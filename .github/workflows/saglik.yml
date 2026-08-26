@@ -1,4 +1,4 @@
-# ORBITAPE — her değişiklikte 229 kontrol
+# ORBITAPE — her değişiklikte bütün sağlık kontrolleri
 #
 # NE YAPAR
 #   Her push ve her pull request'te GitHub'ın kendi makinesinde bir tarayıcı
@@ -23,18 +23,28 @@ on:
 
 jobs:
   saglik:
-    name: 229 kontrol
+    # Isimde SAYI YOK: her yeni kontrolde guncellemek gerekirdi ve bir gun
+    # unutulup yalan soylerdi. Gercek sayi zaten logun son satirinda.
+    name: Saglik kontrolleri
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
+      # v4 -> v5: v4 kendi ici Node 20 istiyor, GitHub onu artik zorla
+      # Node 24'te calistirip her calistirmada uyari basiyordu. v5 zaten
+      # node24 ile geliyor. (v6 de var; v5 yeterli ve daha oturmus.)
       - name: Depoyu al
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
+      # Testleri calistiran Node surumu — yukaridaki adimlarin kendi
+      # calisma ortamiyla karistirilmasin, ayri sey.
+      # 20 -> 22: Node 20'nin destegi Nisan 2026'da bitti, omru dolmus bir
+      # surumde test etmenin anlami yok. 22 su anki LTS ve testler zaten
+      # gelistirme ortaminda Node 22 uzerinde geciyor.
       - name: Node kur
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Playwright ve tarayıcı kur
         run: |
