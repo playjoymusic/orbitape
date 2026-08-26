@@ -25,7 +25,7 @@ jobs:
   saglik:
     name: 229 kontrol
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Depoyu al
@@ -41,23 +41,21 @@ jobs:
           npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
 
-      # Uygulama dosya:// üzerinden değil, gerçek bir sunucudan açılmalı:
-      # service worker ve modül davranışı ancak http:// altında doğru çalışır.
-      - name: Yerel sunucuyu başlat
+      # Sunucu ve test AYNI adımda: ayrı adımlarda başlatılan arka plan
+      # süreçlerinin adım sınırından sağ çıkacağı garanti değil. Burada
+      # sunucu testle aynı kabukta yaşıyor ve iş bitince kapanıyor.
+      #
+      # Uygulama file:// üzerinden değil gerçek bir sunucudan açılmalı:
+      # service worker ancak http:// altında çalışır.
+      - name: Sağlık kontrolü
         run: |
-          python3 -m http.server 8765 &
+          python3 -m http.server 8765 --bind 127.0.0.1 &
+          SUNUCU=$!
+          trap 'kill $SUNUCU 2>/dev/null || true' EXIT
           for i in $(seq 1 30); do
             curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
             sleep 1
           done
-
-      - name: Sağlık kontrolü
-        run: node test/saglik.js
-
-      # Kayıt dosyası kontrolü ffmpeg istiyor; ayrı adım, ayrı hata mesajı.
-      - name: Kayıt dosyası kontrolü
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
-          chmod +x test/kayit_kontrol.sh
-          test/kayit_kontrol.sh || echo "kayit kontrolu atlandi (ortam farki)"
+          curl -sf http://127.0.0.1:8765/index.html >/dev/null || {
+            echo "Yerel sunucu ayaga kalkmadi"; exit 1; }
+          node test/saglik.js

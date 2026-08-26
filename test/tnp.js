@@ -1,6 +1,7 @@
 const { chromium } = require('playwright');
+const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kullanir
 (async()=>{
-  const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:['--autoplay-policy=no-user-gesture-required']});
+  const b = await chromium.launch({executablePath:KROM,args:['--autoplay-policy=no-user-gesture-required']});
   for(const w of [360, 390, 430, 480]){
     const c = await b.newContext({viewport:{width:w,height:844}, deviceScaleFactor:2, isMobile:true, hasTouch:true,
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'});

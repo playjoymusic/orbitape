@@ -3,11 +3,12 @@
    2) Yukari surukleyince saturasyon hala giriyor mu?
    3) Radyo kanalinda limiter gercekten atlaniyor mu?                */
 const { chromium } = require('playwright');
+const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kullanir
 
 const dB = r => (20*Math.log10(r)).toFixed(1);
 
 (async()=>{
-  const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium',
+  const b = await chromium.launch({executablePath:KROM,
     args:['--autoplay-policy=no-user-gesture-required','--use-fake-device-for-media-stream']});
   const c = await b.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
   const p = await c.newPage();

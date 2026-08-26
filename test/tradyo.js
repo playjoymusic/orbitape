@@ -2,6 +2,7 @@
    radio-browser bu ortamdan erisilemiyor; istekleri yakalayip
    gercekci istasyon verisiyle cevapliyoruz. */
 const { chromium } = require('playwright');
+const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kullanir
 
 /* Gercek radio-browser kayitlarina benzeyen ornekler */
 const ISTASYONLAR = [
@@ -43,7 +44,7 @@ const ISTASYONLAR = [
                 lastcheckok:1, __ok:s.ok }));
 
 (async()=>{
-  const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:['--autoplay-policy=no-user-gesture-required']});
+  const b = await chromium.launch({executablePath:KROM,args:['--autoplay-policy=no-user-gesture-required']});
   const c = await b.newContext({viewport:{width:390,height:844}, deviceScaleFactor:2, isMobile:true, hasTouch:true});
   const p = await c.newPage();
   const istekler = [];

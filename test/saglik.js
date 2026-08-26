@@ -1,6 +1,7 @@
 /* ORBITAPE SAGLIK KONTROLU — tek tarayici acilisi, tum yuzeyler.
    Cikti: her satir  [OK|!!]  baslik : olcum                                   */
 const { chromium } = require('playwright');
+const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kullanir
 const fs = require('fs');
 const path = require('path');
 /* ── YOLLAR ──────────────────────────────────────────────────────
@@ -19,7 +20,7 @@ const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
 
 (async()=>{
-  const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium',
+  const b = await chromium.launch({executablePath:KROM,
     args:['--autoplay-policy=no-user-gesture-required','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
   const c = await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,
     permissions:['camera'],

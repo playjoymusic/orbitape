@@ -1,7 +1,8 @@
 /* A2: lisans ekranda gorunuyor mu, dogru cozuluyor mu, yerlesimi bozuyor mu. */
 const { chromium } = require('playwright');
+const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kullanir
 (async()=>{
-  const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:['--autoplay-policy=no-user-gesture-required']});
+  const b = await chromium.launch({executablePath:KROM,args:['--autoplay-policy=no-user-gesture-required']});
   for(const w of [360, 390, 430]){
     const c = await b.newContext({viewport:{width:w,height:844}, deviceScaleFactor:2, isMobile:true, hasTouch:true});
     const p = await c.newPage();
