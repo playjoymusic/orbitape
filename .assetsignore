@@ -1,0 +1,17 @@
+# Yayına GİRMEYECEK dosyalar.
+#
+# Depo herkese açık, yani buradakiler zaten görünür. Mesele gizlilik
+# değil, temizlik ve boyut: test malzemesi 260 KB ve ziyaretçinin
+# orbitape.app/test/... altında bunları bulmasının bir anlamı yok.
+
+test/
+araclar/
+.github/
+node_modules/
+
+README.md
+package.json
+package-lock.json
+wrangler.jsonc
+.gitignore
+.assetsignore

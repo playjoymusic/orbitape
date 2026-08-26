@@ -1,0 +1,26 @@
+// ORBITAPE — Cloudflare dağıtım tarifi
+// ─────────────────────────────────────────────────────────────────
+// Bu dosya Cloudflare'a "depodaki neyi yayınlayacağını" söylüyor.
+// Bağlantı kurulduktan sonra main dalına her push, siteyi otomatik
+// güncelliyor. Elle dosya sürüklemek bitiyor.
+//
+// DERLEME ADIMI YOK. Uygulama tek dosya; ne paketleyici ne dönüştürücü
+// var. Cloudflare depoyu alıp olduğu gibi yayınlıyor.
+//
+// name ALANI KRİTİK: mevcut Worker'ın adıyla birebir aynı olmalı.
+// Farklı olursa Cloudflare yeni bir Worker yaratır ve orbitape.app
+// eski hâlinde kalır — yani yayın güncellenmez.
+{
+  "name": "orbitape",
+  "compatibility_date": "2026-08-26",
+
+  // Statik dosyalar deponun kökünde. Yayına girmemesi gerekenler
+  // .assetsignore dosyasında listeli (testler, araçlar, README).
+  //
+  // html_handling ve not_found_handling BİLEREK yazılmadı: varsayılan
+  // davranış /privacy adresini privacy.html'e eşliyor ve bugün çalışan
+  // şey bu. Elle ayarlamak çalışan bir şeyi bozma riski taşır.
+  "assets": {
+    "directory": "./"
+  }
+}
