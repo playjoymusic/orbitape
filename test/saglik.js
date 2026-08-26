@@ -1523,6 +1523,52 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        'sade '+sade.length+' | damgali '+damgali.length);
   }
 
+  /* ── BEKLEME SEMBOLLERI ─────────────────────────────────────────
+     Sag ustteki bekleme gostergesi ALIEN dagarcigindan rastgele sembol
+     cekiyor. Iki sey olculuyor:
+
+     1) HICBIRI BOS DEGIL. Bozuk bir SVG yolu hata VERMEZ, sessizce bos
+        kutu birakir; ekranda bir yuva bos kalir ve kimse fark etmez.
+        Her sembolun gercek murekkep siniri (getBBox) olculuyor.
+
+     2) ISTENMEYEN ISARET YOK. Dagarcik merak uyandirsin diye var, kimseye
+        bir sey soylesin diye degil. Ust uste iki ucgen (altigen yildiz) ve
+        daire+govde+cubuk (Venus/disi isareti) bu yuzden cikarildi. Bu
+        kontrol kararin kalici olmasi icin: ileride biri farkinda olmadan
+        geri koyarsa test duser. */
+  const sm = await pg.evaluate(()=>{
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 24 24');
+    svg.setAttribute('style','position:fixed;left:-9999px;width:240px;height:240px;stroke:#000;fill:none;stroke-width:1.6');
+    document.body.appendChild(svg);
+    let bos=0, tasan=0;
+    for(const c of ALIEN){
+      svg.innerHTML = c;
+      let bb=null; try{ bb=svg.getBBox(); }catch(e){}
+      if(!bb || bb.width<1 || bb.height<1){ bos++; continue; }
+      if(bb.x<-0.6 || bb.y<-0.6 || bb.x+bb.width>24.6 || bb.y+bb.height>24.6) tasan++;
+    }
+    svg.remove();
+    /* HER SEMBOLE TEK TEK BAKILIYOR — dizi birlestirilerek DEGIL.
+       Ilk yazisimda ALIEN.join(' ') uzerinde ariyordum ve test bosuna
+       dustu: 'iki ucgen' kalibi, AYRI AYRI duran yukari ucgen (#4) ile
+       asagi ucgeni (#6) birlesik metinde yan yana gorup esleşiyordu.
+       Kalip bir sembolun ICINDE aranmali; iki komsunun toplamında degil. */
+    const iceriyor = kalip => ALIEN.some(c => kalip.test(c));
+    return { n:ALIEN.length, bos, tasan,
+      /* Altigen yildiz: AYNI kutuda biri yukari biri asagi bakan iki ucgen. */
+      yildiz: iceriyor(/M12 3\.4 L20\.6 19 L3\.4 19 Z.*M12 20\.6 L3\.4 5 L20\.6 5 Z/),
+      /* Venus: daire, altinda dikey govde, govdeyi kesen yatay cubuk. */
+      venus:  iceriyor(/circle cx="12" cy="7\.4" r="4\.4".*M12 11\.8 V21 M7\.6 18 H16\.4/),
+      /* Altigen + uc kosegen: kime kup, kime altigen yildiz gorunuyor. */
+      altigen: iceriyor(/M12 3 V21 M4\.2 7\.5 L19\.8 16\.5 M19\.8 7\.5 L4\.2 16\.5/) };
+  });
+  K('Bekleme sembolleri cizilebiliyor', !!sm && sm.bos===0, sm ? sm.n+' sembol, bos '+sm.bos : '-');
+  K('Sembollerin hepsi kutuya siginiyor', !!sm && sm.tasan===0, sm ? 'tasan '+sm.tasan : '-');
+  K('Istenmeyen isaret yok', !!sm && !sm.yildiz && !sm.venus && !sm.altigen,
+     'altigen yildiz, Venus isareti ve kosegenli altigen dagarcikta degil');
+
   /* ── HATA YAKALAYICI ────────────────────────────────────────────
      Bir betik hatasinda uygulama sessizce donuyordu: kullanici kapatir,
      bir daha acmaz, bizim haberimiz olmaz. Artik ne oldugunu soyluyor
