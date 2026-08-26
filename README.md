@@ -89,6 +89,39 @@ görünüyor, paylaşılan videoya da yazılıyor.
 - `araclar/havuz_birlestir.py` — yeni hasadı mevcut havuzlara katar. Lisans
   süzgecini yeniden uygular, tekrar eden adresleri eler, boyuta göre ayırır.
 
+
+---
+
+## Yayına çıkma
+
+`main` dalına her push, siteyi **otomatik olarak** yayına alır. Elle dosya
+yüklemek yok.
+
+```
+git commit  →  git push  →  Cloudflare derler  →  orbitape.app güncellenir
+```
+
+`wrangler.jsonc` Cloudflare'a deponun kökünü yayınlamasını söyler.
+`.assetsignore` testleri, araçları ve README'yi dışarıda bırakır.
+Derleme adımı yoktur; uygulama tek dosya, paketleyici yok.
+
+**Ana dal dışındaki dallar** ayrı bir önizleme adresine çıkar. Yani riskli
+bir değişikliği önce orada görüp sonra `main`'e alabilirsin.
+
+**Geri alma:** Cloudflare panelinde her sürüm saklanır; bir şey bozulursa
+önceki dağıtıma tek tıkla dönülür.
+
+---
+
+## Değişiklik yaparken
+
+1. Değiştir, `test/saglik.js`'i yerelde çalıştır.
+2. Bozduğun bir şey varsa test söyler — düzelt.
+3. Yeni bir hata düzelttiysen **saglik.js'e o hatayı yakalayan bir kontrol ekle.**
+   Test sayısı geçmişte yapılan hataların hafızası; 229'un her biri bir
+   kere gerçekten bozulmuş bir şey.
+4. Commit + push. GitHub testleri tekrar koşar, Cloudflare yayına alır.
+
 ---
 
 ## Lisans
