@@ -1523,6 +1523,62 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        'sade '+sade.length+' | damgali '+damgali.length);
   }
 
+  /* ── HATA YAKALAYICI ────────────────────────────────────────────
+     Bir betik hatasinda uygulama sessizce donuyordu: kullanici kapatir,
+     bir daha acmaz, bizim haberimiz olmaz. Artik ne oldugunu soyluyor
+     ve yeniden yukleme sunuyor.
+
+     HICBIR SEY OTOMATIK GONDERILMIYOR — ne bize ne ucuncu tarafa.
+     Gizlilik metnindeki "hicbir sey toplanmiyor" cumlesi aynen gecerli.
+     Asagidaki 'metinde kimlik/gecmis YOK' kontrolu bu sozun bekcisi.
+
+     AYRI SAYFA: bu blok bilerek hata firlatiyor; ana sayfada yapsak
+     jsHata sayaci kirlenir ve sonraki testler yanlis okur. */
+  const ht = await (async()=>{
+    const p7 = await c.newPage();
+    try{
+      await sahteAg(p7);
+      await p7.goto(S); await p7.waitForTimeout(1800);
+      const acik = ()=>p7.evaluate(()=>document.getElementById('hata').classList.contains('on'));
+      const kapali0 = (await acik())===false;
+      /* Soz zinciri reddi PANEL ACMAMALI: uygulamada zararsiz reddler
+         var (otomatik oynatma reddi gibi); her birinde panel acmak yeni
+         bir hata olurdu. Ama kayda gecmeli. */
+      await p7.evaluate(()=>{ Promise.reject(new Error('sinama-red')); });
+      await p7.waitForTimeout(400);
+      const redActi = await acik();
+      const redKayit = await p7.evaluate(()=>_hataKayit.some(x=>x.tur==='promise'));
+      /* Cizim dongusu hata verirse saniyede ~60 kez tetiklenir:
+         panel bir kez cikmali, kayit tavani asilmamali. */
+      await p7.evaluate(()=>{ for(let i=0;i<60;i++) setTimeout(()=>{ throw new Error('sinama-hata'); },0); });
+      await p7.waitForTimeout(700);
+      const hataActi = await acik();
+      const kayitSayisi = await p7.evaluate(()=>_hataKayit.length);
+      const metin = await p7.evaluate(()=>window.hataMetni());
+      const gecirir = await p7.evaluate(()=>getComputedStyle(document.getElementById('hata')).pointerEvents==='none');
+      const dugme = await p7.evaluate(()=>{
+        const a=document.getElementById('hataYenile'), b=document.getElementById('hataKopya');
+        return !!a && !!b && getComputedStyle(b).pointerEvents==='auto';
+      });
+      const ing = await p7.evaluate(()=>document.getElementById('hata').textContent);
+      return { kapali0, redActi, redKayit, hataActi, kayitSayisi, metin, gecirir, dugme, ing };
+    } finally { try{ await p7.close(); }catch(e){} }
+  })();
+  K('Acilista hata paneli KAPALI', ht.kapali0, 'kullanici bos yere korkmuyor');
+  K('Betik hatasi paneli ACIYOR', ht.hataActi===true, 'donmus ekran yerine aciklama');
+  K('Soz reddi panel ACMIYOR', ht.redActi===false && ht.redKayit===true,
+     'zararsiz redler paneli tetiklemiyor ama kayda giriyor');
+  K('60 hatada panel bir kez, kayit tavanli', ht.kayitSayisi<=5, ht.kayitSayisi+' kayit');
+  K('Panel dokunusu GECIRIYOR', ht.gecirir===true && ht.dugme===true,
+     'ses ve kanallar erisilebilir kaliyor, sadece dugmeler dokunus aliyor');
+  K('Hata metninde kimlik/gecmis YOK',
+     !/localStorage|orbitape\.(mod|fav|ses)|latitude|geolocation|calindi/i.test(ht.metin||''),
+     'sadece hata metni + tarayici + ekran olcusu');
+  K('Hata metninde surum ve tarayici VAR',
+     /ORBITAPE \d{4}\./.test(ht.metin||'') && /Mozilla/.test(ht.metin||''),
+     'rapor ise yarar bilgi tasiyor');
+  K('Hata paneli Ingilizce', !/[ıİşŞğĞçÇöÖüÜ]/.test(ht.ing||''), 'arayuzde Turkce yok');
+
   /* ── SES ZINCIRI: MERKEZDE SEFFAF, RADYODA EZILMEYEN ────────────
      Iki olculen hata vardi:
      1) WaveShaper (tanh 2.2x) grafige KALICI bagliydi; FX merkezdeyken
@@ -1536,6 +1592,19 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const sz = await pg.evaluate(async ()=>{
     const bekle = ms => new Promise(r=>setTimeout(r,ms));
     try{
+      /* ── OTOMATIK SEVIYE SUSTURULUYOR — TESTIN KENDI KUSURUYDU ──
+         Bu blok cikisG kazancini 1'e sabitleyip olcum aliyor. Ama AGC
+         her 500 ms'de bir ayni kazanci oynatiyor ve iki olcumun arasina
+         girebiliyor. Sonuc: ayni kod, her calistirmada baska sayi.
+         Olculen tepe/dip oranlari: 0.962, 1.099, 1.153, 0.750 — sonuncusu
+         esigin altinda kalip CI'i dusurdu. Hata olculen seyde degil,
+         olcen seyde.
+         AGC'nin kendi guard'i var: ses duraklatilmissa dokunmuyor.
+         O yuzden olcum boyunca ses duraklatiliyor, sonra eski haline
+         donduruluyor. Yan fayda: graftaki tek sinyal bizim sinus. */
+      const calıyordu = !ses.paused;
+      try{ ses.pause(); }catch(e){}
+      await bekle(600);                       // devredeki AGC turu bitsin
       analizKur();
       const oD = actx.createAnalyser(); oD.fftSize=2048; driveOut.connect(oD);
       const oC = actx.createAnalyser(); oC.fftSize=2048; cikisG.connect(oC);
@@ -1565,11 +1634,24 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const ky = await olc(0.1,oD), by = await olc(0.9,oD);
       const sikisma = (ky/0.1)/(by/0.9);
       fxSeviye=0; fxUygula(); await bekle(300);
-      // 3) limiter yolu
+      /* ── 3) LIMITER YOLU ────────────────────────────────────────
+         GURULTUNUN KAYNAGI TREMOLO'YDU. Olcum penceresi 2048 ornek,
+         yani ~46 ms. Tremolo acik kalirsa tremG kazanci o pencere
+         boyunca saliniyor ve her okuma LFO'nun baska bir fazina denk
+         geliyor. Olculen dagilim: radyo 0.750 / 0.838 / 0.962 / 1.099 /
+         1.282 — ayni kod, bes ayri sayi. Once "gurultu" sanip uc okumanin
+         ortancasini aldim; DAHA KOTU oldu, cunku sapma rastgele degil
+         faza bagliydi. Ortalama almak faz sorununu cozmez.
+         Cozum: olcumden once tremolo kesin olarak kapatiliyor. */
       const limOlc = async k => {
         mod=k; _limAtla=null; limiterYolu();
+        try{ modUygula(); }catch(e){}                    // tremolo/wow durumu sifirlansin
+        try{                                              // ve kesin olarak sabitlensin
+          tremG.gain.cancelScheduledValues(0);   tremG.gain.value = 1;
+          tremDerin.gain.cancelScheduledValues(0); tremDerin.gain.value = 0;
+        }catch(e){}
         cikisG.gain.cancelScheduledValues(0); cikisG.gain.value=1;
-        await bekle(200);
+        await bekle(250);
         const a = await olc(0.06,oC); cikisG.gain.value=1;
         const b = await olc(0.85,oC); cikisG.gain.value=1;
         return (b/0.85)/(a/0.06);
@@ -1578,6 +1660,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       mod=modYedek; _limAtla=null; limiterYolu();
       if(kaynak){ try{ kaynak.stop(); kaynak.disconnect(); }catch(e){} }
       try{ oD.disconnect(); oC.disconnect(); }catch(e){}
+      if(calıyordu){ try{ ses.play().catch(()=>{}); }catch(e){} }   // sonraki testler icin eski hal
       return { sapma, sikisma, oLib, oRadyo, tavanEsik: tavan ? tavan.threshold.value : null };
     }catch(e){ return { hata:String(e).slice(0,90) }; }
   });

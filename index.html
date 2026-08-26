@@ -104,6 +104,35 @@
     color:#cfe9e4;background:rgba(8,16,18,.65);border:1px solid rgba(150,200,195,.35);
     border-radius:999px;padding:9px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   #agyok .ay-tekrar:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
+  /* ── HATA PANELİ ──────────────────────────────────────────────────
+     Bir betik hatası olduğunda uygulama sessizce donuyordu: kullanıcı
+     kapatıyor, bir daha açmıyor, bizim haberimiz olmuyordu.
+     Bu panel iki şey yapıyor: (1) donmuş ekran yerine ne olduğunu
+     söylüyor ve yeniden yükleme sunuyor, (2) ayrıntıları panoya
+     kopyalatıp adresi veriyor.
+     HİÇBİR ŞEY OTOMATİK GÖNDERİLMİYOR. Gönderme kararı kullanıcının;
+     gizlilik metnindeki "hiçbir şey toplanmıyor" cümlesi aynen geçerli.
+     Görünüm #agyok ile aynı dili konuşuyor ama ayrı bir eleman: ikisi
+     aynı anda çıkabilir ve biri diğerini gizlememeli. */
+  #hata{position:fixed;z-index:98;left:50%;top:50%;transform:translate(-50%,-50%);
+    display:none;flex-direction:column;align-items:center;gap:11px;
+    width:min(78vw,320px);padding:20px 18px;box-sizing:border-box;text-align:center;
+    pointer-events:none;                       /* sadece düğmeler dokunuş alır */
+    background:rgba(5,8,10,.97);border:1px solid rgba(200,140,120,.28);border-radius:16px;
+    font-family:'Share Tech Mono',ui-monospace,monospace;
+    opacity:0;transition:opacity .4s ease;}
+  #hata.on{display:flex;opacity:1;}
+  #hata .ht-ad{font-size:12px;letter-spacing:.30em;color:#e89a82;}
+  #hata .ht-not{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
+    font-size:12px;line-height:1.45;color:rgba(244,247,250,.62);}
+  #hata .ht-sira{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:2px;}
+  #hata button{pointer-events:auto;appearance:none;-webkit-appearance:none;
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.2em;
+    color:#cfe9e4;background:rgba(8,16,18,.65);border:1px solid rgba(150,200,195,.35);
+    border-radius:999px;padding:9px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  #hata button:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
+  #hata .ht-posta{font-family:'Share Tech Mono',ui-monospace,monospace;font-size:10.5px;
+    letter-spacing:.08em;color:rgba(244,247,250,.42);margin-top:2px;}
   /* Arama açıkken sağ alttaki parça paneli ve REC geri çekilir: sonuç listesi
      onların üstüne biniyordu, iki yazı iç içe okunuyordu. */
   body.arama-acik #np{opacity:0;pointer-events:none;}
@@ -1003,6 +1032,15 @@
     <div class="ay-not">ORBITAPE streams from the internet.<br>It resumes by itself when you are back online.</div>
     <button class="ay-tekrar" id="agyokTekrar" type="button">TRY AGAIN</button>
   </div>
+  <div id="hata" aria-hidden="true" role="alert">
+    <div class="ht-ad">SOMETHING BROKE</div>
+    <div class="ht-not">ORBITAPE hit an error and may not work properly.<br>Reloading usually fixes it.</div>
+    <div class="ht-sira">
+      <button id="hataYenile" type="button">RELOAD</button>
+      <button id="hataKopya" type="button">COPY DETAILS</button>
+    </div>
+    <div class="ht-posta">hello@orbitape.app</div>
+  </div>
   <div id="ara">
       <div class="etiket" id="araEtiket" role="button" tabindex="0"></div>
       <div class="cizgi" id="araCizgi" role="button" tabindex="0" aria-label="Search"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.7 7.7 L11 11"/></svg></div>
@@ -1043,6 +1081,80 @@
   <div id="rapor"><h4>SOURCE REPORT · v62 · press D</h4><div id="raplist"></div></div>
 
 <script>
+/* ── HATA YAKALAYICI — BETİĞİN İLK İŞİ ────────────────────────────────
+   Buradan önce hiçbir şey çalışmıyor, çünkü kurulum sırasında olan bir
+   hatayı da yakalaması gerek. Daha aşağıda tanımlansa, ilk saniyede
+   patlayan bir şey sessizce kaybolurdu — düzeltmeye çalıştığımız şey
+   tam olarak buydu.
+
+   NEDEN VAR: Bir betik hatası olduğunda uygulama donuyor ve kullanıcı
+   bir açıklama görmüyordu. Kapatıp bir daha açmıyor, bizim de haberimiz
+   olmuyordu. Artık ne olduğunu söylüyor ve yeniden yükleme sunuyor.
+
+   HİÇBİR ŞEY OTOMATİK GÖNDERİLMİYOR. Ne sunucumuza, ne üçüncü tarafa.
+   Kullanıcı isterse ayrıntıları panoya kopyalayıp postalıyor. Gizlilik
+   metnindeki "hiçbir şey toplanmıyor" cümlesi aynen geçerli kalıyor.
+
+   TASARIM KARARLARI, HEPSİ SEBEPLİ:
+   1) PANEL YALNIZCA GERÇEK BETİK HATASINDA. Söz zinciri reddi
+      (unhandledrejection) sessizce kaydediliyor ama panel açmıyor:
+      uygulamada zararsız reddler var (otomatik oynatma reddi gibi) ve
+      her birinde panel açmak yeni bir hata olurdu.
+   2) BİR KEZ ÇIKAR. Çizim döngüsü hata verirse saniyede ~60 kez
+      tetiklenir. Panel bir kez, kayıt en fazla 5 hata.
+   3) SESİ DURDURMAZ, DOKUNUŞU GEÇİRİR. Hata görselde olabilir, ses
+      çalmaya devam ediyor olabilir; kullanıcıyı ondan etmiyoruz.
+   4) window.onerror KULLANILIYOR, capture'lı 'error' dinleyicisi DEĞİL.
+      İkincisi resim/ses yükleme hatalarını da yakalar; uygulamada ölü
+      arşiv linkleri normal ve zaten ele alınıyor, panel açmamalı.       */
+  var ORB_SURUM = '2026.08.26';
+  var _hataKayit = [], _hataGosterildi = false;
+  (function(){
+    var TAVAN = 5;
+    function ekle(tur, metin, ek){
+      if(_hataKayit.length >= TAVAN) return;
+      var ayni = _hataKayit.some(function(x){ return x.metin === metin; });
+      if(ayni) return;                       // aynı hata tekrar tekrar yazılmasın
+      _hataKayit.push({ tur:tur, metin:metin, ek:ek||'' });
+    }
+    function panel(){
+      if(_hataGosterildi) return;
+      _hataGosterildi = true;
+      try{
+        var el = document.getElementById('hata');
+        if(!el) return;                      // DOM henüz yok: sessiz kal, kayıt duruyor
+        el.classList.add('on');
+        el.setAttribute('aria-hidden','false');
+      }catch(e){}
+    }
+    window.onerror = function(mesaj, kaynak, satir, sutun){
+      try{
+        ekle('error', String(mesaj || 'unknown'),
+             (kaynak ? String(kaynak).replace(/^.*\//,'') : '') + ':' + satir + ':' + sutun);
+        panel();
+      }catch(e){}
+      return false;                          // tarayıcının kendi günlüğünü susturma
+    };
+    window.addEventListener('unhandledrejection', function(ev){
+      try{
+        var r = ev && ev.reason;
+        ekle('promise', String((r && (r.message || r)) || 'unknown'), '');
+      }catch(e){}
+    });
+    /* Kullanıcının postalayabileceği metin. Cihaz kimliği yok, konum yok,
+       çalma geçmişi yok — sadece hatanın kendisi ve hangi tarayıcı. */
+    window.hataMetni = function(){
+      var s = 'ORBITAPE ' + ORB_SURUM + '\n' + navigator.userAgent + '\n';
+      try{ s += 'screen ' + innerWidth + 'x' + innerHeight + '\n'; }catch(e){}
+      s += '\n';
+      for(var i=0;i<_hataKayit.length;i++){
+        s += '[' + _hataKayit[i].tur + '] ' + _hataKayit[i].metin +
+             (_hataKayit[i].ek ? '  (' + _hataKayit[i].ek + ')' : '') + '\n';
+      }
+      return s;
+    };
+  })();
+
   var fxX=0, fxY=0;   // FX ışık noktası — TDZ olmasın diye en tepede
   // Uzay/gizem alt kümesi: Voyager Altın Plak, Conet Project (numbers station),
   // NASA gezegen sesleri. Havuzun içindeler; rapor kaç tane olduğunu gösterir.
@@ -1593,6 +1705,35 @@
     window.addEventListener('online',  ()=>{ agDene(); });
     window.addEventListener('offline', ()=>{ agYokAc(); });
     document.getElementById('agyokTekrar').addEventListener('click', e=>{ e.stopPropagation(); agDene(); });
+  }catch(e){}
+  /* ── HATA PANELİ DÜĞMELERİ ────────────────────────────────────────
+     RELOAD: en sık işe yarayan şey; kullanıcıyı tahmine bırakmıyoruz.
+     COPY DETAILS: hata metnini panoya koyar. Kopyalanan şeyde cihaz
+     kimliği, konum ya da çalma geçmişi YOK — sadece hatanın kendisi,
+     tarayıcı sürümü ve ekran ölçüsü. Gönderip göndermemek kullanıcının.
+     Pano izni olmayan tarayıcılarda eski seçme-kopyalama yolu var;
+     yoksa düğme "COPY FAILED" der ve yalan söylemez. */
+  try{
+    document.getElementById('hataYenile').addEventListener('click', e=>{
+      e.stopPropagation(); try{ location.reload(); }catch(_){}
+    });
+    document.getElementById('hataKopya').addEventListener('click', async e=>{
+      e.stopPropagation();
+      const dug = e.currentTarget, metin = window.hataMetni ? window.hataMetni() : '';
+      let oldu = false;
+      try{ await navigator.clipboard.writeText(metin); oldu = true; }
+      catch(_){
+        try{                                   // pano izni yok: eski yol
+          const t = document.createElement('textarea');
+          t.value = metin; t.style.cssText = 'position:fixed;opacity:0;left:-9999px;';
+          document.body.appendChild(t); t.select();
+          oldu = document.execCommand('copy');
+          t.remove();
+        }catch(__){}
+      }
+      dug.textContent = oldu ? 'COPIED' : 'COPY FAILED';
+      setTimeout(()=>{ try{ dug.textContent = 'COPY DETAILS'; }catch(_){} }, 2200);
+    });
   }catch(e){}
   function bekleGoster(){
     /* Ağ gerçekten yoksa bekleme sembolü değil, açıklama göster. */
