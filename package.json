@@ -1,0 +1,13 @@
+{
+  "name": "orbitape",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A sound explorer: live radio, public-domain and Creative Commons archive recordings, effects you play with your finger.",
+  "scripts": {
+    "test": "node test/saglik.js",
+    "sunucu": "python3 -m http.server 8765"
+  },
+  "devDependencies": {
+    "playwright": "^1.47.0"
+  }
+}

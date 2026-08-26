@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+
+# Test çıktıları
+test/kayit-*.webm
+test/kayit-*.mp4
+test/*.png
+test-results/
+playwright-report/
+
+# Yerel geçici dosyalar
+*.log
+__pycache__/
+*.pyc
