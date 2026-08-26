@@ -594,6 +594,23 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const ac = await (async()=>{
     const p2 = await c.newPage();
     try{
+      /* ── DUZELTILEN CI HATASI: SAYFA GERCEK INTERNETE CIKIYORDU ──
+         Bu sayfa sahte agsiz aciliyordu. Sonuc: test, calistigi makinenin
+         internete erisip erisemedigine gore farkli davraniyordu.
+           · Gelistirme ortami: dis istekler engelli -> hicbir parca
+             baslamiyor -> _ilkCalindi false -> test geciyordu.
+           · GitHub Actions: internet var -> gercek bir radyo istasyonu
+             baglanip caliyor -> _ilkCalindi true -> test dusuyordu.
+         6 CI calistirmasinin 4'u bu yuzden kirmiziydi.
+
+         Bu blogun olctugu sey ILK SES BASLAMADAN ONCEKI durum: nereye
+         basilirsa basilsin radyo acilmali, halka kategori secmemeli.
+         O yuzden sahte ag veriliyor (uygulama cevrimdisi moda dusmesin,
+         listeler gelsin) ama SES kesiliyor (calmaya baslamasin). Ses
+         kurali sahteAg'den SONRA yaziliyor; Playwright son yazilan
+         kurali once deniyor. */
+      await sahteAg(p2);
+      await p2.route(/sahte\.test\//, r=>r.abort());
       await p2.addInitScript(()=>{ try{ localStorage.setItem('orbitape.mod','HUMAN'); }catch(e){} });
       await p2.goto(S); await p2.waitForTimeout(1800);
       const mod0  = await p2.evaluate(()=>AKTIF_MOD);
