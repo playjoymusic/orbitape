@@ -827,11 +827,35 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      'akis birakildi');
   K('Kamera penceresi HALKANIN ICINDE', cam.olcu && cam.olcu.kam < cam.olcu.disHalka && cam.olcu.kam > cam.olcu.icHalka,
      'kamera '+(cam.olcu&&cam.olcu.kam)+'px | en dis halka '+(cam.olcu&&cam.olcu.disHalka)+'px');
-  /* geri/ileri ayni hizada mi */
+  /* ── ◁ ve ▷ AYNI HIZADA MI ──────────────────────────────────────
+     DUZELTILEN KARARSIZ TEST: bu kontrol CI'da bir kez dustu, sonraki
+     calistirmada gecti. Ayni kod, farkli sonuc — en zararli test turu,
+     cunku birkac kez tekrarlarsa kimse kirmiziya bakmaz olur.
+
+     SEBEP: iki dugme de varsayilan olarak display:none; gecmis olustukca
+     '.var' sinifiyla gorunur oluyorlar. Gizli bir elemanin
+     getBoundingClientRect() degeri SIFIRDIR. Olcum:
+
+       geri      ileri     fark       sonuc
+       gizli     gizli     0.0px      gecer
+       gorunur   gorunur   0.0px      gecer
+       gorunur   gizli     798.0px    DUSER   <- calarken NORMAL durum
+       gizli     gorunur   798.0px    DUSER
+
+     Yani test, calan bir uygulamanin en sik gorulen halinde dusuyordu
+     ve 798 sayisi bir hizalama hatasi degil, dugmenin kendi konumuydu.
+
+     COZUM: olcumden once ikisi de gorunur yapiliyor, olcum aliniyor,
+     sonra sinif durumu aynen geri konuyor. Boylece test zamanlamaya
+     degil GERCEK CSS hizalamasina bakiyor. Kasitli bozma denendi:
+     ileri'ye 3px kaydirma verilince test dusuyor, yani hala ise yariyor. */
   const gz = await pg.evaluate(()=>{
-    const a=document.getElementById('geri').getBoundingClientRect();
-    const b2=document.getElementById('ileri').getBoundingClientRect();
-    return Math.abs(a.top-b2.top);
+    const g=document.getElementById('geri'), i=document.getElementById('ileri');
+    const gy=g.className, iy=i.className;                 // durumu sakla
+    g.classList.add('var'); i.classList.add('var');       // ikisini de goster
+    const f = Math.abs(g.getBoundingClientRect().top - i.getBoundingClientRect().top);
+    g.className=gy; i.className=iy;                       // aynen geri koy
+    return f;
   });
   K('◁ ve ▷ ayni hizada', gz <= 1.5, gz.toFixed(1)+'px fark');
 
