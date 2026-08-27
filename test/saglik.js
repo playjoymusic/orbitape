@@ -1082,6 +1082,51 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      && mf.description.length>40 && !/[ğüşıöçĞÜŞİÖÇ]/.test(mf.description),
      (mf.description||'').slice(0,46)+'…');
 
+  /* ── YAYINA GIDEN DOSYALAR CLOUDFLARE SINIRINA SIGIYOR MU ────────
+     GERCEK OLAY: depoya 30.2 MB'lik bir ara dosya (yeni_hasat.json,
+     hasat ciktisi) commit'lendi. Cloudflare'in tek dosya siniri
+     25 MiB; derleme dustu ve o commit'ten SONRAKI her dal da dustu,
+     cunku hepsi o dosyayi tasiyordu. Kodda hicbir sey bozuk degildi.
+
+     Bu kontrol o dosyayi push'tan ONCE yakalar. Testin isi sadece
+     kodu degil, YAYINA CIKABILIRLIGI de sinamak: yayina cikmayan
+     dogru kod, calismayan koddur.
+
+     Sinirlar (Cloudflare Workers static assets, Eylul 2025):
+       · tek dosya : 25 MiB
+       · dosya sayisi : ucretsiz planda 20.000
+     Kaynak: developers.cloudflare.com/workers/platform/limits/ */
+  {
+    const TEK_TAVAN = 25 * 1024 * 1024;
+    const ADET_TAVAN = 20000;
+    /* .assetsignore'daki dosyalar yuklenmiyor, onlar sayilmiyor.
+       Bicim: bir satir bir desen; '/' ile bitenler klasor. */
+    const gozardi = fs.readFileSync('.assetsignore','utf8')
+      .split('\n').map(s=>s.trim()).filter(s=>s && !s.startsWith('#'));
+    const atlanir = (yol) => gozardi.some(d =>
+      d.endsWith('/') ? (yol === d.slice(0,-1) || yol.startsWith(d)) : yol === d);
+    const buyuk = [];
+    let adet = 0;
+    (function tara(dizin){
+      for(const ad of fs.readdirSync(dizin.length ? dizin : '.')){
+        if(ad === '.git') continue;
+        const yol = dizin ? dizin + '/' + ad : ad;
+        const d = fs.statSync(yol);
+        if(d.isDirectory()){
+          if(!atlanir(yol + '/')) tara(yol);
+          continue;
+        }
+        if(atlanir(yol)) continue;
+        adet++;
+        if(d.size > TEK_TAVAN) buyuk.push(yol + ' ' + (d.size/1048576).toFixed(1) + ' MB');
+      }
+    })('');
+    K('Yayina giden dosyalar 25 MiB altinda', buyuk.length===0,
+       buyuk.length ? buyuk.join(', ') : adet+' dosya, hepsi sinirin altinda');
+    K('Yayina giden dosya sayisi sinirin altinda', adet < ADET_TAVAN,
+       adet+' / '+ADET_TAVAN);
+  }
+
   // ── 11. KARSILAMA ELI: ses gelmezse 2 sn'de cikmali ────────────────
   /* Senaryo: AG VAR ama tarayici otomatik calmaya izin vermiyor.
      El tam bu durum icin var. (Ag yokken el bilerek cikmiyor —

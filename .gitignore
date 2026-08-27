@@ -12,3 +12,10 @@ playwright-report/
 *.log
 __pycache__/
 *.pyc
+
+# Hasat ciktilari: 30 MB ara dosya, uygulamanin parcasi degil.
+# Bir kere depoya girdi ve Cloudflare derlemesini dusurdu.
+yeni_hasat.json
+hasat_durum.json
+lisans_ozeti.csv
+*.temiz.json

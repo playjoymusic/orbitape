@@ -15,3 +15,8 @@ package-lock.json
 wrangler.jsonc
 .gitignore
 .assetsignore
+
+# Hasat ciktilari yanlislikla depoya girerse en azindan YAYINA
+# gitmesin: tek dosya siniri 25 MiB ve bu dosya 30 MB.
+yeni_hasat.json
+hasat_durum.json
