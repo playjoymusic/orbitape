@@ -10,6 +10,8 @@ araclar/
 node_modules/
 
 README.md
+CLAUDE.md
+GUNLUK.md
 package.json
 package-lock.json
 wrangler.jsonc
