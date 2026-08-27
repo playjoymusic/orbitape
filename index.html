@@ -1330,18 +1330,42 @@
     {t:'mod', ad:'MIXTAPE'},  {t:'mod', ad:'RADIOTAPE'}
   ];
   const MODSIRA = HALKALAR.map(h=>h.ad);
+  /* ── HALKALAR = BULUNDUGUN KANALIN RAFLARI ────────────────────────
+     Halka hareketi tek: bas, tut, bir halkanin uzerinde birak.
+     Ne sectigi kanala gore degisiyor.
+       RADYO kanalinda  -> 8 tur ailesi (AILELER)
+       ARSIV kanallarinda -> eskisi gibi kategoriler (MODSIRA)
+     Boylece kullanici tek bir kural ogreniyor: "halka = raf".
+
+     SAYI DEGISINCE GEOMETRI DE DEGISIYOR. En dis halka SABIT
+     kaliyor (HALKA_DIS) cunku ekran kenarina dayanmis durumda;
+     yer iceriden aciliyor. 8 halkada ic yaricap 0.295'e iniyor,
+     ARALIK degismiyor -- yani halkalar sikismiyor, sadece
+     ortadaki daire kuculuyor. */
+  function halkaAdlar(){
+    try{ if(typeof mod !== 'undefined' && mod === 'radio' &&
+            typeof AILE_ADLAR !== 'undefined') return AILE_ADLAR; }catch(e){}
+    return MODSIRA;
+  }
+  function halkaAilesiMi(){ return halkaAdlar() !== MODSIRA; }
   /* Halka yarıçapları — çizim ve DOKUNMA aynı sayıları kullanıyor ki
      bastığın yer ile gördüğün halka birbirini tutsun. */
   /* En dış halka telefonun sağından/solundan taşıyordu. Ölçüm: en
      yüksek ritimde çizilen çap 390px ekranda 420px'e çıkıyordu.
      Aralık 0.080 -> 0.068 (en dış 0.95R -> 0.89R) ve nefes payı
      kısıldı; en geniş hal artık ~360px, ekranın içinde kalıyor. */
-  const HALKA_IC = 0.55, HALKA_ARA = 0.085;   // 5 halka: 0.55R -> 0.89R
+  const HALKA_ARA = 0.085;                   // halkalar arasi mesafe: SABIT
   /* En dış halkanın oranı halka SAYISINDAN geliyor. Sabit "5*ARA"
      yazılıydı; halka sayısı değişince sınır, FX ucu ve yazı konumu
      halkalardan kopuyordu. */
-  const HALKA_DIS = HALKA_IC + (HALKALAR.length - 1) * HALKA_ARA;
-  const ZAR_SINIR = 0.47;
+  const HALKA_DIS = 0.55 + (HALKALAR.length - 1) * HALKA_ARA;   // 0.89R -- SABIT
+  /* Ic yaricap halka SAYISINDAN geliyor. Sabit yazilirsa sayi
+     degistiginde cizim ile dokunma birbirinden kopar: parmak bir
+     halkaya basip baskasini secer. */
+  function halkaIc(){ return HALKA_DIS - (halkaAdlar().length - 1) * HALKA_ARA; }
+  /* Ortadaki zarin siniri de halkalarla birlikte kayiyor. 0.08'lik
+     bosluk halka ile zar arasinda: parmak sinirda titremesin. */
+  function zarSinir(){ return halkaIc() - 0.08; }
   /* Kategori kipine geçmek için gereken basılı tutma süresi. Altında
      kalan her dokunuş "sıradaki ses" sayılıyor. */
   const MOOD_TUT = 300;
@@ -1350,8 +1374,8 @@
     if(!pDown || !_moodAday || _moodGez || FXMOD) return;
     const o = _diskOran(e || _moodSonOlay);
     _moodGez = true;                       // kip açıldı: bırakış artık "tık" değil
-    _moodVurgu = (o >= ZAR_SINIR) ? _halkaNo(o) : -1;
-    try{ modAdiTut(_moodVurgu >= 0 ? MODSIRA[_moodVurgu] : ''); }catch(_){}
+    _moodVurgu = (o >= zarSinir()) ? _halkaNo(o) : -1;
+    try{ modAdiTut(_moodVurgu >= 0 ? halkaAdlar()[_moodVurgu] : ''); }catch(_){}
   }
   /* İlk ses başlayana kadar false: o süre boyunca disk bölünmez,
      her basış radyoyu açar. sonraki() ve cal() true yapıyor. */
@@ -3845,17 +3869,18 @@
        taşıyor; üstüne dokunmak o modu açıyor. Seçilen halka DURUYOR,
        kalanlar dönmeye devam ediyor — hangisinin seçili olduğu tek
        bakışta belli. Seçiliyken kalanlar gölgede kalıyor. */
-    for(let k=0;k<MODSIRA.length;k++){
+    const _adlar = halkaAdlar(), _aileMi = halkaAilesiMi(), _ic = halkaIc();
+    for(let k=0;k<_adlar.length;k++){
       vctx.save(); vctx.translate(cx,cy);
-      const _mAd = MODSIRA[k];
+      const _mAd = _adlar[k];
       const _h = HALKALAR[k];
       const _vurgu2 = (_moodGez && _moodVurgu === k);
-      const _secili = (AKTIF_MOD === _mAd);
+      const _secili = _aileMi ? (AKTIF_AILE === _mAd) : (AKTIF_MOD === _mAd);
       const _dondur = _secili ? (k*0.4) : ((k%2?-1:1)*vt*0.28 + k*0.4);   // seçili halka DURUR
       vctx.rotate(_dondur);
       vctx.translate(-cx,-cy);
       const esne = 1 + rit*(0.06+0.024*k) + 0.03*Math.sin(vt*1.2+k*1.3);
-      let rR = R*(HALKA_IC + k*HALKA_ARA)*squeeze*esne;    // altı halka: 0.56R -> 0.91R
+      let rR = R*(_ic + k*HALKA_ARA)*squeeze*esne;         // ic yaricap halka sayisindan
       if(_moodGez && _moodVurgu === k) rR *= 1.035;         // parmağın altındaki halka hafif büyür
       /* Halka DÖNDÜRÜLMÜŞ bir eksende çiziliyor; uzanma yönü ekran açısı
          olduğu için yerel açıya çevriliyor (ekran açısı = yerel + rot). */
@@ -3875,8 +3900,11 @@
       // Gradyanlı soluk hat yerine net renkli kontur -> çizim hissi.
       /* Halka rengi = modun rengi. Mod seçiliyse o halka parlak ve
          kalın, diğerleri %22 opaklıkta gölgede. */
+      /* Ailedeysek renk AILELER tablosundan, degilsek kategori
+         temasindan. Ikisi de yoksa eski dort renk yedek. */
       const _mp = MOD_TEMA[_mAd];
-      let _rnk = _mp ? _mp.ana : HALKA_RENK[k%HALKA_RENK.length];
+      let _rnk = (_aileMi ? aileRenk(_mAd) : (_mp ? _mp.ana : '')) ||
+                 (_mp ? _mp.ana : HALKA_RENK[k%HALKA_RENK.length]);
       /* ── FX AÇIKKEN HALKALAR O RENGİN AİLESİNE KAYAR ──────────────
          Tek bir halkayı boyamak yetmiyordu: efektte olduğunu ve hangi
          efektte olduğunu ancak bütün diskin rengi söyleyebiliyor.
@@ -4776,15 +4804,22 @@
 
      Sıra ekrandaki sıra: akraba aileler yan yana.
      Renkler koyu zeminde okunuyor ve birbirine karışmıyor. */
+  /* ── RENKLER: MEVCUT PALET KORUNDU ────────────────────────────────
+     Bes halkanin rengi bugunku ORBITAPE paletinden, AYNI SIRADA ve
+     AYNI YERDE: en icteki mavi-mor, en distaki turkuaz. Halka sayisi
+     5'ten 8'e ciktigi icin ORTAYA uc yeni renk eklendi. Boylece ekran
+     tanidik kaliyor, sadece araya uc raf giriyor.
+     Yeni ucu bilerek mevcutlardan uzak secildi: yesil, kirmizi-
+     turuncu, leylak -- hicbiri komsusuna benzemiyor. */
   const AILELER = [
-    { ad:'ELECTRONIC',    renk:'142,124,240' },
-    { ad:'AMBIENT',       renk:'127,208,232' },
-    { ad:'INDIE & LOFI',  renk:'229,143,168' },
-    { ad:'JAZZ & SOUL',   renk:'224,164,92'  },
-    { ad:'WORLD & ROOTS', renk:'95,191,122'  },
-    { ad:'AFRO & LATIN',  renk:'242,104,60'  },
-    { ad:'CLASSICAL',     renk:'216,203,160' },
-    { ad:'NEWS & TALK',   renk:'126,147,168' }
+    { ad:'ELECTRONIC',    renk:'132,150,255' },   // eski AMBIANCE mavi-mor
+    { ad:'AMBIENT',       renk:'204,124,164' },   // eski HUMAN tozlu gul
+    { ad:'INDIE & LOFI',  renk:'95,191,122'  },   // YENI  yesil
+    { ad:'JAZZ & SOUL',   renk:'242,104,60'  },   // YENI  kirmizi-turuncu
+    { ad:'WORLD & ROOTS', renk:'176,124,232' },   // YENI  leylak
+    { ad:'AFRO & LATIN',  renk:'154,150,172' },   // eski ORBITAPE antrasit
+    { ad:'CLASSICAL',     renk:'240,172,122' },   // eski MIXTAPE kavunici
+    { ad:'NEWS & TALK',   renk:'53,224,216'  }    // eski RADIOTAPE turkuaz
   ];
   const AILE_ADLAR = AILELER.map(a=>a.ad);
   function aileRenk(ad){
@@ -5146,9 +5181,9 @@
     return Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)) / (r.width/2);
   }
   function _halkaNo(rr){
-    if(rr < ZAR_SINIR || rr > 1.06) return -1;          // içerisi ya da dışarısı: halka yok
-    let k = Math.round((rr - HALKA_IC) / HALKA_ARA);
-    return Math.max(0, Math.min(MODSIRA.length-1, k));
+    if(rr < zarSinir() || rr > 1.06) return -1;         // içerisi ya da dışarısı: halka yok
+    let k = Math.round((rr - halkaIc()) / HALKA_ARA);
+    return Math.max(0, Math.min(halkaAdlar().length-1, k));
   }
   const SUR_ESIK=8;   // bu kadar px hareket = sürükleme sayılır (tık değil)
   btn.addEventListener('pointerdown', e=>{
@@ -5218,8 +5253,8 @@
     if(_moodGez){                                   // mood gezinmesi: FX'e girme
       e.preventDefault();
       const _o = _diskOran(e);
-      const k = (_o >= ZAR_SINIR) ? _halkaNo(_o) : -1;
-      if(k !== _moodVurgu){ _moodVurgu = k; modAdiTut(k>=0 ? MODSIRA[k] : ''); }
+      const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
+      if(k !== _moodVurgu){ _moodVurgu = k; modAdiTut(k>=0 ? halkaAdlar()[k] : ''); }
       return;
     }
     if(!FXMOD) return;                              // FX kapalı: sürükleme bir şey yapmaz
@@ -5250,11 +5285,11 @@
       /* Halkanın ÜSTÜNDE değilse hiçbir şey olmaz — ne seçim, ne
          parça atlama. Tutuşu iptal etmenin yolu da bu. */
       const _o = _diskOran(e);
-      const k = (_o >= ZAR_SINIR) ? _halkaNo(_o) : -1;
+      const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
       modAdiBirak();
       try{ btn.releasePointerCapture(e.pointerId); }catch(_){}
       if(k >= 0){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
-                  modSec(MODSIRA[k]); }        // halkada bıraktı -> o mood
+                  halkaSec(k); }               // halkada bıraktı -> o raf
       _moodVurgu = -1;
       return;                                   // boşlukta bıraktı -> hiçbir şey olmaz
     }
@@ -5997,6 +6032,18 @@
   function modAdiBirak(){ onizlemeAyarla(''); modGezYaz(''); modAdiYaz(); }   // parmak kalktı: önizleme düşer
   /* zorla=true: aynı kategoriye tekrar basılsa bile KAPATMAZ. Gezegen
      sırasında kullanılıyor — sıra ilerlerken kategori kapanmasın. */
+  /* Halkaya basildi: kanal neyse onu sec. Tek giris noktasi --
+     dokunma kodu "aile mi kategori mi" diye bilmek zorunda degil. */
+  function halkaSec(k, zorla){
+    const ad = halkaAdlar()[k]; if(!ad) return;
+    if(halkaAilesiMi()){
+      try{ aileSec(ad, zorla); }catch(e){}
+      try{ modAdiGoster(); zeminUygula(); }catch(e){}
+      try{ sonraki(true); }catch(e){}
+      return;
+    }
+    modSec(ad, zorla);
+  }
   function modSec(ad, zorla){
     AKTIF_MOD = (!zorla && AKTIF_MOD === ad) ? null : ad;
     try{ etkilesimSay(); }catch(e){}

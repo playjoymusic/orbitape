@@ -199,19 +199,43 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Tani paneli varsayilan kapali', await pg.evaluate(()=>TANI===false), '?tani ile aciliyor');
   const md = await pg.evaluate(()=>({n:MODLAR.length, ad:MODLAR.map(m=>m.ad).join(' '), aktif:AKTIF_MOD}));
   K('Kategoriler tanimli',    md.n===5, md.ad);
-  const hs = await pg.evaluate(()=>({sira:MODSIRA.join(' '), ic:HALKA_IC, ara:HALKA_ARA, sinir:ZAR_SINIR}));
-  K('Bes halka', hs.sira.split(' ').length===5, hs.sira);
+  /* Adlarda BOSLUK VAR ("INDIE & LOFI") -> sayiyi ayirarak sayma.
+     Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
+  const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
+                                     ic:halkaIc(), ara:HALKA_ARA, sinir:zarSinir()}));
+  /* HALKA SAYISI KANALA GORE DEGISIYOR:
+       radyo kanalinda 8 tur ailesi, arsiv kanallarinda 5 kategori.
+     Sabit sayi beklemek yanlis olurdu -- ikisini de ayri sinamak
+     gerekiyor, cunku geometri (ic yaricap, zar siniri) sayidan
+     tureniyor ve yanlis sayida parmak baska halkayi secer. */
+  K('Radyoda halkalar tur ailesi', hs.n===8 &&
+       /ELECTRONIC/.test(hs.sira) && /NEWS & TALK/.test(hs.sira), hs.sira);
+  {
+    const ars = await pg.evaluate(()=>{
+      const eski = mod; mod = 'lib';
+      const r = { ad:halkaAdlar().join(' '), n:halkaAdlar().length, ic:halkaIc(), sinir:zarSinir() };
+      mod = eski; return r;
+    });
+    K('Arsiv kanalinda halkalar kategori', ars.n===5 && /RADIOTAPE/.test(ars.ad), ars.ad);
+    /* EN DIS HALKA SABIT: yer iceriden aciliyor. Bu bozulursa en dis
+       halka ekran kenarindan tasar -- bir kere olmustu. */
+    K('En dis halka her iki kanalda ayni',
+       Math.abs((hs.ic + 7*hs.ara) - (ars.ic + 4*hs.ara)) < 0.001,
+       'radyo dis '+(hs.ic+7*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+4*hs.ara).toFixed(3));
+    K('Zar siniri halkalarla birlikte kayiyor', hs.sinir < ars.sinir,
+       'radyo '+hs.sinir.toFixed(3)+' < arsiv '+ars.sinir.toFixed(3));
+  }
   /* Cizim ve DOKUNMA ayni sabitleri kullaniyor mu: her halkanin
      cizildigi yarıcapa basinca _halkaNo o halkayi vermeli. */
   const hg = await pg.evaluate(()=>{
-    const y=[]; for(let k=0;k<MODSIRA.length;k++) y.push(_halkaNo(HALKA_IC + k*HALKA_ARA));
+    const y=[]; for(let k=0;k<halkaAdlar().length;k++) y.push(_halkaNo(halkaIc() + k*HALKA_ARA));
     /* en genis hal (ritim 1) ekrana sigiyor mu */
     const dk=document.querySelector('.disk').getBoundingClientRect();
     const R=Math.min(dk.width,dk.height)*0.5;
-    const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*(MODSIRA.length-1))+0.03)*1.035; // 1.035: parmak altindaki halka
+    const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*(halkaAdlar().length-1))+0.03)*1.035; // 1.035: parmak altindaki halka
     return { y, enGenis:Math.round(enGenis), ekran:innerWidth, disk:Math.round(dk.width) };
   });
-  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4', 'yaricap->halka '+hg.y.join(','));
+  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7', 'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
   const ay = await pg.evaluate(()=>{
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
@@ -792,7 +816,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const R = Math.min(d.width,d.height)*0.357;
     const olcu = { kam: Math.round(kk2.width),
                    disHalka: Math.round(2*R*HALKA_DIS),
-                   icHalka:  Math.round(2*R*HALKA_IC) };
+                   icHalka:  Math.round(2*R*halkaIc()) };
     document.getElementById('cam').click(); await bek(400);
     const kapali = { kamAcik: !!kamAcik, iz: !!(kamAkis && kamAkis.getTracks().length) };
     return { once, sonra, kapali, olcu };
