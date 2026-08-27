@@ -5573,8 +5573,14 @@
   /* NEBULA = ANAHTAR: canlı radyo ↔ arşivin ses havuzu. FX dönerken
      de çalışır — kaynak değiştirmek için efekti kapatmak gerekmiyor.
      Eskiden FX'i sıfırlıyordu; o iş zaten uydu düğmesinde var. */
+  /* Uc ana kanal, sirayla: RADIOTAPE (canli radyo, acilis) ->
+     ORBITAPE (sesler) -> MIXTAPE (insanlarin parcalari) -> basa. */
+  const KANAL_SIRA = ['radio','lib','liste'];
   function havuzDegis(){
-    try{ modaGec(mod === 'radio' ? 'lib' : 'radio'); }catch(e){}
+    try{
+      const i = KANAL_SIRA.indexOf(mod);
+      modaGec(KANAL_SIRA[(i < 0 ? 0 : i + 1) % KANAL_SIRA.length]);
+    }catch(e){}
   }
   function moodDegis(){ havuzDegis(); }
   /* ── SAĞ ÜST KATEGORİ YAZISI: BİR SONRAKİ HALKA ──────────────────

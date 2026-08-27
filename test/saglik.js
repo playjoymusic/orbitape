@@ -450,12 +450,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const once = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
     moodDegis(); await new Promise(r=>setTimeout(r,150));
     const sonra = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
+    /* Tam tur: radyo -> sesler -> parcalar -> basa. Dorduncu basista
+       basa donmezse bir kanal ulasilamaz kalir. */
+    const _e = mod; const _s = [];
+    try{ modaGec('radio'); _s.push(mod);
+         for(let i=0;i<3;i++){ havuzDegis(); _s.push(mod); }
+         modaGec(_e); }catch(e){}
     /* DURUMU GERI AL: nebula artik FX'i kapatmiyor, bu yuzden test
        kendi acdigi efekti kendi kapatmali. Kapatmazsa sonraki
        testler "acilista FX acik" diye yalan soyler -- bir kez oldu. */
     try{ fxNormale && fxNormale(); }catch(e){}
     try{ if(mod !== once.kanal) modaGec(once.kanal); }catch(e){}
-    return {once, sonra};
+    return {once, sonra, sira:_s.join(',')};
   });
   const madi = await pg.evaluate(()=>{
     AKTIF_MOD='AMBIANCE'; modAdiYaz();
@@ -487,10 +493,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
      FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
      Eski davranis (FX sifirlama) uydu dugmesinde zaten var. */
-  K('Nebula radyo <-> ses havuzu',
-    nebT.once.kanal !== nebT.sonra.kanal &&
-    (nebT.sonra.kanal==='radio' || nebT.sonra.kanal==='lib'),
-    'kanal '+nebT.once.kanal+' -> '+nebT.sonra.kanal);
+  K('Nebula uc ana kanali geziyor',
+    nebT.once.kanal !== nebT.sonra.kanal && nebT.sira === 'radio,lib,liste,radio',
+    'sira: '+nebT.sira);
   K('Nebula FX kapatmiyor', nebT.sonra.fx==='retro',
     'FX '+nebT.once.fx+' -> "'+nebT.sonra.fx+'"');
   /* ── FX TEK EKSEN ────────────────────────────────────────────────
