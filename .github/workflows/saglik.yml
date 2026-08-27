@@ -69,3 +69,69 @@ jobs:
           curl -sf http://127.0.0.1:8765/index.html >/dev/null || {
             echo "Yerel sunucu ayaga kalkmadi"; exit 1; }
           node test/saglik.js
+
+  # ─────────────────────────────────────────────────────────────────
+  # MOTOR DENKLIGI — WebKit
+  #
+  # NEDEN AYRI İŞ
+  #   WebKit geliştirme ortamına KURULAMIYOR: Playwright'ın indirme
+  #   sunucusu oradan kapalı ("Failed to download WebKit ... code=1").
+  #   Yani bu testin koşabildiği tek yer burası. Ayrı iş olması ayrıca
+  #   Chromium testinin süresini uzatmıyor: ikisi paralel koşuyor.
+  #
+  # NEDEN 291 KONTROLÜN HEPSİ DEĞİL
+  #   O kontrollerin büyük kısmı piksel yerleşimi ve piksel hizası
+  #   motorlar arasında zaten farklı. WebKit'te koşturmak gürültü
+  #   üretir, bilgi üretmez. test/motor.js yalnızca motor farkına
+  #   duyarlı olanı sınıyor: ses grafı, medya API'leri, çizim, CORS,
+  #   service worker, klavye, lisans kapısı.
+  #
+  # continue-on-error KALDIRILDI — ilk koşu ne soracağımızı öğretti.
+  #
+  #   İlk WebKit koşusu 19/21 verdi. Düşen ikisi MediaRecorder'dı ve
+  #   ilk bakışta "Safari'de kayıt çalışmıyor" gibi duruyordu. Değildi:
+  #   caniuse'a bakıldı, MediaRecorder iOS Safari 14.5'ten beri
+  #   destekleniyor. Olmayan şey Playwright'ın LİNUX WebKit derlemesi —
+  #   medya kodlayıcıları oraya konmuyor.
+  #
+  #   Yani bir uygulama hatası değil, TESTİN SINIRI. O iki satır artık
+  #   "bilgi" olarak yazılıyor, hüküm sayılmıyor: yalan söyleyen bir
+  #   test, kırmızısına bakılmayan bir teste dönüşür.
+  #
+  #   Geriye kalan 19 kontrolün hepsi WebKit'te geçti — yani kodun
+  #   WebKit hakkındaki iddiaları motor seviyesinde tutuyor. Artık
+  #   kırmızı olması gerçek bir gerileme demek, o yüzden zorunlu.
+  #
+  #   AÇIK KALAN BOŞLUK: kayıt yolu bu testle doğrulanamıyor. Gerçek
+  #   cihaz ya da Mac üzerinde WebKit gerekiyor. Elle sınama listesinde.
+  motor:
+    name: Motor denkligi (WebKit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - name: Node kur
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Playwright ve WebKit kur
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps webkit
+
+      - name: Motor denkligi
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 &
+          SUNUCU=$!
+          trap 'kill $SUNUCU 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8765/index.html >/dev/null || {
+            echo "Yerel sunucu ayaga kalkmadi"; exit 1; }
+          MOTOR=webkit node test/motor.js

@@ -87,6 +87,46 @@ const { sayfa, kapat } = await sayfaAc(b);                  // telefon + sahte a
 const { sayfa, kapat } = await sayfaAc(c, {ag:'yerel'});    // çevrimdışı ölçümü
 ```
 
+`test/motor.js` **Safari'nin motorunda** koşan ayrı bir paket. Uygulama
+iPhone'da yaşıyor ve ses/kayıt kodunun büyük kısmı WebKit'in tuhaflıklarına
+karşı yazılmış — cızırtı düzeltmesi, `crossOrigin`/CORS eşlemesi, "ENCODER
+STALLED (TRACK MUTED)" tespiti. Bunların hepsi WebKit **hakkında iddia** ve
+hiçbiri WebKit'te sınanmıyordu.
+
+```bash
+npm run motor            # WebKit  (yalnızca CI'da kurulabiliyor)
+npm run motor:chromium   # aynı kontroller Chromium'da — karşılaştırma için
+```
+
+291 kontrolün hepsi orada koşmuyor: büyük kısmı piksel yerleşimi ve piksel
+hizası motorlar arasında zaten farklı. Sadece motor farkına duyarlı olan
+sınanıyor — ses grafı, medya API'leri, çizim, CORS, service worker, klavye,
+lisans kapısı.
+
+**Ne garanti etmiyor:** Playwright'ın webkit'i Safari değil, Safari'nin
+*motoru*. iOS Safari'nin üstüne koyduğu kısıtları (dokunmadan çalmama, arka
+planda susma, sıkı bellek tavanı) yakalamaz. Verdiği güvence "iPhone'da
+çalışıyor" değil, "motor farkı yüzünden kırılmıyor".
+
+**WebKit yerelde kurulamıyor** — Playwright'ın indirme sunucusu bu geliştirme
+ortamından kapalı (`Failed to download WebKit … code=1`). Bu yüzden yalnızca
+GitHub Actions'ta koşuyor.
+
+**İlk koşunun öğrettiği şey.** WebKit 19/21 verdi; düşen ikisi MediaRecorder'dı
+ve ilk bakışta "Safari'de kayıt çalışmıyor" gibi duruyordu. Değildi —
+MediaRecorder iOS Safari 14.5'ten beri destekleniyor
+([caniuse](https://caniuse.com/mediarecorder)). Olmayan şey Playwright'ın
+**Linux WebKit derlemesi**: medya kodlayıcıları oraya konmuyor.
+
+Yani bir uygulama hatası değil, **testin sınırı**. O iki satır artık `BİLGİ`
+olarak yazılıyor, hüküm sayılmıyor. Sebebi ilkeli: dustu saymak testi yalancı
+yapardı, ve yalan söyleyen bir test kırmızısına bakılmayan bir teste dönüşür.
+Hiç yazmamak da kör bırakırdı.
+
+**Açık kalan boşluk, açıkça:** kayıt yolu bu testle doğrulanamıyor. Onun için
+gerçek bir cihaz ya da Mac üzerinde WebKit gerekiyor — elle sınama listesinde
+durmalı.
+
 `test/saglik.sh` bunun üstüne kayıt dosyasını `ffprobe` ile açıp gerçekten
 ses ve görüntü içerdiğini doğrular, kare maliyetini 4 kat yavaşlatılmış
 CPU ile ölçer.
