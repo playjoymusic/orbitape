@@ -1,18 +1,16 @@
 /* ORBITAPE SAGLIK KONTROLU — tek tarayici acilisi, tum yuzeyler.
    Cikti: her satir  [OK|!!]  baslik : olcum                                   */
-const { chromium } = require('playwright');
-const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kullanir
 const fs = require('fs');
-const path = require('path');
-/* ── YOLLAR ──────────────────────────────────────────────────────
+/* ── SAHNE KURULUMU AYRI DOSYADA ─────────────────────────────────
+   Tarayici acma, telefon olculeri, sahte ag, sayfa acma: hepsi
+   test/ortak.js'te. Sebep orada yaziyor — ozeti: ayni sekiz satir
+   yedi kere elle yazilmisti ve bir keresinde yanlis yazilinca CI
+   uc kere ust uste dustu.
    Bu betik depo KOKUNDEN calisir:  node test/saglik.js
    · Uygulama dosyalari (index.html, manifest.json) kokte -> cwd.
-   · Testin kendi malzemesi (ton.wav, yuksek.mp3) test/ altinda ->
-     __dirname. Ikisini karistirmamak icin ayri yardimci var.
-   Yerel sunucu kokten yayin yapiyor; testin ses dosyalari da
-   oraya /test/... yolundan ulasiliyor. */
-const T = (ad) => path.join(__dirname, ad);
-const S = 'http://127.0.0.1:8765/index.html';
+   · Testin kendi malzemesi (ton.wav, yuksek.mp3) test/ altinda -> T(). */
+const { T, ADRES: S, TELEFON, IPHONE_UA,
+        tarayiciAc, sahteAg, sayfaAc } = require('./ortak');
 
 
 
@@ -20,53 +18,27 @@ const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
 
 (async()=>{
-  const b = await chromium.launch({executablePath:KROM,
-    args:['--autoplay-policy=no-user-gesture-required','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
-  const c = await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,
-    permissions:['camera'],
-    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'});
+  const b = await tarayiciAc();
+  /* ANA BAGLAM. Digerlerinden iki farki var ve ikisi de bilerek:
+     · permissions:['camera'] — kayit/kamera bolumu izin sormasin.
+     · iPhone kimligi — iOS'a ozel yollar (kamera rozeti, paylasim)
+       ancak boyle calisiyor. */
+  const c = await b.newContext(Object.assign({}, TELEFON, {
+    permissions:['camera'], userAgent:IPHONE_UA }));
   /* TANITIM TURU testlerin ustune binmesin: kutu isaretlenmis gibi
      davranan bayrak. Tur kendi bolumunde ayrica sinaniyor. */
   await c.addInitScript(()=>{ try{ localStorage.setItem('orbitape.tur','1'); }catch(e){} });
-  const pg = await c.newPage();
+  const { sayfa: pg } = await sayfaAc(c, {
+    bekle: 2500,
+    once: ()=>{ window.__gum=0;
+      const o = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+      if(o) navigator.mediaDevices.getUserMedia = function(){ window.__gum++; return o.apply(this,arguments); }; },
+    git: false });
   const jsHata=[], konsol=[];
   pg.on('pageerror', e=>jsHata.push(e.message));
   pg.on('console', m=>{ const t=m.text(); if(m.type()==='error' && !/ERR_FAILED|ERR_BLOCKED|net::/.test(t)) konsol.push(t.slice(0,120)); });   // dis istekler testte bilerek kesiliyor
-  await pg.addInitScript(()=>{ window.__gum=0;
-    const o = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
-    if(o) navigator.mediaDevices.getUserMedia = function(){ window.__gum++; return o.apply(this,arguments); }; });
-  /* ── SAHTE LISTE SUNUCUSU ────────────────────────────────────────
-     Test cihazi AGI OLAN bir cihazi temsil ediyor. Disaridaki her
-     istegi abort edersek uygulama (dogru olarak) kendini cevrimdisi
-     sayar: "no connection" paneli acilir, acilis turu ve karsilama eli
-     bastirilir, hicbir havuz yuklenmez. O yuzden liste uc noktalarina
-     kucuk ama GECERLI cevaplar veriyoruz; SES dosyalari yine kesiliyor
-     (calmayi degil, yerlesim ve akisi olcuyoruz).
-     AGSIZ davranis kendi bloklarinda ayrica sinaniyor. */
-  const TON = fs.readFileSync(T('ton.wav'));
-  const sahteAg = async (sayfa)=>{
-    const liste = (n,on)=>JSON.stringify(Array.from({length:n},(_,i)=>
-      ({mp3:'https://sahte.test/'+on+i+'.mp3', ad:on.toUpperCase()+' '+i, etiket:'netlabel'})));
-    await sayfa.route('**/*', r=>{
-      const u = r.request().url();
-      if(u.startsWith('http://127.0.0.1:8765')) return r.continue();
-      if(/earth_buyuk\.json/.test(u)) return r.fulfill({status:200, contentType:'application/json', body:liste(24,'u')});
-      if(/earth\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:liste(40,'e')});
-      if(/mixtape\.json/.test(u))     return r.fulfill({status:200, contentType:'application/json', body:liste(30,'m')});
-      if(/liste\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:liste(6,'l')});
-      if(/stations\/search/.test(u))  return r.fulfill({status:200, contentType:'application/json',
-        body: JSON.stringify(Array.from({length:16},(_,i)=>({stationuuid:'s'+i, url:'https://sahte.test/r'+i,
-               url_resolved:'https://sahte.test/r'+i, name:'Radio '+i, lastcheckok:1})))});
-      /* SES: kisa bir ton. Parcalar GERCEKTEN calmazsa uygulama sonsuz
-         "sonraki kaynagi dene" dongusune giriyor ve o dongu, sirasi
-         gelen her testin altini oyuyor (calani duraklatiyoruz, dongu
-         hemen yenisini basliyor). Gercek cihazda boyle bir dongu yok. */
-      if(/sahte\.test\//.test(u)) return r.fulfill({status:200, contentType:'audio/wav',
-        headers:{'access-control-allow-origin':'*'}, body: TON});
-      return r.abort();
-    });
-  };
-  await sahteAg(pg);
+  /* Dinleyiciler takildiktan SONRA gidiliyor: acilistaki bir JS hatasi
+     yakalanmazsa bu testin varlik sebebi kalmaz. */
   await pg.goto(S); await pg.waitForTimeout(2500);
 
   // ── 1. TEMEL ────────────────────────────────────────────────────────
@@ -256,10 +228,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Her turda 'gecis' eklenirse disk opakligi ve alttaki yazilar
      titriyor. Gorsel sifirlama sadece gercek gecise ait. */
   const ttr = await (async()=>{
-    const p3 = await c.newPage();
+    const { sayfa: p3, kapat } = await sayfaAc(c, {ag:'yerel', bekle:1800});
     try{
-      await p3.route('**/*', r=>r.request().url().startsWith(S.replace(/\/[^/]*$/,''))?r.continue():r.abort());
-      await p3.goto(S); await p3.waitForTimeout(1800);
       await p3.evaluate(()=>{ window.__g=0; window.__s=0;
         const mo=new MutationObserver(()=>{ if(document.body.classList.contains('gecis')) window.__g++; });
         mo.observe(document.body,{attributes:true,attributeFilter:['class']});
@@ -268,7 +238,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       });
       await p3.waitForTimeout(6000);
       return await p3.evaluate(()=>({g:window.__g, s:window.__s}));
-    } finally { try{ await p3.close(); }catch(e){} }
+    } finally { await kapat(); }
   })();
   /* ── TITREME 2: TELEFONU DONDURUNCE ─────────────────────────────
      canvas.width'e yazmak AYNI degeri yazsan bile tuvali siler.
@@ -276,11 +246,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      seferinde siliniyor, alttaki yazilar yeniden yerlesiyordu.
      Olcum: duzeltmeden once 62 silme, sonra 2. */
   const dnd = await (async()=>{
-    const p5 = await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
-    const pp = await p5.newPage();
+    const { sayfa: pp, kapat } = await sayfaAc(b, {ag:'yerel', bekle:2200});
     try{
-      await pp.route('**/*', r=>r.request().url().startsWith(S.replace(/\/[^/]*$/,''))?r.continue():r.abort());
-      await pp.goto(S); await pp.waitForTimeout(2200);
       await pp.evaluate(()=>{
         window.__sil = 0;
         const d = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype,'width');
@@ -291,7 +258,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       await pp.setViewportSize({width:390,height:844}); await pp.waitForTimeout(200);
       for(let i=0;i<24;i++){ await pp.setViewportSize({width:390,height: 844-(i%2?6:0)}); await pp.waitForTimeout(30); }
       return await pp.evaluate(()=>window.__sil);
-    } finally { try{ await p5.close(); }catch(e){} }
+    } finally { await kapat(); }
   })();
   /* Nebula + gezegenler, karsisindaki ORBITAPE yazisiyla ayni UST
      sinirdan basliyor. markHizala tekrar tekrar cagriliyor: kaymadan
@@ -320,29 +287,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      isaretlenmezse bir sonraki acilista yine cikar (standart).
      Bittiginde hicbir sey secili birakmaz. */
   const tur = await (async()=>{
-    const p4 = await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
-    const pp = await p4.newPage();
+    /* Bu test "normal ilk acilis"i temsil ediyor, yani AGI OLAN bir
+       cihazi — o yuzden 'sahte' ag. Iki fark var ve ikisi de bilerek:
+       · KUCUK havuzlar: tur 20 saniyede bitmeli, 40 parcalik havuz
+         yuklenirken gecen zaman olcume karisiyor.
+       · ses:false — bu blokta hicbir sey CALMAMALI. Tur ekraninin
+         ustune calan parcanin kunyesi binerse katman cakismasi
+         olcumu (tur.cak) yalan soyler. */
+    const { sayfa: pp, kapat } = await sayfaAc(b, {
+      bekle: 2400,
+      sayilar: {buyuk:6, earth:8, mixtape:8, liste:4, radyo:8},
+      ses: false });
     try{
-      /* Bu test "normal ilk acilis"i temsil ediyor, yani AGI OLAN bir
-         cihazi. Disaridaki her istegi abort edersek uygulama kendini
-         cevrimdisi sayip "no connection" panelini aciyor ve tur (dogru
-         olarak) bastiriliyor. O yuzden liste uc noktalarina kucuk ama
-         GECERLI cevaplar veriyoruz. */
-      const sahteListe = (n,on)=>JSON.stringify(Array.from({length:n},(_,i2)=>
-        ({mp3:'https://x/'+on+i2+'.mp3', ad:on+' '+i2, etiket:'netlabel'})));
-      await pp.route('**/*', r=>{
-        const u = r.request().url();
-        if(u.startsWith(S.replace(/\/[^/]*$/,''))) return r.continue();
-        if(/earth_buyuk\.json/.test(u)) return r.fulfill({status:200, contentType:'application/json', body:sahteListe(6,'u')});
-        if(/earth\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:sahteListe(8,'e')});
-        if(/mixtape\.json/.test(u))     return r.fulfill({status:200, contentType:'application/json', body:sahteListe(8,'m')});
-        if(/liste\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:sahteListe(4,'l')});
-        if(/stations\/search/.test(u))  return r.fulfill({status:200, contentType:'application/json',
-          body: JSON.stringify(Array.from({length:8},(_,i2)=>({stationuuid:'s'+i2, url:'https://x/r'+i2,
-                 url_resolved:'https://x/r'+i2, name:'Radio '+i2, lastcheckok:1})))});
-        return r.abort();
-      });
-      await pp.goto(S); await pp.waitForTimeout(2400);
       const acildi = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
       const ingilizce = await pp.evaluate(()=>{
         const t=document.getElementById('tur').textContent||'';
@@ -390,7 +346,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const bitti = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
       return { acildi, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz, tekrar, bitti,
                sure: (sure>0 ? sure : -1), cak, kars };
-    } finally { try{ await p4.close(); }catch(e){} }
+    } finally { await kapat(); }
   })();
   K('Tur ilk acilista cikiyor', tur.acildi, 'gorunur');
   K('Tur INGILIZCE', tur.ingilizce, 'turkce karakter yok');
@@ -592,27 +548,27 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      halka kategori secmez. AYRI SAYFADA: ana sayfayi yeniden yuklemek
      ses grafigini dagitiyor, sonraki testler cokuyordu. */
   const ac = await (async()=>{
-    const p2 = await c.newPage();
-    try{
-      /* ── DUZELTILEN CI HATASI: SAYFA GERCEK INTERNETE CIKIYORDU ──
-         Bu sayfa sahte agsiz aciliyordu. Sonuc: test, calistigi makinenin
-         internete erisip erisemedigine gore farkli davraniyordu.
-           · Gelistirme ortami: dis istekler engelli -> hicbir parca
-             baslamiyor -> _ilkCalindi false -> test geciyordu.
-           · GitHub Actions: internet var -> gercek bir radyo istasyonu
-             baglanip caliyor -> _ilkCalindi true -> test dusuyordu.
-         6 CI calistirmasinin 4'u bu yuzden kirmiziydi.
+    /* ── DUZELTILEN CI HATASI: SAYFA GERCEK INTERNETE CIKIYORDU ──
+       Bu sayfa sahte agsiz aciliyordu. Sonuc: test, calistigi makinenin
+       internete erisip erisemedigine gore farkli davraniyordu.
+         · Gelistirme ortami: dis istekler engelli -> hicbir parca
+           baslamiyor -> _ilkCalindi false -> test geciyordu.
+         · GitHub Actions: internet var -> gercek bir radyo istasyonu
+           baglanip caliyor -> _ilkCalindi true -> test dusuyordu.
+       6 CI calistirmasinin 4'u bu yuzden kirmiziydi. Artik sayfa
+       sayfaAc()'tan geciyor ve ag secmeden sayfa acilamiyor.
 
-         Bu blogun olctugu sey ILK SES BASLAMADAN ONCEKI durum: nereye
-         basilirsa basilsin radyo acilmali, halka kategori secmemeli.
-         O yuzden sahte ag veriliyor (uygulama cevrimdisi moda dusmesin,
-         listeler gelsin) ama SES kesiliyor (calmaya baslamasin). Ses
-         kurali sahteAg'den SONRA yaziliyor; Playwright son yazilan
-         kurali once deniyor. */
-      await sahteAg(p2);
-      await p2.route(/sahte\.test\//, r=>r.abort());
-      await p2.addInitScript(()=>{ try{ localStorage.setItem('orbitape.mod','HUMAN'); }catch(e){} });
-      await p2.goto(S); await p2.waitForTimeout(1800);
+       Bu blogun olctugu sey ILK SES BASLAMADAN ONCEKI durum: nereye
+       basilirsa basilsin radyo acilmali, halka kategori secmemeli.
+       O yuzden sahte ag veriliyor (uygulama cevrimdisi moda dusmesin,
+       listeler gelsin) ama SES kesiliyor (calmaya baslamasin). Ses
+       kurali ekAg ile sahteAg'den SONRA yaziliyor; Playwright son
+       yazilan kurali once deniyor. */
+    const { sayfa: p2, kapat } = await sayfaAc(c, {
+      bekle: 1800,
+      ekAg: s => s.route(/sahte\.test\//, r=>r.abort()),
+      once: ()=>{ try{ localStorage.setItem('orbitape.mod','HUMAN'); }catch(e){} } });
+    try{
       const mod0  = await p2.evaluate(()=>AKTIF_MOD);
       const depo  = await p2.evaluate(()=>{ try{ return localStorage.getItem('orbitape.mod'); }catch(e){ return 'x'; } });
       const bay0  = await p2.evaluate(()=>_ilkCalindi);
@@ -641,7 +597,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                  halkaAlt:Math.round(halkaAlt), taban:Math.round(taban), H:innerHeight };
       });
       return { mod0, depo, bay0, gez1, son1, gez2, yayin, yazi };
-    } finally { try{ await p2.close(); }catch(e){} }
+    } finally { await kapat(); }
   })();
   K('Acilis her zaman RADIOTAPE', ac.mod0==='RADIOTAPE' && !ac.depo, 'AKTIF_MOD='+ac.mod0+' | depo="'+ac.depo+'"');
   K('Ilk basis kategori degistirmez', ac.bay0===false && ac.gez1===false && ac.son1.mod==='RADIOTAPE', 'gezinme '+ac.gez1+' | mod '+ac.son1.mod);
@@ -881,12 +837,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      GERCEKTEN surtene kadar hakki durur, surttukten sonra bir daha
      cikmaz. */
   const fxip = await (async()=>{
-    const p6 = await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
-    const pp = await p6.newPage();
+    const { sayfa: pp, kapat } = await sayfaAc(b, {ag:'yerel', bekle:2000,
+      once: ()=>{ try{ localStorage.setItem('orbitape.tur','1'); }catch(e){} } });
     try{
-      await pp.addInitScript(()=>{ try{ localStorage.setItem('orbitape.tur','1'); }catch(e){} });
-      await pp.route('**/*', r=>r.request().url().startsWith(S.replace(/\/[^/]*$/,''))?r.continue():r.abort());
-      await pp.goto(S); await pp.waitForTimeout(2000);
       const d = ()=>pp.evaluate(()=>({on:document.getElementById('fxEl').classList.contains('on'),
         depo:localStorage.getItem('orbitape.fxIpucu')}));
       const acilis = await d();
@@ -915,7 +868,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       await pp.click('.uydu[data-fx="ana"]'); await pp.waitForTimeout(400);
       const yeniden = await d();
       return { acilis, acik, baska, kapali, tekrar, minik, surtme, sonra, yeniden };
-    } finally { try{ await p6.close(); }catch(e){} }
+    } finally { await kapat(); }
   })();
   K('FX ipucu ilk acilista YOK', fxip.acilis.on===false, 'efekt kapali');
   K('FX acilinca el cikar', fxip.acik.on===true, 'gorunur');
@@ -1130,17 +1083,16 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      (mf.description||'').slice(0,46)+'…');
 
   // ── 11. KARSILAMA ELI: ses gelmezse 2 sn'de cikmali ────────────────
-  const pg2 = await c.newPage();
   /* Senaryo: AG VAR ama tarayici otomatik calmaya izin vermiyor.
      El tam bu durum icin var. (Ag yokken el bilerek cikmiyor —
      dokununca baslayacak bir sey yok; o ayrica sinaniyor.) */
-  await sahteAg(pg2);
-  await pg2.addInitScript(()=>{ HTMLMediaElement.prototype.play = function(){ return Promise.reject(new Error('NotAllowed')); }; });
-  await pg2.goto(S); await pg2.waitForTimeout(3200);
+  const { sayfa: pg2, kapat: pg2Kapat } = await sayfaAc(c, {
+    bekle: 3200,
+    once: ()=>{ HTMLMediaElement.prototype.play = function(){ return Promise.reject(new Error('NotAllowed')); }; } });
   const el = await pg2.evaluate(()=>{const k=document.getElementById('karsilama');
     return {acik:k.classList.contains('on'), gor:getComputedStyle(k).display, op:+getComputedStyle(k).opacity};});
   K('Ses yoksa el cikiyor (2 sn)', el.acik && el.op>0.5, 'on='+el.acik+' opacity='+el.op);
-  await pg2.close();
+  await pg2Kapat();
 
   /* ── DURUM DEGISTIREN KONTROLLER EN SONDA ───────────────────────
      Bu bloklar calan parcayi, kategoriyi ve REC durumunu degistiriyor.
@@ -1581,10 +1533,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      AYRI SAYFA: bu blok bilerek hata firlatiyor; ana sayfada yapsak
      jsHata sayaci kirlenir ve sonraki testler yanlis okur. */
   const ht = await (async()=>{
-    const p7 = await c.newPage();
+    const { sayfa: p7, kapat } = await sayfaAc(c, {bekle:1800});
     try{
-      await sahteAg(p7);
-      await p7.goto(S); await p7.waitForTimeout(1800);
       const acik = ()=>p7.evaluate(()=>document.getElementById('hata').classList.contains('on'));
       const kapali0 = (await acik())===false;
       /* Soz zinciri reddi PANEL ACMAMALI: uygulamada zararsiz reddler
@@ -1608,7 +1558,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       });
       const ing = await p7.evaluate(()=>document.getElementById('hata').textContent);
       return { kapali0, redActi, redKayit, hataActi, kayitSayisi, metin, gecirir, dugme, ing };
-    } finally { try{ await p7.close(); }catch(e){} }
+    } finally { await kapat(); }
   })();
   K('Acilista hata paneli KAPALI', ht.kapali0, 'kullanici bos yere korkmuyor');
   K('Betik hatasi paneli ACIYOR', ht.hataActi===true, 'donmus ekran yerine aciklama');
