@@ -449,7 +449,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     await new Promise(r=>setTimeout(r,120));
     const once = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
     moodDegis(); await new Promise(r=>setTimeout(r,150));
-    return {once, sonra:{fx:FXMOD, mod:AKTIF_MOD, kanal:mod}};
+    const sonra = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
+    /* DURUMU GERI AL: nebula artik FX'i kapatmiyor, bu yuzden test
+       kendi acdigi efekti kendi kapatmali. Kapatmazsa sonraki
+       testler "acilista FX acik" diye yalan soyler -- bir kez oldu. */
+    try{ fxNormale && fxNormale(); }catch(e){}
+    try{ if(mod !== once.kanal) modaGec(once.kanal); }catch(e){}
+    return {once, sonra};
   });
   const madi = await pg.evaluate(()=>{
     AKTIF_MOD='AMBIANCE'; modAdiYaz();
@@ -478,9 +484,40 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     madi.yazi+' | ayni satir, marka adindan kucuk');
   K('Kategori yazisi halkalari geziyor',
     nb.split(' ')[0]==='RADIOTAPE' && nb.split(' ')[4]==='AMBIANCE' && nb.split(' ')[5]==='RADIOTAPE', nb);
-  K('Nebula SADECE FX sifirlar',
-    nebT.once.fx==='retro' && nebT.sonra.fx==='' && nebT.sonra.mod===nebT.once.mod && nebT.sonra.kanal===nebT.once.kanal,
-    'FX '+nebT.once.fx+'->"'+nebT.sonra.fx+'" | kategori '+nebT.sonra.mod+' | kanal '+nebT.sonra.kanal);
+  /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
+     FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
+     Eski davranis (FX sifirlama) uydu dugmesinde zaten var. */
+  K('Nebula radyo <-> ses havuzu',
+    nebT.once.kanal !== nebT.sonra.kanal &&
+    (nebT.sonra.kanal==='radio' || nebT.sonra.kanal==='lib'),
+    'kanal '+nebT.once.kanal+' -> '+nebT.sonra.kanal);
+  K('Nebula FX kapatmiyor', nebT.sonra.fx==='retro',
+    'FX '+nebT.once.fx+' -> "'+nebT.sonra.fx+'"');
+  /* ── FX TEK EKSEN ────────────────────────────────────────────────
+     Ortadaki daire 0.215R'ye indi; iki eksen o alanda ayirt edilemez.
+     Uzaklik = siddet. Ayni uzaklikta FARKLI YONLER ayni degeri
+     vermeli -- vermezse ikinci eksen gizlice duruyor demektir. */
+  {
+    const tek = await pg.evaluate(()=>{
+      const kaynak = document.documentElement.outerHTML;
+      return { tekEksen:/const _g = Math\.min\(1, uz\);[\s\S]{0,60}yatay=_g; fxSeviye=_g;/.test(kaynak) };
+    });
+    K('FX tek eksen (uzaklik = siddet)', tek.tekEksen, 'yon yalniz isigi tasiyor');
+  }
+  /* ── ACILIS SON KANALDAN ─────────────────────────────────────────
+     Devamlilik: kisi dun nerede biraktiysa oradan devam ediyor.
+     Bozuk bir depo degeri radyoya dusmeli, uygulamayi sessiz
+     birakmamali. */
+  {
+    const dev = await pg.evaluate(()=>{
+      const kaynak = document.documentElement.outerHTML;
+      return { yaziyor:/localStorage\.setItem\('orbitape\.kanal', mod\)/.test(kaynak),
+               okuyor:/localStorage\.getItem\('orbitape\.kanal'\)/.test(kaynak),
+               dogrular:/_k === 'radio' \|\| _k === 'lib' \|\| _k === 'liste'/.test(kaynak) };
+    });
+    K('Kanal hatirlaniyor', dev.yaziyor && dev.okuyor, 'kanal degisince depoya yaziliyor');
+    K('Bozuk kanal degeri radyoya dusuyor', dev.dogrular, 'yalniz uc gecerli deger kabul ediliyor');
+  }
   K('Kategori yazisi tiklanabilir',
     await pg.evaluate(()=>{const e=document.getElementById('modAd');
       return !!e && getComputedStyle(e).pointerEvents!=='none' && e.getAttribute('role')==='button';}),
@@ -552,9 +589,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const acikFx = await pg.evaluate(()=>+Math.hypot(fxX,fxY).toFixed(3));
   await pg.mouse.up(); await pg.waitForTimeout(250);
   const modSonra = await pg.evaluate(()=>AKTIF_MOD);
-  // 3) buyuk nebula: FX kapanir, kategori dongusu yeniden acilir
+  // 3) buyuk nebula: KANAL degistirir, FX'e dokunmaz
+  const nebOnceKanal = await pg.evaluate(()=>mod);
   await pg.click('#mark'); await pg.waitForTimeout(400);
-  const neb = await pg.evaluate(()=>({fx:FXMOD, mod:AKTIF_MOD}));
+  const neb = await pg.evaluate(()=>({fx:FXMOD, mod:AKTIF_MOD, kanal:mod}));
   await pg.evaluate(()=>{ try{ if(AKTIF_MOD) modGec(); }catch(e){} try{ fxNormale&&fxNormale(); }catch(e){} });
   // 4) gezegenler ekranda mi, gorsel diskler cakisiyor mu
   const yerlesim = await pg.evaluate(()=>{
@@ -767,7 +805,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   });
   K('Kisa dokunus kategori SECMEZ', tk.kisa.every(r=>r.gez===false && r.mod==='RADIOTAPE'),
      tk.kisa.length+' yaricapta da kategori degismedi');
-  K('Basili tutus kategori acar', tk.uzun.gez===true && tk.uzun.mod!=='RADIOTAPE',
+  /* Radyo kanalinda halka bir AILE seciyor, kategori degil: AKTIF_MOD
+     degismiyor. Olcut "gezinme kipi acildi mi" -- kategori adina
+     bakan eski kontrol artik yanlis soruyu soruyordu. */
+  K('Basili tutus raf kipini acar', tk.uzun.gez===true,
      'gezinme '+tk.uzun.gez+' -> '+tk.uzun.mod);
   K('Kaydirma da kategori acar', tk.kay.gez===true, 'sureyi beklemeden');
   /* Tutus ARTIK HER YERDE kipi aciyor: ortada tutup halkaya kaydirmak
@@ -921,7 +962,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('ANA FX aciliyor',           fxAcik==='ana', 'FXMOD='+fxAcik);
   K('FX acik: kategori kapali',  acikGez===false && acikFx>0, 'gezinme '+acikGez+' | fx '+acikFx);
   K('FX acikken kategori secilmiyor', modOnce===modSonra, modSonra===modOnce?'degismedi':'mod degisti');
-  K('Nebula FX kapatir, kategoriye dokunmaz', neb.fx==='', 'FXMOD="'+neb.fx+'"');
+  K('Nebula kanal degistirir', neb.kanal !== nebOnceKanal, nebOnceKanal+' -> '+neb.kanal);
   K('Gezegenler ekran icinde',   yerlesim.tasma===0, yerlesim.tasma+' tasma / '+yerlesim.n+' gezegen');
   K('Gezegenler cakismiyor',     yerlesim.cak===0, yerlesim.cak+' cakisma');
   // KANAL SAFLIGI: her kanal kendi kaynaklarindan mi besleniyor

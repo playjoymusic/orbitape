@@ -1331,17 +1331,11 @@
   ];
   const MODSIRA = HALKALAR.map(h=>h.ad);
   /* ── HALKALAR = BULUNDUGUN KANALIN RAFLARI ────────────────────────
-     Halka hareketi tek: bas, tut, bir halkanin uzerinde birak.
-     Ne sectigi kanala gore degisiyor.
-       RADYO kanalinda  -> 8 tur ailesi (AILELER)
-       ARSIV kanallarinda -> eskisi gibi kategoriler (MODSIRA)
-     Boylece kullanici tek bir kural ogreniyor: "halka = raf".
-
-     SAYI DEGISINCE GEOMETRI DE DEGISIYOR. En dis halka SABIT
-     kaliyor (HALKA_DIS) cunku ekran kenarina dayanmis durumda;
-     yer iceriden aciliyor. 8 halkada ic yaricap 0.295'e iniyor,
-     ARALIK degismiyor -- yani halkalar sikismiyor, sadece
-     ortadaki daire kuculuyor. */
+     Tek hareket: bas, tut, bir halkanin uzerinde birak. Ne sectigi
+     kanala gore degisiyor: radyoda 8 tur ailesi, arsivde kategoriler.
+     Kullanici tek kural ogreniyor: "halka = raf".
+     SAYI DEGISINCE GEOMETRI DE DEGISIYOR: en dis halka SABIT (ekran
+     kenarina dayali), yer iceriden aciliyor, ARALIK degismiyor. */
   function halkaAdlar(){
     try{ if(typeof mod !== 'undefined' && mod === 'radio' &&
             typeof AILE_ADLAR !== 'undefined') return AILE_ADLAR; }catch(e){}
@@ -2150,7 +2144,13 @@
            radyo ? null : (()=>{ _kullaniciDuraklatti=false; try{ geriGit(); }catch(e){} })); }catch(e){}
     ortamDurum();
   }
-  let mod='radio';                     // AÇILIŞ: RADIOTAPE (en üstteki kanal). ('radio' | 'lib' | 'liste')
+  /* AÇILIŞ SON KALINAN KANALDAN: devamlılık. Bilinmeyen değer
+     radyoya düşer — bozuk bir kayıt uygulamayı sessiz bırakmasın. */
+  let mod='radio';                     // ('radio' | 'lib' | 'liste')
+  try{
+    const _k = localStorage.getItem('orbitape.kanal');
+    if(_k === 'radio' || _k === 'lib' || _k === 'liste') mod = _k;
+  }catch(e){}
   let radyoKuyruk=[];
   // ── MIXTAPE: kullanıcının kendi şarkı listesi (liste.json) ──
   const LISTE_URL     = "https://raw.githubusercontent.com/playjoymusic/tracks/main/liste.json";
@@ -4793,24 +4793,14 @@
     }catch(e){ return false; }
   }
   /* ── AİLELER (tür kümeleri) ───────────────────────────────────────
-     radyo.json'daki her istasyonun bir 'grup' alanı var. 24 tür sekiz
-     aileye toplandı: dinleyici 24 seçenek arasında değil 8 arasında
-     geziniyor ve her ailenin kendi rengi oluyor.
-
-     BURASI ARAYÜZ DEĞİL, MOTOR. Aileyi kimin seçtiği (halka mı, üst
-     şerit mi) burayı ilgilendirmiyor; burası "seçilen aile neyse
-     kuyruğa yalnızca o girsin" işini yapıyor. Arayüz kararı
-     değişirse bu kod aynı kalıyor.
-
-     Sıra ekrandaki sıra: akraba aileler yan yana.
-     Renkler koyu zeminde okunuyor ve birbirine karışmıyor. */
-  /* ── RENKLER: MEVCUT PALET KORUNDU ────────────────────────────────
-     Bes halkanin rengi bugunku ORBITAPE paletinden, AYNI SIRADA ve
-     AYNI YERDE: en icteki mavi-mor, en distaki turkuaz. Halka sayisi
-     5'ten 8'e ciktigi icin ORTAYA uc yeni renk eklendi. Boylece ekran
-     tanidik kaliyor, sadece araya uc raf giriyor.
-     Yeni ucu bilerek mevcutlardan uzak secildi: yesil, kirmizi-
-     turuncu, leylak -- hicbiri komsusuna benzemiyor. */
+     radyo.json'daki 'grup' alanı. 24 tür sekiz aileye toplandı.
+     BURASI ARAYÜZ DEĞİL, MOTOR: aileyi kimin seçtiği burayı
+     ilgilendirmiyor, "seçilen aile neyse kuyruğa o girsin" işi.
+     Sıra ekrandaki sıra: akraba aileler yan yana. */
+  /* RENKLER: MEVCUT PALET KORUNDU. Bes halka bugunku ORBITAPE
+     paletinden, AYNI YERDE (en icte mavi-mor, en dista turkuaz).
+     5->8 oldugu icin ORTAYA uc yeni renk girdi; ucu de komsularindan
+     uzak secildi: yesil, kirmizi-turuncu, leylak. */
   const AILELER = [
     { ad:'ELECTRONIC',    renk:'132,150,255' },   // eski AMBIANCE mavi-mor
     { ad:'AMBIENT',       renk:'204,124,164' },   // eski HUMAN tozlu gul
@@ -4827,10 +4817,8 @@
   }
   /* null = aile seçilmemiş: bütün liste çalıyor (bugünkü davranış). */
   var AKTIF_AILE = null;
-  /* MÜZİK DURMASIN KURALI: seçilen aile elde hiçbir istasyon
-     bırakmıyorsa süzgeç UYGULANMIYOR. Boş bir aile yüzünden sessiz
-     kalmaktansa aileyi görmezden gelmek yeğdir; sessizlik kullanıcıya
-     "bozuldu" der, karışık liste demez. */
+  /* MÜZİK DURMASIN: seçilen aile elde hiçbir istasyon bırakmıyorsa
+     süzgeç UYGULANMIYOR. Sessizlik kullanıcıya "bozuldu" der. */
   function aileSuz(list){
     if(!AKTIF_AILE || !list || !list.length) return list || [];
     const s = list.filter(x => x && x.grup === AKTIF_AILE);
@@ -5271,8 +5259,13 @@
       const uz=Math.hypot(nx,ny);
       if(uz>1){ nx/=uz; ny/=uz; }
       try{ fxIpucuSurtuldu(Math.min(1, uz)); }catch(_){}   // gerçek sürtme: ipucu bir daha çıkmaz
-      fxX=nx; fxY=ny;                                     // ışık için
-      yatay=nx; fxSeviye=ny;
+      fxX=nx; fxY=ny;                                     // ışık için (yön hâlâ ışığı taşıyor)
+      /* ── FX TEK EKSEN: UZAKLIK = ŞİDDET ───────────────────────────
+         Halka sayısı 8 olunca ortadaki daire 0.47R'den 0.215R'ye indi;
+         o alanda iki eksen ayırt edilemez, parametreler karışıyor.
+         Tek değer: merkezden UZAKLIK. Yön yalnızca ışığı taşıyor. */
+      const _g = Math.min(1, uz);
+      yatay=_g; fxSeviye=_g;
       fxIste();                                           // ses parametrelerini kare başına 1 kez uygula (parmak 120Hz olay üretir)
     }
   }, {passive:false});
@@ -5368,6 +5361,7 @@
     // RADIOTAPE'te aranacak isim yok; oraya geçmek etiketi kaldırır.
     if(yeni==='radio'){ try{ araGiris.value=''; etiketKur(''); }catch(e){} }
     mod = yeni;
+    try{ localStorage.setItem('orbitape.kanal', mod); }catch(e){}   // devamlılık
     gecmisSifirla();                                     // geri listesi kanal başına
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
@@ -5576,7 +5570,13 @@
      Kanala ve kategoriye dokunmuyor, müzik kesilmiyor. Tek işi
      "efektlerden çık, temize dön". Kategori sırası artık sağ üstteki
      kategori yazısında. */
-  function moodDegis(){ fxNormale(); }
+  /* NEBULA = ANAHTAR: canlı radyo ↔ arşivin ses havuzu. FX dönerken
+     de çalışır — kaynak değiştirmek için efekti kapatmak gerekmiyor.
+     Eskiden FX'i sıfırlıyordu; o iş zaten uydu düğmesinde var. */
+  function havuzDegis(){
+    try{ modaGec(mod === 'radio' ? 'lib' : 'radio'); }catch(e){}
+  }
+  function moodDegis(){ havuzDegis(); }
   /* ── SAĞ ÜST KATEGORİ YAZISI: BİR SONRAKİ HALKA ──────────────────
      Marka adının solundaki isim aynı zamanda bir düğme. Açılışta
      RADIOTAPE (en dış halka) yazıyor; her basışta bir içteki halkaya
@@ -8476,9 +8476,14 @@
        başlıyor, karar tek ölçüte bakıyor: kulağa ses geliyor mu. */
     karsilamaKur();
     let ilk=null;
-    moodYaz();                                   // açılış kanalı: RADIOTAPE (en üstte, parlar)
-    try{ await radyoKuyrukDoldur(); ilk = radyoKuyruk.shift() || null; }catch(e){}   // İLK PARÇA: radyo istasyonu
-    if(!ilk){ try{ await earthYukle(); ilk = earthAl(); }catch(e){} }                // radyo gelmezse arşivden
+    moodYaz();                                   // açılış kanalı: hatırlanan kanal
+    /* İLK PARÇA hatırlanan kanaldan geliyor. Radyo değilse dizine hiç
+       sorulmuyor — arşiv kanalında açılıp radyo istasyonu duymak
+       "devam ediyorum" hissini bozardı. */
+    if(mod === 'radio'){
+      try{ await radyoKuyrukDoldur(); ilk = radyoKuyruk.shift() || null; }catch(e){}
+    }
+    if(!ilk){ try{ await earthYukle(); ilk = earthAl(); }catch(e){} }                // yedek: arşiv
     /* HİÇBİR KAYNAK GELMEDİ: eskiden buradan sessizce çıkılıyordu —
        otoBaslat hiç çağrılmıyor, kullanıcıya tek kelime söylenmiyordu.
        Ekranda kalan tek şey sonsuza kadar dönen bekleme sembolüydü. */
