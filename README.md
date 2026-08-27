@@ -98,10 +98,39 @@ görünüyor, paylaşılan videoya da yazılıyor.
 
 ### Araçlar
 
+- `araclar/hasat.py` — sunucuda çalışan hasatçı. Kaldığı yerden devam eder;
+  archive.org IP başına hız sınırlıyor, o yüzden 8 işçi (20 daha yavaştı).
 - `araclar/lisans_filtre.py` — lisans metnini sınıflandırır ve serbest olup
   olmadığına karar verir. **ND kontrolü BY-NC'den önce yapılır**; sıra kritik.
-- `araclar/havuz_birlestir.py` — yeni hasadı mevcut havuzlara katar. Lisans
-  süzgecini yeniden uygular, tekrar eden adresleri eler, boyuta göre ayırır.
+- `araclar/hasat_ayikla.py` — hasadı havuza katar. Lisans, tekrar, türev
+  bitrate, çalmayan adres, din süzgeçlerini uygular; öge başına tavan ve
+  kanal hedefiyle seçer; boyuta göre böler. **Kanal ve din kurallarını
+  `index.html`den okur** — elle kopyalanmaz, kopya bir gün asıldan ayrılır.
+  Sonunda kendi çıktısını sınar ve raporlar.
+
+  ```bash
+  python3 araclar/hasat_ayikla.py yeni_hasat.json --havuz ../tracks-depo
+  #  --yaz vermeden çalıştırınca hiçbir dosyaya dokunmaz, sadece rapor basar
+  ```
+
+- `araclar/havuz_birlestir.py` — eski, basit birleştirici. `hasat_ayikla.py`
+  bunun yaptığı her şeyi yapıyor; kayıt olarak duruyor.
+
+#### Havuz neden 84 binin tamamı değil
+
+Hasat 84.296 kayıt getirdi, havuza 19.052 tanesi girdi. İki sebep, ikisi de
+ölçülmüş:
+
+- **Boyut.** 4 kat yavaşlatılmış işlemcide ekranın kullanılabilir hale gelmesi
+  1.104 ms → 1.469 ms. Havuzun tamamen yüklenmesi 1.154 ms → 2.717 ms; ama
+  ekran bunu beklemiyor, radyo önce açılıyor. 84 binde bu tablo tutmaz.
+- **Denge.** Hasadın kendi dağılımı çarpıktı: 59.455 HUMAN'a karşı 14.570
+  AMBIANCE. Ham katılsaydı AMBIANCE halkası HUMAN'ın gölgesinde kalırdı.
+
+Din süzgeci arşivde radyodakinden **dar** ve bu bilerek: radyoda `religion`
+etiketi vaaz **eden** istasyon demek, arşivde çoğu zaman o sesi **belgeleyen**
+kayıt demek. Kural aynen uygulanınca çan sesi saha kayıtlarını ve ambient
+parçaları eliyordu. Ayrıntı `hasat_ayikla.py` başında.
 
 
 ---
