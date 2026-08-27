@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Not here — ORBITAPE</title>
+<meta name="theme-color" content="#05080a">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<!--
+  404 SAYFASI
+
+  NEDEN VAR
+    Yanlis bir adres yazilinca ya da eski bir bagi takip edilince
+    Cloudflare'in duz beyaz "404 Not Found" ekrani cikiyordu. Kullanici
+    icin bu, sitenin comdugu anlamina geliyor — geri donecek bir kapi
+    yok. Burada tek cumle ve bir dugme var.
+
+  NEDEN AYRI DOSYA
+    index.html 496 KB; bir yazim hatasi icin butun uygulamayi indirtmek
+    dogru degil. Bu dosya 2 KB ve kendi kendine yetiyor: dis yazi tipi
+    yok, betik yok, gorsel yok.
+
+  BAGLANMASI
+    wrangler.jsonc icinde  "not_found_handling": "404-page"
+-->
+<style>
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:#020203 radial-gradient(120% 120% at 50% 45%,#0a0a0d 0%,#020203 70%);
+    color:#e8f4f4;
+    font:400 16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;text-align:center;
+  }
+  .kutu{max-width:420px;display:flex;flex-direction:column;align-items:center;gap:22px;}
+  .halka{width:96px;height:96px;opacity:.9;}
+  .halka circle{fill:none;stroke:#35e0d8;stroke-width:1.1;opacity:.55;}
+  .halka circle:nth-child(2){stroke:#e8a982;opacity:.4;}
+  .halka circle:nth-child(3){stroke:#b6adbe;opacity:.3;}
+  .marka{
+    font-size:13px;letter-spacing:.42em;text-indent:.42em;
+    color:#35e0d8;font-weight:600;
+  }
+  h1{font-size:21px;font-weight:600;margin:0;letter-spacing:-.01em;}
+  p{margin:0;color:rgba(232,244,244,.66);font-size:15.5px;}
+  a.dugme{
+    display:inline-block;margin-top:4px;
+    padding:11px 26px;border-radius:999px;
+    border:1px solid rgba(53,224,216,.42);
+    color:#8ff0dd;text-decoration:none;
+    font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+  }
+  a.dugme:hover,a.dugme:focus-visible{
+    background:rgba(53,224,216,.1);border-color:rgba(53,224,216,.7);
+  }
+  a.dugme:focus-visible{outline:2px solid #e59700;outline-offset:3px;}
+  .kucuk{font-size:13px;color:rgba(232,244,244,.36);}
+  .kucuk a{color:rgba(232,244,244,.52);}
+</style>
+</head>
+<body>
+  <div class="kutu">
+    <svg class="halka" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="46"/>
+      <circle cx="50" cy="50" r="34"/>
+      <circle cx="50" cy="50" r="22"/>
+    </svg>
+    <div class="marka">ORBITAPE</div>
+    <h1>Nothing at this address</h1>
+    <p>The page you were looking for is not here. It may have been moved, or the link may be mistyped.</p>
+    <a class="dugme" href="/">Open ORBITAPE</a>
+    <p class="kucuk">Something you expected should be here? <a href="mailto:hello@orbitape.app">hello@orbitape.app</a></p>
+  </div>
+</body>
+</html>

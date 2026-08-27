@@ -978,22 +978,48 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const box = await pg.evaluate(()=>{const r=document.getElementById('tp').getBoundingClientRect();
     return {x:r.left+r.width/2,y:r.top+r.height/2,rad:r.width/2};});
   /* REC canli yayinda PASIF (kural). Kayit testleri icin arsivden bir
-     parcaya gecip REC'i aktif hale getiriyoruz. */
+     parcaya gecip REC'i aktif hale getiriyoruz.
+
+     mod='lib' DE GEREKLI. Eskiden sadece parca elle veriliyordu ama
+     kanal 'radio' kaliyordu; parca bitince sonraki() bir CANLI
+     ISTASYON getiriyordu. Gercek uygulamada bu olamaz (radyo
+     kanalinda REC zaten basilamaz), ama testte oluyordu — ve canli
+     yayin gelince kaydi durduran kural devreye girip kaydi
+     kesiyordu. Yani test, dogru calisan bir korumaya takiliyordu.
+     Kanali parcayla ayni yapmak testi gercege yaklastiriyor. */
   await pg.evaluate(async ()=>{
     AKTIF_MOD = null;
+    mod = 'lib';
     cal({ id:'kyt', mp3:'https://sahte.test/kayit.mp3', ad:'Kayit', etiket:'netlabel' });
     await new Promise(r=>setTimeout(r,400));
     try{ recPasifYaz(); }catch(e){}
   });
   await pg.waitForTimeout(400);
   await pg.click('#rec'); await pg.waitForTimeout(800);
+  /* SURUKLEME YARICAPI 0.95 -> 0.40 (ZAR_SINIR 0.47'nin ICI).
+     Eski hali diskin DISINA, halkalarin uzerine cikiyordu; orasi FX
+     degil KATEGORI bolgesi. Surukleme oradan birakilinca uygulama en
+     distaki halkayi (RADIOTAPE) seciyor ve CANLI bir istasyon
+     baslatiyordu — kayit sirasinda.
+
+     Eskiden test bunu fark etmiyordu cunku canli yayin kaydedilmeye
+     devam ediyordu; yani test, kapatilmasi gereken bir deligi acik
+     tutuyordu. Delik kapatilinca (cal() icindeki canli-yayin kapisi)
+     bu satirlar dustu ve dogru sebeple dustu.
+     Artik surukleme gercekten FX bolgesinde: olculen sey FX. */
   for(const m of ['','retro','dongu','karadelik']){
     await pg.evaluate(mm=>{FXMOD=mm; try{fxDurumTazele();}catch(e){}}, m);
     await pg.mouse.move(box.x,box.y); await pg.mouse.down();
     for(let i=0;i<10;i++){ const a=i*0.7;
-      await pg.mouse.move(box.x+Math.cos(a)*box.rad*0.95, box.y+Math.sin(a)*box.rad*0.95); await pg.waitForTimeout(70); }
+      await pg.mouse.move(box.x+Math.cos(a)*box.rad*0.40, box.y+Math.sin(a)*box.rad*0.40); await pg.waitForTimeout(70); }
     await pg.mouse.up();
   }
+  /* Ve kanal gercekten degismemis olmali — yukaridaki suruklemenin
+     kategori secmedigini de dogruluyoruz, yoksa yarin biri yaricapi
+     yine buyutur ve test yine sessizce baska bir sey olcer. */
+  const fxKanal = await pg.evaluate(()=>({radyo: !!(aktifItem && aktifItem.radyo), mod}));
+  K('FX suruklemesi kanali degistirmiyor', fxKanal.radyo === false,
+     'mod ' + fxKanal.mod + ' | canli yayin ' + fxKanal.radyo);
   const kd = await pg.evaluate(()=>({ durum: kaydedici?kaydedici.state:'YOK',
     iz:(kayitGoruntuAkis&&kayitGoruntuAkis.getVideoTracks()[0])?kayitGoruntuAkis.getVideoTracks()[0].readyState:'-',
     dirilme:_kayitDirilme, sebep:_kayitSebep||'-' }));
@@ -1125,6 +1151,225 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        buyuk.length ? buyuk.join(', ') : adet+' dosya, hepsi sinirin altinda');
     K('Yayina giden dosya sayisi sinirin altinda', adet < ADET_TAVAN,
        adet+' / '+ADET_TAVAN);
+  }
+
+  /* ── ARAMA VE PAYLASIM KUNYESI ──────────────────────────────────
+     Bunlar uygulamayi ACMIS kisi icin degil, HENUZ ACMAMIS kisi
+     icin. Eksiklerdi: Google sonucunda basligin altinda hicbir sey
+     yoktu, bag bir yere yapistirilinca bos kutu cikiyordu.
+     Kontrol var cunku bunlar gorunmez: bozulduklarinda uygulama
+     calismaya devam eder ve kimse fark etmez. */
+  {
+    /* <head> BUYUK: CSS de orada. Etiketler dosyanin 8. binlik
+       diliminde degil, </head>'in hemen ustunde. O yuzden butun
+       head okunuyor. */
+    const _tam = fs.readFileSync('index.html','utf8');
+    const h = _tam.slice(0, _tam.indexOf('</head>'));
+    const oz = /<meta name="description" content="([^"]{60,300})"/.exec(h);
+    K('Arama aciklamasi var ve dolu', !!oz, oz ? oz[1].length+' karakter' : 'YOK');
+    K('Arama aciklamasi INGILIZCE', !!oz && !/[ğüşıöçĞÜŞİÖÇ]/.test(oz[1]),
+       'turkce karakter yok');
+    K('Canonical adres var', /<link rel="canonical" href="https:\/\/orbitape\.app\/"/.test(h),
+       'https://orbitape.app/');
+    /* og:image PAYLASIMIN KENDISI: bag WhatsApp'a, Slack'e, X'e
+       yapistirilinca gorunen tek sey bu. Yoksa bos gri kutu cikiyor. */
+    const og = ['og:type','og:url','og:title','og:description','og:image',
+                'twitter:card','twitter:image'].filter(k=>!h.includes(k));
+    K('Paylasim onizlemesi eksiksiz', og.length===0, og.length ? 'eksik: '+og.join(', ') : '7 etiket');
+    K('Onizleme gorseli 1200x630 bildirilmis',
+       /og:image:width" content="1200"/.test(h) && /og:image:height" content="630"/.test(h),
+       'boyut bildirilmezse bazi uygulamalar kirpip gosteriyor');
+    /* Gorsel GERCEKTEN o olcude mi: etiket yalan soylerse onizleme
+       kirpilir ve kimse sebebini anlamaz. PNG basligindan okunuyor. */
+    let pw=0, ph=0;
+    try{
+      const b = fs.readFileSync('paylas.png');
+      pw = b.readUInt32BE(16); ph = b.readUInt32BE(20);
+    }catch(e){}
+    K('Onizleme gorseli dosyada da 1200x630', pw===1200 && ph===630, pw+'x'+ph);
+  }
+
+  /* ── ROBOTS / SITEMAP / 404 ─────────────────────────────────────
+     Ucu de "sayfa acilmayinca ne olur" sorusunun cevabi. */
+  {
+    const rb = fs.readFileSync('robots.txt','utf8');
+    K('robots.txt sitemap adresini veriyor', /^Sitemap:\s*https:\/\/orbitape\.app\/sitemap\.xml/m.test(rb),
+       'Google haritaya Search Console olmadan da ulasiyor');
+    K('robots.txt kok dizini kapatmiyor', !/^Disallow:\s*\/\s*$/m.test(
+        rb.replace(/^#.*$/gm,'')), 'Allow: /');
+
+    const sm = fs.readFileSync('sitemap.xml','utf8');
+    const adresler = (sm.match(/<loc>([^<]+)<\/loc>/g)||[]).map(x=>x.replace(/<\/?loc>/g,''));
+    K('sitemap.xml gecerli ve dolu', adresler.length>=2 && adresler.every(u=>/^https:\/\/orbitape\.app\//.test(u)),
+       adresler.length+' adres');
+    /* HARITADAKI HER ADRES GERCEKTEN ACILMALI. Acilmayan bir adres
+       koymak haritayi yalanci yapar ve Google'da hata olarak gorunur. */
+    const yerel = adresler.map(u=>u.replace('https://orbitape.app','http://127.0.0.1:8765'));
+    let acilan = 0;
+    for(const u of yerel){
+      const r = await pg.evaluate(async (adres)=>{
+        try{ const c = await fetch(adres, {method:'GET'}); return c.status; }catch(e){ return 0; }
+      }, u.replace(/\/$/, '/index.html').replace('/privacy','/privacy.html'));
+      if(r===200) acilan++;
+    }
+    K('Haritadaki her adres gercekten aciliyor', acilan===adresler.length,
+       acilan+'/'+adresler.length);
+
+    const d4 = fs.readFileSync('404.html','utf8');
+    K('404 sayfasi var ve ana sayfaya donuyor', /href="\/"/.test(d4), 'Open ORBITAPE dugmesi');
+    K('404 sayfasi INGILIZCE', !/[ğüşıöçĞÜŞİÖÇ]/.test(
+        d4.replace(/<!--[\s\S]*?-->/g,'').replace(/<style[\s\S]*?<\/style>/g,'')),
+       'gorunen metinde turkce yok');
+    K('404 sayfasi hafif', fs.statSync('404.html').size < 6000,
+       Math.round(fs.statSync('404.html').size/1024)+' KB — 496 KB uygulama indirtmiyor');
+    K('404 aramaya girmiyor', /name="robots" content="noindex"/.test(d4), 'noindex');
+    /* Cloudflare'a BAGLI mi: dosya var ama wrangler soylemezse
+       kullanici yine duz beyaz 404 goruyor. */
+    const wr = fs.readFileSync('wrangler.jsonc','utf8');
+    K('404 sayfasi Cloudflare\'a bagli', /"not_found_handling"\s*:\s*"404-page"/.test(wr),
+       'wrangler.jsonc');
+
+    const hd = fs.readFileSync('_headers','utf8');
+    K('Referrer disariya sizmiyor', /^\s*Referrer-Policy:\s*no-referrer\s*$/m.test(hd),
+       'archive.org ve istasyonlar hangi sayfadan gelindigini gormuyor');
+    K('MIME tahmini kapali', /X-Content-Type-Options:\s*nosniff/.test(hd), 'nosniff');
+    /* TERSI: _headers .assetsignore'a YAZILMAMALI.
+       Bir kere yazildi ve yanlisti: .assetsignore dosyayi hic
+       yuklemiyor, yuklenmeyen dosyanin kurallari da hic uygulanmiyor.
+       Cloudflare _headers'i yukluyor, ayristiriyor ve kendisi servis
+       etmiyor — yani zaten yayinda gorunmuyor.
+       Bu kontrol ayni hatanin tekrar yapilmasini engelliyor. */
+    K('_headers .assetsignore\'da DEGIL', !fs.readFileSync('.assetsignore','utf8')
+        .split('\n').map(s=>s.trim()).filter(s=>s && !s.startsWith('#')).includes('_headers'),
+       'yoksa Cloudflare dosyayi hic gormez ve basliklar uygulanmaz');
+  }
+
+  /* ── KLAVYE VE EKRAN OKUYUCU ────────────────────────────────────
+     OLCULDU VE DUSTU: #tp gercek bir <button>, odaklanabiliyordu,
+     odak halkasi bile vardi — ama Enter/Space'e basinca HICBIR SEY
+     olmuyordu. Bagli dinleyicilerin hepsi pointer olayiydi; tarayici
+     Enter'da sentetik bir 'click' uretiyor ve onu dinleyen yoktu.
+     Yani klavye kullanicisi icin uygulama calismiyordu: cal, atla,
+     kategori — hepsi o dugmede.
+
+     Ayni blokta ikinci hata: #np (calan parcanin kunyesi, uygulamanin
+     TEK metinsel ciktisi) HTML'de aria-hidden="true" yaziliydi ve
+     hicbir zaman kaldirilmiyordu. Panel gorunuyordu, doluydu, ekran
+     okuyucuya gorunmuyordu. Icindeki dugmeler de tab sirasindaydi ama
+     gizli agactaydi — WCAG 4.1.2 ihlali. */
+  {
+    const eris = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const cikti = {};
+      /* 1) H1: gorsel olarak gizli AMA agacta olmali. display:none
+            ya da visibility:hidden ekran okuyucudan da gizlerdi. */
+      const h1 = document.querySelector('h1');
+      if(h1){
+        const st = getComputedStyle(h1);
+        cikti.h1Var = (h1.textContent||'').trim().length > 20;
+        cikti.h1Gizli = h1.getBoundingClientRect().width <= 2;
+        cikti.h1Agacta = st.display !== 'none' && st.visibility !== 'hidden';
+      }
+      /* 2) Kunye paneli agacta mi (calarken). */
+      const np = document.getElementById('np');
+      cikti.npAcik   = np.classList.contains('on');
+      cikti.npGorunur = np.getAttribute('aria-hidden') !== 'true';
+      const npAd = document.getElementById('npAd');
+      cikti.npCanli = npAd && npAd.getAttribute('aria-live') === 'polite';
+      /* 3) aria-hidden bir agacin ICINDE odaklanabilir dugme kalmasin. */
+      cikti.gizliOdak = Array.from(document.querySelectorAll('button,[tabindex="0"]'))
+        .filter(el=>{
+          if(el.getBoundingClientRect().width < 1) return false;
+          let a = el;
+          while(a && a !== document.body){
+            if(a.getAttribute && a.getAttribute('aria-hidden') === 'true') return true;
+            a = a.parentElement;
+          }
+          return false;
+        }).map(el=>el.id || el.className).slice(0,4);
+      /* 4) Kategori adi ekran okuyucudan gizli olmamali. */
+      const ma = document.getElementById('modAd');
+      cikti.modAdGorunur = ma && ma.getAttribute('aria-hidden') !== 'true';
+      /* 5) KLAVYE: sentetik click (detail 0) sonraki()'yi cagirmali.
+            Gercek Enter'in urettigi olayin aynisi. */
+      const o = window.sonraki; let sayac = 0;
+      window.sonraki = function(){ sayac++; };
+      try{
+        document.getElementById('tp').dispatchEvent(
+          new MouseEvent('click', {bubbles:true, detail:0}));
+        await bek(80);
+      }finally{ window.sonraki = o; }
+      cikti.klavye = sayac;
+      /* 6) Ve isaretci click'i AYNI yoldan IKI kere calismamali:
+            detail>=1 gelen click'i klavye kapisi yok saymali. */
+      let sayac2 = 0;
+      window.sonraki = function(){ sayac2++; };
+      try{
+        document.getElementById('tp').dispatchEvent(
+          new MouseEvent('click', {bubbles:true, detail:1}));
+        await bek(80);
+      }finally{ window.sonraki = o; }
+      cikti.fareCift = sayac2;
+      return cikti;
+    });
+    K('Sayfanin bir H1 basligi var', eris.h1Var === true, 'ekran okuyucu "bu sayfa ne?" sorusunu cevapliyor');
+    K('H1 gorsel olarak gizli ama agacta', eris.h1Gizli===true && eris.h1Agacta===true,
+       'display:none degil, 1px kirpma');
+    K('Calan parca ekran okuyucuya gorunuyor', eris.npAcik===true && eris.npGorunur===true,
+       'aria-hidden ' + (eris.npGorunur ? 'kaldirildi' : 'HALA true'));
+    K('Parca degisimi duyuruluyor', eris.npCanli===true, 'npAd aria-live="polite"');
+    K('Gizli agacta odaklanabilir dugme yok', (eris.gizliOdak||[]).length===0,
+       (eris.gizliOdak||[]).length ? eris.gizliOdak.join(', ') : 'WCAG 4.1.2 temiz');
+    K('Kategori adi ekran okuyucuda', eris.modAdGorunur===true, 'aria-hidden yok');
+    K('Ana dugme KLAVYEYLE calisiyor', eris.klavye===1, 'Enter -> sonraki() '+eris.klavye+' kez');
+    K('Isaretci tiklamasi iki kere saymiyor', eris.fareCift===0,
+       'detail>=1 klavye kapisindan gecmiyor');
+  }
+
+  /* ── CANLI YAYIN KAYDEDILMEZ ────────────────────────────────────
+     REC canli yayinda pasif; ama iki kapi da "kayit HENUZ baslamadi"
+     varsayiyordu. Kayit acikken kanal degistirilince delik aciliyordu:
+     MIXTAPE'te REC -> RADIOTAPE -> canli istasyon kaydedilmeye devam.
+     Bir yayini izinsiz sabitlemek yayincinin, plak sirketinin ve
+     icracinin hakkina girer. Kapi cal() icinde, cunku orasi TEK
+     cikis noktasi. */
+  {
+    const kayit = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiAktif = _kayitAktif, eskiSebep = _kayitSebep;
+      const eskiDurdur = window.kayitDurdur, eskiSonraki = window.sonraki;
+      let durduruldu = 0, sebep = '';
+      window.kayitDurdur = function(){ durduruldu++; sebep = _kayitSebep; };
+      /* sonraki() susturuluyor: acilan parca bitince uygulama kendi
+         basina bir sonrakine geciyor ve o CANLI olabiliyor — o zaman
+         olctugumuz sey bizim cagirdigimiz cal() degil, arka plandaki
+         gecis olurdu. */
+      window.sonraki = function(){};
+      const sonuc = {};
+      try{
+        /* Kayit aciksa: canli yayin gelince DURMALI. */
+        _kayitAktif = true; _kayitSebep = '';
+        try{ cal({mp3:'https://sahte.test/r0', ad:'Radio X', radyo:true}); }catch(e){}
+        await bek(120);
+        sonuc.yayindaDurdu = durduruldu;
+        sonuc.sebep = sebep;
+        /* Arsiv parcasinda DURMAMALI: mesru kayit kesilmesin. */
+        durduruldu = 0; _kayitAktif = true; _kayitSebep = '';
+        try{ cal({mp3:'https://sahte.test/e0.mp3', ad:'E 0', etiket:'netlabel'}); }catch(e){}
+        await bek(120);
+        sonuc.arsivdeDurdu = durduruldu;
+      }finally{
+        window.kayitDurdur = eskiDurdur; window.sonraki = eskiSonraki;
+        _kayitAktif = eskiAktif; _kayitSebep = eskiSebep;
+      }
+      return sonuc;
+    });
+    K('Canli yayin gelince kayit duruyor', kayit.yayindaDurdu === 1,
+       kayit.yayindaDurdu + ' kez durduruldu');
+    K('Durma sebebi ekranda yaziyor', /LIVE RADIO/.test(kayit.sebep||''),
+       kayit.sebep || '(bos)');
+    K('Arsiv parcasinda kayit kesilmiyor', kayit.arsivdeDurdu === 0,
+       'mesru kayit devam ediyor');
   }
 
   // ── 11. KARSILAMA ELI: ses gelmezse 2 sn'de cikmali ────────────────

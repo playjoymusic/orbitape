@@ -1,0 +1,54 @@
+# ORBITAPE — YAYIN BASLIKLARI
+#
+# Bu dosya yayina GITMIYOR; Cloudflare onu okuyup kurallarini
+# cevaplara uyguluyor.
+#
+# ── NEDEN ─────────────────────────────────────────────────────────
+# Uygulamanin gizlilik sozu "hicbir sey toplamiyoruz" degil sadece;
+# "senin hakkinda hicbir sey KIMSEYE soylemiyoruz" da. Referrer-Policy
+# olmadan bu soz eksik kaliyordu: tarayici archive.org'a, radyo
+# istasyonuna, jsDelivr'e her istekte hangi sayfadan geldigini
+# soyluyordu. Simdi soylemiyor.
+#
+# ── NEDEN CSP YOK ─────────────────────────────────────────────────
+# Content-Security-Policy buraya yazilabilirdi ve yazilmasi da iyi
+# olurdu — ama media-src'yi yanlis yazmak uygulamayi SUSTURUR: canli
+# radyo yuzlerce farkli sunucudan geliyor ve hepsi onceden bilinmiyor.
+# Denetimde de "bu adimi atlamayin, dogrulamadan koymayin" diye
+# isaretlendi. Enjeksiyon yuzeyi zaten kapali (dis veri DOM'a yalnizca
+# textContent ile giriyor, eval/innerHTML-dis-veri yok), yani CSP
+# burada ikinci savunma. Gercek akis adresleriyle olculup oyle
+# eklenecek.
+
+/*
+  # Tarayici, dosyayi sunucunun soyledigi turden BASKA bir sey
+  # sanmasin. MIME tahmini eski ve gercek bir saldiri yoluydu.
+  X-Content-Type-Options: nosniff
+
+  # Baska bir site ORBITAPE'i gorunmez bir cerceveye alip kullanicinin
+  # farkinda olmadan uzerine tiklatamasin (clickjacking).
+  X-Frame-Options: DENY
+
+  # Disariya cikan hicbir istekte "hangi sayfadan geldim" bilgisi
+  # gitmesin. Gizlilik metnindeki sozun teknik karsiligi.
+  Referrer-Policy: no-referrer
+
+  # Uygulamanin KENDISININ kullandiklari acik (kamera + ekran kaydi),
+  # geri kalan her sey kapali. Uygulama bunlari istemiyor; istemedigi
+  # bir seyin izni de olmamali.
+  Permissions-Policy: camera=(self), display-capture=(self), microphone=(), geolocation=(), payment=(), usb=(), midi=(), serial=(), bluetooth=(), interest-cohort=()
+
+# Ikonlar ve ekran goruntuleri surum etiketiyle (?v=6) cagriliyor;
+# icerik degisince etiket degisiyor. O yuzden uzun onbellek guvenli
+# ve her acilista yeniden indirilmiyorlar.
+/icon-*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/ekran-*.png
+  Cache-Control: public, max-age=604800
+
+# index.html BILEREK YOK: uygulamanin kendisi her acilista "degisti mi"
+# diye sormali, yoksa yeni surum kullaniciya gunlerce ulasmiyor.

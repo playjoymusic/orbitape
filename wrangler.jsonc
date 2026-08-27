@@ -17,10 +17,19 @@
   // Statik dosyalar deponun kökünde. Yayına girmemesi gerekenler
   // .assetsignore dosyasında listeli (testler, araçlar, README).
   //
-  // html_handling ve not_found_handling BİLEREK yazılmadı: varsayılan
-  // davranış /privacy adresini privacy.html'e eşliyor ve bugün çalışan
-  // şey bu. Elle ayarlamak çalışan bir şeyi bozma riski taşır.
+  // html_handling BİLEREK yazılmadı: varsayılan (auto-trailing-slash)
+  // /privacy adresini privacy.html'e eşliyor ve bugün çalışan şey bu.
+  //
+  // not_found_handling: "404-page"
+  //   Eşleşmeyen bir adreste Cloudflare'ın düz beyaz "404 Not Found"
+  //   ekranı yerine 404.html gösteriliyor — kullanıcı için geri
+  //   dönecek bir kapı. html_handling'i ETKİLEMİYOR: bu kural yalnız
+  //   hiçbir dosya eşleşmediğinde devreye giriyor, yani /privacy
+  //   eskisi gibi çalışmaya devam ediyor.
+  //   (developers.cloudflare.com/workers/static-assets/routing/
+  //    static-site-generation/)
   "assets": {
-    "directory": "./"
+    "directory": "./",
+    "not_found_handling": "404-page"
   }
 }

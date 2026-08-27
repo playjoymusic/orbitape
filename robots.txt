@@ -1,0 +1,32 @@
+# ORBITAPE — arama motorlarina ne acik
+#
+# NEDEN VAR
+#   Bu dosya olmayinca her tarayici robotu koke gelip 404 aliyor ve
+#   kendi kurallarini uyguluyor. Var olmasi, "burada ne var ne yok"u
+#   bizim soylememiz demek. Ayrica sitemap satiri Google'a haritayi
+#   Search Console'a girmeden de gosteriyor.
+#
+# NE ACIK
+#   index.html ve privacy.html — ikisi de zaten herkese acik sayfalar.
+#
+# NE KAPALI VE NEDEN
+#   test/ ve araclar/ zaten .assetsignore ile yayina hic gitmiyor;
+#   burada tekrar yazmanin anlami yok, olmayan bir seyi yasaklamak
+#   robota "belki vardir" demektir.
+#   Ekran goruntuleri ve ikonlar aramada cikabilir, sorun degil.
+
+User-agent: *
+Allow: /
+
+# Yapay zeka egitim robotlari: karar SENIN. Su an ACIK birakildi,
+# cunku uygulamanin icerigi zaten kamu mali ve CC kayitlar. Kapatmak
+# istersen asagidaki satirlarin basindaki # isaretini kaldir.
+#
+# User-agent: GPTBot
+# Disallow: /
+# User-agent: CCBot
+# Disallow: /
+# User-agent: Google-Extended
+# Disallow: /
+
+Sitemap: https://orbitape.app/sitemap.xml
