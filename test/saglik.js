@@ -440,9 +440,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* Kategori sirasi artik SAG UST YAZIDA (modSiraGec); nebula sadece
      FX sifirliyor, kanala ve kategoriye dokunmuyor. */
   const nb = await pg.evaluate(async()=>{
-    AKTIF_MOD=null; _nebSira=-1; const o=[];
-    for(let i=0;i<7;i++){ modSiraGec(); o.push(AKTIF_MOD); await new Promise(r=>setTimeout(r,20)); }
-    return o.join(' ');
+    const eskiKanal = mod, eskiAile = AKTIF_AILE;
+    mod = 'radio'; AKTIF_AILE = AILE_ADLAR[0];
+    const tur = [AKTIF_AILE];
+    for(let i=0;i<8;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
+    AKTIF_AILE = eskiAile; mod = eskiKanal;
+    return { tur };
   });
   const nebT = await pg.evaluate(async()=>{
     AKTIF_MOD='HUMAN'; modAdiYaz(); fxModGec('retro');
@@ -450,12 +453,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const once = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
     moodDegis(); await new Promise(r=>setTimeout(r,150));
     const sonra = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
-    /* Tam tur: radyo -> sesler -> parcalar -> basa. Dorduncu basista
-       basa donmezse bir kanal ulasilamaz kalir. */
+    /* Tam tur: radyo -> sesler -> basa. MIXTAPE simdilik kapali. */
     const _e = mod; const _s = [];
     try{ modaGec('radio'); _s.push(mod);
          for(let i=0;i<3;i++){ havuzDegis(); _s.push(mod); }
          modaGec(_e); }catch(e){}
+    /* MIXTAPE kapali oldugu icin listede olmamali. */
     /* DURUMU GERI AL: nebula artik FX'i kapatmiyor, bu yuzden test
        kendi acdigi efekti kendi kapatmali. Kapatmazsa sonraki
        testler "acilista FX acik" diye yalan soyler -- bir kez oldu. */
@@ -481,20 +484,26 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     a.secincBuyuk=g.textContent; a.secincKucuk=k.textContent;
     AKTIF_MOD=null; modAdiYaz(); modGezYaz(''); return a;
   });
-  K('Gezinirken buyuk yazi, sag ust sabit',
-    iki.gezinirkenBuyuk==='SPACE' && iki.gezinirkenKucuk==='' && iki.buyukPunto>=20,
-    'buyuk '+iki.buyukPunto+'px, sag ust bos');
-  K('Secilince buyuk gider, kucuk kalir',
-    iki.secincBuyuk==='' && iki.secincKucuk==='SPACE', 'buyuk temizlendi');
+  /* KUCUK YAZI ARTIK HIC BOSALMIYOR. Kullanici nerede oldugunu
+     kaybediyordu; artik gezinen yoksa bulundugu yerin adi yaziyor. */
+  K('Gezinirken buyuk yazi cikiyor',
+    iki.gezinirkenBuyuk==='SPACE' && iki.buyukPunto>=20, 'buyuk '+iki.buyukPunto+'px');
+  K('Kucuk yazi hic bosalmiyor',
+    iki.gezinirkenKucuk!=='' && iki.secincKucuk!=='', 
+    'gezinirken "'+iki.gezinirkenKucuk+'" | secince "'+iki.secincKucuk+'"');
+  K('Secilince buyuk gider', iki.secincBuyuk==='', 'buyuk temizlendi');
   K('Kategori adi markanin solunda', madi.solda && madi.ayniSatir && madi.kucuk,
     madi.yazi+' | ayni satir, marka adindan kucuk');
-  K('Kategori yazisi halkalari geziyor',
-    nb.split(' ')[0]==='RADIOTAPE' && nb.split(' ')[4]==='AMBIANCE' && nb.split(' ')[5]==='RADIOTAPE', nb);
+  /* Radyoda isim dugmesi AILE degistiriyor: her basis bir sonraki
+     tur, sekizinci basista basa donuyor. */
+  K('Isim dugmesi turleri geziyor',
+    nb.tur && nb.tur.length===9 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[8],
+    nb.tur ? nb.tur.join(' > ') : String(nb));
   /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
      FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
      Eski davranis (FX sifirlama) uydu dugmesinde zaten var. */
   K('Nebula uc ana kanali geziyor',
-    nebT.once.kanal !== nebT.sonra.kanal && nebT.sira === 'radio,lib,liste,radio',
+    nebT.once.kanal !== nebT.sonra.kanal && nebT.sira === 'radio,lib,radio,lib',
     'sira: '+nebT.sira);
   K('Nebula FX kapatmiyor', nebT.sonra.fx==='retro',
     'FX '+nebT.once.fx+' -> "'+nebT.sonra.fx+'"');

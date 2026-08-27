@@ -1331,11 +1331,9 @@
   ];
   const MODSIRA = HALKALAR.map(h=>h.ad);
   /* ── HALKALAR = BULUNDUGUN KANALIN RAFLARI ────────────────────────
-     Tek hareket: bas, tut, bir halkanin uzerinde birak. Ne sectigi
-     kanala gore degisiyor: radyoda 8 tur ailesi, arsivde kategoriler.
-     Kullanici tek kural ogreniyor: "halka = raf".
-     SAYI DEGISINCE GEOMETRI DE DEGISIYOR: en dis halka SABIT (ekran
-     kenarina dayali), yer iceriden aciliyor, ARALIK degismiyor. */
+     Tek hareket: bas, tut, halkada birak. Radyoda 8 tur ailesi,
+     arsivde kategoriler. SAYI DEGISINCE GEOMETRI DE DEGISIYOR: en dis
+     halka SABIT, yer iceriden aciliyor, ARALIK degismiyor. */
   function halkaAdlar(){
     try{ if(typeof mod !== 'undefined' && mod === 'radio' &&
             typeof AILE_ADLAR !== 'undefined') return AILE_ADLAR; }catch(e){}
@@ -4793,30 +4791,32 @@
     }catch(e){ return false; }
   }
   /* ── AİLELER (tür kümeleri) ───────────────────────────────────────
-     radyo.json'daki 'grup' alanı. 24 tür sekiz aileye toplandı.
-     BURASI ARAYÜZ DEĞİL, MOTOR: aileyi kimin seçtiği burayı
-     ilgilendirmiyor, "seçilen aile neyse kuyruğa o girsin" işi.
-     Sıra ekrandaki sıra: akraba aileler yan yana. */
-  /* RENKLER: MEVCUT PALET KORUNDU. Bes halka bugunku ORBITAPE
-     paletinden, AYNI YERDE (en icte mavi-mor, en dista turkuaz).
-     5->8 oldugu icin ORTAYA uc yeni renk girdi; ucu de komsularindan
-     uzak secildi: yesil, kirmizi-turuncu, leylak. */
+     radyo.json'daki 'grup' alanı: 24 tür sekiz ailede. BURASI ARAYÜZ
+     DEĞİL, MOTOR: "seçilen aile neyse kuyruğa yalnız o girsin".
+     SIRA = BUYUKLUK: en kucuk aile en icteki halkada, en buyugu en
+     distakinde -- halkanin capi ailenin buyuklugunu anlatiyor.
+     RENKLER POZISYONDA kaliyor (ekranin bugunku hali bozulmasin):
+     en icte mavi-mor, en dista turkuaz; ortadaki uc renk yeni. */
   const AILELER = [
-    { ad:'ELECTRONIC',    renk:'132,150,255' },   // eski AMBIANCE mavi-mor
-    { ad:'AMBIENT',       renk:'204,124,164' },   // eski HUMAN tozlu gul
-    { ad:'INDIE & LOFI',  renk:'95,191,122'  },   // YENI  yesil
-    { ad:'JAZZ & SOUL',   renk:'242,104,60'  },   // YENI  kirmizi-turuncu
-    { ad:'WORLD & ROOTS', renk:'176,124,232' },   // YENI  leylak
-    { ad:'AFRO & LATIN',  renk:'154,150,172' },   // eski ORBITAPE antrasit
-    { ad:'CLASSICAL',     renk:'240,172,122' },   // eski MIXTAPE kavunici
-    { ad:'NEWS & TALK',   renk:'53,224,216'  }    // eski RADIOTAPE turkuaz
+    { ad:'NEWS & TALK',   renk:'132,150,255' },   // 0
+    { ad:'CLASSICAL',     renk:'204,124,164' },   // 44
+    { ad:'INDIE & LOFI',  renk:'95,191,122'  },   // 50
+    { ad:'AFRO & LATIN',  renk:'242,104,60'  },   // 69
+    { ad:'AMBIENT',       renk:'176,124,232' },   // 72
+    { ad:'WORLD & ROOTS', renk:'154,150,172' },   // 91
+    { ad:'JAZZ & SOUL',   renk:'240,172,122' },   // 96
+    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 130 -- en dista, turkuaz
   ];
+  const AILE_ACILIS = 'ELECTRONIC';   // sifirdan acilis ailesi
   const AILE_ADLAR = AILELER.map(a=>a.ad);
   function aileRenk(ad){
     const a = AILELER.find(x=>x.ad === ad); return a ? a.renk : '';
   }
   /* null = aile seçilmemiş: bütün liste çalıyor (bugünkü davranış). */
   var AKTIF_AILE = null;
+  /* SIFIRDAN ACILIS: elektronik radyo. Kanal hatirlaniyor, aile
+     hatirlanmiyor -- her oturum ayni bilinen yerden basliyor. */
+  try{ if(!AKTIF_AILE) AKTIF_AILE = AILE_ACILIS; }catch(e){}
   /* MÜZİK DURMASIN: seçilen aile elde hiçbir istasyon bırakmıyorsa
      süzgeç UYGULANMIYOR. Sessizlik kullanıcıya "bozuldu" der. */
   function aileSuz(list){
@@ -5260,10 +5260,9 @@
       if(uz>1){ nx/=uz; ny/=uz; }
       try{ fxIpucuSurtuldu(Math.min(1, uz)); }catch(_){}   // gerçek sürtme: ipucu bir daha çıkmaz
       fxX=nx; fxY=ny;                                     // ışık için (yön hâlâ ışığı taşıyor)
-      /* ── FX TEK EKSEN: UZAKLIK = ŞİDDET ───────────────────────────
-         Halka sayısı 8 olunca ortadaki daire 0.47R'den 0.215R'ye indi;
-         o alanda iki eksen ayırt edilemez, parametreler karışıyor.
-         Tek değer: merkezden UZAKLIK. Yön yalnızca ışığı taşıyor. */
+      /* FX TEK EKSEN: 8 halka olunca ortadaki daire 0.215R'ye indi;
+         o alanda iki eksen ayirt edilemez. Tek deger: merkezden
+         UZAKLIK. Yon yalnizca isigi tasiyor. */
       const _g = Math.min(1, uz);
       yatay=_g; fxSeviye=_g;
       fxIste();                                           // ses parametrelerini kare başına 1 kez uygula (parmak 120Hz olay üretir)
@@ -5570,12 +5569,13 @@
      Kanala ve kategoriye dokunmuyor, müzik kesilmiyor. Tek işi
      "efektlerden çık, temize dön". Kategori sırası artık sağ üstteki
      kategori yazısında. */
-  /* NEBULA = ANAHTAR: canlı radyo ↔ arşivin ses havuzu. FX dönerken
-     de çalışır — kaynak değiştirmek için efekti kapatmak gerekmiyor.
-     Eskiden FX'i sıfırlıyordu; o iş zaten uydu düğmesinde var. */
+  /* NEBULA = ANAHTAR: canli radyo <-> arsivin ses havuzu. FX donerken
+     de calisir. Eskiden FX'i sifirliyordu; o is uydu dugmesinde var. */
   /* Uc ana kanal, sirayla: RADIOTAPE (canli radyo, acilis) ->
      ORBITAPE (sesler) -> MIXTAPE (insanlarin parcalari) -> basa. */
-  const KANAL_SIRA = ['radio','lib','liste'];
+  /* MIXTAPE SIMDILIK KAPALI: calismiyordu, nebuladan oraya gecmek
+     kullaniciyi bos kanalda birakiyordu. Listeye geri eklemek yeter. */
+  const KANAL_SIRA = ['radio','lib'];
   function havuzDegis(){
     try{
       const i = KANAL_SIRA.indexOf(mod);
@@ -5589,7 +5589,17 @@
      geçiyor ve en içtekinden sonra başa dönüyor. Halkadan elle başka
      bir kategori seçildiyse sıra bozulmuş sayılır: bir sonraki basış
      yine en dıştan başlar. */
+  /* Radyoda sag ustteki isme basmak BIR SONRAKI TURE geciriyor;
+     arsivde eski davranis (bir icteki kategori). */
+  function aileSiraGec(){
+    const n = AILE_ADLAR.length;
+    const bul = AILE_ADLAR.indexOf(AKTIF_AILE);
+    const i = (bul >= 0) ? (bul + 1) % n : 0;
+    try{ aileSec(AILE_ADLAR[i], true); }catch(e){}
+    try{ modAdiGoster(); }catch(e){}
+  }
   function modSiraGec(){
+    if(typeof mod !== 'undefined' && mod === 'radio'){ aileSiraGec(); return; }
     const n = MODSIRA.length;
     /* HER BASIŞ BİR HALKA İÇERİ. Nerede olduğumuza bakıyoruz: sıra
        bizde ise bir sonrakine, elle başka bir kategori seçilmişse
@@ -5970,11 +5980,21 @@
      gezinen varsa o, yoksa seçili kategori, o da yoksa boş. */
   function modAdiYaz(gezinen){
     const el = document.getElementById('modAd'); if(!el) return;
-    const ad = (gezinen !== undefined && gezinen !== null) ? gezinen : (AKTIF_MOD || '');
+    /* YAZI HIC KAYBOLMUYOR: gezinen yoksa bulundugu yerin adi
+       yaziliyor (radyoda aile, arsivde kategori, yoksa kanal). */
+    let ad = (gezinen !== undefined && gezinen !== null && gezinen !== '') ? gezinen : '';
+    if(!ad){
+      try{
+        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || AILE_ACILIS;
+        else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : mod === 'liste' ? 'MIXTAPE' : 'RADIOTAPE');
+      }catch(e){ ad = AKTIF_MOD || ''; }
+    }
     el.textContent = ad;
     const p = ad && MOD_TEMA[ad];
-    if(p){
-      const [r,g,b] = p.ana.split(',').map(Number);
+    let _rn = p ? p.ana : '';
+    if(!_rn){ try{ _rn = aileRenk(ad); }catch(e){} }
+    if(_rn){
+      const [r,g,b] = _rn.split(',').map(Number);
       el.style.color = 'rgb('+Math.round(r*0.78+14)+','+Math.round(g*0.78+14)+','+Math.round(b*0.78+14)+')';
     }else{ el.style.color = ''; }
     el.classList.toggle('gor', !!ad);
@@ -6038,8 +6058,8 @@
   function modAdiBirak(){ onizlemeAyarla(''); modGezYaz(''); modAdiYaz(); }   // parmak kalktı: önizleme düşer
   /* zorla=true: aynı kategoriye tekrar basılsa bile KAPATMAZ. Gezegen
      sırasında kullanılıyor — sıra ilerlerken kategori kapanmasın. */
-  /* Halkaya basildi: kanal neyse onu sec. Tek giris noktasi --
-     dokunma kodu "aile mi kategori mi" diye bilmek zorunda degil. */
+  /* Halkaya basildi: kanal neyse onu sec. Dokunma kodu "aile mi
+     kategori mi" bilmek zorunda degil. */
   function halkaSec(k, zorla){
     const ad = halkaAdlar()[k]; if(!ad) return;
     if(halkaAilesiMi()){
