@@ -20,3 +20,9 @@ wrangler.jsonc
 # gitmesin: tek dosya siniri 25 MiB ve bu dosya 30 MB.
 yeni_hasat.json
 hasat_durum.json
+
+# Yayin basliklari: Cloudflare bunu okuyup uygular, dosya olarak
+# servis edilmemeli.
+_headers
+
+# Onizleme gorseli uretici (Playwright) — yayina gitmez, araclar/ zaten haric.

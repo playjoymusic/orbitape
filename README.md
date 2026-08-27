@@ -16,23 +16,47 @@ olduğu gibi servis ediyor; ara bir derleme adımı yok.
 index.html          Uygulamanın tamamı — tek dosya, bağımlılık yok
 sw.js               Çevrimdışı kabuk (ağ önce, sonra önbellek)
 privacy.html        Gizlilik metni  ->  /privacy
+404.html            Eşleşmeyen adres  (wrangler: not_found_handling)
 manifest.json       PWA künyesi
+robots.txt          Arama robotlarına kurallar + sitemap adresi
+sitemap.xml         İki sayfa: / ve /privacy
+_headers            Yayın başlıkları (yayına gitmez, Cloudflare okur)
 icon-*.png          Uygulama ikonları (192/512, normal + maskeli)
 ekran-*.png         Mağaza ekran görüntüleri
+paylas.png          Bağlantı paylaşılınca çıkan önizleme (og:image)
 test/               Otomatik kontroller
 araclar/            Kütüphane bakım araçları (Python)
 ```
 
+### Ekran görüntüleri ve önizleme neden kendi içeriğimiz
+
+`ekran-1.png` bir zamanlar canlı radyo ekranıydı ve üzerinde iri
+puntoyla bir istasyonun adı yazıyordu. Bir tanıtım görselinde üçüncü
+taraf marka göstermek, o kurumun uygulamayı desteklediği izlenimini
+doğurur ve mağaza incelemesinde takılır. Şimdi hepsi kamu malı arşiv
+kaydı: lisansı ve kaynağı ekranda görünüyor.
+
+`paylas.png` (1200×630) uygulamanın kendisinden üretiliyor —
+`araclar/goruntu.js` gerçek tarayıcıda açıp künyeyi sabitleyip
+fotoğrafını çekiyor. Elle Photoshop yok; ekran değişince görsel de
+yeniden üretilebilir.
+
 ### Neden tek dosya?
 
-`index.html` 449 KB ve her şeyi içeriyor: HTML, CSS, JavaScript. Derleme
+`index.html` 496 KB ve her şeyi içeriyor: HTML, CSS, JavaScript. Derleme
 adımı, paket yöneticisi, çerçeve yok. Sebebi: bu uygulamanın tek işi
 açılıp ses çalmak. Ara katman ne kadar azsa açılış o kadar hızlı ve
 bozulacak yer o kadar az.
 
-Dosyanın %10'u yorum. Yorumların çoğu "ne yapıyor" değil **"neden böyle"**
-diyor ve gerekçesindeki ölçüm sayısını taşıyor. Bir satırın neden orada
-olduğunu merak edersen üstünde yazıyor.
+Dosyanın **%42'si yorum** (210 KB; kod 4.845 satır). Burada uzun süre
+"%10" yazıyordu — yanlıştı, iki bağımsız yöntemle ölçülüp düzeltildi.
+Yorumların çoğu "ne yapıyor" değil **"neden böyle"** diyor ve
+gerekçesindeki ölçüm sayısını taşıyor. Bir satırın neden orada olduğunu
+merak edersen üstünde yazıyor.
+
+Yorumların tel üzerindeki bedeli gzip'te 68,6 KB. Ölçüldü, biliniyor ve
+kalmasına karar verildi: tek geliştiricili bir projede "bu neden böyle"
+ve "bu denendi, geri alındı" kaydı, o baytlardan değerli.
 
 ---
 
