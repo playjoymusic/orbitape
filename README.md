@@ -110,10 +110,22 @@ planda susma, sıkı bellek tavanı) yakalamaz. Verdiği güvence "iPhone'da
 
 **WebKit yerelde kurulamıyor** — Playwright'ın indirme sunucusu bu geliştirme
 ortamından kapalı (`Failed to download WebKit … code=1`). Bu yüzden yalnızca
-GitHub Actions'ta koşuyor ve şu an `continue-on-error` ile: WebKit'in ne
-diyeceğini bilmeden `main`'e kırmızı çarpı koymak, ilk gerçek farkta "zaten
-hep kırmızı" alışkanlığı yaratır. Farklar düzeltilip koşu istikrarlı yeşile
-döndüğünde o satır kaldırılacak. **Kaldırılmadığı sürece iş yarım demektir.**
+GitHub Actions'ta koşuyor.
+
+**İlk koşunun öğrettiği şey.** WebKit 19/21 verdi; düşen ikisi MediaRecorder'dı
+ve ilk bakışta "Safari'de kayıt çalışmıyor" gibi duruyordu. Değildi —
+MediaRecorder iOS Safari 14.5'ten beri destekleniyor
+([caniuse](https://caniuse.com/mediarecorder)). Olmayan şey Playwright'ın
+**Linux WebKit derlemesi**: medya kodlayıcıları oraya konmuyor.
+
+Yani bir uygulama hatası değil, **testin sınırı**. O iki satır artık `BİLGİ`
+olarak yazılıyor, hüküm sayılmıyor. Sebebi ilkeli: dustu saymak testi yalancı
+yapardı, ve yalan söyleyen bir test kırmızısına bakılmayan bir teste dönüşür.
+Hiç yazmamak da kör bırakırdı.
+
+**Açık kalan boşluk, açıkça:** kayıt yolu bu testle doğrulanamıyor. Onun için
+gerçek bir cihaz ya da Mac üzerinde WebKit gerekiyor — elle sınama listesinde
+durmalı.
 
 `test/saglik.sh` bunun üstüne kayıt dosyasını `ffprobe` ile açıp gerçekten
 ses ve görüntü içerdiğini doğrular, kare maliyetini 4 kat yavaşlatılmış

@@ -86,18 +86,28 @@ jobs:
   #   duyarlı olanı sınıyor: ses grafı, medya API'leri, çizim, CORS,
   #   service worker, klavye, lisans kapısı.
   #
-  # NEDEN continue-on-error
-  #   WebKit'in ne diyeceğini HENÜZ BİLMİYORUZ. Bilmeden main'e
-  #   kırmızı çarpı koymak, ilk gerçek farkta "zaten hep kırmızı"
-  #   alışkanlığı yaratır — testlere olan güveni asıl bu öldürür.
-  #   İlk turlar RAPOR veriyor. Çıkan farklar düzeltilip koşu
-  #   istikrarlı yeşile döndüğünde bu satır KALDIRILACAK.
-  #   Bu satır kaldırılmadığı sürece iş yarım demektir.
+  # continue-on-error KALDIRILDI — ilk koşu ne soracağımızı öğretti.
+  #
+  #   İlk WebKit koşusu 19/21 verdi. Düşen ikisi MediaRecorder'dı ve
+  #   ilk bakışta "Safari'de kayıt çalışmıyor" gibi duruyordu. Değildi:
+  #   caniuse'a bakıldı, MediaRecorder iOS Safari 14.5'ten beri
+  #   destekleniyor. Olmayan şey Playwright'ın LİNUX WebKit derlemesi —
+  #   medya kodlayıcıları oraya konmuyor.
+  #
+  #   Yani bir uygulama hatası değil, TESTİN SINIRI. O iki satır artık
+  #   "bilgi" olarak yazılıyor, hüküm sayılmıyor: yalan söyleyen bir
+  #   test, kırmızısına bakılmayan bir teste dönüşür.
+  #
+  #   Geriye kalan 19 kontrolün hepsi WebKit'te geçti — yani kodun
+  #   WebKit hakkındaki iddiaları motor seviyesinde tutuyor. Artık
+  #   kırmızı olması gerçek bir gerileme demek, o yüzden zorunlu.
+  #
+  #   AÇIK KALAN BOŞLUK: kayıt yolu bu testle doğrulanamıyor. Gerçek
+  #   cihaz ya da Mac üzerinde WebKit gerekiyor. Elle sınama listesinde.
   motor:
     name: Motor denkligi (WebKit)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    continue-on-error: true      # <- ilk turlar icin; kaldirilacak
 
     steps:
       - name: Depoyu al

@@ -40,6 +40,14 @@ const MOTOR = (process.env.MOTOR || 'chromium').toLowerCase();
 const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti: !!gecti, olcum: String(olcum)});
 
+/* BILGI SATIRI — yazdirilir, HUKUM SAYILMAZ.
+   Bazi seyler bu kurulumda olculemiyor ve bu, uygulamanin degil
+   ORTAMIN ozelligi. Onlari "dustu" saymak testi yalanci yapar;
+   hic yazmamak ise kor birakir. Ikisi de yanlis, ucuncu yol bu:
+   goruntule, sayma, sebebini yaz. */
+const bilgi = [];
+const B = (ad, deger, neden) => bilgi.push({ad, deger: String(deger), neden});
+
 (async () => {
   const b = await tarayiciAc(MOTOR);
   const jsHata = [], konsol = [];
@@ -174,9 +182,32 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti: !!gecti, olcum: String(ol
       captureStream: !!(document.createElement('canvas').captureStream)
     };
   });
-  K('MediaRecorder var', medya.kaydedici === true, 'kayit yolu acik');
-  K('En az bir kayit bicimi destekli', medya.bicimler.length > 0,
-     medya.bicimler.length ? medya.bicimler.join(' | ') : 'HICBIRI — kayit calismaz');
+  /* MEDIARECORDER: BILGI, HUKUM DEGIL — VE BUNU ILK KOSU OGRETTI.
+     Ilk WebKit kosusunda bu ikisi dustu:
+       MediaRecorder var            -> false
+       En az bir kayit bicimi        -> HICBIRI
+     Ilk tepki "kayit Safari'de calismiyor" demek olurdu. Yanlis olurdu.
+     caniuse'a bakildi: MediaRecorder iOS Safari 14.5'ten beri
+     DESTEKLENIYOR (masaustu Safari 14.1'den beri). Yani gercek
+     iPhone'da var; olmayan sey Playwright'in LINUX WebKit derlemesi.
+     Medya kodlayicilari o derlemeye konmuyor.
+
+     Yani bu bir uygulama hatasi degil, TESTIN SINIRI. Dustu saymak
+     testi yalanci yapardi ("Safari'de kayit yok" diye) — ve yalan
+     soyleyen bir test, kirmizisina bakilmayan bir teste donusur.
+     Hic yazmamak da kor birakirdi. Ucuncu yol: bilgi olarak yaz.
+
+     KAPANMAYAN BOSLUK, ACIKCA: kayit yolu bu testle DOGRULANAMIYOR.
+     Onun icin gercek bir cihaz ya da Mac uzerinde WebKit gerekiyor.
+     Elle sinama listesinde durmali. */
+  B('MediaRecorder', medya.kaydedici ? 'var' : 'YOK',
+     medya.kaydedici ? '' : 'Linux WebKit derlemesinde yok; iOS Safari 14.5+ destekliyor (caniuse)');
+  B('Kayit bicimleri', medya.bicimler.length ? medya.bicimler.join(' | ') : 'hicbiri',
+     medya.bicimler.length ? '' : 'ayni sebep — kodlayici bu derlemede yok');
+
+  /* Bunlar BURADA da olmali ve oldular: kamera ve ekran yakalama
+     yollari WebKit'te calisiyor. Kayit zincirinin geri kalani ayakta,
+     eksik olan yalnizca kodlayici. */
   K('getUserMedia var', medya.gum === true, 'kamera yolu');
   K('canvas.captureStream var', medya.captureStream === true, 'ekran kaydinin temeli');
 
@@ -250,6 +281,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti: !!gecti, olcum: String(ol
   console.log('╔═ MOTOR DENKLIGI — ' + m.ad.toUpperCase());
   for (const x of sonuc) {
     console.log('║ ' + (x.gecti ? 'OK ' : '!! ') + x.ad.padEnd(en) + ' : ' + x.olcum);
+  }
+  if (bilgi.length) {
+    const be = Math.max(...bilgi.map(x => x.ad.length));
+    console.log('║');
+    console.log('║ BILGI (hukum degil — bu ortamda olculemeyenler)');
+    for (const x of bilgi) {
+      console.log('║ ·  ' + x.ad.padEnd(be) + ' : ' + x.deger + (x.neden ? '   [' + x.neden + ']' : ''));
+    }
   }
   const dusen = sonuc.filter(x => !x.gecti);
   console.log('╚═ ' + gecen + '/' + sonuc.length + ' gecti' +
