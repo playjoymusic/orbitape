@@ -21,8 +21,13 @@ wrangler.jsonc
 yeni_hasat.json
 hasat_durum.json
 
-# Yayin basliklari: Cloudflare bunu okuyup uygular, dosya olarak
-# servis edilmemeli.
-_headers
-
-# Onizleme gorseli uretici (Playwright) — yayina gitmez, araclar/ zaten haric.
+# _headers BURAYA YAZILMAZ — bir kere yazildi ve yanlisti.
+# Mantik "yayina gitmesin" diye dusundurtuyor ama .assetsignore
+# dosyayi HIC YUKLEMIYOR; yuklenmeyen dosyanin kurallari da hic
+# uygulanmiyor. Cloudflare _headers'i yukluyor, ayristiriyor ve
+# KENDISI servis etmiyor. Yani dogru yer burasi degil.
+#   "_headers and _redirects files are supported natively in Workers
+#    with static assets. Ensure that ... these files are included in
+#    the static asset directory of your project."
+#   developers.cloudflare.com/workers/static-assets/migration-guides/
+#   migrate-from-pages/

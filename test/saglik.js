@@ -1233,8 +1233,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Referrer disariya sizmiyor', /^\s*Referrer-Policy:\s*no-referrer\s*$/m.test(hd),
        'archive.org ve istasyonlar hangi sayfadan gelindigini gormuyor');
     K('MIME tahmini kapali', /X-Content-Type-Options:\s*nosniff/.test(hd), 'nosniff');
-    K('_headers yayina gitmiyor', fs.readFileSync('.assetsignore','utf8').split('\n')
-        .map(s=>s.trim()).includes('_headers'), '.assetsignore');
+    /* TERSI: _headers .assetsignore'a YAZILMAMALI.
+       Bir kere yazildi ve yanlisti: .assetsignore dosyayi hic
+       yuklemiyor, yuklenmeyen dosyanin kurallari da hic uygulanmiyor.
+       Cloudflare _headers'i yukluyor, ayristiriyor ve kendisi servis
+       etmiyor — yani zaten yayinda gorunmuyor.
+       Bu kontrol ayni hatanin tekrar yapilmasini engelliyor. */
+    K('_headers .assetsignore\'da DEGIL', !fs.readFileSync('.assetsignore','utf8')
+        .split('\n').map(s=>s.trim()).filter(s=>s && !s.startsWith('#')).includes('_headers'),
+       'yoksa Cloudflare dosyayi hic gormez ve basliklar uygulanmaz');
   }
 
   /* ── KLAVYE VE EKRAN OKUYUCU ────────────────────────────────────
