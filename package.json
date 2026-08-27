@@ -5,7 +5,9 @@
   "description": "A sound explorer: live radio, public-domain and Creative Commons archive recordings, effects you play with your finger.",
   "scripts": {
     "test": "node test/saglik.js",
-    "sunucu": "python3 -m http.server 8765"
+    "sunucu": "python3 -m http.server 8765",
+    "motor": "MOTOR=webkit node test/motor.js",
+    "motor:chromium": "MOTOR=chromium node test/motor.js"
   },
   "devDependencies": {
     "playwright": "^1.47.0"

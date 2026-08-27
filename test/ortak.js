@@ -26,7 +26,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { chromium } = require('playwright');
+const { chromium, webkit, firefox } = require('playwright');
 const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kullanir
 
 /* ── YOLLAR ──────────────────────────────────────────────────────
@@ -46,13 +46,41 @@ const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) ' +
   'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
 
 /* --autoplay-policy : kullanici dokunmadan ses baslasin (testte dokunan yok)
-   --use-fake-*      : kamera izni sorulmasin, sahte kamera goruntusu gelsin */
+   --use-fake-*      : kamera izni sorulmasin, sahte kamera goruntusu gelsin
+   BUNLAR CHROMIUM'A OZEL. WebKit bu bayraklari tanimiyor; oraya
+   verilirse tarayici hic acilmaz. */
 const TARAYICI_ARG = ['--autoplay-policy=no-user-gesture-required',
                       '--use-fake-ui-for-media-stream',
                       '--use-fake-device-for-media-stream'];
 
-async function tarayiciAc(){
-  return chromium.launch({ executablePath: KROM, args: TARAYICI_ARG });
+/* ── MOTOR SECIMI ────────────────────────────────────────────────
+   NEDEN VAR: uygulama iPhone'da yasiyor ve ses/kayit kodunun buyuk
+   kismi WebKit'in tuhafliklarina karsi yazilmis — cizirti duzeltmesi,
+   crossOrigin/CORS eslemesi, "ENCODER STALLED (TRACK MUTED)" tespiti.
+   Bunlarin hepsi WebKit hakkinda IDDIA ve hicbiri WebKit'te
+   sinanmiyordu.
+
+   WebKit yerel gelistirme ortamina KURULAMIYOR (Playwright'in indirme
+   sunucusu kapali):
+     Failed to download WebKit 26.5 / Download failure, code=1
+   O yuzden WebKit yalnizca GitHub Actions'ta kosuyor; orada ag acik.
+
+   DURUSTLUK NOTU: Playwright'in webkit'i Safari DEGIL, Safari'nin
+   MOTORU. Motor seviyesindeki farklari yakalar (Web Audio, medya
+   olaylari, CORS, MediaRecorder). iOS Safari'ye ozel kisitlari
+   (arka plan sesi, dokunmadan calma, bellek baskisi) YAKALAMAZ.
+   Bu testin verdigi guvence "Safari'de calisiyor" degil,
+   "motor farki yuzunden kirilmiyor". */
+function motorSec(ad){
+  const m = String(ad || process.env.MOTOR || 'chromium').toLowerCase();
+  if(m === 'webkit')  return { ad:'webkit',  sur:webkit,  arg:[],           yol:undefined };
+  if(m === 'firefox') return { ad:'firefox', sur:firefox, arg:[],           yol:undefined };
+  return                     { ad:'chromium',sur:chromium,arg:TARAYICI_ARG, yol:KROM };
+}
+
+async function tarayiciAc(motor){
+  const m = motorSec(motor);
+  return m.sur.launch({ executablePath: m.yol, args: m.arg });
 }
 
 /* ── AG DAVRANISLARI ─────────────────────────────────────────────
@@ -127,11 +155,21 @@ async function yerelAg(sayfa){
    Donen: { sayfa, baglam, yeniBaglam, kapat }
    kapat(): kendi actigi baglami kapatir; disaridan gelen baglami
             kapatmaz, sadece sekmeyi kapatir. */
+/* WebKit isMobile/hasTouch desteklemiyor: verilirse baglam hic
+   acilmiyor ("isMobile is not supported in WebKit"). Olculer ayni
+   kaliyor, sadece o iki bayrak dusuyor. */
+function telefonOlcu(motorAd){
+  if(String(motorAd||'').toLowerCase() === 'webkit'){
+    return { viewport: TELEFON.viewport, deviceScaleFactor: TELEFON.deviceScaleFactor };
+  }
+  return TELEFON;
+}
+
 async function sayfaAc(kaynak, secenek){
   const se = Object.assign({ ag:'sahte', bekle:2000, git:true }, secenek || {});
   const yeniBaglam = typeof kaynak.newContext === 'function';
   const baglam = yeniBaglam
-    ? await kaynak.newContext(Object.assign({}, TELEFON, se.baglamEk || {}))
+    ? await kaynak.newContext(Object.assign({}, telefonOlcu(se.motor), se.baglamEk || {}))
     : kaynak;
   const sayfa = await baglam.newPage();
 
@@ -163,4 +201,4 @@ async function sayfaAc(kaynak, secenek){
 }
 
 module.exports = { T, ADRES, KOK, TELEFON, IPHONE_UA, TARAYICI_ARG,
-                   tarayiciAc, sahteAg, yerelAg, sayfaAc, TON };
+                   tarayiciAc, motorSec, telefonOlcu, sahteAg, yerelAg, sayfaAc, TON };

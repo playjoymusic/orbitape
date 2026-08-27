@@ -87,6 +87,34 @@ const { sayfa, kapat } = await sayfaAc(b);                  // telefon + sahte a
 const { sayfa, kapat } = await sayfaAc(c, {ag:'yerel'});    // çevrimdışı ölçümü
 ```
 
+`test/motor.js` **Safari'nin motorunda** koşan ayrı bir paket. Uygulama
+iPhone'da yaşıyor ve ses/kayıt kodunun büyük kısmı WebKit'in tuhaflıklarına
+karşı yazılmış — cızırtı düzeltmesi, `crossOrigin`/CORS eşlemesi, "ENCODER
+STALLED (TRACK MUTED)" tespiti. Bunların hepsi WebKit **hakkında iddia** ve
+hiçbiri WebKit'te sınanmıyordu.
+
+```bash
+npm run motor            # WebKit  (yalnızca CI'da kurulabiliyor)
+npm run motor:chromium   # aynı kontroller Chromium'da — karşılaştırma için
+```
+
+291 kontrolün hepsi orada koşmuyor: büyük kısmı piksel yerleşimi ve piksel
+hizası motorlar arasında zaten farklı. Sadece motor farkına duyarlı olan
+sınanıyor — ses grafı, medya API'leri, çizim, CORS, service worker, klavye,
+lisans kapısı.
+
+**Ne garanti etmiyor:** Playwright'ın webkit'i Safari değil, Safari'nin
+*motoru*. iOS Safari'nin üstüne koyduğu kısıtları (dokunmadan çalmama, arka
+planda susma, sıkı bellek tavanı) yakalamaz. Verdiği güvence "iPhone'da
+çalışıyor" değil, "motor farkı yüzünden kırılmıyor".
+
+**WebKit yerelde kurulamıyor** — Playwright'ın indirme sunucusu bu geliştirme
+ortamından kapalı (`Failed to download WebKit … code=1`). Bu yüzden yalnızca
+GitHub Actions'ta koşuyor ve şu an `continue-on-error` ile: WebKit'in ne
+diyeceğini bilmeden `main`'e kırmızı çarpı koymak, ilk gerçek farkta "zaten
+hep kırmızı" alışkanlığı yaratır. Farklar düzeltilip koşu istikrarlı yeşile
+döndüğünde o satır kaldırılacak. **Kaldırılmadığı sürece iş yarım demektir.**
+
 `test/saglik.sh` bunun üstüne kayıt dosyasını `ffprobe` ile açıp gerçekten
 ses ve görüntü içerdiğini doğrular, kare maliyetini 4 kat yavaşlatılmış
 CPU ile ölçer.
