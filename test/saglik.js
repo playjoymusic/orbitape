@@ -2199,13 +2199,60 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const kaynak3 = fs.readFileSync('index.html','utf8');
     const bas3 = kaynak3.indexOf('async function radyoListe');
     const govde3 = kaynak3.slice(bas3, bas3 + 500);
-    K('Beyaz liste once deneniyor', /beyazListeYukle\(\)[\s\S]{0,120}return karisik\(bl\)/.test(govde3),
-      'radyo.json varsa dizine sorulmuyor');
+    K('Beyaz liste once deneniyor', /beyazListeYukle\(\)[\s\S]{0,160}return karisik\(aileSuz\(bl\)\)/.test(govde3),
+      'radyo.json varsa dizine sorulmuyor, aile suzgecinden geciyor');
     K('Beyaz liste de suzgecten geciyor',
       /beyazListe = temiz\.filter\(st=>!dinselMi\(st\) && !yasakliMi\(st\)\)/.test(kaynak3),
       'eski kuralla toplanmis liste suzgeci atlamiyor');
     K('Liste yoksa radyo susmuyor', /_blDenendi = true; return null;/.test(kaynak3),
       'eski yol yedek olarak duruyor');
+    /* AILE ALANI: beyaz listeden 'grup' dusurulurse aile suzgeci
+       sessizce ise yaramaz hale gelir -- hicbir istasyon eslesmez,
+       "muzik durmasin" kurali her seferinde devreye girer ve secim
+       hic calismiyor gibi gorunur. Onun icin ayri kontrol. */
+    K('Aile alani beyaz listeden dusurulmuyor',
+      /grup:\(x\.grup\|\|''\)/.test(kaynak3), "temiz haritasinda grup var");
+    K('Aile onbellege de yaziliyor',
+      /grup:\(st\.grup\|\|''\) \}\)\)\);/.test(kaynak3), 'ag yokken de suzulebiliyor');
+    K('Calan ogeye aile tasiniyor',
+      /radyoKuyruk\.push\(\{[^}]*grup:\(a\.grup\|\|''\)/.test(kaynak3),
+      'ekran rengi calan istasyonun ailesinden gelebilir');
+  }
+  /* ── AILELER (tur kumeleri) ──────────────────────────────────────
+     8 aile, her birinin rengi. Motor arayuzden once: aileyi kim
+     secerse secsin, kuyruga yalniz o aile girmeli. */
+  {
+    const ai = await pg.evaluate(()=>{
+      const A = (typeof AILELER!=='undefined') ? AILELER : null;
+      if(!A) return null;
+      const sahte = [ {ad:'a', grup:'JAZZ & SOUL'}, {ad:'b', grup:'JAZZ & SOUL'},
+                      {ad:'c', grup:'ELECTRONIC'},  {ad:'d', grup:''} ];
+      const eski = AKTIF_AILE;
+      AKTIF_AILE = 'JAZZ & SOUL';
+      const suzulen = aileSuz(sahte).map(x=>x.ad).join(',');
+      AKTIF_AILE = 'NEWS & TALK';                 // bu ailede tek istasyon yok
+      const bos = aileSuz(sahte).length;
+      AKTIF_AILE = null;
+      const hepsi = aileSuz(sahte).length;
+      AKTIF_AILE = eski;
+      return { sayi:A.length, adlar:A.map(x=>x.ad),
+               renkler:A.map(x=>x.renk),
+               benzersizRenk:new Set(A.map(x=>x.renk)).size,
+               suzulen, bos, hepsi,
+               aileSecVar:(typeof aileSec==='function') };
+    });
+    K('Sekiz aile tanimli', !!ai && ai.sayi===8, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===8,
+       ai ? ai.benzersizRenk+'/8 benzersiz' : '-');
+    K('Aile suzgeci sadece o aileyi birakiyor', !!ai && ai.suzulen==='a,b',
+       ai ? ('kalan: '+ai.suzulen) : '-');
+    /* MUZIK DURMASIN: bos bir aile sessizlik uretmemeli. Bu kontrol
+       kaldirilirsa NEWS & TALK secildiginde (henuz 0 istasyon) radyo
+       tamamen susardi. */
+    K('Bos aile sessizlik uretmiyor', !!ai && ai.bos===4,
+       ai ? (ai.bos+' istasyon kaldi (suzgec uygulanmadi)') : '-');
+    K('Aile secilmeden hepsi caliyor', !!ai && ai.hepsi===4, ai ? ai.hepsi+' istasyon' : '-');
+    K('aileSec var', !!ai && ai.aileSecVar, 'arayuz buna baglanacak');
   }
   /* Istasyon adlari radio-browser'da anahtar kelime kuyrugu oluyor:
      "DJ REMIX & CHARTS RADIO @ TikTok Charts, Electronic Music,

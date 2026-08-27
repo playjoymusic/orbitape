@@ -4764,6 +4764,51 @@
       return DIN_ZAYIF.test(m);
     }catch(e){ return false; }
   }
+  /* ── AİLELER (tür kümeleri) ───────────────────────────────────────
+     radyo.json'daki her istasyonun bir 'grup' alanı var. 24 tür sekiz
+     aileye toplandı: dinleyici 24 seçenek arasında değil 8 arasında
+     geziniyor ve her ailenin kendi rengi oluyor.
+
+     BURASI ARAYÜZ DEĞİL, MOTOR. Aileyi kimin seçtiği (halka mı, üst
+     şerit mi) burayı ilgilendirmiyor; burası "seçilen aile neyse
+     kuyruğa yalnızca o girsin" işini yapıyor. Arayüz kararı
+     değişirse bu kod aynı kalıyor.
+
+     Sıra ekrandaki sıra: akraba aileler yan yana.
+     Renkler koyu zeminde okunuyor ve birbirine karışmıyor. */
+  const AILELER = [
+    { ad:'ELECTRONIC',    renk:'142,124,240' },
+    { ad:'AMBIENT',       renk:'127,208,232' },
+    { ad:'INDIE & LOFI',  renk:'229,143,168' },
+    { ad:'JAZZ & SOUL',   renk:'224,164,92'  },
+    { ad:'WORLD & ROOTS', renk:'95,191,122'  },
+    { ad:'AFRO & LATIN',  renk:'242,104,60'  },
+    { ad:'CLASSICAL',     renk:'216,203,160' },
+    { ad:'NEWS & TALK',   renk:'126,147,168' }
+  ];
+  const AILE_ADLAR = AILELER.map(a=>a.ad);
+  function aileRenk(ad){
+    const a = AILELER.find(x=>x.ad === ad); return a ? a.renk : '';
+  }
+  /* null = aile seçilmemiş: bütün liste çalıyor (bugünkü davranış). */
+  var AKTIF_AILE = null;
+  /* MÜZİK DURMASIN KURALI: seçilen aile elde hiçbir istasyon
+     bırakmıyorsa süzgeç UYGULANMIYOR. Boş bir aile yüzünden sessiz
+     kalmaktansa aileyi görmezden gelmek yeğdir; sessizlik kullanıcıya
+     "bozuldu" der, karışık liste demez. */
+  function aileSuz(list){
+    if(!AKTIF_AILE || !list || !list.length) return list || [];
+    const s = list.filter(x => x && x.grup === AKTIF_AILE);
+    return s.length ? s : list;
+  }
+  /* Aile değiştir. zorla=true aynı aileye tekrar basınca kapatmaz. */
+  function aileSec(ad, zorla){
+    AKTIF_AILE = (!zorla && AKTIF_AILE === ad) ? null : (ad || null);
+    try{ radyoKuyruk.length = 0; }catch(e){}      // eski ailenin istasyonları çalmasın
+    try{ radyoKuyrukDoldur(); }catch(e){}
+    return AKTIF_AILE;
+  }
+
   /* ── BEYAZ LİSTE: radyo.json ──────────────────────────────────────
      Anahtar kelime süzgeci 50.000 istasyonluk bir dizide er geç
      sızdırır — adı Yunanca bir haber kanalı, etiketi "world" olan bir
@@ -4788,7 +4833,11 @@
         const A = Array.isArray(d) ? d : ((d && (d.istasyonlar||d.liste)) || []);
         const temiz = A.map(x=>({
           stationuuid:(x.id||'').replace(/^rb:/,''), name:istasyonAdiTemiz(x.ad||'radio'),
-          url:x.mp3, url_resolved:x.mp3, tags:(x.etiket||''), lastcheckup:1, lastcheckok:1
+          url:x.mp3, url_resolved:x.mp3, tags:(x.etiket||''), lastcheckup:1, lastcheckok:1,
+          /* AILE: radyo.json'daki 'grup' alani. BURADA DUSURULMEMELI —
+             istasyon ailesini kaybederse halkalar ne secerse secsin
+             suzecek bir sey kalmaz. */
+          grup:(x.grup||'')
         })).filter(x=>x.url && /^https:/i.test(x.url));
         /* Liste hazır gelse bile süzgeç YİNE çalışıyor: kural sonradan
            sıkışırsa eski liste onu atlamasın. */
@@ -4810,7 +4859,7 @@
     /* ÖNCE BEYAZ LİSTE. Varsa dizine hiç sorulmuyor. */
     try{
       const bl = await beyazListeYukle();
-      if(bl && bl.length) return karisik(bl).slice(0, 40);
+      if(bl && bl.length) return karisik(aileSuz(bl)).slice(0, 40);
     }catch(e){}
     const sunucu=RB_SUNUCU[Math.random()*RB_SUNUCU.length|0];
     /* Mod açıkken etiket rastgele değil, modun kendisi. Modun kendi
@@ -4841,7 +4890,7 @@
     if(list.length) onbellekYaz('radyo', list.map(st=>({
       id:'rb:'+(st.stationuuid||st.url_resolved||st.url), mp3:(st.url_resolved||st.url),
       ad:istasyonAdiTemiz(st.name||'radio'),
-      etiket:(st.tags||'') })));
+      etiket:(st.tags||''), grup:(st.grup||'') })));   // aile de saklanıyor: ağ yokken de süzülebilsin
     return list;
   }
   /* Önbellekteki istasyonlar radio-browser biçimine geri çevriliyor,
@@ -4876,9 +4925,11 @@
     const c = onbellekOku('radyo'); if(!c || !c.length) return [];
     /* SÜZGEÇ ÖNBELLEĞE DE UYGULANIYOR. Önbellekteki kayıt, kural
        değişmeden önce çekilmiş olabilir; ağ yokken bile eleme aynı. */
-    return c.map(o=>({ stationuuid:(o.id||'').replace(/^rb:/,''), url:o.mp3,
-                       url_resolved:o.mp3, name:o.ad, tags:(o.etiket||''), lastcheckok:1 }))
-            .filter(st=>!dinselMi(st) && !yasakliMi(st));
+    return aileSuz(
+      c.map(o=>({ stationuuid:(o.id||'').replace(/^rb:/,''), url:o.mp3,
+                  url_resolved:o.mp3, name:o.ad, tags:(o.etiket||''),
+                  grup:(o.grup||''), lastcheckok:1 }))
+       .filter(st=>!dinselMi(st) && !yasakliMi(st)));
   }
   async function radyoKuyrukDoldur(){
     iz('radyoKuyruk');
@@ -4911,14 +4962,16 @@
       for(const st of list){
         const u=st.url_resolved||st.url, id="rb:"+(st.stationuuid||u);
         if(CALINDI.has(id)||radyoKuyruk.some(x=>x.id===id)) continue;
-        aday.push({ id, u, ad:istasyonAdiTemiz(st.name||'radyo') });
+        aday.push({ id, u, ad:istasyonAdiTemiz(st.name||'radyo'), grup:(st.grup||'') });
         if(aday.length>=16) break;
       }
       if(aday.length){
         const gecti = await Promise.all(aday.map(a=>corsVarMi(a.u)));   // TEK tur, paralel
         aday.forEach((a,k)=>{
           if(!gecti[k] || radyoKuyruk.length>=8) return;
-          radyoKuyruk.push({ id:a.id, mp3:a.u, ad:a.ad, sanatci:'', radyo:true }); ekle++;
+          /* grup CALAN OGEYE de tasiniyor: ekranin rengi calan istasyonun
+             ailesinden gelecek, kuyruktan degil. */
+          radyoKuyruk.push({ id:a.id, mp3:a.u, ad:a.ad, sanatci:'', radyo:true, grup:(a.grup||'') }); ekle++;
         });
       }
       if(ekle) basari('radyo');
