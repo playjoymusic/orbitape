@@ -14,6 +14,9 @@ const { T, ADRES: S, TELEFON, IPHONE_UA,
 
 
 
+/* SERBEST sabiti SAYFADA tanimli (test/ortak.js). Testlerin elle
+   cal() ile verdigi parcalar da lisans tasimali: uygulamada artik
+   lisansi taninmayan hicbir sey calmiyor. */
 const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
 
@@ -756,7 +759,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      tek adimda ortaya basinca zaten ayni yere donuluyor. */
   const gc = await pg.evaluate(async ()=>{
     turBitir(); const eskiMod = AKTIF_MOD; AKTIF_MOD = null; gecmisSifirla();
-    const P = n=>({mp3:'x'+n, ad:'Track '+n, etiket:'netlabel'});
+    const P = n=>({mp3:'x'+n, ad:'Track '+n, etiket:'netlabel', lisans:SERBEST});
     const gor = ()=>({ pos:_gecPos, n:GECMIS.length,
       geri:geriDug.classList.contains('var'),
       ileri:!!(ileriDug && ileriDug.classList.contains('var')),
@@ -990,7 +993,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   await pg.evaluate(async ()=>{
     AKTIF_MOD = null;
     mod = 'lib';
-    cal({ id:'kyt', mp3:'https://sahte.test/kayit.mp3', ad:'Kayit', etiket:'netlabel' });
+    cal({ id:'kyt', mp3:'https://sahte.test/kayit.mp3', ad:'Kayit', etiket:'netlabel', lisans:SERBEST });
     await new Promise(r=>setTimeout(r,400));
     try{ recPasifYaz(); }catch(e){}
   });
@@ -1242,6 +1245,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('_headers .assetsignore\'da DEGIL', !fs.readFileSync('.assetsignore','utf8')
         .split('\n').map(s=>s.trim()).filter(s=>s && !s.startsWith('#')).includes('_headers'),
        'yoksa Cloudflare dosyayi hic gormez ve basliklar uygulanmaz');
+    /* METIN DOSYALARI UTF-8 OLDUGUNU SOYLEMELI. Cloudflare .txt ve
+       .xml icin charset gondermiyor; tarayici eski bir kodlama
+       varsayiyor ve dosyadaki uzun tire "â€”" olarak cikiyor.
+       Tarayicida gorulup olculdu. */
+    K('robots.txt UTF-8 diyor', /\/robots\.txt[\s\S]{0,120}charset=utf-8/.test(hd),
+       'yoksa turkce karakterler bozuk gorunuyor');
+    K('sitemap.xml UTF-8 diyor', /\/sitemap\.xml[\s\S]{0,120}charset=utf-8/.test(hd), 'ayni sebep');
   }
 
   /* ── KLAVYE VE EKRAN OKUYUCU ────────────────────────────────────
@@ -1355,7 +1365,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         sonuc.sebep = sebep;
         /* Arsiv parcasinda DURMAMALI: mesru kayit kesilmesin. */
         durduruldu = 0; _kayitAktif = true; _kayitSebep = '';
-        try{ cal({mp3:'https://sahte.test/e0.mp3', ad:'E 0', etiket:'netlabel'}); }catch(e){}
+        try{ cal({mp3:'https://sahte.test/e0.mp3', ad:'E 0', etiket:'netlabel', lisans:SERBEST}); }catch(e){}
         await bek(120);
         sonuc.arsivdeDurdu = durduruldu;
       }finally{
@@ -1488,7 +1498,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     if(AKTIF_MOD) modSec(AKTIF_MOD, false);
     AKTIF_MOD = null;
     try{ ['turKutu','fxKutu'].forEach(i=>document.getElementById(i).classList.remove('sec')); }catch(e){}
-    cal({mp3:'temiz2', ad:'Temiz', etiket:'netlabel'}); await bek(120);
+    cal({mp3:'temiz2', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(120);
     try{ recPasifYaz(); }catch(e){}
     return { bir, birAlt, gecen, iki, ayni, ayniAlt, radyo, turSonra, turSonraAlt, kutuDepo, kapali,
              depoTemiz, kullandiktanSonra, yenidenAcilista, yenidenAlt,
@@ -1555,7 +1565,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     if(gercek) Object.defineProperty(Navigator.prototype,'mediaSession',gercek);
     window.MediaMetadata = eskiMM; _ortamKurulu = false;
     AKTIF_MOD = eskiMod; aktifItem = eskiIt;
-    cal({mp3:'temiz3', ad:'Temiz', etiket:'netlabel'}); await bek(120);
+    cal({mp3:'temiz3', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(120);
     try{ recPasifYaz(); }catch(e){}
     return { arsiv, radyo, duraklat, acildi };
   });
@@ -1704,7 +1714,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const yer = { yaziSol:R(bi.left), yari:R(innerWidth/2), blokSag:R(bi.right),
                   lisansSag:R(lz.getBoundingClientRect().right) };
     AKTIF_MOD = eskiMod; aktifItem = eskiIt;
-    cal({mp3:'temiz4', ad:'Temiz', etiket:'netlabel'}); await bek(120);
+    cal({mp3:'temiz4', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(120);
     try{ recPasifYaz(); }catch(e){}
     return { yanlis:yanlis.map(x=>x.g.slice(-26)+' -> '+(x.c||'(bos)')), lisansli, radyo, kendi, yer,
              havuzTasiyor: typeof lisansAdi === 'function' };
@@ -1725,6 +1735,160 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Havuzlar lisansi tasiyor', tasiyor>=3, tasiyor+' yukleyici (earth, uzun, mix)');
     K('Kayit cizimi lisansi yaziyor', /npLisans[\s\S]{0,200}domMetin\(c, lz, lz\.textContent/.test(kaynak),
       'paylasilan videoda atif duruyor');
+  }
+
+  /* ── HALKALAR GERCEKTEN CIZILIYOR MU ────────────────────────────
+     Tarayicida ekrana bakildiginda diskin ortasi bombos gorundu ve
+     "cizim bozuldu mu?" diye bakildi. Bozuk degildi: ses HENUZ
+     baslamamisti (tarayici otomatik calmayi engelliyor), seviye
+     sifirdi ve halkalar da kapaliydi. Yani DOGRU davranis.
+
+     Ama bunu her seferinde goz karariyla anlamak zor. Tuvalin
+     GERCEKTEN boyanmis pikselini sayiyoruz: ses calarken halkalar
+     ekranda olmali. Cizim yolu sessizce olurse (rAF zinciri kopar,
+     bir istisna yutulur) buradan anlasilir — ekran siyah kalir ve
+     kimse hata gormez, en sinsi bozulma turu budur. */
+  {
+    const hlk = await pg.evaluate(()=>{
+      const k = document.getElementById('viz');
+      if(!k || !k.width) return null;
+      const d = k.getContext('2d').getImageData(0,0,k.width,k.height).data;
+      let dolu=0, tepe=0;
+      for(let i=0;i<d.length;i+=4){
+        const v = Math.max(d[i], d[i+1], d[i+2]);
+        if(v > 18) dolu++;
+        if(v > tepe) tepe = v;
+      }
+      return { piksel:dolu, tepe, oran:+(dolu/(k.width*k.height)*100).toFixed(1), calan: !ses.paused };
+    });
+    K('Tuval gercekten boyaniyor', !!hlk && hlk.piksel > 20000,
+       hlk ? hlk.piksel+' piksel (%'+hlk.oran+'), en parlak '+hlk.tepe : 'tuval yok');
+  }
+
+  /* ── LISANS KAPISI ──────────────────────────────────────────────
+     ESKI ACIK: havuzdaki 24.356 arsiv kaydi uc ayri lisans kapisindan
+     geciyordu; Jamendo ve Audius parcalari HICBIRINDEN gecmiyordu.
+     Ikisinde de kayda 'lisans' alani bile konmuyordu, yani ekranda ve
+     paylasilan videoda lisans satiri hic cikmiyordu — oysa CC BY
+     ailesinde lisansi belirtmek lisansin KENDI SARTI.
+
+     Simdi tek bir kural var (lisansSerbest) ve uc yerde uygulaniyor:
+     hasatta (Python), Jamendo cekilirken, ve cal()'da son kapi olarak.
+     Bu blok ucunu de siniyor. */
+  {
+    const lk = await pg.evaluate(()=>{
+      /* SIRA KRITIK: ND kontrolu BY-NC'den ONCE olmali. Yoksa
+         "by-nc-nd" yanlislikla "by-nc" sayilir ve turev yasagi olan
+         bir eser iceri sizar. Python tarafinda da ayni sira var. */
+      const durum = [
+        ['http://creativecommons.org/licenses/publicdomain/',   true ],
+        ['https://creativecommons.org/publicdomain/zero/1.0/',  true ],
+        ['https://creativecommons.org/publicdomain/mark/1.0/',  true ],
+        ['http://creativecommons.org/licenses/by/3.0/',         true ],
+        ['http://creativecommons.org/licenses/by-sa/4.0/',      true ],
+        ['http://creativecommons.org/licenses/by-nc/2.0/',      true ],
+        ['http://creativecommons.org/licenses/by-nc-sa/2.0/',   true ],
+        ['http://creativecommons.org/licenses/by-nd/4.0/',      false],
+        ['http://creativecommons.org/licenses/by-nc-nd/3.0/',   false],   // <- tuzak
+        ['http://creativecommons.org/licenses/nd-nc/1.0/',      false],
+        ['',                                                    false],
+        ['belirtilmemis',                                       false],
+        ['FMA_License',                                         false],
+        ['Sampling Plus 1.0',                                   false]
+      ];
+      const yanlis = durum.filter(([l,b])=>lisansSerbest(l)!==b).map(([l])=>l||'(bos)');
+      /* calinabilirMi: kimler gecebiliyor. */
+      const kapi = {
+        radyo:   calinabilirMi({mp3:'https://x/r', radyo:true}),
+        bizim:   calinabilirMi({id:'lst:3', mp3:'https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/Ala.mp3', ad:'Ala'}),
+        serbest: calinabilirMi({mp3:'https://x/a.mp3', lisans:'http://creativecommons.org/licenses/by-nc-sa/3.0/'}),
+        nd:      calinabilirMi({mp3:'https://x/b.mp3', lisans:'http://creativecommons.org/licenses/by-nc-nd/3.0/'}),
+        bos:     calinabilirMi({mp3:'https://x/c.mp3'}),
+        audius:  calinabilirMi({id:'aud:9', mp3:'https://api.audius.co/v1/tracks/9/stream'})
+      };
+      return { yanlis, kapi };
+    });
+    K('Lisans siniflandirmasi dogru', !!lk && lk.yanlis.length===0,
+       lk && lk.yanlis.length ? 'yanlis: '+lk.yanlis.join(', ') : '14 ornek, ND tuzagi dahil');
+    K('Canli yayin gecebiliyor', !!lk && lk.kapi.radyo===true, 'kaydedilmiyor, dagitilmiyor');
+    K('PLAYJOY kayitlari gecebiliyor', !!lk && lk.kapi.bizim===true, 'bizim, lisans alanina gerek yok');
+    K('Serbest lisansli kayit geciyor', !!lk && lk.kapi.serbest===true, 'CC BY-NC-SA');
+    K('ND kayit GECEMIYOR', !!lk && lk.kapi.nd===false, 'turev yasakli');
+    K('Lisanssiz kayit GECEMIYOR', !!lk && lk.kapi.bos===false, 'kanit yoksa serbest sayilmaz');
+    K('Audius adresi GECEMIYOR', !!lk && lk.kapi.audius===false, 'lisans bilgisi dondurmuyor');
+  }
+
+  /* Kapinin GERCEKTEN cal() icinde durdugu: yukaridaki kontroller
+     fonksiyonu sinadi, bu calma yolunu siniyor. */
+  {
+    const kp = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiSonraki = window.sonraki, eskiItem = aktifItem;
+      let atlandi = 0;
+      window.sonraki = function(){ atlandi++; };
+      const sonuc = {};
+      try{
+        /* ND parca: aktifItem OLMAMALI ve atlanmali. */
+        const nd = {id:'sinama-nd', mp3:'https://sahte.test/e1.mp3', ad:'ND parca',
+                    lisans:'http://creativecommons.org/licenses/by-nd/4.0/'};
+        try{ cal(nd); }catch(e){}
+        await bek(120);
+        sonuc.ndCalindi = (aktifItem === nd);
+        sonuc.ndAtlandi = atlandi;
+        /* Serbest parca: normal calmali. */
+        atlandi = 0;
+        const ok = {id:'sinama-ok', mp3:'https://sahte.test/e2.mp3', ad:'Serbest parca',
+                    lisans:'http://creativecommons.org/licenses/by/4.0/'};
+        try{ cal(ok); }catch(e){}
+        await bek(120);
+        sonuc.okCalindi = (aktifItem === ok);
+        /* SONSUZ DONGU KORUMASI: art arda lisanssiz gelirse durmali. */
+        atlandi = 0; _lisansElendi = 0;
+        for(let i=0;i<12;i++){
+          try{ cal({id:'d'+i, mp3:'https://sahte.test/x'+i+'.mp3'}); }catch(e){}
+        }
+        await bek(200);
+        sonuc.dongu = atlandi;
+      }finally{
+        window.sonraki = eskiSonraki; _lisansElendi = 0;
+      }
+      return sonuc;
+    });
+    K('ND parca CALMIYOR', !!kp && kp.ndCalindi===false, 'aktif parca olmadi');
+    K('Elenen parca atlaniyor', !!kp && kp.ndAtlandi===1, kp ? kp.ndAtlandi+' kez sonraki()' : '-');
+    K('Serbest parca normal caliyor', !!kp && kp.okCalindi===true, 'kapi mesru kaydi kesmiyor');
+    K('Sonsuz dongu korumasi var', !!kp && kp.dongu>0 && kp.dongu<=6,
+       (kp?kp.dongu:'-')+' deneme sonrasi durdu (tavan 6)');
+  }
+
+  /* ── AUDIUS KALDIRILDI ──────────────────────────────────────────
+     API lisans bilgisi dondurmuyor; bir eserin varsayilani "tum
+     haklari sakli"dir ve kanit yoksa serbest sayilmaz. Suzulecek alan
+     olmadigi icin suzgec kurulamadi, kaynak cikti.
+     Kontrol, kaynagin sessizce geri gelmesini engelliyor. */
+  {
+    const kk = fs.readFileSync('index.html','utf8');
+    const cagri = (kk.match(/audiusCek|audiusDoldur|audiusKuyruk|AUDIUS_HOST/g)||[]);
+    K('Audius kodu geri gelmemis', cagri.length===0,
+       cagri.length ? 'kalinti: '+cagri.slice(0,3).join(', ') : 'cagri yok');
+    K('api.audius.co adresi yok', !/api\.audius\.co/.test(kk), 'ag istegi kalmadi');
+  }
+
+  /* ── JAMENDO: LISANS SUZGECINDEN GECIYOR ────────────────────────
+     Jamendo her parcada license_ccurl donduruyor (varsayilan yanitta,
+     ek parametre gerekmiyor). Gercek yanittan olculdu:
+       "license_ccurl":"http://creativecommons.org/licenses/by-nc-sa/2.0/"
+     Iki kapi var: istekte ccnd=false (sunucu tarafi) ve yanitta
+     lisansSerbest (bizim kural). Ikincisi asil olan; sunucu suzgeci
+     sessizce degisebilir. */
+  {
+    const kj = fs.readFileSync('index.html','utf8');
+    K('Jamendo istegi ND istemiyor', /ccnd=false/.test(kj), 'sunucu tarafi on eleme');
+    K('Jamendo yaniti suzgecten geciyor',
+       /js\.results\|\|\[\]\)\.filter\(t=>t && t\.audio && lisansSerbest\(t\.license_ccurl\)\)/.test(kj),
+       'license_ccurl -> lisansSerbest');
+    K('Jamendo kaydi lisansi tasiyor', /lisans:\(t\.license_ccurl\|\|""\)/.test(kj),
+       'ekranda ve paylasilan videoda atif cikiyor');
   }
 
   /* ── LISTE ISTEKLERI: DAMGA DEGIL, KOSULLU ISTEK ────────────────
@@ -2076,13 +2240,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                        kip:d.classList.contains('kip'), n:FAV.length, mod:_favMod,
                        calan:(aktifItem&&aktifItem.ad)||null });
     const bos = gor();
-    cal({mp3:'f1', ad:'Fav 1', etiket:'netlabel'}); await bek(80);
+    cal({mp3:'f1', ad:'Fav 1', etiket:'netlabel', lisans:SERBEST}); await bek(80);
     const calan = gor();
     favDegis(); await bek(60); const bir = gor();
     favDegis(); await bek(60); const sifir = gor();
     favDegis();
-    cal({mp3:'f2', ad:'Fav 2', etiket:'netlabel'}); await bek(60); favDegis();
-    cal({mp3:'f3', ad:'Fav 3', etiket:'netlabel'}); await bek(60);
+    cal({mp3:'f2', ad:'Fav 2', etiket:'netlabel', lisans:SERBEST}); await bek(60); favDegis();
+    cal({mp3:'f3', ad:'Fav 3', etiket:'netlabel', lisans:SERBEST}); await bek(60);
     const iki = gor();
     favKipDegis(); await bek(150);
     const kipte = gor();
@@ -2108,7 +2272,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        etkilenmesin. */
     _favMod = false; FAV = []; favTazele();
     AKTIF_MOD = eskiMod;
-    cal({mp3:'temiz', ad:'Temiz', etiket:'netlabel'}); await bek(80);
+    cal({mp3:'temiz', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(80);
     return { bos, calan, bir, sifir, iki, kipte, favdanMi, c1, c2, kapali, depo, bosKip };
   });
 
