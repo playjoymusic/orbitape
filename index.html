@@ -1955,7 +1955,6 @@
       if(it.radyo) return 'LIVE RADIO';
       const h = new URL(it.mp3, location.href).hostname.replace(/^www\./,'').toLowerCase();
       if(/(^|\.)archive\.org$/.test(h))            return 'ARCHIVE.ORG';
-      if(/audius/.test(h))                          return 'AUDIUS';
       if(/jamendo/.test(h))                         return 'JAMENDO';
       if(/wikimedia|wikipedia/.test(h))             return 'WIKIMEDIA';
       if(/freesound/.test(h))                       return 'FREESOUND';
@@ -1982,6 +1981,47 @@
     const m = s.match(/licenses\/(by(?:-nc)?(?:-sa|-nd)?(?:-nc)?)(?:\/|$)/);
     if(m) return 'CC ' + m[1].toUpperCase();
     return '';
+  }
+  /* ── LİSANS KAPISI ───────────────────────────────────────────────
+     araclar/lisans_filtre.py ile AYNI kural, tarayıcı tarafında.
+     Havuzlar zaten süzülmüş hâlde geliyor; bu, süzgeçten GEÇMEMİŞ
+     kaynaklar için (Jamendo gibi canlı API'ler) ve son bir emniyet
+     kemeri için var.
+
+     SIRA KRİTİK: ND kontrolü BY-NC'den ÖNCE. Yoksa "by-nc-nd"
+     yanlışlıkla "by-nc" sayılır ve türev yasağı olan bir eser içeri
+     sızar. Python tarafında da aynı sıra ve aynı sebep yazılı.
+
+     NEDEN ND ÇIKIYOR: kullanıcı efekt uygulayıp kayıt alıyor; o kayıt
+     TÜREV ESER. NoDerivatives lisansı bunu yasaklıyor.
+     NEDEN BY-NC KALIYOR: uygulama ücretsiz, reklamsız, uygulama içi
+     satın alması yok. Bu değişirse bu kural da değişmeli. */
+  var _lisansElendi = 0;    // var: cal() erken calisabilir
+  const LIS_PD = /publicdomain|\/mark\/|zero|(^|\W)cc0(\W|$)/i;
+  const LIS_ND = /by-nc-nd|by-nd-nc|by-nd|licenses\/nd(\W|$)/i;
+  const LIS_OK = /by-nc-sa|by-nc(\W|$)|by-sa|licenses\/by[/-]|licenses\/by$/i;
+  function lisansSerbest(l){
+    const s = String(l||'').trim().toLowerCase();
+    if(!s || s==='belirtilmemis' || s==='belirtilmemiş' || s==='unknown' || s==='none' || s==='null' || s==='-') return false;
+    if(LIS_PD.test(s)) return true;
+    if(LIS_ND.test(s)) return false;      // ND ÖNCE
+    return LIS_OK.test(s);
+  }
+  /* KENDİ PARÇALARIMIZ: PLAYJOY kayıtları bizim, lisans alanları yok
+     ve olmasına gerek de yok. Adresleri kendi depomuzda. */
+  function bizimMi(o){
+    try{
+      const u = (o && o.mp3) || '';
+      return /playjoymusic\/tracks/.test(u) || /^lst:/.test((o && o.id) || '');
+    }catch(e){ return false; }
+  }
+  /* Çalınmasına izin var mı: canlı yayın (kaydedilmiyor, dağıtılmıyor),
+     kendi parçamız, ya da lisansı tanınan bir kayıt. */
+  function calinabilirMi(o){
+    if(!o) return false;
+    if(o.radyo) return true;
+    if(bizimMi(o)) return true;
+    return lisansSerbest(o.lisans);
   }
   function simdiCalan(item){
     if(!item) return;
@@ -2136,11 +2176,11 @@
       return calListe.length;
     }catch(e){ return calListe.length; }
   }
-  // MIXTAPE'e karışan AUDIUS parçaları: arkada hazır bekletilir -> sıra gelince bekleme olmaz
+  // MIXTAPE'e karışan netlabel parçaları: arkada hazır bekletilir -> sıra gelince bekleme olmaz
   /* ── MIXTAPE HAVUZU: bash'ta toplanmış CC netlabel + Openverse parçaları ──
      blocSonic, Mahorka, Clinical Archives, Bump Foot, Kahvi, Ektoplazm +
      Openverse (Jamendo / Free Music Archive / Wikimedia). Hepsi CORS doğrulanmış.
-     Audius canlı API yavaşladığında ya da boş döndüğünde burası devreye girer. */
+     Jamendo canlı API yavaşladığında ya da boş döndüğünde burası devreye girer. */
   const MIX_URL       = "https://raw.githubusercontent.com/playjoymusic/tracks/main/mixtape.json";
   const MIX_URL_YEDEK = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/mixtape.json";
   let mixHavuz=[], _mxShuf=[], _mxIdx=0, _mxSoz=null;
@@ -2197,51 +2237,54 @@
     }
     return null;
   }
-  const AUDIUS_ORAN = 0.9;        // MIXTAPE: 100 parçanın ~90'ı audius, ~10'u SENİN şarkın
-  const AUDIUS_STOK = 6;          // arkada hazır bekleyen audius parçası sayısı
-  let audiusKuyruk=[], audiusDolduruluyor=false;
-  async function audiusDoldur(){
-    if(audiusDolduruluyor || audiusKuyruk.length>=AUDIUS_STOK) return;
-    audiusDolduruluyor=true;
-    try{
-      for(let i=0;i<4 && audiusKuyruk.length<AUDIUS_STOK;i++){
-        const a=await audiusCek();
-        if(a && !audiusKuyruk.some(x=>x.id===a.id)) audiusKuyruk.push(a);
-      }
-    }catch(e){} finally{ audiusDolduruluyor=false; }
-  }
+  /* ── AUDIUS KALDIRILDI ───────────────────────────────────────────
+     Audius kullanıcı yüklemesi bir ağ ve API'si LİSANS BİLGİSİ
+     DÖNDÜRMÜYOR. Bir eserin varsayılanı "tüm hakları saklı"dır;
+     kanıt yoksa serbest sayılmaz. Havuzdaki 24.356 arşiv kaydı üç
+     ayrı lisans kapısından geçiyor, Audius parçaları HİÇBİRİNDEN
+     geçmiyordu — ve MIXTAPE'in yaklaşık yarısı onlardı.
+
+     Mesele soyut değil: kullanıcı efekt uygulayıp KAYIT alıyor ve o
+     kaydı paylaşıyor. Bu türev eser + umuma iletim. Lisansı
+     bilinmeyen bir parçada ikisi de dayanaksız.
+
+     Süzgeç kurulamadı çünkü süzülecek alan yok. Yerine mixtape.json
+     (1.453 lisanslı netlabel parçası), Jamendo (artık lisans
+     süzgecinden geçiyor) ve PLAYJOY kayıtları geçti.
+
+     Ekranda lisans satırı da bu yüzden boş kalıyordu: gösterilecek
+     bir lisans yoktu. Şimdi MIXTAPE'te çalan her parçanın lisansı
+     var ve ekranda yazıyor. */
+  const KENDI_ORAN = 0.86;        // MIXTAPE: 100 parçanın ~14'ü SENİN şarkın
   function kendiSarkin(){                                // sıradaki KENDİ şarkın (karışık torba)
     if(!calListe.length) return;
     if(_lsIdx>=_lsShuf.length){ _lsShuf=karisik(calListe); _lsIdx=0; }
     cal(_lsShuf[_lsIdx++]);
   }
-  function listeGec(){        // MIXTAPE: ~%10 senin şarkın, gerisi audius + toplanmış havuz
+  function listeGec(){        // MIXTAPE: ~%14 senin şarkın, gerisi havuz + Jamendo
     if(!calListe.length){ listeYukle().then(n=>{ if(n && mod==='liste') listeGec(); }); return; }
-    audiusDoldur();                                      // arkada audius stoğunu tazele
     if(!mixHavuz.length) mixYukle();                     // havuzu arkada hazırla
-    if(Math.random() >= AUDIUS_ORAN){ kendiSarkin(); return; }   // ~%10 PLAYJOY
-    // Kalan %90: yarı yarıya audius / toplanmış havuz. Biri yoksa öteki devralır.
+    if(Math.random() >= KENDI_ORAN){ kendiSarkin(); return; }    // ~%14 PLAYJOY
     const havuzdan = ()=>{ const o=mixAl(); if(o){ cal(o); return true; } return false; };
     /* JAMENDO ARTIK BURADA. RADIOTAPE'ten alındı; CC lisanslı müzik
        MIXTAPE'in kendi türü. Kuyruktan hazır bir parça varsa onu
-       kullanıyoruz, yoksa audius/havuz devralıyor — bekletmiyoruz. */
+       kullanıyoruz, yoksa havuz devralıyor — bekletmiyoruz. */
     const jamendodan = ()=>{ const j = jamKuyruk.shift(); if(j){ cal(j); return true; } return false; };
     jamendoDoldur();                                     // arkada stoğu tazele
+    /* Audius çıktıktan sonra sıra sadeleşti: parçaların yaklaşık
+       üçte biri Jamendo, gerisi toplanmış netlabel havuzu. Biri
+       yoksa öteki devralıyor, ikisi de yoksa kendi şarkın. */
     const kur = Math.random();
-    if(kur < 0.22){ if(jamendodan()) return; }
-    if(kur < 0.61){
-      if(audiusKuyruk.length){ cal(audiusKuyruk.shift()); return; }
-      if(havuzdan()) return;
+    if(kur < 0.34){
       if(jamendodan()) return;
+      if(havuzdan()) return;
     }else{
       if(havuzdan()) return;
-      if(audiusKuyruk.length){ cal(audiusKuyruk.shift()); return; }
       if(jamendodan()) return;
     }
-    // ikisi de hazır değil: audius'u doğrudan dene, olmazsa havuz, en son kendi şarkın
-    audiusCek().then(a=>{ if(mod!=='liste') return;
-                          if(a) cal(a); else if(!havuzdan()) kendiSarkin(); })
-               .catch(()=>{ if(mod==='liste' && !havuzdan()) kendiSarkin(); });
+    /* Hiçbiri hazır değil: havuzu yüklemeyi bekletmeden kendi
+       şarkınla devam, havuz gelince kendiliğinden karışıma girer. */
+    kendiSarkin();
   }
   /* Arşiv kaydının "creator" alanı çoğunlukla gerçek bir isim ama arada
      e-posta, site adresi ya da "Various" gibi doldurma değerler geliyor.
@@ -2359,7 +2402,7 @@
      çeviriyor:
        · ORBITAPE -> earth.json'daki 'etiket' alanına düzenli ifade
        · RADIOTAPE -> radio-browser 'tag' parametresi
-       · MIXTAPE  -> Audius tür/etiket ve Jamendo fuzzytags
+       · MIXTAPE  -> Jamendo fuzzytags
 
      ORBITAPE sayıları ölçüldü (6280 kayıt, 5203'ü etiketli):
        NATURE 270 · SPACE 62 · CALM 382 · STRANGE 542 · VOICE 858
@@ -2415,19 +2458,16 @@
        oraya giren AMBIANCE'a giremiyor. (irdial/conet buradan çıktı;
        onlar telsiz konuşması.) */
     { ad:'AMBIANCE',  yer:/nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|space ?sounds?|satellite|shortwave|room tone|city ?sounds?|urban ?sounds?|machine ?sounds?|war ?recording|ambience|ambiance|atmosphere|soundscape|\biss\b|spacewalk|expedition ?\d|telemetry|radio ?signals?|interference|static|engine|factory|traffic|subway|\btrain\b|airport|crowd|market|street|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit|green.?field.?recordings?|field recordings?|folksoundomy|environmental.?sounds?|natural sounds?|\bnature\b|bird ?song|ocean|\bsea\b|rain|thunder|storm|forest|jungle|river|stream|creek|waterfall|\bwind\b|insects?|crickets?|frogs?|\bbirds?\b|wildlife|animal|underwater|hydrophone|garden|meadow|mountain|desert|\bsnow\b|\bice\b/i,
-      radyo:'ambient', audius:'Ambient',      aud2:'field recording' },
+      radyo:'ambient' },
     /* İnsan sesi — konuşma, tiyatro, telsiz, vaaz. */
     /* İNSAN SESİ olan her şey: konuşma, tiyatro, vaaz ve TELSİZ —
        sayı istasyonları, kısa dalga konuşmaları, NASA yer-uzay
        hattı. Bunlar AMBIANCE'a değil buraya giriyor. */
     { ad:'HUMAN',     yer:/oldtimeradio|old time radio|\botr\b|radioprograms|radiostationarchives|radio ?drama|radio ?programs?|airchecks|diy.?church|kreislauf|librivox|audio_?bookspoetry|poetry|spoken|podcast|\btalk\b|interview|speech|sermon|проповеди|lecture|irdial|conet|numbers ?station|shortwave ?(?:voice|numbers)|telsiz|truyenaudioarchive|goc-truyen-audio|love story audio|gurdjieff|ouspensky|nicoll|comedy|\bdrama\b|crime|audiobook|reading|narrat|soap opera|conference|briefing|commentary|liveshot|\bnews\b|church|monolog|dialog|storytell|oral history|psa\b|documentar/i,
-      radyo:'talk',    audius:'Podcasts',     aud2:'spoken word' },
-    { ad:'MIXTAPE',   yer:/.^/,
-      radyo:'',        audius:'Electronic',   aud2:'indie' },
-    { ad:'ORBITAPE',  yer:/.^/,
-      radyo:'',        audius:'Ambient',      aud2:'field recording' },
-    { ad:'RADIOTAPE', yer:/.^/,
-      radyo:'',        audius:'',             aud2:'' }
+      radyo:'talk' },
+    { ad:'MIXTAPE',   yer:/.^/, radyo:'' },
+    { ad:'ORBITAPE',  yer:/.^/, radyo:'' },
+    { ad:'RADIOTAPE', yer:/.^/, radyo:'' }
   ];
   /* Etiket: koleksiyondan gelir, güvenilir. Başlık: serbest metin, asla. */
   function _mt(o){ return String((o&&o.etiket)||'').toLowerCase(); }
@@ -3089,7 +3129,7 @@
     if(_pitchHazir) return; _pitchHazir = true;
     try{ ses.preservesPitch=false; ses.mozPreservesPitch=false; ses.webkitPreservesPitch=false; }catch(e){}
   }
-  /* CANLI YAYIN MI? Radyo istasyonu bir AKIŞ; arşiv/audius/jamendo dosya. */
+  /* CANLI YAYIN MI? Radyo istasyonu bir AKIŞ; arşiv/jamendo dosya. */
   function akisMi(){ try{ return !!(aktifItem && aktifItem.radyo); }catch(e){ return false; } }
   function hizYaz(zorla){
     /* ── MOBİLDE CANLI YAYINDA playbackRate'E HİÇ DOKUNMUYORUZ ──────
@@ -3098,7 +3138,7 @@
        bırakırken gelen kısa bir CIZIRTI/kopma olarak duyuluyordu:
        sola sürüklenip parmak kaldırılınca bir yazım, sonra merkeze
        dönerken bir yazım daha — her biri bir tampon sıfırlaması.
-       Dosya kaynaklarında (arşiv, audius, jamendo) bu sorun yok,
+       Dosya kaynaklarında (arşiv, jamendo) bu sorun yok,
        orada davranış aynen duruyor. */
     if(MOBIL && akisMi()){
       try{ if(ses.playbackRate !== 1) ses.playbackRate = 1; }catch(e){}
@@ -3294,7 +3334,7 @@
     }
   }
   /* ── OTOMATİK SEVİYE ──────────────────────────────────────────
-     Radyo istasyonları, Audius parçaları ve arşiv kayıtları çok farklı gürlükte
+     Radyo istasyonları, netlabel parçaları ve arşiv kayıtları çok farklı gürlükte
      masterlanmış. Sabit kazançla kimi patlıyor kimi duyulmuyordu. Burada çalan
      sesin gerçek seviyesi ölçülüp çıkış kazancı yavaşça hedefe çekiliyor:
      yüksek kaynak kısılır, kısık kaynak toparlanır. Kulakta pompalama olmasın
@@ -4091,13 +4131,29 @@
     const _m = AKTIF_MOD ? modBul(AKTIF_MOD) : null;
     const tag = _m ? _m.jam : JAMENDO_ETIKET[Math.random()*JAMENDO_ETIKET.length|0];
     const off = Math.random()*150|0;              // rastgelelik için değişken ofset
+    /* ccnd=false: türev yasaklı olanları SUNUCU tarafında eliyor.
+       Ama tek başına ona güvenilmiyor — sunucu süzgeci sessizce
+       değişebilir ve kimse fark etmez. Asıl karar aşağıda, kendi
+       kuralımızla. Bu satır yalnızca boşa gelen kaydı azaltıyor. */
     let url = "https://api.jamendo.com/v3.0/tracks/?client_id="+JAMENDO_ID+
-      "&format=json&limit=20&offset="+off+"&order=popularity_month&audioformat=mp31";
+      "&format=json&limit=20&offset="+off+"&order=popularity_month&audioformat=mp31&ccnd=false";
     if(tag) url += "&fuzzytags="+encodeURIComponent(tag);
     let r; try{ r=await fetchZA(url, 6000); }catch(e){ hataEkle('jamendo'); return null; }
     if(!r.ok){ hataEkle('jamendo'); return null; }
     let js={}; try{ js=await r.json(); }catch(e){ hataEkle('jamendo'); return null; }
-    const list=(js.results||[]).filter(t=>t && t.audio);
+    /* ── LİSANS KAPISI — ESKİDEN YOKTU VE BU BİR AÇIKTI ──────────
+       Havuzdaki 24.356 arşiv kaydı üç ayrı lisans kapısından
+       geçiyor; Jamendo parçaları HİÇBİRİNDEN geçmiyordu. Üstelik
+       kayda 'lisans' alanı bile konmuyordu: ekranda ve paylaşılan
+       videoda lisans satırı hiç çıkmıyordu — oysa CC BY ailesinde
+       lisansı belirtmek lisansın KENDİ ŞARTI.
+
+       Jamendo her parçada license_ccurl döndürüyor; varsayılan
+       yanıtta, ek parametre gerekmiyor. Gerçek yanıttan ölçüldü:
+         "license_ccurl":"http://creativecommons.org/licenses/by-nc-sa/2.0/"
+       Bu alan artık kayda yazılıyor ve arşivle AYNI kuraldan
+       (lisansSerbest) geçiriliyor: ND çıkar, belirsiz çıkar. */
+    const list=(js.results||[]).filter(t=>t && t.audio && lisansSerbest(t.license_ccurl));
     if(!list.length){ hataEkle('jamendo'); return null; }
     karistir(list);
     for(const t of list){
@@ -4105,58 +4161,16 @@
       if(CALINDI.has(id)) continue;
       if(kuyruk.some(x=>x.id===id)) continue;
       basari('jamendo'); calindiEkle(id);
-      return { id, mp3:t.audio, ad:(t.name||""), sanatci:(t.artist_name||"") };
+      return { id, mp3:t.audio, ad:(t.name||""), sanatci:(t.artist_name||""),
+               lisans:(t.license_ccurl||"") };
     }
     return null;
   }
 
-  /* ── AUDIUS: açık kaynaklı, SoundCloud benzeri bağımsız müzik ağı ──
-        API anahtarı GEREKMİYOR, tam parça verir (30sn önizleme değil). SoundCloud/Bandcamp
-        kapalı API'lerinin yerine geçen tek yasal/açık kaynak budur. */
-  const AUDIUS_HOST = "https://api.audius.co";
-  const AUDIUS_UYG  = "orbitape";                 // app_name: zorunlu ama serbest metin
-  // indie / underground ağırlıklı etiketler — MIXTAPE'in karakteri buradan geliyor
-  const AUDIUS_ETIKET = ["indie","indie rock","post punk","shoegaze","dream pop","garage rock",
-                         "psychedelic","krautrock","noise rock","slowcore","art pop","bedroom pop",
-                         "experimental","ambient","drone","dark ambient","industrial","idm",
-                         "trip hop","downtempo","lofi","dub","techno","minimal","breakbeat",
-                         "field recording","jazz","folk"];
-  const AUDIUS_TUR = ["Rock","Alternative","Electronic","Experimental","Ambient","Punk","Metal",
-                      "Folk","Jazz","Lo-Fi","Downtempo","Techno","Hip-Hop/Rap"];
-  async function audiusCek(){
-    // iki kaynak: etiket araması (niş/underground) ve tür bazlı trend (yeni çıkanlar)
-    let url;
-    const _m = AKTIF_MOD ? modBul(AKTIF_MOD) : null;
-    if(_m){                                        // mod acik: turu ve etiketi mod belirliyor
-      url = (Math.random() < 0.5)
-        ? AUDIUS_HOST+"/v1/tracks/trending?genre="+encodeURIComponent(_m.audius)+"&app_name="+AUDIUS_UYG+"&limit=25"
-        : AUDIUS_HOST+"/v1/tracks/search?query="+encodeURIComponent(_m.aud2)+"&app_name="+AUDIUS_UYG+"&limit=25";
-    }else if(Math.random() < 0.35){
-      const tur = AUDIUS_TUR[Math.random()*AUDIUS_TUR.length|0];
-      url = AUDIUS_HOST+"/v1/tracks/trending?genre="+encodeURIComponent(tur)+
-            "&app_name="+AUDIUS_UYG+"&limit=25";
-    }else{
-      const q = AUDIUS_ETIKET[Math.random()*AUDIUS_ETIKET.length|0];
-      url = AUDIUS_HOST+"/v1/tracks/search?query="+encodeURIComponent(q)+
-            "&app_name="+AUDIUS_UYG+"&limit=25";
-    }
-    let r; try{ r=await fetchZA(url, 7000); }catch(e){ hataEkle('audius'); return null; }
-    if(!r || !r.ok){ hataEkle('audius'); return null; }
-    let js={}; try{ js=await r.json(); }catch(e){ hataEkle('audius'); return null; }
-    const list=(js.data||[]).filter(t=>t && t.id && t.is_streamable!==false && !t.is_stream_gated && !t.is_delete);
-    if(!list.length){ hataEkle('audius'); return null; }
-    karistir(list);
-    for(const t of list){
-      const id="aud:"+t.id;
-      if(CALINDI.has(id)) continue;
-      if(radyoKuyruk.some(x=>x.id===id) || kuyruk.some(x=>x.id===id)) continue;
-      const mp3 = (typeof t.stream==='string' && t.stream) ? t.stream
-                : AUDIUS_HOST+"/v1/tracks/"+t.id+"/stream?app_name="+AUDIUS_UYG;
-      basari('audius'); calindiEkle(id);
-      return { id, mp3, ad:(t.title||""), sanatci:((t.user&&t.user.name)||"") };
-    }
-    return null;
-  }
+  /* AUDIUS BURADAN KALDIRILDI — sebebi listeGec'in üstünde yazıyor:
+     API lisans bilgisi döndürmüyor, süzülecek alan yok. Kod kayıt
+     olarak git geçmişinde duruyor; lisans veren bir uç nokta çıkarsa
+     geri getirilebilir. */
 
   // EARTH SOUNDS kaynağı: YALNIZCA earth.json havuzu.
   // Uygulama archive.org'da kendi başına arama YAPMAZ, doğrulanmamış link çalmaz.
@@ -4469,6 +4483,31 @@
       setTimeout(()=>{ if(AKTIF_MOD) { try{ modGec(); }catch(e){} } }, 60);
       return;
     }
+    /* ── LİSANS: SON KAPI ───────────────────────────────────────────
+       Kaynakların her biri kendi süzgecinden geçiyor (havuzlar
+       hasatta, Jamendo çekilirken). Bu, onların hepsinin ARKASINDA
+       duran son kapı: yarın yeni bir kaynak eklenir ve süzgeci
+       unutulursa, buradan geçemez.
+
+       Geçenler:
+         · canlı yayın — kaydedilmiyor, dağıtılmıyor, sabitlenmiyor
+         · PLAYJOY kayıtları — bizim, lisans alanına gerek yok
+         · lisansı tanınan her kayıt (PD/CC0/BY/BY-SA/BY-NC/BY-NC-SA)
+       Geçemeyenler: ND ve lisansı belirsiz olan her şey.
+
+       Sessizce ATLIYOR, hata paneli açmıyor: kullanıcının yapabileceği
+       bir şey yok ve bu bir çökme değil, bir karar. Ama kaynak
+       raporuna (D tuşu) düşüyor ki kör kalmayalım. */
+    if(!calinabilirMi(item)){
+      try{ hataEkle('lisans'); }catch(e){}
+      /* SONSUZ DÖNGÜ KORUMASI. Bir kaynak toptan bozulup her kaydı
+         lisanssız döndürürse, "atla -> yine lisanssız -> atla" zinciri
+         uygulamayı kilitlerdi. Art arda 6 eleme sonrası duruyoruz;
+         sayaç ilk geçen kayıtta sıfırlanıyor. */
+      if(++_lisansElendi <= 6) setTimeout(()=>{ try{ sonraki(false); }catch(e){} }, 40);
+      return;
+    }
+    _lisansElendi = 0;
     gecmisYaz(item);
     aktifItem=item;
     /* ── CANLI YAYIN KAYDEDİLMEZ — SON KAPI ─────────────────────────
@@ -4520,8 +4559,8 @@
     clearTimeout(baslamaTimer); bekleGoster();                            // WAIT göster (parça başlayınca gizlenir)
     const basladi=()=>{ ustUsteHata=0; clearTimeout(aramaTimer); clearTimeout(baslamaTimer); aramaDurdur(); bekleDondur(); ufoDurdur(); baslatildi=true; document.body.classList.add('playing'); calBaslangic=Date.now(); };
     // 5 SN BAŞLAMA ZAMAN AŞIMI: audio 5sn'de çalmaya başlamazsa atla (takılıp kalmasın)
-    // MIXTAPE: audius akışı önce api.audius.co'dan bir içerik düğümüne yönleniyor;
-    // 2.8 sn çoğu zaman yetmiyordu ve parça daha açılmadan atlanıyordu -> 6 sn.
+    // MIXTAPE'te Jamendo akışı yönlendirmeyle geliyor, 2.8 sn çoğu
+    // zaman yetmiyor ve parça daha açılmadan atlanıyordu -> 6 sn.
     // ORBITAPE'te uzun kayıtlar da var; onlar geç açılıyor -> tek eşik 6 sn.
     const basSuresi = (mod==='liste' || mod==='radio' || mod==='lib') ? 6000 : 2800;
     baslamaTimer=setTimeout(()=>{ if(aktifItem===item && !calBaslangic){ clearTimeout(aramaTimer); atla(); } }, basSuresi);
@@ -4855,7 +4894,7 @@
          Kanal haritası artık net:
            RADIOTAPE -> yalnızca canlı istasyon
            ORBITAPE  -> yalnızca arşiv (earth + uzun kayıtlar)
-           MIXTAPE   -> PLAYJOY + Audius + netlabel havuzu + Jamendo   */
+           MIXTAPE   -> PLAYJOY + netlabel havuzu + Jamendo   */
       // CANLI İSTASYON
       /* HIZ: kuyrukta çalınacak bir şey varsa istasyon elemesini BEKLEMİYORUZ,
          arkada bitiyor. Açılışta kullanıcı elemenin bitmesini beklemesin. */
@@ -4932,20 +4971,19 @@
       radyoGec(); return;
     }
     const z = Math.random();
-    const sirala = (z < 0.62) ? ['earth','mix','audius','jam']
-                 : (z < 0.80) ? ['mix','earth','audius','jam']
-                 : (z < 0.92) ? ['audius','jam','earth','mix']
-                              : ['jam','audius','earth','mix'];
+    const sirala = (z < 0.62) ? ['earth','mix','jam']
+                 : (z < 0.80) ? ['mix','earth','jam']
+                 : (z < 0.92) ? ['jam','earth','mix']
+                              : ['jam','mix','earth'];
     for(const k of sirala){
       if(k==='earth'){ const o=earthAl(); if(o){ cal(o); return; } }
       else if(k==='mix'){ const o=mixAl(); if(o){ cal(o); return; } }
-      /* Kuyruktan gelen her şey de süzülüyor: eskiden Audius/Jamendo
+      /* Kuyruktan gelen her şey de süzülüyor: eskiden Jamendo
          parçaları kategoriye bakılmadan çalınıyordu. */
-      else if(k==='audius'){ const o=_kuyruktanUygun(audiusKuyruk); if(o){ cal(o); audiusDoldur(); return; } }
       else if(k==='jam'){    const o=_kuyruktanUygun(jamKuyruk);    if(o){ cal(o); jamendoDoldur(); return; } }
     }
     // hiçbiri hazır değil: havuzları doldur, kısa süre sonra tekrar dene
-    try{ earthYukle(); mixYukle(); audiusDoldur(); jamendoDoldur(); }catch(e){}
+    try{ earthYukle(); mixYukle(); jamendoDoldur(); }catch(e){}
     setTimeout(()=>{ if(AKTIF_MOD) sonraki(false); }, 700);
   }
   function sonraki(kullanici){
@@ -4977,7 +5015,7 @@
     try{ if(_etiket && etiketGec()) return; }catch(e){}
     /* ── MOD AÇIKSA KANAL ÖNEMSİZ ─────────────────────────────────
        Mod seçildiği an o etiketin TÜM arşivi açılıyor: earth havuzu,
-       netlabel havuzu, Audius ve Jamendo. Altı mod, altı ayrı kanal
+       netlabel havuzu ve Jamendo. Altı mod, altı ayrı kanal
        gibi davranıyor; RADIOTAPE/ORBITAPE/MIXTAPE ayrımı devre dışı. */
     if(AKTIF_MOD){ modGec(); return; }
     if(mod==='radio'){ radyoGec(); return; }                               // RADYO moodu: sıradaki istasyon
@@ -5014,8 +5052,8 @@
       ['MIXTAPE', null, null],
       ['mixtape.json (netlabel)', 'mix',
         ()=> mixHavuz.length ? ('✓ '+mixHavuz.length+' track') : null],
-      ['audius (canli, indie)', 'audius', null],
       ['jamendo (CC muzik)', 'jamendo', null],
+      ['lisanssiz elenen', 'lisans', ()=> (FAIL['lisans']||0) ? ('\u2715 '+FAIL['lisans']+' track') : '\u2014', true],
       ['liste.json (PLAYJOY)', null,
         ()=> calListe.length ? ('✓ '+calListe.length+' track') : null],
       ['RADIOTAPE', null, null],
@@ -5237,7 +5275,7 @@
     if(AKTIF_MOD){
       AKTIF_MOD = null;
       try{ localStorage.setItem('orbitape.mod',''); }catch(e){}
-      try{ kuyruk.length=0; radyoKuyruk.length=0; audiusKuyruk.length=0; jamKuyruk.length=0; }catch(e){}
+      try{ kuyruk.length=0; radyoKuyruk.length=0; jamKuyruk.length=0; }catch(e){}
     }
     // RADIOTAPE'te aranacak isim yok; oraya geçmek etiketi kaldırır.
     if(yeni==='radio'){ try{ araGiris.value=''; etiketKur(''); }catch(e){} }
@@ -5246,7 +5284,7 @@
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
     if(mod==='lib'){ earthYukle(); uzunYukle(); }        // ORBITAPE: kısa + uzun arşiv havuzları
-    if(mod==='liste'){ listeYukle(); audiusDoldur(); mixYukle(); jamendoDoldur(); }   // MIXTAPE: kendi liste + audius + havuz + jamendo
+    if(mod==='liste'){ listeYukle(); mixYukle(); jamendoDoldur(); }   // MIXTAPE: kendi liste + havuz + jamendo
     sonraki(false);
   }
   /* ── FX İPUCU ────────────────────────────────────────────────────
@@ -5913,7 +5951,7 @@
     try{ fxSunumDene(); }catch(e){}
     try{ localStorage.setItem('orbitape.mod', AKTIF_MOD || ''); }catch(e){}
     /* Kuyrukları boşalt: eski moddan kalan sesler çalmasın. */
-    try{ kuyruk.length = 0; radyoKuyruk.length = 0; audiusKuyruk.length = 0; jamKuyruk.length = 0; }catch(e){}
+    try{ kuyruk.length = 0; radyoKuyruk.length = 0; jamKuyruk.length = 0; }catch(e){}
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){}
     try{ sonraki(true); }catch(e){}
   }

@@ -76,8 +76,20 @@ const SAYI_VARSAYILAN = { buyuk:24, earth:40, mixtape:30, liste:6, radyo:16 };
 async function sahteAg(sayfa, ayar){
   const s = Object.assign({}, SAYI_VARSAYILAN, (ayar && ayar.sayilar) || {});
   const ses = !ayar || ayar.ses !== false;
+  /* LISANS ALANI SAHTE VERIDE DE OLMALI. Gercek havuzlarin her
+     kaydinda var (hasat suzgeci lisanssiz kayit gecirmiyor) ve
+     uygulamada artik lisansi taninmayan hicbir sey calmiyor. Sahte
+     veri lisanssiz kalirsa test, gercekte olmayan bir durumu olcer:
+     butun havuz elenir ve uygulama bos gorunur.
+     Uc lisans donusumlu veriliyor ki ekranda gosterilen ad da
+     (CC0 / PUBLIC DOMAIN / CC BY-NC-SA) tek bir kalibi tekrar
+     etmesin. Ucu de serbest; ND sinamasi ayri yerde yapiliyor. */
+  const LISANSLAR = ['https://creativecommons.org/publicdomain/zero/1.0/',
+                     'http://creativecommons.org/licenses/publicdomain/',
+                     'http://creativecommons.org/licenses/by-nc-sa/3.0/'];
   const liste = (n,on)=>JSON.stringify(Array.from({length:n},(_,i)=>
-    ({mp3:'https://sahte.test/'+on+i+'.mp3', ad:on.toUpperCase()+' '+i, etiket:'netlabel'})));
+    ({mp3:'https://sahte.test/'+on+i+'.mp3', ad:on.toUpperCase()+' '+i, etiket:'netlabel',
+      lisans:LISANSLAR[i % LISANSLAR.length]})));
   await sayfa.route('**/*', r=>{
     const u = r.request().url();
     if(u.startsWith(KOK)) return r.continue();
@@ -122,6 +134,14 @@ async function sayfaAc(kaynak, secenek){
     ? await kaynak.newContext(Object.assign({}, TELEFON, se.baglamEk || {}))
     : kaynak;
   const sayfa = await baglam.newPage();
+
+  /* Testlerin elle cal() ile verdigi parcalar da lisans tasimali:
+     uygulamada artik lisansi taninmayan hicbir sey calmiyor ve
+     gercek havuzun her kaydinda lisans var. Sayfada duruyor cunku
+     evaluate()'in icinde kullaniliyor. */
+  await sayfa.addInitScript(()=>{
+    window.SERBEST = 'http://creativecommons.org/licenses/by-nc-sa/3.0/';
+  });
 
   if(se.once){
     for(const f of [].concat(se.once)) await sayfa.addInitScript(f);

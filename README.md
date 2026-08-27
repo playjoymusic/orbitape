@@ -120,6 +120,53 @@ Commons lisansında. Türetmeye izin vermeyen (ND) tek kayıt yok — kayıt al�
 paylaşılan bir uygulamada olamaz. Lisans ve sanatçı adı çalarken ekranda
 görünüyor, paylaşılan videoya da yazılıyor.
 
+### Lisans kapısı
+
+Kural tek: **`lisansSerbest()`**. Üç yerde uygulanıyor.
+
+| Nerede | Ne zaman |
+|---|---|
+| `araclar/lisans_filtre.py` | hasat havuza katılırken |
+| `jamendoCek()` | Jamendo'dan parça çekilirken |
+| `cal()` | çalmadan hemen önce — **son kapı** |
+
+Son kapı, diğer ikisinin arkasında duruyor: yarın yeni bir kaynak eklenir ve
+süzgeci unutulursa oradan geçemez. Geçenler: canlı yayın (kaydedilmiyor,
+dağıtılmıyor), PLAYJOY kayıtları (bizim), ve lisansı tanınan her kayıt.
+
+**Sıra kritik:** ND kontrolü BY-NC'den **önce**. Yoksa `by-nc-nd` yanlışlıkla
+`by-nc` sayılır ve türev yasağı olan bir eser içeri sızar. Python ve JavaScript
+tarafında aynı sıra, aynı sebep.
+
+### Audius neden kaldırıldı
+
+MIXTAPE'in yaklaşık yarısı Audius'tan geliyordu ve **Audius API'si lisans
+bilgisi döndürmüyor.** Bir eserin varsayılanı "tüm hakları saklı"dır; kanıt
+yoksa serbest sayılmaz. Süzgeç kurulamadı çünkü süzülecek alan yok.
+
+Mesele soyut değil: kullanıcı efekt uygulayıp kayıt alıyor ve paylaşıyor —
+türev eser artı umuma iletim. Lisansı bilinmeyen bir parçada ikisi de
+dayanaksız. Ekranda lisans satırının boş kalmasının sebebi de buydu.
+
+Yerine `mixtape.json` (1.453 lisanslı netlabel parçası), Jamendo (artık
+süzgeçten geçiyor) ve PLAYJOY kayıtları geçti. Kod git geçmişinde duruyor;
+lisans veren bir uç nokta çıkarsa geri gelebilir.
+
+**Jamendo** her parçada `license_ccurl` döndürüyor. Ölçüldü:
+
+```
+"license_ccurl":"http://creativecommons.org/licenses/by-nc-sa/2.0/"
+```
+
+İstekte `ccnd=false` (sunucu tarafı ön eleme) **ve** yanıtta `lisansSerbest`
+(asıl karar). Sunucu süzgeci sessizce değişebilir; ikincisi olmadan bunu kimse
+fark etmez. Kanıtlandı — kapılar kaldırılıp ölçüldü:
+
+```
+kapılarla   : 3 parçadan 1'i geçti (ND ve lisanssız elendi)
+kapılar yok : 3'ü de geçti, ND parça çaldı
+```
+
 ### Araçlar
 
 - `araclar/hasat.py` — sunucuda çalışan hasatçı. Kaldığı yerden devam eder;

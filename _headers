@@ -38,6 +38,17 @@
   # bir seyin izni de olmamali.
   Permissions-Policy: camera=(self), display-capture=(self), microphone=(), geolocation=(), payment=(), usb=(), midi=(), serial=(), bluetooth=(), interest-cohort=()
 
+# METIN DOSYALARI UTF-8. Cloudflare .txt ve .xml icin charset
+# soylemiyor; tarayici da eski bir kodlama varsayiyor ve dosyadaki
+# uzun tire ekranda "â€”" olarak cikiyordu. Yalnizca yorum
+# satirlarinda oldugu icin robotlari etkilemiyordu ama dosya yanlis
+# gorunuyordu. Kodlamayi acikca soylemek dogrusu.
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+
 # Ikonlar ve ekran goruntuleri surum etiketiyle (?v=6) cagriliyor;
 # icerik degisince etiket degisiyor. O yuzden uzun onbellek guvenli
 # ve her acilista yeniden indirilmiyorlar.
