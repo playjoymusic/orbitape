@@ -593,6 +593,9 @@
     font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.30em;}
   /* Küçük ve silik: arama sonuçlarının okunmasını bölmüyor ama
      inceleyen biri iki saniyede buluyor. */
+  /* Iki yasal baglanti alt alta degil YAN YANA: alt satir zaten
+     dar ve iki blok ust uste binince arama kutusunu itiyordu. */
+  #ara .np-yasal + .np-yasal{margin-top:4px;}
   #ara .np-yasal{display:block;margin-top:9px;padding:2px 0;
     font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:8.5px;letter-spacing:.2em;text-decoration:none;
@@ -1160,7 +1163,7 @@
              bulduğu, her zaman erişilebilir bir yer ve kapalıyken hiç
              yer kaplamıyor. column-reverse olduğu için DOM'da .satir'dan
              ÖNCE yazılınca ekranda ONUN ALTINDA çıkıyor. -->
-        <a class="np-yasal" id="yasalBag" href="/privacy" target="_blank" rel="noopener">PRIVACY &amp; CONTACT</a>
+        <a class="np-yasal" id="yasalBag" href="/privacy" target="_blank" rel="noopener">PRIVACY</a><a class="np-yasal" id="yasalBag2" href="/terms" target="_blank" rel="noopener">TERMS</a>
         <div class="satir">
           <button class="sil" id="araSil" type="button" aria-label="Clear search">×</button>
           <input id="araGiris" type="search" placeholder="SEARCH" autocomplete="off"

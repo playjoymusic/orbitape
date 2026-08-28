@@ -2,7 +2,7 @@
 <!--
   ORBITAPE site haritasi.
 
-  Iki sayfa var, o kadar. Uygulama tek sayfa; kanallar ve parcalar
+  Uc sayfa var, o kadar. Uygulama tek sayfa; kanallar ve parcalar
   ayri adres degil, o yuzden haritaya girmiyorlar (giren her adres
   gercekten acilabilir olmali, yoksa harita yalan soyler).
 
@@ -20,6 +20,12 @@
   <url>
     <loc>https://orbitape.app/privacy</loc>
     <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://orbitape.app/terms</loc>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>

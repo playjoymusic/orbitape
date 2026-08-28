@@ -1410,7 +1410,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     for(const u of yerel){
       const r = await pg.evaluate(async (adres)=>{
         try{ const c = await fetch(adres, {method:'GET'}); return c.status; }catch(e){ return 0; }
-      }, u.replace(/\/$/, '/index.html').replace('/privacy','/privacy.html'));
+      /* Yerel sunucu Cloudflare'in uzantisiz adres eslemesini
+         yapmiyor; haritadaki her uzantisiz adres burada .html'e
+         cevriliyor. Yeni bir sayfa eklendiginde bu satira da
+         eklenmeli, yoksa test onu "acilmiyor" sayar. */
+      }, u.replace(/\/$/, '/index.html')
+          .replace('/privacy','/privacy.html')
+          .replace('/terms','/terms.html'));
       if(r===200) acilan++;
     }
     K('Haritadaki her adres gercekten aciliyor', acilan===adresler.length,
