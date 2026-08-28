@@ -2775,6 +2775,46 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
             && ars !== 'ORBITAPE'
             && bos === '' && raf === 'JAZZ';
       }), 'liste=MIXTAPE, lib=SOUNDS, radyoda raf adi ya da bos');
+    /* ── ARAMA RADYOYU DA BULMALI ────────────────────────────────
+       Olculen sikayet: "cinemix diye bir kanal var, radyo yazdim
+       cikmadi". Sebep arama kutusu degildi -- arama havuzu arsiv ve
+       mixtape'ten olusuyordu, 541 CANLI ISTASYON hic girmiyordu.
+       Yani arama o listeyi bilmiyordu bile. */
+    K('Arama istasyonlari da buluyor', await pg.evaluate(async()=>{
+        const eM = mod; mod = 'radio';
+        /* Beyaz listeyi sahte ama GERCEKCI bir kayitla dolduruyoruz:
+           bicim beyazListe'nin kendi bicimi (name/url/tags). */
+        const eski = (typeof beyazListe !== 'undefined') ? beyazListe : null;
+        beyazListe = [
+          { stationuuid:'a1', name:'Cinemix', url:'https://x/1', url_resolved:'https://x/1',
+            tags:'film music,soundtrack', grup:'ORCHESTRAL', saf:1, ulke:'FR' },
+          { stationuuid:'a2', name:'Deep House Radio', url:'https://x/2', url_resolved:'https://x/2',
+            tags:'deep house,electronic', grup:'ELECTRONIC', saf:1, ulke:'DE' }
+        ];
+        _radAraIdx = null; _radAraSay = -1; _araIdx = null; _araSay = -1;
+        const dene = async (metin)=>{
+          araGiris.value = metin; araYap();
+          await new Promise(r=>setTimeout(r,30));
+          return _araListe.map(x=>x.o.ad);
+        };
+        const kucuk = await dene('cinemix');
+        const buyuk = await dene('CINEMIX');       // kucuk/buyuk harf farketmemeli
+        const parca = await dene('cinem');         // parca eslesme
+        const etiket = await dene('deep house');   // adinda YOK, etiketinde VAR
+        araGiris.value=''; try{ etiketKur(''); }catch(e){}
+        beyazListe = eski || []; _radAraIdx=null; _radAraSay=-1; _araIdx=null; _araSay=-1;
+        mod = eM;
+        return kucuk.indexOf('Cinemix')>=0 && buyuk.indexOf('Cinemix')>=0
+            && parca.indexOf('Cinemix')>=0
+            && etiket.indexOf('Deep House Radio')>=0;
+      }), 'ad, BUYUK/kucuk harf, parca ve etiket uzerinden bulunuyor');
+    /* Klavye acilinca arama kutusu klavyenin altinda kaliyordu. */
+    K('Klavye arama kutusunu ortmuyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        const c = getComputedStyle(document.getElementById('ara')).bottom;
+        return /--klavye/.test(k) && /visualViewport/.test(k)
+            && !!c && c !== 'auto';
+      }), 'kutu --klavye kadar yukari kalkiyor');
     /* ── RAF KAPISI TIK YAGMURU URETMEMELI ───────────────────────
        Olculen sikayet: sag ustten raf degistirip beklerken "arka
        arkaya cok hizli tiklaniyormus gibi" sesler geliyordu.

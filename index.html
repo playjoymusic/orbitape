@@ -466,10 +466,18 @@
      Kapalıyken ekranda tek bir çizgiden ibaret; rengi aktif kanalın rengi. */
   /* ARAMA artık sol altta, REC'in sağında. Sonuç listesi YUKARI açılıyor
      (aşağıda yer yok), o yüzden sütun ters çevrildi. */
+  /* --klavye: ekran klavyesinin kapladigi yukseklik, calisma aninda
+     olculuyor (visualViewport). Mobilde klavye acilinca position:fixed
+     eleman yerinde kaliyor ve arama kutusu klavyenin ALTINDA kaliyordu:
+     kullanici yazdigi seyi ve sonuclari goremiyordu. */
   #ara{position:fixed;z-index:79;pointer-events:auto;
     display:flex;flex-direction:column-reverse;align-items:flex-start;
     left:calc(16px + env(safe-area-inset-left, 0px));
-    bottom:calc(14px + env(safe-area-inset-bottom, 0px));}
+    bottom:calc(14px + env(safe-area-inset-bottom, 0px) + var(--klavye, 0px));
+    transition:bottom .18s ease;}
+  /* Klavye acikken sonuc listesi kisaliyor: yoksa yukarida halkalarin
+     uzerine tirmaniyor. */
+  body.klavye #ara .sonuc{max-height:min(26vh,168px);}
   body.t-lib   #ara, body.t-lib   #karsilama{color:#8ff0dd;}
   body.t-liste #ara, body.t-liste #karsilama{color:#d9d0dd;}
   body.t-radio #ara, body.t-radio #karsilama{color:#ffc79e;}
@@ -6586,9 +6594,38 @@
     const ek = ES_ANLAM[q];
     return ek ? ek.map(araNorm).filter(x=>x && x!==q) : [];
   }
+  /* ── RADYO ISTASYONLARI DA ARANIYOR ──────────────────────────────
+     Arama havuzu arsiv ve mixtape'ten olusuyordu; 541 CANLI ISTASYON
+     hic girmiyordu. Yani radyo kanalindayken bir istasyonun adini
+     yazmak sonuc vermiyordu -- olculen vaka: "cinemix" diye bir kanal
+     var, arama bulamiyordu. Kullanicinin gordugu sey "arama bozuk"tu;
+     gercekte arama o listeyi hic bilmiyordu.
+     Istasyonlar beyazListe'de arama icin degil CALMAK icin duran bir
+     bicimde (name/url/tags). Burada bir kez cal()'in bekledigi bicime
+     ceviriliyor ve liste uzunlugu degismedikce yeniden cevrilmiyor. */
+  var _radAraIdx = null, _radAraSay = -1;
+  function radyoArananlar(){
+    try{
+      const bl = (typeof beyazListe !== 'undefined' && Array.isArray(beyazListe)) ? beyazListe : [];
+      if(_radAraIdx && _radAraSay === bl.length) return _radAraIdx;
+      _radAraSay = bl.length;
+      _radAraIdx = bl.map(st=>{
+        const u = st.url_resolved || st.url; if(!u) return null;
+        return { kanal:'radio', o:{
+          id:'rb:'+(st.stationuuid||u), mp3:u,
+          ad:istasyonAdiTemiz(st.name||'radyo'), sanatci:'', radyo:true,
+          grup:(st.grup||''), saf:(st.saf||3), ulke:(st.ulke||''),
+          /* Etiketler aramaya giriyor ama EKRANDA gorunmuyor: "jazz"
+             yazinca adinda jazz gecmeyen jazz istasyonlari da ciksin. */
+          etiket:(st.tags||'') } };
+      }).filter(Boolean);
+      return _radAraIdx;
+    }catch(e){ _yut(e); return []; }
+  }
   function araHavuzlar(){
     const g=[];
     const ek=(arr,kanal)=>{ if(Array.isArray(arr)) for(const o of arr) if(o&&o.mp3) g.push({o:o,kanal:kanal}); };
+    try{ for(const x of radyoArananlar()) g.push(x); }catch(e){ _yut(e); }
     try{ ek(earthHavuz,'lib'); }catch(e){ _yut(e); }
     try{ ek(uzunHavuz,'lib'); }catch(e){ _yut(e); }
     try{ ek(mixHavuz,'liste'); }catch(e){ _yut(e); }
@@ -6642,6 +6679,10 @@
        GEÇENLER, en sonda yalnızca arşiv etiketinde geçenler. */
     const ek=araTerimler(q);
     const bas=[], ici=[], etk=[], esa=[];
+    /* BULUNDUGUN KANAL ONCE. Radyodayken bir istasyon adi yazan kisi
+       once istasyonlari gormek istiyor; arsivdeyken tersi. Ayni skor
+       icinde kanal siralamayi belirliyor, skoru degil. */
+    const _kanalOnce = a => (a.kanal === mod ? 0 : 1);
     for(const x of araIndeks()){
       if(x.a.startsWith(q) || x.s.startsWith(q)) bas.push(x);
       else if(x.a.indexOf(q)>=0 || x.s.indexOf(q)>=0){ if(ici.length<60) ici.push(x); }
@@ -6649,7 +6690,8 @@
       else if(ek.length && esa.length<60 && ek.some(t=>(x.e&&x.e.indexOf(t)>=0)||x.a.indexOf(t)>=0)) esa.push(x);
       if(bas.length>=40) break;
     }
-    _araListe=bas.concat(ici, etk, esa).slice(0,40);
+    const _sirala = a => a.sort((x,y)=>_kanalOnce(x)-_kanalOnce(y));
+    _araListe=_sirala(bas).concat(_sirala(ici), _sirala(etk), _sirala(esa)).slice(0,40);
     araYaz();
   }
   /* ── ETİKET: arama kalıcı bir SÜZGEÇ ────────────────────────────
@@ -6850,9 +6892,40 @@
   try{ modAdiYaz(); }catch(e){ _yut(e); }      // açılışta RADIOTAPE yazılı gelir
   try{ zeminUygula(); }catch(e){ _yut(e); }    // açılış zemini de RADIOTAPE
 
+  /* ── EKRAN KLAVYESI OLCULUYOR ────────────────────────────────────
+     Mobilde klavye acilinca layout viewport degismiyor; degisen sey
+     visualViewport. position:fixed olan arama kutusu yerinde kaldigi
+     icin klavyenin ALTINDA kaliyordu -- kullanici yazdigini da
+     sonuclari da goremiyordu.
+     Olculen fark bir CSS degiskenine yaziliyor (--klavye) ve kutu o
+     kadar yukari kalkiyor. Ozellik yoksa (masaustu, eski tarayici)
+     deger 0 kaliyor ve hicbir sey degismiyor. */
+  (function(){
+    try{
+      const vv = window.visualViewport;
+      if(!vv) return;
+      let _son = -1;
+      const yaz = ()=>{
+        try{
+          const k = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+          if(k === _son) return;
+          _son = k;
+          document.documentElement.style.setProperty('--klavye', k + 'px');
+          document.body.classList.toggle('klavye', k > 90);
+        }catch(e){ _yut(e); }
+      };
+      vv.addEventListener('resize', yaz);
+      vv.addEventListener('scroll', yaz);
+      yaz();
+    }catch(e){ _yut(e); }
+  })();
+
   function araAc(){
     if(araKut.classList.contains('acik')) return;
     araKut.classList.add('acik'); document.body.classList.add('arama-acik');
+    /* Radyo listesi de: arama kutusu acilir acilmaz 541 istasyon
+       aranabilir olsun, kullanici yazmaya baslayana kadar gelsin. */
+    try{ radyoListe(); }catch(e){ _yut(e); }
     try{ earthYukle(); uzunYukle(); mixYukle(); listeYukle(); }catch(e){ _yut(e); }   // tüm havuzlar aranabilsin
     silGoster();
     setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);
