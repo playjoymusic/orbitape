@@ -195,8 +195,8 @@ def _raflar(metin, elektronik_ustun=True):
     Iki tur birden geciyorsa kimse kazanmaz, MIXTAPE'e gider."""
     if elektronik_ustun and ELEKTRONIK.search(metin):
         return ["ELECTRONIC"]
-    # JAZZ: adinda jazz geciyorsa jazz. Kullanicinin karari, iki kez
-    # soruldu: "Piano Jazz Lounge" da jazz calar, rafta kalsin.
+    # JAZZ: adinda jazz geciyorsa jazz. "Piano Jazz Lounge",
+    # "Bossa Jazz Brasil" da jazz calar, rafta kalirlar.
     if RAF_KELIME["JAZZ"].search(metin):
         return ["JAZZ"]
     return [ad for ad, kal in RAF_KELIME.items() if kal.search(metin)]
@@ -236,13 +236,17 @@ def grupla(kayitlar):
             o["grup"] = isim_raf[0]
             continue
 
-        # 3) Isim susuyor: etikete bak, ama saflik sart.
-        hepsi = ad + " " + etiket
-        if KARISIK.search(hepsi):
-            o["grup"] = "MIXTAPE"
-            continue
-        etiket_raf = _raflar(hepsi)
-        o["grup"] = etiket_raf[0] if len(etiket_raf) == 1 else "MIXTAPE"
+        # 3) ISIM SUSUYORSA MIXTAPE. ETIKETE ARTIK BAKILMIYOR.
+        #    Olculen vaka: kullanici JAZZ rafinda karisik muzik duydu
+        #    ve o istasyonlarin HICBIRININ adinda jazz gecmiyordu --
+        #    hepsi etiketten atanmisti. Etiket istasyonun kendi yazdigi
+        #    arama kelimesi; "jazz" yazip house calan cok.
+        #    Adi soylemiyorsa emin degiliz demektir; emin olmadigimiz
+        #    her sey MIXTAPE'e gider. Kapsama degil isabet.
+        if len(isim_raf) > 1:
+            o["grup"] = "MIXTAPE"      # adinda iki tur: kimse kazanmaz
+        else:
+            o["grup"] = "MIXTAPE"      # ad susuyor: emin degiliz
     return {}
 
 
