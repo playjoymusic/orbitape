@@ -5949,13 +5949,28 @@
   /* YON: BUYUKTEN KUCUGE. AILE_ADLAR icten disa (kucukten buyuge)
      dizili, o yuzden burada geriye dogru gidiyoruz: en distaki
      halkadan baslayip ice dogru. */
+  /* ── GECICI AD: HALKANIN ALTINDA, SILIK ───────────────────────────
+     Isim dugmesiyle raf degistirirken sadece halka yaniyordu; hangi
+     rafa gectigin ancak sag ustteki KUCUK yazidan okunuyordu ve
+     kullanici "yukaridaki kucuk gozden kacabiliyor" dedi. Halkalarda
+     parmakla gezerken zaten alttaki buyuk silik yazi cikiyor; ayni
+     yazi artik isim dugmesinde de cikiyor. Kendi kendine soner. */
+  var _geciciAdZaman = null;
+  function geciciAdGoster(ad){
+    try{
+      modGezYaz(ad);
+      if(_geciciAdZaman) clearTimeout(_geciciAdZaman);
+      _geciciAdZaman = setTimeout(()=>{ _geciciAdZaman = null;
+        try{ modGezYaz(''); }catch(e){} }, 1100);
+    }catch(e){}
+  }
   function aileSiraGec(){
     try{ aileGezmeBasla(); }catch(e){}
     const n = AILE_ADLAR.length;
     const bul = AILE_ADLAR.indexOf(AKTIF_AILE);
     const i = (bul >= 0) ? (bul - 1 + n) % n : n - 1;
     try{ aileSec(AILE_ADLAR[i], true); }catch(e){}
-    try{ modAdiGoster(); halkaYak(AILE_ADLAR[i]); }catch(e){}
+    try{ modAdiGoster(); halkaYak(AILE_ADLAR[i]); geciciAdGoster(AILE_ADLAR[i]); }catch(e){}
   }
   /* ORBITAPE'te isim dugmesi 8 rafi geziyor. */
   /* RADYODAKI DAVRANISIN AYNISI: isme basmak rafi SECIYOR ve halkayi
@@ -5969,7 +5984,7 @@
     AKTIF_MOD = ARSIV_ADLAR[i];
     try{ localStorage.setItem('orbitape.mod', AKTIF_MOD); }catch(e){}
     try{ kuyruk.length = 0; }catch(e){}          // yeni raf siradaki seste gecerli
-    try{ modAdiGoster(); zeminUygula(); halkaYak(AKTIF_MOD); }catch(e){}
+    try{ modAdiGoster(); zeminUygula(); halkaYak(AKTIF_MOD); geciciAdGoster(AKTIF_MOD); }catch(e){}
   }
   function modSiraGec(){
     if(typeof mod !== 'undefined' && mod === 'radio'){ aileSiraGec(); return; }
@@ -6394,7 +6409,12 @@
   function modGezYaz(ad){
     const el = _modGezEl();
     el.textContent = ad || '';
-    const p = ad && MOD_TEMA[ad];
+    /* Renk once aileden: 'MIXTAPE' adi hem tur halkasi hem eski kanal
+       temasi olarak var (bkz. aktifTema). */
+    let _pa = '';
+    try{ if(typeof mod !== 'undefined' && mod === 'radio') _pa = aileRenk(ad); }catch(e){}
+    if(!_pa){ const _p = ad && MOD_TEMA[ad]; _pa = _p ? _p.ana : ''; }
+    const p = _pa ? {ana:_pa} : null;
     if(p){
       const [r,g,b] = p.ana.split(',').map(Number);
       el.style.color = 'rgb('+Math.round(r*0.72)+','+Math.round(g*0.72)+','+Math.round(b*0.72)+')';
@@ -8705,13 +8725,39 @@
       return true;
     }catch(e){ return false; }
   }
-  /* Sadece GERCEKTEN bos yer: dugme, halka, cubuk, panel degil. */
+  /* ── "BOS YER" NEREDE BITIYOR ─────────────────────────────────────
+     Ilk yazimda secici listesiyle ayikliyordum (#ust, #mark ...) ve
+     CALISMIYORDU: ust serit pointer-events:none, yani parmak oraya
+     degdiginde olayin hedefi <body> oluyor ve dokunus "bos yer"
+     sayiliyordu. Kullanicinin yasadigi: sag ustte isme basarken
+     parmak kacinilmaz olarak sembollere degiyor ve secim kalkiyordu.
+     Artik olcut GEOMETRI: sayfadaki gercek kutular. Ust seridin
+     tamami (yazi, semboller ve ARALARINDAKI BOSLUK), halka diski ve
+     alt seritler dokunulmaz bolge. Geriye kalan gercekten bos yer. */
+  const _DOKUNULMAZ = ['#ust', '#mark', '#uydular', '#modAd', '#modGez',
+                       '.disk', '#np', '#ara', '#kamCubuk', '#sesCubuk',
+                       '#rapor', '#tur', '#karsilama', '#hata', '#agyok'];
+  function bosYerMi(x, y){
+    for(const se of _DOKUNULMAZ){
+      const el = document.querySelector(se);
+      if(!el) continue;
+      const st = getComputedStyle(el);
+      /* GORUNMEYEN KATMAN BOLGE TUTMAZ. Ozellikle #tur: inset:0 ile
+         butun ekrani kapliyor ve kapaliyken sadece opacity:0 --
+         display'e bakip gecersek hicbir yer "bos" cikmiyordu. */
+      if(st.display === 'none' || st.visibility === 'hidden') continue;
+      if(parseFloat(st.opacity) === 0) continue;
+      const r = el.getBoundingClientRect();
+      if(!r.width || !r.height) continue;
+      if(x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return false;
+    }
+    return true;
+  }
   document.addEventListener('pointerdown', e=>{
     try{
       const h = e.target;
-      if(!h || h.closest('button, a, input, label, select, textarea, ' +
-                          '.hit, .uydu, #ust, #np, #mark, #rapor, #kamCubuk, ' +
-                          '#sesCubuk, #tur, #karsilama, #hata, #agyok')) return;
+      if(h && h.closest && h.closest('button, a, input, label, select, textarea, .hit, .uydu')) return;
+      if(!bosYerMi(e.clientX, e.clientY)) return;
       aileIptal();
     }catch(_){}
   }, {passive:true});

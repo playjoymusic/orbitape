@@ -2600,6 +2600,35 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        once calanin rafina, sonra gezinmeye baslanan rafa donuyordu.
        Ikisinde de kuyruk yeniden doluyor ve parmak kalkinca sarki
        degisiyordu. Dogrusu VAZGECMEK: raf kalkar, butun liste calar. */
+    /* UST SERIT BOS YER DEGIL: pointer-events:none oldugu icin
+       dokunusun hedefi <body> geliyordu ve secici listesi bunu
+       yakalayamiyordu. Kullanicinin yasadigi: isme basarken parmak
+       sembollere degiyor, secim kalkiyor. Olcut artik geometri. */
+    K('Ust serit ve semboller bos yer sayilmaz', await pg.evaluate(()=>{
+        const kutu = se=>{ const e=document.querySelector(se);
+                           return e ? e.getBoundingClientRect() : null; };
+        const u = kutu('#ust'), m = kutu('#mark'), d = kutu('.disk');
+        if(!u || !m || !d) return false;
+        const orta = (r)=>[r.left + r.width/2, r.top + r.height/2];
+        /* yazi ile semboller ARASINDAKI bosluk da dokunulmaz olmali */
+        const ara = [u.left + u.width*0.5, u.top + u.height*0.5];
+        return !bosYerMi(...orta(u)) && !bosYerMi(...orta(m))
+            && !bosYerMi(...ara)     && !bosYerMi(...orta(d))
+            && bosYerMi(4, Math.round(window.innerHeight*0.42));
+      }), 'ust serit / semboller / disk kapali, yanlardaki bosluk acik');
+    /* GECICI AD HALKANIN ALTINDA: sag ustteki kucuk yazi gozden
+       kaciyordu; isim dugmesinde de alttaki buyuk silik yazi cikiyor. */
+    K('Isim dugmesi alt yaziyi da gosteriyor', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE;
+        mod = 'radio'; AKTIF_AILE = 'JAZZ';
+        aileSiraGec();
+        const el = document.getElementById('modGez');
+        const yazi = el ? el.textContent : '';
+        const altta = el ? (el.getBoundingClientRect().top >
+                            document.querySelector('.disk').getBoundingClientRect().top) : false;
+        mod = eM; AKTIF_AILE = eA; try{ modGezYaz(''); }catch(e){}
+        return !!yazi && yazi !== 'JAZZ' && altta;
+      }), 'gecici ad halkanin ALTINDA cikiyor ve kendi kendine soner');
     K('Bosluga basmak secimi kaldirir', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
         mod = 'radio'; _aileOncesi = null; AKTIF_AILE = 'ELECTRONIC';
