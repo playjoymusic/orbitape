@@ -223,7 +223,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      gerekiyor, cunku geometri (ic yaricap, zar siniri) sayidan
      tureniyor ve yanlis sayida parmak baska halkayi secer. */
   K('Radyoda halkalar tur ailesi', hs.n===8 &&
-       /ELECTRONIC/.test(hs.sira) && /CLASSICAL/.test(hs.sira), hs.sira);
+       /ELECTRONIC/.test(hs.sira) && /ORCHESTRAL/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
       const eski = mod; mod = 'lib';
@@ -984,6 +984,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       /* Tur katmani acik kalabiliyor ve ustunu kapatiyor; burada
          olcmek istedigimiz sey dugmenin ISI, tiklanabilirligi degil. */
       const _kOnce = await pp.evaluate(()=>mod);
+      const _aOnce = await pp.evaluate(()=>AKTIF_AILE);   // isim dugmesi aileyi degistiriyor
       await pp.evaluate(()=>document.querySelector('#ust .kanal.ad').click());
       await pp.waitForTimeout(300);
       /* DURUMU GERI AL: bu blok bittikten sonraki testler radyo
@@ -992,9 +993,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       /* SADECE KANAL geri aliniyor. Once burada modSec de cagriliyordu
          ve o localStorage'a yaziyor -> "acilista depo bos" kontrolu
          sebepsiz kirmiziya donuyordu. Test kendi izini birakmamali. */
-      await pp.evaluate(k=>{ try{ if(mod!==k) modaGec(k);
+      /* AILEYI DE GERI AL. FX ipucu artik TUR BASINA susuyor; bu blok
+         aileyi degistirip birakinca "ayni turde bir daha cikmaz"
+         kontrolu baska bir turde olculuyor ve haksiz yere dusuyor. */
+      await pp.evaluate(([k,a])=>{ try{ if(mod!==k) modaGec(k);
                                   AKTIF_MOD=null; localStorage.removeItem('orbitape.mod');
-                                  modAdiYaz(); }catch(e){} }, _kOnce);
+                                  AKTIF_AILE = a; modAdiYaz(); }catch(e){} }, [_kOnce, _aOnce]);
       await pp.waitForTimeout(200);
       const baska = await d();
       await pp.click('.uydu[data-fx="ana"]'); await pp.waitForTimeout(300);
@@ -1026,8 +1030,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('FX kapaninca el gider, hak durur', fxip.kapali.on===false && !fxip.kapali.depo && fxip.tekrar.on===true,
      'tekrar acilinca yine cikti');
   K('Minik oynatma hakki YAKMAZ', fxip.minik.on===true && !fxip.minik.depo, 'gercek surtme sart');
-  K('Gercek surtme ipucunu bitirir', fxip.surtme.on===false && fxip.surtme.depo==='1', 'depo=1');
-  K('Bir daha hic cikmaz', fxip.sonra.on===false && fxip.yeniden.on===false, 'yeniden yuklemede de yok');
+  /* Depoda artik '1' degil, TUR -> ZAMAN eslesmesi var: ipucu tur
+     basina susuyor ve uzun sure dokunulmazsa geri geliyor. */
+  K('Gercek surtme ipucunu bitirir',
+     fxip.surtme.on===false && /\{".+":\d{10,}\}/.test(fxip.surtme.depo||''),
+     'depo=' + (fxip.surtme.depo||'-'));
+  K('Ayni turde bir daha cikmaz', fxip.sonra.on===false && fxip.yeniden.on===false,
+     'yeniden yuklemede de yok');
 
 
   K('Gecmis cok adimli', gc.bes.n===5 && gc.bes.pos===4, gc.bes.n+' kayit');
@@ -2403,6 +2412,29 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        ai ? ai.benzersizRenk+'/8 benzersiz' : '-');
     K('En icteki halka ELECTRONIC', !!ai && ai.adlar[0]==='ELECTRONIC',
        'ortada basili tutan en cok istasyonu olan aileye duser');
+    /* FX IPUCU ARTIK TUR BASINA VE SURELI: bir turde ogrenmek
+       otekinde de ogrenmis saymak degil; aylardir dokunmayan da
+       unutuyor. Tek '1' bayragina donulurse bu kontrol duser. */
+    K('FX ipucu tur basina ve sureli', await pg.evaluate(()=>{
+        const eski = localStorage.getItem('orbitape.fxIpucu');
+        try{
+          const eM = mod; mod = 'radio';          // tur kovasi radyoda aileden geliyor
+          const e2 = AKTIF_AILE; AKTIF_AILE = 'ELECTRONIC';
+          localStorage.setItem('orbitape.fxIpucu', JSON.stringify({'ELECTRONIC':Date.now()}));
+          const ayni = fxIpucuBittiMi();                 // ayni turde: cikmaz
+          AKTIF_AILE = 'ROCK';
+          const baska = fxIpucuBittiMi();                // baska turde: cikar
+          AKTIF_AILE = 'ELECTRONIC';
+          localStorage.setItem('orbitape.fxIpucu',
+            JSON.stringify({'ELECTRONIC':Date.now() - 9*24*60*60*1000}));
+          const eskimis = fxIpucuBittiMi();              // 9 gun once: yeniden cikar
+          AKTIF_AILE = e2; mod = eM;
+          return ayni===true && baska===false && eskimis===false;
+        } finally {
+          if(eski===null) localStorage.removeItem('orbitape.fxIpucu');
+          else localStorage.setItem('orbitape.fxIpucu', eski);
+        }
+      }), 'ayni tur susar, baska tur ve '+'eskimis kayit yeniden gosterir');
     K('Aile suzgeci sadece o aileyi birakiyor', !!ai && ai.suzulen==='a,b',
        ai ? ('kalan: '+ai.suzulen) : '-');
     /* MUZIK DURMASIN: bos bir aile sessizlik uretmemeli. Bu kontrol

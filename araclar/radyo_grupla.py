@@ -44,24 +44,24 @@ ROCK = re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|shoegaze|"
                   r"prog(ressive)? ?rock|rock ?n ?roll|rockabilly", re.I)
 
 AILELER = OrderedDict([
-    ("ELECTRONIC",    {"renk": "#8E7CF0",
+    ("ELECTRONIC",    {"renk": "#8496FF",
                        "turler": ["electronic", "techno", "house",
                                   "downtempo", "psychedelic", "chillout"]}),
-    ("AMBIENT",       {"renk": "#7FD0E8",
-                       "turler": ["ambient", "instrumental", "new age"]}),
-    ("INDIE & LOFI",  {"renk": "#E58FA8",
-                       "turler": ["indie", "lofi"]}),
-    ("JAZZ & SOUL",   {"renk": "#E0A45C",
-                       "turler": ["jazz", "blues", "soul", "funk"]}),
-    ("WORLD & ROOTS", {"renk": "#5FBF7A",
-                       "turler": ["world", "folk", "reggae", "dub"]}),
-    ("AFRO & LATIN",  {"renk": "#F2683C",
+    ("AFRO & LATIN",  {"renk": "#CC7CA4",
                        "turler": ["afrobeat", "latin", "bossa nova"]}),
+    ("INDIE & LOFI",  {"renk": "#5FBF7A",
+                       "turler": ["indie", "lofi"]}),
+    ("AMBIENT",       {"renk": "#F2683C",
+                       "turler": ["ambient", "instrumental", "new age"]}),
     # soundtrack CLASSICAL'a girdi: ikisi de orkestral, ve classical
     # tek basina 17'de kaliyordu -> diger ailelerle esit agirliga geldi.
-    ("ROCK",          {"renk": "#B07CE8",
+    ("ROCK",          {"renk": "#9A96AC",
                        "turler": []}),          # etiketten geliyor, tur alanindan degil
-    ("CLASSICAL",     {"renk": "#D8CBA0",
+    ("WORLD & ROOTS", {"renk": "#F0AC7A",
+                       "turler": ["world", "folk", "reggae", "dub"]}),
+    ("JAZZ & SOUL",   {"renk": "#B07CE8",
+                       "turler": ["jazz", "blues", "soul", "funk"]}),
+    ("ORCHESTRAL",    {"renk": "#35E0D8",
                        "turler": ["classical", "soundtrack"]}),
     # Henuz bos. Haber/spor/talk BILEREK gelecek, kacak olarak degil.
     ("NEWS & TALK",   {"renk": "#7E93A8",

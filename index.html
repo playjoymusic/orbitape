@@ -4902,14 +4902,14 @@
      asagidaki aileRenk() de bunu bekliyor. Ayni tuzak kamAcik'ta
      yasandi, orada da cozum 'var' olmustu. */
   var AILELER = [
-    { ad:'ELECTRONIC',    renk:'132,150,255' },   // 130 -- EN ICTEKI halka
-    { ad:'AMBIENT',       renk:'204,124,164' },   //  72
-    { ad:'INDIE & LOFI',  renk:'95,191,122'  },   //  50
-    { ad:'JAZZ & SOUL',   renk:'242,104,60'  },   //  96
-    { ad:'WORLD & ROOTS', renk:'154,150,172' },   //  91
-    { ad:'AFRO & LATIN',  renk:'240,172,122' },   //  57
-    { ad:'ROCK',          renk:'176,124,232' },   //  97 -- rock/punk/metal
-    { ad:'CLASSICAL',     renk:'53,224,216'  }    //  42 -- en dista, turkuaz
+    { ad:'ELECTRONIC',    renk:'132,150,255' },   // 110 -- EN ICTEKI halka
+    { ad:'AFRO & LATIN',  renk:'204,124,164' },   //  57
+    { ad:'INDIE & LOFI',  renk:'95,191,122'  },   //  33
+    { ad:'AMBIENT',       renk:'242,104,60'  },   //  66
+    { ad:'ROCK',          renk:'154,150,172' },   //  97
+    { ad:'WORLD & ROOTS', renk:'240,172,122' },   //  79
+    { ad:'JAZZ & SOUL',   renk:'176,124,232' },   //  68
+    { ad:'ORCHESTRAL',    renk:'53,224,216'  }    //  42 -- en dista, turkuaz
   ];
   var AILE_ACILIS = 'ELECTRONIC';   // sifirdan acilis ailesi
   var AILE_ADLAR = AILELER.map(a=>a.ad);
@@ -5636,10 +5636,44 @@
        hemen gir. (Eskiden 900 ms'ti, geç kalıyordu.) */
     _fxSunumZaman = setTimeout(()=>{ _fxSunumZaman = null; fxSunumBasla(); }, 320);
   }
+  /* ── FX İPUCU: TÜR BAŞINA VE SÜRELİ ─────────────────────────────
+     Eskiden tek bir "1" vardı: kişi bir kez sürtünce ipucu ömür boyu
+     kapanıyordu. İki sorun:
+       · Bir türde öğrenmek, öteki türde de öğrenmiş saymak demek
+         değil — her rafın sesi başka, efekt orada başka bir şey.
+       · Aylardır FX'e dokunmayan biri unutuyor ve ipucu bir daha
+         hiç çıkmıyor.
+     Artık depoda tür başına SON KULLANIM ZAMANI duruyor. O türde
+     yakın zamanda sürttüyse ipucu çıkmıyor; üstünden FXIP_GUN geçtiyse
+     bir kez daha çıkıyor. Eski '1' değeri de tanınıyor (o kayıt
+     "bugün kullandı" sayılıyor), kimse ipucu yağmuruna tutulmasın. */
   const FXIP_ANAHTAR = 'orbitape.fxIpucu';
+  const FXIP_GUN = 4;                       // bu kadar gün dokunulmazsa ipucu geri gelir
   var _fxIpAcik = false;
+  function _fxIpKok(){
+    try{
+      const ham = localStorage.getItem(FXIP_ANAHTAR);
+      if(!ham) return {};
+      if(ham === '1') return { _eski: Date.now() };   // eski biçim: bugün kullanılmış say
+      const o = JSON.parse(ham);
+      return (o && typeof o === 'object') ? o : {};
+    }catch(e){ return {}; }
+  }
+  /* Hangi rafta olduğumuz: radyoda aile, arşivde kategori. Hiçbiri
+     yoksa tek bir ortak kova ('-') — ipucu yine de bir yere yazılsın. */
+  function _fxIpTur(){
+    try{
+      if(typeof mod !== 'undefined' && mod === 'radio') return AKTIF_AILE || AILE_ACILIS || '-';
+      return AKTIF_MOD || '-';
+    }catch(e){ return '-'; }
+  }
   function fxIpucuBittiMi(){
-    try{ return localStorage.getItem(FXIP_ANAHTAR) === '1'; }catch(e){ return false; }
+    try{
+      const k = _fxIpKok();
+      const t = k[_fxIpTur()] || k._eski;
+      if(!t) return false;
+      return (Date.now() - t) < FXIP_GUN*24*60*60*1000;
+    }catch(e){ return false; }
   }
   function fxIpucuYerlestir(){
     const el = document.getElementById('fxEl'); if(!el) return;
@@ -5665,7 +5699,13 @@
     const el = document.getElementById('fxEl');
     _fxIpAcik = false;
     if(el){ el.classList.remove('on'); el.setAttribute('aria-hidden','true'); }
-    if(kalici){ try{ localStorage.setItem(FXIP_ANAHTAR,'1'); }catch(e){} }
+    if(kalici){
+      try{
+        const k = _fxIpKok(); delete k._eski;
+        k[_fxIpTur()] = Date.now();
+        localStorage.setItem(FXIP_ANAHTAR, JSON.stringify(k));
+      }catch(e){}
+    }
   }
   /* Gerçek sürtme: efekt açıkken diskte belirgin bir hareket. */
   function fxIpucuSurtuldu(mag){
