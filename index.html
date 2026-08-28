@@ -6178,16 +6178,22 @@
       _ma.setAttribute('role','button');
       _ma.setAttribute('aria-label','Next category');
       _ma.addEventListener('click', e=>{ e.stopPropagation(); modSiraGec(); });
-      /* Semboller de ayni dugme. Ayri bir davranis YOK: iki hedef,
-         tek is -- yoksa "hangisi ne yapiyordu" sorusu dogar. */
-      try{
-        const _sm = document.getElementById('bekle');
-        if(_sm) _sm.addEventListener('click', e=>{
-          if(!_sm.classList.contains('buyuk')) return;   // yukleme kipinde degil
-          e.stopPropagation(); modSiraGec();
-        });
-      }catch(_){ _yut(_); }
       _ma.addEventListener('pointerdown', e=>e.stopPropagation());
+    });
+  }catch(e){ _yut(e); }
+  /* ── SEMBOLLER DE AYNI DUGME ──────────────────────────────────────
+     Ayri bir davranis YOK: iki hedef, tek is -- yoksa "hangisi ne
+     yapiyordu" sorusu dogar.
+     DONGUNUN DISINDA. Ilk yazimda bu satirlar yukaridaki forEach'in
+     ICINDEYDI ve donguyu iki eleman geziyor: dinleyici sembollere IKI
+     KEZ baglaniyordu. Sonucu olculdu -- sembollere tek tik iki raf
+     birden ilerletiyordu (JAZZ -> AMBIENT, arada INDIE & LOFI atlaniyor).
+     Ekranda "tikladigim yere gitmiyor" diye goruluyordu. */
+  try{
+    const _sm = document.getElementById('bekle');
+    if(_sm) _sm.addEventListener('click', e=>{
+      if(!_sm.classList.contains('buyuk')) return;   // yukleme kipinde degil
+      e.stopPropagation(); modSiraGec();
     });
   }catch(e){ _yut(e); }
   /* ── SOL ALT İSTİF ────────────────────────────────────────────────

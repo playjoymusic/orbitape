@@ -2694,6 +2694,39 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         return /item\.grup !== AKTIF_AILE/.test(k)
             && /mod === 'radio'[\s\S]{0,80}item\.radyo/.test(k);
       }), 'cal() icinde radyo tarafinin kendi son kapisi var');
+    /* SEMBOLLER: TEK TIK = TEK ADIM.
+       Ilk yazimda dinleyici, iki elemani gezen bir forEach'in ICINDE
+       kalmisti ve sembollere IKI KEZ baglaniyordu: tek tik iki raf
+       birden ilerletiyor, aradaki raf atlaniyordu (JAZZ -> AMBIENT,
+       INDIE & LOFI hic gorunmuyor). Ekranda "tikladigim yere gitmiyor"
+       diye goruluyordu. Cagri SAYISI olculuyor; yoksa hata gorunmez. */
+    K('Uc sembol de raf degistiriyor', await pg.evaluate(()=>{
+        const el = document.getElementById('bekle');
+        if(!el) return false;
+        el.classList.add('buyuk');
+        const tiklanir = getComputedStyle(el).pointerEvents !== 'none';
+        const eM = mod, eA = AKTIF_AILE, eS = window.modSiraGec;
+        let say = 0;
+        window.modSiraGec = function(){ say++; return eS.apply(this, arguments); };
+        mod = 'radio'; AKTIF_AILE = 'JAZZ';
+        el.dispatchEvent(new MouseEvent('click', {bubbles:true}));
+        const bir = AILE_ADLAR.indexOf('JAZZ');
+        const beklenen = AILE_ADLAR[(bir - 1 + AILE_ADLAR.length) % AILE_ADLAR.length];
+        const sonuc = AKTIF_AILE;
+        window.modSiraGec = eS; mod = eM; AKTIF_AILE = eA;
+        return tiklanir && say === 1 && sonuc === beklenen;
+      }), 'tek tik = TEK adim, cift baglanma yok');
+    /* RAF SECILI DEGILSE USTTE YAZI DA YOK: once 'RADIOTAPE', sonra
+       'ALL' yazmistim; ikisi de kullaniciya "ne alaka" dedirtti. */
+    K('Secim yokken ust yazi bos', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE;
+        mod = 'radio'; AKTIF_AILE = null; modAdiYaz();
+        const bos = document.getElementById('modAd').textContent === '';
+        AKTIF_AILE = 'JAZZ'; modAdiYaz();
+        const dolu = document.getElementById('modAd').textContent === 'JAZZ';
+        mod = eM; AKTIF_AILE = eA; modAdiYaz();
+        return bos && dolu;
+      }), 'ne RADIOTAPE ne ALL: hicbir sey');
     K('Ortaya dokunus SADECE siradaki sesi caliyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return !/aileIptal/.test(k) && !/bosYerMi/.test(k);
