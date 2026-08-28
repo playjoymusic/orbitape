@@ -52,51 +52,74 @@ from collections import OrderedDict
 # gevsek isaretler de vardi ve 552 istasyonun 220'sini MIXTAPE'e
 # yigdi -- yani ayirmak yerine yeni bir cop kutusu yaptik. Bunlar
 # atildi; kalanlar bir TUR degil bir LISTE anlatan isaretler.
+# ══ TUR KARARI: SAFLIK ESAS ══════════════════════════════════════
+# ONCEKI YOL YANLISTI. Istasyonun 'tur' alanina bakiyorduk ama o alan
+# istasyonun NE CALDIGINI degil, dizinde HANGI ETIKETLE bulundugunu
+# soyluyor. "jazz" etiketiyle listelenmis bir kanal pekala house
+# calabiliyor -- olculdu: kullanici JAZZ rafinda 15 parca dinledi,
+# hic jazz duymadi, ikisi house cikti.
+#
+# YENI KURAL: bir istasyon bir rafa ancak O RAFIN kelimeleri
+# etiketinde geciyorsa VE baska bir rafin kelimeleri gecmiyorsa
+# giriyor. Saf degilse MIXTAPE.
+# Kucuk ama dogru raf, buyuk ama yalan raftan iyidir: "her turden
+# 3-5 istasyon bile ise yarar, 24 saat yayin sonucta."
+
+# ELEKTRONIK MUTLAK USTUN: house/techno/edm gecen istasyon baska ne
+# yazarsa yazsin elektroniktir.
+ELEKTRONIK = re.compile(
+    r"\bhouse\b|\btechno\b|\bedm\b|\btrance\b|\bdnb\b|drum ?(and|&|n) ?bass|"
+    r"dubstep|\belectro\b|electronic|electronica|\bclub\b|\brave\b|"
+    r"\bdance\b|breakbeat|\bacid\b|minimal|psytrance|hardstyle|"
+    r"\bidm\b|\bgarage\b|synthwave|vaporwave|\bdisco\b", re.I)
+
+# Raf kelimeleri. YALNIZ birine uyarsa o rafa, birden fazlasina
+# uyarsa MIXTAPE'e gidiyor.
+RAF_KELIME = OrderedDict([
+    ("ROCK",        re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
+                               r"rockabilly|grindcore", re.I)),
+    ("JAZZ",        re.compile(r"\bjazz\b|bebop|\bswing\b|big ?band|dixieland|"
+                               r"hard ?bop|free ?jazz", re.I)),
+    ("DISCO FUNK",  re.compile(r"\bfunk\b|\bsoul\b|motown|\br&b\b|\brnb\b|"
+                               r"\bgroove\b|boogie", re.I)),
+    ("LOUNGE",      re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
+                               r"\bcafe\b|café|\bspa\b|relaxation|\bmellow\b|"
+                               r"\bchill\b|chillout|downtempo", re.I)),
+    ("AMBIENT",     re.compile(r"\bambient\b|\bdrone\b|new ?age|meditation|"
+                               r"instrumental|soundscape", re.I)),
+    ("ORCHESTRAL",  re.compile(r"\bclassical\b|\bopera\b|orchestra|symphon|"
+                               r"\bsonata\b|\bconcerto\b|baroque|soundtrack|"
+                               r"film ?music|\bpiano\b", re.I)),
+    ("WORLD & ROOTS", re.compile(r"\breggae\b|\bdub\b|\bska\b|\bfolk\b|"
+                                 r"\bworld\b|celtic|\bblues\b|bluegrass|"
+                                 r"\bcountry\b|traditional", re.I)),
+    ("AFRO & LATIN", re.compile(r"afrobeat|\bafro\b|\blatin\b|\bsalsa\b|"
+                                r"\bbossa\b|cumbia|merengue|bachata|\bsamba\b|"
+                                r"\btango\b|highlife|soukous", re.I)),
+    ("INDIE & LOFI", re.compile(r"\bindie\b|\blo-?fi\b|shoegaze|dream ?pop|"
+                                r"bedroom ?pop|alternative", re.I)),
+])
+
+# Bir TUR degil bir LISTE anlatan isaretler: tek basina MIXTAPE demek.
 KARISIK = re.compile(
     r"\bpop\b|\bcharts?\b|\bhits?\b|top ?\d{2,3}|dj ?mix|"
     r"variety|adult contemporary|hitradio|\bchr\b|"
-    r"contemporary hits|non.?stop|greatest hits|oldies", re.I)
-BELIRSIZ_ESIK = 4          # bu kadar farkli aileye uyuyorsa: karisik
-
-# LOUNGE: olculdu, 109 istasyon. Cogu "chillout" etiketi tasidigi
-# icin ELECTRONIC'e dusuyordu ama dinleyici icin ayni sey degil --
-# kafe/spa/smooth jazz muzigi kendi rafini hak ediyor. Tur alanindan
-# ONCE soruluyor, yoksa electronic onu yutuyor.
-LOUNGE = re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
-                    r"dinner|\bcafe\b|café|elevator|\bspa\b|relaxation|"
-                    r"\bmellow\b", re.I)
-
-ROCK = re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|shoegaze|"
-                  r"post.?rock|classic ?rock|hard ?rock|blues ?rock|"
-                  r"prog(ressive)? ?rock|rock ?n ?roll|rockabilly", re.I)
+    r"contemporary hits|non.?stop|greatest hits|oldies|\bmix\b", re.I)
 
 AILELER = OrderedDict([
-    ("ELECTRONIC",    {"renk": "#8496FF",
-                       "turler": ["electronic", "techno", "house",
-                                  "downtempo", "psychedelic", "chillout"]}),
-    ("AFRO & LATIN",  {"renk": "#CC7CA4",
-                       "turler": ["afrobeat", "latin", "bossa nova"]}),
-    ("INDIE & LOFI",  {"renk": "#5FBF7A",
-                       "turler": ["indie", "lofi"]}),
-    ("AMBIENT",       {"renk": "#F2683C",
-                       "turler": ["ambient", "instrumental", "new age"]}),
-    # soundtrack CLASSICAL'a girdi: ikisi de orkestral, ve classical
-    # tek basina 17'de kaliyordu -> diger ailelerle esit agirliga geldi.
-    ("ROCK",          {"renk": "#9A96AC",
-                       "turler": []}),          # etiketten geliyor, tur alanindan degil
-    ("WORLD & ROOTS", {"renk": "#F0AC7A",
-                       "turler": ["world", "folk", "reggae", "dub"]}),
-    ("JAZZ & SOUL",   {"renk": "#B07CE8",
-                       "turler": ["jazz", "blues", "soul", "funk"]}),
-    ("ORCHESTRAL",    {"renk": "#35E0D8",
-                       "turler": ["classical", "soundtrack"]}),
-    ("LOUNGE",        {"renk": "#D8CBA0",
-                       "turler": []}),          # etiketten geliyor
-    ("MIXTAPE",       {"renk": "#8496FF",
-                       "turler": []}),          # emin olmadiklarimiz
-    # Henuz bos. Haber/spor/talk BILEREK gelecek, kacak olarak degil.
-    ("NEWS & TALK",   {"renk": "#7E93A8",
-                       "turler": ["news", "sports", "talk"]}),
+    # SIRA = HALKA SIRASI, en icten disa. MIXTAPE en icte: ortaya
+    # basan kisi oraya duser ve orasi "rastgele" rafi.
+    ("MIXTAPE",       {"renk": "#8496FF", "turler": []}),
+    ("INDIE & LOFI",  {"renk": "#CC7CA4", "turler": []}),
+    ("ORCHESTRAL",    {"renk": "#5FBF7A", "turler": []}),
+    ("JAZZ",          {"renk": "#F2683C", "turler": []}),
+    ("AFRO & LATIN",  {"renk": "#9A96AC", "turler": []}),
+    ("DISCO FUNK",    {"renk": "#F0AC7A", "turler": []}),
+    ("AMBIENT",       {"renk": "#B07CE8", "turler": []}),
+    ("ROCK",          {"renk": "#BEB6A4", "turler": []}),
+    ("WORLD & ROOTS", {"renk": "#D8CBA0", "turler": []}),
+    ("LOUNGE",        {"renk": "#8FD0E8", "turler": []}),
+    ("ELECTRONIC",    {"renk": "#35E0D8", "turler": []}),
 ])
 
 TUR_GRUP = {}
@@ -147,34 +170,27 @@ def temizle(kayitlar):
 
 
 def grupla(kayitlar):
-    """Her kayda 'grup' yaz. Ailesi olmayan tur kalirsa HATA VER —
-    sessizce gruptan dusen istasyon, ekranda renksiz istasyon demek."""
-    atanmamis = {}
+    """Her kayda 'grup' yaz. KURAL: saf olan rafina, olmayan MIXTAPE'e.
+
+    Once bir istasyonun 'tur' alanina bakiliyordu; o alan istasyonun
+    NE CALDIGINI degil dizinde HANGI ETIKETLE bulundugunu soyluyor ve
+    yalan soyleyebiliyor. Artik yalniz ETIKET METNI okunuyor."""
     for o in kayitlar:
-        metin = (o.get("etiket") or "") + " " + (o.get("ad") or "")
-        # Kac ayri aileye birden uyuyor?
-        uyan = set()
-        dusuk = metin.lower()
-        for _g, _d in AILELER.items():
-            for _t in _d["turler"]:
-                if _t in dusuk:
-                    uyan.add(_g)
-                    break
-        if KARISIK.search(metin) or len(uyan) >= BELIRSIZ_ESIK:
+        metin = ((o.get("etiket") or "") + " " + (o.get("ad") or "")
+                 ).replace("_", " ").replace("+", " ")
+        # 1) ELEKTRONIK MUTLAK USTUN: house/techno/edm varsa tartisma yok.
+        if ELEKTRONIK.search(metin):
+            o["grup"] = "ELECTRONIC"
+            continue
+        # 2) "Her seyden biraz" isareti varsa karisiktir.
+        if KARISIK.search(metin):
             o["grup"] = "MIXTAPE"
             continue
-        if ROCK.search(metin):
-            o["grup"] = "ROCK"
-            continue
-        if LOUNGE.search(metin):
-            o["grup"] = "LOUNGE"
-            continue
-        g = TUR_GRUP.get((o.get("tur") or "").strip().lower())
-        if not g:
-            atanmamis[o.get("tur")] = atanmamis.get(o.get("tur"), 0) + 1
-            continue
-        o["grup"] = g
-    return atanmamis
+        # 3) Hangi raflarin kelimeleri geciyor? TEK rafa uyuyorsa saf,
+        #    birden fazlasina uyuyorsa ya da hicbirine uymuyorsa MIXTAPE.
+        uyan = [ad for ad, kal in RAF_KELIME.items() if kal.search(metin)]
+        o["grup"] = uyan[0] if len(uyan) == 1 else "MIXTAPE"
+    return {}
 
 
 def main():
