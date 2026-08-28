@@ -161,6 +161,26 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Asil sinir Cloudflare'in 25 MiB'i; bu sadece disiplin siniri.
      Bir daha takilirsa cozum yorum silmek DEGIL, kodu bolmek. */
   K('Dosya boyutu < 520 KB',  dosyaBoy < 520*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* ── ESKI SURUM ACILMASIN ────────────────────────────────────────
+     Olculen vaka: yeni surum yayindayken uygulama ESKI surumu acti.
+     Sebep index.html icin Cache-Control yazilmamis olmasiydi; kural
+     yoksa tarayici sezgisel onbellege dusup dosyayi kendi kafasina
+     gore sakliyor. no-cache = "sakla ama kullanmadan once sor".
+     Bu satirlar silinirse sorun sessizce geri gelir. */
+  {
+    const bas = fs.readFileSync('_headers','utf8');
+    const kural = ad => {
+      const i = bas.indexOf('\n'+ad+'\n');
+      if(i < 0) return '';
+      return bas.slice(i, i+220);
+    };
+    K('index.html her acilista soruluyor', /Cache-Control:\s*no-cache/i.test(kural('/index.html')),
+       'no-cache yazili');
+    K('Kok adres de soruluyor', /Cache-Control:\s*no-cache/i.test(kural('/')),
+       'orbitape.app/ icin de');
+    K('Servis calisani soruluyor', /Cache-Control:\s*no-cache/i.test(kural('/sw.js')),
+       'eski sw.js yeni kabugu gormezlik edemesin');
+  }
 
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───
   const filtre = await pg.evaluate(()=>{

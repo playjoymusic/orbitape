@@ -61,5 +61,22 @@
 /ekran-*.png
   Cache-Control: public, max-age=604800
 
-# index.html BILEREK YOK: uygulamanin kendisi her acilista "degisti mi"
-# diye sormali, yoksa yeni surum kullaniciya gunlerce ulasmiyor.
+# ── UYGULAMANIN KENDISI: HER ACILISTA SOR ────────────────────────
+# "Kural yazmazsak tarayici zaten sorar" diye dusunulmustu. YANLIS.
+# Cache-Control yoksa tarayici SEZGISEL onbellege duser: dosyanin
+# yasina bakip kendi kafasina gore bir sure saklar. Olculen sonuc:
+# yeni surum yayindayken uygulama ESKI surumu acti (iOS'ta ana
+# ekrana eklenmis halde daha da inatci).
+# no-cache = "sakla ama KULLANMADAN ONCE SOR". Degismediyse sunucu
+# 304 donuyor, yani maliyet neredeyse sifir; degistiyse kullanici
+# yeni surumu ILK acilista goruyor.
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+# Servis calisani da ayni sebeple: eski bir sw.js yeni kabugu
+# hic gormeyebilir.
+/sw.js
+  Cache-Control: no-cache
