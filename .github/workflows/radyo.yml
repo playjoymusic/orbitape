@@ -1,0 +1,69 @@
+name: Radyo hasadı
+
+on:
+  workflow_dispatch:
+    inputs:
+      hedef:
+        description: 'Raf başına hedef istasyon sayısı'
+        required: false
+        default: '40'
+  schedule:
+    - cron: '17 4 1 * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  hasat:
+    name: Radyo hasadi
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - name: Veri deposunu al
+        uses: actions/checkout@v5
+        with:
+          repository: playjoymusic/tracks
+          path: tracks
+          token: ${{ secrets.TRACKS_TOKEN || github.token }}
+
+      - name: Hasat
+        run: |
+          python3 araclar/radyo_hasat.py \
+            tracks/radyo.json \
+            tracks/radyo.yeni.json \
+            "${{ github.event.inputs.hedef || '40' }}"
+          mv tracks/radyo.yeni.json tracks/radyo.json
+
+      - name: Degisiklik var mi
+        id: fark
+        run: |
+          cd tracks
+          if git diff --quiet -- radyo.json; then
+            echo "var=hayir" >> $GITHUB_OUTPUT
+          else
+            echo "var=evet" >> $GITHUB_OUTPUT
+          fi
+
+      - name: PR ac
+        if: steps.fark.outputs.var == 'evet'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          path: tracks
+          token: ${{ secrets.TRACKS_TOKEN || github.token }}
+          branch: radyo-hasat
+          title: 'Radyo hasadi: eksik turlere istasyon'
+          commit-message: 'Radyo hasadi'
+          body: |
+            radio-browser'dan eksik turler icin istasyon toplandi.
+
+            Her istasyon uc kapidan gecti:
+            1. Uygulamanin kendi elemeleri (ibadet / canli konusma / ulke)
+            2. Saflik kurali — istenen rafa GERCEKTEN dusuyor mu
+            3. CORS basligi — yoksa uygulamada sessiz kalirdi
+
+            Birlestirmeden once kosunun ciktisindaki raf sayilarina bak.
