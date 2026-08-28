@@ -2622,6 +2622,23 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        Olculen vaka: ustte LOUNGE yazarken "LIVE · WORLD & ROOTS"
        caliyordu. Kuyruk suzuluyordu ama YOLDA olan istek suzgecin
        arkasindan geliyordu; cal() icindeki raf kapisi onu durduruyor. */
+    /* ACILIS TURU UYGULAMAYI DOGRU ANLATSIN. Eskisi "bes halka, bes
+       kanal" diyordu ve yaricaplari elle yazilmis sabitlerdi; halka
+       sayisi degisince baska yerleri gosteriyordu. */
+    K('Acilis turu bugunku uygulamayi anlatiyor', await pg.evaluate(()=>{
+        const a = turAdimlari();
+        const basliklar = a.map(x=>x.bas);
+        const sure = a.reduce((t,x)=>t + x.duraklar.reduce((u,d)=>u+d.sure,0), 0);
+        /* Halka duraklari CANLI geometriden gelmeli: en dis durak
+           en dis halkanin yaricapina esit olsun. */
+        const gez = a[1].duraklar.map(d=>d.hedef.disk);
+        const enDis = halkaIc() + (halkaAdlar().length-1)*halkaAra();
+        return basliklar.includes('GENRES') && basliklar.includes('CHANNEL')
+            && basliklar.includes('NOW PLAYING')
+            && !basliklar.includes('CATEGORIES')
+            && Math.abs(gez[0] - enDis) < 0.001
+            && sure > 13000 && sure < 19000;
+      }), 'GENRES/NOW PLAYING/CHANNEL var, yaricaplar canli, sure ~16 sn');
     K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return /item\.grup !== AKTIF_AILE/.test(k)

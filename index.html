@@ -8910,20 +8910,38 @@
      duraği var. Duraklar hızlı: el bir yerden ötekine geçerken
      halkalar sırayla yanıyor, gezegenler sırayla açılıyor.
      Tur bilerek kısa — 45 saniyelik bir tanıtımı kimse izlemiyor. */
+  /* ── ACILIS TURU ──────────────────────────────────────────────────
+     UYGULAMANIN BUGUNKU HALINI anlatiyor. Eski metin bayatlamisti:
+     "bes halka, bes kanal" diyordu; halkalar artik ON TUR ve arsiv
+     kategorileri degil. Yaricaplar da elle yazilmis sabitlerdi
+     (0.55 + k*0.068) ve geometri degisince baska yerleri
+     gosteriyorlardi -- artik halkaIc()/halkaAra() ile CANLI
+     hesaplaniyor, raf sayisi degisse de dogru yeri gosterir.
+     SURE eskisiyle ayni tempoda: ~16 sn, adim basina 1.3-2.6 sn. */
   function turAdimlari(){
-    const H = k => 0.55 + k*0.068;                 // k'ıncı halkanın yarıçap oranı
+    const H = k => halkaIc() + k*halkaAra();       // k'inci halkanin yaricap orani
+    const adlar = halkaAdlar();
+    const n = adlar.length;
+    /* Distan ice dogru alti durak: en dis halkadan merkeze. */
     const halkaGezi = [];
-    for(let k=5;k>=0;k--) halkaGezi.push({ hedef:{disk:H(k), aci:0}, sure:340,
-      oynat:(kk=>()=>{ try{ modAdiTut(MODSIRA[kk]); }catch(e){} })(k) });
+    for(let i=0;i<6;i++){
+      const k = Math.round((n-1) * (1 - i/5));
+      halkaGezi.push({ hedef:{disk:H(k), aci:0}, sure:340,
+        oynat:(kk=>()=>{ try{ modAdiTut(adlar[kk]); }catch(e){} })(k) });
+    }
     return [
       { bas:'ORBITAPE', metin:'Live radio and a sound archive.<br>Tap the centre to start.',
         duraklar:[{hedef:{disk:0.10, aci:0}, sure:2000}] },
-      { bas:'CATEGORIES', metin:'Hold on the rings.<br>Five rings, five channels.',
+      { bas:'GENRES', metin:'Hold on the rings.<br>Each ring is a genre.',
         duraklar: halkaGezi },
       { bas:'SELECT', metin:'Release on a ring to open it.<br>Release outside to cancel.',
-        duraklar:[{hedef:{disk:H(2), aci:0}, sure:1500, oynat:()=>{ try{ modAdiTut(MODSIRA[2]); }catch(e){} }}] },
-      { bas:'SHORTCUT', metin:'The name up here steps<br>through the rings, one by one.',
-        duraklar:[{hedef:'#modAd', sure:1500, oynat:()=>{ try{ modAdiBirak(); }catch(e){} }}] },
+        duraklar:[{hedef:{disk:H(Math.max(0,n-4)), aci:0}, sure:1500,
+                   oynat:()=>{ try{ modAdiTut(adlar[Math.max(0,n-4)]); }catch(e){} }}] },
+      { bas:'SHORTCUT', metin:'The name and the three symbols<br>step through the genres.',
+        duraklar:[{hedef:'#modAd', sure:700, oynat:()=>{ try{ modAdiBirak(); }catch(e){} }},
+                  {hedef:'#bekle', sure:700}] },
+      { bas:'NOW PLAYING', metin:'Down here: the station,<br>its genre and where it broadcasts from.',
+        duraklar:[{hedef:'#np', sure:1300}] },
       { bas:'EFFECTS', metin:'The planets are the effects.<br>Tap one to turn it on.',
         duraklar:[
           {hedef:'.uydu[data-fx="ana"]',       sure:620, oynat:()=>{ try{ if(FXMOD!=='ana') fxModGec('ana'); }catch(e){} }},
@@ -8933,14 +8951,15 @@
       { bas:'SHAPE', metin:'With an effect on, drag inside the disc.<br>The rings reach toward your finger.',
         duraklar:[{hedef:{disk:0.34, aci:-46}, sure:800},
                   {hedef:{disk:0.30, aci:118}, sure:800}] },
-      { bas:'RESET', metin:'The big planet clears every effect.<br>The music keeps playing.',
+      { bas:'CHANNEL', metin:'The big planet switches channel:<br>live radio or the archive.',
         duraklar:[{hedef:'#mark', sure:1400, oynat:()=>{ try{ fxNormale(); }catch(e){} }}] },
       { bas:'RECORD', metin:'REC records the screen with sound.<br>CAM adds the front camera.',
-        duraklar:[{hedef:'#araclar', sure:1500}] },
-      { bas:'READY', metin:'That’s it. Enjoy.',
+        duraklar:[{hedef:'#araclar', sure:1300}] },
+      { bas:'READY', metin:'That\u2019s it. Enjoy.',
         duraklar:[{hedef:{disk:0.10, aci:0}, sure:1200}] }
     ];
   }
+
   function turDurak(ad, no){
     if(!_turAkiyor) return;
     const d = ad.duraklar[no];
