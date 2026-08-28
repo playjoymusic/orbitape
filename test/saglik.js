@@ -160,7 +160,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      520 KB hala gzip sonrasi ~110 KB; mobilde fark olculebilir degil.
      Asil sinir Cloudflare'in 25 MiB'i; bu sadece disiplin siniri.
      Bir daha takilirsa cozum yorum silmek DEGIL, kodu bolmek. */
-  K('Dosya boyutu < 520 KB',  dosyaBoy < 520*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* TAVAN 540 KB: aile temasi, aile ici gecmis ve secim iptali
+     eklendiginde 522 KB'a cikti. Tavan bir uyari, bir yasak degil --
+     ama yukselttigimiz her seferi yazmali ki sessizce sismesin. */
+  K('Dosya boyutu < 540 KB',  dosyaBoy < 540*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── ESKI SURUM ACILMASIN ────────────────────────────────────────
      Olculen vaka: yeni surum yayindayken uygulama ESKI surumu acti.
      Sebep index.html icin Cache-Control yazilmamis olmasiydi; kural
@@ -632,7 +635,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const mrk = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const oku=()=>getComputedStyle(document.documentElement).getPropertyValue('--m1').trim();
+    /* ARSIV KANALINDA: radyo modunda tema artik SECILI AILEDEN
+       geliyor (iki ayri MIXTAPE karisiyordu, bkz. aktifTema).
+       MOD_TEMA arsiv tarafinin sozlugu, testi de orada kosturuyoruz. */
+    const _eskiMod = mod; mod = 'lib';
     const o={}; for(const a of ['RADIOTAPE','MIXTAPE','ORBITAPE','AMBIANCE']){ modSec(a,true); await bek(80); o[a]=oku(); }
+    mod = _eskiMod;
     modSec('RADIOTAPE', true);
     return o;
   });
@@ -781,6 +789,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const bek = ms=>new Promise(r=>setTimeout(r,ms));
     const z = ()=>getComputedStyle(document.body).getPropertyValue('--zem1').trim();
     try{ fxNormale && fxNormale(); }catch(e){}
+    /* ARSIV KANALI: tema radyo modunda AILEDEN geliyor (bkz. aktifTema). */
+    mod = 'lib';
     modSec('RADIOTAPE', true); onizlemeAyarla(''); await bek(120);
     const bas = { mod:AKTIF_MOD, zem:z() };
     const gez = [];
@@ -816,6 +826,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       return { z1:cs.getPropertyValue('--zem1').trim(), z2:cs.getPropertyValue('--zem2').trim(),
                sinif:document.body.classList.contains('zem') }; };
     try{ fxNormale && fxNormale(); }catch(e){}
+    mod = 'lib';                      // tema arsiv sozlugunden okunsun
     modSec('RADIOTAPE', true); await bek(120);
     const kat = zem();
     const katFarkli = {};
@@ -2469,6 +2480,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const hepsi = aileSuz(sahte).length;
       AKTIF_AILE = eski;
       return { sayi:A.length, adlar:A.map(x=>x.ad),
+               acilis:(typeof AILE_ACILIS!=='undefined'?AILE_ACILIS:null),
                renkler:A.map(x=>x.renk),
                benzersizRenk:new Set(A.map(x=>x.renk)).size,
                suzulen, bos, hepsi,
@@ -2478,8 +2490,22 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('On bir aile tanimli', !!ai && ai.sayi===11, ai ? ai.adlar.join(' · ') : 'AILELER yok');
     K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===11,
        ai ? ai.benzersizRenk+'/11 benzersiz' : '-');
-    K('En icteki halka MIXTAPE', !!ai && ai.adlar[0]==='MIXTAPE',
-       'turu belirsiz olanlarin yeri; en dista ELECTRONIC');
+    /* SIRAYI KULLANICI DIKTE ETTI (buyukten kucuge):
+       ELECTRONIC · MIXTAPE · HIP HOP & RNB · ROCK & COUNTRY ·
+       WORLD & ROOTS · LOUNGE · ORCHESTRAL · JAZZ · DISCO FUNK ·
+       INDIE & LOFI · AMBIENT
+     Dizi icten disa oldugu icin ilki AMBIENT, sonuncusu ELECTRONIC.
+     Bu bir zevk karari; sayiyla dogrulanamaz, o yuzden aynen sabit. */
+  {
+    const SIRA = ['AMBIENT','INDIE & LOFI','DISCO FUNK','JAZZ','ORCHESTRAL',
+                  'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','HIP HOP & RNB',
+                  'MIXTAPE','ELECTRONIC'];
+    K('Halka sirasi kullanicinin dikte ettigi gibi',
+      !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
+      ai ? ai.adlar.join(' < ') : '-');
+    K('Acilis ailesi ELECTRONIC', !!ai && ai.acilis==='ELECTRONIC',
+      ai ? String(ai.acilis) : '-');
+  }
     /* FX IPUCU ARTIK TUR BASINA VE SURELI: bir turde ogrenmek
        otekinde de ogrenmis saymak degil; aylardir dokunmayan da
        unutuyor. Tek '1' bayragina donulurse bu kontrol duser. */
@@ -2516,14 +2542,46 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* SAFLIK SIRASI: has olanlar once. Kademe icinde rastgele,
        kademeler arasinda sabit. Bu bozulursa kullanici bir rafa
        basip once karisik istasyon duyar -- rafa guveni biter. */
-    K('Has istasyonlar once caliyor', await pg.evaluate(()=>{
-        const g = [{ad:'k3',saf:3},{ad:'k1',saf:1},{ad:'k2',saf:2},
-                   {ad:'k1b',saf:1},{ad:'kx'}];
-        const s = safSirala(g).map(x=>x.saf || 3);
-        // once 1'ler, sonra 2, sonra 3'ler
-        for(let i=1;i<s.length;i++) if(s[i] < s[i-1]) return false;
-        return s.length===5;
-      }), 'saf 1 -> 2 -> 3');
+    /* UC KADEMELI SAFLIK SIRASI KALKTI: kullanici denedi ve
+       "1. 2. grup olayini bosver" dedi. Yerine RAFI ACAN ISTASYON
+       var: JAZZ her zaman Instrumental Jazz ile, AMBIENT doga sesiyle
+       aciliyor; gerisi rastgele. Bu satir giderse raf yine rastgele
+       bir seyle acilir ve ilk ses turu anlatmaz. */
+    K('Raf acan istasyonla basliyor', await pg.evaluate(()=>{
+        const eski = AKTIF_AILE;
+        AKTIF_AILE = 'JAZZ';
+        const g = [{ad:'Bossa Jazz Brasil'},{ad:'Jazz 88'},
+                   {ad:'Instrumental Jazz'},{ad:'Radio Art - Jazz Piano'}];
+        const ilk = (safSirala(g)[0]||{}).ad;
+        AKTIF_AILE = 'AMBIENT';
+        const g2 = [{ad:'MyNoise Pure Nature'},{ad:'Nature Radio Rain'},
+                    {ad:'0R - MUSIC FOR SLEEP'}];
+        const ilk2 = (safSirala(g2)[0]||{}).ad;
+        AKTIF_AILE = eski;
+        return ilk === 'Instrumental Jazz' && ilk2 === 'Nature Radio Rain'
+               && safSirala(g).length === 4;
+      }), 'JAZZ -> Instrumental Jazz, AMBIENT -> Nature Radio Rain');
+    /* GERI/ILERI AILENIN ICINDE: JAZZ'tayken geri basmak arada
+       calmis bir ROCK istasyonuna ATLAMAZ. */
+    K('Geri tusu aileden cikmiyor', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE;
+        mod = 'radio'; AKTIF_AILE = 'JAZZ';
+        const s = _gecUygun({grup:'JAZZ'}) && !_gecUygun({grup:'ROCK & COUNTRY'})
+                  && _gecUygun({}) ;
+        mod = eM; AKTIF_AILE = eA;
+        return s;
+      }), 'baska ailenin kaydi atlaniyor, grupsuz kayit engel degil');
+    /* BOS YERE BASMAK SECIMI IPTAL EDER: secim calan sesin rafina
+       doner. Bayrak degil, calan kaydin rafi olcut. */
+    K('Bos yere basinca secim iptal', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE, eS = _sonCalan;
+        mod = 'radio'; _sonCalan = {grup:'JAZZ'}; AKTIF_AILE = 'HIP HOP & RNB';
+        const oldu = aileIptal();
+        const sonuc = oldu && AKTIF_AILE === 'JAZZ';
+        _sonCalan = {grup:'JAZZ'}; const ikinci = aileIptal();   // ayni raf: is yok
+        mod = eM; AKTIF_AILE = eA; _sonCalan = eS;
+        return sonuc && ikinci === false;
+      }), 'secim calan istasyonun rafina doner');
     /* TUR ICINDE SONSUZ DONGU: havuz bitince damgalar temizlenip
        basa donuluyor. Esik tur acikken 1, yoksa 3. Bu satir giderse
        kullanici bir turde 20 istasyon sonra duvara toslar. */

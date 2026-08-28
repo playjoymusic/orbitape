@@ -236,7 +236,7 @@
   #kamCubuk i{position:absolute;left:0;right:0;height:1.5px;border-radius:2px;
     background:rgba(140,190,190,.22);}
   #kamCubuk b{position:absolute;left:0;height:1.5px;border-radius:2px;
-    width:calc(var(--kv,22) * 1%);background:currentColor;opacity:.75;
+    width:calc(var(--kv,100) * 1%);background:currentColor;opacity:.75;
     box-shadow:0 0 7px currentColor;transition:width .08s linear;}
   #kamCubuk{color:#8ff0dd;}
   body.t-liste #kamCubuk{color:#d9d0dd;} body.t-radio #kamCubuk{color:#ffc79e;}
@@ -831,7 +831,7 @@
     /* kenara doğru sönerek bitsin: sert çember kesiği görünmesin */
     -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.55) 76%, transparent 94%);
     mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.55) 76%, transparent 94%);}
-  #kam.on{display:block;opacity:calc(var(--kv,22) / 100);}   /* seviye #kamCubuk'tan */
+  #kam.on{display:block;opacity:calc(var(--kv,100) / 100);}   /* seviye #kamCubuk'tan */
   /* sürüklerken yumuşatma yok: kamera parmağı anında takip etsin */
   #kam.surukle{transition:none;}
 
@@ -1322,10 +1322,42 @@
   /* Sağ üstteki marka adı, seçili (ya da önizlenen) kategorinin
      renginde. İki durak: kategorinin ana ve ikinci rengi. Kategori
      yoksa açılış gradyanına dönüyor. */
+  /* ── IKI AYRI "MIXTAPE" VARDI ────────────────────────────────────
+     Biri yeni TUR HALKASI (AILELER icinde, mavi), oteki eski KANAL
+     TEMASI (MOD_TEMA.MIXTAPE, kavunici -- kullanicinin kendi muzik
+     arsivi). Ikisinin adi ayni oldugu icin radyo modunda MIXTAPE
+     halkasi secilince marka rengi ve zemin ESKI KANALIN kavunicisine
+     dusuyordu; semboller dogru duruyordu cunku onlar aileRenk()'ten
+     okuyor. Kullanicinin gordugu tam olarak buydu: "semboller dogru,
+     mixtape hala eski rengini goruyor, bu baska bir mixtape."
+     Artik radyo modunda tema AILENIN renginden turetiliyor; MOD_TEMA
+     yalnizca arsiv tarafinin sozlugu. */
+  function aileTema(rgb){
+    const [r,g,b] = rgb.split(',').map(n=>+n);
+    const kis = (k)=>[Math.round(r*k),Math.round(g*k),Math.round(b*k)].join(',');
+    const ac  = (k)=>[Math.min(255,Math.round(r+(255-r)*k)),
+                      Math.min(255,Math.round(g+(255-g)*k)),
+                      Math.min(255,Math.round(b+(255-b)*k))].join(',');
+    const onalti = (k)=>'#'+[r,g,b].map(v=>Math.round(v*k).toString(16)
+                        .padStart(2,'0')).join('');
+    return { ana:rgb, ikinci:ac(.55),
+             halka:[rgb, ac(.45), kis(.55), ac(.8)],
+             zemin:[onalti(.055), '#000000'] };
+  }
+  function aktifTema(){
+    try{
+      if(typeof mod !== 'undefined' && mod === 'radio'){
+        const r = (typeof AKTIF_AILE !== 'undefined' && AKTIF_AILE)
+                ? aileRenk(AKTIF_AILE) : '';
+        if(r) return aileTema(r);
+      }
+    }catch(e){}
+    const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
+    return (g && MOD_TEMA[g]) || null;
+  }
   function markaRengi(){
     try{
-      const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
-      const p = g && MOD_TEMA[g];
+      const p = aktifTema();
       const kok = document.documentElement.style;
       if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); return; }
       kok.setProperty('--m1', 'rgb('+p.ana+')');
@@ -1358,8 +1390,8 @@
          Hangi efektte olduğunu HALKALAR söylüyor (hepsi o rengin
          ailesine kayıyor); zemin sabit kalınca kişi nerede olduğunu
          kaybetmiyor. */
-      const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
-      const zm = (g && MOD_TEMA[g] && MOD_TEMA[g].zemin) || null;
+      const _t = aktifTema();
+      const zm = (_t && _t.zemin) || null;
       const b = document.body; if(!b) return;
       if(!zm){ b.classList.remove('zem'); return; }
       b.style.setProperty('--zem1', zm[0]);
@@ -4495,6 +4527,7 @@
       geriYerlestir();
     }catch(e){}
   }
+  var _sonCalan = null;   // o an calan kayit (bkz. aileIptal)
   function gecmisYaz(item){
     if(_gecisKaynak==='gez'){ /* geçmişte gezildi: dizi değişmiyor */ }
     else{
@@ -4599,8 +4632,27 @@
     cal(o);
     return true;
   }
-  function geriGit(){ gecmisCal(_gecPos - 1); }
-  function ileriGit(){ gecmisCal(_gecPos + 1); }
+  /* ── GERI/ILERI AILENIN ICINDE KALIR ──────────────────────────────
+     Gecmis tek bir dizi ama radyo modunda gezinme SECILI AILEYE
+     hapsedilmis durumda: JAZZ'tayken geri basmak bir onceki JAZZ
+     istasyonuna dondurur, arada calmis bir ROCK istasyonuna degil.
+     Aksi halde geri tusu insani sessizce baska bir rafa tasiyordu.
+     Grubu olmayan kayit (arsiv parcasi, favori) engel degil. */
+  function _gecUygun(x){
+    if(typeof mod === 'undefined' || mod !== 'radio') return true;
+    if(!AKTIF_AILE) return true;
+    return !x || !x.grup || x.grup === AKTIF_AILE;
+  }
+  function geriGit(){
+    let i = _gecPos - 1;
+    while(i >= 0 && !_gecUygun(GECMIS[i])) i--;
+    gecmisCal(i);
+  }
+  function ileriGit(){
+    let i = _gecPos + 1;
+    while(i < GECMIS.length && !_gecUygun(GECMIS[i])) i++;
+    gecmisCal(i);
+  }
   /* Ortaya basış: geçmişin içindeysek yeni parça ARAMA, bir ileri git. */
   function ileriDonduMu(){
     if(_gecPos >= 0 && _gecPos < GECMIS.length - 1) return gecmisCal(_gecPos + 1);
@@ -4609,6 +4661,7 @@
   function cal(item){
     iz('cal');
     if(!item) return;
+    try{ _sonCalan = item; }catch(e){}
     /* İLK SES KATEGORİYE TAKILMAZ ────────────────────────────────
        Açılış kategorisi RADIOTAPE. Radyo gelmeyip yedeğe düşülünce
        ilk ses bir ARŞİV kaydı oluyor ve aşağıdaki kategori kapısından
@@ -4931,20 +4984,32 @@
      MIXTAPE EN ICTE: turu belli olmayanlar orada. Bir istasyonu zorla
      "orchestral" rafina koyup pop caldirmak guveni kiriyor; emin
      olmadiklarimizin kendi yeri var ve orasi bilerek secilen bir yer. */
+  /* SIRA ISTASYON SAYISINA GORE (olculdu, radyo.json 552):
+     kucuk raf icte, buyuk raf dista. Halkanin capi rafin buyuklugunu
+     anlatiyor; sag ustteki isim dugmesi BUYUKTEN KUCUGE tariyor.
+     RENKLER DEGISMEDI -- her ailenin rengi kendinde kaldi. */
   var AILELER = [
-    { ad:'MIXTAPE',       renk:'132,150,255' },   // 1. halka -- turu belirsiz
-    { ad:'JAZZ',          renk:'204,124,164' },   // 2.
-    { ad:'AMBIENT',       renk:'95,191,122'  },   // 3.
-    { ad:'ROCK & COUNTRY',renk:'242,104,60'  },   // 4.
-    { ad:'WORLD & ROOTS', renk:'154,150,172' },   // 5.
-    { ad:'ORCHESTRAL',    renk:'240,172,122' },   // 6.
-    { ad:'INDIE & LOFI',  renk:'176,124,232' },   // 7.
-    { ad:'HIP HOP & RNB', renk:'190,182,164' },   // 8.
-    { ad:'DISCO FUNK',    renk:'143,208,232' },   // 9.
-    { ad:'LOUNGE',        renk:'216,203,160' },   // 10.
-    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 11. en dista, turkuaz
+    { ad:'AMBIENT',       renk:'95,191,122'  },   // 1. halka, EN ICTE
+    { ad:'INDIE & LOFI',  renk:'176,124,232' },   // 2.
+    { ad:'DISCO FUNK',    renk:'143,208,232' },   // 3.
+    { ad:'JAZZ',          renk:'204,124,164' },   // 4.
+    { ad:'ORCHESTRAL',    renk:'240,172,122' },   // 5.
+    { ad:'LOUNGE',        renk:'216,203,160' },   // 6.
+    { ad:'WORLD & ROOTS', renk:'154,150,172' },   // 7.
+    { ad:'ROCK & COUNTRY',renk:'242,104,60'  },   // 8.
+    { ad:'HIP HOP & RNB', renk:'190,182,164' },   // 9.
+    { ad:'MIXTAPE',       renk:'132,150,255' },   // 10. turu belirsiz
+    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 11. EN DISTA, turkuaz
   ];
-  var AILE_ACILIS = 'ELECTRONIC';   // sifirdan acilis: en distaki halka
+  /* SIRAYI KULLANICI VERDI, buyukten kucuge dikte etti:
+       ELECTRONIC · MIXTAPE · HIP HOP & RNB · ROCK & COUNTRY ·
+       WORLD & ROOTS · LOUNGE · ORCHESTRAL · JAZZ · DISCO FUNK ·
+       INDIE & LOFI · AMBIENT
+     Yukaridaki dizi ICTEN DISA oldugu icin bunun tersi. Istasyon
+     sayisiyla ilgisi yok; halkanin yeri kullanicinin kulaginda o
+     turun agirligini anlatiyor.
+     ACILIS: ELECTRONIC, en distaki halka. */
+  var AILE_ACILIS = 'ELECTRONIC';
   var AILE_ADLAR = AILELER.map(a=>a.ad);
   /* TANIMDAN ONCE CAGRILABILIR: acilis yerlesimi buraya erken
      ugruyor. Tablo henuz yoksa renk yok demek, hata degil. */
@@ -4974,23 +5039,33 @@
     if(!AKTIF_AILE || !list || !list.length) return list || [];
     return list.filter(x => x && x.grup === AKTIF_AILE);
   }
-  /* ── SAFLIK SIRASI: HAS OLANLAR ONCE ──────────────────────────────
-     radyo.json'daki 'saf' alani: 1 = has (adinda tek tur), 2 = yakin
-     (iki tur), 3 = karisik. "Jazz 88" ile "Bossa Jazz Brasil" ayni
-     rafta ama ayni sey degil; bir rafa basan once EN HAS olani
-     duymali, onlar bitince daha yakinlar, en son karisiklar.
-     Kademe ICINDE rastgele: ayni rafa iki kez basan ayni sirayi
-     duymasin. Kademeler ARASINDA sira sabit. */
+  /* ── RAFI ACAN ISTASYON ───────────────────────────────────────────
+     Once uc kademeli bir "saflik" sirasi vardi (has -> yakin ->
+     karisik). Kullanici denedi ve kaldirdi: "1. 2. grup olayini
+     bosver." Yerine daha basit ve daha kesin bir sey istedi: bazi
+     raflar HER ZAMAN belli bir istasyonla acilsin, gerisi rastgele.
+       JAZZ    -> Instrumental Jazz
+       AMBIENT -> Nature Radio Rain  (doga SESI; adinda sleep/relax yok)
+     Boylece rafa ilk basildiginda duyulan sey o rafin ne oldugunu
+     soyluyor; ikinci sesten itibaren rastgelelik geri geliyor. */
+  const AILE_ACAN = {
+    'JAZZ':    'instrumental jazz',
+    'AMBIENT': 'nature radio rain'
+  };
   function safSirala(liste){
     if(!liste || !liste.length) return liste || [];
-    const kat = [[],[],[]];
-    for(const x of liste){
-      const k = Math.min(3, Math.max(1, +((x && x.saf) || 3))) - 1;
-      kat[k].push(x);
-    }
-    return kat[0].concat(kat[1], kat[2]).length
-         ? karisik(kat[0]).concat(karisik(kat[1]), karisik(kat[2]))
-         : liste;
+    const s = karisik(liste.slice());
+    try{
+      const acan = AILE_ACAN[AKTIF_AILE];
+      if(acan){
+        const i = s.findIndex(x=>{
+          const ad = (x && (x.name || x.ad) || '').toLowerCase();
+          return ad.indexOf(acan) >= 0;
+        });
+        if(i > 0) s.unshift(s.splice(i, 1)[0]);
+      }
+    }catch(e){}
+    return s;
   }
   /* Aile değiştir. zorla=true aynı aileye tekrar basınca kapatmaz. */
   function aileSec(ad, zorla){
@@ -5848,10 +5923,13 @@
       _yakZaman = setTimeout(()=>{ _yakZaman = null; _moodGez = false; _moodVurgu = -1; }, 900);
     }catch(e){}
   }
+  /* YON: BUYUKTEN KUCUGE. AILE_ADLAR icten disa (kucukten buyuge)
+     dizili, o yuzden burada geriye dogru gidiyoruz: en distaki
+     halkadan baslayip ice dogru. */
   function aileSiraGec(){
     const n = AILE_ADLAR.length;
     const bul = AILE_ADLAR.indexOf(AKTIF_AILE);
-    const i = (bul >= 0) ? (bul + 1) % n : 0;
+    const i = (bul >= 0) ? (bul - 1 + n) % n : n - 1;
     try{ aileSec(AILE_ADLAR[i], true); }catch(e){}
     try{ modAdiGoster(); halkaYak(AILE_ADLAR[i]); }catch(e){}
   }
@@ -5863,7 +5941,7 @@
   function arsivSiraGec(){
     const n = ARSIV_ADLAR.length;
     const bul = ARSIV_ADLAR.indexOf(AKTIF_MOD);
-    const i = (bul >= 0) ? (bul + 1) % n : 0;
+    const i = (bul >= 0) ? (bul - 1 + n) % n : n - 1;   // buyukten kucuge
     AKTIF_MOD = ARSIV_ADLAR[i];
     try{ localStorage.setItem('orbitape.mod', AKTIF_MOD); }catch(e){}
     try{ kuyruk.length = 0; }catch(e){}          // yeni raf siradaki seste gecerli
@@ -6665,9 +6743,14 @@
      Açılış yumuşak (%22). Çizgiyi sürükleyerek %6 ile %80 arasında
      ayarlanıyor; seçim hatırlanıyor. Kayıt tuvali kameranın GERÇEK
      opaklığını okuduğu için çıktı da aynı seviyede çıkıyor. */
-  const KAM_ANAHTAR = 'orbitape.kamSeviye';
-  const KAM_ALT = 6, KAM_UST = 80;
-  var _kamSeviye = 22;
+  /* ACILIS %100: kamera artik tam gorunurlukte aciliyor. Halkalarin
+     ALTINDA kaliyor (#kam z-index 0, halka tuvali #viz z-index 1),
+     o yuzden tam acikken bile arayuzun onune gecmiyor. Cubukla
+     kisilabiliyor. Anahtar yenilendi ki eskiden kayitli %22 yeni
+     acilisi bastirmasin. */
+  const KAM_ANAHTAR = 'orbitape.kamSeviye2';
+  const KAM_ALT = 6, KAM_UST = 100;
+  var _kamSeviye = 100;
   try{ const v = parseFloat(localStorage.getItem(KAM_ANAHTAR));
        if(isFinite(v)) _kamSeviye = Math.min(KAM_UST, Math.max(KAM_ALT, v)); }catch(e){}
   const kamCubuk = document.getElementById('kamCubuk');
@@ -8517,8 +8600,50 @@
   /* El dokunuşu YAKALAMIYOR; basış halkaya gidiyor ve müziği o başlatıyor.
      Biz sadece ilk temasta eli kaldırıyoruz — nereye basılırsa basılsın. */
   ['pointerdown','touchstart','keydown'].forEach(t=>
-    document.addEventListener(t, ()=>{ _dokunuldu = true; if(_karsAcik) karsilamaKapat(); },
-                              {capture:true, passive:true}));
+    document.addEventListener(t, ()=>{
+      /* ILK DOKUNUS TURU KAPATIR ────────────────────────────────
+         Olculen sikayet: "ilk hep skip'e basmak istiyorum, ilk
+         ekrana basiyor, skip'e sonra basabiliyorum." Sebebi tur
+         katmaninin tiklama gecirmesiydi: ilk dokunus karsilamayi
+         kapatip halkaya gidiyordu, SKIP ancak ikinci dokunusla
+         basilabiliyordu. Artik tur akiyorsa ILK dokunus SKIP
+         sayiliyor; ses baslamasi degismiyor cunku dokunus yine
+         altindaki dugmeye de gidiyor. */
+      const _ilk = !_dokunuldu;
+      _dokunuldu = true;
+      if(_karsAcik) karsilamaKapat();
+      if(_ilk){ try{ if(_turAkiyor) turBitir(); }catch(e){} }
+    }, {capture:true, passive:true}));
+
+  /* ── BOS YERE BASMAK SECIMI IPTAL EDER ───────────────────────────
+     Sag ustteki isim dugmesiyle raflar arasinda geziliyor ama secim
+     ANINDA calmiyor: calan ses bitene kadar eski raf devam ediyor.
+     Yani arada bir "sectim ama henuz duymadim" hali var. Kullanicinin
+     istedigi: "hip hop'in ustundeyim ama daha secmedim, ekranin bos
+     bir yerine basinca secimler iptal olmali."
+     Iptal olculebilir bir seye baglandi, ayri bir bayraga degil: o an
+     CALAN kaydin rafi ile secili raf farkliysa secim henuz gerceklesmemis
+     demektir; bos yere basmak secili rafi calana geri dondurur. */
+  function aileIptal(){
+    try{
+      if(typeof mod === 'undefined' || mod !== 'radio') return false;
+      const g = _sonCalan && _sonCalan.grup;
+      if(!g || !AKTIF_AILE || g === AKTIF_AILE) return false;
+      aileSec(g, true);
+      try{ modAdiGoster(); halkaYak(g); }catch(e){}
+      return true;
+    }catch(e){ return false; }
+  }
+  /* Sadece GERCEKTEN bos yer: dugme, halka, cubuk, panel degil. */
+  document.addEventListener('pointerdown', e=>{
+    try{
+      const h = e.target;
+      if(!h || h.closest('button, a, input, label, select, textarea, ' +
+                          '.hit, .uydu, #ust, #np, #mark, #rapor, #kamCubuk, ' +
+                          '#sesCubuk, #tur, #karsilama, #hata, #agyok')) return;
+      aileIptal();
+    }catch(_){}
+  }, {passive:true});
 
   /* ── TANITIM TURU ────────────────────────────────────────────────
      İlk açılışta bir kez akar, adımlar kendi kendine geçer. Katman
