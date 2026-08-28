@@ -139,6 +139,59 @@ KARISIK = re.compile(
     r"variety|adult contemporary|hitradio|\bchr\b|"
     r"contemporary hits|non.?stop|greatest hits|oldies|\bmix\b", re.I)
 
+# ── ELLE VERILEN KARARLAR ─────────────────────────────────────────
+# radyo_elle.json: kullanicinin tek tek dinleyip verdigi kararlar.
+# Kuraldan USTUN. Bir kural degisse bile bu istasyonlar yerinden
+# oynamaz -- insan karari, desen eslesmesinden daha guvenilir.
+ELLE = {}
+try:
+    import os
+    _y = os.path.join(os.path.dirname(os.path.abspath(__file__)), "radyo_elle.json")
+    with open(_y, encoding="utf-8") as _f:
+        ELLE = json.load(_f)
+except Exception:
+    ELLE = {}
+
+# ── KULLANICININ MANTIGI ──────────────────────────────────────────
+# 84 elle karari okundu ve su desenler cikti:
+#
+# WORLD & ROOTS = YEREL DIL / BOLGESEL YAYIN. Ispanyolca, Arapca,
+#   Turkce, Balkan, Alman halk muzigi, Afrika, gospel. Tur kelimesi
+#   ne olursa olsun: "AMOR SOLO POP" pop degil, Meksika radyosu.
+BOLGESEL = re.compile(
+    r"\bregional\b|\bmexic|\bbanda\b|ranchera|nortena|norteña|mariachi|"
+    r"grupera|vallenato|champeta|\bcorrido|\bbolero\b|\bcriolla\b|"
+    r"\bturk\w*|\bturkce\b|\barabic\b|\barab\b|\bmaroc|amazigh|"
+    r"chaabi|\bbalkan\b|\bgrcki\b|\bgreek\b|\bschlager\b|volksmusik|"
+    r"\bheimat\b|\bceltic\b|\bgospel\b|\bafrican\b|afrobeats?|"
+    r"\bhindi\b|bollywood|\bdesi\b|\bpersian\b|\bfarsi\b|"
+    r"\brussian folk\b|\bklezmer\b|\bfado\b|\bsevdah\b|\bmanele\b|"
+    r"\bkizomba\b|\bsoca\b|\bcalypso\b|\bzouk\b|\bhighlife\b", re.I)
+
+# ROCK & COUNTRY = ESKI ON YILLAR ve klasik rock. "0 N - 60s on
+#   Radio", "80s Forever", "Flower Power" hep buraya girdi.
+ESKI_ROCK = re.compile(
+    r"\b60s\b|\bsixties\b|\b70s\b|\bseventies\b|classic ?rock|"
+    r"flower ?power|\bpsychedelic ?rock\b|\bbeat\b ?music|"
+    r"\bwoodstock\b|\bvintage rock\b", re.I)
+
+# ORCHESTRAL = klasik + FILM MUZIGI + akustik.
+FILM_MUZIGI = re.compile(
+    r"\bcinema\b|\bfilm\b|\bmovie\b|soundtrack|\bscore\b|"
+    r"filmzene|\bakustik\b|\bacoustic\b|\bklassik\b|\bclasica\b|"
+    r"\bclassique\b|\bopera\b", re.I)
+
+# AMBIENT = uzay, sci-fi, uyku, ODAKLANMA, rahatlama.
+ODAK_UZAY = re.compile(
+    r"\bspace\b|\bsci.?fi\b|\bcosmic\b|\bfocus\b|\bstudy\b|"
+    r"\bcoding\b|\bcode\b ?radio|\bconcentration\b|\bsleep\b|"
+    r"\bdream\w*|\bspiritual\b|\bmeditat\w*", re.I)
+
+# ELECTRONIC = deejay / remix / club / trance / deep / bass / eurodance.
+DJ_KULUP = re.compile(
+    r"\bdeejay\b|\bremix\w*|\bhands ?up\b|\beurodance\b|"
+    r"\bbass\b|\bbroken ?beat\b|\bibiza\b|\bbpm\b|\bmixe?s?\b ?radio", re.I)
+
 AILELER = OrderedDict([
     # SIRA = HALKA SIRASI, en icten disa. Kucuk raf icte, buyuk raf
     # dista: halkanin capi rafin buyuklugunu anlatiyor.
@@ -272,6 +325,13 @@ def grupla(kayitlar):
         ad = (o.get("ad") or "").replace("_", " ").replace("+", " ")
         etiket = (o.get("etiket") or "").replace("_", " ").replace("+", " ")
 
+        # 0) ELLE VERILMIS KARAR HER SEYIN USTUNDE.
+        _elle = ELLE.get(o.get("ad") or "")
+        if _elle:
+            o["grup"] = _elle
+            o["saf"] = 1                      # insan karari: has sayilir
+            continue
+
         # 1) ISIMDE "her seyden biraz" isareti varsa TUR SORULMAZ.
         #    "1000 HITS Classical" adinda classical geciyor ama basinda
         #    HITS var: bu bir tur degil bir liste. Once bu bakiliyor,
@@ -286,6 +346,67 @@ def grupla(kayitlar):
             o["grup"] = isim_raf[0]
             o["saf"] = saflik(ad, isim_raf[0])
             continue
+
+        # 2b) ISIM SUSUYOR AMA KULLANICININ MANTIGI KONUSUYOR MU?
+        #     84 elle karardan cikarilan desenler. Ad + etiket birlikte
+        #     okunuyor; burada etikete bakmak guvenli, cunku bunlar
+        #     "tur" degil "kimlik" isaretleri (dil, bolge, on yil).
+        #     CAKISMA KURALI BURADA DA GECERLI: kullanici iki tur birden
+        #     gecen istasyonlari BOS BIRAKTI. Ayni sekilde bir istasyon
+        #     iki desene birden uyuyorsa kimse kazanmaz, MIXTAPE'te
+        #     kalir. "Yeter ki dogru olsun" -- kapsama degil isabet.
+        #
+        #     CAKISMA NASIL COZULUYOR (kullanicinin kendi anlattigi yol):
+        #       - UC ve uzeri aday  -> bakilmaz bile, MIXTAPE. "rock ambient
+        #         jazz vs yaziyorsa hemen mixtape'e."
+        #       - IKI aday          -> hemen pes edilmiyor, YOGUNLUGA
+        #         bakiliyor: ISIMDE gecen, etikette gecene basar. Isim
+        #         istasyonun kendi soyledigi sey; etiket dizine yazdigi
+        #         arama kelimesi.
+        #       - Ikisi de isimdeyse -> esit, kimse kazanmaz, MIXTAPE.
+        #         (Kullanici da adinda iki tur gecenleri bos birakti.)
+        AD_PUAN, ET_PUAN = 3, 1
+        hepsi = ad + " " + etiket
+        if not KARISIK.search(ad):
+            _aday = {}
+
+            def _koy(raf, kal):
+                """Aday listesine puaniyla ekle. Isimde geçiyorsa agir basar."""
+                if kal.search(ad):
+                    _aday[raf] = max(_aday.get(raf, 0), AD_PUAN)
+                elif kal.search(etiket):
+                    _aday[raf] = max(_aday.get(raf, 0), ET_PUAN)
+
+            _koy("WORLD & ROOTS",  BOLGESEL)
+            _koy("ROCK & COUNTRY", ESKI_ROCK)
+            _koy("ORCHESTRAL",     FILM_MUZIGI)
+            _koy("AMBIENT",        ODAK_UZAY)
+            _koy("ELECTRONIC",     DJ_KULUP)
+            # RAF KELIMELERI TEK BASINA ATAMA YAPMIYOR, YARISA GIRIYOR.
+            # Etiket yalan soyleyebiliyor (HIP HOP rafinda lo-fi calmasi
+            # bu yuzden olmustu), o yuzden etiketten gelen 1 puan.
+            for _r, _k in RAF_KELIME.items():
+                _koy(_r, _k)
+
+            if len(_aday) >= 3:
+                # Cok sesli: hicbiri istasyonu anlatmiyor.
+                o["grup"] = "MIXTAPE"; o["saf"] = 3; continue
+
+            if len(_aday) == 2:
+                _s = sorted(_aday.items(), key=lambda t: -t[1])
+                if _s[0][1] > _s[1][1]:
+                    # Biri ISIMDE, oteki sadece etikette: isim kazanir.
+                    o["grup"] = _s[0][0]; o["saf"] = 2; continue
+                o["grup"] = "MIXTAPE"; o["saf"] = 3; continue
+
+            if len(_aday) == 1:
+                _r, _p = list(_aday.items())[0]
+                # Tek aday isimde geciyorsa raf kelimesi de atayabilir.
+                # Sadece etiketten geliyorsa yalnizca KIMLIK desenlerine
+                # guveniyoruz (dil, bolge, on yil) -- tur etiketine degil.
+                if _p >= AD_PUAN or _r in ("WORLD & ROOTS", "ROCK & COUNTRY",
+                                           "ORCHESTRAL", "AMBIENT", "ELECTRONIC"):
+                    o["grup"] = _r; o["saf"] = 2; continue
 
         # 3) ISIM SUSUYORSA MIXTAPE. ETIKETE ARTIK BAKILMIYOR.
         #    Olculen vaka: kullanici JAZZ rafinda karisik muzik duydu
