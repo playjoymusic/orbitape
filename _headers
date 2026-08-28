@@ -49,6 +49,18 @@
 /sitemap.xml
   Content-Type: application/xml; charset=utf-8
 
+# ── DIGITAL ASSET LINKS ──────────────────────────────────────────
+# TWA'nin adres cubugunu gizlemesi bu dosyaya bagli: Chrome uygulamayi
+# acarken orbitape.app/.well-known/assetlinks.json'u okuyup imza
+# parmak izini karsilastiriyor.
+# Content-Type YANLIS olursa Chrome dosyayi OKUMAZ ve dogrulama sessizce
+# duser -- uygulama tarayici gibi acilir, adres cubugu gorunur ve
+# sebebi hicbir yerde yazmaz. Cloudflare uzantisiz/az bilinen yollarda
+# turu tahmin ediyor; burada acikca soyluyoruz.
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=300
+
 # Ikonlar ve ekran goruntuleri surum etiketiyle (?v=6) cagriliyor;
 # icerik degisince etiket degisiyor. O yuzden uzun onbellek guvenli
 # ve her acilista yeniden indirilmiyorlar.

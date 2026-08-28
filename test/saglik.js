@@ -1516,6 +1516,36 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('robots.txt UTF-8 diyor', /\/robots\.txt[\s\S]{0,120}charset=utf-8/.test(hd),
        'yoksa turkce karakterler bozuk gorunuyor');
     K('sitemap.xml UTF-8 diyor', /\/sitemap\.xml[\s\S]{0,120}charset=utf-8/.test(hd), 'ayni sebep');
+    /* ── DIGITAL ASSET LINKS ─────────────────────────────────────
+       TWA'nin adres cubugunu gizlemesi bu dosyaya bagli. Chrome onu
+       okuyamazsa dogrulama SESSIZCE duser: uygulama tarayici gibi
+       acilir ve sebebi hicbir yerde yazmaz. En sinsi basarisizlik
+       yollarindan biri, o yuzden bicim ve baslik simdiden bagli.
+       PARMAK IZI henuz yok (Play Console veriyor, uygulama kaydi
+       acilinca); dosya o gun tek satirlik bir duzenlemeyle tamam
+       oluyor. Test iki durumu da kabul ediyor -- BOZUK olani degil. */
+    {
+      const al = JSON.parse(fs.readFileSync('.well-known/assetlinks.json','utf8'));
+      const g = al[0] || {};
+      const pi = ((g.target||{}).sha256_cert_fingerprints||[])[0] || '';
+      const bekliyor = /^PARMAK_IZI_BEKLIYOR/.test(pi);
+      const gercek = /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/i.test(pi);
+      K('assetlinks.json bicimi dogru',
+        Array.isArray(al) && al.length===1
+        && (g.relation||[])[0]==='delegate_permission/common.handle_all_urls'
+        && (g.target||{}).namespace==='android_app'
+        && !!(g.target||{}).package_name
+        && (bekliyor || gercek),
+        bekliyor ? 'bicim tamam, PARMAK IZI BEKLIYOR (Play Console verecek)'
+                 : 'parmak izi yerinde');
+      K('assetlinks.json JSON olarak servis ediliyor',
+        /\/\.well-known\/assetlinks\.json[\s\S]{0,140}Content-Type:\s*application\/json/.test(hd),
+        'yanlis tur = Chrome dosyayi okumaz, dogrulama sessizce duser');
+      K('.well-known yayina giriyor', !fs.readFileSync('.assetsignore','utf8')
+          .split('\n').map(x=>x.trim()).filter(x=>x && !x.startsWith('#'))
+          .some(x=>x==='.well-known' || x==='.well-known/'),
+        'listelenirse dosya hic yuklenmez ve TWA dogrulanmaz');
+    }
   }
 
   /* ── KLAVYE VE EKRAN OKUYUCU ────────────────────────────────────
