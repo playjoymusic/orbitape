@@ -1,0 +1,90 @@
+[
+ {
+  "ad": "24/7 SciFi Radio",
+  "grup": "AMBIENT",
+  "ulke": "GB",
+  "mp3": "https://ec6.yesstreaming.net:1465/stream",
+  "sebep": "ULASILMIYOR: baglanti kurulmuyor",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "0 N - Chillout on Radio",
+  "grup": "LOUNGE",
+  "ulke": "DE",
+  "mp3": "https://0n-chillout.radionetz.de/0n-chillout.aac",
+  "sebep": "ULASILMIYOR: sunucu baglantiyi cevapsiz kapatiyor",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "0 N - Chillout on Radio",
+  "grup": "LOUNGE",
+  "ulke": "DE",
+  "mp3": "https://0n-chillout.radionetz.de/0n-chillout.mp3",
+  "sebep": "ULASILMIYOR: sunucu baglantiyi cevapsiz kapatiyor",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "24/7 Bossa Nova Radio",
+  "grup": "WORLD & ROOTS",
+  "ulke": "GB",
+  "mp3": "https://ec6.yesstreaming.net:1605/stream",
+  "sebep": "ULASILMIYOR: baglanti kurulmuyor",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "Obong University Radio",
+  "grup": "WORLD & ROOTS",
+  "ulke": "NG",
+  "mp3": "https://a10.asurahosting.com:7150/radio.mp3",
+  "sebep": "ULASILMIYOR: sertifika dogrulanmadi",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "Afrofusion Gospel Radio",
+  "grup": "WORLD & ROOTS",
+  "ulke": "NG",
+  "mp3": "https://a10.asurahosting.com:7120/radio.mp3",
+  "sebep": "ULASILMIYOR: sertifika dogrulanmadi",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "Onic Movies",
+  "grup": "MIXTAPE",
+  "ulke": "IE",
+  "mp3": "https://live.onic.ie/stream-movies?_=55552",
+  "sebep": "SAGIR: CORS basligi yok, uygulamada acilir ama SUSAR",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "Ràdio 90 (320k)",
+  "grup": "MIXTAPE",
+  "ulke": "ES",
+  "mp3": "https://giss.tv:666/r90.mp3",
+  "sebep": "ULASILMIYOR: sertifika dogrulanmadi",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "Breaking Bass Air",
+  "grup": "ELECTRONIC",
+  "ulke": "RU",
+  "mp3": "https://aircast.breaking-bass.ru:8443/air",
+  "sebep": "ULASILMIYOR: SSL WRONG_VERSION_NUMBER (https portunda https yok)",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "SOUND UP STATION NFRS",
+  "grup": "ELECTRONIC",
+  "ulke": "JP",
+  "mp3": "https://stream2.rcast.net/70945",
+  "sebep": "HTTP-403: sunucu kapiyi kapatiyor",
+  "tarih": "2026-08-28"
+ },
+ {
+  "ad": "Techno - FM - Channel",
+  "grup": "ELECTRONIC",
+  "ulke": "GB",
+  "mp3": "https://stream.techno.fm/radio1-320k.mp3",
+  "sebep": "ULASILMIYOR: sertifika dogrulanmadi",
+  "tarih": "2026-08-28"
+ }
+]
