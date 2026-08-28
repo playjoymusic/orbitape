@@ -46,6 +46,16 @@ jobs:
             https://raw.githubusercontent.com/playjoymusic/tracks/main/radyo.json
           python3 -c "import json;print(len(json.load(open('radyo.json'))),'istasyon')"
 
+      # ÖNCE BİÇİM, SONRA AĞ. Bozuk bir dosyayı anlamak için 10 dakika
+      # beklemenin anlamı yok; bu adım saniyeler sürüyor ve dosya
+      # bozuksa iş burada düşüyor.
+      #
+      # VERİ DEPOSUNDA HİÇ KONTROL YOKTU ve iki kere bozuk veri yayına
+      # gitti — ikisi de ancak kullanıcı "bir şey çalmıyor" dedikten
+      # sonra anlaşıldı. Kapatılan boşluk bu.
+      - name: Bicimi dogrula
+        run: python3 araclar/radyo_dogrula.py radyo.json index.html
+
       - name: Adresleri sina
         run: python3 araclar/radyo_kontrol.py radyo.json rapor.md rapor.json
 

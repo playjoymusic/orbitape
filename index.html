@@ -1219,6 +1219,31 @@
    4) window.onerror KULLANILIYOR, capture'lı 'error' dinleyicisi DEĞİL.
       İkincisi resim/ses yükleme hatalarını da yakalar; uygulamada ölü
       arşiv linkleri normal ve zaten ele alınıyor, panel açmamalı.       */
+  /* ── YUTULAN HATA SAYACI ──────────────────────────────────────────
+     Dosyada 391 tane BOS catch vardi: hata yakalaniyor ve hicbir sey
+     yapilmadan atiliyordu. Sebebi mesru -- bir efektin, bir DOM
+     dokunusunun ya da bir depolama cagrisinin patlamasi muzigi
+     kesmemeli. Ama bedeli KORLUK: bir sey ters gittiginde hicbir iz
+     kalmiyor. Bu oturumdaki "baska yere gidiyor", "takiliyor"
+     sikayetlerinin gec anlasilmasinin sebebi buydu.
+     Cozum davranisi DEGISTIRMIYOR: catch yine yutuyor, uygulama yine
+     devam ediyor. Sadece SAYIYOR ve ilk birkac mesaji tutuyor; ikisi
+     de 'D' raporunda gorunuyor. Yani hata artik sessiz degil, sadece
+     zararsiz.
+     Fonksiyon disariya hicbir degiskene bagli DEGIL ve kendi icinde
+     try/catch'li: acilisin en erken aninda cagrilsa bile patlamaz --
+     catch icinde patlamak, yutulan hatayi gercek hataya cevirirdi. */
+  function _yut(e){
+    try{
+      if(!window.__yut) window.__yut = { n:0, ilk:[] };
+      window.__yut.n++;
+      if(window.__yut.ilk.length < 8){
+        var m = (e && (e.message || e.name)) || String(e);
+        m = String(m).slice(0, 90);
+        if(m && window.__yut.ilk.indexOf(m) < 0) window.__yut.ilk.push(m);
+      }
+    }catch(_){}
+  }
   var ORB_SURUM = '2026.08.28';
   var _hataKayit = [], _hataGosterildi = false;
   (function(){
@@ -1237,32 +1262,43 @@
         if(!el) return;                      // DOM henüz yok: sessiz kal, kayıt duruyor
         el.classList.add('on');
         el.setAttribute('aria-hidden','false');
-      }catch(e){}
+      }catch(e){ _yut(e); }
     }
     window.onerror = function(mesaj, kaynak, satir, sutun){
       try{
         ekle('error', String(mesaj || 'unknown'),
              (kaynak ? String(kaynak).replace(/^.*\//,'') : '') + ':' + satir + ':' + sutun);
         panel();
-      }catch(e){}
+      }catch(e){ _yut(e); }
       return false;                          // tarayıcının kendi günlüğünü susturma
     };
     window.addEventListener('unhandledrejection', function(ev){
       try{
         var r = ev && ev.reason;
         ekle('promise', String((r && (r.message || r)) || 'unknown'), '');
-      }catch(e){}
+      }catch(e){ _yut(e); }
     });
     /* Kullanıcının postalayabileceği metin. Cihaz kimliği yok, konum yok,
        çalma geçmişi yok — sadece hatanın kendisi ve hangi tarayıcı. */
     window.hataMetni = function(){
       var s = 'ORBITAPE ' + ORB_SURUM + '\n' + navigator.userAgent + '\n';
-      try{ s += 'screen ' + innerWidth + 'x' + innerHeight + '\n'; }catch(e){}
+      try{ s += 'screen ' + innerWidth + 'x' + innerHeight + '\n'; }catch(e){ _yut(e); }
       s += '\n';
       for(var i=0;i<_hataKayit.length;i++){
         s += '[' + _hataKayit[i].tur + '] ' + _hataKayit[i].metin +
              (_hataKayit[i].ek ? '  (' + _hataKayit[i].ek + ')' : '') + '\n';
       }
+      /* YUTULAN HATALAR: uygulamayi kesmeyen ama olmus olan seyler.
+         Sifir degilse bir sey ters gidiyor ve biz gormuyoruz demektir.
+         Panel acilmaz -- bunlar zaten zararsiz kabul edilmis hatalar;
+         ama raporu isteyen kisi onlari da gormeli. */
+      try{
+        var y = window.__yut;
+        if(y && y.n){
+          s += '\nswallowed ' + y.n + '\n';
+          for(var j=0;j<y.ilk.length;j++) s += '  . ' + y.ilk[j] + '\n';
+        }
+      }catch(e){ _yut(e); }
       return s;
     };
   })();
@@ -1367,7 +1403,7 @@
     const y = ad || '';
     if(y === _onizMod) return;
     _onizMod = y;
-    try{ document.body.classList.toggle('oniz', !!y); }catch(e){}
+    try{ document.body.classList.toggle('oniz', !!y); }catch(e){ _yut(e); }
     zeminUygula();
   }
   /* Sağ üstteki marka adı, seçili (ya da önizlenen) kategorinin
@@ -1410,7 +1446,7 @@
                 ? aileRenk(AKTIF_AILE) : '';
         if(r) return aileTema(r);
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
     return (g && MOD_TEMA[g]) || null;
   }
@@ -1454,10 +1490,10 @@
       if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); return; }
       kok.setProperty('--m1', 'rgb('+p.ana+')');
       kok.setProperty('--m2', 'rgb('+p.ikinci+')');
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function zeminUygula(){
-    try{ markaRengi(); }catch(e){}
+    try{ markaRengi(); }catch(e){ _yut(e); }
     /* ── SAĞ ÜSTTEKİ ÜÇ SEMBOL SEÇİLİ HALKANIN RENGİNİ ALIR ─────────
        Semboller kanalın sabit rengiyle duruyordu; hangi rafta
        olduğunu söylemiyorlardı. Artık seçili raf neyse onun rengi:
@@ -1476,7 +1512,7 @@
         if(_r) _b.style.color = 'rgb(' + _r + ')';
         else   _b.style.removeProperty('color');
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     try{
       /* ZEMİN FX'E GÖRE DEĞİŞMİYOR: arka plan seçili KATEGORİNİN malı.
          Hangi efektte olduğunu HALKALAR söylüyor (hepsi o rengin
@@ -1491,7 +1527,7 @@
       b.classList.add('zem');
       const mt = document.querySelector('meta[name="theme-color"]');
       if(mt) mt.setAttribute('content', zm[1]);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
 
   /* ── ALTI HALKA ──────────────────────────────────────────────────
@@ -1515,7 +1551,7 @@
         if(mod === 'radio' && typeof AILE_ADLAR !== 'undefined') return AILE_ADLAR;
         if(mod === 'lib'   && typeof ARSIV_ADLAR !== 'undefined') return ARSIV_ADLAR;
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     return MODSIRA;
   }
   function halkaAilesiMi(){
@@ -1559,7 +1595,7 @@
     const o = _diskOran(e || _moodSonOlay);
     _moodGez = true;                       // kip açıldı: bırakış artık "tık" değil
     _moodVurgu = (o >= zarSinir()) ? _halkaNo(o) : -1;
-    try{ modAdiTut(_moodVurgu >= 0 ? halkaAdlar()[_moodVurgu] : ''); }catch(_){}
+    try{ modAdiTut(_moodVurgu >= 0 ? halkaAdlar()[_moodVurgu] : ''); }catch(_){ _yut(_); }
   }
   /* İlk ses başlayana kadar false: o süre boyunca disk bölünmez,
      her basış radyoyu açar. sonraki() ve cal() true yapıyor. */
@@ -1613,7 +1649,7 @@
      "ağ yok" paneli çıkıyor (bkz. agYokMu). Bir tek başarı sıfırlıyor. */
   function hataEkle(k){ HATA[k]=(HATA[k]||0)+1; FAIL[k]=(FAIL[k]||0)+1; if(HATA[k]>=ELE_ESIK){ KARA.add(k); KARA_SURE.set(k, Date.now()); } rapyaz(); }
   function basari(k){ HATA[k]=0; KARA.delete(k); KARA_SURE.delete(k); OK[k]=(OK[k]||0)+1; rapyaz();
-    try{ agYokKapa(); }catch(e){} }   // affet — ve ağ çalışıyor demektir
+    try{ agYokKapa(); }catch(e){ _yut(e); } }   // affet — ve ağ çalışıyor demektir
   // TOPARLANMA: elenen koleksiyonları ~45sn sonra tekrar dene (archive geri gelirse yeşile döner) -> kalıcı ölüm yok
   setInterval(()=>{ const now=Date.now(); let d=false;
     for(const k of [...KARA]){ if(now-(KARA_SURE.get(k)||0) > 45000){ KARA.delete(k); KARA_SURE.delete(k); HATA[k]=0; d=true; } }
@@ -1673,7 +1709,7 @@
       const kes = liste.length > ONB_TAVAN ? karisik(liste).slice(0, ONB_TAVAN) : liste;
       const v = kes.map(o=>[o.id||'', o.mp3||'', o.ad||'', o.sanatci||'', o.etiket||'', o.lisans||'']);
       localStorage.setItem(ONB_ON+ad, JSON.stringify({t:Date.now(), v:v}));
-    }catch(e){}   // kota dolu / gizli sekme: önbellek bir lüks, hata vermesin
+    }catch(e){ _yut(e); }   // kota dolu / gizli sekme: önbellek bir lüks, hata vermesin
   }
   function onbellekOku(ad){
     try{
@@ -1719,16 +1755,16 @@
   const KOSULLU = {cache:'no-cache'};
   async function listeCek(url, yedek, ms){
     const tazele = u => u + (u.includes('?')?'&':'?') + 't=' + Date.now();
-    try{ const r = await fetchZA(url, ms, KOSULLU); if(r && r.ok) return r; }catch(e){}
-    try{ const r = await fetchZA(tazele(yedek), ms); if(r && r.ok) return r; }catch(e){}
+    try{ const r = await fetchZA(url, ms, KOSULLU); if(r && r.ok) return r; }catch(e){ _yut(e); }
+    try{ const r = await fetchZA(tazele(yedek), ms); if(r && r.ok) return r; }catch(e){ _yut(e); }
     // son şans: aynı kaynağa iki kat bütçeyle bir daha (yavaş hat için)
-    try{ const r = await fetchZA(url, ms*2, KOSULLU); if(r && r.ok) return r; }catch(e){}
+    try{ const r = await fetchZA(url, ms*2, KOSULLU); if(r && r.ok) return r; }catch(e){ _yut(e); }
     return null;
   }
   function fetchZA(url, ms, secenek){
     const sure = Math.round((ms || 8000) * AG_KAT);
     const kontrol = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    const zt = setTimeout(()=>{ try{ kontrol && kontrol.abort(); }catch(_){} }, sure);
+    const zt = setTimeout(()=>{ try{ kontrol && kontrol.abort(); }catch(_){ _yut(_); } }, sure);
     const kur = secenek ? Object.assign({}, secenek) : {};
     if(kontrol) kur.signal = kontrol.signal;
     const istek = fetch(url, kur);
@@ -1896,7 +1932,7 @@
         }
       }
       if(vb) sv.setAttribute('viewBox', vb);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   let bekleInt=null;
   // 3 BUYUK sembol: sabit yuvalarda, agir agir ve SIRAYLA degisir (makara).
@@ -1940,7 +1976,7 @@
       /* yuva başına g/3; sembol o yuvanın %74'ü -> aralarında ince boşluk kalır */
       bekle.style.setProperty('--sem', Math.max(16, Math.round(g/3*0.78)) + 'px');
 
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* ── AĞ YOK DURUMU ────────────────────────────────────────────────
      Eskiden ağ olmayınca hiçbir liste gelmiyor, hiçbir şey çalmıyor ve
@@ -1957,9 +1993,9 @@
      yoksa zaten liste çekmeleri de düşer ve sayaç hızla dolar. */
   var _agBos = 0;
   const AG_BOS_ESIK = 4;
-  function agBosArtir(){ try{ _agBos++; if(agYokMu()) agYokAc(); }catch(e){} }
+  function agBosArtir(){ try{ _agBos++; if(agYokMu()) agYokAc(); }catch(e){ _yut(e); } }
   function agYokMu(){
-    try{ if(navigator.onLine === false) return true; }catch(e){}
+    try{ if(navigator.onLine === false) return true; }catch(e){ _yut(e); }
     return _agBos >= AG_BOS_ESIK;
   }
   function agYokAc(){
@@ -1970,8 +2006,8 @@
       if(bekleInt){ clearInterval(bekleInt); bekleInt=null; }
       /* Zaten açıksa karşılama elini de kaldır: "dokun, başlasın"
          diyor ama dokununca başlayacak bir şey yok. */
-      try{ if(typeof karsilamaKapat === 'function') karsilamaKapat(); }catch(_){}
-    }catch(e){}
+      try{ if(typeof karsilamaKapat === 'function') karsilamaKapat(); }catch(_){ _yut(_); }
+    }catch(e){ _yut(e); }
   }
   /* "Şu an bir kaynak aranıyor" göstergesi açık mı? İki biçimi var:
      bekleme sembolü ya da (ağ yoksa) bağlantı paneli. sonraki() bu
@@ -1989,18 +2025,18 @@
       _agBos = 0;
       const el = document.getElementById('agyok'); if(!el || !el.classList.contains('on')) return;
       el.classList.remove('on'); el.setAttribute('aria-hidden','true');
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function agDene(){
     agYokKapa();
-    try{ radyoKuyrukDoldur(); }catch(e){}
-    try{ if(!sesDuyuluyorMu || !sesDuyuluyorMu()) sonraki(false); }catch(e){ try{ sonraki(false); }catch(_){} }
+    try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
+    try{ if(!sesDuyuluyorMu || !sesDuyuluyorMu()) sonraki(false); }catch(e){ try{ sonraki(false); }catch(_){ _yut(_); } }
   }
   try{
     window.addEventListener('online',  ()=>{ agDene(); });
     window.addEventListener('offline', ()=>{ agYokAc(); });
     document.getElementById('agyokTekrar').addEventListener('click', e=>{ e.stopPropagation(); agDene(); });
-  }catch(e){}
+  }catch(e){ _yut(e); }
   /* ── HATA PANELİ DÜĞMELERİ ────────────────────────────────────────
      RELOAD: en sık işe yarayan şey; kullanıcıyı tahmine bırakmıyoruz.
      COPY DETAILS: hata metnini panoya koyar. Kopyalanan şeyde cihaz
@@ -2010,7 +2046,7 @@
      yoksa düğme "COPY FAILED" der ve yalan söylemez. */
   try{
     document.getElementById('hataYenile').addEventListener('click', e=>{
-      e.stopPropagation(); try{ location.reload(); }catch(_){}
+      e.stopPropagation(); try{ location.reload(); }catch(_){ _yut(_); }
     });
     document.getElementById('hataKopya').addEventListener('click', async e=>{
       e.stopPropagation();
@@ -2024,12 +2060,12 @@
           document.body.appendChild(t); t.select();
           oldu = document.execCommand('copy');
           t.remove();
-        }catch(__){}
+        }catch(__){ _yut(__); }
       }
       dug.textContent = oldu ? 'COPIED' : 'COPY FAILED';
-      setTimeout(()=>{ try{ dug.textContent = 'COPY DETAILS'; }catch(_){} }, 2200);
+      setTimeout(()=>{ try{ dug.textContent = 'COPY DETAILS'; }catch(_){ _yut(_); } }, 2200);
     });
-  }catch(e){}
+  }catch(e){ _yut(e); }
   function bekleGoster(){
     /* Ağ gerçekten yoksa bekleme sembolü değil, açıklama göster. */
     if(agYokMu()){ agYokAc(); return; }
@@ -2055,7 +2091,7 @@
      3. sembol — her biri bir öncekinden yavaş — son hâline oturur. Yuvalar
      sabit genişlikte olduğu için oturdukları yerde hiçbir kayma olmuyor. */
   function bekleDondur(){
-    try{ agYokKapa(); }catch(e){}          // ses geldi: ağ çalışıyor
+    try{ agYokKapa(); }catch(e){ _yut(e); }          // ses geldi: ağ çalışıyor
     if(bekleInt){ clearInterval(bekleInt); bekleInt=null; }
     const y = yuvalar();
     y.forEach((el,i)=>{
@@ -2270,7 +2306,7 @@
        Kanal adı da bu panelde tekrarlanmıyor — sağ üstte zaten yazıyor. */
     ufoDurdur();
     npAd.textContent = ad; npSanatci.textContent = sanatci;
-    try{ npKaynak.textContent = kaynakSatiri(item); }catch(e){}   // sesin geldiği yer
+    try{ npKaynak.textContent = kaynakSatiri(item); }catch(e){ _yut(e); }   // sesin geldiği yer
     /* Lisans kendi satırında, en altta. Yoksa hiç yer kaplamıyor
        (canlı radyoda ve kendi parçalarımızda lisans satırı çıkmaz). */
     try{
@@ -2278,17 +2314,17 @@
       const ad2 = lisansAdi(item && item.lisans);
       lz.textContent = ad2;
       lz.classList.toggle('var', !!ad2);
-    }catch(e){}
+    }catch(e){ _yut(e); }
     npUst.textContent=''; npUst.classList.remove('var');
     np.classList.remove('radio','liste','lib');
     np.classList.add(mod==='radio'?'radio':mod==='liste'?'liste':'lib');
     np.classList.add('on');
     /* Panel görünür oldu: erişilebilirlik ağacına da girsin. Görünürlük
        sınıfla yönetiliyordu ama aria-hidden HTML'de sabit kalmıştı. */
-    try{ np.setAttribute('aria-hidden','false'); }catch(e){}
+    try{ np.setAttribute('aria-hidden','false'); }catch(e){ _yut(e); }
     /* ◁ artık #np'nin içinde akıyor: yazı bir/iki satır olsa da yerini
        yığın kendisi ayarlıyor, burada hesaplanacak bir koordinat yok. */
-    try{ ortamKunye(ad, sanatci, item); }catch(e){}
+    try{ ortamKunye(ad, sanatci, item); }catch(e){ _yut(e); }
   }
 
   /* ── KİLİT EKRANI / KONTROL MERKEZİ (MediaSession) ────────────────
@@ -2306,37 +2342,37 @@
   function ortamDurum(){
     try{ if(!('mediaSession' in navigator)) return;
          navigator.mediaSession.playbackState = (ses && !ses.paused && ses.src) ? 'playing' : 'paused';
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function ortamKur(){
     if(_ortamKurulu) return;
     if(!('mediaSession' in navigator) || !navigator.mediaSession.setActionHandler) return;
     _ortamKurulu = true;
-    const el = (ad, fn)=>{ try{ navigator.mediaSession.setActionHandler(ad, fn); }catch(e){} };
+    const el = (ad, fn)=>{ try{ navigator.mediaSession.setActionHandler(ad, fn); }catch(e){ _yut(e); } };
     el('play', ()=>{ _kullaniciDuraklatti = false;
-      try{ sesBaglamiAl(); if(actx && actx.state!=='running') actx.resume(); }catch(e){}
-      try{ ses.play().catch(()=>{}); }catch(e){}
+      try{ sesBaglamiAl(); if(actx && actx.state!=='running') actx.resume(); }catch(e){ _yut(e); }
+      try{ ses.play().catch(()=>{}); }catch(e){ _yut(e); }
       ortamDurum(); });
     el('pause', ()=>{ _kullaniciDuraklatti = true;
-      try{ korumayiBirak(); }catch(e){}      // kamera koruması geri açmasın
-      try{ ses.pause(); }catch(e){}
+      try{ korumayiBirak(); }catch(e){ _yut(e); }      // kamera koruması geri açmasın
+      try{ ses.pause(); }catch(e){ _yut(e); }
       ortamDurum(); });
     el('stop', ()=>{ _kullaniciDuraklatti = true;
-      try{ korumayiBirak(); ses.pause(); }catch(e){} ortamDurum(); });
-    el('nexttrack', ()=>{ _kullaniciDuraklatti = false; try{ sonraki(true); }catch(e){} });
-    el('previoustrack', ()=>{ _kullaniciDuraklatti = false; try{ geriGit(); }catch(e){} });
+      try{ korumayiBirak(); ses.pause(); }catch(e){ _yut(e); } ortamDurum(); });
+    el('nexttrack', ()=>{ _kullaniciDuraklatti = false; try{ sonraki(true); }catch(e){ _yut(e); } });
+    el('previoustrack', ()=>{ _kullaniciDuraklatti = false; try{ geriGit(); }catch(e){ _yut(e); } });
     /* Konumlandırma yok: kaynakların bir kısmı canlı yayın, süre bilgisi
        yok. Yanlış bir ilerleme çubuğu göstermektense hiç göstermemek. */
-    try{ ses.addEventListener('play',  ()=>{ _kullaniciDuraklatti=false; ortamDurum(); }); }catch(e){}
-    try{ ses.addEventListener('pause', ortamDurum); }catch(e){}
-    try{ ses.addEventListener('ended', ortamDurum); }catch(e){}
+    try{ ses.addEventListener('play',  ()=>{ _kullaniciDuraklatti=false; ortamDurum(); }); }catch(e){ _yut(e); }
+    try{ ses.addEventListener('pause', ortamDurum); }catch(e){ _yut(e); }
+    try{ ses.addEventListener('ended', ortamDurum); }catch(e){ _yut(e); }
   }
   function ortamKunye(ad, sanatci, item){
     ortamKur();
     if(!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
     const radyo = !!(item && item.radyo);
     let kaynak = '';
-    try{ kaynak = kaynakAdi(item) || ''; }catch(e){}
+    try{ kaynak = kaynakAdi(item) || ''; }catch(e){ _yut(e); }
     /* Albüm alanı kanalı ve kaynağı taşıyor: kilit ekranında
        "RADIOTAPE · RADIO-BROWSER" gibi tek satır bilgi. */
     const kanal = (typeof AKTIF_MOD !== 'undefined' && AKTIF_MOD) ? AKTIF_MOD
@@ -2351,10 +2387,10 @@
           { src: ORTAM_KAPAK+'icon-512.png?v=6', sizes:'512x512', type:'image/png' }
         ]
       });
-    }catch(e){}
+    }catch(e){ _yut(e); }
     /* Canlı yayında "önceki" anlamsız: düğmeyi kaldırıyoruz. */
     try{ navigator.mediaSession.setActionHandler('previoustrack',
-           radyo ? null : (()=>{ _kullaniciDuraklatti=false; try{ geriGit(); }catch(e){} })); }catch(e){}
+           radyo ? null : (()=>{ _kullaniciDuraklatti=false; try{ geriGit(); }catch(e){ _yut(e); } })); }catch(e){ _yut(e); }
     ortamDurum();
   }
   /* AÇILIŞ SON KALINAN KANALDAN: devamlılık. Bilinmeyen değer
@@ -2363,7 +2399,7 @@
   try{
     const _k = localStorage.getItem('orbitape.kanal');
     if(_k === 'radio' || _k === 'lib' || _k === 'liste') mod = _k;
-  }catch(e){}
+  }catch(e){ _yut(e); }
   let radyoKuyruk=[];
   // ── MIXTAPE: kullanıcının kendi şarkı listesi (liste.json) ──
   const LISTE_URL     = "https://raw.githubusercontent.com/playjoymusic/tracks/main/liste.json";
@@ -2776,7 +2812,7 @@
     /* ORBITAPE'IN 7 RAFI: karar tek yerden, arsivRaf()'tan geliyor.
        Burada ayrica kalip denemek iki farkli dogruluk kaynagi yaratir
        ve er gec ayrisirlar. */
-    try{ if(ARSIV_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){}
+    try{ if(ARSIV_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){ _yut(e); }
     const mz = _muzikMi(o);
     if(ad === 'MIXTAPE')  return mz;
     if(ad === 'ORBITAPE') return !mz;
@@ -2804,7 +2840,7 @@
   /* Ağ yoksa son bilinen ORBITAPE arşiv havuzundan devam et. */
   function earthOnbellekten(){
     const c = onbellekOku('earth');
-    if(c && c.length){ earthHavuz = c; _ehShuf=[]; _ehIdx=0; try{ earthAyir(); }catch(e){} return earthHavuz.length; }
+    if(c && c.length){ earthHavuz = c; _ehShuf=[]; _ehIdx=0; try{ earthAyir(); }catch(e){ _yut(e); } return earthHavuz.length; }
     return 0;
   }
   function earthAyir(){                                // havuzu üç kovaya böl (bir kez)
@@ -3020,12 +3056,12 @@
              rampayla yukarı taşıyor. */
           try{ if(wetG){ wetG.gain.cancelScheduledValues(actx.currentTime);
                          wetG.gain.setValueAtTime(0, actx.currentTime);
-                         _pSon.delete(wetG.gain); } }catch(e){}
+                         _pSon.delete(wetG.gain); } }catch(e){ _yut(e); }
           kaynak.connect(convNode); convBagli=true; }
       }else if(convBagli && !_convTimer){
         _convTimer=setTimeout(()=>{ _convTimer=null;
           const p2 = (FXMOD==='karadelik') ? Math.max(0,fxSeviye) : (RETRO?0:Math.max(0,-yatay));
-          if(p2<=FX_ESIK && convBagli){ try{ driveOut.disconnect(convNode); }catch(e){} convBagli=false; }
+          if(p2<=FX_ESIK && convBagli){ try{ driveOut.disconnect(convNode); }catch(e){ _yut(e); } convBagli=false; }
         }, 1200);                                  // reverb kuyruğu sönsün, sonra kes
       }
       if(del>FX_ESIK){
@@ -3033,20 +3069,20 @@
         if(!delayBagli){
           try{ if(delayG){ delayG.gain.cancelScheduledValues(actx.currentTime);
                            delayG.gain.setValueAtTime(0, actx.currentTime);
-                           _pSon.delete(delayG.gain); } }catch(e){}
+                           _pSon.delete(delayG.gain); } }catch(e){ _yut(e); }
           kaynak.connect(delayNode);
-          try{ kaynak.connect(delay2); }catch(e){} delayBagli=true; }
+          try{ kaynak.connect(delay2); }catch(e){ _yut(e); } delayBagli=true; }
       }else if(delayBagli && !_delayTimer){
         _delayTimer=setTimeout(()=>{ _delayTimer=null;
           const d2 = (FXMOD==='dongu') ? Math.max(Math.abs(yatay), Math.max(0,fxSeviye))
                    : RETRO ? Math.max(yatay,fxSeviye) : yatay;
           if(Math.max(0, d2)<=FX_ESIK && delayBagli){
-          try{ driveOut.disconnect(delayNode); }catch(e){}
-          try{ driveOut.disconnect(delay2); }catch(e){}
+          try{ driveOut.disconnect(delayNode); }catch(e){ _yut(e); }
+          try{ driveOut.disconnect(delay2); }catch(e){ _yut(e); }
           delayBagli=false; }
         }, 1200);                                  // eko kuyruğu sönsün, sonra kes
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   // FX'i tamamen sıfırla: reverb/delay/drive kapalı, filtre açık, ses temiz.
   // Parmağı bıraktığında ayar "kilitli" kalıyordu; bu yüzden bir sonraki parça/kanal
@@ -3058,7 +3094,7 @@
   var _fxSonum = 0;
   function fxSifirla(){                      // adı kaldı, davranışı sönümleme
     _fxSonum = Date.now() + 2500;
-    try{ retroUygula(); }catch(e){}          // retro karakteri korunur
+    try{ retroUygula(); }catch(e){ _yut(e); }          // retro karakteri korunur
   }
   function fxSonumIsle(){
     if(!_fxSonum) return;
@@ -3090,7 +3126,7 @@
          bir kez ayarlanıyor (bkz. pitchHazirla) ve bir daha geri alınmıyor;
          hız 1 iken bayrağın hiçbir etkisi yok. */
       fxUygula(); yatayUygula(); modUygula();
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* Uydular büyük nebulanın çevresinde bir YAY üzerinde dizilir: sağ yandan
      başlayıp saat yönünde aşağı doğru küçülerek. Konumlar nebulanın gerçek
@@ -3120,7 +3156,7 @@
         b.style.left = Math.round(v.x)+'px';
         b.style.top  = Math.round(v.y)+'px';
       });
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
 
   /* ── FX MODLARI ──────────────────────────────────────────────────
@@ -3140,16 +3176,16 @@
     fxSifirla();
     hedefHiz = 1; hizYaz(true);          // hız zaten 1 ise hiçbir şey yazılmaz (ses kesilmez)
     // aktif uydu yansın, ötekiler sönsün
-    try{ UYDULAR.forEach(u=>uyduDug[u.fx].classList.toggle('acik', FXMOD===u.fx)); }catch(e){}
-    try{ if(!actx) analizKur(); if(actx && actx.state==='suspended') actx.resume(); }catch(e){}
+    try{ UYDULAR.forEach(u=>uyduDug[u.fx].classList.toggle('acik', FXMOD===u.fx)); }catch(e){ _yut(e); }
+    try{ if(!actx) analizKur(); if(actx && actx.state==='suspended') actx.resume(); }catch(e){ _yut(e); }
     zeminUygula();                        // zemin de efektin rengine dönsün
     /* Efekt açıldıysa ipucu (hakkı duruyorsa) çıkar; kapandıysa gider
        ama hak yanmaz — bir dahaki açışta yine çıkar. */
-    try{ if(FXMOD) fxIpucuAc(); else fxIpucuKapat(false); }catch(e){}
+    try{ if(FXMOD) fxIpucuAc(); else fxIpucuKapat(false); }catch(e){ _yut(e); }
     /* Bir gezegene basıldı: sunum hemen susuyor ama tamamen bitmiyor —
        hatırlatma olarak İKİ hakkı kalıyor (bkz. fxKullanildiIsaretle). */
     try{ if(FXMOD){ fxKullanildiIsaretle();
-                    if(_fxSunumAkiyor) fxSunumBitir(); } }catch(e){}
+                    if(_fxSunumAkiyor) fxSunumBitir(); } }catch(e){ _yut(e); }
     retroUygula();                        // ortak uygulayıcı: fxUygula + yatayUygula + modUygula
   }
   /* ── AudioParam YAZIM SÜZGECİ ────────────────────────────────────
@@ -3166,7 +3202,7 @@
     const onceki = _pSon.get(param);
     if(onceki !== undefined && Math.abs(onceki - deger) < Math.max(1e-4, Math.abs(deger)*0.002)) return;
     _pSon.set(param, deger);
-    try{ param.setTargetAtTime(deger, t, tau); }catch(e){}
+    try{ param.setTargetAtTime(deger, t, tau); }catch(e){ _yut(e); }
   }
   function yatayUygula(){
     iz('yatayUygula');
@@ -3263,7 +3299,7 @@
         if(wetG){ pyaz(wetG.gain, plt*0.9, t, 0.08); }
         pyaz(dryG.gain, 1 - Math.max(del,plt)*0.4, t, 0.08);
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* RETRO modülasyonları: AŞAĞI -> vibrato + tremolo, YUKARI -> chorus */
   /* Mod değişiminden hemen sonra tını parametreleri daha YAVAŞ kayıyor:
@@ -3299,7 +3335,7 @@
       // chorus şimdilik kapalı (yukarı yön tape delay'e ayrıldı)
       if(korWet)   korWet.gain.setTargetAtTime(0, t, 0.25);
       if(korDerin) korDerin.gain.setTargetAtTime(0, t, 0.3);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function fxUygula(){
     iz('fxUygula');
@@ -3403,7 +3439,7 @@
   var _pitchHazir = false;
   function pitchHazirla(){
     if(_pitchHazir) return; _pitchHazir = true;
-    try{ ses.preservesPitch=false; ses.mozPreservesPitch=false; ses.webkitPreservesPitch=false; }catch(e){}
+    try{ ses.preservesPitch=false; ses.mozPreservesPitch=false; ses.webkitPreservesPitch=false; }catch(e){ _yut(e); }
   }
   /* CANLI YAYIN MI? Radyo istasyonu bir AKIŞ; arşiv/jamendo dosya. */
   function akisMi(){ try{ return !!(aktifItem && aktifItem.radyo); }catch(e){ return false; } }
@@ -3417,7 +3453,7 @@
        Dosya kaynaklarında (arşiv, jamendo) bu sorun yok,
        orada davranış aynen duruyor. */
     if(MOBIL && akisMi()){
-      try{ if(ses.playbackRate !== 1) ses.playbackRate = 1; }catch(e){}
+      try{ if(ses.playbackRate !== 1) ses.playbackRate = 1; }catch(e){ _yut(e); }
       _yazilanHiz = 1; return;
     }
     if(MOBIL && !zorla) return;          // mobilde SADECE parmak kalkınca (zorla) yazılır
@@ -3435,7 +3471,7 @@
         if(Math.abs(yuvarlak - 1) > 0.004) pitchHazirla();   // ilk kaydırmada bir kez
         ses.playbackRate = yuvarlak;
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* FX uygulaması mobilde her karede değil, en fazla 33 ms'de bir (30/sn).
      Parmak 120 Hz olay üretiyor; her olayda 12 parametre yazmak takıyordu. */
@@ -3460,7 +3496,7 @@
         /* srcNode eleman başına TEK SEFERLİK: varsa yeniden yaratmıyoruz,
            sadece altındaki yarım kalmış zinciri söküp baştan kuruyoruz. */
         if(!srcNode) srcNode = actx.createMediaElementSource(ses);
-        else { try{ srcNode.disconnect(); }catch(_){} }
+        else { try{ srcNode.disconnect(); }catch(_){ _yut(_); } }
         lopass=actx.createBiquadFilter(); lopass.type='lowpass'; lopass.frequency.value=20000; lopass.Q.value=0.7;
 
         // DRIVE zinciri (yukarı yön): pre-gain -> waveshaper -> tiz shelf -> makeup
@@ -3518,20 +3554,20 @@
         wowLfo=actx.createOscillator(); wowLfo.type='sine'; wowLfo.frequency.value=5.2;   // vibrato hızı
         wowDerin=actx.createGain(); wowDerin.gain.value=0;
         wowLfo.connect(wowDerin); wowDerin.connect(wowNode.delayTime);
-        try{ wowLfo.start(); }catch(e){}      // derinlik 0 iken bedava; modlar kullanacak
+        try{ wowLfo.start(); }catch(e){ _yut(e); }      // derinlik 0 iken bedava; modlar kullanacak
         // TREMOLO: genliği yavaşça inip çıkaran LFO
         tremG=actx.createGain(); tremG.gain.value=1;
         tremLfo=actx.createOscillator(); tremLfo.type='sine'; tremLfo.frequency.value=4.6;
         tremDerin=actx.createGain(); tremDerin.gain.value=0;
         tremLfo.connect(tremDerin); tremDerin.connect(tremG.gain);
-        try{ tremLfo.start(); }catch(e){}     // tremG artık analizden SONRA -> görüntüyü titretmiyor
+        try{ tremLfo.start(); }catch(e){ _yut(e); }     // tremG artık analizden SONRA -> görüntüyü titretmiyor
         // CHORUS: 18 ms civarı modüle gecikme, ıslak sinyal ayrı yoldan karışır
         korDelay=actx.createDelay(0.12); korDelay.delayTime.value=0.018;
         korLfo=actx.createOscillator(); korLfo.type='sine'; korLfo.frequency.value=0.45;
         korDerin=actx.createGain(); korDerin.gain.value=0;
         korLfo.connect(korDerin); korDerin.connect(korDelay.delayTime);
         korWet=actx.createGain(); korWet.gain.value=0;
-        try{ korLfo.start(); }catch(e){}      // chorus LFO'su da hazır beklesin
+        try{ korLfo.start(); }catch(e){ _yut(e); }      // chorus LFO'su da hazır beklesin
         // MULTI-TAP: ana ekonun yanına farklı süreli ikinci vuruş
         delay2=actx.createDelay(2.0); delay2.delayTime.value=0.31;
         delay2G=actx.createGain(); delay2G.gain.value=0;
@@ -3592,11 +3628,11 @@
             kayitHedef = actx.createMediaStreamDestination();
             tavan.connect(kayitHedef);
           }
-        }catch(e){}
+        }catch(e){ _yut(e); }
         fxUygula(); yatayUygula(); modUygula();
         grafHazir = true;                 // buraya geldiysek zincir tam
       }
-      try{ fxDurumTazele(); }catch(e){}
+      try{ fxDurumTazele(); }catch(e){ _yut(e); }
     }catch(e){
       /* KURULUM YARIM KALDI. İki şey yapıyoruz:
          1) Bayrağı düşür — bir sonraki denemede zincir baştan kurulur.
@@ -3605,8 +3641,8 @@
             Eskiden burada sadece analiz=null yazılıyordu; zincir kopuk
             kaldığı için ses de tamamen susuyordu. */
       grafHazir = false; analiz = null;
-      try{ if(srcNode && actx){ srcNode.disconnect(); srcNode.connect(actx.destination); } }catch(_){}
-      try{ fxDurumTazele(); }catch(_){}
+      try{ if(srcNode && actx){ srcNode.disconnect(); srcNode.connect(actx.destination); } }catch(_){ _yut(_); }
+      try{ fxDurumTazele(); }catch(_){ _yut(_); }
     }
   }
   /* ── OTOMATİK SEVİYE ──────────────────────────────────────────
@@ -3646,8 +3682,8 @@
       if(!tremG || !limiter || !cikisG) return;
       const atla = (mod === 'radio');
       if(_limAtla === atla) return;      // gereksiz sökme-takma yok
-      try{ tremG.disconnect(); }catch(_){}
-      try{ limiter.disconnect(); }catch(_){}
+      try{ tremG.disconnect(); }catch(_){ _yut(_); }
+      try{ limiter.disconnect(); }catch(_){ _yut(_); }
       if(atla){ tremG.connect(cikisG); }
       else    { tremG.connect(limiter); limiter.connect(cikisG); }
       _limAtla = atla;
@@ -3658,7 +3694,7 @@
       limiterYolu();                     // kanal değiştiyse yolu düzelt
       const hedef = BASLANGIC_KAZANC[mod] || 0.36;
       if(cikisG.gain.value > hedef) cikisG.gain.setTargetAtTime(hedef, actx.currentTime, 0.05);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   setInterval(()=>{
     try{
@@ -3702,7 +3738,7 @@
       const adim = (hedef < simdi) ? 0.55 : 0.22;
       const yeni = simdi + (hedef - simdi) * adim;
       cikisG.gain.setTargetAtTime(yeni, actx.currentTime, (hedef < simdi) ? 0.25 : 0.9);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }, 500);
 
   /* Otomatik seviye için biriktiriciler: her karede bir pencere daha okunuyor,
@@ -3726,7 +3762,7 @@
         _agcRms += Math.sqrt(kare/zamanVeri.length); _agcSayim++;
         if(tp > _agcTepe) _agcTepe = tp; else _agcTepe *= 0.995;
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   let kuyruk=[];              // önden hazırlanan (hep YENİ) öğeler
   /* ── ÇALINANLAR: TAVANLI ──────────────────────────────────────────
@@ -3771,11 +3807,11 @@
   const TIK_SES = "data:audio/wav;base64,UklGRjIMAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQ4MAADMBqI0NhC8F0qujWA+CxoCBZwx16Ilo9WKRrb5iqWqT53EsVdnmsts6bQC/ve+cBpQ4sUKwVvX5rsKGhNw4nUy3dxN+70UZ8pF+C72mR4ytnw2WwlFDlrGtxVe/GIbWA8R+TTsxyuv7Nv1bf0gOw3ZqyBt8VDnBAb+7I0CafCk/svaiCXW+sj4EBDi8y0eGAKCCRsT+9+pH9fXWhvsDVzsbRLy9yvv6RKE9Mv7VAvd9u3esPYR+z8X6AX6BZcUDfEuE90EBe5qFQvoyA2NCV3qWwYR7uwPf/hX/FQC8QQY+h4KAvNY+F4E9gHc+7kP9v/M/0cGPf3+Efr+Gfzn9YcKzexuBBf2cPebCBYCfftxAGr7nQ/hAdP1kw0F/SMCyf5R+xIJmPo0Anj/H/6bCTv4FvjGAkQAkP4s+1b5rAbPAH79sv5wCGYENQSV+I8HbwFi+4sA/ART+73+6P2K/lQDj/pIBTj5EQF5/w8AGP96/oP8pwOAAzACyQDoASUFcPygBOP9TfyqAOwBofv9AK76pv+SAuf+xvxhA2j+5f1TAE4ANAC/AFYDnAJ8AKMCP/9+/noBlv+n/jIAnvzVATj8t//j/dz/VQD4AJsBu/6AAIsCXf9SAaIBBQCp/1ABSAC//pYB2f6n/wkArP7d/0n9DABlANb9i/8iAbQAXP8WApf/9wH//+ABHv/cANb+MAAMALUAdf4x/yYA2v93/23/MwDm/oQA0/5vADgAVQBwAPUA6QDLAK//KgF+AJ3/9v8C/5n/mf9S/3j/KQBq/+H/BwBD/+QA/f/+/3cApf/XAC4ATQARAEwAqgBjAAAA0v+1/wEA2/7t/8j/d/9q/08AYf+EAEEA4v85ABMA2AAiAB0AJwD8/0YAGAD0/8//DgDt/6r/j/8iAFf/CgDT/6X/9P8bAAAARgAhAF8AUQBZABIAUQDn/wkAMwCh/+n/3P/M/8X/9f+v/9r/0/8OAOH/DwDw/0IAJAD4/zUAcQAqACYANgD2/yQA4v/R//r/rP/h/9b/y//2/8b////z/xgADwAHABYAHwARAEEAIAAZAAYAIQD8/xcA7//m/9T/8P/W/8z/4f/o//r/AQAGAAoA+/8VAC4AFgAaACQADwAFAAMAAQARAPT/+f/y/+T/4P/z/9n/8f/z/+j/AwD+/xMABAAkABkAHgANAA4AHgAFAPb//P////L/+P/l/+3/8f/1/+7/9P/3/wMA/P8MAAgACgARAAoAHAAQAAUADwAMAAAA9v/1//3/5//x//P/8f/y//v/+v8AAAEAAgBj+Coi5wgdFYj/EN/+C/TlohPdCxjpdATq9/7waBvCC0fjIgA8C9D+9P568DkVyAWxCFIFqAR977n1ivQM/ZD0nQ9f+a38oQGf+uwWAgkP9bz8j/UwAWQONgGd/noTqflwAxb4Fe/cBWL8j/GFB8X6X/9iBwoKqQND+S8JHfZzDXTw1g9d+1D2sAUm/eQCigPn9OUKMe48C4b8n/la+UYFhwRkAkMNM/Y7DSsBbf+7/WP4BAc++rf3lwLC+xcGCvzR+/cCbv7E/+wFQgHE++gCkAXzA3H9mftj/+QBof0M/cIBtP/j/03/Yf5G/k8AhwOp/N8GfPtg/6YElP1ZAg8EBv8//QoCuv0t/Yv+Q/4oABT8JQWU+xIBywEzAwQA6v/C/+cDmQAk/vn+xAAJASP9qP++/XQBzPxm/5kAfQDJ/foD9P+6/9UA4QCtArv/j/9JAVj/Qf81/XYAGP4CAiL/ZgAPAK3/b/6GAHAAmP9+ABYBIgHE/6AATgFh/2z/8/4m/hMA4f68AFn/hf/DACQBL/+CAU7/qgDsAC3/9QAJAOf//gCh/nb/zwAb/+X+igDS/jX/1QCVAIP/lACOAD4B9P9+ANP/cf8jAMT/mQCS/2D/NwAH/ygAMQB2/4P/LwCJALz/cQDMAFgAQAD5/wQAUQBS/93/1//k/zP/cgBA/3QAcf8qAGwAHgCn/3UAGQD//2kALgCNALj/4P9WAHL/vP+K/9D/9P+Q/xkACgBIAMb/TQBkADsAGAA1ACcA/v/d/+n/GgDC//n/rf8gAM3/lv8hAN3/2/86ADUARgAhAEsA/P8+ANX/LAAEALv/4P/7/9n/BgDe/9n/5v///w8A0/9BAOf/MQAvABEAQAD//yEAAADw//L/3P/i/8T/8v///+3/+v8OAAMAHgD//w8ALQAEAB8AHAAKAAsA/v/b//n/5P/l/+v/5//+/+//BgAIAAMAKAADAB0AEQAGAAkADQD2//z/+f8GAOH//f/r/+f/+v/9//j/+/8MABgABAAfABMADgD//w8A+P8DAO//9//u//v/+f/3/+z/+/8HAPT/DQACAAYAGQANAA0ABQALAAUAAAD6//D/9P/2//f/8P/7//z/BAAAAAAADAAFAAcADQAKAAcABQAEAP7/+v////P//P/0//j/9v/5//3/AwABAAcADAAHAAUACAAGAAUA/f8AAAEA+v/+//r/+f/2//7//P/7////AgAFAAMABgALAAMACQACAAIA/v8AAPr//v/6//r//f/8//7//P///wAABQADAAEACAADAAUABAABAAIAAAD8//3/+v/9//z//f/8/wAAAAABAAEAAgAEAAMAAwAEAAMAAQAAAAAA/v8AAP3//P/8//3//f///wAAAAABAAMAAwADAAIAAwACAAAAAQAAAP/////+//3//v/9//7//////wAAAAACAAIAAwADAAIAAQABAAAAAAD////////+//7//v//////AAAAAAAAAQABAAIAAQACAAEAAQAAAAAA//////////////////8AAAAAAAAAAAAAAQABAAEAAQABAAEAAAAAAAAA//////////////////8AAAAAAAAAAAEAAQABAAEAAQAAAAAAAAAAAAAAAAD//////////wAAAAAAAAAAAAAAAAEAAQABAAEAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
   const TIK_VOL = 0.45;   // 0..1 arası ses seviyesi (kısmak için düşür)
   let _tikAudio=null;
-  try{ _tikAudio=new Audio(TIK_SES); _tikAudio.preload='auto'; _tikAudio.volume=TIK_VOL; }catch(e){}
+  try{ _tikAudio=new Audio(TIK_SES); _tikAudio.preload='auto'; _tikAudio.volume=TIK_VOL; }catch(e){ _yut(e); }
   function tik(){
     try{
       if(_tikAudio){ const a=_tikAudio.cloneNode(); a.volume=TIK_VOL; a.currentTime=0; a.play().catch(()=>{}); return; }
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
 
 
@@ -3820,13 +3856,13 @@
     _olcuBekleyen = requestAnimationFrame(()=>{
       _olcuBekleyen = 0;
       vizSize();
-      try{ bekleGenisligiAyarla(); }catch(e){}
-      try{ if(_fxIpAcik) fxIpucuYerlestir(); }catch(e){}
+      try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); }
+      try{ if(_fxIpAcik) fxIpucuYerlestir(); }catch(e){ _yut(e); }
     });
   }
   window.addEventListener('resize', olcuIste);
-  try{ window.addEventListener('orientationchange', olcuIste); }catch(e){}
-  try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', olcuIste); }catch(e){}
+  try{ window.addEventListener('orientationchange', olcuIste); }catch(e){ _yut(e); }
+  try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', olcuIste); }catch(e){ _yut(e); }
   vizSize();
 
   /* organik yarıçap (katmanlı sinüsler = akışkan zar)
@@ -3929,10 +3965,10 @@
      ses.volume kullanıyoruz — playbackRate'in aksine tamponu sıfırlamıyor,
      sık yazmak güvenli. Grafik kurulu olsun olmasın çalışır. */
   var kSes = 1;                        // kullanıcı seviyesi 0..1
-  try{ const v = parseFloat(localStorage.getItem('orbitape.ses')); if(isFinite(v)) kSes = Math.max(0, Math.min(1, v)); }catch(e){}
+  try{ const v = parseFloat(localStorage.getItem('orbitape.ses')); if(isFinite(v)) kSes = Math.max(0, Math.min(1, v)); }catch(e){ _yut(e); }
   function sesSeviyeYaz(){
     /* Radyoda 0.85 çarpanı kaldırıldı: kullanıcının ayarı neyse o. */
-    try{ ses.volume = Math.max(0, Math.min(1, kSes)); }catch(e){}
+    try{ ses.volume = Math.max(0, Math.min(1, kSes)); }catch(e){ _yut(e); }
   }
   const sesCub = document.getElementById('sesCubuk');
   let _sesGizle = 0;
@@ -3951,7 +3987,7 @@
       if(e.target && e.target.closest && e.target.closest('#ara')) return;   // sonuç listesi kaydırılabilsin
       etkin = true; basY = ortY(e.touches); basSes = kSes;
       // halka/FX bu jesti üstlenmesin
-      try{ pDown=false; _basili=false; }catch(_){}
+      try{ pDown=false; _basili=false; }catch(_){ _yut(_); }
       sesGoster();
     }, {passive:true});
     document.addEventListener('touchmove', e=>{
@@ -3964,7 +4000,7 @@
     }, {passive:false});
     const bitir = ()=>{
       if(!etkin) return; etkin=false;
-      try{ localStorage.setItem('orbitape.ses', String(kSes)); }catch(e){}
+      try{ localStorage.setItem('orbitape.ses', String(kSes)); }catch(e){ _yut(e); }
     };
     document.addEventListener('touchend', bitir, {passive:true});
     document.addEventListener('touchcancel', bitir, {passive:true});
@@ -3981,7 +4017,7 @@
       void _diskEl.offsetWidth;                       // yeniden akış: animasyon sıfırlansın
       _diskEl.classList.add('nefes');
       _nefesBitis = performance.now() + (RETRO?560:480) + 60;
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   if(_diskEl) _diskEl.addEventListener('animationend', ()=>_diskEl.classList.remove('nefes'));
 
@@ -4003,7 +4039,7 @@
                    : (_izGec.length ? _izGec[_izGec.length-1].n : '-');
         _takilanSure = _b;
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     _cizIcinde = false;                     // yeni tur: önceki çizim bitmiş demektir
     _ekranSon = performance.now();          // takılma ölçeri (bkz. takilmaGozcu)
     // KARE SINIRI: mobilde 30fps; hiçbir şey çalmıyorken 12fps -> işlemci boşa yanmaz
@@ -4274,10 +4310,10 @@
        doldurur ve gerçek suçluyu gizlerdi. Yalnızca ANORMAL UZUN süren
        bir çizim geçmişe yazılıyor; kilitleyen oysa böyle görünür. */
     /* Tampon hazır: tek kopyalamayla ekrana. */
-    try{ vizEkran.clearRect(0,0,W,H); vizEkran.drawImage(vizArka,0,0); }catch(e){}
+    try{ vizEkran.clearRect(0,0,W,H); vizEkran.drawImage(vizArka,0,0); }catch(e){ _yut(e); }
     _cizIcinde = false;
     try{ if(performance.now() - _cizBas > 900) { _izGec.push({n:'ciz', t:_cizBas});
-           if(_izGec.length > 200) _izGec.shift(); } }catch(e){}
+           if(_izGec.length > 200) _izGec.shift(); } }catch(e){ _yut(e); }
   }
   /* ── KARE SÜRÜCÜSÜ + DİRİLTME ─────────────────────────────────────
      Cihaz raporu: STALL SCREEN 2.9S @uyduYerlestir x3 ve kullanıcı
@@ -4321,7 +4357,7 @@
     rafBasla();                              // her denemede rAF'ı bir daha yokla (ölüyse bedava)
     if(!_yedekSurucu){                       // sayaç SADECE ölü duruma ilk girişte artar
       _rafDirilme++;
-      _yedekSurucu = setInterval(()=>{ try{ vizLoop(performance.now()); }catch(e){} }, 40);
+      _yedekSurucu = setInterval(()=>{ try{ vizLoop(performance.now()); }catch(e){ _yut(e); } }, 40);
     }
   }
   function kareSurucuNormale(){
@@ -4381,13 +4417,13 @@
     let r;
     try{ r=await fetchZA(url, 5000); }catch(e){ hataEkle(kol); return null; }   // geç açan -> ele, başka koleksiyon dene
     if(!r.ok){ hataEkle(kol); return null; }
-    let docs=[]; try{ docs=(await r.json()).response.docs||[]; }catch(e){}
+    let docs=[]; try{ docs=(await r.json()).response.docs||[]; }catch(e){ _yut(e); }
     if(!docs.length){ hataEkle(kol); return null; }                            // boş -> ele
     karistir(docs);
     for(const d of docs.slice(0,8)){ if(!d.identifier) continue;
       if(CALINDI.has(d.identifier)) continue;                 // daha önce geldi -> atla
       if(kuyruk.some(x=>x.id===d.identifier)) continue;       // zaten kuyrukta -> atla
-      let mp3=null; try{ mp3=await mp3Bul(d.identifier); }catch(e){}
+      let mp3=null; try{ mp3=await mp3Bul(d.identifier); }catch(e){ _yut(e); }
       if(mp3){ basari(kol); calindiEkle(d.identifier); return {id:d.identifier,mp3}; }
     }
     return null;
@@ -4408,7 +4444,7 @@
         const j = await jamendoCek();
         if(j && !jamKuyruk.some(x=>x.id===j.id)) jamKuyruk.push(j);
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     jamDolduruluyor = false;
   }
   async function jamendoCek(){
@@ -4461,7 +4497,7 @@
   async function kaynaktanCek(canliIzin){
     // ORBITAPE havuzu = kısa arşiv sesleri + uzun kayıtlar, BİRLİKTE.
     // Uzunlar oranlarınca çıkar (~%8); geldiklerinde ortadanDal() ortasından girer.
-    if(!earthHavuz.length){ try{ await earthYukle(); }catch(e){} }
+    if(!earthHavuz.length){ try{ await earthYukle(); }catch(e){ _yut(e); } }
     if(!uzunHavuz.length){ uzunYukle(); }                       // arkada yüklensin
     const toplam = earthHavuz.length + uzunHavuz.length;
     if(uzunHavuz.length && toplam && Math.random() < uzunHavuz.length/toplam){
@@ -4480,7 +4516,7 @@
         const yeni=grup.filter(o=>o && !kuyruk.some(x=>x.id===o.id));
         if(yeni.length){ kuyruk.push(...yeni); bosDeneme=0; } else { bosDeneme++; }
       }
-    }catch(e){} finally{ hazirlaniyor=false; onbellekIsit(); }
+    }catch(e){ _yut(e); } finally{ hazirlaniyor=false; onbellekIsit(); }
   }
   function kuyruktanAl(){ const o=kuyruk.shift()||null; if(o) calindiEkle(o.id); return o; }
 
@@ -4490,7 +4526,7 @@
   const ONB_SAYI = MOBIL ? 1 : 2;
   const onbellekler = Array.from({length:ONB_SAYI}, ()=>{
     const a = new Audio();
-    try{ a.crossOrigin='anonymous'; }catch(e){}
+    try{ a.crossOrigin='anonymous'; }catch(e){ _yut(e); }
     a.preload='auto'; a.muted=true;      // sessiz: sadece tamponlama amaçlı
     // ÖN-DENETİM: parça daha SIRASI GELMEDEN indirilirken hata verirse ölü sayılır ve
     // sessizce kuyruktan düşer -> kullanıcı o boşluğu hiç görmez (arşivde silinmiş dosyalar)
@@ -4532,7 +4568,7 @@
   }
   function onbellekDurdur(){                                // indirmeyi kes, bant genişliğini çalan parçaya bırak
     for(let i=0;i<ONB_SAYI;i++){
-      try{ onbellekler[i].removeAttribute('src'); onbellekler[i].load(); }catch(e){}
+      try{ onbellekler[i].removeAttribute('src'); onbellekler[i].load(); }catch(e){ _yut(e); }
       onbellekURLler[i]=null;
     }
   }
@@ -4544,7 +4580,7 @@
       if(onbellekURLler.indexOf(nx.mp3) >= 0) continue;      // zaten ısıtıldı -> tekrar indirme
       const slot = (onbSira++) % ONB_SAYI;                   // sırayla yaz (kuyruk kayınca ısınmış olan korunur)
       onbellekURLler[slot] = nx.mp3;
-      try{ onbellekler[slot].src = nx.mp3; onbellekler[slot].load(); }catch(e){}
+      try{ onbellekler[slot].src = nx.mp3; onbellekler[slot].load(); }catch(e){ _yut(e); }
     }
   }
   // çalan parça takılırsa arka plan indirmesini derhal kes; toparlayınca tekrar dene
@@ -4570,7 +4606,7 @@
       g.gain.linearRampToValueAtTime(0.03, t+0.045);
       g.gain.exponentialRampToValueAtTime(0.0001, t+0.34);
       o1.start(t); o2.start(t); o1.stop(t+0.38); o2.stop(t+0.38);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function aramaBaslat(){
     if(!actx || aramaCalisyor) return; aramaCalisyor=true;
@@ -4602,7 +4638,7 @@
       aktifItem._daldi = true;
       const hedef = d * (0.08 + Math.random()*0.57);                    // %8 ile %65 arası bir nokta
       if(hedef > 5 && hedef < d - 30) ses.currentTime = hedef;
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   // NOT: atlama artık cal() içinde, ÇALMADAN ÖNCE yapılıyor (aşağıda). Çalarken atlamak
   // tamponu koparıp sesi kesiyordu.
@@ -4640,7 +4676,7 @@
       geriDug.classList.toggle('var', geriVar);
       if(ileriDug) ileriDug.classList.toggle('var', adim >= 2);   // 2+ adımda çıkar
       geriYerlestir();
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   var _sonCalan = null;   // o an calan kayit
   function gecmisYaz(item){
@@ -4664,7 +4700,7 @@
     const hedef = GECMIS[hedefNo];
     if(!hedef) return false;
     _gecPos = hedefNo; _gecisKaynak='gez';
-    try{ ses.pause(); }catch(e){}
+    try{ ses.pause(); }catch(e){ _yut(e); }
     aramaBaslat(); bekleGoster();
     cal(hedef);
     return true;
@@ -4680,8 +4716,8 @@
   const FAV_ANAHTAR = 'orbitape.fav', FAV_TAVAN = 300, FAV_TUT = 450;
   var FAV = [], _favMod = false, _favBekle = null, _favBasti = false;
   try{ const h = JSON.parse(localStorage.getItem(FAV_ANAHTAR) || '[]');
-       if(Array.isArray(h)) FAV = h.filter(x=>x && x.mp3).slice(0, FAV_TAVAN); }catch(e){}
-  function favYaz(){ try{ localStorage.setItem(FAV_ANAHTAR, JSON.stringify(FAV)); }catch(e){} }
+       if(Array.isArray(h)) FAV = h.filter(x=>x && x.mp3).slice(0, FAV_TAVAN); }catch(e){ _yut(e); }
+  function favYaz(){ try{ localStorage.setItem(FAV_ANAHTAR, JSON.stringify(FAV)); }catch(e){ _yut(e); } }
   function favNo(o){ const u = o && o.mp3; if(!u) return -1; return FAV.findIndex(x=>x.mp3===u); }
   function favMi(o){ return favNo(o) >= 0; }
   function favTazele(){
@@ -4696,7 +4732,7 @@
         a.setAttribute('aria-pressed', _favMod ? 'true' : 'false');
         a.title = _favMod ? 'Favourites — on' : (FAV.length ? 'Favourites ('+FAV.length+')' : 'Favourites — none yet');
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     const d = document.getElementById('fav'); if(!d) return;
     /* Düğme yalnızca çalan bir şey varken ya da favori kipi açıkken. */
     d.classList.toggle('var', !!(aktifItem || _favMod));
@@ -4704,7 +4740,7 @@
     d.classList.toggle('kip', _favMod);
     d.setAttribute('aria-pressed', favMi(aktifItem) ? 'true' : 'false');
     d.title = _favMod ? 'Favourites only (hold to exit)' : 'Favourite (hold: play favourites)';
-    try{ geriYerlestir(); }catch(e){}
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
   }
   function favDegis(){
     if(!aktifItem || !aktifItem.mp3) return;
@@ -4718,7 +4754,7 @@
       if(FAV.length > FAV_TAVAN) FAV.shift();
     }
     favYaz(); favTazele();
-    try{ tik(); }catch(e){}
+    try{ tik(); }catch(e){ _yut(e); }
   }
   function favKipDegis(){
     if(!_favMod && !FAV.length){
@@ -4730,8 +4766,8 @@
     }
     _favMod = !_favMod;
     favTazele();
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){}
-    try{ sonraki(true); }catch(e){}
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){ _yut(e); }
+    try{ sonraki(true); }catch(e){ _yut(e); }
   }
   /* sonraki() buradan besleniyor: kip açıkken havuz FAVORİLER. */
   var _favSira = [], _favIdx = 0;
@@ -4776,9 +4812,9 @@
   function cal(item){
     iz('cal');
     if(!item) return;
-    try{ _sonCalan = item; }catch(e){}
-    try{ aileSecimKesinlesti(item); }catch(e){}
-    try{ modAdiYaz(); }catch(e){}      // yeni ses geldi: yazi katilasir ya da silik kalir
+    try{ _sonCalan = item; }catch(e){ _yut(e); }
+    try{ aileSecimKesinlesti(item); }catch(e){ _yut(e); }
+    try{ modAdiYaz(); }catch(e){ _yut(e); }      // yeni ses geldi: yazi katilasir ya da silik kalir
     /* İLK SES KATEGORİYE TAKILMAZ ────────────────────────────────
        Açılış kategorisi RADIOTAPE. Radyo gelmeyip yedeğe düşülünce
        ilk ses bir ARŞİV kaydı oluyor ve aşağıdaki kategori kapısından
@@ -4796,7 +4832,7 @@
        Buradan geçemiyor; onun yerine kategoriden yeni bir ses
        isteniyor. Tek çıkış noktası olduğu için kaçak kalmıyor. */
     if(AKTIF_MOD && !_favMod && !_ilkSes && !modUygun(item)){
-      setTimeout(()=>{ if(AKTIF_MOD) { try{ modGec(); }catch(e){} } }, 60);
+      setTimeout(()=>{ if(AKTIF_MOD) { try{ modGec(); }catch(e){ _yut(e); } } }, 60);
       return;
     }
     /* ── RAF KAPISI: RADYO TARAFININ KENDI SON KAPISI ───────────────
@@ -4813,7 +4849,7 @@
        tercih, sessizligin sebebi olamaz). */
     if(!_ilkSes && !_favMod && typeof mod !== 'undefined' && mod === 'radio'
        && AKTIF_AILE && item.radyo && item.grup && item.grup !== AKTIF_AILE){
-      setTimeout(()=>{ try{ sonraki(true); }catch(e){} }, 60);
+      setTimeout(()=>{ try{ sonraki(true); }catch(e){ _yut(e); } }, 60);
       return;
     }
     /* ── LİSANS: SON KAPI ───────────────────────────────────────────
@@ -4832,12 +4868,12 @@
        bir şey yok ve bu bir çökme değil, bir karar. Ama kaynak
        raporuna (D tuşu) düşüyor ki kör kalmayalım. */
     if(!calinabilirMi(item)){
-      try{ hataEkle('lisans'); }catch(e){}
+      try{ hataEkle('lisans'); }catch(e){ _yut(e); }
       /* SONSUZ DÖNGÜ KORUMASI. Bir kaynak toptan bozulup her kaydı
          lisanssız döndürürse, "atla -> yine lisanssız -> atla" zinciri
          uygulamayı kilitlerdi. Art arda 6 eleme sonrası duruyoruz;
          sayaç ilk geçen kayıtta sıfırlanıyor. */
-      if(++_lisansElendi <= 6) setTimeout(()=>{ try{ sonraki(false); }catch(e){} }, 40);
+      if(++_lisansElendi <= 6) setTimeout(()=>{ try{ sonraki(false); }catch(e){ _yut(e); } }, 40);
       return;
     }
     _lisansElendi = 0;
@@ -4873,9 +4909,9 @@
         _kayitSebep = 'LIVE RADIO IS NOT RECORDED';
         kayitDurdur();
       }
-    }catch(e){}
-    try{ favTazele(); }catch(e){}
-    try{ recPasifYaz(); }catch(e){} buParcaSinyal=false; calBaslangic=0;
+    }catch(e){ _yut(e); }
+    try{ favTazele(); }catch(e){ _yut(e); }
+    try{ recPasifYaz(); }catch(e){ _yut(e); } buParcaSinyal=false; calBaslangic=0;
     _agcTepe=0; _agcRms=0; _agcSayim=0;                  // seviye ölçümü yeni parçayla sıfırdan başlar
     fxSifirla();                                         // HER parça TEMİZ başlar: FX 0, ses seviyesi tam
     kazancHazirla();                                     // tedbirli kazançla gir, otomatik seviye ayarlasın
@@ -4884,7 +4920,7 @@
     if(sesHazirURL===item.mp3 && ses.getAttribute('src')){
       // bu parça zaten ÖNDEN yüklendi (ilk parça) -> src'yi SIFIRLAMA, tamponu koru => anında başlar
     }else{
-      try{ ses.crossOrigin='anonymous'; }catch(e){}
+      try{ ses.crossOrigin='anonymous'; }catch(e){ _yut(e); }
       ses.preload='auto';
       iz('ses.src'); ses.src=item.mp3; sesHazirURL=item.mp3; iz('ses.src bitti');
     }
@@ -4905,8 +4941,8 @@
       if(grafHazir){ clearTimeout(aramaTimer); atla(); return; }  // graf TAM -> izinsiz çalınca SESSİZ olur -> atla
       /* srcNode değil grafHazir: yarım kalmış grafta ses doğrudan
          çıkışa bağlı ve DUYULUYOR, parçayı atlamak yanlış olurdu. */
-      try{ ses.removeAttribute('crossorigin'); ses.crossOrigin=null; }catch(e){}   // graf yoksa: sesli doğrudan çal (FX yok)
-      try{ fxDurumYaz(true); }catch(_){}          // bu yol KESİN FX'siz -> uydular hemen sönsün, deneme bile olmasın
+      try{ ses.removeAttribute('crossorigin'); ses.crossOrigin=null; }catch(e){ _yut(e); }   // graf yoksa: sesli doğrudan çal (FX yok)
+      try{ fxDurumYaz(true); }catch(_){ _yut(_); }          // bu yol KESİN FX'siz -> uydular hemen sönsün, deneme bile olmasın
       ses.load();
       ses.play().then(basladi).catch(()=>{ clearTimeout(aramaTimer); atla(); });
     });
@@ -5014,11 +5050,11 @@
   async function corsVarMi(u){
     try{
       const kontrol = new AbortController();
-      const zamanlayici = setTimeout(()=>{ try{ kontrol.abort(); }catch(_){} }, Math.round(1100*AG_KAT));
+      const zamanlayici = setTimeout(()=>{ try{ kontrol.abort(); }catch(_){ _yut(_); } }, Math.round(1100*AG_KAT));
       const r = await fetch(u, { method:'GET', mode:'cors', signal:kontrol.signal,
                                  headers:{ 'Range':'bytes=0-1' }, cache:'no-store' });
       clearTimeout(zamanlayici);
-      try{ if(r.body && r.body.cancel) r.body.cancel(); }catch(_){}   // akışı hemen bırak
+      try{ if(r.body && r.body.cancel) r.body.cancel(); }catch(_){ _yut(_); }   // akışı hemen bırak
       return true;
     }catch(e){ return false; }
   }
@@ -5162,7 +5198,7 @@
   var AKTIF_AILE = null;
   /* SIFIRDAN ACILIS: elektronik radyo. Kanal hatirlaniyor, aile
      hatirlanmiyor -- her oturum ayni bilinen yerden basliyor. */
-  try{ if(!AKTIF_AILE) AKTIF_AILE = AILE_ACILIS; }catch(e){}
+  try{ if(!AKTIF_AILE) AKTIF_AILE = AILE_ACILIS; }catch(e){ _yut(e); }
   /* ── AİLE SÜZGECİ MUTLAK ──────────────────────────────────────────
      ESKİDEN: süzgeç elde hiçbir şey bırakmazsa TÜM liste dönüyordu
      ("müzik durmasın"). Ölçülen sonuç: kullanıcı HIP HOP'a bastı,
@@ -5203,15 +5239,15 @@
         });
         if(i > 0) s.unshift(s.splice(i, 1)[0]);
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     return s;
   }
   /* Aile değiştir. zorla=true aynı aileye tekrar basınca kapatmaz. */
   function aileSec(ad, zorla){
     AKTIF_AILE = (!zorla && AKTIF_AILE === ad) ? null : (ad || null);
-    try{ zeminUygula(); }catch(e){}                 // semboller ve zemin yeni ailenin rengine
-    try{ radyoKuyruk.length = 0; }catch(e){}      // eski ailenin istasyonları çalmasın
-    try{ radyoKuyrukDoldur(); }catch(e){}
+    try{ zeminUygula(); }catch(e){ _yut(e); }                 // semboller ve zemin yeni ailenin rengine
+    try{ radyoKuyruk.length = 0; }catch(e){ _yut(e); }      // eski ailenin istasyonları çalmasın
+    try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
     return AKTIF_AILE;
   }
 
@@ -5269,7 +5305,7 @@
     try{
       const bl = await beyazListeYukle();
       if(bl && bl.length) return safSirala(aileSuz(bl)).slice(0, 40);
-    }catch(e){}
+    }catch(e){ _yut(e); }
     const sunucu=RB_SUNUCU[Math.random()*RB_SUNUCU.length|0];
     /* Mod açıkken etiket rastgele değil, modun kendisi. Modun kendi
        etiketi yoksa (RADIOTAPE'te öyle) küratörlü listeden çekiliyor.
@@ -5400,7 +5436,7 @@
     let it=radyoKuyruk.shift();
     if(it){ _radyoBos=0; calindiEkle(it.id); cal(it); radyoKuyrukDoldur(); return; }
     if(cekiliyor) return; cekiliyor=true;                    // kuyruk boş: doldur, sonra çal
-    (async()=>{ try{ await radyoKuyrukDoldur(); }catch(e){} cekiliyor=false;
+    (async()=>{ try{ await radyoKuyrukDoldur(); }catch(e){ _yut(e); } cekiliyor=false;
       let it=radyoKuyruk.shift();
       if(it){ _radyoBos=0; calindiEkle(it.id); cal(it); }
       else {
@@ -5417,7 +5453,7 @@
            Tur acikken ILK bos turda damgalar temizleniyor, tur yoksa
            eski davranis (uc bos tur) duruyor. */
         const _esik = (typeof AKTIF_AILE !== 'undefined' && AKTIF_AILE) ? 1 : 3;
-        if(_radyoBos >= _esik){ try{ calindiRadyoTemizle(); }catch(e){} _radyoBos = 0; }
+        if(_radyoBos >= _esik){ try{ calindiRadyoTemizle(); }catch(e){ _yut(e); } _radyoBos = 0; }
         setTimeout(()=>{ if(!cekiliyor && (mod==='radio' || AKTIF_MOD==='RADIOTAPE')) radyoGec(); }, 800);
       }
       radyoKuyrukDoldur();
@@ -5457,12 +5493,12 @@
       else if(k==='jam'){    const o=_kuyruktanUygun(jamKuyruk);    if(o){ cal(o); jamendoDoldur(); return; } }
     }
     // hiçbiri hazır değil: havuzları doldur, kısa süre sonra tekrar dene
-    try{ earthYukle(); mixYukle(); jamendoDoldur(); }catch(e){}
+    try{ earthYukle(); mixYukle(); jamendoDoldur(); }catch(e){ _yut(e); }
     setTimeout(()=>{ if(AKTIF_MOD) sonraki(false); }, 700);
   }
   function sonraki(kullanici){
     _ilkCalindi = true;                 // artık halkalar menü olabilir (bkz. _ilkCalindi)
-    try{ korumayiBirak(); }catch(e){}   // kullanıcı kendi geçiş istedi -> kamera koruması karışmasın
+    try{ korumayiBirak(); }catch(e){ _yut(e); }   // kullanıcı kendi geçiş istedi -> kamera koruması karışmasın
     if(kullanici){ tik(); nefesVer(); }                                    // basış: klik sesi + nefes efekti
     /* ── TİTREME ─────────────────────────────────────────────────────
        Kaynak bulunamayınca sonraki(false) 700-800 ms'de bir kendini
@@ -5478,15 +5514,15 @@
       document.body.classList.add('firing','gecis');
       setTimeout(()=>document.body.classList.remove('gecis'),220);
     }
-    try{ ses.pause(); }catch(e){}                                          // çalanı DURDUR -> her tık/mood YENİ ses bulacak
+    try{ ses.pause(); }catch(e){ _yut(e); }                                          // çalanı DURDUR -> her tık/mood YENİ ses bulacak
     if(_gorselGecis){ aramaBaslat(); bekleGoster(); }                      // frekans + WAIT... göster
     /* FAVORİ KİPİ HER ŞEYİN ÖNÜNDE — geçmişten bile önce. Kipe
        girdiğin an favori çalmalı; geçmişte ileri gitmek kipin işini
        çalıyordu (ölçüldü: kipe girince eski parça geliyordu). */
-    try{ if(_favMod && favGec()) return; }catch(e){}
+    try{ if(_favMod && favGec()) return; }catch(e){ _yut(e); }
     if(ileriDonduMu()) return;                                             // ◁ ile geri gitmiştik: bıraktığımıza dön
     // ETİKET AÇIKSA: rastgele havuza gitme, kelimeyi içerenlerden devam et
-    try{ if(_etiket && etiketGec()) return; }catch(e){}
+    try{ if(_etiket && etiketGec()) return; }catch(e){ _yut(e); }
     /* ── MOD AÇIKSA KANAL ÖNEMSİZ ─────────────────────────────────
        Mod seçildiği an o etiketin TÜM arşivi açılıyor: earth havuzu,
        netlabel havuzu ve Jamendo. Altı mod, altı ayrı kanal
@@ -5500,7 +5536,7 @@
     // kuyruk boş -> çek (KİLİT YOK, en son basış kazanır)
     hazirla();
     (async()=>{
-      let yeni=null; try{ yeni=await kaynaktanCek(false); }catch(e){}      // SADECE earth.json havuzu
+      let yeni=null; try{ yeni=await kaynaktanCek(false); }catch(e){ _yut(e); }      // SADECE earth.json havuzu
       if(benim!==nesil) return;                                            // daha yeni basış oldu -> bu sonucu at
       if(yeni){ cal(yeni); }                                               // buldu -> çal
       else setTimeout(()=>{ if(benim===nesil) sonraki(false); }, 700);     // bulamadı -> tekrar dene
@@ -5575,7 +5611,7 @@
   btn.addEventListener('pointerdown', e=>{
     e.preventDefault();                                   // iOS: seçim/callout/sentetik-fare olayını engelle
     pDown=true; _basili=true; _fxSonum=0; pMoved=false; startY=e.clientY; startX=e.clientX;
-    try{ etkilesimSay(); }catch(_){}
+    try{ etkilesimSay(); }catch(_){ _yut(_); }
     /* Başladığın yer kararı verir: halkanın üstü -> mood, ortası -> FX. */
     /* FX AÇIKKEN kategori seçimi kapalı, FX KAPALIYKEN halkalar menü.
        İkisi aynı jeste binmiyor: hangi kipte olduğunu gezegenlerden
@@ -5600,8 +5636,8 @@
     _moodAday = !FXMOD && _ilkCalindi;
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
     if(_moodAday) _moodBekle = setTimeout(()=>{ _moodBekle = null; moodGeziAc(e); }, MOOD_TUT);
-    try{ btn.setPointerCapture(e.pointerId); }catch(_){}
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+    try{ btn.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
   }, {passive:false});
   /* ── BIRAKMA GÜVENCESİ ────────────────────────────────────────────
      Eskiden basış durumu SADECE btn'in kendi pointerup'ına bağlıydı.
@@ -5613,8 +5649,8 @@
   function basisiBirak(){ if(!pDown && !_basili) return; pDown=false; _basili=false;
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
     _moodAday = false;
-    if(_moodGez){ _moodGez=false; _moodVurgu=-1; try{ modAdiBirak(); }catch(_){} }
-    try{ hizYaz(true); }catch(_){} }
+    if(_moodGez){ _moodGez=false; _moodVurgu=-1; try{ modAdiBirak(); }catch(_){ _yut(_); } }
+    try{ hizYaz(true); }catch(_){ _yut(_); } }
   btn.addEventListener('lostpointercapture', basisiBirak);
   /* KABARMA fazında (capture değil): btn'in kendi pointerup'ı ÖNCE çalışsın,
      yoksa kısa tıkta sonraki() hiç tetiklenmezdi. */
@@ -5656,7 +5692,7 @@
          kırpılıyor: yön korunur, uzaklık en fazla 1 -> sınır tam bir daire. */
       const uz=Math.hypot(nx,ny);
       if(uz>1){ nx/=uz; ny/=uz; }
-      try{ fxIpucuSurtuldu(Math.min(1, uz)); }catch(_){}   // gerçek sürtme: ipucu bir daha çıkmaz
+      try{ fxIpucuSurtuldu(Math.min(1, uz)); }catch(_){ _yut(_); }   // gerçek sürtme: ipucu bir daha çıkmaz
       fxX=nx; fxY=ny;                                     // ışık için (yön hâlâ ışığı taşıyor)
       /* FX TEK EKSEN: 8 halka olunca ortadaki daire 0.215R'ye indi;
          o alanda iki eksen ayirt edilemez. Tek deger: merkezden
@@ -5677,21 +5713,21 @@
       const _o = _diskOran(e);
       const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
       modAdiBirak();
-      try{ btn.releasePointerCapture(e.pointerId); }catch(_){}
-      if(k >= 0){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+      try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
+      if(k >= 0){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
                   halkaSec(k); }               // halkada bıraktı -> o raf
       _moodVurgu = -1;
       return;                                   // boşlukta bıraktı -> hiçbir şey olmaz
     }
-    try{ hizYaz(true); }catch(_){}          // parmak kalkınca detune'u kesinleştir
-    try{ btn.releasePointerCapture(e.pointerId); }catch(_){}
+    try{ hizYaz(true); }catch(_){ _yut(_); }          // parmak kalkınca detune'u kesinleştir
+    try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
     if(!pMoved){
       /* ── NEREYE BASILDI ────────────────────────────────────────
          Ortadaki zarın İÇİ  -> sıradaki ses (eskisi gibi).
          Halkaların ÜSTÜ     -> o halkanın modu açılır/kapanır.
          Hangi halka olduğu en yakın yarıçapa göre bulunuyor; tam
          çizginin üstüne basmak gerekmiyor, yakını yeter. */
-      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
       /* ORTA = SIRADAKI SES, BASKA HICBIR SEY. Bir ara buraya "raf
          secimini birak" da baglanmisti; kullanici kaldirtti: zar
          atlamak icin en cok basilan yer orasi ve her basista ustteki
@@ -5722,17 +5758,17 @@
      düğmelerinde zaten click dinleyicisi var, onlar çalışıyordu. */
   btn.addEventListener('click', e=>{
     if(e.detail !== 0) return;                            // işaretçi zaten pointer* ile hallediliyor
-    try{ sesBaglamiAl(); }catch(_){}
-    try{ etkilesimSay(); }catch(_){}
-    try{ sonraki(false); }catch(_){}
+    try{ sesBaglamiAl(); }catch(_){ _yut(_); }
+    try{ etkilesimSay(); }catch(_){ _yut(_); }
+    try{ sonraki(false); }catch(_){ _yut(_); }
   });
   /* ÇİFT DOKUNUŞ: yakınlaştırmayı iptal et ve kayma olduysa geri al.
      touch-action tek başına eski iOS sürümlerinde yetmiyor; dblclick'i
      de tutuyoruz. Kayma olduysa sayfayı başa çekmek fixed katmanları
      yerine oturtuyor — kullanıcı elle düzeltemiyordu. */
-  document.addEventListener('dblclick', e=>{ try{ e.preventDefault(); }catch(_){}
-    try{ window.scrollTo(0,0); }catch(_){} }, {passive:false});
-  window.addEventListener('scroll', ()=>{ try{ if(scrollX||scrollY) window.scrollTo(0,0); }catch(_){} }, {passive:true});
+  document.addEventListener('dblclick', e=>{ try{ e.preventDefault(); }catch(_){ _yut(_); }
+    try{ window.scrollTo(0,0); }catch(_){ _yut(_); } }, {passive:false});
+  window.addEventListener('scroll', ()=>{ try{ if(scrollX||scrollY) window.scrollTo(0,0); }catch(_){ _yut(_); } }, {passive:true});
   btn.addEventListener('contextmenu', e=>e.preventDefault());                 // mobil uzun-basış menüsü çıkmasın
   btn.addEventListener('lostpointercapture', ()=>{ /* yakalama düşerse tık latch'i korunur */ });
 
@@ -5745,17 +5781,17 @@
     geriDug.classList.remove('radio','liste','lib'); geriDug.classList.add(sinif);
     if(ileriDug){ ileriDug.classList.remove('radio','liste','lib'); ileriDug.classList.add(sinif); }
     try{ const fd=document.getElementById('fav');
-         if(fd){ fd.classList.remove('radio','liste','lib'); fd.classList.add(sinif); } }catch(e){}
+         if(fd){ fd.classList.remove('radio','liste','lib'); fd.classList.add(sinif); } }catch(e){ _yut(e); }
     document.body.classList.remove('t-lib','t-liste','t-radio');
     document.body.classList.add('t-'+sinif);                      // zemin de kanalla döner
     zeminUygula();                                               // kategori/FX zemini varsa üstte kalır
     kanalDug.forEach(el=>el.classList.add('on'));   // tek eleman: uygulama adı hep parlak
-    try{ eqTazele(); }catch(e){}
-    try{ bekleGenisligiAyarla(); }catch(e){}
+    try{ eqTazele(); }catch(e){ _yut(e); }
+    try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); }
   }
   function modaGec(yeni){
     if(!yeni) return;
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     /* ── KANAL DEĞİŞİMİ MODU KAPATIR ──────────────────────────────
        Mod bir "şu an şunu dinliyorum" hâli; kanal ise nereden geldiği.
        Sağ üstten bir kanala ya da sol üstteki gezegene basmak eski
@@ -5764,13 +5800,13 @@
        kapısı burası. */
     if(AKTIF_MOD){
       AKTIF_MOD = null;
-      try{ localStorage.setItem('orbitape.mod',''); }catch(e){}
-      try{ kuyruk.length=0; radyoKuyruk.length=0; jamKuyruk.length=0; }catch(e){}
+      try{ localStorage.setItem('orbitape.mod',''); }catch(e){ _yut(e); }
+      try{ kuyruk.length=0; radyoKuyruk.length=0; jamKuyruk.length=0; }catch(e){ _yut(e); }
     }
     // RADIOTAPE'te aranacak isim yok; oraya geçmek etiketi kaldırır.
-    if(yeni==='radio'){ try{ araGiris.value=''; etiketKur(''); }catch(e){} }
+    if(yeni==='radio'){ try{ araGiris.value=''; etiketKur(''); }catch(e){ _yut(e); } }
     mod = yeni;
-    try{ localStorage.setItem('orbitape.kanal', mod); }catch(e){}   // devamlılık
+    try{ localStorage.setItem('orbitape.kanal', mod); }catch(e){ _yut(e); }   // devamlılık
     /* ── KANAL DEGISINCE DURUM SIFIRLANIR ─────────────────────────
        Nebula iki kanal arasinda gecis yapmaya baslayinca ortaya cikti:
        halka sayisi kanala gore degisiyor (radyoda 7, arsivde 5) ama
@@ -5778,13 +5814,13 @@
        yeni kanalda YOK. Ayrica sessizlik gozcusu eski parcanin
        baslangic zamaniyla calisip yeni kanalda pesi sira atliyordu:
        "her sey sapitiyor" denen sey buydu. */
-    try{ _moodGez = false; _moodVurgu = -1; modAdiBirak(); }catch(e){}
+    try{ _moodGez = false; _moodVurgu = -1; modAdiBirak(); }catch(e){ _yut(e); }
     /* FX DE SONER. Nebuladan oteki kanala gecip geri donunce
        gezegenler yanik kaliyordu: efekt kapali ama dugmeler acik
        gorunuyordu, kullanici neyin acik oldugunu bilemiyordu.
        Kanal degisimi temiz bir baslangictir. */
-    try{ if(FXMOD) fxModGec(FXMOD); }catch(e){}
-    try{ calBaslangic = 0; buParcaSinyal = false; }catch(e){}
+    try{ if(FXMOD) fxModGec(FXMOD); }catch(e){ _yut(e); }
+    try{ calBaslangic = 0; buParcaSinyal = false; }catch(e){ _yut(e); }
     gecmisSifirla();                                     // geri listesi kanal başına
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
@@ -5842,7 +5878,7 @@
   }
   function fxSunumIsaretle(ad){
     try{ const g = fxSunumGorulen(); g.add(ad);
-         localStorage.setItem(FXSUNUM_LISTE, [...g].join(',')); }catch(e){}
+         localStorage.setItem(FXSUNUM_LISTE, [...g].join(',')); }catch(e){ _yut(e); }
   }
   /* Efektli kanalların hepsi birer kez gördü mü? (RADIOTAPE hariç:
      canlı yayında efektin işi yok, orada sunum hiç çıkmıyor.) */
@@ -5873,11 +5909,11 @@
            el hedefe varmadan bir sonrakine kalkıyor ve gösterim
            anlaşılmıyordu. Toplam ~6 saniye. */
         duraklar:[
-          {hedef:g('ana'),       sure:980,  oynat:()=>{ try{ uyduDug.ana.classList.add('acik'); }catch(e){} }},
-          {hedef:g('retro'),     sure:980,  oynat:()=>{ try{ uyduDug.ana.classList.remove('acik'); uyduDug.retro.classList.add('acik'); }catch(e){} }},
-          {hedef:g('dongu'),     sure:980,  oynat:()=>{ try{ uyduDug.retro.classList.remove('acik'); uyduDug.dongu.classList.add('acik'); }catch(e){} }},
-          {hedef:g('karadelik'), sure:1080, oynat:()=>{ try{ uyduDug.dongu.classList.remove('acik'); uyduDug.karadelik.classList.add('acik'); }catch(e){} }},
-          {hedef:{disk:0.34, aci:-40}, sure:1050, oynat:()=>{ try{ uyduDug.karadelik.classList.remove('acik'); }catch(e){} }},
+          {hedef:g('ana'),       sure:980,  oynat:()=>{ try{ uyduDug.ana.classList.add('acik'); }catch(e){ _yut(e); } }},
+          {hedef:g('retro'),     sure:980,  oynat:()=>{ try{ uyduDug.ana.classList.remove('acik'); uyduDug.retro.classList.add('acik'); }catch(e){ _yut(e); } }},
+          {hedef:g('dongu'),     sure:980,  oynat:()=>{ try{ uyduDug.retro.classList.remove('acik'); uyduDug.dongu.classList.add('acik'); }catch(e){ _yut(e); } }},
+          {hedef:g('karadelik'), sure:1080, oynat:()=>{ try{ uyduDug.dongu.classList.remove('acik'); uyduDug.karadelik.classList.add('acik'); }catch(e){ _yut(e); } }},
+          {hedef:{disk:0.34, aci:-40}, sure:1050, oynat:()=>{ try{ uyduDug.karadelik.classList.remove('acik'); }catch(e){ _yut(e); } }},
           {hedef:{disk:0.30, aci:120}, sure:1150}
         ] }
     ];
@@ -5891,7 +5927,7 @@
        kapatma her zaman elinin altında. İŞARETLEMEDEN ÖNCE bakılıyor. */
     const turDondu = fxSunumTurDondu();
     _fxSunumAkiyor = true;
-    try{ if(AKTIF_MOD) fxSunumIsaretle(AKTIF_MOD); }catch(e){}
+    try{ if(AKTIF_MOD) fxSunumIsaretle(AKTIF_MOD); }catch(e){ _yut(e); }
     _turListe = fxSunumAdimlari();
     _turAkiyor = true; _turAdim = 0;
     t.classList.add('on','gor'); t.setAttribute('aria-hidden','false');
@@ -5906,12 +5942,12 @@
         const kt = document.getElementById('fxKutu');
         if(kt){ kt.classList.remove('sec'); kt.setAttribute('aria-checked','false'); }
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     turIlerle();
     /* Dokunuş gelirse hemen kes — ama SKIP/kutuya basmak sunumu
        kesmemeli, onların kendi işi var. */
     const kes = (e)=>{
-      try{ if(e && e.target && e.target.closest && e.target.closest('#tur .alt')) return; }catch(_){}
+      try{ if(e && e.target && e.target.closest && e.target.closest('#tur .alt')) return; }catch(_){ _yut(_); }
       if(_fxSunumAkiyor) fxSunumBitir();
     };
     _fxSunumKes = kes;
@@ -5919,7 +5955,7 @@
   }
   function fxSunumTemizle(){
     if(!_fxSunumKes) return;
-    try{ ['pointerdown','keydown'].forEach(x=>document.removeEventListener(x, _fxSunumKes, {capture:true})); }catch(e){}
+    try{ ['pointerdown','keydown'].forEach(x=>document.removeEventListener(x, _fxSunumKes, {capture:true})); }catch(e){ _yut(e); }
     _fxSunumKes = null;
   }
   function fxSunumBitir(){ turBitir(); }
@@ -5935,7 +5971,7 @@
     if(fxSunumBittiMi() || _fxKullanildi) return;
     if(!AKTIF_MOD || AKTIF_MOD === 'RADIOTAPE' || FXMOD) return;
     if(_turAkiyor || _fxSunumAkiyor) return;
-    try{ if(document.getElementById('ara').classList.contains('acik')) return; }catch(e){}
+    try{ if(document.getElementById('ara').classList.contains('acik')) return; }catch(e){ _yut(e); }
     if(_kayitAktif) return;
     /* Kısa bir soluk: kanal geçişinin kendi hareketi otursun, sonra
        hemen gir. (Eskiden 900 ms'ti, geç kalıyordu.) */
@@ -5990,7 +6026,7 @@
       el.style.setProperty('--fr', Math.round(R*0.62) + 'px');   // halkaların ortasına denk gelen yarıçap
       const yz = el.querySelector('.yazi');
       if(yz) yz.style.top = Math.round(R*(HALKA_DIS) + 38) + 'px';   // en dış halkanın ALTINDA
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function fxIpucuAc(){
     if(_fxIpAcik || fxIpucuBittiMi()) return;
@@ -6009,7 +6045,7 @@
         const k = _fxIpKok(); delete k._eski;
         k[_fxIpTur()] = Date.now();
         localStorage.setItem(FXIP_ANAHTAR, JSON.stringify(k));
-      }catch(e){}
+      }catch(e){ _yut(e); }
     }
   }
   /* Gerçek sürtme: efekt açıkken diskte belirgin bir hareket. */
@@ -6044,7 +6080,7 @@
     try{
       const i = KANAL_SIRA.indexOf(mod);
       modaGec(KANAL_SIRA[(i < 0 ? 0 : i + 1) % KANAL_SIRA.length]);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function moodDegis(){ havuzDegis(); }
   /* ── SAĞ ÜST KATEGORİ YAZISI: BİR SONRAKİ HALKA ──────────────────
@@ -6069,7 +6105,7 @@
       _moodGez = true; _moodVurgu = k;
       if(_yakZaman) clearTimeout(_yakZaman);
       _yakZaman = setTimeout(()=>{ _yakZaman = null; _moodGez = false; _moodVurgu = -1; }, 900);
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* YON: BUYUKTEN KUCUGE. AILE_ADLAR icten disa (kucukten buyuge)
      dizili, o yuzden burada geriye dogru gidiyoruz: en distaki
@@ -6086,16 +6122,16 @@
       modGezYaz(ad);
       if(_geciciAdZaman) clearTimeout(_geciciAdZaman);
       _geciciAdZaman = setTimeout(()=>{ _geciciAdZaman = null;
-        try{ modGezYaz(''); }catch(e){} }, 1100);
-    }catch(e){}
+        try{ modGezYaz(''); }catch(e){ _yut(e); } }, 1100);
+    }catch(e){ _yut(e); }
   }
   function aileSiraGec(){
-    try{ aileGezmeBasla(); }catch(e){}
+    try{ aileGezmeBasla(); }catch(e){ _yut(e); }
     const n = AILE_ADLAR.length;
     const bul = AILE_ADLAR.indexOf(AKTIF_AILE);
     const i = (bul >= 0) ? (bul - 1 + n) % n : n - 1;
-    try{ aileSec(AILE_ADLAR[i], true); }catch(e){}
-    try{ modAdiGoster(); halkaYak(AILE_ADLAR[i]); geciciAdGoster(AILE_ADLAR[i]); }catch(e){}
+    try{ aileSec(AILE_ADLAR[i], true); }catch(e){ _yut(e); }
+    try{ modAdiGoster(); halkaYak(AILE_ADLAR[i]); geciciAdGoster(AILE_ADLAR[i]); }catch(e){ _yut(e); }
   }
   /* ORBITAPE'te isim dugmesi 8 rafi geziyor. */
   /* RADYODAKI DAVRANISIN AYNISI: isme basmak rafi SECIYOR ve halkayi
@@ -6107,9 +6143,9 @@
     const bul = ARSIV_ADLAR.indexOf(AKTIF_MOD);
     const i = (bul >= 0) ? (bul - 1 + n) % n : n - 1;   // buyukten kucuge
     AKTIF_MOD = ARSIV_ADLAR[i];
-    try{ localStorage.setItem('orbitape.mod', AKTIF_MOD); }catch(e){}
-    try{ kuyruk.length = 0; }catch(e){}          // yeni raf siradaki seste gecerli
-    try{ modAdiGoster(); zeminUygula(); halkaYak(AKTIF_MOD); geciciAdGoster(AKTIF_MOD); }catch(e){}
+    try{ localStorage.setItem('orbitape.mod', AKTIF_MOD); }catch(e){ _yut(e); }
+    try{ kuyruk.length = 0; }catch(e){ _yut(e); }          // yeni raf siradaki seste gecerli
+    try{ modAdiGoster(); zeminUygula(); halkaYak(AKTIF_MOD); geciciAdGoster(AKTIF_MOD); }catch(e){ _yut(e); }
   }
   function modSiraGec(){
     if(typeof mod !== 'undefined' && mod === 'radio'){ aileSiraGec(); return; }
@@ -6130,7 +6166,7 @@
     _nebSira = i;
     modSec(MODSIRA[n-1-i], true);                        // en dıştan içe, kapatmadan
   }
-  try{ mark.style.cursor='pointer'; mark.addEventListener('click', moodDegis); }catch(e){}
+  try{ mark.style.cursor='pointer'; mark.addEventListener('click', moodDegis); }catch(e){ _yut(e); }
   /* Sağ üstteki İKİ yazı da aynı işi yapıyor: kategori adı ve markanın
      kendisi. Hangisine basılırsa basılsın bir içteki halkaya geçiliyor —
      açılışta kategori adı boş olabildiği için markanın da tıklanabilir
@@ -6150,10 +6186,10 @@
           if(!_sm.classList.contains('buyuk')) return;   // yukleme kipinde degil
           e.stopPropagation(); modSiraGec();
         });
-      }catch(_){}
+      }catch(_){ _yut(_); }
       _ma.addEventListener('pointerdown', e=>e.stopPropagation());
     });
-  }catch(e){}
+  }catch(e){ _yut(e); }
   /* ── SOL ALT İSTİF ────────────────────────────────────────────────
      Tek sütun, alttan yukarı: ARAMA çizgisi → REC → ◁ geri tuşu.
      Üçü de aynı sol kenardan başlıyor, aralarındaki boşluk eşit; ölçüler
@@ -6179,9 +6215,9 @@
       if(!(g > 0)) return;
       const k = Math.min(1, Math.max(0.60, bütçe / g));
       araclar.style.transform = (k < 1) ? ('scale(' + k.toFixed(4) + ')') : '';
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
-  function araclarYenidenSigdir(){ try{ geriYerlestir(); }catch(e){} }
+  function araclarYenidenSigdir(){ try{ geriYerlestir(); }catch(e){ _yut(e); } }
   /* ── SOL SÜTUNUN GENİŞLİĞİ (--ug) ─────────────────────────────────
      Arama çizgisi ile onun altındaki REC · CAM · ★ satırı aynı sağ
      kenarda bitsin diye: --ug = max(en uzun kanal adı, satırın DİNLENME
@@ -6215,7 +6251,7 @@
       const s = Math.round(Math.max(_ugAd, _ugSatir)) || 138;
       if(Math.abs((parseFloat(getComputedStyle(kok).getPropertyValue('--ug')) || 0) - s) > 0.5){
         kok.style.setProperty('--ug', s + 'px');
-        try{ araKut.style.setProperty('--ug', s + 'px'); }catch(_){}
+        try{ araKut.style.setProperty('--ug', s + 'px'); }catch(_){ _yut(_); }
       }
       return s;
     }catch(e){ return 138; }
@@ -6250,7 +6286,7 @@
           const gz = document.querySelector('#np .np-gez');
           const gr = gz ? gz.getBoundingClientRect() : null;
           if(gr && gr.width) butce = Math.round(gr.left - 12 - (araclar.getBoundingClientRect().left || 16));
-        }catch(_){}
+        }catch(_){ _yut(_); }
         araclarSigdir(araclar, Math.max(120, butce));
         const ab = araclar.getBoundingClientRect();
         if(ab.height){ sol = Math.round(ab.left); aracAlt = ab.bottom; aracUst = ab.top; }
@@ -6261,7 +6297,7 @@
       try{
         const npE = document.getElementById('np');
         if(npE) npE.style.bottom = Math.round(Math.max(6, window.innerHeight - aracAlt)) + 'px';
-      }catch(_){}
+      }catch(_){ _yut(_); }
 
       // ARAMA: araç satırının hemen ÜSTÜNDE, aynı sol kenarda.
       if(arE){
@@ -6280,7 +6316,7 @@
           kc.style.width  = Math.round(ugOlcu()) + 'px';
           kc.style.bottom = Math.round(window.innerHeight - araY.top + 8) + 'px';
         }
-      }catch(_){}
+      }catch(_){ _yut(_); }
       /* Bilgi satırı en üstte; sabit bir sayı kullanınca haplarla üst
          üste biniyor ve okunmuyordu. */
       try{
@@ -6292,7 +6328,7 @@
           bg.style.left   = sol + 'px';
           bg.style.bottom = Math.round(window.innerHeight - ust + 10) + 'px';
         }
-      }catch(_){}
+      }catch(_){ _yut(_); }
       /* BURADA BİR SATIR VARDI, SİLİNDİ — GERİ EKLEME:
            const recYuk = rec.getBoundingClientRect().height || 30; void recYuk;
          Sonucu 'void' ile çöpe atılıyordu, yani hiçbir işe yaramıyordu.
@@ -6312,7 +6348,7 @@
 
       araYerlestir();
       uyduYerlestir();
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* Kanal seçimi artık halkalardan; sağ üstteki yazı tıklanmıyor. */
 
@@ -6380,10 +6416,10 @@
   function araHavuzlar(){
     const g=[];
     const ek=(arr,kanal)=>{ if(Array.isArray(arr)) for(const o of arr) if(o&&o.mp3) g.push({o:o,kanal:kanal}); };
-    try{ ek(earthHavuz,'lib'); }catch(e){}
-    try{ ek(uzunHavuz,'lib'); }catch(e){}
-    try{ ek(mixHavuz,'liste'); }catch(e){}
-    try{ ek(calListe,'liste'); }catch(e){}
+    try{ ek(earthHavuz,'lib'); }catch(e){ _yut(e); }
+    try{ ek(uzunHavuz,'lib'); }catch(e){ _yut(e); }
+    try{ ek(mixHavuz,'liste'); }catch(e){ _yut(e); }
+    try{ ek(calListe,'liste'); }catch(e){ _yut(e); }
     return g;
   }
   function araIndeks(){                      // havuz büyüdüyse yeniden kur, yoksa hazırı kullan
@@ -6518,14 +6554,14 @@
       }catch(e){ ad = AKTIF_MOD || ''; }
     }
     el.textContent = ad;
-    try{ el.classList.toggle('bekliyor', aileBekliyorMu()); }catch(e){}
+    try{ el.classList.toggle('bekliyor', aileBekliyorMu()); }catch(e){ _yut(e); }
     /* RENK ONCE AILEDEN: radyo modunda 'MIXTAPE' adi hem tur halkasi
        hem eski kanal temasi olarak var; MOD_TEMA once sorulursa yazi
        eski kanalin kavunicisine dusuyor (bkz. aktifTema). */
     let _rn = '';
-    try{ if(typeof mod !== 'undefined' && mod === 'radio') _rn = aileRenk(ad); }catch(e){}
+    try{ if(typeof mod !== 'undefined' && mod === 'radio') _rn = aileRenk(ad); }catch(e){ _yut(e); }
     if(!_rn){ const p = ad && MOD_TEMA[ad]; _rn = p ? p.ana : ''; }
-    if(!_rn){ try{ _rn = aileRenk(ad); }catch(e){} }
+    if(!_rn){ try{ _rn = aileRenk(ad); }catch(e){ _yut(e); } }
     if(_rn){
       const [r,g,b] = _rn.split(',').map(Number);
       el.style.color = 'rgb('+Math.round(r*0.78+14)+','+Math.round(g*0.78+14)+','+Math.round(b*0.78+14)+')';
@@ -6547,7 +6583,7 @@
     /* Renk once aileden: 'MIXTAPE' adi hem tur halkasi hem eski kanal
        temasi olarak var (bkz. aktifTema). */
     let _pa = '';
-    try{ if(typeof mod !== 'undefined' && mod === 'radio') _pa = aileRenk(ad); }catch(e){}
+    try{ if(typeof mod !== 'undefined' && mod === 'radio') _pa = aileRenk(ad); }catch(e){ _yut(e); }
     if(!_pa){ const _p = ad && MOD_TEMA[ad]; _pa = _p ? _p.ana : ''; }
     const p = _pa ? {ana:_pa} : null;
     if(p){
@@ -6568,7 +6604,7 @@
         ['sesCubuk','araclar','ara','np','kayitBilgi'].forEach(id=>{
           try{ const e2 = document.getElementById(id); if(!e2) return;
                const k = e2.getBoundingClientRect();
-               if(k.height > 0) taban = Math.min(taban, k.top); }catch(_){}
+               if(k.height > 0) taban = Math.min(taban, k.top); }catch(_){ _yut(_); }
         });
         const h = el.getBoundingClientRect().height || 21;
         /* TUR SIRASINDA YUKARI: tanıtım yazısı diskin altındaki
@@ -6587,7 +6623,7 @@
            dörtte biri (yani halka ile eski yerinin tam ortası). */
         const orta = halkaAlt + (window.innerHeight - halkaAlt)*0.25 - h*0.5;
         el.style.top = Math.round(Math.max(halkaAlt + 10, Math.min(taban - 14 - h, orta))) + 'px';
-      }catch(e){}
+      }catch(e){ _yut(e); }
     }
     el.classList.toggle('gor', !!ad);
   }
@@ -6601,53 +6637,53 @@
   function halkaSec(k, zorla){
     const ad = halkaAdlar()[k]; if(!ad) return;
     if(halkaAilesiMi()){
-      try{ aileGezmeBasla(); }catch(e){}
-      try{ aileSec(ad, zorla); }catch(e){}
-      try{ modAdiGoster(); zeminUygula(); }catch(e){}
-      try{ sonraki(true); }catch(e){}
+      try{ aileGezmeBasla(); }catch(e){ _yut(e); }
+      try{ aileSec(ad, zorla); }catch(e){ _yut(e); }
+      try{ modAdiGoster(); zeminUygula(); }catch(e){ _yut(e); }
+      try{ sonraki(true); }catch(e){ _yut(e); }
       return;
     }
     modSec(ad, zorla);
   }
   function modSec(ad, zorla){
     AKTIF_MOD = (!zorla && AKTIF_MOD === ad) ? null : ad;
-    try{ etkilesimSay(); }catch(e){}
+    try{ etkilesimSay(); }catch(e){ _yut(e); }
     modAdiGoster(); zeminUygula();
-    try{ fxSunumDene(); }catch(e){}
-    try{ localStorage.setItem('orbitape.mod', AKTIF_MOD || ''); }catch(e){}
+    try{ fxSunumDene(); }catch(e){ _yut(e); }
+    try{ localStorage.setItem('orbitape.mod', AKTIF_MOD || ''); }catch(e){ _yut(e); }
     /* Kuyrukları boşalt: eski moddan kalan sesler çalmasın. */
-    try{ kuyruk.length = 0; radyoKuyruk.length = 0; jamKuyruk.length = 0; }catch(e){}
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){}
-    try{ sonraki(true); }catch(e){}
+    try{ kuyruk.length = 0; radyoKuyruk.length = 0; jamKuyruk.length = 0; }catch(e){ _yut(e); }
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){ _yut(e); }
+    try{ sonraki(true); }catch(e){ _yut(e); }
   }
   /* ── AÇILIŞ HER ZAMAN RADYO ──────────────────────────────────────
      Eskiden son seçilen kategori localStorage'dan geri yükleniyordu:
      uygulamayı ikinci kez açan kişi ortaya basıyor ve radyo yerine
      dünkü kategorisi başlıyordu. Kategori bilinçli bir seçim, açılış
      durumu değil — depodaki değer açılışta siliniyor. */
-  try{ localStorage.removeItem('orbitape.mod'); }catch(e){}
+  try{ localStorage.removeItem('orbitape.mod'); }catch(e){ _yut(e); }
   AKTIF_MOD = 'RADIOTAPE';           // açılış her zaman en dış halka: radyo + müzik
-  try{ modAdiYaz(); }catch(e){}      // açılışta RADIOTAPE yazılı gelir
-  try{ zeminUygula(); }catch(e){}    // açılış zemini de RADIOTAPE
+  try{ modAdiYaz(); }catch(e){ _yut(e); }      // açılışta RADIOTAPE yazılı gelir
+  try{ zeminUygula(); }catch(e){ _yut(e); }    // açılış zemini de RADIOTAPE
 
   function araAc(){
     if(araKut.classList.contains('acik')) return;
     araKut.classList.add('acik'); document.body.classList.add('arama-acik');
-    try{ earthYukle(); uzunYukle(); mixYukle(); listeYukle(); }catch(e){}   // tüm havuzlar aranabilsin
+    try{ earthYukle(); uzunYukle(); mixYukle(); listeYukle(); }catch(e){ _yut(e); }   // tüm havuzlar aranabilsin
     silGoster();
-    setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){} }, 40);
+    setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);
     if(araGiris.value.trim()) araYap();       // etiket duruyorsa listesi de gelsin
   }
   function araKapa(){
     if(!araKut.classList.contains('acik')) return;
     araKut.classList.remove('acik'); document.body.classList.remove('arama-acik');
     _araListe=[]; araSonuc.textContent='';    // yazı DURUYOR: etiket kapanınca silinmez
-    try{ araGiris.blur(); }catch(e){}
+    try{ araGiris.blur(); }catch(e){ _yut(e); }
     etiketGoster();
   }
   function araCal(i){
     const x=_araListe[i]; if(!x) return;
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     if(mod!==x.kanal){ mod=x.kanal; gecmisSifirla(); moodYaz(); }   // parçanın kanalına geç
     araKapa();
     cal(x.o);
@@ -6662,7 +6698,7 @@
         _ugAd = Math.round(w-4);
         ugOlcu();
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* Nebula, karşısındaki üç kanal adının TAM ORTA hizasında dursun.
      Sabit bir üst değer yazmıyoruz: yazıların gerçek yeri ölçülüp ona göre
@@ -6678,7 +6714,7 @@
          silinirse arama tekrar en alta düşüp REC/CAM'in altına giriyor. */
       const el = document.getElementById('ara'); if(!el) return;
       el.style.left = '';
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* ── NEBULA HİZASI: ÜST SINIRDAN ─────────────────────────────────
      Eskiden küre, sağ üstteki yazı satırının ORTASINA hizalanıyordu.
@@ -6702,23 +6738,23 @@
       const kureUst = nb.top - nb.height*0.04;
       const simdi = parseFloat(getComputedStyle(mark).top) || 0;
       mark.style.top = Math.max(4, Math.round(simdi + (yaziUst - kureUst))) + 'px';
-      try{ geriYerlestir(); }catch(_){}      // uydu, büyük nebulaya göre konumlanıyor
-    }catch(e){}
+      try{ geriYerlestir(); }catch(_){ _yut(_); }      // uydu, büyük nebulaya göre konumlanıyor
+    }catch(e){ _yut(e); }
   }
-  function ustOlcu(){ araCizgiOlcu(); markHizala(); araYerlestir(); try{ bekleGenisligiAyarla(); }catch(e){} }
+  function ustOlcu(){ araCizgiOlcu(); markHizala(); araYerlestir(); try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); } }
   ustOlcu();
-  try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(ustOlcu); }catch(e){}
+  try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(ustOlcu); }catch(e){ _yut(e); }
   /* ustOlcu da aynı kareye toplanıyor: döndürme sırasında saniyede
      onlarca kez yeniden ölçüp yerleştirmek alttaki yazıları
      oynatıyordu. */
   var _ustBekleyen = 0;
   function ustOlcuIste(){
     if(_ustBekleyen) return;
-    _ustBekleyen = requestAnimationFrame(()=>{ _ustBekleyen = 0; try{ ustOlcu(); }catch(e){} });
+    _ustBekleyen = requestAnimationFrame(()=>{ _ustBekleyen = 0; try{ ustOlcu(); }catch(e){ _yut(e); } });
   }
   window.addEventListener('resize', ustOlcuIste);
-  try{ window.addEventListener('orientationchange', ()=>{ ustOlcuIste(); setTimeout(ustOlcuIste, 320); }); }catch(e){}
-  try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', ustOlcuIste); }catch(e){}
+  try{ window.addEventListener('orientationchange', ()=>{ ustOlcuIste(); setTimeout(ustOlcuIste, 320); }); }catch(e){ _yut(e); }
+  try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', ustOlcuIste); }catch(e){ _yut(e); }
   setTimeout(ustOlcu, 700);                  // geç yüklenen font için emniyet
   araCizgi.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); araAc(); });
   araCizgi.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); araAc(); } });
@@ -6730,7 +6766,7 @@
     e.preventDefault(); e.stopPropagation();
     araGiris.value=''; silGoster(); clearTimeout(_araZaman);
     _araListe=[]; araSonuc.textContent=''; etiketKur('');
-    try{ araGiris.focus(); }catch(_){}
+    try{ araGiris.focus(); }catch(_){ _yut(_); }
   });
   araGiris.addEventListener('keydown', e=>{
     e.stopPropagation();                                   // 'd' raporu vs. yazarken tetiklenmesin
@@ -6753,6 +6789,21 @@
      (Web sayfası galeriye doğrudan yazamaz; paylaşım sayfası tek yol.)               */
   const rec=$('rec'), recYazi=$('recYazi');
   let kaydedici=null, kayitParcalari=[], kayitBaslangic=0, kayitSayac=null, kayitHedef=null, sesliKayit=false;
+  /* ── KAYIT TAVANI ─────────────────────────────────────────────────
+     Kayit parcalari BELLEKTE birikiyor (kayitParcalari dizisi) ve
+     hicbir siniri yoktu. Bit hizi cozunurluge gore 3.2-12 Mbit/s;
+     ust siniri ~90 MB/dk eder. Yirmi dakikalik bir kayitta sekme
+     cokuyor ve o ana kadarki her sey gidiyor -- kullanicinin
+     gorecegi sey "uygulama kapandi", sebebini bilmeden.
+     Iki tavan var, hangisi once dolarsa:
+       BOYUT 400 MB  -- telefonda bellek baskisinin basladigi yer
+       SURE  15 dk   -- boyut dusuk bit hizinda gec dolar, sure onu yakalar
+     Tavana varinca kayit IPTAL DEGIL DURDURULUYOR: o ana kadarki
+     dosya SAVE akisina gidiyor, sebebi ekranda yaziyor. Canli yayin
+     kuraliyla ayni desen -- kullanici emegini kaybetmiyor. */
+  const KAYIT_TAVAN_BAYT = 400 * 1024 * 1024;
+  const KAYIT_TAVAN_MS   = 15 * 60 * 1000;
+  var _kayitBoyut = 0;
   /* Kayıt ses hedefini tamamen kapat: iz durdurulur, grafikten koparılır.
      Canlı kalan bir iz hem boşuna iş yapar hem de bir sonraki kaydın
      ses/görüntü hizasını kaydırır. */
@@ -6802,7 +6853,7 @@
        bir akış veriyor ama eskisi hiç durdurulmuyordu. Ses izinde olduğu
        gibi, canlı kalmış bir iz sonraki kaydın hizasını kaydırabiliyor —
        ve boşuna kare üretmeye devam ediyor. */
-    try{ if(kayitGoruntuAkis) kayitGoruntuAkis.getTracks().forEach(t=>t.stop()); }catch(e){}
+    try{ if(kayitGoruntuAkis) kayitGoruntuAkis.getTracks().forEach(t=>t.stop()); }catch(e){ _yut(e); }
     kayitGoruntuAkis = null;
   }
 
@@ -6857,16 +6908,16 @@
     if(_kamKoruIt) return;
     const geri = ()=>{
       if(Date.now() > _kamKoru){ clearInterval(_kamKoruIt); _kamKoruIt=null;
-                                 try{ ses.removeEventListener('pause', geri); }catch(e){} return; }
+                                 try{ ses.removeEventListener('pause', geri); }catch(e){ _yut(e); } return; }
       /* Kilit ekranından BİLEREK duraklattıysa geri açma: koruma
          kameranın yol açtığı kazara duraklamalar için, kullanıcının
          kendi kararını iptal etmek için değil. */
       if(_kullaniciDuraklatti){ clearInterval(_kamKoruIt); _kamKoruIt=null;
-                                try{ ses.removeEventListener('pause', geri); }catch(e){} return; }
-      try{ if(actx && actx.state==='suspended') actx.resume(); }catch(e){}
-      try{ if(ses.paused && ses.src) ses.play().catch(()=>{}); }catch(e){}
+                                try{ ses.removeEventListener('pause', geri); }catch(e){ _yut(e); } return; }
+      try{ if(actx && actx.state==='suspended') actx.resume(); }catch(e){ _yut(e); }
+      try{ if(ses.paused && ses.src) ses.play().catch(()=>{}); }catch(e){ _yut(e); }
     };
-    try{ ses.addEventListener('pause', geri); }catch(e){}
+    try{ ses.addEventListener('pause', geri); }catch(e){ _yut(e); }
     _kamKoruIt = setInterval(geri, 120);
   }
   function korumayiBirak(){ _kamKoru = 0; }      // kullanıcı kendi geçiş istedi
@@ -6882,8 +6933,8 @@
         video:{ facingMode:'user', width:{ideal:480}, height:{ideal:480} },   // minik pencere: küçük çözünürlük yeter
         audio:false });
       kamEl.srcObject = kamAkis;
-      try{ kamEl.muted = true; kamEl.volume = 0; }catch(e){}   // ses oturumunu hiç istemesin
-      try{ await kamEl.play(); }catch(e){}
+      try{ kamEl.muted = true; kamEl.volume = 0; }catch(e){ _yut(e); }   // ses oturumunu hiç istemesin
+      try{ await kamEl.play(); }catch(e){ _yut(e); }
       kamEl.classList.add('on'); kamAcik = true;   // tek ve sabit seviye (CSS)
       camYaz();
       kamIzleyiciKur();                             // iz biterse sessizce kapat
@@ -6903,12 +6954,12 @@
   function kamIzi(){ try{ return kamAkis && kamAkis.getVideoTracks()[0]; }catch(e){ return null; } }
   function kamIzleyiciKur(){
     const iz = kamIzi(); if(!iz) return;
-    try{ iz.onended = ()=>{ kamKapat(); }; }catch(e){}
+    try{ iz.onended = ()=>{ kamKapat(); }; }catch(e){ _yut(e); }
   }
   document.addEventListener('visibilitychange', ()=>{
     // Geri dönünce yalnızca oynatmayı sürdür — izin İSTEMİYORUZ.
     if(!document.hidden && kamAcik && kamEl && kamEl.paused){
-      try{ kamEl.play().catch(()=>{}); }catch(e){}
+      try{ kamEl.play().catch(()=>{}); }catch(e){ _yut(e); }
     }
   });
 
@@ -6941,31 +6992,31 @@
   const KAM_ALT = 6, KAM_UST = 100;
   var _kamSeviye = 100;
   try{ const v = parseFloat(localStorage.getItem(KAM_ANAHTAR));
-       if(isFinite(v)) _kamSeviye = Math.min(KAM_UST, Math.max(KAM_ALT, v)); }catch(e){}
+       if(isFinite(v)) _kamSeviye = Math.min(KAM_UST, Math.max(KAM_ALT, v)); }catch(e){ _yut(e); }
   const kamCubuk = document.getElementById('kamCubuk');
   function kamSeviyeYaz(v, kaydet){
     _kamSeviye = Math.min(KAM_UST, Math.max(KAM_ALT, Math.round(v)));
-    try{ document.documentElement.style.setProperty('--kv', _kamSeviye); }catch(e){}
+    try{ document.documentElement.style.setProperty('--kv', _kamSeviye); }catch(e){ _yut(e); }
     if(kamCubuk) kamCubuk.setAttribute('aria-valuenow', String(_kamSeviye));
-    if(kaydet){ try{ localStorage.setItem(KAM_ANAHTAR, String(_kamSeviye)); }catch(e){} }
+    if(kaydet){ try{ localStorage.setItem(KAM_ANAHTAR, String(_kamSeviye)); }catch(e){ _yut(e); } }
   }
   kamSeviyeYaz(_kamSeviye, false);
   /* Seviye çizgisi İSTEĞE BAĞLI: her kamera açılışında kendiliğinden
      çıkmıyor. CAM'e BASILI TUTUNCA açılıp kapanıyor; tercih
      hatırlanıyor. (Kamera kapalıyken zaten hiç görünmüyor.) */
   var _kamCubukAcik = false;
-  try{ _kamCubukAcik = localStorage.getItem('orbitape.kamCubuk') === '1'; }catch(e){}
+  try{ _kamCubukAcik = localStorage.getItem('orbitape.kamCubuk') === '1'; }catch(e){ _yut(e); }
   function kamCubukYaz(){
     if(!kamCubuk) return;
     const gor = !!kamAcik && _kamCubukAcik;
     kamCubuk.classList.toggle('var', gor);
     kamCubuk.setAttribute('aria-hidden', gor ? 'false' : 'true');
-    try{ geriYerlestir(); }catch(e){}
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
   }
   function kamCubukDegis(){
     if(!kamAcik) return;                       // kamera kapalıyken anlamı yok
     _kamCubukAcik = !_kamCubukAcik;
-    try{ localStorage.setItem('orbitape.kamCubuk', _kamCubukAcik ? '1' : '0'); }catch(e){}
+    try{ localStorage.setItem('orbitape.kamCubuk', _kamCubukAcik ? '1' : '0'); }catch(e){ _yut(e); }
     kamCubukYaz();
   }
   if(kamCubuk){
@@ -6978,7 +7029,7 @@
     let surukle = false;
     kamCubuk.addEventListener('pointerdown', e=>{
       e.preventDefault(); e.stopPropagation(); surukle = true;
-      try{ kamCubuk.setPointerCapture(e.pointerId); }catch(_){}
+      try{ kamCubuk.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
       oku(e);
     });
     kamCubuk.addEventListener('pointermove', e=>{ if(surukle){ e.preventDefault(); oku(e); } });
@@ -7010,7 +7061,7 @@
       cd.addEventListener('pointerup', bit, {passive:true});
       cd.addEventListener('pointercancel', ()=>{ bit(); _camBasti=false; }, {passive:true});
     }
-  }catch(e){}
+  }catch(e){ _yut(e); }
   async function kamDegis(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
     /* Basılı tutuş çizgiyi açtıysa, arkasından gelen tık kamerayı
@@ -7024,7 +7075,7 @@
     if(kamAcik){ kamKapat(); return; }
     kamAciliyor = true;
     if(camDug) camDug.classList.add('bekle');
-    try{ await kamAc(); }catch(e2){}
+    try{ await kamAc(); }catch(e2){ _yut(e2); }
     kamAciliyor = false;
     if(camDug) camDug.classList.remove('bekle');
   }
@@ -7037,14 +7088,14 @@
       const kayitta = !!kaydedici || !!_bekleyenKayit;
       rec.classList.toggle('pasif', yayin && !kayitta);
       rec.title = (yayin && !kayitta) ? 'Recording is off during live radio' : 'Screen recording';
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   function camYaz(){
     if(!camDug) return;
     if(camDug.classList.contains('sil')) return;   // silme modunda kamera durumu yazılmaz
     camDug.classList.toggle('acik', !!kamAcik);
     camDug.setAttribute('aria-pressed', kamAcik ? 'true' : 'false');
-    try{ kamCubukYaz(); }catch(e){}
+    try{ kamCubukYaz(); }catch(e){ _yut(e); }
   }
   /* CAM <-> DELETE geçişi. Tek yerden yazılıyor ki iki durum birbirine
      karışmasın. */
@@ -7063,11 +7114,11 @@
       camDug.classList.toggle('var', !!KAMERA);
       camYaz();
     }
-    try{ recPasifYaz(); }catch(e){}
-    try{ geriYerlestir(); }catch(e){}
+    try{ recPasifYaz(); }catch(e){ _yut(e); }
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
   }
   if(camDug){
-    try{ camModuTazele(); }catch(e){}          // açılışta doğru yüzü tak (KAMERA anahtarına göre)
+    try{ camModuTazele(); }catch(e){ _yut(e); }          // açılışta doğru yüzü tak (KAMERA anahtarına göre)
     camDug.addEventListener('click', kamDegis);
     camDug.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') kamDegis(e); });
     ['pointerdown','touchstart','mousedown'].forEach(t=>
@@ -7075,9 +7126,9 @@
   }
   function kamKapat(){
     kamAcik = false;
-    if(kamEl){ kamEl.classList.remove('on'); kamEl.style.opacity=''; try{ kamEl.srcObject=null; }catch(e){} }
-    try{ camYaz(); }catch(e){}
-    if(kamAkis){ try{ kamAkis.getTracks().forEach(t=>t.stop()); }catch(e){} kamAkis=null; }
+    if(kamEl){ kamEl.classList.remove('on'); kamEl.style.opacity=''; try{ kamEl.srcObject=null; }catch(e){ _yut(e); } }
+    try{ camYaz(); }catch(e){ _yut(e); }
+    if(kamAkis){ try{ kamAkis.getTracks().forEach(t=>t.stop()); }catch(e){ _yut(e); } kamAkis=null; }
   }
 
   function kayitOlcuHesapla(){
@@ -7202,8 +7253,8 @@
      çalışıyor. Riskli her blok bundan geçiyor. */
   function kat(c, fn){
     c.save();
-    try{ fn(); }catch(e){}
-    finally{ try{ c.restore(); }catch(e){} }
+    try{ fn(); }catch(e){ _yut(e); }
+    finally{ try{ c.restore(); }catch(e){ _yut(e); } }
   }
   function kureCiz(c, x, y, r, k){
     if(!(r > 0) || !isFinite(x) || !isFinite(y)) return;   // bozuk ölçüyle hiç başlama
@@ -7215,7 +7266,7 @@
     g.addColorStop(0, k.c1); g.addColorStop(0.42, k.c2);
     g.addColorStop(0.76, k.c3); g.addColorStop(1, k.c4);
     c.fillStyle = g; kutu();
-    if(k.yuzey) { try{ k.yuzey(c, x, y, r); }catch(e){} }
+    if(k.yuzey) { try{ k.yuzey(c, x, y, r); }catch(e){ _yut(e); } }
     g = c.createRadialGradient(x+r*0.48, y+r*0.54, 0, x+r*0.48, y+r*0.54, r*0.64);
     g.addColorStop(0, k.sicrama || 'rgba(150,190,230,.16)'); g.addColorStop(1, 'rgba(0,0,0,0)');
     c.fillStyle = g; kutu();
@@ -7226,7 +7277,7 @@
     g = c.createRadialGradient(x-r*0.42, y-r*0.52, 0, x-r*0.42, y-r*0.52, r*0.30);
     g.addColorStop(0,'rgba(255,255,255,.50)'); g.addColorStop(1,'rgba(255,255,255,0)');
     c.fillStyle = g; kutu();
-    }catch(e){}
+    }catch(e){ _yut(e); }
     finally{ c.restore(); }
   }
   /* ── KAYITTA NEBULA RENK KATMANI ──────────────────────────────────
@@ -7246,7 +7297,7 @@
       const t = getComputedStyle(el, '::before').transform;
       const m = /matrix\(([-\d.e]+),\s*([-\d.e]+)/.exec(t||'');
       if(m) return Math.atan2(parseFloat(m[2]), parseFloat(m[1]));
-    }catch(e){}
+    }catch(e){ _yut(e); }
     return 0;
   }
   function nebYuzey(c, x, y, r, aci, bulanik){
@@ -7254,7 +7305,7 @@
     c.save();
     try{
     c.translate(x, y); c.rotate(aci||0); c.translate(-x, -y);
-    try{ if(bulanik) c.filter = 'blur(' + bulanik.toFixed(1) + 'px)'; }catch(e){}
+    try{ if(bulanik) c.filter = 'blur(' + bulanik.toFixed(1) + 'px)'; }catch(e){ _yut(e); }
     const B = r*3.4, L = x - B/2, T = y - B/2;      // ::before kutusu
     NEB_LEKE.forEach(([px,py,pr,renk,son])=>{
       const cx = L + B*px, cy = T + B*py, rr = B*pr;
@@ -7262,8 +7313,8 @@
       g.addColorStop(0, renk); g.addColorStop(Math.min(0.999,son), 'rgba(0,0,0,0)');
       c.fillStyle = g; c.fillRect(L, T, B, B);
     });
-    }catch(e){}
-    finally{ try{ c.filter='none'; }catch(e){} c.restore(); }
+    }catch(e){ _yut(e); }
+    finally{ try{ c.filter='none'; }catch(e){ _yut(e); } c.restore(); }
   }
   function _bant(c, x, y, r, yy, kal, renk){          // eliptik enlem kuşağı
     kat(c, ()=>{ c.globalAlpha = 1; c.fillStyle = renk;
@@ -7471,10 +7522,10 @@
        vinyet ve kamera maskesi ise hazır resim olarak saklanıyor. */
 
     /* 1) ZEMİN — hazır resim, karıştırmadan (önceki kareyi de siler) */
-    for(let i=0;i<8;i++){ try{ c.restore(); }catch(e){} }
-    try{ c.setTransform(1,0,0,1,0,0); }catch(e){}
+    for(let i=0;i<8;i++){ try{ c.restore(); }catch(e){ _yut(e); } }
+    try{ c.setTransform(1,0,0,1,0,0); }catch(e){ _yut(e); }
     c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
-    try{ c.filter = 'none'; }catch(e){}
+    try{ c.filter = 'none'; }catch(e){ _yut(e); }
     try{
       const zi = zeminResmi(gorNo, W, H);
       if(zi){ c.globalCompositeOperation='copy'; c.drawImage(zi, 0, 0, W, H);
@@ -7513,7 +7564,7 @@
             try{
               kc.translate(boy/2, boy/2); kc.scale(-1, 1);        // ayna
               kc.drawImage(kamEl, -dw/2, -dh/2, dw, dh);
-            }catch(e){}
+            }catch(e){ _yut(e); }
             finally{ kc.restore(); }
             kc.globalCompositeOperation = 'destination-in';       // kenarda sönen maske (hazır)
             kc.drawImage(T.maske, 0, 0);
@@ -7522,13 +7573,13 @@
           }
         }
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     /* 2b) DİSK — #viz'in KENDİ ölçülen kutusu. Tuval diskin %20 dışına
           taşıyor; kutusunu olduğu gibi alınca halkalar kırpılmıyor ve
           oran ekrandakinin aynısı oluyor. Nefes de dâhil. */
     /* KAYNAK ARTIK vizArka (ekran dışı tampon). Ekrandaki #viz'den
        kopyalamak, derleyicinin bayatlamış enstantanesini almak demekti. */
-    try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){}
+    try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){ _yut(e); }
     /* 3) SOL ÜST: gezegen + uydular — hepsi ölçülen yerlerinden */
     try{
       const ta = (TEMA[gorNo] || TEMA.lib).ana;
@@ -7544,7 +7595,7 @@
         try{
           const m = /hue-rotate\(([-\d.]+)deg\)/.exec((nebEl && nebEl.style.filter) || '');
           if(m) c.filter = 'hue-rotate('+m[1]+'deg)';
-        }catch(e){}
+        }catch(e){ _yut(e); }
         const nAci = nebAcisi(nebEl);
         kureCiz(c, nb.ox, nb.oy, nr, {
           c1:_rgb(ta,1.55), c2:_rgb(ta,1.0), c3:_rgb(ta,0.46), c4:_rgb(ta,0.14),
@@ -7558,7 +7609,7 @@
             _bant(cc,x,y,r, 0.60,0.06,'rgba(255,255,255,.05)');
           }
         });
-        }finally{ try{ c.filter='none'; }catch(e){} c.restore(); }
+        }finally{ try{ c.filter='none'; }catch(e){ _yut(e); } c.restore(); }
       }
       const sonuk = uyduKap && uyduKap.classList.contains('sonuk');
       UYDULAR.forEach(u=>{
@@ -7592,7 +7643,7 @@
           }
         });
       });
-    }catch(e){}
+    }catch(e){ _yut(e); }
     /* 4) SAĞ ÜST: kanal adları — ölçülen kutu, ekrandan okunan yazı tipi */
     try{
       document.querySelectorAll('#ust .kanal').forEach(el=>{
@@ -7620,7 +7671,7 @@
       const _ma = document.getElementById('modAd');
       if(_ma && (_ma.textContent||'').trim() && parseFloat(getComputedStyle(_ma).opacity) > 0.02)
         domMetin(c, _ma, _ma.textContent.trim(), 'sag');
-    }catch(e){}
+    }catch(e){ _yut(e); }
 
     /* 5) SEMBOLLER — MIXTAPE'in altındaki üç yuva, ölçülen yerlerinden */
     try{
@@ -7634,7 +7685,7 @@
         });
         c.globalAlpha = 1;
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
 
     /* 6) SAĞ ALT: ◁ düğmesi + çalan parça */
     try{
@@ -7702,7 +7753,7 @@
             if(fd2.classList.contains('dolu')){ c.fillStyle = rk; c.fill(); }
             else { c.strokeStyle = rk; c.lineWidth = Math.max(1, K*1.4); c.stroke(); }
           });
-        }catch(e){}
+        }catch(e){ _yut(e); }
         if(npUst.classList.contains('var') && npUst.textContent) domMetin(c, npUst, npUst.textContent, 'sag');
         if(npAd.textContent)       domMetin(c, npAd, npAd.textContent, 'sag');
         if(npSanatci.textContent)  domMetin(c, npSanatci, npSanatci.textContent, 'sag');
@@ -7714,10 +7765,10 @@
           const lz = document.getElementById('npLisans');
           if(lz && lz.classList.contains('var') && lz.textContent)
             domMetin(c, lz, lz.textContent, 'sag');
-        }catch(e){}
+        }catch(e){ _yut(e); }
         c.globalAlpha = 1;
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
 
     /* 7) SOL ALT: REC + arama çizgisi (ekranda ne varsa kayıtta da) */
     try{
@@ -7775,7 +7826,7 @@
       }
       const et = document.getElementById('araEtiket');
       if(et && et.textContent) domMetin(c, et, et.textContent, 'sol');
-    }catch(e){}
+    }catch(e){ _yut(e); }
 
     /* 8) SES ÇUBUĞU — iki parmak jesti sırasında ekranda ne görünüyorsa */
     try{
@@ -7787,13 +7838,13 @@
           if(ib){ c.fillStyle=getComputedStyle(sc).color; c.fillRect(sb.x, sb.y, ib.w, Math.max(1,sb.h)); }
           c.globalAlpha=1; }
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     /* 10) VİNYET — bir kez pişirilip saklanıyor. Yük artınca ilk bunu
        bırakıyoruz: tam ekran alfa karışımı en pahalı adımlardan biri
        ve yokluğu en az fark edilen şey. */
-    if(_kademe < 1){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0, W, H); }catch(e){} }
+    if(_kademe < 1){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0, W, H); }catch(e){ _yut(e); } }
     /* VİNYET — hazır resim. Yük artınca ilk bundan vazgeçiyoruz. */
-    if(_kademe < 1){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0); }catch(e){} }
+    if(_kademe < 1){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0); }catch(e){ _yut(e); } }
 
     /* Kare bitti: kodlayıcıya "al bunu" de. captureStream(0) yolunda
        kayda giren kare sayısı buraya eşit; WebKit'in kendi toplayıcısı
@@ -7819,13 +7870,13 @@
   function kayitBicimi(){
     const adaylar=['video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/mp4',
                    'video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
-    for(const t of adaylar){ try{ if(MediaRecorder.isTypeSupported(t)) return t; }catch(e){} }
+    for(const t of adaylar){ try{ if(MediaRecorder.isTypeSupported(t)) return t; }catch(e){ _yut(e); } }
     return '';
   }
   function sureYaz(){
     const sn=Math.floor((Date.now()-kayitBaslangic)/1000);
-    recYazi.textContent=String(Math.floor(sn/60)).padStart(2,'0')+':'+String(sn%60).padStart(2,'0'); try{ araclarYenidenSigdir(); }catch(_){}
-    if(sn===0 || sn===60) { try{ geriYerlestir(); }catch(e){} }   // basamak artınca hizayı tazele
+    recYazi.textContent=String(Math.floor(sn/60)).padStart(2,'0')+':'+String(sn%60).padStart(2,'0'); try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    if(sn===0 || sn===60) { try{ geriYerlestir(); }catch(e){ _yut(e); } }   // basamak artınca hizayı tazele
   }
   /* ── ÖN KONTROL ───────────────────────────────────────────────────
      REC'e basınca kayıt HEMEN başlamıyor. Önce iki şey doğrulanıyor:
@@ -7841,12 +7892,12 @@
   async function kayitOnKontrol(){
     if(_onKontrol || kaydedici) return;
     _onKontrol = true;
-    rec.classList.add('kontrol'); recYazi.textContent = 'CHECK'; try{ araclarYenidenSigdir(); }catch(_){}
-    try{ geriYerlestir(); }catch(e){}
+    rec.classList.add('kontrol'); recYazi.textContent = 'CHECK'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
     try{
-      try{ sesBaglamiAl(); if(actx) await actx.resume(); }catch(e){}
-      try{ if(!grafHazir && ses.src) analizKur(); }catch(e){}
-      try{ if(ses.src && ses.paused && !ses.ended) await ses.play().catch(()=>{}); }catch(e){}
+      try{ sesBaglamiAl(); if(actx) await actx.resume(); }catch(e){ _yut(e); }
+      try{ if(!grafHazir && ses.src) analizKur(); }catch(e){ _yut(e); }
+      try{ if(ses.src && ses.paused && !ses.ended) await ses.play().catch(()=>{}); }catch(e){ _yut(e); }
       // kayıt tuvali dönsün ki kare sayacı işlesin
       kayitTuvalKur();
       if(kayitRAF) cancelAnimationFrame(kayitRAF);
@@ -7859,7 +7910,7 @@
         if(sesVar && kareVar) break;
         await new Promise(r=>setTimeout(r, 60));
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
     rec.classList.remove('kontrol');
     _onKontrol = false;
     await kayitBaslat();
@@ -7875,8 +7926,8 @@
       if(_bekleyenKayit) kayitBekleyeniBirak();   // kaydedilmemiş eskisi varsa yerini yeniye bırakır
       // SES: kayıttan önce ses grafiğinin kurulu olduğundan emin ol. Kurulu değilse
       // (ilk parça henüz grafiğe bağlanmadıysa) ses kanalı hiç eklenmiyor ve video sessiz çıkıyordu.
-      try{ if(!grafHazir && ses.src) analizKur(); }catch(e){}
-      try{ if(actx && actx.state==='suspended') await actx.resume(); }catch(e){}
+      try{ if(!grafHazir && ses.src) analizKur(); }catch(e){ _yut(e); }
+      try{ if(actx && actx.state==='suspended') await actx.resume(); }catch(e){ _yut(e); }
 
       /* ── REC ARTIK KAMERAYA HİÇ DOKUNMUYOR ───────────────────────
          Kamerayı REC'e bağlamak üç ayrı sorunu birden doğurdu:
@@ -7910,13 +7961,13 @@
       kayitGoruntuAkis = kayitTuval.captureStream(0);
       let vIz = kayitGoruntuAkis.getVideoTracks()[0];
       if(!vIz || typeof vIz.requestFrame !== 'function'){
-        try{ kayitGoruntuAkis.getTracks().forEach(t=>t.stop()); }catch(e){}
+        try{ kayitGoruntuAkis.getTracks().forEach(t=>t.stop()); }catch(e){ _yut(e); }
         kayitGoruntuAkis = kayitTuval.captureStream(30);
         vIz = kayitGoruntuAkis.getVideoTracks()[0];
         _elleKare = null; _capYolu = 'AUTO';
       }else{
         _elleKare = vIz; _capYolu = 'MANUAL';  // kayitCiz her karede bunu dürtecek
-        try{ vIz.requestFrame(); }catch(e){}   // ilk kare hemen girsin
+        try{ vIz.requestFrame(); }catch(e){ _yut(e); }   // ilk kare hemen girsin
       }
       const izler = vIz ? [vIz] : [];
 
@@ -7952,12 +8003,12 @@
              kalıyor — yani kayda başlarken çoktan ısınmış ve akıyor. */
           if(!kayitHedef || kayitHedef.context !== actx){
             kayitHedef = actx.createMediaStreamDestination();
-            try{ kaynakDugum.connect(kayitHedef); }catch(e){}
+            try{ kaynakDugum.connect(kayitHedef); }catch(e){ _yut(e); }
           }
           const sesIzi = kayitHedef.stream.getAudioTracks()[0];
           if(sesIzi && sesIzi.readyState === 'live') izler.push(sesIzi);
         }
-      }catch(e){}
+      }catch(e){ _yut(e); }
       // WebKit, sonradan addTrack edilen ses izini yok sayabiliyor; izleri
       // yapıcıya TEK SEFERDE veriyoruz.
       const akis = new MediaStream(izler);
@@ -7984,15 +8035,34 @@
       if(tip) secenek.mimeType = tip;
       try{ kaydedici = new MediaRecorder(akis, secenek); }
       catch(e){ kaydedici = tip ? new MediaRecorder(akis,{mimeType:tip}) : new MediaRecorder(akis); }
-      kayitParcalari=[];
-      kaydedici.ondataavailable=e=>{ if(e.data && e.data.size){ kayitParcalari.push(e.data); _chunk.push(Math.round(e.data.size/1024)); } };
+      kayitParcalari=[]; _kayitBoyut=0;
+      kaydedici.ondataavailable=e=>{
+        if(!(e.data && e.data.size)) return;
+        kayitParcalari.push(e.data);
+        _kayitBoyut += e.data.size;
+        _chunk.push(Math.round(e.data.size/1024));
+        /* TAVAN DENETIMI HER PARCADA. Parca 5 saniyede bir geliyor,
+           yani sinir en fazla 5 saniye asilabiliyor. */
+        try{
+          const _gecen = kayitBaslangic ? (Date.now() - kayitBaslangic) : 0;
+          if(_kayitBoyut >= KAYIT_TAVAN_BAYT){
+            _kayitSebep = 'RECORDING LIMIT: ' +
+              Math.round(KAYIT_TAVAN_BAYT/1048576) + ' MB';
+            kayitDurdur();
+          }else if(_gecen >= KAYIT_TAVAN_MS){
+            _kayitSebep = 'RECORDING LIMIT: ' +
+              Math.round(KAYIT_TAVAN_MS/60000) + ' MIN';
+            kayitDurdur();
+          }
+        }catch(_){ _yut(_); }
+      };
       kaydedici.onstop=kayitBitir;
       /* Kaydedici hata verirse SESSİZCE ölmesin: sebebi yaz, dosyayı
          kurtar (stop -> onstop -> SAVE/DELETE). */
       kaydedici.onerror=e=>{
         const n=(e && e.error && (e.error.name||e.error.message)) || 'ERROR';
         _kayitSebep = 'RECORDER ERROR: '+String(n).toUpperCase();
-        try{ kayitDurdur(); }catch(_){}
+        try{ kayitDurdur(); }catch(_){ _yut(_); }
       };
       /* ── KODLAYICI PES EDERSE ────────────────────────────────────
          Cihaz raporu: FRM 1105, GAP 87MS, RST 0 — bizim çizim
@@ -8007,11 +8077,11 @@
       if(izler[0]){
         izler[0].onended=()=>{
           _kayitSebep = 'VIDEO TRACK ENDED';
-          try{ kayitDurdur(); }catch(_){}
+          try{ kayitDurdur(); }catch(_){ _yut(_); }
         };
         izler[0].onmute=()=>{
           _kayitSebep = 'ENCODER STALLED (TRACK MUTED)';
-          try{ kayitDurdur(); }catch(_){}
+          try{ kayitDurdur(); }catch(_){ _yut(_); }
         };
       }
       /* PARÇALI KAYIT YOK.
@@ -8063,12 +8133,12 @@
       const _calDevam = ()=>{
         /* Kilit ekranından bilerek duraklatıldıysa karışma. */
         if(_kullaniciDuraklatti) return;
-        try{ if(actx && actx.state !== 'running'){ _fixSes++; actx.resume().catch(()=>{}); } }catch(e){}
-        try{ if(ses.src && ses.paused && !ses.ended){ _fixCal++; ses.play().catch(()=>{}); } }catch(e){}
+        try{ if(actx && actx.state !== 'running'){ _fixSes++; actx.resume().catch(()=>{}); } }catch(e){ _yut(e); }
+        try{ if(ses.src && ses.paused && !ses.ended){ _fixCal++; ses.play().catch(()=>{}); } }catch(e){ _yut(e); }
       };
       ses.addEventListener('pause', _calDevam);
       const _nobet = setInterval(_calDevam, 500);
-      _calGeriAl = ()=>{ try{ ses.removeEventListener('pause', _calDevam); }catch(e){} clearInterval(_nobet); };
+      _calGeriAl = ()=>{ try{ ses.removeEventListener('pause', _calDevam); }catch(e){ _yut(e); } clearInterval(_nobet); };
       /* ── DONMANIN YERİNİ KESİN OLARAK BULACAK İKİ ÖLÇÜ ──────────
          Cihaz raporu: FRM 1318 / REC 45.3S = 29.1 kare/sn, RQF yok,
          REC = FILE. Yani biz çiziyoruz, requestFrame hata vermiyor,
@@ -8127,10 +8197,10 @@
          MediaRecorder.start() burada patlarsa nöbetçi SAYFA ÖMRÜ BOYUNCA
          ayakta kalıyor: kullanıcı müziği bir daha duraklatamıyor, üstelik
          her başarısız deneme bir dinleyici + bir interval daha ekliyor. */
-      if(_calGeriAl){ try{ _calGeriAl(); }catch(_){} _calGeriAl = null; }
+      if(_calGeriAl){ try{ _calGeriAl(); }catch(_){ _yut(_); } _calGeriAl = null; }
       kaydedici=null; _kayitAktif=false; kamKapat(); kayitSesiBirak(); rec.classList.remove('hazirla');
       if(kayitRAF){ cancelAnimationFrame(kayitRAF); kayitRAF=null; }
-      recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){} }
+      recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); } }
   }
   /* ── KAYIT GÖZCÜSÜ ────────────────────────────────────────────────
      "Bir süre sonra FX'lerle duruyor": kaydedici SESSİZCE ölebiliyordu ve
@@ -8162,21 +8232,21 @@
       if(!kaydedici){ kayitGozcuDur(); return; }
       if(kaydedici.state !== 'recording'){
         _kayitSebep = 'RECORDER STOPPED: '+String(kaydedici.state).toUpperCase();
-        kayitGozcuDur(); try{ kayitDurdur(); }catch(e){}
+        kayitGozcuDur(); try{ kayitDurdur(); }catch(e){ _yut(e); }
         return;
       }
       const iz = kayitGoruntuAkis && kayitGoruntuAkis.getVideoTracks()[0];
       if(iz && iz.readyState !== 'live'){
         _kayitSebep = 'RECORDER STOPPED: VIDEO TRACK ENDED';
-        kayitGozcuDur(); try{ kayitDurdur(); }catch(e){}
+        kayitGozcuDur(); try{ kayitDurdur(); }catch(e){ _yut(e); }
         return;
       }
       if(performance.now() - _kayitKalp > 2000){
         _kayitDirilme++; _kayitKalp = performance.now();
         if(kayitRAF) cancelAnimationFrame(kayitRAF);
         kayitRAF = null;
-        try{ kayitCiz(); }catch(e){}
-        try{ kayitNotYaz('RECORD LOOP RESTARTED x'+_kayitDirilme, true); }catch(e){}
+        try{ kayitCiz(); }catch(e){ _yut(e); }
+        try{ kayitNotYaz('RECORD LOOP RESTARTED x'+_kayitDirilme, true); }catch(e){ _yut(e); }
       }
     }, 1000);
   }
@@ -8186,8 +8256,8 @@
     _kayitGercekSn = _kayitBasZaman ? (performance.now()-_kayitBasZaman)/1000 : 0;
     _durdurmaIstendi = true;
     kayitGozcuDur();
-    rec.classList.add('hazirla'); recYazi.textContent='···'; try{ araclarYenidenSigdir(); }catch(_){}
-    try{ kaydedici.stop(); }catch(e){}
+    rec.classList.add('hazirla'); recYazi.textContent='···'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    try{ kaydedici.stop(); }catch(e){ _yut(e); }
     clearInterval(kayitSayac); kayitSayac=null;
   }
   async function kayitBitir(){
@@ -8204,12 +8274,12 @@
     kaydedici=null; _kayitAktif=false; rec.classList.remove('kayit');
     kamKapat();
     kayitSesiBirak();                               // izi canlı bırakma: sonraki kaydın hizası kaymasın                                    // kayıt bitti -> kamera tamamen kapanır
-    const blob=new Blob(kayitParcalari,{type:tip}); kayitParcalari=[];
+    const blob=new Blob(kayitParcalari,{type:tip}); kayitParcalari=[]; _kayitBoyut=0;
     kayitDosyasiniOlc(blob);                      // dosyayı ölç: sesi baştan mı başlıyor?
     const uzanti = tip.includes('mp4') ? 'mp4' : 'webm';
     const ad = 'orbitape-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.'+uzanti;
     _elleKare = null;
-    if(_calGeriAl){ try{ _calGeriAl(); }catch(e){} _calGeriAl = null; }
+    if(_calGeriAl){ try{ _calGeriAl(); }catch(e){ _yut(e); } _calGeriAl = null; }
     if(kayitRAF){ cancelAnimationFrame(kayitRAF); kayitRAF=null; }   // kayıt tuvali döngüsünü durdur
     /* ── KAYDIN KAYBOLMASININ SEBEBİ ───────────────────────────────
        Paylaşım sayfasını burada, doğrudan açıyorduk. Ama burası
@@ -8221,9 +8291,9 @@
        sayfası her seferinde açılıyor. */
     _bekleyenKayit = { blob: blob, ad: ad, tip: tip };
     rec.classList.remove('hazirla','sessiz');
-    rec.classList.add('kaydet'); recYazi.textContent='SAVE'; try{ araclarYenidenSigdir(); }catch(_){}
+    rec.classList.add('kaydet'); recYazi.textContent='SAVE'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
     camModuTazele();                 // yanındaki tuş: CAM -> DELETE
-    try{ geriYerlestir(); }catch(e){}
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
   }
 
   /* Kaydedilmeyi bekleyen dosya. Yeni kayda başlanana kadar duruyor. */
@@ -8246,9 +8316,9 @@
         a.href=u; a.download=k.ad; document.body.appendChild(a); a.click(); a.remove();
         setTimeout(()=>URL.revokeObjectURL(u), 8000);
         oldu = true;
-      }catch(e){}
+      }catch(e){ _yut(e); }
     }
-    if(oldu){ kayitBekleyeniBirak(); try{ kayitNotYaz('RECORDING SAVED', false); }catch(e){} }
+    if(oldu){ kayitBekleyeniBirak(); try{ kayitNotYaz('RECORDING SAVED', false); }catch(e){ _yut(e); } }
   }
   /* Ekranda kısa bilgi. Ses baştan geliyorsa sessizce onaylıyor;
      geç geliyorsa kaç milisaniye geciktiğini yazıyor — böylece sorunun
@@ -8260,7 +8330,7 @@
      masaüstünde D tuşu da aynı işi görüyor. Kapalıyken ölçümler yine
      toplanıyor (maliyeti yok), sadece yazılmıyor. */
   var TANI = false;
-  try{ TANI = /[?&]tani(=|&|$)/.test(location.search); }catch(e){}
+  try{ TANI = /[?&]tani(=|&|$)/.test(location.search); }catch(e){ _yut(e); }
   function taniPanel(){ return TANI ? document.getElementById('kayitBilgi') : null; }
   var _bilgiZaman = null, _sesProfil = '', _sesTepe = 0;
   function kayitBilgiYaz(ms){
@@ -8274,7 +8344,7 @@
     if(_kayitSebep){ el.textContent=_kayitSebep; el.classList.add('uyari','var');
       _kayitSebep=''; clearTimeout(_bilgiZaman);
       _bilgiZaman=setTimeout(()=>{ el.classList.remove('var'); }, 9000);
-      try{ geriYerlestir(); }catch(e){} return; }
+      try{ geriYerlestir(); }catch(e){ _yut(e); } return; }
     if(ms === null){ metin = 'RECORDING READY'; }
     else if(ms < 0){ metin = 'RECORDING HAS NO AUDIO'; uyari = true; }
     else if(ms <= 250){ metin = 'AUDIO OK ' + ms + 'MS  PK' + _sesTepe.toFixed(2).slice(1) + '  ' + _sesProfil; }
@@ -8301,39 +8371,39 @@
     el.textContent = metin;
     el.classList.toggle('uyari', uyari);
     el.classList.add('var');
-    try{ geriYerlestir(); }catch(e){}
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
     clearTimeout(_bilgiZaman);
     _bilgiZaman = setTimeout(()=>{ el.classList.remove('var'); }, 14000);
   }
   function kayitBekleyeniBirak(){
     _bekleyenKayit = null;
-    rec.classList.remove('kaydet'); recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){}
-    try{ camModuTazele(); }catch(e){}      // DELETE -> CAM, kamera durumu geri gelir
-    try{ geriYerlestir(); }catch(e){}
+    rec.classList.remove('kaydet'); recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    try{ camModuTazele(); }catch(e){ _yut(e); }      // DELETE -> CAM, kamera durumu geri gelir
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
   }
   /* SİL: dosya bellekten düşer, satır REC + CAM'e döner. Onay sormuyoruz —
      karar zaten bu iki tuşun kendisi. */
   function kaydiSil(){
     if(!_bekleyenKayit) return;
     kayitBekleyeniBirak();
-    try{ kayitNotYaz('RECORDING DISCARDED', false); }catch(e){}
+    try{ kayitNotYaz('RECORDING DISCARDED', false); }catch(e){ _yut(e); }
   }
   function kayitNotYaz(metin, uyari){
     const el = taniPanel(); if(!el) return;
     el.textContent = metin;
     el.classList.toggle('uyari', !!uyari);
     el.classList.add('var');
-    try{ geriYerlestir(); }catch(e){}
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
     clearTimeout(_bilgiZaman);
     _bilgiZaman = setTimeout(()=>{ el.classList.remove('var'); }, 5000);
   }
   function kayitDegis(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     if(_onKontrol) return;                            // kontrol sürüyor: ikinci basış yutulur
     /* CANLI YAYINDA KAYIT YOK. CSS zaten tıklamayı kesiyor; bu ikinci
        kapı klavye/dokunmatik kaçaklarına karşı. */
-    try{ if(!kaydedici && !_bekleyenKayit && akisMi()){ recPasifYaz(); return; } }catch(e){}
+    try{ if(!kaydedici && !_bekleyenKayit && akisMi()){ recPasifYaz(); return; } }catch(e){ _yut(e); }
     if(kaydedici){ kayitDurdur(); return; }
     if(_bekleyenKayit){ kaydiPaylas(); return; }      // dokunuş taze -> paylaşım sayfası açılır
     kayitOnKontrol();
@@ -8345,7 +8415,7 @@
   }
   // ◁| bir önceki — sol altta REC'in üstünde.
   geriDug.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     geriGit(); });
   ['pointerdown','mousedown','touchstart'].forEach(t=>
     geriDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
@@ -8356,7 +8426,7 @@
     const fa = document.getElementById('favAc');
     if(fa){
       const ac = e=>{ if(e){ e.preventDefault(); e.stopPropagation(); }
-        try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+        try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
         favKipDegis(); };
       fa.addEventListener('click', ac);
       fa.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') ac(e); });
@@ -8364,7 +8434,7 @@
         fa.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
       favTazele();
     }
-  }catch(e){}
+  }catch(e){ _yut(e); }
   const favDug = document.getElementById('fav');
   if(favDug){
     favDug.addEventListener('pointerdown', e=>{
@@ -8372,7 +8442,7 @@
       _favBasti = true;
       if(_favBekle) clearTimeout(_favBekle);
       _favBekle = setTimeout(()=>{ _favBekle = null; _favBasti = false; favKipDegis(); }, FAV_TUT);
-      try{ favDug.setPointerCapture(e.pointerId); }catch(_){}
+      try{ favDug.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
     });
     const favBirak = e=>{
       if(e){ e.preventDefault(); e.stopPropagation(); }
@@ -8391,7 +8461,7 @@
   }
   if(ileriDug){
     ileriDug.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
-      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
       ileriGit(); });
     ['pointerdown','mousedown','touchstart'].forEach(t=>
       ileriDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
@@ -8439,7 +8509,7 @@
   function fxDurumYaz(yok){
     if(yok === _fxYok) return;
     _fxYok = yok;
-    try{ uyduKap.classList.toggle('sonuk', yok); }catch(e){}
+    try{ uyduKap.classList.toggle('sonuk', yok); }catch(e){ _yut(e); }
   }
   function fxDurumTazele(){
     fxDurumYaz(!(grafHazir && analiz && lopass));
@@ -8547,7 +8617,7 @@
     const TUR = 26000, DONUS = 19000;
     const markEl = document.getElementById('mark');
     ctx.imageSmoothingEnabled = true;
-    try{ ctx.imageSmoothingQuality = 'high'; }catch(e){}
+    try{ ctx.imageSmoothingQuality = 'high'; }catch(e){ _yut(e); }
 
     function ciz(){
       if(document.hidden) return;
@@ -8631,7 +8701,7 @@
                        + (FXMOD ? ' ' + FXMOD.toUpperCase() : '')
                        + (_kayitAktif ? ' REC' : '') + (kamAcik ? ' CAM' : '');
         el.classList.add('var','uyari');
-        try{ geriYerlestir(); }catch(e){}
+        try{ geriYerlestir(); }catch(e){ _yut(e); }
         clearTimeout(_bilgiZaman);
         _bilgiZaman = setTimeout(()=>{ el.classList.remove('var'); }, 20000);
       }
@@ -8658,7 +8728,7 @@
       if(_bosSayi < 3) return;                       // 6 saniye üst üste boş
       _bosSayi = 0; _tuvalKurtarma++;
       vizSize();                                     // yeni arka bellek
-      try{ if(kayitTuval){ kayitTuval.width = kayitTuval.width; }}catch(e){}
+      try{ if(kayitTuval){ kayitTuval.width = kayitTuval.width; }}catch(e){ _yut(e); }
       _zeminT = null; _vinyetT = null; _kamT = null;  // onları da yeniden kur
       const el = taniPanel();
       if(el){
@@ -8666,11 +8736,11 @@
                        + (FXMOD ? ' ' + FXMOD.toUpperCase() : '')
                        + (_kayitAktif ? ' REC' : '') + (kamAcik ? ' CAM' : '');
         el.classList.add('var','uyari');
-        try{ geriYerlestir(); }catch(e){}
+        try{ geriYerlestir(); }catch(e){ _yut(e); }
         clearTimeout(_bilgiZaman);
         _bilgiZaman = setTimeout(()=>{ el.classList.remove('var'); }, 20000);
       }
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }, 2000);
 
   var TANI_ACIK = /[?&]tani(=|&|$)/.test(location.search);
@@ -8765,7 +8835,7 @@
     if(typeof _turAkiyor !== 'undefined' && _turAkiyor) return;
     /* AĞ YOKKEN EL YOK: el "dokun, başlasın" diyor ama dokununca
        başlayacak bir şey yok. Panelin üstünde yanıltıcı duruyordu. */
-    try{ if(document.getElementById('agyok').classList.contains('on')) return; }catch(e){}
+    try{ if(document.getElementById('agyok').classList.contains('on')) return; }catch(e){ _yut(e); }
     if(_karsAcik || !karsEl) return;
     _karsAcik = true; karsEl.classList.add('on');
     // ses kendiliğinden gelirse el çekilsin (izin geç çıkabiliyor)
@@ -8801,7 +8871,7 @@
       const _ilk = !_dokunuldu;
       _dokunuldu = true;
       if(_karsAcik) karsilamaKapat();
-      if(_ilk){ try{ if(_turAkiyor) turBitir(); }catch(e){} }
+      if(_ilk){ try{ if(_turAkiyor) turBitir(); }catch(e){ _yut(e); } }
     }, {capture:true, passive:true}));
 
   /* ── BOS YERE BASMAK SECIMI IPTAL EDER ───────────────────────────
@@ -8835,7 +8905,7 @@
       if(_aileOncesi === null) return;
       if(!item || !item.grup) return;
       if(item.grup === AKTIF_AILE) _aileOncesi = null;
-    }catch(e){}
+    }catch(e){ _yut(e); }
   }
   /* BOSLUGA BASMAK SECIMI KALDIRIR -- BASKA BIR RAFA GECIRMEZ.
      Once "gezinmeye basladigin rafa don" diye yazmistim; kullanici
@@ -8929,7 +8999,7 @@
           cz.style.top = czY + 'px';
           y.style.top = Math.round(Math.max(bandUst, czY - h - 14)) + 'px';
         }
-      }catch(e){}
+      }catch(e){ _yut(e); }
       y.classList.add('gor');
     }, 180);
     const cz = t.querySelector('.cizgi');
@@ -8960,7 +9030,7 @@
     for(let i=0;i<6;i++){
       const k = Math.round((n-1) * (1 - i/5));
       halkaGezi.push({ hedef:{disk:H(k), aci:0}, sure:340,
-        oynat:(kk=>()=>{ try{ modAdiTut(adlar[kk]); }catch(e){} })(k) });
+        oynat:(kk=>()=>{ try{ modAdiTut(adlar[kk]); }catch(e){ _yut(e); } })(k) });
     }
     return [
       { bas:'ORBITAPE', metin:'Live radio and a sound archive.<br>Tap the centre to start.',
@@ -8969,23 +9039,23 @@
         duraklar: halkaGezi },
       { bas:'SELECT', metin:'Release on a ring to open it.<br>Release outside to cancel.',
         duraklar:[{hedef:{disk:H(Math.max(0,n-4)), aci:0}, sure:1500,
-                   oynat:()=>{ try{ modAdiTut(adlar[Math.max(0,n-4)]); }catch(e){} }}] },
+                   oynat:()=>{ try{ modAdiTut(adlar[Math.max(0,n-4)]); }catch(e){ _yut(e); } }}] },
       { bas:'SHORTCUT', metin:'The name and the three symbols<br>step through the genres.',
-        duraklar:[{hedef:'#modAd', sure:700, oynat:()=>{ try{ modAdiBirak(); }catch(e){} }},
+        duraklar:[{hedef:'#modAd', sure:700, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
                   {hedef:'#bekle', sure:700}] },
       { bas:'NOW PLAYING', metin:'Down here: the station,<br>its genre and where it broadcasts from.',
         duraklar:[{hedef:'#np', sure:1300}] },
       { bas:'EFFECTS', metin:'The planets are the effects.<br>Tap one to turn it on.',
         duraklar:[
-          {hedef:'.uydu[data-fx="ana"]',       sure:620, oynat:()=>{ try{ if(FXMOD!=='ana') fxModGec('ana'); }catch(e){} }},
-          {hedef:'.uydu[data-fx="retro"]',     sure:620, oynat:()=>{ try{ if(FXMOD!=='retro') fxModGec('retro'); }catch(e){} }},
-          {hedef:'.uydu[data-fx="dongu"]',     sure:620, oynat:()=>{ try{ if(FXMOD!=='dongu') fxModGec('dongu'); }catch(e){} }},
-          {hedef:'.uydu[data-fx="karadelik"]', sure:700, oynat:()=>{ try{ if(FXMOD!=='karadelik') fxModGec('karadelik'); }catch(e){} }}] },
+          {hedef:'.uydu[data-fx="ana"]',       sure:620, oynat:()=>{ try{ if(FXMOD!=='ana') fxModGec('ana'); }catch(e){ _yut(e); } }},
+          {hedef:'.uydu[data-fx="retro"]',     sure:620, oynat:()=>{ try{ if(FXMOD!=='retro') fxModGec('retro'); }catch(e){ _yut(e); } }},
+          {hedef:'.uydu[data-fx="dongu"]',     sure:620, oynat:()=>{ try{ if(FXMOD!=='dongu') fxModGec('dongu'); }catch(e){ _yut(e); } }},
+          {hedef:'.uydu[data-fx="karadelik"]', sure:700, oynat:()=>{ try{ if(FXMOD!=='karadelik') fxModGec('karadelik'); }catch(e){ _yut(e); } }}] },
       { bas:'SHAPE', metin:'With an effect on, drag inside the disc.<br>The rings reach toward your finger.',
         duraklar:[{hedef:{disk:0.34, aci:-46}, sure:800},
                   {hedef:{disk:0.30, aci:118}, sure:800}] },
       { bas:'CHANNEL', metin:'The big planet switches channel:<br>live radio or the archive.',
-        duraklar:[{hedef:'#mark', sure:1400, oynat:()=>{ try{ fxNormale(); }catch(e){} }}] },
+        duraklar:[{hedef:'#mark', sure:1400, oynat:()=>{ try{ fxNormale(); }catch(e){ _yut(e); } }}] },
       { bas:'RECORD', metin:'REC records the screen with sound.<br>CAM adds the front camera.',
         duraklar:[{hedef:'#araclar', sure:1300}] },
       { bas:'READY', metin:'That\u2019s it. Enjoy.',
@@ -9001,7 +9071,7 @@
     /* kısa dokunuş jesti; duraklar kısa olduğu için hemen */
     setTimeout(()=>{ if(_turAkiyor) turTasi(d.hedef, true); }, Math.min(180, d.sure*0.3));
     setTimeout(()=>{ if(_turAkiyor) turTasi(d.hedef, false); }, Math.min(360, d.sure*0.6));
-    if(d.oynat) setTimeout(()=>{ if(_turAkiyor) try{ d.oynat(); }catch(e){} }, Math.min(200, d.sure*0.35));
+    if(d.oynat) setTimeout(()=>{ if(_turAkiyor) try{ d.oynat(); }catch(e){ _yut(e); } }, Math.min(200, d.sure*0.35));
     _turZaman = setTimeout(()=>turDurak(ad, no+1), d.sure);
   }
   /* Tur, adım listesini _turListe'den okuyor. Normalde tam tanıtım;
@@ -9021,14 +9091,14 @@
     /* AĞ YOKKEN TUR YOK: "no connection" panelinin üstüne binip iki
        mesaj birden okunmuyordu. Kutu işaretlenmediği sürece depoya
        hiçbir şey yazılmıyor, yani tur bir dahaki açılışta yine çıkar. */
-    try{ if(document.getElementById('agyok').classList.contains('on')) return; }catch(e){}
+    try{ if(document.getElementById('agyok').classList.contains('on')) return; }catch(e){ _yut(e); }
     _turListe = null;
     _turAkiyor = true; _turAdim = 0;
     t.classList.add('on','gor');
     t.setAttribute('aria-hidden','false');
     /* Açılış turunun kendi alt satırı; FX'inki kapalı kalıyor. */
     try{ document.getElementById('turAlt').classList.add('gor');
-         document.getElementById('fxAlt').classList.remove('gor'); }catch(e){}
+         document.getElementById('fxAlt').classList.remove('gor'); }catch(e){ _yut(e); }
     turIlerle();
   }
   function turBitir(){
@@ -9039,21 +9109,21 @@
     if(typeof _fxSunumAkiyor !== 'undefined' && _fxSunumAkiyor){
       _fxSunumuydu = true;
       _fxSunumAkiyor = false;
-      try{ fxSunumTemizle(); }catch(e){}
-      try{ UYDULAR.forEach(u=>uyduDug[u.fx].classList.toggle('acik', FXMOD===u.fx)); }catch(e){}
+      try{ fxSunumTemizle(); }catch(e){ _yut(e); }
+      try{ UYDULAR.forEach(u=>uyduDug[u.fx].classList.toggle('acik', FXMOD===u.fx)); }catch(e){ _yut(e); }
     }
     /* Her iki alt satır da kapanıyor; bir sonraki gösterim hangisiyse
        kendi satırını kendisi açacak. */
     try{ document.getElementById('turAlt').classList.remove('gor');
-         document.getElementById('fxAlt').classList.remove('gor'); }catch(e){}
+         document.getElementById('fxAlt').classList.remove('gor'); }catch(e){ _yut(e); }
     if(_turZaman){ clearTimeout(_turZaman); _turZaman = null; }
     /* GERİ AL: tur sadece göstermek için oynattı, hiçbir şeyi seçili
        bırakmıyor. Önizleme düşüyor, FX kapanıyor. */
-    try{ modAdiBirak(); }catch(e){}
-    try{ fxNormale(); }catch(e){}
+    try{ modAdiBirak(); }catch(e){ _yut(e); }
+    try{ fxNormale(); }catch(e){ _yut(e); }
     if(t){ t.classList.remove('on','gor'); t.setAttribute('aria-hidden','true');
            setTimeout(()=>{ try{ t.querySelector('.halka').classList.remove('gor');
-                                 t.querySelector('.yazi').classList.remove('gor'); }catch(e){} }, 500); }
+                                 t.querySelector('.yazi').classList.remove('gor'); }catch(e){ _yut(e); } }, 500); }
     /* Kutu işaretliyse bir daha gösterme. İşaretli değilse hiçbir şey
        yazmıyoruz: bir sonraki açılışta yine çıkar.
        HANGİ kutuya bakıldığı ekranda ne olduğuna bağlı — ikisi ayrı
@@ -9061,17 +9131,17 @@
        açılış turunu ASLA kapatmıyor. */
     if(_fxSunumuydu){
       if(turKutuDurum('fxKutu')){
-        try{ localStorage.setItem(FXSUNUM_ANAHTAR, '1'); }catch(e){}
+        try{ localStorage.setItem(FXSUNUM_ANAHTAR, '1'); }catch(e){ _yut(e); }
         try{ const kt = document.getElementById('fxKutu');
-             if(kt){ kt.classList.remove('sec'); kt.setAttribute('aria-checked','false'); } }catch(e){}
+             if(kt){ kt.classList.remove('sec'); kt.setAttribute('aria-checked','false'); } }catch(e){ _yut(e); }
       }
     } else if(turKutuDurum('turKutu')){
-      try{ localStorage.setItem(TUR_ANAHTAR, '1'); }catch(e){}
+      try{ localStorage.setItem(TUR_ANAHTAR, '1'); }catch(e){ _yut(e); }
     }
     /* Tur bitti: hâlâ hiçbir yere dokunulmadıysa karşılama eli
        kendi kuralıyla çıkabilsin. */
     if(!_fxSunumuydu){
-      try{ setTimeout(()=>{ if(!_dokunuldu && !sesDuyuluyorMu()) karsilamaAc(); }, 900); }catch(e){}
+      try{ setTimeout(()=>{ if(!_dokunuldu && !sesDuyuluyorMu()) karsilamaAc(); }, 900); }catch(e){ _yut(e); }
     }
   }
   /* İki alt satırın düğmeleri aynı şekilde çalışıyor ama AYRI:
@@ -9088,11 +9158,11 @@
     };
     bagla('turKutu','turAtla');
     bagla('fxKutu','fxAtla');
-  }catch(e){}
+  }catch(e){ _yut(e); }
   /* Açılıştan kısa süre sonra: karşılama eli ile çakışmasın diye
      el zaten "dokun" diyorsa tur onun üstüne biniyor, sorun değil —
      tur da aynı yeri gösteriyor. */
-  setTimeout(()=>{ try{ turBasla(); }catch(e){} }, 1400);
+  setTimeout(()=>{ try{ turBasla(); }catch(e){ _yut(e); } }, 1400);
 
   /* ── İLK DOKUNUŞ NEREYE OLURSA OLSUN BAŞLATSIN ───────────────────
      Tarayıcı sesi ancak GERÇEK bir dokunuşun içinde açıyor; önceki
@@ -9107,7 +9177,7 @@
     const t = e.target;
     if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#uydular,#mark,#rapor')) return;  // kendi başlatıcıları var
     _ilkTetik = true;
-    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+    try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     const it = ilkItem;
     if(it){ ilkItem = null; cal(it); } else { sonraki(false); }
   }, {capture:true, passive:true});
@@ -9124,13 +9194,13 @@
        sorulmuyor — arşiv kanalında açılıp radyo istasyonu duymak
        "devam ediyorum" hissini bozardı. */
     if(mod === 'radio'){
-      try{ await radyoKuyrukDoldur(); ilk = radyoKuyruk.shift() || null; }catch(e){}
+      try{ await radyoKuyrukDoldur(); ilk = radyoKuyruk.shift() || null; }catch(e){ _yut(e); }
     }
-    if(!ilk){ try{ await earthYukle(); ilk = earthAl(); }catch(e){} }                // yedek: arşiv
+    if(!ilk){ try{ await earthYukle(); ilk = earthAl(); }catch(e){ _yut(e); } }                // yedek: arşiv
     /* HİÇBİR KAYNAK GELMEDİ: eskiden buradan sessizce çıkılıyordu —
        otoBaslat hiç çağrılmıyor, kullanıcıya tek kelime söylenmiyordu.
        Ekranda kalan tek şey sonsuza kadar dönen bekleme sembolüydü. */
-    if(!ilk){ try{ agYokAc(); }catch(e){} }
+    if(!ilk){ try{ agYokAc(); }catch(e){ _yut(e); } }
     if(ilk){
       ilkItem = ilk; calindiEkle(ilk.id);
       try{
@@ -9138,7 +9208,7 @@
         ses.preload='auto';               // ÖNDEN tamponla: basınca ağı bekleme, hemen gir
         ses.src=ilk.mp3; sesHazirURL=ilk.mp3;
         ses.load();
-      }catch(e){}
+      }catch(e){ _yut(e); }
       otoBaslat();                        // tarayıcı izin veriyorsa kendiliğinden çal
     }
     hazirla();   // kütüphane çeşitliliğini arkada topla (isteyen üstten geçince hazır olsun)
@@ -9159,10 +9229,10 @@
   try{
     if('serviceWorker' in navigator && location.protocol !== 'file:'){
       window.addEventListener('load', ()=>{
-        setTimeout(()=>{ try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){} }, 1200);
+        setTimeout(()=>{ try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){ _yut(e); } }, 1200);
       });
     }
-  }catch(e){}
+  }catch(e){ _yut(e); }
 </script>
 </body>
 </html>

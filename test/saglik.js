@@ -160,10 +160,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      520 KB hala gzip sonrasi ~110 KB; mobilde fark olculebilir degil.
      Asil sinir Cloudflare'in 25 MiB'i; bu sadece disiplin siniri.
      Bir daha takilirsa cozum yorum silmek DEGIL, kodu bolmek. */
-  /* TAVAN 540 KB: aile temasi, aile ici gecmis ve secim iptali
-     eklendiginde 522 KB'a cikti. Tavan bir uyari, bir yasak degil --
-     ama yukselttigimiz her seferi yazmali ki sessizce sismesin. */
-  K('Dosya boyutu < 540 KB',  dosyaBoy < 540*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* TAVAN 540 -> 560 KB. Sebep tek ve olculu: 395 bos catch'in her
+     birine sayac cagrisi eklendi (+~5 KB) ve yaninda neden boyle
+     oldugunu anlatan yorum (+~1.5 KB). Yani buyume korluk karsiliginda
+     alinan bir sey, sessiz sisme degil.
+     Bu tavan bir uyari, bir yasak degil -- ama her yukseltmenin
+     sebebi buraya yaziliyor ki bir gun "nasil 700 KB olmus" diye
+     sorulmasin. Sunucu gzip'liyor: 543 KB kaynak ~90 KB tel uzerinde. */
+  K('Dosya boyutu < 560 KB',  dosyaBoy < 560*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── ESKI SURUM ACILMASIN ────────────────────────────────────────
      Olculen vaka: yeni surum yayindayken uygulama ESKI surumu acti.
      Sebep index.html icin Cache-Control yazilmamis olmasiydi; kural
@@ -2631,6 +2635,46 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* ACILIS TURU UYGULAMAYI DOGRU ANLATSIN. Eskisi "bes halka, bes
        kanal" diyordu ve yaricaplari elle yazilmis sabitlerdi; halka
        sayisi degisince baska yerleri gosteriyordu. */
+    /* KAYIT TAVANI: parcalar bellekte birikiyordu ve siniri yoktu;
+       uzun kayitta sekme cokuyor ve o ana kadarki her sey gidiyordu.
+       Iki tavan var (boyut ve sure) ve tavana varinca kayit IPTAL
+       degil DURDURULUYOR -- dosya kullanicida kaliyor. */
+    /* YUTULAN HATA SAYACI: 395 bos catch vardi ve hepsi sessizdi.
+       Davranis degismedi (yine yutuyor) ama artik SAYILIYOR ve
+       'D' raporunda gorunuyor. Bu giderse korluk geri gelir. */
+    K('Yutulan hatalar sayiliyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        const bosKaldi = (k.match(/catch\s*\(\s*[A-Za-z_$][\w$]*\s*\)\s*\{\s*\}/g)||[]).length;
+        /* _yut'un kendi ic catch'i haric hepsi baglanmis olmali */
+        return typeof _yut === 'function' && bosKaldi <= 1
+            && /swallowed/.test(k);
+      }), 'bos catch kalmadi, sayac D raporunda');
+    K('Sayac kendisi patlamiyor', await pg.evaluate(()=>{
+        /* En kritik ozellik: catch icinde patlamak, yutulan hatayi
+           GERCEK hataya cevirir. Cop degerlerle sinaniyor. */
+        try{
+          _yut(new Error('deneme')); _yut(null); _yut(undefined);
+          _yut({}); _yut('metin'); _yut(0);
+          const y = window.__yut;
+          return !!y && y.n >= 6 && y.ilk.length > 0
+                 && y.ilk.indexOf('deneme') >= 0;
+        }catch(e){ return false; }
+      }), 'null/undefined/nesne/metin ile de patlamiyor');
+    K('Kayit tamponunda tavan var', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return typeof KAYIT_TAVAN_BAYT === 'number'
+            && typeof KAYIT_TAVAN_MS === 'number'
+            && KAYIT_TAVAN_BAYT > 0 && KAYIT_TAVAN_BAYT <= 600*1024*1024
+            && KAYIT_TAVAN_MS > 0 && KAYIT_TAVAN_MS <= 30*60*1000
+            /* Tavana varinca DURDURUYOR: iptal eden bir yol olmamali */
+            && /_kayitBoyut >= KAYIT_TAVAN_BAYT[\s\S]{0,180}kayitDurdur\(\)/.test(k)
+            && /RECORDING LIMIT/.test(k);
+      }), '400 MB / 15 dk, dolunca durur (iptal etmez)');
+    K('Kayit boyutu gercekten sayiliyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /_kayitBoyut \+= e\.data\.size/.test(k)
+            && /kayitParcalari=\[\]; _kayitBoyut=0/.test(k);
+      }), 'her parcada toplaniyor, kayit bitince sifirlaniyor');
     K('Acilis turu bugunku uygulamayi anlatiyor', await pg.evaluate(()=>{
         const a = turAdimlari();
         const basliklar = a.map(x=>x.bas);
