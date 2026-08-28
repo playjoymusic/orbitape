@@ -634,19 +634,19 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       return (mx-mn)/mx < 0.18 && b2 > r;          // az doygun, morumsu
     }), 'gri + az mor');
   /* Marka adi secili kategorinin rengini aliyor. */
+  /* MARKA ARTIK ARSIVDE SABIT (SPACE tonu) -- o yuzden burada
+     kategoriye gore degisen sey ZEMIN. Marka rengi ayrica
+     "ORBITAPE yazisi arsivde SPACE renginde" testinde olculuyor. */
   const mrk = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    const oku=()=>getComputedStyle(document.documentElement).getPropertyValue('--m1').trim();
-    /* ARSIV KANALINDA: radyo modunda tema artik SECILI AILEDEN
-       geliyor (iki ayri MIXTAPE karisiyordu, bkz. aktifTema).
-       MOD_TEMA arsiv tarafinin sozlugu, testi de orada kosturuyoruz. */
+    const oku=()=>getComputedStyle(document.body).getPropertyValue('--zem1').trim();
     const _eskiMod = mod; mod = 'lib';
     const o={}; for(const a of ['RADIOTAPE','MIXTAPE','ORBITAPE','AMBIANCE']){ modSec(a,true); await bek(80); o[a]=oku(); }
     mod = _eskiMod;
     modSec('RADIOTAPE', true);
     return o;
   });
-  K('Marka adi kategori renginde', new Set(Object.values(mrk)).size===4 && /224/.test(mrk.RADIOTAPE) && /240/.test(mrk.MIXTAPE),
+  K('Her kategorinin kendi zemin tonu', new Set(Object.values(mrk)).size===4,
      Object.entries(mrk).map(([k,v])=>k+' '+v).join(' | ').slice(0,90));
   /* ZEMIN IMA OLMALI: ic durak koyu kalsin, boyanmis gibi durmasin. */
   K('Zeminler siyaha yakin', await pg.evaluate(()=>MODSIRA.every(a=>{
@@ -2614,51 +2614,29 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         mod = eM; AKTIF_AILE = eA; try{ modGezYaz(''); }catch(e){}
         return !!yazi && yazi !== 'JAZZ' && altta;
       }), 'gecici ad halkanin ALTINDA cikiyor ve kendi kendine soner');
-    /* IPTAL ARTIK BIR JEST: DISKIN ORTASINA TEK DOKUNUS.
-       "Ekranin bos yeri" olcutu dokunmatikte surekli yanlislikla
-       tetikleniyordu (parmak ust serite/kenara degiyordu) ve
-       kullanici kaldirtti. Kod ortadaki zar bolgesine bagli:
-       _diskOran(e) < zarSinir(). Bu satir giderse iptalin yolu
-       kalmaz. */
-    /* SEMBOLLER DE ISIM DUGMESI: iki hedef, tek is. Yazi ince,
-       semboller genis -- dokunmatikte asil basilan yer orasi. */
-    K('Uc sembol de raf degistiriyor', await pg.evaluate(()=>{
-        const el = document.getElementById('bekle');
-        if(!el) return false;
-        el.classList.add('buyuk');
-        const tiklanir = getComputedStyle(el).pointerEvents !== 'none';
-        const eM = mod, eA = AKTIF_AILE;
-        mod = 'radio'; AKTIF_AILE = 'JAZZ';
-        el.dispatchEvent(new MouseEvent('click', {bubbles:true}));
-        const degisti = AKTIF_AILE !== 'JAZZ' && !!AKTIF_AILE;
-        mod = eM; AKTIF_AILE = eA;
-        return tiklanir && degisti;
-      }), 'sembollere tiklamak isim dugmesiyle ayni sirayi ilerletiyor');
-    /* RAF SECILI DEGILSE USTTE YAZI DA YOK: once RADIOTAPE, sonra ALL
-       yazmistim; ikisi de kullaniciya "ne alaka" dedirtti. */
-    K('Secim yokken ust yazi bos', await pg.evaluate(()=>{
-        const eM = mod, eA = AKTIF_AILE;
-        mod = 'radio'; AKTIF_AILE = null; modAdiYaz();
-        const bos = document.getElementById('modAd').textContent === '';
-        AKTIF_AILE = 'JAZZ'; modAdiYaz();
-        const dolu = document.getElementById('modAd').textContent === 'JAZZ';
-        mod = eM; AKTIF_AILE = eA; modAdiYaz();
-        return bos && dolu;
-      }), 'ne RADIOTAPE ne ALL: hicbir sey');
-    K('Ortaya tek dokunus secimi birakir', await pg.evaluate(()=>{
-        const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
-        mod = 'radio'; _aileOncesi = null; AKTIF_AILE = 'ELECTRONIC';
-        const oldu = aileIptal();                  // kosulsuz calisir
-        const kalkti = AKTIF_AILE === null;
-        const ikinci = aileIptal();                // secili yok: is yok
-        mod = eM; AKTIF_AILE = eA; _aileOncesi = eO;
-        return oldu && kalkti && ikinci === false;
-      }), 'raf kalkar, baska rafa GECMEZ');
-    K('Iptal diskin ortasina bagli', await pg.evaluate(()=>{
+    /* ORTA = SIRADAKI SES. Bir ara oraya "raf secimini birak" da
+       baglanmisti; zar atlamak icin en cok basilan yer orasi ve her
+       basista ustteki raf adi siliniyordu. Kullanici kaldirtti.
+       Bu satir, iptalin sessizce geri gelmedigini kontrol ediyor. */
+    K('Ortaya dokunus SADECE siradaki sesi caliyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
-        return /_diskOran\(e\) < zarSinir\(\)[\s\S]{0,40}aileIptal\(\)/.test(k)
-            && !/bosYerMi/.test(k);
-      }), 'zar bolgesine tek dokunus; eski "bos yer" olcutu kaldirildi');
+        return !/aileIptal/.test(k) && !/bosYerMi/.test(k);
+      }), 'raf secimi ortadaki zara bagli DEGIL');
+    /* ARSIV KANALINDA MARKA YAZISI SABIT: SPACE'in kursun tonu. */
+    K('ORBITAPE yazisi arsivde SPACE renginde', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const oku = ()=>getComputedStyle(document.documentElement)
+                        .getPropertyValue('--m1').trim();
+        const eM = mod, eA = AKTIF_MOD;
+        mod = 'lib'; AKTIF_MOD = 'NATURE'; markaRengi(); await bek(20);
+        const a = oku();
+        AKTIF_MOD = 'HUMANS'; markaRengi(); await bek(20);
+        const b = oku();
+        mod = eM; AKTIF_MOD = eA; markaRengi();
+        const sade = x => (x||'').replace(/\s+/g,'');
+        const [r,g,bl] = (MOD_TEMA.SPACE.ana).split(',').map(Number);
+        return sade(a) === sade(b) && sade(a) === 'rgb('+r+','+g+','+bl+')';
+      }), 'raf degisse de marka rengi ayni kaliyor');
     /* MARKANIN 2. DURAGI SABIT PEMBE: ORBITAPE yazisinin son
        harflerindeki retro ton rafa gore degismesin. */
     K('Marka ikinci duragi sabit pembe', await pg.evaluate(()=>{

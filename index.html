@@ -1413,7 +1413,14 @@
   }
   function markaRengi(){
     try{
-      const p = aktifTema();
+      /* ARSIV KANALINDA MARKA SABIT: ORBITAPE yazisi SPACE rafinin
+         kursun tonunu aliyor. Once secili rafla birlikte degisiyordu
+         ve marka her rafta baska bir renge giriyordu; kullanici
+         "orbitape moduna gecince yazinin rengi space'teki renk olsun,
+         o iyi" dedi. Zemin ve semboller rafla degismeye devam ediyor;
+         sabit kalan yalniz markanin kendisi. */
+      let p = aktifTema();
+      if(typeof mod !== 'undefined' && mod === 'lib' && MOD_TEMA.SPACE) p = MOD_TEMA.SPACE;
       const kok = document.documentElement.style;
       if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); return; }
       kok.setProperty('--m1', 'rgb('+p.ana+')');
@@ -4606,7 +4613,7 @@
       geriYerlestir();
     }catch(e){}
   }
-  var _sonCalan = null;   // o an calan kayit (bkz. aileIptal)
+  var _sonCalan = null;   // o an calan kayit
   function gecmisYaz(item){
     if(_gecisKaynak==='gez'){ /* geçmişte gezildi: dizi değişmiyor */ }
     else{
@@ -5635,10 +5642,11 @@
          Hangi halka olduğu en yakın yarıçapa göre bulunuyor; tam
          çizginin üstüne basmak gerekmiyor, yakını yeter. */
       try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
-      /* ORTAYA TEK DOKUNUS = RAF SECIMINI BIRAK. Halkanin uzerine
-         degil ORTASINA basmak "bana her seyden ver" demek; ardindan
-         gelen ses de artik suzgecsiz havuzdan geliyor. */
-      try{ if(_diskOran(e) < zarSinir()) aileIptal(); }catch(_){}
+      /* ORTA = SIRADAKI SES, BASKA HICBIR SEY. Bir ara buraya "raf
+         secimini birak" da baglanmisti; kullanici kaldirtti: zar
+         atlamak icin en cok basilan yer orasi ve her basista ustteki
+         raf adi siliniyordu. Secimi birakmanin ayri bir yolu yok --
+         baska bir rafa gecmek yeter. */
       sonraki(true);
     }
   });
@@ -8786,29 +8794,7 @@
      VAZGECMEK: secili raf kalkar, butun liste calar, calan ses
      bozulmaz. "Bosluklar secili bir sey varsa secimi kaldiriyor,
      olay bu." */
-  function aileIptal(){
-    try{
-      if(typeof mod === 'undefined' || mod !== 'radio') return false;
-      if(!AKTIF_AILE) return false;              // secili bir sey yoksa is yok
-      /* KOSUL YOK: bu artik kasitli bir jest (ortaya tek dokunus),
-         yanlislikla tetiklenen bir sey degil. Secili raf neyse kalkar. */
-      _aileOncesi = null;
-      aileSec(null, true);                       // raf secimi kalkti
-      try{ modAdiGoster(); zeminUygula(); }catch(e){}
-      return true;
-    }catch(e){ return false; }
-  }
-  /* ── SECIMI IPTAL: DISKIN ORTASINA TEK DOKUNUS ───────────────────
-     Once "ekranin bos bir yerine basmak" diye yazilmisti ve
-     dokunmatikte surekli yanlislikla tetikleniyordu: parmak ust
-     serite degiyor, kenara degiyor, secim kalkiyordu. Kullanici
-     kaldirdi ve yerine kendi jestini soyledi:
-       "en ortaya basinca iptal olur. surtmeye baslarsak zaten
-        secime gecer... tek basti zaten secimler iptal."
-     Yani IPTAL ARTIK BIR JEST, bir kaza degil: diskin tam ortasina
-     (zar bolgesi) tek dokunus. Parmak kalkmadan surtmeye baslarsa
-     hicbir sey iptal olmuyor, normal gezinme/FX devam ediyor --
-     karar parmak KALKARKEN veriliyor. */
+
 
   /* ── TANITIM TURU ────────────────────────────────────────────────
      İlk açılışta bir kez akar, adımlar kendi kendine geçer. Katman
