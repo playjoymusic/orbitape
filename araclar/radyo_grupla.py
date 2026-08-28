@@ -78,7 +78,10 @@ ELEKTRONIK = re.compile(
 RAF_KELIME = OrderedDict([
     ("ROCK",        re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
                                r"rockabilly|grindcore", re.I)),
-    ("JAZZ",        re.compile(r"\bjazz\b|bebop|\bswing\b|big ?band|dixieland|"
+    # "smooth jazz" JAZZ DEGIL LOUNGE: kullanicinin karari. Geriye
+    # bakisla disliyoruz, yoksa ikisi birden eslesip kayit MIXTAPE'e
+    # dusuyordu -- JAZZ rafinda 1 istasyon kalmasinin sebebi buydu.
+    ("JAZZ",        re.compile(r"(?<!smooth )\bjazz\b|bebop|\bswing\b|big ?band|dixieland|"
                                r"hard ?bop|free ?jazz", re.I)),
     ("DISCO FUNK",  re.compile(r"\bfunk\b|\bsoul\b|motown|\br&b\b|\brnb\b|"
                                r"\bgroove\b|boogie", re.I)),
@@ -107,24 +110,26 @@ KARISIK = re.compile(
     r"contemporary hits|non.?stop|greatest hits|oldies|\bmix\b", re.I)
 
 AILELER = OrderedDict([
-    # SIRA = HALKA SIRASI, en icten disa. MIXTAPE en icte: ortaya
-    # basan kisi oraya duser ve orasi "rastgele" rafi.
-    ("MIXTAPE",       {"renk": "#8496FF", "turler": []}),
-    ("INDIE & LOFI",  {"renk": "#CC7CA4", "turler": []}),
-    ("ORCHESTRAL",    {"renk": "#5FBF7A", "turler": []}),
-    ("JAZZ",          {"renk": "#F2683C", "turler": []}),
-    ("AFRO & LATIN",  {"renk": "#9A96AC", "turler": []}),
-    ("DISCO FUNK",    {"renk": "#F0AC7A", "turler": []}),
-    ("AMBIENT",       {"renk": "#B07CE8", "turler": []}),
-    ("ROCK",          {"renk": "#BEB6A4", "turler": []}),
-    ("WORLD & ROOTS", {"renk": "#D8CBA0", "turler": []}),
-    ("LOUNGE",        {"renk": "#8FD0E8", "turler": []}),
-    ("ELECTRONIC",    {"renk": "#35E0D8", "turler": []}),
+    # SIRA = HALKA SIRASI, en icten disa. Kucuk raf icte, buyuk raf
+    # dista: halkanin capi rafin buyuklugunu anlatiyor.
+    # MIXTAPE EN ICTE ve bilerek: ortaya basan oraya duser, orasi
+    # "turu belirsiz / rastgele" rafi.
+    ("MIXTAPE",       {"renk": "#8496FF"}),   # 187
+    ("JAZZ",          {"renk": "#CC7CA4"}),   #   1  (hasat bekliyor)
+    ("AMBIENT",       {"renk": "#5FBF7A"}),   #  20
+    ("ROCK",          {"renk": "#F2683C"}),   #  20
+    ("INDIE & LOFI",  {"renk": "#9A96AC"}),   #  23
+    ("AFRO & LATIN",  {"renk": "#F0AC7A"}),   #  25
+    ("DISCO FUNK",    {"renk": "#B07CE8"}),   #  25
+    ("LOUNGE",        {"renk": "#BEB6A4"}),   #  43
+    ("ORCHESTRAL",    {"renk": "#8FD0E8"}),   #  44
+    ("WORLD & ROOTS", {"renk": "#D8CBA0"}),   #  45
+    ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 119 -- en dista, turkuaz
 ])
 
 TUR_GRUP = {}
 for _ad, _d in AILELER.items():
-    for _t in _d["turler"]:
+    for _t in _d.get("turler", []):
         TUR_GRUP[_t] = _ad
 
 # ── ELEMELER ──────────────────────────────────────────────────────
@@ -169,27 +174,51 @@ def temizle(kayitlar):
     return kalan, sayac
 
 
-def grupla(kayitlar):
-    """Her kayda 'grup' yaz. KURAL: saf olan rafina, olmayan MIXTAPE'e.
+def _raflar(metin, elektronik_ustun=True):
+    """Metinde hangi raflarin kelimeleri geciyor."""
+    if elektronik_ustun and ELEKTRONIK.search(metin):
+        return ["ELECTRONIC"]
+    return [ad for ad, kal in RAF_KELIME.items() if kal.search(metin)]
 
-    Once bir istasyonun 'tur' alanina bakiliyordu; o alan istasyonun
-    NE CALDIGINI degil dizinde HANGI ETIKETLE bulundugunu soyluyor ve
-    yalan soyleyebiliyor. Artik yalniz ETIKET METNI okunuyor."""
+
+def grupla(kayitlar):
+    """Her kayda 'grup' yaz.
+
+    SIRA: ONCE ISIM, SONRA ETIKET.
+      Isim yayincinin kendi secimi: "Radio Caprice - Lounge" lounge
+      calar. Etiket ise arama motoru icin doldurulmus kelime kuyrugu
+      ve yalan soyler. Once etikete bakiyorduk; sonuc: adinda LOUNGE
+      yazan istasyon ORCHESTRAL rafina dustu. Kullanicinin gordugu de
+      buydu ve haklyidi.
+
+    KURAL:
+      1) Isimde TEK bir rafin kelimesi geciyorsa -> o raf. Bitti.
+      2) Isim karar vermiyorsa etikete bak, yine TEK rafa uyuyorsa
+         o raf.
+      3) Ikisi de karar vermiyorsa MIXTAPE.
+    """
     for o in kayitlar:
-        metin = ((o.get("etiket") or "") + " " + (o.get("ad") or "")
-                 ).replace("_", " ").replace("+", " ")
-        # 1) ELEKTRONIK MUTLAK USTUN: house/techno/edm varsa tartisma yok.
-        if ELEKTRONIK.search(metin):
-            o["grup"] = "ELECTRONIC"
+        ad = (o.get("ad") or "").replace("_", " ").replace("+", " ")
+        etiket = (o.get("etiket") or "").replace("_", " ").replace("+", " ")
+
+        # 1) ISIM KONUSUYORSA O KONUSUR.
+        isim_raf = _raflar(ad)
+        if len(isim_raf) == 1:
+            o["grup"] = isim_raf[0]
             continue
-        # 2) "Her seyden biraz" isareti varsa karisiktir.
-        if KARISIK.search(metin):
+
+        # 2) Isim "her seyden biraz" diyorsa karisiktir.
+        if KARISIK.search(ad):
             o["grup"] = "MIXTAPE"
             continue
-        # 3) Hangi raflarin kelimeleri geciyor? TEK rafa uyuyorsa saf,
-        #    birden fazlasina uyuyorsa ya da hicbirine uymuyorsa MIXTAPE.
-        uyan = [ad for ad, kal in RAF_KELIME.items() if kal.search(metin)]
-        o["grup"] = uyan[0] if len(uyan) == 1 else "MIXTAPE"
+
+        # 3) Isim susuyor: etikete bak, ama saflik sart.
+        hepsi = ad + " " + etiket
+        if KARISIK.search(hepsi):
+            o["grup"] = "MIXTAPE"
+            continue
+        etiket_raf = _raflar(hepsi)
+        o["grup"] = etiket_raf[0] if len(etiket_raf) == 1 else "MIXTAPE"
     return {}
 
 
