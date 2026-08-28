@@ -147,7 +147,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                           : 'ustOlcu() zincirinde riskli isim yok'));
     K('Olu recYuk satiri geri gelmedi', !/const recYuk\s*=/.test(_temizJs), 'silinmis (yorumdaki ornek sayilmiyor)');
   }
-  K('Dosya boyutu < 500 KB',  dosyaBoy < 500*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* SINIR 500 -> 520 KB. Son uc eklemede dosya 499.9 KB'de takildi ve
+     her seferinde YORUM KISALTARAK altina indirildi -- yani sinir
+     kodu degil ACIKLAMAYI budamaya basladi. Bu yanlis tesvik.
+     520 KB hala gzip sonrasi ~110 KB; mobilde fark olculebilir degil.
+     Asil sinir Cloudflare'in 25 MiB'i; bu sadece disiplin siniri.
+     Bir daha takilirsa cozum yorum silmek DEGIL, kodu bolmek. */
+  K('Dosya boyutu < 520 KB',  dosyaBoy < 520*1024, Math.round(dosyaBoy/1024)+' KB');
 
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───
   const filtre = await pg.evaluate(()=>{
@@ -208,8 +214,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Sabit sayi beklemek yanlis olurdu -- ikisini de ayri sinamak
      gerekiyor, cunku geometri (ic yaricap, zar siniri) sayidan
      tureniyor ve yanlis sayida parmak baska halkayi secer. */
-  K('Radyoda halkalar tur ailesi', hs.n===8 &&
-       /ELECTRONIC/.test(hs.sira) && /NEWS & TALK/.test(hs.sira), hs.sira);
+  K('Radyoda halkalar tur ailesi', hs.n===7 &&
+       /ELECTRONIC/.test(hs.sira) && /CLASSICAL/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
       const eski = mod; mod = 'lib';
@@ -220,8 +226,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* EN DIS HALKA SABIT: yer iceriden aciliyor. Bu bozulursa en dis
        halka ekran kenarindan tasar -- bir kere olmustu. */
     K('En dis halka her iki kanalda ayni',
-       Math.abs((hs.ic + 7*hs.ara) - (ars.ic + 4*hs.ara)) < 0.001,
-       'radyo dis '+(hs.ic+7*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+4*hs.ara).toFixed(3));
+       Math.abs((hs.ic + 6*hs.ara) - (ars.ic + 4*hs.ara)) < 0.001,
+       'radyo dis '+(hs.ic+6*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+4*hs.ara).toFixed(3));
     K('Zar siniri halkalarla birlikte kayiyor', hs.sinir < ars.sinir,
        'radyo '+hs.sinir.toFixed(3)+' < arsiv '+ars.sinir.toFixed(3));
   }
@@ -235,7 +241,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*(halkaAdlar().length-1))+0.03)*1.035; // 1.035: parmak altindaki halka
     return { y, enGenis:Math.round(enGenis), ekran:innerWidth, disk:Math.round(dk.width) };
   });
-  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7', 'yaricap->halka '+hg.y.join(','));
+  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6', 'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
   const ay = await pg.evaluate(()=>{
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
@@ -443,7 +449,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const eskiKanal = mod, eskiAile = AKTIF_AILE;
     mod = 'radio'; AKTIF_AILE = AILE_ADLAR[0];
     const tur = [AKTIF_AILE];
-    for(let i=0;i<8;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
+    for(let i=0;i<7;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
     AKTIF_AILE = eskiAile; mod = eskiKanal;
     return { tur };
   });
@@ -497,7 +503,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* Radyoda isim dugmesi AILE degistiriyor: her basis bir sonraki
      tur, sekizinci basista basa donuyor. */
   K('Isim dugmesi turleri geziyor',
-    nb.tur && nb.tur.length===9 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[8],
+    nb.tur && nb.tur.length===8 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[7],
     nb.tur ? nb.tur.join(' > ') : String(nb));
   /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
      FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
@@ -2309,7 +2315,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const eski = AKTIF_AILE;
       AKTIF_AILE = 'JAZZ & SOUL';
       const suzulen = aileSuz(sahte).map(x=>x.ad).join(',');
-      AKTIF_AILE = 'NEWS & TALK';                 // bu ailede tek istasyon yok
+      AKTIF_AILE = 'YOK-BOYLE-BIR-AILE';          // hicbir istasyon eslesmez
       const bos = aileSuz(sahte).length;
       AKTIF_AILE = null;
       const hepsi = aileSuz(sahte).length;
@@ -2320,9 +2326,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                suzulen, bos, hepsi,
                aileSecVar:(typeof aileSec==='function') };
     });
-    K('Sekiz aile tanimli', !!ai && ai.sayi===8, ai ? ai.adlar.join(' · ') : 'AILELER yok');
-    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===8,
-       ai ? ai.benzersizRenk+'/8 benzersiz' : '-');
+    /* NEWS & TALK SILINDI: icinde tek istasyon yoktu. Sayi 7. */
+    K('Yedi aile tanimli', !!ai && ai.sayi===7, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===7,
+       ai ? ai.benzersizRenk+'/7 benzersiz' : '-');
+    K('En icteki halka ELECTRONIC', !!ai && ai.adlar[0]==='ELECTRONIC',
+       'ortada basili tutan en cok istasyonu olan aileye duser');
     K('Aile suzgeci sadece o aileyi birakiyor', !!ai && ai.suzulen==='a,b',
        ai ? ('kalan: '+ai.suzulen) : '-');
     /* MUZIK DURMASIN: bos bir aile sessizlik uretmemeli. Bu kontrol

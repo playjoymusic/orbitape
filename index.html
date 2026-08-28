@@ -4793,19 +4793,20 @@
   /* ── AİLELER (tür kümeleri) ───────────────────────────────────────
      radyo.json'daki 'grup' alanı: 24 tür sekiz ailede. BURASI ARAYÜZ
      DEĞİL, MOTOR: "seçilen aile neyse kuyruğa yalnız o girsin".
-     SIRA = BUYUKLUK: en kucuk aile en icteki halkada, en buyugu en
-     distakinde -- halkanin capi ailenin buyuklugunu anlatiyor.
-     RENKLER POZISYONDA kaliyor (ekranin bugunku hali bozulmasin):
-     en icte mavi-mor, en dista turkuaz; ortadaki uc renk yeni. */
+     SIRA: ELECTRONIC EN ICTE. Ortada parmagi basili tutup birakan
+     kisi en kucuk halkaya denk gelir; orasi en cok istasyonu olan
+     aile olsun ki bilmeden secen bos bir rafa dusmesin.
+     NEWS & TALK SILINDI: icinde tek istasyon yoktu, bos bir halka
+     "bozuk" gibi duruyordu. Geri gelirse buraya eklenir.
+     RENKLER kaydi, ortadaki leylak dustu; en dis halka yine turkuaz. */
   const AILELER = [
-    { ad:'NEWS & TALK',   renk:'132,150,255' },   // 0
-    { ad:'CLASSICAL',     renk:'204,124,164' },   // 44
-    { ad:'INDIE & LOFI',  renk:'95,191,122'  },   // 50
-    { ad:'AFRO & LATIN',  renk:'242,104,60'  },   // 69
-    { ad:'AMBIENT',       renk:'176,124,232' },   // 72
-    { ad:'WORLD & ROOTS', renk:'154,150,172' },   // 91
-    { ad:'JAZZ & SOUL',   renk:'240,172,122' },   // 96
-    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 130 -- en dista, turkuaz
+    { ad:'ELECTRONIC',    renk:'132,150,255' },   // 130 -- EN ICTEKI halka
+    { ad:'AMBIENT',       renk:'204,124,164' },   //  72
+    { ad:'INDIE & LOFI',  renk:'95,191,122'  },   //  50
+    { ad:'JAZZ & SOUL',   renk:'242,104,60'  },   //  96
+    { ad:'WORLD & ROOTS', renk:'154,150,172' },   //  91
+    { ad:'AFRO & LATIN',  renk:'240,172,122' },   //  69
+    { ad:'CLASSICAL',     renk:'53,224,216'  }    //  44 -- en dista, turkuaz
   ];
   const AILE_ACILIS = 'ELECTRONIC';   // sifirdan acilis ailesi
   const AILE_ADLAR = AILELER.map(a=>a.ad);
@@ -5361,6 +5362,15 @@
     if(yeni==='radio'){ try{ araGiris.value=''; etiketKur(''); }catch(e){} }
     mod = yeni;
     try{ localStorage.setItem('orbitape.kanal', mod); }catch(e){}   // devamlılık
+    /* ── KANAL DEGISINCE DURUM SIFIRLANIR ─────────────────────────
+       Nebula iki kanal arasinda gecis yapmaya baslayinca ortaya cikti:
+       halka sayisi kanala gore degisiyor (radyoda 7, arsivde 5) ama
+       gezinme durumu eski kanaldan kaliyordu -- 6. halkanin indisi
+       yeni kanalda YOK. Ayrica sessizlik gozcusu eski parcanin
+       baslangic zamaniyla calisip yeni kanalda pesi sira atliyordu:
+       "her sey sapitiyor" denen sey buydu. */
+    try{ _moodGez = false; _moodVurgu = -1; modAdiBirak(); }catch(e){}
+    try{ calBaslangic = 0; buParcaSinyal = false; }catch(e){}
     gecmisSifirla();                                     // geri listesi kanal başına
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
