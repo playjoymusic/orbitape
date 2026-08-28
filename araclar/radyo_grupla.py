@@ -75,7 +75,15 @@ ELEKTRONIK = re.compile(
 
 # Raf kelimeleri. YALNIZ birine uyarsa o rafa, birden fazlasina
 # uyarsa MIXTAPE'e gidiyor.
+# SIRA ONEMLI: once dar ve kesin olanlar. "West Coast G-Funk &
+# Hip-Hop" hem hip hop hem funk; hip hop once soruldugu icin dogru
+# rafa gidiyor.
 RAF_KELIME = OrderedDict([
+    # HIP HOP: bosalan rafa geldi. Turevleri ve dallari da burada --
+    # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
+    ("HIP HOP",     re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+                               r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
+                               r"g-?funk|turntabl|\bbreakdance\b|\bmc\b", re.I)),
     # COUNTRY BURAYA GELDI: WORLD & ROOTS'ta duruyordu ama adinda
     # country gecen istasyon sayisi az degil ve dinleyici icin gitar
     # tarafi rock'a yakin. Raf adi da onu soylesin.
@@ -86,8 +94,9 @@ RAF_KELIME = OrderedDict([
                                r"hard ?bop|free ?jazz", re.I)),
     # "groove" CIKARILDI: SomaFM Groove Salad bir chillout istasyonu,
     # funk degil. Zayif kelime yanlis rafa tasiyordu.
-    ("DISCO FUNK",  re.compile(r"\bfunk\b|\bsoul\b|motown|\br&b\b|\brnb\b|"
-                               r"boogie|\bdisco ?funk\b", re.I)),
+    # r&b / rnb HIP HOP'a tasindi: "100 Hip hop and RNB FM" funk degil.
+    ("DISCO FUNK",  re.compile(r"\bfunk\b|\bsoul\b|motown|boogie|"
+                               r"\bdisco ?funk\b", re.I)),
     ("LOUNGE",      re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
                                r"\bcafe\b|café|\bspa\b|relaxation|\bmellow\b|"
                                r"\bchill\b|chillout|downtempo", re.I)),
@@ -102,11 +111,13 @@ RAF_KELIME = OrderedDict([
     ("ORCHESTRAL",  re.compile(r"\bclassical\b|\bopera\b|orchestra|symphon|"
                                r"\bsonata\b|\bconcerto\b|baroque|soundtrack|"
                                r"film ?music|\bpiano\b", re.I)),
+    # AFRO & LATIN buraya KATILDI: ikisi de "koku belli, yerel muzik".
+    # Ayri raflar olarak 15 ve 19'da kaliyorlardi; birlesince 34.
     ("WORLD & ROOTS", re.compile(r"\breggae\b|\bdub\b|\bska\b|\bfolk\b|"
-                                 r"\bworld\b|celtic|\bblues\b|traditional", re.I)),
-    ("AFRO & LATIN", re.compile(r"afrobeat|\bafro\b|\blatin\b|\bsalsa\b|"
-                                r"\bbossa\b|cumbia|merengue|bachata|\bsamba\b|"
-                                r"\btango\b|highlife|soukous", re.I)),
+                                 r"\bworld\b|celtic|\bblues\b|traditional|"
+                                 r"afrobeat|\bafro\b|\blatin\b|\bsalsa\b|"
+                                 r"\bbossa\b|cumbia|merengue|bachata|\bsamba\b|"
+                                 r"\btango\b|highlife|soukous", re.I)),
     ("INDIE & LOFI", re.compile(r"\bindie\b|\blo-?fi\b|shoegaze|dream ?pop|"
                                 r"bedroom ?pop|alternative", re.I)),
 ])
@@ -129,7 +140,7 @@ AILELER = OrderedDict([
     ("WORLD & ROOTS", {"renk": "#9A96AC"}),   # 5.
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),   # 6.
     ("INDIE & LOFI",  {"renk": "#B07CE8"}),   # 7.
-    ("AFRO & LATIN",  {"renk": "#BEB6A4"}),   # 8.
+    ("HIP HOP",       {"renk": "#BEB6A4"}),   # 8.
     ("DISCO FUNK",    {"renk": "#8FD0E8"}),   # 9.
     ("LOUNGE",        {"renk": "#D8CBA0"}),   # 10.
     ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 11. en dista, turkuaz
@@ -193,6 +204,10 @@ def _raflar(metin, elektronik_ustun=True):
     girdiginde raf yalan soyluyor. Olcut kapsama degil ISABET:
     "her bastigimda jazz cikiyor" 38 istasyondan degerli.
     Iki tur birden geciyorsa kimse kazanmaz, MIXTAPE'e gider."""
+    # HIP HOP ELEKTRONIKTEN DE USTUN: "House vs. Hip-Hop" ikisi de
+    # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
+    if RAF_KELIME["HIP HOP"].search(metin):
+        return ["HIP HOP"]
     if elektronik_ustun and ELEKTRONIK.search(metin):
         return ["ELECTRONIC"]
     # JAZZ: adinda jazz geciyorsa jazz. "Piano Jazz Lounge",
