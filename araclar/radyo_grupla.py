@@ -67,6 +67,12 @@ from collections import OrderedDict
 
 # ELEKTRONIK MUTLAK USTUN: house/techno/edm gecen istasyon baska ne
 # yazarsa yazsin elektroniktir.
+# Lounge isaretleri MUTLAK: baska tur de gecse lounge kazanir.
+LOUNGE_MUTLAK = re.compile(r"\blounge\b|\bsmooth\b|\brelax\w*|"
+                           r"easy ?listening|\bchill\b|chillout|"
+                           r"\bcafe\b|café|\bspa\b|cocktail|\bmellow\b|"
+                           r"\bdinner\b|\bbackground\b", re.I)
+
 ELEKTRONIK = re.compile(
     r"\bhouse\b|\btechno\b|\bedm\b|\btrance\b|\bdnb\b|drum ?(and|&|n) ?bass|"
     r"dubstep|\belectro\b|electronic|electronica|\bclub\b|\brave\b|"
@@ -81,9 +87,12 @@ ELEKTRONIK = re.compile(
 RAF_KELIME = OrderedDict([
     # HIP HOP: bosalan rafa geldi. Turevleri ve dallari da burada --
     # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
+    # soul / r&b / trap BURADA: kullanicinin karari, raf dolsun.
+    # lofi ve indie BURADA DEGIL -- onlar kendi rafinda kaliyor.
     ("HIP HOP",     re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
-                               r"g-?funk|turntabl|\bbreakdance\b|\bmc\b", re.I)),
+                               r"\bsoul\b|motown|g-?funk|turntabl|"
+                               r"\bbreakdance\b|\bmc\b", re.I)),
     # COUNTRY BURAYA GELDI: WORLD & ROOTS'ta duruyordu ama adinda
     # country gecen istasyon sayisi az degil ve dinleyici icin gitar
     # tarafi rock'a yakin. Raf adi da onu soylesin.
@@ -95,19 +104,21 @@ RAF_KELIME = OrderedDict([
     # "groove" CIKARILDI: SomaFM Groove Salad bir chillout istasyonu,
     # funk degil. Zayif kelime yanlis rafa tasiyordu.
     # r&b / rnb HIP HOP'a tasindi: "100 Hip hop and RNB FM" funk degil.
-    ("DISCO FUNK",  re.compile(r"\bfunk\b|\bsoul\b|motown|boogie|"
-                               r"\bdisco ?funk\b", re.I)),
+    # soul HIP HOP'a tasindi; burada funk ve disco funk kaldi.
+    ("DISCO FUNK",  re.compile(r"\bfunk\b|boogie|\bdisco ?funk\b", re.I)),
     ("LOUNGE",      re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
                                r"\bcafe\b|café|\bspa\b|relaxation|\bmellow\b|"
                                r"\bchill\b|chillout|downtempo", re.I)),
     # AMBIENT = INSAN SESSIZ ORTAM. Akraba turler burada: doga
     # kayitlari, uyku/rahatlama yayinlari, meditasyon, drone.
     # Ayri raflar olsalardi her biri 3-5 istasyonda kalirdi.
+    # relax/chill LOUNGE'a tasindi. Burada kalanlar: doga, uyku,
+    # meditasyon, drone, enstrumantal -- insan sessiz ortam.
     ("AMBIENT",     re.compile(r"\bambient\b|\bdrone\b|new ?age|meditation|"
                                r"instrumental|soundscape|\bnature\b|\bsleep\b|"
-                               r"\brelax\w*|\bcalm\b|\bzen\b|healing|"
-                               r"\bbinaural\b|white ?noise|rain ?sounds?|"
-                               r"ocean ?sounds?|forest ?sounds?", re.I)),
+                               r"\bcalm\b|\bzen\b|healing|\bbinaural\b|"
+                               r"white ?noise|rain ?sounds?|ocean ?sounds?|"
+                               r"forest ?sounds?", re.I)),
     ("ORCHESTRAL",  re.compile(r"\bclassical\b|\bopera\b|orchestra|symphon|"
                                r"\bsonata\b|\bconcerto\b|baroque|soundtrack|"
                                r"film ?music|\bpiano\b", re.I)),
@@ -208,6 +219,11 @@ def _raflar(metin, elektronik_ustun=True):
     # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
     if RAF_KELIME["HIP HOP"].search(metin):
         return ["HIP HOP"]
+    # LOUNGE MUTLAK: "lounge", "smooth", "relax" gecen her sey lounge.
+    # "Smooth Jazz Lounge", "Jazz Lounge Bar" da dahil -- kullanicinin
+    # karari: bunlar jazz degil, arka plan muzigi.
+    if LOUNGE_MUTLAK.search(metin):
+        return ["LOUNGE"]
     if elektronik_ustun and ELEKTRONIK.search(metin):
         return ["ELECTRONIC"]
     # JAZZ: adinda jazz geciyorsa jazz. "Piano Jazz Lounge",
@@ -215,6 +231,25 @@ def _raflar(metin, elektronik_ustun=True):
     if RAF_KELIME["JAZZ"].search(metin):
         return ["JAZZ"]
     return [ad for ad, kal in RAF_KELIME.items() if kal.search(metin)]
+
+
+def saflik(ad, grup):
+    """1 = has, 2 = yakin, 3 = karisik.
+
+    NEDEN VAR
+      "Jazz 88 Minneapolis" ile "Bossa Jazz Brasil" ayni rafta ama
+      ayni sey degil. Kullanici bir rafa bastiginda once EN HAS
+      olanlari duymali; onlar bitince daha yakinlar, en son
+      karisiklar. Uygulama bu sayiya gore siraliyor.
+    Olcut: adinda kac ayri turun kelimesi geciyor."""
+    kac = sum(1 for kal in RAF_KELIME.values() if kal.search(ad))
+    if ELEKTRONIK.search(ad) and grup != "ELECTRONIC":
+        kac += 1
+    if kac <= 1:
+        return 1
+    if kac == 2:
+        return 2
+    return 3
 
 
 def grupla(kayitlar):
@@ -249,6 +284,7 @@ def grupla(kayitlar):
         isim_raf = _raflar(ad)
         if len(isim_raf) == 1:
             o["grup"] = isim_raf[0]
+            o["saf"] = saflik(ad, isim_raf[0])
             continue
 
         # 3) ISIM SUSUYORSA MIXTAPE. ETIKETE ARTIK BAKILMIYOR.
@@ -262,6 +298,7 @@ def grupla(kayitlar):
             o["grup"] = "MIXTAPE"      # adinda iki tur: kimse kazanmaz
         else:
             o["grup"] = "MIXTAPE"      # ad susuyor: emin degiliz
+        o["saf"] = 3
     return {}
 
 
@@ -289,7 +326,7 @@ def main():
     duzen = [OrderedDict([("id", o.get("id")), ("mp3", o.get("mp3")),
                           ("ad", o.get("ad")), ("etiket", o.get("etiket", "")),
                           ("ulke", o.get("ulke", "")), ("tur", o.get("tur", "")),
-                          ("grup", o["grup"])])
+                          ("grup", o["grup"]), ("saf", o.get("saf", 3))])
              for o in kalan]
     duzen.sort(key=lambda o: (list(AILELER).index(o["grup"]),
                               o["tur"], (o["ad"] or "").lower()))

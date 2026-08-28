@@ -2432,7 +2432,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const kaynak3 = fs.readFileSync('index.html','utf8');
     const bas3 = kaynak3.indexOf('async function radyoListe');
     const govde3 = kaynak3.slice(bas3, bas3 + 500);
-    K('Beyaz liste once deneniyor', /beyazListeYukle\(\)[\s\S]{0,160}return karisik\(aileSuz\(bl\)\)/.test(govde3),
+    K('Beyaz liste once deneniyor', /beyazListeYukle\(\)[\s\S]{0,160}return safSirala\(aileSuz\(bl\)\)/.test(govde3),
       'radyo.json varsa dizine sorulmuyor, aile suzgecinden geciyor');
     K('Beyaz liste de suzgecten geciyor',
       /beyazListe = temiz\.filter\(st=>!dinselMi\(st\) && !yasakliMi\(st\)\)/.test(kaynak3),
@@ -2446,7 +2446,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Aile alani beyaz listeden dusurulmuyor',
       /grup:\(x\.grup\|\|''\)/.test(kaynak3), "temiz haritasinda grup var");
     K('Aile onbellege de yaziliyor',
-      /grup:\(st\.grup\|\|''\) \}\)\)\);/.test(kaynak3), 'ag yokken de suzulebiliyor');
+      /grup:\(st\.grup\|\|''\), saf:/.test(kaynak3), 'ag yokken de suzulebiliyor');
     K('Calan ogeye aile tasiniyor',
       /radyoKuyruk\.push\(\{[^}]*grup:\(a\.grup\|\|''\)/.test(kaynak3),
       'ekran rengi calan istasyonun ailesinden gelebilir');
@@ -2505,13 +2505,25 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       }), 'ayni tur susar, baska tur ve '+'eskimis kayit yeniden gosterir');
     K('Aile suzgeci sadece o aileyi birakiyor', !!ai && ai.suzulen==='a,b',
        ai ? ('kalan: '+ai.suzulen) : '-');
-    /* MUZIK DURMASIN: bos bir aile sessizlik uretmemeli. Bu kontrol
-       kaldirilirsa NEWS & TALK secildiginde (henuz 0 istasyon) radyo
-       tamamen susardi. */
-    K('Bos aile sessizlik uretmiyor', !!ai && ai.bos===4,
-       ai ? (ai.bos+' istasyon kaldi (suzgec uygulanmadi)') : '-');
+    /* AILE SUZGECI MUTLAK. Eskiden bos kalinca tum liste donuyordu ve
+       kullanici HIP HOP'ta lo-fi duyuyordu -- ekranda bir sey yazip
+       baskasini calmak en kotu hata. Bos aile SESSIZ kalir; havuz
+       biterse damgalar temizlenip basa donulur, baska aile girmez. */
+    K('Aile disindan istasyon SIZMIYOR', !!ai && ai.bos===0,
+       ai ? (ai.bos+' istasyon (bos aile bos kalir)') : '-');
     K('Aile secilmeden hepsi caliyor', !!ai && ai.hepsi===4, ai ? ai.hepsi+' istasyon' : '-');
     K('aileSec var', !!ai && ai.aileSecVar, 'arayuz buna baglanacak');
+    /* SAFLIK SIRASI: has olanlar once. Kademe icinde rastgele,
+       kademeler arasinda sabit. Bu bozulursa kullanici bir rafa
+       basip once karisik istasyon duyar -- rafa guveni biter. */
+    K('Has istasyonlar once caliyor', await pg.evaluate(()=>{
+        const g = [{ad:'k3',saf:3},{ad:'k1',saf:1},{ad:'k2',saf:2},
+                   {ad:'k1b',saf:1},{ad:'kx'}];
+        const s = safSirala(g).map(x=>x.saf || 3);
+        // once 1'ler, sonra 2, sonra 3'ler
+        for(let i=1;i<s.length;i++) if(s[i] < s[i-1]) return false;
+        return s.length===5;
+      }), 'saf 1 -> 2 -> 3');
     /* TUR ICINDE SONSUZ DONGU: havuz bitince damgalar temizlenip
        basa donuluyor. Esik tur acikken 1, yoksa 3. Bu satir giderse
        kullanici bir turde 20 istasyon sonra duvara toslar. */

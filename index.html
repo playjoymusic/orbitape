@@ -4959,12 +4959,38 @@
   /* SIFIRDAN ACILIS: elektronik radyo. Kanal hatirlaniyor, aile
      hatirlanmiyor -- her oturum ayni bilinen yerden basliyor. */
   try{ if(!AKTIF_AILE) AKTIF_AILE = AILE_ACILIS; }catch(e){}
-  /* MÜZİK DURMASIN: seçilen aile elde hiçbir istasyon bırakmıyorsa
-     süzgeç UYGULANMIYOR. Sessizlik kullanıcıya "bozuldu" der. */
+  /* ── AİLE SÜZGECİ MUTLAK ──────────────────────────────────────────
+     ESKİDEN: süzgeç elde hiçbir şey bırakmazsa TÜM liste dönüyordu
+     ("müzik durmasın"). Ölçülen sonuç: kullanıcı HIP HOP'a bastı,
+     ekranda HIP HOP yazdı, lo-fi istasyonları çaldı. Sebep önbellek:
+     telefonda kalan eski kayıtların 'grup' alanı yok, süzgeç boş
+     dönüyor ve yedek yol karışık listeyi açıyordu.
+     Sessizlik yalan söylemekten iyidir. Seçili aile neyse yalnız o
+     çalar; havuz biterse damgalar temizlenip başa dönülür (bkz.
+     radyoGec), listeye başka aile GİRMEZ.
+     GRUPSUZ KAYIT DA ELENİR: eski önbellek kaydı "belki uyar" diye
+     kabul edilirse aynı kaçak geri gelir. */
   function aileSuz(list){
     if(!AKTIF_AILE || !list || !list.length) return list || [];
-    const s = list.filter(x => x && x.grup === AKTIF_AILE);
-    return s.length ? s : list;
+    return list.filter(x => x && x.grup === AKTIF_AILE);
+  }
+  /* ── SAFLIK SIRASI: HAS OLANLAR ONCE ──────────────────────────────
+     radyo.json'daki 'saf' alani: 1 = has (adinda tek tur), 2 = yakin
+     (iki tur), 3 = karisik. "Jazz 88" ile "Bossa Jazz Brasil" ayni
+     rafta ama ayni sey degil; bir rafa basan once EN HAS olani
+     duymali, onlar bitince daha yakinlar, en son karisiklar.
+     Kademe ICINDE rastgele: ayni rafa iki kez basan ayni sirayi
+     duymasin. Kademeler ARASINDA sira sabit. */
+  function safSirala(liste){
+    if(!liste || !liste.length) return liste || [];
+    const kat = [[],[],[]];
+    for(const x of liste){
+      const k = Math.min(3, Math.max(1, +((x && x.saf) || 3))) - 1;
+      kat[k].push(x);
+    }
+    return kat[0].concat(kat[1], kat[2]).length
+         ? karisik(kat[0]).concat(karisik(kat[1]), karisik(kat[2]))
+         : liste;
   }
   /* Aile değiştir. zorla=true aynı aileye tekrar basınca kapatmaz. */
   function aileSec(ad, zorla){
@@ -5003,7 +5029,7 @@
           /* AILE: radyo.json'daki 'grup' alani. BURADA DUSURULMEMELI —
              istasyon ailesini kaybederse halkalar ne secerse secsin
              suzecek bir sey kalmaz. */
-          grup:(x.grup||'')
+          grup:(x.grup||''), saf:(+x.saf || 3)
         })).filter(x=>x.url && /^https:/i.test(x.url));
         /* Liste hazır gelse bile süzgeç YİNE çalışıyor: kural sonradan
            sıkışırsa eski liste onu atlamasın. */
@@ -5025,7 +5051,7 @@
     /* ÖNCE BEYAZ LİSTE. Varsa dizine hiç sorulmuyor. */
     try{
       const bl = await beyazListeYukle();
-      if(bl && bl.length) return karisik(aileSuz(bl)).slice(0, 40);
+      if(bl && bl.length) return safSirala(aileSuz(bl)).slice(0, 40);
     }catch(e){}
     const sunucu=RB_SUNUCU[Math.random()*RB_SUNUCU.length|0];
     /* Mod açıkken etiket rastgele değil, modun kendisi. Modun kendi
@@ -5056,7 +5082,7 @@
     if(list.length) onbellekYaz('radyo', list.map(st=>({
       id:'rb:'+(st.stationuuid||st.url_resolved||st.url), mp3:(st.url_resolved||st.url),
       ad:istasyonAdiTemiz(st.name||'radio'),
-      etiket:(st.tags||''), grup:(st.grup||'') })));   // aile de saklanıyor: ağ yokken de süzülebilsin
+      etiket:(st.tags||''), grup:(st.grup||''), saf:(st.saf||3) })));   // aile de saklanıyor: ağ yokken de süzülebilsin
     return list;
   }
   /* Önbellekteki istasyonlar radio-browser biçimine geri çevriliyor,
@@ -5091,10 +5117,12 @@
     const c = onbellekOku('radyo'); if(!c || !c.length) return [];
     /* SÜZGEÇ ÖNBELLEĞE DE UYGULANIYOR. Önbellekteki kayıt, kural
        değişmeden önce çekilmiş olabilir; ağ yokken bile eleme aynı. */
+    /* Onbellekteki eski kayitlarin 'grup' alani olmayabilir; aile
+       acikken onlar da elenir (aileSuz mutlak). */
     return aileSuz(
       c.map(o=>({ stationuuid:(o.id||'').replace(/^rb:/,''), url:o.mp3,
                   url_resolved:o.mp3, name:o.ad, tags:(o.etiket||''),
-                  grup:(o.grup||''), lastcheckok:1 }))
+                  grup:(o.grup||''), saf:(o.saf||3), lastcheckok:1 }))
        .filter(st=>!dinselMi(st) && !yasakliMi(st)));
   }
   async function radyoKuyrukDoldur(){
@@ -5128,7 +5156,7 @@
       for(const st of list){
         const u=st.url_resolved||st.url, id="rb:"+(st.stationuuid||u);
         if(CALINDI.has(id)||radyoKuyruk.some(x=>x.id===id)) continue;
-        aday.push({ id, u, ad:istasyonAdiTemiz(st.name||'radyo'), grup:(st.grup||'') });
+        aday.push({ id, u, ad:istasyonAdiTemiz(st.name||'radyo'), grup:(st.grup||''), saf:(st.saf||3) });
         if(aday.length>=16) break;
       }
       if(aday.length){
@@ -5137,12 +5165,13 @@
           if(!gecti[k] || radyoKuyruk.length>=8) return;
           /* grup CALAN OGEYE de tasiniyor: ekranin rengi calan istasyonun
              ailesinden gelecek, kuyruktan degil. */
-          radyoKuyruk.push({ id:a.id, mp3:a.u, ad:a.ad, sanatci:'', radyo:true, grup:(a.grup||'') }); ekle++;
+          radyoKuyruk.push({ id:a.id, mp3:a.u, ad:a.ad, sanatci:'', radyo:true, grup:(a.grup||''), saf:(a.saf||3) }); ekle++;
         });
       }
       if(ekle) basari('radyo');
-      // karıştır: jamendo + istasyon iç içe gelsin
-      karistir(radyoKuyruk);        // ortak Fisher–Yates (elle yazılmış kopyaydı)
+      /* KUYRUK ARTIK KARISTIRILMIYOR: saf sirasi (has -> yakin ->
+         karisik) burada bozuluyordu. Rastgelelik zaten safSirala()
+         icinde, kademe icinde veriliyor. */
     }catch(e){ hataEkle('radyo'); }
   }
   /* Üst üste kaç kez boş döndük. Üçüncüde "çalınanlar" listesindeki
