@@ -425,6 +425,60 @@ def _puanla(ad, etiket, kademe=None):
     return puan
 
 
+# ── HALKA ICI SIRA: 1. GRUP / 2. GRUP ─────────────────────────────
+#
+# Aile kararindan AYRI bir is. Aile "hangi halka", grup "o halkanin
+# icinde once ne calacak". Kullanici her aile icin 1. grubu kendisi
+# tarif etti; buradaki desenler onun cumleleri:
+#
+#   ELECTRONIC     minimal / dubstep / drum and bass / deep house
+#   LOUNGE         relax yazanlar
+#   ROCK & COUNTRY rock yazanlar
+#   ORCHESTRAL     classical yazanlar + soundtrack yazanlar
+#   AMBIENT        nature -- ozellikle SES uzerine olanlar
+#   JAZZ           saf jazz / instrumental jazz / only jazz
+#   WORLD & ROOTS  ters kural: reggaeton ve afro olanlar 2. GRUBA
+#
+# Adi gecmeyen aileler (INDIE & LOFI, HIP HOP & RNB, DISCO FUNK)
+# eski hesabini korur. MIXTAPE'e dokunulmuyor -- orasi zaten
+# "belirsiz" rafi ve kullanici elle bakiyor.
+GRUP1 = {
+    "ELECTRONIC":     re.compile(r"\bminimal\b|dubstep|"
+                                 r"drum ?(and|&|n) ?bass|\bdnb\b|"
+                                 r"deep ?house", re.I),
+    "LOUNGE":         re.compile(r"relax\w*", re.I),
+    "ROCK & COUNTRY": re.compile(r"\brock\b", re.I),
+    "ORCHESTRAL":     re.compile(r"\bclassical\b|soundtrack", re.I),
+    "AMBIENT":        re.compile(r"\bnature\b|natural|soundscape|"
+                                 r"sounds? of|\bfield recording\b|"
+                                 r"rain|ocean|forest|\bwater\b|"
+                                 r"\bbirds?\b|\bwaves?\b", re.I),
+    "JAZZ":           re.compile(r"\bjazz\b|bebop|\bswing\b|big ?band", re.I),
+}
+# Bu aileler icin kural TERS: desen tutarsa 2. gruba dusuyor.
+GRUP2 = {
+    "WORLD & ROOTS":  re.compile(r"reggaeton|\bafro\w*", re.I),
+}
+
+
+def gruplandir(o):
+    """Aile belliyken halka ici sirayi (saf) yaz. Kullanicinin
+    aile aile verdigi tarif burada uygulaniyor."""
+    aile = o.get("grup")
+    if not aile or aile == "MIXTAPE":
+        return
+    # SADECE ISME BAKILIYOR. Kullanicinin sozu "rock YAZANLARI",
+    # "classical YAZANLARI" -- yani istasyonun kendi adinda gecenler.
+    # Etikete de bakinca "A MISSISSIPPI BLUES" jazz etiketi tasidigi
+    # icin JAZZ'in 1. grubuna giriyordu; oysa 1. grup halkanin en has
+    # yuzu, orada tereddut olmamali.
+    metin = (o.get("ad") or "").replace("_", " ")
+    if aile in GRUP2:
+        o["saf"] = 2 if GRUP2[aile].search(metin) else 1
+    elif aile in GRUP1:
+        o["saf"] = 1 if GRUP1[aile].search(metin) else 2
+
+
 def grupla(kayitlar):
     """Her kayda 'grup' yaz.
 
@@ -502,6 +556,12 @@ def grupla(kayitlar):
         #    Emin olmadigimiz her sey oraya gider. Kapsama degil isabet.
         o["grup"] = "MIXTAPE"
         o["saf"] = 3
+
+    # Aileler yerlestikten SONRA halka ici sira. Ayri gecis, cunku
+    # bu karar aileden bagimsiz: "hangi halka" ile "once ne calsin"
+    # farkli sorular.
+    for o in kayitlar:
+        gruplandir(o)
     return {}
 
 
