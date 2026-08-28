@@ -2504,11 +2504,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        tasindi, raf bosaldi. Bos halka sessiz halkadir. */
     const SIRA = ['AMBIENT','INDIE & LOFI','JAZZ','ORCHESTRAL',
                   'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','FUNK & RNB',
-                  'MIXTAPE','ELECTRONIC'];
+                  'ELECTRONIC','MIXTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
       ai ? ai.adlar.join(' < ') : '-');
-    K('Acilis ailesi ELECTRONIC', !!ai && ai.acilis==='ELECTRONIC',
+    K('Acilis ailesi MIXTAPE', !!ai && ai.acilis==='MIXTAPE',
       ai ? String(ai.acilis) : '-');
   }
     /* FX IPUCU ARTIK TUR BASINA VE SURELI: bir turde ogrenmek
