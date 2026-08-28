@@ -2608,6 +2608,16 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* GENIS EKRANDA TEK KOLON: kose sabitleri ekranin degil ortalanmis
        kolonun kenarina bagli. Bu giderse masaustunde arayuz yine
        ekranin dort kosesine dagilir. */
+    /* CANLI YAYINDA "LIVE RADIO" TEK BASINA HICBIR SEY ANLATMIYOR:
+       hangi raf, nereden. Elde ne varsa yaziliyor, uydurma yok. */
+    K('Canli yayinda raf ve ulke yaziyor', await pg.evaluate(()=>{
+        const t = kaynakSatiri({radyo:true, grup:'ELECTRONIC', ulke:'nl'});
+        const raftan = kaynakSatiri({radyo:true, grup:'JAZZ'});
+        const cip = kaynakSatiri({radyo:true});
+        const arsiv = kaynakSatiri({mp3:'https://archive.org/x.mp3'});
+        return t === 'LIVE · ELECTRONIC · NL' && raftan === 'LIVE · JAZZ'
+            && cip === 'LIVE' && arsiv === 'ARCHIVE.ORG';
+      }), 'LIVE · RAF · ULKE; eksik olan yazilmaz, arsiv degismedi');
     K('Genis ekranda arayuz ortada toplaniyor', await pg.evaluate(async ()=>{
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
         const oku = ()=>{

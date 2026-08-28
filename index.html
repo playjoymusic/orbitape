@@ -2127,6 +2127,29 @@
       return h.replace(/^(cdn|api|files|stream|media|dl|download)\./,'').toUpperCase();
     }catch(e){ return ''; }
   }
+  /* ── EKRANDAKİ KAYNAK SATIRI ──────────────────────────────────────
+     kaynakAdi() canlı yayınlar için sadece "LIVE RADIO" döndürüyor ve
+     bu ekranda hiçbir şey anlatmıyordu: hangi raftan geldiğini de,
+     nereden yayın yaptığını da söylemiyordu. Kullanıcının sözü:
+     "çok alakasız LIVE RADIO yazıyor, tam bilgisi olması lazım
+     hepsinin."
+     Artık: LIVE · ELECTRONIC · NL. Raf yoksa raf yazılmıyor, ülke
+     yoksa ülke yazılmıyor — uydurma yok, elde ne varsa o.
+     Arşiv/mixtape tarafı değişmedi; orada kaynak zaten sunucunun
+     kendisi (ARCHIVE.ORG, JAMENDO...) ve o bilgi doğru.
+     MediaSession'da hâlâ kaynakAdi() kullanılıyor: kilit ekranındaki
+     "sanatçı" alanı kısa kalmalı. */
+  function kaynakSatiri(it){
+    try{
+      if(!it) return '';
+      if(!it.radyo) return kaynakAdi(it);
+      const p = ['LIVE'];
+      if(it.grup) p.push(it.grup);
+      const u = (it.ulke || '').toUpperCase();
+      if(u) p.push(u);
+      return p.join(' · ');
+    }catch(e){ return kaynakAdi(it); }
+  }
   /* ── LİSANS ADI ───────────────────────────────────────────────────
      Depodaki lisans bir URL. Ekranda URL göstermek anlamsız; kısa adı
      yazıyoruz: "CC BY-NC-SA", "CC0", "PUBLIC DOMAIN".
@@ -2203,7 +2226,7 @@
        Kanal adı da bu panelde tekrarlanmıyor — sağ üstte zaten yazıyor. */
     ufoDurdur();
     npAd.textContent = ad; npSanatci.textContent = sanatci;
-    try{ npKaynak.textContent = kaynakAdi(item); }catch(e){}   // sesin geldiği yer
+    try{ npKaynak.textContent = kaynakSatiri(item); }catch(e){}   // sesin geldiği yer
     /* Lisans kendi satırında, en altta. Yoksa hiç yer kaplamıyor
        (canlı radyoda ve kendi parçalarımızda lisans satırı çıkmaz). */
     try{
@@ -5155,7 +5178,10 @@
           /* AILE: radyo.json'daki 'grup' alani. BURADA DUSURULMEMELI —
              istasyon ailesini kaybederse halkalar ne secerse secsin
              suzecek bir sey kalmaz. */
-          grup:(x.grup||''), saf:(+x.saf || 3)
+          grup:(x.grup||''), saf:(+x.saf || 3),
+          /* ULKE de tasiniyor: ekranda "LIVE RADIO" tek basina hicbir
+             sey anlatmiyordu, artik rafi ve ulkeyi de yaziyoruz. */
+          ulke:(x.ulke||'')
         })).filter(x=>x.url && /^https:/i.test(x.url));
         /* Liste hazır gelse bile süzgeç YİNE çalışıyor: kural sonradan
            sıkışırsa eski liste onu atlamasın. */
@@ -5291,7 +5317,8 @@
           if(!gecti[k] || radyoKuyruk.length>=8) return;
           /* grup CALAN OGEYE de tasiniyor: ekranin rengi calan istasyonun
              ailesinden gelecek, kuyruktan degil. */
-          radyoKuyruk.push({ id:a.id, mp3:a.u, ad:a.ad, sanatci:'', radyo:true, grup:(a.grup||''), saf:(a.saf||3) }); ekle++;
+          radyoKuyruk.push({ id:a.id, mp3:a.u, ad:a.ad, sanatci:'', radyo:true,
+                             grup:(a.grup||''), saf:(a.saf||3), ulke:(a.ulke||'') }); ekle++;
         });
       }
       if(ekle) basari('radyo');
