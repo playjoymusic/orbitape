@@ -84,13 +84,21 @@ RAF_KELIME = OrderedDict([
                                r"\bhonky ?tonk\b|\bamericana\b", re.I)),
     ("JAZZ",        re.compile(r"\bjazz\b|bebop|\bswing\b|big ?band|dixieland|"
                                r"hard ?bop|free ?jazz", re.I)),
+    # "groove" CIKARILDI: SomaFM Groove Salad bir chillout istasyonu,
+    # funk degil. Zayif kelime yanlis rafa tasiyordu.
     ("DISCO FUNK",  re.compile(r"\bfunk\b|\bsoul\b|motown|\br&b\b|\brnb\b|"
-                               r"\bgroove\b|boogie", re.I)),
+                               r"boogie|\bdisco ?funk\b", re.I)),
     ("LOUNGE",      re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
                                r"\bcafe\b|café|\bspa\b|relaxation|\bmellow\b|"
                                r"\bchill\b|chillout|downtempo", re.I)),
+    # AMBIENT = INSAN SESSIZ ORTAM. Akraba turler burada: doga
+    # kayitlari, uyku/rahatlama yayinlari, meditasyon, drone.
+    # Ayri raflar olsalardi her biri 3-5 istasyonda kalirdi.
     ("AMBIENT",     re.compile(r"\bambient\b|\bdrone\b|new ?age|meditation|"
-                               r"instrumental|soundscape", re.I)),
+                               r"instrumental|soundscape|\bnature\b|\bsleep\b|"
+                               r"\brelax\w*|\bcalm\b|\bzen\b|healing|"
+                               r"\bbinaural\b|white ?noise|rain ?sounds?|"
+                               r"ocean ?sounds?|forest ?sounds?", re.I)),
     ("ORCHESTRAL",  re.compile(r"\bclassical\b|\bopera\b|orchestra|symphon|"
                                r"\bsonata\b|\bconcerto\b|baroque|soundtrack|"
                                r"film ?music|\bpiano\b", re.I)),
@@ -180,13 +188,15 @@ def _raflar(metin, elektronik_ustun=True):
     IKI MUTLAK ONCELIK VAR:
       ELECTRONIC — house/techno/edm gecen istasyon baska ne yazarsa
                    yazsin elektroniktir.
-      JAZZ       — "jazz lounge", "piano jazz", "smooth jazz": icinde
-                   jazz geciyorsa jazz rafina gider. Onceden bunlar
-                   iki rafa birden uyup MIXTAPE'e dusuyordu ve JAZZ
-                   rafinda tek istasyon kaliyordu.
-    Elektronik once soruluyor: "acid jazz" jazz degil, elektroniktir."""
+    JAZZ ONCELIGI KALDIRILDI. Bir sure "icinde jazz geciyorsa jazz"
+    denendi ve JAZZ 38'e cikti -- ama "Piano Jazz Lounge" jazz rafina
+    girdiginde raf yalan soyluyor. Olcut kapsama degil ISABET:
+    "her bastigimda jazz cikiyor" 38 istasyondan degerli.
+    Iki tur birden geciyorsa kimse kazanmaz, MIXTAPE'e gider."""
     if elektronik_ustun and ELEKTRONIK.search(metin):
         return ["ELECTRONIC"]
+    # JAZZ: adinda jazz geciyorsa jazz. Kullanicinin karari, iki kez
+    # soruldu: "Piano Jazz Lounge" da jazz calar, rafta kalsin.
     if RAF_KELIME["JAZZ"].search(metin):
         return ["JAZZ"]
     return [ad for ad, kal in RAF_KELIME.items() if kal.search(metin)]
@@ -212,15 +222,18 @@ def grupla(kayitlar):
         ad = (o.get("ad") or "").replace("_", " ").replace("+", " ")
         etiket = (o.get("etiket") or "").replace("_", " ").replace("+", " ")
 
-        # 1) ISIM KONUSUYORSA O KONUSUR.
+        # 1) ISIMDE "her seyden biraz" isareti varsa TUR SORULMAZ.
+        #    "1000 HITS Classical" adinda classical geciyor ama basinda
+        #    HITS var: bu bir tur degil bir liste. Once bu bakiliyor,
+        #    yoksa liste istasyonu saf rafa siziyordu.
+        if KARISIK.search(ad):
+            o["grup"] = "MIXTAPE"
+            continue
+
+        # 2) ISIM KONUSUYORSA O KONUSUR.
         isim_raf = _raflar(ad)
         if len(isim_raf) == 1:
             o["grup"] = isim_raf[0]
-            continue
-
-        # 2) Isim "her seyden biraz" diyorsa karisiktir.
-        if KARISIK.search(ad):
-            o["grup"] = "MIXTAPE"
             continue
 
         # 3) Isim susuyor: etikete bak, ama saflik sart.
