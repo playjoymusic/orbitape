@@ -1236,6 +1236,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      ◁ ★ ▷ satiri: sayac 120:45'e cikinca ya da DELETE belirince bile
      araya en az 8px bosluk kalmali. Dinlenme halinde (REC/CAM) satir
      ile ustundeki cizgi ayni yerde bitiyor — o ayrica olculuyor. */
+  let _kolonNot = '';
   let carpmaEn = -999, temelFark = 999;
   for(const w of [360,390,430]){
     await pg.setViewportSize({width:w, height:844}); await pg.waitForTimeout(350);
@@ -2604,6 +2605,41 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        dokunusun hedefi <body> geliyordu ve secici listesi bunu
        yakalayamiyordu. Kullanicinin yasadigi: isme basarken parmak
        sembollere degiyor, secim kalkiyor. Olcut artik geometri. */
+    /* GENIS EKRANDA TEK KOLON: kose sabitleri ekranin degil ortalanmis
+       kolonun kenarina bagli. Bu giderse masaustunde arayuz yine
+       ekranin dort kosesine dagilir. */
+    K('Genis ekranda arayuz ortada toplaniyor', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const oku = ()=>{
+          const u = document.getElementById('ust').getBoundingClientRect();
+          const m = document.getElementById('mark').getBoundingClientRect();
+          return { sag: innerWidth - u.right, sol: m.left };
+        };
+        const eskiEn = innerWidth;
+        return { dar:oku(), en:eskiEn };
+      }).then(async r=>{
+        const genis = await (async()=>{
+          await pg.setViewportSize({width:1200, height:844});
+          await pg.waitForTimeout(250);
+          const g = await pg.evaluate(()=>{
+            const u = document.getElementById('ust').getBoundingClientRect();
+            const m = document.getElementById('mark').getBoundingClientRect();
+            /* Rapor paneli kapaliyken kutusu 0x0 gelir; olcut CSS'in
+               kendisi: marka satirinin ALTINDAN basliyor mu. */
+            const rp = parseFloat(getComputedStyle(document.getElementById('rapor')).top);
+            return { sag: innerWidth - u.right, sol: m.left,
+                     kolon: Math.round(u.right - m.left),
+                     raporUst: Math.round(rp) };
+          });
+          await pg.setViewportSize({width:390, height:844});
+          await pg.waitForTimeout(250);
+          return g;
+        })();
+        _kolonNot = 'kolon '+genis.kolon+'px | kenar '+Math.round(genis.sol)+'px'
+                  + ' | rapor ust '+genis.raporUst+'px';
+        return genis.sol > 250 && genis.sag > 250
+            && genis.kolon <= 600 && genis.raporUst >= 70;
+      }), _kolonNot);
     K('Ust serit ve semboller bos yer sayilmaz', await pg.evaluate(()=>{
         const kutu = se=>{ const e=document.querySelector(se);
                            return e ? e.getBoundingClientRect() : null; };

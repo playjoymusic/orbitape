@@ -958,6 +958,34 @@
     #mark{left:calc(13px + env(safe-area-inset-left, 0px));}
     #mark .neb{width:64px;height:64px;}
     #bekle.buyuk{--sem:26px;} }
+
+  /* ── GENIS EKRANDA TEK KOLON ──────────────────────────────────────
+     Arayuzun her parcasi ekranin KOSELERINE sabitli. Telefonda ekran
+     dar oldugu icin hepsi bir arada duruyor ve tek bir nesne gibi
+     okunuyor. 1400px'lik bir pencerede ayni parcalar birbirinden
+     metrelerce uzaga dagiliyordu: REC sol uctan, ◁ ★ sag uctan,
+     calan istasyon en sag altta. Kullanici masaustunde acinca
+     "alakasiz, eski surum gibi" dedi -- surum guncelDI, dagilan
+     duzendi.
+     Cozum: kose sabitlerini ekranin degil ORTALANMIS BIR KOLONUN
+     kenarina baglamak. Kolon disk kadar genis; dar ekranda sorgu hic
+     devreye girmiyor, yani telefon davranisi bire bir ayni kaliyor. */
+  @media (min-width:700px){
+    :root{ --kol:560px; --yan:calc((100vw - var(--kol)) / 2); }
+    .disk{ width:min(84vw, 500px); }
+    #ust        { right:calc(var(--yan) + 18px + env(safe-area-inset-right, 0px)); }
+    #np         { right:calc(var(--yan) + 18px + env(safe-area-inset-right, 0px)); }
+    #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
+    #mark       { left:calc(var(--yan) + 14px + env(safe-area-inset-left, 0px)); }
+    #ara        { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
+    #araclar    { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
+    #kayitBilgi { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
+  }
+  /* KAYNAK RAPORU MARKA YAZISININ ALTINDA BASLIYOR: ust satirin
+     uzerine biniyordu ve ORBITAPE yazisiyla uc sembolu, yaninda da
+     tur adini tamamen ortuyordu -- panel acikken hangi rafta
+     oldugunu goremiyordun. */
+  #rapor{ top:calc(78px + env(safe-area-inset-top, 0px)); max-height:70vh; }
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
