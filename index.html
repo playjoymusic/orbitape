@@ -947,6 +947,39 @@
   #sesCubuk.on{opacity:.9;}
   #sesCubuk i{display:block;height:100%;width:var(--dolu,100%);border-radius:2px;
     background:currentColor;box-shadow:0 0 8px currentColor;transition:width .06s linear;}
+  /* ── MASAUSTUNDE DIKEY SES ───────────────────────────────────────
+     Iki parmak jesti dokunmatik bir hareket; farede karsiligi yok ve
+     Mac/PC'de sesi kismanin hicbir yolu yoktu. Sagda ince bir dikey
+     cubuk: surukle, ya da uzerinde tekerlegi cevir.
+     YALNIZCA fare/trackpad olan cihazlarda. hover:hover + pointer:fine
+     ikisi birden: dokunmatik ekranda cikmiyor, orada zaten iki parmak
+     var ve iki ayri yol iki ayri "dogru" demek olurdu. */
+  #sesDikey{display:none;}
+  @media (hover:hover) and (pointer:fine){
+    #sesDikey{display:block;position:fixed;z-index:80;
+      right:calc(18px + var(--yan, 0px));
+      top:50%;transform:translateY(-50%);
+      width:26px;height:150px;cursor:ns-resize;
+      -webkit-tap-highlight-color:transparent;
+      opacity:.30;transition:opacity .22s ease;}
+    #sesDikey:hover,#sesDikey.tutuluyor{opacity:.92;}
+    /* Iz: ince bir cizgi. Dolu kisim ASAGIDAN yukari -- ses "yukselir". */
+    #sesDikey .iz{position:absolute;left:50%;top:0;bottom:0;width:2px;
+      margin-left:-1px;background:currentColor;opacity:.26;border-radius:2px;}
+    #sesDikey .iz i{position:absolute;left:0;right:0;bottom:0;
+      height:var(--dolu,100%);background:currentColor;border-radius:2px;
+      opacity:.9;}
+    /* Tutamak: dolu kismin tepesinde kucuk bir nokta. */
+    #sesDikey .nokta{position:absolute;left:50%;width:7px;height:7px;
+      margin-left:-3.5px;margin-bottom:-3.5px;border-radius:50%;
+      background:currentColor;bottom:var(--dolu,100%);opacity:.95;
+      transition:bottom .06s linear;}
+    body.t-lib   #sesDikey{color:#8ff0dd;}
+    body.t-liste #sesDikey{color:#d9d0dd;}
+    body.t-radio #sesDikey{color:#ffc79e;}
+    /* Arama acikken cekilsin: o an dikkat orada. */
+    body.arama-acik #sesDikey{opacity:.12;}
+  }
   body.t-lib   #sesCubuk{color:#8ff0dd;}
   body.t-liste #sesCubuk{color:#d9d0dd;}
   body.t-radio #sesCubuk{color:#ffc79e;}
@@ -1183,6 +1216,12 @@
     </div>
   </div>
   <div id="sesCubuk" aria-hidden="true"><i></i></div>
+  <!-- Masaustunde dikey ses. Dokunmatikte hic gorunmuyor (bkz. CSS):
+       orada iki parmak jesti var. -->
+  <div id="sesDikey" role="slider" aria-label="Volume" aria-orientation="vertical"
+       aria-valuemin="0" aria-valuemax="100" tabindex="0">
+    <div class="iz"><i></i></div><div class="nokta"></div>
+  </div>
   <audio id="ses" preload="none"></audio>
   <!-- ARIA: bu panel uygulamanın TEK metinsel çıktısı — parça adı,
        sanatçı, kaynak, lisans. Eskiden burada kalıcı aria-hidden="true"
@@ -3100,6 +3139,16 @@
   let yatay=0;                              // -1 = tam reverb (sol) .. 0 = temiz .. +1 = tam distortion (sağ)
   let dryG=null, wetG=null, delayNode=null, fbNode=null, delayG=null, convNode=null, fbTavan=null;
   let limiter=null, cikisG=null, tavan=null;   // dengeleyici + çıkış kazancı + tepe koruması
+  /* ── KULLANICI SESI: GRAFIGIN EN SONU ────────────────────────────
+     Iki parmak jesti ses.volume yaziyordu ve HICBIR SEY olmuyordu:
+     <audio> Web Audio grafigine baglaninca (createMediaElementSource)
+     elemanin kendi volume'u cikisi etkilemiyor -- ses artik elemandan
+     degil, grafigin sonundan cikiyor. Kullanicinin sikayeti buydu:
+     "iki parmak var ama kismiyor".
+     Bu dugum EN SONDA ve kendi basina: cikisG otomatik seviye
+     tarafindan surekli yazilyor, oraya carpim koymak iki mekanizmayi
+     birbirine karistirirdi. */
+  let kulGain=null;
   let driveIn=null, shaper=null, hishelf=null, driveOut=null;   // DRIVE (yukarı): satürasyon + tiz boost
   /* ── SATÜRASYON ARTIK ÇAPRAZ GEÇİŞLİ ─────────────────────────────
      ÖLÇÜLEN HATA: shaper (tanh 2.2x) grafiğe KALICI bağlıydı ve FX
@@ -3715,7 +3764,11 @@
         tavan=actx.createDynamicsCompressor();
         tavan.threshold.value=-3; tavan.knee.value=0; tavan.ratio.value=20;
         tavan.attack.value=0.002; tavan.release.value=0.12;
-        analiz.connect(tremG); cikisG.connect(tavan); tavan.connect(actx.destination);
+        kulGain=actx.createGain(); kulGain.gain.value=1;
+        analiz.connect(tremG); cikisG.connect(tavan);
+        /* KAYIT tavan'dan aliniyor, yani kullanici kazancindan ONCE:
+           sesi kistin diye kaydin kisik cikmasi istenmez. */
+        tavan.connect(kulGain); kulGain.connect(actx.destination);
         _limAtla = null; limiterYolu();     // tremG -> (limiter) -> cikisG bağlantısını kanala göre kur
         /* ── KAYIT HEDEFİ TAM BURADA KURULUYOR ────────────────────────
            Ölçüm: ilk kayıtta ses 3912 ms, sonra 6002 ms GEÇ giriyordu;
@@ -4076,8 +4129,15 @@
   var kSes = 1;                        // kullanıcı seviyesi 0..1
   try{ const v = parseFloat(localStorage.getItem('orbitape.ses')); if(isFinite(v)) kSes = Math.max(0, Math.min(1, v)); }catch(e){ _yut(e); }
   function sesSeviyeYaz(){
-    /* Radyoda 0.85 çarpanı kaldırıldı: kullanıcının ayarı neyse o. */
-    try{ ses.volume = Math.max(0, Math.min(1, kSes)); }catch(e){ _yut(e); }
+    const v = Math.max(0, Math.min(1, kSes));
+    /* Grafik varsa ASIL yer burasi. setTargetAtTime: ani sicrama
+       cit sesi yapiyor, 30 ms'lik yumusama duyulmuyor ama citi
+       kaldiriyor. */
+    try{ if(kulGain && actx) kulGain.gain.setTargetAtTime(v, actx.currentTime, 0.03); }
+    catch(e){ _yut(e); }
+    /* Grafik henuz kurulmadiysa (ilk sese kadar) eleman kendi
+       calisiyor; orada volume gecerli. */
+    try{ ses.volume = v; }catch(e){ _yut(e); }
   }
   const sesCub = document.getElementById('sesCubuk');
   let _sesGizle = 0;
@@ -4088,6 +4148,63 @@
     clearTimeout(_sesGizle);
     _sesGizle = setTimeout(()=>sesCub.classList.remove('on'), 900);
   }
+  /* Dikey cubugun dolulugu da ayni yerden guncelleniyor: iki parmakla
+     kissan da cubuk dogru gorunsun, tek gercek kSes. */
+  const sesDik = document.getElementById('sesDikey');
+  function sesDikeyYaz(){
+    if(!sesDik) return;
+    try{
+      const y = Math.round(kSes*100) + '%';
+      sesDik.style.setProperty('--dolu', y);
+      sesDik.setAttribute('aria-valuenow', String(Math.round(kSes*100)));
+    }catch(e){ _yut(e); }
+  }
+  /* ── MASAUSTU: DIKEY SES CUBUGU ──────────────────────────────────
+     Surukle, ya da uzerinde tekerlegi cevir. Deger cubugun kendi
+     yuksekliginden okunuyor: ASAGISI sessiz, YUKARISI tam. */
+  (function dikeySes(){
+    if(!sesDik) return;
+    let tutuluyor = false;
+    const oku = (e)=>{
+      const r = sesDik.getBoundingClientRect();
+      const o = 1 - ((e.clientY - r.top) / Math.max(1, r.height));
+      kSes = Math.max(0, Math.min(1, o));
+      sesSeviyeYaz(); sesDikeyYaz(); sesGoster();
+    };
+    const kaydet = ()=>{ try{ localStorage.setItem('orbitape.ses', String(kSes)); }catch(e){ _yut(e); } };
+    sesDik.addEventListener('pointerdown', e=>{
+      /* Ses baglami kullanici hareketiyle acilir: cubugu ilk kez
+         kullanan kisi de sesi duysun. */
+      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+      tutuluyor = true; sesDik.classList.add('tutuluyor');
+      try{ sesDik.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+      e.stopPropagation(); e.preventDefault(); oku(e);
+    });
+    sesDik.addEventListener('pointermove', e=>{ if(tutuluyor){ e.preventDefault(); oku(e); } });
+    const birak = ()=>{ if(!tutuluyor) return; tutuluyor=false;
+      sesDik.classList.remove('tutuluyor'); kaydet(); };
+    sesDik.addEventListener('pointerup', birak);
+    sesDik.addEventListener('pointercancel', birak);
+    sesDik.addEventListener('lostpointercapture', birak);
+    /* Tekerlek: cubugun uzerinde. Sayfa zaten kaymiyor ama yine de
+       durduruyoruz, yoksa bazi trackpad'lerde gerileme oluyor. */
+    sesDik.addEventListener('wheel', e=>{
+      e.preventDefault();
+      kSes = Math.max(0, Math.min(1, kSes - Math.sign(e.deltaY) * 0.05));
+      sesSeviyeYaz(); sesDikeyYaz(); sesGoster(); kaydet();
+    }, {passive:false});
+    /* Klavye: cubuk odaklanabilir, ok tuslari calissin. */
+    sesDik.addEventListener('keydown', e=>{
+      const k = e.key;
+      if(k!=='ArrowUp' && k!=='ArrowDown' && k!=='Home' && k!=='End') return;
+      e.preventDefault();
+      if(k==='Home') kSes = 0; else if(k==='End') kSes = 1;
+      else kSes = Math.max(0, Math.min(1, kSes + (k==='ArrowUp' ? 0.05 : -0.05)));
+      sesSeviyeYaz(); sesDikeyYaz(); sesGoster(); kaydet();
+    });
+    sesDikeyYaz();
+  })();
+
   (function ikiParmakSes(){
     let etkin=false, basY=0, basSes=1;
     const ortY = t => (t[0].clientY + t[1].clientY) / 2;
@@ -4105,7 +4222,7 @@
       const dy = ortY(e.touches) - basY;
       const menzil = Math.max(240, window.innerHeight * 0.70);
       kSes = Math.max(0, Math.min(1, basSes - dy / menzil));
-      sesSeviyeYaz(); sesGoster();
+      sesSeviyeYaz(); sesGoster(); try{ sesDikeyYaz(); }catch(e){ _yut(e); }
     }, {passive:false});
     const bitir = ()=>{
       if(!etkin) return; etkin=false;

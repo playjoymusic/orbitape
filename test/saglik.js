@@ -167,7 +167,36 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Bu tavan bir uyari, bir yasak degil -- ama her yukseltmenin
      sebebi buraya yaziliyor ki bir gun "nasil 700 KB olmus" diye
      sorulmasin. Sunucu gzip'liyor: 543 KB kaynak ~90 KB tel uzerinde. */
-  K('Dosya boyutu < 560 KB',  dosyaBoy < 560*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* TAVAN 560 -> 580 KB. Sebep: masaustu icin DIKEY SES CUBUGU.
+     Iki parmak jesti dokunmatige ait; Mac/PC'de sesi kismanin hicbir
+     yolu yoktu. Eklenen sey bir eleman, bir CSS blogu ve surukle/
+     tekerlek/klavye kodu (~6 KB, yarisi yorum).
+     Ayni turda ses zincirindeki GERCEK hata da duzeldi: iki parmak
+     ses.volume yaziyordu ve <audio> Web Audio'ya bagli oldugu icin
+     hicbir sey olmuyordu. */
+  K('Dosya boyutu < 580 KB',  dosyaBoy < 580*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* ── SES GERCEKTEN KISILIYOR MU ─────────────────────────────────
+     Olculen sikayet: "mobilde iki parmak var ama kismiyor". Jest
+     calisiyordu; yazdigi yer yanlisti. <audio> Web Audio grafigine
+     baglaninca (createMediaElementSource) elemanin kendi volume'u
+     cikisi etkilemiyor -- ses artik elemandan degil, grafigin
+     sonundan cikiyor. Kullanici seviyesi artik EN SONDAKI kendi
+     dugumune yaziliyor.
+     Neden cikisG'ye degil: cikisG'yi otomatik seviye surekli
+     yaziyor; oraya carpim koymak iki mekanizmayi birbirine
+     karistirirdi. */
+  K('Ses zinciri kullanici kazanciyla bitiyor', (()=>{
+      const k = fs.readFileSync('index.html','utf8');
+      return /kulGain\s*=\s*actx\.createGain\(\)/.test(k)
+          && /tavan\.connect\(kulGain\)[\s\S]{0,80}kulGain\.connect\(actx\.destination\)/.test(k)
+          && /kulGain\.gain\.setTargetAtTime/.test(k);
+    })(), 'kulGain en sonda; ses.volume yalnizca grafik yokken yedek');
+  /* KAYIT kullanici kazancindan ONCE aliniyor: sesi kistin diye
+     kaydin kisik cikmasi istenmez. */
+  K('Kayit kullanici kazancindan once',
+     /const kaynakDugum = tavan \|\| cikisG/.test(fs.readFileSync('index.html','utf8')),
+     'kayit tavandan aliniyor, kulGainden degil');
+
   /* ── ESKI SURUM ACILMASIN ────────────────────────────────────────
      Olculen vaka: yeni surum yayindayken uygulama ESKI surumu acti.
      Sebep index.html icin Cache-Control yazilmamis olmasiydi; kural
