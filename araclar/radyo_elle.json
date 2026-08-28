@@ -76,10 +76,10 @@
  "雨声轻音乐": "AMBIENT",
  "ALIENS HR": "FUNK & RNB",
  "Fly Foot Selecta": "WORLD & ROOTS",
- "_Funky Corner Radio (Spain)": "FUNK & RNB",
- "_Funky Corner Radio (USA)": "FUNK & RNB",
+ "_Funky Corner Radio (Spain)": "MIXTAPE",
+ "_Funky Corner Radio (USA)": "MIXTAPE",
  "90S DANCE by Mix": "WORLD & ROOTS",
- "DISCO by Mix": "FUNK & RNB",
+ "DISCO by Mix": "MIXTAPE",
  "FM 80 FUNKY MUSIC": "FUNK & RNB",
  "__SOLOPIANO__ by rautemusik (rm.fm)": "JAZZ",
  "Радио Эрмитаж Санкт-Петербург 90.1 FM": "JAZZ",
@@ -170,7 +170,7 @@
  "#1 Splash Spa": "AMBIENT",
  "CAPITAL CHILL": "AMBIENT",
  "Chillout Ibiza FM": "AMBIENT",
- "GoRadio ng": "FUNK & RNB",
+ "GoRadio ng": "WORLD & ROOTS",
  "24/7 Bossa Nova Radio": "LOUNGE",
  "Ella Radio - Bossa": "LOUNGE",
  "Nostalgie Dance 90": "MIXTAPE",
@@ -181,5 +181,6 @@
  "Radio Planeta Costa del Sol": "MIXTAPE",
  "Radio Raheem": "MIXTAPE",
  "ROBOTARIIS RADIO": "MIXTAPE",
- "Technolovers - AFRO HOUSE": "WORLD & ROOTS"
+ "Technolovers - AFRO HOUSE": "WORLD & ROOTS",
+ "House of Funk": "ELECTRONIC"
 }

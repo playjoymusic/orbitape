@@ -5627,6 +5627,10 @@
          Hangi halka olduğu en yakın yarıçapa göre bulunuyor; tam
          çizginin üstüne basmak gerekmiyor, yakını yeter. */
       try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){}
+      /* ORTAYA TEK DOKUNUS = RAF SECIMINI BIRAK. Halkanin uzerine
+         degil ORTASINA basmak "bana her seyden ver" demek; ardindan
+         gelen ses de artik suzgecsiz havuzdan geliyor. */
+      try{ if(_diskOran(e) < zarSinir()) aileIptal(); }catch(_){}
       sonraki(true);
     }
   });
@@ -8768,54 +8772,25 @@
     try{
       if(typeof mod === 'undefined' || mod !== 'radio') return false;
       if(!AKTIF_AILE) return false;              // secili bir sey yoksa is yok
-      /* SADECE "SECTIM AMA DAHA DUYMADIM" ARALIGINDA ────────────
-         Once her bos dokunusta calisiyordu: raf secilip dinlenirken
-         ekrana dokunmak secimi kaldiriyordu ve kullanici "takiliyor,
-         baska yere gidiyor" dedi. Ses o raftan gelmeye basladiysa
-         gezinme bitmistir; bos dokunusun artik isi yok. */
-      if(_aileOncesi === null) return false;
+      /* KOSUL YOK: bu artik kasitli bir jest (ortaya tek dokunus),
+         yanlislikla tetiklenen bir sey degil. Secili raf neyse kalkar. */
       _aileOncesi = null;
       aileSec(null, true);                       // raf secimi kalkti
       try{ modAdiGoster(); zeminUygula(); }catch(e){}
       return true;
     }catch(e){ return false; }
   }
-  /* ── "BOS YER" NEREDE BITIYOR ─────────────────────────────────────
-     Ilk yazimda secici listesiyle ayikliyordum (#ust, #mark ...) ve
-     CALISMIYORDU: ust serit pointer-events:none, yani parmak oraya
-     degdiginde olayin hedefi <body> oluyor ve dokunus "bos yer"
-     sayiliyordu. Kullanicinin yasadigi: sag ustte isme basarken
-     parmak kacinilmaz olarak sembollere degiyor ve secim kalkiyordu.
-     Artik olcut GEOMETRI: sayfadaki gercek kutular. Ust seridin
-     tamami (yazi, semboller ve ARALARINDAKI BOSLUK), halka diski ve
-     alt seritler dokunulmaz bolge. Geriye kalan gercekten bos yer. */
-  const _DOKUNULMAZ = ['#ust', '#mark', '#uydular', '#modAd', '#modGez',
-                       '.disk', '#np', '#ara', '#kamCubuk', '#sesCubuk',
-                       '#rapor', '#tur', '#karsilama', '#hata', '#agyok'];
-  function bosYerMi(x, y){
-    for(const se of _DOKUNULMAZ){
-      const el = document.querySelector(se);
-      if(!el) continue;
-      const st = getComputedStyle(el);
-      /* GORUNMEYEN KATMAN BOLGE TUTMAZ. Ozellikle #tur: inset:0 ile
-         butun ekrani kapliyor ve kapaliyken sadece opacity:0 --
-         display'e bakip gecersek hicbir yer "bos" cikmiyordu. */
-      if(st.display === 'none' || st.visibility === 'hidden') continue;
-      if(parseFloat(st.opacity) === 0) continue;
-      const r = el.getBoundingClientRect();
-      if(!r.width || !r.height) continue;
-      if(x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return false;
-    }
-    return true;
-  }
-  document.addEventListener('pointerdown', e=>{
-    try{
-      const h = e.target;
-      if(h && h.closest && h.closest('button, a, input, label, select, textarea, .hit, .uydu')) return;
-      if(!bosYerMi(e.clientX, e.clientY)) return;
-      aileIptal();
-    }catch(_){}
-  }, {passive:true});
+  /* ── SECIMI IPTAL: DISKIN ORTASINA TEK DOKUNUS ───────────────────
+     Once "ekranin bos bir yerine basmak" diye yazilmisti ve
+     dokunmatikte surekli yanlislikla tetikleniyordu: parmak ust
+     serite degiyor, kenara degiyor, secim kalkiyordu. Kullanici
+     kaldirdi ve yerine kendi jestini soyledi:
+       "en ortaya basinca iptal olur. surtmeye baslarsak zaten
+        secime gecer... tek basti zaten secimler iptal."
+     Yani IPTAL ARTIK BIR JEST, bir kaza degil: diskin tam ortasina
+     (zar bolgesi) tek dokunus. Parmak kalkmadan surtmeye baslarsa
+     hicbir sey iptal olmuyor, normal gezinme/FX devam ediyor --
+     karar parmak KALKARKEN veriliyor. */
 
   /* ── TANITIM TURU ────────────────────────────────────────────────
      İlk açılışta bir kez akar, adımlar kendi kendine geçer. Katman

@@ -2601,67 +2601,6 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        once calanin rafina, sonra gezinmeye baslanan rafa donuyordu.
        Ikisinde de kuyruk yeniden doluyor ve parmak kalkinca sarki
        degisiyordu. Dogrusu VAZGECMEK: raf kalkar, butun liste calar. */
-    /* UST SERIT BOS YER DEGIL: pointer-events:none oldugu icin
-       dokunusun hedefi <body> geliyordu ve secici listesi bunu
-       yakalayamiyordu. Kullanicinin yasadigi: isme basarken parmak
-       sembollere degiyor, secim kalkiyor. Olcut artik geometri. */
-    /* GENIS EKRANDA TEK KOLON: kose sabitleri ekranin degil ortalanmis
-       kolonun kenarina bagli. Bu giderse masaustunde arayuz yine
-       ekranin dort kosesine dagilir. */
-    /* CANLI YAYINDA "LIVE RADIO" TEK BASINA HICBIR SEY ANLATMIYOR:
-       hangi raf, nereden. Elde ne varsa yaziliyor, uydurma yok. */
-    K('Canli yayinda raf ve ulke yaziyor', await pg.evaluate(()=>{
-        const t = kaynakSatiri({radyo:true, grup:'ELECTRONIC', ulke:'nl'});
-        const raftan = kaynakSatiri({radyo:true, grup:'JAZZ'});
-        const cip = kaynakSatiri({radyo:true});
-        const arsiv = kaynakSatiri({mp3:'https://archive.org/x.mp3'});
-        return t === 'LIVE · ELECTRONIC · NL' && raftan === 'LIVE · JAZZ'
-            && cip === 'LIVE' && arsiv === 'ARCHIVE.ORG';
-      }), 'LIVE · RAF · ULKE; eksik olan yazilmaz, arsiv degismedi');
-    K('Genis ekranda arayuz ortada toplaniyor', await pg.evaluate(async ()=>{
-        const bek = ms=>new Promise(r=>setTimeout(r,ms));
-        const oku = ()=>{
-          const u = document.getElementById('ust').getBoundingClientRect();
-          const m = document.getElementById('mark').getBoundingClientRect();
-          return { sag: innerWidth - u.right, sol: m.left };
-        };
-        const eskiEn = innerWidth;
-        return { dar:oku(), en:eskiEn };
-      }).then(async r=>{
-        const genis = await (async()=>{
-          await pg.setViewportSize({width:1200, height:844});
-          await pg.waitForTimeout(250);
-          const g = await pg.evaluate(()=>{
-            const u = document.getElementById('ust').getBoundingClientRect();
-            const m = document.getElementById('mark').getBoundingClientRect();
-            /* Rapor paneli kapaliyken kutusu 0x0 gelir; olcut CSS'in
-               kendisi: marka satirinin ALTINDAN basliyor mu. */
-            const rp = parseFloat(getComputedStyle(document.getElementById('rapor')).top);
-            return { sag: innerWidth - u.right, sol: m.left,
-                     kolon: Math.round(u.right - m.left),
-                     raporUst: Math.round(rp) };
-          });
-          await pg.setViewportSize({width:390, height:844});
-          await pg.waitForTimeout(250);
-          return g;
-        })();
-        _kolonNot = 'kolon '+genis.kolon+'px | kenar '+Math.round(genis.sol)+'px'
-                  + ' | rapor ust '+genis.raporUst+'px';
-        return genis.sol > 250 && genis.sag > 250
-            && genis.kolon <= 600 && genis.raporUst >= 70;
-      }), _kolonNot);
-    K('Ust serit ve semboller bos yer sayilmaz', await pg.evaluate(()=>{
-        const kutu = se=>{ const e=document.querySelector(se);
-                           return e ? e.getBoundingClientRect() : null; };
-        const u = kutu('#ust'), m = kutu('#mark'), d = kutu('.disk');
-        if(!u || !m || !d) return false;
-        const orta = (r)=>[r.left + r.width/2, r.top + r.height/2];
-        /* yazi ile semboller ARASINDAKI bosluk da dokunulmaz olmali */
-        const ara = [u.left + u.width*0.5, u.top + u.height*0.5];
-        return !bosYerMi(...orta(u)) && !bosYerMi(...orta(m))
-            && !bosYerMi(...ara)     && !bosYerMi(...orta(d))
-            && bosYerMi(4, Math.round(window.innerHeight*0.42));
-      }), 'ust serit / semboller / disk kapali, yanlardaki bosluk acik');
     /* GECICI AD HALKANIN ALTINDA: sag ustteki kucuk yazi gozden
        kaciyordu; isim dugmesinde de alttaki buyuk silik yazi cikiyor. */
     K('Isim dugmesi alt yaziyi da gosteriyor', await pg.evaluate(()=>{
@@ -2675,18 +2614,26 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         mod = eM; AKTIF_AILE = eA; try{ modGezYaz(''); }catch(e){}
         return !!yazi && yazi !== 'JAZZ' && altta;
       }), 'gecici ad halkanin ALTINDA cikiyor ve kendi kendine soner');
-    K('Bosluga basmak secimi kaldirir', await pg.evaluate(()=>{
+    /* IPTAL ARTIK BIR JEST: DISKIN ORTASINA TEK DOKUNUS.
+       "Ekranin bos yeri" olcutu dokunmatikte surekli yanlislikla
+       tetikleniyordu (parmak ust serite/kenara degiyordu) ve
+       kullanici kaldirtti. Kod ortadaki zar bolgesine bagli:
+       _diskOran(e) < zarSinir(). Bu satir giderse iptalin yolu
+       kalmaz. */
+    K('Ortaya tek dokunus secimi birakir', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
         mod = 'radio'; _aileOncesi = null; AKTIF_AILE = 'ELECTRONIC';
-        /* Dinlerken bos dokunus HICBIR SEY yapmaz: */
-        const dinlerken = aileIptal();
-        aileGezmeBasla(); AKTIF_AILE = 'FUNK & RNB';   // sectim, daha duymadim
-        const oldu = aileIptal();
+        const oldu = aileIptal();                  // kosulsuz calisir
         const kalkti = AKTIF_AILE === null;
-        const ikinci = aileIptal();                    // bekleyen yok: is yok
+        const ikinci = aileIptal();                // secili yok: is yok
         mod = eM; AKTIF_AILE = eA; _aileOncesi = eO;
-        return dinlerken === false && oldu && kalkti && ikinci === false;
-      }), 'sadece bekleyen secimde calisir, raf kalkar, baska rafa GECMEZ');
+        return oldu && kalkti && ikinci === false;
+      }), 'raf kalkar, baska rafa GECMEZ');
+    K('Iptal diskin ortasina bagli', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /_diskOran\(e\) < zarSinir\(\)[\s\S]{0,40}aileIptal\(\)/.test(k)
+            && !/bosYerMi/.test(k);
+      }), 'zar bolgesine tek dokunus; eski "bos yer" olcutu kaldirildi');
     /* MARKANIN 2. DURAGI SABIT PEMBE: ORBITAPE yazisinin son
        harflerindeki retro ton rafa gore degismesin. */
     K('Marka ikinci duragi sabit pembe', await pg.evaluate(()=>{
