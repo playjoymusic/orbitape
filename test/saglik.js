@@ -2574,27 +2574,44 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* SECILDI AMA DUYULMADI: yazi silik. Ekranda duymadigin bir raf
        adinin katilasmis durmasi yalan; o aralik gorunur olmali. */
     K('Bekleyen secim yazisi silik', await pg.evaluate(()=>{
-        const eM = mod, eA = AKTIF_AILE, eS = _sonCalan;
-        mod = 'radio'; _sonCalan = {grup:'MIXTAPE'}; AKTIF_AILE = 'HIP HOP & RNB';
+        const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
+        mod = 'radio'; AKTIF_AILE = 'MIXTAPE'; _aileOncesi = null;
+        aileGezmeBasla(); AKTIF_AILE = 'HIP HOP & RNB';   // gezindi
         modAdiYaz();
         const bekler = document.getElementById('modAd').classList.contains('bekliyor');
-        _sonCalan = {grup:'HIP HOP & RNB'};       // ses o raftan geldi
+        aileSecimKesinlesti({grup:'HIP HOP & RNB'});      // ses o raftan geldi
         modAdiYaz();
         const katilasti = !document.getElementById('modAd').classList.contains('bekliyor');
-        mod = eM; AKTIF_AILE = eA; _sonCalan = eS; modAdiYaz();
+        mod = eM; AKTIF_AILE = eA; _aileOncesi = eO; modAdiYaz();
         return bekler && katilasti;
       }), 'raf duyulana kadar nefes aliyor, sonra katilasiyor');
     /* BOS YERE BASMAK SECIMI IPTAL EDER: secim calan sesin rafina
        doner. Bayrak degil, calan kaydin rafi olcut. */
-    K('Bos yere basinca secim iptal', await pg.evaluate(()=>{
-        const eM = mod, eA = AKTIF_AILE, eS = _sonCalan;
-        mod = 'radio'; _sonCalan = {grup:'JAZZ'}; AKTIF_AILE = 'HIP HOP & RNB';
+    /* IPTAL GEZINMEYE BASLADIGIN RAFA DONER, CALANIN RAFINA DEGIL.
+       Ilk yazimda calanin rafina donuyordu ve kullanici iki tur
+       arasinda kilitlendi: bos dokunus onu calanin rafina atiyor,
+       isim dugmesi oradan bir geri gidiyor, tekrar bos dokunus...
+       Bu satir giderse o kilit geri gelir. */
+    /* BOSLUGA BASMAK SECIMI KALDIRIR. Onceki iki deneme yanlisti:
+       once calanin rafina, sonra gezinmeye baslanan rafa donuyordu.
+       Ikisinde de kuyruk yeniden doluyor ve parmak kalkinca sarki
+       degisiyordu. Dogrusu VAZGECMEK: raf kalkar, butun liste calar. */
+    K('Bosluga basmak secimi kaldirir', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
+        mod = 'radio'; _aileOncesi = null; AKTIF_AILE = 'HIP HOP & RNB';
         const oldu = aileIptal();
-        const sonuc = oldu && AKTIF_AILE === 'JAZZ';
-        _sonCalan = {grup:'JAZZ'}; const ikinci = aileIptal();   // ayni raf: is yok
-        mod = eM; AKTIF_AILE = eA; _sonCalan = eS;
-        return sonuc && ikinci === false;
-      }), 'secim calan istasyonun rafina doner');
+        const kalkti = AKTIF_AILE === null;
+        const ikinci = aileIptal();            // secili yok: is yok
+        mod = eM; AKTIF_AILE = eA; _aileOncesi = eO;
+        return oldu && kalkti && ikinci === false;
+      }), 'raf secimi kalkar, baska rafa GECMEZ');
+    /* MARKANIN 2. DURAGI SABIT PEMBE: ORBITAPE yazisinin son
+       harflerindeki retro ton rafa gore degismesin. */
+    K('Marka ikinci duragi sabit pembe', await pg.evaluate(()=>{
+        const a = aileTema('53,224,216').ikinci, b = aileTema('95,191,122').ikinci;
+        const [r,g,bl] = a.split(',').map(Number);
+        return a === b && r > g && r > 180 && bl > g;   // pembe: kirmizi ve mavi baskin
+      }), 'her ailede ayni tozlu gul');
     /* TUR ICINDE SONSUZ DONGU: havuz bitince damgalar temizlenip
        basa donuluyor. Esik tur acikken 1, yoksa 3. Bu satir giderse
        kullanici bir turde 20 istasyon sonra duvara toslar. */

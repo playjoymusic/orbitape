@@ -1344,6 +1344,7 @@
      mixtape hala eski rengini goruyor, bu baska bir mixtape."
      Artik radyo modunda tema AILENIN renginden turetiliyor; MOD_TEMA
      yalnizca arsiv tarafinin sozlugu. */
+  const MARKA_PEMBE = '226,122,158';   // tozlu gul: retro pembe
   function aileTema(rgb){
     const [r,g,b] = rgb.split(',').map(n=>+n);
     const kis = (k)=>[Math.round(r*k),Math.round(g*k),Math.round(b*k)].join(',');
@@ -1352,7 +1353,14 @@
                       Math.min(255,Math.round(b+(255-b)*k))].join(',');
     const onalti = (k)=>'#'+[r,g,b].map(v=>Math.round(v*k).toString(16)
                         .padStart(2,'0')).join('');
-    return { ana:rgb, ikinci:ac(.55),
+    /* 2. DURAK SABIT RETRO PEMBE ────────────────────────────────
+       ORBITAPE yazisinin son harflerindeki pembe, RADIOTAPE
+       temasinin ikinci renginden geliyordu. Tema aileden turetilince
+       o pembe kayboldu ve yazi tek renge dustu. Kullanici geri
+       istedi, "biraz daha retro" dedi: doymus magenta (236,104,190)
+       yerine tozlu gul. 1. durak aileyle degisir, 2. durak sabit --
+       marka kimligi rafa gore degismesin. */
+    return { ana:rgb, ikinci:MARKA_PEMBE,
              halka:[rgb, ac(.45), kis(.55), ac(.8)],
              zemin:[onalti(.055), '#000000'] };
   }
@@ -4674,6 +4682,7 @@
     iz('cal');
     if(!item) return;
     try{ _sonCalan = item; }catch(e){}
+    try{ aileSecimKesinlesti(item); }catch(e){}
     try{ modAdiYaz(); }catch(e){}      // yeni ses geldi: yazi katilasir ya da silik kalir
     /* İLK SES KATEGORİYE TAKILMAZ ────────────────────────────────
        Açılış kategorisi RADIOTAPE. Radyo gelmeyip yedeğe düşülünce
@@ -5940,6 +5949,7 @@
      dizili, o yuzden burada geriye dogru gidiyoruz: en distaki
      halkadan baslayip ice dogru. */
   function aileSiraGec(){
+    try{ aileGezmeBasla(); }catch(e){}
     const n = AILE_ADLAR.length;
     const bul = AILE_ADLAR.indexOf(AKTIF_AILE);
     const i = (bul >= 0) ? (bul - 1 + n) % n : n - 1;
@@ -6348,7 +6358,10 @@
     let ad = (gezinen !== undefined && gezinen !== null && gezinen !== '') ? gezinen : '';
     if(!ad){
       try{
-        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || AILE_ACILIS;
+        /* Raf secimi kaldirildiysa (bosluga basildi) yazi ACILIS
+           RAFINI degil KANALI gosterir: ekranda secili olmayan bir
+           raf adi durmasin. */
+        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || 'RADIOTAPE';
         else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : 'RADIOTAPE');
       }catch(e){ ad = AKTIF_MOD || ''; }
     }
@@ -6431,6 +6444,7 @@
   function halkaSec(k, zorla){
     const ad = halkaAdlar()[k]; if(!ad) return;
     if(halkaAilesiMi()){
+      try{ aileGezmeBasla(); }catch(e){}
       try{ aileSec(ad, zorla); }catch(e){}
       try{ modAdiGoster(); zeminUygula(); }catch(e){}
       try{ sonraki(true); }catch(e){}
@@ -8642,23 +8656,44 @@
      Iptal olculebilir bir seye baglandi, ayri bir bayraga degil: o an
      CALAN kaydin rafi ile secili raf farkliysa secim henuz gerceklesmemis
      demektir; bos yere basmak secili rafi calana geri dondurur. */
-  /* Secim devreye girdi mi? Ayri bir bayrak tutmuyoruz: CALAN kaydin
-     rafi ile secili raf ayni degilse secim henuz duyulmamis demektir. */
-  function aileBekliyorMu(){
-    try{
-      if(typeof mod === 'undefined' || mod !== 'radio') return false;
-      if(!AKTIF_AILE) return false;
-      const g = _sonCalan && _sonCalan.grup;
-      return !!g && g !== AKTIF_AILE;
-    }catch(e){ return false; }
+  /* ── BEKLEYEN SECIM ──────────────────────────────────────────────
+     ILK YAZIMDA olcut "calan kaydin rafi != secili raf" idi ve YANLISTI:
+     iptal, gezinmeye BASLADIGIN rafa degil CALAN ISTASYONUN rafina
+     donuyordu. Calan sey bir MIXTAPE istasyonuysa bos yere basmak
+     seni MIXTAPE'e atiyordu -- kullanici "bosluga basinca baska bir
+     tur secti" dedi, haklyidi. Ustune isim dugmesi o yeni raftan bir
+     geri gidiyor, tekrar bos yere basinca yine geri: iki tur arasinda
+     kilitlenme. Yazi ile halkanin ayrismasi da ayni yerden.
+     ARTIK: gezinme baslarken nerede oldugumuz bir kez yaziliyor
+     (_aileOncesi) ve iptal oraya doner. Secim, o raftan GERCEKTEN bir
+     ses gelince kesinlesir ve hafiza silinir. */
+  var _aileOncesi = null;
+  function aileBekliyorMu(){ return _aileOncesi !== null; }
+  function aileGezmeBasla(){
+    if(_aileOncesi === null) _aileOncesi = AKTIF_AILE || null;
   }
+  /* Bir ses caldi: rafi seciliyse gezinme bitmistir. */
+  function aileSecimKesinlesti(item){
+    try{
+      if(_aileOncesi === null) return;
+      if(!item || !item.grup) return;
+      if(item.grup === AKTIF_AILE) _aileOncesi = null;
+    }catch(e){}
+  }
+  /* BOSLUGA BASMAK SECIMI KALDIRIR -- BASKA BIR RAFA GECIRMEZ.
+     Once "gezinmeye basladigin rafa don" diye yazmistim; kullanici
+     duzeltti: o da yanlis, cunku eski rafa donmek kuyrugu yeniden
+     dolduruyor ve parmak kalkinca sarki degisiyor. Istenen sey
+     VAZGECMEK: secili raf kalkar, butun liste calar, calan ses
+     bozulmaz. "Bosluklar secili bir sey varsa secimi kaldiriyor,
+     olay bu." */
   function aileIptal(){
     try{
       if(typeof mod === 'undefined' || mod !== 'radio') return false;
-      const g = _sonCalan && _sonCalan.grup;
-      if(!g || !AKTIF_AILE || g === AKTIF_AILE) return false;
-      aileSec(g, true);
-      try{ modAdiGoster(); halkaYak(g); }catch(e){}
+      if(!AKTIF_AILE) return false;              // secili bir sey yoksa is yok
+      _aileOncesi = null;
+      aileSec(null, true);                       // raf secimi kalkti
+      try{ modAdiGoster(); zeminUygula(); }catch(e){}
       return true;
     }catch(e){ return false; }
   }
