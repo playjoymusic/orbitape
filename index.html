@@ -571,12 +571,26 @@
      Seçim yapılınca bu yazı gidiyor — işini bitirmiş oluyor. */
   #modGez{position:fixed;left:50%;transform:translateX(-50%);
     z-index:59;pointer-events:none;user-select:none;white-space:nowrap;
-    font-family:'Share Tech Mono',ui-monospace,monospace;font-weight:300;
+    /* AGIRLIK 300 -> 500. Yazi zaten silik (opaklik .56); inceyken
+       silik olmak "solmus" gibi duruyordu, kalinken silik olmak
+       "arkada duran" gibi duruyor. Fark yaziyi okunakli yapiyor ama
+       one cikarmiyor. */
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-weight:500;
     font-size:26px;letter-spacing:.46em;text-indent:.46em;line-height:1;
     color:currentColor;opacity:0;text-shadow:none;
     mix-blend-mode:screen;
     transition:opacity .16s ease, color .16s ease;}
   #modGez.gor{opacity:.56;}          /* .34 fazla silikti: okunmuyordu */
+  /* ── SORU KIPI ───────────────────────────────────────────────────
+     Nebulaya ilk basista burada bir cumle cikiyor ("SWITCH TO
+     SOUNDS?"). Raf adlari tek kelime, cumle degil: 26px ve .46em
+     harf arasiyla ekrandan tasar. Soru kipinde punto ve harf arasi
+     kuculuyor, yazi bir tik daha belirgin -- soru sorulduysa
+     okunmasi lazim. */
+  #modGez.soru{font-size:15px;letter-spacing:.30em;text-indent:.30em;
+    font-weight:500;}
+  #modGez.soru.gor{opacity:.72;}
+  @media (max-width:480px){ #modGez.soru{font-size:13px;letter-spacing:.24em;text-indent:.24em;} }
   /* Önizleme parmakla geziniyor: zemin geçişi 0.8s yerine 0.3s,
      yoksa halkadan halkaya geçerken renk arkadan yetişiyor. */
   body.oniz{transition:background-color .30s ease, background-image .30s ease;}
@@ -3856,7 +3870,10 @@
   /* mouse tık */
   // gerçek fare tıkı — HTML'e gömülü WAV (ağsız, CORS'suz, anında çalar). TIK_SES seviyesi kısık.
   const TIK_SES = "data:audio/wav;base64,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9//u//v/+f/3/+z/+/8HAPT/DQACAAYAGQANAA0ABQALAAUAAAD6//D/9P/2//f/8P/7//z/BAAAAAAADAAFAAcADQAKAAcABQAEAP7/+v////P//P/0//j/9v/5//3/AwABAAcADAAHAAUACAAGAAUA/f8AAAEA+v/+//r/+f/2//7//P/7////AgAFAAMABgALAAMACQACAAIA/v8AAPr//v/6//r//f/8//7//P///wAABQADAAEACAADAAUABAABAAIAAAD8//3/+v/9//z//f/8/wAAAAABAAEAAgAEAAMAAwAEAAMAAQAAAAAA/v8AAP3//P/8//3//f///wAAAAABAAMAAwADAAIAAwACAAAAAQAAAP/////+//3//v/9//7//////wAAAAACAAIAAwADAAIAAQABAAAAAAD////////+//7//v//////AAAAAAAAAQABAAIAAQACAAEAAQAAAAAA//////////////////8AAAAAAAAAAAAAAQABAAEAAQABAAEAAAAAAAAA//////////////////8AAAAAAAAAAAEAAQABAAEAAQAAAAAAAAAAAAAAAAD//////////wAAAAAAAAAAAAAAAAEAAQABAAEAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
-  const TIK_VOL = 0.45;   // 0..1 arası ses seviyesi (kısmak için düşür)
+  /* Tik sesi %20 kisildi (0.45 -> 0.36): fare tiklamasi gibi duyulan
+     bu ses, ust uste basarken one cikiyordu. */
+  var _kapiZaman = null;   // raf kapisinin TEK zamanlayicisi (bkz. cal)
+  const TIK_VOL = 0.36;   // 0..1 arası ses seviyesi (kısmak için düşür)
   let _tikAudio=null;
   try{ _tikAudio=new Audio(TIK_SES); _tikAudio.preload='auto'; _tikAudio.volume=TIK_VOL; }catch(e){ _yut(e); }
   function tik(){
@@ -4898,9 +4915,25 @@
        icin tek cikis noktasi burasi.
        Ilk ses muaf (yukaridaki _ilkSes ile ayni gerekce: kategori bir
        tercih, sessizligin sebebi olamaz). */
+    /* Kapinin tek zamanlayicisi: ayni anda on istek dönerse on tane
+       'sonraki' kuyruga girmesin. */
     if(!_ilkSes && !_favMod && typeof mod !== 'undefined' && mod === 'radio'
        && AKTIF_AILE && item.radyo && item.grup && item.grup !== AKTIF_AILE){
-      setTimeout(()=>{ try{ sonraki(true); }catch(e){ _yut(e); } }, 60);
+      /* ── KAPI SESSIZ VE YAVAS OLMALI ──────────────────────────────
+         Once burada sonraki(TRUE) cagriliyordu, yani "kullanici basti"
+         yolu: her seferinde tik sesi caliyor ve ekran gecis animasyonu
+         bastan basliyordu. Raf degistikten sonra kuyrukta eski rafin
+         BIRDEN COK istasyonu kalabiliyor; her biri bu kapiya carpip
+         60 ms sonra bir sonrakini tetikliyor ve ortaya "arka arkaya
+         cok hizli tiklaniyormus gibi" bir sey cikiyordu. Olculen sey
+         de buydu: saniyede ~16 tik.
+         Iki degisiklik: (1) sonraki(FALSE) -- bu bir kullanici basisi
+         degil, ic temizlik; ses de yok, gecis de yok. (2) araya biraz
+         nefes: 60 ms yerine 260 ms ve ust uste birikmesin diye tek
+         zamanlayici. */
+      if(_kapiZaman) clearTimeout(_kapiZaman);
+      _kapiZaman = setTimeout(()=>{ _kapiZaman = null;
+        try{ sonraki(false); }catch(e){ _yut(e); } }, 260);
       return;
     }
     /* ── LİSANS: SON KAPI ───────────────────────────────────────────
@@ -6150,7 +6183,9 @@
       if(_kanalSorZaman){ clearTimeout(_kanalSorZaman); _kanalSorZaman = null; }
       if(!_kanalSorHedef) return;
       _kanalSorHedef = null;
-      try{ modGezYaz(''); }catch(e){ _yut(e); }
+      try{ modGezYaz('');
+           const _g = document.getElementById('modGez');
+           if(_g) _g.classList.remove('soru'); }catch(e){ _yut(e); }
       try{ mark.classList.remove('soruyor'); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
@@ -6160,13 +6195,20 @@
       const hedef = KANAL_SIRA[(i < 0 ? 0 : i + 1) % KANAL_SIRA.length];
       if(_kanalSorHedef !== hedef){
         _kanalSorHedef = hedef;
-        try{ modGezYaz((KANAL_ADI[hedef] || '') + ' ?'); }catch(e){ _yut(e); }
+        /* "SOUNDS ?" cirkin ve ne dedigi belli degildi. Soru tam
+           cumle: hangi kanala gecilecegini soyluyor ve nasil
+           onaylanacagini da. Ingilizce -- arayuzun tamami oyle. */
+        try{ modGezYaz('SWITCH TO ' + (KANAL_ADI[hedef] || '') + '? TAP AGAIN');
+             const _g = document.getElementById('modGez');
+             if(_g) _g.classList.add('soru'); }catch(e){ _yut(e); }
         try{ mark.classList.add('soruyor'); }catch(e){ _yut(e); }
         if(_kanalSorZaman) clearTimeout(_kanalSorZaman);
         _kanalSorZaman = setTimeout(kanalSoruIptal, 2600);
         return;                                   // HENUZ GECMIYORUZ
       }
       kanalSoruIptal();
+      try{ const _g = document.getElementById('modGez');
+           if(_g) _g.classList.remove('soru'); }catch(e){ _yut(e); }
       modaGec(hedef);
     }catch(e){ _yut(e); }
   }

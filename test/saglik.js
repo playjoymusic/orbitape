@@ -610,6 +610,31 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Nebula once soruyor', nebT.soruAnı.kanal === nebT.once.kanal
         && nebT.soruAnı.soru === true,
     'ilk basis: kanal '+nebT.soruAnı.kanal+', soru '+nebT.soruAnı.soru);
+  /* SORU TAM CUMLE OLMALI. Once ekranda 'SOUNDS ?' yaziyordu:
+     ne sorulduğu belli degildi ve cirkin duruyordu. Yazi hangi kanala
+     gecilecegini ve nasil onaylanacagini soylemeli, INGILIZCE. */
+  K('Soru tam cumle ve ingilizce', await pg.evaluate(async()=>{
+      const eM = mod; mod = 'radio';
+      try{ kanalSoruIptal(); }catch(e){}
+      try{ moodDegis(); }catch(e){}
+      await new Promise(r=>setTimeout(r,80));
+      const g = document.getElementById('modGez');
+      const y = (g.textContent||'').trim();
+      const kip = g.classList.contains('soru');
+      /* Punto soru kipinde kucuk: cumle 26px ve .46em harf arasiyla
+         ekrandan tasiyordu. */
+      const punto = parseFloat(getComputedStyle(g).fontSize);
+      const tasma = g.getBoundingClientRect().width <= innerWidth - 8;
+      try{ kanalSoruIptal(); }catch(e){}
+      mod = eM;
+      return /^SWITCH TO [A-Z]+\? TAP AGAIN$/.test(y) && kip
+          && punto <= 18 && tasma && !/[çğışöüÇĞİŞÖÜ]/.test(y);
+    }), 'SWITCH TO ... ? TAP AGAIN, ekrana sigiyor, soru kipi acik');
+  /* GECICI YAZI DAHA KALIN: zaten silik, inceyken 'solmus' duruyordu. */
+  K('Gecici yazi kalinligi', await pg.evaluate(()=>{
+      const g = document.getElementById('modGez');
+      return (parseInt(getComputedStyle(g).fontWeight,10)||400) >= 500;
+    }), 'font-weight >= 500');
   /* KANAL DEGISINCE FX SONER. Once "nebula FX'e dokunmasin" demistik
      ama olculen davranis kotu cikti: oteki kanala gecip donunce
      gezegenler yanik kaliyor, efekt kapali ama dugmeler acik
@@ -2750,6 +2775,41 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
             && ars !== 'ORBITAPE'
             && bos === '' && raf === 'JAZZ';
       }), 'liste=MIXTAPE, lib=SOUNDS, radyoda raf adi ya da bos');
+    /* ── RAF KAPISI TIK YAGMURU URETMEMELI ───────────────────────
+       Olculen sikayet: sag ustten raf degistirip beklerken "arka
+       arkaya cok hizli tiklaniyormus gibi" sesler geliyordu.
+       Sebep: raf degisince kuyrukta eski rafin BIRDEN COK istasyonu
+       kaliyor; her biri cal() icindeki raf kapisina carpiyor ve kapi
+       sonraki(TRUE) cagiriyordu -- yani "kullanici basti" yolu, her
+       seferinde tik sesi ve gecis animasyonu. Alti istasyon = alti tik.
+       Kapi artik sessiz (sonraki FALSE) ve tek zamanlayicili. */
+    { const _rk = await pg.evaluate(async()=>{
+        const eM = mod, eA = AKTIF_AILE, eT = tik;
+        let say = 0;
+        window.tik = function(){ say++; };
+        mod = 'radio'; AKTIF_AILE = 'JAZZ';
+        /* Alti tanesi de BASKA rafin: hepsi kapiya carpacak. */
+        for(let i=0;i<6;i++){
+          try{ cal({ id:'rb:x'+i, mp3:'https://x/'+i, ad:'Yabanci '+i,
+                     radyo:true, grup:'ELECTRONIC' }); }catch(e){}
+        }
+        await new Promise(r=>setTimeout(r, 900));
+        window.tik = eT; mod = eM; AKTIF_AILE = eA;
+        const k = document.documentElement.innerHTML;
+        /* Kaynakta da bagli olsun: kapi 'kullanici basisi' yoluna
+           donerse bu satir kirmizi yanar. */
+        const sessiz = /_kapiZaman = setTimeout\([\s\S]{0,120}sonraki\(false\)/.test(k);
+        /* Tek bir tik gecebilir (baska bir zamanlayicidan); olculen
+           sikayet PATLAMAYDI -- duzeltmeden once alti yabanci istasyon
+           alti tik uretiyordu. Esik 1. */
+        return { say, sessiz, ok: (say <= 1 && sessiz) };
+      });
+      K('Raf kapisi tik yagmuru uretmiyor', _rk.ok, 'tik='+_rk.say+' sessiz='+_rk.sessiz); }
+    /* Tik sesi kisildi: fare tiklamasi gibi duyulan ses ust uste
+       basarken one cikiyordu. */
+    K('Tik sesi kisik', await pg.evaluate(()=>
+        typeof TIK_VOL === 'number' && TIK_VOL > 0 && TIK_VOL <= 0.37),
+      'TIK_VOL <= 0.37');
     /* AYNI SEY IKI KEZ YAZILMAZ. Kendi parcalarimizda hem kaynak hem
        sanatci 'PLAYJOY' ve ekranda yan yana iki kez cikiyordu. */
     K('Kaynak sanatciyla ayniysa tekrarlanmiyor', await pg.evaluate(()=>{
