@@ -35,6 +35,14 @@ from collections import OrderedDict
 # Renkler koyu zeminde okunacak sekilde secildi ve birbirine
 # karismayacak kadar uzak: mor / kehribar / yesil / buz / turuncu /
 # pembe / fildisi / gri.
+# ROCK ONCE SORULUYOR: bir istasyon hem "rock" hem "electronic"
+# etiketli olabiliyor ve rock en son sorulursa hicbir zaman
+# kazanmiyor -- olculdu, 97 istasyonun tamami baska ailelere
+# dagilmisti. Kaynak etikette "rock/punk/metal" geciyorsa aile ROCK.
+ROCK = re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|shoegaze|"
+                  r"post.?rock|classic ?rock|hard ?rock|blues ?rock|"
+                  r"prog(ressive)? ?rock|rock ?n ?roll|rockabilly", re.I)
+
 AILELER = OrderedDict([
     ("ELECTRONIC",    {"renk": "#8E7CF0",
                        "turler": ["electronic", "techno", "house",
@@ -51,6 +59,8 @@ AILELER = OrderedDict([
                        "turler": ["afrobeat", "latin", "bossa nova"]}),
     # soundtrack CLASSICAL'a girdi: ikisi de orkestral, ve classical
     # tek basina 17'de kaliyordu -> diger ailelerle esit agirliga geldi.
+    ("ROCK",          {"renk": "#B07CE8",
+                       "turler": []}),          # etiketten geliyor, tur alanindan degil
     ("CLASSICAL",     {"renk": "#D8CBA0",
                        "turler": ["classical", "soundtrack"]}),
     # Henuz bos. Haber/spor/talk BILEREK gelecek, kacak olarak degil.
@@ -110,6 +120,9 @@ def grupla(kayitlar):
     sessizce gruptan dusen istasyon, ekranda renksiz istasyon demek."""
     atanmamis = {}
     for o in kayitlar:
+        if ROCK.search((o.get("etiket") or "") + " " + (o.get("ad") or "")):
+            o["grup"] = "ROCK"
+            continue
         g = TUR_GRUP.get((o.get("tur") or "").strip().lower())
         if not g:
             atanmamis[o.get("tur")] = atanmamis.get(o.get("tur"), 0) + 1
