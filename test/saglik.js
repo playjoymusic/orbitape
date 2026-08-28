@@ -249,8 +249,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Sabit sayi beklemek yanlis olurdu -- ikisini de ayri sinamak
      gerekiyor, cunku geometri (ic yaricap, zar siniri) sayidan
      tureniyor ve yanlis sayida parmak baska halkayi secer. */
+  /* En distaki halkanin adi MIXTAPE'ti, RADIO oldu: ayni kelime hem
+     tur rafi hem arsivin muzik kanaliydi ve ekran hangisi oldugunu
+     soyleyemiyordu. */
   K('Radyoda halkalar tur ailesi', hs.n===10 &&
-       /ELECTRONIC/.test(hs.sira) && /MIXTAPE/.test(hs.sira), hs.sira);
+       /ELECTRONIC/.test(hs.sira) && /\bRADIO\b/.test(hs.sira)
+       && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
       const eski = mod; mod = 'lib';
@@ -512,12 +516,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     AKTIF_MOD='HUMAN'; modAdiYaz(); fxModGec('retro');
     await new Promise(r=>setTimeout(r,120));
     const once = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
+    /* NEBULA ONCE SORUYOR: ilk basis yalnizca soruyu aciyor, kanal
+       degismiyor. Ikinci basis geciriyor. Test ikisini de olcuyor --
+       ilk basista kanal degisirse "yanlislikla degen parmak" hatasi
+       geri gelmis demektir. */
+    moodDegis(); await new Promise(r=>setTimeout(r,120));
+    const soruAnı = {kanal:mod, soru:!!document.getElementById('mark').classList.contains('soruyor')};
     moodDegis(); await new Promise(r=>setTimeout(r,150));
     const sonra = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
     /* Tam tur: radyo -> sesler -> basa. MIXTAPE simdilik kapali. */
     const _e = mod; const _s = [];
     try{ modaGec('radio'); _s.push(mod);
-         for(let i=0;i<3;i++){ havuzDegis(); _s.push(mod); }
+         for(let i=0;i<3;i++){ havuzDegis(); havuzDegis(); _s.push(mod); }
          modaGec(_e); }catch(e){}
     /* MIXTAPE kapali oldugu icin listede olmamali. */
     /* DURUMU GERI AL: nebula artik FX'i kapatmiyor, bu yuzden test
@@ -525,7 +535,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        testler "acilista FX acik" diye yalan soyler -- bir kez oldu. */
     try{ fxNormale && fxNormale(); }catch(e){}
     try{ if(mod !== once.kanal) modaGec(once.kanal); }catch(e){}
-    return {once, sonra, sira:_s.join(',')};
+    return {once, sonra, soruAnı, sira:_s.join(',')};
   });
   const madi = await pg.evaluate(()=>{
     AKTIF_MOD='AMBIANCE'; modAdiYaz();
@@ -592,6 +602,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Nebula uc ana kanali geziyor',
     nebT.once.kanal !== nebT.sonra.kanal && nebT.sira === 'radio,lib,radio,lib',
     'sira: '+nebT.sira);
+  /* ILK BASIS SORAR, IKINCI BASIS GECER.
+     Kanal degisimi uygulamadaki en buyuk hareket: calan istasyon
+     gidiyor ve geri donusu yok. Tek dokunusla olursa yanlislikla
+     degen parmak seni baska kanala atiyor. Bu satir giderse o
+     kaza geri gelir. */
+  K('Nebula once soruyor', nebT.soruAnı.kanal === nebT.once.kanal
+        && nebT.soruAnı.soru === true,
+    'ilk basis: kanal '+nebT.soruAnı.kanal+', soru '+nebT.soruAnı.soru);
   /* KANAL DEGISINCE FX SONER. Once "nebula FX'e dokunmasin" demistik
      ama olculen davranis kotu cikti: oteki kanala gecip donunce
      gezegenler yanik kaliyor, efekt kapali ama dugmeler acik
@@ -701,7 +719,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const modSonra = await pg.evaluate(()=>AKTIF_MOD);
   // 3) buyuk nebula: KANAL degistirir, FX'e dokunmaz
   const nebOnceKanal = await pg.evaluate(()=>mod);
-  await pg.click('#mark'); await pg.waitForTimeout(400);
+  await pg.click('#mark'); await pg.waitForTimeout(150);   // 1. basis: sorar
+  await pg.click('#mark'); await pg.waitForTimeout(400);   // 2. basis: gecer
   const neb = await pg.evaluate(()=>({fx:FXMOD, mod:AKTIF_MOD, kanal:mod}));
   await pg.evaluate(()=>{ try{ if(AKTIF_MOD) modGec(); }catch(e){} try{ fxNormale&&fxNormale(); }catch(e){} });
   // 4) gezegenler ekranda mi, gorsel diskler cakisiyor mu
@@ -786,7 +805,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      yukari alindi -> aradaki mesafenin dortte biri. */
   K('Yazi halkaya bir tik daha yakin', ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.H-ac.yazi.halkaAlt)*0.25))<=8,
      'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.H-ac.yazi.halkaAlt)*0.25):'-'));
-  K('Ses baslayinca halka menu',ac.son1.ilk===true && ac.gez2===true, 'ikinci basis gezinme '+ac.gez2);
+  K('Diskte gezinme kipi hic acilmiyor', ac.son1.ilk===true && ac.gez2===false,
+     'ikinci basis gezinme '+ac.gez2+' (acilmamali)');
 
   /* ── KATEGORI ONIZLEMESI ────────────────────────────────────────
      Halkalarin ustunde gezerken tema+zemin ONIZLENIR, secim henuz
@@ -921,14 +941,24 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* Radyo kanalinda halka bir AILE seciyor, kategori degil: AKTIF_MOD
      degismiyor. Olcut "gezinme kipi acildi mi" -- kategori adina
      bakan eski kontrol artik yanlis soruyu soruyordu. */
-  K('Basili tutus raf kipini acar', tk.uzun.gez===true,
+  /* ── PARMAKLA HALKA GEZINME KALDIRILDI ───────────────────────────
+     Asagidaki dort satir eskiden bu kipin ACILDIGINI dogruluyordu.
+     Kullanici kaldirtti: "kesinlikle parmakla halkalarda gezilmesin,
+     o kafa karistiriyor, tiklama kalsin". Silmek yerine TERSINE
+     cevrildiler -- kip sessizce geri gelirse bu satirlar yakalar.
+     Raf secmenin tek yolu sag ustteki isim/semboller. */
+  K('Basili tutus raf kipini ACMAZ', tk.uzun.gez===false,
      'gezinme '+tk.uzun.gez+' -> '+tk.uzun.mod);
-  K('Kaydirma da kategori acar', tk.kay.gez===true, 'sureyi beklemeden');
+  K('Kaydirma da kategori ACMAZ', tk.kay.gez===false, 'surukleme sadece FX');
   /* Tutus ARTIK HER YERDE kipi aciyor: ortada tutup halkaya kaydirmak
      calisiyor. Halkanin ustunde degilken birakmak hicbir sey yapmiyor. */
-  K('Merkezde tutus da kipi acar', tk.merkez.gez===true, 'gezinme acildi');
+  K('Merkezde tutus da kip ACMAZ', tk.merkez.gez===false, 'gezinme acilmadi');
   K('Halka disinda birakmak SECMEZ', tk.merkez.mod==='RADIOTAPE', 'kategori degismedi');
-  K('Halka disinda birakmak parca ATLAMAZ', tk.atladi===false, 'sonraki() cagrilmadi');
+  /* Gezinme kipi kalkinca diskteki her dokunusun TEK anlami kaldi:
+     siradaki ses. Basili tutup birakmak da artik bir dokunustur --
+     eskiden "halka disinda birakmak hicbir sey yapmaz" istisnasi
+     vardi, o istisna kipin kendisiyle birlikte gitti. */
+  K('Diskte her dokunus siradaki ses', tk.atladi===true, 'sonraki() cagrildi');
   K('Tutma esigi makul', tk.esik>=200 && tk.esik<=500, tk.esik+' ms');
 
   /* ── COK ADIMLI GECMIS ──────────────────────────────────────────
@@ -1094,7 +1124,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
 
   K('4. gezegen: ana FX grubu', uyduAd.length===4 && uyduAd.indexOf('ana')>=0, uyduAd.join(' '));
   K('Acilista FX kapali',        fxAcilis==='', 'FXMOD="'+fxAcilis+'"');
-  K('FX kapali: halka=kategori', kapaliGez===true && kapaliFx<0.001, 'gezinme '+kapaliGez+' | fx '+kapaliFx);
+  K('FX kapali: surukleme bir sey yapmaz', kapaliGez===false && kapaliFx<0.001,
+     'gezinme '+kapaliGez+' | fx '+kapaliFx);
   K('ANA FX aciliyor',           fxAcik==='ana', 'FXMOD='+fxAcik);
   K('FX acik: kategori kapali',  acikGez===false && acikFx>0, 'gezinme '+acikGez+' | fx '+acikFx);
   K('FX acikken kategori secilmiyor', modOnce===modSonra, modSonra===modOnce?'degismedi':'mod degisti');
@@ -2514,11 +2545,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        tasindi, raf bosaldi. Bos halka sessiz halkadir. */
     const SIRA = ['AMBIENT','INDIE & LOFI','JAZZ','ORCHESTRAL',
                   'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','FUNK & RNB',
-                  'ELECTRONIC','MIXTAPE'];
+                  'ELECTRONIC','RADIO'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
       ai ? ai.adlar.join(' < ') : '-');
-    K('Acilis ailesi MIXTAPE', !!ai && ai.acilis==='MIXTAPE',
+    K('Acilis ailesi RADIO', !!ai && ai.acilis==='RADIO'
+        && ai.acilis!=='MIXTAPE',
       ai ? String(ai.acilis) : '-');
   }
     /* FX IPUCU ARTIK TUR BASINA VE SURELI: bir turde ogrenmek
@@ -2712,9 +2744,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         mod = 'radio'; AKTIF_AILE = null;  const bos = oku();
         mod = 'radio'; AKTIF_AILE = 'JAZZ';const raf = oku();
         mod = eM; AKTIF_AILE = eA; AKTIF_MOD = eK; modAdiYaz();
-        return mix === 'MIXTAPE' && ars === 'ORBITAPE'
+        /* Arsiv kanali SOUNDS: 'ORBITAPE' yazarsa markanin yaninda
+           ayni kelime iki kez cikiyor ve ekran bir sey soylemiyor. */
+        return mix === 'MIXTAPE' && ars === 'SOUNDS'
+            && ars !== 'ORBITAPE'
             && bos === '' && raf === 'JAZZ';
-      }), 'liste=MIXTAPE, lib=ORBITAPE, radyoda raf adi ya da bos');
+      }), 'liste=MIXTAPE, lib=SOUNDS, radyoda raf adi ya da bos');
     /* AYNI SEY IKI KEZ YAZILMAZ. Kendi parcalarimizda hem kaynak hem
        sanatci 'PLAYJOY' ve ekranda yan yana iki kez cikiyordu. */
     K('Kaynak sanatciyla ayniysa tekrarlanmiyor', await pg.evaluate(()=>{

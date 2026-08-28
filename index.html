@@ -382,7 +382,8 @@
   #np .np-alt{display:flex;align-items:baseline;justify-content:flex-end;gap:9px;max-width:100%;}
   #np .np-kaynak{flex:none;font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:8.5px;letter-spacing:.2em;line-height:1.3;white-space:nowrap;
-    color:rgba(244,247,250,.34);text-shadow:0 1px 8px rgba(0,0,0,.5);}
+    color:rgba(244,247,250,.34);text-shadow:0 1px 8px rgba(0,0,0,.5);
+    margin-right:-.2em;}   /* son harften sonraki bosluk: bkz. #ust .kanal.ad */
   #np .np-kaynak:empty{display:none;}
   /* LİSANS SATIRI: kaynağın altında, ondan da silik. Sadece 'var'
      sınıfı varken görünüyor — lisansı olmayan (kendi parçamız, canlı
@@ -391,6 +392,9 @@
     font-size:8px;letter-spacing:.18em;line-height:1.3;white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;max-width:100%;
     color:rgba(244,247,250,.26);text-shadow:0 1px 8px rgba(0,0,0,.5);}
+  /* Lisans satirina negatif sag bosluk VERILMEDI: 8px'te .18em = 1.4px,
+     goze gorunmuyor ama bu satir blogun sag kenarini olcen testin
+     dayanagi. Gorunmeyen bir kazanc icin olcum noktasini bozmuyoruz. */
   #np .np-lisans.var{display:block;}
   @media (max-width:480px){ #np .np-kaynak{font-size:8px;letter-spacing:.16em;}
     #np .np-lisans{font-size:7.5px;letter-spacing:.14em;} }
@@ -421,6 +425,16 @@
     font-size:23px;font-weight:700;letter-spacing:.30em;line-height:1;
     text-shadow:none;padding:4px 2px;margin:-4px 0;
     -webkit-tap-highlight-color:transparent;transition:color .25s, text-shadow .25s;}
+  /* ── SAG KENAR: KUTU DEGIL MUREKKEP ──────────────────────────────
+     letter-spacing son harften SONRA da bosluk birakir; kutunun sag
+     kenari o boslugun disinda kalir. ORBITAPE'in harf arasi .30em
+     (23px'te 6.9px) ve 2px dolgusu var: kutu 522'de bitiyordu ama
+     GORUNEN son harf 513'te. Alttaki parca adinin harf arasi yok,
+     o 522'de bitiyordu. Ekranda 9px'lik bir kayma olarak goruluyordu
+     ("yazilar oturmamis, sag hizali degil").
+     Negatif sag bosluk o havayi geri aliyor: artik hizalanan sey
+     harfin kendisi. */
+  #ust .kanal.ad{margin-right:calc(-.30em - 2px);}
   /* SOL ÜST: yalnızca nebula */
   /* Nebula + gezegenler, karşısındaki ORBITAPE yazısıyla aynı ÜST
      sınırdan başlıyor. Ölçüldü: nebulanın görünen mürekkebi 3px'te,
@@ -637,6 +651,13 @@
   #mark .neb{display:block;width:74px;height:74px;border-radius:50%;
     box-shadow:0 0 20px rgba(90,220,210,.20), inset 0 0 14px rgba(0,0,0,.7);}
   #mark.radio .neb{box-shadow:0 0 20px rgba(255,140,90,.22), inset 0 0 14px rgba(0,0,0,.7);}
+  /* SORU KIPI: gezegen nefes aliyor. Yeni bir kutu ya da dugme yok --
+     soruyu halkanin altindaki gecici yazi soyluyor, buradaki nefes
+     de sorunun NEREDEN geldigini gosteriyor. */
+  #mark.soruyor .neb{animation:markSoru 1.1s ease-in-out infinite;}
+  @keyframes markSoru{0%,100%{opacity:.55;transform:scale(1);}
+                      50%   {opacity:1;  transform:scale(1.06);}}
+  @media (prefers-reduced-motion:reduce){ #mark.soruyor .neb{animation:none;opacity:.7;} }
   #mark.liste .neb{box-shadow:0 0 20px rgba(176,164,192,.22), inset 0 0 14px rgba(0,0,0,.7);}
   #mark .wm{font-family:'Share Tech Mono',monospace;color:#8ff0dd;font-size:15px;letter-spacing:.34em;
     line-height:1;text-shadow:0 0 13px rgba(90,220,210,.38);}
@@ -1590,13 +1611,17 @@
      kalan her dokunuş "sıradaki ses" sayılıyor. */
   const MOOD_TUT = 300;
   var _moodAday = false, _moodBekle = null, _moodSonOlay = null;
-  function moodGeziAc(e){
-    if(!pDown || !_moodAday || _moodGez || FXMOD) return;
-    const o = _diskOran(e || _moodSonOlay);
-    _moodGez = true;                       // kip açıldı: bırakış artık "tık" değil
-    _moodVurgu = (o >= zarSinir()) ? _halkaNo(o) : -1;
-    try{ modAdiTut(_moodVurgu >= 0 ? halkaAdlar()[_moodVurgu] : ''); }catch(_){ _yut(_); }
-  }
+  /* ── PARMAKLA HALKA GEZINME KALDIRILDI ───────────────────────────
+     Basili tutup halkalarda gezinmek, birakinca o rafi secmek: uzun
+     sure uygulamanin ana hareketiydi ve uzun sure sorun uretti --
+     "parmagi birakinca sarki geciyor", "tikladigim yere gitmiyor",
+     "bosluga basinca secim kalkiyor". Her seferinde bir yamayla
+     kapatildi. Kullanicinin karari net oldu: KAFA KARISTIRIYOR,
+     kalksin. Raf secmenin tek yolu artik sag ustteki isim/semboller.
+     Fonksiyon DURUYOR ama hicbir sey yapmiyor: cagiran uc yer var ve
+     onlari da bosaltmak yerine tek kapiyi kapatmak, yarin geri
+     istenirse tek satirda acilmasini sagliyor. */
+  function moodGeziAc(){ return; }
   /* İlk ses başlayana kadar false: o süre boyunca disk bölünmez,
      her basış radyoyu açar. sonraki() ve cal() true yapıyor. */
   var _ilkCalindi = false;
@@ -1970,7 +1995,18 @@
       g = Math.max(54, Math.round(g));
       bekle.style.left      = 'auto';
       bekle.style.transform = 'none';
-      bekle.style.right     = Math.round(Math.max(0, innerWidth - kr.right + 2)) + 'px';   // 2px: .kanal sağ dolgusu
+      /* Semboller de MUREKKEBE hizalaniyor, kutuya degil. Kutunun sag
+         kenari son harften sonraki letter-spacing boslugunu ve dolguyu
+         da iceriyor; ona tutununca semboller yazidan birkac piksel
+         disari tasiyordu. */
+      const _sagMur = (()=>{ try{
+          const tn = [...mix.childNodes].find(n=>n.nodeType===3 && n.textContent.trim());
+          if(!tn) return kr.right;
+          const rg = document.createRange(); rg.selectNodeContents(tn);
+          const ls = parseFloat(getComputedStyle(mix).letterSpacing) || 0;
+          return rg.getBoundingClientRect().right - ls;
+        }catch(e){ return kr.right; } })();
+      bekle.style.right     = Math.round(Math.max(0, innerWidth - _sagMur)) + 'px';
       bekle.style.top       = Math.round(kr.bottom - 4 + 9) + 'px';                        // -4 dolgu, +9 minik boşluk
       bekle.style.width     = g + 'px';
       /* yuva başına g/3; sembol o yuvanın %74'ü -> aralarında ince boşluk kalır */
@@ -2403,6 +2439,13 @@
   }
   /* AÇILIŞ SON KALINAN KANALDAN: devamlılık. Bilinmeyen değer
      radyoya düşer — bozuk bir kayıt uygulamayı sessiz bırakmasın. */
+  /* Kanalin ADI TEK YERDE. Iki yerde yazilan bir sey bir gun ayrisir;
+     hem ust yazi hem nebulanin sorusu buradan okuyor. 'lib' arsiv
+     kanali: adi 'ORBITAPE' iken markanin yaninda ayni kelime iki kez
+     cikiyordu, 'SOUNDS' ne dinledigini soyluyor.
+     Erken tanimli (var degil const ama en ustte): modAdiYaz acilista
+     da cagriliyor. */
+  const KANAL_ADI = { radio:'RADIO', lib:'SOUNDS', liste:'MIXTAPE' };
   let mod='radio';                     // ('radio' | 'lib' | 'liste')
   try{
     const _k = localStorage.getItem('orbitape.kanal');
@@ -4170,7 +4213,7 @@
       vctx.save(); vctx.translate(cx,cy);
       const _mAd = _adlar[k];
       const _h = HALKALAR[k];
-      const _vurgu2 = (_moodGez && _moodVurgu === k);
+      const _vurgu2 = (_moodGez && _moodVurgu === k) || (_yakVurgu === k);
       const _secili = _aileMi ? (AKTIF_AILE === _mAd) : (AKTIF_MOD === _mAd);
       const _dondur = _secili ? (k*0.4) : ((k%2?-1:1)*vt*0.28 + k*0.4);   // seçili halka DURUR
       vctx.rotate(_dondur);
@@ -4181,7 +4224,7 @@
       const _kEsne = Math.min(k, 4);
       const esne = 1 + rit*(0.06+0.024*_kEsne) + 0.03*Math.sin(vt*1.2+k*1.3);
       let rR = R*(_ic + k*_ara)*squeeze*esne;              // aralik halka sayisindan
-      if(_moodGez && _moodVurgu === k) rR *= 1.035;         // parmağın altındaki halka hafif büyür
+      if((_moodGez && _moodVurgu === k) || _yakVurgu === k) rR *= 1.035;   // yanan halka hafif büyür
       /* Halka DÖNDÜRÜLMÜŞ bir eksende çiziliyor; uzanma yönü ekran açısı
          olduğu için yerel açıya çevriliyor (ekran açısı = yerel + rot). */
       const rot = _dondur;
@@ -5176,7 +5219,13 @@
     { ad:'ROCK & COUNTRY',renk:'242,104,60'  },   // 7.
     { ad:'FUNK & RNB',    renk:'190,182,164' },   // 8.
     { ad:'ELECTRONIC',    renk:'132,150,255' },   // 9.
-    { ad:'MIXTAPE',       renk:'53,224,216'  }    // 10. EN DISTA, turkuaz
+    /* EN DISTAKI HALKA: 'RADIO'.
+       Adi once 'MIXTAPE'ti ve bu ad uygulamada IKI ayri seyi birden
+       anlatiyordu: burasi (turu belli olmayan istasyonlarin rafi) ve
+       arsivin muzik kanali. Ayni kelime iki yerde durunca ekran hangisi
+       oldugunu soyleyemiyordu. Burasi zaten CANLI RADYONUN kendisi --
+       tur secmeden acilan yer -- ve adi artik onu soyluyor. */
+    { ad:'RADIO',         renk:'53,224,216'  }    // 10. EN DISTA, turkuaz
   ];
   /* RENK SIRASI HALKANIN MALI, ADIN DEGIL. Kullanici MIXTAPE ile
      ELECTRONIC'i yer degistirdi ama "renk sirasi ayni kalsin" dedi:
@@ -5192,7 +5241,7 @@
      sayisiyla ilgisi yok; halkanin yeri kullanicinin kulaginda o
      turun agirligini anlatiyor.
      ACILIS: ELECTRONIC, en distaki halka. */
-  var AILE_ACILIS = 'MIXTAPE';
+  var AILE_ACILIS = 'RADIO';
   var AILE_ADLAR = AILELER.map(a=>a.ad);
   /* TANIMDAN ONCE CAGRILABILIR: acilis yerlesimi buraya erken
      ugruyor. Tablo henuz yoksa renk yok demek, hata degil. */
@@ -5238,6 +5287,16 @@
   function safSirala(liste){
     if(!liste || !liste.length) return liste || [];
     const s = karisik(liste.slice());
+    /* ── SAF OLAN USTTE ──────────────────────────────────────────
+       Sira KARISIK kaliyor (butun listeyi safa gore dizmek cesitligi
+       oldurur, o bir kere denendi ve geri alindi). Degisen tek sey
+       ILK duyulan: rafa girer girmez o rafin merkezindeki bir
+       istasyon calsin. ROCK & COUNTRY'ye gecince once gercek bir rock
+       istasyonu duyulmali, kenardan bir sey degil. Gerisi rastgele. */
+    try{
+      const i1 = s.findIndex(x => x && +x.saf === 1);
+      if(i1 > 0) s.unshift(s.splice(i1, 1)[0]);
+    }catch(e){ _yut(e); }
     try{
       const acan = AILE_ACAN[AKTIF_AILE];
       if(acan){
@@ -5610,6 +5669,11 @@
      ORTADAN (zarın içinden) başlayan basış eskisi gibi: kısa tık
      sıradaki ses, sürükleme FX. FX'e hiç dokunulmadı. */
   var _moodGez = false, _moodVurgu = -1;
+  /* Sag ustten raf secince YANAN halka. Sonme suresi ile rafin
+     baslama suresi AYNI olmali: kullanici "halka sondugu an
+     aktiflesin" dedi -- isik sonuyorsa karar verilmis demektir. */
+  var _yakVurgu = -1;
+  const HALKA_YANMA = 900;
   function _diskOran(e){
     const r = btn.getBoundingClientRect();
     return Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)) / (r.width/2);
@@ -5645,9 +5709,10 @@
        halkaya kaydırmak işe yaramıyor, bırakınca da "tık" sayılıp
        parça atlanıyordu. Artık tutuş her yerde kipi açar; halkanın
        üstünde değilken bırakmak hiçbir şey yapmaz. */
-    _moodAday = !FXMOD && _ilkCalindi;
+    /* BASILI TUTUS DA KIP ACMIYOR: raf secimi sag ustte. Disk'in
+       tek isi kaldi -- dokunmak siradaki sesi calar, surtmek FX. */
+    _moodAday = false;
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
-    if(_moodAday) _moodBekle = setTimeout(()=>{ _moodBekle = null; moodGeziAc(e); }, MOOD_TUT);
     try{ btn.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
   }, {passive:false});
@@ -5679,18 +5744,8 @@
     _moodSonOlay = e;
     /* Belirgin bir kaydırma da niyet göstergesidir: süreyi beklemeden
        kipi açıyor. Kısa ve YERİNDE bir dokunuş hâlâ "sıradaki ses". */
-    if(_moodAday && !_moodGez &&
-       (Math.abs(e.clientX-startX)>SUR_ESIK*1.6 || Math.abs(e.clientY-startY)>SUR_ESIK*1.6)){
-      if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
-      moodGeziAc(e);
-    }
-    if(_moodGez){                                   // mood gezinmesi: FX'e girme
-      e.preventDefault();
-      const _o = _diskOran(e);
-      const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
-      if(k !== _moodVurgu){ _moodVurgu = k; modAdiTut(k>=0 ? halkaAdlar()[k] : ''); }
-      return;
-    }
+    /* Surukleme artik SADECE FX. Eskiden belirgin bir kaydirma raf
+       gezinme kipini aciyordu; o kip kalkti (bkz. moodGeziAc). */
     if(!FXMOD) return;                              // FX kapalı: sürükleme bir şey yapmaz
     if(Math.abs(e.clientX-startX)>SUR_ESIK || Math.abs(e.clientY-startY)>SUR_ESIK) pMoved=true;
     if(pMoved){                                          // FX artık HER modda (radyo da ses+grafikten geçiyor)
@@ -5718,19 +5773,8 @@
     if(!pDown) return; pDown=false; _basili=false;
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
     _moodAday = false;
-    if(_moodGez){
-      _moodGez = false;
-      /* Halkanın ÜSTÜNDE değilse hiçbir şey olmaz — ne seçim, ne
-         parça atlama. Tutuşu iptal etmenin yolu da bu. */
-      const _o = _diskOran(e);
-      const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
-      modAdiBirak();
-      try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
-      if(k >= 0){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
-                  halkaSec(k); }               // halkada bıraktı -> o raf
-      _moodVurgu = -1;
-      return;                                   // boşlukta bıraktı -> hiçbir şey olmaz
-    }
+    /* Birakinca raf secme de kalkti: parmak halkalarda gezmiyor.
+       Kisa dokunus her zaman "siradaki ses" -- tek anlam. */
     try{ hizYaz(true); }catch(_){ _yut(_); }          // parmak kalkınca detune'u kesinleştir
     try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
     if(!pMoved){
@@ -6088,13 +6132,54 @@
   /* MIXTAPE SIMDILIK KAPALI: calismiyordu, nebuladan oraya gecmek
      kullaniciyi bos kanalda birakiyordu. Listeye geri eklemek yeter. */
   const KANAL_SIRA = ['radio','lib'];
+  /* ── NEBULA ONCE SORUYOR ─────────────────────────────────────────
+     Sol ustteki gezegene basmak kanali ANINDA degistiriyordu: canli
+     radyoyu dinlerken yanlislikla degen parmak seni arsive atiyor,
+     calan istasyon gidiyor ve geri donusu yok. Kanal degisimi bu
+     uygulamadaki en buyuk hareket; tek dokunusla olmamali.
+     Artik ilk dokunus SORUYOR: halkanin altinda, gezinme adlarinin
+     ciktigi yerde hedefin adi ve bir soru isareti beliriyor
+     ("SOUNDS ?"), gezegen de nefes aliyor. Ikinci dokunus geciyor.
+     VAZGECMEK ICIN HICBIR SEY YAPMAK GEREKMIYOR: 2.6 saniye bekle,
+     ya da baska bir yere dokun -- soru kendiliginden siliniyor.
+     Bu, uygulamanin baska yerinde de olan bir dil: gecici ad yazar,
+     kendi kendine soner. Yeni bir dugme, yeni bir kutu yok. */
+  var _kanalSorHedef = null, _kanalSorZaman = null;
+  function kanalSoruIptal(){
+    try{
+      if(_kanalSorZaman){ clearTimeout(_kanalSorZaman); _kanalSorZaman = null; }
+      if(!_kanalSorHedef) return;
+      _kanalSorHedef = null;
+      try{ modGezYaz(''); }catch(e){ _yut(e); }
+      try{ mark.classList.remove('soruyor'); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
   function havuzDegis(){
     try{
       const i = KANAL_SIRA.indexOf(mod);
-      modaGec(KANAL_SIRA[(i < 0 ? 0 : i + 1) % KANAL_SIRA.length]);
+      const hedef = KANAL_SIRA[(i < 0 ? 0 : i + 1) % KANAL_SIRA.length];
+      if(_kanalSorHedef !== hedef){
+        _kanalSorHedef = hedef;
+        try{ modGezYaz((KANAL_ADI[hedef] || '') + ' ?'); }catch(e){ _yut(e); }
+        try{ mark.classList.add('soruyor'); }catch(e){ _yut(e); }
+        if(_kanalSorZaman) clearTimeout(_kanalSorZaman);
+        _kanalSorZaman = setTimeout(kanalSoruIptal, 2600);
+        return;                                   // HENUZ GECMIYORUZ
+      }
+      kanalSoruIptal();
+      modaGec(hedef);
     }catch(e){ _yut(e); }
   }
   function moodDegis(){ havuzDegis(); }
+  /* Baska bir yere dokunmak da vazgecmektir: soru ekranin ortasinda
+     asili kalmasin. Yakalama asamasinda dinliyoruz ki, dokunusun ne
+     yaptigindan bagimsiz olarak soru kapansin. */
+  try{
+    document.addEventListener('pointerdown', e=>{
+      try{ if(_kanalSorHedef && !(mark && mark.contains(e.target))) kanalSoruIptal(); }
+      catch(_){ _yut(_); }
+    }, true);
+  }catch(e){ _yut(e); }
   /* ── SAĞ ÜST KATEGORİ YAZISI: BİR SONRAKİ HALKA ──────────────────
      Marka adının solundaki isim aynı zamanda bir düğme. Açılışta
      RADIOTAPE (en dış halka) yazıyor; her basışta bir içteki halkaya
@@ -6114,9 +6199,12 @@
          duran bir katman ve 900 ms boyunca altindaki her seyi
          kapatiyordu (turda SKIP dugmesi tiklanamaz oldu, olculdu).
          Burada gereken sey sadece HALKANIN yanmasi. */
-      _moodGez = true; _moodVurgu = k;
+      /* Kendi bayragi var: eskiden parmak gezinmesinin bayragini
+         (_moodGez) odunc aliyordu ve o kip kalkinca anlamsiz kalirdi.
+         Ayrica surtme (FX) o 900 ms boyunca engelleniyordu. */
+      _yakVurgu = k;
       if(_yakZaman) clearTimeout(_yakZaman);
-      _yakZaman = setTimeout(()=>{ _yakZaman = null; _moodGez = false; _moodVurgu = -1; }, 900);
+      _yakZaman = setTimeout(()=>{ _yakZaman = null; _yakVurgu = -1; }, HALKA_YANMA);
     }catch(e){ _yut(e); }
   }
   /* YON: BUYUKTEN KUCUGE. AILE_ADLAR icten disa (kucukten buyuge)
@@ -6137,6 +6225,31 @@
         try{ modGezYaz(''); }catch(e){ _yut(e); } }, 1100);
     }catch(e){ _yut(e); }
   }
+  /* ── RAF SECINCE KENDI BASLASIN ──────────────────────────────────
+     Eskiden sag ustten raf degistirmek yalnizca SECIYORDU: yeni raf
+     ancak bir sonraki seste devreye giriyordu, yani kullanicinin bir
+     de ortaya basmasi gerekiyordu. "Halkalar degisiyor ama baslamiyor"
+     denen sey buydu. Artik basisin kendisi baslatiyor.
+     AMA HER BASISTA DEGIL. Raflarda gezmek icin ust uste basiliyor;
+     her basis ses baslatirsa on rafi gezerken on kere sarki degisir --
+     daha once tam bu yuzden sikayet gelmisti ("parmagi birakinca
+     sarki geciyor"). Bu yuzden SON basistan sonra bekliyoruz: parmak
+     duruncaya kadar sayac sifirlaniyor, durunca bir kez basliyor. */
+  var _rafBaslatZaman = null;
+  /* ISIK SONDUGU AN BASLAR. Sure halka yanmasiyla AYNI (900 ms):
+     kullanici "sag ustte bastim, halka sondugu an aktiflesin" dedi.
+     Ust uste basarken sayac her basista sifirlaniyor -- yani hizlica
+     asagi inerken aradaki raflar calmiyor, sadece durdugun yer. */
+  const RAF_BASLAT_BEKLE = HALKA_YANMA;
+  function rafBaslatPlanla(){
+    try{
+      if(_rafBaslatZaman) clearTimeout(_rafBaslatZaman);
+      _rafBaslatZaman = setTimeout(()=>{
+        _rafBaslatZaman = null;
+        try{ sonraki(true); }catch(e){ _yut(e); }
+      }, RAF_BASLAT_BEKLE);
+    }catch(e){ _yut(e); }
+  }
   function aileSiraGec(){
     try{ aileGezmeBasla(); }catch(e){ _yut(e); }
     const n = AILE_ADLAR.length;
@@ -6144,12 +6257,11 @@
     const i = (bul >= 0) ? (bul - 1 + n) % n : n - 1;
     try{ aileSec(AILE_ADLAR[i], true); }catch(e){ _yut(e); }
     try{ modAdiGoster(); halkaYak(AILE_ADLAR[i]); geciciAdGoster(AILE_ADLAR[i]); }catch(e){ _yut(e); }
+    rafBaslatPlanla();
   }
-  /* ORBITAPE'te isim dugmesi 8 rafi geziyor. */
-  /* RADYODAKI DAVRANISIN AYNISI: isme basmak rafi SECIYOR ve halkayi
-     yakiyor ama calan sesi kesmiyor. Yeni raf bir sonraki seste
-     devreye giriyor. Once burada modSec cagriliyordu ve o sonraki()
-     ile parcayi aninda degistiriyordu -- iki menu farkli davraniyordu. */
+  /* ORBITAPE'te isim dugmesi 8 rafi geziyor.
+     RADYODAKI DAVRANISIN AYNISI: iki menu ayni davranmali. Radyo
+     tarafi artik secince basliyor, burasi da oyle. */
   function arsivSiraGec(){
     const n = ARSIV_ADLAR.length;
     const bul = ARSIV_ADLAR.indexOf(AKTIF_MOD);
@@ -6158,6 +6270,7 @@
     try{ localStorage.setItem('orbitape.mod', AKTIF_MOD); }catch(e){ _yut(e); }
     try{ kuyruk.length = 0; }catch(e){ _yut(e); }          // yeni raf siradaki seste gecerli
     try{ modAdiGoster(); zeminUygula(); halkaYak(AKTIF_MOD); geciciAdGoster(AKTIF_MOD); }catch(e){ _yut(e); }
+    rafBaslatPlanla();
   }
   function modSiraGec(){
     if(typeof mod !== 'undefined' && mod === 'radio'){ aileSiraGec(); return; }
@@ -6573,7 +6686,13 @@
            zaten donuyor, geriye sadece MIXTAPE kaliyor. Sonuc: mixtape
            kanalinda ekranda RADIOTAPE yaziyordu. */
         if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || '';
-        else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : 'MIXTAPE');
+        /* ARSIV KANALININ ADI: SOUNDS.
+           Once 'ORBITAPE' yaziyordu ve markanin yaninda 'ORBITAPE
+           ORBITAPE' diye iki kez cikiyordu: kanal adi markanin adiyla
+           ayni oldugu icin ekran hicbir sey soylemiyordu. 'SOUNDS'
+           ise ne dinledigini soyluyor -- canli radyonun karsisinda
+           kayit arsivi. */
+        else ad = AKTIF_MOD || KANAL_ADI[mod] || '';
       }catch(e){ ad = AKTIF_MOD || ''; }
     }
     el.textContent = ad;

@@ -39,17 +39,17 @@ from collections import OrderedDict
 # etiketli olabiliyor ve rock en son sorulursa hicbir zaman
 # kazanmiyor -- olculdu, 97 istasyonun tamami baska ailelere
 # dagilmisti. Kaynak etikette "rock/punk/metal" geciyorsa aile ROCK.
-# ── EMIN OLMADIKLARIMIZ: MIXTAPE ─────────────────────────────────
+# ── EMIN OLMADIKLARIMIZ: RADIO ─────────────────────────────────
 # Bir istasyonun turu HER ZAMAN belli degil. Iki durum var:
 #   1) Etiketi acikca "her seyden biraz": pop, charts, top 40, hits,
 #      dj mix, variety, 80s/90s/00s. Bunlar bir tur degil, bir liste.
 #   2) Etiketi UC VE DAHA FAZLA aileye birden uyuyor -- yani kaynak
 #      da karar verememis.
 # Ikisini de zorla bir rafa koymak deneyimi bozuyor: "orchestral"e
-# basip pop dinlemek guveni kiriyor. Artik ikisi de MIXTAPE'e gidiyor
-# ve MIXTAPE en icteki (en kucuk) halka: bilerek secilen bir yer.
+# basip pop dinlemek guveni kiriyor. Artik ikisi de RADIO'e gidiyor
+# ve RADIO en icteki (en kucuk) halka: bilerek secilen bir yer.
 # ISARETLER OLCUYLE SECILDI. Ilk yazimda "dj", "mix", "80s" gibi
-# gevsek isaretler de vardi ve 552 istasyonun 220'sini MIXTAPE'e
+# gevsek isaretler de vardi ve 552 istasyonun 220'sini RADIO'e
 # yigdi -- yani ayirmak yerine yeni bir cop kutusu yaptik. Bunlar
 # atildi; kalanlar bir TUR degil bir LISTE anlatan isaretler.
 # ══ TUR KARARI: SAFLIK ESAS ══════════════════════════════════════
@@ -61,7 +61,7 @@ from collections import OrderedDict
 #
 # YENI KURAL: bir istasyon bir rafa ancak O RAFIN kelimeleri
 # etiketinde geciyorsa VE baska bir rafin kelimeleri gecmiyorsa
-# giriyor. Saf degilse MIXTAPE.
+# giriyor. Saf degilse RADIO.
 # Kucuk ama dogru raf, buyuk ama yalan raftan iyidir: "her turden
 # 3-5 istasyon bile ise yarar, 24 saat yayin sonucta."
 
@@ -80,7 +80,7 @@ ELEKTRONIK = re.compile(
     r"\bidm\b|\bgarage\b|synthwave|vaporwave|\bdisco\b", re.I)
 
 # Raf kelimeleri. YALNIZ birine uyarsa o rafa, birden fazlasina
-# uyarsa MIXTAPE'e gidiyor.
+# uyarsa RADIO'e gidiyor.
 # SIRA ONEMLI: once dar ve kesin olanlar. "West Coast G-Funk &
 # Hip-Hop" hem hip hop hem funk; hip hop once soruldugu icin dogru
 # rafa gidiyor.
@@ -147,7 +147,7 @@ RAF_KELIME = OrderedDict([
 # ── ETIKET SAYIMI: KADEME 1 ve KADEME 2 ───────────────────────────
 #
 # NEDEN VAR
-#   "Bir etiket baska raftan da bahsediyorsa MIXTAPE" kurali fazla
+#   "Bir etiket baska raftan da bahsediyorsa RADIO" kurali fazla
 #   sertti. Kullanici ekran ekran gosterdi: karsit tur degil, COK
 #   GECEN tur kazaniyor.
 #     Virgin Radio Italy — alternative rock, classic rock, indie rock,
@@ -238,7 +238,7 @@ KADEME2 = OrderedDict([
     ("ORCHESTRAL", re.compile(r"instrumental|\bacoustic\b|\bakustik\b", re.I)),
 ])
 
-# Bir TUR degil bir LISTE anlatan isaretler: tek basina MIXTAPE demek.
+# Bir TUR degil bir LISTE anlatan isaretler: tek basina RADIO demek.
 KARISIK = re.compile(
     r"\bpop\b|\bcharts?\b|\bhits?\b|top ?\d{2,3}|dj ?mix|"
     r"variety|adult contemporary|hitradio|\bchr\b|"
@@ -300,9 +300,9 @@ DJ_KULUP = re.compile(
 AILELER = OrderedDict([
     # SIRA = HALKA SIRASI, en icten disa. Kucuk raf icte, buyuk raf
     # dista: halkanin capi rafin buyuklugunu anlatiyor.
-    # MIXTAPE EN ICTE ve bilerek: ortaya basan oraya duser, orasi
+    # RADIO EN ICTE ve bilerek: ortaya basan oraya duser, orasi
     # "turu belirsiz / rastgele" rafi.
-    ("MIXTAPE",       {"renk": "#8496FF"}),   # 1. halka
+    ("RADIO",         {"renk": "#8496FF"}),   # 1. halka
     ("JAZZ",          {"renk": "#CC7CA4"}),   # 2.
     ("AMBIENT",       {"renk": "#5FBF7A"}),   # 3.
     ("ROCK & COUNTRY",{"renk": "#F2683C"}),   # 4.
@@ -371,7 +371,7 @@ def _raflar(metin, elektronik_ustun=True):
     denendi ve JAZZ 38'e cikti -- ama "Piano Jazz Lounge" jazz rafina
     girdiginde raf yalan soyluyor. Olcut kapsama degil ISABET:
     "her bastigimda jazz cikiyor" 38 istasyondan degerli.
-    Iki tur birden geciyorsa kimse kazanmaz, MIXTAPE'e gider."""
+    Iki tur birden geciyorsa kimse kazanmaz, RADIO'e gider."""
     # HIP HOP ELEKTRONIKTEN DE USTUN: "House vs. Hip-Hop" ikisi de
     # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
     if RAF_KELIME["FUNK & RNB"].search(metin):
@@ -446,7 +446,7 @@ def _puanla(ad, etiket, kademe=None):
 #   WORLD & ROOTS  ters kural: reggaeton ve afro olanlar 2. GRUBA
 #
 # Adi gecmeyen aileler (INDIE & LOFI, FUNK & RNB)
-# eski hesabini korur. MIXTAPE'e dokunulmuyor -- orasi zaten
+# eski hesabini korur. RADIO'e dokunulmuyor -- orasi zaten
 # "belirsiz" rafi ve kullanici elle bakiyor.
 GRUP1 = {
     "ELECTRONIC":     re.compile(r"\bminimal\b|dubstep|"
@@ -471,7 +471,7 @@ def gruplandir(o):
     """Aile belliyken halka ici sirayi (saf) yaz. Kullanicinin
     aile aile verdigi tarif burada uygulaniyor."""
     aile = o.get("grup")
-    if not aile or aile == "MIXTAPE":
+    if not aile or aile == "RADIO":
         return
     # SADECE ISME BAKILIYOR. Kullanicinin sozu "rock YAZANLARI",
     # "classical YAZANLARI" -- yani istasyonun kendi adinda gecenler.
@@ -499,7 +499,7 @@ def grupla(kayitlar):
       1) Isimde TEK bir rafin kelimesi geciyorsa -> o raf. Bitti.
       2) Isim karar vermiyorsa etikete bak, yine TEK rafa uyuyorsa
          o raf.
-      3) Ikisi de karar vermiyorsa MIXTAPE.
+      3) Ikisi de karar vermiyorsa RADIO.
     """
     for o in kayitlar:
         ad = (o.get("ad") or "").replace("_", " ").replace("+", " ")
@@ -517,14 +517,14 @@ def grupla(kayitlar):
         #    HITS var: bu bir tur degil bir liste. Once bu bakiliyor,
         #    yoksa liste istasyonu saf rafa siziyordu.
         if KARISIK.search(ad):
-            o["grup"] = "MIXTAPE"
+            o["grup"] = "RADIO"
             continue
 
         # 2) ISIM KONUSUYORSA O KONUSUR.
         isim_raf = _raflar(ad)
         if len(isim_raf) == 1:
             o["grup"] = isim_raf[0]
-            # IKI GRUP: 1 = has, 2 = kenarda. 3 SADECE MIXTAPE'in.
+            # IKI GRUP: 1 = has, 2 = kenarda. 3 SADECE RADIO'in.
             # Halkanin icinde once 1. grup calar, tukenince 2. grup,
             # o da bitince bastan 1. grup. Bkz. safSirala (index.html).
             o["saf"] = 1 if saflik(ad, isim_raf[0]) == 1 else 2
@@ -546,9 +546,9 @@ def grupla(kayitlar):
             # Etiket istasyonun dizine yazdigi arama kelimesi; bir
             # tanesi delil degil. Artik karar icin ya ISIMDE gecmesi
             # (3 puan) ya da EN AZ IKI etiketin ayni rafi soylemesi
-            # gerekiyor. Emin olmadigimiz her sey MIXTAPE'e gider.
+            # gerekiyor. Emin olmadigimiz her sey RADIO'e gider.
             if _s[0][1] < 2:
-                o["grup"] = "MIXTAPE"; o["saf"] = 3; continue
+                o["grup"] = "RADIO"; o["saf"] = 3; continue
             if len(_s) == 1 or _s[0][1] > _s[1][1]:
                 o["grup"] = _s[0][0]
                 # IKI GRUP.
@@ -566,12 +566,12 @@ def grupla(kayitlar):
                     1 if _s[0][1] >= max(2, 2 * _ikinci) else 2)
                 continue
             # Berabere: kimse kazanmaz.
-            o["grup"] = "MIXTAPE"; o["saf"] = 3
+            o["grup"] = "RADIO"; o["saf"] = 3
             continue
 
-        # 3) NE ISIM NE ETIKET KONUSTU -> MIXTAPE.
+        # 3) NE ISIM NE ETIKET KONUSTU -> RADIO.
         #    Emin olmadigimiz her sey oraya gider. Kapsama degil isabet.
-        o["grup"] = "MIXTAPE"
+        o["grup"] = "RADIO"
         o["saf"] = 3
 
     # Aileler yerlestikten SONRA halka ici sira. Ayri gecis, cunku

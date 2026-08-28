@@ -49,7 +49,7 @@
  },
  {
   "ad": "Onic Movies",
-  "grup": "MIXTAPE",
+  "grup": "RADIO",
   "ulke": "IE",
   "mp3": "https://live.onic.ie/stream-movies?_=55552",
   "sebep": "SAGIR: CORS basligi yok, uygulamada acilir ama SUSAR",
@@ -57,7 +57,7 @@
  },
  {
   "ad": "Ràdio 90 (320k)",
-  "grup": "MIXTAPE",
+  "grup": "RADIO",
   "ulke": "ES",
   "mp3": "https://giss.tv:666/r90.mp3",
   "sebep": "ULASILMIYOR: sertifika dogrulanmadi",
