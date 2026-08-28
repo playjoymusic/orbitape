@@ -2571,6 +2571,19 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         mod = eM; AKTIF_AILE = eA;
         return s;
       }), 'baska ailenin kaydi atlaniyor, grupsuz kayit engel degil');
+    /* SECILDI AMA DUYULMADI: yazi silik. Ekranda duymadigin bir raf
+       adinin katilasmis durmasi yalan; o aralik gorunur olmali. */
+    K('Bekleyen secim yazisi silik', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE, eS = _sonCalan;
+        mod = 'radio'; _sonCalan = {grup:'MIXTAPE'}; AKTIF_AILE = 'HIP HOP & RNB';
+        modAdiYaz();
+        const bekler = document.getElementById('modAd').classList.contains('bekliyor');
+        _sonCalan = {grup:'HIP HOP & RNB'};       // ses o raftan geldi
+        modAdiYaz();
+        const katilasti = !document.getElementById('modAd').classList.contains('bekliyor');
+        mod = eM; AKTIF_AILE = eA; _sonCalan = eS; modAdiYaz();
+        return bekler && katilasti;
+      }), 'raf duyulana kadar nefes aliyor, sonra katilasiyor');
     /* BOS YERE BASMAK SECIMI IPTAL EDER: secim calan sesin rafina
        doner. Bayrak degil, calan kaydin rafi olcut. */
     K('Bos yere basinca secim iptal', await pg.evaluate(()=>{

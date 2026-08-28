@@ -529,6 +529,18 @@
     color:currentColor;opacity:0;text-shadow:none;
     transition:opacity .22s ease, color .22s ease;}
   #modAd.gor{opacity:.72;}
+  /* ── SECILDI AMA HENUZ DUYULMADI ─────────────────────────────────
+     Isim dugmesiyle raf secmek calan sesi kesmiyor: yeni raf bir
+     SONRAKI seste devreye giriyor. Arada ekranda duymadigin bir raf
+     adi yaziyordu ve bu yalan gibi duruyordu (kullanici ekran
+     goruntusuyle gosterdi: yazi HIP HOP & RNB, calan sey MIXTAPE
+     istasyonu). Artik o aralikta yazi SILIK ve yavasca nefes aliyor;
+     ilk ses o raftan gelince katilasiyor. Hareketi kapali olanlarda
+     sadece silik kaliyor. */
+  #modAd.bekliyor{animation:adBekle 1.7s ease-in-out infinite;}
+  @keyframes adBekle{0%,100%{opacity:.28} 50%{opacity:.60}}
+  @media (prefers-reduced-motion: reduce){
+    #modAd.bekliyor{animation:none;opacity:.32;} }
   /* ── GEZİNME YAZISI ──────────────────────────────────────────────
      Parmak halkalarda gezerken BÜYÜK ve silik olarak halkanın hemen
      üstünde duruyor. Sağ üstteki küçük etiketi gezinirken güncellemek
@@ -4662,6 +4674,7 @@
     iz('cal');
     if(!item) return;
     try{ _sonCalan = item; }catch(e){}
+    try{ modAdiYaz(); }catch(e){}      // yeni ses geldi: yazi katilasir ya da silik kalir
     /* İLK SES KATEGORİYE TAKILMAZ ────────────────────────────────
        Açılış kategorisi RADIOTAPE. Radyo gelmeyip yedeğe düşülünce
        ilk ses bir ARŞİV kaydı oluyor ve aşağıdaki kategori kapısından
@@ -6340,8 +6353,13 @@
       }catch(e){ ad = AKTIF_MOD || ''; }
     }
     el.textContent = ad;
-    const p = ad && MOD_TEMA[ad];
-    let _rn = p ? p.ana : '';
+    try{ el.classList.toggle('bekliyor', aileBekliyorMu()); }catch(e){}
+    /* RENK ONCE AILEDEN: radyo modunda 'MIXTAPE' adi hem tur halkasi
+       hem eski kanal temasi olarak var; MOD_TEMA once sorulursa yazi
+       eski kanalin kavunicisine dusuyor (bkz. aktifTema). */
+    let _rn = '';
+    try{ if(typeof mod !== 'undefined' && mod === 'radio') _rn = aileRenk(ad); }catch(e){}
+    if(!_rn){ const p = ad && MOD_TEMA[ad]; _rn = p ? p.ana : ''; }
     if(!_rn){ try{ _rn = aileRenk(ad); }catch(e){} }
     if(_rn){
       const [r,g,b] = _rn.split(',').map(Number);
@@ -8624,6 +8642,16 @@
      Iptal olculebilir bir seye baglandi, ayri bir bayraga degil: o an
      CALAN kaydin rafi ile secili raf farkliysa secim henuz gerceklesmemis
      demektir; bos yere basmak secili rafi calana geri dondurur. */
+  /* Secim devreye girdi mi? Ayri bir bayrak tutmuyoruz: CALAN kaydin
+     rafi ile secili raf ayni degilse secim henuz duyulmamis demektir. */
+  function aileBekliyorMu(){
+    try{
+      if(typeof mod === 'undefined' || mod !== 'radio') return false;
+      if(!AKTIF_AILE) return false;
+      const g = _sonCalan && _sonCalan.grup;
+      return !!g && g !== AKTIF_AILE;
+    }catch(e){ return false; }
+  }
   function aileIptal(){
     try{
       if(typeof mod === 'undefined' || mod !== 'radio') return false;
