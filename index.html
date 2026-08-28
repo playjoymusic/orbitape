@@ -513,6 +513,16 @@
      duruyor — bir onay değil, bir DURUM göstergesi. Ton yumuşak:
      kategorinin rengi ama kısılmış; marka adını bastırmıyor. */
   #ust .ustSatir{display:flex;align-items:baseline;justify-content:flex-end;gap:9px;}
+  /* ── ÇİFT DOKUNUŞ SAYFAYI KAYDIRMASIN ─────────────────────────────
+     iOS Safari'de bir yazıya iki kez hızlı basmak "çift dokunuşla
+     yakınlaştır" demek: görüntü penceresi büyüyüp kayıyor ve
+     position:fixed duran alt köşeler onunla birlikte yer değiştirip
+     geri gelmiyor. body'de touch-action:manipulation var ama bu
+     özellik MİRAS ALINMIYOR — üstteki tıklanabilir yazılara ayrı ayrı
+     yazılması gerekiyor. Ölçülen belirti: isme çift tıkla, REC satırı
+     arama çizgisinin üstüne biner. */
+  #ust, #ust .ustSatir, #ust .kanal, #ust .kanal.ad, #modAd, #mark, #uydular{
+    touch-action:manipulation;}
   #modAd{pointer-events:none;user-select:none;white-space:nowrap;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-weight:400;
     font-size:12px;letter-spacing:.30em;text-indent:.30em;line-height:1;
@@ -5433,6 +5443,13 @@
     try{ etkilesimSay(); }catch(_){}
     try{ sonraki(false); }catch(_){}
   });
+  /* ÇİFT DOKUNUŞ: yakınlaştırmayı iptal et ve kayma olduysa geri al.
+     touch-action tek başına eski iOS sürümlerinde yetmiyor; dblclick'i
+     de tutuyoruz. Kayma olduysa sayfayı başa çekmek fixed katmanları
+     yerine oturtuyor — kullanıcı elle düzeltemiyordu. */
+  document.addEventListener('dblclick', e=>{ try{ e.preventDefault(); }catch(_){}
+    try{ window.scrollTo(0,0); }catch(_){} }, {passive:false});
+  window.addEventListener('scroll', ()=>{ try{ if(scrollX||scrollY) window.scrollTo(0,0); }catch(_){} }, {passive:true});
   btn.addEventListener('contextmenu', e=>e.preventDefault());                 // mobil uzun-basış menüsü çıkmasın
   btn.addEventListener('lostpointercapture', ()=>{ /* yakalama düşerse tık latch'i korunur */ });
 

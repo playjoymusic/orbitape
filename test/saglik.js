@@ -1458,22 +1458,37 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       cikti.modAdGorunur = ma && ma.getAttribute('aria-hidden') !== 'true';
       /* 5) KLAVYE: sentetik click (detail 0) sonraki()'yi cagirmali.
             Gercek Enter'in urettigi olayin aynisi. */
-      const o = window.sonraki; let sayac = 0;
-      window.sonraki = function(){ sayac++; };
+      /* ── NEDEN BU KADAR AYRINTI ─────────────────────────────────
+         Bu kontrol GitHub'in makinesinde dusuyor, burada geciyordu ve
+         iki tur boyunca tahminle kovaladim. Artik olcum kendisi
+         soyluyor: dinleyici calisti mi, e.detail kacti, zincirin
+         hangi adiminda kaldi. Kirmizi olursa log dogrudan yeri
+         gosteriyor -- bir daha korlemesine yama yok. */
+      const o = window.sonraki, oS = window.sesBaglamiAl, oE = window.etkilesimSay;
+      let sayac = 0, adim = [], gorulenDetail = -1;
+      window.sonraki = function(){ sayac++; adim.push('sonraki'); };
       try{
-        document.getElementById('tp').dispatchEvent(
-          new MouseEvent('click', {bubbles:true, detail:0}));
+        window.sesBaglamiAl = function(){ adim.push('ses'); };
+        window.etkilesimSay = function(){ adim.push('etkilesim'); };
+        const el = document.getElementById('tp');
+        el.addEventListener('click', ev=>{ gorulenDetail = ev.detail; adim.push('dinleyici'); },
+                            {capture:true, once:true});
+        el.dispatchEvent(new MouseEvent('click', {bubbles:true, detail:0}));
         await bek(80);
-      }finally{ window.sonraki = o; }
+      }finally{ window.sonraki = o; window.sesBaglamiAl = oS; window.etkilesimSay = oE; }
       cikti.klavye = sayac;
+      cikti.klavyeIz = adim.join('>') + ' | detail=' + gorulenDetail;
       /* 6) Ve isaretci click'i AYNI yoldan IKI kere calismamali:
             detail>=1 gelen click'i klavye kapisi yok saymali. */
+      /* SENKRON OLC: klavye kapisi tiklamayi ANINDA ya gecirir ya
+         gecirmez. Beklersek arka plandaki bir zamanlayici (lisans
+         elemesi gibi) araya girip sayaci artiriyor ve test kendi
+         gurultusunu olcmus oluyor -- bir kez oldu. */
       let sayac2 = 0;
       window.sonraki = function(){ sayac2++; };
       try{
         document.getElementById('tp').dispatchEvent(
           new MouseEvent('click', {bubbles:true, detail:1}));
-        await bek(80);
       }finally{ window.sonraki = o; }
       cikti.fareCift = sayac2;
       return cikti;
@@ -1487,7 +1502,22 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Gizli agacta odaklanabilir dugme yok', (eris.gizliOdak||[]).length===0,
        (eris.gizliOdak||[]).length ? eris.gizliOdak.join(', ') : 'WCAG 4.1.2 temiz');
     K('Kategori adi ekran okuyucuda', eris.modAdGorunur===true, 'aria-hidden yok');
-    K('Ana dugme KLAVYEYLE calisiyor', eris.klavye===1, 'Enter -> sonraki() '+eris.klavye+' kez');
+  /* CIFT DOKUNUS YAKINLASTIRMASI: iOS'ta ustteki yazilara iki kez
+     basinca goruntu penceresi kayiyor ve alt kose fixed katmanlari
+     yerinden oynayip GERI GELMIYOR. touch-action MIRAS ALINMIYOR,
+     her birine ayri yazilmasi gerekiyor. */
+  {
+    const ta = await pg.evaluate(()=>{
+      const se = ['#ust','#modAd','#ust .kanal.ad','#mark','#uydular'];
+      const kotu = se.filter(x=>{ const e=document.querySelector(x);
+        return !e || getComputedStyle(e).touchAction !== 'manipulation'; });
+      return { kotu, dbl:typeof window.ondblclick !== 'undefined' };
+    });
+    K('Ust yazilarda cift dokunus kilitli', ta.kotu.length===0,
+       ta.kotu.length ? ('touch-action eksik: '+ta.kotu.join(', ')) : 'hepsinde manipulation');
+  }
+    K('Ana dugme KLAVYEYLE calisiyor', eris.klavye===1,
+       'Enter -> sonraki() '+eris.klavye+' kez | iz: '+(eris.klavyeIz||'-'));
     K('Isaretci tiklamasi iki kere saymiyor', eris.fareCift===0,
        'detail>=1 klavye kapisindan gecmiyor');
   }
