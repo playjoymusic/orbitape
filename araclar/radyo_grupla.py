@@ -464,20 +464,35 @@ def grupla(kayitlar):
         isim_raf = _raflar(ad)
         if len(isim_raf) == 1:
             o["grup"] = isim_raf[0]
-            o["saf"] = saflik(ad, isim_raf[0])
+            # IKI GRUP: 1 = has, 2 = kenarda. 3 SADECE MIXTAPE'in.
+            # Halkanin icinde once 1. grup calar, tukenince 2. grup,
+            # o da bitince bastan 1. grup. Bkz. safSirala (index.html).
+            o["saf"] = 1 if saflik(ad, isim_raf[0]) == 1 else 2
             continue
 
         # 2b) ETIKET SAYIMI. Bkz. KADEME1 / KADEME2 aciklamasi.
         _p = _puanla(ad, etiket)
+        _kademe2 = False
         if not _p:
             _p = _puanla(ad, etiket, KADEME2)
+            _kademe2 = bool(_p)
         if _p:
             _s = sorted(_p.items(), key=lambda t: -t[1])
             if len(_s) == 1 or _s[0][1] > _s[1][1]:
                 o["grup"] = _s[0][0]
-                # Acik ara onde ise HAS sayilir: halkada once o calar.
+                # IKI GRUP.
+                #   1. GRUP = HAS. Turu acikca soyleyen istasyon:
+                #      "Instrumental Jazz", "nature sounds", "deep house".
+                #      Kullanicinin tarifi: "sadece jazz ya da sadece
+                #      instrumental jazz; ambient'te soundscape, doga sesi".
+                #   2. GRUP = KENARDA. Ya dar farkla kazanmis, ya da
+                #      karari RUH HALI kelimesi vermis (chillout, relax).
+                #      Kullanicinin tarifi: "2. grup chillout relax vs".
+                # 2. kademeden gelen HER ZAMAN 2. gruptur: o kelimeler
+                # turu degil havayi anlatiyor.
                 _ikinci = _s[1][1] if len(_s) > 1 else 0
-                o["saf"] = 1 if _s[0][1] >= max(2, 2 * _ikinci) else 2
+                o["saf"] = 2 if _kademe2 else (
+                    1 if _s[0][1] >= max(2, 2 * _ikinci) else 2)
                 continue
             # Berabere: kimse kazanmaz.
             o["grup"] = "MIXTAPE"; o["saf"] = 3
