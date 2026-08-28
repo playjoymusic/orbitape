@@ -533,7 +533,7 @@
      Isim dugmesiyle raf secmek calan sesi kesmiyor: yeni raf bir
      SONRAKI seste devreye giriyor. Arada ekranda duymadigin bir raf
      adi yaziyordu ve bu yalan gibi duruyordu (kullanici ekran
-     goruntusuyle gosterdi: yazi HIP HOP & RNB, calan sey MIXTAPE
+     goruntusuyle gosterdi: yazi FUNK & RNB, calan sey MIXTAPE
      istasyonu). Artik o aralikta yazi SILIK ve yavasca nefes aliyor;
      ilk ses o raftan gelince katilasiyor. Hareketi kapali olanlarda
      sadece silik kaliyor. */
@@ -5013,20 +5013,21 @@
   var AILELER = [
     { ad:'AMBIENT',       renk:'95,191,122'  },   // 1. halka, EN ICTE
     { ad:'INDIE & LOFI',  renk:'176,124,232' },   // 2.
-    { ad:'DISCO FUNK',    renk:'143,208,232' },   // 3.
-    { ad:'JAZZ',          renk:'204,124,164' },   // 4.
-    { ad:'ORCHESTRAL',    renk:'240,172,122' },   // 5.
-    { ad:'LOUNGE',        renk:'216,203,160' },   // 6.
-    { ad:'WORLD & ROOTS', renk:'154,150,172' },   // 7.
-    { ad:'ROCK & COUNTRY',renk:'242,104,60'  },   // 8.
-    { ad:'HIP HOP & RNB', renk:'190,182,164' },   // 9.
-    { ad:'MIXTAPE',       renk:'132,150,255' },   // 10. turu belirsiz
-    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 11. EN DISTA, turkuaz
+    { ad:'JAZZ',          renk:'204,124,164' },   // 3.
+    { ad:'ORCHESTRAL',    renk:'240,172,122' },   // 4.
+    { ad:'LOUNGE',        renk:'216,203,160' },   // 5.
+    { ad:'WORLD & ROOTS', renk:'154,150,172' },   // 6.
+    { ad:'ROCK & COUNTRY',renk:'242,104,60'  },   // 7.
+    { ad:'FUNK & RNB',    renk:'190,182,164' },   // 8.
+    { ad:'MIXTAPE',       renk:'132,150,255' },   // 9. turu belirsiz
+    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 10. EN DISTA, turkuaz
   ];
   /* SIRAYI KULLANICI VERDI, buyukten kucuge dikte etti:
-       ELECTRONIC · MIXTAPE · HIP HOP & RNB · ROCK & COUNTRY ·
-       WORLD & ROOTS · LOUNGE · ORCHESTRAL · JAZZ · DISCO FUNK ·
-       INDIE & LOFI · AMBIENT
+       ELECTRONIC · MIXTAPE · FUNK & RNB · ROCK & COUNTRY ·
+       WORLD & ROOTS · LOUNGE · ORCHESTRAL · JAZZ · INDIE & LOFI ·
+       AMBIENT
+     DISCO FUNK cikarildi: butun funk istasyonlari FUNK & RNB'ye
+     tasindi ve raf bosaldi. Bos halka sessiz halkadir.
      Yukaridaki dizi ICTEN DISA oldugu icin bunun tersi. Istasyon
      sayisiyla ilgisi yok; halkanin yeri kullanicinin kulaginda o
      turun agirligini anlatiyor.
@@ -6358,10 +6359,11 @@
     let ad = (gezinen !== undefined && gezinen !== null && gezinen !== '') ? gezinen : '';
     if(!ad){
       try{
-        /* Raf secimi kaldirildiysa (bosluga basildi) yazi ACILIS
-           RAFINI degil KANALI gosterir: ekranda secili olmayan bir
-           raf adi durmasin. */
-        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || 'RADIOTAPE';
+        /* Raf secimi kaldirildiysa yazi ALL olur: hicbir raf secili
+           degil, butun liste caliyor. Once 'RADIOTAPE' yaziyordu ama
+           o eski KANAL adi; kullanici ekranda gorunce "ne alaka"
+           dedi, hakliydi -- secili olmayan bir sey ismiyle durmamali. */
+        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || 'ALL';
         else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : 'RADIOTAPE');
       }catch(e){ ad = AKTIF_MOD || ''; }
     }
@@ -8691,6 +8693,12 @@
     try{
       if(typeof mod === 'undefined' || mod !== 'radio') return false;
       if(!AKTIF_AILE) return false;              // secili bir sey yoksa is yok
+      /* SADECE "SECTIM AMA DAHA DUYMADIM" ARALIGINDA ────────────
+         Once her bos dokunusta calisiyordu: raf secilip dinlenirken
+         ekrana dokunmak secimi kaldiriyordu ve kullanici "takiliyor,
+         baska yere gidiyor" dedi. Ses o raftan gelmeye basladiysa
+         gezinme bitmistir; bos dokunusun artik isi yok. */
+      if(_aileOncesi === null) return false;
       _aileOncesi = null;
       aileSec(null, true);                       // raf secimi kalkti
       try{ modAdiGoster(); zeminUygula(); }catch(e){}

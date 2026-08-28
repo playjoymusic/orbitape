@@ -84,15 +84,23 @@ ELEKTRONIK = re.compile(
 # SIRA ONEMLI: once dar ve kesin olanlar. "West Coast G-Funk &
 # Hip-Hop" hem hip hop hem funk; hip hop once soruldugu icin dogru
 # rafa gidiyor.
+# DISCO FUNK RAFI KALKTI: kullanici butun funk istasyonlarini
+# HIP HOP & RNB'ye tasidi ve o rafin adini FUNK & RNB yapti. Geriye
+# tek istasyon kalmadi; bos bir halka sessiz bir halkadir.
 RAF_KELIME = OrderedDict([
     # HIP HOP: bosalan rafa geldi. Turevleri ve dallari da burada --
     # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
     # soul / r&b / trap BURADA: kullanicinin karari, raf dolsun.
     # lofi ve indie BURADA DEGIL -- onlar kendi rafinda kaliyor.
-    ("HIP HOP & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("FUNK & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                r"\bsoul\b|motown|g-?funk|turntabl|"
+                               r"\bfunk\w*|boogie|\bdisco ?funk\b|"
                                r"\bbreakdance\b|\bmc\b", re.I)),
+    # RAF ADI "HIP HOP & RNB" DEGIL ARTIK "FUNK & RNB": kullanici
+    # butun funk istasyonlarini buraya tasidi ve adi ona gore
+    # degistirdi. Kelime listesi ayni kaldi -- karari zaten 171 elle
+    # karar ve etiket sayimi veriyor.
     # COUNTRY BURAYA GELDI: WORLD & ROOTS'ta duruyordu ama adinda
     # country gecen istasyon sayisi az degil ve dinleyici icin gitar
     # tarafi rock'a yakin. Raf adi da onu soylesin.
@@ -109,7 +117,6 @@ RAF_KELIME = OrderedDict([
     # funk degil. Zayif kelime yanlis rafa tasiyordu.
     # r&b / rnb HIP HOP'a tasindi: "100 Hip hop and RNB FM" funk degil.
     # soul HIP HOP'a tasindi; burada funk ve disco funk kaldi.
-    ("DISCO FUNK",  re.compile(r"\bfunk\b|boogie|\bdisco ?funk\b", re.I)),
     ("LOUNGE",      re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
                                r"\bcafe\b|café|\bspa\b|relaxation|\bmellow\b|"
                                r"\bchill\b|chillout|downtempo", re.I)),
@@ -147,7 +154,7 @@ RAF_KELIME = OrderedDict([
 #       pop rock, punk rock, rock, soft rock -> indie de geciyor ama
 #       ROCK 7 kere. Karar: ROCK.
 #     WEFUNK — funk, hip hop, soul -> funk 1, hip hop tarafi 2.
-#       Karar: HIP HOP & RNB.
+#       Karar: FUNK & RNB.
 #     Top Urbano — hip hop, latino urbano, pop urbano, reggaeton,
 #       urbano -> hip hop 1, yerel 4. Karar: WORLD & ROOTS.
 #   Yani etiket bir oy pusulasi: hangi tur daha cok yazilmissa
@@ -173,10 +180,11 @@ RAF_KELIME = OrderedDict([
 #   latino / reggaeton / urbano / french / sertanejo -> WORLD
 #   instrumental TEK BASINA ORCHESTRAL yapmiyor (雨声轻音乐 -> AMBIENT)
 KADEME1 = OrderedDict([
-    ("HIP HOP & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("FUNK & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                  r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                  r"\bsoul\b|motown|g-?funk|turntabl|"
-                                 r"trip.?hop|\bbreakdance\b", re.I)),
+                                 r"trip.?hop|\bbreakdance\b|"
+                                 r"\bfunk\w*|boogie", re.I)),
     ("ROCK & COUNTRY", re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
                                   r"rockabilly|grindcore|\bcountry\b|bluegrass|"
                                   r"\bhonky ?tonk\b|\bamericana\b|alternative|"
@@ -186,7 +194,6 @@ KADEME1 = OrderedDict([
     # JAZZ dedi. Blues ile jazz karsit degil komsu.
     ("JAZZ",        re.compile(r"\bjazz\b|bebop|\bswing\b|big ?band|dixieland|"
                                r"hard ?bop|free ?jazz|\bblues\b", re.I)),
-    ("DISCO FUNK",  re.compile(r"\bfunk\b|boogie|\bdisco\b", re.I)),
     ("AMBIENT",     re.compile(r"\bambient\b|\bdrone\b|new ?age|meditat\w*|"
                                r"soundscape|\bnature\b|sleep\w*|\bzen\b|"
                                r"healing|\bbinaural\b|white ?noise|"
@@ -302,8 +309,7 @@ AILELER = OrderedDict([
     ("WORLD & ROOTS", {"renk": "#9A96AC"}),   # 5.
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),   # 6.
     ("INDIE & LOFI",  {"renk": "#B07CE8"}),   # 7.
-    ("HIP HOP & RNB", {"renk": "#BEB6A4"}),   # 8.
-    ("DISCO FUNK",    {"renk": "#8FD0E8"}),   # 9.
+    ("FUNK & RNB", {"renk": "#BEB6A4"}),   # 8.
     ("LOUNGE",        {"renk": "#D8CBA0"}),   # 10.
     ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 11. en dista, turkuaz
 ])
@@ -368,8 +374,8 @@ def _raflar(metin, elektronik_ustun=True):
     Iki tur birden geciyorsa kimse kazanmaz, MIXTAPE'e gider."""
     # HIP HOP ELEKTRONIKTEN DE USTUN: "House vs. Hip-Hop" ikisi de
     # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
-    if RAF_KELIME["HIP HOP & RNB"].search(metin):
-        return ["HIP HOP & RNB"]
+    if RAF_KELIME["FUNK & RNB"].search(metin):
+        return ["FUNK & RNB"]
     # LOUNGE MUTLAK: "lounge", "smooth", "relax" gecen her sey lounge.
     # "Smooth Jazz Lounge", "Jazz Lounge Bar" da dahil -- kullanicinin
     # karari: bunlar jazz degil, arka plan muzigi.
@@ -439,7 +445,7 @@ def _puanla(ad, etiket, kademe=None):
 #   JAZZ           saf jazz / instrumental jazz / only jazz
 #   WORLD & ROOTS  ters kural: reggaeton ve afro olanlar 2. GRUBA
 #
-# Adi gecmeyen aileler (INDIE & LOFI, HIP HOP & RNB, DISCO FUNK)
+# Adi gecmeyen aileler (INDIE & LOFI, FUNK & RNB)
 # eski hesabini korur. MIXTAPE'e dokunulmuyor -- orasi zaten
 # "belirsiz" rafi ve kullanici elle bakiyor.
 GRUP1 = {

@@ -245,7 +245,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Sabit sayi beklemek yanlis olurdu -- ikisini de ayri sinamak
      gerekiyor, cunku geometri (ic yaricap, zar siniri) sayidan
      tureniyor ve yanlis sayida parmak baska halkayi secer. */
-  K('Radyoda halkalar tur ailesi', hs.n===11 &&
+  K('Radyoda halkalar tur ailesi', hs.n===10 &&
        /ELECTRONIC/.test(hs.sira) && /MIXTAPE/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
@@ -261,8 +261,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        kucuk kalmiyor -- 9 halkada 0.13R'ye inip ortaya basmayi
        imkansiz kilmisti. */
     K('En dis halka her iki kanalda ayni',
-       Math.abs((hs.ic + 10*hs.ara) - (ars.ic + 6*ars.ara)) < 0.001,
-       'radyo dis '+(hs.ic+10*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+6*ars.ara).toFixed(3));
+       Math.abs((hs.ic + (hs.n-1)*hs.ara) - (ars.ic + (ars.n-1)*ars.ara)) < 0.001,
+       'radyo dis '+(hs.ic+(hs.n-1)*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+(ars.n-1)*ars.ara).toFixed(3));
     K('Merkez her kanalda ayni ve genis', Math.abs(hs.sinir - ars.sinir) < 0.001 && hs.sinir >= 0.25,
        'zar siniri '+hs.sinir.toFixed(3)+'R');
   }
@@ -276,7 +276,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*Math.min(halkaAdlar().length-1,4))+0.03)*1.035; // 1.035: parmak altindaki halka
     return { y, enGenis:Math.round(enGenis), ekran:innerWidth, disk:Math.round(dk.width) };
   });
-  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7,8,9,10', 'yaricap->halka '+hg.y.join(','));
+  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7,8,9', 'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
   const ay = await pg.evaluate(()=>{
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
@@ -578,7 +578,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Arsiv zeminleri koyu', rt.zeminler, 'hepsi #0.. ile basliyor');
   }
   K('Isim dugmesi turleri geziyor',
-    nb.tur && nb.tur.length===12 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[11],
+    /* Sonda bir tur fazla basiliyor; dongu 10 ailede kapaniyor:
+       11. basis basa doner, yani tur[0] === tur[10]. */
+    nb.tur && nb.tur.length===12 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[10],
     nb.tur ? nb.tur.join(' > ') : String(nb));
   /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
      FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
@@ -2487,18 +2489,20 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                aileSecVar:(typeof aileSec==='function') };
     });
     /* NEWS & TALK SILINDI: icinde tek istasyon yoktu. Sayi 7. */
-    K('On bir aile tanimli', !!ai && ai.sayi===11, ai ? ai.adlar.join(' · ') : 'AILELER yok');
-    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===11,
-       ai ? ai.benzersizRenk+'/11 benzersiz' : '-');
+    K('On aile tanimli', !!ai && ai.sayi === 10, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===10,
+       ai ? ai.benzersizRenk+'/10 benzersiz' : '-');
     /* SIRAYI KULLANICI DIKTE ETTI (buyukten kucuge):
-       ELECTRONIC · MIXTAPE · HIP HOP & RNB · ROCK & COUNTRY ·
-       WORLD & ROOTS · LOUNGE · ORCHESTRAL · JAZZ · DISCO FUNK ·
-       INDIE & LOFI · AMBIENT
+       ELECTRONIC · MIXTAPE · FUNK & RNB · ROCK & COUNTRY ·
+       WORLD & ROOTS · LOUNGE · ORCHESTRAL · JAZZ · INDIE & LOFI ·
+       AMBIENT
      Dizi icten disa oldugu icin ilki AMBIENT, sonuncusu ELECTRONIC.
      Bu bir zevk karari; sayiyla dogrulanamaz, o yuzden aynen sabit. */
   {
-    const SIRA = ['AMBIENT','INDIE & LOFI','DISCO FUNK','JAZZ','ORCHESTRAL',
-                  'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','HIP HOP & RNB',
+    /* DISCO FUNK CIKARILDI: funk istasyonlarinin hepsi FUNK & RNB'ye
+       tasindi, raf bosaldi. Bos halka sessiz halkadir. */
+    const SIRA = ['AMBIENT','INDIE & LOFI','JAZZ','ORCHESTRAL',
+                  'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','FUNK & RNB',
                   'MIXTAPE','ELECTRONIC'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
@@ -2576,10 +2580,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Bekleyen secim yazisi silik', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
         mod = 'radio'; AKTIF_AILE = 'MIXTAPE'; _aileOncesi = null;
-        aileGezmeBasla(); AKTIF_AILE = 'HIP HOP & RNB';   // gezindi
+        aileGezmeBasla(); AKTIF_AILE = 'FUNK & RNB';   // gezindi
         modAdiYaz();
         const bekler = document.getElementById('modAd').classList.contains('bekliyor');
-        aileSecimKesinlesti({grup:'HIP HOP & RNB'});      // ses o raftan geldi
+        aileSecimKesinlesti({grup:'FUNK & RNB'});      // ses o raftan geldi
         modAdiYaz();
         const katilasti = !document.getElementById('modAd').classList.contains('bekliyor');
         mod = eM; AKTIF_AILE = eA; _aileOncesi = eO; modAdiYaz();
@@ -2598,13 +2602,16 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        degisiyordu. Dogrusu VAZGECMEK: raf kalkar, butun liste calar. */
     K('Bosluga basmak secimi kaldirir', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
-        mod = 'radio'; _aileOncesi = null; AKTIF_AILE = 'HIP HOP & RNB';
+        mod = 'radio'; _aileOncesi = null; AKTIF_AILE = 'ELECTRONIC';
+        /* Dinlerken bos dokunus HICBIR SEY yapmaz: */
+        const dinlerken = aileIptal();
+        aileGezmeBasla(); AKTIF_AILE = 'FUNK & RNB';   // sectim, daha duymadim
         const oldu = aileIptal();
         const kalkti = AKTIF_AILE === null;
-        const ikinci = aileIptal();            // secili yok: is yok
+        const ikinci = aileIptal();                    // bekleyen yok: is yok
         mod = eM; AKTIF_AILE = eA; _aileOncesi = eO;
-        return oldu && kalkti && ikinci === false;
-      }), 'raf secimi kalkar, baska rafa GECMEZ');
+        return dinlerken === false && oldu && kalkti && ikinci === false;
+      }), 'sadece bekleyen secimde calisir, raf kalkar, baska rafa GECMEZ');
     /* MARKANIN 2. DURAGI SABIT PEMBE: ORBITAPE yazisinin son
        harflerindeki retro ton rafa gore degismesin. */
     K('Marka ikinci duragi sabit pembe', await pg.evaluate(()=>{
