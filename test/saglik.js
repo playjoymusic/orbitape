@@ -109,6 +109,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Cizimde TDZ riski yok', _kalan.length===0,
       _kalan.length ? _kalan.map(r=>r[0]+' (kullanim '+r[1]+', tanim '+r[2]+')').join(' | ') : 'senkron ilk turda riskli isim yok');
     K('kamAcik hoisted (var)', /\bvar kamAkis\s*=\s*null,\s*kamAcik\b/.test(_js), 'var');
+    /* AYNI TUZAK, IKINCI KEZ: acilis yerlesimi zeminUygula() ->
+       aileRenk() zinciriyle AILELER'e TANIMDAN ONCE dokunuyor.
+       'const' oldugunda WebKit acilisi kesti ("Cannot access
+       'AILELER' before initialization") ve uc kontrol birden dustu.
+       Chromium'da gorunmedi -- o yuzden burada yaziyor. */
+    K('AILELER hoisted (var)', /\bvar AILELER\s*=\s*\[/.test(_js), 'var');
+    K('ARSIV_ADLAR hoisted (var)', /\bvar ARSIV_ADLAR\s*=\s*\[/.test(_js), 'var');
 
     /* ── IKINCI SENKRON YOL: ACILIS YERLESIMI ──────────────────────
        `ustOlcu();` de betigin ortasinda SENKRON cagriliyor ve zinciri
