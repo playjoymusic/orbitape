@@ -74,7 +74,7 @@
  "ГУСЬ-Релакс": "AMBIENT",
  "Спокойное радио": "AMBIENT",
  "雨声轻音乐": "AMBIENT",
- "ALIENS HR": "WORLD & ROOTS",
+ "ALIENS HR": "FUNK & RNB",
  "Fly Foot Selecta": "WORLD & ROOTS",
  "_Funky Corner Radio (Spain)": "FUNK & RNB",
  "_Funky Corner Radio (USA)": "FUNK & RNB",
@@ -162,12 +162,15 @@
  "Groove Cabane": "FUNK & RNB",
  "Nostalgie Funk": "FUNK & RNB",
  "Real Love Music - Radio Future Funk": "FUNK & RNB",
- "181.FM - Soul": "WORLD & ROOTS",
- "90s90s Soul & RNB": "WORLD & ROOTS",
+ "181.FM - Soul": "FUNK & RNB",
+ "90s90s Soul & RNB": "FUNK & RNB",
  "KLCBS New Age": "LOUNGE",
  "Ella Radio - Smooth Bossa Nova": "JAZZ",
  "Epic Lounge - PIANO & JAZZ BAR": "JAZZ",
  "#1 Splash Spa": "AMBIENT",
  "CAPITAL CHILL": "AMBIENT",
- "Chillout Ibiza FM": "AMBIENT"
+ "Chillout Ibiza FM": "AMBIENT",
+ "GoRadio ng": "FUNK & RNB",
+ "24/7 Bossa Nova Radio": "LOUNGE",
+ "Ella Radio - Bossa": "LOUNGE"
 }
