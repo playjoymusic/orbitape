@@ -4770,6 +4770,23 @@
       setTimeout(()=>{ if(AKTIF_MOD) { try{ modGec(); }catch(e){} } }, 60);
       return;
     }
+    /* ── RAF KAPISI: RADYO TARAFININ KENDI SON KAPISI ───────────────
+       Ustteki kapi ARSIV kategorisine bakiyor (modUygun); radyo
+       ailesine BAKAN kimse yoktu. Olculen sonuc, kullanicinin ekran
+       goruntusu: ustte LOUNGE yaziyor, calan istasyon
+       "LIVE · WORLD & ROOTS".
+       Sebep: bir istasyon istegi yola cikip cevap vermeden once raf
+       degistiriliyor. Istek sonuclandiginda kuyruk artik yeni rafin
+       ama BU cagri eski rafin kaydiyla geliyor ve calmaya basliyor.
+       aileSuz() kuyrugu suzuyor ama yolda olani durduramaz; durdurmak
+       icin tek cikis noktasi burasi.
+       Ilk ses muaf (yukaridaki _ilkSes ile ayni gerekce: kategori bir
+       tercih, sessizligin sebebi olamaz). */
+    if(!_ilkSes && !_favMod && typeof mod !== 'undefined' && mod === 'radio'
+       && AKTIF_AILE && item.radyo && item.grup && item.grup !== AKTIF_AILE){
+      setTimeout(()=>{ try{ sonraki(true); }catch(e){} }, 60);
+      return;
+    }
     /* ── LİSANS: SON KAPI ───────────────────────────────────────────
        Kaynakların her biri kendi süzgecinden geçiyor (havuzlar
        hasatta, Jamendo çekilirken). Bu, onların hepsinin ARKASINDA

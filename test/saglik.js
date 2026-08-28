@@ -2618,6 +2618,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        baglanmisti; zar atlamak icin en cok basilan yer orasi ve her
        basista ustteki raf adi siliniyordu. Kullanici kaldirtti.
        Bu satir, iptalin sessizce geri gelmedigini kontrol ediyor. */
+    /* YOLDA KALAN ISTASYON RAF DEGISINCE CALAMAZ.
+       Olculen vaka: ustte LOUNGE yazarken "LIVE · WORLD & ROOTS"
+       caliyordu. Kuyruk suzuluyordu ama YOLDA olan istek suzgecin
+       arkasindan geliyordu; cal() icindeki raf kapisi onu durduruyor. */
+    K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /item\.grup !== AKTIF_AILE/.test(k)
+            && /mod === 'radio'[\s\S]{0,80}item\.radyo/.test(k);
+      }), 'cal() icinde radyo tarafinin kendi son kapisi var');
     K('Ortaya dokunus SADECE siradaki sesi caliyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return !/aileIptal/.test(k) && !/bosYerMi/.test(k);

@@ -538,6 +538,17 @@ def grupla(kayitlar):
             _kademe2 = bool(_p)
         if _p:
             _s = sorted(_p.items(), key=lambda t: -t[1])
+            # TEK BASINA BIR ETIKET YETMEZ.
+            # Olculen vaka (kullanicinin ekran goruntusu): ORCHESTRAL
+            # rafinda "Michael Jackson music star" ve "MA:-Hit Radio
+            # Maroc" caliyordu. Ikisinin de TEK etiketi vardi:
+            # "classical". Adlarinda klasikle ilgili hicbir sey yok.
+            # Etiket istasyonun dizine yazdigi arama kelimesi; bir
+            # tanesi delil degil. Artik karar icin ya ISIMDE gecmesi
+            # (3 puan) ya da EN AZ IKI etiketin ayni rafi soylemesi
+            # gerekiyor. Emin olmadigimiz her sey MIXTAPE'e gider.
+            if _s[0][1] < 2:
+                o["grup"] = "MIXTAPE"; o["saf"] = 3; continue
             if len(_s) == 1 or _s[0][1] > _s[1][1]:
                 o["grup"] = _s[0][0]
                 # IKI GRUP.

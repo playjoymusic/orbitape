@@ -53,7 +53,7 @@
  "Classic FM HD": "ORCHESTRAL",
  "Classic FM Movies": "ORCHESTRAL",
  "COOLFM Filmzenék": "ORCHESTRAL",
- "Fayroz": "ORCHESTRAL",
+ "Fayroz": "MIXTAPE",
  "Новое радио": "ORCHESTRAL",
  "EgoFM Pure": "INDIE & LOFI",
  "0 N - 60s on Radio": "ROCK & COUNTRY",
@@ -111,9 +111,8 @@
  "Streamee Salt": "WORLD & ROOTS",
  "Suncity 104.9 FM": "WORLD & ROOTS",
  "Tropical 100 Mix": "WORLD & ROOTS",
- "MA:-Hit Radio Maroc": "ORCHESTRAL",
- "Magic FM Movie Hits": "ORCHESTRAL",
- "Movie Soundtracks Hits Radio": "ORCHESTRAL",
+ "Magic FM Movie Hits": "ELECTRONIC",
+ "Movie Soundtracks Hits Radio": "MIXTAPE",
  "Oxygen Spencer-Hill": "MIXTAPE",
  "neverland": "MIXTAPE",
  "KUTX 98.9 (2024 Stream": "ROCK & COUNTRY",
@@ -193,5 +192,8 @@
  "The Independent FM": "ROCK & COUNTRY",
  "Radio Schwany - Volksmusik instrumental": "WORLD & ROOTS",
  "RadioArt": "WORLD & ROOTS",
- "bigFM LoFi Focus": "LOUNGE"
+ "bigFM LoFi Focus": "LOUNGE",
+ "MA:-Hit Radio Maroc": "ELECTRONIC",
+ "London Telugu Radio": "MIXTAPE",
+ "Michael Jackson music star": "FUNK & RNB"
 }
