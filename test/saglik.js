@@ -2649,20 +2649,33 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         return !/aileIptal/.test(k) && !/bosYerMi/.test(k);
       }), 'raf secimi ortadaki zara bagli DEGIL');
     /* ARSIV KANALINDA MARKA YAZISI SABIT: SPACE'in kursun tonu. */
-    K('ORBITAPE yazisi arsivde SPACE renginde', await pg.evaluate(async ()=>{
+    /* ARSIVDE MARKA: SOLU HER RAFTA AYNI KOYU, SAGI RAFTAN BIR
+       TUTAM VE RETROYA CEKILMIS. Bu bozulursa ya arsivin karanlik
+       havasi gider (sol degisirse) ya da raf bilgisi kaybolur
+       (sag sabitlenirse). */
+    K('Arsivde marka solu koyu sagi raftan', await pg.evaluate(async ()=>{
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
-        const oku = ()=>getComputedStyle(document.documentElement)
-                        .getPropertyValue('--m1').trim();
+        const kok = ()=>getComputedStyle(document.documentElement);
+        const say = x => (x.match(/\d+/g)||[]).map(Number);
         const eM = mod, eA = AKTIF_MOD;
-        mod = 'lib'; AKTIF_MOD = 'NATURE'; markaRengi(); await bek(20);
-        const a = oku();
+        mod = 'lib';
+        AKTIF_MOD = 'NATURE'; markaRengi(); await bek(20);
+        const a1 = kok().getPropertyValue('--m1').trim();
+        const a2 = kok().getPropertyValue('--m2').trim();
         AKTIF_MOD = 'HUMANS'; markaRengi(); await bek(20);
-        const b = oku();
+        const b1 = kok().getPropertyValue('--m1').trim();
+        const b2 = kok().getPropertyValue('--m2').trim();
         mod = eM; AKTIF_MOD = eA; markaRengi();
-        const sade = x => (x||'').replace(/\s+/g,'');
-        const [r,g,bl] = (MOD_TEMA.SPACE.ana).split(',').map(Number);
-        return sade(a) === sade(b) && sade(a) === 'rgb('+r+','+g+','+bl+')';
-      }), 'raf degisse de marka rengi ayni kaliyor');
+        const solAyni = a1 === b1;
+        const sagFarkli = a2 !== b2;
+        const [r1,g1,bl1] = say(a1);
+        const solKoyu = (0.2126*r1 + 0.7152*g1 + 0.0722*bl1) < 110;
+        /* RETRO: sag durak doygun olmamali -- en yuksek ve en dusuk
+           bilesen arasindaki fark dar kalmali. */
+        const [r2,g2,bl2] = say(a2);
+        const sonuk = (Math.max(r2,g2,bl2) - Math.min(r2,g2,bl2)) < 70;
+        return solAyni && sagFarkli && solKoyu && sonuk;
+      }), 'sol her rafta ayni ve koyu, sag rafa gore degisiyor ama sonuk');
     /* MARKANIN 2. DURAGI SABIT PEMBE: ORBITAPE yazisinin son
        harflerindeki retro ton rafa gore degismesin. */
     K('Marka ikinci duragi sabit pembe', await pg.evaluate(()=>{

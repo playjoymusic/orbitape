@@ -1,0 +1,64 @@
+# ORBITAPE — radyo bağlantı kontrolü
+#
+# NE YAPAR
+#   Yayındaki radyo.json'u alır, 552 yayın adresini tek tek dener ve
+#   bir RAPOR üretir: hangileri ölmüş, hangileri açılıyor ama CORS
+#   başlığı olmadığı için uygulamada susuyor, hangi rafta kaç sağlam
+#   istasyon kalmış.
+#
+# NEDEN BURADA KOŞUYOR
+#   Geliştirme ortamından istasyon sunucularına çıkış kapalı (ölçüldü:
+#   59 istasyonun 50'sine ulaşılamadı). Ağı olan tek yer burası.
+#
+# HİÇBİR YERE YAZMIYOR — BİLEREK
+#   Bundan önceki hasat işi kod deposundan VERİ deposuna yazmaya
+#   çalıştı ve "git exit 128" ile düştü: çapraz depo yazmak ayrı bir
+#   token istiyor. Bu iş yalnızca rapor üretiyor; raporu aşağıdaki
+#   özet ekranında okuyorsun, neyin eleneceğine sen karar veriyorsun.
+#   Yani token yok, izin sorunu yok, ilk koşuda çalışır.
+#
+# SÜRE
+#   Her adres tek tek denendiği için 5-10 dakika (12 istek aynı anda).
+
+name: Radyo baglanti kontrolu
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 3 * *'
+
+permissions:
+  contents: read
+
+jobs:
+  kontrol:
+    name: Baglantilari sina
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - name: Listeyi indir
+        run: |
+          curl -sSfL -o radyo.json \
+            https://raw.githubusercontent.com/playjoymusic/tracks/main/radyo.json
+          python3 -c "import json;print(len(json.load(open('radyo.json'))),'istasyon')"
+
+      - name: Adresleri sina
+        run: python3 araclar/radyo_kontrol.py radyo.json rapor.md rapor.json
+
+      - name: Ozete yaz
+        if: always()
+        run: cat rapor.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Raporu sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radyo-baglanti-raporu
+          path: |
+            rapor.md
+            rapor.json
+          retention-days: 30

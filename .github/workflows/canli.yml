@@ -1,0 +1,62 @@
+# ORBITAPE — canlı çalma sınaması
+#
+# NE YAPAR
+#   Uygulamayı gerçek internetle açar, her raftan iki istasyon
+#   çaldırır ve tek bir soruyu sorar: SEÇİLEN RAFTAN BAŞKA BİR ŞEY
+#   ÇALIYOR MU?
+#
+# NEDEN AYRI BİR İŞ
+#   Sağlık kontrolü sahte ağla koşuyor; istekler anında döndüğü için
+#   "istek yolda kalırken raf değişti" aralığı orada hiç oluşmuyor.
+#   Bu oturumdaki en pahalı hata (üstte LOUNGE yazarken WORLD & ROOTS
+#   çalması) tam olarak o aralıkta yaşandı ve sağlık kontrolü onu
+#   göremezdi.
+#
+# NE ZAMAN KIRMIZI YANAR
+#   Sadece KURAL ihlalinde: seçilen raf dışından bir şey çaldıysa, ya
+#   da ekranda yazan rafla çalan şey ayrışıyorsa. Ölü istasyon
+#   düşürmez — o bir veri meselesi ve kendi aracı var
+#   (Radyo baglanti kontrolu).
+#
+# SÜRE
+#   10 raf x 2 deneme x en fazla 22 sn = en kötü ihtimalle ~8 dakika.
+
+name: Canli calma sinamasi
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  canli:
+    name: Gercek agla cal
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Playwright
+        run: |
+          npm ci || npm install
+          npx playwright install --with-deps chromium
+
+      - name: Sunucuyu baslat
+        run: |
+          python3 -m http.server 8765 >/dev/null 2>&1 &
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
+            sleep 0.5
+          done
+
+      - name: Canli sinama
+        run: node test/canli.js

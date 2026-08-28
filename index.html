@@ -1411,16 +1411,42 @@
     const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
     return (g && MOD_TEMA[g]) || null;
   }
+  /* Rengi kendi parlakligina dogru cekmek = doygunlugu dusurmek.
+     oran 1 -> renk aynen, 0 -> tamamen gri. Retro paletin yaptigi is
+     de bu; burada ayni isi tek renk icin yapiyoruz. */
+  function _retroTon(rgb, oran){
+    try{
+      const [r,g,b] = rgb.split(',').map(Number);
+      const l = 0.2126*r + 0.7152*g + 0.0722*b;
+      const m = v => Math.max(0, Math.min(255, Math.round(l + (v - l) * oran)));
+      return [m(r), m(g), m(b)].join(',');
+    }catch(e){ return rgb; }
+  }
+  function _koyult(rgb, k){
+    try{ return rgb.split(',').map(v=>Math.round(+v * k)).join(','); }
+    catch(e){ return rgb; }
+  }
   function markaRengi(){
     try{
-      /* ARSIV KANALINDA MARKA SABIT: ORBITAPE yazisi SPACE rafinin
-         kursun tonunu aliyor. Once secili rafla birlikte degisiyordu
-         ve marka her rafta baska bir renge giriyordu; kullanici
-         "orbitape moduna gecince yazinin rengi space'teki renk olsun,
-         o iyi" dedi. Zemin ve semboller rafla degismeye devam ediyor;
-         sabit kalan yalniz markanin kendisi. */
+      /* ── ARSIVDE MARKA: SOLU KOYU, SAGI RAFTAN BIR TUTAM ──────────
+         Yazi bir gradyan: sol durak (--m1) ve sag durak (--m2).
+         Once ikisi de SPACE'in kursun tonuna sabitlenmisti; kullanici
+         daha incesini istedi:
+           "sol tarafi dark devam etsin, sagdaki son harfler cok az
+            secilen turun renginden alsin, retro versiyonu."
+         O yuzden:
+           SOL  = SPACE kursununun koyultulmusu -- her rafta ayni,
+                  arsivin karanlik havasi bozulmuyor.
+           SAG  = secili rafin rengi ama RETRO'ya cekilmis: doygunluk
+                  kendi parlakligina dogru kisiliyor, yani renk
+                  "bagirmiyor", sadece ima ediyor.
+         Radyo tarafi degismedi; orada marka aileden geliyor. */
       let p = aktifTema();
-      if(typeof mod !== 'undefined' && mod === 'lib' && MOD_TEMA.SPACE) p = MOD_TEMA.SPACE;
+      if(typeof mod !== 'undefined' && mod === 'lib' && MOD_TEMA.SPACE){
+        const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
+        const raf = (g && MOD_TEMA[g] && MOD_TEMA[g].ana) || MOD_TEMA.SPACE.ana;
+        p = { ana: _koyult(MOD_TEMA.SPACE.ana, 0.58), ikinci: _retroTon(raf, 0.42) };
+      }
       const kok = document.documentElement.style;
       if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); return; }
       kok.setProperty('--m1', 'rgb('+p.ana+')');
