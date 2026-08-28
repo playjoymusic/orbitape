@@ -216,40 +216,44 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* Adlarda BOSLUK VAR ("INDIE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
-                                     ic:halkaIc(), ara:HALKA_ARA, sinir:zarSinir()}));
+                                     ic:halkaIc(), ara:halkaAra(), sinir:zarSinir()}));
   /* HALKA SAYISI KANALA GORE DEGISIYOR:
        radyo kanalinda 8 tur ailesi, arsiv kanallarinda 5 kategori.
      Sabit sayi beklemek yanlis olurdu -- ikisini de ayri sinamak
      gerekiyor, cunku geometri (ic yaricap, zar siniri) sayidan
      tureniyor ve yanlis sayida parmak baska halkayi secer. */
-  K('Radyoda halkalar tur ailesi', hs.n===8 &&
-       /ELECTRONIC/.test(hs.sira) && /ORCHESTRAL/.test(hs.sira), hs.sira);
+  K('Radyoda halkalar tur ailesi', hs.n===10 &&
+       /ELECTRONIC/.test(hs.sira) && /MIXTAPE/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
       const eski = mod; mod = 'lib';
-      const r = { ad:halkaAdlar().join(' '), n:halkaAdlar().length, ic:halkaIc(), sinir:zarSinir() };
+      const r = { ad:halkaAdlar().join(' '), n:halkaAdlar().length, ic:halkaIc(), ara:halkaAra(), sinir:zarSinir() };
       mod = eski; return r;
     });
     K('Arsiv kanalinda halkalar 7 raf', ars.n===7 && /HUMANS/.test(ars.ad) && /OTHERS/.test(ars.ad), ars.ad);
     /* EN DIS HALKA SABIT: yer iceriden aciliyor. Bu bozulursa en dis
        halka ekran kenarindan tasar -- bir kere olmustu. */
+    /* GEOMETRI TERSINE CEVRILDI: ic yaricap SABIT, aralik halka
+       sayisindan tureniyor. Boylece ortadaki daire hicbir kanalda
+       kucuk kalmiyor -- 9 halkada 0.13R'ye inip ortaya basmayi
+       imkansiz kilmisti. */
     K('En dis halka her iki kanalda ayni',
-       Math.abs((hs.ic + 7*hs.ara) - (ars.ic + 6*hs.ara)) < 0.001,
-       'radyo dis '+(hs.ic+7*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+6*hs.ara).toFixed(3));
-    K('Zar siniri halka sayisindan tureniyor', hs.sinir < ars.sinir,
-       'radyo(8) '+hs.sinir.toFixed(3)+' | arsiv(7) '+ars.sinir.toFixed(3));
+       Math.abs((hs.ic + 9*hs.ara) - (ars.ic + 6*ars.ara)) < 0.001,
+       'radyo dis '+(hs.ic+9*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+6*ars.ara).toFixed(3));
+    K('Merkez her kanalda ayni ve genis', Math.abs(hs.sinir - ars.sinir) < 0.001 && hs.sinir >= 0.25,
+       'zar siniri '+hs.sinir.toFixed(3)+'R');
   }
   /* Cizim ve DOKUNMA ayni sabitleri kullaniyor mu: her halkanin
      cizildigi yarıcapa basinca _halkaNo o halkayi vermeli. */
   const hg = await pg.evaluate(()=>{
-    const y=[]; for(let k=0;k<halkaAdlar().length;k++) y.push(_halkaNo(halkaIc() + k*HALKA_ARA));
+    const y=[]; for(let k=0;k<halkaAdlar().length;k++) y.push(_halkaNo(halkaIc() + k*halkaAra()));
     /* en genis hal (ritim 1) ekrana sigiyor mu */
     const dk=document.querySelector('.disk').getBoundingClientRect();
     const R=Math.min(dk.width,dk.height)*0.5;
-    const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*(halkaAdlar().length-1))+0.03)*1.035; // 1.035: parmak altindaki halka
+    const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*Math.min(halkaAdlar().length-1,4))+0.03)*1.035; // 1.035: parmak altindaki halka
     return { y, enGenis:Math.round(enGenis), ekran:innerWidth, disk:Math.round(dk.width) };
   });
-  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7', 'yaricap->halka '+hg.y.join(','));
+  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7,8,9', 'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
   const ay = await pg.evaluate(()=>{
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
@@ -473,7 +477,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const eskiKanal = mod, eskiAile = AKTIF_AILE;
     mod = 'radio'; AKTIF_AILE = AILE_ADLAR[0];
     const tur = [AKTIF_AILE];
-    for(let i=0;i<8;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
+    for(let i=0;i<10;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
     AKTIF_AILE = eskiAile; mod = eskiKanal;
     return { tur };
   });
@@ -551,7 +555,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Arsiv zeminleri koyu', rt.zeminler, 'hepsi #0.. ile basliyor');
   }
   K('Isim dugmesi turleri geziyor',
-    nb.tur && nb.tur.length===9 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[8],
+    nb.tur && nb.tur.length===11 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[10],
     nb.tur ? nb.tur.join(' > ') : String(nb));
   /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
      FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
@@ -559,7 +563,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Nebula uc ana kanali geziyor',
     nebT.once.kanal !== nebT.sonra.kanal && nebT.sira === 'radio,lib,radio,lib',
     'sira: '+nebT.sira);
-  K('Nebula FX kapatmiyor', nebT.sonra.fx==='retro',
+  /* KANAL DEGISINCE FX SONER. Once "nebula FX'e dokunmasin" demistik
+     ama olculen davranis kotu cikti: oteki kanala gecip donunce
+     gezegenler yanik kaliyor, efekt kapali ama dugmeler acik
+     gorunuyordu. Kanal degisimi temiz baslangic olmali. */
+  K('Kanal degisince FX soner', nebT.sonra.fx==='',
     'FX '+nebT.once.fx+' -> "'+nebT.sonra.fx+'"');
   /* ── FX TEK EKSEN ────────────────────────────────────────────────
      Ortadaki daire 0.215R'ye indi; iki eksen o alanda ayirt edilemez.
@@ -1474,7 +1482,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         el.addEventListener('click', ev=>{ gorulenDetail = ev.detail; adim.push('dinleyici'); },
                             {capture:true, once:true});
         el.dispatchEvent(new MouseEvent('click', {bubbles:true, detail:0}));
-        await bek(80);
+        /* SENKRON: dinleyici sonraki()'yi ayni anda cagiriyor.
+           Beklersek arka plandaki lisans elemesi araya girip sayaci
+           ikiye cikariyor -- testin kendi gurultusu. */
       }finally{ window.sonraki = o; window.sesBaglamiAl = oS; window.etkilesimSay = oE; }
       cikti.klavye = sayac;
       cikti.klavyeIz = adim.join('>') + ' | detail=' + gorulenDetail;
@@ -2437,11 +2447,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                aileSecVar:(typeof aileSec==='function') };
     });
     /* NEWS & TALK SILINDI: icinde tek istasyon yoktu. Sayi 7. */
-    K('Sekiz aile tanimli', !!ai && ai.sayi===8, ai ? ai.adlar.join(' · ') : 'AILELER yok');
-    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===8,
-       ai ? ai.benzersizRenk+'/8 benzersiz' : '-');
-    K('En icteki halka ELECTRONIC', !!ai && ai.adlar[0]==='ELECTRONIC',
-       'ortada basili tutan en cok istasyonu olan aileye duser');
+    K('On aile tanimli', !!ai && ai.sayi===10, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===10,
+       ai ? ai.benzersizRenk+'/10 benzersiz' : '-');
+    K('En icteki halka MIXTAPE', !!ai && ai.adlar[0]==='MIXTAPE',
+       'turu belirsiz olanlarin yeri; en dista ELECTRONIC');
     /* FX IPUCU ARTIK TUR BASINA VE SURELI: bir turde ogrenmek
        otekinde de ogrenmis saymak degil; aylardir dokunmayan da
        unutuyor. Tek '1' bayragina donulurse bu kontrol duser. */

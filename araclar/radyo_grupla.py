@@ -39,6 +39,33 @@ from collections import OrderedDict
 # etiketli olabiliyor ve rock en son sorulursa hicbir zaman
 # kazanmiyor -- olculdu, 97 istasyonun tamami baska ailelere
 # dagilmisti. Kaynak etikette "rock/punk/metal" geciyorsa aile ROCK.
+# ── EMIN OLMADIKLARIMIZ: MIXTAPE ─────────────────────────────────
+# Bir istasyonun turu HER ZAMAN belli degil. Iki durum var:
+#   1) Etiketi acikca "her seyden biraz": pop, charts, top 40, hits,
+#      dj mix, variety, 80s/90s/00s. Bunlar bir tur degil, bir liste.
+#   2) Etiketi UC VE DAHA FAZLA aileye birden uyuyor -- yani kaynak
+#      da karar verememis.
+# Ikisini de zorla bir rafa koymak deneyimi bozuyor: "orchestral"e
+# basip pop dinlemek guveni kiriyor. Artik ikisi de MIXTAPE'e gidiyor
+# ve MIXTAPE en icteki (en kucuk) halka: bilerek secilen bir yer.
+# ISARETLER OLCUYLE SECILDI. Ilk yazimda "dj", "mix", "80s" gibi
+# gevsek isaretler de vardi ve 552 istasyonun 220'sini MIXTAPE'e
+# yigdi -- yani ayirmak yerine yeni bir cop kutusu yaptik. Bunlar
+# atildi; kalanlar bir TUR degil bir LISTE anlatan isaretler.
+KARISIK = re.compile(
+    r"\bpop\b|\bcharts?\b|\bhits?\b|top ?\d{2,3}|dj ?mix|"
+    r"variety|adult contemporary|hitradio|\bchr\b|"
+    r"contemporary hits|non.?stop|greatest hits|oldies", re.I)
+BELIRSIZ_ESIK = 4          # bu kadar farkli aileye uyuyorsa: karisik
+
+# LOUNGE: olculdu, 109 istasyon. Cogu "chillout" etiketi tasidigi
+# icin ELECTRONIC'e dusuyordu ama dinleyici icin ayni sey degil --
+# kafe/spa/smooth jazz muzigi kendi rafini hak ediyor. Tur alanindan
+# ONCE soruluyor, yoksa electronic onu yutuyor.
+LOUNGE = re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
+                    r"dinner|\bcafe\b|café|elevator|\bspa\b|relaxation|"
+                    r"\bmellow\b", re.I)
+
 ROCK = re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|shoegaze|"
                   r"post.?rock|classic ?rock|hard ?rock|blues ?rock|"
                   r"prog(ressive)? ?rock|rock ?n ?roll|rockabilly", re.I)
@@ -63,6 +90,10 @@ AILELER = OrderedDict([
                        "turler": ["jazz", "blues", "soul", "funk"]}),
     ("ORCHESTRAL",    {"renk": "#35E0D8",
                        "turler": ["classical", "soundtrack"]}),
+    ("LOUNGE",        {"renk": "#D8CBA0",
+                       "turler": []}),          # etiketten geliyor
+    ("MIXTAPE",       {"renk": "#8496FF",
+                       "turler": []}),          # emin olmadiklarimiz
     # Henuz bos. Haber/spor/talk BILEREK gelecek, kacak olarak degil.
     ("NEWS & TALK",   {"renk": "#7E93A8",
                        "turler": ["news", "sports", "talk"]}),
@@ -120,8 +151,23 @@ def grupla(kayitlar):
     sessizce gruptan dusen istasyon, ekranda renksiz istasyon demek."""
     atanmamis = {}
     for o in kayitlar:
-        if ROCK.search((o.get("etiket") or "") + " " + (o.get("ad") or "")):
+        metin = (o.get("etiket") or "") + " " + (o.get("ad") or "")
+        # Kac ayri aileye birden uyuyor?
+        uyan = set()
+        dusuk = metin.lower()
+        for _g, _d in AILELER.items():
+            for _t in _d["turler"]:
+                if _t in dusuk:
+                    uyan.add(_g)
+                    break
+        if KARISIK.search(metin) or len(uyan) >= BELIRSIZ_ESIK:
+            o["grup"] = "MIXTAPE"
+            continue
+        if ROCK.search(metin):
             o["grup"] = "ROCK"
+            continue
+        if LOUNGE.search(metin):
+            o["grup"] = "LOUNGE"
             continue
         g = TUR_GRUP.get((o.get("tur") or "").strip().lower())
         if not g:
