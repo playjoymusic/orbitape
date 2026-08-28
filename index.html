@@ -2306,7 +2306,15 @@
        Kanal adı da bu panelde tekrarlanmıyor — sağ üstte zaten yazıyor. */
     ufoDurdur();
     npAd.textContent = ad; npSanatci.textContent = sanatci;
-    try{ npKaynak.textContent = kaynakSatiri(item); }catch(e){ _yut(e); }   // sesin geldiği yer
+    /* KAYNAK SANATÇIYLA AYNIYSA İKİ KEZ YAZILMIYOR. Kendi
+       parçalarımızda ikisi de "PLAYJOY" ve ekranda yan yana
+       "PLAYJOY PLAYJOY" çıkıyordu. Bilgi eklemeyen tekrar, gürültü. */
+    try{
+      const _k = kaynakSatiri(item);
+      npKaynak.textContent =
+        (_k && sanatci && _k.trim().toLowerCase() === sanatci.trim().toLowerCase())
+          ? '' : _k;
+    }catch(e){ _yut(e); }   // sesin geldiği yer
     /* Lisans kendi satırında, en altta. Yoksa hiç yer kaplamıyor
        (canlı radyoda ve kendi parçalarımızda lisans satırı çıkmaz). */
     try{
@@ -5409,7 +5417,11 @@
       for(const st of list){
         const u=st.url_resolved||st.url, id="rb:"+(st.stationuuid||u);
         if(CALINDI.has(id)||radyoKuyruk.some(x=>x.id===id)) continue;
-        aday.push({ id, u, ad:istasyonAdiTemiz(st.name||'radyo'), grup:(st.grup||''), saf:(st.saf||3) });
+        /* ULKE BURADA DA TASINMALI: asagidaki push a.ulke okuyor.
+           Bir ara bu alan burada unutuldu; veri dogruydu ama ara
+           halkada dusuyordu ve ekranda "LIVE · ELECTRONIC" yaziyordu,
+           ulke kodu hic gelmiyordu. */
+        aday.push({ id, u, ad:istasyonAdiTemiz(st.name||'radyo'), grup:(st.grup||''), saf:(st.saf||3), ulke:(st.ulke||'') });
         if(aday.length>=16) break;
       }
       if(aday.length){
@@ -6555,8 +6567,13 @@
            "ne alaka" dedi -- ortadaki zara her basista cikiyordu,
            yani ekranin yarisi zaman ALL yaziyordu). Dogrusu sessizlik:
            secili bir sey yoksa ekranda da bir sey yazmiyor. */
+        /* KANAL ADLARI: lib -> ORBITAPE (arsiv), liste -> MIXTAPE.
+           Burada 'liste' de RADIOTAPE yaziyordu: else dali radyoyu
+           da kapsadigi icin yazilmisti ama radyo bir ustteki satirda
+           zaten donuyor, geriye sadece MIXTAPE kaliyor. Sonuc: mixtape
+           kanalinda ekranda RADIOTAPE yaziyordu. */
         if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || '';
-        else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : 'RADIOTAPE');
+        else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : 'MIXTAPE');
       }catch(e){ ad = AKTIF_MOD || ''; }
     }
     el.textContent = ad;

@@ -2675,6 +2675,62 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         return /_kayitBoyut \+= e\.data\.size/.test(k)
             && /kayitParcalari=\[\]; _kayitBoyut=0/.test(k);
       }), 'her parcada toplaniyor, kayit bitince sifirlaniyor');
+    /* ULKE KODU KUYRUGA KADAR GELMELI.
+       Olculen vaka: radyo.json'da ulke='US' yaziyordu, ekranda ise
+       "LIVE · ELECTRONIC" cikiyor, ulke hic gorunmuyordu. Veri
+       dogruydu; istasyonDoldur() icindeki ARA nesne (aday) alani
+       tasimayi unutmustu, sonraki push da a.ulke okuyordu. Yani
+       zincirin ucu bagliydi, ortasi kopuktu.
+       Bu yuzden test iki ucu birden tutuyor: bicimlendirme (dogru
+       yaziyor mu) VE aktarim (ara nesne alani tasiyor mu). */
+    K('Ulke kodu ekrana kadar geliyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        /* 1) Bicim: elde ne varsa o yaziliyor, uydurma yok */
+        const tam  = kaynakSatiri({ radyo:true, grup:'ELECTRONIC', ulke:'us' });
+        const yok  = kaynakSatiri({ radyo:true, grup:'ELECTRONIC', ulke:''   });
+        const rafsiz = kaynakSatiri({ radyo:true, grup:'', ulke:'NL' });
+        /* 2) Aktarim: aday nesnesi de ulkeyi tasiyor olmali --
+           push tarafi a.ulke okuyor, orada yoksa satir hep eksik. */
+        const zincir = /aday\.push\(\{[^}]*ulke\s*:/.test(k)
+                    && /radyoKuyruk\.push\(\{[^}]*ulke\s*:/.test(k);
+        return tam === 'LIVE · ELECTRONIC · US'
+            && yok === 'LIVE · ELECTRONIC'
+            && rafsiz === 'LIVE · NL'
+            && zincir;
+      }), 'LIVE · RAF · ULKE; aday ve kuyruk ikisi de ulkeyi tasiyor');
+    /* KANAL ADI DOGRU YAZILMALI.
+       Olculen vaka: MIXTAPE kanalindayken ust yazi 'RADIOTAPE'
+       diyordu. Else dali radyoyu da kapsayacak diye yazilmisti ama
+       radyo bir ust satirda zaten donuyor; geriye yalnizca mixtape
+       kaliyordu ve yanlis kanalin adini aliyordu. */
+    K('Kanal adi dogru yaziliyor', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE, eK = AKTIF_MOD;
+        const oku = ()=>{ modAdiYaz(); return document.getElementById('modAd').textContent; };
+        AKTIF_MOD = null;
+        mod = 'liste'; AKTIF_AILE = null; const mix = oku();
+        mod = 'lib';                       const ars = oku();
+        mod = 'radio'; AKTIF_AILE = null;  const bos = oku();
+        mod = 'radio'; AKTIF_AILE = 'JAZZ';const raf = oku();
+        mod = eM; AKTIF_AILE = eA; AKTIF_MOD = eK; modAdiYaz();
+        return mix === 'MIXTAPE' && ars === 'ORBITAPE'
+            && bos === '' && raf === 'JAZZ';
+      }), 'liste=MIXTAPE, lib=ORBITAPE, radyoda raf adi ya da bos');
+    /* AYNI SEY IKI KEZ YAZILMAZ. Kendi parcalarimizda hem kaynak hem
+       sanatci 'PLAYJOY' ve ekranda yan yana iki kez cikiyordu. */
+    K('Kaynak sanatciyla ayniysa tekrarlanmiyor', await pg.evaluate(()=>{
+        const eM = mod;
+        mod = 'liste';
+        simdiCalan({ id:'lst:0', ad:'Caramel Delusion', sanatci:'PLAYJOY',
+                     mp3:'https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/x.mp3' });
+        const ayni = document.getElementById('npKaynak').textContent.trim();
+        simdiCalan({ id:'rb:1', ad:'Some Station', radyo:true,
+                     grup:'JAZZ', ulke:'DE', mp3:'https://x/y' });
+        const farkli = document.getElementById('npKaynak').textContent.trim();
+        mod = eM;
+        /* Ayni oldugunda satir bos; farkli oldugunda hala yaziyor --
+           tekrarı kaldirirken bilgiyi de kaldirmis olmayalim. */
+        return ayni === '' && farkli === 'LIVE · JAZZ · DE';
+      }), 'PLAYJOY PLAYJOY yok; farkli kaynak hala yaziliyor');
     K('Acilis turu bugunku uygulamayi anlatiyor', await pg.evaluate(()=>{
         const a = turAdimlari();
         const basliklar = a.map(x=>x.bas);

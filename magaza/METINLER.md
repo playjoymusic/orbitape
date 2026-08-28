@@ -132,9 +132,29 @@ ama **cihazdan çıkmadığı**.
 | `ekran-2-1080x1920.png` | 1080 × 1920 | Telefon ekran görüntüsü |
 | `ekran-3-1080x1920.png` | 1080 × 1920 | Telefon ekran görüntüsü |
 
-Ekran görüntüleri uygulamanın kendi `ekran-*.png` dosyalarından
-üretildi. İçerik değiştirilmedi; Play'in istediği **9:16** oranına
-uyması için uygulamanın kendi koyu zemininde ortalandı — kırpma yok,
-esnetme yok.
+Ekran görüntüleri **uygulamanın şu anki kodundan** yeniden çekildi
+(540×960 görüntü alanı, 2× ölçek → tam 1080×1920). Kırpma yok,
+esnetme yok, elle rötuş yok.
+
+Çekimde gerçek `radyo.json` ve gerçek `earth.json` kullanıldı:
+ekranda görünen istasyon adları, rafları, ülke kodları, arşiv kaydının
+adı, sanatçısı ve lisansı **depoda yazanın aynısı**. Ses yerine kısa
+bir ton döndürüldü — görselleştirici gerçek sinyalle çalıştı.
+
+| Dosya | Ne gösteriyor |
+|---|---|
+| `ekran-1` | Canlı radyo, ELECTRONIC rafı seçili — `LIVE · ELECTRONIC · UA` |
+| `ekran-2` | Retro FX açık, parmak diskin içinde, `DRAG INSIDE` |
+| `ekran-3` | Arşiv (ORBITAPE), AMBIANCE rafı — ARCHIVE.ORG · Frank Schulte · CC BY-SA |
+
+Üçüncüsü bilerek arşiv tarafından: **lisans ve sanatçı satırı**
+uygulamanın en önemli sözü ve mağaza sayfasında görünmesi lazım.
+
+Bir ara MIXTAPE kanalında çekilmişti; o kanal kodda kapalı
+(`KANAL_SIRA = ['radio','lib']`), yani kullanıcının hiç gidemediği bir
+ekran mağazaya girecekti. Değiştirildi.
+
+Eski görüntüler uygulamanın **önceki** halindendi ve mağazaya
+girseydi bugünkü uygulamayı yanlış anlatırdı; bu yüzden değiştirildi.
 
 Uygulama simgesi olarak `icon-512.png` kullanılacak (512 × 512, hazır).
