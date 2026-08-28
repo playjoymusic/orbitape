@@ -89,7 +89,7 @@ RAF_KELIME = OrderedDict([
     # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
     # soul / r&b / trap BURADA: kullanicinin karari, raf dolsun.
     # lofi ve indie BURADA DEGIL -- onlar kendi rafinda kaliyor.
-    ("HIP HOP",     re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("HIP HOP & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                r"\bsoul\b|motown|g-?funk|turntabl|"
                                r"\bbreakdance\b|\bmc\b", re.I)),
@@ -115,13 +115,13 @@ RAF_KELIME = OrderedDict([
     # relax/chill LOUNGE'a tasindi. Burada kalanlar: doga, uyku,
     # meditasyon, drone, enstrumantal -- insan sessiz ortam.
     ("AMBIENT",     re.compile(r"\bambient\b|\bdrone\b|new ?age|meditation|"
-                               r"instrumental|soundscape|\bnature\b|\bsleep\b|"
+                               r"soundscape|\bnature\b|\bsleep\b|"
                                r"\bcalm\b|\bzen\b|healing|\bbinaural\b|"
                                r"white ?noise|rain ?sounds?|ocean ?sounds?|"
                                r"forest ?sounds?", re.I)),
     ("ORCHESTRAL",  re.compile(r"\bclassical\b|\bopera\b|orchestra|symphon|"
                                r"\bsonata\b|\bconcerto\b|baroque|soundtrack|"
-                               r"film ?music|\bpiano\b", re.I)),
+                               r"film ?music|\bpiano\b|instrumental", re.I)),
     # AFRO & LATIN buraya KATILDI: ikisi de "koku belli, yerel muzik".
     # Ayri raflar olarak 15 ve 19'da kaliyorlardi; birlesince 34.
     ("WORLD & ROOTS", re.compile(r"\breggae\b|\bdub\b|\bska\b|\bfolk\b|"
@@ -151,7 +151,7 @@ AILELER = OrderedDict([
     ("WORLD & ROOTS", {"renk": "#9A96AC"}),   # 5.
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),   # 6.
     ("INDIE & LOFI",  {"renk": "#B07CE8"}),   # 7.
-    ("HIP HOP",       {"renk": "#BEB6A4"}),   # 8.
+    ("HIP HOP & RNB", {"renk": "#BEB6A4"}),   # 8.
     ("DISCO FUNK",    {"renk": "#8FD0E8"}),   # 9.
     ("LOUNGE",        {"renk": "#D8CBA0"}),   # 10.
     ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 11. en dista, turkuaz
@@ -217,8 +217,8 @@ def _raflar(metin, elektronik_ustun=True):
     Iki tur birden geciyorsa kimse kazanmaz, MIXTAPE'e gider."""
     # HIP HOP ELEKTRONIKTEN DE USTUN: "House vs. Hip-Hop" ikisi de
     # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
-    if RAF_KELIME["HIP HOP"].search(metin):
-        return ["HIP HOP"]
+    if RAF_KELIME["HIP HOP & RNB"].search(metin):
+        return ["HIP HOP & RNB"]
     # LOUNGE MUTLAK: "lounge", "smooth", "relax" gecen her sey lounge.
     # "Smooth Jazz Lounge", "Jazz Lounge Bar" da dahil -- kullanicinin
     # karari: bunlar jazz degil, arka plan muzigi.
