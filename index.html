@@ -165,6 +165,14 @@
     top:calc(37px + env(safe-area-inset-top, 0px));}
   #bekle.buyuk #bekleGly{font-size:0;}
   #bekle.buyuk.on{opacity:.78;}
+  /* UC SEMBOL DE BIR DUGME: isim yazisiyla ayni isi yapiyor (raf
+     degistirme). Kullanicinin sozu: "3 sembole tiklayinca da
+     ORBITAPE ile ayni seyleri yapsin, hem dokunmatik icin de iyi
+     olur." Yazi ince ve kucuk; semboller genis bir hedef.
+     pointer-events YALNIZ bu kipte aciliyor: #bekle ayni zamanda
+     yukleme gostergesi ve diskin ortasindayken tiklanabilir olmasi
+     halkaya basmayi engellerdi. */
+  #bekle.buyuk{pointer-events:auto;cursor:pointer;touch-action:manipulation;}
   #bekle #bekleGly{letter-spacing:0;line-height:1;}
   #bekle .nk{font-style:normal;opacity:.16;animation:beklePls 1.15s infinite;}
   #bekle .nk:nth-of-type(1){animation-delay:0s;}
@@ -6076,6 +6084,15 @@
       _ma.setAttribute('role','button');
       _ma.setAttribute('aria-label','Next category');
       _ma.addEventListener('click', e=>{ e.stopPropagation(); modSiraGec(); });
+      /* Semboller de ayni dugme. Ayri bir davranis YOK: iki hedef,
+         tek is -- yoksa "hangisi ne yapiyordu" sorusu dogar. */
+      try{
+        const _sm = document.getElementById('bekle');
+        if(_sm) _sm.addEventListener('click', e=>{
+          if(!_sm.classList.contains('buyuk')) return;   // yukleme kipinde degil
+          e.stopPropagation(); modSiraGec();
+        });
+      }catch(_){}
       _ma.addEventListener('pointerdown', e=>e.stopPropagation());
     });
   }catch(e){}
@@ -6433,11 +6450,12 @@
     let ad = (gezinen !== undefined && gezinen !== null && gezinen !== '') ? gezinen : '';
     if(!ad){
       try{
-        /* Raf secimi kaldirildiysa yazi ALL olur: hicbir raf secili
-           degil, butun liste caliyor. Once 'RADIOTAPE' yaziyordu ama
-           o eski KANAL adi; kullanici ekranda gorunce "ne alaka"
-           dedi, hakliydi -- secili olmayan bir sey ismiyle durmamali. */
-        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || 'ALL';
+        /* RAF SECILI DEGILSE YAZI DA YOK. Once 'RADIOTAPE' yazdim
+           (eski kanal adi, kafa karistirdi), sonra 'ALL' (kullanici
+           "ne alaka" dedi -- ortadaki zara her basista cikiyordu,
+           yani ekranin yarisi zaman ALL yaziyordu). Dogrusu sessizlik:
+           secili bir sey yoksa ekranda da bir sey yazmiyor. */
+        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || '';
         else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : 'RADIOTAPE');
       }catch(e){ ad = AKTIF_MOD || ''; }
     }

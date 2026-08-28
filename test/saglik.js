@@ -2620,6 +2620,31 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        kullanici kaldirtti. Kod ortadaki zar bolgesine bagli:
        _diskOran(e) < zarSinir(). Bu satir giderse iptalin yolu
        kalmaz. */
+    /* SEMBOLLER DE ISIM DUGMESI: iki hedef, tek is. Yazi ince,
+       semboller genis -- dokunmatikte asil basilan yer orasi. */
+    K('Uc sembol de raf degistiriyor', await pg.evaluate(()=>{
+        const el = document.getElementById('bekle');
+        if(!el) return false;
+        el.classList.add('buyuk');
+        const tiklanir = getComputedStyle(el).pointerEvents !== 'none';
+        const eM = mod, eA = AKTIF_AILE;
+        mod = 'radio'; AKTIF_AILE = 'JAZZ';
+        el.dispatchEvent(new MouseEvent('click', {bubbles:true}));
+        const degisti = AKTIF_AILE !== 'JAZZ' && !!AKTIF_AILE;
+        mod = eM; AKTIF_AILE = eA;
+        return tiklanir && degisti;
+      }), 'sembollere tiklamak isim dugmesiyle ayni sirayi ilerletiyor');
+    /* RAF SECILI DEGILSE USTTE YAZI DA YOK: once RADIOTAPE, sonra ALL
+       yazmistim; ikisi de kullaniciya "ne alaka" dedirtti. */
+    K('Secim yokken ust yazi bos', await pg.evaluate(()=>{
+        const eM = mod, eA = AKTIF_AILE;
+        mod = 'radio'; AKTIF_AILE = null; modAdiYaz();
+        const bos = document.getElementById('modAd').textContent === '';
+        AKTIF_AILE = 'JAZZ'; modAdiYaz();
+        const dolu = document.getElementById('modAd').textContent === 'JAZZ';
+        mod = eM; AKTIF_AILE = eA; modAdiYaz();
+        return bos && dolu;
+      }), 'ne RADIOTAPE ne ALL: hicbir sey');
     K('Ortaya tek dokunus secimi birakir', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
         mod = 'radio'; _aileOncesi = null; AKTIF_AILE = 'ELECTRONIC';
