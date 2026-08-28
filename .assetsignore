@@ -33,3 +33,8 @@ hasat_durum.json
 #    the static asset directory of your project."
 #   developers.cloudflare.com/workers/static-assets/migration-guides/
 #   migrate-from-pages/
+
+# Magaza malzemesi yayina gitmiyor: gorseller ve metinler Play
+# Console icin, ziyaretcinin orbitape.app/magaza/... altinda
+# bulmasinin anlami yok.
+magaza/
