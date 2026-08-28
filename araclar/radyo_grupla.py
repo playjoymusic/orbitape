@@ -76,12 +76,13 @@ ELEKTRONIK = re.compile(
 # Raf kelimeleri. YALNIZ birine uyarsa o rafa, birden fazlasina
 # uyarsa MIXTAPE'e gidiyor.
 RAF_KELIME = OrderedDict([
-    ("ROCK",        re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
-                               r"rockabilly|grindcore", re.I)),
-    # "smooth jazz" JAZZ DEGIL LOUNGE: kullanicinin karari. Geriye
-    # bakisla disliyoruz, yoksa ikisi birden eslesip kayit MIXTAPE'e
-    # dusuyordu -- JAZZ rafinda 1 istasyon kalmasinin sebebi buydu.
-    ("JAZZ",        re.compile(r"(?<!smooth )\bjazz\b|bebop|\bswing\b|big ?band|dixieland|"
+    # COUNTRY BURAYA GELDI: WORLD & ROOTS'ta duruyordu ama adinda
+    # country gecen istasyon sayisi az degil ve dinleyici icin gitar
+    # tarafi rock'a yakin. Raf adi da onu soylesin.
+    ("ROCK & COUNTRY", re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
+                               r"rockabilly|grindcore|\bcountry\b|bluegrass|"
+                               r"\bhonky ?tonk\b|\bamericana\b", re.I)),
+    ("JAZZ",        re.compile(r"\bjazz\b|bebop|\bswing\b|big ?band|dixieland|"
                                r"hard ?bop|free ?jazz", re.I)),
     ("DISCO FUNK",  re.compile(r"\bfunk\b|\bsoul\b|motown|\br&b\b|\brnb\b|"
                                r"\bgroove\b|boogie", re.I)),
@@ -94,8 +95,7 @@ RAF_KELIME = OrderedDict([
                                r"\bsonata\b|\bconcerto\b|baroque|soundtrack|"
                                r"film ?music|\bpiano\b", re.I)),
     ("WORLD & ROOTS", re.compile(r"\breggae\b|\bdub\b|\bska\b|\bfolk\b|"
-                                 r"\bworld\b|celtic|\bblues\b|bluegrass|"
-                                 r"\bcountry\b|traditional", re.I)),
+                                 r"\bworld\b|celtic|\bblues\b|traditional", re.I)),
     ("AFRO & LATIN", re.compile(r"afrobeat|\bafro\b|\blatin\b|\bsalsa\b|"
                                 r"\bbossa\b|cumbia|merengue|bachata|\bsamba\b|"
                                 r"\btango\b|highlife|soukous", re.I)),
@@ -114,17 +114,17 @@ AILELER = OrderedDict([
     # dista: halkanin capi rafin buyuklugunu anlatiyor.
     # MIXTAPE EN ICTE ve bilerek: ortaya basan oraya duser, orasi
     # "turu belirsiz / rastgele" rafi.
-    ("MIXTAPE",       {"renk": "#8496FF"}),   # 187
-    ("JAZZ",          {"renk": "#CC7CA4"}),   #   1  (hasat bekliyor)
-    ("AMBIENT",       {"renk": "#5FBF7A"}),   #  20
-    ("ROCK",          {"renk": "#F2683C"}),   #  20
-    ("INDIE & LOFI",  {"renk": "#9A96AC"}),   #  23
-    ("AFRO & LATIN",  {"renk": "#F0AC7A"}),   #  25
-    ("DISCO FUNK",    {"renk": "#B07CE8"}),   #  25
-    ("LOUNGE",        {"renk": "#BEB6A4"}),   #  43
-    ("ORCHESTRAL",    {"renk": "#8FD0E8"}),   #  44
-    ("WORLD & ROOTS", {"renk": "#D8CBA0"}),   #  45
-    ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 119 -- en dista, turkuaz
+    ("MIXTAPE",       {"renk": "#8496FF"}),   # 1. halka
+    ("JAZZ",          {"renk": "#CC7CA4"}),   # 2.
+    ("AMBIENT",       {"renk": "#5FBF7A"}),   # 3.
+    ("ROCK & COUNTRY",{"renk": "#F2683C"}),   # 4.
+    ("WORLD & ROOTS", {"renk": "#9A96AC"}),   # 5.
+    ("ORCHESTRAL",    {"renk": "#F0AC7A"}),   # 6.
+    ("INDIE & LOFI",  {"renk": "#B07CE8"}),   # 7.
+    ("AFRO & LATIN",  {"renk": "#BEB6A4"}),   # 8.
+    ("DISCO FUNK",    {"renk": "#8FD0E8"}),   # 9.
+    ("LOUNGE",        {"renk": "#D8CBA0"}),   # 10.
+    ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 11. en dista, turkuaz
 ])
 
 TUR_GRUP = {}
@@ -175,9 +175,20 @@ def temizle(kayitlar):
 
 
 def _raflar(metin, elektronik_ustun=True):
-    """Metinde hangi raflarin kelimeleri geciyor."""
+    """Metinde hangi raflarin kelimeleri geciyor.
+
+    IKI MUTLAK ONCELIK VAR:
+      ELECTRONIC — house/techno/edm gecen istasyon baska ne yazarsa
+                   yazsin elektroniktir.
+      JAZZ       — "jazz lounge", "piano jazz", "smooth jazz": icinde
+                   jazz geciyorsa jazz rafina gider. Onceden bunlar
+                   iki rafa birden uyup MIXTAPE'e dusuyordu ve JAZZ
+                   rafinda tek istasyon kaliyordu.
+    Elektronik once soruluyor: "acid jazz" jazz degil, elektroniktir."""
     if elektronik_ustun and ELEKTRONIK.search(metin):
         return ["ELECTRONIC"]
+    if RAF_KELIME["JAZZ"].search(metin):
+        return ["JAZZ"]
     return [ad for ad, kal in RAF_KELIME.items() if kal.search(metin)]
 
 

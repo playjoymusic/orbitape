@@ -4932,17 +4932,17 @@
      "orchestral" rafina koyup pop caldirmak guveni kiriyor; emin
      olmadiklarimizin kendi yeri var ve orasi bilerek secilen bir yer. */
   var AILELER = [
-    { ad:'MIXTAPE',       renk:'132,150,255' },   // 187 -- turu belirsiz/karisik
-    { ad:'JAZZ',          renk:'204,124,164' },   //   1 -- hasat bekliyor
-    { ad:'AMBIENT',       renk:'95,191,122'  },   //  20
-    { ad:'ROCK',          renk:'242,104,60'  },   //  20
-    { ad:'INDIE & LOFI',  renk:'154,150,172' },   //  23
-    { ad:'AFRO & LATIN',  renk:'240,172,122' },   //  25
-    { ad:'DISCO FUNK',    renk:'176,124,232' },   //  25
-    { ad:'LOUNGE',        renk:'190,182,164' },   //  43
-    { ad:'ORCHESTRAL',    renk:'143,208,232' },   //  44
-    { ad:'WORLD & ROOTS', renk:'216,203,160' },   //  45
-    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 119 -- en dista, turkuaz
+    { ad:'MIXTAPE',       renk:'132,150,255' },   // 1. halka -- turu belirsiz
+    { ad:'JAZZ',          renk:'204,124,164' },   // 2.
+    { ad:'AMBIENT',       renk:'95,191,122'  },   // 3.
+    { ad:'ROCK & COUNTRY',renk:'242,104,60'  },   // 4.
+    { ad:'WORLD & ROOTS', renk:'154,150,172' },   // 5.
+    { ad:'ORCHESTRAL',    renk:'240,172,122' },   // 6.
+    { ad:'INDIE & LOFI',  renk:'176,124,232' },   // 7.
+    { ad:'AFRO & LATIN',  renk:'190,182,164' },   // 8.
+    { ad:'DISCO FUNK',    renk:'143,208,232' },   // 9.
+    { ad:'LOUNGE',        renk:'216,203,160' },   // 10.
+    { ad:'ELECTRONIC',    renk:'53,224,216'  }    // 11. en dista, turkuaz
   ];
   var AILE_ACILIS = 'ELECTRONIC';   // sifirdan acilis: en distaki halka
   var AILE_ADLAR = AILELER.map(a=>a.ad);
@@ -5162,7 +5162,15 @@
            ihtimalle "hepsi çalındı" damgasından kaynaklanıyor. Yalnız
            istasyon id'lerini temizleyip bir daha deniyoruz; arşiv
            geçmişine dokunmuyoruz. */
-        if(_radyoBos >= 3){ try{ calindiRadyoTemizle(); }catch(e){} _radyoBos = 0; }
+        /* ── TUR ICINDE SONSUZ DONGU ─────────────────────────────
+           Bir tur secildiginde havuz kucuk: 20-40 istasyon. Hepsi
+           calindi damgasini yiyince kuyruk bosa dusuyor ve kanal
+           "bitti" gibi duruyor -- olculdu, kullanici bir turde
+           basa donemedi. Radyo bitmez; basa doner.
+           Tur acikken ILK bos turda damgalar temizleniyor, tur yoksa
+           eski davranis (uc bos tur) duruyor. */
+        const _esik = (typeof AKTIF_AILE !== 'undefined' && AKTIF_AILE) ? 1 : 3;
+        if(_radyoBos >= _esik){ try{ calindiRadyoTemizle(); }catch(e){} _radyoBos = 0; }
         setTimeout(()=>{ if(!cekiliyor && (mod==='radio' || AKTIF_MOD==='RADIOTAPE')) radyoGec(); }, 800);
       }
       radyoKuyrukDoldur();

@@ -2504,6 +2504,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        ai ? (ai.bos+' istasyon kaldi (suzgec uygulanmadi)') : '-');
     K('Aile secilmeden hepsi caliyor', !!ai && ai.hepsi===4, ai ? ai.hepsi+' istasyon' : '-');
     K('aileSec var', !!ai && ai.aileSecVar, 'arayuz buna baglanacak');
+    /* TUR ICINDE SONSUZ DONGU: havuz bitince damgalar temizlenip
+       basa donuluyor. Esik tur acikken 1, yoksa 3. Bu satir giderse
+       kullanici bir turde 20 istasyon sonra duvara toslar. */
+    K('Tur icinde basa donuyor',
+       /_radyoBos >= _esik/.test(require('fs').readFileSync('index.html','utf8')),
+       'tur acikken ilk bos turda calindi damgalari siliniyor');
   }
   /* Istasyon adlari radio-browser'da anahtar kelime kuyrugu oluyor:
      "DJ REMIX & CHARTS RADIO @ TikTok Charts, Electronic Music,
