@@ -475,9 +475,42 @@
     left:calc(16px + env(safe-area-inset-left, 0px));
     bottom:calc(14px + env(safe-area-inset-bottom, 0px) + var(--klavye, 0px));
     transition:bottom .18s ease;}
-  /* Klavye acikken sonuc listesi kisaliyor: yoksa yukarida halkalarin
-     uzerine tirmaniyor. */
-  body.klavye #ara .sonuc{max-height:min(26vh,168px);}
+  /* ── KLAVYE ACIKKEN ARAMA YUKARI TASINIYOR ───────────────────────
+     Ilk deneme kutuyu klavye yuksekligi kadar YUKARI KALDIRMAKTI ve
+     yetmedi: iOS'ta klavyenin ustundeki yardim seridi (^ v ✓) bazi
+     surumlerde visualViewport olcusune girmiyor, kutu tam o seridin
+     ALTINDA kaliyor. Kullanicinin ekran goruntusunde yazdigi kelimenin
+     yalnizca tepesi gorunuyordu.
+     Olcuye guvenmek yerine KESIN olan sey kullaniliyor: klavye her
+     zaman ekranin ALTINI kaplar, UST her zaman bostur. Klavye acikken
+     arama basliga iniyor, sonuclar da altinda siralaniyor. Hicbir
+     olcum tutmasa bile calisir. */
+  body.klavye #ara{
+    /* 160px: gezegenlerin altina. 104'te kutu gezegenlerin uzerine
+       biniyordu (olculdu). */
+    top:calc(160px + env(safe-area-inset-top, 0px));
+    bottom:auto;
+    /* Yon de degisiyor: kap normalde column-reverse ve icerigi
+       ALTTAN diziyor. Ust'e tasiyip yonu birakinca kutu kabin
+       dibine, yani yine klavyenin arkasina dusuyordu (olculdu:
+       #ara ust 104 ama kutu 874'te). */
+    flex-direction:column;
+    height:auto;
+  }
+  /* SIRA ACIKCA YAZILIYOR. Kutu normalde column-reverse: yazi altta,
+     sonuclar ustunde. Klavye acikken tersi lazim -- yazi ustte,
+     sonuclar altinda -- ve bunu yon degistirerek yapmak DOM sirasina
+     bagli kaliyor (bir kere denendi, sonuclar yine ustte cikti).
+     'order' ile sira dogrudan soyleniyor: ne yazarsak o. */
+  body.klavye #ara.acik .kutu{flex-direction:column;}
+  body.klavye #ara.acik .kutu > *{order:3;}
+  body.klavye #ara.acik .kutu .satir{order:1;}
+  body.klavye #ara.acik .kutu .sonuc{order:2;}
+  body.klavye #ara .sonuc{margin-bottom:0;margin-top:8px;
+    max-height:min(38vh,260px);}
+  /* Klavye acikken alt satirlar (REC/CAM, calan parca) yolda: yazi
+     yazarken kimse onlara bakmiyor ve klavyenin arkasinda kaliyorlar. */
+  body.klavye #araclar{opacity:0;pointer-events:none;}
   body.t-lib   #ara, body.t-lib   #karsilama{color:#8ff0dd;}
   body.t-liste #ara, body.t-liste #karsilama{color:#d9d0dd;}
   body.t-radio #ara, body.t-radio #karsilama{color:#ffc79e;}
@@ -6911,7 +6944,10 @@
           if(k === _son) return;
           _son = k;
           document.documentElement.style.setProperty('--klavye', k + 'px');
-          document.body.classList.toggle('klavye', k > 90);
+          /* Sinifi burasi da acabilir (odaklanma olayi kacarsa) ama
+             KAPATMIYOR: blur kapatir. Olcum yaniltirsa kutu yukarida
+             kalir, klavyenin altinda degil. */
+          if(k > 90) document.body.classList.add('klavye');
         }catch(e){ _yut(e); }
       };
       vv.addEventListener('resize', yaz);
@@ -6919,6 +6955,18 @@
       yaz();
     }catch(e){ _yut(e); }
   })();
+
+  /* Klavye ACILDI/KAPANDI: olcum degil OLAY. visualViewport bazi
+     iOS surumlerinde yardim seridini saymiyor; odaklanma her yerde
+     dogru. Masaustunde klavye yok, o yuzden yalnizca dokunmatikte. */
+  try{
+    araGiris.addEventListener('focus', ()=>{
+      try{ if(MOBIL) document.body.classList.add('klavye'); }catch(e){ _yut(e); }
+    });
+    araGiris.addEventListener('blur', ()=>{
+      try{ document.body.classList.remove('klavye'); }catch(e){ _yut(e); }
+    });
+  }catch(e){ _yut(e); }
 
   function araAc(){
     if(araKut.classList.contains('acik')) return;

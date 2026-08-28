@@ -2808,13 +2808,38 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
             && parca.indexOf('Cinemix')>=0
             && etiket.indexOf('Deep House Radio')>=0;
       }), 'ad, BUYUK/kucuk harf, parca ve etiket uzerinden bulunuyor');
-    /* Klavye acilinca arama kutusu klavyenin altinda kaliyordu. */
-    K('Klavye arama kutusunu ortmuyor', await pg.evaluate(()=>{
+    /* ── KLAVYE ACIKKEN ARAMA YUKARIDA OLMALI ────────────────────
+       Ilk cozum kutuyu klavye yuksekligi kadar kaldirmakti; iOS'ta
+       klavyenin yardim seridi (^ v ✓) olcuye girmedigi icin kutu tam
+       o seridin ALTINDA kaldi -- kullanicinin ekran goruntusunde
+       yazdigi kelimenin yalnizca tepesi gorunuyordu.
+       Artik olcuye guvenilmiyor: klavye her zaman ALTI kaplar, UST
+       her zaman bostur. Klavye acikken arama yukari tasiniyor. */
+    K('Klavye acikken arama yukarida', await pg.evaluate(()=>{
+        const el = document.getElementById('ara');
+        const once = el.getBoundingClientRect();
+        document.body.classList.add('klavye');
+        const sonra = el.getBoundingClientRect();
+        /* Sira GERCEKTEN olculuyor: yazi kutusu sonuc listesinin
+           USTUNDE mi. Yon adina bakmak yetmiyor -- bir kere 'column'
+           yazildi ama DOM sirasi yuzunden sonuclar yine ustte cikti. */
+        el.classList.add('acik');
+        const satir = el.querySelector('.satir').getBoundingClientRect();
+        const sonuc = el.querySelector('.sonuc').getBoundingClientRect();
+        el.classList.remove('acik');
+        document.body.classList.remove('klavye');
+        return sonra.top < innerHeight * 0.35
+            && sonra.top < once.top
+            && satir.top <= sonuc.top;
+      }), 'kutu ust yariya cikiyor, sonuclar altina geciyor');
+    /* Kapatma odaklanma OLAYINA bagli: olcum yaniltsa bile blur
+       kapatiyor, yani kutu klavyenin altinda kalmiyor. */
+    K('Klavye kipi odaklanmaya bagli', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
-        const c = getComputedStyle(document.getElementById('ara')).bottom;
-        return /--klavye/.test(k) && /visualViewport/.test(k)
-            && !!c && c !== 'auto';
-      }), 'kutu --klavye kadar yukari kalkiyor');
+        return /addEventListener\('focus'[\s\S]{0,140}classList\.add\('klavye'\)/.test(k)
+            && /addEventListener\('blur'[\s\S]{0,140}classList\.remove\('klavye'\)/.test(k)
+            && /--klavye/.test(k);
+      }), 'focus acar, blur kapatir; olcum yalnizca yedek');
     /* ── RAF KAPISI TIK YAGMURU URETMEMELI ───────────────────────
        Olculen sikayet: sag ustten raf degistirip beklerken "arka
        arkaya cok hizli tiklaniyormus gibi" sesler geliyordu.
