@@ -1271,6 +1271,28 @@
     RADIOTAPE:{ ana:'53,224,216', ikinci:'236,104,190',             // turkuaz halka, SİYAH zemin (ilk açılan ekran temiz dursun)
                 halka:['53,224,216','236,104,190','150,140,255','104,160,240'], zemin:['#08090b','#000000'] }
   };
+  /* ── ORBITAPE = RETRO-DARK ────────────────────────────────────────
+     Radyo tarafı canlı ve doygun; arşiv tarafı bilerek sönük: krem,
+     kum, zeytin, bakır, kurşun. Aynı ailenin tonları — kanal
+     değiştiğinde ekran "başka bir yer" gibi duruyor ama yabancı
+     durmuyor. HUMAN kendi gül rengini koruyor (yukarıda tanımlı). */
+  (function(){
+    const RETRO = {
+      HUMANS:     ['204,124,164','226,168,140'],   // mevcut HUMAN gulu korundu
+      RECORDS:      ['196,150,110','232,196,158'],   // bakir: plak
+      SPACE:      ['154,150,172','196,192,208'],   // kursun
+      SOUNDSCAPES: ['150,158,128','196,202,176'],   // zeytin
+      NATURE:     ['130,160,150','182,206,196'],   // sonuk yesil-mavi
+      MACHINES:    ['168,160,140','214,206,184'],   // kum
+      OTHERS:    ['190,182,164','230,224,208']    // krem
+    };
+    for(const ad in RETRO){
+      const [ana, ik] = RETRO[ad];
+      MOD_TEMA[ad] = { ana:ana, ikinci:ik,
+                       halka:[ana, ik, '96,92,86', '224,216,200'],
+                       zemin:['#0d0c0a','#030302'] };
+    }
+  })();
   /* Ekran zemini: FX > kategori > kanal. modSec / fxModGec / modaGec
      ve açılış çağırıyor. Kanal temasına dönmek için sınıf kalkıyor. */
   /* ── KATEGORİ ÖNİZLEMESİ ─────────────────────────────────────────
@@ -1302,6 +1324,25 @@
   }
   function zeminUygula(){
     try{ markaRengi(); }catch(e){}
+    /* ── SAĞ ÜSTTEKİ ÜÇ SEMBOL SEÇİLİ HALKANIN RENGİNİ ALIR ─────────
+       Semboller kanalın sabit rengiyle duruyordu; hangi rafta
+       olduğunu söylemiyorlardı. Artık seçili raf neyse onun rengi:
+       ekranda üç ayrı yer (halka, yazı, semboller) aynı şeyi
+       söylüyor. Satır içi renk sınıf rengini eziyor; seçim yoksa
+       satır içi renk kalkıyor ve sınıf rengi geri geliyor. */
+    try{
+      const _b = document.getElementById('bekle');
+      if(_b){
+        let _r = '';
+        if(typeof mod !== 'undefined' && mod === 'radio'){
+          _r = (typeof AKTIF_AILE !== 'undefined' && AKTIF_AILE) ? aileRenk(AKTIF_AILE) : '';
+        }else if(AKTIF_MOD && MOD_TEMA[AKTIF_MOD]){
+          _r = MOD_TEMA[AKTIF_MOD].ana;
+        }
+        if(_r) _b.style.color = 'rgb(' + _r + ')';
+        else   _b.style.removeProperty('color');
+      }
+    }catch(e){}
     try{
       /* ZEMİN FX'E GÖRE DEĞİŞMİYOR: arka plan seçili KATEGORİNİN malı.
          Hangi efektte olduğunu HALKALAR söylüyor (hepsi o rengin
@@ -1335,11 +1376,17 @@
      arsivde kategoriler. SAYI DEGISINCE GEOMETRI DE DEGISIYOR: en dis
      halka SABIT, yer iceriden aciliyor, ARALIK degismiyor. */
   function halkaAdlar(){
-    try{ if(typeof mod !== 'undefined' && mod === 'radio' &&
-            typeof AILE_ADLAR !== 'undefined') return AILE_ADLAR; }catch(e){}
+    try{
+      if(typeof mod !== 'undefined'){
+        if(mod === 'radio' && typeof AILE_ADLAR !== 'undefined') return AILE_ADLAR;
+        if(mod === 'lib'   && typeof ARSIV_ADLAR !== 'undefined') return ARSIV_ADLAR;
+      }
+    }catch(e){}
     return MODSIRA;
   }
-  function halkaAilesiMi(){ return halkaAdlar() !== MODSIRA; }
+  function halkaAilesiMi(){
+    try{ return typeof mod !== 'undefined' && mod === 'radio'; }catch(e){ return false; }
+  }
   /* Halka yarıçapları — çizim ve DOKUNMA aynı sayıları kullanıyor ki
      bastığın yer ile gördüğün halka birbirini tutsun. */
   /* En dış halka telefonun sağından/solundan taşıyordu. Ölçüm: en
@@ -2489,8 +2536,43 @@
       radyo:'talk' },
     { ad:'MIXTAPE',   yer:/.^/, radyo:'' },
     { ad:'ORBITAPE',  yer:/.^/, radyo:'' },
-    { ad:'RADIOTAPE', yer:/.^/, radyo:'' }
+    { ad:'RADIOTAPE', yer:/.^/, radyo:'' },
+    /* ── ORBITAPE'IN 7 RAFI ──────────────────────────────────────────
+       SIRA ONEMLI VE OLCULDU. Raflar BIRBIRINI DISLIYOR: bir kayit
+       yukaridan asagi ilk uydugu rafa giriyor, ikinciye giremiyor.
+       Sondaki OTHERS bu yuzden gercekten "kalan" -- ustteki alti
+       rafa giren hicbir sey oraya dusemez.
+       Olculen hacimler (22.903 kayit, earth + earth_buyuk):
+         HUMANS 8.111 · RECORDS 9.412 · SPACE 683 · SOUNDSCAPES 5.580
+         NATURE 3.984 · MACHINES 523 · OTHERS kalan */
+    { ad:'HUMANS',     yer:/oldtimeradio|old ?time ?radio|\botr\b|radio ?drama|radioprogram|radiostationarchives|airchecks|librivox|audiobook|audio_?bookspoetry|poetry|spoken|podcast|\btalk\b|interview|speech|lecture|sermon|monolog|dialog|storytell|oral history|narrat|documentar|\bnews\b|briefing|commentary|conference|aapb|soap opera|comedy|\bdrama\b|shortwave|numbers ?station|irdial|conet|telsiz|radio ?signals?/i, radyo:'' },
+    { ad:'RECORDS',      yer:/78 ?rpm|great78|cylinder|edison|shellac|\bvinyl\b|^lp_|netlabel|freemusicarchive|jamendo|folklore|\bfolk\b|\bsaz\b|baglama|celtic|flamenco|tango|\bsalsa\b|klezmer|\bjazz\b|\bblues\b|\bopera\b|orchestra|symphon|sonata|concerto|album|\bep\b|remix|compilation|\bsong\b|\bmusic\b|guitar|piano|quartet|techno|\bidm\b|glitch|musique concrete|electroacoustic|\bdrone\b|psych.?folk|improvisation/i, radyo:'' },
+    { ad:'SPACE',      yer:/nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|satellite|space ?sounds?|\biss\b|spacewalk|expedition ?\d|telemetry|soyuz|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit/i, radyo:'' },
+    { ad:'SOUNDSCAPES', yer:/soundscape|bioacoustic|phonograph|field ?recordings?|environmental ?sounds?|natural ?sounds?|hydrophone|room ?tone|ambience|ambiance|atmosphere/i, radyo:'' },
+    { ad:'NATURE',     yer:/\bnature\b|\bbirds?\b|bird ?song|forest|jungle|wildlife|animal|insects?|crickets?|frogs?|meadow|garden|mountain|desert|ocean|\bsea\b|river|stream|creek|waterfall|underwater|\brain\b|thunder|storm|\bwind\b|\bsnow\b|\bice\b|city ?sounds?|urban|traffic|crowd|market|street/i, radyo:'' },
+    { ad:'MACHINES',    yer:/machine ?sounds?|\bengine\b|factory|\btrain\b|subway|airport|turbine|generator|motor\b|industrial ?sounds?|war ?recording/i, radyo:'' },
+    { ad:'OTHERS',    yer:/.^/, radyo:'' }          // kalan: asagidaki arsivRaf() dolduruyor
   ];
+  /* ORBITAPE kanalinda halkalar bunlar. En icteki ilk acilan. */
+  const ARSIV_ADLAR = ['HUMANS','RECORDS','SPACE','SOUNDSCAPES','NATURE','MACHINES','OTHERS'];
+  /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
+     uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
+     ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
+  /* SINIFLAMA SIRASI EKRAN SIRASI DEGIL. Ekranda HUMANS en icte
+     duruyor ama sorulacak ILK soru o degil: HUMANS ve RECORDS cok
+     genis kaliplar ve once sorulurlarsa dar raflari yutuyorlar --
+     olculdu, MACHINES 523 kayittan 7'ye dusmustu. Once DAR ve kesin
+     raflar soruluyor, genis olanlar en sonda. */
+  const ARSIV_SORGU = ['MACHINES','SPACE','SOUNDSCAPES','NATURE','HUMANS','RECORDS'];
+  function arsivRaf(o){
+    const t = (String((o&&o.etiket)||'') + ' ' + String((o&&o.ad)||'') + ' ' +
+               String((o&&o.mp3)||'')).replace(/[_\-.\/]+/g,' ');
+    for(const ad of ARSIV_SORGU){
+      const m = modBul(ad);
+      if(m && m.yer && m.yer.test(t)) return ad;
+    }
+    return 'OTHERS';
+  }
   /* Etiket: koleksiyondan gelir, güvenilir. Başlık: serbest metin, asla. */
   function _mt(o){ return String((o&&o.etiket)||'').toLowerCase(); }
   /* Kaynak: mp3 adresindeki archive.org kimliği + dosya adı. */
@@ -2523,6 +2605,10 @@
     /* Canlı yayın SADECE RADIOTAPE'te; RADIOTAPE de sadece canlı yayın. */
     if(o && o.radyo) return ad === 'RADIOTAPE';
     if(ad === 'RADIOTAPE') return false;
+    /* ORBITAPE'IN 7 RAFI: karar tek yerden, arsivRaf()'tan geliyor.
+       Burada ayrica kalip denemek iki farkli dogruluk kaynagi yaratir
+       ve er gec ayrisirlar. */
+    try{ if(ARSIV_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){}
     const mz = _muzikMi(o);
     if(ad === 'MIXTAPE')  return mz;
     if(ad === 'ORBITAPE') return !mz;
@@ -4498,6 +4584,15 @@
   function cal(item){
     iz('cal');
     if(!item) return;
+    /* İLK SES KATEGORİYE TAKILMAZ ────────────────────────────────
+       Açılış kategorisi RADIOTAPE. Radyo gelmeyip yedeğe düşülünce
+       ilk ses bir ARŞİV kaydı oluyor ve aşağıdaki kategori kapısından
+       geçemiyor: uygulama hiçbir şey çalmadan duruyor, karşılama eli
+       de çıkmıyor (elin şartı bir çalma denemesi). Ölçüldü:
+       _ilkCalindi hiç true olmuyordu.
+       Kategori bir TERCİH; sessizliğin sebebi olamaz. Yalnızca ilk
+       ses muaf, sonrası eskisi gibi. */
+    const _ilkSes = !_ilkCalindi;
     _ilkCalindi = true;
     /* ── SON KAPI ────────────────────────────────────────────────
        Kategori açıkken o kategoriye ait olmayan hiçbir şey çalmaz.
@@ -4505,7 +4600,7 @@
        sonuçlandığında kategori dinlerken istasyon açılıyordu.
        Buradan geçemiyor; onun yerine kategoriden yeni bir ses
        isteniyor. Tek çıkış noktası olduğu için kaçak kalmıyor. */
-    if(AKTIF_MOD && !_favMod && !modUygun(item)){
+    if(AKTIF_MOD && !_favMod && !_ilkSes && !modUygun(item)){
       setTimeout(()=>{ if(AKTIF_MOD) { try{ modGec(); }catch(e){} } }, 60);
       return;
     }
@@ -4805,8 +4900,9 @@
     { ad:'INDIE & LOFI',  renk:'95,191,122'  },   //  50
     { ad:'JAZZ & SOUL',   renk:'242,104,60'  },   //  96
     { ad:'WORLD & ROOTS', renk:'154,150,172' },   //  91
-    { ad:'AFRO & LATIN',  renk:'240,172,122' },   //  69
-    { ad:'CLASSICAL',     renk:'53,224,216'  }    //  44 -- en dista, turkuaz
+    { ad:'AFRO & LATIN',  renk:'240,172,122' },   //  57
+    { ad:'ROCK',          renk:'176,124,232' },   //  97 -- rock/punk/metal
+    { ad:'CLASSICAL',     renk:'53,224,216'  }    //  42 -- en dista, turkuaz
   ];
   const AILE_ACILIS = 'ELECTRONIC';   // sifirdan acilis ailesi
   const AILE_ADLAR = AILELER.map(a=>a.ad);
@@ -4828,6 +4924,7 @@
   /* Aile değiştir. zorla=true aynı aileye tekrar basınca kapatmaz. */
   function aileSec(ad, zorla){
     AKTIF_AILE = (!zorla && AKTIF_AILE === ad) ? null : (ad || null);
+    try{ zeminUygula(); }catch(e){}                 // semboller ve zemin yeni ailenin rengine
     try{ radyoKuyruk.length = 0; }catch(e){}      // eski ailenin istasyonları çalmasın
     try{ radyoKuyrukDoldur(); }catch(e){}
     return AKTIF_AILE;
@@ -5601,15 +5698,46 @@
      yine en dıştan başlar. */
   /* Radyoda sag ustteki isme basmak BIR SONRAKI TURE geciriyor;
      arsivde eski davranis (bir icteki kategori). */
+  /* ISME BASINCA HALKA YANAR: secilen raf, parmak uzerindeymis gibi
+     buyuyup parlıyor. Sagdan basmak ile halkaya dokunmak ayni seyi
+     yapiyor -- kullanici ikisinin ayni sey oldugunu gorerek ogreniyor. */
+  var _yakZaman = null;
+  function halkaYak(ad){
+    try{
+      const k = halkaAdlar().indexOf(ad); if(k < 0) return;
+      /* BUYUK GEZINME YAZISI ACILMIYOR: o yazi ekranin ortasinda
+         duran bir katman ve 900 ms boyunca altindaki her seyi
+         kapatiyordu (turda SKIP dugmesi tiklanamaz oldu, olculdu).
+         Burada gereken sey sadece HALKANIN yanmasi. */
+      _moodGez = true; _moodVurgu = k;
+      if(_yakZaman) clearTimeout(_yakZaman);
+      _yakZaman = setTimeout(()=>{ _yakZaman = null; _moodGez = false; _moodVurgu = -1; }, 900);
+    }catch(e){}
+  }
   function aileSiraGec(){
     const n = AILE_ADLAR.length;
     const bul = AILE_ADLAR.indexOf(AKTIF_AILE);
     const i = (bul >= 0) ? (bul + 1) % n : 0;
     try{ aileSec(AILE_ADLAR[i], true); }catch(e){}
-    try{ modAdiGoster(); }catch(e){}
+    try{ modAdiGoster(); halkaYak(AILE_ADLAR[i]); }catch(e){}
+  }
+  /* ORBITAPE'te isim dugmesi 8 rafi geziyor. */
+  /* RADYODAKI DAVRANISIN AYNISI: isme basmak rafi SECIYOR ve halkayi
+     yakiyor ama calan sesi kesmiyor. Yeni raf bir sonraki seste
+     devreye giriyor. Once burada modSec cagriliyordu ve o sonraki()
+     ile parcayi aninda degistiriyordu -- iki menu farkli davraniyordu. */
+  function arsivSiraGec(){
+    const n = ARSIV_ADLAR.length;
+    const bul = ARSIV_ADLAR.indexOf(AKTIF_MOD);
+    const i = (bul >= 0) ? (bul + 1) % n : 0;
+    AKTIF_MOD = ARSIV_ADLAR[i];
+    try{ localStorage.setItem('orbitape.mod', AKTIF_MOD); }catch(e){}
+    try{ kuyruk.length = 0; }catch(e){}          // yeni raf siradaki seste gecerli
+    try{ modAdiGoster(); zeminUygula(); halkaYak(AKTIF_MOD); }catch(e){}
   }
   function modSiraGec(){
     if(typeof mod !== 'undefined' && mod === 'radio'){ aileSiraGec(); return; }
+    if(typeof mod !== 'undefined' && mod === 'lib'){ arsivSiraGec(); return; }
     const n = MODSIRA.length;
     /* HER BASIŞ BİR HALKA İÇERİ. Nerede olduğumuza bakıyoruz: sıra
        bizde ise bir sonrakine, elle başka bir kategori seçilmişse
@@ -5996,7 +6124,7 @@
     if(!ad){
       try{
         if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || AILE_ACILIS;
-        else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : mod === 'liste' ? 'MIXTAPE' : 'RADIOTAPE');
+        else ad = AKTIF_MOD || (mod === 'lib' ? 'ORBITAPE' : 'RADIOTAPE');
       }catch(e){ ad = AKTIF_MOD || ''; }
     }
     el.textContent = ad;

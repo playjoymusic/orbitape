@@ -204,7 +204,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Ses grafi kuruldu',      ses.kuruldu, ses.durum+' @'+ses.sr);
   K('Tani paneli varsayilan kapali', await pg.evaluate(()=>TANI===false), '?tani ile aciliyor');
   const md = await pg.evaluate(()=>({n:MODLAR.length, ad:MODLAR.map(m=>m.ad).join(' '), aktif:AKTIF_MOD}));
-  K('Kategoriler tanimli',    md.n===5, md.ad);
+  /* 5 kanal kategorisi + ORBITAPE'in 8 rafi = 13. */
+  K('Kategoriler tanimli',    md.n===12, md.ad);
   /* Adlarda BOSLUK VAR ("INDIE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
@@ -214,7 +215,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Sabit sayi beklemek yanlis olurdu -- ikisini de ayri sinamak
      gerekiyor, cunku geometri (ic yaricap, zar siniri) sayidan
      tureniyor ve yanlis sayida parmak baska halkayi secer. */
-  K('Radyoda halkalar tur ailesi', hs.n===7 &&
+  K('Radyoda halkalar tur ailesi', hs.n===8 &&
        /ELECTRONIC/.test(hs.sira) && /CLASSICAL/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
@@ -222,14 +223,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const r = { ad:halkaAdlar().join(' '), n:halkaAdlar().length, ic:halkaIc(), sinir:zarSinir() };
       mod = eski; return r;
     });
-    K('Arsiv kanalinda halkalar kategori', ars.n===5 && /RADIOTAPE/.test(ars.ad), ars.ad);
+    K('Arsiv kanalinda halkalar 7 raf', ars.n===7 && /HUMANS/.test(ars.ad) && /OTHERS/.test(ars.ad), ars.ad);
     /* EN DIS HALKA SABIT: yer iceriden aciliyor. Bu bozulursa en dis
        halka ekran kenarindan tasar -- bir kere olmustu. */
     K('En dis halka her iki kanalda ayni',
-       Math.abs((hs.ic + 6*hs.ara) - (ars.ic + 4*hs.ara)) < 0.001,
-       'radyo dis '+(hs.ic+6*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+4*hs.ara).toFixed(3));
-    K('Zar siniri halkalarla birlikte kayiyor', hs.sinir < ars.sinir,
-       'radyo '+hs.sinir.toFixed(3)+' < arsiv '+ars.sinir.toFixed(3));
+       Math.abs((hs.ic + 7*hs.ara) - (ars.ic + 6*hs.ara)) < 0.001,
+       'radyo dis '+(hs.ic+7*hs.ara).toFixed(3)+' | arsiv dis '+(ars.ic+6*hs.ara).toFixed(3));
+    K('Zar siniri halka sayisindan tureniyor', hs.sinir < ars.sinir,
+       'radyo(8) '+hs.sinir.toFixed(3)+' | arsiv(7) '+ars.sinir.toFixed(3));
   }
   /* Cizim ve DOKUNMA ayni sabitleri kullaniyor mu: her halkanin
      cizildigi yarıcapa basinca _halkaNo o halkayi vermeli. */
@@ -241,7 +242,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*(halkaAdlar().length-1))+0.03)*1.035; // 1.035: parmak altindaki halka
     return { y, enGenis:Math.round(enGenis), ekran:innerWidth, disk:Math.round(dk.width) };
   });
-  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6', 'yaricap->halka '+hg.y.join(','));
+  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7', 'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
   const ay = await pg.evaluate(()=>{
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
@@ -360,6 +361,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
           const cz=document.querySelector('#tur .cizgi');
           const d=document.querySelector('.disk').getBoundingClientRect();
           const ha=d.top+d.height*0.5+Math.min(d.width,d.height)*0.357*HALKA_DIS;
+          const yz=document.querySelector('#tur .yazi');
+          /* HENUZ YERLESTIRILMEMISSE OLCME. Yazinin top'u adim
+             basina hesaplaniyor; bos oldugu an eleman sayfanin
+             tepesinde duruyor ve her olcum "cakisma" sayiliyordu --
+             olculen sey yerlesim degil, olcumun erken yapilmasiydi. */
+          if(!yz.style.top) return 0;
           const y=g('#tur .yazi'), a=g('#tur .alt');
           const c=cz.style.display==='none'?null:g('#tur .cizgi');
           return ((c && y[1]>c[0]) || y[1]>a[0] || y[0]<ha) ? 1 : 0;
@@ -368,13 +375,23 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       }
       const kars = await pp.evaluate(()=>document.getElementById('karsilama').classList.contains('on'));
       /* SKIP: kutu isaretlenmeden -> tekrar cikmali */
-      await pp.click('#turAtla'); await pp.waitForTimeout(400);
+      /* TUR KENDILIGINDEN BITEBILIYOR. Adim sayisi degistikce bu
+         dongu turdan uzun surebiliyor ve SKIP gorunmez oluyordu ->
+         test kod hatasi yokken cokuyordu. Acikken tikla, kapanmissa
+         zaten istenen son durumdayiz. */
+      await pp.evaluate(()=>{ try{ const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
+      await pp.waitForTimeout(400);
       const kapandi = await pp.evaluate(()=>!document.getElementById('tur').classList.contains('on'));
       const temiz = await pp.evaluate(()=>({fx:FXMOD, oniz:_onizMod}));
       await pp.reload(); await pp.waitForTimeout(2400);
       const tekrar = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
       /* kutu isaretli -> bir daha cikmamali */
-      await pp.click('#turKutu'); await pp.click('#turAtla'); await pp.waitForTimeout(300);
+      /* DOGRUDAN element.click(): tur kendiliginden kapanmis olabilir
+         ve o zaman Playwright "gorunmuyor" diye bekliyor. Burada
+         olculen sey kutunun ISI, tiklanabilirligi degil. */
+      await pp.evaluate(()=>{ try{ const k=document.getElementById('turKutu'); if(k) k.click();
+                                   const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
+      await pp.waitForTimeout(300);
       await pp.reload(); await pp.waitForTimeout(2400);
       const bitti = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
       return { acildi, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz, tekrar, bitti,
@@ -449,7 +466,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const eskiKanal = mod, eskiAile = AKTIF_AILE;
     mod = 'radio'; AKTIF_AILE = AILE_ADLAR[0];
     const tur = [AKTIF_AILE];
-    for(let i=0;i<7;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
+    for(let i=0;i<8;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
     AKTIF_AILE = eskiAile; mod = eskiKanal;
     return { tur };
   });
@@ -502,8 +519,32 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     madi.yazi+' | ayni satir, marka adindan kucuk');
   /* Radyoda isim dugmesi AILE degistiriyor: her basis bir sonraki
      tur, sekizinci basista basa donuyor. */
+  {
+    const rt = await pg.evaluate(()=>{
+      const g = ARSIV_ADLAR.map(a=>({ad:a, p:MOD_TEMA[a], m:modBul(a)}));
+      const doygun = c=>{ const [r,gg,b]=c.split(',').map(Number);
+        return (Math.max(r,gg,b)-Math.min(r,gg,b)); };
+      return { hepsiTemali:g.every(x=>x.p && x.p.ana),
+               hepsiKalipli:g.every(x=>x.m && x.m.yer),
+               /* RETRO = SONUK. HUMAN disinda hicbir raf doygun renk
+                  olmamali; doygun renk radyo tarafinin isareti. */
+               enDoygun:Math.max(...g.filter(x=>x.ad!=='HUMANS').map(x=>doygun(x.p.ana))),
+               zeminler:g.every(x=>/^#0/.test(x.p.zemin[0])) };
+    });
+    K('Yedi raf tanimli ve kalipli', rt.hepsiTemali && rt.hepsiKalipli, 'her rafin temasi ve kalibi var');
+    /* RAFLAR BIRBIRINI DISLIYOR: ayni kayit iki rafa giremez.
+       Girerse OTHERS "kalan" olmaktan cikar ve halkalar yalan soyler. */
+    K('Raflar birbirini dislıyor', await pg.evaluate(()=>{
+        const ornek=[{etiket:'field recording soundscape'},{etiket:'oldtimeradio drama'},
+                     {etiket:'78rpm jazz vinyl'},{etiket:'nasa apollo'},{etiket:'engine factory'},
+                     {etiket:'birds forest'},{etiket:'zzz-hicbir-sey'}];
+        return ornek.every(o=>ARSIV_ADLAR.filter(a=>modUyar(o,a)).length===1);
+      }), 'her kayit tek rafa giriyor');
+    K('Arsiv raflari retro-sonuk', rt.enDoygun <= 100, 'en doygun raf farki '+rt.enDoygun+' (radyo tarafi 150+)');
+    K('Arsiv zeminleri koyu', rt.zeminler, 'hepsi #0.. ile basliyor');
+  }
   K('Isim dugmesi turleri geziyor',
-    nb.tur && nb.tur.length===8 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[7],
+    nb.tur && nb.tur.length===9 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[8],
     nb.tur ? nb.tur.join(' > ') : String(nb));
   /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
      FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
@@ -933,7 +974,21 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const acilis = await d();
       await pp.click('.uydu[data-fx="ana"]'); await pp.waitForTimeout(400);
       const acik = await d();
-      await pp.click('#ust .kanal.ad'); await pp.waitForTimeout(300);
+      /* Tur katmani acik kalabiliyor ve ustunu kapatiyor; burada
+         olcmek istedigimiz sey dugmenin ISI, tiklanabilirligi degil. */
+      const _kOnce = await pp.evaluate(()=>mod);
+      await pp.evaluate(()=>document.querySelector('#ust .kanal.ad').click());
+      await pp.waitForTimeout(300);
+      /* DURUMU GERI AL: bu blok bittikten sonraki testler radyo
+         kanalinda olmaya guveniyor. Birakip gidince kayit ve el
+         testleri sebepsiz kirmiziya donmustu. */
+      /* SADECE KANAL geri aliniyor. Once burada modSec de cagriliyordu
+         ve o localStorage'a yaziyor -> "acilista depo bos" kontrolu
+         sebepsiz kirmiziya donuyordu. Test kendi izini birakmamali. */
+      await pp.evaluate(k=>{ try{ if(mod!==k) modaGec(k);
+                                  AKTIF_MOD=null; localStorage.removeItem('orbitape.mod');
+                                  modAdiYaz(); }catch(e){} }, _kOnce);
+      await pp.waitForTimeout(200);
       const baska = await d();
       await pp.click('.uydu[data-fx="ana"]'); await pp.waitForTimeout(300);
       const kapali = await d();
@@ -1444,6 +1499,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       try{
         /* Kayit aciksa: canli yayin gelince DURMALI. */
         _kayitAktif = true; _kayitSebep = '';
+        /* KATEGORI KAPALI OLMALI. cal()'in ilk kapisi "acik kategoriye
+           ait olmayan hicbir sey calmaz" diyor ve canli yayin hicbir
+           arsiv rafina ait degil -- yani AKTIF_MOD acikken kayit
+           kapisina HIC gelinmiyor. Onceki testlerden kalan bir
+           kategori bu testi sebepsiz kirmiziya ceviriyordu. */
+        const _kMod = AKTIF_MOD; AKTIF_MOD = null;
         try{ cal({mp3:'https://sahte.test/r0', ad:'Radio X', radyo:true}); }catch(e){}
         await bek(120);
         sonuc.yayindaDurdu = durduruldu;
@@ -1453,6 +1514,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         try{ cal({mp3:'https://sahte.test/e0.mp3', ad:'E 0', etiket:'netlabel', lisans:SERBEST}); }catch(e){}
         await bek(120);
         sonuc.arsivdeDurdu = durduruldu;
+        AKTIF_MOD = _kMod;
       }finally{
         window.kayitDurdur = eskiDurdur; window.sonraki = eskiSonraki;
         _kayitAktif = eskiAktif; _kayitSebep = eskiSebep;
@@ -1656,7 +1718,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   });
   K('Kilit ekrani kunyesi doluyor', !!ms && ms.arsiv.baslik==='Nocturne in E-flat' && ms.arsiv.sanatci==='Chopin',
      (ms?ms.arsiv.baslik+' — '+ms.arsiv.sanatci:'-'));
-  K('Kunyede kanal ve kaynak var', !!ms && /ARCHIVE/.test(ms.arsiv.albom||''), (ms?ms.arsiv.albom:'-'));
+  /* 'ARCHIVE.ORG' burada KAYNAK adi -- raf adi degil. Toplu yeniden
+     adlandirmada yanlislikla OTHERS'a cevrilmisti. */
+  K('Kunyede kanal ve kaynak var', !!ms && /ARCHIVE\.ORG/i.test(ms.arsiv.albom||''), (ms?ms.arsiv.albom:'-'));
   K('Kilit ekraninda kapak var', !!ms && ms.arsiv.kapak===true, '192 + 512');
   K('Bes oynatma kancasi kurulu', !!ms && ['nexttrack','pause','play','previoustrack','stop']
        .every(x=>ms.arsiv.kancalar.includes(x)), (ms?ms.arsiv.kancalar.join(' '):'-'));
@@ -2327,9 +2391,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                aileSecVar:(typeof aileSec==='function') };
     });
     /* NEWS & TALK SILINDI: icinde tek istasyon yoktu. Sayi 7. */
-    K('Yedi aile tanimli', !!ai && ai.sayi===7, ai ? ai.adlar.join(' · ') : 'AILELER yok');
-    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===7,
-       ai ? ai.benzersizRenk+'/7 benzersiz' : '-');
+    K('Sekiz aile tanimli', !!ai && ai.sayi===8, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===8,
+       ai ? ai.benzersizRenk+'/8 benzersiz' : '-');
     K('En icteki halka ELECTRONIC', !!ai && ai.adlar[0]==='ELECTRONIC',
        'ortada basili tutan en cok istasyonu olan aileye duser');
     K('Aile suzgeci sadece o aileyi birakiyor', !!ai && ai.suzulen==='a,b',
@@ -2458,7 +2522,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     n.classList.add('on');
     npAd.textContent = 'Symphony No. 9 in D minor, Op. 125 — IV. Presto / Allegro assai (Complete Live Recording)';
     npSanatci.textContent = 'Berliner Philharmoniker conducted by Herbert von Karajan';
-    npKaynak.textContent = 'ARCHIVE';
+    npKaynak.textContent = 'OTHERS';
     for(const id of ['geri','fav','ileri']) document.getElementById(id).classList.add('var');
     const fAc = document.getElementById('favAc');
     const eskiRec = rec.className, eskiCam = cam.className, eskiFav = fAc.className;

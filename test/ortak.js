@@ -179,6 +179,14 @@ async function sayfaAc(kaynak, secenek){
      evaluate()'in icinde kullaniliyor. */
   await sayfa.addInitScript(()=>{
     window.SERBEST = 'http://creativecommons.org/licenses/by-nc-sa/3.0/';
+    /* KANAL HAFIZASI TEMIZ BASLASIN. Uygulama son kalinan kanali
+       hatirliyor (orbitape.kanal). Testler ayni tarayici baglamini
+       paylastigi icin bir testin biraktigi kanal, sonraki testin
+       ACILISINI degistiriyordu: baska havuz, baska ag istegi, baska
+       sonuc -- ve dusen test hicbir seyi olcmemis oluyordu.
+       Kalicilik AYRICA sinaniyor; oradaki test degeri kendisi
+       yaziyor. Burada varsayilan hep ayni: radyo. */
+    try{ localStorage.removeItem('orbitape.kanal'); }catch(e){}
   });
 
   if(se.once){
