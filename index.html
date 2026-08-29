@@ -2048,6 +2048,16 @@
   /* Iki onalti rengi karistiriyor. Kilit kapaliyken tema ile rafin
      zemini yari yariya birlesiyor: tema baskin ama raf degisince
      zemin de hafifce doniyor. */
+  /* Iki "r,g,b" dizgisini karistiriyor. pay=0 -> tamamen a,
+     pay=1 -> tamamen b. Halkalarin temaya kaydirilmasinda ve
+     baska yerlerde kullaniliyor. */
+  function _renkKaris(a, b, pay){
+    try{
+      const A=String(a).split(',').map(Number), B=String(b).split(',').map(Number);
+      if(A.length<3 || B.length<3) return a;
+      return [0,1,2].map(i=>Math.round(A[i]*(1-pay)+B[i]*pay)).join(',');
+    }catch(e){ return a; }
+  }
   function _hexKaris(a, b, k){
     try{
       const oku = h=>{ h=String(h).replace('#','');
@@ -5361,6 +5371,26 @@
       const _mp = MOD_TEMA[_mAd];
       let _rnk = (_aileMi ? aileRenk(_mAd) : (_mp ? _mp.ana : '')) ||
                  (_mp ? _mp.ana : HALKA_RENK[k%HALKA_RENK.length]);
+      /* ── TEMA HALKALARA DA GIRIYOR ────────────────────────────────
+         Tema zemini, marka yazisini ve sembolleri boyuyordu ama
+         halkalar disarida kaliyordu: ekranin en buyuk nesnesi kilifin
+         disindaydi ve tema "sadece arka plan" gibi duruyordu.
+         AMA HALKANIN RENGI RAFIN KIMLIGI. Tamamen temaya boyansalardi
+         dokuz halka birbirinin ayni olurdu ve hangi rafta oldugun
+         kaybolurdu -- temanin bozmamasi gereken tek sey bu.
+         O yuzden KAYDIRMA, boyama degil: her halka kendi renginden
+         temanin vurgusuna dogru %34 cekiliyor. Raflar arasindaki fark
+         duruyor (turkuaz hala turkuaz, kavunici hala kavunici) ama
+         hepsi ayni tonda konusuyor -- takim halinde bir palet.
+         SECILI HALKA DAHA AZ KAYIYOR (%18): o an bakilan sey, kendi
+         rengine en yakin duran o olmali. */
+      try{
+        const _T = temaAl();
+        if(_T && _T.v){
+          const _pay = (_secili || _vurgu2) ? 0.18 : 0.34;
+          _rnk = _renkKaris(_rnk, _T.v, _pay);
+        }
+      }catch(e){ _yut(e); }
       /* ── FX AÇIKKEN HALKALAR O RENGİN AİLESİNE KAYAR ──────────────
          Tek bir halkayı boyamak yetmiyordu: efektte olduğunu ve hangi
          efektte olduğunu ancak bütün diskin rengi söyleyebiliyor.

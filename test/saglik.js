@@ -4034,6 +4034,52 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   });
   K('Tema marka yazisina giriyor', kilif.temali.m1 !== kilif.oto.m1,
      'sol durak ' + kilif.oto.m1 + ' -> ' + kilif.temali.m1);
+  /* ── TEMA HALKALARA DA GIRIYOR ─────────────────────────────────
+     Ekranin en buyuk nesnesi kilifin disinda kaliyordu. Ama halkanin
+     rengi RAFIN KIMLIGI: tamamen boyansalar dokuz halka birbirinin
+     ayni olur ve hangi rafta oldugun kaybolur. O yuzden kaydirma --
+     her halka kendi renginden temanin vurgusuna dogru cekiliyor,
+     aralarindaki fark duruyor. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const i0 = kaynak.indexOf('let _rnk = (_aileMi');
+    const blok = kaynak.slice(i0, i0 + 1600);
+    K('Tema halkalara giriyor',
+       /_renkKaris\(_rnk, _T\.v, _pay\)/.test(blok), 'halka rengi temaya kaydiriliyor');
+    /* Secili halka daha az kayiyor: o an bakilan sey kendi rengine
+       en yakin duran olmali. */
+    K('Secili halka daha az kayiyor',
+       /\(_secili \|\| _vurgu2\) \? 0\.18 : 0\.34/.test(blok), 'secili %18, otekiler %34');
+  }
+  /* Karisim islevinin kendisi: uc noktasi ve orta nokta dogru mu.
+     Yanlis bir karisim halkalari sessizce tek renge dusurur. */
+  {
+    const kr = await pg.evaluate(()=>({
+      sifir: _renkKaris('200,100,50','0,0,0',0),
+      bir:   _renkKaris('200,100,50','0,0,0',1),
+      orta:  _renkKaris('200,100,50','100,200,150',0.5),
+      bozuk: _renkKaris('bozuk','1,2,3',0.5)
+    }));
+    K('Renk karisimi dogru', kr.sifir==='200,100,50' && kr.bir==='0,0,0'
+       && kr.orta==='150,150,100' && kr.bozuk==='bozuk',
+       '0 -> kendisi, 1 -> hedef, .5 -> ortasi, bozuk deger degismiyor');
+  }
+  /* Halkalar tema altinda BIRBIRINDEN AYRI kalmali: kilif hepsini
+     ayni renge dusurmuyorsa raf kimligi duruyor demektir. */
+  {
+    const ayrik = await pg.evaluate(()=>{
+      const T = TEMALAR.find(t=>t.ad==='ACID YELLOW');
+      const adlar = AILELER.slice(0,6).map(a=>a.ad);
+      const ham = adlar.map(a=>aileRenk(a));
+      const boyali = ham.map(r=>_renkKaris(r, T.v, 0.34));
+      const tek = new Set(boyali).size;
+      /* Kayma gercekten olmus mu ve raflar hala ayri mi */
+      return { tek, n:boyali.length, degisti: boyali.every((c,i)=>c!==ham[i]) };
+    });
+    K('Tema halkalari tek renge dusurmuyor', ayrik.tek===ayrik.n && ayrik.degisti===true,
+       ayrik.n + ' rafin ' + ayrik.tek + ' ayri rengi kaldi');
+  }
+
   K('Tema sembollere de giriyor',
      kilif.temali.buyutec !== kilif.oto.buyutec && kilif.temali.cizgi2 !== kilif.oto.cizgi2,
      'buyutec ve tutamagin orta cizgisi');
