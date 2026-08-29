@@ -210,26 +210,6 @@
   "saf": 2
  },
  {
-  "id": "rb:962aa032-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://ice6.somafm.com/groovesalad-128-aac",
-  "ad": "SomaFM Groove Salad (128k AAC)",
-  "etiket": "ambient,chillout,downtempo,groove,lounge,sleep",
-  "ulke": "US",
-  "tur": "ambient",
-  "grup": "AMBIENT",
-  "saf": 2
- },
- {
-  "id": "rb:960cf833-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://ice2.somafm.com/groovesalad-128-mp3",
-  "ad": "SomaFM Groove Salad (128k MP3)",
-  "etiket": "ambient,chillout,downtempo,groove,lounge,sleep",
-  "ulke": "US",
-  "tur": "ambient",
-  "grup": "AMBIENT",
-  "saf": 2
- },
- {
   "id": "rb:ca0d4e4d-658b-43cc-abce-710075ae358d",
   "mp3": "https://ice6.somafm.com/groovesalad-256-mp3",
   "ad": "SomaFM Groove Salad (256k MP3)",
@@ -516,7 +496,7 @@
   "etiket": "classical piano,jazz,lounge,lounge music,piano,piano jazz,smooth jazz",
   "ulke": "DE",
   "tur": "jazz",
-  "grup": "JAZZ",
+  "grup": "LOUNGE",
   "saf": 1
  },
  {
@@ -1190,16 +1170,6 @@
   "saf": 2
  },
  {
-  "id": "rb:7a5f6e60-af07-4dbf-a076-d8e079fb1439",
-  "mp3": "https://ice5.somafm.com/groovesalad2-256-mp3",
-  "ad": "Groove Salad 2 (256k MP3)",
-  "etiket": "ambient,chillout,downtempo,lounge",
-  "ulke": "US",
-  "tur": "downtempo",
-  "grup": "LOUNGE",
-  "saf": 2
- },
- {
   "id": "rb:f2847b14-8a7b-4f93-a381-99628ee723ef",
   "mp3": "https://stream2.xdevel.com/audio0s975809-423/stream/icecast.audio",
   "ad": "lifegate",
@@ -1590,16 +1560,6 @@
   "saf": 1
  },
  {
-  "id": "rb:0698d428-45f1-4cbc-a910-577a2c434944",
-  "mp3": "https://streamer.radio.co/s0635c8b0d/listen",
-  "ad": "dr_dick's dub shack",
-  "etiket": "bass,downtempo,dub,dub reggae,dub techno,dubtechno,future bass",
-  "ulke": "BM",
-  "tur": "downtempo",
-  "grup": "WORLD & ROOTS",
-  "saf": 1
- },
- {
   "id": "rb:db695122-b64f-4be3-a2b6-633e8722d4ba",
   "mp3": "https://puma.streemlion.com:5505/stream",
   "ad": "dubsideradio",
@@ -1636,7 +1596,7 @@
   "etiket": "bossa nova,jazz",
   "ulke": "DE",
   "tur": "bossa nova",
-  "grup": "WORLD & ROOTS",
+  "grup": "LOUNGE",
   "saf": 1
  },
  {
@@ -1956,7 +1916,7 @@
   "etiket": "classical,dub,jazz,pop,reggae,rock,techno",
   "ulke": "FR",
   "tur": "jazz",
-  "grup": "WORLD & ROOTS",
+  "grup": "RADIOTAPE",
   "saf": 1
  },
  {
@@ -2056,7 +2016,7 @@
   "etiket": "electro,hip hop,jazz,new wave,reggae,world music",
   "ulke": "FR",
   "tur": "jazz",
-  "grup": "WORLD & ROOTS",
+  "grup": "RADIOTAPE",
   "saf": 1
  },
  {
@@ -2086,7 +2046,7 @@
   "etiket": "bayern,instrumental,schwany,volksmusik,volksmusik instrumental",
   "ulke": "DE",
   "tur": "instrumental",
-  "grup": "WORLD & ROOTS",
+  "grup": "ORCHESTRAL",
   "saf": 1
  },
  {
@@ -2096,7 +2056,7 @@
   "etiket": "broadway,musicals,showtunes,soundtracks",
   "ulke": "GR",
   "tur": "soundtrack",
-  "grup": "WORLD & ROOTS",
+  "grup": "ORCHESTRAL",
   "saf": 1
  },
  {
@@ -2126,7 +2086,7 @@
   "etiket": "dub,eclectic,electronic,funk,jazz,reggae,rock,urban",
   "ulke": "FR",
   "tur": "dub",
-  "grup": "WORLD & ROOTS",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -2166,7 +2126,7 @@
   "etiket": "gospel,instrumental",
   "ulke": "BR",
   "tur": "instrumental",
-  "grup": "WORLD & ROOTS",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -2190,16 +2150,6 @@
   "saf": 1
  },
  {
-  "id": "rb:cc91af7c-42ee-11e9-aa55-52543be04c81",
-  "mp3": "https://ice6.somafm.com/dubstep-128-aac",
-  "ad": "SomaFM Dub Step Beyond (128k AAC)",
-  "etiket": "deep bass,dub,dubstep",
-  "ulke": "US",
-  "tur": "dub",
-  "grup": "WORLD & ROOTS",
-  "saf": 1
- },
- {
   "id": "rb:960eb3a4-0601-11e8-ae97-52543be04c81",
   "mp3": "https://ice2.somafm.com/dubstep-128-mp3",
   "ad": "SomaFM Dub Step Beyond (128k MP3)",
@@ -2216,16 +2166,6 @@
   "etiket": "deep bass,dub,dubstep",
   "ulke": "US",
   "tur": "dub",
-  "grup": "WORLD & ROOTS",
-  "saf": 1
- },
- {
-  "id": "rb:d420bcf1-bb4c-11e9-acb2-52543be04c81",
-  "mp3": "https://ice6.somafm.com/folkfwd-128-aac",
-  "ad": "SomaFM Folk Forward (128k AAC)",
-  "etiket": "alt-folk,indie folk,occasional folk classics",
-  "ulke": "US",
-  "tur": "folk",
   "grup": "WORLD & ROOTS",
   "saf": 1
  },
@@ -3076,7 +3016,7 @@
   "etiket": "hip hop,r&b,soul,urban",
   "ulke": "US",
   "tur": "soul",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3086,7 +3026,7 @@
   "etiket": "soul,waynesboro",
   "ulke": "US",
   "tur": "soul",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3096,7 +3036,7 @@
   "etiket": "1990's,1990s,rnb,soul",
   "ulke": "DE",
   "tur": "soul",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3106,7 +3046,7 @@
   "etiket": "dubstep,electro,hip-hop,trap",
   "ulke": "US",
   "tur": "dub",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3116,7 +3056,7 @@
   "etiket": "80s,90s,funk,r&b,soul,urban",
   "ulke": "NL",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3126,7 +3066,7 @@
   "etiket": "80's,disco,funk,oldies,pop,soul",
   "ulke": "FR",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3136,7 +3076,7 @@
   "etiket": "60s,70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,oldies,p-funk,r&b,r'n'b,rare groove,rnb,soul,usa",
   "ulke": "US",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3146,7 +3086,7 @@
   "etiket": "60s,70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,oldies,p-funk,r&b,r'n'b,rare groove,rnb,soul,usa",
   "ulke": "US",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3156,7 +3096,7 @@
   "etiket": "disco,electro house,funk,groove",
   "ulke": "FR",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3166,7 +3106,7 @@
   "etiket": "funk",
   "ulke": "FR",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3176,7 +3116,7 @@
   "etiket": "classical",
   "ulke": "AF",
   "tur": "classical",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3186,7 +3126,7 @@
   "etiket": "funk,nostalgie,oldies,soul",
   "ulke": "FR",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3196,7 +3136,7 @@
   "etiket": "future funk",
   "ulke": "JP",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3206,7 +3146,7 @@
   "etiket": "soul",
   "ulke": "US",
   "tur": "soul",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3216,7 +3156,7 @@
   "etiket": "hiphop,rnb,rumba,soul",
   "ulke": "UG",
   "tur": "soul",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3226,7 +3166,7 @@
   "etiket": "funk,hip hop,soul",
   "ulke": "CA",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3236,7 +3176,7 @@
   "etiket": "90s hip hop,g-funk,gangsta rap,hip hop,old school hip hop,rap,west coast hip hop",
   "ulke": "US",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -3246,7 +3186,7 @@
   "etiket": "1970s,1980s,70's,70er,70s,70s disco,80,80's,80er,80s,boogie,funk",
   "ulke": "US",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 2
  },
  {
@@ -3256,7 +3196,7 @@
   "etiket": "70's,70s disco,disco funk,funk",
   "ulke": "IT",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 2
  },
  {
@@ -3266,7 +3206,7 @@
   "etiket": "disco,funky house,house",
   "ulke": "RU",
   "tur": "funk",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 2
  },
  {
@@ -3276,7 +3216,7 @@
   "etiket": "#,+,-,0,00s,bach,beach,black,chill house,chillout+lounge,clubbing,dance,dancehall,deejay,deep house,dj mixes,dj remix,dj sets,edm,electro,hard techno,house,ibiza,ibiza club,latin,lounge,lounge music,mashup,mix,mixed,moombahton,new,new rave,pool beach bar,pop,pop dance,pop music,promodj,rave,reggaeton,remix,rnb,soul,soulful house,summer,sunshine,techno,top charts,top40,urban",
   "ulke": "DE",
   "tur": "reggae",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3286,7 +3226,7 @@
   "etiket": "charts,chillout,edm,edm festival,house,lifestyle,lounge,non-stop music,party,party hits,partyhits,rock,top 40,top charts,top hits,top100,top40",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3296,7 +3236,7 @@
   "etiket": "#,#charts,#club,#djmix,#mashup,#radio,#top100,00s,90s,beachclub,charts,chill house,chillout,chillout+lounge,club,club dance,club dance electronic house trance,club house,clubbing,dance house club  electronic techhouse,deejay,deep house,deep music,dj,dj mixes,dj remix,dj sets,edm,electro,electro techno,electronic,funky house,future house,hardstyle/handsup/edm,hip hop,hip-hop,hiphop,house,hypertechno,ibiza,latin,latin music,latin pop,lounge music,mashup,melodic house,minimal,minimal techno,moombahton,pop,progressive house,r&b,r&b/urban,rap hiphop rnb,rave,reggaeton,remixed,remixes,singlecharts,soulful house,sundowner,sunset,tech house,techno,top 40,top100,vocal deep",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3306,7 +3246,7 @@
   "etiket": "#90s,#charts,2000s,2010s,bass house,beachclub,charts,chillout,club,club dance electronic house trance,clubbing,dance music,dance top40,dancehall,deejay,deep house,deep techno,dj,dj mixes,dj remix,dj sets,edm,edm radioshows,electro house,electro techno,electronic dance music,funky house,hotel,house,house techno,house/soulful/deep house,houseparty,hypertechno,latin music,live dj,live music,liveset,lounge,mainstream,mainstream music,mainstream urban,mashup,minimal techno,música urbana,partymix,pop,progressive house,radio,radioshow,reggaeton,remix,remixed,rnb,singlecharts,soulful,soulful house,sundowner,techno,technology,top 40 hits,top charts,top hits,top100,urban",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3316,7 +3256,7 @@
   "etiket": "### top 40 club ###,#dj,#edm,#partybreaks,#remix,#techhouse,''''''''' top 100 '''''''''',********,00s,2000s,90,90's,90s,ambient,ambient lounge,best,best music,bounce,chamber,charts,chillout,classic hits,contemporary hits,dance,dance music,dance/chr/edm,deejay,deejay remix,deep house,dj,dj mix,dj mixes,dj radio,dj remix,dj sets,edm,electro house,electronic,eurodance,festivals,game,handsup! rave oldscool 90s 00s 10s trance techno,highfield-festival,hiphop,hits,house,houseparty,hypertechno,live dj,local music,local radio,lounge,lounge music,love,love songs,minimal,minimal tech house,minimal techno,mix,oldies,party,partycharts,partymusik,pop,promodj,rap hiphop rnb,rave,relax,remixes,rnb,rock,spring break festival,techhouse,techno,top 100,top 40,video game music,video games,videogames",
   "ulke": "DE",
   "tur": "ambient",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3326,7 +3266,7 @@
   "etiket": "00's,00s,2000s,2010s,2020s,2024,2025s,2026s,2027s,80s,90s,chillout,chillout+lounge,club,club dance,deep house,dj,dj remix,dj sets,facebook,funk,hard techno,house,houseparty,instagram,klassik,klassik rock,liveradio,livestream,lounge music,minimal techno,mixed,moombahton,non-stop,non-stop music,palm springs,pop dance,promo,promodj,reggaeton,remixed,rnb,rock,soulful house,summer,summer tunes,techhouse,techno,tiktok,top 100,top 40,top charts,top hits,top100,top40,twitter,up to date,winter",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3336,7 +3276,7 @@
   "etiket": "#charts,#edm,#house,#techhouse,beachclub,charts,chillout,chillout+lounge,club,club dance,club dance electronic house trance,club house,clubbing,deep ambient,deep house,deep techno,disco,dj,dj mix,dj remix,dj sets,electro techno,hiphop,ibiza club,live,lounge,minimal,non-stop,party,party hits,partymix,radio,radiocharts,reggaeton,relax,schlager,tech house,techno,top 40,top hits,top40",
   "ulke": "DE",
   "tur": "ambient",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3346,7 +3286,7 @@
   "etiket": "cinema,movie,movie soundtracks,movies,soundtracks",
   "ulke": "DE",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3356,7 +3296,7 @@
   "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
   "ulke": "ES",
   "tur": "funk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3366,7 +3306,7 @@
   "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
   "ulke": "US",
   "tur": "funk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3376,7 +3316,7 @@
   "etiket": "anime,music,soundtracks",
   "ulke": "CO",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3386,7 +3326,7 @@
   "etiket": "reggaeton",
   "ulke": "DE",
   "tur": "reggae",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3406,7 +3346,7 @@
   "etiket": "film score,movie scores,movie soundtracks,soundtracks",
   "ulke": "HU",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3416,7 +3356,7 @@
   "etiket": "70s,70s disco,acir,acir online,disco,disco funk,entretenimiento,español,estación,euro disco,grupo acir,iheart,iheart radio,internet,internet radio,internet station,italo disco,mix,mix fm,moi merino,music,música,música del recuerdo,música en inglés,nu disco,nu-disco,online,online only,radio online",
   "ulke": "MX",
   "tur": "funk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3426,7 +3366,7 @@
   "etiket": "#bewirbdich!,#mashup,beach,best music,brandnew,charts,chillout+lounge,club,clubbing,community radio,dance smashes,dj,dj remix,dj sets,edm,edm radioshows,hard techno,hiphop,hits,hot ac,houseparty,ibiza,ibiza classics,ibiza club,lounge,mashup,minimal techno,non-stop music,party,partycharts,promodj,radio,rave,remixed,singlecharts,sunset,tech house,techno,top 100,top 40,top charts,top hits,underground,urban",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3446,7 +3386,7 @@
   "etiket": "90's,années 80,electro,emission,jazz,pop music,talk",
   "ulke": "FR",
   "tur": "jazz",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3456,7 +3396,7 @@
   "etiket": "ambient,ambiental,chill,chillout,classic,classical,classical piano,klassik,new age piano,piano jazz,relax,relaxing",
   "ulke": "DE",
   "tur": "new age",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3466,7 +3406,7 @@
   "etiket": "ambient,ambient and relaxation music,classic,classical,instrumental,klassiek,violin",
   "ulke": "DE",
   "tur": "instrumental",
-  "grup": "RADIO",
+  "grup": "ORCHESTRAL",
   "saf": 3
  },
  {
@@ -3476,7 +3416,7 @@
   "etiket": "102.7 fm,américa,arizona,en todas partes,entretenimiento,español,estación,exa,exa fm,fm,juvenil,la estación exacta,la estación naranja,latinoamérica,moi merino,music,mvs,mvs radio,méxico,música,música en español e inglés,música pop,nogales,norteamérica,ponte exa,pop,pop en español e inglés,pop music,pop rock,radio,sonora,top 40,usa",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3486,7 +3426,7 @@
   "etiket": "americana,ballads,beautiful music,cinematic,downtempo,female vocalists,femalevocals,jazz,pop,pop ballads,sadcore,slow,soft,soft pop,vocal jazz",
   "ulke": "US",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3496,7 +3436,7 @@
   "etiket": "classical",
   "ulke": "MA",
   "tur": "classical",
-  "grup": "ORCHESTRAL",
+  "grup": "WORLD & ROOTS",
   "saf": 3
  },
  {
@@ -3506,7 +3446,7 @@
   "etiket": "acid jazz,disco,funk,groove,neo soul,new jack swing,nu disco,nu funk,smooth jazz,soul",
   "ulke": "FR",
   "tur": "jazz",
-  "grup": "RADIO",
+  "grup": "DISCO FUNK",
   "saf": 3
  },
  {
@@ -3516,7 +3456,7 @@
   "etiket": "indie pop,jpop",
   "ulke": "JP",
   "tur": "indie",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3526,7 +3466,7 @@
   "etiket": "ambient,chillout,downtempo",
   "ulke": "US",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "AMBIENT",
   "saf": 3
  },
  {
@@ -3546,7 +3486,7 @@
   "etiket": "conspiracy theories,philosophy,psychedelic",
   "ulke": "AT",
   "tur": "psychedelic",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3556,7 +3496,7 @@
   "etiket": "club dance,dance,dance top40,electro,electronic,electronic dance music,music non stop,non-commercial,non-stop,non-stop music,noncommercial,pop,pop dance,top 40,top 40 hits,top charts,top hits,top40",
   "ulke": "FR",
   "tur": "electronic",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3586,7 +3526,7 @@
   "etiket": "afrobeats,chill,chillout,electronic,lounge,mashup,remixes",
   "ulke": "DE",
   "tur": "afrobeat",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3596,7 +3536,7 @@
   "etiket": "ambient,balearic,balearic house,beach,club dance,dance,deep house,house,lounge,pool beach bar,relax,smooth,smooth jazz,smooth lounge",
   "ulke": "DE",
   "tur": "jazz",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3606,7 +3546,7 @@
   "etiket": "instrumental music",
   "ulke": "BE",
   "tur": "instrumental",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3616,7 +3556,7 @@
   "etiket": "others,pop.rock.jazz",
   "ulke": "SA",
   "tur": "jazz",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3626,7 +3566,7 @@
   "etiket": "blues,pop,pop rock,rock,soul",
   "ulke": "FR",
   "tur": "soul",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3636,7 +3576,7 @@
   "etiket": "beschwingte ryhtmen,easy listening,lounge,nu-jazz,positive energie,soundtrack für die besten abende des jahres",
   "ulke": "DE",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3646,7 +3586,7 @@
   "etiket": "jazz,new age",
   "ulke": "ID",
   "tur": "new age",
-  "grup": "RADIO",
+  "grup": "ORCHESTRAL",
   "saf": 3
  },
  {
@@ -3656,7 +3596,7 @@
   "etiket": "974,créole,reggae,réunion",
   "ulke": "RE",
   "tur": "reggae",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3666,7 +3606,7 @@
   "etiket": "99.9 fm,argentina,buenos aires,entretenimiento,español,estación,fm,grupo clarín,la 100,latinoamérica,magazines,moi merino,música,radio,suramérica",
   "ulke": "AR",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3676,7 +3616,7 @@
   "etiket": "90s,classic rock,música del recuerdo,pop music,techno",
   "ulke": "PE",
   "tur": "techno",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3686,7 +3626,7 @@
   "etiket": "afrobeats",
   "ulke": "NG",
   "tur": "afrobeat",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3696,7 +3636,7 @@
   "etiket": "60s,70s,acir,acir online,américa,balada,balada en español,balada romántica,baladas,baladas en español,cdmx,ciudad de méxico,clásicos,clásicos en español,entretenimiento,español,estación,grupo acir,iheart,iheart radio,latinoamérica,mexico city,moi merino,méxico,música,música en español,norteamérica,online,online only,radio,radio online,valle de méxico",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3706,7 +3646,7 @@
   "etiket": "folk",
   "ulke": "HU",
   "tur": "folk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3716,7 +3656,7 @@
   "etiket": "disco,electro,funk,jazz,music,pop,raggae,rock,sanspub,soul,world",
   "ulke": "FR",
   "tur": "jazz",
-  "grup": "RADIO",
+  "grup": "DISCO FUNK",
   "saf": 3
  },
  {
@@ -3726,7 +3666,7 @@
   "etiket": "classical",
   "ulke": "IN",
   "tur": "classical",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3736,7 +3676,7 @@
   "etiket": "américa,chile,entretenimiento,español,estación,fm,juvenil,latin pop,los40,moi merino,music,música,música en español e inglés,música pop,pop,pop en español e inglés,pop music,pop rock,prisa radio,radio,santiago,suramérica",
   "ulke": "CL",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3746,7 +3686,7 @@
   "etiket": "103.7 fm,américa,boca del río,clásicos en español,entretenimiento,español,estación,fm,grupo radiosa,latinoamérica,love,love fm,moi merino,música,música en español,norteamérica,pop,pop en español,pop music,pop rock,radio,retro hits,veracruz,veracruz city",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3756,7 +3696,7 @@
   "etiket": "alternative / indie,pop,top hits",
   "ulke": "ID",
   "tur": "indie",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3766,7 +3706,7 @@
   "etiket": "2000er,2010er,2020er,80er,90er,ard,bildung,charts,entertainment,gemeinschaft,hitradio,mdr jump,mitteldeutscher rundfunk,mitteldeutschland,ostdeutschland,osten,pop,radio,sachsen,sachsen-anhalt,thüringen,unterhaltung",
   "ulke": "DE",
   "tur": "funk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3776,7 +3716,7 @@
   "etiket": "1980's,1980's hits,1980s,1980s hits,80's,80s,80s radio,80s rock,acir,acir online,américa,cdmx,ciudad de méxico,classic rock; alternative rock indie,entretenimiento,español,estación,glam,glam rock,grupo acir,hits 80s,iheart,iheart radio,internet radio,internet station,latinoamérica,mexico city,mix,mix 80s,mix fm,mix ochentas,moi merino,music,méxico,música,new wave,norteamérica,online,online only,radio,radio online,rock,the best of 80's,valle de méxico",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3786,7 +3726,7 @@
   "etiket": "106.5 fm,2000s,2010s,70s,80s,80s 90s y más,90s,90s y más,acir,acir online,américa,cdmx,ciudad de méxico,clásicos,clásicos en inglés,entretenimiento,español,estación,grupo acir,iheart,iheart radio,latinoamérica,mexico city,mix,mix fm,music,méxico,música,música del recuerdo,música en inglés,música pop,norteamérica,oldies,pop,pop en inglés,pop music,radio,retro hits,retro music,valle de méxico,éxitos",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3796,7 +3736,7 @@
   "etiket": "ost,soundtrack",
   "ulke": "US",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3806,7 +3746,7 @@
   "etiket": "ambient lounge,chillout,downtempo,eletronic,indie,world music",
   "ulke": "PT",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3816,7 +3756,7 @@
   "etiket": "afrobeat,electronic,funk,gospel,hip hop,house,jazz,pop,reggae,soul",
   "ulke": "US",
   "tur": "afrobeat",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3826,7 +3766,7 @@
   "etiket": "93.7 fm,américa,centroamérica,entretenimiento,estación,feminista,fm,guatemala,guatemala city,latinoamérica,moi merino,mujer,music,mía,música,música en español,música romántica,radio,romántica y femenina",
   "ulke": "GT",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3836,7 +3776,7 @@
   "etiket": "anime,anime radio,jazz,lofi",
   "ulke": "AR",
   "tur": "lofi",
-  "grup": "RADIO",
+  "grup": "INDIE & LOFI",
   "saf": 3
  },
  {
@@ -3846,7 +3786,7 @@
   "etiket": "90s,dance,hits,house",
   "ulke": "FR",
   "tur": "house",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3856,7 +3796,7 @@
   "etiket": "70s,80s,disco,funk,nostalgie",
   "ulke": "FR",
   "tur": "funk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3866,7 +3806,7 @@
   "etiket": "beats,electronica,hip-hop,house,jazz,r&b,soul,techno",
   "ulke": "ES",
   "tur": "soul",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3876,7 +3816,7 @@
   "etiket": "college,electric blues,electronic dance music,international,lofi",
   "ulke": "US",
   "tur": "lofi",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3886,7 +3826,7 @@
   "etiket": "easy listening,italo,pop dance,soundtrack",
   "ulke": "HU",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3896,7 +3836,7 @@
   "etiket": "80s synth,ambient,breakbeat,breaks,chillout,deep house,electronic,ethnic,hip-hop,house,instrumental,metal,progressive house,punk,reggae,rock,techno,trip-hop",
   "ulke": "BA",
   "tur": "instrumental",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3906,7 +3846,7 @@
   "etiket": "afro house,chill,dance,deep,deep house,electronic,house,relax",
   "ulke": "RO",
   "tur": "electronic",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3916,7 +3856,7 @@
   "etiket": "acir,acir online,américa,cdmx,ciudad de méxico,entretenimiento,español,estación,grupo acir,iheart,iheart radio,instrumental,instrumental music,latinoamérica,mexico city,moi merino,music,méxico,música,música instrumental,norteamérica,online,online only,piano,piano landscapes,radio,radio online,relax,valle de méxico",
   "ulke": "MX",
   "tur": "instrumental",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3926,7 +3866,7 @@
   "etiket": "etnic,folk",
   "ulke": "KZ",
   "tur": "folk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3936,7 +3876,7 @@
   "etiket": "80s,90s,music,musica,pop,rock,world music",
   "ulke": "EC",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3946,7 +3886,7 @@
   "etiket": "1224 am,1224am,etherpiraten,geheimezender,instrumental,nederlandstalig,piraten hits,piraten muziek,piratenhits,piratenmuziek,polka",
   "ulke": "NL",
   "tur": "instrumental",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3956,7 +3896,7 @@
   "etiket": "anime,anime endings,anime openings,game,japonese anime soundtracks,jpop,song requests,vgm ost",
   "ulke": "BR",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3966,7 +3906,7 @@
   "etiket": "anime,anime openings,japanese anime soundtracks game jpop vgm ost,song requests",
   "ulke": "BR",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3976,7 +3916,7 @@
   "etiket": "anni 80,anni 90,balera,dance,folk,italiana,liscio,oldies,pop,popolare,tradizione",
   "ulke": "IT",
   "tur": "folk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3986,7 +3926,7 @@
   "etiket": "soundtrack",
   "ulke": "RO",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3996,7 +3936,7 @@
   "etiket": "folk,narodna,zabavna",
   "ulke": "BA",
   "tur": "folk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4006,7 +3946,7 @@
   "etiket": "dance,house,pop,r&b",
   "ulke": "ES",
   "tur": "house",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4016,7 +3956,7 @@
   "etiket": "ambient,balearic,breakbeat,dancehall,downtempo,electronic,hip hop,italian,latin,pop",
   "ulke": "IT",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4026,7 +3966,7 @@
   "etiket": "classical",
   "ulke": "PL",
   "tur": "classical",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4036,7 +3976,7 @@
   "etiket": "bosnia,folk,zabavna - narodna",
   "ulke": "BA",
   "tur": "folk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4046,7 +3986,7 @@
   "etiket": "folk",
   "ulke": "SK",
   "tur": "folk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4056,7 +3996,7 @@
   "etiket": "eclectic,electronic,rock,world music",
   "ulke": "GR",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4066,7 +4006,7 @@
   "etiket": "variedad,world music",
   "ulke": "BO",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4076,7 +4016,7 @@
   "etiket": "classical",
   "ulke": "IR",
   "tur": "classical",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4086,7 +4026,7 @@
   "etiket": "16-bit,8-bit,background music,chiptune,jrpg,lofi,pixel music,relaxing,retro game music,video game music",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4096,7 +4036,7 @@
   "etiket": "retro,retro games,soundtracks,video game music",
   "ulke": "GB",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4106,7 +4046,7 @@
   "etiket": "pop latino,pop music,top 40",
   "ulke": "DO",
   "tur": "latin",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4116,7 +4056,7 @@
   "etiket": "ai generated,ambient,downtempo,electronic,industrial,netradio,synthwave,techno",
   "ulke": "FR",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4126,7 +4066,7 @@
   "etiket": "instrumental,jazz,mpb,public radio",
   "ulke": "BR",
   "tur": "instrumental",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4136,7 +4076,7 @@
   "etiket": "bossa nova,brazilian music,culture",
   "ulke": "BR",
   "tur": "bossa nova",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4146,7 +4086,7 @@
   "etiket": "variety,world middle east",
   "ulke": "SA",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4156,7 +4096,7 @@
   "etiket": "japanese anime soundtracks game jpop vgm ost",
   "ulke": "FR",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4166,7 +4106,7 @@
   "etiket": "ambient pop,lofi,pop,trapsoul",
   "ulke": "US",
   "tur": "lofi",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4176,7 +4116,7 @@
   "etiket": "calm,classical,eclectic,jazz,relaxing,soft,soundtracks",
   "ulke": "FR",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4186,7 +4126,7 @@
   "etiket": "classic,classical,classical piano,classics,instrumental,new age piano,piano,piano jazz",
   "ulke": "DE",
   "tur": "new age",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4196,7 +4136,7 @@
   "etiket": "ambient,chill,downtempo",
   "ulke": "US",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4206,7 +4146,7 @@
   "etiket": "dubstep",
   "ulke": "US",
   "tur": "dub",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4216,7 +4156,7 @@
   "etiket": "ambient,chill,defcon,electronic,hacker,non-commercial",
   "ulke": "US",
   "tur": "ambient",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4226,17 +4166,7 @@
   "etiket": "ambient,downtempo,early 2000s",
   "ulke": "US",
   "tur": "ambient",
-  "grup": "RADIO",
-  "saf": 3
- },
- {
-  "id": "rb:47620077-20c1-11ea-a955-52543be04c81",
-  "mp3": "https://ice5.somafm.com/gsclassic-64-aac",
-  "ad": "SomaFM Groove Salad Classic (64k AAC)",
-  "etiket": "ambient,downtempo,early 2000s",
-  "ulke": "US",
-  "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "AMBIENT",
   "saf": 3
  },
  {
@@ -4246,7 +4176,7 @@
   "etiket": "indie,indie pop,indie rock",
   "ulke": "US",
   "tur": "indie",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4256,17 +4186,7 @@
   "etiket": "electronic,femalevocals,lounge,mellow,vocal",
   "ulke": "US",
   "tur": "electronic",
-  "grup": "RADIO",
-  "saf": 3
- },
- {
-  "id": "rb:960d68cf-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://ice2.somafm.com/secretagent-32-aac",
-  "ad": "SomaFM Secret Agent (32k AAC)",
-  "etiket": "ambient,downtempo,jazz,lounge,samba,sixties",
-  "ulke": "US",
-  "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4276,7 +4196,7 @@
   "etiket": "ambient,downtempo,jazz,lounge,samba,sixties",
   "ulke": "US",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "LOUNGE",
   "saf": 3
  },
  {
@@ -4286,7 +4206,7 @@
   "etiket": "desi-influenced asian,world beats",
   "ulke": "US",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4296,7 +4216,7 @@
   "etiket": "avant-garde,psychedelic pop",
   "ulke": "US",
   "tur": "psychedelic",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4306,7 +4226,7 @@
   "etiket": "broadway,musicals,off-broadway,showtunes,soundtrack,theater,theatre,west end",
   "ulke": "US",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4316,7 +4236,7 @@
   "etiket": "anime,anime endings,anime openings,anime radio,j-pop,j-rock,japanese anime soundtracks game jpop vgm ost,japonese anime soundtracks,video game music,video games,videogame music",
   "ulke": "JP",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4326,7 +4246,7 @@
   "etiket": "love,reggae",
   "ulke": "JM",
   "tur": "reggae",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4336,7 +4256,7 @@
   "etiket": "funk,jazz,latin,lounge,nu grooves,soul,world",
   "ulke": "CH",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4346,7 +4266,7 @@
   "etiket": "soundtracks",
   "ulke": "CA",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4356,7 +4276,7 @@
   "etiket": "ambient,ethiopia,slow,tizta",
   "ulke": "ET",
   "tur": "ambient",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4366,7 +4286,7 @@
   "etiket": "alternative,alternative rock,garage,indie,indie pop,indie rock,left-field dance",
   "ulke": "GB",
   "tur": "indie",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4376,7 +4296,7 @@
   "etiket": "alternative,alternative rock,garage,indie,indie pop,indie rock,left-field dance",
   "ulke": "GB",
   "tur": "indie",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4386,7 +4306,7 @@
   "etiket": "downtempo,dub,electronica,illbient,trip-hop",
   "ulke": "PL",
   "tur": "dub",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4396,7 +4316,7 @@
   "etiket": "folk,oldies,piratenhits",
   "ulke": "NL",
   "tur": "folk",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4406,7 +4326,7 @@
   "etiket": "electronica,jazz,progressive,underground music,world music",
   "ulke": "GB",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4416,7 +4336,7 @@
   "etiket": "classical,new york city,new york public radio",
   "ulke": "US",
   "tur": "classical",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4426,7 +4346,7 @@
   "etiket": "blues,folk,public radio,rock",
   "ulke": "US",
   "tur": "blues",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4436,7 +4356,7 @@
   "etiket": "alternative,dance,disco,experimental,funk,gospel,hip-hop,house,indie,punk,reagge,rock,soul,techno,world",
   "ulke": "HR",
   "tur": "world",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4446,7 +4366,7 @@
   "etiket": "afro house,afrobeat,chillout,disco funk,lounge,smooth jazz,soulful house",
   "ulke": "LV",
   "tur": "afrobeat",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -4476,7 +4396,7 @@
   "etiket": "dnb,drill,dubstep,edm,hardstyle,riddim,trap,various",
   "ulke": "PL",
   "tur": "dub",
-  "grup": "FUNK & RNB",
+  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -4586,7 +4506,7 @@
   "etiket": "afro,afro house,afrohouse,charts,dance,drums,hits,house,tech house",
   "ulke": "DE",
   "tur": "house",
-  "grup": "ELECTRONIC",
+  "grup": "WORLD & ROOTS",
   "saf": 2
  },
  {
@@ -4636,7 +4556,7 @@
   "etiket": "acid,acid jazz,ambient,canada,classic jazz,free jazz,hip hop,instrumental music,instrumentales,jazz,jazz fusion,latin jazz,nu-jazz,piano jazz,relax,relaxing,smooth jazz,toronto,trumpeth",
   "ulke": "CA",
   "tur": "jazz",
-  "grup": "ELECTRONIC",
+  "grup": "JAZZ",
   "saf": 2
  },
  {
@@ -4976,7 +4896,7 @@
   "etiket": "chr,contemporary hits radio,dance,electronic dance music,jovem,jovem pan,pop,pop rock,top 40",
   "ulke": "BR",
   "tur": "electronic",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -4986,7 +4906,7 @@
   "etiket": "anthems,bauer radio,club dance,dab,dab+,dance,dance anthems,dance music,edm,electronic dance music,england,entertainment,europe,kiss,kiss dance,london,moi merino,radio,rayo,uk,united kingdom",
   "ulke": "GB",
   "tur": "electronic",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -5006,7 +4926,7 @@
   "etiket": "classical",
   "ulke": "MA",
   "tur": "classical",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -5106,7 +5026,7 @@
   "etiket": "beach,chillout,dance,dj,dj mixes,dj sets,edm,electro,electronic,electronic dance music,hiphop,lounge,mixed,música pop,non-stop music,pop,reggaeton,remix,remixes,techno,top 100,top 40,top charts,top hits,urban",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIO",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -5190,16 +5110,6 @@
   "saf": 2
  },
  {
-  "id": "rb:39a19b72-7c6d-11e9-aa30-52543be04c81",
-  "mp3": "https://ice6.somafm.com/beatblender-128-aac",
-  "ad": "SomaFM Beat Blender (128k AAC)",
-  "etiket": "chillout,deep house,downtempo,electronica",
-  "ulke": "US",
-  "tur": "chillout",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
   "id": "rb:960eb232-0601-11e8-ae97-52543be04c81",
   "mp3": "https://ice2.somafm.com/beatblender-128-mp3",
   "ad": "SomaFM Beat Blender (128k MP3)",
@@ -5216,16 +5126,6 @@
   "etiket": "chilled trap,future soul,hiphop,woozy electronica",
   "ulke": "US",
   "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:9634ce58-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://ice6.somafm.com/poptron-128-aac",
-  "ad": "SomaFM PopTron (128k AAC)",
-  "etiket": "electropop,indie,synthpop",
-  "ulke": "US",
-  "tur": "indie",
   "grup": "ELECTRONIC",
   "saf": 2
  },

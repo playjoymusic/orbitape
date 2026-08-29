@@ -3455,7 +3455,36 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        silinmedigini kontrol ediyor. */
     {
       const akis = fs.readFileSync('.github/workflows/radyo.yml','utf8');
-      K('Hasat yayin kopyasini da tazeliyor',
+      /* ── ELLE VERILEN KARARLAR KALICI OLMALI ─────────────────────
+       Hasat, listede olmayan her istasyonu YENI sayiyor. Yani
+       kullanici bir istasyonu elle cikardiginda o istasyon bir
+       sonraki hasatta aynen geri geliyordu -- ayni SomaFM bitrate
+       ikizlerini her seferinde yeniden ayiklamak gerekirdi.
+       Iki dosya bunu kalici yapiyor:
+         radyo_yasak.json  -> bir daha EKLENMEYECEK adresler
+         radyo_elle.json   -> insanin verdigi raf kararlari
+       Bu test ikisinin de okundugunu dogruluyor; okunmazsa dosyalar
+       durur ama hicbir ise yaramaz ve kimse fark etmez. */
+    {
+      const hasat = fs.readFileSync('araclar/radyo_hasat.py','utf8');
+      const grupla = fs.readFileSync('araclar/radyo_grupla.py','utf8');
+      const yasak = JSON.parse(fs.readFileSync('araclar/radyo_yasak.json','utf8'));
+      const elle  = JSON.parse(fs.readFileSync('araclar/radyo_elle.json','utf8'));
+      const liste = JSON.parse(fs.readFileSync('radyo.json','utf8'));
+      const adresler = new Set(liste.map(x=>x.mp3));
+      K('Cikarilanlar geri gelmiyor',
+         /radyo_yasak\.json/.test(hasat) && /varolan_url \|= /.test(hasat) && yasak.length > 0,
+         'hasat yasak listesini okuyor, ' + yasak.length + ' adres');
+      K('Elle raf kararlari okunuyor',
+         /radyo_elle\.json/.test(grupla) && Object.keys(elle).length > 100,
+         Object.keys(elle).length + ' elle karar');
+      /* Yasakli bir adres listede DURUYORSA biri digerini iptal
+         etmis demektir -- iki dosya birbiriyle celismemeli. */
+      const celisen = yasak.filter(y=>adresler.has(y.mp3)).map(y=>y.ad);
+      K('Yasak liste ile yayin listesi celismiyor', celisen.length === 0,
+         celisen.length ? celisen.slice(0,3).join(' | ') : yasak.length + ' adresin hicbiri listede degil');
+    }
+    K('Hasat yayin kopyasini da tazeliyor',
          /cp tracks\/radyo\.json radyo\.json/.test(akis)
          && /add-paths:\s*radyo\.json/.test(akis),
          'is akisi hem tracks hem kod deposu icin PR aciyor');

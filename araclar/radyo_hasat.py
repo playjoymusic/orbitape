@@ -33,6 +33,7 @@ KULLANIM
 """
 
 import json
+import os
 import sys
 import time
 import urllib.parse
@@ -115,6 +116,22 @@ def main():
         mevcut = json.load(f)
     RG.grupla(mevcut)
     varolan_url = {o["mp3"] for o in mevcut}
+    # ── KULLANICININ CIKARDIKLARI GERI GELMESIN ───────────────────
+    # Hasat, "listede olmayan" her istasyonu YENI sayiyor. Yani
+    # kullanici bir istasyonu elle cikardiginda o istasyon bir
+    # sonraki hasatta aynen geri geliyordu -- ayni SomaFM bitrate
+    # ikizlerini her seferinde yeniden ayiklamak gerekirdi.
+    # radyo_yasak.json bu kararlari kalici yapiyor: oradaki adresler
+    # "zaten var" sayiliyor, yani hic eklenmiyorlar.
+    try:
+        _yy = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "radyo_yasak.json")
+        with open(_yy, encoding="utf-8") as _f:
+            _yasak = json.load(_f)
+        varolan_url |= {o["mp3"] for o in _yasak if o.get("mp3")}
+        print("yasak liste: %d adres (elle cikarilanlar)" % len(_yasak))
+    except FileNotFoundError:
+        pass
     sayim = {}
     for o in mevcut:
         sayim[o["grup"]] = sayim.get(o["grup"], 0) + 1
