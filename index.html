@@ -12,7 +12,17 @@
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>ORBITAPE</title>
 <style>
-  :root{--bg:#020203;}
+  /* --sut: sol ust blogun ust bosluğu. Baslangic degeri sag ustteki
+     yaziyla ayni (15px); solUstHizala() olcup taban cizgisine gore
+     duzeltiyor. Burada TANIMLI olmasi sart -- tanimsiz bir degiskeni
+     getComputedStyle bos string dondurur ve duzeltme hic islemez. */
+  :root{--bg:#020203;--sut:15px;
+    /* --kx: EKRANIN KENAR PAYI. Dort kose de bu tek sayiyi kullaniyor.
+       Onceden her kose kendi sayisini tasiyordu (sol 16, sag 18, ust
+       sag 13...) ve ekranda "sagi solu hizali degil" olarak
+       goruluyordu. Tek kaynak: burasi. */
+    --kx:16px;}
+  @media (max-width:480px){ :root{--kx:14px;} }
   /* overflow-x:hidden -> arama kutusu/klavye açılırken sayfa yana kaymasın. */
   *{box-sizing:border-box;} html,body{height:100%;overscroll-behavior:none;overflow-x:hidden;max-width:100%;}
   /* Tam ekran (ana ekrandan acilinca) alt/ust guvenli alanlari iOS sayfanin KOK rengiyle
@@ -191,7 +201,7 @@
   /* Kayıt bitince kısa bir bilgi satırı: dosyanın sesi gerçekten
      baştan başlıyor mu? Cihazda ölçülüp yazılıyor, 9 saniye sonra
      kayboluyor. Sorun yoksa hiç çıkmıyor. */
-  #kayitBilgi{position:fixed;left:calc(16px + env(safe-area-inset-left, 0px));bottom:104px;
+  #kayitBilgi{position:fixed;left:calc(var(--kx) + env(safe-area-inset-left, 0px));bottom:104px;
     z-index:79;font-family:'Share Tech Mono',ui-monospace,monospace;font-size:9px;
     letter-spacing:.04em;color:rgba(244,247,250,.72);pointer-events:none;
     /* pre-wrap + küçük punto: rapor satırları ekrandan TAŞIP KESİLMESİN.
@@ -248,14 +258,29 @@
     box-shadow:0 0 7px currentColor;transition:width .08s linear;}
   #kamCubuk{color:#8ff0dd;}
   body.t-liste #kamCubuk{color:#d9d0dd;} body.t-radio #kamCubuk{color:#ffc79e;}
-  /* ── SOL ALT SATIR: REC · CAM · ★ ─────────────────────────────────
-     Artık EN ALTTA ve karşısındaki ◁ ★ ▷ satırıyla aynı taban
-     çizgisinde. İki satır aynı yükseklikte (32px), aynı yuvarlaklık,
-     aynı zemin ve kenar rengi -> ekranın iki alt köşesi birbirinin
-     aynası. Arama bu satırın ÜSTÜNE çıktı.
-     Boşluk 7px: sağdaki satırla aynı. */
-  #araclar{position:fixed;left:calc(16px + env(safe-area-inset-left, 0px));bottom:calc(14px + env(safe-area-inset-bottom, 0px));
-    z-index:78;display:flex;align-items:center;gap:7px;width:var(--ug,138px);}
+  /* ── SOL UST BLOK ────────────────────────────────────────────────
+     Iki satir: tasima (◁ oynat/durdur ▷ + ses cizgisi) ve kayit
+     (REC · CAM · ★). Sol kenar ORBITAPE yazisinin sag kenariyla
+     simetrik: 14px.
+     BASLANGIC HIZASI: ilk satirin taban cizgisi sag ustteki marka
+     yazisinin taban cizgisiyle esitleniyor (ustHizala, --sut degeri).
+     Sabit bir sayi yazmak yetmez -- yazi tipi gec yuklenince ya da
+     kanal adi degisince taban kayiyor, once oyle yapilmisti ve
+     ekranda 4-5px'lik bir bozukluk olarak goruluyordu. */
+  #solUst{position:fixed;z-index:78;
+    top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px));
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+    max-width:calc(56vw - 8px);}
+  /* TASIMA SATIRI: elin en cok gittigi yer. Yukseklik 32px --
+     asagidaki kayit satiri ve sag alttaki ★ ile birebir ayni. */
+  #tasima{display:flex;align-items:center;gap:7px;}
+  /* ── SOL UST SATIR: REC · CAM · ★ ─────────────────────────────────
+     Eskiden sol ALTTAYDI; arama en alta indigi icin oraya sigmiyordu.
+     Simdi tasima satirinin altinda. Kutu artik konumlandirilmiyor
+     (position:fixed kalkti), yerini ust bloktan aliyor.
+     Boşluk 7px: tasima satiriyla ayni. */
+  #araclar{display:flex;align-items:center;gap:7px;}
   /* ── ★ FAVORİLERE GİRİŞ: REC/CAM'in yanında ────────────────────
      Favori kipine ancak sağdaki minik yıldızı BASILI TUTARAK
      girilebiliyordu; kimse bulamıyordu. Buradaki yıldız tek basışla
@@ -335,8 +360,14 @@
      satırıyla aynı çizgide. Bilgi yazıları onların ÜSTÜNDE ve
      yukarı doğru büyüyor: uzun ad sola taşmıyor, satır sayısı
      artıyor. Genişlik ekranın yarısını geçmiyor. */
-  #np{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom, 0px));right:calc(18px + env(safe-area-inset-right, 0px));z-index:75;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
-    pointer-events:none;user-select:none;max-width:min(44vw,280px);text-align:right;opacity:0;transition:opacity .55s ease;}
+  #np{position:fixed;bottom:calc(41px + env(safe-area-inset-bottom, 0px));right:calc(var(--kx) + env(safe-area-inset-right, 0px));z-index:75;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+    /* GENISLEDI: 44vw -> 72vw. Sol alt kose bosaldi (REC · CAM · ★
+       sol uste tasindi), yani karsida carpilacak bir sey kalmadi.
+       Genislik lazim cunku kunye artik KIRPILMIYOR: eserin adi,
+       sanatcisi, kaynagi ve lisansi tam yaziliyor. Bu bir tasarim
+       tercihi degil, CC BY ailesinin sarti -- "..." ile biten bir
+       atif atif sayilmaz. */
+    pointer-events:none;user-select:none;max-width:min(86vw,460px);text-align:right;opacity:0;transition:opacity .55s ease;}
   #np .np-bilgi{display:flex;flex-direction:column;align-items:flex-end;gap:3px;max-width:100%;}
   #np.on{opacity:1;}
   /* EARTH SOUNDS / AMBIANCE'ta müzik olanın künyesi: kanal adının ÜSTÜNDE,
@@ -364,18 +395,19 @@
   #np .np-ad{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;font-size:15.5px;font-weight:400;letter-spacing:.01em;
     color:rgba(244,247,250,.9);text-shadow:0 1px 10px rgba(0,0,0,.5);
     min-height:1.3em;line-height:1.32;max-width:100%;
-    /* Sola taşmak yerine SATIR SAYISI artıyor: dar bir sütunda üç
-       satıra kadar sarıyor, sonra kırpılıyor. */
-    white-space:normal;overflow:hidden;overflow-wrap:anywhere;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;}
+    /* KIRPMA YOK. Onceden ucuncu satirdan sonra "..." ile kesiliyordu;
+       uzun adli bir eserin adi ekranda hicbir zaman tam gorunmuyordu.
+       Sola tasmak yerine satir sayisi artiyor, kac satir gerekiyorsa
+       o kadar. Blok yukari dogru buyudugu icin alt hiza bozulmuyor. */
+    white-space:normal;overflow-wrap:anywhere;}
   body.t-radio #np .np-eq i{background:#ff9a6a;box-shadow:0 0 5px rgba(255,140,90,.6);}
 
   body.t-liste #np .np-eq i{background:#c8bcd2;box-shadow:0 0 5px rgba(186,172,204,.5);}
 
   #np .np-sanatci{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;font-size:11.5px;font-weight:400;letter-spacing:.012em;
     color:rgba(244,247,250,.62);text-shadow:0 1px 9px rgba(0,0,0,.5);line-height:1.3;max-width:100%;
-    white-space:normal;overflow:hidden;overflow-wrap:anywhere;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+    /* Sanatci adi da kirpilmiyor: atifin ikinci yarisi bu. */
+    white-space:normal;overflow-wrap:anywhere;}
   #np .np-sanatci:empty{display:none;}
   /* En alt satır: sanatçının SOLUNDA, sesin nereden geldiği.
      Küçük ve silik — bilgi olsun ama okumayı bölmesin. */
@@ -387,10 +419,13 @@
   #np .np-kaynak:empty{display:none;}
   /* LİSANS SATIRI: kaynağın altında, ondan da silik. Sadece 'var'
      sınıfı varken görünüyor — lisansı olmayan (kendi parçamız, canlı
-     yayın) hiç yer kaplamıyor. Uzun ad sarmıyor: kısaltılıyor. */
+     yayın) hiç yer kaplamıyor.
+     KISALTMA KALKTI: lisans adi "..." ile bitiyordu ve hangi lisans
+     oldugu okunamiyordu. CC BY-NC-SA 4.0 ile CC BY 4.0 ayni sey degil;
+     yarim yazilan bir lisans adi yanlis bilgi. Sariyor. */
   #np .np-lisans{display:none;font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:8px;letter-spacing:.18em;line-height:1.3;white-space:nowrap;
-    overflow:hidden;text-overflow:ellipsis;max-width:100%;
+    font-size:8px;letter-spacing:.18em;line-height:1.3;
+    white-space:normal;overflow-wrap:anywhere;max-width:100%;
     color:rgba(244,247,250,.26);text-shadow:0 1px 8px rgba(0,0,0,.5);}
   /* Lisans satirina negatif sag bosluk VERILMEDI: 8px'te .18em = 1.4px,
      goze gorunmuyor ama bu satir blogun sag kenarini olcen testin
@@ -398,14 +433,14 @@
   #np .np-lisans.var{display:block;}
   @media (max-width:480px){ #np .np-kaynak{font-size:8px;letter-spacing:.16em;}
     #np .np-lisans{font-size:7.5px;letter-spacing:.14em;} }
-  @media (max-width:480px){ #np{max-width:min(43vw,220px);} #np .np-ad{font-size:13.5px;}
+  @media (max-width:480px){ #np{max-width:min(88vw,340px);} #np .np-ad{font-size:13.5px;}
     #np .np-sanatci{font-size:11px;} #np .np-lab{font-size:10px;}
     #np .np-ust{font-size:11px;} }
   /* ── üst köşe: hareketli nebula + ORBITAPE mood ── */
   /* ── SAĞ ÜST: üç kanal alt alta, hepsi aynı ölçüde (eski ORBITAPE ölçüsü) ── */
   #ust{position:fixed;z-index:70;pointer-events:none;user-select:none;
     top:calc(15px + env(safe-area-inset-top, 0px));
-    right:calc(18px + env(safe-area-inset-right, 0px));
+    right:calc(var(--kx) + env(safe-area-inset-right, 0px));
     display:flex;flex-direction:column;align-items:flex-end;gap:8px;
     max-width:calc(100vw - 30px);}
   /* Çalıyor göstergesi: AKTİF kanal adının hemen solunda, ilk harfe bitişik.
@@ -469,8 +504,10 @@
      kullanici yazdigi seyi ve sonuclari goremiyordu. */
   #ara{position:fixed;z-index:79;pointer-events:auto;
     display:flex;flex-direction:column-reverse;align-items:flex-start;
-    left:calc(16px + env(safe-area-inset-left, 0px));
-    bottom:calc(14px + env(safe-area-inset-bottom, 0px) + var(--klavye, 0px));
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    /* 41px = ucgen (5 + 26) + 10 hava. JS ilk olcumde uzerine yaziyor;
+       bu deger ilk karede aramanin ucgenin uzerine binmemesi icin. */
+    bottom:calc(41px + env(safe-area-inset-bottom, 0px) + var(--klavye, 0px));
     transition:bottom .18s ease;}
   /* ── KLAVYE ACIKKEN ARAMA YUKARI TASINIYOR ───────────────────────
      Ilk deneme kutuyu klavye yuksekligi kadar YUKARI KALDIRMAKTI ve
@@ -505,9 +542,10 @@
   body.klavye #ara.acik .kutu .sonuc{order:2;}
   body.klavye #ara .sonuc{margin-bottom:0;margin-top:8px;
     max-height:min(38vh,260px);}
-  /* Klavye acikken alt satirlar (REC/CAM, calan parca) yolda: yazi
-     yazarken kimse onlara bakmiyor ve klavyenin arkasinda kaliyorlar. */
-  body.klavye #araclar{opacity:0;pointer-events:none;}
+  /* Klavye acikken alttaki ayar ucgeni yolda: yazi yazarken kimse
+     ona bakmiyor ve klavyenin arkasinda kaliyor. REC/CAM artik sol
+     ustte, yani klavyenin ustunde -- onlar gizlenmiyor. */
+  body.klavye #ayarTut{opacity:0;pointer-events:none;}
   body.t-lib   #ara, body.t-lib   #karsilama{color:#8ff0dd;}
   body.t-liste #ara, body.t-liste #karsilama{color:#d9d0dd;}
   body.t-radio #ara, body.t-radio #karsilama{color:#ffc79e;}
@@ -706,7 +744,12 @@
      düğme kendiliğinden yukarı kayıyor.
      'var' değilken display:none: ilk parçada altında hayalet boşluk
      bırakmasın (ilk parçada zaten dönülecek bir yer yok). */
-  #geri{display:none;z-index:72;flex:none;
+  /* GORUNMEZ AMA YER TUTUYOR. Eskiden display:none idi ve sag alttaki
+     yigina akiyordu, gorunmeyince yer kaplamamasi dogruydu. Sol ust
+     TASIMA SATIRINDA ise yanlis: gecmis olusunca ◁ birden belirip
+     yanindaki oynat/durdur tusunu 45px saga itiyordu. Simdi yuvasi
+     hep duruyor, yalnizca icerigi goruluyor/gorulmuyor. */
+  #geri{display:flex;visibility:hidden;z-index:72;flex:none;
     appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;
     margin:0;                       /* boşluk .np-gez'de; ikisi aynı hizada dursun */
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
@@ -718,13 +761,13 @@
     color:#a6fbea;opacity:0;pointer-events:none;
     transition:opacity .35s ease, color .25s, border-color .2s;}
   #geri svg{width:15px;height:13px;display:block;fill:currentColor;opacity:.9;}
-  #geri.var{display:flex;opacity:.9;pointer-events:auto;}
+  #geri.var{display:flex;visibility:visible;opacity:.9;pointer-events:auto;}
   #geri:hover{border-color:rgba(120,180,180,.34);}
   #geri.liste{color:#d9d0dd;} #geri.radio{color:#ffc79e;}
   /* ▷| BİR SONRAKİ (geçmişte). ◁ ile aynı görünüm; sadece iki adımdan
      fazla geriye gidilmişse çıkıyor — bir adımda zaten ortaya basınca
      aynı yere dönülüyor. */
-  #ileri{display:none;z-index:72;flex:none;
+  #ileri{display:flex;visibility:hidden;z-index:72;flex:none;
     appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     align-items:center;justify-content:center;cursor:pointer;
@@ -732,9 +775,47 @@
     color:#a6fbea;opacity:0;pointer-events:none;
     transition:opacity .35s ease, color .25s, border-color .2s;}
   #ileri svg{width:15px;height:13px;display:block;fill:currentColor;opacity:.9;}
-  #ileri.var{display:flex;opacity:.9;pointer-events:auto;}
+  #ileri.var{display:flex;visibility:visible;opacity:.9;pointer-events:auto;}
   #ileri:hover{border-color:rgba(120,180,180,.34);}
   #ileri.liste{color:#d9d0dd;} #ileri.radio{color:#ffc79e;}
+  /* ── OYNAT / DURDUR ──────────────────────────────────────────────
+     Uygulamanin ilk gercek "durdur" tusu. Oncesinde ses ancak kilit
+     ekranindan ya da kulaklik dugmesinden durdurulabiliyordu; ekranda
+     hicbir yerde durdurma yoktu.
+     ◁ ▷ ile ayni kilikta ama HER ZAMAN gorunur -- durdurmak icin bir
+     gecmise ihtiyac yok. Iki cizgi calarken, ucgen durunca. */
+  #dur{display:flex;z-index:72;flex:none;
+    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
+    border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
+    align-items:center;justify-content:center;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    color:#a6fbea;opacity:.9;
+    transition:color .25s, border-color .2s;}
+  #dur svg{width:14px;height:12px;display:block;fill:currentColor;opacity:.9;}
+  #dur .oyn{display:none;}
+  #dur.durdu .d1,#dur.durdu .d2{display:none;}
+  #dur.durdu .oyn{display:block;}
+  #dur:hover{border-color:rgba(120,180,180,.34);}
+  #dur.liste{color:#d9d0dd;} #dur.radio{color:#ffc79e;}
+  /* ── SES: YATAY CIZGI ────────────────────────────────────────────
+     Masaustunde dikey bir kaydirici vardi, dokunmatikte hicbir sey --
+     orada iki parmak jesti kullaniliyordu ve iPhone Safari'de
+     calismiyordu (kullanici bildirdi). Bu cizgi her cihazda var.
+     Surukle = seviye. Tek dokunus = sustur / geri ac (son seviye
+     hatirlaniyor). Yukseklik dokunma alani icin 32px, GORUNEN cizgi
+     3px -- parmak buyuk, murekkep ince. */
+  #sesYatay{position:relative;flex:none;width:58px;height:32px;
+    display:flex;align-items:center;cursor:pointer;touch-action:none;
+    -webkit-tap-highlight-color:transparent;color:#a6fbea;
+    transition:color .25s, opacity .25s;}
+  #sesYatay .iz{position:absolute;left:0;right:0;height:3px;border-radius:3px;
+    background:rgba(120,180,180,.26);}
+  #sesYatay .dolu{position:absolute;left:0;height:3px;border-radius:3px;
+    width:100%;background:currentColor;opacity:.85;
+    transition:width .08s linear;}
+  #sesYatay.sus .dolu{opacity:.22;}
+  #sesYatay:focus-visible{outline:1px solid currentColor;outline-offset:3px;border-radius:3px;}
+  #sesYatay.liste{color:#d9d0dd;} #sesYatay.radio{color:#ffc79e;}
   /* ── ★ FAVORİ ─────────────────────────────────────────────────────
      ◁ ▷ ile aynı görünüm. Üç hâli var:
        boş yıldız  : parça favori değil
@@ -926,39 +1007,13 @@
   #sesCubuk.on{opacity:.9;}
   #sesCubuk i{display:block;height:100%;width:var(--dolu,100%);border-radius:2px;
     background:currentColor;box-shadow:0 0 8px currentColor;transition:width .06s linear;}
-  /* ── MASAUSTUNDE DIKEY SES ───────────────────────────────────────
-     Iki parmak jesti dokunmatik bir hareket; farede karsiligi yok ve
-     Mac/PC'de sesi kismanin hicbir yolu yoktu. Sagda ince bir dikey
-     cubuk: surukle, ya da uzerinde tekerlegi cevir.
-     YALNIZCA fare/trackpad olan cihazlarda. hover:hover + pointer:fine
-     ikisi birden: dokunmatik ekranda cikmiyor, orada zaten iki parmak
-     var ve iki ayri yol iki ayri "dogru" demek olurdu. */
-  #sesDikey{display:none;}
-  @media (hover:hover) and (pointer:fine){
-    #sesDikey{display:block;position:fixed;z-index:80;
-      right:calc(18px + var(--yan, 0px));
-      top:50%;transform:translateY(-50%);
-      width:26px;height:150px;cursor:ns-resize;
-      -webkit-tap-highlight-color:transparent;
-      opacity:.30;transition:opacity .22s ease;}
-    #sesDikey:hover,#sesDikey.tutuluyor{opacity:.92;}
-    /* Iz: ince bir cizgi. Dolu kisim ASAGIDAN yukari -- ses "yukselir". */
-    #sesDikey .iz{position:absolute;left:50%;top:0;bottom:0;width:2px;
-      margin-left:-1px;background:currentColor;opacity:.26;border-radius:2px;}
-    #sesDikey .iz i{position:absolute;left:0;right:0;bottom:0;
-      height:var(--dolu,100%);background:currentColor;border-radius:2px;
-      opacity:.9;}
-    /* Tutamak: dolu kismin tepesinde kucuk bir nokta. */
-    #sesDikey .nokta{position:absolute;left:50%;width:7px;height:7px;
-      margin-left:-3.5px;margin-bottom:-3.5px;border-radius:50%;
-      background:currentColor;bottom:var(--dolu,100%);opacity:.95;
-      transition:bottom .06s linear;}
-    body.t-lib   #sesDikey{color:#8ff0dd;}
-    body.t-liste #sesDikey{color:#d9d0dd;}
-    body.t-radio #sesDikey{color:#ffc79e;}
-    /* Arama acikken cekilsin: o an dikkat orada. */
-    body.arama-acik #sesDikey{opacity:.12;}
-  }
+  /* ── DIKEY SES CUBUGU SILINDI ────────────────────────────────────
+     Sagda, yalnizca masaustunde gorunen dikey bir cubuk vardi;
+     dokunmatikte karsiligi iki parmak jestiydi. Iki ayri yol iki ayri
+     "dogru" demekti ve telefondaki yol iPhone Safari'de calismiyordu.
+     Ikisinin yerine TEK denetim geldi: sol ustteki yatay ses cizgisi
+     (#sesYatay). Her cihazda ayni yerde, gorunur, surukle ya da
+     dokun. Iki parmak jesti kisayol olarak duruyor. */
   /* ── SOUND BANKS (MOOD) KIPI ─────────────────────────────────────
      Eski ORBITAPE tarafi -- arsiv havuzlari, nebula, gezegenler, FX --
      SILINMEDI, ayarlardaki bir dugmenin arkasina kondu. Kapaliyken
@@ -998,51 +1053,42 @@
      TUTAMAK: iki kisa cizgi, ekranin alt ORTASINDA. Orasi bos --
      solda REC/CAM/yildiz, sagda geri/yildiz var, orta bosluktu.
      Kapaliyken cok silik: arayan bulur, aramayan gormez. */
-  /* ── AYARLAR TUTAMAGI: SOL UST ───────────────────────────────────
-     Nebula kalkinca sol ust bosaldi; tutamak oraya tasindi. Uc KALIN
-     cizgi ve renkleri ORBITAPE'in kendi temasindan: markanin
-     gradyanindaki iki durak (turkuaz -> tozlu gul) ve arasindaki
-     karisim. Yani ayni palet, ucuncu bir renk uydurulmadi.
-     Konum ORBITAPE yazisiyla ayni ust hizada: karsilikli iki kose. */
+  /* ── AYARLAR TUTAMAGI: EKRANIN ALT ORTASI ────────────────────────
+     Uc cizgi sol ustteydi ve orayi tasima tuslarina birakti. Yeni yer
+     ALT ORTA: bir uygulamanin "merkez tusu" nerede aranirsa orada,
+     iki basparmagin da esit uzaklikta oldugu tek nokta.
+     Bicim TERS UCGEN (▽): asagi bakan bir ok "buradan bir sey acilir"
+     demenin en kisa yolu. Panel acilinca yukari donuyor (△) -- ayni
+     nesne, durumu kendisi soyluyor, ikinci bir kapatma tusu gerekmiyor.
+     Renk uydurulmadi: markanin kendi gradyani (turkuaz -> tozlu gul)
+     ucgenin uzerinde. */
   #ayarTut{position:fixed;z-index:96;
-    top:calc(22px + env(safe-area-inset-top, 0px));
-    left:calc(14px + env(safe-area-inset-left, 0px));
-    width:46px;height:38px;display:flex;flex-direction:column;
-    align-items:flex-start;justify-content:center;gap:7px;cursor:pointer;
+    left:50%;transform:translateX(-50%);
+    bottom:calc(5px + env(safe-area-inset-bottom, 0px));
+    width:54px;height:26px;display:flex;
+    align-items:center;justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
-  /* SOUND BANKS kipinde SOL UST nebulanindir: tutamak alta iniyor.
-     Iki sey ayni koseyi paylasamaz; kipe gore yer degistiriyor. */
-  body.mood #ayarTut{top:auto;left:50%;transform:translateX(-50%);
-    bottom:calc(6px + env(safe-area-inset-bottom, 0px));
-    width:54px;height:26px;align-items:center;gap:5px;}
-  body.mood #ayarTut span{width:26px;height:2.5px;}
-  body.mood #ayarTut span:nth-child(2){width:22px;}
-  body.mood #ayarTut span:nth-child(3){width:16px;}
-  body.mood #ayar{top:auto;left:50%;
-    bottom:calc(40px + env(safe-area-inset-bottom, 0px));
-    transform:translateX(-50%) translateY(12px);}
-  body.mood.ayar-acik #ayar{transform:translateX(-50%) translateY(0);}
-  #ayarTut span{display:block;width:34px;height:3px;border-radius:3px;
-    transition:width .22s ease, opacity .22s ease;}
-  /* MARKA_PEMBE ve RADIO halkasinin turkuazi -- index'teki degerlerin
-     ayni. Ortadaki cizgi ikisinin karisimi. */
-  #ayarTut span:nth-child(1){background:#35e0d8;}
-  #ayarTut span:nth-child(2){background:#8cb1ba;width:28px;}
-  #ayarTut span:nth-child(3){background:#e27a9e;width:22px;}
-  body.ayar-acik #ayarTut span:nth-child(2){width:34px;}
-  body.ayar-acik #ayarTut span:nth-child(3){width:34px;}
+  /* Ucgen bir kenarlik ucgeni DEGIL: kenarlik ucgenine gradyan
+     uygulanamaz. clip-path ile kesilen bir kutu, uzerinde markanin
+     gradyani. Doner de -- kenarlik ucgeni donunce kenarlari kiriliyor. */
+  #ayarTut .ucgen{display:block;width:22px;height:13px;
+    background:linear-gradient(100deg,#35e0d8 0%,#8cb1ba 52%,#e27a9e 100%);
+    clip-path:polygon(0 0, 100% 0, 50% 100%);
+    transition:transform .26s cubic-bezier(.2,.8,.3,1);}
+  body.ayar-acik #ayarTut .ucgen{transform:rotate(180deg);}
 
+  /* Panel de alt ortadan, ucgenin USTUNDEN aciliyor. */
   #ayar{position:fixed;z-index:95;
-    left:calc(14px + env(safe-area-inset-left, 0px));
-    top:calc(70px + env(safe-area-inset-top, 0px));
-    transform:translateY(-12px);
+    left:50%;
+    bottom:calc(38px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%) translateY(12px);
     width:min(84vw,300px);padding:14px 16px 12px;
     background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
     border-radius:14px;opacity:0;pointer-events:none;
     transition:transform .26s cubic-bezier(.2,.8,.3,1), opacity .22s ease;}
-  body.ayar-acik #ayar{transform:translateY(0);
+  body.ayar-acik #ayar{transform:translateX(-50%) translateY(0);
     opacity:1;pointer-events:auto;}
   #ayar h4{margin:0 0 10px;font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:9.5px;letter-spacing:.30em;font-weight:400;
@@ -1168,9 +1214,28 @@
   #ust .kanal[data-mod="liste"].on:not(.ad){color:#ffc79e;text-shadow:0 0 13px rgba(255,140,90,.5);}
   #ust .kanal[data-mod="radio"].on:not(.ad){color:#8ff0dd;text-shadow:0 0 13px rgba(90,220,210,.45);}
   @media (max-width:480px){
-    #ust{top:calc(13px + env(safe-area-inset-top, 0px));right:calc(13px + env(safe-area-inset-right, 0px));gap:7px;}
+    #ust{top:calc(13px + env(safe-area-inset-top, 0px));gap:7px;}
     #ust .kanal{font-size:20px;letter-spacing:.26em;}
     #bekle.buyuk{--sem:26px;} }
+
+  /* ── DAR EKRANDA SOL UST DARALIYOR ───────────────────────────────
+     390px'te olculdu: sol ust satir 190px, sag ustteki kategori adi
+     ("RADIOTAPE") 193px, iki kenar payi 28px -> 411 > 390. Carpisma
+     gercekti ve emniyet olcegi devreye girip dugmeleri 0.83'e
+     kuculttugu icin hap olculeri sag alttaki ★ ile tutmuyordu:
+     ekranin iki kosesi gorunur sekilde farkli olcudeydi.
+     Cozum kuculmek DEGIL, dar ekranda dar olcu. Bu blok butun
+     dugme tanimlarindan SONRA duruyor -- CSS'te esit ozgullukte son
+     yazilan kazanir, yukariya konunca 38px'lik tanimlar bunu eziyordu
+     ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
+  @media (max-width:480px){
+    #tasima{gap:6px;} #araclar{gap:6px;}
+    #geri,#ileri,#dur,#fav,#favAc{width:34px;}
+    #sesYatay{width:40px;}
+    /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
+       daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
+    #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:9px;letter-spacing:.14em;}
+  }
 
   /* ── GENIS EKRANDA TEK KOLON ──────────────────────────────────────
      Arayuzun her parcasi ekranin KOSELERINE sabitli. Telefonda ekran
@@ -1186,12 +1251,12 @@
   @media (min-width:700px){
     :root{ --kol:560px; --yan:calc((100vw - var(--kol)) / 2); }
     .disk{ width:min(84vw, 500px); }
-    #ust        { right:calc(var(--yan) + 18px + env(safe-area-inset-right, 0px)); }
-    #np         { right:calc(var(--yan) + 18px + env(safe-area-inset-right, 0px)); }
+    #ust        { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
+    #np         { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
-    #ara        { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
-    #araclar    { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
-    #kayitBilgi { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
+    #ara        { left:calc(var(--yan) + var(--kx) + env(safe-area-inset-left, 0px)); }
+    #solUst     { left:calc(var(--yan) + var(--kx) + env(safe-area-inset-left, 0px)); }
+    #kayitBilgi { left:calc(var(--yan) + var(--kx) + env(safe-area-inset-left, 0px)); }
   }
   /* KAYNAK RAPORU MARKA YAZISININ ALTINDA BASLIYOR: ust satirin
      uzerine biniyordu ve ORBITAPE yazisiyla uc sembolu, yaninda da
@@ -1313,7 +1378,7 @@
   <div id="sesCubuk" aria-hidden="true"><i></i></div>
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
-       aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
+       aria-expanded="false" aria-controls="ayar"><i class="ucgen"></i></div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <h4>SETTINGS</h4>
     <!-- tabindex KAPALIYKEN -1: panel aria-hidden iken icindeki
@@ -1332,12 +1397,9 @@
     <div class="sat mood" data-ayar="mood" role="switch" tabindex="-1">
       <span>SOUND BANKS</span><span class="durum">OFF</span></div>
   </div>
-  <!-- Masaustunde dikey ses. Dokunmatikte hic gorunmuyor (bkz. CSS):
-       orada iki parmak jesti var. -->
-  <div id="sesDikey" role="slider" aria-label="Volume" aria-orientation="vertical"
-       aria-valuemin="0" aria-valuemax="100" tabindex="0">
-    <div class="iz"><i></i></div><div class="nokta"></div>
-  </div>
+  <!-- Dikey ses cubugu SILINDI; yerini sol ustteki yatay ses cizgisi
+       aldi (#sesYatay, tasima satirinin sonunda). -->
+
   <audio id="ses" preload="none"></audio>
   <!-- ARIA: bu panel uygulamanın TEK metinsel çıktısı — parça adı,
        sanatçı, kaynak, lisans. Eskiden burada kalıcı aria-hidden="true"
@@ -1361,10 +1423,12 @@
            boş kalır, o zaman hiç yer kaplamaz. -->
       <div class="np-lisans" id="npLisans"></div>
     </div>
+    <!-- ◁ ve ▷ BURADAN SOL UST'E TASINDI. Ayni is icin ekranda iki
+         takim tus vardi; hangisinin ne yaptigi belirsizdi. Sag altta
+         yalnizca favori yildizi kaldi: bu kose artik "calan sey"
+         kosesi -- kunye ve onu isaretleyen tek dugme. -->
     <div class="np-gez">
-      <button id="geri" type="button" title="Previous" aria-label="Previous"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="0.6" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M13.4 1.1 L13.4 10.9 L4.2 6 Z"/></svg></button>
       <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
-      <button id="ileri" type="button" title="Next in history" aria-label="Next in history"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="11.7" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M0.6 1.1 L0.6 10.9 L9.8 6 Z"/></svg></button>
     </div>
   </div>
   <div id="bekle" aria-hidden="true"><span id="bekleGly"><i class="yuva"></i><i class="yuva"></i><i class="yuva"></i></span></div>
@@ -1416,10 +1480,41 @@
   </div>
   <div id="kamCubuk" role="slider" tabindex="0" aria-label="Camera level"
        aria-valuemin="0" aria-valuemax="100" aria-valuenow="22" aria-hidden="true"><i></i><b></b></div>
-  <div id="araclar">
-    <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
-    <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
-    <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
+  <!-- ── SOL UST: TASIMA · KAYIT · SES ────────────────────────────
+       Ekranin sol ustu nebula kalkinca bosalmisti. Simdi elin en cok
+       gittigi tuslar orada: ilk satir tasima (◁ oynat/durdur ▷) ve
+       ses cizgisi, ikinci satir kayit (REC · CAM · ★).
+       ILK SATIRIN TABAN CIZGISI sag ustteki ORBITAPE yazisinin taban
+       cizgisiyle ayni -- iki kose karsilikli, ayni hatta oturuyor
+       (olcum ustHizala icinde, testi de var).
+       ARACLAR KUTUSU (#araclar) BURADA: eskiden SOL ALTTAYDI, id
+       korundu cunku olcu/sigdirma mantigi ona bagli. -->
+  <div id="solUst">
+    <div id="tasima">
+      <button id="geri" type="button" title="Previous" aria-label="Previous"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="0.6" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M13.4 1.1 L13.4 10.9 L4.2 6 Z"/></svg></button>
+      <button id="dur" type="button" title="Play / stop" aria-label="Play or stop" aria-pressed="false"><svg viewBox="0 0 14 12" aria-hidden="true"><rect class="d1" x="2.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="d2" x="8.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><path class="oyn" d="M3.2 1.1 L3.2 10.9 L12 6 Z"/></svg></button>
+      <button id="ileri" type="button" title="Next in history" aria-label="Next in history"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="11.7" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M0.6 1.1 L0.6 10.9 L9.8 6 Z"/></svg></button>
+    </div>
+    <!-- IKINCI SATIR: kayit araclari, favori girisi ve ses.
+         NEDEN BU DAGILIM: 360px'te olculdu -- sag ustteki satir
+         (kategori adi + ORBITAPE) 201px yer kapliyor ve solda yalnizca
+         127px kaliyor. Ilk satira bes denetim koyunca 186px oluyor ve
+         carpiyordu; emniyet olcegi devreye girip haplari kuculttugu
+         icin de sag alttaki ★ ile ayni olcude olmuyorlardi.
+         Ikinci satirin karsisinda HICBIR SEY YOK (sag ustteki satir
+         yukarida bitiyor), yani genis olabilir. Bu yuzden ilk satirda
+         yalnizca uc tasima tusu duruyor: 114px, rahatca siginyor. -->
+    <div id="araclar">
+      <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
+      <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
+      <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
+      <!-- SES: yatay tek cizgi. Dokunmatikte iki parmak jesti iPhone
+           Safari'de calismadi; artik her yerde gorunen bir denetim var.
+           Surukle = seviye, tek dokunus = sustur/geri ac. -->
+      <div id="sesYatay" role="slider" tabindex="0" aria-label="Volume"
+           aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100"
+           aria-valuenow="100"><i class="iz"></i><i class="dolu"></i></div>
+    </div>
   </div>
   <div id="rapor"><h4>SOURCE REPORT · v62 · press D</h4><div id="raplist"></div></div>
 
@@ -4360,61 +4455,131 @@
     clearTimeout(_sesGizle);
     _sesGizle = setTimeout(()=>sesCub.classList.remove('on'), 900);
   }
-  /* Dikey cubugun dolulugu da ayni yerden guncelleniyor: iki parmakla
-     kissan da cubuk dogru gorunsun, tek gercek kSes. */
-  const sesDik = document.getElementById('sesDikey');
+  /* Yatay cizginin dolulugu da ayni yerden guncelleniyor: iki parmakla
+     kissan da cizgi dogru gorunsun, tek gercek kSes. */
+  const sesDik = document.getElementById('sesYatay');
   function sesDikeyYaz(){
     if(!sesDik) return;
     try{
-      const y = Math.round(kSes*100) + '%';
-      sesDik.style.setProperty('--dolu', y);
-      sesDik.setAttribute('aria-valuenow', String(Math.round(kSes*100)));
+      const y = Math.round(kSes*100);
+      const d = sesDik.querySelector('.dolu');
+      if(d) d.style.width = y + '%';
+      sesDik.classList.toggle('sus', kSes <= 0.001);
+      sesDik.setAttribute('aria-valuenow', String(y));
     }catch(e){ _yut(e); }
   }
-  /* ── MASAUSTU: DIKEY SES CUBUGU ──────────────────────────────────
-     Surukle, ya da uzerinde tekerlegi cevir. Deger cubugun kendi
-     yuksekliginden okunuyor: ASAGISI sessiz, YUKARISI tam. */
-  (function dikeySes(){
+  /* ── SES CIZGISI (SOL UST) ───────────────────────────────────────
+     Surukle = seviye, cizginin SOLU sessiz SAGI tam.
+     TEK DOKUNUS = sustur / geri ac. Surukleme ile karismasin diye
+     ayrimi mesafe yapiyor: parmak 4px'ten az gezdiyse bu bir
+     dokunustur, fazlaysa suruklemedir. 4px goz kararı degil --
+     bir parmak duran haldeyken bile 2-3px oynuyor.
+     Tekerlek ve ok tuslari da calisiyor (masaustu + ekran okuyucu). */
+  (function sesCizgisi(){
     if(!sesDik) return;
-    let tutuluyor = false;
+    let tutuluyor = false, basX = 0, gezdi = false, sonSes = 1;
     const oku = (e)=>{
       const r = sesDik.getBoundingClientRect();
-      const o = 1 - ((e.clientY - r.top) / Math.max(1, r.height));
+      const o = (e.clientX - r.left) / Math.max(1, r.width);
       kSes = Math.max(0, Math.min(1, o));
       sesSeviyeYaz(); sesDikeyYaz(); sesGoster();
     };
     const kaydet = ()=>{ try{ localStorage.setItem('orbitape.ses', String(kSes)); }catch(e){ _yut(e); } };
     sesDik.addEventListener('pointerdown', e=>{
-      /* Ses baglami kullanici hareketiyle acilir: cubugu ilk kez
+      /* Ses baglami kullanici hareketiyle acilir: cizgiyi ilk kez
          kullanan kisi de sesi duysun. */
       try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
-      tutuluyor = true; sesDik.classList.add('tutuluyor');
+      tutuluyor = true; gezdi = false; basX = e.clientX;
+      sesDik.classList.add('tutuluyor');
       try{ sesDik.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
-      e.stopPropagation(); e.preventDefault(); oku(e);
+      e.stopPropagation(); e.preventDefault();
     });
-    sesDik.addEventListener('pointermove', e=>{ if(tutuluyor){ e.preventDefault(); oku(e); } });
-    const birak = ()=>{ if(!tutuluyor) return; tutuluyor=false;
-      sesDik.classList.remove('tutuluyor'); kaydet(); };
+    sesDik.addEventListener('pointermove', e=>{
+      if(!tutuluyor) return;
+      if(!gezdi && Math.abs(e.clientX - basX) < 4) return;
+      gezdi = true; e.preventDefault(); oku(e);
+    });
+    const birak = ()=>{
+      if(!tutuluyor) return; tutuluyor = false;
+      sesDik.classList.remove('tutuluyor');
+      if(!gezdi){
+        /* SUSTUR / GERI AC. Susmadan onceki seviye saklaniyor:
+           kapatip acinca ses sifirdan degil biraktigi yerden geliyor. */
+        if(kSes > 0.001){ sonSes = kSes; kSes = 0; }
+        else { kSes = sonSes > 0.001 ? sonSes : 1; }
+        sesSeviyeYaz(); sesDikeyYaz(); sesGoster();
+      }
+      kaydet();
+    };
     sesDik.addEventListener('pointerup', birak);
     sesDik.addEventListener('pointercancel', birak);
     sesDik.addEventListener('lostpointercapture', birak);
-    /* Tekerlek: cubugun uzerinde. Sayfa zaten kaymiyor ama yine de
+    /* Tekerlek: cizginin uzerinde. Sayfa zaten kaymiyor ama yine de
        durduruyoruz, yoksa bazi trackpad'lerde gerileme oluyor. */
     sesDik.addEventListener('wheel', e=>{
       e.preventDefault();
       kSes = Math.max(0, Math.min(1, kSes - Math.sign(e.deltaY) * 0.05));
       sesSeviyeYaz(); sesDikeyYaz(); sesGoster(); kaydet();
     }, {passive:false});
-    /* Klavye: cubuk odaklanabilir, ok tuslari calissin. */
+    /* Klavye: cizgi odaklanabilir, ok tuslari calissin. Yatay oldugu
+       icin sol/sag da kabul ediliyor. */
     sesDik.addEventListener('keydown', e=>{
       const k = e.key;
-      if(k!=='ArrowUp' && k!=='ArrowDown' && k!=='Home' && k!=='End') return;
+      if(k===' ' || k==='Enter'){
+        e.preventDefault();
+        if(kSes > 0.001){ sonSes = kSes; kSes = 0; } else { kSes = sonSes > 0.001 ? sonSes : 1; }
+        sesSeviyeYaz(); sesDikeyYaz(); sesGoster(); kaydet(); return;
+      }
+      const art = (k==='ArrowUp' || k==='ArrowRight'), eks = (k==='ArrowDown' || k==='ArrowLeft');
+      if(!art && !eks && k!=='Home' && k!=='End') return;
       e.preventDefault();
       if(k==='Home') kSes = 0; else if(k==='End') kSes = 1;
-      else kSes = Math.max(0, Math.min(1, kSes + (k==='ArrowUp' ? 0.05 : -0.05)));
+      else kSes = Math.max(0, Math.min(1, kSes + (art ? 0.05 : -0.05)));
       sesSeviyeYaz(); sesDikeyYaz(); sesGoster(); kaydet();
     });
+    if(kSes > 0.001) sonSes = kSes;
     sesDikeyYaz();
+  })();
+
+  /* ── OYNAT / DURDUR ──────────────────────────────────────────────
+     Ekranda ilk kez gercek bir durdurma var. Onceden ses yalnizca
+     kilit ekranindan ya da kulaklik dugmesinden durdurulabiliyordu.
+     _kullaniciDuraklatti bayragi zaten vardi (kilit ekrani icin);
+     ayni bayrak burada da yaziliyor, yoksa kamera korumasi ya da
+     gorunurluk olayi sesi kendiliginden geri aciyordu -- "durdurdum
+     ama yine caliyor" hatasi tam olarak boyle olusur. */
+  (function oynatDurdur(){
+    const d = document.getElementById('dur');
+    if(!d) return;
+    function yaz(){
+      try{ const duruyor = !ses || ses.paused || !ses.src;
+           d.classList.toggle('durdu', duruyor);
+           d.setAttribute('aria-pressed', duruyor ? 'true' : 'false');
+           d.setAttribute('aria-label', duruyor ? 'Play' : 'Stop');
+      }catch(e){ _yut(e); }
+    }
+    d.addEventListener('click', e=>{
+      e.stopPropagation(); e.preventDefault();
+      try{ sesBaglamiAl(); if(actx && actx.state!=='running') actx.resume(); }catch(_){ _yut(_); }
+      try{
+        if(ses && !ses.paused && ses.src){
+          _kullaniciDuraklatti = true;
+          try{ korumayiBirak(); }catch(_){ _yut(_); }
+          ses.pause();
+        } else {
+          _kullaniciDuraklatti = false;
+          if(ses && ses.src) ses.play().catch(()=>{});
+          else sonraki(true);            // hic kaynak yoksa: bir sey bul ve cal
+        }
+      }catch(_){ _yut(_); }
+      try{ ortamDurum(); }catch(_){ _yut(_); }
+      yaz();
+    });
+    try{ ses.addEventListener('play', yaz); ses.addEventListener('playing', yaz);
+         ses.addEventListener('pause', yaz); ses.addEventListener('ended', yaz);
+         ses.addEventListener('emptied', yaz); }catch(e){ _yut(e); }
+    yaz();
+    window.durTazele = yaz;
   })();
 
   (function ikiParmakSes(){
@@ -6311,8 +6476,11 @@
     mark.classList.remove('radio','liste','lib');   mark.classList.add(sinif);
     geriDug.classList.remove('radio','liste','lib'); geriDug.classList.add(sinif);
     if(ileriDug){ ileriDug.classList.remove('radio','liste','lib'); ileriDug.classList.add(sinif); }
-    try{ const fd=document.getElementById('fav');
-         if(fd){ fd.classList.remove('radio','liste','lib'); fd.classList.add(sinif); } }catch(e){ _yut(e); }
+    /* ★, oynat/durdur ve ses cizgisi de kanalin rengini aliyor:
+       sol ustteki satir tek parca gorunsun, icinde farkli renkte bir
+       dugme kalmasin. */
+    try{ ['fav','dur','sesYatay'].forEach(id=>{ const e2=document.getElementById(id);
+         if(e2){ e2.classList.remove('radio','liste','lib'); e2.classList.add(sinif); } }); }catch(e){ _yut(e); }
     document.body.classList.remove('t-lib','t-liste','t-radio');
     document.body.classList.add('t-'+sinif);                      // zemin de kanalla döner
     zeminUygula();                                               // kategori/FX zemini varsa üstte kalır
@@ -6841,12 +7009,14 @@
      etiket beklenmedik uzunlukta olursa hesap kayabilir. Bu güvenlik
      ölçüsü grubu gerçekten ölçüp gerekirse birebir sığdırıyor —
      hizanın bozulması ihtimali kalmıyor. */
-  /* Satır (REC · CAM · ★) alttaki arama çizgisini GEÇMİYOR.
-     Ölçü kutunun kendisi DEĞİL, İÇERİĞİ: #araclar'ın genişliği sabit
-     (var(--ug)) ama içerik taşabiliyor — kutuyu ölçünce hep "sığıyor"
-     görünüyordu, oysa yıldız çizginin 41px dışındaydı. scrollWidth
-     gerçek içerik genişliğini veriyor ve ölçekten etkilenmiyor, tek
-     hesap yetiyor. */
+  /* SOL UST BLOK sag ustteki yaziya CARPMIYOR.
+     Olcu kutunun kendisi DEGIL, ICERIGI: kutunun genisligi CSS'ten
+     sinirli (max-width) ama icerik tasabiliyor -- kutuyu olcunce hep
+     "siginyor" gorunuyordu, oysa yildiz cizginin 41px disindaydi.
+     scrollWidth gercek icerik genisligini veriyor ve olcekten
+     etkilenmiyor, tek hesap yetiyor.
+     ESKIDEN bu olcu sol ALT satir icindi; satir sol uste tasindi,
+     olculen sey ayni kaldi. */
   function araclarSigdir(araclar, bütçe){
     try{
       if(!araclar || !(bütçe > 0)) return;
@@ -6854,7 +7024,11 @@
       araclar.style.transform = '';
       const g = araclar.scrollWidth;          // gerçek içerik genişliği
       if(!(g > 0)) return;
-      const k = Math.min(1, Math.max(0.60, bütçe / g));
+      /* Alt sinir 0.60 -> 0.80. Daha asagisinda dugmeler sag alttaki
+         ★ ile ayni olcude olmaktan cikiyor ve iki kose gorunur
+         sekilde farkli oluyordu. 0.80 altina inmek gerekiyorsa sorun
+         olcekte degil olcude; oraya dar ekran sorgusu bakiyor. */
+      const k = Math.min(1, Math.max(0.80, bütçe / g));
       araclar.style.transform = (k < 1) ? ('scale(' + k.toFixed(4) + ')') : '';
     }catch(e){ _yut(e); }
   }
@@ -6882,13 +7056,12 @@
     try{
       const kok = document.documentElement;
       if(!_ugAd) _ugAd = parseFloat(getComputedStyle(kok).getPropertyValue('--ug')) || 138;
-      const a = document.getElementById('araclar');
-      if(a && ugTemelMi()){
-        const eski = a.style.transform; a.style.transform = '';
-        const ic = a.scrollWidth;
-        a.style.transform = eski;
-        if(ic > _ugSatir) _ugSatir = ic;
-      }
+      /* REC · CAM · ★ ARTIK SOL UST'TE: arama cizgisiyle ayni sutunu
+         paylasmiyorlar, o yuzden genisligine de karismiyorlar.
+         --ug yalnizca en uzun kanal adindan geliyor. _ugSatir olcusu
+         duruyor ama ugTemelMi() ile birlikte yalnizca eski davranisi
+         acikca kapatmak icin burada; sifir kaliyor. */
+      void ugTemelMi; _ugSatir = 0;
       const s = Math.round(Math.max(_ugAd, _ugSatir)) || 138;
       if(Math.abs((parseFloat(getComputedStyle(kok).getPropertyValue('--ug')) || 0) - s) > 0.5){
         kok.style.setProperty('--ug', s + 'px');
@@ -6900,53 +7073,83 @@
   function geriYerlestir(){
     iz('geriYerlestir');
     try{
-      /* ── SOL ALT SÜTUN (aşağıdan yukarı) ─────────────────────────
-           REC · CAM · ★   ← EN ALTTA, sağdaki ◁ ★ ▷ ile aynı tabanda
-           arama çizgisi
+      /* ── YENI ALT SERIT (asagidan yukari) ────────────────────────
+           ▽ ayarlar ucgeni   <- EN ALTTA, ORTADA (konumu CSS'ten)
+           arama cizgisi      <- solda, ucgenin ustunde
            kamera seviyesi
-           kayıt bilgisi
-         Çapa artık ARAÇ SATIRI. Arama onun üstüne oturuyor; sağ alt
-         blok da yine araç satırının tabanına hizalanıyor. Böylece
-         ekranın iki alt köşesindeki düğmeler karşılıklı aynı çizgide. */
+           kayit bilgisi
+         REC · CAM · ★ BURADAN GITTI: sol uste, tasima tuslarinin
+         altina tasindi. Bu yuzden capa artik bir eleman degil, alt
+         kenardan olculen SABIT bir hat: ucgenin tepesi + bosluk.
+         Sag alt blok (#np) ayni hatta hizalaniyor -- ekranin iki alt
+         kosesi yine karsilikli, arada ucgen ortada duruyor. */
       const arE = document.getElementById('ara');
-      const alt = 14 + (parseFloat(getComputedStyle(document.body).getPropertyValue('--gd')) || 0);
+      const gd  = parseFloat(getComputedStyle(document.body).getPropertyValue('--gd')) || 0;
+      /* 5 = ucgenin alt bosluğu, 26 = yuksekligi, 10 = ustundeki hava.
+         Ucu de CSS'te ayni degerler; burada tek yerde toplaniyor. */
+      const UCGEN_UST = 5 + 26 + 10;
+      const alt = UCGEN_UST + gd;
+      const sol = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16);
+      const hat = window.innerHeight - alt;      // arama ve sag alt blok bu hatta biter
 
-      const araclar = document.getElementById('araclar');
-      let sol = 16, aracAlt = window.innerHeight - alt, aracUst = aracAlt - 32;
-      if(araclar){
-        araclar.style.left   = '';                 // sol kenar CSS'ten (güvenli alan dahil)
-        araclar.style.bottom = 'calc(' + Math.round(alt) + 'px + env(safe-area-inset-bottom, 0px))';
-        ugOlcu();
-        /* Küçültme bütçesi artık arama çizgisi DEĞİL, karşıdaki düğme
-           satırı: iki köşe aynı hatta olduğu için tek gerçek sınır o.
-           Normalde satır zaten sığıyor (ölçüm: 169px, bütçe 216px) —
-           bu yalnız çok dar ekranda ya da sayaç 120:45'e çıkınca
-           devreye giren emniyet. */
-        let butce = Math.round(window.innerWidth * 0.5) - 16;
-        try{
-          const gz = document.querySelector('#np .np-gez');
-          const gr = gz ? gz.getBoundingClientRect() : null;
-          if(gr && gr.width) butce = Math.round(gr.left - 12 - (araclar.getBoundingClientRect().left || 16));
-        }catch(_){ _yut(_); }
-        araclarSigdir(araclar, Math.max(120, butce));
-        const ab = araclar.getBoundingClientRect();
-        if(ab.height){ sol = Math.round(ab.left); aracAlt = ab.bottom; aracUst = ab.top; }
-      }
-
-      /* SAĞ ALT: düğme satırının TABANI soldaki REC satırının tabanıyla
-         aynı çizgide — iki köşe birbirinin aynası. */
+      /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
+         Blogu tek parca olcmek yanlisti: birinci satirin karsisinda
+         marka adi (dar), ikinci satirin karsisinda kategori adi
+         (genis) var. Tek butce alinca genis olan ikisini birden
+         kucultuyordu -- birinci satir bol bol sigiyorken.
+         Karsilikli satirlar arasinda 12px hava birakiliyor. */
       try{
-        const npE = document.getElementById('np');
-        if(npE) npE.style.bottom = Math.round(Math.max(6, window.innerHeight - aracAlt)) + 'px';
+        /* Karsi taraf marka yazisi DEGIL, sag ustteki SATIRIN tamami:
+           kategori adi onun solunda ve ayni satirda duruyor, once
+           carpilacak olan o. */
+        const adE  = document.querySelector('#ust .ustSatir') || document.querySelector('#ust .kanal.ad');
+        const modE = document.getElementById('modAd');
+        const olc = (satirId, karsi)=>{
+          const el = document.getElementById(satirId); if(!el) return;
+          const kx = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16);
+          let butce = window.innerWidth - kx*2;
+          const kr = karsi ? karsi.getBoundingClientRect() : null;
+          if(kr && kr.width){
+            const eski = el.style.transform; el.style.transform = '';
+            const solK = el.getBoundingClientRect().left;
+            el.style.transform = eski;
+            butce = Math.round(kr.left - 12 - solK);
+          }
+          araclarSigdir(el, Math.max(110, butce));
+        };
+        /* ILK SATIR sag ustteki satirla ayni yukseklikte -> ona gore.
+           IKINCI SATIRIN karsisinda hicbir sey yok (sag ust tek satir
+           ve yukarida bitiyor) -> butce ekranin kendisi. */
+        olc('tasima',  adE);
+        olc('araclar', null);
+        void modE;
       }catch(_){ _yut(_); }
+      ugOlcu();
 
-      // ARAMA: araç satırının hemen ÜSTÜNDE, aynı sol kenarda.
+      // ARAMA: ucgenin hemen USTUNDE, sol kenarda.
       if(arE){
         arE.style.left   = '';
-        arE.style.bottom = Math.round(Math.max(6, window.innerHeight - (aracUst - IST_ARA))) + 'px';
+        arE.style.bottom = Math.round(Math.max(6, alt)) + 'px';
       }
+      /* SAG ALT KUNYE: ARAMA CIZGISININ USTUNDE, ayni hatta DEGIL.
+         Once ikisini ayni tabana koydum ve carpistilar: kunye artik
+         kirpilmadigi icin genis (72vw) ve arama cizgisi solda 138px
+         yer kapliyor -- 390px'te 72px ust uste biniyorlardi.
+         Ikisinden biri yer degistirmek zorundaydi. Kirpma bir LISANS
+         sarti, yani kunye kisalamaz; arama ise en altta kalmali
+         (kullanicinin istegi). Geriye kunyeyi bir sira yukari almak
+         kaldi. Sag kenar hizasi bozulmuyor -- degisen sadece yukseklik. */
+      try{
+        const npE = document.getElementById('np');
+        if(npE){
+          const ab2 = arE ? arE.getBoundingClientRect() : null;
+          const ustHat = (ab2 && ab2.height) ? (window.innerHeight - ab2.top + 10)
+                                             : (alt + 36);
+          npE.style.bottom = Math.round(Math.max(6, ustHat)) + 'px';
+        }
+      }catch(_){ _yut(_); }
       const araY = arE ? arE.getBoundingClientRect()
-                       : {height:26, left:sol, top:aracUst-IST_ARA-26, bottom:aracUst-IST_ARA, width:138};
+                       : {height:26, left:sol, top:hat-26, bottom:hat, width:138};
 
       /* Kamera seviyesi çizgisi aramanın ÜSTÜNDE, aynı sol kenarda ve
          aynı genişlikte. Kamera kapalıyken hiç çizilmiyor. */
@@ -7306,14 +7509,17 @@
       /* HALKANIN ALTINDA: halka ile ekranın DİBİ arasında ortalanıyor.
          Ölçü diskin kutusundan değil, EN DIŞ HALKANIN görünen alt
          kenarından alınıyor — kutunun içinde halkadan sonra boşluk var.
-         Alttaki ses çubuğu / REC satırı / arama satırına 14px'ten
-         fazla yaklaşmıyor: o şeridin üstünü asla geçmiyor. */
+         Alttaki serit (ses cubugu / arama / kunye / ayar ucgeni)
+         14px'ten fazla yaklasmiyor: o seridin ustunu asla gecmiyor.
+         'araclar' BU LISTEDEN CIKTI -- REC · CAM satiri sol UST'e
+         tasindi. Listede kalinca alt serit 47px olarak olculuyordu
+         (yani ekranin tepesi) ve buyuk yazi hicbir yere sigmiyordu. */
       try{
         const d = document.querySelector('.disk').getBoundingClientRect();
         /* halka yarıçapı = min(en,boy)*0.357 * (0.55 + 5*0.080) */
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
         let taban = window.innerHeight;
-        ['sesCubuk','araclar','ara','np','kayitBilgi'].forEach(id=>{
+        ['sesCubuk','ara','np','kayitBilgi','ayarTut'].forEach(id=>{
           try{ const e2 = document.getElementById(id); if(!e2) return;
                const k = e2.getBoundingClientRect();
                if(k.height > 0) taban = Math.min(taban, k.top); }catch(_){ _yut(_); }
@@ -7619,7 +7825,54 @@
       try{ geriYerlestir(); }catch(_){ _yut(_); }      // uydu, büyük nebulaya göre konumlanıyor
     }catch(e){ _yut(e); }
   }
-  function ustOlcu(){ araCizgiOlcu(); markHizala(); araYerlestir(); try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); } }
+  /* ── SOL UST HIZASI: TABAN CIZGISI ───────────────────────────────
+     Kullanicinin bildirdigi hata: "sol ustteki cizgilerle karsisinda
+     sag ustteki yazilarin taban hizasi ayni degil."
+     Sabit bir top degeri bunu cozmez. Sagdaki yazinin taban cizgisi
+     yazi tipine, puntoya ve ekran genisligine gore degisiyor (480px
+     altinda punto 23 -> 20 dusuyor); font gec yuklendiginde de kayiyor.
+     O yuzden olculuyor:
+       yazinin taban cizgisi = kutu ustu + satir payi + ascent
+       (ascent ~ punto * 0.80; 'Share Tech Mono' yuklu degilse sistem
+        monosuna dusuyor, ikisinde de bu oran 1px icinde tutuyor)
+     ve sol ust satirin ORTASI yazinin murekkep ortasina getiriliyor.
+
+     NEDEN ORTA, NEDEN TABAN DEGIL: once satirin ALT kenarini yazinin
+     taban cizgisine oturtmayi denedim ve olcu tutmadi -- satir 32px
+     yuksekliginde bir hap, yazinin murekkebi 12px. Alt kenari tabana
+     getirmek satirin tepesini ekranin disina (-3px) itiyordu, yani
+     geometrik olarak imkansiz. Zaten yuvarlak bir hapta gozun
+     hizaladigi sey alt kenar degil, ORTA. Yazinin murekkep ortasi da
+     kutu ortasi degil: buyuk harf tepesi (~0.20 punto) ile taban
+     cizgisi (~0.80 punto) arasinin ortasi, yani 0.50 punto.
+     Duzeltme --sut degiskenine FARK olarak yaziliyor, mutlak deger
+     olarak degil: boylece guvenli alan payi (env) toplanabilir kalir,
+     centikli ekranda hesap bozulmaz. */
+  function solUstHizala(){
+    try{
+      const su = document.getElementById('solUst');
+      const ts = document.getElementById('tasima');
+      const ad = document.querySelector('#ust .kanal.ad');
+      if(!su || !ts || !ad) return;
+      const ab = ad.getBoundingClientRect();
+      const fs = parseFloat(getComputedStyle(ad).fontSize) || 20;
+      if(!ab.height) return;
+      const orta = ab.top + (ab.height - fs)/2 + fs*0.50;   // murekkep ortasi
+      const tb = ts.getBoundingClientRect();
+      if(!tb.height) return;
+      const satirOrta = tb.top + tb.height/2;
+      const kok = document.documentElement;
+      const mevcut = parseFloat(getComputedStyle(kok).getPropertyValue('--sut')) || 15;
+      const yeni = Math.max(2, Math.round(mevcut + (orta - satirOrta)));
+      /* Not: tb, emniyet olcegi devredeyse kuculmus olcuyu verir.
+         Olcek normal ekranda hic calismiyor (bkz. dar ekran sorgusu);
+         calistigi durumda da alt kenar dogru yerde kaldigi icin
+         hiza bozulmuyor -- olcek sol-ust koseden buyutuyor degil,
+         'left center' koseden kuculuyor. */
+      if(Math.abs(yeni - mevcut) > 0.5) kok.style.setProperty('--sut', yeni + 'px');
+    }catch(e){ _yut(e); }
+  }
+  function ustOlcu(){ araCizgiOlcu(); markHizala(); solUstHizala(); araYerlestir(); try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); } }
   ustOlcu();
   try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(ustOlcu); }catch(e){ _yut(e); }
   /* ustOlcu da aynı kareye toplanıyor: döndürme sırasında saniyede

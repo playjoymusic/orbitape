@@ -972,7 +972,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         modGezYaz('RADIOTAPE');
         const d = document.querySelector('.disk').getBoundingClientRect();
         const y = document.getElementById('modGez').getBoundingClientRect();
-        let taban = innerHeight; ['sesCubuk','araclar','ara','np','kayitBilgi'].forEach(id=>{ const e=document.getElementById(id);
+        let taban = innerHeight; ['sesCubuk','ara','np','kayitBilgi','ayarTut'].forEach(id=>{ const e=document.getElementById(id);
           if(e){ const k=e.getBoundingClientRect(); if(k.height>0) taban=Math.min(taban,k.top); } });
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
         modGezYaz('');
@@ -1409,12 +1409,28 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         document.getElementById('favAc').classList.add('var');
         for(const id of ['geri','fav','ileri']) document.getElementById(id).classList.add('var');
         geriYerlestir();
-        const cz=document.getElementById('araCizgi').getBoundingClientRect();
-        const a =document.getElementById('araclar').getBoundingClientRect();
-        const gz=document.querySelector('#np .np-gez').getBoundingClientRect();
-        const en=Math.max(a.right, cm.getBoundingClientRect().right,
-                          document.getElementById('favAc').getBoundingClientRect().right);
-        return { carpma: Math.round(en - gz.left), cizgi: Math.round(en - cz.right) };
+        /* SOL UST BLOK artik burada olculuyor: REC · CAM satirinin
+           karsisinda ARAMA CIZGISI degil, sag ustteki KATEGORI ADI var.
+           Eski olcum arama cizgisine gore yapiliyordu ve iki eleman
+           artik ekranin iki ucunda. */
+        /* Blok kutusu DEGIL, satirlarin kendisi olculuyor: #solUst'un
+           max-width'i var ve kutu icerikten genis cikabiliyor. */
+        /* HER SATIR KENDI KARSISINA gore olculuyor.
+           Ilk satir (tasima) sag ustteki satirla ayni yukseklikte,
+           carpabilecegi sey o. Ikinci satirin (REC · CAM · ★ · ses)
+           karsisinda hicbir sey yok -- sag ust tek satir ve yukarida
+           bitiyor -- sinir yalnizca ekranin kendisi.
+           Blok kutusu DEGIL satirlar olculuyor: #solUst'un max-width'i
+           var ve kutusu icerikten genis cikabiliyor. */
+        const t1=document.getElementById('tasima').getBoundingClientRect();
+        const t2=document.getElementById('araclar').getBoundingClientRect();
+        const us=document.querySelector('#ust .ustSatir').getBoundingClientRect();
+        const kx=Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx'))||16);
+        const c1=Math.round(t1.right - us.left);            // ilk satir  <-> sag ust satir
+        const c2=Math.round(t2.right - (innerWidth - kx));  // ikinci satir <-> sag kenar
+        return { carpma: Math.max(c1, c2),
+                 cizgi: Math.round(Math.min(t1.left,t2.left)
+                        - document.getElementById('ara').getBoundingClientRect().left) };
       },[yz,sil]);
       if(t.carpma > carpmaEn) carpmaEn = t.carpma;
       if(yz==='REC' && Math.abs(t.cizgi) < Math.abs(temelFark)) temelFark = t.cizgi;
@@ -1426,8 +1442,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     document.getElementById('camYazi').textContent='CAM';
     for(const id of ['geri','fav','ileri']) document.getElementById(id).classList.remove('var');
     geriYerlestir(); });
-  K('REC satiri karsidakilere carpmiyor', carpmaEn <= -8, 'en yakin '+(-carpmaEn)+'px bosluk');
-  K('REC satiri cizgiyle ayni yerde bitiyor', Math.abs(temelFark) <= 1, 'fark '+temelFark+'px');
+  K('Sol ust blok karsidakilere carpmiyor', carpmaEn <= -8, 'en yakin '+(-carpmaEn)+'px bosluk');
+  /* Iki uc sol kenar: sol ustteki blok ve en alttaki arama cizgisi.
+     Kullanicinin sozu: "ekranin sagi solu hizali her zaman." */
+  K('Sol ust ve arama ayni sol kenarda', Math.abs(temelFark) <= 1, 'fark '+temelFark+'px');
 
   // ── 9. TUVAL BELLEGI ────────────────────────────────────────────────
   const bellek = await pg.evaluate(()=>{
@@ -2162,8 +2180,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      (at?at.lisansli.yazi:'-'));
   K('Canli yayinda lisans satiri YOK', !!at && at.radyo.gor===false, 'hic yer kaplamiyor');
   K('Kendi parcamizda lisans satiri YOK', !!at && at.kendi.gor===false, 'hic yer kaplamiyor');
-  K('Lisans yerlesimi bozmuyor', !!at && at.yer.yaziSol >= at.yer.yari && at.yer.lisansSag===at.yer.blokSag,
-     'yazi sol '+(at?at.yer.yaziSol:'-')+' | yari '+(at?at.yer.yari:'-')+' | sag hizali');
+  /* ESKI KURAL: blok ekranin yarisini gecmesin. Kural sol altta REC ·
+     CAM · ★ satiri dururken gecerliydi -- carpmasinlar diye. O satir
+     sol UST'e tasindi, sol alt bosaldi. Yeni kural: blok ekran
+     genisliginin %78'ini gecmesin (nefes payi kalsin) ve lisans satiri
+     blogun sag kenariyla hizali olsun.
+     Kirpma testi ayrica asagida: kunye artik "..." ile kesilmiyor. */
+  /* Blok artik ekranin buyuk bolumunu kaplayabiliyor -- kunye
+     kirpilmiyor ve karsisinda carpacak bir sey kalmadi. Kalan tek
+     kural: sol kenara yapismasin (ekranin disina tasmasin) ve lisans
+     satiri blogun sag kenariyla hizali olsun. */
+  K('Lisans yerlesimi bozmuyor', !!at && at.yer.yaziSol >= 8 && at.yer.lisansSag===at.yer.blokSag,
+     'yazi sol '+(at?at.yer.yaziSol:'-')+' | sag hizali');
   {
     /* Havuzlar lisansi tasiyor mu + kayit cizimi lisansi yaziyor mu:
        kaynak uzerinden, cunku ikisi de calisma aninda kolay gozlenmiyor. */
@@ -3201,7 +3229,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Tekrar tutus kipi kapatir', fv.kapali.mod===false, 'normale dondu');
   K('Favoriler cihazda kalir', fv.depo===2, fv.depo+' kayit depoda');
   K('Bos listeyle kipe girilmez', fv.bosKip===false, 'yildiz iki kez yanip soner');
-  /* Sol altta REC/CAM yaninda GIRIS yildizi: tek basisla favori kipi. */
+  /* Sol USTTE tasima satirinin sonunda GIRIS yildizi: tek basisla
+     favori kipi. Eskiden sol altta REC/CAM yanindaydi. */
   const fa = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const a = document.getElementById('favAc'); if(!a) return null;
@@ -3212,27 +3241,33 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const acik = { acik:a.classList.contains('acik'), mod:_favMod };
     a.click(); await bek(200);
     const tekrar = { acik:a.classList.contains('acik'), mod:_favMod };
-    /* satir alttaki arama cizgisini gecmiyor mu */
+    /* Tasima satiri sag ustteki marka yazisina carpmiyor mu ve sol
+       ust blok arama cizgisiyle ayni sol kenardan mi basliyor. */
     const ar = document.getElementById('ara').getBoundingClientRect();
-    const ac = document.getElementById('araclar');
-    const sonSag = a.getBoundingClientRect().right;
-    const hiza = { tasma: Math.round(sonSag - ar.right), sol: Math.abs(ac.getBoundingClientRect().left - ar.left) };
+    const su = document.getElementById('solUst');
+    const ad = document.querySelector('#ust .kanal.ad').getBoundingClientRect();
+    const sonSag = document.getElementById('tasima').getBoundingClientRect().right;
+    const hiza = { tasma: Math.round(sonSag - (ad.left - 12)),
+                   sol: Math.abs(su.getBoundingClientRect().left - ar.left) };
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
     AKTIF_MOD = eski;
     return { kapali, acik, tekrar, hiza };
   });
-  K('Sol altta favori yildizi var', !!fa && fa.kapali.gor===true, 'REC/CAM yaninda');
+  K('Sol ustte favori yildizi var', !!fa && fa.kapali.gor===true, 'tasima satirinin sonunda');
   K('Yildiza basis kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'tek basis');
   K('Tekrar basis kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
-  K('Yildiz arama cizgisini gecmiyor', !!fa && fa.hiza.tasma <= 0 && fa.hiza.sol <= 1,
+  K('Tasima satiri sag ust yaziya carpmiyor', !!fa && fa.hiza.tasma <= 0 && fa.hiza.sol <= 1,
      'tasma '+(fa?fa.hiza.tasma:'-')+'px | sol hiza '+(fa?fa.hiza.sol:'-'));
 
-  /* ── SAG ALT DUZEN ────────────────────────────────────────────────
-     Duzen soyle olmali: ◁ ★ ▷ satiri EN ALTTA, tabani soldaki arama
-     satirinin tabaniyla ayni cizgide; bilgi yazilari onlarin USTUNDE
-     ve uzadikca yukari buyuyor. Yazi bloku ekranin yarisini gecmiyor
-     ve sol alttaki arama cizgisine hicbir zaman degmiyor. */
+  /* ── SAG ALT DUZEN (YENI HARITA) ─────────────────────────────────
+     Duzen soyle olmali: ★ EN ALTTA, tabani soldaki arama cizgisinin
+     tabaniyla ayni hatta; bilgi yazilari onun USTUNDE ve uzadikca
+     yukari buyuyor. Blok sag kenarda hizali.
+     DEGISENLER: ◁ ve ▷ bu koseden sol uste gitti (tek takim tus),
+     REC · CAM da sol uste gitti (sol alt bosaldi), bu yuzden yazi
+     artik ekranin yarisini gecebiliyor -- karsisinda carpacak bir sey
+     yok. Kirpma da kalkti: kunye tam yaziliyor (lisans sarti). */
   const np = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const n = document.getElementById('np'); if(!n) return null;
@@ -3249,39 +3284,215 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const R=x=>Math.round(x);
     const g  = n.querySelector('.np-gez').getBoundingClientRect();
     const bi = n.querySelector('.np-bilgi').getBoundingClientRect();
-    const ac = document.getElementById('araclar').getBoundingClientRect();
     const ar = document.getElementById('ara').getBoundingClientRect();
-    const cz = document.getElementById('araCizgi').getBoundingClientRect();
-    const rr = rec.getBoundingClientRect(), fa = fAc.getBoundingClientRect();
+    const ts = document.getElementById('tasima').getBoundingClientRect();
+    const tut = document.getElementById('ayarTut').getBoundingClientRect();
+    const fa = fAc.getBoundingClientRect();
     const sf = document.getElementById('fav').getBoundingClientRect();
-    const o = { taban:R(g.bottom-ac.bottom), yaziSol:R(bi.left), yari:R(innerWidth/2),
-                cizgiSag:R(cz.right), sagHiza:R(g.right-bi.right),
+    const o = { taban:R(g.bottom-ar.top), ustunde:(g.bottom <= ar.top + 1), yaziSol:R(bi.left), yari:R(innerWidth/2),
+                sagHiza:R(g.right-bi.right),
+                cizgiSag:R(document.getElementById('araCizgi').getBoundingClientRect().right),
                 dugmeAltta:g.top >= bi.bottom - 1,
-                solY:R(rr.height), sagY:R(g.height),
+                solY:R(ts.height), sagY:R(g.height),
                 solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
-                aramaUstte: ar.bottom <= ac.top,
-                satirTasma: R(fa.right - cz.right) };
+                ucgenAltta: tut.top >= ar.bottom - 1,
+                blokEn: R(bi.width), en: R(innerWidth),
+                kirpma: (()=>{ const a2=document.getElementById('npAd');
+                  const st=getComputedStyle(a2);
+                  return st.webkitLineClamp && st.webkitLineClamp!=='none' ? st.webkitLineClamp
+                       : (st.textOverflow==='ellipsis' ? 'ellipsis' : 'yok'); })() };
     for(const id of ['geri','fav','ileri']) document.getElementById(id).classList.remove('var');
     rec.className = eskiRec; cam.className = eskiCam; fAc.className = eskiFav;
     npAd.textContent=eskiAd; npSanatci.textContent=eskiSan; npKaynak.textContent=eskiKay;
     n.classList.remove('on'); geriYerlestir();
     return o;
   });
-  K('Iki alt kose taban hizali', !!np && Math.abs(np.taban) <= 1,
-     'REC satiri / ◁ ★ ▷ fark '+(np?np.taban:'-')+'px');
-  K('Iki satir ayni yukseklikte', !!np && np.solY===np.sagY && np.solY===32,
-     'sol '+(np?np.solY:'-')+'px | sag '+(np?np.sagY:'-')+'px');
+  /* KUNYE ARAMANIN USTUNDE. Once ikisi ayni tabandaydi ve carpistilar:
+     kunye kirpilmadigi icin genis, arama cizgisi de solda yer kapliyor.
+     Kirpma bir lisans sarti (kisalamaz), arama en altta kalmali
+     (kullanicinin istegi) -- geriye kunyeyi bir sira yukari almak
+     kaldi. Sag kenar hizasi asagida ayrica olculuyor. */
+  K('Kunye arama cizgisinin USTUNDE', !!np && np.ustunde===true,
+     'kunye alti / arama ustu fark '+(np?np.taban:'-')+'px');
+  K('Iki satir ayni yukseklikte', !!np && Math.abs(np.solY-np.sagY) <= 1 && np.sagY===32,
+     'sol ust '+(np?np.solY:'-')+'px | sag alt '+(np?np.sagY:'-')+'px');
   K('Iki yildiz ayni olcude', !!np && np.solYildiz===np.sagYildiz,
      (np?np.solYildiz:'-')+' / '+(np?np.sagYildiz:'-'));
-  K('Arama REC satirinin USTUNDE', !!np && np.aramaUstte===true, 'sira: arama -> REC · CAM · ★');
-  K('REC satiri arama cizgisini gecmiyor', !!np && np.satirTasma <= 0,
-     'tasma '+(np?np.satirTasma:'-')+'px');
+  /* Ayar ucgeni EN ALTTA, aramanin altinda: alt orta app'in merkez tusu. */
+  K('Ayar ucgeni aramanin ALTINDA', !!np && np.ucgenAltta===true, 'sira: arama -> ▽');
+  /* KIRPMA YOK: kunye "..." ile kesilmiyor. Lisans sarti, tasarim
+     tercihi degil -- yarim bir atif atif sayilmaz. */
+  K('Kunye kirpilmiyor', !!np && np.kirpma==='yok', 'npAd kirpma: '+(np?np.kirpma:'-'));
+  K('Kunye genisleyebiliyor', !!np && np.blokEn > np.en*0.30,
+     'blok '+(np?np.blokEn:'-')+'px / ekran '+(np?np.en:'-')+'px');
   K('Dugmeler yazinin ALTINDA', !!np && np.dugmeAltta===true, 'yigin: bilgi -> ◁ ★ ▷');
-  K('Sag alt yazi ekran yarisini gecmiyor', !!np && np.yaziSol >= np.yari,
-     'yazi sol '+(np?np.yaziSol:'-')+' | yari '+(np?np.yari:'-'));
-  K('Sag alt yazi arama cizgisine degmiyor', !!np && np.yaziSol > np.cizgiSag + 12,
-     'bosluk '+(np? (np.yaziSol-np.cizgiSag):'-')+'px');
+  /* ESKI KURAL SILINDI ("yazi ekranin yarisini gecmesin"): karsisinda
+     REC · CAM · ★ satiri dururken gecerliydi, o satir sol uste tasindi.
+     Yerine gecen kural: blok ekranin sol kenarina yapismasin. */
+  K('Sag alt yazi ekrandan tasmiyor', !!np && np.yaziSol >= 8,
+     'yazi sol '+(np?np.yaziSol:'-')+'px');
+  /* Yatayda artik carpismalari MUMKUN (kunye genis, arama solda) ama
+     ayni yukseklikte degiller. Dikey ayrimin gercekten var oldugunu
+     yukaridaki "Kunye arama cizgisinin USTUNDE" olcuyor. */
+  K('Arama cizgisi ekranda duruyor', !!np && np.cizgiSag > 0 && np.cizgiSag < np.en,
+     'cizgi sag '+(np?np.cizgiSag:'-')+'px');
   K('Sag alt blok sag kenarda hizali', !!np && Math.abs(np.sagHiza) <= 1, 'fark '+(np?np.sagHiza:'-')+'px');
+
+  /* ════════════════════════════════════════════════════════════════
+     YENI YERLESIM — SOL UST TASIMA, ALT ORTA AYAR, KENAR HIZASI
+     Kullanicinin bildirdikleri:
+       "sol ustteki cizgilerle sag ustteki yazilarin taban hizasi ayni
+        degil", "ekranin sagi solu hizali her zaman",
+       "3 cizgiyi tam en alta ortaya koyalim, ters ucgen olur",
+       "sol uste istasyon geri/ileri, play stop, ses icin yatay cizgi",
+       "sag alta tum bilgileri yaz, 3 nokta ile kisaltma".
+     Asagidaki kontroller bunlarin her birini ayri ayri olcuyor.
+     ════════════════════════════════════════════════════════════════ */
+
+  /* ── 1. EKRANIN DORT KENARI AYNI PAYDA ─────────────────────────── */
+  const kenar = await pg.evaluate(()=>{
+    const R=x=>Math.round(x);
+    const g=id=>document.getElementById(id).getBoundingClientRect();
+    const kx=Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx'))||16);
+    const sol=[g('solUst').left, g('ara').left];
+    const sag=[innerWidth-g('ust').right, innerWidth-g('np').right];
+    return { solFark:R(Math.max(...sol)-Math.min(...sol)),
+             sagFark:R(Math.max(...sag)-Math.min(...sag)),
+             solSag:R(Math.abs(Math.min(...sol)-Math.min(...sag))), kx };
+  });
+  K('Sol kenarlar tek hizada', kenar.solFark <= 1, 'sol ust / arama fark '+kenar.solFark+'px');
+  K('Sag kenarlar tek hizada', kenar.sagFark <= 1, 'sag ust / kunye fark '+kenar.sagFark+'px');
+  K('Sag ve sol pay esit', kenar.solSag <= 1, 'pay '+kenar.kx+'px, fark '+kenar.solSag+'px');
+
+  /* ── 2. SOL UST ILE SAG UST AYNI HIZADA ──────────────────────────
+     Kullanicinin gozuyle bakilan sey: soldaki hap satirinin ortasi ile
+     sagdaki yazinin murekkep ortasi. Bkz. solUstHizala -- alt kenari
+     taban cizgisine oturtmak geometrik olarak imkansiz (hap 32px,
+     yazinin murekkebi 12px). */
+  const hz = await pg.evaluate(()=>{
+    const ad=document.querySelector('#ust .kanal.ad');
+    const ts=document.getElementById('tasima');
+    const ab=ad.getBoundingClientRect(), tb=ts.getBoundingClientRect();
+    const fs=parseFloat(getComputedStyle(ad).fontSize)||20;
+    return Math.round(Math.abs((ab.top+(ab.height-fs)/2+fs*0.50) - (tb.top+tb.height/2)));
+  });
+  K('Sol ust ve sag ust ayni hizada', hz <= 2, hz+'px fark');
+
+  /* ── 3. AYAR TUTAMAGI: ALT ORTA, TERS UCGEN ──────────────────── */
+  const ayTut = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const t=document.getElementById('ayarTut'); if(!t) return null;
+    const r=t.getBoundingClientRect();
+    const uc=t.querySelector('.ucgen');
+    const st=uc?getComputedStyle(uc):null;
+    const acikOnce=document.body.classList.contains('ayar-acik');
+    t.click(); await bek(320);
+    const acildi=document.body.classList.contains('ayar-acik');
+    const pnl=document.getElementById('ayar').getBoundingClientRect();
+    const donuk=uc?getComputedStyle(uc).transform:'';
+    t.click(); await bek(320);
+    const kapandi=!document.body.classList.contains('ayar-acik');
+    return { ortaFark:Math.round(Math.abs((r.left+r.width/2)-innerWidth/2)),
+             dipFark:Math.round(innerHeight-r.bottom),
+             ucgenVar:!!(st && st.clipPath && st.clipPath!=='none'),
+             cizgiYok:t.querySelectorAll('span').length===0,
+             acildi, kapandi, acikOnce,
+             panelOrta:Math.round(Math.abs((pnl.left+pnl.width/2)-innerWidth/2)),
+             panelUstunde: pnl.bottom <= r.top + 1,
+             doner: donuk && donuk!=='none' };
+  });
+  K('Ayar tutamagi alt ortada', !!ayTut && ayTut.ortaFark <= 1 && ayTut.dipFark <= 12,
+     'orta fark '+(ayTut?ayTut.ortaFark:'-')+'px | dipten '+(ayTut?ayTut.dipFark:'-')+'px');
+  K('Tutamak ters ucgen (cizgi degil)', !!ayTut && ayTut.ucgenVar===true && ayTut.cizgiYok===true,
+     'clip-path ucgen, span yok');
+  K('Ucgen acilinca donuyor', !!ayTut && ayTut.doner===true, 'rotate(180deg)');
+  K('Ayar paneli ucgenin USTUNDEN aciliyor', !!ayTut && ayTut.acildi===true && ayTut.kapandi===true
+     && ayTut.panelOrta <= 2 && ayTut.panelUstunde===true,
+     'ortali, ucgenin ustunde, acilip kapaniyor');
+
+  /* ── 4. OYNAT / DURDUR ─────────────────────────────────────────── */
+  const od = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const d=document.getElementById('dur'); if(!d) return null;
+    const s2=document.getElementById('ses');
+    /* Gercek ag yok: sahte bir kaynakla oynat/duraklat davranisi. */
+    const eskiSrc=s2.src;
+    s2.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=';
+    try{ await s2.play(); }catch(e){}
+    await bek(120);
+    const calarken={ duruyorSinif:d.classList.contains('durdu'), duraklamis:s2.paused };
+    d.click(); await bek(160);
+    const basildi={ duruyorSinif:d.classList.contains('durdu'), duraklamis:s2.paused,
+                    bayrak:(typeof _kullaniciDuraklatti!=='undefined')?_kullaniciDuraklatti:null };
+    d.click(); await bek(220);
+    const geriAcildi={ duraklamis:s2.paused, bayrak:(typeof _kullaniciDuraklatti!=='undefined')?_kullaniciDuraklatti:null };
+    try{ s2.pause(); }catch(e){}
+    s2.src=eskiSrc; _kullaniciDuraklatti=false;
+    return { calarken, basildi, geriAcildi, hepZamanGorunur:getComputedStyle(d).display!=='none' };
+  });
+  K('Oynat/durdur her zaman gorunur', !!od && od.hepZamanGorunur===true, 'gecmise bagli degil');
+  K('Durdur tusu sesi durduruyor', !!od && od.basildi.duraklamis===true,
+     'calarken duraklamis='+(od?od.calarken.duraklamis:'-')+' -> basinca '+(od?od.basildi.duraklamis:'-'));
+  /* Bu bayrak olmadan kamera korumasi ya da gorunurluk olayi sesi
+     kendiliginden geri aciyor: "durdurdum ama yine caliyor". */
+  K('Durdurunca kullanici bayragi kalkiyor', !!od && od.basildi.bayrak===true,
+     '_kullaniciDuraklatti='+(od?od.basildi.bayrak:'-'));
+  K('Simge duruma gore degisiyor', !!od && od.calarken.duruyorSinif===false && od.basildi.duruyorSinif===true,
+     'calarken iki cizgi, dururken ucgen');
+
+  /* ── 5. SES CIZGISI ────────────────────────────────────────────── */
+  const sc = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const c=document.getElementById('sesYatay'); if(!c) return null;
+    const dikeyKalkti = !document.getElementById('sesDikey');
+    const r=c.getBoundingClientRect();
+    const bas=(x)=>{ c.dispatchEvent(new PointerEvent('pointerdown',{clientX:x,clientY:r.top+r.height/2,bubbles:true,pointerId:1})); };
+    const gez=(x)=>{ c.dispatchEvent(new PointerEvent('pointermove',{clientX:x,clientY:r.top+r.height/2,bubbles:true,pointerId:1})); };
+    const kalk=()=>{ c.dispatchEvent(new PointerEvent('pointerup',{clientX:0,clientY:0,bubbles:true,pointerId:1})); };
+    /* SURUKLE: cizginin dortte birine -> ~%25 */
+    bas(r.left+r.width*0.9); gez(r.left+r.width*0.25); kalk(); await bek(80);
+    const surukle=Math.round(kSes*100);
+    const dolu=parseFloat(c.querySelector('.dolu').style.width)||-1;
+    /* TEK DOKUNUS: sustur */
+    bas(r.left+r.width*0.25); kalk(); await bek(60);
+    const sustu=kSes;
+    const susSinif=c.classList.contains('sus');
+    /* TEK DOKUNUS: geri ac -- eski seviyeden devam etmeli */
+    bas(r.left+r.width*0.25); kalk(); await bek(60);
+    const geldi=Math.round(kSes*100);
+    /* Kazanc dugumune gercekten yaziliyor mu */
+    kSes=1; sesSeviyeYaz(); sesDikeyYaz();
+    try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
+    return { dikeyKalkti, surukle, dolu, sustu, susSinif, geldi,
+             gorunur:getComputedStyle(c).display!=='none' };
+  });
+  K('Ses cizgisi her cihazda gorunur', !!sc && sc.gorunur===true && sc.dikeyKalkti===true,
+     'dikey cubuk silindi, yerine tek yatay cizgi');
+  K('Surukleyince seviye degisiyor', !!sc && Math.abs(sc.surukle-25) <= 6,
+     'dortte bire cekildi -> %'+(sc?sc.surukle:'-'));
+  K('Cizginin dolulugu seviyeyi gosteriyor', !!sc && Math.abs(sc.dolu-sc.surukle) <= 2,
+     'dolu %'+(sc?sc.dolu:'-')+' / seviye %'+(sc?sc.surukle:'-'));
+  K('Tek dokunus susturuyor', !!sc && sc.sustu===0 && sc.susSinif===true, 'seviye 0');
+  /* Sifirdan degil BIRAKTIGI yerden geri gelmeli: yoksa her acisda
+     kullanici sesi elle bulmak zorunda kaliyor. */
+  K('Tekrar dokunus eski seviyeden aciyor', !!sc && Math.abs(sc.geldi-sc.surukle) <= 2,
+     'geri gelen %'+(sc?sc.geldi:'-')+' / birakilan %'+(sc?sc.surukle:'-'));
+
+  /* ── 6. TEK TAKIM TASIMA TUSU ──────────────────────────────────
+     ◁ ve ▷ eskiden sag alttaydi. Ikisi birden bulunursa kullanici
+     hangisinin ne yaptigini bilemez -- tasima tuslari YALNIZCA sol
+     ustte olmali, sag altta yalnizca ★ kalmali. */
+  const takim = await pg.evaluate(()=>({
+    solUstte: !!(document.querySelector('#tasima #geri') && document.querySelector('#tasima #ileri')
+                 && document.querySelector('#tasima #dur')),
+    sagAltta: document.querySelectorAll('#np .np-gez button').length,
+    sagAlttaki: [...document.querySelectorAll('#np .np-gez button')].map(b=>b.id).join(','),
+    kayitSolUstte: !!(document.querySelector('#solUst #rec') && document.querySelector('#solUst #cam')),
+    solAltBos: !document.querySelector('body > #araclar')
+  }));
+  K('Tasima tuslari sol ustte', takim.solUstte===true, '◁ ‖ ▷ tek yerde');
+  K('Sag altta sadece yildiz', takim.sagAltta===1 && takim.sagAlttaki==='fav', 'kalan: '+takim.sagAlttaki);
+  K('REC ve CAM sol uste tasindi', takim.kayitSolUstte===true && takim.solAltBos===true, 'sol alt bosaldi');
 
   await b.close();
 
