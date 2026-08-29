@@ -4162,37 +4162,75 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     temaSec(0); await bek(120);
     const m1=()=>getComputedStyle(document.documentElement).getPropertyValue('--m1').trim();
     const m2=()=>getComputedStyle(document.documentElement).getPropertyValue('--m2').trim();
-    const oto={ m1:m1(), m2:m2(),
+    const m3=()=>getComputedStyle(document.documentElement).getPropertyValue('--m3').trim();
+    const oto={ m1:m1(), m2:m2(), m3:m3(),
                 buyutec:getComputedStyle(document.querySelector('#ara .cizgi')).color,
                 oynat:getComputedStyle(document.getElementById('dur')).color,
                 cizgi2:getComputedStyle(document.querySelector('#ayarTut span:nth-child(2)')).backgroundColor };
     temaSec(TEMALAR.findIndex(t=>t.ad==='BAUHAUS')); await bek(140);
-    const temali={ m1:m1(), m2:m2(),
+    const temali={ m1:m1(), m2:m2(), m3:m3(),
                 buyutec:getComputedStyle(document.querySelector('#ara .cizgi')).color,
                 oynat:getComputedStyle(document.getElementById('dur')).color,
                 cizgi2:getComputedStyle(document.querySelector('#ayarTut span:nth-child(2)')).backgroundColor };
     /* Raf degisince SAG durak degismeli (oda belli olsun), sol durak
        temada kalmali. */
     aileSec('AMBIENT', true); await bek(140);
-    const bakaRaf={ m1:m1(), m2:m2() };
+    const bakaRaf={ m1:m1(), m2:m2(), m3:m3() };
+    /* Ayni odaya donunce ayni kombinasyon cikmali. */
+    aileSec('JAZZ', true); await bek(140);
+    const geri1 = m1()+'|'+m2()+'|'+m3();
+    aileSec('AMBIENT', true); await bek(140);
+    aileSec('JAZZ', true); await bek(140);
+    const geri2 = m1()+'|'+m2()+'|'+m3();
+    const tekrar = geri1 === geri2;
     temaSec(eskiT); AYAR.mood=eskiMood; moodUygula(); await bek(280);
-    return { oto, temali, bakaRaf };
+    return { oto, temali, bakaRaf, tekrar };
   });
-  /* MARKA TEMADAN ETKILENMIYOR -- ve bu bilerek boyle.
-     Bir tur sol durak temanin vurgusuna baglandi; KODACHROME'da yazi
-     turuncu, TELETEXT'te yesil oldu ve marka her temada baska bir
-     marka gibi goruldu. Kullanicinin duzeltmesi: "o ana yesil,
-     ORBITAPE yazisi da oyle, sonuna dogru hafif gul kurusu."
-     Bir markanin degismemesi zaten markadir. */
-  K('Marka yazisi temayla degismiyor', kilif.temali.m1 === kilif.oto.m1,
-     'sol durak sabit: ' + kilif.temali.m1);
-  /* Bosluklara takilmasin diye sayilar cikariliyor: bazi tarayicilar
-     'rgb(53, 224, 216)', bazilari 'rgb(53,224,216)' yaziyor. */
+  /* ── MARKA: RAF + TEMA KOMBINASYONU ─────────────────────────────
+     Bir tur temaya baglandi (her temada baska bir marka gibi oldu),
+     bir tur sabitlendi (tek kombinasyon, cesit yok). Ucuncu ve
+     istenen hali: renkler SERBEST ama SECIM DEGIL.
+     Kaynak havuzu dort renk (markanin yesili, gul kurusu, rafin
+     rengi, temanin vurgusu); hangi ucunun secilecegi rafin adiyla
+     temanin numarasindan HESAPLANIYOR. Yani ayni oda hep ayni yazi,
+     oda degisince yazi da degisiyor. */
+  K('Tema marka yazisini degistiriyor',
+     kilif.temali.m1 !== kilif.oto.m1 || kilif.temali.m2 !== kilif.oto.m2
+     || kilif.temali.m3 !== kilif.oto.m3,
+     'AUTO ' + kilif.oto.m1 + '/' + kilif.oto.m2
+     + '  ->  temali ' + kilif.temali.m1 + '/' + kilif.temali.m2);
+  /* AYNI ODA -> AYNI YAZI. Secim hesaplaniyor, rastgele degil: yazi
+     her cizimde baska bir renge atlarsa marka "kaynar". */
+  K('Ayni raf ve tema hep ayni kombinasyon', kilif.tekrar===true,
+     'iki kez hesaplandi, ikisi de ayni');
+  /* Uc durak: iki renkli kaliplarda orta durak iki ucun ortasi, uc
+     renkli olanlarda ucuncu renk. Ikisinde de dolu. */
+  K('Marka gradyani uc durakli', kilif.temali.m3 !== '',
+     'orta durak ' + kilif.temali.m3);
+  /* GRADYAN OLMAYAN GRADYAN OLMASIN: havuzdaki dort renkten ikisi
+     ayni tona denk gelebiliyor ve yazi tek renk gibi cikiyor. Iki uc
+     arasindaki fark bir tabani gecmeli. */
   {
-    const say = x => (String(x).match(/\d+/g)||[]).join(',');
-    K('Marka yazisi yesilden gul kurusuna',
-       say(kilif.temali.m1)==='53,224,216' && say(kilif.temali.m2)==='226,122,158',
-       kilif.temali.m1 + ' -> ' + kilif.temali.m2);
+    const uzak = await pg.evaluate(()=>{
+      const say = x => (String(x).match(/\d+/g)||[]).map(Number);
+      const enAz = (a,b)=>{ const x=say(a), y=say(b);
+        return Math.abs(x[0]-y[0])+Math.abs(x[1]-y[1])+Math.abs(x[2]-y[2]); };
+      const eskiT = AYAR.tema, eskiA = AKTIF_AILE;
+      let dip = 999;
+      /* Butun raf x tema ciftlerinden bir kesit: her birinde iki uc
+         birbirinden yeterince uzak mi. */
+      for(const raf of AILELER.slice(0,10).map(a=>a.ad)){
+        for(const t of [0, 5, 12, 22, 30]){
+          AYAR.tema = t; AKTIF_AILE = raf; markaRengi();
+          const st = getComputedStyle(document.documentElement);
+          const d = enAz(st.getPropertyValue('--m1'), st.getPropertyValue('--m2'));
+          if(d < dip) dip = d;
+        }
+      }
+      AYAR.tema = eskiT; AKTIF_AILE = eskiA; markaRengi();
+      return dip;
+    });
+    K('Iki uc birbirine yapismiyor', uzak >= 60, 'en dar cift ' + uzak + ' (taban 60)');
   }
   /* ── TEMA HALKALARA DA GIRIYOR ─────────────────────────────────
      Ekranin en buyuk nesnesi kilifin disinda kaliyordu. Ama halkanin
@@ -4256,9 +4294,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* Marka sabit oldugu icin raf degisince de degismiyor. Hangi rafta
      oldugun HALKALARDAN ve sag ustteki kategori adindan okunuyor --
      ikisi de rafin renginde. */
-  K('Marka raf degisince de sabit',
-     kilif.bakaRaf.m1 === kilif.temali.m1 && kilif.bakaRaf.m2 === kilif.temali.m2,
-     'iki durak da yerinde');
+  K('Raf degisince marka da degisiyor',
+     kilif.bakaRaf.m1 !== kilif.temali.m1 || kilif.bakaRaf.m2 !== kilif.temali.m2
+     || kilif.bakaRaf.m3 !== kilif.temali.m3,
+     'JAZZ ' + kilif.temali.m1 + '  ->  AMBIENT ' + kilif.bakaRaf.m1);
 
   /* ── YILDIZ KUMELENMESI ────────────────────────────────────────
      Bildirilen: "yogun az yerleri vs gibi" ve "cok az gorunuyor,
@@ -4310,7 +4349,50 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      'AUTOBAHN k=' + yildizAyar.kumeli.k + ' | DEEP FIELD k=' + yildizAyar.dagilmis.k);
   {
     const kaynak = fs.readFileSync('index.html','utf8');
-    K('Yildiz kademesi cihazda kaliyor',
+    /* ── PARLAKLIK YOGUNLUKTAN AYRI ────────────────────────────────
+     Istenen: "yildizlar da acilip kisilir, yogunluk ayri parlaklik
+     ayri." Ikisi gercekten ayri seyler: kalabalik ama silik bir
+     gokyuzu (toz) ile seyrek ama parlak bir gokyuzu (birkac iri
+     yildiz) cok farkli iki his. */
+  const isik = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const eskiY = AYAR.yildiz, eskiI = AYAR.yildizIsik;
+    AYAR.yildizIsik = 0; const az = yildizIsik();
+    AYAR.yildizIsik = 4; const cok = yildizIsik();
+    /* Parlaklik degisirken YOGUNLUK degismemeli -- ikisi bagimsiz. */
+    AYAR.yildiz = 2; AYAR.yildizIsik = 0; const y1 = +yildizTema().n.toFixed(3);
+    AYAR.yildizIsik = 4;                  const y2 = +yildizTema().n.toFixed(3);
+    /* Ve tersi: yogunluk degisirken parlaklik degismemeli. */
+    AYAR.yildiz = 0; const i1 = yildizIsik();
+    AYAR.yildiz = 4; const i2 = yildizIsik();
+    /* Ayarlardaki satir kademeleri geziyor mu */
+    const sat = document.querySelector('#ayar .sat[data-ayar="yildizIsik"]');
+    const tut = document.getElementById('ayarTut');
+    AYAR.yildizIsik = YILDIZ_ISIK.length - 1;
+    tut.click(); await bek(300);
+    sat.click(); await bek(120);
+    const dondu = AYAR.yildizIsik, etiket = sat.querySelector('.durum').textContent;
+    tut.click(); await bek(300);
+    AYAR.yildiz = eskiY; AYAR.yildizIsik = eskiI; ayarKaydet();
+    return { az, cok, bagimsiz: (y1===y2 && i1===i2), dondu, etiket };
+  });
+  K('Parlaklik ayarlanabiliyor', isik.az < isik.cok,
+     'FAINT ' + isik.az + ' -> BLAZING ' + isik.cok);
+  K('Parlaklik ve yogunluk bagimsiz', isik.bagimsiz===true,
+     'biri degisirken oteki sabit');
+  K('Parlaklik kademesi basa donuyor', isik.dondu===0 && isik.etiket==='FAINT',
+     'son kademeden sonra basa');
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    K('Parlaklik cizime gercekten giriyor',
+       /\(0\.30\+0\.45\*energy\) \* yildizIsik\(\)/.test(kaynak),
+       'zerre opakligi carpiliyor');
+    K('Parlaklik cihazda kaliyor',
+       /_a\.yildizIsik === 'number'[\s\S]{0,140}AYAR\.yildizIsik = _a\.yildizIsik/.test(kaynak),
+       'depodan geri okunuyor, sinir kontrollu');
+  }
+
+  K('Yildiz kademesi cihazda kaliyor',
        /_a\.yildiz === 'number'[\s\S]{0,140}AYAR\.yildiz = _a\.yildiz/.test(kaynak),
        'depodan geri okunuyor, sinir kontrollu');
   }

@@ -544,7 +544,13 @@
     pointer-events:none;cursor:default;
     /* Marka adı seçili kategorinin rengini alıyor: iki durak JS'ten
        geliyor (bkz. markaRengi). Değişken yoksa açılış gradyanı. */
-    background:linear-gradient(102deg,var(--m1,#35e0d8) 0%,var(--m1,#86dcd0) 34%,var(--m2,#e8a97e) 78%,var(--m2,#f0ac7a) 100%);
+    /* UC DURAK. Onceden iki durak vardi ve yazi hep ayni iki renk
+       arasinda geciyordu. Simdi ortada bir durak daha var (--m3):
+       raf ve temaya gore iki ya da uc renkli kombinasyonlar
+       cikabiliyor. Uc durak yoksa ortadaki iki ucun ortasina
+       ayarlaniyor (bkz. markaRengi) -- yani ayni CSS iki renkli
+       kombinasyonu da tasiyor, ayri bir kural gerekmiyor. */
+    background:linear-gradient(102deg,var(--m1,#35e0d8) 0%,var(--m3,#86dcd0) 48%,var(--m2,#e8a97e) 100%);
     -webkit-background-clip:text;background-clip:text;
     -webkit-text-fill-color:transparent;color:transparent;
     text-shadow:none;}
@@ -1765,6 +1771,10 @@
       <span>LOCK THEME</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat islem" data-ayar="yildiz" role="button" tabindex="-1">
       <span>STARS</span><span class="durum">NORMAL</span></div>
+    <!-- Parlaklik YOGUNLUKTAN AYRI: kalabalik ama silik bir gokyuzu
+         ile seyrek ama parlak bir gokyuzu cok farkli iki his. -->
+    <div class="sat islem" data-ayar="yildizIsik" role="button" tabindex="-1">
+      <span>STARLIGHT</span><span class="durum">NORMAL</span></div>
 
     <!-- ── SES ───────────────────────────────────────────────────
          "SEARCH SOUND" degil sadece "SEARCH": SOUNDS baska bir sey
@@ -2368,7 +2378,7 @@
         p = { ana: _koyult(MOD_TEMA.SPACE.ana, 0.58), ikinci: _retroTon(raf, 0.42) };
       }
       const kok = document.documentElement.style;
-      if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); return; }
+      if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); kok.removeProperty('--m3'); return; }
       /* ── TEMA MARKA YAZISINA DA GIRIYOR ─────────────────────────
          Tema yalnizca zemini degistiriyordu ve bir "kilif" gibi
          hissettirmiyordu. Istenen: "olay bizim sag ustteki ORBITAPE
@@ -2396,17 +2406,73 @@
          degismemesi zaten markadir; temanin isi zemin, semboller ve
          halkalar. */
       /* ARSIV TARAFI KENDI KURALINDA KALIYOR: solu her rafta ayni
-         koyu ton, sagi rafin renginden bir tutam (yukaridaki 'p'
-         hesabi). Orasi baska bir dunya ve kullanicinin sozu netti:
-         "orbitape icin baska oldugundan ona dokunma."
-         RADYO TARAFINDA marka SABIT: solda ana yesil, sagda tozlu
-         gul. */
-      let m1 = p.ana, m2 = p.ikinci;
+         koyu ton, sagi rafin renginden bir tutam. Orasi baska bir
+         dunya ve kullanicinin sozu netti: "orbitape icin baska
+         oldugundan ona dokunma." */
+      let m1 = p.ana, m2 = p.ikinci, m3 = '';
       if(typeof mod === 'undefined' || mod !== 'lib'){
-        m1 = MARKA_YESIL; m2 = MARKA_PEMBE;
+        /* ── RADYODA MARKA: RAF + TEMA KOMBINASYONU ────────────────
+           Bir tur sabitlenmisti (yesil -> gul kurusu) cunku temaya
+           baglayinca marka her temada baska bir marka gibi
+           goruluyordu. Kullanici simdi tersini istedi: "ismimizin
+           rengi hep sabit olmamali, turlere gore etkilensin, temalarda
+           da; o yazi icin bircok kombinasyon olsun, 2 veya 3 renk."
+           Ortadaki yol: renkler SERBEST ama SECIMI DEGIL. Kaynak
+           havuzu dort renk --
+             markanin yesili · markanin gul kurusu · RAFIN rengi ·
+             TEMANIN vurgusu
+           ve aralarindan hangi ucunun secilecegi rafin adiyla temanin
+           numarasindan HESAPLANIYOR. Sonuc:
+             · Ayni raf + ayni tema -> HER ZAMAN ayni kombinasyon.
+               Oda degismedikce yazi da degismiyor, marka
+               "kaynamiyor".
+             · Raf ya da tema degisince kombinasyon degisiyor --
+               cesit buradan geliyor, rastgelelikten degil.
+           Markanin kendi iki rengi kaliplarin cogunda duruyor: yazi
+           tanidik kalmaya devam ediyor. */
+        let raf = '';
+        try{ if(AKTIF_AILE) raf = aileRenk(AKTIF_AILE); }catch(e){ _yut(e); }
+        const T = temaAl();
+        const tv = (T && T.v) || '';
+        const havuz = {
+          y: MARKA_YESIL,                    // markanin yesili
+          g: MARKA_PEMBE,                    // markanin gul kurusu
+          r: raf || MARKA_YESIL,             // rafin rengi
+          t: tv  || MARKA_PEMBE              // temanin vurgusu
+        };
+        /* Sekiz kalip. Uc harfli olanlar uc renkli, iki harfli
+           olanlarda orta durak iki ucun ortasi oluyor. */
+        const KALIP = ['ygr','yrg','ytg','rgy','ryt','yg','rt','tg'];
+        let n = 0;
+        try{
+          const ad2 = String(AKTIF_AILE || '');
+          for(let i=0;i<ad2.length;i++) n = (n*31 + ad2.charCodeAt(i)) >>> 0;
+          n = (n + (AYAR.tema|0) * 7) >>> 0;
+        }catch(e){ _yut(e); }
+        const k = KALIP[n % KALIP.length];
+        m1 = havuz[k[0]] || MARKA_YESIL;
+        m2 = havuz[k[k.length-1]] || MARKA_PEMBE;
+        m3 = (k.length === 3) ? (havuz[k[1]] || '') : '';
+        /* IKI UCUN BIRBIRINE COK YAKIN DUSMESI: havuzdaki dort renkten
+           ikisi ayni tona denk gelebiliyor (rafin rengi tozlu gule
+           yakinsa gibi) ve yazi tek renk gibi cikiyor -- gradyan
+           olmayan bir gradyan. Olculuyor: kanallar arasi toplam fark
+           60'in altindaysa sag uc markanin OTEKI rengine cekiliyor,
+           yani en azindan iki uc ayrisiyor. */
+        try{
+          const uzak = (a2,b2)=>{ const x=String(a2).split(',').map(Number),
+                                        y=String(b2).split(',').map(Number);
+            return Math.abs(x[0]-y[0]) + Math.abs(x[1]-y[1]) + Math.abs(x[2]-y[2]); };
+          if(uzak(m1, m2) < 60)
+            m2 = (uzak(m1, MARKA_PEMBE) > uzak(m1, MARKA_YESIL)) ? MARKA_PEMBE : MARKA_YESIL;
+        }catch(e){ _yut(e); }
       }
+      /* Orta durak yoksa iki ucun ortasi: ayni CSS hem iki hem uc
+         renkli kombinasyonu tasiyor. */
+      if(!m3) m3 = _renkKaris(m1, m2, 0.5);
       kok.setProperty('--m1', 'rgb('+m1+')');
       kok.setProperty('--m2', 'rgb('+m2+')');
+      kok.setProperty('--m3', 'rgb('+m3+')');
     }catch(e){ _yut(e); }
   }
   function zeminUygula(){
@@ -4862,7 +4928,7 @@
      acilista cagrilabiliyor. */
   /* mood: SOUND BANKS kipi. Kapali = yalnizca canli radyo (varsayilan).
      Acik = eski ORBITAPE tarafi: arsiv havuzlari, nebula, gezegenler, FX. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:2 };
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:2, yildizIsik:2 };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -4892,6 +4958,8 @@
          bozulmuyor. */
       if(typeof _a.yildiz === 'number' && _a.yildiz >= 0
          && _a.yildiz < 5) AYAR.yildiz = _a.yildiz|0;
+      if(typeof _a.yildizIsik === 'number' && _a.yildizIsik >= 0
+         && _a.yildizIsik < 5) AYAR.yildizIsik = _a.yildizIsik|0;
     }
   }catch(e){ _yut(e); }
   /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
@@ -5186,6 +5254,20 @@
      onu kendi ekraninda azaltip cogaltabiliyor. */
   const YILDIZ_KADEME = [0.35, 0.70, 1.00, 1.55, 2.20];   // OFF'a yakin ... cok yogun
   const YILDIZ_AD     = ['MINIMAL','LOW','NORMAL','DENSE','COSMIC'];
+  /* ── YOGUNLUK VE PARLAKLIK AYRI ─────────────────────────────────
+     Istenen: "yildizlar da acilip kisilir, yogunluk ayri parlaklik
+     ayri."
+     Ikisi gercekten ayri seyler: kalabalik ama silik bir gokyuzu
+     (toz) ile seyrek ama parlak bir gokyuzu (birkac iri yildiz) cok
+     farkli iki his. Tek bir kaydiraci ikisine birden baglamak
+     ikisini de yarim yapardi. */
+  const YILDIZ_ISIK   = [0.30, 0.60, 1.00, 1.45, 2.00];
+  const YILDIZ_ISIK_AD= ['FAINT','DIM','NORMAL','BRIGHT','BLAZING'];
+  function yildizIsik(){
+    try{ const i = (typeof AYAR!=='undefined' && AYAR) ? (AYAR.yildizIsik|0) : 2;
+         return YILDIZ_ISIK[Math.max(0, Math.min(YILDIZ_ISIK.length-1, i))]; }
+    catch(e){ return 1; }
+  }
   function yildizCarpan(){
     try{ const i = (typeof AYAR!=='undefined' && AYAR) ? (AYAR.yildiz|0) : 2;
          return YILDIZ_KADEME[Math.max(0, Math.min(YILDIZ_KADEME.length-1, i))]; }
@@ -5812,7 +5894,11 @@
 
     // sürüklenen zerreler (mobilde parmak diskteyken atlanır)
     if(!hafifCizim){
-      const zRenk='rgba(236,250,248,'+Math.min(0.9,(0.30+0.45*energy)).toFixed(3)+')';
+      /* Parlaklik kullanicidan: taban opaklik carpiliyor. Ust sinir
+         1'e dayaniyor -- daha fazlasi zaten gorunmuyor, yalnizca
+         beyaza doyuyor. */
+      const zRenk='rgba(236,250,248,'
+        + Math.min(1, (0.30+0.45*energy) * yildizIsik()).toFixed(3) + ')';
       vctx.fillStyle=zRenk;                       // renk döngü DIŞINDA: her zerrede yeniden yazmıyoruz
       const _yt = yildizTema();
       /* Yogunluk temadan: bazi temalar seyrek ve derin, bazilari
@@ -8813,6 +8899,8 @@
       try{
         const el = kut.querySelector('.sat[data-ayar="yildiz"] .durum');
         if(el) el.textContent = YILDIZ_AD[AYAR.yildiz|0] || 'NORMAL';
+        const el2 = kut.querySelector('.sat[data-ayar="yildizIsik"] .durum');
+        if(el2) el2.textContent = YILDIZ_ISIK_AD[AYAR.yildizIsik|0] || 'NORMAL';
       }catch(e){ _yut(e); }
     }
     const yaz = ()=>{
@@ -8942,6 +9030,11 @@
         /* Bes kademe arasinda donuyor. Ayri bir panel acmak yerine
            satirin kendisi deger gosteriyor: tek dokunus, tek satir. */
         AYAR.yildiz = ((AYAR.yildiz|0) + 1) % YILDIZ_KADEME.length;
+        ayarKaydet(); yildizYaz();
+        return;
+      }
+      if(k === 'yildizIsik'){
+        AYAR.yildizIsik = ((AYAR.yildizIsik|0) + 1) % YILDIZ_ISIK.length;
         ayarKaydet(); yildizYaz();
         return;
       }
