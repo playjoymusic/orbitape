@@ -4072,8 +4072,22 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     temaSec(eskiT); AYAR.mood=eskiMood; moodUygula(); await bek(280);
     return { oto, temali, bakaRaf };
   });
-  K('Tema marka yazisina giriyor', kilif.temali.m1 !== kilif.oto.m1,
-     'sol durak ' + kilif.oto.m1 + ' -> ' + kilif.temali.m1);
+  /* MARKA TEMADAN ETKILENMIYOR -- ve bu bilerek boyle.
+     Bir tur sol durak temanin vurgusuna baglandi; KODACHROME'da yazi
+     turuncu, TELETEXT'te yesil oldu ve marka her temada baska bir
+     marka gibi goruldu. Kullanicinin duzeltmesi: "o ana yesil,
+     ORBITAPE yazisi da oyle, sonuna dogru hafif gul kurusu."
+     Bir markanin degismemesi zaten markadir. */
+  K('Marka yazisi temayla degismiyor', kilif.temali.m1 === kilif.oto.m1,
+     'sol durak sabit: ' + kilif.temali.m1);
+  /* Bosluklara takilmasin diye sayilar cikariliyor: bazi tarayicilar
+     'rgb(53, 224, 216)', bazilari 'rgb(53,224,216)' yaziyor. */
+  {
+    const say = x => (String(x).match(/\d+/g)||[]).join(',');
+    K('Marka yazisi yesilden gul kurusuna',
+       say(kilif.temali.m1)==='53,224,216' && say(kilif.temali.m2)==='226,122,158',
+       kilif.temali.m1 + ' -> ' + kilif.temali.m2);
+  }
   /* ── TEMA HALKALARA DA GIRIYOR ─────────────────────────────────
      Ekranin en buyuk nesnesi kilifin disinda kaliyordu. Ama halkanin
      rengi RAFIN KIMLIGI: tamamen boyansalar dokuz halka birbirinin
@@ -4124,16 +4138,21 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      yesili) -- "cok rengarenk olmus, soldaki her seyi yesil yap".
      Temanin sembollerdeki izi tutamagin ORTA cizgisinde ve oynat
      tusunda duruyor. */
-  K('Tema sembollere de giriyor',
-     kilif.temali.cizgi2 !== kilif.oto.cizgi2 && kilif.temali.oynat !== kilif.oto.oynat,
-     'tutamagin orta cizgisi ve oynat tusu');
-  K('Sol taraf tek renk', kilif.temali.buyutec === kilif.oto.buyutec,
-     'buyutec temayla degismiyor: markanin yesili');
+  /* Temanin sembollerdeki tek izi tutamagin ORTA cizgisi. Konsol da
+     sol taraf da tek renk: markanin yesili. */
+  K('Tema tutamaga giriyor', kilif.temali.cizgi2 !== kilif.oto.cizgi2,
+     'orta cizgi ' + kilif.oto.cizgi2 + ' -> ' + kilif.temali.cizgi2);
+  K('Konsol ve sol taraf tek renk',
+     kilif.temali.oynat === kilif.oto.oynat && kilif.temali.buyutec === kilif.oto.buyutec,
+     'oynat ve buyutec temayla degismiyor');
   /* EN ONEMLISI: kilif degisse de yazinin SAG ucu odanin rengini
      tasiyor. Tasimazsa hangi rafta oldugun kayboluyor. */
-  K('Yazinin sag ucu hala rafin rengi',
-     kilif.bakaRaf.m2 !== kilif.temali.m2 && kilif.bakaRaf.m1 === kilif.temali.m1,
-     'raf degisti: sag durak dondu, sol durak temada kaldi');
+  /* Marka sabit oldugu icin raf degisince de degismiyor. Hangi rafta
+     oldugun HALKALARDAN ve sag ustteki kategori adindan okunuyor --
+     ikisi de rafin renginde. */
+  K('Marka raf degisince de sabit',
+     kilif.bakaRaf.m1 === kilif.temali.m1 && kilif.bakaRaf.m2 === kilif.temali.m2,
+     'iki durak da yerinde');
 
   /* ── YILDIZ KUMELENMESI ────────────────────────────────────────
      Bildirilen: "yogun az yerleri vs gibi" ve "cok az gorunuyor,

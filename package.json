@@ -7,7 +7,9 @@
     "test": "node test/saglik.js",
     "sunucu": "python3 -m http.server 8765",
     "motor": "MOTOR=webkit node test/motor.js",
-    "motor:chromium": "MOTOR=chromium node test/motor.js"
+    "motor:chromium": "MOTOR=chromium node test/motor.js",
+    "senaryo": "node test/senaryo.js",
+    "test:hepsi": "node test/saglik.js && node test/senaryo.js"
   },
   "devDependencies": {
     "playwright": "^1.47.0"

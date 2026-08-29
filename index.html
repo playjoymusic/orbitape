@@ -897,8 +897,13 @@
   /* OYNAT TUSU TEMANIN RENGINDE. Otekiler sabit pembemsi; oynat
      ayrisiyor cunku en cok basilan tus o. Tema secili degilse
      (AUTO) pembemsi kaliyor -- --tv yalnizca tema varken yaziliyor. */
-  /* Oynat tusu temanin renginde; tema yoksa markanin turkuazi. */
-  #dur{color:rgb(var(--tv, 90,220,210));}
+  /* ── KONSOL TEK RENK ─────────────────────────────────────────────
+     Oynat tusu bir ara temanin rengine baglanmisti ve konsol iki
+     renkli goruluyordu (uc tus turkuaz, biri turuncu). Istenen:
+     "sol ustteki player konsolu da tek renk, ana rengim."
+     Dort tus da markanin yesili. Temanin izi konsolda degil,
+     zeminde, halkalarda ve tutamagin orta cizgisinde. */
+  #dur{color:#5adcd2;}
   /* ── SES: YATAY CIZGI ────────────────────────────────────────────
      Masaustunde dikey bir kaydirici vardi, dokunmatikte hicbir sey --
      orada iki parmak jesti kullaniliyordu ve iPhone Safari'de
@@ -2049,6 +2054,9 @@
      Artik radyo modunda tema AILENIN renginden turetiliyor; MOD_TEMA
      yalnizca arsiv tarafinin sozlugu. */
   const MARKA_PEMBE = '226,122,158';   // tozlu gul: retro pembe
+  /* MARKANIN ANA RENGI. Yazinin sol durgi, konsol tuslari, sol
+     alttaki semboller -- hepsi bu. Tema bunu degistirmiyor. */
+  const MARKA_YESIL = '53,224,216';
   /* ══ TEMALAR ══════════════════════════════════════════════════════
      Uygulamanin "kilifi": zemin ve vurgu rengi. Otuz bes tema, uc
      seride ayrilmis (RETRO / GECE / CIVIL) ama listede tek sira
@@ -2234,19 +2242,27 @@
          ama turlerin, yani kelimenin sagi da olsa etkilenir ki o
          odada oldugumuz anlasilsin."
          Tema yoksa (AUTO) eski dagilim aynen geciyor. */
+      /* ── MARKA YAZISI TEMADAN ETKILENMIYOR ─────────────────────
+         Bir tur sol durak temanin vurgusuna baglanmisti ("tema sag
+         ustteki ORBITAPE yazisina da girsin"). Sonuc yanlisti:
+         KODACHROME'da yazi turuncu, TELETEXT'te yesil oluyordu --
+         marka her temada baska bir marka gibi goruluyordu.
+         Kullanicinin duzeltmesi: "tema rengimiz o degil ki; o ana
+         yesil, ORBITAPE yazisi da oyle, sonuna dogru hafif gul
+         kurusu bir renk vardi."
+         Marka SABIT: solda ana yesil, sagda tozlu gul. Bir markanin
+         degismemesi zaten markadir; temanin isi zemin, semboller ve
+         halkalar. */
+      /* ARSIV TARAFI KENDI KURALINDA KALIYOR: solu her rafta ayni
+         koyu ton, sagi rafin renginden bir tutam (yukaridaki 'p'
+         hesabi). Orasi baska bir dunya ve kullanicinin sozu netti:
+         "orbitape icin baska oldugundan ona dokunma."
+         RADYO TARAFINDA marka SABIT: solda ana yesil, sagda tozlu
+         gul. */
       let m1 = p.ana, m2 = p.ikinci;
-      try{
-        const T = temaAl();
-        if(T && T.v){
-          m1 = _koyult(T.v, 0.72);
-          /* Sag durak rafin rengi: radyoda ailenin, arsivde rafin. */
-          let raf = '';
-          if(typeof mod !== 'undefined' && mod === 'radio' && AKTIF_AILE) raf = aileRenk(AKTIF_AILE);
-          else { const g2 = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
-                 raf = (g2 && MOD_TEMA[g2] && MOD_TEMA[g2].ana) || ''; }
-          if(raf) m2 = raf;
-        }
-      }catch(e){ _yut(e); }
+      if(typeof mod === 'undefined' || mod !== 'lib'){
+        m1 = MARKA_YESIL; m2 = MARKA_PEMBE;
+      }
       kok.setProperty('--m1', 'rgb('+m1+')');
       kok.setProperty('--m2', 'rgb('+m2+')');
     }catch(e){ _yut(e); }
@@ -4695,8 +4711,20 @@
       if(typeof _a.tema === 'number' && _a.tema >= 0
          && _a.tema < TEMALAR.length) AYAR.tema = _a.tema|0;
       if(_a.temaKilit === true) AYAR.temaKilit = true;
+      /* SINIR ELLE YAZILIYOR, YILDIZ_KADEME.length ILE DEGIL.
+         Sebep sirasi: ayarlar betigin BASINDA okunuyor, YILDIZ_KADEME
+         ise gorsellestirici bolumunde -- yani burada henuz TANIMSIZ.
+         Once oyle yazilmisti: ReferenceError _yut'a dusuyor, blok
+         orada kesiliyordu ve yildiz kademesi her acilista
+         varsayilana donuyordu. Tema bir satir yukarida oldugu icin O
+         kaydediliyordu, yildiz kaydedilmiyordu -- hata tam da bu
+         yuzden gozden kacti.
+         5 = YILDIZ_KADEME'nin uzunlugu. Ikisi ayrilirsa buradaki
+         sinir buyuk kalir ve deger yine kirpilir (yildizCarpan
+         icinde Math.min var), yani en kotu ihtimalde davranis
+         bozulmuyor. */
       if(typeof _a.yildiz === 'number' && _a.yildiz >= 0
-         && _a.yildiz < YILDIZ_KADEME.length) AYAR.yildiz = _a.yildiz|0;
+         && _a.yildiz < 5) AYAR.yildiz = _a.yildiz|0;
     }
   }catch(e){ _yut(e); }
   /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
@@ -7873,6 +7901,16 @@
          kosesi yine karsilikli, arada ucgen ortada duruyor. */
       const arE = document.getElementById('ara');
       const gd  = parseFloat(getComputedStyle(document.body).getPropertyValue('--gd')) || 0;
+      /* ── GUVENLI ALAN PAYI KAYBOLMASIN ───────────────────────────
+         CSS'te alt kenarlar 'calc(7px + env(safe-area-inset-bottom))'
+         ile yaziliyor; JS ise duz piksel yaziyordu ve o env payini
+         SILIYORDU. Centikli telefonda (iPhone) alt pay ~34px:
+         kayit satiri CSS'ten geldigi icin yukarida kaliyor, buyutec
+         ve kunye JS'ten geldigi icin 34px asagi kayiyordu. Ekranda
+         "buyutec havada duruyor, tabana oturmuyor" olarak goruldu --
+         kullanicinin ekran goruntusunde tam olarak bu var.
+         Artik JS de ayni bicimde yaziyor. */
+      const _dip = px => 'calc(' + Math.round(px) + 'px + env(safe-area-inset-bottom, 0px))';
       /* ALT SERIT TEK BIR ORTA CIZGIDE.
          Once arama cizgisini ucgenin USTUNE koymustum (41px) ve
          ekranda "yukari kaymis, tabana oturmamis" gorunuyordu --
@@ -7897,8 +7935,25 @@
           /* Olcek radyoda hic kullanilmiyor: konsol artik kimseyle
              yer paylasmiyor. Kalinti bir olcek varsa temizleniyor. */
           su0.style.transform = '';
+          /* ── KONSOLUN USTUNDE IKI SEY VAR ─────────────────────
+             Yalnizca #ust'a gore konumlandirmak yetmedi: bekleme
+             sembolleri (#bekle -- yayin aranirken donen isaretler ve
+             raf gezinme sembolleri) markanin hemen altinda, ortada
+             duruyor ve konsolla TAM UST USTE biniyordu (olculdu:
+             bekle 244-377 x 42-77, konsol 249-376 x 47-79).
+             Kullanicinin ekran goruntusunde tuslarin uzerinde kare
+             ve ucgen semboller goruluyordu.
+             Ikisinin ALTINA aliniyor. #bekle'nin kutusu her zaman
+             duruyor (yalnizca opakligi degisiyor), o yuzden semboller
+             gorunup kaybolurken konsol YERINDEN OYNAMIYOR -- zaten
+             konsolun kimildamasi bastaki sikayetti. */
           const ur0 = ustE0 ? ustE0.getBoundingClientRect() : null;
-          if(ur0 && ur0.height) su0.style.top = Math.round(ur0.bottom + 14) + 'px';
+          const bek0 = document.getElementById('bekle');
+          const br0 = bek0 ? bek0.getBoundingClientRect() : null;
+          let ustHat = 0;
+          if(ur0 && ur0.height) ustHat = ur0.bottom;
+          if(br0 && br0.height) ustHat = Math.max(ustHat, br0.bottom);
+          if(ustHat) su0.style.top = Math.round(ustHat + 12) + 'px';
         } else if(su0){ su0.style.top = ''; }
       }catch(_){ _yut(_); }
       /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
@@ -7961,7 +8016,7 @@
            alt kenarlari esitlemek gozde 3px'lik bir kayma birakiyordu
            (olculdu). Modul yokken (SOUND BANKS) fark gerekmiyor. */
         const _fark = _moodda ? 0 : 3;
-        arE.style.bottom = Math.round(Math.max(6, alt + _fark)) + 'px';
+        arE.style.bottom = _dip(Math.max(6, alt + _fark));
         let arSol = sol;
         try{
           const ac2 = document.getElementById('araclar');
@@ -7970,8 +8025,21 @@
              satirinin saginda duruyor ama panel acilinca kutu ve
              sonuc listesi genis: orada kalsa sag kenardan tasiyordu
              (olculdu, gizlilik baglantisi ekranin disina cikiyordu). */
-          if(!_moodda && ab3 && ab3.width && !arE.classList.contains('acik'))
-            arSol = Math.round(ab3.right + 8);
+          if(!_moodda && ab3 && ab3.width && !arE.classList.contains('acik')){
+            const yan = Math.round(ab3.right + 8);
+            /* SIGIYOR MU: buyutec 26px. Sagdaki kunyeye de 12px hava
+               kalmali, yoksa ikisi birbirine yapisiyor. */
+            const sinir = Math.round(window.innerWidth - sol - 12);
+            if(yan + 26 <= sinir) arSol = yan;
+            else {
+              /* SIGMIYORSA YUKARI: satirin USTUNE, ayni sol kenardan.
+                 Istenen: "buyutec sigmiyorsa yukariya da alinir, sol
+                 alttaki yapinin ustu tabi." Havada kalmaktansa bir
+                 sira yukari cikmak dogru -- kenar hizasi bozulmuyor. */
+              arSol = sol;
+              arE.style.bottom = _dip(Math.max(6, window.innerHeight - ab3.top + 10));
+            }
+          }
         }catch(_){ _yut(_); }
         arE.style.left = arSol + 'px';
       }
@@ -7988,7 +8056,7 @@
       try{
         const npE = document.getElementById('np');
         if(npE){
-          npE.style.bottom = Math.round(Math.max(6, alt)) + 'px';
+          npE.style.bottom = _dip(Math.max(6, alt));
           /* SOLDA NE VARSA ONA GORE. Radyoda alt sol koseyi ayar
              tutamagi ve buyutec paylasiyor; SOUND BANKS kipinde
              arama yok, orada modulun kendisi duruyor ve cok daha
@@ -8010,8 +8078,41 @@
               if(r2.width && r2.right > en) en = r2.right; });
             if(en) cizgiSag = en;
           }catch(_){ _yut(_); }
-          const yer = Math.round(window.innerWidth - cizgiSag - sol - 24);
-          npE.style.maxWidth = (yer > 140 ? yer : 140) + 'px';
+          /* OLCU EKRANIN SAG KENARINDAN DEGIL, BLOGUN KENDI SAG
+             KENARINDAN aliniyor. Genis ekranda arayuz ortalanmis bir
+             kolona sikisiyor (bkz. --yan) ve kunye ekranin sag
+             kenarinda DEGIL, kolonun sag kenarinda duruyor. Ekran
+             genisligiyle hesaplayinca blok gercekte olmadigi kadar
+             genis sanilip soldaki satirin uzerine biniyordu (senaryo
+             testi 820px'te olctu: 26x26 cakisma).
+             Taban 140 -> 96: 320px'lik dar bir ekranda 140 zaten
+             sigmiyordu ve tasma yaratiyordu. Kunye kisalmiyor,
+             yalnizca daha cok satira sariyor. */
+          const npSag = npE.getBoundingClientRect().right || (window.innerWidth - sol);
+          let yer = Math.round(npSag - cizgiSag - 24);
+          /* ── YAN YANA SIGMIYORSA YIGILIYOR ────────────────────────
+             Dar bir ekranda (320px olculdu) soldaki satir yerin
+             yarisini aliyor ve kunyeye ~100px kaliyor. Kunye
+             kirpilmadigi icin o genislikte on bes satira cikiyor,
+             ekranin TEPESINDEN tasip sag ustteki konsolun uzerine
+             biniyordu (senaryo testi olctu: np ust -49, tasima ile
+             104x32 cakisma).
+             Yan yana sigmiyorsa kural degisiyor: kunye butun
+             genisligi aliyor ve soldaki satirin USTUNE cikiyor.
+             Yigilmak kirpmaktan iyidir -- kunyenin tam olmasi bir
+             lisans sarti, yan yana durmasi yalnizca bir tercih. */
+          const YAN_YANA_ESIK = 150;
+          if(yer < YAN_YANA_ESIK){
+            yer = Math.round(npSag - sol);
+            let ustHat2 = alt;
+            try{
+              const ac3 = document.getElementById('araclar');
+              const ar3 = ac3 ? ac3.getBoundingClientRect() : null;
+              if(ar3 && ar3.height) ustHat2 = Math.round(window.innerHeight - ar3.top + 10);
+            }catch(_){ _yut(_); }
+            npE.style.bottom = _dip(Math.max(6, ustHat2));
+          }
+          npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
         }
       }catch(_){ _yut(_); }
       const araY = arE ? arE.getBoundingClientRect()
@@ -10578,6 +10679,28 @@
       ['pointerdown','mousedown','touchstart'].forEach(t=>
         fa.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
       favTazele();
+    }
+  }catch(e){ _yut(e); }
+  /* ── KAYIT SATIRI DEGISINCE YERLESIM YENIDEN ─────────────────────
+     Buyutecin yeri kayit satirinin SAG KENARINDAN hesaplaniyor. Satir
+     bostayken (CAM ve ★ henuz gorunmezken) genisligi sifir ve buyutec
+     sol kenara oturuyor -- dogru. Ama satir sonradan dolunca hicbir
+     sey yerlesimi yeniden calistirmiyordu: buyutec 14'te kaliyor ve
+     satirin ALTINDA/USTUNDE degil TAM UZERINDE duruyordu (senaryo
+     testi olctu: 130x29'luk cakisma).
+     Sinif degisimini izleyip yerlesimi tazeliyoruz. Gozlemci yalnizca
+     'class' ozelligine bakiyor ve tek bir kareye toplaniyor -- REC
+     sayaci saniyede bir sinif degistirirken bile maliyeti yok. */
+  try{
+    const _acKutu = document.getElementById('araclar');
+    if(_acKutu && typeof MutationObserver === 'function'){
+      let _bekleyen = false;
+      const _goz = new MutationObserver(()=>{
+        if(_bekleyen) return; _bekleyen = true;
+        requestAnimationFrame(()=>{ _bekleyen = false;
+          try{ geriYerlestir(); }catch(e){ _yut(e); } });
+      });
+      _goz.observe(_acKutu, { attributes:true, attributeFilter:['class'], subtree:true });
     }
   }catch(e){ _yut(e); }
   const favDug = document.getElementById('fav');
