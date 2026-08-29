@@ -980,6 +980,64 @@
     /* Arama acikken cekilsin: o an dikkat orada. */
     body.arama-acik #sesDikey{opacity:.12;}
   }
+  /* ── AYARLAR: ALTTAN ACILAN PANEL ────────────────────────────────
+     Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
+     sonra insanlar isyeyebilir". Tek bir ses icin dugme koymak yerine
+     kapali duran bir yer acildi; ileride buraya baska ayar da girer.
+     TUTAMAK: iki kisa cizgi, ekranin alt ORTASINDA. Orasi bos --
+     solda REC/CAM/yildiz, sagda geri/yildiz var, orta bosluktu.
+     Kapaliyken cok silik: arayan bulur, aramayan gormez. */
+  #ayarTut{position:fixed;z-index:96;left:50%;transform:translateX(-50%);
+    bottom:calc(6px + env(safe-area-inset-bottom, 0px));
+    width:54px;height:26px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:4px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;opacity:.30;
+    transition:opacity .22s ease;}
+  #ayarTut:hover,#ayarTut:focus-visible{opacity:.75;}
+  #ayarTut span{display:block;width:22px;height:1.5px;border-radius:2px;
+    background:currentColor;transition:width .22s ease, opacity .22s ease;}
+  #ayarTut span:last-child{width:14px;opacity:.7;}
+  body.ayar-acik #ayarTut{opacity:.85;}
+  body.ayar-acik #ayarTut span:last-child{width:22px;opacity:1;}
+  body.t-lib   #ayarTut{color:#8ff0dd;}
+  body.t-liste #ayarTut{color:#d9d0dd;}
+  body.t-radio #ayarTut{color:#ffc79e;}
+
+  #ayar{position:fixed;z-index:95;left:50%;transform:translateX(-50%) translateY(112%);
+    bottom:calc(40px + env(safe-area-inset-bottom, 0px));
+    width:min(84vw,300px);padding:14px 16px 12px;
+    background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;opacity:0;pointer-events:none;
+    transition:transform .26s cubic-bezier(.2,.8,.3,1), opacity .22s ease;}
+  body.ayar-acik #ayar{transform:translateX(-50%) translateY(0);
+    opacity:1;pointer-events:auto;}
+  #ayar h4{margin:0 0 10px;font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:9.5px;letter-spacing:.30em;font-weight:400;
+    color:rgba(244,247,250,.34);}
+  #ayar .sat{display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:9px 0;cursor:pointer;
+    font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:11px;letter-spacing:.16em;color:rgba(244,247,250,.80);
+    border-top:1px solid rgba(255,255,255,.06);
+    -webkit-tap-highlight-color:transparent;}
+  #ayar .sat:first-of-type{border-top:none;}
+  #ayar .sat:hover{color:#fff;}
+  /* DURUM YAZIYLA: kucuk bir anahtar cizmek yerine ON/OFF yaziyor --
+     ekranin geri kalani da yaziyla konusuyor ve renk korlugunde de
+     okunuyor. */
+  #ayar .durum{flex:0 0 auto;font-size:10px;letter-spacing:.20em;
+    color:rgba(244,247,250,.30);}
+  #ayar .sat.acik .durum{color:currentColor;opacity:.95;}
+  #ayar .sat.islem .durum{color:rgba(244,247,250,.55);}
+  body.t-lib   #ayar .sat.acik{color:#8ff0dd;}
+  body.t-liste #ayar .sat.acik{color:#d9d0dd;}
+  body.t-radio #ayar .sat.acik{color:#ffc79e;}
+  /* Panel acikken calan parca cekiliyor: panel 300px, sag alttaki
+     yazi da orada -- ust uste binip ikisi de okunmuyordu (olculdu,
+     ekran goruntusunde gorundu). Arama kutusu acilinca da ayni sey
+     yapiliyor; ayni dil. */
+  body.ayar-acik #np{opacity:0;pointer-events:none;}
+  @media (prefers-reduced-motion:reduce){ #ayar{transition:opacity .2s ease;} }
   body.t-lib   #sesCubuk{color:#8ff0dd;}
   body.t-liste #sesCubuk{color:#d9d0dd;}
   body.t-radio #sesCubuk{color:#ffc79e;}
@@ -1216,6 +1274,22 @@
     </div>
   </div>
   <div id="sesCubuk" aria-hidden="true"><i></i></div>
+  <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
+  <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
+       aria-expanded="false" aria-controls="ayar"><span></span><span></span></div>
+  <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
+    <h4>SETTINGS</h4>
+    <!-- tabindex KAPALIYKEN -1: panel aria-hidden iken icindeki
+         satirlar odaklanabilir kalirsa ekran okuyucu "gorunmeyen ama
+         odaklanabilen dugme" durumuna duser (WCAG 4.1.2). Acilinca 0
+         yapiliyor, kapaninca geri -1. -->
+    <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
+      <span>SEARCH SOUND</span><span class="durum">ON</span></div>
+    <div class="sat" data-ayar="tikSes" role="switch" tabindex="-1">
+      <span>CLICK</span><span class="durum">ON</span></div>
+    <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
+      <span>SHOW TOUR AGAIN</span><span class="durum">PLAY</span></div>
+  </div>
   <!-- Masaustunde dikey ses. Dokunmatikte hic gorunmuyor (bkz. CSS):
        orada iki parmak jesti var. -->
   <div id="sesDikey" role="slider" aria-label="Volume" aria-orientation="vertical"
@@ -1705,17 +1779,19 @@
      kalan her dokunuş "sıradaki ses" sayılıyor. */
   const MOOD_TUT = 300;
   var _moodAday = false, _moodBekle = null, _moodSonOlay = null;
-  /* ── PARMAKLA HALKA GEZINME KALDIRILDI ───────────────────────────
-     Basili tutup halkalarda gezinmek, birakinca o rafi secmek: uzun
-     sure uygulamanin ana hareketiydi ve uzun sure sorun uretti --
-     "parmagi birakinca sarki geciyor", "tikladigim yere gitmiyor",
-     "bosluga basinca secim kalkiyor". Her seferinde bir yamayla
-     kapatildi. Kullanicinin karari net oldu: KAFA KARISTIRIYOR,
-     kalksin. Raf secmenin tek yolu artik sag ustteki isim/semboller.
-     Fonksiyon DURUYOR ama hicbir sey yapmiyor: cagiran uc yer var ve
-     onlari da bosaltmak yerine tek kapiyi kapatmak, yarin geri
-     istenirse tek satirda acilmasini sagliyor. */
-  function moodGeziAc(){ return; }
+  /* ── PARMAKLA HALKA GEZINME ──────────────────────────────────────
+     Basili tut, halkalarda gez, birakinca o raf acilir.
+     Bir ara KALDIRILMISTI (kullanici "kafa karistiriyor" demisti) ve
+     sonra geri istendi. Kaldirildigi surece surukleme dogrudan FX'e
+     gidiyordu; yani FX'in "hissi" de o yuzden degismisti. Geri
+     gelince ikisi de eski haline dondu. */
+  function moodGeziAc(e){
+    if(!pDown || !_moodAday || _moodGez || FXMOD) return;
+    const o = _diskOran(e || _moodSonOlay);
+    _moodGez = true;                       // kip açıldı: bırakış artık "tık" değil
+    _moodVurgu = (o >= zarSinir()) ? _halkaNo(o) : -1;
+    try{ modAdiTut(_moodVurgu >= 0 ? halkaAdlar()[_moodVurgu] : ''); }catch(_){ _yut(_); }
+  }
   /* İlk ses başlayana kadar false: o süre boyunca disk bölünmez,
      her basış radyoyu açar. sonraki() ve cal() true yapıyor. */
   var _ilkCalindi = false;
@@ -3966,11 +4042,29 @@
   const TIK_SES = "data:audio/wav;base64,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9//u//v/+f/3/+z/+/8HAPT/DQACAAYAGQANAA0ABQALAAUAAAD6//D/9P/2//f/8P/7//z/BAAAAAAADAAFAAcADQAKAAcABQAEAP7/+v////P//P/0//j/9v/5//3/AwABAAcADAAHAAUACAAGAAUA/f8AAAEA+v/+//r/+f/2//7//P/7////AgAFAAMABgALAAMACQACAAIA/v8AAPr//v/6//r//f/8//7//P///wAABQADAAEACAADAAUABAABAAIAAAD8//3/+v/9//z//f/8/wAAAAABAAEAAgAEAAMAAwAEAAMAAQAAAAAA/v8AAP3//P/8//3//f///wAAAAABAAMAAwADAAIAAwACAAAAAQAAAP/////+//3//v/9//7//////wAAAAACAAIAAwADAAIAAQABAAAAAAD////////+//7//v//////AAAAAAAAAQABAAIAAQACAAEAAQAAAAAA//////////////////8AAAAAAAAAAAAAAQABAAEAAQABAAEAAAAAAAAA//////////////////8AAAAAAAAAAAEAAQABAAEAAQAAAAAAAAAAAAAAAAD//////////wAAAAAAAAAAAAAAAAEAAQABAAEAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
   /* Tik sesi %20 kisildi (0.45 -> 0.36): fare tiklamasi gibi duyulan
      bu ses, ust uste basarken one cikiyordu. */
+  /* ── AYARLAR ─────────────────────────────────────────────────────
+     Kullanicinin kapatabildigi seyler. Tek bir nesne ve tek bir depo
+     anahtari: iki ayri yerde tutulan bir sey bir gun ayrisir.
+     Varsayilan ACIK -- sesler uygulamanin dili, kapatmak bir tercih.
+     Erken tanimli: tik() ve aramaBaslat() bunu okuyor ve ikisi de
+     acilista cagrilabiliyor. */
+  var AYAR = { aramaSes:true, tikSes:true };
+  try{
+    const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
+    if(_a && typeof _a === 'object'){
+      if(_a.aramaSes === false) AYAR.aramaSes = false;
+      if(_a.tikSes  === false) AYAR.tikSes  = false;
+    }
+  }catch(e){ _yut(e); }
+  function ayarKaydet(){
+    try{ localStorage.setItem('orbitape.ayar', JSON.stringify(AYAR)); }catch(e){ _yut(e); }
+  }
   var _kapiZaman = null;   // raf kapisinin TEK zamanlayicisi (bkz. cal)
   const TIK_VOL = 0.36;   // 0..1 arası ses seviyesi (kısmak için düşür)
   let _tikAudio=null;
   try{ _tikAudio=new Audio(TIK_SES); _tikAudio.preload='auto'; _tikAudio.volume=TIK_VOL; }catch(e){ _yut(e); }
   function tik(){
+    if(!AYAR.tikSes) return;              // ayarlardan kapatilabilir
     try{
       if(_tikAudio){ const a=_tikAudio.cloneNode(); a.volume=TIK_VOL; a.currentTime=0; a.play().catch(()=>{}); return; }
     }catch(e){ _yut(e); }
@@ -4835,6 +4929,10 @@
     }catch(e){ _yut(e); }
   }
   function aramaBaslat(){
+    /* SES kapatilabilir ama ARAMA GOSTERIMI kapanmiyor: ekrandaki
+       WAIT ve frekans cizgisi duruyor. Kapatilan sey gurultu, bilgi
+       degil -- kullanici yine ne olup bittigini goruyor. */
+    if(!AYAR.aramaSes) return;
     if(!actx || aramaCalisyor) return; aramaCalisyor=true;
     const grup=()=>{
       if(!aramaCalisyor) return;
@@ -5900,10 +5998,9 @@
        halkaya kaydırmak işe yaramıyor, bırakınca da "tık" sayılıp
        parça atlanıyordu. Artık tutuş her yerde kipi açar; halkanın
        üstünde değilken bırakmak hiçbir şey yapmaz. */
-    /* BASILI TUTUS DA KIP ACMIYOR: raf secimi sag ustte. Disk'in
-       tek isi kaldi -- dokunmak siradaki sesi calar, surtmek FX. */
-    _moodAday = false;
+    _moodAday = !FXMOD && _ilkCalindi;
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
+    if(_moodAday) _moodBekle = setTimeout(()=>{ _moodBekle = null; moodGeziAc(e); }, MOOD_TUT);
     try{ btn.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
   }, {passive:false});
@@ -5935,8 +6032,20 @@
     _moodSonOlay = e;
     /* Belirgin bir kaydırma da niyet göstergesidir: süreyi beklemeden
        kipi açıyor. Kısa ve YERİNDE bir dokunuş hâlâ "sıradaki ses". */
-    /* Surukleme artik SADECE FX. Eskiden belirgin bir kaydirma raf
-       gezinme kipini aciyordu; o kip kalkti (bkz. moodGeziAc). */
+    /* Belirgin bir kaydirma da niyet göstergesidir: süreyi beklemeden
+       kipi açıyor. Kısa ve YERİNDE bir dokunuş hâlâ "sıradaki ses". */
+    if(_moodAday && !_moodGez &&
+       (Math.abs(e.clientX-startX)>SUR_ESIK*1.6 || Math.abs(e.clientY-startY)>SUR_ESIK*1.6)){
+      if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
+      moodGeziAc(e);
+    }
+    if(_moodGez){                                   // mood gezinmesi: FX'e girme
+      e.preventDefault();
+      const _o = _diskOran(e);
+      const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
+      if(k !== _moodVurgu){ _moodVurgu = k; modAdiTut(k>=0 ? halkaAdlar()[k] : ''); }
+      return;
+    }
     if(!FXMOD) return;                              // FX kapalı: sürükleme bir şey yapmaz
     if(Math.abs(e.clientX-startX)>SUR_ESIK || Math.abs(e.clientY-startY)>SUR_ESIK) pMoved=true;
     if(pMoved){                                          // FX artık HER modda (radyo da ses+grafikten geçiyor)
@@ -5964,8 +6073,19 @@
     if(!pDown) return; pDown=false; _basili=false;
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
     _moodAday = false;
-    /* Birakinca raf secme de kalkti: parmak halkalarda gezmiyor.
-       Kisa dokunus her zaman "siradaki ses" -- tek anlam. */
+    if(_moodGez){
+      _moodGez = false;
+      /* Halkanın ÜSTÜNDE değilse hiçbir şey olmaz — ne seçim, ne
+         parça atlama. Tutuşu iptal etmenin yolu da bu. */
+      const _o = _diskOran(e);
+      const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
+      modAdiBirak();
+      try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
+      if(k >= 0){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+                  halkaSec(k); }               // halkada bıraktı -> o raf
+      _moodVurgu = -1;
+      return;                                   // boşlukta bıraktı -> hiçbir şey olmaz
+    }
     try{ hizYaz(true); }catch(_){ _yut(_); }          // parmak kalkınca detune'u kesinleştir
     try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
     if(!pMoved){
@@ -7084,6 +7204,83 @@
       try{ document.body.classList.remove('klavye'); }catch(e){ _yut(e); }
     });
   }catch(e){ _yut(e); }
+
+  /* ── AYAR PANELI ─────────────────────────────────────────────────
+     Tutamaga bas -> panel yukari kayar. Tekrar bas, disina dokun ya da
+     Esc -> kapanir. Panel acikken halkalara ve diske dokunmak paneli
+     kapatiyor ve o dokunus ORAYA GITMIYOR: acik bir panelin arkasina
+     yanlislikla basmak kotu bir surpriz. */
+  (function ayarlar(){
+    const tut = document.getElementById('ayarTut');
+    const kut = document.getElementById('ayar');
+    if(!tut || !kut) return;
+    const yaz = ()=>{
+      kut.querySelectorAll('.sat[role="switch"]').forEach(el=>{
+        const k = el.dataset.ayar;
+        const a = !!AYAR[k];
+        el.classList.toggle('acik', a);
+        el.setAttribute('aria-checked', a ? 'true' : 'false');
+        const d = el.querySelector('.durum');
+        if(d) d.textContent = a ? 'ON' : 'OFF';
+      });
+    };
+    /* Kapali panel GERCEKTEN kapali olmali: aria-hidden yetmiyor,
+       icindeki satirlar hala sekmeyle gezilebiliyordu. inert + tabindex
+       ikisi birden. */
+    const odak = (a)=>{
+      kut.querySelectorAll('.sat').forEach(el=>el.setAttribute('tabindex', a ? '0' : '-1'));
+    };
+    const ac = ()=>{ document.body.classList.add('ayar-acik');
+      tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
+      try{ kut.removeAttribute('inert'); }catch(e){ _yut(e); }
+      odak(true); yaz(); };
+    const kapa = ()=>{ document.body.classList.remove('ayar-acik');
+      tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
+      try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
+      odak(false); };
+    const cevir = ()=>{ document.body.classList.contains('ayar-acik') ? kapa() : ac(); };
+    tut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
+    tut.addEventListener('pointerdown', e=>e.stopPropagation());
+    tut.addEventListener('keydown', e=>{
+      if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); cevir(); } });
+
+    const sec = (el)=>{
+      const k = el.dataset.ayar;
+      if(k === 'tur'){
+        /* Turu tekrar oynat: panel kapaniyor, tur bastan basliyor.
+           Depoya "gosterildi" damgasi silinmiyor -- kullanici bunu
+           kendi istedi, bir daha acilista cikmasin. */
+        kapa();
+        setTimeout(()=>{ try{ turBasla(true); }catch(e){ _yut(e); } }, 320);
+        return;
+      }
+      AYAR[k] = !AYAR[k];
+      ayarKaydet(); yaz();
+      /* Arama sesi kapatilinca calmakta olan dongu de sussun. */
+      if(k === 'aramaSes' && !AYAR.aramaSes){ try{ aramaDurdur(); }catch(e){ _yut(e); } }
+      /* Tik ACILDIYSA tek bir tik: degisikligi duyarak anla. */
+      if(k === 'tikSes' && AYAR.tikSes){ try{ tik(); }catch(e){ _yut(e); } }
+    };
+    kut.querySelectorAll('.sat').forEach(el=>{
+      el.addEventListener('click', e=>{ e.stopPropagation(); sec(el); });
+      el.addEventListener('pointerdown', e=>e.stopPropagation());
+      el.addEventListener('keydown', e=>{
+        if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); sec(el); } });
+    });
+    /* Disariya dokunmak kapatir. Yakalama asamasinda ve DURDURARAK:
+       panelin arkasindaki halka o dokunusu almasin. */
+    document.addEventListener('pointerdown', e=>{
+      try{
+        if(!document.body.classList.contains('ayar-acik')) return;
+        if(kut.contains(e.target) || tut.contains(e.target)) return;
+        e.stopPropagation(); e.preventDefault(); kapa();
+      }catch(_){ _yut(_); }
+    }, true);
+    document.addEventListener('keydown', e=>{
+      if(e.key==='Escape' && document.body.classList.contains('ayar-acik')) kapa();
+    });
+    yaz();
+  })();
 
   function araAc(){
     if(araKut.classList.contains('acik')) return;
@@ -9507,9 +9704,12 @@
     turYaz(_turAdim, hepsi.length, ad.bas, ad.metin);
     turDurak(ad, 0);
   }
-  function turBasla(){
+  /* zorla=true: kullanici AYARLARDAN istedi. O zaman "bir kere
+     gosterildi" damgasina bakilmiyor -- damga acilistaki kendiliginden
+     gosterim icin var, elle istegi engellememeli. */
+  function turBasla(zorla){
     const t = document.getElementById('tur'); if(!t || _turAkiyor) return;
-    if(!turGosterilsinMi()) return;
+    if(!zorla && !turGosterilsinMi()) return;
     /* AĞ YOKKEN TUR YOK: "no connection" panelinin üstüne binip iki
        mesaj birden okunmuyordu. Kutu işaretlenmediği sürece depoya
        hiçbir şey yazılmıyor, yani tur bir dahaki açılışta yine çıkar. */

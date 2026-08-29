@@ -175,6 +175,52 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      ses.volume yaziyordu ve <audio> Web Audio'ya bagli oldugu icin
      hicbir sey olmuyordu. */
   K('Dosya boyutu < 580 KB',  dosyaBoy < 580*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* ── AYARLAR PANELI ──────────────────────────────────────────────
+     Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
+     sonra insanlar isyeyebilir". Iki ses de kapatilabilir, karar
+     cihazda kaliyor.
+     Kapali panelin GERCEKTEN kapali olmasi ayri bir sart: aria-hidden
+     yetmiyor, icindeki satirlar sekmeyle geziliyordu (WCAG 4.1.2).
+     Bu test bir kere kirmizi yanip onu yakaladi. */
+  K('Ayar paneli calisiyor ve kapaliyken erisilmez', await pg.evaluate(async()=>{
+      const tut = document.getElementById('ayarTut');
+      const kut = document.getElementById('ayar');
+      const sat = k => kut.querySelector('.sat[data-ayar="'+k+'"]');
+      const eski = { a:AYAR.aramaSes, t:AYAR.tikSes };
+
+      const kapaliOdak  = [...kut.querySelectorAll('.sat')].every(el=>el.getAttribute('tabindex')==='-1');
+      const kapaliInert = kut.hasAttribute('inert');
+
+      tut.click(); await new Promise(r=>setTimeout(r,30));
+      const acik     = document.body.classList.contains('ayar-acik');
+      const acikOdak = [...kut.querySelectorAll('.sat')].every(el=>el.getAttribute('tabindex')==='0');
+
+      sat('aramaSes').click(); await new Promise(r=>setTimeout(r,20));
+      const kapandi = AYAR.aramaSes === false;
+      const depo    = JSON.parse(localStorage.getItem('orbitape.ayar')||'{}');
+      const yazi    = sat('aramaSes').querySelector('.durum').textContent.trim();
+
+      let calisti = false;
+      try{ aramaDurdur(); aramaBaslat(); calisti = !!aramaCalisyor; aramaDurdur(); }catch(e){}
+
+      const turkce = /[cgisouCGISOU]/.test('') || /[\u00e7\u011f\u0131\u015f\u00f6\u00fc\u00c7\u011e\u0130\u015e\u00d6\u00dc]/.test(kut.textContent||'');
+
+      tut.click(); await new Promise(r=>setTimeout(r,30));
+      const kapandiPanel = !document.body.classList.contains('ayar-acik');
+
+      AYAR.aramaSes = eski.a; AYAR.tikSes = eski.t; ayarKaydet();
+      return kapaliOdak && kapaliInert && acik && acikOdak && kapandi
+          && depo.aramaSes === false && yazi === 'OFF'
+          && calisti === false && !turkce && kapandiPanel;
+    }), 'ac/kapa, ses susuyor, cihazda kaliyor, kapaliyken sekmeyle gezilemiyor');
+  /* ARAMA GOSTERIMI KAPANMIYOR: kapatilan sey gurultu, bilgi degil.
+     WAIT yazisi ve frekans cizgisi yerinde kaliyor. */
+  K('Ses kapaliyken arama gosterimi duruyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      return /if\(!AYAR\.aramaSes\) return;/.test(k)
+          && typeof aramaGosterimiVarMi === 'function';
+    }), 'WAIT ve frekans cizgisi ayara bagli DEGIL');
+
   /* ── SES GERCEKTEN KISILIYOR MU ─────────────────────────────────
      Olculen sikayet: "mobilde iki parmak var ama kismiyor". Jest
      calisiyordu; yazdigi yer yanlisti. <audio> Web Audio grafigine
@@ -859,8 +905,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      yukari alindi -> aradaki mesafenin dortte biri. */
   K('Yazi halkaya bir tik daha yakin', ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.H-ac.yazi.halkaAlt)*0.25))<=8,
      'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.H-ac.yazi.halkaAlt)*0.25):'-'));
-  K('Diskte gezinme kipi hic acilmiyor', ac.son1.ilk===true && ac.gez2===false,
-     'ikinci basis gezinme '+ac.gez2+' (acilmamali)');
+  K('Ses baslayinca halka menu', ac.son1.ilk===true && ac.gez2===true,
+     'ikinci basis gezinme '+ac.gez2);
 
   /* ── KATEGORI ONIZLEMESI ────────────────────────────────────────
      Halkalarin ustunde gezerken tema+zemin ONIZLENIR, secim henuz
@@ -995,24 +1041,21 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* Radyo kanalinda halka bir AILE seciyor, kategori degil: AKTIF_MOD
      degismiyor. Olcut "gezinme kipi acildi mi" -- kategori adina
      bakan eski kontrol artik yanlis soruyu soruyordu. */
-  /* ── PARMAKLA HALKA GEZINME KALDIRILDI ───────────────────────────
-     Asagidaki dort satir eskiden bu kipin ACILDIGINI dogruluyordu.
-     Kullanici kaldirtti: "kesinlikle parmakla halkalarda gezilmesin,
-     o kafa karistiriyor, tiklama kalsin". Silmek yerine TERSINE
-     cevrildiler -- kip sessizce geri gelirse bu satirlar yakalar.
-     Raf secmenin tek yolu sag ustteki isim/semboller. */
-  K('Basili tutus raf kipini ACMAZ', tk.uzun.gez===false,
+  /* ── PARMAKLA HALKA GEZINME: GITTI VE GERI GELDI ─────────────────
+     Bir ara kaldirildi ("kafa karistiriyor"), sonra geri istendi.
+     Kaldirildigi surece surukleme dogrudan FX'e gidiyordu ve FX'in
+     hissi degismisti; geri gelince ikisi de eski haline dondu.
+     Bu satirlar kipin ACILDIGINI dogruluyor. */
+  K('Basili tutus raf kipini acar', tk.uzun.gez===true,
      'gezinme '+tk.uzun.gez+' -> '+tk.uzun.mod);
-  K('Kaydirma da kategori ACMAZ', tk.kay.gez===false, 'surukleme sadece FX');
+  K('Kaydirma da kategori acar', tk.kay.gez===true, 'sureyi beklemeden');
   /* Tutus ARTIK HER YERDE kipi aciyor: ortada tutup halkaya kaydirmak
      calisiyor. Halkanin ustunde degilken birakmak hicbir sey yapmiyor. */
-  K('Merkezde tutus da kip ACMAZ', tk.merkez.gez===false, 'gezinme acilmadi');
+  K('Merkezde tutus da kipi acar', tk.merkez.gez===true, 'gezinme acildi');
   K('Halka disinda birakmak SECMEZ', tk.merkez.mod==='RADIOTAPE', 'kategori degismedi');
-  /* Gezinme kipi kalkinca diskteki her dokunusun TEK anlami kaldi:
-     siradaki ses. Basili tutup birakmak da artik bir dokunustur --
-     eskiden "halka disinda birakmak hicbir sey yapmaz" istisnasi
-     vardi, o istisna kipin kendisiyle birlikte gitti. */
-  K('Diskte her dokunus siradaki ses', tk.atladi===true, 'sonraki() cagrildi');
+  /* Tutup halkanin DISINDA birakmak hicbir sey yapmaz: ne secim, ne
+     parca atlama. Tutusu iptal etmenin yolu da bu. */
+  K('Halka disinda birakmak parca ATLAMAZ', tk.atladi===false, 'sonraki() cagrilmadi');
   K('Tutma esigi makul', tk.esik>=200 && tk.esik<=500, tk.esik+' ms');
 
   /* ── COK ADIMLI GECMIS ──────────────────────────────────────────
@@ -1178,7 +1221,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
 
   K('4. gezegen: ana FX grubu', uyduAd.length===4 && uyduAd.indexOf('ana')>=0, uyduAd.join(' '));
   K('Acilista FX kapali',        fxAcilis==='', 'FXMOD="'+fxAcilis+'"');
-  K('FX kapali: surukleme bir sey yapmaz', kapaliGez===false && kapaliFx<0.001,
+  K('FX kapali: halka=kategori', kapaliGez===true && kapaliFx<0.001,
      'gezinme '+kapaliGez+' | fx '+kapaliFx);
   K('ANA FX aciliyor',           fxAcik==='ana', 'FXMOD='+fxAcik);
   K('FX acik: kategori kapali',  acikGez===false && acikFx>0, 'gezinme '+acikGez+' | fx '+acikFx);
