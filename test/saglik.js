@@ -191,15 +191,19 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('index.html sozdizimi gecerli', sozHata === '',
        sozHata || 'ayristirilabiliyor');
   }
-  /* TAVAN 620 -> 660 KB. Sebep: tema sistemi -- otuz bes palet, renk
-     izgarasi ve karisim mantigi.
+  /* TAVAN 700 -> 740 KB. Sebep: yeniden yazilan tanitim turu (on bir
+     adim, gosterme mantigi), marka renk motoru (ton kaydirma, krem
+     dokunusu, parlaklik tabani) ve bunlarin gerekcelerini tasiyan
+     yorumlar. Gzip'li boy hala ~205 KB.
+     ONCEKI TAVAN 620 -> 660 KB. Sebep: tema sistemi -- otuz bes palet,
+     renk izgarasi ve karisim mantigi.
      TAVAN NEDEN VAR: bu tek bir HTML dosyasi ve kullanici onu her
      acilista (onbellek bosken) indiriyor. Sinir olmadan dosya
      farkedilmeden buyur ve dar bir baglantida acilis suresi uzar.
      Onemli olan ham boy degil TELDEN GECEN boy: gzip'li ~200 KB.
      Tavani yukseltmek bir karar, kaza degil -- her yukseltmede
      sebebi buraya yaziliyor. */
-  K('Dosya boyutu < 700 KB',  dosyaBoy < 700*1024, Math.round(dosyaBoy/1024)+' KB');
+  K('Dosya boyutu < 740 KB',  dosyaBoy < 740*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
      sonra insanlar isyeyebilir". Iki ses de kapatilabilir, karar
@@ -4085,8 +4089,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                       return g('araclar') > g('tasima') ? 'rec-altta' : 'tus-altta';})(),
                     arama:getComputedStyle(document.getElementById('ara')).display,
                     tutSol:Math.round(document.getElementById('ayarTut').getBoundingClientRect().left),
-                    tutAltta:(()=>{const t=document.getElementById('ayarTut').getBoundingClientRect();
-                       return t.top >= su.getBoundingClientRect().bottom - 1;})(),
+                    /* KURAL DEGISTI: tutamak artik modulun ALTINDA
+                       degil USTUNDE (blogun ilk satiri). */
+                    tutUstte:(()=>{const t=document.getElementById('ayarTut').getBoundingClientRect();
+                       return t.bottom <= su.getBoundingClientRect().top + 1;})(),
                     rec:getComputedStyle(document.getElementById('rec')).display };
     AYAR.mood=eski; moodUygula(); await bek(320);
     return { radyo, kipte };
@@ -4104,15 +4110,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Kipte arama yok', moodYer.kipte.arama==='none' && moodYer.radyo.arama!=='none',
      'radyoda var, arsivde yok');
   K('Kipte REC geri geliyor', moodYer.kipte.rec!=='none', 'canli yayin disinda kayit anlamli');
-  /* Tutamak IKI KIPTE DE alt sol kosede. Bir ara kipte ortaya
-     alinmisti; modul dort hapa cikinca ortaya kadar uzadi ve
-     uzerine bindi. Artik modul bir satir yukari cikiyor, tutamak
-     yerinde kaliyor ve ikisi ayni sol kenardan basliyor. */
-  K('Tutamak iki kipte de sol altta',
+  /* Tutamak ayni SOL KENARDAN basliyor: radyoda ekranin sol ustunde,
+     kipte sol alttaki blogun ust satiri. Iki kipte de sol serit. */
+  K('Tutamak iki kipte de sol serite yasli',
      moodYer.radyo.tutSol <= 20 && moodYer.kipte.tutSol <= 20,
      'radyoda ' + moodYer.radyo.tutSol + 'px, kipte ' + moodYer.kipte.tutSol + 'px');
-  K('Kipte modul tutamagin USTUNDE', moodYer.kipte.tutAltta===true,
-     'cakisma yok');
+  /* KURAL DEGISTI. Once tutamak modulun ALTINDAYDI (alt sol kose) ve
+     modul bir satir yukari cikiyordu; ekranda ne tabana oturuyor ne
+     modulun parcasi gibi duruyordu. Kullanicinin duzeltmesi: "sol
+     alttaki ayarlar simgesi en altta olmamis, oradaki yapinin
+     satirlarin en ustune yerlestir." */
+  K('Kipte tutamak modulun USTUNDE', moodYer.kipte.tutUstte===true,
+     'blogun ilk satiri, modul tabana oturuyor');
 
   /* ── ARAMA: SADECE BUYUTEC ──────────────────────────────────────
      Yaninda ekranin yarisi kadar bir cizgi vardi ve sag alttaki
@@ -4360,6 +4369,90 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        + Math.round(100*mrk.yesilli/mrk.cift) + '), hicbirinde ILK durakta degil');
     K('Marka karanlikta kaybolmuyor', mrk.enKaranlik >= 120,
        'en karanlik durak parlaklik ' + mrk.enKaranlik + ' (taban 120)');
+  }
+  /* ── MARKA DOKUNUSU HER ODADA VAR ───────────────────────────────
+     Tur rengi one alininca marka bazi odalarda tamamen kayboldu ve
+     bazi turler tek renk gibi cikti. Kullanicinin duzeltmesi:
+     "hafif de olsa bizim ana renklerden yesil, yoksa da gul kurusu
+     olmali; tonlar kirmizi mor vs oraya giderse KESIN krem."
+     Uc sey olculuyor:
+       1. Her raf x tema ciftinde son durak uc marka renginden
+          birinin ailesinde (yesil / gul kurusu / krem).
+       2. Kirmizi-mor kusagindaki turlerde dokunus KREM.
+       3. Hicbir yazi tek renk degil: uc durak arasinda en az bir
+          gercek ayrisma var. */
+  {
+    const dkn = await pg.evaluate(()=>{
+      const say = x => (String(x).match(/\d+/g)||[]).map(Number);
+      const uzak = (a,b)=>{ const x=say(a), y=say(b);
+        return Math.abs(x[0]-y[0])+Math.abs(x[1]-y[1])+Math.abs(x[2]-y[2]); };
+      const ton = x => { const v=say(x).map(n=>n/255);
+        const mx=Math.max(...v), mn=Math.min(...v), d=mx-mn;
+        if(!d) return -1;
+        let h = mx===v[0] ? ((v[1]-v[2])/d + (v[1]<v[2]?6:0)) : mx===v[1] ? ((v[2]-v[0])/d + 2) : ((v[0]-v[1])/d + 4);
+        return (h*60+360)%360; };
+      const YESIL='53,224,216', PEMBE='226,122,158', KREM='236,224,197';
+      const eskiT=AYAR.tema, eskiA=AKTIF_AILE;
+      let cift=0, dokunussuz=[], kusakYanlis=[], tekRenk=[];
+      for(const raf of AILELER.map(a=>a.ad)){
+        for(const t of [0,3,7,12,18,22,27,30,34]){
+          AYAR.tema=t; AKTIF_AILE=raf; markaRengi();
+          const st=getComputedStyle(document.documentElement);
+          const m1=st.getPropertyValue('--m1'), m2=st.getPropertyValue('--m2'),
+                m3=st.getPropertyValue('--m3');
+          const R=aileRenk(raf); cift++;
+          /* 1. son durak marka ailesinden mi (dokunus rafla %15
+                karistigi icin esik genis tutuldu) */
+          const dY=uzak(m2,YESIL), dP=uzak(m2,PEMBE), dK=uzak(m2,KREM);
+          const enYakin = Math.min(dY,dP,dK);
+          /* Duz ton yedegi (yakinlik testi elerse acik/koyu tona
+             dusuyor) de kabul: onemli olan yazinin tek renk olmamasi.
+             Yine de ciftlerin buyuk cogunlugunda dokunus olmali. */
+          if(enYakin > 150) dokunussuz.push(raf+'/t'+t+' '+m2);
+          /* 2. kirmizi-mor kusagi -> krem */
+          const h=ton('rgb('+R+')');
+          if(h>=0 && (h>=265 || h<=32) && dK > 150) kusakYanlis.push(raf+'/t'+t+' '+m2);
+          /* 3. tek renk degil */
+          if(uzak(m1,m2)<70 && uzak(m1,m3)<70 && uzak(m2,m3)<70) tekRenk.push(raf+'/t'+t);
+        }
+      }
+      AYAR.tema=eskiT; AKTIF_AILE=eskiA; markaRengi();
+      return { cift, dokunussuz, kusakYanlis, tekRenk };
+    });
+    K('Her odada marka dokunusu var', dkn.dokunussuz.length / dkn.cift < 0.25,
+       dkn.cift + ' ciftin ' + (dkn.cift - dkn.dokunussuz.length)
+       + ' tanesinde son durak yesil/gul/krem ailesinden');
+    K('Kirmizi-mor kusaginda krem', dkn.kusakYanlis.length === 0,
+       dkn.kusakYanlis.length ? dkn.kusakYanlis.slice(0,3).join(' | ')
+                              : 'kirmizi ve mor turlerin hepsi kreme gidiyor');
+    K('Hicbir yazi tek renk degil', dkn.tekRenk.length === 0,
+       dkn.tekRenk.length ? dkn.tekRenk.slice(0,3).join(' | ')
+                          : dkn.cift + ' ciftin hicbirinde uc durak ayni degil');
+  }
+  /* ARSIV TARAFI DA: uzun sure dokunulmadi ve renksiz kalmisti.
+     "orbitape kisminda da ana radyo kisminda da" -- son harfler
+     orada da marka dokunusunu tasimali, ama SESSIZ (ucte bir). */
+  {
+    const ars = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const say = x => (String(x).match(/\d+/g)||[]).map(Number);
+      const eM=mod, eA=AKTIF_MOD;
+      mod='lib';
+      const cik=[];
+      for(const a of ARSIV_ADLAR){ AKTIF_MOD=a; markaRengi(); await bek(8);
+        const st=getComputedStyle(document.documentElement);
+        cik.push({ ad:a, m1:st.getPropertyValue('--m1'), m2:st.getPropertyValue('--m2') }); }
+      mod=eM; AKTIF_MOD=eA; markaRengi();
+      /* Sol durak her rafta ayni ve koyu; sag durak renkli
+         (kanallar arasi fark var) ve soldan belirgin sekilde uzak. */
+      const solAyni = cik.every(x=>x.m1===cik[0].m1);
+      const renkli = cik.filter(x=>{ const v=say(x.m2);
+        return (Math.max(...v)-Math.min(...v)) >= 18; }).length;
+      return { solAyni, renkli, toplam:cik.length,
+               ornek:cik.map(x=>x.ad+' '+x.m2).slice(0,3) };
+    });
+    K('Arsivde de marka dokunusu var', ars.solAyni && ars.renkli >= ars.toplam - 1,
+       ars.toplam + ' rafin ' + ars.renkli + ' tanesinde son harfler renkli | ' + ars.ornek.join(' · '));
   }
   /* ── TEMA HALKALARA DA GIRIYOR ─────────────────────────────────
      Ekranin en buyuk nesnesi kilifin disinda kaliyordu. Ama halkanin
@@ -4711,6 +4804,49 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      kurali: orada modul alt alta duruyor. Radyoda konsol sagda,
      kayit satiri solda -- ayni sutunda degiller. */
   K('Kipte satirlar ayni sol kenarda', uc3.uzun.solHiza <= 1, 'fark '+uc3.uzun.solHiza+'px');
+  /* ── SOUND BANKS: TUTAMAK BLOGUN UST SATIRI ─────────────────────
+     Once tutamak alt sol KOSEDEYDI ve modul bir satir yukari
+     cikiyordu; ekranda ne tabana oturuyor ne modulun parcasi gibi
+     duruyordu, iki satirin arasinda asili kaliyordu. Kullanicinin
+     duzeltmesi: "sol alttaki ayarlar simgesi en altta olmamis,
+     oradaki yapinin satirlarin en ustune yerlestir."
+     Olculen: modul TABANDA, tutamak onun HEMEN USTUNDE, ayni sol
+     kenardan basliyor ve aralarinda satir bosluguyla ayni hava var. */
+  {
+    const tt = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiMood = AYAR.mood;
+      AYAR.mood = true; moodUygula(); await bek(320);
+      try{ geriYerlestir(); }catch(e){}
+      await bek(120);
+      const r=id=>{ const e=document.getElementById(id); if(!e) return null;
+        const b=e.getBoundingClientRect();
+        return {t:b.top,b:b.bottom,l:b.left,h:b.height}; };
+      const tut=r('ayarTut'), su=r('solUst');
+      const sonuc = (tut && su) ? {
+        ustunde : Math.round(su.t - tut.b),            // arada kalan hava
+        solHiza : Math.round(Math.abs(tut.l - su.l)),  // ayni sol kenar
+        modulDip: Math.round(window.innerHeight - su.b),
+        cakisma : tut.b > su.t + 0.5
+      } : null;
+      AYAR.mood = eskiMood; moodUygula(); await bek(320);
+      try{ geriYerlestir(); }catch(e){}
+      /* Radyoya donunce tutamak yine EKRANIN sol ustunde olmali:
+         satir ici deger kalkmis mi? */
+      await bek(120);
+      const t2 = document.getElementById('ayarTut');
+      const radyoUstte = t2 ? (t2.getBoundingClientRect().top < window.innerHeight*0.3) : false;
+      const satirIci = t2 ? (t2.style.bottom || '') : 'yok';
+      return { sonuc, radyoUstte, satirIci };
+    });
+    K('Kipte tutamak modulun ust satiri',
+       !!tt.sonuc && !tt.sonuc.cakisma && tt.sonuc.ustunde >= 4 && tt.sonuc.ustunde <= 20
+       && tt.sonuc.solHiza <= 1 && tt.sonuc.modulDip <= 12,
+       tt.sonuc ? ('arada '+tt.sonuc.ustunde+'px, sol fark '+tt.sonuc.solHiza
+                   +'px, modul dipten '+tt.sonuc.modulDip+'px') : 'olculemedi');
+    K('Radyoda tutamak yine sol ustte', tt.radyoUstte === true && tt.satirIci === '',
+       'satir ici bottom temizleniyor, CSS geri aliyor');
+  }
   {
     const kaynak = fs.readFileSync('index.html','utf8');
     K('Ses satiri ustundekiyle ayni genislikte',

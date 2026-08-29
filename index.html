@@ -1241,7 +1241,7 @@
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
   body.mood #ayarTut{top:auto;
-    bottom:calc(7px + env(safe-area-inset-bottom, 0px));}
+    bottom:calc(115px + env(safe-area-inset-bottom, 0px));}
   /* SOUND BANKS kipinde de AYNI YERDE. Once ortaya alinmisti (sol
      alti modul aldi diye) ama modul dort hapa cikinca ortaya kadar
      uzadi ve tutamagin uzerine bindi -- olculdu, sustur tusuyla
@@ -1549,10 +1549,25 @@
      Satir aralari da tek yerden: --modul-bosluk. */
   #solUst{--modul-bosluk:8px;gap:var(--modul-bosluk);}
   #tasima{width:var(--ses-en,150px);justify-content:space-between;}
-  /* SOUND BANKS kipinde tutamak da alt sol kosede: modul bir satir
-     yukari cikiyor ki ustune binmesin. 7 + 26 (tutamak) + 10 hava */
+  /* ── SOUND BANKS: TUTAMAK BLOGUN EN USTUNDE ───────────────────
+     ONCE tutamak alt sol KOSEDEYDI ve modul bir satir yukari
+     cikiyordu (bottom:43px). Ekranda yanlis okunuyordu: tutamak
+     ne tabana oturuyordu ne de modulun parcasi gibi duruyordu --
+     iki satirin arasinda asili kaliyordu.
+     Kullanicinin duzeltmesi: "sol alttaki ayarlar simgesi en altta
+     olmamis, oradaki yapinin satirlarin en ustune yerlestir."
+     Artik modul TABANA oturuyor ve tutamak onun UST SATIRI:
+       [ uc cizgi ]        <- tutamak
+       [ ses cizgisi ]
+       [ tasima tuslari ]
+       [ kayit araclari ]
+     Tutamagin yeri JS'te modulun OLCULEN ustunden veriliyor
+     (geriYerlestir), cunku satir sayisi kipe gore degisiyor --
+     sabit bir sayi bir kipte bosluk birakir, otekinde bindirir.
+     Buradaki deger yalnizca JS yetismeden onceki ilk karenin
+     yedegi. */
   body.mood #solUst{
-    bottom:calc(43px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(7px + env(safe-area-inset-bottom, 0px));
   }
   body.mood #sesSatir{order:1;}
   body.mood #tasima  {order:2;}
@@ -2209,6 +2224,21 @@
   /* MARKANIN ANA RENGI. Yazinin sol durgi, konsol tuslari, sol
      alttaki semboller -- hepsi bu. Tema bunu degistirmiyor. */
   const MARKA_YESIL = '53,224,216';
+  /* ── UCUNCU MARKA RENGI: KREM ─────────────────────────────────────
+     Yesil ile gul kurusu bazi turlerde ise yaramiyor: kirmizi, mor,
+     magenta bir turun yanina gul kurusu koyunca ikisi birbirine
+     karisiyor, yesil koyunca da tabela gibi cigirtkanlasiyor.
+     Kullanicinin buldugu cozum DISCO FUNK'ta kendiliginden cikmisti:
+       "disko funkta krem vardi, cok iyiydi. tonlar kirmizi mor vs
+        oraya giderse kesin krem rengi etkisi olsun. biraz Dondurmam
+        Gulum tarzi, smoothie icecekler havasi."
+     Dogru teshis: krem HER RENKLE gecinen tek ton. Sicak, eski film
+     afisi/dondurma reklami havasi veriyor ve turun rengini
+     bastirmadan yaninda duruyor.
+     Bu yuzden marka dokunusu artik UC renkli bir sira: once yesil,
+     uymazsa gul kurusu, o da uymazsa krem. Kirmizi/mor kusaginda
+     dogrudan kreme gidiliyor. */
+  const MARKA_KREM  = '236,224,197';
   /* ══ TEMALAR ══════════════════════════════════════════════════════
      Uygulamanin "kilifi": zemin ve vurgu rengi. Otuz bes tema, uc
      seride ayrilmis (RETRO / GECE / CIVIL) ama listede tek sira
@@ -2402,6 +2432,42 @@
       return v.map(x=>Math.min(255, Math.round(x + (255 - x)*k))).join(',');
     }catch(e){ return rgb; }
   }
+  /* ── MARKA DOKUNUSU SECIMI ────────────────────────────────────────
+     Yazinin son harflerinde duracak marka rengini seciyor. IKI TARAF
+     DA BUNU KULLANIYOR -- kullanicinin sozu: "orbitape kisminda da
+     ana radyo kisminda da, hafif de olsa bizim ana renklerden yesil,
+     yoksa da gul kurusu olmali."
+     Sira: yesil -> gul kurusu -> krem.
+       · Bir renk turun rengine cok yakinsa atlaniyor (gorunmeyecek
+         bir dokunus dokunus degil).
+       · Turun tonu KIRMIZI/MOR kusagindaysa dogrudan krem: orada
+         yesil cigirtkan, gul kurusu ise turun rengine karisiyor.
+       · Hicbiri esigi gecmiyorsa EN UZAK olani aliniyor; yani
+         dokunus hicbir zaman bos kalmiyor.
+     n = raf adi + tema numarasindan hesaplanan sayi; ayni odada hep
+     ayni dokunus cikiyor, oda degisince degisiyor. */
+  function _markaDokunus(R, n){
+    try{
+      let rTon = -1;
+      const v = String(R).split(',').map(x=>+x/255);
+      const mx = Math.max(...v), mn = Math.min(...v), d = mx - mn;
+      if(d){ rTon = ((mx===v[0] ? ((v[1]-v[2])/d + (v[1]<v[2]?6:0))
+                    : mx===v[1] ? ((v[2]-v[0])/d + 2)
+                    : ((v[0]-v[1])/d + 4)) * 60 + 360) % 360; }
+      /* Kusak 265-360 ve 0-32: INDIE & LOFI'nin moru 272'de, yani
+         275 sinirinin disinda kaliyordu ve kreme gitmiyordu. */
+      if(rTon >= 265 || (rTon >= 0 && rTon <= 32)) return MARKA_KREM;
+      const SIRA = [MARKA_YESIL, MARKA_PEMBE, MARKA_KREM];
+      const bas2 = Math.floor((n||0) / 5) % 2;      // yesilden mi gulden mi
+      for(let i=0;i<SIRA.length;i++){
+        const aday = SIRA[(bas2 + i) % SIRA.length];
+        if(_renkUzak(R, aday) >= 130) return aday;
+      }
+      /* KREM DE ELENEBILIR: krem bir turde (DISCO FUNK, LOUNGE) krem
+         dokunus gorunmez oluyor ve yazi tek renge dusuyordu. */
+      return SIRA.reduce((en,c)=> _renkUzak(R, c) > _renkUzak(R, en) ? c : en, SIRA[0]);
+    }catch(e){ return MARKA_KREM; }
+  }
   /* Iki rgb arasindaki kaba uzaklik (kanal toplami). */
   function _renkUzak(a, b){
     try{ const x=String(a).split(',').map(Number), y=String(b).split(',').map(Number);
@@ -2424,10 +2490,30 @@
                   "bagirmiyor", sadece ima ediyor.
          Radyo tarafi degismedi; orada marka aileden geliyor. */
       let p = aktifTema();
+      let _arsivDokunus = '';
       if(typeof mod !== 'undefined' && mod === 'lib' && MOD_TEMA.SPACE){
         const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
         const raf = (g && MOD_TEMA[g] && MOD_TEMA[g].ana) || MOD_TEMA.SPACE.ana;
         p = { ana: _koyult(MOD_TEMA.SPACE.ana, 0.58), ikinci: _retroTon(raf, 0.42) };
+        /* ── ARSIVDE DE MARKA DOKUNUSU ────────────────────────────
+           Bu taraf uzun sure dokunulmamisti ("orbitape icin baska
+           oldugundan ona dokunma") ve sonuc renksizdi: koyu kursun
+           -> sonuk raf tonu, yani gri bir yaziya iki gri durak.
+           Kullanicinin son sozu iki tarafi da kapsiyor: "orbitape
+           kisminda da ana radyo kisminda da, hafif de olsa bizim ana
+           renklerden yesil, yoksa da gul kurusu olmali."
+           SOL TARAF DEGISMIYOR -- arsivin karanlik havasi onun
+           kimligi. Degisen SON HARFLER: rafin sonuk tonunun uzerine
+           marka dokunusunun ucte biri geliyor. Ucte bir cunku bu
+           taraf sessiz olmali; radyodaki gibi %85 dokunus burada
+           bagirir. */
+        let n2 = 0;
+        try{
+          const ad3 = String(g || '');
+          for(let i=0;i<ad3.length;i++) n2 = (n2*31 + ad3.charCodeAt(i)) >>> 0;
+          n2 = (n2 + (AYAR.tema|0) * 7) >>> 0;
+        }catch(e){ _yut(e); }
+        _arsivDokunus = _markaDokunus(raf, n2);
       }
       const kok = document.documentElement.style;
       if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); kok.removeProperty('--m3'); return; }
@@ -2482,87 +2568,95 @@
                cesit buradan geliyor, rastgelelikten degil.
            Markanin kendi iki rengi kaliplarin cogunda duruyor: yazi
            tanidik kalmaya devam ediyor. */
-        /* ── TUR RENGI ONDE, MARKA GERIDE ─────────────────────────
-           ONCEKI KURAL FAZLA TUTUKTU. Havuzun yarisi markanin kendi
-           iki rengiydi (yesil + gul kurusu) ve kaliplarin cogu onlarla
-           basliyordu; sonuc: hangi turde olursak olalim yazi hep ayni
-           yesil-pembe ikilisine donuyordu. Kullanicinin sozu:
-             "orbitape renkler cok tutucu... turlerin rengini daha
-              etkili gorelim, kayboluyoruz sayfalarda. kirmizi
-              belirgin, 'geldik' hissettirsin. bazilarinda orbitape'in
-              ana rengini unut. ana renk TUR RENGI olacak, sonuna
-              dogru hafif bizim ana yesil gorunur, bazen de hic
-              gorunmez. morla mesela o turun ton sutonuna git."
+        /* ── TUR RENGI ONDE, MARKA ARKADA AMA HEP VAR ─────────────
+           IKI ADIMDA BURAYA GELINDI.
+           Once havuzun yarisi markanin kendi renkleriydi ve yazi
+           hangi turde olursak olalim ayni yesil-pembe ikilisine
+           donuyordu -- "cok tutucu, kayboluyoruz sayfalarda".
+           Sonra kural tersine cevrildi ve tur rengi one alindi, ama
+           bu sefer marka bazi odalarda tamamen kayboldu ve bazi
+           turler (ELECTRONIC gibi) tek renk gibi cikti.
+           Kullanicinin son sozu ikisinin ortasi:
+             "hafif de olsa bizim ana renklerden yesil, yoksa da gul
+              kurusu olmali. tonlar kirmizi mor vs oraya giderse
+              kesin krem rengi etkisi olsun. electronic cok tek renk
+              olmus, koy bizim gul kurusundan ya da 3. renkten."
 
-           YENI KURAL:
-             1. YAZI HER ZAMAN TURUN RENGIYLE BASLIYOR. Ilk durak
-                (--m1) istisnasiz rafin rengi ya da onun bir tonu.
-                Kirmizi bir tur kirmizi giriyor, mor mor giriyor.
-             2. IKINCI/UCUNCU DURAKLAR once AYNI RENGIN TONLARI:
-                ust ton (beyaza dogru), alt ton (koyu) ve KOMSU TON
-                (ton acisi 26-34 derece cevrilmis). Mor -> menekse,
-                kirmizi -> kiremit. Boylece yazi turun kendi
-                ailesinde kaliyor.
-             3. MARKANIN YESILI YALNIZCA SON DURAKTA ve kaliplarin
-                sadece bir kisminda. On kalibin ucunde var, birinde
-                gul kurusu var, altisinda marka rengi HIC YOK.
-             4. YESIL UYMUYORSA GIRMIYOR: rafin rengi zaten yesile
-                yakinsa (uzaklik < 110) son durak yesil yerine rafin
-                koyu tonuna donuyor. "Uygun oldugunda kalsin."
-           Secim yine HESAPLANIYOR (raf adi + tema numarasi), yani
-           ayni odada yazi kaynamiyor; oda degisince kombinasyon
+           BUGUNKU KURAL -- HER YAZI UC DURAK:
+             1. DURAK : TURUN KENDI RENGI. Istisnasiz. Kirmizi
+                        kirmizi girer, mor mor girer.
+             2. DURAK : ayni rengin bir tonu -- ust ton, derin ton,
+                        komsu ton (mor->menekse, kirmizi->kiremit),
+                        oteki komsu ton ya da temanin vurgusu.
+                        Cesit buradan geliyor.
+             3. DURAK : MARKA DOKUNUSU. Yazinin son harflerinde,
+                        hafif: rengin %15'i turun renginden geliyor
+                        ki damga gibi degil solma gibi dursun.
+           MARKA DOKUNUSU NASIL SECILIYOR:
+             · Sira yesil -> gul kurusu -> krem.
+             · Bir renk turun rengine cok yakinsa (uzaklik < 130)
+               ATLANIYOR: gorunmeyecek bir dokunus dokunus degil.
+             · TURUN TONU KIRMIZI/MOR KUSAGINDA ise (ton acisi
+               275-360 ya da 0-30) dogrudan KREM. Orada yesil
+               cigirtkan, gul kurusu ise turun rengine karisiyor.
+             · Krem her zaman uyar, yani dokunus HICBIR ZAMAN
+               bos kalmiyor -- marka her odada var, sadece
+               yuksek sesle degil.
+           Secim yine HESAPLANIYOR (raf adi + tema numarasi): ayni
+           odada yazi kaynamiyor, oda degisince kombinasyon
            degisiyor. */
         let raf = '';
         try{ if(AKTIF_AILE) raf = aileRenk(AKTIF_AILE); }catch(e){ _yut(e); }
         const T = temaAl();
         const tv = (T && T.v) || '';
         const R  = raf || MARKA_YESIL;
-        const havuz = {
-          r : R,                    // turun kendi rengi -- BASROL
-          a : _acTon(R, 0.42),      // ust ton
-          k : _koyult(R, 0.58),     // alt ton
-          s : _tonKay(R, 30),       // komsu ton (sutton)
-          S : _tonKay(R, -28),      // oteki yondeki komsu ton
-          y : MARKA_YESIL,          // markanin yesili -- yalnizca sonda
-          g : MARKA_PEMBE,          // markanin gul kurusu -- nadiren
-          t : tv || _acTon(R, 0.2)  // temanin vurgusu
-        };
-        /* On kalip. Hepsi 'r' ile basliyor. Yalnizca dordunun sonunda
-           marka rengi var; kalan altisi bastan sona turun ailesi. */
-        const KALIP = ['ra', 'rk', 'ars', 'rs', 'rS', 'rat', 'ray', 'rsy', 'rag', 'rky'];
+        /* ORTA DURAK HAVUZU: hepsi turun kendi ailesinden. */
+        const TONLAR = [ _acTon(R, 0.42),        // ust ton
+                         _koyult(R, 0.58),       // derin ton
+                         _tonKay(R, 30),         // komsu ton
+                         _tonKay(R, -28),        // oteki komsu ton
+                         /* Temanin vurgusu HAM degil, rafla karisik:
+                            ham haliyle yesil bir turun ortasina kirmizi
+                            bir durak koyabiliyordu (AMBIENT + tema 5'te
+                            olculdu). Yarisi rafin rengi -> tema tint
+                            gibi giriyor, ortaya yamalik olmuyor. */
+                         tv ? _renkKaris(tv, R, 0.45) : _acTon(R, 0.22) ];
         let n = 0;
         try{
           const ad2 = String(AKTIF_AILE || '');
           for(let i=0;i<ad2.length;i++) n = (n*31 + ad2.charCodeAt(i)) >>> 0;
           n = (n + (AYAR.tema|0) * 7) >>> 0;
         }catch(e){ _yut(e); }
-        let k = KALIP[n % KALIP.length];
-        /* YESIL UYMUYORSA CIKAR. Rafin rengi zaten yesile yakinsa
-           son duraktaki yesil gorunmez -- yerine rafin koyu tonu. */
-        try{
-          const sonHarf = k[k.length-1];
-          if((sonHarf === 'y' && _renkUzak(R, MARKA_YESIL) < 110) ||
-             (sonHarf === 'g' && _renkUzak(R, MARKA_PEMBE) < 110))
-            k = k.slice(0, -1) + 'k';
-        }catch(e){ _yut(e); }
-        m1 = _markaOkunur(havuz[k[0]] || R);
-        m2 = _markaOkunur(havuz[k[k.length-1]] || _acTon(R, 0.42));
-        m3 = (k.length === 3) ? _markaOkunur(havuz[k[1]] || '') : '';
+        const orta = TONLAR[n % TONLAR.length];
+        const dokunus = _markaDokunus(R, n);
+        m1 = _markaOkunur(R);
+        m3 = _markaOkunur(orta);
+        /* HAFIF: dokunusun %15'i turun renginden. Sert bir damga
+           degil, yazinin sonuna dogru bir solma. */
+        m2 = _markaOkunur(_renkKaris(dokunus, R, 0.15));
         /* IKI UC BIRBIRINE COK YAKIN DUSERSE gradyan olmayan bir
-           gradyan cikiyor. Eskiden cozum ucu MARKANIN rengine
-           cekmekti; artik turun kendi ailesinde kaliyoruz: uc,
-           rafin acik ya da koyu tonuna aciliyor. */
+           gradyan cikiyor. Turun ailesinde kaliyoruz: uc, rafin acik
+           ya da koyu tonuna aciliyor -- ama ikisi de parlaklik
+           tabanindan geciyor, karanlik bir uc "ayrisir" ama okunmaz. */
         try{
-          /* Esik 70 -> 95: acik mavi/krem gibi ZATEN acik turlerde
-             ust ton cok az kimildiyor ve yazi tek renk gibi
-             cikiyordu (ELECTRONIC ve LOUNGE'da olculdu). */
           if(_renkUzak(m1, m2) < 110){
-            /* Iki aday da parlaklik tabanindan geciyor: karanlik bir
-               uc "ayrisma" saglar ama okunmaz, o yuzden ise yaramaz. */
             const acik = _acTon(R, 0.52), koyu = _markaOkunur(_koyult(R, 0.5), 150);
             m2 = (_renkUzak(m1, acik) > _renkUzak(m1, koyu)) ? acik : koyu;
           }
+          /* ORTA DURAK IKI UCUN ARASINDA KAYBOLURSA (uc renk de ayni
+             tona dusmusse) yazi tek renk gibi okunuyor -- ELECTRONIC
+             tam bunu yapiyordu. O zaman orta durak marka dokunusunun
+             daha acik bir haline gidiyor: uc renk garanti. */
+          if(_renkUzak(m1, m3) < 70 && _renkUzak(m2, m3) < 70)
+            m3 = _markaOkunur(_renkKaris(m1, dokunus, 0.5));
         }catch(e){ _yut(e); }
+      }
+      /* ARSIV: son harfler rafin sonuk tonundan marka dokunusuna
+         dogru bir tutam kayiyor; orta durak eski yerinde kaliyor,
+         yani gecis yumusak. */
+      if(_arsivDokunus){
+        m3 = _renkKaris(m1, m2, 0.55);
+        m2 = _renkKaris(m2, _arsivDokunus, 0.34);
       }
       /* Orta durak yoksa iki ucun ortasi: ayni CSS hem iki hem uc
          renkli kombinasyonu tasiyor. */
@@ -8320,6 +8414,36 @@
       try{
         const su0 = document.getElementById('solUst');
         if(su0){ su0.style.top = ''; su0.style.transform = ''; }
+      }catch(_){ _yut(_); }
+      /* ── SOUND BANKS: TUTAMAK MODULUN UST SATIRI ─────────────────
+         Radyoda tutamak ekranin SOL USTUNDE, orada karsisinda marka
+         adi var ve yeri CSS'ten geliyor.
+         SOUND BANKS kipinde sol ust nebulanin; tutamak sol alttaki
+         blogun parcasi ve o blogun EN UST SATIRI. Yeri sabit bir
+         sayiyla verilemez cunku satir sayisi kipe gore degisiyor
+         (REC bu kipte geri geliyor, ses cizgisi yalnizca farede
+         var): sabit sayi bir durumda bosluk birakir, otekinde
+         modulun uzerine biner -- eskisi tam olarak oyleydi ve
+         "en altta olmamis, arada asili kalmis" diye goruldu.
+         O yuzden modulun OLCULEN ustunden veriliyor.
+         OLCULEN DEGER DUZ PIKSEL: rect zaten gercek ekran
+         koordinati, guvenli alan payi icinde. _dip() ile yazilirsa
+         env() ikinci kez eklenir (buyutecte tam bu hata yasandi). */
+      try{
+        const tut0 = document.getElementById('ayarTut');
+        const su1  = document.getElementById('solUst');
+        if(tut0){
+          if(_moodda && su1){
+            const sr = su1.getBoundingClientRect();
+            if(sr.height){
+              const bos = parseFloat(getComputedStyle(su1).getPropertyValue('--modul-bosluk')) || 8;
+              tut0.style.bottom = Math.round(window.innerHeight - sr.top + bos) + 'px';
+            }
+          }else{
+            /* Radyoda CSS ne diyorsa o: satir ici deger kalkiyor. */
+            tut0.style.removeProperty('bottom');
+          }
+        }
       }catch(_){ _yut(_); }
       /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
          Blogu tek parca olcmek yanlisti: birinci satirin karsisinda
