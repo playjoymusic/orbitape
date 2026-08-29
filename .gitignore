@@ -19,3 +19,6 @@ yeni_hasat.json
 hasat_durum.json
 lisans_ozeti.csv
 *.temiz.json
+
+# Gecici: silinemeyen kilit dosyalarinin tasindigi klasor.
+_to_delete/
