@@ -50,22 +50,54 @@ const VERI = [{"a":"MyNoise Pure Nature","u":"https://purenature-mynoise.radioca
 function adresler(u){
   let p; try{ p = new URL(u); }catch(e){ return []; }
   const h = p.hostname.toLowerCase(), yol = p.pathname || '', kok = p.origin;
+  const seg = yol.split('/').filter(Boolean);
+  const son = seg.length ? seg[seg.length-1] : '';
+  /* Ust dizin: bazi sunucularda yayin /proxy/xyz/stream altinda
+     duruyor ve durum dosyasi de o dizinde. Kokte aramak 404 veriyor. */
+  const ustDizin = seg.length > 1 ? (kok + '/' + seg.slice(0, -1).join('/')) : kok;
   const a = [];
   if(h.includes('somafm.com')){
     const kanal = yol.replace(/^\//,'').split('-')[0];
     if(kanal) a.push(['somafm', 'https://somafm.com/songs/' + kanal + '.json']);
   }
   if(h.includes('radio.co')){
-    const seg = yol.split('/').filter(Boolean);
     if(seg[0] && /^s/.test(seg[0])) a.push(['radio.co', 'https://public.radio.co/stations/' + seg[0] + '/status']);
   }
   if(h.includes('streamtheworld') || h.includes('tritondigital')){
-    const seg = yol.split('/').filter(Boolean);
-    if(seg.length) a.push(['triton', 'https://np.tritondigital.com/public/nowplaying?mountName='
-      + encodeURIComponent(seg[seg.length-1]) + '&numberToFetch=1&eventType=track']);
+    /* MOUNT ADI DUZELTILDI. Ilk olcumde triton'dan SIFIR sonuc geldi
+       cunku yol parcasi oldugu gibi kullaniliyordu (".mp3" dahil) ve
+       Triton onu tanimiyordu. Uzanti ve bilinen ekler atiliyor. */
+    const mount = son.replace(/\.(mp3|aac|m4a)$/i, '')
+                     .replace(/(AAC|MP3)$/i, '') || son;
+    if(mount){
+      a.push(['triton', 'https://np.tritondigital.com/public/nowplaying?mountName='
+        + encodeURIComponent(mount) + '&numberToFetch=1&eventType=track']);
+      a.push(['triton', 'https://np.tritondigital.com/public/nowplaying?mountName='
+        + encodeURIComponent(son) + '&numberToFetch=1&eventType=track']);
+    }
+  }
+  if(h.includes('radioking')){
+    /* listen.radioking.com/radio/<id>/stream/<sid> */
+    const i = seg.indexOf('radio');
+    if(i >= 0 && seg[i+1]) a.push(['radioking',
+      'https://api.radioking.io/widget/radio/' + encodeURIComponent(seg[i+1]) + '/track/current']);
+  }
+  if(h.includes('zeno.fm') && son){
+    a.push(['zeno', 'https://api.zeno.fm/mounts/' + encodeURIComponent(son) + '/now-playing']);
+    a.push(['zeno', 'https://api.zeno.fm/mounts/metadata/' + encodeURIComponent(son)]);
   }
   a.push(['icecast',   kok + '/status-json.xsl']);
   a.push(['azuracast', kok + '/api/nowplaying']);
+  /* ── ILK OLCUMDE 110 ISTASYON "kod404" DEDI ─────────────────────
+     Yani sunucu CEVAP VERDI, sadece o adres yok. Cogunun baska bir
+     kapisi var; asagidakiler o kapilar. Hangisinin gercekten
+     calistigini ancak olcerek gorebiliriz -- bu yuzden once buraya
+     ekleniyorlar, uygulamaya sonra. */
+  a.push(['shoutcast', kok + '/stats?json=1']);
+  a.push(['shoutcast', kok + '/status-json.xsl?mount=' + encodeURIComponent(yol)]);
+  if(ustDizin !== kok) a.push(['icecast', ustDizin + '/status-json.xsl']);
+  a.push(['shoutcast7', kok + '/7.html']);
+  a.push(['currentsong', kok + '/currentsong?sid=1']);
   return a;
 }
 
@@ -97,6 +129,33 @@ function baslik(tur, veri){
       const s = n && n.now_playing && n.now_playing.song;
       if(s && s.text) return s.text;
     }
+    if(tur === 'shoutcast'){
+      if(veri && veri.songtitle) return veri.songtitle;
+      if(veri && veri.streams && veri.streams[0] && veri.streams[0].songtitle)
+        return veri.streams[0].songtitle;
+      /* Shoutcast bazen Icecast bicimini de veriyor */
+      let k = veri && veri.icestats && veri.icestats.source;
+      if(k){ if(!Array.isArray(k)) k = [k];
+        for(const x of k){ if(x && x.title) return x.title; } }
+    }
+    if(tur === 'radioking'){
+      if(veri && (veri.title || veri.artist))
+        return ((veri.artist||'') + (veri.artist && veri.title ? ' — ' : '') + (veri.title||''));
+    }
+    if(tur === 'zeno'){
+      if(veri && veri.title) return veri.title;
+      if(veri && veri.streamTitle) return veri.streamTitle;
+      if(veri && veri.now_playing && veri.now_playing.title) return veri.now_playing.title;
+    }
+    if(tur === 'shoutcast7' || tur === 'currentsong'){
+      /* Duz metin: 7.html virgullu bir satir, sonuncu alan sarki adi.
+         currentsong dogrudan adi veriyor. */
+      const m = String(veri).replace(/<[^>]*>/g, '').trim();
+      if(!m) return '';
+      if(tur === 'currentsong') return m;
+      const p2 = m.split(',');
+      return p2.length > 6 ? p2.slice(6).join(',').trim() : '';
+    }
   }catch(e){}
   return '';
 }
@@ -120,7 +179,8 @@ async function istek(tur, adres){
     if(!r.ok) return {hal:'kod' + r.status};
     const metin = await r.text();
     let govde = metin;
-    if(tur !== 'triton'){ try{ govde = JSON.parse(metin); }catch(e){ return {hal:'json degil'}; } }
+    const duzMetin = (tur === 'triton' || tur === 'shoutcast7' || tur === 'currentsong');
+    if(!duzMetin){ try{ govde = JSON.parse(metin); }catch(e){ return {hal:'json degil'}; } }
     const b = baslik(tur, govde);
     return b ? {hal:'ok', baslik:b} : {hal:'bos'};
   }catch(e){
