@@ -8176,70 +8176,10 @@
     /* KAYNAK ARTIK vizArka (ekran dışı tampon). Ekrandaki #viz'den
        kopyalamak, derleyicinin bayatlamış enstantanesini almak demekti. */
     try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){ _yut(e); }
-    /* 3) SOL ÜST: gezegen + uydular — hepsi ölçülen yerlerinden */
-    try{
-      const ta = (TEMA[gorNo] || TEMA.lib).ana;
-      const nebEl = document.querySelector('#mark .neb');
-      const nb = kk(nebEl);
-      if(nb){
-        const nr = Math.min(nb.w, nb.h)/2;
-        /* Ekrandaki renk dönüşü kayda da girsin: nebulanın o anki
-           hue-rotate açısını elemandan okuyup tuvale aynısını
-           uyguluyoruz. Uydulara uygulanmıyor — ekranda da onlarda yok. */
-        c.save();
-        try{
-        try{
-          const m = /hue-rotate\(([-\d.]+)deg\)/.exec((nebEl && nebEl.style.filter) || '');
-          if(m) c.filter = 'hue-rotate('+m[1]+'deg)';
-        }catch(e){ _yut(e); }
-        const nAci = nebAcisi(nebEl);
-        kureCiz(c, nb.ox, nb.oy, nr, {
-          c1:_rgb(ta,1.55), c2:_rgb(ta,1.0), c3:_rgb(ta,0.46), c4:_rgb(ta,0.14),
-          sicrama:'rgba(150,200,235,.15)',
-          yuzey:(cc,x,y,r)=>{
-            nebYuzey(cc, x, y, r, nAci, 7*KAYIT_K);      // ekrandaki renk lekeleri
-            _bant(cc,x,y,r,-0.52,0.06,'rgba(255,255,255,.085)');
-            _bant(cc,x,y,r,-0.22,0.07,'rgba(0,0,0,.085)');
-            _bant(cc,x,y,r, 0.06,0.06,'rgba(255,255,255,.065)');
-            _bant(cc,x,y,r, 0.34,0.07,'rgba(0,0,0,.075)');
-            _bant(cc,x,y,r, 0.60,0.06,'rgba(255,255,255,.05)');
-          }
-        });
-        }finally{ try{ c.filter='none'; }catch(e){ _yut(e); } c.restore(); }
-      }
-      const sonuk = !!(uyduKap && uyduKap.classList.contains('sonuk'));
-      UYDULAR.forEach(u=>{
-        const d = uyduDug && uyduDug[u.fx]; if(!d) return;
-        const nk = kk(d.querySelector('.nk')); if(!nk) return;
-        const rr = Math.min(nk.w, nk.h)/2;
-        const gk = GOK[u.gk]; if(!gk) return;
-        if(!(rr > 0)) return;
-        kat(c, ()=>{
-          if(sonuk) c.globalAlpha = (FXMOD===u.fx) ? 0.55 : 0.46;   // ekrandaki sönük hâl
-          if(u.gk==='saturn'){
-            kat(c, ()=>{
-              c.translate(nk.ox, nk.oy); c.rotate(-19*Math.PI/180);
-              c.strokeStyle = (FXMOD===u.fx) ? 'rgba(200,238,255,.75)' : 'rgba(232,212,166,.5)';
-              c.lineWidth = Math.max(1.5, rr*0.09);
-              c.beginPath(); c.ellipse(0,0, rr*2.20, rr*0.62, 0, 0, 6.2832); c.stroke();
-            });
-          }
-          kureCiz(c, nk.ox, nk.oy, rr, gk);
-          /* AKTİF UYDU PARLAMASI — donmanın kaynağı tam buydu.
-             Bu dal SADECE bir FX açıkken çalışıyor; içinde save()+clip()
-             vardı ve gradyan kurulumu hata atarsa kırpma karenin sonuna
-             kadar açık kalıyordu. Artık kat() içinde. */
-          if(FXMOD===u.fx){
-            kat(c, ()=>{
-              c.beginPath(); c.arc(nk.ox,nk.oy,rr,0,6.2832); c.clip();
-              const g=c.createRadialGradient(nk.ox-rr*0.1, nk.oy-rr*0.2, 0, nk.ox, nk.oy, rr);
-              g.addColorStop(0, 'rgba('+ta+',.34)'); g.addColorStop(1,'rgba(0,0,0,0)');
-              c.fillStyle=g; c.fillRect(nk.ox-rr,nk.oy-rr,2*rr,2*rr);
-            });
-          }
-        });
-      });
-    }catch(e){ _yut(e); }
+    /* 3) SOL UST: KAYITTA DA BOS. Burada nebula ve gezegenler
+       kayit tuvaline yeniden ciziliyordu (renk donusu, uydu diskleri,
+       Saturn halkasi). Ikisi de ekrandan kalkti; kayitta da yoklar.
+       Uc numara bilerek atlanmadi -- asagidaki sira bozulmasin. */
     /* 4) SAĞ ÜST: kanal adları — ölçülen kutu, ekrandan okunan yazı tipi */
     try{
       document.querySelectorAll('#ust .kanal').forEach(el=>{
