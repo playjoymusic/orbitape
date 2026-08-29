@@ -474,7 +474,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const r = { ad:halkaAdlar().join(' '), n:halkaAdlar().length, ic:halkaIc(), ara:halkaAra(), sinir:zarSinir() };
       mod = eski; return r;
     });
-    K('Arsiv kanalinda halkalar 7 raf', ars.n===7 && /HUMANS/.test(ars.ad) && /OTHERS/.test(ars.ad), ars.ad);
+    /* SEKIZ RAF: ORBITAPE en icte (arsivin tamami, acilista secili),
+       OTHERS en distaki -- gercekten "geri kalan" oldugu icin sonda.
+       Kullanicinin istegi: "OTHER en sonuncu olmali, ilk basta
+       orbitape aciliyor, hepsinin oldugu." */
+    K('Arsiv kanalinda halkalar 8 raf', ars.n===8 && /^ORBITAPE/.test(ars.ad) && /OTHERS$/.test(ars.ad), ars.ad);
     /* EN DIS HALKA SABIT: yer iceriden aciliyor. Bu bozulursa en dis
        halka ekran kenarindan tasar -- bir kere olmustu. */
     /* GEOMETRI TERSINE CEVRILDI: ic yaricap SABIT, aralik halka
@@ -499,10 +503,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   });
   K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7,8,9', 'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
+  /* ORBITAPE'IN ANLAMI DEGISTI. Eskiden "arsivdeki muzik OLMAYAN her
+     sey" demekti ve MIXTAPE ile birlikte arsivi ikiye boluyordu.
+     Artik menudeki en icteki halka ve arsivin TAMAMI -- otekiler onun
+     altindaki daraltmalar. MIXTAPE hala "arsivdeki butun muzik".
+     Kontrol de buna gore: muzik MIXTAPE'e girer ama AMBIANCE'a
+     girmez, ses AMBIANCE'a girer ama MIXTAPE'e girmez, ikisi de
+     ORBITAPE'e girer, hicbiri RADIOTAPE'e girmez. */
   const ay = await pg.evaluate(()=>{
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
-    return modUyar(muzik,'MIXTAPE') && !modUyar(muzik,'ORBITAPE') && !modUyar(muzik,'AMBIANCE')
-        && modUyar(ses,'ORBITAPE') && modUyar(ses,'AMBIANCE') && !modUyar(ses,'MIXTAPE')
+    return modUyar(muzik,'MIXTAPE') && !modUyar(muzik,'AMBIANCE')
+        && modUyar(ses,'AMBIANCE') && !modUyar(ses,'MIXTAPE')
+        && modUyar(muzik,'ORBITAPE') && modUyar(ses,'ORBITAPE')
         && !modUyar(muzik,'RADIOTAPE') && !modUyar(ses,'RADIOTAPE');
   });
   /* Halka sirasi ve MIXTAPE'in yeri: en distan iceri RADIOTAPE,
@@ -699,7 +711,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Kutu isaretlenmezse TEKRAR cikar', tur.tekrar, 'standart davranis');
   K('Kutu isaretlenirse bir daha cikmaz', !tur.bitti, 'depoya yazildi');
 
-  K('Muzik MIXTAPE, ses ORBITAPE', ay, 'arsiv ikiye ayriliyor, RADIOTAPE disarida');
+  K('MIXTAPE muzik, ORBITAPE hepsi', ay, 'ORBITAPE arsivin tamami, RADIOTAPE disarida');
   const sf = await pg.evaluate(()=>{
     const t=(e,a)=>({etiket:e,ad:a});
     return {
@@ -802,15 +814,21 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                enDoygun:Math.max(...g.filter(x=>x.ad!=='HUMANS').map(x=>doygun(x.p.ana))),
                zeminler:g.every(x=>/^#0/.test(x.p.zemin[0])) };
     });
-    K('Yedi raf tanimli ve kalipli', rt.hepsiTemali && rt.hepsiKalipli, 'her rafin temasi ve kalibi var');
-    /* RAFLAR BIRBIRINI DISLIYOR: ayni kayit iki rafa giremez.
-       Girerse OTHERS "kalan" olmaktan cikar ve halkalar yalan soyler. */
-    K('Raflar birbirini dislıyor', await pg.evaluate(()=>{
+    K('Sekiz raf tanimli ve kalipli', rt.hepsiTemali && rt.hepsiKalipli, 'her rafin temasi ve kalibi var');
+    /* DAR RAFLAR BIRBIRINI DISLIYOR: ayni kayit iki dar rafa giremez.
+       Girerse OTHERS "kalan" olmaktan cikar ve halkalar yalan soyler.
+       ORBITAPE bu kontrolun DISINDA: o bir daraltma degil, hepsini
+       kapsayan ust raf -- her kayit ona da girer, girmesi gerekiyor. */
+    const rafDagilim = await pg.evaluate(()=>{
         const ornek=[{etiket:'field recording soundscape'},{etiket:'oldtimeradio drama'},
                      {etiket:'78rpm jazz vinyl'},{etiket:'nasa apollo'},{etiket:'engine factory'},
                      {etiket:'birds forest'},{etiket:'zzz-hicbir-sey'}];
-        return ornek.every(o=>ARSIV_ADLAR.filter(a=>modUyar(o,a)).length===1);
-      }), 'her kayit tek rafa giriyor');
+        const dar = ARSIV_ADLAR.filter(a=>a!=='ORBITAPE');
+        return { tek: ornek.every(o=>dar.filter(a=>modUyar(o,a)).length===1),
+                 hepsi: ornek.every(o=>modUyar(o,'ORBITAPE')===true) };
+      });
+    K('Dar raflar birbirini dislıyor', rafDagilim.tek, 'her kayit tek dar rafa giriyor');
+    K('ORBITAPE rafi hepsini kapsiyor', rafDagilim.hepsi, 'ust raf: arsivin tamami');
     K('Arsiv raflari retro-sonuk', rt.enDoygun <= 100, 'en doygun raf farki '+rt.enDoygun+' (radyo tarafi 150+)');
     K('Arsiv zeminleri koyu', rt.zeminler, 'hepsi #0.. ile basliyor');
   }
@@ -3760,6 +3778,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Tema rafin rengini silmiyor', tema.halkaVar===true, 'halka rengi raftan geliyor');
   K('Tema vurgu rengi yaziyor', tema.tv !== '', '--tv = ' + (tema.tv||'(bos)'));
   K('AUTO donunce tema kalintisi kalmiyor', tema.tvSonra === '', 'vurgu degiskeni siliniyor');
+
+  /* TEMA CIHAZDA KALIYOR. Once kalmiyordu: secilen tema yeniden
+     acilista AUTO'ya donuyor, kullanici her seferinde bastan
+     seciyordu. Depodaki deger DOGRULANARAK aliniyor -- tablonun
+     disina cikmis bir sayi tanimsiz bir temaya isaret ederdi. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    K('Tema cihazda kaliyor',
+       /_a\.tema === 'number'[\s\S]{0,120}AYAR\.tema = _a\.tema/.test(kaynak)
+       && /_a\.temaKilit === true/.test(kaynak),
+       'depodan geri okunuyor, sinir kontrollu');
+  }
 
   /* Izgara: otuz bes kutu TEMALAR tablosundan uretiliyor, elle
      yazilmiyor. Kapali panelde odaklanabilir kalmiyor (WCAG 4.1.2). */

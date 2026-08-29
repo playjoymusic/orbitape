@@ -3336,7 +3336,13 @@
     { ad:'OTHERS',    yer:/.^/, radyo:'' }          // kalan: asagidaki arsivRaf() dolduruyor
   ];
   /* ORBITAPE kanalinda halkalar bunlar. En icteki ilk acilan. */
-  var ARSIV_ADLAR = ['HUMANS','RECORDS','SPACE','SOUNDSCAPES','NATURE','MACHINES','OTHERS'];
+  /* ORBITAPE EN BASTA (en icteki halka) ve acilista secili olan raf.
+     Icinde arsivin TAMAMI var -- "hepsinin oldugu" raf. Otekiler
+     onun altindaki daraltmalar; OTHERS de en sonda, gercekten
+     "geri kalan" oldugu icin. Kullanicinin istegi: "orbitape
+     modundaki menude OTHER en sonuncu olmali, ilk basta orbitape
+     aciliyor, hepsinin oldugu." */
+  var ARSIV_ADLAR = ['ORBITAPE','HUMANS','RECORDS','SPACE','SOUNDSCAPES','NATURE','MACHINES','OTHERS'];
   /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
      uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
      ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
@@ -3387,7 +3393,13 @@
     /* Canlı yayın SADECE RADIOTAPE'te; RADIOTAPE de sadece canlı yayın. */
     if(o && o.radyo) return ad === 'RADIOTAPE';
     if(ad === 'RADIOTAPE') return false;
-    /* ORBITAPE'IN 7 RAFI: karar tek yerden, arsivRaf()'tan geliyor.
+    /* ORBITAPE RAFI HEPSINI ALIR. Menudeki en icteki halka ve
+       acilista secili olan: "hepsinin oldugu" raf. arsivRaf() ona
+       hicbir zaman bir kayit atamaz (o yalnizca dar raflari dagitir),
+       o yuzden asagidaki sorgudan ONCE cevaplaniyor -- yoksa raf
+       bombos gorunurdu. */
+    if(ad === 'ORBITAPE') return true;
+    /* ARSIVIN DAR RAFLARI: karar tek yerden, arsivRaf()'tan geliyor.
        Burada ayrica kalip denemek iki farkli dogruluk kaynagi yaratir
        ve er gec ayrisirlar. */
     try{ if(ARSIV_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){ _yut(e); }
@@ -4421,6 +4433,15 @@
       if(_a.aramaSes === false) AYAR.aramaSes = false;
       if(_a.tikSes  === false) AYAR.tikSes  = false;
       if(_a.mood    === true ) AYAR.mood    = true;
+      /* TEMA DA DEPODAN GERI GELIYOR. Once bu iki satir yoktu ve
+         secilen tema yeniden acilista AUTO'ya donuyordu: kullanici
+         her seferinde bastan seciyordu.
+         Deger DOGRULANARAK aliniyor -- depodaki sayi tablonun disina
+         cikmis olabilir (tema silinmis ya da surum eskimis olabilir)
+         ve dogrudan yazmak tanimsiz bir temaya isaret ederdi. */
+      if(typeof _a.tema === 'number' && _a.tema >= 0
+         && _a.tema < TEMALAR.length) AYAR.tema = _a.tema|0;
+      if(_a.temaKilit === true) AYAR.temaKilit = true;
     }
   }catch(e){ _yut(e); }
   /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
@@ -4449,7 +4470,10 @@
            acildiginda o deger duruyorsa sonraki() dogruca radyoya
            gidiyor: ekran arsive donuyor ama kulaga hala istasyon
            geliyordu (olculdu -- 'Trancetechnic Radio'). */
-        try{ AKTIF_MOD = null; localStorage.removeItem('orbitape.mod'); }catch(e){ _yut(e); }
+        /* Acilista secili raf ORBITAPE: arsivin tamami. Once null
+           birakiliyordu ve kip acilinca hicbir raf secili olmuyordu --
+           ekranda hangi rafta oldugun yazmiyordu. */
+        try{ AKTIF_MOD = 'ORBITAPE'; localStorage.removeItem('orbitape.mod'); }catch(e){ _yut(e); }
         try{ earthYukle(); uzunYukle(); }catch(e){ _yut(e); }
         /* YERLESIM BIR KARE SONRA. Gezegenlerin yeri nebulanin
            GERCEK olcusunden hesaplaniyor; sinif daha yeni eklendigi
