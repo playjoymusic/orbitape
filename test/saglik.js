@@ -1141,9 +1141,19 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         modGezYaz('RADIOTAPE');
         const d = document.querySelector('.disk').getBoundingClientRect();
         const y = document.getElementById('modGez').getBoundingClientRect();
-        let taban = innerHeight; ['sesCubuk','ara','np','kayitBilgi','araclar'].forEach(id=>{ const e=document.getElementById(id);
-          if(e){ const k=e.getBoundingClientRect(); if(k.height>0) taban=Math.min(taban,k.top); } });
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
+        /* TABAN UYGULAMAYLA AYNI KURALDAN: gorunen, halkalarin
+           altinda ve ekran icinde duran elemanlar. Bu satir bir ara
+           uygulamadan ayri dusmustu (eski liste 'araclar', gorunurluk
+           suzgeci yok) ve test kendi olcusuyle uygulamayi yanlis
+           sanmisti -- olcu kopyalanacaksa BIREBIR kopyalanmali. */
+        let taban = innerHeight;
+        ['sesCubuk','ara','np','kayitBilgi','solUst'].forEach(id=>{ const e=document.getElementById(id);
+          if(!e) return; const st=getComputedStyle(e);
+          if(st.display==='none' || st.visibility==='hidden' || +st.opacity<0.02) return;
+          const k=e.getBoundingClientRect();
+          if(k.height<=0 || k.top<=halkaAlt || k.top>=innerHeight) return;
+          taban=Math.min(taban,k.top); });
         modGezYaz('');
         return { ust:Math.round(y.top), alt:Math.round(y.bottom), merkez:Math.round(y.top+y.height/2),
                  halkaAlt:Math.round(halkaAlt), taban:Math.round(taban), H:innerHeight };
@@ -4892,6 +4902,62 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                    +'px, modul dipten '+tt.sonuc.modulDip+'px') : 'olculemedi');
     K('Radyoda tutamak yine sol ustte', tt.radyoUstte === true && tt.satirIci === '',
        'satir ici bottom temizleniyor, CSS geri aliyor');
+  }
+  /* ── GECICI AD IKI KIPTE DE AYNI YERDE ──────────────────────────
+     ORBITAPE kipinde yazi yukarida kalip HALKANIN ICINE giriyordu.
+     Sebep: 'kayitBilgi' o kipte ekranin disinda park ediyor
+     (top = -22) ama yuksekligi sifir degil; alt seridi bulan dongu
+     yalnizca yukseklige bakiyordu ve tabani -22 sanip yaziyi
+     halkaya yapistiriyordu. Iki duzeltme:
+       · taban yalnizca HALKALARIN ALTINDA ve EKRAN ICINDE duran,
+         gercekten gorunen elemanlardan hesaplaniyor,
+       · olculen sey kayit satiri degil MODULUN USTU -- modul
+         radyoda iki, bu kipte uc satir, satir sayisina bagli
+         kalinca yazi iki tarafta baska yuksekliktendi.
+     Kullanicinin istegi: "radiotape'teki ayni yere cekelim." */
+  {
+    const gz = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiMood = AYAR.mood, eskiA = AKTIF_AILE, eskiM = AKTIF_MOD;
+      const olc = ()=>{
+        const g = document.getElementById('modGez').getBoundingClientRect();
+        const d = document.querySelector('.disk').getBoundingClientRect();
+        const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
+        const su = document.getElementById('solUst').getBoundingClientRect();
+        return { ust:Math.round(g.top), alt:Math.round(g.bottom),
+                 halkaAlt:Math.round(halkaAlt), modulUst:Math.round(su.top) };
+      };
+      AYAR.mood = false; moodUygula(); await bek(320);
+      AKTIF_AILE = 'AMBIENT'; modGezYaz('AMBIENT'); await bek(60);
+      const radyo = olc();
+      AYAR.mood = true; moodUygula(); await bek(340);
+      AKTIF_MOD = 'NATURE'; modGezYaz('NATURE'); await bek(60);
+      const kipte = olc();
+      modGezYaz('');
+      AYAR.mood = eskiMood; AKTIF_AILE = eskiA; AKTIF_MOD = eskiM;
+      moodUygula(); await bek(320);
+      return { radyo, kipte };
+    });
+    /* TOLERANS 10px. Ikisi ayni FORMULDEN ciksa da alt seridin
+       mobilyasi iki kipte birebir ayni degil (radyoda buyutec var,
+       kipte REC var) ve kunye satir sayisina gore birkac piksel
+       oynayabiliyor. Onemli olan yazinin ayni HATTA oturmasi;
+       eskiden fark 150px'ti ve yazi halkanin icindeydi. */
+    K('Gecici ad iki kipte de ayni hatta',
+       Math.abs(gz.radyo.ust - gz.kipte.ust) <= 10,
+       'radyo ' + gz.radyo.ust + 'px | kipte ' + gz.kipte.ust + 'px');
+    K('Gecici ad halkanin icine girmiyor',
+       gz.kipte.ust > gz.kipte.halkaAlt && gz.radyo.ust > gz.radyo.halkaAlt
+       && gz.kipte.alt < gz.kipte.modulUst && gz.radyo.alt < gz.radyo.modulUst,
+       'kipte: halka alti ' + gz.kipte.halkaAlt + ' < yazi ' + gz.kipte.ust
+       + '..' + gz.kipte.alt + ' < modul ' + gz.kipte.modulUst);
+    /* Ekran disinda park etmis bir eleman tabani belirlememeli --
+       hatanin kokeni buydu. */
+    K('Ekran disindaki eleman tabani belirlemiyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /if\(k\.top <= halkaAlt\) return;/.test(k)
+            && /if\(k\.top >= window\.innerHeight\) return;/.test(k);
+      }), 'halkanin ustundeki ve ekran disindaki elemanlar eleniyor');
   }
   {
     const kaynak = fs.readFileSync('index.html','utf8');

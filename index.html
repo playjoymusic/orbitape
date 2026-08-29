@@ -9116,10 +9116,34 @@
            seride ait degil. Yerine kayit satiri (CAM · ★ · sustur ·
            buyutec) girdi -- alt seridin gercek ust sinirini o
            belirliyor. */
-        ['sesCubuk','ara','np','kayitBilgi','araclar'].forEach(id=>{
+        /* ── ALT SERIT GERCEKTEN ALTTA OLMALI ────────────────────
+           BURADA BIR HATA VARDI ve ORBITAPE kipinde goruluyordu:
+           gecici tur adi yukarida kalip halkanin icine giriyordu.
+           Sebep: 'kayitBilgi' o kipte ekranin DISINDA park ediyor
+           (top = -22) ama yuksekligi sifir degil. Yukseklige bakan
+           bu dongu onu alt seridin bir parcasi sayiyor, taban -22
+           cikiyor, yazi da alt sinira (halkaAlt + 10) yapisiyordu.
+           Radyoda ayni sey olmuyordu cunku orada o panel yerinde.
+
+           Dogru olcut yalnizca "yuksekligi var mi" degil: bu yazinin
+           TABANI, tanimi geregi HALKALARIN ALTINDA ve EKRANIN ICINDE
+           duran seylerdir. Yukarida ya da disarida duran bir eleman
+           tabani belirleyemez. */
+        /* 'araclar' -> 'solUst': kayit satiri modulun SON satiri, ama
+           taban modulun UST kenari olmali. Ikisi arasindaki fark iki
+           kipte farkliydi (radyoda modul iki satir, ORBITAPE kipinde
+           uc) ve yazi iki tarafta baska yukseklige oturuyordu.
+           Kullanicinin istegi netti: "radiotape'teki ayni yere
+           cekelim." Modulun ustunu olcunce iki kip de ayni. */
+        ['sesCubuk','ara','np','kayitBilgi','solUst'].forEach(id=>{
           try{ const e2 = document.getElementById(id); if(!e2) return;
+               const st = getComputedStyle(e2);
+               if(st.display === 'none' || st.visibility === 'hidden' || +st.opacity < 0.02) return;
                const k = e2.getBoundingClientRect();
-               if(k.height > 0) taban = Math.min(taban, k.top); }catch(_){ _yut(_); }
+               if(k.height <= 0) return;
+               if(k.top <= halkaAlt) return;               // halkanin ustunde: alt serit degil
+               if(k.top >= window.innerHeight) return;     // ekranin disinda
+               taban = Math.min(taban, k.top); }catch(_){ _yut(_); }
         });
         const h = el.getBoundingClientRect().height || 21;
         /* TUR SIRASINDA YUKARI: tanıtım yazısı diskin altındaki
