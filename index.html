@@ -272,6 +272,8 @@
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     display:flex;flex-direction:column;align-items:flex-start;gap:8px;
     max-width:calc(56vw - 8px);}
+  /* UC SATIR TEK BLOK: ses satiri ustundekilerin en genisine
+     esitlendigi icin uc satir ayni sag kenarda bitiyor. */
   /* TASIMA SATIRI: elin en cok gittigi yer. Yukseklik 32px --
      asagidaki kayit satiri ve sag alttaki ★ ile birebir ayni. */
   #tasima{display:flex;align-items:center;gap:7px;}
@@ -281,6 +283,14 @@
      (position:fixed kalkti), yerini ust bloktan aliyor.
      Boşluk 7px: tasima satiriyla ayni. */
   #araclar{display:flex;align-items:center;gap:7px;}
+  /* REC RADYODA YOK. Canli yayin kaydedilmiyor; dugme radyo tarafinda
+     her zaman pasifti ve calismayan bir tus gostermek yanlisti.
+     SILINMEDI, gizlendi: SOUND BANKS kipinde geri geliyor. */
+  body:not(.mood) #rec{display:none !important;}
+  /* UCUNCU SATIR: ses. Genisligi JS'ten (sesSatirOlcu) -- ustundeki
+     satirlarin en genisine esitleniyor, uc satir ayni sag kenarda
+     bitiyor. */
+  #sesSatir{display:flex;align-items:center;width:var(--ses-en,114px);height:20px;}
   /* ── ★ FAVORİLERE GİRİŞ: REC/CAM'in yanında ────────────────────
      Favori kipine ancak sağdaki minik yıldızı BASILI TUTARAK
      girilebiliyordu; kimse bulamıyordu. Buradaki yıldız tek basışla
@@ -804,13 +814,16 @@
      Surukle = seviye. Tek dokunus = sustur / geri ac (son seviye
      hatirlaniyor). Yukseklik dokunma alani icin 32px, GORUNEN cizgi
      3px -- parmak buyuk, murekkep ince. */
-  #sesYatay{position:relative;flex:none;width:58px;height:32px;
+  #sesYatay{position:relative;flex:1 1 auto;width:auto;height:20px;
     display:flex;align-items:center;cursor:pointer;touch-action:none;
     -webkit-tap-highlight-color:transparent;color:#a6fbea;
     transition:color .25s, opacity .25s;}
-  #sesYatay .iz{position:absolute;left:0;right:0;height:3px;border-radius:3px;
+  /* 3px -> 2px: bu satirda tek basina duruyor, ustundeki haplarin
+     yaninda ince olmasi onu bir denetim degil bir GOSTERGE gibi
+     gosteriyor. Dokunma alani yine 26px yukseklikte. */
+  #sesYatay .iz{position:absolute;left:0;right:0;height:2px;border-radius:2px;
     background:rgba(120,180,180,.26);}
-  #sesYatay .dolu{position:absolute;left:0;height:3px;border-radius:3px;
+  #sesYatay .dolu{position:absolute;left:0;height:2px;border-radius:2px;
     width:100%;background:currentColor;opacity:.85;
     transition:width .08s linear;}
   #sesYatay.sus .dolu{opacity:.22;}
@@ -1065,19 +1078,29 @@
   #ayarTut{position:fixed;z-index:96;
     left:50%;transform:translateX(-50%);
     bottom:calc(5px + env(safe-area-inset-bottom, 0px));
-    width:54px;height:26px;display:flex;
-    align-items:center;justify-content:center;cursor:pointer;
+    width:56px;height:30px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:5px;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
-  /* Ucgen bir kenarlik ucgeni DEGIL: kenarlik ucgenine gradyan
-     uygulanamaz. clip-path ile kesilen bir kutu, uzerinde markanin
-     gradyani. Doner de -- kenarlik ucgeni donunce kenarlari kiriliyor. */
-  #ayarTut .ucgen{display:block;width:22px;height:13px;
-    background:linear-gradient(100deg,#35e0d8 0%,#8cb1ba 52%,#e27a9e 100%);
-    clip-path:polygon(0 0, 100% 0, 50% 100%);
-    transition:transform .26s cubic-bezier(.2,.8,.3,1);}
-  body.ayar-acik #ayarTut .ucgen{transform:rotate(180deg);}
+  /* UC CIZGI, ESKISININ AYNISI. Dolu bir ucgen degil: uzunlugu
+     azalan uc cizgi zaten asagi bakan bir ucgen siluetı ciziyor ve
+     dolu bir ucgenin aksine hala "tutamak" gibi duruyor.
+     Renkler ORBITAPE'in kendi paletinden: markanin gradyanindaki iki
+     durak (turkuaz -> tozlu gul) ve arasindaki karisim. Ucuncu bir
+     renk uydurulmadi.
+     ORTALANMIS ve BIRAZ BUYUK: sol ustteyken sola dayaliydi ve 34px
+     genisligindeydi; alt ortada bir "merkez tusu" olarak durdugu icin
+     ortalandi ve 40px'e cikti. */
+  #ayarTut span{display:block;height:3.5px;border-radius:3px;
+    transition:width .22s ease, opacity .22s ease;}
+  #ayarTut span:nth-child(1){background:#35e0d8;width:40px;}
+  #ayarTut span:nth-child(2){background:#8cb1ba;width:32px;}
+  #ayarTut span:nth-child(3){background:#e27a9e;width:24px;}
+  /* Acikken uc cizgi esitlenip duz bir yigin oluyor: ucgen kapaniyor.
+     Eski davranisin birebir aynisi. */
+  body.ayar-acik #ayarTut span:nth-child(2){width:40px;}
+  body.ayar-acik #ayarTut span:nth-child(3){width:40px;}
 
   /* Panel de alt ortadan, ucgenin USTUNDEN aciliyor. */
   #ayar{position:fixed;z-index:95;
@@ -1231,7 +1254,6 @@
   @media (max-width:480px){
     #tasima{gap:6px;} #araclar{gap:6px;}
     #geri,#ileri,#dur,#fav,#favAc{width:34px;}
-    #sesYatay{width:40px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:9px;letter-spacing:.14em;}
@@ -1378,7 +1400,7 @@
   <div id="sesCubuk" aria-hidden="true"><i></i></div>
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
-       aria-expanded="false" aria-controls="ayar"><i class="ucgen"></i></div>
+       aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <h4>SETTINGS</h4>
     <!-- tabindex KAPALIYKEN -1: panel aria-hidden iken icindeki
@@ -1409,6 +1431,17 @@
        tab sırasındaydı ama gizli ağaçtaydı — WCAG 4.1.2 ihlali.
        Panel açılırken false'a çekiliyor (simdiCalan). -->
   <div id="np" aria-hidden="true">
+    <!-- ★ BLOGUN EN USTUNDE ve DOM'da da ilk sirada.
+         Onceden yazilarin ALTINDAydi ve kunye uzadikca yildiz asagi
+         kayiyordu: parmagin gittigi yer her parcada degisiyordu.
+         Ustte oldugu icin artik sabit -- blok yukari dogru buyurken
+         yildizin ekrandaki yeri de yukari cikiyor ama yazinin
+         TABANI hep ayni hatta kaliyor (soldaki arama cizgisiyle).
+         ◁ ve ▷ BURADAN SOL UST'E TASINDI: ayni is icin ekranda iki
+         takim tus vardi ve hangisinin ne yaptigi belirsizdi. -->
+    <div class="np-gez">
+      <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
+    </div>
     <div class="np-bilgi">
       <div class="np-ust" id="npUst"></div>
       <!-- aria-live: parça değişince ekran okuyucu yeni adı okusun.
@@ -1422,13 +1455,6 @@
            lisansın kendi şartı. Kendi parçalarımızda ve canlı yayında
            boş kalır, o zaman hiç yer kaplamaz. -->
       <div class="np-lisans" id="npLisans"></div>
-    </div>
-    <!-- ◁ ve ▷ BURADAN SOL UST'E TASINDI. Ayni is icin ekranda iki
-         takim tus vardi; hangisinin ne yaptigi belirsizdi. Sag altta
-         yalnizca favori yildizi kaldi: bu kose artik "calan sey"
-         kosesi -- kunye ve onu isaretleyen tek dugme. -->
-    <div class="np-gez">
-      <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
     </div>
   </div>
   <div id="bekle" aria-hidden="true"><span id="bekleGly"><i class="yuva"></i><i class="yuva"></i><i class="yuva"></i></span></div>
@@ -1505,12 +1531,21 @@
          yukarida bitiyor), yani genis olabilir. Bu yuzden ilk satirda
          yalnizca uc tasima tusu duruyor: 114px, rahatca siginyor. -->
     <div id="araclar">
+      <!-- REC RADYO TARAFINDA YOK. Canli yayin kaydedilmiyor: dugme
+           orada her zaman pasifti, yani ekranda hicbir zaman
+           calismayan bir tus duruyordu. Yalnizca SOUND BANKS kipinde
+           gorunuyor (bkz. CSS: body:not(.mood) #rec). Silinmedi --
+           orada kendi tasarimiyla duracak. -->
       <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
       <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
       <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
-      <!-- SES: yatay tek cizgi. Dokunmatikte iki parmak jesti iPhone
-           Safari'de calismadi; artik her yerde gorunen bir denetim var.
-           Surukle = seviye, tek dokunus = sustur/geri ac. -->
+    </div>
+    <!-- UCUNCU SATIR: SES. Genisligi JS'te ustundeki satirlarin EN
+         GENISINE esitleniyor (bkz. sesSatirOlcu) -- boylece uc satir
+         ayni sag kenarda bitiyor ve blok tek bir dikdortgen gibi
+         okunuyor. Cizgi daha ince: bir denetim degil bir gosterge
+         gibi dursun. -->
+    <div id="sesSatir">
       <div id="sesYatay" role="slider" tabindex="0" aria-label="Volume"
            aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100"
            aria-valuenow="100"><i class="iz"></i><i class="dolu"></i></div>
@@ -7070,6 +7105,22 @@
       return s;
     }catch(e){ return 138; }
   }
+  /* ── SES SATIRININ GENISLIGI ─────────────────────────────────────
+     Kullanicinin istegi: "yukaridaki seylerle hizalansin, sag taraftan
+     tasmasin hicbir satir." Yani uc satir ayni sag kenarda bitsin.
+     Ustteki iki satirin genisligi icerikten geliyor (tus sayisi,
+     CAM/DELETE yazisi); ses satiri tek bir cizgi oldugu icin kendi
+     genisligi yok -- olculup esitleniyor. Sabit bir sayi yazmak
+     yetmezdi: CAM yazisi DELETE olunca satir uzuyor. */
+  function sesSatirOlcu(){
+    try{
+      const t1 = document.getElementById('tasima');
+      const t2 = document.getElementById('araclar');
+      if(!t1) return;
+      const en = Math.max(t1.scrollWidth || 0, t2 ? (t2.scrollWidth || 0) : 0);
+      if(en > 0) document.documentElement.style.setProperty('--ses-en', Math.round(en) + 'px');
+    }catch(e){ _yut(e); }
+  }
   function geriYerlestir(){
     iz('geriYerlestir');
     try{
@@ -7123,6 +7174,7 @@
         olc('tasima',  adE);
         olc('araclar', null);
         void modE;
+        sesSatirOlcu();
       }catch(_){ _yut(_); }
       ugOlcu();
 
@@ -7131,21 +7183,24 @@
         arE.style.left   = '';
         arE.style.bottom = Math.round(Math.max(6, alt)) + 'px';
       }
-      /* SAG ALT KUNYE: ARAMA CIZGISININ USTUNDE, ayni hatta DEGIL.
-         Once ikisini ayni tabana koydum ve carpistilar: kunye artik
-         kirpilmadigi icin genis (72vw) ve arama cizgisi solda 138px
-         yer kapliyor -- 390px'te 72px ust uste biniyorlardi.
-         Ikisinden biri yer degistirmek zorundaydi. Kirpma bir LISANS
-         sarti, yani kunye kisalamaz; arama ise en altta kalmali
-         (kullanicinin istegi). Geriye kunyeyi bir sira yukari almak
-         kaldi. Sag kenar hizasi bozulmuyor -- degisen sadece yukseklik. */
+      /* SAG ALT KUNYE: TABANI ARAMA CIZGISIYLE AYNI HATTA.
+         Bir ara kunyeyi bir sira yukari almistim, cunku kirpma
+         kalkinca blok genisledi (86vw) ve solda duran arama cizgisiyle
+         cakisiyordu. Ayni hatta durmasi istendi, o yuzden cozum yer
+         degistirmek degil GENISLIK SINIRI: blok arama cizgisinin
+         bittigi yerden 16px sonra basliyor. Yazi kisalmiyor -- yer
+         daralinca satir sayisi artiyor ve blok YUKARI dogru buyuyor,
+         tabani sabit kaliyor.
+         Bu yuzden ★ da blogun en ustune alindi: asagida olsaydi
+         kunye uzadikca yildiz asagi kayacakti. */
       try{
         const npE = document.getElementById('np');
         if(npE){
+          npE.style.bottom = Math.round(Math.max(6, alt)) + 'px';
           const ab2 = arE ? arE.getBoundingClientRect() : null;
-          const ustHat = (ab2 && ab2.height) ? (window.innerHeight - ab2.top + 10)
-                                             : (alt + 36);
-          npE.style.bottom = Math.round(Math.max(6, ustHat)) + 'px';
+          const cizgiSag = (ab2 && ab2.width) ? ab2.right : (sol + 138);
+          const yer = Math.round(window.innerWidth - cizgiSag - sol - 16);
+          npE.style.maxWidth = (yer > 140 ? yer : 140) + 'px';
         }
       }catch(_){ _yut(_); }
       const araY = arE ? arE.getBoundingClientRect()

@@ -3289,10 +3289,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const tut = document.getElementById('ayarTut').getBoundingClientRect();
     const fa = fAc.getBoundingClientRect();
     const sf = document.getElementById('fav').getBoundingClientRect();
-    const o = { taban:R(g.bottom-ar.top), ustunde:(g.bottom <= ar.top + 1), yaziSol:R(bi.left), yari:R(innerWidth/2),
+    const o = { taban:R(bi.bottom-ar.bottom), yildizUstte:(g.bottom <= bi.top + 1),
+                bosluk:R(bi.left - document.getElementById('araCizgi').getBoundingClientRect().right),
+                yaziSol:R(bi.left), yari:R(innerWidth/2),
                 sagHiza:R(g.right-bi.right),
                 cizgiSag:R(document.getElementById('araCizgi').getBoundingClientRect().right),
-                dugmeAltta:g.top >= bi.bottom - 1,
+
                 solY:R(ts.height), sagY:R(g.height),
                 solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
                 ucgenAltta: tut.top >= ar.bottom - 1,
@@ -3307,13 +3309,16 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     n.classList.remove('on'); geriYerlestir();
     return o;
   });
-  /* KUNYE ARAMANIN USTUNDE. Once ikisi ayni tabandaydi ve carpistilar:
-     kunye kirpilmadigi icin genis, arama cizgisi de solda yer kapliyor.
-     Kirpma bir lisans sarti (kisalamaz), arama en altta kalmali
-     (kullanicinin istegi) -- geriye kunyeyi bir sira yukari almak
-     kaldi. Sag kenar hizasi asagida ayrica olculuyor. */
-  K('Kunye arama cizgisinin USTUNDE', !!np && np.ustunde===true,
-     'kunye alti / arama ustu fark '+(np?np.taban:'-')+'px');
+  /* KUNYENIN TABANI SOLDAKI ARAMA CIZGISIYLE AYNI HATTA.
+     Bir ara kunyeyi bir sira yukari almistim (kirpma kalkinca blok
+     genisledi ve arama cizgisiyle cakisiyordu). Ayni hatta durmasi
+     istendi; cozum yer degistirmek degil GENISLIK SINIRI oldu: blok
+     arama cizgisinin bittigi yerden 16px sonra basliyor, yer daralinca
+     satir sayisi artiyor ve blok YUKARI buyuyor. */
+  K('Kunye tabani arama cizgisiyle hizali', !!np && Math.abs(np.taban) <= 1,
+     'fark '+(np?np.taban:'-')+'px');
+  K('Kunye arama cizgisine degmiyor', !!np && np.bosluk >= 12,
+     'bosluk '+(np?np.bosluk:'-')+'px');
   K('Iki satir ayni yukseklikte', !!np && Math.abs(np.solY-np.sagY) <= 1 && np.sagY===32,
      'sol ust '+(np?np.solY:'-')+'px | sag alt '+(np?np.sagY:'-')+'px');
   K('Iki yildiz ayni olcude', !!np && np.solYildiz===np.sagYildiz,
@@ -3325,7 +3330,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Kunye kirpilmiyor', !!np && np.kirpma==='yok', 'npAd kirpma: '+(np?np.kirpma:'-'));
   K('Kunye genisleyebiliyor', !!np && np.blokEn > np.en*0.30,
      'blok '+(np?np.blokEn:'-')+'px / ekran '+(np?np.en:'-')+'px');
-  K('Dugmeler yazinin ALTINDA', !!np && np.dugmeAltta===true, 'yigin: bilgi -> ◁ ★ ▷');
+  /* ★ BLOGUN EN USTUNDE. Onceden yazilarin altindaydi ve kunye
+     uzadikca yildiz asagi kayiyordu -- parmagin gittigi yer her
+     parcada degisiyordu. Ustte oldugu icin yazinin TABANI sabit
+     kalirken yildiz yukari cikiyor. */
+  K('Yildiz kunyenin USTUNDE', !!np && np.yildizUstte===true, 'yigin: ★ -> bilgi');
   /* ESKI KURAL SILINDI ("yazi ekranin yarisini gecmesin"): karsisinda
      REC · CAM · ★ satiri dururken gecerliydi, o satir sol uste tasindi.
      Yerine gecen kural: blok ekranin sol kenarina yapismasin. */
@@ -3383,29 +3392,39 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const t=document.getElementById('ayarTut'); if(!t) return null;
     const r=t.getBoundingClientRect();
-    const uc=t.querySelector('.ucgen');
-    const st=uc?getComputedStyle(uc):null;
+    const cz=[...t.querySelectorAll('span')];
     const acikOnce=document.body.classList.contains('ayar-acik');
     t.click(); await bek(320);
     const acildi=document.body.classList.contains('ayar-acik');
     const pnl=document.getElementById('ayar').getBoundingClientRect();
-    const donuk=uc?getComputedStyle(uc).transform:'';
+    const acikEn=cz.map(e=>Math.round(e.getBoundingClientRect().width));
     t.click(); await bek(320);
     const kapandi=!document.body.classList.contains('ayar-acik');
+    const kapaliEn=cz.map(e=>Math.round(e.getBoundingClientRect().width));
+    const renk=cz.map(e=>getComputedStyle(e).backgroundColor);
     return { ortaFark:Math.round(Math.abs((r.left+r.width/2)-innerWidth/2)),
              dipFark:Math.round(innerHeight-r.bottom),
-             ucgenVar:!!(st && st.clipPath && st.clipPath!=='none'),
-             cizgiYok:t.querySelectorAll('span').length===0,
+             cizgiSayi:cz.length, kapaliEn, acikEn, renk,
+             azalan: kapaliEn.length===3 && kapaliEn[0]>kapaliEn[1] && kapaliEn[1]>kapaliEn[2],
+             esitlenir: acikEn.length===3 && acikEn[0]===acikEn[1] && acikEn[1]===acikEn[2],
              acildi, kapandi, acikOnce,
              panelOrta:Math.round(Math.abs((pnl.left+pnl.width/2)-innerWidth/2)),
-             panelUstunde: pnl.bottom <= r.top + 1,
-             doner: donuk && donuk!=='none' };
+             panelUstunde: pnl.bottom <= r.top + 1 };
   });
   K('Ayar tutamagi alt ortada', !!ayTut && ayTut.ortaFark <= 1 && ayTut.dipFark <= 12,
      'orta fark '+(ayTut?ayTut.ortaFark:'-')+'px | dipten '+(ayTut?ayTut.dipFark:'-')+'px');
-  K('Tutamak ters ucgen (cizgi degil)', !!ayTut && ayTut.ucgenVar===true && ayTut.cizgiYok===true,
-     'clip-path ucgen, span yok');
-  K('Ucgen acilinca donuyor', !!ayTut && ayTut.doner===true, 'rotate(180deg)');
+  /* SEKIL: dolu bir ucgen degil, ESKI TUTAMAGIN AYNISI -- uzunlugu
+     azalan uc cizgi. Asagi bakan ucgen siluetini zaten onlar ciziyor
+     ve dolu bir ucgenin aksine hala "tutamak" gibi duruyor. */
+  K('Tutamak uc cizgi, ucgen siluetli', !!ayTut && ayTut.cizgiSayi===3 && ayTut.azalan===true,
+     'genislikler '+(ayTut?ayTut.kapaliEn.join(' > '):'-'));
+  K('Acilinca cizgiler esitleniyor', !!ayTut && ayTut.esitlenir===true,
+     'acik '+(ayTut?ayTut.acikEn.join(' = '):'-'));
+  /* Renkler markanin kendi gradyanindan: turkuaz -> karisim -> tozlu
+     gul. Ucuncu bir renk uydurulmadi. */
+  K('Tutamak marka renklerinde', !!ayTut && ayTut.renk.length===3
+     && ayTut.renk[0]==='rgb(53, 224, 216)' && ayTut.renk[2]==='rgb(226, 122, 158)',
+     (ayTut?ayTut.renk.join(' '):'-'));
   K('Ayar paneli ucgenin USTUNDEN aciliyor', !!ayTut && ayTut.acildi===true && ayTut.kapandi===true
      && ayTut.panelOrta <= 2 && ayTut.panelUstunde===true,
      'ortali, ucgenin ustunde, acilip kapaniyor');
@@ -3493,6 +3512,79 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Tasima tuslari sol ustte', takim.solUstte===true, '◁ ‖ ▷ tek yerde');
   K('Sag altta sadece yildiz', takim.sagAltta===1 && takim.sagAlttaki==='fav', 'kalan: '+takim.sagAlttaki);
   K('REC ve CAM sol uste tasindi', takim.kayitSolUstte===true && takim.solAltBos===true, 'sol alt bosaldi');
+
+  /* ── 7. REC RADYODA YOK ─────────────────────────────────────────
+     Canli yayin kaydedilmiyor: dugme radyo tarafinda HER ZAMAN
+     pasifti, yani ekranda hicbir zaman calismayan bir tus duruyordu.
+     Silinmedi -- SOUND BANKS kipinde geri geliyor. */
+  const recKip = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const r=document.getElementById('rec'); if(!r) return null;
+    r.classList.add('var');
+    const radyoda = getComputedStyle(r).display;
+    const eski = AYAR.mood;
+    AYAR.mood = true; moodUygula(); await bek(260);
+    const moodda = getComputedStyle(r).display;
+    AYAR.mood = eski; moodUygula(); await bek(260);
+    const geriDondu = getComputedStyle(r).display;
+    r.classList.remove('var');
+    return { radyoda, moodda, geriDondu };
+  });
+  K('REC radyo tarafinda gorunmuyor', !!recKip && recKip.radyoda==='none',
+     'display: '+(recKip?recKip.radyoda:'-'));
+  K('REC SOUND BANKS kipinde geri geliyor', !!recKip && recKip.moodda!=='none' && recKip.geriDondu==='none',
+     'mood: '+(recKip?recKip.moodda:'-')+' | donunce: '+(recKip?recKip.geriDondu:'-'));
+
+  /* ── 8. UC SATIR AYNI SAG KENARDA ───────────────────────────────
+     Kullanicinin sozu: "yukaridaki seylerle hizalansin, sag taraftan
+     tasmasin hicbir satir." Ses satirinin kendi genisligi yok (tek
+     cizgi), ustundekilerin en genisine esitleniyor. Sabit bir sayi
+     yetmezdi: CAM yazisi DELETE olunca ustteki satir uzuyor. */
+  const uc3 = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    document.getElementById('cam').classList.add('var');
+    document.getElementById('favAc').classList.add('var');
+    for(const id of ['geri','ileri']) document.getElementById(id).classList.add('var');
+    const R=x=>Math.round(x);
+    const q=s2=>document.querySelector(s2).getBoundingClientRect();
+    const olc=()=>{ geriYerlestir();
+      const t1=q('#tasima'), t2=q('#araclar'), t3=q('#sesSatir');
+      const enGenis=Math.max(t1.right,t2.right);
+      return { sesSag:R(t3.right), enGenis:R(enGenis),
+               tasan:R(Math.max(t1.right,t2.right,t3.right) - enGenis),
+               solHiza:R(Math.max(t1.left,t2.left,t3.left)-Math.min(t1.left,t2.left,t3.left)),
+               ucuncuSatir: t3.top >= t2.bottom - 1 }; };
+    const kisa = olc();
+    /* IKINCI OLCUM: SOUND BANKS kipi. Orada REC geri geliyor ve
+       ikinci satir (REC · CAM · ★) birinci satiri geciyor. Sabit bir
+       genislik yazilmis olsaydi birinci olcum yine gecerdi -- bu
+       kontrolun isirmasi icin gercek bir genisleme sart.
+       CAM yazisi da DELETE'e cekiliyor: kayit dururken satir en uzun
+       halinde oluyor. */
+    const eskiYazi = document.getElementById('camYazi').textContent;
+    const eskiMood = AYAR.mood;
+    AYAR.mood = true; moodUygula(); await bek(260);
+    document.getElementById('rec').classList.add('var');
+    document.getElementById('camYazi').textContent = 'DELETE';
+    await bek(60);
+    const uzun = olc();
+    document.getElementById('camYazi').textContent = eskiYazi;
+    document.getElementById('rec').classList.remove('var');
+    AYAR.mood = eskiMood; moodUygula(); await bek(260); olc();
+    return { kisa, uzun };
+  });
+  K('Ses cizgisi ucuncu satirda', uc3.kisa.ucuncuSatir===true, 'CAM · ★ satirinin altinda');
+  K('Ses cizgisi ustundekiyle ayni sag kenarda',
+     Math.abs(uc3.kisa.sesSag-uc3.kisa.enGenis) <= 1 && Math.abs(uc3.uzun.sesSag-uc3.uzun.enGenis) <= 1,
+     'CAM: '+uc3.kisa.sesSag+'/'+uc3.kisa.enGenis+' | DELETE: '+uc3.uzun.sesSag+'/'+uc3.uzun.enGenis);
+  /* SABIT DEGIL, OLCULEN bir genislik oldugunun kaniti: kayit satiri
+     uzayinca ses cizgisi de uzuyor. */
+  K('Ust satir uzayinca ses cizgisi de uzuyor', uc3.uzun.sesSag > uc3.kisa.sesSag,
+     uc3.kisa.sesSag+'px -> '+uc3.uzun.sesSag+'px');
+  K('Hicbir satir sagdan tasmiyor', uc3.kisa.tasan <= 0 && uc3.uzun.tasan <= 0,
+     'tasma '+uc3.kisa.tasan+'/'+uc3.uzun.tasan+'px');
+  K('Uc satir ayni sol kenarda', uc3.kisa.solHiza <= 1, 'fark '+uc3.kisa.solHiza+'px');
+
 
   await b.close();
 
