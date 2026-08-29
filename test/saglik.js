@@ -3303,13 +3303,16 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const ar = document.getElementById('ara').getBoundingClientRect();
     const su = document.getElementById('solUst');
     const ad = document.querySelector('#ust .kanal.ad').getBoundingClientRect();
-    /* Konsol sag ustte, YAZILARIN ALTINDA. Sag kenari sag ustteki
-       blogun sag kenariyla ayni hatta -- sag ust tek bir blok gibi
-       okunuyor. */
-    const ustB = document.querySelector('#ust').getBoundingClientRect();
+    /* KONSOL ALT SOLDA, MODULUN ILK SATIRI. Once sol ustteydi
+       (yaziyla yan yana; raf adi uzayinca kuculuyordu), sonra sag
+       uste alindi (bekleme sembolleriyle cakisti). Ucuncu ve dogru
+       yer alt sol: karsisinda kimse yok.
+       Iki olcu: konsol kayit satirinin USTUNDE mi, ve iki satir ayni
+       SAG kenarda mi bitiyor. */
     const ts2 = document.getElementById('tasima').getBoundingClientRect();
-    const hiza = { tasma: Math.round(ustB.bottom - ts2.top),
-                   sol: Math.round(Math.abs(ts2.right - ustB.right)) };
+    const ac5 = document.getElementById('araclar').getBoundingClientRect();
+    const hiza = { tasma: Math.round(ts2.bottom - ac5.top),
+                   sol: Math.round(Math.abs(ts2.right - ac5.right)) };
     void ar; void ad; void su;
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
@@ -3319,7 +3322,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Sol ustte favori yildizi var', !!fa && fa.kapali.gor===true, 'tasima satirinin sonunda');
   K('Yildiza basis kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'tek basis');
   K('Tekrar basis kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
-  K('Konsol yazilarin ALTINDA ve sag kenarda hizali',
+  K('Konsol kayit satirinin USTUNDE, sag kenarlar hizali',
      !!fa && fa.hiza.tasma <= 0 && fa.hiza.sol <= 2,
      'dikey bosluk '+(fa?-fa.hiza.tasma:'-')+'px | sag hiza '+(fa?fa.hiza.sol:'-')+'px');
 
@@ -3460,8 +3463,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* Sol kenari tasiyan iki nesne: ust soldaki tutamak ve alt
        soldaki kayit satiri. Konsol sagda, o olcuye girmiyor. */
     const sol=[g('araclar').left, g('ayarTut').left];
-    const sag=[innerWidth-g('ust').right, innerWidth-g('np').right,
-               innerWidth-g('tasima').right];
+    /* Sag kenari tasiyan iki nesne: sag ustteki yazi blogu ve sag
+       alttaki kunye. Konsol artik SOLDA, bu olcuye girmiyor. */
+    const sag=[innerWidth-g('ust').right, innerWidth-g('np').right];
     return { solFark:R(Math.max(...sol)-Math.min(...sol)),
              sagFark:R(Math.max(...sag)-Math.min(...sag)),
              solSag:R(Math.abs(Math.min(...sol)-Math.min(...sag))), kx };
@@ -3859,7 +3863,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const fa=document.getElementById('favAc');
     fa.classList.add('var');
     const fr=fa.getBoundingClientRect(), mr=m.getBoundingClientRect();
-    const yaninda = mr.left >= fr.right - 1 && Math.abs(mr.top-fr.top) <= 1;
+    /* SIRA DEGISTI: ★ artik satirin EN SONUNDA (kullanici istegi:
+       "alt sirada yildiz en sonda olsun"), sustur onun solunda.
+       Olculen sey yine ayni: ikisi yan yana ve ayni hatta. */
+    const yaninda = mr.right <= fr.left + 1 && Math.abs(mr.top-fr.top) <= 1;
     const olcuAyni = Math.round(mr.width)===Math.round(fr.width)
                   && Math.round(mr.height)===Math.round(fr.height);
     kSes=1; sesSeviyeYaz(); sesDikeyYaz();
@@ -3874,7 +3881,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
     return { yaninda, olcuAyni, sus, geri };
   });
-  K('Sustur tusu yildizin saginda', !!mut && mut.yaninda===true, '★ ile yan yana');
+  K('Sustur tusu yildizin solunda', !!mut && mut.yaninda===true, '★ satirin sonunda');
   K('Sustur ★ ile ayni olcude', !!mut && mut.olcuAyni===true, 'satir egri gorunmuyor');
   K('Sustur sesi kesiyor', !!mut && mut.sus.k===0 && mut.sus.sinif===true, 'seviye 0');
   /* Susturmanin GERCEKTEN ise yaramasi grafige yazilmasina bagli:
@@ -3919,7 +3926,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     AYAR.mood=eski; moodUygula(); await bek(320);
     return { radyo, kipte };
   });
-  K('Radyoda modul sol USTTE', moodYer.radyo.ust < 120, 'ust '+moodYer.radyo.ust+'px');
+  /* MODUL IKI KIPTE DE ALT SOLDA. Radyoda sira tasima -> kayit,
+     SOUND BANKS kipinde ters (orada REC de var ve en cok basilan sey
+     dibe geliyor). */
+  K('Radyoda modul sol ALTTA', moodYer.radyo.ust > 400, 'ust '+moodYer.radyo.ust+'px');
   K('SOUND BANKS kipinde modul sol ALTTA', moodYer.kipte.alt < 120, 'dipten '+moodYer.kipte.alt+'px');
   /* Sira ters: dibe en yakin olan REC · CAM · ★ · sustur satiri,
      ustunde tasima tuslari -- en cok basilan sey basparmagin
@@ -4319,7 +4329,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     solAltBos: !document.querySelector('body > #araclar')
   }));
   K('Tasima tuslari sol ustte', takim.solUstte===true, '◁ ‖ ▷ tek yerde');
-  K('Sag altta sadece yildiz', takim.sagAltta===1 && takim.sagAlttaki==='fav', 'kalan: '+takim.sagAlttaki);
+  /* Sag alt kosede iki dugme var ve ikisi de AYNI SEY hakkinda:
+     calan ses. ★ "bunu hatirla", ? "bu neydi". Tasima tuslari
+     buradan gitti -- ayni is icin iki takim tus olmasin diye. */
+  K('Sag altta tasima tusu yok', takim.sagAltta<=2 && !/geri|ileri|dur/.test(takim.sagAlttaki),
+     'kalan: '+takim.sagAlttaki);
   K('REC ve CAM sol uste tasindi', takim.kayitSolUstte===true && takim.solAltBos===true, 'sol alt bosaldi');
 
   /* ── 7. REC RADYODA YOK ─────────────────────────────────────────

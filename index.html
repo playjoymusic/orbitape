@@ -658,6 +658,9 @@
      duruyordu ve ikisi ayni hatta sikisiyordu. Buyutec zaten
      evrensel: cizgiye gerek yok, kunyeye 100px'den fazla yer
      aciliyor. */
+  /* Yuva buyutecle birebir ayni olcude: satirdaki bosluklar
+     buyutecin gercek genisligine gore olusuyor. */
+  #araYuva{display:block;width:26px;height:32px;flex:none;}
   #ara .cizgi{width:26px;height:26px;display:flex;align-items:center;
     justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;}
@@ -937,6 +940,24 @@
        boş yıldız  : parça favori değil
        dolu yıldız : parça favoride
        yanan halka : FAVORİ KİPİ açık (sadece favoriler çalıyor)      */
+  /* ── "BU NE?" DUGMESI ────────────────────────────────────────────
+     ★ ile birebir ayni olcu ve kilik: yan yana duruyorlar, biri
+     otekinden buyuk olsa satir egri gorunur.
+     Yalnizca CANLI YAYINDA gorunuyor -- arsiv kayitlarinin adi ve
+     sanatcisi zaten ekranda yaziyor, orada soracak bir sey yok. */
+  #tani{display:none;z-index:72;flex:none;
+    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
+    border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
+    align-items:center;justify-content:center;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    color:#5adcd2;opacity:.52;
+    transition:opacity .18s ease, color .25s, border-color .2s, background .25s;}
+  #tani svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;
+    stroke-width:1.7;stroke-linecap:round;}
+  #tani .nk{fill:currentColor;stroke:none;}
+  #tani.var{display:flex;pointer-events:auto;}
+  #tani:hover{opacity:.9;}
+  #tani:focus-visible{outline:1px solid currentColor;outline-offset:2px;}
   #fav{display:none;z-index:72;flex:none;
     appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
@@ -1427,31 +1448,31 @@
      column-reverse DENENDI VE OLMADI: ilk cocugu dibe koyuyor, yani
      tasima satiri en alta dusuyordu. 'order' ile sira acikca
      yaziliyor -- ne yazarsak o. */
-  /* ── RADYODA KONSOL SAG USTE, YAZILARIN ALTINA ───────────────────
-     Bildirilen: "play puse konsolu surekli yer degistiriyor, sagdaki
-     tur isimlerinin uzunluguna gore. bu kabul edilemez."
-     Dogruydu: konsol SOLDAYDI ve sag ustteki satir uzayinca emniyet
-     olcegi devreye girip konsolu kucultuyordu -- yani konsolun boyu
-     rafin adina bagliydi.
-     Cozum konsolu sagdaki blokla AYNI SUTUNA almak. Artik sag kenara
-     dayali ve yazilarin ALTINDA: yazi uzasa da konsol kimildamiyor,
-     cunku ikisi yan yana degil alt alta. Ayrica uc sembolun altina
-     hizali duruyor -- sag ust tek bir blok gibi okunuyor. */
-  body:not(.mood) #solUst{
-    left:auto;
-    right:calc(var(--kx) + env(safe-area-inset-right, 0px));
-    align-items:flex-end;
-    max-width:calc(100vw - 2*var(--kx));
-  }
-  /* Kayit araclari ve buyutec SOL ALTA. position:fixed onlari
-     #solUst'un akisindan cikariyor -- ust blok yalnizca tasima
-     tuslarini tasiyor. */
-  body:not(.mood) #araclar{position:fixed;z-index:78;
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    bottom:calc(7px + env(safe-area-inset-bottom, 0px));}
-  body.mood #solUst{
+  /* ── MODUL IKI KIPTE DE SOL ALTTA ────────────────────────────────
+     Konsol once sol USTTEYDI (yaziyla yan yana; raf adi uzayinca
+     kuculuyordu), sonra sag uste alindi (bekleme sembolleriyle
+     cakisti). Ucuncu ve dogru yer alt sol: orada karsisinda hicbir
+     sey yok, boyu hicbir seye bagli degil ve elin dogal yerinde.
+     Istenen: "sag ustteki player konsolunu artik sol alta alabilirsin,
+     tam orda ilk satir o olur."
+     RADYODA sira: tasima (ust) -> kayit araclari (alt).
+     SOUND BANKS kipinde ters (asagida ayrica yaziyor) cunku orada
+     REC de var ve en cok basilan sey dibe geliyor. */
+  #solUst{
     top:auto;
-    /* 7 + 26 (tutamak) + 10 hava = 43 */
+    bottom:calc(7px + env(safe-area-inset-bottom, 0px));
+  }
+  /* IKI SATIR AYNI SAG KENARDA BITIYOR. Genislik JS'te olculup en
+     genis satira esitleniyor; tasima satiri o genisligi ARALARI
+     ACARAK dolduruyor. Boylece modul tek bir dikdortgen gibi
+     okunuyor -- kullanicinin sozu: "hizalamalara bak, iki satir
+     arasi ve sag tarafi."
+     Satir aralari da tek yerden: --modul-bosluk. */
+  #solUst{--modul-bosluk:8px;gap:var(--modul-bosluk);}
+  #tasima{width:var(--ses-en,150px);justify-content:space-between;}
+  /* SOUND BANKS kipinde tutamak da alt sol kosede: modul bir satir
+     yukari cikiyor ki ustune binmesin. 7 + 26 (tutamak) + 10 hava */
+  body.mood #solUst{
     bottom:calc(43px + env(safe-area-inset-bottom, 0px));
   }
   body.mood #sesSatir{order:1;}
@@ -1474,7 +1495,7 @@
      ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
   @media (max-width:480px){
     #tasima{gap:6px;} #araclar{gap:6px;}
-    #geri,#ileri,#dur,#duraklat,#fav,#favAc,#mute{width:34px;}
+    #geri,#ileri,#dur,#duraklat,#fav,#favAc,#mute,#tani{width:34px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:9px;letter-spacing:.14em;}
@@ -1691,6 +1712,20 @@
          ◁ ve ▷ BURADAN SOL UST'E TASINDI: ayni is icin ekranda iki
          takim tus vardi ve hangisinin ne yaptigi belirsizdi. -->
     <div class="np-gez">
+      <!-- ── BU NE? ─────────────────────────────────────────────────
+           Canli yayinda calan parcanin adi cogu istasyonda hic
+           gelmiyor; kullanici guzel bir sey duyup "bu neydi" diye
+           kaliyor. Bu dugme telefonun kendi taniyicisini aciyor.
+
+           SHAZAM LOGOSU CIZILMEDI. Baska bir markanin logosunu
+           uygulamanin icine koymak marka kullanimidir; magaza
+           incelemeleri bunu isaretliyor ve uygulamanin kendi cizgi
+           diliyle de catisiyor. Yerine kendi sembolumuz var: bir
+           soru isareti ve onu saran dinleme yayi.
+
+           ★ ILE YAN YANA cunku ikisi de AYNI SEY hakkinda: calan ses.
+           ★ "bunu hatirla", ? "bu neydi". -->
+      <button id="tani" type="button" title="What is this? (opens Shazam — it listens through the microphone, so keep the sound on the speaker)" aria-label="Identify this song"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="yay" d="M4.6 7.4a9 9 0 0 0 0 9.2"/><path class="soru" d="M9.6 9.1a2.7 2.7 0 0 1 5.2.9c0 1.8-2.6 2.2-2.6 4"/><circle class="nk" cx="12.2" cy="17.6" r="1.15"/></svg></button>
       <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
     </div>
     <div class="np-bilgi">
@@ -1804,7 +1839,6 @@
            orada kendi tasarimiyla duracak. -->
       <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
       <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
-      <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
       <!-- ── SUSTUR ─────────────────────────────────────────────────
            Hoparlor cizmedik: uygulamanin kendi sembol dili nokta ve
            yay. Ortada bir kaynak noktasi, sagina yayilan iki yay --
@@ -1812,6 +1846,18 @@
            bir cizgi geliyor. Ayni dil sag ustteki calma gostergesinde
            ve halkalarda da kullaniliyor. -->
       <div id="mute" role="button" tabindex="0" title="Mute" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle class="kay" cx="7.5" cy="12" r="2.6"/><path class="y1" d="M12.4 8.6a5.6 5.6 0 0 1 0 6.8"/><path class="y2" d="M16.1 6.1a10 10 0 0 1 0 11.8"/><path class="cap" d="M5 19 L19 5"/></svg></div>
+      <!-- ── BUYUTECIN YUVASI ───────────────────────────────────────
+           Arama kutusu (#ara) satirin bir parcasi OLAMAZ: acilinca
+           yukari dogru buyuyup butun ekrani kaplamasi gerekiyor, yani
+           akistan bagimsiz durmali. Ama kapaliyken satirda YER
+           TUTMALI, yoksa yildiz onun uzerine gelir.
+           Bu bos kutu o yeri tutuyor; buyutec calisma aninda tam
+           onun uzerine konumlaniyor. Boylece yildiz satirin SONUNDA
+           kaliyor ve aradaki bosluklar satirin kendi bosluguyla ayni
+           -- elle hicbir sayi hizalanmiyor. -->
+      <i id="araYuva" aria-hidden="true"></i>
+      <!-- ★ EN SONDA. Istenen: "alt sirada yildiz en sonda olsun." -->
+      <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
     </div>
     <!-- UCUNCU SATIR: SES. Genisligi JS'te ustundeki satirlarin EN
          GENISINE esitleniyor (bkz. sesSatirOlcu) -- boylece uc satir
@@ -6110,6 +6156,13 @@
         a.title = _favMod ? 'Favourites — on' : (FAV.length ? 'Favourites ('+FAV.length+')' : 'Favourites — none yet');
       }
     }catch(e){ _yut(e); }
+    /* "BU NE?" YALNIZCA CANLI YAYINDA. Arsiv kayitlarinin adi ve
+       sanatcisi zaten ekranda yaziyor -- orada soracak bir sey yok
+       ve gereksiz bir dugme kosede yer kapliyor. */
+    try{
+      const t = document.getElementById('tani');
+      if(t) t.classList.toggle('var', !!(aktifItem && aktifItem.radyo));
+    }catch(e){ _yut(e); }
     const d = document.getElementById('fav'); if(!d) return;
     /* Düğme yalnızca çalan bir şey varken ya da favori kipi açıkken. */
     d.classList.toggle('var', !!(aktifItem || _favMod));
@@ -7881,9 +7934,15 @@
     try{
       const t1 = document.getElementById('tasima');
       const t2 = document.getElementById('araclar');
-      if(!t1) return;
-      const en = Math.max(t1.scrollWidth || 0, t2 ? (t2.scrollWidth || 0) : 0);
+      if(!t2) return;
+      /* OLCU KAYIT SATIRINDAN. Tasima satirinin genisligi artik
+         --ses-en'in KENDISINE bagli (space-between ile o genisligi
+         dolduruyor); onu da olcuye katmak kendi kendini besleyen bir
+         dongu olurdu -- satir her olcumde biraz daha genisler.
+         Kayit satiri icerikten geliyor, yani gercek bir olcu. */
+      const en = t2.scrollWidth || 0;
       if(en > 0) document.documentElement.style.setProperty('--ses-en', Math.round(en) + 'px');
+      void t1;
     }catch(e){ _yut(e); }
   }
   function geriYerlestir(){
@@ -7922,39 +7981,15 @@
       const sol = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16);
       const hat = window.innerHeight - alt;      // arama ve sag alt blok bu hatta biter
 
-      /* ── RADYODA KONSOL SAG USTTE, YAZILARIN ALTINDA ────────────
-         Konsol sag ust blokla ayni sutunda: yazi uzasa da konsol
-         kimildamiyor. Ustu #ust'un altindan olculuyor, sabit bir
-         sayiyla degil -- kanal adi iki satira cikarsa konsol da
-         onunla birlikte iniyor. */
+      /* MODUL IKI KIPTE DE ALT SOL KOSEDE (bkz. CSS). Konsolun ustunu
+         hesaplayan blok SILINDI: konsol sag ustteyken #ust'un ve
+         bekleme sembollerinin altina yerlestirmek gerekiyordu, artik
+         karsisinda kimse yok. Kalinti bir olcek varsa temizleniyor --
+         konsol hicbir kosulda kucultulmuyor. */
       const _moodda = document.body.classList.contains('mood');
       try{
         const su0 = document.getElementById('solUst');
-        const ustE0 = document.getElementById('ust');
-        if(su0 && !_moodda){
-          /* Olcek radyoda hic kullanilmiyor: konsol artik kimseyle
-             yer paylasmiyor. Kalinti bir olcek varsa temizleniyor. */
-          su0.style.transform = '';
-          /* ── KONSOLUN USTUNDE IKI SEY VAR ─────────────────────
-             Yalnizca #ust'a gore konumlandirmak yetmedi: bekleme
-             sembolleri (#bekle -- yayin aranirken donen isaretler ve
-             raf gezinme sembolleri) markanin hemen altinda, ortada
-             duruyor ve konsolla TAM UST USTE biniyordu (olculdu:
-             bekle 244-377 x 42-77, konsol 249-376 x 47-79).
-             Kullanicinin ekran goruntusunde tuslarin uzerinde kare
-             ve ucgen semboller goruluyordu.
-             Ikisinin ALTINA aliniyor. #bekle'nin kutusu her zaman
-             duruyor (yalnizca opakligi degisiyor), o yuzden semboller
-             gorunup kaybolurken konsol YERINDEN OYNAMIYOR -- zaten
-             konsolun kimildamasi bastaki sikayetti. */
-          const ur0 = ustE0 ? ustE0.getBoundingClientRect() : null;
-          const bek0 = document.getElementById('bekle');
-          const br0 = bek0 ? bek0.getBoundingClientRect() : null;
-          let ustHat = 0;
-          if(ur0 && ur0.height) ustHat = ur0.bottom;
-          if(br0 && br0.height) ustHat = Math.max(ustHat, br0.bottom);
-          if(ustHat) su0.style.top = Math.round(ustHat + 12) + 'px';
-        } else if(su0){ su0.style.top = ''; }
+        if(su0){ su0.style.top = ''; su0.style.transform = ''; }
       }catch(_){ _yut(_); }
       /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
          Blogu tek parca olcmek yanlisti: birinci satirin karsisinda
@@ -8015,31 +8050,31 @@
            ORTASI ayni hatta olsun diye buyutec 3px yukari aliniyor;
            alt kenarlari esitlemek gozde 3px'lik bir kayma birakiyordu
            (olculdu). Modul yokken (SOUND BANKS) fark gerekmiyor. */
-        const _fark = _moodda ? 0 : 3;
+        /* DIKEY HIZA DA YUVADAN: buyutec 26px, satir 32px. Ikisinin
+           ORTASI ayni hatta olmali, alt kenarlari degil. */
+        let _fark = 0;
+        try{
+          const yv2 = document.getElementById('araYuva');
+          const ac4 = document.getElementById('araclar');
+          if(!_moodda && yv2 && ac4){
+            const ar4 = ac4.getBoundingClientRect();
+            if(ar4.height) _fark = Math.round(window.innerHeight - ar4.bottom - alt + (ar4.height - 26)/2);
+          }
+        }catch(_){ _yut(_); }
         arE.style.bottom = _dip(Math.max(6, alt + _fark));
         let arSol = sol;
         try{
-          const ac2 = document.getElementById('araclar');
-          const ab3 = ac2 ? ac2.getBoundingClientRect() : null;
-          /* ACIKKEN SOL KENARA DONUYOR. Kapali buyutec kayit
-             satirinin saginda duruyor ama panel acilinca kutu ve
-             sonuc listesi genis: orada kalsa sag kenardan tasiyordu
+          /* BUYUTEC KENDI YUVASININ UZERINE oturuyor. Yuva kayit
+             satirinin icinde bos bir kutu; satirdaki bosluklar ve
+             ★'in yeri boylece kendiliginden dogru cikiyor, elle
+             hicbir sayi hizalanmiyor.
+             Panel ACIKKEN sol kenara donuyor: kutu ve sonuc listesi
+             genis, yuvanin uzerinde kalsa sag kenardan tasiyordu
              (olculdu, gizlilik baglantisi ekranin disina cikiyordu). */
-          if(!_moodda && ab3 && ab3.width && !arE.classList.contains('acik')){
-            const yan = Math.round(ab3.right + 8);
-            /* SIGIYOR MU: buyutec 26px. Sagdaki kunyeye de 12px hava
-               kalmali, yoksa ikisi birbirine yapisiyor. */
-            const sinir = Math.round(window.innerWidth - sol - 12);
-            if(yan + 26 <= sinir) arSol = yan;
-            else {
-              /* SIGMIYORSA YUKARI: satirin USTUNE, ayni sol kenardan.
-                 Istenen: "buyutec sigmiyorsa yukariya da alinir, sol
-                 alttaki yapinin ustu tabi." Havada kalmaktansa bir
-                 sira yukari cikmak dogru -- kenar hizasi bozulmuyor. */
-              arSol = sol;
-              arE.style.bottom = _dip(Math.max(6, window.innerHeight - ab3.top + 10));
-            }
-          }
+          const yv = document.getElementById('araYuva');
+          const yr = yv ? yv.getBoundingClientRect() : null;
+          if(!_moodda && yr && yr.width && !arE.classList.contains('acik'))
+            arSol = Math.round(yr.left);
         }catch(_){ _yut(_); }
         arE.style.left = arSol + 'px';
       }
@@ -8106,7 +8141,12 @@
             yer = Math.round(npSag - sol);
             let ustHat2 = alt;
             try{
-              const ac3 = document.getElementById('araclar');
+              /* MODULUN TAMAMININ ustune, tek satirin degil: modul
+                 artik iki satir (tasima + kayit araclari). Yalnizca
+                 kayit satirina gore hesaplayinca kunye tasima
+                 satirinin uzerine biniyordu (senaryo 320px'te olctu:
+                 162x30 cakisma). */
+              const ac3 = document.getElementById('solUst');
               const ar3 = ac3 ? ac3.getBoundingClientRect() : null;
               if(ar3 && ar3.height) ustHat2 = Math.round(window.innerHeight - ar3.top + 10);
             }catch(_){ _yut(_); }
@@ -10701,6 +10741,56 @@
           try{ geriYerlestir(); }catch(e){ _yut(e); } });
       });
       _goz.observe(_acKutu, { attributes:true, attributeFilter:['class'], subtree:true });
+    }
+  }catch(e){ _yut(e); }
+  /* ── "BU NE?" ────────────────────────────────────────────────────
+     Telefonun kendi tanima uygulamasini aciyor.
+
+     NEDEN GOMULU DEGIL: Shazam'in tanima motoru web'e acik degil
+     (ShazamKit yalnizca native iOS/macOS). Ucuncu taraf servisler
+     (AudD, ACRCloud) teknik olarak yapilabilir -- ses grafigimizde
+     kayit cikisi zaten hazir -- ama birkac saniyelik sesi baska bir
+     sunucuya gondermek demek ve bu, gizlilik metnimizdeki ve Play
+     Data Safety formundaki "hicbir veri toplanmiyor" cevabini bozar.
+     O cevap su an degistirilmedigi surece bu dugme hicbir sey
+     gondermiyor: yalnizca bir baglanti aciyor.
+
+     NASIL CALISIYOR: universal link. Shazam kuruluysa isletim
+     sistemi uygulamayi aciyor, degilse site aciliyor. Ozel semalar
+     (shazam://) belgelenmemis ve her surumde calismiyor; universal
+     link her iki tarafta da guvenli yol.
+
+     SESIMIZ DURMUYOR: uygulama arka plana gectiginde MediaSession
+     sayesinde yayin devam ediyor, yani Shazam hoparlorden duyuyor.
+
+     KULAKLIK UYARISI: Shazam MIKROFONDAN dinliyor. Kulaklik takiliysa
+     mikrofona ses gitmiyor ve tanima bos donuyor. Bunu kullanicinin
+     denemeden once bilmesi lazim -- ilk basista ekranda bir satir
+     cikiyor, sonrakilerde cikmiyor. */
+  try{
+    const tn = document.getElementById('tani');
+    if(tn){
+      const ac = e=>{
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        try{ basHissi(tn); }catch(_){ _yut(_); }
+        let ilkKez = false;
+        try{ ilkKez = !localStorage.getItem('orbitape.tani'); }catch(_){ _yut(_); }
+        try{ localStorage.setItem('orbitape.tani','1'); }catch(_){ _yut(_); }
+        const git = ()=>{
+          try{ window.open('https://www.shazam.com/', '_blank', 'noopener'); }
+          catch(_){ _yut(_); }
+        };
+        if(ilkKez){
+          /* Uyariyi gosterip KISA bir sure sonra aciyoruz: kullanici
+             once okusun, sonra ekran degissin. */
+          try{ geciciAdGoster('KEEP IT ON THE SPEAKER'); }catch(_){ _yut(_); }
+          setTimeout(git, 1200);
+        } else git();
+      };
+      tn.addEventListener('click', ac);
+      tn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') ac(e); });
+      ['pointerdown','mousedown','touchstart'].forEach(t=>
+        tn.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
     }
   }catch(e){ _yut(e); }
   const favDug = document.getElementById('fav');

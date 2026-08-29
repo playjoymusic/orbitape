@@ -105,9 +105,12 @@ async function supur(pg, nerede){
     const cakisan = [];
     for(let i=0;i<kutu.length;i++) for(let j=i+1;j<kutu.length;j++){
       const a=kutu[i], b=kutu[j];
-      /* #ara ve #araclar bilerek yan yana; #solUst kendi
-         cocuklarini kapsiyor. Kapsama cakisma degil. */
+      /* #solUst kendi cocuklarini kapsiyor; kapsama cakisma degil.
+         #ara da BILEREK kayit satirinin icindeki yuvasinin uzerinde
+         duruyor (bkz. #araYuva) -- ikisi ust uste olmali. O ciftin
+         dogru durdugu ayrica olculuyor ("buyutec yuvasinda"). */
       if(a.id==='solUst' || b.id==='solUst') continue;
+      if((a.id==='ara' && b.id==='araclar') || (a.id==='araclar' && b.id==='ara')) continue;
       const yx = Math.min(a.r.right,b.r.right) - Math.max(a.r.left,b.r.left);
       const yy = Math.min(a.r.bottom,b.r.bottom) - Math.max(a.r.top,b.r.top);
       if(yx > 2 && yy > 2) cakisan.push(a.id+'×'+b.id+' ('+R(yx)+'x'+R(yy)+')');
@@ -116,9 +119,29 @@ async function supur(pg, nerede){
       k.r.left < -1 || k.r.top < -1 ||
       k.r.right > innerWidth + 1 || k.r.bottom > innerHeight + 1
     ).map(k => k.id+' ['+R(k.r.left)+','+R(k.r.top)+','+R(k.r.right)+','+R(k.r.bottom)+']');
+    /* BUYUTEC YUVASINDA MI: satirin icindeki bos kutunun tam
+       uzerinde durmali. Kaymissa ★ ile arasindaki bosluk bozulur ve
+       satir egri gorunur -- kullanicinin "havada duruyor" dedigi
+       hata tam olarak buydu. Panel acikken kural gecerli degil:
+       orada kutu sol kenara donuyor. */
+    let yuva = 'yok';
+    try{
+      const yv = document.getElementById('araYuva');
+      const cz = document.querySelector('#ara .cizgi');
+      const ac = document.getElementById('ara');
+      if(yv && cz && ac && !ac.classList.contains('acik')
+         && getComputedStyle(yv).display !== 'none'){
+        const a2 = yv.getBoundingClientRect(), b2 = cz.getBoundingClientRect();
+        if(a2.width && b2.width){
+          const dx = Math.abs(a2.left - b2.left);
+          const dy = Math.abs((a2.top+a2.height/2) - (b2.top+b2.height/2));
+          yuva = (dx <= 2 && dy <= 2) ? 'tam' : ('kaymis ' + R(dx) + 'x' + R(dy));
+        }
+      }
+    }catch(e){}
     const yutulan = (window.__yutulan || []).slice();
     window.__yutulan = [];
-    return { cakisan, tasan, yutulan, W:innerWidth, H:innerHeight };
+    return { cakisan, tasan, yutulan, yuva, W:innerWidth, H:innerHeight };
   }, SABITLER).then(o => {
     K('['+nerede+'] cakisma yok', o.cakisan.length===0,
        o.cakisan.length ? o.cakisan.join(' · ') : 'sabit elemanlar ayri');
@@ -126,6 +149,8 @@ async function supur(pg, nerede){
        o.tasan.length ? o.tasan.join(' · ') : o.W+'x'+o.H+' icinde');
     K('['+nerede+'] yutulan hata yok', o.yutulan.length===0,
        o.yutulan.length ? o.yutulan.slice(0,2).join(' | ') : '_yut() bos');
+    K('['+nerede+'] buyutec yuvasinda', o.yuva !== 'kaymis' && !/^kaymis/.test(o.yuva),
+       o.yuva);
     return o;
   });
 }
