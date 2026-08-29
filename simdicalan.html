@@ -35,6 +35,7 @@ Sonuc bir sayidan ibaret: bu ozelligin kac istasyonda gercekten
 calisacagi. Birkac dakika surer.</p>
 
 <button id="basla">Olcumu baslat</button>
+<button id="dur" disabled>Bitir ve raporla</button>
 <div id="cubuk"><i></i></div>
 <div id="durum">hazir</div>
 <div id="ozet"></div>
@@ -100,12 +101,22 @@ function baslik(tur, veri){
   return '';
 }
 
-async function dene(tur, adres){
+/* ── ZAMAN ASIMI ABORT'A BIRAKILMIYOR ────────────────────────────
+   Ilk yazimda yalnizca AbortController vardi ve olcum 130. istasyonda
+   DONDU. Sebep: olu bir sunucuda fetch, DNS cozumu ya da TLS el
+   sikismasi asamasinda takiliyor ve abort sinyali ancak o asama
+   bitince isleniyor -- tarayici orada bir-iki dakika bekleyebiliyor.
+   Sekiz iscinin hepsi ayni anda boyle bir adrese dusunce sayac
+   duruyor ve ekranda "kilitlendi" gibi gorunuyor.
+   Cozum: istegi GERCEK bir zamanlayiciyla yaristirmak. Takilan fetch
+   arka planda kendi haline birakiliyor (abort yine deneniyor), isci
+   beklemeden siradaki istasyona geciyor. */
+function zamanla(ms){ return new Promise(r=>setTimeout(()=>r({hal:'zaman asimi'}), ms)); }
+
+async function istek(tur, adres){
   const kes = new AbortController();
-  const zt = setTimeout(()=>kes.abort(), 5000);
   try{
     const r = await fetch(adres, {signal:kes.signal, mode:'cors', credentials:'omit'});
-    clearTimeout(zt);
     if(!r.ok) return {hal:'kod' + r.status};
     const metin = await r.text();
     let govde = metin;
@@ -113,42 +124,65 @@ async function dene(tur, adres){
     const b = baslik(tur, govde);
     return b ? {hal:'ok', baslik:b} : {hal:'bos'};
   }catch(e){
-    clearTimeout(zt);
     return {hal: (e && e.name === 'AbortError') ? 'zaman asimi' : 'cors/ag'};
+  }finally{
+    try{ kes.abort(); }catch(_){}
   }
 }
 
+async function dene(tur, adres){
+  return Promise.race([ istek(tur, adres), zamanla(4500) ]);
+}
+
 const $ = x=>document.getElementById(x);
-let calisiyor = false;
+let calisiyor = false, durduruldu = false;
 
 $('basla').onclick = async ()=>{
-  if(calisiyor) return; calisiyor = true;
-  $('basla').disabled = true;
+  if(calisiyor) return; calisiyor = true; durduruldu = false;
+  $('basla').disabled = true; $('dur').disabled = false;
   const sonuc = [];
   let bitti = 0;
-  const EST = 8;                       // ayni anda kac istek
+  /* 8 -> 20. Istekler ag bekliyor, islemci degil; yirmi tanesi rahat
+     donuyor ve birkac tanesi takilsa bile olcum akmaya devam ediyor. */
+  const EST = 20;
   const sira = VERI.slice();
   const yaz = ()=>{
-    $('durum').textContent = bitti + ' / ' + VERI.length + ' denendi — bulunan: '
-      + sonuc.filter(x=>x.hal==='ok').length;
+    const ok = sonuc.filter(x=>x.hal==='ok').length;
+    const y = bitti ? (100*ok/bitti).toFixed(0) : 0;
+    $('durum').textContent = bitti + ' / ' + VERI.length + ' denendi · bulunan '
+      + ok + ' (%' + y + ') · kalan ' + (VERI.length - bitti);
     $('cubuk').firstChild.style.width = (100*bitti/VERI.length).toFixed(1) + '%';
   };
+  /* Isci govdesi TAMAMEN korumali: bir istasyonda beklenmedik bir
+     sey olursa o isci olmemeli. Ilk yazimda boyle bir hata butun
+     Promise.all'i dusurup olcumu sessizce bitiriyordu. */
   async function isci(){
-    while(sira.length){
+    while(sira.length && !durduruldu){
       const st = sira.shift();
       let kayit = {ad:st.a, grup:st.g, hal:'yol yok', tur:'', baslik:''};
-      for(const [tur, adres] of adresler(st.u)){
-        const r = await dene(tur, adres);
-        if(r.hal === 'ok'){ kayit = {ad:st.a, grup:st.g, hal:'ok', tur, baslik:r.baslik}; break; }
-        kayit = {ad:st.a, grup:st.g, hal:r.hal, tur, baslik:''};
-      }
-      sonuc.push(kayit); bitti++; if(bitti % 5 === 0) yaz();
+      try{
+        for(const [tur, adres] of adresler(st.u)){
+          const r = await dene(tur, adres);
+          if(r && r.hal === 'ok'){ kayit = {ad:st.a, grup:st.g, hal:'ok', tur, baslik:r.baslik}; break; }
+          kayit = {ad:st.a, grup:st.g, hal:(r&&r.hal)||'bilinmiyor', tur, baslik:''};
+        }
+      }catch(e){ kayit.hal = 'beklenmedik'; }
+      sonuc.push(kayit); bitti++; yaz();
     }
   }
-  await Promise.all(Array.from({length:EST}, isci));
+  await Promise.all(Array.from({length:EST}, ()=>isci().catch(()=>{})));
   yaz();
   calisiyor = false;
+  $('dur').disabled = true;
+  rapor(sonuc);
+};
 
+/* ── RAPOR ────────────────────────────────────────────────────────
+   Ayri fonksiyon: hem olcum bitince hem "Bitir ve raporla" ile
+   YARIDA cagrilabiliyor. Ilk yazimda rapor akisin icindeydi ve
+   olcum takilinca eldeki 130 sonuc da gorulemiyordu. */
+function rapor(sonuc){
+  {
   /* ── OZET ── */
   const ok = sonuc.filter(x=>x.hal==='ok');
   const turSay = {}, halSay = {}, rafSay = {};
@@ -180,7 +214,13 @@ $('basla').onclick = async ()=>{
         .map(([k,v])=>'  ' + k + ': ' + v).join('\n')
     + '\n\nORNEKLER (ilk 25):\n' + ornek.join('\n') + '\n';
   $('kopyala').disabled = false;
-};
+  }
+}
+
+/* YARIDA KES: takilan istekler beklenmez, eldeki sonuclarla rapor
+   verilir. Yarim bir olcum bile hicbir sey gormemekten iyi. */
+$('dur').onclick = ()=>{ durduruldu = true; $('dur').disabled = true;
+  $('durum').textContent += ' — durduruldu'; };
 
 $('kopyala').onclick = async ()=>{
   const t = $('cikti');
