@@ -3396,7 +3396,7 @@
   "etiket": "blues,classical,contemporary,eclectic programming,folk,jazz,music,pop,rock,world",
   "ulke": "CA",
   "tur": "blues",
-  "grup": "RADIO",
+  "grup": "ROCK & COUNTRY",
   "saf": 3
  },
  {
@@ -3436,7 +3436,7 @@
   "etiket": "movie soundtracks",
   "ulke": "RO",
   "tur": "soundtrack",
-  "grup": "RADIO",
+  "grup": "ORCHESTRAL",
   "saf": 3
  },
  {
@@ -3496,7 +3496,7 @@
   "etiket": "classical",
   "ulke": "MA",
   "tur": "classical",
-  "grup": "RADIO",
+  "grup": "ORCHESTRAL",
   "saf": 3
  },
  {
@@ -3536,7 +3536,7 @@
   "etiket": "ambient lounge,jazz lounge,lounge",
   "ulke": "BR",
   "tur": "jazz",
-  "grup": "RADIO",
+  "grup": "LOUNGE",
   "saf": 3
  },
  {
@@ -3566,7 +3566,7 @@
   "etiket": "ambient lounge,lounge,lounge downtempo chillout ambient easy listening,lounge music",
   "ulke": "FR",
   "tur": "downtempo",
-  "grup": "RADIO",
+  "grup": "LOUNGE",
   "saf": 3
  },
  {
@@ -3576,7 +3576,7 @@
   "etiket": "chill beats,chillhop,lofi hip hop,music for study,relax",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "RADIO",
+  "grup": "LOUNGE",
   "saf": 3
  },
  {
@@ -4476,7 +4476,7 @@
   "etiket": "dnb,drill,dubstep,edm,hardstyle,riddim,trap,various",
   "ulke": "PL",
   "tur": "dub",
-  "grup": "ELECTRONIC",
+  "grup": "FUNK & RNB",
   "saf": 1
  },
  {
@@ -4966,7 +4966,7 @@
   "etiket": "1930s,1940s,big band,jazz,swing",
   "ulke": "JP",
   "tur": "jazz",
-  "grup": "ELECTRONIC",
+  "grup": "JAZZ",
   "saf": 2
  },
  {
@@ -4976,7 +4976,7 @@
   "etiket": "chr,contemporary hits radio,dance,electronic dance music,jovem,jovem pan,pop,pop rock,top 40",
   "ulke": "BR",
   "tur": "electronic",
-  "grup": "ELECTRONIC",
+  "grup": "RADIO",
   "saf": 2
  },
  {
@@ -4986,7 +4986,7 @@
   "etiket": "anthems,bauer radio,club dance,dab,dab+,dance,dance anthems,dance music,edm,electronic dance music,england,entertainment,europe,kiss,kiss dance,london,moi merino,radio,rayo,uk,united kingdom",
   "ulke": "GB",
   "tur": "electronic",
-  "grup": "ELECTRONIC",
+  "grup": "RADIO",
   "saf": 2
  },
  {
@@ -5006,7 +5006,7 @@
   "etiket": "classical",
   "ulke": "MA",
   "tur": "classical",
-  "grup": "ELECTRONIC",
+  "grup": "RADIO",
   "saf": 2
  },
  {
@@ -5016,7 +5016,7 @@
   "etiket": "movie,movie music,movie soundtracks,movies",
   "ulke": "RO",
   "tur": "soundtrack",
-  "grup": "ELECTRONIC",
+  "grup": "ORCHESTRAL",
   "saf": 2
  },
  {
@@ -5086,7 +5086,7 @@
   "etiket": "chillout,chillout+lounge,club house,cool jazz,disco funk,easy listening,easy music,electronic,entertainment,funk,funky,funky house,hits,house,jazz,música pop,new releases,nu-jazz,piano jazz,pop dance,pop en español e inglés,pop en inglés,pop music,pop rock,popular,smooth jazz,soulful house,tech house,top hits",
   "ulke": "FR",
   "tur": "jazz",
-  "grup": "ELECTRONIC",
+  "grup": "LOUNGE",
   "saf": 2
  },
  {
@@ -5106,7 +5106,7 @@
   "etiket": "beach,chillout,dance,dj,dj mixes,dj sets,edm,electro,electronic,electronic dance music,hiphop,lounge,mixed,música pop,non-stop music,pop,reggaeton,remix,remixes,techno,top 100,top 40,top charts,top hits,urban",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "ELECTRONIC",
+  "grup": "RADIO",
   "saf": 2
  },
  {
