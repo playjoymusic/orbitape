@@ -243,6 +243,67 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
           && typeof aramaGosterimiVarMi === 'function';
     }), 'WAIT ve frekans cizgisi ayara bagli DEGIL');
 
+  /* ── ARAMADAN SECMEK: TAM SENARYO ───────────────────────────────
+     Kullanicinin anlattigi vaka, adim adim: aramayi ac, yaz, listeden
+     BASKA RAFTAN bir istasyon sec. Olan sey buydu: secilen sey degil
+     BASKA bir istasyon caliyordu (cal() icindeki raf kapisi secimi
+     reddediyordu) ve yazdigi kelime suzgec olarak kalip uygulamayi
+     sonsuz aramaya sokuyordu.
+     Bu test dordunu birden tutuyor: dogru sey caliyor, raf ona
+     geciyor, yazi siliniyor, panel kapaniyor. */
+  K('Aramadan secilen SEY caliyor', await pg.evaluate(async()=>{
+      const eskiAile = AKTIF_AILE, eskiMod = mod;
+      const bl = (typeof beyazListe !== 'undefined') ? beyazListe : [];
+      mod = 'radio'; AKTIF_AILE = 'ELECTRONIC';
+      beyazListe = [{ stationuuid:'s1', name:'Qqq Jazz Test', url:'https://q/1',
+                      url_resolved:'https://q/1', tags:'jazz', grup:'JAZZ', saf:1, ulke:'FR' }];
+      _radAraIdx=null; _radAraSay=-1; _araIdx=null; _araSay=-1;
+      araAc(); araGiris.value='qqq jazz'; araYap();
+      await new Promise(r=>setTimeout(r,60));
+      const bulundu = _araListe.length > 0 && _araListe[0].o.ad === 'Qqq Jazz Test';
+      araCal(0);
+      await new Promise(r=>setTimeout(r,220));
+      const sonuc = {
+        calan   : aktifItem ? aktifItem.ad : '-',
+        raf     : AKTIF_AILE,
+        yazi    : araGiris.value,
+        etiket  : _etiket,
+        panel   : document.getElementById('ara').classList.contains('acik')
+      };
+      beyazListe = bl; AKTIF_AILE = eskiAile; mod = eskiMod;
+      _radAraIdx=null; _radAraSay=-1; _araIdx=null; _araSay=-1;
+      try{ araKapa(); }catch(e){}
+      return bulundu
+        && sonuc.calan === 'Qqq Jazz Test'   // SECILEN sey caliyor
+        && sonuc.raf   === 'JAZZ'            // raf ona gecti
+        && sonuc.yazi  === ''                // yazi silindi
+        && sonuc.etiket === ''               // suzgec silindi
+        && sonuc.panel === false;            // panel kapandi
+    }), 'secilen calar, raf gecer, yazi ve suzgec silinir, panel kapanir');
+  /* SUZGEC BOSA DUSERSE KENDINI SILER: sonsuz arama dongusu bitti. */
+  K('Bos suzgec sonsuz aramaya sokmuyor', await pg.evaluate(async()=>{
+      const eskiAile = AKTIF_AILE, eskiMod = mod;
+      mod = 'radio';
+      araGiris.value = 'zzzhicbulunmaz'; etiketKur('zzzhicbulunmaz');
+      const kuruldu = _etiket === 'zzzhicbulunmaz';
+      const sonuc = etiketGec();          // havuz bos -> false donmeli
+      const silindi = _etiket === '' && araGiris.value === '';
+      AKTIF_AILE = eskiAile; mod = eskiMod;
+      return kuruldu && sonuc === false && silindi;
+    }), 'bulunamayan kelime tek denemede dusuyor');
+  /* RAF DEGISINCE DE DUSER: "funk" yazip JAZZ rafina gecen kisi bos
+     havuzda kalmasin. */
+  K('Raf degisince suzgec dusuyor', await pg.evaluate(()=>{
+      const eskiAile = AKTIF_AILE, eskiMod = mod;
+      mod = 'radio'; AKTIF_AILE = 'ELECTRONIC';
+      araGiris.value = 'funk'; etiketKur('funk');
+      const vardi = _etiket === 'funk';
+      aileSec('JAZZ', true);
+      const dustu = _etiket === '' && araGiris.value === '';
+      AKTIF_AILE = eskiAile; mod = eskiMod;
+      return vardi && dustu;
+    }), 'yeni raf yeni niyet: eski kelime birlikte gidiyor');
+
   /* ── SOUND BANKS: IKI DUNYA, TEK KAPI ───────────────────────────
      Eski ORBITAPE tarafi (arsiv havuzlari, nebula, gezegenler, FX)
      silinmedi; ayarlardaki bir dugmenin arkasina kondu.

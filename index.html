@@ -4174,6 +4174,9 @@
   function ayarKaydet(){
     try{ localStorage.setItem('orbitape.ayar', JSON.stringify(AYAR)); }catch(e){ _yut(e); }
   }
+  /* Aramadan yapilan ACIK secim: raf kapisi bu tek cagriyi gecirir.
+     Kullanicinin kendi sectigi seyi reddetmek, kapinin isi degil. */
+  var _secildi = false;
   var _kapiZaman = null;   // raf kapisinin TEK zamanlayicisi (bkz. cal)
   const TIK_VOL = 0.36;   // 0..1 arası ses seviyesi (kısmak için düşür)
   let _tikAudio=null;
@@ -5307,7 +5310,8 @@
        SOUND BANKS kipine canli yayin sizmasin. */
     /* Kapinin tek zamanlayicisi: ayni anda on istek dönerse on tane
        'sonraki' kuyruga girmesin. */
-    if(!_ilkSes && !_favMod && typeof mod !== 'undefined' && mod === 'radio'
+    if(_secildi){ _secildi = false; }
+    else if(!_ilkSes && !_favMod && typeof mod !== 'undefined' && mod === 'radio'
        && AKTIF_AILE && item.radyo && item.grup && item.grup !== AKTIF_AILE){
       /* ── KAPI SESSIZ VE YAVAS OLMALI ──────────────────────────────
          Once burada sonraki(TRUE) cagriliyordu, yani "kullanici basti"
@@ -5734,6 +5738,11 @@
   }
   /* Aile değiştir. zorla=true aynı aileye tekrar basınca kapatmaz. */
   function aileSec(ad, zorla){
+    /* RAF DEGISINCE ARAMA SUZGECI DUSER. Kelime bir rafta anlamli,
+       otekinde degil: "funk" yazip JAZZ rafina gecen kisi bos bir
+       havuzda kaliyordu. Raf secmek yeni bir niyet; eski kelime
+       onunla birlikte gitmeli. */
+    try{ if(_etiket){ araGiris.value=''; silGoster(); etiketKur(''); } }catch(e){ _yut(e); }
     AKTIF_AILE = (!zorla && AKTIF_AILE === ad) ? null : (ad || null);
     try{ zeminUygula(); }catch(e){ _yut(e); }                 // semboller ve zemin yeni ailenin rengine
     try{ radyoKuyruk.length = 0; }catch(e){ _yut(e); }      // eski ailenin istasyonları çalmasın
@@ -7203,7 +7212,23 @@
     return _etSira[0] || null;
   }
   function etiketGec(){                       // sonraki() buradan besleniyor
-    const x=etiketAl(); if(!x) return false;
+    const x=etiketAl();
+    /* ── SUZGEC BOSA DUSTUYSE KENDINI SILER ────────────────────────
+       Olculen vaka: kullanici arama yazdi, sonra sag ustten rafi
+       degistirdi. Yeni rafta o kelimeyi tasiyan hicbir sey yok;
+       etiketGec her seferinde false donuyor, sonraki() yeniden
+       deniyor ve uygulama SONSUZ ARAMA dongusune giriyordu -- ekranda
+       kalici WAIT.
+       Bos bir suzgec suzgec degildir: siliniyor ve akis normale
+       donuyor. Kullanici bir sey kaybetmiyor, zaten hicbir sey
+       bulunmuyordu. */
+    if(!x){
+      if(_etiket){
+        try{ araGiris.value=''; silGoster(); }catch(e){ _yut(e); }
+        try{ etiketKur(''); }catch(e){ _yut(e); }
+      }
+      return false;
+    }
     if(mod!==x.kanal){ mod=x.kanal; moodYaz(); }
     cal(x.o); return true;
   }
@@ -7497,11 +7522,48 @@
     try{ araGiris.blur(); }catch(e){ _yut(e); }
     etiketGoster();
   }
+  /* ── ARAMADAN SECMEK: KULLANICININ KARARI HER SEYIN ONUNDE ───────
+     Olculen sikayet: listeden bir istasyon secince BASKA bir sey
+     caliyordu, sonra da uygulama o kelimeyi sonsuza kadar ariyordu.
+     Iki ayri sebep vardi ve ikisi de burada bitiyor:
+
+     1. cal() icindeki RAF KAPISI secimi reddediyordu. ELECTRONIC
+        rafindayken JAZZ istasyonu secince kapi "bu benim rafimdan
+        degil" deyip atiyor, yerine siradaki calisiyordu. Kapi
+        dogruydu -- yanlis olan, kullanicinin ACIK SECIMINI de yolda
+        kalmis bir istek gibi saymakti. Artik raf secilen seyin
+        rafina geciyor: ekran, halka ve calan ses ayni seyi soyluyor.
+
+     2. Yazdigin kelime SUZGEC olarak kaliyordu. Sonra sag ustten
+        rafi degistirince o kelime yeni rafta bulunamiyor ve uygulama
+        sonsuz arama dongusune giriyordu. Secim yapildigi an is bitmis
+        demektir: yazi da suzgec de siliniyor.
+
+     Tek dokunus: sec -> calar -> panel kapanir -> eski ekrana donulur.
+     Kullanicinin bir daha hicbir yere basmasi gerekmiyor. */
   function araCal(i){
     const x=_araListe[i]; if(!x) return;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     if(mod!==x.kanal){ mod=x.kanal; gecmisSifirla(); moodYaz(); }   // parçanın kanalına geç
+    /* Rafi secilen seyin rafina getir. Radyo tarafinda halkalar
+       tur ailesi; arsivde kategori. Ikisinde de ekran calanla ayni
+       seyi gostermeli. */
+    try{
+      if(x.o && x.o.radyo && x.o.grup && typeof AKTIF_AILE !== 'undefined'){
+        AKTIF_AILE = x.o.grup;
+        try{ radyoKuyruk.length = 0; }catch(e){ _yut(e); }
+      }
+    }catch(e){ _yut(e); }
+    /* Yazi ve suzgec temizleniyor -- panel kapanmadan ONCE, yoksa
+       etiket ekranda asili kaliyor. */
+    try{ araGiris.value=''; silGoster(); }catch(e){ _yut(e); }
+    try{ etiketKur(''); }catch(e){ _yut(e); }
+    _araListe=[]; try{ araSonuc.textContent=''; }catch(e){ _yut(e); }
     araKapa();
+    try{ modAdiYaz(); zeminUygula(); }catch(e){ _yut(e); }
+    /* SECIM KAPIYI ACAR: bir sonraki cal() cagrisinda raf kapisi bu
+       kaydi gecirsin. Bayrak tek seferlik. */
+    _secildi = true;
     cal(x.o);
   }
   // Çizgi, en uzun kanal adıyla aynı genişlikte olsun (RADIOTAPE'in altına tam otursun).
