@@ -987,29 +987,39 @@
      TUTAMAK: iki kisa cizgi, ekranin alt ORTASINDA. Orasi bos --
      solda REC/CAM/yildiz, sagda geri/yildiz var, orta bosluktu.
      Kapaliyken cok silik: arayan bulur, aramayan gormez. */
-  #ayarTut{position:fixed;z-index:96;left:50%;transform:translateX(-50%);
-    bottom:calc(6px + env(safe-area-inset-bottom, 0px));
-    width:54px;height:26px;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:4px;cursor:pointer;
-    -webkit-tap-highlight-color:transparent;opacity:.30;
+  /* ── AYARLAR TUTAMAGI: SOL UST ───────────────────────────────────
+     Nebula kalkinca sol ust bosaldi; tutamak oraya tasindi. Uc KALIN
+     cizgi ve renkleri ORBITAPE'in kendi temasindan: markanin
+     gradyanindaki iki durak (turkuaz -> tozlu gul) ve arasindaki
+     karisim. Yani ayni palet, ucuncu bir renk uydurulmadi.
+     Konum ORBITAPE yazisiyla ayni ust hizada: karsilikli iki kose. */
+  #ayarTut{position:fixed;z-index:96;
+    top:calc(22px + env(safe-area-inset-top, 0px));
+    left:calc(14px + env(safe-area-inset-left, 0px));
+    width:46px;height:38px;display:flex;flex-direction:column;
+    align-items:flex-start;justify-content:center;gap:7px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
-  #ayarTut:hover,#ayarTut:focus-visible{opacity:.75;}
-  #ayarTut span{display:block;width:22px;height:1.5px;border-radius:2px;
-    background:currentColor;transition:width .22s ease, opacity .22s ease;}
-  #ayarTut span:last-child{width:14px;opacity:.7;}
-  body.ayar-acik #ayarTut{opacity:.85;}
-  body.ayar-acik #ayarTut span:last-child{width:22px;opacity:1;}
-  body.t-lib   #ayarTut{color:#8ff0dd;}
-  body.t-liste #ayarTut{color:#d9d0dd;}
-  body.t-radio #ayarTut{color:#ffc79e;}
+  #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
+  #ayarTut span{display:block;width:34px;height:3px;border-radius:3px;
+    transition:width .22s ease, opacity .22s ease;}
+  /* MARKA_PEMBE ve RADIO halkasinin turkuazi -- index'teki degerlerin
+     ayni. Ortadaki cizgi ikisinin karisimi. */
+  #ayarTut span:nth-child(1){background:#35e0d8;}
+  #ayarTut span:nth-child(2){background:#8cb1ba;width:28px;}
+  #ayarTut span:nth-child(3){background:#e27a9e;width:22px;}
+  body.ayar-acik #ayarTut span:nth-child(2){width:34px;}
+  body.ayar-acik #ayarTut span:nth-child(3){width:34px;}
 
-  #ayar{position:fixed;z-index:95;left:50%;transform:translateX(-50%) translateY(112%);
-    bottom:calc(40px + env(safe-area-inset-bottom, 0px));
+  #ayar{position:fixed;z-index:95;
+    left:calc(14px + env(safe-area-inset-left, 0px));
+    top:calc(70px + env(safe-area-inset-top, 0px));
+    transform:translateY(-12px);
     width:min(84vw,300px);padding:14px 16px 12px;
     background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
     border-radius:14px;opacity:0;pointer-events:none;
     transition:transform .26s cubic-bezier(.2,.8,.3,1), opacity .22s ease;}
-  body.ayar-acik #ayar{transform:translateX(-50%) translateY(0);
+  body.ayar-acik #ayar{transform:translateY(0);
     opacity:1;pointer-events:auto;}
   #ayar h4{margin:0 0 10px;font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:9.5px;letter-spacing:.30em;font-weight:400;
@@ -1221,7 +1231,11 @@
     <canvas id="viz"></canvas>
     <button class="hit" id="tp" aria-label="ORBITAPE"></button>
   </div>
-  <div id="mark" class="lib" aria-hidden="true"><canvas class="neb" width="148" height="148"></canvas></div>
+  <!-- NEBULA (#mark) ve GEZEGENLER (#uydular) KALDIRILDI.
+       ORBITAPE artik yalnizca canli radyo: gececek kanal yok, acilacak
+       efekt yok. Ikisi de FX uygulamasina tasindi (bkz. fx-tam
+       etiketi ve ~/Downloads/orbitape-fx).
+       Sol ust bosaldi; oraya AYARLAR tutamagi geldi. -->
   <!-- Kanal adları halkalara taşındı (en dıştaki üç halka). Sağ üstte
        artık sadece uygulamanın adı duruyor. Ölçü referansı olarak
        kullanıldığı için eleman yapısı aynı kaldı. -->
@@ -1237,7 +1251,7 @@
     </div>
   </div>
 
-  <div id="uydular" aria-hidden="false"></div>
+
   <div id="karsilama" aria-hidden="true">
     <div class="isaret">
       <span class="dalga"></span><span class="dalga d2"></span>
@@ -1276,7 +1290,7 @@
   <div id="sesCubuk" aria-hidden="true"><i></i></div>
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
-       aria-expanded="false" aria-controls="ayar"><span></span><span></span></div>
+       aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <h4>SETTINGS</h4>
     <!-- tabindex KAPALIYKEN -1: panel aria-hidden iken icindeki
@@ -1968,31 +1982,33 @@
   }
   const $=id=>document.getElementById(id);
   const btn=$('tp'), ses=$('ses'), flash=$('flash'), c=$('noise'), ctx=c.getContext('2d');
-  const ust=$('ust'), mark=$('mark');                              // sağ üst istif + sol üst nebula
+  const ust=$('ust');
+  /* NEBULA KALDIRILDI ama uzerinde donen bir avuc satir var
+     (sinif atama, konum olcusu, eski kanal sorusu). Hepsini tek tek
+     ayiklamak yerine KUKLA bir eleman veriliyor: DOM'a hic girmiyor,
+     dolayisiyla ekranda gorunmuyor, ama classList/style/querySelector
+     cagrilari patlamiyor. Ikinci asamada o satirlar da silinecek. */
+  const mark = $('mark') || document.createElement('div');
   const np=$('np'), npAd=$('npAd'), npSanatci=$('npSanatci'), npKaynak=$('npKaynak');   // çalan parça paneli
   const npUst=$('npUst');                                        // EARTH/AMBIANCE künye satırı
   const geriDug=$('geri'), ileriDug=$('ileri'), uyduKap=$('uydular');
   /* UYDU LİSTESİ — büyükten küçüğe. cap: nebula çapının oranı. Yeni bir mod
      eklemek için buraya bir satır yazmak yetiyor; dizilim kendiliğinden olur. */
-  const UYDULAR = [
-    /* Gezegen + ayları: ilki sağ ekvatorda, sonrakiler saat yönünde aşağı
-       iner. Her adımda hem küçülüyor hem yörüngesi genişliyor. */
-    { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO — tape / lo-fi' },
-    { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP — infinite repeat' },
-    { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE — collapse / infinite echo' },
-    /* ── ANA FX ────────────────────────────────────────────────────
-       Eskiden temel efekt her sürüklemede kendiliğinden devredeydi.
-       Artık onun da bir gezegeni var: kapalıyken halkalar KATEGORİ
-       menüsü, açıkken FX. Böylece ikisi birbirine karışmıyor. */
-    { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX — main effect group' }
-  ];
+  /* ── GEZEGENLER (FX DUGMELERI) KALDIRILDI ────────────────────────
+     Dort efekt kipi ve onlarin gezegen dugmeleri FX uygulamasina
+     tasindi (fx-tam etiketi). Dizi BOS birakildi, silinmedi: uzerinde
+     donen bes ayri yer var (cizim, tema, tur, olay baglama) ve bos bir
+     dizi hepsini sessizce devre disi birakiyor. Ikinci asamada o
+     yerler de temizlenecek.
+     Eski tanim FX uygulamasinda duruyor. */
+  const UYDULAR = [];
   const uyduDug = {};
   UYDULAR.forEach(u=>{
     const b=document.createElement('button');
     b.type='button'; b.className='uydu'; b.dataset.fx=u.fx; b.dataset.gk=u.gk||'';
     b.title=u.ad; b.setAttribute('aria-label',u.ad);
     b.innerHTML='<span class="nk"></span><i class="hlk"></i>';   // hlk: Satürn halkası
-    uyduKap.appendChild(b); uyduDug[u.fx]=b;
+    if(uyduKap) uyduKap.appendChild(b); uyduDug[u.fx]=b;
   });
   const bekle=$('bekle'), bekleGly=$('bekleGly');               // WAIT göstergesi (uzaylı sembol)
   /* Her parça bir sembol. Dağarcık geometri, yaşam ağacı, simya ve gök
@@ -2616,11 +2632,12 @@
      Erken tanimli (var degil const ama en ustte): modAdiYaz acilista
      da cagriliyor. */
   const KANAL_ADI = { radio:'RADIO', lib:'SOUNDS', liste:'MIXTAPE' };
-  let mod='radio';                     // ('radio' | 'lib' | 'liste')
-  try{
-    const _k = localStorage.getItem('orbitape.kanal');
-    if(_k === 'radio' || _k === 'lib' || _k === 'liste') mod = _k;
-  }catch(e){ _yut(e); }
+  /* KANAL ARTIK TEK: RADIO. Arsiv (lib) ve mixtape (liste) kaldirildi;
+     'mod' degiskeni duruyor cunku yuzlerce yerde okunuyor, ama artik
+     hicbir zaman degismiyor. Depodaki eski deger de siliniyor: dun
+     arsivde kalmis biri bugun bos bir kanalda acilmasin. */
+  let mod='radio';
+  try{ localStorage.removeItem('orbitape.kanal'); }catch(e){ _yut(e); }
   let radyoKuyruk=[];
   // ── MIXTAPE: kullanıcının kendi şarkı listesi (liste.json) ──
   const LISTE_URL     = "https://raw.githubusercontent.com/playjoymusic/tracks/main/liste.json";
@@ -6158,6 +6175,9 @@
   }
   function modaGec(yeni){
     if(!yeni) return;
+    /* Radyo disinda bir kanal YOK. Eski bir cagri ya da depodan gelen
+       eski bir deger uygulamayi bos bir kanala atmasin. */
+    if(yeni !== 'radio') return;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     /* ── KANAL DEĞİŞİMİ MODU KAPATIR ──────────────────────────────
        Mod bir "şu an şunu dinliyorum" hâli; kanal ise nereden geldiği.
@@ -6173,7 +6193,8 @@
     // RADIOTAPE'te aranacak isim yok; oraya geçmek etiketi kaldırır.
     if(yeni==='radio'){ try{ araGiris.value=''; etiketKur(''); }catch(e){ _yut(e); } }
     mod = yeni;
-    try{ localStorage.setItem('orbitape.kanal', mod); }catch(e){ _yut(e); }   // devamlılık
+    /* Kanal artik depoya YAZILMIYOR: tek kanal var, hatirlanacak bir
+       sey yok. Eski deger acilista siliniyor (bkz. yukarisi). */
     /* ── KANAL DEGISINCE DURUM SIFIRLANIR ─────────────────────────
        Nebula iki kanal arasinda gecis yapmaya baslayinca ortaya cikti:
        halka sayisi kanala gore degisiyor (radyoda 7, arsivde 5) ama
@@ -6442,7 +6463,9 @@
      ORBITAPE (sesler) -> MIXTAPE (insanlarin parcalari) -> basa. */
   /* MIXTAPE SIMDILIK KAPALI: calismiyordu, nebuladan oraya gecmek
      kullaniciyi bos kanalda birakiyordu. Listeye geri eklemek yeter. */
-  const KANAL_SIRA = ['radio','lib'];
+  /* Tek kanal kaldi: gecilecek yer yok. Dizi duruyor ki havuzDegis()
+     ve testler bir sey aramasin; icinde tek eleman var. */
+  const KANAL_SIRA = ['radio'];
   /* ── NEBULA ONCE SORUYOR ─────────────────────────────────────────
      Sol ustteki gezegene basmak kanali ANINDA degistiriyordu: canli
      radyoyu dinlerken yanlislikla degen parmak seni arsive atiyor,
@@ -6468,6 +6491,10 @@
     }catch(e){ _yut(e); }
   }
   function havuzDegis(){
+    /* KANAL GECISI KALDIRILDI: tek kanal var. Fonksiyon duruyor ama
+       hicbir sey yapmiyor -- cagiran yerler (nebula) zaten silindi,
+       geride kalan bir cagri olursa da sessizce donuyor. */
+    if(KANAL_SIRA.length < 2) return;
     try{
       const i = KANAL_SIRA.indexOf(mod);
       const hedef = KANAL_SIRA[(i < 0 ? 0 : i + 1) % KANAL_SIRA.length];
@@ -8230,7 +8257,7 @@
         });
         }finally{ try{ c.filter='none'; }catch(e){ _yut(e); } c.restore(); }
       }
-      const sonuk = uyduKap && uyduKap.classList.contains('sonuk');
+      const sonuk = !!(uyduKap && uyduKap.classList.contains('sonuk'));
       UYDULAR.forEach(u=>{
         const d = uyduDug && uyduDug[u.fx]; if(!d) return;
         const nk = kk(d.querySelector('.nk')); if(!nk) return;
@@ -9128,7 +9155,7 @@
   function fxDurumYaz(yok){
     if(yok === _fxYok) return;
     _fxYok = yok;
-    try{ uyduKap.classList.toggle('sonuk', yok); }catch(e){ _yut(e); }
+    try{ if(uyduKap) uyduKap.classList.toggle('sonuk', yok); }catch(e){ _yut(e); }
   }
   function fxDurumTazele(){
     fxDurumYaz(!(grafHazir && analiz && lopass));
@@ -9652,7 +9679,7 @@
         oynat:(kk=>()=>{ try{ modAdiTut(adlar[kk]); }catch(e){ _yut(e); } })(k) });
     }
     return [
-      { bas:'ORBITAPE', metin:'Live radio and a sound archive.<br>Tap the centre to start.',
+      { bas:'ORBITAPE', metin:'Live radio from around the world.<br>Tap the centre to start.',
         duraklar:[{hedef:{disk:0.10, aci:0}, sure:2000}] },
       { bas:'GENRES', metin:'Hold on the rings.<br>Each ring is a genre.',
         duraklar: halkaGezi },
@@ -9664,17 +9691,11 @@
                   {hedef:'#bekle', sure:700}] },
       { bas:'NOW PLAYING', metin:'Down here: the station,<br>its genre and where it broadcasts from.',
         duraklar:[{hedef:'#np', sure:1300}] },
-      { bas:'EFFECTS', metin:'The planets are the effects.<br>Tap one to turn it on.',
-        duraklar:[
-          {hedef:'.uydu[data-fx="ana"]',       sure:620, oynat:()=>{ try{ if(FXMOD!=='ana') fxModGec('ana'); }catch(e){ _yut(e); } }},
-          {hedef:'.uydu[data-fx="retro"]',     sure:620, oynat:()=>{ try{ if(FXMOD!=='retro') fxModGec('retro'); }catch(e){ _yut(e); } }},
-          {hedef:'.uydu[data-fx="dongu"]',     sure:620, oynat:()=>{ try{ if(FXMOD!=='dongu') fxModGec('dongu'); }catch(e){ _yut(e); } }},
-          {hedef:'.uydu[data-fx="karadelik"]', sure:700, oynat:()=>{ try{ if(FXMOD!=='karadelik') fxModGec('karadelik'); }catch(e){ _yut(e); } }}] },
-      { bas:'SHAPE', metin:'With an effect on, drag inside the disc.<br>The rings reach toward your finger.',
-        duraklar:[{hedef:{disk:0.34, aci:-46}, sure:800},
-                  {hedef:{disk:0.30, aci:118}, sure:800}] },
-      { bas:'CHANNEL', metin:'The big planet switches channel:<br>live radio or the archive.',
-        duraklar:[{hedef:'#mark', sure:1400, oynat:()=>{ try{ fxNormale(); }catch(e){ _yut(e); } }}] },
+      /* EFFECTS / SHAPE / CHANNEL adimlari KALDIRILDI: gezegenler,
+         FX ve kanal geciai artik yok. Yerine SETTINGS geldi -- sol
+         ustteki uc cizgi, turda gosterilmezse kimse bulamaz. */
+      { bas:'SETTINGS', metin:'Top left: sounds you can turn off,<br>and this tour again.',
+        duraklar:[{hedef:'#ayarTut', sure:1300}] },
       { bas:'RECORD', metin:'REC records the screen with sound.<br>CAM adds the front camera.',
         duraklar:[{hedef:'#araclar', sure:1300}] },
       { bas:'READY', metin:'That\u2019s it. Enjoy.',

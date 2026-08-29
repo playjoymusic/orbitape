@@ -280,7 +280,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     return bul;
   });
   K('Kalici CSS filtresi/katmani', filtre.length===0, filtre.length ? filtre.join(', ').slice(0,110) : 'YOK');
-  K('Nebula tuval mi',        await pg.evaluate(()=>{const n=document.querySelector('#mark .neb'); return !!(n&&n.tagName==='CANVAS');}), 'canvas');
+  /* 'Nebula tuval mi' KALKTI: nebula yok. Yerine "Nebula ekranda yok". */
 
   // ── 3. DIL: ekranda turkce olmasin ──────────────────────────────────
   const dil = await pg.evaluate(()=>{
@@ -414,19 +414,26 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* Nebula + gezegenler, karsisindaki ORBITAPE yazisiyla ayni UST
      sinirdan basliyor. markHizala tekrar tekrar cagriliyor: kaymadan
      ayni yerde durmali. */
-  const hz = await pg.evaluate(()=>{
-    const ol = ()=>{
-      const ad=document.querySelector('#ust .kanal.ad'), k=document.querySelector('#mark .neb');
-      const ab=ad.getBoundingClientRect(), nb=k.getBoundingClientRect();
-      const fs=parseFloat(getComputedStyle(ad).fontSize)||20;
-      return { yazi: ab.top + (ab.height-fs)/2 + fs*0.16, kure: nb.top - nb.height*0.04,
-               top: parseFloat(getComputedStyle(document.getElementById('mark')).top)||0 };
-    };
-    const a=ol(); for(let i=0;i<8;i++) markHizala(); const b=ol();
-    return { fark:+(a.yazi-a.kure).toFixed(2), kayma:+(b.top-a.top).toFixed(2) };
-  });
-  K('Nebula ORBITAPE ile ayni ust hizada', Math.abs(hz.fark) <= 2, 'fark '+hz.fark+'px');
-  K('Hiza tekrarda kaymiyor', Math.abs(hz.kayma) <= 1, '8 cagri sonrasi '+hz.kayma+'px');
+  /* ── NEBULA VE GEZEGENLER KALDIRILDI ──────────────────────────
+     ORBITAPE artik yalnizca canli radyo: gececek kanal yok, acilacak
+     efekt yok. Ikisi de FX uygulamasina tasindi (fx-tam etiketi).
+     Buradaki testler eskiden ikisinin YERINI olcuyordu; artik
+     YOKLUKLARINI dogruluyorlar. Sessizce geri gelirlerse yakalanir. */
+  K('Nebula ekranda yok', await pg.evaluate(()=>
+      !document.getElementById('mark')), 'kanal anahtari kalkti');
+  K('Gezegenler ekranda yok', await pg.evaluate(()=>
+      !document.getElementById('uydular')
+      && document.querySelectorAll('.uydu').length === 0
+      && UYDULAR.length === 0), 'FX dugmeleri kalkti');
+  K('Tek kanal var', await pg.evaluate(()=>
+      KANAL_SIRA.length === 1 && KANAL_SIRA[0] === 'radio' && mod === 'radio'),
+     'arsiv ve mixtape kanallari kapandi');
+  K('Eski kanal depodan siliniyor', await pg.evaluate(()=>{
+      try{ localStorage.setItem('orbitape.kanal','lib'); }catch(e){}
+      /* Acilisin yaptigi sey: eski deger okunmuyor, siliniyor. */
+      return /localStorage\.removeItem\('orbitape\.kanal'\)/
+        .test(document.documentElement.innerHTML);
+    }), 'dun arsivde kalan bugun bos kanalda acilmiyor');
 
   K('Dondurmede tuval silinmiyor', dnd <= 6, '26 resize -> '+dnd+' silme');
 
@@ -471,6 +478,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       }
       /* katmanlar cakisiyor mu */
       await pp.reload(); await pp.waitForTimeout(2300);
+      /* KARSILAMA ELI TUR SIRASINDA OLCULUYOR, sonrasinda degil.
+         Tur kisaldi (EFFECTS/SHAPE/CHANNEL adimlari kalkti) ve
+         asagidaki 8x1.5 sn'lik dongu turdan uzun surer oldu: olcum
+         tur BITTIKTEN sonraya dusuyor, el o zaman haklı olarak
+         cikiyor ve test kod hatasi yokken kirmizi yaniyordu.
+         Olculmek istenen sey "tur ACIKKEN el yok". */
+      const kars = await pp.evaluate(()=>
+        document.getElementById('tur').classList.contains('on')
+        && document.getElementById('karsilama').classList.contains('on'));
       let cak = 0;
       for(let i=0;i<8;i++){
         cak += await pp.evaluate(()=>{
@@ -490,7 +506,6 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         });
         await pp.waitForTimeout(1500);
       }
-      const kars = await pp.evaluate(()=>document.getElementById('karsilama').classList.contains('on'));
       /* SKIP: kutu isaretlenmeden -> tekrar cikmali */
       /* TUR KENDILIGINDEN BITEBILIYOR. Adim sayisi degistikce bu
          dongu turdan uzun surebiliyor ve SKIP gorunmez oluyordu ->
@@ -587,31 +602,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     AKTIF_AILE = eskiAile; mod = eskiKanal;
     return { tur };
   });
-  const nebT = await pg.evaluate(async()=>{
-    AKTIF_MOD='HUMAN'; modAdiYaz(); fxModGec('retro');
-    await new Promise(r=>setTimeout(r,120));
-    const once = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
-    /* NEBULA ONCE SORUYOR: ilk basis yalnizca soruyu aciyor, kanal
-       degismiyor. Ikinci basis geciriyor. Test ikisini de olcuyor --
-       ilk basista kanal degisirse "yanlislikla degen parmak" hatasi
-       geri gelmis demektir. */
-    moodDegis(); await new Promise(r=>setTimeout(r,120));
-    const soruAnı = {kanal:mod, soru:!!document.getElementById('mark').classList.contains('soruyor')};
-    moodDegis(); await new Promise(r=>setTimeout(r,150));
-    const sonra = {fx:FXMOD, mod:AKTIF_MOD, kanal:mod};
-    /* Tam tur: radyo -> sesler -> basa. MIXTAPE simdilik kapali. */
-    const _e = mod; const _s = [];
-    try{ modaGec('radio'); _s.push(mod);
-         for(let i=0;i<3;i++){ havuzDegis(); havuzDegis(); _s.push(mod); }
-         modaGec(_e); }catch(e){}
-    /* MIXTAPE kapali oldugu icin listede olmamali. */
-    /* DURUMU GERI AL: nebula artik FX'i kapatmiyor, bu yuzden test
-       kendi acdigi efekti kendi kapatmali. Kapatmazsa sonraki
-       testler "acilista FX acik" diye yalan soyler -- bir kez oldu. */
-    try{ fxNormale && fxNormale(); }catch(e){}
-    try{ if(mod !== once.kanal) modaGec(once.kanal); }catch(e){}
-    return {once, sonra, soruAnı, sira:_s.join(',')};
-  });
+  /* nebT blogu KALDIRILDI: nebula ve kanal gecisi yok. Yerine
+     yukarida "Nebula ekranda yok / Tek kanal var" testleri var. */
   const madi = await pg.evaluate(()=>{
     AKTIF_MOD='AMBIANCE'; modAdiYaz();
     const e=document.getElementById('modAd'), k=document.querySelector('#ust .kanal.ad');
@@ -671,51 +663,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        11. basis basa doner, yani tur[0] === tur[10]. */
     nb.tur && nb.tur.length===12 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[10],
     nb.tur ? nb.tur.join(' > ') : String(nb));
-  /* NEBULA ARTIK ANAHTAR: canli radyo <-> arsivin ses havuzu.
-     FX'i KAPATMIYOR -- efekt acikken kaynak degistirebilmek icin.
-     Eski davranis (FX sifirlama) uydu dugmesinde zaten var. */
-  K('Nebula uc ana kanali geziyor',
-    nebT.once.kanal !== nebT.sonra.kanal && nebT.sira === 'radio,lib,radio,lib',
-    'sira: '+nebT.sira);
-  /* ILK BASIS SORAR, IKINCI BASIS GECER.
-     Kanal degisimi uygulamadaki en buyuk hareket: calan istasyon
-     gidiyor ve geri donusu yok. Tek dokunusla olursa yanlislikla
-     degen parmak seni baska kanala atiyor. Bu satir giderse o
-     kaza geri gelir. */
-  K('Nebula once soruyor', nebT.soruAnı.kanal === nebT.once.kanal
-        && nebT.soruAnı.soru === true,
-    'ilk basis: kanal '+nebT.soruAnı.kanal+', soru '+nebT.soruAnı.soru);
-  /* SORU TAM CUMLE OLMALI. Once ekranda 'SOUNDS ?' yaziyordu:
-     ne sorulduğu belli degildi ve cirkin duruyordu. Yazi hangi kanala
-     gecilecegini ve nasil onaylanacagini soylemeli, INGILIZCE. */
-  K('Soru tam cumle ve ingilizce', await pg.evaluate(async()=>{
-      const eM = mod; mod = 'radio';
-      try{ kanalSoruIptal(); }catch(e){}
-      try{ moodDegis(); }catch(e){}
-      await new Promise(r=>setTimeout(r,80));
-      const g = document.getElementById('modGez');
-      const y = (g.textContent||'').trim();
-      const kip = g.classList.contains('soru');
-      /* Punto soru kipinde kucuk: cumle 26px ve .46em harf arasiyla
-         ekrandan tasiyordu. */
-      const punto = parseFloat(getComputedStyle(g).fontSize);
-      const tasma = g.getBoundingClientRect().width <= innerWidth - 8;
-      try{ kanalSoruIptal(); }catch(e){}
-      mod = eM;
-      return /^SWITCH TO [A-Z]+\? TAP AGAIN$/.test(y) && kip
-          && punto <= 18 && tasma && !/[çğışöüÇĞİŞÖÜ]/.test(y);
-    }), 'SWITCH TO ... ? TAP AGAIN, ekrana sigiyor, soru kipi acik');
+  /* Kanal gezme, nebula sorusu ve "kanal degisince FX soner"
+     testleri KALKTI: ucu de olmayan bir seyi olcuyordu. */
   /* GECICI YAZI DAHA KALIN: zaten silik, inceyken 'solmus' duruyordu. */
   K('Gecici yazi kalinligi', await pg.evaluate(()=>{
       const g = document.getElementById('modGez');
       return (parseInt(getComputedStyle(g).fontWeight,10)||400) >= 500;
     }), 'font-weight >= 500');
-  /* KANAL DEGISINCE FX SONER. Once "nebula FX'e dokunmasin" demistik
-     ama olculen davranis kotu cikti: oteki kanala gecip donunce
-     gezegenler yanik kaliyor, efekt kapali ama dugmeler acik
-     gorunuyordu. Kanal degisimi temiz baslangic olmali. */
-  K('Kanal degisince FX soner', nebT.sonra.fx==='',
-    'FX '+nebT.once.fx+' -> "'+nebT.sonra.fx+'"');
+
   /* ── FX TEK EKSEN ────────────────────────────────────────────────
      Ortadaki daire 0.215R'ye indi; iki eksen o alanda ayirt edilemez.
      Uzaklik = siddet. Ayni uzaklikta FARKLI YONLER ayni degeri
@@ -731,16 +686,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Devamlilik: kisi dun nerede biraktiysa oradan devam ediyor.
      Bozuk bir depo degeri radyoya dusmeli, uygulamayi sessiz
      birakmamali. */
-  {
-    const dev = await pg.evaluate(()=>{
-      const kaynak = document.documentElement.outerHTML;
-      return { yaziyor:/localStorage\.setItem\('orbitape\.kanal', mod\)/.test(kaynak),
-               okuyor:/localStorage\.getItem\('orbitape\.kanal'\)/.test(kaynak),
-               dogrular:/_k === 'radio' \|\| _k === 'lib' \|\| _k === 'liste'/.test(kaynak) };
-    });
-    K('Kanal hatirlaniyor', dev.yaziyor && dev.okuyor, 'kanal degisince depoya yaziliyor');
-    K('Bozuk kanal degeri radyoya dusuyor', dev.dogrular, 'yalniz uc gecerli deger kabul ediliyor');
-  }
+  /* ── KANAL HAFIZASI KALKTI ────────────────────────────────────
+     Tek kanal var; hatirlanacak bir sey yok. Ustelik eski deger
+     TEHLIKELI: dun arsivde kalan biri bugun bos bir kanalda acilirdi.
+     Onun icin acilista siliniyor -- test de bunu dogruluyor. */
+  K('Kanal depoya yazilmiyor', await pg.evaluate(()=>{
+      const k = document.documentElement.outerHTML;
+      return !/setItem\('orbitape\.kanal'/.test(k)
+          && /removeItem\('orbitape\.kanal'\)/.test(k);
+    }), 'eski deger siliniyor, yenisi yazilmiyor');
   K('Kategori yazisi tiklanabilir',
     await pg.evaluate(()=>{const e=document.getElementById('modAd');
       return !!e && getComputedStyle(e).pointerEvents!=='none' && e.getAttribute('role')==='button';}),
@@ -780,11 +734,16 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     (await pg.evaluate(()=>[...document.querySelectorAll('#ust .kanal')].map(e=>e.textContent.trim()).join('|')))==='ORBITAPE', 'ORBITAPE');
   K('Her halkanin paleti var',
     await pg.evaluate(()=>MODSIRA.every(a=>MOD_TEMA[a] && MOD_TEMA[a].ana)), '8/8');
-  const cik = await pg.evaluate(async()=>{
-    AKTIF_MOD='SPACE'; modaGec('liste'); await new Promise(r=>setTimeout(r,300));
-    return { kanalKapatti: AKTIF_MOD===null };
-  });
-  K('Kanal degisimi modu kapatiyor', cik.kanalKapatti, 'sag ust + gezegen = cikis kapisi');
+  /* Radyo disinda bir kanal YOK: eski bir cagri gelse bile modaGec
+     onu geri ceviriyor. Bu, depodan gelen eski deger ya da kalan bir
+     kod yolu uygulamayi bos bir kanala atmasin diye. */
+  K('Radyo disina gecilemiyor', await pg.evaluate(async()=>{
+      const once = mod;
+      try{ modaGec('lib'); }catch(e){}
+      try{ modaGec('liste'); }catch(e){}
+      await new Promise(r=>setTimeout(r,120));
+      return mod === 'radio' && once === 'radio';
+    }), 'lib ve liste cagrilari sessizce reddediliyor');
   K('Acilista RADIOTAPE',    md.aktif==='RADIOTAPE', 'AKTIF_MOD='+md.aktif);
 
   /* ── ANA FX GEZEGENI + FX/KATEGORI KAPISI ───────────────────────
@@ -794,48 +753,27 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const kutu = await pg.evaluate(()=>{const r=document.getElementById('tp').getBoundingClientRect();
     return {x:r.left+r.width/2, y:r.top+r.height/2, R:r.width/2};});
   const halkaX = kutu.x + kutu.R*(0.55+2*0.080);
-  const uyduAd = await pg.evaluate(()=>UYDULAR.map(u=>u.fx));
-  const fxAcilis = await pg.evaluate(()=>FXMOD);
-  // 1) FX KAPALI: halkada gezinme calisir, surukleme FX'e dokunmaz
-  await pg.evaluate(()=>{ fxX=0; fxY=0; try{ if(AKTIF_MOD) modGec(); }catch(e){} });
-  /* MOOD_TUT (300ms) kadar BASILI TUTMAK gerekiyor: kisa dokunus
-     artik kategori kipini acmiyor. */
-  await pg.mouse.move(halkaX, kutu.y); await pg.mouse.down(); await pg.waitForTimeout(480);
-  const kapaliGez = await pg.evaluate(()=>!!_moodGez);
-  await pg.mouse.move(kutu.x + kutu.R*0.20, kutu.y, {steps:5}); await pg.waitForTimeout(200);
-  const kapaliFx = await pg.evaluate(()=>+Math.hypot(fxX,fxY).toFixed(3));
-  await pg.mouse.up(); await pg.waitForTimeout(250);
-  await pg.evaluate(()=>{ try{ if(AKTIF_MOD) modGec(); }catch(e){} });
-  // 2) ANA FX ac -> halka artik FX
-  await pg.click('.uydu[data-fx="ana"]'); await pg.waitForTimeout(400);
-  const fxAcik = await pg.evaluate(()=>FXMOD);
-  const modOnce = await pg.evaluate(()=>AKTIF_MOD);
-  await pg.evaluate(()=>{fxX=0;fxY=0;});
-  await pg.mouse.move(halkaX, kutu.y); await pg.mouse.down(); await pg.waitForTimeout(480);
-  const acikGez = await pg.evaluate(()=>!!_moodGez);
-  await pg.mouse.move(kutu.x + kutu.R*0.85, kutu.y, {steps:6}); await pg.waitForTimeout(200);
-  const acikFx = await pg.evaluate(()=>+Math.hypot(fxX,fxY).toFixed(3));
-  await pg.mouse.up(); await pg.waitForTimeout(250);
-  const modSonra = await pg.evaluate(()=>AKTIF_MOD);
-  // 3) buyuk nebula: KANAL degistirir, FX'e dokunmaz
-  const nebOnceKanal = await pg.evaluate(()=>mod);
-  await pg.click('#mark'); await pg.waitForTimeout(150);   // 1. basis: sorar
-  await pg.click('#mark'); await pg.waitForTimeout(400);   // 2. basis: gecer
-  const neb = await pg.evaluate(()=>({fx:FXMOD, mod:AKTIF_MOD, kanal:mod}));
-  await pg.evaluate(()=>{ try{ if(AKTIF_MOD) modGec(); }catch(e){} try{ fxNormale&&fxNormale(); }catch(e){} });
-  // 4) gezegenler ekranda mi, gorsel diskler cakisiyor mu
-  const yerlesim = await pg.evaluate(()=>{
-    const d=[...document.querySelectorAll('.uydu')].map(b=>{
-      const n=(b.querySelector('.nk')||b).getBoundingClientRect();
-      return {f:b.dataset.fx, cx:n.left+n.width/2, cy:n.top+n.height/2, yc:n.width/2, l:n.left, t:n.top, r:n.right};
-    });
-    let tasma=0, cak=0;
-    d.forEach(a=>{ if(a.l<0 || a.t<0 || a.r>innerWidth) tasma++; });
-    for(let i=0;i<d.length;i++) for(let j=i+1;j<d.length;j++){
-      if(Math.hypot(d[i].cx-d[j].cx, d[i].cy-d[j].cy) < d[i].yc+d[j].yc) cak++;
-    }
-    return {tasma, cak, n:d.length};
-  });
+  /* ── FX KIP TESTLERI KALDIRILDI ────────────────────────────────
+     Dort efekt kipi, gezegen dugmeleri ve nebulanin kanal degistirmesi
+     FX uygulamasina tasindi (fx-tam etiketi). Buradaki dizi de artik
+     bos; asagidaki testler onun YERINE gecti.
+     ORBITAPE tarafinda kalan tek jest: halkalarda gezinip birakmak.
+     Surukleme FX'e girmiyor cunku FX yok. */
+  const kapaliGez = await (async()=>{
+    const kutu2 = await pg.evaluate(()=>{const r=document.getElementById('tp').getBoundingClientRect();
+      return {x:r.left+r.width/2, y:r.top+r.height/2, R:r.width/2};});
+    const hx = kutu2.x + kutu2.R*(0.55+2*0.080);
+    await pg.mouse.move(hx, kutu2.y); await pg.mouse.down(); await pg.waitForTimeout(480);
+    const g = await pg.evaluate(()=>!!_moodGez);
+    await pg.mouse.up(); await pg.waitForTimeout(200);
+    return g;
+  })();
+  K('Halkada gezinme calisiyor', kapaliGez === true,
+     'basili tutus kategori kipini aciyor');
+  K('FX kapali ve kapali kaliyor', await pg.evaluate(()=>
+      (typeof FXMOD === 'undefined' || FXMOD === '') && UYDULAR.length === 0),
+     'acacak dugme yok');
+
   /* ── ACILIS: HER ZAMAN RADYO ────────────────────────────────────
      Depoda kategori kalsa bile acilis radyo. Ve ilk ses baslayana
      kadar disk bolunmez: nereye basilirsa basilsin radyo acilir,
@@ -1140,75 +1078,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   });
   K('◁ ve ▷ ayni hizada', gz <= 1.5, gz.toFixed(1)+'px fark');
 
-  /* ── FX IPUCU ELI ───────────────────────────────────────────────
-     Ilk kez efekt acan kisiye halkalarin ustunde bir el cikar; kisi
-     GERCEKTEN surtene kadar hakki durur, surttukten sonra bir daha
-     cikmaz. */
-  const fxip = await (async()=>{
-    const { sayfa: pp, kapat } = await sayfaAc(b, {ag:'yerel', bekle:2000,
-      once: ()=>{ try{ localStorage.setItem('orbitape.tur','1'); }catch(e){} } });
-    try{
-      const d = ()=>pp.evaluate(()=>({on:document.getElementById('fxEl').classList.contains('on'),
-        depo:localStorage.getItem('orbitape.fxIpucu')}));
-      const acilis = await d();
-      await pp.click('.uydu[data-fx="ana"]'); await pp.waitForTimeout(400);
-      const acik = await d();
-      /* Tur katmani acik kalabiliyor ve ustunu kapatiyor; burada
-         olcmek istedigimiz sey dugmenin ISI, tiklanabilirligi degil. */
-      const _kOnce = await pp.evaluate(()=>mod);
-      const _aOnce = await pp.evaluate(()=>AKTIF_AILE);   // isim dugmesi aileyi degistiriyor
-      await pp.evaluate(()=>document.querySelector('#ust .kanal.ad').click());
-      await pp.waitForTimeout(300);
-      /* DURUMU GERI AL: bu blok bittikten sonraki testler radyo
-         kanalinda olmaya guveniyor. Birakip gidince kayit ve el
-         testleri sebepsiz kirmiziya donmustu. */
-      /* SADECE KANAL geri aliniyor. Once burada modSec de cagriliyordu
-         ve o localStorage'a yaziyor -> "acilista depo bos" kontrolu
-         sebepsiz kirmiziya donuyordu. Test kendi izini birakmamali. */
-      /* AILEYI DE GERI AL. FX ipucu artik TUR BASINA susuyor; bu blok
-         aileyi degistirip birakinca "ayni turde bir daha cikmaz"
-         kontrolu baska bir turde olculuyor ve haksiz yere dusuyor. */
-      await pp.evaluate(([k,a])=>{ try{ if(mod!==k) modaGec(k);
-                                  AKTIF_MOD=null; localStorage.removeItem('orbitape.mod');
-                                  AKTIF_AILE = a; modAdiYaz(); }catch(e){} }, [_kOnce, _aOnce]);
-      await pp.waitForTimeout(200);
-      const baska = await d();
-      await pp.click('.uydu[data-fx="ana"]'); await pp.waitForTimeout(300);
-      const kapali = await d();
-      await pp.click('.uydu[data-fx="retro"]'); await pp.waitForTimeout(300);
-      const tekrar = await d();
-      const k = await pp.evaluate(()=>{const r=document.getElementById('tp').getBoundingClientRect();
-        return {x:r.left+r.width/2,y:r.top+r.height/2,R:r.width/2};});
-      await pp.mouse.move(k.x,k.y); await pp.mouse.down();
-      await pp.mouse.move(k.x+6,k.y,{steps:2}); await pp.mouse.up(); await pp.waitForTimeout(250);
-      const minik = await d();
-      await pp.mouse.move(k.x,k.y); await pp.mouse.down();
-      for(let i=0;i<14;i++){ const a=i/14*6.28;
-        await pp.mouse.move(k.x+Math.cos(a)*k.R*0.55, k.y+Math.sin(a)*k.R*0.55,{steps:2}); }
-      await pp.mouse.up(); await pp.waitForTimeout(300);
-      const surtme = await d();
-      await pp.click('.uydu[data-fx="retro"]'); await pp.waitForTimeout(200);
-      await pp.click('.uydu[data-fx="dongu"]'); await pp.waitForTimeout(400);
-      const sonra = await d();
-      await pp.reload(); await pp.waitForTimeout(2000);
-      await pp.click('.uydu[data-fx="ana"]'); await pp.waitForTimeout(400);
-      const yeniden = await d();
-      return { acilis, acik, baska, kapali, tekrar, minik, surtme, sonra, yeniden };
-    } finally { await kapat(); }
-  })();
-  K('FX ipucu ilk acilista YOK', fxip.acilis.on===false, 'efekt kapali');
-  K('FX acilinca el cikar', fxip.acik.on===true, 'gorunur');
-  K('Baska ise gecince el DURUR', fxip.baska.on===true, 'hak yanmiyor');
-  K('FX kapaninca el gider, hak durur', fxip.kapali.on===false && !fxip.kapali.depo && fxip.tekrar.on===true,
-     'tekrar acilinca yine cikti');
-  K('Minik oynatma hakki YAKMAZ', fxip.minik.on===true && !fxip.minik.depo, 'gercek surtme sart');
-  /* Depoda artik '1' degil, TUR -> ZAMAN eslesmesi var: ipucu tur
-     basina susuyor ve uzun sure dokunulmazsa geri geliyor. */
-  K('Gercek surtme ipucunu bitirir',
-     fxip.surtme.on===false && /\{".+":\d{10,}\}/.test(fxip.surtme.depo||''),
-     'depo=' + (fxip.surtme.depo||'-'));
-  K('Ayni turde bir daha cikmaz', fxip.sonra.on===false && fxip.yeniden.on===false,
-     'yeniden yuklemede de yok');
+  /* ── FX IPUCU ELI TESTLERI KALDIRILDI ──────────────────────────
+     Ipucu eli ilk kez EFEKT acan kisiye cikiyordu; efekt kalmadi.
+     Sekiz test FX uygulamasina ait -- git gecmisinde ve fx-tam
+     etiketinde duruyorlar, oraya tasinacaklar. */
 
 
   K('Gecmis cok adimli', gc.bes.n===5 && gc.bes.pos===4, gc.bes.n+' kayit');
@@ -1219,16 +1092,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Sonda ortaya basis YENI parca arar', gc.d3===false && gc.sonPos===4, 'ileriDonduMu='+gc.d3+' | pos '+gc.sonPos);
   K('Yeni parca ileri dali atar', gc.dal.n===4 && gc.dal.pos===3 && gc.dal.calan==='Track 9', gc.dal.n+' kayit, son Track 9');
 
-  K('4. gezegen: ana FX grubu', uyduAd.length===4 && uyduAd.indexOf('ana')>=0, uyduAd.join(' '));
-  K('Acilista FX kapali',        fxAcilis==='', 'FXMOD="'+fxAcilis+'"');
-  K('FX kapali: halka=kategori', kapaliGez===true && kapaliFx<0.001,
-     'gezinme '+kapaliGez+' | fx '+kapaliFx);
-  K('ANA FX aciliyor',           fxAcik==='ana', 'FXMOD='+fxAcik);
-  K('FX acik: kategori kapali',  acikGez===false && acikFx>0, 'gezinme '+acikGez+' | fx '+acikFx);
-  K('FX acikken kategori secilmiyor', modOnce===modSonra, modSonra===modOnce?'degismedi':'mod degisti');
-  K('Nebula kanal degistirir', neb.kanal !== nebOnceKanal, nebOnceKanal+' -> '+neb.kanal);
-  K('Gezegenler ekran icinde',   yerlesim.tasma===0, yerlesim.tasma+' tasma / '+yerlesim.n+' gezegen');
-  K('Gezegenler cakismiyor',     yerlesim.cak===0, yerlesim.cak+' cakisma');
+  /* Yedi FX/gezegen testi KALDIRILDI: olcecekleri sey yok. Yerlerine
+     yukarida "Halkada gezinme calisiyor" ve "FX kapali ve kapali
+     kaliyor" gecti. */
   // KANAL SAFLIGI: her kanal kendi kaynaklarindan mi besleniyor
   const saf = await pg.evaluate(()=>({
     radyoJamendo: /jamendoCek\(\)[\s\S]{0,120}radyoKuyruk\.push/.test(document.documentElement.innerHTML),
@@ -1720,7 +1586,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      her birine ayri yazilmasi gerekiyor. */
   {
     const ta = await pg.evaluate(()=>{
-      const se = ['#ust','#modAd','#ust .kanal.ad','#mark','#uydular'];
+      /* #mark ve #uydular listeden cikti: ikisi de kaldirildi. */
+      const se = ['#ust','#modAd','#ust .kanal.ad'];
       const kotu = se.filter(x=>{ const e=document.querySelector(x);
         return !e || getComputedStyle(e).touchAction !== 'manipulation'; });
       return { kotu, dbl:typeof window.ondblclick !== 'undefined' };
@@ -3001,12 +2868,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
            en dis halkanin yaricapina esit olsun. */
         const gez = a[1].duraklar.map(d=>d.hedef.disk);
         const enDis = halkaIc() + (halkaAdlar().length-1)*halkaAra();
-        return basliklar.includes('GENRES') && basliklar.includes('CHANNEL')
+        /* EFFECTS / SHAPE / CHANNEL adimlari kalkti (gezegenler ve
+           kanal gecisi yok), yerine SETTINGS geldi. Tur kisaldi. */
+        return basliklar.includes('GENRES') && basliklar.includes('SETTINGS')
             && basliklar.includes('NOW PLAYING')
-            && !basliklar.includes('CATEGORIES')
+            && !basliklar.includes('EFFECTS') && !basliklar.includes('SHAPE')
+            && !basliklar.includes('CHANNEL') && !basliklar.includes('CATEGORIES')
             && Math.abs(gez[0] - enDis) < 0.001
-            && sure > 13000 && sure < 19000;
-      }), 'GENRES/NOW PLAYING/CHANNEL var, yaricaplar canli, sure ~16 sn');
+            && sure > 8000 && sure < 16000;
+      }), 'GENRES/NOW PLAYING/SETTINGS var, FX adimlari yok, yaricaplar canli');
     K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return /item\.grup !== AKTIF_AILE/.test(k)
