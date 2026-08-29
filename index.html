@@ -290,7 +290,20 @@
   /* UCUNCU SATIR: ses. Genisligi JS'ten (sesSatirOlcu) -- ustundeki
      satirlarin en genisine esitleniyor, uc satir ayni sag kenarda
      bitiyor. */
-  #sesSatir{display:flex;align-items:center;width:var(--ses-en,114px);height:20px;}
+  /* ── SES CIZGISI YALNIZCA FARE/TRACKPAD OLAN CIHAZLARDA ─────────
+     Istenen: "volume cizgisi olmasin, sesi kapatma mute olsun --
+     ama bu sadece mobil icin. mac pc'de volume kisma acma kalsin."
+     Dogru istek: telefonda zaten donanim ses tuslari var ve ekranda
+     ikinci bir kaydirici hem yer kapliyor hem yanlislikla suruluyor.
+     Masaustunde donanim tusu yok, kaydirici gercekten lazim.
+     Sustur tusu IKISINDE DE var (yildizin saginda): tek yer, iki
+     cihazda ayni. */
+  /* Olculer TABANDA duruyor, sorguda yalnizca gorunurluk var.
+     Ikisi de sorgunun icindeyken satir dokunmatikte hicbir olcu
+     tasimiyordu: gecici olarak gosterilse bile genisligi 0 kaliyor
+     ve icindeki cizgi surulemiyordu. */
+  #sesSatir{display:none;align-items:center;width:var(--ses-en,114px);height:20px;}
+  @media (hover:hover) and (pointer:fine){ #sesSatir{display:flex;} }
   /* ── ★ FAVORİLERE GİRİŞ: REC/CAM'in yanında ────────────────────
      Favori kipine ancak sağdaki minik yıldızı BASILI TUTARAK
      girilebiliyordu; kimse bulamıyordu. Buradaki yıldız tek basışla
@@ -302,12 +315,32 @@
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
     color:#8fb6b6;transition:color .2s, border-color .2s, background .2s, opacity .25s;}
-  #favAc.var{display:flex;}
+  #favAc.var{display:flex;opacity:.88;}
+  #favAc.var:hover{opacity:1;}
   #favAc svg{width:15px;height:15px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;}
   #favAc.bos{opacity:.42;}                      /* hiç favori yok */
   #favAc.acik{color:#ffd98a;border-color:rgba(255,217,138,.45);background:rgba(26,22,10,.75);}
   #favAc.acik svg{fill:currentColor;}
   #favAc:hover{color:#cfe9e4;}
+  /* SUSTUR: ★ ile birebir ayni olcu ve kilik. Yanyana duruyorlar,
+     biri otekinden buyuk olsa satir egri gorunur. */
+  #mute{display:flex;align-items:center;justify-content:center;
+    width:38px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
+    background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
+    cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
+    color:#8fb6b6;transition:color .2s, border-color .2s, background .2s;}
+  #mute{color:rgb(var(--tv, 143,182,182));}
+  #mute svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;
+    stroke-width:1.7;stroke-linecap:round;}
+  #mute .kay{fill:currentColor;stroke:none;}
+  #mute .cap{display:none;}
+  /* SUSTURULMUS HAL: yaylar gidiyor, capraz cizgi geliyor. Renk de
+     sonuyor -- durum tek bakista okunuyor. */
+  #mute.sus{color:#d88a9e;border-color:rgba(226,122,158,.38);}
+  #mute.sus .y1,#mute.sus .y2{display:none;}
+  #mute.sus .cap{display:block;}
+  #mute:hover{color:#cfe9e4;}
+  #mute:focus-visible{outline:1px solid currentColor;outline-offset:2px;}
   body.t-liste #favAc{color:#b6adbe;} body.t-radio #favAc{color:#d6a483;}
   /* Yükseklik 32px: sağ alttaki ◁ ★ ▷ ile aynı. Dolgu dikeyde değil,
      satırın kendi yüksekliğinden geliyor -> yazı uzasa da (SAVE/DELETE,
@@ -512,9 +545,11 @@
      olculuyor (visualViewport). Mobilde klavye acilinca position:fixed
      eleman yerinde kaliyor ve arama kutusu klavyenin ALTINDA kaliyordu:
      kullanici yazdigi seyi ve sonuclari goremiyordu. */
+  /* Buyutec ayar tutamaginin SAGINDA: alt sol kose tutamagin,
+     buyutec onun yanina geciyor. 40 = tutamak genisligi, 16 = hava. */
   #ara{position:fixed;z-index:79;pointer-events:auto;
     display:flex;flex-direction:column-reverse;align-items:flex-start;
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    left:calc(var(--kx) + 56px + env(safe-area-inset-left, 0px));
     /* 41px = ucgen (5 + 26) + 10 hava. JS ilk olcumde uzerine yaziyor;
        bu deger ilk karede aramanin ucgenin uzerine binmemesi icin. */
     bottom:calc(7px + env(safe-area-inset-bottom, 0px) + var(--klavye, 0px));
@@ -599,14 +634,22 @@
   }
   /* --ug: en uzun kanal adının genişliği, çalışma anında ölçülüyor (araCizgiOlcu).
      Hem kapalı çizgi hem açık arama kutusu bu genişlikte -> soldan taşmıyor. */
-  #ara .cizgi{width:var(--ug,104px);height:26px;display:flex;align-items:center;cursor:pointer;
+  /* ── KAPALI ARAMA: SADECE BUYUTEC ────────────────────────────────
+     Yaninda ekranin yarisi kadar bir cizgi vardi. Cizginin isi
+     "burada bir sey var" demekti ama sag alttaki kunyenin yerini
+     yiyordu -- kunye kirpilmadigi icin genis, cizgi de solda
+     duruyordu ve ikisi ayni hatta sikisiyordu. Buyutec zaten
+     evrensel: cizgiye gerek yok, kunyeye 100px'den fazla yer
+     aciliyor. */
+  #ara .cizgi{width:26px;height:26px;display:flex;align-items:center;
+    justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;}
-  #ara .cizgi{gap:6px;}
-  #ara .cizgi svg{flex:0 0 auto;width:11px;height:11px;opacity:.62;transition:opacity .25s;}
-  #ara .cizgi::after{content:'';flex:1 1 auto;height:1px;background:currentColor;opacity:.40;
-    transition:opacity .25s;}
-  #ara .cizgi:hover::after{opacity:.85;}
+  /* Buyutec temanin vurgu renginde; tema yoksa kanalin rengi
+     (kutunun kendi 'color' degeri) geciyor. */
+  #ara .cizgi{color:rgb(var(--tv, 143,240,221));}
+  #ara .cizgi svg{flex:0 0 auto;width:14px;height:14px;opacity:.66;transition:opacity .25s;}
   #ara .cizgi:hover svg{opacity:1;}
+  #ara.acik .cizgi{display:none;}
   /* etiket aktifken: kapalıyken de kelime görünsün, çizgi biraz parlasın */
   #ara .etiket{order:2;margin-bottom:3px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.26em;
     color:currentColor;opacity:.82;cursor:pointer;padding:1px 0 2px;
@@ -614,7 +657,7 @@
     -webkit-tap-highlight-color:transparent;}
   #ara .etiket:empty{display:none;}
   #ara.acik .etiket{display:none;}
-  #ara.etiketli .cizgi::after{opacity:.9;}
+
   /* ── SEÇİLİ KATEGORİ ADI ─────────────────────────────────────────
      Marka adının solunda, aynı satırda, ondan küçük. Hem halkalarda
      gezinirken (parmağın altındaki) hem seçimden sonra (seçili olan)
@@ -811,11 +854,20 @@
     color:#e8b6c8;opacity:.9;
     transition:color .18s, border-color .18s, background .18s;}
   #dur svg,#duraklat svg{width:14px;height:12px;display:block;fill:currentColor;opacity:.9;}
-  /* Duraklat tusu duruma gore yuz degistiriyor: calarken iki cizgi,
-     duraklamisken oynat ucgeni. Oynat tusu (#dur) hep ucgen. */
-  #duraklat .oyn{display:none;}
-  #duraklat.durdu .d1,#duraklat.durdu .d2{display:none;}
-  #duraklat.durdu .oyn{display:block;}
+  /* IKINCI TUSUN UC YUZU.
+     Radyoda (govdede 'mood' YOK): her zaman ■ kare -- durdur.
+     Arsivde (govdede 'mood' VAR): calarken ‖ iki cizgi, duraklamisken
+     ▶ ucgen. Oynat tusu (#dur) hep ucgen kaliyor. */
+  #duraklat .oyn,#duraklat .d1,#duraklat .d2{display:none;}
+  #duraklat .stp{display:block;}
+  body.mood #duraklat .stp{display:none;}
+  body.mood #duraklat .d1,body.mood #duraklat .d2{display:block;}
+  body.mood #duraklat.durdu .d1,body.mood #duraklat.durdu .d2{display:none;}
+  body.mood #duraklat.durdu .oyn{display:block;}
+  /* OYNAT TUSU TEMANIN RENGINDE. Otekiler sabit pembemsi; oynat
+     ayrisiyor cunku en cok basilan tus o. Tema secili degilse
+     (AUTO) pembemsi kaliyor -- --tv yalnizca tema varken yaziliyor. */
+  #dur{color:rgb(var(--tv, 232,182,200));}
   /* ── SES: YATAY CIZGI ────────────────────────────────────────────
      Masaustunde dikey bir kaydirici vardi, dokunmatikte hicbir sey --
      orada iki parmak jesti kullaniliyordu ve iPhone Safari'de
@@ -834,7 +886,7 @@
      dikkat cekiyordu; oysa bir gosterge, bir dugme degil. Iz
      neredeyse gorunmez, dolu kisim yarim opaklikta; dokununca ya da
      odaklaninca tam gorunur oluyor. */
-  #sesYatay{opacity:.5;}
+  #sesYatay{opacity:.5;color:rgb(var(--tv, 166,251,234));}
   #sesYatay:hover,#sesYatay.tutuluyor,#sesYatay:focus-visible{opacity:1;}
   #sesYatay .iz{position:absolute;left:0;right:0;height:2px;border-radius:2px;
     background:rgba(120,180,180,.13);}
@@ -858,7 +910,19 @@
     transition:opacity .35s ease, color .25s, border-color .2s, background .25s;}
   #fav svg{width:15px;height:15px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;
     stroke-linejoin:round;opacity:.9;}
-  #fav.var{display:flex;opacity:.9;pointer-events:auto;}
+  /* ── IKI YILDIZ, IKI PARLAKLIK ───────────────────────────────────
+     Sag alttaki yildiz "bu parcayi isaretle" demek: parca favoride
+     DEGILKEN bos bir kutu gibi, yani SOLUK. Isaretlenince doluyor ve
+     tam parlakliga cikiyor.
+     Sol ustteki yildiz favori BOLUMUNUN kapisi -- bir durum degil bir
+     yer. O yuzden hep daha belirgin duruyor.
+     Ikisi ayni parlaklikta oldugu surece konsol duz ve okunmasi zor
+     goruluyordu; simdi goz hangisinin "durum" hangisinin "yer"
+     oldugunu bir bakista ayiriyor. */
+  #fav.var{display:flex;opacity:.52;pointer-events:auto;
+    transition:opacity .18s ease, color .25s, border-color .2s, background .25s;}
+  #fav.var.dolu,#fav.var.kip{opacity:1;}
+  #fav.var:hover{opacity:.9;}
   #fav.dolu svg{fill:currentColor;}
   #fav.kip{border-color:currentColor;background:rgba(20,34,34,.85);}
   #fav:hover{border-color:rgba(120,180,180,.34);}
@@ -1090,13 +1154,27 @@
      nesne, durumu kendisi soyluyor, ikinci bir kapatma tusu gerekmiyor.
      Renk uydurulmadi: markanin kendi gradyani (turkuaz -> tozlu gul)
      ucgenin uzerinde. */
+  /* ── TUTAMAK: RADYODA SOL ALT KOSE ───────────────────────────────
+     Alt ortadaydi ("app'in merkez tusu gibi"); kullanici sol alt
+     koseyi istedi ve orasi radyo tarafinda gercekten bos.
+     ESKI SEKLI GERI GELDI: cizgiler SOLA dayali ve uzunluklari
+     azaliyor -- sag tarafi basamak basamak iniyor, yani asagi bakan
+     ucgen hissi duruyor ama nesne yine bir "tutamak" gibi okunuyor.
+     SOUND BANKS kipinde sol alt modulun yeri; tutamak orada alt
+     ortaya donuyor (asagida). */
   #ayarTut{position:fixed;z-index:96;
-    left:50%;transform:translateX(-50%);
-    bottom:calc(5px + env(safe-area-inset-bottom, 0px));
-    width:56px;height:30px;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:5px;cursor:pointer;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    bottom:calc(7px + env(safe-area-inset-bottom, 0px));
+    width:40px;height:26px;display:flex;flex-direction:column;
+    align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
+  /* SOUND BANKS kipinde de AYNI YERDE. Once ortaya alinmisti (sol
+     alti modul aldi diye) ama modul dort hapa cikinca ortaya kadar
+     uzadi ve tutamagin uzerine bindi -- olculdu, sustur tusuyla
+     cakisiyordu. Cozum tutamagi kacirmak degil: modul BIR SATIR
+     yukari cikiyor ve tutamak alt sol kosede kaliyor. Ikisi ayni
+     sol kenardan basliyor, tek bir konsol gibi okunuyor. */
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
   /* UC CIZGI, ESKISININ AYNISI. Dolu bir ucgen degil: uzunlugu
      azalan uc cizgi zaten asagi bakan bir ucgen siluetı ciziyor ve
@@ -1109,13 +1187,16 @@
      ortalandi ve 40px'e cikti. */
   #ayarTut span{display:block;height:3.5px;border-radius:3px;
     transition:width .22s ease, opacity .22s ease;}
-  #ayarTut span:nth-child(1){background:#35e0d8;width:40px;}
-  #ayarTut span:nth-child(2){background:#8cb1ba;width:32px;}
-  #ayarTut span:nth-child(3){background:#e27a9e;width:24px;}
+  #ayarTut span:nth-child(1){background:#35e0d8;width:34px;}
+  /* Ortadaki cizgi TEMANIN vurgusu. Ustteki ve alttaki markanin
+     sabit iki duragi; ortadaki kilifla birlikte doniyor. Uc cizgi
+     hem markayi hem o anki temayi ayni anda soyluyor. */
+  #ayarTut span:nth-child(2){background:rgb(var(--tv, 140,177,186));width:27px;}
+  #ayarTut span:nth-child(3){background:#e27a9e;width:20px;}
   /* Acikken uc cizgi esitlenip duz bir yigin oluyor: ucgen kapaniyor.
      Eski davranisin birebir aynisi. */
-  body.ayar-acik #ayarTut span:nth-child(2){width:40px;}
-  body.ayar-acik #ayarTut span:nth-child(3){width:40px;}
+  body.ayar-acik #ayarTut span:nth-child(2){width:34px;}
+  body.ayar-acik #ayarTut span:nth-child(3){width:34px;}
 
   /* Panel ARAMA CIZGISININ USTUNDEN aciliyor.
      Once ucgenin hemen ustunden (38px) aciliyordu ve ekranin dibinde
@@ -1123,16 +1204,19 @@
      denk gelip alt seridin hizasini bozuyordu. Aramanin ustune
      alininca alt serit (arama · ucgen · kunye tabani) oldugu gibi
      kaliyor, panel onun uzerine biniyor -- taban degismiyor. */
+  /* Panel tutamakla ayni tarafta aciliyor: radyoda soldan, SOUND
+     BANKS kipinde ortadan. Yukari dogru, alt seride dokunmadan. */
   #ayar{position:fixed;z-index:95;
-    left:50%;
-    bottom:calc(48px + env(safe-area-inset-bottom, 0px));
-    transform:translateX(-50%) translateY(12px);
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    bottom:calc(46px + env(safe-area-inset-bottom, 0px));
+    transform:translateY(12px);
     width:min(84vw,300px);padding:14px 16px 12px;
     background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
     border-radius:14px;opacity:0;pointer-events:none;
     transition:transform .26s cubic-bezier(.2,.8,.3,1), opacity .22s ease;}
-  body.ayar-acik #ayar{transform:translateX(-50%) translateY(0);
+  body.ayar-acik #ayar{transform:translateY(0);
     opacity:1;pointer-events:auto;}
+
   #ayar h4{margin:0 0 10px;font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:9.5px;letter-spacing:.30em;font-weight:400;
     color:rgba(244,247,250,.34);}
@@ -1283,6 +1367,31 @@
     #ust .kanal{font-size:20px;letter-spacing:.26em;}
     #bekle.buyuk{--sem:26px;} }
 
+  /* ── SOUND BANKS KIPINDE MODUL SOL ALTA INIYOR ───────────────────
+     Istenen: "orbitape moduna gecince REC, CAM, yildiz, volume,
+     ileri geri modulu sol alta tasiyacaksin; search burada olmasin."
+     NEDEN DOGRU: o tarafta sol UST nebulanin ve gezegenlerin yeri --
+     modul orada dururken ustuste biniyorlardi. Alt sol ise o kipte
+     tamamen bos.
+     SIRA TERS CEVRILIYOR: en altta REC · CAM · ★ · sustur satiri,
+     onun ustunde tasima tuslari, en ustte ses cizgisi. Istenen:
+     "REC CAM yildiz en altta, ustunde play vs."
+     column-reverse DENENDI VE OLMADI: ilk cocugu dibe koyuyor, yani
+     tasima satiri en alta dusuyordu. 'order' ile sira acikca
+     yaziliyor -- ne yazarsak o. */
+  body.mood #solUst{
+    top:auto;
+    /* 7 + 26 (tutamak) + 10 hava = 43 */
+    bottom:calc(43px + env(safe-area-inset-bottom, 0px));
+  }
+  body.mood #sesSatir{order:1;}
+  body.mood #tasima  {order:2;}
+  body.mood #araclar {order:3;}
+  /* ARAMA BU KIPTE YOK. Arsiv tarafinda gezinme halkalarla ve
+     gezegenlerle yapiliyor; arama cizgisi hem modulun altinda yer
+     istiyor hem de o tarafin dili degil. */
+  body.mood #ara{display:none;}
+
   /* ── DAR EKRANDA SOL UST DARALIYOR ───────────────────────────────
      390px'te olculdu: sol ust satir 190px, sag ustteki kategori adi
      ("RADIOTAPE") 193px, iki kenar payi 28px -> 411 > 390. Carpisma
@@ -1295,7 +1404,7 @@
      ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
   @media (max-width:480px){
     #tasima{gap:6px;} #araclar{gap:6px;}
-    #geri,#ileri,#dur,#duraklat,#fav,#favAc{width:34px;}
+    #geri,#ileri,#dur,#duraklat,#fav,#favAc,#mute{width:34px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:9px;letter-spacing:.14em;}
@@ -1591,7 +1700,17 @@
            olmadi; "ortaya basma" isi ile duraklatma ayni yere konunca
            tusun o an hangisini yaptigi belirsizlesiyor. -->
       <button id="dur" type="button" title="Play" aria-label="Play"><svg viewBox="0 0 14 12" aria-hidden="true"><path d="M3.2 1.1 L3.2 10.9 L12 6 Z"/></svg></button>
-      <button id="duraklat" type="button" title="Pause" aria-label="Pause" aria-pressed="false"><svg viewBox="0 0 14 12" aria-hidden="true"><rect class="d1" x="2.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="d2" x="8.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><path class="oyn" d="M3.2 1.1 L3.2 10.9 L12 6 Z"/></svg></button>
+      <!-- IKINCI TUS KIPE GORE DEGISIYOR:
+           RADYODA  = ■ STOP. Canli yayinda duraklatmak diye bir sey
+                      yok; durdurdugun an yayin akmaya devam ediyor ve
+                      geri donunce baska bir yerinden giriyorsun. Yani
+                      duraklat ile durdur ayni sey -- ekranda ikisinden
+                      birini secmek gerekiyorsa dogru olan STOP.
+           ARSIVDE  = ‖ DURAKLAT. Orada kayit duruyor, kaldigin yerden
+                      devam etmek gercek bir sey.
+           Uc sekil de ayni SVG'nin icinde; hangisinin gorunecegine
+           govdedeki 'mood' sinifi ve 'durdu' durumu karar veriyor. -->
+      <button id="duraklat" type="button" title="Stop" aria-label="Stop" aria-pressed="false"><svg viewBox="0 0 14 12" aria-hidden="true"><rect class="d1" x="2.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="d2" x="8.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="stp" x="2.6" y="1.3" width="9.4" height="9.4" rx="1.4"/><path class="oyn" d="M3.2 1.1 L3.2 10.9 L12 6 Z"/></svg></button>
       <button id="ileri" type="button" title="Next in history" aria-label="Next in history"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="11.7" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M0.6 1.1 L0.6 10.9 L9.8 6 Z"/></svg></button>
     </div>
     <!-- IKINCI SATIR: kayit araclari, favori girisi ve ses.
@@ -1612,6 +1731,13 @@
       <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
       <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
       <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
+      <!-- ── SUSTUR ─────────────────────────────────────────────────
+           Hoparlor cizmedik: uygulamanin kendi sembol dili nokta ve
+           yay. Ortada bir kaynak noktasi, sagina yayilan iki yay --
+           "ses cikiyor". Susunca yaylar sonuyor ve uzerine capraz
+           bir cizgi geliyor. Ayni dil sag ustteki calma gostergesinde
+           ve halkalarda da kullaniliyor. -->
+      <div id="mute" role="button" tabindex="0" title="Mute" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle class="kay" cx="7.5" cy="12" r="2.6"/><path class="y1" d="M12.4 8.6a5.6 5.6 0 0 1 0 6.8"/><path class="y2" d="M16.1 6.1a10 10 0 0 1 0 11.8"/><path class="cap" d="M5 19 L19 5"/></svg></div>
     </div>
     <!-- UCUNCU SATIR: SES. Genisligi JS'te ustundeki satirlarin EN
          GENISINE esitleniyor (bkz. sesSatirOlcu) -- boylece uc satir
@@ -2000,8 +2126,36 @@
       }
       const kok = document.documentElement.style;
       if(!p){ kok.removeProperty('--m1'); kok.removeProperty('--m2'); return; }
-      kok.setProperty('--m1', 'rgb('+p.ana+')');
-      kok.setProperty('--m2', 'rgb('+p.ikinci+')');
+      /* ── TEMA MARKA YAZISINA DA GIRIYOR ─────────────────────────
+         Tema yalnizca zemini degistiriyordu ve bir "kilif" gibi
+         hissettirmiyordu. Istenen: "olay bizim sag ustteki ORBITAPE
+         yazisina etkisi ve genel bi tema... winamp mantigi biraz."
+         Boluşum:
+           SOL DURAK  = temanin vurgu rengi (biraz koyultulmus, cunku
+                        sol taraf her zaman daha derin duruyor)
+           SAG DURAK  = RAFIN rengi -- degismiyor.
+         Neden boyle: tema kilif, raf ise o an nerede oldugun. Ikisi
+         yazinin iki ucunda yan yana duruyor; kilif degisince yazi
+         bastan asagi degisiyor ama son harfler hala odanin rengini
+         tasiyor. Kullanicinin kurali: "her kanalin rengini yine alir
+         ama turlerin, yani kelimenin sagi da olsa etkilenir ki o
+         odada oldugumuz anlasilsin."
+         Tema yoksa (AUTO) eski dagilim aynen geciyor. */
+      let m1 = p.ana, m2 = p.ikinci;
+      try{
+        const T = temaAl();
+        if(T && T.v){
+          m1 = _koyult(T.v, 0.72);
+          /* Sag durak rafin rengi: radyoda ailenin, arsivde rafin. */
+          let raf = '';
+          if(typeof mod !== 'undefined' && mod === 'radio' && AKTIF_AILE) raf = aileRenk(AKTIF_AILE);
+          else { const g2 = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
+                 raf = (g2 && MOD_TEMA[g2] && MOD_TEMA[g2].ana) || ''; }
+          if(raf) m2 = raf;
+        }
+      }catch(e){ _yut(e); }
+      kok.setProperty('--m1', 'rgb('+m1+')');
+      kok.setProperty('--m2', 'rgb('+m2+')');
     }catch(e){ _yut(e); }
   }
   function zeminUygula(){
@@ -3342,7 +3496,13 @@
      "geri kalan" oldugu icin. Kullanicinin istegi: "orbitape
      modundaki menude OTHER en sonuncu olmali, ilk basta orbitape
      aciliyor, hepsinin oldugu." */
-  var ARSIV_ADLAR = ['ORBITAPE','HUMANS','RECORDS','SPACE','SOUNDSCAPES','NATURE','MACHINES','OTHERS'];
+  /* SIRA = HALKA CAPI. Dizinin basi EN ICTEKI (en kucuk) halka.
+     OTHERS EN ICTE: "geri kalan" raf en kucugu, cunku icine en az sey
+     giriyor -- halkanin capi rafin buyuklugunu anlatiyor.
+     ORBITAPE EN DISTA: icinde arsivin TAMAMI var, yani en buyugu.
+     Acilista secili olan da odur ("ilk basta orbitape aciliyor,
+     hepsinin oldugu"). */
+  var ARSIV_ADLAR = ['OTHERS','MACHINES','NATURE','SOUNDSCAPES','SPACE','RECORDS','HUMANS','ORBITAPE'];
   /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
      uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
      ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
@@ -4518,6 +4678,12 @@
       try{ _araIdx = null; _araSay = -1; }catch(e){ _yut(e); }
       try{ gecmisSifirla(); }catch(e){ _yut(e); }
       try{ modAdiYaz(); zeminUygula(); moodYaz(); }catch(e){ _yut(e); }
+      /* Ikinci tusun yuzu kipe bagli (radyoda ■ stop, arsivde ‖
+         duraklat): kip degisince tazelenmeli, yoksa oteki kipin
+         simgesi ekranda kaliyor. */
+      try{ if(window.durTazele) window.durTazele(); }catch(e){ _yut(e); }
+      /* Sol alt/sol ust yer degistirdi: olculer yeniden alinmali. */
+      try{ requestAnimationFrame(()=>{ try{ geriYerlestir(); }catch(e){ _yut(e); } }); }catch(e){ _yut(e); }
       /* Ilk kurulumda ses baslatmiyoruz: acilis akisi kendi isini
          yapiyor. Kullanici dugmeye bastiysa YENI dunyadan bir ses
          gelmeli, yoksa kip degisti ama kulakta hicbir sey degismedi. */
@@ -4745,6 +4911,9 @@
       if(d) d.style.width = y + '%';
       sesDik.classList.toggle('sus', kSes <= 0.001);
       sesDik.setAttribute('aria-valuenow', String(y));
+      /* Cizgiden sifira cekilince sustur tusu de sonuk hale gecsin:
+         iki denetim ayni durumu gosteriyor. */
+      try{ if(window.muteTazele) window.muteTazele(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
   /* ── SES CIZGISI (SOL UST) ───────────────────────────────────────
@@ -4832,6 +5001,36 @@
     });
     if(kSes > 0.001) sonSes = kSes;
     sesDikeyYaz();
+    /* ── SUSTUR TUSU ─────────────────────────────────────────────
+       Ayni 'sonSes' hafizasini kullaniyor: susturup geri acinca ses
+       sifirdan degil BIRAKTIGIN yerden geliyor. Iki ayri hafiza
+       olsaydi cizgiden kisip tustan acan biri sesi tam acardi. */
+    const mt = document.getElementById('mute');
+    if(mt){
+      const yazMt = ()=>{
+        const susmus = kSes <= 0.001;
+        mt.classList.toggle('sus', susmus);
+        mt.setAttribute('aria-pressed', susmus ? 'true' : 'false');
+        mt.setAttribute('aria-label', susmus ? 'Unmute' : 'Mute');
+        mt.title = susmus ? 'Unmute' : 'Mute';
+      };
+      const cevir = e=>{
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        /* Grafigi kurmak sart: grafik yokken tek yol <audio>.volume ve
+           iOS Safari onu yok sayar -- tus basilir, ses susmaz. */
+        grafigiKur();
+        if(kSes > 0.001){ sonSes = kSes; kSes = 0; }
+        else { kSes = sonSes > 0.001 ? sonSes : 1; }
+        sesSeviyeYaz(); sesDikeyYaz(); sesGoster(); yazMt();
+        try{ localStorage.setItem('orbitape.ses', String(kSes)); }catch(_){ _yut(_); }
+      };
+      mt.addEventListener('click', cevir);
+      mt.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') cevir(e); });
+      ['pointerdown','mousedown','touchstart'].forEach(t=>
+        mt.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+      yazMt();
+      window.muteTazele = yazMt;
+    }
   })();
 
   /* ── ALCAK TON: TUSA BASINCA ─────────────────────────────────────
@@ -4873,12 +5072,36 @@
   (function oynatDuraklat(){
     const oy = document.getElementById('dur');
     const dk = document.getElementById('duraklat');
+    /* Ikinci tusun yuzunu tazeleyen tek yer. Oynat tusu da cagiriyor,
+       o yuzden ikisinden ONCE tanimli. */
+    function yaz(){
+      if(!dk) return;
+      try{ const duraklamis = !!(ses && ses.src && ses.paused);
+           dk.classList.toggle('durdu', duraklamis);
+           const moodda = document.body.classList.contains('mood');
+           dk.setAttribute('aria-pressed', duraklamis ? 'true' : 'false');
+           dk.setAttribute('aria-label',
+             moodda ? (duraklamis ? 'Resume' : 'Pause') : 'Stop');
+           dk.title = moodda ? (duraklamis ? 'Resume' : 'Pause') : 'Stop';
+      }catch(e){ _yut(e); }
+    }
     if(oy){
+      /* ▶ OYNAT -- IKI DURUM, TEK TUS:
+           DURMUSSA  : ayni istasyon/parca kaldigi yerden devam eder.
+                       Durdurup tekrar basan biri baska bir sey degil
+                       AYNI seyi bekler.
+           CALIYORSA : bir sonrakine gecer -- yani halkanin ortasina
+                       basmakla ayni is.
+         Istenen: "stoptaysa ayni istasyon devam eder, muzik sirasinda
+         basarsa bir sonrakine atlar." */
       const bas = e=>{
         if(e){ e.preventDefault(); e.stopPropagation(); }
         basHissi(oy); alcakTon();
         try{ sesBaglamiAl(); if(actx && actx.state!=='running') actx.resume(); }catch(_){ _yut(_); }
         _kullaniciDuraklatti = false;
+        try{
+          if(ses && ses.src && ses.paused){ ses.play().catch(()=>{}); yaz(); return; }
+        }catch(_){ _yut(_); }
         try{ sonraki(true); }catch(_){ _yut(_); }      // ORTAYA BASIS
       };
       oy.addEventListener('click', bas);
@@ -4887,17 +5110,6 @@
         oy.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
     }
     if(!dk) return;
-    function yaz(){
-      /* "Duraklamis" yalnizca GERCEKTEN duraklamissa: elde bir kaynak
-         var ama calmiyor. Hic kaynak yokken de ucgen gosteriliyordu ve
-         yanindaki oynat tusuyla ikizlesiyordu -- ekranda yan yana iki
-         ayni ucgen duruyordu, hangisinin ne yaptigi belirsizdi. */
-      try{ const duraklamis = !!(ses && ses.src && ses.paused);
-           dk.classList.toggle('durdu', duraklamis);
-           dk.setAttribute('aria-pressed', duraklamis ? 'true' : 'false');
-           dk.setAttribute('aria-label', duraklamis ? 'Resume' : 'Pause');
-      }catch(e){ _yut(e); }
-    }
     const degis = e=>{
       if(e){ e.preventDefault(); e.stopPropagation(); }
       basHissi(dk); alcakTon();
@@ -5631,7 +5843,12 @@
      ◁ : bir öncekine.        ▷ : geçmişte bir sonrakine.
      ORTAYA BASIŞ: geçmişin içindeysen bir ileri gider; sonuna gelince
      yeni parça aranır ve akış normale döner. */
-  const GECMIS_TAVAN = 40;
+  /* TAVAN 40 -> 160. Istenen: "her modda geri baya gidebilir, tek
+     gidis degil artik." Kayitlar kucuk nesneler (ad, adres, raf);
+     160 tanesi birkac on kilobayt tutar ve yalnizca bellekte durur.
+     Tavan yine de var: sinirsiz bir dizi, uzun bir dinlemede
+     farkedilmeden buyur. */
+  const GECMIS_TAVAN = 160;
   let GECMIS = [], _gecPos = -1, _gecisKaynak = '';
   function geriYenile(){
     try{
@@ -5659,10 +5876,19 @@
      SONRAKİ parça yiyordu: kanal değişiminden sonraki ilk parça
      geçmişe hiç yazılmıyordu. */
   function gecmisSifirla(){ _gecisKaynak=''; GECMIS=[]; _gecPos=-1; geriYenile(); }
-  function gecmisCal(hedefNo){
+  /* kullanici=true: ◁ ▷ tuslarindan gelen ACIK gezinme.
+     Boyle bir cagride cal() icindeki RAF KAPISI da acilmali. Kapi
+     arka planda kalmis, artik ilgisiz istekleri elemek icin var --
+     kullanicinin gecmiste bilerek gittigi yer o kategoriye girmiyor.
+     Suzgeci yalnizca _gecUygun'dan kaldirmak yetmedi: gecmis dogru
+     kaydi buluyordu ama cal() onu reddedip yerine baska bir sey
+     caliyordu, yani geri yine tek adim gibi davraniyordu (olculdu:
+     on kayitlik gecmiste 1 adim). */
+  function gecmisCal(hedefNo, kullanici){
     if(hedefNo < 0 || hedefNo >= GECMIS.length) return false;
     const hedef = GECMIS[hedefNo];
     if(!hedef) return false;
+    if(kullanici){ try{ _secildi = true; }catch(e){ _yut(e); } }
     _gecPos = hedefNo; _gecisKaynak='gez';
     try{ ses.pause(); }catch(e){ _yut(e); }
     aramaBaslat(); bekleGoster();
@@ -5753,15 +5979,32 @@
      istasyonuna dondurur, arada calmis bir ROCK istasyonuna degil.
      Aksi halde geri tusu insani sessizce baska bir rafa tasiyordu.
      Grubu olmayan kayit (arsiv parcasi, favori) engel degil. */
-  function _gecUygun(x){
+  /* ── GECMIS SUZGECI: KIME UYGULANIR ─────────────────────────────
+     Iki ayri soru var ve ayni cevap ikisine de uymuyor:
+
+     1. KENDILIGINDEN ilerlerken (ortaya basis, sarki bitince) -- o an
+        secili raftan devam edilmeli, yoksa kullanici JAZZ rafinda
+        dururken gecmisten bir ELECTRONIC kaydi geliyor ve raf yalan
+        soyluyor. Burada suzgec DOGRU.
+
+     2. Kullanici ◁ tusuna BASINCA -- o an ne dinlediyse ona donmek
+        istiyor. Suzgec burada calisinca gecmisin cogu atlaniyordu:
+        raf degistirmis biri icin geri neredeyse tek adim kaliyordu.
+        Bildirilen sey buydu: "her modda geri baya gidebilir, tek
+        gidis degil artik."
+
+     O yuzden suzgec artik yalnizca 1. duruma uygulaniyor. Gecmis
+     dinlenenlerin kaydidir; secili rafin degil. */
+  function _gecUygun(x, kullanici){
+    if(kullanici) return true;                 // acik basis: suzgec yok
     if(typeof mod === 'undefined' || mod !== 'radio') return true;
     if(!AKTIF_AILE) return true;
     return !x || !x.grup || x.grup === AKTIF_AILE;
   }
   function geriGit(){
     let i = _gecPos - 1;
-    while(i >= 0 && !_gecUygun(GECMIS[i])) i--;
-    gecmisCal(i);
+    while(i >= 0 && !_gecUygun(GECMIS[i], true)) i--;
+    gecmisCal(i, true);
   }
   /* ▷ ILERI. Gecmiste donulecek bir yer varsa oraya gidiyor; YOKSA
      ortaya basmis gibi davraniyor (yeni bir sey bul ve cal).
@@ -5770,9 +6013,9 @@
      basiyorsun, bir sey oluyor. */
   function ileriGit(){
     let i = _gecPos + 1;
-    while(i < GECMIS.length && !_gecUygun(GECMIS[i])) i++;
+    while(i < GECMIS.length && !_gecUygun(GECMIS[i], true)) i++;
     if(!(i < GECMIS.length)){ try{ sonraki(true); }catch(e){ _yut(e); } return; }
-    gecmisCal(i);
+    gecmisCal(i, true);
   }
   /* Ortaya basış: geçmişin içindeysek yeni parça ARAMA, bir ileri git. */
   function ileriDonduMu(){
@@ -7505,12 +7748,21 @@
             el.style.transform = eski;
             butce = Math.round(kr.left - 12 - solK);
           }
-          araclarSigdir(el, Math.max(110, butce));
+          /* TABAN 110 -> 56. 110 kendi kendini bozan bir sayiydi:
+             satirin genisligi de 110 civari, yani butce hicbir zaman
+             satirdan kucuk cikmiyor ve emniyet olcegi ASLA devreye
+             girmiyordu. 360px'te uzun bir kategori adiyla iki blok
+             birbirine tam degiyordu (olculdu: 0px bosluk).
+             56 = tek bir hapin genisligi; olcegin kendi alt siniri
+             (0.80) zaten asiri kuculmeyi engelliyor. */
+          araclarSigdir(el, Math.max(56, butce));
         };
         /* ILK SATIR sag ustteki satirla ayni yukseklikte -> ona gore.
            IKINCI SATIRIN karsisinda hicbir sey yok (sag ust tek satir
            ve yukarida bitiyor) -> butce ekranin kendisi. */
-        olc('tasima',  adE);
+        /* SOUND BANKS kipinde modul sol ALTTA: sag ustteki satirla
+           ayni yukseklikte degil, yani carpisma ihtimali yok. */
+        olc('tasima',  document.body.classList.contains('mood') ? null : adE);
         olc('araclar', null);
         void modE;
         sesSatirOlcu();
@@ -7536,8 +7788,19 @@
         const npE = document.getElementById('np');
         if(npE){
           npE.style.bottom = Math.round(Math.max(6, alt)) + 'px';
-          const ab2 = arE ? arE.getBoundingClientRect() : null;
-          const cizgiSag = (ab2 && ab2.width) ? ab2.right : (sol + 138);
+          /* SOLDA NE VARSA ONA GORE. Radyoda alt sol koseyi ayar
+             tutamagi ve buyutec paylasiyor; SOUND BANKS kipinde
+             arama yok, orada modulun kendisi duruyor ve cok daha
+             genis. Sabit bir sayi ikisinden birinde yanlis olurdu:
+             kipte kunye modulun uzerine biniyordu (olculdu). */
+          let cizgiSag = sol + 138;
+          try{
+            const engel = document.body.classList.contains('mood')
+                        ? document.getElementById('solUst')
+                        : arE;
+            const eb = engel ? engel.getBoundingClientRect() : null;
+            if(eb && eb.width) cizgiSag = eb.right;
+          }catch(_){ _yut(_); }
           const yer = Math.round(window.innerWidth - cizgiSag - sol - 16);
           npE.style.maxWidth = (yer > 140 ? yer : 140) + 'px';
         }
