@@ -191,7 +191,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('index.html sozdizimi gecerli', sozHata === '',
        sozHata || 'ayristirilabiliyor');
   }
-  /* TAVAN 700 -> 740 KB. Sebep: yeniden yazilan tanitim turu (on bir
+  /* TAVAN 740 -> 780 KB. Sebep: gecici tur adlari artik CIZIM --
+     yirmi bir ismin outline SVG yolu (~19 KB). Font dosyasi gomulmedi
+     (lisans), yani bu 19 KB bir .woff'un yerini tutuyor ve ondan
+     kucuk. Gzip'li boy 250 KB.
+     ONCEKI TAVAN 700 -> 740 KB. Sebep: yeniden yazilan tanitim turu (on bir
      adim, gosterme mantigi), marka renk motoru (ton kaydirma, krem
      dokunusu, parlaklik tabani) ve bunlarin gerekcelerini tasiyan
      yorumlar. Gzip'li boy hala ~205 KB.
@@ -203,7 +207,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Onemli olan ham boy degil TELDEN GECEN boy: gzip'li ~200 KB.
      Tavani yukseltmek bir karar, kaza degil -- her yukseltmede
      sebebi buraya yaziliyor. */
-  K('Dosya boyutu < 740 KB',  dosyaBoy < 740*1024, Math.round(dosyaBoy/1024)+' KB');
+  K('Dosya boyutu < 780 KB',  dosyaBoy < 780*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
      sonra insanlar isyeyebilir". Iki ses de kapatilabilir, karar
@@ -883,16 +887,19 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   const iki = await pg.evaluate(()=>{
     AKTIF_MOD=null; modAdiYaz(); modAdiTut('SPACE');
     const g=document.getElementById('modGez'), k=document.getElementById('modAd');
-    const a={gezinirkenBuyuk:g.textContent, gezinirkenKucuk:k.textContent,
-             buyukPunto:parseFloat(getComputedStyle(g).fontSize)};
+    /* GECICI AD ARTIK CIZIM: textContent bos, punto 0. Ne yazdigini
+       data-ad soyluyor, olcuyu de cizimin kendi kutusu. */
+    const a={gezinirkenBuyuk:g.getAttribute('data-ad')||g.textContent,
+             gezinirkenKucuk:k.textContent,
+             buyukPunto:Math.round(g.getBoundingClientRect().height)};
     modAdiBirak(); AKTIF_MOD='SPACE'; modAdiGoster();
-    a.secincBuyuk=g.textContent; a.secincKucuk=k.textContent;
+    a.secincBuyuk=(g.getAttribute('data-ad')||g.textContent); a.secincKucuk=k.textContent;
     AKTIF_MOD=null; modAdiYaz(); modGezYaz(''); return a;
   });
   /* KUCUK YAZI ARTIK HIC BOSALMIYOR. Kullanici nerede oldugunu
      kaybediyordu; artik gezinen yoksa bulundugu yerin adi yaziyor. */
   K('Gezinirken buyuk yazi cikiyor',
-    iki.gezinirkenBuyuk==='SPACE' && iki.buyukPunto>=20, 'buyuk '+iki.buyukPunto+'px');
+    iki.gezinirkenBuyuk==='SPACE' && iki.buyukPunto>=20, 'buyuk '+iki.buyukPunto+'px boyunda');
   K('Kucuk yazi hic bosalmiyor',
     iki.gezinirkenKucuk!=='' && iki.secincKucuk!=='', 
     'gezinirken "'+iki.gezinirkenKucuk+'" | secince "'+iki.secincKucuk+'"');
@@ -944,12 +951,45 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      agirlik 300: ince, ferah. Kontrol iki seye birden bakiyor --
      agirlik ve yazi ailesi -- cunku ikisinden biri geri donerse eski
      his geri gelir. */
-  K('Gecici yazi ince ve sans', await pg.evaluate(()=>{
+  /* ── GECICI AD: CIZIM, YAZI DEGIL ───────────────────────────────
+     Istenen yazi tipi Honfleur Heavy. FONT DOSYASI GOMULMEDI:
+     Typodermic'in ucretsiz masaustu lisansi webfont/app kullanimini
+     kapsamiyor ("Needs another license: webfonts, apps..."), ama
+     ayni belge "outlined SVG" ciktisini acikca kapsiyor. Tur adlari
+     sabit bir liste oldugu icin her isim TEK BIR CIZIM olarak
+     gomuldu -- yeniden kullanilabilir bir alfabe degil.
+     BU TEST LISANS BEKCISI: depoya bir gun .otf/.woff girerse ya da
+     @font-face yazilirsa burasi kirmizi yanar. */
+  K('Font dosyasi gomulu degil', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      /* YORUMLARDA GECEN ".otf" YAKALANMASIN: aranan sey bir font
+         dosyasinin GERCEKTEN yuklenmesi -- @font-face bildirimi,
+         url() ile cagrilan bir font dosyasi, ya da <link as="font">.
+         Ilk yazimda duz metin araniyordu ve testin kendi gerekcesini
+         anlatan yorum testi dusuruyordu. */
+      const bildirim = /@font-face/i.test(k);
+      const url      = /url\(\s*['"]?[^)'"]+\.(otf|ttf|woff2?)/i.test(k);
+      const onyukle  = /<link[^>]+as=["']?font/i.test(k);
+      const gomulu   = /data:(font|application\/font|application\/x-font)/i.test(k);
+      return !bildirim && !url && !onyukle && !gomulu;
+    }), '@font-face / url(.woff) / <link as=font> / data:font -- hicbiri yok');
+  K('Tur adlari cizim olarak ciziliyor', await pg.evaluate(()=>{
       const g = document.getElementById('modGez');
-      const st = getComputedStyle(g);
-      const w = parseInt(st.fontWeight,10)||400;
-      return w <= 400 && !/mono/i.test(st.fontFamily);
-    }), 'font-weight <= 400, mono degil');
+      modGezYaz('AMBIENT');
+      const cizim = g.classList.contains('cizim') && !!g.querySelector('svg path')
+                 && g.getAttribute('data-ad') === 'AMBIENT'
+                 && Math.round(g.getBoundingClientRect().height) >= 20;
+      const op = parseFloat(getComputedStyle(g).opacity);
+      /* Listede olmayan bir cumle hala YAZI olarak cikiyor. */
+      modGezYaz('SWITCH TO SOUNDS? TAP AGAIN');
+      const yazi = !g.classList.contains('cizim')
+                 && g.textContent === 'SWITCH TO SOUNDS? TAP AGAIN';
+      modGezYaz('');
+      const temiz = g.textContent === '' && !g.querySelector('svg')
+                 && !g.hasAttribute('data-ad');
+      return { cizim, yazi, temiz, op };
+    }).then(r=> r.cizim && r.yazi && r.temiz),
+    'raf adi svg path, cumle yazi, bosalinca ikisi de gidiyor');
 
   /* ── FX TEK EKSEN ────────────────────────────────────────────────
      Ortadaki daire 0.215R'ye indi; iki eksen o alanda ayirt edilemez.
@@ -1124,9 +1164,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      istedi ve tam ortaya alindi. Olcum ekranin dibine gore DEGIL,
      alt seridin ustune gore -- serit degistiginde yazi da onunla
      birlikte kayiyor. */
-  K('Yazi halka ile alt seridin ortasinda',
-     ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.5))<=10,
-     'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.5):'-'));
+  /* ORAN 0.50 -> 0.66. Cizilmis harfler eskisinden buyuk ve halkanin
+     cizgilerine yaklasiyordu; istenen "biraz da o yazilari asagiya
+     al". Alt sinir yine alt seridin ustu. */
+  K('Yazi halka ile alt serit arasinda, asagida',
+     ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.66))<=12,
+     'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.66):'-'));
   K('Ses baslayinca halka menu', ac.son1.ilk===true && ac.gez2===true,
      'ikinci basis gezinme '+ac.gez2);
 
@@ -1145,11 +1188,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     for(const a of ['AMBIANCE','HUMAN','ORBITAPE']){
       modAdiTut(a); await bek(80);
       gez.push({ ad:a, gorunen:gorunenMod(), zem:z(), secili:AKTIF_MOD,
-                 yazi:(document.getElementById('modGez')||{}).textContent||'' });
+                 yazi:(()=>{const e=document.getElementById('modGez');
+                        return e ? (e.getAttribute('data-ad')||e.textContent||'') : '';})() });
     }
     modAdiBirak(); await bek(80);
     const son = { gorunen:gorunenMod(), zem:z(), secili:AKTIF_MOD,
-                  yazi:(document.getElementById('modGez')||{}).textContent||'' };
+                  yazi:(()=>{const e=document.getElementById('modGez');
+                         return e ? (e.getAttribute('data-ad')||e.textContent||'') : '';})() };
     modAdiTut('AMBIANCE'); await bek(320);          // gecis (.16s) bitsin
     const op = parseFloat(getComputedStyle(document.getElementById('modGez')).opacity);
     modAdiBirak(); await bek(120);
@@ -2989,7 +3034,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         mod = 'radio'; AKTIF_AILE = 'JAZZ';
         aileSiraGec();
         const el = document.getElementById('modGez');
-        const yazi = el ? el.textContent : '';
+        /* GECICI AD ARTIK CIZIM: ne yazdigini data-ad soyluyor. */
+        const yazi = el ? (el.getAttribute('data-ad') || el.textContent) : '';
         const altta = el ? (el.getBoundingClientRect().top >
                             document.querySelector('.disk').getBoundingClientRect().top) : false;
         mod = eM; AKTIF_AILE = eA; try{ modGezYaz(''); }catch(e){}
