@@ -2864,7 +2864,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        oldugunda istek etiketsiz gidiyordu. */
     const kaynak2 = fs.readFileSync('index.html','utf8');
     const bas = kaynak2.indexOf('async function radyoListe');
-    const govde = kaynak2.slice(bas, bas + 1400);
+    /* PENCERE 1400 -> 3000. Fonksiyonun basina uzun bir gerekce
+       yorumu girince aranan satirlar pencerenin disinda kaldi ve
+       test, kod dogruyken kirmizi yandi. Dilim fonksiyonun govdesini
+       kapsamali; yorumlar buyudukce bu sayi da buyur. */
+    const govde = kaynak2.slice(bas, bas + 3000);
     const yedek  = /const tag = \(_m && _m\.radyo\) \|\| RB_ETIKET\[/.test(govde);
     const kosulsuz = /&tag="\+encodeURIComponent\(tag\)/.test(govde) && !/if\(tag\) url\+=/.test(govde);
     K('Etiketsiz istek atilmiyor', bas > 0 && yedek && kosulsuz,
@@ -3430,6 +3434,63 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* TUR ICINDE SONSUZ DONGU: havuz bitince damgalar temizlenip
        basa donuluyor. Esik tur acikken 1, yoksa 3. Bu satir giderse
        kullanici bir turde 20 istasyon sonra duvara toslar. */
+    /* ── OLCEK: ISTASYON LISTESI KENDI SITEMIZDEN ────────────────
+       Uzun sure birinci adres raw.githubusercontent.com'du. Bir kisi
+       icin sorun degil; milyon acilista hem hiz sinirina toslariz hem
+       de o adres bir CDN degil. Dosya zaten kendi kokumuzde duruyor
+       ve Cloudflare'da statik dosya istegi ucretsiz + sinirsiz.
+       Bu satirlar sirayi koruyor: kendi sitemiz -> GitHub -> jsDelivr. */
+    K('Istasyon listesi once kendi sitemizden', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /RADYO_URL\s*=\s*["']\/radyo\.json["']/.test(k)
+            && /RADYO_URL_YEDEK\s*=\s*["']https:\/\/raw\.githubusercontent/.test(k)
+            && /RADYO_URL_SON\s*=\s*["']https:\/\/cdn\.jsdelivr/.test(k);
+      }), 'birinci /radyo.json, yedekler GitHub ve jsDelivr');
+    /* IKI KOPYA AYRISMASIN. Liste artik iki yerde: kaynak veri
+       deposunda (tracks), yayina giden kopya kod deposunun kokunde.
+       Kopya elle guncellenirse er gec unutulur ve uygulama aylarca
+       eski listeyi servis eder -- hicbir sey bozulmaz, sadece yeni
+       istasyonlar hic gorunmez, yani sessiz bir hata.
+       Hasat is akisi ikisini birden guncelliyor; bu test o adimin
+       silinmedigini kontrol ediyor. */
+    {
+      const akis = fs.readFileSync('.github/workflows/radyo.yml','utf8');
+      K('Hasat yayin kopyasini da tazeliyor',
+         /cp tracks\/radyo\.json radyo\.json/.test(akis)
+         && /add-paths:\s*radyo\.json/.test(akis),
+         'is akisi hem tracks hem kod deposu icin PR aciyor');
+      /* Yayina giden kopya GERCEKTEN yayinlaniyor mu: .assetsignore
+         onu haric tutuyorsa adres 404 doner ve uygulama her acilista
+         yedege duser -- yani degisiklik hicbir sey kazandirmaz. */
+      const haric = fs.readFileSync('.assetsignore','utf8');
+      K('radyo.json yayindan haric tutulmamis',
+         !/^\s*\/?radyo\.json\s*$/m.test(haric) && fs.existsSync('radyo.json'),
+         'dosya kokte ve .assetsignore listesinde degil');
+      /* Onbellek kurali: her acilista yeniden indirilmesin ama hasat
+         sonrasi da aylarca eski kalmasin. */
+      const bas = fs.readFileSync('_headers','utf8');
+      K('Liste icin onbellek kurali var',
+         /\/radyo\.json[\s\S]{0,200}stale-while-revalidate/.test(bas),
+         '10 dk taze, sonra arkada tazeleniyor');
+    }
+    /* ── DIZINE GIDEN ISTEK TAVANI ───────────────────────────────
+       radio-browser gonullu isletilen, bagisla ayakta duran bir
+       servis. Buraya yalnizca beyaz liste hic gelmediyse duselir --
+       ama o durumda radyoListe() her "sonraki"de yeniden cagriliyor
+       ve kendi icinde uc kez tekrar edebiliyor. Tavan olmadan tek
+       bir kirik oturum dizine onlarca istek atabilirdi. */
+    K('Dizine giden istek sayisi sinirli', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /const RB_TAVAN\s*=\s*\d+/.test(k)
+            && /if\(_rbSayac >= RB_TAVAN\)[\s\S]{0,60}radyoOnbellekten\(\)/.test(k)
+            && /_rbSayac\+\+/.test(k);
+      }), 'oturum basina tavan var, dolunca onbellege dusuyor');
+    /* Beyaz liste geldiginde dizine HIC sorulmamali -- tavan ikinci
+       savunma, birincisi bu erken donus. */
+    K('Liste varsa dizine hic sorulmuyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /const bl = await beyazListeYukle\(\);[\s\S]{0,140}if\(bl && bl\.length\) return/.test(k);
+      }), 'radyoListe() beyaz liste doluysa erken donuyor');
     K('Tur icinde basa donuyor',
        /_radyoBos >= _esik/.test(require('fs').readFileSync('index.html','utf8')),
        'tur acikken ilk bos turda calindi damgalari siliniyor');
@@ -3899,10 +3960,24 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      kapanmiyor, eski haline donsun sifir kapali ana ekran". */
   const aramaAkis = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    /* Test agi radyo.json'i sunmuyor, o yuzden beyazListe bos kaliyor.
-       Aramanin radyo havuzu ondan besleniyor -- listeyi elle
-       kuruyoruz ki olculen sey AKIS olsun, agin varligi degil. */
+    /* Aramanin radyo havuzu beyaz listeden besleniyor -- listeyi elle
+       kuruyoruz ki olculen sey AKIS olsun, agin varligi degil.
+       ESKIDEN buradaki yorum "test agi radyo.json'i sunmuyor" diyordu
+       ve bu artik DOGRU DEGIL: uygulama listeyi once /radyo.json'dan
+       cekiyor, test sunucusu da onu servis ediyor. Gercek liste
+       yarisi yuklenip sahte listenin uzerine biniyordu ve test
+       rastgele kirilmaya basladi. Yuklemeyi "denendi" isaretleyip
+       kapatiyoruz: fikstur ne ise o kaliyor. */
     const eskiBl = (typeof beyazListe !== 'undefined') ? beyazListe : null;
+    const eskiDenendi = (typeof _blDenendi !== 'undefined') ? _blDenendi : false;
+    /* ONCE GERCEK YUKLEMEYI BITIR. Yalnizca _blDenendi'yi isaretlemek
+       YETMIYOR: acilista baslamis bir yukleme HALA YOLDA olabilir ve
+       tamamlaninca beyazListe'yi kendi verisiyle eziyor. Fikstur o an
+       yerinden oynayinca _araListe yeniden diziliyor ve test rastgele
+       kiriliyordu (bir kosuda gecip otekinde dusuyordu).
+       Once bitmesini bekliyoruz, sonra fiksturu koyuyoruz. */
+    try{ await beyazListeYukle(); }catch(e){}
+    _blDenendi = true; _blSoz = null;
     beyazListe = Array.from({length:12},(_,i)=>({
       stationuuid:'t'+i, name:'Test Station '+i, url:'https://sahte.test/ts'+i,
       url_resolved:'https://sahte.test/ts'+i, grup:'AMBIENT', saf:1, ulke:'TR', tags:'ambient' }));
@@ -3920,11 +3995,21 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     if(_araListe.length){
       const hedef = _araListe[0];
       const bekleniyor = (hedef.o && (hedef.o.mp3 || hedef.o.u)) || '';
-      araCal(0); await bek(320);
+      araCal(0);
+      /* OLCUM ANI HEMEN BURASI. Once 320 ms beklenip bakiliyordu ve
+         test rastgele kiriliyordu: sahte adresler gercekten
+         calmadigi icin uygulama o arada HAKLI OLARAK bir sonraki
+         istasyona geciyor (olu yayin -> atla). Yani olculen sey
+         "bastigim sey calmaya basladi mi" degil, "320 ms sonra hala
+         o mu" oluyordu -- ikincisi bu testin sorusu degil.
+         Sonrasindaki kayma dogru davranis; burada bakilan sey
+         basildigi anda dogru seyin secilmesi. */
+      const calanIlk = ((aktifItem&&(aktifItem.mp3||aktifItem.u))||'');
+      await bek(320);
       secim = { kutu:araGiris.value, etiket:(typeof _etiket!=='undefined'?_etiket:''),
                 acik:araKut.classList.contains('acik'),
                 liste:_araListe.length,
-                calan:((aktifItem&&(aktifItem.mp3||aktifItem.u))||''), bekleniyor };
+                calan:calanIlk, bekleniyor };
     }
     /* Kapanma sifira donduruyor mu */
     araAc(); await bek(200);
@@ -3933,6 +4018,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const kapanis = { kutu:araGiris.value, etiket:(typeof _etiket!=='undefined'?_etiket:''),
                       acik:araKut.classList.contains('acik'), liste:_araListe.length };
     if(eskiBl) beyazListe = eskiBl;
+    _blDenendi = eskiDenendi;
     _radAraIdx = null; _radAraSay = -1; _araIdx = null; _araSay = -1;
     return { acilis, suzgec, secim, kapanis };
   });
@@ -3940,6 +4026,23 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      aramaAkis.acilis.n + ' kayit, kutu bos');
   K('Harf yazinca suzuluyor', aramaAkis.suzgec.n > 0 && aramaAkis.suzgec.n <= aramaAkis.acilis.n,
      aramaAkis.acilis.n + ' -> ' + aramaAkis.suzgec.n);
+  /* ── LISTE PARMAGIN ALTINDAN CEKILMESIN ─────────────────────────
+     Arama acilinca havuz agdan geliyor ve liste 260/900 ms'de
+     tazeleniyor. Yavas hatta bu tazeleme, kullanici listeye bakip
+     bir satira basmak uzereyken siralamayi yeniden kuruyordu:
+     bastigi anda o satir baska bir istasyon oluyordu. Yukaridaki
+     akis testi bunu gercekten yakaladi (0. satir yerine 3. caldi).
+     Kural: kullanici sonuclara DOKUNDUYSA (parmagini koydu ya da
+     kaydirdi) liste artik yeniden dizilmiyor. */
+  K('Sonuclara dokununca liste yeniden dizilmiyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const bayrak   = /var _araDokunuldu = false;/.test(k);
+      const dinleyen = /araSonuc\.addEventListener\('pointerdown'[\s\S]{0,80}_araDokunuldu = true/.test(k)
+                    && /araSonuc\.addEventListener\('scroll'[\s\S]{0,80}_araDokunuldu = true/.test(k);
+      const kapi     = /&& !_araDokunuldu\) araYap\(\);/.test(k);
+      const sifirla  = /_araDokunuldu = false;\s*\/\/ yeni acilis/.test(k);
+      return bayrak && dinleyen && kapi && sifirla;
+    }), 'dokunma bayragi var, tazeleme ona bakiyor, her acilista sifirlaniyor');
   K('Secilen sey caliyor', !!aramaAkis.secim && aramaAkis.secim.calan===aramaAkis.secim.bekleniyor,
      'calan: ' + (aramaAkis.secim?aramaAkis.secim.calan.slice(-24):'-'));
   K('Secince kutu ve liste sifirlaniyor', !!aramaAkis.secim && aramaAkis.secim.kutu===''
@@ -4902,6 +5005,38 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                    +'px, modul dipten '+tt.sonuc.modulDip+'px') : 'olculemedi');
     K('Radyoda tutamak yine sol ustte', tt.radyoUstte === true && tt.satirIci === '',
        'satir ici bottom temizleniyor, CSS geri aliyor');
+  }
+  /* ── EKRAN DEGISINCE YERLESIM DE DEGISMELI ──────────────────────
+     Sol alttaki buyutecin ve sag alttaki kunyenin yeri JS'te
+     olculuyor, yani ekran degisince kendiliginden duzelmiyorlar.
+     Resize dinleyicisi tuvali ve bekleme sembollerini guncelliyor
+     ama geriYerlestir()'i CAGIRMIYORDU: telefon dondurulunce buyutec
+     yuvasindan kopuyor, kunye genis ekranda hesaplanmis genisligiyle
+     kalip sol alttaki tuslarin uzerine biniyordu.
+     Senaryo testi 820 -> 390 gecisinde yakaladi (buyutec 146px
+     kaymis). Burada hem kaynak hem DAVRANIS olculuyor. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const i0 = kaynak.indexOf('function olcuIste()');
+    K('Resize yerlesimi de tazeliyor',
+       i0 > 0 && /geriYerlestir\(\)/.test(kaynak.slice(i0, i0 + 1400)),
+       'olcuIste() icinde geriYerlestir cagrisi var');
+    const dnm = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      /* Genis ekranda yerlestir, sonra daralt: yeni olcuye gore
+         kendini toparlamali. Olcum icin viewport degistiremiyoruz,
+         o yuzden olayi elle tetikleyip cagri zincirini olcuyoruz. */
+      const ar = document.getElementById('ara');
+      ar.style.left = '9999px';                 // bilerek bozuluyor
+      window.dispatchEvent(new Event('resize'));
+      await bek(160);
+      const yv = document.getElementById('araYuva').getBoundingClientRect();
+      const a2 = ar.getBoundingClientRect();
+      return { fark: Math.round(Math.abs(a2.left - yv.left)), yuvaVar: yv.width > 0 };
+    });
+    K('Resize sonrasi buyutec yuvasina donuyor',
+       dnm.yuvaVar && dnm.fark <= 2,
+       'elle bozuldu, resize sonrasi fark ' + dnm.fark + 'px');
   }
   /* ── GECICI AD IKI KIPTE DE AYNI YERDE ──────────────────────────
      ORBITAPE kipinde yazi yukarida kalip HALKANIN ICINE giriyordu.

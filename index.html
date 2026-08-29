@@ -2990,10 +2990,13 @@
      tutuyor ve orada önbelleği biz yönetmiyoruz. Yedek zaten nadiren
      çalışıyor; oradaki tam indirmeye razıyız. */
   const KOSULLU = {cache:'no-cache'};
-  async function listeCek(url, yedek, ms){
+  async function listeCek(url, yedek, ms, ucuncu){
     const tazele = u => u + (u.includes('?')?'&':'?') + 't=' + Date.now();
     try{ const r = await fetchZA(url, ms, KOSULLU); if(r && r.ok) return r; }catch(e){ _yut(e); }
     try{ const r = await fetchZA(tazele(yedek), ms); if(r && r.ok) return r; }catch(e){ _yut(e); }
+    /* UCUNCU ADRES: birinci kendi sitemiz, ikinci GitHub, ucuncu
+       jsDelivr. Ucu birden dusmedikce dizine hic sorulmuyor. */
+    if(ucuncu){ try{ const r = await fetchZA(tazele(ucuncu), ms); if(r && r.ok) return r; }catch(e){ _yut(e); } }
     // son şans: aynı kaynağa iki kat bütçeyle bir daha (yavaş hat için)
     try{ const r = await fetchZA(url, ms*2, KOSULLU); if(r && r.ok) return r; }catch(e){ _yut(e); }
     return null;
@@ -5345,6 +5348,21 @@
       vizSize();
       try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); }
       try{ if(_fxIpAcik) fxIpucuYerlestir(); }catch(e){ _yut(e); }
+      /* ── EKRAN DEGISINCE YERLESIM DE DEGISMELI ─────────────────
+         BURASI EKSIKTI. Bu dinleyici tuvali ve bekleme sembollerini
+         guncelliyordu ama sol alttaki buyuteci ve sag alttaki
+         kunyeyi yerlestiren geriYerlestir()'i CAGIRMIYORDU.
+         Ikisinin yeri JS'te olculup yaziliyor, yani ekran degisince
+         kendiliginden duzelmiyorlar: telefon dondurulunce (ya da
+         masaustunde pencere daraltilinca) buyutec yuvasindan
+         kopuyor, kunye genis ekranda hesaplanmis genisligiyle
+         kaliyor ve sol alttaki tuslarin uzerine biniyor.
+         Senaryo testi bunu 820px -> 390px gecisinde yakaladi:
+         buyutec 146px kaymis, kunye tasima ve kayit satirlarinin
+         ikisiyle birden cakisiyordu.
+         Cagri zaten ayni kareye toplaniyor (rAF), yani her piksel
+         degisiminde degil, degisim durunca bir kez calisiyor. */
+      try{ geriYerlestir(); }catch(e){ _yut(e); }
     });
   }
   window.addEventListener('resize', olcuIste);
@@ -6932,6 +6950,11 @@
 
   /* ── CANLI RADYO (Radio Browser): kütüphaneyle AYNI ses+grafikten çalar -> FX + görselleştirme radyoda da çalışır.
         CORS başlığı olmayan istasyonlar grafikten geçince sessiz kalır -> gözcü onları otomatik atlar. ── */
+  /* Bir oturumda dizine atilabilecek EN COK istek. Sekiz, listesi
+     hic yuklenmemis bir kullanicinin birkac raf gezmesine yetiyor;
+     ondan sonrasi onbellekten. */
+  const RB_TAVAN = 8;
+  var _rbSayac = 0;
   const RB_SUNUCU=["https://de1.api.radio-browser.info","https://all.api.radio-browser.info","https://at1.api.radio-browser.info","https://fi1.api.radio-browser.info"];
   /* ── KÜRATÖRLÜ ETİKET LİSTESİ ─────────────────────────────────────
      BURADA BİR AÇIK VARDI: listenin sonunda "" (boş etiket) duruyordu
@@ -7236,8 +7259,26 @@
      Liste yoksa (henüz yüklenmediyse) eski yol çalışmaya devam ediyor:
      küratörlü etiketlerle dizine sorulur ve gelen yine süzgeçten
      geçer. Yani bu dosya bir gün silinse uygulama susmuyor. */
-  const RADYO_URL       = "https://raw.githubusercontent.com/playjoymusic/tracks/main/radyo.json";
-  const RADYO_URL_YEDEK = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/radyo.json";
+  /* ── LISTE ONCE KENDI SITEMIZDEN ──────────────────────────────
+     Uzun sure birinci adres GitHub'in raw sunucusuydu. Bir kisi icin
+     sorun degil; olcekte iki sebeple yanlis:
+       · raw.githubusercontent.com bir CDN degil, kaynak dosya
+         goruntuleyici. Hiz siniri var ve dunyanin obur ucundan
+         yavas. Milyon acilista once o duvara toslariz.
+       · jsDelivr yedegi cok comert ama "adil kullanim" kuralli;
+         ticari olcekte yaslanilacak yer degil.
+     Oysa dosya ZATEN kendi sitemizde: depo kokunde duruyor,
+     .assetsignore onu haric tutmuyor, yani Cloudflare yayinliyor.
+     Cloudflare'in kendi belgesi: "Requests to static assets are free
+     and unlimited" -- yani ayni dosyayi kendi kenarimizdan vermek
+     hem daha hizli hem de bize hicbir sey getirmiyor.
+     Adres GORELI: orbitape.app'te kendi kenarimiza, yerel
+     denemelerde yerel sunucuya gidiyor. Ikisi de calisir.
+     Digerleri YEDEK olarak duruyor: dosya bir gun yayindan
+     dususe uygulama yine de liste bulabilsin. */
+  const RADYO_URL       = "/radyo.json";
+  const RADYO_URL_YEDEK = "https://raw.githubusercontent.com/playjoymusic/tracks/main/radyo.json";
+  const RADYO_URL_SON   = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/radyo.json";
   var beyazListe = null, _blSoz = null, _blDenendi = false;
   async function beyazListeYukle(){
     if(beyazListe) return beyazListe;
@@ -7245,7 +7286,7 @@
     if(_blSoz) return _blSoz;
     _blSoz = (async()=>{
       try{
-        const r = await listeCek(RADYO_URL, RADYO_URL_YEDEK, 7000);
+        const r = await listeCek(RADYO_URL, RADYO_URL_YEDEK, 7000, RADYO_URL_SON);
         if(!r || !r.ok){ _blDenendi = true; return null; }
         const d = await r.json();
         const A = Array.isArray(d) ? d : ((d && (d.istasyonlar||d.liste)) || []);
@@ -7282,6 +7323,20 @@
       const bl = await beyazListeYukle();
       if(bl && bl.length) return safSirala(aileSuz(bl)).slice(0, 40);
     }catch(e){ _yut(e); }
+    /* ── DIZINE GIDEN ISTEK SAYISI SINIRLI ────────────────────────
+       Buraya yalnizca beyaz liste hic gelmediyse duselir. Ama o
+       durumda radyoListe() her "sonraki"de yeniden cagriliyor ve
+       her cagri kendi icinde uc kez tekrar edebiliyor: listesi
+       yuklenmemis TEK bir kullanici, bir oturumda dizine onlarca
+       istek atabilir. Milyon kullanicida bu, gonullu isletilen ve
+       bagisla ayakta duran bir servisi yormak demek.
+       radio-browser bizim yedegimiz, sirtimizi dayadigimiz yer
+       degil. Oturum basina tavan koyuyoruz: dolunca sessizce
+       onbellege dusuyoruz, uygulama yine caliyor.
+       (Beyaz liste geldiginde buraya zaten hic girilmiyor -- yani
+       normal kullanicida bu sayac hep sifir.) */
+    if(_rbSayac >= RB_TAVAN){ return radyoOnbellekten(); }
+    _rbSayac++;
     const sunucu=RB_SUNUCU[Math.random()*RB_SUNUCU.length|0];
     /* Mod açıkken etiket rastgele değil, modun kendisi. Modun kendi
        etiketi yoksa (RADIOTAPE'te öyle) küratörlü listeden çekiliyor.
@@ -8725,6 +8780,10 @@
   const araKut=$('ara'), araCizgi=$('araCizgi'), araGiris=$('araGiris'),
         araSonuc=$('araSonuc'), araEtiket=$('araEtiket'), araSil=$('araSil');
   let _araListe=[], _araIdx=null, _araSay=-1, _araZaman=null;
+  /* Kullanici sonuclara dokundu mu (kaydirdi ya da parmagini koydu).
+     Dokunduysa gec gelen havuz listeyi YENIDEN DIZMIYOR -- bkz.
+     araAc() icindeki tazeleme. */
+  var _araDokunuldu = false;
 
   function araNorm(s){
     return String(s==null?'':s).toLocaleLowerCase('tr')
@@ -9467,14 +9526,28 @@
     if(!AYAR.mood){ try{ radyoListe(); }catch(e){ _yut(e); } }
     else { try{ earthYukle(); uzunYukle(); mixYukle(); listeYukle(); }catch(e){ _yut(e); } }
     silGoster();
+    _araDokunuldu = false;                    // yeni acilis: temiz sayfa
     setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);
     araYap();                                 // bos kutu -> tum liste
     /* HAVUZLAR AGDAN GELIYOR. Yukaridaki cagri o an elde ne varsa onu
        yaziyor; radyo listesi 200 ms sonra gelirse liste bos kalirdi.
        Iki kez tazeleniyor -- kullanici ilk harfi yazana kadar liste
-       dolmus oluyor. */
+       dolmus oluyor.
+
+       ── AMA PARMAGIN ALTINDAN LISTE CEKILMESIN ──────────────────
+       Bu tazeleme bir tehlike tasiyordu ve testte yakalandi: liste
+       gec gelirse (yavas hat, ilk acilis) 900 ms'deki tazeleme
+       siralamayi YENIDEN kuruyor. Kullanici o sirada listeye bakip
+       bir satira basmak uzereyse, bastigi anda o satir baska bir
+       istasyon olabiliyor -- "tikladigim sey calmadi, baskasi caldi".
+       Olculdu: secilen 0. satir yerine 3. satir caldi.
+       Cozum tazelemeyi kaldirmak degil (o zaman liste bos kalir):
+       kullanici SONUCLARA DOKUNDUYSA artik tazelenmiyor. Bakmaya
+       baslamis birinin altindan liste degistirilmez. */
     [260, 900].forEach(ms=>setTimeout(()=>{
-      try{ if(araKut.classList.contains('acik') && araNorm(araGiris.value).length<2) araYap(); }
+      try{ if(araKut.classList.contains('acik')
+             && araNorm(araGiris.value).length < 2
+             && !_araDokunuldu) araYap(); }
       catch(e){ _yut(e); }
     }, ms));
   }
@@ -9680,6 +9753,12 @@
     if(e.key==='Escape'){ e.preventDefault(); araKapa(); }
     else if(e.key==='Enter'){ e.preventDefault(); clearTimeout(_araZaman); araYap(); araCal(0); }
   });
+  /* SONUCLARA DOKUNULDU: gec gelen havuz artik listeyi yeniden
+     dizmiyor. Ikisi de sayiliyor -- parmagini koymak da kaydirmak
+     da "ben buna bakiyorum" demek. passive: sadece isaretliyoruz,
+     kaydirmayi engellemiyoruz. */
+  araSonuc.addEventListener('pointerdown', ()=>{ _araDokunuldu = true; }, {passive:true});
+  araSonuc.addEventListener('scroll',      ()=>{ _araDokunuldu = true; }, {passive:true});
   araSonuc.addEventListener('click', e=>{
     e.stopPropagation();
     const st=e.target.closest('.st'); if(!st) return;

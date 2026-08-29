@@ -49,6 +49,37 @@ jobs:
             echo "var=evet" >> $GITHUB_OUTPUT
           fi
 
+      # ── YAYINDAKI KOPYA DA GUNCELLENSIN ─────────────────────────
+      # Uygulama listeyi artik ONCE KENDI SITEMIZDEN cekiyor
+      # (orbitape.app/radyo.json) -- GitHub'in raw sunucusu ve
+      # jsDelivr yalnizca yedek. Cloudflare'da statik dosya istegi
+      # ucretsiz ve sinirsiz, yani olcekte dogru yer orasi.
+      # Ama bu, KOD deposunda da bir kopya olmasi demek. Kopya elle
+      # guncellenirse er gec unutulur ve uygulama aylarca eski
+      # listeyi servis eder -- kimse fark etmez, cunku hicbir sey
+      # bozulmaz, sadece yeni istasyonlar hic gorunmez.
+      # O yuzden hasat ikisini birden guncelliyor: kaynak tracks'te,
+      # yayina giden kopya burada.
+      - name: Yayindaki kopyayi tazele
+        if: steps.fark.outputs.var == 'evet'
+        run: cp tracks/radyo.json radyo.json
+
+      - name: Kod deposuna PR ac
+        if: steps.fark.outputs.var == 'evet'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: radyo-yayin-kopyasi
+          title: 'Yayindaki radyo.json tazelendi'
+          commit-message: 'radyo.json: yayin kopyasi hasatla esitlendi'
+          add-paths: radyo.json
+          body: |
+            Hasat tracks/radyo.json'u guncelledi; uygulama listeyi
+            once orbitape.app/radyo.json'dan cektigi icin yayina
+            giden kopya da esitlendi.
+
+            Bu PR'i VERI deposundaki PR ile BIRLIKTE birlestir --
+            biri birlesip oteki kalirsa liste ile yayin ayrisir.
+
       - name: PR ac
         if: steps.fark.outputs.var == 'evet'
         uses: peter-evans/create-pull-request@v7
