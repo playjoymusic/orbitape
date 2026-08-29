@@ -963,23 +963,6 @@
      otekinden buyuk olsa satir egri gorunur.
      Yalnizca CANLI YAYINDA gorunuyor -- arsiv kayitlarinin adi ve
      sanatcisi zaten ekranda yaziyor, orada soracak bir sey yok. */
-  #tani{display:none;z-index:72;flex:none;
-    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
-    border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
-    align-items:center;justify-content:center;cursor:pointer;
-    -webkit-tap-highlight-color:transparent;
-    color:#5adcd2;opacity:.52;
-    transition:opacity .18s ease, color .25s, border-color .2s, background .25s;}
-  #tani svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;
-    stroke-width:1.7;stroke-linecap:round;}
-  #tani .nk{fill:currentColor;stroke:none;}
-  #tani.var{display:flex;pointer-events:auto;}
-  /* Onay satiri: dugmeye basinca ekranin ortasinda degil, kunyenin
-     hemen ustunde tek satir. Panel acmak bu kadar kucuk bir karar
-     icin fazla; kullanici okur, ikinci basiste gider. */
-  #tani.soruyor{color:#ffc8dd;border-color:rgba(226,122,158,.45);opacity:1;}
-  #tani:hover{opacity:.9;}
-  #tani:focus-visible{outline:1px solid currentColor;outline-offset:2px;}
   #fav{display:none;z-index:72;flex:none;
     appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
@@ -1628,7 +1611,7 @@
      ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
   @media (max-width:480px){
     #tasima{gap:6px;} #araclar{gap:6px;}
-    #geri,#ileri,#dur,#duraklat,#fav,#favAc,#mute,#tani{width:34px;}
+    #geri,#ileri,#dur,#duraklat,#fav,#favAc,#mute{width:34px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:9px;letter-spacing:.14em;}
@@ -1872,20 +1855,17 @@
          ◁ ve ▷ BURADAN SOL UST'E TASINDI: ayni is icin ekranda iki
          takim tus vardi ve hangisinin ne yaptigi belirsizdi. -->
     <div class="np-gez">
-      <!-- ── BU NE? ─────────────────────────────────────────────────
-           Canli yayinda calan parcanin adi cogu istasyonda hic
-           gelmiyor; kullanici guzel bir sey duyup "bu neydi" diye
-           kaliyor. Bu dugme telefonun kendi taniyicisini aciyor.
+      <!-- ── "BU NE?" DUGMESI KALDIRILDI ────────────────────────
+           Burada Shazam'i acan bir dugme vardi. Kullanicinin karari:
+           "shazami cikar su anlik, icine entegre et sarkiyi bulan
+            sistem."
+           Dogru karar. O dugme kullaniciyi UYGULAMADAN CIKARIYORDU:
+           calan ses duruyor, baska bir uygulama aciliyor, geri
+           donunce yayin baska bir yerinden giriyor. Bir radyo
+           uygulamasinin "bu ne?" sorusuna cevabi kendi icinde
+           olmali. Yerine gelecek olan sey mikrofonla dinleme degil
+           -- istasyonun KENDI yayin bilgisi (bkz. GUNLUK). -->
 
-           SHAZAM LOGOSU CIZILMEDI. Baska bir markanin logosunu
-           uygulamanin icine koymak marka kullanimidir; magaza
-           incelemeleri bunu isaretliyor ve uygulamanin kendi cizgi
-           diliyle de catisiyor. Yerine kendi sembolumuz var: bir
-           soru isareti ve onu saran dinleme yayi.
-
-           ★ ILE YAN YANA cunku ikisi de AYNI SEY hakkinda: calan ses.
-           ★ "bunu hatirla", ? "bu neydi". -->
-      <button id="tani" type="button" title="What is this? (opens Shazam — it listens through the microphone, so keep the sound on the speaker)" aria-label="Identify this song"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="yay" d="M4.6 7.4a9 9 0 0 0 0 9.2"/><path class="soru" d="M9.6 9.1a2.7 2.7 0 0 1 5.2.9c0 1.8-2.6 2.2-2.6 4"/><circle class="nk" cx="12.2" cy="17.6" r="1.15"/></svg></button>
       <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
     </div>
     <div class="np-bilgi">
@@ -5167,7 +5147,34 @@
     if(_a && typeof _a === 'object'){
       if(_a.aramaSes === false) AYAR.aramaSes = false;
       if(_a.tikSes  === false) AYAR.tikSes  = false;
-      if(_a.mood    === true ) AYAR.mood    = true;
+      /* ── KIP DEPODAN GERI GELMIYOR ──────────────────────────
+         Bu satir eskiden 'if(_a.mood === true) AYAR.mood = true;'
+         idi ve iki ayri sorun cikariyordu.
+
+         1. ACILISTA TEKLEME. Kip, ayarlar bolumunun SONUNDA
+            (moodUygula(true)) uygulaniyor -- yani betigin cok
+            asagisinda. O ana kadar uygulama ZATEN radyo olarak
+            acilmis oluyor: cizim dongusu basliyor, radyo havuzu
+            yukleniyor, yerlesim oturuyor. Sonra kip devreye girip
+            hepsini geri aliyor: govde sinifi degisiyor, kuyruklar
+            bosaliyor, arsiv havuzlari yukleniyor, gezegenler bir
+            kare sonra yerlestiriliyor. Ekranda bu bir TEKLEME
+            olarak goruluyor -- kullanicinin tarifi: "acilista bi
+            tekleme var sanki".
+
+         2. KULLANICI OTEKI DUNYADA SIKISIYOR. Raf (AKTIF_AILE)
+            zaten her acilista RADIOTAPE'e donuyor; kip donmuyordu.
+            Yani bir kere SOUND BANKS'e giren biri bundan sonra hep
+            canli radyonun OLMADIGI bir dunyaya aciliyordu ve geri
+            donusun tek kapisi ayarlarin icindeki bir satirdi.
+            Ekranin geri kalani sifirlanirken kipin sabit kalmasi
+            tutarsizdi.
+
+         Karar: kip bir OTURUM tercihi, kalici bir ayar degil.
+         Uygulama her zaman canli radyo ile aciliyor; SOUND BANKS'e
+         gecis her seferinde bilincli bir tik.
+         Deger hala YAZILIYOR (ayarKaydet butun nesneyi yaziyor),
+         yalnizca OKUNMUYOR -- ileride geri istenirse veri duruyor. */
       /* TEMA DA DEPODAN GERI GELIYOR. Once bu iki satir yoktu ve
          secilen tema yeniden acilista AUTO'ya donuyordu: kullanici
          her seferinde bastan seciyordu.
@@ -6636,10 +6643,6 @@
     /* "BU NE?" YALNIZCA CANLI YAYINDA. Arsiv kayitlarinin adi ve
        sanatcisi zaten ekranda yaziyor -- orada soracak bir sey yok
        ve gereksiz bir dugme kosede yer kapliyor. */
-    try{
-      const t = document.getElementById('tani');
-      if(t) t.classList.toggle('var', !!(aktifItem && aktifItem.radyo));
-    }catch(e){ _yut(e); }
     const d = document.getElementById('fav'); if(!d) return;
     /* Düğme yalnızca çalan bir şey varken ya da favori kipi açıkken. */
     d.classList.toggle('var', !!(aktifItem || _favMod));
@@ -7636,7 +7639,22 @@
     }
     el.innerHTML=h;
   }
+  /* ── KAYNAK RAPORU: KISAYOL KAPALI ───────────────────────────────
+     Bu panel bir GELISTIRICI araci: hangi havuzun kac kayit verdigini
+     gosteriyor. Uzun sure ekranda herhangi bir yere 'D' basmakla
+     aciliyordu ve bu yanlisti:
+       · Klavyeli bir cihazda kullanicinin yazi yazacak bir yeri yok,
+         yani her 'd' tusu bu panele gidiyordu -- arama kutusu
+         disinda ekranin her yerinde.
+       · Ekranin sag ustune "SOURCE REPORT · v62 · press D" diye
+         teknik bir kutu aciliyordu; uygulamanin dili bu degil ve
+         magaza incelemesinde de tuhaf durur.
+     Artik panel ADRESE bagli: orbitape.app/?tani ile aciliyor.
+     ?tani zaten olcum kutusunun anahtari -- ikisi ayni kapidan
+     giriyor, tek bir gizli kapi kaliyor.
+     Kisayol o adreste ACIK: gelistirirken ac/kapa gerekiyor. */
   document.addEventListener('keydown',e=>{
+    if(!TANI_KAPI) return;                          // adres ?tani degilse hic dinlenmiyor
     if(e.key==='d'||e.key==='D'){
       const r=document.getElementById('rapor'); r.classList.toggle('on'); rapyaz();
       TANI = r.classList.contains('on');            // kaynak raporu ile tanı paneli birlikte
@@ -9512,9 +9530,13 @@
       if(e.key==='Escape' && document.body.classList.contains('ayar-acik')) kapa();
     });
     yaz();
-    /* Acilista da kur: kip depoda acik kalmis olabilir. 'ilk' bayragi
-       ses baslatmiyor -- acilis akisi kendi isini yapiyor. */
-    try{ moodUygula(true); }catch(e){ _yut(e); }
+    /* ACILISTA KIP KURULMUYOR. Eskiden burada moodUygula(true)
+       vardi cunku kip depodan geri gelebiliyordu. Artik gelmiyor
+       (bkz. AYAR okumasi), yani bu cagrinin yapacagi tek sey
+       "kapatma" yolunu bos yere yurutmekti: kuyruklari bosaltmak,
+       rafi yeniden kurmak, gecmisi sifirlamak. Acilis akisi bunlari
+       zaten kendi yapiyor ve ustune bir kez daha yapmak ekranda
+       ikinci bir sicrama demekti. */
   })();
 
   function araAc(){
@@ -11316,7 +11338,11 @@
      masaüstünde D tuşu da aynı işi görüyor. Kapalıyken ölçümler yine
      toplanıyor (maliyeti yok), sadece yazılmıyor. */
   var TANI = false;
-  try{ TANI = /[?&]tani(=|&|$)/.test(location.search); }catch(e){ _yut(e); }
+  /* TANI_KAPI: gelistirici kapisinin acik olup olmadigi. Adres
+     ?tani iceriyorsa hem olcum kutusu hem 'D' kisayolu calisiyor;
+     icermiyorsa ikisi de yok. Tek kapi, tek anahtar. */
+  var TANI_KAPI = false;
+  try{ TANI_KAPI = /[?&]tani(=|&|$)/.test(location.search); TANI = TANI_KAPI; }catch(e){ _yut(e); }
   function taniPanel(){ return TANI ? document.getElementById('kayitBilgi') : null; }
   var _bilgiZaman = null, _sesProfil = '', _sesTepe = 0;
   function kayitBilgiYaz(ms){
@@ -11444,69 +11470,18 @@
       _goz.observe(_acKutu, { attributes:true, attributeFilter:['class'], subtree:true });
     }
   }catch(e){ _yut(e); }
-  /* ── "BU NE?" ────────────────────────────────────────────────────
-     Telefonun kendi tanima uygulamasini aciyor.
-
-     NEDEN GOMULU DEGIL: Shazam'in tanima motoru web'e acik degil
-     (ShazamKit yalnizca native iOS/macOS). Ucuncu taraf servisler
-     (AudD, ACRCloud) teknik olarak yapilabilir -- ses grafigimizde
-     kayit cikisi zaten hazir -- ama birkac saniyelik sesi baska bir
-     sunucuya gondermek demek ve bu, gizlilik metnimizdeki ve Play
-     Data Safety formundaki "hicbir veri toplanmiyor" cevabini bozar.
-     O cevap su an degistirilmedigi surece bu dugme hicbir sey
-     gondermiyor: yalnizca bir baglanti aciyor.
-
-     NASIL CALISIYOR: universal link. Shazam kuruluysa isletim
-     sistemi uygulamayi aciyor, degilse site aciliyor. Ozel semalar
-     (shazam://) belgelenmemis ve her surumde calismiyor; universal
-     link her iki tarafta da guvenli yol.
-
-     SESIMIZ DURMUYOR: uygulama arka plana gectiginde MediaSession
-     sayesinde yayin devam ediyor, yani Shazam hoparlorden duyuyor.
-
-     KULAKLIK UYARISI: Shazam MIKROFONDAN dinliyor. Kulaklik takiliysa
-     mikrofona ses gitmiyor ve tanima bos donuyor. Bunu kullanicinin
-     denemeden once bilmesi lazim -- ilk basista ekranda bir satir
-     cikiyor, sonrakilerde cikmiyor. */
-  try{
-    const tn = document.getElementById('tani');
-    if(tn){
-      /* IKI BASIS: ilki SORUYOR, ikincisi GIDIYOR.
-         Baska bir uygulamaya atlamak kucuk bir karar degil -- calan
-         sey duruyor, ekran degisiyor. Yanlislikla basan biri kendini
-         Shazam'da bulmamali. Ilk basista dugme pembelesiyor ve
-         ekranda tek satir cikiyor; uc saniye icinde tekrar basilirsa
-         gidiyor, basilmazsa kendiliginden vazgeciyor.
-         Onay paneli ACMIYORUZ: bu kadar kucuk bir sey icin panel
-         fazla, uygulamanin dili de o degil. */
-      let _soruyor = 0;
-      const ac = e=>{
-        if(e){ e.preventDefault(); e.stopPropagation(); }
-        try{ basHissi(tn); }catch(_){ _yut(_); }
-        if(!_soruyor){
-          _soruyor = setTimeout(()=>{ _soruyor = 0;
-            try{ tn.classList.remove('soruyor'); }catch(_){ _yut(_); } }, 3000);
-          try{ tn.classList.add('soruyor'); }catch(_){ _yut(_); }
-          /* Kulaklik uyarisi ayni satirda: Shazam MIKROFONDAN
-             dinliyor, kulaklik takiliysa hicbir sey duymuyor.
-             Kullanicinin bunu denemeden once bilmesi lazim. */
-          try{ geciciAdGoster('SHAZAM? KEEP IT ON THE SPEAKER'); }catch(_){ _yut(_); }
-          return;
-        }
-        clearTimeout(_soruyor); _soruyor = 0;
-        try{ tn.classList.remove('soruyor'); }catch(_){ _yut(_); }
-        /* Universal link: Shazam kuruluysa isletim sistemi
-           uygulamayi aciyor, degilse site aciliyor. Ozel semalar
-           (shazam://) belgelenmemis ve her surumde calismiyor. */
-        try{ window.open('https://www.shazam.com/', '_blank', 'noopener'); }
-        catch(_){ _yut(_); }
-      };
-      tn.addEventListener('click', ac);
-      tn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') ac(e); });
-      ['pointerdown','mousedown','touchstart'].forEach(t=>
-        tn.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
-    }
-  }catch(e){ _yut(e); }
+  /* ── "BU NE?" DUGMESI KALDIRILDI ────────────────────────────────
+     Burada Shazam'i acan bir dugme ve uzun bir gerekce vardi.
+     Kullanicinin karari: "shazami cikar su anlik, icine entegre et
+     sarkiyi bulan sistem."
+     Dogru karar, cunku o dugmenin temel sorunu tanima degil
+     TERK ETMEKTI: basinca calan ses duruyor, baska bir uygulama
+     aciliyor ve geri donunce canli yayin baska bir yerinden
+     giriyor. Bir radyo uygulamasinin "bu ne caliyor" sorusuna
+     cevabi kendi icinde olmali.
+     Yerine gelecek olan sey MIKROFONLA DINLEME DEGIL: istasyonlarin
+     kendi yayin bilgisi (ICY / now-playing). Sebebi ve olculen
+     kapsam GUNLUK.md'de. */
   const favDug = document.getElementById('fav');
   if(favDug){
     favDug.addEventListener('pointerdown', e=>{

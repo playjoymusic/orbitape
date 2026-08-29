@@ -285,61 +285,58 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        'yeni kaynakta yeniden yaziliyor');
   }
 
-  /* ── "BU NE?" (SHAZAM) ──────────────────────────────────────────
-     Canli yayinda calan parcanin adi cogu istasyonda hic gelmiyor.
-     Bu dugme telefonun kendi taniyicisini aciyor -- gomulu tanima
-     degil, cunku Shazam'in motoru web'e acik degil ve ucuncu taraf
-     bir servise ses gondermek "hicbir veri toplanmiyor" sozunu
-     bozardi. */
+  /* ── "BU NE?" DUGMESI KALDIRILDI ────────────────────────
+     Burada Shazam'i acan dugmenin uc kontrolu vardi: yalnizca canli
+     yayinda gorunmesi, iki basisla gitmesi, platform yonlendirmesi.
+     Dugme kaldirildi -- kullanicinin karari: "shazami cikar su anlik,
+     icine entegre et sarkiyi bulan sistem."
+     Temel sorun tanima degil TERK ETMEKTI: basinca calan ses duruyor,
+     baska bir uygulama aciliyor, geri donunce canli yayin baska bir
+     yerinden giriyor.
+     BU KONTROL NOBETTE KALIYOR: dugme geri gelirse ya da disariya
+     tanima baglantisi acilirsa burasi kirmizi yanar. */
   {
     const kaynak = fs.readFileSync('index.html','utf8');
-    /* BASKA BIR MARKANIN LOGOSU CIZILMEDI: magaza incelemeleri bunu
-       isaretliyor ve uygulamanin kendi cizgi diliyle de catisiyor.
-       Kendi sembolumuz: soru isareti + onu saran dinleme yayi. */
-    const svg = (kaynak.match(/<button id="tani"[\s\S]{0,400}?<\/button>/)||[''])[0];
-    K('Kendi sembolumuz cizilmis', /class="yay"/.test(svg) && /class="soru"/.test(svg),
-       'soru isareti + dinleme yayi');
-    /* Ozel sema (shazam://) belgelenmemis ve her surumde calismiyor;
-       universal link her iki tarafta da guvenli yol. Yorumlarda
-       gecmesi sorun degil, KODDA gecmemeli. */
-    const kod = kaynak.replace(/\/\*[\s\S]*?\*\//g, '');
-    K('Universal link kullaniliyor',
-       /window\.open\('https:\/\/www\.shazam\.com\/'/.test(kod)
-       && !/shazam:\/\//.test(kod),
-       'ozel sema degil');
+    /* HTML YORUMLARI DA CIKARILIYOR. Ilk yazimda yalnizca JS
+       yorumlari (/* *​/) siliniyordu ve dosyadaki
+       "<!-- Burada Shazam'i acan bir dugme vardi -->" aciklamasi
+       testi dusuruyordu: kod temizdi, gerekceyi anlatan cumle
+       kirmizi yakiyordu. Aranan sey KODDA gecmesi. */
+    const kod = kaynak.replace(/\/\*[\s\S]*?\*\//g, '')
+                      .replace(/<!--[\s\S]*?-->/g, '');
+    K('Disariya tanima baglantisi yok',
+       !/id="tani"/.test(kod) && !/shazam/i.test(kod) && !/intent:\/\//.test(kod),
+       'dugme, ozel sema ve intent adresi -- ucu de kodda yok');
   }
-  const tani = await pg.evaluate(async ()=>{
-    const bek = ms=>new Promise(r=>setTimeout(r,ms));
-    const t = document.getElementById('tani'); if(!t) return null;
-    const eskiIt = aktifItem;
-    /* SENKRON OKUNUYOR: arada beklenirse arka planda suren kaynak
-       arayisi aktifItem'i degistiriyor ve olculen sey testin
-       kurdugu durum olmaktan cikiyor (bir kere oyle dustu). */
-    aktifItem = { mp3:'x', ad:'A', radyo:true }; favTazele();
-    const radyoda = t.classList.contains('var') ? 'flex' : 'none';
-    aktifItem = { mp3:'y', ad:'B' }; favTazele();
-    const arsivde = t.classList.contains('var') ? 'flex' : 'none';
-    aktifItem = { mp3:'x', ad:'A', radyo:true }; favTazele(); await bek(40);
-    /* Ilk basis SORUYOR, gitmiyor. */
-    let acilan = 0;
-    const eskiAc = window.open; window.open = ()=>{ acilan++; return null; };
-    t.click(); await bek(80);
-    const soruyor = t.classList.contains('soruyor');
-    const ilkteGitti = acilan;
-    t.click(); await bek(80);
-    const ikincideGitti = acilan;
-    window.open = eskiAc;
-    aktifItem = eskiIt; favTazele();
-    return { radyoda, arsivde, soruyor, ilkteGitti, ikincideGitti };
-  });
-  K('"Bu ne?" yalnizca canli yayinda', !!tani && tani.radyoda!=='none' && tani.arsivde==='none',
-     'radyoda ' + (tani?tani.radyoda:'-') + ' | arsivde ' + (tani?tani.arsivde:'-'));
-  /* Baska bir uygulamaya atlamak kucuk bir karar degil: calan sey
-     duruyor, ekran degisiyor. Yanlislikla basan biri kendini
-     Shazam'da bulmamali. */
-  K('Ilk basis soruyor, ikincisi goturuyor',
-     !!tani && tani.soruyor===true && tani.ilkteGitti===0 && tani.ikincideGitti===1,
-     'ilk basis ' + (tani?tani.ilkteGitti:'-') + ' acilis, ikinci ' + (tani?tani.ikincideGitti:'-'));
+  /* ── KIP DEPODAN GERI GELMIYOR ────────────────────────────────
+     Iki sebep. Birincisi ACILISTA TEKLEME: kip, ayarlar bolumunun
+     sonunda uygulaniyordu -- yani uygulama once radyo olarak
+     aciliyor (cizim basliyor, havuz yukleniyor, yerlesim oturuyor),
+     sonra hepsi geri alinip arsive geciliyordu. Kullanicinin
+     tarifi: "acilista bi tekleme var sanki".
+     Ikincisi TUTARSIZLIK: raf her acilista RADIOTAPE'e donuyordu
+     ama kip donmuyordu; bir kere SOUND BANKS'e giren biri bundan
+     sonra hep canli radyonun OLMADIGI bir dunyaya aciliyordu.
+     Kip artik bir OTURUM tercihi. */
+  K('Kip depodan geri gelmiyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      /* Okuma satiri kalkmis olmali (yorumda gecmesi serbest). */
+      const kod = k.replace(/\/\*[\s\S]*?\*\//g, '');
+      const okumuyor = !/_a\.mood\s*===\s*true/.test(kod);
+      /* Acilistaki moodUygula(true) cagrisi da kalkmis olmali:
+         yapacagi tek sey bos yere "kapatma" yolunu yurutmekti. */
+      const cagirmiyor = !/moodUygula\(true\)/.test(kod);
+      return okumuyor && cagirmiyor;
+    }), 'AYAR.mood okunmuyor, acilista moodUygula cagrilmiyor');
+  /* Depoda mood:true yazsa bile uygulama RADYO olarak acilmali. */
+  K('Depoda kip acik olsa da radyo aciliyor', await pg.evaluate(()=>{
+      /* AYAR nesnesi betigin basinda kuruluyor; o an depoda ne
+         yazdigina bakiliyor. Sayfa zaten acildi, yani olculen sey
+         SONUC: govde 'mood' sinifini almamis olmali. */
+      let depoda = null;
+      try{ depoda = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}'); }catch(e){}
+      return AYAR.mood === false && !document.body.classList.contains('mood');
+    }), 'AYAR.mood false, govdede mood sinifi yok');
 
   K('Ses kapaliyken arama gosterimi duruyor', await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
