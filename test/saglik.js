@@ -174,6 +174,23 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Ayni turda ses zincirindeki GERCEK hata da duzeldi: iki parmak
      ses.volume yaziyordu ve <audio> Web Audio'ya bagli oldugu icin
      hicbir sey olmuyordu. */
+  /* ── SOZDIZIMI ONCE ─────────────────────────────────────────────
+     Buyuk bir silme sirasinda bir IIFE'nin kuyrugu ( })(); ) yarim
+     kaldi ve dosya sozdizimi hatasina dustu. Tarayici tarafinda bu
+     "AYAR is not defined" gibi ALAKASIZ bir hata olarak goruldu ve
+     gercek sebebi bulmak vakit aldi.
+     Bu kontrol en basta ve dogrudan konusuyor: kod ayristirilamiyorsa
+     geri kalan 300 testin hicbirinin soyledigi sey guvenilir degil. */
+  {
+    let sozHata = '';
+    try{
+      const k = fs.readFileSync('index.html','utf8');
+      const js = k.slice(k.indexOf('<script>')+8, k.lastIndexOf('</script>'));
+      new (require('vm').Script)(js, {filename:'index.html'});
+    }catch(e){ sozHata = String(e && e.message || e).slice(0,120); }
+    K('index.html sozdizimi gecerli', sozHata === '',
+       sozHata || 'ayristirilabiliyor');
+  }
   K('Dosya boyutu < 580 KB',  dosyaBoy < 580*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure

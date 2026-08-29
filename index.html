@@ -439,9 +439,6 @@
   /* Nebula + gezegenler, karşısındaki ORBITAPE yazısıyla aynı ÜST
      sınırdan başlıyor. Ölçüldü: nebulanın görünen mürekkebi 3px'te,
      yazınınki 15px'te başlıyordu — küre 12px yukarı taşıyordu. */
-  #mark{position:fixed;z-index:70;display:flex;align-items:center;cursor:pointer;
-    top:calc(25px + env(safe-area-inset-top, 0px));
-    left:calc(14px + env(safe-area-inset-left, 0px));}
   /* Takas: lib<-liste rengi, liste<-radio rengi, radio<-lib rengi */
   #ust .kanal[data-mod="lib"]:not(.ad){color:#8c8794;}
   #ust .kanal[data-mod="liste"]:not(.ad){color:#a87a5e;}
@@ -584,7 +581,7 @@
      özellik MİRAS ALINMIYOR — üstteki tıklanabilir yazılara ayrı ayrı
      yazılması gerekiyor. Ölçülen belirti: isme çift tıkla, REC satırı
      arama çizgisinin üstüne biner. */
-  #ust, #ust .ustSatir, #ust .kanal, #ust .kanal.ad, #modAd, #mark, #uydular{
+  #ust, #ust .ustSatir, #ust .kanal, #ust .kanal.ad, #modAd{
     touch-action:manipulation;}
   #modAd{pointer-events:none;user-select:none;white-space:nowrap;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-weight:400;
@@ -703,24 +700,6 @@
      filtreyle değil, gradyan renklerinin tonu döndürülerek. Küre
      gölgelemesi bir kez pişiyor. Sonuç: SIFIR CSS filtresi, sıfır
      derleyici katmanı — düşürülecek bir şey yok. */
-  #mark .neb{display:block;width:74px;height:74px;border-radius:50%;
-    box-shadow:0 0 20px rgba(90,220,210,.20), inset 0 0 14px rgba(0,0,0,.7);}
-  #mark.radio .neb{box-shadow:0 0 20px rgba(255,140,90,.22), inset 0 0 14px rgba(0,0,0,.7);}
-  /* SORU KIPI: gezegen nefes aliyor. Yeni bir kutu ya da dugme yok --
-     soruyu halkanin altindaki gecici yazi soyluyor, buradaki nefes
-     de sorunun NEREDEN geldigini gosteriyor. */
-  #mark.soruyor .neb{animation:markSoru 1.1s ease-in-out infinite;}
-  @keyframes markSoru{0%,100%{opacity:.55;transform:scale(1);}
-                      50%   {opacity:1;  transform:scale(1.06);}}
-  @media (prefers-reduced-motion:reduce){ #mark.soruyor .neb{animation:none;opacity:.7;} }
-  #mark.liste .neb{box-shadow:0 0 20px rgba(176,164,192,.22), inset 0 0 14px rgba(0,0,0,.7);}
-  #mark .wm{font-family:'Share Tech Mono',monospace;color:#8ff0dd;font-size:15px;letter-spacing:.34em;
-    line-height:1;text-shadow:0 0 13px rgba(90,220,210,.38);}
-  #mark .wm small{display:block;margin-top:5px;font-size:8.5px;letter-spacing:.34em;color:#5f8189;text-shadow:none;}
-  #mark.radio .wm{color:#ffb98a;text-shadow:0 0 13px rgba(255,140,90,.4);}
-  #mark.radio .wm small{color:#a76e54;}
-  #mark.liste .wm{color:#cfe08a;text-shadow:0 0 13px rgba(200,220,110,.4);}
-  #mark.liste .wm small{color:#8a9a54;}
   /* ── BİR ÖNCEKİ (◁|): SAĞ ALT bloğun EN ÜSTÜNDE, parça adının üzerinde.
      Artık #np'nin içinde akan bir eleman -> konumu yığından geliyor,
      JS'te tek bir koordinat hesabı kalmadı; yazı iki satıra çıksa da
@@ -1143,8 +1122,6 @@
   @media (max-width:480px){
     #ust{top:calc(13px + env(safe-area-inset-top, 0px));right:calc(13px + env(safe-area-inset-right, 0px));gap:7px;}
     #ust .kanal{font-size:20px;letter-spacing:.26em;}
-    #mark{left:calc(13px + env(safe-area-inset-left, 0px));}
-    #mark .neb{width:64px;height:64px;}
     #bekle.buyuk{--sem:26px;} }
 
   /* ── GENIS EKRANDA TEK KOLON ──────────────────────────────────────
@@ -1164,7 +1141,6 @@
     #ust        { right:calc(var(--yan) + 18px + env(safe-area-inset-right, 0px)); }
     #np         { right:calc(var(--yan) + 18px + env(safe-area-inset-right, 0px)); }
     #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
-    #mark       { left:calc(var(--yan) + 14px + env(safe-area-inset-left, 0px)); }
     #ara        { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
     #araclar    { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
     #kayitBilgi { left:calc(var(--yan) + 16px + env(safe-area-inset-left, 0px)); }
@@ -3376,36 +3352,10 @@
       fxUygula(); yatayUygula(); modUygula();
     }catch(e){ _yut(e); }
   }
-  /* Uydular büyük nebulanın çevresinde bir YAY üzerinde dizilir: sağ yandan
-     başlayıp saat yönünde aşağı doğru küçülerek. Konumlar nebulanın gerçek
-     ölçüsünden hesaplanıyor, sabit sayı yok. */
-  function uyduYerlestir(){
-    iz('uyduYerlestir');
-    try{
-      const nb = document.querySelector('#mark .neb'); if(!nb) return;
-      const n = nb.getBoundingClientRect(); if(!n.width) return;
-      const mx = n.left + n.width/2, my = n.top + n.height/2, R = n.width/2;
-      // Yay SAĞA ve AŞAĞI açılıyor (sol tarafta ekran kenarı var). Her uydu
-      // bir öncekinden biraz daha uzakta: yörüngeler iç içe değil, kademeli.
-      const yer = UYDULAR.map(u=>{
-        const cap = Math.round(n.width * u.cap);
-        const r   = R*(u.uzak||1.16) + cap*0.20;
-        const a   = u.aci * Math.PI/180;
-        return { u, cap, x: mx + Math.cos(a)*r, y: my + Math.sin(a)*r };
-      });
-      yer.forEach((v,i)=>{
-        const b = uyduDug[v.u.fx]; if(!b) return;
-        // Dokunma alanı komşusuna taşmasın: en yakın uyduya olan mesafenin %92'si.
-        let enYakin = 1e9;
-        yer.forEach((w,k)=>{ if(k!==i) enYakin = Math.min(enYakin, Math.hypot(v.x-w.x, v.y-w.y)); });
-        const vur = Math.max(30, Math.round(Math.min(v.cap*1.9, enYakin*0.92)));
-        b.style.setProperty('--cap', v.cap+'px');
-        b.style.setProperty('--vur', vur+'px');
-        b.style.left = Math.round(v.x)+'px';
-        b.style.top  = Math.round(v.y)+'px';
-      });
-    }catch(e){ _yut(e); }
-  }
+  /* uyduYerlestir() SILINDI (asama 2): yerlestirecek gezegen yok.
+     Cagrilari da kaldirildi. */
+  function uyduYerlestir(){ }
+
 
   /* ── FX MODLARI ──────────────────────────────────────────────────
      FXMOD: '' (normal) veya bir uydunun adı. Aynı uyduya tekrar basmak
@@ -9173,127 +9123,10 @@
        · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
        · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
      Kare başına iş: iki drawImage + dört minik nokta. */
-  (function nebulaTuval(){
-    const el = document.querySelector('#mark .neb');
-    if(!el || !el.getContext) return;
-    const ctx = el.getContext('2d');
-    const CSSBOY = 74;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const P = Math.round(CSSBOY * dpr);
-    el.width = P; el.height = P;
-    el.style.width = CSSBOY+'px'; el.style.height = CSSBOY+'px';
-
-    // gaz bulutu: CSS'teki inset:-35% -> kürenin 1.7 katı bir alan
-    const YAY = 1.70, KB = 34;
-    const PALET = {
-      lib:  [[.32,.34,.38,'130,245,224',.95], [.70,.62,.44,'150,110,255',.80],
-             [.56,.30,.46,'255,120,200',.60], [.44,.76,.60,'40,120,210',.65]],
-      radio:[[.32,.34,.40,'255,186,120',.95], [.70,.62,.46,'255,92,150',.85],
-             [.56,.30,.46,'186,96,255',.72], [.44,.76,.60,'150,50,180',.70]],
-      liste:[[.32,.34,.40,'226,216,206',.92], [.70,.62,.46,'158,148,178',.85],
-             [.56,.30,.46,'198,184,212',.70], [.44,.76,.60,'80,60,180',.70]]
-    };
-    // rgb -> ton döndür -> rgb. Filtre yerine bu: bedava ve katman açmıyor.
-    function tonDondur(r,g,b,derece){
-      const mx=Math.max(r,g,b)/255, mn=Math.min(r,g,b)/255, l=(mx+mn)/2, d=mx-mn;
-      let h=0, sa=0;
-      if(d>1e-6){
-        sa = l>0.5 ? d/(2-mx-mn) : d/(mx+mn);
-        const R=r/255,G=g/255,B=b/255;
-        h = (mx===R) ? ((G-B)/d + (G<B?6:0)) : (mx===G) ? ((B-R)/d + 2) : ((R-G)/d + 4);
-        h/=6;
-      }
-      h = (h + derece/360) % 1; if(h<0) h+=1;
-      if(sa===0){ const v=Math.round(l*255); return v+','+v+','+v; }
-      const q = l<0.5 ? l*(1+sa) : l+sa-l*sa, pp = 2*l-q;
-      const kn = t=>{ if(t<0)t+=1; if(t>1)t-=1;
-        if(t<1/6) return pp+(q-pp)*6*t; if(t<1/2) return q;
-        if(t<2/3) return pp+(q-pp)*(2/3-t)*6; return pp; };
-      return Math.round(kn(h+1/3)*255)+','+Math.round(kn(h)*255)+','+Math.round(kn(h-1/3)*255);
-    }
-
-    const gaz = document.createElement('canvas'); gaz.width=gaz.height=KB;
-    const gc = gaz.getContext('2d');
-    let pisAd='', pisTon=-999;
-    function gaziPisir(tema, ton){
-      if(tema===pisAd && Math.abs(ton-pisTon)<4) return;
-      pisAd=tema; pisTon=ton;
-      gc.clearRect(0,0,KB,KB);
-      for(const [x,y,r,renk,a] of (PALET[tema]||PALET.lib)){
-        const [R,G,B] = renk.split(',').map(Number);
-        const g = gc.createRadialGradient(x*KB,y*KB,0, x*KB,y*KB,r*KB);
-        g.addColorStop(0,'rgba('+tonDondur(R,G,B,ton)+','+a+')');
-        g.addColorStop(1,'rgba('+tonDondur(R,G,B,ton)+',0)');
-        gc.fillStyle=g; gc.fillRect(0,0,KB,KB);
-      }
-    }
-
-    // küre kabuğu (eski ::after): tema değiştirmiyor -> bir kez pişiyor
-    const kabuk = document.createElement('canvas'); kabuk.width=kabuk.height=P;
-    (function kabuguPisir(){
-      const k = kabuk.getContext('2d'), H=P;
-      const el2 = (gx,gy,rx,ry,renk,dur)=>{
-        k.save(); k.translate(gx*H,gy*H); k.scale(rx,ry);
-        const g=k.createRadialGradient(0,0,0,0,0,H);
-        g.addColorStop(0,renk); g.addColorStop(dur,'rgba(0,0,0,0)');
-        k.fillStyle=g; k.fillRect(-H,-H,2*H,2*H); k.restore();
-      };
-      el2(.29,.24,.11,.11,'rgba(255,255,255,.40)',1);       // speküler
-      el2(.33,.28,.40,.40,'rgba(255,255,255,.10)',1);       // difüz parıltı
-      el2(.50,.24,.37,.030,'rgba(255,255,255,.085)',.74);   // enlem kuşakları
-      el2(.50,.39,.40,.035,'rgba(0,0,0,.085)',.74);
-      el2(.50,.53,.39,.030,'rgba(255,255,255,.065)',.74);
-      el2(.50,.67,.36,.035,'rgba(0,0,0,.075)',.74);
-      el2(.50,.80,.31,.030,'rgba(255,255,255,.05)',.74);
-      el2(.74,.78,.32,.32,'rgba(150,200,235,.15)',1);       // karşı kenar sıçraması
-      // kenar ışığı
-      let g=k.createRadialGradient(H/2,H/2,H*0.40,H/2,H/2,H*0.50);
-      g.addColorStop(0,'rgba(190,235,255,0)'); g.addColorStop(.72,'rgba(190,235,255,.22)');
-      g.addColorStop(1,'rgba(190,235,255,0)');
-      k.fillStyle=g; k.fillRect(0,0,H,H);
-      // terminatör
-      g=k.createRadialGradient(.31*H,.27*H,0,.31*H,.27*H,H);
-      g.addColorStop(.30,'rgba(0,0,0,0)');  g.addColorStop(.52,'rgba(0,0,0,.20)');
-      g.addColorStop(.72,'rgba(0,0,0,.46)'); g.addColorStop(.88,'rgba(0,0,0,.74)');
-      g.addColorStop(1,  'rgba(1,2,4,.94)');
-      k.fillStyle=g; k.fillRect(0,0,H,H);
-    })();
-
-    const YILDIZ = [[.60,.26,2,0],[.34,.62,2,.9],[.72,.44,1.5,1.7],[.64,.70,1.5,2.5]];
-    const TUR = 26000, DONUS = 19000;
-    const markEl = document.getElementById('mark');
-    ctx.imageSmoothingEnabled = true;
-    try{ ctx.imageSmoothingQuality = 'high'; }catch(e){ _yut(e); }
-
-    function ciz(){
-      if(document.hidden) return;
-      const t = Date.now();
-      const tema = markEl && markEl.classList.contains('radio') ? 'radio'
-                 : markEl && markEl.classList.contains('liste') ? 'liste' : 'lib';
-      gaziPisir(tema, Math.round((t % TUR) / TUR * 360));
-      ctx.clearRect(0,0,P,P);
-      ctx.save();
-      ctx.beginPath(); ctx.arc(P/2,P/2,P/2,0,6.2832); ctx.clip();
-      // gaz: küçük tampon büyütülünce yumuşuyor -> blur filtresine gerek yok
-      const yay = P*YAY;
-      ctx.translate(P/2,P/2);
-      ctx.rotate((t % DONUS)/DONUS * 6.2832);
-      ctx.scale(1.06,1.06);
-      ctx.drawImage(gaz, -yay/2, -yay/2, yay, yay);
-      ctx.setTransform(1,0,0,1,0,0);
-      ctx.beginPath(); ctx.arc(P/2,P/2,P/2,0,6.2832); ctx.clip();
-      ctx.drawImage(kabuk,0,0);
-      for(const [x,y,r,gec] of YILDIZ){
-        const a = 0.2 + 0.75*(0.5+0.5*Math.sin((t/3400 - gec/3.4)*6.2832));
-        ctx.fillStyle='rgba(234,255,249,'+a.toFixed(2)+')';
-        ctx.beginPath(); ctx.arc(x*P,y*P,r*dpr/2,0,6.2832); ctx.fill();
-      }
-      ctx.restore();
-    }
-    ciz();
-    setInterval(ciz, 90);                    // ~11 kare/sn: yavaş bir bulut için fazlasıyla yeter
-    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) ciz(); });
-  })();
+  /* NEBULA TUVALI SILINDI (asama 2). Sol ustteki gaz kuresini cizen
+     ~120 satir: gaz katmani, HSL ton dondurme, kure kabugu, yildizlar.
+     Nebula bir KANAL ANAHTARIYDI; kanal kalmayinca isi de kalmadi.
+     Tamami fx-tam etiketinde ve ~/Downloads/orbitape-fx icinde. */
 
   /* ── TAKILMA ÖLÇERİ ───────────────────────────────────────────────
      "Görüntü dondu, ses devam etti" birkaç kez tekrarladı ve bu
@@ -9818,7 +9651,7 @@
   document.addEventListener('pointerdown', e=>{
     if(_ilkTetik || baslatildi) return;
     const t = e.target;
-    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#uydular,#mark,#rapor')) return;  // kendi başlatıcıları var
+    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor')) return;  // kendi başlatıcıları var
     _ilkTetik = true;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     const it = ilkItem;
