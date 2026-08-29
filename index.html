@@ -959,6 +959,38 @@
     /* Arama acikken cekilsin: o an dikkat orada. */
     body.arama-acik #sesDikey{opacity:.12;}
   }
+  /* ── SOUND BANKS (MOOD) KIPI ─────────────────────────────────────
+     Eski ORBITAPE tarafi -- arsiv havuzlari, nebula, gezegenler, FX --
+     SILINMEDI, ayarlardaki bir dugmenin arkasina kondu. Kapaliyken
+     hicbiri ekranda yok; acilinca hepsi geri geliyor.
+     Boylece kod ne olu kaliyor ne de atiliyor: gercek bir ozellik.
+     Kapali kip icin gizleme TEK yerde: asagidaki iki satir. */
+  #mark, #uydular{display:none;}
+  body.mood #mark{display:flex;}
+  body.mood #uydular{display:block;}
+  body.mood #mark{position:fixed;z-index:70;display:flex;align-items:center;cursor:pointer;
+    top:calc(25px + env(safe-area-inset-top, 0px));
+    left:calc(14px + env(safe-area-inset-left, 0px));}
+  body.mood #mark .neb{display:block;width:74px;height:74px;border-radius:50%;
+    box-shadow:0 0 20px rgba(90,220,210,.20), inset 0 0 14px rgba(0,0,0,.7);}
+  body.mood #mark.radio .neb{box-shadow:0 0 20px rgba(255,140,90,.22), inset 0 0 14px rgba(0,0,0,.7);}
+  body.mood #mark.soruyor .neb{animation:markSoru 1.1s ease-in-out infinite;}
+  @keyframes markSoru{0%,100%{opacity:.55;transform:scale(1);}
+                      50%   {opacity:1;  transform:scale(1.06);}}
+  body.mood #mark.liste .neb{box-shadow:0 0 20px rgba(176,164,192,.22), inset 0 0 14px rgba(0,0,0,.7);}
+  body.mood #mark .wm{font-family:'Share Tech Mono',monospace;color:#8ff0dd;font-size:15px;letter-spacing:.34em;
+    line-height:1;text-shadow:0 0 13px rgba(90,220,210,.38);}
+  body.mood #mark .wm small{display:block;margin-top:5px;font-size:8.5px;letter-spacing:.34em;color:#5f8189;text-shadow:none;}
+  body.mood #mark.radio .wm{color:#ffb98a;text-shadow:0 0 13px rgba(255,140,90,.4);}
+  body.mood #mark.radio .wm small{color:#a76e54;}
+  body.mood #mark.liste .wm{color:#cfe08a;text-shadow:0 0 13px rgba(200,220,110,.4);}
+  body.mood #mark.liste .wm small{color:#8a9a54;}
+  /* NOT: eski dosyada bu iki kural MEDYA SORGUSUNUN icindeydi (dar
+     ekran ve genis ekran). Geri getirirken duz bir blok olarak
+     yapistirildilar ve KOSULSUZ calisir hale geldiler -- genis ekran
+     kurali dar ekranda da uygulaniyor, nebula sol ust yerine ekranin
+     ortasina dusuyordu (olculdu: left 233px). Kaldirildilar; taban
+     kural (left:14px) her iki ekranda da dogru yeri veriyor. */
   /* ── AYARLAR: ALTTAN ACILAN PANEL ────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
      sonra insanlar isyeyebilir". Tek bir ses icin dugme koymak yerine
@@ -980,6 +1012,18 @@
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
+  /* SOUND BANKS kipinde SOL UST nebulanindir: tutamak alta iniyor.
+     Iki sey ayni koseyi paylasamaz; kipe gore yer degistiriyor. */
+  body.mood #ayarTut{top:auto;left:50%;transform:translateX(-50%);
+    bottom:calc(6px + env(safe-area-inset-bottom, 0px));
+    width:54px;height:26px;align-items:center;gap:5px;}
+  body.mood #ayarTut span{width:26px;height:2.5px;}
+  body.mood #ayarTut span:nth-child(2){width:22px;}
+  body.mood #ayarTut span:nth-child(3){width:16px;}
+  body.mood #ayar{top:auto;left:50%;
+    bottom:calc(40px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%) translateY(12px);}
+  body.mood.ayar-acik #ayar{transform:translateX(-50%) translateY(0);}
   #ayarTut span{display:block;width:34px;height:3px;border-radius:3px;
     transition:width .22s ease, opacity .22s ease;}
   /* MARKA_PEMBE ve RADIO halkasinin turkuazi -- index'teki degerlerin
@@ -1010,6 +1054,10 @@
     border-top:1px solid rgba(255,255,255,.06);
     -webkit-tap-highlight-color:transparent;}
   #ayar .sat:first-of-type{border-top:none;}
+  /* Sonuncusu bir ses ayari degil: araya gercek bir bosluk ve daha
+     belirgin bir cizgi. Ayni listede ama ayni tur is degil. */
+  #ayar .sat.mood{margin-top:6px;padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.14);}
   #ayar .sat:hover{color:#fff;}
   /* DURUM YAZIYLA: kucuk bir anahtar cizmek yerine ON/OFF yaziyor --
      ekranin geri kalani da yaziyla konusuyor ve renk korlugunde de
@@ -1175,20 +1223,20 @@
      · twitter:*    : X önizlemesi (summary_large_image = geniş kart)
      Önizleme görseli KENDİ ekranımız; üzerinde başkasının istasyon
      adı ya da sanatçısı YOK — bkz. paylas.png üretimi (araclar/). -->
-<meta name="description" content="A sound explorer: live radio, public-domain and Creative Commons archive recordings, and effects you play with your finger. No account, no ads, no tracking.">
+<meta name="description" content="Live radio from around the world, grouped into ten genres. No account, no ads, no tracking.">
 <link rel="canonical" href="https://orbitape.app/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://orbitape.app/">
 <meta property="og:site_name" content="ORBITAPE">
-<meta property="og:title" content="ORBITAPE — a sound explorer">
-<meta property="og:description" content="Live radio, public-domain and Creative Commons recordings, effects you play with your finger. No account, no ads, no tracking.">
+<meta property="og:title" content="ORBITAPE — live radio">
+<meta property="og:description" content="Live radio from around the world, grouped into ten genres. No account, no ads, no tracking.">
 <meta property="og:image" content="https://orbitape.app/paylas.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ORBITAPE — orbital rings on a black field, with the name of the track playing.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ORBITAPE — a sound explorer">
-<meta name="twitter:description" content="Live radio, public-domain and Creative Commons recordings, effects you play with your finger. No account, no ads, no tracking.">
+<meta name="twitter:description" content="Live radio from around the world, grouped into ten genres. No account, no ads, no tracking.">
 <meta name="twitter:image" content="https://orbitape.app/paylas.png">
 </head>
 <body>
@@ -1207,11 +1255,10 @@
     <canvas id="viz"></canvas>
     <button class="hit" id="tp" aria-label="ORBITAPE"></button>
   </div>
-  <!-- NEBULA (#mark) ve GEZEGENLER (#uydular) KALDIRILDI.
-       ORBITAPE artik yalnizca canli radyo: gececek kanal yok, acilacak
-       efekt yok. Ikisi de FX uygulamasina tasindi (bkz. fx-tam
-       etiketi ve ~/Downloads/orbitape-fx).
-       Sol ust bosaldi; oraya AYARLAR tutamagi geldi. -->
+  <!-- NEBULA ve GEZEGENLER: yalnizca SOUND BANKS kipinde gorunur.
+       Radyo tarafinda display:none ile kapali (bkz. body.mood). -->
+  <div id="mark" class="lib" aria-hidden="true"><canvas class="neb" width="148" height="148"></canvas></div>
+  <div id="uydular" aria-hidden="false"></div>
   <!-- Kanal adları halkalara taşındı (en dıştaki üç halka). Sağ üstte
        artık sadece uygulamanın adı duruyor. Ölçü referansı olarak
        kullanıldığı için eleman yapısı aynı kaldı. -->
@@ -1279,6 +1326,11 @@
       <span>CLICK</span><span class="durum">ON</span></div>
     <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
       <span>SHOW TOUR AGAIN</span><span class="durum">PLAY</span></div>
+    <!-- EN ALTTA ve bilerek ayri: bu bir ses ayari degil, baska bir
+         dunyaya gecis. Acilinca arsiv havuzlari, nebula, gezegenler
+         ve efektler geliyor; canli radyo o taraftan gorunmuyor. -->
+    <div class="sat mood" data-ayar="mood" role="switch" tabindex="-1">
+      <span>SOUND BANKS</span><span class="durum">OFF</span></div>
   </div>
   <!-- Masaustunde dikey ses. Dokunmatikte hic gorunmuyor (bkz. CSS):
        orada iki parmak jesti var. -->
@@ -1970,14 +2022,21 @@
   const geriDug=$('geri'), ileriDug=$('ileri'), uyduKap=$('uydular');
   /* UYDU LİSTESİ — büyükten küçüğe. cap: nebula çapının oranı. Yeni bir mod
      eklemek için buraya bir satır yazmak yetiyor; dizilim kendiliğinden olur. */
-  /* ── GEZEGENLER (FX DUGMELERI) KALDIRILDI ────────────────────────
-     Dort efekt kipi ve onlarin gezegen dugmeleri FX uygulamasina
-     tasindi (fx-tam etiketi). Dizi BOS birakildi, silinmedi: uzerinde
-     donen bes ayri yer var (cizim, tema, tur, olay baglama) ve bos bir
-     dizi hepsini sessizce devre disi birakiyor. Ikinci asamada o
-     yerler de temizlenecek.
-     Eski tanim FX uygulamasinda duruyor. */
-  const UYDULAR = [];
+  /* ── GEZEGENLER (FX DUGMELERI) ───────────────────────────────────
+     Yalnizca SOUND BANKS kipinde gorunurler; radyo tarafinda ekranda
+     yoklar. Tanim burada duruyor cunku kip acilinca aynen kuruluyorlar. */
+  const UYDULAR = [
+    /* Gezegen + ayları: ilki sağ ekvatorda, sonrakiler saat yönünde aşağı
+       iner. Her adımda hem küçülüyor hem yörüngesi genişliyor. */
+    { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO — tape / lo-fi' },
+    { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP — infinite repeat' },
+    { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE — collapse / infinite echo' },
+    /* ── ANA FX ────────────────────────────────────────────────────
+       Eskiden temel efekt her sürüklemede kendiliğinden devredeydi.
+       Artık onun da bir gezegeni var: kapalıyken halkalar KATEGORİ
+       menüsü, açıkken FX. Böylece ikisi birbirine karışmıyor. */
+    { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX — main effect group' }
+  ];
   const uyduDug = {};
   UYDULAR.forEach(u=>{
     const b=document.createElement('button');
@@ -2612,7 +2671,11 @@
      'mod' degiskeni duruyor cunku yuzlerce yerde okunuyor, ama artik
      hicbir zaman degismiyor. Depodaki eski deger de siliniyor: dun
      arsivde kalmis biri bugun bos bir kanalda acilmasin. */
-  let mod='radio';
+  /* KANAL: radyo tarafinda tek deger. SOUND BANKS kipinde arsiv
+     ('lib') acilyor -- kip acilirken moodUygula() yaziyor.
+     Eski 'orbitape.kanal' degeri artik okunmuyor ve siliniyor: kanal
+     hafizasi yerine KIP hafizasi var (AYAR.mood). */
+  let mod = 'radio';
   try{ localStorage.removeItem('orbitape.kanal'); }catch(e){ _yut(e); }
   let radyoKuyruk=[];
   // ── MIXTAPE: kullanıcının kendi şarkı listesi (liste.json) ──
@@ -2793,6 +2856,8 @@
   let earthHavuz=[], _ehShuf=[], _ehIdx=0, _ehSoz=null;
   async function earthYukle(){
     iz('earthYukle');
+    /* Radyo tarafinda arsivin isi yok: ne aramada, ne kuyrukta. */
+    if(!AYAR.mood) return 0;
     if(earthHavuz.length) return earthHavuz.length;
     if(_ehSoz) return _ehSoz;
     _ehSoz = (async()=>{
@@ -3352,9 +3417,36 @@
       fxUygula(); yatayUygula(); modUygula();
     }catch(e){ _yut(e); }
   }
-  /* uyduYerlestir() SILINDI (asama 2): yerlestirecek gezegen yok.
-     Cagrilari da kaldirildi. */
-  function uyduYerlestir(){ }
+  /* Uydular büyük nebulanın çevresinde bir YAY üzerinde dizilir: sağ yandan
+     başlayıp saat yönünde aşağı doğru küçülerek. Konumlar nebulanın gerçek
+     ölçüsünden hesaplanıyor, sabit sayı yok. */
+  function uyduYerlestir(){
+    iz('uyduYerlestir');
+    try{
+      const nb = document.querySelector('#mark .neb'); if(!nb) return;
+      const n = nb.getBoundingClientRect(); if(!n.width) return;
+      const mx = n.left + n.width/2, my = n.top + n.height/2, R = n.width/2;
+      // Yay SAĞA ve AŞAĞI açılıyor (sol tarafta ekran kenarı var). Her uydu
+      // bir öncekinden biraz daha uzakta: yörüngeler iç içe değil, kademeli.
+      const yer = UYDULAR.map(u=>{
+        const cap = Math.round(n.width * u.cap);
+        const r   = R*(u.uzak||1.16) + cap*0.20;
+        const a   = u.aci * Math.PI/180;
+        return { u, cap, x: mx + Math.cos(a)*r, y: my + Math.sin(a)*r };
+      });
+      yer.forEach((v,i)=>{
+        const b = uyduDug[v.u.fx]; if(!b) return;
+        // Dokunma alanı komşusuna taşmasın: en yakın uyduya olan mesafenin %92'si.
+        let enYakin = 1e9;
+        yer.forEach((w,k)=>{ if(k!==i) enYakin = Math.min(enYakin, Math.hypot(v.x-w.x, v.y-w.y)); });
+        const vur = Math.max(30, Math.round(Math.min(v.cap*1.9, enYakin*0.92)));
+        b.style.setProperty('--cap', v.cap+'px');
+        b.style.setProperty('--vur', vur+'px');
+        b.style.left = Math.round(v.x)+'px';
+        b.style.top  = Math.round(v.y)+'px';
+      });
+    }catch(e){ _yut(e); }
+  }
 
 
   /* ── FX MODLARI ──────────────────────────────────────────────────
@@ -4015,14 +4107,70 @@
      Varsayilan ACIK -- sesler uygulamanin dili, kapatmak bir tercih.
      Erken tanimli: tik() ve aramaBaslat() bunu okuyor ve ikisi de
      acilista cagrilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true };
+  /* mood: SOUND BANKS kipi. Kapali = yalnizca canli radyo (varsayilan).
+     Acik = eski ORBITAPE tarafi: arsiv havuzlari, nebula, gezegenler, FX. */
+  var AYAR = { aramaSes:true, tikSes:true, mood:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
       if(_a.aramaSes === false) AYAR.aramaSes = false;
       if(_a.tikSes  === false) AYAR.tikSes  = false;
+      if(_a.mood    === true ) AYAR.mood    = true;
     }
   }catch(e){ _yut(e); }
+  /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
+     Tek kapi. Iki dunya arasindaki gecisin BASKA yolu yok: ne nebula,
+     ne halka, ne arama. Kullanici kazayla oteki tarafa dusemiyor.
+     ACARKEN : gövde 'mood' sinifini alir (nebula ve gezegenler
+               gorunur olur), kanal arsive gecer, arsiv havuzlari
+               yuklenir.
+     KAPARKEN: FX soner, kanal radyoya doner, radyo kuyrugu bastan
+               dolar. Arsivden kalan bir istasyon calmaya devam
+               etmesin diye siradaki ses de radyodan aliniyor. */
+  function moodUygula(ilk){
+    try{
+      document.body.classList.toggle('mood', !!AYAR.mood);
+      if(AYAR.mood){
+        try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
+        mod = 'lib';
+        try{ AKTIF_AILE = null; }catch(e){ _yut(e); }
+        /* AKTIF_MOD DA SIFIRLANIYOR. Acilista 'RADIOTAPE' yaziliyor ve
+           arsivdeki RADIOTAPE rafi CANLI RADYONUN kendisi. Kip
+           acildiginda o deger duruyorsa sonraki() dogruca radyoya
+           gidiyor: ekran arsive donuyor ama kulaga hala istasyon
+           geliyordu (olculdu -- 'Trancetechnic Radio'). */
+        try{ AKTIF_MOD = null; localStorage.removeItem('orbitape.mod'); }catch(e){ _yut(e); }
+        try{ earthYukle(); uzunYukle(); }catch(e){ _yut(e); }
+        /* YERLESIM BIR KARE SONRA. Gezegenlerin yeri nebulanin
+           GERCEK olcusunden hesaplaniyor; sinif daha yeni eklendigi
+           icin ilk okumada kutu hala 0 ve hesap sessizce iptal
+           oluyordu (olculdu: gezegenler ekranin ortasinda kaliyordu).
+           Iki kez cagriliyor: bir kare sonra ve yerlesim otursun diye
+           bir de kisa gecikmeyle. */
+        try{ requestAnimationFrame(()=>{ try{ ustOlcu(); }catch(e){ _yut(e); } }); }catch(e){ _yut(e); }
+        setTimeout(()=>{ try{ ustOlcu(); }catch(e){ _yut(e); } }, 260);
+      }else if(!ilk){
+        /* ILK KURULUMDA DOKUNULMUYOR: acilis akisi AKTIF_MOD'u
+           'RADIOTAPE' yapiyor ve mod zaten radyo. Burada sifirlamak
+           o degeri eziyordu (test yakaladi). Yalnizca kullanici kipi
+           KAPATTIGINDA temizlik gerekiyor. */
+        try{ fxNormale(); }catch(e){ _yut(e); }
+        try{ AKTIF_MOD = null; }catch(e){ _yut(e); }
+        try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
+        mod = 'radio';
+        try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
+      }
+      /* Arama havuzu da kipe bagli (bkz. araHavuzlar): dizin yeniden
+         kurulsun, yoksa oteki dunyanin kayitlari aramada kalir. */
+      try{ _araIdx = null; _araSay = -1; }catch(e){ _yut(e); }
+      try{ gecmisSifirla(); }catch(e){ _yut(e); }
+      try{ modAdiYaz(); zeminUygula(); moodYaz(); }catch(e){ _yut(e); }
+      /* Ilk kurulumda ses baslatmiyoruz: acilis akisi kendi isini
+         yapiyor. Kullanici dugmeye bastiysa YENI dunyadan bir ses
+         gelmeli, yoksa kip degisti ama kulakta hicbir sey degismedi. */
+      if(!ilk){ setTimeout(()=>{ try{ sonraki(true); }catch(e){ _yut(e); } }, 120); }
+    }catch(e){ _yut(e); }
+  }
   function ayarKaydet(){
     try{ localStorage.setItem('orbitape.ayar', JSON.stringify(AYAR)); }catch(e){ _yut(e); }
   }
@@ -5138,6 +5286,25 @@
        icin tek cikis noktasi burasi.
        Ilk ses muaf (yukaridaki _ilkSes ile ayni gerekce: kategori bir
        tercih, sessizligin sebebi olamaz). */
+    /* ── DUNYA KAPISI: cal() SON CIKIS NOKTASI ──────────────────────
+       Olculen vaka: SOUND BANKS kipine gecildi, ekran arsive dondu ama
+       CALAN sey hala bir radyo istasyonuydi -- yolda kalmis bir istek
+       kip degistikten sonra donup calmisti. Kuyruklari bosaltmak
+       yetmiyor; yolda olani durdurmanin tek yeri burasi.
+       Kural basit: SOUND BANKS acikken canli yayin calmaz, kapaliyken
+       arsiv kaydi calmaz. Ilk ses muaf degil -- burada muafiyet
+       kullaniciyi yanlis dunyaya atardi. */
+    if(item && item.radyo && AYAR.mood){
+      setTimeout(()=>{ try{ sonraki(false); }catch(e){ _yut(e); } }, 200);
+      return;
+    }
+    /* TERS YON KAPATILMADI ve bu bilerek: radyo tarafinda zaten
+       radyodan baska kaynak URETILMIYOR (earthYukle/mixYukle o tarafta
+       calismiyor, kuyruklar kip degisince bosaliyor). Buraya bir de
+       "radyo tarafinda arsiv kaydi calmasin" kurali koymak, favoriler
+       ve gecmis gibi mesru yollarla gelen kayitlari da keserdi --
+       olculdu, on dokuz test birden kirmizi yandi. Kapi tek yonlu:
+       SOUND BANKS kipine canli yayin sizmasin. */
     /* Kapinin tek zamanlayicisi: ayni anda on istek dönerse on tane
        'sonraki' kuyruga girmesin. */
     if(!_ilkSes && !_favMod && typeof mod !== 'undefined' && mod === 'radio'
@@ -5702,6 +5869,13 @@
        .filter(st=>!dinselMi(st) && !yasakliMi(st)));
   }
   async function radyoKuyrukDoldur(){
+    /* SOUND BANKS kipinde radyo makinesi HIC calismiyor. Kapiyi
+       yalnizca cikista (cal) tutmak yetmedi: arka planda kuyruk
+       dolmaya devam ediyor ve her dolan istasyon kapiya carpip yeni
+       bir arayis tetikliyordu -- ekran sessiz kalirken sistem bos
+       yere donuyordu (olculdu). Uretimi kaynaginda durduruyoruz. */
+    if(AYAR.mood) return;
+
     iz('radyoKuyruk');
     if(radyoDolduruluyor || radyoKuyruk.length>=6) return;
     radyoDolduruluyor=true;
@@ -5725,6 +5899,13 @@
     radyoDolduruluyor=false;
   }
   async function istasyonDoldur(){
+    /* SOUND BANKS kipinde radyo makinesi HIC calismiyor. Kapiyi
+       yalnizca cikista (cal) tutmak yetmedi: arka planda kuyruk
+       dolmaya devam ediyor ve her dolan istasyon kapiya carpip yeni
+       bir arayis tetikliyordu -- ekran sessiz kalirken sistem bos
+       yere donuyordu (olculdu). Uretimi kaynaginda durduruyoruz. */
+    if(AYAR.mood) return;
+
     iz('istasyonDoldur');
     try{
       const list=await radyoListe(); let ekle=0;
@@ -5760,6 +5941,13 @@
      deneme kendini sonsuza kadar çağırır ve ekranda kalıcı WAIT kalır. */
   var _radyoBos = 0;
   function radyoGec(){                                       // radyo modunda "sıradaki istasyon" -> ses+grafikten çal (FX'li)
+    /* SOUND BANKS kipinde radyo makinesi HIC calismiyor. Kapiyi
+       yalnizca cikista (cal) tutmak yetmedi: arka planda kuyruk
+       dolmaya devam ediyor ve her dolan istasyon kapiya carpip yeni
+       bir arayis tetikliyordu -- ekran sessiz kalirken sistem bos
+       yere donuyordu (olculdu). Uretimi kaynaginda durduruyoruz. */
+    if(AYAR.mood) return;
+
     let it=radyoKuyruk.shift();
     if(it){ _radyoBos=0; calindiEkle(it.id); cal(it); radyoKuyrukDoldur(); return; }
     if(cekiliyor) return; cekiliyor=true;                    // kuyruk boş: doldur, sonra çal
@@ -6125,9 +6313,13 @@
   }
   function modaGec(yeni){
     if(!yeni) return;
-    /* Radyo disinda bir kanal YOK. Eski bir cagri ya da depodan gelen
-       eski bir deger uygulamayi bos bir kanala atmasin. */
-    if(yeni !== 'radio') return;
+    /* IKI DUNYA, ARALARINDA KAPI YOK.
+       Radyo tarafindayken yalnizca 'radio'; SOUND BANKS kipindeyken
+       yalnizca arsiv/mixtape. Gecis TEK yerden yapiliyor: ayarlardaki
+       dugme. Boylece kullanici kazayla oteki dunyaya dusmuyor ve
+       "hangi taraftayim" sorusu hic dogmuyor. */
+    if(!AYAR.mood && yeni !== 'radio') return;
+    if(AYAR.mood  && yeni === 'radio') return;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     /* ── KANAL DEĞİŞİMİ MODU KAPATIR ──────────────────────────────
        Mod bir "şu an şunu dinliyorum" hâli; kanal ise nereden geldiği.
@@ -6413,8 +6605,9 @@
      ORBITAPE (sesler) -> MIXTAPE (insanlarin parcalari) -> basa. */
   /* MIXTAPE SIMDILIK KAPALI: calismiyordu, nebuladan oraya gecmek
      kullaniciyi bos kanalda birakiyordu. Listeye geri eklemek yeter. */
-  /* Tek kanal kaldi: gecilecek yer yok. Dizi duruyor ki havuzDegis()
-     ve testler bir sey aramasin; icinde tek eleman var. */
+  /* Radyo tarafinda tek kanal var. SOUND BANKS kipinde de nebula
+     KANAL DEGISTIRMIYOR (bkz. moodDegis): orada isi FX'leri
+     sifirlamak. Yani her iki dunyada da gecilecek yer yok. */
   const KANAL_SIRA = ['radio'];
   /* ── NEBULA ONCE SORUYOR ─────────────────────────────────────────
      Sol ustteki gezegene basmak kanali ANINDA degistiriyordu: canli
@@ -6467,7 +6660,18 @@
       modaGec(hedef);
     }catch(e){ _yut(e); }
   }
-  function moodDegis(){ havuzDegis(); }
+  /* ── NEBULANIN YENI ISI: FX'LERI SIFIRLAMAK ──────────────────────
+     Eskiden kanal degistiriyordu. Iki dunya artik ayarlardan
+     ayrildigi icin gececek yer kalmadi; nebula bos durmasin diye
+     degil, GEREKEN is oldugu icin buraya bagli: FX ile oynarken
+     "temize don" demenin en hizli yolu. Uydu dugmelerinde de var ama
+     orada once hangi efektte oldugunu bulman gerekiyor.
+     Radyo tarafinda nebula zaten ekranda yok. */
+  function moodDegis(){
+    if(!AYAR.mood) return;
+    try{ fxNormale(); }catch(e){ _yut(e); }
+    try{ nefesVer(); }catch(e){ _yut(e); }
+  }
   /* Baska bir yere dokunmak da vazgecmektir: soru ekranin ortasinda
      asili kalmasin. Yakalama asamasinda dinliyoruz ki, dokunusun ne
      yaptigindan bagimsiz olarak soru kapansin. */
@@ -6869,14 +7073,24 @@
       return _radAraIdx;
     }catch(e){ _yut(e); return []; }
   }
+  /* ── ARAMA YALNIZCA BULUNDUGUN DUNYAYI TARAR ─────────────────────
+     Iki dunya arasindaki tek kapi ayarlardaki dugme. Arama bir kapi
+     OLMAMALI: SOUND BANKS kipindeyken bir istasyon adi arayip ona
+     tiklamak seni sessizce radyoya atardi -- kullanici hangi tarafta
+     oldugunu bilemez hale gelirdi.
+     O yuzden havuz kipe gore kuruluyor. Kip degisince dizin de
+     yeniden kuruluyor (bkz. moodUygula). */
   function araHavuzlar(){
     const g=[];
     const ek=(arr,kanal)=>{ if(Array.isArray(arr)) for(const o of arr) if(o&&o.mp3) g.push({o:o,kanal:kanal}); };
-    try{ for(const x of radyoArananlar()) g.push(x); }catch(e){ _yut(e); }
-    try{ ek(earthHavuz,'lib'); }catch(e){ _yut(e); }
-    try{ ek(uzunHavuz,'lib'); }catch(e){ _yut(e); }
-    try{ ek(mixHavuz,'liste'); }catch(e){ _yut(e); }
-    try{ ek(calListe,'liste'); }catch(e){ _yut(e); }
+    if(!AYAR.mood){
+      try{ for(const x of radyoArananlar()) g.push(x); }catch(e){ _yut(e); }
+    }else{
+      try{ ek(earthHavuz,'lib'); }catch(e){ _yut(e); }
+      try{ ek(uzunHavuz,'lib'); }catch(e){ _yut(e); }
+      try{ ek(mixHavuz,'liste'); }catch(e){ _yut(e); }
+      try{ ek(calListe,'liste'); }catch(e){ _yut(e); }
+    }
     return g;
   }
   function araIndeks(){                      // havuz büyüdüyse yeniden kur, yoksa hazırı kullan
@@ -7233,6 +7447,9 @@
       }
       AYAR[k] = !AYAR[k];
       ayarKaydet(); yaz();
+      /* SOUND BANKS: dunya degisiyor. Panel kapaniyor -- degisikligi
+         gormek icin ekranin kendisine bakmak lazim. */
+      if(k === 'mood'){ kapa(); moodUygula(false); return; }
       /* Arama sesi kapatilinca calmakta olan dongu de sussun. */
       if(k === 'aramaSes' && !AYAR.aramaSes){ try{ aramaDurdur(); }catch(e){ _yut(e); } }
       /* Tik ACILDIYSA tek bir tik: degisikligi duyarak anla. */
@@ -7257,15 +7474,18 @@
       if(e.key==='Escape' && document.body.classList.contains('ayar-acik')) kapa();
     });
     yaz();
+    /* Acilista da kur: kip depoda acik kalmis olabilir. 'ilk' bayragi
+       ses baslatmiyor -- acilis akisi kendi isini yapiyor. */
+    try{ moodUygula(true); }catch(e){ _yut(e); }
   })();
 
   function araAc(){
     if(araKut.classList.contains('acik')) return;
     araKut.classList.add('acik'); document.body.classList.add('arama-acik');
-    /* Radyo listesi de: arama kutusu acilir acilmaz 541 istasyon
-       aranabilir olsun, kullanici yazmaya baslayana kadar gelsin. */
-    try{ radyoListe(); }catch(e){ _yut(e); }
-    try{ earthYukle(); uzunYukle(); mixYukle(); listeYukle(); }catch(e){ _yut(e); }   // tüm havuzlar aranabilsin
+    /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
+       tarayacagi sey de o. */
+    if(!AYAR.mood){ try{ radyoListe(); }catch(e){ _yut(e); } }
+    else { try{ earthYukle(); uzunYukle(); mixYukle(); listeYukle(); }catch(e){ _yut(e); } }
     silGoster();
     setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);
     if(araGiris.value.trim()) araYap();       // etiket duruyorsa listesi de gelsin
@@ -8176,10 +8396,70 @@
     /* KAYNAK ARTIK vizArka (ekran dışı tampon). Ekrandaki #viz'den
        kopyalamak, derleyicinin bayatlamış enstantanesini almak demekti. */
     try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){ _yut(e); }
-    /* 3) SOL UST: KAYITTA DA BOS. Burada nebula ve gezegenler
-       kayit tuvaline yeniden ciziliyordu (renk donusu, uydu diskleri,
-       Saturn halkasi). Ikisi de ekrandan kalkti; kayitta da yoklar.
-       Uc numara bilerek atlanmadi -- asagidaki sira bozulmasin. */
+    /* 3) SOL ÜST: gezegen + uydular — hepsi ölçülen yerlerinden */
+    try{
+      const ta = (TEMA[gorNo] || TEMA.lib).ana;
+      const nebEl = document.querySelector('#mark .neb');
+      const nb = kk(nebEl);
+      if(nb){
+        const nr = Math.min(nb.w, nb.h)/2;
+        /* Ekrandaki renk dönüşü kayda da girsin: nebulanın o anki
+           hue-rotate açısını elemandan okuyup tuvale aynısını
+           uyguluyoruz. Uydulara uygulanmıyor — ekranda da onlarda yok. */
+        c.save();
+        try{
+        try{
+          const m = /hue-rotate\(([-\d.]+)deg\)/.exec((nebEl && nebEl.style.filter) || '');
+          if(m) c.filter = 'hue-rotate('+m[1]+'deg)';
+        }catch(e){ _yut(e); }
+        const nAci = nebAcisi(nebEl);
+        kureCiz(c, nb.ox, nb.oy, nr, {
+          c1:_rgb(ta,1.55), c2:_rgb(ta,1.0), c3:_rgb(ta,0.46), c4:_rgb(ta,0.14),
+          sicrama:'rgba(150,200,235,.15)',
+          yuzey:(cc,x,y,r)=>{
+            nebYuzey(cc, x, y, r, nAci, 7*KAYIT_K);      // ekrandaki renk lekeleri
+            _bant(cc,x,y,r,-0.52,0.06,'rgba(255,255,255,.085)');
+            _bant(cc,x,y,r,-0.22,0.07,'rgba(0,0,0,.085)');
+            _bant(cc,x,y,r, 0.06,0.06,'rgba(255,255,255,.065)');
+            _bant(cc,x,y,r, 0.34,0.07,'rgba(0,0,0,.075)');
+            _bant(cc,x,y,r, 0.60,0.06,'rgba(255,255,255,.05)');
+          }
+        });
+        }finally{ try{ c.filter='none'; }catch(e){ _yut(e); } c.restore(); }
+      }
+      const sonuk = uyduKap && uyduKap.classList.contains('sonuk');
+      UYDULAR.forEach(u=>{
+        const d = uyduDug && uyduDug[u.fx]; if(!d) return;
+        const nk = kk(d.querySelector('.nk')); if(!nk) return;
+        const rr = Math.min(nk.w, nk.h)/2;
+        const gk = GOK[u.gk]; if(!gk) return;
+        if(!(rr > 0)) return;
+        kat(c, ()=>{
+          if(sonuk) c.globalAlpha = (FXMOD===u.fx) ? 0.55 : 0.46;   // ekrandaki sönük hâl
+          if(u.gk==='saturn'){
+            kat(c, ()=>{
+              c.translate(nk.ox, nk.oy); c.rotate(-19*Math.PI/180);
+              c.strokeStyle = (FXMOD===u.fx) ? 'rgba(200,238,255,.75)' : 'rgba(232,212,166,.5)';
+              c.lineWidth = Math.max(1.5, rr*0.09);
+              c.beginPath(); c.ellipse(0,0, rr*2.20, rr*0.62, 0, 0, 6.2832); c.stroke();
+            });
+          }
+          kureCiz(c, nk.ox, nk.oy, rr, gk);
+          /* AKTİF UYDU PARLAMASI — donmanın kaynağı tam buydu.
+             Bu dal SADECE bir FX açıkken çalışıyor; içinde save()+clip()
+             vardı ve gradyan kurulumu hata atarsa kırpma karenin sonuna
+             kadar açık kalıyordu. Artık kat() içinde. */
+          if(FXMOD===u.fx){
+            kat(c, ()=>{
+              c.beginPath(); c.arc(nk.ox,nk.oy,rr,0,6.2832); c.clip();
+              const g=c.createRadialGradient(nk.ox-rr*0.1, nk.oy-rr*0.2, 0, nk.ox, nk.oy, rr);
+              g.addColorStop(0, 'rgba('+ta+',.34)'); g.addColorStop(1,'rgba(0,0,0,0)');
+              c.fillStyle=g; c.fillRect(nk.ox-rr,nk.oy-rr,2*rr,2*rr);
+            });
+          }
+        });
+      });
+    }catch(e){ _yut(e); }
     /* 4) SAĞ ÜST: kanal adları — ölçülen kutu, ekrandan okunan yazı tipi */
     try{
       document.querySelectorAll('#ust .kanal').forEach(el=>{
@@ -9063,10 +9343,139 @@
        · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
        · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
      Kare başına iş: iki drawImage + dört minik nokta. */
-  /* NEBULA TUVALI SILINDI (asama 2). Sol ustteki gaz kuresini cizen
-     ~120 satir: gaz katmani, HSL ton dondurme, kure kabugu, yildizlar.
-     Nebula bir KANAL ANAHTARIYDI; kanal kalmayinca isi de kalmadi.
-     Tamami fx-tam etiketinde ve ~/Downloads/orbitape-fx icinde. */
+  /* ── NEBULA: KÜÇÜK BİR TUVAL ─────────────────────────────────────
+     Neden tuval: eski hâlinde üç CSS filtresi vardı (blur, hue-rotate,
+     dönen ::before). Filtre animasyonu çalışan bir eleman KALICI bir
+     derleyici katmanına alınıyor ve her karede yeniden rasterleniyor;
+     telefonda boştaki işin %30'u buydu ve bellek baskısında katman
+     düşünce ekranda donuk bir dikdörtgen kalıyordu.
+
+     Tuvalde hiçbir filtre yok:
+       · bulanıklık   -> gaz katmanı 34px'lik tamponda çizilip büyütülüyor
+       · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
+       · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
+     Kare başına iş: iki drawImage + dört minik nokta. */
+  (function nebulaTuval(){
+    const el = document.querySelector('#mark .neb');
+    if(!el || !el.getContext) return;
+    const ctx = el.getContext('2d');
+    const CSSBOY = 74;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const P = Math.round(CSSBOY * dpr);
+    el.width = P; el.height = P;
+    el.style.width = CSSBOY+'px'; el.style.height = CSSBOY+'px';
+
+    // gaz bulutu: CSS'teki inset:-35% -> kürenin 1.7 katı bir alan
+    const YAY = 1.70, KB = 34;
+    const PALET = {
+      lib:  [[.32,.34,.38,'130,245,224',.95], [.70,.62,.44,'150,110,255',.80],
+             [.56,.30,.46,'255,120,200',.60], [.44,.76,.60,'40,120,210',.65]],
+      radio:[[.32,.34,.40,'255,186,120',.95], [.70,.62,.46,'255,92,150',.85],
+             [.56,.30,.46,'186,96,255',.72], [.44,.76,.60,'150,50,180',.70]],
+      liste:[[.32,.34,.40,'226,216,206',.92], [.70,.62,.46,'158,148,178',.85],
+             [.56,.30,.46,'198,184,212',.70], [.44,.76,.60,'80,60,180',.70]]
+    };
+    // rgb -> ton döndür -> rgb. Filtre yerine bu: bedava ve katman açmıyor.
+    function tonDondur(r,g,b,derece){
+      const mx=Math.max(r,g,b)/255, mn=Math.min(r,g,b)/255, l=(mx+mn)/2, d=mx-mn;
+      let h=0, sa=0;
+      if(d>1e-6){
+        sa = l>0.5 ? d/(2-mx-mn) : d/(mx+mn);
+        const R=r/255,G=g/255,B=b/255;
+        h = (mx===R) ? ((G-B)/d + (G<B?6:0)) : (mx===G) ? ((B-R)/d + 2) : ((R-G)/d + 4);
+        h/=6;
+      }
+      h = (h + derece/360) % 1; if(h<0) h+=1;
+      if(sa===0){ const v=Math.round(l*255); return v+','+v+','+v; }
+      const q = l<0.5 ? l*(1+sa) : l+sa-l*sa, pp = 2*l-q;
+      const kn = t=>{ if(t<0)t+=1; if(t>1)t-=1;
+        if(t<1/6) return pp+(q-pp)*6*t; if(t<1/2) return q;
+        if(t<2/3) return pp+(q-pp)*(2/3-t)*6; return pp; };
+      return Math.round(kn(h+1/3)*255)+','+Math.round(kn(h)*255)+','+Math.round(kn(h-1/3)*255);
+    }
+
+    const gaz = document.createElement('canvas'); gaz.width=gaz.height=KB;
+    const gc = gaz.getContext('2d');
+    let pisAd='', pisTon=-999;
+    function gaziPisir(tema, ton){
+      if(tema===pisAd && Math.abs(ton-pisTon)<4) return;
+      pisAd=tema; pisTon=ton;
+      gc.clearRect(0,0,KB,KB);
+      for(const [x,y,r,renk,a] of (PALET[tema]||PALET.lib)){
+        const [R,G,B] = renk.split(',').map(Number);
+        const g = gc.createRadialGradient(x*KB,y*KB,0, x*KB,y*KB,r*KB);
+        g.addColorStop(0,'rgba('+tonDondur(R,G,B,ton)+','+a+')');
+        g.addColorStop(1,'rgba('+tonDondur(R,G,B,ton)+',0)');
+        gc.fillStyle=g; gc.fillRect(0,0,KB,KB);
+      }
+    }
+
+    // küre kabuğu (eski ::after): tema değiştirmiyor -> bir kez pişiyor
+    const kabuk = document.createElement('canvas'); kabuk.width=kabuk.height=P;
+    (function kabuguPisir(){
+      const k = kabuk.getContext('2d'), H=P;
+      const el2 = (gx,gy,rx,ry,renk,dur)=>{
+        k.save(); k.translate(gx*H,gy*H); k.scale(rx,ry);
+        const g=k.createRadialGradient(0,0,0,0,0,H);
+        g.addColorStop(0,renk); g.addColorStop(dur,'rgba(0,0,0,0)');
+        k.fillStyle=g; k.fillRect(-H,-H,2*H,2*H); k.restore();
+      };
+      el2(.29,.24,.11,.11,'rgba(255,255,255,.40)',1);       // speküler
+      el2(.33,.28,.40,.40,'rgba(255,255,255,.10)',1);       // difüz parıltı
+      el2(.50,.24,.37,.030,'rgba(255,255,255,.085)',.74);   // enlem kuşakları
+      el2(.50,.39,.40,.035,'rgba(0,0,0,.085)',.74);
+      el2(.50,.53,.39,.030,'rgba(255,255,255,.065)',.74);
+      el2(.50,.67,.36,.035,'rgba(0,0,0,.075)',.74);
+      el2(.50,.80,.31,.030,'rgba(255,255,255,.05)',.74);
+      el2(.74,.78,.32,.32,'rgba(150,200,235,.15)',1);       // karşı kenar sıçraması
+      // kenar ışığı
+      let g=k.createRadialGradient(H/2,H/2,H*0.40,H/2,H/2,H*0.50);
+      g.addColorStop(0,'rgba(190,235,255,0)'); g.addColorStop(.72,'rgba(190,235,255,.22)');
+      g.addColorStop(1,'rgba(190,235,255,0)');
+      k.fillStyle=g; k.fillRect(0,0,H,H);
+      // terminatör
+      g=k.createRadialGradient(.31*H,.27*H,0,.31*H,.27*H,H);
+      g.addColorStop(.30,'rgba(0,0,0,0)');  g.addColorStop(.52,'rgba(0,0,0,.20)');
+      g.addColorStop(.72,'rgba(0,0,0,.46)'); g.addColorStop(.88,'rgba(0,0,0,.74)');
+      g.addColorStop(1,  'rgba(1,2,4,.94)');
+      k.fillStyle=g; k.fillRect(0,0,H,H);
+    })();
+
+    const YILDIZ = [[.60,.26,2,0],[.34,.62,2,.9],[.72,.44,1.5,1.7],[.64,.70,1.5,2.5]];
+    const TUR = 26000, DONUS = 19000;
+    const markEl = document.getElementById('mark');
+    ctx.imageSmoothingEnabled = true;
+    try{ ctx.imageSmoothingQuality = 'high'; }catch(e){ _yut(e); }
+
+    function ciz(){
+      if(document.hidden) return;
+      const t = Date.now();
+      const tema = markEl && markEl.classList.contains('radio') ? 'radio'
+                 : markEl && markEl.classList.contains('liste') ? 'liste' : 'lib';
+      gaziPisir(tema, Math.round((t % TUR) / TUR * 360));
+      ctx.clearRect(0,0,P,P);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(P/2,P/2,P/2,0,6.2832); ctx.clip();
+      // gaz: küçük tampon büyütülünce yumuşuyor -> blur filtresine gerek yok
+      const yay = P*YAY;
+      ctx.translate(P/2,P/2);
+      ctx.rotate((t % DONUS)/DONUS * 6.2832);
+      ctx.scale(1.06,1.06);
+      ctx.drawImage(gaz, -yay/2, -yay/2, yay, yay);
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.beginPath(); ctx.arc(P/2,P/2,P/2,0,6.2832); ctx.clip();
+      ctx.drawImage(kabuk,0,0);
+      for(const [x,y,r,gec] of YILDIZ){
+        const a = 0.2 + 0.75*(0.5+0.5*Math.sin((t/3400 - gec/3.4)*6.2832));
+        ctx.fillStyle='rgba(234,255,249,'+a.toFixed(2)+')';
+        ctx.beginPath(); ctx.arc(x*P,y*P,r*dpr/2,0,6.2832); ctx.fill();
+      }
+      ctx.restore();
+    }
+    ciz();
+    setInterval(ciz, 90);                    // ~11 kare/sn: yavaş bir bulut için fazlasıyla yeter
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) ciz(); });
+  })();
 
   /* ── TAKILMA ÖLÇERİ ───────────────────────────────────────────────
      "Görüntü dondu, ses devam etti" birkaç kez tekrarladı ve bu

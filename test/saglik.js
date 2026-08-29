@@ -191,7 +191,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('index.html sozdizimi gecerli', sozHata === '',
        sozHata || 'ayristirilabiliyor');
   }
-  K('Dosya boyutu < 580 KB',  dosyaBoy < 580*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* TAVAN 580 -> 620 KB. Sebep: SOUND BANKS kipi. Silinecek olan
+     eski ORBITAPE tarafi (arsiv, nebula, gezegenler, FX) SILINMEDI --
+     ayarlardaki bir dugmenin arkasina kondu ve gercek bir ozellik
+     oldu. Silinen uc gorsel blok da geri getirildi.
+     Kullaniciya giden sey gzip'li ~192 KB. */
+  K('Dosya boyutu < 620 KB',  dosyaBoy < 620*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
      sonra insanlar isyeyebilir". Iki ses de kapatilabilir, karar
@@ -237,6 +242,56 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       return /if\(!AYAR\.aramaSes\) return;/.test(k)
           && typeof aramaGosterimiVarMi === 'function';
     }), 'WAIT ve frekans cizgisi ayara bagli DEGIL');
+
+  /* ── SOUND BANKS: IKI DUNYA, TEK KAPI ───────────────────────────
+     Eski ORBITAPE tarafi (arsiv havuzlari, nebula, gezegenler, FX)
+     silinmedi; ayarlardaki bir dugmenin arkasina kondu.
+     EN ONEMLI KURAL: iki dunya arasindaki tek gecis o dugme. Arama
+     bir kapi OLMAMALI -- SOUND BANKS kipindeyken bir istasyon adi
+     arayip tiklamak kullaniciyi sessizce radyoya atardi ve "hangi
+     taraftayim" sorusu dogardi. */
+  K('Arama yalnizca bulundugun dunyayi tariyor', await pg.evaluate(async()=>{
+      const eskiMood = AYAR.mood, eskiMod = mod;
+      const bl = (typeof beyazListe !== 'undefined') ? beyazListe : [];
+      beyazListe = [{ stationuuid:'z1', name:'Zzz Test Radio', url:'https://x/1',
+                      url_resolved:'https://x/1', tags:'test', grup:'RADIO', saf:1, ulke:'TR' }];
+      earthHavuz = [{ id:'ert:1', mp3:'https://y/1', ad:'Zzz Test Archive',
+                      sanatci:'NASA', etiket:'test', lisans:'' }];
+      const dene = ()=>{ _radAraIdx=null; _radAraSay=-1; _araIdx=null; _araSay=-1;
+        araGiris.value='zzz test'; araYap();
+        return _araListe.map(x=>x.kanal+':'+x.o.ad); };
+
+      AYAR.mood = false; const radyoda = dene();
+      AYAR.mood = true;  const moodda  = dene();
+
+      araGiris.value=''; try{ etiketKur(''); }catch(e){}
+      AYAR.mood = eskiMood; mod = eskiMod; beyazListe = bl;
+      earthHavuz = []; _radAraIdx=null; _radAraSay=-1; _araIdx=null; _araSay=-1;
+
+      /* Radyodayken arsiv kaydi CIKMAMALI, moodda istasyon CIKMAMALI. */
+      return radyoda.some(x=>x.startsWith('radio:'))
+          && !radyoda.some(x=>x.startsWith('lib:'))
+          && moodda.some(x=>x.startsWith('lib:'))
+          && !moodda.some(x=>x.startsWith('radio:'));
+    }), 'radyoda arsiv yok, moodda istasyon yok');
+  /* Kapi tek: modaGec oteki dunyaya gecisi reddediyor. */
+  K('Iki dunya arasinda baska kapi yok', await pg.evaluate(async()=>{
+      const eskiMood = AYAR.mood, eskiMod = mod;
+      AYAR.mood = false; mod = 'radio';
+      try{ modaGec('lib'); modaGec('liste'); }catch(e){}
+      const radyodaKaldi = mod === 'radio';
+      AYAR.mood = true; mod = 'lib';
+      try{ modaGec('radio'); }catch(e){}
+      const moodDaKaldi = mod === 'lib';
+      AYAR.mood = eskiMood; mod = eskiMod;
+      return radyodaKaldi && moodDaKaldi;
+    }), 'modaGec her iki yonde de reddediyor');
+  /* NEBULANIN YENI ISI: kanal degistirmek degil, FX sifirlamak. */
+  K('Nebula artik FX sifirliyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      return /function moodDegis\(\)\{[\s\S]{0,200}fxNormale\(\)/.test(k)
+          && !/function moodDegis\(\)\{ havuzDegis\(\); \}/.test(k);
+    }), 'kanal gecisi yok, temize donus var');
 
   /* ── SES GERCEKTEN KISILIYOR MU ─────────────────────────────────
      Olculen sikayet: "mobilde iki parmak var ama kismiyor". Jest
@@ -436,12 +491,30 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      efekt yok. Ikisi de FX uygulamasina tasindi (fx-tam etiketi).
      Buradaki testler eskiden ikisinin YERINI olcuyordu; artik
      YOKLUKLARINI dogruluyorlar. Sessizce geri gelirlerse yakalanir. */
-  K('Nebula ekranda yok', await pg.evaluate(()=>
-      !document.getElementById('mark')), 'kanal anahtari kalkti');
-  K('Gezegenler ekranda yok', await pg.evaluate(()=>
-      !document.getElementById('uydular')
-      && document.querySelectorAll('.uydu').length === 0
-      && UYDULAR.length === 0), 'FX dugmeleri kalkti');
+  /* ── IKI DUNYA ──────────────────────────────────────────────────
+     Radyo tarafinda nebula ve gezegenler EKRANDA YOK; SOUND BANKS
+     kipinde geri geliyorlar. Silinmediler -- ayarlardaki dugmenin
+     arkasindalar. Test ikisini de olcuyor: kapaliyken gorunmemeli,
+     acikken gorunmeli. */
+  K('Radyoda nebula ve gezegenler gizli', await pg.evaluate(()=>{
+      const m = document.getElementById('mark'), u = document.getElementById('uydular');
+      return !!m && !!u
+        && getComputedStyle(m).display === 'none'
+        && getComputedStyle(u).display === 'none'
+        && !document.body.classList.contains('mood');
+    }), 'ikisi de var ama kapali');
+  K('SOUND BANKS acilinca geliyorlar', await pg.evaluate(async()=>{
+      const eskiMood = AYAR.mood, eskiMod = mod;
+      AYAR.mood = true; document.body.classList.add('mood');
+      await new Promise(r=>setTimeout(r,30));
+      const m = document.getElementById('mark'), u = document.getElementById('uydular');
+      const gor = getComputedStyle(m).display !== 'none'
+               && getComputedStyle(u).display !== 'none';
+      const dugme = UYDULAR.length === 4;
+      AYAR.mood = eskiMood; mod = eskiMod;
+      document.body.classList.toggle('mood', !!eskiMood);
+      return gor && dugme;
+    }), 'nebula + dort gezegen geri geliyor');
   K('Tek kanal var', await pg.evaluate(()=>
       KANAL_SIRA.length === 1 && KANAL_SIRA[0] === 'radio' && mod === 'radio'),
      'arsiv ve mixtape kanallari kapandi');
@@ -787,9 +860,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   })();
   K('Halkada gezinme calisiyor', kapaliGez === true,
      'basili tutus kategori kipini aciyor');
-  K('FX kapali ve kapali kaliyor', await pg.evaluate(()=>
-      (typeof FXMOD === 'undefined' || FXMOD === '') && UYDULAR.length === 0),
-     'acacak dugme yok');
+  K('Radyo tarafinda FX kapali', await pg.evaluate(()=>
+      (typeof FXMOD === 'undefined' || FXMOD === '') && AYAR.mood === false),
+     'FX yalnizca SOUND BANKS kipinde');
 
   /* ── ACILIS: HER ZAMAN RADYO ────────────────────────────────────
      Depoda kategori kalsa bile acilis radyo. Ve ilk ses baslayana
@@ -1202,7 +1275,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      yayin gelince kaydi durduran kural devreye girip kaydi
      kesiyordu. Yani test, dogru calisan bir korumaya takiliyordu.
      Kanali parcayla ayni yapmak testi gercege yaklastiriyor. */
+  /* KAYIT ARTIK SOUND BANKS KIPININ ISI. Canli yayin kaydedilmiyor
+     (telif), ORBITAPE de yalnizca canli radyo -- yani REC radyo
+     tarafinda her zaman pasif ve tiklanmiyor. Testin kayit yapabilmesi
+     icin kipi acmasi gerekiyor; gercek kullanici da oyle yapacak. */
   await pg.evaluate(async ()=>{
+    AYAR.mood = true; document.body.classList.add('mood');
     AKTIF_MOD = null;
     mod = 'lib';
     cal({ id:'kyt', mp3:'https://sahte.test/kayit.mp3', ad:'Kayit', etiket:'netlabel', lisans:SERBEST });
@@ -1245,6 +1323,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('SAVE + DELETE cikti',    (await pg.evaluate(()=>document.getElementById('camYazi').textContent))==='DELETE', 'SAVE | DELETE');
   await pg.click('#cam'); await pg.waitForTimeout(500);
   K('DELETE kaydi siliyor',   (await pg.evaluate(()=>!_bekleyenKayit)), 'temizlendi');
+  /* KIPI GERI KAPAT. Acik birakmak sonraki testleri bozdu: gecmis,
+     arama ve kayit testleri bir anda oteki dunyada calisiyordu
+     (dokuz test birden kirmizi yandi). Test kendi actigi kapiyi
+     kendi kapatmali. */
+  await pg.evaluate(()=>{ AYAR.mood = false; document.body.classList.remove('mood');
+    mod = 'radio'; AKTIF_MOD = null;
+    try{ _araIdx = null; _araSay = -1; }catch(e){} });
 
   // ── 8. HIZA: REC satiri karsidaki dugmelere carpmiyor ───────────────
   /* Arama artik REC satirinin USTUNDE. Tek gercek sinir karsidaki
