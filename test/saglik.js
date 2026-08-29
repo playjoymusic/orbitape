@@ -397,17 +397,73 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         somafm: A('somafm', {songs:[{artist:'Kaya Project', title:'Always Waiting'}]}, '')
       };
     });
+    /* parcaCoz artik NESNE donuyor: {s: sanatci, a: parca}. Boyle
+       cunku kaynaklarin cogu ikisini zaten ayri veriyor ve isaret
+       dugmesindeki kart ikisini ayri gosteriyor; birlestirip tekrar
+       ayirmak tahmine kaliyordu. */
+    const M = x => x ? ((x.s ? x.s + ' — ' : '') + x.a) : '';
     K('Paylasilan sunucuda dogru istasyon seciliyor',
-       pr.azDogru === 'DOGRU' && pr.icDogru === 'DOGRU',
+       M(pr.azDogru) === 'DOGRU' && M(pr.icDogru) === 'DOGRU',
        'yayin adresi eslestiriliyor, listenin ilki alinmiyor');
     K('Eslesmeyince ad GOSTERILMIYOR',
-       pr.azSusuyor === '' && pr.icSusuyor === '',
+       !pr.azSusuyor && !pr.icSusuyor,
        'yanlis ad bos satirdan kotudur -- emin olamayinca susuyor');
-    K('Tek yayinli sunucuda ad geliyor', pr.icTek === 'A - B', 'eslestirme gerekmiyor');
+    K('Tek yayinli sunucuda ad geliyor', M(pr.icTek) === 'A - B', 'eslestirme gerekmiyor');
     K('Yayin yazilimi etiketi temizleniyor',
-       pr.autodj === 'X - Y' && pr.cop === '' && pr.somafm === 'Kaya Project — Always Waiting',
+       M(pr.autodj) === 'X - Y' && !pr.cop
+       && M(pr.somafm) === 'Kaya Project — Always Waiting',
        'AutoDJ: kalkiyor, "unknown" bilgi sayilmiyor');
   }
+  /* ── OLCUMUN OGRETTIKLERI ────────────────────────────────────
+     Ikinci olcumde kapsam %28'den %43.9'a cikti (233/531) ama
+     GELEN VERININ BIR KISMI COPTU. Gercek ornekler:
+       "Kein Titel Update"  -> Almanca "baslik yok", yer tutucu
+       "AKON - Lonely || 945 || S || ea038073-7e6d-..."
+                            -> sonuna sunucu kimlikleri eklenmis
+       "04 relax"           -> dosya adi
+     Daha kotusu: 0nlineradio.radioho.st'taki 21 istasyonun HEPSI
+     ayni satiri dondurdu. Sebep, klasik Shoutcast'in 7.html'inin
+     HANGI yayindan bahsettigini soylememesi -- hep sunucudaki ilk
+     yayini veriyor. Paylasilan sunucuda bu, baska bir istasyonun
+     sarkisini gostermek demek.
+     Iki kural cikti ve ikisi de burada tutuluyor. */
+  {
+    const pf = await pg.evaluate(()=>{
+      const T = x => _temizAd(x);
+      return {
+        kuyruk: T('AKON - Lonely || 945 || S || ea038073-7e6d-4e54'),
+        keinTitel: T('Kein Titel Update'),
+        numara: T('04'),
+        kisa: T('ab'),
+        saglam: T('Tones On Tail - Go!')
+      };
+    });
+    K('Cop satirlar ekrana cikmiyor',
+       pf.kuyruk === 'AKON - Lonely' && pf.keinTitel === '' && pf.numara === ''
+       && pf.kisa === '' && pf.saglam === 'Tones On Tail - Go!',
+       'kuyruktaki kimlikler kirpiliyor, yer tutucular eleniyor');
+  }
+  /* Mount SOYLEMEYEN kaynaklar (7.html, currentsong, stats) yalnizca
+     TEK ISTASYONLU sunucularda kullanilmali. Paylasilan sunucuda
+     baska bir istasyonun sarkisini gosterirler. */
+  K('Eslestirmeyen kaynak paylasilan sunucuda kullanilmiyor', await pg.evaluate(()=>{
+      const eskiBl = beyazListe;
+      /* Ayni sunucuda IKI istasyon: eslestirmeyen kaynaklar olmamali */
+      beyazListe = [
+        {url:'https://ortak.test/bir', url_resolved:'https://ortak.test/bir'},
+        {url:'https://ortak.test/iki', url_resolved:'https://ortak.test/iki'}];
+      _sunucuSay = null;
+      const paylasilan = parcaKaynaklari('https://ortak.test/bir').map(x=>x.t);
+      /* Tek istasyonlu sunucu: hepsi olmali */
+      beyazListe = [{url:'https://tek.test/yayin', url_resolved:'https://tek.test/yayin'}];
+      _sunucuSay = null;
+      const tek = parcaKaynaklari('https://tek.test/yayin').map(x=>x.t);
+      beyazListe = eskiBl; _sunucuSay = null;
+      const eslestirmeyen = ['shoutcast','shoutcast7','currentsong'];
+      return eslestirmeyen.every(t=>paylasilan.indexOf(t) < 0)
+          && eslestirmeyen.every(t=>tek.indexOf(t) >= 0)
+          && paylasilan.indexOf('icecast') >= 0;      // eslestirenler her yerde
+    }), '7.html/currentsong/stats yalnizca tek istasyonlu sunucuda');
   /* HICBIR SEY GONDERILMIYOR. Gizlilik metnindeki ve Play Data
      Safety formundaki "hicbir veri toplanmiyor" cevabinin teknik
      karsiligi: ne mikrofon aciliyor ne de ses bir tanima servisine
@@ -442,6 +498,35 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     }), 'arsivde hic sorulmuyor, radyoda soruluyor');
   /* Bilinmiyorsa SATIR HIC CIZILMIYOR: o istasyonda ekran
      bugunkuyle birebir ayni kaliyor. */
+  /* ── ISARETE BASINCA BUYUK KART ──────────────────────────────
+     Kunyedeki satir ORTAM bilgisi: kucuk, silik, goz ucuyla okunan.
+     Isarete basinca acilan kart OKUMAK icin: yalnizca sanatci ve
+     parca adi, buyuk punto.
+     Isaret ancak bilinen bir parca varken basilabilir oluyor --
+     kosede durup basilinca hicbir sey yapmayan bir dugme
+     kullaniciyi yaniltir. */
+  K('Isaret ancak parca bilinince basilabiliyor', await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const isr = document.getElementById('isaret');
+      parcaYaz('');
+      const bosken = { rol:isr.getAttribute('role'), var:isr.classList.contains('var') };
+      parcaYaz({s:'The Beths', a:'Future Me Hates Me'});
+      await bek(260);
+      const dolu = { rol:isr.getAttribute('role'), var:isr.classList.contains('var') };
+      parcaKartAc(); await bek(60);
+      const k = document.getElementById('parcaKart');
+      const kart = { acik:k.classList.contains('acik'),
+                     s:document.getElementById('pkSanatci').textContent,
+                     a:document.getElementById('pkAd').textContent };
+      parcaKartKapat();
+      const kapandi = !k.classList.contains('acik');
+      parcaYaz('');
+      const temiz = !isr.classList.contains('var');
+      return bosken.var === false && !bosken.rol
+          && dolu.var === true && dolu.rol === 'button'
+          && kart.acik && kart.s === 'The Beths' && kart.a === 'Future Me Hates Me'
+          && kapandi && temiz;
+    }), 'bosken sessiz, doluyken dugme; kart sanatci+parca gosteriyor');
   K('Ad bilinmiyorsa satir yok', await pg.evaluate(()=>{
       parcaYaz('');
       const e = document.getElementById('npParca');
