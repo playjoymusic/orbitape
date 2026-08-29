@@ -259,7 +259,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                       url_resolved:'https://q/1', tags:'jazz', grup:'JAZZ', saf:1, ulke:'FR' }];
       _radAraIdx=null; _radAraSay=-1; _araIdx=null; _araSay=-1;
       araAc(); araGiris.value='qqq jazz'; araYap();
-      await new Promise(r=>setTimeout(r,60));
+      /* Renk gecisi .18s: sinifi kaldirmak yetmiyor, gecisin bitmesi
+         de beklenmeli. */
+      await new Promise(r=>setTimeout(r,280));
       const bulundu = _araListe.length > 0 && _araListe[0].o.ad === 'Qqq Jazz Test';
       araCal(0);
       await new Promise(r=>setTimeout(r,220));
@@ -816,11 +818,18 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     nb.tur ? nb.tur.join(' > ') : String(nb));
   /* Kanal gezme, nebula sorusu ve "kanal degisince FX soner"
      testleri KALKTI: ucu de olmayan bir seyi olcuyordu. */
-  /* GECICI YAZI DAHA KALIN: zaten silik, inceyken 'solmus' duruyordu. */
-  K('Gecici yazi kalinligi', await pg.evaluate(()=>{
+  /* GECICI YAZI INCE VE MODERN. Bir ara kalinlastirilmisti ("silik
+     yaziyi kalin yapalim, solmus durmasin"); ekranda karsiligi
+     lekelenmis bir daktilo yazisi oldu. Artik sistem sans yazisi,
+     agirlik 300: ince, ferah. Kontrol iki seye birden bakiyor --
+     agirlik ve yazi ailesi -- cunku ikisinden biri geri donerse eski
+     his geri gelir. */
+  K('Gecici yazi ince ve sans', await pg.evaluate(()=>{
       const g = document.getElementById('modGez');
-      return (parseInt(getComputedStyle(g).fontWeight,10)||400) >= 500;
-    }), 'font-weight >= 500');
+      const st = getComputedStyle(g);
+      const w = parseInt(st.fontWeight,10)||400;
+      return w <= 400 && !/mono/i.test(st.fontFamily);
+    }), 'font-weight <= 400, mono degil');
 
   /* ── FX TEK EKSEN ────────────────────────────────────────────────
      Ortadaki daire 0.215R'ye indi; iki eksen o alanda ayirt edilemez.
@@ -990,10 +999,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      'yazi ust '+(ac.yazi&&ac.yazi.ust)+' | halka alt '+(ac.yazi&&ac.yazi.halkaAlt));
   K('Yazi alt seridi gecmiyor', ac.yazi && ac.yazi.alt <= ac.yazi.taban-14,
      'yazi alt '+(ac.yazi&&ac.yazi.alt)+' | serit ust '+(ac.yazi&&ac.yazi.taban));
-  /* Halka ile dip arasinin ortasi fazla asagidaydi: yazi bir tik
-     yukari alindi -> aradaki mesafenin dortte biri. */
-  K('Yazi halkaya bir tik daha yakin', ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.H-ac.yazi.halkaAlt)*0.25))<=8,
-     'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.H-ac.yazi.halkaAlt)*0.25):'-'));
+  /* HALKA ILE ALT SERIDIN TAM ORTASI. Bir ara aradaki mesafenin
+     dortte birindeydi (halkaya yapisik); yazi incelince kendine yer
+     istedi ve tam ortaya alindi. Olcum ekranin dibine gore DEGIL,
+     alt seridin ustune gore -- serit degistiginde yazi da onunla
+     birlikte kayiyor. */
+  K('Yazi halka ile alt seridin ortasinda',
+     ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.5))<=10,
+     'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.5):'-'));
   K('Ses baslayinca halka menu', ac.son1.ilk===true && ac.gez2===true,
      'ikinci basis gezinme '+ac.gez2);
 
@@ -2726,10 +2739,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Dizi icten disa oldugu icin ilki AMBIENT, sonuncusu ELECTRONIC.
      Bu bir zevk karari; sayiyla dogrulanamaz, o yuzden aynen sabit. */
   {
-    /* DISCO FUNK CIKARILDI: funk istasyonlarinin hepsi FUNK & RNB'ye
-       tasindi, raf bosaldi. Bos halka sessiz halkadir. */
+    /* 8. halkanin adi FUNK & RNB -> DISCO FUNK olarak degisti
+       (kullanici istegi). Istasyonlar ayni, yalnizca rafin adi. */
     const SIRA = ['AMBIENT','INDIE & LOFI','JAZZ','ORCHESTRAL',
-                  'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','FUNK & RNB',
+                  'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','DISCO FUNK',
                   'ELECTRONIC','RADIO'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
@@ -3295,9 +3308,21 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                 sagHiza:R(g.right-bi.right),
                 cizgiSag:R(document.getElementById('araCizgi').getBoundingClientRect().right),
 
-                solY:R(ts.height), sagY:R(g.height),
+                /* Olcek TEMIZLENEREK olculuyor. Dar ekranda uzun bir
+                   kategori adi (ornegin WORLD & ROOTS) sag ustteki
+                   satiri genisletiyor ve sol ust satir icin yer
+                   kalmiyor; emniyet olcegi devreye girip satiri
+                   kuculterek carpismayi onluyor. Bu DOGRU davranis --
+                   ama o an olculen yukseklik CSS'in soyledigi degil,
+                   o anki olcegin sonucu. Iki kosenin ayni olcude
+                   TASARLANDIGINI olcmek istiyoruz. */
+                solY:(()=>{ const t=document.getElementById('tasima');
+                  const e=t.style.transform; t.style.transform='';
+                  const h=Math.round(t.getBoundingClientRect().height);
+                  t.style.transform=e; return h; })(),
+                sagY:R(g.height),
                 solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
-                ucgenAltta: tut.top >= ar.bottom - 1,
+                hatFark: R((tut.top+tut.height/2) - (ar.top+ar.height/2)),
                 blokEn: R(bi.width), en: R(innerWidth),
                 kirpma: (()=>{ const a2=document.getElementById('npAd');
                   const st=getComputedStyle(a2);
@@ -3323,8 +3348,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      'sol ust '+(np?np.solY:'-')+'px | sag alt '+(np?np.sagY:'-')+'px');
   K('Iki yildiz ayni olcude', !!np && np.solYildiz===np.sagYildiz,
      (np?np.solYildiz:'-')+' / '+(np?np.sagYildiz:'-'));
-  /* Ayar ucgeni EN ALTTA, aramanin altinda: alt orta app'in merkez tusu. */
-  K('Ayar ucgeni aramanin ALTINDA', !!np && np.ucgenAltta===true, 'sira: arama -> ▽');
+  /* ALT SERIT TEK HAT. Ucgen bir ara aramanin ALTINDAYDI ve ekranda
+     iki ayri serit gibi duruyordu ("arama yukari kaymis, tabana
+     oturmamis"). Artik ucgenin dikey ortasi ile arama cizgisinin
+     dikey ortasi ayni hatta. */
+  K('Ucgen ve arama ayni hatta', !!np && Math.abs(np.hatFark) <= 2,
+     'orta cizgi farki '+(np?np.hatFark:'-')+'px');
   /* KIRPMA YOK: kunye "..." ile kesilmiyor. Lisans sarti, tasarim
      tercihi degil -- yarim bir atif atif sayilmaz. */
   K('Kunye kirpilmiyor', !!np && np.kirpma==='yok', 'npAd kirpma: '+(np?np.kirpma:'-'));
@@ -3432,7 +3461,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* ── 4. OYNAT / DURDUR ─────────────────────────────────────────── */
   const od = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    const d=document.getElementById('dur'); if(!d) return null;
+    const d=document.getElementById('duraklat'); if(!d) return null;
     const s2=document.getElementById('ses');
     /* Gercek ag yok: sahte bir kaynakla oynat/duraklat davranisi. */
     const eskiSrc=s2.src;
@@ -3449,15 +3478,163 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     s2.src=eskiSrc; _kullaniciDuraklatti=false;
     return { calarken, basildi, geriAcildi, hepZamanGorunur:getComputedStyle(d).display!=='none' };
   });
-  K('Oynat/durdur her zaman gorunur', !!od && od.hepZamanGorunur===true, 'gecmise bagli degil');
-  K('Durdur tusu sesi durduruyor', !!od && od.basildi.duraklamis===true,
+  K('Duraklat tusu her zaman gorunur', !!od && od.hepZamanGorunur===true, 'gecmise bagli degil');
+  K('Duraklat tusu sesi durduruyor', !!od && od.basildi.duraklamis===true,
      'calarken duraklamis='+(od?od.calarken.duraklamis:'-')+' -> basinca '+(od?od.basildi.duraklamis:'-'));
   /* Bu bayrak olmadan kamera korumasi ya da gorunurluk olayi sesi
-     kendiliginden geri aciyor: "durdurdum ama yine caliyor". */
-  K('Durdurunca kullanici bayragi kalkiyor', !!od && od.basildi.bayrak===true,
+     kendiliginden geri aciyor: "duraklattim ama yine caliyor". */
+  K('Duraklatinca kullanici bayragi kalkiyor', !!od && od.basildi.bayrak===true,
      '_kullaniciDuraklatti='+(od?od.basildi.bayrak:'-'));
   K('Simge duruma gore degisiyor', !!od && od.calarken.duruyorSinif===false && od.basildi.duruyorSinif===true,
      'calarken iki cizgi, dururken ucgen');
+  K('Tekrar basinca geri caliyor', !!od && od.geriAcildi.duraklamis===false,
+     'duraklamis='+(od?od.geriAcildi.duraklamis:'-'));
+
+  /* ── ▶ OYNAT = ORTAYA BASIS ─────────────────────────────────────
+     Istenen: "play de olmali, ayni ortaya basma fonksiyonu olan."
+     Yani bu tus duraklatilmis sesi devam ettirmiyor, halkanin
+     ortasina basmakla ayni isi yapiyor. Kaynak uzerinden olculuyor:
+     davranisin kendisi cagri zincirinde. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const blok = kaynak.slice(kaynak.indexOf('(function oynatDuraklat()'),
+                              kaynak.indexOf('(function oynatDuraklat()') + 1400);
+    K('Oynat tusu ortaya basisi cagiriyor', /sonraki\(true\)/.test(blok),
+       'sonraki(true) -- halkanin ortasiyla ayni');
+  }
+  /* ▷ gecmiste gidecek yer yoksa ORTAYA BASMIS gibi davraniyor:
+     tus hicbir zaman olu kalmiyor. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const i = kaynak.indexOf('function ileriGit()');
+    K('Ileri tusu bosta ortaya basis yapiyor',
+       /sonraki\(true\)/.test(kaynak.slice(i, i+420)),
+       'gecmis bitince yeni parca ariyor');
+  }
+  /* Dort tus da HER ZAMAN gorunur ve ayni renkte: aktif/pasif renk
+     farki yok. Kullanicinin sozu: "setteki her sey hep gorunecek",
+     "aktif pasif renk degisimi yapma". */
+  {
+    const tus = await pg.evaluate(async ()=>{
+      const ids=['geri','dur','duraklat','ileri'];
+      /* Basili gorunum sinifi ('bas') 160 ms yasiyor ve rengi bilerek
+         degistiriyor. Bu kontrol DINLENME rengine bakiyor; hemen
+         once bir tusa basan bir kontrol varsa kalinti okunur. */
+      ids.forEach(i=>{ const e=document.getElementById(i); if(e) e.classList.remove('bas'); });
+      /* Renk gecisi .18s: sinifi kaldirmak yetmiyor, gecisin bitmesi
+         de beklenmeli. */
+      await new Promise(r=>setTimeout(r,280));
+      const g=ids.map(i=>{const e=document.getElementById(i); if(!e) return null;
+        const st=getComputedStyle(e); return {i, d:st.display, v:st.visibility, c:st.color};});
+      return { hepsi:g.every(x=>x && x.d!=='none' && x.v!=='hidden'),
+               ayniRenk:g.every(x=>x && x.c===g[0].c),
+               eksik:g.filter(x=>!x||x.d==='none'||x.v==='hidden').length,
+               renk:g.map(x=>x?x.i+':'+x.c:'?').join(' ') };
+    });
+    K('Dort tus da her zaman gorunur', tus.hepsi===true, 'eksik: '+tus.eksik);
+    K('Dordu de ayni renkte', tus.ayniRenk===true, tus.renk);
+  }
+
+  /* ── SES GERCEKTEN KISILIYOR ────────────────────────────────────
+     Bildirilen hata: "volume zaten calismiyor, etki etmiyor."
+     Iki ayri sebep vardi:
+       1. Normal calarken Web Audio grafigi kurulmuyor (grafHazir
+          false). Grafik yokken tek yol <audio>.volume ve iOS Safari
+          o ozelligi YOK SAYAR -- Mac'te calisir, telefonda calismaz.
+       2. Grafik sonradan kurulunca kulGain.gain 1'e sifirlaniyordu,
+          yani kullanicinin kistigi ses kendiliginden geri aciliyordu.
+     Ikisi de burada olculuyor. */
+  const sesGercek = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const c = document.getElementById('sesYatay'); if(!c) return null;
+    const s2 = document.getElementById('ses');
+    if(!s2.src) s2.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=';
+    try{ await s2.play(); }catch(e){}
+    await bek(150);
+    const r=c.getBoundingClientRect();
+    /* Cizgiye dokunmak grafigi kurmali: iOS'ta tek calisan yol bu. */
+    c.dispatchEvent(new PointerEvent('pointerdown',{clientX:r.left+r.width*0.9,clientY:r.top+r.height/2,bubbles:true,pointerId:9}));
+    c.dispatchEvent(new PointerEvent('pointermove',{clientX:r.left+r.width*0.4,clientY:r.top+r.height/2,bubbles:true,pointerId:9}));
+    c.dispatchEvent(new PointerEvent('pointerup',{clientX:0,clientY:0,bubbles:true,pointerId:9}));
+    await bek(260);
+    const kuruldu = (typeof grafHazir!=='undefined') && grafHazir;
+    const g = (typeof kulGain!=='undefined' && kulGain) ? kulGain.gain.value : null;
+    const seviye = kSes;
+    /* Grafik BASTAN kurulsa seviye korunuyor mu: yeniden kurulum
+       simulasyonu yerine dogrudan kaynaktaki deger okunuyor. */
+    kSes=1; sesSeviyeYaz();
+    try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
+    try{ s2.pause(); }catch(e){}
+    return { kuruldu, g, seviye };
+  });
+  K('Ses cizgisi grafigi kuruyor', !!sesGercek && sesGercek.kuruldu===true,
+     'grafHazir=' + (sesGercek?sesGercek.kuruldu:'-') + ' (iOS icin tek calisan yol)');
+  K('Kazanc dugumu kullanicinin seviyesinde', !!sesGercek && sesGercek.g!==null
+     && Math.abs(sesGercek.g - sesGercek.seviye) < 0.02,
+     'kulGain=' + (sesGercek?Number(sesGercek.g).toFixed(2):'-') + ' | kSes=' + (sesGercek?Number(sesGercek.seviye).toFixed(2):'-'));
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    K('Grafik kurulurken seviye sifirlanmiyor',
+       !/kulGain=actx\.createGain\(\);\s*kulGain\.gain\.value=1;/.test(kaynak)
+       && /kulGain\.gain\.value\s*=\s*\(typeof kSes/.test(kaynak),
+       'kulGain kSes ile basliyor');
+  }
+
+  /* ── ARAMA: ACILINCA TAM LISTE, SECINCE SIFIR ───────────────────
+     Bildirilenler: "search'e bastim tum liste acilacak", "sectigim
+     calacak ama orda yazan yaziyi silmesi lazim", "search ilk
+     kapanmiyor, eski haline donsun sifir kapali ana ekran". */
+  const aramaAkis = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    /* Test agi radyo.json'i sunmuyor, o yuzden beyazListe bos kaliyor.
+       Aramanin radyo havuzu ondan besleniyor -- listeyi elle
+       kuruyoruz ki olculen sey AKIS olsun, agin varligi degil. */
+    const eskiBl = (typeof beyazListe !== 'undefined') ? beyazListe : null;
+    beyazListe = Array.from({length:12},(_,i)=>({
+      stationuuid:'t'+i, name:'Test Station '+i, url:'https://sahte.test/ts'+i,
+      url_resolved:'https://sahte.test/ts'+i, grup:'AMBIENT', saf:1, ulke:'TR', tags:'ambient' }));
+    _radAraIdx = null; _radAraSay = -1; _araIdx = null; _araSay = -1;
+    araKapa(); await bek(80);
+    araAc(); await bek(700);
+    const acilis = { n:_araListe.length, kutu:araGiris.value,
+                     gorunen:document.getElementById('araSonuc').children.length };
+    /* Harf yazinca suzuluyor mu */
+    araGiris.value='station'; araYap(); await bek(120);
+    const suzgec = { n:_araListe.length };
+    /* Listeden secince: calan sey o, kutu bosaliyor, panel kapaniyor */
+    araGiris.value=''; araYap(); await bek(120);
+    let secim = null;
+    if(_araListe.length){
+      const hedef = _araListe[0];
+      const bekleniyor = (hedef.o && (hedef.o.mp3 || hedef.o.u)) || '';
+      araCal(0); await bek(320);
+      secim = { kutu:araGiris.value, etiket:(typeof _etiket!=='undefined'?_etiket:''),
+                acik:araKut.classList.contains('acik'),
+                liste:_araListe.length,
+                calan:((aktifItem&&(aktifItem.mp3||aktifItem.u))||''), bekleniyor };
+    }
+    /* Kapanma sifira donduruyor mu */
+    araAc(); await bek(200);
+    araGiris.value='jazz'; araYap(); await bek(120);
+    araKapa(); await bek(120);
+    const kapanis = { kutu:araGiris.value, etiket:(typeof _etiket!=='undefined'?_etiket:''),
+                      acik:araKut.classList.contains('acik'), liste:_araListe.length };
+    if(eskiBl) beyazListe = eskiBl;
+    _radAraIdx = null; _radAraSay = -1; _araIdx = null; _araSay = -1;
+    return { acilis, suzgec, secim, kapanis };
+  });
+  K('Arama acilinca TUM liste geliyor', aramaAkis.acilis.n > 5 && aramaAkis.acilis.kutu==='',
+     aramaAkis.acilis.n + ' kayit, kutu bos');
+  K('Harf yazinca suzuluyor', aramaAkis.suzgec.n > 0 && aramaAkis.suzgec.n <= aramaAkis.acilis.n,
+     aramaAkis.acilis.n + ' -> ' + aramaAkis.suzgec.n);
+  K('Secilen sey caliyor', !!aramaAkis.secim && aramaAkis.secim.calan===aramaAkis.secim.bekleniyor,
+     'calan: ' + (aramaAkis.secim?aramaAkis.secim.calan.slice(-24):'-'));
+  K('Secince kutu ve liste sifirlaniyor', !!aramaAkis.secim && aramaAkis.secim.kutu===''
+     && !aramaAkis.secim.etiket && aramaAkis.secim.acik===false && aramaAkis.secim.liste===0,
+     'kutu bos, suzgec yok, panel kapali');
+  K('Kapanan arama sifira donuyor', aramaAkis.kapanis.kutu==='' && !aramaAkis.kapanis.etiket
+     && aramaAkis.kapanis.acik===false,
+     'kutu bos, suzgec yok -- ana ekran');
 
   /* ── 5. SES CIZGISI ────────────────────────────────────────────── */
   const sc = await pg.evaluate(async ()=>{
