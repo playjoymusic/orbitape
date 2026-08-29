@@ -2356,6 +2356,58 @@
     try{ return rgb.split(',').map(v=>Math.round(+v * k)).join(','); }
     catch(e){ return rgb; }
   }
+  /* Rengi BEYAZA dogru cekmek: ayni rengin ust tonu. */
+  function _acTon(rgb, k){
+    try{ return rgb.split(',').map(v=>Math.min(255, Math.round(+v + (255 - +v)*k))).join(','); }
+    catch(e){ return rgb; }
+  }
+  /* ── AYNI RENGIN KOMSU TONU ───────────────────────────────────────
+     "morla mesela o turun ton sutonuna git": bir tur mor ise yazinin
+     oteki ucu da mor ailesinden olmali -- markanin yesili degil.
+     Ton acisini derece kadar cevirip ayni doygunlukta birakiyoruz;
+     mor -> menekse/lila, kirmizi -> kiremit/koyu kirmizi gibi. */
+  function _tonKay(rgb, derece){
+    try{
+      let [r,g,b] = rgb.split(',').map(Number);
+      r/=255; g/=255; b/=255;
+      const mx = Math.max(r,g,b), mn = Math.min(r,g,b), d = mx-mn;
+      let h = 0;
+      if(d){ h = mx===r ? ((g-b)/d + (g<b?6:0)) : mx===g ? ((b-r)/d + 2) : ((r-g)/d + 4); h *= 60; }
+      const l = (mx+mn)/2;
+      const sat = d ? d / (1 - Math.abs(2*l - 1)) : 0;
+      h = (h + derece + 360) % 360;
+      const c = (1 - Math.abs(2*l - 1)) * sat;
+      const x = c * (1 - Math.abs(((h/60) % 2) - 1));
+      const m = l - c/2;
+      const t = h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+      return t.map(v=>Math.max(0,Math.min(255,Math.round((v+m)*255)))).join(',');
+    }catch(e){ return rgb; }
+  }
+  /* ── MARKA YAZISI KARANLIKTA KAYBOLMASIN ──────────────────────────
+     "kayboluyoruz sayfalarda... belirgin, 'geldik' hissettirsin."
+     Turun rengini one alinca bir yan etki cikti: koyu tonlar (koyu
+     yesil, koyu mor, kahve) siyah zeminde eriyip gidiyor ve yazinin
+     yarisi okunmuyor. Bu yuzden markanin HER DURAGI bir parlaklik
+     tabanindan geciyor: taban altindaysa renk beyaza dogru tam
+     yetecek kadar cekiliyor -- rengi degismiyor, yalnizca gorunur
+     oluyor. Ton (hangi renk oldugu) korunuyor cunku uc kanal ayni
+     oranda cekiliyor. */
+  function _markaOkunur(rgb, hedef){
+    try{
+      const v = String(rgb).split(',').map(Number);
+      const l = 0.2126*v[0] + 0.7152*v[1] + 0.0722*v[2];
+      const h = hedef || 132;
+      if(l >= h) return rgb;
+      const k = (h - l) / (255 - l);
+      return v.map(x=>Math.min(255, Math.round(x + (255 - x)*k))).join(',');
+    }catch(e){ return rgb; }
+  }
+  /* Iki rgb arasindaki kaba uzaklik (kanal toplami). */
+  function _renkUzak(a, b){
+    try{ const x=String(a).split(',').map(Number), y=String(b).split(',').map(Number);
+         return Math.abs(x[0]-y[0]) + Math.abs(x[1]-y[1]) + Math.abs(x[2]-y[2]); }
+    catch(e){ return 999; }
+  }
   function markaRengi(){
     try{
       /* ── ARSIVDE MARKA: SOLU KOYU, SAGI RAFTAN BIR TUTAM ──────────
@@ -2430,41 +2482,86 @@
                cesit buradan geliyor, rastgelelikten degil.
            Markanin kendi iki rengi kaliplarin cogunda duruyor: yazi
            tanidik kalmaya devam ediyor. */
+        /* ── TUR RENGI ONDE, MARKA GERIDE ─────────────────────────
+           ONCEKI KURAL FAZLA TUTUKTU. Havuzun yarisi markanin kendi
+           iki rengiydi (yesil + gul kurusu) ve kaliplarin cogu onlarla
+           basliyordu; sonuc: hangi turde olursak olalim yazi hep ayni
+           yesil-pembe ikilisine donuyordu. Kullanicinin sozu:
+             "orbitape renkler cok tutucu... turlerin rengini daha
+              etkili gorelim, kayboluyoruz sayfalarda. kirmizi
+              belirgin, 'geldik' hissettirsin. bazilarinda orbitape'in
+              ana rengini unut. ana renk TUR RENGI olacak, sonuna
+              dogru hafif bizim ana yesil gorunur, bazen de hic
+              gorunmez. morla mesela o turun ton sutonuna git."
+
+           YENI KURAL:
+             1. YAZI HER ZAMAN TURUN RENGIYLE BASLIYOR. Ilk durak
+                (--m1) istisnasiz rafin rengi ya da onun bir tonu.
+                Kirmizi bir tur kirmizi giriyor, mor mor giriyor.
+             2. IKINCI/UCUNCU DURAKLAR once AYNI RENGIN TONLARI:
+                ust ton (beyaza dogru), alt ton (koyu) ve KOMSU TON
+                (ton acisi 26-34 derece cevrilmis). Mor -> menekse,
+                kirmizi -> kiremit. Boylece yazi turun kendi
+                ailesinde kaliyor.
+             3. MARKANIN YESILI YALNIZCA SON DURAKTA ve kaliplarin
+                sadece bir kisminda. On kalibin ucunde var, birinde
+                gul kurusu var, altisinda marka rengi HIC YOK.
+             4. YESIL UYMUYORSA GIRMIYOR: rafin rengi zaten yesile
+                yakinsa (uzaklik < 110) son durak yesil yerine rafin
+                koyu tonuna donuyor. "Uygun oldugunda kalsin."
+           Secim yine HESAPLANIYOR (raf adi + tema numarasi), yani
+           ayni odada yazi kaynamiyor; oda degisince kombinasyon
+           degisiyor. */
         let raf = '';
         try{ if(AKTIF_AILE) raf = aileRenk(AKTIF_AILE); }catch(e){ _yut(e); }
         const T = temaAl();
         const tv = (T && T.v) || '';
+        const R  = raf || MARKA_YESIL;
         const havuz = {
-          y: MARKA_YESIL,                    // markanin yesili
-          g: MARKA_PEMBE,                    // markanin gul kurusu
-          r: raf || MARKA_YESIL,             // rafin rengi
-          t: tv  || MARKA_PEMBE              // temanin vurgusu
+          r : R,                    // turun kendi rengi -- BASROL
+          a : _acTon(R, 0.42),      // ust ton
+          k : _koyult(R, 0.58),     // alt ton
+          s : _tonKay(R, 30),       // komsu ton (sutton)
+          S : _tonKay(R, -28),      // oteki yondeki komsu ton
+          y : MARKA_YESIL,          // markanin yesili -- yalnizca sonda
+          g : MARKA_PEMBE,          // markanin gul kurusu -- nadiren
+          t : tv || _acTon(R, 0.2)  // temanin vurgusu
         };
-        /* Sekiz kalip. Uc harfli olanlar uc renkli, iki harfli
-           olanlarda orta durak iki ucun ortasi oluyor. */
-        const KALIP = ['ygr','yrg','ytg','rgy','ryt','yg','rt','tg'];
+        /* On kalip. Hepsi 'r' ile basliyor. Yalnizca dordunun sonunda
+           marka rengi var; kalan altisi bastan sona turun ailesi. */
+        const KALIP = ['ra', 'rk', 'ars', 'rs', 'rS', 'rat', 'ray', 'rsy', 'rag', 'rky'];
         let n = 0;
         try{
           const ad2 = String(AKTIF_AILE || '');
           for(let i=0;i<ad2.length;i++) n = (n*31 + ad2.charCodeAt(i)) >>> 0;
           n = (n + (AYAR.tema|0) * 7) >>> 0;
         }catch(e){ _yut(e); }
-        const k = KALIP[n % KALIP.length];
-        m1 = havuz[k[0]] || MARKA_YESIL;
-        m2 = havuz[k[k.length-1]] || MARKA_PEMBE;
-        m3 = (k.length === 3) ? (havuz[k[1]] || '') : '';
-        /* IKI UCUN BIRBIRINE COK YAKIN DUSMESI: havuzdaki dort renkten
-           ikisi ayni tona denk gelebiliyor (rafin rengi tozlu gule
-           yakinsa gibi) ve yazi tek renk gibi cikiyor -- gradyan
-           olmayan bir gradyan. Olculuyor: kanallar arasi toplam fark
-           60'in altindaysa sag uc markanin OTEKI rengine cekiliyor,
-           yani en azindan iki uc ayrisiyor. */
+        let k = KALIP[n % KALIP.length];
+        /* YESIL UYMUYORSA CIKAR. Rafin rengi zaten yesile yakinsa
+           son duraktaki yesil gorunmez -- yerine rafin koyu tonu. */
         try{
-          const uzak = (a2,b2)=>{ const x=String(a2).split(',').map(Number),
-                                        y=String(b2).split(',').map(Number);
-            return Math.abs(x[0]-y[0]) + Math.abs(x[1]-y[1]) + Math.abs(x[2]-y[2]); };
-          if(uzak(m1, m2) < 60)
-            m2 = (uzak(m1, MARKA_PEMBE) > uzak(m1, MARKA_YESIL)) ? MARKA_PEMBE : MARKA_YESIL;
+          const sonHarf = k[k.length-1];
+          if((sonHarf === 'y' && _renkUzak(R, MARKA_YESIL) < 110) ||
+             (sonHarf === 'g' && _renkUzak(R, MARKA_PEMBE) < 110))
+            k = k.slice(0, -1) + 'k';
+        }catch(e){ _yut(e); }
+        m1 = _markaOkunur(havuz[k[0]] || R);
+        m2 = _markaOkunur(havuz[k[k.length-1]] || _acTon(R, 0.42));
+        m3 = (k.length === 3) ? _markaOkunur(havuz[k[1]] || '') : '';
+        /* IKI UC BIRBIRINE COK YAKIN DUSERSE gradyan olmayan bir
+           gradyan cikiyor. Eskiden cozum ucu MARKANIN rengine
+           cekmekti; artik turun kendi ailesinde kaliyoruz: uc,
+           rafin acik ya da koyu tonuna aciliyor. */
+        try{
+          /* Esik 70 -> 95: acik mavi/krem gibi ZATEN acik turlerde
+             ust ton cok az kimildiyor ve yazi tek renk gibi
+             cikiyordu (ELECTRONIC ve LOUNGE'da olculdu). */
+          if(_renkUzak(m1, m2) < 110){
+            /* Iki aday da parlaklik tabanindan geciyor: karanlik bir
+               uc "ayrisma" saglar ama okunmaz, o yuzden ise yaramaz. */
+            const acik = _acTon(R, 0.52), koyu = _markaOkunur(_koyult(R, 0.5), 150);
+            m2 = (_renkUzak(m1, acik) > _renkUzak(m1, koyu)) ? acik : koyu;
+          }
         }catch(e){ _yut(e); }
       }
       /* Orta durak yoksa iki ucun ortasi: ayni CSS hem iki hem uc
@@ -8285,16 +8382,34 @@
            (olculdu). Modul yokken (SOUND BANKS) fark gerekmiyor. */
         /* DIKEY HIZA DA YUVADAN: buyutec 26px, satir 32px. Ikisinin
            ORTASI ayni hatta olmali, alt kenarlari degil. */
-        let _fark = 0;
+        /* ── GUVENLI ALAN PAYI IKI KERE EKLENMESIN ─────────────────
+           BURADA BIR HATA VARDI ve ekranda "buyutec yukari kaymis,
+           yeri bos kalmis, ustundeki satirin uzerine binmis" olarak
+           goruluyordu.
+           Sebep: yuvanin yeri OLCULUYOR (getBoundingClientRect) ama
+           sonuc _dip() ile yaziliyordu. Olculen deger zaten GERCEK
+           ekran koordinati -- guvenli alan payi onun icinde. _dip()
+           uzerine bir kere daha env(safe-area-inset-bottom) ekleyince
+           centikli telefonda buyutec ~34px yukari firliyor; kayit
+           satirinin yuksekligi 32px oldugu icin de tam ustundeki
+           satirin uzerine biniyor.
+           Kural: OLCULEN degerler duz piksel yazilir, _dip() yalnizca
+           CSS'ten gelen sabitler icin. */
+        let _olculdu = false;
         try{
           const yv2 = document.getElementById('araYuva');
-          const ac4 = document.getElementById('araclar');
-          if(!_moodda && yv2 && ac4){
-            const ar4 = ac4.getBoundingClientRect();
-            if(ar4.height) _fark = Math.round(window.innerHeight - ar4.bottom - alt + (ar4.height - 26)/2);
+          if(!_moodda && yv2){
+            const yr2 = yv2.getBoundingClientRect();
+            if(yr2.height){
+              /* Buyutec 26px, yuva 32px: ORTALARI ayni hatta. */
+              arE.style.bottom = Math.round(window.innerHeight - yr2.bottom + (yr2.height - 26)/2) + 'px';
+              _olculdu = true;
+            }
           }
         }catch(_){ _yut(_); }
-        arE.style.bottom = _dip(Math.max(6, alt + _fark));
+        /* Yuva olculemiyorsa (SOUND BANKS kipinde arama satiri yok)
+           CSS'in kendi dip hattina donuyoruz -- orada env() DOGRU. */
+        if(!_olculdu) arE.style.bottom = _dip(Math.max(6, alt));
         let arSol = sol;
         try{
           /* BUYUTEC KENDI YUVASININ UZERINE oturuyor. Yuva kayit
@@ -8372,7 +8487,7 @@
           const YAN_YANA_ESIK = 150;
           if(yer < YAN_YANA_ESIK){
             yer = Math.round(npSag - sol);
-            let ustHat2 = alt;
+            let ustHat2 = alt, _oy = false;
             try{
               /* MODULUN TAMAMININ ustune, tek satirin degil: modul
                  artik iki satir (tasima + kayit araclari). Yalnizca
@@ -8381,9 +8496,12 @@
                  162x30 cakisma). */
               const ac3 = document.getElementById('solUst');
               const ar3 = ac3 ? ac3.getBoundingClientRect() : null;
-              if(ar3 && ar3.height) ustHat2 = Math.round(window.innerHeight - ar3.top + 10);
+              if(ar3 && ar3.height){
+                ustHat2 = Math.round(window.innerHeight - ar3.top + 10); _oy = true; }
             }catch(_){ _yut(_); }
-            npE.style.bottom = _dip(Math.max(6, ustHat2));
+            /* AYNI KURAL: olculen deger duz piksel, sabit deger _dip.
+               (Buyutecteki cift sayma hatasinin ikizi buradaydi.) */
+            npE.style.bottom = _oy ? (Math.max(6, ustHat2) + 'px') : _dip(Math.max(6, ustHat2));
           }
           npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
         }
@@ -8944,6 +9062,13 @@
          ayarlar listesi karsilasin, otuz bes renk degil. */
       try{ izgaraAc(false); }catch(e){ _yut(e); } };
     const cevir = ()=>{ document.body.classList.contains('ayar-acik') ? kapa() : ac(); };
+    /* ── TURUN PANELI GOSTEREBILMESI ICIN ───────────────────────────
+       Acilis turu "ayarlar sol ustte" demekle yetinmiyor, PANELI
+       ACIP kapatiyor. Bunu sahte bir tik ureterek yapamaz (dinleyici
+       stopPropagation ediyor, ustelik sahte tik guvenilmez), o yuzden
+       ac/kapa buradan disari veriliyor. Yalnizca GORSEL: tur biterken
+       kapa() cagriliyor, ekranda iz kalmiyor. */
+    try{ window.ayarGoster = (a)=>{ a ? ac() : kapa(); }; }catch(e){ _yut(e); }
     tut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
     tut.addEventListener('pointerdown', e=>e.stopPropagation());
     tut.addEventListener('keydown', e=>{
@@ -11645,46 +11770,86 @@
      halkalar sırayla yanıyor, gezegenler sırayla açılıyor.
      Tur bilerek kısa — 45 saniyelik bir tanıtımı kimse izlemiyor. */
   /* ── ACILIS TURU ──────────────────────────────────────────────────
-     UYGULAMANIN BUGUNKU HALINI anlatiyor. Eski metin bayatlamisti:
-     "bes halka, bes kanal" diyordu; halkalar artik ON TUR ve arsiv
-     kategorileri degil. Yaricaplar da elle yazilmis sabitlerdi
-     (0.55 + k*0.068) ve geometri degisince baska yerleri
-     gosteriyorlardi -- artik halkaIc()/halkaAra() ile CANLI
-     hesaplaniyor, raf sayisi degisse de dogru yeri gosterir.
-     SURE eskisiyle ayni tempoda: ~16 sn, adim basina 1.3-2.6 sn. */
+     UYGULAMANIN BUGUNKU YERLESIMINI anlatiyor. Ekrandaki harita
+     degisti: sol ust = uc cizgi (ayarlar), sag ust = raf adi +
+     ORBITAPE, sol alt = iki satirlik konsol (dort tasima tusu / CAM ·
+     sustur · buyutec · yildiz) ve altinda ses cizgisi, sag alt =
+     kunye + yildiz + soru isareti. Eski tur bunlarin hicbirini
+     gostermiyordu; "RECORD" adimi ise radyoda GORUNMEYEN bir tusu
+     anlatiyordu.
+
+     GOSTEREREK ANLATIYOR, yazip gecmiyor. Her adim ekranda gercekten
+     bir sey oynatiyor:
+       GENRES   -> halkalar sirayla YANIYOR (halkaYak) ve altta o rafin
+                   adi beliriyor (modAdiTut)
+       SHELF    -> isme basinca halkanin yanmasi canlandiriliyor
+       SETTINGS -> panel GERCEKTEN aciliyor, satirlar tek tek
+                   gosteriliyor, sonra kapaniyor (window.ayarGoster)
+     Hicbiri gercek bir dinleyiciyi tetiklemiyor: ses baslamiyor, raf
+     degismiyor, ayar yazilmiyor. turBitir() hepsini geri aliyor.
+
+     Yaricaplar CANLI: halkaIc()/halkaAra(), raf sayisi degisse de
+     dogru yeri gosterir. SURE ~17 sn, adim basina 1.1-2.4 sn. */
   function turAdimlari(){
     const H = k => halkaIc() + k*halkaAra();       // k'inci halkanin yaricap orani
     const adlar = halkaAdlar();
     const n = adlar.length;
-    /* Distan ice dogru alti durak: en dis halkadan merkeze. */
+    /* GORUNURSE GOSTER: sag alttaki "?" yalnizca canli yayinda,
+       CAM yalnizca izin veren tarayicida var. Gorunmeyen bir elemani
+       hedef verirsek el oldugu yerde kalir ve adim bos gecer -- o
+       yuzden yedegi olan hedef seciliyor. */
+    const gorunur = s=>{ try{ const e = document.querySelector(s);
+      return !!(e && e.getBoundingClientRect().width > 1); }catch(_){ return false; } };
+    const yaDa = (a,b)=> gorunur(a) ? a : b;
+    /* Distan ice dogru alti durak: en dis halkadan merkeze. Her
+       durakta halka YANIYOR -- tur "halkalara bas" derken basildiginda
+       ne oldugunu ayni anda gosteriyor. */
     const halkaGezi = [];
     for(let i=0;i<6;i++){
       const k = Math.round((n-1) * (1 - i/5));
       halkaGezi.push({ hedef:{disk:H(k), aci:0}, sure:340,
-        oynat:(kk=>()=>{ try{ modAdiTut(adlar[kk]); }catch(e){ _yut(e); } })(k) });
+        oynat:(kk=>()=>{ try{ modAdiTut(adlar[kk]); halkaYak(adlar[kk]); }catch(e){ _yut(e); } })(k) });
     }
+    const secK = Math.max(0, n-4);
     return [
       { bas:'ORBITAPE', metin:'Live radio from around the world.<br>Tap the centre to start.',
-        duraklar:[{hedef:{disk:0.10, aci:0}, sure:2000}] },
+        duraklar:[{hedef:{disk:0.10, aci:0}, sure:1700}] },
       { bas:'GENRES', metin:'Hold on the rings.<br>Each ring is a genre.',
         duraklar: halkaGezi },
       { bas:'SELECT', metin:'Release on a ring to open it.<br>Release outside to cancel.',
-        duraklar:[{hedef:{disk:H(Math.max(0,n-4)), aci:0}, sure:1500,
-                   oynat:()=>{ try{ modAdiTut(adlar[Math.max(0,n-4)]); }catch(e){ _yut(e); } }}] },
-      { bas:'SHORTCUT', metin:'The name and the three symbols<br>step through the genres.',
-        duraklar:[{hedef:'#modAd', sure:700, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
-                  {hedef:'#bekle', sure:700}] },
-      { bas:'NOW PLAYING', metin:'Down here: the station,<br>its genre and where it broadcasts from.',
+        duraklar:[{hedef:{disk:H(secK), aci:0}, sure:1400,
+                   oynat:()=>{ try{ modAdiTut(adlar[secK]); halkaYak(adlar[secK]); }catch(e){ _yut(e); } }}] },
+      { bas:'SHELF', metin:'Top right: the genre you are in.<br>The three marks step through them.',
+        duraklar:[{hedef:'#modAd', sure:800, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
+                  {hedef:'#bekle', sure:900,
+                   oynat:()=>{ try{ halkaYak(adlar[Math.max(0,n-2)]); }catch(e){ _yut(e); } }}] },
+      /* SOL ALT, BIRINCI SATIR. Dort tusun dordu de tek tek
+         gosteriliyor: ikisi gecmis, ikisi calma denetimi ve hangisinin
+         hangisi oldugu yalnizca simgeden anlasilmiyor. */
+      { bas:'CONTROLS', metin:'Bottom left: play, stop, and back<br>and forward through what you heard.',
+        duraklar:[{hedef:'#geri', sure:520}, {hedef:'#dur', sure:560},
+                  {hedef:'#duraklat', sure:520}, {hedef:'#ileri', sure:520}] },
+      /* SOL ALT, IKINCI SATIR. */
+      { bas:'TOOLS', metin:'Camera, mute, search<br>and your favourites.',
+        duraklar:[{hedef:yaDa('#cam','#mute'), sure:540}, {hedef:'#mute', sure:540},
+                  {hedef:'#araYuva', sure:620}, {hedef:'#favAc', sure:620}] },
+      { bas:'VOLUME', metin:'The thin line below them.<br>Drag it to set the level.',
+        duraklar:[{hedef:'#sesYatay', sure:1100}] },
+      { bas:'NOW PLAYING', metin:'Bottom right: the station first,<br>then the track it is playing.',
         duraklar:[{hedef:'#np', sure:1300}] },
-      /* EFFECTS / SHAPE / CHANNEL adimlari KALDIRILDI: gezegenler,
-         FX ve kanal geciai artik yok. Yerine SETTINGS geldi -- sol
-         ustteki uc cizgi, turda gosterilmezse kimse bulamaz. */
-      { bas:'SETTINGS', metin:'Top left: sounds you can turn off,<br>and this tour again.',
-        duraklar:[{hedef:'#ayarTut', sure:1300}] },
-      { bas:'RECORD', metin:'REC records the screen with sound.<br>CAM adds the front camera.',
-        duraklar:[{hedef:'#araclar', sure:1300}] },
-      { bas:'READY', metin:'That\u2019s it. Enjoy.',
-        duraklar:[{hedef:{disk:0.10, aci:0}, sure:1200}] }
+      { bas:'WHAT IS THIS?', metin:'Heard something good?<br>This asks your phone to name it.',
+        duraklar:[{hedef:yaDa('#tani','#np'), sure:1200}] },
+      /* AYARLAR: soylemek yetmiyor, ACILIYOR. El uc cizgiye iner,
+         panel gercekten iner, iki satir gosterilir ve panel kapanir. */
+      { bas:'SETTINGS', metin:'Top left: three lines.<br>Themes, stars, sounds — and this tour.',
+        duraklar:[{hedef:'#ayarTut', sure:820,
+                   oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){ _yut(e); } }},
+                  {hedef:yaDa('#ayar .sat.kapi','#ayarTut'), sure:1000},
+                  {hedef:yaDa('#ayar .sat[data-ayar="tema"]','#ayarTut'), sure:1000},
+                  {hedef:'#ayarTut', sure:700,
+                   oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){ _yut(e); } }}] },
+      { bas:'READY', metin:'That’s it. Enjoy.',
+        duraklar:[{hedef:{disk:0.10, aci:0}, sure:1100}] }
     ];
   }
 
@@ -11749,6 +11914,10 @@
        bırakmıyor. Önizleme düşüyor, FX kapanıyor. */
     try{ modAdiBirak(); }catch(e){ _yut(e); }
     try{ fxNormale(); }catch(e){ _yut(e); }
+    /* SETTINGS adimi paneli acmisti. Tur ortasinda SKIP'e basilirsa
+       panel acik kalirdi -- kullanici hic acmadigi bir paneli kapatmak
+       zorunda kalirdi. Nerede kesilirse kesilsin kapatiliyor. */
+    try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){ _yut(e); }
     if(t){ t.classList.remove('on','gor'); t.setAttribute('aria-hidden','true');
            setTimeout(()=>{ try{ t.querySelector('.halka').classList.remove('gor');
                                  t.querySelector('.yazi').classList.remove('gor'); }catch(e){ _yut(e); } }, 500); }

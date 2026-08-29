@@ -3204,6 +3204,39 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
            tekrarı kaldirirken bilgiyi de kaldirmis olmayalim. */
         return ayni === '' && farkli === 'JAZZ · DE';
       }), 'PLAYJOY PLAYJOY yok; farkli kaynak hala yaziliyor');
+    /* ── ACILIS TURU ────────────────────────────────────────────────
+       Tur EKRANIN BUGUNKU HARITASINI gezmeli. Yerlesim degistikce
+       tur bayatliyor ve kimse fark etmiyor -- bu yuzden test, tur
+       metnini degil TUR HEDEFLERINI olcuyor: her adimin gosterdigi
+       elemanin gercekten belgede olup olmadigina bakiyor. Ekrandan
+       silinen bir tusa isaret eden bir adim burada dusuyor. */
+    /* ── OLCULEN DEGERE env() EKLENMEZ ──────────────────────────────
+       IKI KERE YASANDI, ikisinde de ekranda ayni sekilde goruldu:
+       "buyutec havada / yukari kaymis, yeri bos, ustundekinin uzerine
+       binmis". Sebep her seferinde ayni: bir eleman OLCULUP
+       (getBoundingClientRect -- guvenli alan payi zaten icinde)
+       sonuc _dip() ile yaziliyor ve env(safe-area-inset-bottom) bir
+       kere daha ekleniyor. Centikli telefonda ~34px firliyor.
+       Bu test kaynagi okuyor: olculen degerlerin _dip'e girmedigini
+       ve yerlestikten sonra buyutecin yuvasiyla AYNI HATTA
+       oturdugunu dogruluyor. */
+    K('Buyutec yuvasina oturuyor, env iki kere eklenmiyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        /* Kaynak: olculen yuvadan gelen deger duz px yaziliyor. */
+        const duz = /yr2\.bottom[\s\S]{0,80}\+ 'px'/.test(k);
+        const eskiHata = /_dip\(Math\.max\(6, alt \+ _fark\)\)/.test(k);
+        try{ geriYerlestir(); }catch(e){ return false; }
+        const ar = document.getElementById('ara');
+        const yv = document.getElementById('araYuva');
+        if(!ar || !yv) return false;
+        const a = ar.getBoundingClientRect(), y = yv.getBoundingClientRect();
+        if(!a.height || !y.height) return false;
+        /* Merkezleri ayni hatta (2px tolerans) ve buyutec YUVANIN
+           ustune tasmiyor: yigilma degil, oturma. */
+        const merkez = Math.abs((a.top + a.bottom)/2 - (y.top + y.bottom)/2) < 2.5;
+        const sol = Math.abs(a.left - y.left) < 2.5;
+        return duz && !eskiHata && merkez && sol;
+      }), 'ara ile araYuva ayni merkezde; olculen deger _dip disinda');
     K('Acilis turu bugunku uygulamayi anlatiyor', await pg.evaluate(()=>{
         const a = turAdimlari();
         const basliklar = a.map(x=>x.bas);
@@ -3212,15 +3245,51 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
            en dis halkanin yaricapina esit olsun. */
         const gez = a[1].duraklar.map(d=>d.hedef.disk);
         const enDis = halkaIc() + (halkaAdlar().length-1)*halkaAra();
+        /* Her CSS hedefi belgede var mi? (disk hedefleri gecilir) */
+        const hedefler = [];
+        a.forEach(x=>x.duraklar.forEach(d=>{
+          if(typeof d.hedef === 'string') hedefler.push(d.hedef); }));
+        const eksik = hedefler.filter(h=>!document.querySelector(h));
         /* EFFECTS / SHAPE / CHANNEL adimlari kalkti (gezegenler ve
-           kanal gecisi yok), yerine SETTINGS geldi. Tur kisaldi. */
+           kanal gecisi yok). RECORD da kalkti: REC radyoda gorunmuyor,
+           tur gorunmeyen bir tusu anlatiyordu. */
         return basliklar.includes('GENRES') && basliklar.includes('SETTINGS')
-            && basliklar.includes('NOW PLAYING')
+            && basliklar.includes('NOW PLAYING') && basliklar.includes('CONTROLS')
+            && basliklar.includes('TOOLS') && basliklar.includes('VOLUME')
             && !basliklar.includes('EFFECTS') && !basliklar.includes('SHAPE')
             && !basliklar.includes('CHANNEL') && !basliklar.includes('CATEGORIES')
+            && !basliklar.includes('RECORD')
+            && eksik.length === 0
             && Math.abs(gez[0] - enDis) < 0.001
-            && sure > 8000 && sure < 16000;
-      }), 'GENRES/NOW PLAYING/SETTINGS var, FX adimlari yok, yaricaplar canli');
+            && sure > 12000 && sure < 22000;
+      }), 'Yeni yerlesimin adimlari var, hedeflerin hepsi ekranda, FX adimlari yok');
+    /* GOSTEREREK ANLATSIN: kullanicinin istegi "halkalarin yanmasi,
+       menunun acilmasi vs gibi her seyi gostererek". Yani adimlarin
+       bir kismi SADECE isaret etmiyor, ekranda bir sey oynatiyor.
+       Olculen sey: halka gezisinde halkaYak cagriliyor mu ve SETTINGS
+       adimi paneli gercekten acip kapatiyor mu. */
+    K('Tur gostererek anlatiyor: halka yaniyor, panel aciliyor', await pg.evaluate(()=>{
+        const a = turAdimlari();
+        const kaynak = a.map(x=>x.duraklar.map(d=>String(d.oynat||'')).join(' ')).join(' ');
+        const yanma = /halkaYak/.test(kaynak);
+        const panel = /ayarGoster/.test(kaynak);
+        /* SETTINGS adiminda ACMA ve KAPAMA ikisi de olmali: yalnizca
+           acsa tur bitince panel acik kalirdi. */
+        const st = a.find(x=>x.bas === 'SETTINGS');
+        const stK = st ? st.duraklar.map(d=>String(d.oynat||'')).join(' ') : '';
+        const acar  = /ayarGoster\(true\)/.test(stK);
+        const kapar = /ayarGoster\(false\)/.test(stK);
+        /* Panel gercekten aciliyor mu: cagirip bakiyoruz, sonra geri. */
+        let acildi = false;
+        try{ window.ayarGoster(true);
+             acildi = document.body.classList.contains('ayar-acik');
+             window.ayarGoster(false); }catch(e){}
+        const kapandi = !document.body.classList.contains('ayar-acik');
+        /* turBitir da kapatmali (tur ortasinda SKIP). */
+        const govde = document.documentElement.innerHTML;
+        const bitirKapatir = /function turBitir\(\)[\s\S]{0,1400}ayarGoster\(false\)/.test(govde);
+        return yanma && panel && acar && kapar && acildi && kapandi && bitirKapatir;
+      }), 'halkaYak + ayarGoster(true/false); turBitir de kapatiyor');
     K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return /item\.grup !== AKTIF_AILE/.test(k)
@@ -4231,6 +4300,66 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       return dip;
     });
     K('Iki uc birbirine yapismiyor', uzak >= 60, 'en dar cift ' + uzak + ' (taban 60)');
+  }
+  /* ── MARKA: TUR RENGI ONDE ──────────────────────────────────────
+     Onceki havuzun yarisi markanin kendi iki rengiydi ve kaliplarin
+     cogu onlarla BASLIYORDU: hangi turde olursak olalim yazi ayni
+     yesil-pembe ikilisine donuyordu. Kullanicinin sozu: "renkler cok
+     tutucu, turlerin rengini daha etkili gorelim, kayboluyoruz
+     sayfalarda; ana renk TUR RENGI olacak, sonuna dogru hafif bizim
+     yesil, bazen de hic."
+     Uc sey olculuyor:
+       1. ILK DURAK her zaman turun renginin ailesinden (ton acisi
+          yakin ya da rengin kendisi).
+       2. Markanin yesili AZINLIKTA -- raf x tema ciftlerinin
+          yarisindan azinda gorunuyor, ve gorunuyorsa SON durakta.
+       3. HICBIR DURAK karanlikta kaybolmuyor (parlaklik tabani). */
+  {
+    const mrk = await pg.evaluate(()=>{
+      const say = x => (String(x).match(/\d+/g)||[]).map(Number);
+      const lum = x => { const v=say(x); return 0.2126*v[0]+0.7152*v[1]+0.0722*v[2]; };
+      const ton = x => { const v=say(x).map(n=>n/255);
+        const mx=Math.max(...v), mn=Math.min(...v), d=mx-mn;
+        if(!d) return -1;
+        let h = mx===v[0] ? ((v[1]-v[2])/d + (v[1]<v[2]?6:0)) : mx===v[1] ? ((v[2]-v[0])/d + 2) : ((v[0]-v[1])/d + 4);
+        return (h*60+360)%360; };
+      const tonFark = (a,b)=>{ const x=ton(a), y=ton(b);
+        if(x<0 || y<0) return 0; const d=Math.abs(x-y); return Math.min(d, 360-d); };
+      const eskiT = AYAR.tema, eskiA = AKTIF_AILE;
+      let cift=0, yesilli=0, enKaranlik=999, ilkSapan=[], yesilSonda=true;
+      const YESIL = '53,224,216';
+      for(const raf of AILELER.map(a=>a.ad)){
+        for(const t of [0,3,7,12,18,22,27,30,34]){
+          AYAR.tema = t; AKTIF_AILE = raf; markaRengi();
+          const st = getComputedStyle(document.documentElement);
+          const m1 = st.getPropertyValue('--m1'), m2 = st.getPropertyValue('--m2'),
+                m3 = st.getPropertyValue('--m3');
+          const R = aileRenk(raf);
+          cift++;
+          /* 1. ilk durak turun ailesinde: ton acisi 40 dereceden yakin */
+          if(tonFark(m1, R) > 40) ilkSapan.push(raf+'/t'+t+' '+m1+' vs '+R);
+          /* 2. markanin yesili nerede gorunuyor */
+          const yak = x => { const a=say(x), b=say(YESIL);
+            return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2]) < 24; };
+          const y1=yak(m1), y2=yak(m2), y3=yak(m3);
+          if(y1||y2||y3) yesilli++;
+          /* Rafin kendi rengi zaten markanin yesiliyse (RADIOTAPE)
+             bu kural gecerli degil. */
+          if(y1 && !yak('rgb('+R+')')) yesilSonda = false;
+          [m1,m2,m3].forEach(c=>{ const l=lum(c); if(l<enKaranlik) enKaranlik=l; });
+        }
+      }
+      AYAR.tema = eskiT; AKTIF_AILE = eskiA; markaRengi();
+      return { cift, yesilli, enKaranlik:Math.round(enKaranlik), ilkSapan, yesilSonda };
+    });
+    K('Marka turun renginden basliyor', mrk.ilkSapan.length === 0,
+       mrk.ilkSapan.length ? mrk.ilkSapan.slice(0,3).join(' | ')
+                           : mrk.cift + ' raf x tema ciftinin hepsinde ilk durak turun ailesinde');
+    K('Markanin yesili azinlikta', mrk.yesilli / mrk.cift < 0.5 && mrk.yesilSonda === true,
+       mrk.cift + ' ciftin ' + mrk.yesilli + ' tanesinde yesil var (%'
+       + Math.round(100*mrk.yesilli/mrk.cift) + '), hicbirinde ILK durakta degil');
+    K('Marka karanlikta kaybolmuyor', mrk.enKaranlik >= 120,
+       'en karanlik durak parlaklik ' + mrk.enKaranlik + ' (taban 120)');
   }
   /* ── TEMA HALKALARA DA GIRIYOR ─────────────────────────────────
      Ekranin en buyuk nesnesi kilifin disinda kaliyordu. Ama halkanin
