@@ -314,7 +314,7 @@
     width:38px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
-    color:#8fb6b6;transition:color .2s, border-color .2s, background .2s, opacity .25s;}
+    color:#5adcd2;transition:color .2s, border-color .2s, background .2s, opacity .25s;}
   #favAc.var{display:flex;opacity:.88;}
   #favAc.var:hover{opacity:1;}
   #favAc svg{width:15px;height:15px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;}
@@ -322,14 +322,27 @@
   #favAc.acik{color:#ffd98a;border-color:rgba(255,217,138,.45);background:rgba(26,22,10,.75);}
   #favAc.acik svg{fill:currentColor;}
   #favAc:hover{color:#cfe9e4;}
+  /* Kanal rengi ALMIYORLAR: sol taraf tek renk. */
+  body.t-lib #favAc,body.t-liste #favAc,body.t-radio #favAc,
+  body.t-lib #rec,body.t-liste #rec,body.t-radio #rec,
+  body.t-lib #cam,body.t-liste #cam,body.t-radio #cam{color:#5adcd2;}
   /* SUSTUR: ★ ile birebir ayni olcu ve kilik. Yanyana duruyorlar,
      biri otekinden buyuk olsa satir egri gorunur. */
   #mute{display:flex;align-items:center;justify-content:center;
     width:38px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
-    color:#8fb6b6;transition:color .2s, border-color .2s, background .2s;}
-  #mute{color:rgb(var(--tv, 143,182,182));}
+    color:#5adcd2;transition:color .2s, border-color .2s, background .2s;}
+  /* ── SOL TARAF TEK RENK: MARKANIN YESILI ────────────────────────
+     Bildirilen: "cok rengarenk olmus, soldaki her seyi yesil ana
+     renk yap."
+     Dogruydu: CAM turkuazimsi, ★ baska bir turkuaz, sustur bir
+     baskasi, buyutec kanalin rengi... dort ayri yesil tonu yan yana
+     "palet" degil "kaza" gibi duruyordu. Hepsi artik markanin ana
+     rengi (#5adcd2). Pembe markanin gradyanindaki IKINCI durak; o da
+     yalnizca ayar tutamaginda ve basis tepkisinde kaliyor -- yani
+     "yesil ama biraz pembelik" tarifi. */
+  #mute{color:#5adcd2;}
   #mute svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;
     stroke-width:1.7;stroke-linecap:round;}
   #mute .kay{fill:currentColor;stroke:none;}
@@ -545,11 +558,12 @@
      olculuyor (visualViewport). Mobilde klavye acilinca position:fixed
      eleman yerinde kaliyor ve arama kutusu klavyenin ALTINDA kaliyordu:
      kullanici yazdigi seyi ve sonuclari goremiyordu. */
-  /* Buyutec ayar tutamaginin SAGINDA: alt sol kose tutamagin,
-     buyutec onun yanina geciyor. 40 = tutamak genisligi, 16 = hava. */
+  /* Buyutec kayit satirinin saginda; kesin yeri JS'te olculuyor
+     (satirin genisligi CAM -> DELETE ile degisiyor). Buradaki deger
+     yalnizca ilk kare icin. */
   #ara{position:fixed;z-index:79;pointer-events:auto;
     display:flex;flex-direction:column-reverse;align-items:flex-start;
-    left:calc(var(--kx) + 56px + env(safe-area-inset-left, 0px));
+    left:calc(var(--kx) + 150px + env(safe-area-inset-left, 0px));
     /* 41px = ucgen (5 + 26) + 10 hava. JS ilk olcumde uzerine yaziyor;
        bu deger ilk karede aramanin ucgenin uzerine binmemesi icin. */
     bottom:calc(7px + env(safe-area-inset-bottom, 0px) + var(--klavye, 0px));
@@ -591,6 +605,9 @@
      ona bakmiyor ve klavyenin arkasinda kaliyor. REC/CAM artik sol
      ustte, yani klavyenin ustunde -- onlar gizlenmiyor. */
   body.klavye #ayarTut{opacity:0;pointer-events:none;}
+  /* Arama kutusunun ICI kanalin rengini alabilir (acikken orasi
+     kendi dunyasi) ama KAPALI buyutec markanin yesili -- yukarida
+     ayrica yaziliyor. */
   body.t-lib   #ara, body.t-lib   #karsilama{color:#8ff0dd;}
   body.t-liste #ara, body.t-liste #karsilama{color:#d9d0dd;}
   body.t-radio #ara, body.t-radio #karsilama{color:#ffc79e;}
@@ -646,7 +663,7 @@
     -webkit-tap-highlight-color:transparent;}
   /* Buyutec temanin vurgu renginde; tema yoksa kanalin rengi
      (kutunun kendi 'color' degeri) geciyor. */
-  #ara .cizgi{color:rgb(var(--tv, 143,240,221));}
+  #ara .cizgi{color:#5adcd2;}
   #ara .cizgi svg{flex:0 0 auto;width:14px;height:14px;opacity:.66;transition:opacity .25s;}
   #ara .cizgi:hover svg{opacity:1;}
   #ara.acik .cizgi{display:none;}
@@ -700,13 +717,23 @@
      Seçim yapılınca bu yazı gidiyor — işini bitirmiş oluyor. */
   #modGez{position:fixed;left:50%;transform:translateX(-50%);
     z-index:59;pointer-events:none;user-select:none;white-space:nowrap;
-    /* STIL DEGISTI: daktilo yazisi (Share Tech Mono, agirlik 500)
-       kalin ve silik oldugu icin "lekelenmis" gibi duruyordu. Artik
-       sistem sans yazisi, agirlik 300, harf arasi genis: ince, ferah,
-       modern. Ayni silikligi koruyor ama leke birakmiyor. */
+    /* ── MODA DERGISI BASLIGI ────────────────────────────────────
+       Istenen: "cok asiri kalin silik bi dizayn dedim -- kalinlik
+       ustunden gecerek degil TUTUP CEKEREK olacak. daha buyuk, ama
+       hep silik gibi, daha modern."
+       Yani agirlik font-weight'ten GELMIYOR: yazi ince kesimde
+       kaliyor (300) ve dikeyde geriliyor. Bir dergi mastheadi de
+       boyle yapilir -- harfler kalinlastirilmaz, uzatilir; kalinlik
+       hissi orandan gelir, murekkepten degil.
+       scaleY(1.28) + scaleX(0.94): boy uzuyor, en hafifce daraliyor.
+       transform-origin ortada, cunku yazi zaten ortalanmis.
+       Punto da buyudu (24 -> 34) ve harf arasi acildi. Silikligi
+       degismedi (opaklik .56) -- buyuk ve silik, kalin degil. */
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     font-weight:300;
-    font-size:24px;letter-spacing:.34em;text-indent:.34em;line-height:1.1;
+    font-size:34px;letter-spacing:.42em;text-indent:.42em;line-height:1;
+    transform:translateX(-50%) scale(.94, 1.28);
+    transform-origin:50% 50%;
     color:currentColor;opacity:0;text-shadow:none;
     mix-blend-mode:screen;
     transition:opacity .16s ease, color .16s ease;}
@@ -724,7 +751,7 @@
   /* Önizleme parmakla geziniyor: zemin geçişi 0.8s yerine 0.3s,
      yoksa halkadan halkaya geçerken renk arkadan yetişiyor. */
   body.oniz{transition:background-color .30s ease, background-image .30s ease;}
-  @media (max-width:480px){ #modGez{font-size:21px;letter-spacing:.26em;text-indent:.26em;} }
+  @media (max-width:480px){ #modGez{font-size:26px;letter-spacing:.30em;text-indent:.30em;} }
   @media (max-width:480px){ #modAd{font-size:11px;letter-spacing:.26em;text-indent:.26em;} }
   #ara .kutu{display:none;}
   #ara.acik .cizgi{display:none;}
@@ -814,16 +841,19 @@
        dikdörtgen kalıyor. Siyah zeminde görsel farkı yok. */
     align-items:center;justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
-    color:#e8b6c8;opacity:.9;pointer-events:auto;
+    color:#5adcd2;opacity:.9;pointer-events:auto;
     transition:color .18s, border-color .18s, background .18s;}
   #geri svg{width:15px;height:13px;display:block;fill:currentColor;opacity:.9;}
   #geri.var{display:flex;opacity:.9;pointer-events:auto;}
-  /* KANAL RENGI ALMIYORLAR: dort tus tek takim, rengi sabit pembemsi.
-     Kanal degisince renk degistirmeleri "bu tus simdi baska bir sey
-     yapiyor" izlenimi veriyordu.
-     Basilinca biraz daha pembe ve zemin hafif aciliyor: dokunusun
-     karsiligi var ama tus "aktiflesmis" gibi durmuyor. */
-  #geri:hover,#dur:hover,#duraklat:hover,#ileri:hover{border-color:rgba(226,122,158,.30);}
+  /* ── KONSOLUN RENGI: ORBITAPE'IN KENDI TURKUAZI ──────────────────
+     Bir tur pembemsi denendi ve olmadi: pembe markanin gradyanindaki
+     UC renk, ana renk degil. Konsol uygulamanin omurgasi; omurga
+     markanin ana renginde olmali. Dort tus da ayni turkuaz, kanal
+     degisince de degismiyor.
+     BASINCA KISA BIR TEPKI: renk 160 ms markanin pembesine sicrayip
+     kendiliginden geri donuyor. Dokunusun karsiligi var ama tus
+     "aktiflesmis" gibi kalmiyor -- durum degil, tepki. */
+  #geri:hover,#dur:hover,#duraklat:hover,#ileri:hover{border-color:rgba(90,220,210,.32);}
   #geri:active,#dur:active,#duraklat:active,#ileri:active,
   #geri.bas,#dur.bas,#duraklat.bas,#ileri.bas{color:#ffc8dd;
     border-color:rgba(226,122,158,.42);background:rgba(34,18,26,.82);}
@@ -835,7 +865,7 @@
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     align-items:center;justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
-    color:#e8b6c8;opacity:.9;pointer-events:auto;
+    color:#5adcd2;opacity:.9;pointer-events:auto;
     transition:color .18s, border-color .18s, background .18s;}
   #ileri svg{width:15px;height:13px;display:block;fill:currentColor;opacity:.9;}
   #ileri.var{display:flex;opacity:.9;pointer-events:auto;}
@@ -851,7 +881,7 @@
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     align-items:center;justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
-    color:#e8b6c8;opacity:.9;
+    color:#5adcd2;opacity:.9;
     transition:color .18s, border-color .18s, background .18s;}
   #dur svg,#duraklat svg{width:14px;height:12px;display:block;fill:currentColor;opacity:.9;}
   /* IKINCI TUSUN UC YUZU.
@@ -867,7 +897,8 @@
   /* OYNAT TUSU TEMANIN RENGINDE. Otekiler sabit pembemsi; oynat
      ayrisiyor cunku en cok basilan tus o. Tema secili degilse
      (AUTO) pembemsi kaliyor -- --tv yalnizca tema varken yaziliyor. */
-  #dur{color:rgb(var(--tv, 232,182,200));}
+  /* Oynat tusu temanin renginde; tema yoksa markanin turkuazi. */
+  #dur{color:rgb(var(--tv, 90,220,210));}
   /* ── SES: YATAY CIZGI ────────────────────────────────────────────
      Masaustunde dikey bir kaydirici vardi, dokunmatikte hicbir sey --
      orada iki parmak jesti kullaniliyordu ve iPhone Safari'de
@@ -1162,13 +1193,19 @@
      ucgen hissi duruyor ama nesne yine bir "tutamak" gibi okunuyor.
      SOUND BANKS kipinde sol alt modulun yeri; tutamak orada alt
      ortaya donuyor (asagida). */
+  /* RADYODA SOL UST. Bir tur alt sol koseye alinmisti; konsol oraya
+     tasininca tutamak yine yer degistirmek zorunda kaldi ve
+     kullanici "en yukari yine uc cizgiyi al, o iyiydi" dedi.
+     SOUND BANKS kipinde asagida kaliyor (orada sol ust nebulanin). */
   #ayarTut{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    bottom:calc(7px + env(safe-area-inset-bottom, 0px));
+    top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px));
     width:40px;height:26px;display:flex;flex-direction:column;
     align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
+  body.mood #ayarTut{top:auto;
+    bottom:calc(7px + env(safe-area-inset-bottom, 0px));}
   /* SOUND BANKS kipinde de AYNI YERDE. Once ortaya alinmisti (sol
      alti modul aldi diye) ama modul dort hapa cikinca ortaya kadar
      uzadi ve tutamagin uzerine bindi -- olculdu, sustur tusuyla
@@ -1206,16 +1243,22 @@
      kaliyor, panel onun uzerine biniyor -- taban degismiyor. */
   /* Panel tutamakla ayni tarafta aciliyor: radyoda soldan, SOUND
      BANKS kipinde ortadan. Yukari dogru, alt seride dokunmadan. */
+  /* Panel tutamakla ayni tarafta: radyoda yukaridan asagi, SOUND
+     BANKS kipinde asagidan yukari. */
   #ayar{position:fixed;z-index:95;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    bottom:calc(46px + env(safe-area-inset-bottom, 0px));
-    transform:translateY(12px);
+    top:calc(var(--sut, 15px) + 40px + env(safe-area-inset-top, 0px));
+    bottom:auto;
+    transform:translateY(-12px);
     width:min(84vw,300px);padding:14px 16px 12px;
     background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
     border-radius:14px;opacity:0;pointer-events:none;
     transition:transform .26s cubic-bezier(.2,.8,.3,1), opacity .22s ease;}
   body.ayar-acik #ayar{transform:translateY(0);
     opacity:1;pointer-events:auto;}
+  body.mood #ayar{top:auto;bottom:calc(46px + env(safe-area-inset-bottom, 0px));
+    transform:translateY(12px);}
+  body.mood.ayar-acik #ayar{transform:translateY(0);}
 
   #ayar h4{margin:0 0 10px;font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:9.5px;letter-spacing:.30em;font-weight:400;
@@ -1379,6 +1422,28 @@
      column-reverse DENENDI VE OLMADI: ilk cocugu dibe koyuyor, yani
      tasima satiri en alta dusuyordu. 'order' ile sira acikca
      yaziliyor -- ne yazarsak o. */
+  /* ── RADYODA KONSOL SAG USTE, YAZILARIN ALTINA ───────────────────
+     Bildirilen: "play puse konsolu surekli yer degistiriyor, sagdaki
+     tur isimlerinin uzunluguna gore. bu kabul edilemez."
+     Dogruydu: konsol SOLDAYDI ve sag ustteki satir uzayinca emniyet
+     olcegi devreye girip konsolu kucultuyordu -- yani konsolun boyu
+     rafin adina bagliydi.
+     Cozum konsolu sagdaki blokla AYNI SUTUNA almak. Artik sag kenara
+     dayali ve yazilarin ALTINDA: yazi uzasa da konsol kimildamiyor,
+     cunku ikisi yan yana degil alt alta. Ayrica uc sembolun altina
+     hizali duruyor -- sag ust tek bir blok gibi okunuyor. */
+  body:not(.mood) #solUst{
+    left:auto;
+    right:calc(var(--kx) + env(safe-area-inset-right, 0px));
+    align-items:flex-end;
+    max-width:calc(100vw - 2*var(--kx));
+  }
+  /* Kayit araclari ve buyutec SOL ALTA. position:fixed onlari
+     #solUst'un akisindan cikariyor -- ust blok yalnizca tasima
+     tuslarini tasiyor. */
+  body:not(.mood) #araclar{position:fixed;z-index:78;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    bottom:calc(7px + env(safe-area-inset-bottom, 0px));}
   body.mood #solUst{
     top:auto;
     /* 7 + 26 (tutamak) + 10 hava = 43 */
@@ -1590,6 +1655,10 @@
          renginde kalir -- hangi odada oldugun kaybolmuyor. -->
     <div class="sat" data-ayar="temaKilit" role="switch" tabindex="-1">
       <span>LOCK THEME</span><span class="durum">OFF</span></div>
+    <!-- YILDIZ YOGUNLUGU: temanin verdigi karakterin uzerine binen
+         kullanici carpani. Bes kademe, basisla ilerliyor. -->
+    <div class="sat islem" data-ayar="yildiz" role="button" tabindex="-1">
+      <span>STARS</span><span class="durum">NORMAL</span></div>
     <!-- EN ALTTA ve bilerek ayri: bu bir ses ayari degil, baska bir
          dunyaya gecis. Acilinca arsiv havuzlari, nebula, gezegenler
          ve efektler geliyor; canli radyo o taraftan gorunmuyor. -->
@@ -1997,49 +2066,63 @@
         zemini yari yariya karisir, yani raf degistikce zemin de
         hafifce doner.
 
+     ZEMINLER ARTIK "SIYAH + BIR TON" DEGIL. Onceki tabloda z2 nerdeyse
+     hep #000 idi ve butun temalar siyah bir ekranin uzerine atilmis
+     bir renk gibi duruyordu. Simdi dis durak da kendi renginde
+     (#0a0908 sicak kurum, #04090b soguk mavi-siyah...): ekran kararsa
+     bile RENKLI kararyor. Yine de hepsi koyu -- butun yazi beyaz ve
+     silik, acik bir zeminde okunmaz.
+
      z1 = merkezdeki isik, z2 = kenarlardaki karanlik, v = vurgu
-     (arama cizgisi, ince ayrintilar), y = yildiz alani
-     (n: yogunluk, h: hiz, d: dagilim). */
+     (semboller, ince ayrintilar), y = yildiz alani:
+       n = yogunluk (kac zerre cizilir)
+       h = hiz
+       d = dagilim (yaricap carpani)
+       k = KUMELENME 0..1 -- 0 esit dagilim, 1 birkac kusakta toplanma.
+           "Yogun ve az yerleri" istegi bu. */
   var TEMALAR = [
-    { ad:'AUTO',          z1:null,      z2:null,      v:null,           y:{n:1.00,h:1.00,d:1.00} },
-    /* ── RETRO ── */
-    { ad:'DUSTY ROSE',    z1:'#1c0f14', z2:'#050205', v:'226,122,158', y:{n:0.85,h:0.80,d:1.05} },
-    { ad:'FADED DENIM',   z1:'#0e141d', z2:'#03050a', v:'126,158,196', y:{n:0.95,h:0.85,d:1.00} },
-    { ad:'OLD PAPER',     z1:'#1b1710', z2:'#060503', v:'214,196,156', y:{n:0.80,h:0.70,d:1.10} },
-    { ad:'TAPE BROWN',    z1:'#1a1109', z2:'#060402', v:'196,148,102', y:{n:0.85,h:0.75,d:1.00} },
-    { ad:'SEA FOAM',      z1:'#0c1a17', z2:'#020706', v:'134,206,188', y:{n:0.95,h:0.90,d:1.05} },
-    { ad:'PALE OLIVE',    z1:'#141709', z2:'#040602', v:'176,190,126', y:{n:0.85,h:0.80,d:1.00} },
-    { ad:'SMOKE VIOLET',  z1:'#15101e', z2:'#040308', v:'166,148,206', y:{n:0.90,h:0.85,d:1.05} },
-    { ad:'RUST',          z1:'#1d0e08', z2:'#070302', v:'214,118,74',  y:{n:0.90,h:0.90,d:1.00} },
-    { ad:'SLATE',         z1:'#111417', z2:'#040506', v:'150,166,178', y:{n:1.00,h:0.80,d:1.00} },
-    { ad:'MOSS',          z1:'#0d160f', z2:'#020503', v:'126,180,140', y:{n:0.90,h:0.80,d:1.05} },
-    { ad:'CORAL DUST',    z1:'#1e1010', z2:'#070303', v:'232,140,124', y:{n:0.95,h:0.90,d:1.00} },
-    /* ── GECE ── */
-    { ad:'MIDNIGHT',      z1:'#080d18', z2:'#010208', v:'118,158,236', y:{n:1.20,h:0.90,d:1.15} },
-    { ad:'DEEP SPACE',    z1:'#05070d', z2:'#000000', v:'150,170,200', y:{n:1.40,h:0.80,d:1.25} },
-    { ad:'INK',           z1:'#0a0a0f', z2:'#000000', v:'170,176,196', y:{n:1.30,h:0.75,d:1.20} },
-    { ad:'ABYSS',         z1:'#030b10', z2:'#000306', v:'106,178,196', y:{n:1.25,h:0.85,d:1.15} },
-    { ad:'PLUM NIGHT',    z1:'#120a1a', z2:'#030106', v:'176,130,216', y:{n:1.15,h:0.95,d:1.10} },
-    { ad:'FOREST NIGHT',  z1:'#071310', z2:'#010504', v:'110,190,158', y:{n:1.10,h:0.85,d:1.10} },
-    { ad:'EMBER',         z1:'#160805', z2:'#050101', v:'236,124,72',  y:{n:1.05,h:1.05,d:1.00} },
-    { ad:'STEEL BLUE',    z1:'#091218', z2:'#010406', v:'124,172,206', y:{n:1.15,h:0.85,d:1.10} },
-    { ad:'WINE',          z1:'#160610', z2:'#050104', v:'214,96,140',  y:{n:1.00,h:0.95,d:1.05} },
-    { ad:'GRAPHITE',      z1:'#0c0c0c', z2:'#000000', v:'186,186,186', y:{n:1.20,h:0.70,d:1.20} },
-    { ad:'AURORA',        z1:'#04120f', z2:'#000406', v:'96,232,190',  y:{n:1.30,h:1.00,d:1.20} },
-    /* ── CIVIL ── */
-    { ad:'BUBBLEGUM',     z1:'#210b18', z2:'#080205', v:'255,138,198', y:{n:1.05,h:1.20,d:0.95} },
-    { ad:'CANDY MINT',    z1:'#07201b', z2:'#010806', v:'120,255,214', y:{n:1.10,h:1.25,d:0.95} },
-    { ad:'TANGERINE',     z1:'#221004', z2:'#080301', v:'255,158,72',  y:{n:1.00,h:1.30,d:0.90} },
-    { ad:'ELECTRIC LIME', z1:'#141f04', z2:'#040701', v:'186,255,96',  y:{n:1.05,h:1.30,d:0.95} },
-    { ad:'HOT CORAL',     z1:'#240d0d', z2:'#080202', v:'255,116,108', y:{n:1.00,h:1.25,d:0.95} },
-    { ad:'ULTRAVIOLET',   z1:'#150724', z2:'#040108', v:'170,110,255', y:{n:1.15,h:1.20,d:1.05} },
-    { ad:'CYAN POP',      z1:'#04191f', z2:'#010607', v:'86,226,255',  y:{n:1.20,h:1.25,d:1.00} },
-    { ad:'SUNSET',        z1:'#220c12', z2:'#080203', v:'255,134,140', y:{n:1.00,h:1.15,d:1.00} },
-    { ad:'LAGOON',        z1:'#03181f', z2:'#000507', v:'96,208,236',  y:{n:1.20,h:1.10,d:1.10} },
-    { ad:'PEACH SODA',    z1:'#221410', z2:'#080403', v:'255,178,138', y:{n:0.95,h:1.15,d:1.00} },
-    { ad:'LILAC',         z1:'#180f22', z2:'#050308', v:'202,164,255', y:{n:1.10,h:1.10,d:1.05} },
-    { ad:'ACID YELLOW',   z1:'#1e1c04', z2:'#070601', v:'244,232,96',  y:{n:1.00,h:1.25,d:0.95} },
-    { ad:'ICE',           z1:'#0d1620', z2:'#020508', v:'196,226,255', y:{n:1.35,h:0.95,d:1.20} }
+    { ad:'AUTO',        z1:null,      z2:null,      v:null,          y:{n:1.00,h:1.00,d:1.00,k:0.0} },
+    /* ── BASKI & BANT: matbaanin, filmin, kasetin renkleri ── */
+    { ad:'KODACHROME',  z1:'#2a1408', z2:'#0c0603', v:'242,158,74',  y:{n:0.80,h:0.80,d:1.05,k:0.5} },
+    { ad:'POLAROID',    z1:'#221c14', z2:'#0b0906', v:'226,206,166', y:{n:0.75,h:0.70,d:1.10,k:0.6} },
+    { ad:'RISO BLUE',   z1:'#101c34', z2:'#050912', v:'104,148,236', y:{n:0.95,h:0.85,d:1.00,k:0.4} },
+    { ad:'LETTERPRESS', z1:'#1c1a17', z2:'#0a0908', v:'214,206,192', y:{n:0.70,h:0.65,d:1.15,k:0.7} },
+    { ad:'DARKROOM',    z1:'#240c10', z2:'#0b0405', v:'226,86,96',   y:{n:0.65,h:0.75,d:1.10,k:0.8} },
+    { ad:'VHS',         z1:'#181030', z2:'#070512', v:'168,116,244', y:{n:1.00,h:1.15,d:0.95,k:0.3} },
+    { ad:'TELETEXT',    z1:'#04180c', z2:'#010704', v:'92,240,132',  y:{n:1.05,h:1.25,d:0.95,k:0.2} },
+    { ad:'CASSETTE',    z1:'#241a0e', z2:'#0a0705', v:'214,166,96',  y:{n:0.85,h:0.80,d:1.05,k:0.5} },
+    /* ── KUZEY: Finlandiya, Norvec, Izlanda; sade ve genis ── */
+    { ad:'HELSINKI',    z1:'#141c22', z2:'#070a0d', v:'168,196,214', y:{n:1.15,h:0.70,d:1.20,k:0.6} },
+    { ad:'AALTO',       z1:'#1a1e16', z2:'#080a07', v:'186,202,158', y:{n:0.90,h:0.70,d:1.15,k:0.6} },
+    { ad:'FJORD',       z1:'#0c1e22', z2:'#04090b', v:'110,196,204', y:{n:1.10,h:0.75,d:1.20,k:0.5} },
+    { ad:'TUNDRA',      z1:'#1a1e20', z2:'#090a0b', v:'202,214,214', y:{n:1.25,h:0.60,d:1.25,k:0.7} },
+    { ad:'NORTHERN',    z1:'#04201a', z2:'#010806', v:'96,240,182',  y:{n:1.30,h:0.95,d:1.20,k:0.4} },
+    { ad:'BIRCH',       z1:'#20201c', z2:'#0a0a09', v:'226,222,206', y:{n:0.95,h:0.65,d:1.15,k:0.6} },
+    { ad:'MIDVINTER',   z1:'#0e1626', z2:'#04060c', v:'132,168,226', y:{n:1.35,h:0.70,d:1.25,k:0.7} },
+    /* ── ALMAN OKULU: Bauhaus, Ulm, Braun; az renk, kesin ── */
+    { ad:'BAUHAUS',     z1:'#26100c', z2:'#0b0504', v:'238,96,64',   y:{n:0.70,h:0.85,d:1.00,k:0.8} },
+    { ad:'ULM',         z1:'#191b1d', z2:'#08090a', v:'196,200,204', y:{n:0.80,h:0.60,d:1.20,k:0.9} },
+    { ad:'BRAUN',       z1:'#1e1a12', z2:'#090806', v:'214,196,150', y:{n:0.75,h:0.65,d:1.15,k:0.8} },
+    { ad:'WERKBUND',    z1:'#12181e', z2:'#06080a', v:'138,174,204', y:{n:0.85,h:0.65,d:1.15,k:0.8} },
+    { ad:'AUTOBAHN',    z1:'#141414', z2:'#070707', v:'236,236,236', y:{n:0.90,h:0.55,d:1.30,k:0.9} },
+    /* ── UZAY EGITIM SETI: gozlemevi, sonda, planetaryum ── */
+    { ad:'VOYAGER',     z1:'#0a1220', z2:'#03060c', v:'146,178,236', y:{n:1.45,h:0.80,d:1.30,k:0.3} },
+    { ad:'APOLLO',      z1:'#1e1a10', z2:'#090806', v:'232,206,138', y:{n:1.20,h:0.75,d:1.20,k:0.4} },
+    { ad:'PLANETARIUM', z1:'#100c24', z2:'#05040c', v:'168,150,244', y:{n:1.55,h:0.85,d:1.35,k:0.2} },
+    { ad:'OBSERVATORY', z1:'#0a1a1c', z2:'#040809', v:'134,204,206', y:{n:1.40,h:0.70,d:1.30,k:0.3} },
+    { ad:'LUNAR',       z1:'#191a1c', z2:'#08090a', v:'214,218,222', y:{n:1.30,h:0.60,d:1.25,k:0.5} },
+    { ad:'DEEP FIELD',  z1:'#06060e', z2:'#020205', v:'160,166,196', y:{n:1.60,h:0.55,d:1.40,k:0.1} },
+    /* ── SEHIR GECESI: vitrin, arkad, yagmur ── */
+    { ad:'ARCADE',      z1:'#22062a', z2:'#0a020c', v:'248,96,208',  y:{n:1.10,h:1.30,d:0.90,k:0.3} },
+    { ad:'NEON ALLEY',  z1:'#04202a', z2:'#01080b', v:'86,226,255',  y:{n:1.15,h:1.25,d:0.95,k:0.3} },
+    { ad:'MIDNIGHT',    z1:'#0e0c1e', z2:'#050409', v:'150,140,226', y:{n:1.25,h:0.90,d:1.15,k:0.4} },
+    { ad:'MONSOON',     z1:'#0c1a20', z2:'#04080a', v:'120,178,196', y:{n:1.20,h:1.00,d:1.10,k:0.4} },
+    { ad:'TERRAZZO',    z1:'#241c1e', z2:'#0a0809', v:'232,196,190', y:{n:0.85,h:0.75,d:1.10,k:0.7} },
+    /* ── TOPRAK: cakil, pas, deniz cami, porselen ── */
+    { ad:'OXIDE',       z1:'#261008', z2:'#0b0503', v:'226,118,58',  y:{n:0.80,h:0.85,d:1.05,k:0.7} },
+    { ad:'SEAGLASS',    z1:'#0e2020', z2:'#050a0a', v:'150,214,196', y:{n:1.00,h:0.80,d:1.15,k:0.5} },
+    { ad:'PORCELAIN',   z1:'#1e2022', z2:'#0a0b0c', v:'226,232,236', y:{n:1.10,h:0.60,d:1.25,k:0.8} },
+    { ad:'DESERT ROAD', z1:'#241a10', z2:'#0a0705', v:'232,182,116', y:{n:0.75,h:0.90,d:1.05,k:0.6} }
   ];
   function temaAl(){
     try{ const i = AYAR.tema|0; return (i > 0 && TEMALAR[i]) ? TEMALAR[i] : null; }
@@ -4596,7 +4679,7 @@
      acilista cagrilabiliyor. */
   /* mood: SOUND BANKS kipi. Kapali = yalnizca canli radyo (varsayilan).
      Acik = eski ORBITAPE tarafi: arsiv havuzlari, nebula, gezegenler, FX. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false };
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:2 };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -4612,6 +4695,8 @@
       if(typeof _a.tema === 'number' && _a.tema >= 0
          && _a.tema < TEMALAR.length) AYAR.tema = _a.tema|0;
       if(_a.temaKilit === true) AYAR.temaKilit = true;
+      if(typeof _a.yildiz === 'number' && _a.yildiz >= 0
+         && _a.yildiz < YILDIZ_KADEME.length) AYAR.yildiz = _a.yildiz|0;
     }
   }catch(e){ _yut(e); }
   /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
@@ -4731,7 +4816,13 @@
      72 nokta gereksiz. Sekiz halkada fark gözle görünmüyor, maliyet
      üçte bir azalıyor. */
   const N_HALKA   = MOBIL ? 44 : 68;
-  const N_ZERRE   = MOBIL ? 12 : 26;     // sürüklenen zerre sayısı
+  /* 12/26 -> 34/64. Yildiz alani artik temanin bir parcasi (yogunluk,
+     hiz, dagilim ve KUMELENME temadan geliyor) ve on iki zerreyle
+     "yogun" ile "seyrek" arasindaki fark gozle secilmiyordu --
+     kullanicinin bildirdigi sey buydu: "cok az gorunuyor, etkisi yok".
+     Cizim maliyeti zerre BASINA cok kucuk (tek arc), ama yine de
+     yalnizca temanin istedigi kadari ciziliyor. */
+  const N_ZERRE   = MOBIL ? 34 : 64;     // sürüklenen zerre sayısı
 
   /* ── canlı, akışkan, dokulu daire ── */
   /* ── TİTREME: TELEFONU DÖNDÜRÜNCE ────────────────────────────────
@@ -4868,16 +4959,48 @@
        wob  : yaricap kendi ritminde nefes alir -> yorunge daire olmaz
        hiz araligi genisledi (0.06-0.62) -> hicbir ikisi es gitmez
      Sayilari ve hizlari ayrica TEMAYA bagli (bkz. yildizTema). */
-  const ZERRE=[]; for(let i=0;i<N_ZERRE;i++) ZERRE.push({
-    a:Math.random()*6.28, r:0.26+Math.random()*0.74,
-    sp:0.06+Math.random()*0.56, s:0.4+Math.random()*1.7,
-    yon:(Math.random()<0.34 ? -1 : 1),
-    wob:Math.random()*6.28, wsp:0.0015+Math.random()*0.0075,
-    wamp:0.03+Math.random()*0.13 });
+  /* ── KUMELENME ────────────────────────────────────────────────
+     Bildirilen: "yogun az yerleri vs gibi" -- yani yildizlar her
+     yerde esit sikliktaydi, gokyuzu gibi degil duvar kagidi gibi
+     duruyordu.
+     Her zerrenin IKI yaricapi var:
+       rD = duz dagilim (esit)
+       rK = KUSAK dagilimi -- zerreler dort bandin birine cekiliyor,
+            bandlar arasi bosluk kaliyor
+     Cizim aninda ikisi temanin k degerine gore karistiriliyor:
+     k=0 esit, k=1 tamamen kusakli. Boylece "yogun ve seyrek yerler"
+     temaya gore olusuyor; ayni zerre dizisi hem duz hem kumeli
+     gokyuzu verebiliyor, yeni nesne yaratilmiyor. */
+  const KUSAK = [0.30, 0.52, 0.74, 0.93];
+  const ZERRE=[]; for(let i=0;i<N_ZERRE;i++){
+    const rD = 0.22 + Math.random()*0.78;
+    const kb = KUSAK[i % KUSAK.length];
+    ZERRE.push({
+      a:Math.random()*6.28, rD:rD,
+      /* Kusagin icinde de kucuk bir saginlik var: birebir ayni
+         yaricapta duran zerreler cember gibi gorunuyordu. */
+      rK:Math.max(0.12, Math.min(1, kb + (Math.random()-0.5)*0.10)),
+      sp:0.06+Math.random()*0.56, s:0.4+Math.random()*1.7,
+      yon:(Math.random()<0.34 ? -1 : 1),
+      wob:Math.random()*6.28, wsp:0.0015+Math.random()*0.0075,
+      wamp:0.03+Math.random()*0.13 });
+  }
   /* Temanin yildiz ayari. Tema yoksa ya da AUTO ise notr. */
+  /* Temanin yildiz ayari, ustune kullanicinin AYARLARDAN sectigi
+     yogunluk carpani biniyor: tema bir karakter veriyor, kullanici
+     onu kendi ekraninda azaltip cogaltabiliyor. */
+  const YILDIZ_KADEME = [0.35, 0.70, 1.00, 1.55, 2.20];   // OFF'a yakin ... cok yogun
+  const YILDIZ_AD     = ['MINIMAL','LOW','NORMAL','DENSE','COSMIC'];
+  function yildizCarpan(){
+    try{ const i = (typeof AYAR!=='undefined' && AYAR) ? (AYAR.yildiz|0) : 2;
+         return YILDIZ_KADEME[Math.max(0, Math.min(YILDIZ_KADEME.length-1, i))]; }
+    catch(e){ return 1; }
+  }
   function yildizTema(){
-    try{ const T = temaAl(); return (T && T.y) || {n:1,h:1,d:1}; }
-    catch(e){ return {n:1,h:1,d:1}; }
+    try{
+      const T = temaAl(); const y = (T && T.y) || {n:1,h:1,d:1,k:0};
+      return { n:(y.n||1) * yildizCarpan(), h:y.h||1, d:y.d||1, k:y.k||0 };
+    }catch(e){ return {n:1,h:1,d:1,k:0}; }
   }
 
   /* Nefesi CSS'e devrediyoruz. Sınıfı kaldırıp bir yerleşim okuyarak yeniden
@@ -5070,6 +5193,8 @@
      sanip dusurebiliyor), o yuzden sinifla da veriliyor. */
   function basHissi(el){
     if(!el) return;
+    /* 160 ms: gozun "bir sey oldu" demesine yetiyor, "tus simdi acik"
+       demesine yetmiyor. Daha uzunu tusu durum gibi gosteriyordu. */
     try{ el.classList.add('bas'); setTimeout(()=>el.classList.remove('bas'), 160); }catch(e){ _yut(e); }
   }
 
@@ -5477,10 +5602,14 @@
          kalabalik. Zerre dizisi buyumuyor, yalnizca bir kismi
          ciziliyor -- bellek ve dongu maliyeti sabit kaliyor. */
       const _zn = Math.max(4, Math.min(ZERRE.length, Math.round(ZERRE.length * _yt.n)));
+      const _k = _yt.k || 0;
       for(let zi=0; zi<_zn; zi++){ const z=ZERRE[zi];
         z.a += z.yon * z.sp*0.004*(0.4+energy) * _yt.h;
         z.wob += z.wsp;
-        const rr=z.r*R*0.9*_yt.d*(1+Math.sin(z.wob)*z.wamp);
+        /* Duz dagilim ile kusak dagilimi arasinda temanin k degeri
+           kadar geciliyor: "yogun ve seyrek yerler". */
+        const _r = z.rD + (z.rK - z.rD) * _k;
+        const rr=_r*R*0.9*_yt.d*(1+Math.sin(z.wob)*z.wamp);
         const x=cx+Math.cos(z.a)*rr, y=cy+Math.sin(z.a)*rr;
         vctx.beginPath(); vctx.arc(x,y,z.s*1.15*dpr,0,6.29); vctx.fill(); }
     }
@@ -6453,7 +6582,7 @@
        arsivin muzik kanali. Ayni kelime iki yerde durunca ekran hangisi
        oldugunu soyleyemiyordu. Burasi zaten CANLI RADYONUN kendisi --
        tur secmeden acilan yer -- ve adi artik onu soyluyor. */
-    { ad:'RADIO',         renk:'53,224,216'  }    // 10. EN DISTA, turkuaz
+    { ad:'RADIOTAPE',     renk:'53,224,216'  }    // 10. EN DISTA, turkuaz (eski adi RADIO)
   ];
   /* RENK SIRASI HALKANIN MALI, ADIN DEGIL. Kullanici MIXTAPE ile
      ELECTRONIC'i yer degistirdi ama "renk sirasi ayni kalsin" dedi:
@@ -6469,7 +6598,7 @@
      sayisiyla ilgisi yok; halkanin yeri kullanicinin kulaginda o
      turun agirligini anlatiyor.
      ACILIS: ELECTRONIC, en distaki halka. */
-  var AILE_ACILIS = 'RADIO';
+  var AILE_ACILIS = 'RADIOTAPE';
   var AILE_ADLAR = AILELER.map(a=>a.ad);
   /* TANIMDAN ONCE CAGRILABILIR: acilis yerlesimi buraya erken
      ugruyor. Tablo henuz yoksa renk yok demek, hata degil. */
@@ -7755,6 +7884,23 @@
       const sol = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16);
       const hat = window.innerHeight - alt;      // arama ve sag alt blok bu hatta biter
 
+      /* ── RADYODA KONSOL SAG USTTE, YAZILARIN ALTINDA ────────────
+         Konsol sag ust blokla ayni sutunda: yazi uzasa da konsol
+         kimildamiyor. Ustu #ust'un altindan olculuyor, sabit bir
+         sayiyla degil -- kanal adi iki satira cikarsa konsol da
+         onunla birlikte iniyor. */
+      const _moodda = document.body.classList.contains('mood');
+      try{
+        const su0 = document.getElementById('solUst');
+        const ustE0 = document.getElementById('ust');
+        if(su0 && !_moodda){
+          /* Olcek radyoda hic kullanilmiyor: konsol artik kimseyle
+             yer paylasmiyor. Kalinti bir olcek varsa temizleniyor. */
+          su0.style.transform = '';
+          const ur0 = ustE0 ? ustE0.getBoundingClientRect() : null;
+          if(ur0 && ur0.height) su0.style.top = Math.round(ur0.bottom + 14) + 'px';
+        } else if(su0){ su0.style.top = ''; }
+      }catch(_){ _yut(_); }
       /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
          Blogu tek parca olcmek yanlisti: birinci satirin karsisinda
          marka adi (dar), ikinci satirin karsisinda kategori adi
@@ -7792,17 +7938,42 @@
            ve yukarida bitiyor) -> butce ekranin kendisi. */
         /* SOUND BANKS kipinde modul sol ALTTA: sag ustteki satirla
            ayni yukseklikte degil, yani carpisma ihtimali yok. */
-        olc('tasima',  document.body.classList.contains('mood') ? null : adE);
+        /* Radyoda konsol sag ustte ve karsisinda kimse yok; kayit
+           satiri da sol altta tek basina. Olcum yalnizca SOUND BANKS
+           kipinde anlamli, orada uc satir alt alta duruyor. */
+        olc('tasima',  null);
         olc('araclar', null);
         void modE;
         sesSatirOlcu();
       }catch(_){ _yut(_); }
       ugOlcu();
 
-      // ARAMA: ucgenin hemen USTUNDE, sol kenarda.
+      /* ── BUYUTEC KAYIT SATIRININ SAGINDA ─────────────────────────
+         Istenen: "cam yanina yildiz, yanina buyutec gibi olabilir --
+         boylece daha muntazam."
+         Sol alt tek bir satir oluyor: CAM · ★ · sustur · buyutec.
+         Yeri olculuyor cunku satirin genisligi degisiyor (CAM ->
+         DELETE, sayac 00:12 -> 120:45). Sabit bir sayi o anlarda
+         ya bosluk birakir ya ust uste bindirir. */
       if(arE){
-        arE.style.left   = '';
-        arE.style.bottom = Math.round(Math.max(6, alt)) + 'px';
+        /* Buyutec 26px, kayit satiri 32px yuksekliginde. Ikisinin
+           ORTASI ayni hatta olsun diye buyutec 3px yukari aliniyor;
+           alt kenarlari esitlemek gozde 3px'lik bir kayma birakiyordu
+           (olculdu). Modul yokken (SOUND BANKS) fark gerekmiyor. */
+        const _fark = _moodda ? 0 : 3;
+        arE.style.bottom = Math.round(Math.max(6, alt + _fark)) + 'px';
+        let arSol = sol;
+        try{
+          const ac2 = document.getElementById('araclar');
+          const ab3 = ac2 ? ac2.getBoundingClientRect() : null;
+          /* ACIKKEN SOL KENARA DONUYOR. Kapali buyutec kayit
+             satirinin saginda duruyor ama panel acilinca kutu ve
+             sonuc listesi genis: orada kalsa sag kenardan tasiyordu
+             (olculdu, gizlilik baglantisi ekranin disina cikiyordu). */
+          if(!_moodda && ab3 && ab3.width && !arE.classList.contains('acik'))
+            arSol = Math.round(ab3.right + 8);
+        }catch(_){ _yut(_); }
+        arE.style.left = arSol + 'px';
       }
       /* SAG ALT KUNYE: TABANI ARAMA CIZGISIYLE AYNI HATTA.
          Bir ara kunyeyi bir sira yukari almistim, cunku kirpma
@@ -7825,13 +7996,21 @@
              kipte kunye modulun uzerine biniyordu (olculdu). */
           let cizgiSag = sol + 138;
           try{
-            const engel = document.body.classList.contains('mood')
-                        ? document.getElementById('solUst')
-                        : arE;
-            const eb = engel ? engel.getBoundingClientRect() : null;
-            if(eb && eb.width) cizgiSag = eb.right;
+            /* Solda ne varsa EN SAGDAKI belirliyor. Radyoda alt sol
+               satir CAM · ★ · sustur · buyutec; hangisi daha saga
+               tasiyorsa kunye ondan sonra basliyor. Yalnizca buyutece
+               bakmak yetmiyordu: satir DELETE'e cikinca kayit satiri
+               buyutecin sagina gecebiliyor. */
+            const adaylar = document.body.classList.contains('mood')
+                          ? [document.getElementById('solUst')]
+                          : [document.getElementById('araclar'), arE];
+            let en = 0;
+            adaylar.forEach(el=>{ if(!el) return;
+              const r2 = el.getBoundingClientRect();
+              if(r2.width && r2.right > en) en = r2.right; });
+            if(en) cizgiSag = en;
           }catch(_){ _yut(_); }
-          const yer = Math.round(window.innerWidth - cizgiSag - sol - 16);
+          const yer = Math.round(window.innerWidth - cizgiSag - sol - 24);
           npE.style.maxWidth = (yer > 140 ? yer : 140) + 'px';
         }
       }catch(_){ _yut(_); }
@@ -8219,7 +8398,11 @@
         /* halka yarıçapı = min(en,boy)*0.357 * (0.55 + 5*0.080) */
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
         let taban = window.innerHeight;
-        ['sesCubuk','ara','np','kayitBilgi','ayarTut'].forEach(id=>{
+        /* 'ayarTut' CIKTI: radyoda tutamak artik sol USTTE, alt
+           seride ait degil. Yerine kayit satiri (CAM · ★ · sustur ·
+           buyutec) girdi -- alt seridin gercek ust sinirini o
+           belirliyor. */
+        ['sesCubuk','ara','np','kayitBilgi','araclar'].forEach(id=>{
           try{ const e2 = document.getElementById(id); if(!e2) return;
                const k = e2.getBoundingClientRect();
                if(k.height > 0) taban = Math.min(taban, k.top); }catch(_){ _yut(_); }
@@ -8338,7 +8521,14 @@
     const tut = document.getElementById('ayarTut');
     const kut = document.getElementById('ayar');
     if(!tut || !kut) return;
+    function yildizYaz(){
+      try{
+        const el = kut.querySelector('.sat[data-ayar="yildiz"] .durum');
+        if(el) el.textContent = YILDIZ_AD[AYAR.yildiz|0] || 'NORMAL';
+      }catch(e){ _yut(e); }
+    }
     const yaz = ()=>{
+      yildizYaz();
       kut.querySelectorAll('.sat[role="switch"]').forEach(el=>{
         const k = el.dataset.ayar;
         const a = !!AYAR[k];
@@ -8453,6 +8643,13 @@
         izgaraAc(!!izgara.hidden);
         return;
       }
+      if(k === 'yildiz'){
+        /* Bes kademe arasinda donuyor. Ayri bir panel acmak yerine
+           satirin kendisi deger gosteriyor: tek dokunus, tek satir. */
+        AYAR.yildiz = ((AYAR.yildiz|0) + 1) % YILDIZ_KADEME.length;
+        ayarKaydet(); yildizYaz();
+        return;
+      }
       if(k === 'tur'){
         /* Turu tekrar oynat: panel kapaniyor, tur bastan basliyor.
            Depoya "gosterildi" damgasi silinmiyor -- kullanici bunu
@@ -8501,6 +8698,7 @@
   function araAc(){
     if(araKut.classList.contains('acik')) return;
     araKut.classList.add('acik'); document.body.classList.add('arama-acik');
+    try{ geriYerlestir(); }catch(e){ _yut(e); }   // acilinca sol kenara don
     /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
        tarayacagi sey de o. */
     if(!AYAR.mood){ try{ radyoListe(); }catch(e){ _yut(e); } }
@@ -8520,6 +8718,7 @@
   function araKapa(){
     if(!araKut.classList.contains('acik')) return;
     araKut.classList.remove('acik'); document.body.classList.remove('arama-acik');
+    try{ geriYerlestir(); }catch(e){ _yut(e); }   // kapaninca kayit satirinin yanina don
     _araListe=[]; araSonuc.textContent='';
     /* KAPANMAK = SIFIRA DONMEK.
        Onceden yazi ve suzgec kapaninca DURUYORDU (kasitliydi: arama
@@ -8602,8 +8801,13 @@
       /* DİKKAT: 'bottom' BURADA SIFIRLANMAZ. Arama artık araç satırının
          üstünde duruyor ve o konumu geriYerlestir hesaplıyor; burada
          silinirse arama tekrar en alta düşüp REC/CAM'in altına giriyor. */
+      /* 'left' DE ARTIK SIFIRLANMIYOR. Buyutecin yatay yeri de
+         hesaplaniyor (kapaliyken kayit satirinin saginda, acikken sol
+         kenarda); burada silinince CSS'teki ilk-kare degeri geri
+         geliyor ve kutu acikken sag kenardan tasiyordu -- gizlilik
+         baglantisi ekranin disinda kaliyordu (olculdu: 432 > 390). */
       const el = document.getElementById('ara'); if(!el) return;
-      el.style.left = '';
+      void el;
     }catch(e){ _yut(e); }
   }
   /* ── NEBULA HİZASI: ÜST SINIRDAN ─────────────────────────────────
@@ -8656,10 +8860,13 @@
      centikli ekranda hesap bozulmaz. */
   function solUstHizala(){
     try{
-      const su = document.getElementById('solUst');
-      const ts = document.getElementById('tasima');
+      /* RADYODA sol ustte ayar tutamagi var (konsol saga gecti);
+         SOUND BANKS kipinde sol ust nebulanin, orada hizalanacak bir
+         sey yok. Olculen nesne bu yuzden tutamak. */
+      const su = document.getElementById('ayarTut');
+      const ts = su;
       const ad = document.querySelector('#ust .kanal.ad');
-      if(!su || !ts || !ad) return;
+      if(!su || !ts || !ad || document.body.classList.contains('mood')) return;
       const ab = ad.getBoundingClientRect();
       const fs = parseFloat(getComputedStyle(ad).fontSize) || 20;
       if(!ab.height) return;
