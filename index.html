@@ -956,6 +956,10 @@
     stroke-width:1.7;stroke-linecap:round;}
   #tani .nk{fill:currentColor;stroke:none;}
   #tani.var{display:flex;pointer-events:auto;}
+  /* Onay satiri: dugmeye basinca ekranin ortasinda degil, kunyenin
+     hemen ustunde tek satir. Panel acmak bu kadar kucuk bir karar
+     icin fazla; kullanici okur, ikinci basiste gider. */
+  #tani.soruyor{color:#ffc8dd;border-color:rgba(226,122,158,.45);opacity:1;}
   #tani:hover{opacity:.9;}
   #tani:focus-visible{outline:1px solid currentColor;outline-offset:2px;}
   #fav{display:none;z-index:72;flex:none;
@@ -1286,9 +1290,74 @@
     transform:translateY(12px);}
   body.mood.ayar-acik #ayar{transform:translateY(0);}
 
-  #ayar h4{margin:0 0 10px;font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:9.5px;letter-spacing:.30em;font-weight:400;
-    color:rgba(244,247,250,.34);}
+  /* Panel uzadi (kapi + uc bolum + belgeler): ekrana sigmazsa kendi
+     icinde kayiyor, ekrani itmiyor. */
+  #ayar{max-height:calc(100vh - 130px);overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;}
+  #ayar h4{display:none;}
+  /* ── BOLUM BASLIKLARI ────────────────────────────────────────────
+     Ayarlar duz bir liste degil artik: ART (gorunus), AUDIO (ses),
+     MORE (belgeler ve tur). Kullanicinin sozu: "onem sirasina gore
+     duzenle -- art yazar altinda temalar, audio yazar altinda ses
+     ile ilgili olanlar."
+     Basliklar cok silik: bolumu ayiriyorlar ama okunacak sey
+     degiller. */
+  #ayar h5{margin:14px 0 2px;font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:8.5px;letter-spacing:.34em;font-weight:400;
+    color:rgba(244,247,250,.26);}
+  #ayar h5:first-of-type{margin-top:10px;}
+
+  /* ── ORBITAPE KAPISI ─────────────────────────────────────────────
+     Panelin en ustu ve tek "buyuk" ogesi. Bir ayar degil bir GECIS:
+     acilinca arsiv, nebula, gezegenler ve efektler geliyor. O yuzden
+     kendi alani, kendi cercevesi ve kendi rengi var -- tema ne olursa
+     olsun ayni kapi. */
+  #ayar .sat.kapi{display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin:0 0 4px;padding:13px 14px;border:1px solid rgba(90,220,210,.22);
+    border-radius:12px;background:
+      radial-gradient(120% 160% at 8% 0%,rgba(90,220,210,.10) 0%,rgba(90,220,210,0) 62%),
+      rgba(6,12,14,.72);
+    transition:border-color .25s, background .25s;}
+  #ayar .sat.kapi .kapi-yazi{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  #ayar .sat.kapi b{font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:15px;letter-spacing:.26em;font-weight:400;color:#5adcd2;
+    text-indent:.26em;}
+  #ayar .sat.kapi i{font-style:normal;font-size:9px;letter-spacing:.16em;
+    color:rgba(244,247,250,.34);font-family:'Share Tech Mono',ui-monospace,monospace;}
+  /* ACIKKEN: cerceve ve yazi FX tarafinin morumsu rengine geciyor --
+     "oteki dunyaya girdim" hissi kapinin kendisinde. */
+  #ayar .sat.kapi.acik{border-color:rgba(176,130,216,.55);
+    background:radial-gradient(120% 160% at 8% 0%,rgba(176,130,216,.16) 0%,rgba(176,130,216,0) 62%),
+      rgba(10,6,16,.78);}
+  #ayar .sat.kapi.acik b{color:#c8a6f0;}
+
+  /* ── ANAHTAR: SAGA SOLA CEKILEN ──────────────────────────────────
+     ON/OFF yazisi yerine gercek bir anahtar. Kullanicinin sozu:
+     "acma kapama switch olsun, saga sola cekilenden; menudeki ac
+     kapatlarin hepsi oyle olsun."
+     Yazi okumak gerekmiyor: topuz solda kapali, sagda acik. */
+  #ayar .anahtar{position:relative;flex:0 0 auto;width:38px;height:20px;
+    border-radius:999px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.12);
+    transition:background .22s ease, border-color .22s ease;}
+  #ayar .anahtar b{position:absolute;top:2px;left:2px;width:14px;height:14px;
+    border-radius:50%;background:rgba(244,247,250,.44);
+    transition:transform .22s cubic-bezier(.2,.8,.3,1), background .22s ease;}
+  #ayar .sat.acik .anahtar{background:rgba(90,220,210,.24);
+    border-color:rgba(90,220,210,.46);}
+  #ayar .sat.acik .anahtar b{transform:translateX(18px);background:#5adcd2;}
+  #ayar .sat.kapi .anahtar{width:46px;height:24px;}
+  #ayar .sat.kapi .anahtar b{width:18px;height:18px;}
+  #ayar .sat.kapi.acik .anahtar{background:rgba(176,130,216,.26);
+    border-color:rgba(176,130,216,.5);}
+  #ayar .sat.kapi.acik .anahtar b{transform:translateX(22px);background:#c8a6f0;}
+  @media (prefers-reduced-motion:reduce){
+    #ayar .anahtar,#ayar .anahtar b{transition:none;} }
+
+  /* Belge satirlari: goruntusu oteki satirlarla ayni, yalnizca
+     baglanti oldugu icin <a>. */
+  #ayar .sat.bag{text-decoration:none;color:inherit;}
+  #ayar .sat.bag .durum{opacity:.5;}
   #ayar .sat{display:flex;align-items:center;justify-content:space-between;
     gap:12px;padding:9px 0;cursor:pointer;
     font-family:'Share Tech Mono',ui-monospace,monospace;
@@ -1320,9 +1389,13 @@
      capraz cizgi konuyor ki otekilerden ayrilsin. */
   #temaIzgara .tm.oto{background:
     linear-gradient(135deg,#35e0d8 0%,#8cb1ba 50%,#e27a9e 100%);}
-  #ayar .sat.mood{margin-top:6px;padding-top:12px;
-    border-top:1px solid rgba(255,255,255,.14);}
+  /* .sat.mood KURALI SILINDI: mood satiri artik listenin en altinda
+     ayrilmis bir satir degil, panelin EN USTUNDEKI kapi (bkz.
+     .sat.kapi). */
   #ayar .sat:hover{color:#fff;}
+  /* Bolumun ilk satirinin ustunde cizgi olmasin: basligin kendisi
+     zaten ayiriyor. */
+  #ayar h5 + .sat{border-top:none;}
   /* DURUM YAZIYLA: kucuk bir anahtar cizmek yerine ON/OFF yaziyor --
      ekranin geri kalani da yaziyla konusuyor ve renk korlugunde de
      okunuyor. */
@@ -1656,40 +1729,63 @@
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
-    <h4>SETTINGS</h4>
-    <!-- tabindex KAPALIYKEN -1: panel aria-hidden iken icindeki
-         satirlar odaklanabilir kalirsa ekran okuyucu "gorunmeyen ama
-         odaklanabilen dugme" durumuna duser (WCAG 4.1.2). Acilinca 0
-         yapiliyor, kapaninca geri -1. -->
-    <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
-      <span>SEARCH SOUND</span><span class="durum">ON</span></div>
-    <div class="sat" data-ayar="tikSes" role="switch" tabindex="-1">
-      <span>CLICK</span><span class="durum">ON</span></div>
-    <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
-      <span>SHOW TOUR AGAIN</span><span class="durum">PLAY</span></div>
-    <!-- ── TEMA ────────────────────────────────────────────────────
-         Satira basinca altindaki renk izgarasi aciliyor. Izgara
-         calisma aninda TEMALAR tablosundan uretiliyor: tablo tek
-         kaynak, buraya elle otuz bes kutu yazilmiyor. -->
+    <!-- ── EN UST: BASKA BIR DUNYAYA KAPI ──────────────────────────
+         Bu bir ses ayari degil, bir GECIS: acilinca arsiv havuzlari,
+         nebula, gezegenler ve efektler geliyor, canli radyo o
+         taraftan gorunmuyor. O yuzden listenin icinde bir satir gibi
+         degil, panelin en ustunde KENDI ALANINDA duruyor -- adi,
+         altinda ne oldugunu soyleyen bir satir ve genis bir anahtar.
+         Rengi temanin degil UYGULAMANIN: bu kapi her temada ayni
+         kapi.
+         tabindex KAPALIYKEN -1: panel aria-hidden iken satirlar
+         odaklanabilir kalirsa ekran okuyucu "gorunmeyen ama
+         odaklanabilen dugme" durumuna duser (WCAG 4.1.2). -->
+    <div class="sat kapi" data-ayar="mood" role="switch" tabindex="-1"
+         aria-checked="false" aria-label="ORBITAPE sound banks">
+      <span class="kapi-yazi">
+        <b>ORBITAPE</b>
+        <i>sound banks &amp; effects</i>
+      </span>
+      <i class="anahtar" aria-hidden="true"><b></b></i>
+    </div>
+
+    <!-- ── GORUNUS ──────────────────────────────────────────────── -->
+    <h5>ART</h5>
     <div class="sat islem" data-ayar="tema" role="button" tabindex="-1"
          aria-expanded="false" aria-controls="temaIzgara">
       <span>THEME</span><span class="durum">AUTO</span></div>
+    <!-- Izgara calisma aninda TEMALAR tablosundan uretiliyor: tablo
+         tek kaynak, buraya elle otuz bes kutu yazilmiyor. -->
     <div id="temaIzgara" role="listbox" aria-label="Theme" hidden></div>
     <!-- KILIT: acikken zemin HIC degismez. Kapaliyken tema ile rafin
          zemini karisir, yani raf degistikce zemin de hafifce doner.
-         Iki durumda da halkalar ve marka yazisinin sag yarisi rafin
-         renginde kalir -- hangi odada oldugun kaybolmuyor. -->
+         Iki durumda da halkalar rafin renginde -- hangi odada
+         oldugun kaybolmuyor. -->
     <div class="sat" data-ayar="temaKilit" role="switch" tabindex="-1">
-      <span>LOCK THEME</span><span class="durum">OFF</span></div>
-    <!-- YILDIZ YOGUNLUGU: temanin verdigi karakterin uzerine binen
-         kullanici carpani. Bes kademe, basisla ilerliyor. -->
+      <span>LOCK THEME</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat islem" data-ayar="yildiz" role="button" tabindex="-1">
       <span>STARS</span><span class="durum">NORMAL</span></div>
-    <!-- EN ALTTA ve bilerek ayri: bu bir ses ayari degil, baska bir
-         dunyaya gecis. Acilinca arsiv havuzlari, nebula, gezegenler
-         ve efektler geliyor; canli radyo o taraftan gorunmuyor. -->
-    <div class="sat mood" data-ayar="mood" role="switch" tabindex="-1">
-      <span>SOUND BANKS</span><span class="durum">OFF</span></div>
+
+    <!-- ── SES ───────────────────────────────────────────────────
+         "SEARCH SOUND" degil sadece "SEARCH": SOUNDS baska bir sey
+         (arsiv kipi) ve ikisi yan yana karisiyordu. Zaten AUDIO
+         basliginin altindayiz, "sound" demeye gerek yok. -->
+    <h5>AUDIO</h5>
+    <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
+      <span>SEARCH</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <div class="sat" data-ayar="tikSes" role="switch" tabindex="-1">
+      <span>CLICK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+
+    <!-- ── EN ALT: okumaya ve bilmeye hakki olan seyler ───────────
+         Sik kullanilmaz ama her zaman ULASILABILIR olmali. Sirasi da
+         bu yuzden en altta: onem sirasi yukaridan asagi. -->
+    <h5>MORE</h5>
+    <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
+      <span>HOW IT WORKS</span><span class="durum">PLAY</span></div>
+    <a class="sat bag" href="/privacy" target="_blank" rel="noopener" tabindex="-1">
+      <span>PRIVACY</span><span class="durum">OPEN</span></a>
+    <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
+      <span>TERMS</span><span class="durum">OPEN</span></a>
   </div>
   <!-- Dikey ses cubugu SILINDI; yerini sol ustteki yatay ses cizgisi
        aldi (#sesYatay, tasima satirinin sonunda). -->
@@ -3088,7 +3184,14 @@
     try{
       if(!it) return '';
       if(!it.radyo) return kaynakAdi(it);
-      const p = ['LIVE'];
+      /* 'LIVE' KELIMESI CIKTI. Kullanicinin sozu: "live radio gibi
+         seyler yazman gerekmiyor oraya kesinlikle. sadece radyo
+         bilgileri."
+         Hakliydi: canli yayin dinledigini zaten biliyor, o kelime yer
+         kapliyor ve hicbir sey eklemiyordu. Kalan her sey GERCEK
+         bilgi: rafin adi ve yayinin ulkesi. Elde ne varsa o yaziliyor,
+         uydurma yok. */
+      const p = [];
       if(it.grup) p.push(it.grup);
       const u = (it.ulke || '').toUpperCase();
       if(u) p.push(u);
@@ -3170,6 +3273,24 @@
        kaldırıldı (isim zaten her şeyde var, sembol bilgiyi gizliyordu).
        Kanal adı da bu panelde tekrarlanmıyor — sağ üstte zaten yazıyor. */
     ufoDurdur();
+    /* ── CANLI YAYINDA SIRA TERS ─────────────────────────────────
+       Arsivde en gorunen sey PARCANIN adi, dogru: orada calan sey
+       bir eser.
+       Canli yayinda ise en gorunen sey ISTASYON olmali. Kullanicinin
+       sozu: "radyo ismi daha gorunen olsun, o program isimleri vs
+       daha az gorunebilir... sarki ozellikle o da en gorunen 2. yazi
+       olsun sira olarak da."
+       Istasyon adi zaten 'ad' alaninda geliyor. Yukaridaki "X — Y"
+       ayirici da canli yayinda YANLIS calisiyordu: tireli bir
+       istasyon adini ("Radio Nova - Paris") sanatci/parca sanip
+       ikiye boluyordu. Radyoda o ayirmayi geri aliyoruz. */
+    if(item.radyo){
+      ad = (item.ad || ad).replace(/\s+/g,' ');
+      /* Program / calan parca varsa IKINCI satirda. Yayin bunu
+         gonderiyorsa item.parca'da olur; gondermiyorsa satir hic
+         yer kaplamiyor. */
+      sanatci = item.parca || item.sanatci || '';
+    }
     npAd.textContent = ad; npSanatci.textContent = sanatci;
     /* KAYNAK SANATÇIYLA AYNIYSA İKİ KEZ YAZILMIYOR. Kendi
        parçalarımızda ikisi de "PLAYJOY" ve ekranda yan yana
@@ -5087,16 +5208,38 @@
      sık yazmak güvenli. Grafik kurulu olsun olmasın çalışır. */
   var kSes = 1;                        // kullanıcı seviyesi 0..1
   try{ const v = parseFloat(localStorage.getItem('orbitape.ses')); if(isFinite(v)) kSes = Math.max(0, Math.min(1, v)); }catch(e){ _yut(e); }
+  /* ── SES SEVIYESI: UC AYRI YOL, UCU DE GEREKLI ───────────────────
+     Bu islev iki kez "duzeltildi" ve iki kez kullanici "yine
+     calismiyor" dedi. Sebep tek bir yolun her yerde gecerli
+     olmamasi:
+
+     1. kulGain (Web Audio)  -- grafik kuruluysa ASIL yer burasi.
+        Ama grafik her zaman kurulu degil ve canli yayinlar farkli
+        alan adlarindan geliyor: bir kismi Web Audio'ya hic
+        girmiyor.
+     2. ses.volume           -- masaustunde calisiyor.
+        iOS SAFARI BUNU YOK SAYAR. Yaziyorsun, deger degisiyor, ses
+        degismiyor. "Volume basiyorum mutelemiyor" sikayetinin
+        kaynagi tam olarak bu: telefonda iki yolun da tutmadigi bir
+        durum vardi.
+     3. ses.muted            -- iOS'un SAYDIGI tek ozellik.
+        Seviye ayari degil, sustur/ac. Zaten telefonda ekranda seviye
+        kaydiricisi yok (donanim tuslari var); orada gereken tek sey
+        SUSTURMAK ve o da bununla calisiyor.
+
+     Ucu birden yaziliyor. Hangisi o cihazda gecerliyse o tutuyor;
+     otekiler zararsiz. */
   function sesSeviyeYaz(){
     const v = Math.max(0, Math.min(1, kSes));
-    /* Grafik varsa ASIL yer burasi. setTargetAtTime: ani sicrama
-       cit sesi yapiyor, 30 ms'lik yumusama duyulmuyor ama citi
-       kaldiriyor. */
+    const sus = v <= 0.001;
+    /* setTargetAtTime: ani sicrama cit sesi yapiyor, 30 ms'lik
+       yumusama duyulmuyor ama citi kaldiriyor. */
     try{ if(kulGain && actx) kulGain.gain.setTargetAtTime(v, actx.currentTime, 0.03); }
     catch(e){ _yut(e); }
-    /* Grafik henuz kurulmadiysa (ilk sese kadar) eleman kendi
-       calisiyor; orada volume gecerli. */
     try{ ses.volume = v; }catch(e){ _yut(e); }
+    /* SON SOZ BUNDA. Sifira cekildiyse eleman komple susuyor --
+       grafik kurulu olsun olmasin, iOS olsun olmasin. */
+    try{ ses.muted = sus; }catch(e){ _yut(e); }
   }
   const sesCub = document.getElementById('sesCubuk');
   let _sesGizle = 0;
@@ -6424,6 +6567,10 @@
     baslamaTimer=setTimeout(()=>{ if(aktifItem===item && !calBaslangic){ clearTimeout(aramaTimer); atla(); } }, basSuresi);
     const oynat = ()=>{
     iz('ses.play');
+    /* Yeni kaynak: susturma durumu KORUNUYOR. <audio> yeni bir src
+       alinca bazi tarayicilarda muted sifirlaniyor; kullanici sesi
+       kapatmisken istasyon degistirince ses geri aciliyordu. */
+    try{ ses.muted = (kSes <= 0.001); }catch(e){ _yut(e); }
     ses.play().then(()=>{
       basladi(); iz('analizKur'); analizKur(); yatayUygula();
     }).catch(()=>{
@@ -8675,6 +8822,10 @@
         const a = !!AYAR[k];
         el.classList.toggle('acik', a);
         el.setAttribute('aria-checked', a ? 'true' : 'false');
+        /* Durum artik ANAHTARIN kendisinde: topuz solda kapali,
+           sagda acik. ON/OFF yazisi kalan satirlarda (deger
+           gosterenlerde) duruyor. Ekran okuyucu icin aria-checked
+           zaten var, yani yazi kaldirilinca bilgi kaybolmuyor. */
         const d = el.querySelector('.durum');
         if(d) d.textContent = a ? 'ON' : 'OFF';
       });
@@ -8778,6 +8929,9 @@
       if(a) izgaraYaz();
     }
     const sec = (el)=>{
+      /* Belge satirlari birer baglanti: kendi davranislari var,
+         burada bir sey yapilmiyor. */
+      if(el.classList.contains('bag')) return;
       const k = el.dataset.ayar;
       if(k === 'tema'){
         izgaraKur();
@@ -10770,22 +10924,35 @@
   try{
     const tn = document.getElementById('tani');
     if(tn){
+      /* IKI BASIS: ilki SORUYOR, ikincisi GIDIYOR.
+         Baska bir uygulamaya atlamak kucuk bir karar degil -- calan
+         sey duruyor, ekran degisiyor. Yanlislikla basan biri kendini
+         Shazam'da bulmamali. Ilk basista dugme pembelesiyor ve
+         ekranda tek satir cikiyor; uc saniye icinde tekrar basilirsa
+         gidiyor, basilmazsa kendiliginden vazgeciyor.
+         Onay paneli ACMIYORUZ: bu kadar kucuk bir sey icin panel
+         fazla, uygulamanin dili de o degil. */
+      let _soruyor = 0;
       const ac = e=>{
         if(e){ e.preventDefault(); e.stopPropagation(); }
         try{ basHissi(tn); }catch(_){ _yut(_); }
-        let ilkKez = false;
-        try{ ilkKez = !localStorage.getItem('orbitape.tani'); }catch(_){ _yut(_); }
-        try{ localStorage.setItem('orbitape.tani','1'); }catch(_){ _yut(_); }
-        const git = ()=>{
-          try{ window.open('https://www.shazam.com/', '_blank', 'noopener'); }
-          catch(_){ _yut(_); }
-        };
-        if(ilkKez){
-          /* Uyariyi gosterip KISA bir sure sonra aciyoruz: kullanici
-             once okusun, sonra ekran degissin. */
-          try{ geciciAdGoster('KEEP IT ON THE SPEAKER'); }catch(_){ _yut(_); }
-          setTimeout(git, 1200);
-        } else git();
+        if(!_soruyor){
+          _soruyor = setTimeout(()=>{ _soruyor = 0;
+            try{ tn.classList.remove('soruyor'); }catch(_){ _yut(_); } }, 3000);
+          try{ tn.classList.add('soruyor'); }catch(_){ _yut(_); }
+          /* Kulaklik uyarisi ayni satirda: Shazam MIKROFONDAN
+             dinliyor, kulaklik takiliysa hicbir sey duymuyor.
+             Kullanicinin bunu denemeden once bilmesi lazim. */
+          try{ geciciAdGoster('SHAZAM? KEEP IT ON THE SPEAKER'); }catch(_){ _yut(_); }
+          return;
+        }
+        clearTimeout(_soruyor); _soruyor = 0;
+        try{ tn.classList.remove('soruyor'); }catch(_){ _yut(_); }
+        /* Universal link: Shazam kuruluysa isletim sistemi
+           uygulamayi aciyor, degilse site aciliyor. Ozel semalar
+           (shazam://) belgelenmemis ve her surumde calismiyor. */
+        try{ window.open('https://www.shazam.com/', '_blank', 'noopener'); }
+        catch(_){ _yut(_); }
       };
       tn.addEventListener('click', ac);
       tn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') ac(e); });

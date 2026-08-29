@@ -223,7 +223,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       sat('aramaSes').click(); await new Promise(r=>setTimeout(r,20));
       const kapandi = AYAR.aramaSes === false;
       const depo    = JSON.parse(localStorage.getItem('orbitape.ayar')||'{}');
-      const yazi    = sat('aramaSes').querySelector('.durum').textContent.trim();
+      /* DURUM ARTIK ANAHTARDA, YAZIDA DEGIL. Ac/kapa satirlarinda
+         ON/OFF yazisi yerine saga sola kayan bir anahtar var
+         (kullanici istegi). Bilgi kaybolmadi: aria-checked ve
+         '.acik' sinifi durumu tasiyor, ekran okuyucu da onu okuyor. */
+      const kapaliSinif = !sat('aramaSes').classList.contains('acik');
+      const kapaliAria  = sat('aramaSes').getAttribute('aria-checked') === 'false';
+      const anahtarVar  = !!sat('aramaSes').querySelector('.anahtar');
 
       let calisti = false;
       try{ aramaDurdur(); aramaBaslat(); calisti = !!aramaCalisyor; aramaDurdur(); }catch(e){}
@@ -235,11 +241,98 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
 
       AYAR.aramaSes = eski.a; AYAR.tikSes = eski.t; ayarKaydet();
       return kapaliOdak && kapaliInert && acik && acikOdak && kapandi
-          && depo.aramaSes === false && yazi === 'OFF'
+          && depo.aramaSes === false && kapaliSinif && kapaliAria && anahtarVar
           && calisti === false && !turkce && kapandiPanel;
     }), 'ac/kapa, ses susuyor, cihazda kaliyor, kapaliyken sekmeyle gezilemiyor');
   /* ARAMA GOSTERIMI KAPANMIYOR: kapatilan sey gurultu, bilgi degil.
      WAIT yazisi ve frekans cizgisi yerinde kaliyor. */
+  /* ── SES GERCEKTEN SUSUYOR ──────────────────────────────────────
+     Kullanici iki kez "volume basiyorum mutelemiyor" dedi ve iki kez
+     yanlis yerden duzeltildi. Sebep: tek bir yol her cihazda gecerli
+     degil.
+       kulGain  -- grafik kuruluysa asil yer, ama grafik her zaman
+                   kurulu degil
+       volume   -- masaustunde calisiyor, iOS SAFARI YOK SAYIYOR
+       muted    -- iOS'un saydigi tek ozellik
+     Ucu birden yaziliyor; hangisi o cihazda gecerliyse o tutuyor. */
+  K('Sifira cekilince eleman komple susuyor', await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const s2 = document.getElementById('ses');
+      const eski = kSes;
+      kSes = 0; sesSeviyeYaz(); await bek(60);
+      const sus = { muted:s2.muted, vol:s2.volume };
+      kSes = 1; sesSeviyeYaz(); await bek(60);
+      const ac = { muted:s2.muted, vol:s2.volume };
+      kSes = eski; sesSeviyeYaz();
+      return sus.muted === true && sus.vol === 0
+          && ac.muted === false && ac.vol === 1;
+    }), 'muted + volume + kulGain birlikte');
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    /* Yeni kaynak yuklenince susturma KORUNMALI: <audio> yeni src
+       alinca bazi tarayicilarda muted sifirlaniyor ve istasyon
+       degistirince ses kendiliginden geri aciliyordu. */
+    K('Istasyon degisince susturma korunuyor',
+       /ses\.muted = \(kSes <= 0\.001\);/.test(kaynak),
+       'yeni kaynakta yeniden yaziliyor');
+  }
+
+  /* ── "BU NE?" (SHAZAM) ──────────────────────────────────────────
+     Canli yayinda calan parcanin adi cogu istasyonda hic gelmiyor.
+     Bu dugme telefonun kendi taniyicisini aciyor -- gomulu tanima
+     degil, cunku Shazam'in motoru web'e acik degil ve ucuncu taraf
+     bir servise ses gondermek "hicbir veri toplanmiyor" sozunu
+     bozardi. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    /* BASKA BIR MARKANIN LOGOSU CIZILMEDI: magaza incelemeleri bunu
+       isaretliyor ve uygulamanin kendi cizgi diliyle de catisiyor.
+       Kendi sembolumuz: soru isareti + onu saran dinleme yayi. */
+    const svg = (kaynak.match(/<button id="tani"[\s\S]{0,400}?<\/button>/)||[''])[0];
+    K('Kendi sembolumuz cizilmis', /class="yay"/.test(svg) && /class="soru"/.test(svg),
+       'soru isareti + dinleme yayi');
+    /* Ozel sema (shazam://) belgelenmemis ve her surumde calismiyor;
+       universal link her iki tarafta da guvenli yol. Yorumlarda
+       gecmesi sorun degil, KODDA gecmemeli. */
+    const kod = kaynak.replace(/\/\*[\s\S]*?\*\//g, '');
+    K('Universal link kullaniliyor',
+       /window\.open\('https:\/\/www\.shazam\.com\/'/.test(kod)
+       && !/shazam:\/\//.test(kod),
+       'ozel sema degil');
+  }
+  const tani = await pg.evaluate(async ()=>{
+    const bek = ms=>new Promise(r=>setTimeout(r,ms));
+    const t = document.getElementById('tani'); if(!t) return null;
+    const eskiIt = aktifItem;
+    /* SENKRON OKUNUYOR: arada beklenirse arka planda suren kaynak
+       arayisi aktifItem'i degistiriyor ve olculen sey testin
+       kurdugu durum olmaktan cikiyor (bir kere oyle dustu). */
+    aktifItem = { mp3:'x', ad:'A', radyo:true }; favTazele();
+    const radyoda = t.classList.contains('var') ? 'flex' : 'none';
+    aktifItem = { mp3:'y', ad:'B' }; favTazele();
+    const arsivde = t.classList.contains('var') ? 'flex' : 'none';
+    aktifItem = { mp3:'x', ad:'A', radyo:true }; favTazele(); await bek(40);
+    /* Ilk basis SORUYOR, gitmiyor. */
+    let acilan = 0;
+    const eskiAc = window.open; window.open = ()=>{ acilan++; return null; };
+    t.click(); await bek(80);
+    const soruyor = t.classList.contains('soruyor');
+    const ilkteGitti = acilan;
+    t.click(); await bek(80);
+    const ikincideGitti = acilan;
+    window.open = eskiAc;
+    aktifItem = eskiIt; favTazele();
+    return { radyoda, arsivde, soruyor, ilkteGitti, ikincideGitti };
+  });
+  K('"Bu ne?" yalnizca canli yayinda', !!tani && tani.radyoda!=='none' && tani.arsivde==='none',
+     'radyoda ' + (tani?tani.radyoda:'-') + ' | arsivde ' + (tani?tani.arsivde:'-'));
+  /* Baska bir uygulamaya atlamak kucuk bir karar degil: calan sey
+     duruyor, ekran degisiyor. Yanlislikla basan biri kendini
+     Shazam'da bulmamali. */
+  K('Ilk basis soruyor, ikincisi goturuyor',
+     !!tani && tani.soruyor===true && tani.ilkteGitti===0 && tani.ikincideGitti===1,
+     'ilk basis ' + (tani?tani.ilkteGitti:'-') + ' acilis, ikinci ' + (tani?tani.ikincideGitti:'-'));
+
   K('Ses kapaliyken arama gosterimi duruyor', await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
       return /if\(!AYAR\.aramaSes\) return;/.test(k)
@@ -2967,11 +3060,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
            push tarafi a.ulke okuyor, orada yoksa satir hep eksik. */
         const zincir = /aday\.push\(\{[^}]*ulke\s*:/.test(k)
                     && /radyoKuyruk\.push\(\{[^}]*ulke\s*:/.test(k);
-        return tam === 'LIVE · ELECTRONIC · US'
-            && yok === 'LIVE · ELECTRONIC'
-            && rafsiz === 'LIVE · NL'
+        /* 'LIVE' KELIMESI KALKTI: kullanici canli yayin dinledigini
+           zaten biliyor, o kelime yer kapliyor ve hicbir sey
+           eklemiyordu. Geriye GERCEK bilgi kaldi: raf ve ulke. */
+        return tam === 'ELECTRONIC · US'
+            && yok === 'ELECTRONIC'
+            && rafsiz === 'NL'
             && zincir;
-      }), 'LIVE · RAF · ULKE; aday ve kuyruk ikisi de ulkeyi tasiyor');
+      }), 'RAF · ULKE; aday ve kuyruk ikisi de ulkeyi tasiyor');
     /* KANAL ADI DOGRU YAZILMALI.
        Olculen vaka: MIXTAPE kanalindayken ust yazi 'RADIOTAPE'
        diyordu. Else dali radyoyu da kapsayacak diye yazilmisti ama
@@ -3106,7 +3202,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         mod = eM;
         /* Ayni oldugunda satir bos; farkli oldugunda hala yaziyor --
            tekrarı kaldirirken bilgiyi de kaldirmis olmayalim. */
-        return ayni === '' && farkli === 'LIVE · JAZZ · DE';
+        return ayni === '' && farkli === 'JAZZ · DE';
       }), 'PLAYJOY PLAYJOY yok; farkli kaynak hala yaziliyor');
     K('Acilis turu bugunku uygulamayi anlatiyor', await pg.evaluate(()=>{
         const a = turAdimlari();
