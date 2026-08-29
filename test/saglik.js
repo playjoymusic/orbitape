@@ -191,12 +191,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('index.html sozdizimi gecerli', sozHata === '',
        sozHata || 'ayristirilabiliyor');
   }
-  /* TAVAN 580 -> 620 KB. Sebep: SOUND BANKS kipi. Silinecek olan
-     eski ORBITAPE tarafi (arsiv, nebula, gezegenler, FX) SILINMEDI --
-     ayarlardaki bir dugmenin arkasina kondu ve gercek bir ozellik
-     oldu. Silinen uc gorsel blok da geri getirildi.
-     Kullaniciya giden sey gzip'li ~192 KB. */
-  K('Dosya boyutu < 620 KB',  dosyaBoy < 620*1024, Math.round(dosyaBoy/1024)+' KB');
+  /* TAVAN 620 -> 660 KB. Sebep: tema sistemi -- otuz bes palet, renk
+     izgarasi ve karisim mantigi.
+     TAVAN NEDEN VAR: bu tek bir HTML dosyasi ve kullanici onu her
+     acilista (onbellek bosken) indiriyor. Sinir olmadan dosya
+     farkedilmeden buyur ve dar bir baglantida acilis suresi uzar.
+     Onemli olan ham boy degil TELDEN GECEN boy: gzip'li ~200 KB.
+     Tavani yukseltmek bir karar, kaza degil -- her yukseltmede
+     sebebi buraya yaziliyor. */
+  K('Dosya boyutu < 660 KB',  dosyaBoy < 660*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
      sonra insanlar isyeyebilir". Iki ses de kapatilabilir, karar
@@ -3635,6 +3638,165 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Kapanan arama sifira donuyor', aramaAkis.kapanis.kutu==='' && !aramaAkis.kapanis.etiket
      && aramaAkis.kapanis.acik===false,
      'kutu bos, suzgec yok -- ana ekran');
+
+  /* ── SOUND BANKS'TEN DONUS ──────────────────────────────────────
+     Bildirilen: "fx modundan buraya donunce ORBITAPE yazisi bambaska
+     eski bir renk oldu, solunda da son kaldigi istasyona gitmedi,
+     adi da yazmadi -- ne zaman bastim o zaman yazdi."
+     Sebep: donuste raf (AKTIF_AILE) bos kaliyordu. Marka yazisinin
+     gradyani secili rafin renginden gelir; raf yoksa gecen kipin
+     kalintisi ekranda kalir ve solundaki raf adi hic yazilmaz. */
+  const donus = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const eskiMood = AYAR.mood;
+    AYAR.mood = false; moodUygula(); await bek(300);
+    aileSec('JAZZ', true); await bek(200);
+    const once = { raf:AKTIF_AILE, ad:document.getElementById('modAd').textContent,
+                   m1:getComputedStyle(document.documentElement).getPropertyValue('--m1').trim() };
+    AYAR.mood = true; moodUygula(); await bek(400);
+    const kipte = { raf:AKTIF_AILE, mod:mod };
+    AYAR.mood = false; moodUygula(); await bek(500);
+    const sonra = { raf:AKTIF_AILE, ad:document.getElementById('modAd').textContent,
+                    m1:getComputedStyle(document.documentElement).getPropertyValue('--m1').trim(),
+                    mod:mod };
+    AYAR.mood = eskiMood; moodUygula(); await bek(300);
+    return { once, kipte, sonra };
+  });
+  K('Kipe girince radyo rafi birakiliyor', donus.kipte.raf===null && donus.kipte.mod==='lib',
+     'kipte raf=' + String(donus.kipte.raf) + ' | kanal=' + donus.kipte.mod);
+  K('Donunce ayni rafa geri geliniyor', donus.sonra.raf===donus.once.raf && donus.sonra.raf==='JAZZ',
+     'once ' + String(donus.once.raf) + ' -> sonra ' + String(donus.sonra.raf));
+  /* Onemli olan donuste adin YAZILMIS olmasi. Girmeden onceki
+     degerle birebir esitlik aranmiyor: raf secilip henuz o raftan
+     ses gelmemisse yazi "bekliyor" halinde silik duruyor ve metni
+     farkli olabiliyor. */
+  K('Donunce raf adi ekrana yaziliyor', donus.sonra.ad === donus.sonra.raf,
+     '"' + donus.sonra.ad + '" (raf ' + String(donus.sonra.raf) + ')');
+  /* Marka yazisinin gradyani rafin renginden: donuste ayni renk
+     gelmezse ekranda "bambaska eski bir renk" olarak goruluyor. */
+  K('Donunce marka rengi geri geliyor', donus.sonra.m1 !== '' && donus.sonra.m1===donus.once.m1,
+     'once ' + donus.once.m1 + ' -> sonra ' + donus.sonra.m1);
+
+  /* ══ TEMA SISTEMI ═══════════════════════════════════════════════
+     Istenen: "renk tema degistirme koysak, ayarlara. bircok tema,
+     backround'un da etkilendigi. sectigim tema sabit olsun hic
+     degismesin gibi bir secenegi koyariz. her kanalin rengini yine
+     alir ama turlerin rengi de etkilenir ki o odada oldugumuz
+     anlasilsin."
+     Uc sey olculuyor: tema zemini degistiriyor mu, kilit gercekten
+     kilitliyor mu, ve kilitliyken bile rafin rengi kayboluyor mu. */
+  const tema = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const zem = ()=>{
+      const st=document.body.style;
+      return { z1:st.getPropertyValue('--zem1').trim(), z2:st.getPropertyValue('--zem2').trim() };
+    };
+    const marka = ()=>getComputedStyle(document.documentElement).getPropertyValue('--m2').trim();
+    const eskiT = AYAR.tema, eskiK = AYAR.temaKilit, eskiMood = AYAR.mood;
+    AYAR.mood = false; moodUygula(); await bek(260);
+
+    /* 1. AUTO: zemin rafin renginden */
+    AYAR.tema = 0; AYAR.temaKilit = false; zeminUygula();
+    aileSec('JAZZ', true); await bek(120); zeminUygula();
+    const otoJazz = zem();
+    aileSec('AMBIENT', true); await bek(120); zeminUygula();
+    const otoAmb = zem();
+    const otoDegisti = otoJazz.z1 !== otoAmb.z1;
+
+    /* 2. Tema secilince zemin degisiyor mu */
+    const iTema = TEMALAR.findIndex(t=>t.ad==='ULTRAVIOLET');
+    temaSec(iTema); await bek(120);
+    const temali = zem();
+    const temaEtkiledi = temali.z1 !== otoAmb.z1;
+
+    /* 3. KILIT KAPALI: raf degisince zemin de hafifce doner */
+    aileSec('JAZZ', true); await bek(120); zeminUygula();
+    const kilitsizJazz = zem();
+    const kilitsizDoner = kilitsizJazz.z1 !== temali.z1;
+
+    /* 4. KILIT ACIK: zemin HIC degismez */
+    AYAR.temaKilit = true; zeminUygula(); await bek(80);
+    const kilitJazz = zem();
+    aileSec('AMBIENT', true); await bek(120); zeminUygula();
+    const kilitAmb = zem();
+    const kilitTutuyor = kilitJazz.z1 === kilitAmb.z1
+                      && kilitJazz.z1.toLowerCase() === TEMALAR[iTema].z1.toLowerCase();
+
+    /* 5. Kilitliyken bile RAFIN RENGI kayboluyor mu:
+          halkalar ve marka yazisinin sag yarisi hala raftan gelmeli */
+    const halkaRenk = aileRenk('AMBIENT');
+    const halkaVar = !!halkaRenk;
+    aileSec('JAZZ', true); await bek(120); zeminUygula();
+    const markaJazz = marka();
+    aileSec('AMBIENT', true); await bek(120); zeminUygula();
+    const markaAmb = marka();
+
+    /* 6. Vurgu degiskeni yaziliyor mu */
+    const tv = getComputedStyle(document.documentElement).getPropertyValue('--tv').trim();
+
+    /* 7. AUTO'ya donunce tema kalintisi kalmiyor mu */
+    AYAR.temaKilit = false; temaSec(0); await bek(120);
+    const geriOto = zem();
+    const tvSonra = getComputedStyle(document.documentElement).getPropertyValue('--tv').trim();
+
+    AYAR.tema = eskiT; AYAR.temaKilit = eskiK; AYAR.mood = eskiMood;
+    zeminUygula(); moodUygula();
+    return { sayi:TEMALAR.length, otoDegisti, temaEtkiledi, kilitsizDoner, kilitTutuyor,
+             halkaVar, markaJazz, markaAmb, tv, tvSonra, geriOto, otoAmb };
+  });
+  K('Otuz bes tema var', tema.sayi === 36, (tema.sayi-1) + ' tema + AUTO');
+  K('AUTO zemini raftan aliyor', tema.otoDegisti===true, 'raf degisince zemin de degisiyor');
+  K('Tema zemini degistiriyor', tema.temaEtkiledi===true, 'secilen tema zemine yaziliyor');
+  /* Kilit KAPALIYKEN tema baskin ama raf da zemine yansiyor: oda
+     degistigi hissedilsin. */
+  K('Kilit kapaliyken raf zemine yansiyor', tema.kilitsizDoner===true,
+     'raf degisince zemin hafifce doniyor');
+  /* Kilit ACIKKEN zemin tamamen temanin: raf degisse de oynamiyor. */
+  K('Kilit acikken zemin hic degismiyor', tema.kilitTutuyor===true,
+     'iki farkli rafta ayni zemin, birebir temanin rengi');
+  /* EN ONEMLI KURAL: tema rafi SILMIYOR. Kilit acikken bile marka
+     yazisinin renk duraklari rafla degisiyor -- hangi odada oldugun
+     kayboluyorsa tema basarisiz demektir. */
+  K('Tema rafin rengini silmiyor', tema.halkaVar===true, 'halka rengi raftan geliyor');
+  K('Tema vurgu rengi yaziyor', tema.tv !== '', '--tv = ' + (tema.tv||'(bos)'));
+  K('AUTO donunce tema kalintisi kalmiyor', tema.tvSonra === '', 'vurgu degiskeni siliniyor');
+
+  /* Izgara: otuz bes kutu TEMALAR tablosundan uretiliyor, elle
+     yazilmiyor. Kapali panelde odaklanabilir kalmiyor (WCAG 4.1.2). */
+  const izg = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const tut=document.getElementById('ayarTut');
+    tut.click(); await bek(320);
+    const sat=document.querySelector('#ayar .sat[data-ayar="tema"]');
+    sat.click(); await bek(160);
+    const iz=document.getElementById('temaIzgara');
+    const acik={ n:iz.children.length, gizli:iz.hidden,
+                 odak:[...iz.children].every(d=>d.getAttribute('tabindex')==='0'),
+                 ad:[...iz.children].every(d=>!!d.getAttribute('aria-label')) };
+    tut.click(); await bek(320);
+    const kapali={ gizli:iz.hidden,
+                   odak:[...iz.children].every(d=>d.getAttribute('tabindex')==='-1') };
+    return { acik, kapali };
+  });
+  K('Tema izgarasi tablodan ureliyor', izg.acik.n === 36 && izg.acik.gizli===false,
+     izg.acik.n + ' kutu');
+  K('Her kutunun adi var', izg.acik.ad===true, 'aria-label (renk tek basina erisilebilir degil)');
+  K('Kapali panelde izgara odaklanamiyor', izg.kapali.gizli===true && izg.kapali.odak===true,
+     'tabindex -1');
+
+  /* Yildizlar: hepsi ayni yone, tam daire cizerek donuyordu ve
+     "birbirine bagli" gorunuyordu. Uc sey eklendi. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const i = kaynak.indexOf('const ZERRE=[];');
+    const blok = kaynak.slice(i, i+520);
+    K('Yildizlar serbest hareket ediyor',
+       /yon:/.test(blok) && /wob:/.test(blok) && /wamp:/.test(blok),
+       'ters yon + kendi ritminde nefes alan yaricap');
+    K('Yildiz alani temaya bagli',
+       /yildizTema\(\)/.test(kaynak) && /ZERRE\.length \* _yt\.n/.test(kaynak),
+       'yogunluk, hiz ve dagilim temadan');
+  }
 
   /* ── 5. SES CIZGISI ────────────────────────────────────────────── */
   const sc = await pg.evaluate(async ()=>{

@@ -1145,6 +1145,28 @@
   #ayar .sat:first-of-type{border-top:none;}
   /* Sonuncusu bir ses ayari degil: araya gercek bir bosluk ve daha
      belirgin bir cizgi. Ayni listede ama ayni tur is degil. */
+  /* ── TEMA IZGARASI ───────────────────────────────────────────────
+     Otuz bes kucuk daire, yedili siralar halinde. Her daire kendi
+     temasinin zemin gradyanini tasiyor: ad okumaya gerek yok, renge
+     bakip seciliyor. Secili olanin cevresinde ince bir halka var.
+     Panel dar oldugu icin izgara kayabiliyor; yuksekligi sinirli ve
+     kendi icinde kayiyor -- panel buyumuyor, alt serit oynamiyor. */
+  #temaIzgara{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;
+    margin:9px 0 2px;max-height:132px;overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;}
+  #temaIzgara[hidden]{display:none;}
+  #temaIzgara .tm{width:100%;aspect-ratio:1/1;border-radius:50%;cursor:pointer;
+    border:1px solid rgba(255,255,255,.14);box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .16s ease, border-color .16s ease;}
+  #temaIzgara .tm:hover{transform:scale(1.12);}
+  #temaIzgara .tm.secili{border-color:rgba(255,255,255,.85);
+    box-shadow:0 0 0 2px rgba(255,255,255,.16);}
+  #temaIzgara .tm:focus-visible{outline:1px solid #fff;outline-offset:2px;}
+  /* AUTO kutusu: tek renk degil, "rafin rengi" demek. Icine kucuk bir
+     capraz cizgi konuyor ki otekilerden ayrilsin. */
+  #temaIzgara .tm.oto{background:
+    linear-gradient(135deg,#35e0d8 0%,#8cb1ba 50%,#e27a9e 100%);}
   #ayar .sat.mood{margin-top:6px;padding-top:12px;
     border-top:1px solid rgba(255,255,255,.14);}
   #ayar .sat:hover{color:#fff;}
@@ -1445,6 +1467,20 @@
       <span>CLICK</span><span class="durum">ON</span></div>
     <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
       <span>SHOW TOUR AGAIN</span><span class="durum">PLAY</span></div>
+    <!-- ── TEMA ────────────────────────────────────────────────────
+         Satira basinca altindaki renk izgarasi aciliyor. Izgara
+         calisma aninda TEMALAR tablosundan uretiliyor: tablo tek
+         kaynak, buraya elle otuz bes kutu yazilmiyor. -->
+    <div class="sat islem" data-ayar="tema" role="button" tabindex="-1"
+         aria-expanded="false" aria-controls="temaIzgara">
+      <span>THEME</span><span class="durum">AUTO</span></div>
+    <div id="temaIzgara" role="listbox" aria-label="Theme" hidden></div>
+    <!-- KILIT: acikken zemin HIC degismez. Kapaliyken tema ile rafin
+         zemini karisir, yani raf degistikce zemin de hafifce doner.
+         Iki durumda da halkalar ve marka yazisinin sag yarisi rafin
+         renginde kalir -- hangi odada oldugun kaybolmuyor. -->
+    <div class="sat" data-ayar="temaKilit" role="switch" tabindex="-1">
+      <span>LOCK THEME</span><span class="durum">OFF</span></div>
     <!-- EN ALTTA ve bilerek ayri: bu bir ses ayari degil, baska bir
          dunyaya gecis. Acilinca arsiv havuzlari, nebula, gezegenler
          ve efektler geliyor; canli radyo o taraftan gorunmuyor. -->
@@ -1818,6 +1854,84 @@
      Artik radyo modunda tema AILENIN renginden turetiliyor; MOD_TEMA
      yalnizca arsiv tarafinin sozlugu. */
   const MARKA_PEMBE = '226,122,158';   // tozlu gul: retro pembe
+  /* ══ TEMALAR ══════════════════════════════════════════════════════
+     Uygulamanin "kilifi": zemin ve vurgu rengi. Otuz bes tema, uc
+     seride ayrilmis (RETRO / GECE / CIVIL) ama listede tek sira
+     halinde -- kullanici seri adi degil renk seciyor.
+
+     UC KURAL:
+     1. HEPSI KOYU KALIYOR. Uygulamanin butun yazisi beyaz ve silik;
+        acik bir zeminde okunmaz hale gelir. "Civil" olanlar bile
+        koyu bir zemin uzerinde doygun bir parlamadir, beyaz zemin
+        degil. Bu bir tercih degil okunabilirlik siniri.
+     2. TEMA RAFIN RENGINI SILMEZ. Halkalar, marka yazisinin sag
+        yarisi ve gezinme yazisi hep rafin renginden gelir -- hangi
+        odada oldugun tema ne olursa olsun belli kalir.
+     3. KILIT ACIKKEN zemin HIC degismez; kapaliyken tema ile rafin
+        zemini yari yariya karisir, yani raf degistikce zemin de
+        hafifce doner.
+
+     z1 = merkezdeki isik, z2 = kenarlardaki karanlik, v = vurgu
+     (arama cizgisi, ince ayrintilar), y = yildiz alani
+     (n: yogunluk, h: hiz, d: dagilim). */
+  var TEMALAR = [
+    { ad:'AUTO',          z1:null,      z2:null,      v:null,           y:{n:1.00,h:1.00,d:1.00} },
+    /* ── RETRO ── */
+    { ad:'DUSTY ROSE',    z1:'#1c0f14', z2:'#050205', v:'226,122,158', y:{n:0.85,h:0.80,d:1.05} },
+    { ad:'FADED DENIM',   z1:'#0e141d', z2:'#03050a', v:'126,158,196', y:{n:0.95,h:0.85,d:1.00} },
+    { ad:'OLD PAPER',     z1:'#1b1710', z2:'#060503', v:'214,196,156', y:{n:0.80,h:0.70,d:1.10} },
+    { ad:'TAPE BROWN',    z1:'#1a1109', z2:'#060402', v:'196,148,102', y:{n:0.85,h:0.75,d:1.00} },
+    { ad:'SEA FOAM',      z1:'#0c1a17', z2:'#020706', v:'134,206,188', y:{n:0.95,h:0.90,d:1.05} },
+    { ad:'PALE OLIVE',    z1:'#141709', z2:'#040602', v:'176,190,126', y:{n:0.85,h:0.80,d:1.00} },
+    { ad:'SMOKE VIOLET',  z1:'#15101e', z2:'#040308', v:'166,148,206', y:{n:0.90,h:0.85,d:1.05} },
+    { ad:'RUST',          z1:'#1d0e08', z2:'#070302', v:'214,118,74',  y:{n:0.90,h:0.90,d:1.00} },
+    { ad:'SLATE',         z1:'#111417', z2:'#040506', v:'150,166,178', y:{n:1.00,h:0.80,d:1.00} },
+    { ad:'MOSS',          z1:'#0d160f', z2:'#020503', v:'126,180,140', y:{n:0.90,h:0.80,d:1.05} },
+    { ad:'CORAL DUST',    z1:'#1e1010', z2:'#070303', v:'232,140,124', y:{n:0.95,h:0.90,d:1.00} },
+    /* ── GECE ── */
+    { ad:'MIDNIGHT',      z1:'#080d18', z2:'#010208', v:'118,158,236', y:{n:1.20,h:0.90,d:1.15} },
+    { ad:'DEEP SPACE',    z1:'#05070d', z2:'#000000', v:'150,170,200', y:{n:1.40,h:0.80,d:1.25} },
+    { ad:'INK',           z1:'#0a0a0f', z2:'#000000', v:'170,176,196', y:{n:1.30,h:0.75,d:1.20} },
+    { ad:'ABYSS',         z1:'#030b10', z2:'#000306', v:'106,178,196', y:{n:1.25,h:0.85,d:1.15} },
+    { ad:'PLUM NIGHT',    z1:'#120a1a', z2:'#030106', v:'176,130,216', y:{n:1.15,h:0.95,d:1.10} },
+    { ad:'FOREST NIGHT',  z1:'#071310', z2:'#010504', v:'110,190,158', y:{n:1.10,h:0.85,d:1.10} },
+    { ad:'EMBER',         z1:'#160805', z2:'#050101', v:'236,124,72',  y:{n:1.05,h:1.05,d:1.00} },
+    { ad:'STEEL BLUE',    z1:'#091218', z2:'#010406', v:'124,172,206', y:{n:1.15,h:0.85,d:1.10} },
+    { ad:'WINE',          z1:'#160610', z2:'#050104', v:'214,96,140',  y:{n:1.00,h:0.95,d:1.05} },
+    { ad:'GRAPHITE',      z1:'#0c0c0c', z2:'#000000', v:'186,186,186', y:{n:1.20,h:0.70,d:1.20} },
+    { ad:'AURORA',        z1:'#04120f', z2:'#000406', v:'96,232,190',  y:{n:1.30,h:1.00,d:1.20} },
+    /* ── CIVIL ── */
+    { ad:'BUBBLEGUM',     z1:'#210b18', z2:'#080205', v:'255,138,198', y:{n:1.05,h:1.20,d:0.95} },
+    { ad:'CANDY MINT',    z1:'#07201b', z2:'#010806', v:'120,255,214', y:{n:1.10,h:1.25,d:0.95} },
+    { ad:'TANGERINE',     z1:'#221004', z2:'#080301', v:'255,158,72',  y:{n:1.00,h:1.30,d:0.90} },
+    { ad:'ELECTRIC LIME', z1:'#141f04', z2:'#040701', v:'186,255,96',  y:{n:1.05,h:1.30,d:0.95} },
+    { ad:'HOT CORAL',     z1:'#240d0d', z2:'#080202', v:'255,116,108', y:{n:1.00,h:1.25,d:0.95} },
+    { ad:'ULTRAVIOLET',   z1:'#150724', z2:'#040108', v:'170,110,255', y:{n:1.15,h:1.20,d:1.05} },
+    { ad:'CYAN POP',      z1:'#04191f', z2:'#010607', v:'86,226,255',  y:{n:1.20,h:1.25,d:1.00} },
+    { ad:'SUNSET',        z1:'#220c12', z2:'#080203', v:'255,134,140', y:{n:1.00,h:1.15,d:1.00} },
+    { ad:'LAGOON',        z1:'#03181f', z2:'#000507', v:'96,208,236',  y:{n:1.20,h:1.10,d:1.10} },
+    { ad:'PEACH SODA',    z1:'#221410', z2:'#080403', v:'255,178,138', y:{n:0.95,h:1.15,d:1.00} },
+    { ad:'LILAC',         z1:'#180f22', z2:'#050308', v:'202,164,255', y:{n:1.10,h:1.10,d:1.05} },
+    { ad:'ACID YELLOW',   z1:'#1e1c04', z2:'#070601', v:'244,232,96',  y:{n:1.00,h:1.25,d:0.95} },
+    { ad:'ICE',           z1:'#0d1620', z2:'#020508', v:'196,226,255', y:{n:1.35,h:0.95,d:1.20} }
+  ];
+  function temaAl(){
+    try{ const i = AYAR.tema|0; return (i > 0 && TEMALAR[i]) ? TEMALAR[i] : null; }
+    catch(e){ return null; }
+  }
+  /* Iki onalti rengi karistiriyor. Kilit kapaliyken tema ile rafin
+     zemini yari yariya birlesiyor: tema baskin ama raf degisince
+     zemin de hafifce doniyor. */
+  function _hexKaris(a, b, k){
+    try{
+      const oku = h=>{ h=String(h).replace('#','');
+        if(h.length===3) h=h.split('').map(c=>c+c).join('');
+        return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; };
+      const A=oku(a), B=oku(b);
+      return '#'+[0,1,2].map(i=>Math.round(A[i]*k+B[i]*(1-k))
+                 .toString(16).padStart(2,'0')).join('');
+    }catch(e){ return a; }
+  }
   function aileTema(rgb){
     const [r,g,b] = rgb.split(',').map(n=>+n);
     const kis = (k)=>[Math.round(r*k),Math.round(g*k),Math.round(b*k)].join(',');
@@ -1917,8 +2031,26 @@
          ailesine kayıyor); zemin sabit kalınca kişi nerede olduğunu
          kaybetmiyor. */
       const _t = aktifTema();
-      const zm = (_t && _t.zemin) || null;
+      let zm = (_t && _t.zemin) || null;
       const b = document.body; if(!b) return;
+      /* ── TEMA ─────────────────────────────────────────────────
+         Secili bir tema varsa zemin ondan geliyor.
+         KILIT ACIK  : zemin yalnizca temanindir, raf degisince hic
+                       oynamaz. Raf yine de bellidir -- halkalar ve
+                       marka yazisinin sag yarisi rafin renginde.
+         KILIT KAPALI: tema ile rafin zemini yari yariya karisir;
+                       tema baskin kalir ama oda degistigi zemine de
+                       hafifce yansir. */
+      try{
+        const T = temaAl();
+        const kok = document.documentElement.style;
+        if(T){
+          zm = (AYAR.temaKilit || !zm)
+             ? [T.z1, T.z2]
+             : [_hexKaris(T.z1, zm[0], 0.55), _hexKaris(T.z2, zm[1], 0.55)];
+          if(T.v) kok.setProperty('--tv', T.v); else kok.removeProperty('--tv');
+        } else kok.removeProperty('--tv');
+      }catch(e){ _yut(e); }
       if(!zm){ b.classList.remove('zem'); return; }
       b.style.setProperty('--zem1', zm[0]);
       b.style.setProperty('--zem2', zm[1]);
@@ -4282,7 +4414,7 @@
      acilista cagrilabiliyor. */
   /* mood: SOUND BANKS kipi. Kapali = yalnizca canli radyo (varsayilan).
      Acik = eski ORBITAPE tarafi: arsiv havuzlari, nebula, gezegenler, FX. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false };
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -4306,6 +4438,11 @@
       if(AYAR.mood){
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
+        /* Radyo tarafinin rafi UNUTULMUYOR, saklaniyor: kipten
+           donunce ayni rafa geri gelmek icin. Once null'a
+           yaziliyordu ve donuste raf bos kaliyordu -- marka yazisi
+           rengini kaybediyor, solundaki raf adi hic yazmiyordu. */
+        try{ if(AKTIF_AILE) _radyoRafi = AKTIF_AILE; }catch(e){ _yut(e); }
         try{ AKTIF_AILE = null; }catch(e){ _yut(e); }
         /* AKTIF_MOD DA SIFIRLANIYOR. Acilista 'RADIOTAPE' yaziliyor ve
            arsivdeki RADIOTAPE rafi CANLI RADYONUN kendisi. Kip
@@ -4331,7 +4468,26 @@
         try{ AKTIF_MOD = null; }catch(e){ _yut(e); }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'radio';
+        /* ── DONUSTE RAF GERI GELIYOR ────────────────────────────
+           Bildirilen: "fx modundan buraya donunce ORBITAPE yazisi
+           bambaska eski bir renk oldu, solunda da son kaldigi
+           istasyona gitmedi, adi da yazmadi -- ne zaman bastim o
+           zaman yazdi."
+           Sebep: donuste raf (AKTIF_AILE) bos kaliyordu. Marka
+           yazisinin gradyani secili rafin renginden geliyor; raf
+           yoksa gecen kipin kalintisi ekranda kaliyor. Solundaki
+           raf adi da bos oldugu icin hic yazilmiyordu.
+           Artik kipe girerken saklanan raf geri konuyor; hic yoksa
+           acilis rafina donuluyor. Bir sonraki ses de o raftan
+           geliyor, cunku kuyruk o rafa gore doluyor. */
+        try{
+          AKTIF_AILE = _radyoRafi || (typeof AILE_ACILIS !== 'undefined' ? AILE_ACILIS : null);
+        }catch(e){ _yut(e); }
         try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
+        /* Marka rengi, raf adi ve halka vurgusu AYNI KAREDE
+           tazeleniyor: asagidaki modAdiYaz/zeminUygula/moodYaz
+           zinciri bunu yapiyor ama halka vurgusu ayri. */
+        try{ halkaYak(AKTIF_AILE); }catch(e){ _yut(e); }
       }
       /* Arama havuzu da kipe bagli (bkz. araHavuzlar): dizin yeniden
          kurulsun, yoksa oteki dunyanin kayitlari aramada kalir. */
@@ -4501,7 +4657,28 @@
     }
   }
   // sürüklenen zerreler
-  const ZERRE=[]; for(let i=0;i<N_ZERRE;i++) ZERRE.push({a:Math.random()*6.28,r:0.3+Math.random()*0.7,sp:0.1+Math.random()*0.4,s:0.5+Math.random()*1.5});
+  /* ── ZERRELER (YILDIZLAR) ────────────────────────────────────────
+     Bildirilen: "yildizlar cok birbiriyle beraber baglilarmis gibi
+     hareket ediyor."
+     Sebep: hepsi TAM DAIRE ciziyordu, hepsi ayni yone, hizlari da
+     dar bir araliktaydi (0.1-0.5). Farkli hizda bile olsalar ayni
+     merkezli daireler halinde donen bir kume gozukuyordu.
+     Uc sey eklendi:
+       yon  : bir kismi ters yonde doner -> kume dagilir
+       wob  : yaricap kendi ritminde nefes alir -> yorunge daire olmaz
+       hiz araligi genisledi (0.06-0.62) -> hicbir ikisi es gitmez
+     Sayilari ve hizlari ayrica TEMAYA bagli (bkz. yildizTema). */
+  const ZERRE=[]; for(let i=0;i<N_ZERRE;i++) ZERRE.push({
+    a:Math.random()*6.28, r:0.26+Math.random()*0.74,
+    sp:0.06+Math.random()*0.56, s:0.4+Math.random()*1.7,
+    yon:(Math.random()<0.34 ? -1 : 1),
+    wob:Math.random()*6.28, wsp:0.0015+Math.random()*0.0075,
+    wamp:0.03+Math.random()*0.13 });
+  /* Temanin yildiz ayari. Tema yoksa ya da AUTO ise notr. */
+  function yildizTema(){
+    try{ const T = temaAl(); return (T && T.y) || {n:1,h:1,d:1}; }
+    catch(e){ return {n:1,h:1,d:1}; }
+  }
 
   /* Nefesi CSS'e devrediyoruz. Sınıfı kaldırıp bir yerleşim okuyarak yeniden
      ekliyoruz; yoksa arka arkaya basışlarda animasyon baştan başlamıyor. */
@@ -4687,10 +4864,14 @@
     }
     if(!dk) return;
     function yaz(){
-      try{ const duruyor = !ses || ses.paused || !ses.src;
-           dk.classList.toggle('durdu', duruyor);
-           dk.setAttribute('aria-pressed', duruyor ? 'true' : 'false');
-           dk.setAttribute('aria-label', duruyor ? 'Resume' : 'Pause');
+      /* "Duraklamis" yalnizca GERCEKTEN duraklamissa: elde bir kaynak
+         var ama calmiyor. Hic kaynak yokken de ucgen gosteriliyordu ve
+         yanindaki oynat tusuyla ikizlesiyordu -- ekranda yan yana iki
+         ayni ucgen duruyordu, hangisinin ne yaptigi belirsizdi. */
+      try{ const duraklamis = !!(ses && ses.src && ses.paused);
+           dk.classList.toggle('durdu', duraklamis);
+           dk.setAttribute('aria-pressed', duraklamis ? 'true' : 'false');
+           dk.setAttribute('aria-label', duraklamis ? 'Resume' : 'Pause');
       }catch(e){ _yut(e); }
     }
     const degis = e=>{
@@ -5025,8 +5206,16 @@
     if(!hafifCizim){
       const zRenk='rgba(236,250,248,'+Math.min(0.9,(0.30+0.45*energy)).toFixed(3)+')';
       vctx.fillStyle=zRenk;                       // renk döngü DIŞINDA: her zerrede yeniden yazmıyoruz
-      for(const z of ZERRE){ z.a+=z.sp*0.004*(0.4+energy);
-        const rr=z.r*R*0.9, x=cx+Math.cos(z.a)*rr, y=cy+Math.sin(z.a)*rr;
+      const _yt = yildizTema();
+      /* Yogunluk temadan: bazi temalar seyrek ve derin, bazilari
+         kalabalik. Zerre dizisi buyumuyor, yalnizca bir kismi
+         ciziliyor -- bellek ve dongu maliyeti sabit kaliyor. */
+      const _zn = Math.max(4, Math.min(ZERRE.length, Math.round(ZERRE.length * _yt.n)));
+      for(let zi=0; zi<_zn; zi++){ const z=ZERRE[zi];
+        z.a += z.yon * z.sp*0.004*(0.4+energy) * _yt.h;
+        z.wob += z.wsp;
+        const rr=z.r*R*0.9*_yt.d*(1+Math.sin(z.wob)*z.wamp);
+        const x=cx+Math.cos(z.a)*rr, y=cy+Math.sin(z.a)*rr;
         vctx.beginPath(); vctx.arc(x,y,z.s*1.15*dpr,0,6.29); vctx.fill(); }
     }
 
@@ -5995,6 +6184,9 @@
   }
   /* null = aile seçilmemiş: bütün liste çalıyor (bugünkü davranış). */
   var AKTIF_AILE = null;
+  /* SOUND BANKS kipine girerken radyo tarafinin rafi buraya
+     saklaniyor; kip kapaninca oradan geri aliniyor. */
+  var _radyoRafi = null;
   /* SIFIRDAN ACILIS: elektronik radyo. Kanal hatirlaniyor, aile
      hatirlanmiyor -- her oturum ayni bilinen yerden basliyor. */
   try{ if(!AKTIF_AILE) AKTIF_AILE = AILE_ACILIS; }catch(e){ _yut(e); }
@@ -7844,23 +8036,106 @@
        ikisi birden. */
     const odak = (a)=>{
       kut.querySelectorAll('.sat').forEach(el=>el.setAttribute('tabindex', a ? '0' : '-1'));
+      /* Izgara kutulari da kapali panelde odaklanabilir kalmamali
+         (WCAG 4.1.2): kapaliyken hepsi -1. */
+      try{ const iz2 = document.getElementById('temaIzgara');
+        if(iz2) [...iz2.children].forEach(d=>d.setAttribute('tabindex',
+          (a && !iz2.hidden) ? '0' : '-1')); }catch(e){ _yut(e); }
     };
     const ac = ()=>{ document.body.classList.add('ayar-acik');
       tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
       try{ kut.removeAttribute('inert'); }catch(e){ _yut(e); }
-      odak(true); yaz(); };
+      odak(true); yaz();
+      /* Izgara panel her acildiginda degil, ILK acildiginda
+         kuruluyor; sonra yalnizca secili kutu tazeleniyor. */
+      try{ izgaraKur(); izgaraYaz(); }catch(e){ _yut(e); } };
     const kapa = ()=>{ document.body.classList.remove('ayar-acik');
       tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
       try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
-      odak(false); };
+      odak(false);
+      /* Panel kapaninca izgara da kapaniyor: bir dahaki acilista
+         ayarlar listesi karsilasin, otuz bes renk degil. */
+      try{ izgaraAc(false); }catch(e){ _yut(e); } };
     const cevir = ()=>{ document.body.classList.contains('ayar-acik') ? kapa() : ac(); };
     tut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
     tut.addEventListener('pointerdown', e=>e.stopPropagation());
     tut.addEventListener('keydown', e=>{
       if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); cevir(); } });
 
+    /* ── TEMA IZGARASI ─────────────────────────────────────────────
+       Otuz bes kutu TEMALAR tablosundan uretiliyor. Tabloya bir tema
+       eklemek yeterli; burada elle bir sey yazilmiyor. */
+    const izgara = document.getElementById('temaIzgara');
+    const temaSat = kut.querySelector('.sat[data-ayar="tema"]');
+    function izgaraKur(){
+      if(!izgara || izgara.children.length) return;
+      TEMALAR.forEach((T,i)=>{
+        const d = document.createElement('div');
+        d.className = 'tm' + (i===0 ? ' oto' : '');
+        d.dataset.i = String(i);
+        d.setAttribute('role','option');
+        d.setAttribute('tabindex','-1');
+        /* Ad ekranda yazmiyor ama ekran okuyucuya ve uzun basisa
+           lazim: renk tek basina erisilebilir bir bilgi degil. */
+        d.setAttribute('aria-label', T.ad);
+        d.title = T.ad;
+        /* Kutu yalnizca zemini gosterseydi hepsi neredeyse siyah
+           cikardi (zeminler bilerek koyu). Kutunun tepesine temanin
+           VURGU rengi konuyor: paletin karakteri boyle okunuyor,
+           gercek zemin yine koyu kaliyor. */
+        if(i > 0) d.style.background =
+          'radial-gradient(130% 130% at 50% 30%,rgb('+T.v+') 0%,'+T.z1+' 52%,'+T.z2+' 100%)';
+        d.addEventListener('click', e=>{ e.stopPropagation(); temaSec(i); });
+        d.addEventListener('pointerdown', e=>e.stopPropagation());
+        d.addEventListener('keydown', e=>{
+          if(e.key===' '||e.key==='Enter'){ e.preventDefault(); temaSec(i); } });
+        izgara.appendChild(d);
+      });
+    }
+    function izgaraYaz(){
+      if(!izgara) return;
+      const i = AYAR.tema|0;
+      [...izgara.children].forEach(d=>{
+        const sec2 = (+d.dataset.i === i);
+        d.classList.toggle('secili', sec2);
+        d.setAttribute('aria-selected', sec2 ? 'true' : 'false');
+      });
+      if(temaSat){ const dd = temaSat.querySelector('.durum');
+        if(dd) dd.textContent = (TEMALAR[i] && TEMALAR[i].ad) || 'AUTO'; }
+      /* SECILI KUTU GORUS ALANINA GETIRILIYOR. Izgara uc buçuk satir
+         gosteriyor ve otuz bes kutu var: listenin sonundaki bir tema
+         seciliyken izgara acilinca secim hic gorunmuyordu, kullanici
+         "hangisi secili" sorusunun cevabini kaydirarak aramak
+         zorunda kaliyordu. */
+      try{
+        if(!izgara.hidden){
+          const d = izgara.children[i];
+          if(d && d.scrollIntoView) d.scrollIntoView({block:'nearest'});
+        }
+      }catch(e){ _yut(e); }
+    }
+    function temaSec(i){
+      AYAR.tema = i|0; ayarKaydet();
+      /* Zemin, vurgu ve yildiz yogunlugu ayni anda: uc ayri yerden
+         okunuyor ama tek karede degismeli, yoksa gecis dagilir. */
+      try{ zeminUygula(); }catch(e){ _yut(e); }
+      izgaraYaz();
+    }
+    window.temaSec = temaSec;
+    function izgaraAc(a){
+      if(!izgara) return;
+      izgara.hidden = !a;
+      if(temaSat) temaSat.setAttribute('aria-expanded', a ? 'true':'false');
+      [...izgara.children].forEach(d=>d.setAttribute('tabindex', a ? '0' : '-1'));
+      if(a) izgaraYaz();
+    }
     const sec = (el)=>{
       const k = el.dataset.ayar;
+      if(k === 'tema'){
+        izgaraKur();
+        izgaraAc(!!izgara.hidden);
+        return;
+      }
       if(k === 'tur'){
         /* Turu tekrar oynat: panel kapaniyor, tur bastan basliyor.
            Depoya "gosterildi" damgasi silinmiyor -- kullanici bunu
@@ -7871,6 +8146,9 @@
       }
       AYAR[k] = !AYAR[k];
       ayarKaydet(); yaz();
+      /* Kilit zemini aninda etkiliyor: acinca tema saflasiyor,
+         kapayinca rafin rengi geri karisiyor. */
+      if(k === 'temaKilit'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
       /* SOUND BANKS: dunya degisiyor. Panel kapaniyor -- degisikligi
          gormek icin ekranin kendisine bakmak lazim. */
       if(k === 'mood'){ kapa(); moodUygula(false); return; }
