@@ -465,6 +465,27 @@
     /* Sanatci adi da kirpilmiyor: atifin ikinci yarisi bu. */
     white-space:normal;overflow-wrap:anywhere;}
   #np .np-sanatci:empty{display:none;}
+  /* ── SU AN CALAN PARCA ────────────────────────────────────────
+     Istasyon adinin altinda, ondan kucuk ve bir tik daha parlak
+     degil DAHA SILIK: istasyon nerede oldugunu, parca o an ne
+     oldugunu soyluyor. Hiyerarsi bu sirada.
+     POP-UP GIBI GIRIYOR (kullanicinin istegi): yeni bir ad gelince
+     asagidan hafifce yukselerek beliriyor. Hareket kisa ve tek
+     seferlik -- surekli oynayan bir sey degil, "yeni bir sey oldu"
+     demenin en kisa yolu. */
+  #np .np-parca{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
+    font-size:12.5px;font-weight:400;letter-spacing:.015em;
+    color:rgba(200,228,246,.72);text-shadow:0 1px 9px rgba(0,0,0,.55);
+    line-height:1.34;max-width:100%;margin-top:2px;
+    white-space:normal;overflow-wrap:anywhere;
+    opacity:0;transform:translateY(5px);
+    transition:opacity .34s ease, transform .34s cubic-bezier(.2,.9,.3,1);}
+  #np .np-parca:empty{display:none;}
+  #np .np-parca.gor{opacity:1;transform:translateY(0);}
+  @media (prefers-reduced-motion:reduce){
+    #np .np-parca{transition:opacity .2s ease;transform:none;}
+    #np .np-parca.gor{transform:none;} }
+  @media (max-width:480px){ #np .np-parca{font-size:11.5px;} }
   /* En alt satır: sanatçının SOLUNDA, sesin nereden geldiği.
      Küçük ve silik — bilgi olsun ama okumayı bölmesin. */
   #np .np-alt{display:flex;align-items:baseline;justify-content:flex-end;gap:9px;max-width:100%;}
@@ -981,7 +1002,10 @@
      Ikisi ayni parlaklikta oldugu surece konsol duz ve okunmasi zor
      goruluyordu; simdi goz hangisinin "durum" hangisinin "yer"
      oldugunu bir bakista ayiriyor. */
-  #fav.var{display:flex;opacity:.52;pointer-events:auto;
+  /* 0.52 -> 0.40: yanina marka isareti gelince kose kalabaliklasti.
+     Kullanicinin sozu: "yildiz sonuk cunku genelde daha iyi."
+     Isaretlenince zaten tam parlakliga cikiyor. */
+  #fav.var{display:flex;opacity:.40;pointer-events:auto;
     transition:opacity .18s ease, color .25s, border-color .2s, background .25s;}
   #fav.var.dolu,#fav.var.kip{opacity:1;}
   #fav.var:hover{opacity:.9;}
@@ -990,6 +1014,28 @@
   #fav:hover{border-color:rgba(120,180,180,.34);}
   #fav.liste{color:#d9d0dd;} #fav.radio{color:#ffc79e;}
   #np .np-gez{display:flex;flex-direction:row;align-items:center;gap:7px;margin:0;pointer-events:none;}
+  /* ── ORBITAPE ISARETI ─────────────────────────────────────────
+     Iki cember + mil: yorunge ve makara ayni cizimde.
+     Yildizin SAGINDA, blogun en sag ucunda -- kosenin imzasi.
+     Cizgi ince ve silik: bir denetim degil, bir muhur. Yanindaki
+     yildiz bir DURUM gosteriyor ve dikkati o hak ediyor. */
+  #isaret{display:none;flex:none;align-items:center;justify-content:center;
+    width:34px;height:32px;pointer-events:none;user-select:none;}
+  #np.on #isaret{display:flex;}
+  #isaret svg{width:30px;height:21px;display:block;fill:none;
+    stroke:url(#isaretRenk);stroke-width:1.15;opacity:.62;}
+  #isaret .mil{fill:#bfe6ff;stroke:none;opacity:.85;}
+  /* Beyaza calan mavi. Marka turkuazi (53,224,216) ile ayni sogukta
+     duruyor ama ondan bir tik daha maviye kaciyor: yan yana
+     geldiklerinde ayni aileden okunuyorlar. */
+  #isaret svg{stroke:#a9d8f2;}
+  /* Sagdaki cember DAHA KUCUK. Iki esit cember cizince sekil bir
+     Venn diyagramina benziyordu (olculdu, ekranda oyle goruldu);
+     kucuk olan uzakligi ima ediyor ve cizim bir YORUNGE gibi
+     okunuyor -- buyuk govde, kucuk govde, ortada mil.
+     Kaset okumasi da bozulmuyor: iki makara zaten esit degil,
+     biri dolarken oteki bosaliyor. */
+  #isaret .y2{opacity:.62;}
   /* ── RETRO kısayolu: ◁'nin üstünde küçük nokta. Açıkken sarı yanar. ── */
   /* RETRO düğmesi: büyük nebulanın minik uydusu. Çerçevesiz, koyu gri-siyah. */
   /* ── UYDULAR: büyük nebulanın çevresinde yay çizen minik aylar ──
@@ -1867,12 +1913,41 @@
            -- istasyonun KENDI yayin bilgisi (bkz. GUNLUK). -->
 
       <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
+      <!-- ── ORBITAPE ISARETI ────────────────────────────────────
+           Shazam dugmesinin bosalttigi yer. Kullanicinin istegi:
+           "en saga koy bi logo yap orbitape i temsil etsin."
+
+           SEKIL: iki cember, ortada bir nokta. Ayni cizim iki seyi
+           birden okutuyor ve adin ikiye bolunmusluguyle birebir
+           ortusuyor:
+             ORBIT -> merkezin cevresinde donen iki yorunge
+             TAPE  -> yan yana iki makara, ortasinda mil
+           Uygulamanin butun gorsel dili zaten bu: halkalar, noktalar,
+           yaylar. Yeni bir dil getirmiyor, olani imzaya ceviriyor.
+
+           DEKORATIF: dugme degil, tiklanmiyor, sekmeyle gezilmiyor.
+           Kosede duran ve basilinca hicbir sey yapmayan bir sey
+           kullaniciyi yaniltir; bu yuzden pointer-events kapali ve
+           ekran okuyucudan gizli.
+
+           RENK: beyaza calan bir mavi. Marka turkuazinin komsusu --
+           yani yabanci degil ama kimlik rengini de calmiyor; sag
+           ustteki ORBITAPE yazisi zaten rafin renginde ve iki
+           imzanin ayni anda bagirmasi gerekmiyor. -->
+      <i id="isaret" aria-hidden="true"><svg viewBox="0 0 34 24" aria-hidden="true" focusable="false"><circle class="y1" cx="11.4" cy="12" r="7.9"/><circle class="y2" cx="23.4" cy="12" r="6.1"/><circle class="mil" cx="17.4" cy="12" r="1.35"/></svg></i>
     </div>
     <div class="np-bilgi">
       <div class="np-ust" id="npUst"></div>
       <!-- aria-live: parça değişince ekran okuyucu yeni adı okusun.
            polite = kullanıcının o an okuduğunu kesmez, sırasını bekler. -->
       <div class="np-ad" id="npAd" role="status" aria-live="polite"></div>
+      <!-- ── SU AN CALAN PARCA ────────────────────────────────────
+           Canli yayinda istasyon adinin ALTINDA beliren satir.
+           Bilgi istasyonun KENDISINDEN geliyor (bkz. parcaAl):
+           mikrofon yok, tanima yok, ucuncu taraf yok.
+           Bilinmiyorsa satir hic cizilmiyor -- yani ekran o
+           istasyonda bugunkuyle birebir ayni kaliyor. -->
+      <div class="np-parca" id="npParca" role="status" aria-live="polite"></div>
       <div class="np-alt">
         <span class="np-kaynak" id="npKaynak"></span>
         <div class="np-sanatci" id="npSanatci"></div>
@@ -2981,15 +3056,49 @@
     try{ const r = await fetchZA(url, ms*2, KOSULLU); if(r && r.ok) return r; }catch(e){ _yut(e); }
     return null;
   }
+  /* ── ZAMAN ASIMI ABORT'A BIRAKILMAZ ───────────────────────────────
+     ONCEKI HALI SESSIZ BIR TUZAKTI. Zamanlayici yalnizca abort()
+     cagiriyordu ve donen soz hala fetch'in kendi sozuydu; yani
+     "6 saniyede biter" GARANTI DEGILDI.
+     AbortController ancak istek belirli bir asamaya geldiyse
+     calisiyor. Olu bir sunucuda istek DNS cozumunde ya da TLS el
+     sikismasinda takiliyor ve iptal sinyali o asama bitene kadar
+     islenmiyor -- tarayici orada bir-iki dakika bekleyebiliyor.
+     O sure boyunca cagiran taraf da bekliyor: liste yuklemesi
+     asili kaliyor, uygulama istasyonlarina kavusamiyor ve ekranda
+     hicbir hata gorunmuyor cunku teknik olarak "hala deniyor".
+     Bu tam olarak simdicalan.html olcum sayfasinda yasandi: sekiz
+     istekci ayni anda olu adreslere dusunce sayac 130'da dondu.
+
+     DOGRUSU: istegi GERCEK bir zamanlayiciyla YARISTIRMAK. Sure
+     dolunca abort yine deneniyor ama sonuc BEKLENMIYOR -- soz
+     reddediliyor ve cagiran taraf yoluna devam ediyor. Butun
+     cagiranlar zaten try/catch icinde ve bir reddi "olmadi" diye
+     okuyor, yani davranis degismiyor; degisen tek sey SONSUZ
+     BEKLEMENIN ARTIK MUMKUN OLMAMASI.
+
+     KURAL: bu uygulamada agdan bir sey isteyen her yol bir sure
+     sonra KESIN olarak sonuclanmali. "Genelde iptal olur" yeterli
+     degil. */
   function fetchZA(url, ms, secenek){
     const sure = Math.round((ms || 8000) * AG_KAT);
     const kontrol = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    const zt = setTimeout(()=>{ try{ kontrol && kontrol.abort(); }catch(_){ _yut(_); } }, sure);
     const kur = secenek ? Object.assign({}, secenek) : {};
     if(kontrol) kur.signal = kontrol.signal;
+    let zt = null;
+    const kes = new Promise((_, red)=>{
+      zt = setTimeout(()=>{
+        try{ if(kontrol) kontrol.abort(); }catch(_){ _yut(_); }
+        red(new Error('zaman asimi'));
+      }, sure);
+    });
     const istek = fetch(url, kur);
-    return istek.then(r=>{ clearTimeout(zt); return r; },
-                      e=>{ clearTimeout(zt); throw e; });
+    /* Yaris bittikten SONRA istek kendi basina reddederse ortada
+       sahipsiz bir red kalmasin (konsolda "unhandled rejection"). */
+    try{ istek.catch(()=>{}); }catch(_){ _yut(_); }
+    return Promise.race([istek, kes]).then(
+      r=>{ clearTimeout(zt); return r; },
+      e=>{ clearTimeout(zt); throw e; });
   }
   const $=id=>document.getElementById(id);
   const btn=$('tp'), ses=$('ses'), flash=$('flash'), c=$('noise'), ctx=c.getContext('2d');
@@ -3598,6 +3707,14 @@
     /* ◁ artık #np'nin içinde akıyor: yazı bir/iki satır olsa da yerini
        yığın kendisi ayarlıyor, burada hesaplanacak bir koordinat yok. */
     try{ ortamKunye(ad, sanatci, item); }catch(e){ _yut(e); }
+    /* ── SU AN NE CALIYOR ─────────────────────────────────────────
+       Canli yayinda istasyonun kendi bildirimini sormaya basliyor
+       (bkz. parcaBasla). Arsiv kayitlarinda cagriliyor ama hemen
+       donuyor: orada parcanin adi zaten elimizde.
+       BURADA cagriliyor cunku "calan sey degisti" bilgisinin tek
+       dogru yeri burasi; kip degisimi, gecmis, arama, halka secimi
+       -- hepsi sonunda buraya ugruyor. */
+    try{ parcaBasla(item); }catch(e){ _yut(e); }
   }
 
   /* ── KİLİT EKRANI / KONTROL MERKEZİ (MediaSession) ────────────────
@@ -5812,6 +5929,10 @@
           _kullaniciDuraklatti = true;
           try{ korumayiBirak(); }catch(_){ _yut(_); }
           ses.pause();
+          /* Durdurulan bir yayinin "su an ne caliyor"u sorulmaz:
+             hem yanlis bilgi olur (yayin akmaya devam ediyor, biz
+             dinlemiyoruz) hem de bosuna sunucu yorar. */
+          try{ parcaDurdur(); }catch(_){ _yut(_); }
         } else {
           _kullaniciDuraklatti = false;
           if(ses && ses.src) ses.play().catch(()=>{});
@@ -7252,6 +7373,201 @@
     try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
     return AKTIF_AILE;
   }
+
+  /* ══ SU AN NE CALIYOR ═════════════════════════════════════════════
+     Canli yayinda calan parcanin adini gosteriyor. Kaynak MIKROFON
+     DEGIL, istasyonun KENDI bildirimi: Icecast/AzuraCast/SomaFM gibi
+     yayin yazilimlarinin acik "now playing" adresi.
+
+     NEDEN BOYLE: Shazam'in yaptigi is (sesi dinleyip parmak iziyle
+     eslestirmek) web'e kapali. Tek yol birkac saniyelik sesi paralı
+     bir servise gondermek olurdu ve bu, gizlilik metnindeki ve Play
+     Data Safety formundaki "hicbir veri toplanmiyor" cevabini bozar.
+     Buradaki yol hicbir sey GONDERMIYOR: tarayici zaten yayini
+     aldigi sunucuya "su an ne caliyor" diye soruyor, o kadar.
+     Ustelik sonuc tahmin degil: istasyonun kendi soyledigi ad.
+
+     OLCULDU, TAHMIN EDILMEDI: 531 istasyonun tamami tarayicida tek
+     tek denendi (simdicalan.html). 149'unda ad okunabiliyor (%28).
+     Kaynak dagilimi: AzuraCast 59, Icecast 54, SomaFM 24, Radio.co 12.
+     Kalanlar CORS'a takiliyor ya da o adresi hic acmiyor.
+
+     EN ONEMLI KURAL -- YANLIS AD, BOS SATIRDAN KOTUDUR:
+     Olcumde su goruldu: paylasilan bir sunucudaki iki ayri istasyon
+     (Relax & Meditation ve Blues, ikisi de mml1.prostream.se) AYNI
+     sarkiyi gosterdi. Sebep: o adres sunucudaki BUTUN istasyonlari
+     donduruyor ve ilk yazimda listenin ilki aliniyordu. Yani
+     kullanici Blues dinlerken ekranda baska bir istasyonun sarkisi
+     yaziyordu. 531 istasyonun 263'u paylasilan sunucularda, yani bu
+     kucuk bir kenar durum degil.
+     Bu yuzden asagida her kaynak icin ESLESTIRME var: donen liste
+     bizim yayin adresimizle eslesmiyorsa ad GOSTERILMIYOR. Emin
+     olamadigimizda susuyoruz. */
+  var _parcaZaman = null, _parcaIstek = 0, _parcaSon = '', _parcaItem = null;
+  const PARCA_ARA = 25000;          // kac ms'de bir tazelenir
+
+  /* Yayin adresinden hangi kaynaklarin denenecegini cikariyor.
+     Sira onemli: once o platformun KENDI adresi, sonra genel tahmin. */
+  function parcaKaynaklari(u){
+    let p; try{ p = new URL(u, location.href); }catch(e){ return []; }
+    const h = (p.hostname || '').toLowerCase(), yol = p.pathname || '', kok = p.origin;
+    const k = [];
+    if(h.indexOf('somafm.com') >= 0){
+      const kanal = yol.replace(/^\//, '').split('-')[0];
+      if(kanal) k.push({t:'somafm', a:'https://somafm.com/songs/' + kanal + '.json'});
+    }
+    if(h.indexOf('radio.co') >= 0){
+      const seg = yol.split('/').filter(Boolean);
+      if(seg[0] && /^s/.test(seg[0]))
+        k.push({t:'radioco', a:'https://public.radio.co/stations/' + seg[0] + '/status'});
+    }
+    k.push({t:'icecast',   a:kok + '/status-json.xsl', yol:yol});
+    k.push({t:'azuracast', a:kok + '/api/nowplaying',  yol:yol, kok:kok});
+    return k;
+  }
+
+  /* Iki yayin adresi ayni mi: sorgu ve uzanti farklari onemsiz,
+     onemli olan MOUNT YOLU (/groovesalad-256-mp3 gibi). */
+  function _ayniYayin(a, b){
+    try{
+      const y = x => String(x || '').split('?')[0].replace(/\/+$/, '').toLowerCase();
+      const A = y(a), B = y(b);
+      if(!A || !B) return false;
+      if(A === B) return true;
+      const sonA = A.split('/').pop(), sonB = B.split('/').pop();
+      return !!sonA && sonA === sonB;
+    }catch(e){ return false; }
+  }
+
+  function _temizAd(x){
+    let t = String(x == null ? '' : x).replace(/\s+/g, ' ').trim();
+    /* Yayin yazilimlarinin kendi etiketleri parcanin adi degil. */
+    t = t.replace(/^(AutoDJ|Auto DJ|Now Playing|NowPlaying)\s*[:\-–]\s*/i, '');
+    if(!t) return '';
+    /* Sadece istasyon adini tekrarlayan, ya da reklam/duyuru olan
+       satirlar bilgi degil gurultu. */
+    if(/^(unknown|undefined|null|n\/?a|-+|\.+)$/i.test(t)) return '';
+    if(t.length > 120) t = t.slice(0, 120).replace(/\s\S*$/, '') + '…';
+    return t;
+  }
+
+  /* Gelen cevaptan parca adini cikar. Her kaynak icin ESLESTIRME
+     kurali burada; eslesmezse bos donuyor (bkz. yukarida). */
+  function parcaCoz(kaynak, veri, yayinYolu){
+    try{
+      if(kaynak.t === 'somafm'){
+        const g = veri && veri.songs && veri.songs[0];
+        if(g && (g.title || g.artist))
+          return _temizAd(((g.artist || '') + (g.artist && g.title ? ' — ' : '') + (g.title || '')));
+      }
+      if(kaynak.t === 'radioco'){
+        const g = veri && veri.current_track;
+        if(g && g.title) return _temizAd(g.title);
+      }
+      if(kaynak.t === 'icecast'){
+        let kay = veri && veri.icestats && veri.icestats.source;
+        if(!kay) return '';
+        if(!Array.isArray(kay)) kay = [kay];
+        /* TEK yayin varsa o bizimkidir. BIRDEN COKSA eslestirmek
+           SART: ayni Icecast sunucusunda onlarca istasyon olabiliyor
+           ve yanlisini gostermek bos birakmaktan kotu. */
+        if(kay.length === 1) return _temizAd(kay[0].title || kay[0].yp_currently_playing);
+        for(const g of kay){
+          if(_ayniYayin(g.listenurl, yayinYolu) || _ayniYayin(g.mount, yayinYolu))
+            return _temizAd(g.title || g.yp_currently_playing);
+        }
+        return '';
+      }
+      if(kaynak.t === 'azuracast'){
+        let liste = Array.isArray(veri) ? veri : [veri];
+        if(liste.length === 1){
+          const g = liste[0] && liste[0].now_playing && liste[0].now_playing.song;
+          return g ? _temizAd(g.text || ((g.artist||'') + ' — ' + (g.title||''))) : '';
+        }
+        /* PAYLASILAN SUNUCU. Olcumde iki ayri istasyon ayni sarkiyi
+           gosteriyordu cunku listenin ilki aliniyordu. Artik yayin
+           adresi eslesmeden ad verilmiyor. */
+        for(const n of liste){
+          const st = n && n.station;
+          if(!st) continue;
+          let adresler = [];
+          if(st.listen_url) adresler.push(st.listen_url);
+          if(Array.isArray(st.mounts)) st.mounts.forEach(m=>{ if(m && m.url) adresler.push(m.url); });
+          if(!adresler.some(a=>_ayniYayin(a, yayinYolu))) continue;
+          const g = n.now_playing && n.now_playing.song;
+          if(g) return _temizAd(g.text || ((g.artist||'') + ' — ' + (g.title||'')));
+        }
+        return '';
+      }
+    }catch(e){ _yut(e); }
+    return '';
+  }
+
+  async function parcaAl(item){
+    if(!item || !item.radyo || !item.mp3) return '';
+    const kaynaklar = parcaKaynaklari(item.mp3);
+    for(const k of kaynaklar){
+      let r = null;
+      try{ r = await fetchZA(k.a, 4000); }catch(e){ continue; }
+      if(!r || !r.ok) continue;
+      let govde = null;
+      try{ govde = await r.json(); }catch(e){ continue; }
+      const ad = parcaCoz(k, govde, k.yol || item.mp3);
+      if(ad) return ad;
+    }
+    return '';
+  }
+
+  function parcaYaz(ad){
+    const el = document.getElementById('npParca'); if(!el) return;
+    if(!ad){ el.classList.remove('gor'); el.textContent = ''; _parcaSon = ''; return; }
+    if(ad === _parcaSon) return;                  // ayni sarki: kimildatma
+    _parcaSon = ad;
+    /* POP-UP GIBI: once soner, sonra yeni adla asagidan yukselir.
+       Iki kare beklemek sart -- ayni karede sinif alinip verilirse
+       tarayici gecisi hic oynatmiyor. */
+    el.classList.remove('gor');
+    setTimeout(()=>{
+      el.textContent = ad;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        try{ el.classList.add('gor'); }catch(e){ _yut(e); }
+        try{ geriYerlestir(); }catch(e){ _yut(e); }   // blok buyudu, kunye yerini tazelesin
+      }));
+    }, 120);
+  }
+
+  function parcaDurdur(){
+    if(_parcaZaman){ clearTimeout(_parcaZaman); _parcaZaman = null; }
+    _parcaIstek++;                                 // yolda olan cevap gecersiz
+    _parcaItem = null;
+    parcaYaz('');
+  }
+
+  /* Calan sey degisince baslatiliyor. Yalnizca CANLI YAYINDA
+     calisiyor: arsiv kayitlarinin adi zaten elimizde. */
+  function parcaBasla(item){
+    parcaDurdur();
+    if(!item || !item.radyo) return;
+    _parcaItem = item;
+    const benim = ++_parcaIstek;
+    const tur = async ()=>{
+      if(benim !== _parcaIstek) return;            // baska bir sey caliyor
+      let ad = '';
+      try{ ad = await parcaAl(item); }catch(e){ _yut(e); }
+      if(benim !== _parcaIstek) return;
+      try{ parcaYaz(ad); }catch(e){ _yut(e); }
+      /* Ad gelmediyse de tekrar deniyoruz: bazi istasyonlar parca
+         degisiminde birkac saniye bos donuyor. Ama sonsuza kadar
+         degil -- hic vermeyen bir istasyonda bes denemeden sonra
+         susuyoruz, bosuna sunucu yormayalim. */
+      _parcaDeneme = ad ? 0 : (_parcaDeneme || 0) + 1;
+      if(ad || _parcaDeneme < 5)
+        _parcaZaman = setTimeout(tur, PARCA_ARA);
+    };
+    _parcaDeneme = 0;
+    tur();
+  }
+  var _parcaDeneme = 0;
 
   /* ── BEYAZ LİSTE: radyo.json ──────────────────────────────────────
      Anahtar kelime süzgeci 50.000 istasyonluk bir dizide er geç

@@ -190,6 +190,50 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     }catch(e){ sozHata = String(e && e.message || e).slice(0,120); }
     K('index.html sozdizimi gecerli', sozHata === '',
        sozHata || 'ayristirilabiliyor');
+
+  /* ══ AGDAN ISTENEN HER SEY BIR SURE SONRA KESIN SONUCLANMALI ══
+     BU BIR SINIF HATASI, TEK BIR SATIR DEGIL -- ve iki ayri yerde
+     bagimsiz olarak yasandi:
+       · Olcum sayfasinda (simdicalan.html) sekiz istekci ayni anda
+         olu adreslere dusunce sayac 130'da dondu ve olcum hic
+         bitmedi.
+       · Uygulamanin kendi fetchZA'sinda ayni zafiyet duruyordu:
+         zamanlayici yalnizca abort() cagiriyor, donen soz hala
+         fetch'in kendi sozu oluyordu.
+     SEBEP: AbortController bir GARANTI DEGIL. Istek DNS cozumunde
+     ya da TLS el sikismasinda takildiysa iptal sinyali o asama
+     bitene kadar islenmiyor; tarayici orada dakikalarca bekleyebilir.
+     O sure boyunca cagiran taraf da bekliyor ve ekranda hicbir hata
+     gorunmuyor -- "hala deniyor" durumu, sessiz bir kilit.
+     KURAL: agdan bir sey isteyen her yol GERCEK bir zamanlayiciyla
+     yaristirilir. "Genelde iptal olur" yeterli degil.
+     Asagidaki iki kontrol bu kurali tutuyor: biri kaynaga, oteki
+     GERCEK DAVRANISA bakiyor. */
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const i0 = kaynak.indexOf('function fetchZA(');
+    const govde = kaynak.slice(i0, i0 + 1400);
+    K('Ag istegi zamanlayiciyla yaristiriliyor',
+       i0 > 0 && /Promise\.race\(\[istek, kes\]\)/.test(govde)
+       && /red\(new Error\('zaman asimi'\)\)/.test(govde),
+       'fetchZA yalnizca abort()a guvenmiyor');
+  }
+  /* DAVRANIS: hic cevap vermeyen bir sunucu taklidi. Kaynak dogru
+     gorunse bile is goruyor mu -- olculen sey bu. */
+  K('Cevapsiz sunucu uygulamayi kilitlemiyor', await pg.evaluate(async ()=>{
+      const eskiFetch = window.fetch;
+      /* Sonsuza kadar bekleyen bir istek: abort da dinlenmiyor. */
+      window.fetch = ()=> new Promise(()=>{});
+      const bas = Date.now();
+      let sonuc = 'bekliyor';
+      try{ await fetchZA('https://ornek.test/x', 300); sonuc = 'cevap geldi'; }
+      catch(e){ sonuc = 'reddedildi'; }
+      const gecen = Date.now() - bas;
+      window.fetch = eskiFetch;
+      /* 300 ms istendi; AG_KAT carpani olabilir, 3 saniyeye kadar
+         makul. Onemli olan SONSUZ olmamasi. */
+      return sonuc === 'reddedildi' && gecen < 3000;
+    }), 'cevapsiz istek sure dolunca reddediliyor, asili kalmiyor');
   }
   /* TAVAN 740 -> 780 KB. Sebep: gecici tur adlari artik CIZIM --
      yirmi bir ismin outline SVG yolu (~19 KB). Font dosyasi gomulmedi
@@ -307,6 +351,102 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Disariya tanima baglantisi yok',
        !/id="tani"/.test(kod) && !/shazam/i.test(kod) && !/intent:\/\//.test(kod),
        'dugme, ozel sema ve intent adresi -- ucu de kodda yok');
+
+  /* ══ SU AN NE CALIYOR ═════════════════════════════════════════════
+     Shazam dugmesinin yerine gelen sey. Kaynak MIKROFON DEGIL,
+     istasyonun kendi "now playing" bildirimi.
+     531 istasyon tarayicida tek tek olculdu: 149'unda ad okunabiliyor
+     (%28). AzuraCast 59, Icecast 54, SomaFM 24, Radio.co 12.
+
+     ── EN ONEMLI KURAL ──────────────────────────────────────────
+     YANLIS AD, BOS SATIRDAN KOTUDUR. Olcumde bu gercekten yasandi:
+     paylasilan bir sunucudaki iki ayri istasyon (Relax & Meditation
+     ve Blues, ikisi de mml1.prostream.se) AYNI sarkiyi gosterdi,
+     cunku o adres sunucudaki butun istasyonlari donduruyor ve kod
+     listenin ilkini aliyordu. 531 istasyonun 263'u paylasilan
+     sunucularda -- yani kenar durum degil, cogunluk.
+     Asagidaki kontrol tam olarak o vakayi kuruyor: eslesmeyen bir
+     listede ad DONMEMELI. */
+  {
+    const pr = await pg.evaluate(()=>{
+      const A = (t, veri, yol)=>parcaCoz({t}, veri, yol);
+      return {
+        /* Paylasilan AzuraCast: dogru istasyon secilmeli */
+        azDogru: A('azuracast', [
+          {station:{listen_url:'https://h/radio1', mounts:[{url:'https://h/radio1'}]},
+           now_playing:{song:{text:'YANLIS'}}},
+          {station:{listen_url:'https://h/radio2', mounts:[{url:'https://h/radio2'}]},
+           now_playing:{song:{text:'DOGRU'}}}], '/radio2'),
+        /* Hicbiri eslesmiyorsa SUSMALI -- asil hata buydu */
+        azSusuyor: A('azuracast', [
+          {station:{listen_url:'https://h/radio1'}, now_playing:{song:{text:'YANLIS'}}},
+          {station:{listen_url:'https://h/radio3'}, now_playing:{song:{text:'YANLIS2'}}}], '/radio2'),
+        /* Ayni kural Icecast'te de gecerli: cok mount'lu sunucu */
+        icDogru:   A('icecast', {icestats:{source:[
+          {title:'YANLIS', listenurl:'http://h/aaa'},
+          {title:'DOGRU',  listenurl:'http://h/bbb'}]}}, '/bbb'),
+        icSusuyor: A('icecast', {icestats:{source:[
+          {title:'YANLIS', listenurl:'http://h/aaa'},
+          {title:'YANLIS2',listenurl:'http://h/ccc'}]}}, '/bbb'),
+        /* Tek yayinli sunucuda eslestirmeye gerek yok */
+        icTek: A('icecast', {icestats:{source:{title:'A - B'}}}, '/farkli'),
+        /* Yayin yaziliminin kendi etiketi parcanin adi degil */
+        autodj: A('icecast', {icestats:{source:{title:'AutoDJ: X - Y'}}}, ''),
+        /* Cop degerler bilgi degil */
+        cop:    A('icecast', {icestats:{source:{title:'unknown'}}}, ''),
+        somafm: A('somafm', {songs:[{artist:'Kaya Project', title:'Always Waiting'}]}, '')
+      };
+    });
+    K('Paylasilan sunucuda dogru istasyon seciliyor',
+       pr.azDogru === 'DOGRU' && pr.icDogru === 'DOGRU',
+       'yayin adresi eslestiriliyor, listenin ilki alinmiyor');
+    K('Eslesmeyince ad GOSTERILMIYOR',
+       pr.azSusuyor === '' && pr.icSusuyor === '',
+       'yanlis ad bos satirdan kotudur -- emin olamayinca susuyor');
+    K('Tek yayinli sunucuda ad geliyor', pr.icTek === 'A - B', 'eslestirme gerekmiyor');
+    K('Yayin yazilimi etiketi temizleniyor',
+       pr.autodj === 'X - Y' && pr.cop === '' && pr.somafm === 'Kaya Project — Always Waiting',
+       'AutoDJ: kalkiyor, "unknown" bilgi sayilmiyor');
+  }
+  /* HICBIR SEY GONDERILMIYOR. Gizlilik metnindeki ve Play Data
+     Safety formundaki "hicbir veri toplanmiyor" cevabinin teknik
+     karsiligi: ne mikrofon aciliyor ne de ses bir tanima servisine
+     yollaniyor. Bu kontrol o cevabin bekcisi. */
+  K('Parca adi icin mikrofon ya da tanima servisi kullanilmiyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const kod = k.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+      /* parcaAl yalnizca fetchZA ile ACIK now-playing adresi cagiriyor */
+      const i0 = kod.indexOf('async function parcaAl(');
+      const govde = kod.slice(i0, i0 + 900);
+      return i0 > 0
+        && !/getUserMedia/.test(govde)
+        && !/audd|acrcloud|shazam/i.test(kod)
+        && /fetchZA\(k\.a/.test(govde);
+    }), 'yalnizca istasyonun acik adresi soruluyor');
+  /* SADECE CANLI YAYIN. Arsiv kayitlarinda parcanin adi zaten
+     elimizde; orada sormak hem gereksiz hem de yanlis sonuc verir. */
+  K('Parca sorgusu yalnizca canli yayinda', await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      let cagri = 0;
+      const eskiF = window.fetch;
+      window.fetch = (u)=>{ cagri++; return Promise.reject(new TypeError('yok')); };
+      parcaBasla({id:'lib:1', ad:'Arsiv Kaydi', mp3:'https://h/a.mp3'});   // radyo DEGIL
+      await bek(200);
+      const arsivde = cagri;
+      parcaBasla({id:'rb:1', ad:'Istasyon', radyo:true, mp3:'https://h/mount'});
+      await bek(400);
+      const radyoda = cagri;
+      parcaDurdur();
+      window.fetch = eskiF;
+      return arsivde === 0 && radyoda > 0;
+    }), 'arsivde hic sorulmuyor, radyoda soruluyor');
+  /* Bilinmiyorsa SATIR HIC CIZILMIYOR: o istasyonda ekran
+     bugunkuyle birebir ayni kaliyor. */
+  K('Ad bilinmiyorsa satir yok', await pg.evaluate(()=>{
+      parcaYaz('');
+      const e = document.getElementById('npParca');
+      return !!e && e.textContent === '' && !e.classList.contains('gor');
+    }), 'bos satir cizilmiyor, blok buyumuyor');
   }
   /* ── KIP DEPODAN GERI GELMIYOR ────────────────────────────────
      Iki sebep. Birincisi ACILISTA TEKLEME: kip, ayarlar bolumunun
