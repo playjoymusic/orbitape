@@ -127,14 +127,37 @@ ama **cihazdan çıkmadığı**.
 
 | Dosya | Ölçü | Nerede kullanılacak |
 |---|---|---|
-| `one-cikan-1024x500.png` | 1024 × 500 | Öne çıkan görsel (zorunlu) |
-| `ekran-1-1080x1920.png` | 1080 × 1920 | Telefon ekran görüntüsü |
-| `ekran-2-1080x1920.png` | 1080 × 1920 | Telefon ekran görüntüsü |
-| `ekran-3-1080x1920.png` | 1080 × 1920 | Telefon ekran görüntüsü |
+| `one-cikan-1024x500.png` | 1024 × 500 | **Öne çıkan görsel (zorunlu)** |
+| `galeri/01..09-*.png` | 1080 × 1920 | Telefon ekran görüntüleri |
 
-Ekran görüntüleri **uygulamanın şu anki kodundan** yeniden çekildi
-(540×960 görüntü alanı, 2× ölçek → tam 1080×1920). Kırpma yok,
-esnetme yok, elle rötuş yok.
+### ÖNE ÇIKAN GÖRSEL — DOSYA ADI YANILTICI
+
+Kullanılacak öne çıkan görsel, solda `ORBITAPE` yazan ve altında
+`LIVE RADIO · SOUND ARCHIVE` yazan, sağı halkalarla dolu olan kare.
+
+**O dosyanın adı `banner-B.png` DEĞİL** — aynı görüntü depoda iki adla
+birden duruyor ve doğru olan ad `one-cikan-1024x500.png`:
+
+```
+one-cikan-1024x500.png   md5 66ad39e7a93f06c54bf4e8ed7c196009
+banner-B.png             md5 66ad39e7a93f06c54bf4e8ed7c196009   ← ayni dosya
+banner-A.png             md5 29985e133517de6836d6b871bbc81816   ← baska
+banner-C.png             md5 fa46ffab28bbafe3e4a0a23734474536   ← baska
+```
+
+`banner-A.png` ile `banner-A-yedek.png` de birbirinin aynısı; `-yedek`
+ekli olanlar ayrı bir sürüm değil, aynı dosyanın ikinci kopyası.
+Play Console'a yüklenecek olan **`one-cikan-1024x500.png`**.
+
+Ekran görüntüleri **uygulamanın şu anki kodundan** `araclar/galeri.js`
+ile çekiliyor (360×640 görüntü alanı, 3× ölçek → tam 1080×1920).
+Kırpma yok, esnetme yok, elle rötuş yok. Arayüz değişince tek komutla
+yeniden çekiliyorlar:
+
+```
+python3 -m http.server 8765 &
+node araclar/galeri.js
+```
 
 Çekimde gerçek `radyo.json` ve gerçek `earth.json` kullanıldı:
 ekranda görünen istasyon adları, rafları, ülke kodları, arşiv kaydının
@@ -143,18 +166,25 @@ bir ton döndürüldü — görselleştirici gerçek sinyalle çalıştı.
 
 | Dosya | Ne gösteriyor |
 |---|---|
-| `ekran-1` | Canlı radyo, ELECTRONIC rafı seçili — `LIVE · ELECTRONIC · UA` |
-| `ekran-2` | Retro FX açık, parmak diskin içinde, `DRAG INSIDE` |
-| `ekran-3` | Arşiv (ORBITAPE), AMBIANCE rafı — ARCHIVE.ORG · Frank Schulte · CC BY-SA |
+| `01-radyo-radiotape` | RADIOTAPE rafı |
+| `02-radyo-electronic` | ELECTRONIC |
+| `03-radyo-jazz` | JAZZ |
+| `04-radyo-ambient` | AMBIENT |
+| `05-radyo-rock-country` | ROCK & COUNTRY |
+| `06-radyo-world-roots` | WORLD & ROOTS |
+| `07-radyo-lounge` | LOUNGE |
+| `08-radyo-orchestral` | ORCHESTRAL |
+| `09-tur` | Açılış turu |
 
-Üçüncüsü bilerek arşiv tarafından: **lisans ve sanatçı satırı**
-uygulamanın en önemli sözü ve mağaza sayfasında görünmesi lazım.
+Dokuzu da **RADIOTAPE dünyasından**: nebula ve gezegenler yalnızca
+SOUND BANKS kipinde var (`body.mood`), yani nebulasız set radyo tarafı
+demek.
 
-Bir ara MIXTAPE kanalında çekilmişti; o kanal kodda kapalı
-(`KANAL_SIRA = ['radio','lib']`), yani kullanıcının hiç gidemediği bir
-ekran mağazaya girecekti. Değiştirildi.
+Bir ara MIXTAPE kanalında çekilmişti; o kanal artık kodda hiç yok,
+yani kullanıcının gidemediği bir ekran mağazaya girecekti.
 
-Eski görüntüler uygulamanın **önceki** halindendi ve mağazaya
-girseydi bugünkü uygulamayı yanlış anlatırdı; bu yüzden değiştirildi.
+Eski galeri elle çekilmişti ve arayüz değiştikçe sessizce eskidi:
+içinde artık var olmayan raf adları (SOUNDS, AMBIANCE, HUMAN)
+duruyordu. Betikle çekilmesinin asıl sebebi bu.
 
 Uygulama simgesi olarak `icon-512.png` kullanılacak (512 × 512, hazır).
