@@ -3682,28 +3682,47 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        yalnizca UCU DE AYNIYSA tetikleniyor mu (yoksa her parcada
        cikardi), ve baska hicbir sey degistirmiyor mu -- ses, raf ve
        sira aynen devam etmeli. */
-    K('Ucluk kutlamasi calisiyor', await pg.evaluate(async ()=>{
+    {
+      /* SEMBOLLER DONERKEN OLCULMEZ. Ilk yazimda bu kontrol CI'da
+         kirmizi yandi ve sebebi burada: ses gelmeyen bir ortamda
+         (CI'da gercek ses yok) bekleGoster'in 620 ms'lik zamanlayicisi
+         calismaya devam ediyor ve HER TURDA bir yuvayi rastgele bir
+         sembolle yeniden yaziyor. Test ucunu de '3' yapiyor, arada
+         zamanlayici birini degistiriyor, ucluk bozuluyor ve kutlama
+         hic tetiklenmiyordu. Yerel makinede zamanlama denk gelmedigi
+         icin gorunmuyordu -- klasik "bende calisiyor".
+         Cozum: once bekleDondur() ile donme durduruluyor, oturma
+         animasyonunun bitmesi bekleniyor, sonra olculuyor.
+         Ayrica sonuc artik METIN donuyor: bir daha kirmizi yanarsa
+         hangi adimda takildigi logda yaziyor, tahmin edilmiyor. */
+      const uc = await pg.evaluate(async ()=>{
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
-        bekle.classList.remove('ucluk');
-        document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
-        const y = yuvalar();
-        /* IKISI ayni, biri farkli -> kutlama YOK */
-        y[0].dataset.sem='3'; y[1].dataset.sem='3'; y[2].dataset.sem='7';
-        uclukBak(); await bek(60);
-        const farkliyken = bekle.classList.contains('ucluk');
-        /* UCU de ayni -> kutlama VAR */
-        y[2].dataset.sem='3';
-        uclukBak(); await bek(120);
-        const ayniyken = bekle.classList.contains('ucluk');
-        const yildiz = document.querySelectorAll('.uclukYildiz').length;
-        /* Hareket kisitli cihazda yildiz cikmiyor -- dogru davranis,
-           kontrol onu hata saymamali. */
-        let kisitli = false;
-        try{ kisitli = matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
-        bekle.classList.remove('ucluk');
-        document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
-        return !farkliyken && ayniyken && (yildiz > 0 || kisitli);
-      }), 'ikisi ayniyken yok, ucu ayniyken var');
+        try{
+          bekleDondur();                       // donen zamanlayici dursun
+          await bek(900);                      // uc yuva yerine otursun
+          bekle.classList.remove('ucluk');
+          document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
+          const y = yuvalar();
+          if(y.length !== 3) return 'yuva sayisi ' + y.length;
+          /* IKISI ayni, biri farkli -> kutlama YOK */
+          y[0].dataset.sem='3'; y[1].dataset.sem='3'; y[2].dataset.sem='7';
+          uclukBak();
+          if(bekle.classList.contains('ucluk')) return 'ikisi ayniyken de kutladi';
+          /* UCU de ayni -> kutlama VAR */
+          y[2].dataset.sem='3';
+          uclukBak();
+          if(!bekle.classList.contains('ucluk')) return 'ucu ayniyken kutlamadi';
+          const yildiz = document.querySelectorAll('.uclukYildiz').length;
+          let kisitli = false;
+          try{ kisitli = matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+          bekle.classList.remove('ucluk');
+          document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
+          if(!kisitli && yildiz === 0) return 'yildiz cikmadi';
+          return 'ok ' + yildiz + ' yildiz' + (kisitli ? ' (hareket kisitli)' : '');
+        }catch(e){ return 'hata: ' + (e && e.message); }
+      });
+      K('Ucluk kutlamasi calisiyor', uc.indexOf('ok') === 0, uc);
+    }
     /* Kutlama SES ve SIRAYI degistirmiyor: sadece gorsel. */
     K('Ucluk sadece gorsel', await pg.evaluate(async ()=>{
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
