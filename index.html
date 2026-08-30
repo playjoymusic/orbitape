@@ -183,6 +183,31 @@
   /* non-scaling-stroke: kutu daraltılınca çizgi kalınlaşmasın, ekranda hep aynı. */
   #bekle .yuva svg *{vector-effect:non-scaling-stroke;}
   #bekle .yuva.doniyor{opacity:.22;transform:translateY(-3px) scale(.94);}
+  /* ── GERILIM: ILK IKISI TUTTU, UCUNCU BEKLIYOR ────────────────
+     "Tam 2 olunca patlayacakmis gibi minik icerden hafif etkilenir."
+     Hafif: yalnizca oturan iki sembol, cok kucuk bir nefes ve bir
+     tik parlaklik. Satirin kendisi ya da ekran degismiyor.
+     Sure 520 ms -- ucuncu yuvanin gecikmesiyle ayni, yani nefes tam
+     o yuva otururken kesiliyor. */
+  #bekle.gerilim .yuva:nth-child(1) svg,
+  #bekle.gerilim .yuva:nth-child(2) svg{
+    animation:uclukGerilim .52s ease-in-out;}
+  @keyframes uclukGerilim{
+    0%  {filter:brightness(1);   transform:scale(1);}
+    45% {filter:brightness(1.5); transform:scale(1.07);}
+    100%{filter:brightness(1);   transform:scale(1);}
+  }
+  /* ── SONME: UCUNCU BASKA CIKTI ────────────────────────────────
+     Kisa ve kucuk. Kaybetmek bir ceza degil, "bu sefer olmadi". */
+  #bekle.sondu .yuva svg{animation:uclukSondu .6s ease-out;}
+  @keyframes uclukSondu{
+    0%  {opacity:1;   filter:brightness(1);}
+    35% {opacity:.34; filter:brightness(.65);}
+    100%{opacity:1;   filter:brightness(1);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    #bekle.gerilim .yuva svg, #bekle.sondu .yuva svg{animation:none;}
+  }
   /* ── UCLUK: UC SEMBOL AYNI ─────────────────────────────────────
      Semboller her parcada rastgele seciliyor; ucunun ayni cikmasi
      nadir bir denk gelis. Olunca kisa bir kutlama: renkler cemberde
@@ -822,18 +847,31 @@
      kategorinin rengi ama kısılmış; marka adını bastırmıyor. */
   #ust .ustSatir{display:flex;align-items:baseline;justify-content:flex-end;gap:9px;
     position:relative;}
-  /* ── FREKANS ÇİZGİSİ ──────────────────────────────────────────
-     İnce ve nazik: 1px kalınlık, yarı saydam, yalnızca ses varken.
-     Yüksekliği 9px -- yazının altında bir nefeslik yer, satırın
-     hizasını bozmuyor (mutlak konumlu). Genişliği JS'te #modAd'in
-     ölçülen kutusundan geliyor: isim uzayıp kısaldıkça çizgi de
-     onunla birlikte değişiyor.
-     Durunca yatışıyor: opaklık 0'a iniyor ve çizim düz bir hatta
-     oturuyor -- "durdu" bilgisi de bir hareket. */
-  #ust #modDalga{position:absolute;top:100%;margin-top:4px;height:9px;
-    opacity:0;transition:opacity .5s ease;pointer-events:none;
-    display:block;}
-  #ust #modDalga.caliyor{opacity:.5;}
+  /* ── FREKANS ÇUBUKLARI ────────────────────────────────────────
+     Kategori adının SOLUNDA, dört ince dikey çubuk.
+     ÖLÇÜ: yüksekliği yazının punto'suyla aynı (12px) -- yani
+     satırda kendi ağırlığı var, "acaba bir şey mi var" dedirtmiyor.
+     Genişliği kısa (18px): amacı yer kaplamak değil, ses olduğunu
+     söylemek.
+     Neden çubuk, dalga değil: bu ölçekte 1px'lik bir dalga
+     kayboluyordu (ölçüldü, kullanıcı "anlaşılmıyor" dedi). Dikey
+     çubuk aynı pikselde daha okunur.
+     align-self:center -- satır baseline hizalı, çubuklar yazının
+     ortasına oturmalı. */
+  #ust #modDalga{display:block;width:18px;height:12px;flex:none;
+    align-self:center;opacity:0;transition:opacity .45s ease;
+    pointer-events:none;}
+  #ust #modDalga.caliyor{opacity:.62;}
+  @media (max-width:480px){ #ust #modDalga{width:16px;height:11px;} }
+  /* ── DAR EKRANDA DAHA DAR ─────────────────────────────────────
+     320px'te olculdu: cubugun satira ekledigi genislik (16px +
+     9px bosluk) ust blogu sola tasirip ayar tutamaginin uzerine
+     bindiriyordu -- 4x20px cakisma, senaryo testi yakaladi.
+     Kucultmek dogru cozum: o ekranda zaten her sey dar. Gorunurlugu
+     kaybetmiyoruz, yalnizca aralik kisaliyor. */
+  @media (max-width:400px){
+    #ust #modDalga{width:12px;height:10px;margin-right:-4px;}
+  }
   @media (prefers-reduced-motion: reduce){ #ust #modDalga{display:none;} }
   /* ── ÇİFT DOKUNUŞ SAYFAYI KAYDIRMASIN ─────────────────────────────
      iOS Safari'de bir yazıya iki kez hızlı basmak "çift dokunuşla
@@ -1994,18 +2032,15 @@
            bilerek: bu yazı halkalarda gezinirken her vurguda değişiyor
            (modAdiTut), canlı bölge yapılsaydı sürtme boyunca sürekli
            konuşurdu. Gezinerek okunabilir olması yeterli. -->
+      <!-- ── ÇALDIĞINA DAİR KANIT ────────────────────────────────
+           Kategori adının SOLUNDA, kısa ve yazının yüksekliğinde.
+           Önce adın altında ince bir hat denendi: "anlaşılmıyor, çok
+           ince olmuş" -- haklıydı, 1px'lik bir dalga 12px'lik yazının
+           altında kayboluyordu. Dikey çubuk daha yüksek sesle
+           konuşuyor: aynı yerde, daha az piksel, daha okunur. -->
+      <canvas id="modDalga" aria-hidden="true"></canvas>
       <span id="modAd"></span>
       <div class="kanal on ad" data-mod="radio"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
-      <!-- ── ÇALDIĞINA DAİR KANIT ────────────────────────────────
-           Kategori adının tam altında, TAM ONUN GENİŞLİĞİNDE ince
-           bir dalga. Sadece ses çalarken kıpırdıyor; durunca
-           yatışıp siliniyor.
-           Neden kardeş eleman, çocuk değil: #modAd'in içeriği her
-           isim değişiminde textContent ile baştan yazılıyor -- içine
-           konan her şey silinirdi. Mutlak konumlu ve yeri #modAd'in
-           ölçülen kutusundan geliyor, yani satırın hizasına hiç
-           dokunmuyor. -->
-      <canvas id="modDalga" aria-hidden="true"></canvas>
     </div>
   </div>
 
@@ -3929,33 +3964,83 @@
   /* SES GELDİ: dönme durur ama hepsi birden değil. Önce 1., sonra 2., sonra
      3. sembol — her biri bir öncekinden yavaş — son hâline oturur. Yuvalar
      sabit genişlikte olduğu için oturdukları yerde hiçbir kayma olmuyor. */
+  /* ══ SEMBOLLERIN OTURUSU: KUCUK BIR OYUN ═════════════════════════
+     Kullanicinin istegi: "sembollerin degisimini biraz daha
+     oyunlastir. Mesela ilk 2 ayni oldu, 3'u beklettin, hop gelmedi.
+     Ya da hop geldi, 3 oldu. Tam 2 olunca patlayacakmis gibi minik
+     icerden hafif etkilenir, ama son sembol baska olunca soner gibi.
+     Ama abartma."
+
+     UC SONUC VAR ve hepsi ONCEDEN seciliyor -- yuvalar teker teker
+     otururken zar atilmiyor, atilsaydi gerilimi kuramazdik:
+       TUTAN     (%12)  ucu de ayni
+       KIL PAYI  (%18)  ilk ikisi ayni, ucuncu baska
+       SIRADAN   (%70)  hepsi ayri
+
+     GERILIM: ilk iki yuva ayni oturdugu anda -- TUTAN ve KIL PAYI
+     turlarinin ikisinde de -- satir hafifce nefes almaya basliyor ve
+     UCUNCU YUVA GECIKIYOR (+520 ms). Yani "olacak mi?" ani gercekten
+     yasanıyor ve iki sonucta da ayni geliyor: kullanici oturmadan
+     once bilemiyor.
+     Ucuncu oturunca ya kutlama, ya kisa bir sonme (.sondu, 600 ms).
+     Sonme bilerek KUCUK: kaybetmek bir ceza degil, sadece bu sefer
+     olmadi demek. */
+  const UCLUK_KIL_PAYI = 0.18;
+  function _turSonucu(){
+    /* ?ucluk adresi disaridan kuruyor: ona dokunmuyoruz. */
+    if(UCLUK_ZORLA){
+      const s0 = _uclukTurSem || ALIEN[Math.random()*ALIEN.length|0];
+      return [s0, s0, s0];
+    }
+    const rast = ()=>ALIEN[Math.random()*ALIEN.length|0];
+    const z = Math.random();
+    if(z < UCLUK_SANS){ const a0 = rast(); return [a0,a0,a0]; }
+    if(z < UCLUK_SANS + UCLUK_KIL_PAYI){
+      const a0 = rast(); let b0 = rast();
+      while(b0 === a0) b0 = rast();               // ucuncu MUTLAKA baska
+      return [a0,a0,b0];
+    }
+    /* Siradan tur: ilk ikisi de ayni cikmasin, yoksa gerilimi
+       kurmadan kil payi yasanmis olur. */
+    const a1 = rast(); let b1 = rast(); while(b1 === a1) b1 = rast();
+    return [a1, b1, rast()];
+  }
   function bekleDondur(){
     try{ agYokKapa(); }catch(e){ _yut(e); }          // ses geldi: ağ çalışıyor
     if(bekleInt){ clearInterval(bekleInt); bekleInt=null; }
-    /* ZAR BURADA: semboller son halini alirken bir kez. ?ucluk
-       adresinde zaten disaridan kuruluyor, ona dokunmuyoruz. */
-    if(!UCLUK_ZORLA)
-      _uclukTurSem = (Math.random() < UCLUK_SANS)
-                   ? ALIEN[Math.random()*ALIEN.length|0] : null;
+    try{ bekle.classList.remove('gerilim','sondu'); }catch(e){ _yut(e); }
+    const hedef = _turSonucu();
     const y = yuvalar();
+    const ikiAyni = hedef[0] === hedef[1];
     y.forEach((el,i)=>{
-      const bekleme = i*175, sonme = 180 + i*90;      // sırayla ve yavaşlayarak
+      /* UCUNCU YUVA GECIKIYOR: yalnizca ilk ikisi tuttuysa. */
+      const gecikme = (i === 2 && ikiAyni) ? 520 : 0;
+      const bekleme = i*175 + gecikme, sonme = 180 + i*90;
       setTimeout(()=>{
         el.classList.add('doniyor');
-        setTimeout(()=>{ yuvaYaz(el, alienSec());
-                         el.classList.remove('doniyor');
-                         /* Ucluk ASIL burada denk geliyor: semboller
-                            ses baslayinca son halini aliyor. Son
-                            yuva oturunca bir kez bakiliyor. */
-                         if(i === y.length - 1){
-                           try{ uclukBak(); }catch(e){ _yut(e); }
-                           /* Tur bitti: bir sonraki DONME yine
-                              rastgele olsun diye anahtar siliniyor.
-                              Silinmezse semboller donerken de hep
-                              ayni cikar. */
-                           if(!UCLUK_ZORLA) _uclukTurSem = null;
-                         }
-                       }, sonme);
+        setTimeout(()=>{
+          yuvaYaz(el, hedef[i]);
+          el.classList.remove('doniyor');
+          /* IKINCI oturdu ve ilk ikisi ayni -> gerilim baslasin.
+             Ucuncu yuva zaten 520 ms sonra oturacak. */
+          if(i === 1 && ikiAyni){
+            try{ bekle.classList.add('on','gerilim'); }catch(e){ _yut(e); }
+          }
+          if(i === y.length - 1){
+            try{ bekle.classList.remove('gerilim'); }catch(e){ _yut(e); }
+            const tuttu = hedef[0] === hedef[1] && hedef[1] === hedef[2];
+            if(tuttu){ try{ uclukBak(); }catch(e){ _yut(e); } }
+            else if(ikiAyni){
+              /* KIL PAYI: kisa bir sonme. Kaybetmek bir ceza degil. */
+              try{
+                bekle.classList.add('sondu');
+                setTimeout(()=>{ try{ bekle.classList.remove('sondu'); }
+                                 catch(e){ _yut(e); } }, 600);
+              }catch(e){ _yut(e); }
+            }
+            if(!UCLUK_ZORLA) _uclukTurSem = null;
+          }
+        }, sonme);
       }, bekleme);
     });
   }
@@ -6539,58 +6624,47 @@
      yani gercekten CALANI gosteriyor -- dekor degil, kanit.
      Ses yoksa genlik sifira iniyor ve hat duzlesiyor. */
   var _dalgaEl = null, _dalgaEn = 0, _dalgaBoy = 0, _dalgaGen = 0;
+  const DALGA_CUBUK = 4;
+  var _dalgaFaz = [0.0, 1.7, 3.3, 4.9];      // her cubuk kendi ritminde
+  /* Tuval cozunurlugu ekranin yogunluguna gore: 12px'lik bir cubuk
+     retinada da net cizilsin. Olcu CSS'ten okunuyor, sabit yazilmiyor
+     -- dar ekranda 16x11'e iniyor. */
   function _modDalgaHizala(){
     try{
       const c = _dalgaEl || (_dalgaEl = document.getElementById('modDalga'));
-      const m = document.getElementById('modAd');
-      const sat = document.querySelector('#ust .ustSatir');
-      if(!c || !m || !sat) return;
-      const mr = m.getBoundingClientRect(), sr = sat.getBoundingClientRect();
-      if(!mr.width){ c.classList.remove('caliyor'); return; }
-      const en = Math.round(mr.width), boy = 9;
-      c.style.left = Math.round(mr.left - sr.left) + 'px';
-      c.style.width = en + 'px';
-      /* Tuval cozunurlugu ekranin yogunluguna gore: 1px'lik hat
-         retinada da 1px gorunsun. */
+      if(!c) return;
+      const r = c.getBoundingClientRect();
+      if(!r.width) return;
       const dpr = Math.min(3, window.devicePixelRatio || 1);
-      const w = Math.round(en*dpr), h = Math.round(boy*dpr);
+      const w = Math.round(r.width*dpr), h = Math.round(r.height*dpr);
       if(c.width !== w || c.height !== h){ c.width = w; c.height = h; }
       _dalgaEn = w; _dalgaBoy = h;
-      c.style.height = boy + 'px';
     }catch(e){ _yut(e); }
   }
   function _modDalgaCiz(playing, rit, vt){
     try{
       const c = _dalgaEl || (_dalgaEl = document.getElementById('modDalga'));
-      if(!c || !_dalgaEn) return;
-      /* Genlik yumusak degisiyor: ses girip cikarken hat zipla-
-         mıyor, aciliyor ve kapaniyor. */
-      const hedef = playing ? Math.min(1, 0.18 + rit*2.2) : 0;
+      if(!c) return;
+      if(!_dalgaEn) _modDalgaHizala();
+      if(!_dalgaEn) return;
+      /* Genlik yumusak degisiyor: ses girip cikarken cubuklar
+         ziplamiyor, aciliyor ve kapaniyor. */
+      const hedef = playing ? Math.min(1, 0.22 + rit*2.0) : 0;
       _dalgaGen += (hedef - _dalgaGen) * 0.12;
       c.classList.toggle('caliyor', playing || _dalgaGen > 0.02);
       const x = c.getContext('2d'); if(!x) return;
       x.clearRect(0,0,_dalgaEn,_dalgaBoy);
-      const orta = _dalgaBoy/2;
-      const dpr = Math.min(3, window.devicePixelRatio || 1);
-      x.lineWidth = Math.max(1, Math.round(dpr));
-      x.lineCap = 'round';
-      x.strokeStyle = getComputedStyle(document.getElementById('modAd')).color || '#8ff0dd';
-      x.beginPath();
-      const adim = Math.max(2, Math.round(_dalgaEn/64));
-      for(let px=0; px<=_dalgaEn; px+=adim){
-        const t = px/_dalgaEn;
-        /* Uc dalganin toplami: tek sinus fazla duzenli, makine gibi
-           duruyor. Ucu birlikte duzensiz ama yumusak bir hat veriyor.
-           Kenarlarda soneren bir zarf var -- hat uclarda inceliyor,
-           kesilmis gibi durmuyor. */
-        const zarf = Math.sin(Math.PI*t);
-        const y = orta + zarf * _dalgaGen * (orta-1) * (
-              Math.sin(t*11.0 + vt*3.1)*0.55
-            + Math.sin(t*19.0 - vt*2.3)*0.30
-            + Math.sin(t*31.0 + vt*4.7)*0.15);
-        px ? x.lineTo(px, y) : x.moveTo(px, y);
+      x.fillStyle = getComputedStyle(document.getElementById('modAd')).color || '#8ff0dd';
+      const bosluk = Math.max(1, Math.round(_dalgaEn*0.10));
+      const en = Math.max(1, (_dalgaEn - bosluk*(DALGA_CUBUK-1)) / DALGA_CUBUK);
+      for(let i=0;i<DALGA_CUBUK;i++){
+        /* Taban yukseklik hep var: ses dururken bile dort nokta
+           kaliyor, "kapali" degil "sessiz" demek. */
+        const dalga = 0.5 + 0.5*Math.sin(vt*4.2 + _dalgaFaz[i]);
+        const y = (0.16 + 0.84*dalga*_dalgaGen) * _dalgaBoy;
+        x.fillRect(Math.round(i*(en+bosluk)), Math.round(_dalgaBoy - y),
+                   Math.round(en), Math.round(y));
       }
-      x.stroke();
     }catch(e){ _yut(e); }
   }
   function _eqCiz(playing, rit, vt){

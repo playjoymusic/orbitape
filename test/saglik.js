@@ -1010,6 +1010,45 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       sn.yok ? '-' : (sn.donerkenAyni
         ? 'donerken de hepsi ayni: zar yanlis yerde atiliyor'
         : 'zar yalnizca oturma aninda'));
+    /* ── KIL PAYI VE GERILIM ─────────────────────────────────────
+       Kullanicinin istegi: "ilk 2 ayni oldu, 3'u beklettin, hop
+       gelmedi. Ya da hop geldi." Yani KAYBETMEK de oyunun parcasi:
+       ilk ikisi tutup ucuncusu tutmayan tur olmadan tutan turun
+       anlami yok -- karsilastiracak bir sey kalmiyor.
+       Uc sey olculuyor: dagilim, gerilimin gercekten kurulmasi ve
+       kaybedince sonme. */
+    const oy = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      if(typeof _turSonucu !== 'function') return { yok:true };
+      let tut=0, kil=0, sir=0; const N=3000;
+      for(let i=0;i<N;i++){
+        const h=_turSonucu();
+        if(h[0]===h[1] && h[1]===h[2]) tut++;
+        else if(h[0]===h[1]) kil++;
+        else sir++;
+      }
+      const bk = document.getElementById('bekle');
+      const gor = { gerilim:0, sondu:0 };
+      const izci = new MutationObserver(()=>{
+        if(bk.classList.contains('gerilim')) gor.gerilim++;
+        if(bk.classList.contains('sondu'))   gor.sondu++; });
+      izci.observe(bk, {attributes:true, attributeFilter:['class']});
+      const eski = window._turSonucu;
+      window._turSonucu = ()=>[ALIEN[3], ALIEN[3], ALIEN[9]];   // kil payi
+      bekleDondur(); await bek(1900);
+      window._turSonucu = eski;
+      izci.disconnect();
+      try{ bk.classList.remove('gerilim','sondu'); }catch(e){}
+      return { tut:+(tut/N*100).toFixed(1), kil:+(kil/N*100).toFixed(1),
+               sir:+(sir/N*100).toFixed(1), gor };
+    });
+    K('Kil payi turu var ve dengeli', !oy.yok
+      && oy.kil > 10 && oy.kil < 26 && oy.sir > 55,
+      oy.yok ? '_turSonucu yok'
+             : ('tutan %' + oy.tut + ' · kil payi %' + oy.kil + ' · siradan %' + oy.sir));
+    K('Kil payinda gerilim ve sonme calisiyor', !oy.yok
+      && oy.gor.gerilim > 0 && oy.gor.sondu > 0,
+      oy.yok ? '-' : ('gerilim ' + oy.gor.gerilim + ' kez, sonme ' + oy.gor.sondu + ' kez'));
   }
 
   /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────
@@ -1032,9 +1071,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       _modDalgaHizala();
       await bek(40);
       const cr = c.getBoundingClientRect(), mr = m.getBoundingClientRect();
-      const hiza = { solFark:Math.round(Math.abs(cr.left - mr.left)),
-                     enFark:Math.round(Math.abs(cr.width - mr.width)),
-                     altinda:cr.top >= mr.bottom - 1 };
+      const punto = parseFloat(getComputedStyle(m).fontSize) || 12;
+      /* YERI: yazinin SOLUNDA bitiyor. BOYU: yazinin puntosuyla
+         ayni buyukluk sinifinda -- once yazinin altinda 1px'lik bir
+         hat vardi ve "anlasilmiyor, cok ince" diye geri geldi.
+         GENISLIGI: kisa kalmali, amaci yer kaplamak degil. */
+      const hiza = { solunda:cr.right <= mr.left + 1,
+                     en:Math.round(cr.width), boy:Math.round(cr.height),
+                     punto:Math.round(punto),
+                     boyOran:+(cr.height/punto).toFixed(2) };
       /* Ses varmis gibi birkac kare besle: genlik acilmali. */
       for(let i=0;i<40;i++) _modDalgaCiz(true, 0.32, i*0.05);
       await bek(20);
@@ -1045,12 +1090,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const kapali = { sinif:c.classList.contains('caliyor'), gen:+_dalgaGen.toFixed(3) };
       return { hiza, acik, kapali };
     });
-    K('Frekans cizgisi yaziyla ayni hatta', !dlg.yok
-      && dlg.hiza.solFark <= 1 && dlg.hiza.enFark <= 1 && dlg.hiza.altinda,
-      dlg.yok ? 'cizgi yok'
-              : ('sol fark ' + dlg.hiza.solFark + 'px, genislik farki '
-                 + dlg.hiza.enFark + 'px, yazinin altinda: ' + dlg.hiza.altinda));
-    K('Frekans cizgisi yalnizca calarken kipirdiyor', !dlg.yok
+    K('Frekans cubugu yazinin solunda ve okunur boyda', !dlg.yok
+      && dlg.hiza.solunda && dlg.hiza.boyOran >= 0.8 && dlg.hiza.boyOran <= 1.3
+      && dlg.hiza.en > 0 && dlg.hiza.en <= 26,
+      dlg.yok ? 'cubuk yok'
+              : ('yazinin solunda: ' + dlg.hiza.solunda + ', ' + dlg.hiza.en
+                 + 'x' + dlg.hiza.boy + 'px, punto ' + dlg.hiza.punto
+                 + 'px (oran ' + dlg.hiza.boyOran + ')'));
+    K('Frekans cubugu yalnizca calarken kipirdiyor', !dlg.yok
       && dlg.acik.sinif && dlg.acik.gen > 0.1
       && !dlg.kapali.sinif && dlg.kapali.gen < 0.03,
       dlg.yok ? '-' : ('calarken genlik ' + dlg.acik.gen
