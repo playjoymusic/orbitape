@@ -845,24 +845,22 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   });
   K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7,8,9', 'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
-  /* ORBITAPE'IN ANLAMI DEGISTI. Eskiden "arsivdeki muzik OLMAYAN her
-     sey" demekti ve MIXTAPE ile birlikte arsivi ikiye boluyordu.
-     Artik menudeki en icteki halka ve arsivin TAMAMI -- otekiler onun
-     altindaki daraltmalar. MIXTAPE hala "arsivdeki butun muzik".
-     Kontrol de buna gore: muzik MIXTAPE'e girer ama AMBIANCE'a
-     girmez, ses AMBIANCE'a girer ama MIXTAPE'e girmez, ikisi de
-     ORBITAPE'e girer, hicbiri RADIOTAPE'e girmez. */
+  /* ORBITAPE'IN ANLAMI: menudeki en icteki halka ve arsivin TAMAMI;
+     otekiler onun altindaki daraltmalar. "Arsivdeki butun muzik"
+     rafi RECORDS (MIXTAPE halkasi kaldirildi -- ekranda hicbir yerde
+     gorunmuyordu, isi zaten RECORDS yapiyordu).
+     Kontrol: muzik RECORDS'a gider ama AMBIANCE'a girmez, ses
+     AMBIANCE'a girer ama RECORDS'a gitmez, ikisi de ORBITAPE'e
+     girer, hicbiri RADIOTAPE'e girmez. */
   const ay = await pg.evaluate(()=>{
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
-    return modUyar(muzik,'MIXTAPE') && !modUyar(muzik,'AMBIANCE')
-        && modUyar(ses,'AMBIANCE') && !modUyar(ses,'MIXTAPE')
+    return modUyar(muzik,'RECORDS') && !modUyar(muzik,'AMBIANCE')
+        && modUyar(ses,'AMBIANCE') && !modUyar(ses,'RECORDS')
         && modUyar(muzik,'ORBITAPE') && modUyar(ses,'ORBITAPE')
         && !modUyar(muzik,'RADIOTAPE') && !modUyar(ses,'RADIOTAPE');
   });
-  /* Halka sirasi ve MIXTAPE'in yeri: en distan iceri RADIOTAPE,
-     ORBITAPE, MIXTAPE. */
   const sr = await pg.evaluate(()=>({ sira:MODSIRA.slice().reverse(), zem:MOD_TEMA.RADIOTAPE.zemin }));
-  K('MIXTAPE ustten 2. halka', sr.sira[1]==='MIXTAPE', 'distan iceri: '+sr.sira.slice(0,3).join(' > '));
+  K('Olu MIXTAPE halkasi kalmadi', sr.sira.indexOf('MIXTAPE') < 0, 'yedek liste: '+sr.sira.join(' > '));
   K('RADIOTAPE zemini siyah', /^#0{6}$/i.test(sr.zem[1]) && parseInt(sr.zem[0].slice(1),16) < 0x151515,
      'ic '+sr.zem[0]+' dis '+sr.zem[1]);
 
@@ -1053,17 +1051,17 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Kutu isaretlenmezse TEKRAR cikar', tur.tekrar, 'standart davranis');
   K('Kutu isaretlenirse bir daha cikmaz', !tur.bitti, 'depoya yazildi');
 
-  K('MIXTAPE muzik, ORBITAPE hepsi', ay, 'ORBITAPE arsivin tamami, RADIOTAPE disarida');
+  K('RECORDS muzik, ORBITAPE hepsi', ay, 'ORBITAPE arsivin tamami, RADIOTAPE disarida');
   const sf = await pg.evaluate(()=>{
     const t=(e,a)=>({etiket:e,ad:a});
     return {
-      ambientMuzik: modUyar(t('ambient · drone','Deep Drone'),'MIXTAPE') && !modUyar(t('ambient · drone','Deep Drone'),'AMBIANCE'),
-      noiseMuzik:   modUyar(t('noise · experimental','Harsh'),'MIXTAPE') && !modUyar(t('noise · experimental','Harsh'),'AMBIANCE'),
+      ambientMuzik: modUyar(t('ambient · drone','Deep Drone'),'RECORDS') && !modUyar(t('ambient · drone','Deep Drone'),'AMBIANCE'),
+      noiseMuzik:   modUyar(t('noise · experimental','Harsh'),'RECORDS') && !modUyar(t('noise · experimental','Harsh'),'AMBIANCE'),
       alanKaydi:    modUyar(t('green-field-recordings','x'),'AMBIANCE'),
       nasa:         modUyar(t('nasaaudiocollection · nasa','x'),'AMBIANCE'),
-      baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'AMBIANCE') && !modUyar(t('','Tidal Wave'),'MIXTAPE'),
+      baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'AMBIANCE') && !modUyar(t('','Tidal Wave'),'RECORDS'),
       canliYayin:   modUyar({etiket:'',ad:'FM',radyo:true},'RADIOTAPE') === true &&
-                    ['MIXTAPE','ORBITAPE','AMBIANCE','HUMAN'].every(k=>!modUyar({etiket:'',ad:'FM',radyo:true},k)),
+                    ['RECORDS','ORBITAPE','AMBIANCE','HUMAN'].every(k=>!modUyar({etiket:'',ad:'FM',radyo:true},k)),
       radyoSadeceYayin: !modUyar(t('netlabel · techno','Acid EP'),'RADIOTAPE') && !modUyar(t('field recordings','Rain'),'RADIOTAPE')
     };
   });
@@ -1073,7 +1071,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      siniflaniyor: 'lp_madama-butterfly' muzik, 'exp46-change-of-command'
      insan sesi. Baslik hala hicbir seye karismiyor. */
   const kyn = await pg.evaluate(()=>{
-    const A=['RADIOTAPE','MIXTAPE','ORBITAPE','HUMAN','AMBIANCE'];
+    const A=['RADIOTAPE','RECORDS','ORBITAPE','HUMAN','AMBIANCE'];
     const f=(o)=>A.filter(a=>modUyar(o,a)).join(',');
     const U=(id)=>({etiket:'', ad:'Tidal Wave', mp3:'https://archive.org/download/'+id+'/x.mp3'});
     return {
@@ -1088,7 +1086,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       soap:    f({etiket:'old time radio · otr soap opera', ad:'x', mp3:''})
     };
   });
-  K('Etiketsiz: lp_/edison/78_ muzik', /MIXTAPE/.test(kyn.lp) && /MIXTAPE/.test(kyn.edison) && /MIXTAPE/.test(kyn.r78),
+  K('Etiketsiz: lp_/edison/78_ muzik', /RECORDS/.test(kyn.lp) && /RECORDS/.test(kyn.edison) && /RECORDS/.test(kyn.r78),
      'lp '+kyn.lp+' | edison '+kyn.edison+' | 78 '+kyn.r78);
   /* NASA yer-uzay hatti INSAN SESI: HUMAN'a girer, AMBIANCE'a GIRMEZ.
      Kullanicinin kurali: ambiance'a asla telsiz konusmasi koyma. */
@@ -1096,8 +1094,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Etiketsiz: voyager AMBIANCE', /AMBIANCE/.test(kyn.voyager), kyn.voyager);
   K('Kaynaksiz kayit ORBITAPE te kalir', kyn.bos==='ORBITAPE', kyn.bos);
   K('Etiket "ses" derse kaynak ezemez', kyn.talk==='ORBITAPE,HUMAN', kyn.talk);
-  K('folksoundomy muzik DEGIL', /AMBIANCE/.test(kyn.folk) && !/MIXTAPE/.test(kyn.folk), kyn.folk);
-  K('soap opera muzik DEGIL', /HUMAN/.test(kyn.soap) && !/MIXTAPE/.test(kyn.soap), kyn.soap);
+  K('folksoundomy muzik DEGIL', /AMBIANCE/.test(kyn.folk) && !/RECORDS/.test(kyn.folk), kyn.folk);
+  K('soap opera muzik DEGIL', /HUMAN/.test(kyn.soap) && !/RECORDS/.test(kyn.soap), kyn.soap);
 
   K('Basliktan siniflandirma YOK', sf.baslikYok, '"Tidal Wave" AMBIANCE degil, ORBITAPE');
   K('RADIOTAPE sadece canli yayin', sf.radyoSadeceYayin, 'arsiv RADIOTAPE e girmiyor');
@@ -1259,12 +1257,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       return !!e && getComputedStyle(e).pointerEvents!=='none' && e.getAttribute('role')==='button';}),
     'role=button'),
   K('En dis halka turkuaz', (await pg.evaluate(()=>MOD_TEMA[MODSIRA[MODSIRA.length-1]].ana))==='53,224,216', 'RADIOTAPE');
-  /* Kavunici artik MIXTAPE'te (ustten 3.), ORBITAPE antrasit. */
-  K('Halka sirasi', (await pg.evaluate(()=>MODSIRA.slice().reverse().slice(0,3).join('>')))==='RADIOTAPE>MIXTAPE>ORBITAPE',
-     'distan ice RADIOTAPE > MIXTAPE > ORBITAPE');
-  K('2. halka kavunici (MIXTAPE)', (await pg.evaluate(()=>MOD_TEMA[MODSIRA[MODSIRA.length-2]].ana))==='240,172,122', 'MIXTAPE');
-  K('3. halka antrasit (ORBITAPE)', await pg.evaluate(()=>{
-      const [r,g,b2]=MOD_TEMA[MODSIRA[MODSIRA.length-3]].ana.split(',').map(Number);
+  /* MIXTAPE halkasi kaldirildi: yedek listede de RADIOTAPE > ORBITAPE. */
+  K('Halka sirasi', (await pg.evaluate(()=>MODSIRA.slice().reverse().slice(0,3).join('>')))==='RADIOTAPE>ORBITAPE>HUMAN',
+     'distan ice RADIOTAPE > ORBITAPE > HUMAN');
+  /* Adin kendisiyle soruluyor: halka sayisi degisince sira kayiyor
+     ve indisle sormak sessizce baska halkayi olcuyordu. */
+  K('ORBITAPE halkasi antrasit', await pg.evaluate(()=>{
+      const [r,g,b2]=MOD_TEMA['ORBITAPE'].ana.split(',').map(Number);
       const mx=Math.max(r,g,b2), mn=Math.min(r,g,b2);
       return (mx-mn)/mx < 0.18 && b2 > r;          // az doygun, morumsu
     }), 'gri + az mor');
@@ -1276,7 +1275,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const oku=()=>getComputedStyle(document.body).getPropertyValue('--zem1').trim();
     const _eskiMod = mod; mod = 'lib';
-    const o={}; for(const a of ['RADIOTAPE','MIXTAPE','ORBITAPE','AMBIANCE']){ modSec(a,true); await bek(80); o[a]=oku(); }
+    const o={}; for(const a of ['RADIOTAPE','RECORDS','ORBITAPE','AMBIANCE']){ modSec(a,true); await bek(80); o[a]=oku(); }
     mod = _eskiMod;
     modSec('RADIOTAPE', true);
     return o;
@@ -1472,7 +1471,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     modSec('RADIOTAPE', true); await bek(120);
     const kat = zem();
     const katFarkli = {};
-    for(const a of ['AMBIANCE','HUMAN','MIXTAPE','ORBITAPE']){ modSec(a,true); await bek(60); katFarkli[a]=zem().z1; }
+    for(const a of ['AMBIANCE','HUMAN','RECORDS','ORBITAPE']){ modSec(a,true); await bek(60); katFarkli[a]=zem().z1; }
     modSec('RADIOTAPE', true); await bek(60);
     const fxZem = {}; const fxRenk = {};
     for(const f of ['retro','dongu','karadelik','ana']){
@@ -1729,10 +1728,19 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
           && typeof mixYukle === 'undefined'
           && typeof listeGec === 'undefined';
     }), 'mixtape.json, mixHavuz, listeGec -- hicbiri yok');
-  /* MIXTAPE HALKASI AYRI SEY: o bir raf adi (arsivdeki butun muzik),
-     kanal degil. Kaldirilan sey dosyaydi, raf duruyor. */
-  K('MIXTAPE rafi duruyor', await pg.evaluate(()=>
-      MODSIRA.indexOf('MIXTAPE') >= 0), 'raf adi kanal degil');
+  /* "Arsivdeki butun muzik" rafi RECORDS: MIXTAPE halkasi ekranda
+     hicbir yerde gorunmuyordu (halkaAdlar iki dunyada da baska liste
+     donuyor), kaldirildi. RECORDS duruyor ve dolu. */
+  K('Muzik rafi RECORDS', await pg.evaluate(()=>
+      ARSIV_ADLAR.indexOf('RECORDS') >= 0 && MODSIRA.indexOf('MIXTAPE') < 0),
+     'MIXTAPE halkasi yok, RECORDS var');
+  /* OTHERS'in son sorusu: bu bir muzik mi? Kalip listesi uzatilmadi,
+     uygulamanin kendi muzik testi soruldu. Olculdu: OTHERS 1.289 ->
+     598, RECORDS 5.224 -> 5.915. */
+  K('OTHERS muzigi RECORDS a birakiyor', await pg.evaluate(()=>
+      arsivRaf({etiket:'opensource_audio community experimental', ad:'[LEMN018] Therma Ikarias', mp3:''}) === 'RECORDS'
+      && arsivRaf({etiket:'', ad:'Broken Doorbell', mp3:''}) === 'OTHERS'),
+     'netlabel yayini RECORDS, kalan OTHERS');
   K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
   K('Kayit hedefi ONDEN hazir', await pg.evaluate(()=>!!kayitHedef), 'REC oncesi kurulu');
   /* latencyHint:'playback': tampon 441 -> 1024 ornek. Cizirti isleci
@@ -2411,7 +2419,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     turBitir(); await bek(200);
     /* Tum efektli kanallar birer kez gordu -> bundan sonra SKIP cikar */
     modSec('ORBITAPE', true); await bek(700); turBitir(); await bek(150);
-    modSec('MIXTAPE',  true); await bek(700); turBitir(); await bek(150);
+    modSec('RECORDS',  true); await bek(700); turBitir(); await bek(150);
     modSec('HUMAN',    true); await bek(700);
     const turSonra = _fxSunumAkiyor, turSonraAlt = alt();
     /* Kutuyu isaretle + SKIP: bir daha cikmamali */
@@ -2443,7 +2451,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     turBitir(); await bek(200);
     /* YENIDEN ACILIS taklidi: oturum bayragini sifirla, depo aynen dursun */
     _fxKullanildi = false;
-    modSec('MIXTAPE', true); await bek(800);
+    modSec('RECORDS', true); await bek(800);
     const yenidenAcilista = _fxSunumAkiyor;        // YINE CIKMALI
     const yenidenAlt = alt();                      // liste dolu -> SKIP acik
     turBitir(); await bek(200);

@@ -200,6 +200,32 @@ uygulamamızdan ayrıca yayınlamak o sözleşmeyle çakışabilir. Hak sahibi b
 olduğumuz halde riski taşımanın anlamı yok. mp3 dosyaları `tracks` deposunda
 duruyor; uygulama artık onlara hiç dokunmuyor.
 
+### Arşivin rafları
+
+ORBITAPE dünyasında halkalar arşivin raflarıdır. 22.903 kayıt üzerinde ölçüldü:
+
+| Raf | Kayıt |
+|---|---|
+| ORBITAPE (hepsi) | 22.903 |
+| HUMANS | 6.871 |
+| RECORDS | 5.915 |
+| SOUNDSCAPES | 5.501 |
+| NATURE | 3.048 |
+| OTHERS | 598 |
+| SPACE | 769 |
+| MACHINES | 201 |
+
+Raf kararı tek yerden verilir: `arsivRaf()`. Önce **dar ve kesin** raflar
+sorulur (MACHINES, SPACE, SOUNDSCAPES, NATURE), sonra geniş olanlar
+(HUMANS, RECORDS) — sıra ters olsa geniş kalıplar dar rafları yutar
+(ölçüldü: MACHINES 523'ten 7'ye düşmüştü).
+
+Hiçbiri uymazsa **son soru: bu bir müzik mi?** (`_muzikMi`). Evetse RECORDS.
+Bu kural OTHERS'ı 1.289'dan 598'e indirdi: içindeki 691 kayıt netlabel
+yayınıydı, sadece RECORDS'un kelime listesine takılmamışlardı. Listeyi
+uzatmak yerine uygulamanın zaten sahip olduğu müzik testi soruldu — tek
+doğruluk kaynağı.
+
 ### Netlabel havuzu neden kaldırıldı
 
 `mixtape.json` (1.453 CC netlabel parçası) çalışıyordu ve lisans tarafı
@@ -210,7 +236,8 @@ deposunda duruyor.
 Bununla birlikte MIXTAPE **kanalı** da kapandı — zaten iki dünyaya geçilirken
 erişilemez olmuştu (`modaGec` yalnızca `radio` ve `lib` kabul ediyor), son
 besleyicisi de gidince kodu kaldırıldı. MIXTAPE **rafı** (arşivdeki bütün
-müzik) duruyor; o bir raf adı, kanal değil.
+müzik) rafı da kaldırıldı — ekranda hiçbir yerde görünmüyordu (halkalar iki
+dünyada da başka listeden geliyor) ve işini zaten RECORDS yapıyor.
 
 ### Jamendo neden kaldırıldı
 

@@ -2866,12 +2866,16 @@
   /* ── ALTI HALKA ──────────────────────────────────────────────────
      İÇTEN DIŞA: dört alt kategori (hacme göre), sonra iki üst kategori.
      En dıştaki ikisi arşivin tamamını ikiye bölüyor. */
-  /* Ölçülen hacimler (earth.json 6280):
-       NATURE 238 · AMBIANCE 436 · HUMAN 1557 · MIXTAPE 4263 (müzik)
-       ORBITAPE 2856 (ses) · RADIOTAPE 3424 (müzik)                 */
+  /* ── MIXTAPE HALKASI KALDIRILDI ─────────────────────────────────
+     Bu liste bir YEDEK: ekranda gorunen halkalar halkaAdlar()'dan
+     geliyor ve iki dunyanin ikisinde de baska bir liste donuyor
+     (radyoda AILE_ADLAR, arsivde ARSIV_ADLAR). MIXTAPE ne birinde
+     ne otekinde vardi -- yani ekranda hicbir yerde gorunmuyordu.
+     "Arsivdeki butun muzik" isini bugun RECORDS yapiyor (5.915
+     kayit). Olu kayit temizlendi. */
   const HALKALAR = [
     {t:'mod', ad:'AMBIANCE'}, {t:'mod', ad:'HUMAN'},   {t:'mod', ad:'ORBITAPE'},
-    {t:'mod', ad:'MIXTAPE'},  {t:'mod', ad:'RADIOTAPE'}
+    {t:'mod', ad:'RADIOTAPE'}
   ];
   const MODSIRA = HALKALAR.map(h=>h.ad);
   /* ── HALKALAR = BULUNDUGUN KANALIN RAFLARI ────────────────────────
@@ -4136,6 +4140,23 @@
       const m = modBul(ad);
       if(m && m.yer && m.yer.test(t)) return ad;
     }
+    /* ── SON SORU: BU BIR MUZIK MI ─────────────────────────────────
+       Olculdu: OTHERS'ta 1.289 kayit vardi ve 691'i MUZIKTI --
+       netlabel yayinlari, EP'ler, deneysel kayitlar. RECORDS'un
+       kelime listesine takilmamislardi, o kadar.
+
+       Kelime listesini uzatmak yanlis cozum: liste her uzadiginda
+       baska raftan calmaya basliyor (katalog numarasi kalibi
+       denendi -- OTHERS'tan 75 kayit alirken oteki raflardan 321
+       kayit caliyordu, birakildi).
+
+       Dogru cozum, uygulamanin ZATEN sahip oldugu muzik testini
+       sormak. _muzikMi() her yerde bu karari veriyor; burada da o
+       versin. Tek dogruluk kaynagi.
+
+       Sonuc: RECORDS 5.224 -> 5.915, OTHERS 1.289 -> 598 ve OTHERS
+       gercekten "geri kalan" oldu. */
+    if(_muzikMi(o)) return 'RECORDS';
     return 'OTHERS';
   }
   /* Etiket: koleksiyondan gelir, güvenilir. Başlık: serbest metin, asla. */
@@ -4158,12 +4179,11 @@
        talk radio, vaaz, alan kaydı RADIOTAPE'e kaçmasın. */
     return !_sesMi(t) && KAYNAK.RADIOTAPE.test(k);
   }
-  /* ── ÜÇ ÜST KATEGORİ ─────────────────────────────────────────────
+  /* ── İKİ ÜST KATEGORİ ────────────────────────────────────────────
        RADIOTAPE = SADECE canlı radyo yayınları. Arşiv yok.
-       MIXTAPE   = arşivdeki bütün MÜZİK.
-       ORBITAPE  = arşivdeki bütün SES (müzik olmayan her şey).
-     MIXTAPE + ORBITAPE = arşivin tamamı. RADIOTAPE onların dışında,
-     kendi kaynağından (radio-browser) besleniyor.
+       ORBITAPE  = arşivin tamamı; içindeki raflar onun daralmaları.
+     RADIOTAPE arşivin dışında, kendi kaynağından besleniyor.
+     "Arşivdeki bütün müzik" rafı RECORDS.
      NATURE / AMBIANCE / HUMAN, ORBITAPE'in içinde yaşayan alt
      kategoriler ve ÜST ÜSTE BİNEBİLİRLER. */
   function modUyar(o, ad){
@@ -4181,8 +4201,6 @@
        ve er gec ayrisirlar. */
     try{ if(ARSIV_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){ _yut(e); }
     const mz = _muzikMi(o);
-    if(ad === 'MIXTAPE')  return mz;
-    if(ad === 'ORBITAPE') return !mz;
     if(mz) return false;                    // müzik hiçbir alt kategoriye girmez
     const t = _mt(o);
     const kay = t || _mk(o);                // etiket varsa etiket, yoksa kaynak
