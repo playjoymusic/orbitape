@@ -4343,9 +4343,36 @@
     return null;
   }
   var _modHavuz = null, _modAdi = '', _modIdx = 0;
+  /* ── SUZULMUS HAVUZ, HAVUZ BUYUYUNCE DE TAZELENMELI ──────────────
+     BURASI SONSUZ SES ARAMASININ SEBEBIYDI. Ekranda soyle
+     goruluyordu: SOUND BANKS kipinde uygulama hic durmadan ses
+     ariyor, hicbir tusa basmak ise yaramiyor. Kaynak raporu ise
+     havuzun DOLU oldugunu soyluyordu (earth.json 16424 parca) --
+     yani dosya geliyordu, calan bir sey yoktu.
+
+     SEBEP: bu onbellek yalnizca MOD ADINA bakiyordu. earth.json
+     agdan geliyor, yani acilisin ilk saniyelerinde earthHavuz BOS.
+     O aralikta buraya bir kez ugranirsa:
+        _modAdi   = 'ORBITAPE'
+        _modHavuz = [].filter(...)  ->  BOS DIZI
+     Sonra havuz 16424 parcayla dolsa bile _modAdi === AKTIF_MOD
+     oldugu icin suzgec BIR DAHA CALISMIYOR; earthAl() surekli
+     "bu modda hic ses yok" deyip null donuyor ve modGec() her
+     700 ms'de kendini yeniden cagiriyor.
+
+     Yaris hep vardi ama dar bir araliktı. Kip hafizasi geri gelince
+     AKTIF_MOD acilista, havuz yuklenmeden COK once atanir oldu ve
+     aralik her seferinde tutar hale geldi.
+
+     COZUM: onbellek havuzun BOYUNU da hatirliyor. Havuz buyuduyse
+     suzgec yeniden calisiyor. Boyle bir onbellek, uzerine kuruldugu
+     veri sonradan gelebiliyorsa, yalnizca anahtara bakamaz. */
+  var _modHavuzSay = -1;
   function modHavuzu(){
-    if(_modAdi !== AKTIF_MOD){                   // mod degisti -> yeniden suz ve karistir
+    const say = earthHavuz.length;
+    if(_modAdi !== AKTIF_MOD || _modHavuzSay !== say){
       _modAdi = AKTIF_MOD;
+      _modHavuzSay = say;
       _modHavuz = AKTIF_MOD ? earthHavuz.filter(modUygun) : null;
       if(_modHavuz) karistir(_modHavuz);
       _modIdx = 0;
