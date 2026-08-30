@@ -3674,6 +3674,54 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         const bitirKapatir = /function turBitir\(\)[\s\S]{0,2200}ayarGoster\(false\)/.test(govde);
         return yanma && panel && acar && kapar && acildi && kapandi && bitirKapatir;
       }), 'halkaYak + ayarGoster(true/false); turBitir de kapatiyor');
+    /* ── UCLUK: UC SEMBOL AYNI ──────────────────────────────────
+       Yirmi bir sembolun ucunun ayni gelmesi ~1/441. Olunca kisa
+       bir kutlama: renkler cemberde donuyor, birkac yildiz firliyor,
+       2.5 sn sonra hicbir iz kalmiyor.
+       Kontrol UC seye bakiyor: kutlama gercekten tetikleniyor mu,
+       yalnizca UCU DE AYNIYSA tetikleniyor mu (yoksa her parcada
+       cikardi), ve baska hicbir sey degistirmiyor mu -- ses, raf ve
+       sira aynen devam etmeli. */
+    K('Ucluk kutlamasi calisiyor', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        bekle.classList.remove('ucluk');
+        document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
+        _uclukSon = 0;
+        const y = yuvalar();
+        /* IKISI ayni, biri farkli -> kutlama YOK */
+        y[0].dataset.sem='3'; y[1].dataset.sem='3'; y[2].dataset.sem='7';
+        uclukBak(); await bek(60);
+        const farkliyken = bekle.classList.contains('ucluk');
+        /* UCU de ayni -> kutlama VAR */
+        y[2].dataset.sem='3';
+        uclukBak(); await bek(120);
+        const ayniyken = bekle.classList.contains('ucluk');
+        const yildiz = document.querySelectorAll('.uclukYildiz').length;
+        bekle.classList.remove('ucluk');
+        document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
+        return !farkliyken && ayniyken && yildiz > 0;
+      }), 'ikisi ayniyken yok, ucu ayniyken var');
+    /* Kutlama SES ve SIRAYI degistirmiyor: sadece gorsel. */
+    K('Ucluk sadece gorsel', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const oncekiMod = mod, oncekiRaf = AKTIF_MOD;
+        let cagri = 0;
+        const eskiSonraki = window.sonraki, eskiCal = window.cal;
+        window.sonraki = function(){ cagri++; };
+        window.cal = function(){ cagri++; };
+        uclukDene(); await bek(200);
+        window.sonraki = eskiSonraki; window.cal = eskiCal;
+        bekle.classList.remove('ucluk');
+        document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
+        return cagri === 0 && mod === oncekiMod && AKTIF_MOD === oncekiRaf;
+      }), 'sonraki/cal cagrilmiyor, raf ve kanal ayni');
+    /* Adresle zorlanabiliyor: kutlamanin denk gelmesini beklemek
+       yerine gorulebilsin diye (orbitape.app/?ucluk). */
+    K('Ucluk adresle zorlanabiliyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /\[\?&\]ucluk/.test(k) && typeof alienSec === 'function'
+            && typeof UCLUK_ZORLA !== 'undefined';
+      }), '?ucluk ile ucu de ayni sembol seciliyor');
     /* ── KIP KISAYOLU ───────────────────────────────────────────
        SOUND BANKS kipinden radyoya donmek uc adimdi: ayarlari ac,
        en ustteki kapiyi bul, anahtari cevir. Uc cizginin saginda
