@@ -762,6 +762,48 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        'eski sw.js yeni kabugu gormezlik edemesin');
   }
 
+  /* ── CSP: OZET INDEX.HTML ILE AYNI OLMAK ZORUNDA ─────────────────
+     BU KONTROLUN ONEMI DIGERLERINDEN BUYUK.
+     script-src ozet (hash) ile yaziliyor: yalnizca BIZIM satir ici
+     blogumuz calisiyor, sayfaya sizan baska hicbir script calismiyor.
+     Bedeli su: index.html'in bir tek karakteri degisip ozet
+     guncellenmezse tarayici BUTUN JavaScript'i reddeder ve uygulama
+     hic acilmaz -- bos siyah ekran, konsolda tek satir.
+     Yani bayat ozet, sessiz degil TAM bir arizadir.
+     Bu kontrol o arizayi yayina cikmadan once kirmiziya cevirir.
+     Tazelemek icin: python3 araclar/csp.py                        */
+  {
+    const crypto = require('crypto');
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const bas = fs.readFileSync('_headers','utf8');
+    const hesap = g => "'sha256-" + crypto.createHash('sha256').update(Buffer.from(g,'utf8')).digest('base64') + "'";
+    const sc = kaynak.match(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/);
+    const st = kaynak.match(/<style[^>]*>([\s\S]*?)<\/style>/);
+    const satir = (bas.match(/Content-Security-Policy:.*/) || [''])[0];
+    const jsBek = sc ? hesap(sc[1]) : '(script yok)';
+    const cssBek = st ? hesap(st[1]) : '(style yok)';
+    const jsVar  = satir.includes(jsBek);
+    const cssVar = satir.includes(cssBek);
+    K('CSP ozeti index.html ile ayni', !!satir && jsVar && cssVar,
+      (!satir ? '_headers icinde CSP satiri YOK'
+              : (jsVar && cssVar) ? 'script ve style ozeti guncel'
+              : ('BAYAT -> uygulama hic acilmaz. '
+                 + (jsVar ? '' : 'script bekleniyor: ' + jsBek + '  ')
+                 + (cssVar ? '' : 'style bekleniyor: ' + cssBek)
+                 + '   duzeltme: python3 araclar/csp.py')));
+    /* Politikanin kendisi de zayiflamasin: bir gun "calismiyor" diye
+       'unsafe-inline' eklemek CSP'nin script tarafini tamamen
+       anlamsiz kilar -- sizan her script yine calisir. */
+    K('CSP zayiflatilmamis',
+      !!satir && !/unsafe-inline/.test(satir) && !/unsafe-eval/.test(satir)
+      && /object-src 'none'/.test(satir) && /frame-ancestors 'none'/.test(satir)
+      && /base-uri 'none'/.test(satir),
+      !satir ? 'CSP satiri yok'
+             : (/unsafe-(inline|eval)/.test(satir)
+                ? 'unsafe-* eklenmis: ozetin anlami kalmadi'
+                : "unsafe-* yok; object/frame-ancestors/base-uri kapali"));
+  }
+
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───
   const filtre = await pg.evaluate(()=>{
     const bul=[];
