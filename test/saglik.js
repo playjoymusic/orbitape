@@ -1715,6 +1715,26 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
           && typeof calListe === 'undefined'
           && typeof listeYukle === 'undefined';
     }), 'liste.json, gomulu mp3, calListe -- hicbiri yok');
+  /* ── NETLABEL HAVUZU GERCEKTEN YUKLENIYOR MU ────────────────────
+     PLAYJOY gidince ORBITAPE'in ikinci kaynagi mixtape.json kaldi.
+     Ama kaynak raporunda "mixtape.json --" goruldu: hic yuklenmemis.
+     Sebep: sirada 'mix' secildiginde mixAl() bos donuyor, sira
+     sessizce earth'e kayiyor ve havuzu YUKLEYEN kimse olmuyordu.
+     Iki kapi da bu yuzden var: ORBITAPE'e girerken yukleniyor ve
+     sirada atlanirken yukleme baslatiliyor. */
+  K('Netlabel havuzu ORBITAPE ile birlikte yukleniyor', await pg.evaluate(()=>{
+      const kod = document.documentElement.innerHTML
+        .replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+      return /mod==='lib'\)\{ earthYukle\(\); uzunYukle\(\); mixYukle\(\); \}/.test(kod)
+          && /if\(!mixHavuz\.length\) mixYukle\(\);/.test(kod);
+    }), 'kanal girisinde ve sira atlarken');
+  /* Radyo tarafinda indirilmiyor: earthYukle ile ayni kapi. */
+  K('Netlabel havuzu radyoda indirilmiyor', await pg.evaluate(async ()=>{
+      const eski = AYAR.mood; AYAR.mood = false;
+      const n = await mixYukle();
+      AYAR.mood = eski;
+      return n === 0 || mixHavuz.length === 0;
+    }), 'RADIOTAPE 1453 parcalik JSON indirmiyor');
   K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
   K('Kayit hedefi ONDEN hazir', await pg.evaluate(()=>!!kayitHedef), 'REC oncesi kurulu');
   /* latencyHint:'playback': tampon 441 -> 1024 ornek. Cizirti isleci

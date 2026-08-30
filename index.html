@@ -3889,6 +3889,10 @@
   }
   async function mixYukle(){
     iz('mixYukle');
+    /* Radyo tarafinin netlabel havuzuyla isi yok -- earthYukle ile
+       ayni kapi. RADIOTAPE'te duran birine 1453 parcalik JSON
+       indirtmiyoruz. */
+    if(!AYAR.mood) return 0;
     if(mixHavuz.length) return mixHavuz.length;
     if(_mxSoz) return _mxSoz;
     _mxSoz=(async()=>{
@@ -8084,7 +8088,12 @@
     const sirala = (z < 0.72) ? ['earth','mix'] : ['mix','earth'];
     for(const k of sirala){
       if(k==='earth'){ const o=earthAl(); if(o){ cal(o); return; } }
-      else if(k==='mix'){ const o=mixAl(); if(o){ cal(o); return; } }
+      /* Havuz bossa mixAl() bos donuyor ve sira sessizce earth'e
+         kayiyordu: 'mix' hep atlaniyor, havuz hic yuklenmiyordu.
+         Simdi atlarken yuklemeyi de baslatiyor -- bir sonraki gecise
+         hazir olsun. */
+      else if(k==='mix'){ const o=mixAl(); if(o){ cal(o); return; }
+                          if(!mixHavuz.length) mixYukle(); }
     }
     // hiçbiri hazır değil: havuzları doldur, kısa süre sonra tekrar dene
     try{ earthYukle(); mixYukle(); }catch(e){ _yut(e); }
@@ -8456,7 +8465,7 @@
     gecmisSifirla();                                     // geri listesi kanal başına
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
-    if(mod==='lib'){ earthYukle(); uzunYukle(); }        // ORBITAPE: kısa + uzun arşiv havuzları
+    if(mod==='lib'){ earthYukle(); uzunYukle(); mixYukle(); }   // ORBITAPE: kısa + uzun arşiv + netlabel havuzu
     if(mod==='liste'){ mixYukle(); }                     // netlabel havuzu
     sonraki(false);
   }
@@ -12849,6 +12858,7 @@
     hazirla();   // kütüphane çeşitliliğini arkada topla (isteyen üstten geçince hazır olsun)
     radyoKuyrukDoldur();   // kuyruğu tazele
     earthYukle();          // ORBITAPE arşiv havuzunu da önden yükle (moda geçince anında)
+    mixYukle();            // netlabel havuzu: ORBITAPE'in ikinci kaynağı (ikisi de AYAR.mood kapısında)
   })();
 
   /* ── UYGULAMA KABUĞU ÖNBELLEĞİ ────────────────────────────────────
