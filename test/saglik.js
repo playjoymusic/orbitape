@@ -859,6 +859,61 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
   }
 
+  /* ── ARSIVDE SONSUZ ARAMA OLMAMALI ───────────────────────────────
+     BILDIRILEN (30 Agustos): "ORBITAPE'e gectim ve sonsuz donguye
+     girdi, hicbir sey bulamadi. Tur degistirsem de ortaya tiklasam
+     da hep aradi."
+     SEBEP: ustUsteHata sayaci artiyordu, sifirlaniyordu ama HICBIR
+     YERDE OKUNMUYORDU. Yani arsivde parcalar calamayinca uygulama
+     sonsuza kadar bir sonrakine geciyordu -- bekleme sembolu donuyor,
+     kullaniciya hicbir sey soylenmiyor.
+     Bu kontrol UC seyi birden tutuyor:
+       1) tavan gercekten okunuyor mu (yoksa sayac yine sussuz kalir),
+       2) durunca kullaniciya bir sey soyleniyor mu,
+       3) durustan CIKIS yollari duruyor mu -- basarili calma, tekrar
+          dugmesi ve RAF DEGISTIRMEK. Ucuncusu onemli: kullanici tam
+          da onu denemisti ve ise yaramamisti. */
+  {
+    const k = fs.readFileSync('index.html','utf8');
+    const tavanOkunuyor = /if\(ustUsteHata >= ARSIV_HATA_ESIK\)\{\s*arsivDurdur\(\);\s*return;/.test(k);
+    const esik = (k.match(/const ARSIV_HATA_ESIK\s*=\s*(\d+)/) || [])[1];
+    K('Arsivde hata tavani gercekten okunuyor',
+      tavanOkunuyor && Number(esik) > 0 && Number(esik) <= 30,
+      tavanOkunuyor ? ('esik ' + esik + ' ust uste hata, sonra duruyor')
+                    : 'sayac artiyor ama okunmuyor: sonsuz dongu geri geldi');
+    /* Cikis yollarinin UCU de kodda duruyor mu. */
+    const cikis = {
+      'basarili calma': /const basladi=\(\)=>\{ ustUsteHata=0;[^\n]*arsivDevam\(\)/.test(k),
+      'tekrar dugmesi': /function agDene\(\)\{[\s\S]{0,400}arsivDevam\(\)/.test(k),
+      'raf degistirmek': /function modSec\([\s\S]{0,600}arsivDevam\(\)/.test(k)
+    };
+    const eksik = Object.keys(cikis).filter(a=>!cikis[a]);
+    K('Arsiv durusundan cikis yollari duruyor', eksik.length === 0,
+      eksik.length ? ('cikis yolu YOK: ' + eksik.join(', ')) : 'ucu de bagli');
+    /* Durunca kullaniciya ne yaziyor: panel aciliyor ve metin
+       "ag yok" DEMIYOR -- listeler kendi kokumuzden geldigi icin
+       internet calisiyor olabilir, yanlis sebep gostermeyelim. */
+    const durus = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      const el = document.getElementById('agyok');
+      arsivDurdur();
+      await bek(30);
+      const acik = el.classList.contains('on');
+      const baslik = (el.querySelector('.ay-ad')||{}).textContent || '';
+      const bekleDonuyor = document.getElementById('bekle').classList.contains('on');
+      arsivDevam();
+      await bek(30);
+      const kapandi = !el.classList.contains('on');
+      const geriDondu = ((el.querySelector('.ay-ad')||{}).textContent||'') === 'NO CONNECTION';
+      return { acik, baslik, bekleDonuyor, kapandi, geriDondu };
+    });
+    K('Durunca kullaniciya soyleniyor',
+      durus.acik && durus.baslik && durus.baslik !== 'NO CONNECTION'
+      && !durus.bekleDonuyor && durus.kapandi && durus.geriDondu,
+      '"' + durus.baslik + '" | bekleme sembolu durdu: ' + !durus.bekleDonuyor
+      + ' | devam edince metin geri: ' + durus.geriDondu);
+  }
+
   /* ── KLAVYEYLE HER YERE ULASILABILIYOR MU ────────────────────────
      Olculdu (30 Agustos): ekrandaki 25 kontrolden ikisi sekme
      sirasinda YOKTU -- sag ustteki kategori adi ve marka yazisi.

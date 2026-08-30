@@ -3698,6 +3698,10 @@
     }catch(e){ _yut(e); }
   }
   function agDene(){
+    /* Panel iki sebeple aciliyor: ag yok, ya da arsivde ust uste
+       hicbir sey calmadi. Tekrar dugmesi IKISINI de kaldirmali --
+       yoksa dugme calismiyormus gibi gorunur. */
+    try{ arsivDevam(); }catch(_){ _yut(_); }
     agYokKapa();
     try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
     try{ if(!sesDuyuluyorMu || !sesDuyuluyorMu()) sonraki(false); }catch(e){ try{ sonraki(false); }catch(_){ _yut(_); } }
@@ -6968,9 +6972,76 @@
   /* Bu sayaç tanımsızdı: ORBITAPE'te çalamayan bir parçaya denk gelince
      atla() içinde ReferenceError atıyor, hata kurtarma zinciri orada kopuyordu.
      Art arda hata sayısını tutuyor, ilk başarılı çalışta sıfırlanıyor. */
+  /* ══ SONSUZ ARAMA: OLCULEN HATA ══════════════════════════════════
+     BILDIRILEN (30 Agustos): "ORBITAPE'e gectim ve sonsuz donguye
+     girdi, hicbir sey bulamadi. Tur degistirsem de ortaya tiklasam
+     da hep aradi."
+     SEBEP BURADAYDI ve gorulmesi zordu: asagidaki sayac ARTIYORDU,
+     ilk basarili calista SIFIRLANIYORDU -- ama HICBIR YERDE
+     OKUNMUYORDU. Sayilan sey hicbir seye yaramiyordu.
+     Sonuc: arsivde parcalar calamayinca uygulama sonsuza kadar
+     "bir sonraki"ne geciyor. Her denemede kara listeye bir adres
+     ekliyor, bekleme sembolu donuyor, kullaniciya HICBIR SEY
+     soylenmiyor. Tur degistirmek de kurtarmiyor cunku yeni rafta da
+     ayni sey oluyor. Radyo tarafinda bu korunma vardi (_radyoBos +
+     esik), arsivde yoktu.
+
+     NEDEN 'AG YOK' PANELI KENDILIGINDEN CIKMIYOR: o panel yalnizca
+     LISTE cekimleri dusunce aciliyor ve bu bilerek boyle -- tek bir
+     mp3'un gelmemesi kaynagin oldugunu gosterir, agin degil. Dogru
+     ayrim; ama HEPSI dusunce artik "olu kaynak" degil sistemik bir
+     sorundur ve kullanici bunu bilmeli.
+
+     ESIK 12: 16.424 parcalik havuzda arada olu dosyalar var,
+     birkacini sessizce atlamak dogru. Ust uste 12 tanesi tesaduf
+     degil. 12 deneme birkac saniye suruyor. */
   var ustUsteHata = 0;
+  const ARSIV_HATA_ESIK = 12;
+  var _arsivDurdu = false;
+  /* Panel yeniden kullaniliyor ama METIN DEGISIYOR: burada sorun
+     "ag yok" olmayabilir -- listeler kendi kokumuzden geldiyse
+     internet calisiyor demektir. Yanlis sebep gostermek, hic sebep
+     gostermemekten kotudur. */
+  function arsivDurdur(){
+    try{
+      if(_arsivDurdu) return;
+      _arsivDurdu = true;
+      const el = document.getElementById('agyok'); if(!el) return;
+      const ad = el.querySelector('.ay-ad'), not = el.querySelector('.ay-not');
+      if(ad)  ad.textContent  = 'NOTHING WOULD PLAY';
+      if(not) not.textContent = 'Twelve recordings in a row failed to load. '
+                              + 'The archive server may be busy, or blocked on this network.';
+      el.classList.add('on'); el.setAttribute('aria-hidden','false');
+      try{ bekle.classList.remove('on'); }catch(_){ _yut(_); }
+      try{ if(bekleInt){ clearInterval(bekleInt); bekleInt=null; } }catch(_){ _yut(_); }
+      try{ if(typeof karsilamaKapat === 'function') karsilamaKapat(); }catch(_){ _yut(_); }
+    }catch(e){ _yut(e); }
+  }
+  /* Durusu KALDIRAN her yol buradan geciyor: tekrar dugmesi, basarili
+     bir calma, ve RAF DEGISTIRMEK. Sonuncusu onemli -- kullanici tam
+     da bunu denedi ve ise yaramadi. */
+  function arsivDevam(){
+    try{
+      ustUsteHata = 0; _arsivDurdu = false;
+      const el = document.getElementById('agyok');
+      if(el && el.classList.contains('on')){
+        el.classList.remove('on'); el.setAttribute('aria-hidden','true');
+        /* Metni geri al: panel ag icin de kullaniliyor. */
+        const ad = el.querySelector('.ay-ad'), not = el.querySelector('.ay-not');
+        if(ad)  ad.textContent  = 'NO CONNECTION';
+        if(not) not.innerHTML   = 'ORBITAPE streams from the internet.<br>'
+                                + 'It resumes by itself when you are back online.';
+      }
+    }catch(e){ _yut(e); }
+  }
   function atla(){ const now=Date.now(); if(now-sonAtla<300) return; sonAtla=now;
-    if(mod==='lib') ustUsteHata++;
+    if(mod==='lib'){
+      ustUsteHata++;
+      /* TAVAN: burada DURUYORUZ. sonraki() cagrilmiyor, yani dongu
+         gercekten kesiliyor -- sayaci okuyup yine devam etmek
+         hicbir seyi degistirmezdi. */
+      if(ustUsteHata >= ARSIV_HATA_ESIK){ arsivDurdur(); return; }
+    }
     sonraki(false); }   // boş/çalamayan parçayı otomatik (sessiz) geç
   /* ── BİR ÖNCEKİ (◁) — TEK ADIM ────────────────────────────────
      İki kutu var, o kadar: 'onceki' (◁ ile gidilecek olan) ve 'ileri' (◁'den
@@ -7323,7 +7394,7 @@
     }
     clearTimeout(aramaTimer); aramaTimer=setTimeout(aramaBaslat, 240);   // 240ms'de girmezse frekans-arama sesi boşluğu doldurur
     clearTimeout(baslamaTimer); bekleGoster();                            // WAIT göster (parça başlayınca gizlenir)
-    const basladi=()=>{ ustUsteHata=0; clearTimeout(aramaTimer); clearTimeout(baslamaTimer); aramaDurdur(); bekleDondur(); ufoDurdur(); baslatildi=true; document.body.classList.add('playing'); calBaslangic=Date.now(); };
+    const basladi=()=>{ ustUsteHata=0; try{ arsivDevam(); }catch(_){ _yut(_); } clearTimeout(aramaTimer); clearTimeout(baslamaTimer); aramaDurdur(); bekleDondur(); ufoDurdur(); baslatildi=true; document.body.classList.add('playing'); calBaslangic=Date.now(); };
     // 5 SN BAŞLAMA ZAMAN AŞIMI: audio 5sn'de çalmaya başlamazsa atla (takılıp kalmasın)
     // MIXTAPE'te Jamendo akışı yönlendirmeyle geliyor, 2.8 sn çoğu
     // zaman yetmiyor ve parça daha açılmadan atlanıyordu -> 6 sn.
@@ -10154,6 +10225,11 @@
   }
   function modSec(ad, zorla){
     AKTIF_MOD = (!zorla && AKTIF_MOD === ad) ? null : ad;
+    /* RAF DEGISTIRMEK YENIDEN DENEMEKTIR. Kullanicinin bildirdigi
+       durumda tam olarak bu yapilmisti ("tur degistirsem de...") ve
+       hicbir sey degismiyordu. Yeni bir raf yeni bir sans demek:
+       sayac sifirlaniyor, durus kalkiyor. */
+    try{ arsivDevam(); }catch(e){ _yut(e); }
     try{ etkilesimSay(); }catch(e){ _yut(e); }
     modAdiGoster(); zeminUygula();
     try{ fxSunumDene(); }catch(e){ _yut(e); }
