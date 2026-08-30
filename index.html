@@ -96,6 +96,19 @@
     opacity:0;transition:opacity .35s;white-space:nowrap;line-height:1;
     width:min(64vw,300px);}
   #bekle.on{opacity:.55;}
+  /* ── KUTLAMA KENDI GORUNURLUGUNU GETIRIYOR ────────────────────
+     OLCULEN HATA (30 Agustos): kullanici "uc sembol ayni olunca
+     olan seyi hic goremedim" dedi. Sebep: kutlama CALISIYORDU ama
+     uzerinde calistigi satirin opakligi 0'di.
+     #bekle "su an bir kaynak araniyor" gostergesi; yalnizca .on
+     iken gorunuyor. Ucluk ise cogunlukla arama BITTIKTEN sonra
+     denk geliyor -- yani animasyon gorunmez bir elemanda oynayip
+     bitiyordu. ?ucluk adresinde de ayni: semboller acilista
+     eslesiyor, kutlama aninda cikip kayboluyor.
+     .ucluk kendi opakligini getiriyor: 'araniyor' demiyor (o anlam
+     .on'da kaliyor), sadece kutlama suresince satiri gorunur
+     kiliyor. Bittiginde sinif kalkiyor ve her sey eskisi gibi. */
+  #bekle.ucluk{opacity:.92;}
   /* ── AĞ YOK PANELİ ────────────────────────────────────────────────
      Diskin ortasında, halkaların içinde. Filtre YOK (bkz. #viz notu),
      zemin düz koyu — iOS'ta düşürülüp donacak bir derleyici katmanı
@@ -176,22 +189,51 @@
      donuyor ve birkac yildiz disari firliyor. Baska hicbir sey
      degismiyor -- ses, raf, akis aynen devam ediyor.
      Suresi 2.4 sn ve kendini topluyor; kalici hicbir iz birakmiyor. */
-  #bekle.ucluk .yuva svg{animation:uclukRenk 2.4s linear;}
+  /* ── OLCULEN GERI BILDIRIM ───────────────────────────────────
+     "Bu cok nadir olabilecek bisey ya, 3 sembol ayni anda. Ayni
+      anda oldugunda GIREN bisey olmali."
+     Ilk hali fazla sessizdi: yalnizca ton kaymasi. 441'de bir
+     denk gelen bir sey icin az. Uc sey eklendi ve ucu de kendini
+     topluyor, kalici iz birakmiyor:
+       1) SEMBOL BUYUYUP OTURUYOR (pop) -- goz once bunu yakaliyor.
+       2) Ton kaymasi daha genis ve daha parlak, arkasinda bir isik
+          halesi var (drop-shadow).
+       3) Yildizlar daha cok, daha buyuk ve daha uzaga gidiyor
+          (asagida, JS tarafinda).
+     Sira KORUNUYOR: uc sembol pes pese giriyor (0 / .10 / .20 sn),
+     yani "tak tak tak" hissi bozulmuyor -- once oturuyorlar, sonra
+     birlikte patliyorlar. */
+  #bekle.ucluk .yuva svg{animation:uclukRenk 2.6s cubic-bezier(.2,.8,.2,1);}
   @keyframes uclukRenk{
-    0%  {filter:hue-rotate(0deg)   saturate(1)   brightness(1);}
-    12% {filter:hue-rotate(40deg)  saturate(2.6) brightness(1.5);}
-    50% {filter:hue-rotate(200deg) saturate(2.6) brightness(1.4);}
-    88% {filter:hue-rotate(330deg) saturate(2.2) brightness(1.3);}
-    100%{filter:hue-rotate(360deg) saturate(1)   brightness(1);}
+    0%  {filter:hue-rotate(0deg)   saturate(1)   brightness(1)   drop-shadow(0 0 0 transparent);
+         transform:scale(1);}
+    8%  {filter:hue-rotate(30deg)  saturate(3.4) brightness(2.1) drop-shadow(0 0 14px rgba(120,255,230,.9));
+         transform:scale(1.42);}
+    20% {filter:hue-rotate(110deg) saturate(3.2) brightness(1.9) drop-shadow(0 0 12px rgba(180,140,255,.8));
+         transform:scale(1.16);}
+    45% {filter:hue-rotate(220deg) saturate(3.0) brightness(1.8) drop-shadow(0 0 12px rgba(255,160,220,.75));
+         transform:scale(1.24);}
+    70% {filter:hue-rotate(310deg) saturate(2.6) brightness(1.6) drop-shadow(0 0 9px rgba(255,220,140,.65));
+         transform:scale(1.10);}
+    100%{filter:hue-rotate(360deg) saturate(1)   brightness(1)   drop-shadow(0 0 0 transparent);
+         transform:scale(1);}
   }
   #bekle.ucluk .yuva:nth-child(2) svg{animation-delay:.10s;}
   #bekle.ucluk .yuva:nth-child(3) svg{animation-delay:.20s;}
+  /* Satirin arkasinda tek bir nefes: patlama anini bir yere
+     oturtuyor. Cok kisa ve cok soluk -- ekrani yikamiyor. */
+  #bekle.ucluk{animation:uclukNefes 2.6s ease-out;}
+  @keyframes uclukNefes{
+    0%  {text-shadow:0 0 16px rgba(90,220,210,.30);}
+    10% {text-shadow:0 0 34px rgba(150,255,235,.85);}
+    100%{text-shadow:0 0 16px rgba(90,220,210,.30);}
+  }
   /* Firlayan yildizlar: sembol satirinin ustune konan minik noktalar.
      position:fixed -- #bekle'nin kendi kutusu dar ve overflow ile
      ugrasmak yerine ekrana biniyorlar; pointer-events yok, hicbir
      dokunusu engellemiyorlar. */
-  .uclukYildiz{position:fixed;z-index:120;width:4px;height:4px;border-radius:50%;
-    pointer-events:none;opacity:0;
+  .uclukYildiz{position:fixed;z-index:120;width:6px;height:6px;border-radius:50%;
+    pointer-events:none;opacity:0;box-shadow:0 0 8px currentColor;
     animation:uclukFirla var(--sur,1100ms) cubic-bezier(.16,.7,.3,1) forwards;}
   @keyframes uclukFirla{
     0%  {opacity:0;   transform:translate(0,0) scale(.4);}
@@ -3597,11 +3639,16 @@
          olsun. */
       const r = bekleGly.getBoundingClientRect();
       const ox = r.left + r.width/2, oy = r.top + r.height/2;
-      for(let i=0;i<14;i++){
+      /* SAYI 14 -> 26, MENZIL DE GENIS. 441'de bir denk gelen bir
+         sey icin on dort kucuk nokta az kaliyordu: goz ucuyla
+         yakalanmiyor, "bir sey oldu mu?" diye soruluyordu. Yirmi
+         alti nokta ve iki katina yakin menzil, ekrani doldurmadan
+         patlama hissi veriyor. Hepsi 1,6 sn icinde temizleniyor. */
+      for(let i=0;i<26;i++){
         const d = document.createElement('i');
         d.className = 'uclukYildiz';
-        const aci = (Math.PI*2) * (i/14) + Math.random()*0.4;
-        const uz  = 34 + Math.random()*72;
+        const aci = (Math.PI*2) * (i/26) + Math.random()*0.4;
+        const uz  = 52 + Math.random()*118;
         d.style.left = Math.round(ox) + 'px';
         d.style.top  = Math.round(oy) + 'px';
         d.style.setProperty('--dx', Math.round(Math.cos(aci)*uz) + 'px');
@@ -3609,7 +3656,8 @@
         d.style.setProperty('--sur', (900 + Math.random()*500) + 'ms');
         /* Renk: markanin iki duragi ve arasi -- uydurma bir gokkusagi
            degil, uygulamanin kendi paleti cemberde donuyor. */
-        d.style.background = 'hsl(' + Math.round(Math.random()*360) + ',70%,72%)';
+        d.style.background = 'hsl(' + Math.round(Math.random()*360) + ',85%,74%)';
+        d.style.color      = d.style.background;   // box-shadow currentColor'dan
         document.body.appendChild(d);
         setTimeout(()=>{ try{ d.remove(); }catch(e){ _yut(e); } }, 1600);
       }
@@ -3617,6 +3665,39 @@
   }
   /* Disari veriliyor: testler ve elle deneme icin. */
   try{ window.uclukDene = uclukKutla; }catch(e){ _yut(e); }
+  /* ── ?ucluk ADRESINDE TEKRARLIYOR ─────────────────────────────
+     Kullanicinin sozu: "bu ucu ayni sembol olursa olan seyi
+     goremedim ben daha. bi link yok mu her actigimda 3 sembol
+     gelsin, gormek icin."
+     ?ucluk zaten ucunu de ayni yapiyordu, ama kutlama acilista BIR
+     KEZ olup bitiyordu: ekrana bakmaya firsat bulmadan geciyor.
+     Bu adres bir GOSTERME adresi, yani tekrarlamasi dogru: alti
+     saniyede bir yeniden oynuyor, kullanici rahatca gorene kadar.
+     Normal kullanimda hicbir sey degismiyor -- bu satir yalnizca
+     adreste ?ucluk varken calisiyor. */
+  if(UCLUK_ZORLA){
+    /* TAM TURU OYNATIYOR, yalnizca kutlamayi degil.
+       Kullanicinin tarif ettigi sey su: semboller doner, sonra
+       TEK TEK oturur (tak... tak... tak), ucu de ayni cikinca
+       renkler patlar. O sirayi zaten iki fonksiyon yapiyor:
+         bekleGoster()  -> satiri gorunur yapar ve dondurmeye baslar
+         bekleDondur()  -> birer birer, her biri oncekinden yavas,
+                           son halini oturtur; son yuva oturunca
+                           uclukBak() bakar ve kutlama baslar.
+       Once burada yalnizca uclukKutla() cagriliyordu: renkler bir
+       anda patliyor, oncesindeki DONME VE OTURMA hic olmuyordu --
+       yani gosterilen sey anlatilan sey degildi.
+       Yedi saniyede bir bastan oynuyor; sadece bu adreste. */
+    const _uclukTuru = ()=>{
+      try{
+        _uclukSonSem = '';                       // ayni ucluk yine kutlansin
+        bekleGoster();                           // donmeye basla
+        setTimeout(()=>{ try{ bekleDondur(); }catch(e){ _yut(e); } }, 1700);
+      }catch(e){ _yut(e); }
+    };
+    try{ setTimeout(_uclukTuru, 900); setInterval(_uclukTuru, 7000); }
+    catch(e){ _yut(e); }
+  }
   /* MIXTAPE yazısının GERÇEK genişliği (eq göstergesi, dolgu ve son harften
      sonraki letter-spacing boşluğu hariç). Range ölçümü tam metin kutusunu
      verir; elemanın offsetWidth'i göstergeyi de sayardı. */
