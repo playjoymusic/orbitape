@@ -203,36 +203,37 @@
      Sira KORUNUYOR: uc sembol pes pese giriyor (0 / .10 / .20 sn),
      yani "tak tak tak" hissi bozulmuyor -- once oturuyorlar, sonra
      birlikte patliyorlar. */
-  #bekle.ucluk .yuva svg{animation:uclukRenk 2.6s cubic-bezier(.2,.8,.2,1);}
+  /* OLCU: "bu olunca bi animasyon, yildizlar patlayabilir. o kadar.
+     yoksa olay yok, buyutme."
+     Bir ara 1.42 kat buyuyup isik halesi acan bir hal denendi ve
+     fazlaydi: kutlama ekranin sahibi oluyordu. Asil is YILDIZLARDA;
+     semboller yalnizca bir tik buyuyup renk cemberinde donuyor,
+     sonra yerine oturuyor. Goz once yildizlari goruyor, semboller
+     onun altini imzaliyor. */
+  /* SAYILAR TEZGAHTA SECILDI. Kullanici ucluk_deneme.html uzerinde
+     ayarlari canli oynatip karar verdi; buradaki degerler onun
+     sectikleri, tezgahtaki formullerin birebir aynisiyla:
+       yildiz  : 58 tane, 3px, 140px menzil, 1800 ms
+       sembol  : 1.28x buyume, 5000 ms renk
+       parlama : 8px
+     Kucuk ve cok: 58 tane 3px'lik nokta, kalabalik ama agir degil --
+     bir kivilcim bulutu. Once 8px denendi, ekrani dolduruyordu.
+     Yani ekranda gorunecek sey, onun gordugu seyin ta kendisi. */
+  #bekle.ucluk .yuva svg{animation:uclukRenk 5s cubic-bezier(.2,.8,.2,1);}
   @keyframes uclukRenk{
-    0%  {filter:hue-rotate(0deg)   saturate(1)   brightness(1)   drop-shadow(0 0 0 transparent);
-         transform:scale(1);}
-    8%  {filter:hue-rotate(30deg)  saturate(3.4) brightness(2.1) drop-shadow(0 0 14px rgba(120,255,230,.9));
-         transform:scale(1.42);}
-    20% {filter:hue-rotate(110deg) saturate(3.2) brightness(1.9) drop-shadow(0 0 12px rgba(180,140,255,.8));
-         transform:scale(1.16);}
-    45% {filter:hue-rotate(220deg) saturate(3.0) brightness(1.8) drop-shadow(0 0 12px rgba(255,160,220,.75));
-         transform:scale(1.24);}
-    70% {filter:hue-rotate(310deg) saturate(2.6) brightness(1.6) drop-shadow(0 0 9px rgba(255,220,140,.65));
-         transform:scale(1.10);}
-    100%{filter:hue-rotate(360deg) saturate(1)   brightness(1)   drop-shadow(0 0 0 transparent);
-         transform:scale(1);}
+    0%  {filter:hue-rotate(0deg)   saturate(1)   brightness(1);   transform:scale(1);}
+    10% {filter:hue-rotate(40deg)  saturate(2.8) brightness(1.6); transform:scale(1.28);}
+    45% {filter:hue-rotate(200deg) saturate(2.8) brightness(1.5); transform:scale(1.14);}
+    80% {filter:hue-rotate(320deg) saturate(2.3) brightness(1.3); transform:scale(1.06);}
+    100%{filter:hue-rotate(360deg) saturate(1)   brightness(1);   transform:scale(1);}
   }
   #bekle.ucluk .yuva:nth-child(2) svg{animation-delay:.10s;}
   #bekle.ucluk .yuva:nth-child(3) svg{animation-delay:.20s;}
-  /* Satirin arkasinda tek bir nefes: patlama anini bir yere
-     oturtuyor. Cok kisa ve cok soluk -- ekrani yikamiyor. */
-  #bekle.ucluk{animation:uclukNefes 2.6s ease-out;}
-  @keyframes uclukNefes{
-    0%  {text-shadow:0 0 16px rgba(90,220,210,.30);}
-    10% {text-shadow:0 0 34px rgba(150,255,235,.85);}
-    100%{text-shadow:0 0 16px rgba(90,220,210,.30);}
-  }
   /* Firlayan yildizlar: sembol satirinin ustune konan minik noktalar.
      position:fixed -- #bekle'nin kendi kutusu dar ve overflow ile
      ugrasmak yerine ekrana biniyorlar; pointer-events yok, hicbir
      dokunusu engellemiyorlar. */
-  .uclukYildiz{position:fixed;z-index:120;width:6px;height:6px;border-radius:50%;
+  .uclukYildiz{position:fixed;z-index:120;width:3px;height:3px;border-radius:50%;
     pointer-events:none;opacity:0;box-shadow:0 0 8px currentColor;
     animation:uclukFirla var(--sur,1100ms) cubic-bezier(.16,.7,.3,1) forwards;}
   @keyframes uclukFirla{
@@ -819,7 +820,21 @@
      gezinirken (parmağın altındaki) hem seçimden sonra (seçili olan)
      duruyor — bir onay değil, bir DURUM göstergesi. Ton yumuşak:
      kategorinin rengi ama kısılmış; marka adını bastırmıyor. */
-  #ust .ustSatir{display:flex;align-items:baseline;justify-content:flex-end;gap:9px;}
+  #ust .ustSatir{display:flex;align-items:baseline;justify-content:flex-end;gap:9px;
+    position:relative;}
+  /* ── FREKANS ÇİZGİSİ ──────────────────────────────────────────
+     İnce ve nazik: 1px kalınlık, yarı saydam, yalnızca ses varken.
+     Yüksekliği 9px -- yazının altında bir nefeslik yer, satırın
+     hizasını bozmuyor (mutlak konumlu). Genişliği JS'te #modAd'in
+     ölçülen kutusundan geliyor: isim uzayıp kısaldıkça çizgi de
+     onunla birlikte değişiyor.
+     Durunca yatışıyor: opaklık 0'a iniyor ve çizim düz bir hatta
+     oturuyor -- "durdu" bilgisi de bir hareket. */
+  #ust #modDalga{position:absolute;top:100%;margin-top:4px;height:9px;
+    opacity:0;transition:opacity .5s ease;pointer-events:none;
+    display:block;}
+  #ust #modDalga.caliyor{opacity:.5;}
+  @media (prefers-reduced-motion: reduce){ #ust #modDalga{display:none;} }
   /* ── ÇİFT DOKUNUŞ SAYFAYI KAYDIRMASIN ─────────────────────────────
      iOS Safari'de bir yazıya iki kez hızlı basmak "çift dokunuşla
      yakınlaştır" demek: görüntü penceresi büyüyüp kayıyor ve
@@ -1981,6 +1996,16 @@
            konuşurdu. Gezinerek okunabilir olması yeterli. -->
       <span id="modAd"></span>
       <div class="kanal on ad" data-mod="radio"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
+      <!-- ── ÇALDIĞINA DAİR KANIT ────────────────────────────────
+           Kategori adının tam altında, TAM ONUN GENİŞLİĞİNDE ince
+           bir dalga. Sadece ses çalarken kıpırdıyor; durunca
+           yatışıp siliniyor.
+           Neden kardeş eleman, çocuk değil: #modAd'in içeriği her
+           isim değişiminde textContent ile baştan yazılıyor -- içine
+           konan her şey silinirdi. Mutlak konumlu ve yeri #modAd'in
+           ölçülen kutusundan geliyor, yani satırın hizasına hiç
+           dokunmuyor. -->
+      <canvas id="modDalga" aria-hidden="true"></canvas>
     </div>
   </div>
 
@@ -3602,9 +3627,22 @@
      Iki dunyada da ayni -- semboller ikisinde de ayni yerde. */
   var UCLUK_ZORLA = false;
   try{ UCLUK_ZORLA = /[?&]ucluk(=|&|$)/.test(location.search); }catch(e){ _yut(e); }
-  /* Zorlama kipinde sembol secimi tek elden: hepsi ayni. */
+  /* ── ?ucluk: OYUNUN KENDISI, SADECE DAHA SIK ─────────────────
+     ILK HALI YANLISTI. Zorlama kipinde alienSec() HER ZAMAN ayni
+     sembolu donduruyordu; yani o adreste semboller hic degismiyor,
+     ekranda uc ayni yuvarlak duruyordu. Kullanicinin gordugu de
+     buydu: "3 tane yuvarlak geliyor, niye ayni semboller var."
+     Kutlamanin anlami KAZANMAK: doner, tutmaz, doner, tutmaz,
+     sonra bir seferinde TUTAR. Hep tutuyorsa oyun degil.
+     Simdi her TUR basinda bir kez zar atiliyor:
+       tutan tur  -> ucu de ayni (rastgele bir sembol)
+       tutmayan   -> normal, her yuva ayri sembol
+     Yani ?ucluk gercek davranisin AYNISI, yalnizca tutma sansi
+     441'de bir yerine ~5'te iki. Gordugun sey gercekte olacak
+     seyin ta kendisi. */
+  var _uclukTurSem = null;          // bu turda hepsi ayni olacaksa sembol
   function alienSec(){
-    if(UCLUK_ZORLA) return ALIEN[0];
+    if(UCLUK_ZORLA && _uclukTurSem) return _uclukTurSem;
     return ALIEN[Math.random()*ALIEN.length|0];
   }
   /* AYNI UCLUK IKI KEZ KUTLANMASIN. Ilk yazimda bu bir SURE
@@ -3632,7 +3670,7 @@
       bekle.classList.remove('ucluk');
       void bekle.offsetWidth;                 // animasyon bastan bassin
       bekle.classList.add('ucluk');
-      setTimeout(()=>{ try{ bekle.classList.remove('ucluk'); }catch(e){ _yut(e); } }, 2500);
+      setTimeout(()=>{ try{ bekle.classList.remove('ucluk'); }catch(e){ _yut(e); } }, 5000);
       try{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){ _yut(e); }
       /* Yildizlar: sembol satirinin ortasindan disari. Sayi az (14)
          -- ekrani doldurmak degil, goz ucuyla yakalanan bir kivilcim
@@ -3644,22 +3682,23 @@
          yakalanmiyor, "bir sey oldu mu?" diye soruluyordu. Yirmi
          alti nokta ve iki katina yakin menzil, ekrani doldurmadan
          patlama hissi veriyor. Hepsi 1,6 sn icinde temizleniyor. */
-      for(let i=0;i<26;i++){
+      for(let i=0;i<58;i++){
         const d = document.createElement('i');
         d.className = 'uclukYildiz';
-        const aci = (Math.PI*2) * (i/26) + Math.random()*0.4;
-        const uz  = 52 + Math.random()*118;
+        const aci = (Math.PI*2) * (i/58) + Math.random()*0.4;
+        /* 140px menzil, tezgahtaki formulle: 0.42 taban + 0.72 pay. */
+        const uz  = 59 + Math.random()*101;
         d.style.left = Math.round(ox) + 'px';
         d.style.top  = Math.round(oy) + 'px';
         d.style.setProperty('--dx', Math.round(Math.cos(aci)*uz) + 'px');
         d.style.setProperty('--dy', Math.round(Math.sin(aci)*uz) + 'px');
-        d.style.setProperty('--sur', (900 + Math.random()*500) + 'ms');
+        d.style.setProperty('--sur', Math.round(1350 + Math.random()*810) + 'ms');   // 1800 ms
         /* Renk: markanin iki duragi ve arasi -- uydurma bir gokkusagi
            degil, uygulamanin kendi paleti cemberde donuyor. */
         d.style.background = 'hsl(' + Math.round(Math.random()*360) + ',85%,74%)';
         d.style.color      = d.style.background;   // box-shadow currentColor'dan
         document.body.appendChild(d);
-        setTimeout(()=>{ try{ d.remove(); }catch(e){ _yut(e); } }, 1600);
+        setTimeout(()=>{ try{ d.remove(); }catch(e){ _yut(e); } }, 2880);
       }
     }catch(e){ _yut(e); }
   }
@@ -3691,6 +3730,11 @@
     const _uclukTuru = ()=>{
       try{
         _uclukSonSem = '';                       // ayni ucluk yine kutlansin
+        /* ZAR: bu tur tutacak mi? %40. Tutmayan turlar da onemli --
+           kutlamanin ne demek oldugu ancak tutmayanin yaninda
+           anlasiliyor. */
+        _uclukTurSem = (Math.random() < 0.40)
+                     ? ALIEN[Math.random()*ALIEN.length|0] : null;
         bekleGoster();                           // donmeye basla
         setTimeout(()=>{ try{ bekleDondur(); }catch(e){ _yut(e); } }, 1700);
       }catch(e){ _yut(e); }
@@ -6453,6 +6497,70 @@
      sebebi kare ritmine binmesiydi; oraya ait degil, bir adi olmasi
      yeterli. Ayni degeri tekrar yazmiyor (_eqSon): her karede dort
      stil yazmak yerine yalnizca degiseni yaziyor. */
+  /* ── FREKANS CIZGISI: HIZALAMA VE CIZIM ──────────────────────
+     YERI: kategori adinin (#modAd) olculen kutusundan geliyor --
+     ayni sol kenar, ayni genislik. Isim degisince (modAdiYaz) ve
+     ekran olcusu degisince (geriYerlestir) yeniden hizalaniyor.
+     Sabit bir sayi yazilamazdi: 'JAZZ' ile 'WORLD & ROOTS' bir
+     degil.
+     CIZIM: tek bir ince hat. Genlik sesin ritminden (rit) geliyor,
+     yani gercekten CALANI gosteriyor -- dekor degil, kanit.
+     Ses yoksa genlik sifira iniyor ve hat duzlesiyor. */
+  var _dalgaEl = null, _dalgaEn = 0, _dalgaBoy = 0, _dalgaGen = 0;
+  function _modDalgaHizala(){
+    try{
+      const c = _dalgaEl || (_dalgaEl = document.getElementById('modDalga'));
+      const m = document.getElementById('modAd');
+      const sat = document.querySelector('#ust .ustSatir');
+      if(!c || !m || !sat) return;
+      const mr = m.getBoundingClientRect(), sr = sat.getBoundingClientRect();
+      if(!mr.width){ c.classList.remove('caliyor'); return; }
+      const en = Math.round(mr.width), boy = 9;
+      c.style.left = Math.round(mr.left - sr.left) + 'px';
+      c.style.width = en + 'px';
+      /* Tuval cozunurlugu ekranin yogunluguna gore: 1px'lik hat
+         retinada da 1px gorunsun. */
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      const w = Math.round(en*dpr), h = Math.round(boy*dpr);
+      if(c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+      _dalgaEn = w; _dalgaBoy = h;
+      c.style.height = boy + 'px';
+    }catch(e){ _yut(e); }
+  }
+  function _modDalgaCiz(playing, rit, vt){
+    try{
+      const c = _dalgaEl || (_dalgaEl = document.getElementById('modDalga'));
+      if(!c || !_dalgaEn) return;
+      /* Genlik yumusak degisiyor: ses girip cikarken hat zipla-
+         mıyor, aciliyor ve kapaniyor. */
+      const hedef = playing ? Math.min(1, 0.18 + rit*2.2) : 0;
+      _dalgaGen += (hedef - _dalgaGen) * 0.12;
+      c.classList.toggle('caliyor', playing || _dalgaGen > 0.02);
+      const x = c.getContext('2d'); if(!x) return;
+      x.clearRect(0,0,_dalgaEn,_dalgaBoy);
+      const orta = _dalgaBoy/2;
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      x.lineWidth = Math.max(1, Math.round(dpr));
+      x.lineCap = 'round';
+      x.strokeStyle = getComputedStyle(document.getElementById('modAd')).color || '#8ff0dd';
+      x.beginPath();
+      const adim = Math.max(2, Math.round(_dalgaEn/64));
+      for(let px=0; px<=_dalgaEn; px+=adim){
+        const t = px/_dalgaEn;
+        /* Uc dalganin toplami: tek sinus fazla duzenli, makine gibi
+           duruyor. Ucu birlikte duzensiz ama yumusak bir hat veriyor.
+           Kenarlarda soneren bir zarf var -- hat uclarda inceliyor,
+           kesilmis gibi durmuyor. */
+        const zarf = Math.sin(Math.PI*t);
+        const y = orta + zarf * _dalgaGen * (orta-1) * (
+              Math.sin(t*11.0 + vt*3.1)*0.55
+            + Math.sin(t*19.0 - vt*2.3)*0.30
+            + Math.sin(t*31.0 + vt*4.7)*0.15);
+        px ? x.lineTo(px, y) : x.moveTo(px, y);
+      }
+      x.stroke();
+    }catch(e){ _yut(e); }
+  }
   function _eqCiz(playing, rit, vt){
     for(let i=0;i<npEq.length;i++){
       const hh = playing ? (2 + (3 + rit*9) * (0.35+0.65*Math.abs(Math.sin(vt*4.5 + _eqFaz[i]*1.7)))) : 2;
@@ -6582,6 +6690,7 @@
     const parmakR   = _cekUzak * sinirYari(_cekAci, R, vt, energy, rit);
     const uzamaPx   = _cekGuc * Math.max(0, parmakR - _zarTaban) * (0.94 + 0.14*Math.min(1, rit*3.2));
     _eqCiz(playing, rit, vt);
+    _modDalgaCiz(playing, rit, vt);
 
     // ── KANAL TEMASI: her kanal kendi renk ailesinde, ton sur ton.
     //    halka dizisi ic -> dis; en dista krem/aciklik, iceri dogru kanalin tonlari.
@@ -9854,6 +9963,7 @@
       _solUstOlcegiTemizle();      // kalinti olcek varsa sil
       _tutamakYerlestir(y);        // ayar tutamagi: kipte modulun ustu
       _ustSatirlariSigdir();       // sol ust satirlar karsisindakine gore
+      _modDalgaHizala();           // frekans cizgisi kategori adinin altina
       ugOlcu();
       _buyutecYerlestir(y);        // buyutec kendi yuvasinin uzerine
       _kunyeYerlestir(y);          // sag alt kunye: taban aramayla ayni hat
@@ -10165,6 +10275,8 @@
       el.style.color = 'rgb('+Math.round(r*0.78+14)+','+Math.round(g*0.78+14)+','+Math.round(b*0.78+14)+')';
     }else{ el.style.color = ''; }
     el.classList.toggle('gor', !!ad);
+    /* Isim degisti -> cizginin genisligi de degisti. */
+    try{ _modDalgaHizala(); }catch(e){ _yut(e); }
   }
   /* Büyük gezinme yazısı — halkanın hemen üstünde. */
   function _modGezEl(){

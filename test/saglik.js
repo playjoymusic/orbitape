@@ -859,6 +859,51 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
   }
 
+  /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────
+     Kullanicinin istegi: "kategori adinin tam altini, hep oradaki
+     yazinin uzunlugunda, caldigina dair bir hareket."
+     Iki sey olculuyor:
+       1) YERI -- sol kenar ve genislik #modAd ile birebir ayni,
+          ve yazinin hemen ALTINDA. Sabit bir sayi yazilamazdi:
+          'JAZZ' ile 'WORLD & ROOTS' bir degil, o yuzden isim
+          degisince yeniden hizalaniyor.
+       2) DAVRANISI -- ses varken kipirdiyor, yokken yatisip
+          siliniyor. "Caliyor" bilgisi bir SUS degil, bir hareket
+          olmali; hareket etmiyorsa hicbir sey anlatmiyor. */
+  {
+    const dlg = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      const c = document.getElementById('modDalga');
+      const m = document.getElementById('modAd');
+      if(!c || !m) return { yok:true };
+      _modDalgaHizala();
+      await bek(40);
+      const cr = c.getBoundingClientRect(), mr = m.getBoundingClientRect();
+      const hiza = { solFark:Math.round(Math.abs(cr.left - mr.left)),
+                     enFark:Math.round(Math.abs(cr.width - mr.width)),
+                     altinda:cr.top >= mr.bottom - 1 };
+      /* Ses varmis gibi birkac kare besle: genlik acilmali. */
+      for(let i=0;i<40;i++) _modDalgaCiz(true, 0.32, i*0.05);
+      await bek(20);
+      const acik = { sinif:c.classList.contains('caliyor'), gen:+_dalgaGen.toFixed(3) };
+      /* Ses kesilince yatismali. */
+      for(let i=0;i<160;i++) _modDalgaCiz(false, 0, i*0.05);
+      await bek(20);
+      const kapali = { sinif:c.classList.contains('caliyor'), gen:+_dalgaGen.toFixed(3) };
+      return { hiza, acik, kapali };
+    });
+    K('Frekans cizgisi yaziyla ayni hatta', !dlg.yok
+      && dlg.hiza.solFark <= 1 && dlg.hiza.enFark <= 1 && dlg.hiza.altinda,
+      dlg.yok ? 'cizgi yok'
+              : ('sol fark ' + dlg.hiza.solFark + 'px, genislik farki '
+                 + dlg.hiza.enFark + 'px, yazinin altinda: ' + dlg.hiza.altinda));
+    K('Frekans cizgisi yalnizca calarken kipirdiyor', !dlg.yok
+      && dlg.acik.sinif && dlg.acik.gen > 0.1
+      && !dlg.kapali.sinif && dlg.kapali.gen < 0.03,
+      dlg.yok ? '-' : ('calarken genlik ' + dlg.acik.gen
+                       + ', durunca ' + dlg.kapali.gen));
+  }
+
   /* ── ONBELLEK RAFI DA SAKLIYOR MU ────────────────────────────────
      OLCULEN HATA (30 Agustos): onbellekYaz() cagiran taraftan grup
      ve saf aliyordu ve yanindaki yorum "aile de saklaniyor: ag
