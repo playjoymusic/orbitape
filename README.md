@@ -151,7 +151,6 @@ Parça listeleri ayrı bir depoda: **[playjoymusic/tracks](https://github.com/pl
 |---|---|
 | `earth.json` | Kısa arşiv kayıtları |
 | `earth_buyuk.json` | 25 MB üstü uzun kayıtlar |
-| `mixtape.json` | Netlabel müziği |
 | `radyo.json` | Doğrulanmış canlı istasyonlar |
 
 Havuzdaki her kayıt ya kamu malında ya da paylaşıma izin veren bir Creative
@@ -188,8 +187,9 @@ Mesele soyut değil: kullanıcı efekt uygulayıp kayıt alıyor ve paylaşıyor
 türev eser artı umuma iletim. Lisansı bilinmeyen bir parçada ikisi de
 dayanaksız. Ekranda lisans satırının boş kalmasının sebebi de buydu.
 
-Yerine `mixtape.json` (1.453 lisanslı netlabel parçası) geçti. Kod git
-geçmişinde duruyor; lisans veren bir uç nokta çıkarsa geri gelebilir.
+Yerine bir süre `mixtape.json` (1.453 lisanslı netlabel parçası) geçti; o da
+sonradan kaldırıldı. Kod git geçmişinde duruyor; lisans veren bir uç nokta
+çıkarsa geri gelebilir.
 
 ### PLAYJOY parçaları neden kaldırıldı
 
@@ -199,6 +199,18 @@ bizim olsa da dağıtım sözleşmesi aracı kurumda; aynı kayıtları kendi
 uygulamamızdan ayrıca yayınlamak o sözleşmeyle çakışabilir. Hak sahibi biz
 olduğumuz halde riski taşımanın anlamı yok. mp3 dosyaları `tracks` deposunda
 duruyor; uygulama artık onlara hiç dokunmuyor.
+
+### Netlabel havuzu neden kaldırıldı
+
+`mixtape.json` (1.453 CC netlabel parçası) çalışıyordu ve lisans tarafı
+sağlamdı — kaldırılma sebebi bir karar: **ORBITAPE tek kaynaktan beslenecek.**
+Arşiv 22.903 kayıt, havuzun on beş katı; boşluk doğurmuyor. Dosya `tracks`
+deposunda duruyor.
+
+Bununla birlikte MIXTAPE **kanalı** da kapandı — zaten iki dünyaya geçilirken
+erişilemez olmuştu (`modaGec` yalnızca `radio` ve `lib` kabul ediyor), son
+besleyicisi de gidince kodu kaldırıldı. MIXTAPE **rafı** (arşivdeki bütün
+müzik) duruyor; o bir raf adı, kanal değil.
 
 ### Jamendo neden kaldırıldı
 

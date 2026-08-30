@@ -20,10 +20,12 @@ oynanan efektler. Hesap yok, reklam yok, takip yok, çerez yok.
 | Dünya | Kaynak |
 |---|---|
 | **RADIOTAPE** | Canlı istasyonlar (`radyo.json` beyaz listesi + yedek: radio-browser) |
-| **ORBITAPE** | Arşiv kayıtları (`earth.json` + `earth_buyuk.json`) + netlabel müziği (`mixtape.json`) |
+| **ORBITAPE** | Arşiv kayıtları (`earth.json` + `earth_buyuk.json`) — 22.903 kayıt |
 
-Jamendo (çalışmıyordu, `client_id` taşıyordu) ve PLAYJOY / `liste.json`
-(kendi kayıtlarımız — dağıtımı Believe'de) kaldırıldı.
+Kaldırılanlar: Audius (lisans bilgisi döndürmüyordu), Jamendo (çalışmıyordu,
+`client_id` taşıyordu), PLAYJOY / `liste.json` (kendi kayıtlarımız — dağıtımı
+Believe'de) ve `mixtape.json` (netlabel havuzu — kaynağı tek tutmak için).
+MIXTAPE artık yalnızca bir **raf** adı, kanal değil.
 
 Kanalların içinde **modlar** var (AMBIANCE, HUMAN) — parça etiketine göre
 düzenli ifadeyle ayrılıyor, ayrı havuz değiller.

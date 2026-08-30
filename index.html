@@ -3813,7 +3813,7 @@
     /* Albüm alanı kanalı ve kaynağı taşıyor: kilit ekranında
        "RADIOTAPE · RADIO-BROWSER" gibi tek satır bilgi. */
     const kanal = (typeof AKTIF_MOD !== 'undefined' && AKTIF_MOD) ? AKTIF_MOD
-                : (mod==='radio' ? 'RADIOTAPE' : mod==='liste' ? 'MIXTAPE' : 'ORBITAPE');
+                : (mod==='radio' ? 'RADIOTAPE' : 'ORBITAPE');
     try{
       navigator.mediaSession.metadata = new MediaMetadata({
         title:  ad || 'ORBITAPE',
@@ -3860,20 +3860,22 @@
      ayrıca yayınlamak o sözleşmeyle çakışabilir. Hak sahibi biz
      olduğumuz halde riski taşımanın anlamı yok.
 
-     Yerine bir şey koymaya gerek yok: ORBITAPE rafları zaten
-     earth/mix havuzlarından besleniyor, mixAl() her parçayı
-     modUygun() süzgecinden geçiriyor.
+     Yerine bir şey koymaya gerek yok: ORBITAPE rafları arşivden
+     besleniyor (earth.json + earth_buyuk.json, 22.903 kayıt).
 
      Not: mp3 dosyaları tracks deposunda hâlâ duruyor; uygulama
      artık onlara hiç dokunmuyor. */
-  // MIXTAPE'e karışan netlabel parçaları: arkada hazır bekletilir -> sıra gelince bekleme olmaz
-  /* ── MIXTAPE HAVUZU: bash'ta toplanmış CC netlabel + Openverse parçaları ──
-     blocSonic, Mahorka, Clinical Archives, Bump Foot, Kahvi, Ektoplazm +
-     Openverse (Jamendo / Free Music Archive / Wikimedia). Hepsi CORS doğrulanmış.
-     Jamendo canlı API yavaşladığında ya da boş döndüğünde burası devreye girer. */
-  const MIX_URL       = "https://raw.githubusercontent.com/playjoymusic/tracks/main/mixtape.json";
-  const MIX_URL_YEDEK = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/mixtape.json";
-  let mixHavuz=[], _mxShuf=[], _mxIdx=0, _mxSoz=null;
+  /* ── NETLABEL HAVUZU (mixtape.json) KALDIRILDI ──────────────────
+     1.453 parcalik CC netlabel havuzu (blocSonic, Mahorka, Clinical
+     Archives, Bump Foot, Kahvi, Ektoplazm + Openverse) buradaydi.
+     Kaldirildi: ORBITAPE tek kaynaktan, arsivden beslenecek.
+
+     Bosluk dogurmuyor: arsiv 22.903 kayit, havuzun 15 kati.
+     Dosya tracks deposunda duruyor, uygulama dokunmuyor.
+
+     Bununla birlikte MIXTAPE kanalinin son besleyicisi de gitti --
+     kanal zaten iki dunyaya gecerken erisilemez olmustu (modaGec
+     yalnizca 'radio' ve 'lib' kabul ediyor), simdi kodu da yok. */
   /* Tarayıcı bu formatı çalabiliyor mu? iOS Safari .ogg/.opus/.flac çalmıyor;
      o linkler havuza hiç girmesin, yoksa sessiz kalıp atlanıyorlar. */
   function formatCalinir(u){
@@ -3887,50 +3889,6 @@
       return !!ses.canPlayType(tip);
     }catch(_){ return true; }
   }
-  async function mixYukle(){
-    iz('mixYukle');
-    /* Radyo tarafinin netlabel havuzuyla isi yok -- earthYukle ile
-       ayni kapi. RADIOTAPE'te duran birine 1453 parcalik JSON
-       indirtmiyoruz. */
-    if(!AYAR.mood) return 0;
-    if(mixHavuz.length) return mixHavuz.length;
-    if(_mxSoz) return _mxSoz;
-    _mxSoz=(async()=>{
-      try{
-        const r=await listeCek(MIX_URL, MIX_URL_YEDEK, 8000);
-        if(!r || !r.ok){ agBosArtir(); return mixOnbellekten(); }
-        const d=await r.json();
-        const arr=Array.isArray(d)?d:((d&&(d.tracks||d.liste))||[]);
-        mixHavuz=arr.map((x,i)=>{
-          const u=x&&(x.mp3||x.url); if(!u) return null;
-          if(!formatCalinir(u)) return null;                    // cihazın çalamayacağı format
-          return { id:'mix:'+i, mp3:u, ad:(x.ad||'').toString(), sanatci:(x.sanatci||'').toString(),
-                   etiket:((x.etiket||'')+' '+(x.tur||'')).trim(),     // tur: hasatta yazılan tür
-                   lisans:(x.lisans||'').toString() };
-        }).filter(Boolean);
-        _mxShuf=[]; _mxIdx=0;
-        if(mixHavuz.length) onbellekYaz('mix', mixHavuz); else return mixOnbellekten();
-        return mixHavuz.length;
-      }catch(e){ agBosArtir(); return mixOnbellekten(); }
-      finally{ _mxSoz=null; }
-    })();
-    return _mxSoz;
-  }
-  /* Ağ yoksa son bilinen MIXTAPE havuzundan devam et. */
-  function mixOnbellekten(){
-    const c = onbellekOku('mix');
-    if(c && c.length){ mixHavuz = c; _mxShuf=[]; _mxIdx=0; return mixHavuz.length; }
-    return 0;
-  }
-  function mixAl(){
-    if(!mixHavuz.length) return null;
-    for(let t=0;t<20;t++){
-      if(_mxIdx>=_mxShuf.length){ _mxShuf=karisik(mixHavuz); _mxIdx=0; }
-      const o=_mxShuf[_mxIdx++];
-      if(o && !EARTH_KARA.has(o.mp3) && modUygun(o)) return o;
-    }
-    return null;
-  }
   /* ── AUDIUS KALDIRILDI ───────────────────────────────────────────
      Audius kullanıcı yüklemesi bir ağ ve API'si LİSANS BİLGİSİ
      DÖNDÜRMÜYOR. Bir eserin varsayılanı "tüm hakları saklı"dır;
@@ -3942,21 +3900,12 @@
      kaydı paylaşıyor. Bu türev eser + umuma iletim. Lisansı
      bilinmeyen bir parçada ikisi de dayanaksız.
 
-     Süzgeç kurulamadı çünkü süzülecek alan yok. Yerine mixtape.json
-     (1.453 lisanslı netlabel parçası) geçti.
+     Süzgeç kurulamadı çünkü süzülecek alan yok. Yerini arşiv aldı:
+     her kaydın lisansı hasatta doğrulanıyor.
 
      Ekranda lisans satırı da bu yüzden boş kalıyordu: gösterilecek
-     bir lisans yoktu. Şimdi MIXTAPE'te çalan her parçanın lisansı
-     var ve ekranda yazıyor. */
-  /* Bu akış eskiden ~%14 PLAYJOY + gerisi havuz karışımıydı.
-     PLAYJOY kaldırıldığı için tek kaynak netlabel havuzu. */
-  function listeGec(){
-    if(!mixHavuz.length) mixYukle();                     // havuzu arkada hazırla
-    const o = mixAl();
-    if(o){ cal(o); return; }
-    /* Havuz henüz gelmedi: yükleme bitince buraya geri dön. */
-    mixYukle().then(()=>{ try{ if(mod==='liste'){ const y=mixAl(); if(y) cal(y); } }catch(e){ _yut(e); } });
-  }
+     bir lisans yoktu. Şimdi çalan her parçanın lisansı var ve
+     ekranda yazıyor. */
   /* Arşiv kaydının "creator" alanı çoğunlukla gerçek bir isim ama arada
      e-posta, site adresi ya da "Various" gibi doldurma değerler geliyor.
      Onları künyeye yazmayalım; gerisi olduğu gibi geçsin. */
@@ -6513,12 +6462,10 @@
      degil, digerleri gibi ONCEDEN HASAT EDIP JSON'a yazmak
      (radyo.json gibi) -- anahtarsiz, kirilmadan.
 
-     mixtape.json SILINMEDI: o bizim kendi hasat dosyamiz, calisiyor
-     (1453 parca) ve mixAl() zaten modUygun() suzgecinden geciriyor,
-     yani icerigi bugun de ORBITAPE'in kategorilerine akiyor. Ayri
-     bir kanal degil, arsivin parcasi. */
+     Netlabel havuzu (mixtape.json) da sonradan kaldirildi; ORBITAPE
+     tek kaynaktan, arsivden besleniyor. */
 
-  /* AUDIUS BURADAN KALDIRILDI — sebebi listeGec'in üstünde yazıyor:
+  /* AUDIUS BURADAN KALDIRILDI — sebebi Audius bloğunda yazıyor:
      API lisans bilgisi döndürmüyor, süzülecek alan yok. Kod kayıt
      olarak git geçmişinde duruyor; lisans veren bir uç nokta çıkarsa
      geri getirilebilir. */
@@ -6935,7 +6882,7 @@
       return;
     }
     /* TERS YON KAPATILMADI ve bu bilerek: radyo tarafinda zaten
-       radyodan baska kaynak URETILMIYOR (earthYukle/mixYukle o tarafta
+       radyodan baska kaynak URETILMIYOR (earthYukle o tarafta
        calismiyor, kuyruklar kip degisince bosaliyor). Buraya bir de
        "radyo tarafinda arsiv kaydi calmasin" kurali koymak, favoriler
        ve gecmis gibi mesru yollarla gelen kayitlari da keserdi --
@@ -7041,7 +6988,7 @@
     // MIXTAPE'te Jamendo akışı yönlendirmeyle geliyor, 2.8 sn çoğu
     // zaman yetmiyor ve parça daha açılmadan atlanıyordu -> 6 sn.
     // ORBITAPE'te uzun kayıtlar da var; onlar geç açılıyor -> tek eşik 6 sn.
-    const basSuresi = (mod==='liste' || mod==='radio' || mod==='lib') ? 6000 : 2800;
+    const basSuresi = (mod==='radio' || mod==='lib') ? 6000 : 2800;
     baslamaTimer=setTimeout(()=>{ if(aktifItem===item && !calBaslangic){ clearTimeout(aramaTimer); atla(); } }, basSuresi);
     const oynat = ()=>{
     iz('ses.play');
@@ -8081,22 +8028,12 @@
       if(it){ _ilkYayin = false; calindiEkle(it.id); cal(it); radyoKuyrukDoldur(); return; }
       radyoGec(); return;
     }
-    /* IKI KAYNAK KALDI: arsiv (earth) ve netlabel havuzu (mixtape).
-       Jamendo cikarildi -- calismiyordu ve siranin ucte birini
-       bosa harciyordu (bkz. JAMENDO KALDIRILDI). */
-    const z = Math.random();
-    const sirala = (z < 0.72) ? ['earth','mix'] : ['mix','earth'];
-    for(const k of sirala){
-      if(k==='earth'){ const o=earthAl(); if(o){ cal(o); return; } }
-      /* Havuz bossa mixAl() bos donuyor ve sira sessizce earth'e
-         kayiyordu: 'mix' hep atlaniyor, havuz hic yuklenmiyordu.
-         Simdi atlarken yuklemeyi de baslatiyor -- bir sonraki gecise
-         hazir olsun. */
-      else if(k==='mix'){ const o=mixAl(); if(o){ cal(o); return; }
-                          if(!mixHavuz.length) mixYukle(); }
-    }
-    // hiçbiri hazır değil: havuzları doldur, kısa süre sonra tekrar dene
-    try{ earthYukle(); mixYukle(); }catch(e){ _yut(e); }
+    /* TEK KAYNAK KALDI: arsiv. Jamendo (calismiyordu), PLAYJOY
+       (dagitim haklari) ve netlabel havuzu sirasiyla cikarildi.
+       earthAl() zaten hem kisa hem uzun kayitlari veriyor. */
+    { const o = earthAl(); if(o){ cal(o); return; } }
+    // hazır değil: havuzu doldur, kısa süre sonra tekrar dene
+    try{ earthYukle(); uzunYukle(); }catch(e){ _yut(e); }
     setTimeout(()=>{ if(AKTIF_MOD) sonraki(false); }, 700);
   }
   function sonraki(kullanici){
@@ -8132,7 +8069,6 @@
        gibi davranıyor; RADIOTAPE/ORBITAPE/MIXTAPE ayrımı devre dışı. */
     if(AKTIF_MOD){ modGec(); return; }
     if(mod==='radio'){ radyoGec(); return; }                               // RADYO moodu: sıradaki istasyon
-    if(mod==='liste'){ listeGec(); return; }                               // MIXTAPE moodu: sıradaki kendi şarkın
     const benim = ++nesil;                                                 // bu basışın kimliği
     let item=ilkItem; if(item){ ilkItem=null; } else { item=kuyruktanAl(); }
     if(item){ cal(item); hazirla(); return; }                              // kuyrukta hazır varsa ANINDA çal
@@ -8162,8 +8098,6 @@
         ()=> uzunHavuz.length ? ('✓ '+uzunHavuz.length+' track') : null],
       ['  └ uzay/gizem', null,
         ()=> uzunHavuz.length ? ('~ '+uzaySay(uzunHavuz)+' track') : '—', true],
-      ['mixtape.json (netlabel)', 'mix',
-        ()=> mixHavuz.length ? ('✓ '+mixHavuz.length+' track') : null],
       ['lisanssiz elenen', 'lisans', ()=> (FAIL['lisans']||0) ? ('\u2715 '+FAIL['lisans']+' track') : '\u2014', true],
       ['RADIOTAPE', null, null],
       /* Asil kaynak artik kendi kokumuzdeki radyo.json: istasyon rafi,
@@ -8465,8 +8399,7 @@
     gecmisSifirla();                                     // geri listesi kanal başına
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
-    if(mod==='lib'){ earthYukle(); uzunYukle(); mixYukle(); }   // ORBITAPE: kısa + uzun arşiv + netlabel havuzu
-    if(mod==='liste'){ mixYukle(); }                     // netlabel havuzu
+    if(mod==='lib'){ earthYukle(); uzunYukle(); }        // ORBITAPE: kısa + uzun arşiv
     sonraki(false);
   }
   /* ── FX İPUCU ────────────────────────────────────────────────────
@@ -9443,7 +9376,6 @@
     }else{
       try{ ek(earthHavuz,'lib'); }catch(e){ _yut(e); }
       try{ ek(uzunHavuz,'lib'); }catch(e){ _yut(e); }
-      try{ ek(mixHavuz,'liste'); }catch(e){ _yut(e); }
     }
     return g;
   }
@@ -10089,7 +10021,7 @@
     /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
        tarayacagi sey de o. */
     if(!AYAR.mood){ try{ radyoListe(); }catch(e){ _yut(e); } }
-    else { try{ earthYukle(); uzunYukle(); mixYukle(); }catch(e){ _yut(e); } }
+    else { try{ earthYukle(); uzunYukle(); }catch(e){ _yut(e); } }
     silGoster();
     _araDokunuldu = false;                    // yeni acilis: temiz sayfa
     setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);
@@ -12858,7 +12790,6 @@
     hazirla();   // kütüphane çeşitliliğini arkada topla (isteyen üstten geçince hazır olsun)
     radyoKuyrukDoldur();   // kuyruğu tazele
     earthYukle();          // ORBITAPE arşiv havuzunu da önden yükle (moda geçince anında)
-    mixYukle();            // netlabel havuzu: ORBITAPE'in ikinci kaynağı (ikisi de AYAR.mood kapısında)
   })();
 
   /* ── UYGULAMA KABUĞU ÖNBELLEĞİ ────────────────────────────────────

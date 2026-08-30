@@ -99,7 +99,10 @@ async function tarayiciAc(motor){
    dongusune girer ve o dongu sirasi gelen her testin altini oyar. */
 const TON = fs.readFileSync(T('ton.wav'));
 
-const SAYI_VARSAYILAN = { buyuk:24, earth:40, mixtape:30, liste:6, radyo:16 };
+/* mixtape.json ve liste.json kaldirildi; sahte ag onlari artik
+   karsilamiyor -- kod yeniden isterse istek bos donsun ve testte
+   gorunsun. */
+const SAYI_VARSAYILAN = { buyuk:24, earth:40, radyo:16 };
 
 async function sahteAg(sayfa, ayar){
   const s = Object.assign({}, SAYI_VARSAYILAN, (ayar && ayar.sayilar) || {});
@@ -123,8 +126,6 @@ async function sahteAg(sayfa, ayar){
     if(u.startsWith(KOK)) return r.continue();
     if(/earth_buyuk\.json/.test(u)) return r.fulfill({status:200, contentType:'application/json', body:liste(s.buyuk,'u')});
     if(/earth\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:liste(s.earth,'e')});
-    if(/mixtape\.json/.test(u))     return r.fulfill({status:200, contentType:'application/json', body:liste(s.mixtape,'m')});
-    if(/liste\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:liste(s.liste,'l')});
     if(/stations\/search/.test(u))  return r.fulfill({status:200, contentType:'application/json',
       body: JSON.stringify(Array.from({length:s.radyo},(_,i)=>({stationuuid:'s'+i, url:'https://sahte.test/r'+i,
              url_resolved:'https://sahte.test/r'+i, name:'Radio '+i, lastcheckok:1})))});

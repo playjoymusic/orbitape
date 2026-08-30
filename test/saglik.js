@@ -937,7 +937,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     }), 'nebula + dort gezegen geri geliyor');
   K('Tek kanal var', await pg.evaluate(()=>
       KANAL_SIRA.length === 1 && KANAL_SIRA[0] === 'radio' && mod === 'radio'),
-     'arsiv ve mixtape kanallari kapandi');
+     'tek kanal: radyo; oteki dunya AYAR.mood ile aciliyor');
   K('Eski kanal depodan siliniyor', await pg.evaluate(()=>{
       try{ localStorage.setItem('orbitape.kanal','lib'); }catch(e){}
       /* Acilisin yaptigi sey: eski deger okunmuyor, siliniyor. */
@@ -964,7 +964,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
          olcumu (tur.cak) yalan soyler. */
     const { sayfa: pp, kapat } = await sayfaAc(b, {
       bekle: 2400,
-      sayilar: {buyuk:6, earth:8, mixtape:8, liste:4, radyo:8},
+      sayilar: {buyuk:6, earth:8, radyo:8},
       ses: false });
     try{
       const acildi = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
@@ -1715,26 +1715,24 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
           && typeof calListe === 'undefined'
           && typeof listeYukle === 'undefined';
     }), 'liste.json, gomulu mp3, calListe -- hicbiri yok');
-  /* ── NETLABEL HAVUZU GERCEKTEN YUKLENIYOR MU ────────────────────
-     PLAYJOY gidince ORBITAPE'in ikinci kaynagi mixtape.json kaldi.
-     Ama kaynak raporunda "mixtape.json --" goruldu: hic yuklenmemis.
-     Sebep: sirada 'mix' secildiginde mixAl() bos donuyor, sira
-     sessizce earth'e kayiyor ve havuzu YUKLEYEN kimse olmuyordu.
-     Iki kapi da bu yuzden var: ORBITAPE'e girerken yukleniyor ve
-     sirada atlanirken yukleme baslatiliyor. */
-  K('Netlabel havuzu ORBITAPE ile birlikte yukleniyor', await pg.evaluate(()=>{
+  /* ── ORBITAPE TEK KAYNAKTAN BESLENIYOR ──────────────────────────
+     Sirasiyla Audius, Jamendo, PLAYJOY ve netlabel havuzu cikti.
+     Geriye arsiv kaldi: earth.json + earth_buyuk.json.
+     Netlabel havuzunun kaldirilma sebebi lisans degil karar --
+     kaynagi tek tutmak. Dosya tracks deposunda duruyor.
+     Kontrol tersine: kod yeniden mixtape.json'a uzanirsa kirmizi. */
+  K('Netlabel havuzu uygulamada yok', await pg.evaluate(()=>{
       const kod = document.documentElement.innerHTML
         .replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
-      return /mod==='lib'\)\{ earthYukle\(\); uzunYukle\(\); mixYukle\(\); \}/.test(kod)
-          && /if\(!mixHavuz\.length\) mixYukle\(\);/.test(kod);
-    }), 'kanal girisinde ve sira atlarken');
-  /* Radyo tarafinda indirilmiyor: earthYukle ile ayni kapi. */
-  K('Netlabel havuzu radyoda indirilmiyor', await pg.evaluate(async ()=>{
-      const eski = AYAR.mood; AYAR.mood = false;
-      const n = await mixYukle();
-      AYAR.mood = eski;
-      return n === 0 || mixHavuz.length === 0;
-    }), 'RADIOTAPE 1453 parcalik JSON indirmiyor');
+      return !/mixtape\.json/.test(kod)
+          && typeof mixHavuz === 'undefined'
+          && typeof mixYukle === 'undefined'
+          && typeof listeGec === 'undefined';
+    }), 'mixtape.json, mixHavuz, listeGec -- hicbiri yok');
+  /* MIXTAPE HALKASI AYRI SEY: o bir raf adi (arsivdeki butun muzik),
+     kanal degil. Kaldirilan sey dosyaydi, raf duruyor. */
+  K('MIXTAPE rafi duruyor', await pg.evaluate(()=>
+      MODSIRA.indexOf('MIXTAPE') >= 0), 'raf adi kanal degil');
   K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
   K('Kayit hedefi ONDEN hazir', await pg.evaluate(()=>!!kayitHedef), 'REC oncesi kurulu');
   /* latencyHint:'playback': tampon 441 -> 1024 ornek. Cizirti isleci
@@ -2579,7 +2577,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
              bayat: bayat===null, acik, kapandi, turCikti, elCikti,
              ingilizce: !/[ğüşıöçĞÜŞİÖÇ]/.test(el.textContent||'') };
   });
-  K('Havuz onbellegi cihazda', !!ags && ags.anahtar.length>=3, ags?ags.anahtar.length+' havuz | '+ags.kb+' KB':'-');
+  /* Kaynak sayisi 5'ten 3'e indi (Audius, Jamendo, PLAYJOY, netlabel
+     cikti): geriye earth, uzun ve radyo kaldi. Esik ona gore. */
+  K('Havuz onbellegi cihazda', !!ags && ags.anahtar.length>=2, ags?ags.anahtar.length+' havuz | '+ags.kb+' KB':'-');
   K('Onbellek boyutu makul', !!ags && ags.kb < 700, (ags?ags.kb:'-')+' KB (localStorage ~5 MB)');
   K('Onbellek yaz/oku turu', !!ags && ags.geri===true, 'kayit aynen geri geliyor');
   K('Onbellek tavani calisiyor', !!ags && ags.tavan===500, '900 -> '+(ags?ags.tavan:'-'));
@@ -2700,7 +2700,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        kaynak uzerinden, cunku ikisi de calisma aninda kolay gozlenmiyor. */
     const kaynak = fs.readFileSync('index.html','utf8');
     const tasiyor = (kaynak.match(/lisans:\(x\.lisans\|\|''\)\.toString\(\)/g)||[]).length;
-    K('Havuzlar lisansi tasiyor', tasiyor>=3, tasiyor+' yukleyici (earth, uzun, mix)');
+    K('Havuzlar lisansi tasiyor', tasiyor>=2, tasiyor+' yukleyici (earth, uzun)');
     K('Kayit cizimi lisansi yaziyor', /npLisans[\s\S]{0,200}domMetin\(c, lz, lz\.textContent/.test(kaynak),
       'paylasilan videoda atif duruyor');
   }
@@ -3423,29 +3423,27 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
             && zincir;
       }), 'RAF · ULKE; aday ve kuyruk ikisi de ulkeyi tasiyor');
     /* KANAL ADI DOGRU YAZILMALI.
-       Olculen vaka: MIXTAPE kanalindayken ust yazi 'RADIOTAPE'
-       diyordu. Else dali radyoyu da kapsayacak diye yazilmisti ama
-       radyo bir ust satirda zaten donuyor; geriye yalnizca mixtape
-       kaliyordu ve yanlis kanalin adini aliyordu. */
+       Olculen vaka: else dali radyoyu da kapsayacak diye yazilmisti
+       ama radyo bir ust satirda zaten donuyor; altta kalan kanal
+       yanlis adi aliyordu. MIXTAPE kanali kapandigi icin geriye iki
+       dunya kaldi, kontrol de ikisini olcuyor. */
     K('Kanal adi dogru yaziliyor', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eK = AKTIF_MOD;
         const oku = ()=>{ modAdiYaz(); return document.getElementById('modAd').textContent; };
         AKTIF_MOD = null;
-        mod = 'liste'; AKTIF_AILE = null; const mix = oku();
         mod = 'lib';                       const ars = oku();
         mod = 'radio'; AKTIF_AILE = null;  const bos = oku();
         mod = 'radio'; AKTIF_AILE = 'JAZZ';const raf = oku();
         mod = eM; AKTIF_AILE = eA; AKTIF_MOD = eK; modAdiYaz();
         /* Arsiv kanali SOUNDS: 'ORBITAPE' yazarsa markanin yaninda
            ayni kelime iki kez cikiyor ve ekran bir sey soylemiyor. */
-        return mix === 'MIXTAPE' && ars === 'SOUNDS'
-            && ars !== 'ORBITAPE'
+        return ars === 'SOUNDS' && ars !== 'ORBITAPE'
             && bos === '' && raf === 'JAZZ';
-      }), 'liste=MIXTAPE, lib=SOUNDS, radyoda raf adi ya da bos');
+      }), 'lib=SOUNDS, radyoda raf adi ya da bos');
     /* ── ARAMA RADYOYU DA BULMALI ────────────────────────────────
        Olculen sikayet: "cinemix diye bir kanal var, radyo yazdim
-       cikmadi". Sebep arama kutusu degildi -- arama havuzu arsiv ve
-       mixtape'ten olusuyordu, 541 CANLI ISTASYON hic girmiyordu.
+       cikmadi". Sebep arama kutusu degildi -- arama havuzu yalnizca
+       arsivden olusuyordu, 541 CANLI ISTASYON hic girmiyordu.
        Yani arama o listeyi bilmiyordu bile. */
     K('Arama istasyonlari da buluyor', await pg.evaluate(async()=>{
         const eM = mod; mod = 'radio';
