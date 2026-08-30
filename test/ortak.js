@@ -123,9 +123,18 @@ async function sahteAg(sayfa, ayar){
       lisans:LISANSLAR[i % LISANSLAR.length]})));
   await sayfa.route('**/*', r=>{
     const u = r.request().url();
+    /* ── LISTE DOSYALARI KENDI KOKUMUZDE ─────────────────────────
+       earth.json ve earth_buyuk.json artik disaridan degil, kendi
+       adresimizden geliyor (tracks deposu private oluyor). Ayni
+       koken kontrolu bunlari da "gercek dosya" sayip GECIRIYORDU:
+       testler 5,4 MB'lik gercek havuzu yukluyor, 16.424 kayitla
+       calisiyor ve zamanlamaya bagli kontroller kayiyordu -- uc
+       kontrol boyle kirmizi yandi.
+       Sira degisti: liste dosyalari HER ZAMAN sahte, koken fark
+       etmiyor. Testin havuzu kucuk ve ongorulebilir olmali. */
+    if(/\/earth_buyuk\.json/.test(u)) return r.fulfill({status:200, contentType:'application/json', body:liste(s.buyuk,'u')});
+    if(/\/earth\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:liste(s.earth,'e')});
     if(u.startsWith(KOK)) return r.continue();
-    if(/earth_buyuk\.json/.test(u)) return r.fulfill({status:200, contentType:'application/json', body:liste(s.buyuk,'u')});
-    if(/earth\.json/.test(u))       return r.fulfill({status:200, contentType:'application/json', body:liste(s.earth,'e')});
     if(/stations\/search/.test(u))  return r.fulfill({status:200, contentType:'application/json',
       body: JSON.stringify(Array.from({length:s.radyo},(_,i)=>({stationuuid:'s'+i, url:'https://sahte.test/r'+i,
              url_resolved:'https://sahte.test/r'+i, name:'Radio '+i, lastcheckok:1})))});

@@ -103,3 +103,20 @@
 /radyo.json
   Content-Type: application/json; charset=utf-8
   Cache-Control: public, max-age=600, stale-while-revalidate=86400
+
+# ── ARSIV LISTELERI ──────────────────────────────────────────────
+# earth.json (5,4 MB) ve earth_buyuk.json (2,2 MB) de artik burada.
+# Once raw.githubusercontent.com'dan geliyorlardi; tracks deposu
+# private olunca o adresler kapaniyor ve zaten bizim olmayan iki
+# sunucuya bagli olmanin anlami yoktu.
+# ISTASYON LISTESINDEN DAHA UZUN TAZE: bu iki dosya haftada bir
+# degisiyor (hasat), radyo.json daha sik. 6 saat taze, bir hafta
+# "eskisini goster arkada yenile" -- boylece 5 MB'lik dosya her
+# acilista degil, gunde bir kez telden geciyor.
+/earth.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=21600, stale-while-revalidate=604800
+
+/earth_buyuk.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=21600, stale-while-revalidate=604800

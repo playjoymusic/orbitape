@@ -3212,9 +3212,11 @@
   async function listeCek(url, yedek, ms, ucuncu){
     const tazele = u => u + (u.includes('?')?'&':'?') + 't=' + Date.now();
     try{ const r = await fetchZA(url, ms, KOSULLU); if(r && r.ok) return r; }catch(e){ _yut(e); }
-    try{ const r = await fetchZA(tazele(yedek), ms); if(r && r.ok) return r; }catch(e){ _yut(e); }
-    /* UCUNCU ADRES: birinci kendi sitemiz, ikinci GitHub, ucuncu
-       jsDelivr. Ucu birden dusmedikce dizine hic sorulmuyor. */
+    /* YEDEK ADRESLER BOS OLABILIR. Butun listeler artik kendi
+       kokumuzden geliyor; tracks deposu private olunca oradaki
+       adresler 404 donduruyor. Bos adres denenmiyor -- yoksa her
+       yuklemede iki bosuna istek gidiyordu. */
+    if(yedek){ try{ const r = await fetchZA(tazele(yedek), ms); if(r && r.ok) return r; }catch(e){ _yut(e); } }
     if(ucuncu){ try{ const r = await fetchZA(tazele(ucuncu), ms); if(r && r.ok) return r; }catch(e){ _yut(e); } }
     // son şans: aynı kaynağa iki kat bütçeyle bir daha (yavaş hat için)
     try{ const r = await fetchZA(url, ms*2, KOSULLU); if(r && r.ok) return r; }catch(e){ _yut(e); }
@@ -4116,8 +4118,19 @@
   }
   // ── EARTH SOUNDS: önceden çözülmüş arşiv sesleri havuzu (earth.json) ──
   // archive.org'da CANLI arama yapmak yerine hazır mp3 linklerini kullanır -> anında gelir, ✕ hatası olmaz.
-  const EARTH_URL     = "https://raw.githubusercontent.com/playjoymusic/tracks/main/earth.json";
-  const EARTH_URL_YEDEK = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/earth.json";
+  /* ── ARSIV LISTELERI KENDI KOKUMUZDE ─────────────────────────────
+     Once raw.githubusercontent.com'dan, sonra jsDelivr'dan geliyordu.
+     Ikisi de bizim degil: birinin durmasi ya da tracks deposunun
+     kapanmasi uygulamayi sessizce bosaltiyordu.
+     Artik radyo.json gibi kendi kokumuzden: Cloudflare Workers'da
+     statik dosya istegi ucretsiz ve sinirsiz ("Requests to static
+     assets are free and unlimited"), dosya da zaten her acilista
+     onbellege giriyor.
+     YEDEK ADRES YOK ve bilerek yok: tracks deposu private olacak,
+     yani oradaki adresler 404 dondurecek. Olu bir yedek, yedek
+     degildir -- yerine cihazdaki onbellek var (earthOnbellekten). */
+  const EARTH_URL     = "/earth.json";
+  const EARTH_URL_YEDEK = "";
   let earthHavuz=[], _ehShuf=[], _ehIdx=0, _ehSoz=null;
   async function earthYukle(){
     iz('earthYukle');
@@ -4152,8 +4165,8 @@
      Boyut süzgecinde elediğimiz saatlik kayıtlar (alan kayıtları, eski radyo yayınları,
      silindir arşivleri) burada yaşıyor. Sağ üstteki ORBITAPE yazısına dokununca açılır:
      renkler morumsuya döner, parça uzun olduğu için ortasından girip akmaya devam eder. */
-  const UZUN_URL       = "https://raw.githubusercontent.com/playjoymusic/tracks/main/earth_buyuk.json";
-  const UZUN_URL_YEDEK = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/earth_buyuk.json";
+  const UZUN_URL       = "/earth_buyuk.json";
+  const UZUN_URL_YEDEK = "";
   let uzunHavuz=[], _uzShuf=[], _uzIdx=0, _uzSoz=null;
   /* Ağ yoksa son bilinen AMBIANCE havuzundan devam et. */
   function uzunOnbellekten(){
@@ -7985,8 +7998,10 @@
      Digerleri YEDEK olarak duruyor: dosya bir gun yayindan
      dususe uygulama yine de liste bulabilsin. */
   const RADYO_URL       = "/radyo.json";
-  const RADYO_URL_YEDEK = "https://raw.githubusercontent.com/playjoymusic/tracks/main/radyo.json";
-  const RADYO_URL_SON   = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/radyo.json";
+  /* Yedekler KALDIRILDI: tracks deposu private oluyor, oradaki iki
+     adres de 404 dondurecek. Ilk adres zaten kendi kokumuzdu. */
+  const RADYO_URL_YEDEK = "";
+  const RADYO_URL_SON   = "";
   var beyazListe = null, _blSoz = null, _blDenendi = false;
   async function beyazListeYukle(){
     if(beyazListe) return beyazListe;

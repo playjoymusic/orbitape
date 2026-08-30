@@ -2893,14 +2893,20 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   {
     const k5 = fs.readFileSync('index.html','utf8');
     const bas5 = k5.indexOf('async function listeCek');
-    const govde5 = k5.slice(bas5, bas5 + 700);
+    /* Dilim 700 -> 1100: yedek adres bos olabilecegi icin bir
+       "if(yedek)" kapisi eklendi ve son satir araligin disina
+       tasti. Kontrol dogru seyi ariyor, dilim kisaydi. */
+    const govde5 = k5.slice(bas5, bas5 + 1100);
     K('Birincil liste istegi kosullu',
        /fetchZA\(url, ms, KOSULLU\)/.test(govde5) && /fetchZA\(url, ms\*2, KOSULLU\)/.test(govde5),
        "cache:'no-cache' -> degismediyse 0 bayt");
     K('Birincilde ?t= damgasi yok', !/fetchZA\(tazele\(url\)/.test(govde5),
        'adres sabit -> tarayici onbellegi eslesiyor');
-    K('Yedekte damga duruyor', /fetchZA\(tazele\(yedek\), ms\)/.test(govde5),
-       'jsDelivr onbellegini biz yonetmiyoruz');
+    /* Yedek adresler artik BOS (tracks private oluyor) ama kod yolu
+       duruyor: bir gun ikinci bir kaynak eklenirse damgayla
+       cagrilsin. Kontrol o yolun silinmedigini bakiyor. */
+    K('Yedek yolunda damga duruyor', /fetchZA\(tazele\(yedek\), ms\)/.test(govde5),
+       'ikinci kaynak eklenirse onbellegi biz yonetmiyoruz');
     K('KOSULLU dogru tanimli', /const KOSULLU = \{cache:'no-cache'\};/.test(k5),
        "{cache:'no-cache'}");
   }
@@ -3915,18 +3921,32 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* TUR ICINDE SONSUZ DONGU: havuz bitince damgalar temizlenip
        basa donuluyor. Esik tur acikken 1, yoksa 3. Bu satir giderse
        kullanici bir turde 20 istasyon sonra duvara toslar. */
-    /* ── OLCEK: ISTASYON LISTESI KENDI SITEMIZDEN ────────────────
+    /* ── BUTUN LISTELER KENDI KOKUMUZDEN ────────────────────────
        Uzun sure birinci adres raw.githubusercontent.com'du. Bir kisi
        icin sorun degil; milyon acilista hem hiz sinirina toslariz hem
-       de o adres bir CDN degil. Dosya zaten kendi kokumuzde duruyor
-       ve Cloudflare'da statik dosya istegi ucretsiz + sinirsiz.
-       Bu satirlar sirayi koruyor: kendi sitemiz -> GitHub -> jsDelivr. */
-    K('Istasyon listesi once kendi sitemizden', await pg.evaluate(()=>{
+       de o adres bir CDN degil. Cloudflare'da statik dosya istegi
+       ucretsiz ve sinirsiz.
+       ARTIK YEDEK ADRES DE YOK: tracks deposu private oluyor, oradaki
+       adresler 404 dondurecek. Olu bir yedek yedek degildir -- yerine
+       cihazdaki onbellek var (earthOnbellekten / radyoOnbellekten).
+       Bu kontrol uc dosyayi da tutuyor: biri geri kacarsa yakalar. */
+    K('Butun listeler kendi kokumuzden', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
-        return /RADYO_URL\s*=\s*["']\/radyo\.json["']/.test(k)
-            && /RADYO_URL_YEDEK\s*=\s*["']https:\/\/raw\.githubusercontent/.test(k)
-            && /RADYO_URL_SON\s*=\s*["']https:\/\/cdn\.jsdelivr/.test(k);
-      }), 'birinci /radyo.json, yedekler GitHub ve jsDelivr');
+        const kendi = /RADYO_URL\s*=\s*["']\/radyo\.json["']/.test(k)
+                   && /EARTH_URL\s*=\s*["']\/earth\.json["']/.test(k)
+                   && /UZUN_URL\s*=\s*["']\/earth_buyuk\.json["']/.test(k);
+        /* Yedekler bos: disariya giden hicbir liste adresi kalmadi. */
+        const disariyok = !/URL_YEDEK\s*=\s*["']https/.test(k)
+                       && !/URL_SON\s*=\s*["']https/.test(k);
+        return kendi && disariyok;
+      }), 'radyo, earth, earth_buyuk -- ucu de /, disariya yedek yok');
+    /* Uc dosya gercekten yayinda mi: kokte duruyorlar mi. */
+    {
+      const varMi = f => { try{ return fs.statSync(f).size > 1000; }catch(e){ return false; } };
+      K('Listeler kokte duruyor',
+        varMi('radyo.json') && varMi('earth.json') && varMi('earth_buyuk.json'),
+        'radyo.json + earth.json + earth_buyuk.json');
+    }
     /* IKI KOPYA AYRISMASIN. Liste artik iki yerde: kaynak veri
        deposunda (tracks), yayina giden kopya kod deposunun kokunde.
        Kopya elle guncellenirse er gec unutulur ve uygulama aylarca
@@ -4848,8 +4868,17 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   });
   K('Radyoda ikinci tus STOP', ikinciTus.radyo.stp!=='none' && ikinciTus.radyo.d1==='none'
      && ikinciTus.radyo.et==='Stop', 'kare simge');
-  K('Arsivde ikinci tus DURAKLAT', ikinciTus.arsiv.stp==='none' && ikinciTus.arsiv.d1!=='none'
-     && ikinciTus.arsiv.et==='Pause', 'iki cizgi');
+  /* ARSIVDE TUS "DURAKLAT/DEVAM" AILESINDEN. Once yalnizca 'Pause'
+     bekleniyordu ve test kirilgandi: kip acilinca havuz yukleniyor,
+     cal() calisiyor ve ses baslamayan bir ortamda (testte gercek ses
+     yok) tus yarim saniye icinde 'Resume'a doniyor. Yani kontrol
+     GECICI bir ani olcuyordu -- listeler kendi kokumuze tasininca
+     havuz daha hizli doldu ve o an kaydi.
+     Olculmesi gereken sey su: radyoda DURAKLATMA KAVRAMI YOK (kare,
+     'Stop'), arsivde VAR. Ikisi de o ailenin uyesi. */
+  K('Arsivde ikinci tus DURAKLAT', ikinciTus.arsiv.stp==='none'
+     && (ikinciTus.arsiv.et==='Pause' || ikinciTus.arsiv.et==='Resume'),
+     'kare degil: ' + ikinciTus.arsiv.et);
 
   /* ── GECMIS HER KIPTE UZUN ──────────────────────────────────────
      Istenen: "her modda geri baya gidebilir, tek gidis degil artik."
