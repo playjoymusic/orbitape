@@ -212,7 +212,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   {
     const kaynak = fs.readFileSync('index.html','utf8');
     const i0 = kaynak.indexOf('function fetchZA(');
-    const govde = kaynak.slice(i0, i0 + 1400);
+    /* PENCERE 1400 -> 3200. Fonksiyonun basina, sert sinirin neden
+       BIRINCIL zaman asimi OLMADIGINI anlatan uzun bir gerekce
+       girdi (arsiv havuzunu bosaltan regresyon) ve aranan satirlar
+       pencerenin disinda kaldi: kod dogruyken CI kirmizi yandi.
+       Dilim fonksiyonun GOVDESINI kapsamali. */
+    const govde = kaynak.slice(i0, i0 + 3200);
     K('Ag istegi zamanlayiciyla yaristiriliyor',
        i0 > 0 && /Promise\.race\(\[istek, kes\]\)/.test(govde)
        && /red\(new Error\('zaman asimi'\)\)/.test(govde),
@@ -220,6 +225,30 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   }
   /* DAVRANIS: hic cevap vermeyen bir sunucu taklidi. Kaynak dogru
      gorunse bile is goruyor mu -- olculen sey bu. */
+  /* ── YAVAS CEVAP KESILMEMELI ─────────────────────────────────
+     SERT SINIR BIR KEZ FAZLA SIKI KONDU VE UYGULAMAYI DURDURDU.
+     Ilk yazimda zaman asimi istenen surede REDDEDIYORDU. Ama
+     buradaki sureler "abort nasil olsa calismiyor" dunyasinda
+     ayarlanmisti ve arsiv uc noktalari (archive.org arama API'si)
+     5-10 saniyeyi rahat buluyor. Sert sinir gelince yavas ama
+     BASARILI cevaplar da kesildi: havuz hic dolmadi, calacak bir
+     sey bulunamadi ve SOUND BANKS kipinde uygulama sonsuza kadar
+     aradi. Kullanicinin tarifi: "sonsuz ses aramaya gecti, neye
+     bassam olmadi, hep arama."
+     Dogrusu ikisi birden: abort istenen surede (niyet bu), SERT RED
+     cok daha gec (yalnizca abort'un islemedigi asili istek icin).
+     Bu kontrol o dengeyi tutuyor -- biri digerini yiyemez. */
+  K('Yavas ama gelen cevap kesilmiyor', await pg.evaluate(async ()=>{
+      const eskiF = window.fetch;
+      /* Butcenin USTUNDE ama makul: gercek bir sunucunun yavas gunu. */
+      window.fetch = ()=> new Promise(res=>setTimeout(()=>res(
+        {ok:true, status:200, json:()=>Promise.resolve({x:1}), text:()=>Promise.resolve('x')}), 900));
+      let sonuc = '';
+      try{ const r = await fetchZA('https://ornek.test/yavas', 400); sonuc = r && r.ok ? 'geldi' : 'bos'; }
+      catch(e){ sonuc = 'kesildi'; }
+      window.fetch = eskiF;
+      return sonuc === 'geldi';
+    }), 'butceyi asan ama gelen cevap kabul ediliyor');
   K('Cevapsiz sunucu uygulamayi kilitlemiyor', await pg.evaluate(async ()=>{
       const eskiFetch = window.fetch;
       /* Sonsuza kadar bekleyen bir istek: abort da dinlenmiyor. */
@@ -533,35 +562,34 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       return !!e && e.textContent === '' && !e.classList.contains('gor');
     }), 'bos satir cizilmiyor, blok buyumuyor');
   }
-  /* ── KIP DEPODAN GERI GELMIYOR ────────────────────────────────
-     Iki sebep. Birincisi ACILISTA TEKLEME: kip, ayarlar bolumunun
-     sonunda uygulaniyordu -- yani uygulama once radyo olarak
-     aciliyor (cizim basliyor, havuz yukleniyor, yerlesim oturuyor),
-     sonra hepsi geri alinip arsive geciliyordu. Kullanicinin
-     tarifi: "acilista bi tekleme var sanki".
-     Ikincisi TUTARSIZLIK: raf her acilista RADIOTAPE'e donuyordu
-     ama kip donmuyordu; bir kere SOUND BANKS'e giren biri bundan
-     sonra hep canli radyonun OLMADIGI bir dunyaya aciliyordu.
-     Kip artik bir OTURUM tercihi. */
-  K('Kip depodan geri gelmiyor', await pg.evaluate(()=>{
+  /* ── KIP DEPODAN GERI GELIYOR, AMA ILK CIZIMDEN ONCE ────────────
+     Bu davranis bir kez KALDIRILDI, sonra geri kondu; ikisinin de
+     sebebi burada.
+     KALDIRILMISTI cunku kip ayarlar bolumunun SONUNDA uygulaniyordu:
+     uygulama once radyo olarak aciliyor (cizim basliyor, havuz
+     yukleniyor, yerlesim oturuyor), sonra hepsi geri alinip arsive
+     geciliyordu. Ekranda TEKLEME olarak goruluyordu.
+     GERI KONDU cunku kullanicinin istegi net: "orbitape moodunda
+     kapadiysa biri o moodta ac, radyoda kapadiysa orda ac."
+     COZUM kipi atmak degil ERKEN KURMAK: govde sinifi, kanal ve
+     secili raf AYAR okundugu yerde yaziliyor -- rafBasla'dan ve
+     havuz yuklemelerinden ONCE. Bu kontrol tam onu olcuyor: deger
+     okunuyor mu VE dunya erken mi kuruluyor. */
+  K('Kip depodan geri geliyor', await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
-      /* Okuma satiri kalkmis olmali (yorumda gecmesi serbest). */
-      const kod = k.replace(/\/\*[\s\S]*?\*\//g, '');
-      const okumuyor = !/_a\.mood\s*===\s*true/.test(kod);
-      /* Acilistaki moodUygula(true) cagrisi da kalkmis olmali:
-         yapacagi tek sey bos yere "kapatma" yolunu yurutmekti. */
-      const cagirmiyor = !/moodUygula\(true\)/.test(kod);
-      return okumuyor && cagirmiyor;
-    }), 'AYAR.mood okunmuyor, acilista moodUygula cagrilmiyor');
-  /* Depoda mood:true yazsa bile uygulama RADYO olarak acilmali. */
-  K('Depoda kip acik olsa da radyo aciliyor', await pg.evaluate(()=>{
-      /* AYAR nesnesi betigin basinda kuruluyor; o an depoda ne
-         yazdigina bakiliyor. Sayfa zaten acildi, yani olculen sey
-         SONUC: govde 'mood' sinifini almamis olmali. */
-      let depoda = null;
-      try{ depoda = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}'); }catch(e){}
-      return AYAR.mood === false && !document.body.classList.contains('mood');
-    }), 'AYAR.mood false, govdede mood sinifi yok');
+      const kod = k.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+      return /if\(_a\.mood === true\) AYAR\.mood = true;/.test(kod);
+    }), 'AYAR.mood depodan okunuyor');
+  K('Kip ilk cizimden ONCE kuruluyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const kod = k.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+      /* Erken kurulum blogu, cizim dongusunun basladigi yerden
+         ONCE olmali; yoksa tekleme geri gelir. */
+      const i1 = kod.indexOf("document.body.classList.add('mood')");
+      const i2 = kod.indexOf('function rafBasla(');
+      const i3 = kod.indexOf('function moodUygula(');
+      return i1 > 0 && i2 > 0 && i1 < i2 && i1 < i3;
+    }), 'govde sinifi rafBasla ve moodUygula tanimindan once yaziliyor');
 
   K('Ses kapaliyken arama gosterimi duruyor', await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
@@ -5279,8 +5307,15 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
          o yuzden olayi elle tetikleyip cagri zincirini olcuyoruz. */
       const ar = document.getElementById('ara');
       ar.style.left = '9999px';                 // bilerek bozuluyor
+      /* OLCU DEGISTI GIBI DAVRAN. Yerlestirme artik yalnizca en/boy
+         GERCEKTEN degistiginde ve olay yagmuru DURDUKTAN sonra
+         yapiliyor (titreme duzeltmesi). Sahte bir resize olayi tek
+         basina hicbir sey yapmaz -- dogrusu da bu. Testin olcmek
+         istedigi sey "degisimden sonra toparliyor mu", o yuzden son
+         olcu bilerek gecersiz kilinip olay atiliyor. */
+      _sonEn = -1;
       window.dispatchEvent(new Event('resize'));
-      await bek(160);
+      await bek(340);                            // 120 ms bekleme + pay
       const yv = document.getElementById('araYuva').getBoundingClientRect();
       const a2 = ar.getBoundingClientRect();
       return { fark: Math.round(Math.abs(a2.left - yv.left)), yuvaVar: yv.width > 0 };
@@ -5288,6 +5323,43 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Resize sonrasi buyutec yuvasina donuyor',
        dnm.yuvaVar && dnm.fark <= 2,
        'elle bozuldu, resize sonrasi fark ' + dnm.fark + 'px');
+    /* ── OLAY YAGMURUNDA HER KAREDE YERLESTIRME YOK ─────────────
+       Resize dinleyicisine geriYerlestir() eklenince gercek bir
+       hata duzeldi (ekran donunce yerlesim guncellenmiyordu) ama
+       YENI bir sorun dogdu: tarayici pencere suruklenirken,
+       telefon cevrilirken ya da adres cubugu acilip kapanirken
+       saniyede onlarca 'resize' uretiyor. Her birinde butun blok
+       yeniden olculup yeniden konunca ekranda TITREME goruluyor.
+       Kullanicinin tarifi: "telefonu sag yapip yandan gosterince
+       sonra yine eski haline gelince titreme basliyor."
+       Iki kapi: olcu gercekten degisti mi, ve degisim durdu mu.
+       Bu kontrol ikisini birden olcuyor. */
+    const trs = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eski = window.geriYerlestir;
+      let n = 0;
+      window.geriYerlestir = function(){ n++; return eski.apply(this, arguments); };
+      /* Once bir kez yerlessin ki 'son olcu' guncel olsun. */
+      window.dispatchEvent(new Event('resize')); await bek(260);
+      n = 0;
+      /* AYNI OLCUDE kirk olay: hicbiri yerlestirmemeli. */
+      for(let i=0;i<40;i++) window.dispatchEvent(new Event('resize'));
+      await bek(320);
+      const ayniOlcu = n;
+      window.geriYerlestir = eski;
+      return { ayniOlcu };
+    });
+    K('Olay yagmurunda yerlesim tekrarlanmiyor', trs.ayniOlcu === 0,
+       'ayni olcude 40 resize -> ' + trs.ayniOlcu + ' yerlestirme');
+    {
+      const kaynak = fs.readFileSync('index.html','utf8');
+      const i1 = kaynak.indexOf('function olcuIste()');
+      const g1 = kaynak.slice(i1, i1 + 2600);
+      K('Yerlesim degisim DURUNCA yapiliyor',
+         i1 > 0 && /_en === _sonEn && _boy === _sonBoy/.test(g1)
+         && /setTimeout\(\(\)=>\{ _yerlesZaman = null;/.test(g1),
+         'olcu degismediyse dokunulmuyor, degistiyse 120 ms sonra bir kez');
+    }
   }
   /* ── GECICI AD IKI KIPTE DE AYNI YERDE ──────────────────────────
      ORBITAPE kipinde yazi yukarida kalip HALKANIN ICINE giriyordu.

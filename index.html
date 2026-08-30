@@ -5332,34 +5332,30 @@
     if(_a && typeof _a === 'object'){
       if(_a.aramaSes === false) AYAR.aramaSes = false;
       if(_a.tikSes  === false) AYAR.tikSes  = false;
-      /* ── KIP DEPODAN GERI GELMIYOR ──────────────────────────
-         Bu satir eskiden 'if(_a.mood === true) AYAR.mood = true;'
-         idi ve iki ayri sorun cikariyordu.
+      /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
+         Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
+         de sebebi var, ikisi de burada yaziyor.
 
-         1. ACILISTA TEKLEME. Kip, ayarlar bolumunun SONUNDA
-            (moodUygula(true)) uygulaniyor -- yani betigin cok
-            asagisinda. O ana kadar uygulama ZATEN radyo olarak
-            acilmis oluyor: cizim dongusu basliyor, radyo havuzu
-            yukleniyor, yerlesim oturuyor. Sonra kip devreye girip
-            hepsini geri aliyor: govde sinifi degisiyor, kuyruklar
-            bosaliyor, arsiv havuzlari yukleniyor, gezegenler bir
-            kare sonra yerlestiriliyor. Ekranda bu bir TEKLEME
-            olarak goruluyor -- kullanicinin tarifi: "acilista bi
-            tekleme var sanki".
+         KALDIRILMA SEBEBI: kip, ayarlar bolumunun SONUNDA
+         uygulaniyordu -- yani betigin cok asagisinda. O ana kadar
+         uygulama ZATEN radyo olarak acilmis oluyordu: cizim
+         dongusu basliyor, radyo havuzu yukleniyor, yerlesim
+         oturuyor. Sonra kip devreye girip hepsini geri aliyordu.
+         Ekranda bu bir TEKLEME olarak goruluyordu -- kullanicinin
+         tarifi: "acilista bi tekleme var sanki."
 
-         2. KULLANICI OTEKI DUNYADA SIKISIYOR. Raf (AKTIF_AILE)
-            zaten her acilista RADIOTAPE'e donuyor; kip donmuyordu.
-            Yani bir kere SOUND BANKS'e giren biri bundan sonra hep
-            canli radyonun OLMADIGI bir dunyaya aciliyordu ve geri
-            donusun tek kapisi ayarlarin icindeki bir satirdi.
-            Ekranin geri kalani sifirlanirken kipin sabit kalmasi
-            tutarsizdi.
+         GERI KONMA SEBEBI: kullanicinin istegi net -- "orbitape
+         moodunda kapadiysa biri o moodta ac, radyoda kapadiysa
+         orda ac." Dogru istek: kullanici uygulamayi biraktigi
+         yerde bulmali.
 
-         Karar: kip bir OTURUM tercihi, kalici bir ayar degil.
-         Uygulama her zaman canli radyo ile aciliyor; SOUND BANKS'e
-         gecis her seferinde bilincli bir tik.
-         Deger hala YAZILIYOR (ayarKaydet butun nesneyi yaziyor),
-         yalnizca OKUNMUYOR -- ileride geri istenirse veri duruyor. */
+         COZUM KIPI ATMAK DEGIL, ERKEN KURMAK: deger burada
+         okunuyor ve DUNYA HEMEN ASAGIDA kuruluyor -- govde sinifi,
+         kanal ve secili raf, ilk cizimden ONCE. Boylece uygulama
+         dogru dunyada aciliyor ve sonradan cevrilmiyor. Asagidaki
+         moodUygula(true) yalnizca havuzlari yukluyor; gorsel
+         durumu zaten kurulmus oluyor. */
+      if(_a.mood === true) AYAR.mood = true;
       /* TEMA DA DEPODAN GERI GELIYOR. Once bu iki satir yoktu ve
          secilen tema yeniden acilista AUTO'ya donuyordu: kullanici
          her seferinde bastan seciyordu.
@@ -5387,6 +5383,22 @@
          && _a.yildizIsik < 5) AYAR.yildizIsik = _a.yildizIsik|0;
     }
   }catch(e){ _yut(e); }
+  /* ── DUNYA ILK CIZIMDEN ONCE KURULUYOR ───────────────────────────
+     Kip depodan geldiyse govde sinifi, kanal ve secili raf BURADA
+     yaziliyor -- cizim dongusu (rafBasla) ve havuz yuklemeleri daha
+     asagida. Uygulama dogru dunyada aciliyor, sonradan cevrilmiyor;
+     acilistaki tekleme tam olarak o cevrilmeden geliyordu.
+     Agir isler (havuz yukleme, yerlesim) burada YAPILMIYOR: onlar
+     ayarlar bolumunun sonundaki moodUygula(true) cagrisinda. */
+  try{
+    if(AYAR.mood){
+      document.body.classList.add('mood');
+      mod = 'lib';
+      AKTIF_MOD = 'ORBITAPE';
+      AKTIF_AILE = null;
+    }
+  }catch(e){ _yut(e); }
+
   /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
      Tek kapi. Iki dunya arasindaki gecisin BASKA yolu yok: ne nebula,
      ne halka, ne arama. Kullanici kazayla oteki tarafa dusemiyor.
@@ -10137,13 +10149,12 @@
       if(e.key==='Escape' && document.body.classList.contains('ayar-acik')) kapa();
     });
     yaz();
-    /* ACILISTA KIP KURULMUYOR. Eskiden burada moodUygula(true)
-       vardi cunku kip depodan geri gelebiliyordu. Artik gelmiyor
-       (bkz. AYAR okumasi), yani bu cagrinin yapacagi tek sey
-       "kapatma" yolunu bos yere yurutmekti: kuyruklari bosaltmak,
-       rafi yeniden kurmak, gecmisi sifirlamak. Acilis akisi bunlari
-       zaten kendi yapiyor ve ustune bir kez daha yapmak ekranda
-       ikinci bir sicrama demekti. */
+    /* ACILISTA KIPI KUR: havuzlar yuklensin, yerlesim otursun.
+       Gorsel durum (govde sinifi, kanal, raf) ZATEN kurulmus
+       durumda -- AYAR okundugu yerde, ilk cizimden once. Buradaki
+       cagri o yuzden bir CEVIRME degil, bir TAMAMLAMA: yalnizca
+       arsiv havuzlarini yukluyor ve blogu yerlestiriyor. */
+    try{ moodUygula(true); }catch(e){ _yut(e); }
   })();
 
   function araAc(){
