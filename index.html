@@ -3730,10 +3730,18 @@
     const _uclukTuru = ()=>{
       try{
         _uclukSonSem = '';                       // ayni ucluk yine kutlansin
-        /* ZAR: bu tur tutacak mi? %40. Tutmayan turlar da onemli --
-           kutlamanin ne demek oldugu ancak tutmayanin yaninda
-           anlasiliyor. */
-        _uclukTurSem = (Math.random() < 0.40)
+        /* ── IKI ADRES, IKI AMAC ─────────────────────────────
+           ?ucluk       -> HER TUR TUTAR. Amaci gostermek: kutlamayi
+                           gormek icin sansa birakmak sacma, insan
+                           ekrana bakip beklemek zorunda kalmasin.
+                           Kazanan sembol her turda degisiyor, yani
+                           hep ayni yuvarlagi gormuyor.
+           ?ucluk=oyun  -> bes turda ikisi tutar. Oyun hissini
+                           denemek icin: tutmayan turun yaninda
+                           tutan tur anlam kazaniyor.
+           Gercek uygulamada sans degismiyor: 441'de bir. */
+        const _oyunKipi = /[?&]ucluk=oyun/.test(location.search);
+        _uclukTurSem = (!_oyunKipi || Math.random() < 0.40)
                      ? ALIEN[Math.random()*ALIEN.length|0] : null;
         bekleGoster();                           // donmeye basla
         setTimeout(()=>{ try{ bekleDondur(); }catch(e){ _yut(e); } }, 1700);
