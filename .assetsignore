@@ -9,6 +9,12 @@ araclar/
 .github/
 node_modules/
 
+# MAGAZA GORSELLERI: Play Console'a elle yuklenen dosyalar, sitenin
+# parcasi degil. Depoda duruyorlar (yedek ve gecmis), yayina
+# gitmiyorlar: 7 MB'lik ekran goruntusunun orbitape.app/magaza/...
+# altinda servis edilmesinin bir anlami yok.
+magaza/
+
 README.md
 CLAUDE.md
 GUNLUK.md
@@ -33,8 +39,3 @@ hasat_durum.json
 #    the static asset directory of your project."
 #   developers.cloudflare.com/workers/static-assets/migration-guides/
 #   migrate-from-pages/
-
-# Magaza malzemesi yayina gitmiyor: gorseller ve metinler Play
-# Console icin, ziyaretcinin orbitape.app/magaza/... altinda
-# bulmasinin anlami yok.
-magaza/

@@ -111,6 +111,12 @@ async function sahne(b, s){
        cikiyor ve fotografin ortasina oturuyor. Hakki harcanmis
        sayiliyor -- bugun ve gecmis, butun raflar icin. */
     localStorage.setItem('orbitape.fxIpucu', JSON.stringify({ '-':Date.now(), 'ORBITAPE':Date.now() }));
+    /* FX SUNUMU: raf secilince el + "EFFECTS / Tap one, then drag"
+       balonu akiyor. Depo anahtari 'gordu' diye isaretleniyor. Yine
+       de yetmiyor -- asagida fonksiyonun kendisi de susturuluyor. */
+    localStorage.setItem('orbitape.fxKapat3','1');
+    localStorage.setItem('orbitape.fxSunumKat3',
+      'ORBITAPE,RECORDS,SOUNDSCAPES,NATURE,HUMANS,SPACE,MACHINES,OTHERS');
   }catch(e){} });
   const p = await c.newPage();
   await ag(p);
@@ -155,6 +161,26 @@ async function sahne(b, s){
     }catch(e){}
   }, Object.assign({dunya: s.mood ? 'lib' : 'radio'}, s.kunye || KUNYE.arsiv));
 
+  /* OGRETICI AKISLAR SUSTURULUYOR. Depo anahtarlarini yazmak
+     yetmedi: modSec() raf secince fxSunumDene() 320 ms sonra
+     baslayan bir zamanlayici kuruyor ve fotograf tam o sirada
+     cekiliyordu -- alti arsiv karesinin ustunde de "EFFECTS / Tap
+     one, then drag inside the disc" balonu ve el vardi. Fonksiyonun
+     kendisi bosa cikariliyor. */
+  await p.evaluate(()=>{
+    try{ window.fxSunumDene = function(){}; }catch(e){}
+    try{ window.fxSunumBasla = function(){}; }catch(e){}
+    try{ window.fxIpucuAc = function(){}; }catch(e){}
+    /* KARSILAMA ELI: "ekrana dokun" eli. Bir kez kapatmak yetmiyor --
+       fonksiyon kendi gozcusuyle geri aciliyor (ses susturuldugu icin
+       hakli olarak "hala ses yok" diyor). Ustelik el ekranin ortasinda
+       duran bir katman: halka menusu sahnelerinde basili tutusu da
+       yutuyordu, o kareler bos cikti. */
+    try{ window.karsilamaAc = function(){}; }catch(e){}
+    try{ karsilamaKapat(); }catch(e){}
+    try{ const k = document.getElementById('karsilama');
+         k.classList.remove('on','gidiyor'); k.style.display = 'none'; }catch(e){}
+  });
   /* Ekrandaki ogretici katmanlar kapatiliyor: karsilama eli
      ("ekrana dokun" -- ses susturuldugu icin aciliyor) ve FX ipucu
      balonu. Ikisi de dogru davranis, fotografta isi yok. */
@@ -183,9 +209,12 @@ async function sahne(b, s){
      duruyor -- oteki dunyanin rafi, yanlis bilgi. */
   else await p.evaluate(()=>{ try{ const e2=document.getElementById('modAd');
                                    e2.textContent=''; e2.classList.remove('gor'); }catch(e){} });
-  /* Ipucu kur() icindeki fxModGec ile geri acilabiliyor: son soz. */
-  await p.evaluate(()=>{ try{ fxIpucuKapat(true); }catch(e){}
-                         try{ document.getElementById('fxIpucu').classList.remove('on'); }catch(e){} });
+  /* Son soz: kur() icindeki fxModGec/modSec bir sey acmis olabilir. */
+  await p.evaluate(()=>{
+    try{ fxIpucuKapat(true); }catch(e){}
+    try{ document.getElementById('fxIpucu').classList.remove('on'); }catch(e){}
+    try{ if(!window.__turIstendi){ turBitir(); document.getElementById('tur').classList.remove('on'); } }catch(e){}
+  });
   await p.waitForTimeout(s.bekle || 1100);
 
   const dosya = path.join(CIKIS, s.dosya);
@@ -245,15 +274,21 @@ for(const [dosya, fx] of [['09-fx-ana','ana'], ['10-fx-retro','retro'],
    yaparken kimse kunye okumuyor ve buyuk ad kunyenin uzerine
    biniyordu. */
 const halkayaBas = (oran)=>async function(p){
+  /* Basis, diski dinleyen tusun (#tp) uzerinde OLMALI: .disk'in
+     ortasina basmak yetmiyordu, olay oraya gitmiyor ve kip hic
+     acilmiyordu -- iki kare bombos cikti. */
   const d = await p.evaluate(()=>{
-    const r = document.querySelector('.disk').getBoundingClientRect();
+    const e = document.getElementById('tp') || document.querySelector('.disk');
+    const r = e.getBoundingClientRect();
     return { x:r.left + r.width/2, y:r.top + r.height/2, r:Math.min(r.width, r.height)/2 };
   });
   await p.mouse.move(d.x, d.y);
   await p.mouse.down();
-  await p.waitForTimeout(700);                 // MOOD_TUT: kip aciliyor
-  await p.mouse.move(d.x + d.r * oran, d.y, {steps:14});
-  await p.waitForTimeout(500);
+  await p.waitForTimeout(900);                 // MOOD_TUT 300 ms; genis pay
+  await p.mouse.move(d.x + d.r * oran * 0.5, d.y, {steps:8});
+  await p.waitForTimeout(200);
+  await p.mouse.move(d.x + d.r * oran, d.y, {steps:10});
+  await p.waitForTimeout(600);
 };
 SAHNELER.push({ dosya:'13-halka-gezinme.png',    mood:true, halkaMenusu:true, npGizle:true,
                 kunye:KUNYE.arsiv, bekle:400, eylem:halkayaBas(0.90) });
@@ -286,7 +321,8 @@ for(const [dosya, raf, kunye] of RAF_ARSIV){
    Yerine acilis turu: metni bizim, ekrani bizim.               */
 SAHNELER.push({
   dosya:'21-tur.png', mood:false, npGizle:true, bekle:900,
-  kur:()=>{ try{ localStorage.removeItem('orbitape.tur'); turBitir(); turBasla(true); }catch(e){} }
+  kur:()=>{ try{ window.__turIstendi = true;      // bu sahne turu ISTIYOR
+                 localStorage.removeItem('orbitape.tur'); turBitir(); turBasla(true); }catch(e){} }
 });
 
 (async()=>{
