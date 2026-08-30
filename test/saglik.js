@@ -3947,6 +3947,62 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         varMi('radyo.json') && varMi('earth.json') && varMi('earth_buyuk.json'),
         'radyo.json + earth.json + earth_buyuk.json');
     }
+    /* ── SERVIS CALISANI LISTELERI ONBELLEGE ALMASIN ──────────────
+       Listeler kendi kokumuze tasininca istemeden sw.js'in kapsamina
+       girdiler: o dosya AYNI KOKTEN gelen her GET'i onbellege
+       koyuyordu. Olculdu: ikinci acilista Cache Storage 0,8 MB'dan
+       3,9 MB'a cikiyor (earth_buyuk 2,15 MB + radyo 0,18 MB), kisa
+       arsiv de yuklenince ~9 MB.
+       Bunun HICBIR faydasi yok: ayni baytlar tarayicinin kendi HTTP
+       onbelleginde zaten duruyor (_headers: max-age + swr), ve
+       cevrimdisi liste ise ise yaramiyor cunku sesin kendisi uzakta.
+       Tek etkisi cihazda yer kaplamak ve her acilista megabaytlarca
+       yazma yapmak. Bu test o kapiyi acik tutuyor. */
+    {
+      const sw = fs.readFileSync('sw.js','utf8');
+      const kapi = /if\(\s*\/\^\\\/\(earth\|earth_buyuk\|radyo\)\\\.json\$\/\.test\(u\.pathname\)\s*\)\s*return;/.test(sw);
+      const surum = /orbitape-kabuk-v2/.test(sw);
+      K('Servis calisani listeleri onbellege almiyor', kapi && surum,
+        kapi ? (surum ? 'uc liste atlaniyor, kabuk surumu v2 (eski onbellek siliniyor)'
+                      : 'kapi var ama kabuk surumu artmamis: eski cihazlarda 3,9 MB kalir')
+             : 'sw.js listeleri hala onbellege aliyor');
+    }
+    /* ── RAF SAYISI METINLERDE DOGRU MU ───────────────────────────
+       INDIE ve LOFI silinince raf sayisi 10'dan 9'a dustu, ama
+       "ten genres" cumlesi dort yerde kalmisti: sayfanin meta
+       aciklamasi, og/twitter kartlari ve manifest.json. Manifest
+       aciklamasi Play Store listelemesine giriyor -- yani magazada
+       yanlis bir sayi yaziyordu. Sayiyi elle yazmak yerine
+       AILELER'den okuyup karsilastiriyoruz: raf eklenip cikarilinca
+       bu test kendiliginden dogru sayiyi bekler. */
+    {
+      const n = await pg.evaluate(()=> (typeof AILELER!=='undefined') ? AILELER.length : -1);
+      const YAZI = {9:'nine',10:'ten',8:'eight',11:'eleven',12:'twelve'};
+      const bek = YAZI[n];
+      const k = fs.readFileSync('index.html','utf8') + fs.readFileSync('manifest.json','utf8');
+      const bulunan = [...k.matchAll(/grouped into (\w+) genres/g)].map(m=>m[1]);
+      const hepsiDogru = bek && bulunan.length >= 4 && bulunan.every(x => x === bek);
+      K('Metinlerdeki raf sayisi kodla ayni', hepsiDogru,
+        hepsiDogru ? (bulunan.length + ' yerde "' + bek + '" (AILELER=' + n + ')')
+                   : ('AILELER=' + n + ' ama metinlerde: ' + (bulunan.join(', ') || 'hic')));
+    }
+    /* ── GIZLILIK METNI GERCEKTEN BAGLANDIGIMIZ SUNUCULARI YAZSIN ──
+       Bu metin hukuki bir beyan ve Play Store'un veri guvenligi
+       formuyla tutarli olmak zorunda. Jamendo ve Audius koddan
+       kaldirildi, listeler GitHub/jsDelivr'dan alinmiyor -- ama
+       tablo hala o ucunu sayiyordu, yani metin bagli OLMADIGIMIZ
+       sunuculari sayarak yanlisti. Test: koddan cikan bir sunucu
+       tabloda "baglaniyoruz" diye durmasin. */
+    {
+      const gz = fs.readFileSync('privacy.html','utf8');
+      const tablo = (gz.match(/<table>[\s\S]*?<\/table>/) || [''])[0];
+      const kod = fs.readFileSync('index.html','utf8');
+      const olu = ['api.jamendo.com','api.audius.co','raw.githubusercontent.com','cdn.jsdelivr.net']
+                    .filter(h => tablo.indexOf(h) >= 0 && kod.indexOf('https://' + h) < 0);
+      K('Gizlilik tablosunda olu sunucu yok', olu.length === 0,
+        olu.length ? ('koddan cikmis ama tabloda duruyor: ' + olu.join(', '))
+                   : 'tablodaki her sunucuya gercekten baglaniyoruz');
+    }
     /* IKI KOPYA AYRISMASIN. Liste artik iki yerde: kaynak veri
        deposunda (tracks), yayina giden kopya kod deposunun kokunde.
        Kopya elle guncellenirse er gec unutulur ve uygulama aylarca

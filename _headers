@@ -7,7 +7,7 @@
 # Uygulamanin gizlilik sozu "hicbir sey toplamiyoruz" degil sadece;
 # "senin hakkinda hicbir sey KIMSEYE soylemiyoruz" da. Referrer-Policy
 # olmadan bu soz eksik kaliyordu: tarayici archive.org'a, radyo
-# istasyonuna, jsDelivr'e her istekte hangi sayfadan geldigini
+# istasyonuna, sarki adi soran uc noktalara her istekte hangi sayfadan geldigini
 # soyluyordu. Simdi soylemiyor.
 #
 # ── NEDEN CSP YOK ─────────────────────────────────────────────────

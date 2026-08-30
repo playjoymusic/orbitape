@@ -1828,20 +1828,20 @@
      · twitter:*    : X önizlemesi (summary_large_image = geniş kart)
      Önizleme görseli KENDİ ekranımız; üzerinde başkasının istasyon
      adı ya da sanatçısı YOK — bkz. paylas.png üretimi (araclar/). -->
-<meta name="description" content="Live radio from around the world, grouped into ten genres. No account, no ads, no tracking.">
+<meta name="description" content="Live radio from around the world, grouped into nine genres. No account, no ads, no tracking.">
 <link rel="canonical" href="https://orbitape.app/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://orbitape.app/">
 <meta property="og:site_name" content="ORBITAPE">
 <meta property="og:title" content="ORBITAPE — live radio">
-<meta property="og:description" content="Live radio from around the world, grouped into ten genres. No account, no ads, no tracking.">
+<meta property="og:description" content="Live radio from around the world, grouped into nine genres. No account, no ads, no tracking.">
 <meta property="og:image" content="https://orbitape.app/paylas.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ORBITAPE — orbital rings on a black field, with the name of the track playing.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ORBITAPE — a sound explorer">
-<meta name="twitter:description" content="Live radio from around the world, grouped into ten genres. No account, no ads, no tracking.">
+<meta name="twitter:description" content="Live radio from around the world, grouped into nine genres. No account, no ads, no tracking.">
 <meta name="twitter:image" content="https://orbitape.app/paylas.png">
 </head>
 <body>
@@ -3111,9 +3111,11 @@
     for(const k of [...KARA]){ if(now-(KARA_SURE.get(k)||0) > 45000){ KARA.delete(k); KARA_SURE.delete(k); HATA[k]=0; d=true; } }
     if(d) rapyaz();
   }, 15000);
-  // JSON listelerini çek: önce GitHub raw (anında güncel), olmazsa jsDelivr yedeği.
-  // jsDelivr dosyaları 12 saate kadar önbellekte tutuyor; ?t= parametresi de bunu aşmıyordu,
-  // bu yüzden yeni yüklenen earth.json günlerce eski haliyle geliyordu.
+  // JSON listelerini çek: hepsi KENDİ kökümüzden (/earth.json, /earth_buyuk.json,
+  // /radyo.json). Yedek adres yok; aşağıdaki `if(yedek)` kapısı boş yedeği hiç
+  // denemiyor. Eskiden birinci adres GitHub raw, yedeği jsDelivr'dı — jsDelivr
+  // dosyayı 12 saate kadar önbellekte tutuyordu, ?t= parametresi de bunu aşmıyordu
+  // ve yeni yüklenen earth.json günlerce eski hâliyle geliyordu. O bağımlılık kalktı.
   /* ── YAVAŞ BAĞLANTI ─────────────────────────────────────────────
      İki sorun vardı:
      1) Zaman aşımı isteği İPTAL ETMİYORDU (Promise.race sadece bekleyeni
