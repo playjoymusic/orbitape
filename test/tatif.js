@@ -41,7 +41,7 @@ const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kul
       simdiCalan({ id:'rb:1', mp3:'http://x/s', ad:'Radio', radyo:true });
       await bek(120);
       cikti.radyo = { yazi:lz.textContent, gorunur:getComputedStyle(lz).display!=='none' };
-      simdiCalan({ id:'lst:1', mp3:'https://cdn.jsdelivr.net/x.mp3', ad:'Kendi Parcam', sanatci:'PLAYJOY' });
+      simdiCalan({ id:'x:1', mp3:'https://cdn.jsdelivr.net/x.mp3', ad:'Lisanssiz Kayit' });
       await bek(120);
       cikti.kendi = { yazi:lz.textContent, gorunur:getComputedStyle(lz).display!=='none' };
 
@@ -76,7 +76,7 @@ const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kul
       console.log('  lisansli parca :', JSON.stringify(o.lisansli),
                   (o.lisansli.yazi==='CC BY-NC-SA' && o.lisansli.gorunur)?' OK':' <<< BOZUK');
       console.log('  canli yayin    :', JSON.stringify(o.radyo), (!o.radyo.gorunur)?' OK (satir yok)':' <<< GORUNUYOR');
-      console.log('  kendi parcamiz :', JSON.stringify(o.kendi), (!o.kendi.gorunur)?' OK (satir yok)':' <<< GORUNUYOR');
+      console.log('  lisanssiz     :', JSON.stringify(o.kendi), (!o.kendi.gorunur)?' OK (satir yok)':' <<< GORUNUYOR');
       console.log('');
       await p.screenshot({path:'ss_lisans.png', clip:{x:0,y:620,width:390,height:224}});
     }

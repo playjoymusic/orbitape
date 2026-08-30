@@ -15,13 +15,15 @@ Tek dosyalık bir web ses gezgini: **https://orbitape.app**
 Canlı radyo, kamu malı ve Creative Commons arşiv kayıtları, parmakla
 oynanan efektler. Hesap yok, reklam yok, takip yok, çerez yok.
 
-Üç kanal:
+İki dünya:
 
-| Kanal | Kaynak |
+| Dünya | Kaynak |
 |---|---|
-| **RADIOTAPE** | Canlı istasyonlar (`radyo.json` beyaz listesi + radio-browser) |
-| **ORBITAPE** | Arşiv kayıtları (`earth.json` + `earth_buyuk.json`) |
-| **MIXTAPE** | Netlabel müziği (`mixtape.json`) + Jamendo + PLAYJOY kayıtları |
+| **RADIOTAPE** | Canlı istasyonlar (`radyo.json` beyaz listesi + yedek: radio-browser) |
+| **ORBITAPE** | Arşiv kayıtları (`earth.json` + `earth_buyuk.json`) + netlabel müziği (`mixtape.json`) |
+
+Jamendo (çalışmıyordu, `client_id` taşıyordu) ve PLAYJOY / `liste.json`
+(kendi kayıtlarımız — dağıtımı Believe'de) kaldırıldı.
 
 Kanalların içinde **modlar** var (AMBIANCE, HUMAN) — parça etiketine göre
 düzenli ifadeyle ayrılıyor, ayrı havuz değiller.

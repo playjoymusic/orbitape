@@ -3607,7 +3607,6 @@
       if(/wikimedia|wikipedia/.test(h))             return 'WIKIMEDIA';
       if(/freesound/.test(h))                       return 'FREESOUND';
       if(/ccmixter/.test(h))                        return 'CCMIXTER';
-      if(/jsdelivr|githubusercontent|github\.io/.test(h)) return 'PLAYJOY';
       return h.replace(/^(cdn|api|files|stream|media|dl|download)\./,'').toUpperCase();
     }catch(e){ return ''; }
   }
@@ -3685,20 +3684,14 @@
     if(LIS_ND.test(s)) return false;      // ND ÖNCE
     return LIS_OK.test(s);
   }
-  /* KENDİ PARÇALARIMIZ: PLAYJOY kayıtları bizim, lisans alanları yok
-     ve olmasına gerek de yok. Adresleri kendi depomuzda. */
-  function bizimMi(o){
-    try{
-      const u = (o && o.mp3) || '';
-      return /playjoymusic\/tracks/.test(u) || /^lst:/.test((o && o.id) || '');
-    }catch(e){ return false; }
-  }
-  /* Çalınmasına izin var mı: canlı yayın (kaydedilmiyor, dağıtılmıyor),
-     kendi parçamız, ya da lisansı tanınan bir kayıt. */
+  /* Çalınmasına izin var mı: canlı yayın (kaydedilmiyor,
+     dağıtılmıyor) ya da lisansı tanınan bir kayıt.
+     Eskiden bir de "kendi parçamız" kapısı vardı (PLAYJOY); o
+     kayıtlar kaldırıldığı için kapı da kalktı — artık lisanssız
+     hiçbir şey geçmiyor. */
   function calinabilirMi(o){
     if(!o) return false;
     if(o.radyo) return true;
-    if(bizimMi(o)) return true;
     return lisansSerbest(o.lisans);
   }
   function simdiCalan(item){
@@ -3735,9 +3728,8 @@
       sanatci = item.parca || item.sanatci || '';
     }
     npAd.textContent = ad; npSanatci.textContent = sanatci;
-    /* KAYNAK SANATÇIYLA AYNIYSA İKİ KEZ YAZILMIYOR. Kendi
-       parçalarımızda ikisi de "PLAYJOY" ve ekranda yan yana
-       "PLAYJOY PLAYJOY" çıkıyordu. Bilgi eklemeyen tekrar, gürültü. */
+    /* KAYNAK SANATÇIYLA AYNIYSA İKİ KEZ YAZILMIYOR: aynı ad yan yana
+       iki kere çıkıyordu. Bilgi eklemeyen tekrar, gürültü. */
     try{
       const _k = kaynakSatiri(item);
       npKaynak.textContent =
@@ -3858,54 +3850,22 @@
   let mod = 'radio';
   try{ localStorage.removeItem('orbitape.kanal'); }catch(e){ _yut(e); }
   let radyoKuyruk=[];
-  // ── MIXTAPE: kullanıcının kendi şarkı listesi (liste.json) ──
-  const LISTE_URL     = "https://raw.githubusercontent.com/playjoymusic/tracks/main/liste.json";
-  const LISTE_URL_YEDEK = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/liste.json";
-  // GÖMÜLÜ LİSTE: şarkılar doğrudan kodda -> önbellek/çekme sorunu olmadan kesin çalar. (liste.json güncellenince üstüne yazılır)
-  const G = "https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/";
-  const GOMULU_LISTE = [
-    {mp3:G+"Ala.mp3",ad:"Ala"}, {mp3:G+"AwakeningTruths.mp3",ad:"Awakening Truths"},
-    {mp3:G+"BlummBlumm.mp3",ad:"Blumm Blumm"}, {mp3:G+"BrokenBeginnings.mp3",ad:"Broken Beginnings"},
-    {mp3:G+"CaramelDelusion.mp3",ad:"Caramel Delusion"}, {mp3:G+"EchoesofPain.mp3",ad:"Echoes of Pain"},
-    {mp3:G+"FCXXVI.mp3",ad:"FCXXVI"}, {mp3:G+"FallingDown.mp3",ad:"Falling Down"},
-    {mp3:G+"FamilyTies.mp3",ad:"Family Ties"}, {mp3:G+"HiddenBattles.mp3",ad:"Hidden Battles"},
-    {mp3:G+"Junkfail.mp3",ad:"Junkfail"}, {mp3:G+"Monkshood.mp3",ad:"Monkshood"},
-    {mp3:G+"Raindrop.mp3",ad:"Raindrop"}, {mp3:G+"SearchingforLight.mp3",ad:"Searching for Light"},
-    {mp3:G+"SilentStruggles.mp3",ad:"Silent Struggles"}, {mp3:G+"WhispersofAddiction.mp3",ad:"Whispers of Addiction"},
-    {mp3:G+"lostinShadows.mp3",ad:"Lost in Shadows"}, {mp3:G+"risingfromtheAshes.mp3",ad:"Rising from the Ashes"}
-  ].map((x,i)=>({id:'lst:'+i, mp3:x.mp3, ad:x.ad, sanatci:'PLAYJOY'}));
-  let calListe = GOMULU_LISTE.slice(), _lsShuf=[], _lsIdx=0, listeYuklendi=false;
-  async function listeYukle(){
-    try{
-      const r = await listeCek(LISTE_URL, LISTE_URL_YEDEK, 6000);
-      if(!r || !r.ok){ agBosArtir(); return listeOnbellekten(); }
-      let d = await r.json();
-      let arr = Array.isArray(d) ? d : ((d && (d.tracks||d.songs||d.liste)) || []);
-      const yeni = arr.map((x,i)=>{
-        if(typeof x==='string') return { id:'lst:'+i, mp3:x, ad:((x.split('/').pop()||'').replace(/\.[a-z0-9]+$/i,'')), sanatci:'PLAYJOY' };
-        const u = x.mp3||x.url||x.src||x.file; if(!u) return null;
-        return { id:'lst:'+i, mp3:u, ad:(x.ad||x.title||x.name||'').toString(), sanatci:(x.sanatci||'PLAYJOY') };
-      }).filter(Boolean);
-      if(yeni.length){
-        const mevcut = new Set(calListe.map(x=>x.mp3));
-        const eklenecek = yeni.filter(x=>x.mp3 && !mevcut.has(x.mp3));   // BİRLEŞTİR: gömülü + çekilen, sadece YENİ şarkı ekle (liste asla küçülmez)
-        if(eklenecek.length){ calListe = calListe.concat(eklenecek.map((x,i)=>({id:'net:'+i+':'+x.mp3, mp3:x.mp3, ad:x.ad, sanatci:(x.sanatci||'PLAYJOY')}))); _lsShuf=[]; _lsIdx=0; }
-        listeYuklendi=true;
-        onbellekYaz('liste', calListe);
-      }
-      return calListe.length;
-    }catch(e){ agBosArtir(); listeOnbellekten(); return calListe.length; }
-  }
-  /* Ağ yoksa: gömülü 18 şarkı zaten var, üstüne son çekilenleri ekle. */
-  function listeOnbellekten(){
-    try{
-      const c = onbellekOku('liste'); if(!c) return calListe.length;
-      const mevcut = new Set(calListe.map(x=>x.mp3));
-      const ek = c.filter(x=>x.mp3 && !mevcut.has(x.mp3));
-      if(ek.length){ calListe = calListe.concat(ek); _lsShuf=[]; _lsIdx=0; listeYuklendi=true; }
-      return calListe.length;
-    }catch(e){ return calListe.length; }
-  }
+  /* ── PLAYJOY (liste.json) KALDIRILDI ─────────────────────────────
+     Burada 18 tane kendi kaydımız (PLAYJOY) gömülü duruyordu ve
+     liste.json ile güncelleniyordu. Kaldırıldı.
+
+     Sebep dağıtım hakları: bu kayıtlar Believe üzerinden Spotify ve
+     diğer servislere dağıtılıyor. Eser bizim olsa da dağıtım
+     sözleşmesi aracı kurumda; aynı kayıtları kendi uygulamamızdan
+     ayrıca yayınlamak o sözleşmeyle çakışabilir. Hak sahibi biz
+     olduğumuz halde riski taşımanın anlamı yok.
+
+     Yerine bir şey koymaya gerek yok: ORBITAPE rafları zaten
+     earth/mix havuzlarından besleniyor, mixAl() her parçayı
+     modUygun() süzgecinden geçiriyor.
+
+     Not: mp3 dosyaları tracks deposunda hâlâ duruyor; uygulama
+     artık onlara hiç dokunmuyor. */
   // MIXTAPE'e karışan netlabel parçaları: arkada hazır bekletilir -> sıra gelince bekleme olmaz
   /* ── MIXTAPE HAVUZU: bash'ta toplanmış CC netlabel + Openverse parçaları ──
      blocSonic, Mahorka, Clinical Archives, Bump Foot, Kahvi, Ektoplazm +
@@ -3979,42 +3939,19 @@
      bilinmeyen bir parçada ikisi de dayanaksız.
 
      Süzgeç kurulamadı çünkü süzülecek alan yok. Yerine mixtape.json
-     (1.453 lisanslı netlabel parçası), Jamendo (artık lisans
-     süzgecinden geçiyor) ve PLAYJOY kayıtları geçti.
+     (1.453 lisanslı netlabel parçası) geçti.
 
      Ekranda lisans satırı da bu yüzden boş kalıyordu: gösterilecek
      bir lisans yoktu. Şimdi MIXTAPE'te çalan her parçanın lisansı
      var ve ekranda yazıyor. */
-  const KENDI_ORAN = 0.86;        // MIXTAPE: 100 parçanın ~14'ü SENİN şarkın
-  function kendiSarkin(){                                // sıradaki KENDİ şarkın (karışık torba)
-    if(!calListe.length) return;
-    if(_lsIdx>=_lsShuf.length){ _lsShuf=karisik(calListe); _lsIdx=0; }
-    cal(_lsShuf[_lsIdx++]);
-  }
-  function listeGec(){        // MIXTAPE: ~%14 senin şarkın, gerisi havuz + Jamendo
-    if(!calListe.length){ listeYukle().then(n=>{ if(n && mod==='liste') listeGec(); }); return; }
+  /* Bu akış eskiden ~%14 PLAYJOY + gerisi havuz karışımıydı.
+     PLAYJOY kaldırıldığı için tek kaynak netlabel havuzu. */
+  function listeGec(){
     if(!mixHavuz.length) mixYukle();                     // havuzu arkada hazırla
-    if(Math.random() >= KENDI_ORAN){ kendiSarkin(); return; }    // ~%14 PLAYJOY
-    const havuzdan = ()=>{ const o=mixAl(); if(o){ cal(o); return true; } return false; };
-    /* JAMENDO ARTIK BURADA. RADIOTAPE'ten alındı; CC lisanslı müzik
-       MIXTAPE'in kendi türü. Kuyruktan hazır bir parça varsa onu
-       kullanıyoruz, yoksa havuz devralıyor — bekletmiyoruz. */
-    const jamendodan = ()=>{ const j = jamKuyruk.shift(); if(j){ cal(j); return true; } return false; };
-    jamendoDoldur();                                     // arkada stoğu tazele
-    /* Audius çıktıktan sonra sıra sadeleşti: parçaların yaklaşık
-       üçte biri Jamendo, gerisi toplanmış netlabel havuzu. Biri
-       yoksa öteki devralıyor, ikisi de yoksa kendi şarkın. */
-    const kur = Math.random();
-    if(kur < 0.34){
-      if(jamendodan()) return;
-      if(havuzdan()) return;
-    }else{
-      if(havuzdan()) return;
-      if(jamendodan()) return;
-    }
-    /* Hiçbiri hazır değil: havuzu yüklemeyi bekletmeden kendi
-       şarkınla devam, havuz gelince kendiliğinden karışıma girer. */
-    kendiSarkin();
+    const o = mixAl();
+    if(o){ cal(o); return; }
+    /* Havuz henüz gelmedi: yükleme bitince buraya geri dön. */
+    mixYukle().then(()=>{ try{ if(mod==='liste'){ const y=mixAl(); if(y) cal(y); } }catch(e){ _yut(e); } });
   }
   /* Arşiv kaydının "creator" alanı çoğunlukla gerçek bir isim ama arada
      e-posta, site adresi ya da "Various" gibi doldurma değerler geliyor.
@@ -6553,62 +6490,29 @@
   }
 
   /* ── Jamendo: açık lisanslı (CC) müzik, world/folk ağırlıklı ── */
-  const JAMENDO_ID  = "1414db67";                 // ücretsiz Client ID (herkese açık)
-  const JAMENDO_ETIKET = ["","electronic","rock","pop","jazz","folk","world",
-                          "hiphop","ambient","funk","reggae","soul","chillout","lounge"]; // geniş müzik (RADIO)
-  /* MIXTAPE için küçük bir Jamendo stoğu. Arkada dolar, çalarken
-     beklenmez. Kuyruk kısa: taze kalsın, bellekte yer tutmasın. */
-  var jamKuyruk = [], jamDolduruluyor = false;
-  async function jamendoDoldur(){
-    if(jamDolduruluyor || jamKuyruk.length >= 4) return;
-    jamDolduruluyor = true;
-    try{
-      for(let i=0;i<2 && jamKuyruk.length<4;i++){
-        const j = await jamendoCek();
-        if(j && !jamKuyruk.some(x=>x.id===j.id)) jamKuyruk.push(j);
-      }
-    }catch(e){ _yut(e); }
-    jamDolduruluyor = false;
-  }
-  async function jamendoCek(){
-    const _m = AKTIF_MOD ? modBul(AKTIF_MOD) : null;
-    const tag = _m ? _m.jam : JAMENDO_ETIKET[Math.random()*JAMENDO_ETIKET.length|0];
-    const off = Math.random()*150|0;              // rastgelelik için değişken ofset
-    /* ccnd=false: türev yasaklı olanları SUNUCU tarafında eliyor.
-       Ama tek başına ona güvenilmiyor — sunucu süzgeci sessizce
-       değişebilir ve kimse fark etmez. Asıl karar aşağıda, kendi
-       kuralımızla. Bu satır yalnızca boşa gelen kaydı azaltıyor. */
-    let url = "https://api.jamendo.com/v3.0/tracks/?client_id="+JAMENDO_ID+
-      "&format=json&limit=20&offset="+off+"&order=popularity_month&audioformat=mp31&ccnd=false";
-    if(tag) url += "&fuzzytags="+encodeURIComponent(tag);
-    let r; try{ r=await fetchZA(url, 6000); }catch(e){ hataEkle('jamendo'); return null; }
-    if(!r.ok){ hataEkle('jamendo'); return null; }
-    let js={}; try{ js=await r.json(); }catch(e){ hataEkle('jamendo'); return null; }
-    /* ── LİSANS KAPISI — ESKİDEN YOKTU VE BU BİR AÇIKTI ──────────
-       Havuzdaki 24.356 arşiv kaydı üç ayrı lisans kapısından
-       geçiyor; Jamendo parçaları HİÇBİRİNDEN geçmiyordu. Üstelik
-       kayda 'lisans' alanı bile konmuyordu: ekranda ve paylaşılan
-       videoda lisans satırı hiç çıkmıyordu — oysa CC BY ailesinde
-       lisansı belirtmek lisansın KENDİ ŞARTI.
+  /* ── JAMENDO KALDIRILDI ──────────────────────────────────────────
+     Burada Jamendo'dan CANLI parca ceken bir blok vardi (client_id,
+     etiket listesi, kuyruk, iki ayri istek fonksiyonu).
+     Kullanicinin karari: "jamendo ve mixtape'i sil bence, yer de
+     kaplamasin -- ama eger playstore icin daha iyiyse kalsin."
+     Play Store icin de daha iyi DEGILDI, dort sebeple:
+       · CALISMIYORDU. Kaynak raporunda "jamendo ✗ 2" yaziyordu;
+         ekranda gorunmeyen ama her denemede tekrarlanan bir hata.
+       · ORBITAPE'in kaynak sirasinin UCTE BIRI ona ayrilmisti, yani
+         her uc denemeden biri bosa gidiyordu. "Bazen gec geliyor"
+         hissinin bir parcasi buydu.
+       · Icinde bir client_id duruyordu -- uygulamanin icinde tasinan
+         bir API anahtari, gereksiz bir acik.
+       · Olcekte ucuncu bir tarafa bagimlilik ekliyordu; digerlerinin
+         hepsi bizim onceden hasat ettigimiz JSON dosyalari.
+     Bir gun geri istenirse dogru yolu belli: canli API cagirmak
+     degil, digerleri gibi ONCEDEN HASAT EDIP JSON'a yazmak
+     (radyo.json gibi) -- anahtarsiz, kirilmadan.
 
-       Jamendo her parçada license_ccurl döndürüyor; varsayılan
-       yanıtta, ek parametre gerekmiyor. Gerçek yanıttan ölçüldü:
-         "license_ccurl":"http://creativecommons.org/licenses/by-nc-sa/2.0/"
-       Bu alan artık kayda yazılıyor ve arşivle AYNI kuraldan
-       (lisansSerbest) geçiriliyor: ND çıkar, belirsiz çıkar. */
-    const list=(js.results||[]).filter(t=>t && t.audio && lisansSerbest(t.license_ccurl));
-    if(!list.length){ hataEkle('jamendo'); return null; }
-    karistir(list);
-    for(const t of list){
-      const id="jam:"+t.id;
-      if(CALINDI.has(id)) continue;
-      if(kuyruk.some(x=>x.id===id)) continue;
-      basari('jamendo'); calindiEkle(id);
-      return { id, mp3:t.audio, ad:(t.name||""), sanatci:(t.artist_name||""),
-               lisans:(t.license_ccurl||"") };
-    }
-    return null;
-  }
+     mixtape.json SILINMEDI: o bizim kendi hasat dosyamiz, calisiyor
+     (1453 parca) ve mixAl() zaten modUygun() suzgecinden geciriyor,
+     yani icerigi bugun de ORBITAPE'in kategorilerine akiyor. Ayri
+     bir kanal degil, arsivin parcasi. */
 
   /* AUDIUS BURADAN KALDIRILDI — sebebi listeGec'in üstünde yazıyor:
      API lisans bilgisi döndürmüyor, süzülecek alan yok. Kod kayıt
@@ -7063,7 +6967,6 @@
 
        Geçenler:
          · canlı yayın — kaydedilmiyor, dağıtılmıyor, sabitlenmiyor
-         · PLAYJOY kayıtları — bizim, lisans alanına gerek yok
          · lisansı tanınan her kayıt (PD/CC0/BY/BY-SA/BY-NC/BY-NC-SA)
        Geçemeyenler: ND ve lisansı belirsiz olan her şey.
 
@@ -8065,8 +7968,10 @@
          taşındı; orası zaten CC lisanslı müziğin yeri.
          Kanal haritası artık net:
            RADIOTAPE -> yalnızca canlı istasyon
-           ORBITAPE  -> yalnızca arşiv (earth + uzun kayıtlar)
-           MIXTAPE   -> PLAYJOY + netlabel havuzu + Jamendo   */
+           ORBITAPE  -> arşiv (earth + uzun kayıtlar) + netlabel
+                        havuzu (mixtape.json)
+         Uygulamada iki dünya var; 'liste' içeride ORBITAPE'in
+         netlabel rafını besleyen bir akıştan ibaret. */
       // CANLI İSTASYON
       /* HIZ: kuyrukta çalınacak bir şey varsa istasyon elemesini BEKLEMİYORUZ,
          arkada bitiyor. Açılışta kullanıcı elemenin bitmesini beklemesin. */
@@ -8172,20 +8077,17 @@
       if(it){ _ilkYayin = false; calindiEkle(it.id); cal(it); radyoKuyrukDoldur(); return; }
       radyoGec(); return;
     }
+    /* IKI KAYNAK KALDI: arsiv (earth) ve netlabel havuzu (mixtape).
+       Jamendo cikarildi -- calismiyordu ve siranin ucte birini
+       bosa harciyordu (bkz. JAMENDO KALDIRILDI). */
     const z = Math.random();
-    const sirala = (z < 0.62) ? ['earth','mix','jam']
-                 : (z < 0.80) ? ['mix','earth','jam']
-                 : (z < 0.92) ? ['jam','earth','mix']
-                              : ['jam','mix','earth'];
+    const sirala = (z < 0.72) ? ['earth','mix'] : ['mix','earth'];
     for(const k of sirala){
       if(k==='earth'){ const o=earthAl(); if(o){ cal(o); return; } }
       else if(k==='mix'){ const o=mixAl(); if(o){ cal(o); return; } }
-      /* Kuyruktan gelen her şey de süzülüyor: eskiden Jamendo
-         parçaları kategoriye bakılmadan çalınıyordu. */
-      else if(k==='jam'){    const o=_kuyruktanUygun(jamKuyruk);    if(o){ cal(o); jamendoDoldur(); return; } }
     }
     // hiçbiri hazır değil: havuzları doldur, kısa süre sonra tekrar dene
-    try{ earthYukle(); mixYukle(); jamendoDoldur(); }catch(e){ _yut(e); }
+    try{ earthYukle(); mixYukle(); }catch(e){ _yut(e); }
     setTimeout(()=>{ if(AKTIF_MOD) sonraki(false); }, 700);
   }
   function sonraki(kullanici){
@@ -8251,15 +8153,16 @@
         ()=> uzunHavuz.length ? ('✓ '+uzunHavuz.length+' track') : null],
       ['  └ uzay/gizem', null,
         ()=> uzunHavuz.length ? ('~ '+uzaySay(uzunHavuz)+' track') : '—', true],
-      ['MIXTAPE', null, null],
       ['mixtape.json (netlabel)', 'mix',
         ()=> mixHavuz.length ? ('✓ '+mixHavuz.length+' track') : null],
-      ['jamendo (CC muzik)', 'jamendo', null],
       ['lisanssiz elenen', 'lisans', ()=> (FAIL['lisans']||0) ? ('\u2715 '+FAIL['lisans']+' track') : '\u2014', true],
-      ['liste.json (PLAYJOY)', null,
-        ()=> calListe.length ? ('✓ '+calListe.length+' track') : null],
       ['RADIOTAPE', null, null],
-      ['radio-browser (canli)', 'radyo', null]
+      /* Asil kaynak artik kendi kokumuzdeki radyo.json: istasyon rafi,
+         grup ve ulke bilgisi oradan geliyor. radio-browser yalnizca
+         o liste gelmezse devreye giren yedek. */
+      ['radyo.json (istasyon rafi)', null,
+        ()=> beyazListe ? ('✓ '+beyazListe.length+' station') : null],
+      ['radio-browser (yedek)', 'radyo', null]
     ];
     let h='';
     for(const [ad, k, ozel, alt] of satirlar){
@@ -8529,7 +8432,7 @@
     if(AKTIF_MOD){
       AKTIF_MOD = null;
       try{ localStorage.setItem('orbitape.mod',''); }catch(e){ _yut(e); }
-      try{ kuyruk.length=0; radyoKuyruk.length=0; jamKuyruk.length=0; }catch(e){ _yut(e); }
+      try{ kuyruk.length=0; radyoKuyruk.length=0; }catch(e){ _yut(e); }
     }
     // RADIOTAPE'te aranacak isim yok; oraya geçmek etiketi kaldırır.
     if(yeni==='radio'){ try{ araGiris.value=''; etiketKur(''); }catch(e){ _yut(e); } }
@@ -8554,7 +8457,7 @@
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
     if(mod==='lib'){ earthYukle(); uzunYukle(); }        // ORBITAPE: kısa + uzun arşiv havuzları
-    if(mod==='liste'){ listeYukle(); mixYukle(); jamendoDoldur(); }   // MIXTAPE: kendi liste + havuz + jamendo
+    if(mod==='liste'){ mixYukle(); }                     // netlabel havuzu
     sonraki(false);
   }
   /* ── FX İPUCU ────────────────────────────────────────────────────
@@ -9532,7 +9435,6 @@
       try{ ek(earthHavuz,'lib'); }catch(e){ _yut(e); }
       try{ ek(uzunHavuz,'lib'); }catch(e){ _yut(e); }
       try{ ek(mixHavuz,'liste'); }catch(e){ _yut(e); }
-      try{ ek(calListe,'liste'); }catch(e){ _yut(e); }
     }
     return g;
   }
@@ -9907,7 +9809,7 @@
     try{ fxSunumDene(); }catch(e){ _yut(e); }
     try{ localStorage.setItem('orbitape.mod', AKTIF_MOD || ''); }catch(e){ _yut(e); }
     /* Kuyrukları boşalt: eski moddan kalan sesler çalmasın. */
-    try{ kuyruk.length = 0; radyoKuyruk.length = 0; jamKuyruk.length = 0; }catch(e){ _yut(e); }
+    try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){ _yut(e); }
     try{ sonraki(true); }catch(e){ _yut(e); }
   }
@@ -10178,7 +10080,7 @@
     /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
        tarayacagi sey de o. */
     if(!AYAR.mood){ try{ radyoListe(); }catch(e){ _yut(e); } }
-    else { try{ earthYukle(); uzunYukle(); mixYukle(); listeYukle(); }catch(e){ _yut(e); } }
+    else { try{ earthYukle(); uzunYukle(); mixYukle(); }catch(e){ _yut(e); } }
     silGoster();
     _araDokunuldu = false;                    // yeni acilis: temiz sayfa
     setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);
@@ -12945,7 +12847,6 @@
       otoBaslat();                        // tarayıcı izin veriyorsa kendiliğinden çal
     }
     hazirla();   // kütüphane çeşitliliğini arkada topla (isteyen üstten geçince hazır olsun)
-    listeYukle();          // MIXTAPE listesi küçük bir JSON - önden yüklensin (moda geçince anında)
     radyoKuyrukDoldur();   // kuyruğu tazele
     earthYukle();          // ORBITAPE arşiv havuzunu da önden yükle (moda geçince anında)
   })();

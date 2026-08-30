@@ -153,7 +153,6 @@ Parça listeleri ayrı bir depoda: **[playjoymusic/tracks](https://github.com/pl
 | `earth_buyuk.json` | 25 MB üstü uzun kayıtlar |
 | `mixtape.json` | Netlabel müziği |
 | `radyo.json` | Doğrulanmış canlı istasyonlar |
-| `liste.json` | Seçme parçalar |
 
 Havuzdaki her kayıt ya kamu malında ya da paylaşıma izin veren bir Creative
 Commons lisansında. Türetmeye izin vermeyen (ND) tek kayıt yok — kayıt alınıp
@@ -167,12 +166,13 @@ Kural tek: **`lisansSerbest()`**. Üç yerde uygulanıyor.
 | Nerede | Ne zaman |
 |---|---|
 | `araclar/lisans_filtre.py` | hasat havuza katılırken |
-| `jamendoCek()` | Jamendo'dan parça çekilirken |
 | `cal()` | çalmadan hemen önce — **son kapı** |
 
-Son kapı, diğer ikisinin arkasında duruyor: yarın yeni bir kaynak eklenir ve
-süzgeci unutulursa oradan geçemez. Geçenler: canlı yayın (kaydedilmiyor,
-dağıtılmıyor), PLAYJOY kayıtları (bizim), ve lisansı tanınan her kayıt.
+Son kapı, hasat süzgecinin arkasında duruyor: yarın yeni bir kaynak eklenir
+ve süzgeci unutulursa oradan geçemez. Geçenler: canlı yayın (kaydedilmiyor,
+dağıtılmıyor) ve lisansı tanınan her kayıt. Başka kapı yok — eskiden "kendi
+parçamız" diye bir kapı vardı (PLAYJOY), o kayıtlar kaldırılınca kapı da
+kalktı.
 
 **Sıra kritik:** ND kontrolü BY-NC'den **önce**. Yoksa `by-nc-nd` yanlışlıkla
 `by-nc` sayılır ve türev yasağı olan bir eser içeri sızar. Python ve JavaScript
@@ -188,24 +188,28 @@ Mesele soyut değil: kullanıcı efekt uygulayıp kayıt alıyor ve paylaşıyor
 türev eser artı umuma iletim. Lisansı bilinmeyen bir parçada ikisi de
 dayanaksız. Ekranda lisans satırının boş kalmasının sebebi de buydu.
 
-Yerine `mixtape.json` (1.453 lisanslı netlabel parçası), Jamendo (artık
-süzgeçten geçiyor) ve PLAYJOY kayıtları geçti. Kod git geçmişinde duruyor;
-lisans veren bir uç nokta çıkarsa geri gelebilir.
+Yerine `mixtape.json` (1.453 lisanslı netlabel parçası) geçti. Kod git
+geçmişinde duruyor; lisans veren bir uç nokta çıkarsa geri gelebilir.
 
-**Jamendo** her parçada `license_ccurl` döndürüyor. Ölçüldü:
+### PLAYJOY parçaları neden kaldırıldı
 
-```
-"license_ccurl":"http://creativecommons.org/licenses/by-nc-sa/2.0/"
-```
+Uygulamada 18 kendi kaydımız (`liste.json` + gömülü liste) çalıyordu. Bu
+kayıtlar **Believe** üzerinden Spotify ve diğer servislere dağıtılıyor. Eser
+bizim olsa da dağıtım sözleşmesi aracı kurumda; aynı kayıtları kendi
+uygulamamızdan ayrıca yayınlamak o sözleşmeyle çakışabilir. Hak sahibi biz
+olduğumuz halde riski taşımanın anlamı yok. mp3 dosyaları `tracks` deposunda
+duruyor; uygulama artık onlara hiç dokunmuyor.
 
-İstekte `ccnd=false` (sunucu tarafı ön eleme) **ve** yanıtta `lisansSerbest`
-(asıl karar). Sunucu süzgeci sessizce değişebilir; ikincisi olmadan bunu kimse
-fark etmez. Kanıtlandı — kapılar kaldırılıp ölçüldü:
+### Jamendo neden kaldırıldı
 
-```
-kapılarla   : 3 parçadan 1'i geçti (ND ve lisanssız elendi)
-kapılar yok : 3'ü de geçti, ND parça çaldı
-```
+Jamendo her parçada `license_ccurl` döndürüyordu ve iki kapıdan geçiyordu
+(istekte `ccnd=false`, yanıtta `lisansSerbest`) — lisans tarafı sağlamdı.
+Kaldırılma sebebi başka: kaynak raporunda **`jamendo ✗ 2`** yazıyordu, yani
+pratikte çalışmıyordu; buna rağmen ORBITAPE'in kaynak sırasının üçte birini
+harcıyordu; istemcide bir `client_id` taşıyordu ve ölçekte üçüncü bir tarafa
+canlı bağımlılık ekliyordu. Diğer bütün kaynaklar bizim önceden hasat edip
+JSON'a yazdığımız dosyalar. İstenirse doğru yol, Jamendo'yu da hasat edip
+havuza yazmak.
 
 ### Araçlar
 

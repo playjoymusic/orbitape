@@ -192,6 +192,52 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        sozHata || 'ayristirilabiliyor');
   }
 
+  /* ══ SONSUZ SES ARAMASI — SUZULMUS HAVUZ ONBELLEGI ════════════════
+     Ekranda: SOUND BANKS kipinde uygulama hic durmadan ses ariyor,
+     hicbir tusa basmak ise yaramiyor. Kaynak raporu ise havuzun DOLU
+     oldugunu soyluyordu (earth.json 16424 parca) -- dosya geliyor,
+     calan bir sey yok.
+     SEBEP: modHavuzu() onbellegi yalnizca MOD ADINA bakiyordu.
+     earth.json agdan geliyor, yani acilisin ilk saniyelerinde
+     earthHavuz BOS. O aralikta bir kez suzulurse sonuc BOS DIZI
+     oluyor ve havuz 16424 parcayla dolsa bile onbellek tazelenmiyor
+     -- earthAl() surekli null donuyor, modGec() her 700 ms'de
+     kendini yeniden cagiriyor.
+     Yaris hep vardi ama dardi; kip hafizasi geri gelince AKTIF_MOD
+     acilista, havuz yuklenmeden cok once atanir oldu ve aralik her
+     seferinde tutar hale geldi.
+     KURAL: sonradan dolan bir veri uzerine kurulan onbellek,
+     yalnizca anahtara bakamaz -- verinin kendisi de degistiyse
+     tazelenmeli. */
+  K('Havuz sonradan dolunca suzgec tazeleniyor', await pg.evaluate(()=>{
+      const eskiH = earthHavuz.slice(), eskiM = AKTIF_MOD,
+            eskiAd = _modAdi, eskiSay = _modHavuzSay;
+      try{
+        /* Hatanin birebir kurulumu: havuz BOSKEN suz. */
+        earthHavuz.length = 0;
+        _modAdi = null; _modHavuzSay = -1;
+        AKTIF_MOD = 'ORBITAPE';
+        const bosken = (modHavuzu() || []).length;
+        /* Sonra havuz agdan geldi. */
+        earthHavuz.push(
+          {id:'e:1', mp3:'https://o.test/1.mp3', ad:'Deneme Bir', tur:'muzik'},
+          {id:'e:2', mp3:'https://o.test/2.mp3', ad:'Deneme Iki', tur:'ses'},
+          {id:'e:3', mp3:'https://o.test/3.mp3', ad:'Deneme Uc',  tur:'uzay'});
+        const sonra = (modHavuzu() || []).length;
+        const secebildi = !!earthAl();
+        return bosken === 0 && sonra === 3 && secebildi;
+      } finally {
+        earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
+        AKTIF_MOD = eskiM; _modAdi = eskiAd; _modHavuzSay = eskiSay;
+      }
+    }), 'bos havuzda suzulen onbellek, havuz dolunca yeniden suzuluyor');
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const i0 = kaynak.indexOf('function modHavuzu()');
+    K('Suzgec onbellegi havuz boyunu da hatirliyor',
+       i0 > 0 && /_modHavuzSay !== say/.test(kaynak.slice(i0, i0 + 600)),
+       'onbellek yalnizca mod adina bakmiyor');
+  }
   /* ══ SERT ZAMAN ASIMI GERI ALINDI — KONTROLLERI DE ═══════════════
      Buraya uc kontrol konulmustu: fetchZA gercek bir zamanlayiciyla
      yarissin, cevapsiz sunucu kilitlemesin, yavas cevap kesilmesin.
@@ -1629,12 +1675,46 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      kaliyor" gecti. */
   // KANAL SAFLIGI: her kanal kendi kaynaklarindan mi besleniyor
   const saf = await pg.evaluate(()=>({
+    /* Jamendo kaynagi tamamen cikarildi; bu satir artik her zaman
+       false. Kontrol yine de duruyor: canli bir muzik kaynagi
+       RADIOTAPE kuyruguna geri sizarsa yakalasin. */
     radyoJamendo: /jamendoCek\(\)[\s\S]{0,120}radyoKuyruk\.push/.test(document.documentElement.innerHTML),
     radyoTavan: typeof RADYO_TAVAN!=='undefined' ? RADYO_TAVAN : null,
     radyoHedef: (typeof HEDEF_KANAL!=='undefined') ? HEDEF_KANAL.radio : null
   }));
   K('RADIOTAPE sadece radyo',  !saf.radyoJamendo, saf.radyoJamendo ? 'jamendo muzigi de giriyor' : 'temiz');
-  K('Jamendo MIXTAPE tarafinda', await pg.evaluate(()=>typeof jamKuyruk!=='undefined' && typeof jamendoDoldur==='function'), 'jamKuyruk + jamendoDoldur');
+  /* ── JAMENDO KALDIRILDI ─────────────────────────────────────────
+     Bu satir eskiden "jamendo MIXTAPE tarafinda mi" diye bakiyordu.
+     Kaynak tamamen cikarildi: CALISMIYORDU (kaynak raporunda
+     "jamendo ✗ 2"), ORBITAPE'in kaynak sirasinin UCTE BIRINI bosa
+     harciyordu, icinde bir client_id tasiyordu ve olcekte ucuncu
+     bir tarafa bagimlilik ekliyordu -- digerlerinin hepsi bizim
+     onceden hasat ettigimiz JSON dosyalari.
+     Kontrol tersine cevrildi: canli Jamendo cagrisi GERI GELIRSE
+     burasi kirmizi yanar. Bir gun istenirse dogru yolu onceden
+     hasat edip JSON'a yazmak. */
+  K('Canli Jamendo cagrisi yok', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const kod = k.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+      return !/api\.jamendo\.com/.test(kod)
+          && !/JAMENDO_ID/.test(kod)
+          && typeof jamKuyruk === 'undefined';
+    }), 'api.jamendo.com, client_id ve kuyruk -- ucu de yok');
+  /* ── PLAYJOY (liste.json) KALDIRILDI ────────────────────────────
+     18 kendi kaydimiz gomulu duruyordu. Bu kayitlar Believe
+     uzerinden dagitiliyor; ayni kayitlari kendi uygulamamizdan da
+     yayinlamak o sozlesmeyle cakisabilir. Eser bizim olsa da riski
+     tasimanin anlami yok.
+     Kontrol tersine: kod tekrar bu dosyalara uzanirsa kirmizi yanar.
+     Not: mp3'ler tracks deposunda hala duruyor, uygulama dokunmuyor. */
+  K('PLAYJOY parcalari uygulamada yok', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const kod = k.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+      return !/liste\.json/.test(kod)
+          && !/playjoymusic\/tracks@main\/[A-Za-z]+\.mp3/.test(kod)
+          && typeof calListe === 'undefined'
+          && typeof listeYukle === 'undefined';
+    }), 'liste.json, gomulu mp3, calListe -- hicbiri yok');
   K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
   K('Kayit hedefi ONDEN hazir', await pg.evaluate(()=>!!kayitHedef), 'REC oncesi kurulu');
   /* latencyHint:'playback': tampon 441 -> 1024 ornek. Cizirti isleci
@@ -2556,7 +2636,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     simdiCalan({ id:'rb:at', mp3:'http://x/s', ad:'Radio', radyo:true });
     await bek(100);
     const radyo = { yazi:lz.textContent, gor:getComputedStyle(lz).display!=='none' };
-    simdiCalan({ id:'lst:at', mp3:'https://cdn.jsdelivr.net/x.mp3', ad:'Kendi', sanatci:'PLAYJOY' });
+    /* Lisans alani olmayan bir kayitta satir hic yer kaplamamali. */
+    simdiCalan({ id:'x:at', mp3:'https://cdn.jsdelivr.net/x.mp3', ad:'Lisanssiz' });
     await bek(100);
     const kendi = { gor:getComputedStyle(lz).display!=='none' };
     /* Yerlesim: en uzun lisansla bile blok ekran yarisini gecmemeli */
@@ -2581,7 +2662,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Lisans ekranda gorunuyor', !!at && at.lisansli.yazi==='CC BY-NC-SA' && at.lisansli.gor===true,
      (at?at.lisansli.yazi:'-'));
   K('Canli yayinda lisans satiri YOK', !!at && at.radyo.gor===false, 'hic yer kaplamiyor');
-  K('Kendi parcamizda lisans satiri YOK', !!at && at.kendi.gor===false, 'hic yer kaplamiyor');
+  K('Lisansi olmayan kayitta satir YOK', !!at && at.kendi.gor===false, 'hic yer kaplamiyor');
   /* ESKI KURAL: blok ekranin yarisini gecmesin. Kural sol altta REC ·
      CAM · ★ satiri dururken gecerliydi -- carpmasinlar diye. O satir
      sol UST'e tasindi, sol alt bosaldi. Yeni kural: blok ekran
@@ -2667,7 +2748,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       /* calinabilirMi: kimler gecebiliyor. */
       const kapi = {
         radyo:   calinabilirMi({mp3:'https://x/r', radyo:true}),
-        bizim:   calinabilirMi({id:'lst:3', mp3:'https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/Ala.mp3', ad:'Ala'}),
+        /* ESKIDEN buradan kendi kayitlarimiz (PLAYJOY) lisanssiz
+           geciyordu. O kayitlar kaldirildi, kapi da kalkti: kendi
+           depomuzdaki bir adres bile lisanssiz gecemiyor. */
+        kendiDepo: calinabilirMi({id:'lst:3', mp3:'https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/Ala.mp3', ad:'Ala'}),
         serbest: calinabilirMi({mp3:'https://x/a.mp3', lisans:'http://creativecommons.org/licenses/by-nc-sa/3.0/'}),
         nd:      calinabilirMi({mp3:'https://x/b.mp3', lisans:'http://creativecommons.org/licenses/by-nc-nd/3.0/'}),
         bos:     calinabilirMi({mp3:'https://x/c.mp3'}),
@@ -2678,7 +2762,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Lisans siniflandirmasi dogru', !!lk && lk.yanlis.length===0,
        lk && lk.yanlis.length ? 'yanlis: '+lk.yanlis.join(', ') : '14 ornek, ND tuzagi dahil');
     K('Canli yayin gecebiliyor', !!lk && lk.kapi.radyo===true, 'kaydedilmiyor, dagitilmiyor');
-    K('PLAYJOY kayitlari gecebiliyor', !!lk && lk.kapi.bizim===true, 'bizim, lisans alanina gerek yok');
+    K('Kendi depomuzdaki adres de lisanssiz GECEMIYOR', !!lk && lk.kapi.kendiDepo===false,
+       'PLAYJOY kapisi kaldirildi');
     K('Serbest lisansli kayit geciyor', !!lk && lk.kapi.serbest===true, 'CC BY-NC-SA');
     K('ND kayit GECEMIYOR', !!lk && lk.kapi.nd===false, 'turev yasakli');
     K('Lisanssiz kayit GECEMIYOR', !!lk && lk.kapi.bos===false, 'kanit yoksa serbest sayilmaz');
@@ -2741,22 +2826,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('api.audius.co adresi yok', !/api\.audius\.co/.test(kk), 'ag istegi kalmadi');
   }
 
-  /* ── JAMENDO: LISANS SUZGECINDEN GECIYOR ────────────────────────
-     Jamendo her parcada license_ccurl donduruyor (varsayilan yanitta,
-     ek parametre gerekmiyor). Gercek yanittan olculdu:
-       "license_ccurl":"http://creativecommons.org/licenses/by-nc-sa/2.0/"
-     Iki kapi var: istekte ccnd=false (sunucu tarafi) ve yanitta
-     lisansSerbest (bizim kural). Ikincisi asil olan; sunucu suzgeci
-     sessizce degisebilir. */
-  {
-    const kj = fs.readFileSync('index.html','utf8');
-    K('Jamendo istegi ND istemiyor', /ccnd=false/.test(kj), 'sunucu tarafi on eleme');
-    K('Jamendo yaniti suzgecten geciyor',
-       /js\.results\|\|\[\]\)\.filter\(t=>t && t\.audio && lisansSerbest\(t\.license_ccurl\)\)/.test(kj),
-       'license_ccurl -> lisansSerbest');
-    K('Jamendo kaydi lisansi tasiyor', /lisans:\(t\.license_ccurl\|\|""\)/.test(kj),
-       'ekranda ve paylasilan videoda atif cikiyor');
-  }
+  /* ── JAMENDO KAPILARI KALDIRILDI ────────────────────────────────
+     Burada uc kontrol vardi: istekte ccnd=false, yanitta
+     lisansSerbest(license_ccurl) ve kayda lisans alaninin yazilmasi.
+     Jamendo kaynagi tamamen cikarildi (sebep yukarida, "Canli Jamendo
+     cagrisi yok" kontrolunun basinda), dolayisiyla bu uc kapinin
+     bekleyecegi kod da yok. Kaynagin geri gelmedigini o kontrol
+     bekliyor; geri gelirse bu kapilar da onunla birlikte geri
+     gelmeli. */
 
   /* ── LISTE ISTEKLERI: DAMGA DEGIL, KOSULLU ISTEK ────────────────
      Her istege "?t=zaman" ekleniyordu. Tarayici icin bu her seferinde
@@ -3445,13 +3522,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Tik sesi kisik', await pg.evaluate(()=>
         typeof TIK_VOL === 'number' && TIK_VOL > 0 && TIK_VOL <= 0.37),
       'TIK_VOL <= 0.37');
-    /* AYNI SEY IKI KEZ YAZILMAZ. Kendi parcalarimizda hem kaynak hem
-       sanatci 'PLAYJOY' ve ekranda yan yana iki kez cikiyordu. */
+    /* AYNI SEY IKI KEZ YAZILMAZ: kaynak adi sanatci adiyla ayni
+       oldugunda ekranda yan yana iki kez cikiyordu. */
     K('Kaynak sanatciyla ayniysa tekrarlanmiyor', await pg.evaluate(()=>{
         const eM = mod;
         mod = 'liste';
-        simdiCalan({ id:'lst:0', ad:'Caramel Delusion', sanatci:'PLAYJOY',
-                     mp3:'https://cdn.jsdelivr.net/gh/playjoymusic/tracks@main/x.mp3' });
+        simdiCalan({ id:'mx:0', ad:'Caramel Delusion', sanatci:'CCMIXTER',
+                     mp3:'https://ccmixter.org/content/x/y.mp3' });
         const ayni = document.getElementById('npKaynak').textContent.trim();
         simdiCalan({ id:'rb:1', ad:'Some Station', radyo:true,
                      grup:'JAZZ', ulke:'DE', mp3:'https://x/y' });
@@ -3460,7 +3537,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         /* Ayni oldugunda satir bos; farkli oldugunda hala yaziyor --
            tekrarı kaldirirken bilgiyi de kaldirmis olmayalim. */
         return ayni === '' && farkli === 'JAZZ · DE';
-      }), 'PLAYJOY PLAYJOY yok; farkli kaynak hala yaziliyor');
+      }), 'ayni ad iki kez yok; farkli kaynak hala yaziliyor');
     /* ── ACILIS TURU ────────────────────────────────────────────────
        Tur EKRANIN BUGUNKU HARITASINI gezmeli. Yerlesim degistikce
        tur bayatliyor ve kimse fark etmiyor -- bu yuzden test, tur
