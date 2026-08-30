@@ -3674,6 +3674,49 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         const bitirKapatir = /function turBitir\(\)[\s\S]{0,2200}ayarGoster\(false\)/.test(govde);
         return yanma && panel && acar && kapar && acildi && kapandi && bitirKapatir;
       }), 'halkaYak + ayarGoster(true/false); turBitir de kapatiyor');
+    /* ── KIP KISAYOLU ───────────────────────────────────────────
+       SOUND BANKS kipinden radyoya donmek uc adimdi: ayarlari ac,
+       en ustteki kapiyi bul, anahtari cevir. Uc cizginin saginda
+       duran bu anahtar ayni isi tek dokunusla yapiyor.
+       Uc sey olculuyor: yalnizca bu kipte gorunuyor mu, tutamagin
+       SATIRINA oturuyor mu (CSS'te ayni bottom verilmisti ve
+       tutmadi -- 29px kayiyordu), ve alt satirlardan tasiyor mu. */
+    K('Kip kisayolu tutamagin satirinda', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const R = id=>{ const e=document.getElementById(id); if(!e) return null;
+          const r=e.getBoundingClientRect();
+          return { l:r.left, r:r.right, t:r.top, b:r.bottom, h:r.height,
+                   gor:getComputedStyle(e).display!=='none' }; };
+        const eskiMood = AYAR.mood;
+        AYAR.mood = false; moodUygula(false); await bek(120);
+        const radyoda = R('kipKisayol');
+        AYAR.mood = true;  moodUygula(false); await bek(260);
+        geriYerlestir(); await bek(160);
+        const kk = R('kipKisayol'), tut = R('ayarTut'),
+              ta = R('tasima'),     ar  = R('araclar');
+        AYAR.mood = eskiMood; moodUygula(false); await bek(120);
+        if(!kk || !tut || !ta || !ar) return false;
+        const gizli   = !radyoda.gor;                       // radyoda YOK
+        const gorunur = kk.gor;                             // moodda VAR
+        const ayniSatir = Math.abs((kk.t+kk.b)/2 - (tut.t+tut.b)/2) <= 3;
+        const sagda   = kk.l >= tut.r && kk.l - tut.r <= 16; // uc cizginin hemen sagi
+        const tasmaz  = kk.r <= Math.max(ta.r, ar.r);       // alt satirlari gecmiyor
+        return gizli && gorunur && ayniSatir && sagda && tasmaz;
+      }), 'radyoda yok, moodda uc cizginin saginda, alt satirlari gecmiyor');
+    /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
+       "kipi kapat" mantigi er gec ayrisir. */
+    K('Kip kisayolu radyoya donduruyor', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const eskiMood = AYAR.mood;
+        AYAR.mood = true; moodUygula(false); await bek(220);
+        document.getElementById('kipKisayol').click();
+        await bek(260);
+        const sonuc = AYAR.mood === false && mod === 'radio'
+                   && !document.body.classList.contains('mood');
+        AYAR.mood = eskiMood; moodUygula(false); await bek(120);
+        const k = document.documentElement.innerHTML;
+        return sonuc && /window\.moodKapat/.test(k);
+      }), 'tek dokunus radyoya donuyor, ayarlardaki kapiyla ayni islev');
     /* ── ORBITAPE TANITIMI: ANAHTARI ACMADAN ────────────────────
        Ayarlardaki kapinin uzerinde "sound banks & effects" yaziyor
        ve o iki kelime neyin acildigini anlatmiyor. Kapinin altindaki

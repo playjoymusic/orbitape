@@ -1318,6 +1318,41 @@
     transition:opacity .22s ease;}
   body.mood #ayarTut{top:auto;
     bottom:calc(115px + env(safe-area-inset-bottom, 0px));}
+  /* ── KIP KISAYOLU: UC CIZGININ SAGINDA ────────────────────────
+     Ayni satir, ayni sol kenar duzeni: tutamak 40px, arasinda 10px
+     bosluk, yani anahtar 50px'ten basliyor. Alt satirlar (tasima ve
+     araclar) bundan genis, o yuzden sagdan tasmiyor -- blok tek bir
+     konsol gibi okunmaya devam ediyor.
+     Dikeyde tutamagin ORTASINA hizali: tutamak 26px yuksek, anahtar
+     24px; ikisi de ayni bottom'dan baslayip ortalaniyor. */
+  #kipKisayol{display:none;}
+  body.mood #kipKisayol{
+    position:fixed;z-index:96;display:flex;align-items:center;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px) + 50px);
+    bottom:calc(116px + env(safe-area-inset-bottom, 0px));
+    height:24px;gap:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    opacity:.72;transition:opacity .22s ease;}
+  body.mood #kipKisayol:hover,
+  body.mood #kipKisayol:focus-visible{opacity:1;}
+  /* Anahtarin bicimi ayarlardaki KAPI satirinin anahtariyla ayni
+     (46x24, 18px topuz): ayni jest, ayni gorunum. Tek fark rengi --
+     orada acik/kapali durumu anlatiyor, burada NEREYE gidecegini. */
+  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:46px;height:24px;
+    border-radius:12px;background:rgba(53,224,216,.22);
+    border:1px solid rgba(53,224,216,.45);
+    transition:background .18s ease;}
+  #kipKisayol .anahtar b{position:absolute;top:2px;right:2px;
+    width:18px;height:18px;border-radius:50%;background:#35e0d8;
+    transition:right .18s ease;}
+  /* Yazi: sol ustteki denetimlerle ayni dil -- kucuk, aralikli,
+     buyuk harf. Rengi anahtarin rengi. */
+  #kipKisayol .ad{font-size:11px;letter-spacing:.14em;font-weight:600;
+    color:#35e0d8;white-space:nowrap;}
+  #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
+  #kipKisayol:active .anahtar b{right:4px;}
+  @media (prefers-reduced-motion: reduce){
+    #kipKisayol .anahtar, #kipKisayol .anahtar b{transition:none;}
+  }
   /* SOUND BANKS kipinde de AYNI YERDE. Once ortaya alinmisti (sol
      alti modul aldi diye) ama modul dort hapa cikinca ortaya kadar
      uzadi ve tutamagin uzerine bindi -- olculdu, sustur tusuyla
@@ -1852,6 +1887,23 @@
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
+  <!-- ── KIP KISAYOLU ────────────────────────────────────────────
+       SOUND BANKS kipindeyken radyoya donmek icin ayarlari acmak,
+       en ustteki kapiyi bulmak ve anahtari cevirmek gerekiyordu:
+       uc adim. Bu anahtar o kapinin AYNISI, uc cizginin sagina
+       hizalanmis duruyor ve tek dokunusla radyoya donuyor.
+       RENGI RADYONUN: turkuaz, yani "buraya basinca gidecegin yer".
+       Yalnizca bu kipte var (CSS: body.mood).
+       role=switch ve aria-checked=true: ekran okuyucu icin acik bir
+       anahtar -- kapatinca radyo tarafina donuluyor. -->
+  <div id="kipKisayol" role="switch" aria-checked="true" tabindex="0"
+       aria-label="Sound banks" title="Back to live radio">
+    <i class="anahtar" aria-hidden="true"><b></b></i>
+    <!-- YAZI: anahtar tek basina "bir sey acik" diyor ama NEREYE
+         goturdugunu soylemiyordu. Yer var -- alt satir (araclar)
+         bundan genis, yani sagdan tasmiyor. -->
+    <span class="ad" aria-hidden="true">RADIO</span>
+  </div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <!-- ── EN UST: BASKA BIR DUNYAYA KAPI ──────────────────────────
          Bu bir ses ayari degil, bir GECIS: acilinca arsiv havuzlari,
@@ -8437,6 +8489,23 @@
     if(mod==='lib'){ earthYukle(); uzunYukle(); }        // ORBITAPE: kısa + uzun arşiv
     sonraki(false);
   }
+  /* ── KIP KISAYOLUNUN DINLEYICISI ────────────────────────────────
+     Ayarlardaki kapiyla AYNI islevi cagiriyor (window.moodKapat):
+     iki yerde iki ayri "kipi kapat" mantigi olsa er gec ayrisirlar.
+     pointerdown durduruluyor: altindaki disk bu dokunusu alip
+     sonraki parcaya gecmesin. */
+  try{
+    const _kk = document.getElementById('kipKisayol');
+    if(_kk){
+      const _kapat = (e)=>{ try{ e.stopPropagation(); e.preventDefault(); }catch(_){ _yut(_); }
+                            try{ if(window.moodKapat) window.moodKapat(); }catch(_){ _yut(_); } };
+      _kk.addEventListener('click', _kapat);
+      _kk.addEventListener('pointerdown', e=>{ try{ e.stopPropagation(); }catch(_){ _yut(_); } });
+      _kk.addEventListener('keydown', e=>{
+        if(e.key===' ' || e.key==='Enter'){ _kapat(e); } });
+    }
+  }catch(e){ _yut(e); }
+
   /* ── FX İPUCU ────────────────────────────────────────────────────
      İlk kez bir efekt açan kişi çoğu zaman ne yapacağını bilmiyor:
      efekt açık ama diskte sürtmediği için hiçbir şey duymuyor. Efekt
@@ -8996,6 +9065,26 @@
   }
   function geriYerlestir(){
     iz('geriYerlestir');
+    /* ── KIP KISAYOLU TUTAMAGIN SATIRINA OTURUYOR ─────────────────
+       CSS'te ikisine de ayni 'bottom' verilmisti ve tutmadi: tutamak
+       dar ekranda baska bir kuralla yukari kayiyor, kisayol oldugu
+       yerde kaliyordu -- olculdu, arada 29px fark vardi ve anahtar
+       cizgilerin ustunde duruyordu.
+       Cozum tahmin degil OLCUM: tutamagin gercek kutusundan
+       hesaplaniyor ve DUZ px yaziliyor. env(safe-area-inset-bottom)
+       EKLENMIYOR -- olculen deger onu zaten iceriyor, bir daha
+       eklemek notch'lu telefonlarda iki kat sayardi. */
+    try{
+      const _kt = document.getElementById('ayarTut');
+      const _kk = document.getElementById('kipKisayol');
+      if(_kt && _kk && document.body.classList.contains('mood')){
+        const r = _kt.getBoundingClientRect();
+        if(r.height){
+          _kk.style.bottom = Math.round(window.innerHeight - r.bottom + (r.height - 24)/2) + 'px';
+          _kk.style.left   = Math.round(r.right + 10) + 'px';
+        }
+      }
+    }catch(e){ _yut(e); }
     try{
       /* ── YENI ALT SERIT (asagidan yukari) ────────────────────────
            ▽ ayarlar ucgeni   <- EN ALTTA, ORTADA (konumu CSS'ten)
@@ -9907,6 +9996,15 @@
        ac/kapa buradan disari veriliyor. Yalnizca GORSEL: tur biterken
        kapa() cagriliyor, ekranda iz kalmiyor. */
     try{ window.ayarGoster = (a)=>{ a ? ac() : kapa(); }; }catch(e){ _yut(e); }
+    /* KIP KISAYOLU ayni yolu kullaniyor: sahte tik uretmek yerine
+       (dinleyici stopPropagation ediyor ve panel kapaliyken inert)
+       islev disari veriliyor. Satirin kendi gorunumu de yaz() ile
+       tazeleniyor -- kullanici ayarlari actiginda anahtari dogru
+       durumda gormeli. */
+    try{ window.moodKapat = ()=>{
+      if(!AYAR.mood) return;
+      AYAR.mood = false; ayarKaydet(); yaz(); kapa(); moodUygula(false);
+    }; }catch(e){ _yut(e); }
     tut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
     tut.addEventListener('pointerdown', e=>e.stopPropagation());
     tut.addEventListener('keydown', e=>{
