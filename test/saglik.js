@@ -5699,7 +5699,8 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
         const su = document.getElementById('solUst').getBoundingClientRect();
         return { ust:Math.round(g.top), alt:Math.round(g.bottom),
-                 halkaAlt:Math.round(halkaAlt), modulUst:Math.round(su.top) };
+                 halkaAlt:Math.round(halkaAlt), modulUst:Math.round(su.top),
+                 bosluk:Math.round(su.top - g.bottom) };
       };
       AYAR.mood = false; moodUygula(); await bek(320);
       AKTIF_AILE = 'AMBIENT'; modGezYaz('AMBIENT'); await bek(60);
@@ -5712,14 +5713,28 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       moodUygula(); await bek(320);
       return { radyo, kipte };
     });
-    /* TOLERANS 10px. Ikisi ayni FORMULDEN ciksa da alt seridin
-       mobilyasi iki kipte birebir ayni degil (radyoda buyutec var,
-       kipte REC var) ve kunye satir sayisina gore birkac piksel
-       oynayabiliyor. Onemli olan yazinin ayni HATTA oturmasi;
-       eskiden fark 150px'ti ve yazi halkanin icindeydi. */
+    /* ── NEDEN ARTIK MUTLAK KONUM DEGIL, BOSLUK OLCULUYOR ─────────
+       Once "iki kipte yazinin ust kenari 10px icinde ayni olsun"
+       yaziyordu. O olcu MUTLAK: alt seridin kac piksel yukseldigine
+       bagli, o da yazi tipi metriklerine bagli. Yerelde fark tam
+       10 cikiyordu -- yani kontrol tolerans sinirinda oturuyordu.
+       CI'de satirlar 2px kaydi, fark 12 oldu ve kontrol kirildi:
+       KOD DEGISMEDIGI HALDE. Yanlis alarm, cunku 12px'lik bir
+       kayma kimsenin gormedigi bir sey; giderilen hata 150px'ti.
+
+       Simdi kodun GERCEKTEN kurdugu kural olculuyor: yazi, alt
+       modulun ustunden sabit bir bosluk kadar yukarida durur.
+       Bu bosluk iki kipte esitse yerlesim kurali calisiyordur --
+       ve bu olcu satirlarin toptan asagi/yukari kaymasindan
+       etkilenmiyor. Uzerine mutlak fark icin GENIS bir tavan
+       (32px) kaldi: 150px'lik eski hatayi hala yakalar, 2px'lik
+       yazi tipi farkina takilmaz. */
     K('Gecici ad iki kipte de ayni hatta',
-       Math.abs(gz.radyo.ust - gz.kipte.ust) <= 10,
-       'radyo ' + gz.radyo.ust + 'px | kipte ' + gz.kipte.ust + 'px');
+       Math.abs(gz.radyo.bosluk - gz.kipte.bosluk) <= 10
+       && Math.abs(gz.radyo.ust - gz.kipte.ust) <= 32,
+       'modul ustune bosluk: radyo ' + gz.radyo.bosluk + 'px | kipte '
+       + gz.kipte.bosluk + 'px  (mutlak ust: ' + gz.radyo.ust + ' / '
+       + gz.kipte.ust + ')');
     K('Gecici ad halkanin icine girmiyor',
        gz.kipte.ust > gz.kipte.halkaAlt && gz.radyo.ust > gz.radyo.halkaAlt
        && gz.kipte.alt < gz.kipte.modulUst && gz.radyo.alt < gz.radyo.modulUst,
