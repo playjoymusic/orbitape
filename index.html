@@ -858,21 +858,64 @@
      çubuk aynı pikselde daha okunur.
      align-self:center -- satır baseline hizalı, çubuklar yazının
      ortasına oturmalı. */
+  /* Ad + cubuk TEK BLOK (#modKut) ama ARSIVDE blok YOK: display
+     contents ile kutu kayboluyor, ikisi de dogrudan ust satirin
+     ogesi oluyor -- yani o kipte yerlesim BIREBIR eskisi gibi
+     (olculen kutular, baseline hizasi, hepsi ayni). Kutu yalnizca
+     radyoda gercek bir kutuya doniyor ve sol uste gidiyor. */
+  #modKut{display:contents;}
   #ust #modDalga{display:block;width:18px;height:12px;flex:none;
+    order:-1;                    /* arsivde: adin SOLUNDA */
     align-self:center;opacity:0;transition:opacity .45s ease;
     pointer-events:none;}
   #ust #modDalga.caliyor{opacity:.62;}
-  @media (max-width:480px){ #ust #modDalga{width:16px;height:11px;} }
+  @media (max-width:480px){ body.mood #ust #modDalga{width:16px;height:11px;} }
   /* ── DAR EKRANDA DAHA DAR ─────────────────────────────────────
      320px'te olculdu: cubugun satira ekledigi genislik (16px +
      9px bosluk) ust blogu sola tasirip ayar tutamaginin uzerine
      bindiriyordu -- 4x20px cakisma, senaryo testi yakaladi.
      Kucultmek dogru cozum: o ekranda zaten her sey dar. Gorunurlugu
-     kaybetmiyoruz, yalnizca aralik kisaliyor. */
+     kaybetmiyoruz, yalnizca aralik kisaliyor.
+     YALNIZCA ARSIVDE: radyoda blok sol ustte, karsisinda hicbir sey
+     yok ve cubuk adin altinda -- daraltmanin sebebi orada yok. */
   @media (max-width:400px){
-    #ust #modDalga{width:12px;height:10px;margin-right:-4px;}
+    body.mood #ust #modDalga{width:12px;height:10px;margin-right:-4px;}
   }
   @media (prefers-reduced-motion: reduce){ #ust #modDalga{display:none;} }
+  /* ── RADYODA: SOL UST ─────────────────────────────────────────
+     Istenen: "orbitape yazisinin solundaki kucuk tur aciklamasi en
+     ust solda olacak. radyo modunda orda gezegen yok, rahatiz: isim
+     ve altinda caldigina dair frekans grafigi."
+     Blok #ust'un icinde KALIYOR (DOM tasinmadi) ama position:fixed
+     ile kendi kosesine gidiyor: boylece ayni eleman, ayni olcum
+     zinciri, tek fark yer. Arsiv kipinde bu kural hic uygulanmiyor
+     ve blok markanin soluna geri doner.
+     PUNTO buyuk: karsisinda yer var. Kesin sayi JS'te olculuyor
+     (_solUstAdSigdir) cunku "WORLD & ROOTS" ile "JAZZ" ayni degil
+     ve dar ekranda marka yazisiyla carpisiyordu. */
+  body:not(.mood) #modKut{display:flex;position:fixed;z-index:70;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    top:calc(15px + env(safe-area-inset-top, 0px));
+    flex-direction:column;align-items:stretch;gap:6px;
+    pointer-events:none;user-select:none;}
+  body:not(.mood) #modAd{font-size:var(--modAdPunto, 18px);
+    letter-spacing:.30em;text-indent:.30em;}
+  /* ── CUBUK AKISTAN CIKIYOR ────────────────────────────────────
+     Cubuk adin genisligini almali. Akista birakilinca TERSI oluyor:
+     canvas'in oz genisligi (width niteligi, yani aygit pikseli
+     sayisi) sutunun genisligini belirliyordu -- olculdu, "JAZZ"
+     yazarken kutu 152px'ti, yani yazinin iki katindan genis ve her
+     raf adinda ayni.
+     position:absolute + left/right:0 dongoyu kesiyor: kutunun
+     genisligini YALNIZCA yazi belirliyor, cubuk da o genisligi
+     aliyor. top:100% -> adin hemen alti.
+     GENISLIK YUZDE, 'auto' DEGIL: canvas yer degistirilmis bir oge
+     (replaced element), left/right ikisi birden verilse bile kendi
+     oz genisligini kullaniyor -- olculdu, serit 22px'te takili
+     kaldi. width:100% kapsayanin genisligini aliyor, o da yazinin
+     genisligi. */
+  body:not(.mood) #ust #modDalga{position:absolute;left:0;
+    top:100%;margin:5px 0 0;width:100%;height:11px;order:0;}
   /* ── ÇİFT DOKUNUŞ SAYFAYI KAYDIRMASIN ─────────────────────────────
      iOS Safari'de bir yazıya iki kez hızlı basmak "çift dokunuşla
      yakınlaştır" demek: görüntü penceresi büyüyüp kayıyor ve
@@ -1442,19 +1485,27 @@
      ucgen hissi duruyor ama nesne yine bir "tutamak" gibi okunuyor.
      SOUND BANKS kipinde sol alt modulun yeri; tutamak orada alt
      ortaya donuyor (asagida). */
-  /* RADYODA SOL UST. Bir tur alt sol koseye alinmisti; konsol oraya
-     tasininca tutamak yine yer degistirmek zorunda kaldi ve
-     kullanici "en yukari yine uc cizgiyi al, o iyiydi" dedi.
-     SOUND BANKS kipinde asagida kaliyor (orada sol ust nebulanin). */
+  /* ── IKI KIPTE DE SOL ALT ────────────────────────────────────
+     Tutamak radyoda sol USTTEYDI, arsivde sol ALTTA. Yani kip
+     degistirince ekranin iki kosesi birden yer degistiriyordu ve
+     kullanici bunu istemedi:
+       "orbitape'teki arayuzun tasarimi kullanilsin. sol alttakiler
+        ayni olmali... ki mood degisince sadece yukarda gezegenler
+        oraya gelecek."
+     Dogru okuma: konsol (modul + tutamak + kip anahtari) IKI kipte
+     de ayni yerde duruyor; kip degisince degisen tek sey ust serit.
+     Boylece sol ust radyoda tamamen bosaliyor ve raf adi oraya
+     gidebiliyor.
+     Yeri JS'te modulun OLCULEN ustunden veriliyor (bkz.
+     _tutamakYerlestir); buradaki deger ilk karenin yedegi. */
   #ayarTut{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px));
+    top:auto;
+    bottom:calc(115px + env(safe-area-inset-bottom, 0px));
     width:40px;height:26px;display:flex;flex-direction:column;
     align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
-  body.mood #ayarTut{top:auto;
-    bottom:calc(115px + env(safe-area-inset-bottom, 0px));}
   /* ── KIP KISAYOLU: UC CIZGININ SAGINDA ────────────────────────
      Ayni satir, ayni sol kenar duzeni: tutamak 40px, arasinda 10px
      bosluk, yani anahtar 50px'ten basliyor. Alt satirlar (tasima ve
@@ -1462,15 +1513,25 @@
      konsol gibi okunmaya devam ediyor.
      Dikeyde tutamagin ORTASINA hizali: tutamak 26px yuksek, anahtar
      24px; ikisi de ayni bottom'dan baslayip ortalaniyor. */
-  #kipKisayol{display:none;}
-  body.mood #kipKisayol{
+  /* ── ANAHTAR IKI KIPTE DE VAR ─────────────────────────────────
+     Once yalnizca arsivdeydi ("radyoya don"). Radyo tarafinda ayni
+     kapiya ulasmak icin ayarlari acmak gerekiyordu -- iki taraf
+     esit degildi. Artik ayni anahtar iki kipte de ayni yerde:
+     radyoda ORBITAPE yaziyor ve kapali duruyor, arsivde RADIO
+     yaziyor ve acik duruyor. Tek nesne, iki yon. */
+  #kipKisayol{
     position:fixed;z-index:96;display:flex;align-items:center;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px) + 50px);
     bottom:calc(116px + env(safe-area-inset-bottom, 0px));
     height:24px;gap:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;
     opacity:.72;transition:opacity .22s ease;}
-  body.mood #kipKisayol:hover,
-  body.mood #kipKisayol:focus-visible{opacity:1;}
+  #kipKisayol:hover,
+  #kipKisayol:focus-visible{opacity:1;}
+  /* Etiket kipe gore: ikisi de HTML'de duruyor, gorunen CSS'le
+     seciliyor -- JS'in her kip degisiminde yazi yazmasi gerekmiyor. */
+  #kipKisayol .lm{display:none;}
+  body.mood #kipKisayol .lr{display:none;}
+  body.mood #kipKisayol .lm{display:inline;}
   /* Anahtarin bicimi ayarlardaki KAPI satirinin anahtariyla ayni
      (46x24, 18px topuz): ayni jest, ayni gorunum. Tek fark rengi --
      orada acik/kapali durumu anlatiyor, burada NEREYE gidecegini. */
@@ -1487,6 +1548,18 @@
     color:#35e0d8;white-space:nowrap;}
   #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
   #kipKisayol:active .anahtar b{right:4px;}
+  /* ── RADYODAYKEN: KAPALI VE ARSIVIN RENGI ─────────────────────
+     Topuz SOLDA (kapali) cunku arsiv kapali; rengi de arsivin
+     rengi (leylak, gezegenlerin ve lib rafinin tonu) cunku anahtar
+     "buraya basinca gidecegin yeri" soyluyor -- arsivde turkuaz
+     yaziyor ve radyoya goturuyor, burada leylak yaziyor ve arsive
+     goturuyor. */
+  body:not(.mood) #kipKisayol .anahtar{
+    background:rgba(198,182,214,.16);border-color:rgba(198,182,214,.40);}
+  body:not(.mood) #kipKisayol .anahtar b{right:26px;background:#c6b6d6;}
+  body:not(.mood) #kipKisayol .ad{color:#c6b6d6;}
+  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(198,182,214,.28);}
+  body:not(.mood) #kipKisayol:active .anahtar b{right:24px;}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .anahtar, #kipKisayol .anahtar b{transition:none;}
   }
@@ -1529,20 +1602,21 @@
      BANKS kipinde ortadan. Yukari dogru, alt seride dokunmadan. */
   /* Panel tutamakla ayni tarafta: radyoda yukaridan asagi, SOUND
      BANKS kipinde asagidan yukari. */
+  /* PANEL IKI KIPTE DE ASAGIDAN YUKARI: tutamak artik iki kipte de
+     sol altta, panelin de onun uzerinden acilmasi gerekiyor.
+     Radyoda yukaridan asagi aciliyordu -- tutamak yukaridayken
+     dogruydu, asagi inince tutamagin ustunden degil ekranin
+     tepesinden aciliyordu. */
   #ayar{position:fixed;z-index:95;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:calc(var(--sut, 15px) + 40px + env(safe-area-inset-top, 0px));
-    bottom:auto;
-    transform:translateY(-12px);
+    top:auto;bottom:calc(46px + env(safe-area-inset-bottom, 0px));
+    transform:translateY(12px);
     width:min(84vw,300px);padding:14px 16px 12px;
     background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
     border-radius:14px;opacity:0;pointer-events:none;
     transition:transform .26s cubic-bezier(.2,.8,.3,1), opacity .22s ease;}
   body.ayar-acik #ayar{transform:translateY(0);
     opacity:1;pointer-events:auto;}
-  body.mood #ayar{top:auto;bottom:calc(46px + env(safe-area-inset-bottom, 0px));
-    transform:translateY(12px);}
-  body.mood.ayar-acik #ayar{transform:translateY(0);}
 
   /* Panel uzadi (kapi + uc bolum + belgeler): ekrana sigmazsa kendi
      icinde kayiyor, ekrani itmiyor. */
@@ -1839,14 +1913,15 @@
      olarak duruyordu ve yildizi satirin ilerisine itiyordu: ekranda
      sustur ile yildiz arasinda anlamsiz bir bosluk. */
   body.mood #araYuva{display:none;}
-  /* ── TUTAMAK BU KIPTE DUZ ────────────────────────────────────
-     Radyoda uc cizgi asagi bakan bir ucgen (34/27/20): orada
-     karsisinda marka adi var ve o siluet ekranin ust seridine ait.
-     Bu kipte tutamak sol alttaki blogun UST SATIRI; altindaki
-     satirlar duz kenarli, tutamak ucgen kalinca blok egri
-     basliyordu. Kullanicinin sozu: "duz olsun, cizgiler esit
+  /* ── TUTAMAK DUZ, IKI KIPTE DE ───────────────────────────────
+     Uc cizgi once asagi bakan bir ucgendi (34/27/20): tutamak ust
+     seritteyken, karsisinda marka adiyla, o siluet dogruydu.
+     Tutamak iki kipte de sol alttaki blogun UST SATIRI oldu;
+     altindaki satirlar duz kenarli, tutamak ucgen kalinca blok
+     egri basliyor. Kullanicinin sozu: "duz olsun, cizgiler esit
      olsun." Renkler duruyor -- kimlik cizgilerin sirasinda. */
-  body.mood #ayarTut span{width:34px;}
+  #ayarTut span:nth-child(2),
+  #ayarTut span:nth-child(3){width:34px;}
   /* ARAMA BU KIPTE YOK. Arsiv tarafinda gezinme halkalarla ve
      gezegenlerle yapiliyor; arama cizgisi hem modulun altinda yer
      istiyor hem de o tarafin dili degil. */
@@ -2038,8 +2113,16 @@
            ince olmuş" -- haklıydı, 1px'lik bir dalga 12px'lik yazının
            altında kayboluyordu. Dikey çubuk daha yüksek sesle
            konuşuyor: aynı yerde, daha az piksel, daha okunur. -->
-      <canvas id="modDalga" aria-hidden="true"></canvas>
-      <span id="modAd"></span>
+      <!-- ── RADYODA SOL UST, ARSIVDE SAG UST ──────────────────
+           Radyo tarafinda sol ust BOS: nebula ve gezegenler yalnizca
+           arsivde var, uc cizgi de alt sola indi. Raf adi oraya
+           tasindi, punto buyudu ve cubuklar ADIN ALTINA, adin
+           genisligine gecti -- kullanicinin ilk istedigi buydu, sag
+           ustte yer olmadigi icin yana alinmisti.
+           Arsivde blok eski yerinde kaliyor (markanin solunda,
+           cubuklar yazinin solunda). Yer degisimi tamamen CSS'te:
+           bkz. body:not(.mood) #modKut. -->
+      <span id="modKut"><span id="modAd"></span><canvas id="modDalga" aria-hidden="true"></canvas></span>
       <div class="kanal on ad" data-mod="radio"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
     </div>
   </div>
@@ -2093,13 +2176,13 @@
        Yalnizca bu kipte var (CSS: body.mood).
        role=switch ve aria-checked=true: ekran okuyucu icin acik bir
        anahtar -- kapatinca radyo tarafina donuluyor. -->
-  <div id="kipKisayol" role="switch" aria-checked="true" tabindex="0"
-       aria-label="Sound banks" title="Back to live radio">
+  <div id="kipKisayol" role="switch" aria-checked="false" tabindex="0"
+       aria-label="Sound banks" title="Open the archive">
     <i class="anahtar" aria-hidden="true"><b></b></i>
     <!-- YAZI: anahtar tek basina "bir sey acik" diyor ama NEREYE
          goturdugunu soylemiyordu. Yer var -- alt satir (araclar)
          bundan genis, yani sagdan tasmiyor. -->
-    <span class="ad" aria-hidden="true">RADIO</span>
+    <span class="ad" aria-hidden="true"><span class="lr">ORBITAPE</span><span class="lm">RADIO</span></span>
   </div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <!-- ── EN UST: BASKA BIR DUNYAYA KAPI ──────────────────────────
@@ -5982,6 +6065,10 @@
       try{ _araIdx = null; _araSay = -1; }catch(e){ _yut(e); }
       try{ gecmisSifirla(); }catch(e){ _yut(e); }
       try{ modAdiYaz(); zeminUygula(); moodYaz(); }catch(e){ _yut(e); }
+      /* Kip anahtarinin ekran okuyucu tarafi: yazi CSS'ten geliyor
+         ama aria-checked ve etiket JS'ten -- ikisi ayni anda
+         degismezse anahtar bir sey gosterip baskasini soyler. */
+      try{ _kipAnahtarYaz(); }catch(e){ _yut(e); }
       /* Ikinci tusun yuzu kipe bagli (radyoda ■ stop, arsivde ‖
          duraklat): kip degisince tazelenmeli, yoksa oteki kipin
          simgesi ekranda kaliyor. */
@@ -6624,11 +6711,19 @@
      yani gercekten CALANI gosteriyor -- dekor degil, kanit.
      Ses yoksa genlik sifira iniyor ve hat duzlesiyor. */
   var _dalgaEl = null, _dalgaEn = 0, _dalgaBoy = 0, _dalgaGen = 0;
-  const DALGA_CUBUK = 4;
-  var _dalgaFaz = [0.0, 1.7, 3.3, 4.9];      // her cubuk kendi ritminde
+  const DALGA_CUBUK = 4;              // en az bu kadar cubuk (arsivdeki dar hal)
+  const DALGA_CUBUK_EN = 16;          // en fazla: daha sikisi tarak gibi okunuyor
+  const DALGA_ADIM = 7;               // her cubuga ayrilan CSS pikseli
+  var _dalgaSayi = DALGA_CUBUK;
+  /* Her cubuk kendi ritminde: fazlar tablodan degil, sabit bir
+     adimdan uretiliyor -- cubuk sayisi genislige gore degistigi icin
+     sabit uzunlukta bir tablo yetmiyor. */
+  const _dalgaFazi = i => (i * 1.7) % 6.2831853;
   /* Tuval cozunurlugu ekranin yogunluguna gore: 12px'lik bir cubuk
-     retinada da net cizilsin. Olcu CSS'ten okunuyor, sabit yazilmiyor
-     -- dar ekranda 16x11'e iniyor. */
+     retinada da net cizilsin. Olcu CSS'ten okunuyor, sabit yazilmiyor:
+     arsivde 18x12 (yazinin solunda), radyoda adin genisligi kadar
+     (adin altinda). Cubuk SAYISI da oradan geliyor -- genis bir
+     seride dort cubuk kaybolur, dar bir seride on alti tarak olur. */
   function _modDalgaHizala(){
     try{
       const c = _dalgaEl || (_dalgaEl = document.getElementById('modDalga'));
@@ -6639,6 +6734,8 @@
       const w = Math.round(r.width*dpr), h = Math.round(r.height*dpr);
       if(c.width !== w || c.height !== h){ c.width = w; c.height = h; }
       _dalgaEn = w; _dalgaBoy = h;
+      _dalgaSayi = Math.max(DALGA_CUBUK,
+                   Math.min(DALGA_CUBUK_EN, Math.round(r.width / DALGA_ADIM)));
     }catch(e){ _yut(e); }
   }
   function _modDalgaCiz(playing, rit, vt){
@@ -6655,15 +6752,19 @@
       const x = c.getContext('2d'); if(!x) return;
       x.clearRect(0,0,_dalgaEn,_dalgaBoy);
       x.fillStyle = getComputedStyle(document.getElementById('modAd')).color || '#8ff0dd';
-      const bosluk = Math.max(1, Math.round(_dalgaEn*0.10));
-      const en = Math.max(1, (_dalgaEn - bosluk*(DALGA_CUBUK-1)) / DALGA_CUBUK);
-      for(let i=0;i<DALGA_CUBUK;i++){
-        /* Taban yukseklik hep var: ses dururken bile dort nokta
+      /* Bosluklar toplamda serinin %28'i: cubuk sayisi degisse de
+         doku ayni kaliyor. Sabit bir bosluk yazilsaydi dort cubukta
+         seyrek, on altida bitisik gorunurdu. */
+      const n = Math.max(1, _dalgaSayi);
+      const bosluk = n > 1 ? (_dalgaEn*0.28)/(n-1) : 0;
+      const en = Math.max(1, (_dalgaEn - bosluk*(n-1)) / n);
+      for(let i=0;i<n;i++){
+        /* Taban yukseklik hep var: ses dururken bile cubuklar
            kaliyor, "kapali" degil "sessiz" demek. */
-        const dalga = 0.5 + 0.5*Math.sin(vt*4.2 + _dalgaFaz[i]);
+        const dalga = 0.5 + 0.5*Math.sin(vt*4.2 + _dalgaFazi(i));
         const y = (0.16 + 0.84*dalga*_dalgaGen) * _dalgaBoy;
         x.fillRect(Math.round(i*(en+bosluk)), Math.round(_dalgaBoy - y),
-                   Math.round(en), Math.round(y));
+                   Math.max(1, Math.round(en)), Math.round(y));
       }
     }catch(e){ _yut(e); }
   }
@@ -9155,15 +9256,25 @@
     sonraki(false);
   }
   /* ── KIP KISAYOLUNUN DINLEYICISI ────────────────────────────────
-     Ayarlardaki kapiyla AYNI islevi cagiriyor (window.moodKapat):
-     iki yerde iki ayri "kipi kapat" mantigi olsa er gec ayrisirlar.
+     Ayarlardaki kapiyla AYNI islevi cagiriyor (window.moodKapat /
+     window.moodAc): iki yerde iki ayri "kipi cevir" mantigi olsa er
+     gec ayrisirlar.
+     ARTIK IKI YONLU: anahtar iki kipte de duruyor, radyodayken
+     arsivi ACIYOR, arsivdeyken radyoya DONUYOR. Hangi yon oldugunu
+     govdenin sinifi soyluyor -- ayri bir durum degiskeni tutulmuyor.
      pointerdown durduruluyor: altindaki disk bu dokunusu alip
      sonraki parcaya gecmesin. */
   try{
     const _kk = document.getElementById('kipKisayol');
     if(_kk){
       const _kapat = (e)=>{ try{ e.stopPropagation(); e.preventDefault(); }catch(_){ _yut(_); }
-                            try{ if(window.moodKapat) window.moodKapat(); }catch(_){ _yut(_); } };
+                            try{
+                              if(document.body.classList.contains('mood')){
+                                if(window.moodKapat) window.moodKapat();
+                              }else{
+                                if(window.moodAc) window.moodAc();
+                              }
+                            }catch(_){ _yut(_); } };
       _kk.addEventListener('click', _kapat);
       _kk.addEventListener('pointerdown', e=>{ try{ e.stopPropagation(); }catch(_){ _yut(_); } });
       _kk.addEventListener('keydown', e=>{
@@ -9711,6 +9822,58 @@
      ORTAK OLCU bir kez aliniyor (_yerlesimOlcu) ve adimlara
      veriliyor: her adim kendi basina getComputedStyle cagirsaydi
      ayni sayi sekiz kez hesaplanirdi. */
+  /* ── KIP ANAHTARININ SOZLU HALI ───────────────────────────────
+     Anahtar tek nesne ama iki sey soyluyor. Gozle gorulen yaziyi
+     CSS seciyor; ekran okuyucunun duydugu sey burada yaziliyor ve
+     ikisi ayni kaynaktan (govdenin 'mood' sinifi) geliyor. */
+  /* ── RADYODA SOL USTTEKI RAF ADININ PUNTOSU ───────────────────
+     Istenen: "sol ustteki tur isimlerini biraz daha buyuk yapabilirsin,
+     radyo kisminda tabi. orbitape ayni kaliyor."
+     Sabit bir sayi yazilamaz: karsisinda ORBITAPE yazisi duruyor ve
+     raf adlari 4 harften ("JAZZ") 13 harfe ("WORLD & ROOTS")
+     gidiyor. 320px'te 18px'lik bir "WORLD & ROOTS" markanin uzerine
+     biniyor. O yuzden punto OLCULEN bosluga gore veriliyor: yer
+     varsa buyuk kaliyor, yoksa sigacak kadar kuculuyor -- ama hicbir
+     zaman eski 12px'in altina inmiyor.
+     Arsiv kipinde bu islev hicbir sey yazmiyor: orada blok markanin
+     solunda ve punto CSS'ten (12/11px) geliyor. */
+  const MODAD_PUNTO = 18, MODAD_PUNTO_ALT = 12;
+  function _solUstAdSigdir(){
+    try{
+      const kut = document.getElementById('modKut');
+      const ad  = document.getElementById('modAd');
+      if(!kut || !ad) return;
+      if(document.body.classList.contains('mood')){
+        kut.style.removeProperty('--modAdPunto');
+        return;
+      }
+      /* Once en buyuk puntoda olculuyor, sonra gerekirse kuculuyor.
+         Olcum tek karede: iki kez getBoundingClientRect. */
+      kut.style.setProperty('--modAdPunto', MODAD_PUNTO + 'px');
+      const marka = document.querySelector('#ust .ustSatir');
+      if(!marka) return;
+      const mr = marka.getBoundingClientRect();
+      const kr = kut.getBoundingClientRect();
+      if(!mr.width || !kr.width) return;
+      /* 12px hava: iki blok birbirine degmesin. Marka yazisi ust
+         seritte, ad da ayni yukseklikte -- carpisma gercek. */
+      const butce = mr.left - 12 - kr.left;
+      if(butce > 0 && kr.width > butce){
+        const p = Math.max(MODAD_PUNTO_ALT,
+                  Math.floor(MODAD_PUNTO * (butce / kr.width) * 10) / 10);
+        kut.style.setProperty('--modAdPunto', p + 'px');
+      }
+    }catch(e){ _yut(e); }
+  }
+  function _kipAnahtarYaz(){
+    try{
+      const k = document.getElementById('kipKisayol'); if(!k) return;
+      const acik = document.body.classList.contains('mood');
+      k.setAttribute('aria-checked', acik ? 'true' : 'false');
+      k.setAttribute('aria-label', 'Sound banks');
+      k.setAttribute('title', acik ? 'Back to live radio' : 'Open the archive');
+    }catch(e){ _yut(e); }
+  }
   function _kipKisayoluHizala(){
     /* ── KIP KISAYOLU TUTAMAGIN SATIRINA OTURUYOR ─────────────────
        CSS'te ikisine de ayni 'bottom' verilmisti ve tutmadi: tutamak
@@ -9724,7 +9887,10 @@
     try{
       const _kt = document.getElementById('ayarTut');
       const _kk = document.getElementById('kipKisayol');
-      if(_kt && _kk && document.body.classList.contains('mood')){
+      _kipAnahtarYaz();
+      /* KIP KOSULU KALKTI: anahtar artik iki kipte de duruyor ve
+         iki kipte de tutamagin satirina oturmali. */
+      if(_kt && _kk){
         const r = _kt.getBoundingClientRect();
         if(r.height){
           _kk.style.bottom = Math.round(window.innerHeight - r.bottom + (r.height - 24)/2) + 'px';
@@ -9787,13 +9953,14 @@
       }catch(_){ _yut(_); }
   }
   function _tutamakYerlestir(y){
-      const _moodda = y.moodda;
-      /* ── SOUND BANKS: TUTAMAK MODULUN UST SATIRI ─────────────────
-         Radyoda tutamak ekranin SOL USTUNDE, orada karsisinda marka
-         adi var ve yeri CSS'ten geliyor.
-         SOUND BANKS kipinde sol ust nebulanin; tutamak sol alttaki
-         blogun parcasi ve o blogun EN UST SATIRI. Yeri sabit bir
-         sayiyla verilemez cunku satir sayisi kipe gore degisiyor
+      void y;
+      /* ── TUTAMAK MODULUN UST SATIRI (IKI KIPTE DE) ───────────────
+         Tutamak eskiden radyoda sol USTTEYDI ve yeri CSS'ten
+         geliyordu; iki kipin konsolu ayni yere alininca o ayrim
+         kalmadi.
+         Tutamak sol alttaki blogun parcasi ve o blogun EN UST
+         SATIRI. Yeri sabit bir sayiyla verilemez cunku satir sayisi
+         kipe gore degisiyor
          (REC bu kipte geri geliyor, ses cizgisi yalnizca farede
          var): sabit sayi bir durumda bosluk birakir, otekinde
          modulun uzerine biner -- eskisi tam olarak oyleydi ve
@@ -9806,14 +9973,21 @@
         const tut0 = document.getElementById('ayarTut');
         const su1  = document.getElementById('solUst');
         if(tut0){
-          if(_moodda && su1){
+          if(su1){
             const sr = su1.getBoundingClientRect();
             if(sr.height){
-              const bos = parseFloat(getComputedStyle(su1).getPropertyValue('--modul-bosluk')) || 8;
+              /* EN AZ 13px: satirlarin arasi 8px ama DOKUNMA
+                 ALANLARI kutulardan buyuk -- tutamaginki asagi 7px,
+                 tuslarinki yukari 4px tasiyor. 8px bosluk birakinca
+                 iki alan cakisiyordu (olculdu: dur/ayarTut 7x2px,
+                 saglik testi yakaladi). Gorunen bosluk 13px, yani
+                 tutamak hala modulun ust satiri gibi duruyor. */
+              const bos = Math.max(13,
+                parseFloat(getComputedStyle(su1).getPropertyValue('--modul-bosluk')) || 8);
               tut0.style.bottom = Math.round(window.innerHeight - sr.top + bos) + 'px';
             }
           }else{
-            /* Radyoda CSS ne diyorsa o: satir ici deger kalkiyor. */
+            /* Modul yoksa CSS ne diyorsa o. */
             tut0.style.removeProperty('bottom');
           }
         }
@@ -9998,10 +10172,19 @@
                  kayit satirina gore hesaplayinca kunye tasima
                  satirinin uzerine biniyordu (senaryo 320px'te olctu:
                  162x30 cakisma). */
-              const ac3 = document.getElementById('solUst');
-              const ar3 = ac3 ? ac3.getBoundingClientRect() : null;
-              if(ar3 && ar3.height){
-                ustHat2 = Math.round(window.innerHeight - ar3.top + 10); _oy = true; }
+              /* KONSOLUN TAMAMI: modul + tutamak + kip anahtari.
+                 Yalnizca module bakinca kunye tutamagin uzerine
+                 biniyordu -- tutamak iki kipte de modulun USTUNDE
+                 duruyor artik (senaryo 320px'te olctu: np x ayarTut
+                 40x26 cakisma). En yukaridaki hangisiyse o. */
+              let tepe = Infinity;
+              ['solUst','ayarTut','kipKisayol'].forEach(id=>{
+                const e3 = document.getElementById(id); if(!e3) return;
+                const r3 = e3.getBoundingClientRect();
+                if(r3.height && r3.top < tepe) tepe = r3.top;
+              });
+              if(tepe !== Infinity){
+                ustHat2 = Math.round(window.innerHeight - tepe + 10); _oy = true; }
             }catch(_){ _yut(_); }
             /* AYNI KURAL: olculen deger duz piksel, sabit deger _dip.
                (Buyutecteki cift sayma hatasinin ikizi buradaydi.) */
@@ -10069,7 +10252,8 @@
       _solUstOlcegiTemizle();      // kalinti olcek varsa sil
       _tutamakYerlestir(y);        // ayar tutamagi: kipte modulun ustu
       _ustSatirlariSigdir();       // sol ust satirlar karsisindakine gore
-      _modDalgaHizala();           // frekans cizgisi kategori adinin altina
+      _solUstAdSigdir();           // radyoda sol ustteki raf adinin puntosu
+      _modDalgaHizala();           // frekans cubuklari: adin altina, ad kadar
       ugOlcu();
       _buyutecYerlestir(y);        // buyutec kendi yuvasinin uzerine
       _kunyeYerlestir(y);          // sag alt kunye: taban aramayla ayni hat
@@ -10381,7 +10565,10 @@
       el.style.color = 'rgb('+Math.round(r*0.78+14)+','+Math.round(g*0.78+14)+','+Math.round(b*0.78+14)+')';
     }else{ el.style.color = ''; }
     el.classList.toggle('gor', !!ad);
-    /* Isim degisti -> cizginin genisligi de degisti. */
+    /* Isim degisti -> once puntosu (radyoda sigacak mi), sonra
+       cubuklarin genisligi. Sira onemli: cubuk adin kutusundan
+       olculuyor, punto once oturmali. */
+    try{ _solUstAdSigdir(); }catch(e){ _yut(e); }
     try{ _modDalgaHizala(); }catch(e){ _yut(e); }
   }
   /* Büyük gezinme yazısı — halkanın hemen üstünde. */
@@ -10699,6 +10886,14 @@
     try{ window.moodKapat = ()=>{
       if(!AYAR.mood) return;
       AYAR.mood = false; ayarKaydet(); yaz(); kapa(); moodUygula(false);
+    }; }catch(e){ _yut(e); }
+    /* ── ACMA DA AYNI KAPIDAN ────────────────────────────────────
+       Kip kisayolu iki yonlu oldu: radyodayken arsivi aciyor. Ayni
+       satirin ac/kapa mantigi tek yerde kalsin diye acma da buradan
+       disari veriliyor -- ayarlardaki KAPI satiri ne yapiyorsa o. */
+    try{ window.moodAc = ()=>{
+      if(AYAR.mood) return;
+      AYAR.mood = true; ayarKaydet(); yaz(); kapa(); moodUygula(false);
     }; }catch(e){ _yut(e); }
     tut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
     tut.addEventListener('pointerdown', e=>e.stopPropagation());
@@ -13495,7 +13690,12 @@
       { bas:'SELECT', metin:'Release on a ring to open it.<br>Release outside to cancel.',
         duraklar:[{hedef:{disk:H(secK), aci:0}, sure:1400,
                    oynat:()=>{ try{ modAdiTut(adlar[secK]); halkaYak(adlar[secK]); }catch(e){ _yut(e); } }}] },
-      { bas:'SHELF', metin:'Top right: the genre you are in.<br>The three marks step through them.',
+      /* YER KIPE BAGLI: radyoda raf adi SOL ustte (gezegenler yok,
+         orasi bos), arsivde markanin solunda sag ustte. Tur ekranda
+         ne varsa onu soylemeli -- sabit "top right" yazsaydi
+         radyoda yanlis yere baktirirdi. */
+      { bas:'SHELF', metin:(document.body.classList.contains('mood') ? 'Top right' : 'Top left')
+          + ': the genre you are in.<br>The three marks step through them.',
         duraklar:[{hedef:'#modAd', sure:800, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
                   {hedef:'#bekle', sure:900,
                    oynat:()=>{ try{ halkaYak(adlar[Math.max(0,n-2)]); }catch(e){ _yut(e); } }}] },
@@ -13517,7 +13717,7 @@
         duraklar:[{hedef:yaDa('#tani','#np'), sure:1200}] },
       /* AYARLAR: soylemek yetmiyor, ACILIYOR. El uc cizgiye iner,
          panel gercekten iner, iki satir gosterilir ve panel kapanir. */
-      { bas:'SETTINGS', metin:'Top left: three lines.<br>Themes, stars, sounds — and this tour.',
+      { bas:'SETTINGS', metin:'Bottom left: three lines.<br>Themes, stars, sounds — and this tour.',
         duraklar:[{hedef:'#ayarTut', sure:820,
                    oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){ _yut(e); } }},
                   {hedef:yaDa('#ayar .sat.kapi','#ayarTut'), sure:1000},
