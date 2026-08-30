@@ -3640,9 +3640,21 @@
      Yani ?ucluk gercek davranisin AYNISI, yalnizca tutma sansi
      441'de bir yerine ~5'te iki. Gordugun sey gercekte olacak
      seyin ta kendisi. */
+  /* ── TUTMA SANSI: %12 ─────────────────────────────────────────
+     Onceden sans tamamen dogaldi: uc yuva 46 sembolden bagimsiz
+     seciliyordu, yani ucunun ayni gelmesi 1/2116 -- pratikte hicbir
+     kullanici gormeyecekti. Bir sey yaptik ama kimse gormuyorsa
+     yapmamis sayiliriz.
+     Kullanicinin karari: %12. Yani her sekiz-dokuz parcadan birinde
+     bir kutlama. Nadir kalmaya devam ediyor (arka arkaya beklenmez)
+     ama gorulebilir bir siklik.
+     ZAR NEREDE ATILIYOR: yalnizca semboller SON HALINI alirken
+     (bekleDondur). Donme sirasinda atilsaydi donen semboller de
+     surekli ayni cikardi -- oyun hissi biterdi. */
+  const UCLUK_SANS = 0.12;
   var _uclukTurSem = null;          // bu turda hepsi ayni olacaksa sembol
   function alienSec(){
-    if(UCLUK_ZORLA && _uclukTurSem) return _uclukTurSem;
+    if(_uclukTurSem) return _uclukTurSem;
     return ALIEN[Math.random()*ALIEN.length|0];
   }
   /* AYNI UCLUK IKI KEZ KUTLANMASIN. Ilk yazimda bu bir SURE
@@ -3920,6 +3932,11 @@
   function bekleDondur(){
     try{ agYokKapa(); }catch(e){ _yut(e); }          // ses geldi: ağ çalışıyor
     if(bekleInt){ clearInterval(bekleInt); bekleInt=null; }
+    /* ZAR BURADA: semboller son halini alirken bir kez. ?ucluk
+       adresinde zaten disaridan kuruluyor, ona dokunmuyoruz. */
+    if(!UCLUK_ZORLA)
+      _uclukTurSem = (Math.random() < UCLUK_SANS)
+                   ? ALIEN[Math.random()*ALIEN.length|0] : null;
     const y = yuvalar();
     y.forEach((el,i)=>{
       const bekleme = i*175, sonme = 180 + i*90;      // sırayla ve yavaşlayarak
@@ -3930,7 +3947,14 @@
                          /* Ucluk ASIL burada denk geliyor: semboller
                             ses baslayinca son halini aliyor. Son
                             yuva oturunca bir kez bakiliyor. */
-                         if(i === y.length - 1){ try{ uclukBak(); }catch(e){ _yut(e); } }
+                         if(i === y.length - 1){
+                           try{ uclukBak(); }catch(e){ _yut(e); }
+                           /* Tur bitti: bir sonraki DONME yine
+                              rastgele olsun diye anahtar siliniyor.
+                              Silinmezse semboller donerken de hep
+                              ayni cikar. */
+                           if(!UCLUK_ZORLA) _uclukTurSem = null;
+                         }
                        }, sonme);
       }, bekleme);
     });

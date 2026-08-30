@@ -859,6 +859,45 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
   }
 
+  /* ── UCLUK SANSI: %12 VE DONERKEN BOZULMUYOR ─────────────────────
+     Once sans tamamen dogaldi: uc yuva 46 sembolden bagimsiz
+     seciliyordu, yani 1/2116 -- pratikte kimse gormeyecekti.
+     Kullanicinin karari %12: nadir kalsin ama gorulebilsin.
+     IKI SEY OLCULUYOR:
+       1) gercek oran istenen orana yakin mi (4000 tur),
+       2) zar yalnizca OTURMA aninda atiliyor mu -- donme sirasinda
+          da atilsaydi semboller donerken de hep ayni cikardi ve
+          oyun hissi biterdi. */
+  {
+    const sn = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      if(typeof UCLUK_SANS !== 'number') return { yok:true };
+      let tut = 0; const N = 4000;
+      for(let i=0;i<N;i++){
+        _uclukTurSem = (Math.random() < UCLUK_SANS)
+                     ? ALIEN[Math.random()*ALIEN.length|0] : null;
+        const s = [alienSec(), alienSec(), alienSec()];
+        if(s[0]===s[1] && s[1]===s[2]) tut++;
+        _uclukTurSem = null;
+      }
+      /* Donme sirasinda uc yuva ayri sembol almali. */
+      bekleGoster(); await bek(2400);
+      const y = [...document.querySelectorAll('#bekleGly .yuva')].map(e=>e.dataset.sem);
+      try{ bekleDondur(); }catch(e){}
+      return { sans:UCLUK_SANS, oran:+(tut/N*100).toFixed(2),
+               donerkenAyni:(y[0]===y[1] && y[1]===y[2]) };
+    });
+    const hedef = sn.yok ? 0 : sn.sans*100;
+    K('Ucluk sansi ayarlandigi gibi', !sn.yok
+      && Math.abs(sn.oran - hedef) < 2.5,
+      sn.yok ? 'UCLUK_SANS tanimli degil'
+             : ('istenen %' + hedef + ', olculen %' + sn.oran + ' (4000 tur)'));
+    K('Donerken semboller ayri kaliyor', !sn.yok && !sn.donerkenAyni,
+      sn.yok ? '-' : (sn.donerkenAyni
+        ? 'donerken de hepsi ayni: zar yanlis yerde atiliyor'
+        : 'zar yalnizca oturma aninda'));
+  }
+
   /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────
      Kullanicinin istegi: "kategori adinin tam altini, hep oradaki
      yazinin uzunlugunda, caldigina dair bir hareket."
