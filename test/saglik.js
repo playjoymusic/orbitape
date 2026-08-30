@@ -270,10 +270,39 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      TAVAN NEDEN VAR: bu tek bir HTML dosyasi ve kullanici onu her
      acilista (onbellek bosken) indiriyor. Sinir olmadan dosya
      farkedilmeden buyur ve dar bir baglantida acilis suresi uzar.
-     Onemli olan ham boy degil TELDEN GECEN boy: gzip'li ~200 KB.
      Tavani yukseltmek bir karar, kaza degil -- her yukseltmede
-     sebebi buraya yaziliyor. */
-  K('Dosya boyutu < 800 KB',  dosyaBoy < 800*1024, Math.round(dosyaBoy/1024)+' KB');
+     sebebi buraya yaziliyor.
+
+     ── 30 AGUSTOS: OLCU DEGISTI ──────────────────────────────────
+     Yukaridaki notlarda hep "onemli olan ham boy degil telden gecen
+     boy" yaziyordu, ama TEST ham boyu olcuyordu. Yani yillardir
+     dogru sey biliniyor, yanlis sey olculuyordu.
+     Olculdu: 784 KB ham -> brotli ile 214 KB (%72 sikisiyor).
+     Dosyanin %45'i YORUM ve yorum metni cok iyi sikisiyor; yani
+     "neden boyle" aciklamalarini yazmak kullaniciya neredeyse
+     hicbir sey odetmiyor. Ham boya bakan bir tavan, dokumantasyonu
+     cezalandiriyordu.
+     Cloudflare metin dosyalarini brotli ile veriyor, yani 214 KB
+     kullanicinin GERCEKTEN indirdigi sey.
+     Simdi iki olcu var:
+       · ASIL KONTROL telden gecen boy (brotli). Kullanicinin
+         bekledigi sure buna bagli.
+       · Ham boy da duruyor ama GENIS bir tavanla: tek isi kacak
+         bir buyumeyi (mesela yanlislikla gomulen bir veri dosyasi)
+         yakalamak. Yorum yazmak bu tavana takilmasin diye genis. */
+  {
+    const zlib = require('zlib');
+    const ham = fs.readFileSync('index.html');
+    const br  = zlib.brotliCompressSync(ham, {
+      params:{ [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }).length;
+    const gz  = zlib.gzipSync(ham, {level:9}).length;
+    const brKB = Math.round(br/1024), gzKB = Math.round(gz/1024);
+    K('Telden gecen boy < 280 KB', br < 280*1024,
+      brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
+    K('Ham boy < 1000 KB', dosyaBoy < 1000*1024,
+      Math.round(dosyaBoy/1024) + ' KB kaynak, %'
+      + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor');
+  }
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
      sonra insanlar isyeyebilir". Iki ses de kapatilabilir, karar
@@ -828,6 +857,54 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Dokunma alani parmak icin yeterli', dokunma.kucuk.length === 0,
       dokunma.kucuk.length ? ('36px altinda kalan: ' + dokunma.kucuk.join(', '))
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
+  }
+
+  /* ── KLAVYEYLE HER YERE ULASILABILIYOR MU ────────────────────────
+     Olculdu (30 Agustos): ekrandaki 25 kontrolden ikisi sekme
+     sirasinda YOKTU -- sag ustteki kategori adi ve marka yazisi.
+     Ikisi de <button> degil, span ve div; uzerlerine role="button"
+     yaziliydi. Ama role ELEMANI dugme yapmiyor, yalnizca ekran
+     okuyucuya "bu bir dugme" diyor. Yani ekran okuyucu "dugme" diye
+     okuyor, kullanici ona hic ulasamiyordu: YANLIS BIR SOZ.
+     (Ayar satirlari zaten dogru yapiyordu: panel kapaliyken
+     tabindex -1, acilinca 0. Onlar bu kontrolde de gecmeli.) */
+  {
+    const kl = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      try{ turBitir(); }catch(e){}
+      try{ document.body.classList.remove('oniz'); }catch(e){}
+      await bek(220);
+      const t = document.getElementById('ayarTut'); if(t) t.click();   // paneli ac
+      await bek(500);
+      const gor = e => { const r=e.getBoundingClientRect(); const s=getComputedStyle(e);
+        return r.width>0 && r.height>0 && s.display!=='none' && s.visibility!=='hidden'; };
+      const hepsi = [...document.querySelectorAll(
+        'button,[role="button"],[role="switch"],a[href],input,select,[tabindex]')].filter(gor);
+      const disarda = hepsi.filter(e => e.tabIndex < 0).map(e =>
+        (e.id || e.tagName + '.' + String(e.className.baseVal !== undefined
+          ? e.className.baseVal : e.className).split(' ')[0])
+        + ' "' + (e.textContent||'').trim().slice(0,18) + '"');
+      /* Adsiz dugme ekran okuyucuda "dugme" diye okunur, ne yaptigi
+         belli olmaz. */
+      const adsiz = hepsi.filter(e => !(e.getAttribute('aria-label')
+        || e.getAttribute('title') || (e.textContent||'').trim()))
+        .map(e => e.id || e.tagName);
+      if(t) t.click();                                                 // paneli kapat
+      await bek(300);
+      return { sayi:hepsi.length, disarda, adsiz,
+               yerImi: document.querySelectorAll(
+                 'main,[role="main"],nav,[role="navigation"]').length };
+    });
+    K('Her kontrole klavyeyle ulasiliyor', kl.disarda.length === 0,
+      kl.disarda.length ? ('sekme sirasinda YOK: ' + kl.disarda.join(' | '))
+                        : (kl.sayi + ' kontrolun hepsi sekme sirasinda'));
+    K('Her kontrolun bir adi var', kl.adsiz.length === 0,
+      kl.adsiz.length ? ('adsiz: ' + kl.adsiz.join(', '))
+                      : 'ekran okuyucu hepsinin ne oldugunu soyluyor');
+    /* Ekran okuyucu kullanicilari sayfayi bastan sona dinlemez, yer
+       imleri arasinda ziplar. Yer imi yoksa o kestirme yok. */
+    K('Ana icerik yer imi var', kl.yerImi >= 1,
+      kl.yerImi + ' yer imi (role="main")');
   }
 
   /* ── CSP: OZET INDEX.HTML ILE AYNI OLMAK ZORUNDA ─────────────────

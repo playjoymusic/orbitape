@@ -794,6 +794,12 @@
     color:currentColor;opacity:0;text-shadow:none;
     transition:opacity .22s ease, color .22s ease;}
   #modAd.gor{opacity:.72;}
+  /* Sekmeyle gelince gorunur bir halka: odagin NEREDE oldugu
+     bilinmiyorsa klavyeyle gezmek ise yaramiyor. :focus-visible
+     yalnizca klavyede cikiyor, fareyle tiklayinca cikmiyor. */
+  #modAd:focus-visible, #ust .kanal.ad:focus-visible{
+    outline:1px solid currentColor;outline-offset:4px;
+    border-radius:4px;opacity:1;}
   /* ── SECILDI AMA HENUZ DUYULMADI ─────────────────────────────────
      Isim dugmesiyle raf secmek calan sesi kesmiyor: yeni raf bir
      SONRAKI seste devreye giriyor. Arada ekranda duymadigin bir raf
@@ -1903,7 +1909,16 @@
   <div class="flash" id="flash" aria-hidden="true"></div>
   <div class="grain"></div><div class="vignette"></div>
 
-  <div class="disk">
+  <!-- ── YER IMI (LANDMARK) ─────────────────────────────────────────
+       Olculdu (30 Agustos): sayfada hic yer imi yoktu. Ekran okuyucu
+       kullanicilari bir sayfayi bastan sona okumaz; yer imleri
+       arasinda ZIPLAYARAK gezerler ("ana icerige git"). Yer imi
+       olmayan sayfada o kestirme calismiyor, tek yol her seyi sirayla
+       dinlemek.
+       role="main" DISK'e veriliyor cunku uygulamanin ana icerigi bu:
+       halkalar, gorsellestirme ve calma dugmesi burada.
+       Gorsel hicbir sey degismiyor -- role bir etiket, bir kutu degil. -->
+  <div class="disk" role="main" aria-label="Player">
     <video id="kam" playsinline muted autoplay aria-hidden="true"></video>
     <canvas id="viz"></canvas>
     <button class="hit" id="tp" aria-label="ORBITAPE"></button>
@@ -1923,7 +1938,7 @@
            (modAdiTut), canlı bölge yapılsaydı sürtme boyunca sürekli
            konuşurdu. Gezinerek okunabilir olması yeterli. -->
       <span id="modAd"></span>
-      <div class="kanal on ad" data-mod="radio" aria-hidden="true"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
+      <div class="kanal on ad" data-mod="radio"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
     </div>
   </div>
 
@@ -9144,7 +9159,26 @@
       _ma.style.cursor='pointer'; _ma.style.pointerEvents='auto';
       _ma.setAttribute('role','button');
       _ma.setAttribute('aria-label','Next category');
+      /* ── KLAVYE: SEKME SIRASINA GIRSIN VE ENTER/BOSLUK CALISSIN ──
+         Olculdu (30 Agustos): ekrandaki 25 kontrolden sekmeyle
+         gezilemeyen SADECE bu ikisiydi. Ayar satirlari zaten dogru
+         yapiyordu (panel kapaliyken tabindex -1, acilinca 0).
+         Neden kendiliginden olmuyor: bunlar <button> degil, span ve
+         div. role="button" yazmak ELEMANI dugme yapmiyor -- ekran
+         okuyucuya "bu bir dugme" diyor, o kadar. Sekme sirasina
+         girmesi icin tabindex, Enter/Bosluk ile calismasi icin de
+         tus dinleyicisi gerekiyor. Ikisi de olmayinca ekran okuyucu
+         "dugme" diye okuyor ama kullanici ona hic ulasamiyordu --
+         yani yanlis soz veriliyordu.
+         Bosluk tusunda preventDefault: yoksa sayfa asagi kayar. */
+      _ma.setAttribute('tabindex','0');
+      _ma.removeAttribute('aria-hidden');   // dugme ise gizli olamaz
       _ma.addEventListener('click', e=>{ e.stopPropagation(); modSiraGec(); });
+      _ma.addEventListener('keydown', e=>{
+        if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+          e.preventDefault(); e.stopPropagation(); modSiraGec();
+        }
+      });
       _ma.addEventListener('pointerdown', e=>e.stopPropagation());
     });
   }catch(e){ _yut(e); }
@@ -9265,8 +9299,17 @@
       void t1;
     }catch(e){ _yut(e); }
   }
-  function geriYerlestir(){
-    iz('geriYerlestir');
+  /* ══ YERLESIM: SEKIZ ADIM ═══════════════════════════════════════
+     geriYerlestir() 327 satirlik tek bir fonksiyondu ve bugun ona uc
+     kez dokunduk. Her seferinde once "bu blok nerede bitiyor" diye
+     aramak gerekti; hatalar da tam boyle yerlerde saklaniyor.
+     Davranis DEGISMEDI -- ayni isler, ayni sirada. Degisen tek sey
+     her adimin bir ADI olmasi. Asagidaki geriYerlestir() artik
+     yalnizca sirayi soyluyor; ne yaptigini adlar anlatiyor.
+     ORTAK OLCU bir kez aliniyor (_yerlesimOlcu) ve adimlara
+     veriliyor: her adim kendi basina getComputedStyle cagirsaydi
+     ayni sayi sekiz kez hesaplanirdi. */
+  function _kipKisayoluHizala(){
     /* ── KIP KISAYOLU TUTAMAGIN SATIRINA OTURUYOR ─────────────────
        CSS'te ikisine de ayni 'bottom' verilmisti ve tutmadi: tutamak
        dar ekranda baska bir kuralla yukari kayiyor, kisayol oldugu
@@ -9287,7 +9330,10 @@
         }
       }
     }catch(e){ _yut(e); }
-    try{
+  }
+  /* Butun adimlarin paylastigi olculer. Tek yerde hesaplaniyor. */
+  function _yerlesimOlcu(){
+    {
       /* ── YENI ALT SERIT (asagidan yukari) ────────────────────────
            ▽ ayarlar ucgeni   <- EN ALTTA, ORTADA (konumu CSS'ten)
            arama cizgisi      <- solda, ucgenin ustunde
@@ -9327,10 +9373,19 @@
          karsisinda kimse yok. Kalinti bir olcek varsa temizleniyor --
          konsol hicbir kosulda kucultulmuyor. */
       const _moodda = document.body.classList.contains('mood');
+      return { arE, gd, dip:_dip, alt, sol, hat, moodda:_moodda };
+    }
+  }
+  /* Kalinti bir olcek varsa temizleniyor: konsol hicbir kosulda
+     kucultulmuyor. */
+  function _solUstOlcegiTemizle(){
       try{
         const su0 = document.getElementById('solUst');
         if(su0){ su0.style.top = ''; su0.style.transform = ''; }
       }catch(_){ _yut(_); }
+  }
+  function _tutamakYerlestir(y){
+      const _moodda = y.moodda;
       /* ── SOUND BANKS: TUTAMAK MODULUN UST SATIRI ─────────────────
          Radyoda tutamak ekranin SOL USTUNDE, orada karsisinda marka
          adi var ve yeri CSS'ten geliyor.
@@ -9361,6 +9416,8 @@
           }
         }
       }catch(_){ _yut(_); }
+  }
+  function _ustSatirlariSigdir(){
       /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
          Blogu tek parca olcmek yanlisti: birinci satirin karsisinda
          marka adi (dar), ikinci satirin karsisinda kategori adi
@@ -9406,8 +9463,10 @@
         void modE;
         sesSatirOlcu();
       }catch(_){ _yut(_); }
-      ugOlcu();
+  }
 
+  function _buyutecYerlestir(y){
+      const arE = y.arE, _dip = y.dip, alt = y.alt, sol = y.sol, _moodda = y.moodda;
       /* ── BUYUTEC KAYIT SATIRININ SAGINDA ─────────────────────────
          Istenen: "cam yanina yildiz, yanina buyutec gibi olabilir --
          boylece daha muntazam."
@@ -9466,6 +9525,9 @@
         }catch(_){ _yut(_); }
         arE.style.left = arSol + 'px';
       }
+  }
+  function _kunyeYerlestir(y){
+      const arE = y.arE, _dip = y.dip, alt = y.alt, sol = y.sol;
       /* SAG ALT KUNYE: TABANI ARAMA CIZGISIYLE AYNI HATTA.
          Bir ara kunyeyi bir sira yukari almistim, cunku kirpma
          kalkinca blok genisledi (86vw) ve solda duran arama cizgisiyle
@@ -9546,6 +9608,11 @@
           npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
         }
       }catch(_){ _yut(_); }
+  }
+  /* Kamera cizgisi ve bilgi satiri: ikisi de aramanin USTUNE,
+     birbirinin uzerine yigilarak. */
+  function _altCizgileriYerlestir(y){
+      const arE = y.arE, sol = y.sol, hat = y.hat;
       const araY = arE ? arE.getBoundingClientRect()
                        : {height:26, left:sol, top:hat-26, bottom:hat, width:138};
 
@@ -9588,6 +9655,22 @@
 
       // KAMERA artık diskin İÇİNDE (CSS ile inset:0) -> konumlandırma gerekmiyor.
 
+  }
+  /* ── SIRA ─────────────────────────────────────────────────────────
+     Yerlesimin tamami burada, sekiz satirda okunuyor. Sira ONEMLI:
+     her adim bir oncekinin olctugu yere yasliyor. */
+  function geriYerlestir(){
+    iz('geriYerlestir');
+    _kipKisayoluHizala();
+    try{
+      const y = _yerlesimOlcu();
+      _solUstOlcegiTemizle();      // kalinti olcek varsa sil
+      _tutamakYerlestir(y);        // ayar tutamagi: kipte modulun ustu
+      _ustSatirlariSigdir();       // sol ust satirlar karsisindakine gore
+      ugOlcu();
+      _buyutecYerlestir(y);        // buyutec kendi yuvasinin uzerine
+      _kunyeYerlestir(y);          // sag alt kunye: taban aramayla ayni hat
+      _altCizgileriYerlestir(y);   // kamera cizgisi + kayit bilgisi
       araYerlestir();
       uyduYerlestir();
     }catch(e){ _yut(e); }
