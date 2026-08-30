@@ -2376,14 +2376,35 @@
      değiştiğinde ekran "başka bir yer" gibi duruyor ama yabancı
      durmuyor. HUMAN kendi gül rengini koruyor (yukarıda tanımlı). */
   (function(){
+    /* ── ARSIV RAFLARININ RENKLERI ────────────────────────────────
+       ONCEKI HALI: yedi rafin dordu (RECORDS 30, MACHINES 45,
+       OTHERS 45, SOUNDSCAPES 75) TON CEMBERININ AYNI DILIMINDE --
+       sarinin cevresinde -- duruyordu. Hepsi ayni doygunlukta ve
+       ayni parlaklikta oldugu icin ekranda tek bir renk gibi
+       okunuyorlardi. Kullanicinin sozu: "hep sari ve cevresi gibi
+       olmus."
+       SIMDI: ton HALKA SIRASINCA yuruyor -- OTHERS (neredeyse notr)
+       -> MACHINES zeytin -> NATURE yesil -> SOUNDSCAPES teal ->
+       SPACE kursun mavi -> RECORDS bakir -> HUMANS tozlu gul.
+       Parlaklik da birlikte yuruyor (.58-.70): iki komsu hem tonla
+       hem tonla ayriliyor, yani gecis hissi kaybolmadan her raf tek
+       basina ayirt ediliyor.
+       RETRO KALIYOR: doygunluk .24-.38 arasinda, en doygun rafin
+       kanal farki 82 (radyo tarafinda 150+). Sonuk ama olu degil.
+       NATURE ve SPACE bir tik daha sonuk: ilk denemede marka
+       yazisinin sag duragi olculdu ve ikisi retro sinirini
+       (kanal farki 70) asiyordu -- yesil ve mavi o karisimda
+       oldugundan daha doygun cikiyor.
+       OTHERS bilerek en notr olan: o "geri kalan" rafi, bir rengi
+       yok. */
     const RETRO = {
-      HUMANS:     ['204,124,164','226,168,140'],   // mevcut HUMAN gulu korundu
-      RECORDS:      ['196,150,110','232,196,158'],   // bakir: plak
-      SPACE:      ['154,150,172','196,192,208'],   // kursun
-      SOUNDSCAPES: ['150,158,128','196,202,176'],   // zeytin
-      NATURE:     ['130,160,150','182,206,196'],   // sonuk yesil-mavi
-      MACHINES:    ['168,160,140','214,206,184'],   // kum
-      OTHERS:    ['190,182,164','230,224,208']    // krem
+      OTHERS:      ['187,182,170','224,222,214'],   // sicak gri: geri kalan
+      MACHINES:    ['172,191,136','216,221,207'],   // zeytin
+      NATURE:      ['142,178,155','204,215,208'],   // sonuk yesil
+      SOUNDSCAPES: ['126,184,190','201,216,217'],   // teal
+      SPACE:       ['147,155,190','214,216,224'],   // kursun mavi
+      RECORDS:     ['189,137,107','211,196,187'],   // bakir: plak
+      HUMANS:      ['199,142,156','226,213,216']    // tozlu gul
     };
     for(const ad in RETRO){
       const [ana, ik] = RETRO[ad];
