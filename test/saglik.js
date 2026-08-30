@@ -3678,28 +3678,62 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        zincirin ucu bagliydi, ortasi kopuktu.
        Bu yuzden test iki ucu birden tutuyor: bicimlendirme (dogru
        yaziyor mu) VE aktarim (ara nesne alani tasiyor mu). */
-    K('Ulke kodu ekrana kadar geliyor', await pg.evaluate(()=>{
+    /* ONCE 'LIVE' KALKTI, SONRA RAF ADI, EN SON BAYRAK DA BU
+       SATIRDAN CIKTI. Kullanicinin kurali: canli yayinda o satirda
+       BIZDEN hicbir sey yazmayacak. Raf da bizimdi -- istasyonun
+       kendi soyledigi bir sey degil, bizim onu koydugumuz yer.
+       Bayrak ise kalici bilgi ama yeri orasi degil: kunye uzayip
+       kisaldikca o satir oynuyor. Yildizin satiri sabit, oraya
+       tasindi (#npBayrak).
+       Yani canli yayinda kaynak satiri artik HEP BOS; ulke bilgisi
+       kaybolmadi, yer degistirdi. */
+    K('Ulke kodu ekrana kadar geliyor', await pg.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r,ms));
         const k = document.documentElement.innerHTML;
-        /* 1) Bicim: elde ne varsa o yaziliyor, uydurma yok */
-        const tam  = kaynakSatiri({ radyo:true, grup:'ELECTRONIC', ulke:'us' });
-        const yok  = kaynakSatiri({ radyo:true, grup:'ELECTRONIC', ulke:''   });
-        const rafsiz = kaynakSatiri({ radyo:true, grup:'', ulke:'NL' });
-        /* 2) Aktarim: aday nesnesi de ulkeyi tasiyor olmali --
-           push tarafi a.ulke okuyor, orada yoksa satir hep eksik. */
+        /* 1) Kaynak satiri canli yayinda bos */
+        const satirBos = kaynakSatiri({ radyo:true, grup:'ELECTRONIC', ulke:'us' }) === ''
+                      && kaynakSatiri({ radyo:true, grup:'', ulke:'NL' }) === '';
+        /* 2) Bayrak KENDI kutusuna yaziliyor, ulke yoksa bos kaliyor */
+        const e = document.getElementById('npBayrak');
+        bayrakYaz({ radyo:true, ulke:'us' });      const varMi = e.textContent;
+        bayrakYaz({ radyo:true, ulke:'' });        const yokMu = e.textContent;
+        bayrakYaz({ radyo:false, ulke:'US' });     const arsiv = e.textContent;
+        bayrakYaz({ radyo:true, ulke:'NL' });
+        await bek(20);
+        /* 3) Aktarim: aday nesnesi de ulkeyi tasiyor olmali --
+           push tarafi a.ulke okuyor, orada yoksa bayrak hep eksik. */
         const zincir = /aday\.push\(\{[^}]*ulke\s*:/.test(k)
                     && /radyoKuyruk\.push\(\{[^}]*ulke\s*:/.test(k);
-        /* ONCE 'LIVE' KALKTI, SONRA RAF ADI DA KALKTI.
-           Kullanicinin kurali: canli yayinda o satirda BIZDEN
-           hicbir sey yazmayacak. Raf da bizim -- istasyonun kendi
-           soyledigi bir sey degil. Geriye yalnizca istasyonun kendi
-           kaydindan gelen ulke kaldi ve bayrak olarak yaziliyor.
-           Sarki/sanatci/program bu satirda degil; onlar istasyonun
-           kendi bildiriminden gelip ustteki satirlarda cikiyor. */
-        return tam === '\u{1F1FA}\u{1F1F8}'      // us -> ABD bayragi
-            && yok === ''                         // ulke yoksa satir hic cikmiyor
-            && rafsiz === '\u{1F1F3}\u{1F1F1}'   // raf olmasa da bayrak var
+        bayrakYaz(null);
+        return satirBos
+            && varMi === '\u{1F1FA}\u{1F1F8}'   // us -> ABD bayragi
+            && yokMu === ''                      // ulke yoksa hic cizilmiyor
+            && arsiv === ''                      // arsivde bayrak yok
             && zincir;
-      }), 'yalnizca ulke bayragi; aday ve kuyruk ikisi de ulkeyi tasiyor');
+      }), 'bayrak kendi kutusunda; aday ve kuyruk ikisi de ulkeyi tasiyor');
+    /* ── BAYRAK YILDIZIN SOLUNDA ─────────────────────────────────
+       Kullanicinin istegi: "ulke bayragini artik sag alttaki
+       yildizin soluna alalim." Sadece "yaziliyor mu" degil, YERI
+       de olculuyor: bayragin sag kenari yildizin sol kenarindan
+       once bitmeli ve ikisi ayni satirda olmali. Siralama DOM'da
+       degisirse ya da flex yonu ters cevrilirse burasi kirilir. */
+    K('Bayrak yildizin solunda', await pg.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r,ms));
+        const f = document.getElementById('fav');
+        const e = document.getElementById('npBayrak');
+        const eskiSinif = f.className;
+        f.classList.add('var');
+        bayrakYaz({ radyo:true, ulke:'US' });
+        await bek(40);
+        const rb = e.getBoundingClientRect(), rf = f.getBoundingClientRect();
+        const solda   = rb.right <= rf.left + 1;
+        const ayniSatir = Math.abs((rb.top+rb.bottom)/2 - (rf.top+rf.bottom)/2) <= 4;
+        bayrakYaz(null); f.className = eskiSinif;
+        if(!solda)      return 'bayrak yildizin solunda DEGIL: bayrak ' + Math.round(rb.right)
+                             + ' | yildiz ' + Math.round(rf.left);
+        if(!ayniSatir)  return 'ayni satirda degil';
+        return true;
+      }), 'bayrak yildizdan once bitiyor, ikisi ayni hatta');
       /* Bayrak uretici tek basina da dogru olmali: gecersiz kod
          yanlis bayrak URETMEMELI, bos donmeli. */
     K('Bayrak yalnizca gecerli koddan', await pg.evaluate(()=>{
@@ -3712,9 +3746,17 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     /* RAF ADI O SATIRA GERI SIZMASIN. */
     K('Canli satirinda raf adi yok', await pg.evaluate(()=>{
         const A = (typeof AILELER!=='undefined') ? AILELER.map(x=>x.ad) : [];
-        return A.every(ad => kaynakSatiri({radyo:true, grup:ad, ulke:'US'})
-                             === '\u{1F1FA}\u{1F1F8}');
-      }), 'dokuz rafin hicbiri satira yazilmiyor');
+        /* Hicbir raf adi hicbir yere sizmasin: ne kaynak satirina
+           (artik hep bos), ne bayragin kutusuna. */
+        const e = document.getElementById('npBayrak');
+        const temiz = A.every(ad => {
+          if(kaynakSatiri({radyo:true, grup:ad, ulke:'US'}) !== '') return false;
+          bayrakYaz({radyo:true, grup:ad, ulke:'US'});
+          return e.textContent === '\u{1F1FA}\u{1F1F8}';
+        });
+        bayrakYaz(null);
+        return temiz;
+      }), 'dokuz rafin hicbiri ne satira ne bayrak kutusuna yaziliyor');
     /* KANAL ADI DOGRU YAZILMALI.
        Olculen vaka: else dali radyoyu da kapsayacak diye yazilmisti
        ama radyo bir ust satirda zaten donuyor; altta kalan kanal
@@ -3841,16 +3883,17 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         simdiCalan({ id:'mx:0', ad:'Caramel Delusion', sanatci:'CCMIXTER',
                      mp3:'https://ccmixter.org/content/x/y.mp3' });
         const ayni = document.getElementById('npKaynak').textContent.trim();
-        simdiCalan({ id:'rb:1', ad:'Some Station', radyo:true,
-                     grup:'JAZZ', ulke:'DE', mp3:'https://x/y' });
-        const farkli = document.getElementById('npKaynak').textContent.trim();
+        simdiCalan({ id:'ar:9', ad:'Bir Kayit', sanatci:'Biri',
+                     mp3:'https://archive.org/download/a/b.mp3' });
+        const farkli2 = document.getElementById('npKaynak').textContent.trim();
         mod = eM;
         /* Ayni oldugunda satir bos; farkli oldugunda hala yaziyor --
            tekrarı kaldirirken bilgiyi de kaldirmis olmayalim.
-           Canli yayinda o satir artik yalnizca ULKE BAYRAGI (raf adi
-           cikti, bkz. kaynakSatiri): DE -> Almanya bayragi. */
-        return ayni === '' && farkli === '\u{1F1E9}\u{1F1EA}';
-      }), 'ayni ad iki kez yok; canli yayinda bayrak hala yaziliyor');
+           IKINCI ORNEK ARTIK ARSIVDEN: canli yayinda o satir kural
+           geregi hep bos (bayrak yildizin yanina tasindi), yani
+           "farkli kaynak hala yaziliyor" ancak arsivde olculebilir. */
+        return ayni === '' && farkli2 === 'ARCHIVE.ORG';
+      }), 'ayni ad iki kez yok; farkli kaynak hala yaziliyor');
     /* ── ACILIS TURU ────────────────────────────────────────────────
        Tur EKRANIN BUGUNKU HARITASINI gezmeli. Yerlesim degistikce
        tur bayatliyor ve kimse fark etmiyor -- bu yuzden test, tur

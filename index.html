@@ -1075,6 +1075,19 @@
   #fav:hover{border-color:rgba(120,180,180,.34);}
   #fav.liste{color:#d9d0dd;} #fav.radio{color:#ffc79e;}
   #np .np-gez{display:flex;flex-direction:row;align-items:center;gap:7px;margin:0;pointer-events:none;}
+  /* ── ULKE BAYRAGI: YILDIZIN SOLUNDA ───────────────────────────
+     Bosken HIC YER KAPLAMIYOR (:empty -> display:none). Yoksa
+     arsivde ve ulkesi bilinmeyen istasyonda satirda 7px'lik bir
+     bosluk kalir ve yildiz yerinden oynar.
+     Yildizla ayni yukseklikte (32px) ama dar: satirin dikey
+     hizasini bozmasin. Dokunulacak bir sey degil, bilgidir. */
+  #npBayrak{display:flex;align-items:center;justify-content:center;
+    height:32px;font-size:15px;line-height:1;flex:none;
+    pointer-events:none;user-select:none;
+    /* Emoji bayrak bazi masaustu sistemlerinde iki harf olarak
+       cizilir (ABD -> "US"). O da dogru bilgi; kirilmiyor. */
+    font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+  #npBayrak:empty{display:none;}
   /* ── ORBITAPE ISARETI ─────────────────────────────────────────
      Iki cember + mil: yorunge ve makara ayni cizimde.
      Yildizin SAGINDA, blogun en sag ucunda -- kosenin imzasi.
@@ -2074,6 +2087,16 @@
            olmali. Yerine gelecek olan sey mikrofonla dinleme degil
            -- istasyonun KENDI yayin bilgisi (bkz. GUNLUK). -->
 
+      <!-- ── ULKE BAYRAGI ────────────────────────────────────────
+           Once yazilarin arasindaydi (kaynak satirinda). Kullanicinin
+           istegi: "ulke bayragini artik sag alttaki yildizin soluna
+           alalim." Yeri burasi: yildizla ayni satirda, onun solunda.
+           Boylece kunye uzayip kisalirken bayrak yerinden oynamiyor
+           -- yildiz gibi o da sabit bir kosede duruyor.
+           Yalnizca canli yayinda doluyor; arsiv kayitlarinda bos
+           kalir ve hic yer kaplamaz.
+           DEKORATIF DEGIL, BILGI: ekran okuyucudan gizlenmiyor. -->
+      <span id="npBayrak"></span>
       <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
       <!-- ── ORBITAPE ISARETI ────────────────────────────────────
            Shazam dugmesinin bosalttigi yer. Kullanicinin istegi:
@@ -3888,9 +3911,27 @@
          Sarki, sanatci ve program adi bu satirda DEGIL: onlar
          istasyonun kendi "su an ne caliyor" bildiriminden geliyor ve
          ustteki satirlarda yaziyor (npAd / npSanatci). Yani gelen
-         hicbir bilgi atlanmiyor; yalnizca BIZIM ekledigimiz gitti. */
-      return bayrak(it.ulke);
+         hicbir bilgi atlanmiyor; yalnizca BIZIM ekledigimiz gitti.
+
+         BAYRAK DA BURADAN CIKTI: kullanicinin istegiyle sag alttaki
+         yildizin soluna tasindi (#npBayrak). Sebebi yer: kunye
+         uzayip kisaldikca bu satir oynuyor, yildizin satiri ise
+         sabit. Yani canli yayinda bu satir artik HEP BOS. */
+      return '';
     }catch(e){ return ''; }
+  }
+  /* Bayragin yeni yeri: yildizin solundaki kutu. Canli yayinda
+     dolar, arsivde bos kalir ve :empty ile hic yer kaplamaz. */
+  function bayrakYaz(it){
+    try{
+      const e = document.getElementById('npBayrak');
+      if(!e) return;
+      const b = (it && it.radyo) ? bayrak(it.ulke) : '';
+      e.textContent = b;
+      /* Ekran okuyucu "bayrak" demesin, ULKE desin diye etiket. */
+      if(b) e.setAttribute('aria-label', 'Country: ' + String(it.ulke||'').toUpperCase());
+      else  e.removeAttribute('aria-label');
+    }catch(e2){ _yut(e2); }
   }
   /* ── LİSANS ADI ───────────────────────────────────────────────────
      Depodaki lisans bir URL. Ekranda URL göstermek anlamsız; kısa adı
@@ -3988,6 +4029,8 @@
         (_k && sanatci && _k.trim().toLowerCase() === sanatci.trim().toLowerCase())
           ? '' : _k;
     }catch(e){ _yut(e); }   // sesin geldiği yer
+    /* Ulke bayragi yildizin solunda, kendi kutusunda. */
+    try{ bayrakYaz(item); }catch(e){ _yut(e); }
     /* Lisans kendi satırında, en altta. Yoksa hiç yer kaplamıyor
        (canlı radyoda ve kendi parçalarımızda lisans satırı çıkmaz). */
     try{
