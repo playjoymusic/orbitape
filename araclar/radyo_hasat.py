@@ -50,16 +50,26 @@ DIZIN = ["https://de1.api.radio-browser.info",
 
 # Hangi rafi doldurmak icin dizine hangi etiketlerle soracagiz.
 # Bir raf icin birden cok etiket: dizinde tek bir kelime yetmiyor.
+# ── ANAHTARLAR GERCEK RAF ADLARI OLMAK ZORUNDA ────────────────────
+# Asagida her raf icin toplanan istasyon "gercekten bu rafa dustu
+# mu" diye sinaniyor: kalan[0]["grup"] != raf ise atiliyor. Yani
+# burada var olmayan bir raf adi yazmak, o satirin HICBIR ZAMAN
+# istasyon eklememesi demek -- sessizce.
+# 30 Agustos'ta olculdu: "ROCK" ve "AFRO & LATIN" diye iki raf
+# yaziliydi, ikisi de AILELER'de yok. Yani rock/punk/metal ve
+# afrobeat/latin/salsa aramalarinin tamami bosa gidiyordu.
+# ROCK etiketleri ROCK & INDIE'ye, afro/latin etiketleri
+# WORLD & ROOTS'a tasindi.
 ARAMA = OrderedDict([
     ("JAZZ",         ["jazz", "bebop", "big band", "swing", "smooth jazz"]),
-    ("ROCK",         ["rock", "classic rock", "punk", "metal", "indie rock"]),
     ("DISCO FUNK",   ["funk", "soul", "disco", "motown", "rnb"]),
     ("LOUNGE & LOFI",["lounge", "easy listening", "chillout", "lofi"]),
     ("ORCHESTRAL",   ["classical", "opera", "soundtrack", "baroque"]),
-    ("WORLD & ROOTS",["reggae", "folk", "blues", "world music", "country"]),
-    ("AFRO & LATIN", ["afrobeat", "latin", "salsa", "bossa nova", "cumbia"]),
+    ("WORLD & ROOTS",["reggae", "folk", "blues", "world music", "country",
+                      "afrobeat", "latin", "salsa", "bossa nova", "cumbia"]),
     ("AMBIENT",      ["ambient", "new age", "drone"]),
-    ("ROCK & INDIE", ["indie", "dream pop"]),
+    ("ROCK & INDIE", ["rock", "classic rock", "punk", "metal",
+                      "indie rock", "indie", "dream pop"]),
 ])
 
 BASLIK = {"User-Agent": "ORBITAPE/1.0 (+https://orbitape.app)"}
@@ -114,7 +124,11 @@ def main():
 
     with open(sys.argv[1], encoding="utf-8") as f:
         mevcut = json.load(f)
-    RG.grupla(mevcut)
+    # YERLESIKLERE DOKUNMA: grubu olmayan varsa doldur, olani birak.
+    # Eskiden burada RG.grupla(mevcut) vardi ve kullanicinin elle
+    # yaptigi tasimalari her hasatta geri aliyordu (olculdu: 41
+    # istasyon yer degistiriyordu).
+    RG.grupla_yenileri(mevcut)
     varolan_url = {o["mp3"] for o in mevcut}
     # ── KULLANICININ CIKARDIKLARI GERI GELMESIN ───────────────────
     # Hasat, "listede olmayan" her istasyonu YENI sayiyor. Yani
@@ -176,7 +190,27 @@ def main():
               % (raf, bulundu, hedef, sayim.get(raf, 0)))
 
     hepsi = mevcut + yeni
-    RG.grupla(hepsi)
+    # ── AYNI YAYIN VE SUSLU ADLAR HER HASATTA TEMIZLENSIN ─────────
+    # Bir kez elle temizlemek yetmiyor: dizin ayni yayini farkli
+    # '?ref=' parametresiyle yeniden onerdiginde kopya geri geliyor,
+    # cunku adres farkli goruniyor. Bu iki cagri tam da bu yuzden
+    # burada: hasadin sonucu her seferinde temiz cikiyor.
+    hepsi, _kopya = RG.tekille(hepsi)
+    if _kopya:
+        print("\nayni yayinin kopyasi cikarildi: %d" % len(_kopya))
+        for o in _kopya:
+            print("   %s" % (o.get("ad") or ""))
+    _n = 0
+    for o in hepsi:
+        _y = RG.ad_duzelt(o.get("ad"))
+        if _y != (o.get("ad") or ""):
+            print("   ad: %r -> %r" % (o.get("ad"), _y))
+            o["ad"] = _y
+            _n += 1
+    if _n:
+        print("suslu ad duzeltildi: %d" % _n)
+    # Ayni sebeple: yalnizca yeni gelenler gruplaniyor.
+    RG.grupla_yenileri(hepsi)
     hepsi.sort(key=lambda o: (list(RG.AILELER).index(o["grup"]),
                               (o["ad"] or "").lower()))
     duzen = [OrderedDict([("id", o["id"]), ("mp3", o["mp3"]), ("ad", o["ad"]),

@@ -702,6 +702,22 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       return /function moodDegis\(\)\{[\s\S]{0,200}fxNormale\(\)/.test(k)
           && !/function moodDegis\(\)\{ havuzDegis\(\); \}/.test(k);
     }), 'kanal gecisi yok, temize donus var');
+  /* ── KANAL ISKELETI GERI GELMESIN ────────────────────────────────
+     Kanal gecisi kalkinca calismayan bir iskelet kalmisti: KANAL_SIRA
+     tek elemanliydi, havuzDegis() ilk satirinda donuyordu, yaninda iki
+     durum degiskeni, bir iptal fonksiyonu, belge genelinde bir
+     pointerdown dinleyicisi ve dort CSS kurali bosa duruyordu.
+     Olu kod zararsiz gorunur ama degildir: okuyan "burada bir sey
+     oluyor" sanir ve degistirirken ona gore davranir. 30 Agustos'ta
+     hepsi silindi; bu kontrol geri sizmasini engelliyor. */
+  K('Kanal gecisi iskeleti yok', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const kalinti = ['KANAL_SIRA','havuzDegis','kanalSoruIptal','_kanalSorHedef',
+                       '_kuyruktanUygun','markSoru']
+        .filter(a => new RegExp('(?:function\\s+|const\\s+|let\\s+|var\\s+|@keyframes\\s+)'
+                                + a + '\\b').test(k));
+      return kalinti.length ? kalinti.join(', ') : true;
+    }), 'olu kanal makinesi ve bicimleri geri gelmedi');
 
   /* ── SES GERCEKTEN KISILIYOR MU ─────────────────────────────────
      Olculen sikayet: "mobilde iki parmak var ama kismiyor". Jest
@@ -947,9 +963,14 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       document.body.classList.toggle('mood', !!eskiMood);
       return gor && dugme;
     }), 'nebula + dort gezegen geri geliyor');
-  K('Tek kanal var', await pg.evaluate(()=>
-      KANAL_SIRA.length === 1 && KANAL_SIRA[0] === 'radio' && mod === 'radio'),
-     'tek kanal: radyo; oteki dunya AYAR.mood ile aciliyor');
+  /* Once "KANAL_SIRA tek elemanli mi" diye sorulurdu. O dizi bir
+     iskeletin parcasiydi ve silindi; asil kural zaten daha basitti:
+     'mod' hicbir zaman degismiyor, oteki dunya AYAR.mood ile
+     aciliyor. Simdi dogrudan o olculuyor. */
+  K('Tek kanal var', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      return mod === 'radio' && !/liste:\s*'MIXTAPE'/.test(k);
+    }), 'acilis radyoda; MIXTAPE kanali kodda yok');
   K('Eski kanal depodan siliniyor', await pg.evaluate(()=>{
       try{ localStorage.setItem('orbitape.kanal','lib'); }catch(e){}
       /* Acilisin yaptigi sey: eski deger okunmuyor, siliniyor. */
@@ -3254,6 +3275,94 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        INDIE & LOFI de SILINDI: on yedi lofi LOUNGE'a, bir indie rock
        tarafina tasinip raf TAM bosaldi. On -> dokuz. */
     K('Dokuz aile tanimli', !!ai && ai.sayi === 9, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    /* ── HASAT ARACI UYGULAMAYLA AYNI RAFLARI BILMELI ────────────
+       Raf adlari IKI yerde yaziyor: uygulamadaki AILELER ve
+       araclar/radyo_grupla.py'deki AILELER. 30 Agustos'ta olculdu:
+       ayrismislardi. Raflar yeniden adlandirilirken (RADIO ->
+       RADIOTAPE, FUNK & RNB -> DISCO FUNK) uygulama guncellenmis,
+       arac unutulmustu. Sonuc: bir sonraki hasat "'RADIOTAPE' is not
+       in list" diye cokecekti ve bunu ancak hasat gunu ogrenirdik.
+       Bu kontrol iki listeyi SIRASIYLA VE RENGIYLE karsilastiriyor;
+       birini degistirip otekini unutmak artik burada duruyor. */
+    {
+      const py = fs.readFileSync('araclar/radyo_grupla.py','utf8');
+      const blok = (py.match(/AILELER = OrderedDict\(\[([\s\S]*?)\n\]\)/) || [])[1] || '';
+      const arac = [...blok.matchAll(/\(\s*"([^"]+)"\s*,\s*\{\s*"renk"\s*:\s*"#([0-9A-Fa-f]{6})"/g)]
+                     .map(m => [m[1], m[2].toUpperCase()]);
+      const uyg = (ai ? ai.adlar : []).map((ad,i)=>{
+        const [r,g,b] = ai.renkler[i].split(',').map(Number);
+        return [ad, [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase()];
+      });
+      const yaz = l => l.map(x=>x[0]+'#'+x[1]).join(' | ');
+      const ayni = yaz(arac) === yaz(uyg);
+      K('Hasat araci uygulamayla ayni raflari biliyor', ayni,
+        ayni ? (arac.length + ' raf, ad ve renk birebir')
+             : ('AYRISMIS\n      uygulama: ' + yaz(uyg) + '\n      arac    : ' + yaz(arac)));
+    }
+    /* ── HASADIN ARADIGI HER RAF GERCEKTEN VAR MI ────────────────
+       radyo_hasat.py'deki ARAMA tablosu raf adiyla anahtarli ve
+       toplanan istasyon "gercekten bu rafa dustu mu" diye siniyor.
+       Var olmayan bir raf adi yazmak, o satirin hicbir zaman
+       istasyon eklememesi demek -- hicbir hata cikmadan.
+       Olculdu: "ROCK" ve "AFRO & LATIN" diye iki raf yaziliydi,
+       ikisi de yok; rock/punk/metal ve afrobeat/latin/salsa
+       aramalarinin tamami bosa gidiyordu. */
+    {
+      const hp = fs.readFileSync('araclar/radyo_hasat.py','utf8');
+      const blok = (hp.match(/ARAMA = OrderedDict\(\[([\s\S]*?)\n\]\)/) || [])[1] || '';
+      const raflar = [...blok.matchAll(/\(\s*"([^"]+)"\s*,\s*\[/g)].map(m=>m[1]);
+      const yok = raflar.filter(r => !(ai ? ai.adlar : []).includes(r));
+      K('Hasadin aradigi raflarin hepsi var', raflar.length > 0 && yok.length === 0,
+        yok.length ? ('AILELER\'de olmayan raf araniyor: ' + yok.join(', '))
+                   : (raflar.length + ' raf araniyor, hepsi tanimli'));
+    }
+    /* ── YAYINDAKI ISTASYON ADLARI TEMIZ MI ──────────────────────
+       Bu ad calan parcanin altinda kullaniciya gorunuyor. Dizinde
+       one cikmak icin eklenen sus ('# TOP 100 CHARTS --- DJ MIXES',
+       '__TECHNO__ by rautemusik', '* AFRO HOUSE') istasyonun gercek
+       adi degil. 30 Agustos'ta 531 istasyonun 34'u boyleydi. */
+    {
+      const liste = JSON.parse(fs.readFileSync('radyo.json','utf8'));
+      /* '#1 Splash Spa' KIRLI DEGIL: oradaki '#' numara demek,
+         susu degil. ad_duzelt() de ayni istisnayi taniyor --
+         ayirt eden sey bosluk ('# 100' sus, '#1' numara). */
+      const kirli = liste.map(s=>s.ad||'')
+        .filter(n => !/^#\d/.test(n))
+        .filter(n => /^[\s#*_=~·.-]/.test(n)      // basta sus
+                  || /[-=>*.]{2,}/.test(n)         // tekrar eden ayirici
+                  || /(?<![\w#])[#*_=~]+(?=[^\W\d_])/u.test(n));  // '#lofi'
+      K('Yayindaki istasyon adlari temiz', kirli.length === 0,
+        kirli.length ? (kirli.length + ' suslu ad: ' + kirli.slice(0,4).join(' | '))
+                     : (liste.length + ' istasyonun hicbirinde sus isareti yok'));
+    }
+    /* ── AYNI YAYIN IKI KEZ LISTEDE OLMASIN ──────────────────────
+       rautemusik/breakz agi TEK yayini dizine on ayri adla,
+       yalnizca '?ref=' pazarlama parametresini degistirerek
+       kaydetmis. Listede 21 fazladan kayit vardi: halka dolu
+       gorunuyor ama dinleyici ayni yayini tekrar tekrar duyuyor.
+       Anahtar radyo_grupla.akis_kimligi() ile ayni mantikta:
+       sunucu + bitrate/uzantisiz yol + iz olmayan query. */
+    {
+      const liste = JSON.parse(fs.readFileSync('radyo.json','utf8'));
+      const IZ = new Set(['ref','refresh','provider','quality','cb','_',
+        'listening-from-radio-garden','listenerid',
+        'utm_source','utm_medium','utm_campaign']);
+      const kimlik = u => {
+        let x; try{ x = new URL(u); }catch(e){ return u; }
+        const yol = x.pathname.replace(/[_-]?\d{2,3}\s*k(bps)?/ig,'')
+                              .replace(/\.(mp3|aac|aacp|m3u8?|pls)$/i,'')
+                              .replace(/\/+$/,'').toLowerCase();
+        const q = [...x.searchParams.entries()]
+                    .filter(([k])=>!IZ.has(k.toLowerCase()))
+                    .sort().map(([k,v])=>k+'='+v).join('&');
+        return x.host.toLowerCase()+yol+'?'+q;
+      };
+      const say = new Map();
+      for(const s of liste) say.set(kimlik(s.mp3), (say.get(kimlik(s.mp3))||0)+1);
+      const cift = [...say.values()].reduce((t,n)=>t+(n>1?n-1:0),0);
+      K('Ayni yayin listede bir kez', cift === 0,
+        cift ? (cift + ' fazladan kayit') : (liste.length + ' istasyon, kopya yok'));
+    }
     K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===ai.sayi,
        ai ? ai.benzersizRenk+'/'+ai.sayi+' benzersiz' : '-');
     /* SIRAYI KULLANICI DIKTE ETTI (buyukten kucuge):

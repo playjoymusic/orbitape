@@ -28,6 +28,107 @@ import json
 import re
 import sys
 from collections import OrderedDict
+from urllib.parse import urlsplit, parse_qsl
+
+
+# ── ISTASYON ADINI TEMIZLE ────────────────────────────────────────
+# OLCULEN DURUM (30 Agustos): yayindaki 531 istasyonun 34'unun adi
+# dizinde reklam gibi yaziliydi -- '# TOP 100 CHARTS --- DJ MIXES',
+# '__TECHNO__ by rautemusik (rm.fm)', '* AFRO HOUSE', 'REYFM -#LOFI'.
+# Bunlar istasyonun gercek adi degil, dizinde one cikmak icin
+# eklenen sus. Uygulamada calan parcanin altinda bu yaziyor.
+#
+# NE YAPILMIYOR: buyuk/kucuk harf DEGISTIRILMIYOR. 'AFRO HOUSE'
+# bagirir gibi duruyor ama o istasyonun kendi yazimi; sembol
+# temizlemek nesnel, harf duzeltmek zevk meselesi.
+# '|' BURADA YOK: cok istasyon onu mesru ayirici olarak kullaniyor
+# ('EBS | Movie Soundtracks'). Sus saymak o adlari bozardi.
+SUS_ISARET = "#*_=~"
+# Almanca chart radyolarinin adina ekledigi pazarlama kuyrugu:
+# 'Mainstage Charts - Your FESTIVAL Radio', '#CLUB RADIO - DEIN DJ'.
+PAZARLAMA_KUYRUK = re.compile(r"\s*[-·]?\s*\b(?:your|dein|deine|ihr)\b.*$", re.I)
+
+
+def ad_duzelt(ad):
+    """Istasyon adindan sus isaretlerini temizler. Adi DEGISTIRMEZ,
+       yalnizca anlam tasimayan isaretleri atar."""
+    a = (ad or "").strip()
+    # '__TECHNO__ by rautemusik (rm.fm)'  ->  'TECHNO · rautemusik'
+    m = re.match(r"^_+(.+?)_+\s*by\s+(.+?)\s*(?:\(.*\))?\s*$", a)
+    if m:
+        a = m.group(1).strip() + " · " + m.group(2).strip()
+    # tekrar eden ayirici ( --- ---> === *** ... ) -> tek nokta
+    a = re.sub(r"\s*[-=>*.]{2,}\s*", " · ", a)
+    # '#lofi' -> 'lofi'; ama '#1' (numara) korunur
+    a = re.sub(r"(?<![\w#])[" + re.escape(SUS_ISARET) + r"]+(?=[^\W\d_])", "", a)
+    a = re.sub(r"^#(?=\s+\d)", "", a)                 # '# 100 ...' -> '100 ...'
+    a = re.sub(r"(?<=[\w])[" + re.escape(SUS_ISARET) + r"]+(?![\w])", "", a)
+    a = PAZARLAMA_KUYRUK.sub("", a)
+    # Bastaki susu at -- ama '#1 Splash Spa' gibi NUMARA belirten '#'
+    # kalsin. Ayirt eden sey bosluk: '# 100 ...' sus, '#1' numara.
+    if not re.match(r"^#\d", a):
+        a = a.lstrip(SUS_ISARET + " -–—·.")
+    a = a.rstrip(SUS_ISARET + " -–—·.")
+    a = re.sub(r"\s+-(?=[^\W\d_])", " - ", a)         # 'REYFM -LOFI' -> 'REYFM - LOFI'
+    a = re.sub(r"\s{2,}", " ", a).strip()
+    return a or (ad or "").strip()
+
+
+# ── AYNI YAYIN, FARKLI AD ─────────────────────────────────────────
+# OLCULEN DURUM: rautemusik/breakz agi TEK yayini dizine on ayri
+# adla, yalnizca '?ref=' pazarlama parametresi degistirerek
+# kaydetmis. Bizim listede 21 fazladan kayit vardi: halka dolu
+# gorunuyor ama dinleyici ayni yayini tekrar tekrar duyuyor.
+#
+# ANAHTAR NASIL KURULUYOR: sunucu + yol (bitrate ve uzanti atilir)
+# + IZ_PARAM disindaki query. Query'yi tumden atmiyoruz -- bazi
+# servisler kanali query ile seciyor; yalnizca takip/pazarlama
+# parametrelerini atiyoruz. (Olculdu: iki yontem de ayni 21'i
+# buluyor, yani ihtiyatli olan hicbir sey kaybettirmiyor.)
+IZ_PARAM = {"ref", "refresh", "provider", "quality", "cb", "_",
+            "listening-from-radio-garden", "listenerid",
+            "utm_source", "utm_medium", "utm_campaign"}
+_BITRATE = re.compile(r"[_-]?\d{2,3}\s*k(?:bps)?", re.I)
+_UZANTI = re.compile(r"\.(mp3|aac|aacp|m3u8?|pls)$", re.I)
+
+
+def akis_kimligi(url):
+    p = urlsplit(url or "")
+    yol = _UZANTI.sub("", _BITRATE.sub("", p.path)).rstrip("/").lower()
+    q = tuple(sorted((k, v) for k, v in parse_qsl(p.query)
+                     if k.lower() not in IZ_PARAM))
+    return (p.netloc.lower(), yol, q)
+
+
+def _sus_sayisi(ad):
+    return sum(1 for c in (ad or "") if c in SUS_ISARET)
+
+
+def _bitrate_uzakligi(url):
+    """128 kbps'e yakin olani sec: mobilde kalite/veri dengesi orada."""
+    m = re.search(r"(\d{2,3})\s*k", url or "", re.I)
+    return abs(int(m.group(1)) - 128) if m else 40
+
+
+def tekille(kayitlar):
+    """Ayni yayinin kopyalarindan bir tanesini birakir.
+       Kalan: adi en temiz olan; esitlikte 128k'ya en yakin olan.
+       Dondurur: (kalan, dusenler)."""
+    grup = OrderedDict()
+    for o in kayitlar:
+        grup.setdefault(akis_kimligi(o.get("mp3")), []).append(o)
+    kalan, dusen = [], []
+    for _, v in grup.items():
+        if len(v) == 1:
+            kalan.append(v[0])
+            continue
+        sirali = sorted(v, key=lambda o: (_sus_sayisi(o.get("ad")),
+                                          _bitrate_uzakligi(o.get("mp3")),
+                                          len(o.get("ad") or "")))
+        kalan.append(sirali[0])
+        dusen.extend(sirali[1:])
+    return kalan, dusen
+
 
 # ── AILELER ───────────────────────────────────────────────────────
 # Sira onemli: ekranda da bu sirayla gosterilecek (buyukten kucuge
@@ -92,12 +193,12 @@ RAF_KELIME = OrderedDict([
     # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
     # soul / r&b / trap BURADA: kullanicinin karari, raf dolsun.
     # lofi ve indie BURADA DEGIL -- onlar kendi rafinda kaliyor.
-    ("FUNK & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("DISCO FUNK", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                r"\bsoul\b|motown|g-?funk|turntabl|"
                                r"\bfunk\w*|boogie|\bdisco ?funk\b|"
                                r"\bbreakdance\b|\bmc\b", re.I)),
-    # RAF ADI "HIP HOP & RNB" DEGIL ARTIK "FUNK & RNB": kullanici
+    # RAF ADI "HIP HOP & RNB" DEGIL ARTIK "DISCO FUNK": kullanici
     # butun funk istasyonlarini buraya tasidi ve adi ona gore
     # degistirdi. Kelime listesi ayni kaldi -- karari zaten 171 elle
     # karar ve etiket sayimi veriyor.
@@ -182,7 +283,7 @@ RAF_KELIME = OrderedDict([
 #   latino / reggaeton / urbano / french / sertanejo -> WORLD
 #   instrumental TEK BASINA ORCHESTRAL yapmiyor (雨声轻音乐 -> AMBIENT)
 KADEME1 = OrderedDict([
-    ("FUNK & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("DISCO FUNK", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                  r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                  r"\bsoul\b|motown|g-?funk|turntabl|"
                                  r"trip.?hop|\bbreakdance\b|"
@@ -252,14 +353,29 @@ KARISIK = re.compile(
 # radyo_elle.json: kullanicinin tek tek dinleyip verdigi kararlar.
 # Kuraldan USTUN. Bir kural degisse bile bu istasyonlar yerinden
 # oynamaz -- insan karari, desen eslesmesinden daha guvenilir.
+#
+# ── ANAHTARLAR AD_DUZELT'TEN GECIRILIYOR: NEDEN ───────────────────
+# Bu dosya kararlari ISTASYON ADIYLA tutuyor. Adlari temizlemeye
+# baslayinca ('* AFRO HOUSE' -> 'AFRO HOUSE') anahtarlar tutmaz oldu
+# ve 241 insan karari sessizce dusuyordu -- hicbir hata cikmadan,
+# sadece istasyonlar yanlis raflara dagiliyordu. Olculdu: ROCK &
+# INDIE 58'den 25'e dusuyordu.
+# Cozum: hem anahtar hem sorgu ayni temizlikten geciyor. Boylece
+# dosyanin eski (susly) ve yeni (temiz) hali de calisiyor.
 ELLE = {}
 try:
     import os
     _y = os.path.join(os.path.dirname(os.path.abspath(__file__)), "radyo_elle.json")
     with open(_y, encoding="utf-8") as _f:
-        ELLE = json.load(_f)
+        ELLE = {ad_duzelt(k): v for k, v in json.load(_f).items()}
 except Exception:
     ELLE = {}
+
+
+def elle_karar(ad):
+    """Elle verilmis raf karari (yoksa None). Ad temizligi iki
+       tarafta da uygulandigi icin susly/temiz fark etmiyor."""
+    return ELLE.get(ad_duzelt(ad))
 
 # ── KULLANICININ MANTIGI ──────────────────────────────────────────
 # 84 elle karari okundu ve su desenler cikti:
@@ -306,18 +422,30 @@ AILELER = OrderedDict([
     # dista: halkanin capi rafin buyuklugunu anlatiyor.
     # RADIO EN ICTE ve bilerek: ortaya basan oraya duser, orasi
     # "turu belirsiz / rastgele" rafi.
-    ("RADIO",         {"renk": "#8496FF"}),   # 1. halka
-    ("JAZZ",          {"renk": "#CC7CA4"}),   # 2.
-    ("AMBIENT",       {"renk": "#5FBF7A"}),   # 3.
-    ("ROCK & INDIE",  {"renk": "#F2683C"}),   # 4. (eski adi ROCK & COUNTRY)
+    # ── BU TABLO UYGULAMADAKI AILELER'IN AYNISI OLMAK ZORUNDA ─────
+    # 30 Agustos'ta olculdu: degildi. Raflar yeniden adlandirilirken
+    # (RADIO -> RADIOTAPE, FUNK & RNB -> DISCO FUNK) uygulama
+    # guncellendi, bu tablo unutuldu. Sonuc sessiz degil, GURULTULU
+    # bir hataydi: yayindaki listede 'RADIOTAPE' grubu var, burada
+    # yok; asagidaki siralama satiri "'RADIOTAPE' is not in list"
+    # diye cokuyordu. Yani bir sonraki HASAT calismayacakti ve bunu
+    # ancak hasat gunu ogrenirdik.
+    # Sira = halka sirasi (icten disa) ve renkler uygulamadakiyle
+    # birebir ayni. Degistirirken IKISINI BIRDEN degistir; saglik
+    # testi "Hasat araci uygulamayla ayni raflari biliyor" bu ikisini
+    # karsilastiriyor.
+    ("AMBIENT",       {"renk": "#5FBF7A"}),
+    ("JAZZ",          {"renk": "#CC7CA4"}),
+    ("ORCHESTRAL",    {"renk": "#F0AC7A"}),
+    ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # eski adi LOUNGE
     # MOR LOFI'DEN GELDI: INDIE & LOFI rafi bosalinca kaldirildi ve
     # rengi burada yasiyor. Eski gri (#9A96AC) halkada oteki
     # grilerden ayirt edilmiyordu.
-    ("WORLD & ROOTS", {"renk": "#B07CE8"}),   # 5.
-    ("ORCHESTRAL",    {"renk": "#F0AC7A"}),   # 6.
-    ("FUNK & RNB", {"renk": "#BEB6A4"}),   # 7.
-    ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # 8. (eski adi LOUNGE)
-    ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 11. en dista, turkuaz
+    ("WORLD & ROOTS", {"renk": "#B07CE8"}),
+    ("ROCK & INDIE",  {"renk": "#F2683C"}),   # eski adi ROCK & COUNTRY
+    ("DISCO FUNK",    {"renk": "#BEB6A4"}),   # eski adi FUNK & RNB
+    ("ELECTRONIC",    {"renk": "#8496FF"}),
+    ("RADIOTAPE",     {"renk": "#35E0D8"}),   # en dista, turkuaz
 ])
 
 TUR_GRUP = {}
@@ -380,8 +508,8 @@ def _raflar(metin, elektronik_ustun=True):
     Iki tur birden geciyorsa kimse kazanmaz, RADIO'e gider."""
     # HIP HOP ELEKTRONIKTEN DE USTUN: "House vs. Hip-Hop" ikisi de
     # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
-    if RAF_KELIME["FUNK & RNB"].search(metin):
-        return ["FUNK & RNB"]
+    if RAF_KELIME["DISCO FUNK"].search(metin):
+        return ["DISCO FUNK"]
     # LOUNGE MUTLAK: "lounge", "smooth", "relax" gecen her sey lounge.
     # "Smooth Jazz Lounge", "Jazz Lounge Bar" da dahil -- kullanicinin
     # karari: bunlar jazz degil, arka plan muzigi.
@@ -477,7 +605,7 @@ def gruplandir(o):
     """Aile belliyken halka ici sirayi (saf) yaz. Kullanicinin
     aile aile verdigi tarif burada uygulaniyor."""
     aile = o.get("grup")
-    if not aile or aile == "RADIO":
+    if not aile or aile == "RADIOTAPE":
         return
     # SADECE ISME BAKILIYOR. Kullanicinin sozu "rock YAZANLARI",
     # "classical YAZANLARI" -- yani istasyonun kendi adinda gecenler.
@@ -491,8 +619,28 @@ def gruplandir(o):
         o["saf"] = 1 if GRUP1[aile].search(metin) else 2
 
 
+def grupla_yenileri(kayitlar):
+    """Yalnizca GRUBU OLMAYAN kayitlara 'grup' yazar.
+
+    NEDEN VAR (30 Agustos'ta olculdu)
+      Hasat, listenin TAMAMINI her seferinde yeniden grupluyordu.
+      Yani kullanicinin elle yaptigi her tasima bir sonraki hasatta
+      geri aliniyordu: olctuk, 510 istasyonun 41'i yer degistiriyordu
+      -- 35'i ROCK & INDIE rafindan cikiyordu. Hicbir hata cikmadan,
+      sessizce.
+      Hasadin isi listeyi BUYUTMEK; var olan bir istasyonun rafina
+      karar vermek degil, o karar zaten verilmis. Yeni gelenler
+      gruplaniyor, yerlesikler yerinde kaliyor.
+    """
+    yeniler = [o for o in kayitlar if not (o.get("grup") or "").strip()]
+    return grupla(yeniler) if yeniler else set()
+
+
 def grupla(kayitlar):
-    """Her kayda 'grup' yaz.
+    """Her kayda 'grup' yaz (VAR OLANI DA EZER).
+
+    Elle duzeltilmis bir listeye bunu uygulama -- kullanicinin
+    kararlarini siler. Hasat icin grupla_yenileri() var.
 
     SIRA: ONCE ISIM, SONRA ETIKET.
       Isim yayincinin kendi secimi: "Radio Caprice - Lounge" lounge
@@ -512,7 +660,7 @@ def grupla(kayitlar):
         etiket = (o.get("etiket") or "").replace("_", " ").replace("+", " ")
 
         # 0) ELLE VERILMIS KARAR HER SEYIN USTUNDE.
-        _elle = ELLE.get(o.get("ad") or "")
+        _elle = elle_karar(o.get("ad") or "")
         if _elle:
             o["grup"] = _elle
             o["saf"] = 1                      # insan karari: has sayilir
@@ -523,7 +671,7 @@ def grupla(kayitlar):
         #    HITS var: bu bir tur degil bir liste. Once bu bakiliyor,
         #    yoksa liste istasyonu saf rafa siziyordu.
         if KARISIK.search(ad):
-            o["grup"] = "RADIO"
+            o["grup"] = "RADIOTAPE"
             continue
 
         # 2) ISIM KONUSUYORSA O KONUSUR.
@@ -554,7 +702,7 @@ def grupla(kayitlar):
             # (3 puan) ya da EN AZ IKI etiketin ayni rafi soylemesi
             # gerekiyor. Emin olmadigimiz her sey RADIO'e gider.
             if _s[0][1] < 2:
-                o["grup"] = "RADIO"; o["saf"] = 3; continue
+                o["grup"] = "RADIOTAPE"; o["saf"] = 3; continue
             if len(_s) == 1 or _s[0][1] > _s[1][1]:
                 o["grup"] = _s[0][0]
                 # IKI GRUP.
@@ -572,12 +720,12 @@ def grupla(kayitlar):
                     1 if _s[0][1] >= max(2, 2 * _ikinci) else 2)
                 continue
             # Berabere: kimse kazanmaz.
-            o["grup"] = "RADIO"; o["saf"] = 3
+            o["grup"] = "RADIOTAPE"; o["saf"] = 3
             continue
 
         # 3) NE ISIM NE ETIKET KONUSTU -> RADIO.
         #    Emin olmadigimiz her sey oraya gider. Kapsama degil isabet.
-        o["grup"] = "RADIO"
+        o["grup"] = "RADIOTAPE"
         o["saf"] = 3
 
     # Aileler yerlestikten SONRA halka ici sira. Ayri gecis, cunku
@@ -601,6 +749,18 @@ def main():
     print("cikarilan ulke (TR/AE): %d" % sayac["ulke"])
     print("cikarilan ibadet      : %d" % sayac["ibadet"])
     print("cikarilan konusma     : %d" % sayac["konusma"])
+    kalan, kopya = tekille(kalan)
+    print("cikarilan ayni yayin  : %d" % len(kopya))
+    for o in kopya:
+        print("      %s" % (o.get("ad") or ""))
+    n_ad = 0
+    for o in kalan:
+        yeni = ad_duzelt(o.get("ad"))
+        if yeni != (o.get("ad") or ""):
+            print("      ad: %r -> %r" % (o.get("ad"), yeni))
+            o["ad"] = yeni
+            n_ad += 1
+    print("duzeltilen ad         : %d" % n_ad)
     print("kalan                 : %d" % len(kalan))
 
     atanmamis = grupla(kalan)

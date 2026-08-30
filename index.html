@@ -847,16 +847,10 @@
     font-size:0;letter-spacing:0;text-indent:0;line-height:0;}
   #modGez.cizim svg{display:block;fill:currentColor;}
   #modGez.cizim.gor{opacity:.50;}
-  /* ── SORU KIPI ───────────────────────────────────────────────────
-     Nebulaya ilk basista burada bir cumle cikiyor ("SWITCH TO
-     SOUNDS?"). Raf adlari tek kelime, cumle degil: 26px ve .46em
-     harf arasiyla ekrandan tasar. Soru kipinde punto ve harf arasi
-     kuculuyor, yazi bir tik daha belirgin -- soru sorulduysa
-     okunmasi lazim. */
-  #modGez.soru{font-size:15px;letter-spacing:.30em;text-indent:.30em;
-    font-weight:500;}
-  #modGez.soru.gor{opacity:.72;}
-  @media (max-width:480px){ #modGez.soru{font-size:13px;letter-spacing:.24em;text-indent:.24em;} }
+  /* SORU KIPI SILINDI: nebulaya basinca cikan "SWITCH TO SOUNDS?"
+     cumlesinin bicimiydi. Kanal gecisi kaldirilinca (bkz. havuzDegis
+     mezar tasi) o cumle hic yazilmiyor, yani .soru sinifi hicbir
+     zaman eklenmiyordu -- uc kural bosa duruyordu. */
   /* Önizleme parmakla geziniyor: zemin geçişi 0.8s yerine 0.3s,
      yoksa halkadan halkaya geçerken renk arkadan yetişiyor. */
   body.oniz{transition:background-color .30s ease, background-image .30s ease;}
@@ -1296,9 +1290,6 @@
   body.mood #mark .neb{display:block;width:74px;height:74px;border-radius:50%;
     box-shadow:0 0 20px rgba(90,220,210,.20), inset 0 0 14px rgba(0,0,0,.7);}
   body.mood #mark.radio .neb{box-shadow:0 0 20px rgba(255,140,90,.22), inset 0 0 14px rgba(0,0,0,.7);}
-  body.mood #mark.soruyor .neb{animation:markSoru 1.1s ease-in-out infinite;}
-  @keyframes markSoru{0%,100%{opacity:.55;transform:scale(1);}
-                      50%   {opacity:1;  transform:scale(1.06);}}
   body.mood #mark.liste .neb{box-shadow:0 0 20px rgba(176,164,192,.22), inset 0 0 14px rgba(0,0,0,.7);}
   body.mood #mark .wm{font-family:'Share Tech Mono',monospace;color:#8ff0dd;font-size:15px;letter-spacing:.34em;
     line-height:1;text-shadow:0 0 13px rgba(90,220,210,.38);}
@@ -4037,7 +4028,12 @@
      cikiyordu, 'SOUNDS' ne dinledigini soyluyor.
      Erken tanimli (var degil const ama en ustte): modAdiYaz acilista
      da cagriliyor. */
-  const KANAL_ADI = { radio:'RADIO', lib:'SOUNDS', liste:'MIXTAPE' };
+  /* 'liste' (MIXTAPE) girdisi silindi: o kanal kalkti, kimse
+     sormuyor. 'lib' DURUYOR ve gereklidir -- SOUND BANKS kipine
+     gecerken moodUygula() mod'u 'lib' yapiyor ve ust satirda
+     'SOUNDS' yaziyor. (Bunu silmeye kalktim, testin "Kanal adi
+     dogru yaziliyor" kontrolu yakaladi.) */
+  const KANAL_ADI = { radio:'RADIO', lib:'SOUNDS' };
   /* KANAL ARTIK TEK: RADIO. Arsiv (lib) ve mixtape (liste) kaldirildi;
      'mod' degiskeni duruyor cunku yuzlerce yerde okunuyor, ama artik
      hicbir zaman degismiyor. Depodaki eski deger de siliniyor: dun
@@ -8247,10 +8243,9 @@
   let nesil = 0;   // her basış nesli artırır; kilit YOK
   /* Mod akışı: kaynak ayrımı yok, hepsi tek havuz gibi. earth en büyük
      ve en iyi etiketli olduğu için ağırlığı fazla; kalanlar araya giriyor. */
-  function _kuyruktanUygun(q){
-    for(let i=0;i<q.length;i++){ if(modUygun(q[i])) return q.splice(i,1)[0]; }
-    return null;
-  }
+  /* _kuyruktanUygun() SILINDI: birden fazla havuz varken kuyruktan
+     "bu rafa uyan ilkini" cekiyordu. Jamendo, PLAYJOY ve netlabel
+     havuzlari kalkinca cagiran kimse kalmadi. */
   function modGec(){
     /* RADIOTAPE = radyo + müzik: canlı yayın da sıraya giriyor. Kuyruk
        boşsa BEKLEMİYOR, arşivden devam ediyor ve kuyruk arkada doluyor —
@@ -8895,67 +8890,17 @@
      Kanala ve kategoriye dokunmuyor, müzik kesilmiyor. Tek işi
      "efektlerden çık, temize dön". Kategori sırası artık sağ üstteki
      kategori yazısında. */
-  /* NEBULA = ANAHTAR: canli radyo <-> arsivin ses havuzu. FX donerken
-     de calisir. Eskiden FX'i sifirliyordu; o is uydu dugmesinde var. */
-  /* Uc ana kanal, sirayla: RADIOTAPE (canli radyo, acilis) ->
-     ORBITAPE (sesler) -> MIXTAPE (insanlarin parcalari) -> basa. */
-  /* MIXTAPE SIMDILIK KAPALI: calismiyordu, nebuladan oraya gecmek
-     kullaniciyi bos kanalda birakiyordu. Listeye geri eklemek yeter. */
-  /* Radyo tarafinda tek kanal var. SOUND BANKS kipinde de nebula
-     KANAL DEGISTIRMIYOR (bkz. moodDegis): orada isi FX'leri
-     sifirlamak. Yani her iki dunyada da gecilecek yer yok. */
-  const KANAL_SIRA = ['radio'];
-  /* ── NEBULA ONCE SORUYOR ─────────────────────────────────────────
-     Sol ustteki gezegene basmak kanali ANINDA degistiriyordu: canli
-     radyoyu dinlerken yanlislikla degen parmak seni arsive atiyor,
-     calan istasyon gidiyor ve geri donusu yok. Kanal degisimi bu
-     uygulamadaki en buyuk hareket; tek dokunusla olmamali.
-     Artik ilk dokunus SORUYOR: halkanin altinda, gezinme adlarinin
-     ciktigi yerde hedefin adi ve bir soru isareti beliriyor
-     ("SOUNDS ?"), gezegen de nefes aliyor. Ikinci dokunus geciyor.
-     VAZGECMEK ICIN HICBIR SEY YAPMAK GEREKMIYOR: 2.6 saniye bekle,
-     ya da baska bir yere dokun -- soru kendiliginden siliniyor.
-     Bu, uygulamanin baska yerinde de olan bir dil: gecici ad yazar,
-     kendi kendine soner. Yeni bir dugme, yeni bir kutu yok. */
-  var _kanalSorHedef = null, _kanalSorZaman = null;
-  function kanalSoruIptal(){
-    try{
-      if(_kanalSorZaman){ clearTimeout(_kanalSorZaman); _kanalSorZaman = null; }
-      if(!_kanalSorHedef) return;
-      _kanalSorHedef = null;
-      try{ modGezYaz('');
-           const _g = document.getElementById('modGez');
-           if(_g) _g.classList.remove('soru'); }catch(e){ _yut(e); }
-      try{ mark.classList.remove('soruyor'); }catch(e){ _yut(e); }
-    }catch(e){ _yut(e); }
-  }
-  function havuzDegis(){
-    /* KANAL GECISI KALDIRILDI: tek kanal var. Fonksiyon duruyor ama
-       hicbir sey yapmiyor -- cagiran yerler (nebula) zaten silindi,
-       geride kalan bir cagri olursa da sessizce donuyor. */
-    if(KANAL_SIRA.length < 2) return;
-    try{
-      const i = KANAL_SIRA.indexOf(mod);
-      const hedef = KANAL_SIRA[(i < 0 ? 0 : i + 1) % KANAL_SIRA.length];
-      if(_kanalSorHedef !== hedef){
-        _kanalSorHedef = hedef;
-        /* "SOUNDS ?" cirkin ve ne dedigi belli degildi. Soru tam
-           cumle: hangi kanala gecilecegini soyluyor ve nasil
-           onaylanacagini da. Ingilizce -- arayuzun tamami oyle. */
-        try{ modGezYaz('SWITCH TO ' + (KANAL_ADI[hedef] || '') + '? TAP AGAIN');
-             const _g = document.getElementById('modGez');
-             if(_g) _g.classList.add('soru'); }catch(e){ _yut(e); }
-        try{ mark.classList.add('soruyor'); }catch(e){ _yut(e); }
-        if(_kanalSorZaman) clearTimeout(_kanalSorZaman);
-        _kanalSorZaman = setTimeout(kanalSoruIptal, 2600);
-        return;                                   // HENUZ GECMIYORUZ
-      }
-      kanalSoruIptal();
-      try{ const _g = document.getElementById('modGez');
-           if(_g) _g.classList.remove('soru'); }catch(e){ _yut(e); }
-      modaGec(hedef);
-    }catch(e){ _yut(e); }
-  }
+  /* ── KANAL GECISI: TAMAMEN KALDIRILDI ────────────────────────────
+     Burada bir zamanlar uc kanal vardi (RADIOTAPE -> ORBITAPE ->
+     MIXTAPE) ve sol ustteki gezegen aralarinda geziyordu. Once
+     MIXTAPE kapandi, sonra iki dunya ayarlardan ayrildi ve gecilecek
+     yer kalmadi. Geriye calismayan bir iskelet kaldi: KANAL_SIRA tek
+     elemanliydi, yani havuzDegis() ilk satirinda donuyordu; onunla
+     birlikte kanalSoruIptal(), iki durum degiskeni ve dort CSS kurali
+     da hicbir zaman calismiyordu. Bugun (30 Agustos) hepsi silindi.
+     Gezegenin bugunku isi asagida: FX'leri sifirlamak.
+     Geri istenirse: kanal listesi, soru-sor/onayla akisi ve
+     #modGez.soru + #mark.soruyor bicimleri birlikte geri gelmeli. */
   /* ── NEBULANIN YENI ISI: FX'LERI SIFIRLAMAK ──────────────────────
      Eskiden kanal degistiriyordu. Iki dunya artik ayarlardan
      ayrildigi icin gececek yer kalmadi; nebula bos durmasin diye
@@ -8968,15 +8913,10 @@
     try{ fxNormale(); }catch(e){ _yut(e); }
     try{ nefesVer(); }catch(e){ _yut(e); }
   }
-  /* Baska bir yere dokunmak da vazgecmektir: soru ekranin ortasinda
-     asili kalmasin. Yakalama asamasinda dinliyoruz ki, dokunusun ne
-     yaptigindan bagimsiz olarak soru kapansin. */
-  try{
-    document.addEventListener('pointerdown', e=>{
-      try{ if(_kanalSorHedef && !(mark && mark.contains(e.target))) kanalSoruIptal(); }
-      catch(_){ _yut(_); }
-    }, true);
-  }catch(e){ _yut(e); }
+  /* BELGE GENELINDEKI 'pointerdown' DINLEYICISI DE SILINDI: tek isi
+     yukaridaki kanal sorusunu iptal etmekti. Soru artik hic
+     sorulmadigi icin geriye, ekrana her degiste yakalama asamasinda
+     bosuna calisan bir dinleyici kalmisti. */
   /* ── SAĞ ÜST KATEGORİ YAZISI: BİR SONRAKİ HALKA ──────────────────
      Marka adının solundaki isim aynı zamanda bir düğme. Açılışta
      RADIOTAPE (en dış halka) yazıyor; her basışta bir içteki halkaya

@@ -1,35 +1,5 @@
 [
  {
-  "id": "rb:4dad0ae3-720a-434e-b350-7186e4c5ea6f",
-  "mp3": "https://purenature-mynoise.radioca.st/stream",
-  "ad": "MyNoise Pure Nature",
-  "etiket": "ambient,ambient and relaxation music,nature",
-  "ulke": "BE",
-  "tur": "ambient",
-  "grup": "AMBIENT",
-  "saf": 1
- },
- {
-  "id": "rb:95277bca-2c9a-4c08-b2e7-0854e5793f8e",
-  "mp3": "https://maggie.torontocast.com:2020/stream/natureradiorain",
-  "ad": "Nature Radio Rain",
-  "etiket": "ambient,ambient and relaxation music,nature,rainorshine,relax,relaxation,relaxation music,relaxing,sounds of nature",
-  "ulke": "CA",
-  "tur": "ambient",
-  "grup": "AMBIENT",
-  "saf": 1
- },
- {
-  "id": "rb:77eaf32d-241f-4f25-b7d6-347783cd4471",
-  "mp3": "https://az1.mediacp.eu/listen/natureradiosleep/radio.mp3",
-  "ad": "NATURE RADIO SLEEP",
-  "etiket": "ambient,bird,city,easy listening,forest,italy,meditation,natura,natural,nature,new age,ocean,rain,relax,relaxation,rome,sleep,soft,suoni",
-  "ulke": "IT",
-  "tur": "ambient",
-  "grup": "AMBIENT",
-  "saf": 1
- },
- {
   "id": "rb:29de6c98-0a96-4196-8b7f-1aeb32cbb6ca",
   "mp3": "https://ais-sa2.cdnstream1.com/2347_128.mp3",
   "ad": "#1 Splash Spa",
@@ -50,22 +20,22 @@
   "saf": 2
  },
  {
+  "id": "rb:b828a184-3488-48f2-ab60-38a5e435a9fe",
+  "mp3": "https://0nlineradio.radioho.st/lounge-nature-sounds?ref=radio-browser26",
+  "ad": "0R - NATURE RELAX",
+  "etiket": "alternative,background,chillout,easy listening,lounge,natura,nature,rainforest,relax,sleep,smooth,sounds of nature,yoga",
+  "ulke": "DE",
+  "tur": "chillout",
+  "grup": "AMBIENT",
+  "saf": 2
+ },
+ {
   "id": "rb:a076db99-edf0-45fb-b325-1ad9e064f278",
   "mp3": "https://stream.newageradio.gr/listen/hq/radio.mp3",
   "ad": "1st Greek New Age FLAC Radio",
   "etiket": "new age",
   "ulke": "GR",
   "tur": "new age",
-  "grup": "AMBIENT",
-  "saf": 2
- },
- {
-  "id": "rb:f2be95c6-1e79-4aae-8f6b-6f3d7fc8dc9e",
-  "mp3": "https://stream.newageradio.gr/listen/hq/radio.aac",
-  "ad": "1st Greek New Age FLAC Radio AAC+ 320kbps",
-  "etiket": "ambient,audiophile radio,chillout,downtempo,electronic,flac radio,greek internet radio,healing music,instrumental,lounge,meditation,new age,relax,space music,yoga",
-  "ulke": "GR",
-  "tur": "downtempo",
   "grup": "AMBIENT",
   "saf": 2
  },
@@ -150,6 +120,16 @@
   "saf": 2
  },
  {
+  "id": "rb:c8c9ca34-c4f5-4870-aabe-081cb4078f9b",
+  "mp3": "https://ice6.somafm.com/groovesalad2-256-mp3",
+  "ad": "Groove Salad 2 (256 kbps)",
+  "etiket": "ambient,chillout,downtempo",
+  "ulke": "US",
+  "tur": "downtempo",
+  "grup": "AMBIENT",
+  "saf": 3
+ },
+ {
   "id": "rb:ffc8d7d5-7244-4738-bfee-22fcf0340edf",
   "mp3": "https://mml2.prostream.se/listen/harmony_frequencies_radio/radio.mp3",
   "ad": "Harmony Frequencies",
@@ -168,6 +148,36 @@
   "tur": "instrumental",
   "grup": "AMBIENT",
   "saf": 2
+ },
+ {
+  "id": "rb:4dad0ae3-720a-434e-b350-7186e4c5ea6f",
+  "mp3": "https://purenature-mynoise.radioca.st/stream",
+  "ad": "MyNoise Pure Nature",
+  "etiket": "ambient,ambient and relaxation music,nature",
+  "ulke": "BE",
+  "tur": "ambient",
+  "grup": "AMBIENT",
+  "saf": 1
+ },
+ {
+  "id": "rb:95277bca-2c9a-4c08-b2e7-0854e5793f8e",
+  "mp3": "https://maggie.torontocast.com:2020/stream/natureradiorain",
+  "ad": "Nature Radio Rain",
+  "etiket": "ambient,ambient and relaxation music,nature,rainorshine,relax,relaxation,relaxation music,relaxing,sounds of nature",
+  "ulke": "CA",
+  "tur": "ambient",
+  "grup": "AMBIENT",
+  "saf": 1
+ },
+ {
+  "id": "rb:77eaf32d-241f-4f25-b7d6-347783cd4471",
+  "mp3": "https://az1.mediacp.eu/listen/natureradiosleep/radio.mp3",
+  "ad": "NATURE RADIO SLEEP",
+  "etiket": "ambient,bird,city,easy listening,forest,italy,meditation,natura,natural,nature,new age,ocean,rain,relax,relaxation,rome,sleep,soft,suoni",
+  "ulke": "IT",
+  "tur": "ambient",
+  "grup": "AMBIENT",
+  "saf": 1
  },
  {
   "id": "rb:0e14eb3e-a217-421a-ba6a-133bf5c3f95b",
@@ -218,6 +228,16 @@
   "tur": "downtempo",
   "grup": "AMBIENT",
   "saf": 2
+ },
+ {
+  "id": "rb:e6fa9a8a-02a8-11e9-a1be-52543be04c81",
+  "mp3": "https://ice6.somafm.com/gsclassic-128-mp3",
+  "ad": "SomaFM Groove Salad Classic (128k MP3)",
+  "etiket": "ambient,downtempo,early 2000s",
+  "ulke": "US",
+  "tur": "ambient",
+  "grup": "AMBIENT",
+  "saf": 3
  },
  {
   "id": "rb:9614eb15-0601-11e8-ae97-52543be04c81",
@@ -290,176 +310,6 @@
   "saf": 2
  },
  {
-  "id": "rb:22ed63fd-57bf-469a-9c71-4524834b74d0",
-  "mp3": "https://stream.0nlineradio.com/lo-fi?ref=radiobrowser",
-  "ad": "0nlineradio LO-FI",
-  "etiket": "chillout,easy listening,easy listning,lofi,relax,relaxing",
-  "ulke": "DE",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:49902d2d-672d-4130-b42a-90592d0460c5",
-  "mp3": "https://0nlineradio.radioho.st/0r-lo-fi?ref=radio-browser26",
-  "ad": "0R - LO-FI",
-  "etiket": "calm,chill,easy listening,easy music,learn,lo-fi,lofi,lofi hip hop,lofi study beats,smooth,student",
-  "ulke": "DE",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:0f89b1e4-ea1d-47e1-906b-7581691b6849",
-  "mp3": "https://stream.bigfm.de/lofifocus/mp3-128/radiobrowser",
-  "ad": "bigFM LoFi Focus",
-  "etiket": "chillout,hip-hop,lounge,relax,smooth jazz",
-  "ulke": "DE",
-  "tur": "jazz",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:a5213a32-d614-47bc-8d52-70a2b6eed8e1",
-  "mp3": "https://stream.zeno.fm/tabzverz0fctv",
-  "ad": "Box Lofi Radio",
-  "etiket": "lofi study beats",
-  "ulke": "GH",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:33798616-837b-4418-935d-4f947562ddb8",
-  "mp3": "https://cast.egofm.de/egopure.mp3?ar-distributor=ffa0&aw_0_req.gdpr=true",
-  "ad": "EgoFM Pure",
-  "etiket": "alternative,indie",
-  "ulke": "DE",
-  "tur": "indie",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:a50e5889-8b42-4474-bbbf-a5b2eb0fc80e",
-  "mp3": "https://radio.gameoverse.com/listen/gameoverse_radio/radio.mp3",
-  "ad": "Gameoverse Radio",
-  "etiket": "anime,doujin,game,games,ost,soundtrack,vgm,video games",
-  "ulke": "US",
-  "tur": "soundtrack",
-  "grup": "RADIOTAPE",
-  "saf": 1
- },
- {
-  "id": "rb:658d23e7-8a2e-4221-a8f0-cb4b7e406b8f",
-  "mp3": "https://streaming.hotmixradio.com/hotmix-lofi-en-mp3?provider=radiobrowser",
-  "ad": "Hotmix Lo-Fi",
-  "etiket": "lofi,lofi beats,lofi hip hop,lofi study beats",
-  "ulke": "FR",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:26c2fd92-1412-4e55-8334-96b5a4005b46",
-  "mp3": "https://streaming.hotmixradio.com/hotmix-lofi-en-mp3",
-  "ad": "hotmix LoFi",
-  "etiket": "hip-hop,lofi",
-  "ulke": "FR",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:a7c9d8fc-2100-42f3-a08b-2e8469966b62",
-  "mp3": "https://live.hunter.fm/lofi_high",
-  "ad": "Hunter.fm O Canal Lo-Fi (High)",
-  "etiket": "lo-fi,lofi",
-  "ulke": "BR",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:8a18c2ff-bdb9-4bfc-9707-091c12086fea",
-  "mp3": "https://kathy.torontocast.com:2695/stream",
-  "ad": "Indie X FM",
-  "etiket": "alternative rock,alternative wave,classic alternative,edm,indie,indie pop,indie rock,punk",
-  "ulke": "US",
-  "tur": "indie",
-  "grup": "RADIOTAPE",
-  "saf": 1
- },
- {
-  "id": "rb:dd264a2a-936f-4a6f-84f0-dcea8bcc139b",
-  "mp3": "https://stream.emisorasmusicales.net/listen/la_indie/laindie.mp3",
-  "ad": "La Indie",
-  "etiket": "indie,indie pop",
-  "ulke": "ES",
-  "tur": "indie",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:ab9697c4-f1cf-48bc-b4d8-4d15ad5618fa",
-  "mp3": "https://radio.nia.nc/radio/8020/lofi-hq-stream.aac",
-  "ad": "NIA Radio Lo-Fi",
-  "etiket": "chillout,lofi,lofi hip hop",
-  "ulke": "NC",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:465e8c27-0340-4e2b-a067-3319f55cdbff",
-  "mp3": "https://daystream.palmerablanca.com/daystream-128.mp3",
-  "ad": "Palmera Blanca radio - Daystream",
-  "etiket": "chill,chillout,downtempo,lo-fi,lounge,retrowave,synthwave",
-  "ulke": "KZ",
-  "tur": "downtempo",
-  "grup": "WORLD & ROOTS",
-  "saf": 1
- },
- {
-  "id": "rb:6b2eafdd-ce30-4e3c-b25b-161b546aa2f3",
-  "mp3": "https://das-edge16-live365-dal02.cdnstream.com/a24494",
-  "ad": "PAX LO-FI",
-  "etiket": "christian,lofi,religious",
-  "ulke": "US",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:02338a64-da59-4db6-a1c1-639fdc74d65b",
-  "mp3": "https://listen.reyfm.de/lofi_128kbps.mp3",
-  "ad": "REYFM - #lofi",
-  "etiket": "lo-fi,lofi",
-  "ulke": "DE",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:56b9be45-1211-4286-815d-56c3fec0ad8d",
-  "mp3": "https://listen.reyfm.de/lofi_64kbps.mp3",
-  "ad": "REYFM - #lofi",
-  "etiket": "lo-fi,lofi",
-  "ulke": "DE",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:4e681355-3ebb-4b6c-a79a-d7cc81a0afd5",
-  "mp3": "https://listen.reyfm.de/lofi_320kbps.mp3",
-  "ad": "REYFM -#LOFI",
-  "etiket": "chill,lofi",
-  "ulke": "DE",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
   "id": "rb:4f30d107-82f3-4e4e-99e4-44e05adcb2e9",
   "mp3": "https://0nlineradio.radioho.st/lounge-piano-jazz-bar?ref=radio-browser26",
   "ad": "0R - PIANO JAZZ LOUNGE",
@@ -470,64 +320,14 @@
   "saf": 1
  },
  {
-  "id": "rb:8782cfd5-d363-41b4-83ad-5abc673fea35",
-  "mp3": "https://radio.nitro-server.uk/listen/frobeatsazzadio/radio.mp3",
-  "ad": "Afrobeats Jazz Radio",
-  "etiket": "african,afrobeats,afrobeats jazz,jazz",
-  "ulke": "US",
-  "tur": "afrobeat",
-  "grup": "JAZZ",
-  "saf": 1
- },
- {
-  "id": "rb:7ada8a81-5ae1-418c-8f18-51d2f38d86a4",
-  "mp3": "https://centova5.transmissaodigital.com:20104/live",
-  "ad": "Bossa Jazz Brasil",
-  "etiket": "bossa nova,jazz,mpb",
-  "ulke": "BR",
+  "id": "rb:34a15ee8-a71b-4004-8fce-83650b46af66",
+  "mp3": "https://mpc1.mediacp.eu:8356/stream",
+  "ad": "100% ACID JAZZ",
+  "etiket": "acid,acid jazz,ambient,canada,classic jazz,free jazz,hip hop,instrumental music,instrumentales,jazz,jazz fusion,latin jazz,nu-jazz,piano jazz,relax,relaxing,smooth jazz,toronto,trumpeth",
+  "ulke": "CA",
   "tur": "jazz",
   "grup": "JAZZ",
-  "saf": 1
- },
- {
-  "id": "rb:eb987d1a-ef9c-47dd-a70f-f35a34b11313",
-  "mp3": "https://stream.epic-lounge.com/piano-jazz-bar?ref=radiobrowser",
-  "ad": "Epic Lounge - PIANO & JAZZ BAR",
-  "etiket": "classical piano,jazz,lounge,lounge music,piano,piano jazz,smooth jazz",
-  "ulke": "DE",
-  "tur": "jazz",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:518d02e0-9301-4358-bf25-4ed57372fd2d",
-  "mp3": "https://jfm1.hostingradio.ru:14536/ijstream.mp3",
-  "ad": "Instrumental Jazz",
-  "etiket": "instrumental,jazz",
-  "ulke": "RU",
-  "tur": "jazz",
-  "grup": "JAZZ",
-  "saf": 1
- },
- {
-  "id": "rb:4e2d17f6-4be7-4f0e-bdc9-fa53b5dc45ef",
-  "mp3": "https://kbem-live.streamguys1.com/kbem_aac",
-  "ad": "Jazz 88 Minneapolis KBEM",
-  "etiket": "jazz,traffic",
-  "ulke": "US",
-  "tur": "jazz",
-  "grup": "JAZZ",
-  "saf": 1
- },
- {
-  "id": "rb:cabd4859-ac2b-4d27-b1ba-a29ddf7e8c58",
-  "mp3": "https://live.radioart.com/fJazz_piano.mp3",
-  "ad": "Radio Art - Jazz Piano",
-  "etiket": "instrumental,jazz,piano",
-  "ulke": "GR",
-  "tur": "instrumental",
-  "grup": "JAZZ",
-  "saf": 1
+  "saf": 2
  },
  {
   "id": "rb:961e719c-0601-11e8-ae97-52543be04c81",
@@ -550,16 +350,6 @@
   "saf": 2
  },
  {
-  "id": "rb:66bda19f-02fe-4462-a6c1-dbdcbf9feebe",
-  "mp3": "https://solopiano-high.rautemusik.fm/?ref=radiobrowser",
-  "ad": "__SOLOPIANO__ by rautemusik (rm.fm)",
-  "etiket": "hits,instrumental,klavier,new age piano,piano,piano jazz",
-  "ulke": "DE",
-  "tur": "instrumental",
-  "grup": "JAZZ",
-  "saf": 2
- },
- {
   "id": "rb:a2b92b15-ce28-4007-a756-b431abeb1059",
   "mp3": "https://cast1.torontocast.com:4450/;?type=http&nocache=1745625391",
   "ad": "A MISSISSIPPI BLUES",
@@ -568,6 +358,16 @@
   "tur": "jazz",
   "grup": "JAZZ",
   "saf": 2
+ },
+ {
+  "id": "rb:8782cfd5-d363-41b4-83ad-5abc673fea35",
+  "mp3": "https://radio.nitro-server.uk/listen/frobeatsazzadio/radio.mp3",
+  "ad": "Afrobeats Jazz Radio",
+  "etiket": "african,afrobeats,afrobeats jazz,jazz",
+  "ulke": "US",
+  "tur": "afrobeat",
+  "grup": "JAZZ",
+  "saf": 1
  },
  {
   "id": "rb:ee614813-177f-4b83-ae6a-5e5b22d440d1",
@@ -600,12 +400,72 @@
   "saf": 2
  },
  {
+  "id": "rb:7ada8a81-5ae1-418c-8f18-51d2f38d86a4",
+  "mp3": "https://centova5.transmissaodigital.com:20104/live",
+  "ad": "Bossa Jazz Brasil",
+  "etiket": "bossa nova,jazz,mpb",
+  "ulke": "BR",
+  "tur": "jazz",
+  "grup": "JAZZ",
+  "saf": 1
+ },
+ {
   "id": "rb:32fed2d8-f1b5-42b4-a560-6e746c699b11",
   "mp3": "https://stream.ella-radio.de/ella-smooth-bossa-nova/mp3-192/?ref=radio-browser",
   "ad": "Ella Radio - Smooth Bossa Nova",
   "etiket": "bossa nova,jazz,smooth jazz",
   "ulke": "DE",
   "tur": "bossa nova",
+  "grup": "JAZZ",
+  "saf": 2
+ },
+ {
+  "id": "rb:518d02e0-9301-4358-bf25-4ed57372fd2d",
+  "mp3": "https://jfm1.hostingradio.ru:14536/ijstream.mp3",
+  "ad": "Instrumental Jazz",
+  "etiket": "instrumental,jazz",
+  "ulke": "RU",
+  "tur": "jazz",
+  "grup": "JAZZ",
+  "saf": 1
+ },
+ {
+  "id": "rb:a36cb1a5-f9b5-4739-a86a-987d256b7d0e",
+  "mp3": "https://cast1.torontocast.com:2060/;.mp3",
+  "ad": "J-Club Club Bandstand",
+  "etiket": "1930s,1940s,big band,jazz,swing",
+  "ulke": "JP",
+  "tur": "jazz",
+  "grup": "JAZZ",
+  "saf": 2
+ },
+ {
+  "id": "rb:4e2d17f6-4be7-4f0e-bdc9-fa53b5dc45ef",
+  "mp3": "https://kbem-live.streamguys1.com/kbem_aac",
+  "ad": "Jazz 88 Minneapolis KBEM",
+  "etiket": "jazz,traffic",
+  "ulke": "US",
+  "tur": "jazz",
+  "grup": "JAZZ",
+  "saf": 1
+ },
+ {
+  "id": "rb:cabd4859-ac2b-4d27-b1ba-a29ddf7e8c58",
+  "mp3": "https://live.radioart.com/fJazz_piano.mp3",
+  "ad": "Radio Art - Jazz Piano",
+  "etiket": "instrumental,jazz,piano",
+  "ulke": "GR",
+  "tur": "instrumental",
+  "grup": "JAZZ",
+  "saf": 1
+ },
+ {
+  "id": "rb:66bda19f-02fe-4462-a6c1-dbdcbf9feebe",
+  "mp3": "https://solopiano-high.rautemusik.fm/?ref=radiobrowser",
+  "ad": "SOLOPIANO · rautemusik",
+  "etiket": "hits,instrumental,klavier,new age piano,piano,piano jazz",
+  "ulke": "DE",
+  "tur": "instrumental",
   "grup": "JAZZ",
   "saf": 2
  },
@@ -617,6 +477,26 @@
   "ulke": "RU",
   "tur": "blues",
   "grup": "JAZZ",
+  "saf": 2
+ },
+ {
+  "id": "rb:07e6c4b7-b1b5-430b-a7a8-166260a775ee",
+  "mp3": "https://stream.0nlineradio.com/haendel?ref=radiobrowser",
+  "ad": "0nlineradio HÄNDEL",
+  "etiket": "classic,classic jazz,classical,classical music,classics,instrumental,klassik",
+  "ulke": "DE",
+  "tur": "instrumental",
+  "grup": "ORCHESTRAL",
+  "saf": 2
+ },
+ {
+  "id": "rb:0c7c0c0c-5981-440f-bc8a-98530962c191",
+  "mp3": "https://stream.0nlineradio.com/vivaldi?ref=radiobrowser",
+  "ad": "0nlineradio VIVALDI",
+  "etiket": "classic,classical,classical music,classics,instrumental,klassik,vivaldi",
+  "ulke": "DE",
+  "tur": "classical",
+  "grup": "ORCHESTRAL",
   "saf": 2
  },
  {
@@ -660,96 +540,6 @@
   "saf": 1
  },
  {
-  "id": "rb:9637f981-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://listen.181fm.com/181-xsoundtrax_128k.mp3",
-  "ad": "181.FM - Christmas Soundtracks",
-  "etiket": "christmas music,soundtracks,waynesboro",
-  "ulke": "US",
-  "tur": "soundtrack",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:e58589d8-a286-4d40-81b8-d5b345d100be",
-  "mp3": "https://radio.chinesemusicworld.com/chinesemusic.mp3",
-  "ad": "Chinese Classical Music (Mp3 stream)",
-  "etiket": "classical,instrumental,traditional",
-  "ulke": "CN",
-  "tur": "classical",
-  "grup": "ORCHESTRAL",
-  "saf": 1
- },
- {
-  "id": "rb:5b9cc676-01d6-4c32-9dae-32bd42a79bbd",
-  "mp3": "https://stream.classic.nl/classicnl-soundtracks.mp3",
-  "ad": "classic nl soundtracks",
-  "etiket": "classical,soundtracks",
-  "ulke": "NL",
-  "tur": "soundtrack",
-  "grup": "ORCHESTRAL",
-  "saf": 1
- },
- {
-  "id": "rb:a214dd51-1724-4053-a034-73bfcdb06a9b",
-  "mp3": "https://29318.live.streamtheworld.com/KDFCFMAAC96_SC",
-  "ad": "Classical California KDFC AAC",
-  "etiket": "classical,opera",
-  "ulke": "US",
-  "tur": "classical",
-  "grup": "ORCHESTRAL",
-  "saf": 1
- },
- {
-  "id": "rb:db61d84c-620c-4e56-b262-cbbe0909c828",
-  "mp3": "https://azura.ebsmedia.ro/listen/movies/movies128.mp3",
-  "ad": "EBS | Movie Soundtracks",
-  "etiket": "movie scores,movie soundtracks,soundtracks",
-  "ulke": "RO",
-  "tur": "soundtrack",
-  "grup": "ORCHESTRAL",
-  "saf": 1
- },
- {
-  "id": "rb:19ea3079-8757-467a-befb-0db17b50d1be",
-  "mp3": "https://mml2.prostream.se/listen/epic_soundtracks_only/radio.mp3",
-  "ad": "Epic Soundtracks Only",
-  "etiket": "cinematic,film music,orchestral,soundtracks",
-  "ulke": "SE",
-  "tur": "soundtrack",
-  "grup": "RADIOTAPE",
-  "saf": 1
- },
- {
-  "id": "rb:07e6c4b7-b1b5-430b-a7a8-166260a775ee",
-  "mp3": "https://stream.0nlineradio.com/haendel?ref=radiobrowser",
-  "ad": "0nlineradio HÄNDEL",
-  "etiket": "classic,classic jazz,classical,classical music,classics,instrumental,klassik",
-  "ulke": "DE",
-  "tur": "instrumental",
-  "grup": "ORCHESTRAL",
-  "saf": 2
- },
- {
-  "id": "rb:0c7c0c0c-5981-440f-bc8a-98530962c191",
-  "mp3": "https://stream.0nlineradio.com/vivaldi?ref=radiobrowser",
-  "ad": "0nlineradio VIVALDI",
-  "etiket": "classic,classical,classical music,classics,instrumental,klassik,vivaldi",
-  "ulke": "DE",
-  "tur": "classical",
-  "grup": "ORCHESTRAL",
-  "saf": 2
- },
- {
-  "id": "rb:b828a184-3488-48f2-ab60-38a5e435a9fe",
-  "mp3": "https://0nlineradio.radioho.st/lounge-nature-sounds?ref=radio-browser26",
-  "ad": "0R - NATURE RELAX",
-  "etiket": "alternative,background,chillout,easy listening,lounge,natura,nature,rainforest,relax,sleep,smooth,sounds of nature,yoga",
-  "ulke": "DE",
-  "tur": "chillout",
-  "grup": "AMBIENT",
-  "saf": 2
- },
- {
   "id": "rb:714279f8-7e0e-4ebd-9152-215d3a6164f9",
   "mp3": "https://lhttp-hw.qtfm.cn/live/5022308/64k.mp3",
   "ad": "50首经典古典音乐",
@@ -757,16 +547,6 @@
   "ulke": "CN",
   "tur": "instrumental",
   "grup": "ORCHESTRAL",
-  "saf": 2
- },
- {
-  "id": "rb:c57670ff-eb19-49a2-8a79-d84dd8e855c4",
-  "mp3": "https://stream.zeno.fm/xmgnc6mcwnhvv",
-  "ad": "Acustic Radio",
-  "etiket": "classical,instrumental music,orchestral",
-  "ulke": "RO",
-  "tur": "instrumental",
-  "grup": "WORLD & ROOTS",
   "saf": 2
  },
  {
@@ -778,6 +558,16 @@
   "tur": "classical",
   "grup": "ORCHESTRAL",
   "saf": 2
+ },
+ {
+  "id": "rb:e58589d8-a286-4d40-81b8-d5b345d100be",
+  "mp3": "https://radio.chinesemusicworld.com/chinesemusic.mp3",
+  "ad": "Chinese Classical Music (Mp3 stream)",
+  "etiket": "classical,instrumental,traditional",
+  "ulke": "CN",
+  "tur": "classical",
+  "grup": "ORCHESTRAL",
+  "saf": 1
  },
  {
   "id": "rb:6816e8cd-8b06-4d68-b61f-4d9f54015f95",
@@ -820,6 +610,46 @@
   "saf": 2
  },
  {
+  "id": "rb:5b9cc676-01d6-4c32-9dae-32bd42a79bbd",
+  "mp3": "https://stream.classic.nl/classicnl-soundtracks.mp3",
+  "ad": "classic nl soundtracks",
+  "etiket": "classical,soundtracks",
+  "ulke": "NL",
+  "tur": "soundtrack",
+  "grup": "ORCHESTRAL",
+  "saf": 1
+ },
+ {
+  "id": "rb:a214dd51-1724-4053-a034-73bfcdb06a9b",
+  "mp3": "https://29318.live.streamtheworld.com/KDFCFMAAC96_SC",
+  "ad": "Classical California KDFC AAC",
+  "etiket": "classical,opera",
+  "ulke": "US",
+  "tur": "classical",
+  "grup": "ORCHESTRAL",
+  "saf": 1
+ },
+ {
+  "id": "rb:db61d84c-620c-4e56-b262-cbbe0909c828",
+  "mp3": "https://azura.ebsmedia.ro/listen/movies/movies128.mp3",
+  "ad": "EBS | Movie Soundtracks",
+  "etiket": "movie scores,movie soundtracks,soundtracks",
+  "ulke": "RO",
+  "tur": "soundtrack",
+  "grup": "ORCHESTRAL",
+  "saf": 1
+ },
+ {
+  "id": "rb:9f3d4c02-c3f0-4f00-bebe-509ff81b4d54",
+  "mp3": "https://stream.epic-classical.com/classical-violin",
+  "ad": "EPIC CLASSICAL - Classical Violin",
+  "etiket": "ambient,ambient and relaxation music,classic,classical,instrumental,klassiek,violin",
+  "ulke": "DE",
+  "tur": "instrumental",
+  "grup": "ORCHESTRAL",
+  "saf": 3
+ },
+ {
   "id": "rb:04963e61-76f5-411c-9fed-2a3b08f9054d",
   "mp3": "https://centova.svdns.com.br:19373/stream",
   "ad": "GOLD INSTRUMENTAL (32kbps/aacPlus)",
@@ -850,54 +680,24 @@
   "saf": 2
  },
  {
-  "id": "rb:a853f228-0e27-4461-8657-5b10f2fd79d7",
-  "mp3": "https://live.novoeradio.by:444/live/novoeradio_aac128/icecast.audio",
-  "ad": "Новое радио",
-  "etiket": "classical",
-  "ulke": "BY",
-  "tur": "classical",
-  "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
-  "id": "rb:d7a0a800-b461-44f0-a444-058e10f27e7c",
-  "mp3": "https://az1.mediacp.eu/listen/radiodimensionerelax/radio.mp3",
-  "ad": "RADIO DIMENSIONE RELAX",
-  "etiket": "ambient,ambient and relaxation music,ambient lounge,ambiental,chillout,chillout+lounge,deep ambient,italian music,jazz,lounge,lounge music,relax,smooth jazz,soft music",
-  "ulke": "IT",
-  "tur": "jazz",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:95eff2f9-cb7a-4fe4-bb07-8c700719f8b6",
-  "mp3": "https://pub0201.101.ru/stream/trust/mp3/128/24?",
-  "ad": "Relax FM Chillout",
-  "etiket": "chill,chillout,chillout+lounge",
-  "ulke": "RU",
-  "tur": "chillout",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
-  "id": "rb:1055f30a-bde4-46c7-a233-4668fcdc8781",
-  "mp3": "https://pub0201.101.ru/stream/pro/aac/64/28?",
-  "ad": "Relax FM Instrumental",
-  "etiket": "instrumental",
-  "ulke": "RU",
+  "id": "rb:39bc256d-d78f-41ca-98bf-a7d510579464",
+  "mp3": "https://instrumental-volksmusik.spcast.eu:443/stream?time=1787342349",
+  "ad": "Radio Schwany - Volksmusik instrumental",
+  "etiket": "bayern,instrumental,schwany,volksmusik,volksmusik instrumental",
+  "ulke": "DE",
   "tur": "instrumental",
-  "grup": "LOUNGE & LOFI",
+  "grup": "ORCHESTRAL",
   "saf": 1
  },
  {
-  "id": "rb:4cc3e959-b572-4285-99e2-069151d03b5e",
-  "mp3": "https://cast1.torontocast.com:4640/stream",
-  "ad": "# 100 GREATEST JAZZ LOUNGE BAR",
-  "etiket": "192kbps,chillout,chillout+lounge,classic hits,club,cool jazz,cool music seduction,fm,high quality audio,jazz,jazz fusion,jazz lounge,local radio,lounge,lounge music,lounge radio,music,musica,oldies,public radio,radio,relax,relax music,relaxation,relaxing,smooth,smooth jazz,smooth lounge,vocal jazz,vocal lounge",
-  "ulke": "CA",
-  "tur": "jazz",
-  "grup": "LOUNGE & LOFI",
-  "saf": 2
+  "id": "rb:94a56ce0-958b-4d3b-a482-e41c44f16a62",
+  "mp3": "https://live.radioart.com/fBroadway.mp3",
+  "ad": "RadioArt",
+  "etiket": "broadway,musicals,showtunes,soundtracks",
+  "ulke": "GR",
+  "tur": "soundtrack",
+  "grup": "ORCHESTRAL",
+  "saf": 1
  },
  {
   "id": "rb:389011a1-3a96-11e9-9b4e-52543be04c81",
@@ -918,6 +718,16 @@
   "tur": "downtempo",
   "grup": "LOUNGE & LOFI",
   "saf": 2
+ },
+ {
+  "id": "rb:22ed63fd-57bf-469a-9c71-4524834b74d0",
+  "mp3": "https://stream.0nlineradio.com/lo-fi?ref=radiobrowser",
+  "ad": "0nlineradio LO-FI",
+  "etiket": "chillout,easy listening,easy listning,lofi,relax,relaxing",
+  "ulke": "DE",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
  },
  {
   "id": "rb:ef0f4fda-76d2-4fc1-88f0-8e150b0509bd",
@@ -960,6 +770,16 @@
   "saf": 2
  },
  {
+  "id": "rb:49902d2d-672d-4130-b42a-90592d0460c5",
+  "mp3": "https://0nlineradio.radioho.st/0r-lo-fi?ref=radio-browser26",
+  "ad": "0R - LO-FI",
+  "etiket": "calm,chill,easy listening,easy music,learn,lo-fi,lofi,lofi hip hop,lofi study beats,smooth,student",
+  "ulke": "DE",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
   "id": "rb:43d3984d-fd02-454e-b7a3-4d7ea82cea11",
   "mp3": "https://0nlineradio.radioho.st/piano-romantic-piano?ref=radio-browser26",
   "ad": "0R - ROMANTIC PIANO",
@@ -990,22 +810,32 @@
   "saf": 2
  },
  {
+  "id": "rb:4cc3e959-b572-4285-99e2-069151d03b5e",
+  "mp3": "https://cast1.torontocast.com:4640/stream",
+  "ad": "100 GREATEST JAZZ LOUNGE BAR",
+  "etiket": "192kbps,chillout,chillout+lounge,classic hits,club,cool jazz,cool music seduction,fm,high quality audio,jazz,jazz fusion,jazz lounge,local radio,lounge,lounge music,lounge radio,music,musica,oldies,public radio,radio,relax,relax music,relaxation,relaxing,smooth,smooth jazz,smooth lounge,vocal jazz,vocal lounge",
+  "ulke": "CA",
+  "tur": "jazz",
+  "grup": "LOUNGE & LOFI",
+  "saf": 2
+ },
+ {
+  "id": "rb:9637f981-0601-11e8-ae97-52543be04c81",
+  "mp3": "https://listen.181fm.com/181-xsoundtrax_128k.mp3",
+  "ad": "181.FM - Christmas Soundtracks",
+  "etiket": "christmas music,soundtracks,waynesboro",
+  "ulke": "US",
+  "tur": "soundtrack",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
   "id": "rb:64381ada-fe89-46eb-8049-b1fc79e4dbbe",
   "mp3": "https://ec3.yesstreaming.net:3665/stream",
   "ad": "24/7 Cool Radio",
   "etiket": "blues,chillout,jazz,lounge",
   "ulke": "GB",
   "tur": "blues",
-  "grup": "LOUNGE & LOFI",
-  "saf": 2
- },
- {
-  "id": "rb:25ff1b4c-ffcb-4572-a561-9347e0e58c75",
-  "mp3": "https://lounge-high.rautemusik.fm/?ref=radiobrowser",
-  "ad": "__LOUNGE__ by rautemusik (rm.fm)",
-  "etiket": "ambient,chill,chillout,lounge,lounge music,smooth lounge",
-  "ulke": "DE",
-  "tur": "ambient",
   "grup": "LOUNGE & LOFI",
   "saf": 2
  },
@@ -1018,6 +848,26 @@
   "tur": "jazz",
   "grup": "LOUNGE & LOFI",
   "saf": 2
+ },
+ {
+  "id": "rb:0f89b1e4-ea1d-47e1-906b-7581691b6849",
+  "mp3": "https://stream.bigfm.de/lofifocus/mp3-128/radiobrowser",
+  "ad": "bigFM LoFi Focus",
+  "etiket": "chillout,hip-hop,lounge,relax,smooth jazz",
+  "ulke": "DE",
+  "tur": "jazz",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
+  "id": "rb:a5213a32-d614-47bc-8d52-70a2b6eed8e1",
+  "mp3": "https://stream.zeno.fm/tabzverz0fctv",
+  "ad": "Box Lofi Radio",
+  "etiket": "lofi study beats",
+  "ulke": "GH",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
  },
  {
   "id": "rb:3fd18c3f-8157-11e9-aa30-52543be04c81",
@@ -1090,6 +940,16 @@
   "saf": 2
  },
  {
+  "id": "rb:710d7b6c-225a-452e-8d2e-1f026386f81f",
+  "mp3": "https://stream.ella-radio.de/ella-bossa/mp3-192/?ref=radio-browser",
+  "ad": "Ella Radio - Bossa",
+  "etiket": "bossa nova,jazz",
+  "ulke": "DE",
+  "tur": "bossa nova",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
   "id": "rb:c72d442a-d73b-40f1-b741-e143b620eecf",
   "mp3": "https://stream.epic-lounge.com/jazzhop-lounge?ref=radiobrowser",
   "ad": "Epic Lounge - JAZZHOP",
@@ -1098,6 +958,16 @@
   "tur": "instrumental",
   "grup": "LOUNGE & LOFI",
   "saf": 2
+ },
+ {
+  "id": "rb:eb987d1a-ef9c-47dd-a70f-f35a34b11313",
+  "mp3": "https://stream.epic-lounge.com/piano-jazz-bar?ref=radiobrowser",
+  "ad": "Epic Lounge - PIANO & JAZZ BAR",
+  "etiket": "classical piano,jazz,lounge,lounge music,piano,piano jazz,smooth jazz",
+  "ulke": "DE",
+  "tur": "jazz",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
  },
  {
   "id": "rb:22b4735f-78fe-41db-bb98-800333352815",
@@ -1112,16 +982,6 @@
  {
   "id": "rb:bbe3fd37-8cff-44e4-8818-4f6c28df93d7",
   "mp3": "https://fluxmusic.api.radiosphere.io/channels/anima-radio/stream.aac?quality=10",
-  "ad": "FluxFM Anima Radio",
-  "etiket": "contemporary,downtempo,focus,lounge,music only,relaxed,warm",
-  "ulke": "DE",
-  "tur": "downtempo",
-  "grup": "LOUNGE & LOFI",
-  "saf": 2
- },
- {
-  "id": "rb:5fa6f504-b085-41c6-b485-63235a06245e",
-  "mp3": "https://fluxmusic.api.radiosphere.io/channels/anima-radio/stream.aac?quality=1",
   "ad": "FluxFM Anima Radio",
   "etiket": "contemporary,downtempo,focus,lounge,music only,relaxed,warm",
   "ulke": "DE",
@@ -1150,16 +1010,6 @@
   "saf": 2
  },
  {
-  "id": "rb:c6217603-7748-41a1-9ded-f3b3e8ffd630",
-  "mp3": "https://fluxmusic.api.radiosphere.io/channels/electronic-chillout/stream.mp3?quality=10",
-  "ad": "FluxFM Electronic Chillout",
-  "etiket": "contemporary,downtempo,electronica,music only,relaxation,relaxed",
-  "ulke": "DE",
-  "tur": "downtempo",
-  "grup": "LOUNGE & LOFI",
-  "saf": 2
- },
- {
   "id": "rb:954a3105-c6df-452b-a70c-577cee41355a",
   "mp3": "https://radio.webicdp.com/listen/fmvfitradiourban/radio.mp3",
   "ad": "FMV FIT Radio Urban",
@@ -1168,6 +1018,66 @@
   "tur": "downtempo",
   "grup": "LOUNGE & LOFI",
   "saf": 2
+ },
+ {
+  "id": "rb:9f0466be-b6b0-4f7c-baff-f64555494804",
+  "mp3": "https://stm1.srvif.com:7576/;",
+  "ad": "Groove Wave Lounge",
+  "etiket": "ambient lounge,jazz lounge,lounge",
+  "ulke": "BR",
+  "tur": "jazz",
+  "grup": "LOUNGE & LOFI",
+  "saf": 3
+ },
+ {
+  "id": "rb:26c2fd92-1412-4e55-8334-96b5a4005b46",
+  "mp3": "https://streaming.hotmixradio.com/hotmix-lofi-en-mp3",
+  "ad": "hotmix LoFi",
+  "etiket": "hip-hop,lofi",
+  "ulke": "FR",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
+  "id": "rb:7035cee7-7868-4cc2-99c9-6f3e365836ea",
+  "mp3": "https://streaming.hotmixradio.com/hotmix-lounge-en-mp3?provider=radiobrowser",
+  "ad": "Hotmix Lounge",
+  "etiket": "ambient lounge,lounge,lounge downtempo chillout ambient easy listening,lounge music",
+  "ulke": "FR",
+  "tur": "downtempo",
+  "grup": "LOUNGE & LOFI",
+  "saf": 3
+ },
+ {
+  "id": "rb:a7c9d8fc-2100-42f3-a08b-2e8469966b62",
+  "mp3": "https://live.hunter.fm/lofi_high",
+  "ad": "Hunter.fm O Canal Lo-Fi (High)",
+  "etiket": "lo-fi,lofi",
+  "ulke": "BR",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
+  "id": "rb:c1484aa5-b758-47a1-b098-69db58d6fb78",
+  "mp3": "https://ilm.stream35.radiohost.de/ilm_ilovechillhop_mp3-192?upd-meta&upd-scheme=https&_art=dD0xNzg3MzMzMDQ2JmQ9ODAxODFlNzEzZDkxYzg4OTFkYWM",
+  "ad": "I Love Music - I Love Chillhop",
+  "etiket": "chill beats,chillhop,lofi hip hop,music for study,relax",
+  "ulke": "DE",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 3
+ },
+ {
+  "id": "rb:dd264a2a-936f-4a6f-84f0-dcea8bcc139b",
+  "mp3": "https://stream.emisorasmusicales.net/listen/la_indie/laindie.mp3",
+  "ad": "La Indie",
+  "etiket": "indie,indie pop",
+  "ulke": "ES",
+  "tur": "indie",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
  },
  {
   "id": "rb:f2847b14-8a7b-4f93-a381-99628ee723ef",
@@ -1210,6 +1120,16 @@
   "saf": 2
  },
  {
+  "id": "rb:25ff1b4c-ffcb-4572-a561-9347e0e58c75",
+  "mp3": "https://lounge-high.rautemusik.fm/?ref=radiobrowser",
+  "ad": "LOUNGE · rautemusik",
+  "etiket": "ambient,chill,chillout,lounge,lounge music,smooth lounge",
+  "ulke": "DE",
+  "tur": "ambient",
+  "grup": "LOUNGE & LOFI",
+  "saf": 2
+ },
+ {
   "id": "rb:282facce-8ae7-46a5-9e24-a946abe9fc7d",
   "mp3": "https://s35.derstream.net/100austria.mp3",
   "ad": "Lounge.FM - 100% Austria",
@@ -1218,6 +1138,26 @@
   "tur": "jazz",
   "grup": "LOUNGE & LOFI",
   "saf": 2
+ },
+ {
+  "id": "rb:df2ef0fb-5019-4eb0-bfea-fa21e6a7e609",
+  "mp3": "https://radio.musicradio.ai/listen/musicradio.ai/radio.mp3",
+  "ad": "Music Radio",
+  "etiket": "chillout,chillout+lounge,club house,cool jazz,disco funk,easy listening,easy music,electronic,entertainment,funk,funky,funky house,hits,house,jazz,música pop,new releases,nu-jazz,piano jazz,pop dance,pop en español e inglés,pop en inglés,pop music,pop rock,popular,smooth jazz,soulful house,tech house,top hits",
+  "ulke": "FR",
+  "tur": "jazz",
+  "grup": "LOUNGE & LOFI",
+  "saf": 2
+ },
+ {
+  "id": "rb:ab9697c4-f1cf-48bc-b4d8-4d15ad5618fa",
+  "mp3": "https://radio.nia.nc/radio/8020/lofi-hq-stream.aac",
+  "ad": "NIA Radio Lo-Fi",
+  "etiket": "chillout,lofi,lofi hip hop",
+  "ulke": "NC",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
  },
  {
   "id": "rb:9067dc39-4bf4-4364-bd6b-8020cff3e15d",
@@ -1250,12 +1190,42 @@
   "saf": 2
  },
  {
+  "id": "rb:6b2eafdd-ce30-4e3c-b25b-161b546aa2f3",
+  "mp3": "https://das-edge16-live365-dal02.cdnstream.com/a24494",
+  "ad": "PAX LO-FI",
+  "etiket": "christian,lofi,religious",
+  "ulke": "US",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
   "id": "rb:11b62ca3-4a65-4103-9bff-1881363d0647",
   "mp3": "https://stream.radiojar.com/1uqnt5zp1v8uv.mp3",
   "ad": "Perfect Radio Coffeemusic",
   "etiket": "accoustic,coffee,indie pop,jazz,singer-songwriter,smooth jazz",
   "ulke": "ES",
   "tur": "indie",
+  "grup": "LOUNGE & LOFI",
+  "saf": 2
+ },
+ {
+  "id": "rb:d7a0a800-b461-44f0-a444-058e10f27e7c",
+  "mp3": "https://az1.mediacp.eu/listen/radiodimensionerelax/radio.mp3",
+  "ad": "RADIO DIMENSIONE RELAX",
+  "etiket": "ambient,ambient and relaxation music,ambient lounge,ambiental,chillout,chillout+lounge,deep ambient,italian music,jazz,lounge,lounge music,relax,smooth jazz,soft music",
+  "ulke": "IT",
+  "tur": "jazz",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
+  "id": "rb:a7760c28-7212-4155-9610-21fea3bcd5e0",
+  "mp3": "https://listen.radioking.com/radio/204667/stream/247420",
+  "ad": "Radio Zaï Zaï",
+  "etiket": "alternative rock,chill,dub,electro,electronic,reggae,rock,various",
+  "ulke": "FR",
+  "tur": "dub",
   "grup": "LOUNGE & LOFI",
   "saf": 2
  },
@@ -1268,6 +1238,36 @@
   "tur": "psychedelic",
   "grup": "LOUNGE & LOFI",
   "saf": 2
+ },
+ {
+  "id": "rb:95eff2f9-cb7a-4fe4-bb07-8c700719f8b6",
+  "mp3": "https://pub0201.101.ru/stream/trust/mp3/128/24?",
+  "ad": "Relax FM Chillout",
+  "etiket": "chill,chillout,chillout+lounge",
+  "ulke": "RU",
+  "tur": "chillout",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
+  "id": "rb:1055f30a-bde4-46c7-a233-4668fcdc8781",
+  "mp3": "https://pub0201.101.ru/stream/pro/aac/64/28?",
+  "ad": "Relax FM Instrumental",
+  "etiket": "instrumental",
+  "ulke": "RU",
+  "tur": "instrumental",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
+ },
+ {
+  "id": "rb:02338a64-da59-4db6-a1c1-639fdc74d65b",
+  "mp3": "https://listen.reyfm.de/lofi_128kbps.mp3",
+  "ad": "REYFM - lofi",
+  "etiket": "lo-fi,lofi",
+  "ulke": "DE",
+  "tur": "lofi",
+  "grup": "LOUNGE & LOFI",
+  "saf": 1
  },
  {
   "id": "rb:3ebdeaad-c8fd-4e11-bbb6-92c0a9ff8133",
@@ -1360,6 +1360,16 @@
   "saf": 2
  },
  {
+  "id": "rb:d9b43ea7-3c4d-11e8-b74d-52543be04c81",
+  "mp3": "https://ice6.somafm.com/secretagent-64-aac",
+  "ad": "SomaFM Secret Agent (64k AAC)",
+  "etiket": "ambient,downtempo,jazz,lounge,samba,sixties",
+  "ulke": "US",
+  "tur": "downtempo",
+  "grup": "LOUNGE & LOFI",
+  "saf": 3
+ },
+ {
   "id": "rb:cb136507-425b-4934-8991-d7fc8873c849",
   "mp3": "https://listen.radioking.com/radio/571682/stream/631712",
   "ad": "Sunset Chillout Lounge",
@@ -1410,6 +1420,16 @@
   "saf": 1
  },
  {
+  "id": "rb:c57670ff-eb19-49a2-8a79-d84dd8e855c4",
+  "mp3": "https://stream.zeno.fm/xmgnc6mcwnhvv",
+  "ad": "Acustic Radio",
+  "etiket": "classical,instrumental music,orchestral",
+  "ulke": "RO",
+  "tur": "instrumental",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
+ },
+ {
   "id": "rb:13acd5a9-d83b-4689-9853-0351c905590f",
   "mp3": "https://radio.afrikanabestsounds.com/listen/live_african/radio.mp3",
   "ad": "Afrikana Radio – Live African",
@@ -1418,6 +1438,46 @@
   "tur": "afrobeat",
   "grup": "WORLD & ROOTS",
   "saf": 1
+ },
+ {
+  "id": "rb:991dd9d5-2a83-47ff-a8bb-99e1e948ffe6",
+  "mp3": "https://0nlineradio.radioho.st/technolovers-afro-house?ref=radio-browser26",
+  "ad": "AFRO HOUSE",
+  "etiket": "afro,afro house,afrohouse,charts,dance,drums,hits,house,tech house",
+  "ulke": "DE",
+  "tur": "house",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
+ },
+ {
+  "id": "rb:1a29a057-1127-4906-b93e-dd2a7bdb57bf",
+  "mp3": "https://listen.radioking.com/radio/397789/stream/449770",
+  "ad": "Afrobeat international",
+  "etiket": "afrobeat",
+  "ulke": "CI",
+  "tur": "afrobeat",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
+ },
+ {
+  "id": "rb:4c41fb58-fe5c-419e-bad7-ea81e4932092",
+  "mp3": "https://streamer.radio.co/s919e54210/listen",
+  "ad": "Afrobeat N1 FM",
+  "etiket": "afrobeat",
+  "ulke": "ZA",
+  "tur": "afrobeat",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
+ },
+ {
+  "id": "rb:536669d5-9b8e-4d4d-b462-caf9fdb9ab2a",
+  "mp3": "https://stream.zeno.fm/zyd9stmdlnlvv",
+  "ad": "Afrobeats Gospel Radio",
+  "etiket": "african,afrobeats,christian,gospel,inspirational",
+  "ulke": "NG",
+  "tur": "afrobeat",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
  },
  {
   "id": "rb:7347794b-6214-40b8-8fc2-ba450b1a5009",
@@ -1478,6 +1538,16 @@
   "tur": "funk",
   "grup": "WORLD & ROOTS",
   "saf": 1
+ },
+ {
+  "id": "rb:84b28072-96f5-4397-97e2-9655fa9c5d85",
+  "mp3": "https://stream.bigfm.de/dancehall/mp3-128/radio-browser",
+  "ad": "bigFM Afrobeats",
+  "etiket": "afrobeats,dance,dancehall,pop,reggae,reggaeton",
+  "ulke": "DE",
+  "tur": "afrobeat",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
  },
  {
   "id": "rb:a1dbd7d6-d0c7-4479-b91e-e44b64718d65",
@@ -1590,16 +1660,6 @@
   "saf": 1
  },
  {
-  "id": "rb:710d7b6c-225a-452e-8d2e-1f026386f81f",
-  "mp3": "https://stream.ella-radio.de/ella-bossa/mp3-192/?ref=radio-browser",
-  "ad": "Ella Radio - Bossa",
-  "etiket": "bossa nova,jazz",
-  "ulke": "DE",
-  "tur": "bossa nova",
-  "grup": "LOUNGE & LOFI",
-  "saf": 1
- },
- {
   "id": "rb:9f901849-e6ba-406c-af95-73cd1a6f5358",
   "mp3": "https://panel.retrolandigital.com/listen/estrellas_de_los_80s/listen",
   "ad": "Estrellas de los 80s Radio (Monterrey)",
@@ -1618,6 +1678,16 @@
   "tur": "reggae",
   "grup": "WORLD & ROOTS",
   "saf": 1
+ },
+ {
+  "id": "rb:e8d4a75f-f345-4bc7-a837-ce2adc3a2579",
+  "mp3": "https://stream.zeno.fm/zv3e5wykprhvv.mp3",
+  "ad": "Fayroz",
+  "etiket": "classical",
+  "ulke": "MA",
+  "tur": "classical",
+  "grup": "WORLD & ROOTS",
+  "saf": 3
  },
  {
   "id": "rb:5b35f143-21f9-49a4-ba85-e587591a15aa",
@@ -1718,6 +1788,16 @@
   "tur": "afrobeat",
   "grup": "WORLD & ROOTS",
   "saf": 1
+ },
+ {
+  "id": "rb:8eed14e2-657e-4cac-b5ba-e0e9c4f1f38f",
+  "mp3": "https://streaming.hotmixradio.com/hotmix-afro-en-mp3?provider=radiobrowser",
+  "ad": "Hotmix Afro Beats",
+  "etiket": "afro,afrobeat,afrobeats",
+  "ulke": "FR",
+  "tur": "afrobeat",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
  },
  {
   "id": "rb:3648af4c-a9bd-4852-9d25-2e18f962fbde",
@@ -1840,6 +1920,16 @@
   "saf": 1
  },
  {
+  "id": "rb:2df8d43a-3950-4596-b854-cd8aa1c2c236",
+  "mp3": "https://stream-166.zeno.fm/oaqigxpfjzqvv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJvYXFpZ3hwZmp6cXZ2IiwiaG9zdCI6InN0cmVhbS0xNjYuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IjFnRWVwSWpIUXJXVElZSU1pLVlrenciLCJpYXQiOjE3NDgxMzU4OTUsImV4cCI6MTc0ODEzNTk1NX0.b4Llu6iAJk1NPa2U9OhIjm_3CZQyLuRJZWiNecQWBdY",
+  "ad": "neverland",
+  "etiket": "anime,anime radio,jazz,lofi",
+  "ulke": "AR",
+  "tur": "lofi",
+  "grup": "WORLD & ROOTS",
+  "saf": 3
+ },
+ {
   "id": "rb:6984559c-32fa-47e8-ae3e-781070a5765a",
   "mp3": "https://nova-reggae.ice.infomaniak.ch/nova-reggae-128.mp3",
   "ad": "Nova Reggae",
@@ -1856,6 +1946,16 @@
   "etiket": "reggae",
   "ulke": "FR",
   "tur": "reggae",
+  "grup": "WORLD & ROOTS",
+  "saf": 1
+ },
+ {
+  "id": "rb:465e8c27-0340-4e2b-a067-3319f55cdbff",
+  "mp3": "https://daystream.palmerablanca.com/daystream-128.mp3",
+  "ad": "Palmera Blanca radio - Daystream",
+  "etiket": "chill,chillout,downtempo,lo-fi,lounge,retrowave,synthwave",
+  "ulke": "KZ",
+  "tur": "downtempo",
   "grup": "WORLD & ROOTS",
   "saf": 1
  },
@@ -1907,16 +2007,6 @@
   "ulke": "GR",
   "tur": "bossa nova",
   "grup": "WORLD & ROOTS",
-  "saf": 1
- },
- {
-  "id": "rb:0c914bf0-2cfb-46a3-92b6-519e8b78b61e",
-  "mp3": "https://listen.radioboomboom.com/listen/rbb/radio.mp3",
-  "ad": "Radio Boom Boom",
-  "etiket": "classical,dub,jazz,pop,reggae,rock,techno",
-  "ulke": "FR",
-  "tur": "jazz",
-  "grup": "RADIOTAPE",
   "saf": 1
  },
  {
@@ -2010,16 +2100,6 @@
   "saf": 1
  },
  {
-  "id": "rb:797a1245-f5b0-4a8c-a450-2d74c3defa6e",
-  "mp3": "https://novazz.ice.infomaniak.ch/novazz-128.mp3",
-  "ad": "RADIO NOVA",
-  "etiket": "electro,hip hop,jazz,new wave,reggae,world music",
-  "ulke": "FR",
-  "tur": "jazz",
-  "grup": "RADIOTAPE",
-  "saf": 1
- },
- {
   "id": "rb:cef8689a-a858-4400-aaaf-f6e57a633836",
   "mp3": "https://casthttps.suaradionanet.net/13805/stream",
   "ad": "Radio Reggae Brasil",
@@ -2040,26 +2120,6 @@
   "saf": 1
  },
  {
-  "id": "rb:39bc256d-d78f-41ca-98bf-a7d510579464",
-  "mp3": "https://instrumental-volksmusik.spcast.eu:443/stream?time=1787342349",
-  "ad": "Radio Schwany - Volksmusik instrumental",
-  "etiket": "bayern,instrumental,schwany,volksmusik,volksmusik instrumental",
-  "ulke": "DE",
-  "tur": "instrumental",
-  "grup": "ORCHESTRAL",
-  "saf": 1
- },
- {
-  "id": "rb:94a56ce0-958b-4d3b-a482-e41c44f16a62",
-  "mp3": "https://live.radioart.com/fBroadway.mp3",
-  "ad": "RadioArt",
-  "etiket": "broadway,musicals,showtunes,soundtracks",
-  "ulke": "GR",
-  "tur": "soundtrack",
-  "grup": "ORCHESTRAL",
-  "saf": 1
- },
- {
   "id": "rb:631e9ffd-0dcf-4f60-8e9a-002889792757",
   "mp3": "https://live.aurafm.org/RadioDio",
   "ad": "RadioDio",
@@ -2077,16 +2137,6 @@
   "ulke": "DE",
   "tur": "afrobeat",
   "grup": "WORLD & ROOTS",
-  "saf": 1
- },
- {
-  "id": "rb:fba3d98e-87bd-4ad5-98d0-2fdb6970a1c0",
-  "mp3": "https://live.aurafm.org/R-Dwa-LUC",
-  "ad": "RDWA Luc",
-  "etiket": "dub,eclectic,electronic,funk,jazz,reggae,rock,urban",
-  "ulke": "FR",
-  "tur": "dub",
-  "grup": "DISCO FUNK",
   "saf": 1
  },
  {
@@ -2120,16 +2170,6 @@
   "saf": 1
  },
  {
-  "id": "rb:c4d92d80-8a7c-4076-9373-3fe4ca74d5af",
-  "mp3": "https://usa3.fastcast4u.com/proxy/teomidiainstr?mp=/1",
-  "ad": "Rádio Teomidia Instrumental",
-  "etiket": "gospel,instrumental",
-  "ulke": "BR",
-  "tur": "instrumental",
-  "grup": "DISCO FUNK",
-  "saf": 1
- },
- {
   "id": "rb:12a970e2-443a-4640-8775-5c6b0f238c4a",
   "mp3": "https://playerservices.streamtheworld.com/api/livestream-redirect/XEPHAMAAC.aac",
   "ad": "SABROSITA Ciudad de México - 590 AM",
@@ -2148,6 +2188,16 @@
   "tur": "afrobeat",
   "grup": "WORLD & ROOTS",
   "saf": 1
+ },
+ {
+  "id": "rb:e31778fd-6e9b-4f18-9c55-e17068fa7b27",
+  "mp3": "https://a10.asurahosting.com:7540/radio.mp3",
+  "ad": "Softlife Afrofusion Radio",
+  "etiket": "afro r&b,afrobeats,afrofusion,amapioano,love songs",
+  "ulke": "NG",
+  "tur": "afrobeat",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
  },
  {
   "id": "rb:960eb3a4-0601-11e8-ae97-52543be04c81",
@@ -2218,6 +2268,16 @@
   "tur": "reggae",
   "grup": "WORLD & ROOTS",
   "saf": 1
+ },
+ {
+  "id": "rb:11bb3621-4e62-4143-a275-2303e1ae5ce6",
+  "mp3": "https://stream.technolovers.fm/afro-house?ref=radiobrowser",
+  "ad": "Technolovers - AFRO HOUSE",
+  "etiket": "african music,afro vocal,afrobeats,club house,house,soulful house",
+  "ulke": "DE",
+  "tur": "soul",
+  "grup": "WORLD & ROOTS",
+  "saf": 2
  },
  {
   "id": "rb:491ea022-88f8-44a2-9b24-9da9a01ddf8d",
@@ -2330,94 +2390,14 @@
   "saf": 1
  },
  {
-  "id": "rb:0aec8c2f-3c51-4730-880d-ab6dc6f97fb6",
-  "mp3": "https://mc-mcbossa.hostingradio.ru/mcbossa96.aacp",
-  "ad": "Радио Монте Карло - Bossa Nova",
-  "etiket": "bossa nova,bossanova,latin",
-  "ulke": "RU",
-  "tur": "bossa nova",
-  "grup": "WORLD & ROOTS",
-  "saf": 1
- },
- {
-  "id": "rb:1a29a057-1127-4906-b93e-dd2a7bdb57bf",
-  "mp3": "https://listen.radioking.com/radio/397789/stream/449770",
-  "ad": "Afrobeat international",
-  "etiket": "afrobeat",
-  "ulke": "CI",
-  "tur": "afrobeat",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:4c41fb58-fe5c-419e-bad7-ea81e4932092",
-  "mp3": "https://streamer.radio.co/s919e54210/listen",
-  "ad": "Afrobeat N1 FM",
-  "etiket": "afrobeat",
-  "ulke": "ZA",
-  "tur": "afrobeat",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:536669d5-9b8e-4d4d-b462-caf9fdb9ab2a",
-  "mp3": "https://stream.zeno.fm/zyd9stmdlnlvv",
-  "ad": "Afrobeats Gospel Radio",
-  "etiket": "african,afrobeats,christian,gospel,inspirational",
-  "ulke": "NG",
-  "tur": "afrobeat",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:84b28072-96f5-4397-97e2-9655fa9c5d85",
-  "mp3": "https://stream.bigfm.de/dancehall/mp3-128/radio-browser",
-  "ad": "bigFM Afrobeats",
-  "etiket": "afrobeats,dance,dancehall,pop,reggae,reggaeton",
+  "id": "rb:f9533da3-f2c1-11e8-a471-52543be04c81",
+  "mp3": "https://0n-60s.radionetz.de/0n-60s.mp3",
+  "ad": "0 N - 60s on Radio",
+  "etiket": "60er,60s,funk,oldies,pop,rock 'n' roll,soul,twist",
   "ulke": "DE",
-  "tur": "afrobeat",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:8eed14e2-657e-4cac-b5ba-e0e9c4f1f38f",
-  "mp3": "https://streaming.hotmixradio.com/hotmix-afro-en-mp3?provider=radiobrowser",
-  "ad": "Hotmix Afro Beats",
-  "etiket": "afro,afrobeat,afrobeats",
-  "ulke": "FR",
-  "tur": "afrobeat",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:e31778fd-6e9b-4f18-9c55-e17068fa7b27",
-  "mp3": "https://a10.asurahosting.com:7540/radio.mp3",
-  "ad": "Softlife Afrofusion Radio",
-  "etiket": "afro r&b,afrobeats,afrofusion,amapioano,love songs",
-  "ulke": "NG",
-  "tur": "afrobeat",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:11bb3621-4e62-4143-a275-2303e1ae5ce6",
-  "mp3": "https://stream.technolovers.fm/afro-house?ref=radiobrowser",
-  "ad": "Technolovers - AFRO HOUSE",
-  "etiket": "african music,afro vocal,afrobeats,club house,house,soulful house",
-  "ulke": "DE",
-  "tur": "soul",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:7afae7e3-8d06-42f5-b59e-a52d6e09e60e",
-  "mp3": "https://cast1.torontocast.com:4610/stream",
-  "ad": "# RdMix Classic Rock 70s 80s 90s",
-  "etiket": "60s,60s and 70s.,70's,70er,70s,80's,80er,80s,90's,90er,90s,blues,blues rock,classic blues,classic hits,classic hits 60s 70a 80s,classic rock,classic rock  50's 60's 70's 80's 90's,classic rock music,classic rock oldies,classic rock oldies soul,classic rock; alternative rock indie,country,entretenimiento,fm,hard rock,high quality audio,hits,local radio,melodic hard rock,music,music 70s 80s 90s,musica,oldies,pop rock,public radio,radio,real classic rock,rhythm and blues,rock,soft rock",
-  "ulke": "CA",
-  "tur": "soul",
+  "tur": "funk",
   "grup": "ROCK & INDIE",
-  "saf": 1
+  "saf": 2
  },
  {
   "id": "rb:652a2fa1-d3fe-4724-a3eb-3d6b7fb1e687",
@@ -2428,196 +2408,6 @@
   "tur": "blues",
   "grup": "ROCK & INDIE",
   "saf": 1
- },
- {
-  "id": "rb:ca2d0aa2-6fc8-4761-beb6-ce692a4a9bf5",
-  "mp3": "https://bestofrockfm.stream.vip/altrock/mp3-256/bestofrock.fm/",
-  "ad": "Best Of Rock.FM Alternative Rock",
-  "etiket": "alternative metal,alternative rock,grunge,indie rock,punkrock,rock",
-  "ulke": "DE",
-  "tur": "indie",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:64f0a21e-1f0f-4f3b-a903-1d4e872fa094",
-  "mp3": "https://bestofrockfm.stream.vip/hardrock/mp3-256/bestofrock.fm/",
-  "ad": "Best Of Rock.FM Hard Rock",
-  "etiket": "bluesrock,classic rock,hardrock,rock,stonerrock",
-  "ulke": "DE",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:78363b80-d1dd-4a4c-9087-6ed976878360",
-  "mp3": "https://fluxfm.streamabc.net/flx-80er-mp3-320-9596107?sABC=6202qrr6%230%23sorr1p583723p06268o324o2ps5n399q%23fgernzf.syhksz.qr&amsparams=playerid:streams.fluxfm.de;skey:1644355302",
-  "ad": "DrGnu - 80th Rock II",
-  "etiket": "1990s,20th century,80s,80th,ac/dc,acdc,alternative,anthrax,art rock,avant garde,classic,classics,cream,danzig,europe,experimental,festivals,folk rock,foo fighters,garage punk,gig,glam rock,gothic,grunge,hardcore,heavy metal,heavy rock,hendrix,hits,indie,iron maiden,james taylor,korn,led zeppelin,linkin park,live,livestream,megadeth,metal,metalcore,metallica,motorhead,motörhead,musik,new age,new wave,nirvana,nu punk,open air,paul simon,pop,pop-rock,prog,psychedelia,punk rock,queen,rainorshine,rhythm and blues,rock,rolling stones,sex pistols,slow rock,soft rock,symphonic rock,system of a down,t-rex,talking heads,wacken,wacken open air,wacken radio,woa",
-  "ulke": "DE",
-  "tur": "new age",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:69cdf0f5-ed69-4bf2-be17-719a17c5681f",
-  "mp3": "https://listen.radioking.com/radio/10713/stream/224413",
-  "ad": "Gritty Rock Radio",
-  "etiket": "blues rock,country rock,garage rock,southern rock,stoner rock",
-  "ulke": "CA",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:bc97d762-e996-44da-93f6-5769cadd2059",
-  "mp3": "https://stream.zeno.fm/n0dt87vrnd0uv",
-  "ad": "Lightness of Rock",
-  "etiket": "blues,folk,progressive rock,psychedelic rock",
-  "ulke": "BR",
-  "tur": "psychedelic",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:88a2899f-a42f-43ed-b2bc-6d5e40b8131c",
-  "mp3": "https://media.profesionalhosting.com:8047/stream",
-  "ad": "Mariskal Rock",
-  "etiket": "alternative rock,blues rock,classic rock,hard rock,indie rock,pop rock,progressive rock,punk rock,rock,soft rock",
-  "ulke": "ES",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:0df2b943-49bb-4843-9f07-c73f0fa30e50",
-  "mp3": "https://ods-rock.ice.infomaniak.ch/ods-rock.mp3",
-  "ad": "ODS Radio Rock",
-  "etiket": "alternative rock,indie rock,pop rock,rock,soft rock",
-  "ulke": "FR",
-  "tur": "indie",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:37b84f17-81b6-4f44-8562-fd62b53be6f4",
-  "mp3": "https://ouifmbluesnrock.ice.infomaniak.ch/ouifmbluesnrock-128.mp3",
-  "ad": "OUI FM BLUES'N'ROCK",
-  "etiket": "blues rock",
-  "ulke": "FR",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:2ed9fe39-62df-4484-9473-24c0621a5de8",
-  "mp3": "https://sr11.inmystream.it/proxy/associa9?mp=/stream",
-  "ad": "Radio Antenna Uno Rock Station",
-  "etiket": "alternative rock,indie rock",
-  "ulke": "IT",
-  "tur": "indie",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:47f4b8f2-a516-4763-b597-36622e573838",
-  "mp3": "https://streams.radiobob.de/70errock/aac-64/streams.radiobob.de/",
-  "ad": "RADIO BOB - 70er Rock [aac",
-  "etiket": "1970s,classic rock,disco,glam rock,hard rock,heavy metal,new wave,progressive rock,psychedelic rock,punk,rock",
-  "ulke": "DE",
-  "tur": "psychedelic",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:8dc26fca-2006-4960-b493-5f9ee020bf0d",
-  "mp3": "https://streams.radiobob.de/70errock/mp3-192/streams.radiobob.de/",
-  "ad": "RADIO BOB - 70er Rock [mp3",
-  "etiket": "1970s,classic rock,disco,glam rock,hard rock,heavy metal,new wave,progressive rock,psychedelic rock,punk,rock",
-  "ulke": "DE",
-  "tur": "psychedelic",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:f99eb819-ce65-47c9-9f08-580254a5c8f5",
-  "mp3": "https://streams.radiobob.de/southernrock/mp3-192/streams.radiobob.de/",
-  "ad": "RADIO BOB - Southern Rock [mp3",
-  "etiket": "alternative,blues,country and western,folk rock,indie,pop rock,rock,singer-songwriter",
-  "ulke": "DE",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:afe8da7e-5b5f-463d-8e34-2e264a07dbb6",
-  "mp3": "https://radio6.dixi.md/listen/indie_rock/indie_rock.aac",
-  "ad": "Radio ROKS (Moldova) - Indie Rock",
-  "etiket": "indie rock",
-  "ulke": "MD",
-  "tur": "indie",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:3a6c5ce7-0c5c-11ea-a87e-52543be04c81",
-  "mp3": "https://rockfolk.ice.infomaniak.ch/rockfolk.mp3",
-  "ad": "Rock & Folk (rock n folk)",
-  "etiket": "blues,classic rock,metal,punk,rock",
-  "ulke": "FR",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:0f5f1741-70a5-4075-8995-836d059fff8e",
-  "mp3": "https://17843.live.streamtheworld.com:443/ACIR20_S01AAC.aac",
-  "ad": "ROCK EN ESPAÑOL",
-  "etiket": "80s,80s en español,90s,acir,acir online,américa,cdmx,ciudad de méxico,clásicos,clásicos en español,entretenimiento,español,estación,grupo acir,iheart,iheart radio,latinoamérica,mexico city,moi merino,méxico,música,música en español,norteamérica,online,online only,pop rock,radio,radio online,rock,rock en español,rock music,valle de méxico",
-  "ulke": "MX",
-  "tur": "latin",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:b7e57990-b3ad-44a9-9458-2f8f58dcbde2",
-  "mp3": "https://az10.yesstreaming.net:8060/radio.mp3",
-  "ad": "Rock FM 96.9",
-  "etiket": "alternative rock,classic rock,hard rock,indie rock,pop rock,progressive rock",
-  "ulke": "GR",
-  "tur": "indie",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:09ca95f0-641c-44fd-bd0a-327859ac15f7",
-  "mp3": "https://a10.asurahosting.com:7570/radio.mp3",
-  "ad": "Rock Radioo",
-  "etiket": "blues rock,classic rock,hard rock,heavy metal,rock,spanish rock",
-  "ulke": "ES",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 1
- },
- {
-  "id": "rb:6f4b6359-24af-411b-add3-402761ec7557",
-  "mp3": "https://0nlineradio.radioho.st/0r-country?ref=rb26",
-  "ad": "* COUNTRY",
-  "etiket": "alternative country,blues rock,classic country,classic rock,contemporary country,country,country blues,country music,country pop,country rock,outlaw country,rock,soft rock",
-  "ulke": "DE",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
-  "saf": 2
- },
- {
-  "id": "rb:f9533da3-f2c1-11e8-a471-52543be04c81",
-  "mp3": "https://0n-60s.radionetz.de/0n-60s.mp3",
-  "ad": "0 N - 60s on Radio",
-  "etiket": "60er,60s,funk,oldies,pop,rock 'n' roll,soul,twist",
-  "ulke": "DE",
-  "tur": "funk",
-  "grup": "ROCK & INDIE",
-  "saf": 2
  },
  {
   "id": "rb:32fed468-cfe3-11e9-a861-52543be04c81",
@@ -2660,6 +2450,26 @@
   "saf": 2
  },
  {
+  "id": "rb:ca2d0aa2-6fc8-4761-beb6-ce692a4a9bf5",
+  "mp3": "https://bestofrockfm.stream.vip/altrock/mp3-256/bestofrock.fm/",
+  "ad": "Best Of Rock.FM Alternative Rock",
+  "etiket": "alternative metal,alternative rock,grunge,indie rock,punkrock,rock",
+  "ulke": "DE",
+  "tur": "indie",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
+  "id": "rb:64f0a21e-1f0f-4f3b-a903-1d4e872fa094",
+  "mp3": "https://bestofrockfm.stream.vip/hardrock/mp3-256/bestofrock.fm/",
+  "ad": "Best Of Rock.FM Hard Rock",
+  "etiket": "bluesrock,classic rock,hardrock,rock,stonerrock",
+  "ulke": "DE",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
   "id": "rb:8aaf1e64-f9eb-46f5-9844-2da720f9f83f",
   "mp3": "https://stream.zeno.fm/tfzhyatgswzuv",
   "ad": "Can't Be Serious Records",
@@ -2680,6 +2490,26 @@
   "saf": 2
  },
  {
+  "id": "rb:1d86737b-bf6f-41f2-bd52-cd29d4a73688",
+  "mp3": "https://cbcradiolive.akamaized.net/hls/live/2041058/ES_R2MED/master.m3u8",
+  "ad": "CBC Music Mountain (Calgary",
+  "etiket": "blues,classical,contemporary,eclectic programming,folk,jazz,music,pop,rock,world",
+  "ulke": "CA",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 3
+ },
+ {
+  "id": "rb:6f4b6359-24af-411b-add3-402761ec7557",
+  "mp3": "https://0nlineradio.radioho.st/0r-country?ref=rb26",
+  "ad": "COUNTRY",
+  "etiket": "alternative country,blues rock,classic country,classic rock,contemporary country,country,country blues,country music,country pop,country rock,outlaw country,rock,soft rock",
+  "ulke": "DE",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 2
+ },
+ {
   "id": "rb:08429f60-383a-46ee-9bdf-03b442aab240",
   "mp3": "https://conectperu.com:7003/stream?icy=http",
   "ad": "Doble Nueve - Classic",
@@ -2690,6 +2520,16 @@
   "saf": 2
  },
  {
+  "id": "rb:78363b80-d1dd-4a4c-9087-6ed976878360",
+  "mp3": "https://fluxfm.streamabc.net/flx-80er-mp3-320-9596107?sABC=6202qrr6%230%23sorr1p583723p06268o324o2ps5n399q%23fgernzf.syhksz.qr&amsparams=playerid:streams.fluxfm.de;skey:1644355302",
+  "ad": "DrGnu - 80th Rock II",
+  "etiket": "1990s,20th century,80s,80th,ac/dc,acdc,alternative,anthrax,art rock,avant garde,classic,classics,cream,danzig,europe,experimental,festivals,folk rock,foo fighters,garage punk,gig,glam rock,gothic,grunge,hardcore,heavy metal,heavy rock,hendrix,hits,indie,iron maiden,james taylor,korn,led zeppelin,linkin park,live,livestream,megadeth,metal,metalcore,metallica,motorhead,motörhead,musik,new age,new wave,nirvana,nu punk,open air,paul simon,pop,pop-rock,prog,psychedelia,punk rock,queen,rainorshine,rhythm and blues,rock,rolling stones,sex pistols,slow rock,soft rock,symphonic rock,system of a down,t-rex,talking heads,wacken,wacken open air,wacken radio,woa",
+  "ulke": "DE",
+  "tur": "new age",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
   "id": "rb:d4f41697-61c8-4cd5-bcd3-93c0d5248a84",
   "mp3": "https://fluxfm.streamabc.net/flx-metalfm-mp3-320-9154971?sABC=6202r2p8%230%23sorr1p583723p06268o324o2ps5n399q%23fgernzf.syhksz.qr&amsparams=playerid:streams.fluxfm.de;skey:1644356296",
   "ad": "DrGnu - Metal 2",
@@ -2698,6 +2538,16 @@
   "tur": "new age",
   "grup": "ROCK & INDIE",
   "saf": 2
+ },
+ {
+  "id": "rb:33798616-837b-4418-935d-4f947562ddb8",
+  "mp3": "https://cast.egofm.de/egopure.mp3?ar-distributor=ffa0&aw_0_req.gdpr=true",
+  "ad": "EgoFM Pure",
+  "etiket": "alternative,indie",
+  "ulke": "DE",
+  "tur": "indie",
+  "grup": "ROCK & INDIE",
+  "saf": 1
  },
  {
   "id": "rb:a9fdc88f-c2be-4c90-8162-a874c9119242",
@@ -2730,26 +2580,6 @@
   "saf": 2
  },
  {
-  "id": "rb:206f93c5-5f3c-4ba1-82c2-19a42582fcc2",
-  "mp3": "https://orf-live.ors-shoutcast.at/fm4-q1a",
-  "ad": "FM4 | ORF",
-  "etiket": "orf,alternative mainstream,electronic,pop,rock,public radio",
-  "ulke": "AT",
-  "tur": "electronic",
-  "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
-  "id": "rb:1e13ed4e-daa9-4728-8550-e08d89c1c8e7",
-  "mp3": "https://orf-live.ors-shoutcast.at/fm4-q2a",
-  "ad": "FM4 | ORF | HQ",
-  "etiket": "orf,alternative mainstream,electronic,pop,rock,public radio",
-  "ulke": "AT",
-  "tur": "electronic",
-  "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
   "id": "rb:7994106c-e293-41bf-ad54-df742486e7da",
   "mp3": "https://s20.myradiostream.com:18792/listen.mp3",
   "ad": "Friends of 'CSB (Tuner feed of 89.3 FM)",
@@ -2758,6 +2588,16 @@
   "tur": "psychedelic",
   "grup": "ROCK & INDIE",
   "saf": 2
+ },
+ {
+  "id": "rb:69cdf0f5-ed69-4bf2-be17-719a17c5681f",
+  "mp3": "https://listen.radioking.com/radio/10713/stream/224413",
+  "ad": "Gritty Rock Radio",
+  "etiket": "blues rock,country rock,garage rock,southern rock,stoner rock",
+  "ulke": "CA",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 1
  },
  {
   "id": "rb:a438e66d-2ba7-46b4-89c9-01bc4204e161",
@@ -2820,6 +2660,26 @@
   "saf": 2
  },
  {
+  "id": "rb:bc97d762-e996-44da-93f6-5769cadd2059",
+  "mp3": "https://stream.zeno.fm/n0dt87vrnd0uv",
+  "ad": "Lightness of Rock",
+  "etiket": "blues,folk,progressive rock,psychedelic rock",
+  "ulke": "BR",
+  "tur": "psychedelic",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
+  "id": "rb:88a2899f-a42f-43ed-b2bc-6d5e40b8131c",
+  "mp3": "https://media.profesionalhosting.com:8047/stream",
+  "ad": "Mariskal Rock",
+  "etiket": "alternative rock,blues rock,classic rock,hard rock,indie rock,pop rock,progressive rock,punk rock,rock,soft rock",
+  "ulke": "ES",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
   "id": "rb:110ae9c2-a80a-45fe-93fc-c4662ad3ab27",
   "mp3": "https://playerservices.streamtheworld.com/api/livestream-redirect/ACIR09_s01AAC.aac",
   "ad": "MIX EN VIVO",
@@ -2860,6 +2720,26 @@
   "saf": 2
  },
  {
+  "id": "rb:0df2b943-49bb-4843-9f07-c73f0fa30e50",
+  "mp3": "https://ods-rock.ice.infomaniak.ch/ods-rock.mp3",
+  "ad": "ODS Radio Rock",
+  "etiket": "alternative rock,indie rock,pop rock,rock,soft rock",
+  "ulke": "FR",
+  "tur": "indie",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
+  "id": "rb:37b84f17-81b6-4f44-8562-fd62b53be6f4",
+  "mp3": "https://ouifmbluesnrock.ice.infomaniak.ch/ouifmbluesnrock-128.mp3",
+  "ad": "OUI FM BLUES'N'ROCK",
+  "etiket": "blues rock",
+  "ulke": "FR",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
   "id": "rb:e84c98aa-761a-42ec-acb5-cd20fbb8f0cb",
   "mp3": "https://pawarota-radio-c82a7d2e.radiocult.fm/stream",
   "ad": "Pawarota",
@@ -2868,6 +2748,16 @@
   "tur": "dub",
   "grup": "ROCK & INDIE",
   "saf": 2
+ },
+ {
+  "id": "rb:2ed9fe39-62df-4484-9473-24c0621a5de8",
+  "mp3": "https://sr11.inmystream.it/proxy/associa9?mp=/stream",
+  "ad": "Radio Antenna Uno Rock Station",
+  "etiket": "alternative rock,indie rock",
+  "ulke": "IT",
+  "tur": "indie",
+  "grup": "ROCK & INDIE",
+  "saf": 1
  },
  {
   "id": "rb:98a2bd0a-a207-4c3c-b273-df0a0dba20dc",
@@ -2880,6 +2770,26 @@
   "saf": 2
  },
  {
+  "id": "rb:47f4b8f2-a516-4763-b597-36622e573838",
+  "mp3": "https://streams.radiobob.de/70errock/aac-64/streams.radiobob.de/",
+  "ad": "RADIO BOB - 70er Rock [aac",
+  "etiket": "1970s,classic rock,disco,glam rock,hard rock,heavy metal,new wave,progressive rock,psychedelic rock,punk,rock",
+  "ulke": "DE",
+  "tur": "psychedelic",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
+  "id": "rb:8dc26fca-2006-4960-b493-5f9ee020bf0d",
+  "mp3": "https://streams.radiobob.de/70errock/mp3-192/streams.radiobob.de/",
+  "ad": "RADIO BOB - 70er Rock [mp3",
+  "etiket": "1970s,classic rock,disco,glam rock,hard rock,heavy metal,new wave,progressive rock,psychedelic rock,punk,rock",
+  "ulke": "DE",
+  "tur": "psychedelic",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
   "id": "rb:4d4286f4-d818-4f06-82e0-7eecf834de1a",
   "mp3": "https://streams.radiobob.de/blues/mp3-192/streams.radiobob.de/",
   "ad": "RADIO BOB - Blues [mp3",
@@ -2890,14 +2800,14 @@
   "saf": 2
  },
  {
-  "id": "rb:0fc0643c-86b8-42b5-89b6-ea74d9f4a5d4",
-  "mp3": "https://rcavliveaudio.akamaized.net/hls/live/2006996/M-7BVAN0_VAN/master.m3u8",
-  "ad": "Radio Canada Ici Musique",
-  "etiket": "blues,classical,jazz,world music",
-  "ulke": "CA",
+  "id": "rb:f99eb819-ce65-47c9-9f08-580254a5c8f5",
+  "mp3": "https://streams.radiobob.de/southernrock/mp3-192/streams.radiobob.de/",
+  "ad": "RADIO BOB - Southern Rock [mp3",
+  "etiket": "alternative,blues,country and western,folk rock,indie,pop rock,rock,singer-songwriter",
+  "ulke": "DE",
   "tur": "blues",
-  "grup": "RADIOTAPE",
-  "saf": 2
+  "grup": "ROCK & INDIE",
+  "saf": 1
  },
  {
   "id": "rb:cad28be0-3d75-4b8a-aef4-a951ff362706",
@@ -2920,6 +2830,16 @@
   "saf": 2
  },
  {
+  "id": "rb:afe8da7e-5b5f-463d-8e34-2e264a07dbb6",
+  "mp3": "https://radio6.dixi.md/listen/indie_rock/indie_rock.aac",
+  "ad": "Radio ROKS (Moldova) - Indie Rock",
+  "etiket": "indie rock",
+  "ulke": "MD",
+  "tur": "indie",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
   "id": "rb:4bd0c575-f6ae-46b0-8efb-3267b9cb211c",
   "mp3": "https://01.solumedia.com.ar:8200/stream",
   "ad": "Radio UTN FRC FM 94.3",
@@ -2927,16 +2847,6 @@
   "ulke": "AR",
   "tur": "blues",
   "grup": "ROCK & INDIE",
-  "saf": 2
- },
- {
-  "id": "rb:a7760c28-7212-4155-9610-21fea3bcd5e0",
-  "mp3": "https://listen.radioking.com/radio/204667/stream/247420",
-  "ad": "Radio Zaï Zaï",
-  "etiket": "alternative rock,chill,dub,electro,electronic,reggae,rock,various",
-  "ulke": "FR",
-  "tur": "dub",
-  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -2950,6 +2860,16 @@
   "saf": 2
  },
  {
+  "id": "rb:7afae7e3-8d06-42f5-b59e-a52d6e09e60e",
+  "mp3": "https://cast1.torontocast.com:4610/stream",
+  "ad": "RdMix Classic Rock 70s 80s 90s",
+  "etiket": "60s,60s and 70s.,70's,70er,70s,80's,80er,80s,90's,90er,90s,blues,blues rock,classic blues,classic hits,classic hits 60s 70a 80s,classic rock,classic rock  50's 60's 70's 80's 90's,classic rock music,classic rock oldies,classic rock oldies soul,classic rock; alternative rock indie,country,entretenimiento,fm,hard rock,high quality audio,hits,local radio,melodic hard rock,music,music 70s 80s 90s,musica,oldies,pop rock,public radio,radio,real classic rock,rhythm and blues,rock,soft rock",
+  "ulke": "CA",
+  "tur": "soul",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
   "id": "rb:4dca42c7-eb1e-4471-a886-0f8c51a9806c",
   "mp3": "https://streams.loudspeaker.org/listen/revolution-6/rev6",
   "ad": "Revolution 6",
@@ -2958,6 +2878,46 @@
   "tur": "psychedelic",
   "grup": "ROCK & INDIE",
   "saf": 2
+ },
+ {
+  "id": "rb:3a6c5ce7-0c5c-11ea-a87e-52543be04c81",
+  "mp3": "https://rockfolk.ice.infomaniak.ch/rockfolk.mp3",
+  "ad": "Rock & Folk (rock n folk)",
+  "etiket": "blues,classic rock,metal,punk,rock",
+  "ulke": "FR",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
+  "id": "rb:0f5f1741-70a5-4075-8995-836d059fff8e",
+  "mp3": "https://17843.live.streamtheworld.com:443/ACIR20_S01AAC.aac",
+  "ad": "ROCK EN ESPAÑOL",
+  "etiket": "80s,80s en español,90s,acir,acir online,américa,cdmx,ciudad de méxico,clásicos,clásicos en español,entretenimiento,español,estación,grupo acir,iheart,iheart radio,latinoamérica,mexico city,moi merino,méxico,música,música en español,norteamérica,online,online only,pop rock,radio,radio online,rock,rock en español,rock music,valle de méxico",
+  "ulke": "MX",
+  "tur": "latin",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
+  "id": "rb:b7e57990-b3ad-44a9-9458-2f8f58dcbde2",
+  "mp3": "https://az10.yesstreaming.net:8060/radio.mp3",
+  "ad": "Rock FM 96.9",
+  "etiket": "alternative rock,classic rock,hard rock,indie rock,pop rock,progressive rock",
+  "ulke": "GR",
+  "tur": "indie",
+  "grup": "ROCK & INDIE",
+  "saf": 1
+ },
+ {
+  "id": "rb:09ca95f0-641c-44fd-bd0a-327859ac15f7",
+  "mp3": "https://a10.asurahosting.com:7570/radio.mp3",
+  "ad": "Rock Radioo",
+  "etiket": "blues rock,classic rock,hard rock,heavy metal,rock,spanish rock",
+  "ulke": "ES",
+  "tur": "blues",
+  "grup": "ROCK & INDIE",
+  "saf": 1
  },
  {
   "id": "rb:fa951073-c9af-4216-b41e-899cb34feeb2",
@@ -3030,6 +2990,26 @@
   "saf": 1
  },
  {
+  "id": "rb:8be21138-e88f-43c4-8deb-00a9020ae38b",
+  "mp3": "https://stream.24dubstep.pl/radio/8000/mp3_normal",
+  "ad": "24Dubstep.pl",
+  "etiket": "dnb,drill,dubstep,edm,hardstyle,riddim,trap,various",
+  "ulke": "PL",
+  "tur": "dub",
+  "grup": "DISCO FUNK",
+  "saf": 1
+ },
+ {
+  "id": "rb:bafbd6cc-65e0-4af7-907b-dd1c425e8917",
+  "mp3": "https://discofunk.streamingmedia.it/usa",
+  "ad": "70s 80s Disco Funk ModernSoul Boogie",
+  "etiket": "1970s,1980s,70's,70er,70s,70s disco,80,80's,80er,80s,boogie,funk",
+  "ulke": "US",
+  "tur": "funk",
+  "grup": "DISCO FUNK",
+  "saf": 2
+ },
+ {
   "id": "rb:34c801b0-a0fd-4c41-b535-0a636b88eb13",
   "mp3": "https://regiocast.streamabc.net/regc-90s90srnb9791660-mp3-192-2459421",
   "ad": "90s90s Soul & RNB",
@@ -3090,6 +3070,16 @@
   "saf": 1
  },
  {
+  "id": "rb:6512fd8f-a693-4b42-9c69-a3300d4db38f",
+  "mp3": "https://gestream.fr/g-radio-hd.mp3",
+  "ad": "GENERATION SOUL DISCO FUNK RADIO",
+  "etiket": "acid jazz,disco,funk,groove,neo soul,new jack swing,nu disco,nu funk,smooth jazz,soul",
+  "ulke": "FR",
+  "tur": "jazz",
+  "grup": "DISCO FUNK",
+  "saf": 3
+ },
+ {
   "id": "rb:d39a9f9f-e9b3-454a-994a-d474f8c4e82e",
   "mp3": "https://listen.radioking.com/radio/314264/stream/361499",
   "ad": "Groove Cabane",
@@ -3108,6 +3098,16 @@
   "tur": "funk",
   "grup": "DISCO FUNK",
   "saf": 1
+ },
+ {
+  "id": "rb:6affdd69-650a-46a9-94bf-cff80541e152",
+  "mp3": "https://stream10.xdevel.com/audio13s976748-2017/stream/icecast.audio",
+  "ad": "Le Bon Mix Radio 97.9",
+  "etiket": "disco,electro,funk,jazz,music,pop,raggae,rock,sanspub,soul,world",
+  "ulke": "FR",
+  "tur": "jazz",
+  "grup": "DISCO FUNK",
+  "saf": 3
  },
  {
   "id": "rb:4c0d525b-62e2-46d7-929b-dd829b5c9b4c",
@@ -3130,12 +3130,52 @@
   "saf": 1
  },
  {
+  "id": "rb:f215e3f4-6f2b-4279-98e6-7c304a159fa7",
+  "mp3": "https://icy.unitedradio.it/rmcweb025",
+  "ad": "Radio Monte Carlo Disco Funk",
+  "etiket": "70's,70s disco,disco funk,funk",
+  "ulke": "IT",
+  "tur": "funk",
+  "grup": "DISCO FUNK",
+  "saf": 2
+ },
+ {
+  "id": "rb:e7286b98-bf0d-430a-b957-08a70c408cd3",
+  "mp3": "https://radiorecord.hostingradio.ru/discofunk96.aacp",
+  "ad": "Radio Record - Disco Funk",
+  "etiket": "disco,funky house,house",
+  "ulke": "RU",
+  "tur": "funk",
+  "grup": "DISCO FUNK",
+  "saf": 2
+ },
+ {
+  "id": "rb:fba3d98e-87bd-4ad5-98d0-2fdb6970a1c0",
+  "mp3": "https://live.aurafm.org/R-Dwa-LUC",
+  "ad": "RDWA Luc",
+  "etiket": "dub,eclectic,electronic,funk,jazz,reggae,rock,urban",
+  "ulke": "FR",
+  "tur": "dub",
+  "grup": "DISCO FUNK",
+  "saf": 1
+ },
+ {
   "id": "rb:45ea052e-37c2-403e-be57-8bf66daa86af",
   "mp3": "https://stream-152.zeno.fm/48533y95cnruv?zs=doyTUcjfTvCVtBOS3nlI8g",
   "ad": "Real Love Music - Radio Future Funk",
   "etiket": "future funk",
   "ulke": "JP",
   "tur": "funk",
+  "grup": "DISCO FUNK",
+  "saf": 1
+ },
+ {
+  "id": "rb:c4d92d80-8a7c-4076-9373-3fe4ca74d5af",
+  "mp3": "https://usa3.fastcast4u.com/proxy/teomidiainstr?mp=/1",
+  "ad": "Rádio Teomidia Instrumental",
+  "etiket": "gospel,instrumental",
+  "ulke": "BR",
+  "tur": "instrumental",
   "grup": "DISCO FUNK",
   "saf": 1
  },
@@ -3180,104 +3220,784 @@
   "saf": 1
  },
  {
-  "id": "rb:bafbd6cc-65e0-4af7-907b-dd1c425e8917",
-  "mp3": "https://discofunk.streamingmedia.it/usa",
-  "ad": "70s 80s Disco Funk ModernSoul Boogie",
-  "etiket": "1970s,1980s,70's,70er,70s,70s disco,80,80's,80er,80s,boogie,funk",
-  "ulke": "US",
-  "tur": "funk",
-  "grup": "DISCO FUNK",
+  "id": "rb:8cda8d0d-6166-4881-b9e3-db0994ce23be",
+  "mp3": "https://0nlineradio.radioho.st/technolovers-deep-house?ref=radio-browser26",
+  "ad": "0R - DEEP HOUSE",
+  "etiket": "ambient,club house,deep house,easy listening,electro house,electronic,house,ibiza,soulful house,summer,summer hits",
+  "ulke": "DE",
+  "tur": "ambient",
+  "grup": "ELECTRONIC",
+  "saf": 1
+ },
+ {
+  "id": "rb:e7516606-f5e4-4f5a-9b4c-c1f0a5a6462e",
+  "mp3": "https://0nlineradio.radioho.st/technolovers-eurodance?ref=radio-browser26",
+  "ad": "0R - EURO DANCE",
+  "etiket": "1980s,70s,80s,90s,dance,euro disco,euro hits,eurodance,golden oldie's,goldies,hip-hop and rap oldies,hits,oldies,oldies 50's/60's,pop,techno",
+  "ulke": "DE",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
   "saf": 2
  },
  {
-  "id": "rb:f215e3f4-6f2b-4279-98e6-7c304a159fa7",
-  "mp3": "https://icy.unitedradio.it/rmcweb025",
-  "ad": "Radio Monte Carlo Disco Funk",
-  "etiket": "70's,70s disco,disco funk,funk",
+  "id": "rb:359d6083-ad87-45b6-bfd8-d9bbf1dae021",
+  "mp3": "https://0nlineradio.radioho.st/lounge-soft-house-lounge?ref=radio-browser26",
+  "ad": "0R - SOFT HOUSE",
+  "etiket": "ambient,ambient and relaxation music,chill,chillout,dance,deep house,easy listening,electronic,hits,house,lounge,pool beach bar,poolside,relax,relaxing,smooth,soulful house,summer,tech house",
+  "ulke": "DE",
+  "tur": "ambient",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:1e11d73a-7eed-40ac-90a2-2ac0c4205007",
+  "mp3": "https://club-high.rautemusik.fm/?ref=radiobrowser-100-handsup",
+  "ad": "100 % - HANDSUP <3 - Non-stop 140 BPM",
+  "etiket": "140bpm,dj,dj sets,hands up,handsup,handsup! rave oldscool 90s 00s 10s trance techno,hardstyle,hardstyle/handsup/edm,radio,rave,techno",
+  "ulke": "DE",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:7cecc2a0-6167-49fa-aad5-abcfec674430",
+  "mp3": "https://stream.zeno.fm/lwv6zqgtv1dtv",
+  "ad": "100 BEST IBIZA DEEP HOUSE",
+  "etiket": "club dance,community radio,dance music,deep house,deephouse,electronic,electronic dance music,fm,high quality audio,hits,house,house/soulful/deep house,music,public radio,radio,soulful house,vocal deep",
+  "ulke": "CA",
+  "tur": "soul",
+  "grup": "ELECTRONIC",
+  "saf": 1
+ },
+ {
+  "id": "rb:68df3c3b-d0e5-4290-8a5e-364a33e2d334",
+  "mp3": "https://stream.zeno.fm/jqhhzffjynbuv",
+  "ad": "100 NU-DISCO CENTRAL RADIO",
+  "etiket": "club dance,clubbing,community radio,dance,dance hits,disco,electronic,euro disco,fm,high quality audio,hits,italo disco,music,nu disco,public radio,radio",
   "ulke": "IT",
-  "tur": "funk",
-  "grup": "DISCO FUNK",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
   "saf": 2
  },
  {
-  "id": "rb:e7286b98-bf0d-430a-b957-08a70c408cd3",
-  "mp3": "https://radiorecord.hostingradio.ru/discofunk96.aacp",
-  "ad": "Radio Record - Disco Funk",
-  "etiket": "disco,funky house,house",
+  "id": "rb:9b825eb6-0fa3-44b8-842d-93f9d8d3986f",
+  "mp3": "https://stream.antiradio.net/radio/8000/mp3",
+  "ad": "Anti Radio",
+  "etiket": "deep house,indie,pop music,rock,trance",
+  "ulke": "AZ",
+  "tur": "house",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:64457ff3-73b7-473f-a79a-1985219fa221",
+  "mp3": "https://radiorecord.hostingradio.ru/armin96.aacp",
+  "ad": "Armin van Buuren (Record)",
+  "etiket": "club dance electronic house trance,club house trance dance,deejay remix,remixed,remixes,trance",
   "ulke": "RU",
-  "tur": "funk",
-  "grup": "DISCO FUNK",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
   "saf": 2
  },
  {
-  "id": "rb:af915008-e9f1-4750-bf58-3f774ea5fc4a",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=radiobrowser-mainstage",
-  "ad": "# Mainstage Charts - Your FESTIVAL Radio",
-  "etiket": "#,+,-,0,00s,bach,beach,black,chill house,chillout+lounge,clubbing,dance,dancehall,deejay,deep house,dj mixes,dj remix,dj sets,edm,electro,hard techno,house,ibiza,ibiza club,latin,lounge,lounge music,mashup,mix,mixed,moombahton,new,new rave,pool beach bar,pop,pop dance,pop music,promodj,rave,reggaeton,remix,rnb,soul,soulful house,summer,sunshine,techno,top charts,top40,urban",
-  "ulke": "DE",
+  "id": "rb:2dd9ec68-b0e7-47c8-bc52-86579a8de0af",
+  "mp3": "https://arpradio.com:8443/listen/arp_radio/arp.mp3",
+  "ad": "ARP Radio",
+  "etiket": "dub,dub techno,electro,electronic music,house,techno",
+  "ulke": "GB",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:04a69a7f-a245-4022-81f4-72e793d2fcf5",
+  "mp3": "https://myradio24.org/5129",
+  "ad": "BEST DEEP FM",
+  "etiket": "electronic",
+  "ulke": "RU",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:d074385f-1061-486d-95ab-aeaa51b7778d",
+  "mp3": "https://az1.sednastream.com/radio/8150/Live?1582297952",
+  "ad": "Best Pro Electronic",
+  "etiket": "electronic,tech house,techno",
+  "ulke": "AL",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:a1e34b61-f532-4308-b2b9-b44c69f8507d",
+  "mp3": "https://radio.sutekihost.com/listen/bgmvibes/radio.mp3",
+  "ad": "BGMVibes",
+  "etiket": "edm,electric,jazz,lofi",
+  "ulke": "US",
+  "tur": "lofi",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:005d4865-d4a4-42bf-a4dd-a8127d9c59c5",
+  "mp3": "https://ibizasonica.streaming-pro.com:8001/bluemarlin",
+  "ad": "Blue Marlin Ibiza",
+  "etiket": "electronic dance music",
+  "ulke": "ES",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:96309e77-0601-11e8-ae97-52543be04c81",
+  "mp3": "https://stream.brokenbeats.net/tune",
+  "ad": "Brokenbeats",
+  "etiket": "atmospheric,downtempo,drum and bass",
+  "ulke": "UA",
+  "tur": "downtempo",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:6445c180-6a73-4e3f-834f-4ff6246d30fe",
+  "mp3": "https://streamer.radio.co/sb748f24ad/listen",
+  "ad": "Café del Mar CALM",
+  "etiket": "ambient,chillout,electronic,ibiza",
+  "ulke": "ES",
+  "tur": "ambient",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:5d50b9af-852d-43eb-89dd-b9b934e3f551",
+  "mp3": "https://media-ssl.musicradio.com/CapitalDance",
+  "ad": "CAPITAL DANCE",
+  "etiket": "capital,capital dance,dab+,dance,dance music,edm,electronic dance music,england,entertainment,europe,global radio,london,moi merino,music,radio,uk,united kingdom",
+  "ulke": "GB",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:09d3b2bb-e368-4217-8270-2b98611b88c8",
+  "mp3": "https://stream.cooldanceradio.com/stream1/stream.mp3",
+  "ad": "Cool Dance Radio",
+  "etiket": "cdr,downtempo,happy,ibiza,melodic house,music,new music,organic house,party,vibes",
+  "ulke": "NL",
+  "tur": "downtempo",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:962cc6df-0601-11e8-ae97-52543be04c81",
+  "mp3": "https://dancewave.online/dance.mp3",
+  "ad": "Dance Wave!",
+  "etiket": "club dance electronic house trance",
+  "ulke": "HU",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:21ebd718-0d21-41dd-899c-56fd80f005ab",
+  "mp3": "https://c4.radioboss.fm:18286/dnh",
+  "ad": "DEEP NU HOUSE Radio by SO&SO",
+  "etiket": "deep house,downtempo,house,organic house,relax",
+  "ulke": "ES",
+  "tur": "downtempo",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:e2f8a671-835a-4223-ad0f-33ac7aa9ed05",
+  "mp3": "https://edmdnb.com:448/radio/8000/radio.mp3",
+  "ad": "DnB&EDM",
+  "etiket": "chillstep,dnb,drum & bass,drum and bass,dubstep,edm,electronic,future bass,house,synthwave",
+  "ulke": "US",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 1
+ },
+ {
+  "id": "rb:df1b947f-d1b1-4483-a078-402570a812f3",
+  "mp3": "https://esoterica.servemp3.com:444/listen/psytrance_progressivepsytrance/radio.mp3",
+  "ad": "Esoterica Radio S4",
+  "etiket": "electronic dance music,progressive psytrance,psychedelic,psychedelic rock,psytrance",
+  "ulke": "BA",
+  "tur": "psychedelic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:60ceaabd-4efd-4f47-b961-0dab6f475731",
+  "mp3": "https://stream-eurodance90.fr/radio/8000/128.mp3?1627933323",
+  "ad": "EuroDance 90 radio",
+  "etiket": "dancefloor,electronic dance music,eurodance,pop dance,pop music",
+  "ulke": "FR",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:736c9d38-8947-4d73-b5d8-347c592654fc",
+  "mp3": "https://whsh4u-panel.com/proxy/yfryujzw/stream",
+  "ad": "Extreme Deep House Radio",
+  "etiket": "deep house,nu disco,vocal house",
+  "ulke": "BG",
+  "tur": "house",
+  "grup": "ELECTRONIC",
+  "saf": 1
+ },
+ {
+  "id": "rb:621be7ed-d1a1-48f6-8176-489e1406b4a3",
+  "mp3": "https://stream.rcs.revma.com/wknqhm4yuchvv?CAID=202605180046506038991434",
+  "ad": "FG Classics",
+  "etiket": "dance,house",
+  "ulke": "FR",
+  "tur": "house",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:ba71845c-3ceb-4278-9bb7-7b2e3cc6bc41",
+  "mp3": "https://stream.flaixfm.cat/icecast",
+  "ad": "Flaix FM",
+  "etiket": "dance,house,latin,reggaeton,urban",
+  "ulke": "ES",
   "tur": "reggae",
-  "grup": "RADIOTAPE",
-  "saf": 3
+  "grup": "ELECTRONIC",
+  "saf": 2
  },
  {
-  "id": "rb:d06dd5cb-97f4-48f6-8146-ec89e7b94cc0",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=rb-djclubcharts0326",
-  "ad": "# TOP 100 CHARTS --- DJ MIXES -- Pop",
-  "etiket": "charts,chillout,edm,edm festival,house,lifestyle,lounge,non-stop music,party,party hits,partyhits,rock,top 40,top charts,top hits,top100,top40",
+  "id": "rb:a4192629-2918-4416-b614-9e4d49a1f9be",
+  "mp3": "https://stream.frisky.friskyradio.com/frisky_mp3_high",
+  "ad": "Frisky",
+  "etiket": "electronic,house,progressive,techno,trance",
+  "ulke": "US",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:b81226ae-118b-44ec-9be7-111fc2f13771",
+  "mp3": "https://eternalmix.org/listen/hari_ramas_eternal_mix/radio.mp3",
+  "ad": "Hari Rama's Happy Eternal Miv",
+  "etiket": "full-on,goa trance,psychedelic,psytrance",
+  "ulke": "IN",
+  "tur": "psychedelic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:5f64e7d9-d63a-41e2-b6a3-470ae2382898",
+  "mp3": "https://stream.radiobrocken.de/live-hal-lei/mp3-256",
+  "ad": "Hitradio Antenne Sachsen-Anhalt",
+  "etiket": "dubstep",
+  "ulke": "DE",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:6c5dc2fe-f924-4341-bd43-84aabc359073",
+  "mp3": "https://houseoffunk.eu:8443/live",
+  "ad": "House of Funk",
+  "etiket": "deep house,electronic,funky house,house,minimal,tech house",
+  "ulke": "PL",
+  "tur": "funk",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:5a6ecb07-e6ba-418f-9f4e-43dd40fe3a95",
+  "mp3": "https://breakz-office.rautemusik.fm/?ref=rb-festival",
+  "ad": "House vs. Hip-Hop",
+  "etiket": "#,#00,#clubradio,#dj,#festival,#liveset,#partybreakz,#remix,#top100,afterhour,charts,club house,dance house club  electronic techhouse,deep house,deutschrap,dj remix,electro house,hiphop,house,latin,morning,rap,remixes,rnb,tech house,techno,top 40,top charts,urban",
+  "ulke": "DE",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:d0f00451-eeb0-4fff-a23b-29aa68144fdf",
+  "mp3": "https://0nlineradio.radioho.st/technolovers-hypertechno?ref=radio-browser26",
+  "ad": "HYPERTECHNO",
+  "etiket": "dark techno,dj remix,early hardstyle,edm,electronic,hands up,handsup,hard techno,hardstyle,hardstyle/handsup/edm,hypertechno,liveradio,livestream,remixed,remixes,techno",
+  "ulke": "DE",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:a3d45eec-8fb2-4e8a-8925-057d04576925",
+  "mp3": "https://stream.radiojar.com/p1f2vpv37reuv",
+  "ad": "Ibiza X Radio",
+  "etiket": "dance,dance anthems,deep house,edm,electronica,house,ibiza classics,melodic techno,trance",
+  "ulke": "ES",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76",
+  "mp3": "https://radio.intamixx.uk:8443/radio2",
+  "ad": "Intamixx 80s 90s Radio UK",
+  "etiket": "80s,90s,dance,drum and bass,electronic,funk,garage,jungle,mashup,old skool,reggae,vintage,world music",
+  "ulke": "GB",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:963c00ab-0601-11e8-ae97-52543be04c81",
+  "mp3": "https://intenseradio.live-streams.nl:18000/main",
+  "ad": "Intense Radio - We love Dance 256K",
+  "etiket": "clubhouse,dance,electronic,house,melodic,techno,trance",
+  "ulke": "NL",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:9467b580-dd8b-44d6-b99a-6ac688a50786",
+  "mp3": "https://public.isekoi-radio.com/listen/chill/radio.mp3",
+  "ad": "ISEKOI Radio",
+  "etiket": "chill,chillout,electronic,house,intelligent drum and bass,intelligent drum&bass,liquid,liquid drum and bas,liquid funk,lofi,phonk,relax",
+  "ulke": "FR",
+  "tur": "lofi",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:5c7a7785-6f77-4819-87c0-8776138fe996",
+  "mp3": "https://live.kissfm.ro/kissfm.aacp",
+  "ad": "Kiss Fm",
+  "etiket": "dance,dance pop,house,pop,pop music,top 40",
+  "ulke": "RO",
+  "tur": "house",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:1aa5a707-c24c-4c5d-abcc-6f9b7a8f2f2e",
+  "mp3": "https://stream.technolovers.fm/melodic-house-techno?ref=radiobrowser-2",
+  "ad": "Melodic House & Techno",
+  "etiket": "#,beach,beachclub,chill,chillout,chillout+lounge,dj remix,electro,electro techno,electronic,festival,lounge,melodic house,melodic house & techno,melodic techno,pool beach bar,rave,relax,sea sounds,techno",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIOTAPE",
-  "saf": 3
+  "grup": "ELECTRONIC",
+  "saf": 2
  },
  {
-  "id": "rb:dd98c499-a0c4-4019-a35e-99caa6940407",
-  "mp3": "https://breakz-2012-high.rautemusik.fm/?ref=radiobrowser-top100-clubcharts",
-  "ad": "# TOP 100 CLUB CHARTS - DANCE & DJ MIX",
-  "etiket": "#,#charts,#club,#djmix,#mashup,#radio,#top100,00s,90s,beachclub,charts,chill house,chillout,chillout+lounge,club,club dance,club dance electronic house trance,club house,clubbing,dance house club  electronic techhouse,deejay,deep house,deep music,dj,dj mixes,dj remix,dj sets,edm,electro,electro techno,electronic,funky house,future house,hardstyle/handsup/edm,hip hop,hip-hop,hiphop,house,hypertechno,ibiza,latin,latin music,latin pop,lounge music,mashup,melodic house,minimal,minimal techno,moombahton,pop,progressive house,r&b,r&b/urban,rap hiphop rnb,rave,reggaeton,remixed,remixes,singlecharts,soulful house,sundowner,sunset,tech house,techno,top 40,top100,vocal deep",
+  "id": "rb:db8a3218-6d66-42c2-a97b-ab0550a318ee",
+  "mp3": "https://radio.mfm.ua/online128",
+  "ad": "MFM STATION",
+  "etiket": "dance,dance pop,electronic,pop,top 20,top 40,world music",
+  "ulke": "UA",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:cdc22c75-9ac3-4969-80a7-c7bf01f80d80",
+  "mp3": "https://radio7.pro-fhi.net:19141/milleniumfm.mp3",
+  "ad": "Millenium FM Electro DJ Webradio",
+  "etiket": "dance,dance music,dubstep,electro,electronic,electronic dance music,house,progressive house,soulful house,techno,trance",
+  "ulke": "FR",
+  "tur": "soul",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:f7a27449-af1b-470e-aa50-bc5f1df79f4e",
+  "mp3": "https://r4.rominimal.club/listen/rominimal.club/radio2.m4a",
+  "ad": "Minimal Techno Radio & Track Discovery",
+  "etiket": "electronic,minimal techno,techno",
+  "ulke": "RO",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 1
+ },
+ {
+  "id": "rb:d847db37-5f89-48a5-be32-b10e5406f0e6",
+  "mp3": "https://stream.mixadance.fm/mixadance",
+  "ad": "Mixadance FM",
+  "etiket": "dance,electro,electronic,house,music",
+  "ulke": "RU",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:535eea60-bbf7-4139-8057-1f1d69f0d41b",
+  "mp3": "https://e20.yesstreaming.net:6217/stream",
+  "ad": "mr.chem fm",
+  "etiket": "chillout,downtempo,electro,electronic,house,techno",
+  "ulke": "RS",
+  "tur": "downtempo",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:8ccccd58-1053-4e05-aa7a-daaa41336b87",
+  "mp3": "https://radio.mugadavanje.rs/listen/mugadavanje/mugadavanje",
+  "ad": "Mugadavanje",
+  "etiket": "psychedelic trance",
+  "ulke": "RS",
+  "tur": "psychedelic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:f1174669-b7ad-4668-8369-db995e6ecc8d",
+  "mp3": "https://breakz-high.rautemusik.fm/?ref=rb-neuerscheinungen",
+  "ad": "NEUERSCHEINUNGEN - Radio Charts - DJ",
+  "etiket": "chillout,club,club dance,dj,dj sets,electro sets,electronic dance music,future bass,house,ibiza,mashup,non-stop music,pop,pop dance,pop music,promodj,radiocharts,remixes,soul,sunset,tech house,techhouse,top 100,top 40,top charts,top club,top hits,top100,top40",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "RADIOTAPE",
-  "saf": 3
+  "grup": "ELECTRONIC",
+  "saf": 2
  },
  {
-  "id": "rb:5bc44bcd-7481-40e1-b503-bb92b936f4cf",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=radiobrowser-top100-djcharts",
-  "ad": "# TOP 100 DJ CHARTS - DJ REMIX & CHARTS",
-  "etiket": "#90s,#charts,2000s,2010s,bass house,beachclub,charts,chillout,club,club dance electronic house trance,clubbing,dance music,dance top40,dancehall,deejay,deep house,deep techno,dj,dj mixes,dj remix,dj sets,edm,edm radioshows,electro house,electro techno,electronic dance music,funky house,hotel,house,house techno,house/soulful/deep house,houseparty,hypertechno,latin music,live dj,live music,liveset,lounge,mainstream,mainstream music,mainstream urban,mashup,minimal techno,música urbana,partymix,pop,progressive house,radio,radioshow,reggaeton,remix,remixed,rnb,singlecharts,soulful,soulful house,sundowner,techno,technology,top 40 hits,top charts,top hits,top100,urban",
+  "id": "rb:63b45400-70ff-4967-90f9-7581d1b7aef9",
+  "mp3": "https://stream.nightline-radio.de/stream/1/",
+  "ad": "Nightline Radio",
+  "etiket": "drum and bass,dub,dubtechno,electronic,techno",
   "ulke": "DE",
-  "tur": "chillout",
-  "grup": "RADIOTAPE",
-  "saf": 3
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
  },
  {
-  "id": "rb:019b7a8c-8c96-4b9c-a2bd-eef78904c03c",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=26T40",
-  "ad": "# TOP 40 DEEJAY CHARTS – CLUB CHARTS",
-  "etiket": "### top 40 club ###,#dj,#edm,#partybreaks,#remix,#techhouse,''''''''' top 100 '''''''''',********,00s,2000s,90,90's,90s,ambient,ambient lounge,best,best music,bounce,chamber,charts,chillout,classic hits,contemporary hits,dance,dance music,dance/chr/edm,deejay,deejay remix,deep house,dj,dj mix,dj mixes,dj radio,dj remix,dj sets,edm,electro house,electronic,eurodance,festivals,game,handsup! rave oldscool 90s 00s 10s trance techno,highfield-festival,hiphop,hits,house,houseparty,hypertechno,live dj,local music,local radio,lounge,lounge music,love,love songs,minimal,minimal tech house,minimal techno,mix,oldies,party,partycharts,partymusik,pop,promodj,rap hiphop rnb,rave,relax,remixes,rnb,rock,spring break festival,techhouse,techno,top 100,top 40,video game music,video games,videogames",
+  "id": "rb:a5caf186-4062-45e9-b4df-6822d7b26aee",
+  "mp3": "https://e20.yesstreaming.net:6148/stream",
+  "ad": "Psychedelic Travel Radio",
+  "etiket": "forest psytrance,progressive psytrance,psychedelic,psytrance,trance",
+  "ulke": "RS",
+  "tur": "psychedelic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:43ea0516-a17e-4b65-8999-61791c800ca6",
+  "mp3": "https://ecast.myautodj.com:1380/listen.mp3",
+  "ad": "Radio BipTunia",
+  "etiket": "bass,dub,electronic,experimental,microtonal,psychedelic,space",
+  "ulke": "US",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:21a282be-44f4-4b8e-aae9-b4c2041af4a5",
+  "mp3": "https://stream.radioparadise.com/world-etc-320",
+  "ad": "Radio Paradise World/Etc Mix 320k AAC",
+  "etiket": "california,eclectic,world music,free,internet,non-commercial",
+  "ulke": "US",
+  "tur": "world",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:68c4dc06-824c-4a00-9f76-a13e181c6f2d",
+  "mp3": "https://s2.radioparty.pl:8015/stream?nocache=4171",
+  "ad": "Radio Party - Kanał Główny",
+  "etiket": "electronic,party,rap",
+  "ulke": "PL",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:7c1ac933-86fa-45f9-a48f-3f5b9de19944",
+  "mp3": "https://radiorecord.hostingradio.ru/techno96.aacp",
+  "ad": "Radiorecord.RU /techno",
+  "etiket": "techno",
+  "ulke": "RU",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:3280e71c-1df9-4805-98f3-9a5d60d5d5e7",
+  "mp3": "https://trance.out.airtime.pro/trance_a",
+  "ad": "RadiOzora Trance",
+  "etiket": "psychedelic,psytrance,trance",
+  "ulke": "HU",
+  "tur": "psychedelic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:6cb69b95-72d9-4ea6-859f-52546a85c1fe",
+  "mp3": "https://cast1.torontocast.com:4560/stream",
+  "ad": "RdMix DJSET 70s 80s 90s",
+  "etiket": "1970s,1980s,1990s,70's,70er,70s,70s disco,80's,80er,80s,90's,90er,90s,anni 70,anni 80,anni 90,classic hip hop,classic hits,classic hits 60s 70a 80s,club house,dance,dance music,dance pop,dancefloor,disco,disco funk,discomusic 70,discomusic 80,dj,dj mix,dj mixes,dj remix,dj sets,electronic,euro disco,eurodance,fm,funky,funky 70,goldies,high quality audio,hip-hop and rap oldies,hits,house,italo disco,music,music 70s 80s 90s,musica,musica anni 70,musica anni 80,oldies,oldschool,pop,pop music,public radio,radio,rap,studio 54,techno,vintage music,vintage radio",
+  "ulke": "CA",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:e9577c10-e299-4bb8-9313-c6cc2070c1f3",
+  "mp3": "https://cast1.torontocast.com:2130/stream",
+  "ad": "RdMix Italo Disco 80s",
+  "etiket": "1980,1980s,1980s hits,80's,80er,80s,anni 80,classic hits,club dance,club hits,dance,dance music,dance pop,disco,dj,dj mix,dj mixes,dj remix,electronic,fm,hits,italo dance,italo disco,italo-disco,italy,local radio,mixed,music,musica,musica anni 80,oldies,pop,pop dance,pop music,public radio,radio,radio anni 80,the best of 80's",
+  "ulke": "CA",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:481789fb-82e6-4504-910e-808cd4ed048e",
+  "mp3": "https://radiorecord.hostingradio.ru/goa96.aacp",
+  "ad": "Record Goa Psy",
+  "etiket": "goa trance psychedelic trance,psytrance",
+  "ulke": "FR",
+  "tur": "psychedelic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:960eb232-0601-11e8-ae97-52543be04c81",
+  "mp3": "https://ice2.somafm.com/beatblender-128-mp3",
+  "ad": "SomaFM Beat Blender (128k MP3)",
+  "etiket": "chillout,deep house,downtempo,electronica",
+  "ulke": "US",
+  "tur": "downtempo",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:9614e0a1-0601-11e8-ae97-52543be04c81",
+  "mp3": "https://ice6.somafm.com/fluid-128-mp3",
+  "ad": "SomaFM Fluid (128k MP3)",
+  "etiket": "chilled trap,future soul,hiphop,woozy electronica",
+  "ulke": "US",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:960e0117-0601-11e8-ae97-52543be04c81",
+  "mp3": "https://ice2.somafm.com/poptron-128-mp3",
+  "ad": "SomaFM PopTron (128k MP3)",
+  "etiket": "electropop,indie,synthpop",
+  "ulke": "US",
+  "tur": "indie",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:6b92af91-7a1d-443c-a382-22d6dc21d0b4",
+  "mp3": "https://a7.asurahosting.com:8230/radio.mp3",
+  "ad": "Soul Rhythms Radio UK",
+  "etiket": "dancehall,house,jazz,neo soul,reggae,rnb,soul  music",
+  "ulke": "GB",
+  "tur": "reggae",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:9e286b3c-5185-11e9-a4d7-52543be04c81",
+  "mp3": "https://subfm.radioca.st/",
+  "ad": "Sub FM",
+  "etiket": "bass,deep house,drum and bass,dubstep,electronic,garage,house,juke,jungle,techno,uk garage",
+  "ulke": "",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:110090bf-0af9-4341-98a4-4947fe5d4b7e",
+  "mp3": "https://sunsl.streamabc.net/sunsl-sslafrohouse-aacplus-64-6818223",
+  "ad": "Sunshine Live - Afro House",
+  "etiket": "afro house,afrobeat,minimal techno",
+  "ulke": "DE",
+  "tur": "afrobeat",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:0457c8f9-bae5-4f83-9f8d-9b440ea3b887",
+  "mp3": "https://techhouse-high.rautemusik.fm/?ref=radiobrowser",
+  "ad": "TECHHOUSE · rautemusik",
+  "etiket": "charts,edm,electro house,hits,house,minimal,tech house,techno,vocal deep",
+  "ulke": "DE",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:18ab1514-a53b-4f44-936e-f8583a68b5aa",
+  "mp3": "https://streams.rautemusik.fm/techno/mp3-192/?ref=radiobrowser",
+  "ad": "TECHNO · rautemusik.fm",
+  "etiket": "ambient techno,deep techno,dub techno,hard techno,house techno,minimal techno,techno",
   "ulke": "DE",
   "tur": "ambient",
-  "grup": "RADIOTAPE",
-  "saf": 3
+  "grup": "ELECTRONIC",
+  "saf": 2
  },
  {
-  "id": "rb:ff1b5040-7fac-4716-8fba-0149183ab8e7",
-  "mp3": "https://stream.breakz.fm/?ref=top100radio-browser",
-  "ad": "#TOP 100 - DJ CHARTS & REMIX RADIO",
-  "etiket": "00's,00s,2000s,2010s,2020s,2024,2025s,2026s,2027s,80s,90s,chillout,chillout+lounge,club,club dance,deep house,dj,dj remix,dj sets,facebook,funk,hard techno,house,houseparty,instagram,klassik,klassik rock,liveradio,livestream,lounge music,minimal techno,mixed,moombahton,non-stop,non-stop music,palm springs,pop dance,promo,promodj,reggaeton,remixed,rnb,rock,soulful house,summer,summer tunes,techhouse,techno,tiktok,top 100,top 40,top charts,top hits,top100,top40,twitter,up to date,winter",
+  "id": "rb:01fa3ef0-acf6-4e63-8777-f5bb4957b5ec",
+  "mp3": "https://stream.technolovers.fm/minimal?ref=radiobrowser",
+  "ad": "Technolovers - MINIMAL",
+  "etiket": "#minimal,deep house,house,minimal,tech minimal",
   "ulke": "DE",
-  "tur": "chillout",
-  "grup": "RADIOTAPE",
-  "saf": 3
+  "tur": "house",
+  "grup": "ELECTRONIC",
+  "saf": 1
  },
  {
-  "id": "rb:80afd95c-3266-4907-9178-ebdd788d946c",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=rb26-t100clubcharts",
-  "ad": "* TOP 100 CLUB CHARTS *",
-  "etiket": "#charts,#edm,#house,#techhouse,beachclub,charts,chillout,chillout+lounge,club,club dance,club dance electronic house trance,club house,clubbing,deep ambient,deep house,deep techno,disco,dj,dj mix,dj remix,dj sets,electro techno,hiphop,ibiza club,live,lounge,minimal,non-stop,party,party hits,partymix,radio,radiocharts,reggaeton,relax,schlager,tech house,techno,top 40,top hits,top40",
+  "id": "rb:5ea0c406-cc3e-4a36-9a32-37ed4d5a180e",
+  "mp3": "https://stream.technolovers.fm/edm?ref=radiobrowser",
+  "ad": "Technolovers EDM",
+  "etiket": "club house,dance,edm,electro,electro house,electronic,electronic dance music,electronica,electropop,house,pop dance",
   "ulke": "DE",
-  "tur": "ambient",
-  "grup": "RADIOTAPE",
-  "saf": 3
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:830a7eff-916d-456c-842a-d7786e475658",
+  "mp3": "https://stream.technolovers.fm/electro-house?ref=radiobrowser",
+  "ad": "Technolovers ELECTRO HOUSE",
+  "etiket": "club dance,dance,edm,electro,electro house,electronic,electronic dance music,electronic music,electronica,electropop,elektro,elektronik,house,houseparty",
+  "ulke": "DE",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:0beeb085-5116-4f2a-a543-cdcb837f8116",
+  "mp3": "https://stream.technolovers.fm/handsup?ref=radiobrowser",
+  "ad": "Technolovers HANDSUP",
+  "etiket": "club,club dance,club hits,club sounds,hands up,handsup,handsup! rave oldscool 90s 00s 10s trance techno,techno,trance",
+  "ulke": "DE",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:3511172e-a0f1-4568-9d34-87c3ef0fa608",
+  "mp3": "https://stream.technolovers.fm/trap?ref=radiobrowser",
+  "ad": "Technolovers TRAP",
+  "etiket": "chilled trap,dub,dubstep,liquid trap,post dubstep,trap",
+  "ulke": "DE",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:80be3826-5222-4a06-9259-adb6ae1b9041",
+  "mp3": "https://azura.theindiebeat.fm/listen/audiointerface/radio.mp3",
+  "ad": "The Indie Beat Radio - Audio Interface",
+  "etiket": "ambient,downtempo,electronic,electronica,experimental,techno",
+  "ulke": "US",
+  "tur": "downtempo",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:690e7bc2-b96c-400c-951d-d1226a9e7103",
+  "mp3": "https://thevoidrad.io/stream320",
+  "ad": "The Void – Underground Music Radio",
+  "etiket": "dub techno,microhouse,minimal,rominimal",
+  "ulke": "GB",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:8f1e8acf-2ce6-4542-a423-bc29ea514e4a",
+  "mp3": "https://trance-high.rautemusik.fm/?ref=radiobrowser",
+  "ad": "TRANCE · rautemusik",
+  "etiket": "electro,electro house,electronic,hits,progressive psytrance,progressive trance,psytrance,trance,vocal trance",
+  "ulke": "DE",
+  "tur": "electronic",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:99d8fad1-51f0-44f3-943c-ee6b4a2864f4",
+  "mp3": "https://s11.ssl-stream.com/ssl/trancete?mp=/stream",
+  "ad": "Trancetechnic Radio",
+  "etiket": "acid house,techno,trance,trancetechnic,trancetechnic radio",
+  "ulke": "GB",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:f0df6e39-68b5-4026-9d83-51af63ddfdc6",
+  "mp3": "https://uzic.ice.infomaniak.ch/uzic-128.aac",
+  "ad": "UZIC.CH",
+  "etiket": "electro,house,minimal techno,progressive house,techno",
+  "ulke": "CH",
+  "tur": "techno",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:1f73fdc3-e4df-48db-bcec-83a9460f1c93",
+  "mp3": "https://stream.zeno.fm/pjktyby8dn5tv",
+  "ad": "WeRave Music Radio 01 - Dark and",
+  "etiket": "dance,deep house,electro,electronica,house,iconyc,indie dance,melodic house,melodic house & techno,new york,polyptych,progressive house,techno,underground,werave music",
+  "ulke": "US",
+  "tur": "indie",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:bfd55baa-e4dc-4726-ba51-956756821b20",
+  "mp3": "https://radio.worldclubdome.com/wcd-radio/mp3-192?ref=radiobrowser",
+  "ad": "WORLD CLUB DOME Radio - Das offizielle",
+  "etiket": "#dj,#edm,bigroom,dance,dance house club  electronic techhouse,dance music,deep house,dj,dj mixes,dj sets,edm,electro,electro house,electronic,festival,hard techno,hiphop,house,progressive house,rap,techhouse,techno,worldclubdome",
+  "ulke": "DE",
+  "tur": "world",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:4688eb3a-a407-4360-aef6-ac823bbae240",
+  "mp3": "https://broadcast.wssr.stream/radio/8000/radio.mp3",
+  "ad": "WSSR Sector Seven Radio",
+  "etiket": "deep house,deep techno,drum and bass,dub,dub reggae,electronic,electronica,house,minimal,r&b/urban,tech house,techno",
+  "ulke": "US",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:16c600b5-0e48-4ace-b9bb-5bfc39a757d6",
+  "mp3": "https://radio.xenfm.com/listen/xenfm/radio.mp3",
+  "ad": "XenFM",
+  "etiket": "dnb,drum & bass,dubstep,edm,liquid,melodic,phonk,trance,trap",
+  "ulke": "GB",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:124c45d7-57a9-46ed-8b93-83b306992126",
+  "mp3": "https://s3.radio.co/s113a5dc46/listen",
+  "ad": "XL:UK Radio",
+  "etiket": "afrobeat,asian urban hits,bhangra,bollywood,dance,dance hall,drum & bass,dubstep,edm,grime,hard bassline,hard style,hip-hop,house,r&b,rap,reggae,reggaeton,trap,uk garage",
+  "ulke": "GB",
+  "tur": "dub",
+  "grup": "ELECTRONIC",
+  "saf": 2
+ },
+ {
+  "id": "rb:74884688-e3a7-41f8-8105-bc249a37963e",
+  "mp3": "https://yumicoradio.net/stream",
+  "ad": "Yumi Co. Radio",
+  "etiket": "anime groove,animegroove,city pop,citypop,future funk,futurefunk,japan,japanese,nu disco,nudisco,synthwave,vaporwave",
+  "ulke": "FR",
+  "tur": "funk",
+  "grup": "ELECTRONIC",
+  "saf": 2
  },
  {
   "id": "rb:6746402d-62bf-485a-8769-f2ebed3e10b4",
@@ -3286,26 +4006,6 @@
   "etiket": "cinema,movie,movie soundtracks,movies,soundtracks",
   "ulke": "DE",
   "tur": "soundtrack",
-  "grup": "RADIOTAPE",
-  "saf": 3
- },
- {
-  "id": "rb:373e8330-81d4-4498-adca-1e2a73ae0908",
-  "mp3": "https://ais-sa2.cdnstream1.com/2447_96.aac",
-  "ad": "_Funky Corner Radio (Spain)",
-  "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
-  "ulke": "ES",
-  "tur": "funk",
-  "grup": "RADIOTAPE",
-  "saf": 3
- },
- {
-  "id": "rb:43718921-41a0-48f5-9645-c467d19a5095",
-  "mp3": "https://ais-sa2.cdnstream1.com/2447_192.mp3",
-  "ad": "_Funky Corner Radio (USA)",
-  "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
-  "ulke": "US",
-  "tur": "funk",
   "grup": "RADIOTAPE",
   "saf": 3
  },
@@ -3327,16 +4027,6 @@
   "ulke": "DE",
   "tur": "reggae",
   "grup": "RADIOTAPE",
-  "saf": 3
- },
- {
-  "id": "rb:1d86737b-bf6f-41f2-bd52-cd29d4a73688",
-  "mp3": "https://cbcradiolive.akamaized.net/hls/live/2041058/ES_R2MED/master.m3u8",
-  "ad": "CBC Music Mountain (Calgary",
-  "etiket": "blues,classical,contemporary,eclectic programming,folk,jazz,music,pop,rock,world",
-  "ulke": "CA",
-  "tur": "blues",
-  "grup": "ROCK & INDIE",
   "saf": 3
  },
  {
@@ -3362,21 +4052,11 @@
  {
   "id": "rb:3d9dcff7-8fd2-4eda-9d77-cfe259c62a70",
   "mp3": "https://breakz-2012-high.rautemusik.fm/?ref=rb-djclubcharts",
-  "ad": "DJ & CLUB CHARTS ---> Club Classics",
+  "ad": "DJ & CLUB CHARTS · Club Classics",
   "etiket": "#bewirbdich!,#mashup,beach,best music,brandnew,charts,chillout+lounge,club,clubbing,community radio,dance smashes,dj,dj remix,dj sets,edm,edm radioshows,hard techno,hiphop,hits,hot ac,houseparty,ibiza,ibiza classics,ibiza club,lounge,mashup,minimal techno,non-stop music,party,partycharts,promodj,radio,rave,remixed,singlecharts,sunset,tech house,techno,top 100,top 40,top charts,top hits,underground,urban",
   "ulke": "DE",
   "tur": "chillout",
   "grup": "RADIOTAPE",
-  "saf": 3
- },
- {
-  "id": "rb:9c89c403-b0d1-4d4c-8922-ff0dd1180341",
-  "mp3": "https://azura.ebsmedia.ro/listen/movies/movies128.mp3?refresh=1779029656196",
-  "ad": "EBS Radio Movie Soundtracks -Cluj Napoca",
-  "etiket": "movie soundtracks",
-  "ulke": "RO",
-  "tur": "soundtrack",
-  "grup": "ORCHESTRAL",
   "saf": 3
  },
  {
@@ -3400,14 +4080,14 @@
   "saf": 3
  },
  {
-  "id": "rb:9f3d4c02-c3f0-4f00-bebe-509ff81b4d54",
-  "mp3": "https://stream.epic-classical.com/classical-violin",
-  "ad": "EPIC CLASSICAL - Classical Violin",
-  "etiket": "ambient,ambient and relaxation music,classic,classical,instrumental,klassiek,violin",
-  "ulke": "DE",
-  "tur": "instrumental",
-  "grup": "ORCHESTRAL",
-  "saf": 3
+  "id": "rb:19ea3079-8757-467a-befb-0db17b50d1be",
+  "mp3": "https://mml2.prostream.se/listen/epic_soundtracks_only/radio.mp3",
+  "ad": "Epic Soundtracks Only",
+  "etiket": "cinematic,film music,orchestral,soundtracks",
+  "ulke": "SE",
+  "tur": "soundtrack",
+  "grup": "RADIOTAPE",
+  "saf": 1
  },
  {
   "id": "rb:83d4e85a-51c8-44fe-98b5-243af96bac71",
@@ -3430,24 +4110,54 @@
   "saf": 3
  },
  {
-  "id": "rb:e8d4a75f-f345-4bc7-a837-ce2adc3a2579",
-  "mp3": "https://stream.zeno.fm/zv3e5wykprhvv.mp3",
-  "ad": "Fayroz",
-  "etiket": "classical",
-  "ulke": "MA",
-  "tur": "classical",
-  "grup": "WORLD & ROOTS",
+  "id": "rb:206f93c5-5f3c-4ba1-82c2-19a42582fcc2",
+  "mp3": "https://orf-live.ors-shoutcast.at/fm4-q1a",
+  "ad": "FM4 | ORF",
+  "etiket": "orf,alternative mainstream,electronic,pop,rock,public radio",
+  "ulke": "AT",
+  "tur": "electronic",
+  "grup": "RADIOTAPE",
+  "saf": 2
+ },
+ {
+  "id": "rb:1e13ed4e-daa9-4728-8550-e08d89c1c8e7",
+  "mp3": "https://orf-live.ors-shoutcast.at/fm4-q2a",
+  "ad": "FM4 | ORF | HQ",
+  "etiket": "orf,alternative mainstream,electronic,pop,rock,public radio",
+  "ulke": "AT",
+  "tur": "electronic",
+  "grup": "RADIOTAPE",
+  "saf": 2
+ },
+ {
+  "id": "rb:373e8330-81d4-4498-adca-1e2a73ae0908",
+  "mp3": "https://ais-sa2.cdnstream1.com/2447_96.aac",
+  "ad": "Funky Corner Radio (Spain)",
+  "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
+  "ulke": "ES",
+  "tur": "funk",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
-  "id": "rb:6512fd8f-a693-4b42-9c69-a3300d4db38f",
-  "mp3": "https://gestream.fr/g-radio-hd.mp3",
-  "ad": "GENERATION SOUL DISCO FUNK RADIO",
-  "etiket": "acid jazz,disco,funk,groove,neo soul,new jack swing,nu disco,nu funk,smooth jazz,soul",
-  "ulke": "FR",
-  "tur": "jazz",
-  "grup": "DISCO FUNK",
+  "id": "rb:43718921-41a0-48f5-9645-c467d19a5095",
+  "mp3": "https://ais-sa2.cdnstream1.com/2447_192.mp3",
+  "ad": "Funky Corner Radio (USA)",
+  "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
+  "ulke": "US",
+  "tur": "funk",
+  "grup": "RADIOTAPE",
   "saf": 3
+ },
+ {
+  "id": "rb:a50e5889-8b42-4474-bbbf-a5b2eb0fc80e",
+  "mp3": "https://radio.gameoverse.com/listen/gameoverse_radio/radio.mp3",
+  "ad": "Gameoverse Radio",
+  "etiket": "anime,doujin,game,games,ost,soundtrack,vgm,video games",
+  "ulke": "US",
+  "tur": "soundtrack",
+  "grup": "RADIOTAPE",
+  "saf": 1
  },
  {
   "id": "rb:fdffc27f-a096-4be8-b3bf-2c51a943a1d1",
@@ -3457,26 +4167,6 @@
   "ulke": "JP",
   "tur": "indie",
   "grup": "RADIOTAPE",
-  "saf": 3
- },
- {
-  "id": "rb:c8c9ca34-c4f5-4870-aabe-081cb4078f9b",
-  "mp3": "https://ice6.somafm.com/groovesalad2-256-mp3",
-  "ad": "Groove Salad 2 (256 kbps)",
-  "etiket": "ambient,chillout,downtempo",
-  "ulke": "US",
-  "tur": "downtempo",
-  "grup": "AMBIENT",
-  "saf": 3
- },
- {
-  "id": "rb:9f0466be-b6b0-4f7c-baff-f64555494804",
-  "mp3": "https://stm1.srvif.com:7576/;",
-  "ad": "Groove Wave Lounge",
-  "etiket": "ambient lounge,jazz lounge,lounge",
-  "ulke": "BR",
-  "tur": "jazz",
-  "grup": "LOUNGE & LOFI",
   "saf": 3
  },
  {
@@ -3500,26 +4190,6 @@
   "saf": 3
  },
  {
-  "id": "rb:7035cee7-7868-4cc2-99c9-6f3e365836ea",
-  "mp3": "https://streaming.hotmixradio.com/hotmix-lounge-en-mp3?provider=radiobrowser",
-  "ad": "Hotmix Lounge",
-  "etiket": "ambient lounge,lounge,lounge downtempo chillout ambient easy listening,lounge music",
-  "ulke": "FR",
-  "tur": "downtempo",
-  "grup": "LOUNGE & LOFI",
-  "saf": 3
- },
- {
-  "id": "rb:c1484aa5-b758-47a1-b098-69db58d6fb78",
-  "mp3": "https://ilm.stream35.radiohost.de/ilm_ilovechillhop_mp3-192?upd-meta&upd-scheme=https&_art=dD0xNzg3MzMzMDQ2JmQ9ODAxODFlNzEzZDkxYzg4OTFkYWM",
-  "ad": "I Love Music - I Love Chillhop",
-  "etiket": "chill beats,chillhop,lofi hip hop,music for study,relax",
-  "ulke": "DE",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI",
-  "saf": 3
- },
- {
   "id": "rb:ede84df6-808d-4735-bbb6-3d225c330952",
   "mp3": "https://ilm.stream18.radiohost.de/ilm-ichillout_beats_mp3-192?upd-meta&upd-scheme=https&_art=dD0xNzg3MzI0ODU4JmQ9YzQxMzZmNWJjY2U5NTg4MTlkNTM",
   "ad": "I Love Radio - Chillout Beats",
@@ -3540,6 +4210,16 @@
   "saf": 3
  },
  {
+  "id": "rb:8a18c2ff-bdb9-4bfc-9707-091c12086fea",
+  "mp3": "https://kathy.torontocast.com:2695/stream",
+  "ad": "Indie X FM",
+  "etiket": "alternative rock,alternative wave,classic alternative,edm,indie,indie pop,indie rock,punk",
+  "ulke": "US",
+  "tur": "indie",
+  "grup": "RADIOTAPE",
+  "saf": 1
+ },
+ {
   "id": "rb:b29a1971-9369-4b82-a0b7-a5115d55712f",
   "mp3": "https://c30.radioboss.fm/stream/1031",
   "ad": "Instrumentals Forever",
@@ -3558,6 +4238,26 @@
   "tur": "jazz",
   "grup": "RADIOTAPE",
   "saf": 3
+ },
+ {
+  "id": "rb:bf64595a-eed4-49de-94e5-87c1bb813a74",
+  "mp3": "https://live.paineldj.com.br/proxy/jfloripa?mp=/stream",
+  "ad": "Jovem Pan FM - Florianópolis - SC",
+  "etiket": "chr,contemporary hits radio,dance,electronic dance music,jovem,jovem pan,pop,pop rock,top 40",
+  "ulke": "BR",
+  "tur": "electronic",
+  "grup": "RADIOTAPE",
+  "saf": 2
+ },
+ {
+  "id": "rb:9c8f6141-f8e8-4779-bfed-5a79e14ed4dd",
+  "mp3": "https://stream-kiss.hellorayo.co.uk/kissdance.aac?direct=true&aw_0_1st.skey=1602676850&rp_source=1&=&&___cb=60456375243858",
+  "ad": "KISS DANCE",
+  "etiket": "anthems,bauer radio,club dance,dab,dab+,dance,dance anthems,dance music,edm,electronic dance music,england,entertainment,europe,kiss,kiss dance,london,moi merino,radio,rayo,uk,united kingdom",
+  "ulke": "GB",
+  "tur": "electronic",
+  "grup": "RADIOTAPE",
+  "saf": 2
  },
  {
   "id": "rb:53548d01-14fa-4c90-92c5-8a13ce0ae0fd",
@@ -3650,16 +4350,6 @@
   "saf": 3
  },
  {
-  "id": "rb:6affdd69-650a-46a9-94bf-cff80541e152",
-  "mp3": "https://stream10.xdevel.com/audio13s976748-2017/stream/icecast.audio",
-  "ad": "Le Bon Mix Radio 97.9",
-  "etiket": "disco,electro,funk,jazz,music,pop,raggae,rock,sanspub,soul,world",
-  "ulke": "FR",
-  "tur": "jazz",
-  "grup": "DISCO FUNK",
-  "saf": 3
- },
- {
   "id": "rb:ea2b53c6-00c3-478c-b0d8-4732e6a0ff69",
   "mp3": "https://c8.radioboss.fm/stream/33",
   "ad": "London Telugu Radio",
@@ -3698,6 +4388,26 @@
   "tur": "indie",
   "grup": "RADIOTAPE",
   "saf": 3
+ },
+ {
+  "id": "rb:b019fb4e-adfd-43a9-a00d-68e086e0b06f",
+  "mp3": "https://stream.zeno.fm/une3a02mb",
+  "ad": "MA:-Hit Radio Maroc",
+  "etiket": "classical",
+  "ulke": "MA",
+  "tur": "classical",
+  "grup": "RADIOTAPE",
+  "saf": 2
+ },
+ {
+  "id": "rb:c1064460-1b20-4fae-ac1e-74a142be0c18",
+  "mp3": "https://dc.digi.live.kissfm.ro/magic-movies",
+  "ad": "Magic FM Movie Hits",
+  "etiket": "movie,movie music,movie soundtracks,movies",
+  "ulke": "RO",
+  "tur": "soundtrack",
+  "grup": "RADIOTAPE",
+  "saf": 2
  },
  {
   "id": "rb:045bc079-453b-454c-be0e-8cf2217b0630",
@@ -3767,16 +4477,6 @@
   "ulke": "GT",
   "tur": "latin",
   "grup": "RADIOTAPE",
-  "saf": 3
- },
- {
-  "id": "rb:2df8d43a-3950-4596-b854-cd8aa1c2c236",
-  "mp3": "https://stream-166.zeno.fm/oaqigxpfjzqvv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJvYXFpZ3hwZmp6cXZ2IiwiaG9zdCI6InN0cmVhbS0xNjYuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IjFnRWVwSWpIUXJXVElZSU1pLVlrenciLCJpYXQiOjE3NDgxMzU4OTUsImV4cCI6MTc0ODEzNTk1NX0.b4Llu6iAJk1NPa2U9OhIjm_3CZQyLuRJZWiNecQWBdY",
-  "ad": "neverland",
-  "etiket": "anime,anime radio,jazz,lofi",
-  "ulke": "AR",
-  "tur": "lofi",
-  "grup": "WORLD & ROOTS",
   "saf": 3
  },
  {
@@ -3920,6 +4620,26 @@
   "saf": 3
  },
  {
+  "id": "rb:0c914bf0-2cfb-46a3-92b6-519e8b78b61e",
+  "mp3": "https://listen.radioboomboom.com/listen/rbb/radio.mp3",
+  "ad": "Radio Boom Boom",
+  "etiket": "classical,dub,jazz,pop,reggae,rock,techno",
+  "ulke": "FR",
+  "tur": "jazz",
+  "grup": "RADIOTAPE",
+  "saf": 1
+ },
+ {
+  "id": "rb:0fc0643c-86b8-42b5-89b6-ea74d9f4a5d4",
+  "mp3": "https://rcavliveaudio.akamaized.net/hls/live/2006996/M-7BVAN0_VAN/master.m3u8",
+  "ad": "Radio Canada Ici Musique",
+  "etiket": "blues,classical,jazz,world music",
+  "ulke": "CA",
+  "tur": "blues",
+  "grup": "RADIOTAPE",
+  "saf": 2
+ },
+ {
   "id": "rb:6b6ed0fb-38bc-4c6a-90db-6a70b8501477",
   "mp3": "https://radiodomeldo.ro/movie",
   "ad": "Radio Domeldo",
@@ -3938,6 +4658,16 @@
   "tur": "folk",
   "grup": "RADIOTAPE",
   "saf": 3
+ },
+ {
+  "id": "rb:797a1245-f5b0-4a8c-a450-2d74c3defa6e",
+  "mp3": "https://novazz.ice.infomaniak.ch/novazz-128.mp3",
+  "ad": "RADIO NOVA",
+  "etiket": "electro,hip hop,jazz,new wave,reggae,world music",
+  "ulke": "FR",
+  "tur": "jazz",
+  "grup": "RADIOTAPE",
+  "saf": 1
  },
  {
   "id": "rb:6ad5e93f-869d-4165-a685-25e8363c1bf4",
@@ -4160,16 +4890,6 @@
   "saf": 3
  },
  {
-  "id": "rb:e6fa9a8a-02a8-11e9-a1be-52543be04c81",
-  "mp3": "https://ice6.somafm.com/gsclassic-128-mp3",
-  "ad": "SomaFM Groove Salad Classic (128k MP3)",
-  "etiket": "ambient,downtempo,early 2000s",
-  "ulke": "US",
-  "tur": "ambient",
-  "grup": "AMBIENT",
-  "saf": 3
- },
- {
   "id": "rb:96394224-0601-11e8-ae97-52543be04c81",
   "mp3": "https://ice5.somafm.com/indiepop-128-aac",
   "ad": "SomaFM Indie Pop Rocks! (128k AAC)",
@@ -4187,16 +4907,6 @@
   "ulke": "US",
   "tur": "electronic",
   "grup": "RADIOTAPE",
-  "saf": 3
- },
- {
-  "id": "rb:d9b43ea7-3c4d-11e8-b74d-52543be04c81",
-  "mp3": "https://ice6.somafm.com/secretagent-64-aac",
-  "ad": "SomaFM Secret Agent (64k AAC)",
-  "etiket": "ambient,downtempo,jazz,lounge,samba,sixties",
-  "ulke": "US",
-  "tur": "downtempo",
-  "grup": "LOUNGE & LOFI",
   "saf": 3
  },
  {
@@ -4300,6 +5010,16 @@
   "saf": 3
  },
  {
+  "id": "rb:ff1b5040-7fac-4716-8fba-0149183ab8e7",
+  "mp3": "https://stream.breakz.fm/?ref=top100radio-browser",
+  "ad": "TOP 100 - DJ CHARTS & REMIX RADIO",
+  "etiket": "00's,00s,2000s,2010s,2020s,2024,2025s,2026s,2027s,80s,90s,chillout,chillout+lounge,club,club dance,deep house,dj,dj remix,dj sets,facebook,funk,hard techno,house,houseparty,instagram,klassik,klassik rock,liveradio,livestream,lounge music,minimal techno,mixed,moombahton,non-stop,non-stop music,palm springs,pop dance,promo,promodj,reggaeton,remixed,rnb,rock,soulful house,summer,summer tunes,techhouse,techno,tiktok,top 100,top 40,top charts,top hits,top100,top40,twitter,up to date,winter",
+  "ulke": "DE",
+  "tur": "chillout",
+  "grup": "RADIOTAPE",
+  "saf": 3
+ },
+ {
   "id": "rb:4e19721e-b501-48eb-887b-cdd187e1670b",
   "mp3": "https://a13.asurahosting.com/listen/trip-radio/radio.mp3",
   "ad": "trip radio",
@@ -4370,943 +5090,13 @@
   "saf": 3
  },
  {
-  "id": "rb:8cda8d0d-6166-4881-b9e3-db0994ce23be",
-  "mp3": "https://0nlineradio.radioho.st/technolovers-deep-house?ref=radio-browser26",
-  "ad": "0R - DEEP HOUSE",
-  "etiket": "ambient,club house,deep house,easy listening,electro house,electronic,house,ibiza,soulful house,summer,summer hits",
-  "ulke": "DE",
-  "tur": "ambient",
-  "grup": "ELECTRONIC",
-  "saf": 1
- },
- {
-  "id": "rb:7cecc2a0-6167-49fa-aad5-abcfec674430",
-  "mp3": "https://stream.zeno.fm/lwv6zqgtv1dtv",
-  "ad": "100 BEST IBIZA DEEP HOUSE",
-  "etiket": "club dance,community radio,dance music,deep house,deephouse,electronic,electronic dance music,fm,high quality audio,hits,house,house/soulful/deep house,music,public radio,radio,soulful house,vocal deep",
-  "ulke": "CA",
-  "tur": "soul",
-  "grup": "ELECTRONIC",
-  "saf": 1
- },
- {
-  "id": "rb:8be21138-e88f-43c4-8deb-00a9020ae38b",
-  "mp3": "https://stream.24dubstep.pl/radio/8000/mp3_normal",
-  "ad": "24Dubstep.pl",
-  "etiket": "dnb,drill,dubstep,edm,hardstyle,riddim,trap,various",
-  "ulke": "PL",
-  "tur": "dub",
-  "grup": "DISCO FUNK",
-  "saf": 1
- },
- {
-  "id": "rb:e2f8a671-835a-4223-ad0f-33ac7aa9ed05",
-  "mp3": "https://edmdnb.com:448/radio/8000/radio.mp3",
-  "ad": "DnB&EDM",
-  "etiket": "chillstep,dnb,drum & bass,drum and bass,dubstep,edm,electronic,future bass,house,synthwave",
-  "ulke": "US",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 1
- },
- {
-  "id": "rb:736c9d38-8947-4d73-b5d8-347c592654fc",
-  "mp3": "https://whsh4u-panel.com/proxy/yfryujzw/stream",
-  "ad": "Extreme Deep House Radio",
-  "etiket": "deep house,nu disco,vocal house",
-  "ulke": "BG",
-  "tur": "house",
-  "grup": "ELECTRONIC",
-  "saf": 1
- },
- {
-  "id": "rb:f7a27449-af1b-470e-aa50-bc5f1df79f4e",
-  "mp3": "https://r4.rominimal.club/listen/rominimal.club/radio2.m4a",
-  "ad": "Minimal Techno Radio & Track Discovery",
-  "etiket": "electronic,minimal techno,techno",
-  "ulke": "RO",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 1
- },
- {
-  "id": "rb:01fa3ef0-acf6-4e63-8777-f5bb4957b5ec",
-  "mp3": "https://stream.technolovers.fm/minimal?ref=radiobrowser",
-  "ad": "Technolovers - MINIMAL",
-  "etiket": "#minimal,deep house,house,minimal,tech minimal",
-  "ulke": "DE",
-  "tur": "house",
-  "grup": "ELECTRONIC",
-  "saf": 1
- },
- {
-  "id": "rb:68df3c3b-d0e5-4290-8a5e-364a33e2d334",
-  "mp3": "https://stream.zeno.fm/jqhhzffjynbuv",
-  "ad": "# 100 NU-DISCO CENTRAL RADIO",
-  "etiket": "club dance,clubbing,community radio,dance,dance hits,disco,electronic,euro disco,fm,high quality audio,hits,italo disco,music,nu disco,public radio,radio",
-  "ulke": "IT",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:d2338167-e4e0-4ff2-883a-cadb6462be16",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=maindjatnightrb",
-  "ad": "# Mainstream Mornings & Party Nights",
-  "etiket": "#90s,90er hitmix,charts,chillout,deep house,dj remix,electro,electro house,electro techno,electronic,electropop,hard techno,hiphop,house,houseparty,hypertechno,latin,latin pop,mixed music,musica latinoamericana,party,partymix,partymusik,pop,pop music,regaeton,remixes,rnb,tech house,techno,top 40,top100,urban",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:6cb69b95-72d9-4ea6-859f-52546a85c1fe",
-  "mp3": "https://cast1.torontocast.com:4560/stream",
-  "ad": "# RdMix DJSET 70s 80s 90s",
-  "etiket": "1970s,1980s,1990s,70's,70er,70s,70s disco,80's,80er,80s,90's,90er,90s,anni 70,anni 80,anni 90,classic hip hop,classic hits,classic hits 60s 70a 80s,club house,dance,dance music,dance pop,dancefloor,disco,disco funk,discomusic 70,discomusic 80,dj,dj mix,dj mixes,dj remix,dj sets,electronic,euro disco,eurodance,fm,funky,funky 70,goldies,high quality audio,hip-hop and rap oldies,hits,house,italo disco,music,music 70s 80s 90s,musica,musica anni 70,musica anni 80,oldies,oldschool,pop,pop music,public radio,radio,rap,studio 54,techno,vintage music,vintage radio",
-  "ulke": "CA",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:e9577c10-e299-4bb8-9313-c6cc2070c1f3",
-  "mp3": "https://cast1.torontocast.com:2130/stream",
-  "ad": "# RdMix Italo Disco 80s",
-  "etiket": "1980,1980s,1980s hits,80's,80er,80s,anni 80,classic hits,club dance,club hits,dance,dance music,dance pop,disco,dj,dj mix,dj mixes,dj remix,electronic,fm,hits,italo dance,italo disco,italo-disco,italy,local radio,mixed,music,musica,musica anni 80,oldies,pop,pop dance,pop music,public radio,radio,radio anni 80,the best of 80's",
-  "ulke": "CA",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:b591d01a-e72b-4030-a640-a8da10ed73f6",
-  "mp3": "https://stream.breakz.fm/?ref=radiobrowser-remix-partybreaks-radio",
-  "ad": "# REMIX & PARTYBREAKS - Your House - EDM",
-  "etiket": "#,#00s,#90,#dj,#partybreaks,#top100,charts,dance,dance house club  electronic techhouse,deep house,dj,dj mix,dj mixes,dj remix,electro house,electro techno,house,latin,latin music,latin pop,liveradio,mixtape,moombahton,partymix,pop,pop dance,r&b/urban,rap hiphop rnb,remix,remixed,remixes,techhouse,techno,top 40,top charts,top100,top40,urban",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:1dc211c4-1ad5-42ac-b1e6-62464537ce81",
-  "mp3": "https://breakz-2012-high.rautemusik.fm/?ref=rb-deindj",
-  "ad": "#CLUB RADIO - DEIN DJ",
-  "etiket": "2000s,club dance,clubbing,dance,dj remix,edm,hiphop,house,mixed,party,progressive house,rnb,techhouse,techno,top 40",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:991dd9d5-2a83-47ff-a8bb-99e1e948ffe6",
-  "mp3": "https://0nlineradio.radioho.st/technolovers-afro-house?ref=radio-browser26",
-  "ad": "* AFRO HOUSE",
-  "etiket": "afro,afro house,afrohouse,charts,dance,drums,hits,house,tech house",
-  "ulke": "DE",
-  "tur": "house",
-  "grup": "WORLD & ROOTS",
-  "saf": 2
- },
- {
-  "id": "rb:d0f00451-eeb0-4fff-a23b-29aa68144fdf",
-  "mp3": "https://0nlineradio.radioho.st/technolovers-hypertechno?ref=radio-browser26",
-  "ad": "* HYPERTECHNO",
-  "etiket": "dark techno,dj remix,early hardstyle,edm,electronic,hands up,handsup,hard techno,hardstyle,hardstyle/handsup/edm,hypertechno,liveradio,livestream,remixed,remixes,techno",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:e7516606-f5e4-4f5a-9b4c-c1f0a5a6462e",
-  "mp3": "https://0nlineradio.radioho.st/technolovers-eurodance?ref=radio-browser26",
-  "ad": "0R - EURO DANCE",
-  "etiket": "1980s,70s,80s,90s,dance,euro disco,euro hits,eurodance,golden oldie's,goldies,hip-hop and rap oldies,hits,oldies,oldies 50's/60's,pop,techno",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:359d6083-ad87-45b6-bfd8-d9bbf1dae021",
-  "mp3": "https://0nlineradio.radioho.st/lounge-soft-house-lounge?ref=radio-browser26",
-  "ad": "0R - SOFT HOUSE",
-  "etiket": "ambient,ambient and relaxation music,chill,chillout,dance,deep house,easy listening,electronic,hits,house,lounge,pool beach bar,poolside,relax,relaxing,smooth,soulful house,summer,tech house",
-  "ulke": "DE",
-  "tur": "ambient",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:1e11d73a-7eed-40ac-90a2-2ac0c4205007",
-  "mp3": "https://club-high.rautemusik.fm/?ref=radiobrowser-100-handsup",
-  "ad": "100 % - HANDSUP <3 - Non-stop 140 BPM",
-  "etiket": "140bpm,dj,dj sets,hands up,handsup,handsup! rave oldscool 90s 00s 10s trance techno,hardstyle,hardstyle/handsup/edm,radio,rave,techno",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:34a15ee8-a71b-4004-8fce-83650b46af66",
-  "mp3": "https://mpc1.mediacp.eu:8356/stream",
-  "ad": "100% ACID JAZZ",
-  "etiket": "acid,acid jazz,ambient,canada,classic jazz,free jazz,hip hop,instrumental music,instrumentales,jazz,jazz fusion,latin jazz,nu-jazz,piano jazz,relax,relaxing,smooth jazz,toronto,trumpeth",
-  "ulke": "CA",
-  "tur": "jazz",
-  "grup": "JAZZ",
-  "saf": 2
- },
- {
-  "id": "rb:5f7cdd03-86fc-4d13-89c1-2f9a0b92fc23",
-  "mp3": "https://club-high.rautemusik.fm/?ref=radiobrowser",
-  "ad": "__CLUB__ by rautemusik (rm.fm)",
-  "etiket": "dance,deejay,dj,edm,electronic,elektro,handsup,hardstyle,hits,techno,trance",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:0457c8f9-bae5-4f83-9f8d-9b440ea3b887",
-  "mp3": "https://techhouse-high.rautemusik.fm/?ref=radiobrowser",
-  "ad": "__TECHHOUSE__ by rautemusik (rm.fm)",
-  "etiket": "charts,edm,electro house,hits,house,minimal,tech house,techno,vocal deep",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:18ab1514-a53b-4f44-936e-f8583a68b5aa",
-  "mp3": "https://streams.rautemusik.fm/techno/mp3-192/?ref=radiobrowser",
-  "ad": "__TECHNO__ by rautemusik.fm",
-  "etiket": "ambient techno,deep techno,dub techno,hard techno,house techno,minimal techno,techno",
-  "ulke": "DE",
-  "tur": "ambient",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:8f1e8acf-2ce6-4542-a423-bc29ea514e4a",
-  "mp3": "https://trance-high.rautemusik.fm/?ref=radiobrowser",
-  "ad": "__TRANCE__ by rautemusik (rm.fm)",
-  "etiket": "electro,electro house,electronic,hits,progressive psytrance,progressive trance,psytrance,trance,vocal trance",
-  "ulke": "DE",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:be26f3f5-1ee1-4661-a3de-4544fc29e833",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=radiobrowser-deejay-remixes-radio",
-  "ad": "_DEEJAY REMIXE_ Your Radio for finest",
-  "etiket": "#mashup,bass,beach music,breaks,breakz,breakzfm,charts,chill,chill house,chillout,club,club dance electronic house trance,clubbing,dance,deejay,deep house,dj mix,dj mixes,dj remix,dj sets,djmix,edm,electronic,electronic dance music,electronic music,electropop,hard techno,high energy,house,houseparty,hypertechno,latin pop,local radio,lounge,mashup,mixtape,music non stop,online,online radio,party,partymix,partymusik,pool beach bar,promodj,public radio,rap hiphop rnb,reggaeton,remix,remixed,remixes,rnb,smooth,techno,top 40,urban",
-  "ulke": "DE",
-  "tur": "chillout",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:9b825eb6-0fa3-44b8-842d-93f9d8d3986f",
-  "mp3": "https://stream.antiradio.net/radio/8000/mp3",
-  "ad": "Anti Radio",
-  "etiket": "deep house,indie,pop music,rock,trance",
-  "ulke": "AZ",
-  "tur": "house",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:64457ff3-73b7-473f-a79a-1985219fa221",
-  "mp3": "https://radiorecord.hostingradio.ru/armin96.aacp",
-  "ad": "Armin van Buuren (Record)",
-  "etiket": "club dance electronic house trance,club house trance dance,deejay remix,remixed,remixes,trance",
-  "ulke": "RU",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:2dd9ec68-b0e7-47c8-bc52-86579a8de0af",
-  "mp3": "https://arpradio.com:8443/listen/arp_radio/arp.mp3",
-  "ad": "ARP Radio",
-  "etiket": "dub,dub techno,electro,electronic music,house,techno",
-  "ulke": "GB",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:04a69a7f-a245-4022-81f4-72e793d2fcf5",
-  "mp3": "https://myradio24.org/5129",
-  "ad": "BEST DEEP FM",
-  "etiket": "electronic",
-  "ulke": "RU",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:d074385f-1061-486d-95ab-aeaa51b7778d",
-  "mp3": "https://az1.sednastream.com/radio/8150/Live?1582297952",
-  "ad": "Best Pro Electronic",
-  "etiket": "electronic,tech house,techno",
-  "ulke": "AL",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:a1e34b61-f532-4308-b2b9-b44c69f8507d",
-  "mp3": "https://radio.sutekihost.com/listen/bgmvibes/radio.mp3",
-  "ad": "BGMVibes",
-  "etiket": "edm,electric,jazz,lofi",
-  "ulke": "US",
-  "tur": "lofi",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:005d4865-d4a4-42bf-a4dd-a8127d9c59c5",
-  "mp3": "https://ibizasonica.streaming-pro.com:8001/bluemarlin",
-  "ad": "Blue Marlin Ibiza",
-  "etiket": "electronic dance music",
-  "ulke": "ES",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:96309e77-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://stream.brokenbeats.net/tune",
-  "ad": "Brokenbeats",
-  "etiket": "atmospheric,downtempo,drum and bass",
-  "ulke": "UA",
-  "tur": "downtempo",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:6445c180-6a73-4e3f-834f-4ff6246d30fe",
-  "mp3": "https://streamer.radio.co/sb748f24ad/listen",
-  "ad": "Café del Mar CALM",
-  "etiket": "ambient,chillout,electronic,ibiza",
-  "ulke": "ES",
-  "tur": "ambient",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:5d50b9af-852d-43eb-89dd-b9b934e3f551",
-  "mp3": "https://media-ssl.musicradio.com/CapitalDance",
-  "ad": "CAPITAL DANCE",
-  "etiket": "capital,capital dance,dab+,dance,dance music,edm,electronic dance music,england,entertainment,europe,global radio,london,moi merino,music,radio,uk,united kingdom",
-  "ulke": "GB",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:07f2791f-98e9-4811-a47f-e0fe7833751b",
-  "mp3": "https://breakz-office.rautemusik.fm/?ref=radiobrowser-club-charts",
-  "ad": "Club Charts - DEEJAY & REMIX Radio",
-  "etiket": "#charts,ambient lounge,beatport,club,club house,dance music,deep house,dj remix,electronic dance music,hits,house,mixtapes,moombahton,música urbana,reggaeton,remix,remixed,rnb,soulful house,tech house,top 40,top charts,top hits",
-  "ulke": "DE",
-  "tur": "ambient",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:09d3b2bb-e368-4217-8270-2b98611b88c8",
-  "mp3": "https://stream.cooldanceradio.com/stream1/stream.mp3",
-  "ad": "Cool Dance Radio",
-  "etiket": "cdr,downtempo,happy,ibiza,melodic house,music,new music,organic house,party,vibes",
-  "ulke": "NL",
-  "tur": "downtempo",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:962cc6df-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://dancewave.online/dance.mp3",
-  "ad": "Dance Wave!",
-  "etiket": "club dance electronic house trance",
-  "ulke": "HU",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:21ebd718-0d21-41dd-899c-56fd80f005ab",
-  "mp3": "https://c4.radioboss.fm:18286/dnh",
-  "ad": "DEEP NU HOUSE Radio by SO&SO",
-  "etiket": "deep house,downtempo,house,organic house,relax",
-  "ulke": "ES",
-  "tur": "downtempo",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:df1b947f-d1b1-4483-a078-402570a812f3",
-  "mp3": "https://esoterica.servemp3.com:444/listen/psytrance_progressivepsytrance/radio.mp3",
-  "ad": "Esoterica Radio S4",
-  "etiket": "electronic dance music,progressive psytrance,psychedelic,psychedelic rock,psytrance",
-  "ulke": "BA",
-  "tur": "psychedelic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:60ceaabd-4efd-4f47-b961-0dab6f475731",
-  "mp3": "https://stream-eurodance90.fr/radio/8000/128.mp3?1627933323",
-  "ad": "EuroDance 90 radio",
-  "etiket": "dancefloor,electronic dance music,eurodance,pop dance,pop music",
-  "ulke": "FR",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:621be7ed-d1a1-48f6-8176-489e1406b4a3",
-  "mp3": "https://stream.rcs.revma.com/wknqhm4yuchvv?CAID=202605180046506038991434",
-  "ad": "FG Classics",
-  "etiket": "dance,house",
-  "ulke": "FR",
-  "tur": "house",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:ba71845c-3ceb-4278-9bb7-7b2e3cc6bc41",
-  "mp3": "https://stream.flaixfm.cat/icecast",
-  "ad": "Flaix FM",
-  "etiket": "dance,house,latin,reggaeton,urban",
-  "ulke": "ES",
-  "tur": "reggae",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:a4192629-2918-4416-b614-9e4d49a1f9be",
-  "mp3": "https://stream.frisky.friskyradio.com/frisky_mp3_high",
-  "ad": "Frisky",
-  "etiket": "electronic,house,progressive,techno,trance",
-  "ulke": "US",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:b81226ae-118b-44ec-9be7-111fc2f13771",
-  "mp3": "https://eternalmix.org/listen/hari_ramas_eternal_mix/radio.mp3",
-  "ad": "Hari Rama's Happy Eternal Miv",
-  "etiket": "full-on,goa trance,psychedelic,psytrance",
-  "ulke": "IN",
-  "tur": "psychedelic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:5f64e7d9-d63a-41e2-b6a3-470ae2382898",
-  "mp3": "https://stream.radiobrocken.de/live-hal-lei/mp3-256",
-  "ad": "Hitradio Antenne Sachsen-Anhalt",
-  "etiket": "dubstep",
-  "ulke": "DE",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:6c5dc2fe-f924-4341-bd43-84aabc359073",
-  "mp3": "https://houseoffunk.eu:8443/live",
-  "ad": "House of Funk",
-  "etiket": "deep house,electronic,funky house,house,minimal,tech house",
-  "ulke": "PL",
-  "tur": "funk",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:5a6ecb07-e6ba-418f-9f4e-43dd40fe3a95",
-  "mp3": "https://breakz-office.rautemusik.fm/?ref=rb-festival",
-  "ad": "House vs. Hip-Hop",
-  "etiket": "#,#00,#clubradio,#dj,#festival,#liveset,#partybreakz,#remix,#top100,afterhour,charts,club house,dance house club  electronic techhouse,deep house,deutschrap,dj remix,electro house,hiphop,house,latin,morning,rap,remixes,rnb,tech house,techno,top 40,top charts,urban",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:a3d45eec-8fb2-4e8a-8925-057d04576925",
-  "mp3": "https://stream.radiojar.com/p1f2vpv37reuv",
-  "ad": "Ibiza X Radio",
-  "etiket": "dance,dance anthems,deep house,edm,electronica,house,ibiza classics,melodic techno,trance",
-  "ulke": "ES",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76",
-  "mp3": "https://radio.intamixx.uk:8443/radio2",
-  "ad": "Intamixx 80s 90s Radio UK",
-  "etiket": "80s,90s,dance,drum and bass,electronic,funk,garage,jungle,mashup,old skool,reggae,vintage,world music",
-  "ulke": "GB",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:963c00ab-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://intenseradio.live-streams.nl:18000/main",
-  "ad": "Intense Radio - We love Dance 256K",
-  "etiket": "clubhouse,dance,electronic,house,melodic,techno,trance",
-  "ulke": "NL",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:9467b580-dd8b-44d6-b99a-6ac688a50786",
-  "mp3": "https://public.isekoi-radio.com/listen/chill/radio.mp3",
-  "ad": "ISEKOI Radio",
-  "etiket": "chill,chillout,electronic,house,intelligent drum and bass,intelligent drum&bass,liquid,liquid drum and bas,liquid funk,lofi,phonk,relax",
-  "ulke": "FR",
-  "tur": "lofi",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:a36cb1a5-f9b5-4739-a86a-987d256b7d0e",
-  "mp3": "https://cast1.torontocast.com:2060/;.mp3",
-  "ad": "J-Club Club Bandstand",
-  "etiket": "1930s,1940s,big band,jazz,swing",
-  "ulke": "JP",
-  "tur": "jazz",
-  "grup": "JAZZ",
-  "saf": 2
- },
- {
-  "id": "rb:bf64595a-eed4-49de-94e5-87c1bb813a74",
-  "mp3": "https://live.paineldj.com.br/proxy/jfloripa?mp=/stream",
-  "ad": "Jovem Pan FM - Florianópolis - SC",
-  "etiket": "chr,contemporary hits radio,dance,electronic dance music,jovem,jovem pan,pop,pop rock,top 40",
-  "ulke": "BR",
-  "tur": "electronic",
-  "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
-  "id": "rb:9c8f6141-f8e8-4779-bfed-5a79e14ed4dd",
-  "mp3": "https://stream-kiss.hellorayo.co.uk/kissdance.aac?direct=true&aw_0_1st.skey=1602676850&rp_source=1&=&&___cb=60456375243858",
-  "ad": "KISS DANCE",
-  "etiket": "anthems,bauer radio,club dance,dab,dab+,dance,dance anthems,dance music,edm,electronic dance music,england,entertainment,europe,kiss,kiss dance,london,moi merino,radio,rayo,uk,united kingdom",
-  "ulke": "GB",
-  "tur": "electronic",
-  "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
-  "id": "rb:5c7a7785-6f77-4819-87c0-8776138fe996",
-  "mp3": "https://live.kissfm.ro/kissfm.aacp",
-  "ad": "Kiss Fm",
-  "etiket": "dance,dance pop,house,pop,pop music,top 40",
-  "ulke": "RO",
-  "tur": "house",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:b019fb4e-adfd-43a9-a00d-68e086e0b06f",
-  "mp3": "https://stream.zeno.fm/une3a02mb",
-  "ad": "MA:-Hit Radio Maroc",
+  "id": "rb:a853f228-0e27-4461-8657-5b10f2fd79d7",
+  "mp3": "https://live.novoeradio.by:444/live/novoeradio_aac128/icecast.audio",
+  "ad": "Новое радио",
   "etiket": "classical",
-  "ulke": "MA",
+  "ulke": "BY",
   "tur": "classical",
   "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
-  "id": "rb:c1064460-1b20-4fae-ac1e-74a142be0c18",
-  "mp3": "https://dc.digi.live.kissfm.ro/magic-movies",
-  "ad": "Magic FM Movie Hits",
-  "etiket": "movie,movie music,movie soundtracks,movies",
-  "ulke": "RO",
-  "tur": "soundtrack",
-  "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
-  "id": "rb:1aa5a707-c24c-4c5d-abcc-6f9b7a8f2f2e",
-  "mp3": "https://stream.technolovers.fm/melodic-house-techno?ref=radiobrowser-2",
-  "ad": "Melodic House & Techno",
-  "etiket": "#,beach,beachclub,chill,chillout,chillout+lounge,dj remix,electro,electro techno,electronic,festival,lounge,melodic house,melodic house & techno,melodic techno,pool beach bar,rave,relax,sea sounds,techno",
-  "ulke": "DE",
-  "tur": "chillout",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:db8a3218-6d66-42c2-a97b-ab0550a318ee",
-  "mp3": "https://radio.mfm.ua/online128",
-  "ad": "MFM STATION",
-  "etiket": "dance,dance pop,electronic,pop,top 20,top 40,world music",
-  "ulke": "UA",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:cdc22c75-9ac3-4969-80a7-c7bf01f80d80",
-  "mp3": "https://radio7.pro-fhi.net:19141/milleniumfm.mp3",
-  "ad": "Millenium FM Electro DJ Webradio",
-  "etiket": "dance,dance music,dubstep,electro,electronic,electronic dance music,house,progressive house,soulful house,techno,trance",
-  "ulke": "FR",
-  "tur": "soul",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:d847db37-5f89-48a5-be32-b10e5406f0e6",
-  "mp3": "https://stream.mixadance.fm/mixadance",
-  "ad": "Mixadance FM",
-  "etiket": "dance,electro,electronic,house,music",
-  "ulke": "RU",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:535eea60-bbf7-4139-8057-1f1d69f0d41b",
-  "mp3": "https://e20.yesstreaming.net:6217/stream",
-  "ad": "mr.chem fm",
-  "etiket": "chillout,downtempo,electro,electronic,house,techno",
-  "ulke": "RS",
-  "tur": "downtempo",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:8ccccd58-1053-4e05-aa7a-daaa41336b87",
-  "mp3": "https://radio.mugadavanje.rs/listen/mugadavanje/mugadavanje",
-  "ad": "Mugadavanje",
-  "etiket": "psychedelic trance",
-  "ulke": "RS",
-  "tur": "psychedelic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:df2ef0fb-5019-4eb0-bfea-fa21e6a7e609",
-  "mp3": "https://radio.musicradio.ai/listen/musicradio.ai/radio.mp3",
-  "ad": "Music Radio",
-  "etiket": "chillout,chillout+lounge,club house,cool jazz,disco funk,easy listening,easy music,electronic,entertainment,funk,funky,funky house,hits,house,jazz,música pop,new releases,nu-jazz,piano jazz,pop dance,pop en español e inglés,pop en inglés,pop music,pop rock,popular,smooth jazz,soulful house,tech house,top hits",
-  "ulke": "FR",
-  "tur": "jazz",
-  "grup": "LOUNGE & LOFI",
-  "saf": 2
- },
- {
-  "id": "rb:f1174669-b7ad-4668-8369-db995e6ecc8d",
-  "mp3": "https://breakz-high.rautemusik.fm/?ref=rb-neuerscheinungen",
-  "ad": "NEUERSCHEINUNGEN - Radio Charts - DJ",
-  "etiket": "chillout,club,club dance,dj,dj sets,electro sets,electronic dance music,future bass,house,ibiza,mashup,non-stop music,pop,pop dance,pop music,promodj,radiocharts,remixes,soul,sunset,tech house,techhouse,top 100,top 40,top charts,top club,top hits,top100,top40",
-  "ulke": "DE",
-  "tur": "chillout",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:17ae209c-55b7-455f-9d58-117170cedad5",
-  "mp3": "https://breakz-2012-high.rautemusik.fm/?ref=rbnichteinschalten",
-  "ad": "NICHT EINSCHALTEN -- !!! Nichts außer",
-  "etiket": "beach,chillout,dance,dj,dj mixes,dj sets,edm,electro,electronic,electronic dance music,hiphop,lounge,mixed,música pop,non-stop music,pop,reggaeton,remix,remixes,techno,top 100,top 40,top charts,top hits,urban",
-  "ulke": "DE",
-  "tur": "chillout",
-  "grup": "RADIOTAPE",
-  "saf": 2
- },
- {
-  "id": "rb:63b45400-70ff-4967-90f9-7581d1b7aef9",
-  "mp3": "https://stream.nightline-radio.de/stream/1/",
-  "ad": "Nightline Radio",
-  "etiket": "drum and bass,dub,dubtechno,electronic,techno",
-  "ulke": "DE",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:a5caf186-4062-45e9-b4df-6822d7b26aee",
-  "mp3": "https://e20.yesstreaming.net:6148/stream",
-  "ad": "Psychedelic Travel Radio",
-  "etiket": "forest psytrance,progressive psytrance,psychedelic,psytrance,trance",
-  "ulke": "RS",
-  "tur": "psychedelic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:43ea0516-a17e-4b65-8999-61791c800ca6",
-  "mp3": "https://ecast.myautodj.com:1380/listen.mp3",
-  "ad": "Radio BipTunia",
-  "etiket": "bass,dub,electronic,experimental,microtonal,psychedelic,space",
-  "ulke": "US",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:21a282be-44f4-4b8e-aae9-b4c2041af4a5",
-  "mp3": "https://stream.radioparadise.com/world-etc-320",
-  "ad": "Radio Paradise World/Etc Mix 320k AAC",
-  "etiket": "california,eclectic,world music,free,internet,non-commercial",
-  "ulke": "US",
-  "tur": "world",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:68c4dc06-824c-4a00-9f76-a13e181c6f2d",
-  "mp3": "https://s2.radioparty.pl:8015/stream?nocache=4171",
-  "ad": "Radio Party - Kanał Główny",
-  "etiket": "electronic,party,rap",
-  "ulke": "PL",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:7c1ac933-86fa-45f9-a48f-3f5b9de19944",
-  "mp3": "https://radiorecord.hostingradio.ru/techno96.aacp",
-  "ad": "Radiorecord.RU /techno",
-  "etiket": "techno",
-  "ulke": "RU",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:3280e71c-1df9-4805-98f3-9a5d60d5d5e7",
-  "mp3": "https://trance.out.airtime.pro/trance_a",
-  "ad": "RadiOzora Trance",
-  "etiket": "psychedelic,psytrance,trance",
-  "ulke": "HU",
-  "tur": "psychedelic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:481789fb-82e6-4504-910e-808cd4ed048e",
-  "mp3": "https://radiorecord.hostingradio.ru/goa96.aacp",
-  "ad": "Record Goa Psy",
-  "etiket": "goa trance psychedelic trance,psytrance",
-  "ulke": "FR",
-  "tur": "psychedelic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:960eb232-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://ice2.somafm.com/beatblender-128-mp3",
-  "ad": "SomaFM Beat Blender (128k MP3)",
-  "etiket": "chillout,deep house,downtempo,electronica",
-  "ulke": "US",
-  "tur": "downtempo",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:9614e0a1-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://ice6.somafm.com/fluid-128-mp3",
-  "ad": "SomaFM Fluid (128k MP3)",
-  "etiket": "chilled trap,future soul,hiphop,woozy electronica",
-  "ulke": "US",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:960e0117-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://ice2.somafm.com/poptron-128-mp3",
-  "ad": "SomaFM PopTron (128k MP3)",
-  "etiket": "electropop,indie,synthpop",
-  "ulke": "US",
-  "tur": "indie",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:6b92af91-7a1d-443c-a382-22d6dc21d0b4",
-  "mp3": "https://a7.asurahosting.com:8230/radio.mp3",
-  "ad": "Soul Rhythms Radio UK",
-  "etiket": "dancehall,house,jazz,neo soul,reggae,rnb,soul  music",
-  "ulke": "GB",
-  "tur": "reggae",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:9e286b3c-5185-11e9-a4d7-52543be04c81",
-  "mp3": "https://subfm.radioca.st/",
-  "ad": "Sub FM",
-  "etiket": "bass,deep house,drum and bass,dubstep,electronic,garage,house,juke,jungle,techno,uk garage",
-  "ulke": "",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:110090bf-0af9-4341-98a4-4947fe5d4b7e",
-  "mp3": "https://sunsl.streamabc.net/sunsl-sslafrohouse-aacplus-64-6818223",
-  "ad": "Sunshine Live - Afro House",
-  "etiket": "afro house,afrobeat,minimal techno",
-  "ulke": "DE",
-  "tur": "afrobeat",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:5ea0c406-cc3e-4a36-9a32-37ed4d5a180e",
-  "mp3": "https://stream.technolovers.fm/edm?ref=radiobrowser",
-  "ad": "Technolovers EDM",
-  "etiket": "club house,dance,edm,electro,electro house,electronic,electronic dance music,electronica,electropop,house,pop dance",
-  "ulke": "DE",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:830a7eff-916d-456c-842a-d7786e475658",
-  "mp3": "https://stream.technolovers.fm/electro-house?ref=radiobrowser",
-  "ad": "Technolovers ELECTRO HOUSE",
-  "etiket": "club dance,dance,edm,electro,electro house,electronic,electronic dance music,electronic music,electronica,electropop,elektro,elektronik,house,houseparty",
-  "ulke": "DE",
-  "tur": "electronic",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:0beeb085-5116-4f2a-a543-cdcb837f8116",
-  "mp3": "https://stream.technolovers.fm/handsup?ref=radiobrowser",
-  "ad": "Technolovers HANDSUP",
-  "etiket": "club,club dance,club hits,club sounds,hands up,handsup,handsup! rave oldscool 90s 00s 10s trance techno,techno,trance",
-  "ulke": "DE",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:3511172e-a0f1-4568-9d34-87c3ef0fa608",
-  "mp3": "https://stream.technolovers.fm/trap?ref=radiobrowser",
-  "ad": "Technolovers TRAP",
-  "etiket": "chilled trap,dub,dubstep,liquid trap,post dubstep,trap",
-  "ulke": "DE",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:80be3826-5222-4a06-9259-adb6ae1b9041",
-  "mp3": "https://azura.theindiebeat.fm/listen/audiointerface/radio.mp3",
-  "ad": "The Indie Beat Radio - Audio Interface",
-  "etiket": "ambient,downtempo,electronic,electronica,experimental,techno",
-  "ulke": "US",
-  "tur": "downtempo",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:690e7bc2-b96c-400c-951d-d1226a9e7103",
-  "mp3": "https://thevoidrad.io/stream320",
-  "ad": "The Void – Underground Music Radio",
-  "etiket": "dub techno,microhouse,minimal,rominimal",
-  "ulke": "GB",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:99d8fad1-51f0-44f3-943c-ee6b4a2864f4",
-  "mp3": "https://s11.ssl-stream.com/ssl/trancete?mp=/stream",
-  "ad": "Trancetechnic Radio",
-  "etiket": "acid house,techno,trance,trancetechnic,trancetechnic radio",
-  "ulke": "GB",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:f0df6e39-68b5-4026-9d83-51af63ddfdc6",
-  "mp3": "https://uzic.ice.infomaniak.ch/uzic-128.aac",
-  "ad": "UZIC.CH",
-  "etiket": "electro,house,minimal techno,progressive house,techno",
-  "ulke": "CH",
-  "tur": "techno",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:1f73fdc3-e4df-48db-bcec-83a9460f1c93",
-  "mp3": "https://stream.zeno.fm/pjktyby8dn5tv",
-  "ad": "WeRave Music Radio 01 - Dark and",
-  "etiket": "dance,deep house,electro,electronica,house,iconyc,indie dance,melodic house,melodic house & techno,new york,polyptych,progressive house,techno,underground,werave music",
-  "ulke": "US",
-  "tur": "indie",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:bfd55baa-e4dc-4726-ba51-956756821b20",
-  "mp3": "https://radio.worldclubdome.com/wcd-radio/mp3-192?ref=radiobrowser",
-  "ad": "WORLD CLUB DOME Radio - Das offizielle",
-  "etiket": "#dj,#edm,bigroom,dance,dance house club  electronic techhouse,dance music,deep house,dj,dj mixes,dj sets,edm,electro,electro house,electronic,festival,hard techno,hiphop,house,progressive house,rap,techhouse,techno,worldclubdome",
-  "ulke": "DE",
-  "tur": "world",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:4688eb3a-a407-4360-aef6-ac823bbae240",
-  "mp3": "https://broadcast.wssr.stream/radio/8000/radio.mp3",
-  "ad": "WSSR Sector Seven Radio",
-  "etiket": "deep house,deep techno,drum and bass,dub,dub reggae,electronic,electronica,house,minimal,r&b/urban,tech house,techno",
-  "ulke": "US",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:16c600b5-0e48-4ace-b9bb-5bfc39a757d6",
-  "mp3": "https://radio.xenfm.com/listen/xenfm/radio.mp3",
-  "ad": "XenFM",
-  "etiket": "dnb,drum & bass,dubstep,edm,liquid,melodic,phonk,trance,trap",
-  "ulke": "GB",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:124c45d7-57a9-46ed-8b93-83b306992126",
-  "mp3": "https://s3.radio.co/s113a5dc46/listen",
-  "ad": "XL:UK Radio",
-  "etiket": "afrobeat,asian urban hits,bhangra,bollywood,dance,dance hall,drum & bass,dubstep,edm,grime,hard bassline,hard style,hip-hop,house,r&b,rap,reggae,reggaeton,trap,uk garage",
-  "ulke": "GB",
-  "tur": "dub",
-  "grup": "ELECTRONIC",
-  "saf": 2
- },
- {
-  "id": "rb:74884688-e3a7-41f8-8105-bc249a37963e",
-  "mp3": "https://yumicoradio.net/stream",
-  "ad": "Yumi Co. Radio",
-  "etiket": "anime groove,animegroove,city pop,citypop,future funk,futurefunk,japan,japanese,nu disco,nudisco,synthwave,vaporwave",
-  "ulke": "FR",
-  "tur": "funk",
-  "grup": "ELECTRONIC",
   "saf": 2
  }
 ]
