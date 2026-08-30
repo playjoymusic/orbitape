@@ -859,6 +859,57 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
   }
 
+  /* ── YASAL VE MAGAZA METINLERI KODLA UYUSUYOR MU ─────────────────
+     Bu metinler hukuki beyan ve Play'in veri guvenligi formuyla
+     tutarli olmak zorunda. Kod degistikce sessizce yanlislasiyorlar
+     -- 30 Agustos'ta uc tanesi birden yakalandi:
+       · terms ve magaza metni MIKROFON kullanildigini soyluyordu.
+         Kod audio:false ile yalnizca video istiyor ve _headers
+         mikrofonu tamamen kapatiyor. Kullanmadigin bir izni beyan
+         etmek, veri guvenligi formunda gereksiz bir kirmizi bayrak.
+       · magaza metni "buyuk gezegen canli radyo ile arsiv arasinda
+         gecis yapar" diyordu. Kanal gecisi kaldirildi; gezegen artik
+         FX sifirliyor. Kullanici o gezegene basip hicbir sey
+         olmadigini gorurdu.
+       · "her istasyon adini, TURUNU ve nereden yayin yaptigini
+         gosterir" -- tur o satirdan cikarildi, yerine ulke bayragi
+         geldi.
+     Bu kontrol metinleri kodun kendisine karsi tutuyor. */
+  {
+    const kod = fs.readFileSync('index.html','utf8');
+    const bas = fs.readFileSync('_headers','utf8');
+    const trm = fs.readFileSync('terms.html','utf8');
+    const gzl = fs.readFileSync('privacy.html','utf8');
+    const mgz = fs.readFileSync('magaza/METINLER.md','utf8');
+    /* MIKROFON: kod istemiyor, header kapatiyor -> hicbir metin
+       "kullaniyoruz" dememeli. */
+    const mikKullaniliyor = /getUserMedia\(\{[^}]*audio:\s*true/.test(kod);
+    const mikKapali = /microphone=\(\)/.test(bas);
+    const mikIddia = [['terms.html',trm],['privacy.html',gzl],['magaza/METINLER.md',mgz]]
+      .filter(([,t]) => /microphone (is |are )?(used|needed|required)|camera and microphone are used/i.test(t))
+      .map(([a]) => a);
+    K('Mikrofon iddiasi kodla uyusuyor',
+      mikKullaniliyor ? mikIddia.length > 0 : (mikIddia.length === 0 && mikKapali),
+      mikKullaniliyor ? 'kod mikrofon istiyor'
+        : (mikIddia.length ? ('kod mikrofon ISTEMIYOR ama metin kullanildigini soyluyor: '
+                              + mikIddia.join(', '))
+                           : 'kod audio:false, header microphone=(), metinler de oyle diyor'));
+    /* GEZEGEN: kanal gecisi kaldirildi, artik FX sifirliyor. */
+    const gezegenGecis = /function havuzDegis/.test(kod);
+    const metinGecis = /(big )?planet switches between/i.test(mgz);
+    K('Gezegen anlatimi kodla uyusuyor', gezegenGecis === metinGecis,
+      metinGecis && !gezegenGecis
+        ? 'metin "gezegen kanal degistirir" diyor ama o davranis kodda yok'
+        : 'metin ile kod ayni seyi soyluyor');
+    /* ISTASYON SATIRI: raf adi cikti, bayrak geldi. */
+    const rafYaziliyor = /return bayrak\(it\.ulke\)/.test(kod);
+    const metinTur = /shows its name, its genre/i.test(mgz);
+    K('Istasyon satiri anlatimi dogru', !(metinTur && !rafYaziliyor),
+      metinTur && !rafYaziliyor
+        ? 'metin "turunu gosterir" diyor ama o satirda tur yok'
+        : 'metin, ekranda gercekten yazani anlatiyor');
+  }
+
   /* ── KAYIT KARESI GERCEKTEN CIZILIYOR MU ─────────────────────────
      OLCULEN HATA (30 Agustos): kayitCiz() on adima bolundu ve son
      adim (_kayVinyet) kondüktorde kalan bir degiskeni okuyordu.

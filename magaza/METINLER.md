@@ -53,21 +53,25 @@ Hold on the rings and each one names a genre. Release on the one you
 want and it opens. The name at the top and the three symbols step
 through the genres one by one. Tap the centre for whatever comes next.
 
-The big planet switches between live radio and the archive.
+The switch in the settings drawer moves between live radio and the
+archive; from the archive, one tap on the shortcut brings you back. The
+big planet clears every effect and returns the sound to normal.
 
 WHAT IT DOES NOT DO
 
 No account. No advertising. No analytics, no profile, nothing sent
 anywhere. Favourites and your last channel stay in your own device and
-never leave it. The camera and microphone are used only while you are
-recording, and only on your device.
+never leave it. The camera is asked for only when you switch it on, and
+the picture never leaves your device. The microphone is never used.
 
 Live radio is never recorded — if a station starts while a recording is
 running, the recording stops and says why.
 
 CREDIT WHERE IT IS DUE
 
-Every station shows its name, its genre and where it broadcasts from.
+Every station shows its name and the flag of the country it broadcasts
+from. When a station says what it is playing, the track and the artist
+appear too — that comes from the station itself, not from us.
 Every archive recording shows its licence and its artist. Nothing plays
 unless its licence permits sharing.
 
