@@ -100,9 +100,22 @@
 # 10 dakika taze, sonrasinda bir gun boyunca "eskisini goster, arkada
 # yenile": kullanici hicbir zaman liste yuklenmesini BEKLEMIYOR, ama
 # hasat yeni istasyon ekleyince de en gec ertesi acilista goruyor.
+# ── BEKLEME PENCERESI KISALDI: 1 GUN -> 1 SAAT ──────────────────
+# Olculen sikayet (30 Agustos): "rafi degistirdim, push'ladim, ama
+# uygulama hala ESKI listeyi caliyor."
+# Sebep buradaydi. stale-while-revalidate=86400, tarayiciya sunu
+# soyluyor: "kopya bayatlasa bile BIR GUN boyunca eskisini goster,
+# yenisini arkada indir." Yani liste guncellendikten sonra bir
+# kullanici (ve gelistirici) bir gun eski listeyi gorebiliyordu.
+# Uzun pencere dayaniklilik icin konmustu -- ama o isi zaten
+# cihazdaki kendi onbellegimiz yapiyor (onbellekOku, 3 hafta) ve
+# yalnizca cekim BASARISIZ olunca devreye giriyor. Yani 1 gunluk
+# pencere hicbir sey eklemiyordu, sadece bayatlik uretiyordu.
+# 1 saat: acilis yine anlik, ama bir degisiklik en gec bir saat
+# icinde herkeste.
 /radyo.json
   Content-Type: application/json; charset=utf-8
-  Cache-Control: public, max-age=600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=300, stale-while-revalidate=3600
 
 # ── ARSIV LISTELERI ──────────────────────────────────────────────
 # earth.json (5,4 MB) ve earth_buyuk.json (2,2 MB) de artik burada.
@@ -126,5 +139,5 @@
 #   python3 araclar/csp.py
 # Saglik testi ikisinin ayni olup olmadigina bakiyor.
 /*
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-912ziG1yK1co09oQ67vBB9eQ8hn7X9n47LAr8HkRGrk='; style-src 'sha256-MhOW7Pfo/hgdDFgwSWqL24Glx2CyWCyP0IgtWHYQlkM='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-6QDC6gd3d4CNBocSrbA9QsNpkvZ0Qu7frMnYmfsgNlQ='; style-src 'sha256-MhOW7Pfo/hgdDFgwSWqL24Glx2CyWCyP0IgtWHYQlkM='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 # ── CSP SONU ────────────────────────────────────────────────────

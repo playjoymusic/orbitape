@@ -3238,7 +3238,20 @@
     try{
       if(!liste || !liste.length) return;
       const kes = liste.length > ONB_TAVAN ? karisik(liste).slice(0, ONB_TAVAN) : liste;
-      const v = kes.map(o=>[o.id||'', o.mp3||'', o.ad||'', o.sanatci||'', o.etiket||'', o.lisans||'']);
+      /* ── 'grup' VE 'saf' DA SAKLANIYOR ─────────────────────────
+         BURADA BIR YALAN VARDI. Cagiran taraf grup ve saf'i
+         gonderiyor ve yanina "aile de saklaniyor: ag yokken de
+         suzulebilsin" diye yaziyordu -- ama bu satir yalnizca ALTI
+         alani diziye koyuyordu; grup ve saf sessizce dusuyordu.
+         Sonucu: ag koptugunda uygulama onbellege donuyor, oradaki
+         her istasyonun rafi BOS geliyor ve bir raf seciliyken
+         aileSuz (mutlak) hepsini eliyor. Yani "ag yokken de calsin"
+         diye yazilan mekanizma tam da ag yokken hicbir sey
+         vermiyordu: kuyruk bos, uygulama sonsuza kadar ariyor.
+         Okuyan taraf (onbellekOku) zaten o.grup'a bakiyordu --
+         eksik olan tek sey buydu. */
+      const v = kes.map(o=>[o.id||'', o.mp3||'', o.ad||'', o.sanatci||'',
+                            o.etiket||'', o.lisans||'', o.grup||'', o.saf||3]);
       localStorage.setItem(ONB_ON+ad, JSON.stringify({t:Date.now(), v:v}));
     }catch(e){ _yut(e); }   // kota dolu / gizli sekme: önbellek bir lüks, hata vermesin
   }
@@ -3248,7 +3261,13 @@
       const d = JSON.parse(h);
       if(!d || !Array.isArray(d.v) || !d.v.length) return null;
       if(!d.t || (Date.now() - d.t) > ONB_OMUR){ localStorage.removeItem(ONB_ON+ad); return null; }
-      return d.v.map(a=>({ id:a[0], mp3:a[1], ad:a[2], sanatci:a[3], etiket:a[4], lisans:a[5] }))
+      /* a[6]/a[7] eski kayitlarda yok: o zaman grup bos kalir ve
+         davranis eskisi gibi olur -- bozulmaz, sadece o kayitlar
+         raf seciliyken elenir. Bir sonraki basarili cekimde
+         onbellek yeni bicimle tazeleniyor. */
+      return d.v.map(a=>({ id:a[0], mp3:a[1], ad:a[2], sanatci:a[3],
+                           etiket:a[4], lisans:a[5],
+                           grup:a[6]||'', saf:(a[7]==null?3:a[7]) }))
                 .filter(o=>o.mp3);
     }catch(e){ return null; }
   }

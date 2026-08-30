@@ -48,5 +48,33 @@
   "ad": "dr_dick's dub shack",
   "mp3": "https://streamer.radio.co/s0635c8b0d/listen",
   "sebep": "ad uygun degil"
+ },
+ {
+  "mp3": "https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/uk/mobile_wifi_main_hd_abr_v2/aks/bbc_radio_six_indie_forever.m3u8"
+ },
+ {
+  "mp3": "https://ice2.somafm.com/beatblender-128-mp3"
+ },
+ {
+  "mp3": "https://ice6.somafm.com/fluid-128-mp3"
+ },
+ {
+  "mp3": "https://ice2.somafm.com/poptron-128-mp3"
+ },
+ {
+  "mp3": "https://ic2326.c1261.fastserv.com/rm128",
+  "ad": "Radio Mojdeh - Iranian Farsi/Persian"
+ },
+ {
+  "mp3": "https://usa3.fastcast4u.com/proxy/vaoctave?mp=/1",
+  "ad": "RFI 1021 FM"
+ },
+ {
+  "mp3": "https://wdr-wdr5-live.icecastssl.wdr.de/wdr/wdr5/live/mp3/128/stream.mp3",
+  "ad": "WDR 5"
+ },
+ {
+  "mp3": "https://icecast.tagesschau.de/ndr/tagesschau24/live/mp3/128/stream.mp3",
+  "ad": "ARD Tagesschau Radio"
  }
 ]

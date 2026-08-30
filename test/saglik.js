@@ -859,6 +859,52 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
   }
 
+  /* ── ONBELLEK RAFI DA SAKLIYOR MU ────────────────────────────────
+     OLCULEN HATA (30 Agustos): onbellekYaz() cagiran taraftan grup
+     ve saf aliyordu ve yanindaki yorum "aile de saklaniyor: ag
+     yokken de suzulebilsin" diyordu -- ama diziye yalnizca ALTI
+     alan konuyordu, grup sessizce dusuyordu.
+     Sonucu: ag koptugunda onbellekten okunan her istasyonun rafi
+     bos geliyor, bir raf seciliyken aileSuz hepsini eliyor ve
+     kuyruk bos kaliyor. "Ag yokken de calsin" diye yazilan sey tam
+     da ag yokken hicbir sey vermiyordu.
+     Bu kontrol yorumun degil KODUN ne yaptigina bakiyor: yaz-oku
+     turunu gercekten donduruyor. */
+  {
+    const onb = await pg.evaluate(()=>{
+      const ornek = [{ id:'rb:x1', mp3:'https://a.test/1.mp3', ad:'Bir',
+                       sanatci:'', etiket:'jazz', lisans:'',
+                       grup:'JAZZ', saf:1 }];
+      let eski = null;
+      try{ eski = localStorage.getItem('orbitape.onb.deneme'); }catch(e){}
+      onbellekYaz('deneme', ornek);
+      const geri = onbellekOku('deneme') || [];
+      try{ localStorage.removeItem('orbitape.onb.deneme');
+           if(eski) localStorage.setItem('orbitape.onb.deneme', eski); }catch(e){}
+      const o = geri[0] || {};
+      return { sayi:geri.length, grup:o.grup, saf:o.saf, ad:o.ad };
+    });
+    K('Onbellek rafi da sakliyor',
+      onb.sayi === 1 && onb.grup === 'JAZZ' && onb.saf === 1,
+      onb.sayi ? ('grup "' + onb.grup + '", saf ' + onb.saf
+                  + (onb.grup ? '' : '  <<< raf dusuyor, ag yokken kuyruk bos kalir'))
+               : 'onbellege hic yazilamadi');
+  }
+  /* ── LISTE GUNCELLEMESI BIR GUN BEKLEMESIN ───────────────────────
+     Olculen sikayet: "rafi degistirdim, push'ladim, uygulama hala
+     eski listeyi caliyor." Sebep stale-while-revalidate=86400'du:
+     tarayici bayat kopyayi BIR GUN boyunca gostermeye devam
+     ediyordu. Dayaniklilik zaten cihazdaki kendi onbellegimizde;
+     uzun pencere yalnizca bayatlik uretiyordu. */
+  {
+    const bas = fs.readFileSync('_headers','utf8');
+    const i = bas.indexOf('\n/radyo.json\n');
+    const blok = i < 0 ? '' : bas.slice(i, i + 200);
+    const swr = Number((blok.match(/stale-while-revalidate=(\d+)/) || [])[1] || 0);
+    K('Liste guncellemesi bir gun beklemiyor', swr > 0 && swr <= 3600,
+      swr ? (swr + ' sn bekleme penceresi (en cok 3600)') : 'radyo.json kurali okunamadi');
+  }
+
   /* ── ARSIVDE SONSUZ ARAMA OLMAMALI ───────────────────────────────
      BILDIRILEN (30 Agustos): "ORBITAPE'e gectim ve sonsuz donguye
      girdi, hicbir sey bulamadi. Tur degistirsem de ortaya tiklasam
