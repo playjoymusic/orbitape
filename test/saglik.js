@@ -253,7 +253,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      GERI GELECEGI ZAMAN elimizde OLCUM olmali -- hangi istek, hangi
      surede, gercekten asili mi kaliyor. O olcum yapilmadan bu
      kontroller geri konmamali. */
-  /* TAVAN 740 -> 780 KB. Sebep: gecici tur adlari artik CIZIM --
+  /* TAVAN 780 -> 800 KB. Sebep: ORBITAPE tanitimi (ayarlardaki
+     kapinin altinda "SEE IT FIRST"): sekiz adimlik ayri bir tur,
+     dunyayi GECICI acan onizleme ve bitince geri alan islev. Bir de
+     ayarlardan istenen turun yavas kipi ve uc ek adimi.
+     ONCEKI TAVAN 740 -> 780 KB. Sebep: gecici tur adlari artik CIZIM --
      yirmi bir ismin outline SVG yolu (~19 KB). Font dosyasi gomulmedi
      (lisans), yani bu 19 KB bir .woff'un yerini tutuyor ve ondan
      kucuk. Gzip'li boy 250 KB.
@@ -269,7 +273,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Onemli olan ham boy degil TELDEN GECEN boy: gzip'li ~200 KB.
      Tavani yukseltmek bir karar, kaza degil -- her yukseltmede
      sebebi buraya yaziliyor. */
-  K('Dosya boyutu < 780 KB',  dosyaBoy < 780*1024, Math.round(dosyaBoy/1024)+' KB');
+  K('Dosya boyutu < 800 KB',  dosyaBoy < 800*1024, Math.round(dosyaBoy/1024)+' KB');
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
      sonra insanlar isyeyebilir". Iki ses de kapatilabilir, karar
@@ -791,9 +795,11 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Ses grafi kuruldu',      ses.kuruldu, ses.durum+' @'+ses.sr);
   K('Tani paneli varsayilan kapali', await pg.evaluate(()=>TANI===false), '?tani ile aciliyor');
   const md = await pg.evaluate(()=>({n:MODLAR.length, ad:MODLAR.map(m=>m.ad).join(' '), aktif:AKTIF_MOD}));
-  /* 5 kanal kategorisi + ORBITAPE'in 8 rafi = 13. */
+  /* MODLAR = arsiv tarafinin kategorileri (radyo aileleri ayri
+     tabloda, AILELER). Sayisi INDIE & LOFI'den etkilenmiyor: o bir
+     RADYO rafiydi. */
   K('Kategoriler tanimli',    md.n===12, md.ad);
-  /* Adlarda BOSLUK VAR ("INDIE & LOFI") -> sayiyi ayirarak sayma.
+  /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
                                      ic:halkaIc(), ara:halkaAra(), sinir:zarSinir()}));
@@ -805,7 +811,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   /* En distaki halkanin adi MIXTAPE'ti, RADIO oldu: ayni kelime hem
      tur rafi hem arsivin muzik kanaliydi ve ekran hangisi oldugunu
      soyleyemiyordu. */
-  K('Radyoda halkalar tur ailesi', hs.n===10 &&
+  /* On halka -> DOKUZ: INDIE & LOFI bosaldi ve kaldirildi.
+     Geometri halka SAYISINDAN tureniyor, o yuzden sayi burada
+     acikca yaziyor: yanlis sayida parmak baska halkayi secer. */
+  K('Radyoda halkalar tur ailesi', hs.n===9 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
        && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
@@ -843,7 +852,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const enGenis = 2*R*HALKA_DIS*(1+(0.06+0.024*Math.min(halkaAdlar().length-1,4))+0.03)*1.035; // 1.035: parmak altindaki halka
     return { y, enGenis:Math.round(enGenis), ekran:innerWidth, disk:Math.round(dk.width) };
   });
-  K('Halka/dokunma ayni olcu', hg.y.join(',')==='0,1,2,3,4,5,6,7,8,9', 'yaricap->halka '+hg.y.join(','));
+  /* Dokuz halka (INDIE & LOFI kalkti): sayi halkaAdlar()'dan
+     tureniyor, burada elle yazmak yerine ondan uretiliyor ki bir
+     dahaki raf degisiminde test kendiliginden dogru kalsin. */
+  K('Halka/dokunma ayni olcu',
+    hg.y.join(',') === hg.y.map((_,i)=>i).join(','),
+    'yaricap->halka '+hg.y.join(','));
   K('En dis halka ekrana siğiyor', hg.enGenis <= hg.ekran*0.98, 'en genis cap '+hg.enGenis+'px / ekran '+hg.ekran+'px');
   /* ORBITAPE'IN ANLAMI: menudeki en icteki halka ve arsivin TAMAMI;
      otekiler onun altindaki daraltmalar. "Arsivdeki butun muzik"
@@ -1107,8 +1121,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     mod = 'radio'; AKTIF_AILE = AILE_ADLAR[0];
     const tur = [AKTIF_AILE];
     for(let i=0;i<11;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
+    const aileSayi = AILE_ADLAR.length;
     AKTIF_AILE = eskiAile; mod = eskiKanal;
-    return { tur };
+    return { tur, aileSayi };
   });
   /* nebT blogu KALDIRILDI: nebula ve kanal gecisi yok. Yerine
      yukarida "Nebula ekranda yok / Tek kanal var" testleri var. */
@@ -1176,9 +1191,12 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Arsiv zeminleri koyu', rt.zeminler, 'hepsi #0.. ile basliyor');
   }
   K('Isim dugmesi turleri geziyor',
-    /* Sonda bir tur fazla basiliyor; dongu 10 ailede kapaniyor:
-       11. basis basa doner, yani tur[0] === tur[10]. */
-    nb.tur && nb.tur.length===12 && nb.tur[0]!==nb.tur[1] && nb.tur[0]===nb.tur[10],
+    /* Dongu aile sayisinda kapaniyor: n. basis basa doner. Sayi
+       AILELER'den okunuyor -- raf eklenip cikarildikca test
+       kendiliginden dogru kaliyor (10 -> 9 boyle yakalandi). */
+    nb.tur && nb.tur.length > 3
+      && nb.tur[0] !== nb.tur[1]
+      && nb.tur[0] === nb.tur[nb.aileSayi],
     nb.tur ? nb.tur.join(' > ') : String(nb));
   /* Kanal gezme, nebula sorusu ve "kanal degisince FX soner"
      testleri KALKTI: ucu de olmayan bir seyi olcuyordu. */
@@ -3226,21 +3244,23 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                suzulen, bos, hepsi,
                aileSecVar:(typeof aileSec==='function') };
     });
-    /* NEWS & TALK SILINDI: icinde tek istasyon yoktu. Sayi 7. */
-    K('On aile tanimli', !!ai && ai.sayi === 10, ai ? ai.adlar.join(' · ') : 'AILELER yok');
-    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===10,
-       ai ? ai.benzersizRenk+'/10 benzersiz' : '-');
+    /* NEWS & TALK SILINDI: icinde tek istasyon yoktu.
+       INDIE & LOFI de SILINDI: on yedi lofi LOUNGE'a, bir indie rock
+       tarafina tasinip raf TAM bosaldi. On -> dokuz. */
+    K('Dokuz aile tanimli', !!ai && ai.sayi === 9, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===ai.sayi,
+       ai ? ai.benzersizRenk+'/'+ai.sayi+' benzersiz' : '-');
     /* SIRAYI KULLANICI DIKTE ETTI (buyukten kucuge):
-       ELECTRONIC · MIXTAPE · FUNK & RNB · ROCK & COUNTRY ·
-       WORLD & ROOTS · LOUNGE · ORCHESTRAL · JAZZ · INDIE & LOFI ·
+       ELECTRONIC · DISCO FUNK · ROCK & INDIE ·
+       WORLD & ROOTS · LOUNGE & LOFI · ORCHESTRAL · JAZZ ·
        AMBIENT
      Dizi icten disa oldugu icin ilki AMBIENT, sonuncusu ELECTRONIC.
      Bu bir zevk karari; sayiyla dogrulanamaz, o yuzden aynen sabit. */
   {
     /* 8. halkanin adi FUNK & RNB -> DISCO FUNK olarak degisti
        (kullanici istegi). Istasyonlar ayni, yalnizca rafin adi. */
-    const SIRA = ['AMBIENT','INDIE & LOFI','JAZZ','ORCHESTRAL',
-                  'LOUNGE','WORLD & ROOTS','ROCK & COUNTRY','DISCO FUNK',
+    const SIRA = ['AMBIENT','JAZZ','ORCHESTRAL','LOUNGE & LOFI',
+                  'WORLD & ROOTS','ROCK & INDIE','DISCO FUNK',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
@@ -3309,7 +3329,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Geri tusu aileden cikmiyor', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE;
         mod = 'radio'; AKTIF_AILE = 'JAZZ';
-        const s = _gecUygun({grup:'JAZZ'}) && !_gecUygun({grup:'ROCK & COUNTRY'})
+        const s = _gecUygun({grup:'JAZZ'}) && !_gecUygun({grup:'ROCK & INDIE'})
                   && _gecUygun({}) ;
         mod = eM; AKTIF_AILE = eA;
         return s;
@@ -3358,7 +3378,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        basista ustteki raf adi siliniyordu. Kullanici kaldirtti.
        Bu satir, iptalin sessizce geri gelmedigini kontrol ediyor. */
     /* YOLDA KALAN ISTASYON RAF DEGISINCE CALAMAZ.
-       Olculen vaka: ustte LOUNGE yazarken "LIVE · WORLD & ROOTS"
+       Olculen vaka: ustte LOUNGE & LOFI yazarken "LIVE · WORLD & ROOTS"
        caliyordu. Kuyruk suzuluyordu ama YOLDA olan istek suzgecin
        arkasindan geliyordu; cal() icindeki raf kapisi onu durduruyor. */
     /* ACILIS TURU UYGULAMAYI DOGRU ANLATSIN. Eskisi "bes halka, bes
@@ -3647,9 +3667,61 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         const kapandi = !document.body.classList.contains('ayar-acik');
         /* turBitir da kapatmali (tur ortasinda SKIP). */
         const govde = document.documentElement.innerHTML;
-        const bitirKapatir = /function turBitir\(\)[\s\S]{0,1400}ayarGoster\(false\)/.test(govde);
+        /* Pencere 1400 -> 2200: turBitir'in basina onizlemeyi geri
+           alan blok girdi (ORBITAPE turu dunyayi gecici aciyor) ve
+           ayarGoster(false) araligin disinda kalmisti. Kontrol dogru
+           seyi ariyor, yalnizca dilim kisaydi. */
+        const bitirKapatir = /function turBitir\(\)[\s\S]{0,2200}ayarGoster\(false\)/.test(govde);
         return yanma && panel && acar && kapar && acildi && kapandi && bitirKapatir;
       }), 'halkaYak + ayarGoster(true/false); turBitir de kapatiyor');
+    /* ── ORBITAPE TANITIMI: ANAHTARI ACMADAN ────────────────────
+       Ayarlardaki kapinin uzerinde "sound banks & effects" yaziyor
+       ve o iki kelime neyin acildigini anlatmiyor. Kapinin altindaki
+       "SEE IT FIRST" dunyayi GECICI aciyor.
+       Bu kontrolun asil isi geri donusu olcmek: tur bitince ekran
+       oldugu gibi geri gelmeli, AYAR.mood degismemeli ve depoya
+       hicbir sey yazilmamali. Yoksa kullanici hic istemedigi bir
+       dunyada kalir ve ayardaki anahtar kapali gorundugu icin nasil
+       cikacagini da bilemez. */
+    K('ORBITAPE tanitimi anahtari ACMIYOR', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const onceMood = AYAR.mood, onceMod = mod;
+        const onceDepo = (()=>{ try{ return localStorage.getItem('orbitape.ayar')||''; }catch(e){ return ''; } })();
+        turBitir();
+        try{ document.getElementById('agyok').classList.remove('on'); }catch(e){}
+        moodTuruBasla();
+        await bek(700);
+        const acikken = document.body.classList.contains('mood')
+                     && mod === 'lib'
+                     && document.getElementById('tur').classList.contains('on');
+        turBitir();
+        await bek(400);
+        const sonraDepo = (()=>{ try{ return localStorage.getItem('orbitape.ayar')||''; }catch(e){ return ''; } })();
+        const geri = AYAR.mood === onceMood && mod === onceMod
+                  && document.body.classList.contains('mood') === false
+                  && sonraDepo === onceDepo;
+        return acikken && geri;
+      }), 'dunya gecici aciliyor, bitince geri geliyor, depo degismiyor');
+    /* Tur baslamazsa (ag yokken turBasla vazgeciyor) onizleme acik
+       kalmamali: baslamadigini gorup geri alan satir var mi. */
+    K('Tanitim baslamazsa onizleme geri aliniyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /if\(!_turAkiyor\) geri\(\)/.test(k);
+      }), 'turBasla sessizce vazgecerse dunya acik kalmiyor');
+    /* Ayarlardan istenen tur DAHA YAVAS ve DAHA UZUN: acilistaki
+       selam hizli gecmeli ama ogrenmeye gelen kisi yaziyi
+       bitiremeden el bir sonraki yere gidiyordu. */
+    K('Ayarlardan istenen tur yavas ve uzun', await pg.evaluate(()=>{
+        const say = ()=>turAdimlari().length;
+        _turYavas = false; const hizli = say();
+        _turYavas = true;  const yavas = say();
+        _turYavas = false;
+        const k = document.documentElement.innerHTML;
+        const kat = /TUR_YAVAS_KAT\s*=\s*1\.75/.test(k);
+        const uygulaniyor = /_turZaman = setTimeout\(\(\)=>turDurak\(ad, no\+1\), _sure\(d\.sure\)\)/.test(k);
+        const elle = /_turYavas = !!zorla/.test(k);
+        return yavas > hizli && kat && uygulaniyor && elle;
+      }), 'yavas kipte adim sayisi da artiyor');
     K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return /item\.grup !== AKTIF_AILE/.test(k)
@@ -3659,7 +3731,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        Ilk yazimda dinleyici, iki elemani gezen bir forEach'in ICINDE
        kalmisti ve sembollere IKI KEZ baglaniyordu: tek tik iki raf
        birden ilerletiyor, aradaki raf atlaniyordu (JAZZ -> AMBIENT,
-       INDIE & LOFI hic gorunmuyor). Ekranda "tikladigim yere gitmiyor"
+       ortadaki raf hic gorunmuyor). Ekranda "tikladigim yere gitmiyor"
        diye goruluyordu. Cagri SAYISI olculuyor; yoksa hata gorunmez. */
     K('Uc sembol de raf degistiriyor', await pg.evaluate(()=>{
         const el = document.getElementById('bekle');

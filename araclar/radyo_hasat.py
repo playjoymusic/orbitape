@@ -54,12 +54,12 @@ ARAMA = OrderedDict([
     ("JAZZ",         ["jazz", "bebop", "big band", "swing", "smooth jazz"]),
     ("ROCK",         ["rock", "classic rock", "punk", "metal", "indie rock"]),
     ("DISCO FUNK",   ["funk", "soul", "disco", "motown", "rnb"]),
-    ("LOUNGE",       ["lounge", "easy listening", "chillout"]),
+    ("LOUNGE & LOFI",["lounge", "easy listening", "chillout", "lofi"]),
     ("ORCHESTRAL",   ["classical", "opera", "soundtrack", "baroque"]),
     ("WORLD & ROOTS",["reggae", "folk", "blues", "world music", "country"]),
     ("AFRO & LATIN", ["afrobeat", "latin", "salsa", "bossa nova", "cumbia"]),
     ("AMBIENT",      ["ambient", "new age", "drone"]),
-    ("INDIE & LOFI", ["indie", "lofi", "dream pop"]),
+    ("ROCK & INDIE", ["indie", "dream pop"]),
 ])
 
 BASLIK = {"User-Agent": "ORBITAPE/1.0 (+https://orbitape.app)"}

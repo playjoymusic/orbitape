@@ -104,7 +104,7 @@ RAF_KELIME = OrderedDict([
     # COUNTRY BURAYA GELDI: WORLD & ROOTS'ta duruyordu ama adinda
     # country gecen istasyon sayisi az degil ve dinleyici icin gitar
     # tarafi rock'a yakin. Raf adi da onu soylesin.
-    ("ROCK & COUNTRY", re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
+    ("ROCK & INDIE",   re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
                                r"rockabilly|grindcore|\bcountry\b|bluegrass|"
                                r"\bhonky ?tonk\b|\bamericana\b|alternative", re.I)),
     # blues BURAYA: kullanici Радио Эрмитаж'a JAZZ dedi, ilk gun de
@@ -117,13 +117,13 @@ RAF_KELIME = OrderedDict([
     # funk degil. Zayif kelime yanlis rafa tasiyordu.
     # r&b / rnb HIP HOP'a tasindi: "100 Hip hop and RNB FM" funk degil.
     # soul HIP HOP'a tasindi; burada funk ve disco funk kaldi.
-    ("LOUNGE",      re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
+    ("LOUNGE & LOFI", re.compile(r"\blounge\b|easy ?listening|smooth ?jazz|cocktail|"
                                r"\bcafe\b|café|\bspa\b|relaxation|\bmellow\b|"
                                r"\bchill\b|chillout|downtempo", re.I)),
     # AMBIENT = INSAN SESSIZ ORTAM. Akraba turler burada: doga
     # kayitlari, uyku/rahatlama yayinlari, meditasyon, drone.
     # Ayri raflar olsalardi her biri 3-5 istasyonda kalirdi.
-    # relax/chill LOUNGE'a tasindi. Burada kalanlar: doga, uyku,
+    # relax/chill LOUNGE & LOFI'ye tasindi. Burada kalanlar: doga, uyku,
     # meditasyon, drone, enstrumantal -- insan sessiz ortam.
     ("AMBIENT",     re.compile(r"\bambient\b|\bdrone\b|new ?age|meditation|"
                                r"soundscape|\bnature\b|\bsleep\b|"
@@ -140,8 +140,10 @@ RAF_KELIME = OrderedDict([
                                  r"afrobeat|\bafro\b|\blatin\b|\bsalsa\b|"
                                  r"\bbossa\b|cumbia|merengue|bachata|\bsamba\b|"
                                  r"\btango\b|highlife|soukous", re.I)),
-    ("INDIE & LOFI", re.compile(r"\bindie\b|\blo-?fi\b|shoegaze|dream ?pop|"
-                                r"bedroom ?pop", re.I)),
+    # INDIE & LOFI RAFI KALKTI: lofi tarafi LOUNGE & LOFI'ye, indie
+    # tarafi ROCK & INDIE'ye dagildi. Kalip da oyle bolundu.
+    ("LOUNGE & LOFI", re.compile(r"\blo-?fi\b|dream ?pop|bedroom ?pop", re.I)),
+    ("ROCK & INDIE", re.compile(r"\bindie\b|shoegaze", re.I)),
 ])
 
 # ── ETIKET SAYIMI: KADEME 1 ve KADEME 2 ───────────────────────────
@@ -164,7 +166,7 @@ RAF_KELIME = OrderedDict([
 #   "chillout / relax / easy listening" bir tur degil bir RUH HALI.
 #   Ayni istasyonda "new age" de yaziyorsa karari new age vermeli.
 #     ГУСЬ-Релакс — chillout, easy listening, new age, relax,
-#       sleepingpill -> kullanici AMBIENT dedi, LOUNGE demedi.
+#       sleepingpill -> kullanici AMBIENT dedi, LOUNGE & LOFI demedi.
 #     Спокойное радио — ambient, chillout, easy listening, jazz,
 #       lounge, relax, sounds of nature -> yine AMBIENT.
 #   Bu yuzden ruh hali kelimeleri 2. kademeye alindi: 1. kademede
@@ -185,7 +187,7 @@ KADEME1 = OrderedDict([
                                  r"\bsoul\b|motown|g-?funk|turntabl|"
                                  r"trip.?hop|\bbreakdance\b|"
                                  r"\bfunk\w*|boogie", re.I)),
-    ("ROCK & COUNTRY", re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
+    ("ROCK & INDIE",   re.compile(r"\brock\b|\bpunk\b|\bmetal\b|grunge|hardcore|"
                                   r"rockabilly|grindcore|\bcountry\b|bluegrass|"
                                   r"\bhonky ?tonk\b|\bamericana\b|alternative|"
                                   r"\b60'?s\b|\b70'?s\b|\bsixties\b|\bseventies\b|"
@@ -218,8 +220,10 @@ KADEME1 = OrderedDict([
                                  r"bollywood|\bpersian\b|\bfarsi\b|\bklezmer\b|"
                                  r"\bfado\b|\bmanele\b|kizomba|\bsoca\b|"
                                  r"calypso|\bzouk\b", re.I)),
-    ("INDIE & LOFI", re.compile(r"\bindie\b|\blo-?fi\b|shoegaze|dream ?pop|"
-                                r"bedroom ?pop", re.I)),
+    # INDIE & LOFI RAFI KALKTI: lofi tarafi LOUNGE & LOFI'ye, indie
+    # tarafi ROCK & INDIE'ye dagildi. Kalip da oyle bolundu.
+    ("LOUNGE & LOFI", re.compile(r"\blo-?fi\b|dream ?pop|bedroom ?pop", re.I)),
+    ("ROCK & INDIE", re.compile(r"\bindie\b|shoegaze", re.I)),
     ("ELECTRONIC",  re.compile(r"\bhouse\b|\btechno\b|\bedm\b|\btrance\b|"
                                r"\bdnb\b|drum ?(and|&|n) ?bass|dubstep|"
                                r"\belectro\b|electronic\w*|\bclub\b|\brave\b|"
@@ -227,12 +231,12 @@ KADEME1 = OrderedDict([
                                r"psytrance|hardstyle|\bidm\b|synthwave|"
                                r"vaporwave|\bdeejay\b|remix\w*|hands ?up|"
                                r"eurodance|\bibiza\b|\bbpm\b", re.I)),
-    ("LOUNGE",      re.compile(r"\blounge\b|cocktail|\bcafe\b|café", re.I)),
+    ("LOUNGE & LOFI", re.compile(r"\blounge\b|cocktail|\bcafe\b|café", re.I)),
 ])
 
 # 2. KADEME — RUH HALI. 1. kademede kimse yoksa konusur.
 KADEME2 = OrderedDict([
-    ("LOUNGE",     re.compile(r"\bsmooth\b|relax\w*|easy ?listening|\bchill\w*|"
+    ("LOUNGE & LOFI", re.compile(r"\bsmooth\b|relax\w*|easy ?listening|\bchill\w*|"
                               r"\bspa\b|\bmellow\b|\bdinner\b|\bbackground\b|"
                               r"downtempo|\bcalm\b", re.I)),
     ("ORCHESTRAL", re.compile(r"instrumental|\bacoustic\b|\bakustik\b", re.I)),
@@ -273,7 +277,7 @@ BOLGESEL = re.compile(
     r"\brussian folk\b|\bklezmer\b|\bfado\b|\bsevdah\b|\bmanele\b|"
     r"\bkizomba\b|\bsoca\b|\bcalypso\b|\bzouk\b|\bhighlife\b", re.I)
 
-# ROCK & COUNTRY = ESKI ON YILLAR ve klasik rock. "0 N - 60s on
+# ROCK & INDIE = ESKI ON YILLAR ve klasik rock. "0 N - 60s on
 #   Radio", "80s Forever", "Flower Power" hep buraya girdi.
 ESKI_ROCK = re.compile(
     r"\b60s\b|\bsixties\b|\b70s\b|\bseventies\b|classic ?rock|"
@@ -305,12 +309,14 @@ AILELER = OrderedDict([
     ("RADIO",         {"renk": "#8496FF"}),   # 1. halka
     ("JAZZ",          {"renk": "#CC7CA4"}),   # 2.
     ("AMBIENT",       {"renk": "#5FBF7A"}),   # 3.
-    ("ROCK & COUNTRY",{"renk": "#F2683C"}),   # 4.
-    ("WORLD & ROOTS", {"renk": "#9A96AC"}),   # 5.
+    ("ROCK & INDIE",  {"renk": "#F2683C"}),   # 4. (eski adi ROCK & COUNTRY)
+    # MOR LOFI'DEN GELDI: INDIE & LOFI rafi bosalinca kaldirildi ve
+    # rengi burada yasiyor. Eski gri (#9A96AC) halkada oteki
+    # grilerden ayirt edilmiyordu.
+    ("WORLD & ROOTS", {"renk": "#B07CE8"}),   # 5.
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),   # 6.
-    ("INDIE & LOFI",  {"renk": "#B07CE8"}),   # 7.
-    ("FUNK & RNB", {"renk": "#BEB6A4"}),   # 8.
-    ("LOUNGE",        {"renk": "#D8CBA0"}),   # 10.
+    ("FUNK & RNB", {"renk": "#BEB6A4"}),   # 7.
+    ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # 8. (eski adi LOUNGE)
     ("ELECTRONIC",    {"renk": "#35E0D8"}),   # 11. en dista, turkuaz
 ])
 
@@ -380,7 +386,7 @@ def _raflar(metin, elektronik_ustun=True):
     # "Smooth Jazz Lounge", "Jazz Lounge Bar" da dahil -- kullanicinin
     # karari: bunlar jazz degil, arka plan muzigi.
     if LOUNGE_MUTLAK.search(metin):
-        return ["LOUNGE"]
+        return ["LOUNGE & LOFI"]
     if elektronik_ustun and ELEKTRONIK.search(metin):
         return ["ELECTRONIC"]
     # JAZZ: adinda jazz geciyorsa jazz. "Piano Jazz Lounge",
@@ -438,14 +444,14 @@ def _puanla(ad, etiket, kademe=None):
 # tarif etti; buradaki desenler onun cumleleri:
 #
 #   ELECTRONIC     minimal / dubstep / drum and bass / deep house
-#   LOUNGE         relax yazanlar
-#   ROCK & COUNTRY rock yazanlar
+#   LOUNGE & LOFI  relax ve lofi yazanlar
+#   ROCK & INDIE   rock ve indie yazanlar
 #   ORCHESTRAL     classical yazanlar + soundtrack yazanlar
 #   AMBIENT        nature -- ozellikle SES uzerine olanlar
 #   JAZZ           saf jazz / instrumental jazz / only jazz
 #   WORLD & ROOTS  ters kural: reggaeton ve afro olanlar 2. GRUBA
 #
-# Adi gecmeyen aileler (INDIE & LOFI, FUNK & RNB)
+# Adi gecmeyen aileler (FUNK & RNB)
 # eski hesabini korur. RADIO'e dokunulmuyor -- orasi zaten
 # "belirsiz" rafi ve kullanici elle bakiyor.
 GRUP1 = {
@@ -453,7 +459,7 @@ GRUP1 = {
                                  r"drum ?(and|&|n) ?bass|\bdnb\b|"
                                  r"deep ?house", re.I),
     "LOUNGE":         re.compile(r"relax\w*", re.I),
-    "ROCK & COUNTRY": re.compile(r"\brock\b", re.I),
+    "ROCK & INDIE": re.compile(r"\brock\b", re.I),
     "ORCHESTRAL":     re.compile(r"\bclassical\b|soundtrack", re.I),
     "AMBIENT":        re.compile(r"\bnature\b|natural|soundscape|"
                                  r"sounds? of|\bfield recording\b|"

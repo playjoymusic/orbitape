@@ -296,7 +296,7 @@
   "etiket": "chillout,easy listening,easy listning,lofi,relax,relaxing",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -306,7 +306,7 @@
   "etiket": "calm,chill,easy listening,easy music,learn,lo-fi,lofi,lofi hip hop,lofi study beats,smooth,student",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -316,7 +316,7 @@
   "etiket": "chillout,hip-hop,lounge,relax,smooth jazz",
   "ulke": "DE",
   "tur": "jazz",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -326,7 +326,7 @@
   "etiket": "lofi study beats",
   "ulke": "GH",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -336,7 +336,7 @@
   "etiket": "alternative,indie",
   "ulke": "DE",
   "tur": "indie",
-  "grup": "INDIE & LOFI",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -346,7 +346,7 @@
   "etiket": "anime,doujin,game,games,ost,soundtrack,vgm,video games",
   "ulke": "US",
   "tur": "soundtrack",
-  "grup": "INDIE & LOFI",
+  "grup": "RADIOTAPE",
   "saf": 1
  },
  {
@@ -356,7 +356,7 @@
   "etiket": "lofi,lofi beats,lofi hip hop,lofi study beats",
   "ulke": "FR",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -366,7 +366,7 @@
   "etiket": "hip-hop,lofi",
   "ulke": "FR",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -376,7 +376,7 @@
   "etiket": "lo-fi,lofi",
   "ulke": "BR",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -386,7 +386,7 @@
   "etiket": "alternative rock,alternative wave,classic alternative,edm,indie,indie pop,indie rock,punk",
   "ulke": "US",
   "tur": "indie",
-  "grup": "INDIE & LOFI",
+  "grup": "RADIOTAPE",
   "saf": 1
  },
  {
@@ -396,7 +396,7 @@
   "etiket": "indie,indie pop",
   "ulke": "ES",
   "tur": "indie",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -406,7 +406,7 @@
   "etiket": "chillout,lofi,lofi hip hop",
   "ulke": "NC",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -416,7 +416,7 @@
   "etiket": "chill,chillout,downtempo,lo-fi,lounge,retrowave,synthwave",
   "ulke": "KZ",
   "tur": "downtempo",
-  "grup": "INDIE & LOFI",
+  "grup": "WORLD & ROOTS",
   "saf": 1
  },
  {
@@ -426,7 +426,7 @@
   "etiket": "christian,lofi,religious",
   "ulke": "US",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -436,7 +436,7 @@
   "etiket": "lo-fi,lofi",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -446,7 +446,7 @@
   "etiket": "lo-fi,lofi",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -456,7 +456,7 @@
   "etiket": "chill,lofi",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -496,7 +496,7 @@
   "etiket": "classical piano,jazz,lounge,lounge music,piano,piano jazz,smooth jazz",
   "ulke": "DE",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -666,7 +666,7 @@
   "etiket": "christmas music,soundtracks,waynesboro",
   "ulke": "US",
   "tur": "soundtrack",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -716,7 +716,7 @@
   "etiket": "cinematic,film music,orchestral,soundtracks",
   "ulke": "SE",
   "tur": "soundtrack",
-  "grup": "ORCHESTRAL",
+  "grup": "RADIOTAPE",
   "saf": 1
  },
  {
@@ -766,7 +766,7 @@
   "etiket": "classical,instrumental music,orchestral",
   "ulke": "RO",
   "tur": "instrumental",
-  "grup": "ORCHESTRAL",
+  "grup": "WORLD & ROOTS",
   "saf": 2
  },
  {
@@ -856,7 +856,7 @@
   "etiket": "classical",
   "ulke": "BY",
   "tur": "classical",
-  "grup": "ORCHESTRAL",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -866,7 +866,7 @@
   "etiket": "ambient,ambient and relaxation music,ambient lounge,ambiental,chillout,chillout+lounge,deep ambient,italian music,jazz,lounge,lounge music,relax,smooth jazz,soft music",
   "ulke": "IT",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -876,7 +876,7 @@
   "etiket": "chill,chillout,chillout+lounge",
   "ulke": "RU",
   "tur": "chillout",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -886,7 +886,7 @@
   "etiket": "instrumental",
   "ulke": "RU",
   "tur": "instrumental",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -896,7 +896,7 @@
   "etiket": "192kbps,chillout,chillout+lounge,classic hits,club,cool jazz,cool music seduction,fm,high quality audio,jazz,jazz fusion,jazz lounge,local radio,lounge,lounge music,lounge radio,music,musica,oldies,public radio,radio,relax,relax music,relaxation,relaxing,smooth,smooth jazz,smooth lounge,vocal jazz,vocal lounge",
   "ulke": "CA",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -906,7 +906,7 @@
   "etiket": "chillout,easy listening,jazz,smooth,smoothjazz",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -916,7 +916,7 @@
   "etiket": "chill,chillout,downtempo,easy listening,relax,relaxing,rnb,slow",
   "ulke": "DE",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -926,7 +926,7 @@
   "etiket": "beachclub,chillout,club,club dance,house,lounge,pool beach bar,tech house,techno",
   "ulke": "DE",
   "tur": "techno",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -936,7 +936,7 @@
   "etiket": "ambient,background,chillout+lounge,easy listening,jazz,lounge,lounge music,relax,smooth jazz,smooth lounge",
   "ulke": "DE",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -946,7 +946,7 @@
   "etiket": "ambient,chillout+lounge,easy listening,instrumental,lounge,lounge music,romantic,smooth jazz,smooth lounge",
   "ulke": "DE",
   "tur": "instrumental",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -956,7 +956,7 @@
   "etiket": "ambient,ambient and relaxation music,ambiental,background,calm,chamber,chill,chillout,chillout+lounge,easy listening,easy music,instrumental,lounge,lounge music,lounge radio,romantic,smooth,smooth lounge,soft pop",
   "ulke": "DE",
   "tur": "ambient",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -966,7 +966,7 @@
   "etiket": "ambient,background,classical piano,easy listening,instrumental,jazz,klassik,musica romantica,piano,restaurant,romantic,romantic music,smooth jazz",
   "ulke": "DE",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -976,7 +976,7 @@
   "etiket": "background,chill,chillout,chillout+lounge,easy,easy listening,easy music,instrumental,lounge music,meditation,relax,relaxing,sleep,spa,yoga",
   "ulke": "DE",
   "tur": "chillout",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -986,7 +986,7 @@
   "etiket": "ambient,ambient and relaxation music,bossa nova,canada,chillout+lounge,covers,deep ambient,deep house,dub,house,jazz,lounge,lounge music,lounge radio,reggae,relax,smooth jazz,toronto",
   "ulke": "CA",
   "tur": "ambient",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -996,7 +996,7 @@
   "etiket": "blues,chillout,jazz,lounge",
   "ulke": "GB",
   "tur": "blues",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1006,7 +1006,7 @@
   "etiket": "ambient,chill,chillout,lounge,lounge music,smooth lounge",
   "ulke": "DE",
   "tur": "ambient",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1016,7 +1016,7 @@
   "etiket": "aereoporto,airport,ambient,chill,chillout,easy listening,house,lounge,smooth,smooth jazz",
   "ulke": "CA",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1026,7 +1026,7 @@
   "etiket": "chillout,ibiza,lounge",
   "ulke": "ES",
   "tur": "chillout",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1036,7 +1036,7 @@
   "etiket": "80s en español,café romántico radio,clásicos,español,estación,internet,internet radio,internet station,latinoamérica,moi merino,monterrey,musica romantica,méxico,música en español,norteamérica,nuevo león,online,online only,pop clásico,radio,radio online,retro,romantic,romantic music,romantica,romántica,románticas",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1046,7 +1046,7 @@
   "etiket": "downtempo,electronic chill-out,lounge,trip-hop",
   "ulke": "GR",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1056,7 +1056,7 @@
   "etiket": "chillout,chillout radio,classic,classical,classical music,classical piano,instrumental,new age piano,piano,piano jazz",
   "ulke": "DE",
   "tur": "instrumental",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1066,7 +1066,7 @@
   "etiket": "chillout,downtempo,electronic,lounge",
   "ulke": "GR",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1076,7 +1076,7 @@
   "etiket": "bossa nova,chillout,jazz,lounge",
   "ulke": "ES",
   "tur": "bossa nova",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1086,7 +1086,7 @@
   "etiket": "chillout,epic,lounge,new age,soundtracks",
   "ulke": "GR",
   "tur": "soundtrack",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1096,7 +1096,7 @@
   "etiket": "hiphop,instrumental,jazz,lo-fi,lounge,lounge music",
   "ulke": "DE",
   "tur": "instrumental",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1106,7 +1106,7 @@
   "etiket": "ambient and relaxation music,chillout,chillout+lounge,lo-fi,lofi,lounge,relax,relaxation,relaxation music,smooth lounge,working",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1116,7 +1116,7 @@
   "etiket": "contemporary,downtempo,focus,lounge,music only,relaxed,warm",
   "ulke": "DE",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1126,7 +1126,7 @@
   "etiket": "contemporary,downtempo,focus,lounge,music only,relaxed,warm",
   "ulke": "DE",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1136,7 +1136,7 @@
   "etiket": "chillout,contemporary,downtempo,music only,relaxation,relaxed,study",
   "ulke": "DE",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1146,7 +1146,7 @@
   "etiket": "contemporary,downtempo,electronica,music only,relaxation,relaxed",
   "ulke": "DE",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1156,7 +1156,7 @@
   "etiket": "contemporary,downtempo,electronica,music only,relaxation,relaxed",
   "ulke": "DE",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1166,7 +1166,7 @@
   "etiket": "cafe,chillout,coffeehouse,downtempo,groove,relax,smooth jazz,urban lounge jazz",
   "ulke": "RO",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1176,7 +1176,7 @@
   "etiket": "lounge,new age",
   "ulke": "IT",
   "tur": "new age",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1186,7 +1186,7 @@
   "etiket": "lo-fi,lofi,lofi beats",
   "ulke": "US",
   "tur": "lofi",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1196,7 +1196,7 @@
   "etiket": "chillout,lounge,relax",
   "ulke": "UA",
   "tur": "chillout",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1206,7 +1206,7 @@
   "etiket": "chillout,downtempo,lounge",
   "ulke": "US",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1216,7 +1216,7 @@
   "etiket": "downtempo,easy listening,lounge,smooth jazz",
   "ulke": "AT",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1226,7 +1226,7 @@
   "etiket": "chillsynth,chillwave,instrumental",
   "ulke": "DE",
   "tur": "instrumental",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1236,7 +1236,7 @@
   "etiket": "chillout,downtempo,electronic",
   "ulke": "LV",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1246,7 +1246,7 @@
   "etiket": "alternative,ambient,chillout,eclectic,indie,lounge,trip-hop,world music",
   "ulke": "GR",
   "tur": "ambient",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1256,7 +1256,7 @@
   "etiket": "accoustic,coffee,indie pop,jazz,singer-songwriter,smooth jazz",
   "ulke": "ES",
   "tur": "indie",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1266,7 +1266,7 @@
   "etiket": "chill,chillout,psychedelic,psychill",
   "ulke": "HU",
   "tur": "psychedelic",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1276,7 +1276,7 @@
   "etiket": "classic,instrumental,jazz,new age",
   "ulke": "MX",
   "tur": "new age",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1286,7 +1286,7 @@
   "etiket": "chillout,national,public radio,smooth,variety",
   "ulke": "GB",
   "tur": "chillout",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1296,7 +1296,7 @@
   "etiket": "acir,acir online,américa,cdmx,ciudad de méxico,cool jazz,entretenimiento,español,estación,grupo acir,guitar jazz,iheart,iheart radio,jazz,latinoamérica,mexico city,moi merino,music,méxico,música,norteamérica,online,online only,piano,piano jazz,radio,radio online,sax,saxophone,smooth jazz,valle de méxico",
   "ulke": "MX",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1306,7 +1306,7 @@
   "etiket": "smooth jazz,soul",
   "ulke": "ES",
   "tur": "soul",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1316,7 +1316,7 @@
   "etiket": "acid jazz,canada,fusion jazz,guirar,instrumental,jazz,lounge,sax,sensual,smooth jazz,soft,soft jazz,trumpeth",
   "ulke": "CA",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1326,7 +1326,7 @@
   "etiket": "jazz,smooth jazz,smooth lounge",
   "ulke": "BR",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1336,7 +1336,7 @@
   "etiket": "monterey,smooth jazz",
   "ulke": "US",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1346,7 +1346,7 @@
   "etiket": "monterey,smooth jazz",
   "ulke": "US",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1356,7 +1356,7 @@
   "etiket": "ambient,downtempo,jazz,lounge,samba,sixties",
   "ulke": "US",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1366,7 +1366,7 @@
   "etiket": "chillout,lounge,sunset",
   "ulke": "US",
   "tur": "chillout",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1376,7 +1376,7 @@
   "etiket": "chillout,downtempo,lounge,new age",
   "ulke": "GB",
   "tur": "new age",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1386,7 +1386,7 @@
   "etiket": "jazz,smooth jazz,suave",
   "ulke": "BR",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -1596,7 +1596,7 @@
   "etiket": "bossa nova,jazz",
   "ulke": "DE",
   "tur": "bossa nova",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 1
  },
  {
@@ -2416,7 +2416,7 @@
   "etiket": "60s,60s and 70s.,70's,70er,70s,80's,80er,80s,90's,90er,90s,blues,blues rock,classic blues,classic hits,classic hits 60s 70a 80s,classic rock,classic rock  50's 60's 70's 80's 90's,classic rock music,classic rock oldies,classic rock oldies soul,classic rock; alternative rock indie,country,entretenimiento,fm,hard rock,high quality audio,hits,local radio,melodic hard rock,music,music 70s 80s 90s,musica,oldies,pop rock,public radio,radio,real classic rock,rhythm and blues,rock,soft rock",
   "ulke": "CA",
   "tur": "soul",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2426,7 +2426,7 @@
   "etiket": "1980s,80s,alternative rock,blues rock,classic rock,hard rock,hits,oldies,rock",
   "ulke": "DE",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2436,7 +2436,7 @@
   "etiket": "alternative metal,alternative rock,grunge,indie rock,punkrock,rock",
   "ulke": "DE",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2446,7 +2446,7 @@
   "etiket": "bluesrock,classic rock,hardrock,rock,stonerrock",
   "ulke": "DE",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2456,7 +2456,7 @@
   "etiket": "1990s,20th century,80s,80th,ac/dc,acdc,alternative,anthrax,art rock,avant garde,classic,classics,cream,danzig,europe,experimental,festivals,folk rock,foo fighters,garage punk,gig,glam rock,gothic,grunge,hardcore,heavy metal,heavy rock,hendrix,hits,indie,iron maiden,james taylor,korn,led zeppelin,linkin park,live,livestream,megadeth,metal,metalcore,metallica,motorhead,motörhead,musik,new age,new wave,nirvana,nu punk,open air,paul simon,pop,pop-rock,prog,psychedelia,punk rock,queen,rainorshine,rhythm and blues,rock,rolling stones,sex pistols,slow rock,soft rock,symphonic rock,system of a down,t-rex,talking heads,wacken,wacken open air,wacken radio,woa",
   "ulke": "DE",
   "tur": "new age",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2466,7 +2466,7 @@
   "etiket": "blues rock,country rock,garage rock,southern rock,stoner rock",
   "ulke": "CA",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2476,7 +2476,7 @@
   "etiket": "blues,folk,progressive rock,psychedelic rock",
   "ulke": "BR",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2486,7 +2486,7 @@
   "etiket": "alternative rock,blues rock,classic rock,hard rock,indie rock,pop rock,progressive rock,punk rock,rock,soft rock",
   "ulke": "ES",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2496,7 +2496,7 @@
   "etiket": "alternative rock,indie rock,pop rock,rock,soft rock",
   "ulke": "FR",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2506,7 +2506,7 @@
   "etiket": "blues rock",
   "ulke": "FR",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2516,7 +2516,7 @@
   "etiket": "alternative rock,indie rock",
   "ulke": "IT",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2526,7 +2526,7 @@
   "etiket": "1970s,classic rock,disco,glam rock,hard rock,heavy metal,new wave,progressive rock,psychedelic rock,punk,rock",
   "ulke": "DE",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2536,7 +2536,7 @@
   "etiket": "1970s,classic rock,disco,glam rock,hard rock,heavy metal,new wave,progressive rock,psychedelic rock,punk,rock",
   "ulke": "DE",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2546,7 +2546,7 @@
   "etiket": "alternative,blues,country and western,folk rock,indie,pop rock,rock,singer-songwriter",
   "ulke": "DE",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2556,7 +2556,7 @@
   "etiket": "indie rock",
   "ulke": "MD",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2566,7 +2566,7 @@
   "etiket": "blues,classic rock,metal,punk,rock",
   "ulke": "FR",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2576,7 +2576,7 @@
   "etiket": "80s,80s en español,90s,acir,acir online,américa,cdmx,ciudad de méxico,clásicos,clásicos en español,entretenimiento,español,estación,grupo acir,iheart,iheart radio,latinoamérica,mexico city,moi merino,méxico,música,música en español,norteamérica,online,online only,pop rock,radio,radio online,rock,rock en español,rock music,valle de méxico",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2586,7 +2586,7 @@
   "etiket": "alternative rock,classic rock,hard rock,indie rock,pop rock,progressive rock",
   "ulke": "GR",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2596,7 +2596,7 @@
   "etiket": "blues rock,classic rock,hard rock,heavy metal,rock,spanish rock",
   "ulke": "ES",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 1
  },
  {
@@ -2606,7 +2606,7 @@
   "etiket": "alternative country,blues rock,classic country,classic rock,contemporary country,country,country blues,country music,country pop,country rock,outlaw country,rock,soft rock",
   "ulke": "DE",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2616,7 +2616,7 @@
   "etiket": "60er,60s,funk,oldies,pop,rock 'n' roll,soul,twist",
   "ulke": "DE",
   "tur": "funk",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2626,7 +2626,7 @@
   "etiket": "80s,alternative rock,eighties,gothic,indie,indie pop,manchester rave,new wave,power pop,rare 80s,rock,synthpop",
   "ulke": "CH",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2636,7 +2636,7 @@
   "etiket": "alternative,alternative rock,classic rock,electro,electronic,electronica,house,pop,pop rock,rock,world music",
   "ulke": "FR",
   "tur": "world",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2646,7 +2646,7 @@
   "etiket": "alternative,entretenimiento,indie rock,musica,rock",
   "ulke": "UY",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2656,7 +2656,7 @@
   "etiket": "alternative / indie,britpop,eclectic,indie",
   "ulke": "GB",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2666,7 +2666,7 @@
   "etiket": "60s,70s,blues,folk,funk,pop,rock",
   "ulke": "US",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2676,7 +2676,7 @@
   "etiket": "alternative / indie,alternative rock,ambient,electronic,experimental,instrumental,pop rock,urban contemporary",
   "ulke": "CA",
   "tur": "instrumental",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2686,7 +2686,7 @@
   "etiket": "beat,blues rock,classic pop,classic rock,hard rock,progressive rock,psychedelic rock",
   "ulke": "PE",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2696,7 +2696,7 @@
   "etiket": "1990s,20th century,ac/dc,acdc,alternative,anthrax,art rock,avant garde,classic,cream,danzig,drgnu,europe,experimental,festivals,folk rock,foo fighters,garage punk,gig,glam rock,gothic,grunge,hardcore,heavy metal,heavy rock,hendrix,hits,indie,iron maiden,james taylor,korn,led zeppelin,linkin park,live,livestream,megadeth,metal,metalcore,metallica,motorhead,motörhead,musik,new age,new wave,nirvana,nu punk,open air,paul simon,pop,pop-rock,prog,psychedelia,punk rock,queen,rainorshine,rhythm and blues,rock,rolling stones,sex pistols,slow rock,soft rock,symphonic rock,system of a down,t-rex,talking heads,wacken,wacken open air,wacken radio,woa",
   "ulke": "DE",
   "tur": "new age",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2706,7 +2706,7 @@
   "etiket": "psychedelic rock,rock",
   "ulke": "GB",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2716,7 +2716,7 @@
   "etiket": "classic rock,decades,funk,motown,pop rock,psychedelic",
   "ulke": "DE",
   "tur": "funk",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2726,7 +2726,7 @@
   "etiket": "alternative rock,contemporary,energetic,indie rock,music only",
   "ulke": "DE",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2736,7 +2736,7 @@
   "etiket": "orf,alternative mainstream,electronic,pop,rock,public radio",
   "ulke": "AT",
   "tur": "electronic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -2746,7 +2746,7 @@
   "etiket": "orf,alternative mainstream,electronic,pop,rock,public radio",
   "ulke": "AT",
   "tur": "electronic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -2756,7 +2756,7 @@
   "etiket": "beats,blues,drums,electronic,experimental,folk,free jazz,free radio,freestyle,funk,hip hop,hip-hop,hippy noise,independent,japanoise,jazz,metal,modern classical,mumbling,noise,noise rock,non-commercial,psychedelic,punk,reggae,rock,rockabilly,ska,talk,techno",
   "ulke": "US",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2766,7 +2766,7 @@
   "etiket": "americana,blues,cajun,country,nederpop,soul",
   "ulke": "NL",
   "tur": "soul",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2776,7 +2776,7 @@
   "etiket": "indie,indie rock,psychedelic rock,rock",
   "ulke": "US",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2786,7 +2786,7 @@
   "etiket": "60s,disco,dub,funk,indie,punk,rock",
   "ulke": "GB",
   "tur": "dub",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2796,7 +2796,7 @@
   "etiket": "afrobeats,alternative,alternative rock,ambient,dj mixes,dj remix,djs,electronic,folk,highlife,hip hop,indie,indie rock,jazz,live sessions,local music,mrcrosby,music,punk,rock,talk",
   "ulke": "US",
   "tur": "jazz",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2806,7 +2806,7 @@
   "etiket": "alternative,eclectic,electronic,folk,indie,jazz,pop,rock",
   "ulke": "US",
   "tur": "folk",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2816,7 +2816,7 @@
   "etiket": "indie rock",
   "ulke": "US",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2826,7 +2826,7 @@
   "etiket": "80s,80s live radio,90s,acir,acir online,américa,cdmx,ciudad de méxico,classic rock,classic rock; alternative rock indie,en vivo,entretenimiento,español,estación,grupo acir,iheart,iheart radio,indie rock,latinoamérica,live,live concert,live music,live rock,mexico city,mix,mix en vivo,mix fm,moi merino,méxico,norteamérica,online,online only,pop,pop en inglés,pop music,pop rock,radio,radio online,rock,rock en inglés,valle de méxico",
   "ulke": "MX",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2836,7 +2836,7 @@
   "etiket": "americana,blues,jamband,jazz,psychedelic rock,rock,southern rock",
   "ulke": "US",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2846,7 +2846,7 @@
   "etiket": "ambient,blues,classical,country,dance,disco,dub,electronic,experimental,groove,heavy metal,hiphop,house,indie,jazz,lifestyle,other,pop,post-punk,psychedelic,rap,reggae,rnb,rock,soul,special broadcast,talk,techno,world",
   "ulke": "CA",
   "tur": "dub",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2856,7 +2856,7 @@
   "etiket": "70's,decades,motown,oldies,oldies 50's/60's,soul & great rock n' roll",
   "ulke": "US",
   "tur": "soul",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2866,7 +2866,7 @@
   "etiket": "alternative,dub,industrial,punkrock",
   "ulke": "PL",
   "tur": "dub",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2876,7 +2876,7 @@
   "etiket": "garage rock,krautrock,psychedelic rock",
   "ulke": "EE",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2886,7 +2886,7 @@
   "etiket": "1920s,1960s,1970s,blues,classic,dance,gospel,jazz,jazz funk,pop jazz,pop rock,rhythm and blues,rock,singer-songwriter,smooth,soul,traditional",
   "ulke": "DE",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2896,7 +2896,7 @@
   "etiket": "blues,classical,jazz,world music",
   "ulke": "CA",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -2906,7 +2906,7 @@
   "etiket": "00s,80s,90s,blues,blues rock,classic rock,country,hits,rock,top hits",
   "ulke": "CR",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2916,7 +2916,7 @@
   "etiket": "1180 am,60s,70s,80s,acir,am,balada,balada en español,balada pop,balada romántica,baladas,baladas en español,cdmx,ciudad de méxico,clásicos,clásicos en español,español,estación,grupo acir,iheart,iheart radio,latinoamérica,los mejores momentos,moi merino,méxico,música,música del recuerdo,música en español,música variada,norteamérica,oldies,radio,radio felicidad,retro,rock en español,valle de méxico",
   "ulke": "MX",
   "tur": "latin",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2926,7 +2926,7 @@
   "etiket": "blues,folklore,jazz,metal,radio universitaria,rock",
   "ulke": "AR",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2936,7 +2936,7 @@
   "etiket": "alternative rock,chill,dub,electro,electronic,reggae,rock,various",
   "ulke": "FR",
   "tur": "dub",
-  "grup": "ROCK & COUNTRY",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {
@@ -2946,7 +2946,7 @@
   "etiket": "97.9 fm,bogotá,classic rock,classic rock oldies,classic rock; alternative rock,classic rock; alternative rock indie,colombia,entretenimiento,español,estación,juvenil,latinoamérica,moi merino,music,música,prisa radio,radio,real classic rock,rock,rock classics,rock en español,rock en ingles,rock international,rock latino,rock music,suramérica",
   "ulke": "CO",
   "tur": "latin",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2956,7 +2956,7 @@
   "etiket": "1960s,60s,classic rock,pop,pop rock,psychedelic,rock,sixties",
   "ulke": "US",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2966,7 +2966,7 @@
   "etiket": "alternative indie rock",
   "ulke": "GB",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2976,7 +2976,7 @@
   "etiket": "indie,indie music,indie rock",
   "ulke": "US",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2986,7 +2986,7 @@
   "etiket": "60's,70's,psychedelic rock",
   "ulke": "BR",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -2996,7 +2996,7 @@
   "etiket": "alternative rock,classic rock,indie rock,pop rock,punk rock,rock,soft rock",
   "ulke": "IT",
   "tur": "indie",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -3006,7 +3006,7 @@
   "etiket": "goose,jam bands,jamband,jambands,psychedelic,rock",
   "ulke": "US",
   "tur": "psychedelic",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 2
  },
  {
@@ -3336,7 +3336,7 @@
   "etiket": "blues,classical,contemporary,eclectic programming,folk,jazz,music,pop,rock,world",
   "ulke": "CA",
   "tur": "blues",
-  "grup": "ROCK & COUNTRY",
+  "grup": "ROCK & INDIE",
   "saf": 3
  },
  {
@@ -3476,7 +3476,7 @@
   "etiket": "ambient lounge,jazz lounge,lounge",
   "ulke": "BR",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 3
  },
  {
@@ -3506,7 +3506,7 @@
   "etiket": "ambient lounge,lounge,lounge downtempo chillout ambient easy listening,lounge music",
   "ulke": "FR",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 3
  },
  {
@@ -3516,7 +3516,7 @@
   "etiket": "chill beats,chillhop,lofi hip hop,music for study,relax",
   "ulke": "DE",
   "tur": "lofi",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 3
  },
  {
@@ -3586,7 +3586,7 @@
   "etiket": "jazz,new age",
   "ulke": "ID",
   "tur": "new age",
-  "grup": "ORCHESTRAL",
+  "grup": "RADIOTAPE",
   "saf": 3
  },
  {
@@ -3776,7 +3776,7 @@
   "etiket": "anime,anime radio,jazz,lofi",
   "ulke": "AR",
   "tur": "lofi",
-  "grup": "INDIE & LOFI",
+  "grup": "WORLD & ROOTS",
   "saf": 3
  },
  {
@@ -4196,7 +4196,7 @@
   "etiket": "ambient,downtempo,jazz,lounge,samba,sixties",
   "ulke": "US",
   "tur": "downtempo",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 3
  },
  {
@@ -4936,7 +4936,7 @@
   "etiket": "movie,movie music,movie soundtracks,movies",
   "ulke": "RO",
   "tur": "soundtrack",
-  "grup": "ORCHESTRAL",
+  "grup": "RADIOTAPE",
   "saf": 2
  },
  {
@@ -5006,7 +5006,7 @@
   "etiket": "chillout,chillout+lounge,club house,cool jazz,disco funk,easy listening,easy music,electronic,entertainment,funk,funky,funky house,hits,house,jazz,música pop,new releases,nu-jazz,piano jazz,pop dance,pop en español e inglés,pop en inglés,pop music,pop rock,popular,smooth jazz,soulful house,tech house,top hits",
   "ulke": "FR",
   "tur": "jazz",
-  "grup": "LOUNGE",
+  "grup": "LOUNGE & LOFI",
   "saf": 2
  },
  {

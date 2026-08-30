@@ -61,9 +61,9 @@ const ISTASYONLAR = [
   ['ELECTRONIC','Deep Techno','DE'], ['ELECTRONIC','Night Signal','NL'],
   ['JAZZ','Instrumental Jazz','RU'], ['JAZZ','Late Set','FR'],
   ['AMBIENT','Slow Horizon','NL'],   ['AMBIENT','Rain Loop','SE'],
-  ['LOUNGE','Velvet Hours','FR'],    ['ORCHESTRAL','String Quartet','AT'],
-  ['ROCK & COUNTRY','Desert Highway','US'], ['WORLD & ROOTS','Anadolu Sessions','TR'],
-  ['DISCO FUNK','Mirror Ball','IT'], ['INDIE & LOFI','Study Rain','JP'],
+  ['LOUNGE & LOFI','Velvet Hours','FR'], ['ORCHESTRAL','String Quartet','AT'],
+  ['ROCK & INDIE','Desert Highway','US'], ['WORLD & ROOTS','Anadolu Sessions','TR'],
+  ['DISCO FUNK','Mirror Ball','IT'], ['LOUNGE & LOFI','Study Rain','JP'],
   ['RADIOTAPE','Open Channel','GB'], ['RADIOTAPE','Signal Drift','CA']
 ].map(([grup, ad, ulke], i)=>({
   id:'rb:g'+i, ad:ad, mp3:'https://sahte.test/r'+i+'.mp3',
@@ -232,9 +232,9 @@ const RAF_RADYO = [
   ['02-radyo-electronic',  'ELECTRONIC',     'Deep Techno',       'DE'],
   ['03-radyo-jazz',        'JAZZ',           'Instrumental Jazz', 'RU'],
   ['04-radyo-ambient',     'AMBIENT',        'Slow Horizon',      'NL'],
-  ['05-radyo-rock-country','ROCK & COUNTRY', 'Desert Highway',    'US'],
+  ['05-radyo-rock-indie',  'ROCK & INDIE',   'Desert Highway',    'US'],
   ['06-radyo-world-roots', 'WORLD & ROOTS',  'Anadolu Sessions',  'TR'],
-  ['07-radyo-lounge',      'LOUNGE',         'Velvet Hours',      'FR'],
+  ['07-radyo-lounge-lofi', 'LOUNGE & LOFI',  'Velvet Hours',      'FR'],
   ['08-radyo-orchestral',  'ORCHESTRAL',     'String Quartet',    'AT']
 ];
 const RAF_ARSIV = [
@@ -320,10 +320,18 @@ for(const [dosya, raf, kunye] of RAF_ARSIV){
         olarak duruyor.
    Yerine acilis turu: metni bizim, ekrani bizim.               */
 SAHNELER.push({
-  dosya:'21-tur.png', mood:false, npGizle:true, bekle:900,
+  dosya:'09-tur.png', mood:false, npGizle:true, bekle:900,
   kur:()=>{ try{ window.__turIstendi = true;      // bu sahne turu ISTIYOR
                  localStorage.removeItem('orbitape.tur'); turBitir(); turBasla(true); }catch(e){} }
 });
+
+/* ── MAGAZAYA GIDEN SET: NEBULASIZ ─────────────────────────────
+   Nebula ve gezegenler yalnizca SOUND BANKS kipinde var; kullanici
+   magaza galerisinin nebulasiz olmasini istedi, yani radyo tarafi.
+   FX, halka menusu ve arsiv rafi kareleri (mood tarafi) burada
+   URETILMIYOR. Gerekirse tek satir:  GALERI_HEPSI=1 node araclar/galeri.js */
+const HEPSI = process.env.GALERI_HEPSI === '1';
+const SECIM = HEPSI ? SAHNELER : SAHNELER.filter(s=>!s.mood);
 
 (async()=>{
   fs.mkdirSync(CIKIS, {recursive:true});
@@ -331,11 +339,11 @@ SAHNELER.push({
      kalirsa asagida uyari cikiyor. */
   const b = await chromium.launch({ executablePath:KROM,
     args:['--autoplay-policy=no-user-gesture-required','--mute-audio'] });
-  for(const s of SAHNELER){
+  for(const s of SECIM){
     try{ await sahne(b, s); }
     catch(e){ console.log('ATLANDI', s.dosya, '--', e.message); }
   }
   await b.close();
-  const kalan = fs.readdirSync(CIKIS).filter(f=>!SAHNELER.some(s=>s.dosya===f));
+  const kalan = fs.readdirSync(CIKIS).filter(f=>!SECIM.some(s=>s.dosya===f));
   if(kalan.length) console.log('\nESKI DOSYA (adi degisti, elle sil):', kalan.join(', '));
 })();
