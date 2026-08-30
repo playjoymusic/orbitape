@@ -859,6 +859,69 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
   }
 
+  /* ── KAYIT KARESI GERCEKTEN CIZILIYOR MU ─────────────────────────
+     OLCULEN HATA (30 Agustos): kayitCiz() on adima bolundu ve son
+     adim (_kayVinyet) kondüktorde kalan bir degiskeni okuyordu.
+     Sonuc: KAYIT SIRASINDA HER KAREDE ReferenceError. Kullanicinin
+     telefonunda "SOMETHING BROKE" paneli acildi ve o hatayi bana
+     e-postayla gonderdi:
+       "Can't find variable: _kareBas (:12124:48)"
+
+     NEDEN HICBIR TEST YAKALAMADI: 530 kontrolun hicbiri kayit
+     cizim dongusunu CALISTIRMIYORDU. Kayitla ilgili testler vardi
+     ama hepsi kaynak metnine bakiyordu ("su satir duruyor mu"),
+     hicbiri tuvale bir kare cizdirmiyordu. Calistirilmayan kod
+     test edilmemis koddur.
+     Bu kontrol on adimin her birini TEK TEK cagiriyor: biri patlarsa
+     hangisi oldugu adiyla yaziyor. Iki kipte de kosuyor cunku
+     cizilen sey kipe gore degisiyor. */
+  {
+    const kyt = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      /* DURUMU TAM GERI VER: bu kontrol kip degistiriyor ve
+         moodUygula() yalnizca AYAR.mood'u degil AKTIF_MOD/AKTIF_AILE
+         ve 'mod' degiskenini de oynatiyor. Ilk yazimda yalnizca
+         AYAR.mood geri veriliyordu ve BIR SONRAKI kontrol
+         ("Acilista RADIOTAPE") kirmiziya dondu -- test testi
+         bozuyordu. */
+      const eskiMood = AYAR.mood, eskiAile = AKTIF_AILE,
+            eskiMod = AKTIF_MOD, eskiKanal = mod;
+      const cikti = {};
+      for(const kip of ['radyo','mood']){
+        AYAR.mood = (kip === 'mood'); moodUygula();
+        await bek(340);
+        const hata = [];
+        try{ kayitTuvalKur(); }catch(e){ hata.push('kayitTuvalKur: ' + (e && e.message)); }
+        let g = null;
+        try{
+          g = { c:kayitCtx, W:KAYIT_EN, H:KAYIT_BOY, K:KAYIT_K,
+                gorNo:gorunum(mod), renk:(KANAL_RENK[gorunum(mod)] || KANAL_RENK.lib),
+                kareBas:performance.now(), simdi:performance.now() };
+        }catch(e){ hata.push('baglam: ' + (e && e.message)); }
+        const adim = ['_kayZemin','_kayKamera','_kayDisk','_kaySolUst','_kaySagUst',
+                      '_kaySemboller','_kaySagAlt','_kaySolAlt','_kaySesCubugu','_kayVinyet'];
+        if(g) for(const a of adim){
+          if(typeof window[a] !== 'function'){ hata.push(a + ': TANIMSIZ'); continue; }
+          try{ window[a](g); }catch(e){ hata.push(a + ': ' + (e && e.message)); }
+        }
+        /* Butun dongu de bir kez donsun: kondüktorun kendisi de
+           bir sey unutmus olabilir. */
+        try{ kayitCiz(); }catch(e){ hata.push('kayitCiz: ' + (e && e.message)); }
+        try{ if(kayitRAF) cancelAnimationFrame(kayitRAF); kayitRAF = 0; }catch(e){}
+        cikti[kip] = hata;
+      }
+      AYAR.mood = eskiMood; moodUygula(); await bek(340);
+      AKTIF_AILE = eskiAile; AKTIF_MOD = eskiMod; mod = eskiKanal;
+      try{ modAdiYaz(); zeminUygula(); }catch(e){}
+      await bek(60);
+      return cikti;
+    });
+    const tum = [].concat(kyt.radyo || [], kyt.mood || []);
+    K('Kayit karesi hatasiz ciziliyor', tum.length === 0,
+      tum.length ? ('KAYIT SIRASINDA HATA: ' + tum.slice(0,3).join(' | '))
+                 : 'on adim, iki kipte de temiz');
+  }
+
   /* ── UCLUK SANSI: %12 VE DONERKEN BOZULMUYOR ─────────────────────
      Once sans tamamen dogaldi: uc yuva 46 sembolden bagimsiz
      seciliyordu, yani 1/2116 -- pratikte kimse gormeyecekti.

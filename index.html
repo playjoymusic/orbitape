@@ -12121,7 +12121,7 @@
        Artık susmuyoruz: hata sayılıyor ve denemeye devam ediliyor.
        Sayı rapora RQF olarak yazılıyor. */
     if(_elleKare){ try{ _elleKare.requestFrame(); }catch(e){ _rqfHata++; } }
-    kademeyiAyarla(performance.now() - _kareBas, _simdi);
+    kademeyiAyarla(performance.now() - g.kareBas, g.simdi);
   }
   function kayitCiz(){
     kayitRAF=requestAnimationFrame(kayitCiz);
@@ -12152,7 +12152,13 @@
        ekliyordu. O yüzden öğeler doğrudan çiziliyor; pahalı olan zemin,
        vinyet ve kamera maskesi ise hazır resim olarak saklanıyor. */
 
-    const g = { c:c, W:W, H:H, K:K, gorNo:gorNo, renk:renk };
+    /* _kareBas DA TASINIYOR. Son adim (_kayVinyet) kare suresini
+       olcmek icin bunu okuyor. Bolme sirasinda atlanmisti ve KAYIT
+       SIRASINDA HER KAREDE ReferenceError atiyordu:
+         "Can't find variable: _kareBas"
+       Kullanicinin telefonunda "SOMETHING BROKE" paneli acildi.
+       Adimlarin paylastigi her sey buradan gecmek zorunda. */
+    const g = { c:c, W:W, H:H, K:K, gorNo:gorNo, renk:renk, kareBas:_kareBas, simdi:_simdi };
     _kayZemin(g);
     _kayKamera(g);
     _kayDisk(g);
