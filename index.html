@@ -3132,20 +3132,41 @@
     const kontrol = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     const kur = secenek ? Object.assign({}, secenek) : {};
     if(kontrol) kur.signal = kontrol.signal;
-    let zt = null;
+    /* ── SERT SINIR BIR EMNIYET AGI, BIRINCIL ZAMAN ASIMI DEGIL ──
+       ILK YAZIM BIR SEYI BOZDU ve SOUND BANKS kipinde su sekilde
+       goruldu: "sonsuz ses aramaya gecti, neye bassam olmadi."
+       Sebep: abort() cogu zaman GERCEKTEN calismiyordu ve arsiv
+       uc noktalari (archive.org arama API'si) 5-10 saniyeyi rahat
+       buluyor. Yani buradaki sureler, "nasil olsa kesilmiyor"
+       dunyasinda ayarlanmisti; sert bir sinir koyunca YAVAS AMA
+       BASARILI cevaplar da kesilmeye basladi. Havuz hic dolmadi,
+       calacak bir sey bulunamadi ve uygulama sonsuza kadar aradi.
+
+       Dogru dizilim ikisi birden:
+         abort()  -> istenen surede. Niyet bu, cogu tarayicida da
+                     calisiyor ve bagi gercekten kapatiyor.
+         SERT RED -> cok daha gec. Yalnizca abort'un ISLEMEDIGI
+                     durum icin: DNS/TLS'te asili kalmis bir istek
+                     bir yerde kesilmeli, ama yavas bir sunucu
+                     cezalandirilmamali.
+       Boylece "sonsuz bekleme yok" garantisi duruyor, yavas cevap
+       da kaybolmuyor. */
+    let zt = null, zt2 = null;
     const kes = new Promise((_, red)=>{
       zt = setTimeout(()=>{
         try{ if(kontrol) kontrol.abort(); }catch(_){ _yut(_); }
-        red(new Error('zaman asimi'));
       }, sure);
+      zt2 = setTimeout(()=>{ red(new Error('zaman asimi')); }, Math.round(sure * 2.5) + 1500);
     });
     const istek = fetch(url, kur);
     /* Yaris bittikten SONRA istek kendi basina reddederse ortada
        sahipsiz bir red kalmasin (konsolda "unhandled rejection"). */
     try{ istek.catch(()=>{}); }catch(_){ _yut(_); }
+    const temizle = ()=>{ try{ clearTimeout(zt); }catch(_){ _yut(_); }
+                          try{ clearTimeout(zt2); }catch(_){ _yut(_); } };
     return Promise.race([istek, kes]).then(
-      r=>{ clearTimeout(zt); return r; },
-      e=>{ clearTimeout(zt); throw e; });
+      r=>{ temizle(); return r; },
+      e=>{ temizle(); throw e; });
   }
   const $=id=>document.getElementById(id);
   const btn=$('tp'), ses=$('ses'), flash=$('flash'), c=$('noise'), ctx=c.getContext('2d');
@@ -5511,7 +5532,7 @@
     vizArka.width = w; vizArka.height = h;
     return true;
   }
-  var _olcuBekleyen = 0;
+  var _olcuBekleyen = 0, _sonEn = 0, _sonBoy = 0, _yerlesZaman = null;
   function olcuIste(){
     if(_olcuBekleyen) return;                                // aynı kareye topla
     _olcuBekleyen = requestAnimationFrame(()=>{
@@ -5533,7 +5554,26 @@
          ikisiyle birden cakisiyordu.
          Cagri zaten ayni kareye toplaniyor (rAF), yani her piksel
          degisiminde degil, degisim durunca bir kez calisiyor. */
-      try{ geriYerlestir(); }catch(e){ _yut(e); }
+      /* ── OLCU DEGISMEDIYSE DOKUNMA, DEGISTIYSE DURMASINI BEKLE ──
+         BURASI TITREMEYE SEBEP OLUYORDU. Ilk yazimda geriYerlestir()
+         her olayda cagriliyordu. Masaustunde pencereyi surukler,
+         telefonda ekrani cevirir ya da adres cubugu acilip
+         kapanirken tarayici saniyede onlarca 'resize' uretiyor;
+         her birinde butun blok yeniden olculup yeniden konuluyor ve
+         ekranda TITREME olarak goruluyor.
+         Kullanicinin tarifi: "telefonu sag yapip yandan gosterince
+         sonra yine eski haline gelince titreme basliyor."
+         Iki kapi kondu:
+           1. OLCU GERCEKTEN DEGISTI MI. Ayni en/boy geldiyse hicbir
+              sey yapilmiyor (tuvalde ayni kural zaten vardi).
+           2. DEGISIM DURDU MU. Son olaydan 120 ms sonra BIR KEZ
+              yerlestiriliyor. Surukleme boyunca degil, sonunda. */
+      const _en = Math.round(window.innerWidth), _boy = Math.round(window.innerHeight);
+      if(_en === _sonEn && _boy === _sonBoy) return;
+      _sonEn = _en; _sonBoy = _boy;
+      if(_yerlesZaman) clearTimeout(_yerlesZaman);
+      _yerlesZaman = setTimeout(()=>{ _yerlesZaman = null;
+        try{ geriYerlestir(); }catch(e){ _yut(e); } }, 120);
     });
   }
   window.addEventListener('resize', olcuIste);
