@@ -762,6 +762,74 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        'eski sw.js yeni kabugu gormezlik edemesin');
   }
 
+  /* ── PARMAK ALANI ────────────────────────────────────────────────
+     OLCULEN DURUM (30 Agustos): tuslarin kutusu 28x32 (~5x6 mm),
+     merkezden merkeze 44px (~8 mm). Yetiskin parmak ucunun ekrana
+     degdigi alan 8-10 mm -- yani PARMAK TUSTAN IKI KAT BUYUK ve
+     4 mm'lik siradan bir sapma komsu tusa dusuyor: duraklat yerine
+     ileri, ve dinledigin istasyon gidiyor.
+     Cozum tusu buyutmek degil, gorunmez dokunma alanini buyutmek
+     (bkz. index.html "PARMAK ALANI" blogu).
+
+     BU KONTROL GERCEK ALANI OLCUYOR, CSS'i degil: her tusun
+     merkezinden disariya tarayip elementFromPoint'in hala o tusu
+     dondurdugu son noktayi buluyor. Yani "kural yazilmis mi" degil,
+     "parmak oraya bassa tusa mi gidiyor" sorusunu soruyor.
+
+     ONCE TUR KAPATILIYOR: onizleme/tur acikken yerlesim GECICI ve
+     olcum yalan olur. (Bugun tam buna yakalandik.) */
+  {
+    const dokunma = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      try{ turBitir(); }catch(e){}
+      try{ document.body.classList.remove('oniz'); }catch(e){}
+      await bek(260);
+      const ids = ['geri','dur','duraklat','ileri','mute','favAc','cam','ayarTut','araCizgi'];
+      const gor = e => { const r = e.getBoundingClientRect();
+        const s = getComputedStyle(e);
+        return r.width>0 && r.height>0 && s.display!=='none' && s.visibility!=='hidden'; };
+      const alan = el => {
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width/2, cy = r.top + r.height/2;
+        const ic = (x,y)=>{ const e = document.elementFromPoint(x,y);
+          return !!e && (e===el || el.contains(e)
+                 || (e.closest && el.id && e.closest('#'+el.id)===el)); };
+        let s=cx,g=cx,u=cy,a=cy;
+        for(let d=1;d<70;d++){ if(ic(cx-d,cy)) s=cx-d; else break; }
+        for(let d=1;d<70;d++){ if(ic(cx+d,cy)) g=cx+d; else break; }
+        for(let d=1;d<70;d++){ if(ic(cx,cy-d)) u=cy-d; else break; }
+        for(let d=1;d<70;d++){ if(ic(cx,cy+d)) a=cy+d; else break; }
+        return { sol:s, sag:g, ust:u, alt:a, en:Math.round(g-s), boy:Math.round(a-u) };
+      };
+      const o = {};
+      ids.forEach(id=>{ const e=document.getElementById(id); if(e && gor(e)) o[id]=alan(e); });
+      const k = Object.keys(o), cak = [];
+      for(let i=0;i<k.length;i++) for(let j=i+1;j<k.length;j++){
+        const A=o[k[i]], B=o[k[j]];
+        const x = Math.min(A.sag,B.sag) - Math.max(A.sol,B.sol);
+        const y = Math.min(A.alt,B.alt) - Math.max(A.ust,B.ust);
+        if(x>1 && y>1) cak.push(k[i]+'/'+k[j]+' '+Math.round(x)+'x'+Math.round(y)+'px');
+      }
+      const kucuk = k.filter(id => o[id].en < 36 || o[id].boy < 36)
+                     .map(id => id+' '+o[id].en+'x'+o[id].boy);
+      const enKucuk = k.length ? k.reduce((m,id)=>
+        Math.min(m, Math.min(o[id].en,o[id].boy)), 999) : 0;
+      return { sayi:k.length, cakisma:cak, kucuk, enKucuk };
+    });
+    /* CAKISMA EN TEHLIKELISI: bir tusun gorunmez alani otekinin
+       uzerine binerse, kullanici gordugu tusa basar ama BASKA tus
+       calisir. Gorunmeyen bir hata -- kimse sebebini bulamaz. */
+    K('Dokunma alanlari cakismiyor', dokunma.cakisma.length === 0,
+      dokunma.cakisma.length ? ('BINISME: ' + dokunma.cakisma.join(' | '))
+                             : (dokunma.sayi + ' tusun alani birbirine degiyor, binmiyor'));
+    /* ESIK 36: WCAG'in AA tabani 24x24, onerdigi 44x44. Yerlesim
+       44'e izin vermiyor (iki tus satiri arasinda 8px var), ama 36
+       hepsini AA tabaninin cok uzerine cikariyor. Once 28x32'ydi. */
+    K('Dokunma alani parmak icin yeterli', dokunma.kucuk.length === 0,
+      dokunma.kucuk.length ? ('36px altinda kalan: ' + dokunma.kucuk.join(', '))
+                           : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
+  }
+
   /* ── CSP: OZET INDEX.HTML ILE AYNI OLMAK ZORUNDA ─────────────────
      BU KONTROLUN ONEMI DIGERLERINDEN BUYUK.
      script-src ozet (hash) ile yaziliyor: yalnizca BIZIM satir ici

@@ -1794,6 +1794,50 @@
      tur adini tamamen ortuyordu -- panel acikken hangi rafta
      oldugunu goremiyordun. */
   #rapor{ top:calc(78px + env(safe-area-inset-top, 0px)); max-height:70vh; }
+
+  /* ══ PARMAK ALANI ════════════════════════════════════════════════
+     OLCULEN DURUM (30 Agustos, 390x844 iPhone):
+       tus kutusu        28 x 32 px  (~5 x 6 mm)
+       tuslar arasi      17 px       (~3 mm)
+       merkezden merkeze 44 px       (~8 mm)
+       parmak ucunun ekrana degdigi alan  8-10 mm
+     Yani PARMAK TUSTAN IKI KAT BUYUK. Basarken tusu goremiyorsun,
+     parmagin hem onu hem komsularini ortuyor. Ve merkezler 8 mm
+     arayla oldugu icin 4 mm'lik bir sapma -- yururken siradan --
+     komsu tusa dusuyor: duraklat yerine ileri, ve DINLEDIGIN
+     ISTASYON GIDIYOR. Canli yayinda geri donus yok.
+
+     COZUM: TUSU BUYUTMEK DEGIL, ALANI BUYUTMEK.
+     Ekranda gorunen sey birebir ayni kaliyor. Her tusun uzerine
+     gorunmez, saydam bir ::after konuyor; tarayici o alana dokunusu
+     tusun kendisine sayiyor (::after tusun bir parcasi).
+     Olculer neden 14 ve 40:
+       · Yatayda +14px: en dar durumda bile tuslar arasi bosluk
+         17px olculdu, yani iki komsunun alani BIRBIRINE DEGIYOR
+         ama BINMIYOR. Binseydi komsunun dokunusunu calardi.
+       · Dikeyde 40px: iki tus satiri arasinda 8px var (765-797 ve
+         805-837). 40px, iki satiri tam ortada bulusturuyor.
+         44 yapsaydik 4px binisirdi.
+     Sonuc: dokunma alani 896 px2 -> ~1760 px2, yani IKI KATI;
+     sapma payi 3 mm'den 8 mm'ye cikiyor. Gorsel degisiklik sifir.
+
+     BU OLCULER TESTE BAGLI: "Dokunma alanlari cakismiyor" ve
+     "Dokunma alani parmak icin yeterli" kontrolleri her ekran
+     genisliginde olcuyor. Buradaki bir sayiyi degistirirsen orasi
+     kirmizi yanar. */
+  /* position:relative YALNIZCA static olanlara. #ayarTut FIXED --
+     ona relative yazmak onu yerinden oynatiyordu (olculdu: 11
+     yerlesim kontrolu kirmiziya dondu). Fixed bir eleman zaten
+     kendi ::after'i icin kapsayici blok, ekleme gerekmiyor. */
+  #geri,#dur,#duraklat,#ileri,#mute,#favAc,#cam,#araCizgi{
+    position:relative;}
+  #geri::after,#dur::after,#duraklat::after,#ileri::after,
+  #mute::after,#favAc::after,#cam::after,#ayarTut::after,#araCizgi::after{
+    content:'';position:absolute;left:50%;top:50%;
+    width:calc(100% + 14px);height:40px;
+    transform:translate(-50%,-50%);
+    /* Gorunmez: rengi yok, cizgisi yok. Sadece dokunulacak yer. */
+    background:transparent;pointer-events:auto;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
@@ -9163,8 +9207,17 @@
          --ses-en'in KENDISINE bagli (space-between ile o genisligi
          dolduruyor); onu da olcuye katmak kendi kendini besleyen bir
          dongu olurdu -- satir her olcumde biraz daha genisler.
-         Kayit satiri icerikten geliyor, yani gercek bir olcu. */
-      const en = t2.scrollWidth || 0;
+         Kayit satiri icerikten geliyor, yani gercek bir olcu.
+
+         NEDEN scrollWidth DEGIL: scrollWidth TASAN her seyi de
+         sayiyor -- gorunmez dokunma alanlari da dahil (bkz. index
+         icindeki "PARMAK ALANI" blogu). Tuslarin etrafina 7px'lik
+         alan koyunca bu olcu 6px buyudu, ses satiri onunla birlikte
+         sagdan tasti ve "sag kenarlar hizali" kontrolu kirildi.
+         Olculdu, tahmin edilmedi.
+         Dogru olcu satirin KUTUSU: dekoratif tasma onu etkilemiyor,
+         icerik degisince (CAM -> DELETE) yine dogru buyuyor. */
+      const en = Math.round(t2.getBoundingClientRect().width) || 0;
       if(en > 0) document.documentElement.style.setProperty('--ses-en', Math.round(en) + 'px');
       void t1;
     }catch(e){ _yut(e); }
