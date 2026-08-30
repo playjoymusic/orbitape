@@ -3812,23 +3812,41 @@
      kendisi (ARCHIVE.ORG, JAMENDO...) ve o bilgi doğru.
      MediaSession'da hâlâ kaynakAdi() kullanılıyor: kilit ekranındaki
      "sanatçı" alanı kısa kalmalı. */
+  /* ── ULKE BAYRAGI ────────────────────────────────────────────────
+     ISO 3166 iki harfli kod -> bolgesel gosterge harfleri (U+1F1E6
+     tabanli). 'US' -> ABD bayragi. Kod iki harf degilse bos donuyor:
+     yanlis bayrak, bos yerden kotudur.
+     Bayrak METIN, resim degil -- indirilecek bir sey yok, CSP'ye
+     dokunmuyor, her boyutta net. */
+  function bayrak(kod){
+    const s = String(kod || '').trim().toUpperCase();
+    if(!/^[A-Z]{2}$/.test(s)) return '';
+    try{
+      return String.fromCodePoint(0x1F1E6 + s.charCodeAt(0) - 65,
+                                  0x1F1E6 + s.charCodeAt(1) - 65);
+    }catch(e){ _yut(e); return ''; }
+  }
   function kaynakSatiri(it){
     try{
       if(!it) return '';
       if(!it.radyo) return kaynakAdi(it);
-      /* 'LIVE' KELIMESI CIKTI. Kullanicinin sozu: "live radio gibi
-         seyler yazman gerekmiyor oraya kesinlikle. sadece radyo
-         bilgileri."
-         Hakliydi: canli yayin dinledigini zaten biliyor, o kelime yer
-         kapliyor ve hicbir sey eklemiyordu. Kalan her sey GERCEK
-         bilgi: rafin adi ve yayinin ulkesi. Elde ne varsa o yaziliyor,
-         uydurma yok. */
-      const p = [];
-      if(it.grup) p.push(it.grup);
-      const u = (it.ulke || '').toUpperCase();
-      if(u) p.push(u);
-      return p.join(' · ');
-    }catch(e){ return kaynakAdi(it); }
+      /* ── CANLI YAYINDA BIZDEN HICBIR SEY YAZMIYORUZ ──────────────
+         Kullanicinin sozu: "sag altta kesinlikle bizden bir bilgi
+         olmasin. live mis, tur, o da kanal ismi vs biz eklemeyelim.
+         radyo program sanatci sarki vs olacak onlar okey ve ulke
+         bayragi. ama baska bisey bizden ekleme."
+         Once 'LIVE' kelimesi vardi, cikti. Sonra rafin adi kaldi
+         ("ELECTRONIC · US") -- ama RAF DA BIZIM: istasyonun kendi
+         soyledigi bir sey degil, bizim onu koydugumuz yer. O da
+         cikti.
+         Geriye tek bir sey kaldi ve o da istasyonun kendi kaydindan
+         geliyor: yayinin ulkesi, bayrak olarak.
+         Sarki, sanatci ve program adi bu satirda DEGIL: onlar
+         istasyonun kendi "su an ne caliyor" bildiriminden geliyor ve
+         ustteki satirlarda yaziyor (npAd / npSanatci). Yani gelen
+         hicbir bilgi atlanmiyor; yalnizca BIZIM ekledigimiz gitti. */
+      return bayrak(it.ulke);
+    }catch(e){ return ''; }
   }
   /* ── LİSANS ADI ───────────────────────────────────────────────────
      Depodaki lisans bir URL. Ekranda URL göstermek anlamsız; kısa adı
