@@ -126,5 +126,5 @@
 #   python3 araclar/csp.py
 # Saglik testi ikisinin ayni olup olmadigina bakiyor.
 /*
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-ZTiNh/coIKLkVyE9jMKDuy6fDnTmV9SuDKYWB4JUxM4='; style-src 'sha256-MhOW7Pfo/hgdDFgwSWqL24Glx2CyWCyP0IgtWHYQlkM='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-912ziG1yK1co09oQ67vBB9eQ8hn7X9n47LAr8HkRGrk='; style-src 'sha256-MhOW7Pfo/hgdDFgwSWqL24Glx2CyWCyP0IgtWHYQlkM='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 # ── CSP SONU ────────────────────────────────────────────────────

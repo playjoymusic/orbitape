@@ -6347,6 +6347,38 @@
   function kaydediciAktif(){ return _kayitAktif; }
   var _cizIcinde = false, _cizBas = 0;
   var _takilanIs = '-', _takilanSure = 0;
+  /* ── EKOLAYZER: TUVALDE DEGIL, DOM'DA ─────────────────────────
+     Calan parcanin yanindaki dort minik cubuk. Tuvalle hicbir isi
+     yok -- CSS transform yaziyor. vizLoop'un icinde durmasinin tek
+     sebebi kare ritmine binmesiydi; oraya ait degil, bir adi olmasi
+     yeterli. Ayni degeri tekrar yazmiyor (_eqSon): her karede dort
+     stil yazmak yerine yalnizca degiseni yaziyor. */
+  function _eqCiz(playing, rit, vt){
+    for(let i=0;i<npEq.length;i++){
+      const hh = playing ? (2 + (3 + rit*9) * (0.35+0.65*Math.abs(Math.sin(vt*4.5 + _eqFaz[i]*1.7)))) : 2;
+      const sc = Math.round((hh/11)*100)/100;                 // 11px taban
+      if(_eqSon[i] !== sc){ _eqSon[i] = sc; npEq[i].style.transform = 'scaleY('+sc+')'; }
+    }
+  }
+  /* ── BU KARENIN RENKLERI ──────────────────────────────────────
+     Uc katman ust uste biniyor: kanal temasi, secili modun paleti,
+     ve FX. Hesabi SAF: hicbir sey cizmiyor, yalnizca dort deger
+     donduruyor. vizLoop'un geri kalani geometri; renk ondan ayri
+     bir konu ve ayri okunmali. */
+  function _kareRenkleri(err){
+    const TK = TEMA[gorunum(mod)] || TEMA.lib;
+    /* Mod açıksa önce mod paleti kanal temasıyla harmanlanıyor (%72 mod),
+       FX varsa onun üstüne biniyor. Hem mod hem kanal okunuyor. */
+    const _gm = gorunenMod();                       // önizleme varsa o, yoksa seçili
+    const _MT = (_gm && MOD_TEMA[_gm]) ? TEMA_HARMAN(MOD_TEMA[_gm], TK, 0.72) : TK;
+    const T = FXMOD ? TEMA_HARMAN(TEMA[FXMOD] || TEMA.retro, _MT, 0.72) : _MT;
+    const teal = err?'255,46,126':T.ana;
+    const mag  = T.ikinci;
+    const HALKA_RENK = true
+      ? T.halka
+      : ['53,224,216','236,104,190','150,140,255','104,160,240'];
+    return { T:T, teal:teal, mag:mag, HALKA_RENK:HALKA_RENK };
+  }
   function vizLoop(zaman){
     /* KİLİT BİTTİĞİ AN: kare döngüsü kilit bitince İLK çalışan şeydir.
        Tam bu noktada geçmişin SON kaydı, kilitlenen işin ta kendisidir —
@@ -6449,30 +6481,14 @@
     const _zarTaban = R*0.56*squeeze*(1+rit*0.05)*(1 - 0.15*_cekGuc*_cekUzak);
     const parmakR   = _cekUzak * sinirYari(_cekAci, R, vt, energy, rit);
     const uzamaPx   = _cekGuc * Math.max(0, parmakR - _zarTaban) * (0.94 + 0.14*Math.min(1, rit*3.2));
-    // now-playing ekolayzer: sese göre çubuklar
-    for(let i=0;i<npEq.length;i++){
-      const hh = playing ? (2 + (3 + rit*9) * (0.35+0.65*Math.abs(Math.sin(vt*4.5 + _eqFaz[i]*1.7)))) : 2;
-      const sc = Math.round((hh/11)*100)/100;                 // 11px taban
-      if(_eqSon[i] !== sc){ _eqSon[i] = sc; npEq[i].style.transform = 'scaleY('+sc+')'; }
-    }
+    _eqCiz(playing, rit, vt);
 
     // ── KANAL TEMASI: her kanal kendi renk ailesinde, ton sur ton.
     //    halka dizisi ic -> dis; en dista krem/aciklik, iceri dogru kanalin tonlari.
     /* RETRO açıkken SADECE halkalar retro sarıya kayar; zemin, nebula, yazılar
        kanalın kendi teması olarak kalır. Kanal rengi tamamen kaybolmasın diye
        retro palet kanal paletiyle harmanlanıyor (%72 retro / %28 kanal). */
-    const TK = TEMA[gorunum(mod)] || TEMA.lib;
-    /* Mod açıksa önce mod paleti kanal temasıyla harmanlanıyor (%72 mod),
-       FX varsa onun üstüne biniyor. Hem mod hem kanal okunuyor. */
-    const _gm = gorunenMod();                       // önizleme varsa o, yoksa seçili
-    const _MT = (_gm && MOD_TEMA[_gm]) ? TEMA_HARMAN(MOD_TEMA[_gm], TK, 0.72) : TK;
-    const T = FXMOD ? TEMA_HARMAN(TEMA[FXMOD] || TEMA.retro, _MT, 0.72) : _MT;
-    const teal = err?'255,46,126':T.ana;
-    const mag  = T.ikinci;
-    const HALKA_RENK = true
-      ? T.halka
-      : ['53,224,216','236,104,190','150,140,255','104,160,240'];
-
+    const { T, teal, mag, HALKA_RENK } = _kareRenkleri(err);
     /* ── ALTI HALKA = ALTI MOD ───────────────────────────────────
        Halkalar artık dekor değil, MENÜ. Her biri bir modun rengini
        taşıyor; üstüne dokunmak o modu açıyor. Seçilen halka DURUYOR,
@@ -11476,35 +11492,23 @@
      rengi saniyede 4 kez dönüyor; katmanda olsaydı katman da saniyede 4
      kez baştan çizilecekti (ölçüldü: her seferinde ~40 ms sıçrama).
      Kendileri ucuz (dört küre ~1 ms). Ekranda da vinyetin üstündeler. */
-  function kayitCiz(){
-    kayitRAF=requestAnimationFrame(kayitCiz);
-    _kayitKalp = performance.now();          // gözcü: döngü hâlâ dönüyor mu
-    if(!kayitCtx || !viz.width) return;
-    const _simdi = performance.now();
-    if(_simdi - _kayitSonKare < KADEME_FPS[_kademe]) return;
-    /* KAYIT KARE RİTMİ: kaydedilen görüntü donduğunda suçlunun BİZİM
-       çizim döngümüz mü yoksa yakalayıcı/kodlayıcı mı olduğunu ayırt eden
-       ölçü. Döngü akmaya devam ederken dosyada donma varsa sorun bizde
-       değil, captureStream/MediaRecorder tarafında. */
-    if(_kayitOnce){ const bo = _simdi - _kayitOnce; if(bo > _kayitBosluk) _kayitBosluk = bo; }
-    _kayitOnce = _simdi; _kayitKareSay++;
-    _kayitSonKare = _simdi;
-    _kayitSon = _simdi;                     // takılma ölçeri
-    const _kareBas = _simdi;
-    _kkNo++;                                   // yeni kare -> ölçüm önbelleği tazelensin
-    const c=kayitCtx, W=KAYIT_EN, H=KAYIT_BOY, K=KAYIT_K;
-    const gorNo = gorunum(mod);
-    const renk = KANAL_RENK[gorNo] || KANAL_RENK.lib;
-
-    /* NOT — DENENDİ VE GERİ ALINDI:
-       Arayüzü ayrı bir "kat" tuvaline pişirip kare başına tek çizimle
-       basmayı denedim. Ölçüm tersini söyledi: kamerasız kare 6.2 -> 10 ms,
-       kameralı 18.3 -> 22.2 ms. Sebep, arayüz çiziminin zaten ucuz olması
-       (üç kanal adı 1.09 ms, gezegenler 0.30 ms); pahalı olan TAM EKRAN
-       birleştirmeler. Kat, var olan birleştirmelerin üstüne bir tane daha
-       ekliyordu. O yüzden öğeler doğrudan çiziliyor; pahalı olan zemin,
-       vinyet ve kamera maskesi ise hazır resim olarak saklanıyor. */
-
+  /* ══ KAYIT KARESI: ON ADIM ══════════════════════════════════════
+     kayitCiz() 372 satirlik tek bir fonksiyondu. Icerigi zaten
+     numarali adimlardan olusuyordu (1 zemin, 2a kamera, ... 10
+     vinyet) -- yani yapisi belliydi ama kod tek yigin halindeydi.
+     Her adim ayni tuvale kendi bolgesini ciziyor; paylastigi sey
+     yalnizca tuval ve kanalin rengi. O yuzden bolunmesi guvenli:
+     adimlar birbirinin degiskenini kullanmiyor, sirayla ayni
+     yuzeye basiyorlar.
+     Davranis ve SIRA degismedi. Degisen tek sey her adimin bir adi
+     olmasi -- 'kayitta sag ust yanlis' denince artik dogrudan
+     _kaySagUst'e bakiliyor.
+     PERFORMANS: bu dongu kare basina calisiyor, o yuzden bolmeden
+     once ve sonra kare hizi olculdu. Fonksiyon cagrisi bu olcekte
+     olculebilir bir sey eklemiyor (V8 kucuk fonksiyonlari zaten
+     satir ici aliyor); rakamlar GUNLUK'te. */
+  function _kayZemin(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 1) ZEMİN — hazır resim, karıştırmadan (önceki kareyi de siler) */
     for(let i=0;i<8;i++){ try{ c.restore(); }catch(e){ _yut(e); } }
     try{ c.setTransform(1,0,0,1,0,0); }catch(e){ _yut(e); }
@@ -11519,6 +11523,9 @@
                c.fillStyle=(KANAL_ZEMIN2[gorNo]||KANAL_ZEMIN2.lib)[1]; c.fillRect(0,0,W,H); }
     c.textBaseline='alphabetic';
 
+  }
+  function _kayKamera(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 2a) ÖN KAMERA — küçük bir ARA TUVALE çizilip tek seferde basılıyor.
        ÖLÇÜM: eskiden kamera doğrudan 888x1920'lik kayıt tuvaline
        çiziliyor ve kenar maskesi HER KARE yeniden kurulup ~750x750
@@ -11558,12 +11565,18 @@
         }
       }
     }catch(e){ _yut(e); }
+  }
+  function _kayDisk(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 2b) DİSK — #viz'in KENDİ ölçülen kutusu. Tuval diskin %20 dışına
           taşıyor; kutusunu olduğu gibi alınca halkalar kırpılmıyor ve
           oran ekrandakinin aynısı oluyor. Nefes de dâhil. */
     /* KAYNAK ARTIK vizArka (ekran dışı tampon). Ekrandaki #viz'den
        kopyalamak, derleyicinin bayatlamış enstantanesini almak demekti. */
     try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){ _yut(e); }
+  }
+  function _kaySolUst(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 3) SOL ÜST: gezegen + uydular — hepsi ölçülen yerlerinden */
     try{
       const ta = (TEMA[gorNo] || TEMA.lib).ana;
@@ -11628,6 +11641,9 @@
         });
       });
     }catch(e){ _yut(e); }
+  }
+  function _kaySagUst(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 4) SAĞ ÜST: kanal adları — ölçülen kutu, ekrandan okunan yazı tipi */
     try{
       document.querySelectorAll('#ust .kanal').forEach(el=>{
@@ -11657,6 +11673,9 @@
         domMetin(c, _ma, _ma.textContent.trim(), 'sag');
     }catch(e){ _yut(e); }
 
+  }
+  function _kaySemboller(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 5) SEMBOLLER — MIXTAPE'in altındaki üç yuva, ölçülen yerlerinden */
     try{
       if(bekle.classList.contains('on')){
@@ -11671,6 +11690,9 @@
       }
     }catch(e){ _yut(e); }
 
+  }
+  function _kaySagAlt(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 6) SAĞ ALT: ◁ düğmesi + çalan parça */
     try{
       if(np.classList.contains('on')){
@@ -11754,6 +11776,9 @@
       }
     }catch(e){ _yut(e); }
 
+  }
+  function _kaySolAlt(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 7) SOL ALT: REC + arama çizgisi (ekranda ne varsa kayıtta da) */
     try{
       /* REC ve CAM hapları — ikisi de ekrandaki gerçek yerlerinden,
@@ -11812,6 +11837,9 @@
       if(et && et.textContent) domMetin(c, et, et.textContent, 'sol');
     }catch(e){ _yut(e); }
 
+  }
+  function _kaySesCubugu(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 8) SES ÇUBUĞU — iki parmak jesti sırasında ekranda ne görünüyorsa */
     try{
       const sc = document.getElementById('sesCubuk');
@@ -11823,6 +11851,9 @@
           c.globalAlpha=1; }
       }
     }catch(e){ _yut(e); }
+  }
+  function _kayVinyet(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 10) VİNYET — bir kez pişirilip saklanıyor. Yük artınca ilk bunu
        bırakıyoruz: tam ekran alfa karışımı en pahalı adımlardan biri
        ve yokluğu en az fark edilen şey. */
@@ -11847,6 +11878,47 @@
        Sayı rapora RQF olarak yazılıyor. */
     if(_elleKare){ try{ _elleKare.requestFrame(); }catch(e){ _rqfHata++; } }
     kademeyiAyarla(performance.now() - _kareBas, _simdi);
+  }
+  function kayitCiz(){
+    kayitRAF=requestAnimationFrame(kayitCiz);
+    _kayitKalp = performance.now();          // gözcü: döngü hâlâ dönüyor mu
+    if(!kayitCtx || !viz.width) return;
+    const _simdi = performance.now();
+    if(_simdi - _kayitSonKare < KADEME_FPS[_kademe]) return;
+    /* KAYIT KARE RİTMİ: kaydedilen görüntü donduğunda suçlunun BİZİM
+       çizim döngümüz mü yoksa yakalayıcı/kodlayıcı mı olduğunu ayırt eden
+       ölçü. Döngü akmaya devam ederken dosyada donma varsa sorun bizde
+       değil, captureStream/MediaRecorder tarafında. */
+    if(_kayitOnce){ const bo = _simdi - _kayitOnce; if(bo > _kayitBosluk) _kayitBosluk = bo; }
+    _kayitOnce = _simdi; _kayitKareSay++;
+    _kayitSonKare = _simdi;
+    _kayitSon = _simdi;                     // takılma ölçeri
+    const _kareBas = _simdi;
+    _kkNo++;                                   // yeni kare -> ölçüm önbelleği tazelensin
+    const c=kayitCtx, W=KAYIT_EN, H=KAYIT_BOY, K=KAYIT_K;
+    const gorNo = gorunum(mod);
+    const renk = KANAL_RENK[gorNo] || KANAL_RENK.lib;
+
+    /* NOT — DENENDİ VE GERİ ALINDI:
+       Arayüzü ayrı bir "kat" tuvaline pişirip kare başına tek çizimle
+       basmayı denedim. Ölçüm tersini söyledi: kamerasız kare 6.2 -> 10 ms,
+       kameralı 18.3 -> 22.2 ms. Sebep, arayüz çiziminin zaten ucuz olması
+       (üç kanal adı 1.09 ms, gezegenler 0.30 ms); pahalı olan TAM EKRAN
+       birleştirmeler. Kat, var olan birleştirmelerin üstüne bir tane daha
+       ekliyordu. O yüzden öğeler doğrudan çiziliyor; pahalı olan zemin,
+       vinyet ve kamera maskesi ise hazır resim olarak saklanıyor. */
+
+    const g = { c:c, W:W, H:H, K:K, gorNo:gorNo, renk:renk };
+    _kayZemin(g);
+    _kayKamera(g);
+    _kayDisk(g);
+    _kaySolUst(g);
+    _kaySagUst(g);
+    _kaySemboller(g);
+    _kaySagAlt(g);
+    _kaySolAlt(g);
+    _kaySesCubugu(g);
+    _kayVinyet(g);
   }
   function kayitDesteklenirMi(){
     return !!(window.MediaRecorder && viz.captureStream && navigator.mediaDevices !== undefined);
