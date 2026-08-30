@@ -3469,18 +3469,23 @@
     if(UCLUK_ZORLA) return ALIEN[0];
     return ALIEN[Math.random()*ALIEN.length|0];
   }
-  var _uclukSon = 0;
+  /* AYNI UCLUK IKI KEZ KUTLANMASIN. Ilk yazimda bu bir SURE
+     kapisiydi ("son 3 saniyede kutladiysan sus") ve CI'da kirmizi
+     yandi: sure kapisi zamana bagli, yani makinenin hizina bagli --
+     testte ve gercekte baska davraniyordu.
+     Dogrusu zamana degil ICERIGE bakmak: hangi ucluk kutlandiysa o
+     yaziliyor. Uclu bozulunca (her donusta bir yuva degisiyor)
+     anahtar siliniyor, yani ayni sembol tekrar gelirse yine
+     kutlaniyor. Hem daha dogru hem olculebilir. */
+  var _uclukSonSem = '';
   function uclukBak(){
     try{
       const y = yuvalar();
       if(y.length !== 3) return;
       const a = y[0].dataset.sem, b = y[1].dataset.sem, c = y[2].dataset.sem;
-      if(a === undefined || a === '' || a !== b || b !== c) return;
-      /* Ayni ucluk uzerine ikinci kez tetiklenmesin: bekleDondur uc
-         yuvayi sirayla yaziyor, ucuncu yazimda bir kez yeter. */
-      const simdi = Date.now();
-      if(simdi - _uclukSon < 3000) return;
-      _uclukSon = simdi;
+      if(a === undefined || a === '' || a !== b || b !== c){ _uclukSonSem = ''; return; }
+      if(_uclukSonSem === a) return;          // bu ucluk zaten kutlandi
+      _uclukSonSem = a;
       uclukKutla();
     }catch(e){ _yut(e); }
   }

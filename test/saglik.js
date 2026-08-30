@@ -3686,7 +3686,6 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
         bekle.classList.remove('ucluk');
         document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
-        _uclukSon = 0;
         const y = yuvalar();
         /* IKISI ayni, biri farkli -> kutlama YOK */
         y[0].dataset.sem='3'; y[1].dataset.sem='3'; y[2].dataset.sem='7';
@@ -3697,9 +3696,13 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         uclukBak(); await bek(120);
         const ayniyken = bekle.classList.contains('ucluk');
         const yildiz = document.querySelectorAll('.uclukYildiz').length;
+        /* Hareket kisitli cihazda yildiz cikmiyor -- dogru davranis,
+           kontrol onu hata saymamali. */
+        let kisitli = false;
+        try{ kisitli = matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
         bekle.classList.remove('ucluk');
         document.querySelectorAll('.uclukYildiz').forEach(e=>e.remove());
-        return !farkliyken && ayniyken && yildiz > 0;
+        return !farkliyken && ayniyken && (yildiz > 0 || kisitli);
       }), 'ikisi ayniyken yok, ucu ayniyken var');
     /* Kutlama SES ve SIRAYI degistirmiyor: sadece gorsel. */
     K('Ucluk sadece gorsel', await pg.evaluate(async ()=>{
