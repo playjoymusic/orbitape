@@ -190,80 +190,23 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     }catch(e){ sozHata = String(e && e.message || e).slice(0,120); }
     K('index.html sozdizimi gecerli', sozHata === '',
        sozHata || 'ayristirilabiliyor');
+  }
 
-  /* ══ AGDAN ISTENEN HER SEY BIR SURE SONRA KESIN SONUCLANMALI ══
-     BU BIR SINIF HATASI, TEK BIR SATIR DEGIL -- ve iki ayri yerde
-     bagimsiz olarak yasandi:
-       · Olcum sayfasinda (simdicalan.html) sekiz istekci ayni anda
-         olu adreslere dusunce sayac 130'da dondu ve olcum hic
-         bitmedi.
-       · Uygulamanin kendi fetchZA'sinda ayni zafiyet duruyordu:
-         zamanlayici yalnizca abort() cagiriyor, donen soz hala
-         fetch'in kendi sozu oluyordu.
-     SEBEP: AbortController bir GARANTI DEGIL. Istek DNS cozumunde
-     ya da TLS el sikismasinda takildiysa iptal sinyali o asama
-     bitene kadar islenmiyor; tarayici orada dakikalarca bekleyebilir.
-     O sure boyunca cagiran taraf da bekliyor ve ekranda hicbir hata
-     gorunmuyor -- "hala deniyor" durumu, sessiz bir kilit.
-     KURAL: agdan bir sey isteyen her yol GERCEK bir zamanlayiciyla
-     yaristirilir. "Genelde iptal olur" yeterli degil.
-     Asagidaki iki kontrol bu kurali tutuyor: biri kaynaga, oteki
-     GERCEK DAVRANISA bakiyor. */
-  {
-    const kaynak = fs.readFileSync('index.html','utf8');
-    const i0 = kaynak.indexOf('function fetchZA(');
-    /* PENCERE 1400 -> 3200. Fonksiyonun basina, sert sinirin neden
-       BIRINCIL zaman asimi OLMADIGINI anlatan uzun bir gerekce
-       girdi (arsiv havuzunu bosaltan regresyon) ve aranan satirlar
-       pencerenin disinda kaldi: kod dogruyken CI kirmizi yandi.
-       Dilim fonksiyonun GOVDESINI kapsamali. */
-    const govde = kaynak.slice(i0, i0 + 3200);
-    K('Ag istegi zamanlayiciyla yaristiriliyor',
-       i0 > 0 && /Promise\.race\(\[istek, kes\]\)/.test(govde)
-       && /red\(new Error\('zaman asimi'\)\)/.test(govde),
-       'fetchZA yalnizca abort()a guvenmiyor');
-  }
-  /* DAVRANIS: hic cevap vermeyen bir sunucu taklidi. Kaynak dogru
-     gorunse bile is goruyor mu -- olculen sey bu. */
-  /* ── YAVAS CEVAP KESILMEMELI ─────────────────────────────────
-     SERT SINIR BIR KEZ FAZLA SIKI KONDU VE UYGULAMAYI DURDURDU.
-     Ilk yazimda zaman asimi istenen surede REDDEDIYORDU. Ama
-     buradaki sureler "abort nasil olsa calismiyor" dunyasinda
-     ayarlanmisti ve arsiv uc noktalari (archive.org arama API'si)
-     5-10 saniyeyi rahat buluyor. Sert sinir gelince yavas ama
-     BASARILI cevaplar da kesildi: havuz hic dolmadi, calacak bir
-     sey bulunamadi ve SOUND BANKS kipinde uygulama sonsuza kadar
-     aradi. Kullanicinin tarifi: "sonsuz ses aramaya gecti, neye
-     bassam olmadi, hep arama."
-     Dogrusu ikisi birden: abort istenen surede (niyet bu), SERT RED
-     cok daha gec (yalnizca abort'un islemedigi asili istek icin).
-     Bu kontrol o dengeyi tutuyor -- biri digerini yiyemez. */
-  K('Yavas ama gelen cevap kesilmiyor', await pg.evaluate(async ()=>{
-      const eskiF = window.fetch;
-      /* Butcenin USTUNDE ama makul: gercek bir sunucunun yavas gunu. */
-      window.fetch = ()=> new Promise(res=>setTimeout(()=>res(
-        {ok:true, status:200, json:()=>Promise.resolve({x:1}), text:()=>Promise.resolve('x')}), 900));
-      let sonuc = '';
-      try{ const r = await fetchZA('https://ornek.test/yavas', 400); sonuc = r && r.ok ? 'geldi' : 'bos'; }
-      catch(e){ sonuc = 'kesildi'; }
-      window.fetch = eskiF;
-      return sonuc === 'geldi';
-    }), 'butceyi asan ama gelen cevap kabul ediliyor');
-  K('Cevapsiz sunucu uygulamayi kilitlemiyor', await pg.evaluate(async ()=>{
-      const eskiFetch = window.fetch;
-      /* Sonsuza kadar bekleyen bir istek: abort da dinlenmiyor. */
-      window.fetch = ()=> new Promise(()=>{});
-      const bas = Date.now();
-      let sonuc = 'bekliyor';
-      try{ await fetchZA('https://ornek.test/x', 300); sonuc = 'cevap geldi'; }
-      catch(e){ sonuc = 'reddedildi'; }
-      const gecen = Date.now() - bas;
-      window.fetch = eskiFetch;
-      /* 300 ms istendi; AG_KAT carpani olabilir, 3 saniyeye kadar
-         makul. Onemli olan SONSUZ olmamasi. */
-      return sonuc === 'reddedildi' && gecen < 3000;
-    }), 'cevapsiz istek sure dolunca reddediliyor, asili kalmiyor');
-  }
+  /* ══ SERT ZAMAN ASIMI GERI ALINDI — KONTROLLERI DE ═══════════════
+     Buraya uc kontrol konulmustu: fetchZA gercek bir zamanlayiciyla
+     yarissin, cevapsiz sunucu kilitlemesin, yavas cevap kesilmesin.
+     Kural DOGRUYDU -- AbortController bir garanti degil, DNS/TLS'te
+     asili kalan bir istek dakikalarca bekleyebiliyor.
+     AMA UYGULAMA IKI KEZ DURDU: SOUND BANKS kipinde arsiv havuzu
+     dolmadi ve sonsuz ses aramasi basladi ("neye bassam olmadi, hep
+     arama"). Ilk seferde sinir gevsetildi, sikayet yine geldi.
+     Sebep dogrulanamadi.
+     Davranis bugunden onceki haline donduruldugu icin bu kontroller
+     de kaldirildi: VAR OLMAYAN bir ozelligi olcmek, yesil bir
+     satirla yanlis guven vermekten baska ise yaramaz.
+     GERI GELECEGI ZAMAN elimizde OLCUM olmali -- hangi istek, hangi
+     surede, gercekten asili mi kaliyor. O olcum yapilmadan bu
+     kontroller geri konmamali. */
   /* TAVAN 740 -> 780 KB. Sebep: gecici tur adlari artik CIZIM --
      yirmi bir ismin outline SVG yolu (~19 KB). Font dosyasi gomulmedi
      (lisans), yani bu 19 KB bir .woff'un yerini tutuyor ve ondan

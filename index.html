@@ -3132,41 +3132,28 @@
     const kontrol = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     const kur = secenek ? Object.assign({}, secenek) : {};
     if(kontrol) kur.signal = kontrol.signal;
-    /* ── SERT SINIR BIR EMNIYET AGI, BIRINCIL ZAMAN ASIMI DEGIL ──
-       ILK YAZIM BIR SEYI BOZDU ve SOUND BANKS kipinde su sekilde
-       goruldu: "sonsuz ses aramaya gecti, neye bassam olmadi."
-       Sebep: abort() cogu zaman GERCEKTEN calismiyordu ve arsiv
-       uc noktalari (archive.org arama API'si) 5-10 saniyeyi rahat
-       buluyor. Yani buradaki sureler, "nasil olsa kesilmiyor"
-       dunyasinda ayarlanmisti; sert bir sinir koyunca YAVAS AMA
-       BASARILI cevaplar da kesilmeye basladi. Havuz hic dolmadi,
-       calacak bir sey bulunamadi ve uygulama sonsuza kadar aradi.
+    /* ── SERT ZAMAN ASIMI GERI ALINDI ─────────────────────────────
+       Buraya once "istek gercek bir zamanlayiciyla yaristirilir"
+       kurali konuldu: AbortController bir garanti degil, DNS/TLS'te
+       asili kalan bir istek dakikalarca bekleyebiliyor. Kural
+       DOGRU ve bir gun geri gelmeli.
+       AMA IKI KEZ UYGULAMAYI DURDURDU: SOUND BANKS kipinde arsiv
+       havuzu hic dolmadi ve uygulama sonsuza kadar ses aradi
+       ("neye bassam olmadi, hep arama"). Ilk seferinde sinir cok
+       sikiydi ve gevsetildi; ikinci seferinde de ayni sikayet geldi.
+       Sebep tam olarak dogrulanamadi.
 
-       Dogru dizilim ikisi birden:
-         abort()  -> istenen surede. Niyet bu, cogu tarayicida da
-                     calisiyor ve bagi gercekten kapatiyor.
-         SERT RED -> cok daha gec. Yalnizca abort'un ISLEMEDIGI
-                     durum icin: DNS/TLS'te asili kalmis bir istek
-                     bir yerde kesilmeli, ama yavas bir sunucu
-                     cezalandirilmamali.
-       Boylece "sonsuz bekleme yok" garantisi duruyor, yavas cevap
-       da kaybolmuyor. */
-    let zt = null, zt2 = null;
-    const kes = new Promise((_, red)=>{
-      zt = setTimeout(()=>{
-        try{ if(kontrol) kontrol.abort(); }catch(_){ _yut(_); }
-      }, sure);
-      zt2 = setTimeout(()=>{ red(new Error('zaman asimi')); }, Math.round(sure * 2.5) + 1500);
-    });
-    const istek = fetch(url, kur);
-    /* Yaris bittikten SONRA istek kendi basina reddederse ortada
-       sahipsiz bir red kalmasin (konsolda "unhandled rejection"). */
-    try{ istek.catch(()=>{}); }catch(_){ _yut(_); }
-    const temizle = ()=>{ try{ clearTimeout(zt); }catch(_){ _yut(_); }
-                          try{ clearTimeout(zt2); }catch(_){ _yut(_); } };
-    return Promise.race([istek, kes]).then(
-      r=>{ temizle(); return r; },
-      e=>{ temizle(); throw e; });
+       KARAR: SEBEBI BILINMEYEN BIR IYILESTIRME, CALISAN BIR
+       UYGULAMADAN ONEMLI DEGIL. Davranis, bugunden onceki haline
+       donduruldu: zamanlayici yalnizca abort() cagiriyor, donen soz
+       fetch'in kendi sozu. Yani "asili kalma" korumasi su an YOK
+       ve bu bilinen bir eksik.
+       Geri gelecegi zaman elimizde OLCUM olmali: hangi istek, hangi
+       surede, gercekten asili mi kaliyor. Tahminle degil. */
+    const zt = setTimeout(()=>{ try{ if(kontrol) kontrol.abort(); }catch(_){ _yut(_); } }, sure);
+    const istek2 = fetch(url, kur);
+    return istek2.then(r=>{ clearTimeout(zt); return r; },
+                       e=>{ clearTimeout(zt); throw e; });
   }
   const $=id=>document.getElementById(id);
   const btn=$('tp'), ses=$('ses'), flash=$('flash'), c=$('noise'), ctx=c.getContext('2d');
