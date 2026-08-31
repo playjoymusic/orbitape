@@ -112,6 +112,25 @@ def main(argv):
     # Guvenlik: cikti gercekten temiz mi
     kirli = [x for x in earth + buyuk if not serbest_mi(x.get('lisans'))]
     print(f'dogrulama : kirli kayit {len(kirli)}', 'TEMIZ' if not kirli else '<<< SORUN')
+
+    # ── BASLANGIC DOSYASI DA TAZELENSIN ──────────────────────────
+    # earth.json degistiyse earth_giris.json da degismeli: uygulama
+    # arsivi ONCE o kucuk dosyayla aciyor (700 kayit, 59 KB) ve tam
+    # havuzu arkadan indiriyor.
+    # NEDEN BURADA, ELDE DEGIL: "hasattan sonra su komutu da calistir"
+    # diye bir kural insana birakilamaz -- bir kere unutulur ve
+    # baslangic dosyasi artik havuzda olmayan kayitlara isaret eder.
+    # Kapi bunu yakaliyor (saglik testi alt kume olmayi olcuyor) ama
+    # kirmizi yanmasindansa hic bozulmamasi iyi.
+    print()
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import giris
+        giris.main()
+    except Exception as e:                                  # noqa: BLE001
+        print('baslangic dosyasi URETILEMEDI:', e)
+        print('elle: python3 araclar/giris.py')
+        return 1
     return 0
 
 

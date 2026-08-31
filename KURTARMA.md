@@ -105,6 +105,15 @@ npx wrangler deploy --env deneme
 | `araclar/radyo_elle.json` | elle verilen raf kararları | Raf Masası çıktısı |
 | `earth.json` | 16.424 arşiv kaydı | `araclar/hasat.py` |
 | `earth_buyuk.json` | 6.479 uzun kayıt | aynı |
+| `earth_giris.json` | 700 kayıt, açılış dosyası | hasat sonunda **kendiliğinden** |
+
+**Başlangıç dosyası elle üretilmiyor.** `earth_giris.json`, arşivin
+ilk açılışta indirdiği 700 kayıtlık dosya (59 KB; tam havuz 1050 KB).
+`araclar/havuz_birlestir.py` hasadın sonunda `giris.py`'yi kendisi
+çağırıyor — "hasattan sonra şu komutu da çalıştır" diye bir kural
+insana bırakılmadı, çünkü bir kere unutulur. Yine de unutulursa
+sağlık testi yakalıyor: başlangıç dosyası tam havuzun alt kümesi
+olmaktan çıkar ve kapı kırmızı yanar.
 
 **Raf adları İKİ yerde yazılı** ve ayrışırlarsa hasat çöker:
 `index.html` içindeki `AILELER` ve `araclar/radyo_grupla.py`
