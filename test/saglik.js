@@ -2801,6 +2801,70 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           && /hedefHiz = 1 - cek\*/.test(blok);
     }), 'wow derinligi + LFO yavaslamasi + pitch, ucu birden');
 
+  /* ── SEMBOL CARKI ────────────────────────────────────────────
+     Uc sembol zaten bir kumar makinesiydi ama yalnizca BEKLERKEN
+     donuyordu -- yani tam da muzik gelince duruyordu. Ayarlardaki
+     SYMBOL SPIN acikken sembollere basmak rafi degistirmiyor,
+     carki ceviriyor.
+     Kullanicinin sozu: "artik semboller bagimsiz olur, ustune
+     basinca sadece random doner, yani sarki ararken ki ayni
+     matematik; ama sadece semboller donup sonra duruyor, sonuc
+     gibi."
+     ANAHTARIN IKI YONU DE olculuyor. Yalnizca acik hali olculse,
+     anahtar kapaliyken de rafi degistirmez hale gelse bu test yine
+     yesil yanardi -- ve eski davranis sessizce kaybolurdu. */
+  {
+    const cark = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const bk = document.getElementById('bekle');
+      if(!bk) return null;
+      const eskiCark = AYAR.cark, eskiSinif = bk.className;
+      bk.classList.add('buyuk','on');
+      try{ bekleGenisligiAyarla(); }catch(e){}
+      const sem = ()=>[...document.querySelectorAll('#bekleGly .yuva')]
+                        .map(e=>e.dataset.sem||'').join('|');
+      const raf = ()=>String(AKTIF_MOD)+'|'
+                    +String(typeof AKTIF_AILE!=='undefined'?AKTIF_AILE:'');
+      try{ bekleGoster(); }catch(e){}
+      await bek(800);
+      try{ bekleDondur(); }catch(e){}
+      await bek(1500);
+
+      /* KAPALI: eski davranis -- raf degisiyor. */
+      AYAR.cark = false;
+      const rafOnce = raf();
+      bk.click(); await bek(700);
+      const kapaliDegisti = raf() !== rafOnce;
+
+      /* ACIK: raf SABIT, semboller degisiyor. */
+      AYAR.cark = true;
+      const raf2 = raf(), sem2 = sem();
+      bk.click(); await bek(2400);
+      const acikSabit = raf() === raf2;
+      const semDegisti = sem() !== sem2;
+
+      AYAR.cark = eskiCark; bk.className = eskiSinif;
+      return { kapaliDegisti, acikSabit, semDegisti,
+               fonkVar: typeof carkiCevir === 'function',
+               /* Ayni matematik: cark kendi zarini atmiyor,
+                  bekleDondur uzerinden _turSonucu'ya gidiyor. */
+               ayniMatematik: /function carkiCevir\(\)[\s\S]{0,1600}?bekleDondur\(\)/
+                                .test(document.documentElement.innerHTML),
+               satirVar: !!document.querySelector('#ayar .sat[data-ayar="cark"]') };
+    });
+    K('Sembol carki: acikken raf degismiyor, semboller donuyor',
+       !!cark && cark.fonkVar && cark.satirVar
+       && cark.kapaliDegisti === true      // anahtar KAPALI: eski davranis duruyor
+       && cark.acikSabit === true          // anahtar ACIK: raf sabit
+       && cark.semDegisti === true,        // ...ama semboller degisti
+       cark ? ('kapali: raf degisti ' + cark.kapaliDegisti
+               + ' · acik: raf sabit ' + cark.acikSabit
+               + ', semboller degisti ' + cark.semDegisti) : 'olculemedi');
+    K('Cark sarki ararkenki matematigi kullaniyor',
+       !!cark && cark.ayniMatematik === true,
+       'carkiCevir kendi zarini atmiyor, bekleDondur/_turSonucu uzerinden gidiyor');
+  }
+
   /* ── BASLATICI KISAYOLLARI GERCEKTEN BIR YERE GIDIYOR ────────
      Manifest'e iki kisayol eklendi (Radio / Archive). Bunlar Play
      tarafinda "bu sadece bir web sayfasi sarmali" suphesine karsi

@@ -2444,6 +2444,18 @@
          "SEARCH SOUND" degil sadece "SEARCH": SOUNDS baska bir sey
          (arsiv kipi) ve ikisi yan yana karisiyordu. Zaten AUDIO
          basliginin altindayiz, "sound" demeye gerek yok. -->
+    <!-- ── SEMBOL CARKI ────────────────────────────────────────
+         Uc sembol zaten bir kumar makinesi: onceden secilmis bir
+         sonuc, teker teker oturan uc makara, ilk ikisi tutunca
+         geciken ucuncu, kutlama ya da kisa bir sonme. Ama bugune
+         kadar yalnizca BEKLERKEN donuyordu -- yani tam da muzigin
+         gelmesiyle duruyordu.
+         Bu anahtar acikken sembollere basmak rafi DEGISTIRMIYOR,
+         carki ceviriyor. Kullanicinin sozu: "basilir dedigim
+         donduRecek iste, oyun, kumar makinesi gibi." -->
+    <div class="sat" data-ayar="cark" role="switch" tabindex="-1">
+      <span>SYMBOL SPIN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+
     <h5>AUDIO</h5>
     <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
       <span>SEARCH</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
@@ -4478,6 +4490,49 @@
       }, bekleme);
     });
   }
+  /* ══ CARK: SEMBOLLERI ELLE CEVIRMEK ══════════════════════════
+     Yeni bir makine yazilmadi, VAR OLANI ise kosuluyor. Uc sembol
+     zaten eksiksiz bir kumar makinesi:
+       _turSonucu()   sonucu ONCEDEN seciyor (%12 tutar,
+                      %18 kil payi, %70 siradan)
+       bekleDondur()  makaralari teker teker oturtuyor, ilk ikisi
+                      tutunca ucuncuyu 520 ms geciktiriyor,
+                      sonunda ya kutlama ya kisa bir sonme
+     Eksik olan tek sey CEVIRME hissiydi: bekleDondur dogrudan
+     oturmaya basliyor, cunku ondan once zaten donuyor olurlardi
+     (bekleGoster'in 620 ms'lik ritmi). Elle cevirmede o donus yok,
+     o yuzden kisa bir donus buraya konuyor: 520 ms hizli tur,
+     sonra ayni oturus.
+     CIFT CEVIRME KAPALI: makaralar donerken tekrar basmak iki
+     sonucu ust uste bindirirdi -- ikinci basis ilkinin oturusunu
+     bekliyor. */
+  var _carkDonuyor = false;
+  function carkiCevir(){
+    if(_carkDonuyor) return;
+    const y = yuvalar();
+    if(y.length !== 3) return;
+    _carkDonuyor = true;
+    try{ if(AYAR.tikSes) tik(); }catch(e){ _yut(e); }
+    try{ bekle.classList.remove('gerilim','sondu','ucluk'); }catch(e){ _yut(e); }
+    /* Hizli tur: uc yuva da bagimsiz hizda donuyor ki makara
+       hissi olsun. Sayilar farkli (90/110/130 ms) -- ayni olsaydi
+       uc sembol tek bir blok gibi yanip sonerdi. */
+    const turlar = [];
+    y.forEach((el,i)=>{
+      el.classList.add('doniyor');
+      turlar.push(setInterval(()=>{ try{ yuvaYaz(el, alienSec()); }catch(e){ _yut(e); } },
+                              90 + i*20));
+    });
+    setTimeout(()=>{
+      turlar.forEach(t=>{ try{ clearInterval(t); }catch(e){ _yut(e); } });
+      y.forEach(el=>{ try{ el.classList.remove('doniyor'); }catch(e){ _yut(e); } });
+      try{ bekleDondur(); }catch(e){ _yut(e); }
+      /* Oturus en fazla 2*175 + 520 gecikme + 360 sonme ~ 1.2 sn. */
+      setTimeout(()=>{ _carkDonuyor = false; }, 1400);
+    }, 520);
+  }
+  try{ window.carkiCevir = carkiCevir; }catch(e){ _yut(e); }
+
   /* İKİ ÇALMA GÖSTERGESİ, TEK KAYNAK:
        1) aktif kanal adının solunda (sağ üst)
        2) sağ alt yığının en üstünde
@@ -6538,12 +6593,13 @@
      acilista cagrilabiliyor. */
   /* mood: SOUND BANKS kipi. Kapali = yalnizca canli radyo (varsayilan).
      Acik = eski ORBITAPE tarafi: arsiv havuzlari, nebula, gezegenler, FX. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:2, yildizIsik:2 };
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:2, yildizIsik:2, cark:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
       if(_a.aramaSes === false) AYAR.aramaSes = false;
       if(_a.tikSes  === false) AYAR.tikSes  = false;
+      if(_a.cark    === true)  AYAR.cark    = true;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
@@ -10423,7 +10479,16 @@
     const _sm = document.getElementById('bekle');
     if(_sm) _sm.addEventListener('click', e=>{
       if(!_sm.classList.contains('buyuk')) return;   // yukleme kipinde degil
-      e.stopPropagation(); modSiraGec();
+      e.stopPropagation();
+      /* ── IKI ISLEV, TEK HEDEF ──────────────────────────────────
+         Ayarlardaki SYMBOL SPIN kapaliyken semboller raf adiyla
+         ayni isi yapiyor (eski davranis, degismedi).
+         Acikken ise carki ceviriyor ve BASKA HICBIR SEYE
+         dokunmuyor: sarki atlamiyor, raf degismiyor, oda
+         degismiyor. Kullanicinin istegi tam olarak buydu --
+         dinlerken eli oyalayacak bir sey. */
+      if(AYAR.cark){ carkiCevir(); return; }
+      modSiraGec();
     });
   }catch(e){ _yut(e); }
   /* ── SOL ALT İSTİF ────────────────────────────────────────────────
