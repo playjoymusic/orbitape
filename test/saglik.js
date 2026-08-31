@@ -4121,6 +4121,56 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        a2 ? ('"' + a2.yazi + '"') : '-');
   }
 
+  /* ── HIZ YAZIMI TAMPON BOSKEN DURUYOR ───────────────────────
+     Kullanicinin bildirimi: "her fx degistirmede cizirti oluyor,
+     YUKLENMEDEN GELEN. Ve fx'lere yuklenince de oluyor."
+     Ses grafigi olculdu: mod degisiminde ornekten ornege sicrama
+     yok (en buyugu 0.008; bir kopma olsaydi 0.3+ gorurduk). Yani
+     duğum baglanirken citlamiyor -- cizirti bir TIK degil, bir
+     ACLIK. Sebep medya tarafinda: playbackRate yazmak <audio>'nun
+     tamponunu sifirliyor.
+     Bu biliniyordu ama yalnizca CANLI YAYINDA engellenmisti. Oysa
+     arsiv de agdan geliyor. Dogru soru "canli mi" degil, "onumuzde
+     yeterli ses var mi".
+     Uc sey olculuyor: esik var mi, hizYaz o esige bakiyor mu, ve
+     tamponYeter gercekten dogru cevap veriyor mu. */
+  {
+    const hz = await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      return {
+        esikVar: typeof TAMPON_ESIK === 'number' && TAMPON_ESIK >= 3,
+        esik: (typeof TAMPON_ESIK === 'number') ? TAMPON_ESIK : null,
+        fonkVar: typeof tamponYeter === 'function',
+        /* hizYaz'in mobil dali tamponu SORUYOR mu. */
+        bagli: /MOBIL && \(akisMi\(\) \|\| !tamponYeter\(\)\)/.test(k)
+      };
+    });
+    K('Hiz yazimi tampon esigine bagli',
+       hz.esikVar && hz.fonkVar && hz.bagli,
+       'esik '+hz.esik+' sn, hizYaz soruyor: '+hz.bagli);
+    /* Fonksiyonun kendisi: bos tamponda false, dolu tamponda true.
+       ses.buffered taklit ediliyor -- gercek bir ag indirmesini
+       beklemek testi yavaslatir ve zamanlamaya bagimli yapar. */
+    K('Tampon olcusu dogru cevap veriyor', await pg.evaluate(()=>{
+        const gercek = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'buffered');
+        const kur = (araliklar)=>{
+          Object.defineProperty(ses,'buffered',{configurable:true,get:()=>({
+            length:araliklar.length,
+            start:i=>araliklar[i][0], end:i=>araliklar[i][1] })});
+        };
+        const eskiT = Object.getOwnPropertyDescriptor(ses,'currentTime');
+        Object.defineProperty(ses,'currentTime',{configurable:true,get:()=>10});
+        kur([]);                 const bos    = tamponYeter();
+        kur([[0, 12]]);          const az     = tamponYeter();   // 2 sn ileri
+        kur([[0, 30]]);          const bol    = tamponYeter();   // 20 sn ileri
+        kur([[40, 90]]);         const baska  = tamponYeter();   // baska aralik
+        delete ses.buffered;
+        if(eskiT) Object.defineProperty(ses,'currentTime',eskiT); else delete ses.currentTime;
+        void gercek;
+        return bos===false && az===false && bol===true && baska===false;
+      }), 'bos: hayir · 2sn: hayir · 20sn: evet · alakasiz aralik: hayir');
+  }
+
   /* ── OTOMATIK SEVIYE KULAKTA DUYULMAMALI ────────────────────────
      Kullanicinin bildirimi: "radyoda ses bir anda kisiliyor, sanki
      bir limit devreye giriyor." Dogruydu. Sebep: AGC'nin asagi adimi
@@ -4507,13 +4557,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     /* 8. halkanin adi FUNK & RNB -> DISCO FUNK olarak degisti
        (kullanici istegi). Istasyonlar ayni, yalnizca rafin adi. */
-    /* SIRA GUNCELLENDI: kullanici "3. en buyuk halka JAZZ olsun,
-       sonra LOUNGE, sonrasi kalanlar ayni" dedi. Distan ice:
-       RADIOTAPE · ELECTRONIC · JAZZ · LOUNGE & LOFI, sonra
+    /* SIRA GUNCELLENDI: kullanicinin sozu "ELECTRONIC'ten sonra
+       WORLD gelsin, sonra DISCO, sonra JAZZ, LOUNGE, sonra
+       kalanlar." Distan ice: RADIOTAPE · ELECTRONIC ·
+       WORLD & ROOTS · DISCO FUNK · JAZZ · LOUNGE & LOFI, sonra
        kalanlar KENDI aralarindaki eski sirayla. Dizi icten disa
        oldugu icin bunun tersi. */
-    const SIRA = ['AMBIENT','ORCHESTRAL','WORLD & ROOTS','ROCK & INDIE',
-                  'DISCO FUNK','LOUNGE & LOFI','JAZZ',
+    const SIRA = ['AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
+                  'JAZZ','DISCO FUNK','WORLD & ROOTS',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),

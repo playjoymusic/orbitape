@@ -1638,12 +1638,20 @@
      "buraya basinca gidecegin yeri" soyluyor -- arsivde turkuaz
      yaziyor ve radyoya goturuyor, burada leylak yaziyor ve arsive
      goturuyor. */
-  /* Ton daha MOR: onceki #c6b6d6 griye caliyordu ve arsivin kendi
-     leylagindan ayrisamiyordu. #bda8e0 acikca menekse ama hala
-     yumusak -- gezegenlerin ve lib rafinin ailesinden. */
+  /* ── TONUN UC ADIMI ───────────────────────────────────────────
+     1) #c6b6d6 -- griye caliyordu, arsivin kendi leylagindan
+        ayrisamiyordu.
+     2) #bda8e0 -- acik menekse. Kullanici "evet mor olsun" dedi
+        ama ekledi: "icinde darktan gelen gri de olsun."
+     3) #afa1cb -- BUGUNKU. Menekse ile ARSIVIN KENDI ANTRASITI
+        (MOD_TEMA.ORBITAPE.ana = 154,150,172) %60/%40 karisimi:
+          0.6*(189,168,224) + 0.4*(154,150,172) = (175,161,203)
+        Uydurma bir gri degil, arsiv tarafinin zaten kullandigi
+        gri. Anahtar "gidecegin yeri" soyluyor; o yerin havasi da
+        artik renginin icinde. */
   body:not(.mood) #kipKisayol .anahtar{
-    background:rgba(189,168,224,.16);border-color:rgba(189,168,224,.42);}
-  body:not(.mood) #kipKisayol .anahtar b{right:26px;background:#bda8e0;}
+    background:rgba(175,161,203,.16);border-color:rgba(175,161,203,.42);}
+  body:not(.mood) #kipKisayol .anahtar b{right:26px;background:#afa1cb;}
   /* MEZAR TASI: radyoda etiket duz leylakti (#bda8e0). Artik iki
      kipte de markanin gradyanini aliyor; tek renk yazmak o
      gradyani ezerdi. Anahtarin KENDISI (kutu ve topuz) leylak
@@ -5915,6 +5923,34 @@
   }
   /* CANLI YAYIN MI? Radyo istasyonu bir AKIŞ; arşiv/jamendo dosya. */
   function akisMi(){ try{ return !!(aktifItem && aktifItem.radyo); }catch(e){ return false; } }
+  /* ── ÖNÜMÜZDE KAÇ SANİYE SES VAR ─────────────────────────────────
+     Kullanıcının bildirdiği: "her fx değiştirmede cızırtı oluyor,
+     YÜKLENMEDEN GELEN. Ve fx'lere yüklenince de oluyor."
+     Teşhis o cümlenin içinde: cızırtı bir tık değil, bir AÇLIK.
+     Ölçtüm — mod değişiminde ses grafiğinde örnekten örneğe sıçrama
+     yok (en büyüğü 0.008; kopma olsaydı 0.3-0.7 görürdük). Yani
+     düğüm bağlanırken çıtlamıyor. Kalan tek aday medya tarafı:
+     playbackRate yazmak <audio>'nun tamponunu sıfırlatıyor ve ses
+     bir an aç kalıyor.
+     Bu zaten biliniyordu ama YALNIZCA canlı yayında engellenmişti
+     (bkz. akisMi). Oysa arşiv de ağdan geliyor: archive.org'dan
+     akan bir mp3, canlı yayın kadar savunmasız. "Canlı mı" yanlış
+     soru; doğru soru "önümüzde yeterli ses var mı".
+     TAMPON_ESIK saniyeden az sesi kalmışsa hız hiç yazılmıyor:
+     efektin pitch tarafı o an susuyor, ses kesilmiyor. Tampon
+     dolunca kendiliğinden geri geliyor. */
+  const TAMPON_ESIK = 6;                    // saniye
+  function tamponYeter(){
+    try{
+      const b = ses.buffered;
+      if(!b || !b.length) return false;
+      const t = ses.currentTime;
+      for(let i=0;i<b.length;i++){
+        if(b.start(i) <= t && b.end(i) > t) return (b.end(i) - t) >= TAMPON_ESIK;
+      }
+      return false;
+    }catch(e){ return false; }
+  }
   function hizYaz(zorla){
     /* ── MOBİLDE CANLI YAYINDA playbackRate'E HİÇ DOKUNMUYORUZ ──────
        iOS'ta akış hâlindeki bir <audio> elemanının playbackRate'ini
@@ -5924,8 +5960,10 @@
        dönerken bir yazım daha — her biri bir tampon sıfırlaması.
        Dosya kaynaklarında (arşiv, jamendo) bu sorun yok,
        orada davranış aynen duruyor. */
-    if(MOBIL && akisMi()){
-      try{ if(ses.playbackRate !== 1) ses.playbackRate = 1; }catch(e){ _yut(e); }
+    if(MOBIL && (akisMi() || !tamponYeter())){
+      /* Hız 1'e döndürülüyor ama SADECE 1 değilse: gereksiz bir
+         yazım da bir tampon sıfırlamasıdır. */
+      try{ if(Math.abs(ses.playbackRate - 1) > 0.004) ses.playbackRate = 1; }catch(e){ _yut(e); }
       _yazilanHiz = 1; return;
     }
     if(MOBIL && !zorla) return;          // mobilde SADECE parmak kalkınca (zorla) yazılır
@@ -8528,12 +8566,12 @@
        gecti; oradaki gri (154,150,172) zaten en zayif renkti,
        halkada oteki grilerden ayirt edilmiyordu. */
     /* ── SIRA DEGISTI: JAZZ 3., LOUNGE 4. EN BUYUK HALKA ────────
-       Kullanicinin sozu: "radyo kisminda da 3. en buyuk halka JAZZ
-       olsun, sonra LOUNGE, sonrasi kalanlar ayni."
-       Disaridan iceri sayarak: RADIOTAPE (1.) · ELECTRONIC (2.) ·
-       JAZZ (3.) · LOUNGE & LOFI (4.) · sonra kalanlar KENDI
-       aralarindaki sirayla: DISCO FUNK · ROCK & INDIE ·
-       WORLD & ROOTS · ORCHESTRAL · AMBIENT.
+       Kullanicinin son sozu: "ELECTRONIC'ten sonra WORLD gelsin,
+       sonra DISCO, sonra JAZZ, LOUNGE, sonra kalanlar."
+       Disaridan iceri: RADIOTAPE (1.) · ELECTRONIC (2.) ·
+       WORLD & ROOTS (3.) · DISCO FUNK (4.) · JAZZ (5.) ·
+       LOUNGE & LOFI (6.) · sonra kalanlar KENDI aralarindaki
+       sirayla: ROCK & INDIE · ORCHESTRAL · AMBIENT.
        RENKLER ADLA BIRLIKTE TASINDI: JAZZ hala gul, LOUNGE hala
        kum. Dosyada bir tur "renk sirasi halkanin malidir" diye
        yazilmisti (bkz. asagidaki not) -- o kural tek bir takas
@@ -8544,11 +8582,11 @@
        bozulacaksa kimlik degil yuruyus bozulsun. */
     { ad:'AMBIENT',        renk:'95,191,122'  },   // ICTEN 1. (en kucuk halka)
     { ad:'ORCHESTRAL',     renk:'240,172,122' },   // 2.
-    { ad:'WORLD & ROOTS',  renk:'176,124,232' },   // 3. lofi'den gelen mor
-    { ad:'ROCK & INDIE',   renk:'242,104,60'  },   // 4. (eski adi ROCK & COUNTRY)
-    { ad:'DISCO FUNK',     renk:'190,182,164' },   // 5. (eski adi FUNK & RNB)
-    { ad:'LOUNGE & LOFI',  renk:'216,203,160' },   // 6. -> DISTAN 4.
-    { ad:'JAZZ',           renk:'204,124,164' },   // 7. -> DISTAN 3.
+    { ad:'ROCK & INDIE',   renk:'242,104,60'  },   // 3. (eski adi ROCK & COUNTRY)
+    { ad:'LOUNGE & LOFI',  renk:'216,203,160' },   // 4. -> DISTAN 6.
+    { ad:'JAZZ',           renk:'204,124,164' },   // 5. -> DISTAN 5.
+    { ad:'DISCO FUNK',     renk:'190,182,164' },   // 6. -> DISTAN 4. (eski adi FUNK & RNB)
+    { ad:'WORLD & ROOTS',  renk:'176,124,232' },   // 7. -> DISTAN 3. lofi'den gelen mor
     { ad:'ELECTRONIC',     renk:'132,150,255' },   // 8. -> DISTAN 2.
     /* EN DISTAKI HALKA: 'RADIO'.
        Adi once 'MIXTAPE'ti ve bu ad uygulamada IKI ayri seyi birden
