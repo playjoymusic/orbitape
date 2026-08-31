@@ -5281,20 +5281,42 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Sag kenarlar tek hizada', kenar.sagFark <= 1, 'sag ust / kunye fark '+kenar.sagFark+'px');
   K('Sag ve sol pay esit', kenar.solSag <= 1, 'pay '+kenar.kx+'px, fark '+kenar.solSag+'px');
 
-  /* ── 2. SOL UST ILE SAG UST AYNI HIZADA ──────────────────────────
-     Ust seritte iki yazi var: solda raf adi (radyoda oraya tasindi),
-     sagda marka adi. Ikisi ayni satirmis gibi okunmali -- bakilan
-     sey MUREKKEP ortasi, kutu ortasi degil: puntolar farkli (18 ve
-     20+) ve kutular baseline'a gore duruyor. */
+  /* ── 2. IKI YAZI AYNI TABAN CIZGISINDE ───────────────────────────
+     Ust seritte karsilikli iki yazi var: solda raf adi (14px), sagda
+     marka (20-23px). Once kutu ORTALARI karsilastiriliyordu ve o
+     yanlis olcuydu -- puntolar farkli oldugu icin harfler farkli
+     yukseklikte asili kaliyordu (olculdu: 7px fark, kullanici
+     "hizalama yok" dedi).
+     Dogru olcu TABAN CIZGISI: bir satirdaki iki yazi ayni cizgi
+     uzerinde oturur. Olcum tahmin degil: sifir boyutlu,
+     vertical-align:baseline bir kama ekleniyor ve o kamanin ust
+     kenari tam olarak taban cizgisi oluyor.
+     AYRICA: frekans cubuklarinin sol kenari, adin ILK HARFININ
+     murekkebiyle ayni dikeyde olmali. Once 4.2px solda basliyordu
+     (text-indent) ve ekranda "baslari tam oturmali" olarak
+     goruldu. */
   const hz = await pg.evaluate(()=>{
     const ad=document.querySelector('#ust .kanal.ad');
     const so=document.getElementById('modAd');
-    const orta=(el)=>{ const b=el.getBoundingClientRect();
-      const fs=parseFloat(getComputedStyle(el).fontSize)||12;
-      return b.top + (b.height-fs)/2 + fs*0.50; };
-    return Math.round(Math.abs(orta(ad) - orta(so)));
+    const cb=document.getElementById('modDalga');
+    const taban=(el)=>{ const k=document.createElement('span');
+      k.style.cssText='display:inline-block;width:0;height:0;vertical-align:baseline;';
+      el.appendChild(k); const y=k.getBoundingClientRect().top; k.remove(); return y; };
+    /* Ilk harfin GERCEK murekkep kenari: Range ile olculuyor,
+       kutunun kenariyla ayni sey degil. */
+    const ilkHarf=(el)=>{ const t=[...el.childNodes].find(x=>x.nodeType===3);
+      if(!t || !t.data.length) return null;
+      const r=document.createRange(); r.setStart(t,0); r.setEnd(t,1);
+      return r.getBoundingClientRect().x; };
+    const ih = ilkHarf(so);
+    return { taban: Math.round(Math.abs(taban(ad) - taban(so))),
+             cubuk: ih === null ? null
+                   : Math.round(Math.abs(cb.getBoundingClientRect().x - ih)) };
   });
-  K('Sol ust ve sag ust ayni hizada', hz <= 3, hz+'px fark');
+  K('Iki ust yazi ayni taban cizgisinde', hz.taban <= 1, hz.taban+'px fark');
+  K('Frekans cubuklari ilk harfle ayni dikeyde',
+     hz.cubuk !== null && hz.cubuk <= 1,
+     hz.cubuk === null ? 'ad bos' : hz.cubuk+'px fark');
 
   /* ── 3. AYAR TUTAMAGI: ALT ORTA, TERS UCGEN ──────────────────── */
   const ayTut = await pg.evaluate(async ()=>{

@@ -915,8 +915,21 @@
     top:calc(15px + env(safe-area-inset-top, 0px));
     flex-direction:column;align-items:stretch;gap:6px;
     pointer-events:none;user-select:none;}
+  /* PUNTO KUTUYA YAZILIYOR, yaziya degil: cubuk tuvalinin 'em'i de
+     ayni degeri gorsun -- olculeri sabit piksel yerine yazinin
+     puntosuna baglayabilelim. Ikisi de ayni degiskenden okuyor. */
+  body:not(.mood) #modKut{font-size:var(--modAdPunto, 14px);}
+  /* ── TEXT-INDENT YOK ─────────────────────────────────────────
+     Harf arasi (letter-spacing) son harften SONRA da bosluk birakir;
+     text-indent onu dengelemek icin yaziyi ayni kadar SAGA itiyordu.
+     Ortalanmis bir yazida dogru, SOLA DAYALI bir blokta yanlis:
+     yazi kutunun sol kenarindan 4.2px iceride basliyor, altindaki
+     cubuklar ise kenardan -- olculdu, kullanici "hizalama yok,
+     baslari tam oturmali" dedi ve haklıydi.
+     Indent kalkinca ilk harfin murekkebi kutunun sol kenarinda
+     basliyor; cubuklar da left:0'da. Ikisi ayni dikeyde. */
   body:not(.mood) #modAd{font-size:var(--modAdPunto, 14px);
-    letter-spacing:.30em;text-indent:.30em;}
+    letter-spacing:.30em;text-indent:0;}
   /* ── CUBUK AKISTAN CIKIYOR ────────────────────────────────────
      Cubuk adin genisligini almali. Akista birakilinca TERSI oluyor:
      canvas'in oz genisligi (width niteligi, yani aygit pikseli
@@ -931,7 +944,7 @@
      degil bir grafik oluyor. Dogru olcu KUCUK bir calar: dort
      tikiz cubuk, adin SOL kenarinda, hemen altinda. */
   body:not(.mood) #ust #modDalga{position:absolute;left:0;
-    top:100%;margin:4px 0 0;width:24px;height:10px;order:0;}
+    top:100%;margin:.30em 0 0;width:1.8em;height:.62em;order:0;}
   /* ── ÇİFT DOKUNUŞ SAYFAYI KAYDIRMASIN ─────────────────────────────
      iOS Safari'de bir yazıya iki kez hızlı basmak "çift dokunuşla
      yakınlaştır" demek: görüntü penceresi büyüyüp kayıyor ve
@@ -6878,8 +6891,24 @@
            kaliyor, "kapali" degil "sessiz" demek. */
         const dalga = 0.5 + 0.5*Math.sin(vt*4.2 + _dalgaFazi(i));
         const y = (0.16 + 0.84*dalga*_dalgaGen) * _dalgaBoy;
-        x.fillRect(Math.round(i*(en+bosluk)), Math.round(_dalgaBoy - y),
-                   Math.max(1, Math.round(en)), Math.round(y));
+        /* ── UCLARI YUVARLAK ──────────────────────────────────
+           Kose kose bir dikdortgen bu olcekte kaba duruyor.
+           Yaricap cubuk genisliginin yarisi: ses yokken cubuklar
+           birer NOKTA gibi, ses varken birer kapsul gibi okunuyor --
+           uygulamanin kendi sembol dili zaten nokta ve yay.
+           roundRect eski tarayicilarda yok; o zaman duz dikdortgen,
+           yani gorunum biraz kaba ama hicbir sey kirilmiyor. */
+        const bx = Math.round(i*(en+bosluk));
+        const bw = Math.max(1, Math.round(en));
+        const by = Math.round(_dalgaBoy - y);
+        const bh = Math.max(1, Math.round(y));
+        if(typeof x.roundRect === 'function'){
+          x.beginPath();
+          x.roundRect(bx, by, bw, bh, Math.min(bw, bh) / 2);
+          x.fill();
+        }else{
+          x.fillRect(bx, by, bw, bh);
+        }
       }
     }catch(e){ _yut(e); }
   }
@@ -9963,6 +9992,7 @@
       if(!kut || !ad) return;
       if(document.body.classList.contains('mood')){
         kut.style.removeProperty('--modAdPunto');
+        kut.style.removeProperty('top');     // arsivde blok akista, CSS ne diyorsa o
         return;
       }
       /* Once en buyuk puntoda olculuyor, sonra gerekirse kuculuyor.
@@ -9981,6 +10011,39 @@
                   Math.floor(MODAD_PUNTO * (butce / kr.width) * 10) / 10);
         kut.style.setProperty('--modAdPunto', p + 'px');
       }
+      _solUstTabanaOtur(kut, ad, marka);
+    }catch(e){ _yut(e); }
+  }
+  /* ── IKI YAZI AYNI TABAN CIZGISINDE ───────────────────────────
+     Ust seritte karsilikli iki yazi var: solda raf adi (14px),
+     sagda marka (23px). Kutularin ustunu esitlemek YETMIYOR --
+     puntolar farkli, o yuzden harfler farkli yukseklikte "asili"
+     kaliyor. Olculdu: raf adinin taban cizgisi markanınkinden 7px
+     yukaridaydi ve ekranda "hizalama yok" olarak goruluyordu.
+     Dogru olcu TABAN CIZGISI: bir satirdaki iki yazi ayni cizgi
+     uzerinde oturur, tipografinin ilk kurali.
+     TABAN NASIL OLCULUYOR: sifir boyutlu, vertical-align:baseline
+     bir kama ekleniyor; o kamanin ust kenari tam olarak taban
+     cizgisidir. Font metriklerini tahmin etmiyoruz -- tarayici
+     zaten biliyor, sadece soruyoruz.
+     YAZILAN DEGER DUZ PIKSEL: rect gercek ekran koordinati, guvenli
+     alan payi zaten iceride. _dip() ile yazilsa env() ikinci kez
+     eklenirdi (buyutecte tam bu hata yasandi). */
+  function _solUstTabanaOtur(kut, ad, marka){
+    try{
+      if(!kut || !ad || !marka) return;
+      const taban = (el)=>{
+        const kama = document.createElement('span');
+        kama.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;';
+        el.appendChild(kama);
+        const y = kama.getBoundingClientRect().top;
+        kama.remove();
+        return y;
+      };
+      const fark = Math.round(taban(marka) - taban(ad));
+      if(!fark) return;
+      const su = kut.getBoundingClientRect().top;
+      kut.style.top = Math.round(su + fark) + 'px';
     }catch(e){ _yut(e); }
   }
   function _kipAnahtarYaz(){
