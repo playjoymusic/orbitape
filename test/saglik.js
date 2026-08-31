@@ -6920,7 +6920,62 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        && tt.sonuc.solHiza <= 1 && tt.sonuc.modulDip <= 12,
        tt.sonuc ? ('arada '+tt.sonuc.ustunde+'px, sol fark '+tt.sonuc.solHiza
                    +'px, modul dipten '+tt.sonuc.modulDip+'px') : 'olculemedi');
-    /* Radyoda konsolun ust satiri KIP ANAHTARI. Ayni uc olcu:
+    /* ── OLCUM SIRASI: TUTAMAK CUBUKTAN SONRA ────────────────────
+     CIHAZDA GORULEN HATA: uygulama acilir acilmaz uc cizgi raf
+     adinin UZERINE biniyordu. Sebep sira: _tutamakYerlestir
+     geriYerlestir()'in EN BASINDA cagriliyordu, yani #modDalga'nin
+     bir onceki karedeki yerini okuyordu. Centikli ekranda modKut
+     env(safe-area-inset-top) kadar asagi iniyor ve fark 47px'e
+     ciktigi icin ustuste biniyorlardi.
+     Bu bloktaki kural zaten yaziliydi: "Sira ONEMLI: her adim bir
+     oncekinin olctugu yere yasliyor."
+     Iki sey ayri ayri olculuyor: KAYNAKTA sira dogru mu, ve
+     EKRANDA cizgiler yaziya deger mi. Ikincisi tek basina yetmez
+     (masaustunde centik yok, fark sifir cikiyor ve hata gizleniyor);
+     birincisi tek basina da yetmez (sira dogru ama olcu yanlis
+     olabilir). */
+  {
+    const kaynak0 = fs.readFileSync('index.html','utf8');
+    const g0 = kaynak0.indexOf('function geriYerlestir()');
+    const g1 = kaynak0.indexOf('\n  }', g0);
+    const govde = g0 >= 0 ? kaynak0.slice(g0, g1) : '';
+    const iDalga = govde.indexOf('_modDalgaHizala(');
+    const iAd    = govde.indexOf('_solUstAdSigdir(');
+    const iTut   = govde.indexOf('_tutamakYerlestir(');
+    const iKip   = govde.indexOf('_kipKisayoluHizala(');
+    K('Tutamak olcusunu kendinden onceki adimdan aliyor',
+       iAd > 0 && iDalga > iAd && iTut > iDalga && iKip > iTut,
+       'sira: ad '+iAd+' -> cubuk '+iDalga+' -> tutamak '+iTut+' -> anahtar '+iKip);
+  }
+  {
+    /* Ekranda: raf adi degisince (punto da degisebilir) cizgiler
+       hala adin ALTINDA mi, cubugun altinda mi. */
+    const ust = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const eski = AYAR.mood;
+      AYAR.mood=false; moodUygula(); await bek(300);
+      const olc = async (ad)=>{
+        try{ modAdYaz(ad); }catch(e){}
+        try{ geriYerlestir(); }catch(e){}
+        await bek(140);
+        const r=id=>document.getElementById(id).getBoundingClientRect();
+        const t=r('ayarTut'), a=r('modAd'), d=r('modDalga');
+        return { adaDeger: t.top < a.bottom - 0.5,
+                 cubugaDeger: t.top < d.bottom - 0.5,
+                 arada: Math.round(t.top - d.bottom) };
+      };
+      const k1 = await olc('JAZZ');
+      const k2 = await olc('WORLD & ROOTS');
+      AYAR.mood=eski; moodUygula(); await bek(200);
+      try{ geriYerlestir(); }catch(e){}
+      return { k1, k2 };
+    });
+    K('Uc cizgi raf adinin uzerine binmiyor',
+       ust.k1.adaDeger===false && ust.k2.adaDeger===false
+       && ust.k1.cubugaDeger===false && ust.k2.cubugaDeger===false,
+       'JAZZ: cubuktan '+ust.k1.arada+'px | WORLD & ROOTS: '+ust.k2.arada+'px');
+  }
+  /* Radyoda konsolun ust satiri KIP ANAHTARI. Ayni uc olcu:
        modulun uzerine binmiyor, arada satir boslugu var, ayni sol
        kenardan basliyor. Tutamak ise bu blogun disinda -- ust
        yaride, alt konsola 100px'den fazla mesafede. */

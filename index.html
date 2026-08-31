@@ -10708,14 +10708,32 @@
      her adim bir oncekinin olctugu yere yasliyor. */
   function geriYerlestir(){
     iz('geriYerlestir');
-    _kipKisayoluHizala();
+    /* Etiket her halukarda yaziliyor: asagidaki olcum zinciri bir
+       yerde patlarsa bile anahtarin uzerinde dogru kelime dursun. */
+    try{ _kipAnahtarYaz(); }catch(e){ _yut(e); }
     try{
       const y = _yerlesimOlcu();
       _solUstOlcegiTemizle();      // kalinti olcek varsa sil
-      _tutamakYerlestir(y);        // ayar tutamagi: kipte modulun ustu
       _ustSatirlariSigdir();       // sol ust satirlar karsisindakine gore
       _solUstAdSigdir();           // radyoda sol ustteki raf adinin puntosu
       _modDalgaHizala();           // frekans cubuklari: adin altina, ad kadar
+      /* ── SIRA DUZELTILDI: BU IKISI EN SONA ─────────────────────
+         Once _tutamakYerlestir en basta, _kipKisayoluHizala ise
+         try'in bile disinda cagriliyordu. Ikisi de bir onceki
+         karenin olcusunu okuyordu:
+           tutamak  -> #modDalga'nin (henuz yerlesmemis) alt kenarini
+           anahtar  -> tutamagin (henuz yerlesmemis) sag kenarini
+         Belirtisi cihazda goruldu: uygulama acilir acilmaz uc cizgi
+         raf adinin UZERINE biniyordu. Sebep centik: modKut'un tepesi
+         env(safe-area-inset-top) kadar asagida, ama tutamak o payi
+         daha uygulanmamis bir olcumden almisti. Kullanicinin
+         teshisi dogruydu: "gezegenler yukarida baslayip aniden
+         asagi kayiyordu, ayni olay mi" -- evet, ayni sinif.
+         Bu bloktaki kural zaten yaziliydi: "Sira ONEMLI: her adim
+         bir oncekinin olctugu yere yasliyor." Bu iki satir o
+         kurala uymuyordu. */
+      _tutamakYerlestir(y);        // radyoda cubugun altina, arsivde modulun ustune
+      _kipKisayoluHizala();        // arsivde tutamaga, radyoda module yasli
       ugOlcu();
       _buyutecYerlestir(y);        // buyutec kendi yuvasinin uzerine
       _kunyeYerlestir(y);          // sag alt kunye: taban aramayla ayni hat
@@ -11048,6 +11066,10 @@
        olculuyor, punto once oturmali. */
     try{ _solUstAdSigdir(); }catch(e){ _yut(e); }
     try{ _modDalgaHizala(); }catch(e){ _yut(e); }
+    /* Ve tutamak: radyoda yeri cubugun alt kenarindan geliyor,
+       yani ad degisip punto degisince o da kaymali. Ayni sira,
+       ayni sebep. */
+    try{ _tutamakYerlestir(); }catch(e){ _yut(e); }
   }
   /* Büyük gezinme yazısı — halkanın hemen üstünde. */
   function _modGezEl(){
