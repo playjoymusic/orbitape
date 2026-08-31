@@ -34,10 +34,37 @@ insandan gelmek zorunda.
 - **14–15 kişi topla.** Sayı 14 gün boyunca 12'nin altına düşerse
   sayaç **sıfırlanır** ve baştan başlarsın. İki kişilik yedek, iki
   hafta kaybetmemenin en ucuz yolu.
-- Her birinde **Android telefon** ve **Gmail adresi** olmalı.
-  Senin toplaman gereken tek şey o Gmail adresleri.
+- Her birinde **Android telefon** olmalı.
 - Telefonları farklı olsun: eski/yeni, büyük/küçük ekran, farklı
   marka. Aynı modelden on iki tane, bir taneden fazlasını ölçmez.
+
+### Hangi adres — en sık yapılan hata burada
+
+Senin toplaman gereken şey "Gmail adresi" değil, kişinin **test
+edeceği telefonda Play Store'a giriş yaptığı Google hesabı.**
+
+- Genelde bir Gmail olur ama **şart değil**: bir Google hesabı iş
+  maliyle de, başka bir sağlayıcının adresiyle de açılabilir.
+  Önemli olan Gmail olması değil, **Google hesabı** olması.
+- **Tuzak:** kişi sana iş mailini yollar, ama telefonundaki Play
+  Store başka bir hesapla açıktır. Davetin listede görünür, o kişi
+  testi hiç göremez — sen "12 kişi topladım" sanırsın, sayaç
+  dönmez. On dördüncü günde öğrenmek istemezsin.
+- Kişinin telefonunda **birden fazla Google hesabı** olabilir.
+  Geçerli olan, Play Store'da o an seçili olan hesaptır.
+
+Bu yüzden aşağıdaki mesaj adresi tarif ederek istiyor, "Gmail'ini
+yolla" demiyor.
+
+### Opt-in şart, sadece listeye eklemek yetmiyor
+
+Adresi listeye eklemek testi başlatmaz. Kişi senin göndereceğin
+bağlantıya girip **"Become a tester"** demek zorunda. 14 günlük
+sayaç o an başlar ve sayılan şey, o kişinin 14 gün boyunca
+**kesintisiz opt-in kalması**. Çıkıp geri girerse sayaç sıfırlanır.
+
+Davetleri gönderdikten sonra **teyit et**: "girebildin mi, uygulama
+göründü mü". Bu tek soru, iki hafta kurtarır.
 
 ---
 
@@ -55,9 +82,20 @@ Mağazaya çıkabilmem için 12 kişinin 14 gün boyunca test etmesi
 gerekiyor (Google'ın şartı). Bana yardım eder misin?
 
 Yapman gerekenler:
-1. Bana Gmail adresini yolla.
-2. Sana bir bağlantı geleceğim, oradan kuracaksın.
+
+1. Test edeceğin telefonda Play Store'u aç, sağ üstteki profil
+   resmine bas. Orada bir e-posta adresi yazıyor. TAM OLARAK onu
+   bana yolla — başka bir adresini değil. Test o hesaba
+   tanımlanıyor, yanlış adres olursa uygulamayı hiç göremezsin.
+
+2. Sana bir bağlantı göndereceğim. Aç ve "Become a tester" de.
+   Bu adımı atlarsan test başlamıyor. Sonra Play Store'dan
+   kurabilirsin.
+
 3. 14 gün boyunca ARADA BİR aç. Her gün değil — canın çektikçe.
+   Bu 14 gün boyunca testten çıkma; çıkarsan sayaç sıfırlanıyor
+   ve baştan başlamam gerekiyor.
+
 4. Bir şey ters giderse söyle. En çok işime yarayan şey bu.
 
 Uygulama İngilizce ama içinde okunacak bir şey yok, dinleme
@@ -72,6 +110,16 @@ Teşekkürler.
 
 Sormazsan öğrenemezsin. Üç kez soruyorsun ve **her seferinde farklı**
 bir şey:
+
+### 0. gün — davet ULAŞTI mı
+
+> "Bağlantıya girip 'Become a tester' diyebildin mi? Play Store'da
+> uygulama göründü mü?"
+
+Bu soru listede değildi ve olmalıydı. Sayaç ancak kişi opt-in
+olduğunda dönmeye başlıyor; yanlış adres ya da atlanan bir adım,
+on dördüncü güne kadar sessiz kalır. **Herkesten tek tek teyit al,
+sonra 14 günü saymaya başla.**
 
 ### 1. gün — kurulum tuttu mu
 
