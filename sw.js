@@ -74,7 +74,7 @@ self.addEventListener('fetch', e=>{
      Çevrimdışı saklamanın da faydası yok: listedeki her şey uzak
      bir sunucudan çalıyor, ağ yokken liste elinde olsa da ses yok.
      Bu önbelleğin tek işi kabuk; liste kabuk değil. */
-  if(/^\/(earth|earth_buyuk|radyo)\.json$/.test(u.pathname)) return;
+  if(/^\/(earth|earth_giris|earth_buyuk|radyo)\.json$/.test(u.pathname)) return;
 
   e.respondWith((async()=>{
     try{

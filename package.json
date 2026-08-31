@@ -13,7 +13,8 @@
     "ariza": "node test/ariza.js",
     "hizli": "node test/saglik.js hizli",
     "kontrol": "bash araclar/kontrol.sh",
-    "tip": "bash araclar/tip.sh"
+    "tip": "bash araclar/tip.sh",
+    "birim": "node test/birim.js"
   },
   "devDependencies": {
     "playwright": "^1.47.0",

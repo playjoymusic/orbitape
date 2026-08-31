@@ -5073,35 +5073,125 @@
      degildir -- yerine cihazdaki onbellek var (earthOnbellekten). */
   const EARTH_URL     = "/earth.json";
   const EARTH_URL_YEDEK = "";
+  /* ── ONCE KUCUK DOSYA, TAM HAVUZ ARKADAN ─────────────────────────
+     OLCULEN SORUN: arsive gecen kisi bir sey DUYMADAN once 1050 KB
+     (gzip) indiriyordu. Yavas bir hatta bu, "bastim ama hicbir sey
+     olmuyor" demek -- ve uygulamanin ilk izlenimi tam orada
+     kuruluyor.
+     Rafa gore bolmek ise yaramiyor: acilista secili raf ORBITAPE,
+     yani "hepsi"; parcalarin hepsini indirmek gerekirdi.
+     Ise yarayan: 700 kayitlik bir BASLANGIC dosyasi (58 KB gzip,
+     araclar/giris.py uretiyor). Uygulama onunla aciliyor ve
+     calmaya basliyor; tam havuz ilk parca calarken arkada iniyor ve
+     uzerine ekleniyor. Ilk sese kadar inen veri 18 kat azaliyor.
+     Tam havuz SESSIZ gelmiyor: geldiginde earthAyir() yeniden
+     calisiyor, yani raflar ve kuyruk tam listeye gore tazeleniyor.
+     Arama tam havuzu BEKLIYOR (bkz. earthTamBekle): 700 kayitta
+     arama yapmak, kullaniciya "yok" demek olurdu. */
+  const EARTH_GIRIS_URL = "/earth_giris.json";
   let earthHavuz=[], _ehShuf=[], _ehIdx=0, _ehSoz=null;
+  let _earthTam = false, _etSoz = null;
+  /* Ham kaydi havuz bicimine ceviren tek yer: iki dosya da (baslangic
+     ve tam) ayni suzgecten geciyor. Ikinci bir kopya yazmak, iki ayri
+     dogruluk kaynagi demek olurdu. */
+  function earthEsle(arr, kayma){
+    const k = kayma|0;
+    return (arr||[]).map((x,i)=>{
+      if(typeof x==='string') return { id:'ert:'+(k+i), mp3:x, ad:((x.split('/').pop()||'').replace(/\.[a-z0-9]+$/i,'').replace(/[_\-]+/g,' ')) };
+      const u = x.mp3||x.url||x.src||x.file; if(!u) return null;
+      if(!formatCalinir(u)) return null;
+      return { id:'ert:'+(k+i), mp3:u, ad:(x.ad||x.title||x.name||'').toString(),
+               sanatci:sanatciTemiz(x.sanatci), etiket:(x.etiket||'').toString(),
+               lisans:(x.lisans||'').toString() };
+    }).filter(Boolean);
+  }
+  function _earthGovde(d){
+    return Array.isArray(d) ? d : ((d && (d.tracks||d.songs||d.liste)) || []);
+  }
   async function earthYukle(){
     iz('earthYukle');
     /* Radyo tarafinda arsivin isi yok: ne aramada, ne kuyrukta. */
     if(!AYAR.mood) return 0;
-    if(earthHavuz.length) return earthHavuz.length;
+    /* Havuz elde ama TAM DEGILSE, arkadaki inisi burada yeniden
+       planla: kullanici arsivden cikip geri dondugunde tam liste
+       tamamlansin. */
+    if(earthHavuz.length){ if(!_earthTam) { try{ _earthTamPlanla(); }catch(e){ _yut(e); } }
+                           return earthHavuz.length; }
     if(_ehSoz) return _ehSoz;
     _ehSoz = (async()=>{
       try{
-        const r = await listeCek(EARTH_URL, EARTH_URL_YEDEK, 8000);
-        if(!r || !r.ok){ hataEkle('earth'); agBosArtir(); return earthOnbellekten(); }
-        const d = await r.json();
-        const arr = Array.isArray(d) ? d : ((d && (d.tracks||d.songs||d.liste)) || []);
-        earthHavuz = arr.map((x,i)=>{
-          if(typeof x==='string') return { id:'ert:'+i, mp3:x, ad:((x.split('/').pop()||'').replace(/\.[a-z0-9]+$/i,'').replace(/[_\-]+/g,' ')) };
-          const u = x.mp3||x.url||x.src||x.file; if(!u) return null;
-          if(!formatCalinir(u)) return null;
-          return { id:'ert:'+i, mp3:u, ad:(x.ad||x.title||x.name||'').toString(),
-                   sanatci:sanatciTemiz(x.sanatci), etiket:(x.etiket||'').toString(),
-                   lisans:(x.lisans||'').toString() };
-        }).filter(Boolean);
-        _ehShuf=[]; _ehIdx=0; earthAyir();
-        if(earthHavuz.length){ basari('earth'); onbellekYaz('earth', earthHavuz); }
-        else { hataEkle('earth'); return earthOnbellekten(); }
-        return earthHavuz.length;
+        const r = await listeCek(EARTH_GIRIS_URL, "", 6000);
+        if(r && r.ok){
+          const g = earthEsle(_earthGovde(await r.json()), 0);
+          if(g.length){
+            earthHavuz = g; _ehShuf=[]; _ehIdx=0; earthAyir();
+            basari('earth');
+            /* Tam havuz ARKADAN. Hemen degil: ayni anda baslarsa iki
+               dosya bant genisligini paylasir ve kucuk dosyanin butun
+               anlami kalmaz. Ilk parca CALMAYA BASLAYINCA (ya da en
+               gec 2,5 sn sonra) iniyor -- o ana kadar hat yalnizca
+               baslangic dosyasinin ve sesin. */
+            try{ _earthTamPlanla(); }catch(e){ _yut(e); }
+            return earthHavuz.length;
+          }
+        }
+        /* Baslangic dosyasi yoksa ya da bossa dogrudan tam havuz:
+           eski davranis, tek fark bir istegin bosa gitmesi. */
+        return await earthTamYukle();
       }catch(e){ hataEkle('earth'); agBosArtir(); return earthOnbellekten(); }
       finally{ _ehSoz=null; }
     })();
     return _ehSoz;
+  }
+  var _etPlan = null;
+  function _earthTamPlanla(){
+    if(_earthTam || _etSoz || _etPlan) return;
+    /* ARSIVDEN CIKILDIYSA INDIRME. Radyo dinleyen birinin hattini
+       16.424 kayitlik bir liste icin mesgul etmenin karsiligi yok --
+       o liste yalnizca arsivde kullaniliyor. Kullanici arsive geri
+       dondugunde earthYukle() bu plani yeniden kuruyor.
+       (Bu ayni zamanda testleri de duzeltti: gecikmis indirme baska
+       bir kontrolun ortasina dusup olcumu bozuyordu -- yani sorun
+       yalnizca nezaket degil, ongorulebilirlik.) */
+    const git = ()=>{ _etPlan = null;
+      if(!AYAR.mood) return;
+      try{ earthTamYukle(); }catch(e){ _yut(e); } };
+    _etPlan = setTimeout(git, 2500);
+    try{ ses.addEventListener('playing', ()=>{
+      if(_etPlan){ clearTimeout(_etPlan); _etPlan = null; git(); }
+    }, { once:true }); }catch(e){ _yut(e); }
+  }
+  /* Tam havuz. Baslangic havuzunun UZERINE ekleniyor: ayni mp3 iki
+     kere girmesin diye adres kumesiyle eleniyor, kimlikler de kayarak
+     veriliyor -- boylece calinmis damgalari (id'ye bagli) gecerli
+     kaliyor. */
+  async function earthTamYukle(){
+    if(_earthTam) return earthHavuz.length;
+    if(_etSoz) return _etSoz;
+    _etSoz = (async()=>{
+      try{
+        const r = await listeCek(EARTH_URL, EARTH_URL_YEDEK, 8000);
+        if(!r || !r.ok){ hataEkle('earth'); agBosArtir(); return earthHavuz.length || earthOnbellekten(); }
+        const tam = earthEsle(_earthGovde(await r.json()), earthHavuz.length);
+        if(!tam.length){ hataEkle('earth'); return earthHavuz.length || earthOnbellekten(); }
+        const varOlan = new Set(earthHavuz.map(x=>x.mp3));
+        const yeni = tam.filter(x=>!varOlan.has(x.mp3));
+        earthHavuz = earthHavuz.concat(yeni);
+        _earthTam = true;
+        _ehShuf=[]; _ehIdx=0; earthAyir();
+        basari('earth'); onbellekYaz('earth', earthHavuz);
+        return earthHavuz.length;
+      }catch(e){ hataEkle('earth'); agBosArtir(); return earthHavuz.length || earthOnbellekten(); }
+      finally{ _etSoz=null; }
+    })();
+    return _etSoz;
+  }
+  /* Aramanin tam havuza ihtiyaci var: 700 kayitta arayip "yok" demek,
+     16.424 kaydin ustunde oturup kullaniciyi geri cevirmek olurdu. */
+  async function earthTamBekle(){
+    try{ if(!AYAR.mood) return 0;
+         if(_earthTam) return earthHavuz.length;
+         return await earthTamYukle(); }catch(e){ _yut(e); return 0; }
   }
   /* ── AMBIANCE: uzun kayıtlar ──────────────────────────────────
      Boyut süzgecinde elediğimiz saatlik kayıtlar (alan kayıtları, eski radyo yayınları,
@@ -12108,7 +12198,12 @@
     /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
        tarayacagi sey de o. */
     if(!AYAR.mood){ try{ radyoListe(); }catch(e){ _yut(e); } }
-    else { try{ earthYukle(); uzunYukle(); }catch(e){ _yut(e); } }
+    /* ARAMA TAM HAVUZU ISTER. Acilista yalnizca 700 kayitlik
+       baslangic dosyasi iniyor; onun uzerinde arama yapip "yok"
+       demek, 16.424 kaydin ustunde oturup kullaniciyi geri
+       cevirmek olurdu. Burada tam liste isteniyor ve asagidaki
+       tazeleme dongusu geldiginde listeyi kendiliginden yeniliyor. */
+    else { try{ earthTamBekle(); uzunYukle(); }catch(e){ _yut(e); } }
     silGoster();
     _araDokunuldu = false;                    // yeni acilis: temiz sayfa
     setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);

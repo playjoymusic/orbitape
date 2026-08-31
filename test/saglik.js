@@ -2500,12 +2500,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kay  = await dene(0.85, 130, true);
     const merkez = await dene(0.20, 700, false);
     /* tutus + halka disinda birakma: parca ATLAMAMALI */
-    let atladi = false;
-    { const o = sonraki; window.__sy = 0; window.sonraki = function(){ window.__sy++; return o.apply(this, arguments); };
+    let atladi = false, atlayan = '';
+    /* KIM CAGIRDI: "atladi" tek basina bakan kisiye hicbir sey
+       soylemiyordu. Cagri yigini not olarak yaziliyor -- bir kere tam
+       bunu aramak yarim saat aldi. */
+    { const o = sonraki; window.__sy = 0; window.__yig = [];
+      window.sonraki = function(){ window.__sy++;
+        try{ window.__yig.push((new Error().stack.split('\n')[2]||'').trim().slice(0,90)); }catch(_){ }
+        return o.apply(this, arguments); };
       await dene(0.20, 620, false);
-      window.sonraki = o; atladi = window.__sy > 0; }
+      window.sonraki = o;
+      atlayan = (window.__yig||[]).join(' ; ');
+      /* YALNIZCA JESTTEN GELEN CAGRI SAYILIR. Uygulama bu sirada kendi
+         isini de yapiyor: calamayan bir parcayi sessizce gecmek de
+         sonraki() cagiriyor (atla). O cagri 620 ms'lik pencereye
+         denk gelince test, kodda hicbir sey bozulmamisken kirmizi
+         yaniyordu -- olculen sey jest degil, tesadufun kendisiydi.
+         Simdi 'atla' uzerinden gelenler ayikliyor. */
+      atladi = (window.__yig||[]).some(x=>!/ atla | at atla/.test(' '+x+' ')); }
     try{ if(AKTIF_MOD!=='RADIOTAPE') modSec('RADIOTAPE', true); }catch(e){}
-    return { kisa, uzun, kay, merkez, esik: MOOD_TUT, atladi };
+    return { kisa, uzun, kay, merkez, esik: MOOD_TUT, atladi, atlayan };
   });
   K('Kisa dokunus kategori SECMEZ', tk.kisa.every(r=>r.gez===false && r.mod==='RADIOTAPE'),
      tk.kisa.length+' yaricapta da kategori degismedi');
@@ -2526,7 +2540,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Halka disinda birakmak SECMEZ', tk.merkez.mod==='RADIOTAPE', 'kategori degismedi');
   /* Tutup halkanin DISINDA birakmak hicbir sey yapmaz: ne secim, ne
      parca atlama. Tutusu iptal etmenin yolu da bu. */
-  K('Halka disinda birakmak parca ATLAMAZ', tk.atladi===false, 'sonraki() cagrilmadi');
+  K('Halka disinda birakmak parca ATLAMAZ', tk.atladi===false,
+     tk.atladi ? ('ATLADI -> ' + tk.atlayan) : 'sonraki() cagrilmadi');
   K('Tutma esigi makul', tk.esik>=200 && tk.esik<=500, tk.esik+' ms');
 
   /* ── COK ADIMLI GECMIS ──────────────────────────────────────────
@@ -3090,14 +3105,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            bir yerde kalmali: aramanin acilisinda. Once dort yerde
            vardi. Mezar tasi yorumunun icinde de gectigi icin
            yorum aramak yanilticiydi -- CAGRI kaliplarini sayiyoruz. */
-        istekliIkili: (k.match(/earthYukle\(\); uzunYukle\(\);/g)||[]).length === 1,
+        /* ARAMA ARTIK earthTamBekle() CAGIRIYOR: acilista yalnizca
+           700 kayitlik baslangic dosyasi iniyor, arama tam havuzu
+           istiyor. Kalip da onu izliyor. */
+        istekliIkili: (k.match(/earthTamBekle\(\); uzunYukle\(\);/g)||[]).length === 1
+                   && (k.match(/earthYukle\(\); uzunYukle\(\);/g)||[]).length === 0,
         /* modSec: kanal degisiminde de yok */
         modSecTemiz: /if\(mod==='lib'\)\{ earthYukle\(\); \}/.test(k),
         /* kaynaktanCek: zar kapisi */
         zarVar: /UZUN_ORAN = 0\.28/.test(k)
              && /!uzunHavuz\.length && !_uzSoz && Math\.random\(\) < UZUN_ORAN\) uzunYukle\(\)/.test(k),
         /* arama: dogrudan, zarsiz */
-        aramaDogrudan: /try\{ earthYukle\(\); uzunYukle\(\); \}catch\(e\)\{ _yut\(e\); \} \}/.test(k),
+        aramaDogrudan: /try\{ earthTamBekle\(\); uzunYukle\(\); \}catch\(e\)\{ _yut\(e\); \} \}/.test(k),
         /* toplam cagri sayisi: tanim + zar + arama = 3 */
         cagri: (k.match(/uzunYukle\(\)/g)||[]).length
       };
@@ -5964,14 +5983,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        yazma yapmak. Bu test o kapiyi acik tutuyor. */
     {
       const sw = fs.readFileSync('sw.js','utf8');
-      const kapi = /if\(\s*\/\^\\\/\(earth\|earth_buyuk\|radyo\)\\\.json\$\/\.test\(u\.pathname\)\s*\)\s*return;/.test(sw);
+      /* Dort liste: earth, earth_giris (baslangic dosyasi),
+         earth_buyuk, radyo. Baslangic dosyasi eklendiginde bu kapiya
+         yazilmasi UNUTULABILIRDI -- kucuk diye onbellege alinsa da
+         olurdu sanilir; olmaz, cunku o da tarayicinin kendi HTTP
+         onbelleginde zaten duruyor ve servis calisani kopyasi her
+         acilista bosa yazma yapar. */
+      const kapi = /\(earth\|earth_giris\|earth_buyuk\|radyo\)/.test(sw)
+                && /\.json\$\/\.test\(u\.pathname\)\s*\)\s*return;/.test(sw);
       const surum = /orbitape-kabuk-v2/.test(sw);
       K('Servis calisani listeleri onbellege almiyor', kapi && surum,
-        kapi ? (surum ? 'uc liste atlaniyor, kabuk surumu v2 (eski onbellek siliniyor)'
+        kapi ? (surum ? 'dort liste atlaniyor, kabuk surumu v2 (eski onbellek siliniyor)'
                       : 'kapi var ama kabuk surumu artmamis: eski cihazlarda 3,9 MB kalir')
              : 'sw.js listeleri hala onbellege aliyor');
     }
-    /* ── RAF SAYISI METINLERDE DOGRU MU ───────────────────────────
+      /* ── BASLANGIC DOSYASI ────────────────────────────────────────
+       Arsive gecen kisi bir sey duymadan once 1050 KB (gzip)
+       indiriyordu. Simdi once 700 kayitlik earth_giris.json (58 KB)
+       iniyor, tam havuz arkadan geliyor.
+       Uc sey olculuyor ve ucu de ayri bir sekilde bozulabilir:
+         1) Dosya var, kucuk ve tam havuzun bir ALT KUMESI mi
+            (yani gercekten ayni hasattan mi cikmis).
+         2) Her raf besleniyor mu -- UYGULAMANIN KENDI kurallariyla.
+            araclar/giris.py raf kurallarini bilmiyor (bilerek: iki
+            ayri dogruluk kaynagi olmasin); o yuzden kapsamayi burada,
+            arsivRaf() ile dogruluyoruz.
+         3) Kod once kucuk dosyayi, sonra tam havuzu istiyor mu. */
+    {
+      const fsx = require('fs');
+      const giris = JSON.parse(fsx.readFileSync('earth_giris.json','utf8'));
+      const tam   = JSON.parse(fsx.readFileSync('earth.json','utf8'));
+      const hamKB = Math.round(fsx.statSync('earth_giris.json').size/1024);
+      const tamKB = Math.round(fsx.statSync('earth.json').size/1024);
+      const tamKume = new Set(tam.map(x=>x && x.mp3));
+      const altKume = giris.every(x=>tamKume.has(x && x.mp3));
+      K('Baslangic dosyasi kucuk ve tam havuzdan geliyor',
+         Array.isArray(giris) && giris.length >= 400 && giris.length <= 1200
+         && altKume && hamKB*12 < tamKB,
+         giris.length+' kayit, '+hamKB+' KB (tam havuz '+tam.length+' kayit, '+tamKB+' KB)');
+      /* Raf kapsamasi: uygulamanin kendi arsivRaf'i karar veriyor. */
+      const kapsama = await pg.evaluate((ornek)=>{
+        const say = {};
+        ARSIV_SORGU.forEach(a=>say[a]=0);
+        ornek.forEach(o=>{ const r = arsivRaf(o); if(r && say[r] !== undefined) say[r]++; });
+        return say;
+      }, giris);
+      const bosRaf = Object.keys(kapsama).filter(a=>kapsama[a] < 5);
+      K('Baslangic dosyasi her rafi besliyor', bosRaf.length === 0,
+         Object.keys(kapsama).map(a=>a+' '+kapsama[a]).join(' · '));
+      const kod = fsx.readFileSync('index.html','utf8');
+      K('Once kucuk dosya, tam havuz arkadan',
+         /EARTH_GIRIS_URL\s*=\s*"\/earth_giris\.json"/.test(kod)
+         && /listeCek\(EARTH_GIRIS_URL/.test(kod)
+         && /try\{ earthTamYukle\(\); \}catch/.test(kod)
+         && /earthTamBekle\(\); uzunYukle\(\)/.test(kod),
+         'earthYukle giris dosyasini aliyor, tam havuzu beklemeden basliyor, arama tam havuzu istiyor');
+    }
+
+  /* ── RAF SAYISI METINLERDE DOGRU MU ───────────────────────────
        INDIE ve LOFI silinince raf sayisi 10'dan 9'a dustu, ama
        "ten genres" cumlesi dort yerde kalmisti: sayfanin meta
        aciklamasi, og/twitter kartlari ve manifest.json. Manifest
@@ -7921,12 +7990,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                  halkaAlt:Math.round(halkaAlt), modulUst:Math.round(su.top),
                  bosluk:Math.round(su.top - g.bottom) };
       };
+      /* OTURMUS YERLESIMI OLC, YOLDAKINI DEGIL. Sabit bir bekleme
+         (320 ms) yeterliydi -- ta ki arsiv havuzu iki asamada inmeye
+         baslayana kadar: gelen liste yerlesimi yeniden kuruyor ve
+         olcum arada kalinca ayni kod bir kosuda 71px, otekinde 85px
+         veriyordu. Olcmek istedigimiz sey yerlesim KURALI, o kuralin
+         hangi karede oturdugu degil.
+         Ust uste iki ayni okuma bekleniyor; en fazla ~1,6 sn. */
+      const olcKarar = async ()=>{
+        let a = olc();
+        for(let i=0;i<10;i++){
+          await bek(160);
+          const b = olc();
+          if(b.bosluk === a.bosluk && b.ust === a.ust) return b;
+          a = b;
+        }
+        return a;
+      };
       AYAR.mood = false; moodUygula(); await bek(320);
       AKTIF_AILE = 'AMBIENT'; modGezYaz('AMBIENT'); await bek(60);
-      const radyo = olc();
+      const radyo = await olcKarar();
       AYAR.mood = true; moodUygula(); await bek(340);
       AKTIF_MOD = 'NATURE'; modGezYaz('NATURE'); await bek(60);
-      const kipte = olc();
+      const kipte = await olcKarar();
       modGezYaz('');
       AYAR.mood = eskiMood; AKTIF_AILE = eskiA; AKTIF_MOD = eskiM;
       moodUygula(); await bek(320);

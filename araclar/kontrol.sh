@@ -11,31 +11,40 @@
 # Yani ucu de kirmizi yansa komut "basarili" diyordu. Bir emniyet
 # agi, delik oldugunu soylemedigi surece emniyet agi degildir.
 #
-# Bu betik bes seyi SIRAYLA yapiyor ve ilk kirmizida duruyor:
+# Bu betik alti seyi SIRAYLA yapiyor ve ilk kirmizida duruyor:
 #   1) Tip denetimi    -- en ucuz kontrol en basta (araclar/tip.sh)
-#   2) CSP damgasi     -- index.html degistiyse hash tazelenir
-#   3) CSP'li sunucu   -- duz http.server CSP gondermez, bayat bir
+#   2) Birim testleri  -- saf mantik, tarayicisiz, 0,06 sn
+#   3) CSP damgasi     -- index.html degistiyse hash tazelenir
+#   4) CSP'li sunucu   -- duz http.server CSP gondermez, bayat bir
 #                         hash'i yakalayamaz (bkz. araclar/sunucu.py);
 #                         ayrica cevap verenin BIZIM sunucu oldugu
 #                         dogrulanir (araclar/sunucu_dogrula.py)
-#   4) Dort takim      -- saglik, senaryo, motor, ariza
-#   5) Tek sonuc       -- yesilse cikis 0, degilse 1
+#   5) Dort takim      -- saglik, senaryo, motor, ariza
+#   6) Tek sonuc       -- yesilse cikis 0, degilse 1
 set -u
 KOK="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$KOK" || exit 1
 
-echo "── 1/5  Tip denetimi ────────────────────────────────────────"
+echo "── 1/6  Tip denetimi ────────────────────────────────────────"
 # Once bu: en ucuz kontrol en basta olmali. Yanlis bir ozellik adi
 # ya da olmayan bir fonksiyon cagrisi, dort takimi dakikalarca
 # calistirmadan burada yakalanir.
 bash araclar/tip.sh || { echo "Tip denetimi kirmizi."; exit 1; }
 
 echo
-echo "── 2/5  CSP damgasi ─────────────────────────────────────────"
+echo "── 2/6  Birim testleri (tarayicisiz) ────────────────────────"
+# Saf mantik: raf siniflandirmasi, renk karisimlari, ad temizligi.
+# Tarayici istemiyor, saniyenin altinda kosuyor. Buradan gecmeyen bir
+# degisiklik icin yirmi dakikalik tarayici takimini beklemenin anlami
+# yok -- hizli serit once.
+node test/birim.js || { echo "Birim testleri kirmizi."; exit 1; }
+
+echo
+echo "── 3/6  CSP damgasi ─────────────────────────────────────────"
 python3 araclar/csp.py || { echo "CSP damgasi basarisiz."; exit 1; }
 
 echo
-echo "── 3/5  Yerel sunucu (CSP'li) ───────────────────────────────"
+echo "── 4/6  Yerel sunucu (CSP'li) ───────────────────────────────"
 # NEDEN BU KADAR TITIZ: bir kez sunu yasadik -- 8765'i baska bir
 # betigin unutulmus sunucusu tutuyordu. `pkill -f araclar/sunucu.py`
 # onu goremedi, bizim sunucu porta baglanamadi, ama saglik kontrolu
@@ -73,7 +82,7 @@ if ! python3 araclar/sunucu_dogrula.py; then
 fi
 
 echo
-echo "── 4/5  Takimlar ────────────────────────────────────────────"
+echo "── 5/6  Takimlar ────────────────────────────────────────────"
 hata=0
 for takim in saglik senaryo motor ariza; do
   echo
@@ -88,7 +97,7 @@ for takim in saglik senaryo motor ariza; do
 done
 
 echo
-echo "── 5/5  Sonuc ───────────────────────────────────────────────"
+echo "── 6/6  Sonuc ───────────────────────────────────────────────"
 port_bosalt >/dev/null 2>&1
 if [ "$hata" -eq 0 ]; then
   echo "  TEMIZ — push edilebilir."
