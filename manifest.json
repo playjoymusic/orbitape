@@ -8,11 +8,18 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "portrait",
   "background_color": "#05080a",
   "theme_color": "#05080a",
-  "categories": ["music", "entertainment"],
+  "categories": [
+    "music",
+    "entertainment"
+  ],
   "icons": [
     {
       "src": "/icon-192.png?v=6",
@@ -67,6 +74,34 @@
       "type": "image/png",
       "form_factor": "wide",
       "label": "ORBITAPE on a wide screen"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live radio",
+      "short_name": "Radio",
+      "description": "Open on the live radio side",
+      "url": "/?radyo",
+      "icons": [
+        {
+          "src": "/icon-192.png?v=6",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Sound archive",
+      "short_name": "Archive",
+      "description": "Open on the ORBITAPE archive side",
+      "url": "/?arsiv",
+      "icons": [
+        {
+          "src": "/icon-192.png?v=6",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

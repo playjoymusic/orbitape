@@ -6602,6 +6602,22 @@
      acilistaki tekleme tam olarak o cevrilmeden geliyordu.
      Agir isler (havuz yukleme, yerlesim) burada YAPILMIYOR: onlar
      ayarlar bolumunun sonundaki moodUygula(true) cagrisinda. */
+  /* ── ?arsiv / ?radyo : HANGI DUNYADA ACILACAGI ────────────────
+     Sebep tek bir ozellik degil, bir ZINCIR. Android baslatici
+     kisayollari (manifest 'shortcuts') gercek bir adrese gitmek
+     zorunda. "ARCHIVE" kisayoluna basinca radyo tarafi aciliyorsa
+     o kisayol yalan soyler -- ve Play incelemesinde calismayan bir
+     kisayol, uygulamanin "sadece bir web sayfasi sarmali" oldugu
+     izlenimini GUCLENDIRIR, azaltmaz. Kisayol koyacaksak once
+     gidecegi yer olmali.
+     Kendi basina da dogru: paylasilan bir adres artik hangi
+     dunyayi actigini soyluyor.
+     KALICI TERCIH DEGIL: adresten gelen istek yalnizca BU acilis
+     icin. Kisi anahtari cevirirse zaten AYAR'a kendi yaziyor. */
+  try{
+    if(/[?&](arsiv|archive)(=|&|$)/.test(location.search))      AYAR.mood = true;
+    else if(/[?&](radyo|radio)(=|&|$)/.test(location.search))   AYAR.mood = false;
+  }catch(e){ _yut(e); }
   try{
     if(AYAR.mood){
       document.body.classList.add('mood');

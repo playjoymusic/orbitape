@@ -2801,6 +2801,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           && /hedefHiz = 1 - cek\*/.test(blok);
     }), 'wow derinligi + LFO yavaslamasi + pitch, ucu birden');
 
+  /* ── BASLATICI KISAYOLLARI GERCEKTEN BIR YERE GIDIYOR ────────
+     Manifest'e iki kisayol eklendi (Radio / Archive). Bunlar Play
+     tarafinda "bu sadece bir web sayfasi sarmali" suphesine karsi
+     duran gorunur bir yerli ozellik. Ama YALNIZCA CALISIYORSA:
+     bosa dusen bir kisayol o supheyi azaltmaz, buyutur.
+     O yuzden iki sey birlikte olculuyor: manifest'teki adresler ve
+     uygulamanin o adresleri GERCEKTEN anlamasi. Biri otekisiz
+     degistirilirse burasi kirmiziya doner. */
+  {
+    const ks = await pg.evaluate(async ()=>{
+      const m = await (await fetch('/manifest.json')).json();
+      const k = document.documentElement.innerHTML;
+      const yol = (m.shortcuts||[]).map(x=>String(x.url||''));
+      return {
+        sayi: (m.shortcuts||[]).length,
+        yol: yol.join(' '),
+        /* Her kisayolun adresi kapsam icinde ve bir sorgu tasiyor */
+        kapsamda: yol.every(u=>u.startsWith('/') && u.indexOf('?')>0),
+        /* Uygulama iki sorguyu da taniyor mu */
+        arsivTaniyor: /\[\?&\]\(arsiv\|archive\)/.test(k),
+        radyoTaniyor: /\[\?&\]\(radyo\|radio\)/.test(k),
+        /* Ad ve simge var mi (Android ikisini de istiyor) */
+        adVar: (m.shortcuts||[]).every(x=>x.name && x.short_name && (x.icons||[]).length)
+      };
+    });
+    K('Baslatici kisayollari gercek bir yere gidiyor',
+       ks.sayi === 2 && ks.kapsamda && ks.adVar
+       && ks.arsivTaniyor && ks.radyoTaniyor,
+       ks.sayi + ' kisayol: ' + ks.yol + ' — uygulama ikisini de taniyor');
+    /* Ve DAVRANIS: adres arsiv derse arsiv tarafi acilmali. Gercek
+       bir yeniden yukleme yapilmiyor (test oturumu dagilir); acilis
+       kararini veren kosul birebir taklit ediliyor. */
+    K('Adres hangi dunyanin acilacagini soyluyor', await pg.evaluate(()=>{
+        const karar = (arama)=>{
+          let mood = null;
+          if(/[?&](arsiv|archive)(=|&|$)/.test(arama)) mood = true;
+          else if(/[?&](radyo|radio)(=|&|$)/.test(arama)) mood = false;
+          return mood;
+        };
+        return karar('?arsiv') === true && karar('?archive') === true
+            && karar('?radyo') === false && karar('?radio') === false
+            && karar('') === null && karar('?tani') === null;
+      }), '?arsiv -> arsiv · ?radyo -> radyo · sorgusuz -> kaldigi yer');
+  }
+
   /* ── UZUN KAYITLAR ACILISTA INMIYOR ──────────────────────────
      earth_buyuk.json sikistirilmis 435 KB ve acilista dort ayri
      yerden cagriliyordu. Dosya zaten gec gelmeye tasarlanmis:
@@ -3414,9 +3459,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Senaryo: AG VAR ama tarayici otomatik calmaya izin vermiyor.
      El tam bu durum icin var. (Ag yokken el bilerek cikmiyor —
      dokununca baslayacak bir sey yok; o ayrica sinaniyor.) */
+  /* ── BU KONTROL ARTIK DIS DUNYAYA BAGLI DEGIL ────────────────
+     Once yalnizca play()'i reddediyordu ve gerisini gercek aga
+     birakiyordu. Ama uygulama bir istasyonu kuyruga almadan ONCE
+     onu deniyor (corsVarMi -> fetch). Kapali bir agda hicbir
+     istasyon gecmiyor, kuyruk bos kaliyor, hic calma denemesi
+     olmuyor -- ve el cikmadigi icin test dusuyor. Yani test
+     uygulamayi degil INTERNETI olcuyordu; ayni kod ayni makinede
+     bir kosuda geciyor otekinde dusuyordu (olculdu).
+     Simdi istasyon denemesi de taklit ediliyor: fetch, bir istasyon
+     adresine sorulunca "var" diyor. Boylece kuyruk doluyor, calma
+     deneniyor, play() reddediliyor ve ELIN cikip cikmadigi
+     olculuyor -- olculmek istenen tek sey buydu. */
   const { sayfa: pg2, kapat: pg2Kapat } = await sayfaAc(c, {
     bekle: 3200,
-    once: ()=>{ HTMLMediaElement.prototype.play = function(){ return Promise.reject(new Error('NotAllowed')); }; } });
+    once: ()=>{
+      HTMLMediaElement.prototype.play = function(){ return Promise.reject(new Error('NotAllowed')); };
+      const gercek = window.fetch;
+      window.fetch = function(u, o){
+        const a = String(u && u.url ? u.url : u || '');
+        /* Kendi dosyalarimiz gercek; disaridaki her sey "ulasilabilir". */
+        if(/^https?:\/\//.test(a) && a.indexOf(location.origin) !== 0){
+          return Promise.resolve(new Response(new Uint8Array([0,0]), {status:206}));
+        }
+        return gercek.apply(this, arguments);
+      };
+    } });
   const el = await pg2.evaluate(()=>{const k=document.getElementById('karsilama');
     return {acik:k.classList.contains('on'), gor:getComputedStyle(k).display, op:+getComputedStyle(k).opacity};});
   K('Ses yoksa el cikiyor (2 sn)', el.acik && el.op>0.5, 'on='+el.acik+' opacity='+el.op);
