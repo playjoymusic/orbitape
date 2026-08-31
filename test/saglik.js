@@ -1521,7 +1521,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* MODLAR = arsiv tarafinin kategorileri (radyo aileleri ayri
      tabloda, AILELER). Sayisi INDIE & LOFI'den etkilenmiyor: o bir
      RADYO rafiydi. */
-  K('Kategoriler tanimli',    md.n===12, md.ad);
+  /* 12 -> 11: SPACE kategorisi SOUNDSCAPES'e katildi. */
+  K('Kategoriler tanimli',    md.n===11, md.ad);
   /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
@@ -1552,7 +1553,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        acilista secili olan.
        Kullanicinin istegi: "OTHER en kucuk halka olacakti",
        "ilk basta orbitape aciliyor, hepsinin oldugu." */
-    K('Arsiv kanalinda halkalar 8 raf', ars.n===8 && /^OTHERS/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
+    /* SEKIZ -> YEDI: SPACE rafi SOUNDSCAPES'e katildi (kullanici
+       istegi, "tutarli degil zaten"). Ayrica RECORDS ile HUMANS yer
+       degistirdi: RECORDS artik en buyuk 2. halka. Iki uc SABIT
+       kaliyor ve test onlari ayrica bekliyor: OTHERS en icte,
+       ORBITAPE en dista. */
+    K('Arsiv kanalinda halkalar 7 raf', ars.n===7 && /^OTHERS/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
+    K('Arsivde RECORDS en buyuk 2. halka',
+       /HUMANS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
+    K('SPACE rafi kalmadi', !/\bSPACE\b/.test(ars.ad), ars.ad);
+    /* ── RAF KARARI SERBEST BASLIGA BAKMIYOR ─────────────────────
+       Kullanicinin bildirimi: "sanki olmayan seyler cikiyor
+       bazilarinda." Dogruydu. arsivRaf uc metni birden tariyordu:
+       etiket + BASLIK + adres. Dosyanin kendi kurali ise (_mt'nin
+       ustunde yazili) "baslik: serbest metin, ASLA" diyor.
+       Olculen: 16.424 kayitta 270 kayit yalnizca SARKININ ADINDAKI
+       bir kelime yuzunden yanlis raftaydi.
+       Bu test uydurma degil GERCEK ORNEKLERLE olcuyor -- ucu de
+       katalogdan, ucu de o 270'in icinden. Kural gevserse
+       (baslik yeniden sorulursa) ucu birden kirmiziya doner. */
+    K('Raf karari sarkinin adina bakmiyor', await pg.evaluate(()=>{
+        const dene = [
+          /* 78'lik caz plagi: adinda "Apollo" geciyor diye
+             SOUNDSCAPES'e dusuyordu. */
+          /* UC KAYIT DA KATALOGDAN BIREBIR KOPYA -- adres dahil.
+             Uydurma adres yazmak testi yalanci yapardi: kaynak
+             adresine baslik gecerse kelime oradan yakalanir ve test
+             yanlis sebeple duser (bir kez oldu). */
+          { o:{ etiket:'jazz · vinyl · 78-rpm · 78rpm',
+                ad:"Jumpin' At Apollo",
+                mp3:'https://archive.org/download/JV-25463-1946-QmY13QXN9yZMT7TYEhnpF7N5ne6SGKUfZcbXCadqUfPRff.mp3/APOR1054.mp3' },
+            olmali:'RECORDS' },
+          /* LibriVox siiri: adinda "Wind" geciyor diye NATURE'daydi. */
+          { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',
+                ad:'25 - May Wind',
+                mp3:'https://archive.org/download/love_songs_2008_librivox/lovesongs_25_teasdale_128kb.mp3' },
+            olmali:'HUMANS' },
+          /* radio-aporee alan kaydi: adinda "train" geciyor diye
+             MACHINES'teydi. */
+          { o:{ etiket:'radio-aporee-maps field recording phonography soundscape sound art soundmap radio ephemeral listening radio aporee',
+                ad:'kautenbach, station, train arrival',
+                mp3:'https://archive.org/download/aporee_11490_13536/KautenbachBahnhofZugeinfahrt01.mp3' },
+            olmali:'SOUNDSCAPES' }
+        ];
+        return dene.every(x => arsivRaf(x.o) === x.olmali);
+      }), 'etiket ve kaynak soruluyor, baslik sorulmuyor');
     /* EN DIS HALKA SABIT: yer iceriden aciliyor. Bu bozulursa en dis
        halka ekran kenarindan tasar -- bir kere olmustu. */
     /* GEOMETRI TERSINE CEVRILDI: ic yaricap SABIT, aralik halka
@@ -1869,21 +1914,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     AKTIF_MOD=null; modAdiYaz(); return r;
   });
   const iki = await pg.evaluate(()=>{
-    AKTIF_MOD=null; modAdiYaz(); modAdiTut('SPACE');
+    AKTIF_MOD=null; modAdiYaz(); modAdiTut('SOUNDSCAPES');
     const g=document.getElementById('modGez'), k=document.getElementById('modAd');
     /* GECICI AD ARTIK CIZIM: textContent bos, punto 0. Ne yazdigini
        data-ad soyluyor, olcuyu de cizimin kendi kutusu. */
     const a={gezinirkenBuyuk:g.getAttribute('data-ad')||g.textContent,
              gezinirkenKucuk:k.textContent,
              buyukPunto:Math.round(g.getBoundingClientRect().height)};
-    modAdiBirak(); AKTIF_MOD='SPACE'; modAdiGoster();
+    modAdiBirak(); AKTIF_MOD='SOUNDSCAPES'; modAdiGoster();
     a.secincBuyuk=(g.getAttribute('data-ad')||g.textContent); a.secincKucuk=k.textContent;
     AKTIF_MOD=null; modAdiYaz(); modGezYaz(''); return a;
   });
   /* KUCUK YAZI ARTIK HIC BOSALMIYOR. Kullanici nerede oldugunu
      kaybediyordu; artik gezinen yoksa bulundugu yerin adi yaziyor. */
   K('Gezinirken buyuk yazi cikiyor',
-    iki.gezinirkenBuyuk==='SPACE' && iki.buyukPunto>=20, 'buyuk '+iki.buyukPunto+'px boyunda');
+    iki.gezinirkenBuyuk==='SOUNDSCAPES' && iki.buyukPunto>=20, 'buyuk '+iki.buyukPunto+'px boyunda');
   K('Kucuk yazi hic bosalmiyor',
     iki.gezinirkenKucuk!=='' && iki.secincKucuk!=='', 
     'gezinirken "'+iki.gezinirkenKucuk+'" | secince "'+iki.secincKucuk+'"');
@@ -4462,8 +4507,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     /* 8. halkanin adi FUNK & RNB -> DISCO FUNK olarak degisti
        (kullanici istegi). Istasyonlar ayni, yalnizca rafin adi. */
-    const SIRA = ['AMBIENT','JAZZ','ORCHESTRAL','LOUNGE & LOFI',
-                  'WORLD & ROOTS','ROCK & INDIE','DISCO FUNK',
+    /* SIRA GUNCELLENDI: kullanici "3. en buyuk halka JAZZ olsun,
+       sonra LOUNGE, sonrasi kalanlar ayni" dedi. Distan ice:
+       RADIOTAPE · ELECTRONIC · JAZZ · LOUNGE & LOFI, sonra
+       kalanlar KENDI aralarindaki eski sirayla. Dizi icten disa
+       oldugu icin bunun tersi. */
+    const SIRA = ['AMBIENT','ORCHESTRAL','WORLD & ROOTS','ROCK & INDIE',
+                  'DISCO FUNK','LOUNGE & LOFI','JAZZ',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),

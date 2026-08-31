@@ -434,16 +434,20 @@ AILELER = OrderedDict([
     # birebir ayni. Degistirirken IKISINI BIRDEN degistir; saglik
     # testi "Hasat araci uygulamayla ayni raflari biliyor" bu ikisini
     # karsilastiriyor.
+    # SIRA DEGISTI (kullanicinin istegi): distan ice RADIOTAPE ·
+    # ELECTRONIC · JAZZ · LOUNGE & LOFI, sonra kalanlar kendi
+    # aralarindaki sirayla. Renkler ADLA BIRLIKTE tasindi: JAZZ hala
+    # gul, LOUNGE hala kum.
     ("AMBIENT",       {"renk": "#5FBF7A"}),
-    ("JAZZ",          {"renk": "#CC7CA4"}),
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),
-    ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # eski adi LOUNGE
     # MOR LOFI'DEN GELDI: INDIE & LOFI rafi bosalinca kaldirildi ve
     # rengi burada yasiyor. Eski gri (#9A96AC) halkada oteki
     # grilerden ayirt edilmiyordu.
     ("WORLD & ROOTS", {"renk": "#B07CE8"}),
     ("ROCK & INDIE",  {"renk": "#F2683C"}),   # eski adi ROCK & COUNTRY
     ("DISCO FUNK",    {"renk": "#BEB6A4"}),   # eski adi FUNK & RNB
+    ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # eski adi LOUNGE
+    ("JAZZ",          {"renk": "#CC7CA4"}),
     ("ELECTRONIC",    {"renk": "#8496FF"}),
     ("RADIOTAPE",     {"renk": "#35E0D8"}),   # en dista, turkuaz
 ])

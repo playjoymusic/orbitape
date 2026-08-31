@@ -2993,14 +2993,26 @@
        oldugundan daha doygun cikiyor.
        OTHERS bilerek en notr olan: o "geri kalan" rafi, bir rengi
        yok. */
+    /* ── ARSIVIN KURSUN TONU ──────────────────────────────────
+       Bu renk bir RAFIN degil, ARSIV TARAFININ rengi: sag ustteki
+       marka yazisinin SOL duragi her rafta bundan turuyor
+       (bkz. markaRengi). Bir tur SPACE rafinin tonuydu ve kod da
+       oradan okuyordu -- MOD_TEMA.SPACE.ana. SPACE rafi
+       SOUNDSCAPES'e katilinca o kayit silindi ve markanin arsiv
+       dali SESSIZCE devre disi kaldi (saglik testi yakaladi:
+       "marka solu koyu sagi raftan" kirmiziya dondu).
+       Ders: bir rafin tablosundan raf disi bir sey okumak, o raf
+       silindiginde alakasiz bir yeri bozuyor. Renk artik kendi
+       adiyla duruyor. */
+    const ARSIV_KURSUN = '147,155,190';
+    try{ window.ARSIV_KURSUN = ARSIV_KURSUN; }catch(e){ _yut(e); }
     const RETRO = {
       OTHERS:      ['187,182,170','224,222,214'],   // sicak gri: geri kalan
       MACHINES:    ['172,191,136','216,221,207'],   // zeytin
       NATURE:      ['142,178,155','204,215,208'],   // sonuk yesil
-      SOUNDSCAPES: ['126,184,190','201,216,217'],   // teal
-      SPACE:       ['147,155,190','214,216,224'],   // kursun mavi
-      RECORDS:     ['189,137,107','211,196,187'],   // bakir: plak
-      HUMANS:      ['199,142,156','226,213,216']    // tozlu gul
+      SOUNDSCAPES: ['126,184,190','201,216,217'],   // teal (SPACE de burada)
+      HUMANS:      ['199,142,156','226,213,216'],   // tozlu gul
+      RECORDS:     ['189,137,107','211,196,187']    // bakir: plak
     };
     for(const ad in RETRO){
       const [ana, ik] = RETRO[ad];
@@ -3309,10 +3321,14 @@
          Radyo tarafi degismedi; orada marka aileden geliyor. */
       let p = aktifTema();
       let _arsivDokunus = '';
-      if(typeof mod !== 'undefined' && mod === 'lib' && MOD_TEMA.SPACE){
+      /* ARSIVIN KOYU SOL DURAGI: kursun. Bir tur MOD_TEMA.SPACE'ten
+         okunuyordu; SPACE rafi kalkinca bu dal sessizce olmustu.
+         Artik kendi sabitinden geliyor (bkz. ARSIV_KURSUN). */
+      const _kursun = (typeof window!=='undefined' && window.ARSIV_KURSUN) || '147,155,190';
+      if(typeof mod !== 'undefined' && mod === 'lib'){
         const g = (typeof gorunenMod==='function') ? gorunenMod() : AKTIF_MOD;
-        const raf = (g && MOD_TEMA[g] && MOD_TEMA[g].ana) || MOD_TEMA.SPACE.ana;
-        p = { ana: _koyult(MOD_TEMA.SPACE.ana, 0.58), ikinci: _retroTon(raf, 0.42) };
+        const raf = (g && MOD_TEMA[g] && MOD_TEMA[g].ana) || _kursun;
+        p = { ana: _koyult(_kursun, 0.58), ikinci: _retroTon(raf, 0.42) };
         /* ── ARSIVDE DE MARKA DOKUNUSU ────────────────────────────
            Bu taraf uzun sure dokunulmamisti ("orbitape icin baska
            oldugundan ona dokunma") ve sonuc renksizdi: koyu kursun
@@ -5101,8 +5117,16 @@
          NATURE 3.984 · MACHINES 523 · OTHERS kalan */
     { ad:'HUMANS',     yer:/oldtimeradio|old ?time ?radio|\botr\b|radio ?drama|radioprogram|radiostationarchives|airchecks|librivox|audiobook|audio_?bookspoetry|poetry|spoken|podcast|\btalk\b|interview|speech|lecture|sermon|monolog|dialog|storytell|oral history|narrat|documentar|\bnews\b|briefing|commentary|conference|aapb|soap opera|comedy|\bdrama\b|shortwave|numbers ?station|irdial|conet|telsiz|radio ?signals?/i, radyo:'' },
     { ad:'RECORDS',      yer:/78 ?rpm|great78|cylinder|edison|shellac|\bvinyl\b|^lp_|netlabel|freemusicarchive|jamendo|folklore|\bfolk\b|\bsaz\b|baglama|celtic|flamenco|tango|\bsalsa\b|klezmer|\bjazz\b|\bblues\b|\bopera\b|orchestra|symphon|sonata|concerto|album|\bep\b|remix|compilation|\bsong\b|\bmusic\b|guitar|piano|quartet|techno|\bidm\b|glitch|musique concrete|electroacoustic|\bdrone\b|psych.?folk|improvisation/i, radyo:'' },
-    { ad:'SPACE',      yer:/nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|satellite|space ?sounds?|\biss\b|spacewalk|expedition ?\d|telemetry|soyuz|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit/i, radyo:'' },
-    { ad:'SOUNDSCAPES', yer:/soundscape|bioacoustic|phonograph|field ?recordings?|environmental ?sounds?|natural ?sounds?|hydrophone|room ?tone|ambience|ambiance|atmosphere/i, radyo:'' },
+    /* ── SPACE BURAYA KATILDI ─────────────────────────────────
+       Ayri bir SPACE rafi vardi (371 kayit). Kullanicinin sozu:
+       "space ile soundscapes'i birlestirelim, space'tekileri oraya
+       aktar, space'i sil -- tutarli degil zaten."
+       Tutarsizligin sebebi de belliydi: NASA telemetrisi bir alan
+       kaydidir, ama netlabel'lerin "space ambient" etiketi muzik.
+       Ayni raf iki ayri seyi tasiyordu. Birlestirince en azindan
+       TEK bir soru soruluyor: bu bir ortam kaydi mi.
+       SPACE'in butun terimleri asagida, oldugu gibi. */
+    { ad:'SOUNDSCAPES', yer:/soundscape|bioacoustic|phonograph|field ?recordings?|environmental ?sounds?|natural ?sounds?|hydrophone|room ?tone|ambience|ambiance|atmosphere|nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|satellite|space ?sounds?|\biss\b|spacewalk|expedition ?\d|telemetry|soyuz|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit/i, radyo:'' },
     { ad:'NATURE',     yer:/\bnature\b|\bbirds?\b|bird ?song|forest|jungle|wildlife|animal|insects?|crickets?|frogs?|meadow|garden|mountain|desert|ocean|\bsea\b|river|stream|creek|waterfall|underwater|\brain\b|thunder|storm|\bwind\b|\bsnow\b|\bice\b|city ?sounds?|urban|traffic|crowd|market|street/i, radyo:'' },
     { ad:'MACHINES',    yer:/machine ?sounds?|\bengine\b|factory|\btrain\b|subway|airport|turbine|generator|motor\b|industrial ?sounds?|war ?recording/i, radyo:'' },
     { ad:'OTHERS',    yer:/.^/, radyo:'' }          // kalan: asagidaki arsivRaf() dolduruyor
@@ -5120,7 +5144,14 @@
      ORBITAPE EN DISTA: icinde arsivin TAMAMI var, yani en buyugu.
      Acilista secili olan da odur ("ilk basta orbitape aciliyor,
      hepsinin oldugu"). */
-  var ARSIV_ADLAR = ['OTHERS','MACHINES','NATURE','SOUNDSCAPES','SPACE','RECORDS','HUMANS','ORBITAPE'];
+  /* ── HALKA SIRASI: ICTEN DISA ─────────────────────────────────
+     SPACE CIKTI (SOUNDSCAPES'e katildi, bkz. MODLAR).
+     RECORDS ile HUMANS YER DEGISTIRDI: kullanicinin istegi "en
+     buyuk 2. halka RECORDS olsun, sonrasi ayni sira." En dista
+     ORBITAPE (arsivin tamami) duruyor; onun hemen icinde artik
+     RECORDS -- arsivin en kalabalik rafi (5.3 bin kayit) en genis
+     halkalardan birinde. */
+  var ARSIV_ADLAR = ['OTHERS','MACHINES','NATURE','SOUNDSCAPES','HUMANS','RECORDS','ORBITAPE'];
   /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
      uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
      ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
@@ -5129,10 +5160,31 @@
      genis kaliplar ve once sorulurlarsa dar raflari yutuyorlar --
      olculdu, MACHINES 523 kayittan 7'ye dusmustu. Once DAR ve kesin
      raflar soruluyor, genis olanlar en sonda. */
-  var ARSIV_SORGU = ['MACHINES','SPACE','SOUNDSCAPES','NATURE','HUMANS','RECORDS'];
+  var ARSIV_SORGU = ['MACHINES','SOUNDSCAPES','NATURE','HUMANS','RECORDS'];
   function arsivRaf(o){
-    const t = (String((o&&o.etiket)||'') + ' ' + String((o&&o.ad)||'') + ' ' +
-               String((o&&o.mp3)||'')).replace(/[_\-.\/]+/g,' ');
+    /* ── SERBEST BASLIK ARTIK SORULMUYOR ──────────────────────────
+       Burasi uc metni birden tariyordu: etiket + BASLIK + adres.
+       Oysa dosyanin kendi kurali bunun tersini soyluyor (bkz. _mt):
+       "Etiket: koleksiyondan gelir, guvenilir. Baslik: serbest
+       metin, ASLA."
+       Kural yaziliydi ama burada uygulanmiyordu ve sonucu
+       kullanici gordu: "sanki olmayan seyler cikiyor bazilarinda."
+       Olculdu (16.424 kayit): 270 kayit yanlis raftaydi ve hepsi
+       ayni sebepten -- SARKININ ADINDAKI bir kelime.
+         "Jumpin' At Apollo"  (78rpm caz plagi)  -> SOUNDSCAPES'ti
+         "25 - May Wind"      (LibriVox siiri)   -> NATURE'di
+         "kautenbach, station, train arrival"    -> MACHINES'ti
+                              (radio-aporee alan kaydi)
+       Artik yalnizca ETIKET (koleksiyonun kendi sozu) ve KAYNAK
+       (archive.org kimligi + dosya adi) soruluyor. Ikisi de insan
+       eliyle degil koleksiyon tarafindan yazilmis.
+       BEDELI OLCULDU VE KABUL EDILDI: etiketi zayif 97 kayit
+       OTHERS'a dustu (410 -> 507). Yanlis rafta durmaktansa "geri
+       kalan"da durmak dogru -- OTHERS zaten onun icin var.
+       DENENIP BIRAKILAN: once muzik sorusunu sormak (RECORDS 5.329
+       -> 7.631). Ses raflarini %40 bosaltiyordu; netlabel'de yayin
+       yapan gercek alan kayitlarini da muzik sayiyordu. */
+    const t = (_mt(o) + ' ' + _mk(o)).replace(/[_\-.\/]+/g,' ');
     for(const ad of ARSIV_SORGU){
       const m = modBul(ad);
       if(m && m.yer && m.yer.test(t)) return ad;
@@ -8475,14 +8527,29 @@
        Lofi'nin MORU bos yere kaybolmasin diye WORLD & ROOTS'a
        gecti; oradaki gri (154,150,172) zaten en zayif renkti,
        halkada oteki grilerden ayirt edilmiyordu. */
-    { ad:'AMBIENT',        renk:'95,191,122'  },   // 1. halka, EN ICTE
-    { ad:'JAZZ',           renk:'204,124,164' },   // 2.
-    { ad:'ORCHESTRAL',     renk:'240,172,122' },   // 3.
-    { ad:'LOUNGE & LOFI',  renk:'216,203,160' },   // 4. (eski adi LOUNGE)
-    { ad:'WORLD & ROOTS',  renk:'176,124,232' },   // 5. lofi'den gelen mor
-    { ad:'ROCK & INDIE',   renk:'242,104,60'  },   // 6. (eski adi ROCK & COUNTRY)
-    { ad:'DISCO FUNK',     renk:'190,182,164' },   // 7. (eski adi FUNK & RNB)
-    { ad:'ELECTRONIC',     renk:'132,150,255' },   // 8.
+    /* ── SIRA DEGISTI: JAZZ 3., LOUNGE 4. EN BUYUK HALKA ────────
+       Kullanicinin sozu: "radyo kisminda da 3. en buyuk halka JAZZ
+       olsun, sonra LOUNGE, sonrasi kalanlar ayni."
+       Disaridan iceri sayarak: RADIOTAPE (1.) · ELECTRONIC (2.) ·
+       JAZZ (3.) · LOUNGE & LOFI (4.) · sonra kalanlar KENDI
+       aralarindaki sirayla: DISCO FUNK · ROCK & INDIE ·
+       WORLD & ROOTS · ORCHESTRAL · AMBIENT.
+       RENKLER ADLA BIRLIKTE TASINDI: JAZZ hala gul, LOUNGE hala
+       kum. Dosyada bir tur "renk sirasi halkanin malidir" diye
+       yazilmisti (bkz. asagidaki not) -- o kural tek bir takas
+       icindi ve orada iki komsu halka soz konusuydu. Burada dort
+       ad birden yer degistiriyor; renkleri yerinde birakmak JAZZ'i
+       griye, ORCHESTRAL'i gule cevirirdi, yani turlerin kimligi
+       bozulurdu. Ton yuruyusu zaten sira degisince bozuluyor;
+       bozulacaksa kimlik degil yuruyus bozulsun. */
+    { ad:'AMBIENT',        renk:'95,191,122'  },   // ICTEN 1. (en kucuk halka)
+    { ad:'ORCHESTRAL',     renk:'240,172,122' },   // 2.
+    { ad:'WORLD & ROOTS',  renk:'176,124,232' },   // 3. lofi'den gelen mor
+    { ad:'ROCK & INDIE',   renk:'242,104,60'  },   // 4. (eski adi ROCK & COUNTRY)
+    { ad:'DISCO FUNK',     renk:'190,182,164' },   // 5. (eski adi FUNK & RNB)
+    { ad:'LOUNGE & LOFI',  renk:'216,203,160' },   // 6. -> DISTAN 4.
+    { ad:'JAZZ',           renk:'204,124,164' },   // 7. -> DISTAN 3.
+    { ad:'ELECTRONIC',     renk:'132,150,255' },   // 8. -> DISTAN 2.
     /* EN DISTAKI HALKA: 'RADIO'.
        Adi once 'MIXTAPE'ti ve bu ad uygulamada IKI ayri seyi birden
        anlatiyordu: burasi (turu belli olmayan istasyonlarin rafi) ve
