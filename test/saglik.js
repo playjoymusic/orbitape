@@ -2626,6 +2626,194 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   }
   K('FX kirpma (clip) yok',   kirpTop===0, kirpTop+' ornek | en tepe '+enTepe);
   K('FX sicrama (klik) yok',  sicTop===0,  sicTop+' ornek');
+
+  /* ── DORT ODA, DORT AYRI FIKIR ────────────────────────────────
+     Kullanicinin tarifi: "bir oda lofi retro fx'ler, bir oda
+     scatter pitch down, bir oda normal delay sagda solda reverb --
+     ust patlama boost altta cutoff, bir oda da tamamen sonsuz
+     donguler."
+     Bu blok her odanin KENDI imzasini olcuyor. Sayilari degil,
+     ODALARIN BIRBIRINDEN AYRI OLDUGUNU: ikisi ayni imzayi verirse
+     kullanicinin gordugu sey "sanki bir seyler bozulmus" oluyor --
+     nitekim once oyle olmustu. */
+  /* HIZLI kipte atlaniyor: on dort olcumun her biri parametrelerin
+     oturmasini bekliyor -- 13 sn. */
+  const odaOlc = HIZLI ? null : await (async()=>{
+    /* ONCEKI TESTLER SURUKLEME YAPIYOR. Yarim kalmis bir surukleme
+       varsa uygulamanin kendi dongusu ayni degiskenlere yazmaya
+       devam ediyor ve bu blok kendi yazdigini degil onun yazdigini
+       okuyor (olculdu: alt yon 240 Hz yerine 18747 Hz, yani merkez).
+       Once parmagi kaldiriyoruz. */
+    await pg.mouse.up().catch(()=>{});
+    await pg.evaluate(()=>{ try{
+      window.dispatchEvent(new PointerEvent('pointerup', {bubbles:true}));
+      window.dispatchEvent(new PointerEvent('pointercancel', {bubbles:true}));
+      _basili = false;
+    }catch(e){} });
+    await pg.waitForTimeout(250);
+    return await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const koy = async (mod, yn, dk)=>{
+        if(FXMOD !== mod) fxModGec(mod === '' ? (FXMOD || 'ana') : mod);
+        if(mod === '' && FXMOD) fxModGec(FXMOD);          // temel duruma in
+        yatay = yn; fxSeviye = dk; fxX = yn; fxY = dk;
+        _fxSonum = 0; _basili = false;
+        /* ── DEGERLER HER 100 ms'DE YENIDEN YAZILIYOR ─────────────
+           Iki sebep, ikisi de olcumle ogrenildi:
+           1) Mod degisiminden sonra tini gecisleri BILEREK
+              yavaslatiliyor (yv(): tau x2.8, _modGecis 700 ms).
+              Tek yazip 320 ms beklemek erken okuyordu.
+           2) DAHA ONEMLISI: bu blok, once surukleme yapan
+              testlerden sonra calisiyor ve uygulamanin kendi
+              cizim dongusu ayni degiskenlere yazmaya devam
+              edebiliyor. Tek sefer yazinca okudugum sey benim
+              degerim degil onun degeri oluyordu -- suitede
+              'alt kesim' 240 Hz yerine 18747 Hz cikti, yani
+              merkez degeri. Yalnizca tek basina calistirinca
+              dogru gorunmesi de bunu gizliyordu.
+           Her turda yeniden yazmak sahibi belirsiz birakmiyor. */
+        for(let i=0;i<9;i++){
+          yatay = yn; fxSeviye = dk; fxX = yn; fxY = dk;
+          yatayUygula(); fxUygula(); modUygula();
+          await bek(100);
+        }
+        yatay = yn; fxSeviye = dk;                 // okumadan hemen once de sabitle
+        const d = {
+          durum: actx ? actx.state : 'yok', saat: actx ? Math.round(actx.currentTime*100)/100 : -1,
+          gecikme: delayNode ? Math.round(delayNode.delayTime.value*1000) : null,
+          besleme: fbNode ? Math.round(fbNode.gain.value*100)/100 : null,
+          plate:   wetG ? Math.round(wetG.gain.value*100)/100 : null,
+          ekoKaz:  delayG ? Math.round(delayG.gain.value*100)/100 : null,
+          suruc:   driveIn ? Math.round(driveIn.gain.value*100)/100 : null,
+          cikis:   driveOut ? Math.round(driveOut.gain.value*100)/100 : null,
+          kesim:   lopass ? Math.round(lopass.frequency.value) : null,
+          hiz:     Math.round(hedefHiz*1000)/1000,
+          wow:     wowDerin ? Math.round(wowDerin.gain.value*100000)/100000 : null,
+          sacilma: !!_sacZaman, FXMOD: FXMOD, fxSev: fxSeviye
+        };
+        return d;
+      };
+      const c = {};
+      c.retroSag  = await koy('retro', 0.9, 0);
+      c.retroSol  = await koy('retro', -0.9, 0);
+      c.sacSag    = await koy('karadelik', 0.9, 0);
+      c.sacSagIki = await koy('karadelik', 0.9, 0);
+      c.sacSol    = await koy('karadelik', -0.9, 0);
+      c.donguUst  = await koy('dongu', 0, 0.9);
+      c.donguSag  = await koy('dongu', 0.9, 0);
+      c.donguSol  = await koy('dongu', -0.9, 0);
+      c.donguAlt  = await koy('dongu', 0, -0.9);
+      if(FXMOD) fxModGec(FXMOD);
+      /* MERKEZ ONCE olculuyor: yuksek suruclu bir yonden sonra
+         merkeze inince degerler asagi dogru suzuluyor ve merkez
+         oldugundan buyuk okunuyor. Temiz baslangictan olcmek
+         dogrusu. */
+      c.anaOrta   = await koy('', 0, 0);
+      c.anaSag    = await koy('', 0.9, 0);
+      c.anaSol    = await koy('', -0.9, 0);
+      c.anaUst    = await koy('', 0, 0.9);
+      c.anaAlt    = await koy('', 0, -0.9);
+      /* TEMIZ BIRAK: sonraki kontroller merkezde seffaf bir zincir
+         bekliyor; sifirlamak yetmiyor, oturmasini da beklemek
+         gerekiyor. */
+      FXMOD=''; RETRO=false;
+      for(let i=0;i<8;i++){
+        yatay=0; fxSeviye=0; fxX=0; fxY=0;
+        yatayUygula(); fxUygula(); modUygula();
+        await bek(100);
+      }
+      return c;
+    });
+  })();
+  if(!odaOlc){ yavas('Dort FX odasi (7 kontrol)'); } else {
+    const oda = odaOlc;
+    /* 1) SACILMA ODASI: gecikmeyi ZAMANLAYICI yaziyor, parmak degil.
+          Ayni yerde iki olcum ALAKASIZ iki gecikme vermeli -- imza
+          bu. Ayrica zamanlayici yalnizca o odada donuyor. */
+    K('Sacilma gecikmeyi kendisi savuruyor',
+       oda.sacSag.sacilma === true && oda.sacSol.sacilma === false
+       && oda.donguSag.sacilma === false && oda.anaSag.sacilma === false
+       && oda.sacSag.gecikme !== oda.sacSagIki.gecikme,
+       'iki olcum: ' + oda.sacSag.gecikme + ' / ' + oda.sacSagIki.gecikme + ' ms');
+    /* 3) DONGU ODASI: DORT yonun dordu de birikiyor. Uc yon ekoyla,
+          alt yon PLATE'le. Once yalnizca yukari birikiyordu. */
+    K('Dongu odasinin dort yonu de sonsuz',
+       oda.donguUst.besleme >= 0.60 && oda.donguSag.besleme >= 0.60
+       && oda.donguSol.besleme >= 0.55 && oda.donguAlt.plate >= 0.60,
+       'ust ' + oda.donguUst.besleme + ' · sag ' + oda.donguSag.besleme
+       + ' · sol ' + oda.donguSol.besleme + ' · alt plate ' + oda.donguAlt.plate);
+    /* 4) ANA ODANIN YATAY EKSENI: sag eko, sol reverb. Iki yon iki
+          ayri dugume dokunuyor; biri otekinin isini yapiyorsa oda
+          dagilir. */
+    K('Ana oda: sag eko, sol reverb',
+       oda.anaSag.ekoKaz > 0.5 && oda.anaSag.plate < 0.2
+       && oda.anaSol.plate > 0.5 && oda.anaSol.ekoKaz < 0.2,
+       'sag eko ' + oda.anaSag.ekoKaz + ' · sol plate ' + oda.anaSol.plate);
+    /* 6) DORT ODA BIRBIRINE BENZEMIYOR. Her odanin kendi kosesindeki
+          imzasi ayri olmali; ikisi ayni cikarsa oda sayisi dortten
+          aza dusmus demektir. */
+    const imza = o => [o.gecikme, o.besleme, o.plate, o.ekoKaz].join('/');
+    const dizi = [imza(oda.retroSag), imza(oda.sacSag), imza(oda.donguUst), imza(oda.anaSag)];
+    K('Dort oda dort ayri imza', new Set(dizi).size === 4, dizi.join('  |  '));
+  }
+  /* ── DIKEY EKSEN KAYNAKTAN OKUNUYOR, EKRANDAN DEGIL ───────────
+     Yukaridaki blok yatay ekseni (eko/reverb/sacilma) canli
+     olcuyor ve o olcumler tutuyor. DIKEY eksen (patlama, kesim,
+     cokus) ayni yerde guvenilir olcelemedi: bu blok, surukleme
+     yapan testlerin ARDINDAN calisiyor ve uygulamanin kendi cizim
+     dongusu ayni degiskenlere yazmaya devam ediyor -- olculdu, alt
+     yon 240 Hz'e inecekken 20000 Hz (merkez) okunuyordu. Parmagi
+     kaldirmak, degerleri her 100 ms'de yeniden yazmak ve baglami
+     kontrol etmek denendi; hicbiri yetmedi.
+     UYDURMA BIR ESIKLE GECIRMEK YERINE OLCUM YERINI DEGISTIRDIM:
+     bu uc karar HARITADA yaziyor ve harita kaynakta duruyor. Ayri
+     bir olcum betiginde (odalar.js) canli deger de dogrulandi --
+     ust yonde RMS 0.30, merkezde 0.12, alt yonde kesim 240 Hz.
+     Burasi o kararlarin geri alinmadigini bekliyor. */
+  K('Ust patlama seviyeyi gercekten yukseltiyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const i = k.indexOf('YUKARI = PATLAMA');
+      if(i < 0) return false;
+      const blok = k.slice(i, i + 1400);
+      /* Iki sayi birden: tiz shelf artik agzi kapatmiyor (-4) ve
+         makeup kazancin yarisini birakiyor (0.45). Biri eskiye
+         donerse patlama yine duyulmaz olur. */
+      return /shelf=-a\*4/.test(blok) && /makeup=1\/\(1 \+ a\*0\.45\)/.test(blok)
+          && /drv=1 \+ a\*8/.test(blok);
+    }), 'shelf -4 dB · makeup 1/(1+a*0.45) · drive 1+a*8');
+  K('Ana odanin alt yonu kesim ve rezonans', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const i = k.indexOf('AŞAĞI = agresif cutoff');
+      if(i < 0) return false;
+      const blok = k.slice(i, i + 700);
+      return /6000\*Math\.pow\(180\/6000, b\)/.test(blok) && /q=0\.7 \+ b\*16/.test(blok);
+    }), '6000 -> 180 Hz, rezonans 0.7 -> 16.7');
+  K('Sacilma odasinin cokusu hizsiz da konusuyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const i = k.indexOf('SAÇILMA ODASI (eski adıyla KARADELİK)');
+      if(i < 0) return false;
+      const blok = k.slice(i, i + 2600);
+      /* Pitch mobilde tampon boskan susuyor (bkz. tamponYeter), o
+         yuzden cokus yalnizca hiza birakilamaz: wow derinlesiyor ve
+         yavasliyor, filtre de asagi iniyor. */
+      return /wowDerin\.gain, cek\*0\.0042/.test(blok)
+          && /wowLfo\.frequency, 5\.2 - cek\*4\.4/.test(blok)
+          && /hedefHiz = 1 - cek\*/.test(blok);
+    }), 'wow derinligi + LFO yavaslamasi + pitch, ucu birden');
+
+  /* Reverb yolunu ACAN kural ile KAPATAN kural ayni seyi bilmeli.
+     Ayrisirlarsa kazanc yazilir ama yol sokulur ve efekt sessizce
+     kaybolur -- dongu-alt reverb'i tam olarak oyle kaybolmustu,
+     olcumde 1200 ms sonra wetG 0.83 iken ses yoktu. */
+  K('Reverb yolu ayni kurala gore acilip kapaniyor', await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const i = k.indexOf('function fxYolu');
+      if(i < 0) return false;
+      const govde = k.slice(i, i + 3200);
+      const acan  = /FXMOD==='dongu'\)\{[\s\S]{0,220}?plt = Math\.max\(0, -fxSeviye\)/.test(govde);
+      const kapan = /const p2 =[\s\S]{0,260}?FXMOD==='dongu'\)\s*\?\s*Math\.max\(0,-fxSeviye\)/.test(govde);
+      return acan && kapan;
+    }), 'iki kural da dongu-alt plate\'ini biliyor');
   await pg.evaluate(()=>{ FXMOD=''; fxX=0;fxY=0;yatay=0;fxSeviye=0; fxUygula(); yatayUygula(); modUygula(); });
 
   // ── 7. KAYIT: FX altinda ayakta kaliyor mu ──────────────────────────

@@ -5519,7 +5519,13 @@
     //   retro     -> sağ+üst eko, plate YOK
     //   karadelik -> sağ eko,  ÜST plate (olay ufku)
     let del, plt;
-    if(FXMOD==='dongu'){     del = Math.max(Math.abs(yatay), Math.max(0,fxSeviye)); plt = 0; }
+    /* DÖNGÜ'de ALT YÖN ARTIK PLATE İSTİYOR (donmuş reverb). Burası
+       'plt = 0' diyordu ve sonucu ölçümde görüldü: wetG'ye 0.83
+       yazılıyor ama konvolver 1200 ms sonra hattan SÖKÜLÜYOR, yani
+       reverb hiç duyulmuyordu. Kazanç yazmak yetmez, yolun da açık
+       olması gerekir. */
+    if(FXMOD==='dongu'){     del = Math.max(Math.abs(yatay), Math.max(0,fxSeviye));
+                             plt = Math.max(0, -fxSeviye); }
     else if(FXMOD==='karadelik'){ del = Math.max(0, yatay); plt = Math.max(0, fxSeviye); }
     else if(RETRO){          del = Math.max(0, Math.max(yatay, fxSeviye)); plt = 0; }
     else {                   del = Math.max(0, yatay); plt = Math.max(0, -yatay); }
@@ -5539,7 +5545,13 @@
           kaynak.connect(convNode); convBagli=true; }
       }else if(convBagli && !_convTimer){
         _convTimer=setTimeout(()=>{ _convTimer=null;
-          const p2 = (FXMOD==='karadelik') ? Math.max(0,fxSeviye) : (RETRO?0:Math.max(0,-yatay));
+          /* Sökme anındaki KONTROL, yukarıdaki bağlama kuralının
+             birebir aynısı olmak zorunda: ayrışırlarsa ya yol boşuna
+             açık kalır ya da açıkken sökülür (döngü-alt reverb'i tam
+             olarak öyle kaybolmuştu). */
+          const p2 = (FXMOD==='karadelik') ? Math.max(0,fxSeviye)
+                   : (FXMOD==='dongu')     ? Math.max(0,-fxSeviye)
+                   : (RETRO?0:Math.max(0,-yatay));
           if(p2<=FX_ESIK && convBagli){ try{ driveOut.disconnect(convNode); }catch(e){ _yut(e); } convBagli=false; }
         }, 1200);                                  // reverb kuyruğu sönsün, sonra kes
       }
@@ -5653,6 +5665,11 @@
        yeni modun haritasından geçerek ~2.5 sn'de yumuşakça iniyor, bu sırada
        diske dokunursan sönme iptal olup bulunduğu yerden devralıyor. */
     _modGecis = Date.now() + 700;      // bu süre boyunca tını geçişleri de yavaşlar
+    /* Saçılma zamanlayıcısı odaya ait: oda değişince durmalı. Kendi
+       içinde de FXMOD'a bakıp duruyor ama beklemesi bir tane kadar
+       sürerdi -- odadan çıktıktan sonra gelen bir tane, yeni odanın
+       gecikmesini bozardı. */
+    try{ sacilmaDurdur(); }catch(e){ _yut(e); }
     fxSifirla();
     hedefHiz = 1; hizYaz(true);          // hız zaten 1 ise hiçbir şey yazılmaz (ses kesilmez)
     // aktif uydu yansın, ötekiler sönsün
@@ -5680,10 +5697,85 @@
     if(!param) return;
     if(!isFinite(deger)) return;
     const onceki = _pSon.get(param);
-    if(onceki !== undefined && Math.abs(onceki - deger) < Math.max(1e-4, Math.abs(deger)*0.002)) return;
+    const esik = Math.max(1e-4, Math.abs(deger)*0.002);
+    /* ── ONBELLEK "YAZDIM" DER AMA YAZI OTURMAMIS OLABILIR ────────
+       Bu suzgec yalnizca SON YAZILAN DEGERI hatirliyordu. Oysa bir
+       setTargetAtTime yazisi her zaman gerceklesmiyor: ses baglami
+       askidayken (telefon kilitlendi, sekme arkaya dustu, ses
+       kesintiye ugradi) yazi zamanlanir ama SAAT ILERLEMEDIGI icin
+       parametre kimildamaz. Baglam geri gelince onbellek "o degeri
+       zaten yazdim" der ve duzeltmeyi atlar -- parametre yanlis
+       yerde KILITLI kalir.
+       Olculdu: saglik takiminda temel efektin alt yonu 240 Hz'e
+       inmesi gerekirken 18747 Hz'de duruyordu; FXMOD dogru,
+       baglam calisiyor, saat ilerliyor, yalnizca yazi hic
+       gitmiyordu. Kullanicinin "sanki bir seyler bozulmus"
+       dedigi seyin bir kolu burasi.
+       Cozum: onbellek TEK BASINA yetkili degil. Parametrenin
+       GERCEK degeri hedeften belirgin uzaksa (yuzde 25) yazi
+       yeniden gonderiliyor. Rampa ortasinda da tetiklenebilir ama
+       ayni hedefi tekrar yazmak zararsiz: setTargetAtTime bulundugu
+       yerden ayni hedefe dogru devam eder. Parmak dururken deger
+       hedefe yakin oldugu icin suzgec asil isini (bos yazimlari
+       elemek) yapmaya devam ediyor. */
+    if(onceki !== undefined && Math.abs(onceki - deger) < esik){
+      let gercek = deger;
+      try{ gercek = param.value; }catch(e){ _yut(e); }
+      if(Math.abs(gercek - deger) <= Math.max(esik*8, Math.abs(deger)*0.25)) return;
+    }
     _pSon.set(param, deger);
     try{ param.setTargetAtTime(deger, t, tau); }catch(e){ _yut(e); }
   }
+  /* ── SAÇILMA (SCATTER) ────────────────────────────────────────
+     Kullanıcının isteği: "bir oda scatter, pitch down vs."
+     Saçılma bir parametre değil bir DAVRANIŞ: gecikme süresi düzenli
+     aralıklarla RASTGELE bir taneye atlıyor, besleme de yüksek
+     olduğu için önceki taneler üst üste biniyor. Kulakta ses
+     kırılıp saçılıyor.
+     NEDEN AYRI BİR ZAMANLAYICI: öteki bütün parametreler parmağın
+     yerinden hesaplanıyor; bu ise parmak dursa bile ilerlemeli.
+     Sürükleme karesine bağlasaydım parmak durunca saçılma da
+     dururdu — o da saçılma olmazdı.
+     SIÇRAMA DEĞİL RAMPA: delayTime'a sert değer yazmak gecikme
+     hattında çıt bırakıyor. 6 ms'lik bir rampa hem çıtı siliyor hem
+     de taneye kendi küçük "vınn"ını veriyor — istenen şey zaten bu.
+     TEK SAHİP: saçılma açıkken delayTime'ı yalnızca bu fonksiyon
+     yazıyor; yatayUygula o sırada oraya dokunmuyor. İki yazıcı
+     olsaydı her kare birbirini ezerdi. */
+  const SAC_ESIK = 0.06;
+  var _sacZaman = null;
+  function sacilmaDurdur(){
+    if(_sacZaman){ clearTimeout(_sacZaman); _sacZaman = null; }
+  }
+  function sacilmaAdim(){
+    _sacZaman = null;
+    const sac = (FXMOD === 'karadelik') ? Math.max(0, yatay) : 0;
+    if(sac <= SAC_ESIK || !delayNode || !actx) return;
+    try{
+      const t = actx.currentTime;
+      /* Tane boyu saçılmayla KISALIYOR: hafif saçılmada uzun,
+         müzikal tekrarlar; sonuna doğru 20-80 ms'lik kırıklar. */
+      const alt = 0.02, ust = Math.max(alt + 0.01, 0.18 - sac*0.10);
+      const hedef = alt + Math.random() * (ust - alt);
+      /* ── RAMPA SÜRESİ ÖLÇÜLEREK SEÇİLDİ ───────────────────────
+         6 ms ile başlamıştı ve ölçüm onu düşürdü: örnekten örneğe
+         en büyük sıçrama 0.48 çıktı -- yani gecikme hattı ekleme
+         yeri veriyordu, kulakta "çıt". Saçılma bir glitch efekti
+         ama ÇITLAMA değil; kullanıcı zaten cızırtıdan şikâyet
+         ediyordu, düzeltirken yenisini eklemek olmazdı.
+         28 ms'de aynı atlama bir SPLICE değil hızlı bir kayma
+         oluyor: taneler arasında kısa bir "vınn" duyuluyor ve bu
+         zaten saçılmanın kendi sesi. Ölçüm 0.48 -> 0.06.
+         Daha uzun rampa (60 ms+) taneleri birbirine yapıştırıyor,
+         saçılma hissi kayboluyor. 28 iki ucun arası. */
+      delayNode.delayTime.cancelScheduledValues(t);
+      delayNode.delayTime.setValueAtTime(delayNode.delayTime.value, t);
+      delayNode.delayTime.linearRampToValueAtTime(hedef, t + 0.028);
+      _pSon.delete(delayNode.delayTime);          // pyaz'ın önbelleği yanılmasın
+    }catch(e){ _yut(e); }
+    _sacZaman = setTimeout(sacilmaAdim, Math.max(45, Math.round(240 - sac*185)));
+  }
+  function sacilmaBasla(){ if(!_sacZaman) sacilmaAdim(); }
   function yatayUygula(){
     iz('yatayUygula');
     if(!dryG) return;
@@ -5708,8 +5800,8 @@
                            : 0.14;
         if(delayNode){ pyaz(delayNode.delayTime, sure, t, 0.12); }
         if(delay2)   { pyaz(delay2.delayTime, Math.min(1.9, sure*1.5 + yuk*0.22), t, 0.14); }
-        if(delayG)   { pyaz(delayG.gain, Math.max(yuk*0.95, sag*0.85, sol*0.70), t, 0.09); }
-        if(delay2G)  { pyaz(delay2G.gain, yuk*0.50, t, 0.12); }
+        if(delayG)   { pyaz(delayG.gain, Math.max(yuk*0.95, sag*0.90, sol*0.82), t, 0.09); }
+        if(delay2G)  { pyaz(delay2G.gain, Math.max(yuk*0.50, sag*0.42), t, 0.12); }
         /* ── CIZIRTININ KAYNAĞI BURASIYDI ─────────────────────────
            Besleme 0.985'e çıkarken besleme yolundaki filtre AÇILIYORDU
            (7000 -> 14000 Hz). Yani her tur tizleri olduğu gibi geri
@@ -5720,34 +5812,88 @@
            Doğrusu tersi: besleme yükseldikçe yol KARARIR. Her tekrar
            bir tık daha boğuk olur, kuyruk uzar ama birikmez. Besleme
            tavanı da 0.94'e indi — kulakta hâlâ "sonsuz". */
+        /* ── KURAL DEĞİŞTİ: ODANIN TAMAMI SONSUZ ──────────────────
+           Önce yalnızca YUKARI uzun kuyruk veriyordu; sağ ve sol
+           bilerek birikmiyordu. Kullanıcının isteği: "bir oda da
+           tamamen sonsuz döngüler olacak — delay, eko, reverb."
+           Dört yön de artık kendi sonsuzunu veriyor, ama her biri
+           BAŞKA bir sonsuz:
+             ÜST : uzun kuyruk, açık ton      besleme 0.94
+             SAĞ : geniş aralıklı sonsuz eko  besleme 0.92
+             SOL : sıkışmış kısa döngü        besleme 0.90
+             ALT : donmuş plate — eko yok, reverb sonsuza yayılır
+           GÜVENLİK DEĞİŞMEDİ ve değişemez: besleme yükseldikçe
+           besleme yolu KARARIYOR. Bunun tersi bir kez denendi ve
+           ölçüldü — döngü tizde birikip cızırtı üretiyordu (1089
+           örnek sıçraması). Halkanın içindeki yumuşak tavan
+           (fbTavan) da yerinde duruyor; 0.94 ile 1 arasındaki fark
+           patlamayı imkânsız kılan şey. */
+        const doluluk = Math.max(yuk, sag, sol);
+        /* SOL AYRI TUTULUYOR ve sebebi ölçüm: sol yön gecikmeyi
+           51 ms'ye sıkıştırıyor. O kadar kısa bir hatta 0.83
+           besleme, müzikal bir döngü değil METALİK BİR TARAK
+           üretiyor -- ölçüldü, örnek sıçraması 0.355 (öteki yönler
+           0.03-0.05). Kısa hat çok daha çabuk kaçıyor: aynı sayı
+           uzun hatta güzel, kısa hatta sert.
+           Sol için tavan 0.72 ve besleme yolu bir tık daha karanlık.
+           Kulakta hâlâ sonsuz, ama tarak değil. */
         if(fbNode)   { pyaz(fbNode.gain,
-                          yuk>0.02 ? Math.min(0.94, 0.55 + yuk*0.39)     // yalnız YUKARI uzun kuyruk
-                                   : (0.18 + sag*0.30 + sol*0.20),       // ötekiler birikmez
+                          Math.min(0.94, 0.18 + yuk*0.76 + sag*0.74 + sol*0.54),
                           t, 0.07); }
         if(fbFilt)   { pyaz(fbFilt.frequency,
                           asa>0 ? (7000*Math.pow(300/7000, asa))
-                                : (7000*Math.pow(1600/7000, yuk)), t, 0.2); }
-        if(wetG)     { pyaz(wetG.gain, 0, t, 0.10); }
-        pyaz(dryG.gain, 1 - yuk*0.62 - sag*0.12, t, 0.10);   // kuru YALNIZCA yukarıda çekilir
+                                : (7000*Math.pow(1500/7000, doluluk)
+                                     * Math.pow(0.45, sol)), t, 0.2); }
+        /* ALT = DONMUŞ PLATE. Bu odada reverb bir tur hiç yoktu
+           (wetG sabit 0). Artık aşağı yön onu açıyor: eko susuyor,
+           ses bir odaya kilitleniyor. Döngü odasının dördüncü
+           sonsuzu bu. */
+        if(wetG)     { pyaz(wetG.gain, asa*0.92, t, 0.14); }
+        pyaz(dryG.gain, 1 - doluluk*0.55 - asa*0.30, t, 0.10);
         hedefHiz = 1; if(!MOBIL) hizYaz();
       }
       else if(FXMOD==='karadelik'){
-        /* KARADELİK — yatay eksen.
-           SAĞ : sonsuz eko. Gecikme uzar, besleme 0.94'e kadar çıkar; kaçmasın diye
-                 besleme yolundaki filtre kapanıyor (her tur biraz daha boğuklaşır).
-           SOL : yerçekimi. Bant yavaşlar, ses dibe çekilir. Mobilde playbackRate
-                 sadece parmak kalkınca yazılır (akışı koparmasın).                */
-        const eko = Math.max(0, yatay), cek = Math.max(0, -yatay), yuk = Math.max(0, fxSeviye);
-        if(delayNode){ pyaz(delayNode.delayTime, 0.42 + eko*0.48, t, 0.25); }
-        if(delay2)   { pyaz(delay2.delayTime, 0.67 + eko*0.71, t, 0.25); }
-        if(delayG)   { pyaz(delayG.gain, eko*0.92, t, 0.10); }
-        if(delay2G)  { pyaz(delay2G.gain, eko*0.44, t, 0.12); }
-        if(fbNode)   { pyaz(fbNode.gain, 0.20 + eko*0.74, t, 0.08); }   // 0.20 -> 0.94
-        if(fbFilt)   { pyaz(fbFilt.frequency, 4200 - eko*3400, t, 0.25); }
-        if(wetG)     { pyaz(wetG.gain, yuk*0.95, t, 0.14); }            // olay ufku
-        hedefHiz = 1 - cek*(MOBIL?0.10:0.12);        // retro'dan daha derin çekiş
+        /* ── SAÇILMA ODASI (eski adıyla KARADELİK) ────────────────
+           Kullanıcının tarifi: "bir oda scatter, pitch down vs."
+           Odanın tek fikri var: SES DAĞILIYOR. İki yön iki ayrı
+           dağılma biçimi:
+             SAĞ : SAÇILMA. Gecikme süresi rastgele tanelere atlıyor
+                   (bkz. sacilmaAdim), besleme yüksek, taneler üst
+                   üste biniyor. Ses kırılıyor.
+             SOL : ÇÖKÜŞ. Bant yavaşlar, ses pesleşir ve kararır.
+                   Pitch mobilde tampon dolu değilse yazılmıyor
+                   (bkz. tamponYeter) -- bu yüzden çöküş YALNIZCA
+                   pitch'e bırakılmadı: filtre ve wow titremesi de
+                   aşağı iniyor, oda hızsız da konuşuyor.
+             ÜST : olay ufku. Plate şişer, saçılan taneler bir
+                   bulut hâline gelir.
+             ALT : çığlığa varan rezonans (bkz. fxUygula).
+           GECİKMENİN TEK SAHİBİ: saçılma açıkken delayTime'a
+           buradan DOKUNULMUYOR. İki yazıcı olsaydı her kare
+           birbirini ezer, saçılma da olmazdı. */
+        const sac = Math.max(0, yatay), cek = Math.max(0, -yatay), yuk = Math.max(0, fxSeviye);
+        if(sac > SAC_ESIK){ sacilmaBasla(); }
+        else{
+          sacilmaDurdur();
+          if(delayNode){ pyaz(delayNode.delayTime, 0.42, t, 0.25); }
+        }
+        if(delay2)   { pyaz(delay2.delayTime, 0.09 + sac*0.13, t, 0.20); }
+        if(delayG)   { pyaz(delayG.gain, sac*0.95, t, 0.10); }
+        if(delay2G)  { pyaz(delay2G.gain, sac*0.62, t, 0.12); }
+        /* Besleme saçılmada yüksek ama 0.88'i geçmiyor: taneler
+           birbirine binmeli, sonsuza kilitlenmemeli -- sonsuzluk
+           öteki odanın işi. */
+        if(fbNode)   { pyaz(fbNode.gain, 0.18 + sac*0.70, t, 0.08); }
+        if(fbFilt)   { pyaz(fbFilt.frequency, 4200 - sac*2200 - cek*1500, t, 0.25); }
+        if(wetG)     { pyaz(wetG.gain, yuk*0.95, t, 0.14); }
+        /* ÇÖKÜŞÜN HIZSIZ TARAFI: sol yön wow titremesini derinleştirip
+           yavaşlatıyor. Bant gerçekten yavaşlamasa bile kulakta
+           "aşağı çekiliyor" hissi kalıyor. */
+        if(wowDerin) pyaz(wowDerin.gain, cek*0.0042, t, 0.20);
+        if(wowLfo)   pyaz(wowLfo.frequency, 5.2 - cek*4.4, t, 0.25);
+        hedefHiz = 1 - cek*(MOBIL?0.10:0.12);
         if(!MOBIL) hizYaz();
-        pyaz(dryG.gain, 1 - Math.max(eko,yuk)*0.38, t, 0.10);
+        pyaz(dryG.gain, 1 - Math.max(sac,yuk)*0.55, t, 0.10);
       }
       else if(RETRO){
         const yuk = Math.max(0, fxSeviye);      // YUKARI: drive'lı tape delay
@@ -5795,8 +5941,14 @@
     _modOnceki = imza;
     const t=actx.currentTime;
     try{
-      if(!RETRO){          // normal ve KARADELİK: modülasyon yok (karadelik filtre/eko ile çalışır)
-        wowDerin.gain.setTargetAtTime(0, t, 0.3);
+      if(!RETRO){          // normal: modülasyon yok
+        /* SAÇILMA ODASI KENDİ WOW'UNU YAZIYOR (bkz. yatayUygula:
+           sol yön çöküşü titremeyle de anlatıyor, çünkü pitch
+           mobilde tampon boşken susuyor). Burada sıfırlamak onu her
+           karede geri alırdı -- iki yazıcı, biri kazanır, öteki
+           görünmez bir hataya döner. Odadan çıkınca imza değişiyor
+           ve wow yine buradan sıfırlanıyor. */
+        if(FXMOD !== 'karadelik') wowDerin.gain.setTargetAtTime(0, t, 0.3);
         if(tremDerin) tremDerin.gain.setTargetAtTime(0, t, 0.3);
         if(tremG) tremG.gain.setTargetAtTime(1, t, 0.3);
         if(korWet) korWet.gain.setTargetAtTime(0, t, 0.3);
@@ -5879,13 +6031,26 @@
         drv=2.6; shelf=-6; makeup=0.72 - b*0.06;
       }
     }
-    else if(fxSeviye>=0){                // YUKARI = DRIVE: gövde/boost var ama tizler KAPALI (sıcak, harsh değil)
+    else if(fxSeviye>=0){                // YUKARI = PATLAMA: gövde büyür, seviye gerçekten yükselir
+      /* ── "ÜST PATLAMA" ─────────────────────────────────────────
+         Kullanıcının tarifi: "üst patlama boost, altta cutoff."
+         Buradaki yön zaten boost'tu ama PATLAMIYORDU: tiz shelf'i
+         9 dB kesiyor, makeup da kazancın çoğunu geri alıyordu --
+         yani sürdükçe ses daha DOLU oluyor ama daha YÜKSEK
+         olmuyordu. Kulakta "bir şey oluyor ama patlamıyor".
+         İki sayı değişti:
+           shelf  -9 dB -> -4 dB : tizler hâlâ dizginli (harsh
+                  olmasın diye) ama artık sesin ağzını kapatmıyor.
+           makeup 1/(1+a*0.80) -> 1/(1+a*0.45) : kazancın yarısı
+                  kalıyor, yani seviye gerçekten yükseliyor.
+         GÜVENLİK ZİNCİRDE: 'tavan' (brickwall, -3 dB / 20:1 / 2 ms)
+         her zaman yolda. Patlama kulakta büyüyor, çıkışta taşmıyor.  */
       const a=fxSeviye;                  // 0..1
       f=Math.round(20000*Math.pow(9000/20000, a));  // hafif tiz roll-off (20k -> ~9k), sürdükçe kapanır
       q=0.7;
       drv=1 + a*8;                       // satürasyon (boost / gövde)
-      shelf=-a*9;                        // high-shelf CUT: sürdükçe tizleri düşür -> aynı seviyede kalsın, tizlemesin
-      makeup=1/(1 + a*0.8);              // seviye dengesi
+      shelf=-a*4;                        // tizler dizginli ama kapalı değil
+      makeup=1/(1 + a*0.45);             // kazancın yarısı kalıyor -> gerçek yükselme
       islak=a;                           // MERKEZDE 0: parmak değmediyse satürasyon YOK
     }else{                               // AŞAĞI = agresif cutoff + belirgin rezonans (vuuow)
       const b=-fxSeviye;                 // 0..1
