@@ -142,4 +142,8 @@ dönüyor mu.
 
 - `index.html`'e dokunulmuyor. Uygulama bugün neyse o.
 - Servis çalışanı aynı; TWA onu Chrome üzerinden kullanıyor.
-- Kamera ve mikrofon izinleri manifestten geliyor, elle eklenmiyor.
+- **İzinler manifestten GELMİYOR.** Web manifestinde izin alanı yok;
+  Bubblewrap oradan hiçbir Android izni türetmez. Kamera izni
+  (`CAMERA`) `AndroidManifest.xml`'e elle eklenecek. Mikrofon
+  (`RECORD_AUDIO`) **eklenmeyecek** — uygulama mikrofonu hiç istemiyor
+  ve kullanım şartları bunu yazılı olarak söylüyor.

@@ -122,8 +122,12 @@ bilinemez ve gizlilik metni de aynı şeyi söylüyor — tutarlı olmalı.
 ## Data Safety formu
 
 Senin için kolay tarafı: **toplanan veri yok, paylaşılan veri yok,
-konum yok.** Beyan edilecek tek şey kamera ve mikrofonun kullanıldığı
-ama **cihazdan çıkmadığı**.
+konum yok.** Beyan edilecek tek şey kameranın kullanıldığı ama
+**cihazdan çıkmadığı**.
+
+> Mikrofon beyan EDİLMEYECEK. Uygulama mikrofonu hiç istemiyor ve
+> kullanım şartları bunu yazılı olarak söylüyor; beyan etmek mağaza
+> listesini kendi şartlarımızla çelişkiye düşürür.
 
 ---
 
@@ -174,9 +178,9 @@ bir ton döndürüldü — görselleştirici gerçek sinyalle çalıştı.
 | `02-radyo-electronic` | ELECTRONIC |
 | `03-radyo-jazz` | JAZZ |
 | `04-radyo-ambient` | AMBIENT |
-| `05-radyo-rock-country` | ROCK & COUNTRY |
+| `05-radyo-rock-indie` | ROCK & INDIE |
 | `06-radyo-world-roots` | WORLD & ROOTS |
-| `07-radyo-lounge` | LOUNGE |
+| `07-radyo-lounge-lofi` | LOUNGE & LOFI |
 | `08-radyo-orchestral` | ORCHESTRAL |
 | `09-tur` | Açılış turu |
 

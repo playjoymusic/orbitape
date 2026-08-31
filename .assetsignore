@@ -18,6 +18,26 @@ magaza/
 README.md
 CLAUDE.md
 GUNLUK.md
+KONTROL.md
+
+# ── CALISMA SAYFALARI ────────────────────────────────────────────
+# Bunlar gelistirme sirasinda uretilmis Turkce panolar: yol
+# haritasi, rakip analizi, raf revizyonu, olcum tezgahlari. Depoda
+# duruyorlar (kayit), yayina gitmiyorlar.
+#
+# NEDEN ONEMLI: simdicalan.html tek tusla yaklasik 300 istasyon
+# sunucusuna istek atan bir olcum tezgahi ve robots.txt "Allow: /"
+# diyor. Yayindayken orbitape.app/simdicalan.html adresinden herkese
+# acikti. sitemap.xml de "uc sayfa, o kadar" diyor -- bu liste
+# olmadan o cumle yalandi.
+gun.html
+kiyas.html
+raf.html
+raf_revizyon.html
+simdicalan.html
+ucluk_deneme.html
+yol.html
+zayif.html
 package.json
 package-lock.json
 wrangler.jsonc

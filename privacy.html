@@ -16,6 +16,17 @@
     padding:calc(38px + env(safe-area-inset-top,0px)) 22px calc(64px + env(safe-area-inset-bottom,0px));
     max-width:660px;margin:0 auto;}
   .mono{font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;}
+  /* ── SATIR ICI style="..." KALKTI ────────────────────────────────
+     Ozet (hash) tabanli bir CSP satir ici stil NITELIGINI hicbir
+     kosulda kabul etmiyor: sayfa ciplak aciliyordu (olculdu -- sifir
+     stil sayfasi, beyaz zemin, 16px Times) ve burasi Play Console'a
+     verilen gizlilik politikasi adresi. Iki nitelik iki sinifa
+     cevrildi; araclar/csp.py artik satir ici stil gorurse duruyor. */
+  .eposta{font-size:13px;letter-spacing:.06em;}
+  .kutu p + p{margin-top:8px;}
+  /* Tablonun altindaki "liste tam" notu: metnin geri kalanindan
+     kucuk ve silik, cunku bir madde degil bir kefalet. */
+  .kucuk{font-size:12.5px;letter-spacing:.04em;opacity:.72;}
   header{margin-bottom:34px;}
   .marka{font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:22px;letter-spacing:.34em;color:var(--vurgu);margin:0 0 6px;}
@@ -54,7 +65,7 @@
 
 <header>
   <p class="marka">ORBITAPE</p>
-  <p class="alt">PRIVACY POLICY · LAST UPDATED 25 AUGUST 2026</p>
+  <p class="alt">PRIVACY POLICY · LAST UPDATED 31 AUGUST 2026</p>
 </header>
 
 <div class="kutu">
@@ -104,8 +115,14 @@ anywhere.</p>
   <tr><td>Favourites</td><td>The tracks you starred.</td></tr>
   <tr><td>Camera settings</td><td>Brightness level and whether the slider is shown.</td></tr>
   <tr><td>Tutorial state</td><td>Whether you ticked "don't show this again".</td></tr>
+  <tr><td>Settings</td><td>Sound on or off, the colour theme, how many stars, and which
+    of the two worlds you were last in.</td></tr>
+  <tr><td>Effect preferences</td><td>Which effects you turned off, and whether you have
+    already seen the effect hint.</td></tr>
   <tr><td>Track lists</td><td>A cached copy so the app still opens when you have no connection.</td></tr>
 </table>
+<p class="mono kucuk">That is the whole list, not a sample. The last station you
+played is deliberately <b>not</b> kept: the app starts somewhere new every time.</p>
 <p>You can erase all of it at any time by clearing site data for
 orbitape.app in your browser settings. Nothing else remains.</p>
 
@@ -119,7 +136,10 @@ I do not receive any of that information.</p>
   <tr><th>Service</th><th>What it is for</th></tr>
   <tr><td>archive.org</td><td>Public-domain and Creative Commons recordings.</td></tr>
   <tr><td>radio-browser.info</td><td>The directory of live radio stations.</td></tr>
-  <tr><td>Radio stations</td><td>The live stream itself, served by each station.</td></tr>
+  <tr><td>Radio stations</td><td>The live stream itself, served by each station — and,
+    while a station is playing, a request to that same station's own server asking
+    what track is on right now. Nothing about you is sent with it; it is the same
+    kind of request as the stream.</td></tr>
   <tr><td>somafm.com<br>public.radio.co<br>np.tritondigital.com<br>api.zeno.fm<br>api.radioking.io</td>
       <td>The name of the track a station is playing right now. Asked only
           while you are listening to a station hosted by that provider.</td></tr>
@@ -154,8 +174,8 @@ no mailing list to notify, so the date is the honest signal.</p>
 
 <h2>Contact</h2>
 <div class="kutu">
-  <p class="mono" style="font-size:13px;letter-spacing:.06em;">hello@orbitape.app</p>
-  <p style="margin-top:8px;">Questions, takedown requests, or anything else about this
+  <p class="mono eposta">hello@orbitape.app</p>
+  <p>Questions, takedown requests, or anything else about this
   policy. Written by a person, answered by a person.</p>
 </div>
 

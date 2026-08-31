@@ -29,9 +29,11 @@ Otomatik olanlar ayrı ve onlar bunun yerine geçmez:
 İlk ses kendi kendine gelmeli. Tanıtım turu akıyorsa **ilk dokunuş**
 SKIP olmalı — ikinci dokunuşu beklememelisin.
 
-**2. Üstteki yazıya bak.**
-Açılışta **MIXTAPE** yazmalı. Seçili raf yoksa orada hiçbir şey
-yazmamalı — "ALL" ya da "RADIOTAPE" gibi bir kelime çıkarsa hata.
+**2. Sol üstteki yazıya bak.**
+Açılışta **RADIOTAPE** yazmalı — büyük punto, sol üst köşede, ORBITAPE
+yazısının karşısında. Altında dört küçük çubuk: ses gelince kıpırdamalı,
+durunca sönmeli. Yazı sağ tarafta, ORBITAPE'in solunda çıkıyorsa kip
+yanlış (orası arşiv tarafının yeri).
 
 **3. Sağ üstteki isme bas, sonra üç sembole bas.**
 İkisi de aynı işi yapmalı: bir sonraki rafa geçmek, **büyükten
@@ -61,6 +63,13 @@ ORBITAPE yazısı arşivde **kurşun** (SPACE) renginde olmalı.
 
 ## Bir şey ters giderse
 
-Uygulama açıkken **D** tuşuna bas: açılan panelin ilk satırında sürüm
-var. Sürümü ve ne yaptığını yaz — hatanın hangi değişiklikten sonra
-geldiğini bulmak, hatanın kendisini bulmaktan kolay.
+Bir hata paneli çıktıysa **COPY DETAILS**'e bas: sürüm, tarayıcı ve
+hatanın kendisi panoya gider (cihaz kimliği, konum ya da çalma geçmişi
+YOK). Panel canını sıkıyorsa **DISMISS** ile kapat — kayıt duruyor,
+yeni bir hata paneli tekrar açıyor.
+
+Panel çıkmadıysa ölçüm panelini `orbitape.app/?tani` ile aç; ilk
+satırında sürüm var. (Sadece **D** tuşu yetmiyor — o tuş `?tani`
+olmadan çalışmıyor.) Sürümü ve ne yaptığını yaz — hatanın hangi
+değişiklikten sonra geldiğini bulmak, hatanın kendisini bulmaktan
+kolay.

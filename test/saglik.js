@@ -894,6 +894,33 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         : (mikIddia.length ? ('kod mikrofon ISTEMIYOR ama metin kullanildigini soyluyor: '
                               + mikIddia.join(', '))
                            : 'kod audio:false, header microphone=(), metinler de oyle diyor'));
+    /* ── MAGAZA BELGELERI DE MIKROFON BEYAN ETTIRMESIN ─────────
+       Konsol cevaplarinda RECORD_AUDIO yaziyordu ve paketleme
+       belgesi "izinler manifestten gelir" diyordu: ikisi de
+       yanlisti. RECORD_AUDIO beyan edilseydi magaza listesi
+       terms.html'deki "The microphone is never requested" cumlesiyle
+       dogrudan celisirdi -- uygulamanin kaldirilmasina giden tam
+       olarak bu tur bir uyusmazlik. */
+    const kns = fs.readFileSync('magaza/KONSOL_CEVAPLARI.md','utf8');
+    const pkt = fs.readFileSync('magaza/PAKETLEME.md','utf8');
+    const recAudio = [['KONSOL_CEVAPLARI.md',kns],['METINLER.md',mgz],['PAKETLEME.md',pkt]]
+      .filter(([,t]) => /`?RECORD_AUDIO`?[^\n]*(beyan ediliyor|eklenecek|gerekiyor)/i.test(t)
+                     || /Beyan edilecek[^\n]*mikrofon/i.test(t))
+      .map(([a2]) => a2);
+    K('Magaza belgeleri mikrofon beyan ettirmiyor', recAudio.length === 0,
+      recAudio.length ? ('RECORD_AUDIO/mikrofon beyani duruyor: ' + recAudio.join(', ')
+                         + ' -- terms.html mikrofonun hic istenmedigini yaziyor')
+                      : 'yalnizca CAMERA beyan ediliyor, sartlarla tutarli');
+    /* ── EKRAN YAKALAMA IZNI DE KULLANILMIYOR ──────────────────
+       Baslik display-capture veriyordu ama getDisplayMedia kodda
+       hic gecmiyor: kayit uygulamanin kendi tuvalinden aliniyor.
+       Basligin kendi ilkesi "istemedigi bir seyin izni de olmamali"
+       diyor; kural kendi kendisiyle celisiyordu. */
+    K('Kullanilmayan izin verilmiyor',
+      /getDisplayMedia/.test(kod) === /display-capture=\(self\)/.test(bas),
+      /display-capture=\(self\)/.test(bas) && !/getDisplayMedia/.test(kod)
+        ? 'display-capture aciliyor ama getDisplayMedia kodda yok'
+        : 'verilen izinlerin karsiligi kodda var');
     /* GEZEGEN: kanal gecisi kaldirildi, artik FX sifirliyor. */
     const gezegenGecis = /function havuzDegis/.test(kod);
     const metinGecis = /(big )?planet switches between/i.test(mgz);
@@ -1262,6 +1289,46 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     K('Her kontrolun bir adi var', kl.adsiz.length === 0,
       kl.adsiz.length ? ('adsiz: ' + kl.adsiz.join(', '))
                       : 'ekran okuyucu hepsinin ne oldugunu soyluyor');
+    /* ── ARAMA SONUCLARI KLAVYEYLE ─────────────────────────────
+       Uygulamadaki tek klavye bosluguydu: sonuclar duz <div>'di,
+       rolu yok, sekme sirasi yok, klavye isleyicisi yok. Enter
+       yalnizca SIFIRINCI sonucu caliyordu -- yani uc yuz sonuctan
+       tam olarak birine ulasilabiliyordu.
+       Olculen: liste bir listbox mu, satirlar option mu, ok tusu
+       odagi komsuya tasiyor mu, ve kac sonuc oldugu duyuruluyor mu. */
+    const ark = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      try{ araAc(); }catch(e){ return {yok:'araAc yok'}; }
+      await bek(220);
+      const g = document.getElementById('araGiris');
+      g.value = 'a'; g.dispatchEvent(new Event('input',{bubbles:true}));
+      await bek(420);
+      const kutu = document.getElementById('araSonuc');
+      const satirlar = [...kutu.querySelectorAll('.st')];
+      if(satirlar.length < 2){ try{ araKapa(); }catch(e){} return {yok:'sonuc yok'}; }
+      const rol     = kutu.getAttribute('role');
+      const sayiVar = /\d+\s*results/i.test(kutu.getAttribute('aria-label')||'');
+      const optVar  = satirlar.every(x=>x.getAttribute('role')==='option');
+      /* Sekme listeye BIR kez giriyor: tam bir satir tabindex 0. */
+      const gezinen = satirlar.filter(x=>x.getAttribute('tabindex')==='0').length === 1;
+      satirlar[0].focus();
+      satirlar[0].dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
+      await bek(80);
+      const indi = document.activeElement === satirlar[1];
+      satirlar[1].dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));
+      await bek(80);
+      const cikti = document.activeElement === satirlar[0];
+      try{ araKapa(); }catch(e){}
+      await bek(160);
+      return { rol, sayiVar, optVar, gezinen, indi, cikti, n:satirlar.length };
+    });
+    K('Arama sonuclari klavyeyle geziliyor',
+       !ark.yok && ark.rol==='listbox' && ark.optVar && ark.gezinen
+       && ark.indi && ark.cikti && ark.sayiVar,
+       ark.yok ? ('olculemedi: ' + ark.yok)
+               : (ark.n + ' sonuc; listbox ' + (ark.rol==='listbox')
+                  + ', ok tuslari ' + (ark.indi && ark.cikti)
+                  + ', sayi duyuruluyor ' + ark.sayiVar));
     /* Ekran okuyucu kullanicilari sayfayi bastan sona dinlemez, yer
        imleri arasinda ziplar. Yer imi yoksa o kestirme yok. */
     K('Ana icerik yer imi var', kl.yerImi >= 1,
@@ -1280,23 +1347,47 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Tazelemek icin: python3 araclar/csp.py                        */
   {
     const crypto = require('crypto');
-    const kaynak = fs.readFileSync('index.html','utf8');
     const bas = fs.readFileSync('_headers','utf8');
     const hesap = g => "'sha256-" + crypto.createHash('sha256').update(Buffer.from(g,'utf8')).digest('base64') + "'";
-    const sc = kaynak.match(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/);
-    const st = kaynak.match(/<style[^>]*>([\s\S]*?)<\/style>/);
+    /* ── DORT SAYFANIN DORDU DE ────────────────────────────────────
+       Bu kontrol bir tur YALNIZCA index.html'e bakiyordu ve gercek
+       bir arizayi aylarca kacirdi: CSP '/*' yoluna yazilmisti, yani
+       gizlilik/sartlar/404 sayfalarina da gidiyordu ama onlarin
+       <style> ozetleri listede yoktu. Uc sayfa da CIPLAK aciliyordu
+       -- ve privacy.html Play Console'a verilen adres.
+       Artik her sayfanin kendi yolu, kendi ozeti; kontrol de
+       hepsini tek tek soruyor. */
+    const SAYFALAR = ['index.html','privacy.html','terms.html','404.html'];
+    const eksik = [];
+    for(const ad of SAYFALAR){
+      const kaynak = fs.readFileSync(ad,'utf8');
+      const scler = kaynak.match(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g) || [];
+      const stler = kaynak.match(/<style[^>]*>([\s\S]*?)<\/style>/g) || [];
+      const govde = t => t.replace(/^<[^>]*>/,'').replace(/<\/[a-z]+>$/i,'');
+      /* Sayfanin kendi yol blogundaki CSP satiri. */
+      const yol = ad === 'index.html' ? '/index.html' : '/' + ad;
+      const kacir = yol.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const m = bas.match(new RegExp('^' + kacir + '\\s*$[\\s\\S]*?Content-Security-Policy:(.*)$','m'));
+      const satirX = m ? m[1] : '';
+      if(!satirX){ eksik.push(ad + ': yol blogu yok'); continue; }
+      for(const t of scler){ const h = hesap(govde(t));
+        if(!satirX.includes(h)) eksik.push(ad + ': script ozeti eksik'); }
+      for(const t of stler){ const h = hesap(govde(t));
+        if(!satirX.includes(h)) eksik.push(ad + ': style ozeti eksik'); }
+      /* Satir ici style="..." ozet tabanli CSP'de HICBIR kosulda
+         calismaz: sayfa ciplak acilir. */
+      if(/<[^>]+\sstyle="/.test(kaynak)) eksik.push(ad + ': satir ici style="..." var');
+    }
     const satir = (bas.match(/Content-Security-Policy:.*/) || [''])[0];
-    const jsBek = sc ? hesap(sc[1]) : '(script yok)';
-    const cssBek = st ? hesap(st[1]) : '(style yok)';
-    const jsVar  = satir.includes(jsBek);
-    const cssVar = satir.includes(cssBek);
-    K('CSP ozeti index.html ile ayni', !!satir && jsVar && cssVar,
-      (!satir ? '_headers icinde CSP satiri YOK'
-              : (jsVar && cssVar) ? 'script ve style ozeti guncel'
-              : ('BAYAT -> uygulama hic acilmaz. '
-                 + (jsVar ? '' : 'script bekleniyor: ' + jsBek + '  ')
-                 + (cssVar ? '' : 'style bekleniyor: ' + cssBek)
-                 + '   duzeltme: python3 araclar/csp.py')));
+    K('CSP ozetleri dort sayfayla da ayni', eksik.length === 0,
+      eksik.length ? ('BAYAT: ' + eksik.join(', ') + '   duzeltme: python3 araclar/csp.py')
+                   : SAYFALAR.length + ' sayfanin ozeti guncel');
+    /* '/*' UZERINE per-yol CSP YAZILMASIN: Cloudflare eslesen butun
+       kurallari uygular, iki CSP basligi gidince tarayici
+       KESISIMLERINI alir ve iki ozet listesi birbirini sifirlar. */
+    K('CSP yol basina yaziliyor, /* uzerine degil',
+      !/^\/\*\s*$[\s\S]{0,400}?Content-Security-Policy:/m.test(bas),
+      "'/*' blogunda CSP yok; her sayfa kendi yolunda");
     /* Politikanin kendisi de zayiflamasin: bir gun "calismiyor" diye
        'unsafe-inline' eklemek CSP'nin script tarafini tamamen
        anlamsiz kilar -- sizan her script yine calisir. */
@@ -1308,6 +1399,45 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
              : (/unsafe-(inline|eval)/.test(satir)
                 ? 'unsafe-* eklenmis: ozetin anlami kalmadi'
                 : "unsafe-* yok; object/frame-ancestors/base-uri kapali"));
+  }
+
+  /* ── YAZI SAYFALARI GERCEKTEN KILIGIYLA ACILIYOR MU ─────────────
+     Yukaridaki kontrol ozetleri KARSILASTIRIYOR; bu kontrol sayfayi
+     GERCEKTEN ACIYOR. Ikisi ayni sey degil ve fark bir kez pahaliya
+     patladi: ozetler dogruydu ama '/*' yuzunden yanlis sayfaya
+     gidiyorlardi, uc sayfa da ciplak aciliyordu ve hicbir test
+     gormuyordu -- cunku butun testler yalnizca index.html'i
+     aciyordu.
+     Olculen sey tek ve basit: sayfa kendi stil sayfasini aldi mi,
+     zemini koyu mu, CSP bir sey engelledi mi. */
+  {
+    const yazi = [];
+    for(const ad of ['privacy.html','terms.html','404.html']){
+      const s2 = await pg.context().newPage();
+      const engel = [];
+      s2.on('console', m=>{ const t=m.text();
+        if(/Content Security Policy|Refused to/i.test(t)) engel.push(t.slice(0,90)); });
+      await s2.goto(S.replace(/\/[^/]*$/, '/') + ad, {waitUntil:'load'});
+      await s2.waitForTimeout(260);
+      const o = await s2.evaluate(()=>{
+        const g = getComputedStyle(document.body);
+        const yz = g.color.match(/\d+/g) || [0,0,0];
+        const ar = g.backgroundColor.match(/\d+/g) || [255,255,255];
+        return { css:document.styleSheets.length,
+                 /* Koyu zemin + acik yazi: sayfanin kendi kiligi.
+                    Ciplak halde tam tersi olurdu (beyaz zemin, siyah
+                    yazi) -- olculdu, oyleydi. */
+                 koyu:(+ar[0] + +ar[1] + +ar[2]) < 120,
+                 acikYazi:(+yz[0] + +yz[1] + +yz[2]) > 360 };
+      });
+      await s2.close();
+      yazi.push({ad, ...o, engel:engel.length});
+    }
+    const bozuk = yazi.filter(x=>!(x.css >= 1 && x.koyu && x.acikYazi && x.engel === 0));
+    K('Yazi sayfalari kendi kiligiyla aciliyor', bozuk.length === 0,
+      bozuk.length ? bozuk.map(x=>x.ad+' (stil '+x.css+', koyu '+x.koyu
+                                  +', CSP engeli '+x.engel+')').join(' | ')
+                   : yazi.map(x=>x.ad.replace('.html','')).join(', ') + ' — stil var, CSP temiz');
   }
 
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───
@@ -3606,7 +3736,22 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
         return !!a && !!b && getComputedStyle(b).pointerEvents==='auto';
       });
       const ing = await p7.evaluate(()=>document.getElementById('hata').textContent);
-      return { kapali0, redActi, redKayit, hataActi, kayitSayisi, metin, gecirir, dugme, ing };
+      /* ── KAPANABILIYOR MU ─────────────────────────────────────
+         Panel bir kez acilinca bir daha kapanmiyordu: kapatma yok,
+         zaman asimi yok, sifirlama yok. Tek bir zararsiz ust duzey
+         hata -- bir tarayici eklentisi, boyut gozlemci uyarisi --
+         "SOMETHING BROKE" yazisini oturumun sonuna kadar ekranda
+         tutuyordu. Olculen uc sey: DISMISS kapatiyor mu, kayit
+         duruyor mu, ve YENI bir hata paneli tekrar aciyor mu. */
+      await p7.evaluate(()=>document.getElementById('hataKapat').click());
+      await p7.waitForTimeout(200);
+      const kapandi = (await acik()) === false;
+      const kayitDuruyor = await p7.evaluate(()=>_hataKayit.length > 0);
+      await p7.evaluate(()=>{ setTimeout(()=>{ throw new Error('sinama-ikinci'); },0); });
+      await p7.waitForTimeout(400);
+      const yenidenActi = await acik();
+      return { kapali0, redActi, redKayit, hataActi, kayitSayisi, metin, gecirir, dugme, ing,
+               kapandi, kayitDuruyor, yenidenActi };
     } finally { await kapat(); }
   })();
   K('Acilista hata paneli KAPALI', ht.kapali0, 'kullanici bos yere korkmuyor');
@@ -3614,6 +3759,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Soz reddi panel ACMIYOR', ht.redActi===false && ht.redKayit===true,
      'zararsiz redler paneli tetiklemiyor ama kayda giriyor');
   K('60 hatada panel bir kez, kayit tavanli', ht.kayitSayisi<=5, ht.kayitSayisi+' kayit');
+  K('Hata paneli kapatilabiliyor ve yeniden acilabiliyor',
+     ht.kapandi===true && ht.kayitDuruyor===true && ht.yenidenActi===true,
+     ht.kapandi ? 'DISMISS kapatiyor, kayit duruyor, yeni hata yine aciyor'
+                : 'panel kapanmiyor -- oturum boyunca ekranda kaliyor');
   K('Panel dokunusu GECIRIYOR', ht.gecirir===true && ht.dugme===true,
      'ses ve kanallar erisilebilir kaliyor, sadece dugmeler dokunus aliyor');
   K('Hata metninde kimlik/gecmis YOK',
@@ -6300,7 +6449,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const sonuk   = parseFloat(getComputedStyle(r).opacity) < 0.6;
     /* Basis: not acilmali, kayit baslamamali. */
     r.click(); await bek(260);
-    const not = document.getElementById('recNot');
+    const not = document.getElementById('kisaNot');
     const notAcik = !!not && not.classList.contains('var');
     const notMetin = not ? (not.textContent || '') : '';
     const kayitBasladi = (typeof kaydediciAktif==='function') ? kaydediciAktif() : false;

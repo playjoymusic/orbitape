@@ -2,7 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- YAKINLASTIRMA ACIK. Once maximum-scale=1 ve user-scalable=no yaziyordu:
+     cift dokunusla istemsiz yakinlastirmayi engelliyordu ama ayni zamanda
+     GORME GUCU DUSUK olan herkesin sayfayi buyutmesini de engelliyordu --
+     WCAG 1.4.4 ihlali ve Play'in on yayin erisilebilirlik raporunda
+     cikan bir madde. Istemsiz yakinlastirma zaten dogru yerden
+     cozulmustu: govdede ve ust seritteki yazilarda touch-action:
+     manipulation var, yani CIFT DOKUNUS yakinlastirmiyor ama PARMAKLA
+     acmak calisiyor. Ikisi ayni sey degil. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <!-- no-cache: tarayıcı her açılışta sunucuya "değişti mi" diye sorar,
      yani Cloudflare'a yüklediğin yeni sürümü HER ZAMAN görürsün.
      Ama kopyayı SAKLAYABİLİR. Eskiden burada 'no-store, must-revalidate'
@@ -389,7 +397,7 @@
      kullanici REC'i ariyor, bulamiyor ve nedenini hicbir yerde
      gormuyordu.
      Simdi duruyor, sonuk duruyor ve BASILABILIYOR: basinca neden
-     kapali oldugunu yaziyor (bkz. recNotYaz). Bir tusun neden
+     kapali oldugunu yaziyor (bkz. kisaNotYaz). Bir tusun neden
      calismadigini soylemesi, o tusu saklamaktan iyidir.
      Sekli arsivdekiyle birebir ayni: ayni kutu, ayni nokta, ayni
      yazi -- yalnizca opakligi dusuk. */
@@ -1758,7 +1766,7 @@
      duruyor: hicbir olcum zincirine girmiyor, hicbir seyin uzerine
      binmiyor. Dili alt seridin dili -- kucuk mono, genis harf
      araligi. */
-  #recNot{position:fixed;z-index:97;left:50%;
+  #kisaNot{position:fixed;z-index:97;left:50%;
     bottom:calc(196px + env(safe-area-inset-bottom, 0px));
     transform:translateX(-50%) translateY(6px);
     max-width:min(76vw,320px);text-align:center;
@@ -1769,14 +1777,14 @@
     border-radius:8px;padding:9px 13px;
     opacity:0;pointer-events:none;
     transition:opacity .28s ease, transform .28s ease;}
-  #recNot.var{opacity:1;transform:translateX(-50%) translateY(0);}
+  #kisaNot.var{opacity:1;transform:translateX(-50%) translateY(0);}
   /* Baslik satiri: kirmizimsi, cunku bu bir RED. Ama uyari degil --
      bir kural, o yuzden alarm rengi degil sonuk bir mercan. */
-  #recNot b{display:block;font-weight:400;font-size:9px;
+  #kisaNot b{display:block;font-weight:400;font-size:9px;
     letter-spacing:.26em;color:#e0836f;margin-bottom:6px;}
   @media (prefers-reduced-motion: reduce){
-    #recNot{transition:opacity .28s ease;transform:translateX(-50%);}
-    #recNot.var{transform:translateX(-50%);} }
+    #kisaNot{transition:opacity .28s ease;transform:translateX(-50%);}
+    #kisaNot.var{transform:translateX(-50%);} }
   #rec.sessiz .nokta{background:#c9563f;box-shadow:0 0 8px rgba(201,86,63,.7);}
   /* CANLI YAYINDA KAYIT KAPALI: yayını kaydetmek bizim işimiz değil.
      Düğme gölgeye düşüyor ve basılmıyor; istasyon değişip arşivden bir
@@ -2207,7 +2215,7 @@
        gorunmuyor. Ekranin ortasinda, dort kosedeki hicbir seye
        degmeyen bir yerde duruyor ve 4 saniyede siliniyor.
        role=status + aria-live: ekran okuyucu da duyuyor. -->
-  <div id="recNot" role="status" aria-live="polite" aria-hidden="true"></div>
+  <div id="kisaNot" role="status" aria-live="polite" aria-hidden="true"></div>
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
@@ -2401,6 +2409,19 @@
     <div class="ht-sira">
       <button id="hataYenile" type="button">RELOAD</button>
       <button id="hataKopya" type="button">COPY DETAILS</button>
+      <!-- ── KAPAT ────────────────────────────────────────────────
+           Panel bir kez acilinca bir daha KAPANMIYORDU: kapatma
+           dugmesi yok, zaman asimi yok, sifirlama yok. Tek bir
+           zararsiz ust duzey hata -- bir tarayici eklentisi,
+           Chrome'un boyut gozlemci uyarisi -- "SOMETHING BROKE"
+           yazisini oturumun sonuna kadar ekranin ortasinda
+           tutuyordu. Uygulama calismaya devam ediyor (kapsayici
+           pointer-events almiyor), yani kalicilik ve kelimenin
+           sertligi gereksiz bir korku uretiyordu.
+           Kapatmak hatayi silmiyor: kayit duruyor, COPY DETAILS
+           yine ayni seyi veriyor ve YENI bir hata paneli tekrar
+           aciyor. -->
+      <button id="hataKapat" type="button">DISMISS</button>
     </div>
     <div class="ht-posta">hello@orbitape.app</div>
   </div>
@@ -2420,7 +2441,9 @@
           <input id="araGiris" type="search" placeholder="SEARCH" autocomplete="off"
                  autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
         </div>
-        <div class="sonuc" id="araSonuc"></div>
+        <!-- role=listbox: icindeki satirlar option. Klavyeyle gezinme
+             ve sayinin duyurulmasi icin gerekli (bkz. araYaz/araOdak). -->
+        <div class="sonuc" id="araSonuc" role="listbox" aria-label="Results"></div>
       </div>
     </div>
   <div id="kayitBilgi" aria-hidden="true"></div>
@@ -2580,7 +2603,7 @@
       }
     }catch(_){}
   }
-  var ORB_SURUM = '2026.08.28';
+  var ORB_SURUM = '2026.08.31';
   var _hataKayit = [], _hataGosterildi = false;
   (function(){
     var TAVAN = 5;
@@ -2608,12 +2631,23 @@
       }catch(e){ _yut(e); }
       return false;                          // tarayıcının kendi günlüğünü susturma
     };
+    /* SOZ REDDI PANEL ACMIYOR -- VE BU BILEREK BOYLE.
+       Bir ara "iki hata kanali neden farkli davraniyor" diye buraya
+       panel() eklendi; saglik testi aninda kirmizi yandi ve hakliydi.
+       Sebep kayitli: uygulamada ZARARSIZ reddler var (otomatik
+       oynatma reddi en basta) ve her birinde "SOMETHING BROKE"
+       gostermek hatanin kendisinden buyuk bir hata olurdu. Rejeksiyon
+       kayda giriyor, COPY DETAILS'te gorunuyor; ekrana cikmiyor. */
     window.addEventListener('unhandledrejection', function(ev){
       try{
         var r = ev && ev.reason;
         ekle('promise', String((r && (r.message || r)) || 'unknown'), '');
       }catch(e){ _yut(e); }
     });
+    /* Panel kapatilinca bayrak sifirlaniyor: bir SONRAKI hata yine
+       gorunsun. Kayit (_hataKayit) duruyor, yalnizca "gosterildi"
+       durumu kalkiyor. */
+    window.hataSifirla = function(){ _hataGosterildi = false; };
     /* Kullanıcının postalayabileceği metin. Cihaz kimliği yok, konum yok,
        çalma geçmişi yok — sadece hatanın kendisi ve hangi tarayıcı. */
     window.hataMetni = function(){
@@ -4064,6 +4098,23 @@
       }
       dug.textContent = oldu ? 'COPIED' : 'COPY FAILED';
       setTimeout(()=>{ try{ dug.textContent = 'COPY DETAILS'; }catch(_){ _yut(_); } }, 2200);
+    });
+    /* DISMISS: paneli kapatiyor ve bir SONRAKI hatanin yeniden
+       acabilmesi icin bayragi sifirliyor. Hata kaydi silinmiyor --
+       COPY DETAILS yine ayni seyi veriyor. Klavye kendiliginden
+       calisiyor (gercek <button>); ayrica Esc de kapatiyor. */
+    const hataEl = document.getElementById('hata');
+    const hataKapat = ()=>{
+      try{
+        if(hataEl){ hataEl.classList.remove('on'); hataEl.setAttribute('aria-hidden','true'); }
+        if(window.hataSifirla) window.hataSifirla();
+      }catch(_){ _yut(_); }
+    };
+    document.getElementById('hataKapat').addEventListener('click', e=>{
+      e.stopPropagation(); hataKapat();
+    });
+    document.addEventListener('keydown', e=>{
+      if(e.key === 'Escape' && hataEl && hataEl.classList.contains('on')) hataKapat();
     });
   }catch(e){ _yut(e); }
   function bekleGoster(){
@@ -10469,12 +10520,28 @@
       }
       return;
     }
+    /* ── SONUCLAR KLAVYEYLE DE CALISIYOR ────────────────────────
+       Once her sonuc duz bir <div>'di: rolu yok, sekme sirasi yok,
+       klavye isleyicisi yok. Enter yalnizca SIFIRINCI sonucu
+       caliyordu, yani klavyeyle uc yuz sonuctan tam olarak birine
+       ulasilabiliyordu. Uygulamadaki tek klavye bosluguydu.
+       Simdi liste bir <listbox>, her satir bir <option>: yukari/
+       asagi ile geziliyor, Enter/Bosluk ile caliniyor. Fare ve
+       dokunma yolu hic degismedi. */
     _araListe.forEach((x,i)=>{
       const d=document.createElement('div'); d.className='st'; d.dataset.i=String(i);
+      d.setAttribute('role','option');
+      d.setAttribute('tabindex', i===0 ? '0' : '-1');   // sekme listeye BIR kez giriyor
+      d.setAttribute('aria-selected','false');
       const b=document.createElement('b'); b.textContent=araBaslik(x.o); d.appendChild(b);
       if(x.o.sanatci){ const it=document.createElement('i'); it.textContent=x.o.sanatci; d.appendChild(it); }
+      /* Ekran okuyucu tek parcada duysun: baslik + sanatci. */
+      d.setAttribute('aria-label', araBaslik(x.o) + (x.o.sanatci ? ', ' + x.o.sanatci : ''));
       araSonuc.appendChild(d);
     });
+    /* Kac sonuc oldugunu SOYLE. Goren kisi listeye bakip anliyor;
+       gormeyen kisiye kimse sayiyi soylemiyordu. */
+    try{ araSonuc.setAttribute('aria-label', _araListe.length + ' results'); }catch(e){ _yut(e); }
   }
   /* Bos kutuda kac kayit listeleniyor. 541 istasyonun hepsini birden
      DOM'a yazmak dar telefonda ilk acilisi hissedilir sekilde
@@ -11341,6 +11408,12 @@
     e.stopPropagation();                                   // 'd' raporu vs. yazarken tetiklenmesin
     if(e.key==='Escape'){ e.preventDefault(); araKapa(); }
     else if(e.key==='Enter'){ e.preventDefault(); clearTimeout(_araZaman); araYap(); araCal(0); }
+    /* Asagi ok yazi kutusundan LISTEYE giriyor: klavye kullanan kisi
+       icin ikisi arasindaki tek gecis yolu. */
+    else if(e.key==='ArrowDown'){
+      const ilk = araSonuc.querySelector('.st');
+      if(ilk){ e.preventDefault(); araOdak(ilk); }
+    }
   });
   /* SONUCLARA DOKUNULDU: gec gelen havuz artik listeyi yeniden
      dizmiyor. Ikisi de sayiliyor -- parmagini koymak da kaydirmak
@@ -11352,6 +11425,40 @@
     e.stopPropagation();
     const st=e.target.closest('.st'); if(!st) return;
     araCal(parseInt(st.dataset.i,10));
+  });
+  /* ── LISTEDE KLAVYEYLE GEZINME ──────────────────────────────────
+     Yukari/asagi komsuya gecirir, Home/End uclara, Enter/Bosluk
+     calar, Escape kutuyu kapatir. Odak GERCEKTEN tasiniyor
+     (focus()), yalnizca bir sinif degismiyor: ekran okuyucu ancak
+     odak oradaysa satiri okur.
+     tabindex takasi WAI-ARIA'nin "roving tabindex" deseni: listeye
+     sekmeyle BIR kez girilir, icinde ok tuslariyla gezilir. */
+  function araOdak(el){
+    if(!el) return;
+    try{
+      araSonuc.querySelectorAll('.st').forEach(o=>{
+        o.setAttribute('tabindex','-1'); o.setAttribute('aria-selected','false'); });
+      el.setAttribute('tabindex','0'); el.setAttribute('aria-selected','true');
+      el.focus();
+      _araDokunuldu = true;            // gec gelen havuz listeyi yeniden dizmesin
+    }catch(e){ _yut(e); }
+  }
+  araSonuc.addEventListener('keydown', e=>{
+    const st = e.target && e.target.closest ? e.target.closest('.st') : null;
+    if(!st) return;
+    e.stopPropagation();
+    if(e.key==='Enter' || e.key===' '){
+      e.preventDefault(); araCal(parseInt(st.dataset.i,10)); return;
+    }
+    if(e.key==='ArrowDown'){ e.preventDefault(); araOdak(st.nextElementSibling); return; }
+    if(e.key==='ArrowUp'){   e.preventDefault(); araOdak(st.previousElementSibling); return; }
+    if(e.key==='Home'){ e.preventDefault(); araOdak(araSonuc.querySelector('.st')); return; }
+    if(e.key==='End'){
+      e.preventDefault();
+      const hepsi = araSonuc.querySelectorAll('.st');
+      araOdak(hepsi[hepsi.length-1]); return;
+    }
+    if(e.key==='Escape'){ e.preventDefault(); araKapa(); }
   });
   araKut.addEventListener('pointerdown', e=>e.stopPropagation());   // halkayı tetikleme
   document.addEventListener('pointerdown', e=>{
@@ -11498,6 +11605,9 @@
   function korumayiBirak(){ _kamKoru = 0; }      // kullanıcı kendi geçiş istedi
 
   /* Ses GERÇEKTEN akıyor mu? (grafiğin girişinden ölçüyoruz) */
+  /* Son getUserMedia hatasinin ADI. kamDegis bunu okuyup ekrana
+     dogru cumleyi yaziyor (bkz. kamNotYaz). */
+  var _kamSonHata = '';
   async function kamAc(){
     if(!KAMERA) return;                           // getUserMedia'nın tek çağrıldığı yer; anahtar kapalıyken hiç girilmiyor
     if(kamAcik || !kamEl) return false;
@@ -11514,7 +11624,17 @@
       camYaz();
       kamIzleyiciKur();                             // iz biterse sessizce kapat
       return true;
-    }catch(e){ kamAkis=null; kamAcik=false; return false; }
+    }catch(e){
+      /* HATANIN ADI SAKLANIYOR. Eskiden burada yalnizca false
+         donuluyordu ve sebep kayboluyordu; cagiran taraf da o false'i
+         atiyordu. Ad standart (NotAllowedError, NotFoundError,
+         NotReadableError...) ve her biri kullaniciya soylenecek
+         FARKLI bir cumleye karsilik geliyor. */
+      kamAkis=null; kamAcik=false;
+      _kamSonHata = (e && e.name) ? String(e.name) : 'Error';
+      _yut(e);
+      return false;
+    }
   }
 
   /* ── KAMERA TOPARLAMA — SADE ─────────────────────────────────────
@@ -11650,9 +11770,15 @@
     if(kamAcik){ kamKapat(); return; }
     kamAciliyor = true;
     if(camDug) camDug.classList.add('bekle');
-    try{ await kamAc(); }catch(e2){ _yut(e2); }
+    _kamSonHata = '';
+    let oldu = false;
+    try{ oldu = await kamAc(); }catch(e2){ _yut(e2); }
     kamAciliyor = false;
     if(camDug) camDug.classList.remove('bekle');
+    /* ACILMADIYSA SEBEBINI SOYLE. Eskiden bu deger atiliyordu:
+       izin verilmeyen bir cihazda CAM olu bir tustu ve hicbir sey
+       aciklamiyordu. */
+    if(!oldu && !kamAcik){ try{ kamNotYaz(_kamSonHata); }catch(e3){ _yut(e3); } }
   }
   /* Canlı yayın çalarken REC pasif. akisMi() aktif parçanın canlı
      yayın olup olmadığını söylüyor. */
@@ -11681,22 +11807,61 @@
   try{ window.recPasifTazele = ()=>{ try{ recPasifYaz(); }catch(e){ _yut(e); }
         try{ if(typeof araclarYenidenSigdir==='function') araclarYenidenSigdir(); }
         catch(e){ _yut(e); } }; }catch(e){ _yut(e); }
-  var _recNotZaman = null;
-  function recNotYaz(baslik, metin){
+  var _kisaNotZaman = null;
+  function kisaNotYaz(baslik, metin){
     try{
-      const el = document.getElementById('recNot'); if(!el) return;
-      while(el.firstChild) el.removeChild(el.firstChild);
-      const b = document.createElement('b');
-      b.textContent = baslik;                       // metin DUZ YAZI olarak giriyor
-      el.appendChild(b);
-      el.appendChild(document.createTextNode(metin));
-      el.classList.add('var');
+      const el = document.getElementById('kisaNot'); if(!el) return;
+      /* ── SIRA ONEMLI: ONCE GORUNUR, SONRA YAZ ──────────────────
+         Ilk yazilisinda tersiydi: metin aria-hidden="true" haldeyken
+         giriliyor, sonra gorunur yapiliyordu. GIZLIYKEN degisen bir
+         canli bolge (aria-live) OKUNMAZ, ve gorunur yapmak bir
+         icerik degisikligi sayilmaz -- yani "REC neden kapali"
+         aciklamasi ekran okuyucu kullanan icin tamamen sessizdi.
+         Once aria-hidden kalkiyor, DOM bir kare oturuyor, sonra
+         metin giriyor: degisiklik artik GORUNUR bir bolgede oluyor
+         ve okunuyor. */
       el.setAttribute('aria-hidden','false');
-      clearTimeout(_recNotZaman);
-      _recNotZaman = setTimeout(()=>{
+      el.classList.add('var');
+      const doldur = ()=>{
+        try{
+          while(el.firstChild) el.removeChild(el.firstChild);
+          const b = document.createElement('b');
+          b.textContent = baslik;                   // metin DUZ YAZI olarak giriyor
+          el.appendChild(b);
+          el.appendChild(document.createTextNode(metin));
+        }catch(e){ _yut(e); }
+      };
+      if(typeof requestAnimationFrame === 'function') requestAnimationFrame(doldur);
+      else doldur();
+      clearTimeout(_kisaNotZaman);
+      _kisaNotZaman = setTimeout(()=>{
         try{ el.classList.remove('var'); el.setAttribute('aria-hidden','true'); }
-        catch(e){ _yut(e); } }, 4200);
+        catch(e){ _yut(e); } }, 4600);
     }catch(e){ _yut(e); }
+  }
+  /* ── KAMERA ACILMAZSA NEDENINI SOYLE ──────────────────────────
+     kamAc() eskiden sessizce false donuyordu ve cagiran taraf o
+     degeri atiyordu: izin verilmeyen ya da kamerasi olmayan bir
+     cihazda CAM'e basan kisi hicbir sey olmadigini goruyor, nedenini
+     de hicbir yerde bulamiyordu -- sonsuza kadar. REC dun konusmaya
+     basladi, CAM hala susuyordu.
+     Tarayicilarin hata ADLARI standart; her biri farkli bir sey
+     anlatiyor ve farkli bir cikis yolu var, o yuzden genel bir
+     "olmadi" cumlesi yerine dogru cumle yaziliyor. */
+  function kamNotYaz(ad){
+    const IZIN = ['CAMERA BLOCKED',
+      'The browser is holding the camera back. Open this site’s settings — '
+    + 'the padlock next to the address — allow the camera, then press CAM again.'];
+    const YOK = ['NO CAMERA FOUND',
+      'This device reports no front camera the browser can reach.'];
+    const MESGUL = ['CAMERA IS BUSY',
+      'Another app is holding the camera. Close it and press CAM again.'];
+    const T = { NotAllowedError:IZIN, SecurityError:IZIN, PermissionDeniedError:IZIN,
+                NotFoundError:YOK, OverconstrainedError:YOK, DevicesNotFoundError:YOK,
+                NotReadableError:MESGUL, AbortError:MESGUL, TrackStartError:MESGUL };
+    const v = T[ad] || ['CAMERA DID NOT OPEN',
+      'The browser refused the camera and did not say why.'];
+    kisaNotYaz(v[0], v[1]);
   }
   function camYaz(){
     if(!camDug) return;
@@ -13083,7 +13248,7 @@
       const radyoda = !document.body.classList.contains('mood');
       if(!kaydedici && !_bekleyenKayit && (radyoda || akisMi())){
         recPasifYaz();
-        recNotYaz('REC LOCKED · LIVE SIGNAL',
+        kisaNotYaz('REC LOCKED · LIVE SIGNAL',
           'Archive tracks are Creative Commons or public domain — '
         + 'capturable. A live stream is licensed to be heard, not kept.');
         return;

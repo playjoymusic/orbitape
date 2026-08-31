@@ -10,15 +10,11 @@
 # istasyonuna, sarki adi soran uc noktalara her istekte hangi sayfadan geldigini
 # soyluyordu. Simdi soylemiyor.
 #
-# ── NEDEN CSP YOK ─────────────────────────────────────────────────
-# Content-Security-Policy buraya yazilabilirdi ve yazilmasi da iyi
-# olurdu — ama media-src'yi yanlis yazmak uygulamayi SUSTURUR: canli
-# radyo yuzlerce farkli sunucudan geliyor ve hepsi onceden bilinmiyor.
-# Denetimde de "bu adimi atlamayin, dogrulamadan koymayin" diye
-# isaretlendi. Enjeksiyon yuzeyi zaten kapali (dis veri DOM'a yalnizca
-# textContent ile giriyor, eval/innerHTML-dis-veri yok), yani CSP
-# burada ikinci savunma. Gercek akis adresleriyle olculup oyle
-# eklenecek.
+# ── CSP NEREDE ────────────────────────────────────────────────────
+# Dosyanin SONUNDA, her sayfa icin ayri ayri; oraya araclar/csp.py
+# yaziyor. Burada degil, cunku politika ozet (hash) iceriyor ve her
+# sayfanin ozeti farkli. Ayrintisi ve bir kez yapilan hatanin kaydi
+# csp.py'nin basinda.
 
 /*
   # Tarayici, dosyayi sunucunun soyledigi turden BASKA bir sey
@@ -33,10 +29,14 @@
   # gitmesin. Gizlilik metnindeki sozun teknik karsiligi.
   Referrer-Policy: no-referrer
 
-  # Uygulamanin KENDISININ kullandiklari acik (kamera + ekran kaydi),
-  # geri kalan her sey kapali. Uygulama bunlari istemiyor; istemedigi
-  # bir seyin izni de olmamali.
-  Permissions-Policy: camera=(self), display-capture=(self), microphone=(), geolocation=(), payment=(), usb=(), midi=(), serial=(), bluetooth=(), interest-cohort=()
+  # Uygulamanin KENDISININ kullandigi tek sey acik (on kamera), geri
+  # kalan her sey kapali. Kural basit: istemedigi bir seyin izni de
+  # olmamali.
+  # display-capture KALKTI: kural kendi kendisiyle celisiyordu.
+  # Ekran kaydi getDisplayMedia ILE YAPILMIYOR -- o cagri kodda hic
+  # gecmiyor; kayit uygulamanin kendi tuvalinden (captureStream)
+  # aliniyor ve hicbir izin istemiyor.
+  Permissions-Policy: camera=(self), display-capture=(), microphone=(), geolocation=(), payment=(), usb=(), midi=(), serial=(), bluetooth=(), interest-cohort=()
 
 # METIN DOSYALARI UTF-8. Cloudflare .txt ve .xml icin charset
 # soylemiyor; tarayici da eski bir kodlama varsayiyor ve dosyadaki
@@ -135,9 +135,28 @@
   Cache-Control: public, max-age=21600, stale-while-revalidate=604800
 
 # ── CSP: BURASI csp.py TARAFINDAN YAZILIYOR ─────────────────────
-# Elle duzenleme: index.html degisince ozet de degisir.
+# Elle duzenleme: sayfalar degisince ozet de degisir.
 #   python3 araclar/csp.py
-# Saglik testi ikisinin ayni olup olmadigina bakiyor.
-/*
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-uuD64oRgVgN9q0gNK4AurRazkb6F1F5DktwhZHDZM6M='; style-src 'sha256-2I89yHPTCAQB1W69FUU00BV16i8W1mLXaSiXuZ9DcnI='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+# Saglik testi dort sayfayi da ACIP stil aldiklarina bakiyor.
+#
+# '/*' YOK: Cloudflare eslesen butun kurallari uygular, iki CSP
+# basligi gidince tarayici KESISIMLERINI alir ve iki ayri ozet
+# listesi birbirini sifirlar. Her sayfa kendi yolunda.
+
+# index.html
+/
+/index.html
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-J8ZQGuntZMH4kvsQSJC7tDSMgdPmBWDGn0Zkuh8g/LY='; style-src 'sha256-WWkxHvF2UpEEMFA+u69MMovUBzuFGvUsT6Kunr+vXNI='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+
+# privacy.html
+/privacy.html
+  Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'sha256-9ny9lEj7O6Nnlv5nlopgU37YZMedYj8VgU/D57LRPGs='; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+
+# terms.html
+/terms.html
+  Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'sha256-HcDDLh7UyYn4Ou6zM/aRCRq8TA3eK4kXKamW01tW1Q0='; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+
+# 404.html
+/404.html
+  Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'sha256-ByE+ZrNNPIVG/MTsFNIZqB+O6qHhfQts6sDDTvivFwI='; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 # ── CSP SONU ────────────────────────────────────────────────────

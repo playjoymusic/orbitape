@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-csp.py — index.html'in satir ici script/style ozetini hesaplar ve
-         _headers icindeki Content-Security-Policy satirini tazeler.
+csp.py — YAYINDAKI HER HTML SAYFASININ satir ici script/style ozetini
+         hesaplar ve _headers icindeki CSP bloklarini tazeler.
 
 NEDEN OZET (hash), 'unsafe-inline' DEGIL
   Uygulama tek dosya: butun JavaScript TEK bir satir ici <script>
@@ -12,10 +12,30 @@ NEDEN OZET (hash), 'unsafe-inline' DEGIL
   Ozet yazinca yalnizca BIZIM blogumuz calisiyor: baska hicbir
   satir ici script, hicbir event-handler niteligi, hicbir eval.
 
-  Uyari: ozet ve dosya birbirine bagli. index.html degisip ozet
-  guncellenmezse uygulama HIC ACILMAZ (butun JS engellenir). Bu
-  yuzden saglik testinde "CSP ozeti index.html ile ayni" kontrolu
+  Uyari: ozet ve dosya birbirine bagli. Sayfa degisip ozet
+  guncellenmezse o sayfa CIPLAK ACILIR (index.html'de: HIC ACILMAZ).
+  Bu yuzden saglik testinde "CSP ozeti dosyalarla ayni" kontrolu
   var: bayat ozet YAYINA CIKMADAN once kirmizi yanar.
+
+NEDEN HER SAYFA AYRI -- BU ARAC BIR KEZ YANLIS YAZILDI
+  Ilk surumu YALNIZCA index.html'e bakiyor ve tek bir '/*' blogu
+  yaziyordu. '/*' butun yollara uyar: gizlilik, kullanim sartlari ve
+  404 sayfalari da o politikayi aliyor ama kendi <style> bloklarinin
+  ozeti listede olmadigi icin tarayici hepsini reddediyordu.
+  OLCULDU: uc sayfa da sifir stil sayfasiyla, beyaz zeminde, 16px
+  Times olarak aciliyordu -- ve privacy.html Play Console'a verilen
+  gizlilik politikasi adresi. Aylardir oyleydi ve hicbir test
+  gormemisti (butun testler yalnizca index.html'i aciyor).
+  Artik her sayfanin kendi yolu ve kendi ozeti var.
+
+NEDEN '/*' BLOGU YOK
+  Cloudflare eslesen BUTUN kurallari uyguluyor. '/*' uzerine bir de
+  '/privacy.html' yazilsa sayfaya IKI CSP basligi gider ve tarayici
+  ikisinin KESISIMINI uygular -- yani iki farkli ozet listesi
+  birbirini sifirlar, sayfa yine ciplak kalir. O yuzden CSP yalnizca
+  belirli yollara yaziliyor. Guvenlik basliklarinin geri kalani
+  (nosniff, frame-options, referrer, permissions) '/*' blogunda
+  duruyor ve butun yollara gitmeye devam ediyor.
 
 NEDEN connect-src ve media-src GENIS ('https:')
   Uygulama "su an ne caliyor" bilgisini ISTASYONUN KENDI
@@ -25,6 +45,8 @@ NEDEN connect-src ve media-src GENIS ('https:')
   bilinmiyor. Ayni sebep ses akisi icin de gecerli.
   Bu iki yon dar yazilamaz; ama 'https:' yine de http'yi ve
   ws/ftp gibi semalar disari veri kacirmayi kapatiyor.
+  YAZI SAYFALARINDA GECERLI DEGIL: gizlilik/sartlar/404 hicbir ses
+  calmiyor, hicbir yere baglanmiyor. Onlarin politikasi cok daha dar.
 
 KULLANIM
   python3 araclar/csp.py            # _headers'i yerinde tazeler
@@ -38,11 +60,22 @@ import re
 import sys
 
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INDEX = os.path.join(KOK, "index.html")
 HEADERS = os.path.join(KOK, "_headers")
 
 BASLA = "# ── CSP: BURASI csp.py TARAFINDAN YAZILIYOR ─────────────────────"
 BITIR = "# ── CSP SONU ────────────────────────────────────────────────────"
+
+# Yayina giden HTML sayfalari ve hangi yollardan servis edildikleri.
+# '/' de index.html'i veriyor, o yuzden iki yol birden yaziliyor.
+#   uygulama=True  -> ses calan, aga cikan, kayit yapan sayfa
+#   uygulama=False -> duz yazi sayfasi: hicbir sey calmiyor, hicbir
+#                     yere baglanmiyor. Politikasi buna gore dar.
+SAYFALAR = [
+    {"dosya": "index.html",   "yollar": ["/", "/index.html"], "uygulama": True},
+    {"dosya": "privacy.html", "yollar": ["/privacy.html"],    "uygulama": False},
+    {"dosya": "terms.html",   "yollar": ["/terms.html"],      "uygulama": False},
+    {"dosya": "404.html",     "yollar": ["/404.html"],        "uygulama": False},
+]
 
 
 def ozet(govde):
@@ -50,53 +83,97 @@ def ozet(govde):
     return "'sha256-" + base64.b64encode(h).decode("ascii") + "'"
 
 
-def ozetleri_al(kaynak):
-    sc = re.search(r"<script(?![^>]*\ssrc=)[^>]*>(.*?)</script>", kaynak, re.S)
-    st = re.search(r"<style[^>]*>(.*?)</style>", kaynak, re.S)
-    if not sc or not st:
-        raise SystemExit("index.html icinde satir ici script/style bulunamadi")
-    return ozet(sc.group(1)), ozet(st.group(1))
+def ozetleri_al(kaynak, ad):
+    """Sayfadaki BUTUN satir ici script ve style bloklarinin ozetleri.
+
+    Cogul, cunku tek blok varsayimi bir kabuldu: bir sayfaya ikinci
+    bir <style> eklendigi an sessizce yanlis olurdu."""
+    sc = re.findall(r"<script(?![^>]*\ssrc=)[^>]*>(.*?)</script>", kaynak, re.S)
+    st = re.findall(r"<style[^>]*>(.*?)</style>", kaynak, re.S)
+    if not st:
+        raise SystemExit("%s icinde satir ici <style> bulunamadi" % ad)
+    # Satir ici stil NITELIGI (style="...") ozetle KABUL EDILMEZ.
+    # Sessizce ciplak birakmaktansa burada durup soylemek dogrusu.
+    nitelik = re.findall(r"<[^>]+\sstyle=\"", kaynak)
+    if nitelik:
+        raise SystemExit(
+            "%s icinde %d adet satir ici style=\"...\" var. Ozet tabanli CSP "
+            "bunlari KABUL ETMEZ (sayfa ciplak acilir). Sinifa cevir."
+            % (ad, len(nitelik)))
+    return [ozet(x) for x in sc], [ozet(x) for x in st]
 
 
-def politika(js, css):
-    return "; ".join([
+def politika(js_ozetleri, css_ozetleri, uygulama):
+    js = " ".join(js_ozetleri) if js_ozetleri else "'none'"
+    css = " ".join(css_ozetleri) if css_ozetleri else "'none'"
+    ortak = [
         "default-src 'none'",
         "script-src " + js,
         "style-src " + css,
-        # data: -> uygulamanin kendi urettigi SVG'ler; blob: -> ekran kaydi
-        "img-src 'self' data: blob:",
-        # https: sart: ses yuzlerce farkli istasyon sunucusundan geliyor
-        "media-src 'self' https: blob: data:",
-        # https: sart: "su an ne caliyor" istasyonun KENDI sunucusuna soruluyor
-        "connect-src 'self' https:",
-        "font-src 'self'",
-        "manifest-src 'self'",
-        "worker-src 'self'",
-        # Asagidakiler dar ve bedava: uygulama hicbirini kullanmiyor.
+    ]
+    if uygulama:
+        ortak += [
+            # data: -> uygulamanin kendi urettigi SVG'ler; blob: -> ekran kaydi
+            "img-src 'self' data: blob:",
+            # https: sart: ses yuzlerce farkli istasyon sunucusundan geliyor
+            "media-src 'self' https: blob: data:",
+            # https: sart: "su an ne caliyor" istasyonun KENDI sunucusuna soruluyor
+            "connect-src 'self' https:",
+            "font-src 'self'",
+            "manifest-src 'self'",
+            "worker-src 'self'",
+        ]
+    else:
+        # Yazi sayfasi: yalnizca kendi gorselleri. Aga hic cikmiyor.
+        ortak += [
+            "img-src 'self' data:",
+            "font-src 'self'",
+        ]
+    ortak += [
+        # Asagidakiler dar ve bedava: hicbir sayfa hicbirini kullanmiyor.
         "base-uri 'none'",
         "form-action 'none'",
         "frame-ancestors 'none'",
         "frame-src 'none'",
         "object-src 'none'",
-    ])
+    ]
+    return "; ".join(ortak)
 
 
-def blok(js, css):
-    return "\n".join([
+def blok(kayitlar):
+    satir = [
         BASLA,
-        "# Elle duzenleme: index.html degisince ozet de degisir.",
+        "# Elle duzenleme: sayfalar degisince ozet de degisir.",
         "#   python3 araclar/csp.py",
-        "# Saglik testi ikisinin ayni olup olmadigina bakiyor.",
-        "/*",
-        "  Content-Security-Policy: " + politika(js, css),
-        BITIR,
-    ])
+        "# Saglik testi dort sayfayi da ACIP stil aldiklarina bakiyor.",
+        "#",
+        "# '/*' YOK: Cloudflare eslesen butun kurallari uygular, iki CSP",
+        "# basligi gidince tarayici KESISIMLERINI alir ve iki ayri ozet",
+        "# listesi birbirini sifirlar. Her sayfa kendi yolunda.",
+    ]
+    for k in kayitlar:
+        satir.append("")
+        satir.append("# %s" % k["dosya"])
+        for yol in k["yollar"]:
+            satir.append(yol)
+        satir.append("  Content-Security-Policy: " + k["politika"])
+    satir.append(BITIR)
+    return "\n".join(satir)
 
 
 def main():
-    kaynak = open(INDEX, encoding="utf-8").read()
-    js, css = ozetleri_al(kaynak)
-    yeni = blok(js, css)
+    kayitlar = []
+    for s in SAYFALAR:
+        yol = os.path.join(KOK, s["dosya"])
+        kaynak = open(yol, encoding="utf-8").read()
+        js, css = ozetleri_al(kaynak, s["dosya"])
+        kayitlar.append({
+            "dosya": s["dosya"],
+            "yollar": s["yollar"],
+            "politika": politika(js, css, s["uygulama"]),
+            "js": js, "css": css,
+        })
+    yeni = blok(kayitlar)
     if "--goster" in sys.argv:
         print(yeni)
         return 0
@@ -108,9 +185,12 @@ def main():
     else:
         metin = metin.rstrip("\n") + "\n\n" + yeni + "\n"
     open(HEADERS, "w", encoding="utf-8").write(metin)
-    print("script ozeti: %s" % js)
-    print("style  ozeti: %s" % css)
-    print("_headers tazelendi")
+    for k in kayitlar:
+        print("%-14s script %s | style %s" % (
+            k["dosya"],
+            (k["js"][0] if k["js"] else "yok"),
+            (k["css"][0] if k["css"] else "yok")))
+    print("_headers tazelendi (%d sayfa)" % len(kayitlar))
     return 0
 
 

@@ -38,18 +38,28 @@ Bu form bizde **kolay tarafta**, çünkü hiçbir veri toplanmıyor.
 | Is all of the user data collected by your app encrypted in transit? | *(sorulmaz — toplama yok)* |
 | Do you provide a way for users to request that their data be deleted? | *(sorulmaz — toplama yok)* |
 
-### Kamera ve mikrofon neden "toplanan veri" değil
+### Kamera neden "toplanan veri" değil
 
 Google'ın tanımı net: veri **cihazdan çıkıyorsa** toplanmış sayılır.
-ORBITAPE'te kamera ve mikrofon yalnızca sen kayıt yaparken, yalnızca
-cihazın içinde çalışıyor; hiçbir yere gönderilmiyor, dosya senin
-cihazında kalıyor. Bu, Google'ın **"processed ephemerally / on-device
-only"** istisnası. Gizlilik metnimiz de tam olarak bunu söylüyor —
-ikisi tutarlı olmalı, form ile metin çelişirse geri döner.
+ORBITAPE'te kamera yalnızca sen kayıt yaparken, yalnızca cihazın
+içinde çalışıyor; hiçbir yere gönderilmiyor, dosya senin cihazında
+kalıyor. Bu, Google'ın **"processed ephemerally / on-device only"**
+istisnası. Gizlilik metnimiz de tam olarak bunu söylüyor — ikisi
+tutarlı olmalı, form ile metin çelişirse geri döner.
 
-İzinler (`CAMERA`, `RECORD_AUDIO`) ayrı bir yerde, uygulamanın
-izin listesinde beyan ediliyor; Data Safety **veriyi** soruyor,
-izni değil.
+### MİKROFON BEYAN EDİLMEYECEK
+
+Bu satır bir kez yanlış yazıldı ve düzeltildi: burada `RECORD_AUDIO`
+yazıyordu. **Uygulama mikrofonu hiç istemiyor** — kod tarayıcıdan
+yalnızca görüntü istiyor (`audio:false`), sitenin izin başlığı
+mikrofonu kapatıyor, ve kullanım şartlarımız yazılı olarak
+*"The microphone is never requested"* diyor.
+
+`RECORD_AUDIO` beyan edilirse mağaza listesi kendi yayımlanmış
+şartlarımızla çelişir. Beyan edilecek tek izin `CAMERA`.
+
+İzinler ayrı bir yerde, uygulamanın izin listesinde beyan ediliyor;
+Data Safety **veriyi** soruyor, izni değil.
 
 ---
 
