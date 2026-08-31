@@ -20,6 +20,35 @@ const { T, ADRES: S, TELEFON, IPHONE_UA,
 const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
 
+/* ── HIZLI KIP ───────────────────────────────────────────────────
+     node test/saglik.js          -> hepsi (CI hep boyle kosuyor)
+     node test/saglik.js hizli    -> YAVAS bloklar atlanir
+
+   NEDEN VAR
+     Kontrollerin suresi hic esit degil. Olculdu: 164 saniyenin
+     %85'i yalnizca OTUZ kontrolde, en yavasi tek basina 41.7 saniye
+     ("Tur ilk acilista cikiyor" -- yirmi saniyelik bir tanitim
+     turunun bitmesini bekliyor).
+     Bir duzeltmenin ardindan tam turu cevirmek bu yuzden bes dakika
+     suruyordu ve gun icinde bes kez cevrilince yirmi bes dakika
+     gidiyordu. Oysa o beklemelerin cogu dokunulan seyle ilgisiz.
+
+   NEYI ATLIYOR
+     Yalnizca ZAMAN BEKLEYEN bloklar: tanitim turu, FX gecis
+     olcumleri, gezegen animasyonu, karsilama eli. Hicbiri "kod
+     dogru mu" degil "kac saniyede oluyor" olcuyor.
+
+   NEYI ATLAMIYOR
+     Yerlesim, metin-kod tutarliligi, CSP, erisilebilirlik, veri --
+     yani bir duzeltmenin kirabilecegi seylerin neredeyse tamami.
+
+   KURAL: hizli kip GELISTIRME icindir. CI hep tam turu cevirir ve
+   push oncesi son tur da tam olmali. Atlanan kontroller ciktinin
+   sonunda ADIYLA yaziliyor -- neyin olculmedigi gizlenmiyor. */
+const HIZLI = process.argv.slice(2).includes('hizli');
+const atlanan = [];
+const yavas = (ad) => { atlanan.push(ad); return true; };
+
 (async()=>{
   const b = await tarayiciAc();
   /* ANA BAGLAM. Digerlerinden iki farki var ve ikisi de bilerek:
@@ -1665,7 +1694,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      Ilk acilista cikar, kendi ilerler, SKIP ile kapanir. Kutu
      isaretlenmezse bir sonraki acilista yine cikar (standart).
      Bittiginde hicbir sey secili birakmaz. */
-  const tur = await (async()=>{
+  /* HIZLI kipte atlaniyor: bu blok yirmi saniyelik bir turun
+     bitmesini bekliyor ve tek basina butun surenin dortte biri. */
+  const tur = HIZLI ? null : await (async()=>{
     /* Bu test "normal ilk acilis"i temsil ediyor, yani AGI OLAN bir
        cihazi — o yuzden 'sahte' ag. Iki fark var ve ikisi de bilerek:
        · KUCUK havuzlar: tur 20 saniyede bitmeli, 40 parcalik havuz
@@ -1751,6 +1782,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
                sure: (sure>0 ? sure : -1), cak, kars };
     } finally { await kapat(); }
   })();
+  if(!tur){ yavas('Tanitim turu (11 kontrol)'); } else {
   K('Tur ilk acilista cikiyor', tur.acildi, 'gorunur');
   K('Tur INGILIZCE', tur.ingilizce, 'turkce karakter yok');
   K('Tur kendi ilerliyor', tur.ilerledi, '2.4 sn icinde adim degisti');
@@ -1763,6 +1795,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Tur bitince temiz birakiyor', tur.temiz.fx==='' && tur.temiz.oniz==='', 'FX "'+tur.temiz.fx+'" | onizleme "'+tur.temiz.oniz+'"');
   K('Kutu isaretlenmezse TEKRAR cikar', tur.tekrar, 'standart davranis');
   K('Kutu isaretlenirse bir daha cikmaz', !tur.bitti, 'depoya yazildi');
+  }
 
   K('RECORDS muzik, ORBITAPE hepsi', ay, 'ORBITAPE arsivin tamami, RADIOTAPE disarida');
   const sf = await pg.evaluate(()=>{
@@ -2529,7 +2562,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     try{ sp.disconnect(); osc.stop(); }catch(e){}
     return out;
   });
-  {
+  /* HIZLI kipte atlaniyor: bu blok Web Audio'nun GERCEK ZAMANLI
+     ciktisini dinliyor ve gerekirse uc kez tekrarliyor -- 19.6 sn. */
+  if(HIZLI){ yavas('FX gecisinde CAT yok'); } else {
     const tepe = c => Math.max(c.retro, c.dongu, c.kara, c.ana, c.kapat);
     const esik = c => c.temel * 3 + 0.02;
     let cat = await catOlc(), deneme = 1;
@@ -3139,7 +3174,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      kullanilana kadar HER degisimde tekrar cikar. Kapatma secenegi
      (SKIP + kutu) ancak TUM kanallar birer kez gorduKten SONRA
      beliriyor; kutu isaretlenip kapatilinca bir daha hic cikmiyor. */
-  const fs2 = await pg.evaluate(async ()=>{
+  /* HIZLI kipte atlaniyor: FX sunumu bes ayri kanal degisimini ve
+     her birinin animasyonunu bekliyor -- 9.4 sn. */
+  const fs2 = HIZLI ? null : await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     /* FX sunumunun KENDI alt satiri (#fxAlt). Acilis turununki (#turAlt) ayri. */
     const alt = ()=>{ try{ return getComputedStyle(document.getElementById('fxAlt')).display; }catch(e){ return '?'; } };
@@ -3212,6 +3249,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
              depoTemiz, kullandiktanSonra, yenidenAcilista, yenidenAlt,
              turKutusuTemiz, turDeposuTemiz };
   });
+  if(!fs2){ yavas('FX sunumu (14 kontrol)'); } else {
   K('FX sunumu kanal degisiminde cikar', fs2.bir===true, 'ilk degisimde gorundu');
   K('Sunuma HEMEN giriyor', fs2.gecen < 700, fs2.gecen+' ms');
   K('FX sunumu HER kanal degisiminde', fs2.iki===true && fs2.ayni===true, 'yeni kanalda da ayni kanalda da');
@@ -3226,6 +3264,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Efekt kullanilinca o oturum susar', fs2.kullandiktanSonra===false, 'ayni oturumda cikmiyor');
   K('Yeniden acilista YINE cikar', fs2.yenidenAcilista===true, 'her acilista hatirlatma');
   K('Yeniden acilista SKIP hazir', fs2.yenidenAlt!=='none', 'alt satir: '+fs2.yenidenAlt);
+  }
 
   /* ── KILIT EKRANI (MediaSession) ────────────────────────────────
      Kilit ekraninda parca adi, kapak ve dugmeler. setActionHandler geri
@@ -3772,6 +3811,45 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      /ORBITAPE \d{4}\./.test(ht.metin||'') && /Mozilla/.test(ht.metin||''),
      'rapor ise yarar bilgi tasiyor');
   K('Hata paneli Ingilizce', !/[ıİşŞğĞçÇöÖüÜ]/.test(ht.ing||''), 'arayuzde Turkce yok');
+  /* ── SAHA GERI BILDIRIMI ────────────────────────────────────────
+     Yayindan sonra kor kaliyorduk: bir sey bozuldugunda ogrenmenin
+     tek yolu, kullanicinin kendiliginden metni kopyalayip posta
+     uygulamasini acip adresi bulup yapistirmasiydi. Bes adim; on iki
+     test kullanicisinin on biri yapmaz, sadece uygulamayi siler.
+     Simdi tek dokunus: metin hazir sekilde KENDI posta uygulamasinda
+     aciliyor. Otomatik gonderim YOK ve olmamali -- uygulamanin arka
+     ucu yok, gizlilik metni "hicbir sey toplanmiyor" diyor ve Play
+     Data Safety formunda da oyle yaziyor.
+     Olculen dort sey: iki kapi da var mi, mailto dogru mu, konuda
+     surum var mi (gelen postalar surume gore ayiklanabilsin), ve
+     metin hala kimlik/gecmis tasimiyor mu. */
+  {
+    const gb = await pg.evaluate(()=>{
+      const dug = document.getElementById('hataGonder');
+      const sat = document.querySelector('#ayar .sat[data-ayar="bildir"]');
+      /* Adres KURUCUSU cagriliyor, gonderici degil: sayfa terk
+         edilmiyor ama uretilen sey birebir olculuyor. */
+      let baglanti = '';
+      try{ baglanti = window.hataPostaAdresi('sorun'); }
+      catch(e){ baglanti = 'URETILEMEDI: ' + e.message; }
+      return { dugme: !!dug, dugmeYazi: dug ? dug.textContent.trim() : '',
+               ayarSatir: !!sat, satirYazi: sat ? sat.textContent.trim() : '',
+               baglanti: baglanti.slice(0, 400) };
+    });
+    K('Sorun bildirmenin iki kapisi var',
+       gb.dugme && gb.ayarSatir,
+       'hata panelinde "' + gb.dugmeYazi + '", ayarlarda "' + gb.satirYazi + '"');
+    K('Bildirim kendi posta uygulamasini aciyor, sunucuya gitmiyor',
+       /^mailto:hello@orbitape\.app\?/.test(gb.baglanti)
+       && /subject=ORBITAPE%20\d{4}\./.test(gb.baglanti),
+       gb.baglanti ? gb.baglanti.slice(0,72) + '…' : 'adres uretilemedi');
+    /* Gizlilik metni bu davranisi ANLATMALI: otomatik gonderim yok,
+       posta kullanicinin kendi uygulamasinda aciliyor. */
+    const gzl2 = fs.readFileSync('privacy.html','utf8');
+    K('Gizlilik metni bildirimi anlatiyor',
+       /ever sent automatically/i.test(gzl2) && /your own mail app/i.test(gzl2),
+       'metin ile davranis ayni seyi soyluyor');
+  }
 
   /* ── SES ZINCIRI: MERKEZDE SEFFAF, RADYODA EZILMEYEN ────────────
      Iki olculen hata vardi:
@@ -6772,6 +6850,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
 
   await b.close();
 
+  if(atlanan.length){
+    console.log('║ ·  HIZLI KIP — atlanan yavas bloklar: ' + atlanan.join(' | '));
+    console.log('║ ·  Tam tur icin: node test/saglik.js');
+  }
   const kotu = sonuc.filter(s=>!s.gecti);
   const en = Math.max(...sonuc.map(s=>s.ad.length));
   console.log('\n╔═ ORBITAPE SAGLIK RAPORU ' + '═'.repeat(Math.max(0,en+28)) );

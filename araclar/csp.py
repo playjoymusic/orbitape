@@ -48,12 +48,23 @@ NEDEN connect-src ve media-src GENIS ('https:')
   YAZI SAYFALARINDA GECERLI DEGIL: gizlilik/sartlar/404 hicbir ses
   calmiyor, hicbir yere baglanmiyor. Onlarin politikasi cok daha dar.
 
+SURUM DAMGASI DA BURADA
+  index.html'deki ORB_SURUM elle yaziliyordu ve bir gun UC GUN geride
+  bulundu. O satir, kullanicinin gonderdigi her hata raporunun ILK
+  satiri: yanlissa "hangi surumde bozuldu" sorusu cevapsiz kaliyor,
+  yani var olma sebebi bozuluyor.
+  Insanin hatirlamasi gereken hicbir sey uzun vadede dogru kalmiyor.
+  Bu arac zaten HER PUSH ONCESI calismak zorunda (yoksa CSP ozeti
+  bayatlar ve uygulama acilmaz), yani surumu damgalamak icin dogru
+  yer burasi: unutulmasi mumkun olmayan tek adim.
+
 KULLANIM
-  python3 araclar/csp.py            # _headers'i yerinde tazeler
+  python3 araclar/csp.py            # _headers'i ve surumu tazeler
   python3 araclar/csp.py --goster   # yalnizca yazdirir, dosyaya dokunmaz
 """
 
 import base64
+import datetime
 import hashlib
 import os
 import re
@@ -161,11 +172,34 @@ def blok(kayitlar):
     return "\n".join(satir)
 
 
-def main():
+SURUM_DESEN = re.compile(r"(var ORB_SURUM = ')(\d{4}\.\d{2}\.\d{2})(')")
+
+
+def surumu_damgala():
+    """index.html'deki ORB_SURUM'u BUGUNE cekiyor.
+
+    Dosya degistiyse damga da degismeli; degismediyse dokunmuyoruz --
+    yoksa her calistirmada dosya 'degismis' gorunur ve git gecmisi
+    anlamsiz satirlarla dolar."""
+    yol = os.path.join(KOK, "index.html")
+    s = open(yol, encoding="utf-8").read()
+    m = SURUM_DESEN.search(s)
+    if not m:
+        print("UYARI: ORB_SURUM bulunamadi, surum damgalanmadi")
+        return None, None
+    eski = m.group(2)
+    yeni = datetime.date.today().strftime("%Y.%m.%d")
+    if eski == yeni:
+        return eski, eski
+    s = SURUM_DESEN.sub(lambda x: x.group(1) + yeni + x.group(3), s, count=1)
+    open(yol, "w", encoding="utf-8").write(s)
+    return eski, yeni
+
+
+def ozetleri_topla():
     kayitlar = []
     for s in SAYFALAR:
-        yol = os.path.join(KOK, s["dosya"])
-        kaynak = open(yol, encoding="utf-8").read()
+        kaynak = open(os.path.join(KOK, s["dosya"]), encoding="utf-8").read()
         js, css = ozetleri_al(kaynak, s["dosya"])
         kayitlar.append({
             "dosya": s["dosya"],
@@ -173,10 +207,21 @@ def main():
             "politika": politika(js, css, s["uygulama"]),
             "js": js, "css": css,
         })
-    yeni = blok(kayitlar)
+    return kayitlar
+
+
+def main():
     if "--goster" in sys.argv:
-        print(yeni)
+        print(blok(ozetleri_topla()))
         return 0
+    # SIRA KRITIK: ONCE surum damgalaniyor, SONRA ozet hesaplaniyor.
+    # Tersi olsa damga index.html'i degistirir ve az once hesaplanan
+    # ozet ayni anda bayatlardi -- yani arac kendi urettigi dosyayi
+    # bozardi. Bu hatanin ikizi bugun bir kez yasandi (index.html
+    # duzenlenip csp.py calistirilmayinca uygulama hic acilmadi).
+    eski, taze = surumu_damgala()
+    kayitlar = ozetleri_topla()
+    yeni = blok(kayitlar)
     metin = open(HEADERS, encoding="utf-8").read()
     if BASLA in metin and BITIR in metin:
         bas = metin.index(BASLA)
@@ -191,6 +236,8 @@ def main():
             (k["js"][0] if k["js"] else "yok"),
             (k["css"][0] if k["css"] else "yok")))
     print("_headers tazelendi (%d sayfa)" % len(kayitlar))
+    if taze:
+        print("surum: %s%s" % (taze, "" if eski == taze else "  (eski: %s)" % eski))
     return 0
 
 

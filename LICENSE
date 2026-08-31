@@ -1,0 +1,78 @@
+MIT License
+
+Copyright (c) 2026 Caner Anar
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+═══════════════════════════════════════════════════════════════════════
+WHAT THE MIT LICENCE ABOVE DOES NOT COVER
+═══════════════════════════════════════════════════════════════════════
+
+The licence above covers the SOURCE CODE. Three things are deliberately
+outside it, and each for a different reason.
+
+
+1. THE NAME AND THE IDENTITY
+
+   "ORBITAPE" and "RADIOTAPE", the wordmarks, the icon, the nebula and
+   planet artwork, the store screenshots and the app's visual identity
+   are not licensed here. They belong to the author.
+
+   You may fork this code, change it, ship it, sell it. You may not
+   publish it under the ORBITAPE name or identity, and you may not
+   publish it to an app store in a way that could be mistaken for the
+   original.
+
+   This is not a restriction on the code. It is the ordinary separation
+   between a program and the name a person put on a store listing: a
+   user who searches for ORBITAPE must find ORBITAPE.
+
+   Rename it and everything else here is yours to use.
+
+
+2. THE AUDIO AND THE STATION LIST
+
+   ORBITAPE does not contain any audio. It plays:
+
+     · Recordings from archive.org that are in the public domain or
+       carry a Creative Commons licence. Each recording's own licence
+       applies and is shown on screen while it plays. Reusing a
+       recording is between you and that licence, not this one.
+
+     · Live streams from radio stations. A station's stream is
+       licensed to be heard, not to be redistributed. That is why the
+       app never records live radio (see terms.html). If you fork this
+       and remove that rule, the consequences are yours.
+
+   The station list (radyo.json) is assembled from the public
+   radio-browser.info directory. It carries no rights of its own; the
+   stations do.
+
+
+3. THE FONT
+
+   'Share Tech Mono' is referenced by name and never embedded, because
+   embedding it would require shipping its own licence. If you fork
+   this, the font is between you and its author.
+
+
+═══════════════════════════════════════════════════════════════════════
+
+Questions, or a use you are unsure about: hello@orbitape.app

@@ -2332,6 +2332,17 @@
     <h5>MORE</h5>
     <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
       <span>HOW IT WORKS</span><span class="durum">PLAY</span></div>
+    <!-- ── SORUN BILDIR ────────────────────────────────────────────
+         Hata paneli yalnizca BETIK HATASINDA cikiyor. Kullanicilarin
+         yasadigi seylerin cogu betik hatasi degil: "calmiyor",
+         "sesi cok kisik", "kayit bos cikti". Onlar icin ekranda
+         hicbir kapi yoktu -- kisi ya adresi kendi bulup yazacakti ya
+         da (cogu zaman) hicbir sey yapmayacakti.
+         Bu satir ayni metni hazir sekilde kendi posta uygulamasinda
+         aciyor: teknik durum eklenmis, gonderme karari kullanicinin.
+         Hicbir sey otomatik gitmiyor. -->
+    <div class="sat islem" data-ayar="bildir" role="button" tabindex="-1">
+      <span>REPORT A PROBLEM</span><span class="durum">MAIL</span></div>
     <a class="sat bag" href="/privacy" target="_blank" rel="noopener" tabindex="-1">
       <span>PRIVACY</span><span class="durum">OPEN</span></a>
     <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
@@ -2452,6 +2463,16 @@
            yine ayni seyi veriyor ve YENI bir hata paneli tekrar
            aciyor. -->
       <button id="hataKapat" type="button">DISMISS</button>
+    </div>
+    <!-- ── TEK DOKUNUSLA BILDIR ──────────────────────────────────
+         COPY DETAILS metni panoya koyuyor ama sonrasi kullaniciya
+         kaliyordu: posta uygulamasini ac, adresi bul, yapistir,
+         gonder. Dort adim daha ve cogu kisi orada birakiyor.
+         Bu dugme metni hazir sekilde kendi posta uygulamasinda
+         aciyor -- gonderme karari yine kullanicinin, hicbir sey
+         otomatik gitmiyor. -->
+    <div class="ht-sira">
+      <button id="hataGonder" type="button">SEND TO DEVELOPER</button>
     </div>
     <div class="ht-posta">hello@orbitape.app</div>
   </div>
@@ -2699,7 +2720,68 @@
           for(var j=0;j<y.ilk.length;j++) s += '  . ' + y.ilk[j] + '\n';
         }
       }catch(e){ _yut(e); }
+      /* ── DURUM: HATANIN ETRAFINDAKI TEKNIK BAGLAM ──────────────
+         "Bende olmuyor" ile "bende de olmuyor" arasindaki fark bu
+         satirlar. Hepsi TEKNIK ve hicbiri kisiye ait degil:
+         hangi dunya, hangi raf, ses aciksa akiyor muydu, ag var
+         miydi, kayit surüyor muydu.
+         NE YOK: calma gecmisi, istasyon adi, favoriler, konum,
+         cihaz kimligi. Gizlilik metnindeki soz bu satirla da
+         gecerli -- ve asagidaki saglik testi onun bekcisi. */
+      try{
+        var d = [];
+        d.push('world=' + (document.body.classList.contains('mood') ? 'archive' : 'radio'));
+        try{ d.push('shelf=' + (AKTIF_AILE || AKTIF_MOD || '-')); }catch(e){ _yut(e); }
+        try{ d.push('audio=' + (ses && !ses.paused ? 'playing' : 'idle')); }catch(e){ _yut(e); }
+        try{ d.push('graph=' + (typeof actx !== 'undefined' && actx ? actx.state : 'none')); }catch(e){ _yut(e); }
+        try{ d.push('online=' + (navigator.onLine ? 'yes' : 'no')); }catch(e){ _yut(e); }
+        try{ d.push('rec=' + (kaydediciAktif() ? 'on' : 'off')); }catch(e){ _yut(e); }
+        try{ d.push('dpr=' + (window.devicePixelRatio || 1)); }catch(e){ _yut(e); }
+        s += '\nstate ' + d.join(' ') + '\n';
+      }catch(e){ _yut(e); }
       return s;
+    };
+    /* ── TEK DOKUNUSLA BILDIRME ────────────────────────────────
+       ONCEKI DURUM: yayindan sonra kor kaliyorduk. Bir sey
+       bozuldugunda ogrenmenin tek yolu, kullanicinin kendiliginden
+       COPY DETAILS'e basip, posta uygulamasini acip, adresi bulup,
+       yapistirip gondermesiydi. Bes adim. On iki test kullanicisinin
+       on biri bunu yapmaz -- sadece uygulamayi siler.
+
+       NEDEN OTOMATIK GONDERIM YOK
+       Uygulamanin arka ucu yok ve olmamali: gizlilik metni "hicbir
+       sey toplanmiyor" diyor, Play Data Safety formunda da oyle
+       yaziyor. Bir uc noktaya otomatik gonderim ikisini de bozardi
+       ve ucuncu bir sirketi denkleme sokardi.
+       mailto BU YUZDEN DOGRU CEVAP: hicbir sey bizim sunucumuza
+       gitmiyor, metin kullanicinin KENDI posta uygulamasinda
+       aciliyor, ne yazdigini goruyor ve GONDER'e kendisi basiyor.
+       Bes adim bire iniyor, gizlilik sozu aynen duruyor.
+
+       KONU SATIRINDA SURUM VAR: gelen postalar sürüme gore
+       ayiklanabilsin -- "hangi surumde bozuldu" sorusunun cevabi
+       posta kutusunda hazir olsun. */
+    /* ADRESI KURAN VE ACAN AYRI ISLEVLER. Sebebi test: gonderim
+       location.href'e yaziyor ve o ozellik tarayicida yeniden
+       tanimlanamiyor, yani "ne gonderiliyor" disaridan olculemiyordu.
+       Kurucu ayri olunca uretilen adres dogrudan sinanabiliyor --
+       davranis degismeden. */
+    window.hataPostaAdresi = function(kip){
+      var govde = window.hataMetni ? window.hataMetni() : '';
+      var konu = 'ORBITAPE ' + ORB_SURUM + ' — '
+               + (kip === 'sorun' ? 'problem report' : 'error report');
+      return 'mailto:hello@orbitape.app?subject=' + encodeURIComponent(konu)
+           + '&body=' + encodeURIComponent(
+               (kip === 'sorun'
+                 ? 'What happened (in your own words):\n\n\n\n'
+                 : 'Anything you were doing when it broke:\n\n\n\n')
+               + '--- technical details, please keep ---\n' + govde);
+    };
+    window.hataGonder = function(kip){
+      try{
+        location.href = window.hataPostaAdresi(kip);
+        return true;
+      }catch(e){ _yut(e); return false; }
     };
   })();
 
@@ -4142,6 +4224,10 @@
     };
     document.getElementById('hataKapat').addEventListener('click', e=>{
       e.stopPropagation(); hataKapat();
+    });
+    document.getElementById('hataGonder').addEventListener('click', e=>{
+      e.stopPropagation();
+      try{ if(window.hataGonder) window.hataGonder('hata'); }catch(_){ _yut(_); }
     });
     document.addEventListener('keydown', e=>{
       if(e.key === 'Escape' && hataEl && hataEl.classList.contains('on')) hataKapat();
@@ -11211,6 +11297,14 @@
            kendi istedi, bir daha acilista cikmasin. */
         kapa();
         setTimeout(()=>{ try{ turBasla(true); }catch(e){ _yut(e); } }, 320);
+        return;
+      }
+      if(k === 'bildir'){
+        /* Kendi posta uygulamasinda hazir bir mektup aciliyor: uste
+           kendi cumleleri icin bos satirlar, altta teknik durum.
+           Panel kapaniyor cunku ekran artik posta uygulamasinin. */
+        kapa();
+        try{ if(window.hataGonder) window.hataGonder('sorun'); }catch(e){ _yut(e); }
         return;
       }
       AYAR[k] = !AYAR[k];

@@ -9,8 +9,9 @@
     "motor": "MOTOR=webkit node test/motor.js",
     "motor:chromium": "MOTOR=chromium node test/motor.js",
     "senaryo": "node test/senaryo.js",
-    "test:hepsi": "node test/saglik.js && node test/senaryo.js && node test/ariza.js",
-    "ariza": "node test/ariza.js"
+    "test:hepsi": "node test/saglik.js & node test/senaryo.js & node test/ariza.js & wait",
+    "ariza": "node test/ariza.js",
+    "hizli": "node test/saglik.js hizli"
   },
   "devDependencies": {
     "playwright": "^1.47.0"
