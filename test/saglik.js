@@ -3851,6 +3851,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'metin ile davranis ayni seyi soyluyor');
   }
 
+  /* ── OTOMATIK SEVIYE KULAKTA DUYULMAMALI ────────────────────────
+     Kullanicinin bildirimi: "radyoda ses bir anda kisiliyor, sanki
+     bir limit devreye giriyor." Dogruydu. Sebep: AGC'nin asagi adimi
+     0.55 ve zaman sabiti 0.25 sn'ydi -- sessiz bir konusma
+     bolumunden yuksek bir muzik yatagina gecerken kazanc BIR
+     SANIYEDE 3.5 dB dusuyordu. Kulak 1 dB'lik bir basamagi zar zor
+     secer; 3.5 dB apacik duyulur.
+     AGC'nin hizli olmasina gerek yok, cunku ani patlamayi ZATEN
+     'tavan' onluyor (-3 dB, 20:1, 2 ms atak) ve yeni istasyon kisik
+     basliyor. Geriye kalan is (istasyonlar arasi fark) yavas bir is.
+     BU KONTROL O KARARIN BEKCISI: hesap gercek islevden cagriliyor
+     (_agcHesap), yani birisi sabitleri yeniden sikilastirirsa
+     kirmizi yanar. Gercek zamanli ses beklemiyor -- saf matematik,
+     milisaniyede biter. */
+  {
+    const agc = await pg.evaluate(()=>{
+      if(typeof _agcHesap !== 'function') return { yok:true };
+      const dB = x => 20*Math.log10(x);
+      /* Senaryo: sessiz konusma (rms .04, crest 2.6) -> yuksek muzik
+         yatagi (rms .16, crest 1.7) -> geri. Radyoda tipik gecis. */
+      const yurut = ()=>{
+        let g = 0.24;                       // BASLANGIC_KAZANC.radio
+        const iz = [];
+        for(let t=0;t<20;t++){
+          const yuksek = t>=6 && t<14;
+          const l = yuksek ? 0.16 : 0.04;
+          const tepe = l * (yuksek ? 1.7 : 2.6);
+          const k = _agcHesap(l, tepe, 'radio', g);
+          /* setTargetAtTime'in 500 ms sonunda vardigi yer. */
+          if(!k.atla) g = g + (k.yeni - g) * (1 - Math.exp(-0.5/k.tau));
+          iz.push(g);
+        }
+        return iz;
+      };
+      const iz = yurut();
+      let enSert = 0;
+      for(let i=2;i<iz.length;i++){
+        const d = dB(iz[i]) - dB(iz[i-2]);   // bir saniyelik degisim
+        if(d < enSert) enSert = d;
+      }
+      /* AGC hala ISINI YAPIYOR mu: istasyon farkini kapatabilmeli.
+         Cok yavaslatilirsa bu deger 0'a yaklasir ve AGC olur. */
+      const aralik = dB(Math.max(...iz) / Math.min(...iz));
+      return { enSert:+enSert.toFixed(2), aralik:+aralik.toFixed(2),
+               olu:AGC_OLU_BOLGE, tauAsagi:AGC_TAU_ASAGI };
+    });
+    K('Otomatik seviye kulakta duyulmuyor',
+       !agc.yok && agc.enSert >= -1.5,
+       agc.yok ? '_agcHesap yok'
+               : ('en sert 1 sn dususu ' + agc.enSert + ' dB (esik -1.5) | '
+                  + 'olu bolge %' + Math.round(agc.olu*100)
+                  + ' | asagi zaman sabiti ' + agc.tauAsagi + ' sn'));
+    /* Ikinci taraf: yavaslatirken islevsiz birakmadik. */
+    K('Otomatik seviye hala isini yapiyor',
+       !agc.yok && agc.aralik >= 2.0,
+       agc.yok ? '-' : ('senaryoda ' + agc.aralik + ' dB duzeltme (en az 2.0)'));
+  }
+
   /* ── SES ZINCIRI: MERKEZDE SEFFAF, RADYODA EZILMEYEN ────────────
      Iki olculen hata vardi:
      1) WaveShaper (tanh 2.2x) grafige KALICI bagliydi; FX merkezdeyken

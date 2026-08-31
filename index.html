@@ -6026,34 +6026,72 @@
       _agcRms = 0; _agcSayim = 0;
       if(!isFinite(l) || l < 0.004) return;                 // sessiz an: dokunma
       const simdi = cikisG.gain.value;
-      /* ── RADYONUN "ÇOK YÜKSEK" GELMESİNİN SEBEBİ ────────────────────
-         Seviyeyi yalnızca RMS'e göre eşitliyorduk. Ama radyo yayınları
-         tuğla duvar limitli: tepe/RMS oranı (crest) ~2, arşiv kaydında
-         ~4-6. Aynı RMS'te sıkıştırılmış kaynak kulağa BELİRGİN şekilde
-         daha gürültülü geliyor — ölçü eşit, algı değil.
-         Artık crest'i de ölçüp hedefi ona göre kısıyoruz: sıkıştırılmış
-         kaynak ne kadar sıkıysa o kadar geri çekiliyor, doğal dinamikli
-         kayıt hiç etkilenmiyor. Böylece tek bir gürültülü istasyon da
-         kendiliğinden hizaya geliyor, elle liste tutmaya gerek kalmıyor. */
-      let duzelt = 1;
-      if(tepe > 0.02 && l > 0.01){
-        const crest = tepe / l;                             // ~2 (ezilmiş) .. ~6 (doğal)
-        duzelt = Math.max(0.45, Math.min(1, Math.pow(crest/4, 0.62)));
-      }
-      const hedefSev = HEDEF_SEVIYE * (HEDEF_KANAL[mod] || 1) * duzelt;
-      // ÖNEMLİ: analiz düğümü cikisG'den ÖNCE. Yani ölçülen l, kazançtan bağımsız —
-      // kaynağın ham gürlüğü. O yüzden kazancı "mevcut kazanç x oran" diye değil,
-      // doğrudan hedef/ham olarak hesaplıyoruz. (Çarpanla yapınca her tur yeniden
-      // çarpılıp uca dayanıyordu: her şey ya en kısık ya en açık sınıra gidiyordu.)
-      let hedef = hedefSev / l;
-      hedef = Math.max(KAZANC_ALT, Math.min(KAZANC_UST, hedef));
-      if(mod === 'radio') hedef = Math.min(hedef, RADYO_TAVAN);   // yayını yükseltme, sadece tut
-      // KISMA hızlı olsun (patlamayı hemen kes), AÇMA yavaş (gürültü pompalanmasın)
-      const adim = (hedef < simdi) ? 0.55 : 0.22;
-      const yeni = simdi + (hedef - simdi) * adim;
-      cikisG.gain.setTargetAtTime(yeni, actx.currentTime, (hedef < simdi) ? 0.25 : 0.9);
+      const k = _agcHesap(l, tepe, mod, simdi);
+      if(k.atla) return;                                    // ölü bölge: kıpırdama
+      cikisG.gain.setTargetAtTime(k.yeni, actx.currentTime, k.tau);
     }catch(e){ _yut(e); }
   }, 500);
+
+  /* ── AGC'NİN MATEMATİĞİ — AYRI VE SAF ─────────────────────────────
+     Hesap yukarıdaki zamanlayıcının içinden çıkarıldı. Sebebi test:
+     kazancın ne kadar sert hareket ettiğini ölçmek için gerçek zamanlı
+     ses beklemek gerekiyordu. Ayrı bir işlev olunca doğrudan
+     çağrılabiliyor ve bir senaryo saniyeler yerine milisaniyede
+     sınanıyor (bkz. "Otomatik seviye kulakta duyulmuyor").
+
+     ── NEDEN YAVAŞLADI ──────────────────────────────────────────────
+     Kullanıcının bildirimi: "radyoda ses bir anda kısılıyor, sanki bir
+     limit devreye giriyor." Doğruydu ve sebebi buydu.
+     ESKİ AYAR: aşağı adım 0.55, zaman sabiti 0.25 sn. ÖLÇÜLDÜ —
+     sessiz bir konuşma bölümünden yüksek bir müzik yatağına geçişte
+     kazanç BİR SANİYEDE 3.5 dB düşüyordu. 3.5 dB bir saniyede,
+     kulağın kaçırmayacağı bir basamaktır; üstelik toparlanma yavaş
+     olduğu için "kısıldı ve kısık kaldı" hissi veriyordu.
+
+     ── NEDEN HIZLI OLMASINA GEREK YOK ───────────────────────────────
+     AGC iki işi birden yapmaya çalışıyordu: (1) istasyonlar arası
+     seviye farkını kapatmak, (2) ani patlamayı önlemek.
+     İkincisi ZATEN BAŞKASININ İŞİ: 'tavan' (-3 dB, 20:1, 2 ms atak)
+     gerçek kırpılmayı engelliyor ve her koşulda devrede. Ayrıca yeni
+     istasyon zaten kısık başlıyor (BASLANGIC_KAZANC.radio = 0.24),
+     yani kanal değişiminde patlama ihtimali yok.
+     Geriye yalnızca (1) kalıyor ve o YAVAŞ bir iştir: istasyon farkı
+     saniyeler içinde kapanabilir, milisaniyede kapanması gerekmez.
+
+     ── ÖLÜ BÖLGE ────────────────────────────────────────────────────
+     Pompalamanın büyük kısmı, AGC'nin küçük dalgalanmaları kovalaması.
+     Hedef mevcut kazancın %18'i içindeyse hiç kıpırdamıyor. */
+  const AGC_ADIM_ASAGI = 0.16, AGC_ADIM_YUKARI = 0.12;
+  const AGC_TAU_ASAGI  = 2.0,  AGC_TAU_YUKARI  = 2.5;
+  const AGC_OLU_BOLGE  = 0.18;
+  function _agcHesap(l, tepe, kip, simdi){
+    /* ── RADYONUN "ÇOK YÜKSEK" GELMESİNİN SEBEBİ ────────────────────
+       Seviyeyi yalnızca RMS'e göre eşitliyorduk. Ama radyo yayınları
+       tuğla duvar limitli: tepe/RMS oranı (crest) ~2, arşiv kaydında
+       ~4-6. Aynı RMS'te sıkıştırılmış kaynak kulağa BELİRGİN şekilde
+       daha gürültülü geliyor — ölçü eşit, algı değil.
+       Artık crest'i de ölçüp hedefi ona göre kısıyoruz. */
+    let duzelt = 1;
+    if(tepe > 0.02 && l > 0.01){
+      const crest = tepe / l;                             // ~2 (ezilmiş) .. ~6 (doğal)
+      duzelt = Math.max(0.45, Math.min(1, Math.pow(crest/4, 0.62)));
+    }
+    const hedefSev = HEDEF_SEVIYE * (HEDEF_KANAL[kip] || 1) * duzelt;
+    /* ÖNEMLİ: analiz düğümü cikisG'den ÖNCE. Yani ölçülen l, kazançtan
+       bağımsız — kaynağın ham gürlüğü. O yüzden kazancı "mevcut kazanç
+       x oran" diye değil, doğrudan hedef/ham olarak hesaplıyoruz.
+       (Çarpanla yapınca her tur yeniden çarpılıp uca dayanıyordu.) */
+    let hedef = hedefSev / l;
+    hedef = Math.max(KAZANC_ALT, Math.min(KAZANC_UST, hedef));
+    if(kip === 'radio') hedef = Math.min(hedef, RADYO_TAVAN);   // yayını yükseltme, sadece tut
+    if(Math.abs(hedef - simdi) < simdi * AGC_OLU_BOLGE){
+      return { atla:true, hedef:hedef, yeni:simdi, tau:AGC_TAU_YUKARI };
+    }
+    const asagi = hedef < simdi;
+    const adim  = asagi ? AGC_ADIM_ASAGI : AGC_ADIM_YUKARI;
+    const tau   = asagi ? AGC_TAU_ASAGI  : AGC_TAU_YUKARI;
+    return { atla:false, hedef:hedef, yeni:simdi + (hedef - simdi)*adim, tau:tau };
+  }
 
   /* Otomatik seviye için biriktiriciler: her karede bir pencere daha okunuyor,
      500 ms'de bir toplanıp değerlendiriliyor (yukarıdaki setInterval).
