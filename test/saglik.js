@@ -3851,6 +3851,107 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'metin ile davranis ayni seyi soyluyor');
   }
 
+  /* ── HICBIR YAZI SERIF'E DUSMEMELI ──────────────────────────────
+     Kok sebep sessizdi: govdenin font-family'si HIC YAZILMAMISTI.
+     Ekrandaki her yazi kendi fontunu acikca yazdigi icin uzun sure
+     fark edilmedi -- ta ki kip anahtarina bir etiket eklenene kadar.
+     O etiket TIMES NEW ROMAN olarak cikti ve kullanici "kesinlikle
+     switchlerdeki font yanlis" dedi.
+     Bu kontrol tek bir ogeyi degil KURALI koruyor: font yazmayi
+     unutan bir oge bir daha sessizce serif'e dusemez. Uc durumda
+     birden bakiyor -- radyo, arsiv ve ayar paneli acikken. */
+  {
+    const fnt = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const bak = ()=>{
+        const kotu = [];
+        document.querySelectorAll('*').forEach(e=>{
+          const st = getComputedStyle(e);
+          if(st.display==='none' || st.visibility==='hidden') return;
+          const r = e.getBoundingClientRect();
+          if(!r.width || !r.height) return;
+          /* Yalnizca KENDI metni olan ogeler: kapsayicilar sayilmaz. */
+          if(![...e.childNodes].some(n=>n.nodeType===3 && n.data.trim())) return;
+          const f = st.fontFamily.split(',')[0].replace(/["']/g,'').trim();
+          if(/^(times|georgia|serif)/i.test(f)){
+            kotu.push((e.id ? '#'+e.id : '')
+              + (typeof e.className==='string' && e.className ? '.'+e.className.split(' ')[0] : '')
+              || e.tagName);
+          }
+        });
+        return kotu;
+      };
+      const eskiMood = AYAR.mood;
+      ['rec','cam','favAc','geri','ileri'].forEach(i=>{
+        const e=document.getElementById(i); if(e) e.classList.add('var'); });
+      AYAR.mood=false; moodUygula(false); await bek(320);
+      const radyo = bak();
+      AYAR.mood=true;  moodUygula(false); await bek(420);
+      const arsiv = bak();
+      AYAR.mood=eskiMood; moodUygula(false); await bek(320);
+      try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){}
+      await bek(340);
+      const ayar = bak();
+      try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){}
+      await bek(200);
+      const hepsi = [...new Set([...radyo, ...arsiv, ...ayar])];
+      return { kotu:hepsi, govde:getComputedStyle(document.body).fontFamily.split(',')[0] };
+    });
+    K('Hicbir yazi serif fonta dusmuyor', fnt.kotu.length === 0,
+      fnt.kotu.length ? ('serif\'e dusen: ' + fnt.kotu.join(', '))
+                      : ('govde varsayilani ' + fnt.govde + ', uc durumda da temiz'));
+  }
+
+  /* ── SOL ALT KONSOL TEK BLOK OKUNMALI ───────────────────────────
+     Uc satirin sag kenarlari uc ayri yerde bitiyordu (188/168/232)
+     ve blok tirtikli goruluyordu: "radiotape yazisi cok tasiyor,
+     sag taraftan tasmamali."
+     Cozum bosluk sisirmek DEGIL (o yol bir kez denendi ve tuslarin
+     arasi 101px oldu). Anahtar olculup en genis satirin sag kenarina
+     oturuyor, etiket sagda duruyor.
+     Ayrica etiketin dili: ust seritteki teknik etiket degil, sag
+     alttaki kunyenin sakin yazisi -- kullanicinin istegi buydu. */
+  {
+    const kons = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const olc = ()=>{
+        const R = id=>{ const e=document.getElementById(id);
+          if(!e || getComputedStyle(e).display==='none') return null;
+          const b=e.getBoundingClientRect(); return b.width ? b : null; };
+        const kk=R('kipKisayol'), ta=R('tasima'), ar=R('araclar');
+        if(!kk || !ta || !ar) return null;
+        const enSag = Math.max(ta.right, ar.right);
+        const ad = document.querySelector('#kipKisayol .ad');
+        const gor = [...ad.children].find(x=>getComputedStyle(x).display!=='none') || ad;
+        const st = getComputedStyle(gor);
+        const np = document.querySelector('#np .np-sanatci');
+        return { tasma: Math.round(kk.right - enSag),
+                 font: st.fontFamily.split(',')[0].replace(/["']/g,''),
+                 npFont: np ? getComputedStyle(np).fontFamily.split(',')[0].replace(/["']/g,'') : '',
+                 kalinlik: st.fontWeight, punto: st.fontSize,
+                 yazi: gor.textContent.trim() };
+      };
+      const eskiMood = AYAR.mood;
+      ['rec','cam','favAc','geri','ileri'].forEach(i=>{
+        const e=document.getElementById(i); if(e) e.classList.add('var'); });
+      AYAR.mood=false; moodUygula(false); await bek(320); geriYerlestir(); await bek(160);
+      const radyo = olc();
+      AYAR.mood=true;  moodUygula(false); await bek(420); geriYerlestir(); await bek(160);
+      const arsiv = olc();
+      AYAR.mood=eskiMood; moodUygula(false); await bek(320);
+      return { radyo, arsiv };
+    });
+    const r = kons.radyo, a2 = kons.arsiv;
+    K('Kip anahtari konsoldan tasmiyor',
+       !!r && !!a2 && r.tasma <= 0 && a2.tasma <= 0,
+       (r && a2) ? ('radyo ' + r.tasma + 'px, arsiv ' + a2.tasma + 'px (0 = tam hizali)')
+                 : 'olculemedi');
+    K('Anahtar etiketi kunyenin diliyle yaziliyor',
+       !!r && r.font === r.npFont && r.kalinlik === '400',
+       r ? ('"' + r.yazi + '" ' + r.font + ' ' + r.punto + '/' + r.kalinlik
+            + ' | kunye: ' + r.npFont) : '-');
+  }
+
   /* ── OTOMATIK SEVIYE KULAKTA DUYULMAMALI ────────────────────────
      Kullanicinin bildirimi: "radyoda ses bir anda kisiliyor, sanki
      bir limit devreye giriyor." Dogruydu. Sebep: AGC'nin asagi adimi

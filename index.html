@@ -42,7 +42,19 @@
      bu yüzden 1x1 kırpma kullanılıyor — standart çözüm. */
   .gizli-baslik{position:absolute;width:1px;height:1px;margin:-1px;padding:0;
     overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;}
+  /* ── GOVDE FONTU: UYGULAMANIN VARSAYILAN SESI ─────────────────
+     BURASI BOSTU ve bu sessiz bir hataydi. Font yazilmayan her oge
+     tarayicinin varsayilanina, yani TIMES NEW ROMAN'a dusuyordu.
+     Uzun sure fark edilmedi cunku ekrandaki her yazi kendi fontunu
+     acikca yaziyordu -- ta ki kip anahtarina bir etiket eklenene
+     kadar. O etiket serif olarak cikti ve kullanici "kesinlikle
+     switchlerdeki font yanlis" dedi; hakliydi.
+     Varsayilani yazmak tek bir hatayi degil, BU TUR hatalarin
+     tamamini kapatiyor: bundan sonra font yazmayi unutan bir oge
+     uygulamanin kendi sesiyle cikar. Saglik testi de artik hicbir
+     gorunur ogenin serif'e dusmedigini olcuyor. */
   body{margin:0;background-color:#020203;background-image:radial-gradient(120% 120% at 50% 45%,#0a0a0d 0%,#020203 70%);color:#e8f4f4;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     display:flex;align-items:center;justify-content:center;min-height:100dvh;position:relative;overflow:hidden;cursor:pointer;
     touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;
     -webkit-user-select:none;user-select:none;}
@@ -1573,7 +1585,18 @@
     transition:right .18s ease;}
   /* Yazi: sol ustteki denetimlerle ayni dil -- kucuk, aralikli,
      buyuk harf. Rengi anahtarin rengi. */
-  #kipKisayol .ad{font-size:11px;letter-spacing:.14em;font-weight:600;
+  /* ── ETIKET: SAG ALTTAKI KUNYENIN DILI ────────────────────────
+     Once 600 kalinlikta ve .14em harf araligiyla yaziliyordu -- ust
+     seritteki teknik etiketlerin dili. Kullanicinin istegi: "en sag
+     alttaki sarki/sanatci ismi tarzi bir sey olabilir."
+     Dogru istek: bu bir baslik degil, bir DURUM adi; kunye nasil
+     sakin yaziyorsa bu da oyle yazmali. Olculer #np .np-sanatci'dan
+     birebir aliniyor -- ayni punto, ayni kalinlik, ayni harf araligi.
+     Yan fayda: dar ve alcak, yani anahtar da daralip alt satirlarla
+     hizalanabiliyor. */
+  #kipKisayol .ad{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
+    font-size:12px;font-weight:400;letter-spacing:.012em;
     color:#35e0d8;white-space:nowrap;}
   #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
   #kipKisayol:active .anahtar b{right:4px;}
@@ -1583,11 +1606,14 @@
      "buraya basinca gidecegin yeri" soyluyor -- arsivde turkuaz
      yaziyor ve radyoya goturuyor, burada leylak yaziyor ve arsive
      goturuyor. */
+  /* Ton daha MOR: onceki #c6b6d6 griye caliyordu ve arsivin kendi
+     leylagindan ayrisamiyordu. #bda8e0 acikca menekse ama hala
+     yumusak -- gezegenlerin ve lib rafinin ailesinden. */
   body:not(.mood) #kipKisayol .anahtar{
-    background:rgba(198,182,214,.16);border-color:rgba(198,182,214,.40);}
-  body:not(.mood) #kipKisayol .anahtar b{right:26px;background:#c6b6d6;}
-  body:not(.mood) #kipKisayol .ad{color:#c6b6d6;}
-  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(198,182,214,.28);}
+    background:rgba(189,168,224,.16);border-color:rgba(189,168,224,.42);}
+  body:not(.mood) #kipKisayol .anahtar b{right:26px;background:#bda8e0;}
+  body:not(.mood) #kipKisayol .ad{color:#bda8e0;}
+  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(189,168,224,.28);}
   body:not(.mood) #kipKisayol:active .anahtar b{right:24px;}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .anahtar, #kipKisayol .anahtar b{transition:none;}
@@ -10179,6 +10205,47 @@
       k.setAttribute('title', acik ? 'Back to live radio' : 'Open the archive');
     }catch(e){ _yut(e); }
   }
+  /* ── ANAHTARIN SAG KENARI TASIMA SATIRIYLA AYNI ───────────────
+     Sol alttaki konsol uc satir: tutamak+anahtar, tasima tuslari,
+     kayit araclari. Uc satirin sag kenarlari uc ayri yerde
+     bitiyordu (188 / 168 / 232 px) ve blok tirtikli okunuyordu --
+     kullanicinin sozu: "radiotape yazisi cok tasiyor, sag taraftan
+     tasmamali."
+     COZUM BOSLUK SISIRMEK DEGIL. Bir tur tasima satiri
+     space-between ile gerilmisti ve tuslarin arasi 101px olmustu;
+     o yol kapali. Onun yerine ANAHTAR daraliyor: genisligi
+     olculuyor, sag kenari tasima satirinin sag kenarina esitleniyor
+     ve etiket sagda duruyor (space-between). Toggle solda, ad sagda
+     -- ayarlar panelindeki satirlarin ayni dili.
+     GUVENLIK: etiket o genislige SIGMIYORSA hicbir sey yapilmiyor.
+     Kirpilmis bir kelime, tirtikli bir kenardan kotudur. */
+  function _kipSagKenar(kk, sol){
+    try{
+      /* HEDEF: konsolun EN GENIS satiri, tasima satiri degil.
+         Once tasima satirina hizalanmisti ve radyoda yetmedi --
+         "ORBITAPE" etiketi o genislige sigmiyor, 11px disarida
+         kaliyordu. Blogun sag kenarini zaten en genis satir
+         ciziyor; anahtar oraya oturunca DISARI TASAN hicbir sey
+         kalmiyor. Tasima satirinin daha kisa olmasi sorun degil:
+         iceride kalmak disari tasmak degildir. */
+      let sag = 0;
+      ['tasima','araclar'].forEach(id=>{
+        const e = document.getElementById(id); if(!e) return;
+        const r2 = e.getBoundingClientRect();
+        if(r2.width && r2.right > sag) sag = r2.right;
+      });
+      if(!sag) return;
+      const tr = { right: sag, width: sag };
+      kk.style.width = '';                       // once dogal olcusune don
+      kk.style.justifyContent = '';
+      const dogal = kk.getBoundingClientRect().width;
+      const istenen = Math.round(tr.right - sol);
+      if(istenen >= dogal){                      // yer var: sagi hizala
+        kk.style.width = istenen + 'px';
+        kk.style.justifyContent = 'space-between';
+      }
+    }catch(e){ _yut(e); }
+  }
   function _kipKisayoluHizala(){
     /* ── KIP KISAYOLU TUTAMAGIN SATIRINA OTURUYOR ─────────────────
        CSS'te ikisine de ayni 'bottom' verilmisti ve tutmadi: tutamak
@@ -10200,6 +10267,7 @@
         if(r.height){
           _kk.style.bottom = Math.round(window.innerHeight - r.bottom + (r.height - 24)/2) + 'px';
           _kk.style.left   = Math.round(r.right + 10) + 'px';
+          _kipSagKenar(_kk, Math.round(r.right + 10));
         }
       }
     }catch(e){ _yut(e); }
