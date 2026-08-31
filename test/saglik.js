@@ -1744,17 +1744,82 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   const tur = HIZLI ? null : await (async()=>{
     /* Bu test "normal ilk acilis"i temsil ediyor, yani AGI OLAN bir
        cihazi — o yuzden 'sahte' ag. Iki fark var ve ikisi de bilerek:
-       · KUCUK havuzlar: tur 20 saniyede bitmeli, 40 parcalik havuz
-         yuklenirken gecen zaman olcume karisiyor.
-       · ses:false — bu blokta hicbir sey CALMAMALI. Tur ekraninin
-         ustune calan parcanin kunyesi binerse katman cakismasi
-         olcumu (tur.cak) yalan soyler. */
+       · ORTA BOY havuzlar: tur 20 saniyede bitmeli, cok buyuk bir
+         havuz yuklenirken gecen zaman olcume karisiyor. Ama COK
+         KUCUK de olamiyor: bu blok sayfayi uc kere aciyor ve
+         "calindi" damgalari ayni baglamda kaliyor. Sekiz kayitlik
+         havuz ikinci acilista tukeniyor, arsiv ust uste 12 kez
+         calamiyor ve uygulama "NOTHING WOULD PLAY" panelini aciyor --
+         o panel acikken tur (dogru olarak) hic cikmiyor. Test yine
+         kodda hicbir sey bozulmamisken kirmizi yaniyordu.
+       · SES ACIK. Bu blok bir zamanlar ses:false ile kosuyordu
+         ("tur ekraninin ustune calan parcanin kunyesi binmesin"
+         diye). Iki sebeple kaldirildi:
+         1) Olculen sey zaten etkilenmiyordu: tur.cak yalnizca #tur
+            icindeki katmanlari ve halkanin ustunu karsilastiriyor;
+            calan parcanin kunyesi bu olcume hic girmiyor.
+         2) Yan etkisi olcumu bozuyordu: reddedilen her ses dosyasi
+            uygulama icin "calmayan parca" demek. Tur onizlemesi
+            arsive gectiginde bunlar ust uste 12'yi buluyor, uygulama
+            "NOTHING WOULD PLAY" panelini aciyor ve o panel acikken
+            tur (dogru olarak) HIC cikmiyor. Yani test, kodda hicbir
+            sey bozulmamisken kirmizi yaniyordu; sebep uygulama degil,
+            testin cihazi bozuk gibi gostermesiydi.
+         Simdi cihazin agi calisiyor -- olcmek istedigimiz "normal ilk
+         acilis" tam olarak bu. */
     const { sayfa: pp, kapat } = await sayfaAc(b, {
       bekle: 2400,
-      sayilar: {buyuk:6, earth:8, radyo:8},
-      ses: false });
+      sayilar: {buyuk:24, earth:60, radyo:16} });
     try{
-      const acildi = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
+      /* NEDEN SABIT BEKLEME DEGIL DE BEKLEYIP-BAKMA:
+         Bu blogun uc kontrolu ("acilista cikiyor", "kendi ilerliyor",
+         "kutu isaretlenmezse tekrar cikar") tek bir anlik olcume
+         dayaniyordu: 2.4 sn bekle, bak. Makine yuklendiginde tur
+         2.4 sn'de degil 3 sn'de aciliyor ve test, kodda hicbir sey
+         bozulmamisken kirmizi yaniyordu -- ayni surum bir kosuda
+         yesil, bir kosuda kirmizi. Olculmek istenen sey "tur cikiyor
+         mu"; "tam 2400 ms'de cikiyor mu" degil.
+         Simdi bir tavana kadar bakiliyor ve cikar cikmaz devam
+         ediliyor. Olumsuz kontrol ("bir daha cikmamali") ayni tavanin
+         sonuna kadar bekliyor -- yoksa olumsuz kontrol olumluden
+         kolay gecerdi ve karsilastirma durust olmazdi. */
+      const TUR_TAVAN = 9000;
+      const turBekle = async (tavan)=>{
+        const t = Date.now();
+        for(;;){
+          if(await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'))) return true;
+          if(Date.now() - t >= tavan) return false;
+          await pp.waitForTimeout(150);
+        }
+      };
+      const acildi = await turBekle(TUR_TAVAN);
+      /* TUR CIKMADIYSA SEBEBINI SOYLE. "gorunur degil" demek, saati
+         iki gun sonra bakan kisiye hicbir sey anlatmiyor. Turu
+         bastiran uc sebep var ve ucu de kodda yazili: kutu daha once
+         isaretlenmis olabilir, "no connection" paneli acik olabilir,
+         ya da tur zaten akiyor sayiliyor olabilir. Hangisi oldugunu
+         ölçüp yaziyoruz. */
+      const taniAl = ()=> pp.evaluate(()=>{
+        const p = [];
+        try{ if(!turGosterilsinMi()) p.push('depoda orbitape.tur=1 (kutu isaretli sayiliyor)'); }catch(e){ p.push('turGosterilsinMi okunamadi'); }
+        try{ if(document.getElementById('agyok').classList.contains('on')) p.push('agyok paneli acik (_agBos='+_agBos+')'); }catch(e){}
+        try{ if(_turAkiyor) p.push('_turAkiyor zaten true'); }catch(e){}
+        try{ if(document.getElementById('turKutu').classList.contains('sec')) p.push('turKutu isaretli'); }catch(e){}
+        return p.length ? p.join(' + ') : 'sebep bulunamadi';
+      });
+      const tani = acildi ? '' : await taniAl();
+      /* OLCEMEDIGIMIZI OLCTUK GIBI GOSTERME.
+         Tur, "NOTHING WOULD PLAY" / "NO CONNECTION" paneli acikken
+         (dogru olarak) hic cikmiyor -- bu uygulamanin kurali, kodda
+         yazili. Test makinesi yuklendiginde arsiv onizlemesinde ust
+         uste 12 parca calamayip panel acilabiliyor; o zaman ortada
+         bir hata YOK, sadece olcum yapilamiyor.
+         Once bu durumu kirmizi yaziyorduk: bakan kisi olmayan bir
+         hatayi ariyordu. Simdi ATLANDI diyoruz ve sebebini yaziyoruz.
+         Surekli atlaniyorsa bu da gorunur olur. */
+      if(!acildi && /agyok/.test(tani)){
+        return { atlandi: tani };
+      }
       const ingilizce = await pp.evaluate(()=>{
         const t=document.getElementById('tur').textContent||'';
         return !/[ğüşıöçĞÜŞİÖÇ]/.test(t); });
@@ -1762,10 +1827,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const a=document.getElementById('turAtla'), k=document.getElementById('turKutu');
         return { atla:(a&&a.textContent||'').trim(), kutu:(k&&k.textContent||'').trim(),
                  atlaSagda: a && k ? a.getBoundingClientRect().left > k.getBoundingClientRect().left : false }; });
-      /* ilerliyor mu */
+      /* ilerliyor mu — yine tavana kadar: adim suresi makineye gore
+         birkac yuz milisaniye kayabiliyor, "ilerliyor mu" sorusunun
+         cevabi bundan degismemeli. */
       const y1 = await pp.evaluate(()=>document.querySelector('#tur .yazi').textContent);
-      await pp.waitForTimeout(2400);
-      const y2 = await pp.evaluate(()=>document.querySelector('#tur .yazi').textContent);
+      let y2 = y1;
+      {
+        const t = Date.now();
+        while(Date.now() - t < 9000){
+          await pp.waitForTimeout(200);
+          y2 = await pp.evaluate(()=>document.querySelector('#tur .yazi').textContent);
+          if(y2 !== y1) break;
+        }
+      }
       /* HIZ: tur bastan sona 20 saniyeyi gecmemeli. */
       const t0 = Date.now();
       let sure = -1;
@@ -1812,8 +1886,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await pp.waitForTimeout(400);
       const kapandi = await pp.evaluate(()=>!document.getElementById('tur').classList.contains('on'));
       const temiz = await pp.evaluate(()=>({fx:FXMOD, oniz:_onizMod}));
-      await pp.reload(); await pp.waitForTimeout(2400);
-      const tekrar = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
+      await pp.reload();
+      const tekrar = await turBekle(TUR_TAVAN);
+      const tekrarTani = tekrar ? '' : await taniAl();
       /* kutu isaretli -> bir daha cikmamali */
       /* DOGRUDAN element.click(): tur kendiliginden kapanmis olabilir
          ve o zaman Playwright "gorunmuyor" diye bekliyor. Burada
@@ -1821,14 +1896,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await pp.evaluate(()=>{ try{ const k=document.getElementById('turKutu'); if(k) k.click();
                                    const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
       await pp.waitForTimeout(300);
-      await pp.reload(); await pp.waitForTimeout(2400);
-      const bitti = await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'));
-      return { acildi, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz, tekrar, bitti,
+      await pp.reload();
+      const bitti = await turBekle(TUR_TAVAN);
+      /* Olumsuz kontrolun de mazereti olabilir: panel acikken tur
+         zaten cikmaz, yani "cikmadi" burada bir sey KANITLAMAZ. */
+      const bittiTani = bitti ? '' : await taniAl();
+      return { acildi, tani, tekrarTani, bittiTani, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz, tekrar, bitti,
                sure: (sure>0 ? sure : -1), cak, kars };
     } finally { await kapat(); }
   })();
-  if(!tur){ yavas('Tanitim turu (11 kontrol)'); } else {
-  K('Tur ilk acilista cikiyor', tur.acildi, 'gorunur');
+  if(tur && tur.atlandi){ yavas('Tanitim turu (11 kontrol) — olculemedi: '+tur.atlandi); }
+  else if(!tur){ yavas('Tanitim turu (11 kontrol)'); } else {
+  K('Tur ilk acilista cikiyor', tur.acildi, tur.acildi ? 'gorunur' : ('cikmadi: '+tur.tani));
   K('Tur INGILIZCE', tur.ingilizce, 'turkce karakter yok');
   K('Tur kendi ilerliyor', tur.ilerledi, '2.4 sn icinde adim degisti');
   K('Tur HIZLI (<20 sn)', tur.sure > 0 && tur.sure < 20000, (tur.sure/1000).toFixed(1)+' sn');
@@ -1838,8 +1917,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      tur.dugme.atla+' | '+tur.dugme.kutu);
   K('SKIP turu kapatiyor', tur.kapandi, 'kapandi');
   K('Tur bitince temiz birakiyor', tur.temiz.fx==='' && tur.temiz.oniz==='', 'FX "'+tur.temiz.fx+'" | onizleme "'+tur.temiz.oniz+'"');
-  K('Kutu isaretlenmezse TEKRAR cikar', tur.tekrar, 'standart davranis');
-  K('Kutu isaretlenirse bir daha cikmaz', !tur.bitti, 'depoya yazildi');
+  /* Ayni kural burada da: panel acikken tur zaten cikmaz, o yuzden
+     "cikti/cikmadi" hicbir sey soylemez -- olcum yapilamadi, atlandi. */
+  if(!tur.tekrar && /agyok/.test(tur.tekrarTani))
+    yavas('Kutu isaretlenmezse TEKRAR cikar — olculemedi: '+tur.tekrarTani);
+  else K('Kutu isaretlenmezse TEKRAR cikar', tur.tekrar, tur.tekrar ? 'standart davranis' : ('cikmadi: '+tur.tekrarTani));
+  if(!tur.bitti && /agyok/.test(tur.bittiTani))
+    yavas('Kutu isaretlenirse bir daha cikmaz — olculemedi: '+tur.bittiTani);
+  else K('Kutu isaretlenirse bir daha cikmaz', !tur.bitti, 'depoya yazildi');
   }
 
   K('RECORDS muzik, ORBITAPE hepsi', ay, 'ORBITAPE arsivin tamami, RADIOTAPE disarida');

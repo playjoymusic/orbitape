@@ -3896,7 +3896,20 @@
                        e=>{ clearTimeout(zt); throw e; });
   }
   const $=id=>document.getElementById(id);
-  const btn=$('tp'), ses=$('ses'), flash=$('flash'), c=$('noise'), ctx=c.getContext('2d');
+  /* ── TIP IPUCLARI: SADECE YORUM, CALISMA ZAMANINDA HICBIR SEY ──
+     getElementById her zaman HTMLElement doner; ses elemanina .play,
+     tuvale .getContext demek tip denetiminde hata gibi gorunuyor.
+     Asagidaki @type satirlari tarayiciya hicbir sey soylemiyor --
+     yalnizca `npm run tip` (tsc --checkJs) icin. Olculdu: bu uc
+     satir tek basina 90'a yakin sahte hatayi susturuyor, geriye
+     GERCEK olanlar kaliyor (yanlis ozellik adi, yazim hatasi). */
+  const btn=$('tp');
+  /** @type {HTMLAudioElement} */ // @ts-ignore
+  const ses=$('ses');
+  const flash=$('flash');
+  /** @type {HTMLCanvasElement} */ // @ts-ignore
+  const c=$('noise');
+  const ctx=c.getContext('2d');
   const ust=$('ust');
   /* NEBULA KALDIRILDI ama uzerinde donen bir avuc satir var
      (sinif atama, konum olcusu, eski kanal sorusu). Hepsini tek tek
@@ -5456,7 +5469,9 @@
      derleyicinin elindeki bir yüzeye değil, bizim kendi tamponumuza
      bakıyor — bayatlayacak bir şey yok.
      Maliyeti kare başına tek bir tam boy kopyalama. */
-  const viz=$('viz'), vizEkran=viz.getContext('2d');
+  /** @type {HTMLCanvasElement} */ // @ts-ignore
+  const viz=$('viz');
+  const vizEkran=viz.getContext('2d');
   const vizArka=document.createElement('canvas');
   const vctx=vizArka.getContext('2d');
   c.width=320; c.height=180;

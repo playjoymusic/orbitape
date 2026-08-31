@@ -106,6 +106,15 @@ const SAYI_VARSAYILAN = { buyuk:24, earth:40, radyo:16 };
 
 async function sahteAg(sayfa, ayar){
   const s = Object.assign({}, SAYI_VARSAYILAN, (ayar && ayar.sayilar) || {});
+  /* ses:false ISTEYENE UYARI (kodda simdilik kullanan yok):
+     ses isteklerini reddetmek, uygulamaya "bu parcalar calmiyor"
+     demektir ve uygulama bunu DOGRU sayar -- ust uste 12 basarisiz
+     parcadan sonra "NOTHING WOULD PLAY" paneli acilir, karsilama eli
+     ve tanitim turu bastirilir. Yani "sessiz kossun" diye verilen bir
+     bayrak, farkinda olmadan "cihaz bozuk" senaryosu kurar. Sesin
+     duyulmasi degil, calmasinin OLCUME karismasi sorunsa once bunu
+     hatirla; tanitim turu blogu tam bu yuzden bir sure yanlis olcup
+     rastgele kirmizi yaniyordu. */
   const ses = !ayar || ayar.ses !== false;
   /* LISANS ALANI SAHTE VERIDE DE OLMALI. Gercek havuzlarin her
      kaydinda var (hasat suzgeci lisanssiz kayit gecirmiyor) ve

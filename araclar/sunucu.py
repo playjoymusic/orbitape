@@ -69,6 +69,12 @@ class H(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-socketserver.TCPServer.allow_reuse_address = True
-with socketserver.TCPServer(("127.0.0.1", 8765), functools.partial(H, directory=KOK)) as s:
-    s.serve_forever()
+# Bu dosya `import sunucu` ile de okunabilsin diye sunucu yalnizca
+# dogrudan calistirilinca ayaga kalkiyor. kontrol.sh, 8765'te CEVAP
+# VERENIN gercekten bu sunucu oldugunu dogrularken kurallar() ve
+# eslesir() fonksiyonlarini buradan aliyor -- ayni kurali iki yerde
+# yazmamak icin.
+if __name__ == '__main__':
+    socketserver.TCPServer.allow_reuse_address = True
+    with socketserver.TCPServer(("127.0.0.1", 8765), functools.partial(H, directory=KOK)) as s:
+        s.serve_forever()

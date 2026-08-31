@@ -12,9 +12,11 @@
     "test:hepsi": "node test/saglik.js && node test/senaryo.js && node test/motor.js && node test/ariza.js",
     "ariza": "node test/ariza.js",
     "hizli": "node test/saglik.js hizli",
-    "kontrol": "bash araclar/kontrol.sh"
+    "kontrol": "bash araclar/kontrol.sh",
+    "tip": "bash araclar/tip.sh"
   },
   "devDependencies": {
-    "playwright": "^1.47.0"
+    "playwright": "^1.47.0",
+    "typescript": "^5.9.3"
   }
 }

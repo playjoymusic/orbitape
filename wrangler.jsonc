@@ -31,5 +31,32 @@
   "assets": {
     "directory": "./",
     "not_found_handling": "404-page"
+  },
+
+  // ── DENEME YAYINI (staging) ─────────────────────────────────────
+  // NEDEN VAR: bugune kadar yayina cikan surumu, yayina cikmadan
+  // once GORME imkanimiz yoktu. main'e push -> dogrudan orbitape.app.
+  // Testler yerelde yesil olsa bile "gercekten yayinlanan dosya" ile
+  // "yerelde denenen dosya" ayni oldugunu kimse dogrulamiyordu.
+  //
+  // Bu blok ayri bir Worker tanimliyor: AYNI dosyalar, BASKA adres.
+  //   npx wrangler deploy --env deneme
+  //   -> https://orbitape-deneme.<hesabin>.workers.dev
+  //
+  // orbitape.app'e DOKUNMUYOR: name farkli oldugu icin Cloudflare
+  // bunu ayri bir Worker olarak tutuyor, uretim yayini etkilenmiyor.
+  // (name alaninin kritik oldugu yukarida yaziyor -- burada da ayni
+  // sebeple bilerek FARKLI.)
+  //
+  // Sira: kontrol.sh yesil -> deneme'ye yayinla -> telefondan ac ->
+  // sonra main'e push.
+  "env": {
+    "deneme": {
+      "name": "orbitape-deneme",
+      "assets": {
+        "directory": "./",
+        "not_found_handling": "404-page"
+      }
+    }
   }
 }

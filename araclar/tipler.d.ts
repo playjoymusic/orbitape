@@ -1,0 +1,56 @@
+/* ORBITAPE — tip denetimi icin kucuk bir sozluk.
+   ────────────────────────────────────────────────────────────────
+   Bu dosya TARAYICIYA GITMIYOR. Yalnizca `npm run tip` calisirken
+   (tsc --checkJs) okunuyor.
+
+   NEDEN VAR: uygulama bazi islevleri bilerek `window` uzerine
+   koyuyor -- saglik takimi onlari disaridan cagirabilsin diye
+   (window.hataMetni, window.moodAc ...). Tip denetleyicisi bunlari
+   bilmedigi icin her birine "boyle bir ozellik yok" diyordu:
+   olculdu, 58 sahte hata. Asagidaki bildirim onlari susturuyor ve
+   geriye GERCEK bulgular kaliyor.
+
+   YENI BIR window.X EKLERSEN BURAYA DA YAZ. Yazmazsan tip denetimi
+   kirmizi yanar -- ki bu iyi: unutulmus bir global, unutulmus bir
+   sozlesmedir. */
+interface Window {
+  /* Saglik takiminin disaridan cagirdiklari */
+  hataMetni?: (kip?: string) => string;
+  hataPostaAdresi?: (kip?: string) => string;
+  hataGonder?: (kip?: string) => void;
+  hataSifirla?: () => void;
+  moodAc?: () => void;
+  moodKapat?: () => void;
+  /* true -> ac, false -> kapat (bkz. window.ayarGoster tanimi) */
+  ayarGoster?: (ac?: boolean) => void;
+  temaSec?: (n: number) => void;
+  durTazele?: () => void;
+  muteTazele?: () => void;
+  recPasifTazele?: () => void;
+  uclukDene?: () => void;
+  carkiCevir?: () => void;
+
+  /* Uygulamanin kendi sabitleri */
+  ARSIV_KURSUN?: string;
+
+  /* Yutulan hatalarin sayaci (bkz. _yut) */
+  __yut?: { n: number; ilk: string[] };
+
+  /* Eski Safari adlari */
+  webkitAudioContext?: typeof AudioContext;
+  webkitOfflineAudioContext?: typeof OfflineAudioContext;
+}
+
+interface HTMLMediaElement {
+  /* Eski Firefox ve Safari adlari. Kodda ucu birden yaziliyor
+     (preservesPitch + iki onek) cunku hangi tarayicinin hangisini
+     tanidigi surume gore degisiyor. */
+  mozPreservesPitch?: boolean;
+  webkitPreservesPitch?: boolean;
+}
+
+interface Navigator {
+  /* Deneysel: Network Information API. Safari'de yok, o yuzden
+     kodda her zaman varlik kontrolüyle okunuyor. */
+  connection?: { effectiveType?: string; saveData?: boolean };
+}
