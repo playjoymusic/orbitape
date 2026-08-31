@@ -5,13 +5,14 @@
   "description": "A sound explorer: live radio, public-domain and Creative Commons archive recordings, effects you play with your finger.",
   "scripts": {
     "test": "node test/saglik.js",
-    "sunucu": "python3 -m http.server 8765",
+    "sunucu": "python3 araclar/sunucu.py",
     "motor": "MOTOR=webkit node test/motor.js",
     "motor:chromium": "MOTOR=chromium node test/motor.js",
     "senaryo": "node test/senaryo.js",
-    "test:hepsi": "node test/saglik.js & node test/senaryo.js & node test/ariza.js & wait",
+    "test:hepsi": "node test/saglik.js && node test/senaryo.js && node test/motor.js && node test/ariza.js",
     "ariza": "node test/ariza.js",
-    "hizli": "node test/saglik.js hizli"
+    "hizli": "node test/saglik.js hizli",
+    "kontrol": "bash araclar/kontrol.sh"
   },
   "devDependencies": {
     "playwright": "^1.47.0"
