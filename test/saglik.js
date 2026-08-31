@@ -4892,11 +4892,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        anahtari cevir. Uc cizginin saginda duran bu anahtar ayni isi
        tek dokunusla yapiyor.
        ARTIK IKI KIPTE DE VAR: once yalnizca arsivdeydi, yani radyo
-       tarafinda ayni kapiya kisa yol yoktu. Olculen sey: iki kipte
-       de gorunuyor mu, tutamagin SATIRINA oturuyor mu (CSS'te ayni
-       bottom verilmisti ve tutmadi -- 29px kayiyordu), alt
-       satirlardan tasiyor mu, ve ETIKETI kipe gore degisiyor mu. */
-    K('Kip kisayolu iki kipte de tutamagin satirinda', await pg.evaluate(async ()=>{
+       tarafinda ayni kapiya kisa yol yoktu.
+       KURAL KIPE GORE AYRILDI. Tutamak radyoda sol uste, frekans
+       cubuklarinin altina tasindi (kullanicinin istegi); arsivde
+       oldugu yerde, konsolun ust satirinda kaldi ("ORBITAPE kismi
+       icin demedim"). Anahtarin yeri de o yuzden iki turlu:
+         arsivde -> tutamagin SATIRINDA ve SAGINDA
+         radyoda -> alttaki iki satirla AYNI SOL KENARDA
+       Ikisinde de olculen sey ayni: gorunuyor mu, dogru komsuya
+       yaslanmis mi, ekrandan tasiyor mu, etiketi kipe gore
+       degisiyor mu. */
+    K('Kip kisayolu her kipte kendi komsusuna yasli', await pg.evaluate(async ()=>{
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
         const R = id=>{ const e=document.getElementById(id); if(!e) return null;
           const r=e.getBoundingClientRect();
@@ -4920,22 +4926,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         geriYerlestir(); await bek(160);
         const r2 = olc();
         AYAR.mood = eskiMood; moodUygula(false); await bek(120);
-        const dogru = (o)=>{
+        /* EKRAN KENARINDAN tasmiyor. Once "alt satirlardan tasmasin"
+           deniyordu; radyodaki etiket (ORBITAPE) arsivdekinden
+           (RADIO) uzun ve modulden 12px tasiyor -- orada karsisinda
+           hicbir sey yok, sorun degil. Olculecek sey ekranin
+           kendisi. */
+        const tasmaz = (o)=> o.kk.r <= window.innerWidth - 8;
+        const arsivDogru = (o)=>{
           if(!o.kk || !o.tut || !o.ta || !o.ar) return false;
           const ayniSatir = Math.abs((o.kk.t+o.kk.b)/2 - (o.tut.t+o.tut.b)/2) <= 3;
-          const sagda   = o.kk.l >= o.tut.r && o.kk.l - o.tut.r <= 16;
-          /* EKRAN KENARINDAN tasmiyor. Once "alt satirlardan tasmasin"
-             deniyordu; radyodaki etiket (ORBITAPE) arsivdekinden
-             (RADIO) uzun ve modulden 12px tasiyor -- orada karsisinda
-             hicbir sey yok, sorun degil. Olculecek sey ekranin
-             kendisi. */
-          const tasmaz  = o.kk.r <= window.innerWidth - 8;
-          return o.kk.gor && ayniSatir && sagda && tasmaz;
+          const sagda     = o.kk.l >= o.tut.r && o.kk.l - o.tut.r <= 16;
+          return o.kk.gor && ayniSatir && sagda && tasmaz(o);
         };
-        return dogru(r1) && dogru(r2)
+        const radyoDogru = (o)=>{
+          if(!o.kk || !o.ta || !o.ar) return false;
+          /* SOLA DAYALI: alttaki iki satirla ayni sol kenar. */
+          const solHiza = Math.abs(o.kk.l - o.ta.l) <= 1
+                       && Math.abs(o.kk.l - o.ar.l) <= 1;
+          /* Ve modulun USTUNDE, uzerine binmeden. */
+          const ustunde = o.kk.b <= o.ta.t;
+          return o.kk.gor && solHiza && ustunde && tasmaz(o);
+        };
+        return radyoDogru(r1) && arsivDogru(r2)
             && r1.yazi === 'ORBITAPE' && r2.yazi === 'RADIO'
             && r1.acik === 'false'    && r2.acik === 'true';
-      }), 'iki kipte de uc cizginin saginda; radyoda ORBITAPE (kapali), arsivde RADIO (acik)');
+      }), 'radyoda sola dayali, arsivde uc cizginin saginda; radyoda ORBITAPE (kapali), arsivde RADIO (acik)');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
     K('Kip kisayolu radyoya donduruyor', await pg.evaluate(async ()=>{
@@ -5422,6 +5437,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                 hatFark: R((document.getElementById('araclar').getBoundingClientRect().top
                    + document.getElementById('araclar').getBoundingClientRect().height/2)
                    - (ar.top+ar.height/2)),
+                mood: document.body.classList.contains('mood'),
                 tutUstte: tut.bottom < innerHeight/2,
                 blokEn: R(bi.width), en: R(innerWidth),
                 kirpma: (()=>{ const a2=document.getElementById('npAd');
@@ -5458,12 +5474,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      yatay eksende, tek bir satir gibi okunuyor. */
   K('Kayit satiri ve buyutec ayni hatta', !!np && Math.abs(np.hatFark) <= 2,
      'orta cizgi farki '+(np?np.hatFark:'-')+'px');
-  /* ── TUTAMAK ARTIK IKI KIPTE DE ALT SOLDA ────────────────────
-     Eskiden radyoda ust yarida, arsivde alt yaridaydi: kip degisince
-     ekranin iki kosesi birden yer degistiriyordu. Istenen tek konsol
-     ("sol alttakiler ayni olmali"), yani tutamak da alt seride ait.
-     Bu test o kararin bekcisi: yukari geri kacarsa yakalar. */
-  K('Tutamak alt seride ait', !!np && np.tutUstte===false, 'alt yarida');
+  /* ── TUTAMAK HANGI YARIDA: KIPE GORE ─────────────────────────
+     Bir tur iki kipte de alt soldaydi ("sol alttakiler ayni
+     olmali"). Sonra kullanici radyo icin ayrisma istedi: "3 cizgi
+     yukarda solda frekansin altinda olsun... ORBITAPE kismi icin
+     demedim, o gibi altta olabilir."
+     Yani kural artik TEK degil ama yine de KESIN: radyoda ust
+     yarida, arsivde alt yarida. Bu test o ikiligin bekcisi --
+     ikisinden biri otekinin yarisina kacarsa yakalar. */
+  K('Tutamak kipin dogru yarisinda',
+     !!np && np.tutUstte === !np.mood,
+     np ? (np.mood?'arsiv: alt yarida':'radyo: ust yarida') : '-');
   /* KIRPMA YOK: kunye "..." ile kesilmiyor. Lisans sarti, tasarim
      tercihi degil -- yarim bir atif atif sayilmaz. */
   K('Kunye kirpilmiyor', !!np && np.kirpma==='yok', 'npAd kirpma: '+(np?np.kirpma:'-'));
@@ -5571,31 +5592,69 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kapaliEn=cz.map(e=>Math.round(e.getBoundingClientRect().width));
     const renk=cz.map(e=>getComputedStyle(e).backgroundColor);
     const kx=Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx'))||16);
-    return { solFark:Math.round(r.left - kx),
+    const dal=document.getElementById('modDalga');
+    const dr=dal?dal.getBoundingClientRect():null;
+    return { mood:document.body.classList.contains('mood'),
+             ekranBoy:Math.round(innerHeight),
+             solFark:Math.round(r.left - kx),
              ustFark:Math.round(r.top),
              ortaFark:Math.round(Math.abs((r.left+r.width/2)-innerWidth/2)),
              dipFark:Math.round(innerHeight-r.bottom),
+             /* Frekans cubuguyla iliski (yalnizca radyoda anlamli):
+                cubugun HEMEN altinda mi, ayni sol kenarda mi, ayni
+                boyda mi. */
+             cubukAlti: dr ? Math.round(r.top - dr.bottom) : null,
+             cubukSol:  dr ? Math.round(r.left - dr.left) : null,
+             cubukBoy:  dr ? Math.round(dr.width) : null,
+             enUstCizgi: cz.length ? Math.round(cz[0].getBoundingClientRect().width) : null,
              cizgiSayi:cz.length, kapaliEn, acikEn, renk,
              azalan: kapaliEn.length===3 && kapaliEn[0]>kapaliEn[1] && kapaliEn[1]>kapaliEn[2],
+             duz:    kapaliEn.length===3 && kapaliEn[0]===kapaliEn[1] && kapaliEn[1]===kapaliEn[2],
              esitlenir: acikEn.length===3 && acikEn[0]===acikEn[1] && acikEn[1]===acikEn[2],
              acildi, kapandi, acikOnce,
+             panelUst:Math.round(pnl.top), panelDip:Math.round(pnl.bottom),
              panelOrta:Math.round(Math.abs((pnl.left+pnl.width/2)-innerWidth/2)),
              panelUstunde: pnl.top < r.top && pnl.bottom > r.top };
   });
-  /* Tutamak once sol ust, sonra alt orta, sonra yine sol ustteydi.
-     Son karar: IKI KIPTE DE sol alt, modulun ust satiri olarak --
-     "sol alttakiler ayni olmali." Ayni sol kenardan basliyor. */
-  K('Ayar tutamagi sol ALT kosede', !!ayTut && Math.abs(ayTut.solFark) <= 1
-     && ayTut.dipFark > 0 && ayTut.dipFark <= 200,
-     'sol kenardan '+(ayTut?ayTut.solFark:'-')+'px | dipten '+(ayTut?ayTut.dipFark:'-')+'px');
-  /* SEKIL: uc cizgi, hepsi ESIT. Once uzunlugu azalan bir ucgen
-     siluetiydi ve ust seritte dogruydu; tutamak modulun ust satiri
-     olunca altindaki satirlar duz kenarli kaldi ve blok egri
-     basliyordu. Kullanicinin sozu: "duz olsun, cizgiler esit olsun." */
-  K('Tutamak uc cizgi, duz kenarli', !!ayTut && ayTut.cizgiSayi===3
+  /* Tutamak once sol ust, sonra alt orta, sonra iki kipte de sol
+     alt oldu. SON KARAR KIPE GORE AYRIK:
+       arsivde -> sol ALT, modulun ust satiri ("ORBITAPE kismi icin
+                  demedim, o gibi altta olabilir")
+       radyoda -> sol UST, frekans cubuklarinin altinda ("3 cizgi
+                  yukarda solda frekansin altinda olsun")
+     Iki kipin ust seridi zaten ayni degil: radyoda sol ust raf
+     adinin, arsivde nebulanin. Ayni yer olmak zorunda degiller.
+     Testler bu ikiligi TEK TEK bekliyor; biri otekinin yerine
+     kayarsa yakalanir. */
+  K('Ayar tutamagi kipin dogru kosesinde',
+     !!ayTut && Math.abs(ayTut.solFark) <= 1
+     && (ayTut.mood ? (ayTut.dipFark > 0 && ayTut.dipFark <= 200)
+                    : (ayTut.ustFark > 0 && ayTut.ustFark < ayTut.ekranBoy/2)),
+     (ayTut ? (ayTut.mood?'arsiv: dipten '+ayTut.dipFark:'radyo: tepeden '+ayTut.ustFark)+'px | sol kenardan '+ayTut.solFark+'px' : '-'));
+  /* RADYODA OLCU KOMSUDAN ALINIYOR: tutamak frekans cubugunun
+     hemen altinda, ayni sol kenarda ve EN UST CIZGISI cubukla ayni
+     boyda. Kullanicinin sozu: "frekansla ayni uzunluk olsun."
+     Sabit bir sayiyi degil, iki nesne arasindaki ILISKIYI
+     olcuyoruz: raf adinin puntosu degisince cubuk da tutamak da
+     birlikte hareket etmeli. */
+  K('Radyoda tutamak frekans cubugunun olcusunde',
+     !!ayTut && (ayTut.mood || (
+        ayTut.cubukAlti !== null && ayTut.cubukAlti >= 4 && ayTut.cubukAlti <= 14
+     && Math.abs(ayTut.cubukSol) <= 1
+     && Math.abs(ayTut.enUstCizgi - ayTut.cubukBoy) <= 1)),
+     ayTut && !ayTut.mood
+       ? 'cubugun '+ayTut.cubukAlti+'px altinda | cizgi '+ayTut.enUstCizgi+'px / cubuk '+ayTut.cubukBoy+'px'
+       : 'arsiv kipi, bu kural orada yok');
+  /* SEKIL KIPE GORE:
+       arsivde DUZ (34/34/34) -- tutamak modulun ust satiri, altindaki
+         satirlar duz kenarli, egim blogun kenarini kirardi.
+       radyoda AZALAN (25/19/13) -- ust kosede hizalanacagi bir kenar
+         yok; kullanicinin sozu: "3 cizginin kucuge dogru gittigi
+         hali olsun." */
+  K('Tutamak uc cizgi, kipin siluetinde', !!ayTut && ayTut.cizgiSayi===3
      && ayTut.kapaliEn.length===3
-     && ayTut.kapaliEn[0]===ayTut.kapaliEn[1] && ayTut.kapaliEn[1]===ayTut.kapaliEn[2],
-     'genislikler '+(ayTut?ayTut.kapaliEn.join(' = '):'-'));
+     && (ayTut.mood ? ayTut.duz : ayTut.azalan),
+     (ayTut ? (ayTut.mood?'arsiv duz: ':'radyo azalan: ')+ayTut.kapaliEn.join(' / ') : '-'));
   K('Acilinca cizgiler esitleniyor', !!ayTut && ayTut.esitlenir===true,
      'acik '+(ayTut?ayTut.acikEn.join(' = '):'-'));
   /* Renkler markanin kendi gradyanindan: turkuaz -> karisim -> tozlu
@@ -5603,13 +5662,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Tutamak marka renklerinde', !!ayTut && ayTut.renk.length===3
      && ayTut.renk[0]==='rgb(53, 224, 216)' && ayTut.renk[2]==='rgb(226, 122, 158)',
      (ayTut?ayTut.renk.join(' '):'-'));
-  /* Panel tutamakla AYNI TARAFTA ve YUKARI DOGRU aciliyor: tepesi
-     tutamagin ustunde kaliyor, tabani da alt seride yaslaniyor.
-     Once radyoda yukaridan asagi aciliyordu -- tutamak yukaridayken
-     dogruydu, asagi inince ekranin tepesinden acilir olmustu. */
-  K('Ayar paneli yukari dogru aciliyor', !!ayTut && ayTut.acildi===true
-     && ayTut.kapandi===true && ayTut.panelUstunde===true,
-     'acilip kapaniyor, tutamagin ustunde');
+  /* Panel IKI KIPTE DE alt seritten YUKARI DOGRU aciliyor: tabani
+     aramanin ustune yasliyor, tepesi yukari buyuyor.
+     TUTAMAKLA OLAN BAG KOPTU ve bu bilincli: tutamak radyoda sol
+     uste gitti ama panel bir ALT SAYFA -- basparmagin geldigi yer
+     ekranin dibi, panelin geldigi yer de orasi olmali. Panelin
+     yerini tutamagin yerine baglamak, bir dokunusla acilan seyi
+     ekranin tepesine surerdi.
+     Arsivde tutamak hala alttaysa panel onun da ustunde kaliyor;
+     o kural orada ayrica olculuyor. */
+  K('Ayar paneli alttan yukari aciliyor', !!ayTut && ayTut.acildi===true
+     && ayTut.kapandi===true
+     && ayTut.panelDip > ayTut.ekranBoy*0.5
+     && ayTut.panelUst > ayTut.ekranBoy*0.15
+     && ayTut.panelUst < ayTut.panelDip
+     && (!ayTut.mood || ayTut.panelUstunde===true),
+     ayTut ? 'panel '+ayTut.panelUst+'..'+ayTut.panelDip+' / ekran '+ayTut.ekranBoy : '-');
 
   /* ── 4. OYNAT / DURDUR ─────────────────────────────────────────── */
   const od = await pg.evaluate(async ()=>{
@@ -6828,15 +6896,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       } : null;
       AYAR.mood = eskiMood; moodUygula(); await bek(320);
       try{ geriYerlestir(); }catch(e){}
-      /* Radyoda da AYNI kural: tutamak modulun ust satiri. Konsol
-         iki kipte de sol altta, yani buradaki olcum de ayni. */
+      /* RADYODA KURAL DEGISTI: tutamak sol uste, frekans
+         cubuklarinin altina gitti. Konsolun ust satiri artik
+         TUTAMAK degil KIP ANAHTARI -- olculen nesne de o.
+         Tutamak icin ayrica sorulan sey: alt konsola hic
+         degmiyor mu. */
       await bek(120);
-      const t2 = document.getElementById('ayarTut'), s2 = document.getElementById('solUst');
-      const rb = t2 && t2.getBoundingClientRect(), sb = s2 && s2.getBoundingClientRect();
-      const radyoSonuc = (rb && sb) ? {
+      const k2 = document.getElementById('kipKisayol'), s2 = document.getElementById('solUst');
+      const t3 = document.getElementById('ayarTut');
+      const rb = k2 && k2.getBoundingClientRect(), sb = s2 && s2.getBoundingClientRect();
+      const tb3 = t3 && t3.getBoundingClientRect();
+      const radyoSonuc = (rb && sb && tb3) ? {
         ustunde : Math.round(sb.top - rb.bottom),
         solHiza : Math.round(Math.abs(rb.left - sb.left)),
-        cakisma : rb.bottom > sb.top + 0.5
+        cakisma : rb.bottom > sb.top + 0.5,
+        /* Tutamak konsoldan TAMAMEN uzakta: ust yaride. */
+        tutUzak : tb3.bottom < sb.top - 100
       } : null;
       return { sonuc, radyoSonuc };
     });
@@ -6845,12 +6920,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        && tt.sonuc.solHiza <= 1 && tt.sonuc.modulDip <= 12,
        tt.sonuc ? ('arada '+tt.sonuc.ustunde+'px, sol fark '+tt.sonuc.solHiza
                    +'px, modul dipten '+tt.sonuc.modulDip+'px') : 'olculemedi');
-    K('Radyoda da tutamak modulun ust satiri',
+    /* Radyoda konsolun ust satiri KIP ANAHTARI. Ayni uc olcu:
+       modulun uzerine binmiyor, arada satir boslugu var, ayni sol
+       kenardan basliyor. Tutamak ise bu blogun disinda -- ust
+       yaride, alt konsola 100px'den fazla mesafede. */
+    K('Radyoda kip anahtari modulun ust satiri',
        !!tt.radyoSonuc && !tt.radyoSonuc.cakisma
        && tt.radyoSonuc.ustunde >= 4 && tt.radyoSonuc.ustunde <= 20
-       && tt.radyoSonuc.solHiza <= 1,
+       && tt.radyoSonuc.solHiza <= 1
+       && tt.radyoSonuc.tutUzak === true,
        tt.radyoSonuc ? ('arada '+tt.radyoSonuc.ustunde+'px, sol fark '
-                        +tt.radyoSonuc.solHiza+'px') : 'olculemedi');
+                        +tt.radyoSonuc.solHiza+'px, tutamak konsolun disinda '
+                        +tt.radyoSonuc.tutUzak) : 'olculemedi');
   }
   /* ── EKRAN DEGISINCE YERLESIM DE DEGISMELI ──────────────────────
      Sol alttaki buyutecin ve sag alttaki kunyenin yeri JS'te

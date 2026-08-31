@@ -1539,6 +1539,12 @@
      gidebiliyor.
      Yeri JS'te modulun OLCULEN ustunden veriliyor (bkz.
      _tutamakYerlestir); buradaki deger ilk karenin yedegi. */
+  /* ── TEMEL: TUTAMAK ALT SOL KOSEDE (ARSIV KIPI) ───────────────
+     Arsiv tarafinda hicbir sey degismedi: tutamak konsolun ust
+     satiri, kip anahtari onun sagindan basliyor. Kullanicinin
+     sozu: "ORBITAPE kismi icin demedim, o gibi altta olabilir;
+     oradaki RADIO kelimesi iyi, hizalaniyor zaten."
+     RADYO KIPI ICIN AYRI KURAL asagida (body:not(.mood)). */
   #ayarTut{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;
@@ -1547,13 +1553,15 @@
     align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
-  /* ── KIP KISAYOLU: UC CIZGININ SAGINDA ────────────────────────
-     Ayni satir, ayni sol kenar duzeni: tutamak 40px, arasinda 10px
-     bosluk, yani anahtar 50px'ten basliyor. Alt satirlar (tasima ve
-     araclar) bundan genis, o yuzden sagdan tasmiyor -- blok tek bir
-     konsol gibi okunmaya devam ediyor.
-     Dikeyde tutamagin ORTASINA hizali: tutamak 26px yuksek, anahtar
-     24px; ikisi de ayni bottom'dan baslayip ortalaniyor. */
+  /* ── KIP KISAYOLU ─────────────────────────────────────────────
+     ARSIVDE: uc cizginin saginda. Tutamak 40px, arasinda 10px
+     bosluk, yani anahtar 50px'ten basliyor. Dikeyde tutamagin
+     ORTASINA hizali -- iki kipte de degismedi.
+     RADYODA: tutamak sol uste gitti, o bagimlilik bitti; anahtar
+     alttaki iki satirla (tasima, araclar) AYNI sol kenardan
+     basliyor. Kullanicinin sozu: "bu alttaki swichti sola
+     dayarsin, yaninda yazi rahat olur." Kazanc 50px ve dogrudan
+     etikete gidiyor. */
   /* ── ANAHTAR IKI KIPTE DE VAR ─────────────────────────────────
      Once yalnizca arsivdeydi ("radyoya don"). Radyo tarafinda ayni
      kapiya ulasmak icin ayarlari acmak gerekiyordu -- iki taraf
@@ -1566,6 +1574,8 @@
     bottom:calc(116px + env(safe-area-inset-bottom, 0px));
     height:24px;gap:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;
     opacity:.72;transition:opacity .22s ease;}
+  body:not(.mood) #kipKisayol{
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));}
   #kipKisayol:hover,
   #kipKisayol:focus-visible{opacity:1;}
   /* Etiket kipe gore: ikisi de HTML'de duruyor, gorunen CSS'le
@@ -1631,21 +1641,46 @@
      Renkler ORBITAPE'in kendi paletinden: markanin gradyanindaki iki
      durak (turkuaz -> tozlu gul) ve arasindaki karisim. Ucuncu bir
      renk uydurulmadi.
-     ORTALANMIS ve BIRAZ BUYUK: sol ustteyken sola dayaliydi ve 34px
-     genisligindeydi; alt ortada bir "merkez tusu" olarak durdugu icin
-     ortalandi ve 40px'e cikti. */
+     TEMEL OLCU 34px ve UC CIZGI DUZ: arsiv kipinde tutamak alt sol
+     blogun ust satiri, altindaki satirlar duz kenarli. Radyo kipi
+     bunu asagida degistiriyor (frekans cubuguyla ayni boy, azalan
+     siluet) -- degisiklik yalnizca oraya ait. */
   #ayarTut span{display:block;height:3.5px;border-radius:3px;
     transition:width .22s ease, opacity .22s ease;}
   #ayarTut span:nth-child(1){background:#35e0d8;width:34px;}
   /* Ortadaki cizgi TEMANIN vurgusu. Ustteki ve alttaki markanin
      sabit iki duragi; ortadaki kilifla birlikte doniyor. Uc cizgi
      hem markayi hem o anki temayi ayni anda soyluyor. */
-  #ayarTut span:nth-child(2){background:rgb(var(--tv, 140,177,186));width:27px;}
-  #ayarTut span:nth-child(3){background:#e27a9e;width:20px;}
+  #ayarTut span:nth-child(2){background:rgb(var(--tv, 140,177,186));width:34px;}
+  #ayarTut span:nth-child(3){background:#e27a9e;width:34px;}
+  /* ── RADYO KIPI: SOL UST, FREKANSIN ALTI, AZALAN UC CIZGI ─────
+     Kullanicinin sozu: "3 cizgi yukarda solda frekansin altinda
+     olsun ama 3 cizginin kucuge dogru gittigi hali olsun, frekansla
+     ayni uzunluk olsun. O zaman bu alttaki swichti sola dayarsin,
+     yaninda yazi rahat olur."
+     Uc istek, tek sebep: uc cizgi bir MENU, calma denetimi degil.
+     Ust koseye cikinca alt konsol yalnizca calmaya ait kaliyor ve
+     kip anahtari da 50px iceriden degil, oteki satirlarla ayni sol
+     kenardan basliyor -- yanindaki kelimeye yer aciliyor.
+     ARSIVDE GECERLI DEGIL: orada sol ust nebulanin ve kullanici
+     "ORBITAPE kismi icin demedim" dedi. Iki kip ayni olmak zorunda
+     degil; ust seritleri de ayni degil.
+     Yeri JS'ten (bkz. _tutamakYerlestir): #modDalga'nin OLCULEN
+     alt kenari + 8px. Buradaki 54px ilk karenin yedegi.
+     En ust cizgi 25px = #modDalga genisligi (1.8em @ 14px);
+     alttakiler 6'sar azaliyor, eski 34/27/20 oraninin ayni egimi. */
+  body:not(.mood) #ayarTut{
+    top:calc(54px + env(safe-area-inset-top, 0px));
+    bottom:auto;width:25px;height:22px;gap:4px;}
+  body:not(.mood) #ayarTut span:nth-child(1){width:25px;}
+  body:not(.mood) #ayarTut span:nth-child(2){width:19px;}
+  body:not(.mood) #ayarTut span:nth-child(3){width:13px;}
   /* Acikken uc cizgi esitlenip duz bir yigin oluyor: ucgen kapaniyor.
      Eski davranisin birebir aynisi. */
-  body.ayar-acik #ayarTut span:nth-child(2){width:34px;}
-  body.ayar-acik #ayarTut span:nth-child(3){width:34px;}
+  /* Acikken uc cizgi esitleniyor: ucgen kapaniyor. Arsivde zaten
+     duzler (34), o yuzden kural yalnizca radyoya yaziliyor. */
+  body:not(.mood).ayar-acik #ayarTut span:nth-child(2){width:25px;}
+  body:not(.mood).ayar-acik #ayarTut span:nth-child(3){width:25px;}
 
   /* Panel ARAMA CIZGISININ USTUNDEN aciliyor.
      Once ucgenin hemen ustunden (38px) aciliyordu ve ekranin dibinde
@@ -2011,15 +2046,18 @@
      olarak duruyordu ve yildizi satirin ilerisine itiyordu: ekranda
      sustur ile yildiz arasinda anlamsiz bir bosluk. */
   body.mood #araYuva{display:none;}
-  /* ── TUTAMAK DUZ, IKI KIPTE DE ───────────────────────────────
-     Uc cizgi once asagi bakan bir ucgendi (34/27/20): tutamak ust
-     seritteyken, karsisinda marka adiyla, o siluet dogruydu.
-     Tutamak iki kipte de sol alttaki blogun UST SATIRI oldu;
-     altindaki satirlar duz kenarli, tutamak ucgen kalinca blok
-     egri basliyor. Kullanicinin sozu: "duz olsun, cizgiler esit
-     olsun." Renkler duruyor -- kimlik cizgilerin sirasinda. */
-  #ayarTut span:nth-child(2),
-  #ayarTut span:nth-child(3){width:34px;}
+  /* ── MEZAR TASI: "TUTAMAK DUZ, IKI KIPTE DE" ─────────────────
+     Burada bir kural vardi ve uc cizgiyi esitliyordu (34/27/20 ->
+     34/34/34). Gerekcesi dogruydu: tutamak alt sol konsolun UST
+     SATIRIYDI, altindaki satirlar duz kenarliydi, egim blogun
+     kenarini kiriyordu.
+     O gerekce KALKTI -- tutamak sol uste, frekans cubuklarinin
+     altina gitti. Orada hizalanacagi bir kenar yok; azalan uc
+     cizgi yeniden dogru siluet. Kullanicinin sozu: "3 cizginin
+     kucuge dogru gittigi hali olsun."
+     Kural yalnizca body.mood bloguna yazilmisti ama SECICISI
+     kipsizdi: iki kipte de calisiyordu. Silindi; olculer artik tek
+     yerde (25/19/13). */
   /* ARAMA BU KIPTE YOK. Arsiv tarafinda gezinme halkalarla ve
      gezegenlerle yapiliyor; arama cizgisi hem modulun altinda yer
      istiyor hem de o tarafin dili degil. */
@@ -10213,36 +10251,37 @@
      tasmamali."
      COZUM BOSLUK SISIRMEK DEGIL. Bir tur tasima satiri
      space-between ile gerilmisti ve tuslarin arasi 101px olmustu;
-     o yol kapali. Onun yerine ANAHTAR daraliyor: genisligi
-     olculuyor, sag kenari tasima satirinin sag kenarina esitleniyor
-     ve etiket sagda duruyor (space-between). Toggle solda, ad sagda
-     -- ayarlar panelindeki satirlarin ayni dili.
-     GUVENLIK: etiket o genislige SIGMIYORSA hicbir sey yapilmiyor.
-     Kirpilmis bir kelime, tirtikli bir kenardan kotudur. */
+     o yol kapali.
+     SONRA ANAHTAR gerildi (sag kenari konsolun sag kenarina
+     esitlendi, etiket space-between ile saga itildi). O DA KAPALI:
+     toggle ile kelimenin arasinda 80px'lik bir bosluk kaliyordu ve
+     kelime havada duruyordu. Iki eleman bir arada okunmaliysa yan
+     yana durmali.
+     BUGUNKU KURAL: etiket toggle'in HEMEN yanindadir (CSS gap).
+     Bu fonksiyon artik hicbir seyi germiyor; sadece OLCUYOR ve
+     tasma varsa geri bildiriyor. Tasma yoksa -- ki olculdu, yok --
+     yapacak isi de yoktur. */
   function _kipSagKenar(kk, sol){
     try{
       /* HEDEF: konsolun EN GENIS satiri, tasima satiri degil.
-         Once tasima satirina hizalanmisti ve radyoda yetmedi --
-         "ORBITAPE" etiketi o genislige sigmiyor, 11px disarida
-         kaliyordu. Blogun sag kenarini zaten en genis satir
-         ciziyor; anahtar oraya oturunca DISARI TASAN hicbir sey
-         kalmiyor. Tasima satirinin daha kisa olmasi sorun degil:
-         iceride kalmak disari tasmak degildir. */
+         Blogun sag kenarini zaten en genis satir ciziyor. */
       let sag = 0;
       ['tasima','araclar'].forEach(id=>{
         const e = document.getElementById(id); if(!e) return;
         const r2 = e.getBoundingClientRect();
         if(r2.width && r2.right > sag) sag = r2.right;
       });
-      if(!sag) return;
-      const tr = { right: sag, width: sag };
-      kk.style.width = '';                       // once dogal olcusune don
+      kk.style.width = '';                       // dogal olcusunde kalir
       kk.style.justifyContent = '';
+      if(!sag) return;
       const dogal = kk.getBoundingClientRect().width;
-      const istenen = Math.round(tr.right - sol);
-      if(istenen >= dogal){                      // yer var: sagi hizala
-        kk.style.width = istenen + 'px';
-        kk.style.justifyContent = 'space-between';
+      /* GUVENLIK KAPISI: dar ekranda etiket konsolun sag kenarini
+         gecerse anahtari kirpmiyoruz -- kirpilmis kelime kotudur --
+         sadece sol kenardan iceri cekiyoruz. Genis ekranda bu dal
+         hic calismiyor. */
+      if(sol + dogal > sag){
+        const yeniSol = Math.max(8, Math.round(sag - dogal));
+        kk.style.left = yeniSol + 'px';
       }
     }catch(e){ _yut(e); }
   }
@@ -10260,14 +10299,30 @@
       const _kt = document.getElementById('ayarTut');
       const _kk = document.getElementById('kipKisayol');
       _kipAnahtarYaz();
-      /* KIP KOSULU KALKTI: anahtar artik iki kipte de duruyor ve
-         iki kipte de tutamagin satirina oturmali. */
-      if(_kt && _kk){
+      /* KIP KOSULU KALKTI: anahtar iki kipte de duruyor. Yeri ise
+         kipe gore, cunku TUTAMAK kipe gore:
+           arsivde tutamak yaninda  -> onun satirina, onun sagina
+           radyoda tutamak sol uste -> modulun ustune, sola dayali
+         Ikisinde de sabit sayi yok, olculen bir komsu var. */
+      if(_kk && _kt && document.body.classList.contains('mood')){
         const r = _kt.getBoundingClientRect();
         if(r.height){
           _kk.style.bottom = Math.round(window.innerHeight - r.bottom + (r.height - 24)/2) + 'px';
           _kk.style.left   = Math.round(r.right + 10) + 'px';
           _kipSagKenar(_kk, Math.round(r.right + 10));
+        }
+      }else if(_kk){
+        const su2 = document.getElementById('solUst');
+        if(su2){
+          const r2 = su2.getBoundingClientRect();
+          if(r2.height){
+            /* 14px: tasima satirinin dokunma alani yukari 4px,
+               anahtarinki asagi 7px tasiyor; 8px bosluk birakinca
+               cakisiyorlar. */
+            _kk.style.bottom = Math.round(window.innerHeight - r2.top + 14) + 'px';
+            _kk.style.removeProperty('left');      // sol kenar CSS'ten (--kx)
+            _kipSagKenar(_kk, Math.round(_kk.getBoundingClientRect().left));
+          }
         }
       }
     }catch(e){ _yut(e); }
@@ -10327,43 +10382,58 @@
   }
   function _tutamakYerlestir(y){
       void y;
-      /* ── TUTAMAK MODULUN UST SATIRI (IKI KIPTE DE) ───────────────
-         Tutamak eskiden radyoda sol USTTEYDI ve yeri CSS'ten
-         geliyordu; iki kipin konsolu ayni yere alininca o ayrim
-         kalmadi.
-         Tutamak sol alttaki blogun parcasi ve o blogun EN UST
-         SATIRI. Yeri sabit bir sayiyla verilemez cunku satir sayisi
-         kipe gore degisiyor
-         (REC bu kipte geri geliyor, ses cizgisi yalnizca farede
-         var): sabit sayi bir durumda bosluk birakir, otekinde
-         modulun uzerine biner -- eskisi tam olarak oyleydi ve
-         "en altta olmamis, arada asili kalmis" diye goruldu.
-         O yuzden modulun OLCULEN ustunden veriliyor.
+      /* ── TUTAMAK SOL UST: FREKANS CUBUKLARININ ALTI ──────────────
+         Bir tur alt sol konsolun UST SATIRIYDI ve yeri modulun
+         olculen ustunden geliyordu. O yer kip anahtarini 50px
+         iceri itiyordu (once tutamak, sonra anahtar); kullanici
+         tutamagi yukari, anahtari sola istedi.
+         Yeni yer yine SABIT SAYI DEGIL, OLCUM: radyoda frekans
+         cubugunun (#modDalga) alt kenari + 8px. Raf adinin puntosu
+         14 ile 11 arasinda degisiyor (bkz. _solUstAdSigdir), yani
+         cubugun yeri de degisiyor -- sabit bir top bir puntoda
+         bosluk birakir, otekinde cubuga biner.
          OLCULEN DEGER DUZ PIKSEL: rect zaten gercek ekran
          koordinati, guvenli alan payi icinde. _dip() ile yazilirsa
          env() ikinci kez eklenir (buyutecte tam bu hata yasandi). */
       try{
         const tut0 = document.getElementById('ayarTut');
-        const su1  = document.getElementById('solUst');
-        if(tut0){
-          if(su1){
-            const sr = su1.getBoundingClientRect();
-            if(sr.height){
-              /* EN AZ 13px: satirlarin arasi 8px ama DOKUNMA
-                 ALANLARI kutulardan buyuk -- tutamaginki asagi 7px,
-                 tuslarinki yukari 4px tasiyor. 8px bosluk birakinca
-                 iki alan cakisiyordu (olculdu: dur/ayarTut 7x2px,
-                 saglik testi yakaladi). Gorunen bosluk 13px, yani
-                 tutamak hala modulun ust satiri gibi duruyor. */
-              const bos = Math.max(13,
-                parseFloat(getComputedStyle(su1).getPropertyValue('--modul-bosluk')) || 8);
-              tut0.style.bottom = Math.round(window.innerHeight - sr.top + bos) + 'px';
-            }
-          }else{
-            /* Modul yoksa CSS ne diyorsa o. */
-            tut0.style.removeProperty('bottom');
-          }
+        if(!tut0) return;
+        if(document.body.classList.contains('mood')){
+          /* ── ARSIV: DEGISMEDI. Tutamak modulun OLCULEN ustunde.
+             Sabit bir sayiyla verilemez cunku satir sayisi kipe
+             gore degisiyor (REC geri geliyor, ses cizgisi yalnizca
+             farede var): sabit sayi bir durumda bosluk birakir,
+             otekinde modulun uzerine biner -- eskisi tam olarak
+             oyleydi ve "arada asili kalmis" diye goruldu.
+             OLCULEN DEGER DUZ PIKSEL: rect zaten gercek ekran
+             koordinati, guvenli alan payi icinde. _dip() ile
+             yazilirsa env() ikinci kez eklenir. */
+          tut0.style.removeProperty('top');
+          const su1 = document.getElementById('solUst');
+          if(!su1){ tut0.style.removeProperty('bottom'); return; }
+          const sr = su1.getBoundingClientRect();
+          if(!sr.height) return;
+          /* EN AZ 13px: satirlarin arasi 8px ama DOKUNMA ALANLARI
+             kutulardan buyuk -- tutamaginki asagi 7px, tuslarinki
+             yukari 4px tasiyor. 8px bosluk birakinca iki alan
+             cakisiyordu (olculdu: dur/ayarTut 7x2px). */
+          const bos = Math.max(13,
+            parseFloat(getComputedStyle(su1).getPropertyValue('--modul-bosluk')) || 8);
+          tut0.style.bottom = Math.round(window.innerHeight - sr.top + bos) + 'px';
+          return;
         }
+        /* ── RADYO: FREKANS CUBUGUNUN ALTI ───────────────────────
+           Sabit bir top yeterli degil: raf adinin puntosu 14 ile 11
+           arasinda degisiyor (bkz. _solUstAdSigdir), yani cubugun
+           yeri de degisiyor. Sabit sayi bir puntoda bosluk birakir,
+           otekinde cubuga biner. */
+        tut0.style.removeProperty('bottom');
+        const dal = document.getElementById('modDalga');
+        if(!dal) return;
+        const dr = dal.getBoundingClientRect();
+        /* Cubuk gorunmez olabilir (opacity 0, calmiyorken) ama
+           kutusu yerinde: olcum opaklığa bakmiyor. */
+        if(dr.height) tut0.style.top = Math.round(dr.bottom + 8) + 'px';
       }catch(_){ _yut(_); }
   }
   function _ustSatirlariSigdir(){
@@ -10557,13 +10627,20 @@
                  kayit satirina gore hesaplayinca kunye tasima
                  satirinin uzerine biniyordu (senaryo 320px'te olctu:
                  162x30 cakisma). */
-              /* KONSOLUN TAMAMI: modul + tutamak + kip anahtari.
-                 Yalnizca module bakinca kunye tutamagin uzerine
-                 biniyordu -- tutamak iki kipte de modulun USTUNDE
-                 duruyor artik (senaryo 320px'te olctu: np x ayarTut
-                 40x26 cakisma). En yukaridaki hangisiyse o. */
+              /* KONSOLUN TAMAMI: modul + kip anahtari.
+                 Yalnizca module bakinca kunye anahtarin uzerine
+                 biniyordu -- anahtar modulun USTUNDE duruyor
+                 (senaryo 320px'te olctu: 40x26 cakisma). En
+                 yukaridaki hangisiyse o.
+                 'ayarTut' YALNIZCA ARSIVDE LISTEDE: radyoda
+                 tutamak sol uste, frekans cubuklarinin altina
+                 gitti; orada alt seride ait degil. Listede
+                 kalsaydi tepe ~54px olur ve kunye ekranin
+                 tepesine firlardi. */
               let tepe = Infinity;
-              ['solUst','ayarTut','kipKisayol'].forEach(id=>{
+              const _kons = document.body.classList.contains('mood')
+                ? ['solUst','ayarTut','kipKisayol'] : ['solUst','kipKisayol'];
+              _kons.forEach(id=>{
                 const e3 = document.getElementById(id); if(!e3) return;
                 const r3 = e3.getBoundingClientRect();
                 if(r3.height && r3.top < tepe) tepe = r3.top;
@@ -11632,29 +11709,25 @@
      centikli ekranda hesap bozulmaz. */
   function solUstHizala(){
     try{
-      /* RADYODA sol ustte ayar tutamagi var (konsol saga gecti);
-         SOUND BANKS kipinde sol ust nebulanin, orada hizalanacak bir
-         sey yok. Olculen nesne bu yuzden tutamak. */
-      const su = document.getElementById('ayarTut');
-      const ts = su;
-      const ad = document.querySelector('#ust .kanal.ad');
-      if(!su || !ts || !ad || document.body.classList.contains('mood')) return;
-      const ab = ad.getBoundingClientRect();
-      const fs = parseFloat(getComputedStyle(ad).fontSize) || 20;
-      if(!ab.height) return;
-      const orta = ab.top + (ab.height - fs)/2 + fs*0.50;   // murekkep ortasi
-      const tb = ts.getBoundingClientRect();
-      if(!tb.height) return;
-      const satirOrta = tb.top + tb.height/2;
-      const kok = document.documentElement;
-      const mevcut = parseFloat(getComputedStyle(kok).getPropertyValue('--sut')) || 15;
-      const yeni = Math.max(2, Math.round(mevcut + (orta - satirOrta)));
-      /* Not: tb, emniyet olcegi devredeyse kuculmus olcuyu verir.
-         Olcek normal ekranda hic calismiyor (bkz. dar ekran sorgusu);
-         calistigi durumda da alt kenar dogru yerde kaldigi icin
-         hiza bozulmuyor -- olcek sol-ust koseden buyutuyor degil,
-         'left center' koseden kuculuyor. */
-      if(Math.abs(yeni - mevcut) > 0.5) kok.style.setProperty('--sut', yeni + 'px');
+      /* ── MEZAR TASI: BU HIZA ARTIK BASKA YERDE KURULUYOR ───────
+         Burada '#ust' seridi, sol ustteki AYAR TUTAMAGININ satir
+         ortasina gore kaydiriliyordu (--sut). Iki sey oldu:
+         1) Tutamak bir tur alt sol koseye tasindi ve bu hesap onu
+            izlemeye devam etti -- ekranin DIBINDEKI bir nesneyi
+            TEPEDEKI bir yaziyla hizalamaya calisti. Sonuc her
+            karede alt sinira carpiyordu: --sut = 2px, yani ust
+            serit sessizce 13px yukarida duruyordu.
+         2) Ayni hiza bu arada dogru yontemle kuruldu:
+            _solUstTabanaOtur() raf adinin TABAN CIZGISINI marka
+            yazisinin taban cizgisine oturtuyor (sifir boyutlu kama
+            ile olculuyor, punto tahmin edilmiyor).
+         Ikisini birden calistirmak ayrica DONGU olurdu: biri
+         seridi ada gore, oteki adi seride gore oynatirdi.
+         Bu yuzden burasi bosaltildi; --sut yeniden CSS'teki sabit
+         degerinde (15px). Fonksiyon duruyor cunku ustOlcu()
+         zincirinden cagriliyor ve ileride ust seride ait baska bir
+         hiza gerekirse yeri burasi. */
+      return;
     }catch(e){ _yut(e); }
   }
   function ustOlcu(){ araCizgiOlcu(); markHizala(); solUstHizala(); araYerlestir(); try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); } }
