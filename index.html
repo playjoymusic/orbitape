@@ -383,10 +383,19 @@
      (position:fixed kalkti), yerini ust bloktan aliyor.
      Boşluk 7px: tasima satiriyla ayni. */
   #araclar{display:flex;align-items:center;gap:7px;}
-  /* REC RADYODA YOK. Canli yayin kaydedilmiyor; dugme radyo tarafinda
-     her zaman pasifti ve calismayan bir tus gostermek yanlisti.
-     SILINMEDI, gizlendi: SOUND BANKS kipinde geri geliyor. */
-  body:not(.mood) #rec{display:none !important;}
+  /* ── REC RADYODA DA VAR, AMA SONUK ────────────────────────────
+     Bir tur tamamen gizlenmisti: "calismayan bir tus gostermek
+     yanlis". Yanlis olan tusun kendisi degil SESSIZ olmasiydi --
+     kullanici REC'i ariyor, bulamiyor ve nedenini hicbir yerde
+     gormuyordu.
+     Simdi duruyor, sonuk duruyor ve BASILABILIYOR: basinca neden
+     kapali oldugunu yaziyor (bkz. recNotYaz). Bir tusun neden
+     calismadigini soylemesi, o tusu saklamaktan iyidir.
+     Sekli arsivdekiyle birebir ayni: ayni kutu, ayni nokta, ayni
+     yazi -- yalnizca opakligi dusuk. */
+  body:not(.mood) #rec{opacity:.34;}
+  body:not(.mood) #rec .nokta{background:#3c4a4e;box-shadow:none;}
+  body:not(.mood) #rec:hover{opacity:.55;color:inherit;}
   /* UCUNCU SATIR: ses. Genisligi JS'ten (sesSatirOlcu) -- ustundeki
      satirlarin en genisine esitleniyor, uc satir ayni sag kenarda
      bitiyor. */
@@ -898,7 +907,7 @@
     top:calc(15px + env(safe-area-inset-top, 0px));
     flex-direction:column;align-items:stretch;gap:6px;
     pointer-events:none;user-select:none;}
-  body:not(.mood) #modAd{font-size:var(--modAdPunto, 18px);
+  body:not(.mood) #modAd{font-size:var(--modAdPunto, 14px);
     letter-spacing:.30em;text-indent:.30em;}
   /* ── CUBUK AKISTAN CIKIYOR ────────────────────────────────────
      Cubuk adin genisligini almali. Akista birakilinca TERSI oluyor:
@@ -909,13 +918,12 @@
      position:absolute + left/right:0 dongoyu kesiyor: kutunun
      genisligini YALNIZCA yazi belirliyor, cubuk da o genisligi
      aliyor. top:100% -> adin hemen alti.
-     GENISLIK YUZDE, 'auto' DEGIL: canvas yer degistirilmis bir oge
-     (replaced element), left/right ikisi birden verilse bile kendi
-     oz genisligini kullaniyor -- olculdu, serit 22px'te takili
-     kaldi. width:100% kapsayanin genisligini aliyor, o da yazinin
-     genisligi. */
+     KISA, YAZI KADAR DEGIL: bir tur ad genisligine gerildi ve
+     kullanici "cok buyumus" dedi -- 200px'lik bir serit bir gosterge
+     degil bir grafik oluyor. Dogru olcu KUCUK bir calar: dort
+     tikiz cubuk, adin SOL kenarinda, hemen altinda. */
   body:not(.mood) #ust #modDalga{position:absolute;left:0;
-    top:100%;margin:5px 0 0;width:100%;height:11px;order:0;}
+    top:100%;margin:4px 0 0;width:24px;height:10px;order:0;}
   /* ── ÇİFT DOKUNUŞ SAYFAYI KAYDIRMASIN ─────────────────────────────
      iOS Safari'de bir yazıya iki kez hızlı basmak "çift dokunuşla
      yakınlaştır" demek: görüntü penceresi büyüyüp kayıyor ve
@@ -1745,11 +1753,39 @@
   body.t-radio #sesCubuk{color:#ffc79e;}
 
   /* Kayıt sessiz olacaksa REC bunu belli etsin (sonradan öğrenmek kötü) */
+  /* ── KAPALI TUSUN SEBEBI ──────────────────────────────────────
+     Ekranin ortasinda, alt seridin uzerinde. Sabit koselerden uzak
+     duruyor: hicbir olcum zincirine girmiyor, hicbir seyin uzerine
+     binmiyor. Dili alt seridin dili -- kucuk mono, genis harf
+     araligi. */
+  #recNot{position:fixed;z-index:97;left:50%;
+    bottom:calc(196px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%) translateY(6px);
+    max-width:min(76vw,320px);text-align:center;
+    font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:10px;letter-spacing:.09em;line-height:1.65;
+    color:rgba(244,247,250,.80);white-space:pre-wrap;
+    background:rgba(4,8,10,.90);border:1px solid rgba(255,255,255,.09);
+    border-radius:8px;padding:9px 13px;
+    opacity:0;pointer-events:none;
+    transition:opacity .28s ease, transform .28s ease;}
+  #recNot.var{opacity:1;transform:translateX(-50%) translateY(0);}
+  /* Baslik satiri: kirmizimsi, cunku bu bir RED. Ama uyari degil --
+     bir kural, o yuzden alarm rengi degil sonuk bir mercan. */
+  #recNot b{display:block;font-weight:400;font-size:9px;
+    letter-spacing:.26em;color:#e0836f;margin-bottom:6px;}
+  @media (prefers-reduced-motion: reduce){
+    #recNot{transition:opacity .28s ease;transform:translateX(-50%);}
+    #recNot.var{transform:translateX(-50%);} }
   #rec.sessiz .nokta{background:#c9563f;box-shadow:0 0 8px rgba(201,86,63,.7);}
   /* CANLI YAYINDA KAYIT KAPALI: yayını kaydetmek bizim işimiz değil.
      Düğme gölgeye düşüyor ve basılmıyor; istasyon değişip arşivden bir
      ses gelince kendiliğinden geri açılıyor. */
-  #rec.pasif{opacity:.32;pointer-events:none;filter:none;}
+  /* POINTER-EVENTS ARTIK KESILMIYOR. Once tus tamamen olu
+     birakiliyordu: basan kisi hicbir sey olmadigini goruyor ve
+     nedenini ogrenemiyordu. Artik basis geciyor ve kayitDegis()
+     sebebi ekrana yaziyor. */
+  #rec.pasif{opacity:.32;filter:none;cursor:default;}
   #rec.pasif .nokta{background:#3c4a4e;box-shadow:none;}
   #rec.sessiz #recYazi::after{content:' ✕';opacity:.75;letter-spacing:0;}
 
@@ -2164,6 +2200,14 @@
     </div>
   </div>
   <div id="sesCubuk" aria-hidden="true"><i></i></div>
+  <!-- ── KISA ACIKLAMA ────────────────────────────────────────────
+       REC gibi kapali bir tusa basildiginda NEDENINI soyleyen kisa
+       not. Tani paneli (#kayitBilgi) bu is icin kullanilamazdi: o
+       yalnizca ?tani ile aciliyor, yani normal kullanicida hic
+       gorunmuyor. Ekranin ortasinda, dort kosedeki hicbir seye
+       degmeyen bir yerde duruyor ve 4 saniyede siliniyor.
+       role=status + aria-live: ekran okuyucu da duyuyor. -->
+  <div id="recNot" role="status" aria-live="polite" aria-hidden="true"></div>
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
@@ -6069,6 +6113,9 @@
          ama aria-checked ve etiket JS'ten -- ikisi ayni anda
          degismezse anahtar bir sey gosterip baskasini soyler. */
       try{ _kipAnahtarYaz(); }catch(e){ _yut(e); }
+      /* REC iki kipte de duruyor ama yalnizca arsivde calisiyor:
+         kip degisince sonuk/acik hali hemen tazelenmeli. */
+      try{ if(window.recPasifTazele) window.recPasifTazele(); }catch(e){ _yut(e); }
       /* Ikinci tusun yuzu kipe bagli (radyoda ■ stop, arsivde ‖
          duraklat): kip degisince tazelenmeli, yoksa oteki kipin
          simgesi ekranda kaliyor. */
@@ -9837,7 +9884,10 @@
      zaman eski 12px'in altina inmiyor.
      Arsiv kipinde bu islev hicbir sey yazmiyor: orada blok markanin
      solunda ve punto CSS'ten (12/11px) geliyor. */
-  const MODAD_PUNTO = 18, MODAD_PUNTO_ALT = 12;
+  /* 18 -> 14: ilk deneme cok irriydi ("yazi kuculsun cok buyumus").
+     14 hala eski 12'den belirgin buyuk ama ust seridi ele
+     gecirmiyor. Alt sinir 11: daha asagisi okunmuyor. */
+  const MODAD_PUNTO = 14, MODAD_PUNTO_ALT = 11;
   function _solUstAdSigdir(){
     try{
       const kut = document.getElementById('modKut');
@@ -10150,7 +10200,13 @@
              sigmiyordu ve tasma yaratiyordu. Kunye kisalmiyor,
              yalnizca daha cok satira sariyor. */
           const npSag = npE.getBoundingClientRect().right || (window.innerWidth - sol);
-          let yer = Math.round(npSag - cizgiSag - 24);
+          /* ARADAKI HAVA 24 -> 18. REC radyo tarafina da gelince alt
+             sol satir 162'den 218px'e cikti ve kunyeye kalan yer
+             esigin altina dustu: blok 390px'lik normal bir telefonda
+             konsolun USTUNE yiginiyordu (olculdu, iki hiza testi
+             kirmizi). Alti piksel kunyeyi yaninda tutmaya yetiyor;
+             blok bir satir daha sariyor, yer degistirmiyor. */
+          let yer = Math.round(npSag - cizgiSag - 18);
           /* ── YAN YANA SIGMIYORSA YIGILIYOR ────────────────────────
              Dar bir ekranda (320px olculdu) soldaki satir yerin
              yarisini aliyor ve kunyeye ~100px kaliyor. Kunye
@@ -10162,7 +10218,13 @@
              genisligi aliyor ve soldaki satirin USTUNE cikiyor.
              Yigilmak kirpmaktan iyidir -- kunyenin tam olmasi bir
              lisans sarti, yan yana durmasi yalnizca bir tercih. */
-          const YAN_YANA_ESIK = 150;
+          /* 150 -> 118. Esik "kunye yaninda durabilir mi" sorusunun
+             cevabi ve REC gelince 390px'te 120'ye dustu: 150 kalsaydi
+             normal telefon yiginma kipine geciyordu. 118 gercek alt
+             sinir -- kunye uc satira sariyor ama okunuyor; altina
+             inince kirpilmadan sigmiyor ve yiginmak dogru oluyor
+             (320px hala oyle). */
+          const YAN_YANA_ESIK = 118;
           if(yer < YAN_YANA_ESIK){
             yer = Math.round(npSag - sol);
             let ustHat2 = alt, _oy = false;
@@ -11599,8 +11661,41 @@
       if(!rec) return;
       const yayin = (typeof akisMi==='function') ? akisMi() : false;
       const kayitta = !!kaydedici || !!_bekleyenKayit;
-      rec.classList.toggle('pasif', yayin && !kayitta);
-      rec.title = (yayin && !kayitta) ? 'Recording is off during live radio' : 'Screen recording';
+      /* RADYO TARAFINDA HER ZAMAN KAPALI. Once yalnizca canli bir
+         yayin CALARKEN kapaniyordu; radyoda henuz hicbir sey
+         calmiyorken tus acik gorunup basinca hicbir sey yapmiyordu.
+         O kipte kayit kurali zaten hicbir zaman degismiyor. */
+      const radyoda = !document.body.classList.contains('mood');
+      rec.classList.toggle('pasif', (radyoda || yayin) && !kayitta);
+      rec.title = ((radyoda || yayin) && !kayitta)
+                ? 'Recording is off during live radio' : 'Screen recording';
+    }catch(e){ _yut(e); }
+  }
+  /* ── KAPALI TUS KENDINI ANLATIYOR ─────────────────────────────
+     Metin UYDURMA DEGIL: kullanim sartlarindaki kuralin ta kendisi
+     (terms.html, "Recording" bolumu). Arsiv kayitlari Creative
+     Commons ya da kamu mali -- yakalanabilir; bir istasyonun
+     yayini dinlenmek uzere lisansli, saklanmak uzere degil. */
+  /* moodUygula bu isleve YUKARIDAN erisemiyor (rec ve arkadaslari
+     betigin cok asagisinda kuruluyor): pencereye asiliyor. */
+  try{ window.recPasifTazele = ()=>{ try{ recPasifYaz(); }catch(e){ _yut(e); }
+        try{ if(typeof araclarYenidenSigdir==='function') araclarYenidenSigdir(); }
+        catch(e){ _yut(e); } }; }catch(e){ _yut(e); }
+  var _recNotZaman = null;
+  function recNotYaz(baslik, metin){
+    try{
+      const el = document.getElementById('recNot'); if(!el) return;
+      while(el.firstChild) el.removeChild(el.firstChild);
+      const b = document.createElement('b');
+      b.textContent = baslik;                       // metin DUZ YAZI olarak giriyor
+      el.appendChild(b);
+      el.appendChild(document.createTextNode(metin));
+      el.classList.add('var');
+      el.setAttribute('aria-hidden','false');
+      clearTimeout(_recNotZaman);
+      _recNotZaman = setTimeout(()=>{
+        try{ el.classList.remove('var'); el.setAttribute('aria-hidden','true'); }
+        catch(e){ _yut(e); } }, 4200);
     }catch(e){ _yut(e); }
   }
   function camYaz(){
@@ -12980,9 +13075,20 @@
     if(e){ e.preventDefault(); e.stopPropagation(); }
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     if(_onKontrol) return;                            // kontrol sürüyor: ikinci basış yutulur
-    /* CANLI YAYINDA KAYIT YOK. CSS zaten tıklamayı kesiyor; bu ikinci
-       kapı klavye/dokunmatik kaçaklarına karşı. */
-    try{ if(!kaydedici && !_bekleyenKayit && akisMi()){ recPasifYaz(); return; } }catch(e){ _yut(e); }
+    /* CANLI YAYINDA KAYIT YOK. Tus artik olu degil: basis buraya
+       geliyor ve SEBEBI ekrana yaziyor. Eskiden CSS tiklamayi
+       kesiyordu, yani basan kisi hicbir sey olmadigini goruyor ve
+       nedenini hicbir yerde bulamiyordu. */
+    try{
+      const radyoda = !document.body.classList.contains('mood');
+      if(!kaydedici && !_bekleyenKayit && (radyoda || akisMi())){
+        recPasifYaz();
+        recNotYaz('REC LOCKED · LIVE SIGNAL',
+          'Archive tracks are Creative Commons or public domain — '
+        + 'capturable. A live stream is licensed to be heard, not kept.');
+        return;
+      }
+    }catch(e){ _yut(e); }
     if(kaydedici){ kayitDurdur(); return; }
     if(_bekleyenKayit){ kaydiPaylas(); return; }      // dokunuş taze -> paylaşım sayfası açılır
     kayitOnKontrol();
@@ -13732,7 +13838,10 @@
       ...(_turYavas ? [
         { bas:'FAVOURITES', metin:'The star keeps a station.<br>The list opens from the same place.',
           duraklar:[{hedef:'#favAc', sure:1500}] },
-        { bas:'RECORD', metin:'REC records the screen with its sound.<br>The file stays on your device.',
+        /* REC radyoda GORUNUYOR ama sonuk duruyor: tur bunu da
+           soylemeli, yoksa kisi calismayan bir tusu deneyip
+           kendini sucluyor. */
+        { bas:'RECORD', metin:'REC records the screen with its sound.<br>Archive only — live radio is never recorded.',
           duraklar:[{hedef:yaDa('#rec','#np'), sure:1600}] },
         { bas:'ANOTHER WORLD', metin:'Settings has a second world:<br>an archive of recordings, with effects.',
           duraklar:[{hedef:'#ayarTut', sure:900,

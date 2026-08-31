@@ -1073,10 +1073,10 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const cr = c.getBoundingClientRect(), mr = m.getBoundingClientRect();
       const punto = parseFloat(getComputedStyle(m).fontSize) || 12;
       /* YERI KIPE BAGLI:
-           radyoda -> yazinin ALTINDA ve tam yazi kadar genis. Sol
-                      ust bos oldugu icin yer var; kullanicinin ilk
-                      istedigi de buydu ("yazinin tam altini, hep
-                      ordaki yazinin uzunlugunda").
+           radyoda -> yazinin ALTINDA, SOL kenariyla hizali ve KISA.
+                      Bir tur ad genisligine gerildi ve "cok buyumus"
+                      diye geri alindi: 200px'lik bir serit gosterge
+                      degil grafik oluyor. Dogru olcu kucuk bir calar.
            arsivde -> yazinin SOLUNDA ve kisa: orada marka adiyla
                       ayni satiri paylasiyor, altinda yer yok.
          BOYU her iki durumda da yazinin puntosuyla ayni buyukluk
@@ -1085,7 +1085,7 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const hiza = { moodda:document.body.classList.contains('mood'),
                      solunda:cr.right <= mr.left + 1,
                      altinda:cr.top >= mr.bottom - 1,
-                     adKadar:Math.abs(cr.width - mr.width) <= 2,
+                     solHiza:Math.abs(cr.left - mr.left) <= 2,
                      en:Math.round(cr.width), boy:Math.round(cr.height),
                      punto:Math.round(punto),
                      boyOran:+(cr.height/punto).toFixed(2) };
@@ -1099,15 +1099,16 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
       const kapali = { sinif:c.classList.contains('caliyor'), gen:+_dalgaGen.toFixed(3) };
       return { hiza, acik, kapali };
     });
-    K('Frekans cubugu adin altinda ve ad kadar genis', !dlg.yok
+    K('Frekans cubugu kucuk ve adin sol alt kosesinde', !dlg.yok
       && (dlg.hiza.moodda
-            ? (dlg.hiza.solunda && dlg.hiza.en > 0 && dlg.hiza.en <= 26)
-            : (dlg.hiza.altinda && dlg.hiza.adKadar && dlg.hiza.en > 40))
+            ? dlg.hiza.solunda
+            : (dlg.hiza.altinda && dlg.hiza.solHiza))
+      && dlg.hiza.en >= 10 && dlg.hiza.en <= 32
       && dlg.hiza.boyOran >= 0.5 && dlg.hiza.boyOran <= 1.3,
       dlg.yok ? 'cubuk yok'
               : ((dlg.hiza.moodda ? 'arsivde solunda: ' + dlg.hiza.solunda
                                   : 'radyoda altinda: ' + dlg.hiza.altinda
-                                    + ', ad kadar: ' + dlg.hiza.adKadar)
+                                    + ', sol hizali: ' + dlg.hiza.solHiza)
                  + ', ' + dlg.hiza.en
                  + 'x' + dlg.hiza.boy + 'px, punto ' + dlg.hiza.punto
                  + 'px (oran ' + dlg.hiza.boyOran + ')'));
@@ -2981,8 +2982,17 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     aktifItem = {mp3:'ry', ad:'FM', radyo:true, id:'ry'}; recPasifYaz();
     const yayin = { pasif: rec.classList.contains('pasif'),
                     tik: (()=>{ try{ kayitDegis(); }catch(e){} return !!kaydedici; })() };
+    /* ARSIV TARAFI: kural artik yalnizca calan sese degil KIPE de
+       bakiyor -- radyo tarafinda REC her zaman kapali (orada kayit
+       hicbir kosulda acilmiyor). Bu yuzden arsiv durumu olculurken
+       govde sinifi da arsive alinmali. Yalnizca sinif degistiriliyor:
+       moodUygula() kuyruk doldurup ses baslatirdi ve olcumu
+       kirletirdi. */
+    const eskiSinif = document.body.classList.contains('mood');
+    document.body.classList.add('mood');
     aktifItem = {mp3:'ar', ad:'Arsiv', etiket:'netlabel'}; recPasifYaz();
     const arsiv = { pasif: rec.classList.contains('pasif') };
+    if(!eskiSinif) document.body.classList.remove('mood');
     AKTIF_MOD = eski; aktifItem = eskiIt; recPasifYaz();
     return { yayin, arsiv };
   });
@@ -5592,6 +5602,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
     const su=document.getElementById('solUst');
     const radyo = { ust:Math.round(su.getBoundingClientRect().top),
                     arama:getComputedStyle(document.getElementById('ara')).display,
+                    rec:getComputedStyle(document.getElementById('rec')).display,
+                    recSonuk:parseFloat(getComputedStyle(document.getElementById('rec')).opacity) < 0.6,
+                    recBasilir:getComputedStyle(document.getElementById('rec')).pointerEvents !== 'none',
                     tutSol:Math.round(document.getElementById('ayarTut').getBoundingClientRect().left) };
     AYAR.mood=true; moodUygula(); await bek(420);
     const r2=su.getBoundingClientRect();
@@ -5624,6 +5637,17 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Kipte arama yok', moodYer.kipte.arama==='none' && moodYer.radyo.arama!=='none',
      'radyoda var, arsivde yok');
   K('Kipte REC geri geliyor', moodYer.kipte.rec!=='none', 'canli yayin disinda kayit anlamli');
+  /* ── RADYODA REC DURUYOR AMA SONUK ──────────────────────────────
+     Bir tur tamamen gizlenmisti ve o yanlisti: kullanici REC'i
+     ariyor, bulamiyor, nedenini de hicbir yerde gormuyordu. Simdi
+     ayni tus ayni yerde duruyor, sonuk duruyor ve BASILABILIYOR --
+     basinca sebebini yaziyor. Bu ucu birden olculuyor: gizli degil,
+     sonuk, ve tiklamayi aliyor. */
+  K('Radyoda REC duruyor ama sonuk ve basilabilir',
+     moodYer.radyo.rec!=='none' && moodYer.radyo.recSonuk===true
+     && moodYer.radyo.recBasilir===true,
+     'display '+moodYer.radyo.rec+', sonuk '+moodYer.radyo.recSonuk
+     +', tiklanabilir '+moodYer.radyo.recBasilir);
   /* Tutamak ayni SOL KENARDAN basliyor: radyoda ekranin sol ustunde,
      kipte sol alttaki blogun ust satiri. Iki kipte de sol serit. */
   K('Tutamak iki kipte de sol serite yasli',
@@ -6259,27 +6283,58 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
      'kalan: '+takim.sagAlttaki);
   K('REC ve CAM sol uste tasindi', takim.kayitSolUstte===true && takim.solAltBos===true, 'sol alt bosaldi');
 
-  /* ── 7. REC RADYODA YOK ─────────────────────────────────────────
-     Canli yayin kaydedilmiyor: dugme radyo tarafinda HER ZAMAN
-     pasifti, yani ekranda hicbir zaman calismayan bir tus duruyordu.
-     Silinmedi -- SOUND BANKS kipinde geri geliyor. */
+  /* ── 7. REC RADYODA SONUK, AMA SEBEBINI SOYLUYOR ────────────────
+     Canli yayin kaydedilmiyor. Dugme once radyoda tamamen
+     gizlenmisti; yanlis olan tus degil SESSIZLIKti -- kullanici
+     REC'i ariyor, bulamiyor ve nedenini hicbir yerde gormuyordu.
+     Simdi ayni tus ayni yerde, sonuk; basinca kuralı ekrana
+     yaziyor. Olculen: basis notu ACIYOR, not gercekten kaydin neden
+     kapali oldugunu soyluyor ve kayit BASLAMIYOR. */
   const recKip = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const r=document.getElementById('rec'); if(!r) return null;
     r.classList.add('var');
-    const radyoda = getComputedStyle(r).display;
     const eski = AYAR.mood;
-    AYAR.mood = true; moodUygula(); await bek(260);
+    AYAR.mood = false; moodUygula(false); await bek(300);
+    const radyoda = getComputedStyle(r).display;
+    const sonuk   = parseFloat(getComputedStyle(r).opacity) < 0.6;
+    /* Basis: not acilmali, kayit baslamamali. */
+    r.click(); await bek(260);
+    const not = document.getElementById('recNot');
+    const notAcik = !!not && not.classList.contains('var');
+    const notMetin = not ? (not.textContent || '') : '';
+    const kayitBasladi = (typeof kaydediciAktif==='function') ? kaydediciAktif() : false;
+    AYAR.mood = true; moodUygula(false); await bek(300);
     const moodda = getComputedStyle(r).display;
-    AYAR.mood = eski; moodUygula(); await bek(260);
-    const geriDondu = getComputedStyle(r).display;
+    const moodSonuk = parseFloat(getComputedStyle(r).opacity) < 0.6;
+    AYAR.mood = eski; moodUygula(false); await bek(300);
     r.classList.remove('var');
-    return { radyoda, moodda, geriDondu };
+    if(not){ not.classList.remove('var'); }
+    return { radyoda, sonuk, notAcik, notMetin, kayitBasladi, moodda, moodSonuk };
   });
-  K('REC radyo tarafinda gorunmuyor', !!recKip && recKip.radyoda==='none',
-     'display: '+(recKip?recKip.radyoda:'-'));
-  K('REC SOUND BANKS kipinde geri geliyor', !!recKip && recKip.moodda!=='none' && recKip.geriDondu==='none',
-     'mood: '+(recKip?recKip.moodda:'-')+' | donunce: '+(recKip?recKip.geriDondu:'-'));
+  K('REC radyoda duruyor, sonuk', !!recKip && recKip.radyoda!=='none' && recKip.sonuk===true,
+     'display: '+(recKip?recKip.radyoda:'-')+', sonuk: '+(recKip?recKip.sonuk:'-'));
+  K('REC basilinca sebebini yaziyor, kayit baslamiyor',
+     !!recKip && recKip.notAcik===true && recKip.kayitBasladi===false
+     && /licen/i.test(recKip.notMetin) && /live/i.test(recKip.notMetin),
+     recKip ? (recKip.notAcik ? recKip.notMetin.slice(0,60)+'…' : 'not acilmadi') : '-');
+  K('REC SOUND BANKS kipinde tam parlak',
+     !!recKip && recKip.moodda!=='none' && recKip.moodSonuk===false,
+     'mood: '+(recKip?recKip.moodda:'-')+', sonuk: '+(recKip?recKip.moodSonuk:'-'));
+  /* METIN KODLA UYUSUYOR. Nottaki gerekce uydurulmus bir cumle
+     degil, kullanim sartlarindaki kuralin ta kendisi: arsiv
+     kayitlari CC/kamu mali, istasyon yayini degil. Ikisi ayrisirsa
+     ekranda yalan yazar. */
+  {
+    const sart = fs.readFileSync('terms.html','utf8');
+    const kodNot = fs.readFileSync('index.html','utf8');
+    K('REC gerekcesi kullanim sartlariyla ayni seyi soyluyor',
+       /Live radio is never recorded/i.test(sart)
+       && /Creative\s*Commons/i.test(sart)
+       && /REC LOCKED/.test(kodNot)
+       && /Creative Commons or public domain/.test(kodNot),
+       'sartlar ve ekran notu ayni kurali anlatiyor');
+  }
 
   /* ── 8. UC SATIR AYNI SAG KENARDA ───────────────────────────────
      Kullanicinin sozu: "yukaridaki seylerle hizalansin, sag taraftan

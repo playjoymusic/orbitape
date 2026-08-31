@@ -435,7 +435,8 @@ const CASUS = ()=>{
       AYAR.mood = false; moodUygula(); await b2(620);
       const sonra = { raf:AKTIF_AILE, ad:document.getElementById('modAd').textContent,
                       m1:m1(), kanal:mod,
-                      rec:getComputedStyle(document.getElementById('rec')).display };
+                      rec:getComputedStyle(document.getElementById('rec')).display,
+                      recSonuk:parseFloat(getComputedStyle(document.getElementById('rec')).opacity) < 0.6 };
       return { once, kipte, sonra };
     });
     K('[Y5] Kipte kanal arsive geciyor', kip.kipte.kanal==='lib' && kip.kipte.raf===null,
@@ -451,7 +452,12 @@ const CASUS = ()=>{
        '"' + kip.sonra.ad + '"');
     K('[Y5] Donunce marka rengi geri geliyor', kip.sonra.m1===kip.once.m1 && kip.sonra.m1!=='',
        kip.once.m1 + ' -> ' + kip.sonra.m1);
-    K('[Y5] Donunce REC yine gizli', kip.sonra.rec==='none', 'canli yayin kaydedilmiyor');
+    /* REC ARTIK GIZLENMIYOR, SONUYOR. Gizlemek kullaniciyi
+       "REC nerede" sorusuyla bas basa birakiyordu; simdi tus yerinde
+       duruyor, sonuk duruyor ve basinca sebebini yaziyor. */
+    K('[Y5] Donunce REC duruyor ama sonuk',
+       kip.sonra.rec!=='none' && kip.sonra.recSonuk===true,
+       'canli yayin kaydedilmiyor, tus sebebini soyluyor');
     await supur(p2, 'Y5 kip donusu');
   }
 
