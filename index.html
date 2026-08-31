@@ -6641,7 +6641,9 @@
            birakiliyordu ve kip acilinca hicbir raf secili olmuyordu --
            ekranda hangi rafta oldugun yazmiyordu. */
         try{ AKTIF_MOD = 'ORBITAPE'; localStorage.removeItem('orbitape.mod'); }catch(e){ _yut(e); }
-        try{ earthYukle(); uzunYukle(); }catch(e){ _yut(e); }
+        /* uzunYukle() BURADAN CIKTI: 435 KB'lik dosya acilista
+           inmesin, zar tutunca insin (bkz. kaynaktanCek). */
+        try{ earthYukle(); }catch(e){ _yut(e); }
         /* YERLESIM BIR KARE SONRA. Gezegenlerin yeri nebulanin
            GERCEK olcusunden hesaplaniyor; sinif daha yeni eklendigi
            icin ilk okumada kutu hala 0 ve hesap sessizce iptal
@@ -7904,7 +7906,21 @@
     // ORBITAPE havuzu = kısa arşiv sesleri + uzun kayıtlar, BİRLİKTE.
     // Uzunlar oranlarınca çıkar (~%8); geldiklerinde ortadanDal() ortasından girer.
     if(!earthHavuz.length){ try{ await earthYukle(); }catch(e){ _yut(e); } }
-    if(!uzunHavuz.length){ uzunYukle(); }                       // arkada yüklensin
+    /* ── UZUN KAYITLAR ARTIK AÇILIŞTA İNMİYOR ─────────────────
+       earth_buyuk.json sıkıştırılmış 435 KB ve dört ayrı yerden,
+       açılışta çağrılıyordu. Oysa dosya ZATEN geç gelmeye
+       tasarlanmış: bu çağrı await edilmiyor ("arkada yüklensin")
+       ve havuz boşsa kod kısa arşivden çalmaya devam ediyor.
+       Artık ZARLA isteniyor. Uzunlar havuzun %28'i — ölçüldü:
+       6.479 uzun / 22.903 toplam. (Aşağıdaki eski yorum "~%8"
+       diyordu ve yanlıştı; oran dörtte birden fazla.)
+       Sonuç: ortalama üç-dört parçada bir iniyor. Açıp tek parça
+       dinleyip bırakan kişi o 435 KB'ı hiç indirmiyor.
+       ARAMA AYRI: arama açılınca doğrudan yükleniyor (bkz. araAc),
+       çünkü arama tam listeyi taramak zorunda — eksik sonuç
+       vermek, geç sonuç vermekten kötüdür. */
+    const UZUN_ORAN = 0.28;
+    if(!uzunHavuz.length && !_uzSoz && Math.random() < UZUN_ORAN) uzunYukle();
     const toplam = earthHavuz.length + uzunHavuz.length;
     if(uzunHavuz.length && toplam && Math.random() < uzunHavuz.length/toplam){
       const u = uzunAl(); if(u) return u;
@@ -9553,7 +9569,8 @@
        earthAl() zaten hem kisa hem uzun kayitlari veriyor. */
     { const o = earthAl(); if(o){ cal(o); return; } }
     // hazır değil: havuzu doldur, kısa süre sonra tekrar dene
-    try{ earthYukle(); uzunYukle(); }catch(e){ _yut(e); }
+    // (uzunlar burada da istenmiyor; zarı kaynaktanCek atıyor)
+    try{ earthYukle(); }catch(e){ _yut(e); }
     setTimeout(()=>{ if(AKTIF_MOD) sonraki(false); }, 700);
   }
   function sonraki(kullanici){
@@ -9919,7 +9936,7 @@
     gecmisSifirla();                                     // geri listesi kanal başına
     moodYaz();
     if(mod==='radio') radyoKuyrukDoldur();
-    if(mod==='lib'){ earthYukle(); uzunYukle(); }        // ORBITAPE: kısa + uzun arşiv
+    if(mod==='lib'){ earthYukle(); }                     // uzunlar zarla gelir
     sonraki(false);
   }
   /* ── KIP KISAYOLUNUN DINLEYICISI ────────────────────────────────

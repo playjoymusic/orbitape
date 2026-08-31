@@ -2801,6 +2801,67 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           && /hedefHiz = 1 - cek\*/.test(blok);
     }), 'wow derinligi + LFO yavaslamasi + pitch, ucu birden');
 
+  /* ── UZUN KAYITLAR ACILISTA INMIYOR ──────────────────────────
+     earth_buyuk.json sikistirilmis 435 KB ve acilista dort ayri
+     yerden cagriliyordu. Dosya zaten gec gelmeye tasarlanmis:
+     cagri await edilmiyor ve havuz bossa kod kisa arsivden caliyor.
+     Artik zarla isteniyor -- uzunlar havuzun %28'i, yani ortalama
+     uc-dort parcada bir. Acip tek parca dinleyip birakan kisi o
+     435 KB'i hic indirmiyor.
+     Uc sey olculuyor: acilis yollarinda cagri KALMADI, zar kapisi
+     var, ve ARAMA hala dogrudan yukluyor (eksik sonuc vermek gec
+     sonuc vermekten kotudur). */
+  {
+    const uz = await pg.evaluate(()=>{
+      const k = document.documentElement.innerHTML;
+      const kes = (bas, boy)=>{ const i = k.indexOf(bas); return i<0 ? '' : k.slice(i, i+boy); };
+      return {
+        /* Istekli ikili 'earthYukle(); uzunYukle();' dosyada TEK
+           bir yerde kalmali: aramanin acilisinda. Once dort yerde
+           vardi. Mezar tasi yorumunun icinde de gectigi icin
+           yorum aramak yanilticiydi -- CAGRI kaliplarini sayiyoruz. */
+        istekliIkili: (k.match(/earthYukle\(\); uzunYukle\(\);/g)||[]).length === 1,
+        /* modSec: kanal degisiminde de yok */
+        modSecTemiz: /if\(mod==='lib'\)\{ earthYukle\(\); \}/.test(k),
+        /* kaynaktanCek: zar kapisi */
+        zarVar: /UZUN_ORAN = 0\.28/.test(k)
+             && /!uzunHavuz\.length && !_uzSoz && Math\.random\(\) < UZUN_ORAN\) uzunYukle\(\)/.test(k),
+        /* arama: dogrudan, zarsiz */
+        aramaDogrudan: /try\{ earthYukle\(\); uzunYukle\(\); \}catch\(e\)\{ _yut\(e\); \} \}/.test(k),
+        /* toplam cagri sayisi: tanim + zar + arama = 3 */
+        cagri: (k.match(/uzunYukle\(\)/g)||[]).length
+      };
+    });
+    K('Uzun kayitlar acilista inmiyor',
+       uz.istekliIkili && uz.modSecTemiz && uz.zarVar && uz.aramaDogrudan,
+       'istekli cagri yalniz aramada · zar %28 · toplam ' + uz.cagri + ' gecis');
+    /* Zar gercekten calisiyor mu: havuzu bosaltip zarin hem
+       tuttugu hem tutmadigi hali. Math.random taklit ediliyor --
+       gercek zari beklemek testi kumar yapardi. */
+    K('Zar tutmazsa uzun dosya istenmiyor', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const eskiRnd = Math.random, eskiFetch = window.fetch;
+        const istenen = [];
+        window.fetch = function(u){ try{ istenen.push(String(u)); }catch(e){}
+                                    return eskiFetch.apply(this, arguments); };
+        const eskiHavuz = uzunHavuz.slice(), eskiSoz = _uzSoz;
+        uzunHavuz.length = 0; _uzSoz = null;
+        Math.random = ()=>0.99;                       // zar TUTMUYOR
+        try{ await kaynaktanCek(false); }catch(e){}
+        await bek(120);
+        const tutmayinca = istenen.some(u=>u.indexOf('earth_buyuk')>=0);
+        istenen.length = 0;
+        uzunHavuz.length = 0; _uzSoz = null;
+        Math.random = ()=>0.01;                       // zar TUTUYOR
+        try{ await kaynaktanCek(false); }catch(e){}
+        await bek(120);
+        const tutunca = istenen.some(u=>u.indexOf('earth_buyuk')>=0);
+        Math.random = eskiRnd; window.fetch = eskiFetch;
+        uzunHavuz.length = 0; for(const x of eskiHavuz) uzunHavuz.push(x); _uzSoz = eskiSoz;
+        return tutmayinca === false && tutunca === true;
+      }), 'zar 0.99: istenmedi · zar 0.01: istendi');
+  }
+
   /* Reverb yolunu ACAN kural ile KAPATAN kural ayni seyi bilmeli.
      Ayrisirlarsa kazanc yazilir ama yol sokulur ve efekt sessizce
      kaybolur -- dongu-alt reverb'i tam olarak oyle kaybolmustu,
