@@ -1615,18 +1615,28 @@
      yazilmali; ayni kelime iki ayri yazi tipiyle iki ayri sey
      gibi okunuyordu.
      OLCULER #ust .kanal.ad'DAN BIREBIR: ayni yazi tipi, ayni
-     kalinlik (700), ayni harf araligi (.30em) ve AYNI GRADYAN --
-     --m1/--m3/--m2 degiskenleri markaRengi() tarafindan rafa ve
-     temaya gore yaziliyor, yani etiket de temayla birlikte
-     doniyor. Tek fark punto: orada 23px, burada 12px.
+     kalinlik (700), ayni harf araligi (.30em).
      margin-right: letter-spacing son harften SONRA da bosluk
      birakiyor; anahtarin genisligi o bos havayi saymasin diye geri
      aliniyor (ayni duzeltme markada da var). */
+  /* ── MEZAR TASI: GRADYAN --m1/--m3/--m2'DEN GELIYORDU ─────────
+     Yani markaRengi() ne yazdiysa bu etiket de onu aliyordu: raf
+     degisince, tema degisince, ORBITAPE tarafina gecince renk
+     doniyordu. Kullaganin itirazi yerindeydi:
+       "bunlarin ikisi de tur degisimlerinden etkilenmesinler.
+        baska evrene acilan birer tur."
+     Bu etiket bir DURUM ya da tur gostergesi degil, bir KAPI. Ustune
+     bastiginda gidecegin evren, o an hangi rafta oldugunla
+     degismiyor; o yuzden rengi de degismemeli. Iki kip icin iki
+     SABIT kimlik asagida; degisken yok, markaRengi() buraya
+     dokunmuyor. */
   #kipKisayol .ad{
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:12px;font-weight:700;letter-spacing:.30em;line-height:1;
     margin-right:-.30em;white-space:nowrap;
-    background:linear-gradient(102deg,var(--m1,#35e0d8) 0%,var(--m3,#86dcd0) 48%,var(--m2,#e8a97e) 100%);
+    /* ARSIVDEKI ETIKET = "RADIO": gidecegi yerin, yani radyonun
+       kendi parlak markasi. Ucu de bizim ana renklerimiz, sabit. */
+    background:linear-gradient(102deg,#35e0d8 0%,#86dcd0 48%,#e8a97e 100%);
     -webkit-background-clip:text;background-clip:text;
     -webkit-text-fill-color:transparent;color:transparent;
     text-shadow:none;}
@@ -1649,14 +1659,28 @@
         Uydurma bir gri degil, arsiv tarafinin zaten kullandigi
         gri. Anahtar "gidecegin yeri" soyluyor; o yerin havasi da
         artik renginin icinde. */
+  /* ── 4) BUGUNKU: DARK AGIRLIKLI UC RENK ──────────────────────
+     Kullanicinin son istegi: "radyodaki ORBITAPE yazisi dark
+     renkler arti bizim ana uc renk olsun ama dark agirlikli. ve
+     onun tusu da."
+     Uydurma bir palet degil, olculu bir karisim: her durak
+     %45 kendi markarengimiz + %55 arsivin grafiti (62,64,78).
+       turkuaz  0.45*(53,224,216)  + 0.55*(62,64,78) = (58,136,140)
+       cam gogu 0.45*(134,220,208) + 0.55*(62,64,78) = (94,134,137)
+       kehribar 0.45*(232,169,126) + 0.55*(62,64,78) = (139,111,100)
+     Uc rengimiz de duruyor ama hepsi karanlik tarafa cekilmis --
+     yani kapinin ardindaki evrenin havasi. */
+  body:not(.mood) #kipKisayol .ad{
+    background:linear-gradient(102deg,#3a888c 0%,#5e8689 48%,#8b6f64 100%);
+    -webkit-background-clip:text;background-clip:text;}
   body:not(.mood) #kipKisayol .anahtar{
-    background:rgba(175,161,203,.16);border-color:rgba(175,161,203,.42);}
-  body:not(.mood) #kipKisayol .anahtar b{right:26px;background:#afa1cb;}
-  /* MEZAR TASI: radyoda etiket duz leylakti (#bda8e0). Artik iki
-     kipte de markanin gradyanini aliyor; tek renk yazmak o
-     gradyani ezerdi. Anahtarin KENDISI (kutu ve topuz) leylak
-     kalmaya devam ediyor -- nereye gidecegini o soyluyor. */
-  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(189,168,224,.28);}
+    background:rgba(94,134,137,.14);border-color:rgba(94,134,137,.40);}
+  /* Topuz da ayni uc rengi tasiyor: 18px'lik bir daire icin gradyan
+     abartili gorunmuyor, tersine yazi ile ayni nesne oldugu
+     anlasiliyor. */
+  body:not(.mood) #kipKisayol .anahtar b{right:26px;
+    background:linear-gradient(135deg,#3a888c 0%,#5e8689 52%,#8b6f64 100%);}
+  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(94,134,137,.26);}
   body:not(.mood) #kipKisayol:active .anahtar b{right:24px;}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .anahtar, #kipKisayol .anahtar b{transition:none;}
@@ -2455,6 +2479,21 @@
          donduRecek iste, oyun, kumar makinesi gibi." -->
     <div class="sat" data-ayar="cark" role="switch" tabindex="-1">
       <span>SYMBOL SPIN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+
+    <!-- ── TANITIMLAR ACIK/KAPALI ────────────────────────────────
+         Kullanicinin sozu: "tutoriallar bilen insan icin zulum
+         olacaktir ... ve ayarlarda tutoriallari kapama tusu olsun."
+         Kapatinca hem acilis turu hem FX sunumu susuyor. Tekrar
+         acinca gercekten geri geliyor: "bir daha gosterme"
+         damgalari siliniyor, yoksa anahtar acik gorunup hicbir sey
+         yapmayan bir dugme olurdu.
+         YERI: MORE degil, ust bolum. Bir kez MORE'a konuldu ve
+         kullanici menude bulamadi -- "zaten more da olmasin menude
+         olsun." Dogru: bu, sik kullanilmayan bir belge baglantisi
+         degil, ekranda ne olacagini belirleyen bir tercih; oteki
+         anahtarlarin yaninda duruyor. -->
+    <div class="sat" data-ayar="tanitim" role="switch" tabindex="-1">
+      <span>TUTORIALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
 
     <h5>AUDIO</h5>
     <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
@@ -3566,6 +3605,24 @@
              : [_hexKaris(T.z1, zm[0], 0.55), _hexKaris(T.z2, zm[1], 0.55)];
           if(T.v) kok.setProperty('--tv', T.v); else kok.removeProperty('--tv');
         } else kok.removeProperty('--tv');
+      }catch(e){ _yut(e); }
+      /* ── RADIOTAPE RAFI: ZEMIN SIMSIYAH ──────────────────────
+         Kullanicinin istegi: "ilk acilan RADIOTAPE tarafinda,
+         RADIOTAPE seciliyken arka background simsiyah olacak; sadece
+         o tur kanal oda o sekilde, gerisi ayni."
+         Neden dogru: RADIOTAPE bir TUR degil, canli yayinin
+         kendisi -- oteki sekiz halka birer muzik ailesi ve her
+         birinin kendi rengi var. Uygulamanin ilk acildigi ekran da
+         burasi; en sade zemin, halkalarin ve frekans cubugunun en
+         net gorunecegi zemindir.
+         Tema secilmis olsa bile siyah kaliyor: burada zemin bir
+         tercih degil, rafin kimligi. Baska bir rafa gecince tema
+         aynen geri geliyor. */
+      try{
+        if(typeof mod !== 'undefined' && mod === 'radio'
+           && (AKTIF_AILE || AILE_ACILIS) === 'RADIOTAPE'){
+          zm = ['#000000', '#000000'];
+        }
       }catch(e){ _yut(e); }
       if(!zm){ b.classList.remove('zem'); return; }
       b.style.setProperty('--zem1', zm[0]);
@@ -6608,13 +6665,23 @@
      acilista cagrilabiliyor. */
   /* mood: SOUND BANKS kipi. Kapali = yalnizca canli radyo (varsayilan).
      Acik = eski ORBITAPE tarafi: arsiv havuzlari, nebula, gezegenler, FX. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:2, yildizIsik:2, cark:false };
+  /* YILDIZ VARSAYILANI: LOW (1), NORMAL degil. Kullanicinin sozu:
+     "yildizlari daha dusur, low yap; isteyen acar." Gerekcesi de
+     var: yildizlar ARKA PLAN; ilk acilista goze carpan sey
+     halkalar olmali. Isteyen ayarlardan bes kademe yukari
+     cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
+     "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
+     ustundeki dordu isteyene duruyor. */
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
       if(_a.aramaSes === false) AYAR.aramaSes = false;
       if(_a.tikSes  === false) AYAR.tikSes  = false;
       if(_a.cark    === true)  AYAR.cark    = true;
+      /* TUTORIALS: varsayilan ACIK. Yalnizca kullanici kapattiysa
+         kapali geliyor -- yeni gelen kisi anlatimsiz kalmasin. */
+      if(_a.tanitim === false) AYAR.tanitim = false;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
@@ -10119,6 +10186,10 @@
      kapatılmış olsun. Başka hiçbir şey buraya yazmıyor — özellikle
      efekti kullanmak yazmıyor (bkz. fxKullanildiIsaretle). */
   function fxSunumBittiMi(){
+    /* TUTORIALS kapaliysa FX sunumu da yok: anahtar "tanitimlar"
+       diyor, "acilis turu" demiyor. Ikisini ayirmak kullaniciyi
+       yalanci bir anahtarla bas basa birakirdi. */
+    try{ if(AYAR && AYAR.tanitim === false) return true; }catch(e){ _yut(e); }
     try{ return localStorage.getItem(FXSUNUM_ANAHTAR) === '1'; }catch(e){ return false; }
   }
   /* Efekte basıldı: sunum BU OTURUMDA susuyor. Depoya yazmıyoruz —
@@ -11710,6 +11781,9 @@
   }
   function modSec(ad, zorla){
     AKTIF_MOD = (!zorla && AKTIF_MOD === ad) ? null : ad;
+    /* Halkadan raf secmeyi ogrendi: acilis turunun GENRES/SELECT/
+       SHELF adimlari bir daha cikmayacak (bkz. kullanildi). */
+    try{ kullanildi('halka'); }catch(e){ _yut(e); }
     /* RAF DEGISTIRMEK YENIDEN DENEMEKTIR. Kullanicinin bildirdigi
        durumda tam olarak bu yapilmisti ("tur degistirsem de...") ve
        hicbir sey degismiyordu. Yeni bir raf yeni bir sans demek:
@@ -11821,6 +11895,8 @@
           (a && !iz2.hidden) ? '0' : '-1')); }catch(e){ _yut(e); }
     };
     const ac = ()=>{ document.body.classList.add('ayar-acik');
+      /* Ayar panelini kendi actiysa SETTINGS adimi da dusuyor. */
+      try{ kullanildi('ayar'); }catch(e){ _yut(e); }
       tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
       try{ kut.removeAttribute('inert'); }catch(e){ _yut(e); }
       odak(true); yaz();
@@ -11978,6 +12054,15 @@
       }
       AYAR[k] = !AYAR[k];
       ayarKaydet(); yaz();
+      /* TANITIMLAR TEKRAR ACILDIYSA GERCEKTEN ACILSIN. Depoda
+         "bir daha gosterme" damgasi duruyorsa anahtar acik gorunur
+         ama hicbir sey cikmaz -- yani yalan soyleyen bir dugme.
+         Damgalar siliniyor; bir sonraki acilista tur yine cikiyor. */
+      if(k === 'tanitim' && AYAR.tanitim){
+        try{ localStorage.removeItem(TUR_ANAHTAR);
+             localStorage.removeItem(FXSUNUM_ANAHTAR);
+             localStorage.removeItem(FXSUNUM_LISTE); }catch(e){ _yut(e); }
+      }
       /* Kilit zemini aninda etkiliyor: acinca tema saflasiyor,
          kapayinca rafin rengi geri karisiyor. */
       if(k === 'temaKilit'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
@@ -14663,7 +14748,39 @@
      alınıyor; çalan ses ve seçili kategori bozulmuyor. */
   var _turAdim = 0, _turZaman = null, _turAkiyor = false;
   const TUR_ANAHTAR = 'orbitape.tur';
+  /* ── NEYI ZATEN BILIYOR ──────────────────────────────────────────
+     Kullanicinin sozu: "tutoriallar bilen insan icin zulum olacaktir;
+     azalt, kullaniyorsa ozellikleri."
+     Dogru istek. Tur bir kere ise yarar; ucuncu acilista ayni eli
+     ayni yerlere goturmek ogretmiyor, engelliyor.
+     Olcum basit ve gercek: kullanici bir seyi BIR KEZ kendi yaptiysa
+     o adim bir daha anlatilmiyor. Halkadan raf sectiyse GENRES /
+     SELECT / SHELF dusuyor, ayar panelini actiysa SETTINGS dusuyor.
+     Ogretecek adim kalmadiysa tur hic cikmiyor.
+     Tahmin yok, sayac yok: yalnizca "yapti mi, yapmadi mi". */
+  var KULLANIM_ANAHTAR = 'orbitape.kullanim';
+  function kullanimKume(){
+    try{ const h = JSON.parse(localStorage.getItem(KULLANIM_ANAHTAR) || '[]');
+         return new Set(Array.isArray(h) ? h : []); }catch(e){ return new Set(); }
+  }
+  function kullanildi(ad){
+    try{
+      /* TURUN KENDISI SAYILMAZ: tur ayar panelini gercekten aciyor ve
+         halkalari gercekten yakiyor. Bunlari "kullanici yapti" saymak,
+         turun kendi kendini kapatmasi olurdu. */
+      if(_turAkiyor || _fxSunumAkiyor) return;
+      const g = kullanimKume();
+      if(g.has(ad)) return;
+      g.add(ad);
+      localStorage.setItem(KULLANIM_ANAHTAR, JSON.stringify([...g]));
+    }catch(e){ _yut(e); }
+  }
+  function biliniyor(ad){ try{ return kullanimKume().has(ad); }catch(e){ return false; } }
+  try{ window.kullanildi = kullanildi; }catch(e){ _yut(e); }
   function turGosterilsinMi(){
+    /* Ayarlardaki TUTORIALS anahtari: kapaliysa ne acilis turu ne FX
+       sunumu cikiyor. Depoya bakmadan once buna bakiliyor. */
+    try{ if(AYAR && AYAR.tanitim === false) return false; }catch(e){ _yut(e); }
     try{ return localStorage.getItem(TUR_ANAHTAR) !== '1'; }catch(e){ return true; }
   }
   /* İKİ AYRI KUTU. Açılış turu ile FX sunumu artık aynı düğmeleri
@@ -14792,13 +14909,30 @@
         oynat:(kk=>()=>{ try{ modAdiTut(adlar[kk]); halkaYak(adlar[kk]); }catch(e){ _yut(e); } })(k) });
     }
     const secK = Math.max(0, n-4);
-    return [
+    /* ── HANGI ADIM ACILISTA, HANGISI ISTENINCE ────────────────────
+       Kullanicinin sozu: "tutoriallar bilen insan icin zulum
+       olacaktir hem azalt."
+       Olculdu: acilis turu 11 adim, ~17,6 saniye. Bunlarin yarisi
+       hicbir sey ogretmiyor -- oynat/dur simgeleri evrensel, ses
+       cizgisi surukleniyor, kunye sag altta zaten okunuyor.
+       Ogretilmesi gereken TEK sey uygulamanin kendine ozgu jesti:
+       halkaya BASILI TUTUP birakmak. Acilis turu artik onu ve
+       yerlesimin iki referans noktasini gosteriyor; gerisi
+       'uzun:true' ile ayarlardan acilan tura tasindi -- oraya basan
+       kisi zaten ogrenmeye gelmis oluyor.
+         acilista : ORBITAPE · GENRES · SELECT · SHELF · SETTINGS · READY
+         istenince: yukaridakiler + CONTROLS · TOOLS · VOLUME ·
+                    NOW PLAYING · WHAT IS THIS? · FAVOURITES ·
+                    RECORD · ANOTHER WORLD
+       'bilir' alani ise ikinci yarisi: kullanici o iSi bir kez kendi
+       yaptiysa adim acilista hic cikmiyor. */
+    const hepsi = [
       { bas:'ORBITAPE', metin:'Live radio from around the world.<br>Tap the centre to start.',
         duraklar:[{hedef:{disk:0.10, aci:0}, sure:1700}] },
       { bas:'GENRES', metin:'Hold on the rings.<br>Each ring is a genre.',
-        duraklar: halkaGezi },
+        bilir:'halka', duraklar: halkaGezi },
       { bas:'SELECT', metin:'Release on a ring to open it.<br>Release outside to cancel.',
-        duraklar:[{hedef:{disk:H(secK), aci:0}, sure:1400,
+        bilir:'halka', duraklar:[{hedef:{disk:H(secK), aci:0}, sure:1400,
                    oynat:()=>{ try{ modAdiTut(adlar[secK]); halkaYak(adlar[secK]); }catch(e){ _yut(e); } }}] },
       /* YER KIPE BAGLI: radyoda raf adi SOL ustte (gezegenler yok,
          orasi bos), arsivde markanin solunda sag ustte. Tur ekranda
@@ -14806,28 +14940,28 @@
          radyoda yanlis yere baktirirdi. */
       { bas:'SHELF', metin:(document.body.classList.contains('mood') ? 'Top right' : 'Top left')
           + ': the genre you are in.<br>The three marks step through them.',
-        duraklar:[{hedef:'#modAd', sure:800, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
+        bilir:'halka', duraklar:[{hedef:'#modAd', sure:800, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
                   {hedef:'#bekle', sure:900,
                    oynat:()=>{ try{ halkaYak(adlar[Math.max(0,n-2)]); }catch(e){ _yut(e); } }}] },
       /* SOL ALT, BIRINCI SATIR. Dort tusun dordu de tek tek
          gosteriliyor: ikisi gecmis, ikisi calma denetimi ve hangisinin
          hangisi oldugu yalnizca simgeden anlasilmiyor. */
-      { bas:'CONTROLS', metin:'Bottom left: play, stop, and back<br>and forward through what you heard.',
+      { bas:'CONTROLS', uzun:true, metin:'Bottom left: play, stop, and back<br>and forward through what you heard.',
         duraklar:[{hedef:'#geri', sure:520}, {hedef:'#dur', sure:560},
                   {hedef:'#duraklat', sure:520}, {hedef:'#ileri', sure:520}] },
       /* SOL ALT, IKINCI SATIR. */
-      { bas:'TOOLS', metin:'Camera, mute, search<br>and your favourites.',
+      { bas:'TOOLS', uzun:true, metin:'Camera, mute, search<br>and your favourites.',
         duraklar:[{hedef:yaDa('#cam','#mute'), sure:540}, {hedef:'#mute', sure:540},
                   {hedef:'#araYuva', sure:620}, {hedef:'#favAc', sure:620}] },
-      { bas:'VOLUME', metin:'The thin line below them.<br>Drag it to set the level.',
+      { bas:'VOLUME', uzun:true, metin:'The thin line below them.<br>Drag it to set the level.',
         duraklar:[{hedef:'#sesYatay', sure:1100}] },
-      { bas:'NOW PLAYING', metin:'Bottom right: the station first,<br>then the track it is playing.',
+      { bas:'NOW PLAYING', uzun:true, metin:'Bottom right: the station first,<br>then the track it is playing.',
         duraklar:[{hedef:'#np', sure:1300}] },
-      { bas:'WHAT IS THIS?', metin:'Heard something good?<br>This asks your phone to name it.',
+      { bas:'WHAT IS THIS?', uzun:true, metin:'Heard something good?<br>This asks your phone to name it.',
         duraklar:[{hedef:yaDa('#tani','#np'), sure:1200}] },
       /* AYARLAR: soylemek yetmiyor, ACILIYOR. El uc cizgiye iner,
          panel gercekten iner, iki satir gosterilir ve panel kapanir. */
-      { bas:'SETTINGS', metin:'Bottom left: three lines.<br>Themes, stars, sounds — and this tour.',
+      { bas:'SETTINGS', bilir:'ayar', metin:'Bottom left: three lines.<br>Themes, stars, sounds — and this tour.',
         duraklar:[{hedef:'#ayarTut', sure:820,
                    oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){ _yut(e); } }},
                   {hedef:yaDa('#ayar .sat.kapi','#ayarTut'), sure:1000},
@@ -14857,7 +14991,19 @@
       { bas:'READY', metin:'That’s it. Enjoy.',
         duraklar:[{hedef:{disk:0.10, aci:0}, sure:1100}] }
     ];
+    /* AYARLARDAN ISTENDIYSE HEPSI: oraya basan kisi ogrenmeye geldi,
+       yarim anlatmanin anlami yok -- suzgec calismiyor. */
+    if(_turYavas) return hepsi;
+    /* ACILISTA: uzun adimlar dusuyor, zaten yapilan isler de dusuyor. */
+    return hepsi.filter(a => !a.uzun && !(a.bilir && biliniyor(a.bilir)));
   }
+  /* Acilis turunda OGRETECEK bir sey kaldi mi? ORBITAPE ve READY
+     birer selam; tek baslarina kaldilarsa tur bir sey anlatmiyor,
+     sadece ekrani mesgul ediyor. O zaman hic acilmiyor. */
+  function turOgretecekVarMi(){
+    try{ return turAdimlari().some(a => !!a.bilir); }catch(e){ return true; }
+  }
+
 
   /* ── AYARLARDAN ISTENEN TUR DAHA YAVAS ──────────────────────────
      Acilista cikan tur bir SELAM: kimse okumak icin oturmuyor, hizli
@@ -14987,6 +15133,14 @@
   function turBasla(zorla, liste, geri){
     const t = document.getElementById('tur'); if(!t || _turAkiyor) return;
     if(!zorla && !turGosterilsinMi()) return;
+    /* OGRETECEK SEY KALMADIYSA ACILISTA CIKMA. Kullanici halkadan raf
+       secmeyi ve ayar panelini acmayi zaten ogrendiyse geriye yalnizca
+       "merhaba" ve "hadi bakalim" kaliyor -- o iki adim icin ekrani
+       kapatmak, yardim etmek degil engellemek olur.
+       Depoya HICBIR SEY yazilmiyor: kutu isaretlenmedigi surece karar
+       kalici degil. Kullanici ayarlardan HOW IT WORKS'e basarsa tur
+       yine tam haliyle oynuyor. */
+    if(!zorla && !turOgretecekVarMi()) return;
     /* AĞ YOKKEN TUR YOK: "no connection" panelinin üstüne binip iki
        mesaj birden okunmuyordu. Kutu işaretlenmediği sürece depoya
        hiçbir şey yazılmıyor, yani tur bir dahaki açılışta yine çıkar. */

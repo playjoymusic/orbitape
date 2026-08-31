@@ -45,7 +45,32 @@ def kurallar():
     return tablo
 
 
-TABLO = kurallar()
+_ONBELLEK = {'zaman': None, 'tablo': None}
+
+
+def tablo():
+    """_headers degistiyse yeniden oku.
+
+    NEDEN: kurallar bir kez, sunucu ayaga kalkarken okunuyordu. Sunucu
+    acik dururken index.html degistirilip araclar/csp.py calistirilinca
+    dosyadaki hash tazeleniyor ama SUNUCU ESKI HASH'I gondermeye devam
+    ediyordu. Sonuc: tarayici betigi hic calistirmiyor
+    ("Refused to execute inline script"), sayfa bos aciliyor ve
+    hicbir hata gorunmuyor -- yani sunucu, var olmayan bir arizayi
+    gosteriyordu. Bir kez tam olarak bu yasandi ve yarim saat
+    kaybettirdi.
+    Dosyanin degisme zamanina bakip gerekirse yeniden okuyoruz; her
+    istekte bir stat cagrisi, olcumu bozmayacak kadar ucuz.
+    """
+    yol = os.path.join(KOK, '_headers')
+    try:
+        z = os.path.getmtime(yol)
+    except OSError:
+        z = None
+    if _ONBELLEK['tablo'] is None or z != _ONBELLEK['zaman']:
+        _ONBELLEK['tablo'] = kurallar()
+        _ONBELLEK['zaman'] = z
+    return _ONBELLEK['tablo']
 
 
 def eslesir(kural, yol):
@@ -57,7 +82,7 @@ def eslesir(kural, yol):
 class H(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         yol = self.path.split('?')[0]
-        for kural, basliklar in TABLO.items():
+        for kural, basliklar in tablo().items():
             if eslesir(kural, yol):
                 for ad, deger in basliklar.items():
                     if ad.lower() in ('content-type', 'cache-control'):

@@ -1861,6 +1861,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       let cak = 0;
       for(let i=0;i<8;i++){
         cak += await pp.evaluate(()=>{
+          /* TUR KAPANDIYSA OLCME. Acilis turu 17,6 sn'den ~10 sn'ye
+             indi; asagidaki 8x1,5 sn'lik dongu ondan uzun surer oldu
+             ve son olcumler tur BITTIKTEN sonraya dusuyor. Kapali
+             turun katmanlari ekranda kalan son yerlerinde duruyor,
+             yani olculen sey yerlesim degil, olcumun gec yapilmasi --
+             bir kez tam boyle "1 cakisma / 8 olcum" yazdi. */
+          if(!document.getElementById('tur').classList.contains('on')) return 0;
           const g=e=>{const k=document.querySelector(e).getBoundingClientRect();return [k.top,k.bottom];};
           const cz=document.querySelector('#tur .cizgi');
           const d=document.querySelector('.disk').getBoundingClientRect();
@@ -1925,6 +1932,75 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   if(!tur.bitti && /agyok/.test(tur.bittiTani))
     yavas('Kutu isaretlenirse bir daha cikmaz — olculemedi: '+tur.bittiTani);
   else K('Kutu isaretlenirse bir daha cikmaz', !tur.bitti, 'depoya yazildi');
+  }
+
+  /* ── TANITIMLAR: KISA, OGRENILENI TEKRARLAMAYAN, KAPATILABILIR ───
+     Kullanicinin sozu: "tutoriallar bilen insan icin zulum olacaktir
+     hem azalt kullaniyorsa ozellikleri ve de ayarlarda tutoriallari
+     kapama tusu olsun."
+     Uc ayri soz, uc ayri kontrol. Adim ADLARI da olculuyor cunku
+     "kisaldi" demek yetmiyor: dogru adimlarin kaldigini gostermek
+     lazim -- halkayi tutup birakma jesti uygulamaya OZGU, oynat/dur
+     simgeleri degil. */
+  const tan = HIZLI ? null : await (async()=>{
+    const { sayfa: pp, kapat } = await sayfaAc(b, { bekle: 2600,
+      sayilar:{buyuk:24, earth:60, radyo:16} });
+    try{
+      const acilis = await pp.evaluate(()=>turAdimlari().map(a=>a.bas));
+      const uzun   = await pp.evaluate(()=>{ const e=_turYavas; _turYavas=true;
+        const l=turAdimlari().map(a=>a.bas); _turYavas=e; return l; });
+      /* Ogrendigini isaretle: halkadan raf secti, ayar panelini acti. */
+      await pp.evaluate(()=>{ try{ localStorage.setItem('orbitape.kullanim',
+        JSON.stringify(['halka','ayar'])); }catch(e){} });
+      const bilen  = await pp.evaluate(()=>turAdimlari().map(a=>a.bas));
+      const kalan  = await pp.evaluate(()=>turOgretecekVarMi());
+      /* Anahtar kapaliyken iki tanitim da susmali. */
+      const kapali = await pp.evaluate(()=>{ const e=AYAR.tanitim; AYAR.tanitim=false;
+        const r={ tur:turGosterilsinMi(), fx:fxSunumBittiMi() }; AYAR.tanitim=e; return r; });
+      /* Tekrar acinca damgalar silinmeli: yoksa anahtar acik gorunur
+         ama hicbir sey cikmaz -- yalan soyleyen bir dugme. */
+      const damga = await pp.evaluate(()=>{
+        try{ localStorage.setItem('orbitape.tur','1');
+             localStorage.setItem('orbitape.fxKapat3','1'); }catch(e){}
+        const sat = document.querySelector('#ayar .sat[data-ayar="tanitim"]');
+        if(!sat) return { yok:true };
+        sat.click();                    // kapat
+        const kapaliyken = AYAR.tanitim;
+        sat.click();                    // tekrar ac
+        let t=null, f=null;
+        try{ t = localStorage.getItem('orbitape.tur');
+             f = localStorage.getItem('orbitape.fxKapat3'); }catch(e){}
+        return { kapaliyken, acikken:AYAR.tanitim, tur:t, fx:f,
+                 anahtar: sat.getAttribute('role') === 'switch' };
+      });
+      /* Kapali kalmasin: bu sayfa kapaniyor ama depo baglamda kaliyor. */
+      return { acilis, uzun, bilen, kalan, kapali, damga };
+    } finally { await kapat(); }
+  })();
+  if(!tan){ yavas('Tanitimlar (6 kontrol)'); } else {
+  K('Acilis turu kisa: alti adim', tan.acilis.length <= 7,
+     tan.acilis.length + ' adim: ' + tan.acilis.join(' · '));
+  /* Uygulamaya OZGU olan jest kalmali; evrensel simgeler dusmeli. */
+  K('Acilista ogreten adimlar kaliyor',
+     ['GENRES','SELECT','SHELF','SETTINGS'].every(a=>tan.acilis.includes(a))
+     && !tan.acilis.includes('VOLUME') && !tan.acilis.includes('CONTROLS'),
+     'halka jesti ve iki referans noktasi var, oynat/dur ve ses cizgisi yok');
+  K('Istenince tur tam anlatiyor',
+     tan.uzun.length > tan.acilis.length
+     && ['CONTROLS','TOOLS','VOLUME','NOW PLAYING','RECORD'].every(a=>tan.uzun.includes(a)),
+     tan.uzun.length + ' adim (ayarlardan acilan)');
+  K('Yaptigi is bir daha anlatilmiyor',
+     !tan.bilen.includes('GENRES') && !tan.bilen.includes('SETTINGS'),
+     'halka + ayar ogrenildi -> kalan: ' + tan.bilen.join(' · '));
+  K('Ogretecek sey kalmadiysa tur acilmiyor', tan.kalan === false,
+     'turOgretecekVarMi() = false');
+  K('TUTORIALS kapaliyken hicbir tanitim cikmiyor',
+     tan.kapali.tur === false && tan.kapali.fx === true,
+     'acilis turu kapali, FX sunumu kapali');
+  K('TUTORIALS acilinca damgalar siliniyor',
+     tan.damga.anahtar === true && tan.damga.kapaliyken === false
+     && tan.damga.acikken === true && tan.damga.tur === null && tan.damga.fx === null,
+     'anahtar satiri var; acinca "bir daha gosterme" kaydi kalkiyor');
   }
 
   K('RECORDS muzik, ORBITAPE hepsi', ay, 'ORBITAPE arsivin tamami, RADIOTAPE disarida');
@@ -4553,36 +4629,71 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const e=document.getElementById(i); if(e) e.classList.add('var'); });
       AYAR.mood=false; moodUygula(false); await bek(320); geriYerlestir(); await bek(160);
       const radyo = olc();
+      /* ── TUR DEGISINCE NE OLUYOR ────────────────────────────────
+         Etiket bir KAPI: bastiginda gidecegin evren, o an hangi rafta
+         oldugunla degismiyor. O yuzden rengi de degismemeli.
+         Olcum su: markanin kendi gradyani rafa gore DEGISIYOR mu, ve
+         etiketinki AYNI mi kaliyor. Ikisi birden sorulmali -- yalnizca
+         "etiket degismedi" demek, markaRengi()'nin hic calismadigi bir
+         durumda da gecerdi ve test hicbir sey kanitlamazdi. */
+      /* Markanin rengini markaRengi() UC DEGISKENLE yaziyor
+         (--m1/--m3/--m2). Raf degistirmek yerine dogrudan o
+         degiskenleri degistiriyoruz: boylece olcum markaRengi()'nin
+         hangi kosulda hangi rengi sectigine degil, "degisken degisince
+         ne oluyor" sorusuna bakiyor -- olcmek istedigimiz de bu. */
+      const kok2 = document.documentElement;
+      const esk = ['--m1','--m3','--m2'].map(k=>kok2.style.getPropertyValue(k));
+      kok2.style.setProperty('--m1','rgb(255,0,0)');
+      kok2.style.setProperty('--m3','rgb(0,255,0)');
+      kok2.style.setProperty('--m2','rgb(0,0,255)');
+      await bek(220);
+      const radyoBaskaRaf = olc();
+      ['--m1','--m3','--m2'].forEach((k,i)=>{ if(esk[i]) kok2.style.setProperty(k, esk[i]);
+                                              else kok2.style.removeProperty(k); });
+      await bek(220);
       AYAR.mood=true;  moodUygula(false); await bek(420); geriYerlestir(); await bek(160);
       const arsiv = olc();
       AYAR.mood=eskiMood; moodUygula(false); await bek(320);
-      return { radyo, arsiv };
+      return { radyo, radyoBaskaRaf, arsiv };
     });
     const r = kons.radyo, a2 = kons.arsiv;
     K('Kip anahtari konsoldan tasmiyor',
        !!r && !!a2 && r.tasma <= 0 && a2.tasma <= 0,
        (r && a2) ? ('radyo ' + r.tasma + 'px, arsiv ' + a2.tasma + 'px (0 = tam hizali)')
                  : 'olculemedi');
-  /* ── ETIKET MARKANIN DILIYLE ─────────────────────────────────
+  /* ── ETIKET MARKANIN DILIYLE YAZILIYOR ───────────────────────
      Bir tur kunyenin dili verilmisti (sistem sans, 400). Kullanici
-     duzeltti: "sag ustteki renkler, tema ve font olsun, aynisini
-     koy." Dogrusu da bu -- bu etiket bir kunye degil, markanin
-     adi.
-     Dort sey ayni olmali: yazi tipi, kalinlik, harf araligi ve
-     GRADYAN. Gradyan onemli cunku duraklari markaRengi() rafa ve
-     temaya gore yaziyor; ayni gradyan demek "tema degisince ikisi
-     birlikte donuyor" demek. Punto kasten farkli (23 / 12).
-     ARSIVDE DE AYNI: iki kipte de ayni dil, tek fark kelime
-     ("RADIO" kisa, sigsin diye). */
+     duzeltti: "sag ustteki renkler, tema ve font olsun."
+     Dogrusu da bu -- bu etiket bir kunye degil, markanin adi.
+     Uc sey ayni: yazi tipi, kalinlik, harf araligi. Punto kasten
+     farkli (23 / 12). */
     K('Anahtar etiketi markanin diliyle yaziliyor',
        !!r && !!a2
        && r.font === r.markaFont && r.kalinlik === r.markaKalinlik
        && r.aralik !== null && Math.abs(r.aralik - r.markaAralik) <= 0.01
-       && !!r.grad && r.grad === r.markaGrad
-       && a2.font === a2.markaFont && a2.grad === a2.markaGrad,
+       && a2.font === a2.markaFont,
        r ? ('"' + r.yazi + '" ' + r.font + ' ' + r.punto + '/' + r.kalinlik
             + ' ' + r.aralik + 'em | marka: ' + r.markaFont + '/' + r.markaKalinlik
             + ' ' + r.markaAralik + 'em') : '-');
+  /* ── MEZAR TASI: GRADYAN DA MARKANINKIYLE AYNI OLMALIYDI ─────
+     Bu test bir zamanlar r.grad === r.markaGrad diyordu, cunku etiket
+     --m1/--m3/--m2 degiskenlerini kullaniyordu ve tema degisince
+     marka ile birlikte donuyordu. Kullanici bunu geri aldi:
+       "bunlarin ikisi de tur degisimlerinden etkilenmesinler.
+        baska evrene acilan birer tur."
+     Kural degisti, test de degisti: artik SABITLIK olculuyor. */
+    K('Kapi etiketi tur degisiminden etkilenmiyor',
+       !!r && !!kons.radyoBaskaRaf
+       && r.grad === kons.radyoBaskaRaf.grad
+       && !!r.markaGrad && r.markaGrad !== kons.radyoBaskaRaf.markaGrad,
+       'raf degisti: marka gradyani degisti, kapi etiketi ayni kaldi');
+  /* Iki kapi BIRBIRINDEN de farkli olmali: her biri gidecegi evrenin
+     rengini tasiyor -- radyoda karanlik (arsiv), arsivde parlak
+     (radyo). Ayni olsalardi "baska evrene acilan birer tur" cumlesi
+     ekranda karsiliksiz kalirdi. */
+    K('Iki kapi kendi evreninin rengini tasiyor',
+       !!r && !!a2 && !!r.grad && !!a2.grad && r.grad !== a2.grad,
+       'radyodaki ORBITAPE koyu, arsivdeki RADIO parlak');
     K('Arsivde etiket kisa: RADIO', !!a2 && a2.yazi === 'RADIO',
        a2 ? ('"' + a2.yazi + '"') : '-');
   }
@@ -5451,10 +5562,34 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const sol = Math.abs(a.left - y.left) < 2.5;
         return duz && !eskiHata && merkez && sol;
       }), 'ara ile araYuva ayni merkezde; olculen deger _dip disinda');
+    /* ── HANGI LISTE OLCULUYOR ──────────────────────────────────
+       turAdimlari() artik iki ayri liste doruyor: acilistaki KISA
+       liste (uzun adimlar ve kullanicinin zaten yaptigi isler
+       dusuyor) ve ayarlardan istenen TAM liste.
+       Bu kontrol "bugunku uygulamayi anlatiyor mu" diye soruyor,
+       yani hedeflerin hepsi ekranda mi -- o soru TAM liste icin
+       gecerli. Kisa listenin uzunlugu ise ayrica olculuyor
+       (bkz. "Acilis turu kisa: alti adim").
+       AYRICA depoyu gecici temizliyoruz: bu sayfa yuzlerce kontrolden
+       geciyor, ayar paneli defalarca aciliyor ve "ogrenildi" damgasi
+       coktan yaziliyor -- olcum onu degil, listenin kendisini
+       olcmeli. */
     K('Acilis turu bugunku uygulamayi anlatiyor', await pg.evaluate(()=>{
+        const eskiK = (()=>{ try{ return localStorage.getItem('orbitape.kullanim'); }catch(e){ return null; } })();
+        try{ localStorage.removeItem('orbitape.kullanim'); }catch(e){}
+        const eskiY = _turYavas; _turYavas = true;
         const a = turAdimlari();
+        _turYavas = false;
+        const kisa = turAdimlari();
+        _turYavas = eskiY;
+        try{ if(eskiK !== null) localStorage.setItem('orbitape.kullanim', eskiK); }catch(e){}
         const basliklar = a.map(x=>x.bas);
-        const sure = a.reduce((t,x)=>t + x.duraklar.reduce((u,d)=>u+d.sure,0), 0);
+        const sur = l => l.reduce((t,x)=>t + x.duraklar.reduce((u,d)=>u+d.sure,0), 0);
+        const sure = sur(a);
+        /* Acilis turu KISA olmali: olculdu, 11 adim 17,6 sn idi;
+           simdi 6 adim ~10 sn. Ust sinir 13 sn -- bu esik asilirsa
+           birileri acilis listesine yeniden adim eklemis demektir. */
+        const kisaSure = sur(kisa);
         /* Halka duraklari CANLI geometriden gelmeli: en dis durak
            en dis halkanin yaricapina esit olsun. */
         const gez = a[1].duraklar.map(d=>d.hedef.disk);
@@ -5465,25 +5600,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           if(typeof d.hedef === 'string') hedefler.push(d.hedef); }));
         const eksik = hedefler.filter(h=>!document.querySelector(h));
         /* EFFECTS / SHAPE / CHANNEL adimlari kalkti (gezegenler ve
-           kanal gecisi yok). RECORD da kalkti: REC radyoda gorunmuyor,
-           tur gorunmeyen bir tusu anlatiyordu. */
+           kanal gecisi yok). RECORD ise TAM listede duruyor ama
+           acilis listesinde yok: REC radyoda sonuk gorunuyor, yani
+           anlatilmasi gerekiyor -- ama ilk acilista degil, isteyene. */
         return basliklar.includes('GENRES') && basliklar.includes('SETTINGS')
             && basliklar.includes('NOW PLAYING') && basliklar.includes('CONTROLS')
             && basliklar.includes('TOOLS') && basliklar.includes('VOLUME')
             && !basliklar.includes('EFFECTS') && !basliklar.includes('SHAPE')
             && !basliklar.includes('CHANNEL') && !basliklar.includes('CATEGORIES')
-            && !basliklar.includes('RECORD')
             && eksik.length === 0
             && Math.abs(gez[0] - enDis) < 0.001
-            && sure > 12000 && sure < 22000;
-      }), 'Yeni yerlesimin adimlari var, hedeflerin hepsi ekranda, FX adimlari yok');
+            && sure > 12000 && sure < 32000
+            && kisaSure > 6000 && kisaSure < 13000;
+      }), 'Tam liste bugunku yerlesimi anlatiyor, hedefler ekranda; acilis listesi kisa');
     /* GOSTEREREK ANLATSIN: kullanicinin istegi "halkalarin yanmasi,
        menunun acilmasi vs gibi her seyi gostererek". Yani adimlarin
        bir kismi SADECE isaret etmiyor, ekranda bir sey oynatiyor.
        Olculen sey: halka gezisinde halkaYak cagriliyor mu ve SETTINGS
        adimi paneli gercekten acip kapatiyor mu. */
     K('Tur gostererek anlatiyor: halka yaniyor, panel aciliyor', await pg.evaluate(()=>{
+        /* Yine TAM liste: SETTINGS adimi acilis listesinde kullanici
+           paneli daha once actiysa (bu sayfada defalarca acildi)
+           dusuyor. Olculen sey adimin KENDISI. */
+        const eskiY = _turYavas; _turYavas = true;
         const a = turAdimlari();
+        _turYavas = eskiY;
         const kaynak = a.map(x=>x.duraklar.map(d=>String(d.oynat||'')).join(' ')).join(' ');
         const yanma = /halkaYak/.test(kaynak);
         const panel = /ayarGoster/.test(kaynak);
