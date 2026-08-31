@@ -83,18 +83,45 @@ fi
 
 echo
 echo "── 5/6  Takimlar ────────────────────────────────────────────"
+# ── NEDEN SAGLIK YALNIZ, OTEKI UCU BIRLIKTE ──────────────────────
+# Kapi 20 dakika suruyordu ve dordu de sirayla kosuyordu. Uc tanesi
+# paralel kosunca toplam ~7 dakika kisaliyor.
+# AMA SAGLIK YALNIZ KALIYOR ve sebebi olculdu: o takimdaki bazi
+# kontroller ZAMANA bakiyor (tur 20 saniyeden kisa mi, yerlesim
+# oturdu mu, 620 ms'lik jest penceresi). Makine yuklendiginde bu
+# olcumler kayiyor -- bir kere tam bunu yasadik, uc kontrol kodda
+# hicbir sey bozulmamisken kirmizi yandi. Hizlanmak icin olcumu
+# bozmak, kapiyi hizli ama yalanci yapardi.
+#
+# EXIT KODU: argumansiz `wait` HER ZAMAN 0 doner (bu tuzaga bir kere
+# dusuldu). O yuzden her takim kendi cikis kodunu bir dosyaya
+# yaziyor ve asagida O DOSYA okunuyor -- `wait`'in dedigine
+# bakilmiyor.
 hata=0
-for takim in saglik senaryo motor ariza; do
+kosu(){
+  node "test/$1.js" > "/tmp/orbitape_$1.log" 2>&1
+  echo $? > "/tmp/orbitape_$1.kod"
+}
+rapor(){
   echo
-  echo "  ▸ $takim"
-  if node "test/$takim.js" > "/tmp/orbitape_$takim.log" 2>&1; then
-    grep -v '^[[:space:]]*$' "/tmp/orbitape_$takim.log" | tail -1 | sed 's/^/    /'
+  echo "  ▸ $1"
+  local kod; kod="$(cat "/tmp/orbitape_$1.kod" 2>/dev/null || echo 99)"
+  if [ "$kod" = "0" ]; then
+    grep -v '^[[:space:]]*$' "/tmp/orbitape_$1.log" | tail -1 | sed 's/^/    /'
   else
     hata=1
-    echo "    KIRMIZI — son satirlar:"
-    grep -E "!!|DUZELTILECEK" "/tmp/orbitape_$takim.log" | tail -8 | sed 's/^/    /'
+    echo "    KIRMIZI (cikis $kod) — son satirlar:"
+    grep -E "!!|DUZELTILECEK|COKTU" "/tmp/orbitape_$1.log" | tail -8 | sed 's/^/    /'
   fi
-done
+}
+t0=$(date +%s)
+kosu saglik                      # yalniz: zamana bakan kontroller var
+rapor saglik
+for t in senaryo motor ariza; do kosu "$t" & done
+wait                             # cikis kodlarina GUVENILMIYOR, dosyalar okunuyor
+for t in senaryo motor ariza; do rapor "$t"; done
+echo
+echo "  (takimlar $(( $(date +%s) - t0 )) sn)"
 
 echo
 echo "── 6/6  Sonuc ───────────────────────────────────────────────"

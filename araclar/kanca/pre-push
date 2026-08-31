@@ -1,0 +1,31 @@
+#!/bin/bash
+# ORBITAPE — PUSH ONCESI SON SANIYE KONTROLU
+# ─────────────────────────────────────────────────────────────────
+# Kurulum:  npm run kanca      (bir kere, her klonda)
+#
+# NEDEN VAR: kapi (npm run kontrol) her seyi bakiyor ama 13 dakika
+# suruyor ve acelesi olan atliyor. Bir kural, atlanabildigi surece
+# kural degildir. Bu kanca bir saniyeden kisa surer ve YALNIZCA
+# olumcul olani sorar:
+#
+#   index.html degisti mi, _headers'taki ozet tazelendi mi?
+#
+# Bayat bir ozet, uygulamanin HIC ACILMAMASI demek -- beyaz ekran,
+# hicbir hata mesaji yok. Testler bunu yakalamiyor bile olsa
+# (yerelde tarayici onbellegi yuzunden acilabiliyor) yayinda kesin
+# patlar. O yuzden push'u burada durduruyoruz.
+#
+# Kapiyi ARAMIYOR: 13 dakikalik bir seyi kancaya koymak, insanlarin
+# --no-verify ogrenmesini saglar. Kanca ucuz kalmali ki gecerli
+# kalsin.
+kok="$(git rev-parse --show-toplevel)"
+cd "$kok" || exit 0
+command -v python3 >/dev/null 2>&1 || exit 0
+if ! python3 araclar/csp.py --kontrol; then
+  echo
+  echo "PUSH DURDURULDU. Duzeltmek icin:"
+  echo "    python3 araclar/csp.py   &&   git add _headers index.html   &&   git commit --amend --no-edit"
+  echo "(Gercekten push etmen gerekiyorsa: git push --no-verify)"
+  exit 1
+fi
+exit 0

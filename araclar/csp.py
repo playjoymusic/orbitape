@@ -210,10 +210,41 @@ def ozetleri_topla():
     return kayitlar
 
 
+def kontrol():
+    """--kontrol: HICBIR SEY YAZMADAN, _headers taze mi diye bakar.
+
+    NEDEN VAR: en olumcul hata, index.html degistirilip csp.py
+    calistirilmamasi -- ozet eskir ve uygulama HIC ACILMAZ, beyaz
+    ekran. Kapi bunu zaten onluyor ama kapi 13 dakika suruyor ve
+    aceleyle atlanabiliyor. Bu mod bir saniyeden kisa: git kancasi
+    (araclar/kanca/pre-push) bunu cagiriyor, yani ozeti bayat bir
+    surum push EDILEMIYOR.
+
+    Damga (surum) yazmiyor: yazsaydi kontrol etmek dosyayi
+    degistirirdi ve kontrolun kendisi bir yan etki olurdu.
+    """
+    beklenen = blok(ozetleri_topla())
+    metin = open(HEADERS, encoding="utf-8").read()
+    if BASLA not in metin or BITIR not in metin:
+        print("_headers icinde CSP blogu yok. Calistir: python3 araclar/csp.py")
+        return 1
+    bas = metin.index(BASLA)
+    son = metin.index(BITIR) + len(BITIR)
+    if metin[bas:son].strip() != beklenen.strip():
+        print("_headers BAYAT: index.html degismis ama ozet tazelenmemis.")
+        print("Boyle bir surum yayina cikarsa uygulama HIC ACILMAZ (beyaz ekran).")
+        print("Calistir: python3 araclar/csp.py")
+        return 1
+    print("_headers taze.")
+    return 0
+
+
 def main():
     if "--goster" in sys.argv:
         print(blok(ozetleri_topla()))
         return 0
+    if "--kontrol" in sys.argv:
+        return kontrol()
     # SIRA KRITIK: ONCE surum damgalaniyor, SONRA ozet hesaplaniyor.
     # Tersi olsa damga index.html'i degistirir ve az once hesaplanan
     # ozet ayni anda bayatlardi -- yani arac kendi urettigi dosyayi

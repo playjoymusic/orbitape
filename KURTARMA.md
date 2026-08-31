@@ -81,19 +81,23 @@ yüklemiyor. `npm install` yalnızca testler için.
 
 ```bash
 # 1. index.html'i düzenle
-# 2. kapıdan geçir  (CSP damgası + dört takım)
-npm run kontrol
-# 3. denemeye yayınla, telefondan aç
-npx wrangler deploy --env deneme
-# 4. yeşilse main'e push -> Cloudflare orbitape.app'i günceller
+# 2. kapıdan geçir VE denemeye yayınla  (tek komut)
+npm run deneme
+# 3. telefondan https://orbitape-deneme.caneranar.workers.dev aç
+# 4. iyiyse main'e push -> Cloudflare orbitape.app'i günceller
 ```
+
+`npm run deneme` bilerek tek komut: kapı yeşil değilse yayınlamıyor.
+İki ayrı komut olduğu sürece ikincisi atlanıyordu — araç vardı,
+alışkanlık yoktu.
 
 > **En ölümcül hata ve tek satırlık sebebi:** `index.html`
 > değiştirildikten sonra `araclar/csp.py` çalıştırılmazsa `_headers`
 > içindeki hash eskir ve **uygulama hiç açılmaz** — beyaz ekran.
-> `npm run kontrol` bunu ilk adımda yapıyor; o yüzden elle
-> `csp.py` çalıştırmayı unutma diye bir şey yok, **kapıdan geçir**
-> yeter.
+> `npm run kontrol` bunu yapıyor; üstelik `npm run kanca` ile kurulan
+> pre-push kancası, kapı hiç çalıştırılmasa bile bayat özetli bir
+> push'u durduruyor (bir saniyeden kısa sürüyor). Yani elle `csp.py`
+> çalıştırmayı unutma diye bir şey yok.
 
 ---
 

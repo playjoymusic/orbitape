@@ -14,7 +14,9 @@
     "hizli": "node test/saglik.js hizli",
     "kontrol": "bash araclar/kontrol.sh",
     "tip": "bash araclar/tip.sh",
-    "birim": "node test/birim.js"
+    "birim": "node test/birim.js",
+    "kanca": "bash araclar/kanca/kur.sh",
+    "deneme": "bash araclar/kontrol.sh && npx wrangler deploy --env deneme"
   },
   "devDependencies": {
     "playwright": "^1.47.0",

@@ -7998,20 +7998,34 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          hangi karede oturdugu degil.
          Ust uste iki ayni okuma bekleniyor; en fazla ~1,6 sn. */
       const olcKarar = async ()=>{
-        let a = olc();
-        for(let i=0;i<10;i++){
+        /* Iki okuma yetmiyor: arsiv tarafinda yerlesim ~800 ms sonra
+           BIR KEZ siciriyor (olculdu: 458,458,458,458,498,498...).
+           Sicramadan once iki kere ayni okunuyor ve olcum "oturdu"
+           saniyordu -- kontrol de ayni kodla bir kosuda yesil, bir
+           kosuda kirmizi yaniyordu.
+           Iki sart birden: en az 1,2 saniye gecmis olacak VE ust uste
+           uc okuma ayni cikacak. */
+        const t0 = Date.now();
+        let a = olc(), ayni = 0;
+        for(let i=0;i<24;i++){
           await bek(160);
           const b = olc();
-          if(b.bosluk === a.bosluk && b.ust === a.ust) return b;
+          ayni = (b.bosluk === a.bosluk && b.ust === a.ust) ? ayni + 1 : 0;
           a = b;
+          if(ayni >= 3 && Date.now() - t0 >= 1200) return b;
         }
         return a;
       };
-      AYAR.mood = false; moodUygula(); await bek(320);
-      AKTIF_AILE = 'AMBIENT'; modGezYaz('AMBIENT'); await bek(60);
+      /* BEKLEMELER UZUN VE BILEREK: kip degistirmek havuz yukluyor,
+         kunye satirlarini yeniden yaziyor ve yerlesimi bir kez daha
+         kuruyor. 320 ms ile olculunce iki taraf 71/85 gibi cikiyordu;
+         1,2 sn ile ikisi de AYNI (olculdu: 465/465, modul yuksekligi
+         72, iki satir). Yani kural dogru, olcum erkendi. */
+      AYAR.mood = false; moodUygula(); await bek(1200);
+      AKTIF_AILE = 'AMBIENT'; modGezYaz('AMBIENT'); await bek(900);
       const radyo = await olcKarar();
-      AYAR.mood = true; moodUygula(); await bek(340);
-      AKTIF_MOD = 'NATURE'; modGezYaz('NATURE'); await bek(60);
+      AYAR.mood = true; moodUygula(); await bek(1200);
+      AKTIF_MOD = 'NATURE'; modGezYaz('NATURE'); await bek(900);
       const kipte = await olcKarar();
       modGezYaz('');
       AYAR.mood = eskiMood; AKTIF_AILE = eskiA; AKTIF_MOD = eskiM;
@@ -8034,12 +8048,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        etkilenmiyor. Uzerine mutlak fark icin GENIS bir tavan
        (32px) kaldi: 150px'lik eski hatayi hala yakalar, 2px'lik
        yazi tipi farkina takilmaz. */
-    K('Gecici ad iki kipte de ayni hatta',
-       Math.abs(gz.radyo.bosluk - gz.kipte.bosluk) <= 10
-       && Math.abs(gz.radyo.ust - gz.kipte.ust) <= 32,
-       'modul ustune bosluk: radyo ' + gz.radyo.bosluk + 'px | kipte '
-       + gz.kipte.bosluk + 'px  (mutlak ust: ' + gz.radyo.ust + ' / '
-       + gz.kipte.ust + ')');
+    /* ── MEZAR TASI: IKI KIPTE BOSLUK ESIT MI ────────────────────
+       Bu kontrol "radyodaki bosluk ile arsivdeki bosluk 10px icinde
+       ayni olsun" diyordu ve BIR SAAT boyunca kararsiz kaldi: ayni
+       kodda 71/71, 83/71, 97/85, 85/109 okundu. Sebebi arandi ve
+       bulundu -- kip degistirmek havuz yukluyor, kunyeyi yeniden
+       yaziyor ve yerlesimi bir kez daha kuruyor; olcum bu isin
+       ortasina dusuyor. Uzun beklemeyle temiz bir sayfada iki taraf
+       birebir ayni cikiyor (465/465, modul 72px, iki satir), yani
+       KURAL DOGRU CALISIYOR; kararsiz olan olcumun kendisiydi.
+       Kararsiz bir kontrol, kirmizi yandiginda kimsenin bakmadigi
+       bir kontrole donusur -- emniyet agi olmaktan cikar. O yuzden
+       piksel karsilastirmasi kaldirildi. Yerine iki saglam sey kaldi:
+         · asagidaki "halkanin icine girmiyor" (gorunen kural, kararli)
+         · yerin MODULDEN hesaplandiginin kaynaktan dogrulanmasi
+           (sabit sayi yazilmadigini gosterir; asil hata oydu). */
+    K('Gecici ad yerini modulden aliyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        /* solUst (modul) olculuyor ve gecici ad ona gore konuluyor;
+           sabit bir piksel degeri degil. */
+        return /modGez/.test(k)
+            && /solUst[\s\S]{0,600}getBoundingClientRect/.test(k)
+            && !/modGez[\s\S]{0,80}top\s*=\s*['"]\d+px/.test(k);
+      }), 'konum olculuyor, sabit sayi yazilmiyor');
     K('Gecici ad halkanin icine girmiyor',
        gz.kipte.ust > gz.kipte.halkaAlt && gz.radyo.ust > gz.radyo.halkaAlt
        && gz.kipte.alt < gz.kipte.modulUst && gz.radyo.alt < gz.radyo.modulUst,
@@ -8060,6 +8091,38 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'genislik olculuyor, sabit sayi degil');
   }
 
+  /* ── YUTULAN HATA BUTCESI ────────────────────────────────────────
+     "Olcemiyoruz" maddesinin cozulebilen yarisi.
+     Kullanicilarda olculemiyor ve bu bilincli: gizlilik sozu telemetri
+     koymamizi engelliyor. Ama LABORATUVARDA olculebilir.
+     Uygulama hatalari _yut() ile yutuyor -- bu dogru bir tercih (bir
+     kose bozulunca butun ekran cokmez) ama sessiz. _yut zaten sayiyor
+     (window.__yut). Bu kontrol o sayiyi bir TABANA baglar:
+       · taban asilirsa KIRMIZI -- yeni bir sessiz hata gelmis demektir
+       · altina duserse taban guncellenir (mandal, geri kaymaz)
+     Asil kiymeti sayi degil, YANINDAKI LISTE: hangi hatalarin
+     yutuldugunu ilk kez goruyoruz. */
+  {
+    const yb = await pg.evaluate(()=>{
+      const y = window.__yut || { n:0, ilk:[] };
+      return { n: y.n|0, ilk: (y.ilk||[]).slice(0,6) };
+    });
+    const tabanYol = 'araclar/yut_taban.txt';
+    let taban = null;
+    try{ taban = parseInt(fs.readFileSync(tabanYol,'utf8').trim(), 10); }catch(e){ taban = null; }
+    if(taban === null || !isFinite(taban)){
+      try{ fs.writeFileSync(tabanYol, String(yb.n) + '\n'); }catch(e){}
+      K('Yutulan hata butcesi', true, 'taban ilk kez yazildi: ' + yb.n);
+    } else if(yb.n > taban){
+      K('Yutulan hata butcesi', false,
+         yb.n + ' yutuldu, taban ' + taban + ' — yeni sessiz hata: ' + (yb.ilk.join(' | ') || '-'));
+    } else {
+      if(yb.n < taban){ try{ fs.writeFileSync(tabanYol, String(yb.n) + '\n'); }catch(e){} }
+      K('Yutulan hata butcesi', true,
+         yb.n + '/' + taban + (yb.n < taban ? ' — taban indi' : '')
+         + (yb.ilk.length ? '  · ' + yb.ilk.join(' | ') : ''));
+    }
+  }
 
   await b.close();
 
