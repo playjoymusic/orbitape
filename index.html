@@ -1604,10 +1604,32 @@
      birebir aliniyor -- ayni punto, ayni kalinlik, ayni harf araligi.
      Yan fayda: dar ve alcak, yani anahtar da daralip alt satirlarla
      hizalanabiliyor. */
+  /* ── MEZAR TASI: ETIKET "KUNYENIN DILI"YDI ───────────────────
+     Bir tur sag alttaki sarki/sanatci kunyesinin dili verilmisti
+     (sistem sans, 12/400, .012em). Kullanici sonra baska bir sey
+     istedi ve daha dogrusu: "radyo arayuzundeki swichtin
+     yanindaki ORBITAPE yazisi, ORBITAPE arayuzundeki sag ustteki
+     renkler, tema ve font olsun -- aynisini koy."
+     Gerekcesi de var: bu etiket bir kunye degil, MARKANIN ADI.
+     Sag ustte hangi harflerle yaziliyorsa burada da oyle
+     yazilmali; ayni kelime iki ayri yazi tipiyle iki ayri sey
+     gibi okunuyordu.
+     OLCULER #ust .kanal.ad'DAN BIREBIR: ayni yazi tipi, ayni
+     kalinlik (700), ayni harf araligi (.30em) ve AYNI GRADYAN --
+     --m1/--m3/--m2 degiskenleri markaRengi() tarafindan rafa ve
+     temaya gore yaziliyor, yani etiket de temayla birlikte
+     doniyor. Tek fark punto: orada 23px, burada 12px.
+     margin-right: letter-spacing son harften SONRA da bosluk
+     birakiyor; anahtarin genisligi o bos havayi saymasin diye geri
+     aliniyor (ayni duzeltme markada da var). */
   #kipKisayol .ad{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
-    font-size:12px;font-weight:400;letter-spacing:.012em;
-    color:#35e0d8;white-space:nowrap;}
+    font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;font-weight:700;letter-spacing:.30em;line-height:1;
+    margin-right:-.30em;white-space:nowrap;
+    background:linear-gradient(102deg,var(--m1,#35e0d8) 0%,var(--m3,#86dcd0) 48%,var(--m2,#e8a97e) 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    text-shadow:none;}
   #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
   #kipKisayol:active .anahtar b{right:4px;}
   /* ── RADYODAYKEN: KAPALI VE ARSIVIN RENGI ─────────────────────
@@ -1622,7 +1644,10 @@
   body:not(.mood) #kipKisayol .anahtar{
     background:rgba(189,168,224,.16);border-color:rgba(189,168,224,.42);}
   body:not(.mood) #kipKisayol .anahtar b{right:26px;background:#bda8e0;}
-  body:not(.mood) #kipKisayol .ad{color:#bda8e0;}
+  /* MEZAR TASI: radyoda etiket duz leylakti (#bda8e0). Artik iki
+     kipte de markanin gradyanini aliyor; tek renk yazmak o
+     gradyani ezerdi. Anahtarin KENDISI (kutu ve topuz) leylak
+     kalmaya devam ediyor -- nereye gidecegini o soyluyor. */
   body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(189,168,224,.28);}
   body:not(.mood) #kipKisayol:active .anahtar b{right:24px;}
   @media (prefers-reduced-motion: reduce){
@@ -1635,6 +1660,28 @@
      yukari cikiyor ve tutamak alt sol kosede kaliyor. Ikisi ayni
      sol kenardan basliyor, tek bir konsol gibi okunuyor. */
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
+  /* ── PANEL ACIKKEN: BU IKISININ ALTI KOYULASIYOR ──────────────
+     Panel yari saydam ve OYLE KALIYOR -- kullanicinin sozu:
+     "yoksa transparan cool." Ama iki nesne panelden DAHA USTTE
+     ciziliyor (z-index 96 > 95) ve panelin yazilarinin uzerine
+     biniyor: uc cizgi ve kip anahtari. Cihaz goruntusunde
+     "PRIVACY" satirinin uzerinde duruyorlardi.
+     Ikisini gizlemek yanlis olurdu: uc cizgi paneli KAPATAN
+     dugme, anahtar da o an nerede oldugunu soyluyor. Cozum
+     kullanicinin kendi tarifi: "ORBITAPE ya da RADIOTAPE ya da 3
+     cizgi varsa altinda orasi koyulassin."
+     Yani yalnizca O IKI NESNENIN ALTI. Panelin geri kalani
+     saydam kaliyor, halkalar ve tuslar icinden gorunmeye devam
+     ediyor.
+     ::before, ::after DEGIL: ::after zaten dokunma alani olarak
+     kullaniliyor (bkz. dokunma alanlari bolumu), onu boyamak
+     gorunmez alani gorunur yapardi. */
+  body.ayar-acik #ayarTut::before,
+  body.ayar-acik #kipKisayol::before{
+    content:'';position:absolute;z-index:-1;
+    left:-9px;right:-9px;top:-7px;bottom:-7px;
+    background:rgba(5,7,10,.93);border-radius:13px;
+    pointer-events:none;}
   /* UC CIZGI, ESKISININ AYNISI. Dolu bir ucgen degil: uzunlugu
      azalan uc cizgi zaten asagi bakan bir ucgen siluetı ciziyor ve
      dolu bir ucgenin aksine hala "tutamak" gibi duruyor.
@@ -1953,6 +2000,11 @@
   @media (max-width:480px){
     #ust{top:calc(13px + env(safe-area-inset-top, 0px));gap:7px;}
     #ust .kanal{font-size:20px;letter-spacing:.26em;}
+    /* Anahtarin etiketi markayla AYNI harf araligini kullaniyor;
+       marka dar ekranda .30 -> .26 daraliyor, etiket de daralmali.
+       Yoksa "aynisi olsun" sozu genis ekranda tutup dar ekranda
+       bozulurdu -- ki telefon dar ekran demek. */
+    #kipKisayol .ad{letter-spacing:.26em;margin-right:-.26em;}
     #bekle.buyuk{--sem:26px;} }
 
   /* ── SOUND BANKS KIPINDE MODUL SOL ALTA INIYOR ───────────────────
@@ -6343,6 +6395,19 @@
            bir de kisa gecikmeyle. */
         try{ requestAnimationFrame(()=>{ try{ ustOlcu(); }catch(e){ _yut(e); } }); }catch(e){ _yut(e); }
         setTimeout(()=>{ try{ ustOlcu(); }catch(e){ _yut(e); } }, 260);
+        /* ── FX SUNUMU KIPE GIRER GIRMEZ ────────────────────────
+           Sunum yalnizca KANAL degisiminde tetikleniyordu (bkz.
+           fxSunumDene cagrisi). Ama bu tarafa gecmek zaten bir
+           kanal degisimi degil: kip aciliyor, raf 'ORBITAPE'
+           oluyor ve kimse bir sey secmemis oluyor. Sonuc: efektler
+           bu tarafin butun mesele oldugu halde kendilerini hic
+           tanitmiyordu.
+           ILK KURULUMDA CAGRILMIYOR (ilk): acilista tanitim turu
+           kendi isini yapiyor, ustune bir de bu binmesin.
+           Gerisini fxSunumDene biliyor: kutuyla kalici kapatildiysa,
+           bu oturumda efekte dokunulduysa ya da baska bir sunum
+           akiyorsa kendi kendine susuyor. */
+        if(!ilk){ try{ fxSunumDene(); }catch(e){ _yut(e); } }
       }else if(!ilk){
         /* ILK KURULUMDA DOKUNULMUYOR: acilis akisi AKTIF_MOD'u
            'RADIOTAPE' yapiyor ve mod zaten radyo. Burada sifirlamak
@@ -9699,8 +9764,24 @@
           {hedef:g('retro'),     sure:980,  oynat:()=>{ try{ uyduDug.ana.classList.remove('acik'); uyduDug.retro.classList.add('acik'); }catch(e){ _yut(e); } }},
           {hedef:g('dongu'),     sure:980,  oynat:()=>{ try{ uyduDug.retro.classList.remove('acik'); uyduDug.dongu.classList.add('acik'); }catch(e){ _yut(e); } }},
           {hedef:g('karadelik'), sure:1080, oynat:()=>{ try{ uyduDug.dongu.classList.remove('acik'); uyduDug.karadelik.classList.add('acik'); }catch(e){ _yut(e); } }},
-          {hedef:{disk:0.34, aci:-40}, sure:1050, oynat:()=>{ try{ uyduDug.karadelik.classList.remove('acik'); }catch(e){ _yut(e); } }},
-          {hedef:{disk:0.30, aci:120}, sure:1150}
+          /* ── SURUKLEME MERKEZDEN EN DIS HALKAYA ────────────────
+             Once 0.34 ve 0.30'du: elin gezdigi alan diskin ancak
+             ucte biriydi ve gosterim "kucuk bir daire icinde
+             oynatiliyor" gibi okunuyordu. Kullanicinin sozu: "elin
+             ortadan kenarlara ama EN KENARLARA kadar halkanin
+             gosterilsin."
+             OLCU TAHMIN DEGIL: _turNokta yariçapi R = min(en,boy)/2
+             kabul ediyor; gorunen en dis halka ise
+             min(en,boy)*0.357*HALKA_DIS yariçapinda (bkz. turYaz
+             icindeki halkaAlt). Ikisinin orani 0.357*0.89/0.5 =
+             0.635. 0.60 bu yuzden: en dis halkanin hemen icinde,
+             uzerine binmeden.
+             Once merkez (parmak iner), sonra kenara, sonra kenar
+             boyunca, sonra merkeze geri -- diskin tamami. */
+          {hedef:{disk:0.06, aci:0},   sure:820,  oynat:()=>{ try{ uyduDug.karadelik.classList.remove('acik'); }catch(e){ _yut(e); } }},
+          {hedef:{disk:0.60, aci:-38}, sure:1150},
+          {hedef:{disk:0.60, aci:88},  sure:1100},
+          {hedef:{disk:0.14, aci:150}, sure:1000}
         ] }
     ];
   }

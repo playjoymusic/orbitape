@@ -146,7 +146,7 @@
 # index.html
 /
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-41JKheWarEYyTKOw+gkshhWkz9rUQOARYIM46h1omlE='; style-src 'sha256-1viCnsLHUuLq4+IMGjHZKOrOFYRyhTDlkdnEq4gQMbM='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-pPgfXlFUGypBteTKulhpoULon9UBgbfFhAlKcXb/ISA='; style-src 'sha256-GfWlFGqKZBDViLxQHHlwJk5d0/12VeYniWOcXYYdAAw='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy.html

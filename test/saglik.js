@@ -3239,7 +3239,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const yenidenAcilista = _fxSunumAkiyor;        // YINE CIKMALI
     const yenidenAlt = alt();                      // liste dolu -> SKIP acik
     turBitir(); await bek(200);
-    /* TEMIZ BIRAK: kategori kapali, calan sey arsivden, REC aktif. */
+    /* ── KIPE GIRER GIRMEZ DE CIKIYOR ───────────────────────────
+       Sunum yalnizca KANAL degisimine bagliydi. Ama ORBITAPE
+       tarafina gecmek bir kanal secmek degil: kip aciliyor, raf
+       'ORBITAPE' oluyor ve kimse bir sey secmemis oluyor -- yani
+       efektler, bu tarafin butun meselesi oldugu halde kendilerini
+       hic tanitmiyordu. Kullanicinin istegi: "orbitape tarafina
+       gecince hemen fx'ler gosterilmeli, tutorial gibi."
+       Iki yon de olculuyor: kipe GIRERKEN cikiyor, kipten
+       CIKARKEN cikmiyor (radyoda efektin isi yok). */
+    _fxKullanildi = false;
+    AYAR.mood = false; moodUygula(false); await bek(420);
+    turBitir(); await bek(150);
+    const kiptenCikinca = _fxSunumAkiyor;
+    AYAR.mood = true;  moodUygula(false); await bek(900);
+    const kipeGirince = _fxSunumAkiyor;
+    turBitir(); await bek(200);
+    AYAR.mood = false; moodUygula(false); await bek(420);
+    turBitir(); await bek(200);
+    /* TEMIZ BIRAK: kategori kapali, calan sey arsivden, REC aktif.
+       VE SUNUM SUSUYOR: bundan sonraki testler kip degistirdikce
+       (ki cogu degistiriyor) el gezdiren bir katman aciliyordu ve
+       uc olcum bozuluyordu. _fxKullanildi uygulamanin KENDI susma
+       yolu -- "bu oturumda efekte dokunuldu" demek; testin geri
+       kalani da tam olarak oyle bir oturum. */
+    _fxKullanildi = true;
     if(AKTIF_MOD) modSec(AKTIF_MOD, false);
     AKTIF_MOD = null;
     try{ ['turKutu','fxKutu'].forEach(i=>document.getElementById(i).classList.remove('sec')); }catch(e){}
@@ -3247,7 +3271,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     try{ recPasifYaz(); }catch(e){}
     return { bir, birAlt, gecen, iki, ayni, ayniAlt, radyo, turSonra, turSonraAlt, kutuDepo, kapali,
              depoTemiz, kullandiktanSonra, yenidenAcilista, yenidenAlt,
-             turKutusuTemiz, turDeposuTemiz };
+             turKutusuTemiz, turDeposuTemiz, kipeGirince, kiptenCikinca };
   });
   if(!fs2){ yavas('FX sunumu (14 kontrol)'); } else {
   K('FX sunumu kanal degisiminde cikar', fs2.bir===true, 'ilk degisimde gorundu');
@@ -3258,6 +3282,70 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'alt satir: '+fs2.turSonraAlt);
   K('Kutu isaretlenince bir daha cikmaz', fs2.kutuDepo==='1' && fs2.kapali===false, 'depo='+fs2.kutuDepo);
   K('RADIOTAPE te FX sunumu YOK', fs2.radyo===false, 'canli yayinda cikmiyor');
+  K('ORBITAPE tarafina gecince sunum hemen cikiyor',
+     fs2.kipeGirince===true && fs2.kiptenCikinca===false,
+     'kipe girerken var, radyoya donerken yok');
+  /* ── ELIN GEZDIGI ALAN: MERKEZDEN EN DIS HALKAYA ─────────────
+     Once diskin ancak ucte biri geziliyordu (0.30-0.34) ve
+     gosterim "kucuk bir daire icinde oynatiliyor" gibi
+     okunuyordu. Kullanicinin sozu: "elin ortadan kenarlara ama EN
+     KENARLARA kadar halkanin gosterilsin."
+     SINIR TAHMIN DEGIL, HESAP: _turNokta yariçapi
+     R = min(en,boy)/2 sayiyor; gorunen en dis halka ise
+     min(en,boy)*0.357*HALKA_DIS. Orani 0.357*HALKA_DIS/0.5.
+     Iki yonlu olculuyor: merkezden BASLIYOR ve halkayi ASMIYOR.
+     Asmasi da hata olurdu -- el halkanin disinda gezerse
+     gosterdigi sey artik disk degil. */
+  {
+    const el = await pg.evaluate(()=>{
+      try{
+        const d = fxSunumAdimlari()[0].duraklar
+                  .filter(x=>x.hedef && x.hedef.disk !== undefined)
+                  .map(x=>x.hedef.disk);
+        if(!d.length) return null;
+        const sinir = 0.357*HALKA_DIS/0.5;
+        return { enYakin:Math.min(...d), enUzak:Math.max(...d),
+                 sinir:Math.round(sinir*1000)/1000, sayi:d.length };
+      }catch(e){ return null; }
+    });
+    K('El merkezden en dis halkaya kadar geziyor',
+       !!el && el.sayi >= 3
+       && el.enYakin <= 0.10
+       && el.enUzak >= el.sinir*0.88 && el.enUzak <= el.sinir,
+       el ? ('merkez '+el.enYakin+' -> kenar '+el.enUzak+' (halka siniri '+el.sinir+')') : 'olculemedi');
+  }
+  /* ── PANEL ACIKKEN USTTE KALAN IKI NESNENIN ALTI KOYU ────────
+     Panel yari saydam ve oyle kaliyor ("yoksa transparan cool").
+     Ama uc cizgi ve kip anahtari panelden DAHA USTTE ciziliyor
+     (z-index 96 > 95) ve panelin yazilarinin uzerine biniyordu --
+     cihaz goruntusunde "PRIVACY" satirinin uzerindeydiler.
+     Ikisini gizlemek yanlis olurdu: uc cizgi paneli KAPATAN
+     dugme. Kullanicinin cozumu: "orbitape ya da radiotape ya da 3
+     cizgi varsa altinda orasi koyulassin."
+     Olculen: panel KAPALIYKEN o zemin YOK (saydamlik bozulmasin),
+     ACIKKEN VAR. */
+  {
+    const zemin = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const oku = ()=>['ayarTut','kipKisayol'].map(id=>{
+        const st = getComputedStyle(document.getElementById(id), '::before');
+        return { icerik:st.content, zemin:st.backgroundColor };
+      });
+      const acikOnce = document.body.classList.contains('ayar-acik');
+      if(acikOnce){ document.getElementById('ayarTut').click(); await bek(320); }
+      const kapali = oku();
+      document.getElementById('ayarTut').click(); await bek(320);
+      const acik = oku();
+      document.getElementById('ayarTut').click(); await bek(320);
+      const saydam = z => /rgba\(0, 0, 0, 0\)|transparent/.test(z);
+      return { kapaliBos: kapali.every(x=>x.icerik==='none' || saydam(x.zemin)),
+               acikDolu:  acik.every(x=>x.icerik!=='none' && !saydam(x.zemin)),
+               acikZemin: acik.map(x=>x.zemin).join(' | ') };
+    });
+    K('Panel acikken ustunde kalanlarin alti koyulasiyor',
+       zemin.kapaliBos===true && zemin.acikDolu===true,
+       'acik: '+zemin.acikZemin);
+  }
   K('FX sunumunun KENDI kutusu var', fs2.turKutusuTemiz===true, '#fxKutu ayri, acilis turununki etkilenmiyor');
   K('FX kutusu acilis turunu kapatmaz', fs2.turDeposuTemiz===true, 'orbitape.tur degismedi');
   K('Efekt kullanimi depoya YAZMAZ', fs2.depoTemiz===true, 'kalici hukmu yalniz kutu verir');
@@ -3924,11 +4012,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const ad = document.querySelector('#kipKisayol .ad');
         const gor = [...ad.children].find(x=>getComputedStyle(x).display!=='none') || ad;
         const st = getComputedStyle(gor);
-        const np = document.querySelector('#np .np-sanatci');
+        /* Olcut artik kunye degil MARKA: sag ustteki ORBITAPE. */
+        const mk = document.querySelector('#ust .kanal.ad');
+        const ms = mk ? getComputedStyle(mk) : null;
+        const sadeGrad = z => (z||'').replace(/\s+/g,'');
         return { tasma: Math.round(kk.right - enSag),
                  font: st.fontFamily.split(',')[0].replace(/["']/g,''),
-                 npFont: np ? getComputedStyle(np).fontFamily.split(',')[0].replace(/["']/g,'') : '',
-                 kalinlik: st.fontWeight, punto: st.fontSize,
+                 markaFont: ms ? ms.fontFamily.split(',')[0].replace(/["']/g,'') : '',
+                 kalinlik: st.fontWeight, markaKalinlik: ms ? ms.fontWeight : '',
+                 /* Harf araligi ORAN olarak: ikisi de .30em ama
+                    puntolar farkli (12 / 23), yani px karsilastirmasi
+                    ayni tasarimi FARKLI gosterirdi. */
+                 aralik: Math.round(parseFloat(st.letterSpacing)/parseFloat(st.fontSize)*100)/100,
+                 markaAralik: ms ? Math.round(parseFloat(ms.letterSpacing)/parseFloat(ms.fontSize)*100)/100 : null,
+                 punto: st.fontSize,
+                 /* Gradyan yazinin ICINE kirpiliyor ve KAPSAYICIYA
+                    yaziliyor (#kipKisayol .ad): iki kelime onun
+                    metin akisinin parcasi, dolgu saydamligi da
+                    miras aliniyor. O yuzden gradyan cocuktan degil
+                    KAPSAYICIDAN okunuyor -- cocukta 'none' cikar
+                    ve bu dogru davranistir. */
+                 dolgu: st.webkitTextFillColor || st.color,
+                 grad: sadeGrad(getComputedStyle(ad).backgroundImage),
+                 markaGrad: ms ? sadeGrad(ms.backgroundImage) : '',
                  yazi: gor.textContent.trim() };
       };
       const eskiMood = AYAR.mood;
@@ -3946,10 +4052,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        !!r && !!a2 && r.tasma <= 0 && a2.tasma <= 0,
        (r && a2) ? ('radyo ' + r.tasma + 'px, arsiv ' + a2.tasma + 'px (0 = tam hizali)')
                  : 'olculemedi');
-    K('Anahtar etiketi kunyenin diliyle yaziliyor',
-       !!r && r.font === r.npFont && r.kalinlik === '400',
+  /* ── ETIKET MARKANIN DILIYLE ─────────────────────────────────
+     Bir tur kunyenin dili verilmisti (sistem sans, 400). Kullanici
+     duzeltti: "sag ustteki renkler, tema ve font olsun, aynisini
+     koy." Dogrusu da bu -- bu etiket bir kunye degil, markanin
+     adi.
+     Dort sey ayni olmali: yazi tipi, kalinlik, harf araligi ve
+     GRADYAN. Gradyan onemli cunku duraklari markaRengi() rafa ve
+     temaya gore yaziyor; ayni gradyan demek "tema degisince ikisi
+     birlikte donuyor" demek. Punto kasten farkli (23 / 12).
+     ARSIVDE DE AYNI: iki kipte de ayni dil, tek fark kelime
+     ("RADIO" kisa, sigsin diye). */
+    K('Anahtar etiketi markanin diliyle yaziliyor',
+       !!r && !!a2
+       && r.font === r.markaFont && r.kalinlik === r.markaKalinlik
+       && r.aralik !== null && Math.abs(r.aralik - r.markaAralik) <= 0.01
+       && !!r.grad && r.grad === r.markaGrad
+       && a2.font === a2.markaFont && a2.grad === a2.markaGrad,
        r ? ('"' + r.yazi + '" ' + r.font + ' ' + r.punto + '/' + r.kalinlik
-            + ' | kunye: ' + r.npFont) : '-');
+            + ' ' + r.aralik + 'em | marka: ' + r.markaFont + '/' + r.markaKalinlik
+            + ' ' + r.markaAralik + 'em') : '-');
+    K('Arsivde etiket kisa: RADIO', !!a2 && a2.yazi === 'RADIO',
+       a2 ? ('"' + a2.yazi + '"') : '-');
   }
 
   /* ── OTOMATIK SEVIYE KULAKTA DUYULMAMALI ────────────────────────
