@@ -9,6 +9,21 @@ araclar/
 .github/
 node_modules/
 
+# ── DEPONUN KENDISI ──────────────────────────────────────────────
+# .git YUKLENIYORDU. Ilk kez `wrangler deploy` elle calistirilinca
+# gorundu: 1673 dosya okundu ve ciktinin yarisi
+# ".git/objects/9b/e8df45..." satirlariydi. Yani deponun butun
+# gecmisi yayina cikan dosyalar arasindaydi.
+# Depo herkese acik, yani sir kacmiyor; ama yayina cikmasi gereken
+# sey UYGULAMA, deponun kendisi degil -- ve bosuna bin dosya.
+.git/
+.wrangler/
+.DS_Store
+
+# Ic belge: erisim listesi ve kurtarma yordami. Depoda dursun,
+# yayinda gorunmesin.
+KURTARMA.md
+
 # MAGAZA GORSELLERI: Play Console'a elle yuklenen dosyalar, sitenin
 # parcasi degil. Depoda duruyorlar (yedek ve gecmis), yayina
 # gitmiyorlar: 7 MB'lik ekran goruntusunun orbitape.app/magaza/...
@@ -32,6 +47,7 @@ KONTROL.md
 # olmadan o cumle yalandi.
 gun.html
 kiyas.html
+kiyas_pro.html
 raf.html
 raf_revizyon.html
 simdicalan.html

@@ -8,6 +8,11 @@ test/*.png
 test-results/
 playwright-report/
 
+# Wrangler'in yerel defteri: `wrangler deploy` calisinca kendi
+# olusturuyor ve icinde Cloudflare hesap kimligi var. Sir degil ama
+# depoda isi de yok -- her makinede kendi kopyasi olusur.
+.wrangler/
+
 # Yerel geçici dosyalar
 *.log
 __pycache__/
@@ -19,6 +24,3 @@ yeni_hasat.json
 hasat_durum.json
 lisans_ozeti.csv
 *.temiz.json
-
-# Gecici: silinemeyen kilit dosyalarinin tasindigi klasor.
-_to_delete/
