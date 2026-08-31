@@ -5100,11 +5100,22 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
        uste alindi (bekleme sembolleriyle cakisti). Ucuncu ve dogru
        yer alt sol: karsisinda kimse yok.
        Iki olcu: konsol kayit satirinin USTUNDE mi, ve iki satir ayni
-       SAG kenarda mi bitiyor. */
+       SOL kenardan mi basliyor.
+       KURAL DEGISTI -- once SAG kenar olculuyordu. Tasima satiri o
+       hizayi yakalamak icin kayit satirinin genisligine GERILIYORDU
+       (space-between). REC radyo tarafina da gelince alt satir
+       162'den 218px'e cikti ve gerilme payi patladi: masaustunde
+       olculdu, tuslarin arasi 101px, hemen altindaki satirin arasi
+       7px -- ayni konsolda 14 kat fark, kullanici "hata gibi" dedi.
+       Ayni sikayet arsiv kipinde yasanmis ve orada dogru cozum
+       bulunmustu: satirlar KENDI olculerinde, hepsi ayni SOL
+       kenardan. Simdi iki kipte de oyle. Sag kenar hizasini artik
+       altlarindaki ses cizgisi kuruyor (--ses-en en genis satira
+       esitleniyor) -- bosluklari sisirerek degil. */
     const ts2 = document.getElementById('tasima').getBoundingClientRect();
     const ac5 = document.getElementById('araclar').getBoundingClientRect();
     const hiza = { tasma: Math.round(ts2.bottom - ac5.top),
-                   sol: Math.round(Math.abs(ts2.right - ac5.right)) };
+                   sol: Math.round(Math.abs(ts2.left - ac5.left)) };
     void ar; void ad; void su;
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
@@ -5114,9 +5125,9 @@ const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcu
   K('Sol ustte favori yildizi var', !!fa && fa.kapali.gor===true, 'tasima satirinin sonunda');
   K('Yildiza basis kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'tek basis');
   K('Tekrar basis kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
-  K('Konsol kayit satirinin USTUNDE, sag kenarlar hizali',
+  K('Konsol kayit satirinin USTUNDE, sol kenarlar hizali',
      !!fa && fa.hiza.tasma <= 0 && fa.hiza.sol <= 2,
-     'dikey bosluk '+(fa?-fa.hiza.tasma:'-')+'px | sag hiza '+(fa?fa.hiza.sol:'-')+'px');
+     'dikey bosluk '+(fa?-fa.hiza.tasma:'-')+'px | sol hiza '+(fa?fa.hiza.sol:'-')+'px');
 
   /* ── SAG ALT DUZEN (YENI HARITA) ─────────────────────────────────
      Duzen soyle olmali: ★ EN ALTTA, tabani soldaki arama cizgisinin

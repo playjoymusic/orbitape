@@ -1907,14 +1907,29 @@
     top:auto;
     bottom:calc(7px + env(safe-area-inset-bottom, 0px));
   }
-  /* IKI SATIR AYNI SAG KENARDA BITIYOR. Genislik JS'te olculup en
-     genis satira esitleniyor; tasima satiri o genisligi ARALARI
-     ACARAK dolduruyor. Boylece modul tek bir dikdortgen gibi
-     okunuyor -- kullanicinin sozu: "hizalamalara bak, iki satir
-     arasi ve sag tarafi."
-     Satir aralari da tek yerden: --modul-bosluk. */
+  /* Satir aralari tek yerden: --modul-bosluk. */
   #solUst{--modul-bosluk:8px;gap:var(--modul-bosluk);}
-  #tasima{width:var(--ses-en,150px);justify-content:space-between;}
+  /* ── SATIRLAR GERILMIYOR, KENDI OLCULERINDE ──────────────────────
+     BURADA BIR KURAL GERI ALINDI. Once tasima satiri --ses-en
+     genisligine GERILIYORDU (space-between): amac uc satirin ayni
+     sag kenarda bitmesi, modulun tek bir dikdortgen gibi
+     okunmasiydi.
+     Satirlarin genisligi birbirine yakinken calisiyordu. REC radyo
+     tarafina da gelince alt satir 162'den 218px'e cikti ve gerilme
+     payi patladi -- masaustunde OLCULDU: tasima satiri 247px, icerigi
+     152px, yani tuslarin arasi 101px. Hemen altindaki satirin arasi
+     7px. Ayni konsolda, ust uste iki satir, arasindaki fark 14 kat.
+     Kullanicinin sozu: "geri tusu ile play, play tusu ile stop cok
+     uzun, hepsi araları iste. ona bak hata gibi."
+     AYNI SIKAYET ARSIV KIPINDE DE YASANMISTI ve orada dogru cozum
+     bulunmustu (asagida, body.mood #tasima): satirlar KENDI
+     olculerinde kalir, hepsi ayni SOL kenardan baslar, aralari
+     esittir. Simdi o kural iki kipte de gecerli -- yani tek kural.
+     Ses cizgisi (--ses-en) hala en genis satira esitleniyor: alttaki
+     ince hat konsolun altini bastan sona ciziyor ve blogu yine tek
+     parca yapiyor. Hizayi bosluklari sisirerek degil, cizgiyle
+     kuruyoruz. */
+  #tasima{width:auto;justify-content:flex-start;}
   /* ── SOUND BANKS: TUTAMAK BLOGUN EN USTUNDE ───────────────────
      ONCE tutamak alt sol KOSEDEYDI ve modul bir satir yukari
      cikiyordu (bottom:43px). Ekranda yanlis okunuyordu: tutamak
@@ -1989,17 +2004,19 @@
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:9px;letter-spacing:.14em;}
   }
 
-  /* COK DAR EKRAN (<=400px): tasima satirinda artik DORT tus var.
-     360px'te olculdu -- sag ustteki satir 153px'te basliyor, solda
-     127px kaliyor. Dort tus 34px + 6px bosluk = 154px eder ve carpar;
-     emniyet olcegi devreye girip haplari kucultunce de sag alttaki ★
-     ile ayni olcude olmaktan cikarlar. 28px tus + 5px bosluk = tam
-     127px. Kucultme degil, olcu. */
-  @media (max-width:400px){
-    #tasima{gap:5px;}
-    #geri,#ileri,#dur,#duraklat{width:28px;}
-    #geri svg,#ileri svg,#dur svg,#duraklat svg{width:12px;height:11px;}
-  }
+  /* ── MEZAR TASI: 28px'LIK TASIMA TUSLARI ─────────────────────
+     Burada bir <=400px kurali vardi: dort tusu 28px'e ve arayi 5px'e
+     indiriyordu. Sebebi gecerliydi -- konsol o zaman SOL USTTEYDI ve
+     karsisinda raf adi duruyordu; 360px'te sag satir 153px'te
+     basliyor, sola 127px kaliyordu ve 34px'lik dort tus carpiyordu.
+     O karsilik ARTIK YOK: konsol iki kipte de sol altta ve karsisinda
+     hicbir sey yok. Kayit satiri (218px) ayni ekranda rahatca
+     siginyor, tasima satiri (154px) fazlasiyla.
+     KURAL KALDIRILDI cunku ZARAR VERIYORDU: 28px tus + 5px bosluk,
+     dokunma alanini 33px birakiyordu (28 + iki yana 2.5). Saglik
+     testinin esigi 36 ve hakliydi -- once gerilmis bosluklar bunu
+     gizliyordu, gerilme kalkinca ortaya cikti. Artik 34px tus + 6px
+     bosluk: alan 40px, WCAG'in AA tabaninin cok uzerinde. */
 
   /* ── GENIS EKRANDA TEK KOLON ──────────────────────────────────────
      Arayuzun her parcasi ekranin KOSELERINE sabitli. Telefonda ekran
