@@ -2153,8 +2153,14 @@
      Deri acikken tam opak. Rengi zaten zemine gore hesaplandigi
      icin (--d-vurgu, acik zeminde en az 4.5 kontrast) tam opak
      olmasi bagirmiyor, sadece okunuyor. */
-  body.deri #modGez.gor,body.deri.mood #modGez.gor,
-  body.deri #modGez.cizim.gor,body.deri.mood #modGez.cizim.gor{opacity:1;}
+  /* SIFIR SILIKLIK, HIC BIR DURUMDA. Once yalnizca .gor ve .cizim
+     durumlari yaziliyordu ve aradan gecen baska durumlar (gecis
+     aninda, arsiv dunyasinda, cizimli adlarda) uygulamanin kendi
+     .56 ve .50 degerlerinde kaliyordu. Kullanicinin sozu:
+     "hicbir mood'ta ve turde silik olmasin, 0 overlay."
+     Tek satir, durum ayirmadan: bu yazi ya vardir ya yoktur. */
+  body.deri #modGez{opacity:1 !important;text-shadow:none !important;
+    mix-blend-mode:normal !important;filter:none !important;}
   body.deri #modGez.cizim svg{fill:currentColor;}
   body.deri #kipKisayol .anahtar b{background:var(--d-marka) !important;}
   /* ── SKINS IZGARASI ───────────────────────────────────────────
@@ -4156,7 +4162,11 @@
       if(!rgbDizi) return d0 ? d0.yazi : '';
       const d = d0;
       if(d){
-        const esik = _parlaklikHex(d.zem) > 0.30 ? 4.5 : 3.2;
+        /* Acik zeminde esik 5.5: krem, beyaz ve kavun gibi zeminlerde
+           4.5 "okunuyor ama solgun" demekti. Kullanicinin sozu
+           "beyazlarda ve kremalarda hep koyu tema ve tur rengi
+           karisik." Renk hala rafin rengi -- yalnizca daha koyu. */
+        const esik = _parlaklikHex(d.zem) > 0.30 ? 5.5 : 3.2;
         const v = okunurVurgu(rgbDizi, d.zem, esik);
         if(v) return v;
       }
