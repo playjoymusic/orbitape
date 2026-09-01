@@ -1892,8 +1892,13 @@
      soyluyor. Vurgu yoksa (deri kapali ya da raf secilmemis)
      gradyanin iki ucu da ayni renk: gorunum degismiyor. */
   body.deri #ust .kanal.ad{
+    /* "sagdaki yarisi baya etkilensin." Once yalnizca son harfler
+       kayiyordu ve fark gozle secilmiyordu. Artik kelime ortadan
+       ikiye bolunuyor: sol yari derinin marka rengi, sag yari
+       tamamen rafin rengi, aradaki gecis dar. */
     background:linear-gradient(90deg,
-      var(--d-marka) 0%, var(--d-marka) 52%,
+      var(--d-marka) 0%, var(--d-marka) 42%,
+      var(--d-vurgu, var(--d-marka)) 58%,
       var(--d-vurgu, var(--d-marka)) 100%) !important;
     -webkit-background-clip:text !important;background-clip:text !important;
     -webkit-text-fill-color:transparent !important;color:transparent !important;}
@@ -2055,9 +2060,17 @@
      yani zeminin tersi. Once karanlik dunyanin acik grisi sabitti
      ve krem zeminde okunmuyordu. Tek istisna parca adi -- o marka
      renginde kaliyor, cunku vurgulanan sey o. */
-  body.deri #np .np-yasal,body.deri #np .np-sanatci,
-  body.deri #np .np-lab,body.deri #np small,body.deri #np s{
-    color:var(--d-yazi) !important;-webkit-text-fill-color:var(--d-yazi) !important;}
+  /* Kunyenin ana satirlari GUCLU tonda: koyu zeminde beyaza yakin,
+     acik zeminde siyaha yakin. Ikincil satirlar (yasal baglar,
+     etiket) bir kademe sonuk kaliyor ama hala okunuyor. */
+  body.deri #np .np-ad,body.deri #np .np-sanatci,body.deri #np b{
+    color:var(--d-yazi-guclu, var(--d-yazi)) !important;
+    -webkit-text-fill-color:var(--d-yazi-guclu, var(--d-yazi)) !important;
+    opacity:1 !important;}
+  body.deri #np .np-yasal,body.deri #np .np-lab,
+  body.deri #np small,body.deri #np s{
+    color:var(--d-yazi2, var(--d-yazi)) !important;
+    -webkit-text-fill-color:var(--d-yazi2, var(--d-yazi)) !important;}
   body.deri #kipKisayol .ad{background:none !important;color:var(--d-marka) !important;
     -webkit-text-fill-color:var(--d-marka) !important;}
   body.deri #kipKisayol .anahtar{border-color:var(--d-tus-kenar) !important;
@@ -2132,8 +2145,16 @@
   body.deri #modGez,body.deri #modAd{
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,
                 'Helvetica Neue',Arial,sans-serif !important;}
-  body.deri #modGez.gor{opacity:.88;}
-  body.deri #modGez.cizim.gor{opacity:.80;}
+  /* ── BUYUK GECICI YAZI SILIK OLAMAZ ──────────────────────────
+     Uygulamanin kendi silikligi (.56) karanlik dunyada bir uslup
+     tercihiydi: buyuk ve silik. Derinin uzerinde ayni deger
+     "yazi kaybolmus" demek oluyor -- kullanicinin sozu "kesinlikle
+     hicbirinde silik olmasin, iki mood'ta da."
+     Deri acikken tam opak. Rengi zaten zemine gore hesaplandigi
+     icin (--d-vurgu, acik zeminde en az 4.5 kontrast) tam opak
+     olmasi bagirmiyor, sadece okunuyor. */
+  body.deri #modGez.gor,body.deri.mood #modGez.gor,
+  body.deri #modGez.cizim.gor,body.deri.mood #modGez.cizim.gor{opacity:1;}
   body.deri #modGez.cizim svg{fill:currentColor;}
   body.deri #kipKisayol .anahtar b{background:var(--d-marka) !important;}
   /* ── SKINS IZGARASI ───────────────────────────────────────────
@@ -4070,20 +4091,9 @@
       kok.setProperty('--m1', 'rgb('+m1+')');
       kok.setProperty('--m2', 'rgb('+m2+')');
       kok.setProperty('--m3', 'rgb('+m3+')');
-      /* Deri aciksa rafin rengi ayrica OKUNUR bir vurgu olarak
-         yaziliyor. Deri kapaliysa degisken hic yazilmiyor ve
-         uygulamanin kendi renkleri gecerli kaliyor. */
-      try{
-        const _d = DERILER[(AYAR.deri|0) - 1];
-        if(_d){
-          /* Acik zeminde esik 4.5: raf rengi solgun degil KOYU olsun
-             -- kullanicinin sozu "backround aciksa cok daha koyu
-             ve ilk orjinaldeki rengini alsin, etkili olsun." */
-          const _esik = _parlaklikHex(_d.zem) > 0.30 ? 4.5 : 3.2;
-          const _v = okunurVurgu(m2 || m1, _d.zem, _esik);
-          if(_v) kok.setProperty('--d-vurgu', _v);
-        }
-      }catch(e){ _yut(e); }
+      /* MEZAR TASI: burada bir de --d-vurgu hesaplaniyordu ve
+         kaynagi MARKA GRADYANIYDI, rafin kendi rengi degil. Ekranda
+         uc ayri renk cikiyordu. Tek kaynak modAdiYaz'a tasindi. */
     }catch(e){ _yut(e); }
   }
   /* ── DERI ICINDE RAFIN KENDI RENGI ────────────────────────────
@@ -4202,7 +4212,7 @@
         document.body.classList.remove('deri');
         ['--d-zem','--d-yazi','--d-marka','--d-font','--d-kose','--d-tus-zem',
          '--d-tus-kenar','--d-golge','--d-panel','--d-filtre','--d-karisim','--d-halka',
-         '--d-isik','--d-yazi2','--d-raf','--d-golge-renk','--d-dis-golge','--d-cek','--d-vurgu',
+         '--d-isik','--d-yazi2','--d-yazi-guclu','--d-raf','--d-golge-renk','--d-dis-golge','--d-cek','--d-vurgu',
          '--d-neb-karisim','--d-neb-sef','--d-doku',
          '--d-doku-olcu','--d-doku-sef'].forEach(x=>k.removeProperty(x));
       }else{
@@ -4230,6 +4240,14 @@
            sonuk ama hala okunuyor. Kullanicinin tarifi de buydu:
            "en koyudan orta koyuya dogru." */
         k.setProperty('--d-yazi2', _hexKaris(d.yazi, d.zem, 0.62));
+        /* GUCLU TON: kunyenin ana satiri icin. Derinin yazi rengi
+           orta bir tondu ve sag alttaki kunye koyu zeminde gri
+           kaliyordu -- kullanicinin sozu "koyu ustune beyaz ve acik
+           renklerle yaz." Yazi renginden zeminin TERSINE dogru
+           %55 daha gidiyor: koyu deride beyaza yakin, acik deride
+           siyaha yakin. */
+        k.setProperty('--d-yazi-guclu',
+          _hexKaris(_parlaklikHex(d.zem) > 0.30 ? '#000000' : '#ffffff', d.yazi, 0.55));
         const _acik = _parlaklikHex(d.zem) > 0.30;
         k.setProperty('--d-neb-karisim', _acik ? 'multiply' : 'screen');
         k.setProperty('--d-neb-sef', _acik ? '.26' : '.55');
@@ -12548,9 +12566,24 @@
        -webkit-text-fill-color tasiyor, yani satir ici 'color'
        goruntuyu belirlemiyor. Degisken uzerinden gidince CSS
        kuralinin kendisi dogru rengi aliyor ve tartisma bitiyor. */
+    /* ── TEK KAYNAK: RAFIN RENGI ─────────────────────────────────
+       Iki ayri hesap vardi ve ekranda uc ayri renk cikiyordu:
+       sol ustte JAZZ pembe, sag ustteki marka yazisi mavi, sol
+       alttaki etiket yine mavi. Kullanicinin sozu: "jazz'dayiz,
+       her yer baska renk; tutarli olmali."
+       Sebep: --d-raf rafin kendi renginden, --d-vurgu ise marka
+       gradyaninin duraklarindan hesaplaniyordu. Artik ikisi de
+       BURADAN, ayni degerden yaziliyor. Rafin rengi tek yerde
+       hesaplaniyor ve ekranin dort yerine ayni sey gidiyor:
+       sol ustteki raf adi, sag ustteki marka yazisinin sag yarisi,
+       halkanin altindaki buyuk yazi ve sol alttaki kip etiketi. */
     { const _c = rafYaziRengi(_rn, 0);
       el.style.color = _c;
-      try{ document.documentElement.style.setProperty('--d-raf', _c); }catch(_){ _yut(_); } }
+      try{
+        const _k = document.documentElement.style;
+        _k.setProperty('--d-raf', _c);
+        _k.setProperty('--d-vurgu', _c);
+      }catch(_){ _yut(_); } }
     el.classList.toggle('gor', !!ad);
     /* Isim degisti -> once puntosu (radyoda sigacak mi), sonra
        cubuklarin genisligi. Sira onemli: cubuk adin kutusundan
