@@ -37,7 +37,13 @@ const KAYNAK = fs.readFileSync(path.join(KOK, 'index.html'), 'utf8');
 /* Cikarilacak bildirimler. Sirasi onemli: birbirine bagli olanlar
    once gelmeli (KAYNAK, MODLAR -> modUyar). */
 const MANIFEST = [
+  'var YUT_ANAHTAR',
+  'var _yutDefter',
+  'function _yutOku',
+  'function _yutYaz',
   'function _yut',
+  'function yutOzeti',
+  'function yutSayisi',
   'function _hexKaris',
   'function _retroTon',
   'function _koyult',
@@ -79,8 +85,17 @@ const MANIFEST = [
    Yanlis kesilirse asagidaki vm hemen patliyor ve test kirmizi yaniyor
    -- yani bu varsayim da olcum altinda. */
 const SINIR = /\n {2}(?:function |async function |const |var |let )/g;
+/* ADI TAM ESLESTIRMEK ZORUNDA. Ilk surum duz metin ariyordu ve
+   '_yut' istendiginde '_yutOku'yu buluyordu -- cunku aranan dize
+   otekinin ON EKI. Cikarilan blok yanlis fonksiyondu ve hata
+   ekranda "_yut is not defined" olarak goruluyordu, yani sebebi
+   bambaska bir yerde arattiriyordu. Ad bittikten sonra tanimlayici
+   karakteri OLMAMALI. */
 function cikar(basAd) {
-  const i = KAYNAK.indexOf('\n  ' + basAd);
+  const kacir = basAd.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const kalip = new RegExp('\\n  ' + kacir + '(?![A-Za-z0-9_$])');
+  const e0 = kalip.exec(KAYNAK);
+  const i = e0 ? e0.index : -1;
   if (i < 0) throw new Error('bulunamadi: ' + basAd);
   SINIR.lastIndex = i + 1;
   const e = SINIR.exec(KAYNAK);
@@ -235,6 +250,46 @@ function _kontrast(a,b){
     zayifMarka.length ? zayifMarka.join(', ') : 'hepsi 3.0 ustu');
   K('Cekirdek zeminin tersine kayiyor', tersDegil.length === 0,
     tersDegil.length ? tersDegil.join(', ') : 'acikta koyu, koyuda acik');
+}
+
+/* ── YUTULAN HATA DEFTERI ───────────────────────────────────────
+   Uygulama hatalari sessizce yutuyor ki muzik durmasin. Bedeli:
+   sahada bir sey ters gidince elimizde hicbir sey olmuyor -- cokme
+   raporlari da gormuyor, cunku yutulan hata cokme uretmiyor.
+   Defter o bosluğu kapatiyor: her hata bir imzaya indirgeniyor ve
+   kac kere olustugu cihazda birikiyor.
+   BURADA OLCULEN SEY: ayni hata iki kere olunca IKI SATIR degil,
+   sayaci ikiye cikan TEK satir olmali. Ilk surumde oturum basina
+   ilk sekiz farkli mesaj tutuluyordu ve sayac yoktu; "bu hata bir
+   kere mi oldu, bin kere mi" sorusunun cevabi yoktu. */
+{
+  /* Kabuk icinde localStorage yok; defter o zaman bellekte
+     calismali ve cokmemeli. Once bunu olcuyoruz. */
+  const oncekiSayi = A.yutSayisi();
+  /* AYNI YERDEN IKI KERE. Imza mesaj + yigindaki satir numarasi
+     oldugu icin ayni metni IKI FARKLI satirda uretmek iki AYRI imza
+     verir -- ve dogrusu da budur: ayni mesaj iki ayri yerden
+     geliyorsa iki ayri kusurdur. Burada olculen sey "ayni yer iki
+     kere patlarsa tek satirda toplanir mi", o yuzden hata nesnesi
+     bir kere uretilip iki kere yutuluyor. */
+  const ayniKusur = new Error('deneme kusuru');
+  A._yut(ayniKusur);
+  A._yut(ayniKusur);
+  A._yut(new Error('baska kusur'));
+  const sonra = A.yutSayisi();
+  K('Defter her olayi sayiyor', sonra - oncekiSayi === 3,
+    (sonra - oncekiSayi) + ' olay islendi');
+  const ozet = A.yutOzeti(10);
+  K('Ayni hata tek satirda toplaniyor',
+    /2 x  deneme kusuru/.test(ozet) && /1 x  baska kusur/.test(ozet),
+    ozet ? ozet.split('\n')[0] : 'ozet bos');
+  K('Ozet en cok olani basa aliyor',
+    ozet.indexOf('deneme kusuru') < ozet.indexOf('baska kusur'),
+    'siralama sayiya gore');
+  K('Bozuk girdi defteri comertmiyor',
+    (function(){ try{ A._yut(null); A._yut(undefined); A._yut({}); return true; }
+                 catch(e){ return false; } })(),
+    'null/undefined/nesne yutuluyor, defter ayakta');
 }
 
 /* ── RAF RENGI DERININ ICINDE DE OKUNUYOR ───────────────────────

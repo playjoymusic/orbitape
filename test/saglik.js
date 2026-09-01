@@ -1594,7 +1594,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      acikca yaziyor: yanlis sayida parmak baska halkayi secer. */
   K('Radyoda halkalar tur ailesi', hs.n===10 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
-       && /AFROBEAT/.test(hs.sira)
+       && /AFROBEATS/.test(hs.sira)
        && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
@@ -5267,7 +5267,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        distan besinci, yani bu dizide JAZZ ile DISCO FUNK'in
        arasinda. */
     const SIRA = ['AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
-                  'JAZZ','AFROBEAT','DISCO FUNK','WORLD & ROOTS',
+                  'JAZZ','AFROBEATS','DISCO FUNK','WORLD & ROOTS',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
@@ -5398,13 +5398,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* YUTULAN HATA SAYACI: 395 bos catch vardi ve hepsi sessizdi.
        Davranis degismedi (yine yutuyor) ama artik SAYILIYOR ve
        'D' raporunda gorunuyor. Bu giderse korluk geri gelir. */
+    /* BOS CATCH YALNIZCA DEFTERIN KENDI ICINDE OLABILIR.
+       Once "en fazla bir tane" deniyordu. Defter eklenince bu sayi
+       yetmedi ve dogrusu da sayi degil YER: defterin makinesi
+       kendi hatasini _yut'a veremez -- verirse _yut kendini
+       cagirir ve tek bir aksaklik sonsuz donguye doner. Disarida
+       kalan her bos catch ise gercek bir korluktur.
+       Bu yuzden defter blogu ayrilip disarisi olculuyor. */
     K('Yutulan hatalar sayiliyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
-        const bosKaldi = (k.match(/catch\s*\(\s*[A-Za-z_$][\w$]*\s*\)\s*\{\s*\}/g)||[]).length;
-        /* _yut'un kendi ic catch'i haric hepsi baglanmis olmali */
-        return typeof _yut === 'function' && bosKaldi <= 1
+        const bas = k.indexOf('var YUT_ANAHTAR');
+        const son = k.indexOf('function yutSil');
+        const sonSon = son >= 0 ? k.indexOf('\n  }', son) : -1;
+        const defter = (bas >= 0 && sonSon > bas) ? k.slice(bas, sonSon) : '';
+        const disari = (bas >= 0 && sonSon > bas)
+          ? k.slice(0, bas) + k.slice(sonSon) : k;
+        const kalip = /catch\s*\(\s*[A-Za-z_$][\w$]*\s*\)\s*\{\s*\}/g;
+        const disBos = (disari.match(kalip) || []).length;
+        return typeof _yut === 'function' && !!defter && disBos === 0
             && /swallowed/.test(k);
-      }), 'bos catch kalmadi, sayac D raporunda');
+      }), 'defter disinda bos catch yok, sayac D raporunda');
     K('Sayac kendisi patlamiyor', await pg.evaluate(()=>{
         /* En kritik ozellik: catch icinde patlamak, yutulan hatayi
            GERCEK hataya cevirir. Cop degerlerle sinaniyor. */

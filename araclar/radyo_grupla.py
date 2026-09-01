@@ -443,12 +443,12 @@ AILELER = OrderedDict([
     ("ROCK & INDIE",  {"renk": "#F2683C"}),   # eski adi ROCK & COUNTRY
     ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # eski adi LOUNGE
     ("JAZZ",          {"renk": "#CC7CA4"}),
-    # AFROBEAT BILDIRILMIS-BOS: uygulamada tanimli ama icine ilk
+    # AFROBEATS: kullanicinin elle doldurdugu raf. Hasat bu rafa
     # istasyon girene kadar halkada gorunmuyor. Hasat bu rafa
     # kendiliginden istasyon ATAMIYOR -- hangi istasyonun afrobeat
     # oldugunu etiket soylemiyor, kulak soyluyor. Doldurmasi elle,
     # raf_revizyon.html uzerinden. Yeri distan besinci halka.
-    ("AFROBEAT",      {"renk": "#D68E3A"}),
+    ("AFROBEATS",     {"renk": "#D68E3A"}),
     ("DISCO FUNK",    {"renk": "#BEB6A4"}),   # eski adi FUNK & RNB
     # MOR LOFI'DEN GELDI: INDIE & LOFI rafi bosalinca kaldirildi ve
     # rengi burada yasiyor. Eski gri (#9A96AC) halkada oteki
