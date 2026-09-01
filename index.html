@@ -1946,14 +1946,33 @@
           genis dizgisi.
      Ucu de yalnizca ARSIVDE ve yalnizca DERI acikken. Canli yayin
      tarafi net ve sicaklik almadan kaliyor. */
+  /* KOYULASTIRAN KAT: sepya + tarama cizgileri + kenar kararmasi.
+     Once yalnizca bu vardi ve "cok az hissediliyor, sadece
+     koyulastirma" dendi -- dogru teshis: eskilik yalnizca
+     koyulastirmakla olmuyor. */
   body.deri.mood::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
     background:
       repeating-linear-gradient(0deg,
-        rgba(0,0,0,.055) 0 1px, rgba(0,0,0,0) 1px 3px),
-      linear-gradient(0deg, rgba(190,140,60,.055), rgba(190,140,60,.055));
+        rgba(0,0,0,.085) 0 1px, rgba(0,0,0,0) 1px 3px),
+      radial-gradient(130% 100% at 50% 45%,
+        rgba(0,0,0,0) 52%, rgba(60,40,10,.16) 100%),
+      linear-gradient(0deg, rgba(196,146,64,.10), rgba(196,146,64,.10));
     mix-blend-mode:multiply;}
+  /* SOLDURAN KAT: sicak bir yikama, screen kipinde. Screen siyahlari
+     KALDIRIYOR -- yani en koyu yerler biraz aciliyor ve resim
+     kontrastini kaybediyor. Solmus bir baskinin yaptigi sey tam
+     olarak budur; sararmis bir kagitta hicbir yer gercekten siyah
+     degildir. "Solukluk ve eskilik" istegi buradan geliyor. */
+  .eski{display:none;}
+  body.deri.mood .eski{display:block;position:fixed;inset:0;z-index:2;
+    pointer-events:none;mix-blend-mode:screen;
+    background:
+      radial-gradient(120% 100% at 50% 40%,
+        rgba(214,186,132,.14) 0%, rgba(214,186,132,.05) 62%, rgba(0,0,0,0) 100%),
+      linear-gradient(0deg, rgba(180,150,100,.07), rgba(180,150,100,.07));}
+  /* Yazilar da eskiyor: harf araligi aciliyor (eski etiket dizgisi)
+     ve marka yazisi bir tik daha sicak. */
   body.deri.mood #ust .kanal.ad{letter-spacing:.30em;}
-  @media (prefers-reduced-motion: reduce){ }
 
   /* ── DERIDE HICBIR YAZI KENDI SABIT RENGINI KULLANMAZ ─────────
      Buraya kadar tek tek secici yaziliyordu ve her seferinde bir
@@ -2793,6 +2812,12 @@
   <canvas id="noise" aria-hidden="true"></canvas>
   <div class="flash" id="flash" aria-hidden="true"></div>
   <div class="grain"></div><div class="vignette"></div>
+  <!-- ARSIVIN SOLUKLUGU. Ayri bir katman, cunku bir eleman yalnizca
+       TEK karisim kipi tasiyabiliyor: eskitmek icin iki sey birden
+       gerekiyor -- koyulastiran bir kat (sepya + tarama cizgileri)
+       ve SOLDURAN bir kat (siyahlari kaldiran sicak yikama). Ikincisi
+       burada. Yalnizca arsivde ve yalnizca deri acikken gorunuyor. -->
+  <div class="eski" aria-hidden="true"></div>
 
   <!-- ── YER IMI (LANDMARK) ─────────────────────────────────────────
        Olculdu (30 Agustos): sayfada hic yer imi yoktu. Ekran okuyucu
@@ -7604,12 +7629,24 @@
      cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
      "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
      ustundeki dordu isteyene duruyor. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0 };
+  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0 };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
-      if(_a.aramaSes === false) AYAR.aramaSes = false;
-      if(_a.tikSes  === false) AYAR.tikSes  = false;
+      /* ── SES BIR KERE ACILDI ──────────────────────────────────
+         Varsayilan ikisinde de ACIK; ama daha once kapatmis
+         kullanicilarda kapali kayitli kaliyordu ve uygulama sessiz
+         aciliyordu. Kullanicinin karari: "click ile acilsin app ve
+         search sesi de acik baslasin."
+         Bir kereye mahsus: asagidaki damga yoksa iki ses aciliyor
+         ve damga basiliyor. Bundan sonra kullanici kapatirsa
+         kapali kaliyor -- yani bu bir zorlama degil, tek bir
+         baslangic duzeltmesi. */
+      if(_a.sesAcildi){
+        if(_a.aramaSes === false) AYAR.aramaSes = false;
+        if(_a.tikSes  === false) AYAR.tikSes  = false;
+      }
+      AYAR.sesAcildi = true;
       if(_a.cark    === true)  AYAR.cark    = true;
       /* TUTORIALS: varsayilan ACIK. Yalnizca kullanici kapattiysa
          kapali geliyor -- yeni gelen kisi anlatimsiz kalmasin. */
