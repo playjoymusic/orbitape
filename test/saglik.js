@@ -8132,6 +8132,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
               pikselleriyle olculen konum ekranda gorulen yere denk
               gelmiyor; yanlis sayi yaziliyor ve geri donuste
               "degisiklik yok" deyip duzeltilmiyordu. */
+      /* ── EKRANIN ALTINDAKI SERIT ────────────────────────────────
+         Deri govdeyi boyuyor ama govdenin ALTINDA kalan alani html
+         elemani boyuyor. O uygulamanin kendi karasinda kalinca krem
+         bir deride alt kenarda bir serit olarak goruluyordu --
+         karanlik dunyada ayni renk oldugu icin fark edilmiyordu.
+         Durum cubugu da (theme-color) ayni sebeple ayrisiyordu. */
+      /* Borc, esitlik kapisini DELMELI: yakinlastirip geri
+         donusteki olculer cogu zaman yakinlastirmadan oncekinin
+         aynisi oluyor ve kapi "degisiklik yok" deyip cikiyordu --
+         yani borc hic odenmiyordu. Masaustunde kusurun devam
+         etmesinin sebebi buydu. */
+      K('Yakinlastirma borcu esitlik kapisini deliyor',
+         /if\(!_zoomBorcu\n\s*&& _en === _sonEn/.test(g1),
+         'olculer ayni gelse bile borc varsa yerlesim yapiliyor');
+      K('Yerinden cikan ogeyi bekci geri koyuyor',
+         /_bekciZaman = setInterval\(bak, 2000\)/.test(kaynak)
+         && /r\.top > window\.innerHeight/.test(kaynak),
+         'iki saniyede bir tek olcum, yalnizca sekme gorunurken');
+      K('Deri html zeminini ve durum cubugunu da boyuyor',
+         /documentElement\.style\.backgroundColor = d\.zem/.test(kaynak)
+         && /_mt\.setAttribute\('content', d\.zem\)/.test(kaynak)
+         && /_d \? _d\.zem : zm\[1\]/.test(kaynak),
+         'html zemini, theme-color ve zeminUygula uclu tutarli');
       K('Yakinlastirma surerken yerlestirilmiyor',
          i1 > 0 && /_zoomBorcu/.test(g1) && /_ol > 101/.test(g1),
          'olcek 1 degilken yerlesim erteleniyor, donunce bir kez yapiliyor');

@@ -1946,33 +1946,20 @@
           genis dizgisi.
      Ucu de yalnizca ARSIVDE ve yalnizca DERI acikken. Canli yayin
      tarafi net ve sicaklik almadan kaliyor. */
-  /* KOYULASTIRAN KAT: sepya + tarama cizgileri + kenar kararmasi.
-     Once yalnizca bu vardi ve "cok az hissediliyor, sadece
-     koyulastirma" dendi -- dogru teshis: eskilik yalnizca
-     koyulastirmakla olmuyor. */
-  body.deri.mood::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
-    background:
-      repeating-linear-gradient(0deg,
-        rgba(0,0,0,.085) 0 1px, rgba(0,0,0,0) 1px 3px),
-      radial-gradient(130% 100% at 50% 45%,
-        rgba(0,0,0,0) 52%, rgba(60,40,10,.16) 100%),
-      linear-gradient(0deg, rgba(196,146,64,.10), rgba(196,146,64,.10));
-    mix-blend-mode:multiply;}
-  /* SOLDURAN KAT: sicak bir yikama, screen kipinde. Screen siyahlari
-     KALDIRIYOR -- yani en koyu yerler biraz aciliyor ve resim
-     kontrastini kaybediyor. Solmus bir baskinin yaptigi sey tam
-     olarak budur; sararmis bir kagitta hicbir yer gercekten siyah
-     degildir. "Solukluk ve eskilik" istegi buradan geliyor. */
-  .eski{display:none;}
-  body.deri.mood .eski{display:block;position:fixed;inset:0;z-index:2;
-    pointer-events:none;mix-blend-mode:screen;
-    background:
-      radial-gradient(120% 100% at 50% 40%,
-        rgba(214,186,132,.14) 0%, rgba(214,186,132,.05) 62%, rgba(0,0,0,0) 100%),
-      linear-gradient(0deg, rgba(180,150,100,.07), rgba(180,150,100,.07));}
-  /* Yazilar da eskiyor: harf araligi aciliyor (eski etiket dizgisi)
-     ve marka yazisi bir tik daha sicak. */
-  body.deri.mood #ust .kanal.ad{letter-spacing:.30em;}
+  /* ── MEZAR TASI: ARSIVDE ESKILESTIRME ─────────────────────────
+     Iki katman vardi: multiply ile sepya + tarama cizgileri, screen
+     ile siyahlari kaldiran sicak bir yikama. Amac "canli yayin
+     simdi, arsiv gecmis" farkini hissettirmekti.
+     KALDIRILDI. Kullanicinin karari: "orbitape modunda da
+     eskilestirmeyi iptal et." Gerekcesi de goruluyordu: altmis
+     derinin her biri zaten kendi malzemesini anlatiyor, ustune
+     serilen ortak bir eskilik katmani hepsini ayni sariya boyuyor
+     ve derinin karakterini yutuyordu. Ayrica iki katman da
+     position:fixed'di ve ekranin altinda ince bir cizgi
+     birakiyorlardi.
+     Iki dunya arasindaki fark artik kip anahtarindan okunuyor:
+     arsivde topuz solda ve sakin, canli yayinda sagda, marka
+     renginde ve soluklanan bir nokta ile. */
 
   /* ── DERIDE HICBIR YAZI KENDI SABIT RENGINI KULLANMAZ ─────────
      Buraya kadar tek tek secici yaziliyordu ve her seferinde bir
@@ -2130,6 +2117,25 @@
      ortadaki dolu nokta kalkiyor. */
   body.kam.deri .disk::after{--d-cek:transparent;}
 
+  /* ── RINGS ONLY: GOVDE KALKIYOR, HALKA KALIYOR ────────────────
+     Deride tuval kapali ve halkalar CSS ile ciziliyor -- duz, net,
+     malzemenin uzerinde oyulmus. Bu anahtar acilinca o gorunum
+     birakiliyor: govde (yuvarlak malzeme, bilezik, golge) tamamen
+     kalkiyor ve TUVAL geri geliyor, yani uygulamanin kendi ORGANIK
+     halkasi zeminin uzerinde tek basina duruyor.
+     PARLAMA YOK: tuvalin uc isik katmani (zar dolgusu, cekirdek
+     nefesi, sifir noktasi) cizim tarafinda atlaniyor (bkz.
+     _sadeHalka). Geriye yalnizca cizgi kaliyor.
+     ACIK ZEMINDE CARPMA: turkuaz cizgi kremin uzerinde kaybolur.
+     'multiply' beyaza yakin her seyi zemine karistirip yalnizca
+     cizgiyi birakiyor; koyu zeminde karisim normal. */
+  body.deri.sadehalka #viz{display:block !important;
+    filter:var(--d-filtre,none);
+    mix-blend-mode:var(--d-halka-karisim,normal);}
+  body.deri.sadehalka .disk{background:none !important;box-shadow:none !important;}
+  body.deri.sadehalka .disk::after,
+  body.deri.sadehalka .disk::before{display:none !important;}
+
   body.deri #ayarTut span{background:var(--d-yazi) !important;}
   /* ── DESEN ZEMININ PARCASI, USTUNE SERILEN BIR PERDE DEGIL ────
      z-index 59'du, yani uygulamanin uzerine seriliyordu: COLLAGE'in
@@ -2174,6 +2180,16 @@
   /* Kunyenin ana satirlari GUCLU tonda: koyu zeminde beyaza yakin,
      acik zeminde siyaha yakin. Ikincil satirlar (yasal baglar,
      etiket) bir kademe sonuk kaliyor ama hala okunuyor. */
+  /* ── KUNYEDE GOLGE YOK ────────────────────────────────────────
+     Karanlik dunyada yazilarin altinda bir metin golgesi vardi:
+     kara zeminde harfin kenarini ayiriyordu. Derinin uzerinde ise
+     ters etki yapiyor -- krem ya da mavinin ustunde harfin altina
+     bulanik bir leke koyuyor ve okunakliligi ZEDELIYOR.
+     Kullanicinin sozu: "hepsi golgesiz; koyu zeminse acik net
+     tonlar, acik zeminse siyah ve temaya gore koyu tonlar."
+     Kontrasti golge degil RENK tasiyor: --d-yazi-guclu zaten
+     zeminin tersine dogru %55 kaydirilmis halde. */
+  body.deri #np,body.deri #np *{text-shadow:none !important;}
   body.deri #np .np-ad,body.deri #np .np-sanatci,body.deri #np b{
     color:var(--d-yazi-guclu, var(--d-yazi)) !important;
     -webkit-text-fill-color:var(--d-yazi-guclu, var(--d-yazi)) !important;
@@ -2908,12 +2924,6 @@
   <canvas id="noise" aria-hidden="true"></canvas>
   <div class="flash" id="flash" aria-hidden="true"></div>
   <div class="grain"></div><div class="vignette"></div>
-  <!-- ARSIVIN SOLUKLUGU. Ayri bir katman, cunku bir eleman yalnizca
-       TEK karisim kipi tasiyabiliyor: eskitmek icin iki sey birden
-       gerekiyor -- koyulastiran bir kat (sepya + tarama cizgileri)
-       ve SOLDURAN bir kat (siyahlari kaldiran sicak yikama). Ikincisi
-       burada. Yalnizca arsivde ve yalnizca deri acikken gorunuyor. -->
-  <div class="eski" aria-hidden="true"></div>
 
   <!-- ── YER IMI (LANDMARK) ─────────────────────────────────────────
        Olculdu (30 Agustos): sayfada hic yer imi yoktu. Ekran okuyucu
@@ -3128,6 +3138,13 @@
     <div id="deriIzgara" class="deri-izgara" hidden></div>
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
       <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── RINGS ONLY ─────────────────────────────────────────────
+         Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
+         zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
+         kaliyor. Yalnizca deri acikken anlamli: deri kapaliyken
+         zaten oyle duruyor. -->
+    <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
+      <span>RINGS ONLY</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
 
     <h5>AUDIO</h5>
     <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
@@ -3165,6 +3182,14 @@
       <span>PRIVACY</span><span class="durum">OPEN</span></a>
     <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
       <span>TERMS</span><span class="durum">OPEN</span></a>
+    <!-- ── SIFIRLA ────────────────────────────────────────────────
+         En altta ve bilerek: yanlislikla basilacak bir yer degil.
+         Tek basista SORUYOR, ikinci basista yapiyor -- geri alinamaz
+         bir isi tek dokunusa baglamak dogru olmaz. Soru bes saniye
+         sonra kendiliginden geri donuyor; yani "acaba ne olacak"
+         diye basip birakan kisi bir sey kaybetmiyor. -->
+    <div class="sat islem" data-ayar="sifirla" role="button" tabindex="-1">
+      <span>RESET SETTINGS</span><span class="durum">RESET</span></div>
   </div>
   <!-- Dikey ses cubugu SILINDI; yerini sol ustteki yatay ses cizgisi
        aldi (#sesYatay, tasima satirinin sonunda). -->
@@ -4498,10 +4523,14 @@
       if(!n){
         document.body.classList.remove('deri');
         document.body.classList.remove('luks');
+        document.body.classList.remove('sadehalka');
+        /* Deri kapaniyor: html'in zeminini ve durum cubugu rengini
+           uygulamanin kendi degerlerine birak. */
+        try{ document.documentElement.style.backgroundColor = ''; }catch(e){ _yut(e); }
         ['--d-zem','--d-yazi','--d-marka','--d-font','--d-kose','--d-tus-zem',
          '--d-tus-kenar','--d-golge','--d-panel','--d-filtre','--d-karisim','--d-halka',
          '--d-isik','--d-tel','--d-yazi2','--d-yazi-guclu','--d-raf','--d-gez-ham','--d-golge-renk','--d-dis-golge','--d-cek','--d-vurgu',
-         '--d-neb-karisim','--d-neb-sef','--d-doku',
+         '--d-neb-karisim','--d-neb-sef','--d-halka-karisim','--d-doku',
          '--d-doku-olcu','--d-doku-sef'].forEach(x=>k.removeProperty(x));
       }else{
         const d = DERILER[n-1]; if(!d) return;
@@ -4516,7 +4545,6 @@
           ',inset 0 -1px 0 ' + d.golgeRenk +
           (d.luks ? ',0 0 0 1px ' + d.halka : ''));
         k.setProperty('--d-panel', d.panel);
-        k.setProperty('--d-filtre', 'none');
         k.setProperty('--d-karisim', 'normal');
         k.setProperty('--d-halka', d.halka || d.yazi);
         k.setProperty('--d-isik', d.isik || 'rgba(255,255,255,.55)');
@@ -4550,9 +4578,32 @@
         const _acik = _parlaklikHex(d.zem) > 0.30;
         k.setProperty('--d-neb-karisim', _acik ? 'multiply' : 'screen');
         k.setProperty('--d-neb-sef', _acik ? '.26' : '.55');
+        /* RINGS ONLY: acik zeminde tuval carpma ile karisiyor,
+           koyu zeminde oldugu gibi duruyor. */
+        k.setProperty('--d-halka-karisim', _acik ? 'multiply' : 'normal');
+        /* ── EKRANIN ALTINDAKI SERIT ──────────────────────────────
+           Kullanicinin bildirdigi kusur: "alttaki bosluk; radyo
+           modunda yok ama derilerle ve ORBITAPE'te goruluyor."
+           Sebep: deri GOVDEYI boyuyor, ama govdenin ALTINDA kalan
+           alani -- guvenli alan, ana ekran cubugunun seridi, ve
+           sayfa govdeden kisa kaldiginda geri kalan yer -- html
+           elemani boyuyor. O da uygulamanin kendi kara zemininde
+           (#020203) kaliyordu. Karanlik dunyada ayni renk oldugu
+           icin gorunmuyor; krem ya da zeytin bir deride bir serit
+           olarak ortaya cikiyor.
+           Ust taraftaki durum cubugu da ayni sebeple ayrisiyordu:
+           onu theme-color boyuyor. Ikisi de deriden besleniyor. */
+        try{
+          document.documentElement.style.backgroundColor = d.zem;
+          const _mt = document.querySelector('meta[name="theme-color"]');
+          if(_mt) _mt.setAttribute('content', d.zem);
+        }catch(e){ _yut(e); }
+        k.setProperty('--d-filtre', _acik ? 'invert(1) saturate(.6) contrast(1.35)' : 'none');
         k.setProperty('--d-doku', d.doku);      k.setProperty('--d-doku-olcu', d.dokuOlcu);
         k.setProperty('--d-doku-sef', d.dokuSef);
         document.body.classList.add('deri');
+        /* RINGS ONLY yalnizca deri acikken anlamli; sinif da orada. */
+        document.body.classList.toggle('sadehalka', !!AYAR.halka);
       }
       try{ zeminUygula(); }catch(e){ _yut(e); }
       /* Raf adlarinin rengini JS yaziyor ve deri degisince o renk
@@ -4701,8 +4752,12 @@
       b.style.setProperty('--zem1', zm[0]);
       b.style.setProperty('--zem2', zm[1]);
       b.classList.add('zem');
+      /* DERI ACIKSA DURUM CUBUGU DERININ: buradaki deger arsiv/radyo
+         zemininden geliyor ve deriyi ezerse ustteki serit yine
+         ayrisir. */
       const mt = document.querySelector('meta[name="theme-color"]');
-      if(mt) mt.setAttribute('content', zm[1]);
+      const _d = DERILER[(AYAR.deri|0) - 1];
+      if(mt) mt.setAttribute('content', _d ? _d.zem : zm[1]);
     }catch(e){ _yut(e); }
   }
 
@@ -7923,7 +7978,7 @@
      cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
      "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
      ustundeki dordu isteyene duruyor. */
-  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0 };
+  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:false, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0 };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -8268,7 +8323,8 @@
          ve ekran oldugu yerde kaliyordu. */
       const _kx = _vv ? Math.round(_vv.offsetLeft || 0) : 0;
       const _ky = _vv ? Math.round(_vv.offsetTop  || 0) : 0;
-      if(_en === _sonEn && _boy === _sonBoy && _ol === _sonOlcek && _vb === _sonVvBoy
+      if(!_zoomBorcu
+         && _en === _sonEn && _boy === _sonBoy && _ol === _sonOlcek && _vb === _sonVvBoy
          && _kx === _sonKx && _ky === _sonKy) return;
       _sonEn = _en; _sonBoy = _boy; _sonOlcek = _ol; _sonVvBoy = _vb;
       _sonKx = _kx; _sonKy = _ky;
@@ -8287,12 +8343,50 @@
          odeniyor ve yerlesim bir kez, dogru sayilarla yapiliyor. */
       const yakinda = _ol > 101;
       if(yakinda){ _zoomBorcu = true; return; }
+      /* Borc varsa olculer ayni gelse bile odenmeli: yakinlastirip
+         geri donusteki degerler cogu zaman yakinlastirmadan
+         ONCEKININ AYNISI oluyor ve asagidaki esitlik kapisi bunu
+         "degisiklik yok" sayip cikiyordu. Borc o kapiyi deliyor. */
       if(_yerlesZaman) clearTimeout(_yerlesZaman);
       _yerlesZaman = setTimeout(()=>{ _yerlesZaman = null;
         _zoomBorcu = false;
         try{ geriYerlestir(); }catch(e){ _yut(e); } }, 120);
     });
   }
+  /* ── BEKCI: YERINDEN CIKAN OGEYI GERI KOY ────────────────────
+     Yakinlastirma yollari tarayiciya gore degisiyor: kimi olayda
+     olcek, kimisinde kayma, kimisinde ikisi birden degisiyor ve
+     bazi yollar hicbir olay uretmiyor. Her yolu tek tek kovalamak
+     yerine SONUCU olcuyoruz: buyutec ekranin disina ciktiysa bir
+     sey ters gitmis demektir, yeri yeniden hesaplaniyor.
+     Ucuz: iki saniyede bir tek getBoundingClientRect, ve yalnizca
+     sekme gorunurken. Kullanicinin bildirdigi kusur buydu --
+     "buyutec havaya gidiyor ve orada kilitli kaliyor, ancak
+     yenilemeyle geciyor." */
+  (function(){
+    var _bekciZaman = null;
+    function bak(){
+      try{
+        if(document.hidden) return;
+        var el = document.getElementById('araCizgi');
+        if(!el) return;
+        var r = el.getBoundingClientRect();
+        if(!r.width && !r.height) return;
+        var disari = r.bottom < 0 || r.top > window.innerHeight
+                  || r.right < 0 || r.left > window.innerWidth;
+        if(disari){ _zoomBorcu = true; olcuIste(); }
+      }catch(e){ _yut(e); }
+    }
+    function kur(){
+      if(_bekciZaman) return;
+      _bekciZaman = setInterval(bak, 2000);
+    }
+    kur();
+    document.addEventListener('visibilitychange', function(){
+      if(!document.hidden){ _zoomBorcu = true; olcuIste(); }
+    });
+    window.addEventListener('pageshow', function(){ _zoomBorcu = true; olcuIste(); });
+  })();
   window.addEventListener('resize', olcuIste);
   try{ window.addEventListener('orientationchange', olcuIste); }catch(e){ _yut(e); }
   try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', olcuIste); }catch(e){ _yut(e); }
@@ -9130,16 +9224,36 @@
       vctx.restore();
     }
 
+    /* ── SADE HALKA: PARLAMA YOK ─────────────────────────────────
+       Kullanicinin istegi: "ortadaki yuvarlagin yerine zeminin
+       uzerinde sadece bizim halka, organik haliyle. Parlama asla
+       olmayacak."
+       Tuvalin uc isik katmani var: zarin ic dolgusu, cekirdek
+       nefesi ve sifir noktasi gostergesi. Ucu de "karanlik bir
+       gokyuzunde parlayan sey" fikrine ait. Zeminin uzerinde tek
+       basina duran bir cizim istendiginde ucu de fazla -- geriye
+       yalnizca CIZGI kaliyor.
+       BURADA BILDIRILIYOR, ASAGIDA DEGIL: ilk kullanimi zarin
+       dolgusunda ve bildirimi asagida birakmak "used before its
+       declaration" veriyordu -- tip kapisi yakaladi. */
+    const _sadeHalka = (typeof AYAR !== 'undefined') && !!AYAR.halka && !!AYAR.deri;
     // ana zar (dolgulu, hafif renkli, karanlık)
     const base=_zarTaban, amp=0.06+energy*0.10+rit*0.06;
     const zarM = uzamaPx>0 ? uzamaPx/base : 0;   // tepe noktası tam parmakta biter
     blobPath(cx,cy,vt,base,amp,_cekAci,zarM);
     // Dolgu ÇOK hafif: renk lekesi değil, hattın içindeki hafif nefes.
-    const g=vctx.createRadialGradient(cx,cy,base*0.1,cx,cy,base*1.15);
-    g.addColorStop(0,'rgba('+teal+','+(0.038+0.032*energy)+')');
-    g.addColorStop(0.6,'rgba('+teal+','+(0.015+0.014*energy)+')');
-    g.addColorStop(1,'rgba(4,6,8,0)');
-    vctx.fillStyle=g; vctx.fill();
+    /* DEGISKENIN ADI BILEREK AYRI: bu blok bir kosula alininca
+       'g' blok kapsamina dusuyor ve fonksiyonun ilerisindeki bir
+       'g' baska bir seye baglanip tip kapisini kirmiziya
+       donduruyordu (olculdu: 83 -> 84). Ayri ad, ayri kapsam
+       tartismasi yok. */
+    if(!_sadeHalka){
+      const gZar=vctx.createRadialGradient(cx,cy,base*0.1,cx,cy,base*1.15);
+      gZar.addColorStop(0,'rgba('+teal+','+(0.038+0.032*energy)+')');
+      gZar.addColorStop(0.6,'rgba('+teal+','+(0.015+0.014*energy)+')');
+      gZar.addColorStop(1,'rgba(4,6,8,0)');
+      vctx.fillStyle=gZar; vctx.fill();
+    }
     /* ── ZAR PARLAKLIĞI ──────────────────────────────────────────
        Zar (FX sınırı) 0.56R'de duruyor, en içteki kategori halkası
        0.55R'de: ikisi ÜST ÜSTE biniyor. Zar 0.95 opaklıkta ve kalın
@@ -9168,7 +9282,7 @@
     // çekirdek nefes
     // ÇEKİRDEK: daha küçük ve daha sakin. Eskiden ortada beyaza yakın bir top oluşuyordu.
     const pulse=base*(0.16+0.035*Math.sin(vt*3)*energy);
-    if(!_kamOrta){
+    if(!_kamOrta && !_sadeHalka){
     const cg=vctx.createRadialGradient(cx,cy,0,cx,cy,pulse);
     cg.addColorStop(0,   'rgba(214,246,242,'+Math.min(0.62,(0.26+0.26*energy)).toFixed(3)+')');
     cg.addColorStop(0.34,'rgba('+teal+','+Math.min(0.48,(0.20+0.20*energy)).toFixed(3)+')');
@@ -9218,7 +9332,7 @@
       vctx.fillStyle=lg; vctx.beginPath(); vctx.arc(lx,ly,ışıkR,0,6.29); vctx.fill();
     } else {
       // merkezde sönük çekirdek ışığı (sıfır noktası göstergesi)
-      if(!_kamOrta){
+      if(!_kamOrta && !_sadeHalka){
         const cg2=vctx.createRadialGradient(cx,cy,0,cx,cy,5*dpr);
         cg2.addColorStop(0,'rgba(232,244,244,0.25)'); cg2.addColorStop(1,'rgba('+teal+',0)');
         vctx.fillStyle=cg2; vctx.beginPath(); vctx.arc(cx,cy,5*dpr,0,6.29); vctx.fill();
@@ -13262,8 +13376,13 @@
         if(el) el.textContent = YILDIZ_AD[AYAR.yildiz|0] || 'NORMAL';
         const el2 = kut.querySelector('.sat[data-ayar="yildizIsik"] .durum');
         if(el2) el2.textContent = YILDIZ_ISIK_AD[AYAR.yildizIsik|0] || 'NORMAL';
+        /* Izgara ACIKKEN sagda HIDE yaziyor; buranin onu ezmemesi
+           gerekiyor, yoksa bir deri secilince kapanma yolu
+           kayboluyordu. */
+        const izg = document.getElementById('deriIzgara');
+        const acikMi = !!(izg && !izg.hidden);
         const el3 = kut.querySelector('.sat[data-ayar="deri"] .durum');
-        if(el3) el3.textContent = DERI_AD[AYAR.deri|0] || 'OFF';
+        if(el3) el3.textContent = acikMi ? 'HIDE' : (DERI_AD[AYAR.deri|0] || 'OFF');
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
            baska is yapmaz. */
@@ -13442,6 +13561,16 @@
             const acik = !kap.hidden;
             kap.hidden = acik;
             el.setAttribute('aria-expanded', acik ? 'false' : 'true');
+            /* ── ACIKKEN SAGDA "HIDE" ─────────────────────────────
+               Izgara acilinca satirin sagindaki deri adi kapanma
+               yolunu gostermiyordu; altmis kare acikken menu uzun
+               ve kullanici kapatmak icin nereye basacagini
+               bilmiyordu. Acikken orada HIDE yaziyor, kapaninca
+               yine derinin adi. Ayni yer, iki is: acan ve kapatan
+               tek satir. */
+            const dr = el.querySelector('.durum');
+            if(dr) dr.textContent = acik
+              ? (DERI_AD[AYAR.deri|0] || 'OFF') : 'HIDE';
           }
         }catch(e){ _yut(e); }
         return;
@@ -13464,6 +13593,35 @@
            kendi istedi, bir daha acilista cikmasin. */
         kapa();
         setTimeout(()=>{ try{ turBasla(true); }catch(e){ _yut(e); } }, 320);
+        return;
+      }
+      if(k === 'sifirla'){
+        /* IKI ADIM: once soru, sonra is. Sorunun kendisi satirin
+           saginda duruyor -- ayri bir pencere acmiyoruz, cunku
+           ayar paneli zaten bir pencere ve ustune ikincisini
+           koymak "neye evet dedim" sorusunu doguruyor. */
+        try{
+          const dr = el.querySelector('.durum');
+          if(el.dataset.soruldu === '1'){
+            el.dataset.soruldu = '';
+            /* NE SILINIYOR: yalnizca AYARLAR. Favoriler, tanitim
+               damgalari ve hata defteri kendi anahtarlarinda ve
+               onlar kullanicinin isi -- ayar sifirlamak birinin
+               favorilerini silmez. */
+            try{ localStorage.removeItem('orbitape.ayar'); }catch(e2){ _yut(e2); }
+            location.reload();
+            return;
+          }
+          el.dataset.soruldu = '1';
+          if(dr) dr.textContent = 'ARE YOU SURE?';
+          setTimeout(function(){
+            try{
+              if(el.dataset.soruldu !== '1') return;
+              el.dataset.soruldu = '';
+              if(dr) dr.textContent = 'RESET';
+            }catch(e3){ _yut(e3); }
+          }, 5000);
+        }catch(e){ _yut(e); }
         return;
       }
       if(k === 'tanilama'){
