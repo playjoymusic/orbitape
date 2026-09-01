@@ -1756,7 +1756,16 @@
      SINIF, ID DEGIL: bu katmanlarin id'si yok, sinifi var. Ilk
      yazimda #vignette/#perde/#grain yazildi ve hicbiri eslesmedi. */
   body.deri .vignette,body.deri .perde,body.deri .grain,
-  body.deri #nebula,body.deri #noise,body.deri #viz{display:none !important;}
+  body.deri #noise,body.deri #viz{display:none !important;}
+  /* ── BULUTSU DERIDE DE VAR ────────────────────────────────────
+     Gizlenmisti, cunku karanlik dunyaya gore yapilmis genis isigi
+     kremin uzerinde kirli bir bulut gibi duruyordu. Gizlemek yerine
+     KARISTIRIYORUZ: acik zeminde 'multiply' bulutu zemine gomuyor
+     (beyaza yakin her sey kayboluyor, yalnizca govde kaliyor),
+     koyu zeminde 'screen' onu zeminin uzerine tasiyor. Boylece
+     gokyuzu deriye ait ama yerinde. */
+  body.deri #nebula{mix-blend-mode:var(--d-neb-karisim,screen);
+    opacity:var(--d-neb-sef,.5);}
   /* ── GEZEGENLER DERIDE DE DURUYOR ─────────────────────────────
      Once .nk de bu listedeydi ve uydularin GOVDESI gizleniyordu:
      deri acilinca gokyuzu bosaliyordu -- kullanicinin sozu
@@ -1766,13 +1775,20 @@
      duruyorlar ama yerlerinde kaliyorlar. Kendi kure recetesi
      (dort katmanli gecis) karanlik dunyanin isigina gore
      yapilmisti; krem ya da sarinin uzerinde kirli duruyordu. */
-  body.deri .uydu .nk{
-    background:var(--d-cek) !important;
-    box-shadow:0 2px 3px -1px var(--d-dis-golge),
-               inset 0 1px 0 var(--d-isik),
-               inset 0 -2px 3px -2px var(--d-golge-renk) !important;
-    filter:none !important;}
-  body.deri .uydu .nk::before,body.deri .uydu .nk::after{display:none !important;}
+  /* ── GEZEGENLER KENDI RECETESINI KORUYOR ──────────────────────
+     Once deride uydular tek renk bir daireye indirgeniyordu ve
+     "sonuk golge gibi" gorunuyorlardi -- hakli. Kure hissi renkten
+     degil YEDI KATMANLI ISIKTAN geliyor (spekuler parilti, difuz
+     parilti, yuzey, taban dusus, sicrayan isik, terminator, kenar
+     kararmasi). O katmanlari kapatmak kureyi duz bir lekeye
+     cevirdi. Artik receteye hic dokunulmuyor: gezegenler her
+     deride kendileri.
+     Deriye uyan tek sey SATURN'UN HALKASI: sabit altin rengindeydi
+     ve acik zeminlerde govdeden kopup zemine siziyordu. Rengi artik
+     derinin halka cizgisinden geliyor, halesi de kalkti. */
+  body.deri .uydu .hlk{
+    border-color:var(--d-halka) !important;
+    box-shadow:none !important;}
 
   /* ── OTUZ DERININ TEK MALZEME DILI: KABARTMA ──────────────────
      Once iki ayri anlatim vardi: "cizgi halkali" deriler ve ayri bir
@@ -1868,9 +1884,69 @@
     border-radius:var(--d-kose,50%) !important;
     box-shadow:var(--d-golge,none) !important;}
   body.deri #ayar,body.deri #ara .kutu{background:var(--d-panel) !important;color:var(--d-yazi);}
-  body.deri #ust .kanal.ad{color:var(--d-marka) !important;
-    -webkit-text-fill-color:var(--d-marka) !important;background:none !important;}
+  /* ── MARKA YAZISININ SAG UCU RAFTAN BIR TUTAM ALIYOR ──────────
+     Kullanicinin istegi: "sag ustteki ORBITAPE yazisinin sagina
+     dogru hafif etkilensin."
+     Sol taraf derinin marka renginde duruyor, sag uc rafin
+     rengine kayiyor. Yani kelime ayni kelime, ama nerede oldugunu
+     soyluyor. Vurgu yoksa (deri kapali ya da raf secilmemis)
+     gradyanin iki ucu da ayni renk: gorunum degismiyor. */
+  body.deri #ust .kanal.ad{
+    background:linear-gradient(90deg,
+      var(--d-marka) 0%, var(--d-marka) 52%,
+      var(--d-vurgu, var(--d-marka)) 100%) !important;
+    -webkit-background-clip:text !important;background-clip:text !important;
+    -webkit-text-fill-color:transparent !important;color:transparent !important;}
+
+  /* ── SOL USTTEKI TUR ADI RAFIN RENGINDE ───────────────────────
+     "sol ustteki tur isimleri de orjinal renginden etkilensin ki
+     hangi sayfada oldugumuz belli olsun." Renk rafin kendi rengi,
+     ama okunur hale getirilmis hali (bkz. okunurVurgu). */
+  body.deri #modAd{color:var(--d-vurgu, var(--d-yazi)) !important;}
+
+  /* ── KIP ANAHTARI VE ETIKETI DE RAFI TASIYOR ──────────────────
+     Sol alt kose "hangi dunyadayim" sorusunun tek cevabi. Anahtarin
+     topuzu ve yanindaki yazi rafin renginde: goz oraya bakinca hem
+     dunyayi hem rafi okuyor. */
+  body.deri #kipKisayol .ad{color:var(--d-vurgu, var(--d-marka)) !important;
+    -webkit-text-fill-color:var(--d-vurgu, var(--d-marka)) !important;
+    background:none !important;}
   body.deri #np b,body.deri .np-sanatci,body.deri #modAd{color:var(--d-yazi) !important;}
+  /* ── FX ACIKKEN UYDU BUNU SOYLUYOR ────────────────────────────
+     "fx'leri aktif edince de bir sey olmali, temaya uygun."
+     Aktif uydunun cevresinde rafin renginde ince bir halka ve
+     yavas bir nabiz var. Uydunun kendi kure recetesine
+     dokunulmuyor -- halka DISARIDA, yani gezegen gezegen kaliyor.
+     Bulutsu zaten kanal rengini tasiyor; bu onun kucuk kardesi. */
+  body.deri .uydu.acik .nk{
+    box-shadow:0 0 0 2px var(--d-vurgu, var(--d-marka)),
+               0 0 10px -2px var(--d-vurgu, var(--d-marka)) !important;
+    animation:fxNabiz 2.6s ease-in-out infinite;}
+  @keyframes fxNabiz{0%,100%{transform:scale(1.20)}50%{transform:scale(1.28)}}
+  @media (prefers-reduced-motion: reduce){
+    body.deri .uydu.acik .nk{animation:none;}}
+
+  /* ── ARSIVDE DERI RETROYA KAYIYOR ─────────────────────────────
+     "orbitape'e gecince de bir retro fark olmali, tema ayni
+     gidemez."
+     Dogru istek: iki dunya ayni malzemeyi paylasiyor ama ayni sey
+     degiller. Canli yayin SIMDI, arsiv GECMIS. Fark uc kucuk
+     seyden geliyor ve deriyi bozmuyor:
+       1. Cok ince yatay tarama cizgileri -- eski bir ekranin izi.
+       2. Bir tik sicak yikama: arsiv tarafi hep biraz sarardi.
+       3. Marka yazisinin harf araligi aciliyor -- eski etiketlerin
+          genis dizgisi.
+     Ucu de yalnizca ARSIVDE ve yalnizca DERI acikken. Canli yayin
+     tarafi net ve sicaklik almadan kaliyor. */
+  body.deri.mood::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      repeating-linear-gradient(0deg,
+        rgba(0,0,0,.055) 0 1px, rgba(0,0,0,0) 1px 3px),
+      linear-gradient(0deg, rgba(190,140,60,.055), rgba(190,140,60,.055));
+    mix-blend-mode:multiply;}
+  body.deri.mood #ust .kanal.ad{letter-spacing:.30em;}
+  @media (prefers-reduced-motion: reduce){ }
+
   body.deri #ayarTut span{background:var(--d-yazi) !important;}
   /* ── DESEN ZEMININ PARCASI, USTUNE SERILEN BIR PERDE DEGIL ────
      z-index 59'du, yani uygulamanin uzerine seriliyordu: COLLAGE'in
@@ -1908,7 +1984,14 @@
     stroke:var(--d-yazi) !important;}
   body.deri #favAc svg{fill:var(--d-yazi) !important;}
   body.deri #araYuva{border-color:var(--d-tus-kenar) !important;}
-  body.deri #modAd,body.deri #modGez,body.deri #np .np-yasal{color:var(--d-yazi) !important;}
+  /* Sag alttaki kunye ve aciklamalar: rengi derinin YAZI rengi,
+     yani zeminin tersi. Once karanlik dunyanin acik grisi sabitti
+     ve krem zeminde okunmuyordu. Tek istisna parca adi -- o marka
+     renginde kaliyor, cunku vurgulanan sey o. */
+  body.deri #modGez,body.deri #np .np-yasal,
+  body.deri #np .np-sanatci,body.deri #np .np-lab,
+  body.deri #np small,body.deri #np s{color:var(--d-yazi) !important;
+    -webkit-text-fill-color:var(--d-yazi) !important;}
   body.deri #kipKisayol .ad{background:none !important;color:var(--d-marka) !important;
     -webkit-text-fill-color:var(--d-marka) !important;}
   body.deri #kipKisayol .anahtar{border-color:var(--d-tus-kenar) !important;
@@ -1938,17 +2021,17 @@
     background:var(--d-cek) !important;
     box-shadow:0 1px 2px var(--d-dis-golge),
                inset 0 1px 0 var(--d-isik) !important;}
-  body:not(.mood) #kipKisayol .anahtar b{background:var(--d-marka) !important;}
+  body.deri:not(.mood) #kipKisayol .anahtar b{background:var(--d-vurgu, var(--d-marka)) !important;}
   /* NEFES: yalnizca canli yayinda. Arsivde nokta yok -- yani
      "hareket eden = canli" tek kuralla okunuyor. */
-  body:not(.mood) #kipKisayol .anahtar b::after{
+  body.deri:not(.mood) #kipKisayol .anahtar b::after{
     content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;
     transform:translate(-50%,-50%);border-radius:50%;
     background:var(--d-zem);animation:kipNefes 2.4s ease-in-out infinite;}
   body.mood #kipKisayol .anahtar b::after{display:none;}
   @keyframes kipNefes{0%,100%{opacity:.20}50%{opacity:.75}}
   @media (prefers-reduced-motion: reduce){
-    body:not(.mood) #kipKisayol .anahtar b::after{animation:none;opacity:.5;}}
+    body.deri:not(.mood) #kipKisayol .anahtar b::after{animation:none;opacity:.5;}}
 
   /* ── SAG USTTEKI UC SEMBOL: CERCEVE YOK, ALTIN YOK ────────────
      Kullanicinin sozu: "sembollere altin ya da cerceve yapma,
@@ -1956,7 +2039,15 @@
      Renk mantigi DEGISMIYOR (secili rafin rengi); yalnizca
      etrafindaki isik halesi kalkiyor. Deride hale, camin uzerine
      surulmus bir leke gibi duruyordu. */
-  body.deri #bekle{text-shadow:none !important;}
+  /* ── UC SEMBOL HAVADA DURUYOR ─────────────────────────────────
+     "sembollerin altinda bir sey olmasin, kabartma yapmissin,
+     kesinlikle olmasin, havada gibi olsunlar."
+     Hicbir zemin, hicbir cerceve, hicbir golge: yalnizca isaretin
+     kendisi. Renk mantigi degismiyor -- secili rafin rengi. */
+  body.deri #bekle,body.deri #bekle *{
+    text-shadow:none !important;box-shadow:none !important;
+    background:none !important;background-color:transparent !important;
+    border:0 !important;filter:none !important;}
   body.deri #bekle.on{opacity:.85;}
 
   /* ── TUR ADI HER DERIDE OKUNUYOR ──────────────────────────────
@@ -3910,7 +4001,59 @@
       kok.setProperty('--m1', 'rgb('+m1+')');
       kok.setProperty('--m2', 'rgb('+m2+')');
       kok.setProperty('--m3', 'rgb('+m3+')');
+      /* Deri aciksa rafin rengi ayrica OKUNUR bir vurgu olarak
+         yaziliyor. Deri kapaliysa degisken hic yazilmiyor ve
+         uygulamanin kendi renkleri gecerli kaliyor. */
+      try{
+        const _d = DERILER[(AYAR.deri|0) - 1];
+        if(_d){
+          const _v = okunurVurgu(m2 || m1, _d.zem, 3.2);
+          if(_v) kok.setProperty('--d-vurgu', _v);
+        }
+      }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
+  }
+  /* ── DERI ICINDE RAFIN KENDI RENGI ────────────────────────────
+     Kullanicinin bildirdigi kayip: "hangi turde, hangi istasyonda
+     oldugumuzu anlamiyoruz, kayboluruz."
+     Sebep dogru: deri her seyi tek malzemeye indiriyordu ve rafin
+     kendi rengi -- uygulamanin en eski isareti -- siliniyordu.
+     Cozum rengi geri koymak ama OKUNUR halde: rafin rengi ham
+     haliyle kremin uzerine yazilirsa kaybolur. Asagidaki fonksiyon
+     rengi zeminle karsilastirip, esige varana kadar zeminin
+     TERSINE dogru kaydiriyor. Yani raf rengi taniniyor ve okunuyor.
+     Kullanildigi yerler: sol ustteki tur adi, sag ustteki marka
+     yazisinin sag ucu, sol alttaki kip anahtari ve etiketi. */
+  function _parlaklikRGB(r, g, b){
+    const f = v=>{ v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); };
+    return 0.2126*f(r) + 0.7152*f(g) + 0.0722*f(b);
+  }
+  function _parlaklikHex(h){
+    const c = String(h).trim().replace('#','');
+    const t = c.length === 3 ? c.split('').map(x=>x+x).join('') : c;
+    return _parlaklikRGB(parseInt(t.slice(0,2),16), parseInt(t.slice(2,4),16),
+                         parseInt(t.slice(4,6),16));
+  }
+  function _kontrastOran(l1, l2){
+    const a = Math.max(l1, l2), b = Math.min(l1, l2);
+    return (a + 0.05) / (b + 0.05);
+  }
+  /* rgbDizi: "12,34,56" (uygulamanin her yerinde bu bicim var). */
+  function okunurVurgu(rgbDizi, zemHex, esik){
+    try{
+      const p = String(rgbDizi).split(',').map(Number);
+      if(p.length !== 3 || p.some(isNaN)) return '';
+      const lz = _parlaklikHex(zemHex);
+      const hedef = lz > 0.30 ? 0 : 255;         // zeminin tersi
+      let r = p[0], g = p[1], b = p[2];
+      for(let i = 0; i <= 20; i++){
+        const k = i / 20;
+        const rr = r + (hedef - r)*k, gg = g + (hedef - g)*k, bb = b + (hedef - b)*k;
+        if(_kontrastOran(_parlaklikRGB(rr, gg, bb), lz) >= (esik || 3.2))
+          return 'rgb(' + Math.round(rr) + ',' + Math.round(gg) + ',' + Math.round(bb) + ')';
+      }
+      return lz > 0.30 ? 'rgb(0,0,0)' : 'rgb(255,255,255)';
+    }catch(e){ _yut(e); return ''; }
   }
   /* ── DERI: ayarlardan secilen malzeme ─────────────────────────
      0 = kapali (uygulamanin kendi karanlik hali). Digerleri
@@ -3959,7 +4102,8 @@
         document.body.classList.remove('deri');
         ['--d-zem','--d-yazi','--d-marka','--d-font','--d-kose','--d-tus-zem',
          '--d-tus-kenar','--d-golge','--d-panel','--d-filtre','--d-karisim','--d-halka',
-         '--d-isik','--d-golge-renk','--d-dis-golge','--d-cek','--d-doku',
+         '--d-isik','--d-golge-renk','--d-dis-golge','--d-cek','--d-vurgu',
+         '--d-neb-karisim','--d-neb-sef','--d-doku',
          '--d-doku-olcu','--d-doku-sef'].forEach(x=>k.removeProperty(x));
       }else{
         const d = DERILER[n-1]; if(!d) return;
@@ -3974,6 +4118,13 @@
         k.setProperty('--d-golge-renk', d.golgeRenk || 'rgba(0,0,0,.28)');
         k.setProperty('--d-dis-golge', d.disGolge || d.golgeRenk || 'rgba(0,0,0,.35)');
         k.setProperty('--d-cek', d.cek || d.zem);
+        /* Bulutsunun karisimi zeminin parlakligindan cikiyor: acik
+           zeminde 'multiply' (bulut zemine gomuluyor), koyu zeminde
+           'screen' (zeminin uzerine cikiyor). Deri basina ayar yok,
+           kural tek. */
+        const _acik = _parlaklikHex(d.zem) > 0.30;
+        k.setProperty('--d-neb-karisim', _acik ? 'multiply' : 'screen');
+        k.setProperty('--d-neb-sef', _acik ? '.26' : '.55');
         k.setProperty('--d-doku', d.doku);      k.setProperty('--d-doku-olcu', d.dokuOlcu);
         k.setProperty('--d-doku-sef', d.dokuSef);
         document.body.classList.add('deri');

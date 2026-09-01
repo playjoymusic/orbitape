@@ -56,7 +56,11 @@ const MANIFEST = [
   'function modBul',
   'function modUyar',
   'const DERILER',
-  'const GEZ_CIZIM'
+  'const GEZ_CIZIM',
+  'function _parlaklikRGB',
+  'function _parlaklikHex',
+  'function _kontrastOran',
+  'function okunurVurgu'
 ];
 
 /* Bir bildirimi bastan sonuna kadar cikar.
@@ -228,6 +232,37 @@ function _kontrast(a,b){
     zayifMarka.length ? zayifMarka.join(', ') : 'hepsi 3.0 ustu');
   K('Cekirdek zeminin tersine kayiyor', tersDegil.length === 0,
     tersDegil.length ? tersDegil.join(', ') : 'acikta koyu, koyuda acik');
+}
+
+/* ── RAF RENGI DERININ ICINDE DE OKUNUYOR ───────────────────────
+   Kullanicinin bildirdigi kayip: "hangi turde, hangi istasyonda
+   oldugumuzu anlamiyoruz." Rafin rengi geri kondu ama ham haliyle
+   degil: kremin uzerine acik sari yazmak rengi geri getirmez,
+   yalnizca yaziyi yok eder. okunurVurgu rengi zeminin tersine
+   dogru esik tutana kadar kaydiriyor.
+   Burasi iki ucta da olcuyor: en acik ve en koyu deri zemininde,
+   uygulamanin butun raf renkleriyle. */
+{
+  const zeminler = A.DERILER.map(d=>d.zem);
+  const renkler = ['255,214,0','46,230,200','120,120,130','10,10,12','250,250,250','226,72,63'];
+  const dusen = [];
+  zeminler.forEach(z=>{
+    renkler.forEach(r=>{
+      const v = A.okunurVurgu(r, z, 3.2);
+      const m = /rgb\((\d+),(\d+),(\d+)\)/.exec(v || '');
+      if(!m){ dusen.push(z + ' <- ' + r + ' (bos)'); return; }
+      const o = A._kontrastOran(
+        A._parlaklikRGB(+m[1], +m[2], +m[3]), A._parlaklikHex(z));
+      if(o < 3.19) dusen.push(z + ' <- ' + r + ' = ' + o.toFixed(2));
+    });
+  });
+  K('Raf rengi her deri zemininde okunuyor', dusen.length === 0,
+    dusen.length ? dusen.slice(0,4).join(' | ')
+                 : (zeminler.length * renkler.length) + ' bileske, hepsi 3.2 ustu');
+  K('Bozuk renk sessizce dusuyor',
+    A.okunurVurgu('abc', '#ffffff', 3.2) === ''
+    && A.okunurVurgu('', '#000000', 3.2) === '',
+    'gecersiz girdi bos donuyor, ekrana yanlis renk yazilmiyor');
 }
 
 /* ── HER RAFIN CIZIMI VAR ───────────────────────────────────────
