@@ -8031,11 +8031,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     {
       const kaynak = fs.readFileSync('index.html','utf8');
       const i1 = kaynak.indexOf('function olcuIste()');
-      const g1 = kaynak.slice(i1, i1 + 2600);
+      /* Pencere 2600 idi ve kapi bir kere HAKSIZ yere kirmiziya
+         dondu: fonksiyonun basina aciklama eklenince aranan satir
+         pencerenin disinda kaldi. Olculen sey kodun ta kendisi
+         oldugu icin pencere kodun boyuna gore genis tutuluyor. */
+      const g1 = kaynak.slice(i1, i1 + 5000);
       K('Yerlesim degisim DURUNCA yapiliyor',
          i1 > 0 && /_en === _sonEn && _boy === _sonBoy/.test(g1)
          && /setTimeout\(\(\)=>\{ _yerlesZaman = null;/.test(g1),
          'olcu degismediyse dokunulmuyor, degistiyse 120 ms sonra bir kez');
+      /* ── YAKINLASTIRMA DA KARARA GIRIYOR ────────────────────────
+         Kullanicinin bildirdigi kusur: "bilgisayarda yanlislikla
+         buyutursun, geri alinca buyutec yukarida kaldi."
+         Parmakla yapilan yakinlastirma innerWidth/innerHeight'i
+         degistirmiyor; yalnizca gorsel gorunumun olcegi degisiyor.
+         Karar yalnizca o ikisine bakarsa yerlesim hic tazelenmiyor. */
+      K('Yakinlastirma da yerlesimi tazeliyor',
+         i1 > 0 && /visualViewport/.test(g1)
+         && /_ol === _sonOlcek/.test(g1) && /_vb === _sonVvBoy/.test(g1),
+         'gorsel gorunumun olcegi ve boyu da karara giriyor');
     }
   }
   /* ── GECICI AD IKI KIPTE DE AYNI YERDE ──────────────────────────

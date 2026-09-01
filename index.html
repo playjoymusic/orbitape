@@ -7468,11 +7468,20 @@
     return true;
   }
   var _olcuBekleyen = 0, _sonEn = 0, _sonBoy = 0, _yerlesZaman = null;
+  var _sonOlcek = 100, _sonVvBoy = 0;
   function olcuIste(){
     if(_olcuBekleyen) return;                                // aynı kareye topla
     _olcuBekleyen = requestAnimationFrame(()=>{
       _olcuBekleyen = 0;
-      vizSize();
+      /* ── TUVAL SILINDIYSE AYNI KAREDE YENIDEN CIZ ──────────────
+         Tuvalin en/boyuna yazmak onu SILER. Telefon yan yatip geri
+         donunce olcu gercekten degisiyor, yani silinme kacinilmaz;
+         ama eskiden bir sonraki kareye kadar bos kaliyordu ve
+         geriye kalan kisa titreme buydu -- kullanicinin tarifi:
+         "geri dik haline gelince hafif bir halka titriyor gecivor."
+         Silen ve yeniden cizen ayni karede olunca ekranda bos kare
+         gorunmuyor. */
+      if(vizSize()){ try{ vizLoop(performance.now()); }catch(e){ _yut(e); } }
       try{ bekleGenisligiAyarla(); }catch(e){ _yut(e); }
       try{ if(_fxIpAcik) fxIpucuYerlestir(); }catch(e){ _yut(e); }
       /* ── EKRAN DEGISINCE YERLESIM DE DEGISMELI ─────────────────
@@ -7503,9 +7512,22 @@
               sey yapilmiyor (tuvalde ayni kural zaten vardi).
            2. DEGISIM DURDU MU. Son olaydan 120 ms sonra BIR KEZ
               yerlestiriliyor. Surukleme boyunca degil, sonunda. */
+      /* ── YAKINLASTIRMA DA BIR OLCU DEGISIMIDIR ────────────────
+         Kullanicinin bildirdigi sey: "bilgisayarda yanlislikla
+         buyutursun, geri alinca buyutec yukarida kaldi."
+         Sebep: parmakla/izlemeyle yapilan yakinlastirma (pinch)
+         GORSEL GORUNUMU degistiriyor, innerWidth/innerHeight'i
+         DEGISTIRMIYOR. Asagidaki kapi da yalnizca o ikisine
+         bakiyordu, yani "hicbir sey degismedi" deyip geri
+         donuyordu ve JS ile yerlestirilen buyutec ile kunye
+         yerinde kaliyordu.
+         Artik gorsel gorunumun olcegi ve boyu da karara giriyor. */
+      const _vv = window.visualViewport;
       const _en = Math.round(window.innerWidth), _boy = Math.round(window.innerHeight);
-      if(_en === _sonEn && _boy === _sonBoy) return;
-      _sonEn = _en; _sonBoy = _boy;
+      const _ol = _vv ? Math.round((_vv.scale || 1) * 100) : 100;
+      const _vb = _vv ? Math.round(_vv.height || 0) : 0;
+      if(_en === _sonEn && _boy === _sonBoy && _ol === _sonOlcek && _vb === _sonVvBoy) return;
+      _sonEn = _en; _sonBoy = _boy; _sonOlcek = _ol; _sonVvBoy = _vb;
       if(_yerlesZaman) clearTimeout(_yerlesZaman);
       _yerlesZaman = setTimeout(()=>{ _yerlesZaman = null;
         try{ geriYerlestir(); }catch(e){ _yut(e); } }, 120);
@@ -10497,7 +10519,21 @@
       /* Halkanın ÜSTÜNDE değilse hiçbir şey olmaz — ne seçim, ne
          parça atlama. Tutuşu iptal etmenin yolu da bu. */
       const _o = _diskOran(e);
-      const k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
+      let k = (_o >= zarSinir()) ? _halkaNo(_o) : -1;
+      /* ── EKRANDA YANAN HALKA NEYSE O ACILIR ────────────────────
+         Kullanicinin bildirdigi sey: "surtuyorum, halkanin ustunde
+         teker teker isimler yaniyor; ama tam birakirken halkalar
+         arasi bosluga denk gelse acmiyor -- halka o an yanip
+         secili olsa bile."
+         Sebep: birakma noktasi YENIDEN olculuyordu. Parmak
+         kalkarken bir iki piksel kayiyor ve bazen zarin icine
+         dusuyor; o an ekranda yanan halka ile hesaplanan halka
+         ayrisiyor. Kullanici EKRANDA GORDUGU seyi bekliyor.
+         Artik olcum tutmazsa son yanan halkaya donuluyor.
+         IPTAL HAREKETI DURUYOR: halkalarin DISINDA birakmak
+         (oran 1.06'nin otesi) hala hicbir sey acmiyor -- "halkanin
+         disina cikmadiysa" sarti bu. */
+      if(k < 0 && _moodVurgu >= 0 && _o <= 1.06) k = _moodVurgu;
       modAdiBirak();
       try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
       if(k >= 0){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
