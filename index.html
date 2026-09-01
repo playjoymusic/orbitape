@@ -559,7 +559,7 @@
      küçük modern beyaz yazı. Künye yoksa hiç yer kaplamaz. */
   #np .np-ust{display:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     font-size:11.5px;font-weight:400;letter-spacing:.012em;line-height:1.3;
-    color:rgba(244,247,250,.8);text-shadow:0 1px 10px rgba(0,0,0,.55);
+    color:rgba(244,247,250,.8);text-shadow:0 1px 10px rgba(0,0,0,.42);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:1px;}
   #np .np-ust.var{display:block;}
   #np .np-lab{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.32em;color:#7fa3ab;}
@@ -604,7 +604,7 @@
      demenin en kisa yolu. */
   #np .np-parca{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     font-size:12.5px;font-weight:400;letter-spacing:.015em;
-    color:rgba(200,228,246,.72);text-shadow:0 1px 9px rgba(0,0,0,.55);
+    color:rgba(200,228,246,.72);text-shadow:0 1px 9px rgba(0,0,0,.42);
     line-height:1.34;max-width:100%;margin-top:2px;
     white-space:normal;overflow-wrap:anywhere;
     opacity:0;transform:translateY(5px);
@@ -624,7 +624,7 @@
     max-width:min(84vw,340px);
     padding:14px 16px 15px;border-radius:14px;
     background:rgba(10,15,20,.94);border:1px solid rgba(169,216,242,.22);
-    box-shadow:0 10px 40px rgba(0,0,0,.55);
+    box-shadow:0 10px 40px rgba(0,0,0,.42);
     opacity:0;transform:translateY(8px) scale(.97);transform-origin:100% 100%;
     transition:opacity .2s ease, transform .26s cubic-bezier(.2,.9,.3,1);}
   #parcaKart.acik{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
@@ -1308,7 +1308,7 @@
     -webkit-tap-highlight-color:transparent;transform:translate(-50%,-50%);}
   .uydu .nk{position:relative;width:var(--cap,26px);height:var(--cap,26px);
     border-radius:50%;overflow:hidden;opacity:1;
-    box-shadow:0 0 9px rgba(0,0,0,.55), inset 0 0 6px rgba(0,0,0,.7);
+    box-shadow:0 0 9px rgba(0,0,0,.42), inset 0 0 6px rgba(0,0,0,.7);
     transition:opacity .4s, box-shadow .45s, transform .3s, filter .45s;
     opacity:.92;}
   /* ── GÖK CİSİMLERİ ────────────────────────────────────────────────
@@ -1447,8 +1447,8 @@
     border-radius:50%;object-fit:cover;transform:translate(-50%,-50%) scaleX(-1);
     opacity:0;pointer-events:none;display:none;transition:opacity .6s ease;
     /* kenara doğru sönerek bitsin: sert çember kesiği görünmesin */
-    -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.55) 76%, transparent 94%);
-    mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.55) 76%, transparent 94%);}
+    -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.42) 76%, transparent 94%);
+    mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.42) 76%, transparent 94%);}
   #kam.on{display:block;opacity:calc(var(--kv,100) / 100);}   /* seviye #kamCubuk'tan */
   /* sürüklerken yumuşatma yok: kamera parmağı anında takip etsin */
   #kam.surukle{transition:none;}
@@ -1699,6 +1699,187 @@
      cakisiyordu. Cozum tutamagi kacirmak degil: modul BIR SATIR
      yukari cikiyor ve tutamak alt sol kosede kaliyor. Ikisi ayni
      sol kenardan basliyor, tek bir konsol gibi okunuyor. */
+  /* ── DERILER: AYNI SISTEM, BASKA MALZEME ─────────────────────
+     Tema bugune kadar yalnizca IKI ZEMIN RENGI tasiyordu. Deri
+     ondan fazlasi: zemin, yazi rengi, yazi tipi, kose yaricapi,
+     tus govdesi, panel ve doku.
+     TEK CSS BLOGU, OTUZ DERI: butun degerler DEGISKEN. Hangi derinin
+     hangi degeri kullandigini JS'teki DERILER tablosu soyluyor
+     (deriUygula). Otuz ayri CSS blogu yazmak ayni seyi otuz kere
+     bakim gerektiren bir yer haline getirirdi.
+     DEGISMEYEN SEY: ortadaki halka sistemi. Halkalar uygulamanin
+     kimligi; deri onlarin CEVRESINI degistiriyor. Acik zeminli
+     derilerde tuvale bir filtre uygulaniyor ki cizgiler acik zeminde
+     de okunsun -- cizim kodu hic degismiyor.
+     DIS DOSYA YOK: dokular CSS degradesi, yazi tipleri sistemin
+     kendi yazi tipleri. CSP'ye dokunmuyor, tek bayt eklemiyor. */
+  body.deri{background:var(--d-zem) !important;color:var(--d-yazi);
+    font-family:var(--d-font) !important;}
+  /* Zemin DUZ: uygulamanin merkez isigi (--zem1/--zem2 radyal gecisi)
+     deride kalkiyor; var(--d-zem) tek basina kaliyor. */
+  body.deri.zem{background-image:none !important;}
+  /* ── PARLAMA NEDEN KIRLI BIR BULUTA DONUSUYORDU ────────────────
+     Tuvalde halkalarin altinda genis, yumusak bir isik var. Acik
+     zeminli derilerde tuvali ters cevirince o isik de tersine
+     donuyor ve ekranin ortasinda koyu gri bir bulut olarak
+     goruluyordu -- kullanicinin "parlama garip gorundu" dedigi sey.
+     Cozum eski bir baski numarasi: TERS CEVIR + CARP. Ters cevirmek
+     acik cizgileri koyulastiriyor, carpma ise beyaza yakin her seyi
+     (yani o isigi) zemine karistirip yok ediyor. Geriye yalnizca
+     cizgiler kaliyor -- maketlerdeki duz gorunum.
+     Karanlik derilerde karisim 'normal': orada isik zaten yerinde. */
+  body.deri #viz,body.deri #noise{filter:var(--d-filtre,none);
+    mix-blend-mode:var(--d-karisim,normal);}
+  /* DERIDE ZEMIN DUZ. Uygulamanin kendi atmosferi (kose karartmasi,
+     nebula bulutlari, merkez isigi) karanlik dunyanin parcasi;
+     kremin ya da sarinin uzerinde kirli bir bulut gibi duruyorlardi.
+     Deri secildiginde o katmanlar kalkiyor -- maketlerdeki duz
+     gorunum. Deri kapatilinca hepsi geri geliyor, tek satir CSS. */
+  /* ── DERIDE EKRAN MAKETTEKI GIBI DUZ ──────────────────────────
+     Uygulamanin kendi atmosferi -- kose karartmasi, nebula bulutlari,
+     tuvale cizilen merkez isigi -- karanlik dunyanin parcasi. Kremin
+     ya da sarinin uzerinde kirli bir bulut gibi duruyorlardi ve CSS
+     ile temizlenemiyorlardi, cunku isik TUVALIN ICINE ciziliyor.
+     Deride tuval kapaniyor, halkalar CSS ile ciziliyor.
+     ISLEVLER YERINDE: dokunma, basili tutma ve raf secimi .disk
+     uzerinde calisiyor, tuvalde degil -- deri gorunumu degistiriyor,
+     davranisi degil. Deri kapatilinca tuval geri geliyor.
+     SINIF, ID DEGIL: bu katmanlarin id'si yok, sinifi var. Ilk
+     yazimda #vignette/#perde/#grain yazildi ve hicbiri eslesmedi. */
+  body.deri .vignette,body.deri .perde,body.deri .grain,body.deri .nk,
+  body.deri #nebula,body.deri #noise,body.deri #viz{display:none !important;}
+
+  /* ── OTUZ DERININ TEK MALZEME DILI: KABARTMA ──────────────────
+     Once iki ayri anlatim vardi: "cizgi halkali" deriler ve ayri bir
+     "cihaz" serisi. Ikisi yan yana durunca ayni uygulama gibi
+     durmuyorlardi. Simdi hepsi ayni dili konusuyor:
+
+       · zemin DUZ  -- ortada radyal parlaklik yok
+       · isik TEPEDEN -- yatay kaydirma yok, o yuzden yuvarlaklarin
+         SOLUNDA parlama olmuyor (kullanicinin iki kez bildirdigi hata)
+       · halkalar govdeye OYUK -- ust kenari golge, alt kenari isik
+       · tuslar govdeden KABARIK -- ayni malzeme, ayni isik yonu
+
+     Oluk iki kopyayla veriliyor: ayni halka takimi bir kez YUKARI
+     kaydirilmis koyu renkte, bir kez ASAGI kaydirilmis acik renkte.
+     Ust uste binince yuzeyde ince bir kanal olusuyor. Kaydirma
+     yalnizca DIKEY (%0,5); yatay bilesen sifir. */
+  body.deri .disk{border-radius:50%;background:var(--d-zem) !important;
+    /* TEK GOLGE, ISIK HALESI YOK: dergide bir nesnenin cevresinde
+       isik halkasi olmaz, altinda tek yonlu yumusak bir golge olur. */
+    box-shadow:0 14px 26px -12px var(--d-dis-golge),
+               inset 0 1px 0 var(--d-isik) !important;}
+  body.deri .disk::after{
+    content:'';position:absolute;inset:13%;border-radius:50%;pointer-events:none;
+    background:
+      /* cekirdek: basili dugme */
+      radial-gradient(circle at 50% 50.4%, var(--d-isik) 0 10.4%, transparent 10.4%),
+      radial-gradient(circle at 50% 49.6%, var(--d-golge-renk) 0 10.4%, transparent 10.4%),
+      radial-gradient(circle at 50% 50%,   var(--d-cek) 0 10%, transparent 10%),
+      /* oluklarin ALT kenari: isik */
+      radial-gradient(circle at 50% 50.5%,
+        transparent 0 20.6%, var(--d-isik) 20.6% 21.1%, transparent 21.1% 30.1%,
+        var(--d-isik) 30.1% 30.6%, transparent 30.6% 39.6%,
+        var(--d-isik) 39.6% 40.1%, transparent 40.1% 49.6%,
+        var(--d-isik) 49.6% 50.1%, transparent 50.1%),
+      /* oluklarin UST kenari: golge */
+      radial-gradient(circle at 50% 49.5%,
+        transparent 0 20.6%, var(--d-golge-renk) 20.6% 21.1%, transparent 21.1% 30.1%,
+        var(--d-golge-renk) 30.1% 30.6%, transparent 30.6% 39.6%,
+        var(--d-golge-renk) 39.6% 40.1%, transparent 40.1% 49.6%,
+        var(--d-golge-renk) 49.6% 50.1%, transparent 50.1%);}
+  /* ── CALMA TUSLARI DA AYNI MALZEMEDEN ─────────────────────────
+     Ilk surumde yalnizca .tus/.yuva deriye giriyordu; calma satiri
+     (#geri #dur #duraklat #ileri) uygulamanin kendi koyu turkuazinda
+     kaliyordu ve kremin ya da sarinin uzerinde yabanci duruyordu.
+     Ekran goruntusunde acikca goruldu. Simdi hepsi govdenin
+     renginde, ayni kabartmayla: isik ustte, golge altta. */
+  body.deri #geri,body.deri #dur,body.deri #duraklat,body.deri #ileri{
+    background:var(--d-tus-zem,transparent) !important;
+    color:var(--d-yazi) !important;
+    border-color:var(--d-tus-kenar,transparent) !important;
+    border-radius:var(--d-kose,50%) !important;
+    box-shadow:var(--d-golge,none) !important;}
+  body.deri #geri svg,body.deri #dur svg,body.deri #duraklat svg,body.deri #ileri svg{
+    stroke:var(--d-yazi) !important;fill:var(--d-yazi) !important;}
+  /* Ikinci satirin tuslari da govdeden: cerceve degil kabartma. */
+  body.deri #rec,body.deri #cam,body.deri #mute,body.deri #favAc,body.deri #araCizgi{
+    background:var(--d-tus-zem,transparent) !important;
+    box-shadow:var(--d-golge,none) !important;
+    border-radius:var(--d-kose,50%) !important;}
+  /* .var/.pasif durum siniflari kendi renklerini tasiyordu ve deriyi
+     eziyorlardi (krem zeminde turkuaz CAM hapi). Durum bilgisi
+     kayboluyor degil: acik/kapali farki hala kabartmanin var
+     olup olmamasiyla okunuyor. REC'in kirmizi noktasi haric --
+     o bir DURUM isareti, her deride ayni anlami tasimali. */
+  body.deri #cam.var,body.deri #cam.pasif,
+  body.deri #mute.var,body.deri #favAc.var,body.deri #araCizgi.var{
+    background:var(--d-tus-zem,transparent) !important;
+    color:var(--d-yazi) !important;}
+  body.deri .tus,body.deri .yuva{
+    background:var(--d-tus-zem,transparent) !important;
+    border-color:var(--d-tus-kenar,currentColor) !important;
+    color:var(--d-yazi) !important;
+    border-radius:var(--d-kose,50%) !important;
+    box-shadow:var(--d-golge,none) !important;}
+  body.deri #ayar,body.deri #ara .kutu{background:var(--d-panel) !important;color:var(--d-yazi);}
+  body.deri #ust .kanal.ad{color:var(--d-marka) !important;
+    -webkit-text-fill-color:var(--d-marka) !important;background:none !important;}
+  body.deri #np b,body.deri .np-sanatci,body.deri #modAd{color:var(--d-yazi) !important;}
+  body.deri #ayarTut span{background:var(--d-yazi) !important;}
+  body.deri::after{content:'';position:fixed;inset:0;z-index:59;pointer-events:none;
+    background:var(--d-doku,none);background-size:var(--d-doku-olcu,auto);
+    opacity:var(--d-doku-sef,0);}
+  /* ── DERININ ULASMASI GEREKEN GERI KALAN YERLER ───────────────
+     Ilk surumde yalnizca zemin, dort tus ve marka deriden geliyordu.
+     Ekran goruntusunde uc sey siritti ve ucu de haklı bir sikayet:
+       · "NO CONNECTION" paneli ve arama kutusu SIYAH kaliyordu --
+         krem zeminde kara bir kutu gibi.
+       · Ikinci tus satiri (REC · CAM · sustur · buyutec · yildiz)
+         karanlik temanin turkuazinda kaliyordu.
+       · Halkalar acik zeminde cok soluk okunuyordu.
+     Ucu de asagida, ayni degiskenlerle. */
+  body.deri #agyok,body.deri #rapor,body.deri #hata{
+    background:var(--d-panel) !important;color:var(--d-yazi) !important;
+    border-color:var(--d-tus-kenar) !important;}
+  body.deri #agyok .ay-ad,body.deri #agyok .ay-not,body.deri #agyok .ay-tekrar{
+    color:var(--d-yazi) !important;}
+  body.deri #agyok .ay-tekrar{border-color:var(--d-tus-kenar) !important;}
+  body.deri #ara .kutu,body.deri #ara .sonuc,body.deri #fav{
+    background:var(--d-panel) !important;color:var(--d-yazi) !important;}
+  body.deri #ara input,body.deri #araGiris{color:var(--d-yazi) !important;}
+  /* Ikinci satir: kendi renkleri var (turkuaz/kirmizi). Deri acikken
+     onlar da malzemeye uyuyor -- REC'in kirmizi noktasi haric, o bir
+     DURUM isareti ve her deride ayni anlami tasimali. */
+  body.deri #rec,body.deri #cam,body.deri #mute,body.deri #favAc,
+  body.deri #araCizgi,body.deri #tani{
+    color:var(--d-yazi) !important;border-color:var(--d-tus-kenar) !important;}
+  body.deri #mute svg,body.deri #favAc svg,body.deri #araCizgi svg{
+    stroke:var(--d-yazi) !important;}
+  body.deri #favAc svg{fill:var(--d-yazi) !important;}
+  body.deri #araYuva{border-color:var(--d-tus-kenar) !important;}
+  body.deri #modAd,body.deri #modGez,body.deri #np .np-yasal{color:var(--d-yazi) !important;}
+  body.deri #kipKisayol .ad{background:none !important;color:var(--d-marka) !important;
+    -webkit-text-fill-color:var(--d-marka) !important;}
+  body.deri #kipKisayol .anahtar{border-color:var(--d-tus-kenar) !important;
+    background:var(--d-tus-zem,transparent) !important;}
+  body.deri #kipKisayol .anahtar b{background:var(--d-marka) !important;}
+  /* ── SKINS IZGARASI ───────────────────────────────────────────
+     Her kare o derinin KENDI malzemesinde: zemin rengi kareye,
+     oluk isigi/golgesi ortadaki halkaya. Yani secmeden once neye
+     benzedigini goruyorsun. Secili olanin cevresinde ince halka. */
+  .deri-izgara{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;
+    margin:9px 2px 13px;}
+  .deri-izgara button{appearance:none;-webkit-appearance:none;border:0;padding:0;
+    cursor:pointer;aspect-ratio:1;border-radius:9px;position:relative;
+    box-shadow:0 1px 3px rgba(0,0,0,.40);}
+  .deri-izgara button::after{content:'';position:absolute;inset:24%;border-radius:50%;
+    box-shadow:inset 0 1px 2px var(--g,rgba(0,0,0,.4)),
+               inset 0 -1px 2px var(--i,rgba(255,255,255,.5));}
+  .deri-izgara button.kapa{display:grid;place-items:center;background:#15181c;
+    color:#9aa3ab;font-size:8px;letter-spacing:.12em;}
+  .deri-izgara button.kapa::after{display:none;}
+  .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
   /* ── PANEL ACIKKEN: BU IKISININ ALTI KOYULASIYOR ──────────────
      Panel yari saydam ve OYLE KALIYOR -- kullanicinin sozu:
@@ -1888,11 +2069,11 @@
     -webkit-overflow-scrolling:touch;}
   #temaIzgara[hidden]{display:none;}
   #temaIzgara .tm{width:100%;aspect-ratio:1/1;border-radius:50%;cursor:pointer;
-    border:1px solid rgba(255,255,255,.14);box-sizing:border-box;
+    border:1px solid rgba(255,255,255,.10);box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
     transition:transform .16s ease, border-color .16s ease;}
   #temaIzgara .tm:hover{transform:scale(1.12);}
-  #temaIzgara .tm.secili{border-color:rgba(255,255,255,.85);
+  #temaIzgara .tm.secili{border-color:rgba(255,255,255,.55);
     box-shadow:0 0 0 2px rgba(255,255,255,.16);}
   #temaIzgara .tm:focus-visible{outline:1px solid #fff;outline-offset:2px;}
   /* AUTO kutusu: tek renk degil, "rafin rengi" demek. Icine kucuk bir
@@ -1989,7 +2170,7 @@
   #tur{position:fixed;inset:0;z-index:120;pointer-events:none;opacity:0;
     transition:opacity .5s ease;font-family:'Share Tech Mono',ui-monospace,monospace;}
   #tur.on{opacity:1;}
-  #tur .perde{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,rgba(0,0,0,0) 30%,rgba(0,0,0,.55) 100%);}
+  #tur .perde{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,rgba(0,0,0,0) 30%,rgba(0,0,0,.42) 100%);}
   #tur .el{position:absolute;left:0;top:0;width:34px;height:45px;color:#bff3e8;
     transform:translate(-11px,-8px);opacity:0;
     transition:transform .95s cubic-bezier(.33,.9,.3,1), opacity .4s ease;}
@@ -2519,6 +2700,12 @@
          · PARTY MOOD : sinema karartmasi. Kenarlardan karariyor,
                         ortada yalnizca halkalar kaliyor. -->
     <h5>DISPLAY</h5>
+    <div class="sat islem" data-ayar="deri" role="button" tabindex="-1"
+         aria-expanded="false" aria-controls="deriIzgara">
+      <span>SKINS</span><span class="durum">OFF</span></div>
+    <!-- Otuz deri tek ekranda: satiri otuz kere tiklamak diye bir sey
+         yok. Kareler acilista degil, ILK ACILISTA kuruluyor. -->
+    <div id="deriIzgara" class="deri-izgara" hidden></div>
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
       <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
 
@@ -3613,6 +3800,139 @@
       kok.setProperty('--m3', 'rgb('+m3+')');
     }catch(e){ _yut(e); }
   }
+  /* ── DERI: ayarlardan secilen malzeme ─────────────────────────
+     0 = kapali (uygulamanin kendi karanlik hali). Digerleri
+     yukaridaki CSS bloklarina karsilik geliyor. Sira ayar satirinda
+     donuyor -- yildiz kademeleri gibi. */
+  const DERILER = [
+    {ad:'WHITE', zem:'#f2f1ee', yazi:'#4c4b47', marka:'#2f2e2b', cek:'#dedcd6', isik:'rgba(255,255,255,.95)', golgeRenk:'rgba(120,116,105,.30)', disGolge:'rgba(120,116,105,.55)', halka:'rgba(120,116,105,.30)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#f2f1ee', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(120,116,105,.55),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(120,116,105,.30)', panel:'#f7f6f4', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(120,116,105,.30) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'CREAM', zem:'#ece3d1', yazi:'#6b6153', marka:'#3d372d', cek:'#dbd0b9', isik:'rgba(255,255,255,.95)', golgeRenk:'rgba(146,132,104,.34)', disGolge:'rgba(146,132,104,.60)', halka:'rgba(146,132,104,.34)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#ece3d1', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(146,132,104,.60),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(146,132,104,.34)', panel:'#f1e9da', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(146,132,104,.34) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'MELON', zem:'#ef9c62', yazi:'#5e2f14', marka:'#3a1c08', cek:'#e28a4d', isik:'rgba(255,238,222,.70)', golgeRenk:'rgba(122,58,20,.34)', disGolge:'rgba(122,58,20,.55)', halka:'rgba(122,58,20,.34)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#ef9c62', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(122,58,20,.55),inset 0 1px 0 rgba(255,238,222,.70),inset 0 -1px 0 rgba(122,58,20,.34)', panel:'#f2a973', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(122,58,20,.34) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'SKY', zem:'#7fbcea', yazi:'#164461', marka:'#0d2f45', cek:'#69a9da', isik:'rgba(240,250,255,.78)', golgeRenk:'rgba(16,66,99,.32)', disGolge:'rgba(16,66,99,.55)', halka:'rgba(16,66,99,.32)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#7fbcea', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(16,66,99,.55),inset 0 1px 0 rgba(240,250,255,.78),inset 0 -1px 0 rgba(16,66,99,.32)', panel:'#93c7ef', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(16,66,99,.32) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'COBALT', zem:'#2f7fd0', yazi:'#dceaf7', marka:'#ffffff', cek:'#2a71bb', isik:'rgba(255,255,255,.32)', golgeRenk:'rgba(6,32,60,.50)', disGolge:'rgba(6,32,60,.65)', halka:'rgba(6,32,60,.50)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#2f7fd0', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(6,32,60,.65),inset 0 1px 0 rgba(255,255,255,.32),inset 0 -1px 0 rgba(6,32,60,.50)', panel:'#3a8ad9', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(6,32,60,.50) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'MINT', zem:'#a8d6c6', yazi:'#1f4a3d', marka:'#123328', cek:'#93c7b5', isik:'rgba(245,255,251,.82)', golgeRenk:'rgba(28,84,68,.30)', disGolge:'rgba(28,84,68,.50)', halka:'rgba(28,84,68,.30)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#a8d6c6', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(28,84,68,.50),inset 0 1px 0 rgba(245,255,251,.82),inset 0 -1px 0 rgba(28,84,68,.30)', panel:'#b5ddcf', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(28,84,68,.30) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'BLUSH', zem:'#e5b2ac', yazi:'#5f342f', marka:'#3d1d19', cek:'#d79f98', isik:'rgba(255,244,242,.82)', golgeRenk:'rgba(120,66,58,.30)', disGolge:'rgba(120,66,58,.52)', halka:'rgba(120,66,58,.30)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#e5b2ac', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(120,66,58,.52),inset 0 1px 0 rgba(255,244,242,.82),inset 0 -1px 0 rgba(120,66,58,.30)', panel:'#ebc0bb', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(120,66,58,.30) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'SILVER', zem:'#c9ced3', yazi:'#3d4349', marka:'#22262a', cek:'#b6bcc2', isik:'rgba(255,255,255,.90)', golgeRenk:'rgba(70,80,90,.32)', disGolge:'rgba(70,80,90,.55)', halka:'rgba(70,80,90,.32)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#c9ced3', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(70,80,90,.55),inset 0 1px 0 rgba(255,255,255,.90),inset 0 -1px 0 rgba(70,80,90,.32)', panel:'#d3d8dc', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(70,80,90,.32) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'GRAPHITE', zem:'#2b2f33', yazi:'#c3cad0', marka:'#eef2f5', cek:'#23272b', isik:'rgba(255,255,255,.10)', golgeRenk:'rgba(0,0,0,.62)', disGolge:'rgba(0,0,0,.75)', halka:'rgba(0,0,0,.62)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#2b2f33', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.10),inset 0 -1px 0 rgba(0,0,0,.62)', panel:'#33383d', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,0,0,.62) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'ONYX', zem:'#17191c', yazi:'#a9b0b6', marka:'#f0f3f5', cek:'#101215', isik:'rgba(255,255,255,.09)', golgeRenk:'rgba(0,0,0,.75)', disGolge:'rgba(0,0,0,.85)', halka:'rgba(0,0,0,.75)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#17191c', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.09),inset 0 -1px 0 rgba(0,0,0,.75)', panel:'#1e2125', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,0,0,.75) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'MIDNIGHT', zem:'#16223a', yazi:'#b3c4dc', marka:'#e6f0ff', cek:'#111b2f', isik:'rgba(180,215,255,.12)', golgeRenk:'rgba(0,6,20,.70)', disGolge:'rgba(0,6,20,.80)', halka:'rgba(0,6,20,.70)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#16223a', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,6,20,.80),inset 0 1px 0 rgba(180,215,255,.12),inset 0 -1px 0 rgba(0,6,20,.70)', panel:'#1c2b48', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,6,20,.70) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'NAVY', zem:'#1b2b4d', yazi:'#bccbe4', marka:'#7fb6ff', cek:'#152340', isik:'rgba(190,220,255,.13)', golgeRenk:'rgba(0,8,26,.68)', disGolge:'rgba(0,8,26,.80)', halka:'rgba(0,8,26,.68)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#1b2b4d', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,8,26,.80),inset 0 1px 0 rgba(190,220,255,.13),inset 0 -1px 0 rgba(0,8,26,.68)', panel:'#22355d', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,8,26,.68) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'FOREST', zem:'#1c2e26', yazi:'#b6cdc2', marka:'#7fd8ab', cek:'#16261f', isik:'rgba(200,255,230,.12)', golgeRenk:'rgba(0,14,8,.66)', disGolge:'rgba(0,14,8,.78)', halka:'rgba(0,14,8,.66)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#1c2e26', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,14,8,.78),inset 0 1px 0 rgba(200,255,230,.12),inset 0 -1px 0 rgba(0,14,8,.66)', panel:'#22382e', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,14,8,.66) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'OLIVE', zem:'#2b2f22', yazi:'#c7cbb4', marka:'#d9d97f', cek:'#23271c', isik:'rgba(245,255,210,.11)', golgeRenk:'rgba(10,12,0,.64)', disGolge:'rgba(10,12,0,.76)', halka:'rgba(10,12,0,.64)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#2b2f22', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(10,12,0,.76),inset 0 1px 0 rgba(245,255,210,.11),inset 0 -1px 0 rgba(10,12,0,.64)', panel:'#33382a', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(10,12,0,.64) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'WINE', zem:'#33161d', yazi:'#dcbcc2', marka:'#e8798c', cek:'#2a1218', isik:'rgba(255,210,220,.12)', golgeRenk:'rgba(18,0,4,.68)', disGolge:'rgba(18,0,4,.80)', halka:'rgba(18,0,4,.68)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#33161d', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(18,0,4,.80),inset 0 1px 0 rgba(255,210,220,.12),inset 0 -1px 0 rgba(18,0,4,.68)', panel:'#3d1c24', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(18,0,4,.68) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'PLUM', zem:'#251a33', yazi:'#c9bad9', marka:'#b98cf0', cek:'#1e152a', isik:'rgba(225,205,255,.12)', golgeRenk:'rgba(8,0,18,.68)', disGolge:'rgba(8,0,18,.80)', halka:'rgba(8,0,18,.68)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#251a33', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(8,0,18,.80),inset 0 1px 0 rgba(225,205,255,.12),inset 0 -1px 0 rgba(8,0,18,.68)', panel:'#2d2040', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(8,0,18,.68) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'COPPER', zem:'#2a1f18', yazi:'#d6c0ab', marka:'#e0995b', cek:'#221913', isik:'rgba(255,224,190,.12)', golgeRenk:'rgba(14,4,0,.66)', disGolge:'rgba(14,4,0,.78)', halka:'rgba(14,4,0,.66)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#2a1f18', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(14,4,0,.78),inset 0 1px 0 rgba(255,224,190,.12),inset 0 -1px 0 rgba(14,4,0,.66)', panel:'#32261d', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(14,4,0,.66) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'SLATE', zem:'#23282e', yazi:'#b6c0c9', marka:'#8fb8d8', cek:'#1c2026', isik:'rgba(210,230,255,.11)', golgeRenk:'rgba(0,4,10,.66)', disGolge:'rgba(0,4,10,.78)', halka:'rgba(0,4,10,.66)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#23282e', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,4,10,.78),inset 0 1px 0 rgba(210,230,255,.11),inset 0 -1px 0 rgba(0,4,10,.66)', panel:'#2a3037', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,4,10,.66) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'INK', zem:'#101214', yazi:'#9aa3ab', marka:'#5aa0ff', cek:'#0a0c0e', isik:'rgba(140,190,255,.11)', golgeRenk:'rgba(0,0,0,.80)', disGolge:'rgba(0,0,0,.88)', halka:'rgba(0,0,0,.80)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#101214', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,0,0,.88),inset 0 1px 0 rgba(140,190,255,.11),inset 0 -1px 0 rgba(0,0,0,.80)', panel:'#171a1d', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,0,0,.80) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'TEAK', zem:'#2e2119', yazi:'#cfbba7', marka:'#c98f52', cek:'#261b14', isik:'rgba(255,230,200,.12)', golgeRenk:'rgba(16,6,0,.64)', disGolge:'rgba(16,6,0,.78)', halka:'rgba(16,6,0,.64)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#2e2119', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(16,6,0,.78),inset 0 1px 0 rgba(255,230,200,.12),inset 0 -1px 0 rgba(16,6,0,.64)', panel:'#372820', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(16,6,0,.64) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'RETRO', zem:'#2b2622', yazi:'#e8d6bd', marka:'#e2703a', cek:'#241f1c', isik:'rgba(255,220,180,.13)', golgeRenk:'rgba(0,0,0,.66)', disGolge:'rgba(0,0,0,.78)', halka:'rgba(0,0,0,.66)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#2b2622', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,0,0,.78),inset 0 1px 0 rgba(255,220,180,.13),inset 0 -1px 0 rgba(0,0,0,.66)', panel:'#332d28', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,0,0,.66) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'VECTOR', zem:'#f2c318', yazi:'#2a2205', marka:'#171200', cek:'#e0b30f', isik:'rgba(255,250,215,.80)', golgeRenk:'rgba(120,92,0,.34)', disGolge:'rgba(120,92,0,.50)', halka:'rgba(120,92,0,.34)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#f2c318', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(120,92,0,.50),inset 0 1px 0 rgba(255,250,215,.80),inset 0 -1px 0 rgba(120,92,0,.34)', panel:'#f5cf3e', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(120,92,0,.34) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'POP', zem:'#e2483f', yazi:'#ffe4e0', marka:'#ffffff', cek:'#cf3a32', isik:'rgba(255,225,220,.38)', golgeRenk:'rgba(90,10,4,.48)', disGolge:'rgba(90,10,4,.62)', halka:'rgba(90,10,4,.48)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#e2483f', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(90,10,4,.62),inset 0 1px 0 rgba(255,225,220,.38),inset 0 -1px 0 rgba(90,10,4,.48)', panel:'#e75a52', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(90,10,4,.48) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'CYBER', zem:'#0c1418', yazi:'#8fd6d8', marka:'#2ee6c8', cek:'#081014', isik:'rgba(46,230,200,.16)', golgeRenk:'rgba(0,0,0,.78)', disGolge:'rgba(0,0,0,.86)', halka:'rgba(0,0,0,.78)', font:"'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace", kose:'50%', tusZem:'#0c1418', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,0,0,.86),inset 0 1px 0 rgba(46,230,200,.16),inset 0 -1px 0 rgba(0,0,0,.78)', panel:'#121d22', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,0,0,.78) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'BRUTALIST', zem:'#d3d0c9', yazi:'#33322e', marka:'#16150f', cek:'#c2bfb6', isik:'rgba(255,255,255,.85)', golgeRenk:'rgba(90,86,74,.36)', disGolge:'rgba(90,86,74,.55)', halka:'rgba(90,86,74,.36)', font:"'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace", kose:'4px', tusZem:'#d3d0c9', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(90,86,74,.55),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(90,86,74,.36)', panel:'#dbd8d2', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(90,86,74,.36) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'EDITORIAL', zem:'#f7f4ec', yazi:'#2a251d', marka:'#14120f', cek:'#e6e1d5', isik:'rgba(255,255,255,.95)', golgeRenk:'rgba(140,130,108,.30)', disGolge:'rgba(140,130,108,.50)', halka:'rgba(140,130,108,.30)', font:"Georgia,'Times New Roman',serif", kose:'50%', tusZem:'#f7f4ec', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(140,130,108,.50),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(140,130,108,.30)', panel:'#fbf9f3', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(140,130,108,.30) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'SWISS', zem:'#eeedea', yazi:'#2c2c2c', marka:'#d8231f', cek:'#dedcd7', isik:'rgba(255,255,255,.95)', golgeRenk:'rgba(110,110,105,.30)', disGolge:'rgba(110,110,105,.50)', halka:'rgba(110,110,105,.30)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'4px', tusZem:'#eeedea', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(110,110,105,.50),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(110,110,105,.30)', panel:'#f4f3f1', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(110,110,105,.30) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'VAPOR', zem:'#5a2a6e', yazi:'#f3c9ec', marka:'#ff6fd0', cek:'#4c2160', isik:'rgba(255,190,240,.18)', golgeRenk:'rgba(24,0,34,.62)', disGolge:'rgba(24,0,34,.78)', halka:'rgba(24,0,34,.62)', font:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif", kose:'50%', tusZem:'#5a2a6e', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(24,0,34,.78),inset 0 1px 0 rgba(255,190,240,.18),inset 0 -1px 0 rgba(24,0,34,.62)', panel:'#66317c', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(24,0,34,.62) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'BLUEPRINT', zem:'#12315a', yazi:'#bcd8f2', marka:'#8fd0ff', cek:'#0e2748', isik:'rgba(190,225,255,.16)', golgeRenk:'rgba(0,10,30,.62)', disGolge:'rgba(0,10,30,.78)', halka:'rgba(0,10,30,.62)', font:"'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace", kose:'4px', tusZem:'#12315a', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(0,10,30,.78),inset 0 1px 0 rgba(190,225,255,.16),inset 0 -1px 0 rgba(0,10,30,.62)', panel:'#173b68', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(0,10,30,.62) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'},
+    {ad:'NEON TOKYO', zem:'#1b0f2a', yazi:'#d9bcf0', marka:'#ff3d9a', cek:'#160c22', isik:'rgba(255,140,220,.16)', golgeRenk:'rgba(4,0,12,.74)', disGolge:'rgba(4,0,12,.86)', halka:'rgba(4,0,12,.74)', font:"'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace", kose:'50%', tusZem:'#1b0f2a', tusKenar:'transparent', golge:'0 2px 4px -1px rgba(4,0,12,.86),inset 0 1px 0 rgba(255,140,220,.16),inset 0 -1px 0 rgba(4,0,12,.74)', panel:'#221334', karisim:'normal', filtre:'none', doku:'radial-gradient(rgba(4,0,12,.74) .5px,rgba(0,0,0,0) .6px)', dokuOlcu:'3px 3px', dokuSef:'.45'}
+  ];
+  const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
+  /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
+     ayri CSS blogu yerine tek blok: bakim tek yerde. */
+  function deriUygula(){
+    try{
+      const k = document.documentElement.style;
+      const n = AYAR.deri|0;
+      if(!n){
+        document.body.classList.remove('deri');
+        ['--d-zem','--d-yazi','--d-marka','--d-font','--d-kose','--d-tus-zem',
+         '--d-tus-kenar','--d-golge','--d-panel','--d-filtre','--d-karisim','--d-halka',
+         '--d-isik','--d-golge-renk','--d-dis-golge','--d-cek','--d-doku',
+         '--d-doku-olcu','--d-doku-sef'].forEach(x=>k.removeProperty(x));
+      }else{
+        const d = DERILER[n-1]; if(!d) return;
+        k.setProperty('--d-zem', d.zem);        k.setProperty('--d-yazi', d.yazi);
+        k.setProperty('--d-marka', d.marka);    k.setProperty('--d-font', d.font);
+        k.setProperty('--d-kose', d.kose);      k.setProperty('--d-tus-zem', d.tusZem);
+        k.setProperty('--d-tus-kenar', d.tusKenar); k.setProperty('--d-golge', d.golge);
+        k.setProperty('--d-panel', d.panel);    k.setProperty('--d-filtre', d.filtre);
+        k.setProperty('--d-karisim', d.karisim || 'normal');
+        k.setProperty('--d-halka', d.halka || d.yazi);
+        k.setProperty('--d-isik', d.isik || 'rgba(255,255,255,.55)');
+        k.setProperty('--d-golge-renk', d.golgeRenk || 'rgba(0,0,0,.28)');
+        k.setProperty('--d-dis-golge', d.disGolge || d.golgeRenk || 'rgba(0,0,0,.35)');
+        k.setProperty('--d-cek', d.cek || d.zem);
+        k.setProperty('--d-doku', d.doku);      k.setProperty('--d-doku-olcu', d.dokuOlcu);
+        k.setProperty('--d-doku-sef', d.dokuSef);
+        document.body.classList.add('deri');
+      }
+      try{ zeminUygula(); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  try{ window.deriUygula = deriUygula; }catch(e){ _yut(e); }
+  /* Izgara ILK ACILISTA kuruluyor: otuz dugme, panel hic acilmazsa
+     hic yaratilmiyor. Kareler DERILER tablosundan besleniyor, yani
+     tabloya bir deri eklemek izgaraya da ekliyor. */
+  function deriIzgaraKur(){
+    try{
+      const kap = document.getElementById('deriIzgara');
+      if(!kap || kap.dataset.kuruldu) return;
+      /* RENKLER STIL OZNITELIGIYLE DEGIL, CSSOM ILE VERILIYOR.
+         Ilk yazimda kareler style="background:..." tasiyordu ve CSP
+         kapisi hakli olarak kirmizi yandi: ozet tabanli style-src
+         satir ici stil kabul etmiyor, sayfa ciplak aciliyordu.
+         Element.style uzerinden yazmak ayni sonucu veriyor ve
+         politikaya dokunmuyor. */
+      const yap = (n, ad, d)=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.dataset.n = String(n);
+        if(d){
+          b.title = ad; b.setAttribute('aria-label', ad);
+          b.style.background = d.zem;
+          b.style.setProperty('--g', d.golgeRenk);
+          b.style.setProperty('--i', d.isik);
+        }else{
+          b.className = 'kapa'; b.textContent = 'OFF';
+          b.setAttribute('aria-label', 'SKIN OFF');
+        }
+        return b;
+      };
+      kap.textContent = '';
+      kap.appendChild(yap(0, 'OFF', null));
+      DERILER.forEach((d,i)=>{ kap.appendChild(yap(i+1, d.ad, d)); });
+      kap.dataset.kuruldu = '1';
+      /* TIP KAPISI: e.target yalnizca EventTarget'tir, closest'i yok;
+         dataset de Element'te degil HTMLElement'te. Ikisini de
+         kontrol ederek daraltiyoruz -- ayni davranis, tip kapisi
+         yesil. (Kapı bu iki satiri hakli olarak kirmizi yakti.) */
+      kap.addEventListener('click', (e)=>{
+        try{
+          const h = e.target instanceof HTMLElement ? e.target.closest('button') : null;
+          if(!(h instanceof HTMLElement)) return;
+          AYAR.deri = parseInt(h.dataset.n || '0', 10) || 0;
+          ayarKaydet(); deriIzgaraIsaret(); deriUygula();
+          /* Satirin sagindaki ad DOGRUDAN yaziliyor: ayar panelinin
+             kendi tazeleyicisi (yildizYaz) bu kapsamda YOK ve
+             cagirmak tip kapisini kirmizi yakti -- calisirken de
+             sessizce yutulan bir hata olurdu, ad guncellenmezdi. */
+          const dr = document.querySelector('.sat[data-ayar="deri"] .durum');
+          if(dr) dr.textContent = DERI_AD[AYAR.deri|0] || 'OFF';
+        }catch(err){ _yut(err); }
+      });
+      deriIzgaraIsaret();
+    }catch(e){ _yut(e); }
+  }
+  function deriIzgaraIsaret(){
+    try{
+      const kap = document.getElementById('deriIzgara'); if(!kap) return;
+      const n = AYAR.deri|0;
+      kap.querySelectorAll('button').forEach(b=>{
+        if(!(b instanceof HTMLElement)) return;
+        b.setAttribute('aria-pressed',
+          (parseInt(b.dataset.n || '0', 10) || 0) === n ? 'true' : 'false');
+      });
+    }catch(e){ _yut(e); }
+  }
   function zeminUygula(){
     try{ markaRengi(); }catch(e){ _yut(e); }
     /* ── SAĞ ÜSTTEKİ ÜÇ SEMBOL SEÇİLİ HALKANIN RENGİNİ ALIR ─────────
@@ -3680,7 +4000,9 @@
         /* ALL BLACK: raf da tema da fark etmiyor. Ayarlardaki anahtar
            acikken zemin her yerde simsiyah -- kullanicinin sozu:
            "acikken zaten kilitli". */
-        if(AYAR.karanlik) zm = ['#000000', '#000000'];
+        /* DERI VARSA ZEMIN DERININ: ALL BLACK bir tercih, deri bir
+           malzeme. Malzeme secildiyse ekranin zemini onun. */
+        if(AYAR.karanlik && !(AYAR.deri|0)) zm = ['#000000', '#000000'];
       }catch(e){ _yut(e); }
       if(!zm){ b.classList.remove('zem'); return; }
       b.style.setProperty('--zem1', zm[0]);
@@ -6878,7 +7200,7 @@
      cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
      "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
      ustundeki dordu isteyene duruyor. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true };
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0 };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -6894,6 +7216,7 @@
          acilsin, tam tersi olsun."
          Yani kapatmak bir tercih; acmak varsayilan. */
       if(_a.karanlik === false) AYAR.karanlik = false;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 36) AYAR.deri = _a.deri|0;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
@@ -12078,6 +12401,8 @@
         if(el) el.textContent = YILDIZ_AD[AYAR.yildiz|0] || 'NORMAL';
         const el2 = kut.querySelector('.sat[data-ayar="yildizIsik"] .durum');
         if(el2) el2.textContent = YILDIZ_ISIK_AD[AYAR.yildizIsik|0] || 'NORMAL';
+        const el3 = kut.querySelector('.sat[data-ayar="deri"] .durum');
+        if(el3) el3.textContent = DERI_AD[AYAR.deri|0] || 'OFF';
       }catch(e){ _yut(e); }
     }
     const yaz = ()=>{
@@ -12236,6 +12561,20 @@
         ayarKaydet(); yildizYaz();
         return;
       }
+      if(k === 'deri'){
+        /* Otuz deri: satir artik deger DONDURMUYOR, izgarayi aciyor.
+           Otuz dokunusla gezmek kimsenin yapacagi bir sey degildi. */
+        try{
+          deriIzgaraKur();
+          const kap = document.getElementById('deriIzgara');
+          if(kap){
+            const acik = !kap.hidden;
+            kap.hidden = acik;
+            el.setAttribute('aria-expanded', acik ? 'false' : 'true');
+          }
+        }catch(e){ _yut(e); }
+        return;
+      }
       if(k === 'yildizIsik'){
         AYAR.yildizIsik = ((AYAR.yildizIsik|0) + 1) % YILDIZ_ISIK.length;
         ayarKaydet(); yildizYaz();
@@ -12311,7 +12650,8 @@
        durumda -- AYAR okundugu yerde, ilk cizimden once. Buradaki
        cagri o yuzden bir CEVIRME degil, bir TAMAMLAMA: yalnizca
        arsiv havuzlarini yukluyor ve blogu yerlestiriyor. */
-    try{ moodUygula(true); }catch(e){ _yut(e); }
+    try{ deriUygula(); }catch(e){ _yut(e); }
+  try{ moodUygula(true); }catch(e){ _yut(e); }
   })();
 
   function araAc(){
@@ -13366,7 +13706,7 @@
       const m = maske.getContext('2d');
       const g = m.createRadialGradient(boy/2, boy/2, boy*0.26, boy/2, boy/2, boy*0.47);
       g.addColorStop(0,'rgba(0,0,0,1)');
-      g.addColorStop(0.55,'rgba(0,0,0,.55)');
+      g.addColorStop(0.55,'rgba(0,0,0,.42)');
       g.addColorStop(1,'rgba(0,0,0,0)');
       m.fillStyle = g; m.fillRect(0,0,boy,boy);
       _kamT = { boy:boy, tuval:tuval, ctx:tuval.getContext('2d'), maske:maske };

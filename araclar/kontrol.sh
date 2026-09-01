@@ -125,8 +125,15 @@ kosu saglik                      # yalniz: zamana bakan kontroller var
 rapor saglik
 kosu ariza                       # yalniz: sayac/sure olcuyor
 rapor ariza
-for t in senaryo motor; do kosu "$t" & done
-wait                             # cikis kodlarina GUVENILMIYOR, dosyalar okunuyor
+# ARGUMANSIZ `wait` KAPIYI ASTI. Bu kabuk 4. adimda CSP sunucusunu
+# de arka planda baslatiyor; argumansiz `wait` ONU DA bekliyor ve
+# sunucu hicbir zaman kapanmadigi icin kapi son adima varamadan
+# sonsuza kadar asili kaliyordu. Butun takimlar yesildi ama betik
+# bitmiyordu -- olculdu: dort takim 12:58'de bitti, betik 13:16'da
+# hala bekliyordu. Cozum: yalnizca TAKIMLARIN pid'leri bekleniyor.
+pidler=""
+for t in senaryo motor; do kosu "$t" & pidler="$pidler $!"; done
+wait $pidler 2>/dev/null         # cikis kodlarina GUVENILMIYOR, dosyalar okunuyor
 for t in senaryo motor; do rapor "$t"; done
 echo
 echo "  (takimlar $(( $(date +%s) - t0 )) sn)"
