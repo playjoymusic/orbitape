@@ -1902,7 +1902,6 @@
      "sol ustteki tur isimleri de orjinal renginden etkilensin ki
      hangi sayfada oldugumuz belli olsun." Renk rafin kendi rengi,
      ama okunur hale getirilmis hali (bkz. okunurVurgu). */
-  body.deri #modAd{color:var(--d-vurgu, var(--d-yazi)) !important;}
 
   /* ── KIP ANAHTARI VE ETIKETI DE RAFI TASIYOR ──────────────────
      Sol alt kose "hangi dunyadayim" sorusunun tek cevabi. Anahtarin
@@ -1911,7 +1910,11 @@
   body.deri #kipKisayol .ad{color:var(--d-vurgu, var(--d-marka)) !important;
     -webkit-text-fill-color:var(--d-vurgu, var(--d-marka)) !important;
     background:none !important;}
-  body.deri #np b,body.deri .np-sanatci,body.deri #modAd{color:var(--d-yazi) !important;}
+  /* #modAd BURADAN CIKTI: rengini JS yaziyor (rafYaziRengi) cunku
+     renk rafa gore degisiyor -- kullanicinin istedigi "pilot".
+     !important olan bu satir satir ici rengi eziyordu ve raf adi
+     her deride ayni gri kaliyordu. */
+  body.deri #np b,body.deri .np-sanatci{color:var(--d-yazi) !important;}
   /* ── FX ACIKKEN UYDU BUNU SOYLUYOR ────────────────────────────
      "fx'leri aktif edince de bir sey olmali, temaya uygun."
      Aktif uydunun cevresinde rafin renginde ince bir halka ve
@@ -1946,6 +1949,70 @@
     mix-blend-mode:multiply;}
   body.deri.mood #ust .kanal.ad{letter-spacing:.30em;}
   @media (prefers-reduced-motion: reduce){ }
+
+  /* ── DERIDE HICBIR YAZI KENDI SABIT RENGINI KULLANMAZ ─────────
+     Buraya kadar tek tek secici yaziliyordu ve her seferinde bir
+     yer atlaniyordu: ayar menusundeki degerler, bolum basliklari,
+     kunye, arama sonuclari... Kullanicinin sozu net: "hicbir yerde
+     bu olmasin."
+     O yuzden kural TERSINE cevrildi. Panellerin ICINDEKI her yazi
+     varsayilan olarak derinin yazi renginde; istisna olmasi
+     gerekenler (marka yazisi, raf adi, kip etiketi) bu kapsayicilarin
+     DISINDA ve kendi kurallarini tasiyorlar. Yani yeni bir satir
+     eklendiginde kimse bir sey yazmasa da dogru renkte cikiyor. */
+  body.deri #ayar,body.deri #ayar *,
+  body.deri #np,body.deri #np *,
+  body.deri #ara,body.deri #ara *,
+  body.deri #fav,body.deri #fav *,
+  body.deri #rapor,body.deri #rapor *,
+  body.deri #agyok,body.deri #agyok *,
+  body.deri #hata,body.deri #hata *{
+    color:var(--d-yazi) !important;
+    -webkit-text-fill-color:var(--d-yazi) !important;}
+  /* Ikincil kademe: bolum basliklari, deger yazilari, yasal baglar.
+     Sonuk ama okunuyor -- "en koyudan orta koyuya dogru". */
+  body.deri #ayar h5,body.deri #ayar .durum,
+  body.deri #np .np-yasal,body.deri #np .np-lab,
+  body.deri #ara .sonuc small{
+    color:var(--d-yazi2, var(--d-yazi)) !important;
+    -webkit-text-fill-color:var(--d-yazi2, var(--d-yazi)) !important;
+    opacity:1 !important;}
+  /* Ayar anahtarlari da malzemeye giriyor: turkuaz karanlik
+     dunyanin rengiydi, kremin uzerinde yabanci duruyordu. */
+  body.deri #ayar .anahtar{
+    background:var(--d-tus-zem,transparent) !important;
+    border:1px solid var(--d-halka) !important;
+    box-shadow:inset 0 2px 3px var(--d-golge-renk) !important;}
+  body.deri #ayar .anahtar b{background:var(--d-yazi2, var(--d-yazi)) !important;}
+  body.deri #ayar .sat.acik .anahtar b{background:var(--d-vurgu, var(--d-marka)) !important;}
+  body.deri #ayar .sat.acik>span:first-child{color:var(--d-yazi) !important;
+    -webkit-text-fill-color:var(--d-yazi) !important;}
+
+  /* FX kapisi kendi koyu panelini tasiyordu: krem deride koyu
+     zemin uzerinde koyu yazi kaliyordu, yani hic okunmuyordu. */
+  body.deri #ayar .sat.kapi{background:var(--d-tus-zem,transparent) !important;
+    border:1px solid var(--d-halka) !important;
+    box-shadow:inset 0 1px 0 var(--d-isik) !important;}
+  body.deri #ayar .sat.kapi .kapi-yazi b{color:var(--d-vurgu, var(--d-marka)) !important;
+    -webkit-text-fill-color:var(--d-vurgu, var(--d-marka)) !important;}
+  body.deri #ayar .sat.kapi .kapi-yazi i{color:var(--d-yazi2, var(--d-yazi)) !important;
+    -webkit-text-fill-color:var(--d-yazi2, var(--d-yazi)) !important;}
+
+  /* Sol ustteki raf adi: rengi --d-raf'tan geliyor ve JS onu her
+     raf degisiminde yeniden yaziyor. Kullanicinin istedigi "pilot"
+     bu: ROCK kirmizi, AMBIENT yesil, ama zemine gore koyulastirilmis
+     halde -- yani hem taniniyor hem okunuyor. */
+  body.deri #modAd{color:var(--d-raf, var(--d-yazi)) !important;
+    -webkit-text-fill-color:var(--d-raf, var(--d-yazi)) !important;}
+  /* ── HALKANIN ALTINDAKI BUYUK GECICI YAZI ─────────────────────
+     Kullanicinin istegi: "sag ustteki ORBITAPE yazisinin rengiyle
+     ayni olmali." Marka yazisinin sag ucu --d-vurgu'yu tasiyor,
+     yani rafin okunur rengi. Buyuk yazi da ayni degiskeni aliyor:
+     ekranin iki ucu ayni sey soyluyor ve goz ikisini baglıyor.
+     Vurgu yoksa derinin yazi rengine dusuyor. */
+  body.deri #modGez{color:var(--d-vurgu, var(--d-yazi)) !important;
+    -webkit-text-fill-color:var(--d-vurgu, var(--d-yazi)) !important;}
+  body.deri #modGez.cizim svg{fill:currentColor;}
 
   body.deri #ayarTut span{background:var(--d-yazi) !important;}
   /* ── DESEN ZEMININ PARCASI, USTUNE SERILEN BIR PERDE DEGIL ────
@@ -1988,10 +2055,9 @@
      yani zeminin tersi. Once karanlik dunyanin acik grisi sabitti
      ve krem zeminde okunmuyordu. Tek istisna parca adi -- o marka
      renginde kaliyor, cunku vurgulanan sey o. */
-  body.deri #modGez,body.deri #np .np-yasal,
-  body.deri #np .np-sanatci,body.deri #np .np-lab,
-  body.deri #np small,body.deri #np s{color:var(--d-yazi) !important;
-    -webkit-text-fill-color:var(--d-yazi) !important;}
+  body.deri #np .np-yasal,body.deri #np .np-sanatci,
+  body.deri #np .np-lab,body.deri #np small,body.deri #np s{
+    color:var(--d-yazi) !important;-webkit-text-fill-color:var(--d-yazi) !important;}
   body.deri #kipKisayol .ad{background:none !important;color:var(--d-marka) !important;
     -webkit-text-fill-color:var(--d-marka) !important;}
   body.deri #kipKisayol .anahtar{border-color:var(--d-tus-kenar) !important;
@@ -2059,13 +2125,16 @@
      de deride yukseliyor. Yazi tipi uygulamanin kendi tipi
      kaliyor: derinin yazi tipi buraya girmiyor, cunku bu bir
      malzeme degil KIMLIK. */
+  /* Renk BURADA verilmiyor: ikisinin de rengini JS yaziyor
+     (rafYaziRengi) cunku renk rafa gore degisiyor. Burasi yalnizca
+     yazi tipini sabitliyor -- derinin yazi tipi buraya girmiyor,
+     bu bir malzeme degil KIMLIK. */
   body.deri #modGez,body.deri #modAd{
-    color:var(--d-yazi) !important;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,
                 'Helvetica Neue',Arial,sans-serif !important;}
   body.deri #modGez.gor{opacity:.88;}
   body.deri #modGez.cizim.gor{opacity:.80;}
-  body.deri #modGez.cizim svg{fill:var(--d-yazi) !important;}
+  body.deri #modGez.cizim svg{fill:currentColor;}
   body.deri #kipKisayol .anahtar b{background:var(--d-marka) !important;}
   /* ── SKINS IZGARASI ───────────────────────────────────────────
      Her kare o derinin KENDI malzemesinde: zemin rengi kareye,
@@ -4007,7 +4076,11 @@
       try{
         const _d = DERILER[(AYAR.deri|0) - 1];
         if(_d){
-          const _v = okunurVurgu(m2 || m1, _d.zem, 3.2);
+          /* Acik zeminde esik 4.5: raf rengi solgun degil KOYU olsun
+             -- kullanicinin sozu "backround aciksa cok daha koyu
+             ve ilk orjinaldeki rengini alsin, etkili olsun." */
+          const _esik = _parlaklikHex(_d.zem) > 0.30 ? 4.5 : 3.2;
+          const _v = okunurVurgu(m2 || m1, _d.zem, _esik);
           if(_v) kok.setProperty('--d-vurgu', _v);
         }
       }catch(e){ _yut(e); }
@@ -4053,6 +4126,33 @@
           return 'rgb(' + Math.round(rr) + ',' + Math.round(gg) + ',' + Math.round(bb) + ')';
       }
       return lz > 0.30 ? 'rgb(0,0,0)' : 'rgb(255,255,255)';
+    }catch(e){ _yut(e); return ''; }
+  }
+  /* Raf adlarinin ekrandaki rengi. Deri kapaliyken uygulamanin
+     eski davranisi: rafin rengi bir tik koyultuluyor. Deri acikken
+     sabit bir carpan yetmiyor -- ayni carpan kremin uzerinde solgun,
+     lacivertin uzerinde okunmaz cikiyor. O yuzden deride renk
+     zemine gore hesaplaniyor: rafin RENGI korunuyor, PARLAKLIGI
+     zeminin tersine kaydiriliyor. Kullanicinin istegi buydu:
+     "rock mesela kirmizi ya, o da o renkleri alsin; backround
+     aciksa cok daha koyu olsun." */
+  function rafYaziRengi(rgbDizi, carpan){
+    try{
+      const d0 = DERILER[(AYAR.deri|0) - 1];
+      /* Raf secili degilken renk bostu ve CSS'e dusuyordu; CSS'teki
+         deger karanlik dunyanin acik grisi, yani krem deride
+         okunmuyordu. Deri aciksa bos donmuyoruz: derinin yazi
+         rengi yaziliyor. */
+      if(!rgbDizi) return d0 ? d0.yazi : '';
+      const d = d0;
+      if(d){
+        const esik = _parlaklikHex(d.zem) > 0.30 ? 4.5 : 3.2;
+        const v = okunurVurgu(rgbDizi, d.zem, esik);
+        if(v) return v;
+      }
+      const [r,g,b] = String(rgbDizi).split(',').map(Number);
+      const k = carpan || 0.78, e = (carpan ? 0 : 14);
+      return 'rgb('+Math.round(r*k+e)+','+Math.round(g*k+e)+','+Math.round(b*k+e)+')';
     }catch(e){ _yut(e); return ''; }
   }
   /* ── DERI: ayarlardan secilen malzeme ─────────────────────────
@@ -4102,7 +4202,7 @@
         document.body.classList.remove('deri');
         ['--d-zem','--d-yazi','--d-marka','--d-font','--d-kose','--d-tus-zem',
          '--d-tus-kenar','--d-golge','--d-panel','--d-filtre','--d-karisim','--d-halka',
-         '--d-isik','--d-golge-renk','--d-dis-golge','--d-cek','--d-vurgu',
+         '--d-isik','--d-yazi2','--d-raf','--d-golge-renk','--d-dis-golge','--d-cek','--d-vurgu',
          '--d-neb-karisim','--d-neb-sef','--d-doku',
          '--d-doku-olcu','--d-doku-sef'].forEach(x=>k.removeProperty(x));
       }else{
@@ -4122,6 +4222,14 @@
            zeminde 'multiply' (bulut zemine gomuluyor), koyu zeminde
            'screen' (zeminin uzerine cikiyor). Deri basina ayar yok,
            kural tek. */
+        /* IKINCIL YAZI TONU: bolum basliklari ve deger yazilari icin.
+           Once bunlar karanlik dunyanin yari saydam beyazlariydi ve
+           krem zeminde HIC gorunmuyordu -- kullanicinin sozu "acik
+           renk menudeki yazilar da acik renk, hicbir yerde bu
+           olmasin." Ana yazidan zemine dogru %38 karisiyor: yani
+           sonuk ama hala okunuyor. Kullanicinin tarifi de buydu:
+           "en koyudan orta koyuya dogru." */
+        k.setProperty('--d-yazi2', _hexKaris(d.yazi, d.zem, 0.62));
         const _acik = _parlaklikHex(d.zem) > 0.30;
         k.setProperty('--d-neb-karisim', _acik ? 'multiply' : 'screen');
         k.setProperty('--d-neb-sef', _acik ? '.26' : '.55');
@@ -4130,6 +4238,11 @@
         document.body.classList.add('deri');
       }
       try{ zeminUygula(); }catch(e){ _yut(e); }
+      /* Raf adlarinin rengini JS yaziyor ve deri degisince o renk
+         eskiyor: krem deriye gecildiginde ekranda hala karanlik
+         dunyaya gore hesaplanmis acik gri duruyordu. Deri her
+         degistiginde ikisi de yeniden yaziliyor. */
+      try{ modAdiYaz(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
   try{ window.deriUygula = deriUygula; }catch(e){ _yut(e); }
@@ -12425,10 +12538,19 @@
     try{ if(typeof mod !== 'undefined' && mod === 'radio') _rn = aileRenk(ad); }catch(e){ _yut(e); }
     if(!_rn){ const p = ad && MOD_TEMA[ad]; _rn = p ? p.ana : ''; }
     if(!_rn){ try{ _rn = aileRenk(ad); }catch(e){ _yut(e); } }
-    if(_rn){
-      const [r,g,b] = _rn.split(',').map(Number);
-      el.style.color = 'rgb('+Math.round(r*0.78+14)+','+Math.round(g*0.78+14)+','+Math.round(b*0.78+14)+')';
-    }else{ el.style.color = ''; }
+    /* Renk IKI YERE birden yaziliyor. Bu satir uzerinde bir
+       gradyan kirpma kurali var ve o kural -webkit-text-fill-color
+       tasiyor; yalnizca 'color' yazmak ekranda hicbir sey
+       degistirmiyordu -- yazi eski turkuazinda kaliyordu. */
+    /* Renk bir DEGISKENE yaziliyor, satir icine degil. Satir ici
+       renk denendi ve ekranda hicbir sey degismedi: bu yazinin
+       uzerinde gradyan kirpmali bir kural var ve o kural
+       -webkit-text-fill-color tasiyor, yani satir ici 'color'
+       goruntuyu belirlemiyor. Degisken uzerinden gidince CSS
+       kuralinin kendisi dogru rengi aliyor ve tartisma bitiyor. */
+    { const _c = rafYaziRengi(_rn, 0);
+      el.style.color = _c;
+      try{ document.documentElement.style.setProperty('--d-raf', _c); }catch(_){ _yut(_); } }
     el.classList.toggle('gor', !!ad);
     /* Isim degisti -> once puntosu (radyoda sigacak mi), sonra
        cubuklarin genisligi. Sira onemli: cubuk adin kutusundan
@@ -12517,10 +12639,7 @@
     try{ if(typeof mod !== 'undefined' && mod === 'radio') _pa = aileRenk(ad); }catch(e){ _yut(e); }
     if(!_pa){ const _p = ad && MOD_TEMA[ad]; _pa = _p ? _p.ana : ''; }
     const p = _pa ? {ana:_pa} : null;
-    if(p){
-      const [r,g,b] = p.ana.split(',').map(Number);
-      el.style.color = 'rgb('+Math.round(r*0.72)+','+Math.round(g*0.72)+','+Math.round(b*0.72)+')';
-    }
+    if(p){ el.style.color = rafYaziRengi(p.ana, 0.72); }
     if(ad){
       /* HALKANIN ALTINDA: halka ile ekranın DİBİ arasında ortalanıyor.
          Ölçü diskin kutusundan değil, EN DIŞ HALKANIN görünen alt
