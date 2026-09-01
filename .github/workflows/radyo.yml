@@ -1,14 +1,33 @@
+# ORBITAPE — radyo listesi hasadı
+#
+# NE YAPAR
+#   radio-browser dizinine eksik türler için ayrı ayrı sorar, gelenleri
+#   uygulamanın KENDİ kurallarıyla süzer, CORS başlığını sınar ve yeni
+#   radyo.json'u bu deponun içine yazıp bir PR açar.
+#
+# NEDEN BURADA KOŞUYOR
+#   Geliştirme ortamından radio-browser'a ve istasyon sunucularına
+#   çıkış kapalı (ölçüldü: 59 istasyonun 50'sine ulaşılamadı). Ağı
+#   olan tek yer burası.
+#
+# NEDEN OTOMATİK YAYINLAMIYOR
+#   Liste kullanıcının duyduğu şey. Her değişiklik gözden geçirilmeli;
+#   o yüzden doğrudan main'e yazmıyor, PR açıyor.
+#
+# SÜRE
+#   Her istasyonun CORS başlığı tek tek sınandığı için 10-20 dakika.
+
 name: Radyo hasadı
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:          # elle: Actions -> Radyo hasadı -> Run workflow
     inputs:
       hedef:
         description: 'Raf başına hedef istasyon sayısı'
         required: false
         default: '40'
   schedule:
-    - cron: '17 4 1 * *'
+    - cron: '17 4 1 * *'      # ayda bir, her ayın 1'i
 
 permissions:
   contents: write
@@ -24,71 +43,49 @@ jobs:
       - name: Depoyu al
         uses: actions/checkout@v5
 
-      - name: Veri deposunu al
-        uses: actions/checkout@v5
-        with:
-          repository: playjoymusic/tracks
-          path: tracks
-          token: ${{ secrets.TRACKS_TOKEN || github.token }}
-
+      # ── IKINCI DEPO KALKTI ────────────────────────────────────
+      # Liste eskiden ayri bir VERI deposunda (playjoymusic/tracks)
+      # duruyordu ve bu is onu da klonluyordu. Depo ozele alininca
+      # is her ayin birinde "Not Found" ile dustu: isin varsayilan
+      # jetonu BASKA bir depoyu okuyamaz. Bir sir eklemek cozerdi
+      # ama cozmesi gerekmiyordu -- liste zaten IKI yerde duruyordu
+      # ve ikisini esitlemek icin iki ayri PR aciliyordu. Bu bir
+      # tuzakti: biri birlesip oteki kalirsa uygulama aylarca eski
+      # listeyi servis eder ve kimse fark etmez.
+      # Artik tek kaynak KOD deposu. Uygulama listeyi zaten oradan
+      # (orbitape.app/radyo.json) cekiyor. Sir yok, ikinci PR yok,
+      # ayrismaya yer yok.
       - name: Hasat
         run: |
           python3 araclar/radyo_hasat.py \
-            tracks/radyo.json \
-            tracks/radyo.yeni.json \
+            radyo.json \
+            radyo.yeni.json \
             "${{ github.event.inputs.hedef || '40' }}"
-          mv tracks/radyo.yeni.json tracks/radyo.json
+          mv radyo.yeni.json radyo.json
 
+      # Hiçbir şey değişmediyse boş PR açmanın anlamı yok.
       - name: Degisiklik var mi
         id: fark
         run: |
-          cd tracks
           if git diff --quiet -- radyo.json; then
             echo "var=hayir" >> $GITHUB_OUTPUT
           else
             echo "var=evet" >> $GITHUB_OUTPUT
           fi
 
-      # ── YAYINDAKI KOPYA DA GUNCELLENSIN ─────────────────────────
-      # Uygulama listeyi artik ONCE KENDI SITEMIZDEN cekiyor
-      # (orbitape.app/radyo.json) -- GitHub'in raw sunucusu ve
-      # jsDelivr yalnizca yedek. Cloudflare'da statik dosya istegi
-      # ucretsiz ve sinirsiz, yani olcekte dogru yer orasi.
-      # Ama bu, KOD deposunda da bir kopya olmasi demek. Kopya elle
-      # guncellenirse er gec unutulur ve uygulama aylarca eski
-      # listeyi servis eder -- kimse fark etmez, cunku hicbir sey
-      # bozulmaz, sadece yeni istasyonlar hic gorunmez.
-      # O yuzden hasat ikisini birden guncelliyor: kaynak tracks'te,
-      # yayina giden kopya burada.
-      - name: Yayindaki kopyayi tazele
-        if: steps.fark.outputs.var == 'evet'
-        run: cp tracks/radyo.json radyo.json
-
-      - name: Kod deposuna PR ac
-        if: steps.fark.outputs.var == 'evet'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          branch: radyo-yayin-kopyasi
-          title: 'Yayindaki radyo.json tazelendi'
-          commit-message: 'radyo.json: yayin kopyasi hasatla esitlendi'
-          add-paths: radyo.json
-          body: |
-            Hasat tracks/radyo.json'u guncelledi; uygulama listeyi
-            once orbitape.app/radyo.json'dan cektigi icin yayina
-            giden kopya da esitlendi.
-
-            Bu PR'i VERI deposundaki PR ile BIRLIKTE birlestir --
-            biri birlesip oteki kalirsa liste ile yayin ayrisir.
-
+      # ── TEK PR ──────────────────────────────────────────────────
+      # Eskiden iki PR aciliyordu: biri veri deposuna, biri yayina
+      # giden kopya icin buraya. Ikisini birlikte birlestirmek
+      # gerekiyordu ve bu, unutulmayi bekleyen bir kuraldi. Tek
+      # kaynak kalinca tek PR kaldi.
       - name: PR ac
         if: steps.fark.outputs.var == 'evet'
         uses: peter-evans/create-pull-request@v7
         with:
-          path: tracks
-          token: ${{ secrets.TRACKS_TOKEN || github.token }}
           branch: radyo-hasat
           title: 'Radyo hasadi: eksik turlere istasyon'
           commit-message: 'Radyo hasadi'
+          add-paths: radyo.json
           body: |
             radio-browser'dan eksik turler icin istasyon toplandi.
 
