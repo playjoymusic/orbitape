@@ -1641,7 +1641,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',
                 ad:'25 - May Wind',
                 mp3:'https://archive.org/download/love_songs_2008_librivox/lovesongs_25_teasdale_128kb.mp3' },
-            olmali:'HUMANS' },
+            /* TALKS kapandi ve LibriVox kayitlari arsivden cikti;
+               boyle bir kayit artik hicbir rafa girmiyor. Testin
+               olctugu sey degismedi: baslikta "Wind" geciyor diye
+               NATURE'a DUSMEMELI. */
+            olmali:'OTHERS' },
           /* radio-aporee alan kaydi: adinda "train" geciyor diye
              MACHINES'teydi; MACHINES kalkti, sehrin sesi CITY'de. */
           { o:{ etiket:'radio-aporee-maps field recording phonography soundscape sound art soundmap radio ephemeral listening radio aporee',
