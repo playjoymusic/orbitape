@@ -106,10 +106,19 @@ alışkanlık yoktu.
 | Dosya | Ne | Nasıl güncelleniyor |
 |---|---|---|
 | `radyo.json` | 502 canlı istasyon | `araclar/radyo_hasat.py` + `radyo_grupla.py` |
-| `araclar/radyo_elle.json` | elle verilen raf kararları | Raf Masası çıktısı |
-| `earth.json` | 16.424 arşiv kaydı | `araclar/hasat.py` |
-| `earth_buyuk.json` | 6.479 uzun kayıt | aynı |
+| `araclar/radyo_elle.json` | elle verilen raf kararları | `raf_revizyon.html` çıktısı |
+| `earth.json` | 12.952 arşiv kaydı | `araclar/hasat.py` |
+| `earth_buyuk.json` | 5.198 uzun kayıt | aynı |
 | `earth_giris.json` | 700 kayıt, açılış dosyası | hasat sonunda **kendiliğinden** |
+
+**Radyo listesinin tek kaynağı bu depo.** Eskiden ayrı bir veri
+deposunda (`playjoymusic/tracks`) duruyordu ve hasat iki yeri
+eşitlemek için iki ayrı PR açıyordu. Depo özele alınınca hasat her
+ayın birinde "Not Found" ile düştü — işin varsayılan jetonu başka
+bir depoyu okuyamaz. Bir sır eklemek çözerdi ama çözmesi
+gerekmiyordu: iki kopyayı elle eşit tutmak zaten unutulmayı bekleyen
+bir kuraldı. Artık liste yalnızca burada; uygulama da zaten buradan
+(`orbitape.app/radyo.json`) çekiyor.
 
 **Başlangıç dosyası elle üretilmiyor.** `earth_giris.json`, arşivin
 ilk açılışta indirdiği 700 kayıtlık dosya (59 KB; tam havuz 1050 KB).

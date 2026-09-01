@@ -1589,10 +1589,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      tur rafi hem arsivin muzik kanaliydi ve ekran hangisi oldugunu
      soyleyemiyordu. */
   /* On halka -> DOKUZ: INDIE & LOFI bosaldi ve kaldirildi.
+     DOKUZ -> ON: AFROBEAT acildi ve otuz iki istasyonla doldu.
      Geometri halka SAYISINDAN tureniyor, o yuzden sayi burada
      acikca yaziyor: yanlis sayida parmak baska halkayi secer. */
-  K('Radyoda halkalar tur ailesi', hs.n===9 &&
+  K('Radyoda halkalar tur ailesi', hs.n===10 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
+       && /AFROBEAT/.test(hs.sira)
        && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
@@ -5146,7 +5148,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        gordugu raf sayisi hala dokuz. Magaza metinleri de o sayiyi
        yaziyor. Rafa istasyon girdigi gun bos damgasi kalkacak ve bu
        test onu bekleyecek. */
-    K('Dokuz DOLU aile tanimli', !!ai && ai.sayi === 9, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('On DOLU aile tanimli', !!ai && ai.sayi === 10, ai ? ai.adlar.join(' · ') : 'AILELER yok');
     K('Bildirilmis-bos raf halkada gorunmuyor',
       !!ai && ai.bosAdlar.every(b => !ai.halkada.includes(b)),
       ai ? ('bos: ' + (ai.bosAdlar.join(', ') || 'yok')
@@ -5260,12 +5262,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        WORLD & ROOTS · DISCO FUNK · JAZZ · LOUNGE & LOFI, sonra
        kalanlar KENDI aralarindaki eski sirayla. Dizi icten disa
        oldugu icin bunun tersi. */
-    /* AFROBEAT bu dizide YOK: bildirilmis-bos raflar halkada
-       gorunmuyor ve bu sira EKRANDAKI sirayi olcuyor. Rafa ilk
-       istasyon girdigi gun bos damgasi kalkacak ve buraya
-       JAZZ ile DISCO FUNK'in arasina yazilacak (distan besinci). */
+    /* AFROBEAT bos acilmisti ve halkada gorunmuyordu; otuz iki
+       istasyonla dolunca bos damgasi kalkti ve yerini aldi --
+       distan besinci, yani bu dizide JAZZ ile DISCO FUNK'in
+       arasinda. */
     const SIRA = ['AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
-                  'JAZZ','DISCO FUNK','WORLD & ROOTS',
+                  'JAZZ','AFROBEAT','DISCO FUNK','WORLD & ROOTS',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
@@ -6222,10 +6224,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Yasak liste ile yayin listesi celismiyor', celisen.length === 0,
          celisen.length ? celisen.slice(0,3).join(' | ') : yasak.length + ' adresin hicbiri listede degil');
     }
-    K('Hasat yayin kopyasini da tazeliyor',
-         /cp tracks\/radyo\.json radyo\.json/.test(akis)
+    /* ── TEK KAYNAK ─────────────────────────────────────────────
+       Liste eskiden ayri bir veri deposunda duruyordu ve hasat iki
+       yeri esitlemek icin iki PR aciyordu; bu test o iki adimi
+       ariyordu. Depo ozele alininca hasat "Not Found" ile dustu ve
+       ikinci kopya da bir tuzakti -- PR'lardan biri birlesip oteki
+       kalirsa uygulama aylarca eski listeyi servis eder.
+       Simdi tek kaynak kod deposu. Test artik iki adimi degil,
+       IKINCI DEPONUN HIC OLMADIGINI ariyor: bir gun biri "tracks"i
+       geri koyarsa kapi kirmizi yanar. */
+    K('Hasat tek kaynaktan calisiyor',
+         !/repository:\s*playjoymusic\/tracks/.test(akis)
+         && !/tracks\/radyo\.json/.test(akis)
+         && /radyo_hasat\.py[\s\\]+radyo\.json/.test(akis)
          && /add-paths:\s*radyo\.json/.test(akis),
-         'is akisi hem tracks hem kod deposu icin PR aciyor');
+         'ikinci depo yok, PR tek ve kod deposuna aciliyor');
       /* Yayina giden kopya GERCEKTEN yayinlaniyor mu: .assetsignore
          onu haric tutuyorsa adres 404 doner ve uygulama her acilista
          yedege duser -- yani degisiklik hicbir sey kazandirmaz. */
