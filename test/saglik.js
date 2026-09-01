@@ -66,12 +66,45 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const o = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
       if(o) navigator.mediaDevices.getUserMedia = function(){ window.__gum++; return o.apply(this,arguments); }; },
     git: false });
+  /* ── ALL BLACK VARSAYILAN ACIK, OLCUM ICIN KAPATILIYOR ────────
+     Ayarlardaki ALL BLACK anahtari acikken zemin her rafta simsiyah
+     -- kullanicinin istegi ("background siyahken cok net, istenirse
+     acilsin"). Ama asagidaki onlarca kontrol ZEMIN SISTEMINI
+     olcuyor: tema zemine yaziliyor mu, raf zemine yansiyor mu,
+     kilit calisiyor mu. Anahtar acikken hepsi #000000 okur ve
+     hicbir sey kanitlanamaz.
+     O yuzden bu sayfada anahtar KAPATILIYOR; anahtarin kendisi
+     ayrica sinaniyor ("ALL BLACK varsayilan acik ve her zemini
+     karartiyor"). */
   const jsHata=[], konsol=[];
   pg.on('pageerror', e=>jsHata.push(e.message));
   pg.on('console', m=>{ const t=m.text(); if(m.type()==='error' && !/ERR_FAILED|ERR_BLOCKED|net::/.test(t)) konsol.push(t.slice(0,120)); });   // dis istekler testte bilerek kesiliyor
   /* Dinleyiciler takildiktan SONRA gidiliyor: acilistaki bir JS hatasi
      yakalanmazsa bu testin varlik sebebi kalmaz. */
   await pg.goto(S); await pg.waitForTimeout(2500);
+  /* ALL BLACK anahtarinin KENDISI once olculuyor (varsayilani acik
+     mi, gercekten karartiyor mu), sonra kapatiliyor ki asagidaki
+     zemin kontrolleri sistemi olcebilsin. */
+  const siyah = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const oku=()=>getComputedStyle(document.body).getPropertyValue('--zem1').trim();
+    const varsayilan = AYAR.karanlik === true;
+    const _e = mod; mod = 'lib';
+    modSec('RECORDS', true); await bek(80);
+    const a = oku();
+    modSec('NATURE', true);  await bek(80);
+    const b = oku();
+    AYAR.karanlik = false; zeminUygula(); await bek(60);
+    const c = oku();
+    mod = _e; modSec('RADIOTAPE', true); await bek(60);
+    return { varsayilan, a, b, c };
+  });
+  K('ALL BLACK varsayilan acik ve her zemini karartiyor',
+     siyah.varsayilan === true && /^#0{6}$/i.test(siyah.a) && /^#0{6}$/i.test(siyah.b)
+     && !/^#0{6}$/i.test(siyah.c),
+     'iki farkli rafta da ' + siyah.a + '; anahtar kapaninca ' + siyah.c);
+  /* Anahtar bu sayfada KAPALI kaliyor -- zemin sistemi olculebilsin. */
+  await pg.evaluate(()=>{ try{ AYAR.karanlik = false; zeminUygula(); }catch(e){} });
 
   // ── 1. TEMEL ────────────────────────────────────────────────────────
   K('JS hatasi (sayfa)',      jsHata.length===0, jsHata.length ? jsHata[0].slice(0,80) : '0');
@@ -563,9 +596,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      elimizde; orada sormak hem gereksiz hem de yanlis sonuc verir. */
   K('Parca sorgusu yalnizca canli yayinda', await pg.evaluate(async ()=>{
       const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      /* YALNIZCA SORGU ISTEKLERI SAYILIYOR. Once her fetch
+         sayiliyordu ve uygulama arka planda kendi listelerini de
+         indirdigi icin (arsiv havuzu iki asamada iniyor) sayac
+         yalancilasti: test kodda hicbir sey bozulmamisken kirmizi
+         yandi. Olculmek istenen sey PARCA SORGUSU -- o da
+         istasyonun kendi adresine gidiyor. */
       let cagri = 0;
       const eskiF = window.fetch;
-      window.fetch = (u)=>{ cagri++; return Promise.reject(new TypeError('yok')); };
+      window.fetch = (u)=>{ if(String(u).indexOf('https://h/') === 0) cagri++;
+                            return Promise.reject(new TypeError('yok')); };
       parcaBasla({id:'lib:1', ad:'Arsiv Kaydi', mp3:'https://h/a.mp3'});   // radyo DEGIL
       await bek(200);
       const arsivde = cagri;
@@ -1521,8 +1561,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* MODLAR = arsiv tarafinin kategorileri (radyo aileleri ayri
      tabloda, AILELER). Sayisi INDIE & LOFI'den etkilenmiyor: o bir
      RADYO rafiydi. */
-  /* 12 -> 11: SPACE kategorisi SOUNDSCAPES'e katildi. */
-  K('Kategoriler tanimli',    md.n===11, md.ad);
+  /* 11 -> 14: arsiv raflari yeniden bolundu (TALKS/HUMANS ayrildi,
+     CITY ve BEATS acildi, MACHINES ile SOUNDSCAPES kalkti). Sayi
+     sabit bir hedef degil, listenin GERCEKTEN degistigini gormek
+     icin duruyor. */
+  K('Kategoriler tanimli',    md.n===14, md.ad);
   /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
@@ -1553,15 +1596,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        acilista secili olan.
        Kullanicinin istegi: "OTHER en kucuk halka olacakti",
        "ilk basta orbitape aciliyor, hepsinin oldugu." */
-    /* SEKIZ -> YEDI: SPACE rafi SOUNDSCAPES'e katildi (kullanici
-       istegi, "tutarli degil zaten"). Ayrica RECORDS ile HUMANS yer
-       degistirdi: RECORDS artik en buyuk 2. halka. Iki uc SABIT
-       kaliyor ve test onlari ayrica bekliyor: OTHERS en icte,
-       ORBITAPE en dista. */
-    K('Arsiv kanalinda halkalar 7 raf', ars.n===7 && /^OTHERS/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
-    K('Arsivde RECORDS en buyuk 2. halka',
-       /HUMANS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
-    K('SPACE rafi kalmadi', !/\bSPACE\b/.test(ars.ad), ars.ad);
+    /* YEDI -> ON. Eski bolum olculdu ve uc yerinden bozuktu:
+       MACHINES 120 kayitla oluydu, NATURE'in tepesinde piyano
+       sololari vardi, HUMANS iki ayri deneyimi (sesli kitap ile
+       sozlu tarih) ayni rafta tutuyordu.
+       Yeni bolum kullanicinin karari. Iki uc SABIT: ORBITAPE EN ICTE
+       (arsivin tamami, acilista secili olan -- "orbitape'te zaten
+       hepsi var ve ilk sirada"), RECORDS EN DISTA.
+       Sira KAYIT SAYISINA GORE DEGIL: TALKS 4.123 kayitla ictekilerden
+       biri, RECORDS 1.745 kayitla en distaki. Sunum sirasi. */
+    K('Arsiv kanalinda halkalar 10 raf', ars.n===10 && /^ORBITAPE/.test(ars.ad) && /RECORDS$/.test(ars.ad), ars.ad);
+    K('Arsivde ORBITAPE ilk, RECORDS son',
+       /^ORBITAPE OTHERS TALKS/.test(ars.ad) && /BEATS RECORDS$/.test(ars.ad), ars.ad);
+    K('TALKS ve HUMANS ayri raflar',
+       /\bTALKS\b/.test(ars.ad) && /\bHUMANS\b/.test(ars.ad), 'anlatilan sey ve konusan insan ayrildi');
     /* ── RAF KARARI SERBEST BASLIGA BAKMIYOR ─────────────────────
        Kullanicinin bildirimi: "sanki olmayan seyler cikiyor
        bazilarinda." Dogruydu. arsivRaf uc metni birden tariyordu:
@@ -1574,8 +1622,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (baslik yeniden sorulursa) ucu birden kirmiziya doner. */
     K('Raf karari sarkinin adina bakmiyor', await pg.evaluate(()=>{
         const dene = [
-          /* 78'lik caz plagi: adinda "Apollo" geciyor diye
-             SOUNDSCAPES'e dusuyordu. */
+          /* 78'lik caz plagi: adinda "Apollo" geciyor diye ses
+             raflarina dusuyordu. */
           /* UC KAYIT DA KATALOGDAN BIREBIR KOPYA -- adres dahil.
              Uydurma adres yazmak testi yalanci yapardi: kaynak
              adresine baslik gecerse kelime oradan yakalanir ve test
@@ -1584,17 +1632,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                 ad:"Jumpin' At Apollo",
                 mp3:'https://archive.org/download/JV-25463-1946-QmY13QXN9yZMT7TYEhnpF7N5ne6SGKUfZcbXCadqUfPRff.mp3/APOR1054.mp3' },
             olmali:'RECORDS' },
-          /* LibriVox siiri: adinda "Wind" geciyor diye NATURE'daydi. */
+          /* LibriVox siiri: adinda "Wind" geciyor diye NATURE'daydi.
+             Sesli kitap ve siir artik TALKS rafinda. */
           { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',
                 ad:'25 - May Wind',
                 mp3:'https://archive.org/download/love_songs_2008_librivox/lovesongs_25_teasdale_128kb.mp3' },
-            olmali:'HUMANS' },
+            olmali:'TALKS' },
           /* radio-aporee alan kaydi: adinda "train" geciyor diye
-             MACHINES'teydi. */
+             MACHINES'teydi; MACHINES kalkti, sehrin sesi CITY'de. */
           { o:{ etiket:'radio-aporee-maps field recording phonography soundscape sound art soundmap radio ephemeral listening radio aporee',
                 ad:'kautenbach, station, train arrival',
                 mp3:'https://archive.org/download/aporee_11490_13536/KautenbachBahnhofZugeinfahrt01.mp3' },
-            olmali:'SOUNDSCAPES' }
+            olmali:'CITY' }
         ];
         return dene.every(x => arsivRaf(x.o) === x.olmali);
       }), 'etiket ve kaynak soruluyor, baslik sorulmuyor');
@@ -1635,9 +1684,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      AMBIANCE'a girer ama RECORDS'a gitmez, ikisi de ORBITAPE'e
      girer, hicbiri RADIOTAPE'e girmez. */
   const ay = await pg.evaluate(()=>{
+    /* Bolum degisti: 'netlabel · techno' artik BEATS'in, alan kaydi
+       NATURE'in. Degismeyen kural: ikisi de ORBITAPE'te (arsivin
+       tamami), hicbiri RADIOTAPE'te (canli yayin) degil. */
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
-    return modUyar(muzik,'RECORDS') && !modUyar(muzik,'AMBIANCE')
-        && modUyar(ses,'AMBIANCE') && !modUyar(ses,'RECORDS')
+    return modUyar(muzik,'BEATS') && !modUyar(muzik,'NATURE')
+        && modUyar(ses,'NATURE') && !modUyar(ses,'BEATS')
         && modUyar(muzik,'ORBITAPE') && modUyar(ses,'ORBITAPE')
         && !modUyar(muzik,'RADIOTAPE') && !modUyar(ses,'RADIOTAPE');
   });
@@ -2003,27 +2055,36 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'anahtar satiri var; acinca "bir daha gosterme" kaydi kalkiyor');
   }
 
-  K('RECORDS muzik, ORBITAPE hepsi', ay, 'ORBITAPE arsivin tamami, RADIOTAPE disarida');
+  K('Raflar ayri, ORBITAPE hepsi', ay, 'muzik BEATS, ses NATURE, ikisi de ORBITAPE te');
   const sf = await pg.evaluate(()=>{
     const t=(e,a)=>({etiket:e,ad:a});
     return {
-      ambientMuzik: modUyar(t('ambient · drone','Deep Drone'),'RECORDS') && !modUyar(t('ambient · drone','Deep Drone'),'AMBIANCE'),
-      noiseMuzik:   modUyar(t('noise · experimental','Harsh'),'RECORDS') && !modUyar(t('noise · experimental','Harsh'),'AMBIANCE'),
-      alanKaydi:    modUyar(t('green-field-recordings','x'),'AMBIANCE'),
-      nasa:         modUyar(t('nasaaudiocollection · nasa','x'),'AMBIANCE'),
-      baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'AMBIANCE') && !modUyar(t('','Tidal Wave'),'RECORDS'),
+      /* ── MEZAR TASI: ESKI TAKSONOMI ────────────────────────────
+         Bu satirlar bir zamanlar "ambient muzik sayiliyor mu"
+         soruyordu, cunku AMBIANCE butun SES kayitlarinin rafiydi ve
+         muzik oraya girmemeliydi. Bolum degisti: AMBIANCE artik
+         ambient/drone MUZIGININ kendi rafi, alan kayitlari NATURE'a,
+         uzay SPACE'e, ritim ve gurultu BEATS'e gidiyor. */
+      ambientKendiRafi: modUyar(t('ambient · drone','Deep Drone'),'AMBIANCE')
+                     && !modUyar(t('ambient · drone','Deep Drone'),'NATURE'),
+      gurultuBeats:  modUyar(t('noise · experimental','Harsh'),'BEATS'),
+      alanKaydi:    modUyar(t('green-field-recordings','x'),'NATURE'),
+      nasa:         modUyar(t('nasaaudiocollection · nasa','x'),'SPACE'),
+      baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'NATURE') && !modUyar(t('','Tidal Wave'),'RECORDS'),
       canliYayin:   modUyar({etiket:'',ad:'FM',radyo:true},'RADIOTAPE') === true &&
                     ['RECORDS','ORBITAPE','AMBIANCE','HUMAN'].every(k=>!modUyar({etiket:'',ad:'FM',radyo:true},k)),
       radyoSadeceYayin: !modUyar(t('netlabel · techno','Acid EP'),'RADIOTAPE') && !modUyar(t('field recordings','Rain'),'RADIOTAPE')
     };
   });
-  K('ambient/noise MUZIK sayiliyor', sf.ambientMuzik && sf.noiseMuzik, 'AMBIANCE a dusmuyor');
-  K('Alan kaydi + nasa AMBIANCE', sf.alanKaydi && sf.nasa, 'NATURE kalkti, ikisi de AMBIANCE');
+  K('Ambient kendi rafinda, gurultu BEATS te', sf.ambientKendiRafi && sf.gurultuBeats,
+     'ambient/drone -> AMBIANCE, noise/experimental -> BEATS');
+  K('Alan kaydi NATURE, nasa SPACE', sf.alanKaydi && sf.nasa,
+     'ses raflari ayrildi: doga ayri, uzay ayri');
   /* Etiketsiz kayitlar artik BASLIKTAN degil, archive.org KIMLIGINDEN
      siniflaniyor: 'lp_madama-butterfly' muzik, 'exp46-change-of-command'
      insan sesi. Baslik hala hicbir seye karismiyor. */
   const kyn = await pg.evaluate(()=>{
-    const A=['RADIOTAPE','RECORDS','ORBITAPE','HUMAN','AMBIANCE'];
+    const A=['RADIOTAPE','RECORDS','ORBITAPE','TALKS','HUMANS','NATURE','SPACE','AMBIANCE','BEATS','CITY','OTHERS'];
     const f=(o)=>A.filter(a=>modUyar(o,a)).join(',');
     const U=(id)=>({etiket:'', ad:'Tidal Wave', mp3:'https://archive.org/download/'+id+'/x.mp3'});
     return {
@@ -2042,12 +2103,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'lp '+kyn.lp+' | edison '+kyn.edison+' | 78 '+kyn.r78);
   /* NASA yer-uzay hatti INSAN SESI: HUMAN'a girer, AMBIANCE'a GIRMEZ.
      Kullanicinin kurali: ambiance'a asla telsiz konusmasi koyma. */
-  K('Etiketsiz: NASA konusmasi HUMAN', /HUMAN/.test(kyn.nasa) && !/AMBIANCE/.test(kyn.nasa), kyn.nasa);
-  K('Etiketsiz: voyager AMBIANCE', /AMBIANCE/.test(kyn.voyager), kyn.voyager);
-  K('Kaynaksiz kayit ORBITAPE te kalir', kyn.bos==='ORBITAPE', kyn.bos);
-  K('Etiket "ses" derse kaynak ezemez', kyn.talk==='ORBITAPE,HUMAN', kyn.talk);
-  K('folksoundomy muzik DEGIL', /AMBIANCE/.test(kyn.folk) && !/RECORDS/.test(kyn.folk), kyn.folk);
-  K('soap opera muzik DEGIL', /HUMAN/.test(kyn.soap) && !/RECORDS/.test(kyn.soap), kyn.soap);
+  /* NASA yer-uzay hatti INSAN SESI: HUMANS'a girer (telsiz rafi),
+     uzay seslerinin rafina degil. */
+  K('Etiketsiz: NASA konusmasi HUMANS', /HUMANS/.test(kyn.nasa), kyn.nasa);
+  K('Etiketsiz: voyager SPACE', /SPACE/.test(kyn.voyager), kyn.voyager);
+  /* OTHERS artik gorunur bir halka: kaynaksiz kayit hem ORBITAPE'te
+     (hepsi) hem OTHERS'ta (geri kalan) gorunuyor -- ikisi de dogru. */
+  K('Kaynaksiz kayit OTHERS rafinda', kyn.bos==='ORBITAPE,OTHERS', kyn.bos);
+  K('Etiket "radio program" derse TALKS', /TALKS/.test(kyn.talk), kyn.talk);
+  K('folksoundomy muzik DEGIL', /NATURE/.test(kyn.folk) && !/RECORDS/.test(kyn.folk), kyn.folk);
+  K('soap opera muzik DEGIL', /TALKS/.test(kyn.soap) && !/RECORDS/.test(kyn.soap), kyn.soap);
 
   K('Basliktan siniflandirma YOK', sf.baslikYok, '"Tidal Wave" AMBIANCE degil, ORBITAPE');
   K('RADIOTAPE sadece canli yayin', sf.radyoSadeceYayin, 'arsiv RADIOTAPE e girmiyor');
@@ -2075,21 +2140,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     AKTIF_MOD=null; modAdiYaz(); return r;
   });
   const iki = await pg.evaluate(()=>{
-    AKTIF_MOD=null; modAdiYaz(); modAdiTut('SOUNDSCAPES');
+    AKTIF_MOD=null; modAdiYaz(); modAdiTut('AMBIANCE');
     const g=document.getElementById('modGez'), k=document.getElementById('modAd');
     /* GECICI AD ARTIK CIZIM: textContent bos, punto 0. Ne yazdigini
        data-ad soyluyor, olcuyu de cizimin kendi kutusu. */
     const a={gezinirkenBuyuk:g.getAttribute('data-ad')||g.textContent,
              gezinirkenKucuk:k.textContent,
              buyukPunto:Math.round(g.getBoundingClientRect().height)};
-    modAdiBirak(); AKTIF_MOD='SOUNDSCAPES'; modAdiGoster();
+    modAdiBirak(); AKTIF_MOD='AMBIANCE'; modAdiGoster();
     a.secincBuyuk=(g.getAttribute('data-ad')||g.textContent); a.secincKucuk=k.textContent;
     AKTIF_MOD=null; modAdiYaz(); modGezYaz(''); return a;
   });
   /* KUCUK YAZI ARTIK HIC BOSALMIYOR. Kullanici nerede oldugunu
      kaybediyordu; artik gezinen yoksa bulundugu yerin adi yaziyor. */
   K('Gezinirken buyuk yazi cikiyor',
-    iki.gezinirkenBuyuk==='SOUNDSCAPES' && iki.buyukPunto>=20, 'buyuk '+iki.buyukPunto+'px boyunda');
+    iki.gezinirkenBuyuk==='AMBIANCE' && iki.buyukPunto>=20, 'buyuk '+iki.buyukPunto+'px boyunda');
   K('Kucuk yazi hic bosalmiyor',
     iki.gezinirkenKucuk!=='' && iki.secincKucuk!=='', 
     'gezinirken "'+iki.gezinirkenKucuk+'" | secince "'+iki.secincKucuk+'"');
@@ -2709,9 +2774,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      uygulamanin kendi muzik testi soruldu. Olculdu: OTHERS 1.289 ->
      598, RECORDS 5.224 -> 5.915. */
   K('OTHERS muzigi RECORDS a birakiyor', await pg.evaluate(()=>
-      arsivRaf({etiket:'opensource_audio community experimental', ad:'[LEMN018] Therma Ikarias', mp3:''}) === 'RECORDS'
+      arsivRaf({etiket:'opensource_audio community experimental', ad:'[LEMN018] Therma Ikarias', mp3:''}) === 'BEATS'
       && arsivRaf({etiket:'', ad:'Broken Doorbell', mp3:''}) === 'OTHERS'),
-     'netlabel yayini RECORDS, kalan OTHERS');
+     'deneysel netlabel yayini BEATS, kalan OTHERS');
   K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
   K('Kayit hedefi ONDEN hazir', await pg.evaluate(()=>!!kayitHedef), 'REC oncesi kurulu');
   /* latencyHint:'playback': tampon 441 -> 1024 ornek. Cizirti isleci

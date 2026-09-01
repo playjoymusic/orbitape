@@ -1699,23 +1699,6 @@
      cakisiyordu. Cozum tutamagi kacirmak degil: modul BIR SATIR
      yukari cikiyor ve tutamak alt sol kosede kaliyor. Ikisi ayni
      sol kenardan basliyor, tek bir konsol gibi okunuyor. */
-  /* ── PARTY MOOD: SINEMA KARARTMASI ────────────────────────────
-     Kullanicinin tarifi: "sadece halkanin kalacagi, sinema modu gibi
-     karartma; kenarlardan yapip halkanin cevresini icine alacak
-     kadar."
-     Bir daire: ortada hicbir sey yok (halkalar oldugu gibi duruyor),
-     disari dogru karariyor. Olculer halkanin kendi yaricapina gore:
-     %30'a kadar tamamen acik, %62'de yariya iniyor, kenarda neredeyse
-     kapali. Ekranin ustunde duruyor ama TIKLAMA GECIRIYOR
-     (pointer-events:none) -- karartma bir perde, duvar degil.
-     z-index 60: tuvalin ve halkalarin ustunde, ayar panelinin (96) ve
-     tanitim turunun altinda; yani panel acilinca panel karartmanin
-     ustunde kaliyor. */
-  body.parti::after{
-    content:'';position:fixed;inset:0;z-index:60;pointer-events:none;
-    background:radial-gradient(circle at 50% 50%,
-      rgba(0,0,0,0) 30%, rgba(0,0,0,.50) 62%, rgba(0,0,0,.90) 100%);
-    transition:opacity .35s ease;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
   /* ── PANEL ACIKKEN: BU IKISININ ALTI KOYULASIYOR ──────────────
      Panel yari saydam ve OYLE KALIYOR -- kullanicinin sozu:
@@ -1819,7 +1802,7 @@
      ekran. Panel bir ALT SAYFA; ustunde ne oldugunu goremedigin bir
      panel, panel olmaktan cikip sayfa olur. Fazlasi kendi icinde
      kayiyor. */
-  #ayar{max-height:calc(100vh - 190px);overflow-y:auto;overscroll-behavior:contain;
+  #ayar{max-height:calc(100vh - 180px);overflow-y:auto;overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;}
   #ayar h4{display:none;}
   /* ── BOLUM BASLIKLARI ────────────────────────────────────────────
@@ -2538,8 +2521,6 @@
     <h5>DISPLAY</h5>
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
       <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <div class="sat" data-ayar="parti" role="switch" tabindex="-1">
-      <span>PARTY MOOD</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
 
     <h5>AUDIO</h5>
     <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
@@ -3111,19 +3092,40 @@
        adiyla duruyor. */
     const ARSIV_KURSUN = '147,155,190';
     try{ window.ARSIV_KURSUN = ARSIV_KURSUN; }catch(e){ _yut(e); }
+    /* DOKUZ RAF, DOKUZ TON. Ton halka sirasinca yuruyor (icten disa):
+       notr gri -> kagit -> kursun mavi -> menekse -> beton -> yesil
+       -> tozlu gul -> celik mavi -> bakir. Iki komsu hem tonla hem
+       parlaklikla ayriliyor.
+       RETRO KALIYOR: doygunluk .24-.38, kanal farki 82'yi gecmiyor.
+       TALKS kagit rengi: sesli kitabin ve radyo tiyatrosunun rengi
+       kagit olmali. HUMANS tozlu gulu koruyor (telsiz/sozlu tarih).
+       BEATS celik mavi: ritim tarafinin tek soguk tonu. */
     const RETRO = {
-      OTHERS:      ['187,182,170','224,222,214'],   // sicak gri: geri kalan
-      MACHINES:    ['172,191,136','216,221,207'],   // zeytin
-      NATURE:      ['142,178,155','204,215,208'],   // sonuk yesil
-      SOUNDSCAPES: ['126,184,190','201,216,217'],   // teal (SPACE de burada)
-      HUMANS:      ['199,142,156','226,213,216'],   // tozlu gul
-      RECORDS:     ['189,137,107','211,196,187']    // bakir: plak
+      OTHERS:   ['187,182,170','224,222,214'],   // sicak gri: geri kalan
+      TALKS:    ['206,193,163','232,224,208'],   // kagit
+      SPACE:    ['147,155,190','206,210,226'],   // kursun mavi
+      AMBIANCE: ['160,148,190','214,208,226'],   // sonuk menekse
+      CITY:     ['168,168,158','214,214,208'],   // beton
+      NATURE:   ['142,178,155','204,215,208'],   // sonuk yesil
+      HUMANS:   ['199,142,156','226,213,216'],   // tozlu gul
+      BEATS:    ['126,158,186','200,214,224'],   // celik mavi
+      RECORDS:  ['189,137,107','211,196,187']    // bakir: plak
     };
+    /* ── HER RAFIN KENDI ZEMINI ───────────────────────────────
+       Once dokuz rafin dokuzu da AYNI zemini paylasiyordu
+       ('#0d0c0a'). Raf degistirince ekranin alti hic kimildamiyordu;
+       yani zemin "neredeyim" sorusuna cevap vermiyordu. Saglik testi
+       de bunu yakaladi: dort kategori, uc ayri zemin.
+       Zemin artik rafin KENDI renginden turuyor: rengin %4'u
+       neredeyse siyaha karistiriliyor. Ust sinir olculdu: en acik kanal 11/255,
+       yani "arsiv zeminleri siyaha yakin" kurali korunuyor; ama iki raf yan yana konunca farki goruluyor. */
+    const _zem = (rgb, k, taban)=>'#' + rgb.split(',')
+      .map(x=>Math.min(255, Math.round(+x * k) + taban).toString(16).padStart(2,'0')).join('');
     for(const ad in RETRO){
       const [ana, ik] = RETRO[ad];
       MOD_TEMA[ad] = { ana:ana, ikinci:ik,
                        halka:[ana, ik, '96,92,86', '224,216,200'],
-                       zemin:['#0d0c0a','#030302'] };
+                       zemin:[_zem(ana, 0.04, 3), _zem(ana, 0.015, 1)] };
     }
   })();
   /* Ekran zemini: FX > kategori > kanal. modSec / fxModGec / modaGec
@@ -3605,13 +3607,6 @@
       kok.setProperty('--m3', 'rgb('+m3+')');
     }catch(e){ _yut(e); }
   }
-  /* PARTY MOOD govdeye tek sinif yaziyor; gorunumun tamami CSS'te
-     (body.parti::after). Boylece kip degisimi, tema, raf -- hicbiri
-     bu perdeyi hesaplamak zorunda degil. */
-  function partiUygula(){
-    try{ document.body.classList.toggle('parti', !!AYAR.parti); }catch(e){ _yut(e); }
-  }
-  try{ window.partiUygula = partiUygula; }catch(e){ _yut(e); }
   function zeminUygula(){
     try{ markaRengi(); }catch(e){ _yut(e); }
     /* ── SAĞ ÜSTTEKİ ÜÇ SEMBOL SEÇİLİ HALKANIN RENGİNİ ALIR ─────────
@@ -5376,7 +5371,15 @@
        yayın — hepsi HUMAN'ın. Aşağıdaki modUyar önce HUMAN'a bakıyor,
        oraya giren AMBIANCE'a giremiyor. (irdial/conet buradan çıktı;
        onlar telsiz konuşması.) */
-    { ad:'AMBIANCE',  yer:/nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|space ?sounds?|satellite|shortwave|room tone|city ?sounds?|urban ?sounds?|machine ?sounds?|war ?recording|ambience|ambiance|atmosphere|soundscape|\biss\b|spacewalk|expedition ?\d|telemetry|radio ?signals?|interference|static|engine|factory|traffic|subway|\btrain\b|airport|crowd|market|street|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit|green.?field.?recordings?|field recordings?|folksoundomy|environmental.?sounds?|natural sounds?|\bnature\b|bird ?song|ocean|\bsea\b|rain|thunder|storm|forest|jungle|river|stream|creek|waterfall|\bwind\b|insects?|crickets?|frogs?|\bbirds?\b|wildlife|animal|underwater|hydrophone|garden|meadow|mountain|desert|\bsnow\b|\bice\b/i,
+    /* ── AD DEGISTI: 'AMBIANCE' -> 'SES_KALIBI' ──────────────────
+       Bu kayit bir RAF DEGIL, bir SORU: "bu bir ses kaydi mi, muzik
+       mi?" _sesMi() ve _muzikMi() bunu kullaniyor ve kalip bilerek
+       cok genis (doga + sehir + uzay + telsiz hepsi burada).
+       Arsiv tarafinda AMBIANCE artik gercek bir raf (ambient/drone)
+       ve ayni adi tasiyan iki kayit modBul()'da CAKISIYORDU --
+       modBul ilk buldugunu doner, yani yeni raf hicbir zaman
+       sorulmazdi. Ad degisti, kalip degismedi. */
+    { ad:'SES_KALIBI',  yer:/nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|space ?sounds?|satellite|shortwave|room tone|city ?sounds?|urban ?sounds?|machine ?sounds?|war ?recording|ambience|ambiance|atmosphere|soundscape|\biss\b|spacewalk|expedition ?\d|telemetry|radio ?signals?|interference|static|engine|factory|traffic|subway|\btrain\b|airport|crowd|market|street|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit|green.?field.?recordings?|field recordings?|folksoundomy|environmental.?sounds?|natural sounds?|\bnature\b|bird ?song|ocean|\bsea\b|rain|thunder|storm|forest|jungle|river|stream|creek|waterfall|\bwind\b|insects?|crickets?|frogs?|\bbirds?\b|wildlife|animal|underwater|hydrophone|garden|meadow|mountain|desert|\bsnow\b|\bice\b/i,
       radyo:'ambient' },
     /* İnsan sesi — konuşma, tiyatro, telsiz, vaaz. */
     /* İNSAN SESİ olan her şey: konuşma, tiyatro, vaaz ve TELSİZ —
@@ -5395,21 +5398,51 @@
        Olculen hacimler (22.903 kayit, earth + earth_buyuk):
          HUMANS 8.111 · RECORDS 9.412 · SPACE 683 · SOUNDSCAPES 5.580
          NATURE 3.984 · MACHINES 523 · OTHERS kalan */
-    { ad:'HUMANS',     yer:/oldtimeradio|old ?time ?radio|\botr\b|radio ?drama|radioprogram|radiostationarchives|airchecks|librivox|audiobook|audio_?bookspoetry|poetry|spoken|podcast|\btalk\b|interview|speech|lecture|sermon|monolog|dialog|storytell|oral history|narrat|documentar|\bnews\b|briefing|commentary|conference|aapb|soap opera|comedy|\bdrama\b|shortwave|numbers ?station|irdial|conet|telsiz|radio ?signals?/i, radyo:'' },
-    { ad:'RECORDS',      yer:/78 ?rpm|great78|cylinder|edison|shellac|\bvinyl\b|^lp_|netlabel|freemusicarchive|jamendo|folklore|\bfolk\b|\bsaz\b|baglama|celtic|flamenco|tango|\bsalsa\b|klezmer|\bjazz\b|\bblues\b|\bopera\b|orchestra|symphon|sonata|concerto|album|\bep\b|remix|compilation|\bsong\b|\bmusic\b|guitar|piano|quartet|techno|\bidm\b|glitch|musique concrete|electroacoustic|\bdrone\b|psych.?folk|improvisation/i, radyo:'' },
-    /* ── SPACE BURAYA KATILDI ─────────────────────────────────
-       Ayri bir SPACE rafi vardi (371 kayit). Kullanicinin sozu:
-       "space ile soundscapes'i birlestirelim, space'tekileri oraya
-       aktar, space'i sil -- tutarli degil zaten."
-       Tutarsizligin sebebi de belliydi: NASA telemetrisi bir alan
-       kaydidir, ama netlabel'lerin "space ambient" etiketi muzik.
-       Ayni raf iki ayri seyi tasiyordu. Birlestirince en azindan
-       TEK bir soru soruluyor: bu bir ortam kaydi mi.
-       SPACE'in butun terimleri asagida, oldugu gibi. */
-    { ad:'SOUNDSCAPES', yer:/soundscape|bioacoustic|phonograph|field ?recordings?|environmental ?sounds?|natural ?sounds?|hydrophone|room ?tone|ambience|ambiance|atmosphere|nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|satellite|space ?sounds?|\biss\b|spacewalk|expedition ?\d|telemetry|soyuz|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit/i, radyo:'' },
-    { ad:'NATURE',     yer:/\bnature\b|\bbirds?\b|bird ?song|forest|jungle|wildlife|animal|insects?|crickets?|frogs?|meadow|garden|mountain|desert|ocean|\bsea\b|river|stream|creek|waterfall|underwater|\brain\b|thunder|storm|\bwind\b|\bsnow\b|\bice\b|city ?sounds?|urban|traffic|crowd|market|street/i, radyo:'' },
-    { ad:'MACHINES',    yer:/machine ?sounds?|\bengine\b|factory|\btrain\b|subway|airport|turbine|generator|motor\b|industrial ?sounds?|war ?recording/i, radyo:'' },
-    { ad:'OTHERS',    yer:/.^/, radyo:'' }          // kalan: asagidaki arsivRaf() dolduruyor
+    /* ── DOKUZ RAF: NE OLDUGU DEGIL, NE ICIN DINLENDIGI ──────────
+       Eski yedi raf (HUMANS/RECORDS/SOUNDSCAPES/NATURE/MACHINES/
+       SPACE/OTHERS) olculdu ve uc yerinden bozuktu:
+         · MACHINES 120 kayitla oluydu (binde 5) ve icindekilerin
+           cogu aslinda alan kaydiydi.
+         · NATURE "doga" degildi: tepesinde piyano sololari, sesli
+           kitaplar ve psytrance vardi -- kuralin yakaladigi her sey.
+         · HUMANS iki ayri seyi tasiyordu: sesli kitap/radyo tiyatrosu
+           ile sozlu tarih/telsiz kayitlari. Dinlerken bambaska iki
+           deneyim, ayni rafta.
+       Yeni bolum kullanicinin karari. Iki yeni ayrim var ve ikisi de
+       "ne icin dinliyorsun" sorusuna gore:
+         TALKS  = anlatilan sey (sesli kitap, radyo tiyatrosu, siir)
+         HUMANS = insan sesinin KENDISI (sozlu tarih tanikliklari,
+                  telsiz, kisa dalga, sayi istasyonlari) -- havasi
+                  telsiz gibi olmali.
+       SIRA EKRAN SIRASI DEGIL, SORU SIRASI: dar ve kesin raflar
+       once soruluyor. TALKS once cunku LibriVox/OTR kimlikleri
+       tartismasiz; RECORDS en sonda cunku "song|album|music" gibi
+       terimler her yere bulasiyor.
+       Olculen hacimler (20.496 kayit, ayiklama sonrasi):
+         TALKS 6.083 · NATURE 5.204 · AMBIANCE 4.367 · HUMANS 1.979
+         CITY 1.514 · RECORDS 1.328 · OTHERS 904 · BEATS 831
+         SPACE 437 */
+    { ad:'TALKS',    yer:/librivox|audio_?bookspoetry|audiobooks?|audio ?book|\bpoetry\b|\bliterature\b|oldtimeradio|old ?time ?radio|\botr\b|radio ?drama|radio ?programs?|radiostationarchives|mystery playhouse|\bplayhouse\b|soap opera|storytell|narrat|\breading\b|truyenaudioarchive|goc-truyen-audio/i, radyo:'' },
+    /* HUMANS: KONUSAN INSAN, anlatilan hikaye degil. Sozlu tarih
+       arsivleri (densho: Japon-Amerikalilarin kamp tanikliklari,
+       aapb: kamu yayinciligi arsivi) etiketlerinde "interview"
+       gecmedigi icin eskiden hicbir rafa girmiyordu -- koleksiyon
+       adiyla yakalaniyorlar. Telsiz, kisa dalga ve sayi istasyonlari
+       da burada: hepsi ayni havayi tasiyor. */
+    { ad:'HUMANS',   yer:/densho|\baapb\b|oral history|\binterview\b|\bspeech\b|\blecture\b|\bsermon\b|church|проповеди|monolog|dialog|\bpodcasts?\b|spoken|\bnews\b|briefing|commentary|conference|documentar|history of|shortwave|numbers ?station|irdial|conet|telsiz|\bham radio\b|\bcb radio\b|pirate radio|capcom|\bexp\d{2}\b|change of command|\bceremony\b|air ?traffic|radio ?signals?|airchecks/i, radyo:'' },
+    { ad:'SPACE',    yer:/nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|satellite|space ?sounds?|\biss\b|spacewalk|expedition ?\d|telemetry|soyuz|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit/i, radyo:'' },
+    /* CITY: sehrin sesi. Eski MACHINES rafi buraya katildi -- tren,
+       motor, metro tek baslarina bir raf tasiyamiyordu (120 kayit)
+       ama sehrin parcasi olarak yerleri var. */
+    { ad:'CITY',     yer:/aporee|soundmap|phonograph|\burban\b|city ?sounds?|city soundscape|\btrain\b|\bsubway\b|\bmetro\b|\bengine\b|\bfactory\b|\btraffic\b|\brailway\b|machine ?sounds?|industrial ?sounds?|turbine|generator|\bmotor\b|airport|\bcrowd\b|\bmarket\b|\bstreet\b/i, radyo:'' },
+    { ad:'NATURE',   yer:/hamiltonbioacoustics|bioacoustic|\bnature\b|\bbirds?\b|bird ?song|forest|jungle|wildlife|animal|insects?|crickets?|frogs?|whales?|meadow|garden|mountain|desert|ocean|\bsea\b|river|stream|creek|waterfall|underwater|hydrophone|\brain\b|thunder|storm|\bwind\b|\bsnow\b|\bice\b|environmental ?sounds?|natural ?sounds?|field ?recordings?|green.?field.?recordings?/i, radyo:'' },
+    { ad:'AMBIANCE', yer:/\bambient\b|\bdrone\b|droning|atmospheric|atmosphere|ambience|ambiance|room ?tone|soundscape|\bmeditation\b|new ?age|\bdark ?ambient\b/i, radyo:'' },
+    /* BEATS: ritim ve deneysel elektronik. Kullanicinin istegi --
+       "ritimsel seyler ayri olsa". Gurultu ve dogaclama da burada:
+       ikisi de muzik ama plak degil. */
+    { ad:'BEATS',    yer:/\btechno\b|\bidm\b|\bhouse\b|downtempo|\belectro\b|electronica|breakbeat|\bdub\b|\bbeats?\b|psytrance|\btrance\b|\bglitch\b|breakcore|\bdnb\b|drum ?and ?bass|\bacid\b|\bnoise\b|experimental|improvis|musique concrete|electroacoustic/i, radyo:'' },
+    { ad:'RECORDS',  yer:/78 ?rpm|great78|cylinder|edison|shellac|\bvinyl\b|^lp_|\blp \b|netlabel|freemusicarchive|jamendo|hifidelity|folklore|\bfolk\b|\bsaz\b|baglama|celtic|flamenco|tango|\bsalsa\b|klezmer|\bjazz\b|\bblues\b|\bswing\b|ragtime|\bopera\b|orchestra|symphon|sonata|concerto|guitar|piano|violin|cello|quartet|classical|instrumental|\brock\b|\bpop\b|\bsoul\b|\bfunk\b|hip ?hop|\bmetal\b|album|\bep\b|remix|compilation|\bsong\b|\bmusic\b|psych.?folk/i, radyo:'' },
+    { ad:'OTHERS',   yer:/.^/, radyo:'' }          // kalan: asagidaki arsivRaf() dolduruyor
   ];
   /* ORBITAPE kanalinda halkalar bunlar. En icteki ilk acilan. */
   /* ORBITAPE EN BASTA (en icteki halka) ve acilista secili olan raf.
@@ -5431,7 +5464,13 @@
      ORBITAPE (arsivin tamami) duruyor; onun hemen icinde artik
      RECORDS -- arsivin en kalabalik rafi (5.3 bin kayit) en genis
      halkalardan birinde. */
-  var ARSIV_ADLAR = ['OTHERS','MACHINES','NATURE','SOUNDSCAPES','HUMANS','RECORDS','ORBITAPE'];
+  /* HALKA SIRASI: ICTEN DISA. Ilk halka ORBITAPE -- arsivin
+     tamami, acilista secili olan. En distaki RECORDS.
+     Sira kayit sayisina gore DEGIL, kullanicinin sunum sirasina
+     gore: TALKS en kalabalik raf ama en icteki kucuk halkada
+     duruyor, RECORDS 1.328 kayitla en distaki buyuk halkada.
+     Bilerek boyle. */
+  var ARSIV_ADLAR = ['ORBITAPE','OTHERS','TALKS','SPACE','AMBIANCE','CITY','NATURE','HUMANS','BEATS','RECORDS'];
   /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
      uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
      ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
@@ -5440,7 +5479,7 @@
      genis kaliplar ve once sorulurlarsa dar raflari yutuyorlar --
      olculdu, MACHINES 523 kayittan 7'ye dusmustu. Once DAR ve kesin
      raflar soruluyor, genis olanlar en sonda. */
-  var ARSIV_SORGU = ['MACHINES','SOUNDSCAPES','NATURE','HUMANS','RECORDS'];
+  var ARSIV_SORGU = ['TALKS','HUMANS','SPACE','CITY','NATURE','AMBIANCE','BEATS','RECORDS'];
   function arsivRaf(o){
     /* ── SERBEST BASLIK ARTIK SORULMUYOR ──────────────────────────
        Burasi uc metni birden tariyordu: etiket + BASLIK + adres.
@@ -5498,7 +5537,7 @@
     try{ return decodeURIComponent(m[1]+' '+m[2]).toLowerCase(); }
     catch(e){ return (m[1]+' '+m[2]).toLowerCase(); }
   }
-  function _sesMi(t){ return !!t && (modBul('AMBIANCE').yer.test(t) || modBul('HUMAN').yer.test(t)); }
+  function _sesMi(t){ return !!t && (modBul('SES_KALIBI').yer.test(t) || modBul('HUMAN').yer.test(t)); }
   function _muzikMi(o){
     const t = _mt(o), k = _mk(o);
     if(!t) return KAYNAK.RADIOTAPE.test(k);
@@ -5534,7 +5573,7 @@
     const t = _mt(o);
     const kay = t || _mk(o);                // etiket varsa etiket, yoksa kaynak
     if(!kay) return false;
-    const AMB = t ? modBul('AMBIANCE').yer : KAYNAK.AMBIANCE;
+    const AMB = t ? modBul('SES_KALIBI').yer : KAYNAK.AMBIANCE;
     const INS = t ? modBul('HUMAN').yer    : KAYNAK.HUMAN;
     if(ad === 'HUMAN')    return INS.test(kay);
     /* AMBIANCE'a insan sesi ASLA girmiyor: HUMAN'a giren her şey
@@ -6819,7 +6858,7 @@
      cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
      "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
      ustundeki dordu isteyene duruyor. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:false, parti:false };
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -6829,8 +6868,12 @@
       /* TUTORIALS: varsayilan ACIK. Yalnizca kullanici kapattiysa
          kapali geliyor -- yeni gelen kisi anlatimsiz kalmasin. */
       if(_a.tanitim === false) AYAR.tanitim = false;
-      if(_a.karanlik === true) AYAR.karanlik = true;
-      if(_a.parti    === true) AYAR.parti    = true;
+      /* ALL BLACK VARSAYILAN ACIK. Kullanicinin sozu: "kesinlikle
+         all black'te yaptigi neyse oyle acilmali bu app, ozellikle
+         radyo bolumu; background siyahken cok net. istenirse
+         acilsin, tam tersi olsun."
+         Yani kapatmak bir tercih; acmak varsayilan. */
+      if(_a.karanlik === false) AYAR.karanlik = false;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
@@ -12208,7 +12251,6 @@
          ama hicbir sey cikmaz -- yani yalan soyleyen bir dugme.
          Damgalar siliniyor; bir sonraki acilista tur yine cikiyor. */
       if(k === 'karanlik'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
-      if(k === 'parti'){ try{ partiUygula(); }catch(e){ _yut(e); } }
       if(k === 'tanitim' && AYAR.tanitim){
         try{ localStorage.removeItem(TUR_ANAHTAR);
              localStorage.removeItem(FXSUNUM_ANAHTAR);

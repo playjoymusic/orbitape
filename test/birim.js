@@ -116,12 +116,18 @@ K('Raf karari sarkinin adina bakmiyor',
   A.arsivRaf(kayit('', 'Tidal Wave')) !== 'NATURE'
   && A.arsivRaf(kayit('', 'Machine Gun')) !== 'MACHINES',
   'ad alanindaki kelimeler rafi belirlemiyor');
-K('Etiketten raf: alan kaydi NATURE degil AMBIANCE tarafinda',
-  A.modUyar(kayit('green-field-recordings', 'x'), 'AMBIANCE') === true,
-  'field recording -> AMBIANCE');
-K('Muzik alt kategoriye dusmuyor',
-  A.modUyar(kayit('ambient · drone', 'Deep Drone'), 'AMBIANCE') === false,
-  'ambient etiketi muzik sayiliyor');
+/* Raflar degisti: alan kaydi artik NATURE'in, ambient/drone ise
+   AMBIANCE'in. Ikisi eskiden ayni rafta (AMBIANCE) toplaniyordu. */
+K('Alan kaydi NATURE rafina gidiyor',
+  A.arsivRaf(kayit('green-field-recordings', 'x')) === 'NATURE',
+  'field recording -> NATURE');
+K('Ambient/drone kendi rafinda',
+  A.arsivRaf(kayit('ambient · drone', 'Deep Drone')) === 'AMBIANCE',
+  'ambient etiketi AMBIANCE rafinda');
+K('Sesli kitap TALKS, sozlu tarih HUMANS',
+  A.arsivRaf(kayit('librivox · audiobooks', 'x')) === 'TALKS'
+  && A.arsivRaf(kayit('densho · oral history', 'x')) === 'HUMANS',
+  'anlatilan sey TALKS, konusan insan HUMANS');
 K('Canli yayin yalnizca RADIOTAPE',
   A.modUyar({ radyo: true, etiket: '', ad: 'FM' }, 'RADIOTAPE') === true
   && A.modUyar({ radyo: true, etiket: '', ad: 'FM' }, 'ORBITAPE') === false,
