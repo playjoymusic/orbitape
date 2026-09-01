@@ -1670,17 +1670,25 @@
        kehribar 0.45*(232,169,126) + 0.55*(62,64,78) = (139,111,100)
      Uc rengimiz de duruyor ama hepsi karanlik tarafa cekilmis --
      yani kapinin ardindaki evrenin havasi. */
+  /* ── BUGUNKU: GUL KURUSUNDAN ARSIVIN GRISINE ─────────────────
+     Kullanicinin tarifi: "bizim ana rengimizde, gul kurusundan
+     etkilenmeli; solundan gul kurusuyken dark griye donsun --
+     ORBITAPE moodunun ilk rengi."
+     Iki ucu da bizim: sol uc #e27a9e (uc cizginin ucuncusundeki gul
+     kurusu), sag uc arsivin antrasiti (154,150,172). Yani kelime
+     soldan sonuna dogru radyodan arsive geciyor -- kapinin kendisi
+     bir gecis. */
   body:not(.mood) #kipKisayol .ad{
-    background:linear-gradient(102deg,#6f7d5c 0%,#8f7a4e 26%,#b08a4a 62%,#c79a52 100%);
+    background:linear-gradient(102deg,#e27a9e 0%,#c08a9a 34%,#a89099 68%,#9a96ac 100%);
     -webkit-background-clip:text;background-clip:text;}
   body:not(.mood) #kipKisayol .anahtar{
-    background:rgba(94,134,137,.14);border-color:rgba(94,134,137,.40);}
+    background:rgba(196,141,160,.14);border-color:rgba(196,141,160,.40);}
   /* Topuz da ayni uc rengi tasiyor: 18px'lik bir daire icin gradyan
      abartili gorunmuyor, tersine yazi ile ayni nesne oldugu
      anlasiliyor. */
   body:not(.mood) #kipKisayol .anahtar b{right:26px;
-    background:linear-gradient(135deg,#6f7d5c 0%,#a5854c 48%,#c79a52 100%);}
-  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(94,134,137,.26);}
+    background:linear-gradient(135deg,#e27a9e 0%,#b28d9f 52%,#9a96ac 100%);}
+  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(196,141,160,.26);}
   body:not(.mood) #kipKisayol:active .anahtar b{right:24px;}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .anahtar, #kipKisayol .anahtar b{transition:none;}
@@ -1691,6 +1699,23 @@
      cakisiyordu. Cozum tutamagi kacirmak degil: modul BIR SATIR
      yukari cikiyor ve tutamak alt sol kosede kaliyor. Ikisi ayni
      sol kenardan basliyor, tek bir konsol gibi okunuyor. */
+  /* ── PARTY MOOD: SINEMA KARARTMASI ────────────────────────────
+     Kullanicinin tarifi: "sadece halkanin kalacagi, sinema modu gibi
+     karartma; kenarlardan yapip halkanin cevresini icine alacak
+     kadar."
+     Bir daire: ortada hicbir sey yok (halkalar oldugu gibi duruyor),
+     disari dogru karariyor. Olculer halkanin kendi yaricapina gore:
+     %30'a kadar tamamen acik, %62'de yariya iniyor, kenarda neredeyse
+     kapali. Ekranin ustunde duruyor ama TIKLAMA GECIRIYOR
+     (pointer-events:none) -- karartma bir perde, duvar degil.
+     z-index 60: tuvalin ve halkalarin ustunde, ayar panelinin (96) ve
+     tanitim turunun altinda; yani panel acilinca panel karartmanin
+     ustunde kaliyor. */
+  body.parti::after{
+    content:'';position:fixed;inset:0;z-index:60;pointer-events:none;
+    background:radial-gradient(circle at 50% 50%,
+      rgba(0,0,0,0) 30%, rgba(0,0,0,.50) 62%, rgba(0,0,0,.90) 100%);
+    transition:opacity .35s ease;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
   /* ── PANEL ACIKKEN: BU IKISININ ALTI KOYULASIYOR ──────────────
      Panel yari saydam ve OYLE KALIYOR -- kullanicinin sozu:
@@ -1787,9 +1812,14 @@
   body.ayar-acik #ayar{transform:translateY(0);
     opacity:1;pointer-events:auto;}
 
-  /* Panel uzadi (kapi + uc bolum + belgeler): ekrana sigmazsa kendi
-     icinde kayiyor, ekrani itmiyor. */
-  #ayar{max-height:calc(100vh - 130px);overflow-y:auto;overscroll-behavior:contain;
+  /* Panel uzadi (kapi + dort bolum + belgeler): ekrana sigmazsa kendi
+     icinde kayiyor, ekrani itmiyor.
+     TAVAN 130'DAN 190'A CIKTI: DISPLAY bolumu eklenince panel tavana
+     dayandi ve ekranin 84..798'ini kapladi -- yani neredeyse tam
+     ekran. Panel bir ALT SAYFA; ustunde ne oldugunu goremedigin bir
+     panel, panel olmaktan cikip sayfa olur. Fazlasi kendi icinde
+     kayiyor. */
+  #ayar{max-height:calc(100vh - 190px);overflow-y:auto;overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;}
   #ayar h4{display:none;}
   /* ── BOLUM BASLIKLARI ────────────────────────────────────────────
@@ -2284,7 +2314,7 @@
 <meta property="og:image" content="https://orbitape.app/paylas.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ORBITAPE — orbital rings on a black field, with the name of the track playing.">
+<meta property="og:image:alt" content="ORBITAPE — LIVE RADIO · SOUND ARCHIVE; orbital rings on a black field.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ORBITAPE — a sound explorer">
 <meta name="twitter:description" content="Live radio from around the world, grouped into nine genres. No account, no ads, no tracking.">
@@ -2494,6 +2524,22 @@
          anahtarlarin yaninda duruyor. -->
     <div class="sat" data-ayar="tanitim" role="switch" tabindex="-1">
       <span>TUTORIALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+
+    <!-- ── DISPLAY ────────────────────────────────────────────────
+         Kullanicinin istegi: "ayarlara display gibi bir bolum daha
+         yap." Iki satir, ikisi de ZEMINLE ilgili -- o yuzden ayni
+         baslik altinda ve tema satirlarinin hemen altinda; MORE'a
+         konsa menude asagiya inmek gerekirdi.
+         · ALL BLACK  : zemin her rafta simsiyah. Tema secili olsa
+                        bile siyah kaliyor -- "acikken zaten kilitli"
+                        istegi bu.
+         · PARTY MOOD : sinema karartmasi. Kenarlardan karariyor,
+                        ortada yalnizca halkalar kaliyor. -->
+    <h5>DISPLAY</h5>
+    <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
+      <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <div class="sat" data-ayar="parti" role="switch" tabindex="-1">
+      <span>PARTY MOOD</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
 
     <h5>AUDIO</h5>
     <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
@@ -2829,7 +2875,7 @@
       }
     }catch(_){}
   }
-  var ORB_SURUM = '2026.08.31';
+  var ORB_SURUM = '2026.09.01';
   var _hataKayit = [], _hataGosterildi = false;
   (function(){
     var TAVAN = 5;
@@ -3559,6 +3605,13 @@
       kok.setProperty('--m3', 'rgb('+m3+')');
     }catch(e){ _yut(e); }
   }
+  /* PARTY MOOD govdeye tek sinif yaziyor; gorunumun tamami CSS'te
+     (body.parti::after). Boylece kip degisimi, tema, raf -- hicbiri
+     bu perdeyi hesaplamak zorunda degil. */
+  function partiUygula(){
+    try{ document.body.classList.toggle('parti', !!AYAR.parti); }catch(e){ _yut(e); }
+  }
+  try{ window.partiUygula = partiUygula; }catch(e){ _yut(e); }
   function zeminUygula(){
     try{ markaRengi(); }catch(e){ _yut(e); }
     /* ── SAĞ ÜSTTEKİ ÜÇ SEMBOL SEÇİLİ HALKANIN RENGİNİ ALIR ─────────
@@ -3623,6 +3676,10 @@
            && (AKTIF_AILE || AILE_ACILIS) === 'RADIOTAPE'){
           zm = ['#000000', '#000000'];
         }
+        /* ALL BLACK: raf da tema da fark etmiyor. Ayarlardaki anahtar
+           acikken zemin her yerde simsiyah -- kullanicinin sozu:
+           "acikken zaten kilitli". */
+        if(AYAR.karanlik) zm = ['#000000', '#000000'];
       }catch(e){ _yut(e); }
       if(!zm){ b.classList.remove('zem'); return; }
       b.style.setProperty('--zem1', zm[0]);
@@ -6762,7 +6819,7 @@
      cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
      "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
      ustundeki dordu isteyene duruyor. */
-  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true };
+  var AYAR = { aramaSes:true, tikSes:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:false, parti:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -6772,6 +6829,8 @@
       /* TUTORIALS: varsayilan ACIK. Yalnizca kullanici kapattiysa
          kapali geliyor -- yeni gelen kisi anlatimsiz kalmasin. */
       if(_a.tanitim === false) AYAR.tanitim = false;
+      if(_a.karanlik === true) AYAR.karanlik = true;
+      if(_a.parti    === true) AYAR.parti    = true;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
@@ -12148,6 +12207,8 @@
          "bir daha gosterme" damgasi duruyorsa anahtar acik gorunur
          ama hicbir sey cikmaz -- yani yalan soyleyen bir dugme.
          Damgalar siliniyor; bir sonraki acilista tur yine cikiyor. */
+      if(k === 'karanlik'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
+      if(k === 'parti'){ try{ partiUygula(); }catch(e){ _yut(e); } }
       if(k === 'tanitim' && AYAR.tanitim){
         try{ localStorage.removeItem(TUR_ANAHTAR);
              localStorage.removeItem(FXSUNUM_ANAHTAR);

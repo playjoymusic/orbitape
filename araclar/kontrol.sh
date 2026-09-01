@@ -114,12 +114,20 @@ rapor(){
     grep -E "!!|DUZELTILECEK|COKTU" "/tmp/orbitape_$1.log" | tail -8 | sed 's/^/    /'
   fi
 }
+# ARIZA DA YALNIZ KOSUYOR. Paralel denendi ve olculdu: "butun sesler
+# 404" senaryosunda uygulama 12 basarisiz denemeden sonra durmali;
+# yuklu makinede sayac 13'e ciktigi goruldu, yani test kodda hicbir
+# sey bozulmamisken kirmizi yandi. Tek basina kosunca 14/14.
+# Ariza takimi SAYAC ve SURE olcuyor -- saglik gibi, yuke duyarli.
+# Geriye paralel kosabilen ikisi kaliyor; kazanc az ama durust.
 t0=$(date +%s)
 kosu saglik                      # yalniz: zamana bakan kontroller var
 rapor saglik
-for t in senaryo motor ariza; do kosu "$t" & done
+kosu ariza                       # yalniz: sayac/sure olcuyor
+rapor ariza
+for t in senaryo motor; do kosu "$t" & done
 wait                             # cikis kodlarina GUVENILMIYOR, dosyalar okunuyor
-for t in senaryo motor ariza; do rapor "$t"; done
+for t in senaryo motor; do rapor "$t"; done
 echo
 echo "  (takimlar $(( $(date +%s) - t0 )) sn)"
 
