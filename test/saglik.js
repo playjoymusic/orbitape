@@ -1565,7 +1565,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      CITY ve BEATS acildi, MACHINES ile SOUNDSCAPES kalkti). Sayi
      sabit bir hedef degil, listenin GERCEKTEN degistigini gormek
      icin duruyor. */
-  K('Kategoriler tanimli',    md.n===14, md.ad);
+  K('Kategoriler tanimli',    md.n===16, md.ad);
   /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
@@ -1605,11 +1605,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        hepsi var ve ilk sirada"), RECORDS EN DISTA.
        Sira KAYIT SAYISINA GORE DEGIL: TALKS 4.123 kayitla ictekilerden
        biri, RECORDS 1.745 kayitla en distaki. Sunum sirasi. */
-    K('Arsiv kanalinda halkalar 10 raf', ars.n===10 && /^ORBITAPE/.test(ars.ad) && /RECORDS$/.test(ars.ad), ars.ad);
-    K('Arsivde ORBITAPE ilk, RECORDS son',
-       /^ORBITAPE OTHERS TALKS/.test(ars.ad) && /BEATS RECORDS$/.test(ars.ad), ars.ad);
-    K('TALKS ve HUMANS ayri raflar',
-       /\bTALKS\b/.test(ars.ad) && /\bHUMANS\b/.test(ars.ad), 'anlatilan sey ve konusan insan ayrildi');
+    K('Arsiv kanalinda halkalar 12 raf', ars.n===12 && /^INDUSTRIAL/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
+    K('En icte INDUSTRIAL, en dista ORBITAPE',
+       /^INDUSTRIAL NOISE DARK/.test(ars.ad) && /BEATS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
+    /* MEZAR TASI: bir tur TALKS diye bir raf vardi (sesli kitap,
+       siir, radyo tiyatrosu). Kullanici kapatti ve icerigi arsivden
+       cikardi: tek basina arsivin dortte biriydi ve rastgele calan
+       her dort parcadan biri kitap okumasi oluyordu. Radyo tiyatrosu
+       HUMANS'a tasindi. */
+    K('TALKS rafi kalmadi', !/\bTALKS\b/.test(ars.ad), ars.ad);
     /* ── RAF KARARI SERBEST BASLIGA BAKMIYOR ─────────────────────
        Kullanicinin bildirimi: "sanki olmayan seyler cikiyor
        bazilarinda." Dogruydu. arsivRaf uc metni birden tariyordu:
@@ -1637,7 +1641,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',
                 ad:'25 - May Wind',
                 mp3:'https://archive.org/download/love_songs_2008_librivox/lovesongs_25_teasdale_128kb.mp3' },
-            olmali:'TALKS' },
+            olmali:'HUMANS' },
           /* radio-aporee alan kaydi: adinda "train" geciyor diye
              MACHINES'teydi; MACHINES kalkti, sehrin sesi CITY'de. */
           { o:{ etiket:'radio-aporee-maps field recording phonography soundscape sound art soundmap radio ephemeral listening radio aporee',
@@ -2067,7 +2071,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          uzay SPACE'e, ritim ve gurultu BEATS'e gidiyor. */
       ambientKendiRafi: modUyar(t('ambient · drone','Deep Drone'),'AMBIANCE')
                      && !modUyar(t('ambient · drone','Deep Drone'),'NATURE'),
-      gurultuBeats:  modUyar(t('noise · experimental','Harsh'),'BEATS'),
+      gurultuNoise:  modUyar(t('noise · experimental','Harsh'),'NOISE'),
       alanKaydi:    modUyar(t('green-field-recordings','x'),'NATURE'),
       nasa:         modUyar(t('nasaaudiocollection · nasa','x'),'SPACE'),
       baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'NATURE') && !modUyar(t('','Tidal Wave'),'RECORDS'),
@@ -2076,15 +2080,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       radyoSadeceYayin: !modUyar(t('netlabel · techno','Acid EP'),'RADIOTAPE') && !modUyar(t('field recordings','Rain'),'RADIOTAPE')
     };
   });
-  K('Ambient kendi rafinda, gurultu BEATS te', sf.ambientKendiRafi && sf.gurultuBeats,
-     'ambient/drone -> AMBIANCE, noise/experimental -> BEATS');
+  K('Ambient kendi rafinda, gurultu NOISE ta', sf.ambientKendiRafi && sf.gurultuNoise,
+     'ambient/drone -> AMBIANCE, noise -> NOISE');
   K('Alan kaydi NATURE, nasa SPACE', sf.alanKaydi && sf.nasa,
      'ses raflari ayrildi: doga ayri, uzay ayri');
   /* Etiketsiz kayitlar artik BASLIKTAN degil, archive.org KIMLIGINDEN
      siniflaniyor: 'lp_madama-butterfly' muzik, 'exp46-change-of-command'
      insan sesi. Baslik hala hicbir seye karismiyor. */
   const kyn = await pg.evaluate(()=>{
-    const A=['RADIOTAPE','RECORDS','ORBITAPE','TALKS','HUMANS','NATURE','SPACE','AMBIANCE','BEATS','CITY','OTHERS'];
+    const A=['RADIOTAPE','RECORDS','ORBITAPE','HUMANS','NATURE','SPACE','AMBIANCE','BEATS','CITY','NOISE','DARK','INDUSTRIAL','OTHERS'];
     const f=(o)=>A.filter(a=>modUyar(o,a)).join(',');
     const U=(id)=>({etiket:'', ad:'Tidal Wave', mp3:'https://archive.org/download/'+id+'/x.mp3'});
     return {
@@ -2110,9 +2114,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* OTHERS artik gorunur bir halka: kaynaksiz kayit hem ORBITAPE'te
      (hepsi) hem OTHERS'ta (geri kalan) gorunuyor -- ikisi de dogru. */
   K('Kaynaksiz kayit OTHERS rafinda', kyn.bos==='ORBITAPE,OTHERS', kyn.bos);
-  K('Etiket "radio program" derse TALKS', /TALKS/.test(kyn.talk), kyn.talk);
+  K('Etiket "radio program" derse HUMANS', /HUMANS/.test(kyn.talk), kyn.talk);
   K('folksoundomy muzik DEGIL', /NATURE/.test(kyn.folk) && !/RECORDS/.test(kyn.folk), kyn.folk);
-  K('soap opera muzik DEGIL', /TALKS/.test(kyn.soap) && !/RECORDS/.test(kyn.soap), kyn.soap);
+  K('soap opera muzik DEGIL', /HUMANS/.test(kyn.soap) && !/RECORDS/.test(kyn.soap), kyn.soap);
 
   K('Basliktan siniflandirma YOK', sf.baslikYok, '"Tidal Wave" AMBIANCE degil, ORBITAPE');
   K('RADIOTAPE sadece canli yayin', sf.radyoSadeceYayin, 'arsiv RADIOTAPE e girmiyor');

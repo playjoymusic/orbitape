@@ -33,7 +33,13 @@ KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOSYALAR = ['earth.json', 'earth_buyuk.json']
 
 VIDEO = re.compile(r'mirrortube|social[- _]media[- _]video|youtube[- _]audio', re.I)
-KITAP = re.compile(r'librivox', re.I)
+# TALKS RAFI KAPANDI: sesli kitap, siir ve anlatilan metin arsivden
+# tamamen cikiyor. Kullanicinin karari ("talks'u ve icindekileri sil").
+# Sebebi olculebilir: bu kume tek basina arsivin dortte biriydi ve
+# rastgele calan her dort parcadan biri kitap okumasi oluyordu --
+# ORBITAPE bir dinleme uygulamasi, sesli kitap kutuphanesi degil.
+KITAP = re.compile(r'librivox|audio_?bookspoetry|audiobooks?|audio[- _]?book'
+                   r'|\bpoetry\b|truyenaudioarchive|goc-truyen-audio', re.I)
 
 
 def alan(kayit):
@@ -59,10 +65,7 @@ def main():
                 continue
             if KITAP.search(m):
                 toplam['kitap_once'] += 1
-                kitap_sayaci += 1
-                if kitap_sayaci % 2 == 0:      # her ikincisi kaliyor
-                    continue
-                toplam['kitap_sonra'] += 1
+                continue                        # TALKS kapandi: hicbiri kalmiyor
             yeni.append(k)
 
         toplam['kalan'] += len(yeni)
@@ -72,8 +75,7 @@ def main():
 
     print('basta            %6d' % toplam['basta'])
     print('video sesi cikan  -%5d' % toplam['video'])
-    print('sesli kitap      %6d -> %d  (yariya indi)'
-          % (toplam['kitap_once'], toplam['kitap_sonra']))
+    print('sesli kitap/siir  -%5d  (TALKS rafi kapandi)' % toplam['kitap_once'])
     print('kalan            %6d' % toplam['kalan'])
     if goster:
         print('\n(--goster: hicbir dosya yazilmadi)')

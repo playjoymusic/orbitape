@@ -124,10 +124,15 @@ K('Alan kaydi NATURE rafina gidiyor',
 K('Ambient/drone kendi rafinda',
   A.arsivRaf(kayit('ambient · drone', 'Deep Drone')) === 'AMBIANCE',
   'ambient etiketi AMBIANCE rafinda');
-K('Sesli kitap TALKS, sozlu tarih HUMANS',
-  A.arsivRaf(kayit('librivox · audiobooks', 'x')) === 'TALKS'
+K('Radyo tiyatrosu ve sozlu tarih HUMANS ta',
+  A.arsivRaf(kayit('old time radio · otr', 'x')) === 'HUMANS'
   && A.arsivRaf(kayit('densho · oral history', 'x')) === 'HUMANS',
-  'anlatilan sey TALKS, konusan insan HUMANS');
+  'ikisi de konusan insan: HUMANS');
+K('Gurultu, karanlik ve makine kendi raflarinda',
+  A.arsivRaf(kayit('harsh noise · power electronics', 'x')) === 'NOISE'
+  && A.arsivRaf(kayit('dark ambient · psychedelic', 'x')) === 'DARK'
+  && A.arsivRaf(kayit('field recording · train · railway', 'x')) === 'INDUSTRIAL',
+  'NOISE / DARK / INDUSTRIAL');
 K('Canli yayin yalnizca RADIOTAPE',
   A.modUyar({ radyo: true, etiket: '', ad: 'FM' }, 'RADIOTAPE') === true
   && A.modUyar({ radyo: true, etiket: '', ad: 'FM' }, 'ORBITAPE') === false,
