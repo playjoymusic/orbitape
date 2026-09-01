@@ -149,18 +149,23 @@ const RAFLAR = [
   ['WORLD & ROOTS',  '176,124,232'],
   ['ROCK & INDIE',   '242,104,60'],
   ['DISCO FUNK',     '190,182,164'],
-  /* ACOUSTIC BOS ACILDI. Uygulamada da tanimli ama halkada ancak
+  /* AFROBEAT BOS ACILDI. Uygulamada da tanimli ama halkada ancak
      icine ilk istasyon girdiginde goruluyor -- bos halka sessiz
-     halkadir. Burasi o rafi dolduran yer: tel, nefes ve ahsap
-     agirlikli istasyonlar buraya tasiniyor. */
-  ['ACOUSTIC',       '198,158,110']
+     halkadir. Burasi o rafi dolduran yer. Uygulamada distan
+     besinci halka. */
+  ['AFROBEAT',       '214,142,58']
 ];
 const RENK = {}; for(const [a,r] of RAFLAR) RENK[a] = r;
 const ADLAR = RAFLAR.map(x=>x[0]);
-/* v2: raflar degisti (INDIE & LOFI kalkti, iki raf yeniden
-   adlandirildi). Eski kararlar yeni adlara uymuyor, o yuzden yeni
-   anahtar -- yarim kalmis eski liste geri gelip kafa karistirmasin. */
-const ANAHTAR = 'orbitape.raf.karar.v2';
+/* v3: ACOUSTIC diye acilan raf AFROBEAT olarak yeniden adlandirildi
+   ve yeri degisti. Bir onceki surumde ACOUSTIC'e tasinan istasyonlar
+   artik olmayan bir rafi gosteriyor; anahtar degistigi icin o
+   kararlar dusuyor ve liste temiz basliyor.
+   ANAHTARI DEGISTIRMEK KARARLARI SILMENIN EN DURUST YOLU: eski
+   kayit yerinde duruyor, yalnizca okunmuyor. Yanlislikla silinmis
+   bir seyi geri almak gerekirse tarayicidaki eski anahtar hala
+   orada. */
+const ANAHTAR = 'orbitape.raf.karar.v3';
 
 let karar = {};
 try{ karar = JSON.parse(localStorage.getItem(ANAHTAR) || '{}') || {}; }catch(e){ karar = {}; }

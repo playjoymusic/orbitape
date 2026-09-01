@@ -438,17 +438,17 @@ AILELER = OrderedDict([
     # ELECTRONIC · JAZZ · LOUNGE & LOFI, sonra kalanlar kendi
     # aralarindaki sirayla. Renkler ADLA BIRLIKTE tasindi: JAZZ hala
     # gul, LOUNGE hala kum.
-    # ACOUSTIC BILDIRILMIS-BOS: uygulamada tanimli ama icine ilk
-    # istasyon girene kadar halkada gorunmuyor. Hasat bu rafa
-    # kendiliginden istasyon ATAMIYOR -- hangi istasyonun akustik
-    # oldugunu etiket soylemiyor, kulak soyluyor. Doldurmasi elle,
-    # raf_revizyon.html uzerinden.
-    ("ACOUSTIC",      {"renk": "#C69E6E"}),
     ("AMBIENT",       {"renk": "#5FBF7A"}),
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),
     ("ROCK & INDIE",  {"renk": "#F2683C"}),   # eski adi ROCK & COUNTRY
     ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # eski adi LOUNGE
     ("JAZZ",          {"renk": "#CC7CA4"}),
+    # AFROBEAT BILDIRILMIS-BOS: uygulamada tanimli ama icine ilk
+    # istasyon girene kadar halkada gorunmuyor. Hasat bu rafa
+    # kendiliginden istasyon ATAMIYOR -- hangi istasyonun afrobeat
+    # oldugunu etiket soylemiyor, kulak soyluyor. Doldurmasi elle,
+    # raf_revizyon.html uzerinden. Yeri distan besinci halka.
+    ("AFROBEAT",      {"renk": "#D68E3A"}),
     ("DISCO FUNK",    {"renk": "#BEB6A4"}),   # eski adi FUNK & RNB
     # MOR LOFI'DEN GELDI: INDIE & LOFI rafi bosalinca kaldirildi ve
     # rengi burada yasiyor. Eski gri (#9A96AC) halkada oteki

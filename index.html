@@ -8075,7 +8075,7 @@
     return true;
   }
   var _olcuBekleyen = 0, _sonEn = 0, _sonBoy = 0, _yerlesZaman = null;
-  var _sonOlcek = 100, _sonVvBoy = 0;
+  var _sonOlcek = 100, _sonVvBoy = 0, _sonKx = 0, _sonKy = 0, _zoomBorcu = false;
   function olcuIste(){
     if(_olcuBekleyen) return;                                // aynı kareye topla
     _olcuBekleyen = requestAnimationFrame(()=>{
@@ -8133,16 +8133,45 @@
       const _en = Math.round(window.innerWidth), _boy = Math.round(window.innerHeight);
       const _ol = _vv ? Math.round((_vv.scale || 1) * 100) : 100;
       const _vb = _vv ? Math.round(_vv.height || 0) : 0;
-      if(_en === _sonEn && _boy === _sonBoy && _ol === _sonOlcek && _vb === _sonVvBoy) return;
+      /* KAYMA DA OLCUYE GIRIYOR. Ilk duzeltme yalnizca olcegi ve boyu
+         dinliyordu; ama izleme yuzeyine cift dokunusla yapilan
+         "akilli yakinlastirma" gorunum penceresini hem BUYUTUYOR hem
+         KAYDIRIYOR. Kayma tek basina olunca hicbir olay islenmiyor
+         ve ekran oldugu yerde kaliyordu. */
+      const _kx = _vv ? Math.round(_vv.offsetLeft || 0) : 0;
+      const _ky = _vv ? Math.round(_vv.offsetTop  || 0) : 0;
+      if(_en === _sonEn && _boy === _sonBoy && _ol === _sonOlcek && _vb === _sonVvBoy
+         && _kx === _sonKx && _ky === _sonKy) return;
       _sonEn = _en; _sonBoy = _boy; _sonOlcek = _ol; _sonVvBoy = _vb;
+      _sonKx = _kx; _sonKy = _ky;
+      /* ── YAKINLASTIRMA SURERKEN OLCME ─────────────────────────
+         Kullanicinin bildirdigi kusur: "iki kere hizli dokununca
+         yakinlastiriyor, buyutec havaya gidiyor ve orada kilitli
+         kaliyor; ancak yenilemeyle geciyor."
+         Sebep olcumun ZAMANI. Sayfa yakinlastirilmisken CSS
+         pikselleriyle olculen konumlar ekranda gorulen yere denk
+         gelmiyor: buyutec o yanlis sayilarla yerlestiriliyor ve
+         yakinlastirma bitince kimse onu geri koymuyordu -- cunku
+         geri donuste olculer ZATEN dogruydu, yani "degisiklik yok"
+         deyip cikiliyordu.
+         Artik yakinlastirma SURERKEN hicbir sey yerlestirilmiyor;
+         yalnizca "borclu" isaretleniyor. Olcek bire donunce borc
+         odeniyor ve yerlesim bir kez, dogru sayilarla yapiliyor. */
+      const yakinda = _ol > 101;
+      if(yakinda){ _zoomBorcu = true; return; }
       if(_yerlesZaman) clearTimeout(_yerlesZaman);
       _yerlesZaman = setTimeout(()=>{ _yerlesZaman = null;
+        _zoomBorcu = false;
         try{ geriYerlestir(); }catch(e){ _yut(e); } }, 120);
     });
   }
   window.addEventListener('resize', olcuIste);
   try{ window.addEventListener('orientationchange', olcuIste); }catch(e){ _yut(e); }
   try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', olcuIste); }catch(e){ _yut(e); }
+  /* KAYMA AYRI BIR OLAY. Gorunum penceresi buyumeden de kayabiliyor
+     (yakinlastirilmis sayfayi surukleyince) ve o zaman 'resize'
+     gelmiyor, yalnizca 'scroll' geliyor. */
+  try{ if(window.visualViewport) window.visualViewport.addEventListener('scroll', olcuIste); }catch(e){ _yut(e); }
   vizSize();
 
   /* organik yarıçap (katmanlı sinüsler = akışkan zar)
@@ -10079,22 +10108,23 @@
        griye, ORCHESTRAL'i gule cevirirdi, yani turlerin kimligi
        bozulurdu. Ton yuruyusu zaten sira degisince bozuluyor;
        bozulacaksa kimlik degil yuruyus bozulsun. */
-    /* ── ACOUSTIC: KULLANICININ DOLDURACAGI RAF ─────────────────
-       Bos aciliyor ve bu BILEREK. Arsiv tarafinda 997 kayit
-       olculdu ama radyo tarafinda hangi istasyonun akustik
-       oldugunu etiket soylemiyor -- kulak soyluyor. O yuzden raf
-       acildi, doldurmasi elle: araclar/raf_revizyon.html uzerinden
-       istasyonlar buraya tasiniyor.
-       BOS HALKA SESSIZ HALKADIR: bu yuzden raf, icine ilk istasyon
-       girene kadar halkada GORUNMUYOR (bkz. aileDolu). Menude yer
-       tutup basildiginda hicbir sey calmayan bir halka olmuyor. */
-    { ad:'ACOUSTIC',       renk:'198,158,110', bos:1 },   // ICTEN 0. (BILDIRILMIS-BOS)
     { ad:'AMBIENT',        renk:'95,191,122'  },   // ICTEN 1. (en kucuk halka)
     { ad:'ORCHESTRAL',     renk:'240,172,122' },   // 2.
     { ad:'ROCK & INDIE',   renk:'242,104,60'  },   // 3. (eski adi ROCK & COUNTRY)
     { ad:'LOUNGE & LOFI',  renk:'216,203,160' },   // 4. -> DISTAN 6.
-    { ad:'JAZZ',           renk:'204,124,164' },   // 5. -> DISTAN 5.
-    { ad:'DISCO FUNK',     renk:'190,182,164' },   // 6. -> DISTAN 4. (eski adi FUNK & RNB)
+    { ad:'JAZZ',           renk:'204,124,164' },   // 5. -> DISTAN 6.
+    /* ── AFROBEAT: KULLANICININ DOLDURACAGI RAF ─────────────────
+       Bos aciliyor ve bu BILEREK: hangi istasyonun afrobeat
+       oldugunu etiket soylemiyor -- kulak soyluyor. Raf acildi,
+       doldurmasi elle (raf_revizyon.html uzerinden).
+       BOS HALKA SESSIZ HALKADIR: raf tabloda duruyor ama icine ilk
+       istasyon girene kadar halkada GORUNMUYOR (bkz. aileDolular).
+       Menude yer tutup basildiginda hicbir sey calmayan bir halka
+       olmuyor.
+       YERI KULLANICI VERDI: distan besinci halka. Dizi icten disa
+       oldugu icin JAZZ ile DISCO FUNK'in arasinda duruyor. */
+    { ad:'AFROBEAT',       renk:'214,142,58', bos:1 },   // -> DISTAN 5. (BILDIRILMIS-BOS)
+    { ad:'DISCO FUNK',     renk:'190,182,164' },   // -> DISTAN 4. (eski adi FUNK & RNB)
     { ad:'WORLD & ROOTS',  renk:'176,124,232' },   // 7. -> DISTAN 3. lofi'den gelen mor
     { ad:'ELECTRONIC',     renk:'132,150,255' },   // 8. -> DISTAN 2.
     /* EN DISTAKI HALKA: 'RADIO'.

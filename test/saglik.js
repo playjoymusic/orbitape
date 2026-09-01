@@ -5260,6 +5260,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        WORLD & ROOTS · DISCO FUNK · JAZZ · LOUNGE & LOFI, sonra
        kalanlar KENDI aralarindaki eski sirayla. Dizi icten disa
        oldugu icin bunun tersi. */
+    /* AFROBEAT bu dizide YOK: bildirilmis-bos raflar halkada
+       gorunmuyor ve bu sira EKRANDAKI sirayi olcuyor. Rafa ilk
+       istasyon girdigi gun bos damgasi kalkacak ve buraya
+       JAZZ ile DISCO FUNK'in arasina yazilacak (distan besinci). */
     const SIRA = ['AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
                   'JAZZ','DISCO FUNK','WORLD & ROOTS',
                   'ELECTRONIC','RADIOTAPE'];
@@ -8075,7 +8079,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          dondu: fonksiyonun basina aciklama eklenince aranan satir
          pencerenin disinda kaldi. Olculen sey kodun ta kendisi
          oldugu icin pencere kodun boyuna gore genis tutuluyor. */
-      const g1 = kaynak.slice(i1, i1 + 5000);
+      /* Pencere yine dar kaldi: fonksiyona aciklama eklenince
+         aranan satirlar disarda kaldi ve kapi ikinci kez HAKSIZ
+         yere kirmizi yandi. Olculen sey kodun kendisi oldugu
+         icin pencere kodun boyuna gore genis tutuluyor. */
+      const g1 = kaynak.slice(i1, i1 + 9000);
       K('Yerlesim degisim DURUNCA yapiliyor',
          i1 > 0 && /_en === _sonEn && _boy === _sonBoy/.test(g1)
          && /setTimeout\(\(\)=>\{ _yerlesZaman = null;/.test(g1),
@@ -8086,6 +8094,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          Parmakla yapilan yakinlastirma innerWidth/innerHeight'i
          degistirmiyor; yalnizca gorsel gorunumun olcegi degisiyor.
          Karar yalnizca o ikisine bakarsa yerlesim hic tazelenmiyor. */
+      /* ── YAKINLASTIRMA SURERKEN OLCULMEZ ────────────────────────
+         Kullanicinin bildirdigi kusur: izleme yuzeyine cift
+         dokununca sayfa yakinlasiyor ve buyutec havada kalip
+         kilitleniyordu; ancak yenileme duzeltiyordu.
+         Iki sebep vardi ve ikisi de burada olculuyor:
+           1. KAYMA dinlenmiyordu. Akilli yakinlastirma gorunum
+              penceresini hem buyutuyor hem kaydiriyor; kayma tek
+              basina olunca hicbir olay islenmiyordu.
+           2. Yakinlastirilmisken OLCULUYORDU. O anda CSS
+              pikselleriyle olculen konum ekranda gorulen yere denk
+              gelmiyor; yanlis sayi yaziliyor ve geri donuste
+              "degisiklik yok" deyip duzeltilmiyordu. */
+      K('Yakinlastirma surerken yerlestirilmiyor',
+         i1 > 0 && /_zoomBorcu/.test(g1) && /_ol > 101/.test(g1),
+         'olcek 1 degilken yerlesim erteleniyor, donunce bir kez yapiliyor');
+      K('Gorunum penceresinin kaymasi da dinleniyor',
+         /visualViewport\.addEventListener\('scroll', olcuIste\)/.test(kaynak)
+         && /_kx === _sonKx && _ky === _sonKy/.test(g1),
+         'offsetLeft/offsetTop karara giriyor ve scroll baglandi');
       K('Yakinlastirma da yerlesimi tazeliyor',
          i1 > 0 && /visualViewport/.test(g1)
          && /_ol === _sonOlcek/.test(g1) && /_vb === _sonVvBoy/.test(g1),
