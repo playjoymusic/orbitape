@@ -54,7 +54,9 @@ const MANIFEST = [
   'function _mk',
   'function _muzikMi',
   'function modBul',
-  'function modUyar'
+  'function modUyar',
+  'const DERILER',
+  'const GEZ_CIZIM'
 ];
 
 /* Bir bildirimi bastan sonuna kadar cikar.
@@ -183,6 +185,61 @@ K('E-posta ve adres kunyeye yazilmiyor',
 K('Gercek isim oldugu gibi geciyor',
   A.sanatciTemiz('  Duke   Ellington ') === 'Duke Ellington',
   'bosluklar sadelesiyor, isim korunuyor');
+
+/* ── DERI KONTRASTI OLCULUYOR, GOZE BIRAKILMIYOR ────────────────
+   Kullanicinin bildirdigi kusur: "bazi temalarda bazi yazilar dusuk
+   kaliyor." Goz bu soruya guvenilir cevap vermiyor -- ozellikle
+   orta tonlu zeminlerde (kobalt, kirmizi, yesim) beyaz yazi
+   okunuyor SANILIYOR ama olcunce 4.5'in altinda kaliyor.
+   Burasi WCAG bagil parlakligini hesaplayip her deri icin oraniyor.
+   Esikler: govde yazisi 4.5, marka rengi 3.0 (WCAG AA).
+   Yeni bir deri eklenirse ve kontrasti tutmazsa kapi kirmizi yanar. */
+function _rgb(c){
+  c = String(c).trim().replace('#','');
+  if(c.length === 3) c = c.split('').map(x=>x+x).join('');
+  return [0,2,4].map(i=>parseInt(c.slice(i,i+2),16));
+}
+function _parlaklik(c){
+  const f = v=>{ v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); };
+  const [r,g,b] = _rgb(c);
+  return 0.2126*f(r) + 0.7152*f(g) + 0.0722*f(b);
+}
+function _kontrast(a,b){
+  let la = _parlaklik(a), lb = _parlaklik(b);
+  if(la < lb){ const t = la; la = lb; lb = t; }
+  return (la + 0.05) / (lb + 0.05);
+}
+{
+  const zayifYazi = [], zayifMarka = [], tersDegil = [];
+  A.DERILER.forEach(d=>{
+    const ky = _kontrast(d.yazi, d.zem), km = _kontrast(d.marka, d.zem);
+    if(ky < 4.5) zayifYazi.push(d.ad + ' ' + ky.toFixed(2));
+    if(km < 3.0) zayifMarka.push(d.ad + ' ' + km.toFixed(2));
+    /* Cekirdek ve halka cizgisi ZEMININ TERSINE kaymali: acik
+       zeminde koyulasmali, koyu zeminde acilmali. Ilk surumde
+       ikisi de koyuydu ve koyu derilerde kayboluyorlardi. */
+    const acik = _parlaklik(d.zem) > 0.30;
+    const cekAcik = _parlaklik(d.cek) > _parlaklik(d.zem);
+    if(acik === cekAcik) tersDegil.push(d.ad);
+  });
+  K('Her deride yazi zeminden ayirt ediliyor', zayifYazi.length === 0,
+    zayifYazi.length ? zayifYazi.join(', ') : A.DERILER.length + ' deri, hepsi 4.5 ustu');
+  K('Her deride marka rengi okunuyor', zayifMarka.length === 0,
+    zayifMarka.length ? zayifMarka.join(', ') : 'hepsi 3.0 ustu');
+  K('Cekirdek zeminin tersine kayiyor', tersDegil.length === 0,
+    tersDegil.length ? tersDegil.join(', ') : 'acikta koyu, koyuda acik');
+}
+
+/* ── HER RAFIN CIZIMI VAR ───────────────────────────────────────
+   Tur adlari ekranda yazi degil CIZIM. Cizimi olmayan bir ad metne
+   dusuyor ve digerlerinden BASKA bir yazi tipinde gorunuyor --
+   kullanicinin bildirdigi sey buydu: bes yeni raf (INDUSTRIAL,
+   NOISE, DARK, CITY, BEATS) tabloda yoktu. Yeni bir raf acilinca
+   ayni sey tekrar olmasin diye kapi burada duruyor. */
+K('Her arsiv rafinin cizimi var',
+  A.ARSIV_ADLAR.every(ad=>!!A.GEZ_CIZIM.ad[ad]),
+  A.ARSIV_ADLAR.filter(ad=>!A.GEZ_CIZIM.ad[ad]).join(', ')
+  || A.ARSIV_ADLAR.length + ' raf, hepsi cizili');
 
 console.log('\n' + (dusen.length
   ? '  DUZELTILECEK: ' + dusen.join(', ')
