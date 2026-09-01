@@ -369,7 +369,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Karar: ASIL tavan (brotli) SIKILASIYOR, ham tavan gevsiyor.
        Ham tavanin tek isi hala ayni -- kacak bir buyumeyi, mesela
        yanlislikla gomulen bir veri dosyasini yakalamak. */
-    K('Telden gecen boy < 272 KB', br < 272*1024,
+    /* ── TAVAN 272 -> 274 KB, SEBEBI YAZILI ──────────────────────
+       Bu sayi bir hedef degil bir FREN: kacak buyumeyi gorunur
+       kilmak icin var, o yuzden her sikistiginda yukselmemeli.
+       Bu sefer yukseldi ve gerekcesi su: altmis derilik seri,
+       oluk/cekirdek renk kurali ve FX yumusaticisi girdi; ayni
+       partide ses cizgisinin 5,5 KB'lik olu kodu ve olcusu SILINDI,
+       yani buyume net olarak yeni is. Tavan 272'ye dayaninca once
+       kirpmayi denedik ve olculdu: ham dosyadan 300-500 bayt
+       silmek brotli ciktisini bazen BUYUTUYOR (sozluk degisiyor).
+       Yorum kirparak 20 bayt kovalamak muhendislik degil kumar --
+       o yuzden sayi durustce 274'e cekildi ve iki KB pay birakildi.
+       Kullanici tarafinda karsiligi: ilk acilista ~2 KB daha, sonra
+       servis calisani onbellekliyor. */
+    K('Telden gecen boy < 274 KB', br < 274*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
@@ -2055,11 +2068,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Uygulamaya OZGU olan jest kalmali; evrensel simgeler dusmeli. */
   K('Acilista ogreten adimlar kaliyor',
      ['GENRES','SELECT','SHELF','SETTINGS'].every(a=>tan.acilis.includes(a))
-     && !tan.acilis.includes('VOLUME') && !tan.acilis.includes('CONTROLS'),
-     'halka jesti ve iki referans noktasi var, oynat/dur ve ses cizgisi yok');
+     && !tan.acilis.includes('CONTROLS'),
+     'halka jesti ve iki referans noktasi var, oynat/dur yok');
   K('Istenince tur tam anlatiyor',
      tan.uzun.length > tan.acilis.length
-     && ['CONTROLS','TOOLS','VOLUME','NOW PLAYING','RECORD'].every(a=>tan.uzun.includes(a)),
+     && ['CONTROLS','TOOLS','NOW PLAYING','RECORD'].every(a=>tan.uzun.includes(a)),
      tan.uzun.length + ' adim (ayarlardan acilan)');
   K('Yaptigi is bir daha anlatilmiyor',
      !tan.bilen.includes('GENRES') && !tan.bilen.includes('SETTINGS'),
@@ -2276,9 +2289,43 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const tek = await pg.evaluate(()=>{
       const kaynak = document.documentElement.outerHTML;
-      return { tekEksen:/const _g = Math\.min\(1, uz\);[\s\S]{0,60}yatay=_g; fxSeviye=_g;/.test(kaynak) };
+      return { tekEksen:/fxHam = Math\.min\(1, uz\);[\s\S]{0,40}fxAkisBasla\(\);/.test(kaynak)
+                     && /yatay = v; fxSeviye = v;/.test(kaynak) };
     });
     K('FX tek eksen (uzaklik = siddet)', tek.tekEksen, 'yon yalniz isigi tasiyor');
+  }
+  /* ── FX SEVIYESI ZIPLAMIYOR ──────────────────────────────────────
+     Kullanicinin sozu: "bazi FX odalarinda bir anda cok boostlaniyor,
+     hep dengesiz bir yukselme var, tadi alinmiyor, patliyor."
+     Sebep parmagin YERININ dogrudan siddet olmasiydi: kenara yakin
+     basip birkac piksel oynatan biri degeri tek karede 0'dan 0.7'ye
+     ziplatiyordu. Burada davranis olculuyor, kaynak degil:
+       · ilk 80 ms'de seviye hala cok kucuk (sicrama yok)
+       · yarim saniyede tam yolu tamamliyor (takilip kalmiyor)
+       · egri algisal: yolun yarisi isin yarisini YAPMIYOR */
+  {
+    const yum = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      if(typeof fxAkisBasla !== 'function') return null;
+      fxHam = 1; fxAkisBasla();
+      await bek(80);  const erken = fxSeviye;
+      await bek(560); const gec   = fxSeviye;
+      fxAkisDur(); fxSeviye = 0; yatay = 0;
+      return { erken, gec, yari: fxEgri(0.5), tam: fxEgri(1) };
+    });
+    K('FX seviyesi tek karede ziplamiyor',
+       !!yum && yum.erken < 0.10,
+       'ilk 80 ms: ' + (yum ? yum.erken.toFixed(3) : '-') + ' (sicrama yok)');
+    K('FX yarim saniyede tam yolu aliyor',
+       !!yum && yum.gec > 0.98,
+       'takilip kalmiyor: ' + (yum ? yum.gec.toFixed(3) : '-'));
+    K('FX cevabi algisal, dogrusal degil',
+       !!yum && yum.yari < 0.34 && Math.abs(yum.tam - 1) < 1e-6,
+       'yolun yarisi isin ~%' + (yum ? Math.round(yum.yari*100) : '-') + "'i");
+    K('Islak yollar cikisi ezmiyor',
+       /makeup = makeup \/ \(1 \+ _fxYuk \* 0\.55\)/.test(
+         fs.readFileSync('index.html','utf8')),
+       'eko ve reverb acildikca ortak besleme geri cekiliyor');
   }
   /* ── ACILIS SON KANALDAN ─────────────────────────────────────────
      Devamlilik: kisi dun nerede biraktiysa oradan devam ediyor.
@@ -5687,7 +5734,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Buyutec yuvasina oturuyor, env iki kere eklenmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         /* Kaynak: olculen yuvadan gelen deger duz px yaziliyor. */
-        const duz = /yr2\.bottom[\s\S]{0,80}\+ 'px'/.test(k);
+        const duz = /yr2\.bottom[\s\S]{0,220}\+ 'px'/.test(k);
         const eskiHata = /_dip\(Math\.max\(6, alt \+ _fark\)\)/.test(k);
         try{ geriYerlestir(); }catch(e){ return false; }
         const ar = document.getElementById('ara');
@@ -5744,7 +5791,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            anlatilmasi gerekiyor -- ama ilk acilista degil, isteyene. */
         return basliklar.includes('GENRES') && basliklar.includes('SETTINGS')
             && basliklar.includes('NOW PLAYING') && basliklar.includes('CONTROLS')
-            && basliklar.includes('TOOLS') && basliklar.includes('VOLUME')
+            && basliklar.includes('TOOLS') && !basliklar.includes('VOLUME')
             && !basliklar.includes('EFFECTS') && !basliklar.includes('SHAPE')
             && !basliklar.includes('CHANNEL') && !basliklar.includes('CATEGORIES')
             && eksik.length === 0
@@ -6807,16 +6854,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Ikisi de burada olculuyor. */
   const sesGercek = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    const c = document.getElementById('sesYatay'); if(!c) return null;
+    /* SES CIZGISI SILINDI: seviyeye dokunan tek ekran denetimi artik
+       sustur tusu. Olculen sey degismedi -- dokunus grafigi kuruyor
+       mu ve kullanicinin seviyesi grafik kurulunca korunuyor mu. */
+    const c = document.getElementById('mute'); if(!c) return null;
     const s2 = document.getElementById('ses');
     if(!s2.src) s2.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=';
     try{ await s2.play(); }catch(e){}
     await bek(150);
-    const r=c.getBoundingClientRect();
-    /* Cizgiye dokunmak grafigi kurmali: iOS'ta tek calisan yol bu. */
-    c.dispatchEvent(new PointerEvent('pointerdown',{clientX:r.left+r.width*0.9,clientY:r.top+r.height/2,bubbles:true,pointerId:9}));
-    c.dispatchEvent(new PointerEvent('pointermove',{clientX:r.left+r.width*0.4,clientY:r.top+r.height/2,bubbles:true,pointerId:9}));
-    c.dispatchEvent(new PointerEvent('pointerup',{clientX:0,clientY:0,bubbles:true,pointerId:9}));
+    kSes = 0.4; sesSeviyeYaz();
+    c.click();               // sustur: grafigi kurmali
+    await bek(200);
+    c.click();               // geri ac: eski seviyeden devam etmeli
     await bek(260);
     const kuruldu = (typeof grafHazir!=='undefined') && grafHazir;
     const g = (typeof kulGain!=='undefined' && kulGain) ? kulGain.gain.value : null;
@@ -7732,58 +7781,35 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   }
 
   /* ── 5. SES CIZGISI ────────────────────────────────────────────── */
+  /* ── SES CIZGISI SILINDI ────────────────────────────────────────
+     Kullanicinin sozu: "mac surumunde masaustunde bir cizgi var, sol
+     alttaki konsolda; iki modda da var, onu sil. Gerek yok, mute
+     dugmesi var artik."
+     Once cizgi yalnizca dokunmatikte gizleniyordu; simdi tamamen
+     kalkti -- elemani, CSS'i ve ona bagli surukleme/tekerlek/klavye
+     kodu. Bu kontrol ikisini birden soruyor: cizgi hicbir cihazda
+     YOK, ve seviye yine de degistirilebiliyor (sustur tusu +
+     iki parmakla dikey jest). */
   const sc = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    const c=document.getElementById('sesYatay'); if(!c) return null;
-    const dikeyKalkti = !document.getElementById('sesDikey');
-    /* CIZGI DOKUNMATIKTE GIZLI (bkz. CSS: hover+pointer:fine).
-       Test baglami telefon, o yuzden cizgi gorunmez ve olculemez.
-       Davranisi olcmek icin gecici olarak gosteriliyor -- masaustunde
-       kullanicinin gordugu sey bu. Gorunurluk kurali ayrica
-       kaynaktan dogrulaniyor. */
-    const satir = document.getElementById('sesSatir');
-    const eskiG = satir ? satir.style.display : '';
-    if(satir) satir.style.display = 'flex';
-    await bek(40);
-    const r=c.getBoundingClientRect();
-    const bas=(x)=>{ c.dispatchEvent(new PointerEvent('pointerdown',{clientX:x,clientY:r.top+r.height/2,bubbles:true,pointerId:1})); };
-    const gez=(x)=>{ c.dispatchEvent(new PointerEvent('pointermove',{clientX:x,clientY:r.top+r.height/2,bubbles:true,pointerId:1})); };
-    const kalk=()=>{ c.dispatchEvent(new PointerEvent('pointerup',{clientX:0,clientY:0,bubbles:true,pointerId:1})); };
-    /* SURUKLE: cizginin dortte birine -> ~%25 */
-    bas(r.left+r.width*0.9); gez(r.left+r.width*0.25); kalk(); await bek(80);
-    const surukle=Math.round(kSes*100);
-    const dolu=parseFloat(c.querySelector('.dolu').style.width)||-1;
-    /* TEK DOKUNUS: sustur */
-    bas(r.left+r.width*0.25); kalk(); await bek(60);
-    const sustu=kSes;
-    const susSinif=c.classList.contains('sus');
-    /* TEK DOKUNUS: geri ac -- eski seviyeden devam etmeli */
-    bas(r.left+r.width*0.25); kalk(); await bek(60);
-    const geldi=Math.round(kSes*100);
-    /* Kazanc dugumune gercekten yaziliyor mu */
+    const yok = !document.getElementById('sesYatay')
+             && !document.getElementById('sesSatir')
+             && !document.getElementById('sesDikey');
+    const m = document.getElementById('mute');
+    kSes=1; sesSeviyeYaz(); sesDikeyYaz(); await bek(40);
+    m.click(); await bek(120);
+    const sustu = kSes;
+    m.click(); await bek(120);
+    const geldi = Math.round(kSes*100);
     kSes=1; sesSeviyeYaz(); sesDikeyYaz();
     try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
-    if(satir) satir.style.display = eskiG;
-    await bek(40);
-    const dokunmatikteGizli = satir ? getComputedStyle(satir).display==='none' : null;
-    return { dikeyKalkti, surukle, dolu, sustu, susSinif, geldi, dokunmatikteGizli };
+    return { yok, sustu, geldi };
   });
-  /* Istenen: "volume cizgisi olmasin, sesi kapatma mute olsun -- ama
-     bu sadece mobil icin. mac pc'de volume kisma acma kalsin."
-     Telefonda zaten donanim ses tuslari var; ekranda ikinci bir
-     kaydirici hem yer kapliyor hem yanlislikla suruluyor. */
-  K('Ses cizgisi dokunmatikte yok', !!sc && sc.dokunmatikteGizli===true,
-     'telefonda gizli, masaustunde acik');
-  K('Eski dikey cubuk silindi', !!sc && sc.dikeyKalkti===true, 'tek denetim kaldi');
-  K('Surukleyince seviye degisiyor', !!sc && Math.abs(sc.surukle-25) <= 6,
-     'dortte bire cekildi -> %'+(sc?sc.surukle:'-'));
-  K('Cizginin dolulugu seviyeyi gosteriyor', !!sc && Math.abs(sc.dolu-sc.surukle) <= 2,
-     'dolu %'+(sc?sc.dolu:'-')+' / seviye %'+(sc?sc.surukle:'-'));
-  K('Tek dokunus susturuyor', !!sc && sc.sustu===0 && sc.susSinif===true, 'seviye 0');
-  /* Sifirdan degil BIRAKTIGI yerden geri gelmeli: yoksa her acisda
-     kullanici sesi elle bulmak zorunda kaliyor. */
-  K('Tekrar dokunus eski seviyeden aciyor', !!sc && Math.abs(sc.geldi-sc.surukle) <= 2,
-     'geri gelen %'+(sc?sc.geldi:'-')+' / birakilan %'+(sc?sc.surukle:'-'));
+  K('Ses cizgisi hicbir cihazda yok', !!sc && sc.yok===true,
+     'ucuncu satir tamamen kalkti');
+  K('Sustur tusu seviyeyi sifirliyor', !!sc && sc.sustu===0, 'seviye 0');
+  K('Tekrar dokunus eski seviyeden aciyor', !!sc && sc.geldi===100,
+     'geri gelen %'+(sc?sc.geldi:'-'));
 
   /* ── 6. TEK TAKIM TASIMA TUSU ──────────────────────────────────
      ◁ ve ▷ eskiden sag alttaydi. Ikisi birden bulunursa kullanici
@@ -8166,6 +8192,107 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          i1 > 0 && /visualViewport/.test(g1)
          && /_ol === _sonOlcek/.test(g1) && /_vb === _sonVvBoy/.test(g1),
          'gorsel gorunumun olcegi ve boyu da karara giriyor');
+      /* ── BUYUTEC BOZUK OLCUMLE TAVANA YAPISMIYOR ────────────────
+         Kullanicinin iki kez bildirdigi kusur: "buyutec yukarida
+         kaldi, ancak yenilemeyle geciyor." Sebep tek bir bozuk
+         olcum: yuva o an ekranin tepesinde gorunuyor, formul
+         innerHeight kadar buyuk bir sayi uretiyor ve buyutec orada
+         KILITLENIYOR -- sonraki cagrilarda olculer 'ayni' geldigi
+         icin kimse geri koymuyordu.
+         Iki emniyet birden aranan sey: (1) hesaplanan dip degeri
+         ekranin alt %40'i disina cikarsa yazilmiyor, CSS'in kendi
+         hattina donuluyor; (2) bekci artik "ekranin disina cikti
+         mi" degil "yuvasindan kopmus mu" diye soruyor. */
+      K('Buyutec bozuk olcumu reddediyor',
+         /_dp >= 0 && _dp <= window\.innerHeight \* 0\.40/.test(kaynak),
+         'dip degeri ekranin alt %40 disina cikarsa CSS hattina donuluyor');
+      K('Bekci yuvadan kopmayi da goruyor',
+         /araYuva[\s\S]{0,320}yr\.height\/2\) \) > 8|\(r\.top \+ r\.height\/2\) - \(yr\.top \+ yr\.height\/2\)\) > 8/.test(kaynak),
+         'ekranin icinde ama yanlis yerdeyse de yeniden yerlestiriliyor');
+
+      /* ── ORTADAKI CIZGILER VE CEKIRDEK ──────────────────────────
+         Kullanicinin sozu: "acik skinlerde ortadaki cizgiler ve
+         halka beyaz yapmissin; o ORBITAPE yazisindan etkilensin,
+         ana koyu tonundan. Koyu backgroundlarda tersi olsun. Ama
+         sakin genel yuvarlagin cevresini elleme."
+         Iki sey birden olculuyor:
+           1. SIRA. CSS'te ilk yazilan katman USTTE cizilir. Oluk
+              cizgisi ve cekirdek, kendilerini orten isik bandindan
+              ONCE gelmeli -- eskiden sonra geliyorlardi ve beyaz
+              onlari boyuyordu.
+           2. KAYNAK. Renk markadan tureniyor, tabloya elle otuz
+              satir yazilmiyor. */
+      {
+        const blok = kaynak.slice(kaynak.indexOf('body.deri .disk::after{'),
+                                  kaynak.indexOf('body.deri .disk::after{') + 2400);
+        const iOluk = blok.indexOf('--d-oluk,var(--d-halka)');
+        const iCek  = blok.indexOf('--d-cekirdek,var(--d-cek)');
+        const iIsik = blok.indexOf('var(--d-oluk-isik,var(--d-isik))');
+        K('Ortadaki cizgi ve nokta kabartmanin USTUNDE',
+           iOluk > -1 && iCek > -1 && iIsik > -1 && iOluk < iIsik && iCek < iIsik,
+           'katman sirasi: oluk ve cekirdek once, isik bandi sonra');
+        K('Ortadaki cizgi ve nokta markadan tureniyor',
+           /--d-oluk',\s+_hexKaris\(d\.marka, d\.zem/.test(kaynak)
+           && /--d-cekirdek', _hexKaris\(d\.marka, d\.zem/.test(kaynak),
+           'acik zeminde markanin koyusu, koyu zeminde acigi');
+      }
+      /* ── SKINS: ACAN TUS KAPATAN TUS ────────────────────────────
+         Kullanicinin sozu: "HIDE'a basinca skins penceresi
+         kapanmiyor; SKINS yazisiyla aciliyor ya, yine SKINS'e
+         basinca kapanabilsin, o kadar HIDE'i bosver."
+         Satirin sagi artik her zaman secili derinin ADI -- bir
+         deger, bir komut degil. Ikinci dokunus kapatiyor. */
+      K('SKINS satiri ikinci dokunusta kapaniyor', await pg.evaluate(()=>{
+          const sat = document.querySelector('.sat[data-ayar="deri"]');
+          const kap = document.getElementById('deriIzgara');
+          if(!sat || !kap) return false;
+          if(!kap.hidden) sat.click();
+          sat.click();  const acildi = !kap.hidden;
+          const yaziAcik = sat.querySelector('.durum').textContent.trim();
+          sat.click();  const kapandi = kap.hidden;
+          const yaziKapali = sat.querySelector('.durum').textContent.trim();
+          return acildi && kapandi
+              && yaziAcik !== 'HIDE' && yaziKapali !== 'HIDE'
+              && yaziAcik === yaziKapali;
+        }), 'ayni satir aciyor ve kapatiyor, sagda HIDE degil derinin adi');
+
+      /* ── RINGS ONLY AYNI KAREDE ─────────────────────────────────
+         Kullanicinin sozu: "ayarlardan da ring'i acip kapiyoruz ya,
+         o anda degissin direkt gorelim; oraya bir koyuluk geliyor."
+         Iki kusur vardi: anahtar govdedeki sinifi yazmiyordu (ekran
+         ancak bir sonraki deri dokunusunda degisiyordu) ve tuval
+         display:none'dan donerken olcusu sifir oldugu icin ilk kare
+         karanlik bir delik oluyordu. Ikisi de burada olculuyor:
+         sinif dondu mu ve tuvalin gercek bir olcusu var mi. */
+      K('RINGS ONLY ayni karede uygulaniyor', await pg.evaluate(()=>{
+          const sat = document.querySelector('.sat[data-ayar="halka"]');
+          if(!sat) return false;
+          /* ── DURUM GERI BIRAKILIYOR ──────────────────────────────
+             Anahtara dokunmak ayarlari DEPOYA yaziyor; bu kontrol
+             kendinden sonraki sayfa yuklemelerine deri birakirsa
+             baska kontroller (mesela "kalici CSS filtresi") o
+             derinin tuval suzgecini gorup kirmizi yaniyor -- bir
+             kez oldu ve boyle bulundu. Ne alindiysa geri konuyor. */
+          const eskiDeri = AYAR.deri|0, eskiHalka = !!AYAR.halka;
+          if(!AYAR.deri){ AYAR.deri = 2; deriUygula(); }
+          if(AYAR.halka){ sat.click(); }
+          sat.click();                       // ac
+          const v = document.getElementById('viz');
+          const acildi = document.body.classList.contains('sadehalka')
+                      && getComputedStyle(v).display !== 'none'
+                      && v.width > 10 && v.height > 10;
+          sat.click();                       // kapa
+          const kapandi = !document.body.classList.contains('sadehalka');
+          AYAR.deri = eskiDeri; AYAR.halka = eskiHalka;
+          try{ ayarKaydet(); }catch(e){}
+          try{ deriUygula(); }catch(e){}
+          return acildi && kapandi;
+        }), 'sinif ayni karede donuyor, tuval bos donmuyor');
+
+      K('Govdenin kendisine dokunulmadi',
+         /body\.deri \.disk\{border-radius:50%;background:var\(--d-zem\)/.test(kaynak)
+         && /inset 0 1px 0 var\(--d-isik\)/.test(kaynak),
+         'yuvarlagin zemini, kenari ve golgesi ayni kaldi');
     }
   }
   /* ── GECICI AD IKI KIPTE DE AYNI YERDE ──────────────────────────
@@ -8289,9 +8416,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   }
   {
     const kaynak = fs.readFileSync('index.html','utf8');
-    K('Ses satiri ustundekiyle ayni genislikte',
-       /function sesSatirOlcu\(\)[\s\S]{0,420}--ses-en/.test(kaynak),
-       'genislik olculuyor, sabit sayi degil');
+    /* Eskiden burada "ses satiri ustundekiyle ayni genislikte" diye
+       bir kontrol vardi. Satir silindi; olcunun de isi kalmadi.
+       Yerine olu kodun geri sizmadigini dogruluyoruz. */
+    K('Ses satirinin olcusu de silindi',
+       !/--ses-en/.test(kaynak.split('/*').map(x=>x.split('*/').pop()).join('')),
+       'satir yoksa olcusu de yok');
   }
 
   /* ── YUTULAN HATA BUTCESI ────────────────────────────────────────

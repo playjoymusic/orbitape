@@ -250,6 +250,38 @@ function _kontrast(a,b){
     zayifMarka.length ? zayifMarka.join(', ') : 'hepsi 3.0 ustu');
   K('Cekirdek zeminin tersine kayiyor', tersDegil.length === 0,
     tersDegil.length ? tersDegil.join(', ') : 'acikta koyu, koyuda acik');
+
+  /* ── ORTADAKI OLUK CIZGISI VE CEKIRDEK MARKADAN ─────────────────
+     Kullanicinin sozu: "o ORBITAPE yazisindan etkilensin, ana koyu
+     tonundan; temanin koyusunu alsin acik renkler icin, koyu
+     backgroundlarda tersi olsun."
+     deriUygula'daki kural burada birebir tekrarlaniyor ve altmis
+     derinin hepsinde iki sey soruluyor:
+       1. YON. Acik zeminde ikisi de zeminden KOYU, koyu zeminde
+          ACIK olmali -- yoksa cizgi zemine gomulur.
+       2. GORUNURLUK. Cizgi ince oldugu icin cekirdekten daha guclu
+          olmali; ve cizgi zeminden en az 1,8 kat ayrilmali, yoksa
+          uzaktan yine kaybolur. */
+  {
+    const kar = (a,b,k) => A._hexKaris(a,b,k);
+    const yanlisYon = [], soluk = [], sirasiz = [];
+    A.DERILER.forEach(d=>{
+      const acik = _parlaklik(d.zem) > 0.30;
+      const oluk = kar(d.marka, d.zem, acik ? 0.60 : 0.48);
+      const cek  = kar(d.marka, d.zem, acik ? 0.38 : 0.32);
+      const pz = _parlaklik(d.zem), po = _parlaklik(oluk), pc = _parlaklik(cek);
+      if(acik ? !(po < pz && pc < pz) : !(po > pz && pc > pz)) yanlisYon.push(d.ad);
+      if(_kontrast(oluk, d.zem) < 1.8) soluk.push(d.ad + ' ' + _kontrast(oluk,d.zem).toFixed(2));
+      /* Cizgi cekirdekten daha uzakta olmali: oyuk cizgi, dolgu nokta. */
+      if(Math.abs(po - pz) <= Math.abs(pc - pz)) sirasiz.push(d.ad);
+    });
+    K('Oluk ve cekirdek zeminin tersine gidiyor', yanlisYon.length === 0,
+      yanlisYon.length ? yanlisYon.join(', ') : 'acikta koyu, koyuda acik (60 deri)');
+    K('Oluk cizgisi uzaktan da secilyor', soluk.length === 0,
+      soluk.length ? soluk.join(', ') : 'hepsi zeminden 1.8 kat ayri');
+    K('Cizgi cekirdekten daha guclu', sirasiz.length === 0,
+      sirasiz.length ? sirasiz.join(', ') : 'ince cizgi koyu, genis nokta yumusak');
+  }
 }
 
 /* ── YUTULAN HATA DEFTERI ───────────────────────────────────────

@@ -81,7 +81,9 @@ async function agKur(sayfa){
      · Uygulama bir hata yuttu mu
    Yolculuklar bunu adim adim cagiriyor; nerede bozuldugu belli olsun
    diye adin icinde adim numarasi geciyor.                            */
-const SABITLER = ['ust','solUst','tasima','araclar','ara','np','ayarTut','sesSatir'];
+/* 'sesSatir' listeden cikti: ses cizgisi silindi (bkz. index.html,
+   "SES CIZGISI SILINDI"). */
+const SABITLER = ['ust','solUst','tasima','araclar','ara','np','ayarTut'];
 
 async function supur(pg, nerede){
   return pg.evaluate((ids)=>{
