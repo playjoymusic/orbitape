@@ -359,11 +359,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       params:{ [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }).length;
     const gz  = zlib.gzipSync(ham, {level:9}).length;
     const brKB = Math.round(br/1024), gzKB = Math.round(gz/1024);
-    K('Telden gecen boy < 280 KB', br < 280*1024,
+    /* ── HANGI BOY ONEMLI, OLCULDU ──────────────────────────────
+       Dosyanin %42'si aciklama (417 KB). Kullanici bunlari isteyerek
+       istedi: "sistemimi bozma, neden oyle yapildigini yaz."
+       Brotli o aciklamalari neredeyse bedavaya sikistiriyor -- ham
+       989 KB, telden gecen 265 KB. Yani HAM tavan, kullanicinin
+       odemedigi bir seyi cezalandiriyordu ve bir kere de yanlis
+       yerden kirmizi yandi: Turkce metinler eklenince asilacakti.
+       Karar: ASIL tavan (brotli) SIKILASIYOR, ham tavan gevsiyor.
+       Ham tavanin tek isi hala ayni -- kacak bir buyumeyi, mesela
+       yanlislikla gomulen bir veri dosyasini yakalamak. */
+    K('Telden gecen boy < 272 KB', br < 272*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
-    K('Ham boy < 1000 KB', dosyaBoy < 1000*1024,
+    K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
-      + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor');
+      + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
      Kullanicinin istegi: "arama sesini kapatabilmek lazim, bir sure
@@ -5116,9 +5126,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       AKTIF_AILE = null;
       const hepsi = aileSuz(sahte).length;
       AKTIF_AILE = eski;
-      return { sayi:A.length, adlar:A.map(x=>x.ad),
+      return { sayi:A.filter(x=>!x.bos).length, tumSayi:A.length,
+               adlar:A.filter(x=>!x.bos).map(x=>x.ad),
+               bosAdlar:A.filter(x=>x.bos).map(x=>x.ad),
+               tumAdlar:A.map(x=>x.ad),
                acilis:(typeof AILE_ACILIS!=='undefined'?AILE_ACILIS:null),
-               renkler:A.map(x=>x.renk),
+               renkler:A.filter(x=>!x.bos).map(x=>x.renk),
+               tumRenkler:A.map(x=>x.renk),
+               halkada:(typeof aileDolular==='function') ? aileDolular() : [],
                benzersizRenk:new Set(A.map(x=>x.renk)).size,
                suzulen, bos, hepsi,
                aileSecVar:(typeof aileSec==='function') };
@@ -5126,7 +5141,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* NEWS & TALK SILINDI: icinde tek istasyon yoktu.
        INDIE & LOFI de SILINDI: on yedi lofi LOUNGE'a, bir indie rock
        tarafina tasinip raf TAM bosaldi. On -> dokuz. */
-    K('Dokuz aile tanimli', !!ai && ai.sayi === 9, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    /* BILDIRILMIS-BOS RAF SAYILMIYOR. ACOUSTIC tabloda duruyor ama
+       icine ilk istasyon girene kadar ekranda yok; kullanicinin
+       gordugu raf sayisi hala dokuz. Magaza metinleri de o sayiyi
+       yaziyor. Rafa istasyon girdigi gun bos damgasi kalkacak ve bu
+       test onu bekleyecek. */
+    K('Dokuz DOLU aile tanimli', !!ai && ai.sayi === 9, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('Bildirilmis-bos raf halkada gorunmuyor',
+      !!ai && ai.bosAdlar.every(b => !ai.halkada.includes(b)),
+      ai ? ('bos: ' + (ai.bosAdlar.join(', ') || 'yok')
+            + ' · halkada: ' + ai.halkada.length) : '-');
     /* ── HASAT ARACI UYGULAMAYLA AYNI RAFLARI BILMELI ────────────
        Raf adlari IKI yerde yaziyor: uygulamadaki AILELER ve
        araclar/radyo_grupla.py'deki AILELER. 30 Agustos'ta olculdu:
@@ -5141,8 +5165,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const blok = (py.match(/AILELER = OrderedDict\(\[([\s\S]*?)\n\]\)/) || [])[1] || '';
       const arac = [...blok.matchAll(/\(\s*"([^"]+)"\s*,\s*\{\s*"renk"\s*:\s*"#([0-9A-Fa-f]{6})"/g)]
                      .map(m => [m[1], m[2].toUpperCase()]);
-      const uyg = (ai ? ai.adlar : []).map((ad,i)=>{
-        const [r,g,b] = ai.renkler[i].split(',').map(Number);
+      const uyg = (ai ? ai.tumAdlar : []).map((ad,i)=>{
+        const [r,g,b] = ai.tumRenkler[i].split(',').map(Number);
         return [ad, [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase()];
       });
       const yaz = l => l.map(x=>x[0]+'#'+x[1]).join(' | ');
@@ -5215,8 +5239,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Ayni yayin listede bir kez', cift === 0,
         cift ? (cift + ' fazladan kayit') : (liste.length + ' istasyon, kopya yok'));
     }
-    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===ai.sayi,
-       ai ? ai.benzersizRenk+'/'+ai.sayi+' benzersiz' : '-');
+    /* RENK BENZERSIZLIGI BUTUN RAFLARDA ARANIYOR -- bildirilmis-bos
+       olan da dahil. Sebep: o raf bir gun dolacak ve o gun rengi
+       baska bir rafinkiyle ayni cikarsa halkada iki raf ayirt
+       edilemez. Sayi karsilastirmasi TUM tabloyla yapiliyor. */
+    K('Her ailenin ayri rengi var', !!ai && ai.benzersizRenk===ai.tumSayi,
+       ai ? ai.benzersizRenk+'/'+ai.tumSayi+' benzersiz' : '-');
     /* SIRAYI KULLANICI DIKTE ETTI (buyukten kucuge):
        ELECTRONIC · DISCO FUNK · ROCK & INDIE ·
        WORLD & ROOTS · LOUNGE & LOFI · ORCHESTRAL · JAZZ ·
@@ -6122,7 +6150,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        AILELER'den okuyup karsilastiriyoruz: raf eklenip cikarilinca
        bu test kendiliginden dogru sayiyi bekler. */
     {
-      const n = await pg.evaluate(()=> (typeof AILELER!=='undefined') ? AILELER.length : -1);
+      /* Bildirilmis-bos raflar sayilmiyor: magaza metni kullanicinin
+         GORDUGU raf sayisini yazmali. */
+      const n = await pg.evaluate(()=> (typeof AILELER!=='undefined')
+        ? AILELER.filter(a=>!a.bos).length : -1);
       const YAZI = {9:'nine',10:'ten',8:'eight',11:'eleven',12:'twelve'};
       const bek = YAZI[n];
       const k = fs.readFileSync('index.html','utf8') + fs.readFileSync('manifest.json','utf8');
@@ -7789,12 +7820,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const sart = fs.readFileSync('terms.html','utf8');
     const kodNot = fs.readFileSync('index.html','utf8');
+    /* ── AYNI KURAL, IKI FARKLI UZUNLUK ─────────────────────────
+       Once ekrandaki not sartlardaki cumlenin kopyasiydi (uc satir,
+       lisans aciklamasiyla birlikte). Kullanici kisaltti: "millet
+       bu niye acilmiyor demesin, kisa ama anlasilir olsun."
+       Dogru istek: ekran KURALI soyler, sartlar GEREKCEYI anlatir.
+       O yuzden test artik kopya cumle aramiyor, IKISININ DE AYNI
+       KURALI kurdugunu ariyor: canli yayin kaydedilmez, arsiv
+       kaydedilir. Biri degisip oteki degismezse yine kirmizi. */
     K('REC gerekcesi kullanim sartlariyla ayni seyi soyluyor',
        /Live radio is never recorded/i.test(sart)
        && /Creative\s*Commons/i.test(sart)
        && /REC LOCKED/.test(kodNot)
-       && /Creative Commons or public domain/.test(kodNot),
-       'sartlar ve ekran notu ayni kurali anlatiyor');
+       && /licensed to be heard, not recorded/i.test(kodNot)
+       && /Switch to ORBITAPE to record/i.test(kodNot),
+       'sartlar gerekceyi, ekran kurali soyluyor');
   }
 
   /* ── 8. UC SATIR AYNI SAG KENARDA ───────────────────────────────
