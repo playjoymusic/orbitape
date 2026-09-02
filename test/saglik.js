@@ -8424,6 +8424,91 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'satir yoksa olcusu de yok');
   }
 
+  /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ────────────────────────
+     Uygulamanin gizlilik sozunun en kirilgan yeri burasi. Bir olcum
+     yolu bir kere acilirsa, sonradan "acik unutulmus" hali fark
+     edilmez -- ekranda gorunen bir sey degil. O yuzden dort ayri
+     soru soruluyor ve hepsi DAVRANIS olcuyor, kaynak degil:
+       1. varsayilan KAPALI mi,
+       2. kapaliyken gercekten hicbir istek kurulmuyor mu,
+       3. acilinca giden govdede kimlik/istasyon/arama var mi,
+       4. alti saat kapisi tutuyor mu (her acilista gonderilmiyor).
+     Ucuncusu asil olan: govde ALANLARIYLA birlikte okunuyor, yani
+     ileride biri "sadece sunu da ekleyelim" derse burasi kirmizi
+     yanar. */
+  {
+    const olc = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const gonderilen = [];
+      const gercek = window.fetch;
+      window.fetch = function(u, o){
+        try{ if(String(u).indexOf('/olcu') >= 0) gonderilen.push(String((o&&o.body)||'')); }catch(e){}
+        return Promise.resolve(new Response(null, {status:204}));
+      };
+      const eskiOlcum = !!AYAR.olcum;
+      let varsayilan, kapaliyken, acikken, ikinci, govde = '';
+      try{
+        /* Varsayilan: depodaki degeri degil, KODDAKI baslangici
+           soruyoruz -- o yuzden anahtar once kapatiliyor. */
+        AYAR.olcum = false;
+        varsayilan = (typeof olcumGonder === 'function');
+        try{ localStorage.removeItem('orbitape.olcum.son'); }catch(e){}
+        kapaliyken = olcumGonder();
+        await bek(60);
+        const kapaliIstek = gonderilen.length;
+        /* DEFTERE BILEREK HATA EKLENMIYOR: govde defter bos olsa da
+           dort alanini tasiyor, yani olculecek sey degismiyor. Bir
+           kere eklendi ve oturum sayaci butcesini asti -- test kendi
+           olctugu seyi kirletmemeli. */
+        AYAR.olcum = true;
+        try{ localStorage.removeItem('orbitape.olcum.son'); }catch(e){}
+        acikken = olcumGonder();
+        ikinci  = olcumGonder();
+        await bek(60);
+        govde = gonderilen[0] || '';
+        return { varsayilan, kapaliyken, kapaliIstek, acikken, ikinci, govde,
+                 alanlar: Object.keys(JSON.parse(govde || '{}')).sort().join(',') };
+      } finally {
+        window.fetch = gercek;
+        AYAR.olcum = eskiOlcum;
+        try{ ayarKaydet(); }catch(e){}
+      }
+    });
+    const kaynak = fs.readFileSync('index.html','utf8');
+    K('Olcum varsayilan KAPALI',
+       /olcum:false/.test(kaynak) && /_a\.olcum === true\) AYAR\.olcum = true/.test(kaynak),
+       'yalnizca kullanici acarsa aciliyor, depodaki bozuk deger acmiyor');
+    K('Olcum kapaliyken hicbir istek kurulmuyor',
+       !!olc && olc.kapaliyken === false && olc.kapaliIstek === 0,
+       'kapali anahtarda fetch hic cagrilmiyor');
+    K('Olcum acikken tek gonderim yapiyor',
+       !!olc && olc.acikken === true && olc.ikinci === false,
+       'alti saat kapisi ikinci denemeyi durduruyor');
+    /* Govde SADECE su dort alani tasiyabilir. Yeni bir alan eklemek
+       bilincli bir karar olmali; sessizce sizmamali. */
+    K('Olcum govdesi yalnizca dort alan',
+       !!olc && olc.alanlar === 'n,p,v,y',
+       'giden alanlar: ' + (olc ? olc.alanlar : '-'));
+    K('Olcum govdesinde kimlik ve dinleme izi yok',
+       !!olc && !/kimlik|id"|session|istasyon|station|arama|search|fav|konum|lat|lon/i.test(olc.govde)
+             && !/Mozilla|AppleWebKit/.test(olc.govde),
+       'kalici kimlik, istasyon, arama, konum ve tam userAgent yok');
+    /* Servis calisani POST'a hic karismiyor (yalnizca GET dinliyor);
+       yine de yazili olsun -- bir gun biri method kontrolunu
+       kaldirirsa olcum istekleri onbellege girmeye baslardi. */
+    K('Servis calisani olcum istegine karismiyor',
+       /istek\.method !== 'GET'\) return;/.test(fs.readFileSync('sw.js','utf8')),
+       'yalnizca GET dinleniyor, POST /olcu dokunulmadan geciyor');
+    /* Gizlilik metni koda uymak zorunda: "hicbir sey toplamiyoruz"
+       artik eksik bir cumle. Sayfa anahtarin adini ve varsayilanini
+       yaziyor mu diye bakiyoruz. */
+    const giz = fs.readFileSync('privacy.html','utf8');
+    K('Gizlilik metni olcumu anlatiyor',
+       /SEND DIAGNOSTICS/.test(giz) && /off by default/i.test(giz)
+       && !/It does not collect, store or transmit anything about you/.test(giz),
+       'anahtarin adi, varsayilani ve ne gittigi sayfada yazili');
+  }
+
   /* ── YUTULAN HATA BUTCESI ────────────────────────────────────────
      "Olcemiyoruz" maddesinin cozulebilen yarisi.
      Kullanicilarda olculemiyor ve bu bilincli: gizlilik sozu telemetri

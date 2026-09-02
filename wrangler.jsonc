@@ -28,10 +28,32 @@
   //   eskisi gibi çalışmaya devam ediyor.
   //   (developers.cloudflare.com/workers/static-assets/routing/
   //    static-site-generation/)
+  // ── OLCUM UC NOKTASI ────────────────────────────────────────────
+  // main EKLENDI ve bu yayin seklini degistiren tek satir. Kural:
+  // eslesen bir DOSYA varsa Cloudflare onu dogrudan servis eder ve
+  // Worker HIC calismaz -- index.html, earth.json, ikonlar hepsi
+  // eskisi gibi. Worker yalnizca hicbir dosyayla eslesmeyen
+  // adreslerde devreye giriyor; bizim tek isimiz POST /olcu, geri
+  // kalan her yol ASSETS'e geri veriliyor (bkz. olcu.js).
+  // Onun icin once orbitape-deneme'ye yayinlanip telefondan
+  // dogrulanmali; main'e sonra.
+  "main": "./olcu.js",
+
   "assets": {
     "directory": "./",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // Worker'in ASSETS.fetch ile dosyalara ulasabilmesi icin ad
+    // sart; olcu.js bu adi kullaniyor.
+    "binding": "ASSETS"
   },
+
+  // Olcum kaydi buraya dusuyor. Yonetilecek veritabani yok, ucretsiz
+  // katman bizim hacmimizin cok ustunde ve SQL ile sorgulaniyor.
+  // Hesapta acik degilse baglanti gelmez; olcu.js o durumda da 204
+  // donuyor, yani uygulama etkilenmiyor.
+  "analytics_engine_datasets": [
+    { "binding": "OLCU", "dataset": "orbitape_olcu" }
+  ],
 
   // ── DENEME YAYINI (staging) ─────────────────────────────────────
   // NEDEN VAR: bugune kadar yayina cikan surumu, yayina cikmadan
@@ -53,10 +75,17 @@
   "env": {
     "deneme": {
       "name": "orbitape-deneme",
+      "main": "./olcu.js",
       "assets": {
         "directory": "./",
-        "not_found_handling": "404-page"
-      }
+        "not_found_handling": "404-page",
+        "binding": "ASSETS"
+      },
+      // Deneme AYRI bir veri kumesine yaziyor: denerken uretim
+      // rakamlarini kirletmeyelim.
+      "analytics_engine_datasets": [
+        { "binding": "OLCU", "dataset": "orbitape_olcu_deneme" }
+      ]
     }
   }
 }

@@ -65,12 +65,14 @@
 
 <header>
   <p class="marka">ORBITAPE</p>
-  <p class="alt">PRIVACY POLICY · LAST UPDATED 31 AUGUST 2026</p>
+  <p class="alt">PRIVACY POLICY · LAST UPDATED 1 SEPTEMBER 2026</p>
 </header>
 
 <div class="kutu">
   <p class="one"><b>The short version.</b> ORBITAPE has no accounts, no sign-up and no
-  analytics. It does not collect, store or transmit anything about you.
+  advertising. It collects nothing about you unless you switch on
+  <code>SEND DIAGNOSTICS</code> in settings, which is off by default and sends
+  only crash signatures &mdash; never anything you played, searched or saved.
   Your camera image and your recordings never leave your device. What
   little the app remembers is kept in your own browser and can be
   erased by clearing site data.</p>
@@ -84,10 +86,12 @@ sell and no business model that would make your data useful to anyone.</p>
 <h2>What ORBITAPE does not do</h2>
 <ul>
   <li>No accounts, log-ins, e-mail addresses or passwords.</li>
-  <li>No analytics, tracking pixels, advertising IDs or third-party trackers.</li>
+  <li>No tracking pixels, advertising IDs or third-party trackers.</li>
   <li>No cookies.</li>
   <li>No profile of your listening. Nothing you play is reported anywhere.</li>
-  <li>Nothing is sold or shared with anyone, because nothing is collected.</li>
+  <li>No identifier of any kind &mdash; nothing that could link one visit to another,
+    or one report to another.</li>
+  <li>Nothing is sold or shared with anyone.</li>
 </ul>
 
 <h2>Camera</h2>
@@ -163,6 +167,33 @@ contacts Jamendo or Audius, and the track lists are no longer fetched from
 GitHub or jsDelivr. They are served from orbitape.app itself.</p>
 <p>Each of these has its own privacy policy, which I do not control.</p>
 
+<h2>Crash reports &mdash; off unless you turn them on</h2>
+<p>When something inside ORBITAPE fails, the app swallows the error so the
+music does not stop, and writes a line into a local notebook you can read
+yourself under <code>DIAGNOSTICS</code> in settings. That notebook stays on your
+device. Nothing is sent from it automatically.</p>
+<p>Settings has a switch called <code>SEND DIAGNOSTICS</code>. It is <b>off by
+default</b>. While it is off, the app makes no request of this kind at all.
+If you turn it on, then at most once every six hours the app sends this
+and nothing else:</p>
+<table>
+  <tr><th>Sent</th><th>Example</th></tr>
+  <tr><td>App version</td><td><code>2026.09.01</code></td></tr>
+  <tr><td>Rough platform</td><td><code>mobile-webkit</code> &mdash; phone or desktop, and the
+    browser engine. Not your full browser string.</td></tr>
+  <tr><td>Crash signatures</td><td>The error message and the line number it came from,
+    at most eight of them, each cut to 90 characters.</td></tr>
+  <tr><td>How many times</td><td>A count per signature, and a total.</td></tr>
+</table>
+<p><b>What is never sent:</b> any identifier, session number or fingerprint;
+the station or track you were playing; anything you searched for; your
+favourites; your location; your settings or which skin you chose. There is
+deliberately nothing in a report that could link it to you or to another
+report, which also means these reports cannot be un-sent &mdash; I would not be
+able to find yours.</p>
+<p>You can turn the switch off again at any time, and clearing site data
+erases the local notebook along with everything else.</p>
+
 <h2>Server logs</h2>
 <p>orbitape.app is served by Cloudflare. Like any web host, Cloudflare
 processes standard request data such as IP addresses in order to
@@ -170,8 +201,9 @@ deliver the page and protect against abuse. I do not use Cloudflare's
 analytics and I do not build any profile from it.</p>
 
 <h2>Children</h2>
-<p>ORBITAPE is not directed at children and collects no information from
-anyone, including children.</p>
+<p>ORBITAPE is not directed at children. It asks for no information from
+anyone, including children, and the one optional report described above
+contains nothing personal.</p>
 
 <h2>Content and licences</h2>
 <p>ORBITAPE plays only recordings that are in the public domain or

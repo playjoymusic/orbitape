@@ -366,7 +366,105 @@ K('Her arsiv rafinin cizimi var',
   A.ARSIV_ADLAR.filter(ad=>!A.GEZ_CIZIM.ad[ad]).join(', ')
   || A.ARSIV_ADLAR.length + ' raf, hepsi cizili');
 
-console.log('\n' + (dusen.length
-  ? '  DUZELTILECEK: ' + dusen.join(', ')
-  : '  ' + gecen + '/' + gecen + ' gecti — HEPSI TEMIZ'));
-process.exit(dusen.length ? 1 : 0);
+/* ── DERI SINIRI TABLOYLA AYNI MI ───────────────────────────────
+   Ayarlar betigin BASINDA okunuyor, DERILER tablosu cok asagida;
+   o yuzden depodan gelen deri numarasinin ust siniri elle yazilmak
+   zorunda. Elle yazilan sayi bir kere unutuldu: seri 30'dan 60'a
+   cikti, sinir 36'da kaldi ve 37..60 arasindaki bir deri secen
+   kullanicinin secimi her acilista OFF'a donuyordu. Sessiz bir
+   hataydi -- hicbir sey patlamiyor, yalnizca tercih kayboluyor.
+   Bu kontrol iki sayiyi bir daha ayirmiyor. */
+{
+  const kaynak = require('fs').readFileSync(KOK + '/index.html', 'utf8');
+  const m = kaynak.match(/_a\.deri > 0 && _a\.deri <= (\d+)/);
+  const sinir = m ? +m[1] : -1;
+  K('Deri siniri tablonun boyuyla ayni', sinir === A.DERILER.length,
+    'ayarlardaki sinir ' + sinir + ', tabloda ' + A.DERILER.length + ' deri');
+}
+
+function bitir(){
+  console.log('\n' + (dusen.length
+    ? '  DUZELTILECEK: ' + dusen.join(', ')
+    : '  ' + gecen + '/' + gecen + ' gecti — HEPSI TEMIZ'));
+  process.exit(dusen.length ? 1 : 0);
+}
+
+/* ── OLCUM UC NOKTASI ───────────────────────────────────────────
+   olcu.js internete acilan TEK kodumuz. Gelen govde yabanci girdi
+   sayilir ve uc nokta beyaz liste uygular: yalnizca dort alan
+   okunur, geri kalan her sey -- istemci bir gun yanlislikla
+   koysa bile -- depoya gecmez.
+   Burada olculen sey de tam bu: (1) dogru govde dogru satirlari
+   yaziyor mu, (2) beklenmeyen alanlar DUSUYOR mu, (3) bozuk/asiri
+   girdide patlamiyor mu, (4) baglanti yokken bile uygulamayi
+   etkilemeyecek sekilde 204 donuyor mu, (5) /olcu disindaki her
+   yol statik dosyalara geri veriliyor mu.
+   Worker bir ES modulu; tarayici istemiyor, o yuzden burada. */
+(async () => {
+  try{
+    const w = (await import('file://' + KOK + '/olcu.js')).default;
+    const yaz = [];
+    const env = { OLCU:{ writeDataPoint:o=>yaz.push(o) },
+                  ASSETS:{ fetch:()=>new Response('varlik', {status:200}) } };
+    const at = (govde, tur, yontem) => w.fetch(new Request('https://orbitape.app/olcu', {
+      method: yontem || 'POST',
+      headers: tur === null ? {} : {'content-type': tur || 'application/json'},
+      body: govde }), env);
+
+    yaz.length = 0;
+    const c1 = await at(JSON.stringify({ v:'2026.09.01', p:'mobil-webkit', n:7,
+                                         y:[{i:'boom @12', n:5}, {i:'bam @9', n:2}] }));
+    K('Olcum: dogru govde satir yaziyor',
+      c1.status === 204 && yaz.length === 2
+      && yaz[0].blobs[2] === 'boom @12' && yaz[0].doubles[0] === 5
+      && yaz[0].doubles[1] === 7,
+      'iki imza, iki satir; sayilar yerinde');
+
+    /* ASIL KONTROL: gizlilik sozu koda gomulu mu. Govdeye istasyon,
+       arama kelimesi ve bir kimlik konuyor; hicbiri depoya
+       gecmemeli, hatta yazilan satirin HICBIR alaninda gorunmemeli. */
+    yaz.length = 0;
+    const c2 = await at(JSON.stringify({ v:'2026.09.01', p:'mobil-blink', n:1,
+      y:[{i:'kirik @3', n:1}],
+      istasyon:'BBC Radio 6', arama:'jazz', kimlik:'abc123', konum:'41.0,29.0' }));
+    const duz = JSON.stringify(yaz);
+    K('Olcum: beklenmeyen alanlar dusuyor',
+      c2.status === 204 && yaz.length === 1
+      && !/BBC|jazz|abc123|41\.0/.test(duz),
+      'istasyon, arama, kimlik ve konum satira girmiyor');
+
+    yaz.length = 0;
+    const c3 = await at(JSON.stringify({ v:'kotu surum', p:'<script>', n:-5,
+                                         y:[{ i:'a'.repeat(400), n:1e9 }] }));
+    K('Olcum: bozuk girdi kirpiliyor',
+      c3.status === 204 && yaz.length === 1
+      && yaz[0].blobs[0] === 'bilinmiyor' && yaz[0].blobs[1] === 'bilinmiyor'
+      && yaz[0].blobs[2].length === 90 && yaz[0].doubles[1] === 0,
+      'surum/ortam kaliba uymazsa bilinmiyor, metin 90 karakter');
+
+    const c4 = await at(JSON.stringify({ v:'2026.09.01' }), null);
+    const c5 = await at('{{{');
+    const c6 = await at('[1,2]');
+    const c7 = await at('{"v":"' + 'x'.repeat(5000) + '"}');
+    const c8 = await w.fetch(new Request('https://orbitape.app/olcu'), env);
+    K('Olcum: kotu istek reddediliyor',
+      c4.status === 415 && c5.status === 400 && c6.status === 400
+      && c7.status === 413 && c8.status === 405,
+      'tur 415, bozuk 400, dizi 400, buyuk 413, GET 405');
+
+    const c9 = await w.fetch(new Request('https://orbitape.app/olcu', {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ v:'2026.09.01', p:'mobil-blink', n:0, y:[] })
+    }), { ASSETS: env.ASSETS });
+    K('Olcum: baglanti yokken de uygulamayi bozmuyor', c9.status === 204,
+      'Analytics Engine acik degilse sessizce kabul');
+
+    const c10 = await w.fetch(new Request('https://orbitape.app/index.html'), env);
+    K('Olcum: baska her yol statik dosyalara gidiyor',
+      c10.status === 200 && (await c10.text()) === 'varlik',
+      '/olcu disinda Worker araya girmiyor');
+  }catch(e){
+    K('Olcum uc noktasi yuklenebiliyor', false, String(e && e.message || e));
+  }
+  bitir();
+})();

@@ -3158,6 +3158,16 @@
          aga hicbir sey gitmiyor, gonderme karari kullanicinin. -->
     <div class="sat islem" id="taniSatir" data-ayar="tanilama" role="button" tabindex="-1" hidden>
       <span>DIAGNOSTICS</span><span class="durum">0</span></div>
+    <!-- ── OLCUM: VARSAYILAN KAPALI ────────────────────────────────
+         Yukaridaki satir defteri GORUNUR yapiyor ama gondermeyi
+         kullaniciya birakiyor; kimse gondermezse sahada ne bozuldugunu
+         ogrenemiyoruz. Bu anahtar o kapiyi aciyor -- ve KAPALI
+         duruyor. Acilirsa giden sey: surum, kaba platform ve yutulan
+         hata imzalari. Kalici kimlik yok; istasyon, sarki, arama
+         kelimesi, favori, konum yok. Ayrintisi /privacy sayfasinda
+         ve olcu.js'in basinda. -->
+    <div class="sat" data-ayar="olcum" role="switch" tabindex="-1">
+      <span>SEND DIAGNOSTICS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <a class="sat bag" href="/privacy" target="_blank" rel="noopener" tabindex="-1">
       <span>PRIVACY</span><span class="durum">OPEN</span></a>
     <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
@@ -3562,7 +3572,66 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.01';
+  var ORB_SURUM = '2026.09.02';
+  /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
+     Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
+     gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
+     ogrenemiyoruz. Bu fonksiyon o kapiyi aciyor -- ve YALNIZCA
+     kullanici ayarlardan actiysa.
+
+     NE GIDIYOR: surum, kaba ortam (mobil/masaustu + motor), en cok
+     tekrarlayan sekiz hata imzasi (mesaj + satir no) ve toplam sayi.
+     NE GITMIYOR: kalici kimlik, oturum numarasi, parmak izi,
+     istasyon adi, sarki adi, arama kelimesi, favori, konum, tam
+     userAgent. Iki gonderimi birbirine baglayacak hicbir alan yok.
+     Uc noktanin kendisi de beyaz liste uyguluyor (bkz. olcu.js):
+     buradan yanlislikla fazladan bir sey ciksa bile depoya gecmez.
+
+     NE ZAMAN: acilistan 25 sn sonra bir kez ve alti saatte birden
+     sik degil. Acilis anina yuk bindirmemek icin gecikmeli;
+     istasyon secilirken ag bandini paylasmasin diye tek seferlik. */
+  var OLCUM_ANAHTAR = 'orbitape.olcum.son';
+  var OLCUM_ARA = 6 * 3600 * 1000;
+  function _olcumOrtam(){
+    try{
+      var ua = navigator.userAgent || '';
+      /* KABA KOVA, TAM METIN DEGIL. Tam userAgent tek basina bir
+         parmak izidir; bize gereken "hangi motorda bozuluyor". */
+      var motor = /Firefox\//.test(ua) ? 'gecko'
+                : (/Chrome\/|Chromium\/|Edg\//.test(ua) ? 'blink'
+                : (/Safari\//.test(ua) ? 'webkit' : 'bilinmiyor'));
+      var cihaz = (typeof MOBIL !== 'undefined' && MOBIL) ? 'mobil' : 'masaustu';
+      return cihaz + '-' + motor;
+    }catch(_){ return 'bilinmiyor'; }
+  }
+  function olcumGonder(){
+    try{
+      if(!AYAR || AYAR.olcum !== true) return false;      // kapali: hicbir sey kurulmuyor
+      var simdi = Date.now(), son = 0;
+      try{ son = parseInt(localStorage.getItem(OLCUM_ANAHTAR) || '0', 10) || 0; }catch(_){ _yut(_); }
+      if(son && simdi - son < OLCUM_ARA) return false;
+      var d = _yutOku(), adlar = Object.keys(d);
+      var toplam = 0, i;
+      for(i = 0; i < adlar.length; i++) toplam += d[adlar[i]].n;
+      adlar.sort(function(x, y){ return d[y].n - d[x].n; });
+      var imzalar = [];
+      for(i = 0; i < Math.min(8, adlar.length); i++)
+        imzalar.push({ i: String(adlar[i]).slice(0, 90), n: d[adlar[i]].n });
+      var govde = JSON.stringify({ v: ORB_SURUM, p: _olcumOrtam(),
+                                   n: toplam, y: imzalar });
+      /* keepalive: sekme kapanirken de yola ciksin. Cevap
+         OKUNMUYOR -- uc nokta 204 donuyor ve istemcinin davranisi
+         sonuca gore degismiyor. Hata da yutuluyor: bir olcum
+         yolunun calismamasi uygulamayi etkilememeli. */
+      fetch('/olcu', { method:'POST', keepalive:true,
+                       headers:{ 'content-type':'application/json' },
+                       body: govde })
+        .catch(function(e){ _yut(e); });
+      try{ localStorage.setItem(OLCUM_ANAHTAR, String(simdi)); }catch(_){ _yut(_); }
+      return true;
+    }catch(e){ _yut(e); return false; }
+  }
+  try{ setTimeout(function(){ try{ olcumGonder(); }catch(e){ _yut(e); } }, 25000); }catch(e){ _yut(e); }
   var _hataKayit = [], _hataGosterildi = false;
   (function(){
     var TAVAN = 5;
@@ -8036,7 +8105,7 @@
      cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
      "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
      ustundeki dordu isteyene duruyor. */
-  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:false, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0 };
+  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:false, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -8064,7 +8133,16 @@
          acilsin, tam tersi olsun."
          Yani kapatmak bir tercih; acmak varsayilan. */
       if(_a.karanlik === false) AYAR.karanlik = false;
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 36) AYAR.deri = _a.deri|0;
+      /* SINIR 36'YDI VE BU BIR HATAYDI. Otuz deri varken yazilmisti,
+         seri altmisa cikinca guncellenmedi: 37..60 arasindaki bir
+         deri secilip uygulama kapatilinca deger DOGRULAMADAN
+         GECEMIYOR ve acilista OFF'a donuyordu -- yani lüks serinin
+         yarisi hic hatirlanmiyordu. DERILER.length yazilamiyor,
+         cunku ayarlar betigin basinda okunuyor ve tablo cok
+         asagida (ayni tuzak yildiz kademesinde de yasandi, bkz.
+         asagisi). Sayi elle yaziliyor ve birim testi ikisinin
+         esitligini kontrol ediyor. */
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 60) AYAR.deri = _a.deri|0;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
@@ -8114,6 +8192,11 @@
          && _a.yildiz < 5) AYAR.yildiz = _a.yildiz|0;
       if(typeof _a.yildizIsik === 'number' && _a.yildizIsik >= 0
          && _a.yildizIsik < 5) AYAR.yildizIsik = _a.yildizIsik|0;
+      /* OLCUM: varsayilan KAPALI ve yalnizca kullanici ACTIYSA
+         aciliyor. Depoda bozuk/eksik bir deger varsa kapali kaliyor
+         -- bu yonun tek yonlu olmasi bilincli: bir gizlilik
+         anahtarinin "yanlislikla acik" hali olmamali. */
+      if(_a.olcum === true) AYAR.olcum = true;
     }
   }catch(e){ _yut(e); }
   /* ── DUNYA ILK CIZIMDEN ONCE KURULUYOR ───────────────────────────

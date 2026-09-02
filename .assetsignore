@@ -75,3 +75,9 @@ hasat_durum.json
 #    the static asset directory of your project."
 #   developers.cloudflare.com/workers/static-assets/migration-guides/
 #   migrate-from-pages/
+
+# OLCUM UC NOKTASININ KAYNAGI: Cloudflare bunu Worker olarak
+# derliyor (wrangler.jsonc -> main), yani ayrica statik dosya olarak
+# servis edilmesinin bir anlami yok. Depoda acik duruyor, yayinda
+# /olcu.js diye ikinci bir kopya olmasin.
+olcu.js
