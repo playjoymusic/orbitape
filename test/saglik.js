@@ -8546,6 +8546,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       kotu.length === 0 && (deriFoto || []).length === 2,
       kotu.length ? kotu.join(', ') : not.join(' | '));
   }
+  /* ── BEKCI BUYUTECI YUVASINA GERI KOYUYOR, IKI KATINA ITMIYOR ──
+     Mac'te pencere boyu degisince buyutec yuvasinin tam iki kati
+     saga gitti (yuva 225, buyutec 412). Bekci kaymayi duzeltirken
+     'left'i dis kutuya (#ara, fixed) degil icindeki simgeye
+     (#araCizgi, relative) yaziyordu; relative elemana left:225
+     yazmak onu 225px SAGA iter. Test: ikisi de bilerek yerinden
+     oynatiliyor, 2 saniyelik bekci turundan sonra simge yuvanin
+     ustunde ve simgede satir ici kayma kalmamis olmali. */
+  {
+    const bekci = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const ara = document.getElementById('ara'), sim = document.getElementById('araCizgi'), yv = document.getElementById('araYuva');
+      if(!ara || !sim || !yv) return { yok:true };
+      ara.style.left = '420px'; sim.style.left = '100px'; sim.style.bottom = '40px';
+      await bek(4600);
+      const s = sim.getBoundingClientRect(), y = yv.getBoundingClientRect();
+      return { dx: Math.round(s.left - y.left), dy: Math.round((s.top + s.height/2) - (y.top + y.height/2)),
+               simgeLeft: sim.style.left, simgeBottom: sim.style.bottom };
+    });
+    K('Bekci buyuteci yuvasina geri koyuyor (simgeye degil kutuya yaziyor)',
+      !bekci.yok && Math.abs(bekci.dx) <= 2 && Math.abs(bekci.dy) <= 3
+        && !bekci.simgeLeft && !bekci.simgeBottom,
+      JSON.stringify(bekci));
+  }
   /* METIN KODLA UYUSUYOR. Nottaki gerekce uydurulmus bir cumle
      degil, kullanim sartlarindaki kuralin ta kendisi: arsiv
      kayitlari CC/kamu mali, istasyon yayini degil. Ikisi ayrisirsa

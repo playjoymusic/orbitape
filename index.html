@@ -24,6 +24,17 @@
      yaziyla ayni (15px); solUstHizala() olcup taban cizgisine gore
      duzeltiyor. Burada TANIMLI olmasi sart -- tanimsiz bir degiskeni
      getComputedStyle bos string dondurur ve duzeltme hic islemez. */
+  /* ── ALT PAY 34px'E KILITLI ──────────────────────────────────────
+     Kullanicinin telefonunda (iPhone, Safari arac cubugu gizli) alt
+     blok tabandan 90px yukarida duruyordu; ekran goruntusunden
+     olculdu. Kod 7px + env(safe-area-inset-bottom) diyordu ve Safari
+     arac cubugu gizliyken o payi 34 degil 83 bildiriyor: cubugun
+     yerini "guvenli alan" diye ayiriyor, ama cubuk ekranda yok.
+     Sonuc: derinin tabani da tuslar da havada. Hicbir telefonun
+     dikey alt payi 34'u gecmez; pay buna kilitlendi. Cubuk gorunur
+     olunca Safari zaten gorunumu kucultuyor ve pay 0'a iniyor,
+     tuslar cubugun ustune oturuyor. */
+  :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 34px);}
   :root{--bg:#020203;--sut:15px;
     /* --kx: EKRANIN KENAR PAYI. Dort kose de bu tek sayiyi kullaniyor.
        Onceden her kose kendi sayisini tasiyordu (sol 16, sag 18, ust
@@ -576,7 +587,7 @@
      satırıyla aynı çizgide. Bilgi yazıları onların ÜSTÜNDE ve
      yukarı doğru büyüyor: uzun ad sola taşmıyor, satır sayısı
      artıyor. Genişlik ekranın yarısını geçmiyor. */
-  #np{position:fixed;bottom:calc(7px + env(safe-area-inset-bottom, 0px));right:calc(var(--kx) + env(safe-area-inset-right, 0px));z-index:75;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+  #np{position:fixed;bottom:calc(7px + var(--dip-pay));right:calc(var(--kx) + env(safe-area-inset-right, 0px));z-index:75;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
     /* GENISLEDI: 44vw -> 72vw. Sol alt kose bosaldi (REC · CAM · ★
        sol uste tasindi), yani karsida carpilacak bir sey kalmadi.
        Genislik lazim cunku kunye artik KIRPILMIYOR: eserin adi,
@@ -651,7 +662,7 @@
      basilan yerle acilan sey arasinda bag kalsin. */
   #parcaKart{position:fixed;z-index:88;pointer-events:none;
     right:calc(var(--kx) + env(safe-area-inset-right, 0px));
-    bottom:calc(84px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(84px + var(--dip-pay));
     max-width:min(84vw,340px);
     padding:14px 16px 15px;border-radius:14px;
     background:rgba(10,15,20,.94);border:1px solid rgba(169,216,242,.22);
@@ -788,7 +799,7 @@
     left:calc(var(--kx) + 150px + env(safe-area-inset-left, 0px));
     /* 41px = ucgen (5 + 26) + 10 hava. JS ilk olcumde uzerine yaziyor;
        bu deger ilk karede aramanin ucgenin uzerine binmemesi icin. */
-    bottom:calc(7px + env(safe-area-inset-bottom, 0px) + var(--klavye, 0px));
+    bottom:calc(7px + var(--dip-pay) + var(--klavye, 0px));
     transition:bottom .18s ease;}
   /* ── KLAVYE ACIKKEN ARAMA YUKARI TASINIYOR ───────────────────────
      Ilk deneme kutuyu klavye yuksekligi kadar YUKARI KALDIRMAKTI ve
@@ -1479,7 +1490,7 @@
 
   /* İki parmak ses göstergesi: jest sürerken görünür, sonra siliniyor. */
   #sesCubuk{position:fixed;z-index:150;left:50%;transform:translateX(-50%);
-    bottom:calc(96px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(96px + var(--dip-pay));
     width:min(46vw,190px);height:2px;border-radius:2px;
     background:rgba(255,255,255,.13);opacity:0;transition:opacity .35s;pointer-events:none;}
   #sesCubuk.on{opacity:.9;}
@@ -1567,7 +1578,7 @@
   #ayarTut{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;
-    bottom:calc(115px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(115px + var(--dip-pay));
     width:40px;height:26px;display:flex;flex-direction:column;
     align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
@@ -1590,7 +1601,7 @@
   #kipKisayol{
     position:fixed;z-index:96;display:flex;align-items:center;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px) + 50px);
-    bottom:calc(116px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(116px + var(--dip-pay));
     height:24px;gap:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;
     opacity:.72;transition:opacity .22s ease;}
   body:not(.mood) #kipKisayol{
@@ -2465,7 +2476,7 @@
      tepesinden aciliyordu. */
   #ayar{position:fixed;z-index:95;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:auto;bottom:calc(46px + env(safe-area-inset-bottom, 0px));
+    top:auto;bottom:calc(46px + var(--dip-pay));
     transform:translateY(12px);
     width:min(84vw,300px);padding:14px 16px 12px;
     background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
@@ -2653,7 +2664,7 @@
      binmiyor. Dili alt seridin dili -- kucuk mono, genis harf
      araligi. */
   #kisaNot{position:fixed;z-index:97;left:50%;
-    bottom:calc(196px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(196px + var(--dip-pay));
     transform:translateX(-50%) translateY(6px);
     max-width:min(76vw,320px);text-align:center;
     font-family:'Share Tech Mono',ui-monospace,monospace;
@@ -2731,7 +2742,7 @@
   #tur .yazi b{display:block;font-size:11px;letter-spacing:.28em;color:#7fd8c9;margin-bottom:7px;font-weight:400;}
   /* Alt satır REC/CAM ve arama şeridinin ÜSTÜNDE duruyor: onların
      üstüne binince hem kutu hem büyüteç okunmuyordu. */
-  #tur .alt{position:absolute;left:0;right:0;bottom:calc(96px + env(safe-area-inset-bottom,0px));
+  #tur .alt{position:absolute;left:0;right:0;bottom:calc(96px + var(--dip-pay));
     display:flex;align-items:center;justify-content:space-between;
     padding:0 calc(18px + env(safe-area-inset-left,0px)) 0 calc(18px + env(safe-area-inset-right,0px));
     pointer-events:none;}
@@ -2796,7 +2807,7 @@
      REC de var ve en cok basilan sey dibe geliyor. */
   #solUst{
     top:auto;
-    bottom:calc(7px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(7px + var(--dip-pay));
   }
   /* Satir aralari tek yerden: --modul-bosluk. */
   #solUst{--modul-bosluk:8px;gap:var(--modul-bosluk);}
@@ -2836,7 +2847,7 @@
      Buradaki deger yalnizca JS yetismeden onceki ilk karenin
      yedegi. */
   body.mood #solUst{
-    bottom:calc(7px + env(safe-area-inset-bottom, 0px));
+    bottom:calc(7px + var(--dip-pay));
   }
   body.mood #tasima  {order:2;}
   body.mood #araclar {order:3;}
@@ -4675,8 +4686,11 @@
     {ad:"GRAPHITE STEEL", zem:"#26292d", yazi:"#ccd2d8", marka:"#9fb0bd", cek:"#494b4f", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"50%", panel:"#33363a", doku:"repeating-linear-gradient(90deg,rgba(0,0,0,.30) 0 1px,rgba(0,0,0,0) 1px 2px,rgba(255,255,255,.07) 2px 3px,rgba(0,0,0,0) 3px 5px)", dokuOlcu:"5px 5px", dokuSef:".55", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"ONYX GOLD", zem:"#111114", yazi:"#cfcbc2", marka:"#c8a355", cek:"#37373a", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F2, kose:"50%", panel:"#1f1f22", doku:"radial-gradient(rgba(0,0,0,.30) .4px,rgba(0,0,0,0) .55px)", dokuOlcu:"3px 3px", dokuSef:".45", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"BURGUNDY", zem:"#33161c", yazi:"#e0c2c6", marka:"#b9636f", cek:"#543b40", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F2, kose:"50%", panel:"#3f242a", doku:"repeating-linear-gradient(0deg,rgba(0,0,0,.30) 0 1px,rgba(0,0,0,0) 1px 4px),repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 1px,rgba(0,0,0,0) 1px 4px)", dokuOlcu:"4px 4px", dokuSef:".4", tel:"rgba(255,255,255,.13)", luks:1},
+    {ad:"IVORY", zem:"#f0ebdf", yazi:"#403c33", marka:"#8a7448", cek:"#d8d4c9", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(108,105,100,.30)", disGolge:"rgba(96,94,89,.52)", halka:"rgba(0,0,0,.22)", font:F2, kose:"50%", panel:"#e2ddd2", doku:"radial-gradient(rgba(0,0,0,.10) .4px,rgba(0,0,0,0) .55px)", dokuOlcu:"3px 3px", dokuSef:".45", tel:"rgba(255,255,255,.85)", luks:1},
     {ad:"ROSE GOLD", zem:"#e6cdc2", yazi:"#4a352c", marka:"#a3674a", cek:"#cfb8af", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(103,92,87,.30)", disGolge:"rgba(92,82,77,.52)", halka:"rgba(0,0,0,.22)", font:F2, kose:"50%", panel:"#d8c1b6", doku:"radial-gradient(rgba(0,0,0,.10) .4px,rgba(0,0,0,0) .55px)", dokuOlcu:"3px 3px", dokuSef:".45", tel:"rgba(255,255,255,.85)", luks:1},
+    {ad:"SLATE SILK", zem:"#1e242b", yazi:"#c2ccd6", marka:"#8fb4cc", cek:"#42474d", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"50%", panel:"#2c3138", doku:"repeating-linear-gradient(74deg,rgba(255,255,255,.07) 0 6px,rgba(0,0,0,0) 6px 22px)", dokuOlcu:"auto", dokuSef:".35", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"COGNAC", zem:"#3a2318", yazi:"#e4c8ac", marka:"#c98a4e", cek:"#5a463d", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F2, kose:"50%", panel:"#463026", doku:"radial-gradient(rgba(0,0,0,.30) .6px,rgba(0,0,0,0) .8px),radial-gradient(rgba(255,255,255,.07) .5px,rgba(0,0,0,0) .7px)", dokuOlcu:"7px 7px", dokuSef:".5", tel:"rgba(255,255,255,.13)", luks:1},
+    {ad:"JET", zem:"#0b0b0d", yazi:"#bfc2c6", marka:"#8f949a", cek:"#323234", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"50%", panel:"#1a1a1c", doku:"repeating-linear-gradient(74deg,rgba(255,255,255,.07) 0 6px,rgba(0,0,0,0) 6px 22px)", dokuOlcu:"auto", dokuSef:".35", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"COPPER PATINA", zem:"#1b2a26", yazi:"#c4d6cf", marka:"#8fbfa8", cek:"#3f4c49", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"50%", panel:"#293733", doku:"radial-gradient(rgba(0,0,0,.30) .6px,rgba(0,0,0,0) .8px),radial-gradient(rgba(255,255,255,.07) .5px,rgba(0,0,0,0) .7px)", dokuOlcu:"7px 7px", dokuSef:".5", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"HALFTONE", zem:"#f0ece1", yazi:"#3a3630", marka:"#c8202a", cek:"#d9d4c6", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(120,110,100,.30)", disGolge:"rgba(120,110,100,.55)", halka:"rgba(0,0,0,.20)", font:F1, kose:"50%", panel:"#f5f2ea", doku:"radial-gradient(circle at 25% 25%,rgba(200,32,42,.42) 1.9px,rgba(0,0,0,0) 2.3px),radial-gradient(circle at 75% 75%,rgba(26,25,23,.14) 1.1px,rgba(0,0,0,0) 1.5px)", dokuOlcu:"8px 8px", dokuSef:".55"},
     {ad:"TERMINAL", zem:"#08120c", yazi:"#7dfcae", marka:"#39ff88", cek:"#1b3326", isik:"rgba(120,255,180,.14)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.86)", halka:"rgba(120,255,180,.18)", font:F3, kose:"2px", panel:"#0d1c13", doku:"repeating-linear-gradient(0deg,rgba(57,255,136,.16) 0 1px,rgba(0,0,0,0) 1px 3px)", dokuOlcu:"auto", dokuSef:".70"},
@@ -8396,7 +8410,7 @@
      esleme olmasa 42'yi secmis biri bir sabah baska bir deriyle
      uyanirdi. Cikarilan bir deriyi secmis olan OFF'a duser.
      deriSurum damgasi: bir kez cevrildikten sonra tekrar cevrilmez. */
-  const DERI_ESLEME_1 = {"1":1,"3":2,"4":3,"5":4,"6":5,"7":6,"8":7,"9":8,"10":9,"11":10,"12":11,"13":12,"14":13,"16":14,"17":15,"18":16,"19":17,"20":18,"21":19,"22":20,"23":21,"24":22,"25":23,"28":24,"29":25,"31":26,"33":27,"34":28,"37":29,"43":30,"44":31,"47":32,"50":33,"59":34,"61":35,"63":36,"64":37,"65":38,"67":39,"68":40,"69":41,"70":42,"71":43,"73":44,"74":45,"75":46,"76":47,"77":48,"78":49,"79":50,"81":51,"83":52,"85":53};
+  const DERI_ESLEME_1 = {"1":1,"3":2,"4":3,"5":4,"6":5,"7":6,"8":7,"9":8,"10":9,"11":10,"12":11,"13":12,"14":13,"16":14,"17":15,"18":16,"19":17,"20":18,"21":19,"22":20,"23":21,"24":22,"25":23,"28":24,"29":25,"31":26,"33":27,"34":28,"37":29,"43":30,"44":31,"45":32,"47":33,"48":34,"50":35,"51":36,"59":37,"61":38,"63":39,"64":40,"65":41,"67":42,"68":43,"69":44,"70":45,"71":46,"73":47,"74":48,"75":49,"76":50,"77":51,"78":52,"79":53,"81":54,"83":55,"85":56};
   function deriEslemeUygula(_a){
     try{
       if(!_a || _a.deriSurum === 2) return;
@@ -8489,7 +8503,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 53) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 56) AYAR.deri = _a.deri|0;
       AYAR.deriSurum = 2;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
@@ -9009,12 +9023,26 @@
                  'bottom' BUYUDUKCE eleman YUKARI cikar, o yuzden
                  fark cikariliyor. Deger yine ekranin alt %40'ina
                  kirpiliyor -- duzeltmenin kendisi de savrulmasin. */
-              var mevcut = parseFloat(el.style.bottom);
-              if(!isFinite(mevcut)) mevcut = window.innerHeight - r.bottom;
-              var yeni = Math.round(Math.max(0,
-                Math.min(window.innerHeight * 0.40, mevcut - d)));
-              el.style.bottom = yeni + 'px';
-              if(Math.abs(dx) > 8) el.style.left = Math.round(yr.left) + 'px';
+              /* ── DUZELTME DIS KUTUYA YAZILIYOR, SIMGEYE DEGIL ───────
+                 BURADA BIR HATA VARDI ve Mac'te pencere boyu
+                 degisince "buyutec saga gitmis" olarak goruldu:
+                 yuva 225'teyken buyutec 412'de -- tam iki kati.
+                 Sebep: 'left' ve 'bottom' #ara'ya (position:fixed)
+                 degil, icindeki #araCizgi'ye (position:RELATIVE)
+                 yaziliyordu. Relative bir elemana left:225 yazmak
+                 onu yerinden 225px SAGA iter; dis kutu da yuvaya
+                 oturunca simge yuvanin bir yuva boyu sagina
+                 dusuyordu. 'bottom' icin ayni sey: simge yukari
+                 itiliyordu -- "buyutec yukarida kaldi" bildirimlerinin
+                 bir kaynagi da buydu, yani bekci bozuklugu duzeltmek
+                 yerine URETIYORDU.
+                 Simdi: dis kutu yuvaya oturtuluyor, simgeye yazilmis
+                 eski bir kayma varsa siliniyor. */
+              var kap = document.getElementById('ara') || el;
+              var dp = Math.round(window.innerHeight - yr.bottom + (yr.height - 26)/2);
+              if(dp >= 0 && dp <= window.innerHeight * 0.40) kap.style.bottom = dp + 'px';
+              if(Math.abs(dx) > 8) kap.style.left = Math.round(yr.left) + 'px';
+              if(kap !== el){ el.style.left = ''; el.style.bottom = ''; }
               _zoomBorcu = true; olcuIste();
               return;
             }
@@ -12927,7 +12955,7 @@
          "buyutec havada duruyor, tabana oturmuyor" olarak goruldu --
          kullanicinin ekran goruntusunde tam olarak bu var.
          Artik JS de ayni bicimde yaziyor. */
-      const _dip = px => 'calc(' + Math.round(px) + 'px + env(safe-area-inset-bottom, 0px))';
+      const _dip = px => 'calc(' + Math.round(px) + 'px + var(--dip-pay))';
       /* ALT SERIT TEK BIR ORTA CIZGIDE.
          Once arama cizgisini ucgenin USTUNE koymustum (41px) ve
          ekranda "yukari kaymis, tabana oturmamis" gorunuyordu --
