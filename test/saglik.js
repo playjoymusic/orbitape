@@ -8994,8 +8994,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Bekci yuvadan kopmayi da goruyor',
          /var d = \(yr\.top \+ yr\.height\/2\) - \(r\.top \+ r\.height\/2\);/.test(kaynak)
          && /Math\.abs\(d\) > 8 \|\| Math\.abs\(dx\) > 8/.test(kaynak)
-         && /el\.style\.bottom = yeni \+ 'px';/.test(kaynak),
-         'ekranin icinde ama yanlis yerdeyse fark kadar geri itiliyor');
+         /* Duzeltme DIS KUTUYA (#ara) yaziliyor; simgeye (#araCizgi,
+            relative) yazilinca buyutec yuvanin iki kati saga gidiyordu. */
+         && /kap\.style\.bottom = dp \+ 'px';/.test(kaynak)
+         && /kap\.style\.left = Math\.round\(yr\.left\) \+ 'px';/.test(kaynak)
+         && !/el\.style\.bottom = yeni \+ 'px';/.test(kaynak),
+         'ekranin icinde ama yanlis yerdeyse dis kutu yuvaya geri itiliyor');
 
       /* ── ORTADAKI CIZGILER VE CEKIRDEK ──────────────────────────
          Kullanicinin sozu: "acik skinlerde ortadaki cizgiler ve
