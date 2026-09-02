@@ -67,7 +67,14 @@ const B = (ad, deger, neden) => bilgi.push({ad, deger: String(deger), neden});
   pg.on('pageerror', e => jsHata.push(String(e.message)));
   pg.on('console', m => {
     const t = m.text();
-    if (m.type() === 'error' && !/ERR_FAILED|ERR_BLOCKED|net::|Failed to load resource/.test(t)) konsol.push(t.slice(0, 140));
+    /* AG HATALARI SAYILMIYOR: bir radyo akisinin CORS reddi ya da
+       kopmasi uygulamanin hatasi degil, istasyonun. Chromium bunu
+       'net::' ile yazar; Firefox ayni seyi "Cross-Origin Request
+       Blocked ... Same Origin Policy" diye error seviyesinde yazar
+       (CI'da Gecko bir kez tam bununla kirmizi yandi: ice04.fluidstream). */
+    if (m.type() === 'error'
+        && !/ERR_FAILED|ERR_BLOCKED|net::|Failed to load resource|Cross-Origin Request Blocked|Same Origin Policy|NetworkError/.test(t))
+      konsol.push(t.slice(0, 140));
   });
   await pg.goto(ADRES);
   await pg.waitForTimeout(3200);
@@ -129,6 +136,15 @@ const B = (ad, deger, neden) => bilgi.push({ad, deger: String(deger), neden});
             await Promise.race([actx.resume(), new Promise(r => setTimeout(r, 3000))]); } catch (e) {}
     try { analizKur(); } catch (e) { return { hata: String(e.message) }; }
     await bek(400);
+    /* Gecko'da ilk resume() bazen 'suspended' birakiyor (CI'da bir
+       kez olculdu: suspended @ 44100 Hz). Kararsiz bir olcumu tek
+       denemeyle hukme baglamak yanlis: 4 saniye boyunca yeniden
+       deneniyor; gelirse gelir, gelmezse asagida ortam bilgisi olur. */
+    for (let i = 0; i < 12; i++) {
+      if (typeof actx === 'undefined' || !actx || actx.state === 'running') break;
+      try { await Promise.race([actx.resume(), new Promise(r => setTimeout(r, 300))]); } catch (e) {}
+      await bek(330);
+    }
     /* DUGUMLERE ADIYLA BAKILIYOR, window UZERINDEN DEGIL.
        Ilk yazisimda window['tremG'] deniyordu ve HEPSI eksik cikti:
        bu degiskenler betigin en ustunde let/const ile tanimli, yani
@@ -156,8 +172,18 @@ const B = (ad, deger, neden) => bilgi.push({ad, deger: String(deger), neden});
       krosfeyd: d.sKuru && d.sIslak
     };
   });
-  K('Ses baglami acildi', !!graf && !graf.hata && graf.baglam === 'running',
-     graf ? (graf.hata || graf.baglam + ' @ ' + graf.ornekHz + ' Hz') : '-');
+  /* FIREFOX BASSIZ CI'DA SES CIHAZI OLMAYABILIR: baglam kuruluyor,
+     dokuz dugum bagli, ama durum 'suspended' kaliyor. Bu uygulamanin
+     degil ortamin ozelligi -- Gecko'da bu hal HUKUM degil BILGI.
+     Chromium ve WebKit'te hukum olarak kaliyor (orada sahte ses
+     cihazi var ve her zaman 'running' olculdu). */
+  const _acik = !!graf && !graf.hata && graf.baglam === 'running';
+  if (!_acik && MOTOR === 'firefox' && graf && !graf.hata && graf.baglam === 'suspended')
+    B('Ses baglami', graf.baglam + ' @ ' + graf.ornekHz + ' Hz',
+      'Gecko bassiz: resume() 4 sn icinde running olmadi (ses cihazi yok); zincir yine de olculdu');
+  else
+    K('Ses baglami acildi', _acik,
+      graf ? (graf.hata || graf.baglam + ' @ ' + graf.ornekHz + ' Hz') : '-');
   K('Ses zinciri eksiksiz kuruldu', !!graf && !graf.hata && graf.dugum.length === 0,
      graf && graf.dugum ? (graf.dugum.length ? 'eksik: ' + graf.dugum.join(', ') : '9 dugum') : '-');
   K('Saturasyon krosfeydi kurulu', !!graf && graf.krosfeyd === true,
