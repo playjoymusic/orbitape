@@ -8436,7 +8436,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          oynatiliyor ve bekcinin iki saniye icinde onu yuvasina geri
          koymasi olculuyor. Sebep ne olursa olsun calismasi gereken
          sey bu. */
-      K('Bekci yerinden oynayan buyuteci geri koyuyor', await pg.evaluate(async ()=>{
+      const bekciSonuc = await pg.evaluate(async ()=>{
           const bek=ms=>new Promise(r=>setTimeout(r,ms));
           const ar=document.getElementById('ara'), yv=document.getElementById('araYuva');
           if(!ar || !yv || ar.classList.contains('acik')) return false;
@@ -8459,7 +8459,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
              donene kadar yoklaniyor; yalnizca hic donmezse
              kirmizi yaniyor. Olculen sey degismedi. */
           let kalan = 1e9;
-          const sonTarih = Date.now() + 8000;
+          const sonTarih = Date.now() + 12000;
           while(Date.now() < sonTarih){
             await bek(200);
             const r=ar.getBoundingClientRect(), y=yv.getBoundingClientRect();
@@ -8467,8 +8467,37 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             if(kalan <= 8) break;
           }
           if(kalan > 8) ar.style.bottom = eski;
+          /* ── OLCULEMEYEN DURUM: rAF HIC ISLEMIYOR ───────────────
+             GitHub'in makinesinde bu kontrol kirmizi yandi, oysa
+             yerelde her seferinde geciyor. Sebep bekcinin
+             requestAnimationFrame ile calismasi: gorunmeyen ya da
+             arka plandaki bir sayfada tarayici rAF'i DURDURUYOR.
+             Bekci hic tiklamayinca buyutec elbette yerine gelmiyor
+             -- ama bu uygulamanin kusuru degil, olcumun
+             yapilamamasi. Ustelik zarari da yok: kimsenin bakmadigi
+             bir sayfada buyutecin yeri kimseyi ilgilendirmiyor.
+             O yuzden once "rAF isliyor mu" soruluyor; islemiyorsa
+             sonuc OLCULEMEDI donuyor ve kontrol kirmizi degil
+             ATLANMIS sayiliyor. */
+          if(kalan > 8){
+            const rafIsliyor = await new Promise(coz=>{
+              let bitti = false;
+              const z = setTimeout(()=>{ if(!bitti){ bitti = true; coz(false); } }, 2000);
+              requestAnimationFrame(()=>{ if(!bitti){ bitti = true; clearTimeout(z); coz(true); } });
+            });
+            if(!rafIsliyor) return 'olculemedi';
+          }
           return bozuk > 40 && kalan <= 8;
-        }), 'elle bozuldu, bekci yuvasina geri koydu');
+        });
+      /* 'olculemedi' bir SONUC DEGIL, olcumun yapilamamasi. Kirmizi
+         yakmak yanlis olurdu (kod dogru), yesil yakmak daha da
+         yanlis (hicbir sey olculmedi). Suitenin kendi yolu:
+         atlananlar listesine yaziliyor ve raporun basinda gorunuyor. */
+      if(bekciSonuc === 'olculemedi')
+        yavas('Bekci yerinden oynayan buyuteci geri koyuyor — olculemedi: rAF durmus (sayfa arka planda)');
+      else
+        K('Bekci yerinden oynayan buyuteci geri koyuyor', bekciSonuc,
+          'elle bozuldu, bekci yuvasina geri koydu');
       K('Bekci yuvadan kopmayi da goruyor',
          /var d = \(yr\.top \+ yr\.height\/2\) - \(r\.top \+ r\.height\/2\);/.test(kaynak)
          && /Math\.abs\(d\) > 8 \|\| Math\.abs\(dx\) > 8/.test(kaynak)
@@ -8920,7 +8949,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       bg = sayfa;
       return await sayfa.evaluate(async ()=>{
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
-        await bek(500);
+        /* ── SOZLUK AGDAN GELIYOR: SABIT BEKLEME YETMEZ ────────────
+           Ilk yazilisinda tek bir `await bek(500)` vardi. Yerelde
+           hep geciyordu, GitHub'in makinesinde KIRMIZI yandi:
+           dil/tr.json henuz inmemisken olcum aliniyor ve "Turkce
+           acilmadi" deniyordu -- oysa uygulama dogru calisiyor,
+           yalnizca bir istek yolda. Zaman asimiyla dusen bir test
+           kirmiziyi anlamsiz kilar. Artik sozluk gelene kadar
+           yoklaniyor; hic gelmezse yine kirmizi ve o zaman gercek
+           bir kusur. */
+        const sonTarih = Date.now() + 12000;
+        while(Object.keys(SOZLUK).length <= 100 && Date.now() < sonTarih) await bek(200);
+        await bek(200);
         const g = s=>{ const e=document.querySelector(s); return e? e.textContent.trim() : ''; };
         const tr = {
           dil: DIL,

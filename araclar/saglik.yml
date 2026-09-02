@@ -1,0 +1,276 @@
+# ORBITAPE — her değişiklikte bütün sağlık kontrolleri
+#
+# NE YAPAR
+#   Her push ve her pull request'te GitHub'ın kendi makinesinde bir tarayıcı
+#   açılır, uygulama gerçekten çalıştırılır ve saglik.js'teki bütün kontroller
+#   koşar: yerleşim, ses zinciri, çevrimdışı davranış, lisans, radyo süzgeci,
+#   PWA dosyaları. Sonuç commit'in yanında yeşil tik ya da kırmızı çarpı olur.
+#
+# NEDEN
+#   Testleri elle çalıştırmayı unutmak mümkün. Burada unutmak mümkün değil.
+#
+# SÜRE / MALİYET
+#   Yaklaşık 3-4 dakika. Herkese açık depoda ücretsiz ve sınırsız.
+
+name: Sağlık kontrolü
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:        # elle de çalıştırılabilsin
+
+jobs:
+  saglik:
+    # Isimde SAYI YOK: her yeni kontrolde guncellemek gerekirdi ve bir gun
+    # unutulup yalan soylerdi. Gercek sayi zaten logun son satirinda.
+    name: Saglik kontrolleri
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # v4 -> v5: v4 kendi ici Node 20 istiyor, GitHub onu artik zorla
+      # Node 24'te calistirip her calistirmada uyari basiyordu. v5 zaten
+      # node24 ile geliyor. (v6 de var; v5 yeterli ve daha oturmus.)
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      # Testleri calistiran Node surumu — yukaridaki adimlarin kendi
+      # calisma ortamiyla karistirilmasin, ayri sey.
+      # 20 -> 22: Node 20'nin destegi Nisan 2026'da bitti, omru dolmus bir
+      # surumde test etmenin anlami yok. 22 su anki LTS ve testler zaten
+      # gelistirme ortaminda Node 22 uzerinde geciyor.
+      - name: Node kur
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Playwright ve tarayıcı kur
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      # Sunucu ve test AYNI adımda: ayrı adımlarda başlatılan arka plan
+      # süreçlerinin adım sınırından sağ çıkacağı garanti değil. Burada
+      # sunucu testle aynı kabukta yaşıyor ve iş bitince kapanıyor.
+      #
+      # Uygulama file:// üzerinden değil gerçek bir sunucudan açılmalı:
+      # service worker ancak http:// altında çalışır.
+      - name: Sağlık kontrolü
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 &
+          SUNUCU=$!
+          trap 'kill $SUNUCU 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8765/index.html >/dev/null || {
+            echo "Yerel sunucu ayaga kalkmadi"; exit 1; }
+          node test/saglik.js
+
+      # ── ARIZA SENARYOLARI ──────────────────────────────────────
+      # Saglik testi "calisiyor mu" diye sorar. Bu takim "BOZULUNCA
+      # NE OLUYOR" diye sorar: butun sesler 404, sunucu cevapsiz,
+      # listeler bos, calarken ag kopuyor, otomatik calma engelli.
+      # 30 Agustos'ta bir kullanici sonsuz dongu bildirdi ve o gun
+      # 528 kontrol yesildi -- cunku hicbiri arizali yolu
+      # olcmuyordu. Bu adim o bosluk icin var.
+      - name: Arıza senaryoları
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 &
+          SUNUCU=$!
+          trap 'kill $SUNUCU 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
+            sleep 1
+          done
+          node test/ariza.js
+
+      # ── SENARYO YOLCULUKLARI ───────────────────────────────────
+      # 99 kontrol, on kullanici yolculugu, 320px'e kadar cakisma
+      # denetimi.
+      #
+      # NEDEN BU ADIM SONRADAN EKLENDI
+      #   Aylarca CI'in DISINDAYDI: package.json'da bir script olarak
+      #   duruyordu ama bu dosya onu hic calistirmiyordu. Yani en cok
+      #   is goren test, otomatik agin disindaydi.
+      #   31 Agustos'ta senaryo tek bir gunde UC KEZ kirmizi yandi ve
+      #   ucunde de gercek bir hata yakaladi: 320px'te ust cubugun
+      #   ayar tutamagina binmesi, kunyenin konsolun ustune yiginmasi,
+      #   ve REC'in gizli kalmasi. Ucu de yalnizca elle cevrildigi
+      #   icin goruldu -- push'ta hicbiri calismiyordu.
+      #
+      # NEDEN SAGLIK TESTINDEN AYRI
+      #   Saglik "her sey yerinde mi" diye sorar, tek bir durumda.
+      #   Senaryo ZAMAN icinde yurur: ac, cal, gez, ara, kip degistir,
+      #   yeniden ac. Cakismalar ve yerlesim hatalari tam da bu
+      #   gecislerde ciktigi icin ayri bir kosu gerekiyor.
+      - name: Senaryo yolculukları
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 &
+          SUNUCU=$!
+          trap 'kill $SUNUCU 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
+            sleep 1
+          done
+          node test/senaryo.js
+
+  # ─────────────────────────────────────────────────────────────────
+  # MOTOR DENKLIGI — WebKit
+  #
+  # NEDEN AYRI İŞ
+  #   WebKit geliştirme ortamına KURULAMIYOR: Playwright'ın indirme
+  #   sunucusu oradan kapalı ("Failed to download WebKit ... code=1").
+  #   Yani bu testin koşabildiği tek yer burası. Ayrı iş olması ayrıca
+  #   Chromium testinin süresini uzatmıyor: ikisi paralel koşuyor.
+  #
+  # NEDEN 291 KONTROLÜN HEPSİ DEĞİL
+  #   O kontrollerin büyük kısmı piksel yerleşimi ve piksel hizası
+  #   motorlar arasında zaten farklı. WebKit'te koşturmak gürültü
+  #   üretir, bilgi üretmez. test/motor.js yalnızca motor farkına
+  #   duyarlı olanı sınıyor: ses grafı, medya API'leri, çizim, CORS,
+  #   service worker, klavye, lisans kapısı.
+  #
+  # continue-on-error KALDIRILDI — ilk koşu ne soracağımızı öğretti.
+  #
+  #   İlk WebKit koşusu 19/21 verdi. Düşen ikisi MediaRecorder'dı ve
+  #   ilk bakışta "Safari'de kayıt çalışmıyor" gibi duruyordu. Değildi:
+  #   caniuse'a bakıldı, MediaRecorder iOS Safari 14.5'ten beri
+  #   destekleniyor. Olmayan şey Playwright'ın LİNUX WebKit derlemesi —
+  #   medya kodlayıcıları oraya konmuyor.
+  #
+  #   Yani bir uygulama hatası değil, TESTİN SINIRI. O iki satır artık
+  #   "bilgi" olarak yazılıyor, hüküm sayılmıyor: yalan söyleyen bir
+  #   test, kırmızısına bakılmayan bir teste dönüşür.
+  #
+  #   Geriye kalan 19 kontrolün hepsi WebKit'te geçti — yani kodun
+  #   WebKit hakkındaki iddiaları motor seviyesinde tutuyor. Artık
+  #   kırmızı olması gerçek bir gerileme demek, o yüzden zorunlu.
+  #
+  #   AÇIK KALAN BOŞLUK: kayıt yolu bu testle doğrulanamıyor. Gerçek
+  #   cihaz ya da Mac üzerinde WebKit gerekiyor. Elle sınama listesinde.
+  #   KURULUM SURESI ISI IPTAL ETTIRIYORDU. Olculdu: 'playwright
+  #   install --with-deps webkit' bos bir kosucuda yaklasik 180 apt
+  #   paketi indiriyor ve 20 dakikayi asip zaman asimina giriyordu.
+  #   Kirmizi bir kod hatasi degildi ama surekli kirmizi duran bir
+  #   gosterge, bir sure sonra bakilmayan bir gostergeye donusur.
+  #   Cozum: Playwright'in KENDI imajinda kosmak. Tarayicilar ve
+  #   sistem bagimliliklari imajin icinde hazir geliyor, yani apt
+  #   adimi tamamen kalkiyor.
+  #   IMAJ SURUMU package-lock.json'daki playwright surumuyle AYNI
+  #   OLMALI: imaj ile kutuphane ayrisirsa Playwright "browser not
+  #   found" der. Surum yukseltilirken ikisi birlikte degisir.
+  motor:
+    name: Motor denkligi (WebKit)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    timeout-minutes: 20
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - name: Bagimliliklar
+        run: npm install --no-audit --no-fund
+
+      - name: Motor denkligi
+        run: |
+          # SUNUCU NODE ILE. Playwright imaji Node tabanli ve python3'un
+          # orada bulunacagi garanti degil; is python3 yoksa "command
+          # not found" ile duser ve sebebi tarayiciyla ilgisiz gorunur.
+          # Node zaten var, sunucu da on satir.
+          node -e "const h=require('http'),f=require('fs'),p=require('path');
+            const T={'.html':'text/html','.js':'text/javascript','.json':'application/json',
+                     '.png':'image/png','.svg':'image/svg+xml','.txt':'text/plain'};
+            h.createServer((q,s)=>{const y=p.join(process.cwd(),decodeURIComponent(q.url.split('?')[0]));
+              f.readFile(y,(e,d)=>{ if(e){s.writeHead(404);return s.end('yok');}
+                s.writeHead(200,{'content-type':T[p.extname(y)]||'application/octet-stream'});s.end(d);});
+            }).listen(8765,'127.0.0.1');" &
+          SUNUCU=$!
+          trap 'kill $SUNUCU 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8765/index.html >/dev/null || {
+            echo "Yerel sunucu ayaga kalkmadi"; exit 1; }
+          MOTOR=webkit node test/motor.js
+
+  # ─────────────────────────────────────────────────────────────────
+  # MOTOR DENKLIGI — Gecko (Firefox)
+  #
+  # NEDEN
+  #   Uc buyuk motor var ve ikisini siniyorduk: Chromium (saglik,
+  #   senaryo, ariza) ve WebKit (motor). GECKO HIC ACILMIYORDU.
+  #   Web Audio ve MediaRecorder uc motorda da farkli davraniyor --
+  #   WebKit'i sinamamizin sebebi tam olarak buydu, aynisi Firefox
+  #   icin de gecerli.
+  #   Play tarafinda engel degil (TWA Chrome kullaniyor), ama
+  #   orbitape.app herkese acik bir site ve masaustunde Firefox'tan
+  #   girilecek.
+  #
+  # ILK KOSU BILGI TOPLUYOR, HUKUM VERMIYOR
+  #   continue-on-error: true BILEREK acik ve GECICI. Sebebi WebKit'te
+  #   ogrendigimiz ders: ilk kosuda dusen iki kontrol bir uygulama
+  #   hatasi degil, Playwright'in Linux derlemesinin sinirlariydi
+  #   (medya kodlayicilari o derlemeye konmuyor). Bunu bilmeden
+  #   zorunlu yapsaydik CI kalici kirmizi kalir ve kimse bakmazdi.
+  #   Firefox bu ortamda HIC kosturulamadi -- Playwright'in indirme
+  #   sunucusu gelistirme ortamindan kapali, tipki WebKit gibi. Yani
+  #   ilk gercek kosu burada olacak.
+  #   ILK YESIL KOSUDAN SONRA BU SATIR SILINECEK. Kirmizisina
+  #   bakilmayan bir test, testten sayilmaz.
+  # Ayni imaj, ayni sebep: apt adimi olmadan Firefox hazir geliyor.
+  motor_gecko:
+    name: Motor denkligi (Gecko)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    timeout-minutes: 20
+    continue-on-error: true
+    # ── FIREFOX HIC ACILMIYORDU: $HOME BASKASININ ────────────────
+    # 2 Eylul. Is su satirla duruyordu:
+    #   "Firefox is unable to launch if the $HOME folder isn't owned
+    #    by the current user."
+    # Kapsayicida is root olarak kosuyor ama $HOME=/github/home ve o
+    # klasor pwuser'a ait. Firefox bunu reddediyor; Chromium ve
+    # WebKit umursamiyor -- o yuzden yalnizca Gecko kirmizi yaniyor
+    # ve sebep tarayiciyla ilgisiz gorunuyordu.
+    # Cozum Playwright'in kendi onerdigi ayar. Test koduyla,
+    # uygulamayla ya da motorlarin denkligiyle ilgisi yok.
+    env:
+      HOME: /root
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - name: Bagimliliklar
+        run: npm install --no-audit --no-fund
+
+      - name: Motor denkligi (Gecko)
+        run: |
+          # SUNUCU NODE ILE. Playwright imaji Node tabanli ve python3'un
+          # orada bulunacagi garanti degil; is python3 yoksa "command
+          # not found" ile duser ve sebebi tarayiciyla ilgisiz gorunur.
+          # Node zaten var, sunucu da on satir.
+          node -e "const h=require('http'),f=require('fs'),p=require('path');
+            const T={'.html':'text/html','.js':'text/javascript','.json':'application/json',
+                     '.png':'image/png','.svg':'image/svg+xml','.txt':'text/plain'};
+            h.createServer((q,s)=>{const y=p.join(process.cwd(),decodeURIComponent(q.url.split('?')[0]));
+              f.readFile(y,(e,d)=>{ if(e){s.writeHead(404);return s.end('yok');}
+                s.writeHead(200,{'content-type':T[p.extname(y)]||'application/octet-stream'});s.end(d);});
+            }).listen(8765,'127.0.0.1');" &
+          SUNUCU=$!
+          trap 'kill $SUNUCU 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8765/index.html >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8765/index.html >/dev/null || {
+            echo "Yerel sunucu ayaga kalkmadi"; exit 1; }
+          MOTOR=firefox node test/motor.js
