@@ -78,9 +78,25 @@ function motorSec(ad){
   return                     { ad:'chromium',sur:chromium,arg:TARAYICI_ARG, yol:KROM };
 }
 
+/* ── FIREFOX'TA SES IZNI: BAYRAK DEGIL TERCIH ──────────────────────
+   Chromium'a --autoplay-policy bayragi veriliyor; Firefox bayragi
+   tanimiyor, tercih (pref) istiyor. Tercih verilmeyince olan sey
+   sessiz ve sinsi: actx.resume() donen soz HIC CEVAPLANMIYOR --
+   reddedilmiyor, bekliyor. Motor testi o sozu await ediyor ve CI'da
+   Gecko isi 20 dakika asili kalip zaman asimina ugruyor; log bos,
+   cunku test daha ilk satirini bile yazmiyor. Iki kez yasandi. */
+const FIREFOX_TERCIH = {
+  'media.autoplay.default': 0,
+  'media.autoplay.blocking_policy': 0,
+  'media.autoplay.block-webaudio': false,
+  'media.navigator.permission.disabled': true,
+  'media.navigator.streams.fake': true
+};
 async function tarayiciAc(motor){
   const m = motorSec(motor);
-  return m.sur.launch({ executablePath: m.yol, args: m.arg });
+  const sec = { executablePath: m.yol, args: m.arg };
+  if(m.ad === 'firefox') sec.firefoxUserPrefs = FIREFOX_TERCIH;
+  return m.sur.launch(sec);
 }
 
 /* ── AG DAVRANISLARI ─────────────────────────────────────────────

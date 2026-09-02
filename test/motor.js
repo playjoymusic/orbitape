@@ -49,6 +49,17 @@ const bilgi = [];
 const B = (ad, deger, neden) => bilgi.push({ad, deger: String(deger), neden});
 
 (async () => {
+  /* NOBETCI: bu test hicbir kosulda asili kalmamali. CI'da Gecko
+     20 dakika bekleyip zaman asimina ugradi ve log BOSTU -- hangi
+     adimda takildigi bile gorunmedi. Dort dakikada bitmediyse
+     bitmis sayilir ve nerede oldugu yazilir. unref: normal bitiste
+     sureci ayakta tutmaz. */
+  const nobet = setTimeout(()=>{
+    console.error('\nMOTOR TESTI 4 DAKIKADA BITMEDI — asili kaldi. Son biten kontrol: '
+      + (sonuc.length ? sonuc[sonuc.length-1].ad : '(hicbiri)'));
+    process.exit(1);
+  }, 240000);
+  nobet.unref();
   const b = await tarayiciAc(MOTOR);
   const jsHata = [], konsol = [];
 
@@ -110,7 +121,12 @@ const B = (ad, deger, neden) => bilgi.push({ad, deger: String(deger), neden});
   const graf = await pg.evaluate(async () => {
     const bek = ms => new Promise(r => setTimeout(r, ms));
     try { sesBaglamiAl(); } catch (e) {}
-    try { if (typeof actx !== 'undefined' && actx && actx.resume) await actx.resume(); } catch (e) {}
+    /* resume() sozu Firefox'ta izin yoksa HIC cevaplanmiyor (ne
+       cozum ne ret) ve evaluate sonsuza kadar bekliyor. Ust sinir:
+       3 sn. Tercihler (ortak.js) izni zaten veriyor; bu, tercih
+       bir gun yetmezse testin asili kalmamasi icin. */
+    try { if (typeof actx !== 'undefined' && actx && actx.resume)
+            await Promise.race([actx.resume(), new Promise(r => setTimeout(r, 3000))]); } catch (e) {}
     try { analizKur(); } catch (e) { return { hata: String(e.message) }; }
     await bek(400);
     /* DUGUMLERE ADIYLA BAKILIYOR, window UZERINDEN DEGIL.
