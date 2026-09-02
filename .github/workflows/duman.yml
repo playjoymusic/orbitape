@@ -46,6 +46,9 @@ on:
 permissions:
   contents: read
   issues: write
+  # actions: write — 60 gun kurali (asagiya bak): kapanmis zamanlanmis
+  # isleri yeniden aciyor.
+  actions: write
 
 # Aynı anda iki koşu olmasın: push ile zamanlanmış koşu çakışırsa
 # ikisi de aynı şeyi sorar, biri yeter.
@@ -64,6 +67,42 @@ jobs:
       # assetlinks.json buradan geliyor.
       - name: Depoyu al
         uses: actions/checkout@v5
+
+      # ── 60 GUN KURALI ────────────────────────────────────────────
+      # GitHub, depoda 60 gun boyunca commit olmazsa `schedule:` ile
+      # kosan isleri SESSIZCE kapatir. Ne e-posta, ne kirmizi bir
+      # sey: nobetci sadece bir gun kosmayi birakir. radyo.yml'nin
+      # basina bir kez gelmis (bkz. oradaki not).
+      # Bu adim HER PUSH'TA ve HER ZAMANLANMIS KOSUDA depodaki butun
+      # isleri listeler; "disabled_inactivity" olani yeniden acar ve
+      # bunu bir issue ile soyler. Yani bir nobetci kapandiysa,
+      # otekinin kostugu ilk anda geri acilir. Ikisi birden kapanirsa
+      # bile ilk push acar.
+      # Kendi kendine aylik commit atan "canli tut" isleri bilerek
+      # yok: depoya sahte hareket sokmak, gecmisi kirletir.
+      - name: Sessizce kapanmis nobetci var mi
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const r = await github.rest.actions.listRepoWorkflows({
+              owner: context.repo.owner, repo: context.repo.repo, per_page: 100 });
+            const kapali = r.data.workflows.filter(w => w.state === 'disabled_inactivity');
+            if(!kapali.length){ console.log('kapanmis nobetci yok (' + r.data.workflows.length + ' is)'); return; }
+            const adlar = [];
+            for(const w of kapali){
+              await github.rest.actions.enableWorkflow({
+                owner: context.repo.owner, repo: context.repo.repo, workflow_id: w.id });
+              adlar.push(w.name + ' (' + w.path + ')');
+              console.log('yeniden acildi: ' + w.name);
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: 'Nobetci 60 gun kurali ile kapanmisti — yeniden acildi',
+              labels: ['yayin-alarm'],
+              body: 'GitHub su isleri hareketsizlik yuzunden kapatmisti; bu kosu yeniden acti:\n\n- '
+                  + adlar.join('\n- ')
+                  + '\n\nArada gecen surede canli duman testi KOSMAMISTIR. '
+                  + 'Bu issue bilgi icindir; elle bir sey gerekmiyor.' });
 
       - name: Yayini sina
         id: duman

@@ -1,0 +1,75 @@
+# ORBITAPE — SAHA OLCUMU NOBETI
+#
+# NEDEN VAR
+#   Denetim (2 Eylul): kullanicilarin gonderdigi cokme raporlari
+#   Analytics Engine'e dusuyor ve orada KALIYORDU. Okuyan yoktu.
+#   Kullaniciya "cokme raporu gonder" deyip gonderileni okumamak,
+#   hic toplamamaktan kotu.
+#
+# NE YAPAR
+#   Gunde bir kez son 24 saati okur (araclar/olcu_nobet.py). Yeni bir
+#   hata imzasi ya da 3 kat artis varsa issue acar. Yoksa sessiz.
+#
+# SENIN BIR ADIMIN GEREK — BIR KEZLIK
+#   GitHub -> Settings -> Secrets and variables -> Actions:
+#     CF_HESAP : Cloudflare hesap id'si
+#     CF_TOKEN : Cloudflare API token, yetki YALNIZCA
+#                "Account · Account Analytics · Read"
+#   Yazma yetkisi VERME: bu is yalnizca okur ve okumaktan fazlasina
+#   izinli bir token depoda durmamali.
+#   Sirlar yoksa is kirmizi yanmaz; "sir yok" der ve biter. Cunku
+#   kirmizi bir sey bozuk demek olmali, kurulmamis degil.
+
+name: Saha olcumu nobeti
+
+on:
+  schedule:
+    - cron: '20 6 * * *'     # her gun 06:20 UTC (09:20 TR)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  oku:
+    name: Cokme raporlarini oku
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - name: Oku ve esikle karsilastir
+        id: nobet
+        env:
+          CF_HESAP: ${{ secrets.CF_HESAP }}
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          set +e
+          python3 araclar/olcu_nobet.py | tee /tmp/olcu_cikti.txt
+          kod=${PIPESTATUS[0]}
+          echo "kod=$kod" >> "$GITHUB_OUTPUT"
+          # 3 = sir yok (kurulmamis), 2 = esik asildi, 0 = temiz.
+          # Yalnizca 1 (gercek hata) isi kirmizi yakar.
+          if [ "$kod" = "1" ]; then exit 1; fi
+          exit 0
+
+      - name: Esik asildiysa issue ac
+        if: steps.nobet.outputs.kod == '2'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const cikti = fs.readFileSync('/tmp/olcu_cikti.txt', 'utf8');
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: 'Sahada yeni hata ya da artis — cokme raporlari',
+              labels: ['saha-olcum'],
+              body: '**Son 24 saatteki cokme raporlarinda esik asildi.**\n\n```\n'
+                  + cikti + '\n```\n\nAyrinti: `CF_HESAP=... CF_TOKEN=... bash araclar/olcu_oku.sh 1`' });
+
+      - name: Sir yoksa hatirlat
+        if: steps.nobet.outputs.kod == '3'
+        run: |
+          echo "::warning::CF_HESAP / CF_TOKEN sirri yok — saha olcumu okunmuyor. Dosyanin basina bak."

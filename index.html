@@ -488,18 +488,10 @@
     font-family:'Share Tech Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.18em;color:#7fa3ab;
     cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;white-space:nowrap;flex:none;
     transition:color .2s,border-color .2s,background .2s;}
-  /* ── PARMAK ALANI GORUNTUDEN BUYUK ────────────────────────────
-     2 Eylul denetimi: dokunma alani kontrolunun listesinde 'rec'
-     YOKTU, yani ekrandaki en cok basilan tuslardan biri hic
-     olculmuyordu. Listeye eklenince cikan sayi 62x31 -- yani
-     kendi esigimizin (36) altinda.
-     Gorunumu buyutmuyoruz: satirin duzeni ve iki tus satiri
-     arasindaki 8px bosluk oldugu gibi kaliyor. Buyuyen sey yalnizca
-     DOKUNULABILIR alan; dikeyde 3px, yatayda 2px. Boslugun yarisi
-     bize, yarisi komsuya: alanlar birbirine deger, binmez (kontrol
-     binismeyi ayrica olcuyor).
-     3px denendi ve olculdu: 35px cikti, esigin 1px altinda. 4px ile
-     37-39 arasi. Tahmin degil, olcum. */
+  /* PARMAK ALANI: 'rec' dokunma kontrolunde yoktu; eklenince 62x31
+     cikti, esik 36.
+     Gorunum ayni; buyuyen yalnizca DOKUNULABILIR alan (dikey 4px,
+     yatay 2px). 3px olculdu: 35, esigin altinda. 4px: 37. */
   #rec,#cam{position:relative;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
@@ -2499,9 +2491,10 @@
      ile ilgili olanlar."
      Basliklar cok silik: bolumu ayiriyorlar ama okunacak sey
      degiller. */
+  /* .26 -> .58: koyu panelde 2,17:1 olculdu, esik 4,5. */
   #ayar h5{margin:14px 0 2px;font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:8.5px;letter-spacing:.34em;font-weight:400;
-    color:rgba(244,247,250,.26);}
+    color:rgba(244,247,250,.58);}
   #ayar h5:first-of-type{margin-top:10px;}
 
   /* ── ORBITAPE KAPISI ─────────────────────────────────────────────
@@ -2520,7 +2513,8 @@
     font-size:15px;letter-spacing:.26em;font-weight:400;color:#5adcd2;
     text-indent:.26em;}
   #ayar .sat.kapi i{font-style:normal;font-size:9px;letter-spacing:.16em;
-    color:rgba(244,247,250,.34);font-family:'Share Tech Mono',ui-monospace,monospace;}
+       tutmak isteniyorsa yolu opaklik degil boy olurdu. */
+    color:rgba(244,247,250,.60);font-family:'Share Tech Mono',ui-monospace,monospace;}
   /* ACIKKEN: cerceve ve yazi FX tarafinin morumsu rengine geciyor --
      "oteki dunyaya girdim" hissi kapinin kendisinde. */
   #ayar .sat.kapi.acik{border-color:rgba(176,130,216,.55);
@@ -14867,6 +14861,17 @@
        · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
        · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
      Kare başına iş: iki drawImage + dört minik nokta. */
+  /* TESHIS KAPISI SAYFADA: kayit.js'teyken WebKit'te takilma bekcisi
+     modul yuklenmeden taniPanel() cagirdi -- "Can't find variable".
+     Chromium'da ilk kare hizli, hata gorunmuyordu. (otoBaslat'in ikizi.) */
+  var TANI = false;
+  /* TANI_KAPI: gelistirici kapisinin acik olup olmadigi. Adres
+     ?tani iceriyorsa hem olcum kutusu hem 'D' kisayolu calisiyor;
+     icermiyorsa ikisi de yok. Tek kapi, tek anahtar. */
+  var TANI_KAPI = false;
+  try{ TANI_KAPI = /[?&]tani(=|&|$)/.test(location.search); TANI = TANI_KAPI; }catch(e){ _yut(e); }
+  function taniPanel(){ return TANI ? document.getElementById('kayitBilgi') : null; }
+  var _bilgiZaman = null;
   (function nebulaTuval(){
     const el = document.querySelector('#mark .neb');
     if(!el || !el.getContext) return;
@@ -15128,9 +15133,10 @@
         'plate '+(typeof convBagli!=='undefined'&&convBagli?'ON':'off')+
           '   echo '+(typeof delayBagli!=='undefined'&&delayBagli?'ON':'off')+
           '   rate '+(ses.playbackRate||1).toFixed(2)+'\n'+
-        'camera '+(kamAcik?'ON':'off')+
-          (kamAcik && kamIzi() ? (kamIzi().muted?' [MUTED]':' [live]') : '')+'\n'+
-        (_kayitTani || 'recording: none yet');
+        'camera '+(typeof kamAcik!=='undefined'&&kamAcik?'ON':'off')+
+          (typeof kamAcik!=='undefined'&&kamAcik && typeof kamIzi==='function' && kamIzi()
+             ? (kamIzi().muted?' [MUTED]':' [live]') : '')+'\n'+
+        ((typeof _kayitTani!=='undefined' && _kayitTani) || 'recording: none yet');
     }, 250);
   }
 

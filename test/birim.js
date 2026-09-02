@@ -879,6 +879,17 @@ function bitir(){
     isler.forEach(f => (oku(f).match(/mcr\.microsoft\.com\/playwright:v([\d.]+)/g) || [])
       .forEach(t => goruntuler.push(t.split(':v')[1])));
     const sapan = goruntuler.filter(v => v !== pwSurum);
+    /* LOCK DOSYASI DA AYNI SEYI SOYLEMELI. 2 Eylul: package.json
+       1.62.1'e sabitlendi, package-lock.json ^1.47.0'da kaldi ve
+       CI'daki `npm ci` 43 saniyede "not in sync" ile dustu. Iki
+       dosya uyusmuyorsa kapi burada kirmizi yanar, CI'da degil. */
+    let kilitSurum = '';
+    try{ const kl = JSON.parse(fs.readFileSync(path.join(KOK,'package-lock.json'),'utf8'));
+         kilitSurum = String((((kl.packages||{})['']||{}).devDependencies||{}).playwright || ''); }catch(e){}
+    K('package-lock.json package.json ile ayni Playwright surumunu yaziyor',
+      kilitSurum === pwSurum,
+      kilitSurum === pwSurum ? ('ikisi de ' + pwSurum)
+        : ('package.json ' + pwSurum + ', lock ' + (kilitSurum || 'okunamadi') + ' — npm ci reddeder'));
     K('Playwright surumu package.json ile CI arasinda ayni',
       /^\d+\.\d+\.\d+$/.test(pwSurum) && sapan.length === 0,
       !/^\d+\.\d+\.\d+$/.test(pwSurum)
@@ -950,6 +961,18 @@ function bitir(){
                     ? 'kirmizida issue aciliyor, yesilde kapaniyor'
                     : 'duman testi var ama kimseye haber vermiyor')
                  : 'canli duman testi yok');
+    /* 8. SAHA OLCUMU OKUNUYOR MU: toplanan raporu okuyan bir is
+       olmali, yoksa "cokme raporu gonder" demek bos bir istek. */
+    const okuyan = isler.filter(f => /olcu_nobet\.py/.test(oku(f)) && /schedule:/.test(oku(f)));
+    K('Saha olcumu zamanlanmis bir isle okunuyor', okuyan.length > 0,
+      okuyan.length ? okuyan.join(', ') + ' gunde bir okuyup esik asilirsa issue aciyor'
+                    : 'raporlar toplaniyor ama hicbir is okumuyor');
+    /* 7. 60 GUN KURALI: GitHub hareketsiz depoda schedule islerini
+       sessizce kapatir. Bir is bunu gorup yeniden acmali. */
+    const yenidenAcan = isler.filter(f => /disabled_inactivity/.test(oku(f)) && /enableWorkflow/.test(oku(f)));
+    K('Sessizce kapanan nobetci yeniden aciliyor', yenidenAcan.length > 0,
+      yenidenAcan.length ? yenidenAcan.join(', ') + ' her kosuda kontrol ediyor'
+                         : 'hicbir is disabled_inactivity durumuna bakmiyor');
   }catch(e){
     K('workflow dosyalari okunabiliyor', false, String(e && e.message || e));
   }

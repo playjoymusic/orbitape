@@ -2605,13 +2605,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      bir rapor gerektiğinde adresin sonuna ?tani ekleyip açıyorsun,
      masaüstünde D tuşu da aynı işi görüyor. Kapalıyken ölçümler yine
      toplanıyor (maliyeti yok), sadece yazılmıyor. */
-  var TANI = false;
-  /* TANI_KAPI: gelistirici kapisinin acik olup olmadigi. Adres
-     ?tani iceriyorsa hem olcum kutusu hem 'D' kisayolu calisiyor;
-     icermiyorsa ikisi de yok. Tek kapi, tek anahtar. */
-  var TANI_KAPI = false;
-  try{ TANI_KAPI = /[?&]tani(=|&|$)/.test(location.search); TANI = TANI_KAPI; }catch(e){ _yut(e); }
-  function taniPanel(){ return TANI ? document.getElementById('kayitBilgi') : null; }
+  /* TANI, TANI_KAPI, taniPanel: index.html'de (bkz. oradaki not). */
   var _bilgiZaman = null, _sesProfil = '', _sesTepe = 0;
   function kayitBilgiYaz(ms){
     const el = taniPanel(); if(!el) return;

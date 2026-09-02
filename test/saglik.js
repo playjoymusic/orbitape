@@ -1176,6 +1176,109 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
   }
 
+  /* ── VARSAYILAN TEMANIN KONTRASTI ───────────────────────────────
+     2 Eylul denetimi: butun kontrast kontrolleri DERILER tablosunu
+     geziyordu -- yani altmis dokuz deri olculuyordu, ama
+     kullanicilarin cogunun gordugu VARSAYILAN (derisiz) tema hic
+     olculmuyordu. #e8a982, rgba(244,247,250,.62) gibi sabit renkler
+     denetim disindaydi.
+     Burada tablo degil EKRAN olculuyor: gorunen her yazi icin
+     tarayicinin hesapladigi renk, altindaki gercek zeminle (ust
+     uste binen yari saydam katmanlar birlestirilerek) karsilastirilir.
+     Esik WCAG AA: kucuk yazi 4.5, buyuk/kalin yazi 3.0.
+     Sonuk (opacity < .6) olan elemanlar bilerek disarida: onlar
+     "pasif" demek istiyor ve okunmamalari tasarimin parcasi. */
+  {
+    const kontrast = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      const eskiDeri = AYAR.deri; AYAR.deri = 0; deriUygula();
+      try{ turBitir(); }catch(e){}
+      try{ document.body.classList.remove('oniz'); }catch(e){}
+      await bek(400);
+      const rgba = t => { const m = String(t).match(/rgba?\(([^)]+)\)/);
+        if(!m) return null; const p = m[1].split(',').map(Number);
+        return { r:p[0], g:p[1], b:p[2], a: p.length > 3 ? p[3] : 1 }; };
+      const karis = (ust, alt) => ({          /* ust katmani altin ustune bindir */
+        r: ust.r*ust.a + alt.r*(1-ust.a), g: ust.g*ust.a + alt.g*(1-ust.a),
+        b: ust.b*ust.a + alt.b*(1-ust.a), a: 1 });
+      const parl = c => { const f = v => { v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+        return 0.2126*f(c.r) + 0.7152*f(c.g) + 0.0722*f(c.b); };
+      const oran = (a,b)=>{ let l1=parl(a), l2=parl(b); if(l1<l2){const t=l1;l1=l2;l2=t;} return (l1+0.05)/(l2+0.05); };
+      /* Zemin: elemandan yukari cikip yari saydam zeminleri
+         birlestirerek opak bir renge ulasana kadar. */
+      const zemin = el => {
+        const katman = [];
+        for(let e = el; e; e = e.parentElement){
+          const z = rgba(getComputedStyle(e).backgroundColor);
+          if(z && z.a > 0) katman.push(z);
+          if(z && z.a >= 0.99) break;
+        }
+        let sonuc = { r:2, g:2, b:3, a:1 };            /* body zemini */
+        for(let i = katman.length - 1; i >= 0; i--) sonuc = karis(katman[i], sonuc);
+        return sonuc;
+      };
+      /* Secimler EKRANDAN alindi (gorunen yaprak metinler listelendi),
+         tahminle yazilmadi: ilk liste tahminle yazilmisti ve yalnizca
+         dort eleman esledi. Panel ve pencereler ACILARAK olculuyor,
+         yoksa icindeki yazilar hic olculmez. */
+      const ayarAcik = document.body.classList.contains('ayar-acik');
+      try{ if(!ayarAcik && typeof window.ayarGoster === 'function') window.ayarGoster(true); }catch(e){}
+      try{ const ay = document.getElementById('agyok'); if(ay){ ay.classList.add('on'); ay.style.display='flex'; } }catch(e){}
+      await bek(350);
+      const secici = ['#modAd','#kipKisayol .ad','#recYazi','#camYazi',
+        '#ayar .sat > span','#ayar .sat .durum','#ayar h5','#ayar .kapi-yazi b',
+        '#ayar .kapi-yazi i','#agyok .ay-ad','#agyok .ay-not','#agyok .ay-tekrar',
+        '#fxEl .yazi','#np .ad','#np .alt','#kisaNot'];
+      const kotu = [], olculen = [];
+      secici.forEach(sc=>{
+        document.querySelectorAll(sc).forEach(el=>{
+          const cs = getComputedStyle(el);
+          const r = el.getBoundingClientRect();
+          if(cs.display==='none' || cs.visibility==='hidden' || r.width<2 || r.height<2) return;
+          /* Elemanin ve atalarinin opakligi */
+          let op = 1; for(let e = el; e; e = e.parentElement) op *= parseFloat(getComputedStyle(e).opacity) || 1;
+          if(op < 0.6) return;
+          const metin = (el.textContent || '').trim(); if(!metin) return;
+          /* DEGRADE YAZI: renk 'transparent', gorunen sey
+             background-clip:text ile yazinin icine giydirilen
+             degrade. Oyle bir elemanda color'a bakmak 1.00 verir
+             (yazi = zemin) -- ilk kosuda tam bu oldu. Degradenin
+             duraklari okunuyor ve EN ZAYIFI olculuyor; zemin de
+             elemanin kendisi degil ustundeki. */
+          const klip = (cs.webkitBackgroundClip || cs.backgroundClip || '') === 'text';
+          const arka = klip ? zemin(el.parentElement || el) : zemin(el);
+          let o;
+          if(klip){
+            const duraklar = (cs.backgroundImage.match(/(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8})/g) || [])
+              .map(t=>{ if(t[0] !== '#') return rgba(t);
+                const h = t.slice(1); const u = h.length===3 ? h.split('').map(x=>x+x).join('') : h;
+                return { r:parseInt(u.slice(0,2),16), g:parseInt(u.slice(2,4),16), b:parseInt(u.slice(4,6),16), a:1 }; })
+              .filter(Boolean);
+            if(!duraklar.length) return;
+            o = Math.min(...duraklar.map(d => oran(d.a < 1 ? karis(d, arka) : d, arka)));
+          }else{
+            const renk = rgba(cs.color); if(!renk) return;
+            const on = renk.a < 1 ? karis(renk, arka) : renk;
+            o = oran(on, arka);
+          }
+          const boy = parseFloat(cs.fontSize) || 12;
+          const kalin = parseInt(cs.fontWeight, 10) >= 700;
+          const esik = (boy >= 24 || (boy >= 18.66 && kalin)) ? 3.0 : 4.5;
+          olculen.push(sc);
+          if(o < esik) kotu.push(sc + ' ' + o.toFixed(2) + ' (' + Math.round(boy) + 'px, esik ' + esik + ')');
+        });
+      });
+      try{ const ay = document.getElementById('agyok'); if(ay){ ay.classList.remove('on'); ay.style.display=''; } }catch(e){}
+      try{ if(!ayarAcik && typeof window.ayarGoster === 'function') window.ayarGoster(false); }catch(e){}
+      AYAR.deri = eskiDeri; deriUygula();
+      return { olculen: olculen.length, kotu };
+    });
+    K('Varsayilan temada yazilar zeminden ayirt ediliyor (WCAG AA)',
+      kontrast.kotu.length === 0,
+      kontrast.kotu.length ? kontrast.kotu.join(' | ')
+                           : (kontrast.olculen + ' yazi olculdu, hepsi esigin ustunde'));
+  }
+
   /* ── ODAK YONETIMI ──────────────────────────────────────────────
      2 Eylul erisilebilirlik denetiminin uc bulgusu buradan
      olculuyor. Ucu de "gorunmeyen" kusurlar: ekranda hicbir sey
