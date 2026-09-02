@@ -22,26 +22,47 @@ import http.server, socketserver, os, functools
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def kurallar():
-    """{yol: {baslik: deger}} — _headers'in basit bir okuyucusu."""
+def kurallar(sessiz=False):
+    """{yol: {baslik: deger}} — _headers'i CLOUDFLARE GIBI okuyor.
+
+    ── 2 EYLUL: BU OKUYUCU HOSGORULUYDU VE BIR ACIGI SAKLADI ────────
+    Onceki surum ust uste yazilmis yol satirlarini biriktirip
+    ardindan gelen basliklari HEPSINE uyguluyordu:
+
+        /
+        /index.html
+          Content-Security-Policy: ...
+
+    Cloudflare boyle okumuyor. Orada bir kural = BIR yol satiri +
+    ardindan gelen basliklar; ikinci yol satiri yeni bir kural
+    baslatiyor ve birincisi basliksiz kaliyor. Yani yayinda '/'
+    adresine -- uygulamayi herkesin actigi adrese -- CSP HIC
+    gitmiyordu. Yerelde gorunmedi, cunku burasi hosgoruluydu:
+    "yerel yayini taklit ediyor" sozu tam olarak burada bozuluyordu.
+
+    Artik kati: basliksiz kalan yol basliksiz kaliyor ve ayrica
+    EKRANA YAZILIYOR (sessiz=False). Bir daha sessizce kaybolmasin.
+    """
     tablo = {}
-    yollar = []
-    baslik_geldi = False
+    yol = None
+    bos = []
     for ham in open(os.path.join(KOK, '_headers'), encoding='utf-8'):
         satir = ham.rstrip('\n')
         if not satir.strip() or satir.lstrip().startswith('#'):
             continue
         if not satir.startswith((' ', '\t')):
-            if baslik_geldi:
-                yollar = []
-                baslik_geldi = False
-            yollar.append(satir.strip())
-            tablo.setdefault(satir.strip(), {})
-        elif yollar and ':' in satir:
-            baslik_geldi = True
+            if yol is not None and not tablo.get(yol):
+                bos.append(yol)
+            yol = satir.strip()
+            tablo.setdefault(yol, {})
+        elif yol and ':' in satir:
             ad, deger = satir.strip().split(':', 1)
-            for y in yollar:
-                tablo[y][ad.strip()] = deger.strip()
+            tablo[yol][ad.strip()] = deger.strip()
+    if yol is not None and not tablo.get(yol):
+        bos.append(yol)
+    if bos and not sessiz:
+        print('UYARI: _headers icinde basliksiz kural var, Cloudflare '
+              'bunlara hicbir baslik gondermez: ' + ', '.join(bos))
     return tablo
 
 

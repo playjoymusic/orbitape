@@ -16,6 +16,7 @@
     "tip": "bash araclar/tip.sh",
     "birim": "node test/birim.js",
     "kanca": "bash araclar/kanca/kur.sh",
+    "duman": "bash araclar/duman.sh",
     "deneme": "bash araclar/kontrol.sh && npx wrangler deploy --env deneme"
   },
   "devDependencies": {

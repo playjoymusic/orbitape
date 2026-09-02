@@ -63,6 +63,23 @@
     "run_worker_first": ["/np", "/olcu"]
   },
 
+  // ── GORME ───────────────────────────────────────────────────────
+  // 2 EYLUL. Panelde Workers Logs ve Traces KAPALIYDI. Yani Worker
+  // uretimde ne yapiyor, hangi istek neden dustu, hicbir yerde
+  // yazmiyordu -- /np'nin 24 dakika 404 dondugunu bir insan gozle
+  // buldu. Bu satir onu aciyor.
+  //
+  // NEDEN PANELDEN DEGIL BURADAN: panelden acilan ayari sonraki
+  // yayin geri kapatabilir (yayin tarifi ne diyorsa o gecerli).
+  // Burada yazili olunca her yayinda acik kaliyor.
+  //
+  // head_sampling_rate 1 = her istek. Hacmimizde bedeli yok; artarsa
+  // dusurulecek yer burasi.
+  // NE YAZILMIYOR: bu ayar Cloudflare'in KENDI istek gunlugunu
+  // aciyor, bizim olcum uc noktamiza dokunmuyor. Gizlilik sozu
+  // degismedi -- /olcu hala kullanici acmadan tek bayt almiyor.
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+
   // Olcum kaydi buraya dusuyor. Yonetilecek veritabani yok, ucretsiz
   // katman bizim hacmimizin cok ustunde ve SQL ile sorgulaniyor.
   // Hesapta acik degilse baglanti gelmez; olcu.js o durumda da 204
@@ -92,6 +109,8 @@
     "deneme": {
       "name": "orbitape-deneme",
       "main": "./olcu.js",
+      // Uretimle ayni: deneme yayininda da gorebilelim.
+      "observability": { "enabled": true, "head_sampling_rate": 1 },
       "assets": {
         "directory": "./",
         "not_found_handling": "404-page",

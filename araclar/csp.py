@@ -77,15 +77,32 @@ BASLA = "# ── CSP: BURASI csp.py TARAFINDAN YAZILIYOR ───────�
 BITIR = "# ── CSP SONU ────────────────────────────────────────────────────"
 
 # Yayina giden HTML sayfalari ve hangi yollardan servis edildikleri.
-# '/' de index.html'i veriyor, o yuzden iki yol birden yaziliyor.
 #   uygulama=True  -> ses calan, aga cikan, kayit yapan sayfa
 #   uygulama=False -> duz yazi sayfasi: hicbir sey calmiyor, hicbir
 #                     yere baglanmiyor. Politikasi buna gore dar.
+#
+# ── YOL LISTESI: KULLANICININ ACTIGI ADRES NE ISE O ────────────────
+# _headers ISTEGIN YOLUNA bakiyor, dosya adina degil. Cloudflare'in
+# html_handling'i /privacy -> privacy.html eslemesini yapiyor ama
+# baslik kurali eslesmeden ONCE secildigi icin '/privacy.html'
+# kurali '/privacy' istegine UYMUYOR.
+#
+# 2 Eylul'e kadar listede yalnizca '.html' bicimleri vardi; oysa
+# uygulama '/privacy' ve '/terms' adreslerine link veriyor,
+# sitemap.xml de o adresleri sayiyor. Yani Play Console'a verilen
+# gizlilik adresi dahil, insanlarin gercekte actigi UC sayfanin
+# ucunde de CSP yoktu. Simdi her sayfa hem uzantili hem uzantisiz
+# haliyle yazili. Ikisi ayri istek oldugu icin cift baslik sorunu
+# olusmuyor (bkz. yukaridaki '/*' notu).
+#
+# 404.html BILEREK TEK YOLLU: kullaniciya bilinmeyen bir adreste
+# gosteriliyor ve o adresler onceden sayilamaz. Zarari yok --
+# sayfanin hic betigi yok, satir ici stilinin ozeti de burada.
 SAYFALAR = [
-    {"dosya": "index.html",   "yollar": ["/", "/index.html"], "uygulama": True},
-    {"dosya": "privacy.html", "yollar": ["/privacy.html"],    "uygulama": False},
-    {"dosya": "terms.html",   "yollar": ["/terms.html"],      "uygulama": False},
-    {"dosya": "404.html",     "yollar": ["/404.html"],        "uygulama": False},
+    {"dosya": "index.html",   "yollar": ["/", "/index.html"],        "uygulama": True},
+    {"dosya": "privacy.html", "yollar": ["/privacy", "/privacy.html"], "uygulama": False},
+    {"dosya": "terms.html",   "yollar": ["/terms", "/terms.html"],   "uygulama": False},
+    {"dosya": "404.html",     "yollar": ["/404.html"],               "uygulama": False},
 ]
 
 
@@ -161,13 +178,33 @@ def blok(kayitlar):
         "# '/*' YOK: Cloudflare eslesen butun kurallari uygular, iki CSP",
         "# basligi gidince tarayici KESISIMLERINI alir ve iki ayri ozet",
         "# listesi birbirini sifirlar. Her sayfa kendi yolunda.",
+        "#",
+        "# ── 2 EYLUL: HER YOL KENDI BLOGUNU ALIYOR ──────────────────────",
+        "# Onceki surum ayni politikayi paylasan yollari ust uste",
+        "# yaziyordu:",
+        "#     /",
+        "#     /index.html",
+        "#       <politika satiri>",
+        "# (Ornekte politikanin ADI bilerek yazilmadi: _headers'i duz",
+        "#  metin olarak tarayan araclar yorumdaki ornegi gercek bir",
+        "#  kural saniyor. Bir kez tam olarak bu oldu.)",
+        "# Cloudflare bunu boyle okumuyor: bir kural = BIR yol satiri +",
+        "# ardindan gelen basliklar. Ust uste yazilinca ikinci satir yeni",
+        "# bir kural basliyor ve birincisi -- yani '/' -- BASLIKSIZ",
+        "# kaliyor. Sonuc: uygulamayi herkesin actigi adreste CSP hic",
+        "# yoktu. Yerelde gorunmedi, cunku sunucu.py'nin okuyucusu",
+        "# hosgorulu davraniyordu ve testler '/' degil '/index.html'",
+        "# aciyordu. Ucu de duzeltildi; yayindaki hali artik",
+        "# araclar/duman.sh ile olculuyor.",
     ]
     for k in kayitlar:
         satir.append("")
         satir.append("# %s" % k["dosya"])
-        for yol in k["yollar"]:
+        for i, yol in enumerate(k["yollar"]):
+            if i:
+                satir.append("")
             satir.append(yol)
-        satir.append("  Content-Security-Policy: " + k["politika"])
+            satir.append("  Content-Security-Policy: " + k["politika"])
     satir.append(BITIR)
     return "\n".join(satir)
 

@@ -1459,6 +1459,33 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        -- ve privacy.html Play Console'a verilen adres.
        Artik her sayfanin kendi yolu, kendi ozeti; kontrol de
        hepsini tek tek soruyor. */
+    /* ── _headers CLOUDFLARE GIBI OKUNUYOR ─────────────────────────
+       Bu blok once duz metin uzerinde duzenli ifadeyle geziyordu:
+       "su yol satirini bul, ondan SONRAKI ilk politika satirini al".
+       Iki ayri sekilde yanilttik onu.
+       (1) _headers'in elle yazilan bolumunde de '/index.html' yolu
+           var (onbellek kurallari icin). Duzenli ifade oradaki
+           satiri bulup CSP bolumunden bir sey okuyordu.
+       (2) 2 Eylul'de dosyanin basina bir ORNEK yorum eklendi ve
+           icinde politikanin adi geciyordu; tarayici onu gercek
+           kural sandi.
+       Ikisi de "yakin bir seye bakip dogru sanmak" hatasi. Artik
+       dosya KURAL KURAL okunuyor: bir kural = bir yol satiri +
+       ardindan gelen girintili basliklar; yorumlar ve bos satirlar
+       atiliyor. Cloudflare de tam olarak boyle okuyor. */
+    const oku = () => {
+      const t = {}; let y = null;
+      for(const s of bas.split('\n')){
+        if(!s.trim() || s.trim().startsWith('#')) continue;
+        if(!/^[ \t]/.test(s)){ y = s.trim(); if(!t[y]) t[y] = {}; }
+        else if(y && s.indexOf(':') >= 0){
+          const i = s.indexOf(':');
+          t[y][s.slice(0,i).trim().toLowerCase()] = s.slice(i+1).trim();
+        }
+      }
+      return t;
+    };
+    const KURAL = oku();
     const SAYFALAR = ['index.html','privacy.html','terms.html','404.html'];
     const eksik = [];
     for(const ad of SAYFALAR){
@@ -1468,9 +1495,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const govde = t => t.replace(/^<[^>]*>/,'').replace(/<\/[a-z]+>$/i,'');
       /* Sayfanin kendi yol blogundaki CSP satiri. */
       const yol = ad === 'index.html' ? '/index.html' : '/' + ad;
-      const kacir = yol.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      const m = bas.match(new RegExp('^' + kacir + '\\s*$[\\s\\S]*?Content-Security-Policy:(.*)$','m'));
-      const satirX = m ? m[1] : '';
+      const satirX = (KURAL[yol] && KURAL[yol]['content-security-policy']) || '';
       if(!satirX){ eksik.push(ad + ': yol blogu yok'); continue; }
       for(const t of scler){ const h = hesap(govde(t));
         if(!satirX.includes(h)) eksik.push(ad + ': script ozeti eksik'); }
@@ -1480,7 +1505,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          calismaz: sayfa ciplak acilir. */
       if(/<[^>]+\sstyle="/.test(kaynak)) eksik.push(ad + ': satir ici style="..." var');
     }
-    const satir = (bas.match(/Content-Security-Policy:.*/) || [''])[0];
+    /* Politikanin kendisine bakan kontroller icin UYGULAMANIN
+       politikasi -- '/' yolu, yani insanlarin actigi adres.
+       Dosyadaki "ilk CSP satiri" DEGIL: o, bir yorum ornegi bile
+       olabiliyor (bkz. yukaridaki not). */
+    const satir = (KURAL['/'] && KURAL['/']['content-security-policy']) || '';
+    /* ── HERKESIN ACTIGI ADRESLER ──────────────────────────────────
+       2 Eylul. _headers'ta '/' ile '/index.html' UST USTE yaziliydi;
+       Cloudflare bunu iki kural sayip birincisini basliksiz
+       birakiyor. Yani uygulamayi herkesin actigi adreste CSP HIC
+       YOKTU. Ayni sebeple '/privacy' ve '/terms' de aciktaydi:
+       kural yalnizca '.html' bicimine yazilmisti, oysa uygulama ve
+       sitemap uzantisiz adrese link veriyor. Sayfa calistigi icin
+       hicbir test gormedi -- bu satirlar tam onun icin. */
+    ['/','/index.html','/privacy','/privacy.html','/terms','/terms.html','/404.html']
+      .forEach(y => {
+        const c = (KURAL[y] && KURAL[y]['content-security-policy']) || '';
+        if(!/sha256-/.test(c)) eksik.push(y + ': bu adres CSP\'siz aciliyor');
+      });
     K('CSP ozetleri dort sayfayla da ayni', eksik.length === 0,
       eksik.length ? ('BAYAT: ' + eksik.join(', ') + '   duzeltme: python3 araclar/csp.py')
                    : SAYFALAR.length + ' sayfanin ozeti guncel');

@@ -616,5 +616,78 @@ function bitir(){
     K('wrangler.jsonc okunabiliyor', false, String(e && e.message || e));
   }
 
+  /* ── _headers CLOUDFLARE GIBI OKUNUYOR ──────────────────────────
+     2 EYLUL, ayni kosuda cikan ikinci acik. _headers soyle
+     yaziliyordu:
+
+         /
+         /index.html
+           Content-Security-Policy: ...
+
+     Cloudflare'de bir kural = BIR yol satiri + ardindan gelen
+     basliklar. Ikinci yol satiri yeni kural basliyor, birincisi
+     BASLIKSIZ kaliyor. Yani uygulamayi herkesin actigi '/'
+     adresinde CSP hic yoktu -- ve sayfa calistigi icin kimse fark
+     etmedi. Ayni sebeple '/privacy' ve '/terms' de aciktaydi:
+     kurallar yalnizca '.html' bicimine yazilmisti, oysa uygulama
+     ve sitemap uzantisiz adrese link veriyor.
+
+     Bu test _headers'i CLOUDFLARE GIBI okuyor (hosgorusuz) ve
+     insanlarin actigi her adreste CSP bulunmasini sart kosuyor.
+     Tarayici acmiyor: kusur zaten tarayicida gorunmuyordu. */
+  try{
+    const ham = fs.readFileSync(path.join(KOK, '_headers'), 'utf8');
+    const kural = {}; let acik = null; const bossuz = [];
+    for(const satir of ham.split('\n')){
+      if(!satir.trim() || satir.trim().startsWith('#')) continue;
+      if(!/^[ \t]/.test(satir)){
+        if(acik && Object.keys(kural[acik]).length === 0) bossuz.push(acik);
+        acik = satir.trim(); if(!kural[acik]) kural[acik] = {};
+      }else if(acik && satir.indexOf(':') >= 0){
+        const i = satir.indexOf(':');
+        kural[acik][satir.slice(0, i).trim().toLowerCase()] = satir.slice(i+1).trim();
+      }
+    }
+    if(acik && Object.keys(kural[acik]).length === 0) bossuz.push(acik);
+
+    K('_headers: basliksiz kural yok', bossuz.length === 0,
+      'Cloudflare bunlara hicbir baslik gondermez: ' + bossuz.join(', '));
+
+    /* Kullanicinin gercekten actigi adresler. '/privacy' Play
+       Console'a verilen gizlilik adresi -- listeden dusmesin. */
+    ['/', '/index.html', '/privacy', '/privacy.html',
+     '/terms', '/terms.html', '/404.html'].forEach(y => {
+      const c = kural[y] && kural[y]['content-security-policy'];
+      K('_headers: ' + y + ' CSP aliyor', !!c && /sha256-/.test(c),
+        'bu adres CSP\'siz aciliyor');
+    });
+
+    /* Uygulama sayfasi ile yazi sayfalari AYNI politikayi almamali:
+       yazi sayfalari hicbir ses calmiyor, hicbir yere baglanmiyor. */
+    K('_headers: yazi sayfalarinin politikasi dar',
+      /script-src 'none'/.test(kural['/privacy']['content-security-policy'])
+      && !/connect-src/.test(kural['/privacy']['content-security-policy']),
+      'gizlilik sayfasi uygulamanin genis politikasini almis');
+
+    /* Bir sonraki tuzak: birisi '/*' blogunun icine CSP koyarsa
+       her sayfaya IKI politika gider ve tarayici kesisimlerini
+       alir -- yani ikisi birden cop olur, sayfa ciplak kalir. */
+    K('_headers: /* blogunda CSP yok',
+      !(kural['/*'] && kural['/*']['content-security-policy']),
+      'genel blokta CSP olursa her sayfaya iki baslik gider');
+
+    /* Yolu olan her sayfa dosyasi listede mi: csp.py'ye yeni sayfa
+       eklenip _headers tazelenmezse burasi kirmizi yanar. */
+    const csp = fs.readFileSync(path.join(KOK, 'araclar/csp.py'), 'utf8');
+    const bildirilen = (csp.match(/"yollar":\s*\[([^\]]*)\]/g) || [])
+      .join(',').match(/"\/[^"]*"/g) || [];
+    K('_headers: csp.py ne bildiriyorsa dosyada o var',
+      bildirilen.every(s => kural[s.replace(/"/g,'')]),
+      'csp.py calistirilmamis; eksik: ' + bildirilen
+        .filter(s => !kural[s.replace(/"/g,'')]).join(', '));
+  }catch(e){
+    K('_headers okunabiliyor', false, String(e && e.message || e));
+  }
+
   bitir();
 })();

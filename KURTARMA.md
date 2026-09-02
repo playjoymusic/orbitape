@@ -136,7 +136,76 @@ içindeki `AILELER`. Sağlık testi bu ikisini karşılaştırıyor
 
 ---
 
-## 6. Bu belge neyi çözmüyor
+## 6. Yayın bozulursa — GERİ ALMA
+
+> **Bu bölüm 2 Eylül'de yazıldı ve bir sebebi var.** O gün yayına
+> çıkan sürümde `/np` ve `/olcu` 24 dakika boyunca 404 döndü. Kod
+> doğruydu, 810 test yeşildi, Cloudflare "deployed" diyordu. Hatayı
+> bir insan gözle buldu. O gün geri alma diye bir adımımız yoktu —
+> "ne yapacağımı arayarak öğrenirdim" durumundaydık. Artık yazılı.
+
+### Önce: gerçekten bozuk mu?
+
+```bash
+bash araclar/duman.sh            # 26 kontrol, ~25 saniye
+```
+
+Bu betik canlı siteye sorar (yerel dosyaya değil). Kırmızı satır
+hangi kontrolde düştüğünü ve neye bakman gerektiğini söyler.
+GitHub bunu zaten her push'ta ve 15 dakikada bir kendi koşuyor —
+e-posta geldiyse aynı çıktıyı orada da görürsün.
+
+### Yol A — panelden (en hızlı, 30 saniye)
+
+1. dash.cloudflare.com → Workers & Pages → **orbitape**
+2. **Deployments** sekmesi → *Version History*
+3. Sağlam olduğunu bildiğin sürümün sağındaki **⋯** → **Rollback**
+4. `bash araclar/duman.sh` ile doğrula
+
+### Yol B — komut satırından
+
+```bash
+npx wrangler versions list                 # son 10 sürüm
+npx wrangler rollback <version-id> -m "sebep"
+bash araclar/duman.sh
+```
+
+`<version-id>` panelde solda yazan sekiz haneli kod (`e5c0f602` gibi).
+Sebebi yazmak zorunlu değil ama sonra "bu neden geri alınmış" diye
+soran kişi sen olacaksın.
+
+### Yol C — git ile (kalıcı düzeltme)
+
+Geri alma **yayını** düzeltir, **depoyu** düzeltmez: bir sonraki push
+aynı bozuk sürümü tekrar yayınlar. Kalıcı çözüm bozuk commit'i geri
+almak:
+
+```bash
+git revert <commit>              # yeni bir commit üretir, geçmişi silmez
+npm run kontrol                  # kapı yeşil mi
+git push
+```
+
+`git reset --hard` KULLANILMIYOR: yayına çıkmış bir geçmişi yeniden
+yazmak, aynı depoyu klonlamış her yeri bozar.
+
+### Ne kadar geriye gidebiliriz
+
+Cloudflare son **100 sürümü** tutuyor. Bugün 497 sürüm var, yani
+pratikte son birkaç günlük her şey geri alınabilir. Bunun ötesine
+gitmek gerekiyorsa yol git: doğru commit'i çıkar, `npm run kontrol`,
+push.
+
+### Geri alınamayan tek şey
+
+`earth.json` / `radyo.json` gibi veri dosyalarının yanlış bir hasat
+sonucu bozulması, yayın geri alınınca da düzelmez — çünkü veriyi
+üreten şey depo değil, hasat işi. O durumda bozuk hasat commit'ini
+`git revert` etmek gerekiyor (Yol C).
+
+---
+
+## 7. Bu belge neyi çözmüyor
 
 Dürüst olmak gerekirse: **tek kişilik bir projenin bus factor'ü
 belgeyle 1'den 2'ye çıkmaz.** Bu belge yalnızca şunu sağlar —
