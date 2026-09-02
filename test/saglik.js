@@ -3660,9 +3660,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        okuyamazsa dogrulama SESSIZCE duser: uygulama tarayici gibi
        acilir ve sebebi hicbir yerde yazmaz. En sinsi basarisizlik
        yollarindan biri, o yuzden bicim ve baslik simdiden bagli.
-       PARMAK IZI henuz yok (Play Console veriyor, uygulama kaydi
-       acilinca); dosya o gun tek satirlik bir duzenlemeyle tamam
-       oluyor. Test iki durumu da kabul ediyor -- BOZUK olani degil. */
+       PARMAK IZI GELDI (2 Eylul 2026, Play Console -> Protected with
+       Play -> App signing -> Classical key -> SHA-256). Klasik
+       anahtarinki alindi; Post-quantum sutunundaki DEGIL -- Digital
+       Asset Links klasik sertifikayi dogruluyor.
+       Test hala iki durumu da kabul ediyor (bekleyen ya da gecerli)
+       cunku bir gun anahtar degisirse dosya gecici olarak yeniden
+       bekleyen hale dusebilir; kabul etmedigi tek sey BOZUK bicim. */
     {
       const al = JSON.parse(fs.readFileSync('.well-known/assetlinks.json','utf8'));
       const g = al[0] || {};

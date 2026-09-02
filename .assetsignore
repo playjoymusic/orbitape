@@ -81,3 +81,28 @@ hasat_durum.json
 # servis edilmesinin bir anlami yok. Depoda acik duruyor, yayinda
 # /olcu.js diye ikinci bir kopya olmasin.
 olcu.js
+
+# ── YAYINDA OLUP HICBIR YERDEN BAGLI OLMAYANLAR ─────────────────
+# Olculdu: asagidaki dosyalar orbitape.app'ten servis ediliyordu ama
+# ne uygulamadan, ne sitemap'ten, ne manifest'ten hicbir gonderme
+# yok. Yani yalnizca adresi tahmin eden birinin bulabilecegi
+# calisma tahtalari. Kullanicinin kurali zaten yaziliydi: "analiz
+# tahtalari depoya girmez" -- yayina hic girmemeliydi.
+# Depoda duruyorlar (calisirken gerekiyorlar), yayindan cikiyorlar.
+# Toplam ~237 KB.
+raf_masasi.html
+etiket_eslesme.html
+raf_haritasi.html
+raf_adaylari.html
+raflar.html
+deriler.html
+luks.html
+kalanlar.html
+yol_1m.html
+
+# UC EKRAN GORUNTUSU: hicbir yerden gonderme yok (~291 KB).
+# ekran-1/2/3 ve ekran-genis KALIYOR -- onlar manifest.json'daki
+# PWA ekran goruntuleri, kurulum ekraninda gercekten gorunuyorlar.
+ss_lisans.png
+ss_np.png
+ss_sira.png
