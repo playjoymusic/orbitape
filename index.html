@@ -2021,17 +2021,15 @@
      yani rafin okunur rengi. Buyuk yazi da ayni degiskeni aliyor:
      ekranin iki ucu ayni sey soyluyor ve goz ikisini baglıyor.
      Vurgu yoksa derinin yazi rengine dusuyor. */
-  /* ── BUYUK TUR YAZISI TEMADAN BAGIMSIZ ────────────────────────
-     Kullanicinin son sozu: "o yazilar turlerin KENDI renginde
-     olacak -- rock her zaman o kirmizi temasiyla -- ve temadan
-     etkilenmeyecek."
-     Bir onceki surumde renk zemine gore koyulastiriliyordu; okunur
-     oluyordu ama turun kimligi soluyordu. Kimlik okunabilirlikten
-     once geliyor burada, cunku bu yazi bir BILGI degil bir
-     IMZA: hangi turdesin. Ham renk --d-gez-ham'dan geliyor.
+  /* ── BUYUK TUR YAZISI: KIMLIK + TEMA ──────────────────────────
+     Bir ara bu yazi turun HAM renginde birakilmisti ("temadan
+     etkilenmesin") ve okunurluk kaybedildi. Kullanicinin son sozu
+     ikisini birden istiyor: turun rengi VE temanin ana tonu, uzerine
+     acik-ustu-koyu kurali. Renk gezTemaRengi'nden geliyor.
      %20 ORTU: yazi tam opak degil, zeminle bir tik karisiyor. */
-  body.deri #modGez{color:var(--d-gez-ham, var(--d-gez, var(--d-yazi))) !important;
-    -webkit-text-fill-color:var(--d-gez-ham, var(--d-gez, var(--d-yazi))) !important;
+  body.deri #modGez{
+    color:var(--d-gez-tema, var(--d-gez-ham, var(--d-gez, var(--d-yazi)))) !important;
+    -webkit-text-fill-color:var(--d-gez-tema, var(--d-gez-ham, var(--d-gez, var(--d-yazi)))) !important;
     opacity:.8 !important;}
   body.deri #modGez.cizim svg{fill:currentColor;}
 
@@ -4645,6 +4643,34 @@
      davranis, kaybolan bir cizgi degil.
      BURASI IKI YERDEN CAGRILIYOR: deri degisince (deriUygula) ve
      raf degisince (modAdiYaz icindeki --d-vurgu yazimi). */
+  /* ── HALKANIN ALTINDAKI BUYUK YAZI: TUR + TEMA ──────────────────
+     "Sag ustteki ORBITAPE'in yazilisi ve o anki renklerinden
+     etkilenmek zorunda; hem koyu ana ton hem o turun ana rengi.
+     Yine acik ustu koyu, koyu ustu acik kurali gecerli."
+     Onceki surumde bu yazi turun HAM rengini kullaniyordu ve hicbir
+     duzeltmeden gecmiyordu: kimlik korunuyordu ama krem bir derinin
+     uzerinde acik bir tur rengi okunmuyordu (olculdu: AMBIENT
+     BONE'un uzerinde 1.76). Uc adim: turun rengi markaya dogru %38
+     kaydiriliyor, sonra zemine gore okunur hale getiriliyor, esik
+     3.0 (WCAG buyuk yazi; daha yuksegi turun rengini soldururdu).
+     YAZI TIPI DEGISMIYOR: tur adlari zaten CIZIM ve cizimler sag
+     ustteki markanin harflerinden uretildi. Kalinlastirma yok. */
+  function gezTemaRengi(rgb){
+    try{
+      const n = (typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0;
+      if(!n) return '';
+      const d = DERILER[n-1]; if(!d) return '';
+      const p = String(rgb).split(',').map(Number);
+      if(p.length !== 3 || p.some(isNaN)) return '';
+      const onalti = '#' + p.map(x=>Math.max(0, Math.min(255, x|0))
+                                     .toString(16).padStart(2,'0')).join('');
+      const kar = _hexKaris(onalti, d.marka, 0.62);
+      const k2 = kar.replace('#','');
+      const dizi = [parseInt(k2.slice(0,2),16), parseInt(k2.slice(2,4),16),
+                    parseInt(k2.slice(4,6),16)].join(',');
+      return okunurVurgu(dizi, d.zem, 3.0) || kar;
+    }catch(e){ _yut(e); return ''; }
+  }
   function olukYaz(){
     try{
       const n = (typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0;
@@ -4676,7 +4702,7 @@
         try{ document.documentElement.style.backgroundColor = ''; }catch(e){ _yut(e); }
         ['--d-zem','--d-yazi','--d-marka','--d-font','--d-kose','--d-tus-zem',
          '--d-tus-kenar','--d-golge','--d-panel','--d-filtre','--d-karisim','--d-halka',
-         '--d-isik','--d-tel','--d-yazi2','--d-yazi-guclu','--d-raf','--d-gez-ham','--d-golge-renk','--d-dis-golge','--d-cek','--d-oluk','--d-oluk-isik','--d-cekirdek','--d-vurgu',
+         '--d-isik','--d-tel','--d-yazi2','--d-yazi-guclu','--d-raf','--d-gez-ham','--d-gez-tema','--d-golge-renk','--d-dis-golge','--d-cek','--d-oluk','--d-oluk-isik','--d-cekirdek','--d-vurgu',
          '--d-neb-karisim','--d-neb-sef','--d-halka-karisim','--d-doku',
          '--d-doku-olcu','--d-doku-sef'].forEach(x=>k.removeProperty(x));
       }else{
@@ -13391,11 +13417,18 @@
            icin. Kucuk raf adi ve marka yazisi duzeltilmis olani
            kullanmaya devam ediyor, cunku onlar okunmak zorunda. */
         _k.setProperty('--d-gez-ham', 'rgb(' + p.ana + ')');
+        /* TUR + TEMA + OKUNURLUK (bkz. gezTemaRengi). Deri kapaliysa
+           bos donuyor ve degisken siliniyor: karanlik dunyada bu
+           yazinin kendi kurallari var, oraya karismiyoruz. */
+        const _gt = gezTemaRengi(p.ana);
+        if(_gt) _k.setProperty('--d-gez-tema', _gt);
+        else _k.removeProperty('--d-gez-tema');
       }catch(_){ _yut(_); }
     }else{
       try{
         document.documentElement.style.removeProperty('--d-gez');
         document.documentElement.style.removeProperty('--d-gez-ham');
+        document.documentElement.style.removeProperty('--d-gez-tema');
       }catch(_){ _yut(_); }
     }
     if(ad){

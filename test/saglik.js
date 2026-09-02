@@ -369,7 +369,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Karar: ASIL tavan (brotli) SIKILASIYOR, ham tavan gevsiyor.
        Ham tavanin tek isi hala ayni -- kacak bir buyumeyi, mesela
        yanlislikla gomulen bir veri dosyasini yakalamak. */
-    /* ── TAVAN 276 KB. NE ZAMAN YUKSELIR, NE ZAMAN YUKSELMEZ ─────
+    /* ── TAVAN 278 KB. NE ZAMAN YUKSELIR, NE ZAMAN YUKSELMEZ ─────
        Bu sayi bir hedef degil bir FREN: kacak buyumeyi gorunur
        kilmak icin var. Ama bir freni her sikistiginda gevsetmek de
        freni anlamsiz kilar, o yuzden kural yazili olsun:
@@ -386,8 +386,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        brotli ciktisini bazen BUYUTUYOR (sozluk degisiyor). Yorum
        kirparak 100 bayt kovalamak muhendislik degil kumar.
        Kullanici tarafinda karsiligi: ilk acilista ~2 KB daha,
-       sonra servis calisani onbellekliyor. */
-    K('Telden gecen boy < 276 KB', br < 276*1024,
+       sonra servis calisani onbellekliyor.
+       BU SAYI BUGUN UC KEZ YUKSELDI (272 -> 274 -> 276 -> 278) ve
+       bu bir uyaridir: kirparak durdurulacak bir buyume degil.
+       Gercekten durdurmak icin iki yol var, ikisi de yazili:
+       dosyayi modullere bolmek ve arsivdeki 2.703 kayitlik iki
+       kumeyi (hamilton + aporee) elemek. */
+    K('Telden gecen boy < 278 KB', br < 278*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'

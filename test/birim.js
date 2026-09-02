@@ -346,6 +346,40 @@ function _kontrast(a,b){
       if(o < 3.19) dusen.push(z + ' <- ' + r + ' = ' + o.toFixed(2));
     });
   });
+  /* ── HALKANIN ALTINDAKI BUYUK YAZI: TUR + TEMA ────────────────
+     Kullanicinin sozu: "sag ustteki ORBITAPE'in yazilisi ve o anki
+     renklerinden etkilenmek zorunda; hem koyu ana ton hem o turun
+     ana rengi. Yine acik ustu koyu, koyu ustu acik kurali gecerli."
+     Onceki surumde bu yazi turun HAM rengini kullaniyordu ve hicbir
+     duzeltmeden gecmiyordu: kimlik korunuyordu ama krem bir derinin
+     uzerinde acik bir tur rengi okunmuyordu (olculdu: AMBIENT
+     BONE'un uzerinde 1.76).
+     Kural burada birebir tekrarlaniyor: turun rengi markaya dogru
+     %38 kaydiriliyor, sonra zemine gore okunur hale getiriliyor.
+     Esik 3.0 -- WCAG buyuk yazi esigi; daha yukseği turun rengini
+     gereksiz soldururdu. Altmis deri x alti raf rengi. */
+  {
+    const eksik = [];
+    A.DERILER.forEach(d=>{
+      renkler.forEach(r=>{
+        const p2 = r.split(',').map(Number);
+        const onalti = '#' + p2.map(x=>x.toString(16).padStart(2,'0')).join('');
+        const kar = A._hexKaris(onalti, d.marka, 0.62).replace('#','');
+        const dizi = [parseInt(kar.slice(0,2),16), parseInt(kar.slice(2,4),16),
+                      parseInt(kar.slice(4,6),16)].join(',');
+        const v = A.okunurVurgu(dizi, d.zem, 3.0);
+        const m = /rgb\((\d+),(\d+),(\d+)\)/.exec(v || '');
+        if(!m){ eksik.push(d.ad + ' <- ' + r + ' (bos)'); return; }
+        const o = A._kontrastOran(
+          A._parlaklikRGB(+m[1], +m[2], +m[3]), A._parlaklikHex(d.zem));
+        if(o < 2.99) eksik.push(d.ad + ' <- ' + r + ' = ' + o.toFixed(2));
+      });
+    });
+    K('Buyuk tur yazisi her deride okunuyor', eksik.length === 0,
+      eksik.length ? eksik.slice(0,4).join(', ')
+                   : (A.DERILER.length * renkler.length) + ' bileske, hepsi 3.0 ustu');
+  }
+
   K('Raf rengi her deri zemininde okunuyor', dusen.length === 0,
     dusen.length ? dusen.slice(0,4).join(' | ')
                  : (zeminler.length * renkler.length) + ' bileske, hepsi 3.2 ustu');
