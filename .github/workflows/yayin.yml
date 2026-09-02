@@ -1,0 +1,172 @@
+# ORBITAPE — YAYIN (TESTLER YEŞİLSE)
+# ═══════════════════════════════════════════════════════════════════
+# NEDEN VAR
+#   2 Eylül denetimi: `.github/workflows/` içinde tek bir `wrangler
+#   deploy` yoktu. Yayın, Cloudflare'ın Git tümleşiğiyle oluyordu ve
+#   `saglik.yml` AYNI push'ta PARALEL koşuyordu.
+#
+#   Yani kırmızı CI yayını durdurmuyordu. Her commit, anında,
+#   kullanıcıların %100'üne gidiyordu.
+#
+#   Aynı gün bunun bedeli ödendi: index.html `_headers` olmadan
+#   çıktı, CSP özeti tutmadı, satır içi betiğin tamamı engellendi ve
+#   orbitape.app BEYAZ EKRAN oldu. Kapı o sırada 810/810 yeşildi ama
+#   kapının yayınla hiçbir bağı yoktu.
+#
+# NE YAPAR
+#   push → kapı (tip + birim + CSP + dört takım) → yeşilse yayın →
+#   yayından sonra canlı duman testi. Herhangi biri düşerse yayın
+#   YAPILMAZ.
+#
+# ─────────────────────────────────────────────────────────────────
+# ÇALIŞMASI İÇİN SENİN İKİ ADIMIN GEREK — İKİSİ DE BİR KEZLİK
+#
+#   1. GITHUB SIRRI EKLE
+#      GitHub → depo → Settings → Secrets and variables → Actions →
+#      New repository secret
+#        Ad    : CLOUDFLARE_API_TOKEN
+#        Değer : Cloudflare → My Profile → API Tokens →
+#                Create Token → "Edit Cloudflare Workers" şablonu
+#      Ayrıca hesap kimliği:
+#        Ad    : CLOUDFLARE_ACCOUNT_ID
+#        Değer : Cloudflare panelinde sağ sütunda "Account ID"
+#      TOKEN'I BANA GÖSTERME. Ben token yazmıyorum, tutmuyorum.
+#
+#   2. CLOUDFLARE'IN KENDİ GIT BAĞLANTISINI KAPAT
+#      Cloudflare → Workers & Pages → orbitape → Settings →
+#      Build → Git repository → Disconnect
+#      BU ADIM ATLANIRSA İKİ AYRI YAYIN OLUR: biri buradan (testli),
+#      biri Cloudflare'dan (testsiz). İkincisi birinciyi ezebilir ve
+#      bugünkü hatanın aynısı yine mümkün olur.
+#
+#   Bu iki adım yapılmadan iş kırmızı yanar ve ne yapılacağını yazar;
+#   sessizce hiçbir şey yapmaz. Sessiz kalması, "yayın testlere bağlı"
+#   sanmandan daha kötü olurdu.
+# ─────────────────────────────────────────────────────────────────
+
+name: Yayin (testler yesilse)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# İki yayın aynı anda çıkmasın. cancel-in-progress KAPALI: yarıda
+# kesilen bir `wrangler deploy` en kötü hâldir.
+concurrency:
+  group: yayin
+  cancel-in-progress: false
+
+jobs:
+  kapi:
+    name: Kapi
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Tarayıcı testleri için Playwright'ın kendi görüntüsü. Sürüm
+    # package.json ile aynı olmak zorunda; birim testi bunu ölçüyor.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    steps:
+      - name: Sirlar duruyor mu
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          HESAP: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          eksik=""
+          [ -n "$TOKEN" ] || eksik="$eksik CLOUDFLARE_API_TOKEN"
+          [ -n "$HESAP" ] || eksik="$eksik CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$eksik" ]; then
+            echo "::error::Eksik sir:$eksik — bu dosyanin basindaki 1. adima bak."
+            echo "Yayin YAPILMADI. Cloudflare Git baglantisi hala acikca"
+            echo "duruyorsa site yine de guncellenmis olabilir; 2. adima bak."
+            exit 1
+          fi
+          echo "sirlar yerinde"
+      - name: Depoyu al
+        uses: actions/checkout@v5
+      - name: Node kur
+        run: npm ci
+      - name: Kapi
+        run: bash araclar/kontrol.sh
+
+  yayinla:
+    name: Yayinla
+    needs: kapi
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+      - name: Node kur
+        run: npm ci
+      # CSP özeti dosyalarla birebir tutmak zorunda. Kapı bunu zaten
+      # kontrol ediyor; burada bir kez daha bakılıyor çünkü YANLIŞ
+      # OLDUĞUNDA sonucu beyaz ekran.
+      - name: CSP ozeti dosyayla tutuyor mu
+        run: |
+          python3 araclar/csp.py
+          if ! git diff --quiet -- _headers; then
+            echo "::error::_headers guncel degil: csp.py calistirilmadan push edilmis."
+            git --no-pager diff -- _headers | head -40
+            exit 1
+          fi
+          echo "_headers dosyayla tutuyor"
+      - name: Wrangler ile yayinla
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
+
+  dogrula:
+    name: Yayindan sonra canli sinama
+    needs: yayinla
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+      - name: Canli duman testi
+        id: duman
+        env:
+          ADRES: https://orbitape.app
+          KATI: '1'
+          BEKLE: '420'
+        run: |
+          set -o pipefail
+          bash araclar/duman.sh 2>&1 | tee /tmp/duman_cikti.txt
+      # Yayın çıktı ama bozuk: bu, en acil hâl. Geri alma ELLE
+      # yapılıyor (KURTARMA.md, panelden ~30 sn) — otomatik geri alma
+      # bilerek yok: yanlış teşhisle geri alan bir robot, bozuk bir
+      # yayından daha tehlikeli.
+      - name: Yayin bozuksa alarm
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let cikti = '';
+            try{ cikti = fs.readFileSync('/tmp/duman_cikti.txt','utf8').slice(-4000); }catch(e){}
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: 'YAYIN CIKTI AMA BOZUK — geri alinmali',
+              labels: ['yayin-alarm'],
+              body: [
+                '**Yayin cikti ve canli duman testi dustu.**',
+                '',
+                'Geri alma: Cloudflare -> Workers & Pages -> orbitape ->',
+                'Deployments -> bir onceki -> Rollback  (KURTARMA.md)',
+                '',
+                '- commit: `' + context.sha.slice(0,7) + '`',
+                '- kosu: ' + context.serverUrl + '/' + context.repo.owner + '/'
+                          + context.repo.repo + '/actions/runs/' + context.runId,
+                '',
+                '```',
+                cikti.replace(new RegExp(String.fromCharCode(27)+'\\[[0-9;]*m','g'), ''),
+                '```'
+              ].join('\n') });

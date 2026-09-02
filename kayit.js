@@ -38,6 +38,13 @@
  *   'self' eklendi. Ayrintisi ve neden zayiflama SAYILMADIGI
  *   araclar/csp.py'nin basinda yazili.
  */
+/* ── "BASLADIM" IMZASI ────────────────────────────────────────────
+   Sayfadaki nobetci (index.html) bu dosyayi bir kez daha isteyebilir
+   ama YALNIZCA hic inmediyse: indi de icinde patladiysa tekrar
+   calistirmak ust duzey const'lari yeniden bildirir -- SyntaxError.
+   Iki imza var: burada "basladim", en sonda "bitirdim". Boylece
+   "hic gelmedi" ile "yarida kaldi" karismiyor. */
+try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   const rec=$('rec'), recYazi=$('recYazi');
   let kaydedici=null, kayitParcalari=[], kayitBaslangic=0, kayitSayac=null, kayitHedef=null, sesliKayit=false;
   /* ── KAYIT TAVANI ─────────────────────────────────────────────────
@@ -893,29 +900,124 @@
     });
   }
   /* Kutu: arka plan + kenarlik + kose yaricapi, hepsi ekrandan. */
+  /* ── KABARTMA DA CIZILIYOR: box-shadow ──────────────────────────
+     Fotografta tuslar KAYBOLUYORDU. Sebep sasirtici degil ama
+     gorunmesi zordu: deride tusun zemini --d-zem, yani SAYFANIN
+     ZEMINIYLE AYNI RENK. Ekranda tusu goren sey renk degil,
+     KABARTMA: altinda yumusak bir golge, tepesinde bir piksellik
+     isik. Tuval o zamana kadar yalnizca dolgu ve kenari ciziyordu,
+     yani ayni rengi ayni rengin uzerine koyup "cizdim" diyordu.
+     Simdi golgeler de ciziliyor. Ic golge tuvalde yok, taklit
+     ediliyor: yola kirp, yolun DISARISINI golgeli doldur -- govde
+     kirpmanin disinda kalir, yalnizca golgesi iceri sizar.
+     YAYILMA (spread) yolu buyutup kucultuyor; yuvarlak kosede
+     yaricap da ayni kadar degisiyor, yoksa buyuyen kutu koseleri
+     sivrilesirdi. */
+  function _golgeAyristir(metin){
+    if(!metin || metin === 'none') return [];
+    const parca = []; let d = 0, bas = 0;
+    for(let i = 0; i < metin.length; i++){
+      const ch = metin[i];
+      if(ch === '(') d++; else if(ch === ')') d--;
+      else if(ch === ',' && d === 0){ parca.push(metin.slice(bas, i)); bas = i + 1; }
+    }
+    parca.push(metin.slice(bas));
+    return parca.map(t=>{
+      const s = t.trim(); if(!s) return null;
+      const ic = /\binset\b/.test(s);
+      const rm = s.match(/(rgba?\([^)]*\)|#[0-9a-fA-F]{3,8})/);
+      const sayi = (s.replace(/rgba?\([^)]*\)/g, '').match(/-?[\d.]+px/g) || []).map(parseFloat);
+      if(sayi.length < 2) return null;
+      return { renk: rm ? rm[1] : 'rgba(0,0,0,.4)', ic: ic,
+               dx: sayi[0]||0, dy: sayi[1]||0, bl: sayi[2]||0, ya: sayi[3]||0 };
+    }).filter(Boolean);
+  }
+  function _kutuYolu(c, b, rr, buyut){
+    const g = buyut || 0;
+    const x = b.x - g, y = b.y - g, sag = b.sag + g, alt = b.alt + g;
+    const en = Math.max(0.01, sag - x), boy = Math.max(0.01, alt - y);
+    const r = Math.max(0, Math.min(rr + g, Math.min(en, boy) / 2));
+    c.beginPath();
+    if(r > 0.5){
+      c.moveTo(x + r, y);
+      c.arcTo(sag, y,   sag, alt, r);
+      c.arcTo(sag, alt, x,   alt, r);
+      c.arcTo(x,   alt, x,   y,   r);
+      c.arcTo(x,   y,   sag, y,   r);
+      c.closePath();
+    } else c.rect(x, y, en, boy);
+  }
   function _arayuzKutu(c, el, K){
     const b = kk(el, true); if(!b || !b.w || !b.h) return null;
     const cs = getComputedStyle(el);
     let rr = parseFloat(cs.borderTopLeftRadius) || 0;
     if(/%/.test(cs.borderTopLeftRadius)) rr = Math.min(b.w, b.h) / 2 / K;
     rr = Math.min(rr * K, Math.min(b.w, b.h) / 2);
-    c.beginPath();
-    if(rr > 0.5){
-      c.moveTo(b.x + rr, b.y);
-      c.arcTo(b.sag, b.y,   b.sag, b.alt, rr);
-      c.arcTo(b.sag, b.alt, b.x,   b.alt, rr);
-      c.arcTo(b.x,   b.alt, b.x,   b.y,   rr);
-      c.arcTo(b.x,   b.y,   b.sag, b.y,   rr);
-      c.closePath();
-    } else c.rect(b.x, b.y, b.w, b.h);
+    const golgeler = _golgeAyristir(cs.boxShadow);
+    /* 1) DIS GOLGELER -- govdenin altina, sondan basa (ilk yazilan ustte)
+       GOLGEYI ATAN SEKIL TUVALIN DISINA CIKARILIYOR. Ilk yazimda
+       sekil oldugu yere opak siyah cizilip "nasilsa govde ustunu
+       orter" deniyordu. Ortmuyordu: yildiz tusunun opakligi 0.42
+       ve govde de 0.42 ile ciziliyor -- altindaki siyah disk
+       fotografta gri bir daire olarak kaldi (goruldu).
+       Dogru yol: sekli tuvalin saginda cizip golgeyi ayni kadar
+       sola kaydirmak. Sekil hicbir zaman gorunmuyor, golgesi
+       yerine dusuyor. */
+    const disari = (c.canvas ? c.canvas.width : 4096) + Math.max(b.w, b.h) + 200;
+    for(let i = golgeler.length - 1; i >= 0; i--){
+      const s = golgeler[i]; if(s.ic) continue;
+      if(!s.renk || /rgba\(0, 0, 0, 0\)/.test(s.renk)) continue;
+      c.save();
+      c.shadowColor = s.renk; c.shadowBlur = s.bl * K;
+      c.shadowOffsetX = s.dx * K - disari; c.shadowOffsetY = s.dy * K;
+      c.fillStyle = 'rgba(0,0,0,1)';
+      _kutuYolu(c, { x:b.x+disari, y:b.y, sag:b.sag+disari, alt:b.alt,
+                     w:b.w, h:b.h }, rr, s.ya * K);
+      c.fill();
+      c.restore();
+    }
+    _kutuYolu(c, b, rr, 0);
     const zem = cs.backgroundColor;
     if(zem && zem !== 'rgba(0, 0, 0, 0)' && zem !== 'transparent'){ c.fillStyle = zem; c.fill(); }
+    /* 2) IC GOLGELER -- govdenin ustune, gene sondan basa */
+    for(let i = golgeler.length - 1; i >= 0; i--){
+      const s = golgeler[i]; if(!s.ic) continue;
+      if(!s.renk || /rgba\(0, 0, 0, 0\)/.test(s.renk)) continue;
+      c.save();
+      _kutuYolu(c, b, rr, 0); c.clip();
+      const d = Math.max(b.w, b.h) * 3;
+      c.beginPath();
+      c.rect(b.x - d, b.y - d, b.w + d*2, b.h + d*2);
+      _kutuYoluTers(c, b, rr, -s.ya * K);
+      c.shadowColor = s.renk; c.shadowBlur = s.bl * K;
+      c.shadowOffsetX = s.dx * K; c.shadowOffsetY = s.dy * K;
+      c.fillStyle = 'rgba(0,0,0,1)';
+      c.fill('evenodd');
+      c.restore();
+    }
+    _kutuYolu(c, b, rr, 0);
     const kw = parseFloat(cs.borderTopWidth) || 0;
     const kr = cs.borderTopColor;
     if(kw > 0 && kr && kr !== 'rgba(0, 0, 0, 0)'){
       c.lineWidth = Math.max(1, kw * K); c.strokeStyle = kr; c.stroke();
     }
     return b;
+  }
+  /* Ayni yol, ama acik bir alt yol olarak ekleniyor: 'evenodd' ile
+     dis dikdortgenin icinde delik aciyor. */
+  function _kutuYoluTers(c, b, rr, buyut){
+    const g = buyut || 0;
+    const x = b.x - g, y = b.y - g, sag = b.sag + g, alt = b.alt + g;
+    const en = Math.max(0.01, sag - x), boy = Math.max(0.01, alt - y);
+    const r = Math.max(0, Math.min(rr + g, Math.min(en, boy) / 2));
+    if(r > 0.5){
+      c.moveTo(x + r, y);
+      c.arcTo(sag, y,   sag, alt, r);
+      c.arcTo(sag, alt, x,   alt, r);
+      c.arcTo(x,   alt, x,   y,   r);
+      c.arcTo(x,   y,   sag, y,   r);
+      c.closePath();
+    } else { c.moveTo(x,y); c.lineTo(sag,y); c.lineTo(sag,alt); c.lineTo(x,alt); c.closePath(); }
   }
   /* ── KAYIT ÇİZİMİ — ARTIK EKRANIN BİREBİR KOPYASI ─────────────────
      Her öğe getBoundingClientRect ile ÖLÇÜLEN yerinden, tek bir ölçek
@@ -1038,8 +1140,290 @@
      once ve sonra kare hizi olculdu. Fonksiyon cagrisi bu olcekte
      olculebilir bir sey eklemiyor (V8 kucuk fonksiyonlari zaten
      satir ici aliyor); rakamlar GUNLUK'te. */
+  /* ══ DERI ACIKKEN KARE BAMBASKA BIR EKRANI KOPYALIYOR ══════════
+     2 Eylul'de olculdu ve sonuc utanc vericiydi: bir deri acikken
+     cekilen fotograf neredeyse BOSTU. Ekranda krem zemin, noktali
+     doku ve disk vardi; fotografta zemin SIYAH, disk HIC YOKTU.
+     Yalnizca arayuz katmani (yazilar, tuslar) dogru cikiyordu.
+     Sebep: bu kare cizimi KAYIT icin yazildi, yani uygulamanin
+     karanlik dunyasi icin. Deri acilinca ekran bambaska calisiyor:
+       · zemin duz --d-zem  (tur degradesi yok)
+       · disk CSS ile ciziliyor, tuval (#viz) display:none
+       · vinyet, nebula bulutu, merkez isigi kapali
+     Kare ise hala tur degradesini, tuvali ve vinyeti ciziyordu.
+     Deri kapaliyken dogru, acikken cokuyor -- ve kullanicinin
+     gordugu fotograflar derisizdi, o yuzden bugune kadar
+     yakalanmadi.
+     "Birebir" bir sozdu: ekranda ne varsa fotografta o. Asagidaki
+     uc fonksiyon o sozu deri acikken de tutuyor. */
+  function _deriVar(){
+    try{ return !!(document.body && document.body.classList.contains('deri')); }
+    catch(e){ return false; }
+  }
+  /* Deger EKRANDAN okunuyor, DERILER tablosundan degil: aradaki her
+     duzeltme (olukYaz'in hedefe cozdugu renkler, rafa gore degisen
+     vurgu) yalnizca cizilmis haldedir. Tablodan okumak "kagit
+     uzerindeki" deriyi kopyalar, ekrandakini degil. */
+  function _dd(ad, yedek){
+    try{
+      const v = getComputedStyle(document.documentElement).getPropertyValue(ad).trim();
+      return v || yedek;
+    }catch(e){ return yedek; }
+  }
+  /* ── DOKU: EKRANDAKI KURALI TUVALE CEVIR ────────────────────────
+     Derinin dokusu bir CSS degradesi ve tuval CSS anlamiyor. Iki
+     yol vardi: (a) dokuyu ikinci kez, tuval icin elle yazmak,
+     (b) EKRANDAKI kurali okuyup cizmek. (a) iki kaynak demek --
+     bugune kadar bu depoda iki kaynagin ayrisip yalan soylemedigi
+     bir yer olmadi. O yuzden (b).
+     Ele alinan dort bicim, kullanilan tek bicimler bunlar:
+       radial-gradient           nokta / tram
+       repeating-linear-gradient cizgi, izgara, tarama
+       repeating-radial-gradient esyukselti halkalari
+       linear-gradient           luks derilerdeki isik seridi
+     Anlasilmayan bir katman SESSIZCE ATLANIYOR: fotograf o katmani
+     kaybeder ama yanlis bir sey cizmez. Yeni bir bicim yazilirsa
+     buraya da eklenmeli -- test bunu olcuyor (saglik.js, zemin
+     farki). */
+  function _renkAyikla(p){
+    const m = p.match(/(rgba?\([^)]*\)|#[0-9a-fA-F]{3,8})/);
+    return m ? m[1] : null;
+  }
+  function _px(s){ const m = String(s).match(/(-?[\d.]+)px/); return m ? parseFloat(m[1]) : null; }
+  function _dokuKatmanlari(metin){
+    /* Ust duzeyde virgulle bol: parantez icindeki virguller sayilmaz. */
+    const out = []; let d = 0, bas = 0;
+    for(let i = 0; i < metin.length; i++){
+      const ch = metin[i];
+      if(ch === '(') d++;
+      else if(ch === ')') d--;
+      else if(ch === ',' && d === 0){ out.push(metin.slice(bas, i).trim()); bas = i + 1; }
+    }
+    const son = metin.slice(bas).trim(); if(son) out.push(son);
+    return out;
+  }
+  function _dokuCiz(c, W, H, K){
+    /* ── CIZIMLI DERI: AYNI FONKSIYON, IKINCI YUZEY ──────────────
+       Ekranda arka plan bir resim ve o resmi ureten fonksiyon
+       index.html'de. Burada AYNI fonksiyon cagriliyor -- resmi
+       kopyalamiyoruz, yeniden cizdiriyoruz; hem de fotografin kendi
+       cozunurlugunde, yani buyutulmus degil keskin.
+       Bu, bugun duzeltilen hatanin tam tersi: fotograf artik kendi
+       zeminini kendi bilmiyor, ekranin bildigini soruyor. */
+    try{
+      const no = (typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0;
+      const d = (no && typeof DERILER !== 'undefined') ? DERILER[no-1] : null;
+      if(d && d.cizim && typeof deriCizimCiz === 'function'){
+        const sef = parseFloat(_dd('--d-doku-sef', '1'));
+        c.save();
+        c.globalAlpha = (isNaN(sef) ? 1 : sef);
+        deriCizimCiz(c, W, H, d);
+        c.restore();
+        return;
+      }
+    }catch(e){ _yut(e); }
+    const metin = _dd('--d-doku', '');
+    if(!metin || metin === 'none' || /^url\(/.test(metin)) return;
+    const sef = parseFloat(_dd('--d-doku-sef', '0')) || 0;
+    if(sef <= 0.001) return;
+    const olcuHam = _dokuKatmanlari(_dd('--d-doku-olcu', 'auto'));
+    const kat = _dokuKatmanlari(metin);
+    c.save();
+    c.globalAlpha = sef;
+    /* CSS'te ILK yazilan katman USTTE; tuval ust uste boyuyor. */
+    for(let i = kat.length - 1; i >= 0; i--){
+      const p = kat[i];
+      const olcu = olcuHam[Math.min(i, olcuHam.length - 1)] || 'auto';
+      const renk = _renkAyikla(p); if(!renk) continue;
+      try{
+        if(/^repeating-linear-gradient/.test(p)){
+          const aci = parseFloat((p.match(/\(\s*(-?[\d.]+)deg/) || [])[1] || 0);
+          const sayilar = (p.match(/-?[\d.]+px/g) || []).map(parseFloat);
+          const kalin = (sayilar[1] != null ? sayilar[1] - (sayilar[0] || 0) : 1) * K;
+          const adim  = (sayilar[3] != null ? sayilar[3] : (sayilar[1] || 4) * 4) * K;
+          if(!(adim > 0.5)) continue;
+          const rad = (90 - aci) * Math.PI / 180;   /* CSS 0deg = yukari */
+          c.save();
+          c.translate(W/2, H/2); c.rotate(-rad);
+          c.strokeStyle = renk; c.lineWidth = Math.max(0.5, kalin);
+          const uzun = Math.hypot(W, H);
+          for(let y = -uzun; y <= uzun; y += adim){
+            c.beginPath(); c.moveTo(-uzun, y); c.lineTo(uzun, y); c.stroke();
+          }
+          c.restore();
+        }else if(/^repeating-radial-gradient/.test(p)){
+          const yer = p.match(/at\s+([\d.]+)%\s+([\d.]+)%/);
+          const cx = yer ? W * parseFloat(yer[1]) / 100 : W/2;
+          const cy = yer ? H * parseFloat(yer[2]) / 100 : H/2;
+          const sayilar = (p.match(/-?[\d.]+px/g) || []).map(parseFloat);
+          const kalin = (sayilar[0] || 1) * K;
+          const adim  = (sayilar[2] != null ? sayilar[2] : 12) * K;
+          if(!(adim > 0.5)) continue;
+          c.strokeStyle = renk; c.lineWidth = Math.max(0.5, kalin);
+          const enUzak = Math.hypot(Math.max(cx, W-cx), Math.max(cy, H-cy));
+          for(let r = adim; r <= enUzak; r += adim){
+            c.beginPath(); c.arc(cx, cy, r, 0, Math.PI*2); c.stroke();
+          }
+        }else if(/^radial-gradient/.test(p)){
+          const sayilar = (p.match(/-?[\d.]+px/g) || []).map(parseFloat);
+          const yari = (sayilar[0] || 0.5) * K;
+          const oM = olcu.match(/([\d.]+)px\s+([\d.]+)px/);
+          const ax = (oM ? parseFloat(oM[1]) : 3) * K;
+          const ay = (oM ? parseFloat(oM[2]) : 3) * K;
+          if(!(ax > 0.5 && ay > 0.5)) continue;
+          const yer = p.match(/at\s+([\d.]+)%\s+([\d.]+)%/);
+          const kx = yer ? ax * parseFloat(yer[1]) / 100 : ax/2;
+          const ky = yer ? ay * parseFloat(yer[2]) / 100 : ay/2;
+          c.fillStyle = renk;
+          for(let y = ky; y < H + ay; y += ay)
+            for(let x = kx; x < W + ax; x += ax){
+              c.beginPath(); c.arc(x, y, Math.max(0.4, yari), 0, Math.PI*2); c.fill();
+            }
+        }else if(/^linear-gradient/.test(p)){
+          const aci = parseFloat((p.match(/\(\s*(-?[\d.]+)deg/) || [])[1] || 0);
+          const yuzdeler = (p.match(/[\d.]+%/g) || []).map(parseFloat);
+          const rad = (aci - 90) * Math.PI / 180;
+          const uzun = Math.hypot(W, H);
+          const gx = Math.cos(rad) * uzun / 2, gy = Math.sin(rad) * uzun / 2;
+          const gr = c.createLinearGradient(W/2 - gx, H/2 - gy, W/2 + gx, H/2 + gy);
+          const a = (yuzdeler[0] || 45) / 100, b = (yuzdeler[1] || 46) / 100,
+                z = (yuzdeler[2] || 47) / 100;
+          gr.addColorStop(0, 'rgba(0,0,0,0)');
+          gr.addColorStop(Math.min(1, Math.max(0, a)), 'rgba(0,0,0,0)');
+          gr.addColorStop(Math.min(1, Math.max(0, b)), renk);
+          gr.addColorStop(Math.min(1, Math.max(0, z)), 'rgba(0,0,0,0)');
+          gr.addColorStop(1, 'rgba(0,0,0,0)');
+          c.fillStyle = gr; c.fillRect(0, 0, W, H);
+        }
+      }catch(e){ _yut(e); }
+    }
+    c.restore();
+  }
+  function _deriZemin(g){
+    const c=g.c, W=g.W, H=g.H, K=g.K;
+    c.globalCompositeOperation = 'copy';
+    c.fillStyle = _dd('--d-zem', '#101010');
+    c.fillRect(0, 0, W, H);
+    c.globalCompositeOperation = 'source-over';
+    try{ _dokuCiz(c, W, H, K || KAYIT_K); }catch(e){ _yut(e); }
+  }
+  /* ── DISKI CSS'IN SOYLEDIGI GIBI CIZ ────────────────────────────
+     Deride disk bir tuval degil, bir CSS dairesi: govde --d-zem,
+     altinda iki golge, tepesinde bir piksellik isik, icinde
+     ::after'in ciddigi oluklar ve cekirdek.
+     ORANLAR CSS'TEN BIREBIR: ::after 'inset:13%', yani kutusu
+     diskin %74'u. Icindeki radial-gradient yuzdeleri varsayilan
+     'farthest-corner'a gore, kare bir kutuda bu r*KOK2 demek --
+     yuzde x'in yaricapi x*r*1.4142. Bu carpani unutmak halkalari
+     ekrandakinden %41 kucuk cizerdi.
+     CIZIM SIRASI TERS: CSS'te ilk yazilan katman USTTE durur, tuval
+     ise ust uste boyar. O yuzden asagida en alttaki katmandan
+     baslaniyor -- ayni hata gecen hafta ekranda yasandi (isik bandi
+     oluklari ortuyordu), burada tekrarlanmasin. */
+  function _deriDisk(g){
+    const c = g.c;
+    const el = document.querySelector('.disk');
+    if(!el) return;
+    const b = kk(el, true); if(!b || !b.w) return;
+    const R = Math.min(b.w, b.h) / 2, ox = b.ox, oy = b.oy;
+    const zem = _dd('--d-zem', '#101010');
+    const isik = _dd('--d-isik', 'rgba(255,255,255,.5)');
+    const golge = _dd('--d-golge-renk', 'rgba(0,0,0,.3)');
+    const disGolge = _dd('--d-dis-golge', 'rgba(0,0,0,.5)');
+    const oluk = _dd('--d-oluk', _dd('--d-halka', 'rgba(0,0,0,.2)'));
+    const cek = _dd('--d-cekirdek', _dd('--d-cek', zem));
+    const olukIsik = _dd('--d-oluk-isik', isik);
+    const K = KAYIT_K;
+    const daire = (x, y, r)=>{ c.beginPath(); c.arc(x, y, r, 0, Math.PI*2); };
+    /* 1) Iki dis golge: degdigi yerde dar ve koyu, uzaklastikca
+          genis. CSS'teki yayilma (-2px, -14px) tuvalde yok, o yuzden
+          golgeyi ATAN daire o kadar kucultuluyor. */
+    const disari = (c.canvas ? c.canvas.width : 4096) + R*2 + 200;
+    [[3, 5, 2], [16, 30, 14]].forEach(([dy, bulanik, kucult])=>{
+      c.save();
+      c.shadowColor = disGolge;
+      c.shadowBlur = bulanik * K;
+      c.shadowOffsetX = -disari;          /* sekil disarida, golgesi yerinde */
+      c.shadowOffsetY = dy * K;
+      c.fillStyle = 'rgba(0,0,0,1)';
+      daire(ox + disari, oy, Math.max(1, R - kucult*K)); c.fill();
+      c.restore();
+    });
+    /* 2) Govde */
+    c.fillStyle = zem; daire(ox, oy, R); c.fill();
+    /* 3) IC GOLGE VE IC ISIK -- 'inset' tuvalde yok, taklit ediliyor.
+       Ilk denemede ic golge merkezden kenara giden bir radyal
+       degradeydi ve fotografta diskin cevresinde kalin koyu bir
+       cember olusuyordu; ekranda oyle bir sey yok (yan yana
+       konuldu, goruldu). CSS'in yaptigi baska: golgeyi ATAN sekil
+       daireden DISARISI ve o sekil yukari kaydirilinca golge
+       yalnizca ALT ic kenarda beliriyor.
+       Tuvalde ayni kurulum: daireye kirp, sonra daireden disarisini
+       golgeli doldur. Govde kirpmanin disinda kaldigi icin
+       gorunmuyor, yalnizca golgesi iceri siziyor. */
+    const icGolge = (renkG, kayY, bulanik)=>{
+      c.save(); daire(ox, oy, R); c.clip();
+      c.beginPath();
+      c.rect(ox - R*3, oy - R*3, R*6, R*6);
+      c.arc(ox, oy, R, 0, Math.PI*2, true);
+      c.closePath();
+      c.shadowColor = renkG; c.shadowBlur = bulanik; c.shadowOffsetY = kayY;
+      c.fillStyle = 'rgba(0,0,0,1)';
+      c.fill();
+      c.restore();
+    };
+    icGolge(golge, -8*K, 14*K);   /* inset 0 -8px 14px : altta kapanma */
+    icGolge(isik,   1*K,  0);     /* inset 0  1px  0   : tepede rim  */
+    /* 4) ::after -- oluklar ve cekirdek */
+    const r = R * 0.74, KOK2 = Math.SQRT2;
+    const yy = r * 2;                                  /* kutunun boyu */
+    const yuzde = p => p/100 * r * KOK2;
+    const OLUK = [[20.66,21.05],[30.16,30.55],[39.66,40.05],[49.66,50.05]];
+    const halkaCiz = (kayY, ciftler, renk, en)=>{
+      c.save(); c.strokeStyle = renk;
+      ciftler.forEach(([a, z])=>{
+        const ra = yuzde(a), rz = yuzde(en != null ? a + en : z);
+        c.lineWidth = Math.max(0.6, rz - ra);
+        daire(ox, oy + kayY, (ra + rz) / 2); c.stroke();
+      });
+      c.restore();
+    };
+    /* ── CIZIMLI DERIDE HALKA BIR RESIM ─────────────────────────
+       Ekranda .disk::after'in arka plani bir cizim; burada da ayni
+       fonksiyon cagriliyor, degrade taklidi degil. Motor inmemisse
+       asagidaki oluk cizimi devreye giriyor -- ekranda da oyle
+       oluyor, yani iki yuzey yine ayni seyi gosteriyor. */
+    try{
+      const no = (typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0;
+      const dd = (no && typeof DERILER !== 'undefined') ? DERILER[no-1] : null;
+      if(dd && dd.cizim && typeof DERI_HALKA !== 'undefined' && DERI_HALKA[dd.cizim]){
+        c.save();
+        c.beginPath(); c.arc(ox, oy, r, 0, Math.PI*2); c.clip();
+        c.translate(ox - r, oy - r);
+        DERI_HALKA[dd.cizim](c, r*2, dd);
+        c.restore();
+        return;
+      }
+    }catch(e){ _yut(e); }
+    /* alttan uste: golge kenar -> isik kenar -> cekirdek -> oluk */
+    halkaCiz(-0.005*yy, [[20.6,21.1],[30.1,30.6],[39.6,40.1],[49.6,50.1]], golge);
+    halkaCiz( 0.005*yy, [[20.6,21.1],[30.1,30.6],[39.6,40.1],[49.6,50.1]], olukIsik);
+    c.fillStyle = golge;   daire(ox, oy - 0.004*yy, yuzde(10.4)); c.fill();
+    c.fillStyle = olukIsik;daire(ox, oy + 0.004*yy, yuzde(10.4)); c.fill();
+    c.fillStyle = cek;     daire(ox, oy,            yuzde(10));   c.fill();
+    halkaCiz(0, OLUK, oluk);
+  }
   function _kayZemin(g){
     const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
+    if(_deriVar()){
+      for(let i=0;i<8;i++){ try{ c.restore(); }catch(e){ _yut(e); } }
+      try{ c.setTransform(1,0,0,1,0,0); }catch(e){ _yut(e); }
+      c.globalAlpha = 1;
+      try{ c.filter = 'none'; }catch(e){ _yut(e); }
+      _deriZemin(g);
+      c.textBaseline = 'alphabetic';
+      return;
+    }
     /* 1) ZEMİN — hazır resim, karıştırmadan (önceki kareyi de siler) */
     for(let i=0;i<8;i++){ try{ c.restore(); }catch(e){ _yut(e); } }
     try{ c.setTransform(1,0,0,1,0,0); }catch(e){ _yut(e); }
@@ -1104,6 +1488,10 @@
           oran ekrandakinin aynısı oluyor. Nefes de dâhil. */
     /* KAYNAK ARTIK vizArka (ekran dışı tampon). Ekrandaki #viz'den
        kopyalamak, derleyicinin bayatlamış enstantanesini almak demekti. */
+    /* DERIDE TUVAL YOK: #viz display:none, disk CSS ile ciziliyor.
+       Eskiden burada gorunmez bir tuval kopyalanmaya calisiliyordu
+       ve fotografta disk hic cikmiyordu. */
+    if(_deriVar()){ try{ _deriDisk(g); }catch(e){ _yut(e); } return; }
     try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){ _yut(e); }
   }
   function _kaySolUst(g){
@@ -1470,7 +1858,9 @@
        koseler bir tik daha acik -- yani tasarlanan hali. Eski koyu
        hali geri isteniyorsa cozum bu satiri kopyalamak degil,
        vinyetResmi'ndeki alfayi yukseltmek. */
-    if(_kademe < 1){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0, W, H); }catch(e){ _yut(e); } }
+    /* DERIDE VINYET YOK: ekranda da yok (body.deri .vignette
+       display:none). Cizmek fotografi ekrandan koyu yapardi. */
+    if(_kademe < 1 && !_deriVar()){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0, W, H); }catch(e){ _yut(e); } }
 
     /* Kare bitti: kodlayıcıya "al bunu" de. captureStream(0) yolunda
        kayda giren kare sayısı buraya eşit; WebKit'in kendi toplayıcısı
@@ -2107,7 +2497,15 @@
       try{ kap.removeAttribute('inert'); }catch(e){ _yut(e); }
       /* Odak paylasim tusuna: klavye ve ekran okuyucu icin ilk
          durak "ne yapmak istiyorsun" sorusunun cevabi olsun. */
-      try{ const p = document.getElementById('fotoPaylas'); if(p) p.focus(); }catch(e){ _yut(e); }
+      /* pencereAc: arka plani inert yapiyor (Tab'la fotografin
+         arkasindaki oynaticiya gecilmesin) ve kapanista odagi
+         geldigi yere -- yani PHOTO tusuna -- geri veriyor.
+         Sayfada yoksa (eski surum) davranis eskisi gibi. */
+      try{
+        const p = document.getElementById('fotoPaylas');
+        if(typeof pencereAc === 'function') pencereAc(kap, p);
+        else if(p) p.focus();
+      }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
   function fotoOnizleKapa(){
@@ -2115,7 +2513,8 @@
       const kap = document.getElementById('fotoOnizle');
       const im  = document.getElementById('fotoResim');
       if(kap){ kap.classList.remove('var'); kap.setAttribute('aria-hidden','true');
-               try{ kap.setAttribute('inert',''); }catch(e){ _yut(e); } }
+               try{ kap.setAttribute('inert',''); }catch(e){ _yut(e); }
+               try{ if(typeof pencereKapa === 'function') pencereKapa(kap); }catch(e){ _yut(e); } }
       /* Goruntu bellekte durmasin: 400 KB'lik bir data URL. */
       if(im) im.removeAttribute('src');
       _fotoBekleyen = null;
@@ -2369,111 +2768,6 @@
       _goz.observe(_acKutu, { attributes:true, attributeFilter:['class'], subtree:true });
     }
   }catch(e){ _yut(e); }
-  /* ── "BU NE?" DUGMESI KALDIRILDI ────────────────────────────────
-     Burada Shazam'i acan bir dugme ve uzun bir gerekce vardi.
-     Kullanicinin karari: "shazami cikar su anlik, icine entegre et
-     sarkiyi bulan sistem."
-     Dogru karar, cunku o dugmenin temel sorunu tanima degil
-     TERK ETMEKTI: basinca calan ses duruyor, baska bir uygulama
-     aciliyor ve geri donunce canli yayin baska bir yerinden
-     giriyor. Bir radyo uygulamasinin "bu ne caliyor" sorusuna
-     cevabi kendi icinde olmali.
-     Yerine gelecek olan sey MIKROFONLA DINLEME DEGIL: istasyonlarin
-     kendi yayin bilgisi (ICY / now-playing). Sebebi ve olculen
-     kapsam GUNLUK.md'de. */
-  const favDug = document.getElementById('fav');
-  if(favDug){
-    favDug.addEventListener('pointerdown', e=>{
-      e.preventDefault(); e.stopPropagation();
-      _favBasti = true;
-      if(_favBekle) clearTimeout(_favBekle);
-      _favBekle = setTimeout(()=>{ _favBekle = null; _favBasti = false; favKipDegis(); }, FAV_TUT);
-      try{ favDug.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
-    });
-    const favBirak = e=>{
-      if(e){ e.preventDefault(); e.stopPropagation(); }
-      if(_favBekle){ clearTimeout(_favBekle); _favBekle = null; }
-      if(_favBasti){ _favBasti = false; favDegis(); }        // süre dolmadan bıraktı: kısa basış
-    };
-    favDug.addEventListener('pointerup', favBirak);
-    favDug.addEventListener('pointercancel', ()=>{ if(_favBekle){ clearTimeout(_favBekle); _favBekle=null; } _favBasti=false; });
-    favDug.addEventListener('lostpointercapture', ()=>{ if(_favBekle){ clearTimeout(_favBekle); _favBekle=null; } _favBasti=false; });
-    favDug.addEventListener('keydown', e=>{
-      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); favDegis(); }
-      if(e.key==='f'||e.key==='F'){ e.preventDefault(); favKipDegis(); }
-    });
-    ['mousedown','touchstart','click'].forEach(t=>
-      favDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
-  }
-  if(ileriDug){
-    ileriDug.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
-      try{ basHissi(ileriDug); alcakTon(); }catch(_){ _yut(_); }
-      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
-      ileriGit(); });
-    ['pointerdown','mousedown','touchstart'].forEach(t=>
-      ileriDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
-  }
-  // ● RETRO kısayolu
-  UYDULAR.forEach(u=>{
-    const b=uyduDug[u.fx];
-    b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fxModGec(u.fx); });
-  });
-  ['pointerdown','mousedown','touchstart'].forEach(t=>
-    UYDULAR.forEach(u=>uyduDug[u.fx].addEventListener(t, e=>e.stopPropagation(), {passive:true})));
-
-  // ilk-truthy yarışı: verilen sözlerden ilk DOLU döneni al (hepsi boşsa null)
-  /* ── AÇILIŞTA KENDİLİĞİNDEN ÇAL ─────────────────────────────────
-     Tarayıcılar sesli oynatmayı kullanıcı dokunuşu olmadan engeller.
-     Burada bir deneme yapıyoruz: izin varsa (masaüstü, yüklü uygulama,
-     siteyle daha önce etkileşim) radyo kendiliğinden açılıyor. İzin yoksa
-     hiçbir şey bozulmuyor, bugünkü gibi ilk dokunuşta başlıyor.
-     ÖNEMLİ: reddedilen denemede atla() ÇAĞIRMIYORUZ; yoksa izin yokken
-     istasyonları arka arkaya boşuna tarardı. */
-  var _otoDenendi = false;
-  function otoBaslat(){
-    if(_otoDenendi || baslatildi || !ilkItem) return;
-    _otoDenendi = true;
-    let s=null;
-    try{ s = ses.play(); }catch(e){ return; }
-    if(!s || !s.then) return;
-    s.then(()=>{
-      if(baslatildi || !ilkItem) return;
-      const it = ilkItem; ilkItem = null;
-      karsilamaIsaretle(); karsilamaKapat();   // ses zaten açıldı: ele gerek yok
-      cal(it);                    // izin çıktı: normal akışa devret (künye, kuyruk, gözcüler)
-    }).catch(()=>{});             // izin yok: sessizce geç, karşılama eli devreye girecek
-  }
-
-  /* ── KARŞILAMA ELİ ──────────────────────────────────────────────
-     Tek amacı var: ses için gereken İLK dokunuşu almak. Bir kez görülüp
-     dokunulduktan sonra o cihazda bir daha gösterilmiyor. */
-  /* ── FX KULLANILABİLİR Mİ ────────────────────────────────────────
-     Grafik kurulu değilse ya da yayın grafikten sessiz geçiyorsa efekt
-     mümkün değil. O anda uydular sönüyor (gölgede kalmış gök cismi gibi),
-     efekt geri gelince eski hâllerine dönüyorlar. Ölçüm bedava: zaten
-     hesapladığımız sinyal bayrağına bakıyoruz, ek iş yok, bekleme yok. */
-  var _fxYok = false;
-  function fxDurumYaz(yok){
-    if(yok === _fxYok) return;
-    _fxYok = yok;
-    try{ if(uyduKap) uyduKap.classList.toggle('sonuk', yok); }catch(e){ _yut(e); }
-  }
-  function fxDurumTazele(){
-    fxDurumYaz(!(grafHazir && analiz && lopass));
-  }
-
-  /* ── NEBULA: KÜÇÜK BİR TUVAL ─────────────────────────────────────
-     Neden tuval: eski hâlinde üç CSS filtresi vardı (blur, hue-rotate,
-     dönen ::before). Filtre animasyonu çalışan bir eleman KALICI bir
-     derleyici katmanına alınıyor ve her karede yeniden rasterleniyor;
-     telefonda boştaki işin %30'u buydu ve bellek baskısında katman
-     düşünce ekranda donuk bir dikdörtgen kalıyordu.
-
-     Tuvalde hiçbir filtre yok:
-       · bulanıklık   -> gaz katmanı 34px'lik tamponda çizilip büyütülüyor
-       · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
-       · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
-     Kare başına iş: iki drawImage + dört minik nokta. */
 
 /* ── MODUL KURULDU: YERLESIMI YENIDEN OLCTUR ────────────────────────
    BULUNUS: bolmeden sonra saglik testinde "Kunye buyutece degmiyor"
@@ -2500,3 +2794,9 @@ try{
     try{ if(typeof olcuIste === 'function') olcuIste(); }catch(e){ _yut(e); }
   });
 }catch(e){ try{ _yut(e); }catch(e2){} }
+
+/* ── "BITIRDIM" IMZASI ────────────────────────────────────────────
+   EN SONA konuyor: yukaridaki her sey hatasiz bittiyse atiliyor.
+   Dosya yarida koptuysa imza da yok. Degiskene degil window'a
+   yaziliyor cunku dosya hic calismadiysa ust duzey adlari YOK. */
+try{ window.KAYIT_MODULU_HAZIR = true; }catch(e){}

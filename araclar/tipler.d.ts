@@ -34,6 +34,22 @@ interface Window {
   uclukDene?: () => void;
   carkiCevir?: () => void;
 
+  /* ── MODUL IMZALARI ──────────────────────────────────────────
+     kayit.js iki isaret birakiyor: dosyanin basinda "basladim",
+     sonunda "bitirdim". Sayfadaki nobetci ikisine birden bakiyor --
+     "hic gelmedi" ile "geldi ama yarida kaldi" ayri seyler:
+     birincisinde dosya tekrar istenebilir, ikincisinde istenirse
+     ust duzey const'lar yeniden bildirilir ve SyntaxError olur.
+     Neden window uzerinde: modul hic calismadiysa onun ust duzey
+     adlari YOK, duz bir degiskenle sorulamaz. */
+  /* Cizim motoru istek uzerine iniyor; sayfa geldigini boyle
+     ogreniyor ve secili deriyi yeniden uyguluyor. */
+  DERI_CIZIM_HAZIR?: boolean;
+  deriCizimGeldi?: () => void;
+  KAYIT_MODULU_BASLADI?: boolean;
+  KAYIT_MODULU_HAZIR?: boolean;
+  _kayModulTekrar?: number;
+
   /* Uygulamanin kendi sabitleri */
   ARSIV_KURSUN?: string;
 

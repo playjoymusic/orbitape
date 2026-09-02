@@ -106,6 +106,19 @@
   Content-Type: text/javascript; charset=utf-8
   Cache-Control: no-cache
 
+# Tik sesi: hic degismeyen kucuk bir ses dosyasi. Uygulamayla
+# birlikte degismesi gerekmiyor, o yuzden uzun onbellek.
+/tik.wav
+  Content-Type: audio/wav
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cizimli derilerin motoru. Istek uzerine iniyor (bkz. deriCizimYukle)
+# ama davranisi yine uygulamayla ayni anda degisiyor: eski bir motor
+# yeni bir deri tablosuyla calisirsa cizim tanimsiz kalir.
+/deri_cizim.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: no-cache
+
 # ── ISTASYON LISTESI ─────────────────────────────────────────────
 # Uygulama listeyi artik once BURADAN cekiyor (eskiden GitHub'in raw
 # sunucusundan). Cloudflare'da statik dosya istegi ucretsiz ve
@@ -192,10 +205,10 @@
 
 # index.html
 /
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-RsdTgH1F8FdiK9szKVR4OCC04i85Pqome8rBfPyel7U='; style-src 'sha256-2wn7/TjUbRN29yoGePYYdGmZrLsjWGUrc+5pe67iHrU='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-HeubafmT8hDYBwfrvShKPPlU+AVIwuxpAPrR7BcsXz8='; style-src 'sha256-SYnhPiSZpaLa5dgR4OYsAY0qJ1VDhRYMFDkihMhi++Y='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-RsdTgH1F8FdiK9szKVR4OCC04i85Pqome8rBfPyel7U='; style-src 'sha256-2wn7/TjUbRN29yoGePYYdGmZrLsjWGUrc+5pe67iHrU='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-HeubafmT8hDYBwfrvShKPPlU+AVIwuxpAPrR7BcsXz8='; style-src 'sha256-SYnhPiSZpaLa5dgR4OYsAY0qJ1VDhRYMFDkihMhi++Y='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy

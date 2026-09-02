@@ -100,6 +100,33 @@ for y in "/" "/privacy" "/terms"; do
     "_headers yayina gecmemis ya da kural bu yola uymuyor"
 done
 
+# ── CSP OZETI GERCEKTEN SAYFAYA UYUYOR MU ──────────────────────────
+# 2 EYLUL, IKINCI DERS. Yukaridaki kontrol "CSP basligi var mi" diye
+# soruyor ve bu YETMEDI: index.html degisip _headers birlikte
+# verilmeyince ozet eskide kaldi, baslik yerindeydi ama ARTIK O
+# SAYFAYA AIT DEGILDI. Tarayici satir ici betigin tamamini reddetti
+# ve orbitape.app BEYAZ EKRAN oldu -- duman testi yesil yanarken.
+# Simdi yayindaki sayfanin ozeti YAYINDAKI HTML'den hesaplaniyor ve
+# baslikta gecip gecmedigine bakiliyor. Ikisi ayrisirsa uygulama
+# acilmaz; bu satir onu yayina cikar cikmaz soyluyor.
+"${CURL[@]}" -L -o /tmp/duman_sayfa "$ADRES/" 2>/dev/null
+csp=$("${CURL[@]}" -o /dev/null -D - -w '' "$ADRES/" 2>/dev/null \
+      | tr -d '\r' | grep -i '^content-security-policy:' | head -1)
+ozetler=$(python3 - /tmp/duman_sayfa <<'PYY' 2>/dev/null
+import sys, re, hashlib, base64
+s = open(sys.argv[1], encoding='utf-8', errors='replace').read()
+for b in re.findall(r"<script(?![^>]*\ssrc=)[^>]*>(.*?)</script>", s, re.S):
+    print("sha256-" + base64.b64encode(hashlib.sha256(b.encode()).digest()).decode())
+PYY
+)
+eksik=""
+for o in $ozetler; do
+  echo "$csp" | grep -q "$o" || eksik="$eksik $o"
+done
+K "CSP ozeti yayindaki sayfaya uyuyor" \
+  "$([ -n "$ozetler" ] && [ -z "$eksik" ] && echo 0 || echo 1)" \
+  "eksik ozet:$eksik — index.html degisip _headers ile birlikte cikmamis (beyaz ekran)"
+
 # ── 2. WORKER GERCEKTEN CAGRILIYOR MU ──────────────────────────────
 # Bugunku hatanin tam kendisi. Dortu de Worker'a ulasmadan
 # 404.html'e duserse hepsi birden kirmizi yanar.

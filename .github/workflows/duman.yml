@@ -42,8 +42,10 @@ on:
     - cron: '*/15 * * * *'
   workflow_dispatch:
 
+# issues: write — kirmizi yanınca ISSUE aciliyor (asagiya bak).
 permissions:
   contents: read
+  issues: write
 
 # Aynı anda iki koşu olmasın: push ile zamanlanmış koşu çakışırsa
 # ikisi de aynı şeyi sorar, biri yeter.
@@ -64,10 +66,88 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Yayini sina
+        id: duman
         env:
           ADRES: https://orbitape.app
           # push: yayının yetişmesini 7 dakikaya kadar bekle.
           # schedule: bekleme yok, sadece sağlık sorusu.
           KATI: ${{ github.event_name == 'push' && '1' || '0' }}
           BEKLE: '420'
-        run: bash araclar/duman.sh
+        run: |
+          set -o pipefail
+          bash araclar/duman.sh 2>&1 | tee /tmp/duman_cikti.txt
+
+      # ── ALARM ────────────────────────────────────────────────────
+      # 2 Eylül denetimi: nöbetçi 15 dakikada bir koşuyordu ama
+      # KIMSEYE ULASMIYORDU. Tek dayanak GitHub'ın varsayılan
+      # bildirim e-postasıydı; o da tek bir gelen kutusuna düşüyor ve
+      # gece 02:00'de kimse bakmıyor.
+      #
+      # Issue farklı: telefondaki GitHub uygulamasına anlık bildirim
+      # gider, konu başlığı okunur, ve KAPANANA KADAR açık durur —
+      # yani "gördüm ama unuttum" hâli mümkün değil.
+      #
+      # TEK ISSUE: her koşuda yeni bir tane açmıyoruz. Aynı başlıkta
+      # açık bir tane varsa oraya yorum düşüyor. Yoksa on beş dakikada
+      # bir issue ile boğulurdu ve alarmın kendisi gürültüye dönerdi.
+      - name: Kirmizi yandiysa haber ver
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let cikti = '';
+            try{ cikti = fs.readFileSync('/tmp/duman_cikti.txt','utf8').slice(-4000); }catch(e){}
+            const baslik = 'YAYIN BOZUK — duman testi kirmizi';
+            const govde = [
+              '**orbitape.app canli duman testi dustu.**',
+              '',
+              '- tetik: `' + context.eventName + '`',
+              '- kosu: ' + context.serverUrl + '/' + context.repo.owner + '/'
+                        + context.repo.repo + '/actions/runs/' + context.runId,
+              '- commit: `' + context.sha.slice(0,7) + '`',
+              '- saat (UTC): ' + new Date().toISOString(),
+              '',
+              '<details><summary>duman.sh ciktisi</summary>',
+              '',
+              '```',
+              cikti.replace(/\u001b\[[0-9;]*m/g, ''),
+              '```',
+              '</details>',
+              '',
+              'Bu issue yayin duzelince KENDILIGINDEN kapanir.'
+            ].join('\n');
+            const acik = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'yayin-alarm', per_page: 5 });
+            if(acik.data.length){
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: acik.data[0].number, body: govde });
+            }else{
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: baslik, body: govde, labels: ['yayin-alarm'] });
+            }
+
+      # Yesil yandiysa acik alarmi kapat. Alarmin kendi kendine
+      # kapanmasi sart: kapanmayan bir alarm bir sure sonra
+      # "duruyor iste" diye gorulmeye baslar.
+      - name: Yesil yandiysa alarmi kapat
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const acik = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'yayin-alarm', per_page: 20 });
+            for(const it of acik.data){
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: it.number,
+                body: 'Duman testi yesil yandi (' + new Date().toISOString()
+                    + '). Alarm kapaniyor.' });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: it.number, state: 'closed' });
+            }

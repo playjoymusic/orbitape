@@ -23,6 +23,16 @@ yok. Üç yol vardı:
 güçlü sözünü ("hiçbir şey toplanmıyor") bir sayaç için harcamak yanlış
 bir takas. Yayından ve gerçek kullanıcıdan sonra yeniden bakılacak.
 
+> **2 EYLÜL — BU KARAR DEĞİŞTİ, NOT GÜNCELLENMEDİ.**
+> Yukarıda (b) reddedilmişti. Sonra `olcu.js` yazıldı ve uygulamaya
+> **varsayılan kapalı**, kullanıcının kendi açtığı bir çökme raporu
+> girdi — yani fiilen (b) yapıldı. `privacy.html` güncellendi, bu not
+> güncellenmedi ve `KONSOL_CEVAPLARI.md` bir süre eski cevabı taşıdı.
+> Bir karar değişince onu yazan not da değişmek zorunda; yoksa form
+> eski kâğıttan doldurulur.
+> Data Safety cevabının doğrusu için bkz. `KONSOL_CEVAPLARI.md`
+> → *Data safety*.
+
 **Bu kararın bedeli burada ödeniyor.** Otomatik ölçüm yoksa, ölçüm
 insandan gelmek zorunda.
 

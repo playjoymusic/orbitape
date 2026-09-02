@@ -17,6 +17,11 @@ set -u
 KOK="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$KOK" || exit 1
 GECICI="${TMPDIR:-/tmp}/orbitape_tip"
+# ONCEKI KALINTI SILINIYOR. Klasor sabit ve temizlenmiyordu: bir
+# modul denetim kapsamindan CIKARILDIGINDA eski kopyasi orada
+# kaliyor ve denetlenmeye devam ediyordu. sw.js'i disarida
+# birakinca sekiz sahte hata inatla durdu; sebebi buydu.
+rm -rf "$GECICI"
 mkdir -p "$GECICI"
 
 python3 - "$GECICI" <<'PY'
@@ -39,7 +44,21 @@ print(f'  script cikarildi: {len(en)//1024} KB, {en.count(chr(10))} satir')
 # Liste index.html'den OKUNUYOR: yeni bir modul eklenince
 # kendiliginden denetime giriyor, kimsenin hatirlamasi gerekmiyor.
 dis = re.findall(r'<script[^>]*\ssrc=["\']([^"\']+)["\']', s)
+# ISTEK UZERINE INENLER DE: deri_cizim.js sayfaya bir etiketle
+# degil, bir DIZGI olarak bagli (deriCizimYukle onu kendisi
+# ekliyor). Yalnizca etiketlere bakan denetim onu hic gormedi ve
+# ayni dosyaya deginen her ad "Cannot find name" oldu.
+# sw.js DISARIDA: o bir servis iscisi, sayfanin kuresel sozlugunu
+# degil kendi (Worker) sozlugunu kullaniyor. Denetime katilinca
+# skipWaiting/clients/respondWith gibi sekiz sahte hata uretti.
+dis += [t for t in re.findall(r'["\']([\w./-]+\.js)["\']', s)
+        if not t.startswith(('http://', 'https://', '//'))
+        and os.path.basename(t) != 'sw.js']
+gorulen = set()
 for u in dis:
+    if u in gorulen:
+        continue
+    gorulen.add(u)
     if u.startswith(('http://', 'https://', '//')):
         continue
     yol = os.path.join(kok, u.split('?')[0].lstrip('./'))

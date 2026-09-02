@@ -21,6 +21,13 @@ on:
     branches: [main]
   workflow_dispatch:        # elle de çalıştırılabilsin
 
+# Denetimde goruldu: bu dosyada permissions blogu YOKTU, oteki uc
+# workflow'da vardi. Blok yoksa is, deponun varsayilan GITHUB_TOKEN
+# yetkisiyle kosar -- testlerin hicbirinin yazma yetkisine ihtiyaci
+# yok. En az yetki, en az zarar.
+permissions:
+  contents: read
+
 jobs:
   saglik:
     # Isimde SAYI YOK: her yeni kontrolde guncellemek gerekirdi ve bir gun
@@ -232,6 +239,18 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
     timeout-minutes: 20
     continue-on-error: true
+    # ── FIREFOX HIC ACILMIYORDU: $HOME BASKASININ ────────────────
+    # 2 Eylul. Is su satirla duruyordu:
+    #   "Firefox is unable to launch if the $HOME folder isn't owned
+    #    by the current user."
+    # Kapsayicida is root olarak kosuyor ama $HOME=/github/home ve o
+    # klasor pwuser'a ait. Firefox bunu reddediyor; Chromium ve
+    # WebKit umursamiyor -- o yuzden yalnizca Gecko kirmizi yaniyor
+    # ve sebep tarayiciyla ilgisiz gorunuyordu.
+    # Cozum Playwright'in kendi onerdigi ayar. Test koduyla,
+    # uygulamayla ya da motorlarin denkligiyle ilgisi yok.
+    env:
+      HOME: /root
 
     steps:
       - name: Depoyu al
@@ -242,6 +261,17 @@ jobs:
 
       - name: Motor denkligi (Gecko)
         run: |
+          # ── $HOME BURADA AYARLANIYOR, IS DUZEYINDE DEGIL ───────────
+          # Once job seviyesine `env: HOME: /root` yazildi ve ISE
+          # YARAMADI: kapsayicili islerde kosucu HOME'u kendi
+          # ayarliyor (/github/home) ve is duzeyindeki env onu her
+          # zaman ezmiyor. Log ayni satiri tekrar bastı:
+          #   "Firefox is unable to launch if the $HOME folder isn't
+          #    owned by the current user."
+          # Kabugun icinde export etmek tartismasiz: bu satirdan
+          # sonraki her sey onu goruyor. Yukaridaki env de duruyor --
+          # zarari yok, ve biri digerini yedekliyor.
+          export HOME=/root
           # SUNUCU NODE ILE. Playwright imaji Node tabanli ve python3'un
           # orada bulunacagi garanti degil; is python3 yoksa "command
           # not found" ile duser ve sebebi tarayiciyla ilgisiz gorunur.

@@ -30,13 +30,41 @@ Kullanım şartları için Play ayrı bir alan sormuyor;
 
 `App content → Data safety`
 
-Bu form bizde **kolay tarafta**, çünkü hiçbir veri toplanmıyor.
+> **2 EYLÜL — BU BÖLÜM DEĞİŞTİ. ESKİ CEVAP ARTIK YANLIŞ.**
+> Bu sayfa bir süre "hiçbir veri toplanmıyor → **No**" diyordu. O cevap
+> `olcu.js` yazılmadan önce doğruydu. Artık uygulamada, **varsayılan
+> kapalı** ve kullanıcının kendi açtığı bir çökme raporu var
+> (`index.html` → `olcumGonder`, `olcu.js`). Google'ın kuralında
+> "isteğe bağlı" bir muafiyet değil, formda bir kutucuktur: opt-in olsa
+> bile beyan edilir. Eski cevapla form doldurmak **yanlış beyandır** ve
+> geri dönüşü en zor ihlaldir (askıya alma).
+
+Bu formda tek bir veri türü var: **Crash logs**, ve o da isteğe bağlı.
 
 | Soru | Cevap |
 |---|---|
-| Does your app collect or share any of the required user data types? | **No** |
-| Is all of the user data collected by your app encrypted in transit? | *(sorulmaz — toplama yok)* |
-| Do you provide a way for users to request that their data be deleted? | *(sorulmaz — toplama yok)* |
+| Does your app collect or share any of the required user data types? | **Yes** |
+| Data type | **App activity → Crash logs** (tek tür; başka hiçbir kutucuk işaretlenmez) |
+| Is this data collected, shared, or both? | **Collected** (paylaşılmıyor — üçüncü tarafa gitmiyor) |
+| Is this data processed ephemerally? | **No** (Cloudflare Analytics Engine'de saklanıyor) |
+| Is this data required, or can users choose whether it's collected? | **Users can choose** (varsayılan KAPALI) |
+| Why is this data collected? | **App functionality** + **Analytics** |
+| Is all of the user data collected by your app encrypted in transit? | **Yes** (HTTPS) |
+| Do you provide a way for users to request that their data be deleted? | **No** — ve sebebi yazılı: raporda kimliğe bağlanacak hiçbir şey yok (kimlik, oturum numarası, parmak izi yok), yani "benimkini sil" isteği karşılanamaz çünkü hangisinin kime ait olduğu bilinemez. Bunu gizlilik metni de aynen söylüyor (`privacy.html`, "cannot be un-sent"). Kullanıcı anahtarı kendi cihazından silebilir. |
+
+### Ne GÖNDERİLMİYOR (formu doldururken hiçbiri işaretlenmez)
+
+Kimlik, oturum numarası, parmak izi, çalınan istasyon/parça, arama
+metni, favoriler, konum, ayarlar, deri seçimi, IP'nin saklanması.
+Ayrıntısı `privacy.html` içinde tablo hâlinde; iki metin birbiriyle
+uyuşmak zorunda.
+
+### Alternatif: raporu hiç göndermemek
+
+Kapalı test süresince `olcumGonder`'i çıkarıp formu yine **No** ile
+doldurmak da geçerli bir karar. O zaman `privacy.html`'deki
+"Crash reports" bölümü de kaldırılmalı. **İkisi birden** ya kalır ya
+gider; birinin kalıp ötekinin gitmesi çelişki üretir.
 
 ### Kamera neden "toplanan veri" değil
 

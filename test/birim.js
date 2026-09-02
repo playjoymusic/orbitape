@@ -276,11 +276,34 @@ function _kontrast(a,b){
       if(Math.abs(po - pz) <= Math.abs(pc - pz)) sirasiz.push(d.ad);
     });
     K('Oluk ve cekirdek zeminin tersine gidiyor', yanlisYon.length === 0,
-      yanlisYon.length ? yanlisYon.join(', ') : 'acikta koyu, koyuda acik (60 deri)');
+      yanlisYon.length ? yanlisYon.join(', ')
+                       : 'acikta koyu, koyuda acik (' + A.DERILER.length + ' deri)');
     K('Oluk cizgisi uzaktan da secilyor', soluk.length === 0,
       soluk.length ? soluk.join(', ') : 'hepsi zeminden 1.8 kat ayri');
     K('Cizgi cekirdekten daha guclu', sirasiz.length === 0,
       sirasiz.length ? sirasiz.join(', ') : 'ince cizgi koyu, genis nokta yumusak');
+
+    /* ── COZUCUNUN TAVANI: VERI GIRERKEN SORULUYOR ──────────────
+       Yukaridaki uc kontrol SABIT oranlarla hesapliyor; olukYaz
+       artik oranlari hedefe gore cozuyor ve sonucu tarayicida,
+       derilerin hepsinde saglik.js olcuyor. Burada olculen sonuc
+       degil ONKOSUL: cozucu ne yaparsa yapsin markanin kendisinden
+       daha ayrik bir renk uretemez. Marka zemine cok yakinsa oluk
+       hedefi hicbir oranda tutmaz.
+       Bu, yeni bir deri EKLENIRKEN yakalanmasi gereken sey --
+       tarayici acmadan, veri satirina bakarak. */
+    const tavansiz = [], cekirdekZor = [];
+    A.DERILER.forEach(d=>{
+      const km = _kontrast(d.marka, d.zem);
+      if(km < 2.60) tavansiz.push(d.ad + ' ' + km.toFixed(2));
+      else if(km < 3.20) cekirdekZor.push(d.ad + ' ' + km.toFixed(2));
+    });
+    K('Her deride marka, oluk hedefini tutturacak kadar ayrik',
+      tavansiz.length === 0,
+      tavansiz.length ? tavansiz.join(', ')
+        : (cekirdekZor.length
+            ? 'hepsi 2.60 ustu; cekirdek 3.20 tavanina varamayan: ' + cekirdekZor.join(', ')
+            : 'hepsi 3.20 ustu, iki hedef de tutuyor'));
   }
 }
 
@@ -774,6 +797,161 @@ function bitir(){
       /^\/dil\/tr\.json\s*$/m.test(bas), '_headers icinde /dil/tr.json blogu');
   }catch(e){
     K('tr.json okunabiliyor', false, String(e && e.message || e));
+  }
+
+  /* ── GIZLILIK METNI KODLA UYUSUYOR MU ────────────────────────────
+     privacy.html'deki "cihazda ne tutuluyor" tablosu su cumleyle
+     bitiyor: "That is the whole list, not a sample." Bu bir GARANTI.
+     2 Eylul denetiminde tabloda olmayan DORT anahtar bulundu
+     (kullanim, yut, olcum.son, dil). Garanti cumlesi olmasaydi ortada
+     bir eksiklik olurdu; cumle oldugu icin YANLIS BEYAN oluyordu --
+     ve hicbir test bunu sormuyordu.
+     Artik soruluyor. Tablonun her satirinda <!--anahtar:...--> var;
+     koda yeni bir localStorage anahtari giren gun kapi kirmizi yanar
+     ve metni guncellemeden gecilemez.
+     ISTISNA YOK: bir anahtarin "onemsiz" olmasi onu tablodan muaf
+     tutmuyor. Garanti "hepsi" diyor. */
+  try{
+    const gizli = fs.readFileSync(path.join(KOK, 'privacy.html'), 'utf8');
+    const yazili = new Set();
+    (gizli.match(/<!--anahtar:([^>]*)-->/g) || []).forEach(t=>{
+      t.replace('<!--anahtar:','').replace('-->','').trim()
+       .split(/\s+/).filter(Boolean).forEach(a2=>yazili.add(a2));
+    });
+    /* Koddaki anahtarlar: hem dogrudan yazilanlar hem sabitler. */
+    const kodHepsi = ['index.html','kayit.js','deri_cizim.js','sw.js']
+      .filter(f => fs.existsSync(path.join(KOK, f)))
+      .map(f => fs.readFileSync(path.join(KOK, f), 'utf8')).join('\n');
+    const kullanilan = new Set();
+    (kodHepsi.match(/'orbitape\.[A-Za-z.]+'/g) || [])
+      .forEach(t => kullanilan.add(t.slice(1, -1)));
+    const eksik = [...kullanilan].filter(a2 => !yazili.has(a2));
+    const fazla = [...yazili].filter(a2 => !kullanilan.has(a2));
+    K('privacy.html koddaki her anahtari sayiyor', eksik.length === 0,
+      eksik.length ? ('metinde yok: ' + eksik.join(', '))
+                   : (kullanilan.size + ' anahtar, hepsi tabloda'));
+    K('privacy.html olmayan bir anahtar saymiyor', fazla.length === 0,
+      fazla.length ? ('kodda yok: ' + fazla.join(', ')) : 'fazlalik yok');
+    /* Garanti cumlesi hala orada mi: cumle silinirse bu kontrolun
+       gerekcesi de degisir, o zaman notu guncellemek gerekir. */
+    K('privacy.html "hepsi bu" sozunu hala veriyor',
+      /whole list, not a sample/.test(gizli),
+      'garanti cumlesi yerinde — kontrolun sebebi bu');
+    /* Cokme raporunun iki metni ayrisirsa magaza formu yanlis
+       doldurulur. Kod raporu gonderiyorsa gizlilik metni de,
+       magaza cevap kagidi da bunu soylemeli. */
+    const raporVar = /fetch\('\/olcu'/.test(kodHepsi);
+    const konsol = fs.existsSync(path.join(KOK, 'magaza/KONSOL_CEVAPLARI.md'))
+      ? fs.readFileSync(path.join(KOK, 'magaza/KONSOL_CEVAPLARI.md'), 'utf8') : '';
+    K('Cokme raporu: kod, gizlilik metni ve magaza cevabi ayni seyi soyluyor',
+      !raporVar || (/SEND DIAGNOSTICS/.test(gizli) && /Crash logs/.test(konsol)
+                    && !/collect or share any of the required user data types\? \| \*\*No\*\*/.test(konsol)),
+      raporVar ? (/Crash logs/.test(konsol)
+                  ? 'kod gonderiyor, iki metin de beyan ediyor'
+                  : 'KOD GONDERIYOR AMA MAGAZA CEVABI "toplamiyor" DIYOR')
+               : 'kod hicbir sey gondermiyor');
+  }catch(e){
+    K('privacy.html okunabiliyor', false, String(e && e.message || e));
+  }
+
+  /* ── KAPININ KENDISI DE OLCULUYOR ────────────────────────────────
+     2 Eylul denetimi kodda degil KAPIDA dort acik buldu ve hicbiri
+     bir testin sordugu sey degildi. Bulunan bir acigi duzeltip
+     gecmek, ayni acigin alti ay sonra geri gelmesine izin vermek
+     demek. O yuzden dordu de buraya kontrol olarak yazildi.
+     Bu kontroller uygulamayi degil, uygulamayi yayina goturen
+     duzenegi olcuyor -- ve bugun ogrenildi ki asil kirilgan yer
+     orasiydi. */
+  try{
+    const isDizin = path.join(KOK, '.github/workflows');
+    const isler = fs.existsSync(isDizin)
+      ? fs.readdirSync(isDizin).filter(f => /\.ya?ml$/.test(f)) : [];
+    const oku = f => fs.readFileSync(path.join(isDizin, f), 'utf8');
+    K('Yayin akisi var', isler.length > 0, isler.join(', ') || 'hic workflow yok');
+
+    /* 1. TARAYICI SURUMU: package.json ile CI goruntusu ayni olmali.
+       package.json '^1.47.0' diyordu, CI 'v1.62.1-noble' kosuyordu.
+       Playwright 1.62.1'den sonraki ilk surumde WebKit/Gecko isleri
+       "browser not found" ile kirilirdi -- kimse dokunmadan. */
+    const pj = JSON.parse(fs.readFileSync(path.join(KOK, 'package.json'), 'utf8'));
+    const pwSurum = String((pj.devDependencies || {}).playwright || '');
+    const goruntuler = [];
+    isler.forEach(f => (oku(f).match(/mcr\.microsoft\.com\/playwright:v([\d.]+)/g) || [])
+      .forEach(t => goruntuler.push(t.split(':v')[1])));
+    const sapan = goruntuler.filter(v => v !== pwSurum);
+    K('Playwright surumu package.json ile CI arasinda ayni',
+      /^\d+\.\d+\.\d+$/.test(pwSurum) && sapan.length === 0,
+      !/^\d+\.\d+\.\d+$/.test(pwSurum)
+        ? ('package.json esnek yazilmis: "' + pwSurum + '" — tam surum olmali')
+        : (sapan.length ? ('CI goruntusu ayrisiyor: ' + [...new Set(sapan)].join(', '))
+                        : (pwSurum + ' — ' + goruntuler.length + ' is ayni surumde')));
+
+    /* 2. EN AZ YETKI: permissions blogu olmayan is, deponun
+       varsayilan token yetkisiyle kosar. */
+    const yetkisiz = isler.filter(f => !/^permissions:/m.test(oku(f)));
+    K('Her is kendi yetkisini yaziyor', yetkisiz.length === 0,
+      yetkisiz.length ? ('permissions blogu yok: ' + yetkisiz.join(', '))
+                      : (isler.length + ' isin hepsinde var'));
+
+    /* 3. KULLANICI GIRDISI KABUGA GIRMESIN: ${{ }} bir `run:` blogunun
+       icine yazilirsa GitHub o metni kabuk satirinin ICINE koyuyor.
+       Girdi ortam degiskeniyle gecmeli. */
+    const enjekte = [];
+    isler.forEach(f=>{
+      const m = oku(f);
+      /* run: bloklarini kabaca ayikla ve icinde girdi ifadesi ara. */
+      (m.match(/run:[\s\S]*?(?=\n      - |\n  [a-z]|$)/g) || []).forEach(blok=>{
+        if(/\$\{\{\s*(github\.event\.inputs|inputs|github\.event\.issue|github\.event\.comment|github\.head_ref)/.test(blok))
+          enjekte.push(f);
+      });
+    });
+    K('Kullanici girdisi kabuk satirina dogrudan girmiyor',
+      enjekte.length === 0,
+      enjekte.length ? ('run: icinde girdi ifadesi: ' + [...new Set(enjekte)].join(', '))
+                     : 'girdiler env ile geciyor');
+
+    /* 4. UCUNCU TARAF EYLEMLERI COMMIT'E SABIT: tasinabilir bir etiket
+       (@v7) sahibi tarafindan baska bir commit'e tasinabilir ve o gun
+       depoya yazma yetkisiyle baska bir kod kosar. GitHub'in kendi
+       (actions/, github/) eylemleri disarida. */
+    const gevsek = [];
+    isler.forEach(f=>{
+      (oku(f).match(/uses:\s*([^\s#]+)/g) || []).forEach(t=>{
+        const ad = t.replace(/uses:\s*/, '');
+        if(/^(actions|github)\//.test(ad)) return;
+        if(/@[0-9a-f]{40}$/.test(ad)) return;
+        gevsek.push(f + ' -> ' + ad);
+      });
+    });
+    K('Ucuncu taraf eylemleri commit numarasina sabit', gevsek.length === 0,
+      gevsek.length ? gevsek.join(', ') : 'hepsi SHA ile');
+
+    /* 5. YAYIN TESTLERE BAGLI MI: en pahali dersin kontrolu.
+       Bir `wrangler deploy` adimi olmali ve o adim kapiya BAGLI
+       olmali (needs:). Yoksa yayin testleri beklemiyor demektir --
+       2 Eylul'deki beyaz ekranin sebebi tam buydu. */
+    const yayinDosya = isler.find(f => /wrangler deploy/.test(oku(f)));
+    const yayin = yayinDosya ? oku(yayinDosya) : '';
+    K('Yayin, kapiya bagli bir adimda yapiliyor',
+      !!yayinDosya && /needs:\s*kapi/.test(yayin) && /kontrol\.sh/.test(yayin),
+      yayinDosya ? (/needs:\s*kapi/.test(yayin)
+                    ? (yayinDosya + ': kapi -> yayinla -> canli sinama')
+                    : (yayinDosya + ': deploy var ama kapiya bagli degil'))
+                 : 'hicbir workflow deploy etmiyor — yayin testleri beklemiyor');
+
+    /* 6. ALARM: kirmizi yanan nobetcinin birine ulasmasi gerekiyor.
+       15 dakikada bir kosup kimseye soylemeyen bir test, olcum degil
+       teselli olur. */
+    const dumanDosya = isler.find(f => /duman\.sh/.test(oku(f)));
+    const duman = dumanDosya ? oku(dumanDosya) : '';
+    K('Duman testi dusunce alarm veriyor',
+      !!dumanDosya && /if:\s*failure\(\)/.test(duman) && /issues\.create/.test(duman),
+      dumanDosya ? (/issues\.create/.test(duman)
+                    ? 'kirmizida issue aciliyor, yesilde kapaniyor'
+                    : 'duman testi var ama kimseye haber vermiyor')
+                 : 'canli duman testi yok');
+  }catch(e){
+    K('workflow dosyalari okunabiliyor', false, String(e && e.message || e));
   }
 
   bitir();

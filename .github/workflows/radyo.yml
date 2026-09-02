@@ -55,12 +55,25 @@ jobs:
       # Artik tek kaynak KOD deposu. Uygulama listeyi zaten oradan
       # (orbitape.app/radyo.json) cekiyor. Sir yok, ikinci PR yok,
       # ayrismaya yer yok.
+      # ── KULLANICI GIRDISI KABUGA DOGRUDAN GIRMIYOR ──────────────
+      # Onceki hal: ${{ ... }} dogrudan `run:` icine yaziliyordu, yani
+      # GitHub o metni kabuk satirinin ICINE koyuyordu. Bir noktali
+      # virgul yeter ve komut olur. Somurmek icin zaten depoya yazma
+      # yetkisi gerekiyor -- ama "zaten yetkisi var" bir gerekce degil,
+      # ve bu isin `contents: write` yetkisi var.
+      # Artik girdi bir ORTAM DEGISKENI: kabuk onu veri olarak goruyor.
+      # Ustelik sayi olup olmadigi da denetleniyor.
       - name: Hasat
+        env:
+          HEDEF: ${{ github.event.inputs.hedef || '40' }}
         run: |
+          case "$HEDEF" in
+            ''|*[!0-9]*) echo "::error::hedef yalnizca sayi olabilir: $HEDEF"; exit 1;;
+          esac
           python3 araclar/radyo_hasat.py \
             radyo.json \
             radyo.yeni.json \
-            "${{ github.event.inputs.hedef || '40' }}"
+            "$HEDEF"
           mv radyo.yeni.json radyo.json
 
       # Hiçbir şey değişmediyse boş PR açmanın anlamı yok.
@@ -80,7 +93,14 @@ jobs:
       # kaynak kalinca tek PR kaldi.
       - name: PR ac
         if: steps.fark.outputs.var == 'evet'
-        uses: peter-evans/create-pull-request@v7
+        # ── ETIKET DEGIL, COMMIT ────────────────────────────────
+        # @v7 TASINABILIR bir etiket: sahibi onu baska bir commit'e
+        # tasiyabilir ve o gun depoya yazma yetkisiyle baska bir kod
+        # kosar. Etiket rahatligi, `contents: write` +
+        # `pull-requests: write` yetkisine degmez.
+        # SHA sabit; surum yukseltmek istenirse elle degistirilir ve
+        # o zaman ne degistigi gorulur.
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e  # v7.0.8
         with:
           branch: radyo-hasat
           title: 'Radyo hasadi: eksik turlere istasyon'

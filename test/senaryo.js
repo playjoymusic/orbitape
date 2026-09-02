@@ -600,7 +600,23 @@ const CASUS = ()=>{
   {
     const dayan = await p2.evaluate(async ()=>{
       const b2 = ms=>new Promise(r=>setTimeout(r,ms));
-      const dugum0 = document.getElementsByTagName('*').length;
+      /* ── ONCE DURULSUN, SONRA OLC ────────────────────────────
+         Bu kontrol ARADA BIR kirmizi yandi (339 -> 394) ve sebebi
+         uygulama degildi: olcum penceresinin ICINDE baska bir sey
+         hala dugum ekliyordu -- deri izgarasi ilk acilista seksen
+         kare kuruyor ve o is bu satirin oncesinde bitmemis
+         olabiliyor. Yani sayilan sey "kirk basisin bedeli" degil,
+         "o sirada ne oluyorsa" idi.
+         Simdi once DURGUNLUK bekleniyor: dugum sayisi ust uste iki
+         kez ayni kalana dek (en fazla 3 sn). Iddia zayiflamadi,
+         yalnizca dogru ana bakiyor. */
+      let dugum0 = document.getElementsByTagName('*').length;
+      for(let i = 0; i < 30; i++){
+        await b2(100);
+        const su = document.getElementsByTagName('*').length;
+        if(su === dugum0) break;
+        dugum0 = su;
+      }
       const eskiCal = window.cal; let n=0;
       window.cal = it => { n++; GECMIS.push(it||{mp3:'x'+n}); if(GECMIS.length>GECMIS_TAVAN) GECMIS.shift(); };
       for(let i=0;i<40;i++){ sonraki(true); await b2(25); }

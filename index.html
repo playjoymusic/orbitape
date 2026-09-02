@@ -488,6 +488,21 @@
     font-family:'Share Tech Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.18em;color:#7fa3ab;
     cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;white-space:nowrap;flex:none;
     transition:color .2s,border-color .2s,background .2s;}
+  /* ── PARMAK ALANI GORUNTUDEN BUYUK ────────────────────────────
+     2 Eylul denetimi: dokunma alani kontrolunun listesinde 'rec'
+     YOKTU, yani ekrandaki en cok basilan tuslardan biri hic
+     olculmuyordu. Listeye eklenince cikan sayi 62x31 -- yani
+     kendi esigimizin (36) altinda.
+     Gorunumu buyutmuyoruz: satirin duzeni ve iki tus satiri
+     arasindaki 8px bosluk oldugu gibi kaliyor. Buyuyen sey yalnizca
+     DOKUNULABILIR alan; dikeyde 3px, yatayda 2px. Boslugun yarisi
+     bize, yarisi komsuya: alanlar birbirine deger, binmez (kontrol
+     binismeyi ayrica olcuyor).
+     3px denendi ve olculdu: 35px cikti, esigin 1px altinda. 4px ile
+     37-39 arasi. Tahmin degil, olcum. */
+  #rec,#cam{position:relative;}
+  #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
+    border-radius:999px;}
   #rec.var{display:flex;}
   #cam{display:none;}                                  /* CAM: anahtara bağlı (bkz. KAMERA) */
   #cam.var{display:flex;}
@@ -1822,6 +1837,17 @@
                0 16px 30px -14px var(--d-dis-golge),
                inset 0 1px 0 var(--d-isik),
                inset 0 -8px 14px -10px var(--d-golge-renk) !important;}
+  /* ── CIZIMLI DERIDE HALKA DA AFISIN PARCASI ───────────────────
+     Kullanicinin gonderdigi tahtada ortak olan sey su: disk notr
+     bir daire degil, kompozisyonun MERKEZI. Bauhaus'ta ic ice
+     renkli halkalar, pop art'ta hedef tahtasi.
+     Asagidaki degrade yigini yerini tek bir resme birakiyor ve o
+     resmi ureten fonksiyon deri_cizim.js'te -- yani fotografa da
+     ayni fonksiyon gidiyor. Motor inmediyse sinif hic konmuyor ve
+     alttaki degrade yigini oldugu gibi calisiyor. */
+  body.deri.halkaresim .disk::after{
+    background:var(--d-halka-resim) !important;
+    background-size:100% 100% !important;}
   body.deri .disk::after{
     content:'';position:absolute;inset:13%;border-radius:50%;pointer-events:none;
     background:
@@ -3067,7 +3093,7 @@
       </svg>
     </div>
   </div>
-  <div id="tur" aria-hidden="true">
+  <div id="tur" aria-hidden="true" inert>
     <div class="perde"></div>
     <div class="halka"></div>
     <svg class="el" viewBox="0 0 44 58" fill="none" stroke="currentColor" stroke-width="2"
@@ -4683,7 +4709,47 @@
     {ad:"AMBER", zem:"#33240f", yazi:"#e8d0a2", marka:"#d6a33f", cek:"#544735", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F2, kose:"50%", panel:"#3f311d", doku:"repeating-linear-gradient(74deg,rgba(255,255,255,.07) 0 6px,rgba(0,0,0,0) 6px 22px)", dokuOlcu:"auto", dokuSef:".35", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"INDIGO SILK", zem:"#181a33", yazi:"#c6c8e4", marka:"#8f92e0", cek:"#3d3f54", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F2, kose:"50%", panel:"#26283f", doku:"repeating-linear-gradient(74deg,rgba(255,255,255,.07) 0 6px,rgba(0,0,0,0) 6px 22px)", dokuOlcu:"auto", dokuSef:".35", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"COPPER PATINA", zem:"#1b2a26", yazi:"#c4d6cf", marka:"#8fbfa8", cek:"#3f4c49", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"50%", panel:"#293733", doku:"radial-gradient(rgba(0,0,0,.30) .6px,rgba(0,0,0,0) .8px),radial-gradient(rgba(255,255,255,.07) .5px,rgba(0,0,0,0) .7px)", dokuOlcu:"7px 7px", dokuSef:".5", tel:"rgba(255,255,255,.13)", luks:1},
-    {ad:"ALABASTER", zem:"#eae6de", yazi:"#3a382f", marka:"#7a7156", cek:"#d3cfc8", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(105,103,99,.30)", disGolge:"rgba(93,92,88,.52)", halka:"rgba(0,0,0,.22)", font:F2, kose:"50%", panel:"#dcd8d1", doku:"linear-gradient(102deg,rgba(0,0,0,0) 46%,rgba(255,255,255,.55) 47%,rgba(0,0,0,0) 48%),linear-gradient(84deg,rgba(0,0,0,0) 62%,rgba(0,0,0,.10) 63.4%,rgba(0,0,0,0) 64%),linear-gradient(115deg,rgba(0,0,0,0) 28%,rgba(255,255,255,.55) 29%,rgba(0,0,0,0) 30%)", dokuOlcu:"auto", dokuSef:".7", tel:"rgba(255,255,255,.85)", luks:1}
+    {ad:"ALABASTER", zem:"#eae6de", yazi:"#3a382f", marka:"#7a7156", cek:"#d3cfc8", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(105,103,99,.30)", disGolge:"rgba(93,92,88,.52)", halka:"rgba(0,0,0,.22)", font:F2, kose:"50%", panel:"#dcd8d1", doku:"linear-gradient(102deg,rgba(0,0,0,0) 46%,rgba(255,255,255,.55) 47%,rgba(0,0,0,0) 48%),linear-gradient(84deg,rgba(0,0,0,0) 62%,rgba(0,0,0,.10) 63.4%,rgba(0,0,0,0) 64%),linear-gradient(115deg,rgba(0,0,0,0) 28%,rgba(255,255,255,.55) 29%,rgba(0,0,0,0) 30%)", dokuOlcu:"auto", dokuSef:".7", tel:"rgba(255,255,255,.85)", luks:1},
+    /* ── VAHSI SERI ─────────────────────────────────────────────
+       Kullanicinin sozu: "mavi olan cok iyi ama digeri, bak
+       orjinali nasil cikti." Begendigi BLUEPRINT'ti ve onu ayiran
+       sey rengi degildi -- YAPISI vardi: milimetrik kagit dokusu,
+       kesik kose, monospace yazi. Digerleri ayni noktali dokunun
+       renk degisimiydi.
+       Bu sekiz deri o yonde: her birinin dokusu ayri bir SEYE
+       benziyor -- baski trami, gazete kagidi, fosfor ekran, harita
+       egrisi, karbon dokuma, delikli pano, bant. Renk en son gelen
+       sey.
+       SONA EKLENIYORLAR, araya degil: kullanicinin secimi cihazda
+       bir SAYI olarak duruyor. Araya bir deri girse 42'yi secmis
+       herkes bir sabah baska bir deriyle uyanirdi. */
+    {ad:"HALFTONE", zem:"#f0ece1", yazi:"#3a3630", marka:"#c8202a", cek:"#d9d4c6", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(120,110,100,.30)", disGolge:"rgba(120,110,100,.55)", halka:"rgba(0,0,0,.20)", font:F1, kose:"50%", panel:"#f5f2ea", doku:"radial-gradient(circle at 25% 25%,rgba(200,32,42,.42) 1.9px,rgba(0,0,0,0) 2.3px),radial-gradient(circle at 75% 75%,rgba(26,25,23,.14) 1.1px,rgba(0,0,0,0) 1.5px)", dokuOlcu:"8px 8px", dokuSef:".55"},
+    {ad:"NEWSPRINT", zem:"#e9e6dc", yazi:"#33312c", marka:"#1a1917", cek:"#d3cfc3", isik:"rgba(255,255,255,.88)", golgeRenk:"rgba(110,106,96,.32)", disGolge:"rgba(110,106,96,.56)", halka:"rgba(0,0,0,.22)", font:F2, kose:"2px", panel:"#eeebe3", doku:"repeating-linear-gradient(0deg,rgba(26,25,23,.26) 0 1px,rgba(0,0,0,0) 1px 5px),radial-gradient(rgba(26,25,23,.30) .5px,rgba(0,0,0,0) .6px)", dokuOlcu:"auto,3px 3px", dokuSef:".50"},
+    {ad:"TERMINAL", zem:"#08120c", yazi:"#7dfcae", marka:"#39ff88", cek:"#1b3326", isik:"rgba(120,255,180,.14)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.86)", halka:"rgba(120,255,180,.18)", font:F3, kose:"2px", panel:"#0d1c13", doku:"repeating-linear-gradient(0deg,rgba(57,255,136,.16) 0 1px,rgba(0,0,0,0) 1px 3px)", dokuOlcu:"auto", dokuSef:".70"},
+    {ad:"CRT AMBER", zem:"#140d04", yazi:"#ffbc55", marka:"#ffa726", cek:"#3a2a12", isik:"rgba(255,190,110,.14)", golgeRenk:"rgba(0,0,0,.72)", disGolge:"rgba(0,0,0,.88)", halka:"rgba(255,190,110,.18)", font:F3, kose:"2px", panel:"#1d1408", doku:"repeating-linear-gradient(0deg,rgba(255,167,38,.18) 0 1px,rgba(0,0,0,0) 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.30) 0 1px,rgba(0,0,0,0) 1px 3px)", dokuOlcu:"auto", dokuSef:".70"},
+    {ad:"TOPO", zem:"#dfe3d2", yazi:"#3d4634", marka:"#1f2a18", cek:"#c9cfb9", isik:"rgba(255,255,255,.88)", golgeRenk:"rgba(104,114,88,.32)", disGolge:"rgba(104,114,88,.56)", halka:"rgba(0,0,0,.20)", font:F2, kose:"50%", panel:"#e6e9da", doku:"repeating-radial-gradient(circle at 32% 38%,rgba(31,42,24,.28) 0 1px,rgba(0,0,0,0) 1px 13px)", dokuOlcu:"auto", dokuSef:".55"},
+    {ad:"CARBON", zem:"#131417", yazi:"#c9ced6", marka:"#9fb4c9", cek:"#2b2f36", isik:"rgba(200,220,255,.12)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.86)", halka:"rgba(255,255,255,.14)", font:F1, kose:"6px", panel:"#1b1d21", doku:"repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 2px,rgba(0,0,0,0) 2px 5px),repeating-linear-gradient(-45deg,rgba(0,0,0,.35) 0 2px,rgba(0,0,0,0) 2px 5px)", dokuOlcu:"auto", dokuSef:".75"},
+    {ad:"PEGBOARD", zem:"#8b9aa6", yazi:"#1b242c", marka:"#101820", cek:"#7a8894", isik:"rgba(255,255,255,.55)", golgeRenk:"rgba(30,44,56,.38)", disGolge:"rgba(30,44,56,.60)", halka:"rgba(0,0,0,.24)", font:F1, kose:"50%", panel:"#94a3ae", doku:"radial-gradient(circle,rgba(16,24,32,.34) 1.7px,rgba(0,0,0,0) 2.1px)", dokuOlcu:"15px 15px", dokuSef:".50"},
+    {ad:"TAPE", zem:"#2a231d", yazi:"#e0d3c2", marka:"#e8a15c", cek:"#453a30", isik:"rgba(255,220,180,.13)", golgeRenk:"rgba(0,0,0,.66)", disGolge:"rgba(0,0,0,.82)", halka:"rgba(255,220,180,.16)", font:F2, kose:"3px", panel:"#342c24", doku:"repeating-linear-gradient(0deg,rgba(232,161,92,.26) 0 1px,rgba(0,0,0,0) 1px 4px),repeating-linear-gradient(0deg,rgba(0,0,0,.45) 0 2px,rgba(0,0,0,0) 2px 9px)", dokuOlcu:"auto", dokuSef:".80"},
+    /* ── CIZIMLI SERI ───────────────────────────────────────────
+       Bunlar birer renk degisimi degil, birer USLUP. Arka plan
+       CIZILIYOR (bkz. DERI_CIZIM): her birinin kendi kompozisyonu,
+       kendi paleti var. Halka ve disk yerinde -- degisen sey
+       arkalarindaki dunya.
+       'pal' o uslubun paleti, 'tohum' ise dagilimli olanlarin
+       (mozaik, sprey) rasgeleligini sabitleyen sayi: ayni deri
+       ekranda da fotografta da AYNI resmi veriyor. */
+    {ad:"BAUHAUS", zem:"#efe9dd", yazi:"#23211c", marka:"#c81f1b", cek:"#d9d3c5", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(110,104,92,.30)", disGolge:"rgba(110,104,92,.55)", halka:"rgba(0,0,0,.20)", font:F1, kose:"2px", panel:"#f5f1e8", cizim:"bauhaus"},
+    {ad:"SELBU", zem:"#14243f", yazi:"#e8eef7", marka:"#9dc2ea", cek:"#2b3d59", isik:"rgba(200,225,255,.14)", golgeRenk:"rgba(0,0,0,.66)", disGolge:"rgba(0,0,0,.82)", halka:"rgba(255,255,255,.16)", font:F1, kose:"50%", panel:"#1b2f4f", cizim:"selbu"},
+    {ad:"TRENCADIS", zem:"#f0ece2", yazi:"#35322a", marka:"#b04a2a", cek:"#d9d3c5", isik:"rgba(255,255,255,.92)", golgeRenk:"rgba(120,112,96,.30)", disGolge:"rgba(120,112,96,.55)", halka:"rgba(0,0,0,.20)", font:F2, kose:"50%", panel:"#f6f2ea", cizim:"trencadis"},
+    {ad:"AEROSOL", zem:"#26262a", yazi:"#ededf0", marka:"#ff4d8d", cek:"#3a3a40", isik:"rgba(255,255,255,.12)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.86)", halka:"rgba(255,255,255,.14)", font:F3, kose:"3px", panel:"#2f2f34", cizim:"aerosol"},
+    {ad:"DECO", zem:"#12121a", yazi:"#f0e6cf", marka:"#e8c46a", cek:"#262636", isik:"rgba(232,196,106,.14)", golgeRenk:"rgba(0,0,0,.72)", disGolge:"rgba(0,0,0,.88)", halka:"rgba(232,196,106,.18)", font:F2, kose:"2px", panel:"#1b1b26", cizim:"deco"},
+    {ad:"KILIM", zem:"#3a1a18", yazi:"#f2ddc9", marka:"#e8a13c", cek:"#522824", isik:"rgba(255,220,180,.13)", golgeRenk:"rgba(0,0,0,.66)", disGolge:"rgba(0,0,0,.82)", halka:"rgba(255,220,180,.16)", font:F2, kose:"2px", panel:"#46201d", cizim:"kilim"},
+    {ad:"POP ART", zem:"#f5e14a", yazi:"#151515", marka:"#111111", cek:"#dcc93f", isik:"rgba(255,255,255,.85)", golgeRenk:"rgba(120,104,20,.32)", disGolge:"rgba(120,104,20,.55)", halka:"rgba(0,0,0,.22)", font:F1, kose:"2px", panel:"#f8e968", cizim:"pop"},
+    {ad:"SUPREMATIST", zem:"#f2f0eb", yazi:"#151515", marka:"#d81f26", cek:"#dcd9d2", isik:"rgba(255,255,255,.94)", golgeRenk:"rgba(110,108,100,.28)", disGolge:"rgba(110,108,100,.52)", halka:"rgba(0,0,0,.20)", font:F1, kose:"0px", panel:"#f7f6f2", cizim:"suprem"},
+    {ad:"MONDRIAN", zem:"#f7f5f0", yazi:"#141414", marka:"#d8231f", cek:"#dedbd4", isik:"rgba(255,255,255,.94)", golgeRenk:"rgba(108,106,100,.28)", disGolge:"rgba(108,106,100,.52)", halka:"rgba(0,0,0,.20)", font:F1, kose:"0px", panel:"#fbfaf7", cizim:"mondrian"},
+    {ad:"GLITCH", zem:"#0a0a0f", yazi:"#e8f6ff", marka:"#00e5ff", cek:"#1d1d28", isik:"rgba(160,240,255,.14)", golgeRenk:"rgba(0,0,0,.74)", disGolge:"rgba(0,0,0,.90)", halka:"rgba(0,229,255,.18)", font:F3, kose:"2px", panel:"#14141d", cizim:"glitch"},
+    {ad:"FUTURIST", zem:"#e9e6dd", yazi:"#242424", marka:"#1b3a8f", cek:"#d2cec3", isik:"rgba(255,255,255,.90)", golgeRenk:"rgba(112,108,98,.30)", disGolge:"rgba(112,108,98,.54)", halka:"rgba(0,0,0,.20)", font:F1, kose:"2px", panel:"#efece4", cizim:"futurist"}
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
@@ -4745,16 +4811,94 @@
         const deneme = _hexKaris(karisim, d.zem, acik ? 0.60 : 0.48);
         if(_kontrastOran(_parlaklikHex(deneme), _parlaklikHex(d.zem)) >= 1.8) ana = karisim;
       }
-      k.setProperty('--d-oluk',     _hexKaris(ana, d.zem, acik ? 0.60 : 0.48));
-      k.setProperty('--d-cekirdek', _hexKaris(ana, d.zem, acik ? 0.38 : 0.32));
+      /* ── SABIT ORAN DEGIL, HEDEFE COZUM ────────────────────────
+         Once iki sabit karisim orani vardi (oluk 0.60/0.48, cekirdek
+         0.38/0.32). Sonucu OLCTUK: altmis derinin diski tek tek
+         ekrandan yakalanip oluklarin gorunurlugu piksel farki olarak
+         sayildi (araclar/deri_sayfasi.js).
+           en guclu VECTOR 129, PAPER 128 — en zayif GRAFFITI 51,
+           BRONZE 51, JADE 52, POP 53, COGNAC 54, GUNMETAL 60
+         Ayni oran birinde keskin oluk veriyor, otekinde hicbir sey:
+         disk duz bir kutle. Kullanicinin sozu de buydu -- "mavi cok
+         iyi ama otekine bak." Yanlisi su: karisimin SONUCU zemine
+         bagli ama oran zemini hesaba katmiyor.
+         Artik hedef bir KONTRAST: mix kucukten buyuge taranip esigi
+         gecen ilk deger aliniyor. Esikler "iyi" derilerin olculen
+         degerleri degil, onlarin ALTINDAKI guvenli taban -- amac
+         hepsini esitlemek degil, hicbirini gorunmez birakmamak. */
+      const coz = (kok, hedef, tabanOran)=>{
+        let en = _hexKaris(kok, d.zem, tabanOran);
+        if(_kontrastOran(_parlaklikHex(en), _parlaklikHex(d.zem)) >= hedef) return en;
+        for(let m = tabanOran; m <= 1.0001; m += 0.04){
+          const c = _hexKaris(kok, d.zem, Math.min(1, m));
+          if(_kontrastOran(_parlaklikHex(c), _parlaklikHex(d.zem)) >= hedef) return c;
+          en = c;
+        }
+        /* TARAMA 1'E TAM OTURMUYOR: 0.38'den 0.04'er gidince son
+           adim 0.98 oluyor ve saf renk hic denenmiyor. ROSE GOLD'da
+           gorunen fark tam buydu -- tavan 3.02, cikan 2.95. Kok
+           rengin kendisi her zaman son aday. */
+        return _kontrastOran(_parlaklikHex(kok), _parlaklikHex(d.zem)) >
+               _kontrastOran(_parlaklikHex(en),  _parlaklikHex(d.zem)) ? kok : en;
+      };
+      /* ── RAF TONU ISE YARADIGI SURECE ──────────────────────────
+         Raf karisimi guzel ama bedeli olabiliyor: ROSE GOLD'da
+         karisim zemine saf markadan daha yakin dustu ve cekirdek
+         en yuksek oranda bile hedefi tutturamadi (olculdu 2.95,
+         hedef 3.20). Yukaridaki 1.8'lik guvenlik yalnizca OLUGU
+         deniyordu, cekirdegi hic sormuyordu.
+         Sira artik su: once raf tonuyla coz; hedefe varilamiyorsa
+         ayni hedefi SAF MARKA tonuyla da coz ve hangisi zeminden
+         daha cok ayrisiyorsa o kullanilsin. Yani rafin rengi
+         gorunurluge mal oluyorsa birakiliyor -- once okunur,
+         sonra o anki yerin rengi. */
+      const hedefeCoz = (hedef, tabanOran)=>{
+        const oran = (h)=> _kontrastOran(_parlaklikHex(h), _parlaklikHex(d.zem));
+        const a = coz(ana, hedef, tabanOran);
+        if(oran(a) >= hedef || ana === d.marka) return a;
+        const b = coz(d.marka, hedef, tabanOran);
+        return oran(b) > oran(a) ? b : a;
+      };
+      k.setProperty('--d-oluk',     hedefeCoz(2.60, acik ? 0.60 : 0.48));
+      k.setProperty('--d-cekirdek', hedefeCoz(3.20, acik ? 0.38 : 0.32));
     }catch(e){ _yut(e); }
   }
+
+  /* ── CIZIM MOTORU ISTEK UZERINE ─────────────────────────────────
+     Cizimli derilerin motoru ayri bir dosyada (deri_cizim.js) ve
+     ancak boyle bir deri secilince iniyor. Sebep olculdu: motor
+     sayfanin icindeyken ILK CIZIM tavani (260 KB) asildi -- yani
+     hicbir zaman deri kullanmayacak biri de o bedeli oduyordu.
+     Yuklenmezse ne olur: deri yine calisir, arka planda resim
+     olmaz, zemin duz rengiyle kalir. Sessiz ve zararsiz.
+     Tek deneme: basarisiz olursa tekrar tekrar istenmiyor. */
+  var _cizimIsteniyor = false;
+  const DERI_CIZIM_DOSYA = 'deri_cizim.js';
+  function deriCizimYukle(){
+    try{
+      if(window.DERI_CIZIM_HAZIR || _cizimIsteniyor) return;
+      _cizimIsteniyor = true;
+      const s = document.createElement('script');
+      s.src = DERI_CIZIM_DOSYA;
+      s.defer = true;
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  /* Motor gelince: secili deri cizimliyse arka plani yeniden yaz.
+     deriUygula'yi bastan cagirmak en ucuzu ve en dogrusu -- iki
+     ayri "arka plani tazele" yolu olsaydi ayrisirdi. */
+  function deriCizimGeldi(){
+    try{ if((AYAR.deri|0) && DERILER[(AYAR.deri|0)-1] && DERILER[(AYAR.deri|0)-1].cizim)
+           deriUygula(); }catch(e){ _yut(e); }
+  }
+  try{ window.deriCizimGeldi = deriCizimGeldi; }catch(e){ _yut(e); }
   function deriUygula(){
     try{
       const k = document.documentElement.style;
       const n = AYAR.deri|0;
       if(!n){
         document.body.classList.remove('deri');
+        document.body.classList.remove('halkaresim');
         document.body.classList.remove('luks');
         document.body.classList.remove('sadehalka');
         /* Deri kapaniyor: html'in zeminini ve durum cubugu rengini
@@ -4856,8 +5000,33 @@
           if(_mt) _mt.setAttribute('content', d.zem);
         }catch(e){ _yut(e); }
         k.setProperty('--d-filtre', _acik ? 'invert(1) saturate(.6) contrast(1.35)' : 'none');
-        k.setProperty('--d-doku', d.doku);      k.setProperty('--d-doku-olcu', d.dokuOlcu);
-        k.setProperty('--d-doku-sef', d.dokuSef);
+        /* CIZIMLI DERIDE DOKU YERINE RESIM. Ayni katman, ayni CSS:
+           degisen tek sey degerin bir degrade degil bir resim
+           olmasi. Boylece cizim de "malzemenin bir ozelligi" olarak
+           butun icerigin ARKASINDA kaliyor (bkz. body.deri::after
+           z-index notu) -- diskin ve tuslarin onune gecmiyor. */
+        if(d.cizim && !window.DERI_CIZIM_HAZIR) deriCizimYukle();
+        const _ciz = (d.cizim && typeof deriCizimAdresi === 'function')
+                   ? deriCizimAdresi(d) : '';
+        const _hal = (d.cizim && typeof deriHalkaAdresi === 'function')
+                   ? deriHalkaAdresi(d) : '';
+        if(_hal){ k.setProperty('--d-halka-resim', 'url("' + _hal + '")'); }
+        else k.removeProperty('--d-halka-resim');
+        document.body.classList.toggle('halkaresim', !!_hal);
+        if(_ciz){
+          k.setProperty('--d-doku', 'url("' + _ciz + '")');
+          k.setProperty('--d-doku-olcu', '100% 100%');
+          k.setProperty('--d-doku-sef', String(d.dokuSef || 1));
+        }else{
+          /* CIZIMLI DERIDE DOKU ALANLARI YOK. Onlar bir CSS degradesi
+             icin vardi; cizimli deride arka plan bir resim. Uc alani
+             on bir satirda bos yere tasimak yerine yoklari
+             varsayilana dusuyor -- ILK CIZIM tavani 260 KB ve o
+             satirlar tavanin icinde. */
+          k.setProperty('--d-doku', d.doku || 'none');
+          k.setProperty('--d-doku-olcu', d.dokuOlcu || 'auto');
+          k.setProperty('--d-doku-sef', d.dokuSef || '0');
+        }
         document.body.classList.add('deri');
         /* RINGS ONLY yalnizca deri acikken anlamli; sinif da orada. */
         document.body.classList.toggle('sadehalka', !!AYAR.halka);
@@ -8280,7 +8449,16 @@
 
   /* mouse tık */
   // gerçek fare tıkı — HTML'e gömülü WAV (ağsız, CORS'suz, anında çalar). TIK_SES seviyesi kısık.
-  const TIK_SES = "data:audio/wav;base64,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9//u//v/+f/3/+z/+/8HAPT/DQACAAYAGQANAA0ABQALAAUAAAD6//D/9P/2//f/8P/7//z/BAAAAAAADAAFAAcADQAKAAcABQAEAP7/+v////P//P/0//j/9v/5//3/AwABAAcADAAHAAUACAAGAAUA/f8AAAEA+v/+//r/+f/2//7//P/7////AgAFAAMABgALAAMACQACAAIA/v8AAPr//v/6//r//f/8//7//P///wAABQADAAEACAADAAUABAABAAIAAAD8//3/+v/9//z//f/8/wAAAAABAAEAAgAEAAMAAwAEAAMAAQAAAAAA/v8AAP3//P/8//3//f///wAAAAABAAMAAwADAAIAAwACAAAAAQAAAP/////+//3//v/9//7//////wAAAAACAAIAAwADAAIAAQABAAAAAAD////////+//7//v//////AAAAAAAAAQABAAIAAQACAAEAAQAAAAAA//////////////////8AAAAAAAAAAAAAAQABAAEAAQABAAEAAAAAAAAA//////////////////8AAAAAAAAAAAEAAQABAAEAAQAAAAAAAAAAAAAAAAD//////////wAAAAAAAAAAAAAAAAEAAQABAAEAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+  /* ── TIK SESI ARTIK AYRI BIR DOSYA ──────────────────────────────
+     3,1 KB'lik WAV base64 olarak sayfanin icindeydi ve base64
+     sikismiyor: tek basina 1,8 KB brotli, yani ILK CIZIM tavaninin
+     %0,7'si. Bir ses dosyasinin HTML'in icinde olmasi icin de bir
+     sebep yok -- disaridan gelmesi CORS ya da ag sorunu yaratmiyor,
+     kendi kokumuzden geliyor.
+     preload='auto': istek sayfa acilirken basliyor, yani ilk
+     dokunusa kadar coktan hazir. Gelmezse tik duyulmaz, baska
+     hicbir sey degismez. */
+  const TIK_SES = "tik.wav";
   /* Tik sesi %20 kisildi (0.45 -> 0.36): fare tiklamasi gibi duyulan
      bu ses, ust uste basarken one cikiyordu. */
   /* ── AYARLAR ─────────────────────────────────────────────────────
@@ -8339,7 +8517,7 @@
          asagida (ayni tuzak yildiz kademesinde de yasandi, bkz.
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 60) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 79) AYAR.deri = _a.deri|0;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
@@ -12149,6 +12327,12 @@
     _fxSunumAkiyor = true;
     try{ if(AKTIF_MOD) fxSunumIsaretle(AKTIF_MOD); }catch(e){ _yut(e); }
     _turListe = fxSunumAdimlari();
+    /* Tur basliyor: ekran okuyucuya ac. Kapaliyken inert duruyor
+       (bkz. turBitir) -- yani "gorunmez ama Tab'la yakalanabilir"
+       hali artik mumkun degil. */
+    try{ const _t = document.getElementById('tur');
+         if(_t){ _t.removeAttribute('inert'); _t.setAttribute('aria-hidden','false'); }
+    }catch(e){ _yut(e); }
     _turAkiyor = true; _turAdim = 0;
     t.classList.add('on','gor'); t.setAttribute('aria-hidden','false');
     /* İLK TURDA alt satır (SKIP + kutu) YOK: mesaj kısa, önce görülsün.
@@ -13905,6 +14089,9 @@
       try{ kullanildi('ayar'); }catch(e){ _yut(e); }
       tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
       try{ kut.removeAttribute('inert'); }catch(e){ _yut(e); }
+      /* Arka plan kapaniyor ve odak panele giriyor; kapanista
+         geldigi tusa geri donecek. */
+      try{ pencereAc(kut, kut.querySelector('.sat')); }catch(e){ _yut(e); }
       odak(true); yaz();
       /* Izgara panel her acildiginda degil, ILK acildiginda
          kuruluyor; sonra yalnizca secili kutu tazeleniyor. */
@@ -13912,6 +14099,7 @@
     const kapa = ()=>{ document.body.classList.remove('ayar-acik');
       tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
       try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
+      try{ pencereKapa(kut); }catch(e){ _yut(e); }
       odak(false);
       /* Panel kapaninca izgara da kapaniyor: bir dahaki acilista
          ayarlar listesi karsilasin, otuz bes renk degil. */
@@ -14563,6 +14751,122 @@
      dead zone'da. Islev govdelerinden cagirmak serbest.
      Sizan 25 ad zaten vardi (rec, kayitBaslat, kisaNotYaz, kk ...);
      bolme onlari gorunur kildi. */
+  /* ── BOLMEDEN GERI ALINDI ────────────────────────────────────
+     Asagidaki blok bir sure kayit.js'te durdu ve orada DURMAMASI
+     gerekiyordu: favori tusu, acilista kendiliginden calma,
+     karsilama eli ve FX kullanilabilirligi -- hicbiri kayit,
+     kamera ya da fotografla ilgili degil. Ilk kesim satir
+     araligina gore yapilmisti, ANLAMA gore degil.
+     Bedeli olculdu ve gorunur oldu: senaryo testi "Y1: otoBaslat
+     is not defined" ile kirmizi yandi. Acilista kendiliginden
+     calma, modul daha yuklenmeden cagriliyordu -- yavas bir
+     baglantida kullanici da ilk saniyede bunu yasardi.
+     Bir modulun siniri, dosyadaki yeri degil ISIDIR. */
+  /* ── "BU NE?" DUGMESI KALDIRILDI ────────────────────────────────
+     Burada Shazam'i acan bir dugme ve uzun bir gerekce vardi.
+     Kullanicinin karari: "shazami cikar su anlik, icine entegre et
+     sarkiyi bulan sistem."
+     Dogru karar, cunku o dugmenin temel sorunu tanima degil
+     TERK ETMEKTI: basinca calan ses duruyor, baska bir uygulama
+     aciliyor ve geri donunce canli yayin baska bir yerinden
+     giriyor. Bir radyo uygulamasinin "bu ne caliyor" sorusuna
+     cevabi kendi icinde olmali.
+     Yerine gelecek olan sey MIKROFONLA DINLEME DEGIL: istasyonlarin
+     kendi yayin bilgisi (ICY / now-playing). Sebebi ve olculen
+     kapsam GUNLUK.md'de. */
+  const favDug = document.getElementById('fav');
+  if(favDug){
+    favDug.addEventListener('pointerdown', e=>{
+      e.preventDefault(); e.stopPropagation();
+      _favBasti = true;
+      if(_favBekle) clearTimeout(_favBekle);
+      _favBekle = setTimeout(()=>{ _favBekle = null; _favBasti = false; favKipDegis(); }, FAV_TUT);
+      try{ favDug.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+    });
+    const favBirak = e=>{
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      if(_favBekle){ clearTimeout(_favBekle); _favBekle = null; }
+      if(_favBasti){ _favBasti = false; favDegis(); }        // süre dolmadan bıraktı: kısa basış
+    };
+    favDug.addEventListener('pointerup', favBirak);
+    favDug.addEventListener('pointercancel', ()=>{ if(_favBekle){ clearTimeout(_favBekle); _favBekle=null; } _favBasti=false; });
+    favDug.addEventListener('lostpointercapture', ()=>{ if(_favBekle){ clearTimeout(_favBekle); _favBekle=null; } _favBasti=false; });
+    favDug.addEventListener('keydown', e=>{
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); favDegis(); }
+      if(e.key==='f'||e.key==='F'){ e.preventDefault(); favKipDegis(); }
+    });
+    ['mousedown','touchstart','click'].forEach(t=>
+      favDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+  }
+  if(ileriDug){
+    ileriDug.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
+      try{ basHissi(ileriDug); alcakTon(); }catch(_){ _yut(_); }
+      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+      ileriGit(); });
+    ['pointerdown','mousedown','touchstart'].forEach(t=>
+      ileriDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+  }
+  // ● RETRO kısayolu
+  UYDULAR.forEach(u=>{
+    const b=uyduDug[u.fx];
+    b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fxModGec(u.fx); });
+  });
+  ['pointerdown','mousedown','touchstart'].forEach(t=>
+    UYDULAR.forEach(u=>uyduDug[u.fx].addEventListener(t, e=>e.stopPropagation(), {passive:true})));
+
+  // ilk-truthy yarışı: verilen sözlerden ilk DOLU döneni al (hepsi boşsa null)
+  /* ── AÇILIŞTA KENDİLİĞİNDEN ÇAL ─────────────────────────────────
+     Tarayıcılar sesli oynatmayı kullanıcı dokunuşu olmadan engeller.
+     Burada bir deneme yapıyoruz: izin varsa (masaüstü, yüklü uygulama,
+     siteyle daha önce etkileşim) radyo kendiliğinden açılıyor. İzin yoksa
+     hiçbir şey bozulmuyor, bugünkü gibi ilk dokunuşta başlıyor.
+     ÖNEMLİ: reddedilen denemede atla() ÇAĞIRMIYORUZ; yoksa izin yokken
+     istasyonları arka arkaya boşuna tarardı. */
+  var _otoDenendi = false;
+  function otoBaslat(){
+    if(_otoDenendi || baslatildi || !ilkItem) return;
+    _otoDenendi = true;
+    let s=null;
+    try{ s = ses.play(); }catch(e){ return; }
+    if(!s || !s.then) return;
+    s.then(()=>{
+      if(baslatildi || !ilkItem) return;
+      const it = ilkItem; ilkItem = null;
+      karsilamaIsaretle(); karsilamaKapat();   // ses zaten açıldı: ele gerek yok
+      cal(it);                    // izin çıktı: normal akışa devret (künye, kuyruk, gözcüler)
+    }).catch(()=>{});             // izin yok: sessizce geç, karşılama eli devreye girecek
+  }
+
+  /* ── KARŞILAMA ELİ ──────────────────────────────────────────────
+     Tek amacı var: ses için gereken İLK dokunuşu almak. Bir kez görülüp
+     dokunulduktan sonra o cihazda bir daha gösterilmiyor. */
+  /* ── FX KULLANILABİLİR Mİ ────────────────────────────────────────
+     Grafik kurulu değilse ya da yayın grafikten sessiz geçiyorsa efekt
+     mümkün değil. O anda uydular sönüyor (gölgede kalmış gök cismi gibi),
+     efekt geri gelince eski hâllerine dönüyorlar. Ölçüm bedava: zaten
+     hesapladığımız sinyal bayrağına bakıyoruz, ek iş yok, bekleme yok. */
+  var _fxYok = false;
+  function fxDurumYaz(yok){
+    if(yok === _fxYok) return;
+    _fxYok = yok;
+    try{ if(uyduKap) uyduKap.classList.toggle('sonuk', yok); }catch(e){ _yut(e); }
+  }
+  function fxDurumTazele(){
+    fxDurumYaz(!(grafHazir && analiz && lopass));
+  }
+
+  /* ── NEBULA: KÜÇÜK BİR TUVAL ─────────────────────────────────────
+     Neden tuval: eski hâlinde üç CSS filtresi vardı (blur, hue-rotate,
+     dönen ::before). Filtre animasyonu çalışan bir eleman KALICI bir
+     derleyici katmanına alınıyor ve her karede yeniden rasterleniyor;
+     telefonda boştaki işin %30'u buydu ve bellek baskısında katman
+     düşünce ekranda donuk bir dikdörtgen kalıyordu.
+
+     Tuvalde hiçbir filtre yok:
+       · bulanıklık   -> gaz katmanı 34px'lik tamponda çizilip büyütülüyor
+       · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
+       · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
+     Kare başına iş: iki drawImage + dört minik nokta. */
   (function nebulaTuval(){
     const el = document.querySelector('#mark .neb');
     if(!el || !el.getContext) return;
@@ -15374,6 +15678,12 @@
     _turYavas = !!zorla;
     _turListe = liste || null;
     _turGeri  = geri  || null;
+    /* Tur basliyor: ekran okuyucuya ac. Kapaliyken inert duruyor
+       (bkz. turBitir) -- yani "gorunmez ama Tab'la yakalanabilir"
+       hali artik mumkun degil. */
+    try{ const _t = document.getElementById('tur');
+         if(_t){ _t.removeAttribute('inert'); _t.setAttribute('aria-hidden','false'); }
+    }catch(e){ _yut(e); }
     _turAkiyor = true; _turAdim = 0;
     t.classList.add('on','gor');
     t.setAttribute('aria-hidden','false');
@@ -15382,8 +15692,69 @@
          document.getElementById('fxAlt').classList.remove('gor'); }catch(e){ _yut(e); }
     turIlerle();
   }
+  /* ══ PENCERE ODAGI: AC, KAPAT, GERI VER ═══════════════════════
+     2 Eylul erisilebilirlik denetiminde uc ayri eksik cikti ve ucu
+     de ayni koku paylasiyordu -- pencereler aciliyordu ama ODAK
+     yonetilmiyordu:
+       · Pencere kapaninca odak geri gelmiyordu. Esc'ten sonra odak
+         <body>'de kaliyor ve Tab en bastan basliyordu: klavyeyle
+         kullanan biri her pencere kapanisinda yerini kaybediyordu.
+       · Odak tuzagi yoktu. Ayarlar acikken Tab'la arkadaki
+         oynaticiya sessizce geciliyordu -- ekran okuyucu icin
+         pencere "acik" ama icerik disarida.
+       · Tanitim turu KALICI aria-hidden="true" tasiyordu ama
+         icindeki dort denetim kalici tabindex="0" ile duruyordu.
+         Ekran okuyucu kullanan biri ilk acilista SESSIZLIK duyar,
+         sonra Tab tusu duyurulmayan bir kutucuga duser. Bu ikisi
+         birlikte en kotu hal: gorunmez ama yakalanabilir.
+     Cozum tek yerde. inert, hem odagi hem ekran okuyucuyu birden
+     kesiyor -- tabindex'i tek tek gezmekten hem kisa hem dogru.
+     GERI VERILEN ODAK dogrulaniyor: eleman hala sayfada mi ve
+     gercekten odaklanabilir mi. Silinmis bir dugmeye odak vermek
+     odagi <body>'ye dusurur, yani hicbir sey yapmamakla ayni. */
+  const _odakDonus = new WeakMap();
+  function _arkaKapat(el, kapali){
+    try{
+      const cocuklar = document.body ? [...document.body.children] : [];
+      cocuklar.forEach(c=>{
+        if(c === el || c.tagName === 'SCRIPT') return;
+        if(kapali){
+          if(!c.hasAttribute('inert')){
+            c.setAttribute('inert',''); c.setAttribute('data-inertti','1');
+          }
+        }else if(c.getAttribute('data-inertti') === '1'){
+          c.removeAttribute('inert'); c.removeAttribute('data-inertti');
+        }
+      });
+    }catch(e){ _yut(e); }
+  }
+  function pencereAc(el, ilkOdak){
+    try{
+      if(!el) return;
+      const su = document.activeElement;
+      if(su && su !== document.body) _odakDonus.set(el, su);
+      _arkaKapat(el, true);
+      const h = ilkOdak || el.querySelector('[tabindex],button,a[href],input,select,textarea');
+      if(h && h.focus) h.focus();
+    }catch(e){ _yut(e); }
+  }
+  function pencereKapa(el){
+    try{
+      if(!el) return;
+      _arkaKapat(el, false);
+      const g = _odakDonus.get(el);
+      _odakDonus.delete(el);
+      if(g && g.isConnected && typeof g.focus === 'function'
+         && getComputedStyle(g).display !== 'none') g.focus();
+    }catch(e){ _yut(e); }
+  }
+  try{ window.pencereAc = pencereAc; window.pencereKapa = pencereKapa; }catch(e){ _yut(e); }
   function turBitir(){
     const t = document.getElementById('tur');
+    /* Tur bitti: ekran okuyucudan ve Tab sirasindan tamamen ciksin.
+       Iceride dort denetim var ve tur akmiyorken hicbiri anlamli
+       degil. */
+    try{ if(t){ t.setAttribute('inert',''); t.setAttribute('aria-hidden','true'); } }catch(e){ _yut(e); }
     _turAkiyor = false; _turListe = null;
     /* Onizleme geri aliniyor: ORBITAPE turu dunyayi GECICI acmisti,
        anahtar hala kapali ve ekran oldugu gibi geri donmeli. Nerede
@@ -15522,6 +15893,35 @@
         setTimeout(()=>{ try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){ _yut(e); } }, 1200);
       });
     }
+  }catch(e){ _yut(e); }
+
+  /* ── MODUL NOBETI: KAYIT.JS INMEDIYSE BIR KEZ DAHA ──────────────
+     Bolmenin actigi yeni ariza kapisi: sayfa gelir, ikinci dosya
+     gelmez (zayif hucre, bozuk ara onbellek). Olculdu -- bkz.
+     test/ariza.js 6. senaryo: cokme yok, JS hatasi yok, radyo tam
+     calisiyor, REC/PHOTO tusu hic cizilmiyor. Yani olu tus yok ama
+     sessiz bir eksiklik var: dun fotograf ceken kullanici bugun
+     tusu bulamaz.
+     En ucuz cozum: bir kez daha iste. Tek deneme, yuklemeden 1,5 sn
+     sonra, yalnizca imza yoksa; sorgu dizesi bozuk onbellegi atlar.
+     O da gelmezse ayni sessiz eksiklik -- dinlemek icin gerekmiyor,
+     kullaniciya hata gosterilmiyor. */
+  try{
+    window.addEventListener('load', ()=>{
+      setTimeout(()=>{
+        try{
+          /* HIC BASLAMADIYSA istenir. Basladi ama bitmediyse dosya
+             inmis demektir; aynisini tekrar calistirmak ust duzey
+             const'lari yeniden bildirir ve SyntaxError verir. */
+          if(window.KAYIT_MODULU_BASLADI || window.KAYIT_MODULU_HAZIR) return;
+          if(window._kayModulTekrar) return; window._kayModulTekrar = 1;
+          const s = document.createElement('script');
+          s.src = 'kayit.js?y=' + Date.now();
+          s.defer = true;
+          document.body.appendChild(s);
+        }catch(e){ _yut(e); }
+      }, 1500);
+    });
   }catch(e){ _yut(e); }
 </script>
   <!-- KAYIT / KAMERA / FOTOGRAF: bkz. kayit.js. defer -> satir ici

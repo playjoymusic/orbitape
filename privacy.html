@@ -122,21 +122,43 @@ press send yourself. If you don't, nothing leaves your device.</p>
 says which shelf you were on and whether sound was playing, because a report
 without that is usually impossible to act on.</p>
 
+<!-- ── BU TABLO KODLA KARSILASTIRILIYOR ──────────────────────────
+     Asagidaki her satirin basinda bir gizli anahtar yorumu var ve
+     test/birim.js koddaki her localStorage anahtarinin burada
+     karsilandigini kontrol ediyor.
+     SEBEBI: bu bolum "That is the whole list, not a sample" diyor --
+     yani bir GARANTI veriyor. 2 Eylul'de denetimde dort anahtarin
+     (kullanim, yut, olcum.son, dil) tabloda olmadigi goruldu; garanti
+     cumlesi olmasaydi eksiklik olurdu, cumle oldugu icin YANLIS BEYAN
+     oluyordu. Bir daha sessizce olmasin diye kontrol yazildi:
+     koda yeni bir anahtar eklendigi anda kapi kirmizi yanar. -->
 <h2>What is kept on your device</h2>
 <p>The app stores a few small values in your browser's local storage. They
-stay on your device, are readable only by ORBITAPE, and are never sent
-anywhere.</p>
+stay on your device and are readable only by ORBITAPE. One of them &mdash; the
+crash notebook &mdash; can leave the device, but only if you switch crash
+reports on yourself; that is described in its own section below. Nothing
+else is ever sent anywhere.</p>
 <table>
   <tr><th>What</th><th>Why</th></tr>
-  <tr><td>Volume level</td><td>So it is the same next time you open it.</td></tr>
-  <tr><td>Favourites</td><td>The tracks you starred.</td></tr>
-  <tr><td>Camera settings</td><td>Brightness level and whether the slider is shown.</td></tr>
-  <tr><td>Tutorial state</td><td>Whether you ticked "don't show this again".</td></tr>
-  <tr><td>Settings</td><td>Sound on or off, the colour theme, how many stars, and which
+  <!--anahtar:orbitape.ses--> <tr><td>Volume level</td><td>So it is the same next time you open it.</td></tr>
+  <!--anahtar:orbitape.fav--> <tr><td>Favourites</td><td>The tracks you starred.</td></tr>
+  <!--anahtar:orbitape.kamCubuk--> <tr><td>Camera settings</td><td>Brightness level and whether the slider is shown.</td></tr>
+  <!--anahtar:orbitape.tur--> <tr><td>Tutorial state</td><td>Whether you ticked "don't show this again".</td></tr>
+  <!--anahtar:orbitape.ayar orbitape.mod--> <tr><td>Settings</td><td>Sound on or off, the colour theme, how many stars, and which
     of the two worlds you were last in.</td></tr>
-  <tr><td>Effect preferences</td><td>Which effects you turned off, and whether you have
+  <!--anahtar:orbitape.fxIpucu--> <tr><td>Effect preferences</td><td>Which effects you turned off, and whether you have
     already seen the effect hint.</td></tr>
-  <tr><td>Track lists</td><td>A cached copy so the app still opens when you have no connection.</td></tr>
+  <!--anahtar:orbitape.kanal--> <tr><td>Track lists</td><td>A cached copy so the app still opens when you have no connection.</td></tr>
+  <!--anahtar:orbitape.dil--> <tr><td>Language</td><td>Whether you switched the interface to Turkish.</td></tr>
+  <!--anahtar:orbitape.kullanim--> <tr><td>Which features you have used</td><td>A short list of things you have
+    already done &mdash; opened the shelves, used search, opened settings &mdash; so the
+    tutorial does not teach you what you clearly already know. Names of
+    features only; not what you played, not when, not how often.</td></tr>
+  <!--anahtar:orbitape.yut--> <tr><td>Crash notebook</td><td>The errors the app swallowed, so you can read them
+    yourself under <code>DIAGNOSTICS</code>. This is the one value that can leave
+    your device, and only if you turn on <code>SEND DIAGNOSTICS</code>.</td></tr>
+  <!--anahtar:orbitape.olcum.son--> <tr><td>Last report time</td><td>If crash reports are on, when the last one went,
+    so it is sent at most once every six hours.</td></tr>
 </table>
 <p class="mono kucuk">That is the whole list, not a sample. The last station you
 played is deliberately <b>not</b> kept: the app starts somewhere new every time.</p>
@@ -175,8 +197,12 @@ orbitape.app instead, which is cached and asked once per station rather than onc
 per listener.</p>
 <p>This is a trade, and it is worth stating plainly in both directions:</p>
 <ul>
-  <li><b>Better for you:</b> the station no longer sees your IP address for these
-    requests &mdash; it sees the cache.</li>
+  <li><b>Better for you:</b> when the cache answers, the station does not see your
+    IP address for these requests &mdash; it sees the cache. If the cache cannot
+    answer (the station is not in the list, it is too slow, or my server is
+    down) the browser falls back to asking the station directly, and then it
+    sees your IP as any web request would. So this is an improvement most of
+    the time, not a guarantee every time.</li>
   <li><b>Worse in one way:</b> the request now reaches my server, so it is
     technically possible for me to see which station is being asked about.
     <b>I do not log it.</b> The cache is keyed by the station's address; who asked

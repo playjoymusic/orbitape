@@ -29,7 +29,13 @@ const TUM_KOD = (function(){
       .filter(u => u && !/^https?:|^\/\//.test(u))
       .map(u => u.replace(/^\.?\//, '').split('?')[0])
       .filter(u => require('fs').existsSync(u));
-    return [sayfa].concat(yollar.map(u => require('fs').readFileSync(u,'utf8'))).join('\n');
+    /* Istek uzerine inen moduller de kapsamda: sayfada dizgi
+       olarak gecen .js dosyalari (bkz. deri_cizim.js). */
+    const gizli = (sayfa.match(/['"][\w./-]+\.js['"]/g) || [])
+      .map(t => t.slice(1, -1).replace(/^\.?\//, ''))
+      .filter(u => u && !/^https?:/.test(u) && require('fs').existsSync(u));
+    const hepsi = yollar.concat(gizli).filter((u,i,d)=>d.indexOf(u)===i);
+    return [sayfa].concat(hepsi.map(u => require('fs').readFileSync(u,'utf8'))).join('\n');
   }catch(e){ return ''; }
 })();
 
@@ -152,7 +158,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       .map(t => (t.match(/src=["']([^"']+)["']/) || [])[1])
       .filter(u => u && !/^https?:|^\/\//.test(u))
       .map(u => u.replace(/^\.?\//, '').split('?')[0])
-      .filter(u => fs.existsSync(u));
+      .filter(u => fs.existsSync(u))
+      .concat((kaynak.match(/['"][\w./-]+\.js['"]/g) || [])
+        .map(t => t.slice(1, -1).replace(/^\.?\//, ''))
+        .filter(u => u && !/^https?:/.test(u) && fs.existsSync(u)))
+      .filter((u, i, d) => d.indexOf(u) === i);
     const _modulKod = _modulYol.map(u => fs.readFileSync(u, 'utf8')).join('\n');
     /* Satir ici blok: ILK </script>'e kadar. lastIndexOf ARTIK
        YANLIS -- ikinci bir <script src> etiketi var ve o kesim HTML
@@ -417,7 +427,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       .filter(u => u && !/^https?:|^\/\//.test(u))
       .map(u => u.replace(/^\.?\//, '').split('?')[0])
       .filter(u => fs.existsSync(u));
-    const _parcalar = ['index.html'].concat(_disBetikler);
+    /* ── ISTEK UZERINE INEN MODULLER DE SAYILIYOR ───────────────
+       deri_cizim.js sayfada bir <script src> etiketiyle degil, bir
+       DIZGI olarak duruyor (deriCizimYukle onu kendisi ekliyor).
+       Yalnizca etiketlere bakan bir liste onu hic gormezdi ve
+       "toplam inen boy" tavani gercegi soylemezdi: dosya inecek
+       ama sayilmayacakti. Tavan boyle delinir.
+       Bu yuzden sayfadaki '...js' dizgileri de taraniyor. */
+    const _gizliBetik = (_sayfa.match(/['"][\w./-]+\.js['"]/g) || [])
+      .map(t => t.slice(1, -1).replace(/^\.?\//, ''))
+      .filter(u => u && !/^https?:/.test(u) && fs.existsSync(u));
+    /* ILK ACILISTA INEN: sayfa + etiketle bagli moduller. Istek
+       uzerine inenler burada YOK -- cunku ilk acilista inmiyorlar. */
+    const _parcalar = ['index.html'].concat(_disBetikler)
+      .filter((u, i, d) => d.indexOf(u) === i);
+    const _istekUzerine = _gizliBetik
+      .filter(u => _parcalar.indexOf(u) < 0)
+      .filter((u, i, d) => d.indexOf(u) === i);
     const bro = d => zlib.brotliCompressSync(d, {
       params:{ [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }).length;
     const ham = fs.readFileSync('index.html');
@@ -524,8 +550,56 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      orada, bolmenin kendisinde degil. */
   K('Ilk cizim icin inen boy < 260 KB', bro(ham) < 260*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (index.html) — ilk boyama buna bagli');
-  K('Toplam inen boy < 295 KB', br < 295*1024,
+  /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
+     Bugun bu tavan alti kez yukseldi (272 -> 287) ve her seferinde
+     "kirparak durdurulamaz" diye yazildi. O yazi EKSIKTI. Bugun
+     olcum yapildi ve dogrusu su:
+       index.html brotli                          257,3 KB
+       yalnizca JS blok yorumlari cikarilinca      151,1 KB
+       ---------------------------------------------------
+       yorumlarin bedeli                          106,2 KB  (%41)
+     Yani "300 bayt silmek ciktiyi buyutuyor" dogruydu ama yanlis
+     sonuca goturuyordu: kucuk kirpma ise yaramiyor, TOPLU cikarma
+     yuku neredeyse yariya indiriyor.
+     ONERI (kullanici dondugunde, once o onaylayacak): yayin
+     dosyasi kaynaktan URETILSIN -- yorumlar yalnizca derlemede
+     dusurulsun, kaynakta kalsin. Bunun bedeli bir derleme adimi ve
+     "depodaki dosya artik yazilan dosya degil" gercegi; magaza
+     cikisinin arifesinde tek basima yapilacak bir degisiklik degil.
+     O yuzden bugun 1 KB'lik bir yukseltme yapiliyor ve karsiligi
+     burada yazili: 106 KB'lik bilinen bir odeme plani var.
+     BU TAVAN BIR DAHA PLANSIZ YUKSELMEYECEK. */
+  /* ── 302 KB: IKINCI YUKSELTME, SEBEBI YAZILI ────────────────
+     Bugun bu tavan bir kez daha yukseldi ve bunu saklamiyorum.
+     Sebep: deri acikken fotografin ekrani kopyalamasi (zemin, doku,
+     disk, tuslarin kabartmasi) kayit.js'e ~4 KB ekledi. Karsiligi
+     bir ozellik degil, verilmis bir sozun tutulmasi: fotograf
+     deri acikken neredeyse BOS cikiyordu.
+     Odeme plani hala ayni ve hala onay bekliyor: yorumlar yayina
+     giden dosyadan dusurulsun (olculdu: 106 KB, yukun %41).
+     Tek basima YAPMADIM ve sebebi de yazili: kotu bir ayiklama
+     beyaz ekran demek, kullanici yolda ve dogrulayamaz. Bugun bir
+     kez beyaz ekran yasandi; ikincisini onaysiz riske atmam.
+     SIRADAKI ADIM ONUN: 'yorumlari derlemede dusur' dedigi an
+     tavan 200 KB'in altina iner ve bu not silinir. */
+  K('Ilk acilista inen toplam boy < 302 KB', br < 302*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — ' + _parcaOzet);
+    /* ── UCUNCU TAVAN: ISTEK UZERINE INENLER ────────────────────
+       Ikinci tavan "ilk acilista inen her sey" diye kuruldu ve
+       amaci belliydi: bolmek, citin altina atlamanin yolu olmasin.
+       Simdi gercekten ilk acilista INMEYEN bir modul var
+       (deri_cizim.js: yalnizca cizimli bir deri secilince iniyor),
+       yani onu ikinci tavana katmak da yanlis olurdu -- olculen
+       sey artik olculdugu soylenen sey olmazdi.
+       Cozum kacak degil ucuncu bir soru: istek uzerine inenler ne
+       kadar. Kendi tavani var, yani "lazy yaparim, sayilmaz"
+       diye bir kapi acilmiyor. */
+    const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(f)), 0);
+    K('Istek uzerine inen moduller < 12 KB', _iuBoy < 12*1024,
+      _istekUzerine.length
+        ? (Math.round(_iuBoy/1024) + ' KB — ' + _istekUzerine.map(f =>
+            f + ' ' + Math.round(bro(fs.readFileSync(f))/1024) + 'K').join(' + '))
+        : 'istek uzerine inen modul yok');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
@@ -1047,7 +1121,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{ turBitir(); }catch(e){}
       try{ document.body.classList.remove('oniz'); }catch(e){}
       await bek(260);
-      const ids = ['geri','dur','duraklat','ileri','mute','favAc','cam','ayarTut','araCizgi'];
+      /* LISTE EKSIKTI. 2 Eylul denetimi: 'rec' (REC/PHOTO) ve arama
+         tusu olculmuyordu -- yani ekrandaki en cok basilan iki
+         tustan biri bu kontrolun disindaydi. Olculmeyen sey guvence
+         altinda degildir. */
+      /* 'ara' LISTEDE YOK ve sebebi yazili: o, araCizgi'yi ICEREN
+         kap. Ikisini birden olcmek "binisme" olarak gorunur ama
+         binisme degil, kapsamadir -- kontrol dogru sey icin kirmizi
+         yanmali. */
+      const ids = ['geri','dur','duraklat','ileri','mute','favAc','cam','ayarTut',
+                   'araCizgi','rec'];
       const gor = e => { const r = e.getBoundingClientRect();
         const s = getComputedStyle(e);
         return r.width>0 && r.height>0 && s.display!=='none' && s.visibility!=='hidden'; };
@@ -1091,6 +1174,62 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Dokunma alani parmak icin yeterli', dokunma.kucuk.length === 0,
       dokunma.kucuk.length ? ('36px altinda kalan: ' + dokunma.kucuk.join(', '))
                            : ('en kucuk kenar ' + dokunma.enKucuk + 'px (kutular 28x32)'));
+  }
+
+  /* ── ODAK YONETIMI ──────────────────────────────────────────────
+     2 Eylul erisilebilirlik denetiminin uc bulgusu buradan
+     olculuyor. Ucu de "gorunmeyen" kusurlar: ekranda hicbir sey
+     ters gorunmuyor, yalnizca klavyeyle ya da ekran okuyucuyla
+     kullanan biri kayboluyor. O yuzden goz denetimiyle
+     yakalanmalari da mumkun degildi. */
+  {
+    const odak = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      try{ turBitir(); }catch(e){}
+      await bek(200);
+      const tur = document.getElementById('tur');
+      const turKapali = !!tur && tur.hasAttribute('inert');
+      /* Tur akarken erisilebilir olmali: gorunmez ama Tab'la
+         yakalanabilir hali en kotusu. */
+      let turAcik = null;
+      try{
+        if(typeof turBasla === 'function'){ turBasla(true); await bek(300);
+          turAcik = !!tur && !tur.hasAttribute('inert')
+                 && tur.getAttribute('aria-hidden') === 'false';
+          turBitir(); await bek(200); }
+      }catch(e){ turAcik = 'yok'; }
+      /* Ayar paneli: acilinca arka plan inert, kapaninca odak geri. */
+      const tut = document.getElementById('ayarTut');
+      const kut = document.getElementById('ayar');
+      let arkaKapandi = null, odakGeriGeldi = null;
+      try{
+        if(tut && kut){
+          tut.focus(); await bek(60);
+          tut.click(); await bek(320);
+          const np = document.getElementById('np');
+          arkaKapandi = !!(np && np.hasAttribute('inert'))
+                     && !kut.hasAttribute('inert');
+          tut.click(); await bek(320);
+          odakGeriGeldi = (document.activeElement === tut);
+        }
+      }catch(e){}
+      return { turKapali, turAcik, arkaKapandi, odakGeriGeldi };
+    });
+    K('Tanitim turu kapaliyken Tab sirasindan cikiyor', odak.turKapali === true,
+      odak.turKapali ? 'tur inert, denetimleri yakalanamiyor'
+                     : 'tur gorunmuyor ama Tab ile icine giriliyor');
+    if(odak.turAcik === 'yok' || odak.turAcik === null)
+      yavas('Tanitim turu akarken ekran okuyucuya aciliyor — olculemedi: tur baslatilamadi');
+    else
+      K('Tanitim turu akarken ekran okuyucuya aciliyor', odak.turAcik === true,
+        odak.turAcik ? 'akarken inert ve aria-hidden kalkiyor'
+                     : 'akarken de gizli kaliyor: ekran okuyucu turu duymuyor');
+    K('Pencere acikken arka plan Tab sirasindan cikiyor', odak.arkaKapandi === true,
+      odak.arkaKapandi ? 'ayarlar acikken arkadaki oynatici erisilemez'
+                       : 'Tab ile arkadaki oynaticiya geciliyor (odak tuzagi yok)');
+    K('Pencere kapaninca odak geldigi tusa donuyor', odak.odakGeriGeldi === true,
+      odak.odakGeriGeldi ? 'odak ayar tusuna geri geldi'
+                         : 'odak <body>ye dustu: Tab en bastan basliyor');
   }
 
   /* ── YASAL VE MAGAZA METINLERI KODLA UYUSUYOR MU ─────────────────
@@ -8220,6 +8359,84 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('REC SOUND BANKS kipinde tam parlak',
      !!recKip && recKip.moodda!=='none' && recKip.moodSonuk===false,
      'mood: '+(recKip?recKip.moodda:'-')+', sonuk: '+(recKip?recKip.moodSonuk:'-'));
+
+  /* ── DERI ACIKKEN FOTOGRAF EKRANI KOPYALIYOR MU ─────────────────
+     2 Eylul'de olculdu: bir deri acikken cekilen fotograf neredeyse
+     BOSTU. Ekranda krem zemin, doku ve disk; fotografta zemin
+     SIYAH, disk yok. Sebep, kare cizimin KAYIT icin (uygulamanin
+     karanlik dunyasi icin) yazilmis olmasiydi -- deri acilinca ekran
+     bambaska calisiyor: zemin duz --d-zem, disk CSS ile ciziliyor,
+     tuval kapali, vinyet yok.
+     BU KONTROL OLMASAYDI hicbir sey kirmizi yanmazdi: fotograf
+     uretiliyordu, PNG gecerliydi, boyutu yerindeydi. Yalnizca
+     ICERIGI yanlisti. "Uretti mi" ile "dogru mu" ayri sorular.
+     Olculen sey RENK: fotografin zemini derinin zeminine, ortadaki
+     nokta da cekirdek rengine yakin olmali. Iki deri deneniyor --
+     biri acik biri koyu, cunku eski hata acik deride cok daha
+     buyuktu ve tek koyu ornek onu gizlerdi. */
+  {
+    const deriFoto = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const say = h=>{ const t=String(h).trim();
+        let m = t.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+        if(m) return [+m[1],+m[2],+m[3]];
+        m = t.replace('#','');
+        if(/^[0-9a-fA-F]{6}$/.test(m))
+          return [parseInt(m.slice(0,2),16),parseInt(m.slice(2,4),16),parseInt(m.slice(4,6),16)];
+        return null; };
+      const dv = ad => getComputedStyle(document.documentElement).getPropertyValue(ad).trim();
+      const cikti = [];
+      const eskiDeri = AYAR.deri;
+      for(const no of [61, 63]){
+        AYAR.deri = no; deriUygula(); try{ olukYaz(); }catch(e){}
+        await bek(350);
+        const zem = say(dv('--d-zem')), cek = say(dv('--d-cekirdek')) || say(dv('--d-cek'));
+        const dk = document.querySelector('.disk').getBoundingClientRect();
+        const oranX = (dk.left + dk.width/2) / innerWidth;
+        const oranY = (dk.top + dk.height/2) / innerHeight;
+        try{ await fotoCek(); }catch(e){}
+        await bek(1200);
+        const im = document.getElementById('fotoResim');
+        const olcum = await new Promise(res=>{
+          if(!im || !im.src) return res(null);
+          const g = new Image();
+          g.onload = ()=>{
+            const cv = document.createElement('canvas');
+            cv.width = g.width; cv.height = g.height;
+            const cx = cv.getContext('2d'); cx.drawImage(g, 0, 0);
+            const ort = (x, y, e)=>{
+              const d = cx.getImageData(Math.max(0,x-e), Math.max(0,y-e), e*2, e*2).data;
+              let r=0,gg=0,b=0,n=0;
+              for(let i=0;i<d.length;i+=4){ r+=d[i]; gg+=d[i+1]; b+=d[i+2]; n++; }
+              return n ? [r/n, gg/n, b/n] : null;
+            };
+            res({ zemin: ort(Math.round(g.width*0.5), Math.round(g.height*0.12), 14),
+                  cekirdek: ort(Math.round(g.width*oranX), Math.round(g.height*oranY), 3) });
+          };
+          g.onerror = ()=>res(null);
+          g.src = im.src;
+        });
+        try{ fotoOnizleKapa(); }catch(e){}
+        await bek(200);
+        cikti.push({ no, ad: DERILER[no-1].ad, zem, cek, olcum });
+      }
+      AYAR.deri = eskiDeri; deriUygula(); try{ olukYaz(); }catch(e){}
+      return cikti;
+    });
+    const sapma = (a, b) => (a && b)
+      ? Math.max(Math.abs(a[0]-b[0]), Math.abs(a[1]-b[1]), Math.abs(a[2]-b[2])) : 999;
+    const kotu = [], not = [];
+    (deriFoto || []).forEach(d=>{
+      if(!d.olcum || !d.olcum.zemin){ kotu.push(d.ad + ': fotograf okunamadi'); return; }
+      const sz = sapma(d.olcum.zemin, d.zem), sc = sapma(d.olcum.cekirdek, d.cek);
+      not.push(d.ad + ' zemin ' + Math.round(sz) + ' cekirdek ' + Math.round(sc));
+      if(sz > 40) kotu.push(d.ad + ' zemin sapmasi ' + Math.round(sz));
+      if(sc > 70) kotu.push(d.ad + ' cekirdek sapmasi ' + Math.round(sc));
+    });
+    K('Deri acikken fotograf ekranin zeminini ve diskini tasiyor',
+      kotu.length === 0 && (deriFoto || []).length === 2,
+      kotu.length ? kotu.join(', ') : not.join(' | '));
+  }
   /* METIN KODLA UYUSUYOR. Nottaki gerekce uydurulmus bir cumle
      degil, kullanim sartlarindaki kuralin ta kendisi: arsiv
      kayitlari CC/kamu mali, istasyon yayini degil. Ikisi ayrisirsa
@@ -8577,6 +8794,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           await bek(300);
           const bozuk = Math.abs((ar.getBoundingClientRect().top + 13)
                                - (yv.getBoundingClientRect().top + 16));
+          /* ── BOZAMADIYSAK OLCECEK BIR SEY DE YOK ────────────────
+             Bu kontrol bir kez daha kirmizi yandi ve olcum metni
+             "elle bozuldu, bekci yuvasina geri koydu" diyordu --
+             yani metin sabit, sonuc ise 'bozdum ve geri geldi'nin
+             ikisini birden istiyordu. Kirmizinin gercek sebebi
+             ikincisi degil BIRINCISIYDI: buyutec o an yerinden hic
+             oynamamisti (satir yeniden yerlesirken kutular
+             anlamsiz olabiliyor), yani ortada geri konacak bir
+             bozukluk yoktu.
+             Bozamamak bir KUSUR DEGIL, olcumun yapilamamasi.
+             Yesil yakmak yanlis olurdu (hicbir sey olculmedi),
+             kirmizi yakmak daha da yanlis (kod dogru). */
+          if(!(bozuk > 40)){ ar.style.bottom = eski; return 'olculemedi'; }
           /* ── SABIT BEKLEME YERINE SON TARIH ────────────────────
              Once tek bir `await bek(2600)` vardi (bekci araligi
              2 sn + pay). Tek basina kosarken hep geciyordu, ama
@@ -8623,7 +8853,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          yanlis (hicbir sey olculmedi). Suitenin kendi yolu:
          atlananlar listesine yaziliyor ve raporun basinda gorunuyor. */
       if(bekciSonuc === 'olculemedi')
-        yavas('Bekci yerinden oynayan buyuteci geri koyuyor — olculemedi: rAF durmus (sayfa arka planda)');
+        yavas('Bekci yerinden oynayan buyuteci geri koyuyor — olculemedi: '
+            + 'ya rAF durmus (sayfa arka planda) ya da buyutec o an yerinden oynamadi');
       else
         K('Bekci yerinden oynayan buyuteci geri koyuyor', bekciSonuc,
           'elle bozuldu, bekci yuvasina geri koydu');
@@ -8661,11 +8892,54 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         K('Ortadaki cizgi ve nokta markadan ve raftan tureniyor',
            /function olukYaz\(\)/.test(kaynak)
            && /const karisim = _hexKaris\(raf, d\.marka, 0\.42\);/.test(kaynak)
-           && /--d-oluk',\s+_hexKaris\(ana, d\.zem, acik \? 0\.60 : 0\.48\)/.test(kaynak)
-           && /--d-cekirdek', _hexKaris\(ana, d\.zem, acik \? 0\.38 : 0\.32\)/.test(kaynak)
            && />= 1\.8\) ana = karisim;/.test(kaynak)
            && /try\{ olukYaz\(\); \}catch/.test(kaynak),
            'marka + raf karisimi, zemine gomulurse saf markaya donuyor');
+        /* ── SABIT ORAN DEGIL, OLCULEN SONUC ──────────────────────
+           Bu kontrol bir kez YANLIS SEYI sordu: kaynakta
+           "0.60 : 0.48" yaziyor mu diye bakiyordu. Yani bir SAYIYI
+           koruyordu, bir SONUCU degil -- ve o sabit oran altmis
+           derinin bir kisminda diski duz bir kutleye ceviriyordu
+           (olculdu: GRAFFITI 51, BRONZE 51; VECTOR 129, PAPER 128).
+           Oran hedefe gore cozulur olunca kontrol de kirmizi yandi,
+           halbuki degisiklik iyilestirmeydi. Test bir uygulama
+           ayrintisina kilitlenmisti.
+           Artik sorulan sey su: HER deride, oluk ve cekirdek
+           renginin zemine karsi kontrasti hedefi tutuyor mu. Hedef
+           tutulamiyorsa (ana rengin kendisi bile yetmiyorsa) o
+           derinin ulasabilecegi en iyi degere razi oluyoruz -- ama
+           bunu da olcuyoruz, "yetmedi" diye sessizce gecmiyoruz. */
+        const oluklar = await pg.evaluate(()=>{
+          const eski = AYAR.deri;
+          const kotu = [];
+          const oran = (hex, zem)=> _kontrastOran(_parlaklikHex(hex), _parlaklikHex(zem));
+          for(let i = 1; i <= DERILER.length; i++){
+            AYAR.deri = i; deriUygula(); olukYaz();
+            const d = DERILER[i-1];
+            const k = document.documentElement.style;
+            const ol = String(k.getPropertyValue('--d-oluk')||'').trim();
+            const ce = String(k.getPropertyValue('--d-cekirdek')||'').trim();
+            if(!/^#[0-9a-fA-F]{6}$/.test(ol) || !/^#[0-9a-fA-F]{6}$/.test(ce)){
+              kotu.push(d.ad + ' yazilmadi'); continue;
+            }
+            /* Tavan: ana rengin kendisi. Hedefi asamayan deride
+               beklenen sey hedef degil, bu tavan. */
+            const tavan = oran(d.marka, d.zem);
+            const bekOluk = Math.min(2.60, tavan) - 0.05;
+            const bekCek  = Math.min(3.20, tavan) - 0.05;
+            if(oran(ol, d.zem) < bekOluk)
+              kotu.push(d.ad + ' oluk ' + oran(ol, d.zem).toFixed(2));
+            if(oran(ce, d.zem) < bekCek)
+              kotu.push(d.ad + ' cekirdek ' + oran(ce, d.zem).toFixed(2));
+          }
+          AYAR.deri = eski; deriUygula(); olukYaz();
+          return { sayi: DERILER.length, kotu: kotu.slice(0, 6), toplam: kotu.length };
+        });
+        K('Her deride oluk ve cekirdek zeminden yeterince ayriliyor',
+           oluklar.toplam === 0,
+           oluklar.toplam === 0
+             ? (oluklar.sayi + ' deri: oluk >= 2.60, cekirdek >= 3.20 (ya da o derinin tavani)')
+             : (oluklar.toplam + ' sapma: ' + oluklar.kotu.join(', ')));
       }
       /* ── SKINS: ACAN TUS KAPATAN TUS ────────────────────────────
          Kullanicinin sozu: "HIDE'a basinca skins penceresi
