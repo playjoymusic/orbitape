@@ -689,5 +689,79 @@ function bitir(){
     K('_headers okunabiliyor', false, String(e && e.message || e));
   }
 
+  /* ── TURKCE SOZLUK ──────────────────────────────────────────────
+     Sozlukte anahtar = EKRANDAKI INGILIZCE METNIN KENDISI. Bunun
+     bir bedeli var: metin degisip sozluk degismezse anahtar
+     tutmuyor ve o satir sessizce Ingilizce kaliyor -- hicbir yerde
+     hata gorunmeden. Tam olarak bu yuzden burada olculuyor:
+     sozlukteki her anahtar gercekten kodda geciyor mu.
+     Ters yon (kodda olup sozlukte olmayan) BILEREK sinanmiyor:
+     ceviri eksik olabilir, o zaman Ingilizce gorunur ve bu bir
+     kusur degil bir ara durumdur. */
+  try{
+    const sozluk = JSON.parse(fs.readFileSync(path.join(KOK, 'dil/tr.json'), 'utf8'));
+    const anahtarlar = Object.keys(sozluk).filter(a => a !== '_');
+
+    K('tr.json: gecerli ve dolu', anahtarlar.length > 100,
+      anahtarlar.length + ' anahtar');
+
+    /* Bos ya da Ingilizcesiyle ayni birakilmis ceviri: ya unutulmus
+       ya da anlamsiz. Ikisi de sozlukte yer kaplamamali. */
+    const bos = anahtarlar.filter(a => !String(sozluk[a]).trim());
+    K('tr.json: bos ceviri yok', bos.length === 0, bos.join(', '));
+
+    /* Anahtar kodda GERCEKTEN geciyor mu. Bir metin degisip sozluk
+       unutulursa burasi kirmizi yanar; yoksa ekranda sessizce
+       Ingilizce kalirdi. */
+    /* Uzun metinler kaynakta bolunmus duruyor:
+           'Live stations are licensed to be heard, not recorded. '
+         + 'Switch to ORBITAPE to record.'
+       Duz arama bunu bulamaz ve testin kendisi yalan soyler.
+       Birlestirmeler once kapatiliyor -- arama, calisma aninda
+       olusan metnin uzerinde yapiliyor. */
+    const kod = KAYNAK.replace(/'\s*\+\s*'/g, '').replace(/"\s*\+\s*"/g, '');
+    const yetim = anahtarlar.filter(a => {
+      if(a === 'ORBITAPE' || a === 'NORMAL') return false;   /* her yerde gecen ortak kelimeler */
+      return kod.indexOf(a) < 0;
+    });
+    K('tr.json: her anahtar kodda geciyor', yetim.length === 0,
+      yetim.length ? ('kodda bulunamadi: ' + yetim.slice(0,6).join(' | ')) : anahtarlar.length + ' anahtarin hepsi');
+
+    /* ── VERI CEVRILMIYOR ─────────────────────────────────────────
+       Tur ve raf adlari VERI: cevrilirse hem arama hem hasat
+       araclariyla ayrisir. Sozluge kazara girmeleri kolay ve
+       sonucu sessiz, o yuzden acikca yasak. */
+    const VERI = ['JAZZ','ROCK','AMBIENT','ELECTRONIC','DISCO FUNK','AFROBEATS',
+                  'ORCHESTRAL','WORLD & ROOTS','LOUNGE & LOFI','ROCK & INDIE',
+                  'RADIOTAPE','NATURE','CITY','HUMANS','NOISE','SPACE','AMBIANCE'];
+    const kacak = VERI.filter(a => Object.prototype.hasOwnProperty.call(sozluk, a));
+    K('tr.json: tur ve raf adlari cevrilmemis', kacak.length === 0,
+      kacak.length ? ('veri cevrilmis: ' + kacak.join(', ')) : 'adlar veri olarak duruyor');
+
+    /* Tus etiketleri de cevrilmiyor: bu satirdaki genislik olculu
+       ("uc satir ayni sag kenarda" testi). Karar index.html'de
+       yazili; burasi onu yerinde tutuyor. */
+    const TUS = ['REC','CAM'];
+    const tusKacak = TUS.filter(a => Object.prototype.hasOwnProperty.call(sozluk, a));
+    K('tr.json: kisa tus etiketleri cevrilmemis', tusKacak.length === 0,
+      tusKacak.join(', ') || 'REC/CAM oldugu gibi');
+
+    /* Duzenegin kendisi yerinde mi: dosya yayina cikmazsa ya da
+       cagri silinirse Turkce SESSIZCE kaybolur. */
+    K('Sozluk yayina cikan bir dosyadan yukleniyor',
+      /fetch\('dil\/tr\.json'\)/.test(kod) && /function Y\(s\)/.test(kod)
+      && /function Ym\(s\)/.test(kod),
+      'fetch + Y + Ym yerinde');
+    const yoksay = fs.readFileSync(path.join(KOK, '.assetsignore'), 'utf8');
+    K('Sozluk dosyasi yayindan dislanmamis',
+      !/^\s*dil\//m.test(yoksay),
+      '.assetsignore dil/ klasorunu engellememeli');
+    const bas = fs.readFileSync(path.join(KOK, '_headers'), 'utf8');
+    K('Sozluk dosyasinin onbellek kurali var',
+      /^\/dil\/tr\.json\s*$/m.test(bas), '_headers icinde /dil/tr.json blogu');
+  }catch(e){
+    K('tr.json okunabiliyor', false, String(e && e.message || e));
+  }
+
   bitir();
 })();

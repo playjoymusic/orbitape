@@ -27,6 +27,10 @@ interface Window {
   durTazele?: () => void;
   muteTazele?: () => void;
   recPasifTazele?: () => void;
+  /* Dil degisince ayar panelinin SAGINDAKI degerleri (ON/OFF,
+     NORMAL, deri adi...) yeniden yazdiriyor: onlar metin
+     taramasiyla degil JS'ten geliyor, o yuzden ayri bir kapi. */
+  ayarDurumTazele?: () => void;
   uclukDene?: () => void;
   carkiCevir?: () => void;
 

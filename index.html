@@ -3224,6 +3224,16 @@
          Sik kullanilmaz ama her zaman ULASILABILIR olmali. Sirasi da
          bu yuzden en altta: onem sirasi yukaridan asagi. -->
     <h5>MORE</h5>
+    <!-- ── DIL ─────────────────────────────────────────────────────
+         Ilk acilista cihazin dili gecerli: tarayici Turkce ise
+         uygulama Turkce aciliyor, kimsenin bir sey aramasi
+         gerekmiyor. Bu satir o karari DEGISTIRMEK icin var, kurmak
+         icin degil -- o yuzden ustte degil MORE'un basinda.
+         Sagdaki deger her zaman KENDI dilinde yaziyor (ENGLISH /
+         TURKCE): "Language: Ingilizce" gibi bir satir, dili
+         bilmeyen icin okunmaz olurdu. -->
+    <div class="sat islem" data-ayar="dil" role="button" tabindex="-1">
+      <span>LANGUAGE</span><span class="durum">ENGLISH</span></div>
     <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
       <span>HOW IT WORKS</span><span class="durum">PLAY</span></div>
     <!-- ── SORUN BILDIR ────────────────────────────────────────────
@@ -5800,8 +5810,8 @@
           t.remove();
         }catch(__){ _yut(__); }
       }
-      dug.textContent = oldu ? 'COPIED' : 'COPY FAILED';
-      setTimeout(()=>{ try{ dug.textContent = 'COPY DETAILS'; }catch(_){ _yut(_); } }, 2200);
+      dug.textContent = Y(oldu ? 'COPIED' : 'COPY FAILED');
+      setTimeout(()=>{ try{ dug.textContent = Y('COPY DETAILS'); }catch(_){ _yut(_); } }, 2200);
     });
     /* DISMISS: paneli kapatiyor ve bir SONRAKI hatanin yeniden
        acabilmesi icin bayragi sifirliyor. Hata kaydi silinmiyor --
@@ -8253,7 +8263,11 @@
      cikarabiliyor. Parlaklik da bir kademe dusuk (DIM): kullanici
      "hafif gorunsun" dedi -- az sayida ve sakin. Bes kademenin
      ustundeki dordu isteyene duruyor. */
-  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:false, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false };
+  /* dil: '' = cihazin dili (tr ile basliyorsa Turkce), 'en'/'tr' =
+     kullanici acikca sectiyse. Bos birakilmasi bilerek: secim
+     yapmamis birine kendi dilini gostermek, varsayilani Ingilizce
+     birakip "ayarlardan bul" demekten iyi. */
+  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:false, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'' };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -8345,6 +8359,9 @@
          -- bu yonun tek yonlu olmasi bilincli: bir gizlilik
          anahtarinin "yanlislikla acik" hali olmamali. */
       if(_a.olcum === true) AYAR.olcum = true;
+      /* Yalnizca bilinen iki deger geri aliniyor: depodan bozuk bir
+         deger gelirse cihazin dili gecerli kalsin. */
+      if(_a.dil === 'tr' || _a.dil === 'en') AYAR.dil = _a.dil;
     }
   }catch(e){ _yut(e); }
   /* ── DUNYA ILK CIZIMDEN ONCE KURULUYOR ───────────────────────────
@@ -8378,6 +8395,119 @@
       AKTIF_AILE = null;
     }
   }catch(e){ _yut(e); }
+
+  /* ══ DIL ════════════════════════════════════════════════════════
+     Cevrilen: arayuz (ayarlar, tur, hata/durum metinleri).
+     Cevrilmeyen: istasyon/sarki/sanatci ve tur-raf adlari -- onlar
+     VERI; cevrilirse kaynagiyla ayrisir ve arama bozulur.
+
+     Sozluk ICERIDE DEGIL, dil/tr.json'da: Ingilizce okuyan kimse
+     bir Turkce tabloyu indirmesin diye (ve tavan bugun dorduncu kez
+     yukseldi -- besincisi olmasin).
+
+     Anahtar = INGILIZCE METNIN KENDISI. Uydurma anahtar yok: anahtar
+     ile ekrandaki yazi ayri dursa biri degisip oteki unutuluyor.
+     Karsiligi yoksa Ingilizcesi gorunuyor -- eksik ceviri olur,
+     BOS ekran olmaz.
+
+     Tarama yalnizca sayili kaplarda (DIL_ALAN): butun sayfayi
+     taramak istasyon ve sarki adlarina dokunma riskiydi. */
+  var SOZLUK = {};
+  var DIL = 'en';
+  var DIL_ONBELLEK = 'orbitape.dil';
+  /* Kaplar KUTULARIN KENDISI degil, satirlarin tamami: SKIP dugmesi
+     kutunun kardesi, icinde degil. Once '#turKutu' yazilmisti ve
+     SKIP Ingilizce kalmisti. */
+  const DIL_ALAN = ['#ayar', '#agyok', '#hata', '#turAlt', '#fxAlt', '#fxEl'];
+  function dilSec(){
+    try{
+      if(AYAR.dil === 'tr' || AYAR.dil === 'en') return AYAR.dil;
+      const d = String((navigator.languages && navigator.languages[0])
+                       || navigator.language || 'en').toLowerCase();
+      return d.indexOf('tr') === 0 ? 'tr' : 'en';
+    }catch(e){ return 'en'; }
+  }
+  /* Tek gecis noktasi. Sozlukte yoksa gelen metin oldugu gibi
+     donuyor -- eksik ceviri gorunur, bos ekran olmaz. */
+  function Y(s){
+    try{ return (DIL === 'tr' && SOZLUK[s]) ? SOZLUK[s] : s; }catch(e){ return s; }
+  }
+  /* Iki satirlik metinler: <br> ile ayrilan her cumle AYRI anahtar.
+     Sozlukte ekranda gorunen cumleler duruyor; bir cumle degisince
+     yalnizca o cumlenin cevirisi eskiyor, butun paragraf degil. */
+  function Ym(s){
+    try{ return String(s).split('<br>').map(p => Y(p.trim())).join('<br>'); }
+    catch(e){ return s; }
+  }
+  /* INGILIZCE ASLI burada saklaniyor; olmazsa dile iki kez gecince
+     Turkceyi Turkceye cevirmeye calisir ve geri donus imkansizlasir.
+     NEDEN WeakMap, dugumun uzerine yazilan bir alan degil: (1) DOM
+     dugumune kendi alanimizi eklemek tip denetiminde uc uyari
+     uretiyordu, (2) dugum degisince kayit kendiliginden dusuyor --
+     elle temizlik yok. */
+  const _dilAsil = new WeakMap();
+  function _dilYazi(kok){
+    try{
+      const y = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT);
+      const dugumler = []; let n;
+      while((n = y.nextNode())) dugumler.push(n);
+      for(const d of dugumler){
+        const ham = d.nodeValue, t = ham.trim();
+        if(!t) continue;
+        if(!_dilAsil.has(d)) _dilAsil.set(d, t);
+        const hedef = Y(_dilAsil.get(d));
+        if(t !== hedef) d.nodeValue = ham.replace(t, hedef);
+      }
+      /* KOKUN KENDISI DE: querySelectorAll yalnizca ICERIYE bakiyor.
+         Bir kez atlandi ve panelin ekran okuyucu adi ("Settings")
+         Ingilizce kalmisti -- goze gorunmeyen, yalnizca duyulan bir
+         eksiklik. */
+      const hedefler = [kok].concat(Array.from(kok.querySelectorAll('[aria-label],[title]')));
+      hedefler.forEach(el=>{
+        ['aria-label','title'].forEach(ad=>{
+          const v = el.getAttribute(ad); if(!v) return;
+          /* Ayni WeakMap: metin dugumu icin dizgi, eleman icin
+             {aria-label, title} kutusu tutuluyor. DOM'a fazladan
+             data-* alani yazilmiyor. */
+          let kutu = _dilAsil.get(el);
+          if(!kutu || typeof kutu !== 'object'){ kutu = {}; _dilAsil.set(el, kutu); }
+          if(kutu[ad] === undefined) kutu[ad] = v;
+          const hedef = Y(kutu[ad]);
+          if(v !== hedef) el.setAttribute(ad, hedef);
+        });
+      });
+    }catch(e){ _yut(e); }
+  }
+  function dilUygula(){
+    try{
+      document.documentElement.setAttribute('lang', DIL);
+      DIL_ALAN.forEach(s=>{ const k = document.querySelector(s); if(k) _dilYazi(k); });
+      /* Panelin sagindaki degerler (ON/OFF, NORMAL, deri adi...)
+         JS'ten yaziliyor: taramayla degil, yeniden yazdirilarak
+         guncelleniyor. */
+      try{ if(window.ayarDurumTazele) window.ayarDurumTazele(); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  function dilYukle(){
+    try{
+      DIL = dilSec();
+      if(DIL !== 'tr'){ SOZLUK = {}; dilUygula(); return; }
+      /* Once onbellek: ikinci acilista beklemeden Turkce geliyor. */
+      try{
+        const c = localStorage.getItem(DIL_ONBELLEK);
+        if(c){ const t = JSON.parse(c); if(t && typeof t === 'object'){ SOZLUK = t; dilUygula(); } }
+      }catch(e){ _yut(e); }
+      fetch('dil/tr.json')
+        .then(r => r.ok ? r.json() : null)
+        .then(t => {
+          if(!t || typeof t !== 'object') return;
+          SOZLUK = t; dilUygula();
+          try{ localStorage.setItem(DIL_ONBELLEK, JSON.stringify(t)); }catch(e){ _yut(e); }
+        })
+        .catch(e => _yut(e));   /* Dosya gelmezse Ingilizce kaliyor. */
+    }catch(e){ _yut(e); }
+  }
+  try{ dilYukle(); }catch(e){ _yut(e); }
 
   /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
      Tek kapi. Iki dunya arasindaki gecisin BASKA yolu yok: ne nebula,
@@ -9945,9 +10075,9 @@
       _arsivDurdu = true;
       const el = document.getElementById('agyok'); if(!el) return;
       const ad = el.querySelector('.ay-ad'), not = el.querySelector('.ay-not');
-      if(ad)  ad.textContent  = 'NOTHING WOULD PLAY';
-      if(not) not.textContent = 'Twelve recordings in a row failed to load. '
-                              + 'The archive server may be busy, or blocked on this network.';
+      if(ad)  ad.textContent  = Y('NOTHING WOULD PLAY');
+      if(not) not.textContent = Y('Twelve recordings in a row failed to load. '
+                              + 'The archive server may be busy, or blocked on this network.');
       el.classList.add('on'); el.setAttribute('aria-hidden','false');
       try{ bekle.classList.remove('on'); }catch(_){ _yut(_); }
       try{ if(bekleInt){ clearInterval(bekleInt); bekleInt=null; } }catch(_){ _yut(_); }
@@ -9965,9 +10095,9 @@
         el.classList.remove('on'); el.setAttribute('aria-hidden','true');
         /* Metni geri al: panel ag icin de kullaniliyor. */
         const ad = el.querySelector('.ay-ad'), not = el.querySelector('.ay-not');
-        if(ad)  ad.textContent  = 'NO CONNECTION';
-        if(not) not.innerHTML   = 'ORBITAPE streams from the internet.<br>'
-                                + 'It resumes by itself when you are back online.';
+        if(ad)  ad.textContent  = Y('NO CONNECTION');
+        if(not) not.innerHTML   = Ym('ORBITAPE streams from the internet.<br>'
+                                + 'It resumes by itself when you are back online.');
       }
     }catch(e){ _yut(e); }
   }
@@ -11355,11 +11485,8 @@
     radyoDolduruluyor=false;
   }
   async function istasyonDoldur(){
-    /* SOUND BANKS kipinde radyo makinesi HIC calismiyor. Kapiyi
-       yalnizca cikista (cal) tutmak yetmedi: arka planda kuyruk
-       dolmaya devam ediyor ve her dolan istasyon kapiya carpip yeni
-       bir arayis tetikliyordu -- ekran sessiz kalirken sistem bos
-       yere donuyordu (olculdu). Uretimi kaynaginda durduruyoruz. */
+    /* Kip kapisi: SOUND BANKS acikken radyo makinesi hic
+       calismiyor (gerekce: radyoKuyrukDoldur'un basi). */
     if(AYAR.mood) return;
 
     iz('istasyonDoldur');
@@ -11397,11 +11524,8 @@
      deneme kendini sonsuza kadar çağırır ve ekranda kalıcı WAIT kalır. */
   var _radyoBos = 0;
   function radyoGec(){                                       // radyo modunda "sıradaki istasyon" -> ses+grafikten çal (FX'li)
-    /* SOUND BANKS kipinde radyo makinesi HIC calismiyor. Kapiyi
-       yalnizca cikista (cal) tutmak yetmedi: arka planda kuyruk
-       dolmaya devam ediyor ve her dolan istasyon kapiya carpip yeni
-       bir arayis tetikliyordu -- ekran sessiz kalirken sistem bos
-       yere donuyordu (olculdu). Uretimi kaynaginda durduruyoruz. */
+    /* Kip kapisi: SOUND BANKS acikken radyo makinesi hic
+       calismiyor (gerekce: radyoKuyrukDoldur'un basi). */
     if(AYAR.mood) return;
 
     let it=radyoKuyruk.shift();
@@ -13154,7 +13278,7 @@
     araSonuc.textContent='';
     if(!_araListe.length){
       if(araNorm(araGiris.value).length>=2){
-        const b=document.createElement('div'); b.className='bos'; b.textContent='NO RESULTS';
+        const b=document.createElement('div'); b.className='bos'; b.textContent=Y('NO RESULTS');
         araSonuc.appendChild(b);
       }
       return;
@@ -13656,13 +13780,16 @@
     function yildizYaz(){
       try{
         const el = kut.querySelector('.sat[data-ayar="yildiz"] .durum');
-        if(el) el.textContent = YILDIZ_AD[AYAR.yildiz|0] || 'NORMAL';
+        if(el) el.textContent = Y(YILDIZ_AD[AYAR.yildiz|0] || 'NORMAL');
         const el2 = kut.querySelector('.sat[data-ayar="yildizIsik"] .durum');
-        if(el2) el2.textContent = YILDIZ_ISIK_AD[AYAR.yildizIsik|0] || 'NORMAL';
+        if(el2) el2.textContent = Y(YILDIZ_ISIK_AD[AYAR.yildizIsik|0] || 'NORMAL');
         /* Satirin sagi HER ZAMAN secili derinin adi (HIDE kalkti,
            bkz. data-ayar="deri" isleyicisi). */
         const el3 = kut.querySelector('.sat[data-ayar="deri"] .durum');
-        if(el3) el3.textContent = DERI_AD[AYAR.deri|0] || 'OFF';
+        if(el3) el3.textContent = Y(DERI_AD[AYAR.deri|0] || 'OFF');
+        /* Dil satirinin sagi HER ZAMAN kendi dilinde. */
+        const el4 = kut.querySelector('.sat[data-ayar="dil"] .durum');
+        if(el4) el4.textContent = (DIL === 'tr') ? 'TÜRKÇE' : 'ENGLISH';
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
            baska is yapmaz. */
@@ -13687,9 +13814,12 @@
            gosterenlerde) duruyor. Ekran okuyucu icin aria-checked
            zaten var, yani yazi kaldirilinca bilgi kaybolmuyor. */
         const d = el.querySelector('.durum');
-        if(d) d.textContent = a ? 'ON' : 'OFF';
+        if(d) d.textContent = Y(a ? 'ON' : 'OFF');
       });
     };
+    /* Dil degisince panelin sagindaki butun degerler yeniden
+       yazilmali: bunlar JS'ten geliyor, metin taramasi gormuyor. */
+    try{ window.ayarDurumTazele = ()=>{ try{ yaz(); }catch(e){ _yut(e); } }; }catch(e){ _yut(e); }
     /* Kapali panel GERCEKTEN kapali olmali: aria-hidden yetmiyor,
        icindeki satirlar hala sekmeyle gezilebiliyordu. inert + tabindex
        ikisi birden. */
@@ -13824,6 +13954,18 @@
         izgaraAc(!!izgara.hidden);
         return;
       }
+      if(k === 'dil'){
+        /* Iki durum arasinda donuyor. Ucuncu bir "OTOMATIK" durumu
+           BILEREK yok: kullanici bu satira ancak dili degistirmek
+           icin dokunuyor ve "otomatik"in ne gosterecegi ekranda
+           yazmiyor -- ucuncu durak, secimi kolaylastirmaz. Ilk
+           acilistaki otomatik secim zaten calisiyor (AYAR.dil bos). */
+        AYAR.dil = (dilSec() === 'tr') ? 'en' : 'tr';
+        ayarKaydet();
+        try{ dilYukle(); }catch(e){ _yut(e); }
+        yildizYaz();
+        return;
+      }
       if(k === 'yildiz'){
         /* Bes kademe arasinda donuyor. Ayri bir panel acmak yerine
            satirin kendisi deger gosteriyor: tek dokunus, tek satir. */
@@ -13929,12 +14071,12 @@
           if(dr){
             dr.textContent = '';
             const hayir = document.createElement('button');
-            hayir.type = 'button'; hayir.className = 'cvp'; hayir.textContent = 'NO';
+            hayir.type = 'button'; hayir.className = 'cvp'; hayir.textContent = Y('NO');
             const evet = document.createElement('button');
-            evet.type = 'button'; evet.className = 'cvp evet'; evet.textContent = 'YES';
+            evet.type = 'button'; evet.className = 'cvp evet'; evet.textContent = Y('YES');
             hayir.addEventListener('click', e2=>{
               e2.preventDefault(); e2.stopPropagation();
-              try{ el.dataset.soruldu = ''; dr.textContent = 'RESET'; }catch(e4){ _yut(e4); }
+              try{ el.dataset.soruldu = ''; dr.textContent = Y('RESET'); }catch(e4){ _yut(e4); }
             });
             evet.addEventListener('click', e2=>{
               e2.preventDefault(); e2.stopPropagation();
@@ -13949,7 +14091,7 @@
             try{
               if(el.dataset.soruldu !== '1') return;
               el.dataset.soruldu = '';
-              if(dr) dr.textContent = 'RESET';
+              if(dr) dr.textContent = Y('RESET');
             }catch(e3){ _yut(e3); }
           }, 5000);
         }catch(e){ _yut(e); }
@@ -14687,8 +14829,8 @@
          Kilit yalnizca ARSIVDE canli yayin calarken anlamli. */
       const kapali = !kayitta && (fotoVar ? false : (radyoda || yayin));
       rec.classList.toggle('pasif', kapali);
-      rec.title = kapali ? 'Recording is off during live radio'
-                : (fotoVar && !kayitta ? 'Photo of this screen' : 'Screen recording');
+      rec.title = Y(kapali ? 'Recording is off during live radio'
+                : (fotoVar && !kayitta ? 'Photo of this screen' : 'Screen recording'));
       /* YAZI DA BURADA. Ayri bir cagriya birakilirsa tusun GORUNUSU
          ile YAZISI iki farkli anda guncelleniyor ve arada bir kare
          boyunca "REC" yazan bir tus fotograf cekiyor. Bir kare bile
@@ -14710,6 +14852,11 @@
         catch(e){ _yut(e); } }; }catch(e){ _yut(e); }
   var _kisaNotZaman = null;
   function kisaNotYaz(baslik, metin){
+    /* Ceviri TEK yerde: butun kisa notlar (REC LOCKED, kamera
+       hatalari, fotograf, tani kopyalandi) buradan geciyor. Cagri
+       yerlerine dokunmak gerekmiyor, yani yeni bir not eklendiginde
+       cevrilmesi unutulamiyor. */
+    try{ baslik = Y(baslik); metin = Y(metin); }catch(e){ _yut(e); }
     try{
       const el = document.getElementById('kisaNot'); if(!el) return;
       /* ── SIRA ONEMLI: ONCE GORUNUR, SONRA YAZ ──────────────────
@@ -14779,12 +14926,12 @@
     if(_bekleyenKayit){
       camDug.classList.add('sil'); camDug.classList.remove('acik','bekle');
       if(yz) yz.textContent = 'DELETE';
-      camDug.title = 'Discard recording';
+      camDug.title = Y('Discard recording');
       camDug.setAttribute('aria-pressed','false');
     }else{
       camDug.classList.remove('sil');
       if(yz) yz.textContent = 'CAM';
-      camDug.title = 'Front camera';
+      camDug.title = Y('Front camera');
       camDug.classList.toggle('var', !!KAMERA);
       camYaz();
     }
@@ -16198,8 +16345,14 @@
          canli yayin calarken tus sonuk olmasi gerekirken parlak
          kaliyordu. Sonuk/parlak kararinin tek sahibi recPasifYaz;
          burasi yalnizca YAZIYI kuruyor. */
+      /* TUS YAZILARI CEVRILMIYOR -- eksiklik degil karar.
+         REC / PHOTO / CAM bu satirda yan yana duran kisa etiketler
+         ve genisligi olculu (araclarYenidenSigdir; "uc satir ayni
+         sag kenarda" testi). "FOTOGRAF" sigmiyor. Turlerdeki
+         ANLATIM Turkce ve tusa kendi adiyla isaret ediyor:
+         "PHOTO bu ekrani gorsel olarak sakliyor." */
       recYazi.textContent = f ? 'PHOTO' : 'REC';
-      rec.title = f ? 'Photo of this screen' : 'Screen recording';
+      rec.title = Y(f ? 'Photo of this screen' : 'Screen recording');
       try{ araclarYenidenSigdir(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
@@ -16468,18 +16621,6 @@
     fxDurumYaz(!(grafHazir && analiz && lopass));
   }
 
-  /* ── NEBULA: KÜÇÜK BİR TUVAL ─────────────────────────────────────
-     Neden tuval: eski hâlinde üç CSS filtresi vardı (blur, hue-rotate,
-     dönen ::before). Filtre animasyonu çalışan bir eleman KALICI bir
-     derleyici katmanına alınıyor ve her karede yeniden rasterleniyor;
-     telefonda boştaki işin %30'u buydu ve bellek baskısında katman
-     düşünce ekranda donuk bir dikdörtgen kalıyordu.
-
-     Tuvalde hiçbir filtre yok:
-       · bulanıklık   -> gaz katmanı 34px'lik tamponda çizilip büyütülüyor
-       · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
-       · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
-     Kare başına iş: iki drawImage + dört minik nokta. */
   /* ── NEBULA: KÜÇÜK BİR TUVAL ─────────────────────────────────────
      Neden tuval: eski hâlinde üç CSS filtresi vardı (blur, hue-rotate,
      dönen ::before). Filtre animasyonu çalışan bir eleman KALICI bir
@@ -16964,7 +17105,16 @@
     const y = t.querySelector('.yazi');
     y.classList.remove('gor');
     setTimeout(()=>{
-      y.innerHTML = '<b>'+baslik+'</b>'+metin;
+      /* ── TUR METINLERI TEK YERDE CEVRILIYOR ────────────────────
+         Otuza yakin adimin her birini ayri ayri sarmak yerine
+         cevirinin tek gecidi burasi: butun turlar (acilis, ORBITAPE
+         tanitimi, FX sunumu) bu satirdan geciyor. Adim eklendiginde
+         cevrilmesi icin bir sey yapmak gerekmiyor -- unutulacak bir
+         adim kalmiyor.
+         Ym: metin iki satirlik ve <br> ile ayriliyor; her cumle
+         sozlukte AYRI anahtar. Boylece sozlukte ekranda gorunen
+         cumleler duruyor, birlestirilmis uzun diziler degil. */
+      y.innerHTML = '<b>'+Y(baslik)+'</b>'+Ym(metin);
       /* Yazı ALT SATIRDAN yukarı doğru yerleşiyor: noktalar hemen
          üstünde, yazı onun üstünde. Diskin altındaki büyük kategori
          yazısıyla çakışmasın diye taban da kontrol ediliyor. */

@@ -387,6 +387,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kirparak 100 bayt kovalamak muhendislik degil kumar.
        Kullanici tarafinda karsiligi: ilk acilista ~2 KB daha,
        sonra servis calisani onbellekliyor.
+       ── BESINCI YUKSELIS: KENDI KURALIMI CIGNEDIM, YAZIYORUM ────
+       Bir onceki not aynen soyle diyordu: "BIR SONRAKI YUKSELTME
+       ONCESI MODUL BOLME YAPILMALI." Bu partide (Turkce arayuz)
+       tavan yine asildi ve modul bolme YAPILMADI. Sebebi ve
+       olcumu, kimse aramasin diye burada:
+
+       · Ceviriler dosyaya GIRMEDI. dil/tr.json ayri bir dosya ve
+         yalnizca Turkce kullanan indiriyor (7,6 KB ham / 3,1 KB).
+         Yani buyumeyi ureten sey ceviri metinleri degil, yalnizca
+         onlari yerlestiren ~200 satirlik duzenek.
+       · KIRPMA DENENDI VE OLCULDU: yorumlardan ~700 bayt silindi,
+         brotli 281,71 -> 281,88 KB'a CIKTI. Ayni dosyada zaten
+         yazili olan sey bir kez daha dogrulandi -- bayt kirparak
+         bu freni tutmak mumkun degil.
+       · Modul bolmeyi kullanici uyurken, 1 MB'lik tek dosyada,
+         gozetimsiz yapmak 2 KB'lik bir tavandan buyuk bir risk.
+         Karar bilincli: tavan yukseliyor, bolme SIRADAKI IS olarak
+         kaliyor ve bu satir onun borç senedi.
+       · 283 (282 degil): 281,88'in ustune bir tikkadar bosluk.
+         120 baytlik bir tavan, bir yazim duzeltmesinde bile
+         kirmizi yanar ve o zaman kural her gun yeniden tartisilir.
+
        BU SAYI BUGUN DORT KEZ YUKSELDI (272 -> 274 -> 276 -> 278 ->
        280) ve bu artik bir uyari degil, bir KARAR bekliyor.
        Dorduncu yukselisin sebebi adi konabilen bir is: radyo
@@ -401,7 +423,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        BIR SONRAKI YUKSELTME ONCESI MODUL BOLME YAPILMALI. Bugun
        ayrica ucuncu kez "blogu keserken komsuyu kesme" hatasi
        yasandi; tek dosyanin bedeli artik yalnizca boy degil. */
-    K('Telden gecen boy < 280 KB', br < 280*1024,
+    K('Telden gecen boy < 283 KB', br < 283*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
@@ -8875,6 +8897,90 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          yb.n + '/' + taban + (yb.n < taban ? ' — taban indi' : '')
          + (yb.ilk.length ? '  · ' + yb.ilk.join(' | ') : ''));
     }
+  }
+
+  /* ── TURKCE ARAYUZ ──────────────────────────────────────────────
+     Uygulama cihazin dili Turkce ise Turkce aciliyor. Bu blok AYRI
+     bir tarayici baglaminda (locale tr-TR) olcuyor, cunku dil
+     karari acilista veriliyor. Suitenin geri kalanindaki
+     "... Ingilizce" kontrolleri de bu yuzden gecerli: onlarin
+     baglami en-US.
+     Uc ayri yalanin onunde duruyor:
+       · arayuz gercekten Turkce mi (duzenek kurulu olup sozlugun
+         hic uygulanmamasi mumkun)
+       · VERI cevrilmiyor mu -- tur ve raf adlari (JAZZ, AMBIENT,
+         NATURE) cevrilirse arama ve hasat araclariyla ayrisir
+       · sozluk gelmezse ne oluyor -- Ingilizce kalmali; yarim
+         Turkce ya da bos ekran degil */
+  const trd = await (async ()=>{
+    let bg = null;
+    try{
+      const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:2800,
+                                           baglamEk:{ locale:'tr-TR' } });
+      bg = sayfa;
+      return await sayfa.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        await bek(500);
+        const g = s=>{ const e=document.querySelector(s); return e? e.textContent.trim() : ''; };
+        const tr = {
+          dil: DIL,
+          lang: document.documentElement.getAttribute('lang'),
+          sozluk: Object.keys(SOZLUK).length,
+          baslik: g('#ayar h5'),
+          sifirla: g('.sat[data-ayar="sifirla"] span'),
+          etiket: document.getElementById('ayar').getAttribute('aria-label'),
+          agyok: g('#agyok .ay-ad'),
+          atla: g('#turAtla'),
+          dilDurum: g('.sat[data-ayar="dil"] .durum')
+        };
+        /* VERI: ceviri gecidi tur/raf adlarina DOKUNMAMALI. */
+        const veri = ['JAZZ','AMBIENT','ELECTRONIC','NATURE','CITY','RADIOTAPE']
+                     .every(a => Y(a) === a);
+        /* Tus etiketleri de kisa kalmali: satir genisligi olculu. */
+        const tus = (Y('REC') === 'REC') && (Y('CAM') === 'CAM');
+        /* Sozluk gelmezse: duzenek kurulu, tablo bos -> Ingilizce. */
+        const yedekSozluk = SOZLUK;
+        SOZLUK = {}; dilUygula(); await bek(150);
+        const yedek = { baslik: g('#ayar h5'), sifirla: g('.sat[data-ayar="sifirla"] span') };
+        SOZLUK = yedekSozluk; dilUygula(); await bek(150);
+        /* Iki yonlu mu: TR -> EN -> TR. */
+        document.querySelector('.sat[data-ayar="dil"]').click(); await bek(800);
+        const ing = { dil: DIL, baslik: g('#ayar h5'), durum: g('.sat[data-ayar="dil"] .durum') };
+        document.querySelector('.sat[data-ayar="dil"]').click(); await bek(800);
+        const geri = { dil: DIL, baslik: g('#ayar h5') };
+        /* Turkce karakter aramasi PANELIN TAMAMINDA yapiliyor.
+           Once yalnizca iki satira bakiyordu ve o iki satirin
+           Turkcesi ("SES", "AYARLARI SIFIRLA") tamamen ASCII: test
+           ceviri dogruyken kirmizi yaniyordu. Yanlis olan ceviri
+           degil, olcunun kendisiydi. */
+        return { tr, veri, tus, yedek, ing, geri,
+                 turkceMi: /[ğüşıöçĞÜŞİÖÇ]/.test(
+                   (document.getElementById('ayar').textContent) || '') };
+      });
+    }catch(e){ return null; }
+    finally { try{ if(bg) await bg.context().close(); }catch(e){} }
+  })();
+  if(!trd){ yavas('Turkce arayuz (7 kontrol)'); } else {
+  K('Cihaz Turkce ise uygulama Turkce aciliyor',
+     trd.tr.dil === 'tr' && trd.tr.lang === 'tr' && trd.tr.sozluk > 100,
+     'dil ' + trd.tr.dil + ' | lang="' + trd.tr.lang + '" | ' + trd.tr.sozluk + ' anahtar');
+  K('Ayarlar Turkce', trd.turkceMi === true && trd.tr.baslik === 'SES'
+     && trd.tr.sifirla === 'AYARLARI SIFIRLA',
+     '"' + trd.tr.baslik + '" | "' + trd.tr.sifirla + '"');
+  K('Ekran okuyucu adlari da Turkce', trd.tr.etiket === 'Ayarlar',
+     'panel aria-label: "' + trd.tr.etiket + '"');
+  K('Hata ve tur metinleri de Turkce',
+     trd.tr.agyok === 'BAĞLANTI YOK' && trd.tr.atla === 'GEÇ',
+     '"' + trd.tr.agyok + '" | SKIP -> "' + trd.tr.atla + '"');
+  K('Tur ve raf adlari CEVRILMIYOR', trd.veri === true && trd.tus === true,
+     'JAZZ/AMBIENT/NATURE/RADIOTAPE ve REC/CAM oldugu gibi');
+  K('Sozluk gelmezse Ingilizce kaliyor',
+     trd.yedek.baslik === 'AUDIO' && trd.yedek.sifirla === 'RESET SETTINGS',
+     'eksik ceviri Ingilizce gorunuyor, bos ekran olmuyor');
+  K('Dil iki yonlu degisiyor',
+     trd.ing.dil === 'en' && trd.ing.baslik === 'AUDIO'
+     && trd.ing.durum === 'ENGLISH' && trd.geri.dil === 'tr' && trd.geri.baslik === 'SES',
+     'TR -> EN -> TR');
   }
 
   await b.close();

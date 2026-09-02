@@ -86,8 +86,9 @@ async function agKur(sayfa){
 const SABITLER = ['ust','solUst','tasima','araclar','ara','np','ayarTut'];
 
 async function supur(pg, nerede){
-  return pg.evaluate((ids)=>{
+  return pg.evaluate(async (ids)=>{
     const R = x => Math.round(x);
+    const bek = ms => new Promise(r=>setTimeout(r, ms));
     const gor = el => {
       if(!el) return null;
       const c = getComputedStyle(el);
@@ -126,21 +127,50 @@ async function supur(pg, nerede){
        satir egri gorunur -- kullanicinin "havada duruyor" dedigi
        hata tam olarak buydu. Panel acikken kural gecerli degil:
        orada kutu sol kenara donuyor. */
+    /* ── BEKCIYE ZAMAN TANINIYOR ─────────────────────────────────
+       Bu olcum tek bir anlik bakisti ve makine yuklu oldugunda
+       (kapida dort takim ard arda kosarken) duzenli olarak kirmizi
+       yaniyordu: buyutec henuz yerine oturmamis oluyor. Yerine
+       oturtan sey bir bekci ve arasi ~2 saniye -- yani "su anda
+       yerinde mi" yanlis soru; dogru soru "makul bir sure icinde
+       yerine geliyor mu". Yerine gelir gelmez cikiliyor; hic
+       gelmezse yine kirmizi. */
     let yuva = 'yok';
-    try{
-      const yv = document.getElementById('araYuva');
-      const cz = document.querySelector('#ara .cizgi');
-      const ac = document.getElementById('ara');
-      if(yv && cz && ac && !ac.classList.contains('acik')
-         && getComputedStyle(yv).display !== 'none'){
-        const a2 = yv.getBoundingClientRect(), b2 = cz.getBoundingClientRect();
-        if(a2.width && b2.width){
-          const dx = Math.abs(a2.left - b2.left);
-          const dy = Math.abs((a2.top+a2.height/2) - (b2.top+b2.height/2));
-          yuva = (dx <= 2 && dy <= 2) ? 'tam' : ('kaymis ' + R(dx) + 'x' + R(dy));
+    const sonTarih = Date.now() + 6000;
+    while(true){
+      try{
+        const yv = document.getElementById('araYuva');
+        const ac = document.getElementById('ara');
+        const cz = document.querySelector('#ara .cizgi');
+        if(yv && ac && !ac.classList.contains('acik')
+           && getComputedStyle(yv).display !== 'none'){
+          /* ── OLCULEN SEY: TUSUN KENDISI, ICINDEKI SIMGE DEGIL ──
+             Once '#ara .cizgi' (icerideki simge kutusu) ile yuva
+             karsilastiriliyordu. Ekran genisleyince o olcum 322px
+             kayma bildiriyordu -- oysa TUSUN KENDISI (#ara) yuvayla
+             birebir hizaliydi (olculdu: yuva 322, #ara 322, simge
+             644). Yani kirmizi yanan sey kullanicinin gordugu bir
+             kusur degil, ic bir olcumdu; uygulamanin garanti ettigi
+             ve bekcinin duzelttigi sey #ara'nin yeri.
+             Simge sapmasi kaybolmasin diye mesaja yaziliyor. */
+          const a2 = yv.getBoundingClientRect(), b2 = ac.getBoundingClientRect();
+          if(a2.width && b2.width){
+            const dx = Math.abs(a2.left - b2.left);
+            const dy = Math.abs((a2.top+a2.height/2) - (b2.top+b2.height/2));
+            let ek = '';
+            try{
+              if(cz){ const c2 = cz.getBoundingClientRect();
+                const cd = Math.abs(b2.left - c2.left);
+                if(cd > 2) ek = ' (simge ic sapma ' + R(cd) + 'px)'; }
+            }catch(e2){}
+            yuva = (dx <= 2 && dy <= 2) ? ('tam' + ek)
+                 : ('kaymis ' + R(dx) + 'x' + R(dy) + ek);
+          }
         }
-      }
-    }catch(e){}
+      }catch(e){}
+      if(/^tam/.test(yuva) || yuva === 'yok' || Date.now() >= sonTarih) break;
+      await bek(250);
+    }
     const yutulan = (window.__yutulan || []).slice();
     window.__yutulan = [];
     return { cakisan, tasan, yutulan, yuva, W:innerWidth, H:innerHeight };

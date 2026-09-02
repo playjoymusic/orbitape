@@ -142,7 +142,7 @@ if [ -f "$KOK/.well-known/assetlinks.json" ]; then
     "parmak izi ayrismis — TWA dogrulamasi kirilir"
 fi
 
-for y in /manifest.json /radyo.json /earth_giris.json; do
+for y in /manifest.json /radyo.json /earth_giris.json /dil/tr.json; do
   c=$(kod "$y"); g=$(govde)
   K "$y yayinda ve gecerli JSON" \
     "$([ "$c" = 200 ] && echo "$g" | python3 -c 'import json,sys;json.load(sys.stdin)' 2>/dev/null && echo 0 || echo 1)" \
