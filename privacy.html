@@ -65,7 +65,7 @@
 
 <header>
   <p class="marka">ORBITAPE</p>
-  <p class="alt">PRIVACY POLICY · LAST UPDATED 1 SEPTEMBER 2026</p>
+  <p class="alt">PRIVACY POLICY · LAST UPDATED 2 SEPTEMBER 2026</p>
 </header>
 
 <div class="kutu">
@@ -153,19 +153,37 @@ I do not receive any of that information.</p>
   <tr><th>Service</th><th>What it is for</th></tr>
   <tr><td>archive.org</td><td>Public-domain and Creative Commons recordings.</td></tr>
   <tr><td>radio-browser.info</td><td>The directory of live radio stations.</td></tr>
-  <tr><td>Radio stations</td><td>The live stream itself, served by each station — and,
-    while a station is playing, a request to that same station's own server asking
-    what track is on right now. Nothing about you is sent with it; it is the same
-    kind of request as the stream.</td></tr>
+  <tr><td>Radio stations</td><td>The live stream itself, served by each station.
+    Your browser connects to the station directly, exactly as if you had opened
+    their site.</td></tr>
   <tr><td>somafm.com<br>public.radio.co<br>np.tritondigital.com<br>api.zeno.fm<br>api.radioking.io</td>
       <td>The name of the track a station is playing right now. Asked only
           while you are listening to a station hosted by that provider.</td></tr>
-  <tr><td>orbitape.app</td><td>The app itself and its track lists, hosted on Cloudflare.</td></tr>
+  <tr><td>orbitape.app</td><td>The app itself and its track lists, hosted on Cloudflare
+    &mdash; and, while a station is playing, the &ldquo;what is on right now&rdquo; request
+    described just below.</td></tr>
 </table>
 <p>Two services that used to be on this list are gone: ORBITAPE no longer
 contacts Jamendo or Audius, and the track lists are no longer fetched from
 GitHub or jsDelivr. They are served from orbitape.app itself.</p>
 <p>Each of these has its own privacy policy, which I do not control.</p>
+
+<h2>&ldquo;What is on right now&rdquo;</h2>
+<p>While a station is playing, the app asks what track is on. That question used to
+go from your browser straight to the station's own server. It now goes through
+orbitape.app instead, which is cached and asked once per station rather than once
+per listener.</p>
+<p>This is a trade, and it is worth stating plainly in both directions:</p>
+<ul>
+  <li><b>Better for you:</b> the station no longer sees your IP address for these
+    requests &mdash; it sees the cache.</li>
+  <li><b>Worse in one way:</b> the request now reaches my server, so it is
+    technically possible for me to see which station is being asked about.
+    <b>I do not log it.</b> The cache is keyed by the station's address; who asked
+    is not needed and is not kept.</li>
+</ul>
+<p>The audio stream itself is unchanged: it still goes from your browser to the
+station directly, and it does not pass through me.</p>
 
 <h2>Crash reports &mdash; off unless you turn them on</h2>
 <p>When something inside ORBITAPE fails, the app swallows the error so the

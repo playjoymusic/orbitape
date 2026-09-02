@@ -497,6 +497,63 @@ function bitir(){
     K('Olcum: baska her yol statik dosyalara gidiyor',
       c10.status === 200 && (await c10.text()) === 'varlik',
       '/olcu disinda Worker araya girmiyor');
+
+    /* ── /np : SIMDI CALAN ONBELLEGI ────────────────────────────
+       Bu uc nokta bir adresi alip fetch ediyor. Dikkat edilmezse
+       alan adimizin uzerinde HERKESIN kullanabilecegi bir vekil
+       olur -- o yuzden en onemli kontrol "beyaz liste disina
+       cikmiyor mu". Digerleri: yalnizca https, yalnizca GET,
+       govde tavani, ve kaynak cevap vermezse 204 (istemci sessizce
+       dogrudan sormaya donuyor). */
+    const npEnv = {
+      ASSETS: { fetch: ()=> new Response(JSON.stringify(
+        [{mp3:'https://yayin.ornek.com/live.mp3'}]), {status:200}) }
+    };
+    const gercekFetch = globalThis.fetch;
+    let istenen = null;
+    globalThis.fetch = async (u, o)=>{
+      istenen = { u:String(u), basliklar:(o&&o.headers)||{} };
+      if(String(u).indexOf('patlat') >= 0) throw new Error('kaynak yok');
+      return new Response('{"now":"A - B"}', {status:200,
+        headers:{'content-type':'application/json'}});
+    };
+    const np = (adres, yontem)=> w.fetch(new Request(
+      'https://orbitape.app/np?u=' + encodeURIComponent(adres),
+      { method: yontem || 'GET' }), npEnv);
+    try{
+      const p1 = await np('https://somafm.com/songs/groovesalad.json');
+      K('np: bilinen saglayici geciyor',
+        p1.status === 200 && (await p1.text()).indexOf('A - B') >= 0,
+        'somafm cevabi oldugu gibi donuyor');
+
+      const p2 = await np('https://yayin.ornek.com/status-json.xsl');
+      K('np: radyo.json daki istasyon sunucusu geciyor', p2.status === 200,
+        'beyaz liste veriden uretiliyor, elle yazilmiyor');
+
+      const p3 = await np('https://kotu-adam.example/gizli');
+      const p4 = await np('http://yayin.ornek.com/status-json.xsl');
+      const p5 = await np('https://somafm.com/songs/x.json', 'POST');
+      K('np: ACIK VEKIL DEGIL',
+        p3.status === 403 && p4.status === 400 && p5.status === 405,
+        'liste disi 403, duz http 400, POST 405');
+
+      const p6 = await np('https://somafm.com/patlat.json');
+      K('np: kaynak cevap vermezse sessizce cekiliyor', p6.status === 204,
+        'istemci bugunku gibi dogrudan sormaya donuyor');
+
+      K('np: kaynaga dinleyicinin kimligi gitmiyor',
+        !!istenen && !/cookie|authorization/i.test(JSON.stringify(istenen.basliklar))
+        && /ORBITAPE/.test(JSON.stringify(istenen.basliklar)),
+        'cerez ve yetki basligi yok, kendimizi tanitiyoruz');
+
+      globalThis.fetch = async ()=> new Response('x'.repeat(200*1024), {status:200,
+        headers:{'content-type':'text/plain'}});
+      const p7 = await np('https://somafm.com/kocaman.json');
+      K('np: govde tavani var', (await p7.text()).length === 96*1024,
+        '96 KB ustu kirpiliyor');
+    } finally {
+      globalThis.fetch = gercekFetch;
+    }
   }catch(e){
     K('Olcum uc noktasi yuklenebiliyor', false, String(e && e.message || e));
   }

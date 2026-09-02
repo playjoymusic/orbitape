@@ -8624,6 +8624,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        !!olc && !/kimlik|id"|session|istasyon|station|arama|search|fav|konum|lat|lon/i.test(olc.govde)
              && !/Mozilla|AppleWebKit/.test(olc.govde),
        'kalici kimlik, istasyon, arama, konum ve tam userAgent yok');
+    /* ── SIMDI CALAN: KENAR ONBELLEGINDEN GECIYOR ────────────────
+       Olculdu: her dinleyici istasyonun KENDI sunucusuna 25 sn'de
+       bir soruyordu; 30.000 escamanli dinleyicide saniyede 1.200
+       istek ve populer bir istasyonda saniyede 200. Bu bir saldiri
+       ve bizi engellerler.
+       Uc sey birden olculuyor: istek once /np'den geciyor mu,
+       DUSERSE eski yola donuyor mu (yani kaybolan ozellik yok), ve
+       aralik geri cekilmeyle birlikte tabanda mi. */
+    K('Simdi calan istegi kenar onbelleginden geciyor',
+       /fetchZA\('\/np\?u=' \+ encodeURIComponent\(k\.a\), 5000\)/.test(kaynak)
+       && /if\(!r \|\| !r\.ok\)\{\s*\n\s*try\{ r = await fetchZA\(k\.a, 4000\)/.test(kaynak),
+       'once /np, olmazsa dogrudan istasyon -- en kotusu bugunku davranis');
+    K('Yoklama araligi ve geri cekilme yerinde',
+       /const PARCA_ARA = 40000;/.test(kaynak)
+       && /const PARCA_ARA_UZUN = 80000;/.test(kaynak)
+       && /_parcaAyni >= 2 \? PARCA_ARA_UZUN : PARCA_ARA/.test(kaynak),
+       'taban 40 sn, ad degismiyorsa 80 sn');
     /* Servis calisani POST'a hic karismiyor (yalnizca GET dinliyor);
        yine de yazili olsun -- bir gun biri method kontrolunu
        kaldirirsa olcum istekleri onbellege girmeye baslardi. */

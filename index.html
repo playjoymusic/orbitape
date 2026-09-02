@@ -10743,7 +10743,20 @@
      bizim yayin adresimizle eslesmiyorsa ad GOSTERILMIYOR. Emin
      olamadigimizda susuyoruz. */
   var _parcaZaman = null, _parcaIstek = 0, _parcaSon = '', _parcaItem = null;
-  const PARCA_ARA = 25000;          // kac ms'de bir tazelenir
+  /* ── YOKLAMA ARALIGI VE GERI CEKILME ─────────────────────────
+     25 saniyeydi. Olculdu: 30.000 escamanli dinleyicide bu, saniyede
+     1.200 istek demek. Kenar onbellegi (bkz. olcu.js /np) o isteklerin
+     ISTASYONA gitmesini engelliyor -- ama BIZE gelmeye devam ediyor
+     ve Worker istegi bedava degil.
+     Iki ucuz onlem:
+       · Taban 25 -> 40 sn. Bir parca 3-4 dakika; 40 saniye hala
+         "canli" hissi veriyor, kimse farki gormuyor.
+       · GERI CEKILME: ad iki kez ust uste ayni geldiyse aralik
+         ikiye katlaniyor (80 sn). Parca degisince tabana donuyor.
+         Cogu zaman ad zaten degismiyor, yani kazanc buyuk.
+     Ikisi birlikte istek sayisini kabaca ucte bire indiriyor. */
+  const PARCA_ARA = 40000;          // taban: kac ms'de bir tazelenir
+  const PARCA_ARA_UZUN = 80000;     // ad degismiyorsa
 
   /* Yayin adresinden hangi kaynaklarin denenecegini cikariyor.
      Sira onemli: once o platformun KENDI adresi, sonra genel tahmin. */
@@ -10964,7 +10977,23 @@
     const kaynaklar = parcaKaynaklari(item.mp3);
     for(const k of kaynaklar){
       let r = null;
-      try{ r = await fetchZA(k.a, 4000); }catch(e){ continue; }
+      /* ── ONCE KENAR ONBELLEGI, SONRA DOGRUDAN ──────────────────
+         /np ayni soruyu istasyon basina 25 saniyede BIR kez
+         kaynaga soruyor (bkz. olcu.js). Uc kazanc birden:
+           1. Populer bir istasyonun sunucusu binlerce degil tek
+              istek goruyor -- bizi engellemelerinin onune geciyor.
+           2. Istasyonlarin cogu CORS basligi gondermiyor ve bu
+              istekler tarayicida SESSIZCE dusuyordu; sunucu
+              tarafinda CORS diye bir sey yok, yani artik o
+              istasyonlarda da parca adi geliyor.
+           3. Istasyon dinleyicinin IP'sini gormuyor.
+         DUSERSE ESKI YOL: /np 204 ya da hata donerse dogrudan
+         istasyona soruluyor -- yani en kotu ihtimalde bugunku
+         davranis, kaybolan bir ozellik yok. */
+      try{ r = await fetchZA('/np?u=' + encodeURIComponent(k.a), 5000); }catch(e){ r = null; }
+      if(!r || !r.ok){
+        try{ r = await fetchZA(k.a, 4000); }catch(e){ continue; }
+      }
       if(!r || !r.ok) continue;
       /* Bazi kaynaklar DUZ METIN donuyor (Triton XML, 7.html,
          currentsong). Onlari JSON'a cevirmeye calismak hepsini
@@ -11104,13 +11133,18 @@
          degil -- hic vermeyen bir istasyonda bes denemeden sonra
          susuyoruz, bosuna sunucu yormayalim. */
       _parcaDeneme = ad ? 0 : (_parcaDeneme || 0) + 1;
+      /* Ayni ad ust uste geldiyse aralik uzuyor: parca degismemis,
+         daha sik sormanin bir karsiligi yok. Degisince tabana. */
+      const ayniMi = ad && _parcaSonAd && String(ad) === String(_parcaSonAd);
+      _parcaAyni = ayniMi ? (_parcaAyni || 0) + 1 : 0;
+      _parcaSonAd = ad || _parcaSonAd;
       if(ad || _parcaDeneme < 5)
-        _parcaZaman = setTimeout(tur, PARCA_ARA);
+        _parcaZaman = setTimeout(tur, _parcaAyni >= 2 ? PARCA_ARA_UZUN : PARCA_ARA);
     };
-    _parcaDeneme = 0;
+    _parcaDeneme = 0; _parcaAyni = 0; _parcaSonAd = '';
     tur();
   }
-  var _parcaDeneme = 0;
+  var _parcaDeneme = 0, _parcaAyni = 0, _parcaSonAd = '';
 
   /* ── BEYAZ LİSTE: radyo.json ──────────────────────────────────────
      Anahtar kelime süzgeci 50.000 istasyonluk bir dizide er geç
