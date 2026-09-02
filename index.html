@@ -13173,6 +13173,40 @@
       uyduYerlestir();
     }catch(e){ _yut(e); }
   }
+  /* ── ARAC SATIRI DEGISINCE YERLESIM YENIDEN ─────────────────────
+     BULUNUS: modul bolmeden sonra saglik testi "Kunye buyutece
+     degmiyor" derken -108px bildirdi: sag alttaki kunye blogu
+     buyutecin uzerine biniyordu. Her kosuda degil, BAZEN -- yani bir
+     yaris.
+     Sebep zincir halinde: kunyenin sol kenari SOL ALTTAKI arac
+     satirinin bittigi yerden hesaplaniyor; o satirin genisligi tusun
+     yazisina bagli (radyoda "PHOTO" 5 harf, arsivde "REC" 3); ve
+     yaziyi kuran kod artik kayit.js'te, yani defer ile SONRA
+     calisiyor. Sayfa bir kez dar genislikle yerlesiyor, sonra yazi
+     uzuyor ve kimse yeniden olcmuyordu.
+     Modulun sonuna bir kez yerlesim cagrisi eklendi ama YETMEDI:
+     "bir kez, dogru anda" cagirmak yine zamanlama kovalamak.
+     Yapisal cozum: satirin genisligini GOZLEMLEMEK. Kim degistirirse
+     degistirsin -- modul, dil degisimi, kayit sayaci, uzun bir
+     istasyon adi -- kunye pesinden geliyor.
+     olcuIste zaten ayni kareye topluyor, yani "olay yagmuru"
+     kuralini bozmuyor. */
+  try{
+    if(typeof ResizeObserver === 'function'){
+      const _arSatir = document.getElementById('araclar');
+      if(_arSatir){
+        let _sonEnAraclar = -1;
+        new ResizeObserver(function(kayitlar){
+          try{
+            const en = Math.round(kayitlar[0].contentRect.width);
+            if(en === _sonEnAraclar) return;      // ayni olcu -> is yok
+            _sonEnAraclar = en;
+            geriYerlestir();
+          }catch(e){ _yut(e); }
+        }).observe(_arSatir);
+      }
+    }
+  }catch(e){ _yut(e); }
   /* Kanal seçimi artık halkalardan; sağ üstteki yazı tıklanmıyor. */
 
   /* ── ARAMA ────────────────────────────────────────────────────

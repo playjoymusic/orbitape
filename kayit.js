@@ -2474,3 +2474,29 @@
        · renk dönüşü  -> gradyan renklerinin TONU döndürülüyor (HSL)
        · küre kabuğu  -> bir kez pişiriliyor, sonra sadece kopyalanıyor
      Kare başına iş: iki drawImage + dört minik nokta. */
+
+/* ── MODUL KURULDU: YERLESIMI YENIDEN OLCTUR ────────────────────────
+   BULUNUS: bolmeden sonra saglik testinde "Kunye buyutece degmiyor"
+   kirmizi yandi (bosluk -108px, yani ust uste biniyor). Kod degismedi,
+   ZAMANLAMA degisti ve bu bir test kaprisi degil GERCEK bir kusur:
+
+   Sag alttaki kunye blogunun sol kenari, SOL ALTTAKI arac satirinin
+   bittigi yerden hesaplaniyor (geriYerlestir). O satirin genisligi de
+   tusun yazisina bagli: radyoda "PHOTO" (5 harf), arsivde "REC" (3).
+   Yaziyi bu dosya kuruyor ve bu dosya defer ile SONRA calisiyor --
+   yani sayfa bir kez "REC" genisligiyle yerlesiyor, sonra yazi
+   "PHOTO" oluyor ve kimse yeniden olcmuyordu. Yavas bir baglantida
+   kullanici da bunu gorurdu: once dar, sonra genis, kunye kayik.
+
+   Bir modul, olculen bir seyi degistiriyorsa yeniden olculmesini
+   ISTEMEK zorunda. Iki cagri: satirin kendi genisligi ve ona bagli
+   olan sag alt blok.
+   requestAnimationFrame: yazi degisikliginin duzene islemesi icin bir
+   kare bekleniyor; ayni karede olcmek eski genisligi okurdu. */
+try{
+  requestAnimationFrame(function(){
+    try{ if(typeof araclarYenidenSigdir === 'function') araclarYenidenSigdir(); }catch(e){ _yut(e); }
+    try{ if(typeof geriYerlestir === 'function') geriYerlestir(); }catch(e){ _yut(e); }
+    try{ if(typeof olcuIste === 'function') olcuIste(); }catch(e){ _yut(e); }
+  });
+}catch(e){ try{ _yut(e); }catch(e2){} }

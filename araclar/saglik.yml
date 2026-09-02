@@ -254,6 +254,17 @@ jobs:
 
       - name: Motor denkligi (Gecko)
         run: |
+          # ── $HOME BURADA AYARLANIYOR, IS DUZEYINDE DEGIL ───────────
+          # Once job seviyesine `env: HOME: /root` yazildi ve ISE
+          # YARAMADI: kapsayicili islerde kosucu HOME'u kendi
+          # ayarliyor (/github/home) ve is duzeyindeki env onu her
+          # zaman ezmiyor. Log ayni satiri tekrar bastı:
+          #   "Firefox is unable to launch if the $HOME folder isn't
+          #    owned by the current user."
+          # Kabugun icinde export etmek tartismasiz: bu satirdan
+          # sonraki her sey onu goruyor. Yukaridaki env de duruyor --
+          # zarari yok, ve biri digerini yedekliyor.
+          export HOME=/root
           # SUNUCU NODE ILE. Playwright imaji Node tabanli ve python3'un
           # orada bulunacagi garanti degil; is python3 yoksa "command
           # not found" ile duser ve sebebi tarayiciyla ilgisiz gorunur.
