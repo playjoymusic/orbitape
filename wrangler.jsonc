@@ -44,7 +44,23 @@
     "not_found_handling": "404-page",
     // Worker'in ASSETS.fetch ile dosyalara ulasabilmesi icin ad
     // sart; olcu.js bu adi kullaniyor.
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+
+    // ── 2 EYLUL: /np VE /olcu 404 DONUYORDU ───────────────────────
+    // Yayina ciktiktan sonra orbitape.app/np?u=... adresinin
+    // 404.html gosterdigi goruldu. Sebep tahmin degil, tanim:
+    // not_found_handling "404-page" iken hicbir DOSYAYLA eslesmeyen
+    // adresi varlik yonlendiricisi KENDISI karsiliyor ve 404.html'i
+    // donuyor -- Worker hic calismiyor. Yani /olcu de bugune kadar
+    // Worker'a hic ulasmadi; yayin basarili gorunmesine ragmen tek
+    // bir olcum kaydi dusmedi.
+    //
+    // run_worker_first tam bunun icin var: burada sayilan yollarda
+    // once Worker calisir, geri kalan her sey eskisi gibi dogrudan
+    // dosyadan servis edilir. Liste BILEREK iki yolla sinirli --
+    // "true" yazmak her istegi Worker'a sokar, index.html dahil.
+    // (developers.cloudflare.com/workers/static-assets/routing/)
+    "run_worker_first": ["/np", "/olcu"]
   },
 
   // Olcum kaydi buraya dusuyor. Yonetilecek veritabani yok, ucretsiz
@@ -79,7 +95,10 @@
       "assets": {
         "directory": "./",
         "not_found_handling": "404-page",
-        "binding": "ASSETS"
+        "binding": "ASSETS",
+        // Uretimle birebir ayni olmali, yoksa deneme yayini gercegi
+        // temsil etmez (bkz. yukaridaki 2 Eylul notu).
+        "run_worker_first": ["/np", "/olcu"]
       },
       // Deneme AYRI bir veri kumesine yaziyor: denerken uretim
       // rakamlarini kirletmeyelim.

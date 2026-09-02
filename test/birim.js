@@ -557,5 +557,64 @@ function bitir(){
   }catch(e){
     K('Olcum uc noktasi yuklenebiliyor', false, String(e && e.message || e));
   }
+
+  /* ── YAYIN YOLLARI: ISTEK WORKER'A ULASIYOR MU ──────────────────
+     2 EYLUL. Yukaridaki 11 test yesildi, olcu.js kusursuz calisti,
+     yayin basariyla cikti -- ve orbitape.app/np ORBITAPE'in 404
+     sayfasini dondu. Kusur kodda degil yayin tarifindeydi:
+     not_found_handling "404-page" iken hicbir dosyayla eslesmeyen
+     adresi varlik yonlendiricisi KENDISI karsiliyor (404.html
+     "bulunan varlik" sayiliyor) ve Worker hic cagrilmiyor. /olcu de
+     ayni sebeple bugune kadar tek bir kayit almadi.
+
+     Testlerin bunu kacirmasinin sebebi ogretici: hepsi Worker'i
+     DOGRUDAN cagiriyor, yani "istek Worker'a ulasiyor mu" sorusunu
+     hic sormuyordu. Bu bolum tam o soruyu soruyor. Yerelde
+     `wrangler dev` de gostermiyor -- orada Worker calisiyor,
+     uretimde calismiyor -- o yuzden davranisa degil YAPILANDIRMAYA
+     bakiyor. (developers.cloudflare.com/workers/static-assets/
+      routing/worker-script/ : run_worker_first) */
+  try{
+    const ham = fs.readFileSync(path.join(KOK, 'wrangler.jsonc'), 'utf8');
+    /* JSONC: bu dosyadaki yorumlarin hepsi tam satir. */
+    const konf = JSON.parse(ham.split('\n')
+      .filter(s => !/^\s*\/\//.test(s)).join('\n'));
+
+    const YOLLAR = ['/np', '/olcu'];
+    const bak = (a, ad) => {
+      const v = (a && a.assets) || null;
+      K(ad + ': not_found_handling hala 404-page',
+        !!v && v.not_found_handling === '404-page',
+        'degistiyse bu bolumun gerekcesi de degismistir, notu guncelle');
+      K(ad + ': /np ve /olcu run_worker_first listesinde',
+        !!v && Array.isArray(v.run_worker_first)
+        && YOLLAR.every(y => v.run_worker_first.indexOf(y) >= 0),
+        'yoksa istek Worker\'a ulasmadan 404.html donuyor');
+      K(ad + ': run_worker_first her istegi Worker\'a sokmuyor',
+        !!v && v.run_worker_first !== true
+        && Array.isArray(v.run_worker_first)
+        && v.run_worker_first.length === YOLLAR.length,
+        'true yazilirsa index.html dahil her istek Worker uzerinden gecer');
+    };
+    bak(konf, 'yayin');
+    bak(konf.env && konf.env.deneme, 'deneme');
+
+    K('yayin: deneme uretimle ayni yollari aciyor',
+      JSON.stringify(konf.assets.run_worker_first)
+      === JSON.stringify(konf.env.deneme.assets.run_worker_first),
+      'ayrisirsa deneme yayini gercegi temsil etmez');
+
+    /* olcu.js'in karsiladigi yollarla acilan yollar ayni olmali:
+       biri eklenip digeri unutulursa yine sessiz 404 doneriz. */
+    const kod = fs.readFileSync(path.join(KOK, 'olcu.js'), 'utf8');
+    const karsilanan = (kod.match(/u\.pathname\s*===\s*'([^']+)'/g) || [])
+      .map(s => s.replace(/.*'([^']+)'.*/, '$1')).sort();
+    K('yayin: Worker\'in karsiladigi her yol acilmis',
+      JSON.stringify(karsilanan) === JSON.stringify(YOLLAR.slice().sort()),
+      'olcu.js: ' + karsilanan.join(', ') + ' | acik: ' + YOLLAR.join(', '));
+  }catch(e){
+    K('wrangler.jsonc okunabiliyor', false, String(e && e.message || e));
+  }
+
   bitir();
 })();
