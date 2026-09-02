@@ -8490,7 +8490,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const dv = ad => getComputedStyle(document.documentElement).getPropertyValue(ad).trim();
       const cikti = [];
       const eskiDeri = AYAR.deri;
-      for(const no of [61, 63]){
+      /* Deriler ADIYLA bulunuyor, numarayla degil: liste her
+         yeniden siralandiginda (2 Eylul: 85 -> 53) sabit numara
+         baska bir deriye kayar ve test sessizce yanlis deriyi olcer. */
+      const adlar = ['HALFTONE', 'TERMINAL'];
+      const nolar = adlar.map(ad => DERILER.findIndex(d => d && d.ad === ad) + 1);
+      adlar.forEach((ad, i) => { if(nolar[i] < 1) cikti.push({ no: 0, ad: ad + ' (listede yok)', olcum: null }); });
+      for(const no of nolar.filter(n => n >= 1)){
         AYAR.deri = no; deriUygula(); try{ olukYaz(); }catch(e){}
         await bek(350);
         const zem = say(dv('--d-zem')), cek = say(dv('--d-cekirdek')) || say(dv('--d-cek'));
