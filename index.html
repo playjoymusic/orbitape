@@ -2995,7 +2995,15 @@
 <meta name="theme-color" content="#05080a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- DURUM CUBUGU 'default', 'black-translucent' DEGIL. Olculdu (2 Eylul,
+     iPhone ana ekran uygulamasi): translucent'ta iOS sayfayi saatin
+     altina baslatiyor ama boyunu "ekran - durum cubugu" veriyor; sayfa
+     dipten 47px once bitiyor, alt tuslar havada kaliyor, altta duz
+     zemin rengi bir serit kaliyor. Bilinen WebKit hatasi. 'default'ta
+     cerceve tutarli: cubuk theme-color ile boyaniyor (deriden/raftan
+     geliyor), sayfa tabana kadar iniyor. Bedeli: saatin arkasinda desen
+     degil derinin duz zemin rengi. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ORBITAPE">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=6">
