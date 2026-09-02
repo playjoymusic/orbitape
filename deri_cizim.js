@@ -74,7 +74,13 @@ const DERI_USLUP = {
   suprem   : { pal:["#111111","#d81f26","#f2f0eb"] },
   mondrian : { pal:["#d8231f","#1b57c4","#f2c200","#111111","#f7f5f0"] },
   glitch   : { pal:["#ff2d55","#00e5ff","#ffffff","#0a0a0f"], tohum:77 },
-  futurist : { pal:["#1b3a8f","#c8322e","#2b2b2b","#e9e6dd"], tohum:59 }
+  futurist : { pal:["#1b3a8f","#c8322e","#2b2b2b","#e9e6dd"], tohum:59 },
+  kente    : { pal:["#f2b632","#c8281e","#1c7a3c","#1f1408","#f3e2b6"], tohum:31 },
+  opart    : { pal:["#111111","#f4f4f2"] },
+  construct: { pal:["#c8281e","#1c1a17","#e9e2d3","#8a8578"] },
+  ukiyo    : { pal:["#1f4e79","#3f7fb5","#e8dcc4","#f5f0e4","#243447"] },
+  psyche   : { pal:["#ff8ad8","#ffcf4a","#4ae0ff","#9b5cff","#1a0a2e"] },
+  steam    : { pal:["#d9a049","#8a5a2b","#4a3421","#2b1d12","#e8cfa6"], tohum:17 }
 };
 function _uslup(d){ return (d && DERI_USLUP[d.cizim]) || {}; }
 function _pal(d){ const u = _uslup(d); return (d && d.pal) || u.pal || ['#888']; }
@@ -231,6 +237,71 @@ const DERI_HALKA = {
       }
     c.strokeStyle = p[p.length-1]; c.lineWidth = S*0.02;
     [0.46,0.30,0.15].forEach(k=>{ c.beginPath(); c.arc(o,o,S*k,0,Math.PI*2); c.stroke(); });
+  }  ,
+  kente(c, S, d){
+    const p = _pal(d), o = S/2;
+    [[0.5,p[0]],[0.42,p[1]],[0.34,p[2]],[0.26,p[0]],[0.18,p[3]],[0.10,p[1]]].forEach(([r,renk])=>{
+      c.fillStyle = renk; c.beginPath(); c.arc(o,o,S*r,0,Math.PI*2); c.fill(); });
+    c.strokeStyle = p[3]; c.lineWidth = S*0.012;
+    for(let i = 0; i < 24; i++){ const t = i*Math.PI/12;
+      c.beginPath(); c.moveTo(o + Math.cos(t)*S*0.18, o + Math.sin(t)*S*0.18);
+      c.lineTo(o + Math.cos(t)*S*0.5, o + Math.sin(t)*S*0.5); c.stroke(); }
+  },
+  opart(c, S, d){
+    const p = _pal(d), o = S/2;
+    for(let i = 14; i >= 1; i--){
+      c.fillStyle = i % 2 ? p[0] : p[1];
+      c.beginPath(); c.arc(o + Math.sin(i)*S*0.012, o, S*0.036*i, 0, Math.PI*2); c.fill();
+    }
+  },
+  construct(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[2]; c.fillRect(0,0,S,S);
+    c.fillStyle = p[1]; c.beginPath(); c.arc(o,o,S*0.44,0,Math.PI*2); c.fill();
+    c.fillStyle = p[2]; c.beginPath(); c.arc(o,o,S*0.34,0,Math.PI*2); c.fill();
+    c.fillStyle = p[0]; c.beginPath(); c.moveTo(S*0.08,S*0.86); c.lineTo(S*0.80,S*0.18);
+    c.lineTo(S*0.90,S*0.26); c.lineTo(S*0.16,S*0.94); c.closePath(); c.fill();
+    c.fillStyle = p[1]; c.beginPath(); c.arc(o,o,S*0.09,0,Math.PI*2); c.fill();
+  },
+  ukiyo(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[2]; c.fillRect(0,0,S,S);
+    for(let i = 0; i < 6; i++){
+      c.strokeStyle = i % 2 ? p[0] : p[1]; c.lineWidth = S*0.035;
+      c.beginPath(); c.arc(o, o, S*(0.46 - i*0.07), Math.PI*0.15, Math.PI*1.55); c.stroke();
+    }
+    c.fillStyle = p[3];
+    for(let i = 0; i < 8; i++){ const t = Math.PI*1.55 + i*0.09;
+      c.beginPath(); c.arc(o + Math.cos(t)*S*(0.46 - (i%3)*0.07), o + Math.sin(t)*S*(0.46 - (i%3)*0.07), S*0.03, 0, Math.PI*2); c.fill(); }
+    c.fillStyle = p[4]; c.beginPath(); c.arc(o,o,S*0.09,0,Math.PI*2); c.fill();
+  },
+  psyche(c, S, d){
+    const p = _pal(d), o = S/2;
+    for(let i = 12; i >= 1; i--){
+      c.fillStyle = p[i % 4]; c.beginPath();
+      for(let a = 0; a <= 48; a++){ const t = a/48*Math.PI*2;
+        const rr = S*0.042*i*(1 + 0.14*Math.sin(t*6 + i*0.5));
+        const x = o + Math.cos(t)*rr, y = o + Math.sin(t)*rr;
+        if(a) c.lineTo(x,y); else c.moveTo(x,y); }
+      c.closePath(); c.fill();
+    }
+  },
+  steam(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[3]; c.fillRect(0,0,S,S);
+    c.fillStyle = p[0]; c.beginPath();
+    for(let i = 0; i < 32; i++){ const t = i/32*Math.PI*2, rr = S*(i%2 ? 0.40 : 0.48);
+      const x = o + Math.cos(t)*rr, y = o + Math.sin(t)*rr; if(i) c.lineTo(x,y); else c.moveTo(x,y); }
+    c.closePath(); c.fill();
+    c.fillStyle = p[3]; c.beginPath(); c.arc(o,o,S*0.32,0,Math.PI*2); c.fill();
+    c.strokeStyle = p[1]; c.lineWidth = S*0.05;
+    for(let i = 0; i < 6; i++){ const t = i*Math.PI/3;
+      c.beginPath(); c.moveTo(o + Math.cos(t)*S*0.10, o + Math.sin(t)*S*0.10);
+      c.lineTo(o + Math.cos(t)*S*0.30, o + Math.sin(t)*S*0.30); c.stroke(); }
+    c.fillStyle = p[0]; c.beginPath(); c.arc(o,o,S*0.10,0,Math.PI*2); c.fill();
+    c.fillStyle = p[4];
+    for(let i = 0; i < 8; i++){ const t = i*Math.PI/4;
+      c.beginPath(); c.arc(o + Math.cos(t)*S*0.36, o + Math.sin(t)*S*0.36, S*0.018, 0, Math.PI*2); c.fill(); }
   }
 };
 function deriHalkaAdresi(d){
@@ -513,6 +584,142 @@ const DERI_CIZIM = {
       c.stroke();
     }
     c.globalAlpha = 1;
+    c.restore();
+  }  ,
+  /* KENTE — dokuma seritler: yatay bantlar, icinde dikey cizgili
+     bloklar ve ucgen dizileri. Gana dokumasinin dili. */
+  kente(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), a = H/11;
+    c.save();
+    for(let y = 0, i = 0; y < H; y += a, i++){
+      c.fillStyle = p[i % 3]; c.fillRect(0, y, W, a);
+      /* Icinde dikey cizgili bloklar */
+      const n = 4 + ((r()*3)|0), bw = W/n;
+      for(let k = 0; k < n; k++){
+        if(r() < 0.45) continue;
+        c.fillStyle = p[3]; c.globalAlpha = 0.55;
+        for(let x = k*bw + bw*0.12; x < (k+1)*bw - bw*0.12; x += a*0.16)
+          c.fillRect(x, y + a*0.14, a*0.06, a*0.72);
+        c.globalAlpha = 1;
+      }
+      /* Ucgen dizisi: seridin alt kenari */
+      c.fillStyle = p[4]; c.globalAlpha = 0.5;
+      for(let x = 0; x < W; x += a*0.5){
+        c.beginPath(); c.moveTo(x, y + a); c.lineTo(x + a*0.25, y + a*0.78);
+        c.lineTo(x + a*0.5, y + a); c.closePath(); c.fill();
+      }
+      c.globalAlpha = 1;
+    }
+    c.restore();
+  },
+  /* OP ART — es merkezli kareler, kayarak. Goz yanilmasi. */
+  opart(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[1]; c.fillRect(0, 0, W, H);
+    const cx = W*0.5, cy = H*0.47;
+    for(let i = 22; i >= 1; i--){
+      const s = u*0.075*i, kay = Math.sin(i*0.9)*u*0.02;
+      c.fillStyle = i % 2 ? p[0] : p[1];
+      c.save(); c.translate(cx + kay, cy - kay*0.6); c.rotate(i*0.035);
+      c.fillRect(-s/2, -s/2, s, s); c.restore();
+    }
+    c.restore();
+  },
+  /* KONSTRUKTIVIST — egik kirmizi kama, siyah cubuklar, daire. */
+  construct(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[2]; c.fillRect(0, 0, W, H);
+    c.fillStyle = p[0];
+    c.beginPath(); c.moveTo(-W*0.1, H*0.92); c.lineTo(W*0.62, H*0.08);
+    c.lineTo(W*0.74, H*0.14); c.lineTo(W*0.02, H*1.02); c.closePath(); c.fill();
+    c.fillStyle = p[1];
+    c.beginPath(); c.arc(W*0.72, H*0.30, u*0.20, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[2];
+    c.beginPath(); c.arc(W*0.72, H*0.30, u*0.14, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[1];
+    [0.62, 0.68, 0.74].forEach((y, i)=> c.fillRect(W*0.08, H*y, W*(0.36 - i*0.08), u*0.018));
+    c.save(); c.translate(W*0.5, H*0.5); c.rotate(-0.85);
+    c.fillStyle = p[3]; c.fillRect(-u*0.9, -u*0.006, u*1.8, u*0.012); c.restore();
+    c.restore();
+  },
+  /* UKIYO — buyuk dalga: ic ice kavisler, ucta kopukler. */
+  ukiyo(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[2]; c.fillRect(0, 0, W, H);
+    for(let i = 0; i < 5; i++){
+      c.fillStyle = i % 2 ? p[0] : p[1];
+      c.beginPath();
+      c.moveTo(-W*0.1, H*(0.66 + i*0.05));
+      c.bezierCurveTo(W*0.20, H*(0.40 + i*0.05), W*0.55, H*(0.30 + i*0.04), W*0.62, H*(0.22 + i*0.05));
+      c.bezierCurveTo(W*0.66, H*(0.16 + i*0.05), W*0.60, H*(0.30 + i*0.05), W*0.50, H*(0.32 + i*0.05));
+      c.lineTo(W*0.9, H*(0.34 + i*0.05)); c.lineTo(W*1.1, H*1.1); c.lineTo(-W*0.1, H*1.1);
+      c.closePath(); c.fill();
+    }
+    /* Kopukler: dalganin ucunda */
+    c.fillStyle = p[3];
+    for(let i = 0; i < 14; i++){
+      const t = i/14;
+      c.beginPath(); c.arc(W*(0.48 + t*0.18), H*(0.20 + Math.sin(t*6)*0.03 + t*0.06),
+                           u*(0.028 - t*0.012), 0, Math.PI*2); c.fill();
+    }
+    c.strokeStyle = p[3]; c.lineWidth = u*0.006;
+    for(let i = 0; i < 9; i++){
+      c.beginPath(); c.moveTo(W*0.0, H*(0.70 + i*0.03));
+      c.quadraticCurveTo(W*0.4, H*(0.58 + i*0.03), W*0.9, H*(0.66 + i*0.03)); c.stroke();
+    }
+    c.restore();
+  },
+  /* PSIKEDELIK — dalgali es merkezli halkalar, renkler donerek. */
+  psyche(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const cx = W*0.5, cy = H*0.46;
+    for(let i = 26; i >= 1; i--){
+      c.fillStyle = p[i % 4];
+      c.beginPath();
+      for(let a = 0; a <= 64; a++){
+        const t = a/64*Math.PI*2;
+        const rr = u*0.04*i * (1 + 0.12*Math.sin(t*5 + i*0.4));
+        const x = cx + Math.cos(t)*rr, y = cy + Math.sin(t)*rr*1.15;
+        if(a) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.closePath(); c.fill();
+    }
+    c.restore();
+  },
+  /* STEAMPUNK — bakir dis, disli carklar, percinler. */
+  steam(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[3]; c.fillRect(0, 0, W, H);
+    const disli = (x, y, R, n, renk)=>{
+      c.fillStyle = renk; c.beginPath();
+      for(let i = 0; i < n*2; i++){
+        const t = i/(n*2)*Math.PI*2, rr = R*(i % 2 ? 0.82 : 1);
+        const px = x + Math.cos(t)*rr, py = y + Math.sin(t)*rr;
+        if(i) c.lineTo(px, py); else c.moveTo(px, py);
+      }
+      c.closePath(); c.fill();
+      c.fillStyle = p[3]; c.beginPath(); c.arc(x, y, R*0.55, 0, Math.PI*2); c.fill();
+      c.fillStyle = renk; c.beginPath(); c.arc(x, y, R*0.16, 0, Math.PI*2); c.fill();
+      c.strokeStyle = renk; c.lineWidth = R*0.08;
+      for(let i = 0; i < 4; i++){ c.beginPath(); c.moveTo(x + Math.cos(i*Math.PI/2)*R*0.2, y + Math.sin(i*Math.PI/2)*R*0.2);
+        c.lineTo(x + Math.cos(i*Math.PI/2)*R*0.52, y + Math.sin(i*Math.PI/2)*R*0.52); c.stroke(); }
+    };
+    disli(W*0.16, H*0.16, u*0.17, 12, p[0]);
+    disli(W*0.86, H*0.24, u*0.12, 9,  p[1]);
+    disli(W*0.10, H*0.74, u*0.10, 8,  p[1]);
+    disli(W*0.88, H*0.72, u*0.19, 14, p[0]);
+    /* Percinler: kenar boyunca */
+    c.fillStyle = p[2];
+    for(let i = 0; i < 40; i++){
+      const x = r()*W, y = r()*H;
+      c.beginPath(); c.arc(x, y, u*0.009, 0, Math.PI*2); c.fill();
+    }
     c.restore();
   }
 };
