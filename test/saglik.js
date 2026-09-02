@@ -387,12 +387,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kirparak 100 bayt kovalamak muhendislik degil kumar.
        Kullanici tarafinda karsiligi: ilk acilista ~2 KB daha,
        sonra servis calisani onbellekliyor.
-       BU SAYI BUGUN UC KEZ YUKSELDI (272 -> 274 -> 276 -> 278) ve
-       bu bir uyaridir: kirparak durdurulacak bir buyume degil.
-       Gercekten durdurmak icin iki yol var, ikisi de yazili:
-       dosyayi modullere bolmek ve arsivdeki 2.703 kayitlik iki
-       kumeyi (hamilton + aporee) elemek. */
-    K('Telden gecen boy < 278 KB', br < 278*1024,
+       BU SAYI BUGUN DORT KEZ YUKSELDI (272 -> 274 -> 276 -> 278 ->
+       280) ve bu artik bir uyari degil, bir KARAR bekliyor.
+       Dorduncu yukselisin sebebi adi konabilen bir is: radyo
+       tarafinda fotograf (ekranin PNG'si + telefonun paylasim
+       sayfasi). Ayni partide bir de eksiltme var -- kayit karesinde
+       vinyet iki kez ciziliyordu, tek cizime indi.
+       Kirparak durdurulacak bir buyume DEGIL: olculdu, ham
+       dosyadan 300-500 bayt silmek brotli ciktisini bazen
+       BUYUTUYOR. Gercekten durdurmanin iki yolu var ve ikisi de
+       yazili: dosyayi modullere bolmek, arsivdeki 2.703 kayitlik
+       iki kumeyi (hamilton + aporee) elemek.
+       BIR SONRAKI YUKSELTME ONCESI MODUL BOLME YAPILMALI. Bugun
+       ayrica ucuncu kez "blogu keserken komsuyu kesme" hatasi
+       yasandi; tek dosyanin bedeli artik yalnizca boy degil. */
+    K('Telden gecen boy < 280 KB', br < 280*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
@@ -1018,9 +1027,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        hic gecmiyor: kayit uygulamanin kendi tuvalinden aliniyor.
        Basligin kendi ilkesi "istemedigi bir seyin izni de olmamali"
        diyor; kural kendi kendisiyle celisiyordu. */
+    /* ── ADI GECMEK ILE CAGRILMAK AYNI SEY DEGIL ────────────────
+       Once duz /getDisplayMedia/ araniyordu. 2 Eylul'de fotograf
+       ozelligi yazilirken koda "getDisplayMedia kullanilmiyor,
+       kendi tuvalimizden uretiyoruz" diye bir NOT dusuldu ve test
+       o notu bir CAGRI sandi: kirmizi yandi, oysa kodda hala tek
+       bir cagri yok. Bugun ucuncu kez ayni sinif hata (bkz. CSP
+       yorumu). Artik cagri araniyor: nokta + parantez. */
+    const cagriliyor = /\.\s*getDisplayMedia\s*\(/.test(kod);
     K('Kullanilmayan izin verilmiyor',
-      /getDisplayMedia/.test(kod) === /display-capture=\(self\)/.test(bas),
-      /display-capture=\(self\)/.test(bas) && !/getDisplayMedia/.test(kod)
+      cagriliyor === /display-capture=\(self\)/.test(bas),
+      /display-capture=\(self\)/.test(bas) && !cagriliyor
         ? 'display-capture aciliyor ama getDisplayMedia kodda yok'
         : 'verilen izinlerin karsiligi kodda var');
     /* GEZEGEN: kanal gecisi kaldirildi, artik FX sifirliyor. */
@@ -2124,7 +2141,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'halka jesti ve iki referans noktasi var, oynat/dur yok');
   K('Istenince tur tam anlatiyor',
      tan.uzun.length > tan.acilis.length
-     && ['CONTROLS','TOOLS','NOW PLAYING','RECORD'].every(a=>tan.uzun.includes(a)),
+     /* RECORD -> PHOTO: radyo turunda anlatilan sey artik kilit
+        degil, calisan bir is (ekranin fotografi). */
+     && ['CONTROLS','TOOLS','NOW PLAYING','PHOTO'].every(a=>tan.uzun.includes(a)),
      tan.uzun.length + ' adim (ayarlardan acilan)');
   K('Yaptigi is bir daha anlatilmiyor',
      !tan.bilen.includes('GENRES') && !tan.bilen.includes('SETTINGS'),
@@ -3952,9 +3971,43 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        onu dogrudan kuruyoruz. */
     try{ if(kaydedici) kayitDurdur(); }catch(e){}
     try{ _bekleyenKayit = null; }catch(e){}
+    /* ── RADYO TARAFI ARTIK BOS DEGIL ────────────────────────────
+       Kayit hala yok, ama ayni tus fotograf cekiyor. Bu yuzden
+       "pasif mi" sorusu radyoda artik YANLIS soru; dogru sorular:
+       tus PHOTO mu diyor, ve basinca gercekten bir PNG uretiliyor
+       mu. Paylasim sayfasi test icinde acilmasin diye
+       navigator.share yerine bir kayitci konuyor -- indirme yolu
+       tetiklenirse tarayici dosya indirir ve olcum kirlenir. */
+    const eskiCan = navigator.canShare, eskiPay = navigator.share;
+    let paylasilan = null;
+    try{
+      Object.defineProperty(navigator, 'canShare',
+        { value: ()=>true, configurable:true });
+      Object.defineProperty(navigator, 'share',
+        { value: (d)=>{ paylasilan = d; return Promise.resolve(); }, configurable:true });
+    }catch(e){}
+    document.body.classList.remove('mood');
+    aktifItem = {mp3:'ry', ad:'FM', radyo:true, id:'ry'}; recPasifYaz();
+    const foto = { pasif: rec.classList.contains('pasif'),
+                   sinif: rec.classList.contains('foto'),
+                   yazi: document.getElementById('recYazi').textContent,
+                   tik: (()=>{ try{ kayitDegis(); }catch(e){} return !!kaydedici; })() };
+    foto.dosya = paylasilan && paylasilan.files && paylasilan.files[0]
+               ? { tur: paylasilan.files[0].type, boy: paylasilan.files[0].size,
+                   ad: paylasilan.files[0].name } : null;
+    try{
+      if(eskiCan === undefined) delete navigator.canShare;
+      else Object.defineProperty(navigator,'canShare',{value:eskiCan, configurable:true});
+      if(eskiPay === undefined) delete navigator.share;
+      else Object.defineProperty(navigator,'share',{value:eskiPay, configurable:true});
+    }catch(e){}
+    /* Arsivde CANLI BIR YAYIN calarken kayit hala kapali: orada
+       fotograf da yok, cunku tus o kipte REC. */
+    document.body.classList.add('mood');
     aktifItem = {mp3:'ry', ad:'FM', radyo:true, id:'ry'}; recPasifYaz();
     const yayin = { pasif: rec.classList.contains('pasif'),
                     tik: (()=>{ try{ kayitDegis(); }catch(e){} return !!kaydedici; })() };
+    document.body.classList.remove('mood');
     /* ARSIV TARAFI: kural artik yalnizca calan sese degil KIPE de
        bakiyor -- radyo tarafinda REC her zaman kapali (orada kayit
        hicbir kosulda acilmiyor). Bu yuzden arsiv durumu olculurken
@@ -3967,11 +4020,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const arsiv = { pasif: rec.classList.contains('pasif') };
     if(!eskiSinif) document.body.classList.remove('mood');
     AKTIF_MOD = eski; aktifItem = eskiIt; recPasifYaz();
-    return { yayin, arsiv };
+    return { yayin, arsiv, foto };
   });
-  K('Canli yayinda REC pasif', rp.yayin.pasif===true, 'golgede | kayit yokken');
+  K('Arsivde canli yayinda REC pasif', rp.yayin.pasif===true, 'golgede | kayit yokken');
   K('Pasif REC kayit baslatmaz', rp.yayin.tik===false, 'tiklama yutuluyor');
   K('Arsivde REC yeniden aktif', rp.arsiv.pasif===false, 'geri aciliyor');
+  /* ── RADYODA FOTOGRAF ────────────────────────────────────────────
+     Kullanicinin istegi: "radyo modunda rec yerine fotograf makinesi
+     olsun, basinca ss alsin ayni ekrani ve o anda share menusu
+     acilsin". Uc kontrol, ucu de ayri bir yalanin onunde:
+     · tus PHOTO diyor mu       -> REC yazip fotograf cekmesin
+     · tus sonuk degil mi        -> calisan tus kapali gorunmesin
+     · basinca PNG uretiliyor mu -> "cekti" deyip bos donmesin       */
+  K('Radyoda tus PHOTO diyor',
+     rp.foto.yazi === 'PHOTO' && rp.foto.sinif === true,
+     'yazi "' + rp.foto.yazi + '" | foto sinifi ' + rp.foto.sinif);
+  K('Radyoda tus sonuk degil', rp.foto.pasif === false,
+     'calisan tus kapali gorunmuyor');
+  K('Radyoda basinca PNG paylasima gidiyor',
+     !!rp.foto.dosya && rp.foto.dosya.tur === 'image/png'
+     && rp.foto.dosya.boy > 20000 && /^orbitape-.*\.png$/.test(rp.foto.dosya.ad),
+     rp.foto.dosya ? (rp.foto.dosya.ad + ' · ' + Math.round(rp.foto.dosya.boy/1024) + ' KB')
+                   : 'paylasima dosya gitmedi');
+  K('Fotograf kayit baslatmiyor', rp.foto.tik === false,
+     'radyoda kayit hala yok');
 
   /* Kamera seviye cizgisi SECENEK: CAM'e basili tutus acip kapatiyor,
      kendiliginden cikmiyor. */
@@ -7299,14 +7371,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Kipte arama yok', moodYer.kipte.arama==='none' && moodYer.radyo.arama!=='none',
      'radyoda var, arsivde yok');
   K('Kipte REC geri geliyor', moodYer.kipte.rec!=='none', 'canli yayin disinda kayit anlamli');
-  /* ── RADYODA REC DURUYOR AMA SONUK ──────────────────────────────
-     Bir tur tamamen gizlenmisti ve o yanlisti: kullanici REC'i
-     ariyor, bulamiyor, nedenini de hicbir yerde gormuyordu. Simdi
-     ayni tus ayni yerde duruyor, sonuk duruyor ve BASILABILIYOR --
-     basinca sebebini yaziyor. Bu ucu birden olculuyor: gizli degil,
-     sonuk, ve tiklamayi aliyor. */
-  K('Radyoda REC duruyor ama sonuk ve basilabilir',
-     moodYer.radyo.rec!=='none' && moodYer.radyo.recSonuk===true
+  /* ── RADYODA TUS DURUYOR VE CALISIYOR ───────────────────────────
+     Uc asamadan gecti ve her asama bir onceki yanlisi duzeltti:
+       1) tus radyoda tamamen GIZLIYDI  -> kullanici ariyor, yok
+       2) GORUNUR ama SONUK             -> var ama calismiyor
+       3) bugun: ayni yerde CALISAN bir sey -> ekranin fotografi
+     Olculen: gizli degil, SONUK DEGIL (calisan tus kapali
+     gorunmemeli) ve tiklamayi aliyor. */
+  K('Radyoda tus duruyor, parlak ve basilabilir',
+     moodYer.radyo.rec!=='none' && moodYer.radyo.recSonuk===false
      && moodYer.radyo.recBasilir===true,
      'display '+moodYer.radyo.rec+', sonuk '+moodYer.radyo.recSonuk
      +', tiklanabilir '+moodYer.radyo.recBasilir);
@@ -7922,41 +7995,77 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'kalan: '+takim.sagAlttaki);
   K('REC ve CAM sol uste tasindi', takim.kayitSolUstte===true && takim.solAltBos===true, 'sol alt bosaldi');
 
-  /* ── 7. REC RADYODA SONUK, AMA SEBEBINI SOYLUYOR ────────────────
-     Canli yayin kaydedilmiyor. Dugme once radyoda tamamen
-     gizlenmisti; yanlis olan tus degil SESSIZLIKti -- kullanici
-     REC'i ariyor, bulamiyor ve nedenini hicbir yerde gormuyordu.
-     Simdi ayni tus ayni yerde, sonuk; basinca kuralı ekrana
-     yaziyor. Olculen: basis notu ACIYOR, not gercekten kaydin neden
-     kapali oldugunu soyluyor ve kayit BASLAMIYOR. */
+  /* ── 7. AYNI TUS, IKI IS ────────────────────────────────────────
+     Canli yayin kaydedilmiyor -- istasyonlar dinlenmek icin
+     lisansli. Bu kural hic degismedi. Degisen sey tusun radyodaki
+     hali: once tamamen GIZLIYDI (kullanici ariyor, bulamiyor),
+     sonra SONUK ve basinca sebebini yaziyordu, artik ayni yerde
+     CALISAN bir sey var -- ekranin fotografi.
+     Burada olculen ucu birden:
+       radyoda : tus parlak, PHOTO diyor, basinca PNG uretiyor
+       arsivde : REC tam parlak
+       arsivde canli yayin calarken: sonuk, basinca sebebini yaziyor
+     Paylasim sayfasi test icinde ACILMAMALI: navigator.share yerine
+     bir kayitci konuyor. Konmazsa indirme yolu tetiklenir ve
+     tarayici gercekten dosya indirir. */
   const recKip = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const r=document.getElementById('rec'); if(!r) return null;
     r.classList.add('var');
-    const eski = AYAR.mood;
+    const eski = AYAR.mood, eskiIt = aktifItem;
+    const eskiCan = navigator.canShare, eskiPay = navigator.share;
+    let paylasilan = null;
+    try{
+      Object.defineProperty(navigator,'canShare',{ value:()=>true, configurable:true });
+      Object.defineProperty(navigator,'share',
+        { value:(d)=>{ paylasilan = d; return Promise.resolve(); }, configurable:true });
+    }catch(e){}
     AYAR.mood = false; moodUygula(false); await bek(300);
     const radyoda = getComputedStyle(r).display;
-    const sonuk   = parseFloat(getComputedStyle(r).opacity) < 0.6;
-    /* Basis: not acilmali, kayit baslamamali. */
+    const parlak  = parseFloat(getComputedStyle(r).opacity) > 0.9;
+    const yazi    = (document.getElementById('recYazi')||{}).textContent || '';
     r.click(); await bek(260);
-    const not = document.getElementById('kisaNot');
-    const notAcik = !!not && not.classList.contains('var');
-    const notMetin = not ? (not.textContent || '') : '';
+    const foto = !!(paylasilan && paylasilan.files && paylasilan.files[0]
+                    && paylasilan.files[0].type === 'image/png'
+                    && paylasilan.files[0].size > 20000);
     const kayitBasladi = (typeof kaydediciAktif==='function') ? kaydediciAktif() : false;
+    /* Arsiv, arsiv kaydi calarken: REC tam parlak. */
     AYAR.mood = true; moodUygula(false); await bek(300);
     const moodda = getComputedStyle(r).display;
     const moodSonuk = parseFloat(getComputedStyle(r).opacity) < 0.6;
+    /* Arsiv, CANLI YAYIN calarken: kilit hala burada. */
+    const not0 = document.getElementById('kisaNot');
+    if(not0) not0.classList.remove('var');
+    aktifItem = {mp3:'ry', ad:'FM', radyo:true, id:'ry'};
+    try{ recPasifYaz(); }catch(e){}
+    const kilitSonuk = parseFloat(getComputedStyle(r).opacity) < 0.6;
+    r.click(); await bek(260);
+    const not = document.getElementById('kisaNot');
+    const kilitAcik  = !!not && not.classList.contains('var');
+    const kilitMetin = not ? (not.textContent || '') : '';
+    aktifItem = eskiIt;
     AYAR.mood = eski; moodUygula(false); await bek(300);
     r.classList.remove('var');
     if(not){ not.classList.remove('var'); }
-    return { radyoda, sonuk, notAcik, notMetin, kayitBasladi, moodda, moodSonuk };
+    try{
+      if(eskiCan === undefined) delete navigator.canShare;
+      else Object.defineProperty(navigator,'canShare',{ value:eskiCan, configurable:true });
+      if(eskiPay === undefined) delete navigator.share;
+      else Object.defineProperty(navigator,'share',{ value:eskiPay, configurable:true });
+    }catch(e){}
+    return { radyoda, parlak, yazi, foto, kayitBasladi, moodda, moodSonuk,
+             kilitSonuk, kilitAcik, kilitMetin };
   });
-  K('REC radyoda duruyor, sonuk', !!recKip && recKip.radyoda!=='none' && recKip.sonuk===true,
-     'display: '+(recKip?recKip.radyoda:'-')+', sonuk: '+(recKip?recKip.sonuk:'-'));
-  K('REC basilinca sebebini yaziyor, kayit baslamiyor',
-     !!recKip && recKip.notAcik===true && recKip.kayitBasladi===false
-     && /licen/i.test(recKip.notMetin) && /live/i.test(recKip.notMetin),
-     recKip ? (recKip.notAcik ? recKip.notMetin.slice(0,60)+'…' : 'not acilmadi') : '-');
+  K('Radyoda tus duruyor, parlak ve PHOTO diyor',
+     !!recKip && recKip.radyoda!=='none' && recKip.parlak===true && recKip.yazi==='PHOTO',
+     recKip ? ('display '+recKip.radyoda+', parlak '+recKip.parlak+', yazi "'+recKip.yazi+'"') : '-');
+  K('Radyoda basinca fotograf paylasima gidiyor, kayit baslamiyor',
+     !!recKip && recKip.foto===true && recKip.kayitBasladi===false,
+     recKip ? ('PNG paylasima gitti: '+recKip.foto+' | kayit: '+recKip.kayitBasladi) : '-');
+  K('Arsivde canli yayinda REC sonuk ve sebebini yaziyor',
+     !!recKip && recKip.kilitSonuk===true && recKip.kilitAcik===true
+     && /licen/i.test(recKip.kilitMetin) && /live/i.test(recKip.kilitMetin),
+     recKip ? (recKip.kilitAcik ? recKip.kilitMetin.slice(0,60)+'…' : 'not acilmadi') : '-');
   K('REC SOUND BANKS kipinde tam parlak',
      !!recKip && recKip.moodda!=='none' && recKip.moodSonuk===false,
      'mood: '+(recKip?recKip.moodda:'-')+', sonuk: '+(recKip?recKip.moodSonuk:'-'));
@@ -8317,12 +8426,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           await bek(300);
           const bozuk = Math.abs((ar.getBoundingClientRect().top + 13)
                                - (yv.getBoundingClientRect().top + 16));
-          await bek(2600);                                   // bekci araligi 2 sn
-          const r=ar.getBoundingClientRect(), y=yv.getBoundingClientRect();
-          const kalan = Math.abs((r.top + r.height/2) - (y.top + y.height/2));
+          /* ── SABIT BEKLEME YERINE SON TARIH ────────────────────
+             Once tek bir `await bek(2600)` vardi (bekci araligi
+             2 sn + pay). Tek basina kosarken hep geciyordu, ama
+             kapida dort takim ard arda kosarken makine yuklu
+             oluyor ve bekcinin tik'i bazen 2.6 sn'yi asiyordu:
+             test kirmizi yaniyor, kod ise dogru calisiyordu.
+             Zaman asimiyla dusen bir test, kirmiziyi anlamsiz
+             kilar -- insan ona bakmayi birakir. Artik geri
+             donene kadar yoklaniyor; yalnizca hic donmezse
+             kirmizi yaniyor. Olculen sey degismedi. */
+          let kalan = 1e9;
+          const sonTarih = Date.now() + 8000;
+          while(Date.now() < sonTarih){
+            await bek(200);
+            const r=ar.getBoundingClientRect(), y=yv.getBoundingClientRect();
+            kalan = Math.abs((r.top + r.height/2) - (y.top + y.height/2));
+            if(kalan <= 8) break;
+          }
           if(kalan > 8) ar.style.bottom = eski;
           return bozuk > 40 && kalan <= 8;
-        }), 'elle bozuldu, iki saniyede yuvasina dondu');
+        }), 'elle bozuldu, bekci yuvasina geri koydu');
       K('Bekci yuvadan kopmayi da goruyor',
          /var d = \(yr\.top \+ yr\.height\/2\) - \(r\.top \+ r\.height\/2\);/.test(kaynak)
          && /Math\.abs\(d\) > 8 \|\| Math\.abs\(dx\) > 8/.test(kaynak)

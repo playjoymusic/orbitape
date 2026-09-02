@@ -527,6 +527,21 @@
   #rec.kaydet .nokta{background:#5adcd2;box-shadow:0 0 10px rgba(90,220,210,.85);
     animation:recYanip 1.6s infinite;}
   #rec.kaydet #recYazi{color:#8ff0dd;}
+  /* ── RADYODA FOTOGRAF ──────────────────────────────────────────
+     Radyo tarafinda REC kilitliydi ve tus BILEREK soluktu (yukarida
+     opacity .34): "burasi calismaz" demenin gorsel yoluydu. Artik
+     ayni yerde CALISAN bir sey var -- ekranin fotografi. O yuzden
+     solukluk bu durumda kalkiyor ve nokta kendi rengini aliyor;
+     yoksa calisan bir tus, calismayan bir tus gibi duruyor.
+     KIRMIZI DEGIL: bu satirda kirmizi "kayit suruyor" demek. */
+  #rec.foto{opacity:1;}
+  body:not(.mood) #rec.foto{opacity:1;}
+  body:not(.mood) #rec.foto .nokta{background:#7fb7c4;box-shadow:0 0 8px rgba(127,183,196,.5);}
+  body:not(.mood) #rec.foto:hover{opacity:1;color:#a9cbd2;}
+  /* Deklansor. Paylasim sayfasinin acilmasi telefonda gozle gorulur
+     bir an aliyor; arada hicbir sey olmazsa insan tekrar basiyor. */
+  #rec.foto.cakti .nokta{background:#eaf6ff;box-shadow:0 0 16px rgba(235,248,255,.95);}
+  #rec.foto.cakti{border-color:rgba(200,235,245,.6);}
   /* ── SAĞ ALT DÜZEN ───────────────────────────────────────────────
      Eskiden düğmeler ÜSTTEYDİ ve altlarındaki yazı uzadıkça sola
      taşıyordu; yazı her parçada başka boyda olduğu için düğmeler de
@@ -14656,9 +14671,29 @@
          calmiyorken tus acik gorunup basinca hicbir sey yapmiyordu.
          O kipte kayit kurali zaten hicbir zaman degismiyor. */
       const radyoda = !document.body.classList.contains('mood');
-      rec.classList.toggle('pasif', (radyoda || yayin) && !kayitta);
-      rec.title = ((radyoda || yayin) && !kayitta)
-                ? 'Recording is off during live radio' : 'Screen recording';
+      /* ── RADYODA ARTIK KAPALI DEGIL: FOTOGRAF ───────────────────
+         Yukaridaki kural KAYIT icin hala gecerli -- radyoda kayit
+         yok. Ama tus artik bos degil: ayni yerde ekranin fotografi
+         cekiliyor. Calisan bir tusu "kapali" gostermek yanlis
+         bilgi olurdu, o yuzden radyoda .pasif dusuyor.
+         Arsivde canli bir yayin calarken (yayin) tus yine kapali:
+         orada gercekten yapilacak bir sey yok. */
+      const fotoVar = radyoda && (typeof fotoDesteklenirMi === 'function')
+                      && fotoDesteklenirMi();
+      /* SIRA ONEMLI: fotograf varsa tus KAPALI DEGIL, nokta.
+         Ilk yazilisinda kural "(radyoda && !fotoVar) || yayin"
+         seklindeydi ve radyoda da sonuk kaliyordu -- cunku radyoda
+         zaten hep bir yayin caliyor, yani `yayin` orada da dogru.
+         Kilit yalnizca ARSIVDE canli yayin calarken anlamli. */
+      const kapali = !kayitta && (fotoVar ? false : (radyoda || yayin));
+      rec.classList.toggle('pasif', kapali);
+      rec.title = kapali ? 'Recording is off during live radio'
+                : (fotoVar && !kayitta ? 'Photo of this screen' : 'Screen recording');
+      /* YAZI DA BURADA. Ayri bir cagriya birakilirsa tusun GORUNUSU
+         ile YAZISI iki farkli anda guncelleniyor ve arada bir kare
+         boyunca "REC" yazan bir tus fotograf cekiyor. Bir kare bile
+         olsa yalan; tek fonksiyon, tek dogru. */
+      try{ if(typeof recEtiketTazele === 'function') recEtiketTazele(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
   /* ── KAPALI TUS KENDINI ANLATIYOR ─────────────────────────────
@@ -14668,6 +14703,8 @@
      yayini dinlenmek uzere lisansli, saklanmak uzere degil. */
   /* moodUygula bu isleve YUKARIDAN erisemiyor (rec ve arkadaslari
      betigin cok asagisinda kuruluyor): pencereye asiliyor. */
+  /* recPasifYaz yaziyi da tazeliyor (icinde recEtiketTazele var),
+     o yuzden burada ikinci bir cagri yok. */
   try{ window.recPasifTazele = ()=>{ try{ recPasifYaz(); }catch(e){ _yut(e); }
         try{ if(typeof araclarYenidenSigdir==='function') araclarYenidenSigdir(); }
         catch(e){ _yut(e); } }; }catch(e){ _yut(e); }
@@ -15495,9 +15532,22 @@
     /* 10) VİNYET — bir kez pişirilip saklanıyor. Yük artınca ilk bunu
        bırakıyoruz: tam ekran alfa karışımı en pahalı adımlardan biri
        ve yokluğu en az fark edilen şey. */
+    /* ── AYNI VINYET IKI KEZ CIZILIYORDU ──────────────────────────
+       2 EYLUL, fotograf ozelligi yazilirken bulundu. Burada birebir
+       ayni cizim iki kez vardi (biri W,H vererek, oteki resmin
+       kendi boyunda -- resim zaten W×H uretiliyor, yani ayni
+       cizim). Bir birlestirme kalintisi.
+       Iki bedeli vardi:
+       · HER KAREDE bir fazladan TAM EKRAN alfa karisimi. Yukaridaki
+         notun kendisi bunu "en pahali adimlardan biri" diye
+         tanimliyor; kayit sirasinda telefonun tasidigi yuk buydu.
+       · Vinyet iki kez uygulaninca koseler olmasi gerekenden KOYU
+         cikiyordu (alfa a yerine 1-(1-a)²).
+       Tek cizime indirildi. GORUNUR SONUC: kayitlarda ve fotografta
+       koseler bir tik daha acik -- yani tasarlanan hali. Eski koyu
+       hali geri isteniyorsa cozum bu satiri kopyalamak degil,
+       vinyetResmi'ndeki alfayi yukseltmek. */
     if(_kademe < 1){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0, W, H); }catch(e){ _yut(e); } }
-    /* VİNYET — hazır resim. Yük artınca ilk bundan vazgeçiyoruz. */
-    if(_kademe < 1){ try{ const vi = vinyetResmi(W, H); if(vi) c.drawImage(vi, 0, 0); }catch(e){ _yut(e); } }
 
     /* Kare bitti: kodlayıcıya "al bunu" de. captureStream(0) yolunda
        kayda giren kare sayısı buraya eşit; WebKit'in kendi toplayıcısı
@@ -15515,7 +15565,11 @@
        Artık susmuyoruz: hata sayılıyor ve denemeye devam ediliyor.
        Sayı rapora RQF olarak yazılıyor. */
     if(_elleKare){ try{ _elleKare.requestFrame(); }catch(e){ _rqfHata++; } }
-    kademeyiAyarla(performance.now() - g.kareBas, g.simdi);
+    /* TEK KARE (fotograf) kademeyi OYNATMIYOR. kademeyiAyarla kare
+       suresine bakip kaliteyi dusuruyor; fotograf tek seferlik ve
+       o an baska is de yapiliyor (toDataURL). Olcume katilirsa bir
+       fotograf, sonraki KAYDIN kalitesini dusurebiliyordu. */
+    if(!g.foto) kademeyiAyarla(performance.now() - g.kareBas, g.simdi);
   }
   function kayitCiz(){
     kayitRAF=requestAnimationFrame(kayitCiz);
@@ -15900,7 +15954,8 @@
       if(_calGeriAl){ try{ _calGeriAl(); }catch(_){ _yut(_); } _calGeriAl = null; }
       kaydedici=null; _kayitAktif=false; kamKapat(); kayitSesiBirak(); rec.classList.remove('hazirla');
       if(kayitRAF){ cancelAnimationFrame(kayitRAF); kayitRAF=null; }
-      recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); } }
+      recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+      try{ recEtiketTazele(); }catch(_){ _yut(_); } }
   }
   /* ── KAYIT GÖZCÜSÜ ────────────────────────────────────────────────
      "Bir süre sonra FX'lerle duruyor": kaydedici SESSİZCE ölebiliyordu ve
@@ -16020,6 +16075,134 @@
     }
     if(oldu){ kayitBekleyeniBirak(); try{ kayitNotYaz('RECORDING SAVED', false); }catch(e){ _yut(e); } }
   }
+
+  /* ══ RADYODA FOTOGRAF ═══════════════════════════════════════════
+     NEDEN VAR: canli radyoda REC kilitli -- istasyonlar dinlenmek
+     icin lisansli, kaydedilmek icin degil. Ama insanin "su an bunu
+     dinliyorum" demek istedigi an tam da orada oluyor. Kayit
+     yapmadan paylasmanin yolu: EKRANIN FOTOGRAFI. Ne ses var, ne
+     yayin -- yalnizca o anki ekran: raf, istasyon, calan parca.
+
+     NASIL: yeni bir cizim yazilmadi. Kayit zaten butun ekrani
+     kendi tuvaline yeniden ciziyor (on adim: zemin, kamera, disk,
+     kose yazilari, semboller, ses cubugu, vinyet). Fotograf o on
+     adimi BIR KEZ calistirip tuvali PNG'ye ceviriyor. Yani ekranda
+     ne gorunuyorsa fotografta da o var; iki ayri gorunum bakimi
+     yok, biri degisince oteki geride kalmiyor.
+
+     KAMERA IZNI YOK: getDisplayMedia kullanilmiyor. Tarayiciya
+     "ekranini paylas" izni sordurmak, tek bir kare icin hem
+     gereksiz hem urkutucu. Kendi ciziimizden uretiyoruz. */
+  function fotoDesteklenirMi(){
+    try{
+      return !!(viz && typeof document.createElement('canvas').toDataURL === 'function'
+                && typeof _kayZemin === 'function');
+    }catch(e){ return false; }
+  }
+  /* Ekranin o anki hali kayit tuvaline BIR kez ciziliyor. */
+  function fotoKaresi(){
+    try{
+      kayitTuvalKur();
+      if(!kayitCtx || !viz.width) return false;
+      _kkNo++;                                  // olcum onbellegi tazelensin
+      const t = performance.now();
+      const gorNo = gorunum(mod);
+      const g = { c:kayitCtx, W:KAYIT_EN, H:KAYIT_BOY, K:KAYIT_K, gorNo:gorNo,
+                  renk:(KANAL_RENK[gorNo] || KANAL_RENK.lib),
+                  kareBas:t, simdi:t, foto:true };
+      _kayZemin(g); _kayKamera(g); _kayDisk(g); _kaySolUst(g); _kaySagUst(g);
+      _kaySemboller(g); _kaySagAlt(g); _kaySolAlt(g); _kaySesCubugu(g); _kayVinyet(g);
+      return true;
+    }catch(e){ _yut(e); return false; }
+  }
+  /* data: URL -> bayt. toBlob DEGIL toDataURL kullaniliyor ve sebebi
+     var: toBlob geri cagrili, yani paylasim bir sonraki gorevde
+     acilir ve iOS o noktada dokunusu "taze" saymayip
+     navigator.share'i reddediyor -- kaydin bir kez kaybolmasinin
+     sebebi tam olarak buydu (bkz. _bekleyenKayit notu). toDataURL
+     es zamanli; paylasim, dokunusun kendi gorevinde aciliyor. */
+  function _fotoBayt(veriUrl){
+    const ham = atob(veriUrl.slice(veriUrl.indexOf(',') + 1));
+    const d = new Uint8Array(ham.length);
+    for(let i = 0; i < ham.length; i++) d[i] = ham.charCodeAt(i);
+    return d;
+  }
+  function fotoCakisi(){
+    try{
+      rec.classList.add('cakti');
+      setTimeout(()=>{ try{ rec.classList.remove('cakti'); }catch(e){ _yut(e); } }, 220);
+    }catch(e){ _yut(e); }
+  }
+  function fotoCek(){
+    if(!fotoKaresi()){
+      try{ kisaNotYaz('PHOTO DID NOT WORK',
+        'The screen could not be captured. Reloading usually fixes it.'); }catch(e){ _yut(e); }
+      return;
+    }
+    fotoCakisi();
+    let dosya = null, ad = '', bayt = null;
+    try{
+      ad = 'orbitape-' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.png';
+      /* PNG BIR KEZ uretiliyor. Ilk yazilisinda paylasim ve indirme
+         yollari ayri ayri toDataURL cagiriyordu: olculdu, kodlama
+         tek basina 43 ms -- iki kez yapmak dokunusla paylasim
+         sayfasi arasindaki gecikmeyi iki katina cikariyordu. */
+      bayt = _fotoBayt(kayitTuval.toDataURL('image/png'));
+      dosya = new File([bayt], ad, {type:'image/png'});
+    }catch(e){ _yut(e); }
+    if(!dosya){
+      try{ kisaNotYaz('PHOTO DID NOT WORK',
+        'The image could not be prepared on this device.'); }catch(e){ _yut(e); }
+      return;
+    }
+    /* Telefonun kendi paylasim sayfasi: oradan galeriye kaydetmek,
+       mesajla gondermek, nereye isterse gondermek onun elinde. */
+    let acildi = false;
+    try{
+      if(navigator.canShare && navigator.canShare({files:[dosya]})){
+        navigator.share({files:[dosya], title:'ORBITAPE'}).catch(e=>{ _yut(e); });
+        acildi = true;
+      }
+    }catch(e){ acildi = false; }
+    if(acildi) return;
+    /* Paylasim yoksa (masaustu tarayicilarin cogu) sessizce
+       kaybetmiyoruz: dosya iniyor. */
+    try{
+      const u = URL.createObjectURL(new Blob([bayt], {type:'image/png'}));
+      const a = document.createElement('a');
+      a.href = u; a.download = ad; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u), 8000);
+      try{ kisaNotYaz('PHOTO SAVED', 'The image went to your downloads.'); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  /* ── TUSUN ADI KIPE GORE ────────────────────────────────────────
+     Tek tus, iki is: arsivde REC, radyoda PHOTO. Yazinin kip
+     degisince guncellenmesi SART -- yoksa radyoda "REC" yazan bir
+     tus fotograf cekiyor, ki bu sessiz bir yalan olurdu.
+     Kayit surerken (sayac, kontrol, hazirlik, kaydedilecek dosya)
+     bu fonksiyon DOKUNMUYOR: o durumlarda yazi kaydin kendi
+     durumunu gosteriyor. */
+  function radyodaMi(){
+    try{ return !document.body.classList.contains('mood'); }catch(e){ return true; }
+  }
+  function recEtiketTazele(){
+    try{
+      if(!rec || !recYazi) return;
+      if(kaydedici || _bekleyenKayit) return;
+      if(rec.classList.contains('hazirla') || rec.classList.contains('kontrol')
+         || rec.classList.contains('kayit') || rec.classList.contains('kaydet')) return;
+      const f = radyodaMi() && fotoDesteklenirMi();
+      rec.classList.toggle('foto', f);
+      /* 'pasif' BURADA TEMIZLENMIYOR. Bir kez oyle yazildi ve
+         recPasifYaz'in kararini hemen ardindan siliyordu: arsivde
+         canli yayin calarken tus sonuk olmasi gerekirken parlak
+         kaliyordu. Sonuk/parlak kararinin tek sahibi recPasifYaz;
+         burasi yalnizca YAZIYI kuruyor. */
+      recYazi.textContent = f ? 'PHOTO' : 'REC';
+      rec.title = f ? 'Photo of this screen' : 'Screen recording';
+      try{ araclarYenidenSigdir(); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
   /* Ekranda kısa bilgi. Ses baştan geliyorsa sessizce onaylıyor;
      geç geliyorsa kaç milisaniye geciktiğini yazıyor — böylece sorunun
      gerçekten olup olmadığı tahmin değil, ölçüm oluyor. */
@@ -16082,6 +16265,7 @@
   function kayitBekleyeniBirak(){
     _bekleyenKayit = null;
     rec.classList.remove('kaydet'); recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    try{ recEtiketTazele(); }catch(e){ _yut(e); }    // radyoya donuldiyse PHOTO
     try{ camModuTazele(); }catch(e){ _yut(e); }      // DELETE -> CAM, kamera durumu geri gelir
     try{ geriYerlestir(); }catch(e){ _yut(e); }
   }
@@ -16111,6 +16295,16 @@
        nedenini hicbir yerde bulamiyordu. */
     try{
       const radyoda = !document.body.classList.contains('mood');
+      /* ── RADYODA TUS ARTIK BOS DEGIL: FOTOGRAF ──────────────────
+         Kayit hala yok (istasyonlar dinlenmek icin lisansli), ama
+         "su an bunu dinliyorum" demenin bir yolu var: ekranin
+         fotografi. Ses yok, yayin yok -- yalnizca o anki ekran.
+         Kip degisiminde tusun YAZISI da degisiyor (recEtiketTazele),
+         yani REC yazan bir tus fotograf cekmiyor. */
+      if(radyoda && !kaydedici && !_bekleyenKayit && fotoDesteklenirMi()){
+        fotoCek();
+        return;
+      }
       if(!kaydedici && !_bekleyenKayit && (radyoda || akisMi())){
         recPasifYaz();
         /* KISA VE ANLASILIR. Once uc satirlik bir lisans aciklamasi
@@ -16126,10 +16320,15 @@
     if(_bekleyenKayit){ kaydiPaylas(); return; }      // dokunuş taze -> paylaşım sayfası açılır
     kayitOnKontrol();
   }
-  if(kayitDesteklenirMi()){
+  /* Tus IKI islev icin var: kayit (arsiv) ve fotograf (radyo).
+     MediaRecorder olmayan bir tarayicida kayit yok ama fotograf
+     yine calisiyor -- tus o zaman da gorunuyor, cunku radyo tarafi
+     bu cihazda da tam calisiyor. */
+  if(kayitDesteklenirMi() || fotoDesteklenirMi()){
     rec.classList.add('var');
     rec.addEventListener('click', kayitDegis);
     rec.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') kayitDegis(e); });
+    try{ recEtiketTazele(); }catch(e){ _yut(e); }
   }
   // ◁| bir önceki — sol altta REC'in üstünde.
   geriDug.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
@@ -16920,10 +17119,11 @@
       ...(_turYavas ? [
         { bas:'FAVOURITES', metin:'The star keeps a station.<br>The list opens from the same place.',
           duraklar:[{hedef:'#favAc', sure:1500}] },
-        /* REC radyoda GORUNUYOR ama sonuk duruyor: tur bunu da
-           soylemeli, yoksa kisi calismayan bir tusu deneyip
-           kendini sucluyor. */
-        { bas:'RECORD', metin:'REC records the screen with its sound.<br>Archive only — live radio is never recorded.',
+        /* Bu durak once "REC radyoda calismaz" diyordu: tus
+           gorunuyordu ama sonuktu ve sebebini soyleyen yoktu.
+           Artik ayni yerde CALISAN bir sey var, o yuzden metin de
+           kilidi degil isi anlatiyor. */
+        { bas:'PHOTO', metin:'PHOTO keeps this screen as an image.<br>Live radio is never recorded — a picture is.',
           duraklar:[{hedef:yaDa('#rec','#np'), sure:1600}] },
         { bas:'ANOTHER WORLD', metin:'Settings has a second world:<br>an archive of recordings, with effects.',
           duraklar:[{hedef:'#ayarTut', sure:900,

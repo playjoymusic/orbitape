@@ -454,12 +454,16 @@ const CASUS = ()=>{
        '"' + kip.sonra.ad + '"');
     K('[Y5] Donunce marka rengi geri geliyor', kip.sonra.m1===kip.once.m1 && kip.sonra.m1!=='',
        kip.once.m1 + ' -> ' + kip.sonra.m1);
-    /* REC ARTIK GIZLENMIYOR, SONUYOR. Gizlemek kullaniciyi
-       "REC nerede" sorusuyla bas basa birakiyordu; simdi tus yerinde
-       duruyor, sonuk duruyor ve basinca sebebini yaziyor. */
-    K('[Y5] Donunce REC duruyor ama sonuk',
-       kip.sonra.rec!=='none' && kip.sonra.recSonuk===true,
-       'canli yayin kaydedilmiyor, tus sebebini soyluyor');
+    /* TUS UC ASAMADAN GECTI ve her asama bir onceki yanlisi
+       duzeltti: radyoda once GIZLIYDI ("REC nerede"), sonra
+       GORUNUR ama SONUK ("var ama calismiyor"), 2 Eylul'den beri
+       ayni yerde CALISAN bir sey var: ekranin fotografi.
+       Kayit kurali degismedi -- canli yayin kaydedilmiyor.
+       Degisen, o yerin artik bos olmamasi. Radyoya donunce tus
+       PARLAK olmali; sonuk kalirsa calisan bir tus kapali gorunur. */
+    K('[Y5] Donunce tus duruyor ve parlak',
+       kip.sonra.rec!=='none' && kip.sonra.recSonuk===false,
+       'radyoda fotograf var, tus kapali gorunmuyor');
     await supur(p2, 'Y5 kip donusu');
   }
 
