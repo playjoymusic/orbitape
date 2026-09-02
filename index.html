@@ -2517,6 +2517,31 @@
     margin:9px 0 2px;max-height:132px;overflow-y:auto;overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;}
   #temaIzgara[hidden]{display:none;}
+  /* ── hidden GERCEKTEN GIZLESIN ────────────────────────────────
+     Tarayicinin kendi kurali [hidden]{display:none} zayif kaliyor:
+     yukaridaki '#ayar .sat{display:flex}' ondan daha ozgul, yani
+     hidden yazan bir satir EKRANDA DURUYORDU. Gorulen sonuc:
+     DIAGNOSTICS satiri sayisi sifirken de gorunuyordu -- oysa
+     kurali "gosterecek bir sey yoksa menude yer tutma" idi.
+     Kullanici sordu: "bu gorseldeki diagnostics ne ise yariyor."
+     Sifirken hic olmamali ki soru da olusmasin. */
+  /* TEK KURAL, BUTUN PANEL: hidden yazan hicbir sey cizilmiyor.
+     Once yalnizca .sat icin yazilmisti ve IZGARA disarida kaldi --
+     kullanicinin bildirdigi "skins aciliyor ama tekrar
+     kapanmiyor" hatasi tam olarak buydu: JS kap.hidden = true
+     yaziyordu, CSS onu yok sayiyordu, altmis kare ekranda
+     kaliyordu. Ozniteligi kim yazarsa yazsin gecerli olsun diye
+     kural elemana degil PANELE bagli. */
+  #ayar [hidden]{display:none !important;}
+  /* ── MENU ACIKKEN DISK BASILAMAZ ──────────────────────────────
+     Diskin gorunmez dokunma alani (.hit) butun daireyi kapliyor ve
+     masaustunde o daire ekranin ortasini boydan boya aliyor. Panel
+     acikken menuyu kapatmak icin disariya basan biri istemeden
+     sarkiyi degistirmis oluyordu; olcum sirasinda da panelin
+     satirlarina giden dokunusu #tp'nin yakaladigi goruldu.
+     Panel acikken disk sadece bir resim: kapatma dokunusu belgeye
+     bagli dinleyiciye gidiyor (bkz. "Disariya dokunmak kapatir"). */
+  body.ayar-acik .hit{pointer-events:none !important;}
   #temaIzgara .tm{width:100%;aspect-ratio:1/1;border-radius:50%;cursor:pointer;
     border:1px solid rgba(255,255,255,.10);box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
@@ -2539,6 +2564,20 @@
   /* DURUM YAZIYLA: kucuk bir anahtar cizmek yerine ON/OFF yaziyor --
      ekranin geri kalani da yaziyla konusuyor ve renk korlugunde de
      okunuyor. */
+  /* SIFIRLAMA CEVABI: iki kucuk dugme. Panelin kendi dilinde --
+     ayni yazi tipi, ayni harf araligi; YES bir tik daha belirgin
+     ama kirmizi degil: burada silinen sey yalnizca ayarlar. */
+  #ayar .durum .cvp{
+    font:inherit;letter-spacing:.16em;cursor:pointer;
+    padding:3px 8px;margin-left:6px;border-radius:999px;
+    background:transparent;border:1px solid rgba(255,255,255,.22);
+    color:inherit;-webkit-tap-highlight-color:transparent;}
+  #ayar .durum .cvp.evet{border-color:rgba(255,255,255,.45);
+    background:rgba(255,255,255,.10);}
+  body.deri #ayar .durum .cvp{border-color:var(--d-halka);color:var(--d-yazi);}
+  body.deri #ayar .durum .cvp.evet{
+    border-color:var(--d-vurgu, var(--d-marka));
+    background:var(--d-tus-zem, transparent);}
   #ayar .durum{flex:0 0 auto;font-size:10px;letter-spacing:.20em;
     color:rgba(244,247,250,.30);}
   #ayar .sat.acik .durum{color:currentColor;opacity:.95;}
@@ -13714,6 +13753,9 @@
         /* Otuz deri: satir artik deger DONDURMUYOR, izgarayi aciyor.
            Otuz dokunusla gezmek kimsenin yapacagi bir sey degildi. */
         try{
+          /* Satirin ekrandaki yeri, izgara acilmadan ONCE. */
+          let _satirY = NaN;
+          try{ _satirY = el.getBoundingClientRect().top; }catch(_){ _yut(_); }
           deriIzgaraKur();
           const kap = document.getElementById('deriIzgara');
           if(kap){
@@ -13731,7 +13773,25 @@
                oluyor ve kapanma "olmadi" gibi hissediliyordu. */
             const dr = el.querySelector('.durum');
             if(dr) dr.textContent = DERI_AD[AYAR.deri|0] || 'OFF';
-            if(acik){ try{ el.scrollIntoView({block:'nearest'}); }catch(_){ _yut(_); } }
+            /* ── SATIR KACARSA GERI CEKILIYOR ─────────────────────
+               Panel TABANA yasli ve yukari dogru buyuyor: izgara
+               acilinca 61 kare giriyor ve SKINS satiri ekranda
+               yukari kayiyor (olculdu: 669 -> 541).
+               DURUSTCE: bu satir o kaymayi TAMAMEN gideremiyor --
+               panel kaydirilabilir degilse (icerik tavanindan
+               kisaysa) scrollTop kimildamaz. Yaptigi sey, panel
+               kaydirilabilir oldugunda satiri bulundugu yere geri
+               cekmek; kapanista tam olarak calisiyor.
+               Asil sikayetin ("aciliyor ama kapanmiyor") iki sebebi
+               vardi ve ikisi de baska yerde kapatildi: CSS'te
+               hidden calismiyordu, ve diskin gorunmez dokunma alani
+               panelin uzerindeki dokunuslari yakaliyordu. */
+            try{
+              const oncekiY = _satirY;
+              const yeniY = el.getBoundingClientRect().top;
+              if(isFinite(oncekiY) && Math.abs(yeniY - oncekiY) > 1)
+                kut.scrollTop += (yeniY - oncekiY);
+            }catch(_){ _yut(_); }
           }
         }catch(e){ _yut(e); }
         return;
@@ -13773,8 +13833,36 @@
             location.reload();
             return;
           }
+          /* ── SORU VAR AMA CEVAP YOKTU ──────────────────────────
+             Once satirin saginda yalnizca "ARE YOU SURE?" yaziyordu
+             ve cevabin da ayni satira basmak oldugunu kimse
+             bilmiyordu. Kullanicinin sozu: "resete basinca are you
+             sure diyor ama yes/no yok o anda; are you sure'un
+             ustune basiliyor, o da bir ezber bozuyor."
+             Hakli: bir soru soruyorsan cevabini da goster. Sagda iki
+             kucuk dugme cikiyor -- NO once, YES sonra: yikici olan
+             sag ucta ve varsayilan degil. Bes saniye dokunulmazsa
+             soru kendiliginden geri aliniyor. */
           el.dataset.soruldu = '1';
-          if(dr) dr.textContent = 'ARE YOU SURE?';
+          if(dr){
+            dr.textContent = '';
+            const hayir = document.createElement('button');
+            hayir.type = 'button'; hayir.className = 'cvp'; hayir.textContent = 'NO';
+            const evet = document.createElement('button');
+            evet.type = 'button'; evet.className = 'cvp evet'; evet.textContent = 'YES';
+            hayir.addEventListener('click', e2=>{
+              e2.preventDefault(); e2.stopPropagation();
+              try{ el.dataset.soruldu = ''; dr.textContent = 'RESET'; }catch(e4){ _yut(e4); }
+            });
+            evet.addEventListener('click', e2=>{
+              e2.preventDefault(); e2.stopPropagation();
+              try{ localStorage.removeItem('orbitape.ayar'); }catch(e5){ _yut(e5); }
+              location.reload();
+            });
+            hayir.addEventListener('pointerdown', e2=>e2.stopPropagation());
+            evet.addEventListener('pointerdown', e2=>e2.stopPropagation());
+            dr.appendChild(hayir); dr.appendChild(evet);
+          }
           setTimeout(function(){
             try{
               if(el.dataset.soruldu !== '1') return;

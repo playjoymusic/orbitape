@@ -8318,19 +8318,65 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          basinca kapanabilsin, o kadar HIDE'i bosver."
          Satirin sagi artik her zaman secili derinin ADI -- bir
          deger, bir komut degil. Ikinci dokunus kapatiyor. */
+      /* ── OLCULEN SEY 'hidden' DEGIL, EKRAN ────────────────────
+         Bu kontrol bir kez YANLIS OLCTU: kap.hidden ozelligine
+         bakiyordu ve o hep dogru yaziliyordu -- ama tarayicinin
+         [hidden]{display:none} kurali bizim
+         '.deri-izgara{display:grid}' kuralindan ZAYIF oldugu icin
+         altmis kare ekranda kaliyordu. Yani kod dogru, ekran
+         yanlis, test yesil. Kullanicinin bildirdigi "skins
+         aciliyor ama tekrar kapanmiyor" tam olarak buydu.
+         Ders: gorunurlugu soran bir kontrol computed display'e
+         bakmali. */
       K('SKINS satiri ikinci dokunusta kapaniyor', await pg.evaluate(()=>{
           const sat = document.querySelector('.sat[data-ayar="deri"]');
           const kap = document.getElementById('deriIzgara');
           if(!sat || !kap) return false;
-          if(!kap.hidden) sat.click();
-          sat.click();  const acildi = !kap.hidden;
+          const cizili = ()=> getComputedStyle(kap).display !== 'none';
+          if(cizili()) sat.click();
+          sat.click();  const acildi = cizili() && kap.children.length > 30;
           const yaziAcik = sat.querySelector('.durum').textContent.trim();
-          sat.click();  const kapandi = kap.hidden;
+          sat.click();  const kapandi = !cizili();
           const yaziKapali = sat.querySelector('.durum').textContent.trim();
           return acildi && kapandi
               && yaziAcik !== 'HIDE' && yaziKapali !== 'HIDE'
               && yaziAcik === yaziKapali;
-        }), 'ayni satir aciyor ve kapatiyor, sagda HIDE degil derinin adi');
+        }), 'izgara gercekten cizilmiyor, sagda HIDE degil derinin adi');
+      /* Panel acikken diskin gorunmez dokunma alani panelin
+         uzerindeki dokunuslari yakaliyordu; olcum sirasinda
+         goruldu (#tp pointer olaylarini kesiyordu) ve menuyu
+         kapatmak icin disariya basan biri istemeden sarkiyi
+         degistiriyordu. */
+      K('Menu acikken disk basilamaz', await pg.evaluate(()=>{
+          const t = document.getElementById('tp');
+          if(!t) return false;
+          const acikOnce = document.body.classList.contains('ayar-acik');
+          document.body.classList.add('ayar-acik');
+          const kapali = getComputedStyle(t).pointerEvents === 'none';
+          document.body.classList.remove('ayar-acik');
+          const acik = getComputedStyle(t).pointerEvents !== 'none';
+          if(acikOnce) document.body.classList.add('ayar-acik');
+          return kapali && acik;
+        }), 'panel acikken .hit sagir, kapaninca geri geliyor');
+      /* ── SIFIRLAMA: SORU VE CEVABI ──────────────────────────────
+         "Are you sure diyor ama yes/no yok o anda." Iki dugme
+         cikiyor: NO geri aliyor, YES depoyu silip sayfayi
+         yeniliyor. Burada YES'e BASILMIYOR (sayfa yenilenirdi);
+         olculen sey dugmelerin var olmasi ve NO'nun soruyu geri
+         almasi. */
+      K('RESET sorusu evet/hayir gosteriyor', await pg.evaluate(()=>{
+          const sat = document.querySelector('.sat[data-ayar="sifirla"]');
+          if(!sat) return false;
+          const dr = sat.querySelector('.durum');
+          const once = dr.textContent.trim();
+          sat.click();
+          const dugmeler = [...dr.querySelectorAll('button.cvp')].map(b=>b.textContent.trim());
+          const hayir = dr.querySelector('button.cvp:not(.evet)');
+          if(hayir) hayir.click();
+          const sonra = dr.textContent.trim();
+          return once === 'RESET' && dugmeler.join(',') === 'NO,YES'
+              && sonra === 'RESET' && sat.dataset.soruldu !== '1';
+        }), 'NO ve YES cikiyor, NO soruyu geri aliyor');
 
       /* ── RINGS ONLY AYNI KAREDE ─────────────────────────────────
          Kullanicinin sozu: "ayarlardan da ring'i acip kapiyoruz ya,
@@ -8578,6 +8624,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* Gizlilik metni koda uymak zorunda: "hicbir sey toplamiyoruz"
        artik eksik bir cumle. Sayfa anahtarin adini ve varsayilanini
        yaziyor mu diye bakiyoruz. */
+    /* ── SIFIRKEN DIAGNOSTICS SATIRI YOK ────────────────────────
+       Kural bastan beri "gosterecek bir sey yoksa menude yer
+       tutma" idi ve JS dogru yaziyordu (ts.hidden = !n). Ama
+       tarayicinin [hidden]{display:none} kurali, bizim
+       '#ayar .sat{display:flex}' kuralindan daha ZAYIF: satir
+       hidden'ken bile ekranda duruyordu. Ekran goruntusunde
+       goruldu ve kullanici sordu.
+       Bu kontrol niyeti degil SONUCU olcuyor: hidden yazildiktan
+       sonra eleman gercekten cizilmiyor mu. */
+    K('Sifirken DIAGNOSTICS satiri gorunmuyor', await pg.evaluate(()=>{
+        const ts = document.getElementById('taniSatir');
+        if(!ts) return false;
+        const eski = ts.hidden;
+        ts.hidden = true;
+        const gizli = getComputedStyle(ts).display === 'none';
+        ts.hidden = false;
+        const gorunur = getComputedStyle(ts).display !== 'none';
+        ts.hidden = eski;
+        return gizli && gorunur;
+      }), 'hidden gercekten gizliyor, kaldirilinca geri geliyor');
+
     const giz = fs.readFileSync('privacy.html','utf8');
     K('Gizlilik metni olcumu anlatiyor',
        /SEND DIAGNOSTICS/.test(giz) && /off by default/i.test(giz)
