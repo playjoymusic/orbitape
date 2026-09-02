@@ -719,7 +719,20 @@ function bitir(){
        Duz arama bunu bulamaz ve testin kendisi yalan soyler.
        Birlestirmeler once kapatiliyor -- arama, calisma aninda
        olusan metnin uzerinde yapiliyor. */
-    const kod = KAYNAK.replace(/'\s*\+\s*'/g, '').replace(/"\s*\+\s*"/g, '');
+    /* ── ARAMA ALANI: SAYFA + YUKLEDIGI HER MODUL ───────────────
+       2 Eylul: kayit/kamera/fotograf kayit.js'e tasindi ve oradaki
+       metinler ("REC LOCKED", "PHOTO SAVED" ...) index.html'de
+       kalmadi. Yalnizca sayfaya bakan bu kontrol onlari "kodda yok"
+       diye bildirdi -- yani bolme, testi yaniltti.
+       Liste index.html'den OKUNUYOR: yeni bir modul eklenince
+       kendiliginden aramaya giriyor. */
+    const _modulYollari = (KAYNAK.match(/<script[^>]*\ssrc=["']([^"']+)["']/g) || [])
+      .map(t => (t.match(/src=["']([^"']+)["']/) || [])[1])
+      .filter(u => u && !/^https?:|^\/\//.test(u))
+      .map(u => path.join(KOK, u.replace(/^\.?\//, '').split('?')[0]))
+      .filter(u => fs.existsSync(u));
+    const _butunKod = [KAYNAK].concat(_modulYollari.map(u => fs.readFileSync(u, 'utf8'))).join('\n');
+    const kod = _butunKod.replace(/'\s*\+\s*'/g, '').replace(/"\s*\+\s*"/g, '');
     const yetim = anahtarlar.filter(a => {
       if(a === 'ORBITAPE' || a === 'NORMAL') return false;   /* her yerde gecen ortak kelimeler */
       return kod.indexOf(a) < 0;

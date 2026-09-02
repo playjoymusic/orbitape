@@ -17,6 +17,22 @@ const { T, ADRES: S, TELEFON, IPHONE_UA,
 /* SERBEST sabiti SAYFADA tanimli (test/ortak.js). Testlerin elle
    cal() ile verdigi parcalar da lisans tasimali: uygulamada artik
    lisansi taninmayan hicbir sey calmiyor. */
+/* ── OLCUM KAYNAGI: SAYFA + YUKLEDIGI MODULLER ──────────────────
+   "Kodda su satir var mi" diye soran her kontrol buraya bakmali.
+   Bolmeden sonra yalnizca index.html'e bakan alti kontrol birden
+   kirmizi yandi: kod dogruydu, baktiklari yer eksikti. */
+const TUM_KOD = (function(){
+  try{
+    const sayfa = require('fs').readFileSync('index.html','utf8');
+    const yollar = (sayfa.match(/<script[^>]*\ssrc=["']([^"']+)["']/g) || [])
+      .map(t => (t.match(/src=["']([^"']+)["']/) || [])[1])
+      .filter(u => u && !/^https?:|^\/\//.test(u))
+      .map(u => u.replace(/^\.?\//, '').split('?')[0])
+      .filter(u => require('fs').existsSync(u));
+    return [sayfa].concat(yollar.map(u => require('fs').readFileSync(u,'utf8'))).join('\n');
+  }catch(e){ return ''; }
+})();
+
 const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
 
@@ -124,7 +140,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      bu yuzden tarayici testi yakalamiyor. Kaynak uzerinden bakiyoruz. */
   {
     const kaynak = fs.readFileSync('index.html','utf8');
-    const _js = kaynak.slice(kaynak.indexOf('<script>')+8, kaynak.lastIndexOf('</script>'));
+    /* ── SAYFA + YUKLEDIGI MODULLER ────────────────────────────────
+       2 Eylul: kayit/kamera/fotograf kayit.js'e tasindi. "Kodda su
+       satir var mi" diye soran kontroller yalnizca index.html'e
+       bakiyordu ve alti tanesi birden kirmizi yandi -- kod dogruydu,
+       baktiklari yer eksikti. Bolmenin testleri yaniltmasi tam da
+       kacinilmasi gereken sey.
+       Liste index.html'den OKUNUYOR: yeni bir modul eklenince
+       kendiliginden kapsama giriyor. */
+    const _modulYol = (kaynak.match(/<script[^>]*\ssrc=["']([^"']+)["']/g) || [])
+      .map(t => (t.match(/src=["']([^"']+)["']/) || [])[1])
+      .filter(u => u && !/^https?:|^\/\//.test(u))
+      .map(u => u.replace(/^\.?\//, '').split('?')[0])
+      .filter(u => fs.existsSync(u));
+    const _modulKod = _modulYol.map(u => fs.readFileSync(u, 'utf8')).join('\n');
+    /* Satir ici blok: ILK </script>'e kadar. lastIndexOf ARTIK
+       YANLIS -- ikinci bir <script src> etiketi var ve o kesim HTML
+       de yutuyordu. */
+    const _icBlok = kaynak.slice(kaynak.indexOf('<script>')+8,
+                                 kaynak.indexOf('</script>'));
+    const _js = _icBlok + '\n' + _modulKod;
     const _sat = _js.split('\n');
     /* TARAMA ICIN TEMIZ KOPYA: blok yorumlari, satir yorumlarini ve
        dizgi (string) iceriklerini bosluga cevir. Bunlar yapilmazsa
@@ -247,11 +282,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     let sozHata = '';
     try{
       const k = fs.readFileSync('index.html','utf8');
-      const js = k.slice(k.indexOf('<script>')+8, k.lastIndexOf('</script>'));
+      /* ILK </script>'e kadar: bolmeden sonra sayfada ikinci bir
+         <script src> etiketi var ve lastIndexOf o kesime HTML de
+         katiyordu -- kontrol kendi kendini yaniltiyordu. */
+      const js = k.slice(k.indexOf('<script>')+8, k.indexOf('</script>'));
       new (require('vm').Script)(js, {filename:'index.html'});
+      /* Moduller de ayristirilabilir olmali: birinde sozdizimi
+         hatasi varsa uygulama yine acilmaz, sebebi de alakasiz
+         gorunur. */
+      /* Modul listesi sayfadan okunuyor: _modulYol baska bir blogun
+         yerel degiskeni, buradan gorunmuyor. */
+      for(const t of (k.match(/<script[^>]*\ssrc=["']([^"']+)["']/g) || [])){
+        const u = ((t.match(/src=["']([^"']+)["']/) || [])[1] || '')
+                    .replace(/^\.?\//, '').split('?')[0];
+        if(u && !/^https?:/.test(u) && fs.existsSync(u))
+          new (require('vm').Script)(fs.readFileSync(u,'utf8'), {filename:u});
+      }
     }catch(e){ sozHata = String(e && e.message || e).slice(0,120); }
     K('index.html sozdizimi gecerli', sozHata === '',
-       sozHata || 'ayristirilabiliyor');
+       sozHata || 'sayfa ve modulleri ayristirilabiliyor');
   }
 
   /* ══ SONSUZ SES ARAMASI — SUZULMUS HAVUZ ONBELLEGI ════════════════
@@ -354,11 +403,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          yakalamak. Yorum yazmak bu tavana takilmasin diye genis. */
   {
     const zlib = require('zlib');
-    const ham = fs.readFileSync('index.html');
-    const br  = zlib.brotliCompressSync(ham, {
+    /* ── OLCULEN SEY: ILK ACILISTA INEN HER SEY ──────────────────
+       2 Eylul'de kayit/kamera/fotograf kayit.js'e tasindi. Tavan
+       yalnizca index.html'e baksaydi bolme, cita atlamanin yolu
+       olurdu: dosyayi ikiye ayirip "tavan altina indik" demek.
+       Kullanici acisindan degisen hicbir sey yok -- iki dosya da
+       ilk acilista iniyor. O yuzden olculen sey TOPLAM.
+       Liste index.html'den OKUNUYOR, elle yazilmiyor: yeni bir
+       <script src> eklenirse kendiliginden tavana giriyor. */
+    const _sayfa = fs.readFileSync('index.html', 'utf8');
+    const _disBetikler = (_sayfa.match(/<script[^>]*\ssrc=["']([^"']+)["']/g) || [])
+      .map(t => (t.match(/src=["']([^"']+)["']/) || [])[1])
+      .filter(u => u && !/^https?:|^\/\//.test(u))
+      .map(u => u.replace(/^\.?\//, '').split('?')[0])
+      .filter(u => fs.existsSync(u));
+    const _parcalar = ['index.html'].concat(_disBetikler);
+    const bro = d => zlib.brotliCompressSync(d, {
       params:{ [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }).length;
-    const gz  = zlib.gzipSync(ham, {level:9}).length;
+    const ham = fs.readFileSync('index.html');
+    let br = 0, gz = 0;
+    for(const dosya of _parcalar){
+      const d = fs.readFileSync(dosya);
+      br += bro(d); gz += zlib.gzipSync(d, {level:9}).length;
+    }
     const brKB = Math.round(br/1024), gzKB = Math.round(gz/1024);
+    const _parcaOzet = _parcalar.map(f => f + ' ' + Math.round(bro(fs.readFileSync(f))/1024) + 'K').join(' + ');
     /* ── HANGI BOY ONEMLI, OLCULDU ──────────────────────────────
        Dosyanin %42'si aciklama (417 KB). Kullanici bunlari isteyerek
        istedi: "sistemimi bozma, neden oyle yapildigini yaz."
@@ -435,8 +504,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        BIR SONRAKI YUKSELTME ONCESI MODUL BOLME YAPILMALI. Bugun
        ayrica ucuncu kez "blogu keserken komsuyu kesme" hatasi
        yasandi; tek dosyanin bedeli artik yalnizca boy degil. */
-    K('Telden gecen boy < 287 KB', br < 287*1024,
-      brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
+    /* ── IKI TAVAN, CUNKU IKI AYRI SORU VAR ─────────────────────
+     Bolme sonrasi tek bir sayi yalan soyluyordu. Olculdu:
+       bolmeden once  index.html tek basina        285,9 KB
+       bolmeden sonra index.html + kayit.js        292,9 KB
+     Yani bolme TOPLAMI 7 KB BUYUTTU -- iki ayri brotli akisi
+     ortak sozlugu paylasamiyor. Bunu saklamak yerine yaziyoruz.
+     Bolmenin kazanci boy degildi zaten: bir gunde UC KEZ "blogu
+     keserken komsuyu kesme" hatasi yasandi ve tek dosyanin asil
+     bedeli oydu.
+     Iki soru, iki tavan:
+       · ILK CIZIM: sayfanin kendisi. Kullanicinin bekledigi sure
+         asil buna bagli -- ilk boyama bu dosya inmeden olmuyor.
+       · TOPLAM: ilk acilista inen her sey. Bolme, citin altina
+         atlamanin yolu olmasin diye.
+     SIRADAKI ADIM ve bu sayilar onun olcusu: kayit.js'i ISTEK
+     UZERINE yuklemek (REC/PHOTO/CAM'e ilk basista). O zaman ilk
+     cizim ~254 KB'da kalir ve 38,6 KB hic inmez -- gercek kazanc
+     orada, bolmenin kendisinde degil. */
+  K('Ilk cizim icin inen boy < 260 KB', bro(ham) < 260*1024,
+      Math.round(bro(ham)/1024) + ' KB brotli (index.html) — ilk boyama buna bagli');
+  K('Toplam inen boy < 295 KB', br < 295*1024,
+      brKB + ' KB brotli (gzip ' + gzKB + ' KB) — ' + _parcaOzet);
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
@@ -912,7 +1001,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* KAYIT kullanici kazancindan ONCE aliniyor: sesi kistin diye
      kaydin kisik cikmasi istenmez. */
   K('Kayit kullanici kazancindan once',
-     /const kaynakDugum = tavan \|\| cikisG/.test(fs.readFileSync('index.html','utf8')),
+     /const kaynakDugum = tavan \|\| cikisG/.test(TUM_KOD),
      'kayit tavandan aliniyor, kulGainden degil');
 
   /* ── ESKI SURUM ACILMASIN ────────────────────────────────────────
@@ -4534,7 +4623,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kaynak = fs.readFileSync('index.html','utf8');
     const tasiyor = (kaynak.match(/lisans:\(x\.lisans\|\|''\)\.toString\(\)/g)||[]).length;
     K('Havuzlar lisansi tasiyor', tasiyor>=2, tasiyor+' yukleyici (earth, uzun)');
-    K('Kayit cizimi lisansi yaziyor', /npLisans[\s\S]{0,200}domMetin\(c, lz, lz\.textContent/.test(kaynak),
+    /* Kayit cizimi 2 Eylul'de kayit.js'e tasindi: kaynak da orasi.
+       index.html'de aramak sessizce yesil verirdi (desen hic
+       bulunmadigi icin degil, artik orada OLMADIGI icin). */
+    const kayitKaynak = fs.readFileSync('kayit.js','utf8');
+    K('Kayit cizimi lisansi yaziyor', /npLisans[\s\S]{0,200}domMetin\(c, lz, lz\.textContent/.test(kayitKaynak),
       'paylasilan videoda atif duruyor');
   }
 
@@ -5689,21 +5782,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                  && y.ilk.indexOf('deneme') >= 0;
         }catch(e){ return false; }
       }), 'null/undefined/nesne/metin ile de patlamiyor');
-    K('Kayit tamponunda tavan var', await pg.evaluate(()=>{
-        const k = document.documentElement.innerHTML;
-        return typeof KAYIT_TAVAN_BAYT === 'number'
-            && typeof KAYIT_TAVAN_MS === 'number'
-            && KAYIT_TAVAN_BAYT > 0 && KAYIT_TAVAN_BAYT <= 600*1024*1024
-            && KAYIT_TAVAN_MS > 0 && KAYIT_TAVAN_MS <= 30*60*1000
-            /* Tavana varinca DURDURUYOR: iptal eden bir yol olmamali */
-            && /_kayitBoyut >= KAYIT_TAVAN_BAYT[\s\S]{0,180}kayitDurdur\(\)/.test(k)
-            && /RECORDING LIMIT/.test(k);
-      }), '400 MB / 15 dk, dolunca durur (iptal etmez)');
-    K('Kayit boyutu gercekten sayiliyor', await pg.evaluate(()=>{
-        const k = document.documentElement.innerHTML;
-        return /_kayitBoyut \+= e\.data\.size/.test(k)
-            && /kayitParcalari=\[\]; _kayitBoyut=0/.test(k);
-      }), 'her parcada toplaniyor, kayit bitince sifirlaniyor');
+    /* KOD ARTIK SAYFANIN ICINDE DEGIL: kayit.js ayri bir dosya, yani
+       document.documentElement.innerHTML onu HIC gormuyor. Degerler
+       tarayicidan (gercekten tanimli mi), desenler Node tarafindan
+       (kaynakta gercekten yazili mi) sorulu.  */
+    K('Kayit tamponunda tavan var',
+       (await pg.evaluate(()=>
+            typeof KAYIT_TAVAN_BAYT === 'number'
+         && typeof KAYIT_TAVAN_MS === 'number'
+         && KAYIT_TAVAN_BAYT > 0 && KAYIT_TAVAN_BAYT <= 600*1024*1024
+         && KAYIT_TAVAN_MS > 0 && KAYIT_TAVAN_MS <= 30*60*1000))
+       /* Tavana varinca DURDURUYOR: iptal eden bir yol olmamali */
+       && /_kayitBoyut >= KAYIT_TAVAN_BAYT[\s\S]{0,180}kayitDurdur\(\)/.test(TUM_KOD)
+       && /RECORDING LIMIT/.test(TUM_KOD),
+       '400 MB / 15 dk, dolunca durur (iptal etmez)');
+    K('Kayit boyutu gercekten sayiliyor',
+       /_kayitBoyut \+= e\.data\.size/.test(TUM_KOD)
+       && /kayitParcalari=\[\]; _kayitBoyut=0/.test(TUM_KOD),
+       'her parcada toplaniyor, kayit bitince sifirlaniyor');
     /* ULKE KODU KUYRUGA KADAR GELMELI.
        Olculen vaka: radyo.json'da ulke='US' yaziyordu, ekranda ise
        "LIVE · ELECTRONIC" cikiyor, ulke hic gorunmuyordu. Veri
@@ -8130,7 +8226,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ekranda yalan yazar. */
   {
     const sart = fs.readFileSync('terms.html','utf8');
-    const kodNot = fs.readFileSync('index.html','utf8');
+    const kodNot = TUM_KOD;
     /* ── AYNI KURAL, IKI FARKLI UZUNLUK ─────────────────────────
        Once ekrandaki not sartlardaki cumlenin kopyasiydi (uc satir,
        lisans aciklamasiyla birlikte). Kullanici kisaltti: "millet

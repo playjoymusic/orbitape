@@ -29,6 +29,24 @@ if not bloklar:
 en = sorted(bloklar, key=len, reverse=True)[0]
 open(os.path.join(sys.argv[1], 'app.js'), 'w', encoding='utf-8').write(en)
 print(f'  script cikarildi: {len(en)//1024} KB, {en.count(chr(10))} satir')
+
+# -- DIS BETIKLER DE DENETIME GIRIYOR ----------------------------
+# 2 Eylul: kayit/kamera/fotograf kayit.js'e tasindi. Yalnizca
+# satir ici bloga bakan denetim, o dosyadaki her adi
+# "Cannot find name" diye bildirdi -- 40 sahte hata. Ikisi de
+# klasik betik ve ayni kuresel sozlugu paylasiyor; denetim de
+# oyle gormeli.
+# Liste index.html'den OKUNUYOR: yeni bir modul eklenince
+# kendiliginden denetime giriyor, kimsenin hatirlamasi gerekmiyor.
+dis = re.findall(r'<script[^>]*\ssrc=["\']([^"\']+)["\']', s)
+for u in dis:
+    if u.startswith(('http://', 'https://', '//')):
+        continue
+    yol = os.path.join(kok, u.split('?')[0].lstrip('./'))
+    if os.path.exists(yol):
+        hedef = os.path.join(sys.argv[1], os.path.basename(yol))
+        open(hedef, 'w', encoding='utf-8').write(open(yol, encoding='utf-8').read())
+        print('  modul cikarildi: ' + os.path.basename(yol))
 PY
 [ $? -eq 0 ] || exit 1
 cp araclar/tipler.d.ts "$GECICI/" 2>/dev/null
@@ -45,7 +63,7 @@ fi
 node_modules/.bin/tsc --noEmit --allowJs --checkJs \
   --target es2020 --lib es2020,dom,dom.iterable \
   --noImplicitAny false --strictNullChecks false \
-  "$GECICI/tipler.d.ts" "$GECICI/app.js" 2>&1 | sed "s|$GECICI/||" > "$GECICI/rapor.txt"
+  "$GECICI/tipler.d.ts" "$GECICI"/*.js 2>&1 | sed "s|$GECICI/||" > "$GECICI/rapor.txt"
 
 SAYI=$(grep -c "error TS" "$GECICI/rapor.txt")
 TABAN=$(cat araclar/tip_taban.txt 2>/dev/null || echo 999999)

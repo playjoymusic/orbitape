@@ -133,6 +133,21 @@ def ozetleri_al(kaynak, ad):
 
 def politika(js_ozetleri, css_ozetleri, uygulama):
     js = " ".join(js_ozetleri) if js_ozetleri else "'none'"
+    # ── UYGULAMA SAYFASINDA 'self' DE VAR: kayit.js ────────────────
+    # Kayit/kamera/fotograf 2 Eylul'de kayit.js'e tasindi. Ozet (hash)
+    # yalnizca SATIR ICI bloklari kapsiyor; ayri bir dosyayi
+    # calistirabilmek icin kaynak izni gerekiyor.
+    #
+    # BU BIR ZAYIFLAMA MI: 'self' "bu alan adindaki herhangi bir
+    # betik" demek. Zayiflama ancak saldirgan bizim alan adimiza
+    # DOSYA KOYABILIYORSA anlamli -- oysa burada yukleme yok, form
+    # yok, kullanici icerigi yok: yayindaki her dosya depodan
+    # geliyor ve yayina cikan dosyalarin listesi duman testinde
+    # olculuyor (beklenmeyen bir .js yayindaysa kirmizi yanar).
+    # Yazi sayfalarinda (gizlilik/sartlar/404) 'self' YOK: onlarin
+    # hic betigi yok, dolayisiyla izni de olmamali.
+    if uygulama:
+        js = "'self' " + js
     css = " ".join(css_ozetleri) if css_ozetleri else "'none'"
     ortak = [
         "default-src 'none'",

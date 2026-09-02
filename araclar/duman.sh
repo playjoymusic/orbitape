@@ -149,7 +149,7 @@ for y in /manifest.json /radyo.json /earth_giris.json /dil/tr.json; do
     "gelen $c"
 done
 
-for y in /sw.js /robots.txt /privacy /terms; do
+for y in /sw.js /kayit.js /robots.txt /privacy /terms; do
   c=$(kod "$y")
   K "$y yayinda" "$([ "$c" = 200 ] && echo 0 || echo 1)" "gelen $c"
 done
