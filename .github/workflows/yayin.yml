@@ -146,7 +146,7 @@ jobs:
       # yayından daha tehlikeli.
       - name: Yayin bozuksa alarm
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');

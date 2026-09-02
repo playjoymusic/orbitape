@@ -81,7 +81,7 @@ jobs:
       # Kendi kendine aylik commit atan "canli tut" isleri bilerek
       # yok: depoya sahte hareket sokmak, gecmisi kirletir.
       - name: Sessizce kapanmis nobetci var mi
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const r = await github.rest.actions.listRepoWorkflows({
@@ -131,7 +131,7 @@ jobs:
       # bir issue ile boğulurdu ve alarmın kendisi gürültüye dönerdi.
       - name: Kirmizi yandiysa haber ver
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -174,7 +174,7 @@ jobs:
       # "duruyor iste" diye gorulmeye baslar.
       - name: Yesil yandiysa alarmi kapat
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const acik = await github.rest.issues.listForRepo({
