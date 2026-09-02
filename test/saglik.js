@@ -387,6 +387,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kirparak 100 bayt kovalamak muhendislik degil kumar.
        Kullanici tarafinda karsiligi: ilk acilista ~2 KB daha,
        sonra servis calisani onbellekliyor.
+       ── ALTINCI YUKSELIS (283 -> 287): FOTOGRAF ARAYUZ KATMANI ──
+       Kullanicinin istegi tek cumleydi: "ne goruyorsak o, yani o
+       anda." Fotograf artik ekranin tuslarini da iceriyor -- tuslar,
+       kip anahtari, ayar tutamagi, ve sag alttaki yazi ekranda kac
+       satirsa o kadar satir. Bunun bedeli ~2 KB.
+       AYNI PARTIDE EKSILTME DE VAR: kayit ciziminde `if(false && ...)`
+       ile kapatilmis 1,2 KB'lik olu kod silindi (arama satirinin eski
+       kayit cizimi; arayuz artik kendi katmaninda).
+       Ve yine olculdu: o 1,2 KB silinince brotli 285,92'de KALDI --
+       kirpmanin bu dosyada bir sey degistirmedigi ucuncu olcum.
+       MODUL BOLME ARTIK ERTELENEMEZ. Bu satir ikinci borc senedi.
+
        ── BESINCI YUKSELIS: KENDI KURALIMI CIGNEDIM, YAZIYORUM ────
        Bir onceki not aynen soyle diyordu: "BIR SONRAKI YUKSELTME
        ONCESI MODUL BOLME YAPILMALI." Bu partide (Turkce arayuz)
@@ -423,7 +435,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        BIR SONRAKI YUKSELTME ONCESI MODUL BOLME YAPILMALI. Bugun
        ayrica ucuncu kez "blogu keserken komsuyu kesme" hatasi
        yasandi; tek dosyanin bedeli artik yalnizca boy degil. */
-    K('Telden gecen boy < 283 KB', br < 283*1024,
+    K('Telden gecen boy < 287 KB', br < 287*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
@@ -4014,9 +4026,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                    sinif: rec.classList.contains('foto'),
                    yazi: document.getElementById('recYazi').textContent,
                    tik: (()=>{ try{ kayitDegis(); }catch(e){} return !!kaydedici; })() };
+    /* ── AKIS DEGISTI: ONCE ONIZLEME, SONRA PAYLASIM ────────────
+       Kullanicinin sozu: "hemen bastigimiz gibi paylasim cikmasi
+       olmuyor, ilk ss alabilmesi lazim." Artik basis fotografi
+       CEKIYOR ve ekranda gosteriyor; paylasim ancak SHARE tusuyla
+       aciliyor. Test de o sirayi izliyor -- basista paylasimin
+       ACILMAMASI da olculuyor. */
+    await bek(900);                     /* cizim + simgeler asenkron */
+    foto.onizleme = (document.getElementById('fotoOnizle')||{classList:{contains:()=>false}})
+                      .classList.contains('var');
+    foto.basistaPaylasim = !!paylasilan;
+    try{ document.getElementById('fotoPaylas').click(); }catch(e){}
+    await bek(300);
     foto.dosya = paylasilan && paylasilan.files && paylasilan.files[0]
                ? { tur: paylasilan.files[0].type, boy: paylasilan.files[0].size,
                    ad: paylasilan.files[0].name } : null;
+    try{ fotoOnizleKapa(); }catch(e){}
     try{
       if(eskiCan === undefined) delete navigator.canShare;
       else Object.defineProperty(navigator,'canShare',{value:eskiCan, configurable:true});
@@ -4059,7 +4084,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'yazi "' + rp.foto.yazi + '" | foto sinifi ' + rp.foto.sinif);
   K('Radyoda tus sonuk degil', rp.foto.pasif === false,
      'calisan tus kapali gorunmuyor');
-  K('Radyoda basinca PNG paylasima gidiyor',
+  K('Basinca once ONIZLEME aciliyor, paylasim ACILMIYOR',
+     rp.foto.onizleme === true && rp.foto.basistaPaylasim === false,
+     'onizleme ' + rp.foto.onizleme + ' | basista paylasim ' + rp.foto.basistaPaylasim);
+  K('SHARE tusu PNG paylasima gonderiyor',
      !!rp.foto.dosya && rp.foto.dosya.tur === 'image/png'
      && rp.foto.dosya.boy > 20000 && /^orbitape-.*\.png$/.test(rp.foto.dosya.ad),
      rp.foto.dosya ? (rp.foto.dosya.ad + ' · ' + Math.round(rp.foto.dosya.boy/1024) + ' KB')
@@ -8046,10 +8074,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const radyoda = getComputedStyle(r).display;
     const parlak  = parseFloat(getComputedStyle(r).opacity) > 0.9;
     const yazi    = (document.getElementById('recYazi')||{}).textContent || '';
-    r.click(); await bek(260);
+    r.click(); await bek(1000);            /* cizim + simgeler asenkron */
+    const onizleme = (document.getElementById('fotoOnizle')||{classList:{contains:()=>false}})
+                       .classList.contains('var');
+    try{ document.getElementById('fotoPaylas').click(); }catch(e){}
+    await bek(300);
     const foto = !!(paylasilan && paylasilan.files && paylasilan.files[0]
                     && paylasilan.files[0].type === 'image/png'
                     && paylasilan.files[0].size > 20000);
+    try{ fotoOnizleKapa(); }catch(e){}
     const kayitBasladi = (typeof kaydediciAktif==='function') ? kaydediciAktif() : false;
     /* Arsiv, arsiv kaydi calarken: REC tam parlak. */
     AYAR.mood = true; moodUygula(false); await bek(300);
@@ -8075,15 +8108,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       if(eskiPay === undefined) delete navigator.share;
       else Object.defineProperty(navigator,'share',{ value:eskiPay, configurable:true });
     }catch(e){}
-    return { radyoda, parlak, yazi, foto, kayitBasladi, moodda, moodSonuk,
+    return { radyoda, parlak, yazi, foto, onizleme, kayitBasladi, moodda, moodSonuk,
              kilitSonuk, kilitAcik, kilitMetin };
   });
   K('Radyoda tus duruyor, parlak ve PHOTO diyor',
      !!recKip && recKip.radyoda!=='none' && recKip.parlak===true && recKip.yazi==='PHOTO',
      recKip ? ('display '+recKip.radyoda+', parlak '+recKip.parlak+', yazi "'+recKip.yazi+'"') : '-');
-  K('Radyoda basinca fotograf paylasima gidiyor, kayit baslamiyor',
-     !!recKip && recKip.foto===true && recKip.kayitBasladi===false,
-     recKip ? ('PNG paylasima gitti: '+recKip.foto+' | kayit: '+recKip.kayitBasladi) : '-');
+  K('Radyoda basinca onizleme aciliyor ve SHARE paylasima gonderiyor',
+     !!recKip && recKip.onizleme===true && recKip.foto===true && recKip.kayitBasladi===false,
+     recKip ? ('onizleme: '+recKip.onizleme+' | PNG: '+recKip.foto+' | kayit: '+recKip.kayitBasladi) : '-');
   K('Arsivde canli yayinda REC sonuk ve sebebini yaziyor',
      !!recKip && recKip.kilitSonuk===true && recKip.kilitAcik===true
      && /licen/i.test(recKip.kilitMetin) && /live/i.test(recKip.kilitMetin),
