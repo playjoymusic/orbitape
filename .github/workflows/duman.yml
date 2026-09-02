@@ -1,0 +1,73 @@
+# ORBITAPE — YAYIN DUMAN TESTI
+#
+# NEDEN VAR
+#   2 Eylül. kontrol.sh 810/810 yeşil verdi, Cloudflare "deployed"
+#   dedi, panelde hata oranı %0 göründü — ve orbitape.app/np 24
+#   dakika boyunca 404 döndü. Bulan şey bir test değil, bir insanın
+#   linke bakmasıydı. Aynı koşuda ikinci bir açık daha çıktı:
+#   uygulamayı herkesin açtığı "/" adresinde CSP başlığı hiç yoktu.
+#
+#   İkisinin de ortak sebebi tek: bütün testlerimiz DOSYAYA bakıyordu,
+#   hiçbiri YAYINA bakmıyordu. Aradaki boşluğa yayın tarifi, varlık
+#   yönlendiricisi, _headers eşleşmesi ve alan adı giriyor.
+#
+# NE YAPAR
+#   araclar/duman.sh — canlı adrese sırayla sorar. Tek kontrol düşse
+#   iş kırmızı yanar ve GitHub e-posta gönderir.
+#
+# İKİ AYRI SORU, İKİ AYRI TETİK
+#   push      → "yayın gerçekten çıktı mı": önce yayının yetişmesi
+#               beklenir (KATI=1), sonra sorular sorulur. Beklemeden
+#               sorsaydık bütün cevaplar ESKİ sürümden gelir ve yeşil
+#               yanardı — yani yeni sürümü hiç sınamamış olurduk.
+#   schedule  → "site şu anda ayakta mı": 15 dakikada bir. Burada
+#               KATI kapalı; elle geri alma yapıldıysa iş boşuna
+#               kırmızı yanmasın, soru "sağlam mı", "güncel mi" değil.
+#
+# MALİYET
+#   Koşu ~25 saniye, tarayıcı yok, kurulum yok. Herkese açık depoda
+#   ücretsiz.
+#
+# NE YAZMIYOR
+#   /olcu'ya kayıt DÜŞÜRMÜYOR. Worker'a ulaştığını GET (405) ve yanlış
+#   içerik türü (415) ile kanıtlıyor. 15 dakikada bir sahte ölçüm
+#   bırakmak ölçümün kendisini değersiz kılardı.
+
+name: Yayın duman testi
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Aynı anda iki koşu olmasın: push ile zamanlanmış koşu çakışırsa
+# ikisi de aynı şeyi sorar, biri yeter.
+concurrency:
+  group: duman
+  cancel-in-progress: false
+
+jobs:
+  duman:
+    name: Yayin ayakta mi
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Depo lazım: betiğin kendisi, karşılaştırılacak index.html ve
+      # assetlinks.json buradan geliyor.
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      - name: Yayini sina
+        env:
+          ADRES: https://orbitape.app
+          # push: yayının yetişmesini 7 dakikaya kadar bekle.
+          # schedule: bekleme yok, sadece sağlık sorusu.
+          KATI: ${{ github.event_name == 'push' && '1' || '0' }}
+          BEKLE: '420'
+        run: bash araclar/duman.sh
