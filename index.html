@@ -1804,18 +1804,25 @@
          halka beyaz yapmissin."
          RENK MARKADAN: "o ORBITAPE yazisindan etkilensin, ana koyu
          tonundan; koyu backgroundlarda tersi." --d-oluk ve
-         --d-cekirdek deriUygula'da marka renginden zemine dogru
-         karistiriliyor. Govdeye, kenarina, golgesine dokunulmuyor. */
+         --d-cekirdek marka renginden zemine dogru karistiriliyor
+         (bkz. olukYaz) ve icine RAFIN rengi de giriyor.
+         PURUZSUZ KENAR: duraklar eskiden sert basliyordu
+         (transparent 20.63% -> renk 20.63%) ve daire kenarlari
+         merdiven gibi goruluyordu -- kullanicinin sozu: "ortadaki
+         yuvarlagin ustundeki cizgiler de puruzlu olmasin."
+         Her kenara 0,09'luk bir gecis kondu: tarayici o araligi
+         yumusatiyor, cizgi ayni kalinlikta ama kenari temiz.
+         Govdeye, kenarina, golgesine dokunulmuyor. */
       radial-gradient(circle at 50% 50%,
-        transparent 0 20.63%, var(--d-oluk,var(--d-halka)) 20.63% 21.08%, transparent 21.08% 30.13%,
-        var(--d-oluk,var(--d-halka)) 30.13% 30.58%, transparent 30.58% 39.63%,
-        var(--d-oluk,var(--d-halka)) 39.63% 40.08%, transparent 40.08% 49.63%,
-        var(--d-oluk,var(--d-halka)) 49.63% 50.08%, transparent 50.08%),
+        transparent 0 20.57%, var(--d-oluk,var(--d-halka)) 20.66% 21.05%, transparent 21.14% 30.07%,
+        var(--d-oluk,var(--d-halka)) 30.16% 30.55%, transparent 30.64% 39.57%,
+        var(--d-oluk,var(--d-halka)) 39.66% 40.05%, transparent 40.14% 49.57%,
+        var(--d-oluk,var(--d-halka)) 49.66% 50.05%, transparent 50.14%),
       /* cekirdek: basili dugme -- dolgu ustte, kabartma altinda,
          yani 10% ile 10.4% arasindaki ince serit rim olarak kaliyor */
       radial-gradient(circle at 50% 50%,   var(--d-cekirdek,var(--d-cek)) 0 10%, transparent 10%),
-      radial-gradient(circle at 50% 50.4%, var(--d-oluk-isik,var(--d-isik)) 0 10.4%, transparent 10.4%),
-      radial-gradient(circle at 50% 49.6%, var(--d-golge-renk) 0 10.4%, transparent 10.4%),
+      radial-gradient(circle at 50% 50.4%, var(--d-cek-isik,var(--d-oluk-isik,var(--d-isik))) 0 10.4%, transparent 10.4%),
+      radial-gradient(circle at 50% 49.6%, var(--d-cek-golge,var(--d-golge-renk)) 0 10.4%, transparent 10.4%),
       /* oluklarin ALT kenari: isik */
       radial-gradient(circle at 50% 50.5%,
         transparent 0 20.6%, var(--d-oluk-isik,var(--d-isik)) 20.6% 21.1%, transparent 21.1% 30.1%,
@@ -1975,6 +1982,20 @@
     box-shadow:inset 0 2px 3px var(--d-golge-renk) !important;}
   body.deri #ayar .anahtar b{background:var(--d-yazi2, var(--d-yazi)) !important;}
   body.deri #ayar .sat.acik .anahtar b{background:var(--d-vurgu, var(--d-marka)) !important;}
+  /* ── DERIDE DE ACIK/KAPALI OKUNSUN ────────────────────────────
+     Karanlik temada anahtar acikken YOLUN ICI turkuaz doluyor;
+     deride hic dolmuyordu ve fark yalnizca topuzun yeri ile iki
+     koyu tonun (yazi2 / vurgu) arasindaki kucuk renk farkiydi.
+     Sari bir deride o iki ton yan yana neredeyse ayni goruluyor --
+     kullanicinin sorusu buydu: "bu gorseldekilerin boyle mi olmasi
+     gerekiyormus, dogru muyuz."
+     Artik yol da rafin renginden bir tutam aliyor. color-mix
+     desteklenmeyen eski bir tarayicida bu satir DUSER ve bir
+     onceki kural gecerli kalir -- yani en kotu ihtimalde bugunku
+     gorunum, bozulma degil. */
+  body.deri #ayar .sat.acik .anahtar{
+    background:color-mix(in srgb, var(--d-vurgu, var(--d-marka)) 34%,
+                         var(--d-tus-zem, transparent)) !important;}
   body.deri #ayar .sat.acik>span:first-child{color:var(--d-yazi) !important;
     -webkit-text-fill-color:var(--d-yazi) !important;}
 
@@ -2048,18 +2069,18 @@
   body.deri.luks .disk::after{
     background:
       radial-gradient(circle at 50% 50%,
-        transparent 0 20.63%, var(--d-oluk,var(--d-halka)) 20.63% 21.08%, transparent 21.08% 30.13%,
-        var(--d-oluk,var(--d-halka)) 30.13% 30.58%, transparent 30.58% 39.63%,
-        var(--d-oluk,var(--d-halka)) 39.63% 40.08%, transparent 40.08% 49.63%,
-        var(--d-oluk,var(--d-halka)) 49.63% 50.08%, transparent 50.08%),
+        transparent 0 20.57%, var(--d-oluk,var(--d-halka)) 20.66% 21.05%, transparent 21.14% 30.07%,
+        var(--d-oluk,var(--d-halka)) 30.16% 30.55%, transparent 30.64% 39.57%,
+        var(--d-oluk,var(--d-halka)) 39.66% 40.05%, transparent 40.14% 49.57%,
+        var(--d-oluk,var(--d-halka)) 49.66% 50.05%, transparent 50.14%),
       radial-gradient(circle at 50% 50%,   var(--d-cekirdek,var(--d-cek)) 0 10%, transparent 10%),
       radial-gradient(circle at 50% 50.9%,
         transparent 0 20.7%, var(--d-tel) 20.7% 21%, transparent 21% 30.2%,
         var(--d-tel) 30.2% 30.5%, transparent 30.5% 39.7%,
         var(--d-tel) 39.7% 40%, transparent 40% 49.7%,
         var(--d-tel) 49.7% 50%, transparent 50%),
-      radial-gradient(circle at 50% 50.4%, var(--d-oluk-isik,var(--d-isik)) 0 10.4%, transparent 10.4%),
-      radial-gradient(circle at 50% 49.6%, var(--d-golge-renk) 0 10.4%, transparent 10.4%),
+      radial-gradient(circle at 50% 50.4%, var(--d-cek-isik,var(--d-oluk-isik,var(--d-isik))) 0 10.4%, transparent 10.4%),
+      radial-gradient(circle at 50% 49.6%, var(--d-cek-golge,var(--d-golge-renk)) 0 10.4%, transparent 10.4%),
       radial-gradient(circle at 50% 50.5%,
         transparent 0 20.6%, var(--d-oluk-isik,var(--d-isik)) 20.6% 21.1%, transparent 21.1% 30.1%,
         var(--d-oluk-isik,var(--d-isik)) 30.1% 30.6%, transparent 30.6% 39.6%,
@@ -2098,7 +2119,15 @@
      ve cekirdek onun tam ustune oturuyor; yuzun ortasinda duran
      bir leke gibi gorunuyor. Halkalar duruyor, yalnizca en
      ortadaki dolu nokta kalkiyor. */
-  body.kam.deri .disk::after{--d-cek:transparent;--d-cekirdek:transparent;}
+  /* ── KAMERA ACIKKEN ORTADAKI NOKTA TAMAMEN GIDIYOR ────────────
+     "Skinler varken cam acilinca ortadaki noktayi sil."
+     Dolguyu saydam yapmak YETMIYOR: cekirdegin kabartmasi (asagi
+     kaydirilmis isik, yukari kaydirilmis golge) dolgunun ALTINDA
+     duruyor -- katman sirasi duzeltildikten sonra dolgu kalkinca
+     altindaki iki halka ortaya cikiyor ve nokta yine goruluyordu.
+     Uc katman birden kalkiyor; oluklar duruyor. */
+  body.kam.deri .disk::after{--d-cek:transparent;--d-cekirdek:transparent;
+    --d-cek-isik:transparent;--d-cek-golge:transparent;}
 
   /* ── RINGS ONLY: GOVDE KALKIYOR, HALKA KALIYOR ────────────────
      Deride tuval kapali ve halkalar CSS ile ciziliyor -- duz, net,
@@ -2298,28 +2327,31 @@
   .deri-izgara button.kapa::after{display:none;}
   .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
-  /* ── PANEL ACIKKEN: BU IKISININ ALTI KOYULASIYOR ──────────────
-     Panel yari saydam ve OYLE KALIYOR -- kullanicinin sozu:
-     "yoksa transparan cool." Ama iki nesne panelden DAHA USTTE
-     ciziliyor (z-index 96 > 95) ve panelin yazilarinin uzerine
-     biniyor: uc cizgi ve kip anahtari. Cihaz goruntusunde
-     "PRIVACY" satirinin uzerinde duruyorlardi.
-     Ikisini gizlemek yanlis olurdu: uc cizgi paneli KAPATAN
-     dugme, anahtar da o an nerede oldugunu soyluyor. Cozum
-     kullanicinin kendi tarifi: "ORBITAPE ya da RADIOTAPE ya da 3
-     cizgi varsa altinda orasi koyulassin."
-     Yani yalnizca O IKI NESNENIN ALTI. Panelin geri kalani
-     saydam kaliyor, halkalar ve tuslar icinden gorunmeye devam
-     ediyor.
-     ::before, ::after DEGIL: ::after zaten dokunma alani olarak
-     kullaniliyor (bkz. dokunma alanlari bolumu), onu boyamak
-     gorunmez alani gorunur yapardi. */
-  body.ayar-acik #ayarTut::before,
-  body.ayar-acik #kipKisayol::before{
-    content:'';position:absolute;z-index:-1;
-    left:-9px;right:-9px;top:-7px;bottom:-7px;
-    background:rgba(5,7,10,.93);border-radius:13px;
-    pointer-events:none;}
+  /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ─────────────────────
+     Bir ara buradaki iki nesnenin (uc cizgi ve kip anahtari)
+     ALTINI koyulastiriyorduk: ikisi panelden ustte ciziliyor
+     (z-index 96 > 95) ve panelin yazilarina biniyorlardi; koyu
+     zemin hic olmazsa yaziyi okunur yapiyordu.
+     Kullanici ikisini de reddetti ve hakliydi:
+       "menuyu acinca bir anda leke gibi bir sey geliyor oraya.
+        Bir sey olmasin orda. Uc cizgi ve search menunun onune
+        gecmesin."
+     Koyu hap, sari bir derinin uzerinde panele acilmis bir delik
+     gibi goruluyordu -- okunurluk sorununu cozerken bir gorunum
+     sorunu uretmisiz. Dogrusu ortmeyi ORTADAN KALDIRMAK:
+       · zemin (::before) tamamen silindi -- leke yok,
+       · uc cizgi panel acikken panelin ALTINA iniyor, yani
+         uzerine hicbir kosulda cizemiyor,
+       · kip anahtari tamamen cekiliyor: panelin EN UST SATIRI
+         zaten ayni anahtar (ORBITAPE / sound banks & effects),
+         yani panel acikken kucugu bilgi tasimiyor, yer kapliyor.
+     UC CIZGI GORUNMEZ OLMUYOR: panelin tavani var (max-height
+     100vh-180px, bottom 46px), yani ustte her zaman bos bir serit
+     kaliyor ve tutamak orada duruyor. Kapatma yolu da uc: tutamak,
+     disariya dokunmak, Escape. */
+  body.ayar-acik #ayarTut{z-index:94;}
+  body.ayar-acik #kipKisayol{
+    opacity:0 !important;pointer-events:none !important;}
   /* UC CIZGI, ESKISININ AYNISI. Dolu bir ucgen degil: uzunlugu
      azalan uc cizgi zaten asagi bakan bir ucgen siluetı ciziyor ve
      dolu bir ucgenin aksine hala "tutamak" gibi duruyor.
@@ -3047,8 +3079,32 @@
     <div class="sat islem" data-ayar="turMood" role="button" tabindex="-1">
       <span>SEE IT FIRST</span><span class="durum">PLAY</span></div>
 
-    <!-- ── GORUNUS ──────────────────────────────────────────────── -->
-    <h5>ART</h5>
+    <!-- ── GORUNUS VE SES ─────────────────────────────────────── -->
+    <!-- ── SIRA DEGISTI: AUDIO YUKARI, GORUNUS ASAGI ──────────────
+         Kullanicinin sozu: "ART ile DISPLAY'i birlestir ama altta
+         olsun, AUDIO daha yukarda olsun; TUTORIALS'i da onlarla
+         birlestir. ART'i sil, bos kalacak zaten."
+         Dogru istek: ses iki satir ve HER OTURUMDA gecerli; gorunus
+         ise altmis kareyle birlikte uzun bir bolum ve bir kere
+         secilip birakiliyor. Kisa ve sik kullanilan once, uzun ve
+         nadir olan sonra. ART basligi da kalkti -- icerigi DISPLAY'e
+         gectikten sonra altinda hicbir satir kalmiyordu. -->
+    <h5>AUDIO</h5>
+    <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
+      <span>SEARCH</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <div class="sat" data-ayar="tikSes" role="switch" tabindex="-1">
+      <span>CLICK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── DISPLAY ────────────────────────────────────────────────
+         Kullanicinin istegi: "ayarlara display gibi bir bolum daha
+         yap." Iki satir, ikisi de ZEMINLE ilgili -- o yuzden ayni
+         baslik altinda ve tema satirlarinin hemen altinda; MORE'a
+         konsa menude asagiya inmek gerekirdi.
+         · ALL BLACK  : zemin her rafta simsiyah. Tema secili olsa
+                        bile siyah kaliyor -- "acikken zaten kilitli"
+                        istegi bu.
+         · PARTY MOOD : sinema karartmasi. Kenarlardan karariyor,
+                        ortada yalnizca halkalar kaliyor. -->
+    <h5>DISPLAY</h5>
     <div class="sat islem" data-ayar="tema" role="button" tabindex="-1"
          aria-expanded="false" aria-controls="temaIzgara">
       <span>THEME</span><span class="durum">AUTO</span></div>
@@ -3083,33 +3139,6 @@
          donduRecek iste, oyun, kumar makinesi gibi." -->
     <div class="sat" data-ayar="cark" role="switch" tabindex="-1">
       <span>SYMBOL SPIN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-
-    <!-- ── TANITIMLAR ACIK/KAPALI ────────────────────────────────
-         Kullanicinin sozu: "tutoriallar bilen insan icin zulum
-         olacaktir ... ve ayarlarda tutoriallari kapama tusu olsun."
-         Kapatinca hem acilis turu hem FX sunumu susuyor. Tekrar
-         acinca gercekten geri geliyor: "bir daha gosterme"
-         damgalari siliniyor, yoksa anahtar acik gorunup hicbir sey
-         yapmayan bir dugme olurdu.
-         YERI: MORE degil, ust bolum. Bir kez MORE'a konuldu ve
-         kullanici menude bulamadi -- "zaten more da olmasin menude
-         olsun." Dogru: bu, sik kullanilmayan bir belge baglantisi
-         degil, ekranda ne olacagini belirleyen bir tercih; oteki
-         anahtarlarin yaninda duruyor. -->
-    <div class="sat" data-ayar="tanitim" role="switch" tabindex="-1">
-      <span>TUTORIALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-
-    <!-- ── DISPLAY ────────────────────────────────────────────────
-         Kullanicinin istegi: "ayarlara display gibi bir bolum daha
-         yap." Iki satir, ikisi de ZEMINLE ilgili -- o yuzden ayni
-         baslik altinda ve tema satirlarinin hemen altinda; MORE'a
-         konsa menude asagiya inmek gerekirdi.
-         · ALL BLACK  : zemin her rafta simsiyah. Tema secili olsa
-                        bile siyah kaliyor -- "acikken zaten kilitli"
-                        istegi bu.
-         · PARTY MOOD : sinema karartmasi. Kenarlardan karariyor,
-                        ortada yalnizca halkalar kaliyor. -->
-    <h5>DISPLAY</h5>
     <div class="sat islem" data-ayar="deri" role="button" tabindex="-1"
          aria-expanded="false" aria-controls="deriIzgara">
       <span>SKINS</span><span class="durum">OFF</span></div>
@@ -3125,13 +3154,20 @@
          zaten oyle duruyor. -->
     <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
       <span>RINGS ONLY</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-
-    <h5>AUDIO</h5>
-    <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
-      <span>SEARCH</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <div class="sat" data-ayar="tikSes" role="switch" tabindex="-1">
-      <span>CLICK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-
+    <!-- ── TANITIMLAR ACIK/KAPALI ────────────────────────────────
+         Kullanicinin sozu: "tutoriallar bilen insan icin zulum
+         olacaktir ... ve ayarlarda tutoriallari kapama tusu olsun."
+         Kapatinca hem acilis turu hem FX sunumu susuyor. Tekrar
+         acinca gercekten geri geliyor: "bir daha gosterme"
+         damgalari siliniyor, yoksa anahtar acik gorunup hicbir sey
+         yapmayan bir dugme olurdu.
+         YERI: MORE degil, ust bolum. Bir kez MORE'a konuldu ve
+         kullanici menude bulamadi -- "zaten more da olmasin menude
+         olsun." Dogru: bu, sik kullanilmayan bir belge baglantisi
+         degil, ekranda ne olacagini belirleyen bir tercih; oteki
+         anahtarlarin yaninda duruyor. -->
+    <div class="sat" data-ayar="tanitim" role="switch" tabindex="-1">
+      <span>TUTORIALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ── EN ALT: okumaya ve bilmeye hakki olan seyler ───────────
          Sik kullanilmaz ama her zaman ULASILABILIR olmali. Sirasi da
          bu yuzden en altta: onem sirasi yukaridan asagi. -->
@@ -4555,6 +4591,39 @@
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
      ayri CSS blogu yerine tek blok: bakim tek yerde. */
+  /* ── OLUK CIZGISI VE CEKIRDEK: MARKA + RAF ──────────────────────
+     Kullanicinin iki istegi ust uste bindi:
+       "o ORBITAPE yazisindan etkilensin, ana koyu tonundan"
+       "turun/odanin rengini alsin, ondan etkilensin"
+     Ikisi de dogru ve celismiyorlar: kimlik markada, o anki yer
+     ise rafta. Once marka rafa dogru %42 kaydiriliyor -- yani
+     JAZZ'dayken cizgi markanin tonunda ama pembeye calan bir
+     tonda; sonra o karisim zemine dogru acilip iki ton cikiyor:
+     ince cizgi (guclu) ve genis cekirdek (yumusak).
+     GUVENLIK: rafin rengi zemine cok yakinsa cizgi kaybolur.
+     Karisim zeminden 1,8 kat ayrilmiyorsa raf tonu birakilip saf
+     marka tonuna donuluyor -- yani en kotu ihtimalde bir onceki
+     davranis, kaybolan bir cizgi degil.
+     BURASI IKI YERDEN CAGRILIYOR: deri degisince (deriUygula) ve
+     raf degisince (modAdiYaz icindeki --d-vurgu yazimi). */
+  function olukYaz(){
+    try{
+      const n = (typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0;
+      if(!n) return;
+      const d = DERILER[n-1]; if(!d) return;
+      const k = document.documentElement.style;
+      const acik = _parlaklikHex(d.zem) > 0.30;
+      const raf = String(k.getPropertyValue('--d-raf') || '').trim();
+      let ana = d.marka;
+      if(/^#[0-9a-fA-F]{6}$/.test(raf)){
+        const karisim = _hexKaris(raf, d.marka, 0.42);
+        const deneme = _hexKaris(karisim, d.zem, acik ? 0.60 : 0.48);
+        if(_kontrastOran(_parlaklikHex(deneme), _parlaklikHex(d.zem)) >= 1.8) ana = karisim;
+      }
+      k.setProperty('--d-oluk',     _hexKaris(ana, d.zem, acik ? 0.60 : 0.48));
+      k.setProperty('--d-cekirdek', _hexKaris(ana, d.zem, acik ? 0.38 : 0.32));
+    }catch(e){ _yut(e); }
+  }
   function deriUygula(){
     try{
       const k = document.documentElement.style;
@@ -4630,8 +4699,7 @@
            gibi duruyor).
            Govdeye, kenarina, bilezige, golgeye, gezegenlere
            dokunulmuyor -- onlar --d-halka ve --d-isik'ta kaliyor. */
-        k.setProperty('--d-oluk',     _hexKaris(d.marka, d.zem, _acik ? 0.60 : 0.48));
-        k.setProperty('--d-cekirdek', _hexKaris(d.marka, d.zem, _acik ? 0.38 : 0.32));
+        olukYaz();
         /* Olugun KENDI isigi govdenin isigindan ayrildi. Acik
            derilerde --d-isik beyaz %92-95 ve oluk cizgisinin hemen
            yaninda duruyordu: goz cizgiyi degil beyazi goruyordu,
@@ -8525,9 +8593,36 @@
            && !document.body.classList.contains('mood')){
           var yv = document.getElementById('araYuva');
           var yr = yv ? yv.getBoundingClientRect() : null;
-          if(yr && yr.height && (yr.top || yr.bottom)
-             && Math.abs((r.top + r.height/2) - (yr.top + yr.height/2)) > 8)
-            disari = true;
+          if(yr && yr.height && (yr.top || yr.bottom)){
+            var d = (yr.top + yr.height/2) - (r.top + r.height/2);
+            var dx = yr.left - r.left;
+            if(Math.abs(d) > 8 || Math.abs(dx) > 8){
+              /* ── DOGRUDAN DUZELTME: SEBEBI ARAMIYORUZ ───────────
+                 Kullanici uc kez bildirdi: "buyutec yukarida kaldi."
+                 Her seferinde bir sebep bulunup kapatildi (env payinin
+                 iki kere eklenmesi, yakinlastirma sirasinda olcum,
+                 bozuk yuva olcusu) ve her seferinde baska bir yoldan
+                 geri geldi. Laboratuvarda uretilemiyor: uc ayri
+                 pencere boyunda, yakinlastirip geri donerek, panel
+                 acip kapatarak denendi -- hepsinde yerinde.
+                 O yuzden artik SEBEP degil SONUC kapatiliyor. Yuva
+                 nerede, buyutec orada olmali; degilse aradaki fark
+                 kadar itiliyor. Bu bir olcum zinciri degil, kapali
+                 bir geri besleme: hangi yoldan kayarsa kaysin iki
+                 saniye icinde yerine oturuyor.
+                 'bottom' BUYUDUKCE eleman YUKARI cikar, o yuzden
+                 fark cikariliyor. Deger yine ekranin alt %40'ina
+                 kirpiliyor -- duzeltmenin kendisi de savrulmasin. */
+              var mevcut = parseFloat(el.style.bottom);
+              if(!isFinite(mevcut)) mevcut = window.innerHeight - r.bottom;
+              var yeni = Math.round(Math.max(0,
+                Math.min(window.innerHeight * 0.40, mevcut - d)));
+              el.style.bottom = yeni + 'px';
+              if(Math.abs(dx) > 8) el.style.left = Math.round(yr.left) + 'px';
+              _zoomBorcu = true; olcuIste();
+              return;
+            }
+          }
         }
         if(disari){ _zoomBorcu = true; olcuIste(); }
       }catch(e){ _yut(e); }
@@ -13146,6 +13241,9 @@
         const _k = document.documentElement.style;
         _k.setProperty('--d-raf', _c);
         _k.setProperty('--d-vurgu', _c);
+        /* Halkanin uzerindeki oluk cizgisi ve cekirdek de bu
+           renkten pay aliyor: raf degisince tazeleniyorlar. */
+        try{ olukYaz(); }catch(_2){ _yut(_2); }
       }catch(_){ _yut(_); } }
     el.classList.toggle('gor', !!ad);
     /* Isim degisti -> once puntosu (radyoda sigacak mi), sonra

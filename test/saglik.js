@@ -369,20 +369,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Karar: ASIL tavan (brotli) SIKILASIYOR, ham tavan gevsiyor.
        Ham tavanin tek isi hala ayni -- kacak bir buyumeyi, mesela
        yanlislikla gomulen bir veri dosyasini yakalamak. */
-    /* ── TAVAN 272 -> 274 KB, SEBEBI YAZILI ──────────────────────
+    /* ── TAVAN 276 KB. NE ZAMAN YUKSELIR, NE ZAMAN YUKSELMEZ ─────
        Bu sayi bir hedef degil bir FREN: kacak buyumeyi gorunur
-       kilmak icin var, o yuzden her sikistiginda yukselmemeli.
-       Bu sefer yukseldi ve gerekcesi su: altmis derilik seri,
-       oluk/cekirdek renk kurali ve FX yumusaticisi girdi; ayni
-       partide ses cizgisinin 5,5 KB'lik olu kodu ve olcusu SILINDI,
-       yani buyume net olarak yeni is. Tavan 272'ye dayaninca once
-       kirpmayi denedik ve olculdu: ham dosyadan 300-500 bayt
-       silmek brotli ciktisini bazen BUYUTUYOR (sozluk degisiyor).
-       Yorum kirparak 20 bayt kovalamak muhendislik degil kumar --
-       o yuzden sayi durustce 274'e cekildi ve iki KB pay birakildi.
-       Kullanici tarafinda karsiligi: ilk acilista ~2 KB daha, sonra
-       servis calisani onbellekliyor. */
-    K('Telden gecen boy < 274 KB', br < 274*1024,
+       kilmak icin var. Ama bir freni her sikistiginda gevsetmek de
+       freni anlamsiz kilar, o yuzden kural yazili olsun:
+         · Yukselir: partide ADI KONABILEN yeni bir is varsa.
+         · Yukselmez: "biraz asti, biraz acalim" diye.
+       Bugune kadar iki kez yukseldi ve ikisinde de sebep yaziliydi.
+       Bu sefer: olcum uc noktasi, sustur tusunun geri kurulmasi,
+       ayar sirasi, anahtar dolgusu, menudeki lekenin kaldirilmasi,
+       buyutecin kendini duzeltmesi, olugun puruzsuzlestirilmesi ve
+       raf renginden pay almasi, kamerada cekirdegin tamamen
+       kalkmasi. Ayni sure icinde ses cizgisinin 5,5 KB'lik olu
+       kodu, olcusu ve olu yorumlari SILINDI.
+       KIRPMA DENENDI VE OLCULDU: ham dosyadan 300-500 bayt silmek
+       brotli ciktisini bazen BUYUTUYOR (sozluk degisiyor). Yorum
+       kirparak 100 bayt kovalamak muhendislik degil kumar.
+       Kullanici tarafinda karsiligi: ilk acilista ~2 KB daha,
+       sonra servis calisani onbellekliyor. */
+    K('Telden gecen boy < 276 KB', br < 276*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — kullanicinin indirdigi bu');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
@@ -3005,7 +3010,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       c.retroSag  = await koy('retro', 0.9, 0);
       c.retroSol  = await koy('retro', -0.9, 0);
       c.sacSag    = await koy('karadelik', 0.9, 0);
+      /* ── OLCUM SAYISI ARTTI, IDDIA AYNI ─────────────────────────
+         Iddia "sacilma gecikmeyi savuruyor". Bunu IKI olcumle
+         sinamak yaristi: zamanlayici 74 ms'de bir yeni bir taneye
+         atliyor; iki olcum ayni pencereye duserse ayni sayiyi
+         okuyoruz ve test, kod dogru calisirken kirmizi yaniyor
+         (bir kez oldu: 60 / 60 ms). Bes olcum aliniyor ve
+         "hepsi ayni degil" araniyor -- ayni seyi soruyor, yarisa
+         girmiyor. */
       c.sacSagIki = await koy('karadelik', 0.9, 0);
+      c.sacDizi = [c.sacSag.gecikme, c.sacSagIki.gecikme];
+      for(let i=0; i<3; i++){
+        await bek(90);
+        c.sacDizi.push((await koy('karadelik', 0.9, 0)).gecikme);
+      }
       c.sacSol    = await koy('karadelik', -0.9, 0);
       c.donguUst  = await koy('dongu', 0, 0.9);
       c.donguSag  = await koy('dongu', 0.9, 0);
@@ -3041,8 +3059,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Sacilma gecikmeyi kendisi savuruyor',
        oda.sacSag.sacilma === true && oda.sacSol.sacilma === false
        && oda.donguSag.sacilma === false && oda.anaSag.sacilma === false
-       && oda.sacSag.gecikme !== oda.sacSagIki.gecikme,
-       'iki olcum: ' + oda.sacSag.gecikme + ' / ' + oda.sacSagIki.gecikme + ' ms');
+       && Array.isArray(oda.sacDizi)
+       && new Set(oda.sacDizi).size > 1,
+       'bes olcum: ' + (oda.sacDizi || []).join(' / ') + ' ms');
     /* 3) DONGU ODASI: DORT yonun dordu de birikiyor. Uc yon ekoyla,
           alt yon PLATE'le. Once yalnizca yukari birikiyordu. */
     K('Dongu odasinin dort yonu de sonsuz',
@@ -4052,37 +4071,58 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        && el.enUzak >= el.sinir*0.88 && el.enUzak <= el.sinir,
        el ? ('merkez '+el.enYakin+' -> kenar '+el.enUzak+' (halka siniri '+el.sinir+')') : 'olculemedi');
   }
-  /* ── PANEL ACIKKEN USTTE KALAN IKI NESNENIN ALTI KOYU ────────
-     Panel yari saydam ve oyle kaliyor ("yoksa transparan cool").
-     Ama uc cizgi ve kip anahtari panelden DAHA USTTE ciziliyor
-     (z-index 96 > 95) ve panelin yazilarinin uzerine biniyordu --
-     cihaz goruntusunde "PRIVACY" satirinin uzerindeydiler.
-     Ikisini gizlemek yanlis olurdu: uc cizgi paneli KAPATAN
-     dugme. Kullanicinin cozumu: "orbitape ya da radiotape ya da 3
-     cizgi varsa altinda orasi koyulassin."
-     Olculen: panel KAPALIYKEN o zemin YOK (saydamlik bozulmasin),
-     ACIKKEN VAR. */
+  /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ───────────────────────
+     Bir ara uc cizginin ve kip anahtarinin ALTINI koyulastirmistik:
+     ikisi de panelden ustte cizildigi icin (z-index 96 > 95)
+     panelin yazilarina biniyorlardi ve koyu zemin hic olmazsa
+     yaziyi okunur yapiyordu. Kullanici ikisini de reddetti:
+       "menuyu acinca bir anda leke gibi bir sey geliyor oraya.
+        Bir sey olmasin orda. Uc cizgi ve search menunun onune
+        gecmesin."
+     Koyu hap, acik bir derinin uzerinde panele acilmis bir delik
+     gibi goruluyordu -- okunurlugu duzeltirken bir gorunum sorunu
+     uretmisiz. Simdi ortme YOK: zemin silindi, uc cizgi panel
+     acikken panelin ALTINA iniyor, kip anahtari da tamamen
+     cekiliyor (ayni anahtar panelin en ust satirinda zaten var).
+     Olculen sey davranis: (1) hicbir yerde o koyu hap yok,
+     (2) panel acikken iki nesne de panelin uzerine cizemiyor,
+     (3) uc cizgi yine gorunur ve panelin disinda -- yoksa paneli
+     kapatan dugmeyi kaybederdik. */
   {
-    const zemin = await pg.evaluate(async ()=>{
+    const ust = await pg.evaluate(async ()=>{
       const bek=ms=>new Promise(r=>setTimeout(r,ms));
-      const oku = ()=>['ayarTut','kipKisayol'].map(id=>{
-        const st = getComputedStyle(document.getElementById(id), '::before');
-        return { icerik:st.content, zemin:st.backgroundColor };
-      });
-      const acikOnce = document.body.classList.contains('ayar-acik');
-      if(acikOnce){ document.getElementById('ayarTut').click(); await bek(320); }
-      const kapali = oku();
+      if(document.body.classList.contains('ayar-acik')){
+        document.getElementById('ayarTut').click(); await bek(320); }
+      document.getElementById('ayarTut').click(); await bek(340);
+      const oku = id => {
+        const e = document.getElementById(id);
+        const st = getComputedStyle(e), on = getComputedStyle(e, '::before');
+        const r = e.getBoundingClientRect();
+        return { z:+st.zIndex || 0, opak:+st.opacity,
+                 lekeIcerik:on.content, lekeZemin:on.backgroundColor,
+                 gorunur: r.width > 4 && r.height > 4 && +st.opacity > 0.05 };
+      };
+      const tut = oku('ayarTut'), kip = oku('kipKisayol');
+      const panelZ = +getComputedStyle(document.getElementById('ayar')).zIndex || 0;
+      const pr = document.getElementById('ayar').getBoundingClientRect();
+      const tr = document.getElementById('ayarTut').getBoundingClientRect();
+      const cakisma = !(tr.bottom <= pr.top || tr.top >= pr.bottom
+                     || tr.right <= pr.left || tr.left >= pr.right);
       document.getElementById('ayarTut').click(); await bek(320);
-      const acik = oku();
-      document.getElementById('ayarTut').click(); await bek(320);
-      const saydam = z => /rgba\(0, 0, 0, 0\)|transparent/.test(z);
-      return { kapaliBos: kapali.every(x=>x.icerik==='none' || saydam(x.zemin)),
-               acikDolu:  acik.every(x=>x.icerik!=='none' && !saydam(x.zemin)),
-               acikZemin: acik.map(x=>x.zemin).join(' | ') };
+      return { tut, kip, panelZ, cakisma };
     });
-    K('Panel acikken ustunde kalanlarin alti koyulasiyor',
-       zemin.kapaliBos===true && zemin.acikDolu===true,
-       'acik: '+zemin.acikZemin);
+    const saydam = z => /rgba\(0, 0, 0, 0\)|transparent/.test(z);
+    K('Panel acikken leke yok',
+       !!ust && (ust.tut.lekeIcerik === 'none' || saydam(ust.tut.lekeZemin))
+             && (ust.kip.lekeIcerik === 'none' || saydam(ust.kip.lekeZemin)),
+       'uc cizginin ve kip anahtarinin altinda koyu hap yok');
+    K('Panel acikken uzerine hicbir sey cizilmiyor',
+       !!ust && ust.tut.z < ust.panelZ && ust.kip.opak < 0.05,
+       'uc cizgi z ' + (ust ? ust.tut.z : '-') + ' < panel '
+       + (ust ? ust.panelZ : '-') + ', kip anahtari cekilmis');
+    K('Paneli kapatan tutamak yine gorunur',
+       !!ust && ust.tut.gorunur === true && ust.cakisma === false,
+       'uc cizgi panelin disinda ve tiklanabilir');
   }
   K('FX sunumunun KENDI kutusu var', fs2.turKutusuTemiz===true, '#fxKutu ayri, acilis turununki etkilenmiyor');
   K('FX kutusu acilis turunu kapatmaz', fs2.turDeposuTemiz===true, 'orbitape.tur degismedi');
@@ -8206,9 +8246,37 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Buyutec bozuk olcumu reddediyor',
          /_dp >= 0 && _dp <= window\.innerHeight \* 0\.40/.test(kaynak),
          'dip degeri ekranin alt %40 disina cikarsa CSS hattina donuluyor');
+      /* ── BEKCI YERINDEN OYNAYANI GERI ITIYOR ────────────────────
+         Kullanici uc kez "buyutec yukarida kaldi" dedi ve her
+         seferinde bir SEBEP bulunup kapatildi; her seferinde baska
+         bir yoldan geri geldi. Laboratuvarda uretilemiyor.
+         O yuzden artik sonuc kapatiliyor: eleman elle yerinden
+         oynatiliyor ve bekcinin iki saniye icinde onu yuvasina geri
+         koymasi olculuyor. Sebep ne olursa olsun calismasi gereken
+         sey bu. */
+      K('Bekci yerinden oynayan buyuteci geri koyuyor', await pg.evaluate(async ()=>{
+          const bek=ms=>new Promise(r=>setTimeout(r,ms));
+          const ar=document.getElementById('ara'), yv=document.getElementById('araYuva');
+          if(!ar || !yv || ar.classList.contains('acik')) return false;
+          if(document.body.classList.contains('mood')) return false;
+          const eski = ar.style.bottom;
+          ar.style.bottom = Math.round(window.innerHeight * 0.33) + 'px';   // havaya at
+          /* #ara'da 'transition: bottom .18s' var: hemen olcersek eski
+             yerini okuyoruz ve testin kendisi yalan soyler. */
+          await bek(300);
+          const bozuk = Math.abs((ar.getBoundingClientRect().top + 13)
+                               - (yv.getBoundingClientRect().top + 16));
+          await bek(2600);                                   // bekci araligi 2 sn
+          const r=ar.getBoundingClientRect(), y=yv.getBoundingClientRect();
+          const kalan = Math.abs((r.top + r.height/2) - (y.top + y.height/2));
+          if(kalan > 8) ar.style.bottom = eski;
+          return bozuk > 40 && kalan <= 8;
+        }), 'elle bozuldu, iki saniyede yuvasina dondu');
       K('Bekci yuvadan kopmayi da goruyor',
-         /araYuva[\s\S]{0,320}yr\.height\/2\) \) > 8|\(r\.top \+ r\.height\/2\) - \(yr\.top \+ yr\.height\/2\)\) > 8/.test(kaynak),
-         'ekranin icinde ama yanlis yerdeyse de yeniden yerlestiriliyor');
+         /var d = \(yr\.top \+ yr\.height\/2\) - \(r\.top \+ r\.height\/2\);/.test(kaynak)
+         && /Math\.abs\(d\) > 8 \|\| Math\.abs\(dx\) > 8/.test(kaynak)
+         && /el\.style\.bottom = yeni \+ 'px';/.test(kaynak),
+         'ekranin icinde ama yanlis yerdeyse fark kadar geri itiliyor');
 
       /* ── ORTADAKI CIZGILER VE CEKIRDEK ──────────────────────────
          Kullanicinin sozu: "acik skinlerde ortadaki cizgiler ve
@@ -8231,10 +8299,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         K('Ortadaki cizgi ve nokta kabartmanin USTUNDE',
            iOluk > -1 && iCek > -1 && iIsik > -1 && iOluk < iIsik && iCek < iIsik,
            'katman sirasi: oluk ve cekirdek once, isik bandi sonra');
-        K('Ortadaki cizgi ve nokta markadan tureniyor',
-           /--d-oluk',\s+_hexKaris\(d\.marka, d\.zem/.test(kaynak)
-           && /--d-cekirdek', _hexKaris\(d\.marka, d\.zem/.test(kaynak),
-           'acik zeminde markanin koyusu, koyu zeminde acigi');
+        /* Renk artik iki kaynaktan: markanin tonu ve RAFIN rengi
+           (bkz. olukYaz). Rafin rengi zemine cok yakinsa saf marka
+           tonuna donuluyor -- kontrol o guvenligin de yerinde
+           oldugunu soruyor, yoksa cizgi zemine gomulebilirdi. */
+        K('Ortadaki cizgi ve nokta markadan ve raftan tureniyor',
+           /function olukYaz\(\)/.test(kaynak)
+           && /const karisim = _hexKaris\(raf, d\.marka, 0\.42\);/.test(kaynak)
+           && /--d-oluk',\s+_hexKaris\(ana, d\.zem, acik \? 0\.60 : 0\.48\)/.test(kaynak)
+           && /--d-cekirdek', _hexKaris\(ana, d\.zem, acik \? 0\.38 : 0\.32\)/.test(kaynak)
+           && />= 1\.8\) ana = karisim;/.test(kaynak)
+           && /try\{ olukYaz\(\); \}catch/.test(kaynak),
+           'marka + raf karisimi, zemine gomulurse saf markaya donuyor');
       }
       /* ── SKINS: ACAN TUS KAPATAN TUS ────────────────────────────
          Kullanicinin sozu: "HIDE'a basinca skins penceresi
