@@ -1009,6 +1009,15 @@
      arama çizgisinin üstüne biner. */
   #ust, #ust .ustSatir, #ust .kanal, #ust .kanal.ad, #modAd{
     touch-action:manipulation;}
+  /* USTTEKI IKI AD BIRER TUS: soldaki bir GERI, sagdaki bir ILERI.
+     Kullanicinin sozu: "sol ustteki isimlere basinca bir geri
+     istasyona gitsin, boylece sag ileri sol geri olur." Hangisinin
+     solda oldugu kipe gore degisiyor (radyoda raf adi solda, arsivde
+     sagda); o yuzden yon adla degil EKRANDAKI YERLE belirleniyor
+     (bkz. ustAdlarBagla). */
+  #modKut{pointer-events:auto;cursor:pointer;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;}
+  #ust .kanal.ad{cursor:pointer;-webkit-tap-highlight-color:transparent;}
   #modAd{pointer-events:none;user-select:none;white-space:nowrap;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-weight:400;
     font-size:12px;letter-spacing:.30em;text-indent:.30em;line-height:1;
@@ -3089,8 +3098,8 @@
            Arsivde blok eski yerinde kaliyor (markanin solunda,
            cubuklar yazinin solunda). Yer degisimi tamamen CSS'te:
            bkz. body:not(.mood) #modKut. -->
-      <span id="modKut"><span id="modAd"></span><canvas id="modDalga" aria-hidden="true"></canvas></span>
-      <div class="kanal on ad" data-mod="radio"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
+      <span id="modKut" role="button" tabindex="0" aria-label="Previous"><span id="modAd"></span><canvas id="modDalga" aria-hidden="true"></canvas></span>
+      <div class="kanal on ad" data-mod="radio" role="button" tabindex="0" aria-label="Next"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
     </div>
   </div>
 
@@ -5256,8 +5265,12 @@
      bosluk halka ile zar arasinda: parmak sinirda titremesin. */
   function zarSinir(){ return HALKA_IC_SABIT - 0.08; }   // 0.28R: parmak sigar
   /* Kategori kipine geçmek için gereken basılı tutma süresi. Altında
-     kalan her dokunuş "sıradaki ses" sayılıyor. */
-  const MOOD_TUT = 300;
+     kalan her dokunuş "sıradaki ses" sayılıyor.
+     300 -> 550 (2 Eylul). Kullanicinin sozu: "biri ortadan sarki
+     atlamaya basinca biraz fazla basili tutar, o an halkanin birine
+     deniyor, hop degisiyor tur." 300 ms bir dokunusun dogal
+     suresine fazla yakindi; 550 "tuttugundan eminiz" esigi. */
+  const MOOD_TUT = 550;
   var _moodAday = false, _moodBekle = null, _moodSonOlay = null;
   /* ── PARMAKLA HALKA GEZINME ──────────────────────────────────────
      Basili tut, halkalarda gez, birakinca o raf acilir.
@@ -11996,12 +12009,18 @@
     if(e.pointerType==='mouse' && !e.buttons){ basisiBirak(); return; }
     if(!pDown) return;
     _moodSonOlay = e;
-    /* Belirgin bir kaydirma da niyet gostergesidir: sureyi beklemeden
-       kipi aciyor. Kisa ve YERINDE bir dokunus hala "siradaki ses". */
+    /* ── KAYDIRMA KATEGORI ACMAZ, IPTAL EDER ─────────────────────
+       Eskiden belirgin bir kaydirma "niyet gostergesi" sayilip sureyi
+       beklemeden kipi aciyordu. Kullanicinin olcumu tersini soyledi:
+       "parmagini basarken bazen surtme oluyor, onunla karismasin."
+       Dokunurken parmagin kaymasi kategori istegi degil; sure dolmadan
+       kayan parmak tutusu IPTAL eder (sesi de atlamaz, cunku birakis
+       artik yerinde degil). Kip yalnizca MOOD_TUT dolunca acilir;
+       o andan sonra halkalara kaydirmak yine gezinmedir. */
     if(_moodAday && !_moodGez &&
        (Math.abs(e.clientX-startX)>SUR_ESIK*1.6 || Math.abs(e.clientY-startY)>SUR_ESIK*1.6)){
       if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
-      moodGeziAc(e);
+      _moodAday = false;
     }
     if(_moodGez){                                   // mood gezinmesi: FX'e girme
       e.preventDefault();
@@ -12119,6 +12138,33 @@
   btn.addEventListener('contextmenu', e=>e.preventDefault());                 // mobil uzun-basış menüsü çıkmasın
   btn.addEventListener('lostpointercapture', ()=>{ /* yakalama düşerse tık latch'i korunur */ });
 
+  /* ── UST ADLAR: SOLDAKI GERI, SAGDAKI ILERI ─────────────────────
+     Ekrandaki yere gore: dokunulan adin ortasi ekranin sol yarisindaysa
+     bir geri (geriGit), sag yarisindaysa bir ileri (ileriGit) -- alt
+     soldaki iki tusun aynisi, bir de ustte. Raf adi kipe gore yer
+     degistirdigi icin ada degil yere bakiliyor. */
+  function ustAdlarBagla(){
+    try{
+      const yon = (el)=>{
+        const r = el.getBoundingClientRect();
+        return (r.left + r.width/2) < window.innerWidth/2 ? 'geri' : 'ileri';
+      };
+      const git = (el)=>{
+        try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+        if(yon(el) === 'geri') geriGit(); else ileriGit();
+      };
+      [document.getElementById('modKut'), document.querySelector('#ust .kanal.ad')].forEach(el=>{
+        if(!el) return;
+        el.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); git(el); });
+        /* Tip kapisi: iki farkli eleman turu tek dizide, dinleyici
+           'Event' olarak daraliyor; anahtar KeyboardEvent'ten okunuyor. */
+        el.addEventListener('keydown', e=>{
+          const k = (e instanceof KeyboardEvent) ? e.key : '';
+          if(k === 'Enter' || k === ' '){ e.preventDefault(); git(el); } });
+      });
+    }catch(e){ _yut(e); }
+  }
+  ustAdlarBagla();
   // ── KANALLAR: üst şeritte üçü de yazılı; tıklanan doğrudan seçilir ──
   const kanalDug = [...document.querySelectorAll('#ust .kanal')];
   function moodYaz(){

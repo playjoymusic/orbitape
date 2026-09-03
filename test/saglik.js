@@ -2845,7 +2845,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kutu2 = await pg.evaluate(()=>{const r=document.getElementById('tp').getBoundingClientRect();
       return {x:r.left+r.width/2, y:r.top+r.height/2, R:r.width/2};});
     const hx = kutu2.x + kutu2.R*(0.55+2*0.080);
-    await pg.mouse.move(hx, kutu2.y); await pg.mouse.down(); await pg.waitForTimeout(480);
+    await pg.mouse.move(hx, kutu2.y); await pg.mouse.down(); await pg.waitForTimeout(760);
     const g = await pg.evaluate(()=>!!_moodGez);
     await pg.mouse.up(); await pg.waitForTimeout(200);
     return g;
@@ -2888,11 +2888,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const bay0  = await p2.evaluate(()=>_ilkCalindi);
       const kb = await p2.evaluate(()=>{const r=document.getElementById('tp').getBoundingClientRect();
         return {x:r.left+r.width/2, y:r.top+r.height/2, R:r.width/2};});
-      await p2.mouse.move(kb.x+kb.R*0.75, kb.y); await p2.mouse.down(); await p2.waitForTimeout(480);
+      /* 480 -> 760: tutma esigi 550 ms'ye cikti (MOOD_TUT). */
+      await p2.mouse.move(kb.x+kb.R*0.75, kb.y); await p2.mouse.down(); await p2.waitForTimeout(760);
       const gez1 = await p2.evaluate(()=>!!_moodGez);
       await p2.mouse.up(); await p2.waitForTimeout(350);
       const son1 = await p2.evaluate(()=>({mod:AKTIF_MOD, ilk:_ilkCalindi}));
-      await p2.mouse.move(kb.x+kb.R*0.75, kb.y); await p2.mouse.down(); await p2.waitForTimeout(480);
+      await p2.mouse.move(kb.x+kb.R*0.75, kb.y); await p2.mouse.down(); await p2.waitForTimeout(760);
       const gez2 = await p2.evaluate(()=>!!_moodGez);
       await p2.mouse.up(); await p2.waitForTimeout(200);
       const yayin = await p2.evaluate(()=>({
@@ -3064,9 +3065,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     };
     const kisa = [];
     for(const o of [0.10, 0.50, 0.70, 0.88]) kisa.push(await dene(o, 90, false));
-    const uzun = await dene(0.75, 620, false);
+    const uzun = await dene(0.75, 800, false);
     const kay  = await dene(0.85, 130, true);
-    const merkez = await dene(0.20, 700, false);
+    const merkez = await dene(0.20, 800, false);
     /* tutus + halka disinda birakma: parca ATLAMAMALI */
     let atladi = false, atlayan = '';
     /* KIM CAGIRDI: "atladi" tek basina bakan kisiye hicbir sey
@@ -3076,7 +3077,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       window.sonraki = function(){ window.__sy++;
         try{ window.__yig.push((new Error().stack.split('\n')[2]||'').trim().slice(0,90)); }catch(_){ }
         return o.apply(this, arguments); };
-      await dene(0.20, 620, false);
+      await dene(0.20, 800, false);
       window.sonraki = o;
       atlayan = (window.__yig||[]).join(' ; ');
       /* YALNIZCA JESTTEN GELEN CAGRI SAYILIR. Uygulama bu sirada kendi
@@ -3101,7 +3102,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Bu satirlar kipin ACILDIGINI dogruluyor. */
   K('Basili tutus raf kipini acar', tk.uzun.gez===true,
      'gezinme '+tk.uzun.gez+' -> '+tk.uzun.mod);
-  K('Kaydirma da kategori acar', tk.kay.gez===true, 'sureyi beklemeden');
+  /* TERSINE DONDU (2 Eylul): kaydirma kategori ACMAZ, tutusu iptal
+     eder. "Parmagini basarken bazen surtme oluyor, onunla karismasin."
+     Sure dolmadan kayan parmak surtmedir, niyet degil. */
+  K('Kaydirma kategori ACMAZ, tutusu iptal eder', tk.kay.gez===false && tk.kay.mod==='RADIOTAPE',
+     'sure dolmadan kayan parmak = surtme');
+  K('Basili tutma esigi 550 ms', tk.esik === 550, tk.esik + ' ms');
   /* Tutus ARTIK HER YERDE kipi aciyor: ortada tutup halkaya kaydirmak
      calisiyor. Halkanin ustunde degilken birakmak hicbir sey yapmiyor. */
   K('Merkezde tutus da kipi acar', tk.merkez.gez===true, 'gezinme acildi');
@@ -3110,7 +3116,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      parca atlama. Tutusu iptal etmenin yolu da bu. */
   K('Halka disinda birakmak parca ATLAMAZ', tk.atladi===false,
      tk.atladi ? ('ATLADI -> ' + tk.atlayan) : 'sonraki() cagrilmadi');
-  K('Tutma esigi makul', tk.esik>=200 && tk.esik<=500, tk.esik+' ms');
+  /* 200-500 -> 400-800: kullanici 300'u "dokunusa fazla yakin" buldu,
+     esik 550'ye cikti. 800 ustu ise bekletir gibi olurdu. */
+  K('Tutma esigi makul', tk.esik>=400 && tk.esik<=800, tk.esik+' ms');
 
   /* ── COK ADIMLI GECMIS ──────────────────────────────────────────
      Bu bir arama araci: geri gidip bakmak, sonra ileri donmek.
