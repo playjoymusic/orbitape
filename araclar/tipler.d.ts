@@ -50,6 +50,29 @@ interface Window {
   KAYIT_MODULU_HAZIR?: boolean;
   _kayModulTekrar?: number;
 
+  /* Saat modulu (saat.js): uyku sayaci + sabah alarmi. Istek uzerine
+     iniyor; sayfa ile modul birbirini window uzerinden goruyor. */
+  SAAT_BASLADI?: boolean;
+  SAAT_HAZIR?: boolean;
+  saatGeldi?: () => void;
+  uykuKatYaz?: (k: number) => void;
+  saatAc?: () => void;
+  saatKapa?: () => void;
+  saatDegistir?: () => void;
+  saatAcik?: () => boolean;
+  saatKip?: () => string;
+  saatDurum?: () => any;
+  uykuKur?: (dk: number) => void;
+  uykuIptal?: () => void;
+  uykuBitir?: () => void;
+  sabahKur?: (acik: boolean) => void;
+  alarmCal?: (seviye: number) => void;
+  alarmErtele?: () => void;
+  alarmDurdur?: () => void;
+  sabahHedefHesapla?: (simdi?: number) => number;
+  saatKilitPlay?: () => boolean;
+  saatKilitPause?: () => boolean;
+
   /* Uygulamanin kendi sabitleri */
   ARSIV_KURSUN?: string;
 

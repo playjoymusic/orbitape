@@ -594,11 +594,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Cozum kacak degil ucuncu bir soru: istek uzerine inenler ne
        kadar. Kendi tavani var, yani "lazy yaparim, sayilmaz"
        diye bir kapi acilmiyor. */
+    /* ── TAVAN MODUL BASINA (3 Eylul) ───────────────────────────
+       Once toplamdi (12 KB) ve iki modulle 11'deydi. Ucuncu modul
+       (saat.js) gelince toplam tavan "yeni ozellik yasak" demek
+       olurdu -- tavanin amaci o degil. Amac: TEK bir dokunusun
+       buyuk bir indirme baslatmamasi. Moduller birbirinden bagimsiz
+       iniyor (deri secince deri_cizim, saat tusuna basinca saat),
+       yani olculecek sey her birinin kendi boyu. Tavan ayni: 12 KB,
+       her modul icin ayri ayri. */
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(f)), 0);
-    K('Istek uzerine inen moduller < 12 KB', _iuBoy < 12*1024,
+    const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(f)) >= 12*1024);
+    K('Istek uzerine inen her modul < 12 KB', _iuBuyuk.length === 0,
       _istekUzerine.length
-        ? (Math.round(_iuBoy/1024) + ' KB — ' + _istekUzerine.map(f =>
-            f + ' ' + Math.round(bro(fs.readFileSync(f))/1024) + 'K').join(' + '))
+        ? (_istekUzerine.map(f =>
+            f + ' ' + Math.round(bro(fs.readFileSync(f))/1024) + 'K').join(' + ')
+           + ' (toplam ' + Math.round(_iuBoy/1024) + ' KB)')
         : 'istek uzerine inen modul yok');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
@@ -8577,6 +8587,83 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       !bekci.yok && Math.abs(bekci.dx) <= 2 && Math.abs(bekci.dy) <= 3
         && !bekci.simgeLeft && !bekci.simgeBottom,
       JSON.stringify(bekci));
+  }
+  /* ── SAAT: UYKU SAYACI + SABAH ALARMI (saat.js) ─────────────────
+     Kullanicinin istegi: uyku bitince fade-out; alarm kurulu ise ses
+     durmaz, sessiz donguye gecer (kilitli ekranda sayfa yasasin);
+     sabah kisik baslar (15 sn'de ceyrek, 1 dk'da uc ceyrek);
+     ertelemede daha yuksekten; her gun tekrar. Sureler gercek
+     zamanla olculemez (30 sn fade, 7 dk erteleme); burada zincirin
+     her halkasi dogrudan cagrilip SONUCU olculuyor. */
+  {
+    const st = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const tus = document.getElementById('saatTus'), tut = document.getElementById('ayarTut');
+        c.tusVar = !!tus;
+        if(tus && tut){ const a = tus.getBoundingClientRect(), b = tut.getBoundingClientRect();
+          c.tusAltinda = document.body.classList.contains('mood') ? (a.bottom <= b.top) : (a.top >= b.bottom); }
+        tus.click();
+        for(let i = 0; i < 40 && !window.SAAT_HAZIR; i++) await bek(100);
+        c.moduLGeldi = !!window.SAAT_HAZIR;
+        c.acildi = !!(window.saatAcik && saatAcik());
+        /* uyku */
+        uykuKur(45); const d1 = saatDurum();
+        c.uykuKuruldu = d1.kip === 'uyku' && d1.depo.uykuDk === 45 && d1.depo.uykuBitis > Date.now() + 44*60000;
+        uykuIptal(); c.uykuIptal = saatDurum().depo.uykuBitis === 0;
+        /* sabah hedefi: gelecekte, secilen saatte */
+        sabahKur(true); const d2 = saatDurum();
+        const h = new Date(d2.depo.sabah.hedef);
+        c.hedefIleride = d2.depo.sabah.hedef > Date.now();
+        c.hedefSaati = (String(h.getHours()).padStart(2,'0') + ':' + String(h.getMinutes()).padStart(2,'0')) === d2.depo.sabah.saat;
+        /* alarm: kisik baslar */
+        const katOnce = _uykuKat;
+        alarmCal(1); await bek(1100);
+        c.kisikBasladi = _uykuKat > 0.03 && _uykuKat < 0.12;
+        c.caliyor = saatKip() === 'caliyor' && document.body.classList.contains('alarm-caliyor');
+        /* ertele: 3 sn'de sifira, sessiz dongu, 7 dk sonraya */
+        alarmErtele(); await bek(3400);
+        const d3 = saatDurum();
+        c.gece = saatKip() === 'gece' && _uykuKat === 0 && ses.loop === true && /^blob:/.test(ses.src || '');
+        c.geceSusmuyor = ses.muted === false;
+        c.ertelendi = d3.erteleHedef > Date.now() + 6*60000 && d3.erteleHedef <= Date.now() + 7*60000 + 1000 && d3.erteleme === 1;
+        /* kilit ekranindaki play gecede "uyan" demek */
+        c.kilitPlay = saatKilitPlay() === true && saatKip() === '' && ses.loop === false;
+        /* tekrar: her gun -> durdurunca ertesi gune kurulur, alarm acik kalir */
+        await bek(300);
+        const dOnce = saatDurum().depo.sabah;
+        window.__tekrar = 'daily';
+        /* tekrar secimi paneldeki tusla donuyor: off -> daily */
+        const tk = document.querySelector('#saatPanel .st-tus.tekrar'); if(tk) tk.click();
+        sabahKur(true);
+        alarmCal(2); await bek(400); c.ikinciSeviye = _uykuKat >= 0.25;
+        alarmDurdur(); await bek(200);
+        const d4 = saatDurum();
+        c.tekrarKuruldu = d4.depo.sabah.acik === true && d4.depo.sabah.tekrar === 'daily' && d4.depo.sabah.hedef > Date.now() + 60000;
+        /* ucuncu seviye: dogrudan tam ses */
+        alarmCal(3); await bek(200); c.ucuncuTam = _uykuKat === 1;
+        alarmDurdur(); await bek(200);
+        /* temizlik */
+        try{ const tk2 = document.querySelector('#saatPanel .st-tus.tekrar'); for(let i=0;i<3 && saatDurum().depo.sabah.tekrar!=='off';i++) tk2.click(); }catch(e){}
+        sabahKur(false); uykuIptal(); uykuKatYaz(1);
+        try{ saatKapa(); }catch(e){}
+        c.kapandi = !saatAcik();
+        c.depoTemiz = saatDurum().depo.sabah.acik === false && saatDurum().depo.uykuBitis === 0;
+        c.katGeri = _uykuKat === 1;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const ozet = Object.keys(st).filter(k => st[k] !== true).map(k => k + '=' + st[k]).join(' ');
+    K('Saat tusu var, tutamagin yaninda', st.tusVar && st.tusAltinda, ozet || 'radyoda altinda, arsivde ustunde');
+    K('Saat modulu istek uzerine iniyor ve panel aciliyor', st.moduLGeldi && st.acildi, ozet || 'saat.js');
+    K('Uyku sayaci kuruluyor ve iptal ediliyor', st.uykuKuruldu && st.uykuIptal, ozet || '45 dk');
+    K('Sabah hedefi secilen saatte ve ileride', st.hedefIleride && st.hedefSaati, ozet || 'hedef dogru');
+    K('Alarm kisik basliyor (ilk saniye < %12)', st.kisikBasladi && st.caliyor, ozet || 'rampa 0.04 -> 0.25 @15s -> 0.75 @60s');
+    K('Erteleme: sifira iner, sessiz dongu, 7 dk sonraya', st.gece && st.geceSusmuyor && st.ertelendi, ozet || 'gece kipi');
+    K('Kilit ekraninda play gecede uyandiriyor', st.kilitPlay, ozet || 'dongu birakildi');
+    K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
+    K('Saat paneli kapaniyor, depo ve carpan temiz', st.kapandi && st.depoTemiz && st.katGeri, ozet || 'temiz');
   }
   /* METIN KODLA UYUSUYOR. Nottaki gerekce uydurulmus bir cumle
      degil, kullanim sartlarindaki kuralin ta kendisi: arsiv

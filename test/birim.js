@@ -819,7 +819,7 @@ function bitir(){
        .split(/\s+/).filter(Boolean).forEach(a2=>yazili.add(a2));
     });
     /* Koddaki anahtarlar: hem dogrudan yazilanlar hem sabitler. */
-    const kodHepsi = ['index.html','kayit.js','deri_cizim.js','sw.js']
+    const kodHepsi = ['index.html','kayit.js','deri_cizim.js','saat.js','sw.js']
       .filter(f => fs.existsSync(path.join(KOK, f)))
       .map(f => fs.readFileSync(path.join(KOK, f), 'utf8')).join('\n');
     const kullanilan = new Set();
