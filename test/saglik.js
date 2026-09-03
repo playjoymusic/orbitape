@@ -1992,10 +1992,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   }
 
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───
+  /* KALICI olan sayilir. Kosu #237 (3 Eylul) bunu rastgele kirmiziya
+     cevirdi: semboller o an ucluk gelmis, #bekle'nin 5 sn'lik
+     uclukRenk animasyonu (hue-rotate/brightness) ornekleme aninda
+     kosuyordu. Kosan bir animasyonun filtresi katman degil, gecici
+     efekt; bittiginde kalkiyor. O yuzden o an animasyonu olan
+     hedefler (sozde ogeler dahil) sayilmiyor. */
   const filtre = await pg.evaluate(()=>{
     const bul=[];
+    const oynayan = new Set();
+    try{
+      document.getAnimations().forEach(a=>{
+        const ef = a.effect; if(!ef || !ef.target) return;
+        oynayan.add(ef.target); if(ef.pseudoElement) oynayan.add(ef.target.tagName + '#' + ef.target.id + ef.pseudoElement);
+      });
+    }catch(e){}
     document.querySelectorAll('*').forEach(e=>{
+      if(oynayan.has(e)) return;
       for(const ps of ['','::before','::after']){
+        if(ps && oynayan.has(e.tagName + '#' + e.id + ps)) continue;
         const st = getComputedStyle(e, ps||undefined);
         const f = st.filter, bd = st.backdropFilter||st.webkitBackdropFilter, wc = st.willChange;
         const ad = (e.id?'#'+e.id:'') + (typeof e.className==='string'&&e.className?'.'+e.className.split(' ')[0]:'') || e.tagName;
