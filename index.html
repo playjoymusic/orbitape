@@ -3285,6 +3285,10 @@
     <div id="deriIzgara" class="deri-izgara" hidden></div>
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
       <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- CAR MODE: ses zincire girmez, dogrudan cikisa (CarPlay/Bluetooth
+         takilmalari icin). FX ve REC o kipte kapali. -->
+    <div class="sat" data-ayar="arac" role="switch" tabindex="-1">
+      <span>CAR MODE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ── RINGS ONLY ─────────────────────────────────────────────
          Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
          zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
@@ -8120,6 +8124,18 @@
   }
   function analizKur(){
     iz('analizKur');
+    /* ── CAR MODE: SES ZINCIRE HIC GIRMIYOR ──────────────────────
+       Kullanici (3 Eylul): "arabada CarPlay'e baglayinca yayin kesik
+       kesik, YouTube duzgun." YouTube sesi dogrudan cikisa veriyor;
+       biz her sesi Web Audio zincirinden (analiz, kompresor, limiter,
+       kazanc) geciriyoruz ve CarPlay/Bluetooth cikis yolu degisince
+       iOS'ta bu zincir takilabiliyor. CAR MODE'da zincir hic
+       kurulmuyor: eleman dogrudan cikisa calar, YouTube gibi. Bedeli
+       FX ve REC (ikisi de zincire bagli) ve ses seviyesi (iOS'ta
+       eleman seviyesi yazilamaz; arac dugmesi). srcNode bir kez
+       kurulunca geri alinamaz; o yuzden anahtar acilinca sayfa
+       yenileniyor (bkz. ayarlar). */
+    if(AYAR.arac) return;
     try{
       sesBaglamiAl();
       if(actx.state==='suspended') actx.resume();
@@ -8526,7 +8542,7 @@
      kullanici acikca sectiyse. Bos birakilmasi bilerek: secim
      yapmamis birine kendi dilini gostermek, varsayilani Ingilizce
      birakip "ayarlardan bul" demekten iyi. */
-  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:false, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'' };
+  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:false, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -8545,6 +8561,7 @@
       }
       AYAR.sesAcildi = true;
       if(_a.cark    === true)  AYAR.cark    = true;
+      if(_a.arac    === true)  AYAR.arac    = true;
       /* TUTORIALS: varsayilan ACIK. Yalnizca kullanici kapattiysa
          kapali geliyor -- yeni gelen kisi anlatimsiz kalmasin. */
       if(_a.tanitim === false) AYAR.tanitim = false;
@@ -14483,6 +14500,13 @@
          ama hicbir sey cikmaz -- yani yalan soyleyen bir dugme.
          Damgalar siliniyor; bir sonraki acilista tur yine cikiyor. */
       if(k === 'karanlik'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
+      /* CAR MODE ACILDI ve zincir zaten kurulu: eleman zincirden
+         sokulemez (spec), tek yol yeniden acilis. Kapatildiysa
+         zincir bir sonraki calmada kurulur, yenileme gerekmez. */
+      if(k === 'arac' && AYAR.arac && srcNode){
+        try{ kisaNotYaz('CAR MODE', 'Restarting so the sound can go straight to the output.'); }catch(e){ _yut(e); }
+        setTimeout(()=>{ try{ location.reload(); }catch(e){ _yut(e); } }, 900);
+      }
       if(k === 'tanitim' && AYAR.tanitim){
         try{ localStorage.removeItem(TUR_ANAHTAR);
              localStorage.removeItem(FXSUNUM_ANAHTAR);

@@ -8680,6 +8680,42 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
     K('Saat paneli kapaniyor, depo ve carpan temiz', st.kapandi && st.depoTemiz && st.katGeri, ozet || 'temiz');
   }
+  /* ── CAR MODE: SES ZINCIRE GIRMIYOR ─────────────────────────────
+     "CarPlay'de kesik kesik, YouTube duzgun." Kipte ses grafi hic
+     kurulmamali (srcNode yok), eleman dogrudan cikisa calmali, FX ve
+     REC kapali. Ayri bir sayfada olculuyor: bu sayfada zincir zaten
+     kurulu ve bir kez kurulan geri alinamaz. */
+  {
+    const { sayfa: pp, kapat } = await sayfaAc(b, { bekle: 2600,
+      once: ()=>{ try{
+        const a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
+        a.arac = true; localStorage.setItem('orbitape.ayar', JSON.stringify(a));
+      }catch(e){} } });
+    let arac = {};
+    try{
+      arac = await pp.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const c = { ayar: AYAR.arac === true };
+        try{ sonraki(true); }catch(e){}
+        await bek(2500);
+        try{ analizKur(); }catch(e){ c.hata = String(e.message); }
+        c.zincirYok = (typeof srcNode === 'undefined' || srcNode === null) && !grafHazir;
+        c.calanVar = !!(ses && ses.src);
+        c.satirVar = !!document.querySelector('.sat[data-ayar="arac"]');
+        return c;
+      });
+    }catch(e){ arac = { hata: String(e.message) }; }
+    finally{ await kapat(); }
+    /* calanVar HUKUM DEGIL: sahte agda akis her zaman baslamiyor;
+       olculen sey zincirin kurulmamasi. */
+    K('CAR MODE: ses zinciri kurulmuyor (srcNode yok, graf yok)',
+      arac.ayar && arac.zincirYok && arac.satirVar && !arac.hata,
+      JSON.stringify(arac));
+    K('CAR MODE anahtari acilinca zincir kuruluysa yeniden acilis',
+      /k === 'arac' && AYAR\.arac && srcNode/.test(TUM_KOD) && /if\(AYAR\.arac\) return;/.test(TUM_KOD)
+      && /if\(AYAR\.arac\)\{ try\{ kisaNotYaz\('CAR MODE'/.test(TUM_KOD),
+      'analizKur erken donuyor; REC kipte kapali');
+  }
   /* METIN KODLA UYUSUYOR. Nottaki gerekce uydurulmus bir cumle
      degil, kullanim sartlarindaki kuralin ta kendisi: arsiv
      kayitlari CC/kamu mali, istasyon yayini degil. Ikisi ayrisirsa

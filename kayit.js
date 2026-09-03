@@ -1984,6 +1984,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   }
   async function kayitBaslat(){
     if(kaydedici) return;
+    /* CAR MODE: ses zincire girmiyor, kayit hedefi (tavan) yok --
+       video sessiz cikardi. Kaydetmek yerine soyluyoruz. */
+    if(AYAR.arac){ try{ kisaNotYaz('CAR MODE', 'Recording is off while the sound goes straight to the output.'); }catch(e){ _yut(e); } return; }
     try{
       /* ÖNCE ESKİYİ TAMAMEN BIRAK. Bu çağrı EN BAŞTA olmak zorunda:
          kayitSesiBirak() hem ses hem GÖRÜNTÜ izini durduruyor. Daha
