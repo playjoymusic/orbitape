@@ -42,6 +42,13 @@ node test/birim.js || { echo "Birim testleri kirmizi."; exit 1; }
 echo
 echo "── 3/6  CSP damgasi ─────────────────────────────────────────"
 python3 araclar/csp.py || { echo "CSP damgasi basarisiz."; exit 1; }
+# ── DERLENMIS CIKTI (yayin/) ─────────────────────────────────────
+# Yayina giden dosya kaynaktan uretiliyor: yorumlar dusuyor, CSP ozeti
+# yeni dosyadan hesaplaniyor (araclar/derle.py). Kapinin geri kalani
+# KAYNAGI sinar; son adimda derlenmis cikti da kendi CSP'siyle sunulup
+# motor takimi onun uzerinde kosuyor -- yorumsuz kopya hic acilmazsa
+# (beyaz ekran) burada yakalanir, yayinda degil.
+python3 araclar/derle.py || { echo "Derleme basarisiz."; exit 1; }
 
 echo
 echo "── 4/6  Yerel sunucu (CSP'li) ───────────────────────────────"
@@ -137,6 +144,25 @@ wait $pidler 2>/dev/null         # cikis kodlarina GUVENILMIYOR, dosyalar okunuy
 for t in senaryo motor; do rapor "$t"; done
 echo
 echo "  (takimlar $(( $(date +%s) - t0 )) sn)"
+
+# ── DERLENMIS CIKTI KENDI CSP'SIYLE: MOTOR TAKIMI ──────────────────
+# yayin/ dizini 8766'da, yayin/_headers ile. Motor takimi (acilis,
+# fonksiyonlar, ses grafi, cizim) yorumsuz kopyada da gecmeli.
+echo
+echo "  ▸ derlenmis cikti (yayin/)"
+setsid nohup python3 araclar/sunucu.py --kok yayin --port 8766 >/tmp/yayin_sunucu.log 2>&1 &
+YAYIN_PID=$!
+sleep 2
+KAPI_ADRES=http://127.0.0.1:8766/index.html node test/motor.js > /tmp/orbitape_yayin_motor.log 2>&1
+yk=$?
+kill $YAYIN_PID 2>/dev/null; pkill -f "sunucu.py --kok yayin" 2>/dev/null
+if [ "$yk" = "0" ]; then
+  grep -v '^[[:space:]]*$' /tmp/orbitape_yayin_motor.log | tail -1 | sed 's/^/    /'
+else
+  hata=1
+  echo "    KIRMIZI (cikis $yk) — yorumsuz kopya bozuk, son satirlar:"
+  grep -E "!!|DUZELTILECEK|COKTU" /tmp/orbitape_yayin_motor.log | tail -8 | sed 's/^/    /'
+fi
 
 echo
 echo "── 6/6  Sonuc ───────────────────────────────────────────────"

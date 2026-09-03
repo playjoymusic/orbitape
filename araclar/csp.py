@@ -71,6 +71,11 @@ import re
 import sys
 
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# --kok DIZIN: derlenmis cikti icin (araclar/derle.py -> yayin/).
+# Yorumlar dusurulunce satir ici betigin ozeti degisir; yayina giden
+# _headers o dosyadan hesaplanmali, kaynaktan degil.
+if "--kok" in sys.argv:
+    KOK = os.path.abspath(sys.argv[sys.argv.index("--kok") + 1])
 HEADERS = os.path.join(KOK, "_headers")
 
 BASLA = "# ── CSP: BURASI csp.py TARAFINDAN YAZILIYOR ─────────────────────"
@@ -302,7 +307,8 @@ def main():
     # ozet ayni anda bayatlardi -- yani arac kendi urettigi dosyayi
     # bozardi. Bu hatanin ikizi bugun bir kez yasandi (index.html
     # duzenlenip csp.py calistirilmayinca uygulama hic acilmadi).
-    eski, taze = surumu_damgala()
+    # Derlenmis ciktida damga yok: kaynak zaten damgali, kopyasi ayni.
+    eski, taze = (None, None) if "--kok" in sys.argv else surumu_damgala()
     kayitlar = ozetleri_topla()
     yeni = blok(kayitlar)
     metin = open(HEADERS, encoding="utf-8").read()

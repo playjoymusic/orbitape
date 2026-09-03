@@ -4,8 +4,10 @@
 // Bağlantı kurulduktan sonra main dalına her push, siteyi otomatik
 // güncelliyor. Elle dosya sürüklemek bitiyor.
 //
-// DERLEME ADIMI YOK. Uygulama tek dosya; ne paketleyici ne dönüştürücü
-// var. Cloudflare depoyu alıp olduğu gibi yayınlıyor.
+// TEK DERLEME ADIMI VAR (3 Eylul): araclar/derle.py kaynaktan yayin/
+// uretir -- yorumlar duser, CSP ozeti yeni dosyadan hesaplanir. Ne
+// paketleyici ne donusturucu; kod birebir ayni, yalnizca yorumsuz.
+// Yayina giden dizin yayin/ (assets.directory). yayin.yml once derler.
 //
 // name ALANI KRİTİK: mevcut Worker'ın adıyla birebir aynı olmalı.
 // Farklı olursa Cloudflare yeni bir Worker yaratır ve orbitape.app
@@ -40,7 +42,7 @@
   "main": "./olcu.js",
 
   "assets": {
-    "directory": "./",
+    "directory": "./yayin",
     "not_found_handling": "404-page",
     // Worker'in ASSETS.fetch ile dosyalara ulasabilmesi icin ad
     // sart; olcu.js bu adi kullaniyor.
@@ -112,7 +114,7 @@
       // Uretimle ayni: deneme yayininda da gorebilelim.
       "observability": { "enabled": true, "head_sampling_rate": 1 },
       "assets": {
-        "directory": "./",
+        "directory": "./yayin",
         "not_found_handling": "404-page",
         "binding": "ASSETS",
         // Uretimle birebir ayni olmali, yoksa deneme yayini gercegi

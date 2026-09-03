@@ -114,6 +114,10 @@ jobs:
             exit 1
           fi
           echo "_headers dosyayla tutuyor"
+      # Yayina giden dizin yayin/: kaynaktan uretiliyor (yorumlar duser,
+      # CSP ozeti yeni dosyadan). Kapi ayni ciktiyi zaten sinadi.
+      - name: Derle (yayin/)
+        run: python3 araclar/derle.py
       - name: Wrangler ile yayinla
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -138,8 +142,23 @@ jobs:
           KATI: '1'
           BEKLE: '420'
         run: |
+          # ── UC DENEME, ARADA 40 SN ───────────────────────────────
+          # Kosu #9 (2 Eylul): yayin cikti, ilk sinama 14 saniyede
+          # dustu, bes dakika sonraki ayni kontroller (duman.yml)
+          # gecti. Yayin bozuk degildi; Cloudflare kenari o saniyelerde
+          # bir dosyayi (basliklar / 404 sayfasi) hala eski surumden
+          # veriyordu. Yayilma payi taninmadan "YAYIN BOZUK" demek
+          # yanlis alarm; taninca da gercek bir bozukluk en fazla iki
+          # dakika gec bildirilir -- kabul edilebilir, cunku alarm
+          # zaten insanin elle geri almasi icin.
           set -o pipefail
-          bash araclar/duman.sh 2>&1 | tee /tmp/duman_cikti.txt
+          kod=1
+          for deneme in 1 2 3; do
+            echo "── canli sinama, deneme $deneme/3 ──"
+            if bash araclar/duman.sh 2>&1 | tee /tmp/duman_cikti.txt; then kod=0; break; fi
+            [ "$deneme" -lt 3 ] && { echo "  … 40 sn sonra yeniden"; sleep 40; }
+          done
+          exit $kod
       # Yayın çıktı ama bozuk: bu, en acil hâl. Geri alma ELLE
       # yapılıyor (KURTARMA.md, panelden ~30 sn) — otomatik geri alma
       # bilerek yok: yanlış teşhisle geri alan bir robot, bozuk bir

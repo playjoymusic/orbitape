@@ -24,3 +24,7 @@ yeni_hasat.json
 hasat_durum.json
 lisans_ozeti.csv
 *.temiz.json
+
+# Derlenmis cikti: yayina giden yorumsuz kopya (araclar/derle.py).
+# Kaynak depoda, cikti her makinede yeniden uretilir.
+yayin/

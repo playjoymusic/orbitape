@@ -446,14 +446,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       .filter((u, i, d) => d.indexOf(u) === i);
     const bro = d => zlib.brotliCompressSync(d, {
       params:{ [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }).length;
-    const ham = fs.readFileSync('index.html');
+    /* ── OLCULEN SEY YAYINA GIDEN DOSYA (yayin/) ─────────────────
+       3 Eylul, kullanicinin onayiyla: yayina giden dosya kaynaktan
+       uretiliyor, yorumlar dusuyor (araclar/derle.py). Telden gecen
+       boy artik o dosyanin boyu; kaynagi olcmek yalan soylerdi.
+       yayin/ yoksa (derle.py kosmadiysa) kaynak olculur ve eski
+       tavanlarla kirmizi yanar -- yani derlemeyi atlamak da yakalanir. */
+    const _yayin = f => (fs.existsSync('yayin/' + f) ? 'yayin/' + f : f);
+    const _derlendi = fs.existsSync('yayin/index.html');
+    const ham = fs.readFileSync(_yayin('index.html'));
     let br = 0, gz = 0;
     for(const dosya of _parcalar){
-      const d = fs.readFileSync(dosya);
+      const d = fs.readFileSync(_yayin(dosya));
       br += bro(d); gz += zlib.gzipSync(d, {level:9}).length;
     }
     const brKB = Math.round(br/1024), gzKB = Math.round(gz/1024);
-    const _parcaOzet = _parcalar.map(f => f + ' ' + Math.round(bro(fs.readFileSync(f))/1024) + 'K').join(' + ');
+    const _parcaOzet = _parcalar.map(f => f + ' ' + Math.round(bro(fs.readFileSync(_yayin(f)))/1024) + 'K').join(' + ');
     /* ── HANGI BOY ONEMLI, OLCULDU ──────────────────────────────
        Dosyanin %42'si aciklama (417 KB). Kullanici bunlari isteyerek
        istedi: "sistemimi bozma, neden oyle yapildigini yaz."
@@ -548,8 +556,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      UZERINE yuklemek (REC/PHOTO/CAM'e ilk basista). O zaman ilk
      cizim ~254 KB'da kalir ve 38,6 KB hic inmez -- gercek kazanc
      orada, bolmenin kendisinde degil. */
-  K('Ilk cizim icin inen boy < 260 KB', bro(ham) < 260*1024,
-      Math.round(bro(ham)/1024) + ' KB brotli (index.html) — ilk boyama buna bagli');
+  /* ── TAVANLAR YENIDEN KURULDU: 260 -> 100, 302 -> 120 ─────────
+     Yorumlar yayindan dusunce (onay: 3 Eylul) ilk cizim 259 KB'dan
+     91 KB'a, ilk acilis toplami 302'den 109'a indi. Tavan yine
+     FREN: bugunku olcumun ~%10 ustunde. Kacak bir buyume (gomulen
+     veri, yanlislikla eklenen kutuphane) yine burada yakalanir.
+     Yukaridaki 272/278/287/296/302 notlari tarih olarak duruyor. */
+  const ILK_CIZIM_TAVAN = _derlendi ? 100 : 260, ILK_ACILIS_TAVAN = _derlendi ? 120 : 302;
+  K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
+      Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
      Bugun bu tavan alti kez yukseldi (272 -> 287) ve her seferinde
      "kirparak durdurulamaz" diye yazildi. O yazi EKSIKTI. Bugun
@@ -582,7 +597,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      kez beyaz ekran yasandi; ikincisini onaysiz riske atmam.
      SIRADAKI ADIM ONUN: 'yorumlari derlemede dusur' dedigi an
      tavan 200 KB'in altina iner ve bu not silinir. */
-  K('Ilk acilista inen toplam boy < 302 KB', br < 302*1024,
+  K('Ilk acilista inen toplam boy < ' + ILK_ACILIS_TAVAN + ' KB', br < ILK_ACILIS_TAVAN*1024,
       brKB + ' KB brotli (gzip ' + gzKB + ' KB) — ' + _parcaOzet);
     /* ── UCUNCU TAVAN: ISTEK UZERINE INENLER ────────────────────
        Ikinci tavan "ilk acilista inen her sey" diye kuruldu ve
@@ -602,12 +617,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        iniyor (deri secince deri_cizim, saat tusuna basinca saat),
        yani olculecek sey her birinin kendi boyu. Tavan ayni: 12 KB,
        her modul icin ayri ayri. */
-    const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(f)), 0);
-    const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(f)) >= 12*1024);
+    const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
+    const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= 12*1024);
     K('Istek uzerine inen her modul < 12 KB', _iuBuyuk.length === 0,
       _istekUzerine.length
         ? (_istekUzerine.map(f =>
-            f + ' ' + Math.round(bro(fs.readFileSync(f))/1024) + 'K').join(' + ')
+            f + ' ' + Math.round(bro(fs.readFileSync(_yayin(f)))/1024) + 'K').join(' + ')
            + ' (toplam ' + Math.round(_iuBoy/1024) + ' KB)')
         : 'istek uzerine inen modul yok');
     K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,

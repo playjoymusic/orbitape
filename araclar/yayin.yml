@@ -114,6 +114,10 @@ jobs:
             exit 1
           fi
           echo "_headers dosyayla tutuyor"
+      # Yayina giden dizin yayin/: kaynaktan uretiliyor (yorumlar duser,
+      # CSP ozeti yeni dosyadan). Kapi ayni ciktiyi zaten sinadi.
+      - name: Derle (yayin/)
+        run: python3 araclar/derle.py
       - name: Wrangler ile yayinla
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

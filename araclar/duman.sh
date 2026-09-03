@@ -63,9 +63,12 @@ echo
 # "yesil" der -- yani yeni surumu hic sinamamis oluruz. Once yayinin
 # yetismesini bekliyoruz, sonra soruyoruz.
 KATI_SONUC=0
-if [ "$KATI" = 1 ] && [ -f "$KOK/index.html" ]; then
+# YAYINDAKI DOSYA DERLENMIS KOPYA (yayin/index.html): yorumlar dusmus,
+# kaynakla birebir degil. Cikti yoksa once araclar/derle.py.
+KAYNAK_INDEX="$KOK/yayin/index.html"; [ -f "$KAYNAK_INDEX" ] || KAYNAK_INDEX="$KOK/index.html"
+if [ "$KATI" = 1 ] && [ -f "$KAYNAK_INDEX" ]; then
   ozet(){ shasum -a 256 "$1" 2>/dev/null | cut -d' ' -f1 || sha256sum "$1" | cut -d' ' -f1; }
-  bizim=$(ozet "$KOK/index.html")
+  bizim=$(ozet "$KAYNAK_INDEX")
   KATI_SONUC=1; t0=$(date +%s)
   while :; do
     # '/index.html' 307 ile '/'a gidiyor (html_handling); kullanicinin
@@ -199,8 +202,8 @@ K "Bilinmeyen adres 404 sayfasini gosteriyor" \
 
 # ── 5. KATI: YAYINDAKI DOSYA DEPODAKIYLE AYNI MI ───────────────────
 # Olcumu yukarida yaptik; sonucu burada, sirasi gelince bildiriyoruz.
-if [ "$KATI" = 1 ] && [ -f "$KOK/index.html" ]; then
-  K "Yayindaki sayfa depodakiyle ayni" "$KATI_SONUC" \
+if [ "$KATI" = 1 ] && [ -f "$KAYNAK_INDEX" ]; then
+  K "Yayindaki sayfa derlenmis kopyayla ayni" "$KATI_SONUC" \
     "$BEKLE sn beklendi; yayin ya yetismedi ya da baska bir surumu servis ediyor"
 fi
 

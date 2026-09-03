@@ -17,9 +17,14 @@ dogrulama bir sey kanitlamiyor.
 
 Kullanim:  python3 araclar/sunucu.py        (varsayilan 8765)
 """
-import http.server, socketserver, os, functools
+import http.server, socketserver, os, sys, functools
 
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# --kok DIZIN --port N: derlenmis ciktiyi (yayin/) kendi _headers'iyla
+# baska bir kapida sunmak icin (kontrol.sh son adimi).
+if '--kok' in sys.argv:
+    KOK = os.path.abspath(sys.argv[sys.argv.index('--kok') + 1])
+PORT = int(sys.argv[sys.argv.index('--port') + 1]) if '--port' in sys.argv else 8765
 
 
 def kurallar(sessiz=False):
@@ -122,5 +127,5 @@ class H(http.server.SimpleHTTPRequestHandler):
 # yazmamak icin.
 if __name__ == '__main__':
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("127.0.0.1", 8765), functools.partial(H, directory=KOK)) as s:
+    with socketserver.TCPServer(("127.0.0.1", PORT), functools.partial(H, directory=KOK)) as s:
         s.serve_forever()

@@ -33,7 +33,9 @@ const KROM = require('./tarayici');   // CI'de Playwright kendi tarayicisini kul
    Testin kendi malzemesi (ton.wav, yuksek.mp3) test/ altinda;
    uygulama dosyalari kokte. Ikisi karistirilmasin diye ayri. */
 const T = (ad) => path.join(__dirname, ad);
-const ADRES = 'http://127.0.0.1:8765/index.html';
+/* KAPI_ADRES: kontrol.sh derlenmis ciktiyi (yayin/) ayri bir kapida
+   sunup motor takimini onun uzerinde kosturuyor; adres oradan geliyor. */
+const ADRES = process.env.KAPI_ADRES || 'http://127.0.0.1:8765/index.html';
 const KOK   = ADRES.replace(/\/[^/]*$/, '');     // http://127.0.0.1:8765
 
 /* Uygulama telefon icin yazildi; olcumler telefon olculerinde anlamli.
