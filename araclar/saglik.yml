@@ -21,6 +21,13 @@ on:
     branches: [main]
   workflow_dispatch:        # elle de çalıştırılabilsin
 
+# Denetimde goruldu: bu dosyada permissions blogu YOKTU, oteki uc
+# workflow'da vardi. Blok yoksa is, deponun varsayilan GITHUB_TOKEN
+# yetkisiyle kosar -- testlerin hicbirinin yazma yetkisine ihtiyaci
+# yok. En az yetki, en az zarar.
+permissions:
+  contents: read
+
 jobs:
   saglik:
     # Isimde SAYI YOK: her yeni kontrolde guncellemek gerekirdi ve bir gun
@@ -57,6 +64,14 @@ jobs:
       #
       # Uygulama file:// üzerinden değil gerçek bir sunucudan açılmalı:
       # service worker ancak http:// altında çalışır.
+      # ── DERLE: SAGLIK, YAYINA GIDEN DOSYAYI OLCER ─────────────
+      #   3 Eylul: boy tavanlari yayin/ uzerinde (91/109 KB). yayin/
+      #   yoksa saglik.js kaynagi eski tavanlarla (260/302) olcer ve
+      #   kirmizi yanar -- e71a655'te tam boyle oldu (671/673). Derleme
+      #   burada da kosmali; terser npm install ile geliyor.
+      - name: Derle
+        run: python3 araclar/derle.py
+
       - name: Sağlık kontrolü
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 &
