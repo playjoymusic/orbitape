@@ -48,19 +48,22 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     "body.deri #deriGaleri{--dg-vurgu:var(--d-marka,var(--d-yazi));--dg-yazi:var(--d-yazi);--dg-zem:var(--d-panel,var(--d-zem))}",
     "#deriGaleri[hidden]{display:none !important}",
     ".dg-bas{display:flex;align-items:center;gap:4px;flex:none;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 6px calc(var(--kx) + env(safe-area-inset-left,0px))}",
-    ".dg-baslik{font-size:11px;letter-spacing:.3em;opacity:.55;margin-right:6px}",
-    ".dg-secili{font-size:13px;letter-spacing:.14em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dg-vurgu)}",
-    ".dg-sayac{font-size:11px;opacity:.5;margin-right:4px}",
-    ".dg-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;width:34px;height:32px;padding:0;font:inherit;font-size:14px;cursor:pointer;opacity:.7;-webkit-tap-highlight-color:transparent}",
+    ".dg-baslik{font-size:0.6875rem;letter-spacing:.3em;opacity:.55;margin-right:6px}",
+    ".dg-secili{font-size:0.8125rem;letter-spacing:.14em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dg-vurgu)}",
+    ".dg-sayac{font-size:0.6875rem;opacity:.5;margin-right:4px}",
+    ".dg-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;width:34px;height:32px;padding:0;font:inherit;font-size:0.875rem;cursor:pointer;opacity:.7;-webkit-tap-highlight-color:transparent}",
     ".dg-tus:hover,.dg-tus:focus-visible{opacity:1}",
     "#deriGaleri:not(.serit) .dg-tus.buyut{display:none}",
+    ".dg-tus.halka{width:auto;padding:0 8px;font-size:0.625rem;letter-spacing:.22em;opacity:.45}",
+    ".dg-tus.halka[aria-pressed='true']{opacity:1;color:var(--dg-vurgu);text-shadow:0 0 8px color-mix(in srgb,var(--dg-vurgu) 60%,transparent)}",
+    "#deriGaleri.serit .dg-tus.halka{display:none}",
     ".dg-izgara{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));grid-auto-rows:max-content;align-items:start;gap:10px;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 10px calc(var(--kx) + env(safe-area-inset-left,0px));align-content:start}",
     ".dg-kare{appearance:none;-webkit-appearance:none;border:0;padding:0;margin:0;position:relative;display:block;width:100%;aspect-ratio:108/172;height:auto;border-radius:12px;overflow:hidden;cursor:pointer;background:#111;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;isolation:isolate}",
-    ".dg-kare.kapa{display:grid;place-items:center;background:color-mix(in srgb,var(--dg-yazi) 8%,transparent);font-size:12px;letter-spacing:.24em;color:var(--dg-yazi);opacity:.8}",
+    ".dg-kare.kapa{display:grid;place-items:center;background:color-mix(in srgb,var(--dg-yazi) 8%,transparent);font-size:0.75rem;letter-spacing:.24em;color:var(--dg-yazi);opacity:.8}",
     ".dg-kare[aria-pressed=\"true\"]{outline:2px solid var(--dg-vurgu);outline-offset:3px}",
     ".dg-tuval,.dg-doku{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}",
     ".dg-disk{position:absolute;left:50%;top:44%;width:58%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background-size:cover;pointer-events:none}",
-    ".dg-kare .dg-ad{position:absolute;left:8px;right:6px;bottom:7px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.12em;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    ".dg-kare .dg-ad{position:absolute;left:8px;right:6px;bottom:7px;text-align:left;font-size:0.5625rem;font-weight:700;letter-spacing:.12em;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
     "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 42px);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
     "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-baslik,#deriGaleri.serit .dg-sayac,#deriGaleri.serit .dg-tus.kucult{display:none}",
     "#deriGaleri.serit .dg-bas{padding:2px 6px}",
@@ -81,6 +84,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       KURALLAR.forEach(k=>{ try{ st.sheet.insertRule(k, st.sheet.cssRules.length); }catch(e){ yut(e); } });
     }catch(e){ yut(e); }
   }
+  let halkaTus = null;
   let kap = null, izg = null, adYazi = null, sayacYazi = null;
   const halkaOnbellek = {};
   let cizimSirasi = [];
@@ -170,7 +174,17 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     bas.appendChild(adYazi);
     bas.appendChild(sayacYazi);
     bas.appendChild(tus('ileri', 'Next skin', '▶', ()=>adim(1)));
-    bas.appendChild(tus('kucult', 'Shrink to a strip', '▁', kucult));
+    /* RING ANAHTARI (3 Eylul, kullanici): "ring only hem adi ring
+       olsun hem de o skins menusunde olsun ac kapa olsun. ayarlarda
+       kalabilir." Ayni ayar (AYAR.halka), ayni islev
+       (halkaDegistir); iki yerden de kumanda ediliyor. */
+    halkaTus = tus('halka', 'Rings only', T('RING'), ()=>{
+      try{ if(typeof window.halkaDegistir === 'function') window.halkaDegistir(); }catch(e){ yut(e); }
+      halkaIsaret();
+    });
+    bas.appendChild(halkaTus);
+    /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
+       (degistir). ▦ seritte kaliyor: tam galeriye donus. */
     bas.appendChild(tus('buyut', 'Show all skins', '▦', buyut));
     bas.appendChild(tus('kapat', 'Close', '✕', kapa));
     kap.appendChild(bas);
@@ -193,8 +207,17 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     document.body.appendChild(kap);
   }
 
+  function halkaIsaret(){
+    try{
+      if(!halkaTus) return;
+      const a = (typeof AYAR !== 'undefined') && !!AYAR.halka;
+      halkaTus.setAttribute('aria-pressed', a ? 'true' : 'false');
+      halkaTus.textContent = T('RING');
+    }catch(e){ yut(e); }
+  }
   function isaretle(kaydir){
     try{
+      halkaIsaret();
       const n = AYAR.deri|0;
       if(adYazi) adYazi.textContent = n ? (DERI_AD[n] || '') : T('OFF');
       if(sayacYazi) sayacYazi.textContent = n + ' / ' + DERILER.length;
@@ -274,7 +297,45 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   function acikMi(){ return !!kap && !kap.hidden; }
-  function degistir(){ if(acikMi()) kapa(); else ac(); }
+  /* FIRCA DONGUSU (3 Eylul, kullanici): "tekrar isme basinca ilk
+     kucuk moda gecsin, tekrar basarsak kapanir." Kapali -> tam
+     galeri -> serit -> kapali. */
+  function degistir(){
+    if(!acikMi()) ac();
+    else if(!kap.classList.contains('serit')) kucult();
+    else kapa();
+  }
+
+  /* ── BOSLUGA DOKUNUS: SERIT KAPANIR, DOKUNUS YUTULUR ──────────────
+     Tam galeri ekrani kapladigi icin "bosluk" yok; seritte var.
+     Kural raf listesiyle ayni (liste.js): bosluga dokunus yalnizca
+     kapatir, altindaki tusa gecmez. Firca disarida sayilmiyor:
+     onun kendi dongusu var. */
+  let _yutJest = false, _yutZaman = 0;
+  function disari(e){
+    try{
+      if(!acikMi() || !kap.classList.contains('serit')) return;
+      const t = e.target;
+      if(t instanceof Node && kap.contains(t)) return;
+      if(t instanceof Element && t.closest('#deriFirca')) return;
+      kapa();
+      _yutJest = true; _yutZaman = Date.now() + 600;
+      e.stopPropagation(); e.preventDefault();
+    }catch(err){ yut(err); }
+  }
+  function kalanYut(e){
+    try{
+      if(!_yutJest) return;
+      if(Date.now() > _yutZaman){ _yutJest = false; return; }
+      e.stopPropagation(); if(e.cancelable) e.preventDefault();
+      if(e.type === 'click') _yutJest = false;
+    }catch(err){ yut(err); }
+  }
+  try{
+    window.addEventListener('pointerdown', disari, {capture:true, passive:false});
+    ['pointerup','click','touchstart','touchend','mousedown','mouseup'].forEach(t=>
+      window.addEventListener(t, kalanYut, {capture:true, passive:false}));
+  }catch(e){ yut(e); }
 
   try{
     window.deriGaleriAc = ac; window.deriGaleriKapa = kapa;

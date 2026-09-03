@@ -83,6 +83,8 @@ interface Window {
   deriGaleriAcik?: () => boolean;
   deriGaleriAdim?: (y: number) => void;
   deriGaleriKucult?: () => void;
+  /* RING anahtari: ayarlar ve galeri basligi ayni islevi cagiriyor (index.html). */
+  halkaDegistir?: () => void;
 
   /* Istasyon listesi (liste.js): sag ust ad ve semboller. */
   LISTE_BASLADI?: boolean;

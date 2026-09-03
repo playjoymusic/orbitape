@@ -3107,6 +3107,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     for(const o of [0.10, 0.50, 0.70, 0.88]) kisa.push(await dene(o, 90, false));
     const uzun = await dene(0.75, 800, false);
     const kay  = await dene(0.85, 130, true);
+    /* UFAK SURTME: 4px -- dokunus sayilir, kip acilmaz. */
+    const ufak = await (async ()=>{
+      /* Sahte pointerId ile setPointerCapture laboratuvarda dusuyor
+         ve _yut sayiyor; bu testin kendi urunu, uygulamanin degil:
+         sayac geri aliniyor (yutulan hata butcesi bozulmasin). */
+      const yN = window.__yut ? window.__yut.n : 0;
+      try{ fxNormale && fxNormale(); }catch(e){}
+      _ilkCalindi = true; AKTIF_MOD='RADIOTAPE'; _nebSira=-1;
+      const p = nokta(0.85);
+      OL('pointerdown', p.x, p.y); OL('pointermove', p.x - 4, p.y + 3);
+      await bek(130); const gez = !!_moodGez; OL('pointerup', p.x - 4, p.y + 3); await bek(220);
+      if(window.__yut) window.__yut.n = yN;
+      return { gez, mod: AKTIF_MOD }; })();
     const merkez = await dene(0.20, 800, false);
     /* tutus + halka disinda birakma: parca ATLAMAMALI */
     let atladi = false, atlayan = '';
@@ -3128,7 +3141,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          Simdi 'atla' uzerinden gelenler ayikliyor. */
       atladi = (window.__yig||[]).some(x=>!/ atla | at atla/.test(' '+x+' ')); }
     try{ if(AKTIF_MOD!=='RADIOTAPE') modSec('RADIOTAPE', true); }catch(e){}
-    return { kisa, uzun, kay, merkez, esik: MOOD_TUT, atladi, atlayan };
+    return { kisa, uzun, kay, ufak, merkez, esik: MOOD_TUT, surt: MOOD_SURT, atladi, atlayan };
   });
   K('Kisa dokunus kategori SECMEZ', tk.kisa.every(r=>r.gez===false && r.mod==='RADIOTAPE'),
      tk.kisa.length+' yaricapta da kategori degismedi');
@@ -3142,12 +3155,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Bu satirlar kipin ACILDIGINI dogruluyor. */
   K('Basili tutus raf kipini acar', tk.uzun.gez===true,
      'gezinme '+tk.uzun.gez+' -> '+tk.uzun.mod);
-  /* TERSINE DONDU (2 Eylul): kaydirma kategori ACMAZ, tutusu iptal
-     eder. "Parmagini basarken bazen surtme oluyor, onunla karismasin."
-     Sure dolmadan kayan parmak surtmedir, niyet degil. */
-  K('Kaydirma kategori ACMAZ, tutusu iptal eder', tk.kay.gez===false && tk.kay.mod==='RADIOTAPE',
-     'sure dolmadan kayan parmak = surtme');
-  K('Basili tutma esigi 550 ms', tk.esik === 550, tk.esik + ' ms');
+  /* UCUNCU KARAR (3 Eylul): belirgin kaydirma sure beklemeden kipi
+     ACAR ("surtmeye basladiginda otomatik ona gecmen lazim"); ufak
+     surtme (MOOD_SURT altinda) hala dokunus ("basarken surtme oluyor,
+     karismasin"). Tutus kipirdamayan parmak icin kilit. */
+  K('Belirgin kaydirma kipi sure beklemeden acar', tk.kay.gez===true,
+     Math.round(tk.surt) + 'px ustu kaydirma = gezinme');
+  K('Ufak surtme dokunus sayilir, kip acmaz', tk.ufak.gez===false && tk.ufak.mod==='RADIOTAPE',
+     '4px surtme = dokunus');
+  K('Basili tutma esigi 420 ms', tk.esik === 420, tk.esik + ' ms');
   /* Tutus ARTIK HER YERDE kipi aciyor: ortada tutup halkaya kaydirmak
      calisiyor. Halkanin ustunde degilken birakmak hicbir sey yapmiyor. */
   K('Merkezde tutus da kipi acar', tk.merkez.gez===true, 'gezinme acildi');
@@ -6649,8 +6665,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (3 Eylul) Eskiden ikisi de raf degistiriyordu (modSiraGec).
        Simdi: soldaki ad bir geri (geriGit), sagdaki ad ve semboller
        asagi acilan RAF listesi (liste.js): her raf kendi renginde,
-       dokununca raf acilir (aileSec) ve calma planlanir, acik raf
-       pasif, liste acik kalir, ikinci dokunus kapatir. */
+       dokununca raf acilir (aileSec) ve calma planlanir, liste kapanir
+       (3 Eylul), acik raf pasif; bosluga dokunus kapatir ve yutulur. */
     const il = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const c = {};
@@ -6682,14 +6698,39 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.acikIsaretli = !!acik && acik.querySelector('.il-baslik').textContent === 'JAZZ';
         /* acik rafa dokunmak etkisiz */
         const eS = window.aileSec; let say = 0; window.aileSec = function(a, z){ say++; return eS.apply(this, arguments); };
-        acik.click(); await bek(100); c.acikPasif = say === 0 && AKTIF_AILE === 'JAZZ';
-        /* baska rafa dokunmak rafi acar */
-        const hedef = ogeler.find(li => li.getAttribute('aria-current') !== 'true');
+        acik.click(); await bek(100); c.acikPasif = say === 0 && AKTIF_AILE === 'JAZZ' && !listeAcik();
+        /* baska rafa dokunmak rafi acar VE LISTEYI KAPATIR (3 Eylul):
+           "istasyon secildiginde de o pencere kapansin". */
+        listeAc(sagEl); await bek(100);
+        const ogeler2 = [...kap.querySelectorAll('.il-oge')];
+        const hedef = ogeler2.find(li => li.getAttribute('aria-current') !== 'true');
         const hedefAd = hedef.querySelector('.il-baslik').textContent;
         hedef.click(); await bek(200);
         window.aileSec = eS;
-        c.rafAcildi = say === 1 && AKTIF_AILE === hedefAd && hedef.getAttribute('aria-current') === 'true';
-        c.acikKaldi = listeAcik();
+        c.rafAcildi = say === 1 && AKTIF_AILE === hedefAd;
+        c.secinceKapandi = !listeAcik();
+        /* BOSLUGA DOKUNUS: kapatir ve dokunusu YUTAR (3 Eylul):
+           "bosluga basinca kapansin ... sarki atlamanin ustunde
+           oldugundan bir daha sarki geciyor." Liste acikken diske
+           dokunuluyor: liste kapanmali, sonraki() CAGRILMAMALI. */
+        listeAc(sagEl); await bek(100);
+        const yN = window.__yut ? window.__yut.n : 0;   // sahte pointerId: setPointerCapture laboratuvarda duser, testin urunu
+        const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
+        const dsk = document.getElementById('btn') || document.getElementById('tp'); const db = dsk.getBoundingClientRect();
+        const dx = db.left + db.width/2, dy = db.top + db.height/2;
+        const olay = (t, Tip)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:31, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:dx, clientY:dy}));
+        olay('pointerdown', PointerEvent); c.bosKapatti = !listeAcik();
+        olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
+        window.sonraki = eSn;
+        c.bosYutuldu = sn === 0;
+        /* Yutma bir sonraki dokunusu ESIR ALMAMALI: yeni bir dokunus
+           normal gecer (yutma click ile biter). */
+        await bek(50);
+        let sn2 = 0; window.sonraki = function(){ sn2++; };
+        olay('pointerdown', PointerEvent); olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
+        window.sonraki = eSn;
+        c.sonrakiDokunusGecer = sn2 >= 1;
+        if(window.__yut) window.__yut.n = yN;
         /* semboller: acikken kapatir, kapaliyken acar */
         sm.classList.add('buyuk');
         listeKapa(); c.kapandi = !listeAcik();
@@ -6705,7 +6746,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const ilOz = Object.keys(il).filter(k => il[k] !== true).map(k => k + '=' + il[k]).join(' ');
     K('Sol ad bir geri, sag ad raf listesi', il.solSag && il.solGeri && il.geldi && il.acik, ilOz || 'liste.js indi, acildi');
     K('Listede butun raflar kendi renginde, acik raf isaretli', il.rafSayisi && il.renkli && il.altinda && il.acikIsaretli, ilOz || 'AILE_ADLAR');
-    K('Rafa dokunmak rafi acar, acik raf pasif, liste acik kalir', il.rafAcildi && il.acikPasif && il.acikKaldi, ilOz || 'aileSec bir kez');
+    K('Rafa dokunmak rafi acar ve listeyi kapatir, acik raf pasif', il.rafAcildi && il.acikPasif && il.secinceKapandi, ilOz || 'aileSec bir kez, liste kapandi');
+    K('Bosluga dokunus listeyi kapatir ve dokunusu yutar', il.bosKapatti && il.bosYutuldu && il.sonrakiDokunusGecer, ilOz || 'kapandi, sonraki() 0, sonraki dokunus gecti');
     K('Semboller listeyi acar/kapatir', il.kapandi && il.sembolAcar, ilOz || 'pointerdown/up');
     /* RAF SECILI DEGILSE USTTE YAZI DA YOK: once 'RADIOTAPE', sonra
        'ALL' yazmistim; ikisi de kullaniciya "ne alaka" dedirtti. */
@@ -8783,8 +8825,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         let dolu = 0;
         if(tv){ const d = tv.getContext('2d').getImageData(0,0,tv.width,tv.height).data; for(let i=3;i<d.length;i+=4) if(d[i]>0) dolu++; }
         c.tuvalDolu = !!tv && dolu > tv.width * tv.height * 0.5;
-        /* serit: ekrani kapatmaz, oklar deriyi degistirir */
-        kap.querySelector('.dg-tus.kucult').click(); await bek(200);
+        /* RING anahtari baslikta (3 Eylul): ayni AYAR.halka, ayni
+           islev; basinca ayarlardaki anahtarla birlikte degisiyor. */
+        const ht = kap.querySelector('.dg-tus.halka');
+        const eskiHalka = !!AYAR.halka;
+        ht.click(); await bek(150);
+        const satH = document.querySelector('.sat[data-ayar="halka"]');
+        c.ringAnahtari = !!ht && !!AYAR.halka !== eskiHalka && ht.getAttribute('aria-pressed') === String(!!AYAR.halka)
+                      && (!satH || satH.getAttribute('aria-checked') === String(!!AYAR.halka))
+                      && document.body.classList.contains('sadehalka') === !!AYAR.halka;
+        ht.click(); await bek(150);
+        c.ringGeri = !!AYAR.halka === eskiHalka;
+        /* serit: firca IKINCI dokunusta seride alir (3 Eylul: "tekrar
+           isme basinca ilk kucuk moda gecsin"); kucultme tusu yok. */
+        c.kucultTusuYok = !kap.querySelector('.dg-tus.kucult');
+        f.click(); await bek(200);
         const sr = kap.getBoundingClientRect();
         c.serit = kap.classList.contains('serit') && sr.height < 60 && sr.width < innerWidth * 0.95;
         c.arkaDokunulur = !document.getElementById('tp').closest('[inert]');
@@ -8793,7 +8848,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         kap.querySelector('.dg-tus.geri').click(); kap.querySelector('.dg-tus.geri').click(); await bek(300);
         c.geri = AYAR.deri === 1;
         c.adYazisi = kap.querySelector('.dg-secili').textContent.trim() === DERILER[0].ad;
-        /* firca tekrar: kapanir */
+        /* seritte bosluga dokunus: kapatir ve dokunusu yutar */
+        const yN = window.__yut ? window.__yut.n : 0;   // sahte pointerId, testin urunu
+        const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
+        const dsk = document.getElementById('btn') || document.getElementById('tp'); const db = dsk.getBoundingClientRect();
+        const olay = (t, Tip)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:33, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:db.left+db.width/2, clientY:db.top+db.height/2}));
+        olay('pointerdown', PointerEvent); c.bosKapatti = !deriGaleriAcik();
+        olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
+        window.sonraki = eSn; c.bosYutuldu = sn === 0;
+        if(window.__yut) window.__yut.n = yN;
+        /* firca dongusu: kapali -> tam -> serit -> kapali */
+        f.click(); await bek(200); c.d1 = deriGaleriAcik() && !kap.classList.contains('serit');
+        f.click(); await bek(200); c.d2 = deriGaleriAcik() && kap.classList.contains('serit');
         f.click(); await bek(200);
         c.kapandi = !deriGaleriAcik() && !document.body.classList.contains('galeri-acik');
         AYAR.deri = eskiDeri; deriUygula(); ayarKaydet();
@@ -8805,8 +8871,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
-    K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi, oz || 'serit');
-    K('Firca ikinci dokunusta galeriyi kapatir', g.kapandi, oz || 'kapandi');
+    K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi && g.kucultTusuYok, oz || 'serit, kucultme tusu yok');
+    K('RING anahtari galeri basliginda, ayarlarla ayni', g.ringAnahtari && g.ringGeri, oz || 'AYAR.halka iki yerden');
+    K('Seritte bosluga dokunus kapatir ve yutulur', g.bosKapatti && g.bosYutuldu, oz || 'sonraki() 0');
+    K('Firca dongusu: tam -> serit -> kapali', g.d1 && g.d2 && g.kapandi, oz || 'uc dokunus');
   }
   /* ── PAYLASIM: IPTAL DEFTERE GIRMEZ, CIFT DOKUNUS KILITLI ───────
      Saha olcumu (issue #7): "Share canceled" x4 (kullanicinin

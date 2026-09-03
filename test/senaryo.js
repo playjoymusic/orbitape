@@ -683,6 +683,80 @@ const CASUS = ()=>{
     await supur(p2, 'Y10 ag');
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     YOLCULUK 11 — YAZI OLCEGI (Android "Yazi tipi boyutu")
+     3 Eylul: yazi boylari px'ten rem'e cevrildi. Android'de kullanici
+     sistem yazi boyutunu buyutunce Chrome kok punto'yu buyutuyor;
+     rem olan her sey onunla buyuyor, px olan hicbir sey buyumuyordu.
+     (iOS'ta bu ayar web icerigine hic islemiyor; orada degisen yok.)
+     Bu yolculuk sayfayi kok punto %125 ile ACIYOR (ayar sayfa
+     yuklenmeden once gecerli, gercekte de oyle) ve ayni supurmeyi
+     kosuyor: cakisma yok, tasan yok, buyutec yerinde. Ustune bir
+     de kirpilan yazi araniyor: taşan metni gizleyen ama uc nokta
+     koymayan bir kutu, buyuyen yaziyi sessizce keser.
+     ══════════════════════════════════════════════════════════════ */
+  {
+    const c3 = await b.newContext(Object.assign({}, TELEFON, {userAgent:IPHONE_UA}));
+    await c3.addInitScript(()=>{
+      const kur = ()=>{ try{ if(document.documentElement){
+        document.documentElement.style.fontSize = '125%'; return true; } }catch(e){} return false; };
+      if(!kur()) new MutationObserver((m,o)=>{ if(kur()) o.disconnect(); }).observe(document, {childList:true});
+    });
+    const { sayfa: p3 } = await sayfaAc(c3, { ag: agKur, bekle: 2600, git:false, once: CASUS });
+    await p3.goto(S); await bek(2600);
+    const kok = await p3.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).fontSize));
+    K('[Y11] Kok punto %125 (20px)', Math.abs(kok - 20) < 0.5, kok + 'px');
+    const rem = await p3.evaluate(()=>{
+      /* OLCULEN SEY BIR REM SATIRI: #np .np-sanatci CSS'te .6875rem
+         (16px kokte 11px). 20px kokte 13.75px olmali. Px kalsaydi
+         11'de kalirdi -- bu satir tam o farki olcuyor. Cevrilmemis
+         bir font-size kalirsa kaynak taramasi (asagida) soyluyor. */
+      const el = document.querySelector('#np .np-sanatci');
+      return { p: el ? parseFloat(getComputedStyle(el).fontSize) : 0 };
+    });
+    K('[Y11] Yazi kok puntoyla buyuyor (rem)', Math.abs(rem.p - 13.75) < 0.3,
+       '#np .np-sanatci ' + rem.p + 'px (beklenen 13.75)');
+    const pxKalan = (()=>{ try{
+      const fs = require('fs');
+      const out = [];
+      for(const d of ['index.html','saat.js','deri_galeri.js','liste.js']){
+        const m = fs.readFileSync(d,'utf8').match(/font-size\s*:\s*[0-9.]+px/g) || [];
+        if(m.length) out.push(d + ' ' + m.length);
+      }
+      return out; }catch(e){ return ['okunamadi']; } })();
+    K('[Y11] Kaynakta px font-size kalmadi', pxKalan.length===0,
+       pxKalan.length ? pxKalan.join(', ') : 'index.html, saat.js, deri_galeri.js, liste.js: hepsi rem');
+    await p3.evaluate(()=>{ try{ geriYerlestir(); }catch(e){} });
+    await bek(500);
+    await supur(p3, 'Y11 %125 radyo');
+    const kirpik = await p3.evaluate(()=>{
+      const out = [];
+      const kok = ['ust','solUst','araclar','np','ayarTut','ara','tasima'];
+      for(const id of kok){
+        const k = document.getElementById(id); if(!k) continue;
+        const hepsi = [k, ...k.querySelectorAll('*')];
+        for(const e of hepsi){
+          const cs = getComputedStyle(e);
+          if(cs.display==='none' || cs.visibility==='hidden' || +cs.opacity < .05) continue;
+          if(!(cs.overflow==='hidden' || cs.overflowX==='hidden')) continue;
+          if(cs.textOverflow==='ellipsis') continue;
+          if(!e.textContent || !e.textContent.trim()) continue;
+          if(e.querySelector('canvas,svg,img')) continue;
+          if(e.scrollWidth > e.clientWidth + 2 || e.scrollHeight > e.clientHeight + 2)
+            out.push((e.id?'#'+e.id:e.tagName.toLowerCase()) + ' ' + e.scrollWidth + '>' + e.clientWidth + 'x' + e.scrollHeight + '>' + e.clientHeight);
+        }
+      }
+      return out;
+    });
+    K('[Y11] %125\'te kirpilan yazi yok', kirpik.length===0,
+       kirpik.length ? kirpik.slice(0,4).join(' · ') : 'gizli tasma yok');
+    /* Mood ekrani da ayni olcekte. */
+    await p3.evaluate(()=>{ try{ AYAR.mood = true; moodUygula(); }catch(e){} });
+    await bek(900);
+    await supur(p3, 'Y11 %125 mood');
+    await c3.close();
+  }
+
   /* ── SON: BUTUN YOLCULUK BOYUNCA JS HATASI ──────────────────── */
   K('Yolculuk boyunca JS hatasi yok', jsHata.length===0,
      jsHata.length ? jsHata[0] : '0 hata');
@@ -690,7 +764,7 @@ const CASUS = ()=>{
      gectigi rapora yaziliyor ki "test var ama bos" durumu
      gorunur olsun. */
   const yolculuk = new Set(sonuc.map(x => (x.ad.match(/^\[(Y\d+)/)||[])[1]).filter(Boolean));
-  K('On yolculuk da calisti', yolculuk.size === 10, yolculuk.size + ' yolculuk');
+  K('On bir yolculuk da calisti', yolculuk.size === 11, yolculuk.size + ' yolculuk');
 
   await c2.close();
   await b.close();

@@ -35,23 +35,23 @@ try{ window.LISTE_BASLADI = true; }catch(e){}
   const yut = e=>{ try{ _yut(e); }catch(_){} };
   const T = s=>{ try{ return (typeof Y === 'function') ? Y(s) : s; }catch(e){ return s; } };
   const KURALLAR = [
-    "#istListe{--il-vurgu:#4de0d0;--il-yazi:#dfe4e8;--il-zem:rgba(8,10,12,.94);position:fixed;z-index:97;right:calc(var(--kx) + env(safe-area-inset-right,0px));top:0;width:min(86vw,340px);max-height:56vh;display:flex;flex-direction:column;background:var(--il-zem);color:var(--il-yazi);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:.06em;font-size:12px;overflow:hidden}",
+    "#istListe{--il-vurgu:#4de0d0;--il-yazi:#dfe4e8;--il-zem:rgba(8,10,12,.94);position:fixed;z-index:97;right:calc(var(--kx) + env(safe-area-inset-right,0px));top:0;width:min(86vw,340px);max-height:56vh;display:flex;flex-direction:column;background:var(--il-zem);color:var(--il-yazi);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:.06em;font-size:0.75rem;overflow:hidden}",
     "body.deri #istListe{--il-yazi:var(--d-yazi);--il-zem:var(--d-panel,var(--d-zem))}",
     "#istListe[hidden]{display:none !important}",
     ".il-bas{display:flex;align-items:baseline;gap:10px;padding:12px 16px 8px;color:var(--il-vurgu)}",
-    ".il-ad{font-size:12px;letter-spacing:.3em;font-weight:700}",
-    ".il-say{font-size:11px;opacity:.55;color:var(--il-yazi)}",
+    ".il-ad{font-size:0.75rem;letter-spacing:.3em;font-weight:700}",
+    ".il-say{font-size:0.6875rem;opacity:.55;color:var(--il-yazi)}",
     ".il-liste{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 6px 10px;list-style:none;margin:0}",
     ".il-oge{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s}",
     ".il-oge{--il-raf:var(--il-vurgu)}",   /* yazi: raf rengi + panel yazisi karisimi -- acik deride de okunsun (nokta saf renk) */
     ".il-oge .il-nokta{width:8px;height:8px;border-radius:50%;background:var(--il-raf);flex:none;box-shadow:0 0 8px var(--il-raf)}",
-    ".il-oge .il-baslik{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.18em;font-size:12px;color:color-mix(in srgb,var(--il-raf) 62%,var(--il-yazi))}",
-    ".il-oge .il-alt{font-size:10px;opacity:.5;flex:none;letter-spacing:.1em}",
+    ".il-oge .il-baslik{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.18em;font-size:0.75rem;color:color-mix(in srgb,var(--il-raf) 62%,var(--il-yazi))}",
+    ".il-oge .il-alt{font-size:0.625rem;opacity:.5;flex:none;letter-spacing:.1em}",
     ".il-oge.gez,.il-oge:hover{background:color-mix(in srgb,var(--il-raf) 18%,transparent)}",
     ".il-oge:not([aria-current=\"true\"]) .il-nokta{opacity:.55;box-shadow:none}",
     ".il-oge[aria-current=\"true\"]{cursor:default;background:color-mix(in srgb,var(--il-raf) 10%,transparent)}",
     ".il-oge[aria-current=\"true\"] .il-baslik{font-weight:700}",
-    ".il-bos{padding:14px 16px 18px;opacity:.6;font-size:11px;line-height:1.5}"
+    ".il-bos{padding:14px 16px 18px;opacity:.6;font-size:0.6875rem;line-height:1.5}"
   ];
   function kurallariKur(){
     try{
@@ -155,7 +155,8 @@ try{ window.LISTE_BASLADI = true; }catch(e){}
      raf degil DOKUNULAN raf. Acik olan raf pasif: sarki atlamaz. */
   function sec(li){
     try{
-      if(!(li instanceof HTMLElement) || li.getAttribute('aria-current') === 'true') return;
+      if(!(li instanceof HTMLElement)) return;
+      if(li.getAttribute('aria-current') === 'true'){ kapa(); return; }
       const o = ogeler[+li.dataset.i]; if(!o) return;
       try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){ yut(e); }
       if(radyoMu()){
@@ -170,6 +171,10 @@ try{ window.LISTE_BASLADI = true; }catch(e){}
       try{ modAdiGoster(); halkaYak(o.ad); geciciAdGoster(o.ad); }catch(e){ yut(e); }
       try{ rafBaslatPlanla(); }catch(e){ yut(e); }
       calanIsaretle();
+      /* SECILINCE KAPANIR (3 Eylul, kullanici): "istasyon secildiginde
+         de o pencere kapansin". Liste bir secim menusu; secim yapildi,
+         isi bitti. Acik olan rafa dokunmak da kapatir (asagida). */
+      kapa();
     }catch(e){ yut(e); }
   }
 
@@ -201,6 +206,42 @@ try{ window.LISTE_BASLADI = true; }catch(e){}
   }
   function acikMi(){ return !!kap && !kap.hidden; }
   function degistir(tetik){ if(acikMi()) kapa(); else ac(tetik); }
+
+  /* ── BOSLUGA DOKUNUS: KAPATIR VE DOKUNUSU YUTAR ─────────────────
+     3 Eylul, kullanici: "herhangi bir bosluga basinca da kapansin ...
+     o an atiyorum sarki atlamanin ustunde oldugundan bir daha sarki
+     geciyor. kullanicilarin alistigi kullanimi yap." Yani bosluga
+     dokunusun TEK isi kapatmak; altindaki tusa gecmez. Yakalama
+     asamasinda (capture) pencere duzeyinde dinleniyor ki uygulamanin
+     kendi pointerdown isleyicilerinden ONCE gorsun. Ayni jestin
+     kalan olaylari (pointerup, click, dokunma, fare taklitleri) de
+     yutuluyor; click gelince ya da 600 ms sonra birakiliyor. Tetigin
+     kendisi (ad / semboller) ve listenin ici disarida sayilmiyor. */
+  let _yutJest = false, _yutZaman = 0;
+  function disari(e){
+    try{
+      if(!acikMi()) return;
+      const t = e.target;
+      if(t instanceof Node && kap.contains(t)) return;
+      if(t instanceof Element && t.closest('[data-liste-bagli]')) return;
+      kapa();
+      _yutJest = true; _yutZaman = Date.now() + 600;
+      e.stopPropagation(); e.preventDefault();
+    }catch(err){ yut(err); }
+  }
+  function kalanYut(e){
+    try{
+      if(!_yutJest) return;
+      if(Date.now() > _yutZaman){ _yutJest = false; return; }
+      e.stopPropagation(); if(e.cancelable) e.preventDefault();
+      if(e.type === 'click') _yutJest = false;
+    }catch(err){ yut(err); }
+  }
+  try{
+    window.addEventListener('pointerdown', disari, {capture:true, passive:false});
+    ['pointerup','click','touchstart','touchend','mousedown','mouseup'].forEach(t=>
+      window.addEventListener(t, kalanYut, {capture:true, passive:false}));
+  }catch(e){ yut(e); }
 
   /* ── JEST: BASILI TUT, SURT, BIRAK ─────────────────────────────────
      Tetigin pointerdown'i listeyi acar; parmak kalkmadan listenin

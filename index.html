@@ -95,13 +95,13 @@
   .hit:focus-visible{outline:1px solid rgba(53,224,216,.35);outline-offset:10px;}
   #rapor{position:fixed;top:calc(10px + env(safe-area-inset-top, 0px));right:calc(10px + env(safe-area-inset-right, 0px));z-index:80;max-height:80vh;overflow:auto;
     background:rgba(4,6,8,.92);border:1px solid #1c232b;color:#cfe;font-family:'Share Tech Mono',monospace;
-    font-size:11px;line-height:1.5;padding:10px 12px;display:none;min-width:220px;letter-spacing:.02em;}
+    font-size:0.6875rem;line-height:1.5;padding:10px 12px;display:none;min-width:220px;letter-spacing:.02em;}
   #rapor.on{display:block;}
   #rapor h4{margin:0 0 6px;color:#35e0d8;font-weight:400;letter-spacing:.1em;}
   #rapor .ok{color:#7fe0c8;} #rapor .fail{color:#e88;} #rapor .dead{color:#a55;text-decoration:line-through;}
   #rapor .row{display:flex;justify-content:space-between;gap:10px;}
-  #rapor .row.baslik{margin-top:7px;opacity:.5;letter-spacing:.22em;font-size:9px;}
-  #rapor .row.altsatir{opacity:.55;font-size:9.5px;}
+  #rapor .row.baslik{margin-top:7px;opacity:.5;letter-spacing:.22em;font-size:0.5625rem;}
+  #rapor .row.altsatir{opacity:.55;font-size:0.59375rem;}
   #rapor .alt{color:#8fb3ba;}
   #rapor .row.baslik:first-child{margin-top:0;}
   #rapor small{color:#556;}
@@ -115,7 +115,7 @@
      Her parça bir sembol; konum JS'ten (bekleGenisligiAyarla) diskin gerçek
      yerine göre veriliyor, sabit sayı yok. */
   #bekle{position:fixed;z-index:76;display:block;left:50%;transform:translateX(-50%);
-    font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0;color:#7fe0c8;
+    font-family:'Share Tech Mono',monospace;font-size:0.625rem;letter-spacing:0;color:#7fe0c8;
     text-shadow:0 0 16px rgba(90,220,210,.30);pointer-events:none;user-select:none;
     opacity:0;transition:opacity .35s;white-space:nowrap;line-height:1;
     width:min(64vw,300px);}
@@ -148,11 +148,11 @@
     font-family:'Share Tech Mono',ui-monospace,monospace;
     opacity:0;transition:opacity .4s ease;}
   #agyok.on{display:flex;opacity:1;}
-  #agyok .ay-ad{font-size:12px;letter-spacing:.30em;color:#e8a982;}
+  #agyok .ay-ad{font-size:0.75rem;letter-spacing:.30em;color:#e8a982;}
   #agyok .ay-not{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
-    font-size:12px;line-height:1.45;color:rgba(244,247,250,.62);}
+    font-size:0.75rem;line-height:1.45;color:rgba(244,247,250,.62);}
   #agyok .ay-tekrar{pointer-events:auto;appearance:none;-webkit-appearance:none;margin-top:2px;
-    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.26em;
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.6875rem;letter-spacing:.26em;
     color:#cfe9e4;background:rgba(8,16,18,.65);border:1px solid rgba(150,200,195,.35);
     border-radius:999px;padding:9px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   #agyok .ay-tekrar:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
@@ -174,16 +174,16 @@
     font-family:'Share Tech Mono',ui-monospace,monospace;
     opacity:0;transition:opacity .4s ease;}
   #hata.on{display:flex;opacity:1;}
-  #hata .ht-ad{font-size:12px;letter-spacing:.30em;color:#e89a82;}
+  #hata .ht-ad{font-size:0.75rem;letter-spacing:.30em;color:#e89a82;}
   #hata .ht-not{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
-    font-size:12px;line-height:1.45;color:rgba(244,247,250,.62);}
+    font-size:0.75rem;line-height:1.45;color:rgba(244,247,250,.62);}
   #hata .ht-sira{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:2px;}
   #hata button{pointer-events:auto;appearance:none;-webkit-appearance:none;
-    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.2em;
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.6875rem;letter-spacing:.2em;
     color:#cfe9e4;background:rgba(8,16,18,.65);border:1px solid rgba(150,200,195,.35);
     border-radius:999px;padding:9px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   #hata button:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
-  #hata .ht-posta{font-family:'Share Tech Mono',ui-monospace,monospace;font-size:10.5px;
+  #hata .ht-posta{font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.65625rem;
     letter-spacing:.08em;color:rgba(244,247,250,.42);margin-top:2px;}
   /* Arama açıkken sağ alttaki parça paneli ve REC geri çekilir: sonuç listesi
      onların üstüne biniyordu, iki yazı iç içe okunuyordu. */
@@ -326,7 +326,7 @@
      baştan başlıyor mu? Cihazda ölçülüp yazılıyor, 9 saniye sonra
      kayboluyor. Sorun yoksa hiç çıkmıyor. */
   #kayitBilgi{position:fixed;left:calc(var(--kx) + env(safe-area-inset-left, 0px));bottom:104px;
-    z-index:79;font-family:'Share Tech Mono',ui-monospace,monospace;font-size:9px;
+    z-index:79;font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.5625rem;
     letter-spacing:.04em;color:rgba(244,247,250,.72);pointer-events:none;
     /* pre-wrap + küçük punto: rapor satırları ekrandan TAŞIP KESİLMESİN.
        Tam da okumam gereken alanlar (CAP, FILE) satır sonundaydı. */
@@ -369,7 +369,7 @@
     100% {transform:translate(var(--fr,90px),0) scale(.94);}
   }
   #fxEl .yazi{position:absolute;left:0;transform:translateX(-50%);white-space:nowrap;
-    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.26em;
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.6875rem;letter-spacing:.26em;
     text-indent:.26em;color:rgba(210,246,238,.5);text-shadow:0 2px 12px rgba(0,0,0,.8);}
   #kamCubuk{position:fixed;z-index:78;display:none;align-items:center;
     height:18px;width:var(--ug,138px);cursor:pointer;touch-action:none;
@@ -489,7 +489,7 @@
        plan enstantanesi maliyeti çıkarıyordu. Zemini biraz koyulaştırmak
        aynı işi görüyor. */
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
-    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.18em;color:#7fa3ab;
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.59375rem;letter-spacing:.18em;color:#7fa3ab;
     cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;white-space:nowrap;flex:none;
     transition:color .2s,border-color .2s,background .2s;}
   /* PARMAK ALANI: 'rec' dokunma kontrolunde yoktu; eklenince 62x31
@@ -550,7 +550,7 @@
   #fotoResim{max-width:100%;max-height:calc(100% - 74px);object-fit:contain;
     border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6);}
   #fotoOnizle .fo-sira{display:flex;gap:12px;}
-  #fotoOnizle button{font:inherit;font-size:13px;letter-spacing:.14em;
+  #fotoOnizle button{font:inherit;font-size:0.8125rem;letter-spacing:.14em;
     padding:10px 20px;border-radius:999px;cursor:pointer;
     background:rgba(10,18,22,.9);color:#a9cbd2;
     border:1px solid rgba(120,180,180,.28);}
@@ -593,11 +593,11 @@
   /* EARTH SOUNDS / AMBIANCE'ta müzik olanın künyesi: kanal adının ÜSTÜNDE,
      küçük modern beyaz yazı. Künye yoksa hiç yer kaplamaz. */
   #np .np-ust{display:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
-    font-size:11.5px;font-weight:400;letter-spacing:.012em;line-height:1.3;
+    font-size:0.71875rem;font-weight:400;letter-spacing:.012em;line-height:1.3;
     color:rgba(244,247,250,.8);text-shadow:0 1px 10px rgba(0,0,0,.42);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:1px;}
   #np .np-ust.var{display:block;}
-  #np .np-lab{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.32em;color:#7fa3ab;}
+  #np .np-lab{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:0.6875rem;letter-spacing:.32em;color:#7fa3ab;}
   /* Sağ alttaki çalma göstergesi KALDIRILDI: aynı gösterge sağ üstte
      aktif kanal adının solunda zaten duruyor, ikisi gereksizdi.
      Onun yerini ◁ (bir önceki) düğmesi aldı. */
@@ -612,7 +612,7 @@
     transition:transform .08s linear;}
   /* Bilgi yazıları: künye satırıyla AYNI dil — küçük, modern, beyaz.
      Uzunsa alt satıra geçer (en fazla 2 satır). Uzaylı semboller mono kalır. */
-  #np .np-ad{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;font-size:15.5px;font-weight:400;letter-spacing:.01em;
+  #np .np-ad{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;font-size:0.96875rem;font-weight:400;letter-spacing:.01em;
     color:rgba(244,247,250,.9);text-shadow:0 1px 10px rgba(0,0,0,.5);
     min-height:1.3em;line-height:1.32;max-width:100%;
     /* KIRPMA YOK. Onceden ucuncu satirdan sonra "..." ile kesiliyordu;
@@ -624,7 +624,7 @@
 
   body.t-liste #np .np-eq i{background:#c8bcd2;box-shadow:0 0 5px rgba(186,172,204,.5);}
 
-  #np .np-sanatci{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;font-size:11.5px;font-weight:400;letter-spacing:.012em;
+  #np .np-sanatci{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;font-size:0.71875rem;font-weight:400;letter-spacing:.012em;
     color:rgba(244,247,250,.62);text-shadow:0 1px 9px rgba(0,0,0,.5);line-height:1.3;max-width:100%;
     /* Sanatci adi da kirpilmiyor: atifin ikinci yarisi bu. */
     white-space:normal;overflow-wrap:anywhere;}
@@ -638,7 +638,7 @@
      seferlik -- surekli oynayan bir sey degil, "yeni bir sey oldu"
      demenin en kisa yolu. */
   #np .np-parca{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
-    font-size:12.5px;font-weight:400;letter-spacing:.015em;
+    font-size:0.78125rem;font-weight:400;letter-spacing:.015em;
     color:rgba(200,228,246,.72);text-shadow:0 1px 9px rgba(0,0,0,.42);
     line-height:1.34;max-width:100%;margin-top:2px;
     white-space:normal;overflow-wrap:anywhere;
@@ -664,15 +664,15 @@
     transition:opacity .2s ease, transform .26s cubic-bezier(.2,.9,.3,1);}
   #parcaKart.acik{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
   #parcaKart .pk-sanatci{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
-    font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+    font-size:0.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
     color:rgba(169,216,242,.78);line-height:1.4;margin-bottom:5px;
     white-space:normal;overflow-wrap:anywhere;}
   #parcaKart .pk-sanatci:empty{display:none;}
   #parcaKart .pk-ad{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
-    font-size:19px;font-weight:400;letter-spacing:.005em;line-height:1.28;
+    font-size:1.1875rem;font-weight:400;letter-spacing:.005em;line-height:1.28;
     color:rgba(245,249,252,.95);white-space:normal;overflow-wrap:anywhere;}
   @media (max-width:480px){ #parcaKart{max-width:86vw;padding:12px 14px 13px;}
-    #parcaKart .pk-ad{font-size:17px;} }
+    #parcaKart .pk-ad{font-size:1.0625rem;} }
   @media (prefers-reduced-motion:reduce){
     #parcaKart{transition:opacity .16s ease;transform:none;}
     #parcaKart.acik{transform:none;} }
@@ -684,12 +684,12 @@
   @media (prefers-reduced-motion:reduce){
     #np .np-parca{transition:opacity .2s ease;transform:none;}
     #np .np-parca.gor{transform:none;} }
-  @media (max-width:480px){ #np .np-parca{font-size:11.5px;} }
+  @media (max-width:480px){ #np .np-parca{font-size:0.71875rem;} }
   /* En alt satır: sanatçının SOLUNDA, sesin nereden geldiği.
      Küçük ve silik — bilgi olsun ama okumayı bölmesin. */
   #np .np-alt{display:flex;align-items:baseline;justify-content:flex-end;gap:9px;max-width:100%;}
   #np .np-kaynak{flex:none;font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:8.5px;letter-spacing:.2em;line-height:1.3;white-space:nowrap;
+    font-size:0.53125rem;letter-spacing:.2em;line-height:1.3;white-space:nowrap;
     color:rgba(244,247,250,.34);text-shadow:0 1px 8px rgba(0,0,0,.5);
     margin-right:-.2em;}   /* son harften sonraki bosluk: bkz. #ust .kanal.ad */
   #np .np-kaynak:empty{display:none;}
@@ -700,18 +700,18 @@
      oldugu okunamiyordu. CC BY-NC-SA 4.0 ile CC BY 4.0 ayni sey degil;
      yarim yazilan bir lisans adi yanlis bilgi. Sariyor. */
   #np .np-lisans{display:none;font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:8px;letter-spacing:.18em;line-height:1.3;
+    font-size:0.5rem;letter-spacing:.18em;line-height:1.3;
     white-space:normal;overflow-wrap:anywhere;max-width:100%;
     color:rgba(244,247,250,.26);text-shadow:0 1px 8px rgba(0,0,0,.5);}
   /* Lisans satirina negatif sag bosluk VERILMEDI: 8px'te .18em = 1.4px,
      goze gorunmuyor ama bu satir blogun sag kenarini olcen testin
      dayanagi. Gorunmeyen bir kazanc icin olcum noktasini bozmuyoruz. */
   #np .np-lisans.var{display:block;}
-  @media (max-width:480px){ #np .np-kaynak{font-size:8px;letter-spacing:.16em;}
-    #np .np-lisans{font-size:7.5px;letter-spacing:.14em;} }
-  @media (max-width:480px){ #np{max-width:min(88vw,340px);} #np .np-ad{font-size:13.5px;}
-    #np .np-sanatci{font-size:11px;} #np .np-lab{font-size:10px;}
-    #np .np-ust{font-size:11px;} }
+  @media (max-width:480px){ #np .np-kaynak{font-size:0.5rem;letter-spacing:.16em;}
+    #np .np-lisans{font-size:0.46875rem;letter-spacing:.14em;} }
+  @media (max-width:480px){ #np{max-width:min(88vw,340px);} #np .np-ad{font-size:0.84375rem;}
+    #np .np-sanatci{font-size:0.6875rem;} #np .np-lab{font-size:0.625rem;}
+    #np .np-ust{font-size:0.6875rem;} }
   /* ── üst köşe: hareketli nebula + ORBITAPE mood ── */
   /* ── SAĞ ÜST: üç kanal alt alta, hepsi aynı ölçüde (eski ORBITAPE ölçüsü) ── */
   #ust{position:fixed;z-index:70;pointer-events:none;user-select:none;
@@ -733,7 +733,7 @@
      daraltıldı, yoksa iri puntoda satır çok uzuyordu. */
   #ust .kanal{pointer-events:auto;cursor:pointer;white-space:nowrap;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:23px;font-weight:700;letter-spacing:.30em;line-height:1;
+    font-size:1.4375rem;font-weight:700;letter-spacing:.30em;line-height:1;
     text-shadow:none;padding:4px 2px;margin:-4px 0;
     -webkit-tap-highlight-color:transparent;transition:color .25s, text-shadow .25s;}
   /* ── SAG KENAR: KUTU DEGIL MUREKKEP ──────────────────────────────
@@ -897,7 +897,7 @@
   #ara .cizgi:hover svg{opacity:1;}
   #ara.acik .cizgi{display:none;}
   /* etiket aktifken: kapalıyken de kelime görünsün, çizgi biraz parlasın */
-  #ara .etiket{order:2;margin-bottom:3px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.26em;
+  #ara .etiket{order:2;margin-bottom:3px;font-family:'Share Tech Mono',monospace;font-size:0.625rem;letter-spacing:.26em;
     color:currentColor;opacity:.82;cursor:pointer;padding:1px 0 2px;
     max-width:min(70vw,240px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     -webkit-tap-highlight-color:transparent;}
@@ -965,7 +965,7 @@
   /* PUNTO KUTUYA YAZILIYOR, yaziya degil: cubuk tuvalinin 'em'i de
      ayni degeri gorsun -- olculeri sabit piksel yerine yazinin
      puntosuna baglayabilelim. Ikisi de ayni degiskenden okuyor. */
-  body:not(.mood) #modKut{font-size:var(--modAdPunto, 14px);}
+  body:not(.mood) #modKut{font-size:var(--modAdPunto, 0.875rem);}
   /* ── TEXT-INDENT YOK ─────────────────────────────────────────
      Harf arasi (letter-spacing) son harften SONRA da bosluk birakir;
      text-indent onu dengelemek icin yaziyi ayni kadar SAGA itiyordu.
@@ -975,7 +975,7 @@
      baslari tam oturmali" dedi ve haklıydi.
      Indent kalkinca ilk harfin murekkebi kutunun sol kenarinda
      basliyor; cubuklar da left:0'da. Ikisi ayni dikeyde. */
-  body:not(.mood) #modAd{font-size:var(--modAdPunto, 14px);
+  body:not(.mood) #modAd{font-size:var(--modAdPunto, 0.875rem);
     letter-spacing:.30em;text-indent:0;}
   /* ── CUBUK AKISTAN CIKIYOR ────────────────────────────────────
      Cubuk adin genisligini almali. Akista birakilinca TERSI oluyor:
@@ -1008,7 +1008,7 @@
   #modAd,#ust .kanal.ad{-webkit-tap-highlight-color:transparent;touch-action:none;}
   #modAd{pointer-events:none;user-select:none;white-space:nowrap;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-weight:400;
-    font-size:12px;letter-spacing:.30em;text-indent:.30em;line-height:1;
+    font-size:0.75rem;letter-spacing:.30em;text-indent:.30em;line-height:1;
     color:currentColor;opacity:0;text-shadow:none;
     transition:opacity .22s ease, color .22s ease;}
   #modAd.gor{opacity:.72;}
@@ -1052,7 +1052,7 @@
        degismedi (opaklik .56) -- buyuk ve silik, kalin degil. */
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     font-weight:300;
-    font-size:34px;letter-spacing:.42em;text-indent:.42em;line-height:1;
+    font-size:2.125rem;letter-spacing:.42em;text-indent:.42em;line-height:1;
     transform:translateX(-50%) scale(.94, 1.28);
     transform-origin:50% 50%;
     color:currentColor;opacity:0;text-shadow:none;
@@ -1087,8 +1087,8 @@
   /* Önizleme parmakla geziniyor: zemin geçişi 0.8s yerine 0.3s,
      yoksa halkadan halkaya geçerken renk arkadan yetişiyor. */
   body.oniz{transition:background-color .30s ease, background-image .30s ease;}
-  @media (max-width:480px){ #modGez{font-size:26px;letter-spacing:.30em;text-indent:.30em;} }
-  @media (max-width:480px){ #modAd{font-size:11px;letter-spacing:.26em;text-indent:.26em;} }
+  @media (max-width:480px){ #modGez{font-size:1.625rem;letter-spacing:.30em;text-indent:.30em;} }
+  @media (max-width:480px){ #modAd{font-size:0.6875rem;letter-spacing:.26em;text-indent:.26em;} }
   #ara .kutu{display:none;}
   #ara.acik .cizgi{display:none;}
   /* Çizgi/giriş satırı kanal adlarıyla AYNI genişlikte (soldan taşmıyor).
@@ -1099,7 +1099,7 @@
   /* SİL (×): yazı sağa yaslı olduğu için sol uçta duruyor, yolu kesmiyor. */
   #ara .sil{flex:0 0 auto;width:22px;height:22px;display:none;align-items:center;justify-content:center;
     background:transparent;border:0;padding:0;cursor:pointer;color:currentColor;opacity:.55;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:17px;line-height:1;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:1.0625rem;line-height:1;
     -webkit-tap-highlight-color:transparent;}
   #ara.doluyken .sil{display:flex;}
   #ara .sil:hover{opacity:1;}
@@ -1108,10 +1108,10 @@
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     /* 16px ZORUNLU: iOS Safari daha küçük yazılı girişe dokununca sayfayı
        otomatik yakınlaştırıyor -> çerçeve genişliyor, halka sola kayıyordu. */
-    font-size:16px;-webkit-appearance:none;border-radius:0;}
+    font-size:1rem;-webkit-appearance:none;border-radius:0;}
   #ara input::-webkit-search-cancel-button{display:none;}
   #ara input::placeholder{color:currentColor;opacity:.42;
-    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.30em;}
+    font-family:'Share Tech Mono',monospace;font-size:0.6875rem;letter-spacing:.30em;}
   /* Küçük ve silik: arama sonuçlarının okunmasını bölmüyor ama
      inceleyen biri iki saniyede buluyor. */
   /* Iki yasal baglanti alt alta degil YAN YANA: alt satir zaten
@@ -1119,7 +1119,7 @@
   #ara .np-yasal + .np-yasal{margin-top:4px;}
   #ara .np-yasal{display:block;margin-top:9px;padding:2px 0;
     font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:8.5px;letter-spacing:.2em;text-decoration:none;
+    font-size:0.53125rem;letter-spacing:.2em;text-decoration:none;
     color:rgba(244,247,250,.32);transition:color .2s;}
   #ara .np-yasal:hover{color:rgba(244,247,250,.7);}
   #ara .sonuc{margin-bottom:8px;max-height:min(34vh,214px);overflow-y:auto;-webkit-overflow-scrolling:touch;
@@ -1131,11 +1131,11 @@
   #ara .st{padding:5px 11px;cursor:pointer;text-align:left;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;}
   #ara .st:hover{background:rgba(255,255,255,.05);}
-  #ara .st b{display:block;font-weight:400;font-size:12px;line-height:1.3;
+  #ara .st b{display:block;font-weight:400;font-size:0.75rem;line-height:1.3;
     color:rgba(244,247,250,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  #ara .st i{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
+  #ara .st i{display:block;font-style:normal;font-size:0.59375rem;line-height:1.3;
     color:rgba(244,247,250,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  #ara .bos{padding:9px 11px;text-align:left;font-size:10px;letter-spacing:.2em;
+  #ara .bos{padding:9px 11px;text-align:left;font-size:0.625rem;letter-spacing:.2em;
     font-family:'Share Tech Mono',monospace;color:rgba(244,247,250,.38);}
 
   /* RENK DÖNÜŞÜ ARTIK CSS ANİMASYONU DEĞİL (bkz. renkDonusu(), JS tarafı).
@@ -1294,7 +1294,7 @@
      Yildizla ayni yukseklikte (32px) ama dar: satirin dikey
      hizasini bozmasin. Dokunulacak bir sey degil, bilgidir. */
   #npBayrak{display:flex;align-items:center;justify-content:center;
-    height:32px;font-size:15px;line-height:1;flex:none;
+    height:32px;font-size:0.9375rem;line-height:1;flex:none;
     pointer-events:none;user-select:none;
     /* Emoji bayrak bazi masaustu sistemlerinde iki harf olarak
        cizilir (ABD -> "US"). O da dogru bilgi; kirilmiyor. */
@@ -1516,9 +1516,9 @@
     box-shadow:0 0 20px rgba(90,220,210,.20), inset 0 0 14px rgba(0,0,0,.7);}
   body.mood #mark.radio .neb{box-shadow:0 0 20px rgba(255,140,90,.22), inset 0 0 14px rgba(0,0,0,.7);}
   body.mood #mark.liste .neb{box-shadow:0 0 20px rgba(176,164,192,.22), inset 0 0 14px rgba(0,0,0,.7);}
-  body.mood #mark .wm{font-family:'Share Tech Mono',monospace;color:#8ff0dd;font-size:15px;letter-spacing:.34em;
+  body.mood #mark .wm{font-family:'Share Tech Mono',monospace;color:#8ff0dd;font-size:0.9375rem;letter-spacing:.34em;
     line-height:1;text-shadow:0 0 13px rgba(90,220,210,.38);}
-  body.mood #mark .wm small{display:block;margin-top:5px;font-size:8.5px;letter-spacing:.34em;color:#5f8189;text-shadow:none;}
+  body.mood #mark .wm small{display:block;margin-top:5px;font-size:0.53125rem;letter-spacing:.34em;color:#5f8189;text-shadow:none;}
   body.mood #mark.radio .wm{color:#ffb98a;text-shadow:0 0 13px rgba(255,140,90,.4);}
   body.mood #mark.radio .wm small{color:#a76e54;}
   body.mood #mark.liste .wm{color:#cfe08a;text-shadow:0 0 13px rgba(200,220,110,.4);}
@@ -1659,7 +1659,7 @@
      dokunmuyor. */
   #kipKisayol .ad{
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:12px;font-weight:700;letter-spacing:.30em;line-height:1;
+    font-size:0.75rem;font-weight:700;letter-spacing:.30em;line-height:1;
     margin-right:-.30em;white-space:nowrap;
     /* ARSIVDEKI ETIKET = "RADIO": gidecegi yerin, yani radyonun
        kendi parlak markasi. Ucu de bizim ana renklerimiz, sabit. */
@@ -2380,7 +2380,7 @@
     box-shadow:inset 0 1px 2px var(--g,rgba(0,0,0,.4)),
                inset 0 -1px 2px var(--i,rgba(255,255,255,.5));}
   .deri-izgara button.kapa{display:grid;place-items:center;background:#15181c;
-    color:#9aa3ab;font-size:8px;letter-spacing:.12em;}
+    color:#9aa3ab;font-size:0.5rem;letter-spacing:.12em;}
   .deri-izgara button.kapa::after{display:none;}
   .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
@@ -2524,7 +2524,7 @@
      degiller. */
   /* .26 -> .58: koyu panelde 2,17:1 olculdu, esik 4,5. */
   #ayar h5{margin:14px 0 2px;font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:8.5px;letter-spacing:.34em;font-weight:400;
+    font-size:0.53125rem;letter-spacing:.34em;font-weight:400;
     color:rgba(244,247,250,.58);}
   #ayar h5:first-of-type{margin-top:10px;}
 
@@ -2541,9 +2541,9 @@
     transition:border-color .25s, background .25s;}
   #ayar .sat.kapi .kapi-yazi{display:flex;flex-direction:column;gap:3px;min-width:0;}
   #ayar .sat.kapi b{font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:15px;letter-spacing:.26em;font-weight:400;color:#5adcd2;
+    font-size:0.9375rem;letter-spacing:.26em;font-weight:400;color:#5adcd2;
     text-indent:.26em;}
-  #ayar .sat.kapi i{font-style:normal;font-size:9px;letter-spacing:.16em;
+  #ayar .sat.kapi i{font-style:normal;font-size:0.5625rem;letter-spacing:.16em;
        tutmak isteniyorsa yolu opaklik degil boy olurdu. */
     color:rgba(244,247,250,.60);font-family:'Share Tech Mono',ui-monospace,monospace;}
   /* ACIKKEN: cerceve ve yazi FX tarafinin morumsu rengine geciyor --
@@ -2583,7 +2583,7 @@
   #ayar .sat{display:flex;align-items:center;justify-content:space-between;
     gap:12px;padding:9px 0;cursor:pointer;
     font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:11px;letter-spacing:.16em;color:rgba(244,247,250,.80);
+    font-size:0.6875rem;letter-spacing:.16em;color:rgba(244,247,250,.80);
     border-top:1px solid rgba(255,255,255,.06);
     -webkit-tap-highlight-color:transparent;}
   #ayar .sat:first-of-type{border-top:none;}
@@ -2660,7 +2660,7 @@
   body.deri #ayar .durum .cvp.evet{
     border-color:var(--d-vurgu, var(--d-marka));
     background:var(--d-tus-zem, transparent);}
-  #ayar .durum{flex:0 0 auto;font-size:10px;letter-spacing:.20em;
+  #ayar .durum{flex:0 0 auto;font-size:0.625rem;letter-spacing:.20em;
     color:rgba(244,247,250,.30);}
   #ayar .sat.acik .durum{color:currentColor;opacity:.95;}
   #ayar .sat.islem .durum{color:rgba(244,247,250,.55);}
@@ -2688,7 +2688,7 @@
     transform:translateX(-50%) translateY(6px);
     max-width:min(76vw,320px);text-align:center;
     font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:10px;letter-spacing:.09em;line-height:1.65;
+    font-size:0.625rem;letter-spacing:.09em;line-height:1.65;
     color:rgba(244,247,250,.80);white-space:pre-wrap;
     background:rgba(4,8,10,.90);border:1px solid rgba(255,255,255,.09);
     border-radius:8px;padding:9px 13px;
@@ -2697,7 +2697,7 @@
   #kisaNot.var{opacity:1;transform:translateX(-50%) translateY(0);}
   /* Baslik satiri: kirmizimsi, cunku bu bir RED. Ama uyari degil --
      bir kural, o yuzden alarm rengi degil sonuk bir mercan. */
-  #kisaNot b{display:block;font-weight:400;font-size:9px;
+  #kisaNot b{display:block;font-weight:400;font-size:0.5625rem;
     letter-spacing:.26em;color:#e0836f;margin-bottom:6px;}
   @media (prefers-reduced-motion: reduce){
     #kisaNot{transition:opacity .28s ease;transform:translateX(-50%);}
@@ -2756,10 +2756,10 @@
   @keyframes turNabiz{0%{box-shadow:0 0 0 0 rgba(140,235,220,.35);}70%{box-shadow:0 0 0 18px rgba(140,235,220,0);}100%{box-shadow:0 0 0 0 rgba(140,235,220,0);}}
   #tur .yazi{position:absolute;left:50%;transform:translateX(-50%);
     max-width:min(78vw,420px);text-align:center;
-    font-size:15px;line-height:1.5;letter-spacing:.06em;color:#dff6f1;
+    font-size:0.9375rem;line-height:1.5;letter-spacing:.06em;color:#dff6f1;
     text-shadow:0 2px 14px rgba(0,0,0,.9);opacity:0;transition:opacity .35s ease;}
   #tur .yazi.gor{opacity:.96;}
-  #tur .yazi b{display:block;font-size:11px;letter-spacing:.28em;color:#7fd8c9;margin-bottom:7px;font-weight:400;}
+  #tur .yazi b{display:block;font-size:0.6875rem;letter-spacing:.28em;color:#7fd8c9;margin-bottom:7px;font-weight:400;}
   /* Alt satır REC/CAM ve arama şeridinin ÜSTÜNDE duruyor: onların
      üstüne binince hem kutu hem büyüteç okunmuyordu. */
   #tur .alt{position:absolute;left:0;right:0;bottom:calc(96px + var(--dip-pay));
@@ -2771,22 +2771,22 @@
   #tur .alt{display:none;}
   #tur .alt.gor{display:flex;}
   #tur .kutu{display:flex;align-items:center;gap:9px;pointer-events:auto;cursor:pointer;
-    font-size:11px;letter-spacing:.13em;color:#9fc4c0;user-select:none;}
+    font-size:0.6875rem;letter-spacing:.13em;color:#9fc4c0;user-select:none;}
   #tur .kutu i{width:15px;height:15px;border:1.4px solid rgba(150,200,195,.55);border-radius:3px;
     display:block;position:relative;}
   #tur .kutu.sec i::after{content:'';position:absolute;left:3.5px;top:.5px;width:5px;height:9px;
     border:solid #8ff0dd;border-width:0 1.7px 1.7px 0;transform:rotate(42deg);}
-  #tur .atla{pointer-events:auto;cursor:pointer;font-size:12px;letter-spacing:.26em;color:#cfe9e4;
+  #tur .atla{pointer-events:auto;cursor:pointer;font-size:0.75rem;letter-spacing:.26em;color:#cfe9e4;
     border:1px solid rgba(150,200,195,.35);border-radius:999px;padding:8px 18px;
     background:rgba(8,16,18,.55);}
   #tur .atla:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
   #tur .cizgi{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:6px;}
   #tur .cizgi i{width:14px;height:2px;background:rgba(160,210,205,.25);border-radius:2px;}
   #tur .cizgi i.on{background:rgba(150,240,225,.85);}
-  @media (max-width:480px){ #tur .yazi{font-size:14px;} #tur .atla{font-size:11px;padding:7px 15px;} }
+  @media (max-width:480px){ #tur .yazi{font-size:0.875rem;} #tur .atla{font-size:0.6875rem;padding:7px 15px;} }
   /* KISA EKRAN: halka ile alt satır arasındaki bant dar. Yazı küçülür,
      ilerleme noktaları gizlenir — yoksa üst üste biniyorlar. */
-  @media (max-height:720px){ #tur .yazi{font-size:12px;line-height:1.36;} #tur .yazi b{font-size:10px;margin-bottom:5px;} }
+  @media (max-height:720px){ #tur .yazi{font-size:0.75rem;line-height:1.36;} #tur .yazi b{font-size:0.625rem;margin-bottom:5px;} }
 
 
   /* AKTİF kanal: kendi temasının rengiyle parlar, ötekiler geri çekilir */
@@ -2795,7 +2795,7 @@
   #ust .kanal[data-mod="radio"].on:not(.ad){color:#8ff0dd;text-shadow:0 0 13px rgba(90,220,210,.45);}
   @media (max-width:480px){
     #ust{top:calc(13px + env(safe-area-inset-top, 0px));gap:7px;}
-    #ust .kanal{font-size:20px;letter-spacing:.26em;}
+    #ust .kanal{font-size:1.25rem;letter-spacing:.26em;}
     /* Anahtarin etiketi markayla AYNI harf araligini kullaniyor;
        marka dar ekranda .30 -> .26 daraliyor, etiket de daralmali.
        Yoksa "aynisi olsun" sozu genis ekranda tutup dar ekranda
@@ -2919,7 +2919,7 @@
     #geri,#ileri,#dur,#duraklat,#fav,#favAc,#mute{width:34px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
-    #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:9px;letter-spacing:.14em;}
+    #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:0.5625rem;letter-spacing:.14em;}
   }
 
   /* ── MEZAR TASI: 28px'LIK TASIMA TUSLARI ─────────────────────
@@ -3175,15 +3175,17 @@
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
-  <!-- FIRCA: deri galerisi (deri_galeri.js, istek uzerine). Radyoda uc
-       cizginin altinda, SOUND BANKS'te ustunde; saat tusu onun altinda. -->
+  <!-- PALET: deri galerisi (deri_galeri.js, istek uzerine). Radyoda uc
+       cizginin altinda, SOUND BANKS'te ustunde; saat tusu onun altinda.
+       Simge ressam paleti: "firca iyi degil" (3 Eylul). Dokunus dongusu
+       kapali -> tam galeri -> serit -> kapali (deriGaleriDegistir). -->
   <div id="deriFirca" role="button" tabindex="0" aria-label="Skins"
-       aria-expanded="false" aria-controls="deriGaleri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4.5l5.5 5.5L11 18.5 5.5 13z"/><path d="M5.5 13c-2.2 0-3.5 1.6-3.5 3.6 0 1.4-.6 2.4-1.5 3 2.6.5 6-.4 7-2.5"/></svg></div>
+       aria-expanded="false" aria-controls="deriGaleri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 1.9-.8 1.9-1.6 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-.9.7-1.6 1.6-1.6h1.8a4.2 4.2 0 0 0 4.2-4.2C20.5 6.7 16.7 3.5 12 3.5z"/><circle cx="7.4" cy="11.2" r="1.15" fill="currentColor" stroke="none"/><circle cx="10.2" cy="7.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="14.8" cy="7.2" r="1.15" fill="currentColor" stroke="none"/><circle cx="17.4" cy="10.8" r="1.15" fill="currentColor" stroke="none"/></svg></div>
   <!-- SAAT: uyku sayaci + sabah alarmi. Radyoda uc cizginin altinda,
        SOUND BANKS kipinde ustunde (yeri JS'te, _tutamakYerlestir).
        Panel ve mantik istek uzerine iniyor: saat.js. -->
   <div id="saatTus" role="button" tabindex="0" aria-label="Timer and alarm"
-       aria-expanded="false" aria-controls="saatPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M4 4l2.5 2M20 4l-2.5 2"/></svg></div>
+       aria-expanded="false" aria-controls="saatPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7.4"/><path d="M12 9.6V13l2.7 1.9"/><path d="M5.6 5.2 3 7.6M18.4 5.2 21 7.6"/><path d="M7.4 19.6 6.2 21M16.6 19.6 17.8 21"/></svg></div>
   <!-- ── KIP KISAYOLU ────────────────────────────────────────────
        SOUND BANKS kipindeyken radyoya donmek icin ayarlari acmak,
        en ustteki kapiyi bulmak ve anahtari cevirmek gerekiyordu:
@@ -3302,13 +3304,14 @@
          takilmalari icin). FX ve REC o kipte kapali. -->
     <div class="sat" data-ayar="arac" role="switch" tabindex="-1">
       <span>CAR MODE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- ── RINGS ONLY ─────────────────────────────────────────────
+    <!-- ── RING (eski adi RINGS ONLY; 3 Eylul, kullanici: "adi ring
+         olsun") ─────────────────────────────────────────────────
          Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
          zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
          kaliyor. Yalnizca deri acikken anlamli: deri kapaliyken
          zaten oyle duruyor. -->
     <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
-      <span>RINGS ONLY</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+      <span>RING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ── TANITIMLAR ACIK/KAPALI ────────────────────────────────
          Kullanicinin sozu: "tutoriallar bilen insan icin zulum
          olacaktir ... ve ayarlarda tutoriallari kapama tusu olsun."
@@ -5364,8 +5367,18 @@
   /* Kategori kipine geçmek için gereken basılı tutma süresi. Altında
      kalan her dokunuş "sıradaki ses" sayılıyor.
      300 -> 550: "biraz fazla basili tutar, hop degisiyor tur." 300 bir
-     dokunusa fazla yakindi; 550 "tuttugundan eminiz" esigi. */
-  const MOOD_TUT = 550;
+     dokunusa fazla yakindi; 550 "tuttugundan eminiz" esigi.
+     550 -> 420 (3 Eylul): "o sureyi cok uzatmissin." Artik SURTME de
+     kipi aciyor (asagida, MOOD_SURT); tutus "kilit" gibi: parmak
+     kipirdamadan durursa bu sure sonunda kip acilir. */
+  const MOOD_TUT = 420;
+  /* SURTME KIPI ACAR (3 Eylul): "surtmeye basladiginda otomatik ona
+     gecmen lazim." Parmak bu kadar px kayarsa sure beklenmeden
+     gezinme kipi aciliyor; parmak nereye giderse o raf parlar,
+     birakinca acilir. Esik 3x surukleme esigi (24px): basarken olan
+     ufak surtme ("onunla karismasin") bunun altinda kalir, o hala
+     dokunus sayilir. */
+  const MOOD_SURT = 24;
   var _moodAday = false, _moodBekle = null, _moodSonOlay = null;
   /* ── PARMAKLA HALKA GEZINME ──────────────────────────────────────
      Basili tut, halkalarda gez, birakinca o raf acilir.
@@ -12117,13 +12130,16 @@
     if(e.pointerType==='mouse' && !e.buttons){ basisiBirak(); return; }
     if(!pDown) return;
     _moodSonOlay = e;
-    /* KAYDIRMA KATEGORI ACMAZ, IPTAL EDER (3 Eylul): "parmagini
-       basarken bazen surtme oluyor, onunla karismasin." Sure dolmadan
-       kayan parmak tutusu iptal eder; kip yalnizca MOOD_TUT dolunca. */
+    /* SURTME KIPI ACAR (3 Eylul, ikinci karar): once "kaydirma
+       iptal eder" yazilmisti ("basarken surtme oluyor, karismasin");
+       sonuc: "bu sefer de kaydiramiyorum." Ikisi birden: ufak surtme
+       (MOOD_SURT altinda) dokunus sayilir, belirgin kaydirma sure
+       beklemeden gezinme kipini acar ve parmak nereye giderse o raf
+       parlar. Tutus (MOOD_TUT) kipirdamayan parmak icin kilit. */
     if(_moodAday && !_moodGez &&
-       (Math.abs(e.clientX-startX)>SUR_ESIK*1.6 || Math.abs(e.clientY-startY)>SUR_ESIK*1.6)){
+       (Math.abs(e.clientX-startX)>MOOD_SURT || Math.abs(e.clientY-startY)>MOOD_SURT)){
       if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
-      _moodAday = false;
+      moodGeziAc(e);
     }
     if(_moodGez){                                   // mood gezinmesi: FX'e girme
       e.preventDefault();
@@ -14245,6 +14261,15 @@
         }
       }catch(e){ _yut(e); }
     }
+    /* RING: ayni karede uygula. Iki kumanda var -- ayarlardaki
+       anahtar ve galerinin basligindaki RING tusu (deri_galeri.js,
+       halkaDegistir) -- ikisi de buraya geliyor. */
+    function halkaUygula(){
+      try{ deriUygula(); }catch(e){ _yut(e); }
+      try{ vizSize(); vizLoop(performance.now()); }catch(e){ _yut(e); }
+    }
+    try{ window.halkaDegistir = function(){
+      AYAR.halka = !AYAR.halka; ayarKaydet(); yaz(); halkaUygula(); }; }catch(e){ _yut(e); }
     const yaz = ()=>{
       yildizYaz();
       kut.querySelectorAll('.sat[role="switch"]').forEach(el=>{
@@ -14602,11 +14627,7 @@
          olcu, hemen ardindan ayni karede cizim. Tuval kisa bir
          sonumlemeyle geliyor (@keyframes halkaGel): kesme degil
          gecis. */
-      if(k === 'halka'){
-        try{ deriUygula(); }catch(e){ _yut(e); }
-        try{ vizSize(); vizLoop(performance.now()); }catch(e){ _yut(e); }
-        return;
-      }
+      if(k === 'halka'){ halkaUygula(); return; }
       /* SOUND BANKS: dunya degisiyor. Panel kapaniyor -- degisikligi
          gormek icin ekranin kendisine bakmak lazim. */
       if(k === 'mood'){ kapa(); moodUygula(false); return; }
