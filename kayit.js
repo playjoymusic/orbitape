@@ -2369,16 +2369,31 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
 
   /* Kaydedilmeyi bekleyen dosya. Yeni kayda başlanana kadar duruyor. */
   var _bekleyenKayit = null;
+  /* ── PAYLASIM: IPTAL HATA DEGIL, IKINCI DOKUNUS BEKLER ─────────────
+     Saha olcumu (issue #7): "Share canceled" x4 ve "earlier share has
+     not yet completed" x1 defterde hata olarak duruyordu. Birincisi
+     kullanicinin kendi vazgecisi (AbortError) -- kusur degil, deftere
+     girmez. Ikincisi cift dokunus: paylasim penceresi acikken ikinci
+     share() cagrisi; simdi kilit var, paylasim bitmeden ikinci cagri
+     yok sayiliyor. */
+  var _paylasimSuruyor = false;
+  function _iptalMi(e){ try{ return !!e && (e.name === 'AbortError' || /cancel/i.test(String(e.message || ''))); }catch(_){ return false; } }
   async function kaydiPaylas(){
     const k = _bekleyenKayit; if(!k) return;
-    let oldu = false;
+    if(_paylasimSuruyor) return;
+    let oldu = false, iptal = false;
     try{
       const dosya = new File([k.blob], k.ad, {type:k.tip});
       if(navigator.canShare && navigator.canShare({files:[dosya]})){
+        _paylasimSuruyor = true;
         await navigator.share({files:[dosya], title:'ORBITAPE'});   // iOS: "Videoyu Kaydet" -> galeri
         oldu = true;
       }
-    }catch(e){ oldu = false; }
+    }catch(e){ oldu = false; iptal = _iptalMi(e); if(!iptal) _yut(e); }
+    finally{ _paylasimSuruyor = false; }
+    /* Vazgecti: kayit bekleyende kalir, SAVE yine orada. Indirme
+       dayatilmaz -- o kendi karari. */
+    if(iptal) return;
     if(!oldu){
       /* Paylaşım yoksa ya da iptal edildiyse: doğrudan indirme.
          Sessizce kaybetmiyoruz. */
@@ -2529,16 +2544,19 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      oldugu icin iOS da kabul ediyor. */
   function fotoPaylas(){
     const k = _fotoBekleyen; if(!k) return;
+    if(_paylasimSuruyor) return;              // pencere acikken ikinci dokunus (bkz. kaydiPaylas)
     let acildi = false;
     try{
       const dosya = new File([k.bayt], k.ad, {type:'image/png'});
       if(navigator.canShare && navigator.canShare({files:[dosya]})){
+        _paylasimSuruyor = true;
         navigator.share({files:[dosya], title:'ORBITAPE'})
           .then(()=>{ try{ fotoOnizleKapa(); }catch(e){ _yut(e); } })
-          .catch(e=>{ _yut(e); });          /* iptal edildi: onizleme acik kalsin */
+          .catch(e=>{ if(!_iptalMi(e)) _yut(e); })     /* iptal: onizleme acik kalsin, defter temiz */
+          .finally(()=>{ _paylasimSuruyor = false; });
         acildi = true;
       }
-    }catch(e){ acildi = false; }
+    }catch(e){ acildi = false; _paylasimSuruyor = false; }
     if(acildi) return;
     /* Paylasim yoksa (masaustu tarayicilarin cogu): dosya iniyor. */
     try{

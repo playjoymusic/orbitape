@@ -3622,10 +3622,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await bek(1500);
 
       /* KAPALI: eski davranis -- raf degisiyor. */
+      /* KAPALI: semboller artik raf DEGISTIRMIYOR, istasyon listesini
+         aciyor (3 Eylul). Jest pointer olaylariyla (modul dinliyor). */
       AYAR.cark = false;
       const rafOnce = raf();
-      bk.click(); await bek(700);
-      const kapaliDegisti = raf() !== rafOnce;
+      const vur = (t)=>bk.dispatchEvent(new PointerEvent(t, {bubbles:true, pointerId:11, clientX:innerWidth-40, clientY:60}));
+      try{ if(window.listeKapa) listeKapa(); }catch(e){}
+      /* Modul yoksa ilk dokunus click ile iner; varsa jest pointer. */
+      if(window.LISTE_HAZIR){ vur('pointerdown'); vur('pointerup'); } else bk.click();
+      for(let i = 0; i < 50 && !window.LISTE_HAZIR; i++) await bek(100);
+      await bek(500);
+      const kapaliDegisti = raf() === rafOnce && !!(window.listeAcik && listeAcik());
+      try{ listeKapa(); }catch(e){}
 
       /* ACIK: raf SABIT, semboller degisiyor. */
       AYAR.cark = true;
@@ -3645,7 +3653,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     });
     K('Sembol carki: acikken raf degismiyor, semboller donuyor',
        !!cark && cark.fonkVar && cark.satirVar
-       && cark.kapaliDegisti === true      // anahtar KAPALI: eski davranis duruyor
+       && cark.kapaliDegisti === true      // anahtar KAPALI: raf sabit, liste acildi
        && cark.acikSabit === true          // anahtar ACIK: raf sabit
        && cark.semDegisti === true,        // ...ama semboller degisti
        cark ? ('kapali: raf degisti ' + cark.kapaliDegisti
@@ -4252,8 +4260,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const ta = await pg.evaluate(()=>{
       /* #mark ve #uydular listeden cikti: ikisi de kaldirildi. */
       const se = ['#ust','#modAd','#ust .kanal.ad'];
+      /* 'none' de kabul: ust adlarda liste surtme jesti var, none
+         manipulation'dan daha kisitlayici (cift dokunus da kilitli). */
       const kotu = se.filter(x=>{ const e=document.querySelector(x);
-        return !e || getComputedStyle(e).touchAction !== 'manipulation'; });
+        return !e || !/^(manipulation|none)$/.test(getComputedStyle(e).touchAction); });
       return { kotu, dbl:typeof window.ondblclick !== 'undefined' };
     });
     K('Ust yazilarda cift dokunus kilitli', ta.kotu.length===0,
@@ -6620,28 +6630,68 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         return /item\.grup !== AKTIF_AILE/.test(k)
             && /mod === 'radio'[\s\S]{0,80}item\.radyo/.test(k);
       }), 'cal() icinde radyo tarafinin kendi son kapisi var');
-    /* SEMBOLLER: TEK TIK = TEK ADIM.
-       Ilk yazimda dinleyici, iki elemani gezen bir forEach'in ICINDE
-       kalmisti ve sembollere IKI KEZ baglaniyordu: tek tik iki raf
-       birden ilerletiyor, aradaki raf atlaniyordu (JAZZ -> AMBIENT,
-       ortadaki raf hic gorunmuyor). Ekranda "tikladigim yere gitmiyor"
-       diye goruluyordu. Cagri SAYISI olculuyor; yoksa hata gorunmez. */
-    K('Uc sembol de raf degistiriyor', await pg.evaluate(()=>{
-        const el = document.getElementById('bekle');
-        if(!el) return false;
-        el.classList.add('buyuk');
-        const tiklanir = getComputedStyle(el).pointerEvents !== 'none';
-        const eM = mod, eA = AKTIF_AILE, eS = window.modSiraGec;
-        let say = 0;
-        window.modSiraGec = function(){ say++; return eS.apply(this, arguments); };
-        mod = 'radio'; AKTIF_AILE = 'JAZZ';
-        el.dispatchEvent(new MouseEvent('click', {bubbles:true}));
-        const bir = AILE_ADLAR.indexOf('JAZZ');
-        const beklenen = AILE_ADLAR[(bir - 1 + AILE_ADLAR.length) % AILE_ADLAR.length];
-        const sonuc = AKTIF_AILE;
-        window.modSiraGec = eS; mod = eM; AKTIF_AILE = eA;
-        return tiklanir && say === 1 && sonuc === beklenen;
-      }), 'tek tik = TEK adim, cift baglanma yok');
+    /* ── SEMBOLLER VE SAG AD: RAF LISTESI; SOL AD: BIR GERI ──────
+       (3 Eylul) Eskiden ikisi de raf degistiriyordu (modSiraGec).
+       Simdi: soldaki ad bir geri (geriGit), sagdaki ad ve semboller
+       asagi acilan RAF listesi (liste.js): her raf kendi renginde,
+       dokununca raf acilir (aileSec) ve calma planlanir, acik raf
+       pasif, liste acik kalir, ikinci dokunus kapatir. */
+    const il = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const eM = mod, eA = AKTIF_AILE;
+        mod = 'radio'; AKTIF_AILE = 'JAZZ'; modAdiYaz();
+        const ad = document.getElementById('modAd'), marka = document.querySelector('#ust .kanal.ad'), sm = document.getElementById('bekle');
+        const solda = el=>{ const r = el.getBoundingClientRect(); return (r.left + r.width/2) < innerWidth/2; };
+        c.solSag = solda(ad) !== solda(marka);
+        const solEl = solda(ad) ? ad : marka, sagEl = solda(ad) ? marka : ad;
+        const eG = window.geriGit; let g = 0; window.geriGit = function(){ g++; };
+        solEl.dispatchEvent(new MouseEvent('click', {bubbles:true})); await bek(50);
+        window.geriGit = eG; c.solGeri = g === 1;
+        try{ if(window.listeKapa) listeKapa(); }catch(e){}
+        const vur = (el, t)=>el.dispatchEvent(new PointerEvent(t, {bubbles:true, pointerId:12, clientX:innerWidth-60, clientY:40}));
+        if(window.LISTE_HAZIR){ vur(sagEl, 'pointerdown'); vur(sagEl, 'pointerup'); }
+        else sagEl.dispatchEvent(new MouseEvent('click', {bubbles:true}));
+        for(let i = 0; i < 50 && !window.LISTE_HAZIR; i++) await bek(100);
+        await bek(400);
+        c.geldi = !!window.LISTE_HAZIR;
+        c.acik = !!(window.listeAcik && listeAcik());
+        const kap = document.getElementById('istListe');
+        const ogeler = kap ? [...kap.querySelectorAll('.il-oge')] : [];
+        c.rafSayisi = ogeler.length === AILE_ADLAR.length;
+        c.renkli = ogeler.every(li => /rgb/.test(li.style.getPropertyValue('--il-raf')));
+        const r = kap.getBoundingClientRect(); const mr = marka.getBoundingClientRect();
+        c.altinda = r.top >= mr.bottom && r.right <= innerWidth + 1;
+        const acik = ogeler.find(li => li.getAttribute('aria-current') === 'true');
+        c.acikIsaretli = !!acik && acik.querySelector('.il-baslik').textContent === 'JAZZ';
+        /* acik rafa dokunmak etkisiz */
+        const eS = window.aileSec; let say = 0; window.aileSec = function(a, z){ say++; return eS.apply(this, arguments); };
+        acik.click(); await bek(100); c.acikPasif = say === 0 && AKTIF_AILE === 'JAZZ';
+        /* baska rafa dokunmak rafi acar */
+        const hedef = ogeler.find(li => li.getAttribute('aria-current') !== 'true');
+        const hedefAd = hedef.querySelector('.il-baslik').textContent;
+        hedef.click(); await bek(200);
+        window.aileSec = eS;
+        c.rafAcildi = say === 1 && AKTIF_AILE === hedefAd && hedef.getAttribute('aria-current') === 'true';
+        c.acikKaldi = listeAcik();
+        /* semboller: acikken kapatir, kapaliyken acar */
+        sm.classList.add('buyuk');
+        listeKapa(); c.kapandi = !listeAcik();
+        const vurS = (t)=>sm.dispatchEvent(new PointerEvent(t, {bubbles:true, pointerId:9, clientX:innerWidth-40, clientY:60}));
+        vurS('pointerdown'); vurS('pointerup'); await bek(300);
+        c.sembolAcar = listeAcik();
+        listeKapa();
+        try{ if(_rafBaslatZaman){ clearTimeout(_rafBaslatZaman); _rafBaslatZaman = null; } }catch(e){}
+        mod = eM; AKTIF_AILE = eA; modAdiYaz();
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const ilOz = Object.keys(il).filter(k => il[k] !== true).map(k => k + '=' + il[k]).join(' ');
+    K('Sol ad bir geri, sag ad raf listesi', il.solSag && il.solGeri && il.geldi && il.acik, ilOz || 'liste.js indi, acildi');
+    K('Listede butun raflar kendi renginde, acik raf isaretli', il.rafSayisi && il.renkli && il.altinda && il.acikIsaretli, ilOz || 'AILE_ADLAR');
+    K('Rafa dokunmak rafi acar, acik raf pasif, liste acik kalir', il.rafAcildi && il.acikPasif && il.acikKaldi, ilOz || 'aileSec bir kez');
+    K('Semboller listeyi acar/kapatir', il.kapandi && il.sembolAcar, ilOz || 'pointerdown/up');
     /* RAF SECILI DEGILSE USTTE YAZI DA YOK: once 'RADIOTAPE', sonra
        'ALL' yazmistim; ikisi de kullaniciya "ne alaka" dedirtti. */
     K('Secim yokken ust yazi bos', await pg.evaluate(()=>{
@@ -8679,6 +8729,100 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Kilit ekraninda play gecede uyandiriyor', st.kilitPlay, ozet || 'dongu birakildi');
     K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
     K('Saat paneli kapaniyor, depo ve carpan temiz', st.kapandi && st.depoTemiz && st.katGeri, ozet || 'temiz');
+  }
+  /* ── DERI GALERISI (deri_galeri.js): FIRCA ────────────────────────
+     "sol ustteki uc cizginin altina bir firca koy, oraya basinca tum
+     skinler GORUNSUN; bir tusla kucultebilsin, sag sol iki ok; tekrar
+     firca kapat." Kareler resim degil, deriyi cizen ayni koddan
+     uretiliyor; burada sayilari, secimi, seridi ve oklari olcuyoruz. */
+  {
+    const g = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const f = document.getElementById('deriFirca'), t = document.getElementById('ayarTut'), st = document.getElementById('saatTus');
+        c.tusVar = !!f;
+        if(f && t && st){ const a = f.getBoundingClientRect(), b = t.getBoundingClientRect(), d = st.getBoundingClientRect();
+          c.sira = document.body.classList.contains('mood') ? (a.bottom <= b.top && d.bottom <= a.top) : (a.top >= b.bottom && d.top >= a.bottom); }
+        const eskiDeri = AYAR.deri;
+        f.click();
+        for(let i = 0; i < 40 && !window.DERI_GALERI_HAZIR; i++) await bek(100);
+        await bek(300);
+        c.geldi = !!window.DERI_GALERI_HAZIR;
+        c.acik = !!(window.deriGaleriAcik && deriGaleriAcik());
+        const kap = document.getElementById('deriGaleri');
+        c.kareSayisi = kap ? kap.querySelectorAll('.dg-kare').length : 0;
+        c.kareDogru = c.kareSayisi === DERILER.length + 1;
+        /* kareler ust uste binmiyor: ikinci karenin tepesi birincinin altindan sonra */
+        const k1 = kap.querySelector('.dg-kare[data-n="1"]').getBoundingClientRect();
+        const k4 = kap.querySelector('.dg-kare[data-n="4"]').getBoundingClientRect();
+        c.binmiyor = k4.top >= k1.bottom - 1 && k1.height > 120;
+        /* secim: kareye dokun -> deri uygulanir, galeri acik kalir */
+        kap.querySelector('.dg-kare[data-n="2"]').click(); await bek(400);
+        c.secildi = AYAR.deri === 2 && document.body.classList.contains('deri') && deriGaleriAcik();
+        /* cizimli kare tuvali var ve dolu */
+        const cz = DERILER.findIndex(d=>d.cizim) + 1;
+        for(let i = 0; i < 60 && !window.DERI_CIZIM_HAZIR; i++) await bek(100);
+        await bek(1500);
+        const tv = kap.querySelector('.dg-kare[data-n="' + cz + '"] canvas');
+        let dolu = 0;
+        if(tv){ const d = tv.getContext('2d').getImageData(0,0,tv.width,tv.height).data; for(let i=3;i<d.length;i+=4) if(d[i]>0) dolu++; }
+        c.tuvalDolu = !!tv && dolu > tv.width * tv.height * 0.5;
+        /* serit: ekrani kapatmaz, oklar deriyi degistirir */
+        kap.querySelector('.dg-tus.kucult').click(); await bek(200);
+        const sr = kap.getBoundingClientRect();
+        c.serit = kap.classList.contains('serit') && sr.height < 60 && sr.width < innerWidth * 0.95;
+        c.arkaDokunulur = !document.getElementById('tp').closest('[inert]');
+        kap.querySelector('.dg-tus.ileri').click(); await bek(300);
+        c.ileri = AYAR.deri === 3;
+        kap.querySelector('.dg-tus.geri').click(); kap.querySelector('.dg-tus.geri').click(); await bek(300);
+        c.geri = AYAR.deri === 1;
+        c.adYazisi = kap.querySelector('.dg-secili').textContent.trim() === DERILER[0].ad;
+        /* firca tekrar: kapanir */
+        f.click(); await bek(200);
+        c.kapandi = !deriGaleriAcik() && !document.body.classList.contains('galeri-acik');
+        AYAR.deri = eskiDeri; deriUygula(); ayarKaydet();
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const oz = Object.keys(g).filter(k => g[k] !== true).map(k => k + '=' + g[k]).join(' ');
+    K('Firca var; siralama tutamak > firca > saat', g.tusVar && g.sira, oz || 'yigin dogru');
+    K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
+    K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
+    K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
+    K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi, oz || 'serit');
+    K('Firca ikinci dokunusta galeriyi kapatir', g.kapandi, oz || 'kapandi');
+  }
+  /* ── PAYLASIM: IPTAL DEFTERE GIRMEZ, CIFT DOKUNUS KILITLI ───────
+     Saha olcumu (issue #7): "Share canceled" x4 (kullanicinin
+     vazgecisi) ve "earlier share has not yet completed" x1 (cift
+     dokunus). Sahte bir navigator.share ile ikisi de olculuyor. */
+  {
+    const py = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const eS = navigator.share, eC = navigator.canShare, eY = window.__yut ? window.__yut.n : 0;
+        let cagri = 0, coz = null;
+        navigator.canShare = ()=>true;
+        navigator.share = ()=>{ cagri++; return new Promise((r, j)=>{ coz = ()=>{ const e = new Error('Share canceled'); e.name = 'AbortError'; j(e); }; }); };
+        _fotoBekleyen = { bayt: new Uint8Array([137,80,78,71]), ad:'t.png' };
+        const yutOnce = window.__yut ? window.__yut.n : 0;
+        fotoPaylas(); fotoPaylas(); fotoPaylas();      // pencere acikken iki dokunus daha
+        await bek(50);
+        c.tekCagri = cagri === 1;
+        coz(); await bek(80);
+        const yutSonra = window.__yut ? window.__yut.n : 0;
+        c.iptalDefterdeYok = yutSonra === yutOnce;
+        c.kilitAcildi = !_paylasimSuruyor;
+        fotoPaylas(); await bek(30); c.yenidenCagrilir = cagri === 2; coz(); await bek(50);
+        navigator.share = eS; navigator.canShare = eC; _fotoBekleyen = null;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const pyOz = Object.keys(py).filter(k => py[k] !== true).map(k => k + '=' + py[k]).join(' ');
+    K('Paylasim: iptal deftere girmiyor, pencere acikken ikinci dokunus yok sayiliyor',
+      py.tekCagri && py.iptalDefterdeYok && py.kilitAcildi && py.yenidenCagrilir, pyOz || 'AbortError sessiz, kilit');
   }
   /* ── CAR MODE: SES ZINCIRE GIRMIYOR ─────────────────────────────
      "CarPlay'de kesik kesik, YouTube duzgun." Kipte ses grafi hic

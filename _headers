@@ -126,6 +126,16 @@
   Content-Type: text/javascript; charset=utf-8
   Cache-Control: no-cache
 
+# Deri galerisi (firca). Istek uzerine iniyor; ayni kural.
+/deri_galeri.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: no-cache
+
+# Istasyon listesi (sag ust). Istek uzerine iniyor; ayni kural.
+/liste.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: no-cache
+
 # ── ISTASYON LISTESI ─────────────────────────────────────────────
 # Uygulama listeyi artik once BURADAN cekiyor (eskiden GitHub'in raw
 # sunucusundan). Cloudflare'da statik dosya istegi ucretsiz ve
@@ -212,10 +222,10 @@
 
 # index.html
 /
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-yEyoOWcBX9dDWDFvZHseNLySS+/YeGtU3W+L8uhcF5g='; style-src 'sha256-GaLAF9pLgaXF2xXBf5SH0pM3lRJrYh1j5kKb7+DtWXM='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-iola+dgYyFI5kS0pPNIh0uz4T8r7zZp6ll36PW/VrKo='; style-src 'sha256-BEaJ92i9LMRJiAvnJlQXBevh45KpE9VVYTWsud2Ztmw='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-yEyoOWcBX9dDWDFvZHseNLySS+/YeGtU3W+L8uhcF5g='; style-src 'sha256-GaLAF9pLgaXF2xXBf5SH0pM3lRJrYh1j5kKb7+DtWXM='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-iola+dgYyFI5kS0pPNIh0uz4T8r7zZp6ll36PW/VrKo='; style-src 'sha256-BEaJ92i9LMRJiAvnJlQXBevh45KpE9VVYTWsud2Ztmw='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy

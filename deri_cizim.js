@@ -78,6 +78,17 @@ const DERI_USLUP = {
   kente    : { pal:["#f2b632","#c8281e","#1c7a3c","#1f1408","#f3e2b6"], tohum:31 },
   opart    : { pal:["#111111","#f4f4f2"] },
   construct: { pal:["#c8281e","#1c1a17","#e9e2d3","#8a8578"] },
+  /* ── TABLO SERISI (3 Eylul) ───────────────────────────────────────
+     Kullanicinin sozu: "bunlar cok iyi, bu tarz seyler daha cok
+     uretsen... daha tablo sanat eseri katilabilir." Ressam adi degil
+     USLUP adi: girdapli gece, nilufer havuzu, renk alanlari, kesik
+     kagit, damla, yaldiz. Hepsi kodla ciziliyor, resim yok. */
+  starry   : { pal:["#1b2a5c","#3c63b8","#f2cf5c","#f8f1d8","#0e1330"], tohum:91 },
+  lilies   : { pal:["#4b7e6a","#6f9fb3","#e7a6b8","#f4efe6","#2e4a4a"], tohum:17 },
+  fields   : { pal:["#b8321f","#e6742b","#5a1d3a","#f0b48f"] },
+  cutout   : { pal:["#1d4fb0","#f28c28","#2f9e59","#f4efe2","#e0325a"], tohum:44 },
+  drip     : { pal:["#1a1a1a","#f2ede0","#c98f2b","#b3352c","#efe9dc"], tohum:66 },
+  gilt     : { pal:["#c9a227","#f2d67a","#1c1a17","#8a6d1e","#f7ecc2"], tohum:12 },
   ukiyo    : { pal:["#1f4e79","#3f7fb5","#e8dcc4","#f5f0e4","#243447"] },
   psyche   : { pal:["#ff8ad8","#ffcf4a","#4ae0ff","#9b5cff","#1a0a2e"] },
   steam    : { pal:["#d9a049","#8a5a2b","#4a3421","#2b1d12","#e8cfa6"], tohum:17 }
@@ -302,6 +313,67 @@ const DERI_HALKA = {
     c.fillStyle = p[4];
     for(let i = 0; i < 8; i++){ const t = i*Math.PI/4;
       c.beginPath(); c.arc(o + Math.cos(t)*S*0.36, o + Math.sin(t)*S*0.36, S*0.018, 0, Math.PI*2); c.fill(); }
+  },
+  /* ── TABLO SERISI HALKALARI ──────────────────────────────────── */
+  starry(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    c.fillStyle = p[4]; c.fillRect(0,0,S,S);
+    for(let i = 0; i < 18; i++){
+      c.strokeStyle = i % 3 === 2 ? p[2] : (i % 2 ? p[1] : p[0]); c.lineWidth = S*0.022; c.lineCap = 'round';
+      const a0 = r()*Math.PI*2, rr = S*(0.12 + r()*0.34);
+      c.beginPath(); for(let k = 0; k <= 16; k++){ const t = a0 + k*0.11, q = rr*(1 - k*0.012);
+        const x = o + Math.cos(t)*q, y = o + Math.sin(t)*q; if(k) c.lineTo(x,y); else c.moveTo(x,y); } c.stroke();
+    }
+    c.fillStyle = p[3]; for(let i = 0; i < 6; i++){ c.beginPath(); c.arc(o + (r()-.5)*S*0.7, o + (r()-.5)*S*0.7, S*0.02, 0, Math.PI*2); c.fill(); }
+    c.fillStyle = p[2]; c.beginPath(); c.arc(o, o, S*0.10, 0, Math.PI*2); c.fill();
+  },
+  lilies(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    c.fillStyle = p[0]; c.fillRect(0,0,S,S);
+    c.lineCap = 'round';
+    for(let i = 0; i < 90; i++){ c.strokeStyle = i % 3 ? p[1] : p[4]; c.lineWidth = S*0.018;
+      const x = r()*S, y = r()*S; c.beginPath(); c.moveTo(x, y); c.lineTo(x + S*(0.05 + r()*0.08), y); c.stroke(); }
+    for(let i = 0; i < 7; i++){ const x = o + (r()-.5)*S*0.7, y = o + (r()-.5)*S*0.7;
+      c.fillStyle = p[2]; c.beginPath(); c.ellipse(x, y, S*0.045, S*0.03, r()*3, 0, Math.PI*2); c.fill();
+      c.fillStyle = p[3]; c.beginPath(); c.ellipse(x - S*0.01, y - S*0.008, S*0.02, S*0.014, 0, 0, Math.PI*2); c.fill(); }
+  },
+  fields(c, S, d){
+    const p = _pal(d);
+    c.fillStyle = p[3]; c.fillRect(0,0,S,S);
+    const kat = (y0, y1, renk)=>{ for(let k = 6; k >= 0; k--){ c.globalAlpha = 0.18; c.fillStyle = renk;
+      c.fillRect(S*0.08 - k*S*0.01, y0 - k*S*0.012, S*0.84 + k*S*0.02, (y1 - y0) + k*S*0.024); } c.globalAlpha = 1; };
+    kat(S*0.10, S*0.44, p[0]); kat(S*0.50, S*0.72, p[1]); kat(S*0.76, S*0.92, p[2]);
+  },
+  cutout(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    c.fillStyle = p[3]; c.fillRect(0,0,S,S);
+    for(let i = 0; i < 7; i++){ c.fillStyle = p[i % 3 === 0 ? 0 : (i % 3 === 1 ? 1 : 2)];
+      const a = i/7*Math.PI*2, x = o + Math.cos(a)*S*0.22, y = o + Math.sin(a)*S*0.22;
+      c.beginPath(); c.moveTo(x, y);
+      for(let k = 1; k <= 5; k++){ const t = a + (k-3)*0.35, q = S*(0.12 + (k%2)*0.12 + r()*0.05);
+        c.quadraticCurveTo(x + Math.cos(t-0.15)*q*0.6, y + Math.sin(t-0.15)*q*0.6, x + Math.cos(t)*q, y + Math.sin(t)*q); }
+      c.closePath(); c.fill(); }
+    c.fillStyle = p[4]; c.beginPath(); c.arc(o, o, S*0.07, 0, Math.PI*2); c.fill();
+  },
+  drip(c, S, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d));
+    c.fillStyle = p[4]; c.fillRect(0,0,S,S); c.lineCap = 'round';
+    for(let i = 0; i < 40; i++){ c.strokeStyle = p[i % 4]; c.lineWidth = S*(0.004 + r()*0.014);
+      c.beginPath(); c.moveTo(r()*S, r()*S);
+      for(let k = 0; k < 3; k++) c.bezierCurveTo(r()*S, r()*S, r()*S, r()*S, r()*S, r()*S); c.stroke(); }
+    for(let i = 0; i < 60; i++){ c.fillStyle = p[i % 4]; c.beginPath(); c.arc(r()*S, r()*S, S*(0.004 + r()*0.012), 0, Math.PI*2); c.fill(); }
+  },
+  gilt(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    c.fillStyle = p[0]; c.fillRect(0,0,S,S);
+    for(let i = 0; i < 40; i++){ c.fillStyle = i % 3 ? p[1] : p[2]; const w = S*(0.03 + r()*0.05);
+      c.fillRect(r()*S, r()*S, w, w*(0.6 + r())); }
+    for(let i = 0; i < 9; i++){ c.strokeStyle = i % 2 ? p[2] : p[4]; c.lineWidth = S*0.012;
+      const x = o + (r()-.5)*S*0.7, y = o + (r()-.5)*S*0.7;
+      c.beginPath(); for(let k = 0; k <= 30; k++){ const t = k*0.5, q = S*0.003*k; const px = x + Math.cos(t)*q, py = y + Math.sin(t)*q;
+        if(k) c.lineTo(px,py); else c.moveTo(px,py); } c.stroke(); }
+    c.fillStyle = p[2]; c.beginPath(); c.arc(o, o, S*0.11, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[1]; c.beginPath(); c.arc(o, o, S*0.05, 0, Math.PI*2); c.fill();
   }
 };
 function deriHalkaAdresi(d){
@@ -476,7 +548,9 @@ const DERI_CIZIM = {
     }
     c.fillStyle = p[p.length-1];
     for(let y = 0; y < H; y += a*1.15){ c.fillRect(0, y, W, Math.max(1, a*0.05)); }
-    c.fillRect(0, 0, a*0.22, H); c.fillRect(W - a*0.22, 0, a*0.22, H);
+    /* YAN BANTLAR KALKTI (3 Eylul): kilimin kenar seridi genis ekranda
+       (Mac, 650px) 24px'lik iki koyu cerceve gibi duruyordu -- "yanlar
+       gidik". Desen artik kenara kadar. */
     c.restore();
   }  ,
   /* POP — duz parlak alanlar, kalin siyah kontur, tram noktalari. */
@@ -719,6 +793,155 @@ const DERI_CIZIM = {
     for(let i = 0; i < 40; i++){
       const x = r()*W, y = r()*H;
       c.beginPath(); c.arc(x, y, u*0.009, 0, Math.PI*2); c.fill();
+    }
+    c.restore();
+  },
+  /* ── TABLO SERISI ────────────────────────────────────────────────
+     Kullanicinin istegi: "daha tablo sanat eseri katilabilir." Her
+     biri bir resim uslubunun dili: girdapli gece, nilufer havuzu,
+     renk alanlari, kesik kagit, damla, yaldiz. */
+  /* STARRY — gece gogu, girdap firca darbeleri, halo'lu yildizlar, koyu tepeler. */
+  starry(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    c.lineCap = 'round';
+    /* Akis alani: uc girdap merkezi, darbeler etrafinda doner. */
+    const g = [[W*0.30, H*0.28], [W*0.72, H*0.22], [W*0.55, H*0.50]];
+    for(let i = 0; i < 260; i++){
+      const m = g[i % 3], a0 = r()*Math.PI*2, rr = u*(0.04 + r()*0.34);
+      c.strokeStyle = r() < 0.12 ? p[2] : (r() < 0.5 ? p[1] : p[0]);
+      c.lineWidth = u*(0.006 + r()*0.010);
+      c.beginPath();
+      for(let k = 0; k <= 10; k++){ const t = a0 + k*0.09, q = rr*(1 - k*0.01);
+        const x = m[0] + Math.cos(t)*q*1.4, y = m[1] + Math.sin(t)*q;
+        if(k) c.lineTo(x, y); else c.moveTo(x, y); }
+      c.stroke();
+    }
+    /* Yildizlar: halo + cekirdek */
+    for(let i = 0; i < 9; i++){
+      const x = W*(0.08 + r()*0.84), y = H*(0.06 + r()*0.44), q = u*(0.03 + r()*0.05);
+      const h = c.createRadialGradient(x, y, 0, x, y, q*2.2);
+      h.addColorStop(0, _zemRgba(p[2], 0.9)); h.addColorStop(1, _zemRgba(p[2], 0));
+      c.fillStyle = h; c.beginPath(); c.arc(x, y, q*2.2, 0, Math.PI*2); c.fill();
+      c.fillStyle = p[3]; c.beginPath(); c.arc(x, y, q*0.35, 0, Math.PI*2); c.fill();
+    }
+    /* Tepeler ve selvi: alt kenar */
+    c.fillStyle = p[4];
+    c.beginPath(); c.moveTo(0, H); c.lineTo(0, H*0.80);
+    for(let x = 0; x <= W; x += W/8) c.quadraticCurveTo(x + W/16, H*(0.72 + r()*0.08), x + W/8, H*(0.78 + r()*0.05));
+    c.lineTo(W, H); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(W*0.14, H*0.86); c.quadraticCurveTo(W*0.06, H*0.55, W*0.16, H*0.30);
+    c.quadraticCurveTo(W*0.26, H*0.55, W*0.20, H*0.86); c.closePath(); c.fill();
+    c.restore();
+  },
+  /* LILIES — kirik yatay darbelerle su, pembe-beyaz nilufer, sogut yansimalari. */
+  lilies(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    c.lineCap = 'round';
+    for(let i = 0; i < 900; i++){
+      const y = r()*H, x = r()*W;
+      c.strokeStyle = r() < 0.55 ? p[1] : (r() < 0.75 ? p[4] : p[0]);
+      c.lineWidth = u*(0.005 + r()*0.012);
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x + u*(0.03 + r()*0.10), y + (r()-.5)*u*0.01); c.stroke();
+    }
+    /* Sogut yansimalari: dikey ince cizgiler */
+    for(let i = 0; i < 60; i++){
+      const x = W*(0.55 + r()*0.45), y0 = r()*H*0.5;
+      c.strokeStyle = _zemRgba(p[4], 0.5); c.lineWidth = u*0.004;
+      c.beginPath(); c.moveTo(x, y0); c.lineTo(x + (r()-.5)*u*0.03, y0 + u*(0.10 + r()*0.25)); c.stroke();
+    }
+    /* Nilufer yapraklari ve cicekler */
+    for(let i = 0; i < 26; i++){
+      const x = W*(0.05 + r()*0.9), y = H*(0.08 + r()*0.86), q = u*(0.03 + r()*0.05);
+      c.fillStyle = _zemRgba(p[4], 0.7); c.beginPath(); c.ellipse(x, y, q, q*0.45, 0, 0, Math.PI*2); c.fill();
+      if(r() < 0.55){ c.fillStyle = p[2]; c.beginPath(); c.ellipse(x + q*0.2, y - q*0.2, q*0.5, q*0.3, r()*3, 0, Math.PI*2); c.fill();
+        c.fillStyle = p[3]; c.beginPath(); c.ellipse(x + q*0.15, y - q*0.25, q*0.22, q*0.14, 0, 0, Math.PI*2); c.fill(); }
+    }
+    c.restore();
+  },
+  /* FIELDS — uc yumusak kenarli renk alani; kenarlar kat kat saydamlikla eriyor. */
+  fields(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[3]; c.fillRect(0, 0, W, H);
+    const kat = (y0, y1, renk)=>{
+      for(let k = 10; k >= 0; k--){
+        c.globalAlpha = 0.14; c.fillStyle = renk;
+        c.fillRect(W*0.06 - k*u*0.006, y0 - k*u*0.010, W*0.88 + k*u*0.012, (y1 - y0) + k*u*0.020);
+      }
+      c.globalAlpha = 1;
+    };
+    kat(H*0.06, H*0.46, p[0]); kat(H*0.50, H*0.74, p[1]); kat(H*0.78, H*0.94, p[2]);
+    /* Firca dokusu: ince yatay cizgiler */
+    c.globalAlpha = 0.08; c.strokeStyle = p[3]; c.lineWidth = 1;
+    for(let y = 0; y < H; y += 3){ c.beginPath(); c.moveTo(0, y); c.lineTo(W, y + (y % 7) - 3); c.stroke(); }
+    c.globalAlpha = 1;
+    c.restore();
+  },
+  /* CUTOUT — kesik kagit: yaprak ve yosun bicimleri, duz renk, sert kenar. */
+  cutout(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[3]; c.fillRect(0, 0, W, H);
+    const yaprak = (x, y, q, a, renk)=>{
+      c.fillStyle = renk; c.save(); c.translate(x, y); c.rotate(a);
+      c.beginPath(); c.moveTo(0, 0);
+      for(let k = 0; k < 5; k++){ const t = -0.9 + k*0.45, l = q*(0.55 + (k%2)*0.45 + r()*0.2);
+        c.quadraticCurveTo(Math.cos(t-0.2)*l*0.5, Math.sin(t-0.2)*l*0.5 - q*0.1, Math.cos(t)*l, Math.sin(t)*l);
+        c.quadraticCurveTo(Math.cos(t+0.12)*l*0.6, Math.sin(t+0.12)*l*0.6, 0, 0); }
+      c.closePath(); c.fill(); c.restore();
+    };
+    /* Once seyrekti (16 kucuk bicim, cogu perdenin altinda kaliyordu);
+       daha buyuk ve daha sik, iki kat: arkada acik tonlar, onde koyu. */
+    for(let i = 0; i < 30; i++){
+      yaprak(W*(0.02 + r()*0.96), H*(0.02 + r()*0.96), u*(0.16 + r()*0.22), r()*Math.PI*2, p[[0,1,2,4,0,2][i % 6]]);
+    }
+    c.restore();
+  },
+  /* DRIP — damlatilmis boya: uzun kivrimli cizgiler, siçramalar; siyah, beyaz, koyu sari, kirmizi. */
+  drip(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    for(let i = 0; i < 140; i++){
+      c.strokeStyle = p[[0,0,1,2,3,0][i % 6]]; c.lineWidth = u*(0.002 + r()*0.012);
+      c.beginPath(); c.moveTo(r()*W, r()*H);
+      for(let k = 0; k < 4; k++) c.bezierCurveTo(r()*W, r()*H, r()*W, r()*H, r()*W, r()*H);
+      c.stroke();
+    }
+    for(let i = 0; i < 400; i++){
+      c.fillStyle = p[[0,0,1,2,3][i % 5]];
+      c.beginPath(); c.arc(r()*W, r()*H, u*(0.002 + r()*0.010), 0, Math.PI*2); c.fill();
+    }
+    c.restore();
+  },
+  /* GILT — yaldiz zemin, mozaik dikdortgenler, spiraller, goz bicimleri. */
+  gilt(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    const z = c.createLinearGradient(0, 0, W, H); z.addColorStop(0, p[0]); z.addColorStop(1, p[3]);
+    c.fillStyle = z; c.fillRect(0, 0, W, H);
+    for(let i = 0; i < 220; i++){
+      c.fillStyle = r() < 0.6 ? p[1] : (r() < 0.8 ? p[2] : p[4]);
+      const w = u*(0.015 + r()*0.05), h = w*(0.5 + r()*1.5);
+      c.fillRect(r()*W, r()*H, w, h);
+    }
+    c.lineCap = 'round';
+    for(let i = 0; i < 24; i++){
+      const x = r()*W, y = r()*H; c.strokeStyle = i % 3 ? p[2] : p[4]; c.lineWidth = u*0.005;
+      c.beginPath();
+      for(let k = 0; k <= 40; k++){ const t = k*0.45, q = u*0.0018*k; const px = x + Math.cos(t)*q, py = y + Math.sin(t)*q;
+        if(k) c.lineTo(px, py); else c.moveTo(px, py); }
+      c.stroke();
+    }
+    for(let i = 0; i < 14; i++){
+      const x = r()*W, y = r()*H, q = u*(0.02 + r()*0.03);
+      c.fillStyle = p[2]; c.beginPath(); c.ellipse(x, y, q, q*0.55, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = p[1]; c.beginPath(); c.arc(x, y, q*0.3, 0, Math.PI*2); c.fill();
     }
     c.restore();
   }

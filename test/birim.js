@@ -749,11 +749,15 @@ function bitir(){
        diye bildirdi -- yani bolme, testi yaniltti.
        Liste index.html'den OKUNUYOR: yeni bir modul eklenince
        kendiliginden aramaya giriyor. */
+    /* ISTEK UZERINE INENLER DE (3 Eylul): saat.js, liste.js,
+       deri_galeri.js sayfada bir DIZGI olarak duruyor, etiketle
+       degil; onlar da ceviri cagiriyor (T = Y). */
     const _modulYollari = (KAYNAK.match(/<script[^>]*\ssrc=["']([^"']+)["']/g) || [])
       .map(t => (t.match(/src=["']([^"']+)["']/) || [])[1])
+      .concat((KAYNAK.match(/['"][\w./-]+\.js['"]/g) || []).map(t => t.slice(1, -1)))
       .filter(u => u && !/^https?:|^\/\//.test(u))
       .map(u => path.join(KOK, u.replace(/^\.?\//, '').split('?')[0]))
-      .filter(u => fs.existsSync(u));
+      .filter((u, i, d) => d.indexOf(u) === i && fs.existsSync(u));
     const _butunKod = [KAYNAK].concat(_modulYollari.map(u => fs.readFileSync(u, 'utf8'))).join('\n');
     const kod = _butunKod.replace(/'\s*\+\s*'/g, '').replace(/"\s*\+\s*"/g, '');
     const yetim = anahtarlar.filter(a => {
@@ -819,7 +823,7 @@ function bitir(){
        .split(/\s+/).filter(Boolean).forEach(a2=>yazili.add(a2));
     });
     /* Koddaki anahtarlar: hem dogrudan yazilanlar hem sabitler. */
-    const kodHepsi = ['index.html','kayit.js','deri_cizim.js','saat.js','sw.js']
+    const kodHepsi = ['index.html','kayit.js','deri_cizim.js','saat.js','deri_galeri.js','liste.js','sw.js']
       .filter(f => fs.existsSync(path.join(KOK, f)))
       .map(f => fs.readFileSync(path.join(KOK, f), 'utf8')).join('\n');
     const kullanilan = new Set();

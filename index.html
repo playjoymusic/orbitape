@@ -1002,11 +1002,10 @@
      arama çizgisinin üstüne biner. */
   #ust, #ust .ustSatir, #ust .kanal, #ust .kanal.ad, #modAd{
     touch-action:manipulation;}
-  /* USTTEKI ADLAR TUS: soldaki bir GERI (yon ekrandaki yere gore,
-     bkz. ustAdlarBagla); sagdaki istasyon listesi (geliyor). */
-  #modKut{pointer-events:auto;cursor:pointer;touch-action:manipulation;
-    -webkit-tap-highlight-color:transparent;}
-  #ust .kanal.ad{cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  /* USTTEKI ADLAR TUS: soldaki bir GERI, sagdaki istasyon listesi
+     (yon ekrandaki yere gore, bkz. ustAdBas). touch-action:none:
+     listede surtme jesti icin. */
+  #modAd,#ust .kanal.ad{-webkit-tap-highlight-color:transparent;touch-action:none;}
   #modAd{pointer-events:none;user-select:none;white-space:nowrap;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-weight:400;
     font-size:12px;letter-spacing:.30em;text-indent:.30em;line-height:1;
@@ -2386,6 +2385,16 @@
   .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
   /* SAAT TUSU: mantik ve panel saat.js'te (istek uzerine). */
+  #deriFirca{position:fixed;z-index:96;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    top:auto;bottom:calc(190px + var(--dip-pay));
+    width:40px;height:26px;display:flex;align-items:center;
+    color:#35e0d8;opacity:.72;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
+  #deriFirca svg{width:20px;height:20px;}
+  #deriFirca:hover,#deriFirca:focus-visible,body.galeri-acik #deriFirca{opacity:1;}
+  body.klavye #deriFirca{opacity:0;pointer-events:none;}
+  body.deri #deriFirca{color:var(--d-marka,var(--d-yazi));}
   #saatTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;bottom:calc(154px + var(--dip-pay));
@@ -3096,8 +3105,8 @@
            Arsivde blok eski yerinde kaliyor (markanin solunda,
            cubuklar yazinin solunda). Yer degisimi tamamen CSS'te:
            bkz. body:not(.mood) #modKut. -->
-      <span id="modKut" role="button" tabindex="0" aria-label="Previous"><span id="modAd"></span><canvas id="modDalga" aria-hidden="true"></canvas></span>
-      <div class="kanal on ad" data-mod="radio" role="button" tabindex="0" aria-label="Stations"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
+      <span id="modKut"><span id="modAd"></span><canvas id="modDalga" aria-hidden="true"></canvas></span>
+      <div class="kanal on ad" data-mod="radio" role="button" tabindex="0"><span class="eq"><i></i><i></i><i></i><i></i></span>ORBITAPE</div>
     </div>
   </div>
 
@@ -3166,6 +3175,10 @@
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
+  <!-- FIRCA: deri galerisi (deri_galeri.js, istek uzerine). Radyoda uc
+       cizginin altinda, SOUND BANKS'te ustunde; saat tusu onun altinda. -->
+  <div id="deriFirca" role="button" tabindex="0" aria-label="Skins"
+       aria-expanded="false" aria-controls="deriGaleri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4.5l5.5 5.5L11 18.5 5.5 13z"/><path d="M5.5 13c-2.2 0-3.5 1.6-3.5 3.6 0 1.4-.6 2.4-1.5 3 2.6.5 6-.4 7-2.5"/></svg></div>
   <!-- SAAT: uyku sayaci + sabah alarmi. Radyoda uc cizginin altinda,
        SOUND BANKS kipinde ustunde (yeri JS'te, _tutamakYerlestir).
        Panel ve mantik istek uzerine iniyor: saat.js. -->
@@ -4734,7 +4747,14 @@
     {ad:"FUTURIST", zem:"#e9e6dd", yazi:"#242424", marka:"#1b3a8f", cek:"#d2cec3", font:F1, kose:"2px", cizim:"futurist"},
     {ad:"OP ART", zem:"#f4f4f2", yazi:"#111111", marka:"#111111", cek:"#dddddb", font:F1, kose:"0px", cizim:"opart"},
     {ad:"UKIYO", zem:"#e8dcc4", yazi:"#243447", marka:"#1f4e79", cek:"#d2c6ae", font:F2, kose:"50%", cizim:"ukiyo"},
-    {ad:"STEAMPUNK", zem:"#2b1d12", yazi:"#e8cfa6", marka:"#d9a049", cek:"#43301e", font:F2, kose:"3px", cizim:"steam"}
+    {ad:"STEAMPUNK", zem:"#2b1d12", yazi:"#e8cfa6", marka:"#d9a049", cek:"#43301e", font:F2, kose:"3px", cizim:"steam"},
+    /* ── TABLO SERISI (3 Eylul): "daha tablo sanat eseri katilabilir." SONA EKLENDI, araya degil. */
+    {ad:"STARRY", zem:"#111a3c", yazi:"#f3ecd2", marka:"#f2cf5c", cek:"#22315f", font:F2, kose:"50%", cizim:"starry"},
+    {ad:"LILIES", zem:"#3f6e5c", yazi:"#f4efe6", marka:"#f0c1cf", cek:"#4f8370", font:F2, kose:"50%", cizim:"lilies"},
+    {ad:"FIELDS", zem:"#f0b48f", yazi:"#3a1a12", marka:"#a3281a", cek:"#e6a07a", font:F1, kose:"0px", cizim:"fields"},
+    {ad:"CUTOUT", zem:"#f4efe2", yazi:"#1d2a44", marka:"#1d4fb0", cek:"#e8e1cf", font:F1, kose:"8px", cizim:"cutout"},
+    {ad:"DRIP", zem:"#efe9dc", yazi:"#1a1a1a", marka:"#a8301f", cek:"#e2dbcb", font:F1, kose:"2px", cizim:"drip"},
+    {ad:"GILT", zem:"#6e5614", yazi:"#f7ecc2", marka:"#f2d67a", cek:"#7f671f", font:F2, kose:"50%", cizim:"gilt"}
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
@@ -4877,6 +4897,39 @@
            deriUygula(); }catch(e){ _yut(e); }
   }
   try{ window.deriCizimGeldi = deriCizimGeldi; }catch(e){ _yut(e); }
+  /* DERI GALERISI (deri_galeri.js): fircaya basinca iniyor; inmemisse
+     dokunus bekletilir, modul "bittim" deyince yerine getirilir. */
+  const DERI_GALERI_DOSYA = 'deri_galeri.js';
+  let _galeriIsteniyor = false, _galeriBekliyor = false;
+  function deriGaleriYukle(){
+    try{
+      if(window.DERI_GALERI_HAZIR || _galeriIsteniyor) return;
+      _galeriIsteniyor = true;
+      const s = document.createElement('script');
+      s.src = DERI_GALERI_DOSYA; s.defer = true;
+      s.onerror = ()=>{ _galeriIsteniyor = false; _galeriBekliyor = false; };
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function deriGaleriGeldi(){
+    try{
+      if(_galeriBekliyor && typeof window.deriGaleriDegistir === 'function'){ _galeriBekliyor = false; window.deriGaleriDegistir(); }
+    }catch(e){ _yut(e); }
+  }
+  try{ window.deriGaleriGeldi = deriGaleriGeldi; }catch(e){ _yut(e); }
+  function fircaBas(){
+    try{
+      if(window.DERI_GALERI_HAZIR && typeof window.deriGaleriDegistir === 'function'){ window.deriGaleriDegistir(); return; }
+      _galeriBekliyor = true; deriGaleriYukle();
+    }catch(e){ _yut(e); }
+  }
+  try{
+    const _f = document.getElementById('deriFirca');
+    if(_f){
+      _f.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fircaBas(); });
+      _f.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); fircaBas(); } });
+    }
+  }catch(e){ _yut(e); }
   /* SAAT (uyku sayaci + sabah alarmi): saat tusuna basinca iniyor;
      depoda kurulu bir sayac/alarm varsa acilista hemen (yoksa alarm
      ancak panel acilirsa islerdi). */
@@ -8581,7 +8634,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 56) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 62) AYAR.deri = _a.deri|0;
       AYAR.deriSurum = 2;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
@@ -11144,6 +11197,7 @@
     try{ zeminUygula(); }catch(e){ _yut(e); }                 // semboller ve zemin yeni ailenin rengine
     try{ radyoKuyruk.length = 0; }catch(e){ _yut(e); }      // eski ailenin istasyonları çalmasın
     try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
+    try{ if(window.listeTazele) window.listeTazele(); }catch(e){ _yut(e); }
     return AKTIF_AILE;
   }
 
@@ -12187,30 +12241,6 @@
   btn.addEventListener('contextmenu', e=>e.preventDefault());                 // mobil uzun-basış menüsü çıkmasın
   btn.addEventListener('lostpointercapture', ()=>{ /* yakalama düşerse tık latch'i korunur */ });
 
-  /* UST ADLAR: ekranin sol yarisindaki ad bir geri (geriGit). Raf adi
-     kipe gore yer degistirdigi icin ada degil yere bakiliyor. */
-  function ustAdlarBagla(){
-    try{
-      const yon = (el)=>{
-        const r = el.getBoundingClientRect();
-        return (r.left + r.width/2) < window.innerWidth/2 ? 'geri' : 'ileri';
-      };
-      /* Sagdaki ad atlamiyor: oraya istasyon listesi geliyor. */
-      const git = (el)=>{
-        if(yon(el) !== 'geri') return;
-        try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
-        geriGit();
-      };
-      [document.getElementById('modKut'), document.querySelector('#ust .kanal.ad')].forEach(el=>{
-        if(!el) return;
-        el.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); git(el); });
-        el.addEventListener('keydown', e=>{
-          const k = (e instanceof KeyboardEvent) ? e.key : '';
-          if(k === 'Enter' || k === ' '){ e.preventDefault(); git(el); } });
-      });
-    }catch(e){ _yut(e); }
-  }
-  ustAdlarBagla();
   // ── KANALLAR: üst şeritte üçü de yazılı; tıklanan doğrudan seçilir ──
   const kanalDug = [...document.querySelectorAll('#ust .kanal')];
   function moodYaz(){
@@ -12713,38 +12743,74 @@
     modSec(MODSIRA[n-1-i], true);                        // en dıştan içe, kapatmadan
   }
   try{ mark.style.cursor='pointer'; mark.addEventListener('click', moodDegis); }catch(e){ _yut(e); }
-  /* Sağ üstteki İKİ yazı da aynı işi yapıyor: kategori adı ve markanın
-     kendisi. Hangisine basılırsa basılsın bir içteki halkaya geçiliyor —
-     açılışta kategori adı boş olabildiği için markanın da tıklanabilir
-     olması gerekiyordu. */
+  /* ── UST ADLAR: SOLDAKI BIR GERI, SAGDAKI RAF LISTESI ────────────
+     Eskiden ikisi de bir icteki halkaya (rafa) geciyordu (modSiraGec).
+     Kullanici (3 Eylul): "sol ustteki isimlere basinca bir geri
+     istasyona gitsin; sag ORBITAPE yazisina basarsa istasyon
+     atlamasin, asagi dogru ana renkleriyle liste acilsin" -- raflarin
+     listesi, halkadaki secimin acik hali. Yon EKRANDAKI YERLE:
+     raf adi kipe gore yer degistiriyor. Liste liste.js'te (istek
+     uzerine); ilk dokunusta iner ve acilir, sonra jestleri (basili
+     tut, surt, birak) modul kendisi dinler. */
+  function _solYarida(el){ try{ const r = el.getBoundingClientRect(); return (r.left + r.width/2) < window.innerWidth/2; }catch(e){ return true; } }
+  const LISTE_DOSYA = 'liste.js';
+  let _listeIsteniyor = false, _listeBekleyen = null;
+  function istasyonListesiYukle(){
+    try{
+      if(window.LISTE_HAZIR || _listeIsteniyor) return;
+      _listeIsteniyor = true;
+      const s = document.createElement('script');
+      s.src = LISTE_DOSYA; s.defer = true;
+      s.onerror = ()=>{ _listeIsteniyor = false; _listeBekleyen = null; };
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function _listeTetikleri(){ return [document.getElementById('modAd'), document.querySelector('#ust .kanal.ad'), document.getElementById('bekle')].filter(Boolean); }
+  function listeGeldi(){
+    try{
+      if(typeof window.listeTetikBagla === 'function') _listeTetikleri().forEach(t=>{ try{ window.listeTetikBagla(t); }catch(e){ _yut(e); } });
+      if(_listeBekleyen && typeof window.listeAc === 'function'){ const t = _listeBekleyen; _listeBekleyen = null; window.listeAc(t); }
+    }catch(e){ _yut(e); }
+  }
+  try{ window.listeGeldi = listeGeldi; }catch(e){ _yut(e); }
+  function listeBas(t){
+    try{
+      if(window.LISTE_HAZIR && typeof window.listeDegistir === 'function'){ window.listeDegistir(t); return; }
+      _listeBekleyen = t; istasyonListesiYukle();
+    }catch(e){ _yut(e); }
+  }
+  function ustAdBas(el){
+    try{
+      if(_solYarida(el)){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); } geriGit(); return; }
+      listeBas(el);
+    }catch(e){ _yut(e); }
+  }
   try{
     [document.getElementById('modAd'), document.querySelector('#ust .kanal.ad')].forEach(_ma=>{
       if(!_ma) return;
       _ma.style.cursor='pointer'; _ma.style.pointerEvents='auto';
       _ma.setAttribute('role','button');
-      _ma.setAttribute('aria-label','Next category');
-      /* ── KLAVYE: SEKME SIRASINA GIRSIN VE ENTER/BOSLUK CALISSIN ──
-         Olculdu (30 Agustos): ekrandaki 25 kontrolden sekmeyle
-         gezilemeyen SADECE bu ikisiydi. Ayar satirlari zaten dogru
-         yapiyordu (panel kapaliyken tabindex -1, acilinca 0).
-         Neden kendiliginden olmuyor: bunlar <button> degil, span ve
-         div. role="button" yazmak ELEMANI dugme yapmiyor -- ekran
-         okuyucuya "bu bir dugme" diyor, o kadar. Sekme sirasina
-         girmesi icin tabindex, Enter/Bosluk ile calismasi icin de
-         tus dinleyicisi gerekiyor. Ikisi de olmayinca ekran okuyucu
-         "dugme" diye okuyor ama kullanici ona hic ulasamiyordu --
-         yani yanlis soz veriliyordu.
-         Bosluk tusunda preventDefault: yoksa sayfa asagi kayar. */
       _ma.setAttribute('tabindex','0');
-      _ma.removeAttribute('aria-hidden');   // dugme ise gizli olamaz
-      _ma.addEventListener('click', e=>{ e.stopPropagation(); modSiraGec(); });
+      _ma.removeAttribute('aria-hidden');
+      /* Modul geldikten sonra sagdaki adin jestleri onun; buradaki
+         click yalnizca modul yokken (ilk dokunus) ve soldaki ad icin. */
+      _ma.addEventListener('click', e=>{ e.stopPropagation(); if(_solYarida(_ma) || !window.LISTE_HAZIR) ustAdBas(_ma); });
       _ma.addEventListener('keydown', e=>{
         if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
-          e.preventDefault(); e.stopPropagation(); modSiraGec();
+          if(!_solYarida(_ma) && window.LISTE_HAZIR) return;   // modul dinliyor
+          e.preventDefault(); e.stopPropagation(); ustAdBas(_ma);
         }
       });
-      _ma.addEventListener('pointerdown', e=>e.stopPropagation());
+      _ma.addEventListener('pointerdown', e=>{ e.stopPropagation(); if(!_solYarida(_ma) && !window.LISTE_HAZIR){ _listeBekleyen = _ma; istasyonListesiYukle(); } });
     });
+    /* Etiketler: soldaki "Previous", sagdaki "Stations" -- kipe gore yer
+       degistigi icin yerlesimde tazeleniyor (bkz. ustAdEtiket). */
+    function ustAdEtiket(){
+      try{ [document.getElementById('modAd'), document.querySelector('#ust .kanal.ad')].forEach(el=>{
+        if(el) el.setAttribute('aria-label', _solYarida(el) ? 'Previous station' : 'Genres'); }); }catch(e){ _yut(e); }
+    }
+    ustAdEtiket(); window.addEventListener('resize', ustAdEtiket);
+    try{ window.ustAdEtiket = ustAdEtiket; }catch(e){ _yut(e); }
   }catch(e){ _yut(e); }
   /* ── SEMBOLLER DE AYNI DUGME ──────────────────────────────────────
      Ayri bir davranis YOK: iki hedef, tek is -- yoksa "hangisi ne
@@ -12767,7 +12833,10 @@
          degismiyor. Kullanicinin istegi tam olarak buydu --
          dinlerken eli oyalayacak bir sey. */
       if(AYAR.cark){ carkiCevir(); return; }
-      modSiraGec();
+      /* Semboller de raf listesini acar (3 Eylul): "sagda sembole ya da
+         ORBITAPE ismine basinca bunlar olacak." Modul geldikten sonra
+         jestler onun; bu click ilk dokunus icin. */
+      if(!window.LISTE_HAZIR) listeBas(_sm);
     });
   }catch(e){ _yut(e); }
   /* ── SOL ALT İSTİF ────────────────────────────────────────────────
@@ -13124,11 +13193,14 @@
           const bos = Math.max(13,
             parseFloat(getComputedStyle(su1).getPropertyValue('--modul-bosluk')) || 8);
           tut0.style.bottom = Math.round(window.innerHeight - sr.top + bos) + 'px';
-          /* SAAT TUSU TUTAMAGIN USTUNDE: ayni sol kenar. */
+          /* FIRCA VE SAAT TUTAMAGIN USTUNDE, YIGIN HALINDE: ayni sol kenar. */
           try{
-            const st = document.getElementById('saatTus');
-            if(st){ st.style.removeProperty('top');
-              st.style.bottom = Math.round(window.innerHeight - sr.top + bos + 26 + bos) + 'px'; }
+            let ust = Math.round(window.innerHeight - sr.top + bos);
+            ['deriFirca','saatTus'].forEach(id=>{
+              const e2 = document.getElementById(id); if(!e2) return;
+              ust += 26 + bos;
+              e2.style.removeProperty('top'); e2.style.bottom = ust + 'px';
+            });
           }catch(_){ _yut(_); }
           return;
         }
@@ -13144,11 +13216,16 @@
         /* Cubuk gorunmez olabilir (opacity 0, calmiyorken) ama
            kutusu yerinde: olcum opaklığa bakmiyor. */
         if(dr.height) tut0.style.top = Math.round(dr.bottom + 8) + 'px';
-        /* SAAT TUSU TUTAMAGIN ALTINDA. */
+        /* FIRCA VE SAAT TUTAMAGIN ALTINDA, YIGIN HALINDE. */
         try{
-          const st = document.getElementById('saatTus');
-          if(st && dr.height){ st.style.removeProperty('bottom');
-            st.style.top = Math.round(dr.bottom + 8 + 26 + 10) + 'px'; }
+          if(dr.height){
+            let ust = Math.round(dr.bottom + 8);
+            ['deriFirca','saatTus'].forEach(id=>{
+              const e2 = document.getElementById(id); if(!e2) return;
+              ust += 26 + 10;
+              e2.style.removeProperty('bottom'); e2.style.top = ust + 'px';
+            });
+          }
         }catch(_){ _yut(_); }
       }catch(_){ _yut(_); }
   }
@@ -13367,7 +13444,7 @@
                  tepesine firlardi. */
               let tepe = Infinity;
               const _kons = document.body.classList.contains('mood')
-                ? ['solUst','ayarTut','saatTus','kipKisayol'] : ['solUst','kipKisayol'];
+                ? ['solUst','ayarTut','deriFirca','saatTus','kipKisayol'] : ['solUst','kipKisayol'];
               _kons.forEach(id=>{
                 const e3 = document.getElementById(id); if(!e3) return;
                 const r3 = e3.getBoundingClientRect();
@@ -15597,7 +15674,7 @@
          ne varsa onu soylemeli -- sabit "top right" yazsaydi
          radyoda yanlis yere baktirirdi. */
       { bas:'SHELF', metin:(document.body.classList.contains('mood') ? 'Top right' : 'Top left')
-          + ': the genre you are in.<br>The three marks step through them.',
+          + ': the genre you are in.<br>Tap the marks or the name for the list.',
         bilir:'halka', duraklar:[{hedef:'#modAd', sure:800, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
                   {hedef:'#bekle', sure:900,
                    oynat:()=>{ try{ halkaYak(adlar[Math.max(0,n-2)]); }catch(e){ _yut(e); } }}] },
@@ -15613,6 +15690,13 @@
                   {hedef:'#araYuva', sure:620}, {hedef:'#favAc', sure:620}] },
       /* VOLUME adimi kalkti: ses cizgisi silindi, sustur tusu
          zaten bir onceki adimda (TOOLS) gosteriliyor. */
+      /* FIRCA VE SAAT (3 Eylul): iki yeni tus, uc cizginin altinda.
+         'uzun': acilis turu alti adimda kaliyor (olculu karar); bunlar
+         ayarlardan istenen tam turda anlatiliyor. */
+      { bas:'SKINS', uzun:true, metin:'The brush: every look, live.<br>Tap one and keep listening.',
+        duraklar:[{hedef:'#deriFirca', sure:900}] },
+      { bas:'TIMER', uzun:true, metin:'Sleep timer and a gentle alarm.<br>The sound fades out, then wakes you.',
+        duraklar:[{hedef:'#saatTus', sure:900}] },
       { bas:'NOW PLAYING', uzun:true, metin:'Bottom right: the station first,<br>then the track it is playing.',
         duraklar:[{hedef:'#np', sure:1300}] },
       { bas:'WHAT IS THIS?', uzun:true, metin:'Heard something good?<br>This asks your phone to name it.',
@@ -15968,7 +16052,7 @@
   document.addEventListener('pointerdown', e=>{
     if(_ilkTetik || baslatildi) return;
     const t = e.target;
-    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel')) return;  // kendi başlatıcıları var
+    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe')) return;  // kendi başlatıcıları var
     _ilkTetik = true;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     const it = ilkItem;

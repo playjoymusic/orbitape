@@ -40,6 +40,8 @@
 try{ window.SAAT_BASLADI = true; }catch(e){}
 (function(){
   const yut = e=>{ try{ _yut(e); }catch(_){} };
+  /* Ceviri: sayfadaki Y() (dil/tr.json). Modulde de ayni sozluk. */
+  const T = s=>{ try{ return (typeof Y === 'function') ? Y(s) : s; }catch(e){ return s; } };
 
   /* ── KURALLAR: CSSOM ILE, <style> ILE DEGIL ─────────────────────
      Sayfanin CSP'si ozet tabanli (style-src 'sha256-...'): buradan
@@ -53,7 +55,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
      tus var (START / ON / I'M UP). Vurgu rengi deriden (--d-marka),
      deri yoksa markanin turkuazi. */
   const KURALLAR = [
-    "#saatPanel{--st-vurgu:#35e0d8;--st-yazi:#dfe4e8;--st-zem:rgba(8,10,12,.94);position:fixed;z-index:97;left:calc(var(--kx) + env(safe-area-inset-left,0px));top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 112px);width:min(92vw,340px);max-height:calc(100vh - 140px);overflow-y:auto;background:var(--st-zem);color:var(--st-yazi);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.45);padding:12px 18px 16px;font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:.08em;font-size:12px}",
+    "#saatPanel{--st-vurgu:#35e0d8;--st-yazi:#dfe4e8;--st-zem:rgba(8,10,12,.94);position:fixed;z-index:97;left:calc(var(--kx) + env(safe-area-inset-left,0px));top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 148px);bottom:auto;width:min(92vw,340px);max-height:calc(100vh - 140px);overflow-y:auto;background:var(--st-zem);color:var(--st-yazi);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.45);padding:12px 18px 16px;font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:.08em;font-size:12px}",
     "body.deri #saatPanel{--st-vurgu:var(--d-marka,var(--d-yazi));--st-yazi:var(--d-yazi);--st-zem:var(--d-panel,var(--d-zem))}",
     "#saatPanel[hidden],#saatPanel [hidden]{display:none !important}",
     ".st-bas{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}",
@@ -109,7 +111,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   const ANAHTAR = 'orbitape.alarm';
   const ERTELE_DK = 7;
   const TEKRAR = ['off','daily','weekdays','weekends'];
-  const TEKRAR_AD = { off:'ONCE', daily:'EVERY DAY', weekdays:'WEEKDAYS', weekends:'WEEKENDS' };
+  const TEKRAR_AD = { off:'ONCE', daily:'EVERY DAY', weekdays:'WEEKDAYS', weekends:'WEEKENDS' };   // goster() T() ile ceviriyor
 
   /* ── DURUM ──────────────────────────────────────────────────────
      depo: kalici (localStorage). kip: calisma ani.
@@ -248,6 +250,9 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     /* 30 saniyede sifira. Sonra: alarm varsa gece kipi, yoksa dur. */
     gecis(0, 30000, ()=>{
       if(depo.sabah.acik){ geceTut(); return; }
+      /* Kullanici durdurmus gibi: uygulamanin kendi kurtarma yollari
+         (takilma, kilit ekrani) sesi geri acmasin. */
+      try{ _kullaniciDuraklatti = true; }catch(e){ yut(e); }
       try{ ses.pause(); }catch(e){ yut(e); }
       kip = '';
       /* Carpan geri 1'e: kullanici ertesi gun ▶'a basinca sessiz
@@ -339,20 +344,20 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     kap = el('div'); kap.id = 'saatPanel'; kap.hidden = true;
     kap.setAttribute('role', 'dialog'); kap.setAttribute('aria-label', 'Timer and alarm');
     const bas = el('div', 'st-bas');
-    bas.appendChild(el('span', 'st-baslik', 'TIMER'));
+    bas.appendChild(el('span', 'st-baslik', T('TIMER')));
     bas.appendChild(tus('kapat', '✕', kapa));
     kap.appendChild(bas);
 
     /* ALARM CALIYORKEN: iki buyuk tus. */
     calanKutu = el('div', 'st-calan'); calanKutu.hidden = true;
-    calanKutu.appendChild(el('div', 'st-calan-yazi', 'GOOD MORNING'));
-    calanKutu.appendChild(tus('ertele', 'SNOOZE ' + ERTELE_DK + ' MIN', alarmErtele));
-    calanKutu.appendChild(tus('dur', "I'M UP", alarmDurdur));
+    calanKutu.appendChild(el('div', 'st-calan-yazi', T('GOOD MORNING')));
+    calanKutu.appendChild(tus('ertele', T('SNOOZE') + ' ' + ERTELE_DK + ' ' + T('MIN'), alarmErtele));
+    calanKutu.appendChild(tus('dur', T("I'M UP"), alarmDurdur));
     kap.appendChild(calanKutu);
 
     /* UYKU */
     const u = el('div', 'st-bolum');
-    u.appendChild(el('div', 'st-ad', 'SLEEP'));
+    u.appendChild(el('div', 'st-ad', T('SLEEP')));
     const sat = el('div', 'st-satir');
     sat.appendChild(tus('eksi', '−', ()=>{ depo.uykuDk = Math.max(5, depo.uykuDk - 5); yaz(); goster(); }));
     uykuDkYazi = el('span', 'st-deger', ''); sat.appendChild(uykuDkYazi);
@@ -362,15 +367,15 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     hizliTuslar = [15, 30, 60, 90, 120].map(dk=>{ const t = tus('hizli', dk + '', ()=>{ depo.uykuDk = dk; yaz(); goster(); }); t.dataset.dk = String(dk); hz.appendChild(t); return t; });
     u.appendChild(hz);
     const us = el('div', 'st-satir');
-    us.appendChild(tus('basla', 'START', ()=>uykuKur(depo.uykuDk)));
-    us.appendChild(tus('iptal', 'CANCEL', uykuIptal));
+    us.appendChild(tus('basla', T('START'), ()=>uykuKur(depo.uykuDk)));
+    us.appendChild(tus('iptal', T('CANCEL'), uykuIptal));
     u.appendChild(us);
     uykuDurum = el('div', 'st-durum', ''); u.appendChild(uykuDurum);
     kap.appendChild(u);
 
     /* SABAH */
     const s = el('div', 'st-bolum');
-    s.appendChild(el('div', 'st-ad', 'WAKE'));
+    s.appendChild(el('div', 'st-ad', T('WAKE')));
     const ss = el('div', 'st-satir');
     sabahSaatGiris = document.createElement('input'); sabahSaatGiris.type = 'time'; sabahSaatGiris.className = 'st-saat';
     sabahSaatGiris.setAttribute('aria-label', 'Wake time');
@@ -382,7 +387,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     const sa = el('div', 'st-satir');
     sabahAile = document.createElement('select'); sabahAile.className = 'st-secim';
     sabahAile.setAttribute('aria-label', 'Wake with');
-    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'ANY STATION'; sabahAile.appendChild(o0);
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = T('ANY STATION'); sabahAile.appendChild(o0);
     try{ (AILE_ADLAR || []).forEach(ad=>{ const o = document.createElement('option'); o.value = ad; o.textContent = ad; sabahAile.appendChild(o); }); }catch(e){ yut(e); }
     sabahAile.addEventListener('change', ()=>{ depo.sabah.aile = sabahAile.value; yaz(); goster(); });
     sa.appendChild(sabahAile);
@@ -417,25 +422,31 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       if(!kap) return;
       const s = Date.now();
       calanKutu.hidden = kip !== 'caliyor';
-      uykuDkYazi.textContent = depo.uykuDk + ' MIN';
+      uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
       hizliTuslar.forEach(t=>t.classList.toggle('secili', +t.dataset.dk === depo.uykuDk));
       if(depo.uykuBitis){
         const kalan = Math.max(0, Math.round((depo.uykuBitis - s) / 60000));
-        uykuDurum.textContent = 'Fades out at ' + saatYazisi(depo.uykuBitis) + ' · ' + kalan + ' min left';
-      }else if(kip === 'gece') uykuDurum.textContent = 'Sleeping · silent until the alarm';
-      else uykuDurum.textContent = 'Off';
+        uykuDurum.textContent = T('Fades out at') + ' ' + saatYazisi(depo.uykuBitis) + ' · ' + kalan + ' ' + T('min left');
+      }else if(kip === 'gece') uykuDurum.textContent = T('Sleeping · silent until the alarm');
+      else uykuDurum.textContent = T('Off');
       sabahSaatGiris.value = depo.sabah.saat;
       sabahAile.value = depo.sabah.aile;
-      sabahTekrar.textContent = TEKRAR_AD[depo.sabah.tekrar];
-      sabahAnahtar.textContent = depo.sabah.acik ? 'ON' : 'OFF';
+      sabahTekrar.textContent = T(TEKRAR_AD[depo.sabah.tekrar]);
+      sabahAnahtar.textContent = depo.sabah.acik ? T('ON') : T('OFF');
       sabahAnahtar.setAttribute('aria-checked', depo.sabah.acik ? 'true' : 'false');
       sabahAnahtar.classList.toggle('acik', depo.sabah.acik);
-      if(erteleHedef) sabahDurum.textContent = 'Snoozed · rings at ' + saatYazisi(erteleHedef);
+      if(erteleHedef) sabahDurum.textContent = T('Snoozed · rings at') + ' ' + saatYazisi(erteleHedef);
       else if(depo.sabah.acik && depo.sabah.hedef){
-        const gun = new Date(depo.sabah.hedef).toDateString() === new Date().toDateString() ? 'today' : 'tomorrow';
-        sabahDurum.textContent = 'Rings ' + depo.sabah.saat + ' ' + gun + (depo.sabah.aile ? ' · ' + depo.sabah.aile : '');
+        const gun = new Date(depo.sabah.hedef).toDateString() === new Date().toDateString() ? T('today') : T('tomorrow');
+        sabahDurum.textContent = T('Rings') + ' ' + depo.sabah.saat + ' ' + gun + (depo.sabah.aile ? ' · ' + depo.sabah.aile : '');
       }else sabahDurum.textContent = '';
-      notYazi.hidden = !depo.sabah.acik;
+      /* CAR MODE'da ses zinciri yok: iPhone'da eleman seviyesi yazilamaz,
+         fade ve sabah rampasi islemez -- soyleniyor, sessizce degil. */
+      const arac = (typeof AYAR !== 'undefined' && AYAR && AYAR.arac === true);
+      notYazi.textContent = arac
+        ? T('CAR MODE is on: the sound goes straight to the output, so fade-out and the gentle wake ramp are not available on iPhone. Sleep still stops the sound; the alarm starts at full volume.')
+        : T('Keep ORBITAPE open; the screen may lock. Until the alarm the sound stays on, silently, so the clock keeps running.');
+      notYazi.hidden = !(depo.sabah.acik || arac);
     }catch(e){ yut(e); }
   }
   function ac(){
@@ -443,6 +454,16 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       kur(); goster();
       if(!kap.hidden) return;
       kap.hidden = false;
+      /* Panel tusun yanina: radyoda altina, SOUND BANKS'te (tus altta)
+         ustune. Sabit sayi degil olcum -- ustteki tus sirasi degisiyor. */
+      try{
+        const f = document.getElementById('saatTus');
+        const r = f ? f.getBoundingClientRect() : null;
+        if(r && r.height){
+          if(r.top < window.innerHeight / 2){ kap.style.bottom = ''; kap.style.top = Math.round(r.bottom + 10) + 'px'; }
+          else { kap.style.top = ''; kap.style.bottom = Math.round(window.innerHeight - r.top + 10) + 'px'; }
+        }
+      }catch(e){ yut(e); }
       document.body.classList.add('saat-acik');
       const f = document.getElementById('saatTus'); if(f) f.setAttribute('aria-expanded', 'true');
       try{ if(typeof pencereAc === 'function') pencereAc(kap, kap.querySelector('.st-tus.kapat')); }catch(e){ yut(e); }

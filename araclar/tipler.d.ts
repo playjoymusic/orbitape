@@ -73,6 +73,30 @@ interface Window {
   saatKilitPlay?: () => boolean;
   saatKilitPause?: () => boolean;
 
+  /* Deri galerisi (deri_galeri.js): firca. */
+  DERI_GALERI_BASLADI?: boolean;
+  DERI_GALERI_HAZIR?: boolean;
+  deriGaleriGeldi?: () => void;
+  deriGaleriAc?: () => void;
+  deriGaleriKapa?: () => void;
+  deriGaleriDegistir?: () => void;
+  deriGaleriAcik?: () => boolean;
+  deriGaleriAdim?: (y: number) => void;
+  deriGaleriKucult?: () => void;
+
+  /* Istasyon listesi (liste.js): sag ust ad ve semboller. */
+  LISTE_BASLADI?: boolean;
+  LISTE_HAZIR?: boolean;
+  listeGeldi?: () => void;
+  listeAc?: (tetik?: Element) => void;
+  listeKapa?: () => void;
+  listeDegistir?: (tetik?: Element) => void;
+  listeAcik?: () => boolean;
+  listeTetikBagla?: (t: Element) => void;
+  listeTazele?: () => void;
+  listeCalanIsaretle?: () => void;
+  ustAdEtiket?: () => void;
+
   /* Uygulamanin kendi sabitleri */
   ARSIV_KURSUN?: string;
 
