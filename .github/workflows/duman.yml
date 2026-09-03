@@ -60,7 +60,7 @@ jobs:
   duman:
     name: Yayin ayakta mi
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       # Depo lazım: betiğin kendisi, karşılaştırılacak index.html ve
@@ -113,10 +113,15 @@ jobs:
         id: duman
         env:
           ADRES: https://orbitape.app
-          # push: yayının yetişmesini 7 dakikaya kadar bekle.
+          # push: yayının yetişmesini bekle. 420 -> 840 (3 Eylul, kosu
+          # #38): yayin isi once tam kapiyi kosuyor (7 dk), sonra
+          # wrangler; 7 dk'lik bekleme kapinin kendisinden kisa
+          # kaliyordu ve index.html degisen her push'ta duman yanlis
+          # alarm veriyordu. 14 dk kapi + yayin + kenar yayilmasini
+          # kapsiyor; gercek bir bozukluk en fazla o kadar gec bildirilir.
           # schedule: bekleme yok, sadece sağlık sorusu.
           KATI: ${{ github.event_name == 'push' && '1' || '0' }}
-          BEKLE: '420'
+          BEKLE: '840'
         run: |
           set -o pipefail
           bash araclar/duman.sh 2>&1 | tee /tmp/duman_cikti.txt
