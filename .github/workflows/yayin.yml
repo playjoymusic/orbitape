@@ -135,6 +135,16 @@ jobs:
     steps:
       - name: Depoyu al
         uses: actions/checkout@v5
+      # ── DERLE: KATI KARSILASTIRMA DERLENMIS KOPYAYLA ────────────
+      #   Kosu #18 (3 Eylul): yayin cikti, bu is 15 dk asili kalip
+      #   kesildi. Sebep: yayin/ burada uretilmiyordu; duman.sh
+      #   kaynak index.html'i (yorumlu) yayindaki yorumsuz dosyayla
+      #   karsilastirdi, ozet hic tutmadi, uc deneme x 7 dk bekledi.
+      #   Yayindaki dosya derlenmis kopya; karsilastirma da onunla.
+      - name: Node kur
+        run: npm ci
+      - name: Derle (yayin/)
+        run: python3 araclar/derle.py
       - name: Canli duman testi
         id: duman
         env:

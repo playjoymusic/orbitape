@@ -65,7 +65,14 @@ echo
 KATI_SONUC=0
 # YAYINDAKI DOSYA DERLENMIS KOPYA (yayin/index.html): yorumlar dusmus,
 # kaynakla birebir degil. Cikti yoksa once araclar/derle.py.
-KAYNAK_INDEX="$KOK/yayin/index.html"; [ -f "$KAYNAK_INDEX" ] || KAYNAK_INDEX="$KOK/index.html"
+# KAYNAGA DUSMEK YOK (kosu #18): kaynak yorumlu, yayin yorumsuz; ozet
+# hicbir zaman tutmaz ve BEKLE saniye bosa gecer (uc denemede 21 dk,
+# isin 15 dk siniri asilir). Derlenmis kopya yoksa hemen HAYIR.
+KAYNAK_INDEX="$KOK/yayin/index.html"
+if [ "$KATI" = 1 ] && [ ! -f "$KAYNAK_INDEX" ]; then
+  echo "  HAYIR  yayin/index.html yok — once: python3 araclar/derle.py"
+  exit 1
+fi
 if [ "$KATI" = 1 ] && [ -f "$KAYNAK_INDEX" ]; then
   ozet(){ shasum -a 256 "$1" 2>/dev/null | cut -d' ' -f1 || sha256sum "$1" | cut -d' ' -f1; }
   bizim=$(ozet "$KAYNAK_INDEX")
