@@ -8835,7 +8835,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         try{ ses.pause(); }catch(e){}
         uykuIptal(); await bek(100);
         sabahKur(true); await bek(600);
-        c.alarmOturumu = document.body.classList.contains('gece') && !ses.paused;
+        /* CI'DA GERCEK SES AYGITI YOK: sessiz dongunun play()'i orada
+           reddediliyor ve "ses caliyor mu" yanlis soru olur (kosu
+           #244 tam boyle kirmizi yandi). Olculen sey KURULUM: gece
+           kipi acildi mi ve dongu (loop + kaynak) hazir mi. */
+        c.alarmOturumu = document.body.classList.contains('gece')
+                      && ses.loop === true && !!ses.src;
         sabahKur(false); await bek(300);
         c.kapaninca = !document.body.classList.contains('gece');
         /* SAYAC: kosarken kalan sure geri sayiyor, tus CANCEL oluyor;
