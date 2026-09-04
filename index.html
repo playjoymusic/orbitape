@@ -961,6 +961,15 @@
      PUNTO buyuk: karsisinda yer var. Kesin sayi JS'te olculuyor
      (_solUstAdSigdir) cunku "WORLD & ROOTS" ile "JAZZ" ayni degil
      ve dar ekranda marka yazisiyla carpisiyordu. */
+  /* ── RADYODA SOL UST BOS (4 Eylul) ────────────────────────────
+     Kullanicinin sozu: "sol ustten de artik tur istasyon isimleri
+     yazmayacak, 3 cizgi en uste dayanacak." Raf adi artik carkin
+     kendisinde: igne neyi gosteriyorsa o. Blok arsivde (mood)
+     yerinde duruyor -- orada cark yok.
+     display:none DEGIL: goruntuden cikiyor ama olculebilir kaliyor,
+     yoksa adin genisligini olcen kod (_solUstAdSigdir) sifir
+     okuyup her seferinde en buyuk puntoyu secerdi. */
+  body:not(.mood) #modKut{visibility:hidden;pointer-events:none;}
   body:not(.mood) #modKut{display:flex;position:fixed;z-index:70;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:calc(15px + env(safe-area-inset-top, 0px));
@@ -2189,6 +2198,25 @@
      Uc katman birden kalkiyor; oluklar duruyor. */
   body.kam.deri .disk::after{--d-cek:transparent;--d-cekirdek:transparent;
     --d-cek-isik:transparent;--d-cek-golge:transparent;}
+  /* ── CIZIMLI DERIDE KAMERA ARKADA KALIYORDU (4 Eylul) ──────────
+     Kullanicinin olctugu sey: "kamera acinca bazi skinlerde
+     gorunmedi, arkada kalmis." Sebep: cizimli derilerde govde
+     katmani (.disk::after) tek parca bir RESIM (--d-halka-resim) ve
+     ::after cocuklardan SONRA boyaniyor -- yani #kam'in (z-index 0)
+     tam ustune opak bir kapak koyuyor. Yukaridaki kural yalnizca
+     cekirdegi saydamlastiriyor, resmi degil.
+     Kamera acikken govde katmanlari tamamen cekiliyor: geriye
+     kamera goruntusu ve uygulamanin kendi halkasi (#viz, z-index 1)
+     kaliyor. Kamera kapaninca deri oldugu gibi geri geliyor. */
+  /* ── COZUM MASKE DEGIL, KATMAN SIRASI ─────────────────────────
+     Ilk deneme derinin ortasini maskeyle deliyordu ve kenar
+     bulanik bir halka gibi duruyordu -- kullanici hakli olarak
+     "amatorce" dedi. Dogrusu daha basit: kamera deri govdesinin
+     USTUNE aliniyor, halka da kameranin ustune. Kesim yok, kenar
+     kameranin kendi yumusak maskesinden geliyor.
+        deri govdesi (0)  <  kamera (2)  <  halka tuvali (3)      */
+  body.kam #kam{z-index:2;}
+  body.kam #viz{z-index:3;}
 
   /* ── RINGS ONLY: GOVDE KALKIYOR, HALKA KALIYOR ────────────────
      Deride tuval kapali ve halkalar CSS ile ciziliyor -- duz, net,
@@ -2470,8 +2498,10 @@
      alt kenari + 8px. Buradaki 54px ilk karenin yedegi.
      En ust cizgi 25px = #modDalga genisligi (1.8em @ 14px);
      alttakiler 6'sar azaliyor, eski 34/27/20 oraninin ayni egimi. */
+  /* 4 Eylul: raf adi bloku goruntuden cikinca tutamak EN USTE
+     dayaniyor -- artik altinda duracagi bir cubuk yok. */
   body:not(.mood) #ayarTut{
-    top:calc(54px + env(safe-area-inset-top, 0px));
+    top:calc(15px + env(safe-area-inset-top, 0px));
     bottom:auto;width:25px;height:22px;gap:4px;}
   body:not(.mood) #ayarTut span:nth-child(1){width:25px;}
   body:not(.mood) #ayarTut span:nth-child(2){width:19px;}
@@ -3265,6 +3295,13 @@
     <div class="sat islem" data-ayar="tema" role="button" tabindex="-1"
          aria-expanded="false" aria-controls="temaIzgara">
       <span>THEME</span><span class="durum">AUTO</span></div>
+    <!-- ── CARK TIKIRTISI ────────────────────────────────────────
+         Carki cevirirken her diste cikan kisa tik. Kullanicinin
+         sozu: "tatli bir ses olsun, ASMR etkisi olsun." Dosya
+         indirilmiyor, ses baglaminda uretiliyor (cark.js).
+         Isteyen kapatir: bazi kisiler icin surekli tik yorucudur. -->
+    <div class="sat" data-ayar="carkSes" role="switch" tabindex="-1">
+      <span>WHEEL CLICK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- Izgara calisma aninda TEMALAR tablosundan uretiliyor: tablo
          tek kaynak, buraya elle otuz bes kutu yazilmiyor. -->
     <div id="temaIzgara" role="listbox" aria-label="Theme" hidden></div>
@@ -3291,11 +3328,10 @@
          geciken ucuncu, kutlama ya da kisa bir sonme. Ama bugune
          kadar yalnizca BEKLERKEN donuyordu -- yani tam da muzigin
          gelmesiyle duruyordu.
-         Bu anahtar acikken sembollere basmak rafi DEGISTIRMIYOR,
-         carki ceviriyor. Kullanicinin sozu: "basilir dedigim
-         donduRecek iste, oyun, kumar makinesi gibi." -->
-    <div class="sat" data-ayar="cark" role="switch" tabindex="-1">
-      <span>SYMBOL SPIN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+         4 Eylul: ANAHTAR KALKTI, davranis sabit -- sembollere basmak
+         her zaman carki ceviriyor, baska hicbir seye dokunmuyor.
+         Kullanicinin sozu: "sembollere sadece sembolleri dondurmek
+         icin basilacak, ayarlardaki secenegi kapat." -->
     <div class="sat islem" data-ayar="deri" role="button" tabindex="-1"
          aria-expanded="false" aria-controls="deriIzgara">
       <span>SKINS</span><span class="durum">OFF</span></div>
@@ -3780,7 +3816,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.03';
+  var ORB_SURUM = '2026.09.04';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -4905,6 +4941,49 @@
      dokunus bekletilir, modul "bittim" deyince yerine getirilir. */
   const DERI_GALERI_DOSYA = 'deri_galeri.js';
   let _galeriIsteniyor = false, _galeriBekliyor = false;
+  /* ── CARK MODULU ────────────────────────────────────────────────
+     Ilk cizimde gerekmiyor: halka ciziliyor, cark bir sonraki
+     bosluk karesinde iniyor (ilk cizim tavani 100 KB). */
+  const CARK_DOSYA = 'cark.js';
+  let _carkIsteniyor = false;
+  function carkYukle(){
+    try{
+      if(window.CARK_HAZIR || _carkIsteniyor) return;
+      _carkIsteniyor = true;
+      const s = document.createElement('script');
+      s.src = CARK_DOSYA; s.defer = true;
+      s.onerror = ()=>{ _carkIsteniyor = false; };
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function carkGeldi(){ try{ merkezUygula(); }catch(e){ _yut(e); } }
+  try{ window.carkGeldi = carkGeldi; }catch(e){ _yut(e); }
+  /* ── MERKEZ: ORTADAKI ALET ──────────────────────────────────────
+     Dort cesit, hepsinde deri ve zemin ayni; degisen ortadaki sey.
+       cark     -> disk cemberi + halka (varsayilan)
+       halka    -> uygulamanin organik halkasi (RING acik)
+       yuvarlak -> derinin kendi govdesi (RING kapali)
+       faz      -> ses tayfi (halkanin disinda cubuklar)
+     Sinif govdede: gorunum CSS'te, secim burada. */
+  function merkezUygula(){
+    try{
+      const m = (AYAR.merkez || 'cark');
+      document.body.classList.toggle('merkez-cark', m === 'cark');
+      document.body.classList.toggle('merkez-faz', m === 'faz');
+      /* halka/yuvarlak ayrimi RING anahtariyla ayni sey: govde mi
+         halka mi. Cark ve faz halkayla birlikte duruyor. */
+      AYAR.halka = (m !== 'yuvarlak');
+      try{ deriUygula(); }catch(e){ _yut(e); }
+      try{ vizSize(); vizLoop(performance.now()); }catch(e){ _yut(e); }
+      if(m === 'cark' || m === 'faz'){
+        if(!window.CARK_HAZIR){ carkYukle(); return; }
+        try{ window.carkAc(m); }catch(e){ _yut(e); }
+      }else if(window.CARK_HAZIR){
+        try{ window.carkKapa(); }catch(e){ _yut(e); }
+      }
+    }catch(e){ _yut(e); }
+  }
+  try{ window.merkezUygula = merkezUygula; window.carkYukle = carkYukle; }catch(e){ _yut(e); }
   function deriGaleriYukle(){
     try{
       if(window.DERI_GALERI_HAZIR || _galeriIsteniyor) return;
@@ -8643,7 +8722,11 @@
      insanlar isterse kapatir halkayi, bu yuvarlak acilir." Deri
      kapaliyken zaten gorunur bir etkisi yok; deri secilince
      govde yerine halka geliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, sesAcildi:true, halka:true, mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
+  /* merkez: ortadaki alet. 'cark' varsayilan (4 Eylul: "artik ilk
+     cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
+     (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
+     cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesAcildi:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -8659,9 +8742,11 @@
       if(_a.sesAcildi){
         if(_a.aramaSes === false) AYAR.aramaSes = false;
         if(_a.tikSes  === false) AYAR.tikSes  = false;
+        if(_a.carkSes === false) AYAR.carkSes = false;
+        if(typeof _a.merkez === 'string' && ['cark','halka','yuvarlak','faz'].indexOf(_a.merkez) >= 0)
+          AYAR.merkez = _a.merkez;
       }
       AYAR.sesAcildi = true;
-      if(_a.cark    === true)  AYAR.cark    = true;
       if(_a.arac    === true)  AYAR.arac    = true;
       /* TUTORIALS: varsayilan ACIK. Yalnizca kullanici kapattiysa
          kapali geliyor -- yeni gelen kisi anlatimsiz kalmasin. */
@@ -12893,11 +12978,12 @@
          dokunmuyor: sarki atlamiyor, raf degismiyor, oda
          degismiyor. Kullanicinin istegi tam olarak buydu --
          dinlerken eli oyalayacak bir sey. */
-      if(AYAR.cark){ carkiCevir(); return; }
-      /* Semboller de raf listesini acar (3 Eylul): "sagda sembole ya da
-         ORBITAPE ismine basinca bunlar olacak." Modul geldikten sonra
-         jestler onun; bu click ilk dokunus icin. */
-      if(!window.LISTE_HAZIR) listeBas(_sm);
+      /* ── SEMBOLLER YALNIZCA DONER (4 Eylul) ────────────────────
+         Kullanicinin sozu: "sembollere sadece sembolleri dondurmek
+         icin basilacak, ayarlardaki secenegi kapat, sabit olsun."
+         Liste artik yalnizca sagdaki ADDAN aciliyor; sembol tek is
+         yapiyor ve o is her zaman ayni. */
+      carkiCevir();
     });
   }catch(e){ _yut(e); }
   /* ── SOL ALT İSTİF ────────────────────────────────────────────────
@@ -13270,21 +13356,19 @@
            arasinda degisiyor (bkz. _solUstAdSigdir), yani cubugun
            yeri de degisiyor. Sabit sayi bir puntoda bosluk birakir,
            otekinde cubuga biner. */
+        /* 4 Eylul: sol ustteki ad bloku goruntuden cikti, tutamagin
+           altinda duracagi bir cubuk yok. Yer artik CSS'te (en ust);
+           JS yalnizca firca ve saati onun altina diziyor. */
         tut0.style.removeProperty('bottom');
-        const dal = document.getElementById('modDalga');
-        if(!dal) return;
-        const dr = dal.getBoundingClientRect();
-        /* Cubuk gorunmez olabilir (opacity 0, calmiyorken) ama
-           kutusu yerinde: olcum opaklığa bakmiyor. */
-        if(dr.height) tut0.style.top = Math.round(dr.bottom + 8) + 'px';
-        /* FIRCA VE SAAT TUTAMAGIN ALTINDA, YIGIN HALINDE. */
+        tut0.style.removeProperty('top');
         try{
-          if(dr.height){
-            let ust = Math.round(dr.bottom + 8);
+          const tr = tut0.getBoundingClientRect();
+          if(tr.height){
+            let ust = Math.round(tr.bottom + 10);
             ['deriFirca','saatTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
-              ust += 26 + 10;
               e2.style.removeProperty('bottom'); e2.style.top = ust + 'px';
+              ust += 26 + 10;
             });
           }
         }catch(_){ _yut(_); }
@@ -16187,6 +16271,13 @@
      sonra, yalnizca imza yoksa; sorgu dizesi bozuk onbellegi atlar.
      O da gelmezse ayni sessiz eksiklik -- dinlemek icin gerekmiyor,
      kullaniciya hata gosterilmiyor. */
+  /* ── MERKEZ ILK KAREDEN SONRA ──────────────────────────────────
+     Cark ilk cizimde gerekmiyor: once halka boyaniyor, hemen sonra
+     modul inip ortadaki alet yerine oturuyor. */
+  try{
+    window.addEventListener('load', ()=>{ setTimeout(()=>{
+      try{ merkezUygula(); }catch(e){ _yut(e); } }, 120); });
+  }catch(e){ _yut(e); }
   try{
     window.addEventListener('load', ()=>{
       setTimeout(()=>{

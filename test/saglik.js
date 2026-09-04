@@ -3623,24 +3623,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           && /hedefHiz = 1 - cek\*/.test(blok);
     }), 'wow derinligi + LFO yavaslamasi + pitch, ucu birden');
 
-  /* ── SEMBOL CARKI ────────────────────────────────────────────
+  /* ── SEMBOL CARKI: TEK IS, HER ZAMAN AYNI ────────────────────
      Uc sembol zaten bir kumar makinesiydi ama yalnizca BEKLERKEN
-     donuyordu -- yani tam da muzik gelince duruyordu. Ayarlardaki
-     SYMBOL SPIN acikken sembollere basmak rafi degistirmiyor,
-     carki ceviriyor.
-     Kullanicinin sozu: "artik semboller bagimsiz olur, ustune
-     basinca sadece random doner, yani sarki ararken ki ayni
-     matematik; ama sadece semboller donup sonra duruyor, sonuc
-     gibi."
-     ANAHTARIN IKI YONU DE olculuyor. Yalnizca acik hali olculse,
-     anahtar kapaliyken de rafi degistirmez hale gelse bu test yine
-     yesil yanardi -- ve eski davranis sessizce kaybolurdu. */
+     donuyordu -- yani tam da muzik gelince duruyordu. Once bir
+     ayar (SYMBOL SPIN) eklendi; 4 Eylul'de o ayar KALKTI:
+     "sembollere sadece sembolleri dondurmek icin basilacak,
+     ayarlardaki secenegi kapat, sabit olsun."
+     Olculen sey artik tek: sembole basmak rafi DEGISTIRMIYOR,
+     liste ACMIYOR, yalnizca sembolleri donduruyor. */
   {
     const cark = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const bk = document.getElementById('bekle');
       if(!bk) return null;
-      const eskiCark = AYAR.cark, eskiSinif = bk.className;
+      const eskiSinif = bk.className;
       bk.classList.add('buyuk','on');
       try{ bekleGenisligiAyarla(); }catch(e){}
       const sem = ()=>[...document.querySelectorAll('#bekleGly .yuva')]
@@ -3651,45 +3647,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await bek(800);
       try{ bekleDondur(); }catch(e){}
       await bek(1500);
-
-      /* KAPALI: eski davranis -- raf degisiyor. */
-      /* KAPALI: semboller artik raf DEGISTIRMIYOR, istasyon listesini
-         aciyor (3 Eylul). Jest pointer olaylariyla (modul dinliyor). */
-      AYAR.cark = false;
-      const rafOnce = raf();
-      const vur = (t)=>bk.dispatchEvent(new PointerEvent(t, {bubbles:true, pointerId:11, clientX:innerWidth-40, clientY:60}));
       try{ if(window.listeKapa) listeKapa(); }catch(e){}
-      /* Modul yoksa ilk dokunus click ile iner; varsa jest pointer. */
-      if(window.LISTE_HAZIR){ vur('pointerdown'); vur('pointerup'); } else bk.click();
-      for(let i = 0; i < 50 && !window.LISTE_HAZIR; i++) await bek(100);
-      await bek(500);
-      const kapaliDegisti = raf() === rafOnce && !!(window.listeAcik && listeAcik());
-      try{ listeKapa(); }catch(e){}
-
-      /* ACIK: raf SABIT, semboller degisiyor. */
-      AYAR.cark = true;
       const raf2 = raf(), sem2 = sem();
       bk.click(); await bek(2400);
-      const acikSabit = raf() === raf2;
+      const rafSabit = raf() === raf2;
       const semDegisti = sem() !== sem2;
-
-      AYAR.cark = eskiCark; bk.className = eskiSinif;
-      return { kapaliDegisti, acikSabit, semDegisti,
+      const listeKapali = !(window.listeAcik && listeAcik());
+      bk.className = eskiSinif;
+      return { rafSabit, semDegisti, listeKapali,
                fonkVar: typeof carkiCevir === 'function',
                /* Ayni matematik: cark kendi zarini atmiyor,
                   bekleDondur uzerinden _turSonucu'ya gidiyor. */
                ayniMatematik: /function carkiCevir\(\)[\s\S]{0,1600}?bekleDondur\(\)/
                                 .test(document.documentElement.innerHTML),
-               satirVar: !!document.querySelector('#ayar .sat[data-ayar="cark"]') };
+               ayarYok: !document.querySelector('#ayar .sat[data-ayar="cark"]') };
     });
-    K('Sembol carki: acikken raf degismiyor, semboller donuyor',
-       !!cark && cark.fonkVar && cark.satirVar
-       && cark.kapaliDegisti === true      // anahtar KAPALI: raf sabit, liste acildi
-       && cark.acikSabit === true          // anahtar ACIK: raf sabit
-       && cark.semDegisti === true,        // ...ama semboller degisti
-       cark ? ('kapali: raf degisti ' + cark.kapaliDegisti
-               + ' · acik: raf sabit ' + cark.acikSabit
-               + ', semboller degisti ' + cark.semDegisti) : 'olculemedi');
+    K('Sembole basmak yalnizca sembolleri donduruyor',
+       !!cark && cark.fonkVar && cark.rafSabit === true
+       && cark.semDegisti === true && cark.listeKapali === true,
+       cark ? ('raf sabit ' + cark.rafSabit + ' · semboller degisti ' + cark.semDegisti
+               + ' · liste kapali ' + cark.listeKapali) : 'olculemedi');
+    K('SYMBOL SPIN ayari kalkti (davranis sabit)',
+       !!cark && cark.ayarYok === true, 'ayarlarda satir yok');
     K('Cark sarki ararkenki matematigi kullaniyor',
        !!cark && cark.ayniMatematik === true,
        'carkiCevir kendi zarini atmiyor, bekleDondur/_turSonucu uzerinden gidiyor');
@@ -7409,17 +7388,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      && (ayTut.mood ? (ayTut.dipFark > 0 && ayTut.dipFark <= 200)
                     : (ayTut.ustFark > 0 && ayTut.ustFark < ayTut.ekranBoy/2)),
      (ayTut ? (ayTut.mood?'arsiv: dipten '+ayTut.dipFark:'radyo: tepeden '+ayTut.ustFark)+'px | sol kenardan '+ayTut.solFark+'px' : '-'));
-  /* RADYODA OLCU KOMSUDAN ALINIYOR: tutamak frekans cubugunun
-     hemen altinda, ayni sol kenarda ve EN UST CIZGISI cubukla ayni
-     boyda. Kullanicinin sozu: "frekansla ayni uzunluk olsun."
-     Sabit bir sayiyi degil, iki nesne arasindaki ILISKIYI
-     olcuyoruz: raf adinin puntosu degisince cubuk da tutamak da
-     birlikte hareket etmeli. */
-  K('Radyoda tutamak frekans cubugunun olcusunde',
+  /* RADYODA TUTAMAK EN USTTE (4 Eylul): sol ustteki raf adi bloku
+     goruntuden cikti ("sol ustten artik tur istasyon isimleri
+     yazmayacak, 3 cizgi en uste dayanacak"), yani tutamagin altinda
+     duracagi bir cubuk kalmadi. Olculen sey degisti: cubukla olan
+     mesafe degil, EKRANIN TEPESINE dayanmis olmasi. Sol kenar ve
+     cizgi boyu kurallari duruyor. */
+  K('Radyoda tutamak en uste dayali',
      !!ayTut && (ayTut.mood || (
-        ayTut.cubukAlti !== null && ayTut.cubukAlti >= 4 && ayTut.cubukAlti <= 14
+        ayTut.ustFark > 0 && ayTut.ustFark <= 70
      && Math.abs(ayTut.cubukSol) <= 1
-     && Math.abs(ayTut.enUstCizgi - ayTut.cubukBoy) <= 1)),
+     && ayTut.enUstCizgi >= 20)),
      ayTut && !ayTut.mood
        ? 'cubugun '+ayTut.cubukAlti+'px altinda | cizgi '+ayTut.enUstCizgi+'px / cubuk '+ayTut.cubukBoy+'px'
        : 'arsiv kipi, bu kural orada yok');
@@ -8694,6 +8673,41 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       if(sz > 40) kotu.push(d.ad + ' zemin sapmasi ' + Math.round(sz));
       if(sc > 70) kotu.push(d.ad + ' cekirdek sapmasi ' + Math.round(sc));
     });
+    /* ── KAMERA CIZIMLI DERININ ARKASINDA KALMIYOR (4 Eylul) ──────
+       Kullanicinin olctugu sey: "kamera acinca bazi skinlerde
+       gorunmedi, arkada kalmis." Cizimli deride govde katmani tek
+       parca bir resim ve ::after cocuklardan SONRA boyaniyor, yani
+       #kam'in tam ustune opak bir kapak koyuyordu. Kamera acikken o
+       katmanin ortasi maskeyle deliniyor. */
+    const kamKat = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const eskiDeri = AYAR.deri|0, eskiHalka = !!AYAR.halka;
+        const no = DERILER.findIndex(d => d && d.cizim) + 1;
+        AYAR.deri = no; AYAR.halka = false; deriUygula(); await bek(300);
+        const disk = document.querySelector('.disk');
+        const kapali = getComputedStyle(disk, '::after').maskImage || 'none';
+        document.body.classList.add('kam'); await bek(200);
+        const acik = getComputedStyle(disk, '::after').maskImage || 'none';
+        document.body.classList.remove('kam');
+        AYAR.deri = eskiDeri; AYAR.halka = eskiHalka; deriUygula(); await bek(200);
+        /* Olculen sey KATMAN SIRASI: kamera acikken kamera deri
+           govdesinin ustunde, halka da kameranin ustunde. */
+        void kapali; void acik;
+        document.body.classList.add('kam'); await bek(150);
+        const zk = +getComputedStyle(document.getElementById('kam')).zIndex || 0;
+        const zv = +getComputedStyle(document.getElementById('viz')).zIndex || 0;
+        document.body.classList.remove('kam'); await bek(100);
+        const zk2 = +getComputedStyle(document.getElementById('kam')).zIndex || 0;
+        c.deliniyor = zk >= 2 && zv > zk;
+        c.kapaliyken = zk2 < 1;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('Kamera cizimli derinin ustunde, halka kameranin ustunde',
+      !!kamKat.deliniyor && !!kamKat.kapaliyken,
+      kamKat.hata || 'kam z-index 2, viz 3; kapaliyken 0');
     K('Deri acikken fotograf ekranin zeminini ve diskini tasiyor',
       kotu.length === 0 && (deriFoto || []).length === 2,
       kotu.length ? kotu.join(', ') : not.join(' | '));
@@ -8903,6 +8917,58 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Alarm geri sayimi panelde', st.geriSayim, ozet || 'kac saat kac dakika kaldi');
     K('Saat panelinde bosluga dokunus kapatir ve yutulur', st.bosKapatti && st.bosYutuldu, ozet || 'sonraki() 0');
   }
+  /* ── CARK (cark.js): ORTADAKI ALET ───────────────────────────────
+     4 Eylul, kullanici: "artik ilk cark ile aciliyoruz." Halkanin
+     disina dis cemberi; parmakla cevriliyor, her diste tik sesi,
+     durunca ignenin altindaki RAF aciliyor. Olculenler: modul
+     iniyor mu, varsayilan merkez cark mi, cevirme rafi degistiriyor
+     mu, ve raf adi EKRANIN BASKA YERINDE yazmiyor mu (sol ust bos). */
+  {
+    const ck = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        c.varsayilan = AYAR.merkez === 'cark';
+        if(!window.CARK_HAZIR){ try{ window.carkYukle(); }catch(e){} }
+        for(let i = 0; i < 60 && !window.CARK_HAZIR; i++) await bek(100);
+        c.geldi = !!window.CARK_HAZIR;
+        try{ window.merkezUygula(); }catch(e){}
+        await bek(400);
+        const t = document.getElementById('carkTuval');
+        c.tuvalVar = !!t && t.style.display !== 'none';
+        /* Cevirme: dis bandinda yay cizerek surukle. */
+        const b = t.getBoundingClientRect();
+        const cx = b.left + b.width/2, cy = b.top + b.height/2;
+        const R = document.querySelector('.disk').getBoundingClientRect().width/2;
+        const r = R * 1.2;
+        const P = a=>({ x: cx + Math.cos((a-90)*Math.PI/180)*r, y: cy + Math.sin((a-90)*Math.PI/180)*r });
+        const ev = (tip, p)=>t.dispatchEvent(new PointerEvent(tip, {bubbles:true, cancelable:true,
+          pointerId:5, pointerType:'touch', isPrimary:true, buttons: tip==='pointerup'?0:1, clientX:p.x, clientY:p.y}));
+        const once = window.carkDurum().secili;
+        ev('pointerdown', P(0));
+        for(let a = 6; a <= 60; a += 6){ ev('pointermove', P(a)); await bek(16); }
+        ev('pointerup', P(60));
+        await bek(2600);
+        c.degisti = window.carkDurum().secili !== once;
+        c.rafaOturdu = Math.abs(window.carkDurum().aci % (360 / (AILE_ADLAR||['x']).length)) < 0.5;
+        /* Raf adi ekranin baska yerinde YAZMIYOR: sol ust gizli. */
+        const mk = document.getElementById('modKut');
+        c.solUstGizli = !mk || getComputedStyle(mk).visibility === 'hidden'
+                        || document.body.classList.contains('mood');
+        /* Tik sesi ayari AUDIO bolumunde ve kapatilabiliyor. */
+        c.sesAyari = !!document.querySelector('#ayar .sat[data-ayar="carkSes"]');
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const ckOz = Object.keys(ck).filter(k => ck[k] !== true).map(k => k + '=' + ck[k]).join(' ');
+    K('Cark istek uzerine iniyor ve varsayilan merkez', ck.varsayilan && ck.geldi && ck.tuvalVar,
+       ckOz || 'AYAR.merkez=cark, tuval acik');
+    K('Carki cevirmek rafi degistiriyor ve dise oturuyor', ck.degisti && ck.rafaOturdu,
+       ckOz || 'cevirdi, en yakin rafa oturdu');
+    K('Raf adi yalnizca carkta yaziyor (sol ust bos)', ck.solUstGizli, ckOz || 'modKut gizli');
+    K('Cark tikirtisi ayarlardan kapatilabiliyor', ck.sesAyari, ckOz || 'AUDIO: WHEEL CLICK');
+  }
+
   /* ── DERI GALERISI (deri_galeri.js): FIRCA ────────────────────────
      "sol ustteki uc cizginin altina bir firca koy, oraya basinca tum
      skinler GORUNSUN; bir tusla kucultebilsin, sag sol iki ok; tekrar
@@ -8968,6 +9034,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            gorunsun orda." Kucultunce kaybolmamali. */
         c.seritteRing = !!kap.querySelector('.dg-tus.halka') &&
           getComputedStyle(kap.querySelector('.dg-tus.halka')).display !== 'none';
+        /* Panel tepeye dayanmiyor: ustte en az 40px pay. */
+        c.tepeBosluk = kap.getBoundingClientRect().top >= 40;
+        /* Baslik bir dugme ve serite indiriyor. */
+        const bsl = kap.querySelector('.dg-baslik');
+        const seritOnce = kap.classList.contains('serit');
+        if(bsl) bsl.click(); await bek(200);
+        c.baslikKucultur = !!bsl && bsl.tagName === 'BUTTON'
+                        && kap.classList.contains('serit') !== seritOnce;
+        /* Merkez secici: dort tus, secili olan isaretli. */
+        const mt = [...kap.querySelectorAll('.dg-tus.mrk')].map(t=>t.dataset.merkez);
+        c.merkezDort = ['cark','halka','yuvarlak','faz'].every(k => mt.indexOf(k) >= 0);
+        const sec = kap.querySelector('.dg-tus.mrk[aria-pressed="true"]');
+        c.merkezSecili = !!sec && sec.dataset.merkez === (AYAR.merkez || 'cark');
+        if(kap.classList.contains('serit') !== seritOnce && bsl){ bsl.click(); await bek(200); }
         /* seritte bosluga dokunus: kapatir ve dokunusu yutar */
         const yN = window.__yut ? window.__yut.n : 0;   // sahte pointerId, testin urunu
         const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
@@ -9019,6 +9099,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Seritte bosluga dokunus kapatir ve yutulur', g.bosKapatti && g.bosYutuldu, oz || 'sonraki() 0');
     K('Firca dongusu: tam -> serit -> kapali', g.d1 && g.d2 && g.kapandi, oz || 'uc dokunus');
     K('Seritte RING tusu gorunur', g.seritteRing, oz || 'kucultunce de duruyor');
+    /* 4 Eylul: panel tepeye DAYANMIYOR (ustte tutamak payi kaliyor ki
+       yukari-asagi cekip kapatilabilsin) ve baslik ("SKINS") serite
+       inip cikmanin kisayolu. Serit kipinde merkez secici gorunur:
+       halka / yuvarlak / cark / faz -- secim aninda ekranda. */
+    K('Galeri tepeye dayanmiyor, baslik serite indiriyor',
+       g.tepeBosluk && g.baslikKucultur, oz || 'ust pay var, baslik dugme');
+    K('Merkez secici seritte: cark / halka / yuvarlak / faz',
+       g.merkezDort && g.merkezSecili, oz || 'dort tus, secili isaretli');
     K('Yukari kaydirma galeriyi kapatir', g.kaydirKapatti, oz || 'tepedeyken yukari cekis');
     K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
   }
@@ -9256,14 +9344,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       };
       const k1 = await olc('JAZZ');
       const k2 = await olc('WORLD & ROOTS');
+      const mk = document.getElementById('modKut');
+      const gorunurluk = mk ? getComputedStyle(mk).visibility : 'yok';
+      const t2 = document.getElementById('ayarTut').getBoundingClientRect();
+      const gizli = gorunurluk === 'hidden';
+      const ustFark = Math.round(t2.top);
       AYAR.mood=eski; moodUygula(); await bek(200);
       try{ geriYerlestir(); }catch(e){}
-      return { k1, k2 };
+      return { k1, k2, gizli, gorunurluk, ustFark, tepede: t2.top > 0 && t2.top <= 70 };
     });
-    K('Uc cizgi raf adinin uzerine binmiyor',
-       ust.k1.adaDeger===false && ust.k2.adaDeger===false
-       && ust.k1.cubugaDeger===false && ust.k2.cubugaDeger===false,
-       'JAZZ: cubuktan '+ust.k1.arada+'px | WORLD & ROOTS: '+ust.k2.arada+'px');
+    /* 4 Eylul: ad bloku radyoda GORUNMUYOR (visibility:hidden), yani
+       cizgilerin ustune binebilecegi bir yazi yok. Olculen sey artik
+       o blogun gercekten gorunmedigi ve tutamagin tepede oldugu. */
+    K('Radyoda sol ustte raf adi gorunmuyor, cizgiler tepede',
+       ust.gizli === true && ust.tepede === true,
+       'modKut visibility ' + ust.gorunurluk + ' · tutamak tepeden ' + ust.ustFark + 'px');
   }
   /* Radyoda konsolun ust satiri KIP ANAHTARI. Ayni uc olcu:
        modulun uzerine binmiyor, arada satir boslugu var, ayni sol

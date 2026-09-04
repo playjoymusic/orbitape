@@ -44,11 +44,17 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   /* ── KURALLAR: CSSOM ILE (CSP ozet tabanli, <style> eklenemez) ───
      Cerceve yok, ust seritteki tuslar duz simge; vurgu deriden. */
   const KURALLAR = [
-    "#deriGaleri{--dg-vurgu:#4de0d0;--dg-yazi:#dfe4e8;--dg-zem:rgba(8,10,12,.94);position:fixed;inset:0;z-index:97;display:flex;flex-direction:column;background:var(--dg-zem);color:var(--dg-yazi);padding-top:calc(var(--sut,15px) + env(safe-area-inset-top,0px));padding-bottom:calc(8px + var(--dip-pay,0px));font-family:'Share Tech Mono',ui-monospace,monospace}",
+    "#deriGaleri{--dg-vurgu:#4de0d0;--dg-yazi:#dfe4e8;--dg-zem:rgba(8,10,12,.94);position:fixed;left:0;right:0;bottom:0;top:14vh;border-radius:18px 18px 0 0;z-index:97;display:flex;flex-direction:column;background:var(--dg-zem);color:var(--dg-yazi);padding-top:calc(var(--sut,15px) + env(safe-area-inset-top,0px));padding-bottom:calc(8px + var(--dip-pay,0px));font-family:'Share Tech Mono',ui-monospace,monospace}",
     "body.deri #deriGaleri{--dg-vurgu:var(--d-marka,var(--d-yazi));--dg-yazi:var(--d-yazi);--dg-zem:var(--d-panel,var(--d-zem))}",
     "#deriGaleri[hidden]{display:none !important}",
     ".dg-bas{display:flex;align-items:center;gap:4px;flex:none;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 6px calc(var(--kx) + env(safe-area-inset-left,0px))}",
-    ".dg-baslik{font-size:0.6875rem;letter-spacing:.3em;opacity:.55;margin-right:6px}",
+    ".dg-baslik{font-size:0.6875rem;letter-spacing:.3em;opacity:.55;margin-right:6px;background:transparent;border:0;color:inherit;font-family:inherit;cursor:pointer;padding:4px 2px}",
+    ".dg-baslik:hover,.dg-baslik:focus-visible{opacity:.9}",
+    ".dg-tutamak{flex:none;width:40px;height:4px;border-radius:2px;margin:2px auto 4px;background:color-mix(in srgb,var(--dg-yazi) 30%,transparent)}",
+    "#deriGaleri.serit .dg-tutamak{display:none}",
+    ".dg-merkez{display:flex;gap:2px;flex:none;align-items:center}",
+    ".dg-tus.mrk{width:auto;padding:0 7px;font-size:0.5625rem;letter-spacing:.16em;opacity:.42}",
+    ".dg-tus.mrk[aria-pressed='true']{opacity:1;color:var(--dg-vurgu)}",
     ".dg-secili{font-size:0.8125rem;letter-spacing:.14em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dg-vurgu)}",
     ".dg-sayac{font-size:0.6875rem;opacity:.5;margin-right:4px}",
     ".dg-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;width:34px;height:32px;padding:0;font:inherit;font-size:0.875rem;cursor:pointer;opacity:.7;-webkit-tap-highlight-color:transparent}",
@@ -64,7 +70,8 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     ".dg-disk{position:absolute;left:50%;top:44%;width:58%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background-size:cover;pointer-events:none}",
     ".dg-kare .dg-ad{position:absolute;left:8px;right:6px;bottom:7px;text-align:left;font-size:0.5625rem;font-weight:700;letter-spacing:.12em;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
     "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 42px);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
-    "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-baslik,#deriGaleri.serit .dg-sayac{display:none}",
+    "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-sayac{display:none}",
+    "#deriGaleri.serit .dg-baslik{margin-right:2px}",
     "#deriGaleri.serit .dg-bas{padding:2px 6px}",
     "#deriGaleri.serit .dg-secili{flex:none;max-width:52vw;text-align:center;padding:0 6px}"
   ];
@@ -83,7 +90,14 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       KURALLAR.forEach(k=>{ try{ st.sheet.insertRule(k, st.sheet.cssRules.length); }catch(e){ yut(e); } });
     }catch(e){ yut(e); }
   }
-  let halkaTus = null, kapDinle = null;
+  let halkaTus = null, kapDinle = null, merkezTuslari = [];
+  function el(t, sinif){ const e = document.createElement(t); if(sinif) e.className = sinif; return e; }
+  function merkezIsaret(){
+    try{
+      const m = (typeof AYAR !== 'undefined' && AYAR.merkez) || 'cark';
+      merkezTuslari.forEach(t=> t.setAttribute('aria-pressed', t.dataset.merkez === m ? 'true' : 'false'));
+    }catch(e){ yut(e); }
+  }
   let kap = null, izg = null, adYazi = null, sayacYazi = null;
   const halkaOnbellek = {};
   let cizimSirasi = [];
@@ -205,7 +219,14 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       t.textContent = ic; t.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); f(); });
       return t;
     };
-    const baslik = document.createElement('span'); baslik.className = 'dg-baslik'; baslik.textContent = T('SKINS');
+    /* BASLIK BIR DUGME (4 Eylul): "skins ismine basinca menu
+       minimize olsun." Serite inip cikmanin kisayolu bu -- ayri bir
+       cizgi ya da ok koymadan. */
+    const baslik = document.createElement('button'); baslik.type = 'button';
+    baslik.className = 'dg-baslik'; baslik.textContent = T('SKINS');
+    baslik.setAttribute('aria-label', 'Shrink to a strip');
+    baslik.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
+      if(kap.classList.contains('serit')) buyut(); else kucult(); });
     adYazi = document.createElement('span'); adYazi.className = 'dg-secili'; adYazi.setAttribute('aria-live', 'polite');
     sayacYazi = document.createElement('span'); sayacYazi.className = 'dg-sayac';
     bas.appendChild(tus('geri', 'Previous skin', '◀', ()=>adim(-1)));
@@ -226,6 +247,21 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        (degistir). ▦ seritte kaliyor: tam galeriye donus. */
     bas.appendChild(tus('buyut', 'Show all skins', '▦', buyut));
     bas.appendChild(tus('kapat', 'Close', '✕', kapa));
+    /* ── MERKEZ SECICI (4 Eylul) ────────────────────────────────
+       "minimize modunda halka, yuvarlak, cark ve faz olsun ...
+       diger secenekler de ordan degissin ki o an gorelim etkisini."
+       Serit kipinde ekranin alti acik: secim aninda goruluyor. */
+    const mrk = document.createElement('div'); mrk.className = 'dg-merkez';
+    merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC'],['faz','PHASE']].map(([k, ad])=>{
+      const t = tus('mrk', ad, T(ad), ()=>{
+        try{ AYAR.merkez = k; ayarKaydet(); }catch(e){ yut(e); }
+        try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
+        merkezIsaret(); diskleriTazele();
+      });
+      t.dataset.merkez = k; mrk.appendChild(t); return t;
+    });
+    kap.appendChild(el('i', 'dg-tutamak'));
+    bas.appendChild(mrk);
     kap.appendChild(bas);
     izg = document.createElement('div'); izg.className = 'dg-izgara';
     izg.appendChild(kareYap(0, null));
@@ -248,6 +284,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   }
 
   function halkaIsaret(){
+    try{ merkezIsaret(); }catch(e){}
     try{
       if(!halkaTus) return;
       const a = (typeof AYAR !== 'undefined') && !!AYAR.halka;

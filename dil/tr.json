@@ -16,7 +16,6 @@
   "LOCK THEME": "TEMAYI KİLİTLE",
   "STARS": "YILDIZLAR",
   "STARLIGHT": "YILDIZ IŞIĞI",
-  "SYMBOL SPIN": "SEMBOL DÖNÜŞÜ",
   "SKINS": "KAPLAMALAR",
   "SKIN OFF": "KAPLAMA KAPALI",
   "ALL BLACK": "TAMAMEN SİYAH",
@@ -188,5 +187,9 @@
   "Tap one, then drag inside the disc.": "Birine dokun, sonra diskin içinde sürükle.",
   "Silent · keeping the alarm alive": "Sessiz · alarm icin acik",
   "h": "sa",
-  "s": "sn"
+  "s": "sn",
+  "WHEEL CLICK": "ÇARK TIKIRTISI",
+  "WHEEL": "ÇARK",
+  "DISC": "YUVARLAK",
+  "PHASE": "FAZ"
 }

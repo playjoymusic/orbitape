@@ -86,6 +86,20 @@ interface Window {
   /* RING anahtari: ayarlar ve galeri basligi ayni islevi cagiriyor (index.html). */
   halkaDegistir?: () => void;
 
+  /* Cark (cark.js): ortadaki alet. */
+  CARK_BASLADI?: boolean;
+  CARK_HAZIR?: boolean;
+  carkGeldi?: () => void;
+  carkAc?: (kip?: string) => void;
+  carkKapa?: () => void;
+  carkAcik?: () => boolean;
+  carkHizala?: () => void;
+  carkSeciliNo?: () => number;
+  carkDurum?: () => any;
+  carkTazele?: () => void;
+  carkYukle?: () => void;
+  merkezUygula?: () => void;
+
   /* Istasyon listesi (liste.js): sag ust ad ve semboller. */
   LISTE_BASLADI?: boolean;
   LISTE_HAZIR?: boolean;
