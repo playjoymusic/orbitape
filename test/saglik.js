@@ -6663,7 +6663,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       }), 'cal() icinde radyo tarafinin kendi son kapisi var');
     /* ── SEMBOLLER VE SAG AD: RAF LISTESI; SOL AD: BIR GERI ──────
        (3 Eylul) Eskiden ikisi de raf degistiriyordu (modSiraGec).
-       Simdi: soldaki ad bir geri (geriGit), sagdaki ad ve semboller
+       Simdi: soldaki ad siradaki ses (sonraki), sagdaki ad ve semboller
        asagi acilan RAF listesi (liste.js): her raf kendi renginde,
        dokununca raf acilir (aileSec) ve calma planlanir, liste kapanir
        (3 Eylul), acik raf pasif; bosluga dokunus kapatir ve yutulur. */
@@ -6677,9 +6677,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const solda = el=>{ const r = el.getBoundingClientRect(); return (r.left + r.width/2) < innerWidth/2; };
         c.solSag = solda(ad) !== solda(marka);
         const solEl = solda(ad) ? ad : marka, sagEl = solda(ad) ? marka : ad;
-        const eG = window.geriGit; let g = 0; window.geriGit = function(){ g++; };
+        /* SOLDAKI AD ILERI GECER (3 Eylul): "sol ustten sarki gecsin
+           ama ILERI dogru ve menu orda acilmasin." Once geriGit()
+           cagiriyordu; olculen sey degisti, kural degil: soldaki ad
+           menu ACMAZ, siradaki sese gecer. */
+        const eS0 = window.sonraki; let g = 0; window.sonraki = function(){ g++; };
         solEl.dispatchEvent(new MouseEvent('click', {bubbles:true})); await bek(50);
-        window.geriGit = eG; c.solGeri = g === 1;
+        window.sonraki = eS0;
+        c.solIleri = g === 1 && !(window.listeAcik && listeAcik());
         try{ if(window.listeKapa) listeKapa(); }catch(e){}
         const vur = (el, t)=>el.dispatchEvent(new PointerEvent(t, {bubbles:true, pointerId:12, clientX:innerWidth-60, clientY:40}));
         if(window.LISTE_HAZIR){ vur(sagEl, 'pointerdown'); vur(sagEl, 'pointerup'); }
@@ -6744,7 +6749,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return c;
     });
     const ilOz = Object.keys(il).filter(k => il[k] !== true).map(k => k + '=' + il[k]).join(' ');
-    K('Sol ad bir geri, sag ad raf listesi', il.solSag && il.solGeri && il.geldi && il.acik, ilOz || 'liste.js indi, acildi');
+    K('Sol ad ileri gecer (menu acmaz), sag ad raf listesi', il.solSag && il.solIleri && il.geldi && il.acik, ilOz || 'sonraki() bir kez, liste kapali');
     K('Listede butun raflar kendi renginde, acik raf isaretli', il.rafSayisi && il.renkli && il.altinda && il.acikIsaretli, ilOz || 'AILE_ADLAR');
     K('Rafa dokunmak rafi acar ve listeyi kapatir, acik raf pasif', il.rafAcildi && il.acikPasif && il.secinceKapandi, ilOz || 'aileSec bir kez, liste kapandi');
     K('Bosluga dokunus listeyi kapatir ve dokunusu yutar', il.bosKapatti && il.bosYutuldu && il.sonrakiDokunusGecer, ilOz || 'kapandi, sonraki() 0, sonraki dokunus gecti');
@@ -8636,6 +8641,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const adlar = ['HALFTONE', 'TERMINAL'];
       const nolar = adlar.map(ad => DERILER.findIndex(d => d && d.ad === ad) + 1);
       adlar.forEach((ad, i) => { if(nolar[i] < 1) cikti.push({ no: 0, ad: ad + ' (listede yok)', olcum: null }); });
+      /* GOVDE OLCUMU: RING KAPALI OLMALI. 3 Eylul'de RING varsayilan
+         ACIK oldu ve acikken ekranda govde YOK -- fotograf da
+         cizmiyor (dogrusu bu). Bu blok govdeyi olcuyor, o yuzden
+         kapatiliyor; RING acik hali ayrica sinaniyor (asagida). */
+      const eskiHalka0 = !!AYAR.halka;
+      AYAR.halka = false; deriUygula();
       for(const no of nolar.filter(n => n >= 1)){
         AYAR.deri = no; deriUygula(); try{ olukYaz(); }catch(e){}
         await bek(350);
@@ -8669,11 +8680,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         await bek(200);
         cikti.push({ no, ad: DERILER[no-1].ad, zem, cek, olcum });
       }
-      AYAR.deri = eskiDeri; deriUygula(); try{ olukYaz(); }catch(e){}
+      AYAR.halka = eskiHalka0; AYAR.deri = eskiDeri; deriUygula(); try{ olukYaz(); }catch(e){}
       return cikti;
     });
     const sapma = (a, b) => (a && b)
       ? Math.max(Math.abs(a[0]-b[0]), Math.abs(a[1]-b[1]), Math.abs(a[2]-b[2])) : 999;
+    const kayitKaynak2 = fs.readFileSync('kayit.js','utf8');
     const kotu = [], not = [];
     (deriFoto || []).forEach(d=>{
       if(!d.olcum || !d.olcum.zemin){ kotu.push(d.ad + ': fotograf okunamadi'); return; }
@@ -8685,6 +8697,48 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Deri acikken fotograf ekranin zeminini ve diskini tasiyor',
       kotu.length === 0 && (deriFoto || []).length === 2,
       kotu.length ? kotu.join(', ') : not.join(' | '));
+    /* ── FOTOGRAF RING'I DE TASIYOR (3 Eylul) ──────────────────────
+       Olculdu: RING acikken ekranda govde yok, halkalar var; fotograf
+       ise HER ZAMAN govdeyi ciziyordu -- yani cikti ekranda olmayan
+       bir sey gosteriyordu. Iki cikti karsilastiriliyor: ayni deride
+       RING acik ve kapali kareler AYNI olamaz. */
+    const ringFoto = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const eskiDeri = AYAR.deri|0, eskiHalka = !!AYAR.halka;
+        const no = DERILER.findIndex(d => d && d.ad === 'HALFTONE') + 1;
+        if(no < 1) return { yok:true };
+        AYAR.deri = no;
+        const kare = async ()=>{
+          deriUygula(); await bek(400);
+          try{ await fotoCek(); }catch(e){}
+          await bek(900);
+          const im = document.getElementById('fotoResim');
+          const s = im ? (im.getAttribute('src') || '') : '';
+          try{ fotoOnizleKapa(); }catch(e){}
+          await bek(150);
+          return s;
+        };
+        AYAR.halka = false; const kapaliKare = await kare();
+        AYAR.halka = true;  const acikKare  = await kare();
+        c.ikisiDeVar = kapaliKare.length > 1000 && acikKare.length > 1000;
+        c.farkli = kapaliKare !== acikKare;
+        AYAR.deri = eskiDeri; AYAR.halka = eskiHalka; deriUygula();
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('RING acik/kapali fotografa yansiyor', !!ringFoto.ikisiDeVar && !!ringFoto.farkli,
+      ringFoto.hata || (ringFoto.yok ? 'HALFTONE yok' : 'iki kare ayri'));
+    /* Fotograf cizimi EKRANDAKI TUSLARI biliyor mu: yeni bir tus
+       eklenip bu listeye yazilmazsa ciktida sessizce kaybolur --
+       deriFirca ve saatTus'ta tam boyle oldu. */
+    K('Fotograf yeni tuslari da ciziyor',
+      /'ayarTut','deriFirca','saatTus'/.test(kayitKaynak2)
+      && (kayitKaynak2.match(/'ayarTut','deriFirca','saatTus'/g) || []).length >= 2,
+      'arayuz listesi ve simge hazirligi ayni tuslari sayiyor');
+    K('Fotografta marka isareti de var', /getElementById\('isaret'\)/.test(kayitKaynak2),
+      '#isaret uc dairesiyle ciziliyor');
   }
   /* ── BEKCI BUYUTECI YUVASINA GERI KOYUYOR, IKI KATINA ITMIYOR ──
      Mac'te pencere boyu degisince buyutec yuvasinin tam iki kati
@@ -8766,6 +8820,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* ucuncu seviye: dogrudan tam ses */
         alarmCal(3); await bek(200); c.ucuncuTam = _uykuKat === 1;
         alarmDurdur(); await bek(200);
+        /* ALARM ANAHTARI ADIYLA (3 Eylul): "alarm sayfasinda en alttaki
+           on off anlamadim, o niye var." Neyin acildigi yaziyor. */
+        const anh = document.querySelector('#saatPanel .st-tus.anahtar');
+        c.anahtarAdli = !!anh && /ALARM/.test(anh.textContent || '');
+        /* BOSLUGA DOKUNUS PANELI KAPATIR ve dokunusu YUTAR: kapanirken
+           parmak halkanin ustune denk gelirse sarki atlamamali. */
+        saatAc(); await bek(200);
+        const yN = window.__yut ? window.__yut.n : 0;
+        const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
+        const dsk = document.getElementById('btn') || document.getElementById('tp');
+        const db = dsk.getBoundingClientRect();
+        const olay = (t, Tip)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:37, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:db.left+db.width/2, clientY:db.top+db.height/2}));
+        olay('pointerdown', PointerEvent); c.bosKapatti = !saatAcik();
+        olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
+        window.sonraki = eSn; c.bosYutuldu = sn === 0;
+        if(window.__yut) window.__yut.n = yN;
         /* temizlik */
         try{ const tk2 = document.querySelector('#saatPanel .st-tus.tekrar'); for(let i=0;i<3 && saatDurum().depo.sabah.tekrar!=='off';i++) tk2.click(); }catch(e){}
         sabahKur(false); uykuIptal(); uykuKatYaz(1);
@@ -8786,6 +8856,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Kilit ekraninda play gecede uyandiriyor', st.kilitPlay, ozet || 'dongu birakildi');
     K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
     K('Saat paneli kapaniyor, depo ve carpan temiz', st.kapandi && st.depoTemiz && st.katGeri, ozet || 'temiz');
+    K('Alarm anahtari ne oldugunu yaziyor', st.anahtarAdli, ozet || 'ALARM ON / ALARM OFF');
+    K('Saat panelinde bosluga dokunus kapatir ve yutulur', st.bosKapatti && st.bosYutuldu, ozet || 'sonraki() 0');
   }
   /* ── DERI GALERISI (deri_galeri.js): FIRCA ────────────────────────
      "sol ustteki uc cizginin altina bir firca koy, oraya basinca tum
@@ -8848,6 +8920,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         kap.querySelector('.dg-tus.geri').click(); kap.querySelector('.dg-tus.geri').click(); await bek(300);
         c.geri = AYAR.deri === 1;
         c.adYazisi = kap.querySelector('.dg-secili').textContent.trim() === DERILER[0].ad;
+        /* SERITTE RING GORUNUR (3 Eylul): "halkayi acip kapama da
+           gorunsun orda." Kucultunce kaybolmamali. */
+        c.seritteRing = !!kap.querySelector('.dg-tus.halka') &&
+          getComputedStyle(kap.querySelector('.dg-tus.halka')).display !== 'none';
         /* seritte bosluga dokunus: kapatir ve dokunusu yutar */
         const yN = window.__yut ? window.__yut.n : 0;   // sahte pointerId, testin urunu
         const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
@@ -8861,6 +8937,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         f.click(); await bek(200); c.d1 = deriGaleriAcik() && !kap.classList.contains('serit');
         f.click(); await bek(200); c.d2 = deriGaleriAcik() && kap.classList.contains('serit');
         f.click(); await bek(200);
+        /* YUKARI KAYDIRMA KAPATIR (3 Eylul): "vazgectim, o an yukari
+           scroll yaptigimda kapanmali tamamen o pencere." */
+        f.click(); await bek(300);
+        const izgara = kap.querySelector('.dg-izgara'); if(izgara) izgara.scrollTop = 0;
+        const kb2 = kap.getBoundingClientRect();
+        const kay = (t, y)=>kap.dispatchEvent(new PointerEvent(t, {bubbles:true, cancelable:true, pointerId:41, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:kb2.left+kb2.width/2, clientY:y}));
+        kay('pointerdown', kb2.top + 200); kay('pointermove', kb2.top + 120); await bek(150);
+        c.kaydirKapatti = !deriGaleriAcik();
+        kay('pointerup', kb2.top + 120); await bek(100);
+        /* Karelerin ortasi RING'e gore: acikken govde yok, halka var. */
+        f.click(); await bek(400);
+        const k2 = kap.querySelector('.dg-kare[data-n="2"] .dg-disk');
+        const eskiH = !!AYAR.halka;
+        if(!AYAR.halka){ kap.querySelector('.dg-tus.halka').click(); await bek(200); }
+        const acikStil = getComputedStyle(k2);
+        c.kareHalkali = /radial-gradient/.test(acikStil.backgroundImage)
+                     && /rgba\(0, 0, 0, 0\)|transparent/.test(acikStil.backgroundColor);
+        kap.querySelector('.dg-tus.halka').click(); await bek(200);
+        const kapaliStil = getComputedStyle(k2);
+        c.kareGovdeli = !/radial-gradient/.test(kapaliStil.backgroundImage)
+                     && kapaliStil.boxShadow !== 'none';
+        if(!!AYAR.halka !== eskiH){ kap.querySelector('.dg-tus.halka').click(); await bek(150); }
+        deriGaleriKapa(); await bek(200);
         c.kapandi = !deriGaleriAcik() && !document.body.classList.contains('galeri-acik');
         AYAR.deri = eskiDeri; deriUygula(); ayarKaydet();
       }catch(e){ c.hata = String(e && e.message || e); }
@@ -8875,6 +8974,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('RING anahtari galeri basliginda, ayarlarla ayni', g.ringAnahtari && g.ringGeri, oz || 'AYAR.halka iki yerden');
     K('Seritte bosluga dokunus kapatir ve yutulur', g.bosKapatti && g.bosYutuldu, oz || 'sonraki() 0');
     K('Firca dongusu: tam -> serit -> kapali', g.d1 && g.d2 && g.kapandi, oz || 'uc dokunus');
+    K('Seritte RING tusu gorunur', g.seritteRing, oz || 'kucultunce de duruyor');
+    K('Yukari kaydirma galeriyi kapatir', g.kaydirKapatti, oz || 'tepedeyken yukari cekis');
+    K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
   }
   /* ── PAYLASIM: IPTAL DEFTERE GIRMEZ, CIFT DOKUNUS KILITLI ───────
      Saha olcumu (issue #7): "Share canceled" x4 (kullanicinin

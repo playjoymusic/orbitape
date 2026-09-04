@@ -639,8 +639,18 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
         /* Ekrandaki gradyan seçili kategoriden geliyor; kayıt da aynı
            iki durağı okuyor ki çıktı ekrandan farklı olmasın. */
         const kok = getComputedStyle(document.documentElement);
-        const m1 = (kok.getPropertyValue('--m1')||'').trim() || '#35e0d8';
-        const m2 = (kok.getPropertyValue('--m2')||'').trim() || '#f0ac7a';
+        /* ── DERI ACIKSA DEGRADE DERININ (3 Eylul) ──────────────
+           Ekranda deri acikken marka yazisi --d-marka ile
+           --d-vurgu arasinda; burada her zaman --m1/--m2 (kip
+           renkleri) okunuyordu ve fotograftaki ORBITAPE ekrandan
+           BASKA renkteydi. Olculdu: FIELDS derisinde ekran koyu
+           kirmizi, fotograf turkuaz. */
+        const _deri = document.body.classList.contains('deri');
+        const m1 = ((_deri ? kok.getPropertyValue('--d-marka') : kok.getPropertyValue('--m1'))||'').trim()
+                 || (kok.getPropertyValue('--m1')||'').trim() || '#35e0d8';
+        const m2 = ((_deri ? (kok.getPropertyValue('--d-vurgu') || kok.getPropertyValue('--d-marka'))
+                           : kok.getPropertyValue('--m2'))||'').trim()
+                 || (kok.getPropertyValue('--m2')||'').trim() || '#f0ac7a';
         const gr = c.createLinearGradient(b.x, b.y, b.sag, b.alt);
         gr.addColorStop(0, m1); gr.addColorStop(0.34, m1);
         gr.addColorStop(0.78, m2); gr.addColorStop(1, m2);
@@ -1491,7 +1501,14 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     /* DERIDE TUVAL YOK: #viz display:none, disk CSS ile ciziliyor.
        Eskiden burada gorunmez bir tuval kopyalanmaya calisiliyordu
        ve fotografta disk hic cikmiyordu. */
-    if(_deriVar()){ try{ _deriDisk(g); }catch(e){ _yut(e); } return; }
+    /* ── RING ACIKSA GOVDE YOK, HALKA VAR (3 Eylul) ──────────────
+       Olculdu: RING acikken ekranda deri govdesi hic yok (CSS:
+       body.sadehalka .disk::before/::after gizli, #viz gorunur) ama
+       fotograf her zaman govdeyi ciziyordu -- yani cikti ekranda
+       olmayan bir sey gosteriyordu. Simdi ayni kosula bakiyor. */
+    if(_deriVar() && !document.body.classList.contains('sadehalka')){
+      try{ _deriDisk(g); }catch(e){ _yut(e); } return;
+    }
     try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){ _yut(e); }
   }
   function _kaySolUst(g){
@@ -1679,6 +1696,45 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
             else { c.strokeStyle = rk; c.lineWidth = Math.max(1, K*1.4); c.stroke(); }
           });
         }catch(e){ _yut(e); }
+        /* ── MARKA ISARETI (#isaret) ────────────────────────────
+           Kunyenin yanindaki iki daire "bu parca taninmis" demek ve
+           ekranda duruyor; fotografta yoktu (olculdu: FIELDS
+           derisinde ekranda var, ciktida yok). Uc daire, ekrandan
+           okunan renklerle -- SVG'yi goruntuye cevirmeye gerek yok. */
+        try{
+          const _is = document.getElementById('isaret');
+          const _isc = _is && getComputedStyle(_is);
+          if(_is && _isc && _isc.display !== 'none' && (parseFloat(_isc.opacity)||0) > 0.02){
+            const ib2 = kk(_is);
+            const sv2 = _is.querySelector('svg');
+            const sb2 = sv2 ? kk(sv2, true) : null;
+            if(ib2 && sb2 && sb2.w){
+              kat(c, ()=>{
+                c.globalAlpha = npA * (parseFloat(_isc.opacity) || 1);
+                /* SVG'nin gorunum kutusu 34x24; daireler onun icinde
+                   oranli duruyor, olcek kutunun genisliginden. */
+                const o2 = sb2.w / 34, x0 = sb2.x, y0 = sb2.y;
+                /* Tipler: dizi karisik (metin + sayi) oldugu icin
+                   ogeler tek tek aliniyor, yoksa 'string|number'
+                   aritmetige giriyor ve tip kapisi kirmizi yaniyor. */
+                ;[['y1', 11.4, 12, 7.9], ['y2', 23.4, 12, 6.1], ['mil', 17.4, 12, 1.35]]
+                  .forEach(dizi=>{
+                    const sinif = String(dizi[0]);
+                    const cx = Number(dizi[1]), cy = Number(dizi[2]), r0 = Number(dizi[3]);
+                    const par = _is.querySelector('.' + sinif);
+                    const ps = par ? getComputedStyle(par) : null;
+                    if(!ps) return;
+                    const dolgu = ps.fill, kenar = ps.stroke;
+                    const kw3 = parseFloat(ps.strokeWidth) || 0;
+                    c.beginPath(); c.arc(x0 + cx*o2, y0 + cy*o2, Math.max(0.5, r0*o2), 0, Math.PI*2);
+                    if(dolgu && dolgu !== 'none'){ c.fillStyle = dolgu; c.fill(); }
+                    if(kenar && kenar !== 'none' && kw3 > 0){
+                      c.strokeStyle = kenar; c.lineWidth = Math.max(0.6, kw3*o2); c.stroke(); }
+                  });
+              });
+            }
+          }
+        }catch(e){ _yut(e); }
         if(npUst.classList.contains('var') && npUst.textContent) domMetin(c, npUst, npUst.textContent, 'sag');
         if(npAd.textContent)       domMetinCok(c, npAd, 'sag');
         if(npSanatci.textContent)  domMetinCok(c, npSanatci, 'sag');
@@ -1812,7 +1868,10 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       }catch(e){ _yut(e); }
     };
     try{
-      ['ayarTut','kipKisayol','geri','dur','duraklat','ileri',
+      /* deriFirca ve saatTus 3 Eylul'de eklendi; listeye girmedikleri
+         icin fotografta yoktular -- ekranda duran iki tus ciktida
+         kayipti. */
+      ['ayarTut','deriFirca','saatTus','kipKisayol','geri','dur','duraklat','ileri',
        'rec','cam','mute','favAc','araCizgi'].forEach(id=>{
         ciz(document.getElementById(id));
       });
@@ -1824,7 +1883,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   async function fotoArayuzHazirla(K){
     const harita = new Map();
     try{
-      const idler = ['ayarTut','kipKisayol','geri','dur','duraklat','ileri',
+      const idler = ['ayarTut','deriFirca','saatTus','kipKisayol','geri','dur','duraklat','ileri',
                      'rec','cam','mute','favAc','araCizgi'];
       const isler = [];
       idler.forEach(id=>{

@@ -432,7 +432,10 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       sabahSaatGiris.value = depo.sabah.saat;
       sabahAile.value = depo.sabah.aile;
       sabahTekrar.textContent = T(TEKRAR_AD[depo.sabah.tekrar]);
-      sabahAnahtar.textContent = depo.sabah.acik ? T('ON') : T('OFF');
+      /* "alarm sayfasinda en alttaki on off anlamadim, o niye var"
+         (3 Eylul): tus alarmin kendi anahtariydi ama yalnizca ON/OFF
+         yaziyordu -- neyin acik oldugu yazmiyordu. Artik adiyla. */
+      sabahAnahtar.textContent = depo.sabah.acik ? T('ALARM ON') : T('ALARM OFF');
       sabahAnahtar.setAttribute('aria-checked', depo.sabah.acik ? 'true' : 'false');
       sabahAnahtar.classList.toggle('acik', depo.sabah.acik);
       if(erteleHedef) sabahDurum.textContent = T('Snoozed · rings at') + ' ' + saatYazisi(erteleHedef);
@@ -479,6 +482,37 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   function degistir(){ if(kap && !kap.hidden) kapa(); else ac(); }
+
+  /* ── BOSLUGA DOKUNUS KAPATIR (3 Eylul, kullanici) ────────────────
+     "o menude sadece carpidan kapaniyor, yine bosluga basinca
+     kapansin o da." Raf listesi ve galeriyle ayni kural: bosluga
+     dokunus YALNIZCA kapatir, altindaki tusa gecmez -- yoksa panel
+     kapanirken parmak halkanin ustune denk gelip sarki atlar. */
+  let _yutJest = false, _yutZaman = 0;
+  function disari(e){
+    try{
+      if(!kap || kap.hidden) return;
+      const t = e.target;
+      if(t instanceof Node && kap.contains(t)) return;
+      if(t instanceof Element && t.closest('#saatTus')) return;
+      kapa();
+      _yutJest = true; _yutZaman = Date.now() + 600;
+      e.stopPropagation(); e.preventDefault();
+    }catch(err){ yut(err); }
+  }
+  function kalanYut(e){
+    try{
+      if(!_yutJest) return;
+      if(Date.now() > _yutZaman){ _yutJest = false; return; }
+      e.stopPropagation(); if(e.cancelable) e.preventDefault();
+      if(e.type === 'click') _yutJest = false;
+    }catch(err){ yut(err); }
+  }
+  try{
+    window.addEventListener('pointerdown', disari, {capture:true, passive:false});
+    ['pointerup','click','touchstart','touchend','mousedown','mouseup'].forEach(t=>
+      window.addEventListener(t, kalanYut, {capture:true, passive:false}));
+  }catch(e){ yut(e); }
 
   oku();
   if(depo.uykuBitis) kip = 'uyku';

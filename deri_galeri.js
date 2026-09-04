@@ -56,7 +56,6 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     "#deriGaleri:not(.serit) .dg-tus.buyut{display:none}",
     ".dg-tus.halka{width:auto;padding:0 8px;font-size:0.625rem;letter-spacing:.22em;opacity:.45}",
     ".dg-tus.halka[aria-pressed='true']{opacity:1;color:var(--dg-vurgu);text-shadow:0 0 8px color-mix(in srgb,var(--dg-vurgu) 60%,transparent)}",
-    "#deriGaleri.serit .dg-tus.halka{display:none}",
     ".dg-izgara{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));grid-auto-rows:max-content;align-items:start;gap:10px;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 10px calc(var(--kx) + env(safe-area-inset-left,0px));align-content:start}",
     ".dg-kare{appearance:none;-webkit-appearance:none;border:0;padding:0;margin:0;position:relative;display:block;width:100%;aspect-ratio:108/172;height:auto;border-radius:12px;overflow:hidden;cursor:pointer;background:#111;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;isolation:isolate}",
     ".dg-kare.kapa{display:grid;place-items:center;background:color-mix(in srgb,var(--dg-yazi) 8%,transparent);font-size:0.75rem;letter-spacing:.24em;color:var(--dg-yazi);opacity:.8}",
@@ -65,7 +64,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     ".dg-disk{position:absolute;left:50%;top:44%;width:58%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background-size:cover;pointer-events:none}",
     ".dg-kare .dg-ad{position:absolute;left:8px;right:6px;bottom:7px;text-align:left;font-size:0.5625rem;font-weight:700;letter-spacing:.12em;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
     "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 42px);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
-    "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-baslik,#deriGaleri.serit .dg-sayac,#deriGaleri.serit .dg-tus.kucult{display:none}",
+    "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-baslik,#deriGaleri.serit .dg-sayac{display:none}",
     "#deriGaleri.serit .dg-bas{padding:2px 6px}",
     "#deriGaleri.serit .dg-secili{flex:none;max-width:52vw;text-align:center;padding:0 6px}"
   ];
@@ -84,11 +83,53 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       KURALLAR.forEach(k=>{ try{ st.sheet.insertRule(k, st.sheet.cssRules.length); }catch(e){ yut(e); } });
     }catch(e){ yut(e); }
   }
-  let halkaTus = null;
+  let halkaTus = null, kapDinle = null;
   let kap = null, izg = null, adYazi = null, sayacYazi = null;
   const halkaOnbellek = {};
   let cizimSirasi = [];
 
+  /* ── KARENIN ORTASI: RING ACIKSA GOVDE YOK ────────────────────
+     3 Eylul, kullanici: "ilk acilan onizlemeler halkali olsun."
+     Onizleme ekranda gorecegi seyi gostermeli: RING acikken deri
+     govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye halka
+     kaliyor. Kapaliyken govde geri geliyor -- kare de oyle. */
+  function diskYaz(disk, d){
+    try{
+      const halkaAcik = (typeof AYAR !== 'undefined') && !!AYAR.halka;
+      const resim = (d.cizim && halkaOnbellek[d.cizim]) || '';
+      if(halkaAcik){
+        /* GOVDE YOK, HALKA VAR. Bos birakmak yanlis olurdu: kullanici
+           "onizlemeler HALKALI olsun" dedi, yani ekranda gorecegi sey
+           -- zeminin uzerinde duran halkalar. Es merkezli halkalar
+           tek bir degrade ile ciziliyor (tuval degil: 59 kare). */
+        /* DERININ HALKA RESMI KULLANILMIYOR: o, govdenin yuzeyi.
+           RING acikken ekranda govde yok, uygulamanin kendi
+           halkalari var -- kare de onu gostermeli, her deride ayni
+           bicimde, derinin marka renginde. */
+        const c = d.halka || d.marka || d.yazi || '#fff';
+        disk.style.backgroundColor = 'transparent';
+        disk.style.backgroundImage = 'repeating-radial-gradient(circle at 50% 50%,'
+                     + ' rgba(0,0,0,0) 0 19%, ' + c + ' 19% 20.8%)';
+        disk.style.boxShadow = 'none';
+      }else{
+        disk.style.backgroundColor = d.cek || d.zem;
+        disk.style.backgroundImage = resim ? ('url("' + resim + '")') : 'none';
+        disk.style.boxShadow = '0 5px 12px ' + (d.disGolge || d.golgeRenk || 'rgba(0,0,0,.45)')
+                             + ', inset 0 1px 0 ' + (d.isik || 'rgba(255,255,255,.18)');
+      }
+    }catch(e){ yut(e); }
+  }
+  /* RING degisince butun karelerin ortasi tazelensin. */
+  function diskleriTazele(){
+    try{
+      if(!izg) return;
+      izg.querySelectorAll('.dg-kare').forEach(b=>{
+        const n = parseInt(b.dataset.n || '0', 10) || 0;
+        const d = n ? DERILER[n-1] : null; if(!d) return;
+        const disk = b.querySelector('.dg-disk'); if(disk) diskYaz(disk, d);
+      });
+    }catch(e){ yut(e); }
+  }
   /* ── KARE: DERININ KUCUK HALI ─────────────────────────────────── */
   function kareYap(n, d){
     const b = document.createElement('button');
@@ -119,9 +160,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       b.appendChild(z);
     }
     const disk = document.createElement('i'); disk.className = 'dg-disk';
-    disk.style.background = d.cek || d.zem;
-    disk.style.boxShadow = '0 5px 12px ' + (d.disGolge || d.golgeRenk || 'rgba(0,0,0,.45)')
-                         + ', inset 0 1px 0 ' + (d.isik || 'rgba(255,255,255,.18)');
+    diskYaz(disk, d);
     b.appendChild(disk);
     const a = document.createElement('span'); a.className = 'dg-ad';
     a.textContent = d.ad; a.style.color = d.marka || d.yazi || '#fff';
@@ -145,7 +184,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
         if(disk && typeof deriHalkaAdresi === 'function'){
           const k = is.d.cizim;
           if(!halkaOnbellek[k]) halkaOnbellek[k] = deriHalkaAdresi(is.d) || '';
-          if(halkaOnbellek[k]) disk.style.backgroundImage = 'url("' + halkaOnbellek[k] + '")';
+          diskYaz(disk, is.d);      // resim onbellege girdi: ortayi yeniden yaz
         }
       }catch(e){ yut(e); }
       const sonra = window.requestIdleCallback || (f=>setTimeout(f, 16));
@@ -180,7 +219,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        (halkaDegistir); iki yerden de kumanda ediliyor. */
     halkaTus = tus('halka', 'Rings only', T('RING'), ()=>{
       try{ if(typeof window.halkaDegistir === 'function') window.halkaDegistir(); }catch(e){ yut(e); }
-      halkaIsaret();
+      halkaIsaret(); diskleriTazele();
     });
     bas.appendChild(halkaTus);
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
@@ -205,6 +244,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       else if(e.key === 'ArrowRight'){ e.preventDefault(); adim(1); }
     });
     document.body.appendChild(kap);
+    try{ if(kapDinle) kapDinle(); }catch(e){ yut(e); }
   }
 
   function halkaIsaret(){
@@ -331,6 +371,37 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       if(e.type === 'click') _yutJest = false;
     }catch(err){ yut(err); }
   }
+  /* ── YUKARI KAYDIRMA KAPATIR (3 Eylul) ──────────────────────────
+     "vazgectim o an yukari scroll yaptigimda kapanmali tamamen o
+     pencere." Tam galeride kareler kendi icinde kayiyor: yalnizca
+     LISTENIN TEPESINDEYKEN yukari cekmek kapatiyor (asagi inerken
+     kapanmasi galeriyi kullanilmaz yapardi). Seritte kayacak bir
+     sey yok, her yukari hareket kapatir. */
+  let _kayBas = null;
+  function kayBasla(e){
+    try{
+      if(!acikMi()){ _kayBas = null; return; }
+      _kayBas = { y: e.clientY, tepede: kap.classList.contains('serit') || !izg || izg.scrollTop <= 2 };
+    }catch(err){ yut(err); }
+  }
+  function kayHareket(e){
+    try{
+      if(!_kayBas || !acikMi()) return;
+      if(!_kayBas.tepede) return;
+      if(_kayBas.y - e.clientY > 48){ _kayBas = null; kapa(); }
+    }catch(err){ yut(err); }
+  }
+  try{
+    kapDinle = ()=>{
+      if(!kap || kap.dataset.kayBagli) return;
+      kap.dataset.kayBagli = '1';
+      kap.addEventListener('pointerdown', kayBasla, {passive:true});
+      kap.addEventListener('pointermove', kayHareket, {passive:true});
+      kap.addEventListener('pointerup', ()=>{ _kayBas = null; }, {passive:true});
+      kap.addEventListener('pointercancel', ()=>{ _kayBas = null; }, {passive:true});
+      kap.addEventListener('wheel', e=>{ try{ if(e.deltaY < -12 && (kap.classList.contains('serit') || !izg || izg.scrollTop <= 2)) kapa(); }catch(err){ yut(err); } }, {passive:true});
+    };
+  }catch(e){ yut(e); }
   try{
     window.addEventListener('pointerdown', disari, {capture:true, passive:false});
     ['pointerup','click','touchstart','touchend','mousedown','mouseup'].forEach(t=>
