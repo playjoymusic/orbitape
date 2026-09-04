@@ -160,6 +160,9 @@ else is ever sent anywhere.</p>
     your device, and only if you turn on <code>SEND DIAGNOSTICS</code>.</td></tr>
   <!--anahtar:orbitape.olcum.son--> <tr><td>Last report time</td><td>If crash reports are on, when the last one went,
     so it is sent at most once every six hours.</td></tr>
+  <!--anahtar:orbitape.geri--> <tr><td>Last message time</td><td>If you sent a message through
+    <code>REPORT A PROBLEM</code>, when you sent it &mdash; so the button is not
+    used a hundred times a minute. The message itself is not kept here.</td></tr>
 </table>
 <p class="mono kucuk">That is the whole list, not a sample. The last station you
 played is deliberately <b>not</b> kept: the app starts somewhere new every time.</p>
@@ -238,6 +241,21 @@ report, which also means these reports cannot be un-sent &mdash; I would not be
 able to find yours.</p>
 <p>You can turn the switch off again at any time, and clearing site data
 erases the local notebook along with everything else.</p>
+
+<h2>Telling me something in your own words</h2>
+<p>Most of what actually breaks never raises an error. &ldquo;The wheel turns but
+no station opens&rdquo;, &ldquo;the alarm did not ring&rdquo;, &ldquo;the strip
+covers the title&rdquo; &mdash; a crash report cannot see any of that. Only a person
+can. Settings has a <code>REPORT A PROBLEM</code> panel for exactly that.</p>
+<p>It is <b>not</b> tied to the <code>SEND DIAGNOSTICS</code> switch, because here the
+consent is the act itself: you type a sentence and press send. Nothing leaves your
+device until you do. What is sent is shown in the panel while you write, and it is
+only this: your message (at most 200 characters), the app version, and the same rough
+platform label as above. No identifier, no station, no history, no location &mdash;
+and no crash notebook: a message and a crash report are separate things and are never
+sent together.</p>
+<p>Because there is no identifier, a message cannot be traced back to you and I cannot
+reply to it. If you want an answer, write to the address on the terms page instead.</p>
 
 <h2>Server logs</h2>
 <p>orbitape.app is served by Cloudflare. Like any web host, Cloudflare

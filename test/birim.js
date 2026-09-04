@@ -509,6 +509,35 @@ function bitir(){
       && c7.status === 413 && c8.status === 405,
       'tur 415, bozuk 400, dizi 400, buyuk 413, GET 405');
 
+    /* ── KULLANICININ CUMLESI ────────────────────────────────
+       Sahadaki kusurlarin cogu hata firlatmiyor; yalnizca bir insan
+       fark edip soyluyor. Bu satir turunun kurallari: metin kirpik,
+       index1 = 'geri' (nobetci ayirt etsin), bos gonderim yazilmaz,
+       ve ayni govdedeki hata imzalari OKUNMAZ. */
+    yaz.length = 0;
+    const g1 = await at(JSON.stringify({ k:'geri', v:'2026.09.01', p:'mobil-webkit',
+                                         t:'cark donuyor ama radyo acilmiyor' }));
+    K('Geri bildirim: kullanici cumlesi satir yaziyor',
+      g1.status === 204 && yaz.length === 1
+      && yaz[0].indexes[0] === 'geri'
+      && yaz[0].blobs[2] === 'cark donuyor ama radyo acilmiyor',
+      'index geri, metin yerinde');
+
+    yaz.length = 0;
+    const g2 = await at(JSON.stringify({ k:'geri', v:'2026.09.01', p:'mobil-webkit',
+      t:'x'.repeat(400), y:[{i:'boom @1', n:3}], istasyon:'BBC', kimlik:'abc123' }));
+    K('Geri bildirim: kirpiliyor, yanindaki alanlar dusuyor',
+      g2.status === 204 && yaz.length === 1
+      && yaz[0].blobs[2].length === 200
+      && !/boom|BBC|abc123/.test(JSON.stringify(yaz)),
+      'metin 200 karakter; imza ve fazladan alanlar girmiyor');
+
+    yaz.length = 0;
+    const g3 = await at(JSON.stringify({ k:'geri', v:'2026.09.01', p:'mobil-webkit', t:'   ' }));
+    K('Geri bildirim: bos mesaj yazilmiyor',
+      g3.status === 204 && yaz.length === 0,
+      '"gonderdim" deyip hicbir sey iletmemek, hic gondermemekten kotu');
+
     const c9 = await w.fetch(new Request('https://orbitape.app/olcu', {
       method:'POST', headers:{'content-type':'application/json'},
       body: JSON.stringify({ v:'2026.09.01', p:'mobil-blink', n:0, y:[] })

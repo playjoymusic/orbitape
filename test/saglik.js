@@ -4864,6 +4864,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Beyaz liste ag hatasinda pes etmiyor', !!yav && yav.blDamga===false,
      'kalici damga yok, 8 sn sonra tekrar');
 
+  /* ── KULLANICI KELIMEYLE SOYLEYEBILIYOR MU ──────────────────────
+     Bugun bildirilen uc kusurun ucu de hicbir hata firlatmadi; ucunu
+     de bir insan gordu ve soyledi. Soyleyecek yeri olmayan biri
+     hicbir sey soylemez. Burada olculen sey o yolun VAR ve DURUST
+     olmasi: ne gonderildigi yaziyor mu, gonderilen govdede yalnizca
+     o uc alan var mi, ve pes pese gonderim sinirlaniyor mu. */
+  {
+    const gonderilen = [];
+    await pg.route('**/olcu', async r=>{ gonderilen.push(r.request().postData()); await r.fulfill({status:204}); });
+    const gb = await pg.evaluate(async ()=>{
+      const bek = m=>new Promise(r=>setTimeout(r,m));
+      const o = {};
+      try{ localStorage.removeItem('orbitape.geri'); }catch(e){}
+      const sat = document.getElementById('geriSat');
+      o.satVar = !!sat;
+      if(sat) sat.click();
+      await bek(300);
+      const el = document.getElementById('geriBil');
+      o.acildi = !!el && el.classList.contains('on');
+      o.not = ((document.getElementById('geriNot')||{}).textContent || '');
+      /* Bos mesaj gonderilmiyor. */
+      document.getElementById('geriMetin').value = '   ';
+      document.getElementById('geriGonder').click(); await bek(200);
+      o.bosGonderilmedi = document.getElementById('geriGonder').textContent !== 'SENT';
+      document.getElementById('geriMetin').value = 'cark donuyor ama radyo acilmiyor';
+      document.getElementById('geriGonder').click(); await bek(300);
+      o.gonderdi = document.getElementById('geriGonder').textContent === 'SENT';
+      await bek(1600);
+      o.kapandi = !el.classList.contains('on');
+      sat.click(); await bek(250);
+      document.getElementById('geriMetin').value = 'ikinci';
+      document.getElementById('geriGonder').click(); await bek(250);
+      o.sinir = /wait a minute/i.test((document.getElementById('geriNot')||{}).textContent || '');
+      try{ window.geriKapa(); }catch(e){}
+      try{ localStorage.removeItem('orbitape.geri'); }catch(e){}
+      return o;
+    });
+    await pg.unroute('**/olcu');
+    let govde = null;
+    try{ govde = JSON.parse(gonderilen[0] || 'null'); }catch(e){}
+    K('Sorun bildirme yolu var ve aciliyor', gb.satVar && gb.acildi,
+       'ayarlarda REPORT A PROBLEM satiri');
+    K('Ne gonderildigi panelde yaziyor',
+       /message/i.test(gb.not) && /version/i.test(gb.not) && /No identity/i.test(gb.not),
+       (gb.not || '-').slice(0, 60) + '...');
+    K('Bos mesaj gonderilmiyor', gb.bosGonderilmedi === true, 'bosluk yollamaz');
+    K('Gonderilen govdede yalnizca uc alan var',
+       !!govde && govde.k === 'geri' && typeof govde.t === 'string'
+       && Object.keys(govde).sort().join(',') === 'k,p,t,v',
+       govde ? Object.keys(govde).sort().join(',') : 'govde gitmedi');
+    K('Mesaj kullanicinin yazdigi cumle',
+       !!govde && govde.t === 'cark donuyor ama radyo acilmiyor'
+       && !/orbitape\.(kanal|deri)/.test(gonderilen[0] || ''),
+       govde ? govde.t : '-');
+    K('Gonderince soyluyor ve kapaniyor', gb.gonderdi && gb.kapandi, 'SENT -> kapanis');
+    K('Pes pese gonderim sinirli', gb.sinir === true, 'dakikada bir');
+  }
+
   /* GIZLILIK BAGLANTISI: App Store "uygulama icinde kolay erisilebilir"
      istiyor. Alt serit dolu oldugu icin arama kutusunun icinde. */
   const yb = await pg.evaluate(async ()=>{

@@ -194,6 +194,36 @@
   #hata button:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
   #hata .ht-posta{font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.65625rem;
     letter-spacing:.08em;color:rgba(244,247,250,.42);margin-top:2px;}
+  /* ── GERI BILDIRIM PANELI ─────────────────────────────────────────
+     Hata panelinin kardesi ve bilerek ona benziyor: ayni yer, ayni
+     olcu, ayni dil. Fark, buranin kullanicinin KENDI cumlesi icin
+     olmasi. Sahadaki kusurlarin cogu hic hata firlatmiyor -- "cark
+     donuyor ama radyo acilmiyor" diyen tek sey bir insan. */
+  #geriBil{position:fixed;z-index:98;left:50%;top:50%;transform:translate(-50%,-50%);
+    display:none;flex-direction:column;align-items:stretch;gap:10px;
+    width:min(82vw,340px);padding:18px 16px;box-sizing:border-box;
+    background:rgba(5,8,10,.97);border:1px solid rgba(150,200,195,.28);border-radius:16px;
+    font-family:'Share Tech Mono',ui-monospace,monospace;}
+  #geriBil.on{display:flex;}
+  #geriBil .gb-ad{font-size:0.75rem;letter-spacing:.30em;color:#8fd8cd;text-align:center;}
+  #geriBil textarea{appearance:none;-webkit-appearance:none;resize:none;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
+    font-size:0.8125rem;line-height:1.4;height:88px;padding:10px 11px;box-sizing:border-box;
+    color:#f4f7fa;background:rgba(8,16,18,.65);border:1px solid rgba(150,200,195,.30);
+    border-radius:10px;-webkit-tap-highlight-color:transparent;}
+  #geriBil textarea:focus{outline:none;border-color:rgba(180,240,230,.6);}
+  #geriBil .gb-not{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
+    font-size:0.6875rem;line-height:1.45;color:rgba(244,247,250,.55);}
+  #geriBil .gb-sira{display:flex;gap:8px;justify-content:flex-end;}
+  #geriBil button{appearance:none;-webkit-appearance:none;
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.6875rem;letter-spacing:.2em;
+    color:#cfe9e4;background:rgba(8,16,18,.65);border:1px solid rgba(150,200,195,.35);
+    border-radius:999px;padding:9px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  #geriBil button:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
+  #geriBil button[disabled]{opacity:.4;cursor:default;}
+  body.deri #geriBil{background:var(--d-panel) !important;color:var(--d-yazi) !important;
+    border-color:var(--d-tus-kenar) !important;}
+  body.deri #geriBil .gb-ad{color:var(--d-marka,var(--d-yazi)) !important;}
   /* Arama açıkken sağ alttaki parça paneli ve REC geri çekilir: sonuç listesi
      onların üstüne biniyordu, iki yazı iç içe okunuyordu. */
   body.arama-acik #np{opacity:0;pointer-events:none;}
@@ -3431,6 +3461,16 @@
          ve olcu.js'in basinda. -->
     <div class="sat" data-ayar="olcum" role="switch" tabindex="-1">
       <span>SEND DIAGNOSTICS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── KELIMEYLE SOYLEMEK ────────────────────────────────────
+         Yukaridaki anahtar MAKINENIN gordugunu gonderiyor: hata
+         imzalari. Ama sahada bozulan seylerin cogu hata firlatmiyor
+         ("cark donuyor ama radyo acilmiyor", "alarm calmadi",
+         "menu ustune biniyor") -- bunlari yalnizca bir insan fark
+         eder. Burasi o cumle icin. Anahtara BAGLI DEGIL: gondermek
+         icin kullanicinin yazip dugmeye basmasi gerekiyor, riza
+         zaten hareketin kendisi. Ne gittigi panelde yaziyor. -->
+    <div class="sat islem" id="geriSat" role="button" tabindex="-1">
+      <span>REPORT A PROBLEM</span><span class="durum">OPEN</span></div>
     <a class="sat bag" href="/privacy" target="_blank" rel="noopener" tabindex="-1">
       <span>PRIVACY</span><span class="durum">OPEN</span></a>
     <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
@@ -3539,6 +3579,16 @@
     <div class="ay-ad">NO CONNECTION</div>
     <div class="ay-not">ORBITAPE streams from the internet.<br>It resumes by itself when you are back online.</div>
     <button class="ay-tekrar" id="agyokTekrar" type="button">TRY AGAIN</button>
+  </div>
+  <div id="geriBil" aria-hidden="true" role="dialog" aria-label="Report a problem">
+    <div class="gb-ad">REPORT A PROBLEM</div>
+    <textarea id="geriMetin" maxlength="200" rows="4" spellcheck="false"
+      placeholder="What went wrong? A short sentence is enough."></textarea>
+    <div class="gb-not" id="geriNot">Sends only: your message, the app version and a rough platform label (mobile/desktop + browser engine). No identity, no station, no history, no location.</div>
+    <div class="gb-sira">
+      <button id="geriVaz" type="button">CANCEL</button>
+      <button id="geriGonder" type="button">SEND</button>
+    </div>
   </div>
   <div id="hata" aria-hidden="true" role="alert">
     <div class="ht-ad">SOMETHING BROKE</div>
@@ -3895,6 +3945,93 @@
     }catch(e){ _yut(e); return false; }
   }
   try{ setTimeout(function(){ try{ olcumGonder(); }catch(e){ _yut(e); } }, 25000); }catch(e){ _yut(e); }
+
+  /* ── KULLANICININ KENDI CUMLESI ──────────────────────────────────
+     Yukaridaki olcum MAKINENIN gordugunu yolluyor: hata imzalari.
+     Sahada bozulan seylerin cogu ise hicbir hata firlatmiyor. Bugun
+     bildirilen uc kusurun ucu de boyleydi -- "cark donuyor ama radyo
+     acilmiyor", "gece kipinde ses kisilmiyor", "serit ustune biniyor".
+     Hicbiri window.onerror'a dusmedi; ucunu de bir insan gordu ve
+     soyledi. Soyleyecek yeri olmayan biri ise hicbir sey soylemez.
+
+     RIZA: bu yol SEND DIAGNOSTICS anahtarina BAGLI DEGIL. Sebep,
+     anahtarin gevsetilmesi degil tam tersi: orada arka planda ve
+     kullanici bakmadan gonderim var, burada ise kullanici yaziyor ve
+     dugmeye basiyor. Riza hareketin kendisi. Ne gonderildigi de
+     panelde yaziyor -- mesaj, surum, kaba platform. Baska hicbir sey.
+
+     SINIR: 60 saniyede bir. Ne oldugunu anlatan biri iki kere
+     yazabilmeli; yuz kere yazan bir betik olmamali. */
+  var GERI_ARA = 60000, GERI_ANAHTAR = 'orbitape.geri';
+  /* getElementById her zaman HTMLElement doner; metin alanina .value,
+     dugmeye .disabled demek tip denetiminde sahte hata uretiyor.
+     Tek bir yerde gevsetiliyor -- calisma zamaninda hicbir sey
+     degismiyor (bkz. dosyanin basindaki ayni gerekce, ses/tuval). */
+  function _gel(id){ return /** @type {any} */ (document.getElementById(id)); }
+  function geriAc(){
+    try{
+      var el = document.getElementById('geriBil'); if(!el) return;
+      var m = _gel('geriMetin');
+      var d = _gel('geriGonder');
+      if(m) m.value = '';
+      if(d){ d.disabled = false; d.textContent = Y('SEND'); }
+      var n = document.getElementById('geriNot');
+      if(n) n.textContent = Y(GERI_NOT);
+      el.classList.add('on'); el.setAttribute('aria-hidden','false');
+      try{ pencereAc(el, m); }catch(e){ _yut(e); }
+      try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  function geriKapa(){
+    try{
+      var el = document.getElementById('geriBil'); if(!el) return;
+      el.classList.remove('on'); el.setAttribute('aria-hidden','true');
+      try{ pencereKapa(el); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  var GERI_NOT = 'Sends only: your message, the app version and a rough platform label (mobile/desktop + browser engine). No identity, no station, no history, no location.';
+  function geriYolla(){
+    try{
+      var m = _gel('geriMetin');
+      var d = _gel('geriGonder');
+      var metin = m ? String(m.value || '').trim() : '';
+      if(!metin) return false;
+      var simdi = Date.now(), son = 0;
+      try{ son = parseInt(localStorage.getItem(GERI_ANAHTAR) || '0', 10) || 0; }catch(_){ _yut(_); }
+      if(son && simdi - son < GERI_ARA){
+        var n0 = document.getElementById('geriNot');
+        if(n0) n0.textContent = Y('Please wait a minute before sending again.');
+        return false;
+      }
+      var govde = JSON.stringify({ k:'geri', v: ORB_SURUM, p: _olcumOrtam(),
+                                   t: metin.slice(0, 200) });
+      fetch('/olcu', { method:'POST', keepalive:true,
+                       headers:{ 'content-type':'application/json' },
+                       body: govde })
+        .catch(function(e){ _yut(e); });
+      try{ localStorage.setItem(GERI_ANAHTAR, String(simdi)); }catch(_){ _yut(_); }
+      /* TESEKKUR EDIP KAPANIYOR. "Gonderildi" demeden kapatmak,
+         gondermemekle ayni his birakiyor. */
+      if(d){ d.disabled = true; d.textContent = Y('SENT'); }
+      var n = document.getElementById('geriNot');
+      if(n) n.textContent = Y('Thank you. This goes to the developer, nowhere else.');
+      setTimeout(function(){ try{ geriKapa(); }catch(e){ _yut(e); } }, 1400);
+      return true;
+    }catch(e){ _yut(e); return false; }
+  }
+  try{
+    var _gs = document.getElementById('geriSat');
+    if(_gs){
+      _gs.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); geriAc(); });
+      _gs.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); geriAc(); } });
+    }
+    var _gv = document.getElementById('geriVaz');
+    if(_gv) _gv.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); geriKapa(); });
+    var _gg = document.getElementById('geriGonder');
+    if(_gg) _gg.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); geriYolla(); });
+  }catch(e){ _yut(e); }
+  try{ window.geriAc = geriAc; window.geriKapa = geriKapa; window.geriYolla = geriYolla; }catch(e){ _yut(e); }
   var _hataKayit = [], _hataGosterildi = false;
   (function(){
     var TAVAN = 5;
@@ -16360,7 +16497,7 @@
   document.addEventListener('pointerdown', e=>{
     if(_ilkTetik || baslatildi) return;
     const t = e.target;
-    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe')) return;  // kendi başlatıcıları var
+    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe,#geriBil,#geriSat')) return;  // kendi başlatıcıları var
     _ilkTetik = true;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     const it = ilkItem;
