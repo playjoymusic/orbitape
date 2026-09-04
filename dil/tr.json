@@ -124,8 +124,6 @@
   "WAKE": "UYANDIR",
   "ANY STATION": "HERHANGİ BİR RAF",
   "Fades out at": "Kısılıyor:",
-  "min left": "dk kaldı",
-  "Sleeping · silent until the alarm": "Uyuyor · alarma kadar sessiz",
   "Off": "Kapalı",
   "ONCE": "BİR KEZ",
   "EVERY DAY": "HER GÜN",
@@ -190,6 +188,5 @@
   "Tap one, then drag inside the disc.": "Birine dokun, sonra diskin içinde sürükle.",
   "Silent · keeping the alarm alive": "Sessiz · alarm icin acik",
   "h": "sa",
-  "s": "sn",
-  "ALARM SET": "ALARM KURULU"
+  "s": "sn"
 }
