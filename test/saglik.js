@@ -8825,6 +8825,35 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* ucuncu seviye: dogrudan tam ses */
         alarmCal(3); await bek(200); c.ucuncuTam = _uykuKat === 1;
         alarmDurdur(); await bek(200);
+        /* ── ALARM KURULUYSA OTURUM AYAKTA (4 Eylul) ────────────
+           Kullanicinin olctugu hata: "uyku sayaci tamam ama alarmi
+           kurup kilitleyince olmadi." Sessiz dongu yalnizca uyku
+           bitince basliyordu; sadece alarm kuran biri icin ses hic
+           calmiyor, tarayici sekmeyi uyutuyor ve nabiz durunca alarm
+           saati hic gelmiyor. Simdi alarm kurulu ve ortalik sessizse
+           dongu basliyor. */
+        try{ ses.pause(); }catch(e){}
+        uykuIptal(); await bek(100);
+        sabahKur(true); await bek(600);
+        c.alarmOturumu = document.body.classList.contains('gece') && !ses.paused;
+        sabahKur(false); await bek(300);
+        c.kapaninca = !document.body.classList.contains('gece');
+        /* SAYAC: kosarken kalan sure geri sayiyor, tus CANCEL oluyor;
+           hizli tuslar (5-10-15) kalkti -- "sayac olacak, pratik
+           olmali." */
+        c.hizliYok = !document.querySelector('#saatPanel .st-tus.hizli');
+        const dg = document.querySelector('#saatPanel .st-deger');
+        const bs = document.querySelector('#saatPanel .st-tus.basla');
+        const dkYazi = dg ? dg.textContent : '';
+        uykuKur(45); await bek(300);
+        c.sayacGeri = !!dg && /^\d+:\d\d$/.test((dg.textContent||'').trim()) && dg !== dkYazi;
+        c.tusIptal = !!bs && /CANCEL|IPTAL/i.test(bs.textContent || '');
+        uykuIptal(); await bek(200);
+        /* Alarm kurulunca geri sayim gorunuyor. */
+        sabahKur(true); await bek(200);
+        const gr = document.querySelector('#saatPanel .st-geri');
+        c.geriSayim = !!gr && !gr.hidden && (gr.textContent || '').trim().length > 1;
+        sabahKur(false); await bek(200);
         /* ALARM ANAHTARI ADIYLA (3 Eylul): "alarm sayfasinda en alttaki
            on off anlamadim, o niye var." Neyin acildigi yaziyor. */
         const anh = document.querySelector('#saatPanel .st-tus.anahtar');
@@ -8862,6 +8891,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
     K('Saat paneli kapaniyor, depo ve carpan temiz', st.kapandi && st.depoTemiz && st.katGeri, ozet || 'temiz');
     K('Alarm anahtari ne oldugunu yaziyor', st.anahtarAdli, ozet || 'ALARM ON / ALARM OFF');
+    K('Alarm kuruluyken oturum ayakta (sessiz dongu)', st.alarmOturumu && st.kapaninca,
+       ozet || 'kurulunca gece kipi, kapatinca birakiyor');
+    K('Uyku sayaci geri sayiyor, hizli tuslar kalkti', st.sayacGeri && st.tusIptal && st.hizliYok,
+       ozet || 'dk:sn geri sayim, tus CANCEL');
+    K('Alarm geri sayimi panelde', st.geriSayim, ozet || 'kac saat kac dakika kaldi');
     K('Saat panelinde bosluga dokunus kapatir ve yutulur', st.bosKapatti && st.bosYutuldu, ozet || 'sonraki() 0');
   }
   /* ── DERI GALERISI (deri_galeri.js): FIRCA ────────────────────────

@@ -1,17 +1,14 @@
 {
   "_": "ORBITAPE — Turkce arayuz sozlugu. ANAHTAR = ekrandaki Ingilizce metnin kendisi; uydurma anahtar yok, cunku anahtar ile ekran ayri iki yerde durursa biri degisip oteki unutuluyor. Karsiligi olmayan metin Ingilizce gorunur -- eksik ceviri olur, bos ekran olmaz. ISTASYON, SARKI, SANATCI, TUR ve RAF adlari BILEREK yok: onlar veri, arayuz degil.",
-
   "Settings": "Ayarlar",
   "ORBITAPE sound banks": "ORBITAPE ses bankaları",
   "sound banks & effects": "ses bankaları ve efektler",
   "Sound banks": "Ses bankaları",
   "Open the archive": "Arşivi aç",
   "SEE IT FIRST": "ÖNCE GÖR",
-
   "AUDIO": "SES",
   "SEARCH": "ARAMA",
   "CLICK": "TIK",
-
   "DISPLAY": "GÖRÜNÜM",
   "THEME": "TEMA",
   "Theme": "Tema",
@@ -30,7 +27,6 @@
   "ALARM ON": "ALARM ACIK",
   "ALARM OFF": "ALARM KAPALI",
   "TUTORIALS": "TANITIMLAR",
-
   "MORE": "DAHA FAZLA",
   "LANGUAGE": "DİL",
   "HOW IT WORKS": "NASIL ÇALIŞIR",
@@ -43,13 +39,11 @@
   "OPEN": "AÇ",
   "RESET SETTINGS": "AYARLARI SIFIRLA",
   "RESET": "SIFIRLA",
-
   "ON": "AÇIK",
   "OFF": "KAPALI",
   "PLAY": "BAŞLAT",
   "NO": "HAYIR",
   "YES": "EVET",
-
   "MINIMAL": "EN AZ",
   "LOW": "AZ",
   "NORMAL": "NORMAL",
@@ -59,7 +53,6 @@
   "DIM": "LOŞ",
   "BRIGHT": "PARLAK",
   "BLAZING": "KOR",
-
   "NO CONNECTION": "BAĞLANTI YOK",
   "ORBITAPE streams from the internet.": "ORBITAPE sesi internetten alıyor.",
   "It resumes by itself when you are back online.": "Bağlantı gelince kendiliğinden devam ediyor.",
@@ -73,19 +66,15 @@
   "COPY FAILED": "KOPYALANAMADI",
   "DISMISS": "KAPAT",
   "SEND TO DEVELOPER": "GELİŞTİRİCİYE GÖNDER",
-
   "Don't show this again": "Bunu bir daha gösterme",
   "Don't show effect tips": "Efekt ipuçlarını gösterme",
   "SKIP": "GEÇ",
   "DRAG INSIDE": "İÇİNDE SÜRÜKLE",
-
   "NO RESULTS": "SONUÇ YOK",
   "NOTHING WOULD PLAY": "HİÇBİRİ ÇALMADI",
   "Twelve recordings in a row failed to load. The archive server may be busy, or blocked on this network.": "Arka arkaya on iki kayıt yüklenemedi. Arşiv sunucusu meşgul olabilir ya da bu ağda engelli olabilir.",
-
   "DIAGNOSTICS COPIED": "TANI KOPYALANDI",
   "Paste it into a message to hello@orbitape.app. Nothing was sent automatically.": "hello@orbitape.app adresine göndereceğin bir mesaja yapıştır. Otomatik hiçbir şey gönderilmedi.",
-
   "REC LOCKED": "KAYIT KAPALI",
   "Live stations are licensed to be heard, not recorded. Switch to ORBITAPE to record.": "Canlı istasyonlar dinlenmek için lisanslı, kaydedilmek için değil. Kaydetmek için ORBITAPE'e geç.",
   "Recording is off during live radio": "Canlı radyoda kayıt kapalı",
@@ -101,7 +90,6 @@
   "The screen could not be captured. Reloading usually fixes it.": "Ekran yakalanamadı. Sayfayı yenilemek genelde çözüyor.",
   "The image could not be prepared on this device.": "Görsel bu cihazda hazırlanamadı.",
   "RECORDING SAVED": "KAYIT KAYDEDİLDİ",
-
   "CAMERA BLOCKED": "KAMERA ENGELLİ",
   "NO CAMERA FOUND": "KAMERA BULUNAMADI",
   "This device reports no front camera the browser can reach.": "Bu cihazda tarayıcının ulaşabileceği bir ön kamera görünmüyor.",
@@ -111,7 +99,6 @@
   "The browser refused the camera and did not say why.": "Tarayıcı kamerayı reddetti ve sebebini söylemedi.",
   "Discard recording": "Kaydı sil",
   "Front camera": "Ön kamera",
-
   "ORBITAPE": "ORBITAPE",
   "Live radio from around the world.": "Dünyanın her yerinden canlı radyo.",
   "Tap the centre to start.": "Başlamak için ortaya dokun.",
@@ -150,7 +137,6 @@
   "tomorrow": "yarın",
   "CAR MODE is on: the sound goes straight to the output, so fade-out and the gentle wake ramp are not available on iPhone. Sleep still stops the sound; the alarm starts at full volume.": "ARAÇ KİPİ açık: ses doğrudan çıkışa gidiyor, iPhone'da kısılma ve yumuşak uyanma rampası yok. Uyku yine sesi durdurur; alarm tam seste başlar.",
   "Keep ORBITAPE open; the screen may lock. Until the alarm the sound stays on, silently, so the clock keeps running.": "ORBITAPE açık kalsın; ekran kilitlenebilir. Alarma kadar ses sessizce açık kalır, böylece saat işler.",
-  "GENRES": "TÜRLER",
   "SHELVES": "RAFLAR",
   "Nothing here yet.": "Henüz bir şey yok.",
   "CONTROLS": "KUMANDA",
@@ -179,11 +165,9 @@
   "an archive of recordings, with effects.": "efektleriyle birlikte bir kayıt arşivi.",
   "READY": "HAZIR",
   "That’s it. Enjoy.": "Bu kadar. İyi dinlemeler.",
-
   "A second world, next to the radio.": "Radyonun yanında ikinci bir dünya.",
   "Recordings instead of stations.": "İstasyonlar yerine kayıtlar.",
   "THE ARCHIVE": "ARŞİV",
-  "SHELVES": "RAFLAR",
   "The rings become archive shelves.": "Halkalar arşiv rafına dönüşüyor.",
   "Hold, then release on one.": "Basılı tut, sonra birinin üstünde bırak.",
   "PLANETS": "GEZEGENLER",
@@ -201,8 +185,11 @@
   "THE SWITCH": "ANAHTAR",
   "It is off right now.": "Şu anda kapalı.",
   "Turn it on when you want this world.": "Bu dünyayı istediğinde aç.",
-
   "EFFECTS": "EFEKTLER",
   "These four are the effects.": "Bu dördü efektler.",
-  "Tap one, then drag inside the disc.": "Birine dokun, sonra diskin içinde sürükle."
+  "Tap one, then drag inside the disc.": "Birine dokun, sonra diskin içinde sürükle.",
+  "Silent · keeping the alarm alive": "Sessiz · alarm icin acik",
+  "h": "sa",
+  "s": "sn",
+  "ALARM SET": "ALARM KURULU"
 }

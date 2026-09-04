@@ -66,6 +66,9 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     ".st-satir{display:flex;align-items:center;gap:14px;margin:6px 0;flex-wrap:wrap}",
     ".st-satir.st-hizli{gap:0;justify-content:space-between;margin:2px 0 8px}",
     ".st-deger{font-size:1.375rem;letter-spacing:.06em;min-width:96px;text-align:center}",
+    ".st-deger.kosuyor{color:var(--st-vurgu);font-variant-numeric:tabular-nums}",
+    ".st-satir.st-sayac{justify-content:center;gap:6px;margin:2px 0 8px}",
+    ".st-geri{font-size:1.125rem;letter-spacing:.1em;color:var(--st-vurgu);margin:2px 0 6px;font-variant-numeric:tabular-nums}",
     ".st-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;padding:6px 4px;font:inherit;font-size:0.75rem;letter-spacing:.14em;cursor:pointer;opacity:.62;-webkit-tap-highlight-color:transparent;transition:opacity .18s,color .18s}",
     ".st-tus:hover,.st-tus:focus-visible{opacity:1}",
     ".st-tus.eksi,.st-tus.arti{font-size:1.25rem;padding:0 8px;opacity:.8}",
@@ -226,12 +229,44 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       katYaz(0);
       const a = sessizWav();
       if(a){ ses.loop = true; ses.src = a; ses.play().catch(()=>{}); }
-      try{ ortamKunye('SLEEPING', 'alarm ' + depo.sabah.saat, null); }catch(e){ yut(e); }
+      try{ ortamKunye(depo.uykuBitis ? 'SLEEPING' : 'ALARM SET',
+                      T('Rings') + ' ' + depo.sabah.saat, null); }catch(e){ yut(e); }
       goster();
     }catch(e){ yut(e); }
   }
   function geceBirak(){
     try{ ses.loop = false; document.body.classList.remove('gece'); }catch(e){ yut(e); }
+  }
+
+  /* ── ALARM KURULUYSA OTURUM AYAKTA KALIYOR (4 Eylul) ─────────────
+     KULLANICININ OLCTUGU HATA: "uyku sayaci tamam ama alarmi kurup
+     kilitleyince olmadi." Sebep buydu: sessiz dongu (geceTut) YALNIZCA
+     uyku sayaci bitince basliyordu. Sadece alarm kuran biri icin ses
+     hic calmiyor, tarayici sekmeyi uyutuyor ve 5 saniyelik nabiz
+     durunca alarm saati hic gelmiyor.
+     Bir web uygulamasinin arka planda uyanik kalmasinin TEK yolu ses
+     calmaya devam etmesi. O yuzden alarm kurulu ve ortalik sessizse
+     ayni sessiz donguye giriliyor -- kullanici bir sey duymuyor,
+     oturum yasiyor. Ses zaten caliyorsa dokunulmuyor: muzigin
+     ustune binmez.
+     Ne zaman bakiliyor: alarm kurulunca, ses durunca/bitince, sayfa
+     arka plana atilinca ve her nabizda. */
+  function oturumGerekli(){
+    try{
+      if(!depo.sabah.acik || !depo.sabah.hedef) return false;
+      if(kip === 'caliyor') return false;
+      /* Uyku sayaci koserken ses zaten caliyor. */
+      if(depo.uykuBitis) return false;
+      return true;
+    }catch(e){ yut(e); return false; }
+  }
+  function oturumTut(){
+    try{
+      if(!oturumGerekli()) return;
+      if(kip === 'gece') return;                 // dongu zaten donuyor
+      if(ses && !ses.paused) return;             // muzik caliyor: karisma
+      geceTut();
+    }catch(e){ yut(e); }
   }
 
   /* ── UYKU SAYACI ───────────────────────────────────────────────── */
@@ -265,7 +300,13 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   function sabahKur(acik){
     depo.sabah.acik = !!acik;
     depo.sabah.hedef = acik ? sabahHedefHesapla() : 0;
-    yaz(); goster();
+    yaz();
+    /* Kurulunca oturum ayakta tutuluyor, kapatilinca birakiliyor --
+       yoksa alarm kapaliyken de sessiz dongu donerdi. */
+    if(depo.sabah.acik) oturumTut();
+    else if(kip === 'gece' && !depo.uykuBitis){ geceBirak(); kip = ''; katYaz(1);
+      try{ ses.pause(); }catch(e){ yut(e); } }
+    goster();
   }
   function alarmCal(seviye){
     try{
@@ -326,6 +367,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
         }
         erteleme = 0; alarmCal(1);
       }
+      oturumTut();
       if(kap && !kap.hidden) goster();
     }catch(e){ yut(e); }
   }
@@ -336,8 +378,31 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     const b = el('button', 'st-tus ' + sinif, etiket); b.type = 'button';
     b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); f(); }); return b;
   }
-  let uykuDkYazi, uykuDurum, sabahSaatGiris, sabahAile, sabahTekrar, sabahAnahtar, sabahDurum, calanKutu, notYazi;
+  let uykuDkYazi, uykuDurum, uykuBasla, sabahSaatGiris, sabahAile, sabahTekrar, sabahAnahtar, sabahDurum, calanKutu, notYazi, sabahGeri;
   let hizliTuslar = [];
+  /* BASILI TUTUNCA HIZLANIR: ilk dokunus 5 dk, sonra 400 ms'de bir,
+     iki saniye sonra 120 ms'de bir. Parmagini kaldirmadan 5'ten
+     180'e gidebiliyorsun -- sayaci pratik yapan sey bu. */
+  function basiliTus(sinif, etiket, adim){
+    const b = el('button', 'st-tus ' + sinif, etiket); b.type = 'button';
+    let zaman = null, hizZaman = null, bas0 = 0;
+    const oynat = ()=>{ depo.uykuDk = Math.max(5, Math.min(180, depo.uykuDk + adim)); yaz(); goster(); };
+    const dur = ()=>{ if(zaman) clearTimeout(zaman); if(hizZaman) clearInterval(hizZaman);
+                      zaman = hizZaman = null; };
+    b.addEventListener('pointerdown', e=>{
+      e.preventDefault(); e.stopPropagation();
+      if(depo.uykuBitis) return;              // koserken sayi degismez
+      oynat(); bas0 = Date.now();
+      zaman = setTimeout(()=>{
+        hizZaman = setInterval(()=>{
+          if(Date.now() - bas0 > 2400) { oynat(); oynat(); } else oynat();
+        }, 260);
+      }, 500);
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(t=> b.addEventListener(t, dur));
+    b.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); oynat(); } });
+    return b;
+  }
   function kur(){
     if(kap) return;
     kurallariKur();
@@ -355,20 +420,24 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     calanKutu.appendChild(tus('dur', T("I'M UP"), alarmDurdur));
     kap.appendChild(calanKutu);
 
-    /* UYKU */
+    /* ── UYKU: SAYAC ─────────────────────────────────────────────
+       4 Eylul, kullanici: "abi sayac olacak, hem dk hem ne kadar
+       sure ... 5-10-15 gibi yazmaz, sayac olacak, pratik olmali."
+       Hizli tuslar (15/30/60/90/120) KALKTI. Geriye tek bir sayi
+       kaldi: − 45 MIN +. Sayac koserken ayni yerde KALAN SURE
+       geri sayiyor, yani "kuruldu mu, ne kadar kaldi" sorusunun
+       cevabi ekranin ortasinda duruyor. Basili tutunca hizlaniyor:
+       180 dakikaya bes dokunusla degil, parmagi kaldirmadan. */
     const u = el('div', 'st-bolum');
     u.appendChild(el('div', 'st-ad', T('SLEEP')));
-    const sat = el('div', 'st-satir');
-    sat.appendChild(tus('eksi', '−', ()=>{ depo.uykuDk = Math.max(5, depo.uykuDk - 5); yaz(); goster(); }));
+    const sat = el('div', 'st-satir st-sayac');
+    sat.appendChild(basiliTus('eksi', '−', -5));
     uykuDkYazi = el('span', 'st-deger', ''); sat.appendChild(uykuDkYazi);
-    sat.appendChild(tus('arti', '+', ()=>{ depo.uykuDk = Math.min(180, depo.uykuDk + 5); yaz(); goster(); }));
+    sat.appendChild(basiliTus('arti', '+', 5));
     u.appendChild(sat);
-    const hz = el('div', 'st-satir st-hizli');
-    hizliTuslar = [15, 30, 60, 90, 120].map(dk=>{ const t = tus('hizli', dk + '', ()=>{ depo.uykuDk = dk; yaz(); goster(); }); t.dataset.dk = String(dk); hz.appendChild(t); return t; });
-    u.appendChild(hz);
     const us = el('div', 'st-satir');
-    us.appendChild(tus('basla', T('START'), ()=>uykuKur(depo.uykuDk)));
-    us.appendChild(tus('iptal', T('CANCEL'), uykuIptal));
+    uykuBasla = tus('basla', T('START'), ()=>{ if(depo.uykuBitis) uykuIptal(); else uykuKur(depo.uykuDk); });
+    us.appendChild(uykuBasla);
     u.appendChild(us);
     uykuDurum = el('div', 'st-durum', ''); u.appendChild(uykuDurum);
     kap.appendChild(u);
@@ -394,6 +463,10 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     sabahTekrar = tus('tekrar', '', ()=>{ depo.sabah.tekrar = TEKRAR[(TEKRAR.indexOf(depo.sabah.tekrar) + 1) % TEKRAR.length]; if(depo.sabah.acik) depo.sabah.hedef = sabahHedefHesapla(); yaz(); goster(); });
     sa.appendChild(sabahTekrar);
     s.appendChild(sa);
+    /* Alarmin ne zaman calacagi TEK BAKISTA: saatin altinda geri
+       sayim. "Kurdum mu, tuttu mu" sorusunu ekran cevapliyor -- bu
+       olmadigi icin kullanici alarmi hic sinayamadi. */
+    sabahGeri = el('div', 'st-geri', ''); s.appendChild(sabahGeri);
     const sk = el('div', 'st-satir');
     sabahAnahtar = tus('anahtar', '', ()=>sabahKur(!depo.sabah.acik));
     sabahAnahtar.setAttribute('role', 'switch');
@@ -422,13 +495,21 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       if(!kap) return;
       const s = Date.now();
       calanKutu.hidden = kip !== 'caliyor';
-      uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
-      hizliTuslar.forEach(t=>t.classList.toggle('secili', +t.dataset.dk === depo.uykuDk));
+      /* SAYAC: koserken KALAN SURE, dururken kurulacak sure. */
       if(depo.uykuBitis){
-        const kalan = Math.max(0, Math.round((depo.uykuBitis - s) / 60000));
-        uykuDurum.textContent = T('Fades out at') + ' ' + saatYazisi(depo.uykuBitis) + ' · ' + kalan + ' ' + T('min left');
-      }else if(kip === 'gece') uykuDurum.textContent = T('Sleeping · silent until the alarm');
-      else uykuDurum.textContent = T('Off');
+        const kalanSn = Math.max(0, Math.round((depo.uykuBitis - s) / 1000));
+        const dk = Math.floor(kalanSn / 60), sn = kalanSn % 60;
+        uykuDkYazi.textContent = dk + ':' + String(sn).padStart(2, '0');
+        uykuDkYazi.classList.add('kosuyor');
+        uykuDurum.textContent = T('Fades out at') + ' ' + saatYazisi(depo.uykuBitis);
+      }else{
+        uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
+        uykuDkYazi.classList.remove('kosuyor');
+        uykuDurum.textContent = (kip === 'gece' && depo.sabah.acik)
+          ? T('Silent · keeping the alarm alive') : T('Off');
+      }
+      if(uykuBasla) uykuBasla.textContent = depo.uykuBitis ? T('CANCEL') : T('START');
+      hizliTuslar.forEach(t=>t.classList.toggle('secili', +t.dataset.dk === depo.uykuDk));
       sabahSaatGiris.value = depo.sabah.saat;
       sabahAile.value = depo.sabah.aile;
       sabahTekrar.textContent = T(TEKRAR_AD[depo.sabah.tekrar]);
@@ -443,6 +524,19 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
         const gun = new Date(depo.sabah.hedef).toDateString() === new Date().toDateString() ? T('today') : T('tomorrow');
         sabahDurum.textContent = T('Rings') + ' ' + depo.sabah.saat + ' ' + gun + (depo.sabah.aile ? ' · ' + depo.sabah.aile : '');
       }else sabahDurum.textContent = '';
+      /* GERI SAYIM: kac saat kac dakika kaldi. Bir dakikanin altinda
+         saniye gosteriliyor -- alarmi sinamak icin saati iki dakika
+         ileri kurup burayi izlemek yetiyor. */
+      if(sabahGeri){
+        const hedef2 = erteleHedef || ((depo.sabah.acik && depo.sabah.hedef) ? depo.sabah.hedef : 0);
+        if(hedef2 && kip !== 'caliyor'){
+          const k = Math.max(0, hedef2 - s), sa2 = Math.floor(k / 3600000), dk2 = Math.floor(k % 3600000 / 60000);
+          sabahGeri.textContent = (k < 60000)
+            ? (Math.ceil(k / 1000) + ' ' + T('s'))
+            : (sa2 ? (sa2 + ' ' + T('h') + ' ' + dk2 + ' ' + T('min')) : (dk2 + ' ' + T('min')));
+          sabahGeri.hidden = false;
+        }else sabahGeri.hidden = true;
+      }
       /* CAR MODE'da ses zinciri yok: iPhone'da eleman seviyesi yazilamaz,
          fade ve sabah rampasi islemez -- soyleniyor, sessizce degil. */
       const arac = (typeof AYAR !== 'undefined' && AYAR && AYAR.arac === true);
@@ -518,7 +612,13 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   if(depo.uykuBitis) kip = 'uyku';
   if(depo.sabah.acik && !depo.sabah.hedef){ depo.sabah.hedef = sabahHedefHesapla(); yaz(); }
   tik = setInterval(nabiz, 5000);
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) nabiz(); });
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) nabiz(); else oturumTut(); });
+  /* Ses durdugu anda oturum kapanmaya baslar: alarm kuruluysa hemen
+     sessiz donguye geciliyor. 'ended' de var -- arsiv parcasi bitip
+     yenisi gelmezse ayni bosluk olusur. */
+  try{
+    ['pause','ended'].forEach(t=> ses.addEventListener(t, ()=>{ setTimeout(oturumTut, 400); }));
+  }catch(e){ yut(e); }
   goster();
 
   try{
