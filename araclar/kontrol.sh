@@ -19,7 +19,7 @@
 #                         hash'i yakalayamaz (bkz. araclar/sunucu.py);
 #                         ayrica cevap verenin BIZIM sunucu oldugu
 #                         dogrulanir (araclar/sunucu_dogrula.py)
-#   5) Dort takim      -- saglik, senaryo, motor, ariza
+#   5) Bes takim       -- saglik, senaryo, motor, ariza, cihaz
 #   6) Tek sonuc       -- yesilse cikis 0, degilse 1
 set -u
 KOK="$(cd "$(dirname "$0")/.." && pwd)"
@@ -138,10 +138,14 @@ rapor ariza
 # sonsuza kadar asili kaliyordu. Butun takimlar yesildi ama betik
 # bitmiyordu -- olculdu: dort takim 12:58'de bitti, betik 13:16'da
 # hala bekliyordu. Cozum: yalnizca TAKIMLARIN pid'leri bekleniyor.
+# CIHAZ TAKIMI paralel kosabiliyor: yerlesim olcuyor, sure degil.
+# Neden var: 4 Eylul'de bildirilen uc kusur da testlerden gecmisti,
+# cunku her sey TEK ekran olcusunde (390x844) sinaniyordu. Bu takim
+# alti ekranda ve yavas hatta ayni sorulari soruyor.
 pidler=""
-for t in senaryo motor; do kosu "$t" & pidler="$pidler $!"; done
+for t in senaryo motor cihaz; do kosu "$t" & pidler="$pidler $!"; done
 wait $pidler 2>/dev/null         # cikis kodlarina GUVENILMIYOR, dosyalar okunuyor
-for t in senaryo motor; do rapor "$t"; done
+for t in senaryo motor cihaz; do rapor "$t"; done
 echo
 echo "  (takimlar $(( $(date +%s) - t0 )) sn)"
 

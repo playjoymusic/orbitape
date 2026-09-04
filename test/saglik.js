@@ -5807,8 +5807,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Yavas hatta bu, oturumun geri kalaninda istasyonsuz bir
        uygulama demekti. Kural degisti: ag hatasinda kalici damga yok,
        yalniz sunucu cevaplayip liste bos cikarsa vazgeciliyor. */
-    K('Liste yoksa radyo susmuyor', /if\(!r \|\| !r\.ok\)\{ return null; \}/.test(kaynak3),
-      'beyaz liste gelmezse dizine dusuyor');
+    K('Liste yoksa radyo susmuyor',
+      /if\(!r \|\| !r\.ok\)\{ blTekrarPlanla\(\); return null; \}/.test(kaynak3),
+      'beyaz liste gelmezse dizine dusuyor, ayrica kendi kendine tekrar planlaniyor');
     K('Ag hatasinda kalici vazgecis yok',
       !/catch\(e\)\{ _blDenendi = true; return null; \}/.test(kaynak3) && /BL_BEKLE/.test(kaynak3),
       'BL_BEKLE sonra yeniden deneniyor');
@@ -9034,7 +9035,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         ev('pointerdown', P(0));
         for(let a = 6; a <= 60; a += 6){ ev('pointermove', P(a)); await bek(16); }
         ev('pointerup', P(60));
-        await bek(2600);
+        /* SABIT BEKLEME YERINE DURMASINI BEKLE. 2600 ms sinirdaydi:
+           olculdu, cark 2.6 saniyede -71.7 derecede oluyor ve son
+           dise oturmasi ~5 saniye suruyor. Sabit sure, kod dogruyken
+           rastgele kirmizi yanan bir test demek. */
+        for(let i = 0; i < 80; i++){
+          await bek(100);
+          const d = window.carkDurum();
+          if(d.hiz === 0 && Math.abs(d.aci % (360 / (AILE_ADLAR||['x']).length)) < 0.5) break;
+        }
         c.degisti = window.carkDurum().secili !== once;
         c.rafaOturdu = Math.abs(window.carkDurum().aci % (360 / (AILE_ADLAR||['x']).length)) < 0.5;
         /* Raf adi ekranin baska yerinde YAZMIYOR: sol ust gizli. */

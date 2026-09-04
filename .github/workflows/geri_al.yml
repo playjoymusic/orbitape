@@ -84,13 +84,21 @@ jobs:
         run: |
           sleep 20
           bash araclar/duman.sh
+      # ── SEBEP ENV ILE GECIYOR, run: SATIRINA GOMULMUYOR ────────
+      #   Ilk yazimda burada dogrudan ${{ inputs.sebep }} vardi ve
+      #   birim testi (Kullanici girdisi kabuk satirina girmesin)
+      #   hakli olarak kirmizi yakti: GitHub o metni kabuk satirinin
+      #   ICINE koyuyor, yani sebep kutusuna komut yazan biri onu
+      #   kosturabilirdi. Degeri ortam degiskeniyle aliyoruz.
       - name: Ozet
         if: always()
+        env:
+          SEBEP: ${{ inputs.sebep }}
         run: |
           {
             echo "## Geri alindi"
             echo ""
-            echo "Sebep: ${{ inputs.sebep }}"
+            echo "Sebep: $SEBEP"
             echo ""
             echo "**Depodaki kod DEGISMEDI.** Hatayi duzeltip push etmezsen"
             echo "bir sonraki push ayni bozuk surumu yine yayinlar."

@@ -871,6 +871,17 @@ function bitir(){
     const isler = fs.existsSync(isDizin)
       ? fs.readdirSync(isDizin).filter(f => /\.ya?ml$/.test(f)) : [];
     const oku = f => fs.readFileSync(path.join(isDizin, f), 'utf8');
+    /* ── YORUM SATIRLARI OLCUME GIRMEZ ──────────────────────────────
+       Bu dosyalarin yorumlari uzun ve KASTEN yasak kaliplari anlatiyor
+       ("burada dogrudan ${{ inputs.sebep }} yazmayin", "canliya alan
+       komut wrangler deploy"). Ham metinde arayinca iki kontrol de
+       yanlis dosyayi/yanlis yeri isaret etti: geri_al.yml kendi
+       uyarisi yuzunden "enjeksiyon var" sayildi, onizleme.yml ise
+       yalnizca bir yorumda 'wrangler deploy' gectigi icin "yayin
+       dosyasi" sanildi ve gercek yayin dosyasi hic bakilmadan
+       kirmizi yandi (kosu #29). Yorum hicbir sey CALISTIRMAZ:
+       kontroller artik yorumsuz metne bakiyor. */
+    const kod = f => oku(f).split('\n').filter(l => !/^\s*#/.test(l)).join('\n');
     K('Yayin akisi var', isler.length > 0, isler.join(', ') || 'hic workflow yok');
 
     /* 1. TARAYICI SURUMU: package.json ile CI goruntusu ayni olmali.
@@ -913,7 +924,7 @@ function bitir(){
        Girdi ortam degiskeniyle gecmeli. */
     const enjekte = [];
     isler.forEach(f=>{
-      const m = oku(f);
+      const m = kod(f);
       /* run: bloklarini kabaca ayikla ve icinde girdi ifadesi ara. */
       (m.match(/run:[\s\S]*?(?=\n      - |\n  [a-z]|$)/g) || []).forEach(blok=>{
         if(/\$\{\{\s*(github\.event\.inputs|inputs|github\.event\.issue|github\.event\.comment|github\.head_ref)/.test(blok))
@@ -945,8 +956,8 @@ function bitir(){
        Bir `wrangler deploy` adimi olmali ve o adim kapiya BAGLI
        olmali (needs:). Yoksa yayin testleri beklemiyor demektir --
        2 Eylul'deki beyaz ekranin sebebi tam buydu. */
-    const yayinDosya = isler.find(f => /wrangler deploy/.test(oku(f)));
-    const yayin = yayinDosya ? oku(yayinDosya) : '';
+    const yayinDosya = isler.find(f => /wrangler deploy/.test(kod(f)));
+    const yayin = yayinDosya ? kod(yayinDosya) : '';
     K('Yayin, kapiya bagli bir adimda yapiliyor',
       !!yayinDosya && /needs:\s*kapi/.test(yayin) && /kontrol\.sh/.test(yayin),
       yayinDosya ? (/needs:\s*kapi/.test(yayin)

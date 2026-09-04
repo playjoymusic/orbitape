@@ -76,7 +76,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        BUYUGU: sabit pay (simgelerin alti) ya da ekranin %20'si --
        kisa ekranda birinci, uzun telefonda ikincisi kazaniyor ve
        serit her iki durumda da aletin hemen ustunde duruyor. */
-    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:max(calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 104px), 20vh);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
+    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:max(calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 122px), 20vh);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
     "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-sayac{display:none}",
     "#deriGaleri.serit .dg-baslik{margin-right:2px}",
     "#deriGaleri.serit .dg-bas{padding:2px 6px}",

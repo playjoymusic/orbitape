@@ -84,7 +84,12 @@
      Geçiş ipucu zaten .disk'in opaklık düşüşünde var; opaklık derleyicide
      bedava, yeniden rasterleme istemiyor.
      (3 Eylul: o opaklik dususu de kalkti -- yukaridaki nota bak.) */
-  .disk{position:relative;width:min(84vw,440px);aspect-ratio:1;z-index:10;}
+  /* YUKSEKLIK DE SINIR: disk kare oldugu icin yalniz genislige
+     bakmak yatay durusta tasmaya yol aciyor -- 844x390'da olculdu,
+     500x500 cizilip ekranin ustunden 55 px disari cikiyordu. 72vh
+     dikeyde hicbir seyi degistirmiyor (844 yukseklikte 607 > 440),
+     yalnizca alcak ekranda devreye giriyor. */
+  .disk{position:relative;width:min(84vw,440px,72vh);aspect-ratio:1;z-index:10;}
   /* Basış nefesi: transform derleyicide çalışır, ana iş parçacığı takılsa bile akar. */
   @keyframes diskNefes{
     0%  {transform:scale(1);}
@@ -2983,7 +2988,7 @@
      devreye girmiyor, yani telefon davranisi bire bir ayni kaliyor. */
   @media (min-width:700px){
     :root{ --kol:560px; --yan:calc((100vw - var(--kol)) / 2); }
-    .disk{ width:min(84vw, 500px); }
+    .disk{ width:min(84vw, 500px, 72vh); }
     #ust        { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #np         { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
@@ -3033,13 +3038,27 @@
      kendi ::after'i icin kapsayici blok, ekleme gerekmiyor. */
   #geri,#dur,#duraklat,#ileri,#mute,#favAc,#cam,#araCizgi{
     position:relative;}
+  /* 44 PIKSEL: Apple'in kendi esigi. Once 40'ti ve genislik yalnizca
+     "kutu + 14" idi; dar tuslarda (ileri/geri 38x32, tutamak 25x22)
+     alan hala esigin altinda kaliyordu. Cihaz takimi bunu her ekran
+     olcusunde ayni sekilde yakaladi. Gorunum degismiyor; buyuyen sey
+     yalnizca dokunulacak yer. */
   #geri::after,#dur::after,#duraklat::after,#ileri::after,
-  #mute::after,#favAc::after,#cam::after,#ayarTut::after,#araCizgi::after{
+  #mute::after,#favAc::after,#cam::after,#ayarTut::after,#araCizgi::after,
+  #deriFirca::after,#saatTus::after{
     content:'';position:absolute;left:50%;top:50%;
     width:calc(100% + 14px);height:40px;
     transform:translate(-50%,-50%);
     /* Gorunmez: rengi yok, cizgisi yok. Sadece dokunulacak yer. */
     background:transparent;pointer-events:auto;}
+  /* SOL UST YIGIN 44x44. Konsol tuslari yan yana ve aralari dar --
+     orada 44 istemek komsu alanlarin ust uste binmesi demek, yani
+     gordugun tusa basip baska tusun calismasi (saglik: "Dokunma
+     alanlari cakismiyor"). Sol ustteki uc simgenin etrafinda ise
+     yer VAR: aralik 18 px'e cikinca 44'luk alanlar tam bitisik
+     duruyor, binmiyor. Parmak olcusu once orada kazaniliyor. */
+  #ayarTut::after,#deriFirca::after,#saatTus::after{
+    width:max(calc(100% + 14px), 44px);height:44px;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
@@ -11847,6 +11866,21 @@
      kimseyi yormuyor, kendi CDN'imize bir istek. */
   var beyazListe = null, _blSoz = null, _blDenendi = false, _blSonDeneme = 0;
   const BL_BEKLE = 8000;                    // ag hatasindan sonra en erken tekrar
+  const BL_TEKRAR = 6;                      // kendiliginden deneme sayisi (tavan)
+  var _blTekrar = 0, _blZaman = null;
+  function blTekrarPlanla(){
+    try{
+      if(beyazListe || _blDenendi || _blZaman) return;
+      if(_blTekrar >= BL_TEKRAR) return;
+      _blTekrar++;
+      _blZaman = setTimeout(()=>{
+        _blZaman = null;
+        beyazListeYukle().then(l=>{
+          if(l && l.length){ try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); } }
+        }).catch(e=>_yut(e));
+      }, BL_BEKLE + 500);
+    }catch(e){ _yut(e); }
+  }
   async function beyazListeYukle(){
     if(beyazListe) return beyazListe;
     if(_blDenendi) return null;             // sunucu cevapladi, liste yok: bitti
@@ -11858,8 +11892,16 @@
     _blSoz = (async()=>{
       try{
         const r = await listeCek(RADYO_URL, RADYO_URL_YEDEK, 7000, RADYO_URL_SON);
-        /* AG HATASI: kalici damga YOK, sadece zaman damgasi. */
-        if(!r || !r.ok){ return null; }
+        /* AG HATASI: kalici damga YOK, sadece zaman damgasi -- ve
+           KENDILIGINDEN BIR TEKRAR. Yalniz "bir daha denemeye izin
+           var" demek yetmiyordu: izin var ama isteyen yok. Radyo
+           tarafinda liste ancak bir sonraki 'sonraki' denemesinde
+           isteniyor; hicbir sey calmiyorsa o deneme de gelmiyor ve
+           uygulama sessizce istasyonsuz kaliyor (olculdu: cihaz
+           takimi, yavas hat bolumu). Simdi kisa bir kuyruk: en fazla
+           BL_TEKRAR kez, BL_BEKLE araliyla kendi kendine deniyor ve
+           liste gelince kuyrugu dolduruyor. */
+        if(!r || !r.ok){ blTekrarPlanla(); return null; }
         const d = await r.json();
         const A = Array.isArray(d) ? d : ((d && (d.istasyonlar||d.liste)) || []);
         const temiz = A.map(x=>({
@@ -11881,7 +11923,7 @@
         return beyazListe.length ? beyazListe : null;
       /* Buraya JSON cozulemedigi ya da istek yarida kaldigi zaman
          duseriz. Ikisi de ag kaynakli olabilir -- kalici damga yok. */
-      }catch(e){ return null; }
+      }catch(e){ blTekrarPlanla(); return null; }
       finally{ _blSoz = null; }
     })();
     return _blSoz;
@@ -13419,11 +13461,17 @@
         try{
           const tr = tut0.getBoundingClientRect();
           if(tr.height){
-            let ust = Math.round(tr.bottom + 10);
+            /* ARALIK 10 -> 18: simgeler 26 px yuksek ve dokunma
+               alanlari 44 px. 10 px aralikta iki komsu alan
+               CAKISIYOR -- fircaya basarken uc cizgiye ya da saate
+               gelmek isten degil. 26 + 18 = 44: alanlar tam bitisik,
+               ust uste binmiyor. Gorunumde degisen tek sey biraz
+               daha hava. */
+            let ust = Math.round(tr.bottom + 18);
             ['deriFirca','saatTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
               e2.style.removeProperty('bottom'); e2.style.top = ust + 'px';
-              ust += 26 + 10;
+              ust += 26 + 18;
             });
           }
         }catch(_){ _yut(_); }
