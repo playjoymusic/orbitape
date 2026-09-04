@@ -69,7 +69,14 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     ".dg-tuval,.dg-doku{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}",
     ".dg-disk{position:absolute;left:50%;top:44%;width:58%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background-size:cover;pointer-events:none}",
     ".dg-kare .dg-ad{position:absolute;left:8px;right:6px;bottom:7px;text-align:left;font-size:0.5625rem;font-weight:700;letter-spacing:.12em;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
-    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 42px);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
+    /* SERIT USTTEKI HICBIR SEYIN USTUNE BINMEZ. Once 42px asagidaydi
+       ve marka yazisinin, palet/saat simgelerinin uzerine geliyordu
+       (kullanici: "balk minimize olunca herseyin ustune biniyor alta
+       al biraz, halkanin ustune biraz"). Yeni yer iki olcunun
+       BUYUGU: sabit pay (simgelerin alti) ya da ekranin %20'si --
+       kisa ekranda birinci, uzun telefonda ikincisi kazaniyor ve
+       serit her iki durumda da aletin hemen ustunde duruyor. */
+    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:max(calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 104px), 20vh);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
     "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-sayac{display:none}",
     "#deriGaleri.serit .dg-baslik{margin-right:2px}",
     "#deriGaleri.serit .dg-bas{padding:2px 6px}",
@@ -374,13 +381,15 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   function acikMi(){ return !!kap && !kap.hidden; }
-  /* FIRCA DONGUSU (3 Eylul, kullanici): "tekrar isme basinca ilk
-     kucuk moda gecsin, tekrar basarsak kapanir." Kapali -> tam
-     galeri -> serit -> kapali. */
+  /* FIRCA ARTIK ANAHTAR: ACIK/KAPALI ────────────────────────────
+     Once uc adimli bir dongu vardi (kapali -> tam -> serit ->
+     kapali). Serit kipindeyken fircaya basmak paneli kapatmiyordu
+     ve kullanici bunu kusur olarak gordu: "skins kisayolu acinca
+     tekrar fircaya basarsam ya da yukardaki bosluga kapanmali."
+     Kucultme isi BASLIGA ait (SKINS yazisi); fircanin tek isi acmak
+     ve kapatmak. Iki islev iki ayri tusa boluununce dongu de bitti. */
   function degistir(){
-    if(!acikMi()) ac();
-    else if(!kap.classList.contains('serit')) kucult();
-    else kapa();
+    if(acikMi()) kapa(); else ac();
   }
 
   /* ── BOSLUGA DOKUNUS: SERIT KAPANIR, DOKUNUS YUTULUR ──────────────
@@ -395,7 +404,22 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       const t = e.target;
       if(t instanceof Node && kap.contains(t)) return;
       if(t instanceof Element && t.closest('#deriFirca')) return;
+      /* ORTADAKI ALET BOSLUK DEGIL: seride bakarken parmak carka
+         degiyordu ve panel ucup gidiyordu. Kural uc panelde ayni
+         (bkz. index.html: merkezDokunus).
+         Dokunus KAPATMIYOR ama YUTULUYOR da: yoksa altindaki diske
+         gecip parca degistiriyordu -- gorunmeyen bir sey olmasi
+         kullanicinin asil sikayetiydi ("arka planda sacmalik"). */
+      if(window.merkezDokunus && window.merkezDokunus(e)){
+        _yutJest = true; _yutZaman = Date.now() + 600;
+        e.stopPropagation(); e.preventDefault();
+        return;
+      }
+      const kis = window.kisayolDokunus && window.kisayolDokunus(t);
       kapa();
+      /* Baska bir kisayola dokunuldu: panel kapansin ama tik gecsin,
+         yoksa oteki pencere ikinci dokunusu bekliyor. */
+      if(kis) return;
       _yutJest = true; _yutZaman = Date.now() + 600;
       e.stopPropagation(); e.preventDefault();
     }catch(err){ yut(err); }

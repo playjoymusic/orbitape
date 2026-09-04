@@ -219,9 +219,18 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
     return sessizAdres;
   }
+  var geceZaman = 0;                 // gece kipine ne zaman girildi
   function geceTut(){
     try{
-      kip = 'gece';
+      kip = 'gece'; geceZaman = Date.now();
+      /* SUREN RAMPAYI KES. Olculen kusur: alarmi durdurunca 5
+         saniyelik "normal seviyeye don" rampasi basliyor; hemen
+         ardindan gece kipine girilirse (alarm ertesi gune kuruldu ve
+         ortalik sessiz) o rampa 100 ms'de bir katYaz(1) yazmaya devam
+         ediyor ve buradaki katYaz(0)'i eziyor. Sonuc: kip 'gece'
+         gorunuyor ama ses tam acik -- yani "sessizce uyuyor" denen
+         sey aslinda calmaya devam ediyor. */
+      gecisDur();
       /* SINIF ONCE, SES SONRA: sesSeviyeYaz 'gece' sinifini gorunce
          elemani muted YAPMIYOR -- iOS susturulmus bir elemani "ses
          calmiyor" sayip sayfayi uyutabilir. Dongu zaten sessiz. */
@@ -237,6 +246,48 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   function geceBirak(){
     try{ ses.loop = false; document.body.classList.remove('gece'); }catch(e){ yut(e); }
   }
+  /* ── GECE KIPINDEN UYANMA ────────────────────────────────────────
+     OLCULEN KUSUR (kullanici): "kesinlikle geri acilmaya bassam da
+     kursam da acilmiyor."
+     Sebep: gece kipinde ses carpani SIFIR ve sessiz dongu caliyor.
+     Kullanici o sirada calmaya bassa ya da istasyon secse, uygulama
+     gercek bir yayin yukluyor ama carpan hala sifir -- yani ekranda
+     "caliyor" yaziyor, kulakta hicbir sey yok. Disaridan bakan bunu
+     "uygulama bozuldu" diye okuyor, hakli olarak.
+     Kural: GERCEK bir yayin calmaya basladigi anda gece biter ve
+     carpan 1'e doner. Sessiz dongunun kendi adresi disarida
+     birakiliyor, yoksa gece kipi kendini hemen bozardi.
+     Alarm calarken (kip 'caliyor') buraya girilmiyor: oradaki yavas
+     acilma rampasini ezmemesi gerekiyor. */
+  function uyandir(){
+    try{
+      if(kip !== 'gece') return;
+      gecisDur(); geceBirak(); kip = ''; katYaz(1); goster();
+    }catch(e){ yut(e); }
+  }
+  try{
+    ses.addEventListener('play', ()=>{
+      try{
+        if(kip !== 'gece') return;
+        /* YALNIZCA GERCEK BIR YAYIN UYANDIRIR. Once "sessiz dongunun
+           adresi degilse uyandir" deniyordu ve gece kipi kendini
+           aninda bozuyordu: geceTut once katYaz(0) yapip sonra
+           kaynagi yaziyor, o araliktaki 'play' olayinda currentSrc
+           hala ESKI kaynak oluyor ve yanlislikla eslesmiyordu.
+           Adres karsilastirmasi yerine TUR bakiliyor: istasyonlar
+           http(s), sessiz dongu blob:. Yaris ortadan kalkiyor. */
+        /* currentSrc'ye BAKILMIYOR: yeni kaynak yuklenene kadar orada
+           bir onceki adres duruyor ve gece kipine girerken sessiz
+           dongunun 'play' olayinda eski istasyon adresi goruluyordu
+           -- gece kipi kendini aninda bozuyordu (olculdu). ses.src
+           ise "calmasini istedigimiz sey"; dogru soru o. */
+        const u = ses.src || '';
+        if(!/^https?:/i.test(u)) return;
+        if(Date.now() - geceZaman < 600) return;   // gece kipine yeni girildi
+        uyandir();
+      }catch(e){ yut(e); }
+    });
+  }catch(e){ yut(e); }
 
   /* ── ALARM KURULUYSA OTURUM AYAKTA KALIYOR (4 Eylul) ─────────────
      KULLANICININ OLCTUGU HATA: "uyku sayaci tamam ama alarmi kurup
@@ -282,8 +333,11 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   }
   function uykuBitir(){
     depo.uykuBitis = 0; yaz();
-    /* 30 saniyede sifira. Sonra: alarm varsa gece kipi, yoksa dur. */
-    gecis(0, 30000, ()=>{
+    /* BIR DAKIKAYA YAYILIYOR (kullanici: "1 dakikaya yayilmis bir
+       fadeout ile kapanmali"). Once 30 saniyeydi; uyumak uzere olan
+       biri icin otuz saniye hala bir "kesilme" gibi duyuluyor.
+       Sonra: alarm varsa gece kipi, yoksa dur. */
+    gecis(0, 60000, ()=>{
       if(depo.sabah.acik){ geceTut(); return; }
       /* Kullanici durdurmus gibi: uygulamanin kendi kurtarma yollari
          (takilma, kilit ekrani) sesi geri acmasin. */
@@ -315,7 +369,10 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       geceBirak();
       try{ sesBaglamiAl(); if(actx && actx.state !== 'running') actx.resume(); }catch(e){ yut(e); }
       /* Rampa ONCE, ses SONRA: ilk saniye tam seste cikmasin. */
-      if(seviye <= 1)      { katYaz(0.04); rampa([[0,0.04],[15,0.25],[60,0.75]]); }
+      /* ILK CALIS BIR DAKIKADA TAM SESE CIKIYOR. Once tavan 0.75'ti;
+         "yavas yavas acilacak" istegi karsilaniyordu ama alarm hic
+         tam sese ulasmadigi icin derin uykuda duyulmuyordu. */
+      if(seviye <= 1)      { katYaz(0.04); rampa([[0,0.04],[20,0.30],[60,1.00]]); }
       else if(seviye === 2){ katYaz(0.25); rampa([[0,0.25],[60,1.00]]); }
       else                 { katYaz(1); }
       if(depo.sabah.aile && typeof AILE_ADLAR !== 'undefined' && AILE_ADLAR.indexOf(depo.sabah.aile) >= 0)
@@ -589,7 +646,16 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       const t = e.target;
       if(t instanceof Node && kap.contains(t)) return;
       if(t instanceof Element && t.closest('#saatTus')) return;
+      /* ORTADAKI ALET BOSLUK DEGIL: kapatmiyor ama yutuluyor da,
+         yoksa altindaki disk parca degistirir (bkz. merkezDokunus). */
+      if(window.merkezDokunus && window.merkezDokunus(e)){
+        _yutJest = true; _yutZaman = Date.now() + 600;
+        e.stopPropagation(); e.preventDefault();
+        return;
+      }
+      const kis = window.kisayolDokunus && window.kisayolDokunus(t);
       kapa();
+      if(kis) return;                      // kisayol kendi isini yapsin
       _yutJest = true; _yutZaman = Date.now() + 600;
       e.stopPropagation(); e.preventDefault();
     }catch(err){ yut(err); }

@@ -96,6 +96,14 @@ interface Window {
   carkHizala?: () => void;
   carkSeciliNo?: () => number;
   carkDurum?: () => any;
+  /* Dokunus ortadaki aletin uzerinde mi: pencerelerin "bosluk"
+     karari bunu soruyor (bkz. merkezDokunus). */
+  carkMerkezde?: (e: any) => boolean;
+  /* Pencere kurallari (index.html), uc panelin de cagirdigi:
+     acik pencere var mi / dokunus merkezde mi / hedef bir kisayol mu. */
+  pencereAcikMi?: () => boolean;
+  merkezDokunus?: (e: any) => boolean;
+  kisayolDokunus?: (t: any) => boolean;
   carkTazele?: () => void;
   carkYukle?: () => void;
   merkezUygula?: () => void;

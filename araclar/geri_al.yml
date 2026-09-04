@@ -1,0 +1,97 @@
+# ORBITAPE — GERİ AL (tek tuşla önceki sürüme dön)
+# ═══════════════════════════════════════════════════════════════════
+# NEDEN VAR
+#   Bozuk bir sürüm canlıya çıkarsa geri alma ELLE yapılıyordu:
+#   KURTARMA.md'yi aç, Cloudflare paneline gir, sürümü bul, geri al.
+#   Panik anında en kötü şey, adım adım okumak zorunda kalmak.
+#
+# NE YAPAR
+#   Cloudflare'da Worker'ı bir ÖNCEKİ sürüme döndürür (wrangler
+#   rollback), sonra canlı duman testini koşup gerçekten düzeldi mi
+#   diye bakar. Sürüm kimliği verilirse ona döner; verilmezse
+#   bir öncekine.
+#
+# NASIL ÇALIŞTIRILIR
+#   GitHub → Actions → "Geri al (onceki surume don)" → Run workflow.
+#   İstersen "surum" kutusuna belirli bir sürüm kimliği yazarsın
+#   (Cloudflare → Workers → orbitape → Deployments listesinden).
+#
+# NE YAPMAZ
+#   Depodaki kodu değiştirmez. Yani geri aldıktan SONRA hatayı
+#   düzeltip push etmen gerekir; yoksa bir sonraki push aynı bozuk
+#   kodu yine yayınlar. İş özeti bunu hatırlatıyor.
+#
+# OTOMATİK DEĞİL, BİLEREK
+#   Duman testi kırmızı yanınca bu iş kendiliğinden koşmuyor. Yanlış
+#   teşhisle geri alan bir robot, bozuk bir yayından daha tehlikeli:
+#   ağ kaynaklı tek bir kırmızı, sağlam bir sürümü geri alabilir.
+#   Karar insanda; bu iş yalnızca kararı bir tuşa indiriyor.
+
+name: Geri al (onceki surume don)
+
+on:
+  workflow_dispatch:
+    inputs:
+      surum:
+        description: 'Surum kimligi (bos birakirsan bir oncekine doner)'
+        required: false
+        type: string
+      sebep:
+        description: 'Sebep (kayitta gorunur)'
+        required: false
+        default: 'Yayinda bozukluk'
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: yayin          # yayınla aynı kuyruk: ikisi çakışmasın
+  cancel-in-progress: false
+
+jobs:
+  geri:
+    name: Geri al ve sina
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+      - name: Node kur
+        run: npm ci
+      - name: Geri al
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SURUM: ${{ inputs.surum }}
+          SEBEP: ${{ inputs.sebep }}
+        run: |
+          set -o pipefail
+          # -y: CI'da soru sorulamaz; onay zaten "Run workflow" tuşu.
+          if [ -n "$SURUM" ]; then
+            npx wrangler rollback "$SURUM" -y -m "$SEBEP" 2>&1 | tee /tmp/geri.txt
+          else
+            npx wrangler rollback -y -m "$SEBEP" 2>&1 | tee /tmp/geri.txt
+          fi
+      # Geri aldık ama düzeldi mi: canlıya soruyoruz. KATI kapalı --
+      # yayındaki dosya artık depodakinden ESKİ olmalı, aynı olması
+      # zaten beklenmiyor.
+      - name: Canli sinama
+        env:
+          ADRES: https://orbitape.app
+          KATI: '0'
+        run: |
+          sleep 20
+          bash araclar/duman.sh
+      - name: Ozet
+        if: always()
+        run: |
+          {
+            echo "## Geri alindi"
+            echo ""
+            echo "Sebep: ${{ inputs.sebep }}"
+            echo ""
+            echo "**Depodaki kod DEGISMEDI.** Hatayi duzeltip push etmezsen"
+            echo "bir sonraki push ayni bozuk surumu yine yayinlar."
+          } >> "$GITHUB_STEP_SUMMARY"

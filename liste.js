@@ -224,7 +224,16 @@ try{ window.LISTE_BASLADI = true; }catch(e){}
       const t = e.target;
       if(t instanceof Node && kap.contains(t)) return;
       if(t instanceof Element && t.closest('[data-liste-bagli]')) return;
+      /* ORTADAKI ALET BOSLUK DEGIL: kapatmiyor ama yutuluyor da,
+         yoksa altindaki disk parca degistirir (bkz. merkezDokunus). */
+      if(window.merkezDokunus && window.merkezDokunus(e)){
+        _yutJest = true; _yutZaman = Date.now() + 600;
+        e.stopPropagation(); e.preventDefault();
+        return;
+      }
+      const kis = window.kisayolDokunus && window.kisayolDokunus(t);
       kapa();
+      if(kis) return;                      // kisayol kendi isini yapsin
       _yutJest = true; _yutZaman = Date.now() + 600;
       e.stopPropagation(); e.preventDefault();
     }catch(err){ yut(err); }

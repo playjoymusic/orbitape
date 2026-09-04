@@ -155,14 +155,24 @@ hangi kontrolde düştüğünü ve neye bakman gerektiğini söyler.
 GitHub bunu zaten her push'ta ve 15 dakikada bir kendi koşuyor —
 e-posta geldiyse aynı çıktıyı orada da görürsün.
 
-### Yol A — panelden (en hızlı, 30 saniye)
+### Yol A — GitHub'dan tek tuşla (en kolay, telefondan da olur)
+
+1. GitHub → **Actions** → **"Geri al (onceki surume don)"**
+2. Sağdaki **Run workflow** → (istersen sürüm kimliğini yaz) → çalıştır
+3. İş, geri aldıktan sonra canlı duman testini kendi koşuyor
+
+Bilgisayar başında olmasan da olur: telefondaki GitHub uygulamasından
+da çalıştırılıyor. Kendiliğinden koşmuyor, bilerek — yanlış teşhisle
+geri alan bir robot, bozuk bir yayından daha tehlikeli.
+
+### Yol B — panelden (30 saniye)
 
 1. dash.cloudflare.com → Workers & Pages → **orbitape**
 2. **Deployments** sekmesi → *Version History*
 3. Sağlam olduğunu bildiğin sürümün sağındaki **⋯** → **Rollback**
 4. `bash araclar/duman.sh` ile doğrula
 
-### Yol B — komut satırından
+### Yol C — komut satırından
 
 ```bash
 npx wrangler versions list                 # son 10 sürüm
@@ -174,7 +184,7 @@ bash araclar/duman.sh
 Sebebi yazmak zorunlu değil ama sonra "bu neden geri alınmış" diye
 soran kişi sen olacaksın.
 
-### Yol C — git ile (kalıcı düzeltme)
+### Yol D — git ile (kalıcı düzeltme)
 
 Geri alma **yayını** düzeltir, **depoyu** düzeltmez: bir sonraki push
 aynı bozuk sürümü tekrar yayınlar. Kalıcı çözüm bozuk commit'i geri
@@ -201,7 +211,7 @@ push.
 `earth.json` / `radyo.json` gibi veri dosyalarının yanlış bir hasat
 sonucu bozulması, yayın geri alınınca da düzelmez — çünkü veriyi
 üreten şey depo değil, hasat işi. O durumda bozuk hasat commit'ini
-`git revert` etmek gerekiyor (Yol C).
+`git revert` etmek gerekiyor (Yol D).
 
 ---
 

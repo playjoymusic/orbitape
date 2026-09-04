@@ -4807,6 +4807,63 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Ag yokken karsilama eli YOK', !!ags && ags.elCikti===false, 'dokununca baslayacak sey yok');
   K('Ag gelince panel kapaniyor', !!ags && ags.kapandi===true, 'kendiliginden');
 
+  /* ── YAVAS AG: PES ETMEK YOK ────────────────────────────────────
+     Olculen sikayet: tek cubuk LTE'de cark donuyor, ses geliyor, ama
+     hicbir istasyon acilmiyor ve arada "NO CONNECTION" gelip gidiyor.
+     Iki sebep vardi: (1) beyaz liste bir kez cekilemeyince oturum
+     boyunca bir daha denenmiyordu, (2) dort yavas istek paneli
+     aciyordu. Ikisi de burada sinaniyor. */
+  const yav = await pg.evaluate(async ()=>{
+    const bek=ms2=>new Promise(r=>setTimeout(r,ms2));
+    const eskiBos = _agBos, eskiBasari = _sonBasari;
+    /* Yakin basari varken panel ACILMAMALI: hat yavas, ama calisiyor. */
+    _agBos = 99; _sonBasari = Date.now();
+    const yakinBasari = agYokMu();
+    /* Esik: bes yetmez, alti yeter. */
+    _sonBasari = 0; _agBos = 5; const bes = agYokMu();
+    _agBos = 6; const alti = agYokMu();
+    _agBos = eskiBos; _sonBasari = eskiBasari;
+
+    /* Olculen yavaslik: zaman asimi carpani buyutuyor, tavani var. */
+    const olcumBasi = AG_OLCUM;
+    const eskiFetch = window.fetch;
+    /* Bu sinama BILEREK ag hatasi uretiyor; uygulamanin "sessizce
+       yutulan hata" sayaci onlari kusur sanmasin diye sayac
+       sinamadan onceki haline geri konuyor. */
+    const yutBasi = window.__yut ? { n: window.__yut.n|0, ilk: (window.__yut.ilk||[]).slice() } : null;
+    let carpanArtti = false, blDamga = null;
+    try{
+      /* Hicbir zaman cevaplamayan sunucu: zaman asimi yolu. */
+      window.fetch = (u, o)=> new Promise((_c, red)=>{
+        if(o && o.signal) o.signal.addEventListener('abort', ()=> red(new Error('abort')));
+      });
+      await fetchZA('/radyo.json', 30).catch(()=>{});
+      carpanArtti = AG_OLCUM > olcumBasi;
+      /* Beyaz liste: ag hatasindan sonra KALICI damga vurulmamali.
+         Burada istek ANINDA reddediliyor -- asili birakirsak listeCek
+         yedeklerle birlikte yirmi saniye bekler, sinama uzar. */
+      window.fetch = ()=> Promise.reject(new Error('ag yok'));
+      const eskiListe = beyazListe, eskiDamga = _blDenendi;
+      beyazListe = null; _blDenendi = false; _blSonDeneme = 0;
+      await beyazListeYukle().catch(()=>{});
+      blDamga = _blDenendi;
+      beyazListe = eskiListe; _blDenendi = eskiDamga; _blSonDeneme = 0;
+    }finally{ window.fetch = eskiFetch; AG_OLCUM = olcumBasi; }
+    /* Gec dusen reddler de sayaca islesin diye once bekleniyor,
+       sonra sayac geri aliniyor. */
+    await bek(120);
+    if(yutBasi && window.__yut){ window.__yut.n = yutBasi.n; window.__yut.ilk = yutBasi.ilk; }
+    return { yakinBasari, bes, alti, esik: AG_BOS_ESIK, carpanArtti, blDamga, tavan: OLCUM_TAVAN };
+  });
+  K('Yakin basari varken panel yok', !!yav && yav.yakinBasari===false,
+     'ag calisiyor, sadece yavas');
+  K('Panel esigi 6', !!yav && yav.bes===false && yav.alti===true && yav.esik===6,
+     '5 -> yok, 6 -> panel');
+  K('Zaman asimi butceyi buyutuyor', !!yav && yav.carpanArtti===true,
+     'olcum carpani, tavan '+(yav?yav.tavan:'-'));
+  K('Beyaz liste ag hatasinda pes etmiyor', !!yav && yav.blDamga===false,
+     'kalici damga yok, 8 sn sonra tekrar');
+
   /* GIZLILIK BAGLANTISI: App Store "uygulama icinde kolay erisilebilir"
      istiyor. Alt serit dolu oldugu icin arama kutusunun icinde. */
   const yb = await pg.evaluate(async ()=>{
@@ -5745,8 +5802,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Beyaz liste de suzgecten geciyor',
       /beyazListe = temiz\.filter\(st=>!dinselMi\(st\) && !yasakliMi\(st\)\)/.test(kaynak3),
       'eski kuralla toplanmis liste suzgeci atlamiyor');
-    K('Liste yoksa radyo susmuyor', /_blDenendi = true; return null;/.test(kaynak3),
-      'eski yol yedek olarak duruyor');
+    /* Eskiden burada "_blDenendi = true; return null;" araniyordu:
+       liste gelmezse KALICI olarak vazgecmek dogru kabul ediliyordu.
+       Yavas hatta bu, oturumun geri kalaninda istasyonsuz bir
+       uygulama demekti. Kural degisti: ag hatasinda kalici damga yok,
+       yalniz sunucu cevaplayip liste bos cikarsa vazgeciliyor. */
+    K('Liste yoksa radyo susmuyor', /if\(!r \|\| !r\.ok\)\{ return null; \}/.test(kaynak3),
+      'beyaz liste gelmezse dizine dusuyor');
+    K('Ag hatasinda kalici vazgecis yok',
+      !/catch\(e\)\{ _blDenendi = true; return null; \}/.test(kaynak3) && /BL_BEKLE/.test(kaynak3),
+      'BL_BEKLE sonra yeniden deneniyor');
     /* AILE ALANI: beyaz listeden 'grup' dusurulurse aile suzgeci
        sessizce ise yaramaz hale gelir -- hicbir istasyon eslesmez,
        "muzik durmasin" kurali her seferinde devreye girer ve secim
@@ -6701,7 +6766,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const yN = window.__yut ? window.__yut.n : 0;   // sahte pointerId: setPointerCapture laboratuvarda duser, testin urunu
         const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
         const dsk = document.getElementById('btn') || document.getElementById('tp'); const db = dsk.getBoundingClientRect();
-        const dx = db.left + db.width/2, dy = db.top + db.height/2;
+        /* GERCEK BOSLUK: ortadaki aletin cemberinin disi. Disk
+           govdesine dokunmak artik pencere kapatmiyor (bkz.
+           merkezDokunus) -- eski test tam oraya dokunuyordu. */
+        const dx = Math.max(4, db.left + db.width/2 - db.width * 1.6);
+        const dy = Math.min(innerHeight - 4, db.top + db.height/2 + db.height * 1.1);
         const olay = (t, Tip)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:31, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:dx, clientY:dy}));
         olay('pointerdown', PointerEvent); c.bosKapatti = !listeAcik();
         olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
@@ -8848,13 +8917,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            dongu basliyor. */
         try{ ses.pause(); }catch(e){}
         uykuIptal(); await bek(100);
-        sabahKur(true); await bek(600);
+        sabahKur(true); await bek(800);   // gece kipine girisin 600 ms'lik korumasi gecsin
         /* CI'DA GERCEK SES AYGITI YOK: sessiz dongunun play()'i orada
            reddediliyor ve "ses caliyor mu" yanlis soru olur (kosu
            #244 tam boyle kirmizi yandi). Olculen sey KURULUM: gece
            kipi acildi mi ve dongu (loop + kaynak) hazir mi. */
         c.alarmOturumu = document.body.classList.contains('gece')
                       && ses.loop === true && !!ses.src;
+        /* ── GECEDEN UYANMA ────────────────────────────────────
+           Kullanici: "kesinlikle geri acilmaya bassam da kursam da
+           acilmiyor." Gece kipinde carpan sifir; gercek bir yayin
+           calmaya baslayinca gece bitmeli ve carpan 1'e donmeli --
+           yoksa ekranda 'caliyor' yazar, kulakta hicbir sey olmaz. */
+        c.geceCarpanSifir = _uykuKat === 0;
+        /* Gercek yayin = http(s) kaynak; sessiz dongu blob:. */
+        try{ ses.src = 'https://ornek.gecersiz/yayin.mp3'; }catch(e){}
+        try{ ses.dispatchEvent(new Event('play')); }catch(e){}
+        await bek(200);
+        c.uyandi = saatKip() !== 'gece' && _uykuKat === 1
+                && !document.body.classList.contains('gece');
         sabahKur(false); await bek(300);
         c.kapaninca = !document.body.classList.contains('gece');
         /* SAYAC: kosarken kalan sure geri sayiyor, tus CANCEL oluyor;
@@ -8884,7 +8965,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
         const dsk = document.getElementById('btn') || document.getElementById('tp');
         const db = dsk.getBoundingClientRect();
-        const olay = (t, Tip)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:37, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:db.left+db.width/2, clientY:db.top+db.height/2}));
+        /* GERCEK BOSLUK: aletin cemberinin disi (bkz. merkezDokunus). */
+        const sx = Math.max(4, db.left + db.width/2 - db.width * 1.6);
+        const sy = Math.min(innerHeight - 4, db.top + db.height/2 + db.height * 1.1);
+        const olay = (t, Tip)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:37, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:sx, clientY:sy}));
         olay('pointerdown', PointerEvent); c.bosKapatti = !saatAcik();
         olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
         window.sonraki = eSn; c.bosYutuldu = sn === 0;
@@ -8905,6 +8989,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Uyku sayaci kuruluyor ve iptal ediliyor', st.uykuKuruldu && st.uykuIptal, ozet || '45 dk');
     K('Sabah hedefi secilen saatte ve ileride', st.hedefIleride && st.hedefSaati, ozet || 'hedef dogru');
     K('Alarm kisik basliyor (ilk saniye < %12)', st.kisikBasladi && st.caliyor, ozet || 'rampa 0.04 -> 0.25 @15s -> 0.75 @60s');
+    K('Gercek yayin calinca geceden uyaniyor', st.geceCarpanSifir === true && st.uyandi === true,
+       ozet || 'carpan 0 -> 1, gece sinifi kalkiyor');
     K('Erteleme: sifira iner, sessiz dongu, 7 dk sonraya', st.gece && st.geceSusmuyor && st.ertelendi, ozet || 'gece kipi');
     K('Kilit ekraninda play gecede uyandiriyor', st.kilitPlay, ozet || 'dongu birakildi');
     K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
@@ -9018,12 +9104,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                       && document.body.classList.contains('sadehalka') === !!AYAR.halka;
         ht.click(); await bek(150);
         c.ringGeri = !!AYAR.halka === eskiHalka;
-        /* serit: firca IKINCI dokunusta seride alir (3 Eylul: "tekrar
-           isme basinca ilk kucuk moda gecsin"); kucultme tusu yok. */
+        /* SERITE GECIS ARTIK BASLIKTAN: firca ac/kapa anahtari oldu
+           (kullanici: "tekrar fircaya basarsam kapanmali"), kucultme
+           SKINS basliginin isi. Ayri bir kucultme tusu yok. */
         c.kucultTusuYok = !kap.querySelector('.dg-tus.kucult');
-        f.click(); await bek(200);
+        kap.querySelector('.dg-baslik').click(); await bek(250);
         const sr = kap.getBoundingClientRect();
         c.serit = kap.classList.contains('serit') && sr.height < 60 && sr.width < innerWidth * 0.95;
+        /* SERIT USTTEKI HICBIR SEYE BINMIYOR: sol ustteki simge
+           yigininin (en alttaki saat tusu) ve marka yazisinin
+           altinda kaliyor. Kullanici: "minimize olunca herseyin
+           ustune biniyor, alta al biraz". */
+        {
+          const st0 = document.getElementById('saatTus');
+          const ust0 = document.getElementById('ust');
+          const alt = Math.max(st0 ? st0.getBoundingClientRect().bottom : 0,
+                               ust0 ? ust0.getBoundingClientRect().bottom : 0);
+          c.seritBinmiyor = sr.top >= alt;
+          c.seritOlcu = Math.round(sr.top) + ' >= ' + Math.round(alt);
+        }
         c.arkaDokunulur = !document.getElementById('tp').closest('[inert]');
         kap.querySelector('.dg-tus.ileri').click(); await bek(300);
         c.ileri = AYAR.deri === 3;
@@ -9051,16 +9150,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* seritte bosluga dokunus: kapatir ve dokunusu yutar */
         const yN = window.__yut ? window.__yut.n : 0;   // sahte pointerId, testin urunu
         const eSn = window.sonraki; let sn = 0; window.sonraki = function(){ sn++; };
+        /* BOSLUK ARTIK ORTADAKI ALET DEGIL. Once dokunus diskin
+           ustunde uretiliyordu; disk merkezdeki aletin govdesi ve
+           oraya dokunmak paneli KAPATMAMALI (kullanici: "skinslere
+           bakarken carka dokunuyorum hop kapaniyor, o olmaz").
+           Gercek bosluk: aletin cemberinin disi. */
         const dsk = document.getElementById('btn') || document.getElementById('tp'); const db = dsk.getBoundingClientRect();
-        const olay = (t, Tip)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:33, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:db.left+db.width/2, clientY:db.top+db.height/2}));
+        const mx = db.left + db.width / 2, my = db.top + db.height / 2;
+        const olayXY = (t, Tip, x, y)=>dsk.dispatchEvent(new Tip(t, {bubbles:true, cancelable:true, pointerId:33, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:x, clientY:y}));
+        /* 1) Alete dokunus: panel ACIK kalmali. */
+        olayXY('pointerdown', PointerEvent, mx, my);
+        olayXY('pointerup', PointerEvent, mx, my); await bek(120);
+        c.merkezKapatmaz = deriGaleriAcik();
+        /* 2) Gercek bosluk: kapatir ve dokunusu yutar. */
+        const bx = Math.max(4, mx - db.width * 1.6), by = Math.min(innerHeight - 4, my + db.height * 1.1);
+        const olay = (t, Tip)=>olayXY(t, Tip, bx, by);
+        sn = 0;                       // merkez dokunusu sayilmasin, olculen sey BOSLUK
         olay('pointerdown', PointerEvent); c.bosKapatti = !deriGaleriAcik();
         olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
         window.sonraki = eSn; c.bosYutuldu = sn === 0;
         if(window.__yut) window.__yut.n = yN;
-        /* firca dongusu: kapali -> tam -> serit -> kapali */
+        /* FIRCA ANAHTAR: kapali -> tam -> kapali. Kucultme basligin
+           isi; firca ikinci dokunusta kapatiyor (kullanici: "tekrar
+           fircaya basarsam kapanmali"). */
         f.click(); await bek(200); c.d1 = deriGaleriAcik() && !kap.classList.contains('serit');
-        f.click(); await bek(200); c.d2 = deriGaleriAcik() && kap.classList.contains('serit');
-        f.click(); await bek(200);
+        f.click(); await bek(200); c.d2 = !deriGaleriAcik();
         /* YUKARI KAYDIRMA KAPATIR (3 Eylul): "vazgectim, o an yukari
            scroll yaptigimda kapanmali tamamen o pencere." */
         f.click(); await bek(300);
@@ -9097,7 +9211,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi && g.kucultTusuYok, oz || 'serit, kucultme tusu yok');
     K('RING anahtari galeri basliginda, ayarlarla ayni', g.ringAnahtari && g.ringGeri, oz || 'AYAR.halka iki yerden');
     K('Seritte bosluga dokunus kapatir ve yutulur', g.bosKapatti && g.bosYutuldu, oz || 'sonraki() 0');
-    K('Firca dongusu: tam -> serit -> kapali', g.d1 && g.d2 && g.kapandi, oz || 'uc dokunus');
+    K('Ortadaki alete dokunus pencereyi kapatmaz', g.merkezKapatmaz === true,
+       oz || 'carka degen el paneli ucurmuyor');
+    K('Firca anahtar gibi: ac / kapa', g.d1 && g.d2 && g.kapandi, oz || 'iki dokunus');
+
+    K('Serit ustteki simgelerin altinda', g.seritBinmiyor === true,
+       (g && g.seritOlcu) || 'serit ust ile cakismiyor');
     K('Seritte RING tusu gorunur', g.seritteRing, oz || 'kucultunce de duruyor');
     /* 4 Eylul: panel tepeye DAYANMIYOR (ustte tutamak payi kaliyor ki
        yukari-asagi cekip kapatilabilsin) ve baslik ("SKINS") serite
@@ -9109,6 +9228,75 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        g.merkezDort && g.merkezSecili, oz || 'dort tus, secili isaretli');
     K('Yukari kaydirma galeriyi kapatir', g.kaydirKapatti, oz || 'tepedeyken yukari cekis');
     K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
+  }
+
+  /* ── PENCERE KURALLARI: UCUNDE DE AYNI ──────────────────────────
+     Kullanicinin uc cumlesi, uc kural:
+       "carka dokunuyorum hop kapaniyor"      -> alet bosluk degil
+       "gezerken carka degiyor, arka planda sacmalik" -> cark sessiz
+       "saat alarm acilmiyor, kisayolu bozmussun"     -> tik gecmeli */
+  {
+    const pk = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const o = {};
+      const yutOnce = window.__yut ? window.__yut.n : 0;
+      try{
+        /* Galeriyi serit kipinde ac. */
+        if(!window.deriGaleriAcik || !window.deriGaleriAcik()) window.deriGaleriDegistir();
+        await bek(300);
+        const kap = document.getElementById('deriGaleri');
+        /* Serite gecis BASLIKTAN: firca artik ac/kapa anahtari. */
+        if(kap && !kap.classList.contains('serit')){ kap.querySelector('.dg-baslik').click(); await bek(250); }
+        o.acik = !!window.deriGaleriAcik();
+
+        /* 1) Pencere acikken cark jest ALMIYOR. */
+        const once = window.carkDurum ? window.carkDurum().aci : null;
+        const t = document.getElementById('btn') || document.getElementById('tp');
+        const b = t.getBoundingClientRect();
+        const mx = b.left + b.width/2, my = b.top + b.height/2;
+        const at = (tip, x, y, id)=>t.dispatchEvent(new PointerEvent(tip, {bubbles:true, cancelable:true,
+          pointerId:id, pointerType:'touch', isPrimary:true, buttons:(tip==='pointerup'?0:1), clientX:x, clientY:y}));
+        at('pointerdown', mx + b.width*0.42, my, 51);
+        at('pointermove', mx + b.width*0.30, my + b.height*0.30, 51);
+        at('pointerup',   mx + b.width*0.30, my + b.height*0.30, 51);
+        /* Merkez dokunusu jestin kalanini 600 ms yutuyor (gercek
+           dokunusta 'click' ile biter; burada sahte olay uretiyoruz,
+           o yuzden suresini bekliyoruz). */
+        await bek(750);
+        o.carkDurdu = window.carkDurum ? (Math.abs(window.carkDurum().aci - once) < 0.5) : null;
+        o.galeriAcikKaldi = !!window.deriGaleriAcik();
+
+        /* 2) Kisayola dokunus: galeri kapanir, SAAT ACILIR (tek dokunus). */
+        const st = document.getElementById('saatTus');
+        const sr = st.getBoundingClientRect();
+        st.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, cancelable:true, pointerId:52,
+          pointerType:'touch', isPrimary:true, buttons:1, clientX:sr.left+sr.width/2, clientY:sr.top+sr.height/2}));
+        st.dispatchEvent(new PointerEvent('pointerup', {bubbles:true, cancelable:true, pointerId:52,
+          pointerType:'touch', isPrimary:true, buttons:0, clientX:sr.left+sr.width/2, clientY:sr.top+sr.height/2}));
+        st.click();
+        /* saat.js istek uzerine yukleniyor: panel gelene kadar bekle. */
+        let sp = null;
+        for(let i = 0; i < 40; i++){
+          sp = document.getElementById('saatPanel');
+          if(sp && !sp.hidden) break;
+          await bek(100);
+        }
+        o.galeriKapandi = !window.deriGaleriAcik();
+        o.saatAcildi = !!(sp && !sp.hidden);
+        try{ if(window.saatKapa) window.saatKapa(); }catch(e){}
+        try{ if(window.deriGaleriAcik && window.deriGaleriAcik()) window.deriGaleriKapa(); }catch(e){}
+        await bek(200);
+      }catch(e){ o.hata = String(e).slice(0,80); }
+      /* Sahte pointerId'ler setPointerCapture'i dusuruyor; o yutulan
+         hatalar testin urunu, uygulamanin kusuru degil. */
+      if(window.__yut) window.__yut.n = yutOnce;
+      return o;
+    });
+    const poz = pk ? JSON.stringify(pk) : '-';
+    K('Pencere acikken cark jest almiyor', !!pk && pk.carkDurdu === true && pk.galeriAcikKaldi === true,
+       poz);
+    K('Kisayol tek dokunusla oteki pencereyi aciyor',
+       !!pk && pk.galeriKapandi === true && pk.saatAcildi === true, poz);
   }
   /* ── PAYLASIM: IPTAL DEFTERE GIRMEZ, CIFT DOKUNUS KILITLI ───────
      Saha olcumu (issue #7): "Share canceled" x4 (kullanicinin

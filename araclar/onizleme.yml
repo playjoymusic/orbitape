@@ -1,0 +1,90 @@
+# ORBITAPE — ÖNİZLEME (canlıya dokunmadan)
+# ═══════════════════════════════════════════════════════════════════
+# NEDEN VAR
+#   4 Eylül denetimi: her push doğrudan canlıya gidiyordu. Kapı bozuk
+#   kodu durduruyor ama "testler yeşil, yine de görünüm yanlış" hâli
+#   ancak yayına çıktıktan sonra görülüyordu — yani ilk seyirci
+#   kullanıcıydı.
+#
+# NE YAPAR
+#   Aynı kapıyı koşar, sonra Worker'ı YENİ BİR SÜRÜM olarak yükler
+#   ama canlıya ALMAZ (wrangler versions upload). Cloudflare o sürüme
+#   kendi adresini verir; iş özetinde o adres yazılı olur. Telefonda
+#   açıp bakarsın, beğenirsen main'e push edersin.
+#
+# NASIL ÇALIŞTIRILIR
+#   GitHub → Actions → "Onizleme (canliya cikmadan)" → Run workflow.
+#   Ayrıca main DIŞINDAKİ her dala push kendiliğinden çalışır.
+#
+# CANLIYA HİÇBİR ETKİSİ YOK
+#   'versions upload' yalnızca sürümü yükler; trafiğin tamamı eski
+#   sürümde kalır. Canlıya almak ayrı bir komut (yayin.yml'deki
+#   'wrangler deploy') ve o yalnızca main'de koşuyor.
+
+name: Onizleme (canliya cikmadan)
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onizleme
+  cancel-in-progress: true
+
+jobs:
+  onizle:
+    name: Kapi + onizleme surumu
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    steps:
+      - name: Sirlar duruyor mu
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          HESAP: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          eksik=""
+          [ -n "$TOKEN" ] || eksik="$eksik CLOUDFLARE_API_TOKEN"
+          [ -n "$HESAP" ] || eksik="$eksik CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$eksik" ]; then
+            echo "::error::Eksik sir:$eksik — yayin.yml'in basindaki 1. adima bak."
+            exit 1
+          fi
+          echo "sirlar yerinde"
+      - name: Depoyu al
+        uses: actions/checkout@v5
+      - name: Node kur
+        run: npm ci
+      # Kapı: önizleme de aynı kapıdan geçiyor. "Sadece bakacağım"
+      # diye bozuk bir sürüm yüklemek, bakılan şeyin yalan olması
+      # demek olurdu.
+      - name: Kapi
+        run: bash araclar/kontrol.sh
+      - name: Derle (yayin/)
+        run: python3 araclar/derle.py
+      - name: Onizleme surumu yukle
+        id: yukle
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          npx wrangler versions upload 2>&1 | tee /tmp/onizleme.txt
+          # Adres çıktının içinde: "Version Preview URL: https://..."
+          adres=$(grep -oE 'https://[a-z0-9.-]*workers\.dev[^ ]*' /tmp/onizleme.txt | head -1)
+          surum=$(grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' /tmp/onizleme.txt | head -1)
+          {
+            echo "## Önizleme hazır"
+            echo ""
+            if [ -n "$adres" ]; then echo "Adres: $adres"; else
+              echo "Adres çıktıda bulunamadı; log'un son satırlarına bak."; fi
+            [ -n "$surum" ] && echo "Sürüm: \`$surum\`"
+            echo ""
+            echo "Canlı site DEĞİŞMEDİ. Beğenirsen main'e push et."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "adres=$adres" >> "$GITHUB_OUTPUT"

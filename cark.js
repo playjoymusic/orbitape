@@ -286,14 +286,28 @@ try{ window.CARK_BASLADI = true; }catch(e){}
     const b = tuval.getBoundingClientRect();
     return Math.atan2(e.clientY - (b.top + b.height / 2), e.clientX - (b.left + b.width / 2)) * 180 / Math.PI;
   }
-  function bandaMi(e){
+  function yaricap(e){
     const b = tuval.getBoundingClientRect();
     const dx = e.clientX - (b.left + b.width / 2), dy = e.clientY - (b.top + b.height / 2);
-    const r = Math.sqrt(dx * dx + dy * dy);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  function bandaMi(e){
+    const r = yaricap(e);
     return r >= R * (IC_ORAN - 0.03) && r <= R * (AD_ORAN + 0.14);
+  }
+  /* Dis bandi degil, ORTADAKI ALETIN TAMAMI -- govdesiyle birlikte.
+     Bir pencere acikken buraya gelen dokunus ne carki cevirmeli ne de
+     pencereyi kapatmali. "Elim degdi, her sey ucup gitti" hali tam
+     olarak buradan geliyordu. */
+  function merkezdeMi(e){
+    return !!R && acikMi() && yaricap(e) <= R * (AD_ORAN + 0.14);
   }
   function bas(e){
     try{
+      /* PENCERE ACIKKEN CARK SESSIZ. Kullanicinin sozu: "skinsleri
+         gezerken carka degiyor elim ama arka planda sacmalik."
+         Acik pencere varken jest hic baslamiyor. */
+      if(window.pencereAcikMi && window.pencereAcikMi()) return;
       if(kip !== 'cark' || !R || kapali || !acikMi() || !bandaMi(e)) return;
       basili = true; oturuyor = false; hiz = 0;
       sonAci = aciBul(e); sonZaman = performance.now();
@@ -384,6 +398,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
   try{
     window.carkAc = ac; window.carkKapa = kapa; window.carkAcik = acikMi;
     window.carkHizala = hizala; window.carkSeciliNo = seciliNo;
+    window.carkMerkezde = merkezdeMi;
     window.carkDurum = ()=>({ aci: carkAci, hiz, kip, secili: raflar()[seciliNo()] });
   }catch(e){ yut(e); }
 })();

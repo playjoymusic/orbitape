@@ -5538,7 +5538,9 @@
   /* _agBos: arka arkaya sonuçsuz kaynak denemesi. Eşiği aşınca
      "ağ yok" paneli çıkıyor (bkz. agYokMu). Bir tek başarı sıfırlıyor. */
   function hataEkle(k){ HATA[k]=(HATA[k]||0)+1; FAIL[k]=(FAIL[k]||0)+1; if(HATA[k]>=ELE_ESIK){ KARA.add(k); KARA_SURE.set(k, Date.now()); } rapyaz(); }
+  var _sonBasari = 0;               // en son ne zaman agdan bir sey TUTTU
   function basari(k){ HATA[k]=0; KARA.delete(k); KARA_SURE.delete(k); OK[k]=(OK[k]||0)+1; rapyaz();
+    _sonBasari = Date.now();
     try{ agYokKapa(); }catch(e){ _yut(e); } }   // affet — ve ağ çalışıyor demektir
   // TOPARLANMA: elenen koleksiyonları ~45sn sonra tekrar dene (archive geri gelirse yeşile döner) -> kalıcı ölüm yok
   setInterval(()=>{ const now=Date.now(); let d=false;
@@ -5701,8 +5703,22 @@
      KURAL: bu uygulamada agdan bir sey isteyen her yol bir sure
      sonra KESIN olarak sonuclanmali. "Genelde iptal olur" yeterli
      degil. */
+  /* ── OLCULEN YAVASLIK ─────────────────────────────────────────────
+     AG_KAT tarayicinin bildirdigi baglanti turune bakiyor. iOS'ta
+     navigator.connection YOK: iPhone tek cubuk LTE'de bile hicbir sey
+     soylemiyor, AG_KAT 1 kaliyor ve butun butceler masaustu varsayimi
+     ile hesaplaniyor. Sonuc, olculen sikayet: "cark donuyor ama radyo
+     hic acilmiyor".
+     Bu yuzden tahmin degil OLCUM: bir istek zaman asimina ugradiginda
+     hat yavas demektir ve sonraki isteklere daha cok sure taniniyor.
+     Hizli cevaplar carpani geri indiriyor, yoksa tek bir kotu an
+     butun oturumu yavaslatirdi. Tavan 2.5: butce sonsuz buyurse olu
+     bir kaynaktan sonrakine gecis de o kadar gecikir. */
+  var AG_OLCUM = 1;
+  const OLCUM_TAVAN = 2.5;
   function fetchZA(url, ms, secenek){
-    const sure = Math.round((ms || 8000) * AG_KAT);
+    const sure = Math.round((ms || 8000) * AG_KAT * AG_OLCUM);
+    const t0 = Date.now();
     const kontrol = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     const kur = secenek ? Object.assign({}, secenek) : {};
     if(kontrol) kur.signal = kontrol.signal;
@@ -5724,9 +5740,15 @@
        ve bu bilinen bir eksik.
        Geri gelecegi zaman elimizde OLCUM olmali: hangi istek, hangi
        surede, gercekten asili mi kaliyor. Tahminle degil. */
-    const zt = setTimeout(()=>{ try{ if(kontrol) kontrol.abort(); }catch(_){ _yut(_); } }, sure);
+    const zt = setTimeout(()=>{
+      try{ if(AG_OLCUM < OLCUM_TAVAN) AG_OLCUM = Math.min(OLCUM_TAVAN, AG_OLCUM + 0.5); }catch(_){ _yut(_); }
+      try{ if(kontrol) kontrol.abort(); }catch(_){ _yut(_); }
+    }, sure);
     const istek2 = fetch(url, kur);
-    return istek2.then(r=>{ clearTimeout(zt); return r; },
+    return istek2.then(r=>{ clearTimeout(zt);
+                            /* Cabuk cevap: hat toparlandi, butceyi geri indir. */
+                            if(AG_OLCUM > 1 && (Date.now() - t0) < sure * 0.3) AG_OLCUM = Math.max(1, AG_OLCUM - 0.25);
+                            return r; },
                        e=>{ clearTimeout(zt); throw e; });
   }
   const $=id=>document.getElementById(id);
@@ -6133,10 +6155,21 @@
      bir sonrakine geçmeli, "bağlantı yok" dememeli. Ağ gerçekten
      yoksa zaten liste çekmeleri de düşer ve sayaç hızla dolar. */
   var _agBos = 0;
-  const AG_BOS_ESIK = 4;
+  /* ESIK 4'TEN 6'YA CIKTI + YAKIN BASARI KAPISI.
+     Zayif hatta istekler yavas oldugu icin zaman asimina ugruyor ve
+     dort tanesi kolayca art arda geliyordu: ag CALISIRKEN "NO
+     CONNECTION" paneli aciliyor, sonra bir istek tutunca kapaniyordu.
+     Kullanicinin gordugu, gelip giden bir yalandi.
+     Iki kural: tarayici acikca "cevrimdisiyim" demedikce (o hal
+     kesindir, hemen gosteriyoruz) alti bos deneme gerekiyor VE son
+     BASARI_YAKIN icinde agdan bir sey tutmus olmamak gerekiyor.
+     Yavas ama calisan hatta panel artik hic acilmiyor. */
+  const AG_BOS_ESIK = 6;
+  const BASARI_YAKIN = 20000;
   function agBosArtir(){ try{ _agBos++; if(agYokMu()) agYokAc(); }catch(e){ _yut(e); } }
   function agYokMu(){
     try{ if(navigator.onLine === false) return true; }catch(e){ _yut(e); }
+    if(_sonBasari && Date.now() - _sonBasari < BASARI_YAKIN) return false;
     return _agBos >= AG_BOS_ESIK;
   }
   function agYokAc(){
@@ -11798,15 +11831,35 @@
      adres de 404 dondurecek. Ilk adres zaten kendi kokumuzdu. */
   const RADYO_URL_YEDEK = "";
   const RADYO_URL_SON   = "";
-  var beyazListe = null, _blSoz = null, _blDenendi = false;
+  /* ── BEYAZ LISTE: AG YAVASSA PES ETMEK YOK ────────────────────────
+     Eski hali: liste cekilemezse _blDenendi=true oluyordu ve OTURUM
+     BOYUNCA bir daha denenmiyordu. Zayif hatta dort deneme birden
+     zaman asimina ugrayabiliyor (listeCek kendi icinde yedek adresleri
+     ve iki kat butceyi zaten deniyor) -- o andan sonra elde istasyon
+     rafi olmayan bir uygulama kaliyor: ekranda sonsuz "arama", tek
+     bir yayin acilmiyor. Olculdu: telefonda tek cubuk LTE, cark
+     donuyor, ses geliyor, radyo hic gelmiyor.
+     Artik AG kaynakli basarisizlik KALICI DEGIL: BL_BEKLE sonra
+     yeniden denenebiliyor. Kalici olarak vazgecilen tek durum,
+     sunucunun CEVAP VERIP listenin gercekten bos/bozuk olmasi --
+     orada tekrar denemek ayni bos cevabi getirir.
+     Adres kendi kokumuz (/radyo.json): tekrar denemek disarida
+     kimseyi yormuyor, kendi CDN'imize bir istek. */
+  var beyazListe = null, _blSoz = null, _blDenendi = false, _blSonDeneme = 0;
+  const BL_BEKLE = 8000;                    // ag hatasindan sonra en erken tekrar
   async function beyazListeYukle(){
     if(beyazListe) return beyazListe;
-    if(_blDenendi) return null;             // bir kez denendi, yoksa yok
+    if(_blDenendi) return null;             // sunucu cevapladi, liste yok: bitti
+    /* SIRA ONEMLI: once "su an deniyor muyuz" -- yoksa devam eden
+       denemeye katilmak yerine cagiran bosuna dizine dusuyor. */
     if(_blSoz) return _blSoz;
+    if(_blSonDeneme && Date.now() - _blSonDeneme < BL_BEKLE) return null;
+    _blSonDeneme = Date.now();
     _blSoz = (async()=>{
       try{
         const r = await listeCek(RADYO_URL, RADYO_URL_YEDEK, 7000, RADYO_URL_SON);
-        if(!r || !r.ok){ _blDenendi = true; return null; }
+        /* AG HATASI: kalici damga YOK, sadece zaman damgasi. */
+        if(!r || !r.ok){ return null; }
         const d = await r.json();
         const A = Array.isArray(d) ? d : ((d && (d.istasyonlar||d.liste)) || []);
         const temiz = A.map(x=>({
@@ -11826,7 +11879,9 @@
         _blDenendi = true;
         if(beyazListe.length) basari('radyo');
         return beyazListe.length ? beyazListe : null;
-      }catch(e){ _blDenendi = true; return null; }
+      /* Buraya JSON cozulemedigi ya da istek yarida kaldigi zaman
+         duseriz. Ikisi de ag kaynakli olabilir -- kalici damga yok. */
+      }catch(e){ return null; }
       finally{ _blSoz = null; }
     })();
     return _blSoz;
@@ -16114,6 +16169,61 @@
     }catch(e){ _yut(e); }
   }
   try{ window.pencereAc = pencereAc; window.pencereKapa = pencereKapa; }catch(e){ _yut(e); }
+  /* ── ACIK PENCERE VARSA ARKA PLAN SESSIZ ──────────────────────────
+     Kullanicinin sozu: "skins kisayolu acikken skinslere bakarken
+     carka dokunuyorum hop kapaniyor. o olmaz. o aktif olmali
+     kapatana kadar ve bosluga basinca her pencere kapanacak."
+     Iki ayri kural cikiyor ve ikisi de BUTUN pencerelerde ayni:
+       1) Acik pencere varken ORTADAKI ALET (cark/plak) jest almiyor.
+          Yoksa galeride gezerken parmak carka degip arkada raf
+          degistiriyor -- gorunmeyen bir sey oluyor.
+       2) Ortadaki alete dokunmak pencereyi KAPATMIYOR. Kapatan sey
+          gercek bosluk: aletin de panelin de disi.
+     Tek yerde tanimlaniyor, uc panel de (galeri, liste, saat) ayni
+     iki satiri cagiriyor -- kural bir daha panel basina yazilmasin. */
+  function pencereAcikMi(){
+    try{
+      if(window.deriGaleriAcik && window.deriGaleriAcik()) return true;
+      if(window.listeAcik && window.listeAcik()) return true;
+      const sp = document.getElementById('saatPanel');
+      if(sp && !sp.hidden) return true;
+      if(document.body.classList.contains('ayar-acik')) return true;
+    }catch(e){ _yut(e); }
+    return false;
+  }
+  /* Dokunus ortadaki aletin uzerinde mi? Cark aciksa olcuyu o
+     veriyor (yaricapini yalnizca kendisi biliyor); cark kapaliysa
+     govdenin kendi kutusuna bakiliyor. */
+  function merkezDokunus(e){
+    try{
+      if(window.carkMerkezde && window.carkMerkezde(e)) return true;
+      const d = document.querySelector('.disk');
+      if(d){
+        const b = d.getBoundingClientRect();
+        if(b.width){
+          const dx = e.clientX - (b.left + b.width / 2), dy = e.clientY - (b.top + b.height / 2);
+          if(Math.sqrt(dx * dx + dy * dy) <= b.width / 2) return true;
+        }
+      }
+    }catch(err){ _yut(err); }
+    return false;
+  }
+  /* ── BIR KISAYOLA DOKUNMAK JESTI YUTMAMALI ────────────────────────
+     Panel acikken disariya dokunmak paneli kapatiyor VE jestin geri
+     kalanini yutuyor (yoksa panel kapanirken parmak altindaki tusa
+     basardi). Ama hedef BASKA BIR KISAYOL ise yutmak yanlis: saat
+     tusuna basiyorsun, galeri kapaniyor, saat acilmiyor -- iki kez
+     basmak gerekiyordu. Kullanicinin sozu: "saat alarm acilmiyor
+     kisayolu onu zaten bozmussun."
+     Kisayola dokunusta panel kapaniyor ama tik gecmeye devam ediyor:
+     tek dokunusla oteki pencere aciliyor. */
+  function kisayolDokunus(t){
+    try{ return !!(t instanceof Element &&
+      t.closest('#deriFirca,#saatTus,#ayarTut,#kipKisayol,#araclar,[data-liste-bagli]')); }
+    catch(e){ return false; }
+  }
+  try{ window.pencereAcikMi = pencereAcikMi; window.merkezDokunus = merkezDokunus;
+       window.kisayolDokunus = kisayolDokunus; }catch(e){ _yut(e); }
   function turBitir(){
     const t = document.getElementById('tur');
     /* Tur bitti: ekran okuyucudan ve Tab sirasindan tamamen ciksin.
