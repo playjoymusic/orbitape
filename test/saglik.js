@@ -8739,6 +8739,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       'arayuz listesi ve simge hazirligi ayni tuslari sayiyor');
     K('Fotografta marka isareti de var', /getElementById\('isaret'\)/.test(kayitKaynak2),
       '#isaret uc dairesiyle ciziliyor');
+    /* "bazen ulke bayragi isim yok" (3 Eylul): bayrak yildizin soluna
+       tasindiginda kunyenin metin satirlari listesinden dusmustu ve
+       fotografta HIC cizilmiyordu. */
+    K('Fotografta ulke bayragi da var', /getElementById\('npBayrak'\)/.test(kayitKaynak2),
+      '#npBayrak kunyeyle birlikte ciziliyor');
   }
   /* ── BEKCI BUYUTECI YUVASINA GERI KOYUYOR, IKI KATINA ITMIYOR ──
      Mac'te pencere boyu degisince buyutec yuvasinin tam iki kati

@@ -1696,6 +1696,18 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
             else { c.strokeStyle = rk; c.lineWidth = Math.max(1, K*1.4); c.stroke(); }
           });
         }catch(e){ _yut(e); }
+        /* ── ULKE BAYRAGI (#npBayrak) ───────────────────────────
+           Kullanicinin sozu (3 Eylul): "bazen ulke bayragi isim yok."
+           Olculdu: bayrak fotografta HIC ciziLmiyordu -- kunyenin
+           metin satirlari cizilirken bu span listede degildi, cunku
+           yildizin soluna tasinmisti ve o satirdaki tek YAZI o.
+           Emoji tuvale de yaziliyor; yeri ekrandan olculuyor. */
+        try{
+          const _by = document.getElementById('npBayrak');
+          const _byc = _by && getComputedStyle(_by);
+          if(_by && _byc && _byc.display !== 'none' && (_by.textContent || '').trim())
+            domMetin(c, _by, _by.textContent.trim(), 'sol');
+        }catch(e){ _yut(e); }
         /* ── MARKA ISARETI (#isaret) ────────────────────────────
            Kunyenin yanindaki iki daire "bu parca taninmis" demek ve
            ekranda duruyor; fotografta yoktu (olculdu: FIELDS

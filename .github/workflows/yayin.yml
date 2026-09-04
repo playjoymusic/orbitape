@@ -105,15 +105,17 @@ jobs:
       # CSP özeti dosyalarla birebir tutmak zorunda. Kapı bunu zaten
       # kontrol ediyor; burada bir kez daha bakılıyor çünkü YANLIŞ
       # OLDUĞUNDA sonucu beyaz ekran.
+      # ── --kontrol: YAZMADAN BAKAR ──────────────────────────────
+      #   Kosu #23 (4 Eylul): burada 'csp.py' calisiyordu ve o arac
+      #   index.html'deki ORB_SURUM damgasini BUGUNE cekiyor. Push
+      #   gece 00:09 UTC'de, damga bir onceki gunun tarihiyle
+      #   gitmisti; CI yeni gunde kosunca damga degisti, satir ici
+      #   betigin ozeti degisti, _headers de degisti ve is "csp.py
+      #   calistirilmadan push edilmis" diye kirmizi yandi. Oysa
+      #   dosyalar tutarliydi. Bu mod hicbir sey yazmiyor: yalnizca
+      #   _headers'taki ozetler index.html ile tutuyor mu diye bakar.
       - name: CSP ozeti dosyayla tutuyor mu
-        run: |
-          python3 araclar/csp.py
-          if ! git diff --quiet -- _headers; then
-            echo "::error::_headers guncel degil: csp.py calistirilmadan push edilmis."
-            git --no-pager diff -- _headers | head -40
-            exit 1
-          fi
-          echo "_headers dosyayla tutuyor"
+        run: python3 araclar/csp.py --kontrol
       # Yayina giden dizin yayin/: kaynaktan uretiliyor (yorumlar duser,
       # CSP ozeti yeni dosyadan). Kapi ayni ciktiyi zaten sinadi.
       - name: Derle (yayin/)
