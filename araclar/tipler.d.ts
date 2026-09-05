@@ -100,6 +100,8 @@ interface Window {
      zumu. Testin ve olcumun tek kapisi bu ikisi. */
   yildizDurum?: () => any;
   yildizZumAyar?: (v: number) => void;
+  /* Gokyuzu acikken cark jesti hic baslamiyor: cark.js bunu soruyor. */
+  yildizZumAcik?: () => boolean;
   /* Dokunus ortadaki aletin uzerinde mi: pencerelerin "bosluk"
      karari bunu soruyor (bkz. merkezDokunus). */
   carkMerkezde?: (e: any) => boolean;

@@ -376,6 +376,12 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          gezerken carka degiyor elim ama arka planda sacmalik."
          Acik pencere varken jest hic baslamiyor. */
       if(window.pencereAcikMi && window.pencereAcikMi()) return;
+      /* GOKYUZU ACIKKEN CARK PASIF. Kullanicinin sozu: "hangi turde
+         buyuttuysek baska ture gecemezsin, arkada cark vs pasif
+         olmali; kuculunce geri gelir." Yildiz haritasi acikken raf
+         degistirmek, bakilan gokyuzunu elin altinda degistirmek
+         olurdu. */
+      if(window.yildizZumAcik && window.yildizZumAcik()) return;
       if(kip !== 'cark' || !R || kapali || !acikMi() || !bandaMi(e)) return;
       basili = true; oturuyor = false; hiz = 0;
       sonAci = aciBul(e); sonZaman = performance.now();

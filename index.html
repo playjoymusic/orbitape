@@ -9785,9 +9785,30 @@
      Zum acikken cark/faz tuvali ve halka soluyor: ekranda yalnizca
      gokyuzu kaliyor. */
   const ZUM_TAVAN = 4.2, ZUM_ESIK = 1.06;
+  /* Dokunma yaricapi PIKSEL cinsinden ve comert: yildizin kendisi
+     kucuk, parmak degil. Olculen sikayet "bazi yildizlara
+     basilamiyor" idi ve sebebi 30px'lik dar bir daireydi. */
+  const YIL_DOKUNU = 40;
   var _zum = 1, _zumHedef = 1, _zumKat = null, _zumCtx = null,
-      _zumSecili = null, _zumSurer = false;
+      _zumSecili = null;
+  /* Gokyuzu ekrandan tasiyor; tek parmakla surukleniyor. Kaydirma
+     merkezden sapma olarak tutuluyor, cizim ve dokunma AYNI degeri
+     kullaniyor -- yoksa gorunen yer ile basilan yer ayrisir. */
+  var _kayX = 0, _kayY = 0;
+  var _basX = 0, _basY = 0, _basKayX = 0, _basKayY = 0, _suruk = false, _basli = false;
+  /* Secilen yildizin ad kutusu: kendisi de bir dokunma alani. Ad
+     cikinca ona basmak istasyonu aciyor, minik noktayi ikinci kez
+     bulmak gerekmiyor. */
+  var _adKutu = null;
   function zumAcikMi(){ return _zum > ZUM_ESIK || _zumHedef > ZUM_ESIK; }
+  /* Kac istasyon gosterilecek: en az YIL_TABAN, tavanda rafin
+     tamami. Cizim ve dokunma AYNI sayiyi kullaniyor. */
+  const YIL_TABAN = 18;
+  function yildizGorunurSayi(n, olcek){
+    if(n <= YIL_TABAN) return n;
+    const k = Math.max(0, Math.min(1, (olcek - 1) / (ZUM_TAVAN - 1)));
+    return Math.max(YIL_TABAN, Math.min(n, Math.round(YIL_TABAN + (n - YIL_TABAN) * k)));
+  }
   function zumKatAl(){
     if(_zumKat) return _zumKat;
     try{
@@ -9796,21 +9817,27 @@
       _zumKat.setAttribute('aria-hidden', 'true');
       document.body.appendChild(_zumKat);
       _zumCtx = _zumKat.getContext('2d');
-      _zumKat.addEventListener('pointerdown', zumDokunus);
+      _zumKat.addEventListener('pointerdown', zumBas);
+      _zumKat.addEventListener('pointermove', zumSurukle);
+      _zumKat.addEventListener('pointerup', zumBirak);
+      _zumKat.addEventListener('pointercancel', ()=>{ _basli = false; });
     }catch(e){ _yut(e); }
     return _zumKat;
   }
   function zumBaslat(){
     if(typeof AYAR !== 'undefined' && AYAR && AYAR.mood) return false;
-    try{ if(window.pencereAcikMi && window.pencereAcikMi()) return false; }catch(e){ _yut(e); }
+    if(!zumAcikMi()){
+      try{ if(window.pencereAcikMi && window.pencereAcikMi()) return false; }catch(e){ _yut(e); }
+    }
     if(!istYildizKur().length) return false;
-    zumKatAl(); _zumSecili = null;
+    if(!zumAcikMi()){ _kayX = 0; _kayY = 0; _zumSecili = null; _adKutu = null; }
+    zumKatAl();
     try{ document.body.classList.add('yildiz-zum'); }catch(e){ _yut(e); }
     zumDongu();
     return true;
   }
   function zumKapat(){
-    _zumHedef = 1; _zumSecili = null; zumDongu();
+    _zumHedef = 1; _zumSecili = null; _adKutu = null; zumDongu();
   }
   /* ── GOKYUZUNUN KENDI KARESI ────────────────────────────────────
      Once vizLoop'un karesine biniyordu. Olculdu: uygulama bostayken
@@ -9830,13 +9857,33 @@
   }
   function zumBitti(){
     try{ document.body.classList.remove('yildiz-zum'); }catch(e){ _yut(e); }
-    _zum = 1; _zumHedef = 1; _zumSecili = null;
+    _zum = 1; _zumHedef = 1; _zumSecili = null; _adKutu = null;
+    _kayX = 0; _kayY = 0;
+  }
+  /* Gokyuzunun merkezi: diskin ortasi + kaydirma. */
+  function zumMerkez(){
+    const d = document.querySelector('.disk');
+    const b = d ? d.getBoundingClientRect() : null;
+    if(!b || !b.width) return null;
+    return { x: b.left + b.width / 2 + _kayX, y: b.top + b.height / 2 + _kayY,
+             taban: b.width * 0.5 * 0.9 };
   }
   /* Yildizin ekrandaki yeri: durgun ekranda da, zumda da AYNI
      formul -- yildiz buyurken yerinden ziplamiyor. */
   function yildizNokta(y, cx, cy, taban, olcek){
     const rr = y.r * taban * olcek;
     return { x: cx + Math.cos(y.a) * rr, y: cy + Math.sin(y.a) * rr };
+  }
+  /* Kaydirma sinirsiz degil: gokyuzunu tamamen ekran disina itip
+     bos bir ekranda kalmak kotu bir son. Sapma, gokyuzunun o anki
+     yaricapini gecmiyor. */
+  function kaydirmaSinirla(){
+    try{
+      const m = zumMerkez(); if(!m) return;
+      const en = m.taban * _zum * 1.05;
+      const u = Math.hypot(_kayX, _kayY);
+      if(u > en){ _kayX = _kayX / u * en; _kayY = _kayY / u * en; }
+    }catch(e){ _yut(e); }
   }
   function zumCiz(){
     try{
@@ -9852,24 +9899,58 @@
       c.clearRect(0, 0, W, H);
       _zum += (_zumHedef - _zum) * 0.18;
       if(_zumHedef <= 1 && _zum < ZUM_ESIK){ zumBitti(); return; }
-      const d = document.querySelector('.disk');
-      const b = d ? d.getBoundingClientRect() : null;
-      if(!b || !b.width) return;
-      const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-      const taban = b.width * 0.5 * 0.9;
+      const m = zumMerkez(); if(!m) return;
+      const cx = m.x, cy = m.y, taban = m.taban;
       const L = istYildizKur();
       /* Acilma orani: zum 1'e yakinken katman gorunmez, acildikca
          yildizlar geliyor. */
       const gel = Math.max(0, Math.min(1, (_zum - 1) / 0.9));
       const calan = calanYildiz();
+      /* ── HARITA GIBI: BUYUDUKCE DAHA COK ISTASYON ─────────────
+         Kullanicinin kurdugu benzetme buydu: "haritayi buyuttukce
+         yildizlara basmak kolaylasiyor, bazi arkada kalan ust uste
+         olanlar gorunmeye basliyor."
+         Bir rafta 127 istasyona kadar var; hepsini ilk anda dokmek
+         okunmaz bir kalabalik ve ust uste binen noktalar demek --
+         yani "basilamiyor" sikayetinin ta kendisi. Gorunur sayi
+         zumla buyuyor: az actiysan seyrek ve rahat, sonuna kadar
+         actiysan rafin tamami. Sira sabit oldugu icin gorunen bir
+         yildiz bir daha kaybolmuyor, uzerine yenileri geliyor. */
+      const gorunur = yildizGorunurSayi(L.length, _zum);
       const yaziRenk = 'rgba(236,250,248,';
+      /* ── BOS YILDIZLAR ONCE VE SONUK ──────────────────────────
+         Kullanici: "bazi yildizlar bos ya da basilamiyor; bossa
+         biraz daha sonuk yapabilirsin buyutunce."
+         Dogru: gokyuzunun kalabaligi zerrelerden geliyor ve onlarin
+         arkasinda istasyon yok. Zum acikken halka soluyor, o
+         zerreler de bu katmanda ama COK SONUK yeniden ciziliyor:
+         gokyuzu gokyuzu olarak duruyor, parlak olan tek sey
+         basilabilen sey oluyor. */
+      try{
+        if(typeof ZERRE !== 'undefined' && ZERRE && ZERRE.length){
+          c.fillStyle = 'rgba(190,214,214,' + (0.13 * gel).toFixed(3) + ')';
+          for(let zi = 0; zi < ZERRE.length; zi++){
+            const z = ZERRE[zi];
+            const rr = z.rD * taban * _zum;
+            const x = cx + Math.cos(z.a) * rr, y = cy + Math.sin(z.a) * rr;
+            if(x < -20 || x > W + 20 || y < -20 || y > H + 20) continue;
+            c.beginPath(); c.arc(x, y, z.s * 0.9, 0, 6.29); c.fill();
+          }
+        }
+      }catch(e){ _yut(e); }
+      _adKutu = null;
       for(let i = 0; i < L.length; i++){
         const y = L[i];
-        const p = yildizNokta(y, cx, cy, taban, _zum);
-        if(p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) continue;
         const bu = calan && calan.id === y.id;
         const sec = _zumSecili && _zumSecili.id === y.id;
-        const rad = (bu ? 3.4 : 1.5 + y.b * 1.3) * (0.85 + _zum * 0.08);
+        /* Calan ve secili olan sinirin disinda da ciziliyor: ekranda
+           duran bir seyin kaybolmasi kafa karistirir. */
+        if(i >= gorunur && !bu && !sec) continue;
+        /* Sinira yakin olanlar birden BELIRMIYOR, aciliyor. */
+        const yeni = Math.max(0, Math.min(1, (gorunur - i) / 6));
+        const p = yildizNokta(y, cx, cy, taban, _zum);
+        if(p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) continue;
+        const rad = (bu ? 3.6 : 2.0 + y.b * 1.4) * (0.85 + _zum * 0.08);
         if(bu || sec){
           const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad * 5);
           g.addColorStop(0, 'rgba(255,255,255,' + (0.55 * gel).toFixed(3) + ')');
@@ -9878,63 +9959,133 @@
           c.fillStyle = g;
           c.beginPath(); c.arc(p.x, p.y, rad * 5, 0, 6.29); c.fill();
         }
-        c.fillStyle = yaziRenk + ((bu ? 0.95 : 0.34 + y.b * 0.38) * gel).toFixed(3) + ')';
+        c.fillStyle = yaziRenk + ((bu ? 0.96 : (0.52 + y.b * 0.34) * yeni) * gel).toFixed(3) + ')';
         c.beginPath(); c.arc(p.x, p.y, rad, 0, 6.29); c.fill();
         /* ADI YALNIZCA SECILENDE: ilk dokunus adi gosteriyor, muzik
            kesilmiyor. Ikinci dokunus o istasyona geciyor. */
         if(sec){
-          c.font = "600 12px 'Share Tech Mono', ui-monospace, monospace";
-          c.textAlign = 'center'; c.textBaseline = 'bottom';
+          c.font = "600 15px 'Share Tech Mono', ui-monospace, monospace";
+          c.textAlign = 'center'; c.textBaseline = 'middle';
           const ad = (y.ad || '').slice(0, 26);
-          const gen = c.measureText(ad).width + 14;
+          const gen = Math.min(W - 16, c.measureText(ad).width + 26);
+          const boy = 30;
           let ax = Math.max(gen / 2 + 6, Math.min(W - gen / 2 - 6, p.x));
-          let ay = p.y - rad - 8;
-          if(ay < 22) ay = p.y + rad + 22;
-          c.fillStyle = 'rgba(8,16,20,' + (0.72 * gel).toFixed(3) + ')';
-          c.fillRect(ax - gen / 2, ay - 15, gen, 19);
-          c.fillStyle = yaziRenk + (0.96 * gel).toFixed(3) + ')';
-          c.fillText(ad, ax, ay);
+          let ay = p.y - rad - 20;
+          if(ay - boy / 2 < 8) ay = p.y + rad + 20;
+          c.fillStyle = 'rgba(8,16,20,' + (0.80 * gel).toFixed(3) + ')';
+          c.beginPath();
+          if(c.roundRect) c.roundRect(ax - gen/2, ay - boy/2, gen, boy, 8);
+          else c.rect(ax - gen/2, ay - boy/2, gen, boy);
+          c.fill();
+          c.strokeStyle = 'rgba(90,220,210,' + (0.45 * gel).toFixed(3) + ')';
+          c.lineWidth = 1; c.stroke();
+          c.fillStyle = yaziRenk + (0.97 * gel).toFixed(3) + ')';
+          c.fillText(ad, ax, ay + 1);
+          /* Kutu bir dugme: dokunma alani cizilen kutudan biraz
+             genis, ama komsu yildizlarin uzerine tasmayacak kadar. */
+          _adKutu = { id:y.id, x1:ax - gen/2 - 6, x2:ax + gen/2 + 6,
+                      y1:ay - boy/2 - 6, y2:ay + boy/2 + 6 };
         }
       }
     }catch(e){ _yut(e); }
   }
-  function zumDokunus(e){
+  /* ── TEK PARMAK: KAYDIRMA MI, SECIM MI ──────────────────────────
+     Kullanici: "buyutunce sayfanin disina tasan yildizlara
+     ulasilmiyor, saga sola tek parmak cekip onlara da ulasmak
+     lazim."
+     Ayni parmak iki is yapiyor ve ayrim mesafeden: 10 pikselden
+     fazla kaydiysa gokyuzunu suruklemistir, degilse bir seye
+     basmistir. Karar PARMAK KALKINCA veriliyor -- basar basmaz
+     secmek, kaydirmaya baslayan her hareketi yanlislikla secim
+     yapardi. */
+  const YIL_SURUKLE = 10;
+  function zumBas(e){
     try{
       e.stopPropagation();
+      _basli = true; _suruk = false;
+      _basX = e.clientX; _basY = e.clientY;
+      _basKayX = _kayX; _basKayY = _kayY;
+      /* Yakalama yalnizca GERCEK dokunusta: sentetik olayda etkin
+         bir isaretci yok, cagri atiyor ve sessiz hata defterini
+         bosuna sisiriyor (olculdu). */
+      if(e.isTrusted){ try{ _zumKat.setPointerCapture(e.pointerId); }catch(_){ _yut(_); } }
+    }catch(_){ _yut(_); }
+  }
+  function zumSurukle(e){
+    try{
+      if(!_basli) return;
+      const dx = e.clientX - _basX, dy = e.clientY - _basY;
+      if(!_suruk && Math.hypot(dx, dy) < YIL_SURUKLE) return;
+      _suruk = true;
+      _kayX = _basKayX + dx; _kayY = _basKayY + dy;
+      kaydirmaSinirla();
+      zumDongu();
+    }catch(_){ _yut(_); }
+  }
+  function zumBirak(e){
+    try{
+      if(!_basli) return;
+      _basli = false;
+      if(e.isTrusted){ try{ _zumKat.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); } }
+      if(_suruk){ _suruk = false; return; }        // kaydirma secim degil
+      zumSec(e.clientX, e.clientY);
+    }catch(_){ _yut(_); }
+  }
+  function zumSec(mx, my){
+    try{
+      /* Ad kutusu bir dugme: acikken ona basmak dogrudan aciyor. */
+      if(_adKutu && mx >= _adKutu.x1 && mx <= _adKutu.x2
+         && my >= _adKutu.y1 && my <= _adKutu.y2){
+        const L0 = istYildizKur();
+        for(let i = 0; i < L0.length; i++) if(L0[i].id === _adKutu.id){ yildizAc(L0[i]); return; }
+      }
       const L = istYildizKur();
-      const d = document.querySelector('.disk');
-      const b = d ? d.getBoundingClientRect() : null;
-      if(!b || !b.width){ zumKapat(); return; }
-      const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-      const taban = b.width * 0.5 * 0.9;
+      const m = zumMerkez();
+      if(!m){ zumKapat(); return; }
+      /* YALNIZCA GORUNENLER SECILEBILIR. Cizilmemis bir yildizi
+         secmek, kullanicinin bakmadigi bir seyi acmak olurdu. */
+      const gorunur = yildizGorunurSayi(L.length, _zum);
+      const calan0 = calanYildiz();
       let en = null, enU = 1e9;
       for(let i = 0; i < L.length; i++){
-        const p = yildizNokta(L[i], cx, cy, taban, _zum);
-        const u = Math.hypot(p.x - e.clientX, p.y - e.clientY);
+        if(i >= gorunur && !(calan0 && calan0.id === L[i].id)) continue;
+        const p = yildizNokta(L[i], m.x, m.y, m.taban, _zum);
+        const u = Math.hypot(p.x - mx, p.y - my);
         if(u < enU){ enU = u; en = L[i]; }
       }
       /* Bosluga dokunmak gokyuzunu kapatir -- her acik pencerede
          oldugu gibi. */
-      if(!en || enU > 30){ zumKapat(); return; }
-      if(_zumSecili && _zumSecili.id === en.id){
-        /* IKINCI DOKUNUS: o istasyona gecilir. */
-        try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
-        _zumSecili = null; zumKapat();
-        try{ _secildi = true; }catch(_){ _yut(_); }
-        try{ cal({ id:en.id, mp3:en.mp3, ad:en.ad, sanatci:'', radyo:true,
-                   grup:en.grup, saf:en.saf, ulke:en.ulke }); }catch(_){ _yut(_); }
-        return;
-      }
+      if(!en || enU > YIL_DOKUNU){ zumKapat(); return; }
+      if(_zumSecili && _zumSecili.id === en.id){ yildizAc(en); return; }
       /* ILK DOKUNUS: yalnizca adi. Calan sey degismiyor. */
       _zumSecili = en;
       try{ if(AYAR.tikSes && typeof tik === 'function') tik(); }catch(_){ _yut(_); }
+      zumDongu();
+    }catch(_){ _yut(_); }
+  }
+  function yildizAc(y){
+    try{
+      try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+      _zumSecili = null; zumKapat();
+      try{ _secildi = true; }catch(_){ _yut(_); }
+      try{ cal({ id:y.id, mp3:y.mp3, ad:y.ad, sanatci:'', radyo:true,
+                 grup:y.grup, saf:y.saf, ulke:y.ulke }); }catch(_){ _yut(_); }
     }catch(_){ _yut(_); }
   }
   try{ window.yildizDurum = ()=>({ zum:_zum, acik:zumAcikMi(),
-        sayi:istYildizKur().length, secili:_zumSecili ? _zumSecili.ad : null,
+        sayi:istYildizKur().length,
+        gorunur: yildizGorunurSayi(istYildizKur().length, _zum), secili:_zumSecili ? _zumSecili.ad : null,
+        kay:{ x:Math.round(_kayX), y:Math.round(_kayY) },
+        adKutu: _adKutu ? { x1:Math.round(_adKutu.x1), x2:Math.round(_adKutu.x2),
+                            y1:Math.round(_adKutu.y1), y2:Math.round(_adKutu.y2) } : null,
         calan: (calanYildiz() || {}).id || null }); }catch(e){ _yut(e); }
   try{ window.yildizZumAyar = (v)=>{ if(v > 1){ if(zumBaslat()) _zumHedef = Math.min(ZUM_TAVAN, v); }
         else zumKapat(); }; }catch(e){ _yut(e); }
+  /* Gokyuzu acikken CARK PASIF: raf degismiyor, ortadaki alet
+     dinlemiyor. Kullanicinin sozu: "hangi turde buyuttuysek baska
+     ture gecemezsin, arkada cark vs pasif olmali; kuculunce geri
+     gelir." cark.js bunu her jestin basinda soruyor. */
+  try{ window.yildizZumAcik = zumAcikMi; }catch(e){ _yut(e); }
 
   /* Nefesi CSS'e devrediyoruz. Sınıfı kaldırıp bir yerleşim okuyarak yeniden
      ekliyoruz; yoksa arka arkaya basışlarda animasyon baştan başlamıyor. */
@@ -10173,6 +10324,9 @@
       basAra = ara(e.touches); karar = ''; basZum = _zum;
       // halka/FX bu jesti üstlenmesin
       try{ pDown=false; _basili=false; }catch(_){ _yut(_); }
+      /* Gokyuzu acikken ikinci parmak degdigi anda tek parmak
+         kaydirmasi da dusuyor: pinch sirasinda gokyuzu kaymasin. */
+      try{ _basli = false; _suruk = false; }catch(_){ _yut(_); }
     }, {passive:true});
     document.addEventListener('touchmove', e=>{
       if(!etkin || e.touches.length !== 2) return;

@@ -7969,8 +7969,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const px = cx + Math.cos(a) * r * taban * z, py = cy + Math.sin(a) * r * taban * z;
         const kat = document.getElementById('yildizKat');
         const oncekiCalan = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '');
-        const dok = (x,y)=> kat.dispatchEvent(new PointerEvent('pointerdown',
-          { clientX:x, clientY:y, bubbles:true, cancelable:true, pointerId:9, pointerType:'touch' }));
+        /* Karar parmak KALKINCA veriliyor (kaydirmadan ayirmak
+           icin): dokunus down + up olarak gonderiliyor. */
+        const dok = (x,y)=>{
+          ['pointerdown','pointerup'].forEach(t=> kat.dispatchEvent(new PointerEvent(t,
+            { clientX:x, clientY:y, bubbles:true, cancelable:true, pointerId:9, pointerType:'touch' })));
+        };
         dok(px, py); await bek(80);
         c.ilkDokunusAd = window.yildizDurum().secili === 'Yildiz 4';
         c.ilkDokunusCalmadi = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '') === oncekiCalan;
@@ -7985,6 +7989,112 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         dok(2, 2);
         for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
         c.boslukKapatti = !document.body.classList.contains('yildiz-zum');
+
+        /* ── TEK PARMAKLA KAYDIRMA ────────────────────────────────
+           Ekrandan tasan yildizlara ulasmanin yolu. Kaydirdiktan
+           sonra yildizlar kaydigi kadar yer degistirmeli VE
+           kaydirma bir SECIM sayilmamali. */
+        window.yildizZumAyar(3.4);
+        for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 3.4) > 0.02; i++) await bek(30);
+        const kat2 = document.getElementById('yildizKat');
+        const olay = (t, x, y)=> kat2.dispatchEvent(new PointerEvent(t,
+          { clientX:x, clientY:y, bubbles:true, cancelable:true, pointerId:11, pointerType:'touch' }));
+        const secOnce = window.yildizDurum().secili;
+        olay('pointerdown', 200, 400);
+        olay('pointermove', 260, 400);
+        olay('pointermove', 320, 430);
+        olay('pointerup',   320, 430);
+        await bek(120);
+        const kay = window.yildizDurum().kay;
+        c.kaydi = kay.x === 120 && kay.y === 30;
+        c.kaydirmaSecmedi = window.yildizDurum().secili === secOnce;
+        c.kaydirinca_acik = document.body.classList.contains('yildiz-zum');
+        /* Kaydirmadan sonra yildizin yeri kaydirma kadar otelenmis
+           olmali: cizim ile dokunma ayni yeri soylemeli. */
+        const disk2 = document.querySelector('.disk').getBoundingClientRect();
+        const cx2 = disk2.left + disk2.width/2 + kay.x, cy2 = disk2.top + disk2.height/2 + kay.y;
+        const taban2 = disk2.width * 0.5 * 0.9, z2 = window.yildizDurum().zum;
+        const t2 = 5, a2 = (t2 * 2.39996) % 6.28318,
+              r2 = 0.26 + 0.70 * Math.sqrt((t2 % 89) / 89);
+        const px2 = cx2 + Math.cos(a2) * r2 * taban2 * z2,
+              py2 = cy2 + Math.sin(a2) * r2 * taban2 * z2;
+        if(px2 > 4 && px2 < innerWidth - 4 && py2 > 4 && py2 < innerHeight - 4){
+          olay('pointerdown', px2, py2); olay('pointerup', px2, py2); await bek(90);
+          c.kaydiktanSonraSecim = window.yildizDurum().secili === 'Yildiz 4';
+        }else{ c.kaydiktanSonraSecim = true; }   /* ekran disina cikti: bu olcum gecersiz */
+        /* ── AD KUTUSU DA BIR DUGME ───────────────────────────────
+           "Isim cikinca isminde cevresi de basilabilsin ki
+           tiklayamama sorunu olmasin."
+           Once EKRANDA DURAN bir yildiz seciliyor: kaydirmadan
+           sonra 4 numara ekran disinda kalmis olabiliyor. */
+        let sec2 = null;
+        {
+          const kk = window.yildizDurum().kay;
+          const dd = document.querySelector('.disk').getBoundingClientRect();
+          const ccx = dd.left + dd.width/2 + kk.x, ccy = dd.top + dd.height/2 + kk.y;
+          const tb2 = dd.width * 0.5 * 0.9, zz = window.yildizDurum().zum;
+          for(let i = 0; i < 12; i++){
+            const aa = ((i+1) * 2.39996) % 6.28318,
+                  rr = 0.26 + 0.70 * Math.sqrt(((i+1) % 89) / 89);
+            const xx = ccx + Math.cos(aa) * rr * tb2 * zz,
+                  yy = ccy + Math.sin(aa) * rr * tb2 * zz;
+            if(xx > 60 && xx < innerWidth - 60 && yy > 60 && yy < innerHeight - 60){
+              sec2 = { i, xx, yy }; break;
+            }
+          }
+          if(sec2){ olay('pointerdown', sec2.xx, sec2.yy); olay('pointerup', sec2.xx, sec2.yy); await bek(120); }
+        }
+        c.ekrandaYildizVar = !!sec2;
+        const kutu = window.yildizDurum().adKutu;
+        c.adKutusuVar = !!kutu && (kutu.x2 - kutu.x1) > 40 && (kutu.y2 - kutu.y1) > 24;
+        if(kutu){
+          const mx = (kutu.x1 + kutu.x2) / 2, my = (kutu.y1 + kutu.y2) / 2;
+          olay('pointerdown', mx, my); olay('pointerup', mx, my); await bek(150);
+          c.adKutusuActi = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '')
+                           === ('https://sahte.test/y' + sec2.i);
+        }
+        for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
+        /* ── ZUM ACIKKEN CARK PASIF ───────────────────────────────
+           "Hangi turde buyuttuysek baska ture gecemezsin." */
+        window.yildizZumAyar(2.6);
+        for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 2.6) > 0.02; i++) await bek(30);
+        c.carkPasif = !!(window.yildizZumAcik && window.yildizZumAcik());
+        const aileOnce = AKTIF_AILE;
+        try{
+          const tv = document.getElementById('carkTuval');
+          const tb = tv.getBoundingClientRect();
+          const ty = tb.top + tb.height * 0.06, tx = tb.left + tb.width / 2;
+          tv.dispatchEvent(new PointerEvent('pointerdown',
+            { clientX:tx, clientY:ty, bubbles:true, cancelable:true, pointerId:12, pointerType:'touch' }));
+          tv.dispatchEvent(new PointerEvent('pointermove',
+            { clientX:tx + 90, clientY:ty + 40, bubbles:true, cancelable:true, pointerId:12, pointerType:'touch' }));
+          tv.dispatchEvent(new PointerEvent('pointerup',
+            { clientX:tx + 90, clientY:ty + 40, bubbles:true, cancelable:true, pointerId:12, pointerType:'touch' }));
+        }catch(e){}
+        await bek(400);
+        c.turDegismedi = AKTIF_AILE === aileOnce;
+        window.yildizZumAyar(1);
+        for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
+        c.kucultunceGeriGeldi = !(window.yildizZumAcik && window.yildizZumAcik());
+
+        /* ── HARITA GIBI: BUYUDUKCE DAHA COK ISTASYON ─────────────
+           Kalabalik rafta (60 istasyon) az acilmis gokyuzu seyrek,
+           sonuna kadar acilmis gokyuzu rafin tamami olmali. */
+        beyazListe = Array.from({length:60},(_,i)=>({
+          stationuuid:'k'+i, name:'Kalabalik '+i, url:'https://sahte.test/k'+i,
+          url_resolved:'https://sahte.test/k'+i, grup:'JAZZ', saf:1, ulke:'TR', tags:'jazz' }));
+        AKTIF_AILE = 'JAZZ';
+        window.yildizZumAyar(1.5);
+        for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 1.5) > 0.02; i++) await bek(30);
+        const az = window.yildizDurum();
+        window.yildizZumAyar(4.2);
+        for(let i = 0; i < 80 && Math.abs(window.yildizDurum().zum - 4.2) > 0.02; i++) await bek(30);
+        const cok = window.yildizDurum();
+        c.azdaSeyrek = az.sayi === 60 && az.gorunur > 0 && az.gorunur < 34;
+        c.cokdaHepsi = cok.gorunur === 60;
+        c.artanSira = cok.gorunur > az.gorunur;
+        window.yildizZumAyar(1);
+        for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
       }catch(e){ c.hata = String(e && e.message || e); }
       try{ window.yildizZumAyar(1); }catch(e){}
       beyazListe = eskiBl; _blDenendi = eskiDenendi; AKTIF_AILE = eskiAile;
@@ -8004,6 +8114,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        && yz.gokyuzuKapandi === true, ozy || 'gecince gokyuzu kapaniyor');
     K('Gokyuzunde bosluga dokunus kapatir', yz.boslukKapatti === true,
        ozy || 'her acik pencere gibi');
+    K('Tek parmakla gokyuzu kayiyor, kaydirma secim degil',
+       yz.kaydi === true && yz.kaydirmaSecmedi === true && yz.kaydirinca_acik === true,
+       ozy || 'ekrandan tasan yildizlara ulasiliyor');
+    K('Kaydiktan sonra yildiz yeni yerinden seciliyor',
+       yz.kaydiktanSonraSecim === true, ozy || 'cizim ile dokunma ayni yeri soyluyor');
+    K('Secilen yildizin adi da bir dugme', yz.ekrandaYildizVar === true
+       && yz.adKutusuVar === true && yz.adKutusuActi === true,
+       ozy || 'ada basmak istasyonu aciyor');
+    K('Buyudukce daha cok istasyon geliyor (harita)',
+       yz.azdaSeyrek === true && yz.cokdaHepsi === true && yz.artanSira === true,
+       ozy || 'az acikta seyrek, sonuna kadar acikta rafin tamami');
+    K('Gokyuzu acikken cark pasif, kuculunce geri geliyor',
+       yz.carkPasif === true && yz.turDegismedi === true
+       && yz.kucultunceGeriGeldi === true, ozy || 'zumda tur degismiyor');
   }
 
   /* ── SOUND BANKS'TEN DONUS ──────────────────────────────────────
