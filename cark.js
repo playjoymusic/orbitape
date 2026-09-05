@@ -110,7 +110,9 @@ try{ window.CARK_BASLADI = true; }catch(e){}
       R = b.width / 2;
       const pay = Math.round(R * 0.44);          // adların çemberi için yer
       const boy = Math.round(b.width + pay * 2);
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      /* Piksel yogunlugu uygulamanin kendi tuvaliyle ayni: mobilde
+         1.5. Once 2'ydi ve bu tuval ekrandaki en genis yuzey. */
+      const dpr = Math.min(window.devicePixelRatio || 1, MOBIL_CIHAZ ? 1.5 : 2);
       tuval.style.width = boy + 'px'; tuval.style.height = boy + 'px';
       tuval.style.left = Math.round(b.left - pay) + 'px';
       tuval.style.top  = Math.round(b.top  - pay) + 'px';
@@ -301,9 +303,35 @@ try{ window.CARK_BASLADI = true; }catch(e){}
 
   /* ── DÖNGÜ ──────────────────────────────────────────────────────
      Yalnızca hareket varken kare istiyor: duran çark pil yakmıyor. */
+  /* ── FAZ KIPI TELEFONU ISITIYORDU ───────────────────────────────
+     Olculdu (iPhone profili, calan yayin): cark kipinde bu tuval hic
+     cizilmiyor (0 kare/sn) -- duran cark pil yakmiyor, dogru. FAZ
+     kipinde ise saniyede 60 kare ciziliyor ve toplam cizim cagrisi
+     3.245'ten 9.382'ye ciktiyor. Yani ekrandaki en pahali sey buydu.
+     Iki fren:
+       · Telefonda 30 kare/sn. Uygulamanin kendi tuvali de mobilde
+         30'da (KARE_HEDEF); faz onun iki kati hizda donmesi icin bir
+         sebep yok -- ses cubugu 30'da da akici gorunuyor.
+       · Piksel yogunlugu 2 yerine 1.5 (yine uygulamanin kendi
+         degeriyle ayni). Tuval alani %44 kuculuyor.
+     Ikisi birlikte faz kipinin cizim yukunu ~dortte bire indiriyor. */
+  const MOBIL_CIHAZ = (function(){
+    try{ return matchMedia('(pointer:coarse)').matches
+              || /iphone|ipad|ipod|android/i.test(navigator.userAgent); }
+    catch(e){ return false; }
+  })();
+  const FAZ_FPS = MOBIL_CIHAZ ? 30 : 60;
+  let _fazSonKare = 0;
   function kare(){
     kareIstek = 0;
     try{
+      /* FAZ'da kare hizi sinirli: erken gelen kare CIZMEDEN geri
+         donuyor ama zinciri kirmiyor. */
+      if(kip === 'faz' && !basili){
+        const t = performance.now();
+        if(t - _fazSonKare < (1000 / FAZ_FPS) - 1){ surdur(); return; }
+        _fazSonKare = t;
+      }
       if(!basili){
         if(oturuyor){
           const N = raflar().length, adim = 360 / N;
