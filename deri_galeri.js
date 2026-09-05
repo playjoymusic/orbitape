@@ -44,7 +44,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   /* ── KURALLAR: CSSOM ILE (CSP ozet tabanli, <style> eklenemez) ───
      Cerceve yok, ust seritteki tuslar duz simge; vurgu deriden. */
   const KURALLAR = [
-    "#deriGaleri{--dg-vurgu:#4de0d0;--dg-yazi:#dfe4e8;--dg-zem:rgba(8,10,12,.94);position:fixed;left:0;right:0;bottom:0;top:14vh;border-radius:18px 18px 0 0;z-index:97;display:flex;flex-direction:column;background:var(--dg-zem);color:var(--dg-yazi);padding-top:calc(var(--sut,15px) + env(safe-area-inset-top,0px));padding-bottom:calc(8px + var(--dip-pay,0px));font-family:'Share Tech Mono',ui-monospace,monospace}",
+    "#deriGaleri{--dg-vurgu:#4de0d0;--dg-yazi:#dfe4e8;--dg-zem:rgba(8,10,12,.94);position:fixed;left:0;right:0;bottom:0;top:max(22vh,150px);border-radius:18px 18px 0 0;z-index:97;display:flex;flex-direction:column;background:var(--dg-zem);color:var(--dg-yazi);padding-top:calc(var(--sut,15px) + env(safe-area-inset-top,0px));padding-bottom:calc(8px + var(--dip-pay,0px));font-family:'Share Tech Mono',ui-monospace,monospace}",
     "body.deri #deriGaleri{--dg-vurgu:var(--d-marka,var(--d-yazi));--dg-yazi:var(--d-yazi);--dg-zem:var(--d-panel,var(--d-zem))}",
     "#deriGaleri[hidden]{display:none !important}",
     ".dg-bas{display:flex;align-items:center;gap:4px;flex:none;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 6px calc(var(--kx) + env(safe-area-inset-left,0px))}",
@@ -76,11 +76,44 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        BUYUGU: sabit pay (simgelerin alti) ya da ekranin %20'si --
        kisa ekranda birinci, uzun telefonda ikincisi kazaniyor ve
        serit her iki durumda da aletin hemen ustunde duruyor. */
-    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:max(calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 122px), 20vh);width:auto;max-width:min(92vw,420px);padding:0;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
+    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:max(calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 118px), 13vh);width:auto;max-width:min(96vw,460px);padding:2px 0;border-radius:22px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
     "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-sayac{display:none}",
+    /* YATAY DURUS: ekran 480 pikselden kisa. Alet ortada ve
+       kuculse bile serit onun uzerine denk geliyor. Cozum dikey
+       degil YATAY: serit sola yanasiyor, alet ortada kaliyor ve
+       ikisi yan yana duruyor. */
+    "@media (max-height:480px){#deriGaleri.serit{left:calc(var(--kx) + env(safe-area-inset-left,0px));transform:none;max-width:min(46vw,300px)}}",
     "#deriGaleri.serit .dg-baslik{margin-right:2px}",
-    "#deriGaleri.serit .dg-bas{padding:2px 6px}",
-    "#deriGaleri.serit .dg-secili{flex:none;max-width:52vw;text-align:center;padding:0 6px}"
+    /* ── SERIT IKI SATIR ────────────────────────────────────────
+       Tek satira sigdirma denendi ve olmadi: yedi denetim yan yana
+       gelince yazi 13 px'e dusuyor, uzun deri adlari kirpiliyor ve
+       en sagdaki "PHASE" ekrandan tasip yariya kesiliyordu (olculdu,
+       telefonda goruldu). Kullanicinin sozu: "yine cok dar, yazilar
+       cok kucuk."
+       Cozum sigdirmak degil, IKI SATIR: ustte deri gezinme (ok, ad,
+       ok, halka, izgara, kapat), altta merkez secici. Ikisi de rahat
+       puntoda ve hicbir sey kirpilmiyor. Serit yine ince: iki satir
+       toplami tek satirlik sikisik halden yalnizca ~30 px yuksek. */
+    /* SERITTE IKI SEY GIZLENIYOR ve ikisinin de sebebi ayni: yer.
+       · SKINS basligi: kucultmenin kisayoluydu, ama zaten kucukken
+         soyleyecegi bir sey yok; buyutmeyi ▦ yapiyor.
+       · RING anahtari: merkez secicide zaten "RING" yaziyor ve iki
+         ayri sey ayni kelimeyle ekranda yan yana duruyordu -- hangi
+         RING oldugunu kimse bilemezdi. Merkez "yuvarlak" secilince
+         halka zaten kapaniyor (merkezUygula), yani anahtar seritte
+         gereksiz. Ikisi de tam galeride duruyor. */
+    "#deriGaleri.serit .dg-baslik,#deriGaleri.serit .dg-tus.halka{display:none}",
+    /* YUKSEKLIK OLCULU: serit, sol ustteki simge yigininin ALTI ile
+       ortadaki aletin USTU arasindaki banda sigmali ve iki yanda da
+       gercek bosluk kalmali. Kullanicinin sozu: "grafiksel bosluklar
+       olur ogeler arasi, halkaya degiyor, biraz yukari al." */
+    "#deriGaleri.serit .dg-bas{padding:5px 10px 4px;gap:2px;flex-wrap:wrap;justify-content:center}",
+    "#deriGaleri.serit .dg-secili{font-size:0.9375rem;letter-spacing:.08em;flex:1 1 auto;min-width:0;max-width:none;text-align:center;padding:0 6px}",
+    "#deriGaleri.serit .dg-tus{width:32px;height:32px;font-size:0.9375rem}",
+    /* Merkez secici KENDI SATIRINDA: tam genislik, ortalanmis,
+       dordu de ayni puntoda ve hicbiri kesilmiyor. */
+    "#deriGaleri.serit .dg-merkez{order:9;width:100%;justify-content:center;gap:4px;padding-top:0;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent);margin-top:2px}",
+    "#deriGaleri.serit .dg-tus.mrk{width:auto;height:24px;font-size:0.625rem;letter-spacing:.12em;padding:0 8px}"
   ];
   function kurallariKur(){
     try{
@@ -339,6 +372,29 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       const f = document.getElementById('deriFirca');
       if(f) f.setAttribute('aria-expanded', acik ? 'true' : 'false');
       document.body.classList.toggle('galeri-acik', !!acik);
+      seritIsaret();
+    }catch(e){ yut(e); }
+  }
+  /* ── SERIT ACIKKEN ORTADAKI ALET BIRAZ KUCULUYOR ─────────────────
+     Olculdu (393x852): sol ustteki simgeler 125'te bitiyor, carkin
+     cizilen ilk pikseli 206'da basliyor. Aradaki bant 81 px ve serit
+     -- iki satir, okunur puntoda -- 74 px. Yani serit ya carkin
+     ustune binecek ya da okunmaz kadar kucuk olacak. Ikisi de yanlis;
+     kullanicinin sozu ikisine birden itiraz ediyordu: "yazilar cok
+     kucuk" ve "halkaya degiyor, biraz yukari al".
+     Ucuncu yol: SERIT ACIKKEN ALET KUCULUYOR. Ekranda bir cubuk
+     acilinca icerigin ona yer acmasi, arayuzlerde bilinen ve
+     beklenen davranis. Serit kapaninca alet oldugu boya donuyor.
+     Tuval, aletin OLCULEN kutusuna gore hizalandigi icin degisimden
+     sonra carkHizala cagriliyor. */
+  function seritIsaret(){
+    try{
+      const acik = acikMi() && kap && kap.classList.contains('serit');
+      const onceki = document.body.classList.contains('serit-acik');
+      document.body.classList.toggle('serit-acik', !!acik);
+      if(onceki !== !!acik){
+        requestAnimationFrame(()=>{ try{ if(window.carkHizala) window.carkHizala(); }catch(e){ yut(e); } });
+      }
     }catch(e){ yut(e); }
   }
   function ac(){
@@ -358,6 +414,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       /* Serit ekrani kapatmiyor: arkasi tekrar dokunulabilir olsun. */
       try{ if(typeof pencereKapa === 'function') pencereKapa(kap); }catch(e){ yut(e); }
       kap.classList.add('serit');
+      seritIsaret();
       const t = kap.querySelector('.dg-tus.ileri'); if(t) t.focus();
     }catch(e){ yut(e); }
   }
@@ -365,6 +422,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     try{
       if(!kap) return;
       kap.classList.remove('serit');
+      seritIsaret();
       isaretle(true);
       try{ if(typeof pencereAc === 'function') pencereAc(kap, kap.querySelector('.dg-kare[aria-pressed="true"]')); }catch(e){ yut(e); }
     }catch(e){ yut(e); }
@@ -398,19 +456,23 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
      kapatir, altindaki tusa gecmez. Firca disarida sayilmiyor:
      onun kendi dongusu var. */
   let _yutJest = false, _yutZaman = 0;
+  /* ── BOSLUGA DOKUNUS IKI KIPTE DE KAPATIR ────────────────────────
+     Kural bir sure YALNIZCA serit kipindeydi ve tam galeride
+     disariya dokunmak hicbir sey yapmiyordu. Kullanicinin sozu:
+     "skins acikken bosluga basarsam kapatacaksin skinsi, alarm nasil
+     kapaniyor bosluga basinca." Dogru olan da bu: her acik pencere
+     ayni sekilde kapanmali, kip farki kullaniciyi ilgilendirmiyor.
+     TEK ISTISNA SERITTE: ortadaki alet. Seritte cark ekranda ve
+     kullanici derilere bakarken parmagi ona degiyor -- orada dokunus
+     kapatmiyor, yutuluyor. Tam galeride alet zaten panelin altinda,
+     yani boyle bir dokunus olamaz. */
   function disari(e){
     try{
-      if(!acikMi() || !kap.classList.contains('serit')) return;
+      if(!acikMi()) return;
       const t = e.target;
       if(t instanceof Node && kap.contains(t)) return;
       if(t instanceof Element && t.closest('#deriFirca')) return;
-      /* ORTADAKI ALET BOSLUK DEGIL: seride bakarken parmak carka
-         degiyordu ve panel ucup gidiyordu. Kural uc panelde ayni
-         (bkz. index.html: merkezDokunus).
-         Dokunus KAPATMIYOR ama YUTULUYOR da: yoksa altindaki diske
-         gecip parca degistiriyordu -- gorunmeyen bir sey olmasi
-         kullanicinin asil sikayetiydi ("arka planda sacmalik"). */
-      if(window.merkezDokunus && window.merkezDokunus(e)){
+      if(kap.classList.contains('serit') && window.merkezDokunus && window.merkezDokunus(e)){
         _yutJest = true; _yutZaman = Date.now() + 600;
         e.stopPropagation(); e.preventDefault();
         return;

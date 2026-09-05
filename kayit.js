@@ -1511,6 +1511,30 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     }
     try{ const v = kk(viz, true); if(v) c.drawImage(vizArka, v.x, v.y, v.w, v.h); }catch(e){ _yut(e); }
   }
+  /* ── ORTADAKI ALET: CARK / TAYF ─────────────────────────────────
+     Cark kendi tuvaline ciziliyor (#carkTuval, ekranda diskin
+     ustunde). Kayit tarafi onu hic bilmiyordu: fotografta ne disler,
+     ne tur adlari, ne tayf cubuklari vardi -- yani cikti, ekranda
+     duran ana ogeyi atliyordu. Tuval hazir bir goruntu; olculen
+     kutusuna tek drawImage yetiyor.
+     SIRA: diskten SONRA, arayuzden ONCE -- ekrandaki katman sirasi
+     da bu (disk 10 < cark 11 < tuslar). */
+  function _kayCark(g){
+    try{
+      const t = document.getElementById('carkTuval');
+      if(!t) return;
+      const cs = getComputedStyle(t);
+      if(cs.display === 'none' || cs.visibility === 'hidden') return;
+      const op = parseFloat(cs.opacity);
+      if(isFinite(op) && op < 0.02) return;
+      const b = kk(t, true);
+      if(!b || !b.w) return;
+      const c = g.c, eski = c.globalAlpha;
+      if(isFinite(op) && op < 1) c.globalAlpha = eski * op;
+      c.drawImage(t, b.x, b.y, b.w, b.h);
+      c.globalAlpha = eski;
+    }catch(e){ _yut(e); }
+  }
   function _kaySolUst(g){
     const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 3) SOL ÜST: gezegen + uydular — hepsi ölçülen yerlerinden */
@@ -1604,8 +1628,17 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       });
       /* Kategori yazısı (#modAd) .kanal değil; ayrıca çiziliyor —
          kayıtta hangi kategoride olduğumuz görünsün. */
+      /* GORUNURLUK: opacity YETMIYOR. Radyo kipinde raf adi bloku
+         (#modKut) visibility:hidden ile gizleniyor ve visibility
+         opacity'yi degistirmiyor -- fotografta ekranda OLMAYAN bir
+         "RADIOTAPE" yazisi sol uste, hamburgerin ustune ciziliyordu
+         (olculdu, cark geldikten sonra). offsetParent gizli
+         atalarda da null doner; ikisi birden soruluyor. */
       const _ma = document.getElementById('modAd');
-      if(_ma && (_ma.textContent||'').trim() && parseFloat(getComputedStyle(_ma).opacity) > 0.02)
+      const _maGor = _ma && _ma.offsetParent !== null
+        && getComputedStyle(_ma).visibility !== 'hidden'
+        && parseFloat(getComputedStyle(_ma).opacity) > 0.02;
+      if(_maGor && (_ma.textContent||'').trim())
         domMetin(c, _ma, _ma.textContent.trim(), 'sag');
     }catch(e){ _yut(e); }
 
@@ -2516,7 +2549,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
                   renk:(KANAL_RENK[gorNo] || KANAL_RENK.lib),
                   kareBas:t, simdi:t, foto:true,
                   semboller: semboller || new Map() };
-      _kayZemin(g); _kayKamera(g); _kayDisk(g); _kaySolUst(g); _kaySagUst(g);
+      _kayZemin(g); _kayKamera(g); _kayDisk(g); _kayCark(g); _kaySolUst(g); _kaySagUst(g);
       _kaySemboller(g); _kaySagAlt(g); _kaySolAlt(g); _kaySesCubugu(g);
       /* ARAYUZ KATMANI: kullanicinin istegi "ne goruyorsak o, yani o
          anda". Tuslar da fotografta. Vinyetten ONCE ciziliyor ki

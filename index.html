@@ -90,6 +90,18 @@
      dikeyde hicbir seyi degistirmiyor (844 yukseklikte 607 > 440),
      yalnizca alcak ekranda devreye giriyor. */
   .disk{position:relative;width:min(84vw,440px,72vh);aspect-ratio:1;z-index:10;}
+  /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
+     (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
+     seridi okunur puntoda tasimiyor; cubuk acilinca icerigin ona yer
+     acmasi beklenen davranis. Serit kapaninca eski boyuna donuyor. */
+  body.serit-acik .disk{width:min(74vw,392px,64vh);}
+  /* KISA EKRAN: alet ekranin ORTASINDA duruyor, yani yer acmak icin
+     yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
+     640-667'de yetmiyor ve serit carkin tepesine biniyordu (olculdu:
+     -64 px, -57 px). Burada olcu yukseklige baglaniyor. */
+  @media (max-height:760px){
+    body.serit-acik .disk{width:min(50vw,392px,25vh);}
+  }
   /* Basış nefesi: transform derleyicide çalışır, ana iş parçacığı takılsa bile akar. */
   @keyframes diskNefes{
     0%  {transform:scale(1);}
@@ -221,6 +233,10 @@
     border-radius:999px;padding:9px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   #geriBil button:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
   #geriBil button[disabled]{opacity:.4;cursor:default;}
+  #geriBil .gb-posta{align-self:center;border:0;background:transparent;padding:2px 4px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
+    font-size:0.6875rem;letter-spacing:0;color:rgba(244,247,250,.55);text-decoration:underline;}
+  #geriBil .gb-posta:hover{color:rgba(244,247,250,.85);}
   body.deri #geriBil{background:var(--d-panel) !important;color:var(--d-yazi) !important;
     border-color:var(--d-tus-kenar) !important;}
   body.deri #geriBil .gb-ad{color:var(--d-marka,var(--d-yazi)) !important;}
@@ -3432,16 +3448,16 @@
     <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
       <span>HOW IT WORKS</span><span class="durum">PLAY</span></div>
     <!-- ── SORUN BILDIR ────────────────────────────────────────────
-         Hata paneli yalnizca BETIK HATASINDA cikiyor. Kullanicilarin
-         yasadigi seylerin cogu betik hatasi degil: "calmiyor",
-         "sesi cok kisik", "kayit bos cikti". Onlar icin ekranda
-         hicbir kapi yoktu -- kisi ya adresi kendi bulup yazacakti ya
-         da (cogu zaman) hicbir sey yapmayacakti.
-         Bu satir ayni metni hazir sekilde kendi posta uygulamasinda
-         aciyor: teknik durum eklenmis, gonderme karari kullanicinin.
-         Hicbir sey otomatik gitmiyor. -->
-    <div class="sat islem" data-ayar="bildir" role="button" tabindex="-1">
-      <span>REPORT A PROBLEM</span><span class="durum">MAIL</span></div>
+         Hata paneli yalnizca BETIK HATASINDA cikiyor. Yasanan
+         seylerin cogu betik hatasi degil: "calmiyor", "sesi cok
+         kisik", "cark donuyor ama radyo acilmiyor". Onlar icin bir
+         kapi gerekiyor.
+         BIR SATIR, IKI YOL. Bir sure ekranda IKI ayri "REPORT A
+         PROBLEM" satiri durdu: biri posta uygulamasini aciyordu,
+         oteki uygulama ici paneli. Ayni ada sahip iki satir,
+         kullaniciya bir secim degil bir bilmece sunar. Tek satir
+         kaldi ve paneli aciyor; posta yolu panelin icinde, cevap
+         isteyenler icin bir alt satir olarak duruyor. -->
     <!-- ── DIAGNOSTICS ────────────────────────────────────────────
          Uygulama hatalari sessizce yutuyor: muzik durmasin diye.
          Bedeli, sahada bir sey ters gidince elimizde hicbir sey
@@ -3589,6 +3605,9 @@
       <button id="geriVaz" type="button">CANCEL</button>
       <button id="geriGonder" type="button">SEND</button>
     </div>
+    <!-- Buradan giden mesaj anonim: kimlik tasimadigi icin cevap
+         yazilamiyor. Cevap isteyen icin posta yolu duruyor. -->
+    <button id="geriPosta" class="gb-posta" type="button">Want a reply? Write by email instead</button>
   </div>
   <div id="hata" aria-hidden="true" role="alert">
     <div class="ht-ad">SOMETHING BROKE</div>
@@ -3885,7 +3904,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.04';
+  var ORB_SURUM = '2026.09.05';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -4030,6 +4049,13 @@
     if(_gv) _gv.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); geriKapa(); });
     var _gg = document.getElementById('geriGonder');
     if(_gg) _gg.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); geriYolla(); });
+    var _gp = document.getElementById('geriPosta');
+    if(_gp) _gp.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      /* Panel kapaniyor cunku ekran artik posta uygulamasinin. */
+      geriKapa();
+      try{ if(window.hataGonder) window.hataGonder('sorun'); }catch(err){ _yut(err); }
+    });
   }catch(e){ _yut(e); }
   try{ window.geriAc = geriAc; window.geriKapa = geriKapa; window.geriYolla = geriYolla; }catch(e){ _yut(e); }
   var _hataKayit = [], _hataGosterildi = false;
@@ -11520,6 +11546,15 @@
     try{ radyoKuyruk.length = 0; }catch(e){ _yut(e); }      // eski ailenin istasyonları çalmasın
     try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
     try{ if(window.listeTazele) window.listeTazele(); }catch(e){ _yut(e); }
+    /* ── CARK RAFI TAKIP ETMEK ZORUNDA ────────────────────────────
+       carkTazele() bastan beri disari veriliyordu ama HICBIR YERDEN
+       CAGRILMIYORDU. Sonuc: listeden JAZZ seciliyor, uygulama JAZZ
+       caliyor, cark hala RADIOTAPE'i gosteriyor. Kullanicinin sozu:
+       "listeyi aciyorum jazz'i seciyorum, hala cark radiotape'te,
+       bunun mantigi ne." Hakli -- ortadaki alet, o an nerede
+       oldugunun gostergesi; yalan soyleyen bir gosterge bozuk
+       demektir. Raf her degistiginde cark ona doner. */
+    try{ if(window.carkTazele) window.carkTazele(); }catch(e){ _yut(e); }
     return AKTIF_AILE;
   }
 
@@ -13135,7 +13170,12 @@
       document.head.appendChild(s);
     }catch(e){ _yut(e); }
   }
-  function _listeTetikleri(){ return [document.getElementById('modAd'), document.querySelector('#ust .kanal.ad'), document.getElementById('bekle')].filter(Boolean); }
+  /* ── LISTE YALNIZCA ADDAN ACILIYOR ────────────────────────────────
+     #bekle (uc sembol) bir sure liste tetikcisiydi. Kullanicinin
+     sozu: "sag ustteki sembollere basinca sarki degismeyecek ve liste
+     de acilmayacak." Sembolun tek isi kendi donmesi; ad ise listeyi
+     aciyor. Iki nesne, iki is. */
+  function _listeTetikleri(){ return [document.getElementById('modAd'), document.querySelector('#ust .kanal.ad')].filter(Boolean); }
   function listeGeldi(){
     try{
       if(typeof window.listeTetikBagla === 'function') _listeTetikleri().forEach(t=>{ try{ window.listeTetikBagla(t); }catch(e){ _yut(e); } });
@@ -13202,8 +13242,17 @@
      Ekranda "tikladigim yere gitmiyor" diye goruluyordu. */
   try{
     const _sm = document.getElementById('bekle');
+    /* DOKUNUS ASAGIYA SIZMIYOR. Once yalnizca 'buyuk' kipinde
+       durduruluyordu; oteki hallerde dokunus belgeye gecip
+       "ekranin herhangi bir yeri" kuralini tetikliyor ve SARKIYI
+       DEGISTIRIYORDU. Kullanici bunu "sembole bastim, parca atladi"
+       diye gordu -- hakli. Sembol her halukarda kendi isini yapiyor
+       ve dokunusu yutuyor. */
+    if(_sm){
+      ['pointerdown','pointerup'].forEach(t=>
+        _sm.addEventListener(t, e=>{ e.stopPropagation(); }, {capture:true}));
+    }
     if(_sm) _sm.addEventListener('click', e=>{
-      if(!_sm.classList.contains('buyuk')) return;   // yukleme kipinde degil
       e.stopPropagation();
       /* ── IKI ISLEV, TEK HEDEF ──────────────────────────────────
          Ayarlardaki SYMBOL SPIN kapaliyken semboller raf adiyla
@@ -14536,6 +14585,9 @@
     try{ arsivDevam(); }catch(e){ _yut(e); }
     try{ etkilesimSay(); }catch(e){ _yut(e); }
     modAdiGoster(); zeminUygula();
+    /* Arsiv tarafinda da ayni kural: cark o an nerede oldugumuzu
+       gosteriyor, raf degisince ona doner (bkz. aileSec). */
+    try{ if(window.carkTazele) window.carkTazele(); }catch(e){ _yut(e); }
     try{ fxSunumDene(); }catch(e){ _yut(e); }
     try{ localStorage.setItem('orbitape.mod', AKTIF_MOD || ''); }catch(e){ _yut(e); }
     /* Kuyrukları boşalt: eski moddan kalan sesler çalmasın. */
@@ -14956,14 +15008,10 @@
         }catch(e){ _yut(e); }
         return;
       }
-      if(k === 'bildir'){
-        /* Kendi posta uygulamasinda hazir bir mektup aciliyor: uste
-           kendi cumleleri icin bos satirlar, altta teknik durum.
-           Panel kapaniyor cunku ekran artik posta uygulamasinin. */
-        kapa();
-        try{ if(window.hataGonder) window.hataGonder('sorun'); }catch(e){ _yut(e); }
-        return;
-      }
+      /* 'bildir' SATIRI KALKTI: ayni adla iki satir vardi (biri posta,
+         biri panel) ve ayni ada sahip iki satir kullaniciya secim
+         degil bilmece sunar. Posta yolu artik panelin icinde
+         (#geriPosta) ve ayni islevi cagiriyor. */
       AYAR[k] = !AYAR[k];
       ayarKaydet(); yaz();
       /* TANITIMLAR TEKRAR ACILDIYSA GERCEKTEN ACILSIN. Depoda
@@ -16497,7 +16545,7 @@
   document.addEventListener('pointerdown', e=>{
     if(_ilkTetik || baslatildi) return;
     const t = e.target;
-    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe,#geriBil,#geriSat')) return;  // kendi başlatıcıları var
+    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe,#geriBil,#geriSat,#bekle')) return;  // kendi başlatıcıları var
     _ilkTetik = true;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     const it = ilkItem;

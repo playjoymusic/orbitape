@@ -154,7 +154,39 @@ async function seritOlc(sayfa){
     const us = document.getElementById('ust');
     const alt = Math.max(st ? st.getBoundingClientRect().bottom : 0,
                          us ? us.getBoundingClientRect().bottom : 0);
+    /* SERIT CARKIN USTUNE BINMEZ. Olculdu: bir ara 18 px biniyordu
+       ve kullanici "halkaya degiyor" dedi. Cizilen ilk piksele
+       bakiliyor, elemanin kutusuna degil -- tuval diskten buyuk. */
+    /* CIZILEN ALANIN KUTUSU. Yalniz "en ust piksel" yetmiyor: yatay
+       durusta serit SOLA yanasiyor ve carkla yan yana duruyor -- o
+       durumda dikeyde kesisiyor gorunur ama gercekte binmiyor.
+       Dogru soru iki DIKDORTGEN kesisiyor mu. Tarama 4 pikselde bir:
+       kenar cizgileri 2 pikselden kalin, kacirma riski yok. */
+    let carkKutu = null;
+    try{
+      const t = document.getElementById('carkTuval');
+      if(t && getComputedStyle(t).display !== 'none'){
+        const tr = t.getBoundingClientRect();
+        const im = t.getContext('2d').getImageData(0, 0, t.width, t.height).data;
+        const ox = tr.width / t.width, oy = tr.height / t.height;
+        let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+        for(let y = 0; y < t.height; y += 4)
+          for(let x = 0; x < t.width; x += 4)
+            if(im[(y * t.width + x) * 4 + 3] > 12){
+              if(x < x1) x1 = x; if(x > x2) x2 = x;
+              if(y < y1) y1 = y; if(y > y2) y2 = y;
+            }
+        if(x2 > 0) carkKutu = { sol: tr.left + x1 * ox, sag: tr.left + x2 * ox,
+                                ust: tr.top + y1 * oy, alt: tr.top + y2 * oy };
+      }
+    }catch(e){}
+    const kesisiyor = !!carkKutu && !(r.right <= carkKutu.sol || r.left >= carkKutu.sag
+                                   || r.bottom <= carkKutu.ust || r.top >= carkKutu.alt);
+    const carkTepe = carkKutu ? Math.round(carkKutu.ust) : null;
     return { serit: kap.classList.contains('serit'),
+             carkTepe: carkTepe,
+             carkKesisiyor: kesisiyor,
+             carkBosluk: carkTepe === null ? null : Math.round(carkTepe - r.bottom),
              top: Math.round(r.top), alt: Math.round(alt),
              sol: Math.round(r.left), sag: Math.round(r.right),
              icerde: r.left >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1,
@@ -187,6 +219,10 @@ async function seritOlc(sayfa){
     K('[' + ek.ad + '] skins seridi yerinde',
        !!s && !s.yok && s.serit === true && s.icerde === true && s.binmiyor === true,
        s && !s.yok ? ('top ' + s.top + ' >= ' + s.alt) : 'serit acilmadi');
+    K('[' + ek.ad + '] serit ortadaki alete binmiyor',
+       !!s && !s.yok && s.carkKesisiyor === false,
+       s && !s.yok ? ('carkin tepesi ' + s.carkTepe + ', dikey bosluk ' + s.carkBosluk + ' px')
+                   : 'olculemedi');
 
     await baglam.close();
   }

@@ -4879,11 +4879,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{ localStorage.removeItem('orbitape.geri'); }catch(e){}
       const sat = document.getElementById('geriSat');
       o.satVar = !!sat;
+      o.satSayisi = [...document.querySelectorAll('#ayar .sat')]
+        .filter(x => /REPORT A PROBLEM/i.test(x.textContent || '')).length;
       if(sat) sat.click();
       await bek(300);
       const el = document.getElementById('geriBil');
       o.acildi = !!el && el.classList.contains('on');
       o.not = ((document.getElementById('geriNot')||{}).textContent || '');
+      o.postaVar = !!document.getElementById('geriPosta');
       /* Bos mesaj gonderilmiyor. */
       document.getElementById('geriMetin').value = '   ';
       document.getElementById('geriGonder').click(); await bek(200);
@@ -4906,6 +4909,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     try{ govde = JSON.parse(gonderilen[0] || 'null'); }catch(e){}
     K('Sorun bildirme yolu var ve aciliyor', gb.satVar && gb.acildi,
        'ayarlarda REPORT A PROBLEM satiri');
+    /* TEK SATIR. Bir sure ayni adla IKI satir durdu (biri posta
+       uygulamasini aciyordu, oteki paneli) -- ayni ada sahip iki
+       satir secim degil bilmece sunar. Posta yolu artik panelin
+       icinde, cevap isteyenler icin. */
+    K('Ayarlarda tek bir sorun bildirme satiri var', gb.satSayisi === 1,
+       (gb.satSayisi === undefined ? '-' : gb.satSayisi) + ' satir');
+    K('Cevap isteyene posta yolu duruyor', gb.postaVar === true,
+       'panelin icinde, anonim mesajin altinda');
     K('Ne gonderildigi panelde yaziyor',
        /message/i.test(gb.not) && /version/i.test(gb.not) && /No identity/i.test(gb.not),
        (gb.not || '-').slice(0, 60) + '...');
@@ -5368,7 +5379,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const gb = await pg.evaluate(()=>{
       const dug = document.getElementById('hataGonder');
-      const sat = document.querySelector('#ayar .sat[data-ayar="bildir"]');
+      /* Ayarlardaki kapi artik #geriSat: 'bildir' satiri kalkti cunku
+         ayni adla IKI satir vardi. Posta yolu panelin icinde
+         (#geriPosta) ve ayni islevi cagiriyor. */
+      const sat = document.getElementById('geriSat');
+      const posta = document.getElementById('geriPosta');
       /* Adres KURUCUSU cagriliyor, gonderici degil: sayfa terk
          edilmiyor ama uretilen sey birebir olculuyor. */
       let baglanti = '';
@@ -5376,11 +5391,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       catch(e){ baglanti = 'URETILEMEDI: ' + e.message; }
       return { dugme: !!dug, dugmeYazi: dug ? dug.textContent.trim() : '',
                ayarSatir: !!sat, satirYazi: sat ? sat.textContent.trim() : '',
+               postaYolu: !!posta,
                baglanti: baglanti.slice(0, 400) };
     });
     K('Sorun bildirmenin iki kapisi var',
-       gb.dugme && gb.ayarSatir,
-       'hata panelinde "' + gb.dugmeYazi + '", ayarlarda "' + gb.satirYazi + '"');
+       gb.dugme && gb.ayarSatir && gb.postaYolu,
+       'hata panelinde "' + gb.dugmeYazi + '", ayarlarda "' + gb.satirYazi
+       + '", panelde posta yolu ' + (gb.postaYolu ? 'var' : 'YOK'));
     K('Bildirim kendi posta uygulamasini aciyor, sunucuya gitmiyor',
        /^mailto:hello@orbitape\.app\?/.test(gb.baglanti)
        && /subject=ORBITAPE%20\d{4}\./.test(gb.baglanti),
@@ -6843,12 +6860,34 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         window.sonraki = eSn;
         c.sonrakiDokunusGecer = sn2 >= 1;
         if(window.__yut) window.__yut.n = yN;
-        /* semboller: acikken kapatir, kapaliyken acar */
+        /* SEMBOLLER ARTIK LISTE ACMIYOR. Kullanicinin sozu: "sag
+           ustteki sembollere basinca sarki degismeyecek ve liste de
+           acilmayacak." Sembolun tek isi kendi donmesi; listeyi
+           ADDAN aciyoruz. Olculen sey artik "acmadigi". */
         sm.classList.add('buyuk');
         listeKapa(); c.kapandi = !listeAcik();
+        /* "Sarki degismedi" nasil olculur: sonraki() sayarak DEGIL.
+           Ag yokken uygulama zaten kendi kendine 700 ms'de bir
+           yeniden deniyor ve sayac o gurultuyu sayiyor -- test kod
+           dogruyken kirmizi yanar. Dogru soru: dokunus belgeye
+           ULASIYOR MU. "Ekranin herhangi bir yeri baslatir" kurali
+           orada duruyor; sembol dokunusu oraya hic varmamali. */
+        /* "Sarki degismedi" nasil olculur: sonraki() sayarak DEGIL --
+           ag yokken uygulama zaten 700 ms'de bir yeniden deniyor ve
+           sayac o gurultuyu sayar; test kod dogruyken kirmizi yanar.
+           Belgeye ulasip ulasmadigina bakmak da yanlis: yakalama
+           asamasi belgeden HEDEFE dogru iner, yani belge dinleyicisi
+           her halukarda once calisir.
+           Dogru olcu, "ekranin herhangi bir yeri baslatir" kuralinin
+           bu dokunusu SAYMAMASI: o kural bir kez tetiklenince
+           _ilkTetik'i true yapiyor. Sembole basildiginda false
+           kalmali. */
+        const tetikOnce = (typeof _ilkTetik !== 'undefined') ? _ilkTetik : null;
         const vurS = (t)=>sm.dispatchEvent(new PointerEvent(t, {bubbles:true, pointerId:9, clientX:innerWidth-40, clientY:60}));
         vurS('pointerdown'); vurS('pointerup'); await bek(300);
-        c.sembolAcar = listeAcik();
+        c.sembolListeAcmaz = !listeAcik();
+        c.sembolSarkiDegistirmez = (typeof _ilkTetik !== 'undefined')
+          ? (_ilkTetik === tetikOnce) : true;
         listeKapa();
         try{ if(_rafBaslatZaman){ clearTimeout(_rafBaslatZaman); _rafBaslatZaman = null; } }catch(e){}
         mod = eM; AKTIF_AILE = eA; modAdiYaz();
@@ -6860,7 +6899,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Listede butun raflar kendi renginde, acik raf isaretli', il.rafSayisi && il.renkli && il.altinda && il.acikIsaretli, ilOz || 'AILE_ADLAR');
     K('Rafa dokunmak rafi acar ve listeyi kapatir, acik raf pasif', il.rafAcildi && il.acikPasif && il.secinceKapandi, ilOz || 'aileSec bir kez, liste kapandi');
     K('Bosluga dokunus listeyi kapatir ve dokunusu yutar', il.bosKapatti && il.bosYutuldu && il.sonrakiDokunusGecer, ilOz || 'kapandi, sonraki() 0, sonraki dokunus gecti');
-    K('Semboller listeyi acar/kapatir', il.kapandi && il.sembolAcar, ilOz || 'pointerdown/up');
+    K('Semboller ne liste acar ne sarki degistirir',
+       il.kapandi && il.sembolListeAcmaz && il.sembolSarkiDegistirmez,
+       ilOz || 'sembol yalnizca doner');
     /* RAF SECILI DEGILSE USTTE YAZI DA YOK: once 'RADIOTAPE', sonra
        'ALL' yazmistim; ikisi de kullaniciya "ne alaka" dedirtti. */
     K('Secim yokken ust yazi bos', await pg.evaluate(()=>{
@@ -8793,6 +8834,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const sapma = (a, b) => (a && b)
       ? Math.max(Math.abs(a[0]-b[0]), Math.abs(a[1]-b[1]), Math.abs(a[2]-b[2])) : 999;
     const kayitKaynak2 = fs.readFileSync('kayit.js','utf8');
+    /* ── FOTOGRAF ORTADAKI ALETI ATLIYORDU ────────────────────────
+       Cark geldikten sonra olculdu: fotografta ne disler, ne tur
+       adlari vardi; ustelik radyo kipinde GIZLI olan raf adi
+       (#modKut visibility:hidden) sol uste, hamburgerin ustune
+       ciziliyordu -- yani cikti hem eksik hem yanlisti. Sebep ikisi
+       de tek satirlik: kayit cark tuvalini hic bilmiyordu ve
+       gorunurluk sorusu yalnizca opacity'ye bakiyordu (visibility
+       opacity'yi degistirmez). */
+    K('Fotograf ortadaki aleti (cark/tayf) ciziyor',
+      /_kayCark\(g\)/.test(kayitKaynak2) && /getElementById\('carkTuval'\)/.test(kayitKaynak2),
+      'carkTuval kayit tuvaline geciriliyor');
+    K('Gizli raf adi fotografa girmiyor',
+      /offsetParent !== null[\s\S]{0,120}visibility/.test(kayitKaynak2),
+      'opacity yetmiyor, visibility de soruluyor');
     const kotu = [], not = [];
     (deriFoto || []).forEach(d=>{
       if(!d.olcum || !d.olcum.zemin){ kotu.push(d.ad + ': fotograf okunamadi'); return; }
@@ -9005,8 +9060,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const bs = document.querySelector('#saatPanel .st-tus.basla');
         const dkYazi = dg ? dg.textContent : '';
         uykuKur(45); await bek(300);
-        c.sayacGeri = !!dg && /^\d+:\d\d$/.test((dg.textContent||'').trim()) && dg !== dkYazi;
+        /* BUYUK OLAN "NE KURDUM", KUCUK OLAN "NE KALDI". Once tersiydi
+           ve kullanici hakli olarak itiraz etti: "saat kuruyorum 5 dk,
+           buyuk geri sayim var ama kurulan saat kucuk". Uyumak uzere
+           olan biri kac dakikaya kurdugunu bilmek ister. */
+        const drm = document.querySelector('#saatPanel .st-durum');
+        c.buyukKurulan = !!dg && /^45\s/.test((dg.textContent||'').trim());
+        c.kucukKalan = !!drm && /\d+:\d\d/.test((drm.textContent||'').trim());
         c.tusIptal = !!bs && /CANCEL|IPTAL/i.test(bs.textContent || '');
+        void dkYazi;
         uykuIptal(); await bek(200);
         /* Alarm kurulunca geri sayim gorunuyor. */
         sabahKur(true); await bek(200);
@@ -9057,7 +9119,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Alarm anahtari ne oldugunu yaziyor', st.anahtarAdli, ozet || 'ALARM ON / ALARM OFF');
     K('Alarm kuruluyken oturum ayakta (sessiz dongu)', st.alarmOturumu && st.kapaninca,
        ozet || 'kurulunca gece kipi, kapatinca birakiyor');
-    K('Uyku sayaci geri sayiyor, hizli tuslar kalkti', st.sayacGeri && st.tusIptal && st.hizliYok,
+    K('Buyuk yazi kurulan sure, kalan sure alt satirda',
+       st.buyukKurulan && st.kucukKalan && st.tusIptal && st.hizliYok,
        ozet || 'dk:sn geri sayim, tus CANCEL');
     K('Alarm geri sayimi panelde', st.geriSayim, ozet || 'kac saat kac dakika kaldi');
     K('Saat panelinde bosluga dokunus kapatir ve yutulur', st.bosKapatti && st.bosYutuldu, ozet || 'sonraki() 0');
@@ -9177,7 +9240,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.kucultTusuYok = !kap.querySelector('.dg-tus.kucult');
         kap.querySelector('.dg-baslik').click(); await bek(250);
         const sr = kap.getBoundingClientRect();
-        c.serit = kap.classList.contains('serit') && sr.height < 60 && sr.width < innerWidth * 0.95;
+        /* ESIK 60 -> 100: serit artik IKI SATIR (ustte deri gezinme,
+           altta merkez secici). Tek satira sigdirma denendi ve
+           olmadi: yazi 13 px'e dusuyor, en sagdaki secenek ekrandan
+           tasiyordu. Serit hala "ekrani kapatmayan ince cubuk" --
+           74 px, ekranin yuzde dokuzu. */
+        c.serit = kap.classList.contains('serit') && sr.height < 100 && sr.width < innerWidth * 0.99;
         /* SERIT USTTEKI HICBIR SEYE BINMIYOR: sol ustteki simge
            yigininin (en alttaki saat tusu) ve marka yazisinin
            altinda kaliyor. Kullanici: "minimize olunca herseyin
@@ -9198,8 +9266,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.adYazisi = kap.querySelector('.dg-secili').textContent.trim() === DERILER[0].ad;
         /* SERITTE RING GORUNUR (3 Eylul): "halkayi acip kapama da
            gorunsun orda." Kucultunce kaybolmamali. */
-        c.seritteRing = !!kap.querySelector('.dg-tus.halka') &&
-          getComputedStyle(kap.querySelector('.dg-tus.halka')).display !== 'none';
+        /* SERITTE RING ANAHTARI YOK. Merkez secicide zaten "RING"
+           yaziyor ve iki ayri sey ayni kelimeyle yan yana duruyordu.
+           Merkez "DISC" secilince halka zaten kapaniyor. Anahtar tam
+           galeride duruyor; olculen sey artik seritte GORUNMEDIGI. */
+        c.seritteRingYok = !kap.querySelector('.dg-tus.halka')
+          || getComputedStyle(kap.querySelector('.dg-tus.halka')).display === 'none';
         /* Panel tepeye dayanmiyor: ustte en az 40px pay. */
         c.tepeBosluk = kap.getBoundingClientRect().top >= 40;
         /* Baslik bir dugme ve serite indiriyor. */
@@ -9284,7 +9356,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
     K('Serit ustteki simgelerin altinda', g.seritBinmiyor === true,
        (g && g.seritOlcu) || 'serit ust ile cakismiyor');
-    K('Seritte RING tusu gorunur', g.seritteRing, oz || 'kucultunce de duruyor');
+    K('Seritte RING anahtari yok (merkez seciciyle karismasin)', g.seritteRingYok,
+       oz || 'RING kelimesi seritte tek yerde');
     /* 4 Eylul: panel tepeye DAYANMIYOR (ustte tutamak payi kaliyor ki
        yukari-asagi cekip kapatilabilsin) ve baslik ("SKINS") serite
        inip cikmanin kisayolu. Serit kipinde merkez secici gorunur:

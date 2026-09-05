@@ -173,23 +173,38 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   /* Dogrusal gecis; arka planda rAF durdugu icin setInterval. 100 ms
      adim, kulGain'de setTargetAtTime yumusattigi icin basamak
      duyulmuyor. */
-  function gecisDur(){ try{ if(gecisZaman){ clearInterval(gecisZaman); gecisZaman = null; } }catch(e){} }
+  /* ── GECIS ADIMI DISARIDAN DA CAGRILABILIYOR ──────────────────────
+     Kisilmis (kilitli ekran) bir sayfada setInterval durur ve fade
+     yarida kalir: ses ne kisilir ne durur. Adim islevi burada
+     tutuluyor; nabiz -- ki o da sesin timeupdate olayindan geliyor --
+     her turda bir kez daha cagiriyor. Yani gecis de zamanlayiciya
+     degil, calan sesin kendisine bagli. Hesap ZAMAN FARKINDAN
+     yapiliyor (t0), kac kez cagrildigindan degil; iki kaynaktan
+     gelmesi sonucu degistirmiyor. */
+  var _gecisAdim = null;
+  function gecisDur(){
+    try{ if(gecisZaman){ clearInterval(gecisZaman); gecisZaman = null; } }catch(e){}
+    _gecisAdim = null;
+  }
+  function gecisIlerlet(){ try{ if(_gecisAdim) _gecisAdim(); }catch(e){ yut(e); } }
   function gecis(hedef, sureMs, bitti){
     gecisDur();
     const bas = kat(), t0 = Date.now();
     if(sureMs <= 0){ katYaz(hedef); if(bitti) bitti(); return; }
-    gecisZaman = setInterval(()=>{
+    const adim = ()=>{
       const o = Math.min(1, (Date.now() - t0) / sureMs);
       katYaz(bas + (hedef - bas) * o);
-      if(o >= 1){ clearInterval(gecisZaman); gecisZaman = null; if(bitti) bitti(); }
-    }, 100);
+      if(o >= 1){ gecisDur(); if(bitti) bitti(); }
+    };
+    _gecisAdim = adim;
+    gecisZaman = setInterval(adim, 100);
   }
   /* Kirik dogru: [[saniye, seviye], ...]. Sabah rampasi icin. */
   function rampa(noktalar, bitti){
     gecisDur();
     const t0 = Date.now();
     const son = noktalar[noktalar.length - 1];
-    gecisZaman = setInterval(()=>{
+    const adim = ()=>{
       const s = (Date.now() - t0) / 1000;
       let k = son[1];
       for(let i = 1; i < noktalar.length; i++){
@@ -197,8 +212,10 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
         if(s <= b[0]){ k = a[1] + (b[1] - a[1]) * ((s - a[0]) / Math.max(0.001, b[0] - a[0])); break; }
       }
       katYaz(k);
-      if(s >= son[0]){ clearInterval(gecisZaman); gecisZaman = null; if(bitti) bitti(); }
-    }, 100);
+      if(s >= son[0]){ gecisDur(); if(bitti) bitti(); }
+    };
+    _gecisAdim = adim;
+    gecisZaman = setInterval(adim, 100);
   }
 
   /* ── SESSIZ DONGU: SES OTURUMUNU ACIK TUTAN SEY ─────────────────
@@ -284,6 +301,14 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
         const u = ses.src || '';
         if(!/^https?:/i.test(u)) return;
         if(Date.now() - geceZaman < 600) return;   // gece kipine yeni girildi
+        /* EKRAN KAPALIYKEN ASLA. Bu kural "kullanici calmaya basladi"
+           demek icin var ve ancak biri ekrana bakiyorsa dogru olabilir.
+           Kilitli ekranda sayfa arka planda; olaylar gecikmeli, toplu
+           ve beklenmedik sirada geliyor. Orada tetiklenirse gece kipi
+           bozulur ve kisilmis ses geri acilir -- yani uyuyan birinin
+           kulaginda muzik. Gorunur degilse dokunmuyoruz; kullanici
+           telefonu acinca zaten calmaya devam ederse o an uyanir. */
+        try{ if(document.visibilityState !== 'visible') return; }catch(e){}
         uyandir();
       }catch(e){ yut(e); }
     });
@@ -412,6 +437,10 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   function nabiz(){
     try{
       const s = Date.now();
+      /* Suren fade/rampa varsa bir adim da buradan: kilitli ekranda
+         setInterval durabiliyor, bu cagri sesin kendi olayindan
+         geliyor (bkz. timeupdate). */
+      gecisIlerlet();
       if(depo.uykuBitis && s >= depo.uykuBitis && kip !== 'caliyor') uykuBitir();
       if(erteleHedef && s >= erteleHedef){ erteleHedef = 0; alarmCal(Math.min(3, erteleme + 1)); return; }
       if(depo.sabah.acik && depo.sabah.hedef && s >= depo.sabah.hedef && kip !== 'caliyor' && !erteleHedef){
@@ -553,12 +582,23 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       const s = Date.now();
       calanKutu.hidden = kip !== 'caliyor';
       /* SAYAC: koserken KALAN SURE, dururken kurulacak sure. */
+      /* ── BUYUK OLAN "NE KURDUM", KUCUK OLAN "NE KALDI" ────────────
+         Once tersiydi: sayac calisirken buyuk yaziyi geri sayim
+         kapliyor, kurulan sure hic gorunmuyordu. Kullanicinin sozu:
+         "saat kuruyorum 5 dk, sacma bir buyuk geri sayim var ama
+         kurulan saat kucuk... saati kurdugum gibi yukarida buyuk
+         gorecegiz kaca kuruldugunu, o geri sayimi kucuk yap."
+         Hakli: uyumak uzere olan biri kac dakikaya kurdugunu bilmek
+         ister; saniye saniye eriyen bir sayi ise uykuyu kaciran bir
+         seydir. Buyuk yazi artik hep KURULAN deger; kalan sure alt
+         satirda, bitis saatinin yaninda. */
       if(depo.uykuBitis){
         const kalanSn = Math.max(0, Math.round((depo.uykuBitis - s) / 1000));
         const dk = Math.floor(kalanSn / 60), sn = kalanSn % 60;
-        uykuDkYazi.textContent = dk + ':' + String(sn).padStart(2, '0');
+        uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
         uykuDkYazi.classList.add('kosuyor');
-        uykuDurum.textContent = T('Fades out at') + ' ' + saatYazisi(depo.uykuBitis);
+        uykuDurum.textContent = T('Fades out at') + ' ' + saatYazisi(depo.uykuBitis)
+          + ' · ' + dk + ':' + String(sn).padStart(2, '0');
       }else{
         uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
         uykuDkYazi.classList.remove('kosuyor');
@@ -678,6 +718,28 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   if(depo.uykuBitis) kip = 'uyku';
   if(depo.sabah.acik && !depo.sabah.hedef){ depo.sabah.hedef = sabahHedefHesapla(); yaz(); }
   tik = setInterval(nabiz, 5000);
+  /* ── KILITLI EKRANDA ZAMANLAYICI DEGIL, SESIN KENDISI SAYIYOR ────
+     OLCULEN KUSUR (kullanici): "kilitli ekranda alarmin muzigi
+     kesilmiyor, ne zaman kilidi acsam o zaman duruyor."
+     Sebep: iOS kilitli ekranda sayfayi askiya alir; ses calmaya devam
+     etse bile setInterval'i kisar ya da tamamen durdurur. Nabiz
+     durunca uyku suresinin dolduguna kimse bakmaz -- ve kilit
+     acilinca nabiz geri gelip "sure coktan dolmus" der, muzik o an
+     kesilir. Disaridan bakan bunu "sayac calismadi" diye gorur.
+     'timeupdate' ise SESIN KENDI olayi: ses caldigi surece, sayfa
+     kisilmis olsa bile duzenli olarak geliyor. Yani zamani artik
+     calan sesin kendisi sayiyor. En fazla iki saniyede bir
+     calistiriliyor: timeupdate saniyede 4 kez gelebiliyor ve nabiz
+     ucuz olsa da bosuna kosmasin. */
+  try{
+    let _sonNabiz = 0;
+    ses.addEventListener('timeupdate', ()=>{
+      const s = Date.now();
+      if(s - _sonNabiz < 2000) return;
+      _sonNabiz = s;
+      try{ nabiz(); }catch(e){ yut(e); }
+    });
+  }catch(e){ yut(e); }
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) nabiz(); else oturumTut(); });
   /* Ses durdugu anda oturum kapanmaya baslar: alarm kuruluysa hemen
      sessiz donguye geciliyor. 'ended' de var -- arsiv parcasi bitip

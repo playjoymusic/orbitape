@@ -125,30 +125,98 @@ try{ window.CARK_BASLADI = true; }catch(e){}
      Ayni tuval, baska cizim: dislerin yerinde muzikle canli
      cubuklar. Veri uygulamanin kendi cozumleyicisinden (analiz)
      geliyor; o yoksa cubuklar duruyor ama kaybolmuyor. */
+  /* Cubuk sayisi cift: cember TEPEDEN ikiye ayrilip iki yana ayni
+     bantlar diziliyor. Simetri kasitli -- ses bir yone kaymiyor,
+     halka bir butun olarak nefes aliyor. */
+  const FAZ_N = 96;
+  const FAZ_DUSUS = 0.86;      // cubuk inisi (yukselis anlik)
+  const FAZ_TEPE_DUSUS = 0.965;// tepe noktasinin agir inisi
+  let fazSev = null, fazTepe = null, fazDon = 0, fazNefes = 0;
   function fazCiz(){
     try{
       if(!ctx || !R) return;
       ctx.clearRect(0, 0, tuval.width, tuval.height);
       const yazi = deriRenk('--d-yazi', '#9fb6bb');
-      const marka = deriRenk('--d-marka', '#35e0d8');
       let veri = null;
       try{
         if(typeof analiz !== 'undefined' && analiz && typeof analizVeri !== 'undefined' && analizVeri){
           analiz.getByteFrequencyData(analizVeri); veri = analizVeri;
         }
       }catch(e){}
-      const N = 72;
-      for(let i = 0; i < N; i++){
-        const t = (i * 360 / N - 90) * Math.PI / 180;
-        const v = veri ? (veri[Math.floor(i / N * Math.min(veri.length, 96))] / 255) : 0.14;
-        const r1 = R * IC_ORAN, r2 = r1 + R * (0.03 + v * 0.20);
+      if(!fazSev || fazSev.length !== FAZ_N){
+        fazSev = new Float32Array(FAZ_N); fazTepe = new Float32Array(FAZ_N);
+      }
+      /* ── SES OLCUSUNDEN CUBUGA ────────────────────────────────────
+         Ham veriyi dogrudan boy yapmak olu bir grafik veriyor:
+         cozumleyicinin kendi yumusatmasi (smoothingTimeConstant 0.8)
+         zaten hareketi killiyor. Burada tersi yapiliyor: YUKSELIS
+         ANLIK, INIS YAVAS. Kulagin duydugu vurus goze de vurus gibi
+         geliyor. Ustune, klasik tayf olcerlerdeki gibi agir inen bir
+         TEPE NOKTASI var -- muzik durunca bile bir sure yukarida
+         kalip iniyor, yani ekran "biraz once ne oldugunu" da
+         gosteriyor.
+         Bas frekanslar cemberin TEPESINDE, tizler altta: kullanici
+         vurusu hep ayni yerde gorur, karisik degil ritmik durur. */
+      const bant = veri ? Math.min(veri.length, 96) : 0;
+      const yarim = FAZ_N / 2;
+      let toplam = 0;
+      for(let i = 0; i < FAZ_N; i++){
+        const d = Math.min(i, FAZ_N - i);                 // tepeden uzaklik
+        let hedef = 0.10;
+        if(bant){
+          const k = Math.min(bant - 1, Math.floor(d / yarim * bant));
+          hedef = Math.pow(veri[k] / 255, 0.85);
+        }
+        fazSev[i] = hedef > fazSev[i] ? hedef : (fazSev[i] * FAZ_DUSUS + hedef * (1 - FAZ_DUSUS));
+        fazTepe[i] = Math.max(fazTepe[i] * FAZ_TEPE_DUSUS, fazSev[i]);
+        toplam += fazSev[i];
+      }
+      /* Halkanin kendisi de nefes aliyor: ortalama seviye ic yaricapi
+         cok az itiyor. Cok az -- buyuk hareket gorsel gurultu olur. */
+      const ort = toplam / FAZ_N;
+      fazNefes += (ort - fazNefes) * 0.08;
+      /* Yavas donus: ses sussa bile cember olu durmuyor. */
+      fazDon = (fazDon + 0.06) % 360;
+
+      /* RENK RAFTAN GELIYOR. Cubuk hangi turun oldugu yaya denk
+         geliyorsa onun rengini aliyor -- yani carkla ayni dili
+         konusuyor ve ekranda "hangi turdeyiz" bilgisi tayfta da
+         duruyor. Deri rengi yedek. */
+      const ad = raflar(), N = ad.length || 1;
+      const r0 = R * (IC_ORAN + fazNefes * 0.035);
+      const kalin = Math.max(2.2, R * 0.023);
+      for(let i = 0; i < FAZ_N; i++){
+        const aci = i * 360 / FAZ_N + fazDon;
+        const t = (aci - 90) * Math.PI / 180;
+        const v = fazSev[i];
+        const r2 = r0 + R * (0.02 + v * 0.34);
+        const renk = rafRengi(ad[Math.floor(((aci % 360) + 360) % 360 / 360 * N) % N]) || yazi;
+        const x1 = ox + Math.cos(t) * r0, y1 = oy + Math.sin(t) * r0;
+        const x2 = ox + Math.cos(t) * r2, y2 = oy + Math.sin(t) * r2;
+        /* IKI GECIS: once kalin ve cok saydam bir hale, sonra net
+           cubuk. shadowBlur ayni isi yapardi ama 96 cubuk x 60 kare
+           demek -- olculdu, en pahali yol o. Bu ucuz ve ayni etkiyi
+           veriyor: vurus aninda cubugun etrafi isiyor. */
+        if(v > 0.28){
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+          ctx.strokeStyle = renk; ctx.lineWidth = kalin * 3.2; ctx.lineCap = 'round';
+          ctx.globalAlpha = (v - 0.28) * 0.28;
+          ctx.stroke();
+        }
         ctx.beginPath();
-        ctx.moveTo(ox + Math.cos(t) * r1, oy + Math.sin(t) * r1);
-        ctx.lineTo(ox + Math.cos(t) * r2, oy + Math.sin(t) * r2);
-        ctx.strokeStyle = (i % 6 === 0) ? marka : yazi;
-        ctx.lineWidth = Math.max(1.6, R * 0.016); ctx.lineCap = 'round';
-        ctx.globalAlpha = 0.35 + v * 0.6;
+        ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+        ctx.strokeStyle = renk;
+        ctx.lineWidth = kalin; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.30 + v * 0.65;
         ctx.stroke();
+        /* Tepe noktasi: kucuk, ayni renkte, soluk. */
+        const rt = r0 + R * (0.02 + fazTepe[i] * 0.34);
+        if(rt > r2 + R * 0.012){
+          ctx.beginPath();
+          ctx.arc(ox + Math.cos(t) * rt, oy + Math.sin(t) * rt, kalin * 0.42, 0, Math.PI * 2);
+          ctx.fillStyle = renk; ctx.globalAlpha = 0.22 + fazTepe[i] * 0.35;
+          ctx.fill();
+        }
       }
       ctx.globalAlpha = 1;
     }catch(e){ yut(e); }
