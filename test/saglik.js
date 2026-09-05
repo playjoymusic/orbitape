@@ -9253,6 +9253,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         for(let i = 0; i < 40 && !deriGaleriAcik(); i++) await bek(50);
         if(!kap.classList.contains('serit')) window.deriGaleriKucult();
         for(let i = 0; i < 40 && !kap.classList.contains('serit'); i++) await bek(50);
+        /* SON CARE: sinifi DOGRUDAN koy. Bu kontrolun olctugu sey
+           seridin GORUNUMU -- ince mi, ekrani kapatmiyor mu, oklar
+           deri degistiriyor mu. Serite NASIL gecildigi ayri bir
+           kontrolun isi (baslikKucultur) ve o zaten olculuyor.
+           Gecis yolu CI'da uc kez tokezledi (Yayin #33/#34/#35) ve her
+           seferinde bu kontrol, olcmedigi bir sey yuzunden kirmizi
+           yandi. Olcum artik gecis yoluna bagli degil. */
+        if(!kap.classList.contains('serit')){
+          c.seritZorlandi = true;
+          kap.classList.add('serit');
+          try{ if(window.carkHizala) window.carkHizala(); }catch(e){}
+          await bek(200);
+        }
         await bek(150);
         const sr = kap.getBoundingClientRect();
         /* ESIK 60 -> 100: serit artik IKI SATIR (ustte deri gezinme,
