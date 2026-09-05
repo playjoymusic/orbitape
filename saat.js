@@ -376,9 +376,76 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   }
 
   /* ── SABAH ALARMI ──────────────────────────────────────────────── */
+  /* ── ALARM CALACAK ISTASYONU ONCEDEN HAZIRLA ─────────────────────
+     OLCULEN KUSUR (kullanici, iki kez): "sleep calisiyor ama wakeup
+     kismi asla hicbir zaman calismadi, muzigi acmadi."
+     Sebep saatin gelmemesi degil, o an CALACAK BIR SEY OLMAMASI:
+     alarmCal sonraki() cagiriyordu ve sonraki, kuyruk bossa AGDAN
+     istasyon aramaya gidiyor. Sabaha karsi, ekran kilitliyken, arka
+     plana atilmis bir sayfada o istek cogu zaman hic tamamlanmiyor --
+     alarm sessizce geciyor ve disaridan bakan "alarm calismadi"
+     diyor. Hakli.
+     Cozum: kritik ani ag istegine birakmamak. Alarm kuruluyken
+     calacak istasyon ONCEDEN secilip elde tutuluyor; saat gelince
+     dogrudan o caliyor. Ag o an calisiyorsa uygulama zaten kendi
+     akisina donuyor, calismiyorsa alarm yine de caliyor. */
+  var _uyanItem = null, _uyanDeneme = 0;
+  const UYAN_ARA = 60000;      /* hazirlik icin en sik ag denemesi araligi */
+  function uyanHazirla(){
+    try{
+      if(!depo.sabah.acik){ _uyanItem = null; return; }
+      if(_uyanItem && _uyanItem.mp3) return;
+      var aile = depo.sabah.aile || '';
+      var aday = null;
+      /* ── KAYNAK ONCE ISTASYON RAFI, SONRA KUYRUK ─────────────────
+         Kuyruk O AN CALAN turun istasyonlarini tasiyor. Kullanicinin
+         sozu: "elektronikle uyudum ama uyanmaya baska istasyon
+         yazdik, o acilmali." Kuyruga bakmak bunu karsilamaz --
+         orada o tur hic olmayabilir. Istasyon rafinin tamami
+         (beyazListe) cihazda duruyor ve ag gerektirmiyor; dogru
+         kaynak o. Kuyruk yalnizca yedek. */
+      try{
+        if(typeof beyazListe !== 'undefined' && beyazListe && beyazListe.length){
+          var havuz = beyazListe.filter(function(x){
+            var u = x && (x.url_resolved || x.url);
+            if(!u || !/^https:/i.test(u)) return false;
+            return !aile || (x.grup || '') === aile;
+          });
+          if(havuz.length){
+            var st = havuz[(Math.random() * havuz.length) | 0];
+            aday = { id: 'rb:' + (st.stationuuid || st.url_resolved || st.url),
+                     mp3: (st.url_resolved || st.url),
+                     ad: st.name || 'radio', sanatci: '', radyo: true,
+                     grup: (st.grup || ''), saf: (+st.saf || 3), ulke: (st.ulke || '') };
+          }
+        }
+      }catch(e){ yut(e); }
+      if(!aday) try{
+        if(typeof radyoKuyruk !== 'undefined' && radyoKuyruk.length){
+          for(var i = 0; i < radyoKuyruk.length; i++){
+            var x = radyoKuyruk[i];
+            if(!x || !x.mp3) continue;
+            if(aile && x.grup && x.grup !== aile) continue;
+            aday = x; break;
+          }
+          if(!aday && !aile) aday = radyoKuyruk[0];
+        }
+      }catch(e){ yut(e); }
+      if(aday){ _uyanItem = aday; return; }
+      /* Hicbiri yoksa: listeyi getirtmeye calis, sonraki nabizda
+         yeniden bakilacak. Nabiz kilitli ekranda 2 saniyede bir de
+         gelebiliyor; ag istegini dakikada birden sik atmiyoruz. */
+      var simdi = Date.now();
+      if(_uyanDeneme && simdi - _uyanDeneme < UYAN_ARA) return;
+      _uyanDeneme = simdi;
+      try{ if(typeof beyazListeYukle === 'function') beyazListeYukle(); }catch(e){ yut(e); }
+      try{ if(typeof radyoKuyrukDoldur === 'function') radyoKuyrukDoldur(); }catch(e){ yut(e); }
+    }catch(e){ yut(e); }
+  }
   function sabahKur(acik){
     depo.sabah.acik = !!acik;
     depo.sabah.hedef = acik ? sabahHedefHesapla() : 0;
+    if(!depo.sabah.acik) _uyanItem = null; else uyanHazirla();
     yaz();
     /* Kurulunca oturum ayakta tutuluyor, kapatilinca birakiliyor --
        yoksa alarm kapaliyken de sessiz dongu donerdi. */
@@ -402,7 +469,17 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       else                 { katYaz(1); }
       if(depo.sabah.aile && typeof AILE_ADLAR !== 'undefined' && AILE_ADLAR.indexOf(depo.sabah.aile) >= 0)
         try{ aileSec(depo.sabah.aile, true); }catch(e){ yut(e); }
-      try{ sonraki(true); }catch(e){ yut(e); }
+      /* ONCE ELDEKI: hazir istasyon varsa dogrudan caliyor. sonraki()
+         ag gerektirebilir ve alarm ani onu bekleyemez (bkz.
+         uyanHazirla). Hazir yoksa eski yol duruyor. */
+      var caldi = false;
+      try{
+        if(_uyanItem && _uyanItem.mp3 && typeof cal === 'function'){
+          try{ if(typeof calindiEkle === 'function') calindiEkle(_uyanItem.id); }catch(e){ yut(e); }
+          cal(_uyanItem); caldi = true;
+        }
+      }catch(e){ yut(e); }
+      if(!caldi) try{ sonraki(true); }catch(e){ yut(e); }
       document.body.classList.add('alarm-caliyor');
       ac(); goster();
     }catch(e){ yut(e); }
@@ -454,6 +531,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
         erteleme = 0; alarmCal(1);
       }
       oturumTut();
+      uyanHazirla();
       if(kap && !kap.hidden) goster();
     }catch(e){ yut(e); }
   }
@@ -528,16 +606,22 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     uykuDurum = el('div', 'st-durum', ''); u.appendChild(uykuDurum);
     kap.appendChild(u);
 
-    /* SABAH */
+    /* ── SABAH: UYKUYLA AYNI DIL ─────────────────────────────────
+       Kullanicinin sozu: "yukarda sleep, altta da wakeup gibi bir
+       bolum olacak ve ayni grafiklerle olacak... kurulan saat buyuk
+       gorunmeli."
+       Iki bolum artik birebir ayni duzende: ust satirda − DEGER +,
+       altinda tek dolgulu tus, altinda durum yazisi. Fark yalnizca
+       degerin ne oldugu: birinde dakika, otekinde saat. */
     const s = el('div', 'st-bolum');
-    s.appendChild(el('div', 'st-ad', T('WAKE')));
-    const ss = el('div', 'st-satir');
-    sabahSaatGiris = document.createElement('input'); sabahSaatGiris.type = 'time'; sabahSaatGiris.className = 'st-saat';
+    s.appendChild(el('div', 'st-ad', T('WAKE UP')));
+    const ss = el('div', 'st-satir st-sayac');
+    sabahSaatGiris = document.createElement('input'); sabahSaatGiris.type = 'time'; sabahSaatGiris.className = 'st-saat st-deger';
     sabahSaatGiris.setAttribute('aria-label', 'Wake time');
     sabahSaatGiris.addEventListener('change', ()=>{ if(/^\d\d:\d\d$/.test(sabahSaatGiris.value)){ depo.sabah.saat = sabahSaatGiris.value; if(depo.sabah.acik) depo.sabah.hedef = sabahHedefHesapla(); yaz(); goster(); } });
-    ss.appendChild(tus('eksi', '−5', ()=>saatKaydir(-5)));
+    ss.appendChild(tus('eksi', '−', ()=>saatKaydir(-5)));
     ss.appendChild(sabahSaatGiris);
-    ss.appendChild(tus('arti', '+5', ()=>saatKaydir(5)));
+    ss.appendChild(tus('arti', '+', ()=>saatKaydir(5)));
     s.appendChild(ss);
     const sa = el('div', 'st-satir');
     sabahAile = document.createElement('select'); sabahAile.className = 'st-secim';
@@ -553,15 +637,20 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
        sayim. "Kurdum mu, tuttu mu" sorusunu ekran cevapliyor -- bu
        olmadigi icin kullanici alarmi hic sinayamadi. */
     sabahGeri = el('div', 'st-geri', ''); s.appendChild(sabahGeri);
+    /* ── ANAHTAR KALKTI, TEK DUGME KALDI ────────────────────────
+       Once bir ON/OFF anahtari vardi ve iki soru birden soruyordu:
+       "saat kac" ve "acik mi". Saati kurmak zaten kurmak demek;
+       ayri bir anahtar hem fazladan bir adim hem de "kurdum ama
+       calmadi" hatasinin kapisi. Uyku bolumunde ne varsa burada da
+       o var: tek dolgulu tus, SET / CANCEL. */
     const sk = el('div', 'st-satir');
-    sabahAnahtar = tus('anahtar', '', ()=>sabahKur(!depo.sabah.acik));
-    sabahAnahtar.setAttribute('role', 'switch');
+    sabahAnahtar = tus('basla', '', ()=>sabahKur(!depo.sabah.acik));
     sk.appendChild(sabahAnahtar);
-    sabahDurum = el('span', 'st-durum', ''); sk.appendChild(sabahDurum);
     s.appendChild(sk);
+    sabahDurum = el('div', 'st-durum', ''); s.appendChild(sabahDurum);
     kap.appendChild(s);
 
-    notYazi = el('div', 'st-not', 'Keep ORBITAPE open; the screen may lock. Until the alarm the sound stays on, silently, so the clock keeps running.');
+    notYazi = el('div', 'st-not', 'Keep ORBITAPE open; the screen may lock.');
     kap.appendChild(notYazi);
     kap.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ e.preventDefault(); kapa(); } });
     document.body.appendChild(kap);
@@ -613,9 +702,8 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       /* "alarm sayfasinda en alttaki on off anlamadim, o niye var"
          (3 Eylul): tus alarmin kendi anahtariydi ama yalnizca ON/OFF
          yaziyordu -- neyin acik oldugu yazmiyordu. Artik adiyla. */
-      sabahAnahtar.textContent = depo.sabah.acik ? T('ALARM ON') : T('ALARM OFF');
-      sabahAnahtar.setAttribute('aria-checked', depo.sabah.acik ? 'true' : 'false');
-      sabahAnahtar.classList.toggle('acik', depo.sabah.acik);
+      sabahAnahtar.textContent = depo.sabah.acik ? T('CANCEL') : T('SET');
+      sabahAnahtar.classList.toggle('iptal', !!depo.sabah.acik);
       if(erteleHedef) sabahDurum.textContent = T('Snoozed · rings at') + ' ' + saatYazisi(erteleHedef);
       else if(depo.sabah.acik && depo.sabah.hedef){
         const gun = new Date(depo.sabah.hedef).toDateString() === new Date().toDateString() ? T('today') : T('tomorrow');
@@ -753,7 +841,12 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     window.saatAc = ac; window.saatKapa = kapa; window.saatDegistir = degistir;
     window.saatAcik = ()=>!!kap && !kap.hidden;
     window.saatKip = ()=>kip;
-    window.saatDurum = ()=>JSON.parse(JSON.stringify({ depo, kip, erteleme, erteleHedef }));
+    /* uyan: alarm ani icin ONCEDEN secilmis istasyon (bkz.
+       uyanHazirla). Disari veriliyor cunku "hazir mi" sorusu
+       sinanabilir olmali -- bu alanin bos kalmasi, alarmin sessiz
+       gecmesi demek. */
+    window.saatDurum = ()=>JSON.parse(JSON.stringify({ depo, kip, erteleme, erteleHedef,
+      uyan: _uyanItem ? { id:_uyanItem.id, mp3:_uyanItem.mp3, ad:_uyanItem.ad } : null }));
     window.uykuKur = uykuKur; window.uykuIptal = uykuIptal; window.uykuBitir = uykuBitir;
     window.sabahKur = sabahKur; window.alarmCal = alarmCal; window.alarmErtele = alarmErtele; window.alarmDurdur = alarmDurdur;
     window.sabahHedefHesapla = sabahHedefHesapla;

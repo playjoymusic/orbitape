@@ -23,8 +23,6 @@
   "Restarting so the sound can go straight to the output.": "Ses doğrudan çıkışa gitsin diye yeniden başlıyor.",
   "Recording is off while the sound goes straight to the output.": "Ses doğrudan çıkışa giderken kayıt kapalı.",
   "RING": "HALKA",
-  "ALARM ON": "ALARM ACIK",
-  "ALARM OFF": "ALARM KAPALI",
   "TUTORIALS": "TANITIMLAR",
   "MORE": "DAHA FAZLA",
   "LANGUAGE": "DİL",
@@ -119,7 +117,6 @@
   "SLEEP": "UYKU",
   "START": "BAŞLAT",
   "CANCEL": "İPTAL",
-  "WAKE": "UYANDIR",
   "ANY STATION": "HERHANGİ BİR RAF",
   "Fades out at": "Kısılıyor:",
   "Off": "Kapalı",
@@ -190,5 +187,7 @@
   "WHEEL CLICK": "ÇARK TIKIRTISI",
   "WHEEL": "ÇARK",
   "DISC": "YUVARLAK",
-  "PHASE": "FAZ"
+  "PHASE": "FAZ",
+  "WAKE UP": "UYAN",
+  "SET": "KUR"
 }

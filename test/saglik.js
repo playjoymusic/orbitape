@@ -9038,6 +9038,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            kipi acildi mi ve dongu (loop + kaynak) hazir mi. */
         c.alarmOturumu = document.body.classList.contains('gece')
                       && ses.loop === true && !!ses.src;
+        /* Alarm kuruluyken calacak istasyon elde mi. */
+        /* Hazirlik listeye baglidir; liste sahte agdan geliyor ve
+           birkac yuz milisaniye surebiliyor. Sabit bekleme yerine
+           beklenen sey bekleniyor. */
+        c.uyanHazir = false;
+        for(let i = 0; i < 40; i++){
+          try{ if(saatDurum().uyan && saatDurum().uyan.mp3){ c.uyanHazir = true; break; } }catch(e){}
+          await bek(100);
+        }
         /* ── GECEDEN UYANMA ────────────────────────────────────
            Kullanici: "kesinlikle geri acilmaya bassam da kursam da
            acilmiyor." Gece kipinde carpan sifir; gercek bir yayin
@@ -9087,8 +9096,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         sabahKur(false); await bek(200);
         /* ALARM ANAHTARI ADIYLA (3 Eylul): "alarm sayfasinda en alttaki
            on off anlamadim, o niye var." Neyin acildigi yaziyor. */
-        const anh = document.querySelector('#saatPanel .st-tus.anahtar');
-        c.anahtarAdli = !!anh && /ALARM/.test(anh.textContent || '');
+        /* ── ANAHTAR KALKTI, IKI BOLUM AYNI DILDE ─────────────────
+           Kullanicinin sozu: "yukarda sleep, altta wakeup gibi bir
+           bolum olacak ve ayni grafiklerle." ON/OFF anahtari iki soru
+           birden soruyordu (saat kac + acik mi); saati kurmak zaten
+           kurmak demek. Simdi iki bolumde de ayni duzen var:
+           − DEGER + , altinda tek dolgulu tus. */
+        const bolumler = [...document.querySelectorAll('#saatPanel .st-bolum')];
+        const sonB = bolumler[bolumler.length - 1];
+        const anh = sonB && sonB.querySelector('.st-tus.basla');
+        c.anahtarAdli = !!anh && /SET|CANCEL/i.test(anh.textContent || '');
+        c.anahtarYok = !document.querySelector('#saatPanel .st-tus.anahtar');
+        c.ikiBolumAyniDil = bolumler.length >= 2
+          && bolumler.slice(-2).every(b => b.querySelector('.st-satir.st-sayac')
+                                        && b.querySelector('.st-deger')
+                                        && b.querySelector('.st-tus.basla'));
         /* BOSLUGA DOKUNUS PANELI KAPATIR ve dokunusu YUTAR: kapanirken
            parmak halkanin ustune denk gelirse sarki atlamamali. */
         saatAc(); await bek(200);
@@ -9122,11 +9144,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Alarm kisik basliyor (ilk saniye < %12)', st.kisikBasladi && st.caliyor, ozet || 'rampa 0.04 -> 0.25 @15s -> 0.75 @60s');
     K('Gercek yayin calinca geceden uyaniyor', st.geceCarpanSifir === true && st.uyandi === true,
        ozet || 'carpan 0 -> 1, gece sinifi kalkiyor');
+    /* ── ALARM ANI AGA BAGLI OLMAMALI ────────────────────────────
+       Kullanicinin iki kez soyledigi sey: "sleep calisiyor ama wakeup
+       hicbir zaman calismadi." Sebep saatin gelmemesi degil, o an
+       calacak bir sey olmamasiydi: alarmCal sonraki() cagiriyor,
+       sonraki kuyruk bossa AGDAN istasyon ariyor ve arka plandaki bir
+       sayfada o istek cogu zaman hic tamamlanmiyor.
+       Olculen sey: alarm kurulunca calacak istasyon ONCEDEN elde
+       tutuluyor mu. */
+    K('Alarm kurulunca calacak istasyon onceden hazir', st.uyanHazir === true,
+       ozet || 'kritik an ag istegine birakilmiyor');
     K('Erteleme: sifira iner, sessiz dongu, 7 dk sonraya', st.gece && st.geceSusmuyor && st.ertelendi, ozet || 'gece kipi');
     K('Kilit ekraninda play gecede uyandiriyor', st.kilitPlay, ozet || 'dongu birakildi');
     K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
     K('Saat paneli kapaniyor, depo ve carpan temiz', st.kapandi && st.depoTemiz && st.katGeri, ozet || 'temiz');
-    K('Alarm anahtari ne oldugunu yaziyor', st.anahtarAdli, ozet || 'ALARM ON / ALARM OFF');
+    K('Alarm tek dugmeyle kuruluyor (anahtar yok)',
+       st.anahtarAdli && st.anahtarYok, ozet || 'SET / CANCEL');
+    K('SLEEP ve WAKE UP ayni duzende', st.ikiBolumAyniDil,
+       ozet || 'ikisinde de − deger + ve tek dolgulu tus');
     K('Alarm kuruluyken oturum ayakta (sessiz dongu)', st.alarmOturumu && st.kapaninca,
        ozet || 'kurulunca gece kipi, kapatinca birakiyor');
     K('Buyuk yazi kurulan sure, kalan sure alt satirda',
