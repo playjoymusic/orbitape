@@ -9243,10 +9243,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            yetmiyordu ve test kod dogruyken kirmizi yandi (Yayin #33).
            Panel de acik olmali -- galeri kapaliysa baslik tiklamasi
            hicbir seye yaramaz. */
+        /* SERITE GECIS MODULUN KENDI ISLEVIYLE. Baslik tiklamasiyla
+           denendi ve CI'da iki kez tutmadi (Yayin #33, #34): tiklama
+           hedefe varmadan olcum aliniyordu ve test kod dogruyken
+           kirmizi yaniyordu. Baslik ayrica AYRI bir kontrolde zaten
+           sinaniyor (baslikKucultur); burada olculen sey seridin
+           KENDISI, ona nasil gecildigi degil. */
         if(!deriGaleriAcik()){ window.deriGaleriDegistir(); await bek(400); }
-        if(!kap.classList.contains('serit')) kap.querySelector('.dg-baslik').click();
+        for(let i = 0; i < 40 && !deriGaleriAcik(); i++) await bek(50);
+        if(!kap.classList.contains('serit')) window.deriGaleriKucult();
         for(let i = 0; i < 40 && !kap.classList.contains('serit'); i++) await bek(50);
-        await bek(120);
+        await bek(150);
         const sr = kap.getBoundingClientRect();
         /* ESIK 60 -> 100: serit artik IKI SATIR (ustte deri gezinme,
            altta merkez secici). Tek satira sigdirma denendi ve
