@@ -4548,12 +4548,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kapali = _fxSunumAkiyor;       // kutu isaretlendi -> CIKMAMALI
     turBitir(); await bek(150);
 
+    /* ── SUNUM EKRANDAYKEN ILK DOKUNUS EFEKTI ACAR ────────────────
+       Canli kullanimda bildirilen kusur: "orbitape tarafinda fx'ler
+       acilmiyor." Olculdu ve dogruydu -- sunum ekrandayken bir
+       gezegene ILK basista efekt acilip hemen kapaniyordu:
+         fxModGec -> fxSunumBitir -> turBitir -> fxNormale
+       ve fxNormale acik efekti kapatir. Turun kendi onizlemesi icin
+       dogru, kullanicinin secimi icin yanlis.
+       Olculen: sunum akarken bir gezegene basildiginda efekt ACIK
+       kaliyor mu, ve sunum gercekten kapaniyor mu. */
+    try{ localStorage.removeItem('orbitape.fxKapat3'); }catch(e){}
+    _fxKullanildi = false; FXMOD = ''; turBitir(); await bek(150);
+    modSec('HUMAN', true);
+    { const t1 = Date.now();
+      while(!_fxSunumAkiyor && Date.now()-t1 < 2500) await bek(40); }
+    const sunumAcikti = _fxSunumAkiyor;
+    uyduDug['dongu'].click(); await bek(300);
+    const ilkDokunusFX = FXMOD;                 // 'dongu' kalmali
+    const ilkDokunusSunum = _fxSunumAkiyor;     // sunum kapanmali
+    fxNormale(); turBitir(); await bek(150);
+
     /* ── EFEKT KULLANIMI: SADECE BU OTURUM SUSAR ───────────────────
        Yalniz KAPATMA anahtarini siliyoruz; "hangi kanallar gordu"
        listesi yukaridaki turdan dolu kaldi — gercek hayatta da cihazda
        kalir, bu yuzden yeniden acilista SKIP hazir olmali. */
     try{ localStorage.removeItem('orbitape.fxKapat3'); }catch(e){}
-    _fxKullanildi=false;
+    _fxKullanildi=false; FXMOD='';
     fxModGec('ana'); await bek(200);
     /* Depoya HICBIR SEY yazilmamali: kalici hukmu yalniz kutu verir. */
     const depoTemiz = (()=>{ try{
@@ -4600,7 +4620,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     try{ recPasifYaz(); }catch(e){}
     return { bir, birAlt, gecen, iki, ayni, ayniAlt, radyo, turSonra, turSonraAlt, kutuDepo, kapali,
              depoTemiz, kullandiktanSonra, yenidenAcilista, yenidenAlt,
-             turKutusuTemiz, turDeposuTemiz, kipeGirince, kiptenCikinca };
+             turKutusuTemiz, turDeposuTemiz, kipeGirince, kiptenCikinca,
+             sunumAcikti, ilkDokunusFX, ilkDokunusSunum };
   });
   if(!fs2){ yavas('FX sunumu (14 kontrol)'); } else {
   K('FX sunumu kanal degisiminde cikar', fs2.bir===true, 'ilk degisimde gorundu');
@@ -4700,6 +4721,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('FX kutusu acilis turunu kapatmaz', fs2.turDeposuTemiz===true, 'orbitape.tur degismedi');
   K('Efekt kullanimi depoya YAZMAZ', fs2.depoTemiz===true, 'kalici hukmu yalniz kutu verir');
   K('Efekt kullanilinca o oturum susar', fs2.kullandiktanSonra===false, 'ayni oturumda cikmiyor');
+  K('Sunum ekrandayken ILK dokunus efekti aciyor',
+     fs2.sunumAcikti===true && fs2.ilkDokunusFX==='dongu' && fs2.ilkDokunusSunum===false,
+     'sunum kapaniyor ama secim duruyor (FXMOD=' + fs2.ilkDokunusFX + ')');
   K('Yeniden acilista YINE cikar', fs2.yenidenAcilista===true, 'her acilista hatirlatma');
   K('Yeniden acilista SKIP hazir', fs2.yenidenAlt!=='none', 'alt satir: '+fs2.yenidenAlt);
   }

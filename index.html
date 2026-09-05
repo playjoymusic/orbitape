@@ -7956,6 +7956,10 @@
      normale döndürür. RETRO değişkeni geriye dönük uyum için korunuyor:
      eski retro kodunun tamamı olduğu gibi çalışmaya devam ediyor. */
   var FXMOD = '';
+  /* Sunum kapanirken FXMOD'u geri almak dogru; kullanici o an bir
+     efekt sectiyse DEGIL. Bayrak yalnizca o an acik (bkz. fxModGec
+     ve turBitir). */
+  var _fxKullaniciSecti = false;
   function fxModGec(ad){
     FXMOD = (FXMOD === ad) ? '' : ad;
     RETRO = (FXMOD === 'retro');
@@ -7981,8 +7985,22 @@
     try{ if(FXMOD) fxIpucuAc(); else fxIpucuKapat(false); }catch(e){ _yut(e); }
     /* Bir gezegene basıldı: sunum hemen susuyor ama tamamen bitmiyor —
        hatırlatma olarak İKİ hakkı kalıyor (bkz. fxKullanildiIsaretle). */
+    /* ── SUNUMU KAPATIRKEN SECIMI KAPATMA ───────────────────────
+       Olculen kusur: ORBITAPE tarafinda FX sunumu ekrandayken bir
+       gezegene ilk basista efekt ACILMIYORDU; ikinci basista
+       aciliyordu. Sebep zincirin sonundaydi:
+         fxModGec -> fxSunumBitir -> turBitir -> fxNormale
+       ve fxNormale "acik olan efekti kapat" diyor. Turun kendi
+       ONIZLEMESINI geri almak icin dogru, ama kullanicinin AZ
+       ONCE actigi efekti de kapatiyordu. Yani ilk dokunus once
+       aciyor, hemen ardindan kendi kendini kapatiyordu.
+       Bayrak bu iki durumu ayiriyor: kullanicinin secimi geri
+       alinmiyor. */
     try{ if(FXMOD){ fxKullanildiIsaretle();
-                    if(_fxSunumAkiyor) fxSunumBitir(); } }catch(e){ _yut(e); }
+                    if(_fxSunumAkiyor){
+                      _fxKullaniciSecti = true;
+                      try{ fxSunumBitir(); }finally{ _fxKullaniciSecti = false; }
+                    } } }catch(e){ _yut(e); }
     retroUygula();                        // ortak uygulayıcı: fxUygula + yatayUygula + modUygula
   }
   /* ── AudioParam YAZIM SÜZGECİ ────────────────────────────────────
@@ -16974,7 +16992,9 @@
     /* GERİ AL: tur sadece göstermek için oynattı, hiçbir şeyi seçili
        bırakmıyor. Önizleme düşüyor, FX kapanıyor. */
     try{ modAdiBirak(); }catch(e){ _yut(e); }
-    try{ fxNormale(); }catch(e){ _yut(e); }
+    /* Kullanicinin kendi sectigi efekt geri alinmaz: sunumu kapatan
+       sey o secimin kendisiyse burasi atlaniyor (bkz. fxModGec). */
+    try{ if(!_fxKullaniciSecti) fxNormale(); }catch(e){ _yut(e); }
     /* SETTINGS adimi paneli acmisti. Tur ortasinda SKIP'e basilirsa
        panel acik kalirdi -- kullanici hic acmadigi bir paneli kapatmak
        zorunda kalirdi. Nerede kesilirse kesilsin kapatiliyor. */
