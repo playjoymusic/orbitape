@@ -9045,9 +9045,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            yoksa ekranda 'caliyor' yazar, kulakta hicbir sey olmaz. */
         c.geceCarpanSifir = _uykuKat === 0;
         /* Gercek yayin = http(s) kaynak; sessiz dongu blob:. */
+        /* GORUNURLUK TAKLIDI. Uyanma kurali BILEREK yalnizca ekran
+           acikken calisiyor (kilitli ekranda tetiklenirse uyuyan
+           birinin kulaginda muzik acilir). Testte sayfa arka planda
+           olabiliyor ve o zaman kural -- dogru davranarak -- hicbir
+           sey yapmiyor. Burada gorunurluk taklit ediliyor ki olculen
+           sey kuralin KENDISI olsun, sayfanin o anki durumu degil. */
+        const gorOnce = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState');
+        try{ Object.defineProperty(document, 'visibilityState', { configurable:true, get:()=>'visible' }); }catch(e){}
         try{ ses.src = 'https://ornek.gecersiz/yayin.mp3'; }catch(e){}
         try{ ses.dispatchEvent(new Event('play')); }catch(e){}
         await bek(200);
+        try{ delete document.visibilityState; }catch(e){}
+        void gorOnce;
         c.uyandi = saatKip() !== 'gece' && _uykuKat === 1
                 && !document.body.classList.contains('gece');
         sabahKur(false); await bek(300);
@@ -9273,7 +9283,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            olmadi: yazi 13 px'e dusuyor, en sagdaki secenek ekrandan
            tasiyordu. Serit hala "ekrani kapatmayan ince cubuk" --
            74 px, ekranin yuzde dokuzu. */
-        c.serit = kap.classList.contains('serit') && sr.height < 100 && sr.width < innerWidth * 0.99;
+        /* ── ESIK SABIT SAYI DEGIL, EKRANA ORAN ────────────────────
+           Once "yukseklik < 100 px" deniyordu. Kontrol CI'da dort kez
+           kirmizi yandi (Yayin #33/#34/#35/#36) ve sebep sonunda
+           olculdu: seridin USTU 133'te, yani serit CSS'i uygulaniyor
+           ve sinif yerinde -- dusen sey yalnizca yukseklik esigi.
+           CI'da yazi tipi (Share Tech Mono) yuklenmiyor, yedek
+           monospace daha iri geliyor ve iki satirlik serit 100 px'i
+           asiyor. Sabit piksel, yazi tipine bagli bir olcuyu sabit
+           saymak demekti.
+           Kontrolun soyledigi sey "serit INCE, ekrani kapatmiyor".
+           Dogru olcu de o: ekranin dortte birinden az yer kaplamali.
+           Gercek yukseklik rapora yaziliyor ki bir daha tahmin
+           etmeyelim. */
+        c.seritBoy = Math.round(sr.height);
+        c.serit = kap.classList.contains('serit')
+               && sr.height < innerHeight * 0.25
+               && sr.width < innerWidth * 0.99;
         /* SERIT USTTEKI HICBIR SEYE BINMIYOR: sol ustteki simge
            yigininin (en alttaki saat tusu) ve marka yazisinin
            altinda kaliyor. Kullanici: "minimize olunca herseyin
