@@ -194,6 +194,80 @@ async function seritOlc(sayfa){
   });
 }
 
+/* ── YILDIZ GOKYUZU HER EKRANDA ─────────────────────────────────
+   Gokyuzu ekranin TAMAMINI kullaniyor ve olculeri ekrandan
+   turetiyor: dar bir telefonda ya da yatay duruşta yildizlarin
+   hepsi ekran disina dusebilir, ad kutusu kenardan tasabilir.
+   Ikisi de "gorunuyor ama basilamiyor" demek -- bu takimin
+   yakalamak icin var oldugu kusur turu.
+   Olculenler: katman ekrani kapliyor mu, acilinca EKRANDA duran
+   yildiz kaliyor mu, secilen yildizin ad kutusu ekranin icinde ve
+   parmak olcusunde mi. */
+async function gokyuzuOlc(sayfa){
+  try{
+    return await sayfa.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      if(!window.yildizZumAyar || !window.yildizDurum) return { yok:true };
+      /* Bir onceki olcum skins seridini acik birakmis olabilir.
+         Acik pencere varken gokyuzu ACILMAZ -- bu dogru davranis,
+         ama burada olculen sey o degil: once ekrani temizle. */
+      try{ if(window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){}
+      try{ if(window.saatKapa) window.saatKapa(); }catch(e){}
+      try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){}
+      await bek(250);
+      const pencereKaldi = !!(window.pencereAcikMi && window.pencereAcikMi());
+      /* Raf kalabalik olsun: gercek kullanimdaki gibi. */
+      try{
+        _blDenendi = true; _blSoz = null;
+        beyazListe = Array.from({length:40},(_,i)=>({
+          stationuuid:'c'+i, name:'Cihaz Yildizi '+i, url:'https://sahte.test/c'+i,
+          url_resolved:'https://sahte.test/c'+i, grup:'JAZZ', saf:1, ulke:'TR', tags:'jazz' }));
+        AYAR.mood = false; AKTIF_AILE = 'JAZZ';
+      }catch(e){}
+      window.yildizZumAyar(2.6);
+      for(let i = 0; i < 80 && Math.abs(window.yildizDurum().zum - 2.6) > 0.02; i++) await bek(30);
+      const d = window.yildizDurum();
+      const kat = document.getElementById('yildizKat');
+      const kb = kat ? kat.getBoundingClientRect() : null;
+      const W = innerWidth, H = innerHeight;
+      const kaplama = !!kb && Math.abs(kb.width - W) < 2 && Math.abs(kb.height - H) < 2;
+      /* Ekranda duran yildizlari say ve birine bas. */
+      const disk = document.querySelector('.disk').getBoundingClientRect();
+      const kay = d.kay, z = d.zum;
+      const cx = disk.left + disk.width/2 + kay.x, cy = disk.top + disk.height/2 + kay.y;
+      const taban = disk.width * 0.5 * 0.9;
+      let icerde = 0, hedef = null;
+      for(let i = 0; i < d.gorunur; i++){
+        const a = ((i+1) * 2.39996) % 6.28318,
+              r = 0.26 + 0.70 * Math.sqrt(((i+1) % 89) / 89);
+        const x = cx + Math.cos(a) * r * taban * z, y = cy + Math.sin(a) * r * taban * z;
+        if(x > 8 && x < W - 8 && y > 8 && y < H - 8){
+          icerde++;
+          if(!hedef && x > 70 && x < W - 70 && y > 70 && y < H - 70) hedef = { x, y };
+        }
+      }
+      let kutu = null, kutuIcerde = null, kutuBoy = null;
+      if(hedef && kat){
+        ['pointerdown','pointerup'].forEach(t=> kat.dispatchEvent(new PointerEvent(t,
+          { clientX:hedef.x, clientY:hedef.y, bubbles:true, cancelable:true,
+            pointerId:31, pointerType:'touch' })));
+        await bek(120);
+        kutu = window.yildizDurum().adKutu;
+        if(kutu){
+          kutuIcerde = kutu.x1 >= -1 && kutu.x2 <= W + 1 && kutu.y1 >= -1 && kutu.y2 <= H + 1;
+          kutuBoy = Math.round(kutu.y2 - kutu.y1);
+        }
+      }
+      window.yildizZumAyar(1);
+      for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
+      const kapandi = !document.body.classList.contains('yildiz-zum');
+      return { yok:false, kaplama, icerde, gorunur:d.gorunur, sayi:d.sayi,
+               acildi:d.acik === true, pencereKaldi,
+               hedefVar:!!hedef, kutuVar:!!kutu, kutuIcerde, kutuBoy, kapandi };
+    });
+  }catch(e){ return { yok:true, hata:String(e && e.message || e) }; }
+}
+
 (async ()=>{
   const b = await tarayiciAc();
 
@@ -223,6 +297,20 @@ async function seritOlc(sayfa){
        !!s && !s.yok && s.carkKesisiyor === false,
        s && !s.yok ? ('carkin tepesi ' + s.carkTepe + ', dikey bosluk ' + s.carkBosluk + ' px')
                    : 'olculemedi');
+
+    const g = await gokyuzuOlc(sayfa);
+    K('[' + ek.ad + '] gokyuzu ekrani kapliyor ve yildiz var',
+       !!g && !g.yok && g.acildi === true && g.kaplama === true && g.icerde >= 3,
+       g && !g.yok ? (g.icerde + '/' + g.gorunur + ' yildiz ekranda'
+                      + (g.acildi ? '' : ' — ACILMADI, pencere=' + g.pencereKaldi))
+                   : ('olculemedi ' + (g && g.hata || '')));
+    K('[' + ek.ad + '] ad kutusu ekranin icinde ve parmak olcusunde',
+       !!g && !g.yok && g.acildi === true && (g.hedefVar === false
+         || (g.kutuVar === true && g.kutuIcerde === true && g.kutuBoy >= 40)),
+       g && !g.yok ? (g.kutuVar ? ('kutu ' + g.kutuBoy + ' px, icerde ' + g.kutuIcerde)
+                                : 'ekranda uygun yildiz yok') : 'olculemedi');
+    K('[' + ek.ad + '] gokyuzu kapaniyor', !!g && !g.yok && g.kapandi === true,
+       g && !g.yok ? 'katman birakildi' : 'olculemedi');
 
     await baglam.close();
   }
