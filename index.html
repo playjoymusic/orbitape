@@ -6932,11 +6932,12 @@
       /* ALARM CALARKEN ⏸ = ERTELE (saat.js): 7 dk sonra yeniden. */
       try{ if(typeof window.saatKilitPause === 'function' && window.saatKilitPause()) return; }catch(e){ _yut(e); }
       _kullaniciDuraklatti = true;
-      try{ korumayiBirak(); }catch(e){ _yut(e); }      // kamera koruması geri açmasın
+      /* korumayiBirak kayit.js'te ve o modul ISTEK UZERINE iniyor. */
+      try{ if(typeof korumayiBirak === 'function') korumayiBirak(); }catch(e){ _yut(e); }
       try{ ses.pause(); }catch(e){ _yut(e); }
       ortamDurum(); });
     el('stop', ()=>{ _kullaniciDuraklatti = true;
-      try{ korumayiBirak(); ses.pause(); }catch(e){ _yut(e); } ortamDurum(); });
+      try{ if(typeof korumayiBirak === 'function') korumayiBirak(); ses.pause(); }catch(e){ _yut(e); } ortamDurum(); });
     el('nexttrack', ()=>{ _kullaniciDuraklatti = false; try{ sonraki(true); }catch(e){ _yut(e); } });
     el('previoustrack', ()=>{ _kullaniciDuraklatti = false; try{ geriGit(); }catch(e){ _yut(e); } });
     /* Konumlandırma yok: kaynakların bir kısmı canlı yayın, süre bilgisi
@@ -8665,9 +8666,11 @@
            akıyor olacak. Maliyeti yok: kimse dinlemiyorken sessiz bir
            hedefe bağlı kalmak iş üretmiyor. */
         try{
-          if(!kayitHedef || kayitHedef.context !== actx){
-            kayitHedef = actx.createMediaStreamDestination();
-            tavan.connect(kayitHedef);
+          /* window uzerinde: kayit modulu artik istek uzerine iniyor
+             ve grafik kurulurken bu sayfada bir ad olmayabilir. */
+          if(!window.kayitHedef || window.kayitHedef.context !== actx){
+            window.kayitHedef = actx.createMediaStreamDestination();
+            tavan.connect(window.kayitHedef);
           }
         }catch(e){ _yut(e); }
         fxUygula(); yatayUygula(); modUygula();
@@ -10287,7 +10290,7 @@
              "Duraklattim ama yine caliyor" hatasi tam olarak boyle
              olusur. */
           _kullaniciDuraklatti = true;
-          try{ korumayiBirak(); }catch(_){ _yut(_); }
+          try{ if(typeof korumayiBirak === 'function') korumayiBirak(); }catch(_){ _yut(_); }
           ses.pause();
           /* Durdurulan bir yayinin "su an ne caliyor"u sorulmaz:
              hem yanlis bilgi olur (yayin akmaya devam ediyor, biz
@@ -12777,7 +12780,7 @@
   }
   function sonraki(kullanici){
     _ilkCalindi = true;                 // artık halkalar menü olabilir (bkz. _ilkCalindi)
-    try{ korumayiBirak(); }catch(e){ _yut(e); }   // kullanıcı kendi geçiş istedi -> kamera koruması karışmasın
+    try{ if(typeof korumayiBirak === 'function') korumayiBirak(); }catch(e){ _yut(e); }   // kullanıcı kendi geçiş istedi
     if(kullanici){ tik(); nefesVer(); }                                    // basış: klik sesi + nefes efekti
     /* ── TİTREME ─────────────────────────────────────────────────────
        Kaynak bulunamayınca sonraki(false) 700-800 ms'de bir kendini
@@ -17106,26 +17109,89 @@
     window.addEventListener('load', ()=>{ setTimeout(()=>{
       try{ merkezUygula(); }catch(e){ _yut(e); } }, 120); });
   }catch(e){ _yut(e); }
-  try{
-    window.addEventListener('load', ()=>{
-      setTimeout(()=>{
+  /* ══ KAYIT MODULU ISTEK UZERINE ═══════════════════════════════════
+     Onceden sayfanin sonundaki bir betik etiketiyle HER ACILISTA
+     iniyordu. Olculdu: derlenmis hali 86 KB ve dinlemek icin
+     gerekmiyor. Zayif hatta bunun bedeli dogrudan kullanicinin
+     duydugu sey: ilk saniyeler sese degil, kayit modulune de
+     gidiyor.
+
+     Yeni sira -- once ses, sonra gerisi:
+       1. REC ya da CAM'e dokunulunca (asil sebep),
+       2. ilk ses geldikten 1,5 sn sonra (bosta, kimse beklemiyorken),
+       3. hicbiri olmazsa acilistan 10 sn sonra (taban).
+     Boylece REC'e uzanan biri modulu neredeyse her zaman hazir
+     buluyor.
+
+     ILK BASIS BOSA GITMEZ. Modul yoldayken basilan tus akilda
+     tutuluyor; dosya "bitirdim" imzasini atinca (kayitGeldi) o
+     dokunus bir kez oynatiliyor. Sinir 6 saniye: daha gec gelen bir
+     modulun kendi basina kayit baslatmasi, kullanicinin vazgectigi
+     bir isi yapmak olurdu.
+
+     Dosya hic gelmezse (kopuk hat) bir kez daha isteniyor. Iki kez
+     CALISTIRMAK ise yasak: ust duzey const'lar yeniden bildirilir
+     ve SyntaxError olur -- o yuzden BASLADI imzasi varken yeni
+     istek atilmiyor. */
+  var _kayIstendi = false, _kayTekrar = 0, _kayBekTus = null, _kayBekZaman = 0;
+  function kayitYukle(){
+    try{
+      if(_kayIstendi) return;
+      if(window.KAYIT_MODULU_BASLADI || window.KAYIT_MODULU_HAZIR){ _kayIstendi = true; return; }
+      _kayIstendi = true;
+      const s = document.createElement('script');
+      s.src = 'kayit.js';
+      s.defer = true;
+      s.onerror = ()=>{
         try{
-          /* HIC BASLAMADIYSA istenir. Basladi ama bitmediyse dosya
-             inmis demektir; aynisini tekrar calistirmak ust duzey
-             const'lari yeniden bildirir ve SyntaxError verir. */
           if(window.KAYIT_MODULU_BASLADI || window.KAYIT_MODULU_HAZIR) return;
-          if(window._kayModulTekrar) return; window._kayModulTekrar = 1;
-          const s = document.createElement('script');
-          s.src = 'kayit.js?y=' + Date.now();
-          s.defer = true;
-          document.body.appendChild(s);
+          if(_kayTekrar) return; _kayTekrar = 1; _kayIstendi = false;
+          setTimeout(kayitYukle, 2000);
         }catch(e){ _yut(e); }
-      }, 1500);
-    });
+      };
+      document.body.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function kayitGeldi(){
+    try{
+      const t = _kayBekTus; _kayBekTus = null;
+      if(!t) return;
+      if(Date.now() - _kayBekZaman > 6000) return;
+      setTimeout(()=>{ try{ t.click(); }catch(e){ _yut(e); } }, 0);
+    }catch(e){ _yut(e); }
+  }
+  try{ window.kayitGeldi = kayitGeldi; window.kayitYukle = kayitYukle; }catch(e){ _yut(e); }
+  /* 1. Dokunus: yakalama asamasinda, modulun kendi dinleyicisinden
+     once. Tusu akilda tutuyor ama dokunusu YUTMUYOR -- modul zaten
+     yuklüyse her sey eskisi gibi isliyor. */
+  try{
+    document.addEventListener('pointerdown', e=>{
+      try{
+        const h = /** @type {any} */ (e.target);
+        const t = h && h.closest ? h.closest('#rec,#cam') : null;
+        if(!t) return;
+        if(window.KAYIT_MODULU_HAZIR) return;
+        _kayBekTus = t; _kayBekZaman = Date.now();
+        kayitYukle();
+      }catch(_){ _yut(_); }
+    }, true);
+  }catch(e){ _yut(e); }
+  /* 2. Ilk ses duyulduktan 1,5 sn sonra: kimse beklemiyorken, hat
+     da artik bosta. REC'e uzanan biri modulu hazir buluyor. */
+  try{
+    const ilkSes = ()=>{
+      try{ ses.removeEventListener('playing', ilkSes); }catch(e){ _yut(e); }
+      setTimeout(kayitYukle, 1500);
+    };
+    ses.addEventListener('playing', ilkSes);
+  }catch(e){ _yut(e); }
+  /* 3. Taban: acilistan 10 sn sonra kimse istemediyse de iner. */
+  try{
+    window.addEventListener('load', ()=>{ setTimeout(kayitYukle, 10000); });
   }catch(e){ _yut(e); }
 </script>
-  <!-- KAYIT / KAMERA / FOTOGRAF: bkz. kayit.js. defer -> satir ici
-       betikten SONRA calisiyor; sira onemli ve o dosyada yazili. -->
-  <script defer src="kayit.js"></script>
+  <!-- KAYIT / KAMERA / FOTOGRAF: bkz. kayit.js. Buradan KALDIRILDI:
+       modul artik istek uzerine iniyor (bkz. kayitYukle). Dinlemek
+       icin gerekmiyor ve zayif hatta ilk saniyeler sese kaliyor. -->
 </body>
 </html>

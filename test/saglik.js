@@ -562,7 +562,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      FREN: bugunku olcumun ~%10 ustunde. Kacak bir buyume (gomulen
      veri, yanlislikla eklenen kutuphane) yine burada yakalanir.
      Yukaridaki 272/278/287/296/302 notlari tarih olarak duruyor. */
-  const ILK_CIZIM_TAVAN = _derlendi ? 100 : 260, ILK_ACILIS_TAVAN = _derlendi ? 120 : 302;
+  /* ── TAVAN YINE INDI: 120 -> 108 (kayit.js istek uzerine) ────
+     Sozu verilen adim yapildi. kayit.js artik acilista inmiyor;
+     once ses, sonra modul. Olculdu: ilk acilista inen toplam
+     115 KB'dan 97 KB'a indi (brotli). Tavan yine FREN kurali:
+     bugunku olcumun ~%10 ustu. */
+  const ILK_CIZIM_TAVAN = _derlendi ? 100 : 260, ILK_ACILIS_TAVAN = _derlendi ? 108 : 302;
   K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
@@ -617,9 +622,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        iniyor (deri secince deri_cizim, saat tusuna basinca saat),
        yani olculecek sey her birinin kendi boyu. Tavan ayni: 12 KB,
        her modul icin ayri ayri. */
+    /* ── KAYIT MODULUNUN KENDI TAVANI: 24 KB ────────────────────
+       12 KB kurali "tek bir DOKUNUS buyuk bir indirme baslatmasin"
+       diye kondu. kayit.js 19 KB ve o kurala girmiyor, cunku
+       dokunusla inmiyor: ilk ses duyulduktan 1,5 sn sonra, kimse
+       beklemiyorken kendiliginden iniyor (REC'e dokunus yalnizca
+       yedek yol ve o durumda ilk basis da kaybolmuyor).
+       Yine de tavansiz birakilmiyor -- kacak buyume burada da
+       yakalansin diye kendi tavani var. */
+    const _IU_TAVAN = { 'kayit.js': 24 };
+    const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
-    const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= 12*1024);
-    K('Istek uzerine inen her modul < 12 KB', _iuBuyuk.length === 0,
+    const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
+    K('Istek uzerine inen her modul tavaninin altinda', _iuBuyuk.length === 0,
       _istekUzerine.length
         ? (_istekUzerine.map(f =>
             f + ' ' + Math.round(bro(fs.readFileSync(_yayin(f)))/1024) + 'K').join(' + ')
@@ -7920,6 +7935,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ozd || '50px kayma -> secim yok');
     K('Aramadan secince cark da o ture doner', dk.rafGecti === true,
        ozd || 'AMBIENT -> JAZZ');
+  }
+
+  /* ── KAYIT MODULU: ONCE SES, SONRA MODUL ────────────────────────
+     kayit.js 19 KB (brotli) ve dinlemek icin gerekmiyor. Zayif
+     hatta acilista inmesinin bedeli dogrudan kullanicinin duydugu
+     sey. Artik istek uzerine iniyor.
+     Olculenler, hepsi de "bir sey kaybettik mi" sorusunun
+     karsiligi: acilista GERCEKTEN inmiyor mu, REC'e dokununca
+     iniyor mu, ve modul yoldayken yapilan ILK BASIS bosa gidiyor
+     mu (gitmemeli -- gelince o dokunus bir kez oynatiliyor). */
+  {
+    let kySayfa = null;
+    const ky = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        kySayfa = sayfa;
+        /* Modulun gelisini GECIKTIR: gercek zayif hattaki gibi.
+           Boylece "modul yoldayken basilan tus" durumu olculebiliyor. */
+        await sayfa.route('**/kayit.js*', async r =>{
+          await new Promise(c=>setTimeout(c, 900)); await r.continue(); });
+        return await sayfa.evaluate(async ()=>{
+          const bek = ms=>new Promise(r=>setTimeout(r,ms));
+          const c = {};
+          /* 1. Acilista inmiyor. */
+          c.acilistaYok = !window.KAYIT_MODULU_BASLADI && !window.KAYIT_MODULU_HAZIR;
+          c.etiketYok = !document.querySelector('script[src*="kayit.js"]');
+          /* 2. REC'e dokunmak modulu istiyor ve dokunus akilda
+                kaliyor. */
+          const rec = document.getElementById('rec');
+          c.recVar = !!rec;
+          const r = rec.getBoundingClientRect();
+          const ort = { clientX:r.left + r.width/2, clientY:r.top + r.height/2,
+                        bubbles:true, cancelable:true, pointerId:41, pointerType:'touch' };
+          rec.dispatchEvent(new PointerEvent('pointerdown', ort));
+          rec.dispatchEvent(new PointerEvent('pointerup', ort));
+          rec.click();                       /* modul yok: bu tiklama bosa gider */
+          await bek(120);
+          c.istendi = !!document.querySelector('script[src*="kayit.js"]');
+          /* 3. Modul gelene kadar bekle ve ILK BASISIN oynatildigini
+                gor: kayit modu degisiyor mu. */
+          for(let i = 0; i < 60 && !window.KAYIT_MODULU_HAZIR; i++) await bek(100);
+          c.geldi = !!window.KAYIT_MODULU_HAZIR;
+          await bek(400);
+          /* Oynatilan dokunusun izi: REC tusu artik bir duruma
+             girmis olmali (kayit/kontrol/foto siniflarindan biri). */
+          c.ilkBasisIsledi = /kayit|kontrol|kaydet|foto|sessiz/.test(rec.className);
+          return c;
+        });
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+      finally { try{ if(kySayfa) await kySayfa.context().close(); }catch(e){} }
+    })();
+    const ozk = Object.keys(ky).filter(k=>ky[k]!==true).map(k=>k+'='+ky[k]).join(' ');
+    K('Kayit modulu acilista inmiyor', ky.acilistaYok === true && ky.etiketYok === true,
+       ozk || 'once ses, sonra modul');
+    K('REC dokunusu modulu getiriyor', ky.istendi === true && ky.geldi === true,
+       ozk || 'istek uzerine iniyor');
+    K('Modul yoldayken yapilan ILK BASIS bosa gitmiyor',
+       ky.ilkBasisIsledi === true, ozk || 'gelince o dokunus oynatiliyor');
   }
 
   /* ── YILDIZLAR = ISTASYONLAR ────────────────────────────────────

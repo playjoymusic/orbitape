@@ -49,6 +49,13 @@ interface Window {
   KAYIT_MODULU_BASLADI?: boolean;
   KAYIT_MODULU_HAZIR?: boolean;
   _kayModulTekrar?: number;
+  /* Kayit modulu artik ISTEK UZERINE iniyor: sayfa onu isteyen,
+     modul de gelisini haber veren taraf. */
+  kayitYukle?: () => void;
+  kayitGeldi?: () => void;
+  /* Kayit hedefi (MediaStreamDestination): grafigi index.html
+     kuruyor, kaydi modul aliyor -- ortak yer window. */
+  kayitHedef?: any;
 
   /* Saat modulu (saat.js): uyku sayaci + sabah alarmi. Istek uzerine
      iniyor; sayfa ile modul birbirini window uzerinden goruyor. */

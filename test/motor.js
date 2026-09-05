@@ -85,6 +85,16 @@ const B = (ad, deger, neden) => bilgi.push({ad, deger: String(deger), neden});
   K('JS hatasi yok', jsHata.length === 0, jsHata.length ? jsHata[0].slice(0, 110) : '0');
   K('Konsol hatasi yok', konsol.length === 0, konsol.length ? konsol[0] : '0');
 
+  /* ── KAYIT MODULU ISTEK UZERINE INIYOR ────────────────────────
+     kayitDurdur bu sayfada degil kayit.js'te ve o dosya artik
+     acilista inmiyor (once ses, sonra modul). Sorunun kendisi
+     degismedi -- "butun ana fonksiyonlar tanimli mi" -- ama sorulma
+     ani degisti: once modul isteniyor, sonra bakiliyor. Modul hic
+     gelmezse bu satir yine kirmizi yanar, ki dogrusu odur. */
+  await pg.evaluate(()=>{ try{ if(window.kayitYukle) window.kayitYukle(); }catch(e){} });
+  await pg.waitForFunction(()=>!!window.KAYIT_MODULU_HAZIR, null, { timeout:15000 })
+          .catch(()=>{});
+
   const temel = await pg.evaluate(() => ({
     disk:   !!document.querySelector('.disk'),
     tuval:  !!document.getElementById('viz'),

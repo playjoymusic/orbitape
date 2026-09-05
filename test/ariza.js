@@ -397,8 +397,18 @@ async function ekran(p){
       e6.recGorunur ? 'REC/PHOTO tusu duruyor ama hicbir sey yapmiyor'
         : (e6.turHedefi ? 'tanitim turu gorunmeyen tusu gosteriyor'
                         : 'tus hic cizilmiyor, tur de onu atliyor'));
-    K('[6] modul bir kez daha isteniyor', modulIstegi >= 2,
-      modulIstegi + ' istek — ilk denemede kaybolan dosya icin tek tekrar');
+    /* ── MODUL ARTIK ISTEK UZERINE INIYOR ───────────────────────
+       Kayit modulu acilista inmiyor: once ses, sonra modul. Uc
+       tetigi var (REC/CAM dokunusu, ilk sesten 1,5 sn sonra, ve
+       hicbiri olmazsa acilistan 10 sn sonraki taban). BU
+       SENARYODA REC TUSU HIC CIZILMIYOR -- dosya gelmedigi icin --
+       yani tek gecerli tetik taban. Onu bekliyoruz: uygulama
+       dosyayi istiyor, dusuyor, BIR KEZ daha deniyor.
+       Sabit bir uyku yerine yoklaniyor; makine yavassa test
+       kirilmasin. */
+    for(let i = 0; i < 60 && modulIstegi < 2; i++) await p.waitForTimeout(500);
+    K('[6] modul istek uzerine isteniyor ve bir kez daha deneniyor', modulIstegi >= 2,
+      modulIstegi + ' istek — taban tetigi (10 sn) + kaybolan dosya icin tek tekrar');
     await c.close();
   }
 

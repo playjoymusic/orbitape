@@ -46,7 +46,13 @@
    "hic gelmedi" ile "yarida kaldi" karismiyor. */
 try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   const rec=$('rec'), recYazi=$('recYazi');
-  let kaydedici=null, kayitParcalari=[], kayitBaslangic=0, kayitSayac=null, kayitHedef=null, sesliKayit=false;
+  let kaydedici=null, kayitParcalari=[], kayitBaslangic=0, kayitSayac=null, sesliKayit=false;
+  /* KAYIT HEDEFI IKI DOSYANIN ORTAK ISI: ses grafigi index.html'de
+     kuruluyor ve hedefi ILK SESLE BIRLIKTE baglıyor (olculdu: sonradan
+     kurulunca ilk kaydin basina 3,9 sn sessizlik giriyor). Bu modul ise
+     istek uzerine iniyor, yani grafik kurulurken burada bir ad
+     olmayabilir. O yuzden degisken window uzerinde duruyor: sahibi
+     ikisinden biri degil, ikisi de. */
   /* ── KAYIT TAVANI ─────────────────────────────────────────────────
      Kayit parcalari BELLEKTE birikiyor (kayitParcalari dizisi) ve
      hicbir siniri yoktu. Bit hizi cozunurluge gore 3.2-12 Mbit/s;
@@ -2175,11 +2181,11 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
              sessizlik olarak yazıyor.
              Artık hedef, ses grafiğiyle BİRLİKTE kuruluyor ve bağlı
              kalıyor — yani kayda başlarken çoktan ısınmış ve akıyor. */
-          if(!kayitHedef || kayitHedef.context !== actx){
-            kayitHedef = actx.createMediaStreamDestination();
-            try{ kaynakDugum.connect(kayitHedef); }catch(e){ _yut(e); }
+          if(!window.kayitHedef || window.kayitHedef.context !== actx){
+            window.kayitHedef = actx.createMediaStreamDestination();
+            try{ kaynakDugum.connect(window.kayitHedef); }catch(e){ _yut(e); }
           }
-          const sesIzi = kayitHedef.stream.getAudioTracks()[0];
+          const sesIzi = window.kayitHedef.stream.getAudioTracks()[0];
           if(sesIzi && sesIzi.readyState === 'live') izler.push(sesIzi);
         }
       }catch(e){ _yut(e); }
@@ -2919,3 +2925,8 @@ try{
    Dosya yarida koptuysa imza da yok. Degiskene degil window'a
    yaziliyor cunku dosya hic calismadiysa ust duzey adlari YOK. */
 try{ window.KAYIT_MODULU_HAZIR = true; }catch(e){}
+/* Sayfaya haber ver: bu modul artik ISTEK UZERINE iniyor ve
+   kullanicinin REC/CAM'e ilk basisi modul yoldayken olmus olabilir.
+   Sayfa o bekleyen dokunusu burada oynatiyor -- yani ilk basis
+   bosa gitmiyor (bkz. index.html: kayitGeldi). */
+try{ if(window.kayitGeldi) window.kayitGeldi(); }catch(e){}
