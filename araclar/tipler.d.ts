@@ -96,6 +96,10 @@ interface Window {
   carkHizala?: () => void;
   carkSeciliNo?: () => number;
   carkDurum?: () => any;
+  /* Yildiz gokyuzu (index.html): istasyon eslesmesi ve iki parmak
+     zumu. Testin ve olcumun tek kapisi bu ikisi. */
+  yildizDurum?: () => any;
+  yildizZumAyar?: (v: number) => void;
   /* Dokunus ortadaki aletin uzerinde mi: pencerelerin "bosluk"
      karari bunu soruyor (bkz. merkezDokunus). */
   carkMerkezde?: (e: any) => boolean;

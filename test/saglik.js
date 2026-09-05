@@ -7832,6 +7832,180 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      && aramaAkis.kapanis.acik===false,
      'kutu bos, suzgec yok -- ana ekran');
 
+  /* ── ILK DOKUNUS CALDIRIR, CARK DA O TURE DONER ─────────────────
+     Kullanici: "arama kismini yukari aliyor ya, basiyoruz istasyona,
+     once ayni pencereyi alt tarafa aliyor, sonra bir daha basmamizi
+     istiyor. Hayir, istasyona bastigimiz an baslamali."
+     Sebep click'i beklemekti: klavye kapanirken sayfa yeniden
+     yerlesiyor ve o click ya hic gelmiyor ya baska satira geliyor.
+     Olculen sey KARARIN NEREDE VERILDIGI: satirda pointerdown +
+     pointerup (click YOK) araCal'i cagiriyor mu, ve kaydiran parmak
+     bunu tetiklemiyor mu. Calmanin kendisi bir ust testte olculuyor
+     ("Secilen sey caliyor"); burada olculen tetikleyici. */
+  {
+    /* TEMIZ SAYFADA OLCULUYOR. Bu blok bir DOKUNUS yolu olcuyor ve
+       dokunus yolu ekranin o anki haline duyarli: onceki testlerden
+       kalmis acik bir pencere, dokunusu yakalama asamasinda yutup
+       testi kodda hicbir sey bozulmamisken kirmiziya cevirebiliyor
+       (olculdu). Kendi sayfasinda kosuyor. */
+    let dkSayfa = null;
+    const dk = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:2000 });
+        dkSayfa = sayfa;
+        return await sayfa.evaluate(async ()=>{
+      const c = {};
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiBl = beyazListe, eskiDenendi = _blDenendi, eskiAile = AKTIF_AILE;
+      const eskiCal = araCal;
+      try{
+        _blDenendi = true; _blSoz = null;
+        beyazListe = Array.from({length:8},(_,i)=>({
+          stationuuid:'d'+i, name:'Dokunus '+i, url:'https://sahte.test/d'+i,
+          url_resolved:'https://sahte.test/d'+i, grup:'JAZZ', saf:1, ulke:'TR', tags:'jazz' }));
+        _radAraIdx = null; _radAraSay = -1; _araIdx = null; _araSay = -1;
+        araKapa(); await bek(60); araAc(); await bek(700);
+        araYap(); await bek(150);
+        c.listeVar = _araListe.length > 0;
+        const st = document.querySelector('#araSonuc .st');
+        c.satirVar = !!st;
+        if(st){
+          /* araCal yerine sayac: olculen sey tetikleyici. */
+          let cagri = -1;
+          araCal = (i)=>{ cagri = i; };
+          const b = st.getBoundingClientRect();
+          const ort = { clientX:b.left + b.width/2, clientY:b.top + b.height/2,
+                        bubbles:true, cancelable:true, pointerId:1, pointerType:'touch' };
+          /* CLICK GONDERILMIYOR: sorunun tam merkezi bu. */
+          st.dispatchEvent(new PointerEvent('pointerdown', ort));
+          st.dispatchEvent(new PointerEvent('pointerup', ort));
+          c.clicksiz = cagri === parseInt(st.dataset.i, 10);
+          /* Kaydiran parmak secim degil. */
+          cagri = -1;
+          const o1 = { clientX:b.left+10, clientY:b.top+8,  bubbles:true, cancelable:true, pointerId:2, pointerType:'touch' };
+          const o2 = { clientX:b.left+10, clientY:b.top+58, bubbles:true, cancelable:true, pointerId:2, pointerType:'touch' };
+          st.dispatchEvent(new PointerEvent('pointerdown', o1));
+          st.dispatchEvent(new PointerEvent('pointerup', o2));
+          c.kaydirmaCalmadi = cagri === -1;
+          araCal = eskiCal;
+        }
+        /* CARK DA O TURE DONMELI: secim aileSec'ten geciyor mu. */
+        araYap(); await bek(120);
+        if(_araListe.length){
+          AKTIF_AILE = 'AMBIENT';
+          let secilen = -1;
+          for(let i = 0; i < _araListe.length; i++){
+            const o = _araListe[i] && _araListe[i].o;
+            if(o && o.radyo && o.grup === 'JAZZ'){ secilen = i; break; }
+          }
+          c.jazzBulundu = secilen >= 0;
+          if(secilen >= 0){ araCal(secilen); await bek(200); }
+          c.rafGecti = AKTIF_AILE === 'JAZZ';
+        }
+        araKapa(); await bek(80);
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ araCal = eskiCal; }catch(e){}
+      beyazListe = eskiBl; _blDenendi = eskiDenendi; AKTIF_AILE = eskiAile;
+      _radAraIdx = null; _radAraSay = -1; _araIdx = null; _araSay = -1;
+      return c;
+        });
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+      finally { try{ if(dkSayfa) await dkSayfa.context().close(); }catch(e){} }
+    })();
+    const ozd = Object.keys(dk).filter(k=>dk[k]!==true).map(k=>k+'='+dk[k]).join(' ');
+    K('Aramada ILK dokunus caldirir (click beklenmiyor)',
+       dk.listeVar === true && dk.clicksiz === true,
+       ozd || 'pointerdown+pointerup yetiyor, click beklenmiyor');
+    K('Sonuc listesinde kaydirma secim sayilmiyor', dk.kaydirmaCalmadi === true,
+       ozd || '50px kayma -> secim yok');
+    K('Aramadan secince cark da o ture doner', dk.rafGecti === true,
+       ozd || 'AMBIENT -> JAZZ');
+  }
+
+  /* ── YILDIZLAR = ISTASYONLAR ────────────────────────────────────
+     Kullanici: "hangi turdeysek her o yildiza bir istasyon atasak.
+     2 parmak halkayi buyutebilelim, bir yildiza basinca ilk ismini
+     cikarsin daha acmasin, ama o isme basinca o istasyona gidelim.
+     Her zaman acik olan istasyonun yildizi daha parlak olacak."
+     Olculenler: raf degisince gokyuzu degisiyor mu, calan istasyonun
+     yildizi bulunuyor mu, iki parmak jesti gokyuzunu aciyor mu, ilk
+     dokunus YALNIZCA adi mi gosteriyor, ikinci dokunus istasyonu
+     aciyor mu, ve bosluga dokunus kapatiyor mu. */
+  {
+    const yz = await pg.evaluate(async ()=>{
+      const c = {};
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiBl = beyazListe, eskiDenendi = _blDenendi, eskiAile = AKTIF_AILE,
+            eskiMood = AYAR.mood;
+      try{
+        AYAR.mood = false;                       /* gokyuzu radyo tarafinin isi */
+        _blDenendi = true; _blSoz = null;
+        beyazListe = Array.from({length:20},(_,i)=>({
+          stationuuid:'y'+i, name:'Yildiz '+i, url:'https://sahte.test/y'+i,
+          url_resolved:'https://sahte.test/y'+i, grup:(i<12?'JAZZ':'AMBIENT'),
+          saf:1, ulke:'TR', tags:'jazz' }));
+        AKTIF_AILE = 'JAZZ';
+        c.rafKadar = window.yildizDurum().sayi === 12;
+        AKTIF_AILE = 'AMBIENT';
+        c.rafDegisti = window.yildizDurum().sayi === 8;
+        AKTIF_AILE = 'JAZZ';
+        /* Calan istasyonun yildizi: _sonCalan ile eslesiyor mu. */
+        _sonCalan = { id:'rb:y3', mp3:'https://sahte.test/y3', ad:'Yildiz 3', radyo:true };
+        c.calanYildizVar = window.yildizDurum().calan === 'rb:y3';
+        /* Iki parmak jestinin vardigi yer: zum ayari. */
+        window.yildizZumAyar(2.6);
+        /* OTURANA KADAR BEKLE: zum yumusak geliyor, hareket ederken
+           olculen konum parmagin bastigi yer olmaz. */
+        for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 2.6) > 0.02; i++) await bek(30);
+        const d2 = window.yildizDurum();
+        c.zumAcildi = d2.acik === true && document.body.classList.contains('yildiz-zum');
+        c.katVar = !!document.getElementById('yildizKat');
+        /* Bir yildizin ekrandaki yerini uygulamanin formuluyle bul. */
+        const disk = document.querySelector('.disk').getBoundingClientRect();
+        const cx = disk.left + disk.width/2, cy = disk.top + disk.height/2;
+        const taban = disk.width * 0.5 * 0.9, z = window.yildizDurum().zum;
+        const t = 5, a = (t * 2.39996) % 6.28318,
+              r = 0.26 + 0.70 * Math.sqrt((t % 89) / 89);
+        const px = cx + Math.cos(a) * r * taban * z, py = cy + Math.sin(a) * r * taban * z;
+        const kat = document.getElementById('yildizKat');
+        const oncekiCalan = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '');
+        const dok = (x,y)=> kat.dispatchEvent(new PointerEvent('pointerdown',
+          { clientX:x, clientY:y, bubbles:true, cancelable:true, pointerId:9, pointerType:'touch' }));
+        dok(px, py); await bek(80);
+        c.ilkDokunusAd = window.yildizDurum().secili === 'Yildiz 4';
+        c.ilkDokunusCalmadi = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '') === oncekiCalan;
+        dok(px, py); await bek(150);
+        c.ikinciDokunusActi = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '')
+                              === 'https://sahte.test/y4';
+        for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
+        c.gokyuzuKapandi = !document.body.classList.contains('yildiz-zum');
+        /* Bosluga dokunus da kapatir. */
+        window.yildizZumAyar(2.6);
+        for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 2.6) > 0.02; i++) await bek(30);
+        dok(2, 2);
+        for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
+        c.boslukKapatti = !document.body.classList.contains('yildiz-zum');
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ window.yildizZumAyar(1); }catch(e){}
+      beyazListe = eskiBl; _blDenendi = eskiDenendi; AKTIF_AILE = eskiAile;
+      AYAR.mood = eskiMood;
+      return c;
+    });
+    const ozy = Object.keys(yz).filter(k=>yz[k]!==true).map(k=>k+'='+yz[k]).join(' ');
+    K('Her yildiz bir istasyon, raf degisince gokyuzu degisir',
+       yz.rafKadar === true && yz.rafDegisti === true, ozy || '12 / 8 istasyon');
+    K('Calan istasyonun yildizi isaretli', yz.calanYildizVar === true,
+       ozy || 'calan yildiz bulunuyor');
+    K('Iki parmakla gokyuzu aciliyor', yz.zumAcildi === true && yz.katVar === true,
+       ozy || 'zum 2.6, katman ekranda');
+    K('Ilk dokunus YALNIZCA adi gosteriyor', yz.ilkDokunusAd === true
+       && yz.ilkDokunusCalmadi === true, ozy || 'muzik devam ediyor');
+    K('Ikinci dokunus o istasyona geciyor', yz.ikinciDokunusActi === true
+       && yz.gokyuzuKapandi === true, ozy || 'gecince gokyuzu kapaniyor');
+    K('Gokyuzunde bosluga dokunus kapatir', yz.boslukKapatti === true,
+       ozy || 'her acik pencere gibi');
+  }
+
   /* ── SOUND BANKS'TEN DONUS ──────────────────────────────────────
      Bildirilen: "fx modundan buraya donunce ORBITAPE yazisi bambaska
      eski bir renk oldu, solunda da son kaldigi istasyona gitmedi,
