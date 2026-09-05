@@ -9238,7 +9238,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            (kullanici: "tekrar fircaya basarsam kapanmali"), kucultme
            SKINS basliginin isi. Ayri bir kucultme tusu yok. */
         c.kucultTusuYok = !kap.querySelector('.dg-tus.kucult');
-        kap.querySelector('.dg-baslik').click(); await bek(250);
+        /* SERITE GECIS BEKLENIYOR, SAYILMIYOR. Once tek bir 250 ms
+           bekleme vardi: yerelde yetiyor, CI'nin yuklu makinesinde
+           yetmiyordu ve test kod dogruyken kirmizi yandi (Yayin #33).
+           Panel de acik olmali -- galeri kapaliysa baslik tiklamasi
+           hicbir seye yaramaz. */
+        if(!deriGaleriAcik()){ window.deriGaleriDegistir(); await bek(400); }
+        if(!kap.classList.contains('serit')) kap.querySelector('.dg-baslik').click();
+        for(let i = 0; i < 40 && !kap.classList.contains('serit'); i++) await bek(50);
+        await bek(120);
         const sr = kap.getBoundingClientRect();
         /* ESIK 60 -> 100: serit artik IKI SATIR (ustte deri gezinme,
            altta merkez secici). Tek satira sigdirma denendi ve

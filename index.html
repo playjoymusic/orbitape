@@ -11136,7 +11136,13 @@
       }
     }catch(e){ _yut(e); }
     try{ favTazele(); }catch(e){ _yut(e); }
-    try{ recPasifYaz(); }catch(e){ _yut(e); } buParcaSinyal=false; calBaslangic=0;
+    /* recPasifYaz kayit.js'te ve o modul ISTEK UZERINE iniyor: cal()
+       ondan once calisirsa ad tanimsiz olur, hata yutulur ve senaryo
+       "yeniden acilis" turunda sessiz bir hata olarak birikir
+       (olculdu: "recPasifYaz is not defined"). Modul yoksa yapilacak
+       bir sey de yok -- REC dugmesi henuz ekranda degil. */
+    try{ if(typeof recPasifYaz === 'function') recPasifYaz(); }catch(e){ _yut(e); }
+    buParcaSinyal=false; calBaslangic=0;
     _agcTepe=0; _agcRms=0; _agcSayim=0;                  // seviye ölçümü yeni parçayla sıfırdan başlar
     fxSifirla();                                         // HER parça TEMİZ başlar: FX 0, ses seviyesi tam
     kazancHazirla();                                     // tedbirli kazançla gir, otomatik seviye ayarlasın
