@@ -7939,8 +7939,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         araKapa(); await bek(60); araAc(); await bek(700);
         araYap(); await bek(150);
         c.listeVar = _araListe.length > 0;
-        const st = document.querySelector('#araSonuc .st');
+        /* ── SATIR SECIMI: data-i OLAN ILK SATIR ───────────────────
+           Once "#araSonuc .st" deniyordu, yani listenin ilk satiri ne
+           ise o. Yavas makinede (CI) listenin basinda data-i tasimayan
+           bir satir olabiliyor; o zaman parseInt(dataset.i) NaN oluyor
+           ve karsilastirma "cagri === NaN" hicbir zaman dogru cikmiyor.
+           Test kirmizi yaniyordu ama kodda bozulan bir sey yoktu:
+           olcunun kendi kusuru. Ayrica satir gelene kadar kisa bir
+           bekleme var -- CI'da liste bazen 700 ms'de dolmuyor. */
+        let st = null;
+        for(let d = 0; d < 20 && !st; d++){
+          st = document.querySelector('#araSonuc .st[data-i]');
+          if(!st) await bek(100);
+        }
         c.satirVar = !!st;
+        c.satirIndeksi = st ? st.dataset.i : '-';
         if(st){
           /* araCal yerine sayac: olculen sey tetikleyici. */
           let cagri = -1;
