@@ -43,6 +43,16 @@ const bek = ms => new Promise(r=>setTimeout(r, ms));
 const EKRANLAR = [
   { ad:'kucuk telefon (360x640)',  w:360,  h:640,  dokunma:true },
   { ad:'iPhone SE (375x667)',      w:375,  h:667,  dokunma:true },
+  /* ── TARAYICI CUBUKLARI ACIKKEN ────────────────────────────────
+     6 Eylul, kullanicidan gelen bildirim: "iPhone SE'de hicbir sey
+     sigmamis, sag alttaki bayrak ve isimler halkaya girmis."
+     Bu takim SE'yi zaten olcuyordu ve YESILDI -- cunku 375x667 tam
+     ekran olcusu. Gercek telefonda adres cubugu ve alt cubuk
+     yuzunden sayfaya ~553 piksel kaliyor. Yani olculen ekran gercek
+     ekran degildi; kusur olcunun bu koru icinde duruyordu.
+     Iki satir eklendi ve ikisi de ilk kosuda kirmizi yandi. */
+  { ad:'SE + tarayici (375x553)',  w:375,  h:553,  dokunma:true },
+  { ad:'kucuk + tarayici (360x520)', w:360, h:520, dokunma:true },
   { ad:'iPhone 15 (393x852)',      w:393,  h:852,  dokunma:true },
   { ad:'Pro Max (430x932)',        w:430,  h:932,  dokunma:true },
   { ad:'tablet (768x1024)',        w:768,  h:1024, dokunma:true },
@@ -201,6 +211,104 @@ async function seritOlc(sayfa){
   });
 }
 
+/* ── GENIS MODEL TARAMASI ───────────────────────────────────────
+   Kullanicinin sozu (6 Eylul): "her modele baksana ya, hepsine."
+   Yukaridaki EKRANLAR listesi derin olcum yapiyor (gokyuzu, serit,
+   parmak olcusu) ve her ekran ~30 saniye. Butun telefon ailesini
+   oraya koymak kapiyi dakikalarca uzatirdi.
+   Bu tarama SIG ama GENIS: her modelde yalnizca yerlesimin
+   kirilgan uc sorusu soruluyor -- yatay tasma var mi, zorunlu
+   denetimler ekranda mi, sag alt kunye ortadaki alete biniyor mu.
+   Model listesi iki halde: TAM EKRAN (uygulama olarak kurulu) ve
+   TARAYICI CUBUKLARI ACIK (gunluk kullanim). Ikincisi her zaman
+   daha kisa ve kusur hep orada cikiyor.
+   Rapor tek satir: model temizse "temiz", degilse ne bozuldugu. */
+const MODELLER = [
+  { ad:'iPhone SE (2/3)',      w:375, h:667, c:553 },
+  { ad:'iPhone 12 mini',       w:375, h:812, c:698 },
+  { ad:'iPhone 13/14',         w:390, h:844, c:730 },
+  { ad:'iPhone 15 Pro',        w:393, h:852, c:738 },
+  { ad:'iPhone 14 Pro Max',    w:430, h:932, c:818 },
+  { ad:'Pixel 5',              w:393, h:851, c:737 },
+  { ad:'Pixel 7a',             w:412, h:892, c:778 },
+  { ad:'Galaxy S8',            w:360, h:740, c:626 },
+  { ad:'Galaxy S21',           w:384, h:854, c:740 },
+  { ad:'Galaxy A51',           w:412, h:914, c:800 },
+  { ad:'eski kucuk (320)',     w:320, h:568, c:460 },
+  { ad:'Fold kapali (280)',    w:280, h:653, c:545 },
+  { ad:'iPad mini',            w:768, h:1024, c:924 }
+];
+
+async function modelTara(b, m, yukseklik){
+  const baglam = await b.newContext({ viewport:{ width:m.w, height:yukseklik },
+    deviceScaleFactor:2, isMobile:true, hasTouch:true });
+  const sayfa = await baglam.newPage();
+  try{
+    await sahteAg(sayfa);
+    await sayfa.goto(ADRES);
+    await sayfa.waitForTimeout(1800);
+    const y = await olc(sayfa);
+    const k = await kunyeOlc(sayfa);
+    const kotu = [];
+    if(y.tasma > 0) kotu.push('yatay tasma ' + y.tasma + 'px');
+    if(y.disarda.length) kotu.push('ekran disi: ' + y.disarda.join(', '));
+    if(y.binen.length) kotu.push('binen: ' + y.binen.join(', '));
+    if(!k || k.yok) kotu.push('kunye olculemedi');
+    else{
+      if(k.kesisiyor) kotu.push('kunye alete biniyor (' + k.bosluk + 'px)');
+      if(k.ustKesisiyor) kotu.push('alet ust satira biniyor');
+      if(!k.icerde) kotu.push('kunye ekran disina tasiyor');
+    }
+    return kotu;
+  }catch(e){ return ['olculemedi: ' + (e && e.message || e)]; }
+  finally{ await baglam.close(); }
+}
+
+/* ── SAG ALT KUNYE ORTADAKI ALETE BINIYOR MU ────────────────────
+   Kullanicinin bildirimi (6 Eylul): "sag alttaki bayrak, isimler
+   yukari cikmis, halkaya girmis."
+   Kunye YALNIZCA bir sey calarken doluyor; test hattinda ses yok, o
+   yuzden blok elle dolduruluyor -- olculen sey metin degil YERLESIM.
+   Uzun ama gercekci bir kunye seciliyor: istasyon adi + parca +
+   sanatci + kaynak + lisans, yani CC BY ailesinin tam atfi.
+   Sonra uygulamanin kendi yerlestirme zinciri cagriliyor
+   (geriYerlestir) ve iki dikdortgen kesisiyor mu diye bakiliyor. */
+async function kunyeOlc(sayfa){
+  try{
+    return await sayfa.evaluate(async ()=>{
+      const bek = ms => new Promise(r => setTimeout(r, ms));
+      const yaz = (id, v)=>{ const e = document.getElementById(id); if(e) e.textContent = v; };
+      yaz('npAd', 'RADIO SWISS JAZZ');
+      yaz('npParca', 'Bill Evans Trio — Waltz for Debby (Live at the Village Vanguard, 1961)');
+      yaz('npKaynak', 'somafm.com');
+      yaz('npSanatci', 'Bill Evans Trio');
+      yaz('npLisans', 'CC BY-NC-SA 4.0');
+      yaz('npBayrak', '🇨🇭');
+      const np = document.getElementById('np');
+      if(!np) return { yok:true };
+      np.classList.add('on');
+      try{ if(window.geriYerlestir) window.geriYerlestir(); }catch(e){}
+      await bek(420);
+      const kut = e=>{ const r = e.getBoundingClientRect();
+        return { sol:r.left, sag:r.right, ust:r.top, alt:r.bottom }; };
+      const d = document.querySelector('.disk');
+      if(!d) return { yok:true };
+      const D = kut(d), N = kut(np);
+      const kesis = !(N.sag <= D.sol || N.sol >= D.sag || N.alt <= D.ust || N.ust >= D.alt);
+      /* Ust satira da bakiliyor: alet yukari kaydirilirken bu sefer
+         de tepeye binmesin -- bir kusuru duzeltirken otekini
+         uretmek bu dosyanin en sik gordugu sey. */
+      const u = document.getElementById('ust');
+      const U = u ? kut(u) : null;
+      const ustKesis = !!U && !(U.sag <= D.sol || U.sol >= D.sag || U.alt <= D.ust || U.ust >= D.alt);
+      return { kesisiyor: kesis, ustKesisiyor: ustKesis,
+               bosluk: Math.round(N.ust - D.alt),
+               ustBosluk: U ? Math.round(D.ust - U.alt) : null,
+               icerde: N.sol >= -1 && N.sag <= innerWidth + 1 && N.alt <= innerHeight + 1 };
+    });
+  }catch(e){ return { yok:true, hata:String(e && e.message || e) }; }
+}
+
 /* ── YILDIZ GOKYUZU HER EKRANDA ─────────────────────────────────
    Gokyuzu ekranin TAMAMINI kullaniyor ve olculeri ekrandan
    turetiyor: dar bir telefonda ya da yatay duruşta yildizlarin
@@ -305,6 +413,15 @@ async function gokyuzuOlc(sayfa){
        s && !s.yok ? ('carkin tepesi ' + s.carkTepe + ', dikey bosluk ' + s.carkBosluk + ' px')
                    : 'olculemedi');
 
+    const ky = await kunyeOlc(sayfa);
+    K('[' + ek.ad + '] sag alt kunye ortadaki alete binmiyor',
+       !!ky && !ky.yok && ky.kesisiyor === false && ky.icerde === true,
+       ky && !ky.yok ? ('kunye ile alet arasi ' + ky.bosluk + ' px')
+                     : ('olculemedi ' + (ky && ky.hata || '')));
+    K('[' + ek.ad + '] alet ust satira da binmiyor',
+       !!ky && !ky.yok && ky.ustKesisiyor === false,
+       ky && !ky.yok ? ('ust bosluk ' + ky.ustBosluk + ' px') : 'olculemedi');
+
     const g = await gokyuzuOlc(sayfa);
     K('[' + ek.ad + '] gokyuzu ekrani kapliyor ve yildiz var',
        !!g && !g.yok && g.acildi === true && g.kaplama === true && g.icerde >= 3,
@@ -320,6 +437,17 @@ async function gokyuzuOlc(sayfa){
        g && !g.yok ? 'katman birakildi' : 'olculemedi');
 
     await baglam.close();
+  }
+
+  /* ── BOLUM 1B: GENIS MODEL TARAMASI ─────────────────────────────
+     Her model iki halde: tam ekran ve tarayici cubuklari acik. */
+  for(const m of MODELLER){
+    const tam = await modelTara(b, m, m.h);
+    K('[model] ' + m.ad + ' ' + m.w + 'x' + m.h, tam.length === 0,
+       tam.length ? tam.join(' | ') : 'temiz');
+    const cub = await modelTara(b, m, m.c);
+    K('[model] ' + m.ad + ' + tarayici ' + m.w + 'x' + m.c, cub.length === 0,
+       cub.length ? cub.join(' | ') : 'temiz');
   }
 
   /* ── BOLUM 2: YAVAS HAT ──────────────────────────────────────────

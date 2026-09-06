@@ -118,6 +118,9 @@ interface Window {
   merkezDokunus?: (e: any) => boolean;
   kisayolDokunus?: (t: any) => boolean;
   carkTazele?: () => void;
+  /* Yerlesim zinciri: serit acilip kapaninca deri galerisi bunu
+     cagiriyor -- alet seridin altinda kalsin diye (aletBoyuSigdir). */
+  geriYerlestir?: () => void;
   carkYukle?: () => void;
   merkezUygula?: () => void;
 

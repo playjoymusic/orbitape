@@ -60,6 +60,17 @@
   body{margin:0;background-color:#020203;background-image:radial-gradient(120% 120% at 50% 45%,#0a0a0d 0%,#020203 70%);color:#e8f4f4;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     display:flex;align-items:center;justify-content:center;min-height:100dvh;position:relative;overflow:hidden;cursor:pointer;
+    /* ── ALET BOSLUGUN ORTASINDA, EKRANIN DEGIL ────────────────
+       Alet ekranin tam ortasinda duruyordu; oysa ust satir ~33 px,
+       sag alttaki kunye ~120 px yer kapliyor. Yani serbest alan
+       simetrik degil ve alet ona gore ASAGI kaciyordu -- kucuk
+       ekranda kunye halkanin uzerine biniyordu (olculdu: 360x520'de
+       8 px, 320x460'ta 36 px).
+       Bu pay JS'te olculuyor (aletBoyuSigdir) ve tam olarak
+       asimetrinin iki kati: govdenin icerik kutusu o kadar kisalinca
+       ortalama noktasi yukari kayiyor ve alet bosluğun ortasina
+       oturuyor. Sifirken hicbir sey degismiyor. */
+    box-sizing:border-box;padding-bottom:var(--alet-alt-pay,0px);padding-top:var(--alet-ust-pay,0px);
     touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;
     -webkit-user-select:none;user-select:none;}
   .grain{position:fixed;inset:0;pointer-events:none;z-index:41;opacity:.05;
@@ -89,12 +100,26 @@
      500x500 cizilip ekranin ustunden 55 px disari cikiyordu. 72vh
      dikeyde hicbir seyi degistirmiyor (844 yukseklikte 607 > 440),
      yalnizca alcak ekranda devreye giriyor. */
-  .disk{position:relative;width:min(84vw,440px,72vh);aspect-ratio:1;z-index:10;}
+  /* ── ALET BOYU: OLCULEN BOSLUGA GORE ──────────────────────────
+     Bildirilen (6 Eylul, iPhone SE ve baska bir telefon): "ekran
+     kucuk diye hicbir sey sigmamis, sag alttaki bayrak ve isimler
+     yukari cikip halkaya girmis."
+     Sebep: yukaridaki olculer (84vw / 440px / 72vh) yalnizca EKRANI
+     biliyor, ustteki satirin ve sag alttaki kunyenin ne kadar yer
+     kapladigini bilmiyor. Gercek telefonda tarayici cubuklari da
+     var: SE'de 667 degil ~553 piksel kaliyor. Olculdu: 360x520'de
+     kunye alete BINIYOR, SE'de payi 2 piksel.
+     --alet-tavan JS'te olculuyor (aletBoyuSigdir): ustteki satirin
+     alti ile alttaki bloklarin tepesi arasinda gercekten kalan
+     yukseklik. Yani alet ekrana degil, BOSLUGA gore buyuyor.
+     Var yoksa (JS henuz kosmadiysa) 200vh yaziliyor -- yani hicbir
+     sey degismiyor, eski davranis aynen surer. */
+  .disk{position:relative;width:min(84vw,440px,72vh,var(--alet-tavan,200vh));aspect-ratio:1;z-index:10;}
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
      seridi okunur puntoda tasimiyor; cubuk acilinca icerigin ona yer
      acmasi beklenen davranis. Serit kapaninca eski boyuna donuyor. */
-  body.serit-acik .disk{width:min(74vw,392px,64vh);}
+  body.serit-acik .disk{width:min(74vw,392px,64vh,var(--alet-tavan,200vh));}
   /* ── FAZ SECILIYSE HALKA KUCULUYOR ────────────────────────────
      Kullanicinin sozu: "cok buyuk oldugu icin halka + faz tasiyor
      kenarlara; faz secilince halka kuculebilir ve faz ekrandan
@@ -104,14 +129,14 @@
      iki yana tasiyor demek. Faz kipinde halka kuculuyor -- cizim
      ayni, ekranin icinde kaliyor. Cark kipine donunce eski olcu
      geri geliyor. */
-  body.merkez-faz .disk{width:min(58vw,290px,44vh);}
-  body.merkez-faz.serit-acik .disk{width:min(52vw,264px,40vh);}
+  body.merkez-faz .disk{width:min(58vw,290px,44vh,var(--alet-tavan,200vh));}
+  body.merkez-faz.serit-acik .disk{width:min(52vw,264px,40vh,var(--alet-tavan,200vh));}
   /* KISA EKRAN: alet ekranin ORTASINDA duruyor, yani yer acmak icin
      yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
      640-667'de yetmiyor ve serit carkin tepesine biniyordu (olculdu:
      -64 px, -57 px). Burada olcu yukseklige baglaniyor. */
   @media (max-height:760px){
-    body.serit-acik .disk{width:min(50vw,392px,25vh);}
+    body.serit-acik .disk{width:min(50vw,392px,25vh,var(--alet-tavan,200vh));}
   }
   /* Basış nefesi: transform derleyicide çalışır, ana iş parçacığı takılsa bile akar. */
   @keyframes diskNefes{
@@ -799,7 +824,16 @@
     top:calc(15px + env(safe-area-inset-top, 0px));
     right:calc(var(--kx) + env(safe-area-inset-right, 0px));
     display:flex;flex-direction:column;align-items:flex-end;gap:8px;
-    max-width:calc(100vw - 30px);}
+    /* ── SOL SIMGE SUTUNU ICIN YER AYRILIYOR ───────────────────
+       Eski butce (100vw - 30px) yalnizca kenar boslugunu biliyordu;
+       oysa sol ustte 40 px genisliginde bir simge sutunu var ve bu
+       satir onunla AYNI YUKSEKLIKTE duruyor. Genis telefonda sorun
+       cikmiyordu, dar olanda cikti: 320 ve 280 piksellik ekranlarda
+       marka yazisi sutunun uzerine biniyordu (cihaz takimi: "binen:
+       marka", 6 Eylul). Ayrilan yer = kenar + sutun (40) + 12 px
+       hava. Genis ekranda hicbir sey degismiyor, cunku yazi zaten
+       bu sinirin cok altinda. */
+    max-width:calc(100vw - var(--kx) * 2 - 52px);}
   /* Çalıyor göstergesi: AKTİF kanal adının hemen solunda, ilk harfe bitişik.
      Pasif kanallarda yer kaplamıyor (görünmez ama hizayı bozmasın diye
      genişliği korunuyor -> yazılar basınca sağa sola oynamıyor). */
@@ -3109,7 +3143,7 @@
      devreye girmiyor, yani telefon davranisi bire bir ayni kaliyor. */
   @media (min-width:700px){
     :root{ --kol:560px; --yan:calc((100vw - var(--kol)) / 2); }
-    .disk{ width:min(84vw, 500px, 72vh); }
+    .disk{ width:min(84vw, 500px, 72vh, var(--alet-tavan,200vh)); }
     #ust        { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #np         { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
@@ -3166,7 +3200,7 @@
      yalnizca dokunulacak yer. */
   #geri::after,#dur::after,#duraklat::after,#ileri::after,
   #mute::after,#favAc::after,#cam::after,#ayarTut::after,#araCizgi::after,
-  #deriFirca::after,#saatTus::after,#gorselTus::after{
+  #deriFirca::after,#saatTus::after,#gorselTus::after,#kilitTus::after{
     content:'';position:absolute;left:50%;top:50%;
     width:calc(100% + 14px);height:40px;
     transform:translate(-50%,-50%);
@@ -3178,7 +3212,12 @@
      alanlari cakismiyor"). Sol ustteki uc simgenin etrafinda ise
      yer VAR: aralik 18 px'e cikinca 44'luk alanlar tam bitisik
      duruyor, binmiyor. Parmak olcusu once orada kazaniliyor. */
-  #ayarTut::after,#deriFirca::after,#saatTus::after,#gorselTus::after{
+  /* HOLD 6 Eylul'de bu listeye katildi: eklendigi gun unutulmustu ve
+     tusun dokunma alani 40x26 kalmisti -- gorunen kutu kadar. Kisa
+     ekranda (SE + tarayici cubuklari) olcu bunu yakaladi: alanin
+     etrafi artik bos degil, halka oraya kadar geliyor ve parmak
+     kutunun bir piksel disina dusunce bos yere basiliyordu. */
+  #ayarTut::after,#deriFirca::after,#saatTus::after,#gorselTus::after,#kilitTus::after{
     width:max(calc(100% + 14px), 44px);height:44px;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
@@ -5361,6 +5400,9 @@
      getiriyoruz (gorselGeldi), yani dokunus kaybolmuyor. */
   const GORSEL_DOSYA = 'gorsel.js';
   let _gorselIsteniyor = false, _gorselBekliyor = false;
+  /* HOLD ile acilan gorsel ayri isaretleniyor: kilit kalkinca YALNIZCA
+     kilidin actigi kapaniyor (bkz. kilitDegis). */
+  let _gorselKilitBekliyor = false, _gorselKilitActi = false;
   function gorselYukle(){
     try{
       if(window.GORSEL_HAZIR || _gorselIsteniyor) return;
@@ -5374,6 +5416,15 @@
   function gorselGeldi(){
     try{
       if(_gorselBekliyor && typeof window.gorselDegistir === 'function'){ _gorselBekliyor = false; window.gorselDegistir(); }
+      /* Kilit modul yoldayken kurulduysa: gelir gelmez aciliyor --
+         ama kilit hala duruyorsa. Aradan kalktiysa hicbir sey olmuyor. */
+      if(_gorselKilitBekliyor){
+        _gorselKilitBekliyor = false;
+        if(window.kilitDurum && window.kilitDurum() && typeof window.gorselAc === 'function'
+           && !(window.gorselAcikMi && window.gorselAcikMi())){
+          window.gorselAc(); _gorselKilitActi = true;
+        }
+      }
     }catch(e){ _yut(e); }
   }
   try{ window.gorselGeldi = gorselGeldi; }catch(e){ _yut(e); }
@@ -13340,6 +13391,10 @@
   }, {passive:false});
   btn.addEventListener('pointerup', e=>{
     if(!pDown) return; pDown=false; _basili=false;
+    /* Parmak kalkti: dokunus boyunca ertelenen yerlesim simdi
+       yapiliyor (bkz. aletBoyuSigdir). Bir kare sonra: bu olayin
+       kendi isi once bitsin. */
+    try{ setTimeout(()=>{ try{ aletBoyuSigdir(); }catch(_){ _yut(_); } }, 0); }catch(_){ _yut(_); }
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
     _moodAday = false;
     if(_moodGez){
@@ -13967,6 +14022,27 @@
       try{ if(window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){ _yut(e); }
       try{ if(window.listeKapa) window.listeKapa(); }catch(e){ _yut(e); }
       try{ if(window.yildizZumAyar) window.yildizZumAyar(1); }catch(e){ _yut(e); }
+    }
+    /* ── HOLD -> GORSEL ────────────────────────────────────────
+       Kullanicinin sozu (6 Eylul): "bir tusla solda skins'in altina,
+       ya da hold yapinca da devreye girebilir ayni zamanda ama."
+       Yani HOLD ayni zamanda bir ekran koruyucu: ekran dokunulmaz
+       olurken bakilacak bir sey birakiyor.
+       KURAL: kilit ACARKEN gorsel KENDI actiysa kendisi kapaniyor;
+       kullanici onu daha once elle actiysa acik kaliyor. Yoksa
+       kullanicinin kurdugu durumu bozmus olurduk. */
+    if(_kilitli){
+      try{
+        if(window.GORSEL_HAZIR && typeof window.gorselAc === 'function'){
+          if(!(window.gorselAcikMi && window.gorselAcikMi())){ window.gorselAc(); _gorselKilitActi = true; }
+        }else{ _gorselKilitBekliyor = true; gorselYukle(); }
+      }catch(e){ _yut(e); }
+    }else{
+      try{
+        _gorselKilitBekliyor = false;
+        if(_gorselKilitActi && window.gorselKapa) window.gorselKapa();
+      }catch(e){ _yut(e); }
+      _gorselKilitActi = false;
     }
     try{ if(AYAR.tikSes && typeof tik === 'function') tik(); }catch(e){ _yut(e); }
   }
@@ -14870,6 +14946,152 @@
       _altCizgileriYerlestir(y);   // kamera cizgisi + kayit bilgisi
       araYerlestir();
       uyduYerlestir();
+      /* EN SON: ustteki ve alttaki bloklar yerine oturduktan sonra
+         alete kalan yukseklik olculuyor (bkz. aletBoyuSigdir). Once
+         cagrilsaydi bir onceki karenin olcusunu okurdu -- bu
+         dosyada bir kez tam olarak o hata yapildi. */
+      aletBoyuSigdir();
+    }catch(e){ _yut(e); }
+  }
+  /* ── ALETE KALAN YUKSEKLIK ──────────────────────────────────────
+     Bildirilen: kucuk ekranda sag alttaki kunye (bayrak, istasyon ve
+     parca adlari) yukari cikip halkanin uzerine biniyor.
+     Kok sebep: aletin boyu yalnizca EKRANDAN turetiliyordu
+     (84vw / 440px / 72vh). Ekran kisa oldugunda -- ki gercek
+     telefonda tarayici cubuklari yuzunden her zaman daha kisa --
+     ustteki satir ve alttaki kunye icin ayrilan yer kalmiyordu.
+     Burada olculen sey: ustteki satirin ALTI ile alttaki bloklarin
+     EN TEPESI arasinda gercekten kalan yukseklik. Alet artik ona
+     gore buyuyor; sigmayan bir sey kalmiyor.
+     TABAN VAR: 168 px. Bunun altina inmiyoruz -- kunye cok uzunsa
+     alet gulunc kucuklukte olmaz, o durumda kunyenin kendi kirpma
+     kurallari devrede (bkz. _kunyeYerlestir). */
+  /* TABAN 168 -> 140: yatay duruşta (844x390) 168 zorlamasi aletin
+     kunyeye binmesine sebep oluyordu -- taban, sigmayi bozacak kadar
+     buyuk olmamali. */
+  const ALET_TABAN = 140;
+  /* Son yazilan degerler: kucuk oynamalar uygulanmiyor (bkz. asagi). */
+  var _aletSonTavan = -1, _aletSonPay = 0;
+  function aletBoyuSigdir(){
+    try{
+      const kok = document.documentElement;
+      const H = window.innerHeight || 0;
+      if(!H) return;
+      /* ── PARMAK EKRANDAYKEN YERLESIM OYNAMAZ ──────────────────
+         Kunye calan parcanin adiyla birlikte BUYUYOR; o an aleti
+         yeniden yerlestirmek halkayi parmagin altindan kaydirir ve
+         birakilan yer baska bir yaricapa denk gelir. Saglik takimi
+         bunu yakaladi: halkanin ICINDE baslayan bir tutus, birakista
+         "halka uzerinde" sayilip kategori seciyordu.
+         Dokunus bitince zaten yeniden cagriliyor (pointerup). */
+      try{ if((typeof pDown !== 'undefined' && pDown)
+              || (typeof _basili !== 'undefined' && _basili)) return; }catch(e){ _yut(e); }
+      const kut = id=>{ const e = (typeof id === 'string') ? document.getElementById(id) : id;
+        if(!e) return null;
+        const st = getComputedStyle(e);
+        if(st.display === 'none' || st.visibility === 'hidden' || +st.opacity === 0) return null;
+        const r = e.getBoundingClientRect();
+        return (r.width && r.height) ? r : null; };
+      /* UST SINIR: sag ustteki ad satiri (radyoda raf adi da orada). */
+      let ust = 0;
+      const u1 = kut('ust'); if(u1) ust = Math.max(ust, u1.bottom);
+      /* SKINS SERIDI ACIKSA O DA UST SINIR. Serit ekranin ust
+         ortasinda duruyor; alet yukari cekilirken onu hesaba
+         katmazsak cark seride biniyor (olculdu: 393x852'de 16 px,
+         375x553'te 64 px). CSS'te zaten serit acikken alet
+         kuculuyor; buradaki is onu ASAGI birakmak. */
+      try{
+        const gal = document.getElementById('deriGaleri');
+        if(gal && !gal.hidden && gal.classList.contains('serit')){
+          const gr = kut(gal);
+          /* YALNIZCA ALETIN USTUNDEYSE. Yatay duruşta serit SOLA
+             yanasiyor ve aletle yan yana duruyor (deri_galeri.js:
+             max-height 480 kurali); orada onu ust sinir saymak
+             boslugu 60 piksele dusuruyor ve alet bu sefer alttaki
+             kunyeye biniyordu. Dogru soru: serit ile alet YATAYDA
+             kesisiyor mu. */
+          const dk0 = document.querySelector('.disk');
+          const dr = dk0 ? dk0.getBoundingClientRect() : null;
+          const ortak = gr && dr && !(gr.right <= dr.left || gr.left >= dr.right);
+          if(gr && ortak) ust = Math.max(ust, gr.bottom);
+        }
+      }catch(e){ _yut(e); }
+      /* ALT SINIR: sag alt kunye, sol alttaki blok ve kip anahtari --
+         hangisi en yukaridaysa o. */
+      let alt = H;
+      ['np','solUst','kipKisayol'].forEach(id=>{
+        const r = kut(id); if(r) alt = Math.min(alt, r.top);
+      });
+      const PAY = 12;                     // iki tarafta da nefes payi
+      /* ── CIZIM KUTUDAN BUYUK ──────────────────────────────────
+         Cark ve faz tuvali diskin KUTUSUNUN disina tasiyor: cark
+         yaricapin %44'u, faz (adlar ve cubuklar) %86'si kadar. Yani
+         "diski boslugun icine sigdirmak" yetmiyor -- olcu, cizilen
+         seyin tamami olmali. Cihaz takimi tam bunu yakaladi:
+         375x553'te disk kutusu boslugun icindeydi ama carkin
+         cizilen tepesi seride 64 px biniyordu. */
+      let tasma = 1;
+      try{
+        const m2 = (AYAR && AYAR.merkez) || 'cark';
+        tasma = (m2 === 'faz') ? 1.86 : (m2 === 'cark' ? 1.44 : 1.06);
+      }catch(e){ _yut(e); }
+      const bos = Math.max(ALET_TABAN, Math.round((alt - ust - PAY * 2) / tasma));
+      /* ORTALAMA: serbest alanin ortasi ile ekranin ortasi ayni yer
+         degil. Aradaki fark kadar govdeye alttan pay veriliyor;
+         icerik kutusu kisaldigi icin ortalama noktasi yukari kayiyor
+         ve alet bosluğun ortasina oturuyor. Pay farkın IKI KATI
+         (ortalama yarisini uyguluyor) ve asla eksi olmuyor. */
+      /* CIZIMIN TASMASI YERLESTIRMEYE DE GIRIYOR: kutu boslugun
+         icinde olsa bile cark yaricapin %44'u kadar disari cizdigi
+         icin tepesi seride binebiliyor (olculdu: 375x553'te 22 px).
+         Ust sinir o payla birlikte hesaplaniyor. */
+      let diskBoy = 0;
+      try{ const dk = document.querySelector('.disk');
+           if(dk) diskBoy = dk.getBoundingClientRect().height; }catch(e){ _yut(e); }
+      const ustEt = ust + Math.round(diskBoy * (tasma - 1) / 2);
+      /* IKI YON: bosluk ekranin ortasindan asagidaysa govdeye ALTTAN
+         pay veriliyor (icerik yukari kayiyor), yukaridaysa USTTEN
+         (asagi kayiyor). Tek yon yetmiyordu -- serit acikken bosluk
+         ekranin ALT yarisinda kaliyor ve alet asagi inmeli. */
+      /* MERKEZ IKI SINIRIN ARASINA KILITLENIYOR: yalnizca "boslugun
+         ortasi" demek yetmiyor -- yatay duruşta (844x390) bosluk
+         cizimden kisa kaliyor ve ortalamak bu sefer ALTTAKI kunyeye
+         bindiriyordu. Merkez, cizimin yarisi kadar iki kenardan da
+         iceride tutuluyor; bosluk gercekten yetmiyorsa boy zaten
+         yukaridaki tavanla kuculuyor. */
+      const yariCizim = (diskBoy * tasma) / 2;
+      let merkez = (ustEt + alt) / 2;
+      if(ustEt + yariCizim <= alt - yariCizim){
+        merkez = Math.min(Math.max(merkez, ustEt + yariCizim), alt - yariCizim);
+      }
+      const kayma = Math.round(H / 2 - merkez);
+      const payAlt = kayma > 0 ? Math.min(H * 0.22, kayma * 2) : 0;
+      const payUst = kayma < 0 ? Math.min(H * 0.22, -kayma * 2) : 0;
+      /* KUCUK OYNAMALAR UYGULANMIYOR (6 px). Kunyenin bir satiri
+         degisince olcu birkac piksel oynuyor; her seferinde aleti
+         kaydirmak titreme gibi gorunur. Esigin altindaki fark
+         goz ardi ediliyor. */
+      const payNet = Math.round(payAlt) - Math.round(payUst);
+      if(_aletSonTavan >= 0
+         && Math.abs(bos - _aletSonTavan) <= 6
+         && Math.abs(payNet - _aletSonPay) <= 6) return;
+      _aletSonTavan = bos; _aletSonPay = payNet;
+      const ustEski = kok.style.getPropertyValue('--alet-ust-pay');
+      const ustYaz = Math.round(payUst) + 'px';
+      if(ustEski !== ustYaz) kok.style.setProperty('--alet-ust-pay', ustYaz);
+      const payEski = kok.style.getPropertyValue('--alet-alt-pay');
+      const payYaz = Math.round(payAlt) + 'px';
+      const eski = kok.style.getPropertyValue('--alet-tavan');
+      const yeni = bos + 'px';
+      if(payEski !== payYaz) kok.style.setProperty('--alet-alt-pay', payYaz);
+      if(eski !== yeni || payEski !== payYaz || ustEski !== ustYaz){
+        kok.style.setProperty('--alet-tavan', yeni);
+        /* Tuval olculeri aletin boyuna bagli: boy degistiyse halka ve
+           cark yeniden olculmeli, yoksa bir sonraki dokunusa kadar
+           eski olcude kalirlar. */
+        try{ if(typeof vizSize === 'function') vizSize(); }catch(e){ _yut(e); }
+        try{ if(window.carkTazele) window.carkTazele(); }catch(e){ _yut(e); }
+      }
     }catch(e){ _yut(e); }
   }
   /* ── ARAC SATIRI DEGISINCE YERLESIM YENIDEN ─────────────────────

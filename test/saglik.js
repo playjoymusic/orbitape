@@ -8163,9 +8163,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const d0 = window.gorselDurum();
           c.tavaniAsmiyor = Math.max(d0.en, d0.boy) <= d0.tavan;
           c.olcu = d0.en + 'x' + d0.boy + ' (tavan ' + d0.tavan + ')';
+          /* IMZA TUVALIN TAMAMINDAN. Once yalnizca ORTA SATIR
+             okunuyordu ve olcu yanildi: LAVA gibi yavas bir sunumda o
+             satir bazi anlarda gercekten bos (siyah) kaliyor, iki
+             okuma da 0 cikiyor ve "cizmiyor" deniyordu. Ekranda bir
+             sey degisti mi sorusunun cevabi butun tuvalde. Her 40.
+             piksel: maliyet dusuk, duyarlilik ayni. */
           const imza = ()=>{ const g = tv.getContext('2d');
-            const dd = g.getImageData(0, Math.round(tv.height/2) - 2, tv.width, 4).data;
-            let s2 = 0; for(let i = 0; i < dd.length; i += 4) s2 += dd[i] + dd[i+1] + dd[i+2];
+            const dd = g.getImageData(0, 0, tv.width, tv.height).data;
+            let s2 = 0;
+            for(let i = 0; i < dd.length; i += 160) s2 += dd[i] + dd[i+1] + dd[i+2];
             return s2; };
           const a1 = imza(); await bek(500); const a2 = imza();
           c.ciziyor = a1 !== a2;
@@ -8177,7 +8184,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           window.gorselOnceki(); await bek(120);
           c.gezinme = (ad1 !== ad2) && (window.gorselDurum().ad === ad1);
           c.sunumlar = window.gorselDurum().adet;
-          c.cokSunum = window.gorselDurum().adet >= 3;
+          /* Kullanicinin sayisi: "10 cesit mesela". Esik bilerek 10:
+             bir sunum sessizce dusunce burasi kirmizi yansin. */
+          c.cokSunum = window.gorselDurum().adet >= 10;
+          /* HER SUNUM GERCEKTEN CIZIYOR MU. Bir sunumun icinde hata
+             olsa (yut ile susturulur) ekran siyah kalirdi ve hicbir
+             test bunu gormezdi: sirayla hepsine gecip iki ayri anda
+             piksel imzasi aliniyor. */
+          const olu = [];
+          for(let k = 0; k < c.sunumlar; k++){
+            window.gorselSonraki(); await bek(90);
+            const d1 = imza(); await bek(320); const d2 = imza();
+            if(d1 === d2) olu.push(window.gorselDurum().ad);
+          }
+          c.hepsiCiziyor = olu.length === 0;
+          if(olu.length) c.olu = olu.join(',');
           /* Kapaninca dongu duruyor: kare sayaci sabit kalmali. */
           const k1 = window.gorselDurum().kare;
           window.gorselKapa(); await bek(500);
@@ -8203,9 +8224,50 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Gorsel sunumlari arasinda gezinme ve isinma tavani',
        gr.gezinme === true && gr.cokSunum === true && gr.tavaniAsmiyor === true,
        grOz || (gr.sunumlar + ' sunum | ' + gr.olcu));
+    K('Gorsel sunumlarinin hepsi gercekten ciziyor',
+       gr.hepsiCiziyor === true, grOz || (gr.sunumlar + ' sunum, olu yok'));
     K('Gorsel kapaninca halka geri geliyor ve dongu duruyor',
        gr.kapandi === true && gr.halkaGeriGeldi === true && gr.donguDurdu === true,
        grOz || 'kapali kip bedava');
+  }
+
+  /* ── HOLD GORSELI DE ACIYOR ────────────────────────────────────
+     Kullanicinin sozu: "...ya da hold yapinca da devreye girebilir
+     ayni zamanda ama." Yani HOLD ayni zamanda ekran koruyucu.
+     Olculenler: kilit acilinca gorsel kendiliginden basliyor; kilit
+     kalkinca KENDI actigi icin kapaniyor; kullanici gorseli ELLE
+     actiysa kilit dongusu onu kapatmiyor (kurulu durum bozulmuyor). */
+  {
+    const hg = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      try{
+        if(window.gorselAcikMi && window.gorselAcikMi()) window.gorselKapa();
+        if(window.kilitDurum && window.kilitDurum()) window.kilitDegis();
+        await bek(200);
+        /* 1) Kilit -> gorsel basliyor */
+        window.kilitDegis(); await bek(600);
+        c.kilitActi = !!(window.gorselAcikMi && window.gorselAcikMi());
+        c.kilitliKaldi = !!(window.kilitDurum && window.kilitDurum());
+        /* 2) Kilit kalkinca kapaniyor */
+        window.kilitDegis(); await bek(500);
+        c.kilitKalkinca = !(window.gorselAcikMi && window.gorselAcikMi());
+        /* 3) ELLE acilan gorsel kilit dongusunden sonra da acik */
+        window.gorselAc(); await bek(300);
+        window.kilitDegis(); await bek(400);
+        window.kilitDegis(); await bek(500);
+        c.elleAcikKaldi = !!(window.gorselAcikMi && window.gorselAcikMi());
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ if(window.kilitDurum && window.kilitDurum()) window.kilitDegis();
+           if(window.gorselAcikMi && window.gorselAcikMi()) window.gorselKapa(); }catch(e){}
+      await bek(300);
+      return c;
+    });
+    const hgOz = Object.keys(hg).filter(k => hg[k] !== true).map(k => k + '=' + hg[k]).join(' ');
+    K('HOLD gorseli aciyor, kilit kalkinca kendi actigini kapatiyor',
+       hg.kilitActi === true && hg.kilitliKaldi === true
+       && hg.kilitKalkinca === true && hg.elleAcikKaldi === true,
+       hgOz || 'ekran koruyucu; elle acilan gorsel korunuyor');
   }
 
   /* ── ORTADAKI ORGANIK NOKTA HER KIPTE ──────────────────────────

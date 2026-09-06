@@ -420,7 +420,16 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       const onceki = document.body.classList.contains('serit-acik');
       document.body.classList.toggle('serit-acik', !!acik);
       if(onceki !== !!acik){
-        requestAnimationFrame(()=>{ try{ if(window.carkHizala) window.carkHizala(); }catch(e){ yut(e); } });
+        /* Alet seritin ALTINDA kalmali: serit acilip kapaninca
+           sayfanin yerlesim zinciri yeniden kosuyor (geriYerlestir ->
+           aletBoyuSigdir), yoksa cark seride biniyordu (6 Eylul,
+           cihaz takimi: 375x553'te 64 px). carkHizala tek basina
+           yetmiyor -- o yalnizca tuvali kutuya hizaliyor, kutuyu
+           kucultmuyor. */
+        requestAnimationFrame(()=>{
+          try{ if(window.geriYerlestir) window.geriYerlestir(); }catch(e){ yut(e); }
+          try{ if(window.carkHizala) window.carkHizala(); }catch(e){ yut(e); }
+        });
       }
     }catch(e){ yut(e); }
   }

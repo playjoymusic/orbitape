@@ -74,6 +74,10 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     /* Disk gorselin uzerinde durmaya devam ediyor ama biraz geri
        cekiliyor: ekranin yildizi artik arkadaki sey. */
     "body.gorsel-acik .disk{opacity:.82}",
+    /* HOLD ile birlikte: kilit katmaninin karartmasi hafifliyor.
+       Kilitli oldugu yine belli (tus isikli ve cerceveli) ama gorselin
+       uzerine gri bir tul cekilmis gibi durmuyor. */
+    "body.gorsel-acik #kilitKat{background:rgba(4,7,9,.10)}",
     /* SERIT: deri galerisinin seridiyle ayni dil -- ◀ AD ▶ ve ✕.
        Uc saniye dokunulmazsa siliniyor (ekrani kapatmasin), ekrana
        dokununca geri geliyor. */
@@ -202,97 +206,140 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
   /* ═══ SUNUMLAR ═══════════════════════════════════════════════════
      Her sunum ayni imzayi aliyor: (W, H, s) -- s icinde t (ms), bas,
      orta, tiz, seviye, tayf, dalga. Tuvali TEMIZLEMEK sunumun kendi
-     isi: kimi siliyor, kimi ustune yaziyor (iz birakan olanlar). */
+     isi: kimi siliyor, kimi ustune yaziyor (iz birakan olanlar).
+
+     ── "TATLI" KURALI (kullanicinin sozu, 6 Eylul: "visual ama tatli")
+     Ilk halde renkler tam doygundu (%100 saturasyon), cizgiler keskin
+     ve hareket hizliydi: gorsel "sert" duruyordu. Uc kural kondu ve
+     hepsi asagidaki yardimcilardan geciyor:
+       1) Renk her zaman PASTEL: saturasyon 78, aciklik 62-74. Ton
+          deriden geliyor, yani gorsel skin'e yabanci durmuyor.
+       2) Keskin kenar yok: her sey ya radyal gecisli (kenari sifira
+          giden) ya genis ve dusuk saydamlikta cizgi. Ust uste binen
+          saydam katmanlar dogal bir parlama (bloom) yapiyor -- blur
+          suzgeci pahali, bu bedava.
+       3) Hareket yavas: her sunumda zaman carpani kucuk, ani sicrama
+          yok. Ses vurusu genligi buyutuyor ama yeri degistirmiyor. */
+  const SAT = 78;
+  function ren(ton, aciklik, saydam){
+    return 'hsla(' + (((ton % 360) + 360) % 360).toFixed(0) + ','
+      + SAT + '%,' + aciklik.toFixed(0) + '%,' + saydam.toFixed(3) + ')';
+  }
+  /* Zamanla cok yavas donen taban ton: 60 saniyede bir tam tur. */
+  function tonZaman(t, kayma){ return tabanTon + (kayma || 0) + t * 0.006; }
+  /* Yumusak kenarli isik topu: her sunumda ayni el. */
+  function top(g, x, y, r, ton, guc){
+    if(r <= 0.5) return;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0,    ren(ton, 74, Math.min(0.55, 0.16 + guc * 0.42)));
+    gr.addColorStop(0.45, ren(ton, 64, Math.min(0.28, 0.06 + guc * 0.20)));
+    gr.addColorStop(1,    ren(ton, 58, 0));
+    g.fillStyle = gr;
+    g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill();
+  }
+  /* Perde: dikey, iki yani sifira giden yumusak bir sutun. */
+  function perde(g, x, gen, H, ton, guc){
+    const gr = g.createLinearGradient(x - gen/2, 0, x + gen/2, 0);
+    gr.addColorStop(0,   ren(ton, 62, 0));
+    gr.addColorStop(0.5, ren(ton, 70, Math.min(0.34, 0.05 + guc * 0.30)));
+    gr.addColorStop(1,   ren(ton, 62, 0));
+    g.fillStyle = gr;
+    g.fillRect(x - gen/2, 0, gen, H);
+  }
 
   /* 1) PLASMA — geri besleme tuneli.
      Her kare bir onceki kareyi biraz buyutup dondurerek kendi uzerine
      ciziyor; ustune bas/orta/tiz'e gore uc isik topu birakiyor. Bir
      karenin izi 30-40 kare boyunca kayboluyor: MilkDrop'un temel
-     numarasi bu, ve maliyeti tek bir drawImage. */
+     numarasi bu, ve maliyeti tek bir drawImage.
+     Tatli ayari: donme ve buyume yariya indi (ilk halinde goz
+     merkeze cekiliyordu), izin sonmesi yavasladi. */
   function plasma(W, H, s){
     const g = ctx; if(!g) return;
     g.save();
-    g.globalAlpha = 0.90;
+    g.globalAlpha = 0.93;
     g.globalCompositeOperation = 'source-over';
     g.translate(W/2, H/2);
-    g.rotate(0.0022 + s.bas * 0.010);
-    const bu = 1.012 + s.bas * 0.020;
+    g.rotate(0.0011 + s.bas * 0.005);
+    const bu = 1.007 + s.bas * 0.011;
     g.scale(bu, bu);
     g.drawImage(tuval, -W/2, -H/2, W, H);
     g.restore();
-    /* Kalan izi karartma: yoksa ekran zamanla beyaza doyuyor. */
     g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.055)';
+    g.fillStyle = 'rgba(0,0,0,0.042)';
     g.fillRect(0, 0, W, H);
     g.globalCompositeOperation = 'lighter';
-    don += 0.0016 + s.orta * 0.010;
+    don += 0.0009 + s.orta * 0.005;
     const R = Math.min(W, H) * 0.30;
     const bant = [s.bas, s.orta, s.tiz];
     for(let i = 0; i < 3; i++){
       const a = don * (1 + i * 0.42) + i * 2.094;
-      const x = W/2 + Math.cos(a) * R * (0.55 + bant[i] * 0.75);
-      const y = H/2 + Math.sin(a * 1.31 + i) * R * (0.55 + bant[i] * 0.75);
-      const r = Math.max(6, Math.min(W, H) * (0.045 + bant[i] * 0.16));
-      const ton = (tabanTon + i * 62 + s.t * 0.010) % 360;
-      const gr = g.createRadialGradient(x, y, 0, x, y, r);
-      gr.addColorStop(0, 'hsla(' + ton.toFixed(0) + ',100%,64%,' + (0.30 + bant[i] * 0.55).toFixed(3) + ')');
-      gr.addColorStop(1, 'hsla(' + ton.toFixed(0) + ',100%,50%,0)');
-      g.fillStyle = gr;
-      g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill();
+      const x = W/2 + Math.cos(a) * R * (0.52 + bant[i] * 0.62);
+      const y = H/2 + Math.sin(a * 1.31 + i) * R * (0.52 + bant[i] * 0.62);
+      const r = Math.max(8, Math.min(W, H) * (0.06 + bant[i] * 0.15));
+      top(g, x, y, r, tonZaman(s.t, i * 58), bant[i]);
     }
     g.globalCompositeOperation = 'source-over';
   }
 
-  /* 2) SCOPE — Winamp'in osiloskobu.
-     Dalga bicimi (zaman alani) ekranin ortasindan geciyor, arkasinda
-     kendi izi kaliyor. Veri yoksa yumusak bir sinus ciziliyor. */
+  /* 2) SCOPE — Winamp'in osiloskobu, yumusatilmis hali.
+     Dalga bicimi ortadan geciyor; arkasinda kendi izi kaliyor. Cizgi
+     tek degil uc kat: en genis ve en saydam olan parlama, en ince ve
+     en acik olan cekirdek. Keskin bir tel yerine isikli bir iplik. */
   function scope(W, H, s){
     const g = ctx; if(!g) return;
     g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.16)';
+    g.fillStyle = 'rgba(0,0,0,0.13)';
     g.fillRect(0, 0, W, H);
     const d = s.dalga, n = d ? d.length : 128;
-    const ton = (tabanTon + s.t * 0.020) % 360;
+    const t0n = tonZaman(s.t, 0);
     g.globalCompositeOperation = 'lighter';
-    for(let k = 0; k < 2; k++){                 // iki gecis: genis parlak alt, ince ust
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    const kat = [
+      { k: 0.026, a: 0.10, l: 64 },     /* genis parlama */
+      { k: 0.011, a: 0.22, l: 68 },
+      { k: 0.0028, a: 0.85, l: 74 }     /* cekirdek */
+    ];
+    for(let c = 0; c < kat.length; c++){
       g.beginPath();
       for(let i = 0; i < n; i++){
         const x = (i / (n - 1)) * W;
-        const v = d ? (d[i] - 128) / 128 : Math.sin(i * 0.09 + s.t / 260) * (0.10 + s.seviye);
-        const y = H/2 + v * H * (0.20 + s.seviye * 0.34) * (k ? 1 : 1.06);
+        const v = d ? (d[i] - 128) / 128 : Math.sin(i * 0.07 + s.t / 420) * (0.12 + s.seviye);
+        const y = H/2 + v * H * (0.17 + s.seviye * 0.26);
         if(i === 0) g.moveTo(x, y); else g.lineTo(x, y);
       }
-      g.lineWidth = k ? Math.max(1, W * 0.0022) : Math.max(2, W * 0.010);
-      g.strokeStyle = 'hsla(' + ton.toFixed(0) + ',100%,' + (k ? 78 : 52) + '%,' + (k ? 0.95 : 0.28) + ')';
+      g.lineWidth = Math.max(1, W * kat[c].k);
+      g.strokeStyle = ren(t0n, kat[c].l, kat[c].a);
       g.stroke();
     }
-    /* Bas vurusu: ortadan disari acilan halka. */
-    if(s.bas > 0.42){
-      const r = Math.min(W, H) * (0.10 + s.bas * 0.42);
-      g.beginPath(); g.arc(W/2, H/2, r, 0, 6.2832);
-      g.lineWidth = Math.max(1, W * 0.0016);
-      g.strokeStyle = 'hsla(' + ((ton + 40) % 360).toFixed(0) + ',100%,66%,' + (s.bas * 0.30).toFixed(3) + ')';
-      g.stroke();
-    }
+    /* Bas vurusu: ortadan disari acilan tek bir yumusak halka. */
+    if(s.bas > 0.40) top(g, W/2, H/2, Math.min(W, H) * (0.16 + s.bas * 0.34),
+                         tonZaman(s.t, 46), (s.bas - 0.40) * 0.5);
     g.globalCompositeOperation = 'source-over';
   }
 
-  /* 3) BARS — klasik tayf cubuklari, aynali ve tepe kapakli.
-     Winamp'in ilk ekrani buydu. Tepe kapaklari yavas dusuyor: vurusun
-     nerede oldugunu goz cubuktan degil kapaktan okuyor. */
+  /* 3) BARS — klasik tayf cubuklari; kenarlar yuvarlatildi, tepe
+     kapaklari yavas dusuyor ve her cubugun arkasinda kendi isigi var.
+     Winamp'in ilk ekrani, sert kenarlari alinmis hali. */
   let tepeler = null;
+  function yuvarlakKutu(g, x, y, w, h, r){
+    const rr = Math.max(0, Math.min(r, w/2, Math.abs(h)/2));
+    if(g.roundRect){ g.beginPath(); g.roundRect(x, y, w, h, rr); g.fill(); return; }
+    g.fillRect(x, y, w, h);
+  }
   function bars(W, H, s){
     const g = ctx; if(!g) return;
     g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.30)';
+    g.fillStyle = 'rgba(0,0,0,0.22)';
     g.fillRect(0, 0, W, H);
-    const N = MOBIL ? 28 : 44;
+    const N = MOBIL ? 24 : 36;
     if(!tepeler || tepeler.length !== N) tepeler = new Float32Array(N);
     const tayf = s.tayf;
     const bosluk = W / N;
-    const gen = bosluk * 0.62;
-    const orta = H / 2;
-    const enB = H * 0.42;
+    const gen = bosluk * 0.52;
+    const ortaY = H / 2;
+    const enB = H * 0.34;
+    g.globalCompositeOperation = 'lighter';
     for(let i = 0; i < N; i++){
       let v;
       if(tayf && tayf.length){
@@ -303,25 +350,262 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
         let t = 0; for(let k = a; k < b && k < tayf.length; k++) t += tayf[k];
         v = t / ((b - a) * 255);
       }else{
-        v = 0.10 + 0.09 * Math.abs(Math.sin(i * 0.4 + s.t / 700));
+        v = 0.10 + 0.08 * Math.abs(Math.sin(i * 0.34 + s.t / 900));
       }
-      v = Math.min(1, v * 1.25);
-      const h = Math.max(2, v * enB);
-      tepeler[i] = Math.max(tepeler[i] - H * 0.0042, h);
+      v = Math.min(1, v * 1.2);
+      const h = Math.max(3, v * enB);
+      tepeler[i] = Math.max(tepeler[i] - H * 0.0034, h);
       const x = i * bosluk + (bosluk - gen) / 2;
-      const ton = (tabanTon + (i / N) * 110 + s.t * 0.008) % 360;
-      g.fillStyle = 'hsla(' + ton.toFixed(0) + ',92%,' + (46 + v * 26).toFixed(0) + '%,0.92)';
-      g.fillRect(x, orta - h, gen, h);          // ust
-      g.globalAlpha = 0.45;
-      g.fillRect(x, orta, gen, h);              // ayna
+      const tn = tonZaman(s.t, (i / N) * 74);
+      /* Cubugun arkasindaki isik: sert dikdortgeni zemine baglar. */
+      top(g, x + gen/2, ortaY, gen * (1.6 + v * 1.4), tn, v * 0.5);
+      g.fillStyle = ren(tn, 66 + v * 8, 0.68);
+      yuvarlakKutu(g, x, ortaY - h, gen, h, gen * 0.5);
+      g.globalAlpha = 0.34;
+      yuvarlakKutu(g, x, ortaY, gen, h, gen * 0.5);   /* ayna */
       g.globalAlpha = 1;
       const tp = tepeler[i];
-      g.fillStyle = 'hsla(' + ton.toFixed(0) + ',100%,86%,0.9)';
-      g.fillRect(x, orta - tp - 2, gen, 2);
+      g.fillStyle = ren(tn, 82, 0.6);
+      yuvarlakKutu(g, x, ortaY - tp - 3, gen, 3, 1.5);
     }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 4) AURORA — kuzey isiklari.
+     Alti perde ekranda cok yavas suzuluyor; genislikleri ve parlaklik-
+     lari bantlardan geliyor. Hicbir kenar yok, hicbir sey ziplamiyor:
+     "tatli" tarifin en dogrudan karsiligi bu sunum. */
+  function aurora(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.10)';
+    g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const bant = [s.bas, s.orta, s.tiz];
+    const N = 6;
+    for(let i = 0; i < N; i++){
+      const f = i / N;
+      const hiz = 0.000048 + i * 0.000021;
+      const x = W * (0.5 + 0.42 * Math.sin(s.t * hiz + i * 1.7));
+      const guc = bant[i % 3];
+      const gen = W * (0.10 + 0.10 * guc + 0.03 * Math.sin(s.t * 0.00031 + i));
+      perde(g, x, gen, H, tonZaman(s.t, f * 120), guc);
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 5) BLOOM — suda yuzen isik toplari.
+     Yedi top yavas dolaniyor, boylari bantlarla nefes aliyor. Iz yok,
+     geri besleme yok: en sakin ve en ucuz sunum. */
+  function bloom(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.11)';
+    g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const R = Math.min(W, H);
+    const bant = [s.bas, s.orta, s.tiz];
+    for(let i = 0; i < 7; i++){
+      const a = s.t * (0.000075 + i * 0.000019) + i * 0.897;
+      const x = W/2 + Math.cos(a) * W * (0.13 + 0.10 * ((i % 3) + 1) * 0.6);
+      const y = H/2 + Math.sin(a * 0.83 + i) * H * (0.11 + 0.09 * ((i % 2) + 1) * 0.7);
+      const guc = bant[i % 3];
+      top(g, x, y, R * (0.10 + guc * 0.13 + (i % 3) * 0.015), tonZaman(s.t, i * 44), guc);
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 6) SILK — akan ipek seritler.
+     Bes sinus egrisi ekrani boydan boya geciyor; genlikleri tayftan,
+     birbirlerine gore gecikmeleri sabit. Cizgiler genis ve saydam,
+     ust uste binince ipek gibi katmanlaniyor. */
+  function silk(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.09)';
+    g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    const tayf = s.tayf;
+    const N = 5, adim = Math.max(6, Math.round(W / 90));
+    for(let c = 0; c < N; c++){
+      const f = c / N;
+      const genlik = H * (0.05 + 0.11 * (c % 2 ? s.orta : s.bas) + 0.02 * s.tiz);
+      const faz = s.t * 0.00042 + c * 1.1;
+      g.beginPath();
+      for(let x = 0; x <= W; x += adim){
+        const u = x / W;
+        let ek = 0;
+        if(tayf && tayf.length){
+          const k = Math.min(tayf.length - 1, Math.floor(u * tayf.length * 0.6));
+          ek = (tayf[k] / 255) * H * 0.05;
+        }
+        const y = H * (0.30 + f * 0.40)
+                + Math.sin(u * 6.0 + faz) * genlik
+                + Math.sin(u * 2.3 - faz * 1.7) * genlik * 0.45
+                + ek * Math.sin(u * 9 + faz);
+        if(x === 0) g.moveTo(x, y); else g.lineTo(x, y);
+      }
+      g.lineWidth = Math.max(2, W * (0.010 + 0.006 * (1 - f)));
+      g.strokeStyle = ren(tonZaman(s.t, f * 96), 68, 0.16);
+      g.stroke();
+      g.lineWidth = Math.max(1, W * 0.0022);
+      g.strokeStyle = ren(tonZaman(s.t, f * 96), 76, 0.42);
+      g.stroke();
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 7) LAVA — lav lambasi.
+     Bes buyuk damla asagidan yukari cok yavas suzuluyor, tepeye
+     varinca alttan yeniden giriyor. Boylari basla nefes aliyor.
+     Ekrandaki en yavas sunum; arka plan gibi calisiyor. */
+  function lava(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.10)';
+    g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const R = Math.min(W, H);
+    for(let i = 0; i < 5; i++){
+      const hiz = 0.0000135 + i * 0.0000042;
+      /* Sarmal degil duz yukselis: mod ile sonsuz dongu, sicrama yok
+         cunku top kenarda zaten sonuyor. */
+      const ilerle = (s.t * hiz + i * 0.37) % 1.30;
+      const y = H * (1.15 - ilerle);
+      const x = W * (0.5 + 0.30 * Math.sin(s.t * 0.000055 + i * 1.9));
+      const guc = (i % 2) ? s.orta : s.bas;
+      top(g, x, y, R * (0.16 + guc * 0.12 + i * 0.012), tonZaman(s.t, i * 36), guc * 0.9);
+    }
+    /* TABAN ISIK: damlalar cok yavas ve seyrek; aralarinda ekranin
+       buyuk bolumu gercekten bos kaliyordu (saglik testi bunu
+       "cizmiyor" diye yakaladi ve hakliydi). Alttan gelen genis bir
+       sicaklik hem bosluk birakmiyor hem lav lambasinin cam govdesi
+       gibi duruyor. */
+    top(g, W * 0.5, H * 0.68, R * (0.42 + s.bas * 0.12), tonZaman(s.t, 8), 0.16 + s.bas * 0.24);
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 8) RIPPLE — suya dusen damla.
+     Basta bir vurus olunca merkezden yumusak bir halka aciliyor ve
+     buyuduce soluyor. Vurus yoksa saniyede bir kendiliginden bir
+     halka birakiyor: ekran hicbir zaman olu kalmiyor. */
+  var _halkalar = [], _sonHalka = 0;
+  function ripple(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.12)';
+    g.fillRect(0, 0, W, H);
+    const R = Math.min(W, H);
+    /* Yeni halka: vurus esigi ya da 1,4 saniyelik sessizlik. */
+    if((s.bas > 0.46 && s.t - _sonHalka > 260) || (s.t - _sonHalka > 1400)){
+      _sonHalka = s.t;
+      if(_halkalar.length < 9) _halkalar.push({ r: R * 0.03, g: Math.max(0.25, s.bas), t: tonZaman(s.t, 0) });
+    }
+    g.globalCompositeOperation = 'lighter';
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    for(let i = _halkalar.length - 1; i >= 0; i--){
+      const h = _halkalar[i];
+      h.r += R * (0.0032 + h.g * 0.0042);
+      const kalan = 1 - (h.r / (R * 0.72));
+      if(kalan <= 0){ _halkalar.splice(i, 1); continue; }
+      g.beginPath(); g.arc(W/2, H/2, h.r, 0, 6.2832);
+      g.lineWidth = Math.max(2, R * 0.020 * kalan);
+      g.strokeStyle = ren(h.t, 66, 0.13 * kalan * h.g);
+      g.stroke();
+      g.lineWidth = Math.max(1, R * 0.0035 * kalan);
+      g.strokeStyle = ren(h.t, 76, 0.42 * kalan * h.g);
+      g.stroke();
+    }
+    top(g, W/2, H/2, R * (0.07 + s.seviye * 0.10), tonZaman(s.t, 30), s.seviye);
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 9) DUST — toz.
+     Yavasca suzulen kucuk isik noktalari; uzaktakiler yavas ve sonuk,
+     yakindakiler hizli ve parlak (parallaks). Tizler parlakligi,
+     bas ise butun bulutun akis hizini belirliyor.
+     Nokta basina gecis (gradient) YOK: yuzlerce gecis pahali olurdu,
+     duz daire ve saydamlik ayni yumusakligi bedava veriyor. */
+  var _tozlar = null;
+  function dust(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.16)';
+    g.fillRect(0, 0, W, H);
+    const N = MOBIL ? 70 : 120;
+    if(!_tozlar || _tozlar.length !== N){
+      _tozlar = [];
+      for(let i = 0; i < N; i++)
+        _tozlar.push({ x: Math.random(), y: Math.random(),
+                       z: 0.25 + Math.random() * 0.75, f: Math.random() * 6.28 });
+    }
+    g.globalCompositeOperation = 'lighter';
+    const R = Math.min(W, H);
+    const akis = 0.00022 + s.bas * 0.00055;
+    for(let i = 0; i < N; i++){
+      const t2 = _tozlar[i];
+      t2.y -= akis * t2.z * 16;
+      if(t2.y < -0.05){ t2.y = 1.05; t2.x = Math.random(); }
+      const x = (t2.x + 0.03 * Math.sin(s.t * 0.00018 + t2.f)) * W;
+      const y = t2.y * H;
+      const r = R * (0.0028 + t2.z * 0.0060);
+      g.fillStyle = ren(tonZaman(s.t, t2.z * 70), 74, 0.14 + t2.z * (0.24 + s.tiz * 0.45));
+      g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill();
+    }
+    /* Arkada duran tek bir buyuk isik: bulut bosluga asili kalmasin. */
+    top(g, W * 0.5, H * 0.42, R * (0.30 + s.orta * 0.10), tonZaman(s.t, 18), s.orta * 0.35);
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 10) PRISM — prizma.
+     Alti yaprak merkezden disari aciliyor ve hepsi birlikte cok yavas
+     doniyor; yapraklarin boyu bantlardan geliyor. Kaleydoskop hissi,
+     tek bir dogrusal gecis ve alti dolgu ile -- ayna/ tuval kopyalama
+     yok, yani ucuz. */
+  function prism(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.13)';
+    g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const R = Math.min(W, H) * 0.46;
+    const bant = [s.bas, s.orta, s.tiz];
+    const donme = s.t * 0.000075;
+    g.save();
+    g.translate(W/2, H/2);
+    for(let i = 0; i < 6; i++){
+      const a = donme + i * 1.0472;
+      const guc = bant[i % 3];
+      const boy = R * (0.45 + guc * 0.62);
+      const gen = R * (0.16 + guc * 0.10);
+      g.save(); g.rotate(a);
+      const gr = g.createLinearGradient(0, 0, 0, -boy);
+      const tn = tonZaman(s.t, i * 40);
+      gr.addColorStop(0,   ren(tn, 72, 0.05 + guc * 0.20));
+      gr.addColorStop(0.6, ren(tn, 66, 0.04 + guc * 0.12));
+      gr.addColorStop(1,   ren(tn, 60, 0));
+      g.fillStyle = gr;
+      g.beginPath();
+      g.moveTo(0, 0);
+      g.quadraticCurveTo(-gen, -boy * 0.55, 0, -boy);
+      g.quadraticCurveTo(gen, -boy * 0.55, 0, 0);
+      g.fill();
+      g.restore();
+    }
+    g.restore();
+    top(g, W/2, H/2, R * (0.14 + s.seviye * 0.12), tonZaman(s.t, 12), 0.3 + s.seviye * 0.4);
+    g.globalCompositeOperation = 'source-over';
   }
 
   const SUNUMLAR = [
+    { ad: 'AURORA', ciz: aurora, iz: false },
+    { ad: 'BLOOM',  ciz: bloom,  iz: false },
+    { ad: 'SILK',   ciz: silk,   iz: false },
+    { ad: 'LAVA',   ciz: lava,   iz: false },
+    { ad: 'RIPPLE', ciz: ripple, iz: false },
+    { ad: 'DUST',   ciz: dust,   iz: false },
+    { ad: 'PRISM',  ciz: prism,  iz: false },
     { ad: 'PLASMA', ciz: plasma, iz: true },
     { ad: 'SCOPE',  ciz: scope,  iz: true },
     { ad: 'BARS',   ciz: bars,   iz: false }
