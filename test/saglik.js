@@ -8043,6 +8043,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ky.ilkBasisIsledi === true, ozk || 'gelince o dokunus oynatiliyor');
   }
 
+  /* ── DERI DEGISINCE CARK AYNI KAREDE YENILENIYOR ───────────────
+     Bildirilen: "skins sectik, pencereyi kapattik, carkin ustunde
+     bir bant gibi bir sey oluyor; dondurmeye baslayinca yok
+     oluyor."
+     Cark duran bir tuval: hareket yoksa kare istemiyor (pil). Deri
+     degisince altindaki bant ve disler ESKI derinin renkleriyle
+     ekranda kaliyordu -- gorulen sey yeni bir bant degil, eski
+     karenin kendisiydi.
+     Olculen: deri degistikten HEMEN sonra (dokunus yok) tuvalin
+     icerigi degisiyor mu. */
+  {
+    const dd = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      const eskiDeri = AYAR.deri;
+      try{
+        const tv = document.getElementById('carkTuval');
+        c.tuvalVar = !!tv;
+        if(tv){
+          const imza = ()=>{ const g = tv.getContext('2d');
+            const W = tv.width, H = tv.height;
+            const d = g.getImageData(0, Math.round(H/2) - 2, W, 4).data;
+            let s2 = 0; for(let i = 0; i < d.length; i += 4) s2 += d[i] + d[i+1] + d[i+2];
+            return s2; };
+          const koyu = DERILER.findIndex(d=>d.ad === 'TERMINAL');
+          const acik = DERILER.findIndex(d=>d.ad === 'PAPER');
+          AYAR.deri = koyu + 1; deriUygula(); await bek(600);
+          const a1 = imza();
+          AYAR.deri = acik + 1; deriUygula(); await bek(120);   /* DOKUNUS YOK */
+          const a2 = imza();
+          c.yenilendi = a1 !== a2;
+          c.olcum = a1 + ' -> ' + a2;
+        }
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ AYAR.deri = eskiDeri; deriUygula(); }catch(e){}
+      await bek(300);
+      return c;
+    });
+    const ddOz = Object.keys(dd).filter(k => dd[k] !== true && k !== 'olcum')
+                   .map(k => k + '=' + dd[k]).join(' ');
+    K('Deri degisince cark ayni karede yenileniyor',
+       dd.tuvalVar === true && dd.yenilendi === true,
+       ddOz || (dd.olcum || 'eski kare ekranda kalmiyor'));
+  }
+
   /* ── FX ACIKKEN KULLANILMAYANLAR SUSUYOR ───────────────────────
      Kullanicinin sozu: "fx'e gecince o an cogu kullanilmayan seyleri
      pasif yapabilirsin; cark vs, o an sadece halkayi gorsek de

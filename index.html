@@ -5498,6 +5498,19 @@
          dunyaya gore hesaplanmis acik gri duruyordu. Deri her
          degistiginde ikisi de yeniden yaziliyor. */
       try{ modAdiYaz(); }catch(e){ _yut(e); }
+      /* ── CARK DA YENIDEN CIZILIYOR ────────────────────────────
+         Bildirilen: "skins sectik, pencereyi kapattik, carkin
+         ustunde bir bant gibi bir sey oluyor; dondurmeye baslayinca
+         yok oluyor."
+         Sebep: cark duran bir tuval -- hareket yoksa kare
+         istemiyor (pil). Deri degisince onun altindaki bant ve
+         disler ESKI derinin renkleriyle ekranda kaliyor; ilk
+         donduruste yeniden ciziliyor ve "kayboluyor" gibi
+         gorunuyor. Yani gordugu sey yeni bir sey degil, ESKI
+         karenin kendisiydi.
+         Deri de tam olarak kip/raf degisimi kadar bir olay: carka
+         haber veriliyor. */
+      try{ if(window.carkTazele) window.carkTazele(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
   try{ window.deriUygula = deriUygula; }catch(e){ _yut(e); }
