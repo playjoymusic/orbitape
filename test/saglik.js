@@ -8043,6 +8043,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ky.ilkBasisIsledi === true, ozk || 'gelince o dokunus oynatiliyor');
   }
 
+  /* ── ORTADAKI ORGANIK NOKTA HER KIPTE ──────────────────────────
+     Kullanicinin sozu: "her skins, halka, faz vs her versiyonda da
+     ortadaki o nokta organik sey olmali; ilk acilan halkamizin
+     ortasinda var ya. Ama kamerayi vs her seyi dusun."
+     Once yalnizca uygulamanin kendi halinde ciziliyordu; RINGS ONLY
+     ve deriler merkezi bos birakiyordu.
+     Olculen: dort merkez kipinde de ve acik bir deride merkezde
+     GERCEKTEN piksel var mi. Kamera kurali ayri bir testte
+     (fotograf) duruyor ve degismedi. */
+  {
+    const ck2 = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      const eskiMerkez = AYAR.merkez, eskiDeri = AYAR.deri;
+      try{
+        const viz = document.getElementById('viz');
+        const orta = ()=>{ const g = viz.getContext('2d');
+          const W = viz.width, H = viz.height;
+          const d = g.getImageData(Math.round(W/2)-6, Math.round(H/2)-6, 12, 12).data;
+          let n = 0; for(let i = 3; i < d.length; i += 4) if(d[i] > 10) n++;
+          return n; };
+        for(const k of ['halka','cark','yuvarlak','faz']){
+          AYAR.merkez = k; window.merkezUygula(); await bek(650);
+          c['nokta_' + k] = orta() > 20;
+        }
+        AYAR.merkez = 'cark'; window.merkezUygula(); await bek(300);
+        const i = DERILER.findIndex(d=>d.ad === 'PAPER');
+        if(i >= 0){ AYAR.deri = i + 1; deriUygula(); }
+        document.body.classList.add('sadehalka'); await bek(700);
+        c.nokta_sadeAcikDeri = orta() > 20;
+        document.body.classList.remove('sadehalka');
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ AYAR.merkez = eskiMerkez; AYAR.deri = eskiDeri;
+           deriUygula(); window.merkezUygula(); }catch(e){}
+      await bek(400);
+      return c;
+    });
+    const c2Oz = Object.keys(ck2).filter(k => ck2[k] !== true).map(k => k + '=' + ck2[k]).join(' ');
+    K('Ortadaki organik nokta her merkez kipinde ve acik deride var',
+       ck2.nokta_halka === true && ck2.nokta_cark === true
+       && ck2.nokta_yuvarlak === true && ck2.nokta_faz === true
+       && ck2.nokta_sadeAcikDeri === true,
+       c2Oz || 'halka / cark / yuvarlak / faz + RINGS ONLY acik deri');
+  }
+
   /* ── HOLD: EKRAN KILIDI ─────────────────────────────────────────
      Kullanicinin sozu: "alarmin altinda bi tane de kilit olsun, o da
      hold demek; her sey ekran kilidi gibi dokunulmaz olur. Ne zaman

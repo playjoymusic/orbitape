@@ -10918,12 +10918,30 @@
     const _kamOrta = (typeof kamAcik !== 'undefined') && kamAcik;
     // çekirdek nefes
     // ÇEKİRDEK: daha küçük ve daha sakin. Eskiden ortada beyaza yakın bir top oluşuyordu.
+    /* ── ORTADAKI ORGANIK NOKTA HER KIPTE VAR ─────────────────────
+       Kullanicinin sozu: "her skins, halka, faz vs her versiyonda da
+       ortadaki o nokta organik sey olmali; ilk acilan halkamizin
+       ortasinda var ya. Ama bunu koyarken sakin baska seyleri
+       atlama, cok dinamik degismesin, kamerayi vs her seyi dusun."
+       Once yalnizca uygulamanin kendi halinde ciziliyordu; RINGS
+       ONLY acikken ve derilerde atlaniyordu -- merkez bosaliyordu.
+       Artik her yerde, AMA:
+         · KAMERA acikken YOK. O nokta tam yuzun ustune oturuyor ve
+           fotografta da oyle cikiyordu; bu kural degismiyor.
+         · Sade halkada daha SAKIN (%55 opaklik) -- o kip zaten
+           "yalniz cizgi" demek; nokta var ama bagirmiyor.
+         · Nefes ayni: cok dinamik degil, sesle cok az buyuyor.
+       Rengi deriden geliyor (halkaDeriRengi): acik zeminde koyu,
+       koyu zeminde acik -- yani beyaz bir kremde kaybolmuyor. */
     const pulse=base*(0.16+0.035*Math.sin(vt*3)*energy);
-    if(!_kamOrta && !_sadeHalka){
+    if(!_kamOrta){
+    const _cekRenk = halkaDeriRengi('214,246,242');
+    const _cekHalo = halkaDeriRengi(teal);
+    const _sk = _sadeHalka ? 0.55 : 1;
     const cg=vctx.createRadialGradient(cx,cy,0,cx,cy,pulse);
-    cg.addColorStop(0,   'rgba(214,246,242,'+Math.min(0.62,(0.26+0.26*energy)).toFixed(3)+')');
-    cg.addColorStop(0.34,'rgba('+teal+','+Math.min(0.48,(0.20+0.20*energy)).toFixed(3)+')');
-    cg.addColorStop(1,   'rgba('+teal+',0)');
+    cg.addColorStop(0,   'rgba('+_cekRenk+','+Math.min(0.62,(0.26+0.26*energy)*_sk).toFixed(3)+')');
+    cg.addColorStop(0.34,'rgba('+_cekHalo+','+Math.min(0.48,(0.20+0.20*energy)*_sk).toFixed(3)+')');
+    cg.addColorStop(1,   'rgba('+_cekHalo+',0)');
     vctx.fillStyle=cg; vctx.beginPath(); vctx.arc(cx,cy,pulse,0,6.29); vctx.fill();
     }
 
@@ -11000,9 +11018,13 @@
       vctx.fillStyle=lg; vctx.beginPath(); vctx.arc(lx,ly,ışıkR,0,6.29); vctx.fill();
     } else {
       // merkezde sönük çekirdek ışığı (sıfır noktası göstergesi)
-      if(!_kamOrta && !_sadeHalka){
+      /* Sifir noktasi gostergesi de ayni kurala uyuyor: kamerada
+         yok, sade halkada daha sakin, rengi deriden. */
+      if(!_kamOrta){
         const cg2=vctx.createRadialGradient(cx,cy,0,cx,cy,5*dpr);
-        cg2.addColorStop(0,'rgba(232,244,244,0.25)'); cg2.addColorStop(1,'rgba('+teal+',0)');
+        cg2.addColorStop(0,'rgba(' + halkaDeriRengi('232,244,244') + ','
+          + (_sadeHalka ? 0.16 : 0.25) + ')');
+        cg2.addColorStop(1,'rgba(' + halkaDeriRengi(teal) + ',0)');
         vctx.fillStyle=cg2; vctx.beginPath(); vctx.arc(cx,cy,5*dpr,0,6.29); vctx.fill();
       }
     }
