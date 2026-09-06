@@ -62,7 +62,7 @@ const EKRANLAR = [
 /* Ekranda MUTLAKA tam gorunmesi gereken denetimler. Biri kayarsa
    kullanici o isi hic yapamaz -- "calisiyor ama ulasilamiyor" en
    sinsi kusur turu. */
-const ZORUNLU = ['ayarTut', 'kilitTus', 'deriFirca', 'saatTus', 'gorselTus', 'tp', 'ileri', 'geri'];
+const ZORUNLU = ['ayarTut', 'deriFirca', 'saatTus', 'gorselTus', 'tp', 'ileri', 'geri'];
 
 /* Parmak olcusu. 44 px Apple'in kendi esigi; 40'in altini kusur
    sayiyoruz (dokunma alani gorunen kutudan buyuk olabilir, o yuzden
@@ -131,7 +131,7 @@ async function olc(sayfa){
        sayiyordu -- olcunun kendi kusuru. */
     /* 6 Eylul (2): gorsel tusu yiginin en altina eklendi
        ("solda skins'in altina"). */
-    const yigin = ['ayarTut','kilitTus','saatTus','deriFirca','gorselTus']
+    const yigin = ['ayarTut','saatTus','deriFirca','gorselTus']
       .map(id=>kutular[id]).filter(Boolean);
     for(let i = 1; i < yigin.length; i++){
       if(yigin[i].y < yigin[i-1].alt - 1)

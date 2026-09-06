@@ -156,10 +156,6 @@ interface Window {
   gorselOnceki?: () => void;
   gorselDurum?: () => any;
 
-  /* HOLD (ekran kilidi): durum ve anahtar. */
-  kilitDurum?: () => boolean;
-  kilitDegis?: () => void;
-
   /* Uygulamanin kendi sabitleri */
   ARSIV_KURSUN?: string;
 

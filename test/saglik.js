@@ -8240,76 +8240,71 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        grOz || 'kapali kip bedava');
   }
 
-  /* ── HOLD GORSELI DE ACIYOR ────────────────────────────────────
-     Kullanicinin sozu: "...ya da hold yapinca da devreye girebilir
-     ayni zamanda ama." Yani HOLD ayni zamanda ekran koruyucu.
-     Olculenler: kilit acilinca gorsel kendiliginden basliyor; kilit
-     kalkinca KENDI actigi icin kapaniyor; kullanici gorseli ELLE
-     actiysa kilit dongusu onu kapatmiyor (kurulu durum bozulmuyor). */
+  /* ── GORSEL ACIKKEN EKRAN KILITLI ───────────────────────────────
+     Kullanicinin karari (6 Eylul): HOLD kaldirildi, kilit isini
+     gorselin kendisi yapiyor. "Visual acikken ortadaki sarki
+     degistirme kilitlenmeli, sayfa tamamen bosluk gibi olmali;
+     dokununca sadece visual menusu acilacak."
+     Olculenler: gorsel acikken ekrana dokunmak SARKIYI DEGISTIRMIYOR
+     ve panel acmiyor; dokunus yalnizca seridi getirip goturuyor;
+     denetimler ekranda yok; kapaninca hepsi geri geliyor. */
   {
-    const hg = await pg.evaluate(async ()=>{
+    const gk = await pg.evaluate(async ()=>{
       const bek = ms2 => new Promise(r => setTimeout(r, ms2));
       const c = {};
       try{
-        if(window.gorselAcikMi && window.gorselAcikMi()) window.gorselKapa();
-        if(window.kilitDurum && window.kilitDurum()) window.kilitDegis();
-        await bek(200);
-        /* 1) Kilit -> gorsel basliyor */
-        window.kilitDegis(); await bek(600);
-        c.kilitActi = !!(window.gorselAcikMi && window.gorselAcikMi());
-        c.kilitliKaldi = !!(window.kilitDurum && window.kilitDurum());
-        /* 2) Kilit kalkinca kapaniyor */
-        window.kilitDegis(); await bek(500);
-        c.kilitKalkinca = !(window.gorselAcikMi && window.gorselAcikMi());
-        /* 2b) TAM KIP: ekranda yalnizca HOLD, marka ve kunye kaliyor.
-           Kullanicinin sozu: "sadece sol ustte hold tusu gorunsun,
-           sag ustte ORBITAPE yazisi, sag altta da tum bilgiler. Bu
-           kadar." Olculen sey gorunurluk: gizlenmesi gerekenler
-           display:none mi, kalmasi gerekenler duruyor mu. */
-        if(window.deriGaleriAc) window.deriGaleriAc();      /* skins ACIK basliyor */
+        if(!(window.gorselAcikMi && window.gorselAcikMi())) window.gorselAc();
         await bek(500);
-        window.kilitDegis(); await bek(700);
+        c.acildi = !!(window.gorselAcikMi && window.gorselAcikMi());
+        const kat = document.getElementById('gorselKat');
+        c.katmanVar = !!kat && getComputedStyle(kat).display !== 'none';
         const gor = id=>{ const e = document.getElementById(id); if(!e) return false;
           const st = getComputedStyle(e);
           return st.display !== 'none' && st.visibility !== 'hidden' && +st.opacity > 0.02; };
-        c.tamKip = !!(window.gorselDurum && window.gorselDurum().tam);
-        c.holdDuruyor = gor('kilitTus');
         c.markaDuruyor = gor('ust');
-        c.gizlenenler = ['ayarTut','saatTus','deriFirca','gorselTus','solUst','deriGaleri','gorselSerit']
+        c.gizlenenler = ['ayarTut','saatTus','deriFirca','gorselTus','solUst','deriGaleri']
           .filter(id=>gor(id));
         const dk = document.querySelector('.disk');
         c.aletGizli = !dk || getComputedStyle(dk).display === 'none';
-        window.kilitDegis(); await bek(500);
-        c.tamKipBitti = !document.body.classList.contains('gorsel-tam');
+        /* Ekranin ortasina dokunmak: sarki DEGISMEMELI. */
+        const eskiSonraki = window.sonraki; let n = 0;
+        window.sonraki = function(){ n++; return eskiSonraki.apply(this, arguments); };
+        const x = Math.round(innerWidth/2), y = Math.round(innerHeight/2);
+        const hedef = document.elementFromPoint(x, y);
+        c.ortadaKatman = !!hedef && hedef.id === 'gorselKat';
+        ['pointerdown','pointerup'].forEach(t=> (hedef||document.body).dispatchEvent(
+          new PointerEvent(t, {bubbles:true, cancelable:true, pointerId:9,
+            pointerType:'touch', isPrimary:true, clientX:x, clientY:y,
+            buttons:(t==='pointerup'?0:1)})));
+        await bek(400);
+        window.sonraki = eskiSonraki;
+        c.sarkiDegismedi = n === 0;
+        /* Ayni dokunus seridi getiriyor. */
+        const sr = document.getElementById('gorselSerit');
+        c.seritGeldi = !!sr && !sr.classList.contains('sus');
+        window.gorselKapa(); await bek(500);
+        c.kapandi = !window.gorselAcikMi();
         c.denetimlerGeldi = gor('deriFirca') && gor('gorselTus');
-        try{ if(window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){}
-        await bek(300);
-
-        /* 3) ELLE acilan gorsel kilit dongusunden sonra da acik */
-        window.gorselAc(); await bek(300);
-        window.kilitDegis(); await bek(400);
-        window.kilitDegis(); await bek(500);
-        c.elleAcikKaldi = !!(window.gorselAcikMi && window.gorselAcikMi());
+        c.katmanGitti = !document.getElementById('gorselKat')
+          || getComputedStyle(document.getElementById('gorselKat')).display === 'none';
       }catch(e){ c.hata = String(e && e.message || e); }
-      try{ if(window.kilitDurum && window.kilitDurum()) window.kilitDegis();
-           if(window.gorselAcikMi && window.gorselAcikMi()) window.gorselKapa(); }catch(e){}
+      try{ if(window.gorselAcikMi && window.gorselAcikMi()) window.gorselKapa(); }catch(e){}
       await bek(300);
       return c;
     });
-    const hgOz = Object.keys(hg).filter(k => hg[k] !== true).map(k => k + '=' + hg[k]).join(' ');
-    K('HOLD gorseli aciyor, kilit kalkinca kendi actigini kapatiyor',
-       hg.kilitActi === true && hg.kilitliKaldi === true
-       && hg.kilitKalkinca === true && hg.elleAcikKaldi === true,
-       hgOz || 'ekran koruyucu; elle acilan gorsel korunuyor');
-    K('HOLD tam kipte ekranda yalnizca HOLD, marka ve kunye kaliyor',
-       hg.tamKip === true && hg.holdDuruyor === true && hg.markaDuruyor === true
-       && hg.aletGizli === true && Array.isArray(hg.gizlenenler) && hg.gizlenenler.length === 0,
-       (hg.gizlenenler && hg.gizlenenler.length)
-         ? ('hala gorunuyor: ' + hg.gizlenenler.join(', '))
-         : 'skins acikken bile temiz');
-    K('Kilit kalkinca denetimler geri geliyor',
-       hg.tamKipBitti === true && hg.denetimlerGeldi === true,
-       hgOz || 'tam kip birakildi');
+    const gkOz = Object.keys(gk).filter(k => gk[k] !== true).map(k => k + '=' + gk[k]).join(' ');
+    K('Gorsel acikken ekran kilitli: dokunus sarkiyi degistirmiyor',
+       gk.acildi === true && gk.katmanVar === true && gk.ortadaKatman === true
+       && gk.sarkiDegismedi === true,
+       gkOz || 'sayfa bosluk gibi');
+    K('Gorsel acikken dokunus yalnizca menuyu aciyor',
+       gk.seritGeldi === true && gk.aletGizli === true && gk.markaDuruyor === true
+       && Array.isArray(gk.gizlenenler) && gk.gizlenenler.length === 0,
+       (gk.gizlenenler && gk.gizlenenler.length)
+         ? ('hala gorunuyor: ' + gk.gizlenenler.join(', ')) : 'ad satiri ve kunye kaliyor');
+    K('Gorsel kapaninca kilit de kalkiyor',
+       gk.kapandi === true && gk.denetimlerGeldi === true && gk.katmanGitti === true,
+       gkOz || 'denetimler geri geldi');
   }
 
   /* ── ORTADAKI ORGANIK NOKTA HER KIPTE ──────────────────────────
@@ -8357,74 +8352,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        c2Oz || 'halka / cark / yuvarlak / faz + RINGS ONLY acik deri');
   }
 
-  /* ── HOLD: EKRAN KILIDI ─────────────────────────────────────────
-     Kullanicinin sozu: "alarmin altinda bi tane de kilit olsun, o da
-     hold demek; her sey ekran kilidi gibi dokunulmaz olur. Ne zaman
-     hold'u acar o zaman acilir. Birinin eli carpmasin diye."
-     Olculenler: tus var ve sirasi dogru (ayarlar > hold > alarm >
-     skins), basinca kilit kapaniyor, kilitliyken ekrandaki hicbir
-     dokunus ise yaramiyor (sarki degismiyor, panel acilmiyor), SES
-     DEVAM EDIYOR, ve cikis yolu yalnizca ayni tus. */
-  {
-    const kl = await pg.evaluate(async ()=>{
-      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
-      const c = {};
-      try{
-        const tus = document.getElementById('kilitTus');
-        c.tusVar = !!tus;
-        if(!tus) return c;
-        /* SIRA: ayarlar > hold > alarm > skins (yukaridan asagi). */
-        const y = id=>{ const e = document.getElementById(id);
-          return e ? e.getBoundingClientRect().top : -1; };
-        const sira = [y('ayarTut'), y('kilitTus'), y('saatTus'), y('deriFirca'), y('gorselTus')];
-        c.sirali = sira.every((v,i)=> i === 0 || (v > sira[i-1]));
-        c.araliklar = sira.slice(1).map((v,i)=> Math.round(v - sira[i])).join('/');
-        /* Sıkısik degil: iki simge arasi en az 30 px. */
-        c.sikismamis = sira.slice(1).every((v,i)=> (v - sira[i]) >= 30);
-        const calanOnce = !ses.paused;
-        tus.click(); await bek(250);
-        c.kilitlendi = document.body.classList.contains('kilitli')
-                       && window.kilitDurum && window.kilitDurum() === true;
-        c.sesDevam = (!ses.paused) === calanOnce;
-        /* Kilitliyken dokunus ise yaramiyor: sonraki() sayaci ve
-           panel acilisi. */
-        const eS = window.sonraki; let n = 0; window.sonraki = function(){ n++; };
-        const kat = document.getElementById('kilitKat');
-        c.katVar = !!kat && getComputedStyle(kat).display !== 'none';
-        const vur = (x,y2)=>{ const el = document.elementFromPoint(x, y2) || document.body;
-          ['pointerdown','pointerup','click'].forEach(t=> el.dispatchEvent(
-            t === 'click' ? new MouseEvent(t,{bubbles:true, clientX:x, clientY:y2})
-                          : new PointerEvent(t,{bubbles:true, cancelable:true,
-                              pointerId:61, pointerType:'touch', clientX:x, clientY:y2}))); };
-        vur(Math.round(innerWidth/2), Math.round(innerHeight/2));
-        vur(20, Math.round(innerHeight/2));
-        await bek(200);
-        window.sonraki = eS;
-        c.dokunusYutuldu = n === 0;
-        c.panelKapali = !(window.ayarGoster && document.body.classList.contains('ayar-acik'));
-        /* Ustteki eleman kilit katmani: parmak ekranin ortasinda ona
-           denk geliyor. */
-        const orta = document.elementFromPoint(Math.round(innerWidth/2), Math.round(innerHeight/2));
-        c.katUstte = !!orta && orta.id === 'kilitKat';
-        /* Cikis: yine ayni tus. */
-        tus.click(); await bek(250);
-        c.acildi = !document.body.classList.contains('kilitli');
-      }catch(e){ c.hata = String(e && e.message || e); }
-      try{ if(window.kilitDurum && window.kilitDurum()) window.kilitDegis(); }catch(e){}
-      return c;
-    });
-    const klOz = Object.keys(kl).filter(k => kl[k] !== true && k !== 'araliklar')
-                   .map(k => k + '=' + kl[k]).join(' ');
-    K('HOLD tusu var ve sirasi ayarlar > hold > alarm > skins',
-       kl.tusVar === true && kl.sirali === true && kl.sikismamis === true,
-       'araliklar ' + (kl.araliklar || '-') + ' px');
-    K('HOLD kilitliyor: dokunus ise yaramiyor, ses devam ediyor',
-       kl.kilitlendi === true && kl.katVar === true && kl.katUstte === true
-       && kl.dokunusYutuldu === true && kl.sesDevam === true,
-       klOz || 'ekran kilidi gibi');
-    K('HOLD yalnizca kendi tusuyla aciliyor', kl.acildi === true,
-       klOz || 'tek kapi');
-  }
+
 
   /* ── YILDIZLAR = ISTASYONLAR ────────────────────────────────────
      Kullanici: "hangi turdeysek her o yildiza bir istasyon atasak.
@@ -10143,18 +10071,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{
         const f = document.getElementById('deriFirca'), t = document.getElementById('ayarTut'), st = document.getElementById('saatTus');
         c.tusVar = !!f;
-        /* ── SIRA DEGISTI (6 Eylul) ─────────────────────────────
-           Kullanicinin sozu: "ayarlar altinda hold, altinda alarm,
-           altinda skins." Yani radyoda yukaridan asagi:
-           tutamak > HOLD > saat > firca. Eski olcu firca ile saati
-           ters bekliyordu; kural degil sira degisti. */
-        const kl = document.getElementById('kilitTus');
+        /* ── SIRA (6 Eylul) ─────────────────────────────────────
+           Radyoda yukaridan asagi: tutamak > saat > firca > gorsel.
+           HOLD ayni gun kaldirildi (kilit isini gorselin kendisi
+           yapiyor), dizi ona gore kisaldi. */
         if(f && t && st){ const a = f.getBoundingClientRect(), b = t.getBoundingClientRect(),
-                                d = st.getBoundingClientRect(),
-                                e2 = kl ? kl.getBoundingClientRect() : null;
+                                d = st.getBoundingClientRect();
           c.sira = document.body.classList.contains('mood')
             ? (a.bottom <= b.top && d.bottom <= a.top)
-            : (!!e2 && e2.top >= b.bottom - 1 && d.top >= e2.top && a.top >= d.top); }
+            : (d.top >= b.bottom - 1 && a.top >= d.top); }
         const eskiDeri = AYAR.deri;
         f.click();
         for(let i = 0; i < 40 && !window.DERI_GALERI_HAZIR; i++) await bek(100);
@@ -10881,11 +10806,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          /_bekciZaman = setInterval\(bak, 2000\)/.test(kaynak)
          && /r\.top > window\.innerHeight/.test(kaynak),
          'iki saniyede bir tek olcum, yalnizca sekme gorunurken');
+      /* ── DURUM CUBUGU: OZNITELIK DEGIL, DUGUM ──────────────────
+         6 Eylul: theme-color'i ayni meta dugumunun content'ini
+         degistirerek yaziyorduk ve iOS Safari bunu bazen hic
+         okumuyordu -- ust seritte BIR ONCEKI derinin rengi
+         kaliyordu (kullanici: "yukarida sari bir bant kaldi,
+         hangisine gecersem geceyim"). Artik dugum silinip yeniden
+         ekleniyor (durumCubuguYaz) ve olcu de onu ariyor. */
       K('Deri html zeminini ve durum cubugunu da boyuyor',
          /documentElement\.style\.backgroundColor = d\.zem/.test(kaynak)
-         && /_mt\.setAttribute\('content', d\.zem\)/.test(kaynak)
-         && /_d \? _d\.zem : zm\[1\]/.test(kaynak),
+         && /durumCubuguYaz\(d\.zem\)/.test(kaynak)
+         && /durumCubuguYaz\(_d \? _d\.zem : zm\[1\]\)/.test(kaynak),
          'html zemini, theme-color ve zeminUygula uclu tutarli');
+      K('Durum cubugu rengi meta DUGUMU yenilenerek yaziliyor',
+         /function durumCubuguYaz/.test(kaynak)
+         && /removeChild\(m\)/.test(kaynak)
+         && /createElement\('meta'\)/.test(kaynak),
+         'ayni dugumun content i degisince iOS bazen okumuyor');
       K('Yakinlastirma surerken yerlestirilmiyor',
          i1 > 0 && /_zoomBorcu/.test(g1) && /_ol > 101/.test(g1),
          'olcek 1 degilken yerlesim erteleniyor, donunce bir kez yapiliyor');

@@ -82,7 +82,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        kuculse bile serit onun uzerine denk geliyor. Cozum dikey
        degil YATAY: serit sola yanasiyor, alet ortada kaliyor ve
        ikisi yan yana duruyor. */
-    "@media (max-height:480px){#deriGaleri.serit{left:calc(var(--kx) + env(safe-area-inset-left,0px));transform:none;width:min(52vw,340px);max-width:52vw}}",
+    "@media (max-height:480px){#deriGaleri.serit{left:calc(var(--kx) + env(safe-area-inset-left,0px));transform:none;width:min(44vw,300px);max-width:44vw}}",
     "#deriGaleri.serit .dg-baslik{margin-right:2px}",
     /* ── SERIT IKI SATIR ────────────────────────────────────────
        Tek satira sigdirma denendi ve olmadi: yedi denetim yan yana

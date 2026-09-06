@@ -123,7 +123,12 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          payla ciziyorduk ve fazin tepesi TUVALIN DISINDA kaliyordu
          -- kullanicinin gordugu "kenarlara tasiyor" tam buydu.
          Pay kipe gore: fazda 0.80R. */
-      const pay = Math.round(R * (kip === 'faz' ? 0.86 : 0.44));   // adların çemberi için yer
+      /* FAZ 6 Eylul'de yeniden olculdu: halka artik KUCULMUYOR
+         (kullanicinin sozu: "faz kismi ve kucuk olmus halkasi da"),
+         o yuzden cubuklarin menzili de ekrana gore daralttildi.
+         Pay 0.86 -> 0.34: tuval halkanin biraz disina tasiyor,
+         ekrandan degil. */
+      const pay = Math.round(R * (kip === 'faz' ? 0.34 : 0.44));   // adların çemberi için yer
       const boy = Math.round(b.width + pay * 2);
       /* Piksel yogunlugu uygulamanin kendi tuvaliyle ayni: mobilde
          1.5. Once 2'ydi ve bu tuval ekrandaki en genis yuzey. */
@@ -223,7 +228,12 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          konusuyor ve ekranda "hangi turdeyiz" bilgisi tayfta da
          duruyor. Deri rengi yedek. */
       const ad = raflar(), N = ad.length || 1;
-      const r0 = R * (IC_ORAN + fazNefes * 0.035);
+      /* CUBUKLAR HALKANIN KENARINDAN BASLIYOR. Once ic cemberden
+         (IC_ORAN) baslayip cok uzaga gidiyorlardi: ekranda halka
+         ile tayf arasinda bos bir bant kaliyor, ikisi ayri iki sey
+         gibi duruyordu (kullanici: "garip halka"). Artik cubugun
+         dibi halkanin disina bitisik. */
+      const r0 = R * (0.90 + fazNefes * 0.03);
       const kalin = Math.max(2.2, R * 0.023);
       /* ── VURUS DISARI PATLIYOR ────────────────────────────────
          Kullanicinin sozu: "ses frekansi patlamali kenarlara,
@@ -232,7 +242,10 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          kaliyordu. Menzil %52'ye acildi ve tepe noktasi daha da
          disari gidiyor: sessizde cember ince bir hat, vurusta
          disari acilan bir taç. */
-      const MENZIL = 0.52;
+      /* MENZIL 0.52 -> 0.28: halka tam boyda oldugu icin ayni oran
+         cubuklari ekranin disina tasiriyordu. Tepe noktasi hala
+         disari aciliyor, ama ekranin icinde kaliyor. */
+      const MENZIL = 0.28;
       for(let i = 0; i < FAZ_N; i++){
         const aci = i * 360 / FAZ_N + fazDon;
         const t = (aci - 90) * Math.PI / 180;
@@ -272,7 +285,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          yaziliyor ki vurus tepe yaptiginda ustune binmesin. */
       /* Adlar cubuklarin DISINDA: vurus tepe yaptiginda ustune
          binmesin. Igne de cubuklarin hemen disinda. */
-      adlarVeIgne(ad, N, yazi, R * 1.70, r0 + R * (0.02 + MENZIL + 0.04));
+      adlarVeIgne(ad, N, yazi, R * 1.32, r0 + R * (0.02 + MENZIL + 0.03));
     }catch(e){ yut(e); }
   }
   function ciz(){

@@ -71,32 +71,29 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
        ve koyu bir cerceve biniyordu, ikisi de renkleri olduruyordu. */
     "body.gorsel-acik .grain{display:none !important}",
     "body.gorsel-acik .vignette{display:none !important}",
-    /* Disk gorselin uzerinde durmaya devam ediyor ama biraz geri
-       cekiliyor: ekranin yildizi artik arkadaki sey. */
-    "body.gorsel-acik .disk{opacity:.82}",
     /* HOLD ile birlikte: kilit katmaninin karartmasi hafifliyor.
        Kilitli oldugu yine belli (tus isikli ve cerceveli) ama gorselin
        uzerine gri bir tul cekilmis gibi durmuyor. */
-    "body.gorsel-acik #kilitKat{background:rgba(4,7,9,.10)}",
-    /* ── HOLD ILE ACILAN TAM KIP ────────────────────────────────
-       Kullanicinin sozu (6 Eylul): "hold'a basilinca visuala gir tam
-       ekrana; ama sadece sol ustte hold tusu gorunsun, sag ustte
-       ORBITAPE yazisi, sag altta da tum bilgiler olacak. Bu kadar."
-       Yani bu bir gosterim kipi: ekranda kalan uc sey bakilacak
-       seyler (cikis tusu, marka, calan sey). Geri kalan her denetim
-       cekiliyor -- zaten kilitliyken hicbirine basilamiyor, durmalari
-       yalnizca kalabalik. */
-    "body.gorsel-tam .disk{display:none !important}",
-    "body.gorsel-tam #ayarTut,body.gorsel-tam #saatTus,body.gorsel-tam #deriFirca,"
-      + "body.gorsel-tam #gorselTus,body.gorsel-tam #kipKisayol,body.gorsel-tam #solUst,"
-      + "body.gorsel-tam #ara,body.gorsel-tam #araCizgi,body.gorsel-tam #bekle,"
-      + "body.gorsel-tam #deriGaleri,body.gorsel-tam #modDalga"
+
+    /* ── GORSEL ACIKKEN EKRAN BIR GOSTERIM ──────────────────────
+       Kullanicinin sozu (6 Eylul): "hold'u iptal et. Visual acikken
+       ortadaki sarki degistirme kilitlenmeli, sayfa tamamen bosluk
+       gibi olmali; dokununca sadece visual menusu acilacak."
+       Yani gorsel ayni zamanda KILIT: ekranda kalan iki sey bakilacak
+       seyler -- sag ustteki ad satiri ve sag alttaki kunye. Alet ve
+       butun denetimler cekiliyor; dokunuslari asagidaki katman
+       yutuyor, tek calisan sey gorselin kendi seridi. */
+    "body.gorsel-acik .disk{display:none !important}",
+    "body.gorsel-acik #ayarTut,body.gorsel-acik #saatTus,body.gorsel-acik #deriFirca,"
+      + "body.gorsel-acik #gorselTus,body.gorsel-acik #kipKisayol,body.gorsel-acik #solUst,"
+      + "body.gorsel-acik #ara,body.gorsel-acik #araCizgi,body.gorsel-acik #bekle,"
+      + "body.gorsel-acik #deriGaleri,body.gorsel-acik #modDalga"
       + "{display:none !important}",
-    /* Tam kipte gorselin kendi ayar seridi de yok: kullanici o an
-       ayar yapmiyor, bakiyor. */
-    "body.gorsel-tam #gorselSerit{display:none !important}",
-    /* Kilit katmani tam kipte hic karartmiyor. */
-    "body.gorsel-tam #kilitKat{background:transparent}",
+    /* KATMAN: butun dokunuslari yutuyor. Serit onun USTUNDE
+       (z-index 97 > 96), yani tek calisan sey gorsel menusu. */
+    "#gorselKat{position:fixed;inset:0;z-index:96;display:none;background:transparent;"
+      + "touch-action:none;-webkit-tap-highlight-color:transparent}",
+    "body.gorsel-acik #gorselKat{display:block}",
     /* SERIT: deri galerisinin seridiyle ayni dil -- ◀ AD ▶ ve ✕.
        Uc saniye dokunulmazsa siliniyor (ekrani kapatmasin), ekrana
        dokununca geri geliyor. */
@@ -684,6 +681,29 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
 
+  /* Butun dokunuslari yutan katman: gorsel acikken sayfa "bosluk".
+     Dokunmak yalnizca seridi acip kapatiyor. */
+  var kat = null;
+  function katKur(){
+    if(kat) return;
+    kat = el('div'); kat.id = 'gorselKat'; kat.setAttribute('aria-hidden','true');
+    document.body.appendChild(kat);
+    ['pointerdown','pointerup','pointermove','click','touchstart','touchmove','touchend','wheel']
+      .forEach(t=> kat.addEventListener(t, e=>{
+        try{
+          e.stopPropagation();
+          if(e.cancelable) e.preventDefault();
+          if(t === 'pointerup' || (t === 'touchend' && !window.PointerEvent)) seritDegis();
+        }catch(err){ yut(err); }
+      }, {passive:false}));
+  }
+  function seritDegis(){
+    try{
+      if(!serit) return;
+      if(serit.classList.contains('sus')) seritGoster();
+      else { clearTimeout(susTimer); serit.classList.add('sus'); }
+    }catch(e){ yut(e); }
+  }
   function seritKur(){
     if(serit) return;
     serit = el('div'); serit.id = 'gorselSerit';
@@ -718,18 +738,9 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
   function sonraki(){ sunumSec(no + 1); }
   function onceki(){ sunumSec(no - 1); }
 
-  /* HOLD ile mi acildi: seridi ve butun denetimleri kaldiran kip. */
-  var _tamKip = false;
-  function ac(kip){
+  function ac(){
     try{
-      if(acik){
-        /* Zaten acikken HOLD gelirse yalnizca kip degisiyor. */
-        if(kip === 'kilit' && !_tamKip){ _tamKip = true;
-          try{ document.body.classList.add('gorsel-tam'); }catch(e){ yut(e); }
-          if(serit) serit.hidden = true; }
-        return;
-      }
-      _tamKip = (kip === 'kilit');
+      if(acik) return;
       if(!tuval){
         tuval = /** @type {any} */ (el('canvas'));
         tuval.id = 'gorselTuval';
@@ -737,15 +748,15 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
         ctx = tuval.getContext('2d', { alpha: false });
         document.body.appendChild(tuval);
       }
-      seritKur();
+      seritKur(); katKur();
       acik = true; t0 = performance.now(); sonKare = 0; kareSayaci = 0;
       document.body.classList.add('gorsel-acik');
       tabanTonuOku();
       boyut();
-      if(_tamKip){ try{ document.body.classList.add('gorsel-tam'); }catch(e){ yut(e); } }
-      /* Serit yalnizca tus yolundan acilanda var. */
-      if(serit) serit.hidden = !!_tamKip;
-      if(!_tamKip){ seritYaz(); seritGoster(); }
+      /* Serit kapali basliyor: ekran once temiz gorunsun; dokununca
+         geliyor (katman). */
+      if(serit){ serit.hidden = false; serit.classList.add('sus'); }
+      seritYaz();
       const tus = document.getElementById('gorselTus');
       if(tus) tus.setAttribute('aria-pressed', 'true');
       /* Ses zinciri yoksa simdi isteniyor: gorsel acildiginda ilk
@@ -765,8 +776,6 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
       if(istek){ cancelAnimationFrame(istek); istek = 0; }
       clearTimeout(susTimer);
       document.body.classList.remove('gorsel-acik');
-      try{ document.body.classList.remove('gorsel-tam'); }catch(e){ yut(e); }
-      _tamKip = false;
       if(serit) serit.hidden = true;
       const tus = document.getElementById('gorselTus');
       if(tus) tus.setAttribute('aria-pressed', 'false');
@@ -785,7 +794,6 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
   function durum(){
     return {
       acik: acik,
-      tam: _tamKip,
       no: no,
       ad: (SUNUMLAR[no] || SUNUMLAR[0]).ad,
       adet: SUNUMLAR.length,
@@ -803,19 +811,16 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     /* Ekrana dokununca serit geri geliyor (kilitliyken kilit katmani
        zaten butun dokunuslari yutuyor, yani HOLD'da serit gelmiyor --
        istenen de bu). */
-    /* PENCERE KURALI: bos sayfaya dokunmak gorsel ayarlarini
-       KAPATIYOR; kapaliyken dokunmak geri getiriyor. Seridin kendi
-       uzerine dokunmak sayilmiyor (yoksa oka basarken kapanirdi). */
-    window.addEventListener('pointerdown', e=>{
+    /* Klavye de susuyor: gorsel acikken uygulamanin kisayollari
+       islemiyor -- katman dokunuslari yutuyor, bu da tuslari. */
+    document.addEventListener('keydown', e=>{
       try{
-        if(!acik || _tamKip) return;
-        const t = /** @type {any} */ (e.target);
-        if(serit && t && serit.contains(t)) return;
-        if(serit && !serit.classList.contains('sus')){
-          clearTimeout(susTimer); serit.classList.add('sus');
-        }else{ seritGoster(); }
+        if(!acik) return;
+        const h = /** @type {any} */ (e.target);
+        if(serit && h && serit.contains(h)) return;
+        e.stopPropagation();
       }catch(err){ yut(err); }
-    }, {capture:true, passive:true});
+    }, true);
     document.addEventListener('visibilitychange', ()=>{
       try{ if(acik && !document.hidden && !istek){ sonKare = 0; istek = requestAnimationFrame(kare); } }catch(e){ yut(e); }
     });
