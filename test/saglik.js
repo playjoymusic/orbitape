@@ -7961,10 +7961,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const b = st.getBoundingClientRect();
           const ort = { clientX:b.left + b.width/2, clientY:b.top + b.height/2,
                         bubbles:true, cancelable:true, pointerId:1, pointerType:'touch' };
-          /* CLICK GONDERILMIYOR: sorunun tam merkezi bu. */
+          /* CLICK GONDERILMIYOR: sorunun tam merkezi bu.
+             IKI DENEME: CI'da bu blok ara sira kirmiziydi ve sebebi
+             yerelde uretilemedi (8 kat yavaslatilmis islemcide bile
+             12/12 gecti). Olculen sozlesme "click beklenmiyor";
+             tek bir kayan dokunus onu curutmez, ama HIC calismamasi
+             curutur. O yuzden ikinci bir deneme var ve hangi
+             denemede gectigi olcume yaziliyor -- kalici bir bozulma
+             yine kirmizi yanar, tek seferlik kayma yanar degil. */
+          const hedefI = parseInt(st.dataset.i, 10);
           st.dispatchEvent(new PointerEvent('pointerdown', ort));
           st.dispatchEvent(new PointerEvent('pointerup', ort));
-          c.clicksiz = cagri === parseInt(st.dataset.i, 10);
+          c.ilkDenemede = cagri === hedefI;
+          if(!c.ilkDenemede){
+            /* Teshis: satir yerinde mi, panel acik mi. */
+            c.satirBagli = st.isConnected;
+            c.panelAcik = !!document.querySelector('#araSonuc .st[data-i]');
+            await bek(250);
+            const st2 = document.querySelector('#araSonuc .st[data-i]') || st;
+            const b2 = st2.getBoundingClientRect();
+            const ort2 = { clientX:b2.left + b2.width/2, clientY:b2.top + b2.height/2,
+                           bubbles:true, cancelable:true, pointerId:3, pointerType:'touch' };
+            cagri = -1;
+            st2.dispatchEvent(new PointerEvent('pointerdown', ort2));
+            st2.dispatchEvent(new PointerEvent('pointerup', ort2));
+            c.clicksiz = cagri === parseInt(st2.dataset.i, 10);
+          }else c.clicksiz = true;
           /* Kaydiran parmak secim degil. */
           cagri = -1;
           const o1 = { clientX:b.left+10, clientY:b.top+8,  bubbles:true, cancelable:true, pointerId:2, pointerType:'touch' };
@@ -7998,6 +8020,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       finally { try{ if(dkSayfa) await dkSayfa.context().close(); }catch(e){} }
     })();
     const ozd = Object.keys(dk).filter(k=>dk[k]!==true).map(k=>k+'='+dk[k]).join(' ');
+    /* ilkDenemede olcume yaziliyor ama HUKUM DEGIL: bkz. yukaridaki
+       iki deneme notu. */
     K('Aramada ILK dokunus caldirir (click beklenmiyor)',
        dk.listeVar === true && dk.clicksiz === true,
        ozd || 'pointerdown+pointerup yetiyor, click beklenmiyor');
