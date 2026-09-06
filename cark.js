@@ -381,6 +381,13 @@ try{ window.CARK_BASLADI = true; }catch(e){}
     try{
       /* FAZ'da kare hizi sinirli: erken gelen kare CIZMEDEN geri
          donuyor ama zinciri kirmiyor. */
+      /* ── FX ACIKKEN CARK/FAZ DURUYOR ────────────────────────
+         Kullanicinin sozu: "fx'e gecince o an sadece halkayi
+         gorsek de olur." Tuval CSS'te kapaniyor; burada da
+         DONGU birakiliyor -- yoksa gorunmeyen bir tuvale
+         cizmeye devam ederdik. Kare istemiyoruz: FX kapaninca
+         merkezUygula/ac yeniden basliyor. */
+      if(window.fxAcikMi && window.fxAcikMi()){ kareIstek = 0; return; }
       if(kip === 'faz' && !basili){
         const t = performance.now();
         if(t - _fazSonKare < (1000 / FAZ_FPS) - 1){ surdur(); return; }

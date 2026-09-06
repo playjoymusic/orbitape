@@ -8043,6 +8043,45 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ky.ilkBasisIsledi === true, ozk || 'gelince o dokunus oynatiliyor');
   }
 
+  /* ── FX ACIKKEN KULLANILMAYANLAR SUSUYOR ───────────────────────
+     Kullanicinin sozu: "fx'e gecince o an cogu kullanilmayan seyleri
+     pasif yapabilirsin; cark vs, o an sadece halkayi gorsek de
+     olur." Sebep cizirti: FX acikken ses grafi en agir halinde ve
+     ayni cekirdegi ekranla paylasiyor.
+     Olculen: FX acilinca cark/faz tuvali gercekten KAPANIYOR mu
+     (display), govde anahtari yaziliyor mu, ve FX kapaninca hepsi
+     GERI geliyor mu. */
+  {
+    const fk = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      const eskiMerkez = AYAR.merkez, eskiFX = FXMOD;
+      try{
+        if(FXMOD) fxModGec(FXMOD);
+        AYAR.merkez = 'faz'; window.merkezUygula(); await bek(800);
+        const cv = ()=> document.getElementById('carkTuval');
+        c.tuvalVar = !!cv();
+        c.oncedenAcik = !!cv() && getComputedStyle(cv()).display !== 'none';
+        fxModGec('dongu'); await bek(500);
+        c.govdeAnahtari = document.body.classList.contains('fx-acik');
+        c.tuvalKapandi = !!cv() && getComputedStyle(cv()).display === 'none';
+        c.fxAcikMi = !!(window.fxAcikMi && window.fxAcikMi());
+        fxModGec('dongu'); await bek(600);
+        c.geriGeldi = !!cv() && getComputedStyle(cv()).display !== 'none';
+        c.anahtarKalkti = !document.body.classList.contains('fx-acik');
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ if(FXMOD) fxModGec(FXMOD); if(eskiFX) fxModGec(eskiFX);
+           AYAR.merkez = eskiMerkez; window.merkezUygula(); }catch(e){}
+      await bek(400);
+      return c;
+    });
+    const fkOz = Object.keys(fk).filter(k => fk[k] !== true).map(k => k + '=' + fk[k]).join(' ');
+    K('FX acilinca cark/faz tuvali kapaniyor, kapaninca geri geliyor',
+       fk.oncedenAcik === true && fk.govdeAnahtari === true && fk.tuvalKapandi === true
+       && fk.fxAcikMi === true && fk.geriGeldi === true && fk.anahtarKalkti === true,
+       fkOz || 'o an sadece halka');
+  }
+
   /* ── ORTADAKI ORGANIK NOKTA HER KIPTE ──────────────────────────
      Kullanicinin sozu: "her skins, halka, faz vs her versiyonda da
      ortadaki o nokta organik sey olmali; ilk acilan halkamizin

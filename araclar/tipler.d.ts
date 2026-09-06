@@ -134,6 +134,9 @@ interface Window {
   listeCalanIsaretle?: () => void;
   ustAdEtiket?: () => void;
 
+  /* FX acik mi: cark modulu ve gokyuzu jesti bunu soruyor. */
+  fxAcikMi?: () => boolean;
+
   /* HOLD (ekran kilidi): durum ve anahtar. */
   kilitDurum?: () => boolean;
   kilitDegis?: () => void;

@@ -131,6 +131,11 @@
   #yildizKat{position:fixed;inset:0;z-index:60;display:none;touch-action:none;}
   body.yildiz-zum #yildizKat{display:block;}
   #carkTuval,#viz{transition:opacity .32s ease;}
+  /* FX acikken ortadaki alet gizleniyor: kullanicinin istegi ("o an
+     sadece halkayi gorsek de olur") ve olculen sebep isinma. Tuval
+     GORUNMEZ degil, KAPALI (display) -- yoksa cizmeye devam
+     ederdi. Modul de kendi dongusunu birakiyor (bkz. fxAcikMi). */
+  body.fx-acik #carkTuval{display:none !important;}
   body.yildiz-zum #carkTuval,body.yildiz-zum #viz{opacity:.06;pointer-events:none;}
   .hit{position:absolute;inset:0;border:0;background:transparent;border-radius:50%;cursor:pointer;z-index:2;
     touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
@@ -8046,6 +8051,19 @@
   function fxModGec(ad){
     FXMOD = (FXMOD === ad) ? '' : ad;
     RETRO = (FXMOD === 'retro');
+    /* ── FX ACIKKEN KULLANILMAYANLAR SUSUYOR ──────────────────────
+       Kullanicinin sozu: "fx'e gecince o an cogu kullanilmayan
+       seyleri pasif yapabilirsin; cark vs, o an sadece halkayi
+       gorsek de olur. Yildiz buyutme de kullanilmiyor."
+       Dogru: FX acikken ses grafi en agir halinde calisiyor (eko +
+       plate + saturasyon) ve cizirtinin kaynagi tam olarak o an
+       islemcinin bolusturulmesi. Ekranda ise yalnizca HALKA
+       anlamli -- cark/faz tuvali, zerreler ve iki parmak gokyuzu o
+       an kimsenin bakmadigi seyler.
+       Govde sinifi bir anahtar: CSS tuvali gizliyor, cark modulu
+       kendi dongusunu birakiyor, gokyuzu jesti baslamiyor. FX
+       kapaninca hepsi geri geliyor. */
+    try{ document.body.classList.toggle('fx-acik', !!FXMOD); }catch(e){ _yut(e); }
     /* MOD DEĞİŞİMİNDE FX KESİLMİYOR, UZUYOR.
        Eskiden değerler anında sıfırlanıyordu: eko ve döngü kuyruğu bıçak gibi
        kopuyordu. Artık parça değişimindeki sönümleme çalışıyor — değerler
@@ -9950,6 +9968,8 @@
   }
   function zumBaslat(){
     if(typeof AYAR !== 'undefined' && AYAR && AYAR.mood) return false;
+    /* FX acikken gokyuzu da acilmiyor: o an islemci sesin. */
+    try{ if(FXMOD) return false; }catch(e){ _yut(e); }
     if(!zumAcikMi()){
       try{ if(window.pencereAcikMi && window.pencereAcikMi()) return false; }catch(e){ _yut(e); }
     }
@@ -10210,6 +10230,9 @@
      ture gecemezsin, arkada cark vs pasif olmali; kuculunce geri
      gelir." cark.js bunu her jestin basinda soruyor. */
   try{ window.yildizZumAcik = zumAcikMi; }catch(e){ _yut(e); }
+  /* FX acik mi: cark modulu (kendi dongusunu birakmak icin) ve
+     gokyuzu jesti bunu soruyor. */
+  try{ window.fxAcikMi = ()=>{ try{ return !!FXMOD; }catch(e){ return false; } }; }catch(e){ _yut(e); }
 
   /* Nefesi CSS'e devrediyoruz. Sınıfı kaldırıp bir yerleşim okuyarak yeniden
      ekliyoruz; yoksa arka arkaya basışlarda animasyon baştan başlamıyor. */
@@ -10670,8 +10693,24 @@
        ya 60 ya 30. 30 ise daha önce şikâyet edilen yarı-hız görüntüsünün
        ta kendisi. Cızırtının çözümü çizimde değil, ses tamponunda —
        bkz. sesBaglamiAl(). Burası 60'ta kalıyor. */
+    /* ── FX ACIKKEN CIZIM GERI CEKILIYOR ──────────────────────────
+       Kullanicinin sozu: "fx'leri daha iyilestir, cizirti cok
+       olmasin."
+       Olculdu ve klik/kirpma YOK (bkz. saglik: FX kirpma, FX
+       sicrama, FX gecisinde CAT). Yani cizirtinin kaynagi ses
+       zinciri degil: FX acikken ses grafi en agir halinde calisiyor
+       (eko + plate + saturasyon) ve ayni anda ekran da tam hizda
+       ciziliyor. Telefonda ikisi ayni cekirdegi paylasiyor; ses
+       tamponu geciktigi anda kulakta cizirti oluyor.
+       O yuzden FX acikken cizim 18 kare/sn'ye iniyor: halkalar
+       zaten yavas nefes alan bir grafik, gozle fark edilmiyor;
+       kazanilan zaman dogrudan ses tamponuna gidiyor.
+       Parmak ekrandayken (etkilesim) bu fren YOK -- o an geri
+       bildirim akiciligi daha onemli ve sure kisa. */
+    const _fxAcik = (typeof FXMOD !== 'undefined') && !!FXMOD;
     const _hedefFps = kaydediciAktif() ? 30
                     : _etkilesim ? 60
+                    : (MOBIL && _fxAcik) ? 18
                     : (_cal ? KARE_HEDEF : KARE_BOS);
     if(t && (t - _sonKare) < (1000/_hedefFps - 1)) return;
     _cizIcinde = true; _cizBas = performance.now();   // buradan sonrası ÇİZİM
@@ -10945,8 +10984,9 @@
     vctx.fillStyle=cg; vctx.beginPath(); vctx.arc(cx,cy,pulse,0,6.29); vctx.fill();
     }
 
-    // sürüklenen zerreler (mobilde parmak diskteyken atlanır)
-    if(!hafifCizim){
+    /* Zerreler FX acikken de atlaniyor: o an bakilan sey halka,
+       ve her karede 34 ayri daire ciziyorlar. */
+    if(!hafifCizim && !(MOBIL && typeof FXMOD !== 'undefined' && FXMOD)){
       /* Parlaklik kullanicidan: taban opaklik carpiliyor. Ust sinir
          1'e dayaniyor -- daha fazlasi zaten gorunmuyor, yalnizca
          beyaza doyuyor. */
