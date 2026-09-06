@@ -137,6 +137,21 @@ interface Window {
   /* FX acik mi: cark modulu ve gokyuzu jesti bunu soruyor. */
   fxAcikMi?: () => boolean;
 
+  /* Gorsellestirici (gorsel.js): tam ekran, sese duyarli sunumlar.
+     Istek uzerine iniyor; tusun bekleyen dokunusunu modul gelince
+     yerine getiriyoruz (gorselGeldi). gorselAcikMi'yi hem index.html'in
+     kare dongusu hem cark.js soruyor: acikken ikisi de cekiliyor. */
+  GORSEL_BASLADI?: boolean;
+  GORSEL_HAZIR?: boolean;
+  gorselGeldi?: () => void;
+  gorselAc?: () => void;
+  gorselKapa?: () => void;
+  gorselDegistir?: () => void;
+  gorselAcikMi?: () => boolean;
+  gorselSonraki?: () => void;
+  gorselOnceki?: () => void;
+  gorselDurum?: () => any;
+
   /* HOLD (ekran kilidi): durum ve anahtar. */
   kilitDurum?: () => boolean;
   kilitDegis?: () => void;

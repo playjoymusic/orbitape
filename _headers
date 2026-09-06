@@ -136,6 +136,12 @@
   Content-Type: text/javascript; charset=utf-8
   Cache-Control: no-cache
 
+# Tam ekran gorsellestirici (psychedelic sunumlar). Istek uzerine
+# iniyor; ayni kural: davranisi uygulamayla ayni anda degisiyor.
+/gorsel.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: no-cache
+
 # Istasyon listesi (sag ust). Istek uzerine iniyor; ayni kural.
 /liste.js
   Content-Type: text/javascript; charset=utf-8
@@ -227,10 +233,10 @@
 
 # index.html
 /
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-TXjR7ID+2vaJdQ97Q3F9p6wFDxF86JUek6q13zHhbsw='; style-src 'sha256-QE8NenlArSH4WduEVsJoKsuW/2kFwyQ3+dTPhxl6W5g='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-J/JJ1tq97lIrcFQn9NpAzeal/lb0mOZc0owqNTL9h38='; style-src 'sha256-TGFPMbAAvaFGCWWCZgDrLm1PweioS5vxBzxI76zWTzw='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-TXjR7ID+2vaJdQ97Q3F9p6wFDxF86JUek6q13zHhbsw='; style-src 'sha256-QE8NenlArSH4WduEVsJoKsuW/2kFwyQ3+dTPhxl6W5g='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-J/JJ1tq97lIrcFQn9NpAzeal/lb0mOZc0owqNTL9h38='; style-src 'sha256-TGFPMbAAvaFGCWWCZgDrLm1PweioS5vxBzxI76zWTzw='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy

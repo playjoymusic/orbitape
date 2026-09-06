@@ -2548,6 +2548,23 @@
   @keyframes saatCal{from{opacity:.4}to{opacity:1}}
   body.klavye #saatTus{opacity:0;pointer-events:none;}
   body.deri #saatTus{color:var(--d-marka,var(--d-yazi));}
+  /* ── GORSEL TUSU ──────────────────────────────────────────────
+     Kullanicinin sozu (6 Eylul): "istendiginde ortada visual bi
+     seyler olsa, psychedelic... bir tusla, solda skins'in altina."
+     Yeri JS'te (bkz. _tutamakYerlestir): yiginin en altinda, derinin
+     altinda. Buradaki bottom yalnizca JS henuz yerlestirmeden onceki
+     ilk kare icin: yigindaki oteki uc simgenin altinda kaliyor.
+     Mantik ve tuval istek uzerine iniyor: gorsel.js. */
+  #gorselTus{position:fixed;z-index:96;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    top:auto;bottom:calc(118px + var(--dip-pay));
+    width:40px;height:26px;display:flex;align-items:center;
+    color:#35e0d8;opacity:.72;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
+  #gorselTus svg{width:20px;height:20px;}
+  #gorselTus:hover,#gorselTus:focus-visible,#gorselTus[aria-pressed="true"]{opacity:1;}
+  body.klavye #gorselTus{opacity:0;pointer-events:none;}
+  body.deri #gorselTus{color:var(--d-marka,var(--d-yazi));}
   /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ─────────────────────
      Bir ara buradaki iki nesnenin (uc cizgi ve kip anahtari)
      ALTINI koyulastiriyorduk: ikisi panelden ustte ciziliyor
@@ -3149,7 +3166,7 @@
      yalnizca dokunulacak yer. */
   #geri::after,#dur::after,#duraklat::after,#ileri::after,
   #mute::after,#favAc::after,#cam::after,#ayarTut::after,#araCizgi::after,
-  #deriFirca::after,#saatTus::after{
+  #deriFirca::after,#saatTus::after,#gorselTus::after{
     content:'';position:absolute;left:50%;top:50%;
     width:calc(100% + 14px);height:40px;
     transform:translate(-50%,-50%);
@@ -3161,7 +3178,7 @@
      alanlari cakismiyor"). Sol ustteki uc simgenin etrafinda ise
      yer VAR: aralik 18 px'e cikinca 44'luk alanlar tam bitisik
      duruyor, binmiyor. Parmak olcusu once orada kazaniliyor. */
-  #ayarTut::after,#deriFirca::after,#saatTus::after{
+  #ayarTut::after,#deriFirca::after,#saatTus::after,#gorselTus::after{
     width:max(calc(100% + 14px), 44px);height:44px;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
@@ -3352,6 +3369,11 @@
        Panel ve mantik istek uzerine iniyor: saat.js. -->
   <div id="saatTus" role="button" tabindex="0" aria-label="Timer and alarm"
        aria-expanded="false" aria-controls="saatPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7.4"/><path d="M12 9.6V13l2.7 1.9"/><path d="M5.6 5.2 3 7.6M18.4 5.2 21 7.6"/><path d="M7.4 19.6 6.2 21M16.6 19.6 17.8 21"/></svg></div>
+  <!-- GORSEL: tam ekran, sese duyarli gorsellestirici (gorsel.js,
+       istek uzerine). Simge bir osiloskop dalgasi: Winamp'in ilk
+       ekrani da buydu, kullanicinin referansi da o. -->
+  <div id="gorselTus" role="button" tabindex="0" aria-label="Visuals"
+       aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 12h2.6l2-5.6 3 11.4 2.6-8.2 1.9 4.6 1.5-2.2h5.2"/></svg></div>
   <!-- ── KIP KISAYOLU ────────────────────────────────────────────
        SOUND BANKS kipindeyken radyoya donmek icin ayarlari acmak,
        en ustteki kapiyi bulmak ve anahtari cevirmek gerekiyordu:
@@ -5329,6 +5351,44 @@
     /* Kurulu bir sey varsa modul acilista geliyor. */
     const _h = JSON.parse(localStorage.getItem('orbitape.alarm') || 'null');
     if(_h && ((+_h.uykuBitis > Date.now()) || (_h.sabah && _h.sabah.acik))) saatYukle();
+  }catch(e){ _yut(e); }
+  /* ── GORSEL (tam ekran gorsellestirici) ─────────────────────────
+     Kullanicinin sozu (6 Eylul): "istendiginde ortada visual bi seyler
+     olsa, psychedelic... sarkiya gore oynayacak, halka cekilir o gelir.
+     Winamp vardi eskiden, o tarz."
+     ACILISTA INMIYOR: kapaliyken dosya hic indirilmiyor. Saat ve
+     galeriyle ayni kalip -- ilk dokunusu modul gelince yerine
+     getiriyoruz (gorselGeldi), yani dokunus kaybolmuyor. */
+  const GORSEL_DOSYA = 'gorsel.js';
+  let _gorselIsteniyor = false, _gorselBekliyor = false;
+  function gorselYukle(){
+    try{
+      if(window.GORSEL_HAZIR || _gorselIsteniyor) return;
+      _gorselIsteniyor = true;
+      const s = document.createElement('script');
+      s.src = GORSEL_DOSYA; s.defer = true;
+      s.onerror = ()=>{ _gorselIsteniyor = false; _gorselBekliyor = false; };
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function gorselGeldi(){
+    try{
+      if(_gorselBekliyor && typeof window.gorselDegistir === 'function'){ _gorselBekliyor = false; window.gorselDegistir(); }
+    }catch(e){ _yut(e); }
+  }
+  try{ window.gorselGeldi = gorselGeldi; }catch(e){ _yut(e); }
+  function gorselBas(){
+    try{
+      if(window.GORSEL_HAZIR && typeof window.gorselDegistir === 'function'){ window.gorselDegistir(); return; }
+      _gorselBekliyor = true; gorselYukle();
+    }catch(e){ _yut(e); }
+  }
+  try{
+    const _gt = document.getElementById('gorselTus');
+    if(_gt){
+      _gt.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); gorselBas(); });
+      _gt.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); gorselBas(); } });
+    }
   }catch(e){ _yut(e); }
   function deriUygula(){
     try{
@@ -10721,7 +10781,19 @@
        Parmak ekrandayken (etkilesim) bu fren YOK -- o an geri
        bildirim akiciligi daha onemli ve sure kisa. */
     const _fxAcik = (typeof FXMOD !== 'undefined') && !!FXMOD;
+    /* ── GORSEL ACIKKEN BU DONGU CEKILIYOR ────────────────────────
+       Tam ekran gorsellestirici acikken halka tuvali ve cark tuvali
+       CSS'te gorunmez (bkz. gorsel.js kurallari) -- gorunmeyen bir
+       tuvale cizmek bedava degil, sadece gorunmez. O yuzden burada
+       kare hizi 8'e iniyor.
+       TAMAMEN DURDURMUYORUZ: bu dongu yalnizca cizim degil, ayni
+       zamanda seviyeOku (uydularin sonmesi), sessizlik gozcusu ve
+       FX sonumu. Onlar 8 kare/sn'de dogru calisiyor, cizim ise
+       zaten gorunmuyor. Kazanci olculdu: gorsel acikken toplam
+       cizim yuku tek dongude kaliyor. */
+    const _gorAcik = !!(window.gorselAcikMi && window.gorselAcikMi());
     const _hedefFps = kaydediciAktif() ? 30
+                    : _gorAcik ? 8
                     : _etkilesim ? 60
                     : (MOBIL && _fxAcik) ? 18
                     : (_cal ? KARE_HEDEF : KARE_BOS);
@@ -14430,7 +14502,7 @@
           /* FIRCA VE SAAT TUTAMAGIN USTUNDE, YIGIN HALINDE: ayni sol kenar. */
           try{
             let ust = Math.round(window.innerHeight - sr.top + bos);
-            ['deriFirca','saatTus'].forEach(id=>{
+            ['deriFirca','saatTus','gorselTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
               ust += 26 + bos;
               e2.style.removeProperty('top'); e2.style.bottom = ust + 'px';
@@ -14468,7 +14540,9 @@
                bosluk hala gozle secilir. Daha azi (8) olculdu:
                komsu alanlar gercekten karisiyor. */
             let ust = Math.round(tr.bottom + 14);
-            ['kilitTus','saatTus','deriFirca'].forEach(id=>{
+            /* 6 Eylul: gorsel tusu yiginin EN ALTINDA -- kullanicinin
+               sozu "solda skins'in altina". */
+            ['kilitTus','saatTus','deriFirca','gorselTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
               e2.style.removeProperty('bottom'); e2.style.top = ust + 'px';
               ust += 26 + 12;
@@ -14692,7 +14766,10 @@
                  tepesine firlardi. */
               let tepe = Infinity;
               const _kons = document.body.classList.contains('mood')
-                ? ['solUst','ayarTut','deriFirca','saatTus','kipKisayol'] : ['solUst','kipKisayol'];
+                /* 'gorselTus' 6 Eylul'de eklendi: arsivde yigin
+                   yukari dogru diziliyor, yani gorsel tusu yiginin
+                   EN USTUNDE kaliyor ve kunyenin ilk carpacagi sey o. */
+                ? ['solUst','ayarTut','deriFirca','saatTus','gorselTus','kipKisayol'] : ['solUst','kipKisayol'];
               _kons.forEach(id=>{
                 const e3 = document.getElementById(id); if(!e3) return;
                 const r3 = e3.getBoundingClientRect();

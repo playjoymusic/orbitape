@@ -388,6 +388,11 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          cizmeye devam ederdik. Kare istemiyoruz: FX kapaninca
          merkezUygula/ac yeniden basliyor. */
       if(window.fxAcikMi && window.fxAcikMi()){ kareIstek = 0; return; }
+      /* GORSEL ACIKKEN DE AYNISI: tam ekran gorsellestirici acikken
+         cark tuvali gorunmez (gorsel.js kurallari), dongu de
+         birakiliyor. Kapaninca gorsel.js carkTazele() cagiriyor,
+         yani cark ayni karede geri geliyor. */
+      if(window.gorselAcikMi && window.gorselAcikMi()){ kareIstek = 0; return; }
       if(kip === 'faz' && !basili){
         const t = performance.now();
         if(t - _fazSonKare < (1000 / FAZ_FPS) - 1){ surdur(); return; }

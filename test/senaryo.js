@@ -719,13 +719,13 @@ const CASUS = ()=>{
     const pxKalan = (()=>{ try{
       const fs = require('fs');
       const out = [];
-      for(const d of ['index.html','saat.js','deri_galeri.js','liste.js']){
+      for(const d of ['index.html','saat.js','deri_galeri.js','liste.js','gorsel.js']){
         const m = fs.readFileSync(d,'utf8').match(/font-size\s*:\s*[0-9.]+px/g) || [];
         if(m.length) out.push(d + ' ' + m.length);
       }
       return out; }catch(e){ return ['okunamadi']; } })();
     K('[Y11] Kaynakta px font-size kalmadi', pxKalan.length===0,
-       pxKalan.length ? pxKalan.join(', ') : 'index.html, saat.js, deri_galeri.js, liste.js: hepsi rem');
+       pxKalan.length ? pxKalan.join(', ') : 'index.html, saat.js, deri_galeri.js, liste.js, gorsel.js: hepsi rem');
     await p3.evaluate(()=>{ try{ geriYerlestir(); }catch(e){} });
     await bek(500);
     await supur(p3, 'Y11 %125 radyo');

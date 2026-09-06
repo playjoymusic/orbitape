@@ -8127,6 +8127,87 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        fkOz || 'o an sadece halka');
   }
 
+  /* ── GORSEL: TAM EKRAN GORSELLESTIRICI ─────────────────────────
+     Kullanicinin sozu (6 Eylul): "istendiginde ortada visual bi
+     seyler olsa, psychedelic. 10 cesit mesela. Sarkiya gore
+     oynayacak, halka cekilir o gelir. Bir tusla, solda skins'in
+     altina. Winamp vardi eskiden, o tarz."
+     Olculenler: tus var ve skins'in ALTINDA; ilk dokunus modulu
+     getiriyor ve BOSA GITMIYOR (modul gelince aciliyor); acilinca
+     halka tuvali cekiliyor; tuval gercekten CIZIYOR (iki ayri anda
+     alinan piksel imzasi farkli); sunumlar arasi gezinme calisiyor;
+     ic olcu isinma tavanini asmiyor; kapaninca halka geri geliyor ve
+     dongu duruyor (kare sayaci artmiyor). */
+  {
+    const gr = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      try{
+        const tus = document.getElementById('gorselTus');
+        c.tusVar = !!tus;
+        if(!tus) return c;
+        const fr = document.getElementById('deriFirca');
+        c.skinsAltinda = !!fr && tus.getBoundingClientRect().top > fr.getBoundingClientRect().top;
+        c.oncedenYok = !window.GORSEL_BASLADI;      /* acilista inmiyor */
+        tus.click();                                 /* ILK dokunus: modul yolda */
+        for(let i = 0; i < 60 && !window.GORSEL_HAZIR; i++) await bek(100);
+        c.modulGeldi = !!window.GORSEL_HAZIR;
+        await bek(400);
+        c.ilkBasisIsledi = !!(window.gorselAcikMi && window.gorselAcikMi());
+        c.govdeAnahtari = document.body.classList.contains('gorsel-acik');
+        const viz = document.getElementById('viz');
+        c.halkaCekildi = !!viz && getComputedStyle(viz).display === 'none';
+        const tv = document.getElementById('gorselTuval');
+        c.tuvalVar = !!tv;
+        if(tv){
+          const d0 = window.gorselDurum();
+          c.tavaniAsmiyor = Math.max(d0.en, d0.boy) <= d0.tavan;
+          c.olcu = d0.en + 'x' + d0.boy + ' (tavan ' + d0.tavan + ')';
+          const imza = ()=>{ const g = tv.getContext('2d');
+            const dd = g.getImageData(0, Math.round(tv.height/2) - 2, tv.width, 4).data;
+            let s2 = 0; for(let i = 0; i < dd.length; i += 4) s2 += dd[i] + dd[i+1] + dd[i+2];
+            return s2; };
+          const a1 = imza(); await bek(500); const a2 = imza();
+          c.ciziyor = a1 !== a2;
+          c.imza = a1 + ' -> ' + a2;
+          /* Sunum gezinmesi: ad degisiyor ve basa donuyor. */
+          const ad1 = window.gorselDurum().ad;
+          window.gorselSonraki(); await bek(120);
+          const ad2 = window.gorselDurum().ad;
+          window.gorselOnceki(); await bek(120);
+          c.gezinme = (ad1 !== ad2) && (window.gorselDurum().ad === ad1);
+          c.sunumlar = window.gorselDurum().adet;
+          c.cokSunum = window.gorselDurum().adet >= 3;
+          /* Kapaninca dongu duruyor: kare sayaci sabit kalmali. */
+          const k1 = window.gorselDurum().kare;
+          window.gorselKapa(); await bek(500);
+          c.kapandi = !window.gorselAcikMi() && !document.body.classList.contains('gorsel-acik');
+          c.halkaGeriGeldi = !!viz && getComputedStyle(viz).display !== 'none';
+          c.donguDurdu = window.gorselDurum().kare === k1;
+        }
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ if(window.gorselAcikMi && window.gorselAcikMi()) window.gorselKapa(); }catch(e){}
+      await bek(300);
+      return c;
+    });
+    const grOz = Object.keys(gr).filter(k => gr[k] !== true && k !== 'imza' && k !== 'olcu')
+                   .map(k => k + '=' + gr[k]).join(' ');
+    K('Gorsel tusu skins in altinda ve modul istek uzerine iniyor',
+       gr.tusVar === true && gr.skinsAltinda === true && gr.oncedenYok === true
+       && gr.modulGeldi === true && gr.ilkBasisIsledi === true,
+       grOz || 'ilk dokunus bosa gitmiyor');
+    K('Gorsel acilinca halka cekiliyor ve tuval ciziyor',
+       gr.govdeAnahtari === true && gr.halkaCekildi === true
+       && gr.tuvalVar === true && gr.ciziyor === true,
+       grOz || (gr.imza || 'halka kapali, gorsel akiyor'));
+    K('Gorsel sunumlari arasinda gezinme ve isinma tavani',
+       gr.gezinme === true && gr.cokSunum === true && gr.tavaniAsmiyor === true,
+       grOz || (gr.sunumlar + ' sunum | ' + gr.olcu));
+    K('Gorsel kapaninca halka geri geliyor ve dongu duruyor',
+       gr.kapandi === true && gr.halkaGeriGeldi === true && gr.donguDurdu === true,
+       grOz || 'kapali kip bedava');
+  }
+
   /* ── ORTADAKI ORGANIK NOKTA HER KIPTE ──────────────────────────
      Kullanicinin sozu: "her skins, halka, faz vs her versiyonda da
      ortadaki o nokta organik sey olmali; ilk acilan halkamizin
@@ -8191,7 +8272,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* SIRA: ayarlar > hold > alarm > skins (yukaridan asagi). */
         const y = id=>{ const e = document.getElementById(id);
           return e ? e.getBoundingClientRect().top : -1; };
-        const sira = [y('ayarTut'), y('kilitTus'), y('saatTus'), y('deriFirca')];
+        const sira = [y('ayarTut'), y('kilitTus'), y('saatTus'), y('deriFirca'), y('gorselTus')];
         c.sirali = sira.every((v,i)=> i === 0 || (v > sira[i-1]));
         c.araliklar = sira.slice(1).map((v,i)=> Math.round(v - sira[i])).join('/');
         /* Sıkısik degil: iki simge arasi en az 30 px. */
