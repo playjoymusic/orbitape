@@ -147,7 +147,8 @@ interface Window {
   GORSEL_BASLADI?: boolean;
   GORSEL_HAZIR?: boolean;
   gorselGeldi?: () => void;
-  gorselAc?: () => void;
+  /* 'kilit' -> HOLD ile acilan sessiz tam kip (serit yok). */
+  gorselAc?: (kip?: string) => void;
   gorselKapa?: () => void;
   gorselDegistir?: () => void;
   gorselAcikMi?: () => boolean;

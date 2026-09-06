@@ -5422,7 +5422,7 @@
         _gorselKilitBekliyor = false;
         if(window.kilitDurum && window.kilitDurum() && typeof window.gorselAc === 'function'
            && !(window.gorselAcikMi && window.gorselAcikMi())){
-          window.gorselAc(); _gorselKilitActi = true;
+          window.gorselAc('kilit'); _gorselKilitActi = true;
         }
       }
     }catch(e){ _yut(e); }
@@ -14034,7 +14034,10 @@
     if(_kilitli){
       try{
         if(window.GORSEL_HAZIR && typeof window.gorselAc === 'function'){
-          if(!(window.gorselAcikMi && window.gorselAcikMi())){ window.gorselAc(); _gorselKilitActi = true; }
+          /* 'kilit': sessiz tam kip -- serit yok, denetimler cekiliyor
+             (bkz. gorsel.js, body.gorsel-tam). */
+          if(!(window.gorselAcikMi && window.gorselAcikMi())){ window.gorselAc('kilit'); _gorselKilitActi = true; }
+          else window.gorselAc('kilit');
         }else{ _gorselKilitBekliyor = true; gorselYukle(); }
       }catch(e){ _yut(e); }
     }else{

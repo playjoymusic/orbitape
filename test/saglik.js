@@ -3105,16 +3105,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kb = dsk.getBoundingClientRect();
     const OL = (t,x,y,btn)=>dsk.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,
       pointerId:7, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:x, clientY:y}));
-    const nokta = o=>({ x: kb.left+kb.width/2 + kb.width/2*o, y: kb.top+kb.height/2 });
+    /* KUTU HER JESTTE TAZE OLCULUYOR. Once blogun basinda BIR KEZ
+       olculuyordu; aradan gecen isler (kunye gorunur olunca yerlesim
+       yeniden kosuyor) aleti birkac piksel oynattiginda ayni oran
+       BASKA bir yaricapa denk geliyor ve test ara sira "halkanin
+       icinde biraktim ama sectti" diyordu. Kusur uygulamada degil
+       olcude: bayat bir dikdortgen. */
+    const kb2 = ()=>dsk.getBoundingClientRect();
+    const nokta = o=>{ const r = kb2();
+      return { x: r.left+r.width/2 + r.width/2*o, y: r.top+r.height/2 }; };
     const dene = async (o, sure, kaydir)=>{
       try{ fxNormale && fxNormale(); }catch(e){}
       _ilkCalindi = true; AKTIF_MOD='RADIOTAPE'; _nebSira=-1;
       const p = nokta(o);
+      const gen = kb2().width;
       OL('pointerdown', p.x, p.y);
-      if(kaydir) OL('pointermove', p.x - kb.width*0.10, p.y);
+      if(kaydir) OL('pointermove', p.x - gen*0.10, p.y);
       await bek(sure);
       const gez = !!_moodGez;
-      OL('pointerup', kaydir ? p.x - kb.width*0.10 : p.x, p.y);
+      OL('pointerup', kaydir ? p.x - gen*0.10 : p.x, p.y);
       await bek(220);
       return { gez, mod: AKTIF_MOD };
     };
@@ -8252,6 +8261,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 2) Kilit kalkinca kapaniyor */
         window.kilitDegis(); await bek(500);
         c.kilitKalkinca = !(window.gorselAcikMi && window.gorselAcikMi());
+        /* 2b) TAM KIP: ekranda yalnizca HOLD, marka ve kunye kaliyor.
+           Kullanicinin sozu: "sadece sol ustte hold tusu gorunsun,
+           sag ustte ORBITAPE yazisi, sag altta da tum bilgiler. Bu
+           kadar." Olculen sey gorunurluk: gizlenmesi gerekenler
+           display:none mi, kalmasi gerekenler duruyor mu. */
+        if(window.deriGaleriAc) window.deriGaleriAc();      /* skins ACIK basliyor */
+        await bek(500);
+        window.kilitDegis(); await bek(700);
+        const gor = id=>{ const e = document.getElementById(id); if(!e) return false;
+          const st = getComputedStyle(e);
+          return st.display !== 'none' && st.visibility !== 'hidden' && +st.opacity > 0.02; };
+        c.tamKip = !!(window.gorselDurum && window.gorselDurum().tam);
+        c.holdDuruyor = gor('kilitTus');
+        c.markaDuruyor = gor('ust');
+        c.gizlenenler = ['ayarTut','saatTus','deriFirca','gorselTus','solUst','deriGaleri','gorselSerit']
+          .filter(id=>gor(id));
+        const dk = document.querySelector('.disk');
+        c.aletGizli = !dk || getComputedStyle(dk).display === 'none';
+        window.kilitDegis(); await bek(500);
+        c.tamKipBitti = !document.body.classList.contains('gorsel-tam');
+        c.denetimlerGeldi = gor('deriFirca') && gor('gorselTus');
+        try{ if(window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){}
+        await bek(300);
+
         /* 3) ELLE acilan gorsel kilit dongusunden sonra da acik */
         window.gorselAc(); await bek(300);
         window.kilitDegis(); await bek(400);
@@ -8268,6 +8301,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        hg.kilitActi === true && hg.kilitliKaldi === true
        && hg.kilitKalkinca === true && hg.elleAcikKaldi === true,
        hgOz || 'ekran koruyucu; elle acilan gorsel korunuyor');
+    K('HOLD tam kipte ekranda yalnizca HOLD, marka ve kunye kaliyor',
+       hg.tamKip === true && hg.holdDuruyor === true && hg.markaDuruyor === true
+       && hg.aletGizli === true && Array.isArray(hg.gizlenenler) && hg.gizlenenler.length === 0,
+       (hg.gizlenenler && hg.gizlenenler.length)
+         ? ('hala gorunuyor: ' + hg.gizlenenler.join(', '))
+         : 'skins acikken bile temiz');
+    K('Kilit kalkinca denetimler geri geliyor',
+       hg.tamKipBitti === true && hg.denetimlerGeldi === true,
+       hgOz || 'tam kip birakildi');
   }
 
   /* ── ORTADAKI ORGANIK NOKTA HER KIPTE ──────────────────────────
