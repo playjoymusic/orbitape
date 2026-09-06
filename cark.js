@@ -108,7 +108,14 @@ try{ window.CARK_BASLADI = true; }catch(e){}
       const b = disk.getBoundingClientRect();
       if(!b.width) return false;
       R = b.width / 2;
-      const pay = Math.round(R * 0.44);          // adların çemberi için yer
+      /* ── FAZ DAHA COK YER ISTIYOR ─────────────────────────────
+         Cark kipinde en disardaki sey ad cemberi (1.28R) ve pay
+         0.44R yetiyordu. Faz kipinde cubuk menzili acildi: vurusta
+         cubuk 1.58R'ye, tepe noktasi daha da disari gidiyor. Ayni
+         payla ciziyorduk ve fazin tepesi TUVALIN DISINDA kaliyordu
+         -- kullanicinin gordugu "kenarlara tasiyor" tam buydu.
+         Pay kipe gore: fazda 0.80R. */
+      const pay = Math.round(R * (kip === 'faz' ? 0.86 : 0.44));   // adların çemberi için yer
       const boy = Math.round(b.width + pay * 2);
       /* Piksel yogunlugu uygulamanin kendi tuvaliyle ayni: mobilde
          1.5. Once 2'ydi ve bu tuval ekrandaki en genis yuzey. */
@@ -250,7 +257,9 @@ try{ window.CARK_BASLADI = true; }catch(e){}
       /* Adlar ve igne FAZ'da da var: hangi turde oldugun gorunuyor
          ve parmakla cevrilebiliyor (bkz. bas). Cubuklarin disina
          yaziliyor ki vurus tepe yaptiginda ustune binmesin. */
-      adlarVeIgne(ad, N, yazi, R * (AD_ORAN + 0.06), r0 + R * (0.02 + MENZIL + 0.10));
+      /* Adlar cubuklarin DISINDA: vurus tepe yaptiginda ustune
+         binmesin. Igne de cubuklarin hemen disinda. */
+      adlarVeIgne(ad, N, yazi, R * 1.70, r0 + R * (0.02 + MENZIL + 0.04));
     }catch(e){ yut(e); }
   }
   function ciz(){

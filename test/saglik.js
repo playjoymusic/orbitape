@@ -6862,6 +6862,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const kap = document.getElementById('istListe');
         const ogeler = kap ? [...kap.querySelectorAll('.il-oge')] : [];
         c.rafSayisi = ogeler.length === AILE_ADLAR.length;
+        /* ── SIRA DISTAN ICE ──────────────────────────────────────
+           Kullanicinin sozu: "sag ustte ORBITAPE'e basinca liste
+           ters; RADIOTAPE en ustte olmali, AMBIENT en altta."
+           Tablo icten disa yazili; liste yukaridan asagi okunuyor ve
+           en distaki halka en ustte durmali. */
+        c.enUstteDistaki = ogeler.length
+          ? (ogeler[0].textContent || '').trim().indexOf(AILE_ADLAR[AILE_ADLAR.length-1]) >= 0
+          : false;
+        c.enAlttaIctekiler = ogeler.length
+          ? (ogeler[ogeler.length-1].textContent || '').trim().indexOf(AILE_ADLAR[0]) >= 0
+          : false;
         c.renkli = ogeler.every(li => /rgb/.test(li.style.getPropertyValue('--il-raf')));
         const r = kap.getBoundingClientRect(); const mr = marka.getBoundingClientRect();
         c.altinda = r.top >= mr.bottom && r.right <= innerWidth + 1;
@@ -6943,6 +6954,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const ilOz = Object.keys(il).filter(k => il[k] !== true).map(k => k + '=' + il[k]).join(' ');
     K('Sol ad ileri gecer (menu acmaz), sag ad raf listesi', il.solSag && il.solIleri && il.geldi && il.acik, ilOz || 'sonraki() bir kez, liste kapali');
     K('Listede butun raflar kendi renginde, acik raf isaretli', il.rafSayisi && il.renkli && il.altinda && il.acikIsaretli, ilOz || 'AILE_ADLAR');
+    K('Liste distan ice siralaniyor (RADIOTAPE en ustte)',
+       il.enUstteDistaki === true && il.enAlttaIctekiler === true,
+       ilOz || 'en ust en distaki halka, en alt en icteki');
     K('Rafa dokunmak rafi acar ve listeyi kapatir, acik raf pasif', il.rafAcildi && il.acikPasif && il.secinceKapandi, ilOz || 'aileSec bir kez, liste kapandi');
     K('Bosluga dokunus listeyi kapatir ve dokunusu yutar', il.bosKapatti && il.bosYutuldu && il.sonrakiDokunusGecer, ilOz || 'kapandi, sonraki() 0, sonraki dokunus gecti');
     K('Semboller ne liste acar ne sarki degistirir',
@@ -9670,8 +9684,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const tv = document.getElementById('carkTuval');
         c.tuvalVar = !!tv;
         if(tv){
+          /* Yaricap DISKTEN olculuyor, tuvalden degil: faz kipinde
+             tuvalin payi buyudu (cubuklar disari tasiyordu) ve
+             tuvale oranli sabit bir sayi jest bandinin disina
+             dusuyor. Bant diskin yaricapinin 1.01-1.42 kati. */
+          const dk = document.querySelector('.disk').getBoundingClientRect();
           const b2 = tv.getBoundingClientRect();
-          const cx = b2.left + b2.width/2, cy = b2.top + b2.height/2, r0 = b2.width * 0.42;
+          const cx = b2.left + b2.width/2, cy = b2.top + b2.height/2, r0 = dk.width * 0.5 * 1.2;
           const once = window.carkDurum().secili;
           const ol = (t,x,y)=> tv.dispatchEvent(new PointerEvent(t, {clientX:x, clientY:y,
             bubbles:true, cancelable:true, pointerId:78, pointerType:'touch', isPrimary:true,

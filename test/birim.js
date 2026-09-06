@@ -69,7 +69,9 @@ const MANIFEST = [
   'function _parlaklikRGB',
   'function _parlaklikHex',
   'function _kontrastOran',
-  'function okunurVurgu'
+  'function okunurVurgu',
+  'var _halkaDeriOnbellek',
+  'function halkaDeriRengi'
 ];
 
 /* Bir bildirimi bastan sonuna kadar cikar.
@@ -345,6 +347,40 @@ function _kontrast(a,b){
     (function(){ try{ A._yut(null); A._yut(undefined); A._yut({}); return true; }
                  catch(e){ return false; } })(),
     'null/undefined/nesne yutuluyor, defter ayakta');
+}
+
+/* ── HALKA ACIK DERIDE YUTULMUYOR ───────────────────────────────
+   Kullanicinin sozu: "cok acik renk skins'lerde halka yutuluyor;
+   background acik renkse halkayi ters tonlarda dusun."
+   Halkanin rengi rafin kimligi, o yuzden boyanmiyor: parlakligi
+   zeminin tersine kaydiriliyor (halkaDeriRengi). Burada butun
+   deriler ve butun raf renkleri icin olculuyor -- once yutuluyor
+   muydu, sonra esigi tutuyor mu. */
+{
+  const kon = (rgb, zem)=> A._kontrastOran(
+    A._parlaklikRGB.apply(null, rgb.split(',').map(Number)), A._parlaklikHex(zem));
+  const renkler = ['95,191,122','240,172,122','242,104,60','216,203,160',
+                   '204,124,164','214,142,58','190,182,164','176,124,232',
+                   '132,150,255','53,224,216'];
+  const dusen = [];
+  let enKotuOnce = 99, enKotuSonra = 99;
+  A.DERILER.forEach((d, i)=>{
+    renkler.forEach(r=>{
+      const once = kon(r, d.zem);
+      const sonra = kon(A.halkaDeriRengi(r, i + 1), d.zem);
+      if(once < enKotuOnce) enKotuOnce = once;
+      if(sonra < enKotuSonra) enKotuSonra = sonra;
+      if(sonra < 2.35) dusen.push(d.ad + ' <- ' + r + ' = ' + sonra.toFixed(2));
+    });
+  });
+  K('Halka her deride zeminden ayirt ediliyor', dusen.length === 0,
+    dusen.length ? dusen.slice(0,3).join(' | ')
+                 : A.DERILER.length + ' deri x ' + renkler.length + ' raf; en kotu '
+                   + enKotuOnce.toFixed(2) + ' -> ' + enKotuSonra.toFixed(2));
+  /* Deri kapaliyken hicbir sey degismiyor: uygulamanin kendi
+     karanlik hali zaten kontrastli. */
+  K('Deri kapaliyken halka rengine dokunulmuyor',
+    A.halkaDeriRengi('95,191,122', 0) === '95,191,122', 'deri 0 -> renk aynen');
 }
 
 /* ── RAF RENGI DERININ ICINDE DE OKUNUYOR ───────────────────────

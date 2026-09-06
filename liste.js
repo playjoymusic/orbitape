@@ -105,8 +105,15 @@ try{ window.LISTE_BASLADI = true; }catch(e){}
   }
   function ogeleriTopla(){
     try{
+      /* ── SIRA DISTAN ICE: RADIOTAPE EN USTTE ──────────────────
+         Kullanicinin sozu: "sag ustte ORBITAPE'e basinca liste ters;
+         RADIOTAPE en ustte olmali, yani AMBIENT en altta."
+         Tablo (AILELER) ICTEN DISA yazili -- halkalarin cizim
+         sirasi o. Liste ise yukaridan asagi okunuyor ve ekranda
+         en distaki halka en ustte duruyor. Ayni siranin iki yonu:
+         cizimde icten, listede distan. */
       const adlar = radyoMu() ? (AILE_ADLAR || []) : (ARSIV_ADLAR || []);
-      return adlar.map(ad=>({ ad, renk: rafRengi(ad) }));
+      return adlar.slice().reverse().map(ad=>({ ad, renk: rafRengi(ad) }));
     }catch(e){ yut(e); return []; }
   }
   function vurguRengi(){

@@ -95,6 +95,17 @@
      seridi okunur puntoda tasimiyor; cubuk acilinca icerigin ona yer
      acmasi beklenen davranis. Serit kapaninca eski boyuna donuyor. */
   body.serit-acik .disk{width:min(74vw,392px,64vh);}
+  /* ── FAZ SECILIYSE HALKA KUCULUYOR ────────────────────────────
+     Kullanicinin sozu: "cok buyuk oldugu icin halka + faz tasiyor
+     kenarlara; faz secilince halka kuculebilir ve faz ekrandan
+     tasmaz."
+     Olculdu ve hakli: faz cubuklari vurusta yaricapin 1.58 katina,
+     adlar 1.70 katina gidiyor. Halka bugunku olcusunde (84vw) bu
+     iki yana tasiyor demek. Faz kipinde halka kuculuyor -- cizim
+     ayni, ekranin icinde kaliyor. Cark kipine donunce eski olcu
+     geri geliyor. */
+  body.merkez-faz .disk{width:min(58vw,290px,44vh);}
+  body.merkez-faz.serit-acik .disk{width:min(52vw,264px,40vh);}
   /* KISA EKRAN: alet ekranin ORTASINDA duruyor, yani yer acmak icin
      yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
      640-667'de yetmiyor ve serit carkin tepesine biniyordu (olculdu:
@@ -5039,6 +5050,37 @@
       return okunurVurgu(dizi, d.zem, 3.0) || kar;
     }catch(e){ _yut(e); return ''; }
   }
+  /* ── ACIK DERIDE HALKA YUTULMUYOR ────────────────────────────
+     Kullanicinin sozu: "cok acik renk skins'lerde halka yutuluyor;
+     background acik renkse halkayi ters tonlarda dusun."
+     Halkanin rengi RAFIN KIMLIGI -- boyamiyoruz. Rengi koruyup
+     PARLAKLIGINI zeminin tersine kaydiriyoruz; yazida kullanilan
+     yolun ayni (bkz. okunurVurgu). Esik 2.4: halka genis bir sekil,
+     yazi kadar yuksek kontrast istemiyor -- daha yukarisi butun
+     derileri ayni koyu cizgiye cevirirdi ve raflar birbirine
+     benzerdi.
+     SONUC ONBELLEKTE: dokuz halka x saniyede 30 kare demek, her
+     karede 40 adimlik bir arama telefonu isitirdi. Anahtar renk +
+     deri; deri degisince tablo kendiliginden buyuyor, kucuk
+     kaliyor. */
+  var _halkaDeriOnbellek = new Map();
+  function halkaDeriRengi(rgbDizi, deriNo){
+    try{
+      const n = (deriNo === undefined)
+        ? ((typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0) : (deriNo|0);
+      if(!n || !rgbDizi) return rgbDizi;
+      const d = DERILER[n-1]; if(!d) return rgbDizi;
+      const anahtar = n + '|' + rgbDizi;
+      const varOlan = _halkaDeriOnbellek.get(anahtar);
+      if(varOlan) return varOlan;
+      const v = okunurVurgu(rgbDizi, d.zem, 2.4);
+      const m = v ? v.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/) : null;
+      const sonuc = m ? (m[1] + ',' + m[2] + ',' + m[3]) : rgbDizi;
+      if(_halkaDeriOnbellek.size > 400) _halkaDeriOnbellek.clear();
+      _halkaDeriOnbellek.set(anahtar, sonuc);
+      return sonuc;
+    }catch(e){ _yut(e); return rgbDizi; }
+  }
   function olukYaz(){
     try{
       const n = (typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0;
@@ -9965,7 +10007,7 @@
          basilabilen sey oluyor. */
       try{
         if(typeof ZERRE !== 'undefined' && ZERRE && ZERRE.length){
-          c.fillStyle = 'rgba(190,214,214,' + (0.13 * gel).toFixed(3) + ')';
+          c.fillStyle = 'rgba(' + halkaDeriRengi('190,214,214') + ',' + (0.13 * gel).toFixed(3) + ')';
           for(let zi = 0; zi < ZERRE.length; zi++){
             const z = ZERRE[zi];
             const rr = z.rD * taban * _zum;
@@ -10732,6 +10774,10 @@
           _rnk = _kar(_ft.ana, _rnk, _pay);
         }
       }
+      /* Deri acikken halka zemine gore okunur hale getiriliyor:
+         acik kremde koyu, koyu lacivertte acik (bkz.
+         halkaDeriRengi). */
+      try{ _rnk = halkaDeriRengi(_rnk); }catch(e){ _yut(e); }
       /* HALKALAR HER ZAMAN TAM AÇIK. Önceden mod seçilince diğerleri
          %22'ye düşüyordu ve halka "kapanmış" gibi duruyordu. Artık
          sadece seçili olan öne çıkıyor: daha parlak ve daha kalın.
@@ -10819,7 +10865,15 @@
       /* Parlaklik kullanicidan: taban opaklik carpiliyor. Ust sinir
          1'e dayaniyor -- daha fazlasi zaten gorunmuyor, yalnizca
          beyaza doyuyor. */
-      const zRenk='rgba(236,250,248,'
+      /* ── ACIK DERIDE YILDIZ KOYU ──────────────────────────────
+         Kullanicinin sozu: "acik renklerde yildizlar koyu tonda
+         oluyordu ya, golgesi gibi; acik background'da bulunmuyor."
+         Zerrenin rengi neredeyse beyaz (236,250,248) -- krem bir
+         zeminde gorunmez. Deri acikken ayni yol: renk zeminin
+         TERSINE kaydiriliyor (bkz. halkaDeriRengi). Karanlik
+         dunyada hicbir sey degismiyor. */
+      const zTemel = halkaDeriRengi('236,250,248');
+      const zRenk='rgba(' + zTemel + ','
         + Math.min(1, (0.30+0.45*energy) * yildizIsik()).toFixed(3) + ')';
       vctx.fillStyle=zRenk;                       // renk döngü DIŞINDA: her zerrede yeniden yazmıyoruz
       const _yt = yildizTema();
@@ -10854,7 +10908,8 @@
           _cg.addColorStop(0.34,'rgba('+teal+','+Math.min(0.5,(0.20+0.2*energy)).toFixed(3)+')');
           _cg.addColorStop(1,   'rgba('+teal+',0)');
           vctx.fillStyle=_cg; vctx.beginPath(); vctx.arc(_cx1,_cy1,_cr*4.5,0,6.29); vctx.fill();
-          vctx.fillStyle='rgba(255,255,255,'+Math.min(1,0.85*yildizIsik()).toFixed(3)+')';
+          vctx.fillStyle='rgba(' + halkaDeriRengi('255,255,255') + ','
+            + Math.min(1,0.85*yildizIsik()).toFixed(3) + ')';
           vctx.beginPath(); vctx.arc(_cx1,_cy1,_cr,0,6.29); vctx.fill();
           vctx.fillStyle=zRenk;                 // renk zerrelere geri donuyor
         }
@@ -13654,7 +13709,19 @@
     _nebSira = i;
     modSec(MODSIRA[n-1-i], true);                        // en dıştan içe, kapatmadan
   }
-  try{ mark.style.cursor='pointer'; mark.addEventListener('click', moodDegis); }catch(e){ _yut(e); }
+  /* ── NEBULAYA DOKUNUS SARKI DEGISTIRMEZ ──────────────────────
+     Bildirilen: "nebulaya basinca fx'leri sifirlayacakti; ona bak,
+     sarki degistiriyor alakasiz."
+     Sebep: nebula "ekranin herhangi bir yeri sesi baslatir" kuralinin
+     MUAF LISTESINDE degildi. Kendi isini (fxNormale) yapiyor, ama
+     ayni dokunus belgeye de ulasip siradaki sese geciyordu.
+     Iki yerden birden kapatiliyor: burada duruyor, listede de var. */
+  try{
+    mark.style.cursor='pointer';
+    mark.addEventListener('click', e=>{ e.stopPropagation(); moodDegis(); });
+    ['pointerdown','mousedown','touchstart'].forEach(t=>
+      mark.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+  }catch(e){ _yut(e); }
   /* ── UST ADLAR: SOLDAKI BIR GERI, SAGDAKI RAF LISTESI ────────────
      Eskiden ikisi de bir icteki halkaya (rafa) geciyordu (modSiraGec).
      Kullanici (3 Eylul): "sol ustteki isimlere basinca bir geri
@@ -17103,7 +17170,7 @@
   document.addEventListener('pointerdown', e=>{
     if(_ilkTetik || baslatildi) return;
     const t = e.target;
-    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe,#geriBil,#geriSat,#bekle')) return;  // kendi başlatıcıları var
+    if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe,#geriBil,#geriSat,#bekle,#mark,#uydular')) return;  // kendi başlatıcıları var
     _ilkTetik = true;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
     const it = ilkItem;
