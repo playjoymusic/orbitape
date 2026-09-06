@@ -37,6 +37,14 @@ try{ window.CARK_BASLADI = true; }catch(e){}
   const SURTUNME  = 0.972;     // her karede hızın kalan oranı
   const DUR_ESIK  = 0.12;      // altına inince durdu sayılıyor (derece/kare)
   const OTURMA    = 0.18;      // en yakın rafa oturma yumuşaklığı
+  /* Telefon mu: kare hizi, piksel yogunlugu ve cubuk sayisi buna
+     bagli (bkz. FAZ_N, FAZ_FPS, olc). EN USTTE tanimli olmali --
+     asagidaki sabitler onu okuyor. */
+  const MOBIL_CIHAZ = (function(){
+    try{ return matchMedia('(pointer:coarse)').matches
+              || /iphone|ipad|ipod|android/i.test(navigator.userAgent); }
+    catch(e){ return false; }
+  })();
 
   let tuval = null, ctx = null, R = 0, ox = 0, oy = 0;
   let carkAci = 0;             // çarkın dönüşü, derece (ad benzersiz: TDZ taraması bütün modülleri birlikte okuyor)
@@ -137,7 +145,12 @@ try{ window.CARK_BASLADI = true; }catch(e){}
   /* Cubuk sayisi cift: cember TEPEDEN ikiye ayrilip iki yana ayni
      bantlar diziliyor. Simetri kasitli -- ses bir yone kaymiyor,
      halka bir butun olarak nefes aliyor. */
-  const FAZ_N = 96;
+  /* ── CUBUK SAYISI TELEFONDA DAHA AZ (isinma) ──────────────────
+     96 cubuk x iki gecis x saniyede 30 kare, telefonun en pahali
+     isiydi. 64'te cember hala dolu gorunuyor (cubuk araligi 5.6
+     dereceden 3.75'e cikiyor, gozle secilmiyor) ama cizim yuku
+     ucte bir azaliyor. Masaustunde 96 duruyor. */
+  const FAZ_N = MOBIL_CIHAZ ? 64 : 96;
   const FAZ_DUSUS = 0.86;      // cubuk inisi (yukselis anlik)
   const FAZ_TEPE_DUSUS = 0.965;// tepe noktasinin agir inisi
   let fazSev = null, fazTepe = null, fazDon = 0, fazNefes = 0, _grafIstek = 0;
@@ -361,11 +374,6 @@ try{ window.CARK_BASLADI = true; }catch(e){}
        · Piksel yogunlugu 2 yerine 1.5 (yine uygulamanin kendi
          degeriyle ayni). Tuval alani %44 kuculuyor.
      Ikisi birlikte faz kipinin cizim yukunu ~dortte bire indiriyor. */
-  const MOBIL_CIHAZ = (function(){
-    try{ return matchMedia('(pointer:coarse)').matches
-              || /iphone|ipad|ipod|android/i.test(navigator.userAgent); }
-    catch(e){ return false; }
-  })();
   const FAZ_FPS = MOBIL_CIHAZ ? 30 : 60;
   let _fazSonKare = 0;
   function kare(){

@@ -52,7 +52,7 @@ const EKRANLAR = [
 /* Ekranda MUTLAKA tam gorunmesi gereken denetimler. Biri kayarsa
    kullanici o isi hic yapamaz -- "calisiyor ama ulasilamiyor" en
    sinsi kusur turu. */
-const ZORUNLU = ['ayarTut', 'deriFirca', 'saatTus', 'tp', 'ileri', 'geri'];
+const ZORUNLU = ['ayarTut', 'kilitTus', 'deriFirca', 'saatTus', 'tp', 'ileri', 'geri'];
 
 /* Parmak olcusu. 44 px Apple'in kendi esigi; 40'in altini kusur
    sayiyoruz (dokunma alani gorunen kutudan buyuk olabilir, o yuzden
@@ -115,7 +115,12 @@ async function olc(sayfa){
     /* 3) SOL UST YIGIN UST USTE BINMIYOR: uc cizgi, firca, saat
           asagi dogru siralanmali. Binme, dokunulan tusun yanlis
           olmasi demek. */
-    const yigin = ['ayarTut','deriFirca','saatTus'].map(id=>kutular[id]).filter(Boolean);
+    /* SIRA 6 Eylul'de degisti: tutamak > HOLD > saat > firca
+       (kullanicinin istegi). Eski dizi firca ile saati ters
+       bekliyordu ve alt alta duran iki saglam tusu "binmis"
+       sayiyordu -- olcunun kendi kusuru. */
+    const yigin = ['ayarTut','kilitTus','saatTus','deriFirca']
+      .map(id=>kutular[id]).filter(Boolean);
     for(let i = 1; i < yigin.length; i++){
       if(yigin[i].y < yigin[i-1].alt - 1)
         o.binen.push('solust ' + i);

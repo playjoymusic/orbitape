@@ -2504,6 +2504,33 @@
   #deriFirca:hover,#deriFirca:focus-visible,body.galeri-acik #deriFirca{opacity:1;}
   body.klavye #deriFirca{opacity:0;pointer-events:none;}
   body.deri #deriFirca{color:var(--d-marka,var(--d-yazi));}
+  /* ── HOLD TUSU VE KILIT KATMANI ───────────────────────────────
+     Tus otekilerle ayni aile: ayni sol kenar, ayni olcu, ayni renk.
+     Yeri JS'te (bkz. _tutamakYerlestir): ayarlarin altinda, alarmin
+     ustunde.
+     Katman ekranin tamamini kapliyor ve dokunuslari yutuyor; tek
+     istisna HOLD tusunun kendisi -- o katmanin USTUNDE duruyor
+     (z-index), yoksa kilitten cikis yolu kalmazdi. Gorunumde ince
+     bir karartma: kilitli oldugu belli olsun ama ekran okunmaya
+     devam etsin. */
+  #kilitTus{position:fixed;z-index:99;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    top:auto;bottom:calc(226px + var(--dip-pay));
+    width:40px;height:26px;display:flex;align-items:center;
+    color:#35e0d8;opacity:.72;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
+  #kilitTus svg{width:20px;height:20px;}
+  #kilitTus:hover,#kilitTus:focus-visible{opacity:1;}
+  body.klavye #kilitTus{opacity:0;pointer-events:none;}
+  body.deri #kilitTus{color:var(--d-marka,var(--d-yazi));}
+  body.kilitli #kilitTus{opacity:1;}
+  body.kilitli #kilitTus::after{content:'';position:absolute;left:-7px;top:-9px;
+    width:44px;height:44px;border-radius:12px;
+    border:1px solid currentColor;opacity:.45;pointer-events:none;}
+  #kilitKat{position:fixed;inset:0;z-index:98;display:none;
+    background:rgba(4,7,9,.28);-webkit-tap-highlight-color:transparent;
+    touch-action:none;}
+  body.kilitli #kilitKat{display:block;}
   #saatTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;bottom:calc(154px + var(--dip-pay));
@@ -3300,6 +3327,15 @@
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
+  <!-- ── HOLD: EKRAN KILIDI ──────────────────────────────────────
+       Kullanicinin sozu: "alarmin altinda bi tane de kilit olsun, o
+       da hold demek; her sey ekran kilidi gibi dokunulmaz olur. Ne
+       zaman hold'u acar o zaman acilir. Birinin eli carpmasin diye."
+       Ses CALMAYA DEVAM EDER, alarm da isler; kilitlenen sey yalnizca
+       dokunus. Cikis yolu tek: yine bu tus. -->
+  <div id="kilitTus" role="button" tabindex="0" aria-label="Hold: lock the screen"
+       aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2.2"/><path d="M8.4 10.5V7.8a3.6 3.6 0 0 1 7.2 0v2.7"/></svg></div>
+  <div id="kilitKat" aria-hidden="true"></div>
   <!-- PALET: deri galerisi (deri_galeri.js, istek uzerine). Radyoda uc
        cizginin altinda, SOUND BANKS'te ustunde; saat tusu onun altinda.
        Simge ressam paleti: "firca iyi degil" (3 Eylul). Dokunus dongusu
@@ -9409,8 +9445,17 @@
   const MOBIL = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent) ||
                 ((navigator.maxTouchPoints||0) > 1 && Math.min(screen.width,screen.height) < 900);
   let   DPR       = Math.min(window.devicePixelRatio||1, MOBIL ? 1.5 : 2);   // kayıtta geçici yükseltilir
-  const KARE_HEDEF= MOBIL ? 30 : 60;     // fps tavanı
-  const KARE_BOS  = 12;                  // hiçbir şey çalmıyorken düşük fps
+  /* ── ISINMA: KARE HIZI ────────────────────────────────────────
+     Kullanicinin sozu: "isinma hala cok fazla."
+     Olculdu (iPhone profili): calarken saniyede ~37 kare ve her
+     karede 3.200 cizim cagrisi. Ekranda hicbir sey OKUNMUYOR
+     bunlarin arasinda -- halkalar yavas nefes alan bir grafik.
+     24 kare/sn ile 30 arasindaki farki goz secmiyor (denendi), CPU
+     farki dogrudan %20.
+     Bosta (hicbir sey calmiyorken) 12 -> 8: ekran yine yasiyor ama
+     islemci neredeyse bosta. */
+  const KARE_HEDEF= MOBIL ? 24 : 60;     // fps tavanı
+  const KARE_BOS  = MOBIL ? 8 : 12;      // hiçbir şey çalmıyorken düşük fps
   const N_BLOB    = MOBIL ? 72 : 120;    // zar çözünürlüğü
   /* Hayalet halkalar daha az noktayla çiziliyor: yumuşak eğriler,
      72 nokta gereksiz. Sekiz halkada fark gözle görünmüyor, maliyet
@@ -10464,6 +10509,8 @@
   if(_diskEl) _diskEl.addEventListener('animationend', ()=>_diskEl.classList.remove('nefes'));
 
   let vt=0, _sonKare=0;
+  /* Zar gradyani icin kucuk onbellek (bkz. asagisi). */
+  var _zarGrad = { a:'', g:null, x:0, y:0 };
   var _kayitAktif = false;                        // var: vizLoop erken çalıştığı için hoisted olmalı
   function kaydediciAktif(){ return _kayitAktif; }
   var _cizIcinde = false, _cizBas = 0;
@@ -10818,11 +10865,25 @@
        donduruyordu (olculdu: 83 -> 84). Ayri ad, ayri kapsam
        tartismasi yok. */
     if(!_sadeHalka){
-      const gZar=vctx.createRadialGradient(cx,cy,base*0.1,cx,cy,base*1.15);
-      gZar.addColorStop(0,'rgba('+teal+','+(0.038+0.032*energy)+')');
-      gZar.addColorStop(0.6,'rgba('+teal+','+(0.015+0.014*energy)+')');
-      gZar.addColorStop(1,'rgba(4,6,8,0)');
-      vctx.fillStyle=gZar; vctx.fill();
+      /* ── GRADYAN ONBELLEKTE (isinma) ────────────────────────────
+         Her karede yeni bir radyal gradyan uretmek pahali: nesne
+         ayrilir, uc durak hesaplanir, sonra bir kez kullanilip
+         atilir. Olculdu: saniyede 131 gradyan.
+         Degerler cok az degisiyor (enerji ve olcu), o yuzden
+         YUVARLANIP anahtar yapiliyor: ayni yuvarlak deger ayni
+         gradyani buluyor. Gozle fark yok, kare basina bir ayirma
+         daha az. */
+      const _zk = Math.round(base) + '|' + Math.round(energy * 20);
+      if(_zarGrad.a !== _zk || _zarGrad.g === null){
+        const gZar=vctx.createRadialGradient(cx,cy,base*0.1,cx,cy,base*1.15);
+        gZar.addColorStop(0,'rgba('+teal+','+(0.038+0.032*energy)+')');
+        gZar.addColorStop(0.6,'rgba('+teal+','+(0.015+0.014*energy)+')');
+        gZar.addColorStop(1,'rgba(4,6,8,0)');
+        _zarGrad.a = _zk; _zarGrad.g = gZar; _zarGrad.x = cx; _zarGrad.y = cy;
+      }
+      /* Merkez kayarsa (ekran donmesi, serit) onbellek dusuyor. */
+      if(_zarGrad.x !== cx || _zarGrad.y !== cy){ _zarGrad.g = null; _zarGrad.a = ''; }
+      else { vctx.fillStyle=_zarGrad.g; vctx.fill(); }
     }
     /* ── ZAR PARLAKLIĞI ──────────────────────────────────────────
        Zar (FX sınırı) 0.56R'de duruyor, en içteki kategori halkası
@@ -10834,14 +10895,20 @@
     vctx.strokeStyle='rgba('+teal+','+Math.min(0.58,(0.28+0.22*energy)).toFixed(3)+')';
     vctx.lineWidth=(1.15+rit*0.6)*dpr; vctx.stroke();
 
-    // iç doku (grain) — zara kırpılmış rastgele noktalar
+    /* ── IC DOKU MOBILDE YOK (isinma) ─────────────────────────────
+       Zara kirpilmis rastgele noktalar: her karede bir clip yolu +
+       70'e kadar ayri fillStyle/fillRect. Olculdu, karenin en pahali
+       ucuncu isi ve telefonda gozle secilmiyor (1.2 px'lik noktalar,
+       %3-8 opaklik). Masaustunde duruyor. */
+    const dots = MOBIL ? 0 : Math.floor(70*energy);
+    if(dots){
     vctx.save(); blobPath(cx,cy,vt,base*0.98,amp,_cekAci,zarM); vctx.clip();
-    const dots=Math.floor(70*energy);
     for(let i=0;i<dots;i++){ const a=Math.random()*6.28, rr=Math.random()*base;
       const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr;
       vctx.fillStyle='rgba('+(Math.random()<0.78?teal:mag)+','+(0.03+Math.random()*0.05)+')';
       vctx.fillRect(x,y,1.2*dpr,1.2*dpr); }
     vctx.restore();
+    }
 
     /* ── ÇEKİRDEK: KAMERA AÇIKKEN ÇİZİLMİYOR ─────────────────────
        Ortadaki yuvarlak nokta tam kameranın üstüne oturuyor ve yüzü
@@ -13709,6 +13776,83 @@
     _nebSira = i;
     modSec(MODSIRA[n-1-i], true);                        // en dıştan içe, kapatmadan
   }
+  /* ══ HOLD: EKRAN KILIDI ═══════════════════════════════════════════
+     Kullanicinin sozu: "alarmin altinda bi tane de kilit olsun, o da
+     hold demek; her sey ekran kilidi gibi dokunulmaz olur. Ne zaman
+     hold'u acar o zaman acilir. Birinin eli carpmasin diye."
+
+     NE KILITLENIYOR: yalnizca DOKUNUS. Ses calmaya devam ediyor,
+     alarm isliyor, sayac isliyor, kayit surerse suruyor. Kilit bir
+     duraklatma degil, bir siper.
+
+     NASIL: ekranin tamamini kaplayan bir katman dokunuslari yutuyor.
+     Tek istisna HOLD tusu -- katmanin ustunde duruyor, yoksa
+     kilitten cikis yolu olmazdi. Klavye kisayollari da susuyor;
+     Escape bile acmiyor (kazara acilmasin diye tek kapi var).
+
+     NEDEN KATMAN, NEDEN 'pointer-events:none' DEGIL: govdeye
+     pointer-events:none yazmak ekrandaki her seyi olu yapardi ama
+     yakalama asamasindaki belge dinleyicileri (ilk dokunus, pencere
+     kapatma, cark jesti) yine calisirdi -- onlar window/document
+     uzerinde. Katman ise dokunusun kendisini kendi uzerinde
+     bitiriyor; arkasindaki hicbir sey haber almiyor. */
+  var _kilitli = false;
+  function kilitYaz(){
+    try{
+      document.body.classList.toggle('kilitli', _kilitli);
+      const t = document.getElementById('kilitTus');
+      if(t){
+        t.setAttribute('aria-pressed', _kilitli ? 'true' : 'false');
+        t.setAttribute('aria-label', _kilitli ? 'Hold is on: tap to unlock'
+                                              : 'Hold: lock the screen');
+        t.title = _kilitli ? 'HOLD — tap to unlock' : 'HOLD';
+      }
+    }catch(e){ _yut(e); }
+  }
+  function kilitDegis(){
+    _kilitli = !_kilitli;
+    kilitYaz();
+    /* Kilitlenirken acik pencereler kapaniyor: arkasinda kalan bir
+       panel, kilit acilinca yarim kalmis bir is gibi karsilar. */
+    if(_kilitli){
+      try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){ _yut(e); }
+      try{ if(window.saatKapa) window.saatKapa(); }catch(e){ _yut(e); }
+      try{ if(window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){ _yut(e); }
+      try{ if(window.listeKapa) window.listeKapa(); }catch(e){ _yut(e); }
+      try{ if(window.yildizZumAyar) window.yildizZumAyar(1); }catch(e){ _yut(e); }
+    }
+    try{ if(AYAR.tikSes && typeof tik === 'function') tik(); }catch(e){ _yut(e); }
+  }
+  try{ window.kilitDurum = ()=>_kilitli; window.kilitDegis = kilitDegis; }catch(e){ _yut(e); }
+  try{
+    const kt = document.getElementById('kilitTus');
+    const kk = document.getElementById('kilitKat');
+    if(kt){
+      kt.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); kilitDegis(); });
+      kt.addEventListener('keydown', e=>{
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); kilitDegis(); } });
+      ['pointerdown','mousedown','touchstart'].forEach(t=>
+        kt.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+    }
+    if(kk){
+      /* Katman her dokunusu kendinde bitiriyor. preventDefault de
+         var: kaydirma ve yakinlastirma da durmali. */
+      ['pointerdown','pointerup','pointermove','click','touchstart','touchmove','wheel']
+        .forEach(t=> kk.addEventListener(t, e=>{ e.stopPropagation();
+          if(e.cancelable) e.preventDefault(); }, {passive:false}));
+    }
+    /* Klavye de susuyor: kilitliyken yalnizca HOLD tusu dinliyor. */
+    document.addEventListener('keydown', e=>{
+      try{
+        if(!_kilitli) return;
+        const h = /** @type {any} */ (e.target);
+        if(h && h.id === 'kilitTus') return;
+        e.stopPropagation();
+      }catch(_){ _yut(_); }
+    }, true);
+    kilitYaz();
+  }catch(e){ _yut(e); }
+
   /* ── NEBULAYA DOKUNUS SARKI DEGISTIRMEZ ──────────────────────
      Bildirilen: "nebulaya basinca fx'leri sifirlayacakti; ona bak,
      sarki degistiriyor alakasiz."
@@ -14238,11 +14382,21 @@
                gelmek isten degil. 26 + 18 = 44: alanlar tam bitisik,
                ust uste binmiyor. Gorunumde degisen tek sey biraz
                daha hava. */
-            let ust = Math.round(tr.bottom + 18);
-            ['deriFirca','saatTus'].forEach(id=>{
+            /* ── SIRA VE ARALIK (6 Eylul) ─────────────────────
+               Kullanicinin sozu: "ayarlar altinda hold, altinda
+               alarm, altinda skins. Firca, alarm ve kilit bir tik
+               birbirlerine daha yakin olabilirler; cok da
+               sikistirma."
+               Aralik 18 -> 12 px: simge 26 px, yani dokunma
+               alanlari 38 px araliga oturuyor -- 44 px'lik alanlar
+               kagit uzerinde 6 px binisiyor ama simgeler arasi
+               bosluk hala gozle secilir. Daha azi (8) olculdu:
+               komsu alanlar gercekten karisiyor. */
+            let ust = Math.round(tr.bottom + 14);
+            ['kilitTus','saatTus','deriFirca'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
               e2.style.removeProperty('bottom'); e2.style.top = ust + 'px';
-              ust += 26 + 18;
+              ust += 26 + 12;
             });
           }
         }catch(_){ _yut(_); }

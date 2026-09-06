@@ -8043,6 +8043,75 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ky.ilkBasisIsledi === true, ozk || 'gelince o dokunus oynatiliyor');
   }
 
+  /* ── HOLD: EKRAN KILIDI ─────────────────────────────────────────
+     Kullanicinin sozu: "alarmin altinda bi tane de kilit olsun, o da
+     hold demek; her sey ekran kilidi gibi dokunulmaz olur. Ne zaman
+     hold'u acar o zaman acilir. Birinin eli carpmasin diye."
+     Olculenler: tus var ve sirasi dogru (ayarlar > hold > alarm >
+     skins), basinca kilit kapaniyor, kilitliyken ekrandaki hicbir
+     dokunus ise yaramiyor (sarki degismiyor, panel acilmiyor), SES
+     DEVAM EDIYOR, ve cikis yolu yalnizca ayni tus. */
+  {
+    const kl = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      try{
+        const tus = document.getElementById('kilitTus');
+        c.tusVar = !!tus;
+        if(!tus) return c;
+        /* SIRA: ayarlar > hold > alarm > skins (yukaridan asagi). */
+        const y = id=>{ const e = document.getElementById(id);
+          return e ? e.getBoundingClientRect().top : -1; };
+        const sira = [y('ayarTut'), y('kilitTus'), y('saatTus'), y('deriFirca')];
+        c.sirali = sira.every((v,i)=> i === 0 || (v > sira[i-1]));
+        c.araliklar = sira.slice(1).map((v,i)=> Math.round(v - sira[i])).join('/');
+        /* Sıkısik degil: iki simge arasi en az 30 px. */
+        c.sikismamis = sira.slice(1).every((v,i)=> (v - sira[i]) >= 30);
+        const calanOnce = !ses.paused;
+        tus.click(); await bek(250);
+        c.kilitlendi = document.body.classList.contains('kilitli')
+                       && window.kilitDurum && window.kilitDurum() === true;
+        c.sesDevam = (!ses.paused) === calanOnce;
+        /* Kilitliyken dokunus ise yaramiyor: sonraki() sayaci ve
+           panel acilisi. */
+        const eS = window.sonraki; let n = 0; window.sonraki = function(){ n++; };
+        const kat = document.getElementById('kilitKat');
+        c.katVar = !!kat && getComputedStyle(kat).display !== 'none';
+        const vur = (x,y2)=>{ const el = document.elementFromPoint(x, y2) || document.body;
+          ['pointerdown','pointerup','click'].forEach(t=> el.dispatchEvent(
+            t === 'click' ? new MouseEvent(t,{bubbles:true, clientX:x, clientY:y2})
+                          : new PointerEvent(t,{bubbles:true, cancelable:true,
+                              pointerId:61, pointerType:'touch', clientX:x, clientY:y2}))); };
+        vur(Math.round(innerWidth/2), Math.round(innerHeight/2));
+        vur(20, Math.round(innerHeight/2));
+        await bek(200);
+        window.sonraki = eS;
+        c.dokunusYutuldu = n === 0;
+        c.panelKapali = !(window.ayarGoster && document.body.classList.contains('ayar-acik'));
+        /* Ustteki eleman kilit katmani: parmak ekranin ortasinda ona
+           denk geliyor. */
+        const orta = document.elementFromPoint(Math.round(innerWidth/2), Math.round(innerHeight/2));
+        c.katUstte = !!orta && orta.id === 'kilitKat';
+        /* Cikis: yine ayni tus. */
+        tus.click(); await bek(250);
+        c.acildi = !document.body.classList.contains('kilitli');
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ if(window.kilitDurum && window.kilitDurum()) window.kilitDegis(); }catch(e){}
+      return c;
+    });
+    const klOz = Object.keys(kl).filter(k => kl[k] !== true && k !== 'araliklar')
+                   .map(k => k + '=' + kl[k]).join(' ');
+    K('HOLD tusu var ve sirasi ayarlar > hold > alarm > skins',
+       kl.tusVar === true && kl.sirali === true && kl.sikismamis === true,
+       'araliklar ' + (kl.araliklar || '-') + ' px');
+    K('HOLD kilitliyor: dokunus ise yaramiyor, ses devam ediyor',
+       kl.kilitlendi === true && kl.katVar === true && kl.katUstte === true
+       && kl.dokunusYutuldu === true && kl.sesDevam === true,
+       klOz || 'ekran kilidi gibi');
+    K('HOLD yalnizca kendi tusuyla aciliyor', kl.acildi === true,
+       klOz || 'tek kapi');
+  }
+
   /* ── YILDIZLAR = ISTASYONLAR ────────────────────────────────────
      Kullanici: "hangi turdeysek her o yildiza bir istasyon atasak.
      2 parmak halkayi buyutebilelim, bir yildiza basinca ilk ismini
@@ -9760,8 +9829,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{
         const f = document.getElementById('deriFirca'), t = document.getElementById('ayarTut'), st = document.getElementById('saatTus');
         c.tusVar = !!f;
-        if(f && t && st){ const a = f.getBoundingClientRect(), b = t.getBoundingClientRect(), d = st.getBoundingClientRect();
-          c.sira = document.body.classList.contains('mood') ? (a.bottom <= b.top && d.bottom <= a.top) : (a.top >= b.bottom && d.top >= a.bottom); }
+        /* ── SIRA DEGISTI (6 Eylul) ─────────────────────────────
+           Kullanicinin sozu: "ayarlar altinda hold, altinda alarm,
+           altinda skins." Yani radyoda yukaridan asagi:
+           tutamak > HOLD > saat > firca. Eski olcu firca ile saati
+           ters bekliyordu; kural degil sira degisti. */
+        const kl = document.getElementById('kilitTus');
+        if(f && t && st){ const a = f.getBoundingClientRect(), b = t.getBoundingClientRect(),
+                                d = st.getBoundingClientRect(),
+                                e2 = kl ? kl.getBoundingClientRect() : null;
+          c.sira = document.body.classList.contains('mood')
+            ? (a.bottom <= b.top && d.bottom <= a.top)
+            : (!!e2 && e2.top >= b.bottom - 1 && d.top >= e2.top && a.top >= d.top); }
         const eskiDeri = AYAR.deri;
         f.click();
         for(let i = 0; i < 40 && !window.DERI_GALERI_HAZIR; i++) await bek(100);
@@ -9950,7 +10029,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return c;
     });
     const oz = Object.keys(g).filter(k => g[k] !== true).map(k => k + '=' + g[k]).join(' ');
-    K('Firca var; siralama tutamak > firca > saat', g.tusVar && g.sira, oz || 'yigin dogru');
+    K('Firca var; siralama tutamak > hold > saat > firca', g.tusVar && g.sira, oz || 'yigin dogru');
     K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
