@@ -133,7 +133,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
   const FAZ_N = 96;
   const FAZ_DUSUS = 0.86;      // cubuk inisi (yukselis anlik)
   const FAZ_TEPE_DUSUS = 0.965;// tepe noktasinin agir inisi
-  let fazSev = null, fazTepe = null, fazDon = 0, fazNefes = 0;
+  let fazSev = null, fazTepe = null, fazDon = 0, fazNefes = 0, _grafIstek = 0;
   function fazCiz(){
     try{
       if(!ctx || !R) return;
@@ -145,6 +145,24 @@ try{ window.CARK_BASLADI = true; }catch(e){}
           analiz.getByteFrequencyData(analizVeri); veri = analizVeri;
         }
       }catch(e){}
+      /* ── VERI YOKSA GRAFI ISTE ────────────────────────────────
+         Kullanicinin sozu: "faz sese duyarli degil." Cubuklar sesi
+         cozumleyiciden okuyor; cozumleyici de ancak SES GRAFI
+         kuruluysa var. Graf bazi yollarda kurulmadan calmaya
+         basliyor (bkz. index.html: izin hatasi / CORS geri
+         cekilmesi) ve o zaman faz olu duruyor.
+         Burada sessizce isteniyor: saniyede bir defadan sik degil,
+         ve yalnizca GERCEKTEN ses varken. */
+      if(!veri) try{
+        const t = Date.now();
+        if(t - _grafIstek > 1000 && typeof ses !== 'undefined' && ses
+           && ses.src && !ses.paused && !ses.ended){
+          _grafIstek = t;
+          if(typeof grafHazir === 'undefined' || !grafHazir){
+            if(typeof analizKur === 'function') analizKur();
+          }
+        }
+      }catch(e){ yut(e); }
       if(!fazSev || fazSev.length !== FAZ_N){
         fazSev = new Float32Array(FAZ_N); fazTepe = new Float32Array(FAZ_N);
       }
@@ -187,11 +205,19 @@ try{ window.CARK_BASLADI = true; }catch(e){}
       const ad = raflar(), N = ad.length || 1;
       const r0 = R * (IC_ORAN + fazNefes * 0.035);
       const kalin = Math.max(2.2, R * 0.023);
+      /* ── VURUS DISARI PATLIYOR ────────────────────────────────
+         Kullanicinin sozu: "ses frekansi patlamali kenarlara,
+         estetik." Once cubuk boyu R'nin en fazla %34'u kadar
+         uzuyordu -- sesin tepesi bile ic cemberin yakininda
+         kaliyordu. Menzil %52'ye acildi ve tepe noktasi daha da
+         disari gidiyor: sessizde cember ince bir hat, vurusta
+         disari acilan bir taç. */
+      const MENZIL = 0.52;
       for(let i = 0; i < FAZ_N; i++){
         const aci = i * 360 / FAZ_N + fazDon;
         const t = (aci - 90) * Math.PI / 180;
         const v = fazSev[i];
-        const r2 = r0 + R * (0.02 + v * 0.34);
+        const r2 = r0 + R * (0.02 + v * MENZIL);
         const renk = rafRengi(ad[Math.floor(((aci % 360) + 360) % 360 / 360 * N) % N]) || yazi;
         const x1 = ox + Math.cos(t) * r0, y1 = oy + Math.sin(t) * r0;
         const x2 = ox + Math.cos(t) * r2, y2 = oy + Math.sin(t) * r2;
@@ -199,10 +225,10 @@ try{ window.CARK_BASLADI = true; }catch(e){}
            cubuk. shadowBlur ayni isi yapardi ama 96 cubuk x 60 kare
            demek -- olculdu, en pahali yol o. Bu ucuz ve ayni etkiyi
            veriyor: vurus aninda cubugun etrafi isiyor. */
-        if(v > 0.28){
+        if(v > 0.20){
           ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
           ctx.strokeStyle = renk; ctx.lineWidth = kalin * 3.2; ctx.lineCap = 'round';
-          ctx.globalAlpha = (v - 0.28) * 0.28;
+          ctx.globalAlpha = (v - 0.20) * 0.30;
           ctx.stroke();
         }
         ctx.beginPath();
@@ -212,7 +238,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         ctx.globalAlpha = 0.30 + v * 0.65;
         ctx.stroke();
         /* Tepe noktasi: kucuk, ayni renkte, soluk. */
-        const rt = r0 + R * (0.02 + fazTepe[i] * 0.34);
+        const rt = r0 + R * (0.02 + fazTepe[i] * (MENZIL + 0.06));
         if(rt > r2 + R * 0.012){
           ctx.beginPath();
           ctx.arc(ox + Math.cos(t) * rt, oy + Math.sin(t) * rt, kalin * 0.42, 0, Math.PI * 2);
@@ -221,6 +247,10 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         }
       }
       ctx.globalAlpha = 1;
+      /* Adlar ve igne FAZ'da da var: hangi turde oldugun gorunuyor
+         ve parmakla cevrilebiliyor (bkz. bas). Cubuklarin disina
+         yaziliyor ki vurus tepe yaptiginda ustune binmesin. */
+      adlarVeIgne(ad, N, yazi, R * (AD_ORAN + 0.06), r0 + R * (0.02 + MENZIL + 0.10));
     }catch(e){ yut(e); }
   }
   function ciz(){
@@ -253,10 +283,17 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
-      /* RAF ADLARI ÇARKLA BİRLİKTE DÖNÜYOR ve her biri KENDİ
-         renginde. İğnenin altındaki büyük ve tam renkte; ötekiler
-         soluk. Ekranın başka hiçbir yerinde raf adı yazmıyor -- bu
-         çemberin işi o. */
+      adlarVeIgne(ad, N, yazi, R * AD_ORAN, R * (UZUN_ORAN + 0.028));
+    }catch(e){ yut(e); }
+  }
+  /* ── RAF ADLARI + IGNE ──────────────────────────────────────────
+     Iki kip de ayni seyi soyluyor: igne neyin ustunde. Faz kipinde
+     de gerekiyor -- kullanicinin sozu: "faz... cevrilmiyor". Cark
+     disleri orada yok ama ADLAR ve IGNE var, yani gokyuzune degil
+     bir gostergeye bakiyorsun ve parmakla ceviriyorsun. */
+  function adlarVeIgne(ad, N, yazi, adYari, igneYari){
+    try{
+      const rad = a => (a - 90) * Math.PI / 180;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const secili = seciliNo();
       /* YALNIZCA IGNENIN CEVRESI YAZILIYOR: bütün çember yazılınca
@@ -267,7 +304,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         let a = ((carkAci + i * 360 / N) % 360 + 360) % 360;
         if(a > 180) a -= 360;
         if(Math.abs(a) > AD_YAY) continue;
-        const t = rad(a), r = R * AD_ORAN;
+        const t = rad(a), r = adYari;
         const x = ox + Math.cos(t) * r, y = oy + Math.sin(t) * r;
         const bu = (i === secili);
         const renk = rafRengi(ad[i]) || yazi;
@@ -282,7 +319,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
       ctx.globalAlpha = 1;
       /* İĞNE: sabit, tepede. Rengi seçili rafın rengi -- neyin
          üstünde durduğunu iki kere söylüyor. */
-      const ir = R * (UZUN_ORAN + 0.028);
+      const ir = igneYari;
       ctx.beginPath();
       ctx.moveTo(ox, oy - ir);
       ctx.lineTo(ox + R * 0.030, oy - ir - R * 0.050);
@@ -410,7 +447,11 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          degistirmek, bakilan gokyuzunu elin altinda degistirmek
          olurdu. */
       if(window.yildizZumAcik && window.yildizZumAcik()) return;
-      if(kip !== 'cark' || !R || kapali || !acikMi() || !bandaMi(e)) return;
+      /* FAZ KIPINDE DE CEVRILIYOR (6 Eylul). Kullanicinin sozu:
+         "faz ne alaka anlamadim... cevrilmiyor." Faz bir gosterge,
+         bir duvar degil: ayni bant, ayni jest, ayni sonuc -- tek
+         fark disler yerine ses cubuklari. */
+      if((kip !== 'cark' && kip !== 'faz') || !R || kapali || !acikMi() || !bandaMi(e)) return;
       basili = true; oturuyor = false; hiz = 0;
       sonAci = aciBul(e); sonZaman = performance.now();
       e.preventDefault(); e.stopPropagation();

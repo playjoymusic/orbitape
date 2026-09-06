@@ -1030,12 +1030,17 @@
      display:none DEGIL: goruntuden cikiyor ama olculebilir kaliyor,
      yoksa adin genisligini olcen kod (_solUstAdSigdir) sifir
      okuyup her seferinde en buyuk puntoyu secerdi. */
-  body:not(.mood) #modKut{visibility:hidden;pointer-events:none;}
-  body:not(.mood) #modKut{display:flex;position:fixed;z-index:70;
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:calc(15px + env(safe-area-inset-top, 0px));
-    flex-direction:column;align-items:stretch;gap:6px;
-    pointer-events:none;user-select:none;}
+  /* ── TUR ADI MARKANIN SOLUNDA, IKI TARAFTA DA (6 Eylul) ───────
+     Kullanicinin sozu: "sol ustten hangi turde oldugumuzu da
+     sildigimiz icin... ORBITAPE tarafindaki gibi turler ORBITAPE
+     isminin sol yaninda yazsin. Ama cark varsa da olsun."
+     Yani raf adi artik carkin tekelinde degil: cark varken de
+     yokken de ekranda tek bir sabit yerde yaziyor -- markanin
+     solunda, arsiv tarafiyla AYNI yerde. Ustteki iki kural (radyoda
+     sol uste tasima + gizleme) bu yuzden kaldirildi; radyo da arsiv
+     gibi davraniyor.
+     Blok yine olculebilir: _solUstAdSigdir'in okudugu genislik
+     buradan geliyor ve punto ona gore kisiliyor. */
   /* PUNTO KUTUYA YAZILIYOR, yaziya degil: cubuk tuvalinin 'em'i de
      ayni degeri gorsun -- olculeri sabit piksel yerine yazinin
      puntosuna baglayabilelim. Ikisi de ayni degiskenden okuyor. */
@@ -3914,7 +3919,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.05';
+  var ORB_SURUM = '2026.09.06';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -9308,6 +9313,17 @@
       try{ _araIdx = null; _araSay = -1; }catch(e){ _yut(e); }
       try{ gecmisSifirla(); }catch(e){ _yut(e); }
       try{ modAdiYaz(); zeminUygula(); moodYaz(); }catch(e){ _yut(e); }
+      /* ── CARK AYNI ANDA OTEKI DUNYAYA GECIYOR ─────────────────
+         Bildirilen: "ORBITAPE'e geciyorum, carkta hala RADIOTAPE
+         isimleri oluyor; ne zaman bir tiklasam duzeliyor."
+         Sebep: carkin okudugu raf listesi (raflar()) 'mod'a bagli
+         ve mod burada degisiyor, ama carka HABER VERILMIYORDU --
+         bir sonraki dokunus tesadufen yeniden ciziyordu.
+         Kip degisimi de tam olarak raf degisimi kadar bir olay:
+         aileSec ve modSec nasil carki cagiriyorsa burasi da
+         cagiriyor. Hizalama ayni karede: igne yeni dunyanin ilk
+         rafinda duruyor. */
+      try{ if(window.carkTazele) window.carkTazele(); }catch(e){ _yut(e); }
       /* Kip anahtarinin ekran okuyucu tarafi: yazi CSS'ten geliyor
          ama aria-checked ve etiket JS'ten -- ikisi ayni anda
          degismezse anahtar bir sey gosterip baskasini soyler. */
@@ -11634,8 +11650,31 @@
     try{ ses.muted = (kSes <= 0.001); }catch(e){ _yut(e); }
     ses.play().then(()=>{
       basladi(); iz('analizKur'); analizKur(); yatayUygula();
-    }).catch(()=>{
+    }).catch((err)=>{
       if(grafHazir){ clearTimeout(aramaTimer); atla(); return; }  // graf TAM -> izinsiz çalınca SESSİZ olur -> atla
+      /* ── "IZIN YOK" ILE "CORS YOK" AYNI SEY DEGIL ──────────────
+         Olculen kusur (kullanici): "silik fx'ler basiliyor ama etki
+         sifir." Silik olmasi FX'IN MUMKUN OLMADIGI anlamina geliyor
+         ve buraya duşulmuş demek.
+         Buradaki geri cekilme dogru bir cozumdu ama SEBEBE
+         bakmiyordu: play() iki cok farkli nedenle reddedebiliyor.
+           · NotAllowedError -> tarayicinin OTOMATIK CALMA kurali.
+             Kaynakla, CORS'la ilgisi yok; bir dokunustan sonra ayni
+             kaynak sorunsuz caliyor.
+           · Otekiler (CORS, kodek, ag) -> ses gercekten bu haliyle
+             calmiyor; crossOrigin'i birakip FX'siz calmak dogru.
+         Ayrim yokken iPhone'da ilk dokunustan onceki her deneme
+         crossOrigin'i sifirliyor ve FX o parca boyunca -- cogu zaman
+         butun oturum boyunca -- olu kaliyor. Kullanicinin gordugu
+         tam olarak buydu.
+         Artik izin hatasinda crossOrigin KORUNUYOR: uygulama zaten
+         ilk dokunusta yeniden deniyor ve o denemede graf kuruluyor. */
+      const _izinYok = !!(err && (err.name === 'NotAllowedError'
+                                  || /gesture|user activation|not allowed/i.test(String(err.message||''))));
+      if(_izinYok){
+        try{ bekleGoster(); }catch(_){ _yut(_); }
+        return;                       // dokunus gelince yeniden denenecek
+      }
       /* srcNode değil grafHazir: yarım kalmış grafta ses doğrudan
          çıkışa bağlı ve DUYULUYOR, parçayı atlamak yanlış olurdu. */
       try{ ses.removeAttribute('crossorigin'); ses.crossOrigin=null; }catch(e){ _yut(e); }   // graf yoksa: sesli doğrudan çal (FX yok)
@@ -13625,7 +13664,18 @@
      raf adi kipe gore yer degistiriyor. Liste liste.js'te (istek
      uzerine); ilk dokunusta iner ve acilir, sonra jestleri (basili
      tut, surt, birak) modul kendisi dinler. */
-  function _solYarida(el){ try{ const r = el.getBoundingClientRect(); return (r.left + r.width/2) < window.innerWidth/2; }catch(e){ return true; } }
+  /* ── HANGI YAZI NE YAPAR: YERE DEGIL KIMLIGE BAKILIYOR ────────
+     Once ekranin hangi yarisinda oldugu soruluyordu: raf adi sol
+     ustte, marka sag ustte -- "soldaki ileri gecer, sagdaki raf
+     listesini acar".
+     6 Eylul'de raf adi markanin SOLUNA, ayni serite tasindi
+     (kullanicinin istegi). Dar ekranda ikisi de sag yariya dusuyor
+     ve konuma bakan olcu ikisini de 'liste' yapiyordu: raf adina
+     basinca sarki gecmiyordu -- olculdu ve kullanici da bunu
+     yasadi.
+     Kural degismedi, olcu degisti: RAF ADI ileri gecer, MARKA
+     listeyi acar. Iki eleman, iki is, yerlerinden bagimsiz. */
+  function _solYarida(el){ try{ return !!el && el.id === 'modAd'; }catch(e){ return true; } }
   const LISTE_DOSYA = 'liste.js';
   let _listeIsteniyor = false, _listeBekleyen = null;
   function istasyonListesiYukle(){

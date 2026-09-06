@@ -6833,9 +6833,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const eM = mod, eA = AKTIF_AILE;
         mod = 'radio'; AKTIF_AILE = 'JAZZ'; modAdiYaz();
         const ad = document.getElementById('modAd'), marka = document.querySelector('#ust .kanal.ad'), sm = document.getElementById('bekle');
-        const solda = el=>{ const r = el.getBoundingClientRect(); return (r.left + r.width/2) < innerWidth/2; };
-        c.solSag = solda(ad) !== solda(marka);
-        const solEl = solda(ad) ? ad : marka, sagEl = solda(ad) ? marka : ad;
+        /* ── IKISI DE UST SERITTE (6 Eylul) ─────────────────────
+           Raf adi eskiden ekranin SOL USTUNDEydi, marka sag ustte;
+           olcu de "ekranin iki yarisinda" idi. Kullanici degistirdi:
+           "turler ORBITAPE isminin sol yaninda yazsin." Artik ikisi
+           ayni seritte, yan yana. Kural ayni kaldi -- ADA basmak
+           siradaki sese gecer, MARKAYA basmak raf listesini acar --
+           ama olcu degisti: ad markanin SOLUNDA ve uzerine binmiyor. */
+        const ra = ad.getBoundingClientRect(), rm = marka.getBoundingClientRect();
+        c.solSag = ra.right <= rm.left + 1 && ra.left < rm.left;
+        const solEl = ad, sagEl = marka;
         /* SOLDAKI AD ILERI GECER (3 Eylul): "sol ustten sarki gecsin
            ama ILERI dogru ve menu orda acilmasin." Once geriGit()
            cagiriyordu; olculen sey degisti, kural degil: soldaki ad
@@ -7602,13 +7609,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      duracagi bir cubuk kalmadi. Olculen sey degisti: cubukla olan
      mesafe degil, EKRANIN TEPESINE dayanmis olmasi. Sol kenar ve
      cizgi boyu kurallari duruyor. */
+  /* 6 Eylul: raf adi bloku ust serite (markanin soluna) tasindi;
+     radyoda sol ustte artik HICBIR SEY yok. Cubukla hizalama olcusu
+     bu yuzden dustu -- kiyaslanacak cubuk orada degil. Kalan kural
+     ayni ve daha yalin: tutamak ekranin tepesine dayali. */
   K('Radyoda tutamak en uste dayali',
      !!ayTut && (ayTut.mood || (
         ayTut.ustFark > 0 && ayTut.ustFark <= 70
-     && Math.abs(ayTut.cubukSol) <= 1
      && ayTut.enUstCizgi >= 20)),
      ayTut && !ayTut.mood
-       ? 'cubugun '+ayTut.cubukAlti+'px altinda | cizgi '+ayTut.enUstCizgi+'px / cubuk '+ayTut.cubukBoy+'px'
+       ? 'tepeden '+ayTut.ustFark+'px | cizgi '+ayTut.enUstCizgi+'px'
        : 'arsiv kipi, bu kural orada yok');
   /* SEKIL KIPE GORE:
        arsivde DUZ (34/34/34) -- tutamak modulun ust satiri, altindaki
@@ -9607,10 +9617,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         }
         c.degisti = window.carkDurum().secili !== once;
         c.rafaOturdu = Math.abs(window.carkDurum().aci % (360 / (AILE_ADLAR||['x']).length)) < 0.5;
-        /* Raf adi ekranin baska yerinde YAZMIYOR: sol ust gizli. */
-        const mk = document.getElementById('modKut');
-        c.solUstGizli = !mk || getComputedStyle(mk).visibility === 'hidden'
-                        || document.body.classList.contains('mood');
+        /* ── RAF ADI MARKANIN SOLUNDA (6 Eylul) ───────────────────
+           Once "raf adi yalnizca carkta yaziyor, sol ust bos"
+           kuraliydi. Kullanici degistirdi: "sol ustten hangi turde
+           oldugumuzu da sildigimiz icin... ORBITAPE tarafindaki gibi
+           turler ORBITAPE isminin sol yaninda yazsin. Ama cark varsa
+           da olsun."
+           Yani ad artik carkin tekelinde degil; olculen sey de bu:
+           ad gorunur mu, ust seritte mi, ve marka yazisiyla
+           CAKISMIYOR mu (dar ekranda ilk tehlike o). */
+        const ma = document.getElementById('modAd');
+        const marka = document.querySelector('#ust .kanal.ad');
+        const ka = ma ? ma.getBoundingClientRect() : null;
+        const km = marka ? marka.getBoundingClientRect() : null;
+        c.adGorunur = !!ma && getComputedStyle(ma).visibility !== 'hidden'
+                      && +getComputedStyle(ma).opacity > 0.1 && !!ma.textContent.trim();
+        c.adMarkaninSolunda = !!(ka && km) && ka.left < km.left;
+        c.adCakismiyor = !!(ka && km) && ka.right <= km.left + 1;
+        c.adUstSeritte = !!(ka && km) && Math.abs(ka.top - km.top) < 40;
         /* Tik sesi ayari AUDIO bolumunde ve kapatilabiliyor. */
         c.sesAyari = !!document.querySelector('#ayar .sat[data-ayar="carkSes"]');
       }catch(e){ c.hata = String(e && e.message || e); }
@@ -9621,8 +9645,88 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ckOz || 'AYAR.merkez=cark, tuval acik');
     K('Carki cevirmek rafi degistiriyor ve dise oturuyor', ck.degisti && ck.rafaOturdu,
        ckOz || 'cevirdi, en yakin rafa oturdu');
-    K('Raf adi yalnizca carkta yaziyor (sol ust bos)', ck.solUstGizli, ckOz || 'modKut gizli');
+    K('Raf adi markanin solunda yaziyor (cark olsa da)',
+       ck.adGorunur === true && ck.adMarkaninSolunda === true
+       && ck.adCakismiyor === true && ck.adUstSeritte === true,
+       ckOz || 'ust seritte, markaya carpmadan');
     K('Cark tikirtisi ayarlardan kapatilabiliyor', ck.sesAyari, ckOz || 'AUDIO: WHEEL CLICK');
+
+    /* ── FAZ DA BIR GOSTERGE, DUVAR DEGIL ─────────────────────────
+       Kullanicinin sozu: "faz ne alaka anlamadim, sese duyarli degil
+       cevrilmiyor."
+       Iki ayri kusur cikti ve ikisi de gercekti:
+         · Cevrilmiyordu -- jest yalnizca 'cark' kipinde basliyordu.
+         · Sese duyarli degildi -- cubuklar ses grafindan okuyor ve
+           graf bazi yollarda hic kurulmuyordu (bkz. index.html'de
+           izin hatasi ayrimi). Faz artik veri yoksa grafi istiyor.
+       Olculen: faz kipinde parmakla cevirmek RAF DEGISTIRIYOR mu. */
+    const fz = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      const eskiMerkez = AYAR.merkez;
+      try{
+        AYAR.merkez = 'faz'; window.merkezUygula(); await bek(900);
+        c.fazKipi = window.carkDurum().kip === 'faz';
+        const tv = document.getElementById('carkTuval');
+        c.tuvalVar = !!tv;
+        if(tv){
+          const b2 = tv.getBoundingClientRect();
+          const cx = b2.left + b2.width/2, cy = b2.top + b2.height/2, r0 = b2.width * 0.42;
+          const once = window.carkDurum().secili;
+          const ol = (t,x,y)=> tv.dispatchEvent(new PointerEvent(t, {clientX:x, clientY:y,
+            bubbles:true, cancelable:true, pointerId:78, pointerType:'touch', isPrimary:true,
+            buttons: t==='pointerup' ? 0 : 1}));
+          ol('pointerdown', cx, cy - r0);
+          for(let i = 1; i <= 8; i++){ const a2 = -Math.PI/2 + i*0.10;
+            ol('pointermove', cx + Math.cos(a2)*r0, cy + Math.sin(a2)*r0); await bek(16); }
+          ol('pointerup', cx + Math.cos(-Math.PI/2+0.8)*r0, cy + Math.sin(-Math.PI/2+0.8)*r0);
+          for(let i = 0; i < 80; i++){ await bek(100); if(window.carkDurum().hiz === 0) break; }
+          c.cevrildi = window.carkDurum().secili !== once;
+          c.olcum = once + ' -> ' + window.carkDurum().secili;
+        }
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ AYAR.merkez = eskiMerkez; window.merkezUygula(); }catch(e){}
+      await bek(400);
+      return c;
+    });
+    const fzOz = Object.keys(fz).filter(k => fz[k] !== true && k !== 'olcum')
+                   .map(k => k + '=' + fz[k]).join(' ');
+    /* ── KIP DEGISINCE CARK AYNI ANDA GECIYOR ─────────────────────
+       Bildirilen: "ORBITAPE'e geciyorum, carkta hala RADIOTAPE
+       isimleri oluyor; ne zaman bir tiklasam duzeliyor."
+       Carkin okudugu raf listesi 'mod'a bagli; mod degisiyordu ama
+       carka haber verilmiyordu, bir sonraki dokunus tesadufen
+       yeniden ciziyordu. Olculen: kip degisiminden HEMEN sonra
+       (dokunus yok) cark oteki dunyanin raflarinda mi. */
+    const kp = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      const eskiMood = AYAR.mood;
+      try{
+        AYAR.mood = false; moodUygula(false); await bek(600);
+        c.radyodaBasladi = (AILE_ADLAR || []).includes(window.carkDurum().secili);
+        AYAR.mood = true; moodUygula(false);
+        await bek(150);                       // tek kare + pay: DOKUNUS YOK
+        const s1 = window.carkDurum().secili;
+        c.hemenArsivde = (ARSIV_ADLAR || []).includes(s1);
+        AYAR.mood = false; moodUygula(false);
+        await bek(150);
+        const s2 = window.carkDurum().secili;
+        c.hemenRadyoda = (AILE_ADLAR || []).includes(s2);
+        c.olcum = s1 + ' / ' + s2;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ AYAR.mood = eskiMood; moodUygula(false); }catch(e){}
+      await bek(400);
+      return c;
+    });
+    const kpOz = Object.keys(kp).filter(k => kp[k] !== true && k !== 'olcum')
+                   .map(k => k + '=' + kp[k]).join(' ');
+    K('Kip degisince cark ayni anda oteki dunyaya geciyor',
+       kp.radyodaBasladi === true && kp.hemenArsivde === true && kp.hemenRadyoda === true,
+       kpOz || (kp.olcum || 'dokunus beklemiyor'));
+
+    K('Faz kipinde de cevrilip raf degisiyor',
+       fz.fazKipi === true && fz.cevrildi === true, fzOz || (fz.olcum || 'faz cevriliyor'));
   }
 
   /* ── DERI GALERISI (deri_galeri.js): FIRCA ────────────────────────
@@ -9852,6 +9956,65 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        g.merkezDort && g.merkezSecili, oz || 'dort tus, secili isaretli');
     K('Yukari kaydirma galeriyi kapatir', g.kaydirKapatti, oz || 'tepedeyken yukari cekis');
     K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
+
+    /* ── SERITTE HER SEY SABIT YERDE ──────────────────────────────
+       Kullanicinin sozu: "minimize olunca tek sabit olmali; arada 2
+       satir oluyor, carpinin ve oklarin yerleri degisiyor. Her sey
+       sabit olsun ki hizli hizli oklarla dolasalim -- ezber
+       bozuluyor."
+       Olculen sey tam bu: deri adi kisayken ve COK UZUNKEN ok, ▦ ve
+       ✕ AYNI pikselde mi, serit ayni yukseklikte mi kaliyor. Ayrica
+       oklar kenara yapismiyor (basparmak orta bolgeyi buluyor). */
+    const sb = await pg.evaluate(async ()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const c = {};
+      try{
+        /* Galeri kapali olabilir (onceki blok kapatmis): once ac,
+           sonra serite indir. Kapali panelde olculer sifir doner. */
+        if(!window.deriGaleriAcik || !window.deriGaleriAcik()){
+          try{ document.getElementById('deriFirca').click(); }catch(e){}
+          for(let i = 0; i < 40 && !(window.deriGaleriAcik && window.deriGaleriAcik()); i++) await bek(120);
+          await bek(300);
+        }
+        const g2 = document.getElementById('deriGaleri');
+        if(!g2){ c.hata = 'galeri yok'; return c; }
+        if(!g2.classList.contains('serit')){
+          try{ window.deriGaleriKucult(); }catch(e){}
+          await bek(600);
+        }
+        c.seritte = g2.classList.contains('serit');
+        const yer = k => { const e = g2.querySelector('.dg-tus.' + k);
+          if(!e) return null; const r = e.getBoundingClientRect();
+          return [Math.round(r.left), Math.round(r.top)]; };
+        const kutu = ()=>{ const r = g2.getBoundingClientRect();
+          return [Math.round(r.left), Math.round(r.width), Math.round(r.height)]; };
+        const ad = g2.querySelector('.dg-secili');
+        const kisaAd = ad.textContent;
+        const a1 = { geri:yer('geri'), ileri:yer('ileri'), buyut:yer('buyut'),
+                     kapat:yer('kapat'), kutu:kutu() };
+        ad.textContent = 'MIDNIGHT CHROME LIMITED EDITION XL VERY LONG';
+        await bek(250);
+        const a2 = { geri:yer('geri'), ileri:yer('ileri'), buyut:yer('buyut'),
+                     kapat:yer('kapat'), kutu:kutu() };
+        ad.textContent = kisaAd;
+        c.sabit = JSON.stringify(a1) === JSON.stringify(a2);
+        c.olcum = JSON.stringify(a1) + ' | uzun: ' + JSON.stringify(a2);
+        /* Oklar kenara yapismasin: sol ok panelin sol kenarindan en
+           az 20 px iceride. */
+        c.okKenardaDegil = !!a1.geri && (a1.geri[0] - a1.kutu[0]) >= 20;
+        /* Ad kesiliyor mu: tasma yok. */
+        const ar = ad.getBoundingClientRect(), gr = g2.getBoundingClientRect();
+        c.adTasmiyor = ar.right <= gr.right + 1 && ar.left >= gr.left - 1;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const sbOz = Object.keys(sb).filter(k => sb[k] !== true && k !== 'olcum')
+                   .map(k => k + '=' + sb[k]).join(' ');
+    K('Seritte oklar ve ✕ ad degisse de ayni yerde',
+       sb.seritte === true && sb.sabit === true && sb.adTasmiyor === true,
+       sbOz || (sb.olcum || 'sabit'));
+    K('Seritte oklar kenara yapismiyor', sb.okKenardaDegil === true,
+       (sb.olcum || '') + (sb.okKenardaDegil ? ' — sol ok kenardan >= 20 px iceride' : ' — DAR'));
   }
 
   /* ── PENCERE KURALLARI: UCUNDE DE AYNI ──────────────────────────
@@ -10159,18 +10322,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const mk = document.getElementById('modKut');
       const gorunurluk = mk ? getComputedStyle(mk).visibility : 'yok';
       const t2 = document.getElementById('ayarTut').getBoundingClientRect();
-      const gizli = gorunurluk === 'hidden';
+      const ra2 = document.getElementById('modAd').getBoundingClientRect();
+      /* Sol ust bos demek: ad bloku tutamagin dikeyinde ve solunda
+         DEGIL. Ad artik ust seritte, markanin solunda duruyor. */
+      const solUstteDegil = ra2.left > t2.right + 8 || ra2.top > t2.bottom + 8;
       const ustFark = Math.round(t2.top);
       AYAR.mood=eski; moodUygula(); await bek(200);
       try{ geriYerlestir(); }catch(e){}
-      return { k1, k2, gizli, gorunurluk, ustFark, tepede: t2.top > 0 && t2.top <= 70 };
+      return { k1, k2, solUstteDegil, gorunurluk, ustFark, tepede: t2.top > 0 && t2.top <= 70 };
     });
-    /* 4 Eylul: ad bloku radyoda GORUNMUYOR (visibility:hidden), yani
-       cizgilerin ustune binebilecegi bir yazi yok. Olculen sey artik
-       o blogun gercekten gorunmedigi ve tutamagin tepede oldugu. */
-    K('Radyoda sol ustte raf adi gorunmuyor, cizgiler tepede',
-       ust.gizli === true && ust.tepede === true,
-       'modKut visibility ' + ust.gorunurluk + ' · tutamak tepeden ' + ust.ustFark + 'px');
+    /* 6 Eylul: ad bloku ust serite tasindi (markanin soluna).
+       Radyoda sol ustte yine HICBIR SEY yok -- olculen sey artik
+       "gizli mi" degil, "sol ustte degil mi" ve tutamak tepede mi. */
+    K('Radyoda sol ust bos, raf adi ust seritte, cizgiler tepede',
+       ust.solUstteDegil === true && ust.tepede === true,
+       'ad sol ustte degil: ' + ust.solUstteDegil + ' · tutamak tepeden ' + ust.ustFark + 'px');
   }
   /* Radyoda konsolun ust satiri KIP ANAHTARI. Ayni uc olcu:
        modulun uzerine binmiyor, arada satir boslugu var, ayni sol

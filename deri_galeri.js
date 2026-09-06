@@ -76,13 +76,13 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        BUYUGU: sabit pay (simgelerin alti) ya da ekranin %20'si --
        kisa ekranda birinci, uzun telefonda ikincisi kazaniyor ve
        serit her iki durumda da aletin hemen ustunde duruyor. */
-    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:max(calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 118px), 13vh);width:auto;max-width:min(96vw,460px);padding:2px 0;border-radius:22px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
+    "#deriGaleri.serit{inset:auto;left:50%;transform:translateX(-50%);top:max(calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 118px), 13vh);width:min(98vw,520px);max-width:98vw;padding:2px 0;border-radius:22px;box-shadow:0 4px 18px rgba(0,0,0,.4)}",
     "#deriGaleri.serit .dg-izgara,#deriGaleri.serit .dg-sayac{display:none}",
     /* YATAY DURUS: ekran 480 pikselden kisa. Alet ortada ve
        kuculse bile serit onun uzerine denk geliyor. Cozum dikey
        degil YATAY: serit sola yanasiyor, alet ortada kaliyor ve
        ikisi yan yana duruyor. */
-    "@media (max-height:480px){#deriGaleri.serit{left:calc(var(--kx) + env(safe-area-inset-left,0px));transform:none;max-width:min(46vw,300px)}}",
+    "@media (max-height:480px){#deriGaleri.serit{left:calc(var(--kx) + env(safe-area-inset-left,0px));transform:none;width:min(52vw,340px);max-width:52vw}}",
     "#deriGaleri.serit .dg-baslik{margin-right:2px}",
     /* ── SERIT IKI SATIR ────────────────────────────────────────
        Tek satira sigdirma denendi ve olmadi: yedi denetim yan yana
@@ -107,12 +107,30 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        ortadaki aletin USTU arasindaki banda sigmali ve iki yanda da
        gercek bosluk kalmali. Kullanicinin sozu: "grafiksel bosluklar
        olur ogeler arasi, halkaya degiyor, biraz yukari al." */
-    "#deriGaleri.serit .dg-bas{padding:5px 10px 4px;gap:2px;flex-wrap:wrap;justify-content:center}",
-    "#deriGaleri.serit .dg-secili{font-size:0.9375rem;letter-spacing:.08em;flex:1 1 auto;min-width:0;max-width:none;text-align:center;padding:0 6px}",
-    "#deriGaleri.serit .dg-tus{width:32px;height:32px;font-size:0.9375rem}",
+    /* ── SERIT: HER SEY SABIT YERDE ─────────────────────────────
+       Kullanicinin sozu: "minimize olunca tek sabit olmali; arada 2
+       satir oluyor, carpinin ve oklarin yerleri degisiyor. Her sey
+       sabit olsun ki hizli hizli oklarla dolasalim -- ezber
+       bozuluyor."
+       Sebep esnek (flex) yerlesimdi: satir uzun deri adinda sariyor
+       (flex-wrap) ve ogeler ada gore yer degistiriyordu.
+       Artik IZGARA ve sutun genislikleri sabit:
+           ◀ | AD | ▶ | ▦ | ✕
+       Ad ne olursa olsun sutunlar oynamiyor; uzun ad kesilip uc
+       nokta ile bitiyor (asagida). Oklar da kenara yapismiyor,
+       adin iki yaninda -- basparmak ayni yeri buluyor. */
+    "#deriGaleri.serit .dg-bas{display:grid;grid-template-columns:34px minmax(90px,152px) 34px 34px 34px;align-items:center;gap:2px;padding:5px 12px 4px;flex-wrap:nowrap;justify-content:center}",
+    "#deriGaleri.serit .dg-secili{font-size:0.9375rem;letter-spacing:.08em;min-width:0;max-width:100%;text-align:center;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    "#deriGaleri.serit .dg-tus{width:34px;height:32px;font-size:0.9375rem}",
+    /* ▦ ile ✕ oklardan bir tik uzakta: yanlislikla kapatma azalsin. */
+    "#deriGaleri.serit .dg-tus.buyut{margin-left:8px}",
     /* Merkez secici KENDI SATIRINDA: tam genislik, ortalanmis,
        dordu de ayni puntoda ve hicbiri kesilmiyor. */
-    "#deriGaleri.serit .dg-merkez{order:9;width:100%;justify-content:center;gap:4px;padding-top:0;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent);margin-top:2px}",
+    /* Merkez secici HEP ayni yerde: izgaranin tam genisliginde,
+       kendi satirinda. Ust satir artik hic sarmadigi icin serit her
+       zaman IKI satir -- bir onceki halinde bazen iki bazen ucti,
+       ezberi bozan da oydu. */
+    "#deriGaleri.serit .dg-merkez{order:9;grid-column:1/-1;width:100%;justify-content:center;gap:4px;padding-top:0;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent);margin-top:2px}",
     "#deriGaleri.serit .dg-tus.mrk{width:auto;height:24px;font-size:0.625rem;letter-spacing:.12em;padding:0 8px}"
   ];
   function kurallariKur(){
@@ -336,7 +354,16 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     try{
       halkaIsaret();
       const n = AYAR.deri|0;
-      if(adYazi) adYazi.textContent = n ? (DERI_AD[n] || '') : T('OFF');
+      /* ── COK UZUN AD KISALIYOR ────────────────────────────────
+         Serit sabit izgara: uzun ad sutunlari itemiyor ama kesik
+         gorunmesin diye burada da kirpiliyor. 22 harf, sonrasi tek
+         bir ucnokta -- "MIDNIGHT CHROME EDITION" gibi adlar seritte
+         okunur kaliyor. */
+      if(adYazi){
+        const _ad = n ? (DERI_AD[n] || '') : T('OFF');
+        adYazi.textContent = (_ad.length > 22) ? (_ad.slice(0, 21).trim() + '…') : _ad;
+        adYazi.title = _ad;
+      }
       if(sayacYazi) sayacYazi.textContent = n + ' / ' + DERILER.length;
       if(!izg) return;
       izg.querySelectorAll('.dg-kare').forEach(b=>{
