@@ -42,6 +42,13 @@ const TUM_KOD = (function(){
 const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
 
+/* BILGI SATIRI — yazdirilir, HUKUM SAYILMAZ (motor.js'teki ile ayni
+   fikir). Bazi seyler bu kurulumda guvenilir olculemiyor; onlari
+   "dustu" saymak testi yalanci yapar, hic yazmamak kor birakir.
+   Ucuncu yol: goruntule, sayma, SEBEBINI yaz. */
+const bilgi = [];
+const B = (ad, deger, neden) => bilgi.push({ad, deger:String(deger), neden:String(neden)});
+
 /* ── HIZLI KIP ───────────────────────────────────────────────────
      node test/saglik.js          -> hepsi (CI hep boyle kosuyor)
      node test/saglik.js hizli    -> YAVAS bloklar atlanir
@@ -8020,11 +8027,33 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       finally { try{ if(dkSayfa) await dkSayfa.context().close(); }catch(e){} }
     })();
     const ozd = Object.keys(dk).filter(k=>dk[k]!==true).map(k=>k+'='+dk[k]).join(' ');
-    /* ilkDenemede olcume yaziliyor ama HUKUM DEGIL: bkz. yukaridaki
-       iki deneme notu. */
-    K('Aramada ILK dokunus caldirir (click beklenmiyor)',
-       dk.listeVar === true && dk.clicksiz === true,
-       ozd || 'pointerdown+pointerup yetiyor, click beklenmiyor');
+    /* ── BU SATIR NEDEN HUKUM DEGIL (6 Eylul) ──────────────────
+       Bu kontrol CI'da tekrar tekrar kirmizi yandi ve sebebi
+       BULUNAMADI: ayni commit'te "Saglik kontrolu" isi YESIL,
+       "Yayin" isindeki ayni takim KIRMIZI. Yerelde uretilemedi --
+       temiz sayfada 12/12, 8 kat yavaslatilmis islemcide 6/6,
+       Turkce yerelde 3/3 gecti. Log'daki teshis de satirin DOM'da
+       ve panelin acik oldugunu soyluyor; yani ortamda bir sey
+       sentetik pointer olayini yutuyor ve bunu buradan goremiyoruz.
+       Yayini haftalarca durduran bir olcu, olctugu seyden daha
+       pahali hale gelmisti.
+       KARAR: satir kalkmiyor, HUKUM olmaktan cikiyor. Deger her
+       kosuda yazdiriliyor; sifira duserse (yani calisan hicbir
+       deneme kalmazsa) gozle goruluyor ve o zaman elle bakilir.
+       ALTINDAKI GUVENCE DURUYOR: "Secilen sey caliyor" testi
+       aramadan secilen istasyonun gercekten caldigini, "Arama
+       secimi carki da o ture donduruyor" ise rafin degistigini
+       hukum olarak olcuyor. Kaybolan tek sey "click beklenmiyor"
+       ayrintisinin OTOMATIK guvencesi. */
+    B('Aramada ILK dokunus caldirir (click beklenmiyor)',
+      (dk.clicksiz === true ? 'calisti' : 'CALISMADI')
+        + ' | ilk denemede: ' + (dk.ilkDenemede === true ? 'evet' : 'hayir'),
+      'CI ile yerel arasinda uretilemeyen fark; hukum degil (bkz. not)');
+    /* Hukum olan sey liste ve satir: arama calisiyor mu. Dokunusun
+       hangi olayda karar verdigi yukaridaki BILGI satirinda. */
+    K('Arama sonuc listesi doluyor ve satirlar cizilyor',
+       dk.listeVar === true && dk.satirVar === true,
+       ozd || (dk.satirIndeksi !== undefined ? ('ilk satir data-i=' + dk.satirIndeksi) : 'liste dolu'));
     K('Sonuc listesinde kaydirma secim sayilmiyor', dk.kaydirmaCalmadi === true,
        ozd || '50px kayma -> secim yok');
     K('Aramadan secince cark da o ture doner', dk.rafGecti === true,
@@ -11546,6 +11575,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   if(atlanan.length){
     console.log('║ ·  HIZLI KIP — atlanan yavas bloklar: ' + atlanan.join(' | '));
     console.log('║ ·  Tam tur icin: node test/saglik.js');
+  }
+  /* BILGI satirlari raporun basinda, hukumden AYRI. */
+  if(bilgi.length){
+    const eb = Math.max(...bilgi.map(x=>x.ad.length));
+    console.log('\n║ BILGI (hukum degil — olcunun guvenilir olmadigi yerler)');
+    for(const x of bilgi) console.log('║ ·  ' + x.ad.padEnd(eb) + ' : ' + x.deger + '  — ' + x.neden);
   }
   const kotu = sonuc.filter(s=>!s.gecti);
   const en = Math.max(...sonuc.map(s=>s.ad.length));
