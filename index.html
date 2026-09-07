@@ -68,8 +68,14 @@
        icin govdeye o fark kadar alttan pay veriliyor. Sabit sayi --
        icerikle hicbir ilgisi yok, yani hicbir zaman oynamiyor. */
     box-sizing:border-box;
-    padding-top:max(0px, calc(var(--ust-rez) - var(--alt-rez)));
-    padding-bottom:max(0px, calc(var(--alt-rez) - var(--ust-rez)));
+    /* ── KAYMA SINIRLI (7 Eylul) ────────────────────────────────
+       Alet iki rezervin tam ortasina konunca, alt bant buyudukce
+       yukari kaciyordu: kullanicinin sozu "halka tam ortada degil,
+       baya uste cikmis". Dogru olan ortalamak degil, ORTAYA YAKIN
+       tutmak: kayma en fazla --alet-kay kadar. Kunyeye binmemesi
+       ise boy siniriyla saglaniyor (asagidaki .disk olculeri). */
+    padding-top:min(var(--alet-kay), max(0px, calc(var(--ust-rez) - var(--alt-rez))));
+    padding-bottom:min(var(--alet-kay), max(0px, calc(var(--alt-rez) - var(--ust-rez))));
     touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;
     -webkit-user-select:none;user-select:none;}
   .grain{position:fixed;inset:0;pointer-events:none;z-index:41;opacity:.05;
@@ -137,9 +143,9 @@
      etkisi YARISI kadar (alet iki rezervin ortasinda duruyor), o
      yuzden iki adimda 216'ya cikildi. Bant en uzun gercek kunyeyi
      tasiyacak kadar genis olmali. */
-  :root{ --ust-rez:56px; --alt-rez:max(216px, 29vh); }
+  :root{ --ust-rez:56px; --alt-rez:max(190px, 25vh); --alet-kay:40px; }
   .disk{position:relative;
-    width:min(78vw,400px,calc(100dvh - var(--ust-rez) - var(--alt-rez)));
+    width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)));
     aspect-ratio:1;z-index:10;}
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
@@ -167,7 +173,7 @@
      kismi ve kucuk olmus halkasi da." Once cubuklar cok uzaga
      gittigi icin halka kuculuyordu; artik menzil daraldi (cark.js:
      MENZIL 0.28) ve halka oteki kiplerle ayni boyda. */
-  body.merkez-faz .disk{width:min(78vw,400px,calc(100dvh - var(--ust-rez) - var(--alt-rez)));}
+  body.merkez-faz .disk{width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)));}
   body.merkez-faz.serit-acik .disk{width:min(68vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.70));}
   /* KISA EKRAN: alet ekranin ORTASINDA duruyor, yani yer acmak icin
      yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
@@ -3200,7 +3206,7 @@
      devreye girmiyor, yani telefon davranisi bire bir ayni kaliyor. */
   @media (min-width:700px){
     :root{ --kol:560px; --yan:calc((100vw - var(--kol)) / 2); }
-    .disk{ width:min(78vw, 460px, calc(100dvh - var(--ust-rez) - var(--alt-rez))); }
+    .disk{ width:min(74vw, 440px, calc(100dvh - var(--ust-rez) - var(--alt-rez))); }
     #ust        { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #np         { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
