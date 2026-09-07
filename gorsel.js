@@ -298,94 +298,7 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     g.globalCompositeOperation = 'source-over';
   }
 
-  /* 2) SCOPE — Winamp'in osiloskobu, yumusatilmis hali.
-     Dalga bicimi ortadan geciyor; arkasinda kendi izi kaliyor. Cizgi
-     tek degil uc kat: en genis ve en saydam olan parlama, en ince ve
-     en acik olan cekirdek. Keskin bir tel yerine isikli bir iplik. */
-  function scope(W, H, s){
-    const g = ctx; if(!g) return;
-    g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.13)';
-    g.fillRect(0, 0, W, H);
-    const d = s.dalga, n = d ? d.length : 128;
-    const t0n = tonZaman(s.t, 0);
-    g.globalCompositeOperation = 'lighter';
-    g.lineJoin = 'round'; g.lineCap = 'round';
-    const kat = [
-      { k: 0.026, a: 0.10, l: 64 },     /* genis parlama */
-      { k: 0.011, a: 0.22, l: 68 },
-      { k: 0.0028, a: 0.85, l: 74 }     /* cekirdek */
-    ];
-    for(let c = 0; c < kat.length; c++){
-      g.beginPath();
-      for(let i = 0; i < n; i++){
-        const x = (i / (n - 1)) * W;
-        const v = d ? (d[i] - 128) / 128 : Math.sin(i * 0.07 + s.t / 420) * (0.12 + s.seviye);
-        const y = H/2 + v * H * (0.17 + s.seviye * 0.26);
-        if(i === 0) g.moveTo(x, y); else g.lineTo(x, y);
-      }
-      g.lineWidth = Math.max(1, W * kat[c].k);
-      g.strokeStyle = ren(t0n, kat[c].l, kat[c].a);
-      g.stroke();
-    }
-    /* Bas vurusu: ortadan disari acilan tek bir yumusak halka. */
-    if(s.bas > 0.40) top(g, W/2, H/2, Math.min(W, H) * (0.16 + s.bas * 0.34),
-                         tonZaman(s.t, 46), (s.bas - 0.40) * 0.5);
-    g.globalCompositeOperation = 'source-over';
-  }
 
-  /* 3) BARS — klasik tayf cubuklari; kenarlar yuvarlatildi, tepe
-     kapaklari yavas dusuyor ve her cubugun arkasinda kendi isigi var.
-     Winamp'in ilk ekrani, sert kenarlari alinmis hali. */
-  let tepeler = null;
-  function yuvarlakKutu(g, x, y, w, h, r){
-    const rr = Math.max(0, Math.min(r, w/2, Math.abs(h)/2));
-    if(g.roundRect){ g.beginPath(); g.roundRect(x, y, w, h, rr); g.fill(); return; }
-    g.fillRect(x, y, w, h);
-  }
-  function bars(W, H, s){
-    const g = ctx; if(!g) return;
-    g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.22)';
-    g.fillRect(0, 0, W, H);
-    const N = MOBIL ? 24 : 36;
-    if(!tepeler || tepeler.length !== N) tepeler = new Float32Array(N);
-    const tayf = s.tayf;
-    const bosluk = W / N;
-    const gen = bosluk * 0.52;
-    const ortaY = H / 2;
-    const enB = H * 0.34;
-    g.globalCompositeOperation = 'lighter';
-    for(let i = 0; i < N; i++){
-      let v;
-      if(tayf && tayf.length){
-        /* Logaritmik toplama: kulak boyle duyuyor, esit bolerken
-           cubuklarin yarisi hep olu kaliyordu. */
-        const a = Math.floor(Math.pow(i / N, 1.7) * tayf.length);
-        const b = Math.max(a + 1, Math.floor(Math.pow((i + 1) / N, 1.7) * tayf.length));
-        let t = 0; for(let k = a; k < b && k < tayf.length; k++) t += tayf[k];
-        v = t / ((b - a) * 255);
-      }else{
-        v = 0.10 + 0.08 * Math.abs(Math.sin(i * 0.34 + s.t / 900));
-      }
-      v = Math.min(1, v * 1.2);
-      const h = Math.max(3, v * enB);
-      tepeler[i] = Math.max(tepeler[i] - H * 0.0034, h);
-      const x = i * bosluk + (bosluk - gen) / 2;
-      const tn = tonZaman(s.t, (i / N) * 74);
-      /* Cubugun arkasindaki isik: sert dikdortgeni zemine baglar. */
-      top(g, x + gen/2, ortaY, gen * (1.6 + v * 1.4), tn, v * 0.5);
-      g.fillStyle = ren(tn, 66 + v * 8, 0.68);
-      yuvarlakKutu(g, x, ortaY - h, gen, h, gen * 0.5);
-      g.globalAlpha = 0.34;
-      yuvarlakKutu(g, x, ortaY, gen, h, gen * 0.5);   /* ayna */
-      g.globalAlpha = 1;
-      const tp = tepeler[i];
-      g.fillStyle = ren(tn, 82, 0.6);
-      yuvarlakKutu(g, x, ortaY - tp - 3, gen, 3, 1.5);
-    }
-    g.globalCompositeOperation = 'source-over';
-  }
 
   /* 4) AURORA — kuzey isiklari.
      Alti perde ekranda cok yavas suzuluyor; genislikleri ve parlaklik-
@@ -426,7 +339,11 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
       const x = W/2 + Math.cos(a) * W * (0.13 + 0.10 * ((i % 3) + 1) * 0.6);
       const y = H/2 + Math.sin(a * 0.83 + i) * H * (0.11 + 0.09 * ((i % 2) + 1) * 0.7);
       const guc = bant[i % 3];
-      top(g, x, y, R * (0.10 + guc * 0.13 + (i % 3) * 0.015), tonZaman(s.t, i * 44), guc);
+      /* 7 Eylul: yaricap yariya indi. Telefonda toplar ekranin
+         ucte birini kapliyordu -- kullanicinin gonderdigi goruntude
+         "dev leke" olarak goruluyor. Yumusak bir isik topu ekranin
+         %10'undan buyuk olmamali. */
+      top(g, x, y, R * (0.055 + guc * 0.06 + (i % 3) * 0.008), tonZaman(s.t, i * 44), guc);
     }
     g.globalCompositeOperation = 'source-over';
   }
@@ -472,70 +389,7 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     g.globalCompositeOperation = 'source-over';
   }
 
-  /* 7) LAVA — lav lambasi.
-     Bes buyuk damla asagidan yukari cok yavas suzuluyor, tepeye
-     varinca alttan yeniden giriyor. Boylari basla nefes aliyor.
-     Ekrandaki en yavas sunum; arka plan gibi calisiyor. */
-  function lava(W, H, s){
-    const g = ctx; if(!g) return;
-    g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.10)';
-    g.fillRect(0, 0, W, H);
-    g.globalCompositeOperation = 'lighter';
-    const R = Math.min(W, H);
-    for(let i = 0; i < 5; i++){
-      const hiz = 0.0000135 + i * 0.0000042;
-      /* Sarmal degil duz yukselis: mod ile sonsuz dongu, sicrama yok
-         cunku top kenarda zaten sonuyor. */
-      const ilerle = (s.t * hiz + i * 0.37) % 1.30;
-      const y = H * (1.15 - ilerle);
-      const x = W * (0.5 + 0.30 * Math.sin(s.t * 0.000055 + i * 1.9));
-      const guc = (i % 2) ? s.orta : s.bas;
-      top(g, x, y, R * (0.16 + guc * 0.12 + i * 0.012), tonZaman(s.t, i * 36), guc * 0.9);
-    }
-    /* TABAN ISIK: damlalar cok yavas ve seyrek; aralarinda ekranin
-       buyuk bolumu gercekten bos kaliyordu (saglik testi bunu
-       "cizmiyor" diye yakaladi ve hakliydi). Alttan gelen genis bir
-       sicaklik hem bosluk birakmiyor hem lav lambasinin cam govdesi
-       gibi duruyor. */
-    top(g, W * 0.5, H * 0.68, R * (0.42 + s.bas * 0.12), tonZaman(s.t, 8), 0.16 + s.bas * 0.24);
-    g.globalCompositeOperation = 'source-over';
-  }
 
-  /* 8) RIPPLE — suya dusen damla.
-     Basta bir vurus olunca merkezden yumusak bir halka aciliyor ve
-     buyuduce soluyor. Vurus yoksa saniyede bir kendiliginden bir
-     halka birakiyor: ekran hicbir zaman olu kalmiyor. */
-  var _halkalar = [], _sonHalka = 0;
-  function ripple(W, H, s){
-    const g = ctx; if(!g) return;
-    g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.12)';
-    g.fillRect(0, 0, W, H);
-    const R = Math.min(W, H);
-    /* Yeni halka: vurus esigi ya da 1,4 saniyelik sessizlik. */
-    if((s.bas > 0.46 && s.t - _sonHalka > 260) || (s.t - _sonHalka > 1400)){
-      _sonHalka = s.t;
-      if(_halkalar.length < 9) _halkalar.push({ r: R * 0.03, g: Math.max(0.25, s.bas), t: tonZaman(s.t, 0) });
-    }
-    g.globalCompositeOperation = 'lighter';
-    g.lineJoin = 'round'; g.lineCap = 'round';
-    for(let i = _halkalar.length - 1; i >= 0; i--){
-      const h = _halkalar[i];
-      h.r += R * (0.0032 + h.g * 0.0042);
-      const kalan = 1 - (h.r / (R * 0.72));
-      if(kalan <= 0){ _halkalar.splice(i, 1); continue; }
-      g.beginPath(); g.arc(W/2, H/2, h.r, 0, 6.2832);
-      g.lineWidth = Math.max(2, R * 0.020 * kalan);
-      g.strokeStyle = ren(h.t, 66, 0.13 * kalan * h.g);
-      g.stroke();
-      g.lineWidth = Math.max(1, R * 0.0035 * kalan);
-      g.strokeStyle = ren(h.t, 76, 0.42 * kalan * h.g);
-      g.stroke();
-    }
-    top(g, W/2, H/2, R * (0.07 + s.seviye * 0.10), tonZaman(s.t, 30), s.seviye);
-    g.globalCompositeOperation = 'source-over';
-  }
 
   /* 9) DUST — toz.
      Yavasca suzulen kucuk isik noktalari; uzaktakiler yavas ve sonuk,
@@ -574,57 +428,28 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     g.globalCompositeOperation = 'source-over';
   }
 
-  /* 10) PRISM — prizma.
-     Alti yaprak merkezden disari aciliyor ve hepsi birlikte cok yavas
-     doniyor; yapraklarin boyu bantlardan geliyor. Kaleydoskop hissi,
-     tek bir dogrusal gecis ve alti dolgu ile -- ayna/ tuval kopyalama
-     yok, yani ucuz. */
-  function prism(W, H, s){
-    const g = ctx; if(!g) return;
-    g.globalCompositeOperation = 'source-over';
-    g.fillStyle = 'rgba(0,0,0,0.13)';
-    g.fillRect(0, 0, W, H);
-    g.globalCompositeOperation = 'lighter';
-    const R = Math.min(W, H) * 0.46;
-    const bant = [s.bas, s.orta, s.tiz];
-    const donme = s.t * 0.000075;
-    g.save();
-    g.translate(W/2, H/2);
-    for(let i = 0; i < 6; i++){
-      const a = donme + i * 1.0472;
-      const guc = bant[i % 3];
-      const boy = R * (0.45 + guc * 0.62);
-      const gen = R * (0.16 + guc * 0.10);
-      g.save(); g.rotate(a);
-      const gr = g.createLinearGradient(0, 0, 0, -boy);
-      const tn = tonZaman(s.t, i * 40);
-      gr.addColorStop(0,   ren(tn, 72, 0.05 + guc * 0.20));
-      gr.addColorStop(0.6, ren(tn, 66, 0.04 + guc * 0.12));
-      gr.addColorStop(1,   ren(tn, 60, 0));
-      g.fillStyle = gr;
-      g.beginPath();
-      g.moveTo(0, 0);
-      g.quadraticCurveTo(-gen, -boy * 0.55, 0, -boy);
-      g.quadraticCurveTo(gen, -boy * 0.55, 0, 0);
-      g.fill();
-      g.restore();
-    }
-    g.restore();
-    top(g, W/2, H/2, R * (0.14 + s.seviye * 0.12), tonZaman(s.t, 12), 0.3 + s.seviye * 0.4);
-    g.globalCompositeOperation = 'source-over';
-  }
 
+  /* ── BESI SILINDI (7 Eylul) ─────────────────────────────────────
+     Kullanicinin telefonundan gelen goruntuler: LAVA ve BLOOM dev
+     lekelere donuyor, RIPPLE tek bir soluk halka, PRISM kagit bir
+     cicek, SCOPE duz bir cizgi, BARS ekranin ortasinda bir nokta
+     dizisi. Sebep ikisi bir arada:
+       1) SCOPE ve BARS TAYFA bagli; canli yayinlarin cogu CORS'a
+          izin vermiyor, yani cozumleyici hic veri vermiyor ve o iki
+          sunum "olu" ciziliyor. Verisi olmayan bir gorsellestirici
+          gorsellestirici degil.
+       2) LAVA/RIPPLE/PRISM telefonda cok buyuk olculere aciliyordu.
+     Karar: silindiler. Kalanlar veriye ihtiyac duymadan da dogru
+     duran, yumusak olanlar. "10 cesit" hedefi yerine calisan bes
+     tane -- kullanicinin sozu: "bu visuallari sil."
+     Kod da gitti (fonksiyonlar asagida yok): olu kod birakmak
+     sonraki okuyucuya yalan soyler. */
   const SUNUMLAR = [
     { ad: 'AURORA', ciz: aurora, iz: false },
     { ad: 'BLOOM',  ciz: bloom,  iz: false },
     { ad: 'SILK',   ciz: silk,   iz: false },
-    { ad: 'LAVA',   ciz: lava,   iz: false },
-    { ad: 'RIPPLE', ciz: ripple, iz: false },
     { ad: 'DUST',   ciz: dust,   iz: false },
-    { ad: 'PRISM',  ciz: prism,  iz: false },
-    { ad: 'PLASMA', ciz: plasma, iz: true },
-    { ad: 'SCOPE',  ciz: scope,  iz: true },
-    { ad: 'BARS',   ciz: bars,   iz: false }
+    { ad: 'PLASMA', ciz: plasma, iz: true }
   ];
 
   /* ── TUVAL ─────────────────────────────────────────────────────── */
@@ -729,8 +554,7 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     try{
       const n = SUNUMLAR.length;
       no = ((i % n) + n) % n;
-      tepeler = null;
-      if(ctx && tuval){ ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, tuval.width, tuval.height); }
+        if(ctx && tuval){ ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, tuval.width, tuval.height); }
       seritYaz(); seritGoster();
       try{ localStorage.setItem(DEPO, JSON.stringify({ no: no })); }catch(e){ yut(e); }
     }catch(e){ yut(e); }

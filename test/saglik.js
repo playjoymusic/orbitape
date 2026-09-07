@@ -8259,9 +8259,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           window.gorselOnceki(); await bek(120);
           c.gezinme = (ad1 !== ad2) && (window.gorselDurum().ad === ad1);
           c.sunumlar = window.gorselDurum().adet;
-          /* Kullanicinin sayisi: "10 cesit mesela". Esik bilerek 10:
-             bir sunum sessizce dusunce burasi kirmizi yansin. */
-          c.cokSunum = window.gorselDurum().adet >= 10;
+          /* Esik 10 -> 4. Once "10 cesit" hedeflenmisti; 7 Eylul'de
+             kullanici besini kendi istegiyle sildirdi (tayfa bagli
+             olanlar CORS'suz yayinlarda olu duruyordu, ikisi de
+             telefonda dev lekeye aciliyordu). Esik artik "elde
+             calisan birkac sunum var mi" sorusu; sifira dusunce
+             ya da teke inince kirmizi yanar. */
+          c.cokSunum = window.gorselDurum().adet >= 4;
           /* HER SUNUM GERCEKTEN CIZIYOR MU. Bir sunumun icinde hata
              olsa (yut ile susturulur) ekran siyah kalirdi ve hicbir
              test bunu gormezdi: sirayla hepsine gecip iki ayri anda

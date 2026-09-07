@@ -131,7 +131,13 @@
      sanatci + kaynak + lisans, yani en uzun gercek kunye 116-125 px
      tutuyor. 152 onun uzerinde guvenli bir taban; 24vh yuksek
      ekranda daha comert davraniyor. */
-  :root{ --ust-rez:56px; --alt-rez:max(152px, 24vh); }
+  /* ALT REZERV 152 -> 216 (7 Eylul): olculdu, 360x640'ta uzun bir
+     CC atfi bes satira ciktiginda kunye alete 30 px biniyordu.
+     Rezervi buyutmek aleti hem kucultuyor hem yukari cekiyor ama
+     etkisi YARISI kadar (alet iki rezervin ortasinda duruyor), o
+     yuzden iki adimda 216'ya cikildi. Bant en uzun gercek kunyeyi
+     tasiyacak kadar genis olmali. */
+  :root{ --ust-rez:56px; --alt-rez:max(216px, 29vh); }
   .disk{position:relative;
     width:min(78vw,400px,calc(100dvh - var(--ust-rez) - var(--alt-rez)));
     aspect-ratio:1;z-index:10;}
@@ -641,6 +647,16 @@
   #rec,#cam{position:relative;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
+  /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
+     Bir denemede tus ilk kareden itibaren gorunur yapildi ve GERI
+     ALINDI: modul hic gelmezse ekranda basilinca hicbir sey yapmayan
+     bir tus kaliyor. Ariza takimi bunu ayni kosuda yakaladi
+     ("[6] olu tus birakmiyor") ve hakliydi -- olu tus, olmayan
+     tustan kotudur.
+     Kullanicinin sikayeti ("sol altta photo cam gelmiyor, bazen
+     boyle kaliyor") modulun GEC ya da HIC gelmemesiydi; cozum de
+     orada: daha erken iste, gelmezse birkac kez daha dene
+     (bkz. kayit nobeti). */
   #rec.var{display:flex;}
   #cam{display:none;}                                  /* CAM: anahtara bağlı (bkz. KAMERA) */
   #cam.var{display:flex;}
@@ -3258,8 +3274,12 @@
      ekranda (SE + tarayici cubuklari) olcu bunu yakaladi: alanin
      etrafi artik bos degil, halka oraya kadar geliyor ve parmak
      kutunun bir piksel disina dusunce bos yere basiliyordu. */
+  /* 44 -> 48 (7 Eylul): alt rezerv buyuyunce alet yukari kaydi ve
+     360x520'de tutamagin dokunma alani 43 pikselde kesiliyordu
+     (olculdu, cihaz takimi). Gorunum ayni; buyuyen yalnizca
+     dokunulacak yer. */
   #ayarTut::after,#deriFirca::after,#saatTus::after,#gorselTus::after{
-    width:max(calc(100% + 14px), 44px);height:44px;}
+    width:max(calc(100% + 14px), 48px);height:48px;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
@@ -4064,7 +4084,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.06';
+  var ORB_SURUM = '2026.09.07';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -18032,9 +18052,27 @@
     };
     ses.addEventListener('playing', ilkSes);
   }catch(e){ _yut(e); }
-  /* 3. Taban: acilistan 10 sn sonra kimse istemediyse de iner. */
+  /* 3. Taban: acilistan sonra kimse istemediyse de iner.
+     ── ISRAR (7 Eylul) ──────────────────────────────────────────
+     Kullanicinin bildirimi: "sol altta ilk photo cam gelmiyor,
+     bazen boyle kaliyor." Yani modul BAZEN hic gelmiyor: zayif
+     hucre, yarida kesilen istek, bozuk ara onbellek. Tek deneme
+     yetmiyor.
+     10 sn -> 4 sn, ve gelmezse 8 saniyede bir UC kez daha. Uc
+     denemenin ardindan birakiliyor: dinlemek icin gerekmiyor ve
+     sonsuz istek zayif hatta zarar verir. Tus modul gelene kadar
+     hic cizilmiyor (bkz. #rec.var) -- yani olu tus da olmuyor. */
   try{
-    window.addEventListener('load', ()=>{ setTimeout(kayitYukle, 10000); });
+    window.addEventListener('load', ()=>{
+      setTimeout(kayitYukle, 4000);
+      let kalan = 3;
+      const nobet = setInterval(()=>{
+        try{
+          if(window.KAYIT_MODULU_HAZIR || kalan <= 0){ clearInterval(nobet); return; }
+          kalan--; _kayIstendi = false; kayitYukle();
+        }catch(e){ _yut(e); clearInterval(nobet); }
+      }, 8000);
+    });
   }catch(e){ _yut(e); }
 </script>
   <!-- KAYIT / KAMERA / FOTOGRAF: bkz. kayit.js. Buradan KALDIRILDI:

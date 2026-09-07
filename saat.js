@@ -66,6 +66,12 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     ".st-satir{display:flex;align-items:center;gap:14px;margin:6px 0;flex-wrap:wrap}",
     ".st-satir.st-hizli{gap:0;justify-content:space-between;margin:2px 0 8px}",
     ".st-deger{font-size:1.375rem;letter-spacing:.06em;min-width:96px;text-align:center}",
+    /* ── KURULAN DEGER BUYUK (7 Eylul) ───────────────────────
+       Kullanicinin sozu: "alarmda saati kurduktan sonra kaca
+       kurduysak o saat buyuk font olmali; uyku da, uyandirma da."
+       Kurulu degilken sayi normal; kurulunca one cikiyor -- yani
+       ekran "kurdum mu" sorusunu uzaktan cevapliyor. */
+    ".st-deger.kurulu{font-size:2.125rem;letter-spacing:.04em}",
     ".st-deger.kosuyor{color:var(--st-vurgu);font-variant-numeric:tabular-nums}",
     ".st-satir.st-sayac{justify-content:center;gap:6px;margin:2px 0 8px}",
     ".st-geri{font-size:1.125rem;letter-spacing:.1em;color:var(--st-vurgu);margin:2px 0 6px;font-variant-numeric:tabular-nums}",
@@ -467,14 +473,25 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       if(seviye <= 1)      { katYaz(0.04); rampa([[0,0.04],[20,0.30],[60,1.00]]); }
       else if(seviye === 2){ katYaz(0.25); rampa([[0,0.25],[60,1.00]]); }
       else                 { katYaz(1); }
-      if(depo.sabah.aile && typeof AILE_ADLAR !== 'undefined' && AILE_ADLAR.indexOf(depo.sabah.aile) >= 0)
-        try{ aileSec(depo.sabah.aile, true); }catch(e){ yut(e); }
-      /* ONCE ELDEKI: hazir istasyon varsa dogrudan caliyor. sonraki()
-         ag gerektirebilir ve alarm ani onu bekleyemez (bkz.
-         uyanHazirla). Hazir yoksa eski yol duruyor. */
+      /* ── ONCE KALDIGIN YERDEN (7 Eylul) ───────────────────────
+         Kullanicinin sozu: "acmak icin de direkt play'lesek
+         kaldigimiz yerden."
+         Sira: (1) elde duran ses varsa onu devam ettir -- ag
+         gerekmiyor, alarm ani beklemiyor; (2) yoksa uyumadan once
+         hazirlanan istasyon; (3) o da yoksa siradaki.
+         Istasyon SECIMI yok: ne dinliyorduysan sabah o. */
       var caldi = false;
       try{
-        if(_uyanItem && _uyanItem.mp3 && typeof cal === 'function'){
+        if(typeof ses !== 'undefined' && ses && ses.src && ses.paused === true){
+          const sz = ses.play();
+          if(sz && sz.then) sz.then(()=>{}, ()=>{});
+          caldi = true;
+        }else if(typeof ses !== 'undefined' && ses && ses.src && !ses.paused){
+          caldi = true;                       /* zaten caliyor: sessizden sese cikiyor */
+        }
+      }catch(e){ yut(e); }
+      try{
+        if(!caldi && _uyanItem && _uyanItem.mp3 && typeof cal === 'function'){
           try{ if(typeof calindiEkle === 'function') calindiEkle(_uyanItem.id); }catch(e){ yut(e); }
           cal(_uyanItem); caldi = true;
         }
@@ -542,7 +559,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     const b = el('button', 'st-tus ' + sinif, etiket); b.type = 'button';
     b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); f(); }); return b;
   }
-  let uykuDkYazi, uykuDurum, uykuBasla, sabahSaatGiris, sabahAile, sabahTekrar, sabahAnahtar, sabahDurum, calanKutu, notYazi, sabahGeri;
+  let uykuDkYazi, uykuDurum, uykuBasla, sabahSaatGiris, sabahTekrar, sabahAnahtar, sabahDurum, calanKutu, notYazi, sabahGeri;
   let hizliTuslar = [];
   /* BASILI TUTUNCA HIZLANIR: ilk dokunus 5 dk, sonra 400 ms'de bir,
      iki saniye sonra 120 ms'de bir. Parmagini kaldirmadan 5'ten
@@ -623,13 +640,14 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     ss.appendChild(sabahSaatGiris);
     ss.appendChild(tus('arti', '+', ()=>saatKaydir(5)));
     s.appendChild(ss);
+    /* ── ISTASYON SECIMI KALKTI (7 Eylul) ──────────────────────
+       Kullanicinin sozu: "alarm acilma modunda istasyon secenegini
+       kapat; acmak icin de direkt play'lesek kaldigimiz yerden."
+       Dogru karar: uyumadan once ne dinliyorsan sabah o devam eder.
+       Secim bir soru soruyordu ("hangi turle uyanmak istersin") ve
+       cevabi zaten belliydi. depo.sabah.aile alani duruyor ama artik
+       hep bos -- eski kayitlari okurken patlamasin diye. */
     const sa = el('div', 'st-satir');
-    sabahAile = document.createElement('select'); sabahAile.className = 'st-secim';
-    sabahAile.setAttribute('aria-label', 'Wake with');
-    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = T('ANY STATION'); sabahAile.appendChild(o0);
-    try{ (AILE_ADLAR || []).forEach(ad=>{ const o = document.createElement('option'); o.value = ad; o.textContent = ad; sabahAile.appendChild(o); }); }catch(e){ yut(e); }
-    sabahAile.addEventListener('change', ()=>{ depo.sabah.aile = sabahAile.value; yaz(); goster(); });
-    sa.appendChild(sabahAile);
     sabahTekrar = tus('tekrar', '', ()=>{ depo.sabah.tekrar = TEKRAR[(TEKRAR.indexOf(depo.sabah.tekrar) + 1) % TEKRAR.length]; if(depo.sabah.acik) depo.sabah.hedef = sabahHedefHesapla(); yaz(); goster(); });
     sa.appendChild(sabahTekrar);
     s.appendChild(sa);
@@ -686,19 +704,21 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
         const dk = Math.floor(kalanSn / 60), sn = kalanSn % 60;
         uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
         uykuDkYazi.classList.add('kosuyor');
+        uykuDkYazi.classList.add('kurulu');
         uykuDurum.textContent = T('Fades out at') + ' ' + saatYazisi(depo.uykuBitis)
           + ' · ' + dk + ':' + String(sn).padStart(2, '0');
       }else{
         uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
         uykuDkYazi.classList.remove('kosuyor');
+        uykuDkYazi.classList.remove('kurulu');
         uykuDurum.textContent = (kip === 'gece' && depo.sabah.acik)
           ? T('Silent · keeping the alarm alive') : T('Off');
       }
       if(uykuBasla) uykuBasla.textContent = depo.uykuBitis ? T('CANCEL') : T('START');
       hizliTuslar.forEach(t=>t.classList.toggle('secili', +t.dataset.dk === depo.uykuDk));
       sabahSaatGiris.value = depo.sabah.saat;
-      sabahAile.value = depo.sabah.aile;
-      sabahTekrar.textContent = T(TEKRAR_AD[depo.sabah.tekrar]);
+      sabahSaatGiris.classList.toggle('kurulu', !!depo.sabah.acik);
+        sabahTekrar.textContent = T(TEKRAR_AD[depo.sabah.tekrar]);
       /* "alarm sayfasinda en alttaki on off anlamadim, o niye var"
          (3 Eylul): tus alarmin kendi anahtariydi ama yalnizca ON/OFF
          yaziyordu -- neyin acik oldugu yazmiyordu. Artik adiyla. */
@@ -707,7 +727,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       if(erteleHedef) sabahDurum.textContent = T('Snoozed · rings at') + ' ' + saatYazisi(erteleHedef);
       else if(depo.sabah.acik && depo.sabah.hedef){
         const gun = new Date(depo.sabah.hedef).toDateString() === new Date().toDateString() ? T('today') : T('tomorrow');
-        sabahDurum.textContent = T('Rings') + ' ' + depo.sabah.saat + ' ' + gun + (depo.sabah.aile ? ' · ' + depo.sabah.aile : '');
+        sabahDurum.textContent = T('Rings') + ' ' + depo.sabah.saat + ' ' + gun;
       }else sabahDurum.textContent = '';
       /* GERI SAYIM: kac saat kac dakika kaldi. Bir dakikanin altinda
          saniye gosteriliyor -- alarmi sinamak icin saati iki dakika
