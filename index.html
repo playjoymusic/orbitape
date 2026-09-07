@@ -18,6 +18,22 @@
      elde hiçbir şey kalmıyor, uygulama beyaz ekran açılıyordu.
      Ağsız açılışı asıl sağlayan sw.js — bu satır ona engel olmasın. -->
 <meta http-equiv="Cache-Control" content="no-cache">
+<!-- ── ACILISTAKI BEYAZ PARLAMA (7 Eylul) ─────────────────────────
+     Kullanicinin bildirimi: "bir beyaz gelip gidiyor ama hizli."
+     Sebep tarayicinin ilk boyamasi: bir belge acilirken tuval,
+     yazarin CSS'i islenene kadar UA'nin varsayilan renginde,
+     yani BEYAZ, duruyor. Asagidaki style blogu html'i #020203
+     yapiyor ama o ilk kareye yetismiyor; dosya 1 MB ve ayristirici
+     oraya varana kadar bir kare beyaz gecebiliyor.
+     color-scheme tam bunun icin var: tarayici tuvali, kaydiricilari
+     ve UA denetimlerini ISLEMEDEN ONCE koyu sayiyor. Meta olarak
+     yaziliyor cunku head ayristirilirken okunuyor -- CSS'ten once.
+     Deri acikken (acik zeminli bir deri de olabilir) bir sey
+     bozulmuyor: uygulamanin butun girdileri kendi rengini ve
+     zeminini acikca yaziyor, UA varsayilanina birakilan hicbir
+     denetim yok. Deri zaten belge acildiktan SONRA uygulaniyor;
+     ilk kare her zaman uygulamanin kendi karanlik dunyasi. -->
+<meta name="color-scheme" content="dark">
 <title>ORBITAPE</title>
 <style>
   /* --sut: sol ust blogun ust bosluğu. Baslangic degeri sag ustteki
@@ -27,6 +43,9 @@
   /* ALT PAY 34px'E KILITLI: Safari arac cubugu gizliyken
      env(safe-area-inset-bottom) 83 bildiriyor (cubugun yerini
      ayiriyor); hicbir telefonun dikey alt payi 34'u gecmez. */
+  /* Metanin CSS karsiligi: meta bir sebeple dusserse (uzanti,
+     okuyucu kipi) kural burada da duruyor. */
+  :root{color-scheme:dark;}
   :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 34px);}
   :root{--bg:#020203;--sut:15px;
     /* --kx: EKRANIN KENAR PAYI. Dort kose de bu tek sayiyi kullaniyor.
