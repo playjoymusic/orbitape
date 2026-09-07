@@ -237,6 +237,21 @@
   .disk.nefes{transition:none;animation:diskNefes var(--nsure,480ms) cubic-bezier(.32,.02,.24,1);
     will-change:transform;}
   #viz{position:absolute;top:-20%;left:-20%;width:140%;height:140%;display:block;z-index:1;}   /* tuval diskin %20 dışına taşar (canvas için açık width/height şart) -> halkalar kırpılmaz, boyut AYNI */
+  /* ── TUVALLER DOKUNUS ALMIYOR (7 Eylul) ─────────────────────────
+     Bildirilen: "kamera modundayken ortadan sarki gecme kapaniyor."
+     Kapanan bir sey yoktu -- dokunus HEDEFI DEGISIYORDU.
+     Ortadaki dokunma alani #tp (.hit, z-index 2). Kamera acilinca
+     halka tuvali onun USTUNE cikiyor (body.kam #viz{z-index:3}) --
+     bu dogru bir karar, kamera goruntusu halkanin altinda kalmali.
+     Ama tuvalin pointer-events ayari yoktu: parmak dugmeye degil
+     TUVALE iniyor ve ortadaki jest hic baslamiyordu. Kamera kapaliyken
+     tuval altta oldugu icin sorun gorunmuyordu.
+     Ikisi de SUSLEME: ne #viz'in ne de #carkTuval'in kendi dinleyicisi
+     var -- cark bile jestleri window uzerinden capture ile aliyor
+     (cark.js). Yani dokunusu gecirmelerinin hicbir bedeli yok, tek
+     kazanci var: hangi katman ustte olursa olsun ortadaki dugme hep
+     parmagin altinda. */
+  #viz,#carkTuval{pointer-events:none;}
   /* ── GOKYUZU KATMANI ────────────────────────────────────────────
      Iki parmakla acilan yildiz haritasi. Ekranin tamami: yildizlar
      diskin disina tasabiliyor -- haritayi buyuttugunde kenardaki
