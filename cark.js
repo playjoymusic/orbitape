@@ -72,6 +72,23 @@ try{ window.CARK_BASLADI = true; }catch(e){}
     try{ const v = getComputedStyle(document.documentElement).getPropertyValue(ad).trim(); if(v) return v; }catch(e){}
     return yedek;
   }
+  /* ── CIZGI RENGI: ZEMININ TERSI ─────────────────────────────────
+     Kullanicinin sozu (7 Eylul): "cogu skins'te bu cevredeki faz,
+     cark vs gorunmuyor, halkalar da oyle."
+     Olculdu (59 deri, cark disleri ekrandan okunup zeminle
+     kontrastlari sayildi): IVORY 2.77, COLLAGE 2.88, BLUEPRINT
+     3.03, FIELDS 3.04, HALFTONE 3.11, TOPO 3.16, PAPER 3.42, JADE
+     3.63 -- yani yarisi okunabilirlik esiginin (4.5) altinda. Sebep
+     de belliydi: cizgiler --d-yazi'dan geliyordu, o da GOVDE
+     YAZISININ rengi; deri icinde uyumlu secilmis ama zeminden
+     ayrisip ayrismadigi hic sorulmamis.
+     Artik --d-cizgi kullaniliyor: ayni yazi rengi, zeminin TERSINE
+     dogru esik tutana kadar kaydirilmis hali (index.html: olukYaz
+     -> okunurVurgu). Deri kimligi bozulmuyor, yalnizca gorunuyor.
+     --d-cizgi yoksa (deri kapali) eski davranis aynen duruyor. */
+  function cizgiRenk(){
+    return deriRenk('--d-cizgi', deriRenk('--d-yazi', '#9fb6bb'));
+  }
 
   /* ── TIK SESİ ───────────────────────────────────────────────────
      Kullanıcının sözü: "tatlı bir ses olsun, ASMR etkisi olsun."
@@ -163,7 +180,8 @@ try{ window.CARK_BASLADI = true; }catch(e){}
     try{
       if(!ctx || !R) return;
       ctx.clearRect(0, 0, tuval.width, tuval.height);
-      const yazi = deriRenk('--d-yazi', '#9fb6bb');
+      const yazi = cizgiRenk();
+      const hale = deriRenk('--d-ters-hale', '');
       let veri = null;
       try{
         if(typeof analiz !== 'undefined' && analiz && typeof analizVeri !== 'undefined' && analizVeri){
@@ -178,7 +196,16 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          cekilmesi) ve o zaman faz olu duruyor.
          Burada sessizce isteniyor: saniyede bir defadan sik degil,
          ve yalnizca GERCEKTEN ses varken. */
-      if(!veri) try{
+      /* CAR MODE'DA GRAF YOK VE OLMAYACAK: o kipte ses Web Audio
+         zincirine hic girmiyor (index.html: analizKur ilk satir),
+         yani analiz dugumu de yok. Saniyede bir onu istemek bos
+         is -- analizKur her seferinde ilk satirdan geri donuyor.
+         Cubuklar durgun seviyede kaliyor ve cember donmeye devam
+         ediyor: yalan bir tayf cizmiyoruz. Ayarlarda CAR MODE
+         satirinin altinda bunun bedeli yaziyor. */
+      let _arac = false;
+      try{ _arac = !!(typeof AYAR !== 'undefined' && AYAR && AYAR.arac); }catch(e){}
+      if(!veri && !_arac) try{
         const t = Date.now();
         if(t - _grafIstek > 1000 && typeof ses !== 'undefined' && ses
            && ses.src && !ses.paused && !ses.ended){
@@ -254,6 +281,21 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         const renk = rafRengi(ad[Math.floor(((aci % 360) + 360) % 360 / 360 * N) % N]) || yazi;
         const x1 = ox + Math.cos(t) * r0, y1 = oy + Math.sin(t) * r0;
         const x2 = ox + Math.cos(t) * r2, y2 = oy + Math.sin(t) * r2;
+        /* ── ONCE ZEMINDEN AYRILMA, SONRA RENK ────────────────────
+           Cubuk rengi RAFTAN geliyor (turun rengi) -- yani derinin
+           zeminiyle uyumlu olmak gibi bir gorevi yok ve cogu deride
+           zemine karisiyordu. Kullanicinin sozu (7 Eylul): "cogu
+           skins'te bu cevredeki faz, cark vs gorunmuyor."
+           Cubugun altina TERS TONDA (acik deride koyu, koyu deride
+           acik) daha kalin ve saydam bir cizgi konuyor: raf rengi
+           aynen duruyor, ama artik her zeminin uzerinde bir kenari
+           var. Cark disleriyle ayni kural, ayni degisken. */
+        if(hale){
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+          ctx.strokeStyle = hale; ctx.lineWidth = kalin + 2.4; ctx.lineCap = 'round';
+          ctx.globalAlpha = 0.42 + v * 0.22;
+          ctx.stroke();
+        }
         /* IKI GECIS: once kalin ve cok saydam bir hale, sonra net
            cubuk. shadowBlur ayni isi yapardi ama 96 cubuk x 60 kare
            demek -- olculdu, en pahali yol o. Bu ucuz ve ayni etkiyi
@@ -268,7 +310,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
         ctx.strokeStyle = renk;
         ctx.lineWidth = kalin; ctx.lineCap = 'round';
-        ctx.globalAlpha = 0.30 + v * 0.65;
+        ctx.globalAlpha = 0.55 + v * 0.45;
         ctx.stroke();
         /* Tepe noktasi: kucuk, ayni renkte, soluk. */
         const rt = r0 + R * (0.02 + fazTepe[i] * (MENZIL + 0.06));
@@ -293,7 +335,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
       if(!ctx || !R) return;
       if(kip === 'faz'){ fazCiz(); return; }
       const ad = raflar(), N = ad.length, dis = N * DIS_KAT;
-      const yazi = deriRenk('--d-yazi', '#9fb6bb');
+      const yazi = cizgiRenk();
       const zem  = deriRenk('--d-zem', '');
       const su   = acikRaf();
       ctx.clearRect(0, 0, tuval.width, tuval.height);
@@ -305,16 +347,39 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         ctx.beginPath(); ctx.arc(ox, oy, R * (IC_ORAN + DIS_ORAN) / 2, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
       }
+      const hale = deriRenk('--d-ters-hale', '');
       const rad = a => (a - 90) * Math.PI / 180;
       for(let i = 0; i < dis; i++){
         const a = carkAci + i * 360 / dis;
         const uzun = (i % DIS_KAT === 0);
         const t = rad(a), r1 = R * IC_ORAN, r2 = R * (uzun ? UZUN_ORAN : DIS_ORAN);
+        const x1 = ox + Math.cos(t) * r1, y1 = oy + Math.sin(t) * r1;
+        const x2 = ox + Math.cos(t) * r2, y2 = oy + Math.sin(t) * r2;
+        /* ── DIS ONCE KENDI GOLGESINI CIZIYOR ──────────────────────
+           Cizimli/desenli derilerde zemin tek renk degil: bir yerde
+           acik, bir yerde koyu. Tek bir cizgi rengi orada her
+           noktada tutmaz. Onun altina TERS TONDA daha kalin ve cok
+           saydam bir cizgi konuyor -- dis nereye denk gelirse gelsin
+           kendi kenarini goturuyor. Duz derilerde de zarari yok:
+           gorunen sey cizginin bir tik keskinlesmesi. */
+        if(hale){
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+          ctx.strokeStyle = hale; ctx.lineWidth = (uzun ? 2.2 : 1.3) + 2.2;
+          ctx.lineCap = 'round'; ctx.globalAlpha = 0.55; ctx.stroke();
+        }
         ctx.beginPath();
-        ctx.moveTo(ox + Math.cos(t) * r1, oy + Math.sin(t) * r1);
-        ctx.lineTo(ox + Math.cos(t) * r2, oy + Math.sin(t) * r2);
-        ctx.strokeStyle = yazi; ctx.lineWidth = uzun ? 1.8 : 1;
-        ctx.globalAlpha = uzun ? 0.85 : 0.5;
+        ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+        /* SEFFAFLIK YUKSELDI (.5/.85 -> .72/1). Olculdu: 59 derinin
+           yarisinda disin zeminle kontrasti 4.5'in altindaydi; renk
+           duzeltildikten sonra bile yari saydam ince bir cizgi
+           esigin altinda kaliyor. */
+        /* KALINLIK 1 -> 1.3 / 1.8 -> 2.2: bir piksellik cizgi
+           telefonun piksel yogunlugunda tam bir piksele hic
+           oturmuyor, ekrana her zaman yarim tonda cikiyordu.
+           Olculdu: ayni renkle sadece kalinlik degisince IVORY
+           2.77 -> 3.93, COLLAGE 2.88 -> 4.34. */
+        ctx.strokeStyle = yazi; ctx.lineWidth = uzun ? 2.2 : 1.3;
+        ctx.globalAlpha = uzun ? 1 : 0.72;
         ctx.stroke();
       }
       ctx.globalAlpha = 1;

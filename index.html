@@ -179,6 +179,29 @@
      yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
      640-667'de yetmiyor ve serit carkin tepesine biniyordu (olculdu:
      -64 px, -57 px). Burada olcu yukseklige baglaniyor. */
+  /* KISA EKRANDA KAYMA PAYI BIRAZ DAHA (7 Eylul): 640 pikselde
+     kunye ile alet arasinda 12 piksel eksik kaliyordu. Alet 40
+     yerine 56 piksel yukari cekiliyor -- yalnizca kisa ekranda;
+     uzun telefonda halka ortada kaliyor. */
+  @media (max-height:700px){ :root{ --alet-kay:56px; } }
+  /* ── KUNYE KONSOLUN USTUNE CIKTIYSA ALET DE YUKARI ──────────────
+     Dar telefonlarda (olculdu: 360 ve 320 piksel) sag alt kunye
+     soldaki satirla YAN YANA sigmiyor ve yigiliyor: butun genisligi
+     alip konsolun ustune cikiyor (bkz. _kunyeYerlestir). Sebebi bir
+     lisans sarti -- atif kirpilamaz, o yuzden yer degistirir.
+     O anda kunyenin tabani dipten ~7 degil ~127 piksel yukarida
+     oluyor, yani AYIRDIGIMIZ BANT artik yetmiyor: alet 12 piksel
+     kunyenin uzerine biniyordu.
+     Burada iki sey birden buyuyor:
+       --alt-rez   : bant kunyenin yeni tabanini da kapsiyor
+       --alet-kay  : govdenin dolgusuna izin verilen tavan; 56'da
+                     kalirsa alet o kadar yukari cikamiyor ve
+                     ortalama yine kunyenin icinde kaliyor
+     Bu bir OLCUM DEGIL, bir DURUM: yigilip yigilmayacagi ekranin
+     genisligine bagli, calan sarkiya degil. Alet sarki degistikce
+     yerinden oynamiyor -- dar bir telefonda bir kez daha yukari
+     kuruluyor. */
+  body.kunye-yigin{ --alt-rez:max(268px, 40vh); --alet-kay:220px; }
   @media (max-height:480px){
     /* Serit yatayda sola yanasiyor: aletin ustunde degil. */
     body.serit-acik{ --ust-rez:56px; }
@@ -319,7 +342,18 @@
   #geriBil .gb-ad{font-size:0.75rem;letter-spacing:.30em;color:#8fd8cd;text-align:center;}
   #geriBil textarea{appearance:none;-webkit-appearance:none;resize:none;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
-    font-size:0.8125rem;line-height:1.4;height:88px;padding:10px 11px;box-sizing:border-box;
+    /* ── 13px -> 16px, ZORUNLU (7 Eylul) ────────────────────────
+       Kullanicinin bildirimi: "feedback'e yazinca ekran buyuyor ve
+       geri de gelmiyor, tasmis halde kaliyor."
+       Sebep iOS Safari'nin kurali: 16 pikselden KUCUK yazili bir
+       alana dokununca sayfayi otomatik yakinlastiriyor. Geri
+       donmemesinin sebebi de ayni: sayfa 'width=device-width' ile
+       kurulu ama olcek kullanicinin elinde kaliyor, uygulama onu
+       geri alamiyor.
+       Arama kutusu bu yuzden zaten 16 pikseldi (bkz. #ara input);
+       geri bildirim alani atlanmis. Ayni kural her yazi alani icin
+       gecerli -- birim testi artik bunu tariyor. */
+    font-size:1rem;line-height:1.4;height:88px;padding:10px 11px;box-sizing:border-box;
     color:#f4f7fa;background:rgba(8,16,18,.65);border:1px solid rgba(150,200,195,.30);
     border-radius:10px;-webkit-tap-highlight-color:transparent;}
   #geriBil textarea:focus{outline:none;border-color:rgba(180,240,230,.6);}
@@ -2447,7 +2481,7 @@
   body.deri.sadehalka .disk::after,
   body.deri.sadehalka .disk::before{display:none !important;}
 
-  body.deri #ayarTut span{background:var(--d-yazi) !important;}
+  body.deri #ayarTut span{background:var(--d-simge, var(--d-yazi)) !important;}
   /* ── DESEN ZEMININ PARCASI, USTUNE SERILEN BIR PERDE DEGIL ────
      z-index 59'du, yani uygulamanin uzerine seriliyordu: COLLAGE'in
      capraz bandi diskin ve tuslarin ONUNDEN geciyordu. Desen bir
@@ -2632,7 +2666,7 @@
   #deriFirca svg{width:20px;height:20px;}
   #deriFirca:hover,#deriFirca:focus-visible,body.galeri-acik #deriFirca{opacity:1;}
   body.klavye #deriFirca{opacity:0;pointer-events:none;}
-  body.deri #deriFirca{color:var(--d-marka,var(--d-yazi));}
+  body.deri #deriFirca{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
   #saatTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;bottom:calc(154px + var(--dip-pay));
@@ -2644,7 +2678,7 @@
   #saatTus.caliyor{animation:saatCal .9s ease-in-out infinite alternate;}
   @keyframes saatCal{from{opacity:.4}to{opacity:1}}
   body.klavye #saatTus{opacity:0;pointer-events:none;}
-  body.deri #saatTus{color:var(--d-marka,var(--d-yazi));}
+  body.deri #saatTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
   /* ── GORSEL TUSU ──────────────────────────────────────────────
      Kullanicinin sozu (6 Eylul): "istendiginde ortada visual bi
      seyler olsa, psychedelic... bir tusla, solda skins'in altina."
@@ -2661,7 +2695,28 @@
   #gorselTus svg{width:20px;height:20px;}
   #gorselTus:hover,#gorselTus:focus-visible,#gorselTus[aria-pressed="true"]{opacity:1;}
   body.klavye #gorselTus{opacity:0;pointer-events:none;}
-  body.deri #gorselTus{color:var(--d-marka,var(--d-yazi));}
+  body.deri #gorselTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
+  /* ── SOL SUTUN: DERIDE DAHA GOZE GELIYOR ──────────────────────
+     Kullanicinin sozu (7 Eylul): "bazi karisik skins'lerde soldaki
+     ogeler kayboluyor, daha belirgin renkler tonlar olmali."
+     Uc sey birlikte degisti ve ucu de olculebilir:
+       1) RENK zeminin tersine kayiyor (bkz. --d-simge, olukYaz).
+       2) DURGUN SEFFAFLIK deride .72 -> .88. Sonme bir uslup
+          tercihiydi; desenli bir zeminin uzerinde ise bilgi
+          kaybi. Deri kapaliyken (kendi karanlik dunyamiz) eski
+          deger duruyor -- orada zaten hicbir sey kaybolmuyordu.
+       3) HALE: ters tonda cok hafif bir golge. Cizimli derilerde
+          zemin fotograf gibi degisken; tek bir kontrast hesabi
+          orada yetmiyor, simgenin kendi kenari gerekiyor.
+     drop-shadow kullaniliyor (text-shadow degil): simgeler SVG
+     ve golge yolun kendisini takip ediyor, kutusunu degil. */
+  body.deri #deriFirca,body.deri #saatTus,body.deri #gorselTus,
+  body.deri #ayarTut{opacity:.88;}
+  body.deri #deriFirca svg,body.deri #saatTus svg,body.deri #gorselTus svg{
+    filter:drop-shadow(0 0 2px var(--d-ters-hale, rgba(0,0,0,.6)))
+           drop-shadow(0 1px 1px var(--d-ters-hale, rgba(0,0,0,.6)));}
+  body.deri #ayarTut span{
+    box-shadow:0 0 2px var(--d-ters-hale, rgba(0,0,0,.6));}
   /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ─────────────────────
      Bir ara buradaki iki nesnenin (uc cizgi ve kip anahtari)
      ALTINI koyulastiriyorduk: ikisi panelden ustte ciziliyor
@@ -2784,6 +2839,19 @@
     font-size:0.53125rem;letter-spacing:.34em;font-weight:400;
     color:rgba(244,247,250,.58);}
   #ayar h5:first-of-type{margin-top:10px;}
+  /* ── SATIR ALTI NOT ─────────────────────────────────────────────
+     Bir anahtarin BEDELINI soyleyen tek satir. Kullanicinin CAR
+     MODE'da yasadigi sey buydu: anahtar aciliyor, FX ve REC
+     sessizce olu kaliyor ve sebebini soyleyen hicbir sey yok.
+     Baslik degil, satir da degil: satirin devami. O yuzden ust
+     bosluk yok ve punto deger yazilariyla ayni kademede. */
+  #ayar .not{margin:-2px 0 8px;font-size:0.5625rem;line-height:1.5;
+    letter-spacing:.06em;color:rgba(244,247,250,.42);}
+  body.deri #ayar .not{color:var(--d-yazi2, var(--d-yazi)) !important;opacity:.72 !important;}
+  /* EFFECTS TANITIMI YALNIZCA ARSIVDE: canli radyoda efekt yok,
+     anlatacak bir sey de yok. Gorunmeyen bir satir odak da almiyor
+     (display:none), yani Tab sirasinda bosluk birakmiyor. */
+  body:not(.mood) #ayar #fxTurSatir{display:none;}
 
   /* ── ORBITAPE KAPISI ─────────────────────────────────────────────
      Panelin en ustu ve tek "buyuk" ogesi. Bir ayar degil bir GECIS:
@@ -3508,44 +3576,48 @@
       </span>
       <i class="anahtar" aria-hidden="true"><b></b></i>
     </div>
-    <!-- ANAHTARI ACMADAN BAKMAK. Kapinin ustunde "sound banks &
-         effects" yaziyor ama o iki kelime neyin acildigini
-         anlatmiyor: insan bilmedigi bir dunyaya anahtar cevirerek
-         girmek istemiyor. Bu satir o dunyayi ACMADAN gosteriyor --
-         tur bitince ekran oldugu gibi geri geliyor.
-         Kapinin HEMEN ALTINDA duruyor: ayni konunun ikinci satiri. -->
-    <div class="sat islem" data-ayar="turMood" role="button" tabindex="-1">
-      <span>SEE IT FIRST</span><span class="durum">PLAY</span></div>
+    <!-- "SEE IT FIRST" SATIRI BURADAN TASINDI (7 Eylul).
+         Kapinin hemen altinda duruyordu ve orada dogruydu: ayni
+         konunun ikinci satiri. Ama kullanici butun tanitimlarin tek
+         bir bolumde toplanmasini istedi ve bir sey iki yerde birden
+         duramaz -- ayni islevi iki ad altinda gostermek menuyu
+         buyutur, ogretmez. Simdi TUTORIALS bolumunde "SOUND BANKS"
+         adiyla duruyor. -->
 
-    <!-- ── GORUNUS VE SES ─────────────────────────────────────── -->
-    <!-- ── SIRA DEGISTI: AUDIO YUKARI, GORUNUS ASAGI ──────────────
-         Kullanicinin sozu: "ART ile DISPLAY'i birlestir ama altta
-         olsun, AUDIO daha yukarda olsun; TUTORIALS'i da onlarla
-         birlestir. ART'i sil, bos kalacak zaten."
-         Dogru istek: ses iki satir ve HER OTURUMDA gecerli; gorunus
-         ise altmis kareyle birlikte uzun bir bolum ve bir kere
-         secilip birakiliyor. Kisa ve sik kullanilan once, uzun ve
-         nadir olan sonra. ART basligi da kalkti -- icerigi DISPLAY'e
-         gectikten sonra altinda hicbir satir kalmiyordu. -->
+    <!-- ══ MENU DUZENI (7 Eylul) ═══════════════════════════════════
+         Kullanicinin sozu: "menuye bak. AUDIO'da olmasi gereken
+         baska yerde. DISPLAY'de baska bir sey var. Car mode ac
+         kapat var, o altta olur yani en alt degil ama. Tutorials
+         diye de bir bolum yap, tum tutorials olsun."
+         Hepsi dogruydu ve sebebi de aynidydi: bolumler ZAMANLA
+         buyudu, her yeni satir en yakin baslgin altina birakildi ve
+         basliklarin anlami asindi. Olculdu -- DISPLAY basliginin
+         altinda alti gorunum satiri, BIR SES satiri (WHEEL CLICK)
+         ve BIR CALMA satiri (CAR MODE) duruyordu.
+         Bolumler artik SORUYA gore ayriliyor, ekleme sirasina gore
+         degil:
+           AUDIO     -> uygulamanin CIKARDIGI sesler (muzik degil)
+           DISPLAY   -> ekranda ne gorunuyor
+           PLAYBACK  -> ses cihazdan NASIL cikiyor
+           TUTORIALS -> anlatanlar; hepsi bir arada, ustelik
+                        anahtari da yaninda
+           MORE      -> nadir, ama her zaman ulasilabilir
+         CAR MODE'un yeri: DISPLAY'in ortasindan cikip kendi
+         basliginin altina indi -- yani asagi, ama en alta degil;
+         altinda TUTORIALS ve MORE var. -->
+
+    <!-- ── AUDIO: UYGULAMANIN KENDI SESLERI ────────────────────────
+         Ucu de arayuzun cikardigi ses; hicbiri muzikle ilgili degil.
+         "SEARCH SOUND" degil sadece "SEARCH": SOUNDS baska bir sey
+         (arsiv kipi) ve ikisi yan yana karisiyordu.
+         WHEEL CLICK bu bolume TASINDI (7 Eylul): carki cevirirken
+         cikan tik bir SESTIR; DISPLAY'de durmasinin tek sebebi cark
+         ayarlarinin yanina yazilmis olmasiydi. -->
     <h5>AUDIO</h5>
     <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
       <span>SEARCH</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat" data-ayar="tikSes" role="switch" tabindex="-1">
       <span>CLICK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- ── DISPLAY ────────────────────────────────────────────────
-         Kullanicinin istegi: "ayarlara display gibi bir bolum daha
-         yap." Iki satir, ikisi de ZEMINLE ilgili -- o yuzden ayni
-         baslik altinda ve tema satirlarinin hemen altinda; MORE'a
-         konsa menude asagiya inmek gerekirdi.
-         · ALL BLACK  : zemin her rafta simsiyah. Tema secili olsa
-                        bile siyah kaliyor -- "acikken zaten kilitli"
-                        istegi bu.
-         · PARTY MOOD : sinema karartmasi. Kenarlardan karariyor,
-                        ortada yalnizca halkalar kaliyor. -->
-    <h5>DISPLAY</h5>
-    <div class="sat islem" data-ayar="tema" role="button" tabindex="-1"
-         aria-expanded="false" aria-controls="temaIzgara">
-      <span>THEME</span><span class="durum">AUTO</span></div>
     <!-- ── CARK TIKIRTISI ────────────────────────────────────────
          Carki cevirirken her diste cikan kisa tik. Kullanicinin
          sozu: "tatli bir ses olsun, ASMR etkisi olsun." Dosya
@@ -3553,6 +3625,20 @@
          Isteyen kapatir: bazi kisiler icin surekli tik yorucudur. -->
     <div class="sat" data-ayar="carkSes" role="switch" tabindex="-1">
       <span>WHEEL CLICK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+
+    <!-- ── DISPLAY: EKRANDA NE GORUNUYOR ───────────────────────────
+         Sira ONEM ve BAGLILIK: once zeminin kendisi (tema, kilit),
+         sonra derinin uzerine gelen katman (skins, ring), sonra
+         zemine yapilan mudahale (all black), en sonda gokyuzu
+         (stars, starlight) -- ikisi ayni konunun iki satiri ve
+         yanyana duruyorlar.
+         Iki izgara (temaIzgara, deriIzgara) KENDI satirlarinin
+         hemen altinda kalmali: acilinca satirin altindan aciliyorlar,
+         araya baska satir girerse panel yanlis yerden buyur. -->
+    <h5>DISPLAY</h5>
+    <div class="sat islem" data-ayar="tema" role="button" tabindex="-1"
+         aria-expanded="false" aria-controls="temaIzgara">
+      <span>THEME</span><span class="durum">AUTO</span></div>
     <!-- Izgara calisma aninda TEMALAR tablosundan uretiliyor: tablo
          tek kaynak, buraya elle otuz bes kutu yazilmiyor. -->
     <div id="temaIzgara" role="listbox" aria-label="Theme" hidden></div>
@@ -3562,6 +3648,25 @@
          oldugun kaybolmuyor. -->
     <div class="sat" data-ayar="temaKilit" role="switch" tabindex="-1">
       <span>LOCK THEME</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <div class="sat islem" data-ayar="deri" role="button" tabindex="-1"
+         aria-expanded="false" aria-controls="deriIzgara">
+      <span>SKINS</span><span class="durum">OFF</span></div>
+    <!-- Otuz deri tek ekranda: satiri otuz kere tiklamak diye bir sey
+         yok. Kareler acilista degil, ILK ACILISTA kuruluyor. -->
+    <div id="deriIzgara" class="deri-izgara" hidden></div>
+    <!-- ── RING (eski adi RINGS ONLY; 3 Eylul, kullanici: "adi ring
+         olsun") ─────────────────────────────────────────────────
+         Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
+         zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
+         kaliyor. Yalnizca deri acikken anlamli: deri kapaliyken
+         zaten oyle duruyor. SKINS'in hemen altinda: ayni konunun
+         devami. -->
+    <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
+      <span>RING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ALL BLACK: zemin her rafta simsiyah. Tema secili olsa bile
+         siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
+    <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
+      <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat islem" data-ayar="yildiz" role="button" tabindex="-1">
       <span>STARS</span><span class="durum">NORMAL</span></div>
     <!-- Parlaklik YOGUNLUKTAN AYRI: kalabalik ama silik bir gokyuzu
@@ -3569,40 +3674,46 @@
     <div class="sat islem" data-ayar="yildizIsik" role="button" tabindex="-1">
       <span>STARLIGHT</span><span class="durum">NORMAL</span></div>
 
-    <!-- ── SES ───────────────────────────────────────────────────
-         "SEARCH SOUND" degil sadece "SEARCH": SOUNDS baska bir sey
-         (arsiv kipi) ve ikisi yan yana karisiyordu. Zaten AUDIO
-         basliginin altindayiz, "sound" demeye gerek yok. -->
-    <!-- ── SEMBOL CARKI ────────────────────────────────────────
-         Uc sembol zaten bir kumar makinesi: onceden secilmis bir
-         sonuc, teker teker oturan uc makara, ilk ikisi tutunca
-         geciken ucuncu, kutlama ya da kisa bir sonme. Ama bugune
-         kadar yalnizca BEKLERKEN donuyordu -- yani tam da muzigin
-         gelmesiyle duruyordu.
-         4 Eylul: ANAHTAR KALKTI, davranis sabit -- sembollere basmak
-         her zaman carki ceviriyor, baska hicbir seye dokunmuyor.
-         Kullanicinin sozu: "sembollere sadece sembolleri dondurmek
-         icin basilacak, ayarlardaki secenegi kapat." -->
-    <div class="sat islem" data-ayar="deri" role="button" tabindex="-1"
-         aria-expanded="false" aria-controls="deriIzgara">
-      <span>SKINS</span><span class="durum">OFF</span></div>
-    <!-- Otuz deri tek ekranda: satiri otuz kere tiklamak diye bir sey
-         yok. Kareler acilista degil, ILK ACILISTA kuruluyor. -->
-    <div id="deriIzgara" class="deri-izgara" hidden></div>
-    <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
-      <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- CAR MODE: ses zincire girmez, dogrudan cikisa (CarPlay/Bluetooth
-         takilmalari icin). FX ve REC o kipte kapali. -->
+    <!-- ── PLAYBACK: SES CIHAZDAN NASIL CIKIYOR ────────────────────
+         Tek satirlik bir bolum ama kendi sorusu var ve o soru ne
+         AUDIO'nunki (arayuz sesleri) ne DISPLAY'inki. Bir baslik
+         "az satiri var" diye baska bir basligin altina konulmaz --
+         kullanicinin menude bulamamasinin sebebi tam olarak buydu.
+         CAR MODE: ses Web Audio zincirine HIC girmiyor, dogrudan
+         cikisa gidiyor (CarPlay/Bluetooth takilmalari icin).
+         Bedeli acik yaziyor: o kipte FX, REC ve ses tayfi (PHASE)
+         calismaz -- ucu de zincire bagli. -->
+    <h5>PLAYBACK</h5>
     <div class="sat" data-ayar="arac" role="switch" tabindex="-1">
       <span>CAR MODE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- ── RING (eski adi RINGS ONLY; 3 Eylul, kullanici: "adi ring
-         olsun") ─────────────────────────────────────────────────
-         Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
-         zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
-         kaliyor. Yalnizca deri acikken anlamli: deri kapaliyken
-         zaten oyle duruyor. -->
-    <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
-      <span>RING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- Bedelini SATIRIN ALTINDA soyluyor: anahtari cevirdikten
+         sonra "FX neden sondu, faz neden olu" diye aranmasin. -->
+    <p class="not" id="aracNot">Straight to the output. Effects, PHOTO and the spectrum are off.</p>
+
+    <!-- ── TUTORIALS: ANLATAN HER SEY BIR ARADA ────────────────────
+         Kullanicinin sozu (7 Eylul): "tutorialları yenile, baya bir
+         ekleme degisiklik oldu; o yuzden TUTORIALS diye de bir bolum
+         yap, tum tutorials olsun."
+         Once uc tanitim uc ayri yerdeydi: acilis turu MORE'un
+         icinde ("HOW IT WORKS"), ORBITAPE tanitimi en usteki
+         kapinin altinda ("SEE IT FIRST"), FX sunumu ise hicbir
+         yerde -- yalnizca kendiliginden cikiyordu, tekrar izlemenin
+         yolu yoktu. Ucu de burada ve anahtar da yanlarinda: bir
+         bolumun adi TUTORIALS ise onu kapatan dugme de orada olur.
+         EFFECTS satiri yalnizca arsiv kipinde gorunuyor (CSS):
+         canli radyoda efekt yok, anlatacak bir sey de yok. -->
+    <h5>TUTORIALS</h5>
+    <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
+      <span>HOW IT WORKS</span><span class="durum">PLAY</span></div>
+    <!-- ORBITAPE'i ACMADAN gosteriyor: dunya gecici aciliyor, tur
+         bitince ekran oldugu gibi geri geliyor. Eskiden en usteki
+         kapinin altindaydi ("SEE IT FIRST"); adi da yeri de degisti
+         -- artik oteki tanitimlarla ayni listede ve ne anlattigini
+         adiyla soyluyor. -->
+    <div class="sat islem" data-ayar="turMood" role="button" tabindex="-1">
+      <span>SOUND BANKS</span><span class="durum">PLAY</span></div>
+    <div class="sat islem" id="fxTurSatir" data-ayar="turFx" role="button" tabindex="-1">
+      <span>EFFECTS</span><span class="durum">PLAY</span></div>
     <!-- ── TANITIMLAR ACIK/KAPALI ────────────────────────────────
          Kullanicinin sozu: "tutoriallar bilen insan icin zulum
          olacaktir ... ve ayarlarda tutoriallari kapama tusu olsun."
@@ -3610,13 +3721,10 @@
          acinca gercekten geri geliyor: "bir daha gosterme"
          damgalari siliniyor, yoksa anahtar acik gorunup hicbir sey
          yapmayan bir dugme olurdu.
-         YERI: MORE degil, ust bolum. Bir kez MORE'a konuldu ve
-         kullanici menude bulamadi -- "zaten more da olmasin menude
-         olsun." Dogru: bu, sik kullanilmayan bir belge baglantisi
-         degil, ekranda ne olacagini belirleyen bir tercih; oteki
-         anahtarlarin yaninda duruyor. -->
+         Yukaridaki uc satir bundan ETKILENMIYOR: anahtar
+         KENDILIGINDEN cikmayi kapatiyor, elle istemeyi degil. -->
     <div class="sat" data-ayar="tanitim" role="switch" tabindex="-1">
-      <span>TUTORIALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+      <span>SHOW ON OPEN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ── EN ALT: okumaya ve bilmeye hakki olan seyler ───────────
          Sik kullanilmaz ama her zaman ULASILABILIR olmali. Sirasi da
          bu yuzden en altta: onem sirasi yukaridan asagi. -->
@@ -3631,8 +3739,6 @@
          bilmeyen icin okunmaz olurdu. -->
     <div class="sat islem" data-ayar="dil" role="button" tabindex="-1">
       <span>LANGUAGE</span><span class="durum">ENGLISH</span></div>
-    <div class="sat islem" data-ayar="tur" role="button" tabindex="-1">
-      <span>HOW IT WORKS</span><span class="durum">PLAY</span></div>
     <!-- ── SORUN BILDIR ────────────────────────────────────────────
          Hata paneli yalnizca BETIK HATASINDA cikiyor. Yasanan
          seylerin cogu betik hatasi degil: "calmiyor", "sesi cok
@@ -5032,6 +5138,16 @@
     const a = Math.max(l1, l2), b = Math.min(l1, l2);
     return (a + 0.05) / (b + 0.05);
   }
+  /* "#rrggbb" -> "r,g,b". okunurVurgu bu bicimi bekliyor; deri
+     tablosundaki renkler ise hex. Tek satirlik kopru. */
+  function _hexDizi(h){
+    try{
+      const c = String(h).trim().replace('#','');
+      const t = c.length === 3 ? c.split('').map(x=>x+x).join('') : c;
+      return parseInt(t.slice(0,2),16) + ',' + parseInt(t.slice(2,4),16) + ','
+           + parseInt(t.slice(4,6),16);
+    }catch(e){ return '128,128,128'; }
+  }
   /* rgbDizi: "12,34,56" (uygulamanin her yerinde bu bicim var). */
   function okunurVurgu(rgbDizi, zemHex, esik){
     try{
@@ -5314,8 +5430,44 @@
         const b = coz(d.marka, hedef, tabanOran);
         return oran(b) > oran(a) ? b : a;
       };
-      k.setProperty('--d-oluk',     hedefeCoz(2.60, acik ? 0.60 : 0.48));
-      k.setProperty('--d-cekirdek', hedefeCoz(3.20, acik ? 0.38 : 0.32));
+      /* HEDEFLER 7 EYLUL'DE YUKSELDI (2.60/3.20 -> 3.20/3.90).
+         Kullanicinin sozu: "cogu skins'te ... halkalar da oyle
+         [gorunmuyor]." Eski esikler "iyi" derilerin olculen
+         degerlerinin altindaki guvenli tabandi; olcum tabani degil
+         OKUNURLUGU hedeflemeliydi. Tarama ayni, yalnizca durdugu
+         yer daha yukarida: hedefe varamayan deride en iyi deger
+         yine aliniyor, yani hicbir deri geriye gitmiyor. */
+      k.setProperty('--d-oluk',     hedefeCoz(3.20, acik ? 0.60 : 0.48));
+      k.setProperty('--d-cekirdek', hedefeCoz(3.90, acik ? 0.38 : 0.32));
+      /* ── SOL SUTUN SIMGELERI VE CARK CIZGILERI ─────────────────
+         Kullanicinin sozu (7 Eylul): "bazi karisik skins'lerde
+         soldaki ogeler -- firca, saat, visual -- kayboluyor. Farkli
+         renk kullanman lazim: TAM TERSI. Acik ise koyu, koyu ise
+         acik."
+         Eskiden ikisi de derinin kendi renginden geliyordu:
+           simgeler  -> --d-marka  (markanin rengi)
+           cark disi -> --d-yazi   (govde yazisinin rengi)
+         Ikisi de o derinin ICINDE uyumlu secilmis renkler ama
+         hicbiri "zeminden ayrisiyor mu" diye SORULMUS degildi.
+         Olculdu (araclar: 59 deri, cark disleri ekrandan okundu):
+         disin zeminle en yuksek kontrasti IVORY'de 2.77, COLLAGE'da
+         2.88, BLUEPRINT 3.03, FIELDS 3.04, HALFTONE 3.11, TOPO 3.16
+         -- yani okunabilirlik esiginin (4.5) cok altinda. Ekranda
+         gorunen tam olarak kullanicinin dedigi sey: cark yok.
+         Cozum yeni bir renk uydurmak degil, VAR OLAN rengi zeminin
+         TERSINE dogru kaydirmak: okunurVurgu bunu zaten yapiyor
+         (acik zeminde siyaha, koyu zeminde beyaza dogru, esik
+         tutana kadar). Deri kimligi korunuyor -- marka kirmiziysa
+         koyu kirmizi cikiyor, gri degil.
+         Hale: cizimli/desenli derilerde zeminin KENDISI degisken
+         (fotograf gibi); tek bir kontrast hesabi orada yetmez. Ters
+         tonda cok hafif bir golge simgeyi her zeminden ayiriyor. */
+      const _tersHale = acik ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.70)';
+      k.setProperty('--d-simge',
+        okunurVurgu(_hexDizi(d.marka), d.zem, 4.5) || (acik ? 'rgb(0,0,0)' : 'rgb(255,255,255)'));
+      k.setProperty('--d-cizgi',
+        okunurVurgu(_hexDizi(d.yazi), d.zem, 4.5) || (acik ? 'rgb(0,0,0)' : 'rgb(255,255,255)'));
+      k.setProperty('--d-ters-hale', _tersHale);
     }catch(e){ _yut(e); }
   }
 
@@ -5487,6 +5639,14 @@
   try{ window.gorselGeldi = gorselGeldi; }catch(e){ _yut(e); }
   function gorselBas(){
     try{
+      /* ACILMADAN ONCE EKRAN BOSALIYOR (7 Eylul, kullanici):
+         "tam ekran hep visual, her durumda." Kapatma TUSA BASILDIGI
+         ANDA oluyor -- modul agdan gelene kadar beklenirse acik
+         panel ekranda saniyelerce duruyor. Gorsel zaten aciksa
+         (ikinci dokunus = kapat) hicbir sey kapatilmiyor. */
+      if(!(window.gorselAcikMi && window.gorselAcikMi())){
+        try{ if(window.tumPencereleriKapat) window.tumPencereleriKapat(); }catch(_){ _yut(_); }
+      }
       if(window.GORSEL_HAZIR && typeof window.gorselDegistir === 'function'){ window.gorselDegistir(); return; }
       _gorselBekliyor = true; gorselYukle();
     }catch(e){ _yut(e); }
@@ -5538,7 +5698,8 @@
          '--d-tus-kenar','--d-golge','--d-panel','--d-filtre','--d-karisim','--d-halka',
          '--d-isik','--d-tel','--d-yazi2','--d-yazi-guclu','--d-raf','--d-gez-ham','--d-gez-tema','--d-golge-renk','--d-dis-golge','--d-cek','--d-oluk','--d-oluk-isik','--d-cekirdek','--d-vurgu',
          '--d-neb-karisim','--d-neb-sef','--d-halka-karisim','--d-doku',
-         '--d-doku-olcu','--d-doku-sef'].forEach(x=>k.removeProperty(x));
+         '--d-doku-olcu','--d-doku-sef',
+         '--d-simge','--d-cizgi','--d-ters-hale'].forEach(x=>k.removeProperty(x));
       }else{
         const d0 = DERILER[n-1]; if(!d0) return;
         /* Cizimli deride golge takimi ve panel zeminden turetiliyor. */
@@ -6690,11 +6851,36 @@
        yoksa dugme calismiyormus gibi gorunur. */
     try{ arsivDevam(); }catch(_){ _yut(_); }
     agYokKapa();
+    /* ── DENEME HAKKI YENILENIYOR (7 Eylul) ───────────────────────
+       Kullanicinin bildirimi: "bazen aciyorum, istasyon da bulamadi
+       bayagi bir."
+       Liste ag hatasinda BL_TEKRAR (6) kez, 8,5 saniye arayla
+       kendiliginden deneniyor -- yaklasik bir dakika. O bir dakika
+       kotu bir hucrede gecerse hak bitiyor ve ag SONRADAN gelse bile
+       liste bir daha istenmiyordu: uygulama sayfa yenilenene kadar
+       istasyonsuz kaliyor. Ag geri geldiginde (ya da sekme one
+       dondugunde) sayac sifirlaniyor ve bir kez daha deneniyor.
+       Sunucu CEVAP VERIP liste gercekten bossa (_blDenendi) hicbir
+       sey degismiyor: orada tekrar denemek ayni bos cevabi getirir. */
+    try{
+      if(!beyazListe && !_blDenendi){
+        _blTekrar = 0;
+        if(_blZaman){ clearTimeout(_blZaman); _blZaman = null; }
+        beyazListeYukle().then(l=>{
+          if(l && l.length){ try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); } }
+        }).catch(e=>_yut(e));
+      }
+    }catch(e){ _yut(e); }
     try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
     try{ if(!sesDuyuluyorMu || !sesDuyuluyorMu()) sonraki(false); }catch(e){ try{ sonraki(false); }catch(_){ _yut(_); } }
   }
   try{
     window.addEventListener('online',  ()=>{ agDene(); });
+    /* Sekme one donunce de: telefon uykudan kalkarken 'online'
+       olayi her zaman gelmiyor ama gorunurluk olayi geliyor. */
+    document.addEventListener('visibilitychange', ()=>{
+      try{ if(!document.hidden && !beyazListe && !_blDenendi) agDene(); }catch(e){ _yut(e); }
+    });
     window.addEventListener('offline', ()=>{ agYokAc(); });
     document.getElementById('agyokTekrar').addEventListener('click', e=>{ e.stopPropagation(); agDene(); });
   }catch(e){ _yut(e); }
@@ -10927,9 +11113,25 @@
        zaten gorunmuyor. Kazanci olculdu: gorsel acikken toplam
        cizim yuku tek dongude kaliyor. */
     const _gorAcik = !!(window.gorselAcikMi && window.gorselAcikMi());
+    /* ── CAR MODE'DA CIZIM GERI CEKILIYOR ─────────────────────────
+       Kullanicinin sozu (7 Eylul): "yine arabada takila takila
+       caldi, olmuyor yani."
+       CAR MODE bugune kadar tek bir sey yapiyordu: sesi Web Audio
+       zincirinden cikarmak. Yardim etmedi, cunku telefonda ses
+       zincirinin yaninda AYNI cekirdegi kullanan ikinci bir yuk
+       var -- ekran. Arabada ekran cogu zaman cebde ya da tutucuda,
+       kimse halkalarin nefes alisina bakmiyor; ama tuval calarken
+       30 kare/sn cizmeye devam ediyordu.
+       Bu kipte hedef 12'ye iniyor. Dongunun kendisi DURMUYOR --
+       seviyeOku, sessizlik gozcusu ve FX sonumu ona bagli ve 12'de
+       dogru calisiyorlar (gorsel acikken zaten 8'de calisiyorlar).
+       Parmak ekrandayken fren yok: o an bakan biri var.
+       Ayni satirin ikinci yarisi olan bekci icin bkz. akisBekcisi. */
+    const _aracKip = !!(typeof AYAR !== 'undefined' && AYAR && AYAR.arac);
     const _hedefFps = kaydediciAktif() ? 30
                     : _gorAcik ? 8
                     : _etkilesim ? 60
+                    : (_aracKip && _cal) ? 12
                     : (MOBIL && _fxAcik) ? 18
                     : (_cal ? KARE_HEDEF : KARE_BOS);
     if(t && (t - _sonKare) < (1000/_hedefFps - 1)) return;
@@ -12124,6 +12326,67 @@
     }
     if(mod!=='radio' && ses.src) atla();
   });
+
+  /* ── AKIS BEKCISI: DONAN YAYINI KENDI KENDINE GERI GETIRIR ──────
+     Kullanicinin sozu (3 ve 7 Eylul): "arabada takila takila caldi,
+     olmuyor yani."
+     Arabada olan sey bir hata degil: hucresel bag kisa suren
+     kesintiler yasiyor, <audio> canli bir HTTP akisinda oturdugu
+     soketi kaybediyor ve TEKRAR DENEMIYOR. Eleman "calmaya devam
+     ediyor" gorunur -- paused false, error yok -- ama currentTime
+     ilerlemez. Ne 'error' dinleyicisi ne de 'ended' tetiklenir, yani
+     bugune kadar bu durumu goren hicbir sey yoktu; kullanicinin
+     yapabildigi tek sey elle baska istasyona gecmekti.
+     Bekci TEK SEY olcuyor: ses calarken saat ilerliyor mu.
+       · Ilerliyor  -> sayac sifirlaniyor, hicbir sey olmuyor.
+       · 8 saniye durdu -> ayni kaynak yeniden baglaniyor. Canli
+         yayinda bas taraf zaten yok, kaldigi yer diye bir sey de
+         yok; arsiv kaydinda ise konum korunuyor.
+     UC KEZDEN FAZLA DENEMIYOR. Dorduncu donmada sorun ag degil
+     kaynaktir; sonsuz yeniden baglanma, telefonun pilini yer ve
+     kullaniciya hicbir sey soylemez. O noktada radyo elle
+     birakiliyor (radyo hicbir zaman kendi kendine istasyon
+     degistirmiyor -- yerlesik kural), arsivde ise siradaki parca.
+     CAR MODE ILE ILGISI YOK ama en cok orada ise yariyor: o kipte
+     ses zincire hic girmiyor, yani takilmayi fark edebilecek baska
+     hicbir olcum de yok. */
+  var _akisSon = -1, _akisDurgun = 0, _akisTamir = 0, _akisSrc = '';
+  const AKIS_DUR_SN = 8;                 // kac saniye ilerlemezse takildi sayiliyor
+  const AKIS_TAMIR_TAVAN = 3;            // ust uste en fazla kac yeniden baglanma
+  function akisBekcisi(){
+    try{
+      if(!ses || !ses.src){ _akisDurgun = 0; return; }
+      /* Kaynak degistiyse sayaclar sifirdan: yeni bir parcanin ilk
+         saniyelerini "donmus" saymak yanlis olurdu. */
+      if(ses.src !== _akisSrc){ _akisSrc = ses.src; _akisSon = -1; _akisDurgun = 0; _akisTamir = 0; }
+      if(ses.paused || ses.ended){ _akisDurgun = 0; _akisSon = ses.currentTime; return; }
+      /* Sayfa arka plandayken tarayici zamanlayiciyi kisiyor ama ses
+         calmaya devam ediyor; oradaki olcum guvenilir degil. */
+      if(document.hidden){ _akisDurgun = 0; _akisSon = ses.currentTime; return; }
+      const t = ses.currentTime;
+      if(_akisSon >= 0 && Math.abs(t - _akisSon) < 0.02) _akisDurgun += 2;
+      else _akisDurgun = 0;
+      _akisSon = t;
+      if(_akisDurgun < AKIS_DUR_SN) return;
+      _akisDurgun = 0;
+      if(_akisTamir >= AKIS_TAMIR_TAVAN){
+        try{ iz('akis: tamir tavani'); }catch(e){ _yut(e); }
+        if(mod !== 'radio') atla();
+        return;
+      }
+      _akisTamir++;
+      try{ iz('akis: yeniden baglaniyor ' + _akisTamir); }catch(e){ _yut(e); }
+      const canli = (mod === 'radio');
+      const yer = canli ? 0 : t;
+      try{ ses.load(); }catch(e){ _yut(e); }
+      const p = ses.play();
+      if(p && p.then) p.then(()=>{
+        try{ if(!canli && yer > 0 && isFinite(ses.duration) && yer < ses.duration) ses.currentTime = yer; }
+        catch(e){ _yut(e); }
+      }, e=>{ _yut(e); });
+    }catch(e){ _yut(e); }
+  }
+  setInterval(akisBekcisi, 2000);
 
   /* ── CANLI RADYO (Radio Browser): kütüphaneyle AYNI ses+grafikten çalar -> FX + görselleştirme radyoda da çalışır.
         CORS başlığı olmayan istasyonlar grafikten geçince sessiz kalır -> gözcü onları otomatik atlar. ── */
@@ -13771,9 +14034,14 @@
     ];
   }
   var _fxSunumKes = null;
-  function fxSunumBasla(){
+  /* zorla: ayarlardaki TUTORIALS bolumunden ELLE isteniyor (7 Eylul).
+     Kendiliginden cikma kurallari (kutu isaretlendi mi, kisi efekte
+     bu oturumda dokundu mu) orada gecerli degil -- o kurallar
+     "davetsiz gelmesin" icin var, "isteyene gosterme" icin degil. */
+  function fxSunumBasla(zorla){
     const t = document.getElementById('tur');
-    if(!t || _turAkiyor || _fxSunumAkiyor || fxSunumBittiMi() || _fxKullanildi) return;
+    if(!t || _turAkiyor || _fxSunumAkiyor) return;
+    if(!zorla && (fxSunumBittiMi() || _fxKullanildi)) return;
     /* Kapatma satırı ancak tüm kanallar birer kez gördükten sonra
        açılıyor. Liste cihazda kaldığı için ikinci açılıştan itibaren
        kapatma her zaman elinin altında. İŞARETLEMEDEN ÖNCE bakılıyor. */
@@ -14860,6 +15128,22 @@
             /* AYNI KURAL: olculen deger duz piksel, sabit deger _dip.
                (Buyutecteki cift sayma hatasinin ikizi buradaydi.) */
             npE.style.bottom = _oy ? (Math.max(6, ustHat2) + 'px') : _dip(Math.max(6, ustHat2));
+            /* ── YIGILMA GOVDEYE DE SOYLENIYOR (7 Eylul) ───────────
+               Yiginca kunye konsolun USTUNE cikiyor, yani ekranin
+               ortasina dogru 120 piksel kadar yukseliyor. Ortadaki
+               alet ise sabit yerlesimden geliyor ve bu yukselisten
+               haberi yoktu: 360x640'ta halka kunyenin uzerine
+               biniyordu (cihaz takimi olctu: -12 px).
+               Bu bir "icerik degisince ekran oynuyor" durumu DEGIL:
+               yiginip yiginmayacagini belirleyen sey ekranin
+               genisligi ve soldaki satirin genisligi -- ikisi de
+               cihaz basina sabit. Yani alet sarki degistikce
+               oynamiyor, yalnizca dar bir telefonda BIR KEZ daha
+               yukari kuruluyor. Kullanicinin kuralı korunuyor.
+               Olculeri CSS veriyor (bkz. body.kunye-yigin). */
+            try{ document.body.classList.add('kunye-yigin'); }catch(_){ _yut(_); }
+          }else{
+            try{ document.body.classList.remove('kunye-yigin'); }catch(_){ _yut(_); }
           }
           npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
         }
@@ -15196,6 +15480,22 @@
             /* AYNI KURAL: olculen deger duz piksel, sabit deger _dip.
                (Buyutecteki cift sayma hatasinin ikizi buradaydi.) */
             npE.style.bottom = _oy ? (Math.max(6, ustHat2) + 'px') : _dip(Math.max(6, ustHat2));
+            /* ── YIGILMA GOVDEYE DE SOYLENIYOR (7 Eylul) ───────────
+               Yiginca kunye konsolun USTUNE cikiyor, yani ekranin
+               ortasina dogru 120 piksel kadar yukseliyor. Ortadaki
+               alet ise sabit yerlesimden geliyor ve bu yukselisten
+               haberi yoktu: 360x640'ta halka kunyenin uzerine
+               biniyordu (cihaz takimi olctu: -12 px).
+               Bu bir "icerik degisince ekran oynuyor" durumu DEGIL:
+               yiginip yiginmayacagini belirleyen sey ekranin
+               genisligi ve soldaki satirin genisligi -- ikisi de
+               cihaz basina sabit. Yani alet sarki degistikce
+               oynamiyor, yalnizca dar bir telefonda BIR KEZ daha
+               yukari kuruluyor. Kullanicinin kuralı korunuyor.
+               Olculeri CSS veriyor (bkz. body.kunye-yigin). */
+            try{ document.body.classList.add('kunye-yigin'); }catch(_){ _yut(_); }
+          }else{
+            try{ document.body.classList.remove('kunye-yigin'); }catch(_){ _yut(_); }
           }
           npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
         }
@@ -16244,6 +16544,13 @@
            gecici aciliyor, tur bitince geri geliyor. */
         kapa();
         setTimeout(()=>{ try{ moodTuruBasla(); }catch(e){ _yut(e); } }, 320);
+        return;
+      }
+      if(k === 'turFx'){
+        /* Efekt sunumu ELLE: panel kapaniyor, sunum zorla basliyor.
+           Yalnizca arsiv kipinde gorunuyor (CSS: #fxTurSatir). */
+        kapa();
+        setTimeout(()=>{ try{ fxSunumBasla(true); }catch(e){ _yut(e); } }, 320);
         return;
       }
       if(k === 'tur'){
@@ -17490,17 +17797,39 @@
       /* FIRCA VE SAAT (3 Eylul): iki yeni tus, uc cizginin altinda.
          'uzun': acilis turu alti adimda kaliyor (olculu karar); bunlar
          ayarlardan istenen tam turda anlatiliyor. */
-      { bas:'SKINS', uzun:true, metin:'The brush: every look, live.<br>Tap one and keep listening.',
+      /* ── TANITIMLAR YENILENDI (7 Eylul) ───────────────────────
+         Kullanicinin sozu: "tutoriallari yenile, baya bir ekleme
+         degisiklik oldu."
+         Dogru: bu uc adim uygulamanin BUGUNKU halini anlatmiyordu.
+           · SKINS  -> palet artik iki kademeli (tam galeri, sonra
+                       ince serit); eski metin bunu hic soylemiyordu.
+           · TIMER  -> alarmda artik istasyon secilmiyor, uyanma
+                       calan seyi geri getiriyor (bkz. saat.js).
+           · VISUAL -> yeni ve tur onu hic gostermiyordu.
+           · CENTRE -> cark/faz secimi de yeni; ekranin ortasindaki
+                       seyin degisebildigini kimse kendiliginden
+                       bulmuyor. */
+      { bas:'SKINS', uzun:true, metin:'The brush: every look, live.<br>Tap again for a slim strip that stays.',
         duraklar:[{hedef:'#deriFirca', sure:900}] },
-      { bas:'TIMER', uzun:true, metin:'Sleep timer and a gentle alarm.<br>The sound fades out, then wakes you.',
+      { bas:'TIMER', uzun:true, metin:'Sleep fades the sound out.<br>The alarm brings back what you were playing.',
         duraklar:[{hedef:'#saatTus', sure:900}] },
+      /* VISUAL: ayni zamanda EKRAN KILIDI. Ikisini birlikte
+         soylemek gerekiyor -- yoksa "dokunuyorum, sarki
+         degismiyor" bir kusur gibi gorunur. */
+      { bas:'VISUALS', uzun:true, metin:'Full screen, moving with the sound.<br>Touch only opens its strip — nothing skips.',
+        duraklar:[{hedef:yaDa('#gorselTus','#deriFirca'), sure:1400}] },
+      /* ORTADAKI ALET: DISPLAY degil, ekranin ortasi. Tur bunu
+         gostermek zorunda cunku ayarlarda degil, halkanin kendi
+         cevresinde yasiyor. */
+      { bas:'THE CENTRE', uzun:true, metin:'Turn the ring of teeth to change shelf.<br>Or set the centre to PHASE and watch the sound.',
+        duraklar:[{hedef:{disk:1.12, aci:0}, sure:1500}] },
       { bas:'NOW PLAYING', uzun:true, metin:'Bottom right: the station first,<br>then the track it is playing.',
         duraklar:[{hedef:'#np', sure:1300}] },
       { bas:'WHAT IS THIS?', uzun:true, metin:'Heard something good?<br>This asks your phone to name it.',
         duraklar:[{hedef:yaDa('#tani','#np'), sure:1200}] },
       /* AYARLAR: soylemek yetmiyor, ACILIYOR. El uc cizgiye iner,
          panel gercekten iner, iki satir gosterilir ve panel kapanir. */
-      { bas:'SETTINGS', bilir:'ayar', metin:'Bottom left: three lines.<br>Themes, stars, sounds — and this tour.',
+      { bas:'SETTINGS', bilir:'ayar', metin:'Bottom left: three lines.<br>Sound, display, playback — and every tutorial.',
         duraklar:[{hedef:'#ayarTut', sure:820,
                    oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){ _yut(e); } }},
                   {hedef:yaDa('#ayar .sat.kapi','#ayarTut'), sure:1000},
@@ -17783,6 +18112,33 @@
     }catch(e){ _yut(e); }
     return false;
   }
+  /* ── HEPSINI KAPAT ────────────────────────────────────────────────
+     Kullanicinin sozu (7 Eylul): "skins acikken visual acarsak
+     skinsin bi parcasi kaliyor en yukarda banner gibi. Tam ekran hep
+     visual, her durumda."
+     Once bunu YALNIZCA CSS cozuyordu: gorsel acikken panelleri
+     display:none yapan bir kural. Iki yerde yetmiyor:
+       · Kural gorsel.js ile birlikte INIYOR. Modul agdan gelene
+         kadar (telefonda saniyeler) panel ekranda duruyor.
+       · Bir panel gizlenmis ama hala ACIK sayiliyor: gorsel
+         kapaninca geri geliyor, govdedeki serit-acik sinifi
+         yerlesim olculerini degistirmeye devam ediyor.
+     Dogrusu gizlemek degil KAPATMAK: gorsel acilirken her pencere
+     kendi kapa()'siyla kapaniyor, yani durumu da temizleniyor.
+     CSS kurali yerinde kaliyor -- ikinci emniyet. */
+  function tumPencereleriKapat(){
+    try{ if(window.deriGaleriAcik && window.deriGaleriAcik()
+            && window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){ _yut(e); }
+    try{ if(window.listeAcik && window.listeAcik() && window.listeKapa) window.listeKapa(); }catch(e){ _yut(e); }
+    try{ const sp = document.getElementById('saatPanel');
+         if(sp && !sp.hidden && window.saatKapa) window.saatKapa(); }catch(e){ _yut(e); }
+    try{ if(document.body.classList.contains('ayar-acik') && window.ayarGoster) window.ayarGoster(false); }catch(e){ _yut(e); }
+    /* Galeri modulu hic inmemisse sinif govdede kalmis olabilir:
+       yerlesim olculeri (--ust-rez) ona bakiyor. */
+    try{ document.body.classList.remove('serit-acik');
+         document.body.classList.remove('galeri-acik'); }catch(e){ _yut(e); }
+  }
+  try{ window.tumPencereleriKapat = tumPencereleriKapat; }catch(e){ _yut(e); }
   /* Dokunus ortadaki aletin uzerinde mi? Cark aciksa olcuyu o
      veriyor (yaricapini yalnizca kendisi biliyor); cark kapaliysa
      govdenin kendi kutusuna bakiliyor. */
@@ -17902,6 +18258,23 @@
      o tek dokunuşu olabildiğince kolaylaştırmak: ekranın HERHANGİ bir
      yerine basmak müziği başlatıyor. Kendi işi olan düğmelere
      karışmıyoruz, yoksa parça iki kez ilerlerdi. */
+  /* ── HER DOKUNUS SES BAGLAMINI UYANDIRIYOR (7 Eylul) ────────────
+     Kullanicinin bildirimi: "bazen aciyorum hicbir ses gelmiyor,
+     click sesi cark sesi yok."
+     Tik ve cark sesi Web Audio'dan uretiliyor; baglam 'suspended'
+     kalirsa hicbiri duyulmuyor ve ekranda hicbir belirti olmuyor.
+     Baglam ilk dokunusta kuruluyor ama sonradan (telefon uykuya
+     girip kalkinca, baska bir uygulama sesi ele alinca) yeniden
+     askiya alinabiliyor -- o durumda kimse uyandirmiyordu.
+     Artik her dokunus once baglami yokluyor: zaten calisiyorsa
+     hicbir maliyeti yok. */
+  try{
+    document.addEventListener('pointerdown', ()=>{
+      try{
+        if(typeof actx !== 'undefined' && actx && actx.state !== 'running') actx.resume();
+      }catch(e){ _yut(e); }
+    }, {capture:true, passive:true});
+  }catch(e){ _yut(e); }
   var _ilkTetik = false;
   document.addEventListener('pointerdown', e=>{
     if(_ilkTetik || baslatildi) return;

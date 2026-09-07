@@ -84,10 +84,20 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
        butun denetimler cekiliyor; dokunuslari asagidaki katman
        yutuyor, tek calisan sey gorselin kendi seridi. */
     "body.gorsel-acik .disk{display:none !important}",
+    /* PANELLER DE BU LISTEDE (7 Eylul, kullanici): "skins acikken
+       visual acarsak skinsin bi parcasi kaliyor en yukarda banner
+       gibi. Tam ekran hep visual, her durumda."
+       Asil cozum JS tarafinda: gorsel acilirken her pencere kendi
+       kapa()'siyla KAPANIYOR (index.html: tumPencereleriKapat), yani
+       durumu da temizleniyor. Buradaki liste ikinci emniyet -- bir
+       panel kapanmayi kacirirsa yine de ekranda gorunmuyor. */
     "body.gorsel-acik #ayarTut,body.gorsel-acik #saatTus,body.gorsel-acik #deriFirca,"
       + "body.gorsel-acik #gorselTus,body.gorsel-acik #kipKisayol,body.gorsel-acik #solUst,"
       + "body.gorsel-acik #ara,body.gorsel-acik #araCizgi,body.gorsel-acik #bekle,"
-      + "body.gorsel-acik #deriGaleri,body.gorsel-acik #modDalga"
+      + "body.gorsel-acik #deriGaleri,body.gorsel-acik #modDalga,"
+      + "body.gorsel-acik #ayar,body.gorsel-acik #saatPanel,body.gorsel-acik #istListe,"
+      + "body.gorsel-acik #geriBil,body.gorsel-acik #rapor,body.gorsel-acik #uydular,"
+      + "body.gorsel-acik #araclar,body.gorsel-acik #mark,body.gorsel-acik #tp"
       + "{display:none !important}",
     /* KATMAN: butun dokunuslari yutuyor. Serit onun USTUNDE
        (z-index 97 > 96), yani tek calisan sey gorsel menusu. */
@@ -565,6 +575,11 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
   function ac(){
     try{
       if(acik) return;
+      /* EKRAN ONCE BOSALIYOR. Tusun kendi yolu da bunu cagiriyor
+         (index.html: gorselBas) ama gorsel baska yollardan da
+         acilabiliyor -- kisayol, tur, kurtarma. Kural tek yerde
+         degil, HER GIRISTE gecerli olmali. */
+      try{ if(window.tumPencereleriKapat) window.tumPencereleriKapat(); }catch(e){ yut(e); }
       if(!tuval){
         tuval = /** @type {any} */ (el('canvas'));
         tuval.id = 'gorselTuval';
