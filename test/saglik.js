@@ -574,7 +574,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      once ses, sonra modul. Olculdu: ilk acilista inen toplam
      115 KB'dan 97 KB'a indi (brotli). Tavan yine FREN kurali:
      bugunku olcumun ~%10 ustu. */
-  const ILK_CIZIM_TAVAN = _derlendi ? 100 : 260, ILK_ACILIS_TAVAN = _derlendi ? 108 : 302;
+  /* 8 Eylul: 100 -> 102 ve 108 -> 110. SOUNDS bolumu geldi (butun
+     sesler anahtari, muzik ustunde tikirti anahtari, dort kademeli
+     cark seviyesi) ve tik sesi <audio> klonundan ses baglamina
+     tasindi -- ikisi de gercek islev, yorum degil; olculen artis
+     ~350 bayt brotli. Tavan bir koruma, bir yasak degil: islev
+     eklenince bilerek ve yaziyla yukseltiliyor. */
+  const ILK_CIZIM_TAVAN = _derlendi ? 102 : 260, ILK_ACILIS_TAVAN = _derlendi ? 110 : 302;
   K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
@@ -647,7 +653,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             f + ' ' + Math.round(bro(fs.readFileSync(_yayin(f)))/1024) + 'K').join(' + ')
            + ' (toplam ' + Math.round(_iuBoy/1024) + ' KB)')
         : 'istek uzerine inen modul yok');
-    K('Ham boy < 1100 KB', dosyaBoy < 1100*1024,
+    /* 1100 -> 1105 KB: bkz. ILK_CIZIM_TAVAN notu. */
+    K('Ham boy < 1105 KB', dosyaBoy < 1105*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -11589,7 +11596,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Cihaz Turkce ise uygulama Turkce aciliyor',
      trd.tr.dil === 'tr' && trd.tr.lang === 'tr' && trd.tr.sozluk > 100,
      'dil ' + trd.tr.dil + ' | lang="' + trd.tr.lang + '" | ' + trd.tr.sozluk + ' anahtar');
-  K('Ayarlar Turkce', trd.turkceMi === true && trd.tr.baslik === 'SES'
+  /* 8 Eylul: bolumun adi AUDIO -> SOUNDS (kullanicinin istegi:
+     "audio adini sounds yap"), karsiligi SES -> SESLER. */
+  K('Ayarlar Turkce', trd.turkceMi === true && trd.tr.baslik === 'SESLER'
      && trd.tr.sifirla === 'AYARLARI SIFIRLA',
      '"' + trd.tr.baslik + '" | "' + trd.tr.sifirla + '"');
   K('Ekran okuyucu adlari da Turkce', trd.tr.etiket === 'Ayarlar',
@@ -11600,11 +11609,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Tur ve raf adlari CEVRILMIYOR', trd.veri === true && trd.tus === true,
      'JAZZ/AMBIENT/NATURE/RADIOTAPE ve REC/CAM oldugu gibi');
   K('Sozluk gelmezse Ingilizce kaliyor',
-     trd.yedek.baslik === 'AUDIO' && trd.yedek.sifirla === 'RESET SETTINGS',
+     trd.yedek.baslik === 'SOUNDS' && trd.yedek.sifirla === 'RESET SETTINGS',
      'eksik ceviri Ingilizce gorunuyor, bos ekran olmuyor');
   K('Dil iki yonlu degisiyor',
-     trd.ing.dil === 'en' && trd.ing.baslik === 'AUDIO'
-     && trd.ing.durum === 'ENGLISH' && trd.geri.dil === 'tr' && trd.geri.baslik === 'SES',
+     trd.ing.dil === 'en' && trd.ing.baslik === 'SOUNDS'
+     && trd.ing.durum === 'ENGLISH' && trd.geri.dil === 'tr' && trd.geri.baslik === 'SESLER',
      'TR -> EN -> TR');
   }
 

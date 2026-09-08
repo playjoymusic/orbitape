@@ -46,11 +46,8 @@
   /* Metanin CSS karsiligi: meta bir sebeple dusserse (uzanti,
      okuyucu kipi) kural burada da duruyor. */
   :root{color-scheme:dark;}
-  /* 8 Eylul: 34 -> 18. Kullanicinin sozu: "en altta da bir serit var
-     ve ogeler mecburen yukarda; onlari da en alta almak lazim."
-     Bu pay ana ekran cubugunun (home indicator) uzerine basilmasin
-     diye var; 34 iOS'un tam degeri, gerekenden fazla. 18'de cubuga
-     deger kadar yaklasmadan konsol ekranin dibine iniyor. */
+  /* 8 Eylul: 34 -> 18. Ana ekran cubugu payi gerekenden fazlaydi ve
+     konsolu yukarida tutuyordu ("ogeler mecburen yukarda"). */
   :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 18px);}
   :root{--bg:#020203;--sut:15px;
     /* --kx: EKRANIN KENAR PAYI. Dort kose de bu tek sayiyi kullaniyor.
@@ -185,9 +182,8 @@
      kucuk ve min() onu seciyor (390x844'te tavan 454px, secilen
      288px). Yalnizca yerin gercekten dar oldugu yerde devreye
      giriyor. */
-  /* 8 Eylul: HALKA ORTALANDI. Olculdu (360x640): disk 159..425,
-     konsol 554'te -- 129px bos alan, halka ust yaridaydi.
-     --alet-kay 40->0, .disk 74vw->78vw. Yeni merkez 320/320. */
+  /* 8 Eylul: HALKA ORTALANDI. --alet-kay 40->0, .disk 74vw->78vw;
+     merkez 320/320 (360x640). */
   :root{ --ust-rez:56px; --alt-rez:max(190px, 25vh); --alet-kay:0px;
     /* ust satirin alti (33px) + 7px hava */
     --tepe-pay:40px; }
@@ -248,10 +244,7 @@
      (body.kunye-yigin) 220px'lik kayma duruyor -- orada alt blok
      gercekten buyuk. */
   @media (max-height:700px){ :root{ --alet-kay:0px; } }
-  /* 660'in altinda kunye tek satir olsa bile alete degiyor: cihaz
-     takimi 360x626'da 7px binme olctu. 24px'lik kucuk bir kayma
-     yetiyor. Dar ekranda kunye yigildiginda zaten 220 gecerli
-     (body.kunye-yigin, asagida). */
+  /* 660 alti: 375x553'te 7px binme olculdu, 60px kayma yetiyor. */
   /* 24 -> 46: tuslar artik ilk karede geldigi icin konsol satiri
      bastan tam genisliginde; 375x553'te kunye alete 18px biniyordu
      (cihaz takimi olctu). Once bu sure boyunca satir eksik ciziliyor
@@ -281,16 +274,10 @@
      -8, 320x460 -22, 280x545 -11). Ortalama istegi bu daldan
      karsilanmiyor -- normal telefonlarda (kunye tek satir) alet
      zaten tam ortada, bkz. --alet-kay:0. */
-  /* ── YIGIN DALI: KAYMA GERI KONDU ────────────────────────────
-     Kullanicinin istegi "halka ekranin tam ortasinda olsun" ve
-     NORMAL telefonlarda oyle (--alet-kay:0). Ama kunye yigildiginda
-     -- dar ekran, uc satirlik istasyon adi -- ortalamak matematiksel
-     olarak mumkun degil: 320x568'de alt blok 268px yer istiyor,
-     ortalanmis bir diskin sigmasi icin capinin 32px olmasi gerekirdi.
-     0 denendi: cihaz takimi alti modelde binme olctu (320x460'ta
-     70px). 96 denendi: 8-22px. 220 temiz.
-     Yani bu dalda secim "ortali ama yazinin ustunde" ile "biraz
-     yukarida ama okunur" arasinda; ikincisi dogru. */
+  /* YIGIN DALI: KAYMA GERI KONDU. Kunye yigildiginda ortalamak
+     mumkun degil -- 320x568'de alt blok 268px istiyor, ortalanmis bir
+     diskin sigmasi icin cap 32px olurdu. kay 0: alti modelde binme
+     (320x460'ta 70px). kay 96: 8-22px. 220 temiz. */
   body.kunye-yigin{ --alt-rez:max(268px, 40vh); --alet-kay:220px; }
   @media (max-height:480px){
     /* Serit yatayda sola yanasiyor: aletin ustunde degil. */
@@ -700,14 +687,8 @@
      max-width: eski 56vw sinirindan cikildi; panel iceriginin en
      genis hali (masaustu SOUND BANKS: 237px) dar ekranda 56vw'ye
      sigmiyordu. */
-  /* ── CERCEVE KALDIRILDI (8 Eylul) ─────────────────────────────
-     Bir sure sol alttaki uc satir tek bir panelin (kenarlik + zemin
-     + koseler) icinde duruyordu. Kullanicinin sozu: "sol alttaki
-     seyler bir cercevenin icinde, aptalca gorunuyor."
-     Panel gitti; tuslar kendi zeminleriyle dogrudan ekranin uzerinde
-     duruyor. Telafi degerleri de (--konsol-ic / --konsol-kay) bu
-     yuzden sifir: cerceve yokken kaydirilacak bir sey de yok, satirlar
-     eski piksellerine geri donuyor. */
+  /* CERCEVE KALDIRILDI (8 Eylul): uc satir bir panelin icindeydi,
+     "aptalca gorunuyor". Panel ve telafi degerleri gitti. */
   #solUst{position:fixed;z-index:78;
     top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px));
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
@@ -733,10 +714,7 @@
      "hata gibi"). Simdi acilan sey aralik degil TUSUN KENDISI --
      dort tasima tusu esit paylasiyor, aralari yine 7px. Alt
      satirdaki haplar buyumuyor; genislikleri yaziya gore sabit. */
-  /* 8 Eylul: GERME GERI ALINDI. Uc satiri ayni sag kenarda bitirmek
-     icin tasima tuslari esit paylasiyordu; sonuc tuslarin kendisinin
-     uzamasi oldu. Kullanicinin sozu: "genisletmissin, uzamis,
-     ikonlar arasi saga iyice yaklasmis." Tuslar kendi olculerinde. */
+  /* 8 Eylul: GERME GERI ALINDI -- tuslarin kendisi uzuyordu. */
   /* ── REC RADYODA DA VAR, AMA SONUK ────────────────────────────
      Bir tur tamamen gizlenmisti: "calismayan bir tus gostermek
      yanlis". Yanlis olan tusun kendisi degil SESSIZ olmasiydi --
@@ -827,22 +805,14 @@
      Gorunum ayni; buyuyen yalnizca DOKUNULABILIR alan (dikey 4px,
      yatay 2px). 3px olculdu: 35, esigin altinda. 4px: 37. */
   #rec,#cam{position:relative;}
-  /* HAPLARIN GENISLIGI SABIT. Yazilar cok degisiyor (REC -> ··· ->
-     00:12 -> CHECK -> SAVE -> PHOTO, CAM -> DELETE) ve her degisim
-     kenarlikli kutunun tamamini yeniden olcuyordu. Olculdu: REC
-     58-73, CAM 44-67 (masaustu; <=480'de 50-63 ve 37-57). min-width
-     en genis yaziya kuruldu; nokta ve yazi soldan basliyor, yani
-     yazi kisalinca komsu tuslar da yerinde kaliyor. Istenen
-     "sabit" tam olarak bu. */
-  /* 62/56 DENENDI VE GERI ALINDI (8 Eylul): satir daralinca sag
-     alttaki kunye genisliyor, iki satira sigiyor ve kunye-yigin
-     dali DEVREYE GIRMIYOR -- cihaz takimi alti modelde kunyenin
-     alete bindigini olctu (320x460'ta 70px). Bu iki deger satirin
-     genisligini sabit tutuyor; oradaki bos alan bilerek var. */
-  /* CAM 67 -> 58: kutu yaziyi gereginden genis sariyordu ("CAM
-     yaziyor, cercevesinde bosluk var"). PHOTO'nunki (73) duruyor --
-     bes harf ve satirin genisligini o tutuyor. */
-  #rec{min-width:73px;} #cam{min-width:58px;}
+  /* HAPLARIN GENISLIGI SABIT: yazilar degisiyor (REC -> 00:12 ->
+     PHOTO, CAM -> DELETE) ve her degisim kutuyu yeniden olcuyordu.
+     8 Eylul: 62/56 denendi ve GERI ALINDI -- satir daralinca kunye
+     genisliyor, iki satira sigiyor, kunye-yigin dali devreye girmiyor
+     ve cihaz takimi alti modelde binme olcuyor (320x460'ta 70px).
+     CAM 67 -> 50: uc harf icin gereginden genisti; DELETE gelince
+     kutu kendisi buyuyor, min-width taban. PHOTO (73) duruyor. */
+  #rec{min-width:73px;} #cam{min-width:50px;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
   /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
@@ -3799,7 +3769,17 @@
          WHEEL CLICK bu bolume TASINDI (7 Eylul): carki cevirirken
          cikan tik bir SESTIR; DISPLAY'de durmasinin tek sebebi cark
          ayarlarinin yanina yazilmis olmasiydi. -->
-    <h5>AUDIO</h5>
+    <!-- AUDIO -> SOUNDS (8 Eylul): kullanicinin sozu "audio adini da
+         sounds yap, insanlar daha iyi anlar." Arsiv kipinin adi
+         SOUND BANKS, yani karisma yok. -->
+    <h5>SOUNDS</h5>
+    <!-- ── BUTUN SESLER ────────────────────────────────────────────
+         Tek anahtar: arama, tik ve cark tikirtisi birden susuyor.
+         MUZIGI KAPATMIYOR -- kullanicinin sozu acikti: "muzigi
+         kapatma, tum sesler diyince aman diyeyim." Muzigin susturmasi
+         ayri bir yerde (sag alttaki hoparlor). -->
+    <div class="sat" data-ayar="sesKapa" role="switch" tabindex="-1">
+      <span>ALL SOUNDS OFF</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat" data-ayar="aramaSes" role="switch" tabindex="-1">
       <span>SEARCH</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat" data-ayar="tikSes" role="switch" tabindex="-1">
@@ -3811,6 +3791,14 @@
          Isteyen kapatir: bazi kisiler icin surekli tik yorucudur. -->
     <div class="sat" data-ayar="carkSes" role="switch" tabindex="-1">
       <span>WHEEL CLICK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- Muzik calarken tikirti: ayri anahtar. Sessizken seviyorum ama
+         sarkinin ustunde istemiyorum, gecerli bir istek. -->
+    <div class="sat" data-ayar="carkSesCal" role="switch" tabindex="-1">
+      <span>WHEEL WHILE PLAYING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- Dort kademe. Satirin kendisi deger gosteriyor (THEME ve STARS
+         ile ayni dil): tek dokunus, tek satir, ayri panel yok. -->
+    <div class="sat islem" data-ayar="carkSesSev" role="button" tabindex="-1">
+      <span>WHEEL VOLUME</span><span class="durum">MID</span></div>
 
     <!-- ── DISPLAY: EKRANDA NE GORUNUYOR ───────────────────────────
          Sira ONEM ve BAGLILIK: once zeminin kendisi (tema, kilit),
@@ -5656,16 +5644,10 @@
          Hale: cizimli/desenli derilerde zeminin KENDISI degisken
          (fotograf gibi); tek bir kontrast hesabi orada yetmez. Ters
          tonda cok hafif bir golge simgeyi her zeminden ayiriyor. */
-      /* ── 8 EYLUL: DUZ DERIDE HALE YOK ────────────────────────
-         Kullanicinin sozu: "sol ustte firca, saat vs altinda garip
-         bir doku var, parlama bir sey; grafiksel olarak amatorluk."
-         Hale iki drop-shadow olarak simgenin cevresine ters tonda
-         bir isik koyuyor. Cizimli/desenli deride gerekli -- orada
-         zemin fotograf gibi, tek bir kontrast hesabi yetmiyor. Duz
-         tek ton deride ise zemin belli ve simgenin rengi zaten
-         4.5:1'e cozuluyor (--d-simge). Halenin orada tek yaptigi
-         sey simgenin arkasinda beyaz bir leke birakmak.
-         Duz deride hale saydam; cizimli deride eskisi gibi. */
+      /* DUZ DERIDE HALE YOK (8 Eylul). Hale iki drop-shadow ile
+         simgenin cevresine ters tonda isik koyuyordu; acik deride
+         beyaz bir leke birakiyordu ("garip doku, parlama"). Cizimli
+         deride kaliyor -- orada zemin fotograf gibi ve gerekli. */
       const _duzHale = !d.cizim;
       const _tersHale = _duzHale ? 'transparent'
                       : (acik ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.70)');
@@ -6078,17 +6060,11 @@
         try{
           /* Alttaki serit ve guvenli alan: html'in zemini deriden. */
           document.documentElement.style.backgroundColor = d.zem;
-          /* ── UST SERIT: DERININ RENGI ────────────────────────
-             Kullanicinin sozu: "serit hangi skins seciliyse o
-             olmali." theme-color yazmak yetmiyordu -- iOS ana
-             ekrandan acilan uygulamada durum cubugunu kendi sectigi
-             anda ornekliyor ve sonra dokunmuyor; onceki derinin
-             rengi yukarida asili kaliyordu. Cozum meta degil KIP:
-             apple-mobile-web-app-status-bar-style artik
-             'black-translucent' (bkz. head). Sayfa cubugun ALTINA
-             kadar uzaniyor, o serit artik SISTEMIN degil BIZIM
-             zeminimiz -- deriyle birlikte, ayni karede degisiyor.
-             Bedeli: sistem yazisi (saat, pil) her zaman beyaz. */
+          /* UST SERIT: DERININ RENGI. theme-color yazmak yetmiyordu -- iOS
+             durum cubugunu kendi sectigi anda ornekliyor, onceki derinin
+             rengi asili kaliyordu. Cozum meta degil KIP: status-bar-style
+             'black-translucent' (bkz. head); serit artik bizim zeminimiz.
+             Bedeli: sistem yazisi hep beyaz. */
           durumCubuguYaz(d.zem);
         }catch(e){ _yut(e); }
         k.setProperty('--d-filtre', _acik ? 'invert(1) saturate(.6) contrast(1.35)' : 'none');
@@ -9741,7 +9717,7 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesAcildi:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -9758,6 +9734,12 @@
         if(_a.aramaSes === false) AYAR.aramaSes = false;
         if(_a.tikSes  === false) AYAR.tikSes  = false;
         if(_a.carkSes === false) AYAR.carkSes = false;
+        /* SES AYARLARI (8 Eylul): sesKapa uygulamanin butun kendi
+           seslerini susturur (muzik haric -- "muzigi kapatma"),
+           carkSesCal muzik ustunde tikirti, carkSesSev dort kademe. */
+        if(_a.sesKapa === true) AYAR.sesKapa = true;
+        if(_a.carkSesCal === false) AYAR.carkSesCal = false;
+        if(typeof _a.carkSesSev === 'number') AYAR.carkSesSev = Math.max(0, Math.min(3, _a.carkSesSev|0));
         if(typeof _a.merkez === 'string' && ['cark','halka','yuvarlak','faz'].indexOf(_a.merkez) >= 0)
           AYAR.merkez = _a.merkez;
       }
@@ -10117,9 +10099,34 @@
   const TIK_VOL = 0.36;   // 0..1 arası ses seviyesi (kısmak için düşür)
   let _tikAudio=null;
   try{ _tikAudio=new Audio(TIK_SES); _tikAudio.preload='auto'; _tikAudio.volume=TIK_VOL; }catch(e){ _yut(e); }
+  /* TIK: DOSYA DEGIL SES BAGLAMI. Her tikta bir <audio> klonlanip
+     play() cagriliyordu; telefonda ilk kare 50-150 ms gecikiyor ve ses
+     dokunustan sonra geliyordu ("click sesi de gec oluyor"). Dosya bir
+     kez cozulup tampona aliniyor. Tampon hazir degilse eski yol yedek. */
+  var _tikTampon = null, _tikCozuluyor = false;
+  function _tikTamponHazirla(){
+    if(_tikTampon || _tikCozuluyor) return;
+    try{
+      sesBaglamiAl(); if(!actx) return;
+      _tikCozuluyor = true;
+      fetch(TIK_SES).then(r=>r.arrayBuffer()).then(b=>new Promise((c,r)=>{
+        try{ actx.decodeAudioData(b, c, r); }catch(e){ r(e); }
+      })).then(t=>{ _tikTampon = t; _tikCozuluyor = false; },
+               e=>{ _tikCozuluyor = false; _yut(e); });
+    }catch(e){ _tikCozuluyor = false; _yut(e); }
+  }
   function tik(){
+    if(AYAR.sesKapa) return;              // "butun sesler" kapali
     if(!AYAR.tikSes) return;              // ayarlardan kapatilabilir
     try{
+      if(_tikTampon && actx){
+        if(actx.state !== 'running'){ try{ actx.resume(); }catch(_){ _yut(_); } }
+        const k = actx.createBufferSource(), g = actx.createGain();
+        k.buffer = _tikTampon; g.gain.value = TIK_VOL;
+        k.connect(g); g.connect(actx.destination); k.start();
+        return;
+      }
+      _tikTamponHazirla();
       if(_tikAudio){ const a=_tikAudio.cloneNode(); a.volume=TIK_VOL; a.currentTime=0; a.play().catch(()=>{}); return; }
     }catch(e){ _yut(e); }
   }
@@ -10491,6 +10498,8 @@
      onu kendi ekraninda azaltip cogaltabiliyor. */
   const YILDIZ_KADEME = [0.35, 0.70, 1.00, 1.55, 2.20];   // OFF'a yakin ... cok yogun
   const YILDIZ_AD     = ['MINIMAL','LOW','NORMAL','DENSE','COSMIC'];
+  /* Cark tikirtisinin dort kademesi (bkz. cark.js CARK_SEV). */
+  const CARK_SEV_AD   = ['LOW','MID','HIGH','MAX'];
   /* ── YOGUNLUK VE PARLAKLIK AYRI ─────────────────────────────────
      Istenen: "yildizlar da acilip kisilir, yogunluk ayri parlaklik
      ayri."
@@ -11024,6 +11033,7 @@
     window.muteTazele = ()=>{ if(kSes > 0.001) sonSes = kSes; yazMt(); };
   })();
   function alcakTon(){
+    if(AYAR.sesKapa) return;
     if(!AYAR.tikSes) return;
     try{
       sesBaglamiAl(); if(!actx) return;
@@ -12751,10 +12761,9 @@
     }catch(e){ return false; }
   }
   let radyoDolduruluyor=false;
-  /* KUYRUK NESLI (8 Eylul). Acilistaki doldurma YOLDAYKEN raf
-     degisiyordu; donunce eski rafin istasyonlarini yeni bos kuyruga
-     yaziyordu (cark ORCHESTRAL, ses RADIOTAPE). Raf degisince nesil
-     artiyor, yoldaki sonuc dusuruluyor. */
+  /* KUYRUK NESLI: acilistaki doldurma yoldayken raf degisince eski
+     rafin istasyonlari yeni kuyruga yaziliyordu. Nesil degistiyse
+     yoldaki sonuc dusuruluyor. */
   let _kuyrukNesil = 0;
   /* ── CORS ELEMESİ — "yayın başladı sonra kesildi" sorununun kökü ──
      Ses grafiğe bağlandığı anda, CORS başlığı göndermeyen bir yayın SUSUYOR.
@@ -13394,7 +13403,8 @@
       try{
         const k = document.getElementById('parcaKart');
         if(!k || !k.classList.contains('acik')) return;
-        if(e.target && e.target.closest && (e.target.closest('#parcaKart') || e.target.closest('#isaret'))) return;
+        const _t13 = /** @type {any} */ (e.target);
+        if(_t13 && _t13.closest && (_t13.closest('#parcaKart') || _t13.closest('#isaret'))) return;
         parcaKartKapat();
       }catch(_){ _yut(_); }
     }, true);
@@ -16199,8 +16209,37 @@
     el.classList.toggle('gor', !!ad);
   }
   function modAdiGoster(){ onizlemeAyarla(''); modAdiYaz(); modGezYaz(''); }   // seçim: küçük etiket yazar, büyük gider
-  function modAdiTut(ad){ onizlemeAyarla(ad || ''); modGezYaz(ad || ''); }    // gezinirken: büyük yazı + TAM ÖNİZLEME
-  function modAdiBirak(){ onizlemeAyarla(''); modGezYaz(''); modAdiYaz(); }   // parmak kalktı: önizleme düşer
+  /* ── BUYUK YAZI ICIN BEKCI ────────────────────────────────────
+     Kullanicinin sozu: "ekrana hizli hizli parmagimi surttum, fazla
+     sacmaladim ve boyle dondu" -- ekranda kocaman bir raf adi
+     (AFROBEATS) asili kaldi ve gitmedi.
+     Sebep: bu yazi parmak halkalarda gezerken gorunur, parmak
+     kalkinca (modAdiBirak) gider. Hizli ve dagitik bir jestte o
+     "parmak kalkti" olayi gelmeyebiliyor: pointercancel, ekranin
+     disinda biten surukleme, kesilen dokunus. Olay gelmeyince yazi
+     ekranda kaliyor.
+     Bekci: yazi her gorundugunde bir sayac kuruluyor. Parmak gezmeye
+     devam ettikce sayac sifirlaniyor; iki saniye hicbir sey gelmezse
+     yazi kendiliginde gidiyor. Jestin dogru bittigi durumda bu sayac
+     zaten iptal ediliyor -- yani normal akista hicbir sey degismiyor,
+     yalnizca kayip bir olayin bedeli kalkiyor. */
+  var _gezBekci = null;
+  function _gezBekciKur(){
+    try{
+      if(_gezBekci) clearTimeout(_gezBekci);
+      _gezBekci = setTimeout(function(){
+        _gezBekci = null;
+        try{
+          if(_basili) return;                 // parmak hala ekranda
+          _moodGez = false; _moodVurgu = -1;
+          modAdiBirak();
+        }catch(e){ _yut(e); }
+      }, 2000);
+    }catch(e){ _yut(e); }
+  }
+  function modAdiTut(ad){ onizlemeAyarla(ad || ''); modGezYaz(ad || ''); _gezBekciKur(); }    // gezinirken: büyük yazı + TAM ÖNİZLEME
+  function modAdiBirak(){ try{ if(_gezBekci){ clearTimeout(_gezBekci); _gezBekci = null; } }catch(e){ _yut(e); }
+    onizlemeAyarla(''); modGezYaz(''); modAdiYaz(); }   // parmak kalktı: önizleme düşer
   /* zorla=true: aynı kategoriye tekrar basılsa bile KAPATMAZ. Gezegen
      sırasında kullanılıyor — sıra ilerlerken kategori kapanmasın. */
   /* Halkaya basildi: kanal neyse onu sec. Dokunma kodu "aile mi
@@ -16345,6 +16384,8 @@
         /* Dil satirinin sagi HER ZAMAN kendi dilinde. */
         const el4 = kut.querySelector('.sat[data-ayar="dil"] .durum');
         if(el4) el4.textContent = (DIL === 'tr') ? 'TÜRKÇE' : 'ENGLISH';
+        const el5 = kut.querySelector('.sat[data-ayar="carkSesSev"] .durum');
+        if(el5) el5.textContent = Y(CARK_SEV_AD[AYAR.carkSesSev|0] || 'MID');
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
            baska is yapmaz. */
@@ -16532,6 +16573,13 @@
         ayarKaydet();
         try{ dilYukle(); }catch(e){ _yut(e); }
         yildizYaz();
+        return;
+      }
+      if(k === 'carkSesSev'){
+        AYAR.carkSesSev = ((AYAR.carkSesSev|0) + 1) % CARK_SEV_AD.length;
+        ayarKaydet(); yildizYaz();
+        /* Degisikligi DUYARAK anla: yeni seviyede tek bir tik. */
+        try{ if(window['carkTik']) window['carkTik'](6); }catch(e){ _yut(e); }
         return;
       }
       if(k === 'yildiz'){
@@ -16730,7 +16778,13 @@
       /* SOUND BANKS: dunya degisiyor. Panel kapaniyor -- degisikligi
          gormek icin ekranin kendisine bakmak lazim. */
       if(k === 'mood'){ kapa(); moodUygula(false); return; }
-      /* Arama sesi kapatilinca calmakta olan dongu de sussun. */
+          /* BUTUN SESLER kapandi: calmakta olan arama dongusu de sussun.
+         Acildiginda tek bir tik: degisikligi duyarak anla. */
+      if(k === 'sesKapa'){
+        if(AYAR.sesKapa){ try{ aramaDurdur(); }catch(e){ _yut(e); } }
+        else { try{ tik(); }catch(e){ _yut(e); } }
+      }
+  /* Arama sesi kapatilinca calmakta olan dongu de sussun. */
       if(k === 'aramaSes' && !AYAR.aramaSes){ try{ aramaDurdur(); }catch(e){ _yut(e); } }
       /* Tik ACILDIYSA tek bir tik: degisikligi duyarak anla. */
       if(k === 'tikSes' && AYAR.tikSes){ try{ tik(); }catch(e){ _yut(e); } }
@@ -18445,12 +18499,7 @@
       s.onerror = ()=>{
         try{
           if(window.KAYIT_MODULU_BASLADI || window.KAYIT_MODULU_HAZIR) return;
-          /* ── DOSYA GELMEDI: TUSLARI GERI AL ────────────────────
-             Tuslar ilk karede gorunuyor (asagida, sayfanin sonunda).
-             Modul gercekten inmezse orada CALISMAYAN tuslar kalirdi
-             -- ariza takiminin "olu tus birakmiyor" olcusu tam olarak
-             bunu ariyor. Dosya dusunce tuslar geri cekiliyor; sonraki
-             deneme tutarsa kayit.js zaten kendisi geri getiriyor. */
+          /* Dosya gelmedi: tuslar geri cekiliyor, olu tus kalmasin. */
           ['rec','cam','favAc'].forEach(function(id){
             try{ const el = document.getElementById(id);
                  if(el) el.classList.remove('var'); }catch(e2){ _yut(e2); }
@@ -18525,11 +18574,10 @@
     });
   }catch(e){ _yut(e); }
 
-  /* PHOTO / CAM / ★ ILK KAREDE (8 Eylul). Uc tus display:none ile
-     kayit.js'i bekliyordu; o da acilistan 4 sn sonra iniyor, yani
-     satir sonradan doluyordu. Tuslar artik ilk karede gorunuyor,
-     yazi bastan dogru (radyoda PHOTO), dokunusta modul hemen geliyor,
-     modul inmezse geri cekiliyorlar (bkz. onerror). */
+  /* PHOTO / CAM / ★ ILK KAREDE (8 Eylul): uc tus display:none ile
+     kayit.js'i bekliyordu, o da acilistan 4 sn sonra iniyor. Artik ilk
+     karede oradalar; dokunusta modul hemen geliyor, inmezse geri
+     cekiliyorlar (bkz. onerror). */
   try{
     const _r = document.getElementById('rec'), _c = document.getElementById('cam'),
           _f = document.getElementById('favAc'), _ry = document.getElementById('recYazi');

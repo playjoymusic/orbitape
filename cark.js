@@ -96,15 +96,33 @@ try{ window.CARK_BASLADI = true; }catch(e){}
      gürültü patlaması + hafif bir ton. Dosya indirmiyoruz, ses
      bağlamında üretiliyor -- bayt maliyeti sıfır.
      Ayarlardan kapatılabiliyor (AYAR.carkSes). */
+  /* Dort kademe: seviye carpani. MAX kasten yuksek -- kullanicinin
+     sozu: "cok acilabilir de bu arada, tatli bir his o ses." */
+  const CARK_SEV = [0.6, 1, 1.8, 3];
   function tikSesi(guc){
     try{
       if(!AYAR || AYAR.carkSes === false) return;
+      if(AYAR.sesKapa) return;                 // "butun sesler" kapali
+      /* Muzik calarken tikirti istenmiyorsa sus. Ayri bir anahtar:
+         bazi kisiler sessizken seviyor, muzigin ustunde istemiyor. */
+      if(AYAR.carkSesCal === false){
+        try{ if(typeof ses !== 'undefined' && ses && ses.src && !ses.paused && !ses.ended) return; }catch(e){}
+      }
       try{ sesBaglamiAl(); }catch(e){}
       const ac = (typeof actx !== 'undefined') ? actx : null;
       if(!ac || ac.state === 'closed') return;
+      /* ── SES BAZEN HIC GELMIYORDU ─────────────────────────────
+         Kullanicinin sozu: "cark tikir tikir dondurme sesi bazen
+         gelmiyor." Baglam ASKIDA (suspended) oldugunda bu fonksiyon
+         sessizce hicbir sey caliyordu: 'closed' kontrol ediliyordu
+         ama 'suspended' edilmiyordu. iOS baglami arka plandan
+         donunce, sekme degisince ya da ses duraklayinca askiya
+         aliyor. Simdi uyandiriliyor. */
+      if(ac.state !== 'running'){ try{ ac.resume(); }catch(e){} }
       const t = ac.currentTime;
       const g = ac.createGain();
-      const seviye = Math.max(0.02, Math.min(0.16, 0.05 + guc * 0.05));
+      const kat = CARK_SEV[Math.max(0, Math.min(3, (AYAR.carkSesSev|0)))] || 1;
+      const seviye = Math.max(0.02, Math.min(0.16, 0.05 + guc * 0.05)) * kat;
       g.gain.setValueAtTime(seviye, t);
       g.gain.exponentialRampToValueAtTime(0.0008, t + 0.055);
       const bant = ac.createBiquadFilter();
@@ -634,6 +652,9 @@ try{ window.CARK_BASLADI = true; }catch(e){}
     window.addEventListener('resize', ()=>{ if(olc()) ciz(); });
     /* Raf başka yerden değişirse (liste, halka) çark ona dönsün. */
     try{ window.carkTazele = ()=>{ hizala(); }; }catch(e){}
+    /* Ayarlardaki WHEEL VOLUME satiri seviyeyi degistirince tek bir
+       tik caliyor: kademe kulakla secilsin. */
+    try{ window['carkTik'] = (g)=>{ tikSesi(typeof g === 'number' ? g : 6); }; }catch(e){}
   }
   function hizala(){
     try{
