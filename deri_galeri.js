@@ -79,7 +79,8 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     ".dg-tus.halka[aria-pressed='true']{opacity:1;color:var(--dg-vurgu);text-shadow:0 0 8px color-mix(in srgb,var(--dg-vurgu) 60%,transparent)}",
     ".dg-izgara{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));grid-auto-rows:max-content;align-items:start;gap:10px;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 10px calc(var(--kx) + env(safe-area-inset-left,0px));align-content:start}",
     ".dg-kare{appearance:none;-webkit-appearance:none;border:0;padding:0;margin:0;position:relative;display:block;width:100%;aspect-ratio:108/172;height:auto;border-radius:12px;overflow:hidden;cursor:pointer;background:#111;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;isolation:isolate}",
-    ".dg-kare.kapa{display:grid;place-items:center;background:color-mix(in srgb,var(--dg-yazi) 8%,transparent);font-size:0.75rem;letter-spacing:.24em;color:var(--dg-yazi);opacity:.8}",
+    /* .dg-kare.kapa KALDIRILDI: OFF karesi artik oteki kareler
+       gibi gercek bir onizleme (bkz. kareYap). */
     ".dg-kare[aria-pressed=\"true\"]{outline:2px solid var(--dg-vurgu);outline-offset:3px}",
     ".dg-tuval,.dg-doku{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}",
     ".dg-disk{position:absolute;left:50%;top:44%;width:58%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background-size:cover;pointer-events:none}",
@@ -237,9 +238,24 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'dg-kare'; b.dataset.n = String(n);
     if(!d){
-      b.classList.add('kapa');
+      /* ── OFF KARESI UYGULAMANIN KENDISINI GOSTERIYOR ────────────
+         Kullanicinin sozu: "skinslerde ne sectiysem NONE, yani bizim
+         orijinal halimiz de oyle gorunuyor bu onizleme listesinde."
+         Hakliydi: OFF karesi zemini secili derinin yazi renginden
+         turetiyordu (color-mix(--dg-yazi)), yani MELON secilince
+         turuncu, SKY secilince mavi bir kare oluyordu. Oysa OFF'un
+         onizledigi sey sabit: uygulamanin kendi karanlik zemini ve
+         turkuaz halkalari. Artik oteki kareler gibi GERCEK bir
+         onizleme -- her deride ayni. */
       b.setAttribute('aria-label', 'SKIN OFF');
-      const a = document.createElement('span'); a.className = 'dg-ad'; a.textContent = 'OFF';
+      b.style.background = '#05080a';
+      b.style.color = '#4de0d0';
+      const disk = document.createElement('i'); disk.className = 'dg-disk';
+      diskYaz(disk, { zem:'#05080a', cek:'#0b1418', halka:'#4de0d0', marka:'#4de0d0',
+                      yazi:'#cfe9e4', disGolge:'rgba(0,0,0,.55)', isik:'rgba(120,220,210,.18)' });
+      b.appendChild(disk);
+      const a = document.createElement('span'); a.className = 'dg-ad';
+      a.textContent = 'OFF'; a.style.color = '#4de0d0';
       b.appendChild(a);
       return b;
     }
@@ -351,7 +367,12 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        Anahtar (AYAR.merkez = 'faz') DEGISMIYOR: depoda kayitli
        tercihleri bozmamak icin. Degisen yalnizca ekranda yazan
        kelime. */
-    merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC'],['faz','FREQUENCY']].map(([k, ad])=>{
+    /* ── FREQUENCY KALDIRILDI (8 Eylul) ──────────────────────────
+       Kullanicinin sozu: "fazi yapamadin, sil lutfen." Merkez
+       satirinda uc secenek kaldi. AYAR.merkez = 'faz' anahtari
+       kodda duruyor (eski depoda kayitli olabilir, merkezUygula
+       onu hala tanir); yalnizca bu pencereden SECILEMIYOR. */
+    merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC']].map(([k, ad])=>{
       const t = tus('mrk', ad, T(ad), ()=>{
         try{ AYAR.merkez = k; ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }

@@ -180,7 +180,16 @@
      kucuk ve min() onu seciyor (390x844'te tavan 454px, secilen
      288px). Yalnizca yerin gercekten dar oldugu yerde devreye
      giriyor. */
-  :root{ --ust-rez:56px; --alt-rez:max(190px, 25vh); --alet-kay:40px;
+  /* ── 8 EYLUL: HALKA ASAGI VE BUYUK ────────────────────────────
+     Kullanicinin sozu: "surekli halkayi yukari cikariyorsun."
+     Olculdu (360x640): disk 159..425, alt konsol 554'te basliyor --
+     aralarinda 129px bos alan, yani halka ekranin ust yarisinda
+     duruyordu. Iki sabit degisti:
+       --alet-kay 40 -> 8   : alet iki rezervin ortasina daha yakin,
+                              yukari kayma neredeyse yok.
+       .disk 74vw -> 84vw   : bos kalan alan halkaya gidiyor.
+     Yeni olcu: 142..478, konsola 76px kaliyor. */
+  :root{ --ust-rez:56px; --alt-rez:max(190px, 25vh); --alet-kay:0px;
     /* ust satirin alti (33px) + 7px hava */
     --tepe-pay:40px; }
   /* ── TAVAN :root'ta DEGIL .disk'te TANIMLI ────────────────────
@@ -194,7 +203,7 @@
   .disk{position:relative;
     --alet-tavan:calc((var(--ust-rez) + 100dvh - var(--alt-rez)
                        - 2 * var(--tepe-pay)) / 1.34);
-    width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));
+    width:min(78vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));
     aspect-ratio:1;z-index:10;}
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
@@ -222,7 +231,7 @@
      kismi ve kucuk olmus halkasi da." Once cubuklar cok uzaga
      gittigi icin halka kuculuyordu; artik menzil daraldi (cark.js:
      MENZIL 0.28) ve halka oteki kiplerle ayni boyda. */
-  body.merkez-faz .disk{width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));}
+  body.merkez-faz .disk{width:min(78vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));}
   body.merkez-faz.serit-acik .disk{width:min(68vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.70));}
   /* KISA EKRAN: alet ekranin ORTASINDA duruyor, yani yer acmak icin
      yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
@@ -232,7 +241,24 @@
      kunye ile alet arasinda 12 piksel eksik kaliyordu. Alet 40
      yerine 56 piksel yukari cekiliyor -- yalnizca kisa ekranda;
      uzun telefonda halka ortada kaliyor. */
-  @media (max-height:700px){ :root{ --alet-kay:56px; } }
+  /* 8 Eylul: KISA EKRANDA DA ORTALI. Burasi 56px yukari kaydiriyordu
+     ve 640 yuksekliginde halka ekranin ust yarisina biniyordu
+     (olculdu: disk 141..443, alt konsol 554 -- arada 111px bosluk).
+     Kullanicinin sozu: "halka surekli yukarda, ortalaman lazim."
+     Kayma sifir: alet gercekten ortada. Kunye yigildiginda
+     (body.kunye-yigin) 220px'lik kayma duruyor -- orada alt blok
+     gercekten buyuk. */
+  @media (max-height:700px){ :root{ --alet-kay:0px; } }
+  /* 660'in altinda kunye tek satir olsa bile alete degiyor: cihaz
+     takimi 360x626'da 7px binme olctu. 24px'lik kucuk bir kayma
+     yetiyor. Dar ekranda kunye yigildiginda zaten 220 gecerli
+     (body.kunye-yigin, asagida). */
+  /* 24 -> 46: tuslar artik ilk karede geldigi icin konsol satiri
+     bastan tam genisliginde; 375x553'te kunye alete 18px biniyordu
+     (cihaz takimi olctu). Once bu sure boyunca satir eksik ciziliyor
+     ve olcu yanlis cikiyordu. */
+  @media (max-height:660px){ :root{ --alet-kay:60px; } }
+
   /* ── KUNYE KONSOLUN USTUNE CIKTIYSA ALET DE YUKARI ──────────────
      Dar telefonlarda (olculdu: 360 ve 320 piksel) sag alt kunye
      soldaki satirla YAN YANA sigmiyor ve yigiliyor: butun genisligi
@@ -250,6 +276,12 @@
      genisligine bagli, calan sarkiya degil. Alet sarki degistikce
      yerinden oynamiyor -- dar bir telefonda bir kez daha yukari
      kuruluyor. */
+  /* 8 Eylul: 220 -> 96 DENENDI VE GERI ALINDI. Kunye yigildiginda
+     (dar ekran) alt blok gercekten buyuk: 96'da cihaz takimi dort
+     modelde kunyenin alete bindigini olctu (360x626 -18px, 320x568
+     -8, 320x460 -22, 280x545 -11). Ortalama istegi bu daldan
+     karsilanmiyor -- normal telefonlarda (kunye tek satir) alet
+     zaten tam ortada, bkz. --alet-kay:0. */
   body.kunye-yigin{ --alt-rez:max(268px, 40vh); --alet-kay:220px; }
   @media (max-height:480px){
     /* Serit yatayda sola yanasiyor: aletin ustunde degil. */
@@ -659,29 +691,21 @@
      max-width: eski 56vw sinirindan cikildi; panel iceriginin en
      genis hali (masaustu SOUND BANKS: 237px) dar ekranda 56vw'ye
      sigmiyordu. */
+  /* ── CERCEVE KALDIRILDI (8 Eylul) ─────────────────────────────
+     Bir sure sol alttaki uc satir tek bir panelin (kenarlik + zemin
+     + koseler) icinde duruyordu. Kullanicinin sozu: "sol alttaki
+     seyler bir cercevenin icinde, aptalca gorunuyor."
+     Panel gitti; tuslar kendi zeminleriyle dogrudan ekranin uzerinde
+     duruyor. Telafi degerleri de (--konsol-ic / --konsol-kay) bu
+     yuzden sifir: cerceve yokken kaydirilacak bir sey de yok, satirlar
+     eski piksellerine geri donuyor. */
   #solUst{position:fixed;z-index:78;
-    /* 6px: telafi (dolgu + 1px kenarlik = 7) tam olarak modulun dip
-       payi kadar olsun. Daha buyuk bir dolgu paneli ekranin altindan
-       tasiriyor, daha kucugu ise kenarligi tuslara yapistiriyor. */
-    --konsol-ic:6px;
-    --konsol-kay:calc(var(--konsol-ic) + 1px);
-    top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px) - var(--konsol-kay));
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px) - var(--konsol-kay));
+    top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px));
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     display:flex;flex-direction:column;align-items:flex-start;gap:8px;
-    /* Dip dolgusu daha ince (3px): tam telafi panelin alt kenarini
-       ekranin son piksel satirina yapistiriyordu. Satirlarin tabani
-       yine ayni hatta -- 3 (panel dibi) + 1 (kenarlik) + 3 (dolgu)
-       = eski 7px. */
-    padding:var(--konsol-ic) var(--konsol-ic) 3px;
-    border:1px solid rgba(120,180,180,.13);
-    border-radius:calc(16px + var(--konsol-ic));
-    background:rgba(6,11,14,.62);
+    padding:0;border:0;background:none;
     max-width:calc(100vw - var(--kx) - env(safe-area-inset-left, 0px) - 4px);}
-  /* Deri acikken panel de malzemeden (arama kutusu ve saat paneli
-     gibi): 59 deride ayri ayri renk secilmiyor. */
-  body.deri #solUst{
-    background:var(--d-panel, var(--d-zem)) !important;
-    border-color:var(--d-tus-kenar, transparent) !important;}
+  body.deri #solUst{background:none !important;border:0 !important;}
   /* UC SATIR TEK BLOK: ses satiri ustundekilerin en genisine
      esitlendigi icin uc satir ayni sag kenarda bitiyor. */
   /* TASIMA SATIRI: elin en cok gittigi yer. Yukseklik 32px --
@@ -700,9 +724,10 @@
      "hata gibi"). Simdi acilan sey aralik degil TUSUN KENDISI --
      dort tasima tusu esit paylasiyor, aralari yine 7px. Alt
      satirdaki haplar buyumuyor; genislikleri yaziya gore sabit. */
-  #tasima{align-self:stretch;}
-  #araclar{align-self:stretch;}
-  #tasima > button{flex:1 1 0;min-width:0;}
+  /* 8 Eylul: GERME GERI ALINDI. Uc satiri ayni sag kenarda bitirmek
+     icin tasima tuslari esit paylasiyordu; sonuc tuslarin kendisinin
+     uzamasi oldu. Kullanicinin sozu: "genisletmissin, uzamis,
+     ikonlar arasi saga iyice yaklasmis." Tuslar kendi olculerinde. */
   /* ── REC RADYODA DA VAR, AMA SONUK ────────────────────────────
      Bir tur tamamen gizlenmisti: "calismayan bir tus gostermek
      yanlis". Yanlis olan tusun kendisi degil SESSIZ olmasiydi --
@@ -3291,9 +3316,7 @@
      REC de var ve en cok basilan sey dibe geliyor. */
   #solUst{
     top:auto;
-    /* Telafi burada da: panel dolgu+kenarlik kadar asagi kayiyor ki
-       satirlarin tabani eski hattinda kalsin (bkz. --konsol-kay). */
-    bottom:calc(7px + var(--dip-pay) - 4px);
+    bottom:calc(7px + var(--dip-pay));
   }
   /* Satir aralari tek yerden: --modul-bosluk. */
   #solUst{--modul-bosluk:8px;gap:var(--modul-bosluk);}
@@ -3333,7 +3356,7 @@
      Buradaki deger yalnizca JS yetismeden onceki ilk karenin
      yedegi. */
   body.mood #solUst{
-    bottom:calc(7px + var(--dip-pay) - 4px);
+    bottom:calc(7px + var(--dip-pay));
   }
   body.mood #tasima  {order:2;}
   body.mood #araclar {order:3;}
@@ -5842,15 +5865,41 @@
      Cozum: ozniteligi yazmak yerine dugumu SILIP YENIDEN EKLEMEK.
      Bir de html'in zemini ayni renge cekiliyor (alttaki serit ve
      guvenli alan onunla boyaniyor). */
+  /* ── 8 EYLUL: BANT HALA KALIYORDU ──────────────────────────────
+     Kullanicinin sozu: "bak yukarda yine bant; bu ilk olmuyor,
+     skins degistirdikten sonra oluyor."
+     Dugumu silip yeniden eklemek (6 Eylul) yetmiyor: iOS durum
+     cubugunun rengini SAYFANIN kendi zeminiyle birlikte, kendi
+     sectigi bir anda orneklyor. Tek bir yazma o ana denk gelmezse
+     bir onceki derinin rengi yukarida asili kaliyor.
+     Cozum ayni yazmayi UC ANDA tekrarlamak: hemen, bir sonraki
+     karede, ve derinin butun CSS'i oturduktan sonra (420 ms).
+     Bedeli yok -- yazilan sey dort satirlik bir meta dugumu -- ve
+     hangi ani orneklerse orneklesin dogru rengi buluyor.
+     html'in zemini de her seferinde yeniden yaziliyor; arada bir
+     reflow okunuyor ki tarayici degisikligi atlamasin. */
+  var _cubukZaman = [];
   function durumCubuguYaz(renk){
     try{
       if(!renk) return;
-      const eski = document.querySelectorAll('meta[name="theme-color"]');
-      eski.forEach(m=>{ try{ m.parentNode && m.parentNode.removeChild(m); }catch(e){ _yut(e); } });
-      const m2 = document.createElement('meta');
-      m2.setAttribute('name', 'theme-color');
-      m2.setAttribute('content', renk);
-      document.head.appendChild(m2);
+      const yaz = ()=>{
+        try{
+          const eski = document.querySelectorAll('meta[name="theme-color"]');
+          eski.forEach(m=>{ try{ m.parentNode && m.parentNode.removeChild(m); }catch(e){ _yut(e); } });
+          const m2 = document.createElement('meta');
+          m2.setAttribute('name', 'theme-color');
+          m2.setAttribute('content', renk);
+          document.head.appendChild(m2);
+          const kok = document.documentElement;
+          kok.style.backgroundColor = renk;
+          void kok.offsetHeight;                 // reflow: degisiklik atlanmasin
+        }catch(e){ _yut(e); }
+      };
+      _cubukZaman.forEach(t=>{ try{ clearTimeout(t); }catch(e){ _yut(e); } });
+      _cubukZaman = [];
+      yaz();
+      try{ requestAnimationFrame(yaz); }catch(e){ _yut(e); }
+      _cubukZaman.push(setTimeout(yaz, 420));
     }catch(e){ _yut(e); }
   }
   function deriUygula(){
@@ -12660,6 +12709,20 @@
     }catch(e){ return false; }
   }
   let radyoDolduruluyor=false;
+  /* ── KUYRUK NESLI (8 Eylul) ───────────────────────────────────
+     Kullanicinin sozu: "ilk app'i actik, sag ustteki isme bastim,
+     listeden ORCHESTRAL sectim -- daha ilk tiklama. Carkta
+     ORCHESTRAL yazdi ama RADIOTAPE icerigunden caldi."
+     Sebep bir yaris: acilista kuyruk dolmaya baslamis oluyor ve o
+     doldurma ISTEK YOLDAYKEN raf degistiriliyor. aileSec kuyrugu
+     bosaltiyor ama yoldaki istek bundan habersiz; donunce ESKI
+     rafin istasyonlarini yeni bos kuyruga yaziyor. Cark dogru rafi
+     gosteriyor, calan ses eski raftan geliyor.
+     Nesil sayaci: raf her degistiginde artiyor. Yoldaki doldurma
+     dondugunde nesil degistiyse sonucunu ATIYOR. Iptal edilebilir
+     bir istek olmadigi icin dogru cozum bu -- gelen veri sessizce
+     dusuruluyor, cagri zaten yeni nesil icin bir kez daha yapiliyor. */
+  let _kuyrukNesil = 0;
   /* ── CORS ELEMESİ — "yayın başladı sonra kesildi" sorununun kökü ──
      Ses grafiğe bağlandığı anda, CORS başlığı göndermeyen bir yayın SUSUYOR.
      Duyulan sıra tam olarak şu: yayın önce doğrudan çalıyor, sonra analizKur()
@@ -12931,6 +12994,9 @@
     AKTIF_AILE = (!zorla && AKTIF_AILE === ad) ? null : (ad || null);
     try{ zeminUygula(); }catch(e){ _yut(e); }                 // semboller ve zemin yeni ailenin rengine
     try{ radyoKuyruk.length = 0; }catch(e){ _yut(e); }      // eski ailenin istasyonları çalmasın
+    /* Yoldaki doldurma bu satirdan sonra donerse sonucu dusurulsun
+       (bkz. _kuyrukNesil). Kuyrugu bosaltmak tek basina yetmiyordu. */
+    try{ _kuyrukNesil++; radyoDolduruluyor = false; }catch(e){ _yut(e); }
     try{ radyoKuyrukDoldur(); }catch(e){ _yut(e); }
     try{ if(window.listeTazele) window.listeTazele(); }catch(e){ _yut(e); }
     /* ── CARK RAFI TAKIP ETMEK ZORUNDA ────────────────────────────
@@ -13622,8 +13688,10 @@
     if(AYAR.mood) return;
 
     iz('istasyonDoldur');
+    const nesil = _kuyrukNesil;                 // bu doldurma HANGI raf icin basladi
     try{
       const list=await radyoListe(); let ekle=0;
+      if(nesil !== _kuyrukNesil) return;        // raf degisti: bu liste artik yanlis raf
       const aday=[];
       for(const st of list){
         const u=st.url_resolved||st.url, id="rb:"+(st.stationuuid||u);
@@ -13637,6 +13705,7 @@
       }
       if(aday.length){
         const gecti = await Promise.all(aday.map(a=>corsVarMi(a.u)));   // TEK tur, paralel
+        if(nesil !== _kuyrukNesil) return;      // eleme surerken raf degisti
         aday.forEach((a,k)=>{
           if(!gecti[k] || radyoKuyruk.length>=8) return;
           /* grup CALAN OGEYE de tasiniyor: ekranin rengi calan istasyonun
@@ -18343,6 +18412,17 @@
       s.onerror = ()=>{
         try{
           if(window.KAYIT_MODULU_BASLADI || window.KAYIT_MODULU_HAZIR) return;
+          /* ── DOSYA GELMEDI: TUSLARI GERI AL ────────────────────
+             Tuslar ilk karede gorunuyor (asagida, sayfanin sonunda).
+             Modul gercekten inmezse orada CALISMAYAN tuslar kalirdi
+             -- ariza takiminin "olu tus birakmiyor" olcusu tam olarak
+             bunu ariyor. Dosya dusunce tuslar geri cekiliyor; sonraki
+             deneme tutarsa kayit.js zaten kendisi geri getiriyor. */
+          ['rec','cam','favAc'].forEach(function(id){
+            try{ const el = document.getElementById(id);
+                 if(el) el.classList.remove('var'); }catch(e2){ _yut(e2); }
+          });
+          try{ geriYerlestir(); }catch(e2){ _yut(e2); }
           if(_kayTekrar) return; _kayTekrar = 1; _kayIstendi = false;
           setTimeout(kayitYukle, 2000);
         }catch(e){ _yut(e); }
@@ -18395,6 +18475,12 @@
      hic cizilmiyor (bkz. #rec.var) -- yani olu tus da olmuyor. */
   try{
     window.addEventListener('load', ()=>{
+      /* 1500 DENENDI VE GERI ALINDI: saglik takiminda "Kayit modulu
+         acilista inmiyor" olcusu 1.5 sn'de bakiyor ve modulu yolda
+         yakaliyordu. Zaten gerek de yok -- tuslar ilk karede
+         gorunuyor ve birine dokunuldugu an modul cagriliyor
+         (asagida, tuslarin pointerdown dinleyicisi). Yani bu sure
+         yalnizca hic dokunmayan kullanici icin. */
       setTimeout(kayitYukle, 4000);
       let kalan = 3;
       const nobet = setInterval(()=>{
@@ -18404,6 +18490,32 @@
         }catch(e){ _yut(e); clearInterval(nobet); }
       }, 8000);
     });
+  }catch(e){ _yut(e); }
+
+  /* ── PHOTO / CAM / ★ ILK KAREDE ───────────────────────────────────
+     Kullanicinin sozu (8 Eylul): "cam photo hala gec geliyor, ORBITAPE
+     modunda da rec cam gec geliyor."
+     Sebep tek satirdi: bu uc tus CSS'te display:none bekliyordu ve
+     gorunur olmalari kayit.js'e bagliydi -- o da acilisyan DORT SANIYE
+     sonra iniyor (yukaridaki kayitYukle nobeti). Yani satir once iki
+     ogeyle ciziliyor, sonra ucu birden iceri giriyordu.
+     Uc tus da HTML'de zaten duruyor; beklemenin sebebi "olu tus
+     olmasin"di. Cozum tusu gizlemek degil, MODULU CAGIRMAK: tuslar
+     ilk karede gorunuyor ve birine dokunuldugu an modul hemen
+     yukleniyor (asagidaki dinleyici). Yazi da bastan dogru -- radyoda
+     PHOTO, SOUND BANKS'te REC; yoksa REC yazip sonra PHOTO'ya
+     donerdi, ayni sicramanin kucugu. */
+  try{
+    const _r = document.getElementById('rec'), _c = document.getElementById('cam'),
+          _f = document.getElementById('favAc'), _ry = document.getElementById('recYazi');
+    if(_r) _r.classList.add('var');
+    if(_c) _c.classList.add('var');
+    if(_f){ _f.classList.add('var'); _f.classList.add('bos'); }
+    if(_ry) _ry.textContent = document.body.classList.contains('mood') ? 'REC' : 'PHOTO';
+    /* Dokunusta modulu cagiran dinleyici ZATEN VAR (yukarida,
+       yakalama asamasinda #rec,#cam icin) ve dokunusu akilda tutup
+       modul gelince oynatiyor. Burada ikincisini kurmak gereksiz. */
+    try{ geriYerlestir(); }catch(e){ _yut(e); }
   }catch(e){ _yut(e); }
 </script>
   <!-- KAYIT / KAMERA / FOTOGRAF: bkz. kayit.js. Buradan KALDIRILDI:

@@ -70,6 +70,19 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     /* Iki tam ekran suslemesi de kapali: gorselin uzerine gri bir tul
        ve koyu bir cerceve biniyordu, ikisi de renkleri olduruyordu. */
     "body.gorsel-acik .grain{display:none !important}",
+    /* ── DERI KATMANI GORSELIN ONUNDE KALIYORDU (8 Eylul) ─────────
+       Kullanicinin sozu: "bunda da visual gorunmuyor, arkada
+       kaliyor." Ekran goruntusunde MONDRIAN derisi duruyor, gorsel
+       yok.
+       Sebep: cizimli derinin resmi body.deri::after katmaninda ve
+       o katman z-index 0; gorsel tuvali de z-index 0. Ayni
+       duzeydeki iki katmanda body'nin ::after'i SONRA boyaniyor --
+       yani deri resmi tuvalin ustune oturuyor ve gorseli tamamen
+       ortuyor. Deri acikken gorsel hic gorunmuyordu.
+       Gorsel acikken deri katmani cekiliyor: tuval zaten opak
+       siyah, altinda kalan zemin renginin bir onemi yok. */
+    "body.gorsel-acik.deri::after{display:none !important}",
+    "body.gorsel-acik.deri::before{display:none !important}",
     "body.gorsel-acik .vignette{display:none !important}",
     /* HOLD ile birlikte: kilit katmaninin karartmasi hafifliyor.
        Kilitli oldugu yine belli (tus isikli ve cerceveli) ama gorselin
@@ -111,7 +124,8 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     "body.deri #gorselSerit{background:var(--d-panel,var(--d-zem));color:var(--d-yazi)}",
     "#gorselSerit[hidden]{display:none !important}",
     "#gorselSerit.sus{opacity:0;pointer-events:none}",
-    "#gorselSerit .gs-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;width:34px;height:30px;padding:0;font:inherit;font-size:0.875rem;cursor:pointer;opacity:.7;-webkit-tap-highlight-color:transparent}",
+    /* Tuslar 34x30 idi -- basparmak icin kucuk. Kullanicinin sozu: "visual penceresi kucuk, carpiya basamadim, uygulamayi kapatmak zorunda kaldim." 44x40: kapatma tusu artik parmak olcusunde. */
+    "#gorselSerit .gs-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;width:44px;height:40px;padding:0;font:inherit;font-size:0.875rem;cursor:pointer;opacity:.7;-webkit-tap-highlight-color:transparent}",
     "#gorselSerit .gs-tus:hover,#gorselSerit .gs-tus:focus-visible{opacity:1}",
     "#gorselSerit .gs-ad{font-size:0.6875rem;letter-spacing:.24em;min-width:104px;text-align:center;opacity:.9;color:var(--d-marka,#4de0d0)}",
     "#gorselSerit .gs-sayac{font-size:0.625rem;opacity:.45;padding-right:4px}",

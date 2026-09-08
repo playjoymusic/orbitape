@@ -10286,7 +10286,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                         && kap.classList.contains('serit') !== seritOnce;
         /* Merkez secici: dort tus, secili olan isaretli. */
         const mt = [...kap.querySelectorAll('.dg-tus.mrk')].map(t=>t.dataset.merkez);
-        c.merkezDort = ['cark','halka','yuvarlak','faz'].every(k => mt.indexOf(k) >= 0);
+        /* 8 Eylul: FREQUENCY ('faz') pencereden kaldirildi --
+           kullanicinin sozu "fazi yapamadin, sil lutfen". Olcu uc
+           tusa bakiyor ve 'faz'in ORADA OLMAMASINI bekliyor. */
+        c.merkezDort = ['cark','halka','yuvarlak'].every(k => mt.indexOf(k) >= 0)
+                    && mt.indexOf('faz') < 0;
         const sec = kap.querySelector('.dg-tus.mrk[aria-pressed="true"]');
         c.merkezSecili = !!sec && sec.dataset.merkez === (AYAR.merkez || 'cark');
         if(kap.classList.contains('serit') !== seritOnce && bsl){ bsl.click(); await bek(200); }
@@ -10368,8 +10372,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        halka / yuvarlak / cark / faz -- secim aninda ekranda. */
     K('Galeri tepeye dayanmiyor, baslik serite indiriyor',
        g.tepeBosluk && g.baslikKucultur, oz || 'ust pay var, baslik dugme');
-    K('Merkez secici seritte: cark / halka / yuvarlak / faz',
-       g.merkezDort && g.merkezSecili, oz || 'dort tus, secili isaretli');
+    K('Merkez secici seritte: cark / halka / yuvarlak',
+       g.merkezDort && g.merkezSecili, oz || 'uc tus, secili isaretli');
     K('Yukari kaydirma galeriyi kapatir', g.kaydirKapatti, oz || 'tepedeyken yukari cekis');
     K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
 
