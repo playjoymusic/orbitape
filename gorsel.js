@@ -81,6 +81,11 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
        ortuyor. Deri acikken gorsel hic gorunmuyordu.
        Gorsel acikken deri katmani cekiliyor: tuval zaten opak
        siyah, altinda kalan zemin renginin bir onemi yok. */
+    /* Alt guvenli alan html'in zeminiyle boyaniyor ve o zemin
+       deriden geliyor: gorsel acikken ekranin dibinde acik renkli
+       bir serit kaliyordu (kullanicinin ekran goruntusu). Gorsel
+       acikken html de siyah; kapaninca deri geri yaziyor. */
+    "body.gorsel-acik{background:#000 !important}",
     "body.gorsel-acik.deri::after{display:none !important}",
     "body.gorsel-acik.deri::before{display:none !important}",
     "body.gorsel-acik .vignette{display:none !important}",
@@ -532,7 +537,7 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
 
   /* Butun dokunuslari yutan katman: gorsel acikken sayfa "bosluk".
      Dokunmak yalnizca seridi acip kapatiyor. */
-  var kat = null;
+  var kat = null, _htmlZem = '';
   function katKur(){
     if(kat) return;
     kat = el('div'); kat.id = 'gorselKat'; kat.setAttribute('aria-hidden','true');
@@ -604,6 +609,11 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
       seritKur(); katKur();
       acik = true; t0 = performance.now(); sonKare = 0; kareSayaci = 0;
       document.body.classList.add('gorsel-acik');
+      /* html'in zemini de siyah: alt guvenli alani O boyuyor ve deri
+         acikken orada acik renkli bir serit kaliyordu. Kapaninca
+         deriUygula geri yaziyor (asagida). */
+      try{ _htmlZem = document.documentElement.style.backgroundColor;
+           document.documentElement.style.backgroundColor = '#000'; }catch(e){ yut(e); }
       tabanTonuOku();
       boyut();
       /* Serit kapali basliyor: ekran once temiz gorunsun; dokununca
@@ -626,6 +636,7 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     try{
       if(!acik) return;
       acik = false;
+      try{ document.documentElement.style.backgroundColor = _htmlZem || ''; }catch(e){ yut(e); }
       if(istek){ cancelAnimationFrame(istek); istek = 0; }
       clearTimeout(susTimer);
       document.body.classList.remove('gorsel-acik');

@@ -46,7 +46,12 @@
   /* Metanin CSS karsiligi: meta bir sebeple dusserse (uzanti,
      okuyucu kipi) kural burada da duruyor. */
   :root{color-scheme:dark;}
-  :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 34px);}
+  /* 8 Eylul: 34 -> 18. Kullanicinin sozu: "en altta da bir serit var
+     ve ogeler mecburen yukarda; onlari da en alta almak lazim."
+     Bu pay ana ekran cubugunun (home indicator) uzerine basilmasin
+     diye var; 34 iOS'un tam degeri, gerekenden fazla. 18'de cubuga
+     deger kadar yaklasmadan konsol ekranin dibine iniyor. */
+  :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 18px);}
   :root{--bg:#020203;--sut:15px;
     /* --kx: EKRANIN KENAR PAYI. Dort kose de bu tek sayiyi kullaniyor.
        Onceden her kose kendi sayisini tasiyordu (sol 16, sag 18, ust
@@ -834,7 +839,10 @@
      dali DEVREYE GIRMIYOR -- cihaz takimi alti modelde kunyenin
      alete bindigini olctu (320x460'ta 70px). Bu iki deger satirin
      genisligini sabit tutuyor; oradaki bos alan bilerek var. */
-  #rec{min-width:73px;} #cam{min-width:67px;}
+  /* CAM 67 -> 58: kutu yaziyi gereginden genis sariyordu ("CAM
+     yaziyor, cercevesinde bosluk var"). PHOTO'nunki (73) duruyor --
+     bes harf ve satirin genisligini o tutuyor. */
+  #rec{min-width:73px;} #cam{min-width:58px;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
   /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
