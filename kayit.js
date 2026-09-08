@@ -190,6 +190,46 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   /* Son getUserMedia hatasinin ADI. kamDegis bunu okuyup ekrana
      dogru cumleyi yaziyor (bkz. kamNotYaz). */
   var _kamSonHata = '';
+  /* ── KAMERA: ILK KARE GELMEDEN EKRANDA HICBIR SEY DEGISMIYOR ────
+     Sikayet: "photo cam kismi gec yukleniyor, grafiksel bir hata
+     gibi sonradan geliyor."
+     Hata degildi, ACILIS SIRASIYDI. play() COZULDUGU AN videoda
+     henuz kare yok -- srcObject bagli, oturum kurulmus, ama ilk
+     goruntu daha gelmemis. Eskiden tam o anda hem .on hem body.kam
+     veriliyordu. body.kam ise ANINDA is goruyor: deri govdesi
+     cekiliyor, cekirdek saydamlasiyor, halka tuvali one aliniyor.
+     Yani ekranda once ORTA BOSALIYOR, kamera goruntusu ona yarim
+     saniye sonra oturuyordu. Gorulen sey buydu.
+     Artik ilk gercek kare bekleniyor ve ikisi AYNI KAREDE veriliyor:
+     ya hicbir sey degismis ya da kamera acilmis oluyor, arada bos
+     bir hal yok.
+     NEDEN requestVideoFrameCallback DEGIL: kare beklenirken #kam
+     hala display:none (sinif sonra veriliyor). Cizilmeyen bir video
+     icin o geri cagri tetiklenmeyebiliyor ve acilis kilitlenirdi.
+     readyState >= 2 (HAVE_CURRENT_DATA) + videoWidth ise cizimden
+     bagimsiz, kare gercekten geldiginde dogru oluyor.
+     900 ms UST SINIR: kamera hic kare vermezse dugme olu kalmasin --
+     sure dolunca eski davranisa dusup yine de aciliyor. */
+  function ilkKare(v){
+    return new Promise(function(coz){
+      var bitti = false, sor = 0, zaman = 0;
+      function hazir(){
+        /* Okuyamiyorsak beklemeyi uzatmanin anlami yok: hazir say. */
+        try{ return v.readyState >= 2 && v.videoWidth > 0; }catch(e){ return true; }
+      }
+      function tamam(){
+        if(bitti) return; bitti = true;
+        if(sor) clearInterval(sor);
+        if(zaman) clearTimeout(zaman);
+        coz();
+      }
+      if(hazir()){ tamam(); return; }
+      sor   = setInterval(function(){ if(hazir()) tamam(); }, 30);
+      zaman = setTimeout(tamam, 900);
+      try{ v.addEventListener('loadeddata', function(){ if(hazir()) tamam(); }, {once:true}); }
+      catch(e){ _yut(e); }
+    });
+  }
   async function kamAc(){
     if(!KAMERA) return;                           // getUserMedia'nın tek çağrıldığı yer; anahtar kapalıyken hiç girilmiyor
     if(kamAcik || !kamEl) return false;
@@ -202,6 +242,8 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       kamEl.srcObject = kamAkis;
       try{ kamEl.muted = true; kamEl.volume = 0; }catch(e){ _yut(e); }   // ses oturumunu hiç istemesin
       try{ await kamEl.play(); }catch(e){ _yut(e); }
+      /* ILK KARE. Bunun ustunde neden burada durdugu yaziyor. */
+      try{ await ilkKare(kamEl); }catch(e){ _yut(e); }
       kamEl.classList.add('on'); kamAcik = true;   // tek ve sabit seviye (CSS)
       /* GOVDEYE DE ISARET: tuvalde cekirdek zaten atlaniyor ama
          DERI acikken tuval kapali ve cekirdek CSS ile ciziliyor.

@@ -7436,9 +7436,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                   t.style.transform=e; return h; })(),
                 sagY:R(g.height),
                 solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
-                hatFark: R((document.getElementById('araclar').getBoundingClientRect().top
-                   + document.getElementById('araclar').getBoundingClientRect().height/2)
-                   - (ar.top+ar.height/2)),
+                /* Buyutec 7 Eylul'de TASIMA satirina tasindi (radyoda
+                   kayit satiri bes ogeyle 238px'e cikiyor ve sag alt
+                   kunyeye yer kalmiyordu). Olcu de onunla birlikte
+                   tasindi: hangi satirdaysa o satirla ayni hatta
+                   olmali. */
+                hatFark: R((ts.top + ts.height/2) - (ar.top+ar.height/2)),
                 mood: document.body.classList.contains('mood'),
                 tutUstte: tut.bottom < innerHeight/2,
                 blokEn: R(bi.width), en: R(innerWidth),
@@ -7472,9 +7475,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      iki ayri serit gibi duruyordu ("arama yukari kaymis, tabana
      oturmamis"). Artik ucgenin dikey ortasi ile arama cizgisinin
      dikey ortasi ayni hatta. */
-  /* ALT SOL TEK SATIR: CAM · ★ · sustur · buyutec. Dordu de ayni
-     yatay eksende, tek bir satir gibi okunuyor. */
-  K('Kayit satiri ve buyutec ayni hatta', !!np && Math.abs(np.hatFark) <= 2,
+  /* BUYUTEC KENDI SATIRININ HATTINDA: tasima satirinin (◁ ▶ ■ ▷ 🔍)
+     dikey ortasiyla ayni eksende. */
+  K('Tasima satiri ve buyutec ayni hatta', !!np && Math.abs(np.hatFark) <= 2,
      'orta cizgi farki '+(np?np.hatFark:'-')+'px');
   /* ── TUTAMAK HANGI YARIDA: KIPE GORE ─────────────────────────
      Bir tur iki kipte de alt soldaydi ("sol alttakiler ayni
@@ -10647,7 +10650,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const r=id=>{ const e=document.getElementById(id); if(!e) return null;
         const b=e.getBoundingClientRect();
         return {t:b.top,b:b.bottom,l:b.left,h:b.height}; };
-      const tut=r('ayarTut'), su=r('solUst');
+      /* ── OLCU PANELIN ICINDEN ─────────────────────────────────
+         #solUst artik gorunur bir kap: 1px kenarlik + 6px dolgu,
+         yani kutusu tuslardan 7px disarida. Hiza kurali TUSLAR
+         icin gecerli (uygulamanin sozu: "ekranin sagi solu hizali
+         her zaman"), panelin cercevesi icin degil. Panelin kutusu
+         olculdugunde bu olcum 7px fark gosteriyordu ve dogru olan
+         tuslar tarafiydi. O yuzden konsolun ICI olculuyor:
+         satirlarin birlesimi. */
+      const kons=()=>{ let l=Infinity,t=Infinity,b2=-Infinity,v=false;
+        ['tasima','araclar'].forEach(id=>{ const e=document.getElementById(id); if(!e) return;
+          const q=e.getBoundingClientRect(); if(!q.width||!q.height) return;
+          v=true; l=Math.min(l,q.left); t=Math.min(t,q.top); b2=Math.max(b2,q.bottom); });
+        return v ? {t:t,b:b2,l:l,h:b2-t} : r('solUst'); };
+      const tut=r('ayarTut'), su=kons();
       const sonuc = (tut && su) ? {
         ustunde : Math.round(su.t - tut.b),            // arada kalan hava
         solHiza : Math.round(Math.abs(tut.l - su.l)),  // ayni sol kenar
@@ -10662,9 +10678,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          Tutamak icin ayrica sorulan sey: alt konsola hic
          degmiyor mu. */
       await bek(120);
-      const k2 = document.getElementById('kipKisayol'), s2 = document.getElementById('solUst');
+      const k2 = document.getElementById('kipKisayol');
       const t3 = document.getElementById('ayarTut');
-      const rb = k2 && k2.getBoundingClientRect(), sb = s2 && s2.getBoundingClientRect();
+      const rb = k2 && k2.getBoundingClientRect();
+      /* Yine panelin cercevesi degil ICI: yukaridaki nota bak. */
+      const sb = (()=>{ let l=Infinity,t=Infinity,v=false;
+        ['tasima','araclar'].forEach(id=>{ const e=document.getElementById(id); if(!e) return;
+          const q=e.getBoundingClientRect(); if(!q.width||!q.height) return;
+          v=true; l=Math.min(l,q.left); t=Math.min(t,q.top); });
+        if(v) return {top:t,left:l};
+        const s3=document.getElementById('solUst');
+        return s3 ? s3.getBoundingClientRect() : null; })();
       const tb3 = t3 && t3.getBoundingClientRect();
       const radyoSonuc = (rb && sb && tb3) ? {
         ustunde : Math.round(sb.top - rb.bottom),

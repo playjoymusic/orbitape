@@ -109,11 +109,16 @@ async function supur(pg, nerede){
     for(let i=0;i<kutu.length;i++) for(let j=i+1;j<kutu.length;j++){
       const a=kutu[i], b=kutu[j];
       /* #solUst kendi cocuklarini kapsiyor; kapsama cakisma degil.
-         #ara da BILEREK kayit satirinin icindeki yuvasinin uzerinde
-         duruyor (bkz. #araYuva) -- ikisi ust uste olmali. O ciftin
-         dogru durdugu ayrica olculuyor ("buyutec yuvasinda"). */
+         #ara da BILEREK yuvasinin (#araYuva) uzerinde duruyor --
+         ikisi ust uste olmali. O ciftin dogru durdugu ayrica
+         olculuyor ("buyutec yuvasinda").
+         YUVA TASIMA SATIRINA TASINDI (7 Eylul): radyoda kayit satiri
+         bes ogeyle 238px'e cikiyor ve sag alt kunyeye yer kalmiyordu.
+         Yuvanin komsusu degisti, kural degismedi -- her iki satir da
+         muaf. */
       if(a.id==='solUst' || b.id==='solUst') continue;
-      if((a.id==='ara' && b.id==='araclar') || (a.id==='araclar' && b.id==='ara')) continue;
+      if((a.id==='ara' && (b.id==='araclar' || b.id==='tasima'))
+      || (b.id==='ara' && (a.id==='araclar' || a.id==='tasima'))) continue;
       const yx = Math.min(a.r.right,b.r.right) - Math.max(a.r.left,b.r.left);
       const yy = Math.min(a.r.bottom,b.r.bottom) - Math.max(a.r.top,b.r.top);
       if(yx > 2 && yy > 2) cakisan.push(a.id+'×'+b.id+' ('+R(yx)+'x'+R(yy)+')');

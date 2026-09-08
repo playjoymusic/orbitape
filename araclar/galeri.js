@@ -189,7 +189,36 @@ async function sahne(b, s){
     try{ document.getElementById('karsilama').classList.remove('on','gidiyor'); }catch(e){}
     try{ fxIpucuKapat(true); }catch(e){}
     try{ document.getElementById('fxIpucu').classList.remove('on'); }catch(e){}
+    /* ── NO CONNECTION PANELI FOTOGRAFTA OLMAZ ────────────────────
+       Betik agi kesiyor (bkz. ag()): sahte havuzlar disindaki her
+       istek abort ediliyor ve uygulama HAKLI olarak "baglanti yok"
+       diyor. Yani panel dogru calisiyor, sadece bizim kurdugumuz
+       duruma ait -- gercek kullanicinin ekraninda yok. Kapatilmasa
+       dokuz karenin de ortasinda o kutu duruyordu. */
+    try{ const ay = document.getElementById('agyok');
+         if(ay){ ay.classList.remove('on','var'); ay.hidden = true;
+                 ay.setAttribute('aria-hidden','true'); } }catch(e){}
   });
+  /* ── SOL ALT KONSOL TAM ──────────────────────────────────────
+     Kullanicinin sozu: "rec ve cam, photo ve cam hala yok ama".
+     Hakliydi: bu tuslar kayit modulu inince geliyor ve galeri
+     kosusunda modul her zaman yetismiyordu -- konsol yarim, iki
+     tusluk cikiyordu. Uygulamada gercekten gorunen hali kuruluyor:
+     radyoda PHOTO · CAM · sustur · ★, arsivde REC · CAM · sustur · ★.
+     Uydurma bir tus eklenmiyor; yalnizca gec gelen modulun sonucu
+     bekleniyor. */
+  await p.evaluate((mood)=>{
+    try{
+      ['rec','cam','favAc'].forEach(id=>{
+        const e = document.getElementById(id);
+        if(e) e.classList.add('var');
+      });
+      const ry = document.getElementById('recYazi');
+      if(ry) ry.textContent = mood ? 'REC' : 'PHOTO';
+      geriYerlestir();
+    }catch(e){}
+  }, !!s.mood);
+  await p.waitForTimeout(260);
   /* Kunye bazi sahnelerde KAPALI: halka menusunde buyuk raf adi,
      turda SKIP seridi ayni yere denk geliyor ve ust uste biniyor. */
   if(s.npGizle) await p.evaluate(()=>{ try{ document.getElementById('np').classList.remove('on'); }catch(e){} });

@@ -613,11 +613,45 @@
      Sabit bir sayi yazmak yetmez -- yazi tipi gec yuklenince ya da
      kanal adi degisince taban kayiyor, once oyle yapilmisti ve
      ekranda 4-5px'lik bir bozukluk olarak goruluyordu. */
+  /* ── BLOK TEK PARCA: GORUNUR BIR PANEL ────────────────────────
+     "soldaki sol alttaki blok tek parca olmali, bir blok orasi. ve
+     sabit." Olculdu (360px): ust satir 154px, alt satir radyoda
+     66px, SOUND BANKS'te 173px -- ne ayni sag kenarda bitiyor ne de
+     kip degisince ayni olcude kaliyordu. Satirlari birbirine germek
+     eskiden denenip geri alinmisti (asagida, #tasima notu): esit
+     genislik tuslarin arasini aciyor. Dogru cozum satiri degil KABI
+     vermek.
+     PANEL HICBIR SEYI OYNATMIYOR: dolgu + kenarlik kadar disari
+     kayiyor, tuslar eskisiyle AYNI piksellerde. Hiza kurali
+     "ekranin sagi solu hizali her zaman" ve saglik takiminda alti
+     olcum bunu bekliyor -- tuslari iceri itince altisi da kirmizi
+     dondu.
+     max-width: eski 56vw sinirindan cikildi; panel iceriginin en
+     genis hali (masaustu SOUND BANKS: 237px) dar ekranda 56vw'ye
+     sigmiyordu. */
   #solUst{position:fixed;z-index:78;
-    top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px));
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    /* 6px: telafi (dolgu + 1px kenarlik = 7) tam olarak modulun dip
+       payi kadar olsun. Daha buyuk bir dolgu paneli ekranin altindan
+       tasiriyor, daha kucugu ise kenarligi tuslara yapistiriyor. */
+    --konsol-ic:6px;
+    --konsol-kay:calc(var(--konsol-ic) + 1px);
+    top:calc(var(--sut, 15px) + env(safe-area-inset-top, 0px) - var(--konsol-kay));
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px) - var(--konsol-kay));
     display:flex;flex-direction:column;align-items:flex-start;gap:8px;
-    max-width:calc(56vw - 8px);}
+    /* Dip dolgusu daha ince (3px): tam telafi panelin alt kenarini
+       ekranin son piksel satirina yapistiriyordu. Satirlarin tabani
+       yine ayni hatta -- 3 (panel dibi) + 1 (kenarlik) + 3 (dolgu)
+       = eski 7px. */
+    padding:var(--konsol-ic) var(--konsol-ic) 3px;
+    border:1px solid rgba(120,180,180,.13);
+    border-radius:calc(16px + var(--konsol-ic));
+    background:rgba(6,11,14,.62);
+    max-width:calc(100vw - var(--kx) - env(safe-area-inset-left, 0px) - 4px);}
+  /* Deri acikken panel de malzemeden (arama kutusu ve saat paneli
+     gibi): 59 deride ayri ayri renk secilmiyor. */
+  body.deri #solUst{
+    background:var(--d-panel, var(--d-zem)) !important;
+    border-color:var(--d-tus-kenar, transparent) !important;}
   /* UC SATIR TEK BLOK: ses satiri ustundekilerin en genisine
      esitlendigi icin uc satir ayni sag kenarda bitiyor. */
   /* TASIMA SATIRI: elin en cok gittigi yer. Yukseklik 32px --
@@ -629,6 +663,16 @@
      (position:fixed kalkti), yerini ust bloktan aliyor.
      Boşluk 7px: tasima satiriyla ayni. */
   #araclar{display:flex;align-items:center;gap:7px;}
+  /* SATIRLAR PANELIN IKI KENARINA DA DEGIYOR. Eski tirtik panel
+     gelince gorunur oldu (alt satir 206, ust satir 154 -> sag ust
+     kosede 52px bosluk). "Satirlari germe" hatasi tekrarlanmiyor:
+     eskiden space-between tuslarin ARASINI aciyordu (7 -> 101px,
+     "hata gibi"). Simdi acilan sey aralik degil TUSUN KENDISI --
+     dort tasima tusu esit paylasiyor, aralari yine 7px. Alt
+     satirdaki haplar buyumuyor; genislikleri yaziya gore sabit. */
+  #tasima{align-self:stretch;}
+  #araclar{align-self:stretch;}
+  #tasima > button{flex:1 1 0;min-width:0;}
   /* ── REC RADYODA DA VAR, AMA SONUK ────────────────────────────
      Bir tur tamamen gizlenmisti: "calismayan bir tus gostermek
      yanlis". Yanlis olan tusun kendisi degil SESSIZ olmasiydi --
@@ -719,6 +763,14 @@
      Gorunum ayni; buyuyen yalnizca DOKUNULABILIR alan (dikey 4px,
      yatay 2px). 3px olculdu: 35, esigin altinda. 4px: 37. */
   #rec,#cam{position:relative;}
+  /* HAPLARIN GENISLIGI SABIT. Yazilar cok degisiyor (REC -> ··· ->
+     00:12 -> CHECK -> SAVE -> PHOTO, CAM -> DELETE) ve her degisim
+     kenarlikli kutunun tamamini yeniden olcuyordu. Olculdu: REC
+     58-73, CAM 44-67 (masaustu; <=480'de 50-63 ve 37-57). min-width
+     en genis yaziya kuruldu; nokta ve yazi soldan basliyor, yani
+     yazi kisalinca komsu tuslar da yerinde kaliyor. Istenen
+     "sabit" tam olarak bu. */
+  #rec{min-width:73px;} #cam{min-width:67px;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
   /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
@@ -1143,9 +1195,16 @@
      aciliyor. */
   /* Yuva buyutecle birebir ayni olcude: satirdaki bosluklar
      buyutecin gercek genisligine gore olusuyor. */
+  /* BUYUTEC DE HAP OLDU. Panel gelince satirdaki tek kacak o kaldi:
+     cevresindeki her sey hap, o ciplak bir simgeydi. Olcu 26'da
+     birakildi -- 34'e cikarilinca kunyenin yerine giriyor ve
+     "Kapali arama tek buyutec" olcumu dusuyor (denendi, kirmizi).
+     Deri tarafi zaten hap gibi boyuyordu (body.deri #araCizgi). */
   #araYuva{display:block;width:26px;height:32px;flex:none;}
   #ara .cizgi{width:26px;height:26px;display:flex;align-items:center;
-    justify-content:center;cursor:pointer;
+    justify-content:center;cursor:pointer;box-sizing:border-box;
+    border-radius:999px;background:rgba(8,14,17,.72);
+    border:1px solid rgba(120,180,180,.18);
     -webkit-tap-highlight-color:transparent;}
   /* Buyutec temanin vurgu renginde; tema yoksa kanalin rengi
      (kutunun kendi 'color' degeri) geciyor. */
@@ -1743,7 +1802,10 @@
      halkalar dışarıda görünmeye devam ediyor. */
   #kam{position:absolute;left:50%;top:50%;width:56%;height:56%;z-index:0;
     border-radius:50%;object-fit:cover;transform:translate(-50%,-50%) scaleX(-1);
-    opacity:0;pointer-events:none;display:none;transition:opacity .6s ease;
+    /* .6s -> .28s: kare artik beklendigi icin (kayit.js: ilkKare)
+       bu sure "goruntu yolda" demek degil. .6s'te kamera hazir olsa
+       bile GEC geliyormus gibi okunuyordu. */
+    opacity:0;pointer-events:none;display:none;transition:opacity .28s ease;
     /* kenara doğru sönerek bitsin: sert çember kesiği görünmesin */
     -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.42) 76%, transparent 94%);
     mask-image:radial-gradient(circle at 50% 50%, #000 52%, rgba(0,0,0,.42) 76%, transparent 94%);}
@@ -3186,7 +3248,9 @@
      REC de var ve en cok basilan sey dibe geliyor. */
   #solUst{
     top:auto;
-    bottom:calc(7px + var(--dip-pay));
+    /* Telafi burada da: panel dolgu+kenarlik kadar asagi kayiyor ki
+       satirlarin tabani eski hattinda kalsin (bkz. --konsol-kay). */
+    bottom:calc(7px + var(--dip-pay) - 4px);
   }
   /* Satir aralari tek yerden: --modul-bosluk. */
   #solUst{--modul-bosluk:8px;gap:var(--modul-bosluk);}
@@ -3226,7 +3290,7 @@
      Buradaki deger yalnizca JS yetismeden onceki ilk karenin
      yedegi. */
   body.mood #solUst{
-    bottom:calc(7px + var(--dip-pay));
+    bottom:calc(7px + var(--dip-pay) - 4px);
   }
   body.mood #tasima  {order:2;}
   body.mood #araclar {order:3;}
@@ -3279,6 +3343,10 @@
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:0.5625rem;letter-spacing:.14em;}
+    /* Sabit genislikler de bu olcude yeniden kuruluyor: dar ekranda
+       en genis yazi 63 (PHOTO/CHECK/00:00) ve 57 (DELETE). Ustteki
+       73/67 burada 10px fazla yer yerdi. */
+    #rec{min-width:63px;} #cam{min-width:57px;}
   }
 
   /* ── MEZAR TASI: 28px'LIK TASIMA TUSLARI ─────────────────────
@@ -4030,6 +4098,15 @@
            govdedeki 'mood' sinifi ve 'durdu' durumu karar veriyor. -->
       <button id="duraklat" type="button" title="Stop" aria-label="Stop" aria-pressed="false"><svg viewBox="0 0 14 12" aria-hidden="true"><rect class="d1" x="2.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="d2" x="8.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="stp" x="2.6" y="1.3" width="9.4" height="9.4" rx="1.4"/><path class="oyn" d="M3.2 1.1 L3.2 10.9 L12 6 Z"/></svg></button>
       <button id="ileri" type="button" title="Next in history" aria-label="Next in history"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="11.7" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M0.6 1.1 L0.6 10.9 L9.8 6 Z"/></svg></button>
+      <!-- BUYUTECIN YUVASI BURADA. Once kayit satirindaydi; orada
+           radyoda bes oge oluyordu (REC·CAM·sustur·buyutec·★), satir
+           238px'e cikiyor ve 390px'lik telefonda kunyeye 106px
+           kaliyordu (esik 118 -> kunye konsolun USTUNE yiginiyordu).
+           Buraya alinca kalabalik satir 32px hafifliyor ve iki satir
+           neredeyse ayni genislige geliyor (186/206) -- panelin tek
+           parca okunmasinin asil sebebi bu. Anlam olarak da yeri
+           burasi: arama "calacak bir sey bul" demek. -->
+      <i id="araYuva" aria-hidden="true"></i>
     </div>
     <!-- IKINCI SATIR: kayit araclari, favori girisi ve ses.
          NEDEN BU DAGILIM: 360px'te olculdu -- sag ustteki satir
@@ -4064,7 +4141,6 @@
            onun uzerine konumlaniyor. Boylece yildiz satirin SONUNDA
            kaliyor ve aradaki bosluklar satirin kendi bosluguyla ayni
            -- elle hicbir sayi hizalanmiyor. -->
-      <i id="araYuva" aria-hidden="true"></i>
       <!-- ★ EN SONDA. Istenen: "alt sirada yildiz en sonda olsun." -->
       <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
     </div>
@@ -4230,7 +4306,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.07';
+  var ORB_SURUM = '2026.09.08';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -14772,9 +14848,9 @@
           _kipSagKenar(_kk, Math.round(r.right + 10));
         }
       }else if(_kk){
-        const su2 = document.getElementById('solUst');
+        const su2 = _konsolKutu();
         if(su2){
-          const r2 = su2.getBoundingClientRect();
+          const r2 = su2;
           if(r2.height){
             /* 14px: tasima satirinin dokunma alani yukari 4px,
                anahtarinki asagi 7px tasiyor; 8px bosluk birakinca
@@ -14788,6 +14864,26 @@
     }catch(e){ _yut(e); }
   }
   /* Butun adimlarin paylastigi olculer. Tek yerde hesaplaniyor. */
+  /* KONSOLUN ICI, CERCEVESI DEGIL. #solUst artik gorunur bir panel
+     (1px kenarlik + 6px dolgu), kutusu tuslardan 7px disarida.
+     Komsular TUSLARA hizalanir; panelin kutusu okununca hepsi 7px
+     kayiyordu (saglik: "sol fark 7px"). */
+  function _konsolKutu(){
+    var l=Infinity, t=Infinity, r=-Infinity, b=-Infinity, v=false;
+    ['tasima','araclar'].forEach(function(id){
+      var e = document.getElementById(id); if(!e) return;
+      var q = e.getBoundingClientRect();
+      if(!q.width || !q.height) return;
+      v = true;
+      l = Math.min(l, q.left); t = Math.min(t, q.top);
+      r = Math.max(r, q.right); b = Math.max(b, q.bottom);
+    });
+    if(!v){
+      var su = document.getElementById('solUst');
+      return su ? su.getBoundingClientRect() : null;
+    }
+    return { left:l, top:t, right:r, bottom:b, width:r-l, height:b-t };
+  }
   function _yerlesimOlcu(){
     {
       /* ── YENI ALT SERIT (asagidan yukari) ────────────────────────
@@ -14869,16 +14965,17 @@
              koordinati, guvenli alan payi icinde. _dip() ile
              yazilirsa env() ikinci kez eklenir. */
           tut0.style.removeProperty('top');
-          const su1 = document.getElementById('solUst');
+          const su1 = _konsolKutu();
           if(!su1){ tut0.style.removeProperty('bottom'); return; }
-          const sr = su1.getBoundingClientRect();
+          const sr = su1;
           if(!sr.height) return;
           /* EN AZ 13px: satirlarin arasi 8px ama DOKUNMA ALANLARI
              kutulardan buyuk -- tutamaginki asagi 7px, tuslarinki
              yukari 4px tasiyor. 8px bosluk birakinca iki alan
              cakisiyordu (olculdu: dur/ayarTut 7x2px). */
           const bos = Math.max(13,
-            parseFloat(getComputedStyle(su1).getPropertyValue('--modul-bosluk')) || 8);
+            parseFloat(getComputedStyle(document.getElementById('solUst'))
+              .getPropertyValue('--modul-bosluk')) || 8);
           tut0.style.bottom = Math.round(window.innerHeight - sr.top + bos) + 'px';
           /* FIRCA VE SAAT TUTAMAGIN USTUNDE, YIGIN HALINDE: ayni sol kenar. */
           try{
@@ -14932,6 +15029,16 @@
         }catch(_){ _yut(_); }
       }catch(_){ _yut(_); }
   }
+  /* ── MEZAR TASI: AYNI 387 SATIR IKI KEZ YAZILMISTI ────────────
+     _ustSatirlariSigdir'dan geriYerlestir'e kadar olan blok dosyada
+     PES PESE IKI KEZ duruyordu -- bir kopyala/yapistir kazasi. Ayni
+     kapsamda oldugu icin ikinci tanim birincisini eziyordu: birinci
+     kopya hicbir zaman calismadi, ama her kullaniciya indi (ham
+     kaynakta 22 KB, derlenmis dosyada ~11 KB).
+     Iki kopya iki satirlik bir satir-sarma farki disinda birebir
+     ayniydi; olu olan silindi. Bulunus yolu: "Ham boy < 1100 KB"
+     olcumu kirmiziya donunce yorumlari kismak yerine dosyanin neden
+     bu kadar buyudugune bakildi. */
   function _ustSatirlariSigdir(){
       /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
          Blogu tek parca olcmek yanlisti: birinci satirin karsisinda
@@ -15024,9 +15131,38 @@
              dip hattina donuluyor -- en kotusu birkac piksel kayik
              durur, havaya gitmez. */
           const yv2 = document.getElementById('araYuva');
-          if(!_moodda && yv2){
+          /* ARAMA ACIKKEN KONSOLUN USTUNE. Kutu column-reverse:
+             yazi alani buyutecin UZERINE diziliyor, yani tabani da
+             buyutecin satiriydi ve SEARCH/TERMS/PRIVACY tuslarin
+             arasindan geciyordu. Panel gelince gorundu -- panelin
+             acigi degil, GOSTERDIGI bir sey. Taban artik konsolun
+             tepesinden olculuyor; sabit sayi olmaz, konsolun boyu
+             kipe ve kayit durumuna gore degisiyor. */
+          if(!_moodda && arE.classList.contains('acik')){
+            /* Konsolun VE kip anahtarinin ustune: ikisinin en
+               ustteki tepesi. Ayar tutamagi listede yok -- radyoda o
+               sol USTTE (tepesi 15px), listeye alininca hesap butun
+               ekrani asiyor ve emniyet siniri olcumu atiyor. */
+            let tepe = Infinity;
+            ['solUst','kipKisayol'].forEach(function(kimlik){
+              const e2 = document.getElementById(kimlik);
+              if(!e2) return;
+              const b2 = e2.getBoundingClientRect();
+              if(b2.height && b2.width) tepe = Math.min(tepe, b2.top);
+            });
+            const _dk = Math.round(window.innerHeight - tepe + 8);
+            if(isFinite(tepe) && _dk >= 0 && _dk <= window.innerHeight * 0.62){
+              arE.style.bottom = _dk + 'px';
+              _olculdu = true;
+            }
+          }
+          if(!_olculdu && !_moodda && yv2){
             const yr2 = yv2.getBoundingClientRect();
-            const _dp = Math.round(window.innerHeight - yr2.bottom + (yr2.height - 26)/2);
+            /* Buyutecin KENDI yuksekligi: sabit 26 yazmak olcu
+               degisince 3px kayma birakiyordu. */
+            const cz = arE.querySelector('.cizgi');
+            const czY = (cz && cz.getBoundingClientRect().height) || 26;
+            const _dp = Math.round(window.innerHeight - yr2.bottom + (yr2.height - czY)/2);
             if(yr2.height && _dp >= 0 && _dp <= window.innerHeight * 0.40){
               arE.style.bottom = _dp + 'px';
               _olculdu = true;
@@ -15081,12 +15217,14 @@
                tasiyorsa kunye ondan sonra basliyor. Yalnizca buyutece
                bakmak yetmiyordu: satir DELETE'e cikinca kayit satiri
                buyutecin sagina gecebiliyor. */
+            /* Kipte konsolun ICI olculuyor: panelin kenarligi ve
+               dolgusu kunyeye kalan yeri 7px daraltiyordu. */
             const adaylar = document.body.classList.contains('mood')
-                          ? [document.getElementById('solUst')]
-                          : [document.getElementById('araclar'), arE];
+                          ? [_konsolKutu()]
+                          : [document.getElementById('araclar').getBoundingClientRect(),
+                             arE && arE.getBoundingClientRect()];
             let en = 0;
-            adaylar.forEach(el=>{ if(!el) return;
-              const r2 = el.getBoundingClientRect();
+            adaylar.forEach(r2=>{ if(!r2) return;
               if(r2.width && r2.right > en) en = r2.right; });
             if(en) cizgiSag = en;
           }catch(_){ _yut(_); }
@@ -15152,361 +15290,13 @@
                    EN USTUNDE kaliyor ve kunyenin ilk carpacagi sey o. */
                 ? ['solUst','ayarTut','deriFirca','saatTus','gorselTus','kipKisayol'] : ['solUst','kipKisayol'];
               _kons.forEach(id=>{
-                const e3 = document.getElementById(id); if(!e3) return;
-                const r3 = e3.getBoundingClientRect();
-                if(r3.height && r3.top < tepe) tepe = r3.top;
-              });
-              if(tepe !== Infinity){
-                ustHat2 = Math.round(window.innerHeight - tepe + 10); _oy = true; }
-            }catch(_){ _yut(_); }
-            /* AYNI KURAL: olculen deger duz piksel, sabit deger _dip.
-               (Buyutecteki cift sayma hatasinin ikizi buradaydi.) */
-            npE.style.bottom = _oy ? (Math.max(6, ustHat2) + 'px') : _dip(Math.max(6, ustHat2));
-            /* ── YIGILMA GOVDEYE DE SOYLENIYOR (7 Eylul) ───────────
-               Yiginca kunye konsolun USTUNE cikiyor, yani ekranin
-               ortasina dogru 120 piksel kadar yukseliyor. Ortadaki
-               alet ise sabit yerlesimden geliyor ve bu yukselisten
-               haberi yoktu: 360x640'ta halka kunyenin uzerine
-               biniyordu (cihaz takimi olctu: -12 px).
-               Bu bir "icerik degisince ekran oynuyor" durumu DEGIL:
-               yiginip yiginmayacagini belirleyen sey ekranin
-               genisligi ve soldaki satirin genisligi -- ikisi de
-               cihaz basina sabit. Yani alet sarki degistikce
-               oynamiyor, yalnizca dar bir telefonda BIR KEZ daha
-               yukari kuruluyor. Kullanicinin kuralı korunuyor.
-               Olculeri CSS veriyor (bkz. body.kunye-yigin). */
-            try{ document.body.classList.add('kunye-yigin'); }catch(_){ _yut(_); }
-          }else{
-            try{ document.body.classList.remove('kunye-yigin'); }catch(_){ _yut(_); }
-          }
-          npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
-        }
-      }catch(_){ _yut(_); }
-  }
-  /* Kamera cizgisi ve bilgi satiri: ikisi de aramanin USTUNE,
-     birbirinin uzerine yigilarak. */
-  function _altCizgileriYerlestir(y){
-      const arE = y.arE, sol = y.sol, hat = y.hat;
-      const araY = arE ? arE.getBoundingClientRect()
-                       : {height:26, left:sol, top:hat-26, bottom:hat, width:138};
-
-      /* Kamera seviyesi çizgisi aramanın ÜSTÜNDE, aynı sol kenarda ve
-         aynı genişlikte. Kamera kapalıyken hiç çizilmiyor. */
-      try{
-        const kc = document.getElementById('kamCubuk');
-        if(kc && kc.classList.contains('var')){
-          kc.style.left   = sol + 'px';
-          kc.style.width  = Math.round(ugOlcu()) + 'px';
-          kc.style.bottom = Math.round(window.innerHeight - araY.top + 8) + 'px';
-        }
-      }catch(_){ _yut(_); }
-      /* Bilgi satırı en üstte; sabit bir sayı kullanınca haplarla üst
-         üste biniyor ve okunmuyordu. */
-      try{
-        const bg = document.getElementById('kayitBilgi');
-        if(bg){
-          const kc2 = document.getElementById('kamCubuk');
-          const ust = (kc2 && kc2.classList.contains('var'))
-                        ? kc2.getBoundingClientRect().top : araY.top;
-          bg.style.left   = sol + 'px';
-          bg.style.bottom = Math.round(window.innerHeight - ust + 10) + 'px';
-        }
-      }catch(_){ _yut(_); }
-      /* BURADA BİR SATIR VARDI, SİLİNDİ — GERİ EKLEME:
-           const recYuk = rec.getBoundingClientRect().height || 30; void recYuk;
-         Sonucu 'void' ile çöpe atılıyordu, yani hiçbir işe yaramıyordu.
-         Ama 'rec' betiğin ÇOK DAHA AŞAĞISINDA const olarak tanımlı;
-         açılışta ustOlcu -> markHizala -> geriYerlestir zinciri buraya
-         'rec' daha kurulmadan geldiği için bu satır her açılışta bir
-         ReferenceError atıyor (geçici ölü bölge) ve aşağıdaki
-         araYerlestir() + uyduYerlestir() HİÇ çalışmıyordu: uydular
-         700 ms sonraki ikinci ölçüme kadar yanlış yerde duruyordu.
-         Hata iki ayrı boş catch tarafından yutulduğu için de yıllarca
-         görünmedi. Ölü satırı silmek zincirin tamamını geri getirdi. */
-
-      /* ◁ ARTIK BURADA DEĞİL: sağ alt bloğun (#np) ilk elemanı, konumu
-         yığından geliyor. Sol alt sütun: arama (en altta) -> REC -> kamera. */
-
-      // KAMERA artık diskin İÇİNDE (CSS ile inset:0) -> konumlandırma gerekmiyor.
-
-  }
-  /* ── SIRA ─────────────────────────────────────────────────────────
-     Yerlesimin tamami burada, sekiz satirda okunuyor. Sira ONEMLI:
-     her adim bir oncekinin olctugu yere yasliyor. */
-  function geriYerlestir(){
-    iz('geriYerlestir');
-    /* Etiket her halukarda yaziliyor: asagidaki olcum zinciri bir
-       yerde patlarsa bile anahtarin uzerinde dogru kelime dursun. */
-    try{ _kipAnahtarYaz(); }catch(e){ _yut(e); }
-    try{
-      const y = _yerlesimOlcu();
-      _solUstOlcegiTemizle();      // kalinti olcek varsa sil
-      _ustSatirlariSigdir();       // sol ust satirlar karsisindakine gore
-      _solUstAdSigdir();           // radyoda sol ustteki raf adinin puntosu
-      _modDalgaHizala();           // frekans cubuklari: adin altina, ad kadar
-      /* ── SIRA DUZELTILDI: BU IKISI EN SONA ─────────────────────
-         Once _tutamakYerlestir en basta, _kipKisayoluHizala ise
-         try'in bile disinda cagriliyordu. Ikisi de bir onceki
-         karenin olcusunu okuyordu:
-           tutamak  -> #modDalga'nin (henuz yerlesmemis) alt kenarini
-           anahtar  -> tutamagin (henuz yerlesmemis) sag kenarini
-         Belirtisi cihazda goruldu: uygulama acilir acilmaz uc cizgi
-         raf adinin UZERINE biniyordu. Sebep centik: modKut'un tepesi
-         env(safe-area-inset-top) kadar asagida, ama tutamak o payi
-         daha uygulanmamis bir olcumden almisti. Kullanicinin
-         teshisi dogruydu: "gezegenler yukarida baslayip aniden
-         asagi kayiyordu, ayni olay mi" -- evet, ayni sinif.
-         Bu bloktaki kural zaten yaziliydi: "Sira ONEMLI: her adim
-         bir oncekinin olctugu yere yasliyor." Bu iki satir o
-         kurala uymuyordu. */
-      _tutamakYerlestir(y);        // radyoda cubugun altina, arsivde modulun ustune
-      _kipKisayoluHizala();        // arsivde tutamaga, radyoda module yasli
-      ugOlcu();
-      _buyutecYerlestir(y);        // buyutec kendi yuvasinin uzerine
-      _kunyeYerlestir(y);          // sag alt kunye: taban aramayla ayni hat
-      _altCizgileriYerlestir(y);   // kamera cizgisi + kayit bilgisi
-      araYerlestir();
-      uyduYerlestir();
-    }catch(e){ _yut(e); }
-  }
-  /* ── ALET NEDEN OLCULMUYOR (6 Eylul) ────────────────────────────
-     Bir sure burada aletBoyuSigdir() vardi: ustteki ve alttaki
-     bloklari olcup alete kalan yuksekligi hesapliyor, aleti o
-     boslugun ortasina koyuyordu. Kagit uzerinde dogruydu, kullanimda
-     yanlis: kunye calan parcanin adiyla degisiyor, yani ALET
-     SARKI DEGISTIKCE OYNUYORDU. Kullanicinin sozu: "surekli halkanin
-     konumu degisiyor sag alttaki yazilar degistikce; olmaz boyle,
-     her sey sabit olacak."
-     Yerine gecen sey olcum degil YER AYIRMA: --ust-rez ve --alt-rez
-     sabitleri (CSS, :root). Alet o iki bandin arasinda duruyor ve
-     icerikten hic etkilenmiyor; kunye de kendi bandinin disina
-     cikmiyor (#np max-height).
-     Ders kayitli kalsin: konumu icerikten turetmek, icerik degisince
-     ekranin oynamasi demektir. */
-
-  function _ustSatirlariSigdir(){
-      /* SOL UST: HER SATIR KENDI KARSISINDAKI YAZIYA gore olculuyor.
-         Blogu tek parca olcmek yanlisti: birinci satirin karsisinda
-         marka adi (dar), ikinci satirin karsisinda kategori adi
-         (genis) var. Tek butce alinca genis olan ikisini birden
-         kucultuyordu -- birinci satir bol bol sigiyorken.
-         Karsilikli satirlar arasinda 12px hava birakiliyor. */
-      try{
-        /* Karsi taraf marka yazisi DEGIL, sag ustteki SATIRIN tamami:
-           kategori adi onun solunda ve ayni satirda duruyor, once
-           carpilacak olan o. */
-        const adE  = document.querySelector('#ust .ustSatir') || document.querySelector('#ust .kanal.ad');
-        const modE = document.getElementById('modAd');
-        const olc = (satirId, karsi)=>{
-          const el = document.getElementById(satirId); if(!el) return;
-          const kx = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16);
-          let butce = window.innerWidth - kx*2;
-          const kr = karsi ? karsi.getBoundingClientRect() : null;
-          if(kr && kr.width){
-            const eski = el.style.transform; el.style.transform = '';
-            const solK = el.getBoundingClientRect().left;
-            el.style.transform = eski;
-            butce = Math.round(kr.left - 12 - solK);
-          }
-          /* TABAN 110 -> 56. 110 kendi kendini bozan bir sayiydi:
-             satirin genisligi de 110 civari, yani butce hicbir zaman
-             satirdan kucuk cikmiyor ve emniyet olcegi ASLA devreye
-             girmiyordu. 360px'te uzun bir kategori adiyla iki blok
-             birbirine tam degiyordu (olculdu: 0px bosluk).
-             56 = tek bir hapin genisligi; olcegin kendi alt siniri
-             (0.80) zaten asiri kuculmeyi engelliyor. */
-          araclarSigdir(el, Math.max(56, butce));
-        };
-        /* ILK SATIR sag ustteki satirla ayni yukseklikte -> ona gore.
-           IKINCI SATIRIN karsisinda hicbir sey yok (sag ust tek satir
-           ve yukarida bitiyor) -> butce ekranin kendisi. */
-        /* SOUND BANKS kipinde modul sol ALTTA: sag ustteki satirla
-           ayni yukseklikte degil, yani carpisma ihtimali yok. */
-        /* Radyoda konsol sag ustte ve karsisinda kimse yok; kayit
-           satiri da sol altta tek basina. Olcum yalnizca SOUND BANKS
-           kipinde anlamli, orada uc satir alt alta duruyor. */
-        olc('tasima',  null);
-        olc('araclar', null);
-        void modE;
-      }catch(_){ _yut(_); }
-  }
-
-  function _buyutecYerlestir(y){
-      const arE = y.arE, _dip = y.dip, alt = y.alt, sol = y.sol, _moodda = y.moodda;
-      /* ── BUYUTEC KAYIT SATIRININ SAGINDA ─────────────────────────
-         Istenen: "cam yanina yildiz, yanina buyutec gibi olabilir --
-         boylece daha muntazam."
-         Sol alt tek bir satir oluyor: CAM · ★ · sustur · buyutec.
-         Yeri olculuyor cunku satirin genisligi degisiyor (CAM ->
-         DELETE, sayac 00:12 -> 120:45). Sabit bir sayi o anlarda
-         ya bosluk birakir ya ust uste bindirir. */
-      if(arE){
-        /* Buyutec 26px, kayit satiri 32px yuksekliginde. Ikisinin
-           ORTASI ayni hatta olsun diye buyutec 3px yukari aliniyor;
-           alt kenarlari esitlemek gozde 3px'lik bir kayma birakiyordu
-           (olculdu). Modul yokken (SOUND BANKS) fark gerekmiyor. */
-        /* DIKEY HIZA DA YUVADAN: buyutec 26px, satir 32px. Ikisinin
-           ORTASI ayni hatta olmali, alt kenarlari degil. */
-        /* ── GUVENLI ALAN PAYI IKI KERE EKLENMESIN ─────────────────
-           BURADA BIR HATA VARDI ve ekranda "buyutec yukari kaymis,
-           yeri bos kalmis, ustundeki satirin uzerine binmis" olarak
-           goruluyordu.
-           Sebep: yuvanin yeri OLCULUYOR (getBoundingClientRect) ama
-           sonuc _dip() ile yaziliyordu. Olculen deger zaten GERCEK
-           ekran koordinati -- guvenli alan payi onun icinde. _dip()
-           uzerine bir kere daha env(safe-area-inset-bottom) ekleyince
-           centikli telefonda buyutec ~34px yukari firliyor; kayit
-           satirinin yuksekligi 32px oldugu icin de tam ustundeki
-           satirin uzerine biniyor.
-           Kural: OLCULEN degerler duz piksel yazilir, _dip() yalnizca
-           CSS'ten gelen sabitler icin. */
-        let _olculdu = false;
-        try{
-          /* Buyutec 26px, yuva 32px: ORTALARI ayni hatta.
-             AKIL SAGLIGI KAPISI. Iki kez bildirildi: "buyutec yukarida
-             kaldi, ancak yenilemeyle geciyor." Sebep asagidaki olcum:
-             yuvanin yeri olculuyor ama olcum her zaman gecerli
-             olmuyor (yakinlastirma sirasinda, sekme geri gelirken,
-             yerlesim oturmadan) ve yuva ekranin tepesinde gorunuyor;
-             formul o an innerHeight kadar buyuk bir sayi uretip
-             buyuteci tavana yapistiriyor -- ve orada kilitli kaliyor,
-             cunku sonraki cagrilarda olculer 'ayni' geliyor.
-             Buyutec sol alt konsolun uyesi: ekranin alt %40'inin
-             disina cikamaz. Cikiyorsa olcum bozuktur ve CSS'in kendi
-             dip hattina donuluyor -- en kotusu birkac piksel kayik
-             durur, havaya gitmez. */
-          const yv2 = document.getElementById('araYuva');
-          if(!_moodda && yv2){
-            const yr2 = yv2.getBoundingClientRect();
-            const _dp = Math.round(window.innerHeight - yr2.bottom + (yr2.height - 26)/2);
-            if(yr2.height && _dp >= 0 && _dp <= window.innerHeight * 0.40){
-              arE.style.bottom = _dp + 'px';
-              _olculdu = true;
-            }
-          }
-        }catch(_){ _yut(_); }
-        /* Yuva olculemiyorsa (SOUND BANKS kipinde arama satiri yok)
-           CSS'in kendi dip hattina donuyoruz -- orada env() DOGRU. */
-        if(!_olculdu) arE.style.bottom = _dip(Math.max(6, alt));
-        let arSol = sol;
-        try{
-          /* BUYUTEC KENDI YUVASININ UZERINE oturuyor. Yuva kayit
-             satirinin icinde bos bir kutu; satirdaki bosluklar ve
-             ★'in yeri boylece kendiliginden dogru cikiyor, elle
-             hicbir sayi hizalanmiyor.
-             Panel ACIKKEN sol kenara donuyor: kutu ve sonuc listesi
-             genis, yuvanin uzerinde kalsa sag kenardan tasiyordu
-             (olculdu, gizlilik baglantisi ekranin disina cikiyordu). */
-          const yv = document.getElementById('araYuva');
-          const yr = yv ? yv.getBoundingClientRect() : null;
-          if(!_moodda && yr && yr.width && !arE.classList.contains('acik'))
-            arSol = Math.round(yr.left);
-        }catch(_){ _yut(_); }
-        arE.style.left = arSol + 'px';
-      }
-  }
-  function _kunyeYerlestir(y){
-      const arE = y.arE, _dip = y.dip, alt = y.alt, sol = y.sol;
-      /* SAG ALT KUNYE: TABANI ARAMA CIZGISIYLE AYNI HATTA.
-         Bir ara kunyeyi bir sira yukari almistim, cunku kirpma
-         kalkinca blok genisledi (86vw) ve solda duran arama cizgisiyle
-         cakisiyordu. Ayni hatta durmasi istendi, o yuzden cozum yer
-         degistirmek degil GENISLIK SINIRI: blok arama cizgisinin
-         bittigi yerden 16px sonra basliyor. Yazi kisalmiyor -- yer
-         daralinca satir sayisi artiyor ve blok YUKARI dogru buyuyor,
-         tabani sabit kaliyor.
-         Bu yuzden ★ da blogun en ustune alindi: asagida olsaydi
-         kunye uzadikca yildiz asagi kayacakti. */
-      try{
-        const npE = document.getElementById('np');
-        if(npE){
-          npE.style.bottom = _dip(Math.max(6, alt));
-          /* SOLDA NE VARSA ONA GORE. Radyoda alt sol koseyi ayar
-             tutamagi ve buyutec paylasiyor; SOUND BANKS kipinde
-             arama yok, orada modulun kendisi duruyor ve cok daha
-             genis. Sabit bir sayi ikisinden birinde yanlis olurdu:
-             kipte kunye modulun uzerine biniyordu (olculdu). */
-          let cizgiSag = sol + 138;
-          try{
-            /* Solda ne varsa EN SAGDAKI belirliyor. Radyoda alt sol
-               satir CAM · ★ · sustur · buyutec; hangisi daha saga
-               tasiyorsa kunye ondan sonra basliyor. Yalnizca buyutece
-               bakmak yetmiyordu: satir DELETE'e cikinca kayit satiri
-               buyutecin sagina gecebiliyor. */
-            const adaylar = document.body.classList.contains('mood')
-                          ? [document.getElementById('solUst')]
-                          : [document.getElementById('araclar'), arE];
-            let en = 0;
-            adaylar.forEach(el=>{ if(!el) return;
-              const r2 = el.getBoundingClientRect();
-              if(r2.width && r2.right > en) en = r2.right; });
-            if(en) cizgiSag = en;
-          }catch(_){ _yut(_); }
-          /* OLCU EKRANIN SAG KENARINDAN DEGIL, BLOGUN KENDI SAG
-             KENARINDAN aliniyor. Genis ekranda arayuz ortalanmis bir
-             kolona sikisiyor (bkz. --yan) ve kunye ekranin sag
-             kenarinda DEGIL, kolonun sag kenarinda duruyor. Ekran
-             genisligiyle hesaplayinca blok gercekte olmadigi kadar
-             genis sanilip soldaki satirin uzerine biniyordu (senaryo
-             testi 820px'te olctu: 26x26 cakisma).
-             Taban 140 -> 96: 320px'lik dar bir ekranda 140 zaten
-             sigmiyordu ve tasma yaratiyordu. Kunye kisalmiyor,
-             yalnizca daha cok satira sariyor. */
-          const npSag = npE.getBoundingClientRect().right || (window.innerWidth - sol);
-          /* ARADAKI HAVA 24 -> 18. REC radyo tarafina da gelince alt
-             sol satir 162'den 218px'e cikti ve kunyeye kalan yer
-             esigin altina dustu: blok 390px'lik normal bir telefonda
-             konsolun USTUNE yiginiyordu (olculdu, iki hiza testi
-             kirmizi). Alti piksel kunyeyi yaninda tutmaya yetiyor;
-             blok bir satir daha sariyor, yer degistirmiyor. */
-          let yer = Math.round(npSag - cizgiSag - 18);
-          /* ── YAN YANA SIGMIYORSA YIGILIYOR ────────────────────────
-             Dar bir ekranda (320px olculdu) soldaki satir yerin
-             yarisini aliyor ve kunyeye ~100px kaliyor. Kunye
-             kirpilmadigi icin o genislikte on bes satira cikiyor,
-             ekranin TEPESINDEN tasip sag ustteki konsolun uzerine
-             biniyordu (senaryo testi olctu: np ust -49, tasima ile
-             104x32 cakisma).
-             Yan yana sigmiyorsa kural degisiyor: kunye butun
-             genisligi aliyor ve soldaki satirin USTUNE cikiyor.
-             Yigilmak kirpmaktan iyidir -- kunyenin tam olmasi bir
-             lisans sarti, yan yana durmasi yalnizca bir tercih. */
-          /* 150 -> 118. Esik "kunye yaninda durabilir mi" sorusunun
-             cevabi ve REC gelince 390px'te 120'ye dustu: 150 kalsaydi
-             normal telefon yiginma kipine geciyordu. 118 gercek alt
-             sinir -- kunye uc satira sariyor ama okunuyor; altina
-             inince kirpilmadan sigmiyor ve yiginmak dogru oluyor
-             (320px hala oyle). */
-          const YAN_YANA_ESIK = 118;
-          if(yer < YAN_YANA_ESIK){
-            yer = Math.round(npSag - sol);
-            let ustHat2 = alt, _oy = false;
-            try{
-              /* MODULUN TAMAMININ ustune, tek satirin degil: modul
-                 artik iki satir (tasima + kayit araclari). Yalnizca
-                 kayit satirina gore hesaplayinca kunye tasima
-                 satirinin uzerine biniyordu (senaryo 320px'te olctu:
-                 162x30 cakisma). */
-              /* KONSOLUN TAMAMI: modul + kip anahtari.
-                 Yalnizca module bakinca kunye anahtarin uzerine
-                 biniyordu -- anahtar modulun USTUNDE duruyor
-                 (senaryo 320px'te olctu: 40x26 cakisma). En
-                 yukaridaki hangisiyse o.
-                 'ayarTut' YALNIZCA ARSIVDE LISTEDE: radyoda
-                 tutamak sol uste, frekans cubuklarinin altina
-                 gitti; orada alt seride ait degil. Listede
-                 kalsaydi tepe ~54px olur ve kunye ekranin
-                 tepesine firlardi. */
-              let tepe = Infinity;
-              const _kons = document.body.classList.contains('mood')
-                /* 'gorselTus' 6 Eylul'de eklendi: arsivde yigin
-                   yukari dogru diziliyor, yani gorsel tusu yiginin
-                   EN USTUNDE kaliyor ve kunyenin ilk carpacagi sey o. */
-                ? ['solUst','ayarTut','deriFirca','saatTus','gorselTus','kipKisayol'] : ['solUst','kipKisayol'];
-              _kons.forEach(id=>{
-                const e3 = document.getElementById(id); if(!e3) return;
-                const r3 = e3.getBoundingClientRect();
-                if(r3.height && r3.top < tepe) tepe = r3.top;
+                /* 'solUst' yerine konsolun ICI: panelin tepesi
+                   tuslardan 7px yukarida ve kunye o kadar yukari
+                   firliyordu -- cihaz takimi 320px'te yakaladi
+                   ("kunye alete biniyor -1px"). */
+                const r3 = (id === 'solUst') ? _konsolKutu()
+                         : (document.getElementById(id) || {getBoundingClientRect(){return null;}}).getBoundingClientRect();
+                if(r3 && r3.height && r3.top < tepe) tepe = r3.top;
               });
               if(tepe !== Infinity){
                 ustHat2 = Math.round(window.innerHeight - tepe + 10); _oy = true; }
