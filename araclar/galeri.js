@@ -27,7 +27,31 @@ const KROM = require(path.join(KOK, 'test', 'tarayici'));
 
 const ADRES = 'http://127.0.0.1:8765/index.html';
 const TON   = fs.readFileSync(path.join(KOK, 'test', 'ton.wav'));
-const CIKIS = path.join(KOK, 'magaza', 'galeri');
+/* ── UC OLCU: TELEFON, 7" TABLET, 10" TABLET ───────────────────
+   Play telefon karelerinin yaninda tablet kareleri de istiyor ve
+   depoda tek bir tablet olcusu yoktu. Ayni sahneler, ayni betik --
+   degisen yalnizca gorunum alani ve piksel yogunlugu:
+     telefon   360x640  x3  -> 1080x1920
+     tablet7   600x960  x2  -> 1200x1920
+     tablet10  800x1280 x2  -> 1600x2560
+   800 piksel uygulamanin genis kolon esigini (700) asiyor, yani
+   tablet karesi tablet yerlesimini gosteriyor -- kirpilmis bir
+   telefon degil.
+     GALERI_OLCU=tablet7 node araclar/galeri.js
+   ── MAGAZA SETI ───────────────────────────────────────────────
+   Play telefon basina en fazla 8 kare aliyor ve galeride 12 kare
+   var. GALERI_MAGAZA=1 yalnizca listelemeye gidecek SEKIZI, sirali
+   adlarla ayri bir klasore yaziyor -- yanlis kare yuklenmesin diye
+   secim burada, konsolda degil. */
+const OLCU_TABLO = {
+  telefon:  { w:360, h:640,  dsf:3, ek:'' },
+  tablet7:  { w:600, h:960,  dsf:2, ek:'-tablet7' },
+  tablet10: { w:800, h:1280, dsf:2, ek:'-tablet10' }
+};
+const OLCU_AD = process.env.GALERI_OLCU || 'telefon';
+const OLCU = OLCU_TABLO[OLCU_AD] || OLCU_TABLO.telefon;
+const MAGAZA = process.env.GALERI_MAGAZA === '1';
+const CIKIS = path.join(KOK, 'magaza', (MAGAZA ? 'play' : 'galeri') + OLCU.ek);
 
 /* Fotograf icin kucuk ama GECERLI havuzlar: uygulama cevrimdisi
    moduna dusmesin, halkalar ve gezegenler normal cizilsin.
@@ -101,7 +125,7 @@ async function sahne(b, s){
      MASAUSTU yerlesimini cizdi (tuslar sol altta, gezegenler yok):
      yerlesim viewport genisligine bakiyor, dosyanin piksel boyuna
      degil. */
-  const c = await b.newContext({ viewport:{width:360, height:640}, deviceScaleFactor:3,
+  const c = await b.newContext({ viewport:{width:OLCU.w, height:OLCU.h}, deviceScaleFactor:OLCU.dsf,
                                  isMobile:true, hasTouch:true });
   /* Acilis turu ve karsilama eli fotografta olmasin (turu ISTEYEN
      sahne kendi aciyor). */
@@ -359,8 +383,48 @@ SAHNELER.push({
    magaza galerisinin nebulasiz olmasini istedi, yani radyo tarafi.
    FX, halka menusu ve arsiv rafi kareleri (mood tarafi) burada
    URETILMIYOR. Gerekirse tek satir:  GALERI_HEPSI=1 node araclar/galeri.js */
+/* ── DERI VE FREKANS KARELERI (8 Eylul) ────────────────────────
+   Kullanicinin sozu: "app ici goruntuler hem skinsler hem
+   fx lemeler vs." Galeride ne deri ne frekans karesi vardi --
+   uygulamanin en cok konusulan iki yuzu magazada hic gorunmuyordu.
+   Ucu de radyo tarafinda: nebula yok. */
+SAHNELER.push({
+  dosya:'10-skins.png', mood:false, npGizle:true, bekle:1400,
+  kur:()=>{ try{ const f=document.getElementById('deriFirca'); if(f) f.click(); }catch(e){} }
+});
+SAHNELER.push({
+  dosya:'11-deri.png', mood:false, bekle:1400,
+  kunye:{ ad:'Slow Horizon', alt:'LIVE · AMBIENT · NL', kaynak:'', lisans:'' },
+  /* FIELDS: duz renkli degil ama sakin bir tablo -- diskin kendisi
+     kompozisyonun merkezi oldugu icin magazada anlatilacak sey de
+     bu. Halka o derilerde zaten acilmiyor. */
+  kur:()=>{ try{ AYAR.deri = 57; deriUygula();
+                 if(window.merkezUygula) merkezUygula(); }catch(e){} }
+});
+SAHNELER.push({
+  dosya:'12-frekans.png', mood:false, bekle:1400,
+  kunye:{ ad:'Deep Techno', alt:'LIVE · ELECTRONIC · DE', kaynak:'', lisans:'' },
+  kur:()=>{ try{ AYAR.merkez = 'faz';
+                 if(window.merkezUygula) merkezUygula(); }catch(e){} }
+});
+
 const HEPSI = process.env.GALERI_HEPSI === '1';
-const SECIM = HEPSI ? SAHNELER : SAHNELER.filter(s=>!s.mood);
+/* MAGAZAYA GIDEN SEKIZ, sirasiyla: alet · bir tur · deri galerisi ·
+   uygulanmis deri · frekans · FX · arsiv tarafi · nasil calisiyor.
+   Sekiz kare bir hikaye anlatiyor; sekiz ayni carkin farkli rengi
+   degil. FX ve arsiv karelerinde nebula var -- kullanici bir
+   zamanlar nebulasiz istemisti ama FX'i acikca istedi, ve FX
+   yalnizca o tarafta yasiyor. */
+const MAGAZA_SIRA = ['01-radyo-radiotape.png', '03-radyo-jazz.png',
+  '10-skins.png', '11-deri.png', '12-frekans.png',
+  '09-fx-ana.png', '15-arsiv-orbitape.png', '09-tur.png'];
+const SECIM = MAGAZA
+  ? MAGAZA_SIRA.map((ad, i)=>{
+      const s = SAHNELER.find(x=>x.dosya === ad);
+      if(!s) throw new Error('magaza sahnesi yok: ' + ad);
+      return Object.assign({}, s, { dosya: 'play-' + (i+1) + '-' + ad.replace(/^\d+-/, '') });
+    })
+  : (HEPSI ? SAHNELER : SAHNELER.filter(s=>!s.mood));
 
 (async()=>{
   fs.mkdirSync(CIKIS, {recursive:true});

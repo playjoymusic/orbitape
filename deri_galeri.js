@@ -47,7 +47,22 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     "#deriGaleri{--dg-vurgu:#4de0d0;--dg-yazi:#dfe4e8;--dg-zem:rgba(8,10,12,.94);position:fixed;left:0;right:0;bottom:0;top:max(22vh,150px);border-radius:18px 18px 0 0;z-index:97;display:flex;flex-direction:column;background:var(--dg-zem);color:var(--dg-yazi);padding-top:calc(var(--sut,15px) + env(safe-area-inset-top,0px));padding-bottom:calc(8px + var(--dip-pay,0px));font-family:'Share Tech Mono',ui-monospace,monospace}",
     "body.deri #deriGaleri{--dg-vurgu:var(--d-marka,var(--d-yazi));--dg-yazi:var(--d-yazi);--dg-zem:var(--d-panel,var(--d-zem))}",
     "#deriGaleri[hidden]{display:none !important}",
-    ".dg-bas{display:flex;align-items:center;gap:4px;flex:none;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 6px calc(var(--kx) + env(safe-area-inset-left,0px))}",
+    /* ── BASLIK SATIRI SARIYOR ────────────────────────────────────
+       OLCULDU (8 Eylul): merkez satiri (WHEEL RING DISC FREQUENCY)
+       tek satirda duruyordu ve sag kenari HER genislikte 385px --
+       yani 320 ve 360 piksellik telefonlarda ekranin disinda.
+       320'de FREQUENCY tusunun 76 pikselinin yalnizca 11'i
+       goruluyordu. Kelime uzayinca (PHASE -> FREQUENCY) tasma
+       daha da buyudu.
+       Ayni sikisma secili derinin ADINI da yiyordu: .dg-secili
+       genisligi mobilde 0 olculdu, yani hangi derinin secili
+       oldugu basliktan hic okunmuyordu.
+       Satir artik sariyor ve merkez satiri kendi hattina
+       geciyor -- serit kipinde zaten oyleydi, tam galeride de
+       oyle. */
+    ".dg-bas{display:flex;align-items:center;gap:4px;flex:none;flex-wrap:wrap;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 6px calc(var(--kx) + env(safe-area-inset-left,0px))}",
+    ".dg-merkez{order:9;flex:1 0 100%;justify-content:center;margin-top:2px;padding-top:3px;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent)}",
+    ".dg-secili{flex:1 1 90px}",
     ".dg-baslik{font-size:0.6875rem;letter-spacing:.3em;opacity:.55;margin-right:6px;background:transparent;border:0;color:inherit;font-family:inherit;cursor:pointer;padding:4px 2px}",
     ".dg-baslik:hover,.dg-baslik:focus-visible{opacity:.9}",
     ".dg-tutamak{flex:none;width:40px;height:4px;border-radius:2px;margin:2px auto 4px;background:color-mix(in srgb,var(--dg-yazi) 30%,transparent)}",

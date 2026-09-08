@@ -145,7 +145,19 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          o yuzden cubuklarin menzili de ekrana gore daralttildi.
          Pay 0.86 -> 0.34: tuval halkanin biraz disina tasiyor,
          ekrandan degil. */
-      const pay = Math.round(R * (kip === 'faz' ? 0.34 : 0.44));   // adların çemberi için yer
+      /* ── FAZ PAYI DA 0.44 (8 Eylul) ───────────────────────────
+         OLCULDU: magaza karesinde FREQUENCY kipinde ustteki raf adi
+         TEPESINDEN KESILIYORDU. Sebep bu sayi: ad cemberi iki kipte
+         de yaricapin 1.28 katinda (AD_ORAN) ve secili adin puntosu
+         0.10R; yani yaziyi icine almak icin en az 1.33R gerekiyor.
+         Cark kipinde pay 0.44 -> tuval 1.44R, rahat. Fazda 0.34 ->
+         1.34R, yani yazinin ust yarisi tam tuval kenarina denk
+         geliyor ve kirpiliyordu.
+         Pay bir zamanlar 0.86'ydi ve cubuklar cok uzaga gittigi icin
+         daraltilmisti; cubuklarin menzili sonra zaten daraldi
+         (MENZIL 0.28). Iki kip artik ayni payi kullaniyor -- ayni
+         seyi cizdikleri icin. */
+      const pay = Math.round(R * 0.44);   // adların çemberi için yer
       const boy = Math.round(b.width + pay * 2);
       /* Piksel yogunlugu uygulamanin kendi tuvaliyle ayni: mobilde
          1.5. Once 2'ydi ve bu tuval ekrandaki en genis yuzey. */

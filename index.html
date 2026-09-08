@@ -2453,6 +2453,19 @@
      halde -- yani hem taniniyor hem okunuyor. */
   body.deri #modAd{color:var(--d-raf, var(--d-yazi)) !important;
     -webkit-text-fill-color:var(--d-raf, var(--d-yazi)) !important;}
+  /* ── DERIDE RAF ADI TAM OPAKLIKTA ─────────────────────────────
+     %72 opaklik karanlik dunyada bilincli bir fisilti: renk zaten
+     parlak, biraz geri cekilsin diye. Deride ise renk ZATEN
+     olculerek kisiliyor (rafYaziRengi -> okunurVurgu, acik zeminde
+     esik 5.5) ve uzerine bir de %28 zemin karisinca kazanilan sey
+     geri veriliyordu.
+     OLCULDU (59 derinin hepsi, opaklik hesaba katilarak): orta
+     tonlu zeminlerde oran 3'un altina dusuyordu -- COBALT 2.41,
+     JADE 2.39, LILIES 2.61, POP 2.24. En cok kaybeden zeminler tam
+     da ne acik ne koyu olanlar, cunku karisim orada rengi zeminin
+     icine cekiyor.
+     Deride opaklik 1: kisma isini renk yapiyor, saydamlik degil. */
+  body.deri #modAd.gor{opacity:1;}
   /* ── HALKANIN ALTINDAKI BUYUK GECICI YAZI ─────────────────────
      Kullanicinin istegi: "sag ustteki ORBITAPE yazisinin rengiyle
      ayni olmali." Marka yazisinin sag ucu --d-vurgu'yu tasiyor,
@@ -5923,8 +5936,24 @@
            renklerle yaz." Yazi renginden zeminin TERSINE dogru
            %55 daha gidiyor: koyu deride beyaza yakin, acik deride
            siyaha yakin. */
-        k.setProperty('--d-yazi-guclu',
-          _hexKaris(_parlaklikHex(d.zem) > 0.30 ? '#000000' : '#ffffff', d.yazi, 0.55));
+        /* ── SABIT %55 YERINE OLCULEN ESIK (8 Eylul) ──────────────
+           OLCULDU: orta tonlu derilerde bu karisim GRI veriyordu ve
+           sag alttaki kunye okunmuyordu -- JADE'de yazi/zemin orani
+           1.22, COBALT'ta 1.36, POP'ta 1.36 (esik 4.5). Uretilen
+           renk sirasiyla #9d9e9e, #939494, #979696; yani zeminin
+           parlakligi ortadayken "tersine dogru %55" hicbir yere
+           varmiyor.
+           Sabit bir yuzde yanlis arac: kaydirilacak mesafe zeminin
+           parlakligina bagli. Uygulamanin kendi cozucusu bunu zaten
+           yapiyor (okunurVurgu: rengi zeminin tersine dogru esik
+           tutana kadar kaydirir) ve simgelerde, disklerde, halkada
+           kullaniliyordu -- kunyede kullanilmiyordu.
+           Esik 4.5: kunye bir LISANS SARTI, atif okunmak zorunda.
+           Cozucu bir sey donduremezse eski karisima duruluyor. */
+        const _kunyeTon = (typeof okunurVurgu === 'function' && typeof _hexDizi === 'function')
+          ? okunurVurgu(_hexDizi(d.yazi), d.zem, 4.5) : '';
+        k.setProperty('--d-yazi-guclu', _kunyeTon
+          || _hexKaris(_parlaklikHex(d.zem) > 0.30 ? '#000000' : '#ffffff', d.yazi, 0.55));
         const _acik = _parlaklikHex(d.zem) > 0.30;
         /* ── ORTADAKI OLUK CIZGILERI VE CEKIRDEK ──────────────────
            Kullanicinin sozu: "o ORBITAPE yazisindan etkilensin, ana

@@ -42,7 +42,7 @@ licence and its artist on screen.
 
 WHAT IS INSIDE
 
-· Live radio, grouped into nine genres you choose by turning the rings
+· Live radio, grouped into ten genres you choose by turning the rings
 · An archive of public-domain and Creative Commons recordings
 · Effects you play with your finger, not with sliders
 · Record the screen with its sound, and keep it on your device
@@ -196,3 +196,49 @@ içinde artık var olmayan raf adları (SOUNDS, AMBIANCE, HUMAN)
 duruyordu. Betikle çekilmesinin asıl sebebi bu.
 
 Uygulama simgesi olarak `icon-512.png` kullanılacak (512 × 512, hazır).
+
+---
+
+## PLAY'E GIDECEK VARLIKLAR (8 Eylul 2026)
+
+Konsola yuklenecek dosyalarin TAMAMI `magaza/` altinda ve hepsi
+betikten cikiyor -- elle cizilen hicbir sey yok.
+
+| Ne | Nerede | Olcu |
+|---|---|---|
+| Uygulama simgesi | `magaza/play-icon-512.png` | 512x512, **32 bit (alfa kanalli)** |
+| One cikan gorsel | `magaza/one-cikan-1024x500.png` | 1024x500 |
+| Telefon (8 adet) | `magaza/play/play-1..8-*.png` | 1080x1920 |
+| 7" tablet (8 adet) | `magaza/play-tablet7/` | 1200x1920 |
+| 10" tablet (8 adet) | `magaza/play-tablet10/` | 1600x2560 |
+
+**Neden ayri bir klasor:** `magaza/galeri/` 12 kare tutuyor ama Play
+telefon basina en fazla 8 aliyor. Secim konsolda degil BETIKTE
+yapiliyor (`araclar/galeri.js` -> `MAGAZA_SIRA`), yani yanlis kare
+yuklenmesi diye bir sey yok.
+
+**Sekiz kare bir hikaye anlatiyor**, sekiz ayni carkin farkli rengi
+degil:
+
+1. Alet (RADIOTAPE) · 2. Bir tur (JAZZ) · 3. Deri galerisi ·
+4. Uygulanmis deri (FIELDS) · 5. FREQUENCY · 6. FX ·
+7. Arsiv tarafi · 8. Nasil calisiyor
+
+**Yeniden uretmek:**
+
+```
+python3 -m http.server 8765 &                      # depo kokunden
+GALERI_MAGAZA=1 node araclar/galeri.js             # telefon
+GALERI_MAGAZA=1 GALERI_OLCU=tablet7  node araclar/galeri.js
+GALERI_MAGAZA=1 GALERI_OLCU=tablet10 node araclar/galeri.js
+node araclar/galeri.js                             # 12'lik galeri (radyo)
+GALERI_HEPSI=1 node araclar/galeri.js              # arsiv/FX dahil hepsi
+```
+
+**Simge neden ayri dosya:** `icon-512.png` uygulamanin kendi PWA
+simgesi ve RGB (24 bit). Play konsolu 32 bit istiyor. Uygulamanin
+simgesine dokunmak yerine magaza icin alfa kanalli bir kopya
+uretildi; gorunum birebir ayni.
+
+**ESKI SET:** `magaza/ekran-1..3-1080x1920.png` 28 Agustos'tan kalma
+ve bugunku arayuzu GOSTERMIYOR. Konsola yuklenmeyecek.
