@@ -46,9 +46,10 @@
   /* Metanin CSS karsiligi: meta bir sebeple dusserse (uzanti,
      okuyucu kipi) kural burada da duruyor. */
   :root{color-scheme:dark;}
-  /* 8 Eylul: 34 -> 18. Ana ekran cubugu payi gerekenden fazlaydi ve
-     konsolu yukarida tutuyordu ("ogeler mecburen yukarda"). */
-  :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 18px);}
+  /* 8 Eylul: 34 -> 18 -> 8. Kullanicinin sozu: "en alta dayanmamis
+     yazilar." Bu pay ana ekran cubugu icin; 8px'de konsol ekranin
+     dibine dayaniyor ama cubugun kendi seridine binmiyor. */
+  :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 8px);}
   :root{--bg:#020203;--sut:15px;
     /* --kx: EKRANIN KENAR PAYI. Dort kose de bu tek sayiyi kullaniyor.
        Onceden her kose kendi sayisini tasiyordu (sol 16, sag 18, ust
@@ -791,7 +792,10 @@
      satırın kendi yüksekliğinden geliyor -> yazı uzasa da (SAVE/DELETE,
      00:12) hap büyümüyor, iki köşe hizada kalıyor. */
   #rec,#cam{display:none;align-items:center;gap:6px;height:32px;box-sizing:border-box;
-    padding:0 11px 0 9px;border-radius:999px;
+    /* 8 Eylul: 11/9 -> 8/7. Kullanicinin sozu: "CAM yaziyor,
+       cercevesinde bosluk var." PHOTO'nun genisligini min-width
+       tutuyor, yani satirin olcusu degismiyor; daralan yalniz CAM. */
+    padding:0 8px 0 7px;border-radius:999px;
     /* backdrop-filter kaldırıldı: siyah zemin üzerinde neredeyse
        görünmüyor ama derleyiciye kalıcı bir katman + her değişimde arka
        plan enstantanesi maliyeti çıkarıyordu. Zemini biraz koyulaştırmak
@@ -812,7 +816,7 @@
      ve cihaz takimi alti modelde binme olcuyor (320x460'ta 70px).
      CAM 67 -> 50: uc harf icin gereginden genisti; DELETE gelince
      kutu kendisi buyuyor, min-width taban. PHOTO (73) duruyor. */
-  #rec{min-width:73px;} #cam{min-width:50px;}
+  #rec{min-width:73px;} #cam{min-width:44px;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
   /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
@@ -2198,6 +2202,33 @@
      kaydirilmis koyu renkte, bir kez ASAGI kaydirilmis acik renkte.
      Ust uste binince yuzeyde ince bir kanal olusuyor. Kaydirma
      yalnizca DIKEY (%0,5); yatay bilesen sifir. */
+  /* ── UZAY: STARS COSMIC'TE EKRAN BOSLUGA ACILIYOR ─────────────
+     Kullanicinin sozu: "yildizlari ayarliyorum, tam o anda yavas
+     yavas arkasi uzay olsa, disk ve skins yok olsa guzel olur."
+     STARS en ust kademeye (COSMIC) alininca govdeye 'uzay' sinifi
+     giriyor ve UC sey ayni anda, alti saniyede sonuyor:
+       · derinin zemini    -> derin uzay
+       · derinin dokusu / cizimi (::after)
+       · diskin govdesi ve golgeleri
+     Kalanlar halkalar ve yildizlar: ekranda yalnizca onlar duruyor.
+     Kademe geri indirilince ayni sure icinde deri geri geliyor --
+     kesme yok, ikisi de gecis.
+     NEDEN CSS: yildizlar zaten tuvalde ciziliyor ve dokunulmuyor;
+     burada yapilan is yalnizca ustlerindeki katmanlari cekmek. Tek
+     bir sinif, uc kural, hicbir cizim maliyeti yok. */
+  body.uzay{ --uzay-sure:6s; }
+  body.deri.uzay{
+    background:radial-gradient(circle at 50% 42%, #0b1a24 0%, #060c14 46%, #03040a 100%) !important;
+    transition:background var(--uzay-sure) ease;}
+  body.deri.uzay::after{opacity:0 !important;transition:opacity var(--uzay-sure) ease;}
+  body.deri.uzay .disk{background:transparent !important;box-shadow:none !important;
+    transition:background var(--uzay-sure) ease, box-shadow var(--uzay-sure) ease;}
+  body.deri.uzay .disk::after{opacity:0 !important;transition:opacity var(--uzay-sure) ease;}
+  /* Geri donuste de gecis: sinif KALKARKEN kural artik gecerli
+     degil, o yuzden ayni sureler asil kurallarda da duruyor. */
+  body.deri{transition:background var(--uzay-sure, .001s) ease;}
+  body.deri .disk{transition:background var(--uzay-sure, .001s) ease,
+                             box-shadow var(--uzay-sure, .001s) ease;}
   body.deri .disk{border-radius:50%;background:var(--d-zem) !important;
     /* TEK GOLGE, ISIK HALESI YOK: dergide bir nesnenin cevresinde
        isik halkasi olmaz, altinda tek yonlu yumusak bir golge olur. */
@@ -5914,7 +5945,14 @@
       _cubukZaman.push(setTimeout(yaz, 420));
     }catch(e){ _yut(e); }
   }
+  /* STARS COSMIC ise ekran uzaya aciliyor (bkz. body.uzay kurallari).
+     Hem ayarlardan kademe degisince hem de deri degisince cagriliyor:
+     yeni bir deri secildiginde sinif govdede kalmali. */
+  function uzayUygula(){
+    try{ document.body.classList.toggle('uzay', (AYAR.yildiz|0) === 4); }catch(e){ _yut(e); }
+  }
   function deriUygula(){
+    try{ uzayUygula(); }catch(e){ _yut(e); }
     try{
       const k = document.documentElement.style;
       const n = AYAR.deri|0;
@@ -16587,6 +16625,7 @@
            satirin kendisi deger gosteriyor: tek dokunus, tek satir. */
         AYAR.yildiz = ((AYAR.yildiz|0) + 1) % YILDIZ_KADEME.length;
         ayarKaydet(); yildizYaz();
+        try{ uzayUygula(); }catch(e){ _yut(e); }
         return;
       }
       if(k === 'deri'){
