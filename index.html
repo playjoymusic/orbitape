@@ -180,15 +180,9 @@
      kucuk ve min() onu seciyor (390x844'te tavan 454px, secilen
      288px). Yalnizca yerin gercekten dar oldugu yerde devreye
      giriyor. */
-  /* ── 8 EYLUL: HALKA ASAGI VE BUYUK ────────────────────────────
-     Kullanicinin sozu: "surekli halkayi yukari cikariyorsun."
-     Olculdu (360x640): disk 159..425, alt konsol 554'te basliyor --
-     aralarinda 129px bos alan, yani halka ekranin ust yarisinda
-     duruyordu. Iki sabit degisti:
-       --alet-kay 40 -> 8   : alet iki rezervin ortasina daha yakin,
-                              yukari kayma neredeyse yok.
-       .disk 74vw -> 84vw   : bos kalan alan halkaya gidiyor.
-     Yeni olcu: 142..478, konsola 76px kaliyor. */
+  /* 8 Eylul: HALKA ORTALANDI. Olculdu (360x640): disk 159..425,
+     konsol 554'te -- 129px bos alan, halka ust yaridaydi.
+     --alet-kay 40->0, .disk 74vw->78vw. Yeni merkez 320/320. */
   :root{ --ust-rez:56px; --alt-rez:max(190px, 25vh); --alet-kay:0px;
     /* ust satirin alti (33px) + 7px hava */
     --tepe-pay:40px; }
@@ -282,6 +276,16 @@
      -8, 320x460 -22, 280x545 -11). Ortalama istegi bu daldan
      karsilanmiyor -- normal telefonlarda (kunye tek satir) alet
      zaten tam ortada, bkz. --alet-kay:0. */
+  /* ── YIGIN DALI: KAYMA GERI KONDU ────────────────────────────
+     Kullanicinin istegi "halka ekranin tam ortasinda olsun" ve
+     NORMAL telefonlarda oyle (--alet-kay:0). Ama kunye yigildiginda
+     -- dar ekran, uc satirlik istasyon adi -- ortalamak matematiksel
+     olarak mumkun degil: 320x568'de alt blok 268px yer istiyor,
+     ortalanmis bir diskin sigmasi icin capinin 32px olmasi gerekirdi.
+     0 denendi: cihaz takimi alti modelde binme olctu (320x460'ta
+     70px). 96 denendi: 8-22px. 220 temiz.
+     Yani bu dalda secim "ortali ama yazinin ustunde" ile "biraz
+     yukarida ama okunur" arasinda; ikincisi dogru. */
   body.kunye-yigin{ --alt-rez:max(268px, 40vh); --alet-kay:220px; }
   @media (max-height:480px){
     /* Serit yatayda sola yanasiyor: aletin ustunde degil. */
@@ -825,6 +829,11 @@
      en genis yaziya kuruldu; nokta ve yazi soldan basliyor, yani
      yazi kisalinca komsu tuslar da yerinde kaliyor. Istenen
      "sabit" tam olarak bu. */
+  /* 62/56 DENENDI VE GERI ALINDI (8 Eylul): satir daralinca sag
+     alttaki kunye genisliyor, iki satira sigiyor ve kunye-yigin
+     dali DEVREYE GIRMIYOR -- cihaz takimi alti modelde kunyenin
+     alete bindigini olctu (320x460'ta 70px). Bu iki deger satirin
+     genisligini sabit tutuyor; oradaki bos alan bilerek var. */
   #rec{min-width:73px;} #cam{min-width:67px;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
@@ -3409,10 +3418,11 @@
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:0.5625rem;letter-spacing:.14em;}
+    #rec{min-width:63px;} #cam{min-width:57px;}
     /* Sabit genislikler de bu olcude yeniden kuruluyor: dar ekranda
        en genis yazi 63 (PHOTO/CHECK/00:00) ve 57 (DELETE). Ustteki
        73/67 burada 10px fazla yer yerdi. */
-    #rec{min-width:63px;} #cam{min-width:57px;}
+
   }
 
   /* ── MEZAR TASI: 28px'LIK TASIMA TUSLARI ─────────────────────
@@ -3535,7 +3545,7 @@
      uygulamasi sayfayi saatin altina baslatip boyunu "ekran - durum
      cubugu" veriyor; sayfa dipten 47px once bitiyordu (olculdu, 2 Eylul).
      'default'ta cubuk theme-color ile boyaniyor, sayfa tabana iniyor. -->
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ORBITAPE">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=6">
@@ -5638,7 +5648,19 @@
          Hale: cizimli/desenli derilerde zeminin KENDISI degisken
          (fotograf gibi); tek bir kontrast hesabi orada yetmez. Ters
          tonda cok hafif bir golge simgeyi her zeminden ayiriyor. */
-      const _tersHale = acik ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.70)';
+      /* ── 8 EYLUL: DUZ DERIDE HALE YOK ────────────────────────
+         Kullanicinin sozu: "sol ustte firca, saat vs altinda garip
+         bir doku var, parlama bir sey; grafiksel olarak amatorluk."
+         Hale iki drop-shadow olarak simgenin cevresine ters tonda
+         bir isik koyuyor. Cizimli/desenli deride gerekli -- orada
+         zemin fotograf gibi, tek bir kontrast hesabi yetmiyor. Duz
+         tek ton deride ise zemin belli ve simgenin rengi zaten
+         4.5:1'e cozuluyor (--d-simge). Halenin orada tek yaptigi
+         sey simgenin arkasinda beyaz bir leke birakmak.
+         Duz deride hale saydam; cizimli deride eskisi gibi. */
+      const _duzHale = !d.cizim;
+      const _tersHale = _duzHale ? 'transparent'
+                      : (acik ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.70)');
       k.setProperty('--d-simge',
         okunurVurgu(_hexDizi(d.marka), d.zem, 4.5) || (acik ? 'rgb(0,0,0)' : 'rgb(255,255,255)'));
       k.setProperty('--d-cizgi',
@@ -6046,7 +6068,19 @@
            Ust taraftaki durum cubugu da ayni sebeple ayrisiyordu:
            onu theme-color boyuyor. Ikisi de deriden besleniyor. */
         try{
+          /* Alttaki serit ve guvenli alan: html'in zemini deriden. */
           document.documentElement.style.backgroundColor = d.zem;
+          /* ── UST SERIT: DERININ RENGI ────────────────────────
+             Kullanicinin sozu: "serit hangi skins seciliyse o
+             olmali." theme-color yazmak yetmiyordu -- iOS ana
+             ekrandan acilan uygulamada durum cubugunu kendi sectigi
+             anda ornekliyor ve sonra dokunmuyor; onceki derinin
+             rengi yukarida asili kaliyordu. Cozum meta degil KIP:
+             apple-mobile-web-app-status-bar-style artik
+             'black-translucent' (bkz. head). Sayfa cubugun ALTINA
+             kadar uzaniyor, o serit artik SISTEMIN degil BIZIM
+             zeminimiz -- deriyle birlikte, ayni karede degisiyor.
+             Bedeli: sistem yazisi (saat, pil) her zaman beyaz. */
           durumCubuguYaz(d.zem);
         }catch(e){ _yut(e); }
         k.setProperty('--d-filtre', _acik ? 'invert(1) saturate(.6) contrast(1.35)' : 'none');
@@ -12709,19 +12743,10 @@
     }catch(e){ return false; }
   }
   let radyoDolduruluyor=false;
-  /* ── KUYRUK NESLI (8 Eylul) ───────────────────────────────────
-     Kullanicinin sozu: "ilk app'i actik, sag ustteki isme bastim,
-     listeden ORCHESTRAL sectim -- daha ilk tiklama. Carkta
-     ORCHESTRAL yazdi ama RADIOTAPE icerigunden caldi."
-     Sebep bir yaris: acilista kuyruk dolmaya baslamis oluyor ve o
-     doldurma ISTEK YOLDAYKEN raf degistiriliyor. aileSec kuyrugu
-     bosaltiyor ama yoldaki istek bundan habersiz; donunce ESKI
-     rafin istasyonlarini yeni bos kuyruga yaziyor. Cark dogru rafi
-     gosteriyor, calan ses eski raftan geliyor.
-     Nesil sayaci: raf her degistiginde artiyor. Yoldaki doldurma
-     dondugunde nesil degistiyse sonucunu ATIYOR. Iptal edilebilir
-     bir istek olmadigi icin dogru cozum bu -- gelen veri sessizce
-     dusuruluyor, cagri zaten yeni nesil icin bir kez daha yapiliyor. */
+  /* KUYRUK NESLI (8 Eylul). Acilistaki doldurma YOLDAYKEN raf
+     degisiyordu; donunce eski rafin istasyonlarini yeni bos kuyruga
+     yaziyordu (cark ORCHESTRAL, ses RADIOTAPE). Raf degisince nesil
+     artiyor, yoldaki sonuc dusuruluyor. */
   let _kuyrukNesil = 0;
   /* ── CORS ELEMESİ — "yayın başladı sonra kesildi" sorununun kökü ──
      Ses grafiğe bağlandığı anda, CORS başlığı göndermeyen bir yayın SUSUYOR.
@@ -18492,19 +18517,11 @@
     });
   }catch(e){ _yut(e); }
 
-  /* ── PHOTO / CAM / ★ ILK KAREDE ───────────────────────────────────
-     Kullanicinin sozu (8 Eylul): "cam photo hala gec geliyor, ORBITAPE
-     modunda da rec cam gec geliyor."
-     Sebep tek satirdi: bu uc tus CSS'te display:none bekliyordu ve
-     gorunur olmalari kayit.js'e bagliydi -- o da acilisyan DORT SANIYE
-     sonra iniyor (yukaridaki kayitYukle nobeti). Yani satir once iki
-     ogeyle ciziliyor, sonra ucu birden iceri giriyordu.
-     Uc tus da HTML'de zaten duruyor; beklemenin sebebi "olu tus
-     olmasin"di. Cozum tusu gizlemek degil, MODULU CAGIRMAK: tuslar
-     ilk karede gorunuyor ve birine dokunuldugu an modul hemen
-     yukleniyor (asagidaki dinleyici). Yazi da bastan dogru -- radyoda
-     PHOTO, SOUND BANKS'te REC; yoksa REC yazip sonra PHOTO'ya
-     donerdi, ayni sicramanin kucugu. */
+  /* PHOTO / CAM / ★ ILK KAREDE (8 Eylul). Uc tus display:none ile
+     kayit.js'i bekliyordu; o da acilistan 4 sn sonra iniyor, yani
+     satir sonradan doluyordu. Tuslar artik ilk karede gorunuyor,
+     yazi bastan dogru (radyoda PHOTO), dokunusta modul hemen geliyor,
+     modul inmezse geri cekiliyorlar (bkz. onerror). */
   try{
     const _r = document.getElementById('rec'), _c = document.getElementById('cam'),
           _f = document.getElementById('favAc'), _ry = document.getElementById('recYazi');
