@@ -49,7 +49,7 @@
   /* 8 Eylul: 34 -> 18 -> 8. Kullanicinin sozu: "en alta dayanmamis
      yazilar." Bu pay ana ekran cubugu icin; 8px'de konsol ekranin
      dibine dayaniyor ama cubugun kendi seridine binmiyor. */
-  :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 8px);}
+  :root{--dip-pay:min(env(safe-area-inset-bottom, 0px), 4px);}
   :root{--bg:#020203;--sut:15px;
     /* --kx: EKRANIN KENAR PAYI. Dort kose de bu tek sayiyi kullaniyor.
        Onceden her kose kendi sayisini tasiyordu (sol 16, sag 18, ust
@@ -701,13 +701,15 @@
      esitlendigi icin uc satir ayni sag kenarda bitiyor. */
   /* TASIMA SATIRI: elin en cok gittigi yer. Yukseklik 32px --
      asagidaki kayit satiri ve sag alttaki ★ ile birebir ayni. */
-  #tasima{display:flex;align-items:center;gap:7px;}
+  /* 8 Eylul: 7 -> 6. Cerceveler kalkinca aradaki bosluk daha genis
+     okunuyordu; 4 denendi ama dokunma alanlari birbirine girdi. */
+  #tasima{display:flex;align-items:center;gap:6px;}
   /* ── SOL UST SATIR: REC · CAM · ★ ─────────────────────────────────
      Eskiden sol ALTTAYDI; arama en alta indigi icin oraya sigmiyordu.
      Simdi tasima satirinin altinda. Kutu artik konumlandirilmiyor
      (position:fixed kalkti), yerini ust bloktan aliyor.
      Boşluk 7px: tasima satiriyla ayni. */
-  #araclar{display:flex;align-items:center;gap:7px;}
+  #araclar{display:flex;align-items:center;gap:6px;}
   /* SATIRLAR PANELIN IKI KENARINA DA DEGIYOR. Eski tirtik panel
      gelince gorunur oldu (alt satir 206, ust satir 154 -> sag ust
      kosede 52px bosluk). "Satirlari germe" hatasi tekrarlanmiyor:
@@ -810,12 +812,9 @@
      yatay 2px). 3px olculdu: 35, esigin altinda. 4px: 37. */
   #rec,#cam{position:relative;}
   /* HAPLARIN GENISLIGI SABIT: yazilar degisiyor (REC -> 00:12 ->
-     PHOTO, CAM -> DELETE) ve her degisim kutuyu yeniden olcuyordu.
-     8 Eylul: 62/56 denendi ve GERI ALINDI -- satir daralinca kunye
-     genisliyor, iki satira sigiyor, kunye-yigin dali devreye girmiyor
-     ve cihaz takimi alti modelde binme olcuyor (320x460'ta 70px).
-     CAM 67 -> 50: uc harf icin gereginden genisti; DELETE gelince
-     kutu kendisi buyuyor, min-width taban. PHOTO (73) duruyor. */
+     PHOTO, CAM -> DELETE). 62/56 denendi, GERI ALINDI: satir daralinca
+     kunye genisliyor, yigin dali devreye girmiyor, cihaz takimi alti
+     modelde binme olcuyor. CAM 67 -> 44, PHOTO 73 duruyor. */
   #rec{min-width:73px;} #cam{min-width:44px;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
@@ -910,7 +909,7 @@
      satırıyla aynı çizgide. Bilgi yazıları onların ÜSTÜNDE ve
      yukarı doğru büyüyor: uzun ad sola taşmıyor, satır sayısı
      artıyor. Genişlik ekranın yarısını geçmiyor. */
-  #np{position:fixed;bottom:calc(7px + var(--dip-pay));right:calc(var(--kx) + env(safe-area-inset-right, 0px));z-index:75;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+  #np{position:fixed;bottom:calc(2px + var(--dip-pay));right:calc(var(--kx) + env(safe-area-inset-right, 0px));z-index:75;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
     /* GENISLEDI: 44vw -> 72vw. Sol alt kose bosaldi (REC · CAM · ★
        sol uste tasindi), yani karsida carpilacak bir sey kalmadi.
        Genislik lazim cunku kunye artik KIRPILMIYOR: eserin adi,
@@ -2202,20 +2201,11 @@
      kaydirilmis koyu renkte, bir kez ASAGI kaydirilmis acik renkte.
      Ust uste binince yuzeyde ince bir kanal olusuyor. Kaydirma
      yalnizca DIKEY (%0,5); yatay bilesen sifir. */
-  /* ── UZAY: STARS COSMIC'TE EKRAN BOSLUGA ACILIYOR ─────────────
-     Kullanicinin sozu: "yildizlari ayarliyorum, tam o anda yavas
-     yavas arkasi uzay olsa, disk ve skins yok olsa guzel olur."
-     STARS en ust kademeye (COSMIC) alininca govdeye 'uzay' sinifi
-     giriyor ve UC sey ayni anda, alti saniyede sonuyor:
-       · derinin zemini    -> derin uzay
-       · derinin dokusu / cizimi (::after)
-       · diskin govdesi ve golgeleri
-     Kalanlar halkalar ve yildizlar: ekranda yalnizca onlar duruyor.
-     Kademe geri indirilince ayni sure icinde deri geri geliyor --
-     kesme yok, ikisi de gecis.
-     NEDEN CSS: yildizlar zaten tuvalde ciziliyor ve dokunulmuyor;
-     burada yapilan is yalnizca ustlerindeki katmanlari cekmek. Tek
-     bir sinif, uc kural, hicbir cizim maliyeti yok. */
+  /* UZAY: STARS COSMIC'te ekran alti saniyede uzaya aciliyor --
+     derinin zemini, dokusu ve diskin govdesi soniyor, geriye halkalar
+     ve yildizlar kaliyor. Kademe inince deri ayni surede geri gelir.
+     Yildizlar zaten tuvalde; burada yalnizca ustlerindeki katmanlar
+     cekiliyor. */
   body.uzay{ --uzay-sure:6s; }
   body.deri.uzay{
     background:radial-gradient(circle at 50% 42%, #0b1a24 0%, #060c14 46%, #03040a 100%) !important;
@@ -3334,9 +3324,10 @@
      REC de var ve en cok basilan sey dibe geliyor. */
   #solUst{
     top:auto;
-    bottom:calc(7px + var(--dip-pay));
+    bottom:calc(2px + var(--dip-pay));
   }
   /* Satir aralari tek yerden: --modul-bosluk. */
+  /* 8 Eylul: 8 -> 6. Iki satir tek blok gibi dursun. */
   #solUst{--modul-bosluk:8px;gap:var(--modul-bosluk);}
   /* ── SATIRLAR GERILMIYOR, KENDI OLCULERINDE ──────────────────────
      BURADA BIR KURAL GERI ALINDI. Once tasima satiri --ses-en
@@ -3374,7 +3365,7 @@
      Buradaki deger yalnizca JS yetismeden onceki ilk karenin
      yedegi. */
   body.mood #solUst{
-    bottom:calc(7px + var(--dip-pay));
+    bottom:calc(2px + var(--dip-pay));
   }
   body.mood #tasima  {order:2;}
   body.mood #araclar {order:3;}
@@ -3511,6 +3502,14 @@
      kendi ::after'i icin kapsayici blok, ekleme gerekmiyor. */
   #geri,#dur,#duraklat,#ileri,#mute,#favAc,#cam,#araCizgi{
     position:relative;}
+  /* ANA ARAYUZDE CERCEVE YOK (8 Eylul): "rec cam vs cerceveleri
+     iptal et, havada olsunlar." Duz derilerde zaten boyleydi. Dokunma
+     alani degismiyor -- o ::after ile veriliyor. */
+  body:not(.deri) #geri,body:not(.deri) #dur,body:not(.deri) #duraklat,
+  body:not(.deri) #ileri,body:not(.deri) #rec,body:not(.deri) #cam,
+  body:not(.deri) #mute,body:not(.deri) #favAc,body:not(.deri) #fav,
+  body:not(.deri) #araCizgi,body:not(.deri) #ara .cizgi{
+    background:transparent;border-color:transparent;box-shadow:none;}
   /* 44 PIKSEL: Apple'in kendi esigi. Once 40'ti ve genislik yalnizca
      "kutu + 14" idi; dar tuslarda (ileri/geri 38x32, tutamak 25x22)
      alan hala esigin altinda kaliyordu. Cihaz takimi bunu her ekran
@@ -3519,11 +3518,22 @@
   #geri::after,#dur::after,#duraklat::after,#ileri::after,
   #mute::after,#favAc::after,#cam::after,#ayarTut::after,#araCizgi::after,
   #deriFirca::after,#saatTus::after,#gorselTus::after{
+    /* 8 Eylul: 14px/40px -> 6px/38px. Satir araligi 7 -> 6'ya inince
+       komsu tuslarin dokunma katmanlari birbirine giriyordu ve
+       elementFromPoint yanlis tusu donduruyordu -- olculen erisim
+       37x33'e dustu. Genisleme artik araliktan buyuk degil: alanlar
+       degiyor ama binmiyor. */
     content:'';position:absolute;left:50%;top:50%;
-    width:calc(100% + 14px);height:40px;
+    width:calc(100% + 10px);height:40px;
     transform:translate(-50%,-50%);
     /* Gorunmez: rengi yok, cizgisi yok. Sadece dokunulacak yer. */
     background:transparent;pointer-events:auto;}
+  /* BUYUTEC DAHA GENIS: kendi kutusu 26px ve satirin SONUNDA duruyor.
+     Aralar 7 -> 6'ya inince olculen erisim 33'e dustu (esik 36).
+     Kendi katmani 18px genisliyor; satirda en son o ciziliyor, yani
+     komsusuyla ortusen serit ona gidiyor. 18 denendi: o zaman
+     #ileri 35'e dustu. 14'te ikisi de esigin uzerinde. */
+  #araCizgi::after{width:calc(100% + 14px);}
   /* SOL UST YIGIN 44x44. Konsol tuslari yan yana ve aralari dar --
      orada 44 istemek komsu alanlarin ust uste binmesi demek, yani
      gordugun tusa basip baska tusun calismasi (saglik: "Dokunma
@@ -15161,7 +15171,11 @@
          iki serit gibi duruyordu. Artik ayni yatay eksendeler.
          ucgen: dipten 5px, 30px yuksek -> ortasi dipten 20px
          arama : 26px yuksek -> dipten 7px olmali ki ortasi da 20 olsun */
-      const alt = 7 + gd;
+      /* 8 Eylul: 7 -> 2. Konsolun tabani da 2px'e indi (bkz.
+         #solUst bottom); kunye onunla ayni hatta durmali, yoksa
+         saglik olcusu "kunye tabani kayit satiriyla hizali" 5px
+         fark goruyor. */
+      const alt = 2 + gd;
       const sol = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16);
       const hat = window.innerHeight - alt;      // arama ve sag alt blok bu hatta biter
 
@@ -15450,7 +15464,10 @@
       try{
         const npE = document.getElementById('np');
         if(npE){
-          npE.style.bottom = _dip(Math.max(6, alt));
+          /* Taban 6'ya YUVARLANMIYOR: konsol 2px'e indi ve kunye
+             onunla ayni hatta durmali (olcu: "kunye tabani kayit
+             satiriyla hizali"). Alt sinir 2. */
+          npE.style.bottom = _dip(Math.max(2, alt));
           /* SOLDA NE VARSA ONA GORE. Radyoda alt sol koseyi ayar
              tutamagi ve buyutec paylasiyor; SOUND BANKS kipinde
              arama yok, orada modulun kendisi duruyor ve cok daha
@@ -16247,20 +16264,11 @@
     el.classList.toggle('gor', !!ad);
   }
   function modAdiGoster(){ onizlemeAyarla(''); modAdiYaz(); modGezYaz(''); }   // seçim: küçük etiket yazar, büyük gider
-  /* ── BUYUK YAZI ICIN BEKCI ────────────────────────────────────
-     Kullanicinin sozu: "ekrana hizli hizli parmagimi surttum, fazla
-     sacmaladim ve boyle dondu" -- ekranda kocaman bir raf adi
-     (AFROBEATS) asili kaldi ve gitmedi.
-     Sebep: bu yazi parmak halkalarda gezerken gorunur, parmak
-     kalkinca (modAdiBirak) gider. Hizli ve dagitik bir jestte o
-     "parmak kalkti" olayi gelmeyebiliyor: pointercancel, ekranin
-     disinda biten surukleme, kesilen dokunus. Olay gelmeyince yazi
-     ekranda kaliyor.
-     Bekci: yazi her gorundugunde bir sayac kuruluyor. Parmak gezmeye
-     devam ettikce sayac sifirlaniyor; iki saniye hicbir sey gelmezse
-     yazi kendiliginde gidiyor. Jestin dogru bittigi durumda bu sayac
-     zaten iptal ediliyor -- yani normal akista hicbir sey degismiyor,
-     yalnizca kayip bir olayin bedeli kalkiyor. */
+  /* BUYUK YAZI ICIN BEKCI: hizli/dagitik jestte "parmak kalkti"
+     olayi gelmeyebiliyor (pointercancel, ekran disinda biten
+     surukleme) ve kocaman raf adi ekranda asili kaliyordu. Iki
+     saniye sessizlikte ve parmak ekranda degilse kendiliginden
+     gidiyor. */
   var _gezBekci = null;
   function _gezBekciKur(){
     try{
