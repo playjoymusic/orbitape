@@ -9372,8 +9372,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'son kademeden sonra basa');
   {
     const kaynak = fs.readFileSync('index.html','utf8');
+    /* Taban artik bir degiskende (_zTaban): acik deride zerre
+       golge gibi cizilirken taban ve ton birlikte degisiyor
+       (bkz. "ACIK ZEMINDE ZERRE GOLGE GIBI"). Olcumun derdi taban
+       degil, PARLAKLIK AYARININ carpima girmesi -- kalip da onu
+       soruyor. */
     K('Parlaklik cizime gercekten giriyor',
-       /\(0\.30\+0\.45\*energy\) \* yildizIsik\(\)/.test(kaynak),
+       /\(_zTaban\+0\.45\*energy\) \* yildizIsik\(\)/.test(kaynak)
+       && /let _zTaban = 0\.30/.test(kaynak),
        'zerre opakligi carpiliyor');
     K('Parlaklik cihazda kaliyor',
        /_a\.yildizIsik === 'number'[\s\S]{0,140}AYAR\.yildizIsik = _a\.yildizIsik/.test(kaynak),

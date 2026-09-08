@@ -162,9 +162,39 @@
      etkisi YARISI kadar (alet iki rezervin ortasinda duruyor), o
      yuzden iki adimda 216'ya cikildi. Bant en uzun gercek kunyeyi
      tasiyacak kadar genis olmali. */
-  :root{ --ust-rez:56px; --alt-rez:max(190px, 25vh); --alet-kay:40px; }
+  /* ── BANT DISKI DEGIL ALETIN TAMAMINI TUTMALI ─────────────────
+     Kullanicinin ekran goruntusu: 320 piksellik telefonda ust
+     satirdaki raf adi ile carkin kendi raf adi UST USTE biniyordu
+     ("RADIOTAAADIOTAPEORBITAPE" gibi okunuyordu).
+     Sebep olculdu: rezerv bantlari DISKI sinirliyordu, ama cark
+     diskin disina ciziyor -- ad cemberi yaricapin 1.28 kati (cark.js
+     AD_ORAN), yazinin kendi yuksekligiyle ~1.34. Yani alet, diskin
+     %17'si kadar YUKARI tasiyor ve bant onu hic hesaba katmiyordu.
+     320x568'de olculdu: disk tepesi 60, ad cemberinin tepesi 27 --
+     ust satirin alti ise 33. Alt rezerv orada 268px (kunye yigin
+     kipi), yani yer gercekten dar; disk 236 yerine ~206 olmali.
+     --alet-tavan bunu tek satirda soyluyor. Turetimi:
+       alet tepesi = ust-rez + (bant - d)/2 - 0.17d >= tepe-pay
+       => d <= (ust-rez + 100dvh - alt-rez - 2*tepe-pay) / 1.34
+     Genis ekranda hicbir sey degismiyor: orada 74vw zaten daha
+     kucuk ve min() onu seciyor (390x844'te tavan 454px, secilen
+     288px). Yalnizca yerin gercekten dar oldugu yerde devreye
+     giriyor. */
+  :root{ --ust-rez:56px; --alt-rez:max(190px, 25vh); --alet-kay:40px;
+    /* ust satirin alti (33px) + 7px hava */
+    --tepe-pay:40px; }
+  /* ── TAVAN :root'ta DEGIL .disk'te TANIMLI ────────────────────
+     Ilk yazilisinda :root'taydi ve HIC ISLEMEDI: ozel ozellikler
+     tanimlandiklari elemanda cozuluyor, yani :root'taki formul
+     :root'un --alt-rez'ini (190px) goruyor. Oysa dar telefonda
+     degeri buyuten kural body'de (body.kunye-yigin -> 268px).
+     Olculdu: tavan 264px cikiyordu ve 237'lik diski hic
+     sinirlamiyordu. Tanim .disk'e alininca --alt-rez body'den
+     miras geliyor ve dogru deger cozuluyor. */
   .disk{position:relative;
-    width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)));
+    --alet-tavan:calc((var(--ust-rez) + 100dvh - var(--alt-rez)
+                       - 2 * var(--tepe-pay)) / 1.34);
+    width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));
     aspect-ratio:1;z-index:10;}
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
@@ -192,7 +222,7 @@
      kismi ve kucuk olmus halkasi da." Once cubuklar cok uzaga
      gittigi icin halka kuculuyordu; artik menzil daraldi (cark.js:
      MENZIL 0.28) ve halka oteki kiplerle ayni boyda. */
-  body.merkez-faz .disk{width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)));}
+  body.merkez-faz .disk{width:min(74vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));}
   body.merkez-faz.serit-acik .disk{width:min(68vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.70));}
   /* KISA EKRAN: alet ekranin ORTASINDA duruyor, yani yer acmak icin
      yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
@@ -3376,7 +3406,7 @@
      devreye girmiyor, yani telefon davranisi bire bir ayni kaliyor. */
   @media (min-width:700px){
     :root{ --kol:560px; --yan:calc((100vw - var(--kol)) / 2); }
-    .disk{ width:min(74vw, 440px, calc(100dvh - var(--ust-rez) - var(--alt-rez))); }
+    .disk{ width:min(74vw, 440px, calc(100dvh - var(--ust-rez) - var(--alt-rez)), var(--alet-tavan)); }
     #ust        { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #np         { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
     #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
@@ -3783,7 +3813,7 @@
          kullanicinin menude bulamamasinin sebebi tam olarak buydu.
          CAR MODE: ses Web Audio zincirine HIC girmiyor, dogrudan
          cikisa gidiyor (CarPlay/Bluetooth takilmalari icin).
-         Bedeli acik yaziyor: o kipte FX, REC ve ses tayfi (PHASE)
+         Bedeli acik yaziyor: o kipte FX, REC ve ses tayfi (FREQUENCY)
          calismaz -- ucu de zincire bagli. -->
     <h5>PLAYBACK</h5>
     <div class="sat" data-ayar="arac" role="switch" tabindex="-1">
@@ -5637,9 +5667,28 @@
        yuvarlak -> derinin kendi govdesi (RING kapali)
        faz      -> ses tayfi (halkanin disinda cubuklar)
      Sinif govdede: gorunum CSS'te, secim burada. */
+  /* ── CIZIMLI DERIDE HALKA ACILMIYOR ───────────────────────────
+     Kullanicinin sozu: "cok cisimli karisik skinslerde halka
+     acilamasin." Ekranda gorulen sey de bunu soyluyordu: DRIP ya da
+     MONDRIAN gibi bir desenin uzerine ince renkli halkalar
+     binince ikisi de okunmuyor -- halka desende kayboluyor, desen
+     halkanin altinda parcalaniyor.
+     Olcut deri adi degil, derinin KENDISI: cizimli derilerin hepsi
+     (d.cizim dolu olanlar, 44-59) bir RESIM tasiyor. Duz renkli
+     derilerde hicbir sey degismiyor.
+     Zorlama gecici: AYAR.merkez'e dokunulmuyor, yalnizca o an
+     uygulanan sey 'yuvarlak' oluyor. Deri degisince eski tercih
+     kendiliginden geri geliyor. */
+  function cizimliDeriMi(){
+    try{
+      const n = (AYAR.deri|0);
+      return !!(n && DERILER[n-1] && DERILER[n-1].cizim);
+    }catch(e){ return false; }
+  }
+  try{ window.cizimliDeriMi = cizimliDeriMi; }catch(e){ _yut(e); }
   function merkezUygula(){
     try{
-      const m = (AYAR.merkez || 'cark');
+      const m = cizimliDeriMi() ? 'yuvarlak' : (AYAR.merkez || 'cark');
       document.body.classList.toggle('merkez-cark', m === 'cark');
       document.body.classList.toggle('merkez-faz', m === 'faz');
       /* halka/yuvarlak ayrimi RING anahtariyla ayni sey: govde mi
@@ -11532,8 +11581,26 @@
       /* YILDIZ ESIGI 4.2 (bkz. halkaDeriRengi): acik deride orta gri
          degil koyu ton -- kullanicinin istedigi "golge gibi". */
       const zTemel = halkaDeriRengi('236,250,248', undefined, YILDIZ_ESIK);
-      const zRenk='rgba(' + zTemel + ','
-        + Math.min(1, (0.30+0.45*energy) * yildizIsik()).toFixed(3) + ')';
+      /* ── ACIK ZEMINDE ZERRE GOLGE GIBI ────────────────────────
+         Kullanicinin sozu: "yildizlar koyu siyah olmali yogunluga
+         gore ama golgemsi siyah."
+         Kontrast cozucu orta gri veriyordu (MONDRIAN'da 106,113,112)
+         ve krem bir zeminde o gri ne yildiz ne golge -- kirli bir
+         nokta. Istenen sey SIYAH ama sert degil: zeminin uzerine
+         dusmus bir golge.
+         Iki sey birden degisiyor: renk siyaha iniyor (14,14,16) ve
+         opaklik golge gibi davraniyor -- taban dusuk, ses geldikce
+         koyulasiyor. Yogunluk zaten yildizIsik() ile carpiliyor,
+         yani "yogunluga gore" olan da bu.
+         Karanlik dunyada TEK BIR SAYI degismiyor: kural zeminin
+         kendi parlakligindan geliyor, liste tutulmuyor. */
+      let _zTaban = 0.30, _zTon = zTemel;
+      try{
+        const _zem = getComputedStyle(document.body).getPropertyValue('--d-zem').trim();
+        if(_zem && _parlaklikHex(_zem) > 0.55){ _zTon = '14,14,16'; _zTaban = 0.30; }
+      }catch(e){ _yut(e); }
+      const zRenk='rgba(' + _zTon + ','
+        + Math.min(1, (_zTaban+0.45*energy) * yildizIsik()).toFixed(3) + ')';
       vctx.fillStyle=zRenk;                       // renk döngü DIŞINDA: her zerrede yeniden yazmıyoruz
       const _yt = yildizTema();
       /* Yogunluk temadan: bazi temalar seyrek ve derin, bazilari
@@ -16065,14 +16132,46 @@
       let _son = -1;
       const yaz = ()=>{
         try{
-          const k = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+          /* ── YAKINLASTIRMA KLAVYE DEGILDIR ────────────────────────
+             OLCULEN HATA (8 Eylul, kullanicinin ekran goruntusu):
+             masaustunde izleme yuzeyine cift dokunup sayfayi
+             buyutunce buyutec ekranin ust ortasina firliyor ve geri
+             alinca ORADA KALIYOR. Kullanicinin sozu: "2 kere
+             tiklarsin buyur ya, onu yaptim sol usttekiler gitti,
+             geri aldim ama yine yok."
+             Sebep buradaki olcum: gorunum penceresi KUCULDUGU icin
+             klavye acildi saniliyordu. 691x894 pencerede 2.2 kat
+             yakinlastirma vv.height'i 894'ten 406'ya dusuruyor,
+             yani k = 488 > 90 ve body'ye 'klavye' sinifi taniliyor.
+             O sinif aramayi ekranin tepesine cikariyor
+             (body.klavye #ara{top:160px;bottom:auto}) -- olculdu,
+             buyutec 818'den 160'a gitti, tam kullanicinin
+             gordugu yer.
+             Sinif yalnizca blur ile kapaniyordu; masaustunde kutuya
+             hic odaklanilmadigi icin blur da gelmiyor ve hal kalici
+             oluyordu. Yenilemeden duzelmemesinin sebebi buydu.
+             Iki kapi kondu: (1) olcek 1 degilse bu bir
+             YAKINLASTIRMADIR, klavye degil; (2) olcum sifira
+             dondugunde ve arama kutusu odakta DEGILSE sinif
+             kapaniyor. Ikincisi olmadan bir kez yanilan olcum
+             sonsuza kadar yanlis kaliyor. */
+          const olcek = vv.scale || 1;
+          const yakin = olcek > 1.02;
+          const k = yakin ? 0
+                  : Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
           if(k === _son) return;
           _son = k;
           document.documentElement.style.setProperty('--klavye', k + 'px');
-          /* Sinifi burasi da acabilir (odaklanma olayi kacarsa) ama
-             KAPATMIYOR: blur kapatir. Olcum yaniltirsa kutu yukarida
-             kalir, klavyenin altinda degil. */
+          /* Sinifi burasi da acabilir (odaklanma olayi kacarsa). */
           if(k > 90) document.body.classList.add('klavye');
+          /* KAPANMA: olcum sifira dondu ve kutu odakta degil. Odakta
+             olani kapatmiyoruz -- eski gerekce hala gecerli: olcum
+             yaniltirsa kutu yukarida kalsin, klavyenin altinda
+             degil. */
+          else if(k === 0 && document.activeElement !== araGiris){
+            document.body.classList.remove('klavye');
+            try{ geriYerlestir(); }catch(e2){ _yut(e2); }
+          }
         }catch(e){ _yut(e); }
       };
       vv.addEventListener('resize', yaz);
@@ -17645,7 +17744,7 @@
       /* ORTADAKI ALET: DISPLAY degil, ekranin ortasi. Tur bunu
          gostermek zorunda cunku ayarlarda degil, halkanin kendi
          cevresinde yasiyor. */
-      { bas:'THE CENTRE', uzun:true, metin:'Turn the ring of teeth to change shelf.<br>Or set the centre to PHASE and watch the sound.',
+      { bas:'THE CENTRE', uzun:true, metin:'Turn the ring of teeth to change shelf.<br>Or set the centre to FREQUENCY and watch the sound.',
         duraklar:[{hedef:{disk:1.12, aci:0}, sure:1500}] },
       { bas:'NOW PLAYING', uzun:true, metin:'Bottom right: the station first,<br>then the track it is playing.',
         duraklar:[{hedef:'#np', sure:1300}] },

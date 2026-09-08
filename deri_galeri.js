@@ -152,11 +152,26 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   function el(t, sinif){ const e = document.createElement(t); if(sinif) e.className = sinif; return e; }
   function merkezIsaret(){
     try{
-      const m = (typeof AYAR !== 'undefined' && AYAR.merkez) || 'cark';
-      merkezTuslari.forEach(t=> t.setAttribute('aria-pressed', t.dataset.merkez === m ? 'true' : 'false'));
+      /* CIZIMLI DERIDE YALNIZCA DISC. Uygulama o derilerde halkayi
+         zaten acmiyor (index.html: cizimliDeriMi); dugmenin acik
+         gorunmesi yalan olurdu -- basilinca hicbir sey olmayan bir
+         tus, olmayan tustan kotudur. Sonuyor ve basilamiyor. */
+      const cizimli = (typeof window.cizimliDeriMi === 'function') && window.cizimliDeriMi();
+      const m = cizimli ? 'yuvarlak'
+              : ((typeof AYAR !== 'undefined' && AYAR.merkez) || 'cark');
+      merkezTuslari.forEach(t=>{
+        t.setAttribute('aria-pressed', t.dataset.merkez === m ? 'true' : 'false');
+        const kapali = cizimli && t.dataset.merkez !== 'yuvarlak';
+        t.disabled = kapali;
+        t.style.opacity = kapali ? '0.25' : '';
+      });
+      if(halkaTus){
+        halkaTus.disabled = cizimli;
+        halkaTus.style.opacity = cizimli ? '0.25' : '';
+      }
     }catch(e){ yut(e); }
   }
-  let kap = null, izg = null, adYazi = null, sayacYazi = null;
+  let kap = null, izg = null, adYazi = null;
   const halkaOnbellek = {};
   let cizimSirasi = [];
 
@@ -286,11 +301,16 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     baslik.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
       if(kap.classList.contains('serit')) buyut(); else kucult(); });
     adYazi = document.createElement('span'); adYazi.className = 'dg-secili'; adYazi.setAttribute('aria-live', 'polite');
-    sayacYazi = document.createElement('span'); sayacYazi.className = 'dg-sayac';
+    /* ── SAYAC KALKTI (8 Eylul) ───────────────────────────────────
+       Kullanicinin sozu: "skin penceresinde sayilar olmasin, kac
+       tane oldugu yazmasin, bu bilir."
+       Hakli: "12 / 59" bir katalog bilgisi, secim bilgisi degil.
+       Deriye bakan kisi ADINI ve GORUNUSUNU ariyor; kacinci
+       oldugunu degil. Yer de aciliyor -- serit kipinde ad icin
+       en dar yer orasi. */
     bas.appendChild(tus('geri', 'Previous skin', '◀', ()=>adim(-1)));
     bas.appendChild(baslik);
     bas.appendChild(adYazi);
-    bas.appendChild(sayacYazi);
     bas.appendChild(tus('ileri', 'Next skin', '▶', ()=>adim(1)));
     /* RING ANAHTARI (3 Eylul, kullanici): "ring only hem adi ring
        olsun hem de o skins menusunde olsun ac kapa olsun. ayarlarda
@@ -310,7 +330,13 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        diger secenekler de ordan degissin ki o an gorelim etkisini."
        Serit kipinde ekranin alti acik: secim aninda goruluyor. */
     const mrk = document.createElement('div'); mrk.className = 'dg-merkez';
-    merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC'],['faz','PHASE']].map(([k, ad])=>{
+    /* ── 'PHASE' -> 'FREQUENCY' (8 Eylul) ────────────────────────
+       Kullanicinin sozu: "faz dedigimizi frekans yap, adini
+       ingilizce."
+       Anahtar (AYAR.merkez = 'faz') DEGISMIYOR: depoda kayitli
+       tercihleri bozmamak icin. Degisen yalnizca ekranda yazan
+       kelime. */
+    merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC'],['faz','FREQUENCY']].map(([k, ad])=>{
       const t = tus('mrk', ad, T(ad), ()=>{
         try{ AYAR.merkez = k; ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
@@ -364,7 +390,6 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
         adYazi.textContent = (_ad.length > 22) ? (_ad.slice(0, 21).trim() + '…') : _ad;
         adYazi.title = _ad;
       }
-      if(sayacYazi) sayacYazi.textContent = n + ' / ' + DERILER.length;
       if(!izg) return;
       izg.querySelectorAll('.dg-kare').forEach(b=>{
         if(!(b instanceof HTMLElement)) return;
@@ -381,6 +406,11 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       AYAR.deri = n|0;
       try{ ayarKaydet(); }catch(e){ yut(e); }
       try{ deriUygula(); }catch(e){ yut(e); }
+      /* MERKEZ DE YENIDEN UYGULANIYOR. Cizimli bir deriye gecince
+         halka kapanmali, duz bir deriye donunce eski tercih geri
+         gelmeli (bkz. index.html: cizimliDeriMi). Bu cagri olmadan
+         halka bir sonraki dokunusa kadar acik kaliyordu. */
+      try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
       try{ deriIzgaraIsaret(); }catch(e){ yut(e); }
       /* Ayarlar panelindeki SKINS satirinin sagi da ayni degeri soylesin. */
       try{
@@ -436,6 +466,22 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   function ac(){
     try{
       kur();
+      /* ── GALERI ACILINCA ONCE DISK ────────────────────────────
+         Kullanicinin sozu: "skinsler gezilmeye baslandiginda o
+         yuvarlak olanla goster ilk. halkayi isteyen acar bakar."
+         Dogru: deriye bakan kisi DERIYE bakiyor. Halka acikken
+         govde kalkiyor ve derinin ortasinda gorulecek sey hic
+         cizilmiyor -- yani gezinirken en cok merak edilen sey
+         gizli kaliyordu.
+         Halka bir dokunus uzakta: bu pencerenin kendi RING
+         anahtari ve merkez satirindaki DISC/WHEEL/FREQUENCY. */
+      try{
+        if(typeof AYAR !== 'undefined' && AYAR.merkez !== 'yuvarlak'){
+          AYAR.merkez = 'yuvarlak';
+          try{ ayarKaydet(); }catch(e2){ yut(e2); }
+          try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e2){ yut(e2); }
+        }
+      }catch(e){ yut(e); }
       kap.classList.remove('serit');
       kap.hidden = false;
       fircaIsaret(true);

@@ -181,7 +181,6 @@
   "WHEEL CLICK": "ÇARK TIKIRTISI",
   "WHEEL": "ÇARK",
   "DISC": "YUVARLAK",
-  "PHASE": "FAZ",
   "WAKE UP": "UYAN",
   "SET": "KUR",
   "SOUND BANKS": "SES BANKALARI",
@@ -197,5 +196,6 @@
   "Touch only opens its strip — nothing skips.": "Dokunmak sadece şeridini açar — hiçbir şey atlanmaz.",
   "THE CENTRE": "ORTADAKİ",
   "Turn the ring of teeth to change shelf.": "Dişli halkayı çevirerek rafı değiştir.",
-  "Or set the centre to PHASE and watch the sound.": "Ya da ortayı PHASE yap, sesi izle."
+  "FREQUENCY": "FREKANS",
+  "Or set the centre to FREQUENCY and watch the sound.": "Ya da ortayı FREKANS yap, sesi izle."
 }

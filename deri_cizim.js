@@ -305,12 +305,19 @@ const DERI_HALKA = {
       c.fillStyle = p[2]; c.beginPath(); c.ellipse(x, y, S*0.045, S*0.03, r()*3, 0, Math.PI*2); c.fill();
       c.fillStyle = p[3]; c.beginPath(); c.ellipse(x - S*0.01, y - S*0.008, S*0.02, S*0.014, 0, 0, Math.PI*2); c.fill(); }
   },
+  /* FIELDS — Rothko: yatay bantlar, kenarlari yumusak.
+     ONCE KOSELIYDI: bantlar kenarlardan %8 iceride basliyor ve
+     bitiyordu, yani dairenin icinde KARE bir yigin duruyordu --
+     kullanicinin gordugu "yarim kalmis, koseli" hal buydu.
+     Artik bantlar kareyi bastan sona gecip daireye kadar gidiyor;
+     kirpma onlari zaten daire yapiyor. Yumusaklik yerinde: yedi
+     kat ust uste, her biri biraz daha genis. */
   fields(c, S, d){
     const p = _pal(d);
     c.fillStyle = p[3]; c.fillRect(0,0,S,S);
     const kat = (y0, y1, renk)=>{ for(let k = 6; k >= 0; k--){ c.globalAlpha = 0.18; c.fillStyle = renk;
-      c.fillRect(S*0.08 - k*S*0.01, y0 - k*S*0.012, S*0.84 + k*S*0.02, (y1 - y0) + k*S*0.024); } c.globalAlpha = 1; };
-    kat(S*0.10, S*0.44, p[0]); kat(S*0.50, S*0.72, p[1]); kat(S*0.76, S*0.92, p[2]);
+      c.fillRect(-S*0.06 - k*S*0.01, y0 - k*S*0.012, S*1.12 + k*S*0.02, (y1 - y0) + k*S*0.024); } c.globalAlpha = 1; };
+    kat(-S*0.04, S*0.42, p[0]); kat(S*0.48, S*0.72, p[1]); kat(S*0.76, S*1.04, p[2]);
   },
   cutout(c, S, d){
     const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
@@ -323,13 +330,23 @@ const DERI_HALKA = {
       c.closePath(); c.fill(); }
     c.fillStyle = p[4]; c.beginPath(); c.arc(o, o, S*0.07, 0, Math.PI*2); c.fill();
   },
+  /* DRIP — Pollock. ONCE ORTASI DOLU KENARI BOSTU: butun noktalar
+     0..S arasindan cekiliyordu ve dairesel kirpmadan sonra yigilma
+     merkezde kaliyor, cemberin cevresinde genis bir krem halka
+     duruyordu (kullanicinin sozu: "yarim ortasi bak").
+     Sebep basit: rasgele bir egrinin uc noktalari kareye esit
+     dagilsa bile GOVDESI ortaya toplaniyor -- kenara deger bir
+     egri icin ucun kenarin DISINDA olmasi gerekiyor.
+     Artik noktalar -%15 ile %115 arasindan cekiliyor: tasan kisim
+     zaten kirpiliyor, geriye kenara kadar dolu bir tuval kaliyor. */
   drip(c, S, d){
     const p = _pal(d), r = _tohumlu(_tohum(d));
+    const q = ()=> (-0.15 + r()*1.30) * S;      // kirpma disina tasan dagilim
     c.fillStyle = p[4]; c.fillRect(0,0,S,S); c.lineCap = 'round';
-    for(let i = 0; i < 40; i++){ c.strokeStyle = p[i % 4]; c.lineWidth = S*(0.004 + r()*0.014);
-      c.beginPath(); c.moveTo(r()*S, r()*S);
-      for(let k = 0; k < 3; k++) c.bezierCurveTo(r()*S, r()*S, r()*S, r()*S, r()*S, r()*S); c.stroke(); }
-    for(let i = 0; i < 60; i++){ c.fillStyle = p[i % 4]; c.beginPath(); c.arc(r()*S, r()*S, S*(0.004 + r()*0.012), 0, Math.PI*2); c.fill(); }
+    for(let i = 0; i < 46; i++){ c.strokeStyle = p[i % 4]; c.lineWidth = S*(0.004 + r()*0.014);
+      c.beginPath(); c.moveTo(q(), q());
+      for(let k = 0; k < 3; k++) c.bezierCurveTo(q(), q(), q(), q(), q(), q()); c.stroke(); }
+    for(let i = 0; i < 70; i++){ c.fillStyle = p[i % 4]; c.beginPath(); c.arc(q(), q(), S*(0.004 + r()*0.012), 0, Math.PI*2); c.fill(); }
   }
 };
 function deriHalkaAdresi(d){
