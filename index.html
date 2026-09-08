@@ -746,7 +746,7 @@
      geçmesin diye yazısı yok.
      ÖLÇÜ: sağ alttaki ★ ile birebir aynı (38x32). */
   #favAc{display:none;align-items:center;justify-content:center;
-    width:38px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
+    width:32px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
     color:#5adcd2;transition:color .2s, border-color .2s, background .2s, opacity .25s;}
@@ -763,8 +763,11 @@
   body.t-lib #cam,body.t-liste #cam,body.t-radio #cam{color:#5adcd2;}
   /* SUSTUR: ★ ile birebir ayni olcu ve kilik. Yanyana duruyorlar,
      biri otekinden buyuk olsa satir egri gorunur. */
+  /* 8 Eylul: 38 -> 34/32. Simgeler genis kutularin ortasinda
+     oturuyordu; cerceve kalkinca kutu gorunmez oldu ama yeri kaldi.
+     Sustur 34'te: 32'de olculen erisim 35, esik 36. */
   #mute{display:flex;align-items:center;justify-content:center;
-    width:38px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
+    width:34px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
     color:#5adcd2;transition:color .2s, border-color .2s, background .2s;}
@@ -815,7 +818,14 @@
      PHOTO, CAM -> DELETE). 62/56 denendi, GERI ALINDI: satir daralinca
      kunye genisliyor, yigin dali devreye girmiyor, cihaz takimi alti
      modelde binme olcuyor. CAM 67 -> 44, PHOTO 73 duruyor. */
-  #rec{min-width:73px;} #cam{min-width:44px;}
+  /* GENISLIK ARTIK TUSTA DEGIL SATIRDA (8 Eylul). Satirin olcusunu
+     sabit tutmak icin tuslara min-width veriliyordu; yazi kutudan
+     darsa kutunun sagi bos kaliyor ve o bosluk iki simge ARASI gibi
+     okunuyordu (CAM'de 20px olculdu). Ayak izini artik #araclar'in
+     min-width'i koruyor, tuslar yazilarini sariyor, bos alan satirin
+     sonunda birikiyor. Kunye yerlesimi etkilenmiyor. */
+  #rec{min-width:0;} #cam{min-width:0;}
+  #araclar{min-width:201px;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
   /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
@@ -2202,10 +2212,8 @@
      Ust uste binince yuzeyde ince bir kanal olusuyor. Kaydirma
      yalnizca DIKEY (%0,5); yatay bilesen sifir. */
   /* UZAY: STARS COSMIC'te ekran alti saniyede uzaya aciliyor --
-     derinin zemini, dokusu ve diskin govdesi soniyor, geriye halkalar
-     ve yildizlar kaliyor. Kademe inince deri ayni surede geri gelir.
-     Yildizlar zaten tuvalde; burada yalnizca ustlerindeki katmanlar
-     cekiliyor. */
+     deri zemini, dokusu ve diskin govdesi soniyor; halkalar ve
+     yildizlar kaliyor. Kademe inince ayni surede geri gelir. */
   body.uzay{ --uzay-sure:6s; }
   body.deri.uzay{
     background:radial-gradient(circle at 50% 42%, #0b1a24 0%, #060c14 46%, #03040a 100%) !important;
@@ -3414,11 +3422,11 @@
      ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
   @media (max-width:480px){
     #tasima{gap:6px;} #araclar{gap:6px;}
-    #geri,#ileri,#dur,#duraklat,#fav,#favAc,#mute{width:34px;}
+    #geri,#ileri,#dur,#duraklat{width:34px;} #fav,#favAc,#mute{width:30px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:0.5625rem;letter-spacing:.14em;}
-    #rec{min-width:63px;} #cam{min-width:57px;}
+    #araclar{min-width:198px;}
     /* Sabit genislikler de bu olcude yeniden kuruluyor: dar ekranda
        en genis yazi 63 (PHOTO/CHECK/00:00) ve 57 (DELETE). Ustteki
        73/67 burada 10px fazla yer yerdi. */
@@ -3528,12 +3536,14 @@
     transform:translate(-50%,-50%);
     /* Gorunmez: rengi yok, cizgisi yok. Sadece dokunulacak yer. */
     background:transparent;pointer-events:auto;}
-  /* BUYUTEC DAHA GENIS: kendi kutusu 26px ve satirin SONUNDA duruyor.
-     Aralar 7 -> 6'ya inince olculen erisim 33'e dustu (esik 36).
-     Kendi katmani 18px genisliyor; satirda en son o ciziliyor, yani
-     komsusuyla ortusen serit ona gidiyor. 18 denendi: o zaman
-     #ileri 35'e dustu. 14'te ikisi de esigin uzerinde. */
+  /* BUYUTEC satirin sonunda ve kutusu 26px; kendi katmani genis.
+     18 denendi, o zaman #ileri 35'e dustu. 14'te ikisi de gecti. */
   #araCizgi::after{width:calc(100% + 14px);}
+  /* Sustur ile yildiz yan yana: esit genisletilince yildiz (ustte
+     cizilen) susturun payini yiyordu. Susturunki genis, yildizinki
+     dar -- yildiz sagindaki bos alandan kazaniyor. */
+  #mute::after{width:calc(100% + 18px);}
+  #favAc::after{width:calc(100% + 12px);}
   /* SOL UST YIGIN 44x44. Konsol tuslari yan yana ve aralari dar --
      orada 44 istemek komsu alanlarin ust uste binmesi demek, yani
      gordugun tusa basip baska tusun calismasi (saglik: "Dokunma
@@ -12809,9 +12819,8 @@
     }catch(e){ return false; }
   }
   let radyoDolduruluyor=false;
-  /* KUYRUK NESLI: acilistaki doldurma yoldayken raf degisince eski
-     rafin istasyonlari yeni kuyruga yaziliyordu. Nesil degistiyse
-     yoldaki sonuc dusuruluyor. */
+  /* KUYRUK NESLI: yoldaki doldurma donunce raf degistiyse sonucu
+     dusuruluyor (cark bir raf, ses baska raf caliyordu). */
   let _kuyrukNesil = 0;
   /* ── CORS ELEMESİ — "yayın başladı sonra kesildi" sorununun kökü ──
      Ses grafiğe bağlandığı anda, CORS başlığı göndermeyen bir yayın SUSUYOR.
@@ -18621,10 +18630,9 @@
     });
   }catch(e){ _yut(e); }
 
-  /* PHOTO / CAM / ★ ILK KAREDE (8 Eylul): uc tus display:none ile
-     kayit.js'i bekliyordu, o da acilistan 4 sn sonra iniyor. Artik ilk
-     karede oradalar; dokunusta modul hemen geliyor, inmezse geri
-     cekiliyorlar (bkz. onerror). */
+  /* PHOTO / CAM / ★ ILK KAREDE: uc tus kayit.js'i bekliyordu (4 sn).
+     Artik ilk karede oradalar; dokunusta modul hemen geliyor, inmezse
+     geri cekiliyorlar. */
   try{
     const _r = document.getElementById('rec'), _c = document.getElementById('cam'),
           _f = document.getElementById('favAc'), _ry = document.getElementById('recYazi');
