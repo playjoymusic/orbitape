@@ -167,6 +167,16 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   let halkaTus = null, kapDinle = null, merkezTuslari = [];
+  /* ── ACARKEN DISK, KAPARKEN ESKISI (9 Eylul) ──────────────────
+     Kullanicinin sozu: "skins ikonuna basinca bir anda cark gidiyor;
+     sadece acip kapasam bile cark kayboluyor, bunun mantigi yok."
+     Hakli. Panel acilinca merkez 'yuvarlak'a alaniyor -- gerekce
+     duruyor: deriye bakan kisi DERIYE bakiyor, halka acikken govde
+     hic cizilmiyor. Ama bu ODUNC alinmis bir ayar, kalici bir karar
+     degil: pencere kapaninca kullanicinin birakti gi sey geri
+     gelmeli. Panelde merkezi ELLE degistirdiyse o secim kalir --
+     orada karar veren kullanicidir. */
+  let _merkezOnce = null;
   function el(t, sinif){ const e = document.createElement(t); if(sinif) e.className = sinif; return e; }
   function merkezIsaret(){
     try{
@@ -376,6 +386,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        onu hala tanir); yalnizca bu pencereden SECILEMIYOR. */
     merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC']].map(([k, ad])=>{
       const t = tus('mrk', ad, T(ad), ()=>{
+        _merkezOnce = null;                        // elle secildi: odunc degil karar
         try{ AYAR.merkez = k; ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
         merkezIsaret(); diskleriTazele();
@@ -515,6 +526,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
          anahtari ve merkez satirindaki DISC/WHEEL/FREQUENCY. */
       try{
         if(typeof AYAR !== 'undefined' && AYAR.merkez !== 'yuvarlak'){
+          _merkezOnce = AYAR.merkez;              // kapaninca geri verilecek
           AYAR.merkez = 'yuvarlak';
           try{ ayarKaydet(); }catch(e2){ yut(e2); }
           try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e2){ yut(e2); }
@@ -560,6 +572,12 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     try{
       if(!kap || kap.hidden) return;
       const seritti = kap.classList.contains('serit');
+      if(_merkezOnce){
+        try{ AYAR.merkez = _merkezOnce; ayarKaydet(); }catch(e){ yut(e); }
+        try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
+        try{ if(window.carkTazele) window.carkTazele(); }catch(e){ yut(e); }
+        _merkezOnce = null;
+      }
       kap.hidden = true;
       kap.classList.remove('serit');
       fircaIsaret(false);

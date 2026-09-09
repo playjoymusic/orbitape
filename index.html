@@ -799,6 +799,15 @@
   #mute.sus{color:#d88a9e;border-color:rgba(226,122,158,.38);}
   #mute.sus .y1,#mute.sus .y2{display:none;}
   #mute.sus .cap{display:block;}
+  /* ── KISIK HAL ───────────────────────────────────────────────────
+     Bildirilen: "muzik duruyor" -- gercekte ses cok kisilmisti ve
+     ekranda bunu soyleyen hicbir sey yoktu: sustur simgesi yalnizca
+     TAM sifirda degisiyordu, %4'te ise "acik" gorunuyordu. Uygulama
+     sessiz, simge normal: kullanici bunu ariza sanir. Artik dis yay
+     sonuyor, yani seviye tek bakista okunuyor: iki yay = normal,
+     tek yay = kisik, capraz = susturulmus. */
+  #mute.kisik .y2{opacity:.22;}
+  #mute.kisik{color:#8fb9b6;}
   #mute:hover{color:#cfe9e4;}
   #mute:focus-visible{outline:1px solid currentColor;outline-offset:2px;}
   body.t-liste #favAc{color:#b6adbe;} body.t-radio #favAc{color:#d6a483;}
@@ -2220,22 +2229,6 @@
      kaydirilmis koyu renkte, bir kez ASAGI kaydirilmis acik renkte.
      Ust uste binince yuzeyde ince bir kanal olusuyor. Kaydirma
      yalnizca DIKEY (%0,5); yatay bilesen sifir. */
-  /* UZAY: STARS COSMIC'te ekran alti saniyede uzaya aciliyor --
-     deri zemini, dokusu ve diskin govdesi soniyor; halkalar ve
-     yildizlar kaliyor. Kademe inince ayni surede geri gelir. */
-  body.uzay{ --uzay-sure:6s; }
-  body.deri.uzay{
-    background:radial-gradient(circle at 50% 42%, #0b1a24 0%, #060c14 46%, #03040a 100%) !important;
-    transition:background var(--uzay-sure) ease;}
-  body.deri.uzay::after{opacity:0 !important;transition:opacity var(--uzay-sure) ease;}
-  body.deri.uzay .disk{background:transparent !important;box-shadow:none !important;
-    transition:background var(--uzay-sure) ease, box-shadow var(--uzay-sure) ease;}
-  body.deri.uzay .disk::after{opacity:0 !important;transition:opacity var(--uzay-sure) ease;}
-  /* Geri donuste de gecis: sinif KALKARKEN kural artik gecerli
-     degil, o yuzden ayni sureler asil kurallarda da duruyor. */
-  body.deri{transition:background var(--uzay-sure, .001s) ease;}
-  body.deri .disk{transition:background var(--uzay-sure, .001s) ease,
-                             box-shadow var(--uzay-sure, .001s) ease;}
   body.deri .disk{border-radius:50%;background:var(--d-zem) !important;
     /* TEK GOLGE, ISIK HALESI YOK: dergide bir nesnenin cevresinde
        isik halkasi olmaz, altinda tek yonlu yumusak bir golge olur. */
@@ -5974,15 +5967,7 @@
       _cubukZaman.push(setTimeout(yaz, 420));
     }catch(e){ _yut(e); }
   }
-  /* STARS COSMIC ise ekran uzaya aciliyor (bkz. body.uzay kurallari).
-     Hem ayarlardan kademe degisince hem de deri degisince cagriliyor:
-     yeni bir deri secildiginde sinif govdede kalmali. */
-  function uzayUygula(){
-    try{ document.body.classList.toggle('uzay', (AYAR.yildiz|0) === 4); }catch(e){ _yut(e); }
-  }
-  try{ window['uzayUygula'] = uzayUygula; }catch(e){ _yut(e); }
   function deriUygula(){
-    try{ uzayUygula(); }catch(e){ _yut(e); }
     try{
       const k = document.documentElement.style;
       const n = AYAR.deri|0;
@@ -10993,7 +10978,28 @@
      ses.volume kullanıyoruz — playbackRate'in aksine tamponu sıfırlamıyor,
      sık yazmak güvenli. Grafik kurulu olsun olmasın çalışır. */
   var kSes = 1;                        // kullanıcı seviyesi 0..1
-  try{ const v = parseFloat(localStorage.getItem('orbitape.ses')); if(isFinite(v)) kSes = Math.max(0, Math.min(1, v)); }catch(e){ _yut(e); }
+  /* ── DUYULMAZ SEVIYE DIYE BIR AYAR YOK ──────────────────────────
+     KULLANICININ SOZU: "muzik durmuyormus galiba sesini kismisim."
+
+     Iki parmak jesti seviyeyi 0..1 arasinda SERBEST biraliyordu ve
+     sonucu depoya yaziyordu. %2'ye inen bir jest -- ki listeyi iki
+     parmakla kaydirmaya calisirken kolayca olur -- uygulamayi
+     kalici olarak sessiz birakiyordu: ses tam sifir olmadigi icin
+     sustur simgesi de "acik" gosteriyordu. Kullanicinin gordugu
+     sey: "uygulama calisiyor ama ses yok." Magazada bunun adi tek
+     yildizdir.
+
+     Kural: %2'nin altindaki her sey ZATEN duyulmuyor. O yuzden
+     oraya inen seviye TAM SIFIRA yuvarlaniyor -- boylece sustur
+     simgesi capraz cikiyor, sebep ekranda yaziyor ve tek dokunus
+     sesi geri getiriyor. Ustundeki 'kisik' bant da simgede sonuk
+     gorunuyor (bkz. #mute.kisik). Alarm/uyku rampasi bundan
+     etkilenmiyor: o carpan ayri (_uykuKat), kullanicinin ayari
+     degil. */
+  const SES_DIP   = 0.02;              // altinda duyulmuyor -> sifir sayiliyor
+  const SES_KISIK = 0.22;              // altinda "kisik" olarak isaretleniyor
+  const sesTopla = v => (v > 0 && v < SES_DIP) ? 0 : Math.max(0, Math.min(1, v));
+  try{ const v = parseFloat(localStorage.getItem('orbitape.ses')); if(isFinite(v)) kSes = sesTopla(v); }catch(e){ _yut(e); }
   /* ── SES SEVIYESI: UC AYRI YOL, UCU DE GEREKLI ───────────────────
      Bu islev iki kez "duzeltildi" ve iki kez kullanici "yine
      calismiyor" dedi. Sebep tek bir yolun her yerde gecerli
@@ -11076,6 +11082,7 @@
     };
     const yazMt = ()=>{
       const susmus = kSes <= 0.001;
+      mt.classList.toggle('kisik', !susmus && kSes < SES_KISIK);
       mt.classList.toggle('sus', susmus);
       mt.setAttribute('aria-pressed', susmus ? 'true' : 'false');
       mt.setAttribute('aria-label', susmus ? 'Unmute' : 'Mute');
@@ -11213,13 +11220,28 @@
 
   (function ikiParmakSes(){
     let etkin=false, basY=0, basSes=1, basAra=0, karar='', basZum=1;
+    let basYs=[0,0], basKim=[-1,-1];
     const ortY = t => (t[0].clientY + t[1].clientY) / 2;
     const ara  = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    /* IKI PARMAK DA AYNI YONE, IKISI DE EN AZ 12 PIKSEL. Ters yone
+       giden parmaklar zum; biri duruyorsa telefonu tutan parmaktir.
+       Parmak sirasi degisebiliyor, o yuzden kimlikle eslestiriliyor. */
+    const ayniYon = t=>{
+      try{
+        if(t.length !== 2) return false;
+        let a = t[0], b = t[1];
+        if(basKim[0] === b.identifier && basKim[1] === a.identifier){ const s = a; a = b; b = s; }
+        const d0 = a.clientY - basYs[0], d1 = b.clientY - basYs[1];
+        return (d0 > 12 && d1 > 12) || (d0 < -12 && d1 < -12);
+      }catch(e){ return false; }
+    };
     document.addEventListener('touchstart', e=>{
       if(e.touches.length !== 2) return;
       if(e.target && e.target.closest && e.target.closest('#ara')) return;   // sonuç listesi kaydırılabilsin
       etkin = true; basY = ortY(e.touches); basSes = kSes;
       basAra = ara(e.touches); karar = ''; basZum = _zum;
+      basYs  = [e.touches[0].clientY, e.touches[1].clientY];
+      basKim = [e.touches[0].identifier, e.touches[1].identifier];
       // halka/FX bu jesti üstlenmesin
       try{ pDown=false; _basili=false; }catch(_){ _yut(_); }
       /* Gokyuzu acikken ikinci parmak degdigi anda tek parmak
@@ -11238,7 +11260,13 @@
       if(!karar){
         if(Math.abs(da) > 26 && Math.abs(da) > Math.abs(dy) * 1.2){
           karar = zumBaslat() ? 'zum' : 'ses';
-        }else if(Math.abs(dy) > 14){ karar = 'ses'; }
+        /* 14 piksel COK DUSUKTU: listeyi iki parmakla kaydirmaya
+           calisan, telefonu iki parmakla tutan, ya da zum yapmaya
+           baslarken parmaklari once biraz asagi kayan herkes farkinda
+           olmadan sesi degistiriyordu. 34 piksel bilincli bir hareket;
+           ustelik IKI PARMAK DA AYNI YONE gitmis olmali -- ters yone
+           acilan parmaklar zum jestidir, ses degil. */
+        }else if(Math.abs(dy) > 34 && ayniYon(e.touches)){ karar = 'ses'; }
         if(karar === 'ses') sesGoster();
       }
       if(karar === 'zum'){
@@ -11261,6 +11289,11 @@
         karar = ''; return;
       }
       karar = '';
+      /* Duyulmaz seviyede birakma: sifira yuvarla ki simge sebebi
+         soylesin ve tek dokunus geri getirsin. */
+      const y = sesTopla(kSes);
+      if(y !== kSes){ kSes = y; sesSeviyeYaz(); }
+      try{ sesDikeyYaz(); }catch(e){ _yut(e); }
       try{ localStorage.setItem('orbitape.ses', String(kSes)); }catch(e){ _yut(e); }
     };
     document.addEventListener('touchend', bitir, {passive:true});
@@ -12725,22 +12758,33 @@
      CAR MODE ILE ILGISI YOK ama en cok orada ise yariyor: o kipte
      ses zincire hic girmiyor, yani takilmayi fark edebilecek baska
      hicbir olcum de yok. */
-  var _akisSon = -1, _akisDurgun = 0, _akisTamir = 0, _akisSrc = '';
+  var _akisSon = -1, _akisDurgun = 0, _akisTamir = 0, _akisSrc = '', _akisSaglam = 0;
   const AKIS_DUR_SN = 8;                 // kac saniye ilerlemezse takildi sayiliyor
   const AKIS_TAMIR_TAVAN = 3;            // ust uste en fazla kac yeniden baglanma
+  const AKIS_SAGLAM_TIK = 15;            // 30 sn kesintisiz akis -> tamir hakki geri geliyor
   function akisBekcisi(){
     try{
       if(!ses || !ses.src){ _akisDurgun = 0; return; }
       /* Kaynak degistiyse sayaclar sifirdan: yeni bir parcanin ilk
          saniyelerini "donmus" saymak yanlis olurdu. */
-      if(ses.src !== _akisSrc){ _akisSrc = ses.src; _akisSon = -1; _akisDurgun = 0; _akisTamir = 0; }
+      if(ses.src !== _akisSrc){ _akisSrc = ses.src; _akisSon = -1; _akisDurgun = 0; _akisTamir = 0; _akisSaglam = 0; }
       if(ses.paused || ses.ended){ _akisDurgun = 0; _akisSon = ses.currentTime; return; }
       /* Sayfa arka plandayken tarayici zamanlayiciyi kisiyor ama ses
          calmaya devam ediyor; oradaki olcum guvenilir degil. */
       if(document.hidden){ _akisDurgun = 0; _akisSon = ses.currentTime; return; }
       const t = ses.currentTime;
-      if(_akisSon >= 0 && Math.abs(t - _akisSon) < 0.02) _akisDurgun += 2;
-      else _akisDurgun = 0;
+      if(_akisSon >= 0 && Math.abs(t - _akisSon) < 0.02){ _akisDurgun += 2; _akisSaglam = 0; }
+      else {
+        _akisDurgun = 0;
+        /* 9 Eylul — "MUZIK BAZEN DURUYOR"UN BIRINCI SEBEBI.
+           Tamir sayaci yalnizca KAYNAK DEGISINCE sifirlaniyordu. Bir
+           istasyon gun boyu dinlenirken uc kez takilip uc kez de
+           duzelse, sayac uste kaliyordu: dorduncu donmada bekci artik
+           hicbir sey yapmiyor, radyo sessizce oluyordu. Oysa "ust uste
+           uc deneme" kuralinin anlami ARDISIK denemeler; arada yarim
+           dakika sorunsuz akan bir yayin o kurali sifirlar. */
+        if(_akisTamir && ++_akisSaglam >= AKIS_SAGLAM_TIK){ _akisTamir = 0; _akisSaglam = 0; }
+      }
       _akisSon = t;
       if(_akisDurgun < AKIS_DUR_SN) return;
       _akisDurgun = 0;
@@ -12762,6 +12806,51 @@
     }catch(e){ _yut(e); }
   }
   setInterval(akisBekcisi, 2000);
+
+  /* ── SES OTURUMU BEKCISI ────────────────────────────────────────
+     KULLANICININ SOZU: "bi de muzik bazen duruyor, ne alaka."
+
+     "MUZIK BAZEN DURUYOR"UN IKINCI SEBEBI. Bu nobet KAYIT sirasinda
+     zaten vardi (kayit.js): iOS ses oturumunu sarsinca AudioContext
+     'suspended'/'interrupted' durumuna dusuyor, medya elemani
+     "caliyor" gorunmeye devam ediyor ama grafin cikisinda hicbir ses
+     yok. Ayni sey normal dinlemede de oluyor -- gelen bir arama,
+     baska bir uygulamanin sesi, uyku sonrasi uyanma -- ve orada
+     kimse nobet tutmuyordu. Baglami uyandiran tek yol ekrana
+     dokunmakti; kullanici dokunmadigi surece muzik sessizce olup
+     gidiyordu.
+
+     IKI DURUM AYRILIYOR, cunku dogru cevaplari ayni degil:
+       · Baglam askida  -> ses oturumu kesildi. Baglam uyandiriliyor,
+         eleman duraklamissa devam ediyor.
+       · Baglam calisiyor ama eleman duraklamis -> bu neredeyse her
+         zaman CIHAZ degisikligidir (kulaklik cikti). Orada kendi
+         basina devam etmek hoparlorden bagirmak demek: DOKUNMUYORUZ.
+
+     Uc korumasi var: kullanici bilerek duraklattiysa hicbiri
+     calismiyor; hic calmaya baslanmadiysa (acilista onden yuklenen
+     kaynak) calismiyor -- yoksa uygulama kendi kendine muzik
+     baslatirdi; ve ust uste en fazla uc mudahale, cunku oturum
+     surekli geri aliniyorsa sorun bizde degil, dongude pil yakmanin
+     anlami yok. Bir tik sorunsuz calma hakki geri veriyor. */
+  var _oturumTamir = 0;
+  function oturumBekcisi(){
+    try{
+      if(_kullaniciDuraklatti){ _oturumTamir = 0; return; }
+      if(!baslatildi) return;
+      if(!ses || !ses.src || ses.ended) return;
+      if(typeof actx === 'undefined' || !actx) return;
+      if(actx.state === 'running'){ if(!ses.paused) _oturumTamir = 0; return; }
+      if(_oturumTamir >= 3) return;
+      _oturumTamir++;
+      try{ iz('oturum: baglam uyandiriliyor ' + _oturumTamir); }catch(e){ _yut(e); }
+      try{ const r = actx.resume(); if(r && r.catch) r.catch(()=>{}); }catch(e){ _yut(e); }
+      try{ if(ses.paused){ const p = ses.play(); if(p && p.catch) p.catch(()=>{}); } }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  setInterval(oturumBekcisi, 1000);
+  /* Uygulamaya geri donuldugu an: bekcinin bir sonraki tikini beklemeden. */
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) oturumBekcisi(); });
 
   /* ── CANLI RADYO (Radio Browser): kütüphaneyle AYNI ses+grafikten çalar -> FX + görselleştirme radyoda da çalışır.
         CORS başlığı olmayan istasyonlar grafikten geçince sessiz kalır -> gözcü onları otomatik atlar. ── */
@@ -16652,7 +16741,6 @@
            satirin kendisi deger gosteriyor: tek dokunus, tek satir. */
         AYAR.yildiz = ((AYAR.yildiz|0) + 1) % YILDIZ_KADEME.length;
         ayarKaydet(); yildizYaz();
-        try{ uzayUygula(); }catch(e){ _yut(e); }
         return;
       }
       if(k === 'deri'){

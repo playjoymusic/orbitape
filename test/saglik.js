@@ -653,14 +653,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             f + ' ' + Math.round(bro(fs.readFileSync(_yayin(f)))/1024) + 'K').join(' + ')
            + ' (toplam ' + Math.round(_iuBoy/1024) + ' KB)')
         : 'istek uzerine inen modul yok');
-    /* 1100 -> 1105 -> 1110 KB. Bu olcu KAYNAK dosyanin boyu, yani
-       aciklamalar dahil; kullaniciya inen sey degil (o brotli olcusu
-       ve tavanin bin bayt altinda). 9 Eylul'de eklenen isler --
-       SOUNDS bolumu, uzay gecisi, galerinin serit acilmasi, klavye
-       acikken alet olcusu, aramada basilan satirin secilmesi -- ve
-       her birinin NEDEN yazisi bu dosyada duruyor. Tavan bir koruma;
+    /* 1100 -> 1105 -> 1110 -> 1116 KB. Bu olcu KAYNAK dosyanin boyu,
+       yani aciklamalar dahil; kullaniciya inen sey degil (o brotli
+       olcusu ve tavanin bin bayt altinda). 9 Eylul'de eklenen isler --
+       SOUNDS bolumu, galerinin serit acilmasi, klavye acikken alet
+       olcusu, aramada basilan satirin secilmesi -- ve her birinin
+       NEDEN yazisi bu dosyada duruyor. Son yukseltme (1110 -> 1116)
+       "MUZIK DURUYOR" isi: ses seviyesinin duyulmaz bir yerde
+       birakilamamasi, kisik halin simgede gorunmesi, iki parmak
+       jestinin kaza esigi ve ses oturumu nobetcisi. Tavan bir koruma;
        islev eklenince yaziyla yukseltiliyor, sessizce degil. */
-    K('Ham boy < 1110 KB', dosyaBoy < 1110*1024,
+    K('Ham boy < 1116 KB', dosyaBoy < 1116*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -8821,6 +8824,76 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      !!mut && mut.sus.cap!=='none' && mut.sus.yay==='none', 'yaylar gidiyor, capraz geliyor');
   K('Tekrar basinca eski seviye', !!mut && mut.geri.k===1 && mut.geri.sinif===false,
      'biraktigi yerden aciliyor');
+
+  /* ── DUYULMAZ SEVIYE DIYE BIR AYAR YOK ──────────────────────────
+     Bildirilen: "muzik durmuyormus galiba sesini kismisim."
+     Iki parmak jesti seviyeyi %2'ye indirip depoya yaziyordu; ses
+     tam sifir olmadigi icin sustur simgesi "acik" gorunuyor, uygulama
+     ise sessiz. Kullanicinin gordugu: "calisiyor ama ses yok."
+     Uc kural birden olculuyor:
+       · %2 altindaki seviye sifira yuvarlaniyor (simge sebebi soyler)
+       · %2-%22 arasi 'kisik' olarak isaretleniyor (dis yay sonuyor)
+       · kucuk iki parmak hareketi sese DOKUNMUYOR */
+  const dipSes = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    const m=document.getElementById('mute'); if(!m) return null;
+    const eski = kSes;
+    kSes = 0.10; sesSeviyeYaz(); sesDikeyYaz(); await bek(40);
+    const kisik = { sinif:m.classList.contains('kisik'), sus:m.classList.contains('sus'),
+                    y2:getComputedStyle(m.querySelector('.y2')).opacity };
+    kSes = 0.6;  sesSeviyeYaz(); sesDikeyYaz(); await bek(40);
+    const normal = m.classList.contains('kisik');
+    const yuvarla = { dip:sesTopla(0.012), sinir:sesTopla(0.02), ust:sesTopla(0.5), sifir:sesTopla(0) };
+    kSes = eski; sesSeviyeYaz(); sesDikeyYaz();
+    try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
+    return { kisik, normal, yuvarla };
+  });
+  K('Kisik seviye simgede gorunuyor',
+     !!dipSes && dipSes.kisik.sinif===true && dipSes.kisik.sus===false
+     && parseFloat(dipSes.kisik.y2) < 0.5 && dipSes.normal===false,
+     '%10 = sonuk yay, %60 = tam yay');
+  K('Duyulmaz seviye sifira yuvarlaniyor',
+     !!dipSes && dipSes.yuvarla.dip===0 && dipSes.yuvarla.sinir===0.02
+     && dipSes.yuvarla.ust===0.5 && dipSes.yuvarla.sifir===0,
+     '%1.2 -> 0, %2 ve ustu dokunulmuyor');
+  /* Kaynakta olculuyor: jest esigi ve "iki parmak da ayni yone"
+     kurali. Iki parmakli dokunmatik jesti taklit etmek guvenilir
+     degil; kural kodda duruyor mu, ona bakiyoruz. */
+  K('Iki parmak jest esigi kaza payini kaldiriyor',
+     /Math\.abs\(dy\) > 34 && ayniYon\(e\.touches\)/.test(TUM_KOD)
+     && /d0 > 12 && d1 > 12/.test(TUM_KOD),
+     '34 px + iki parmak ayni yone');
+
+  /* ── SESSIZCE OLEN CALMA: IKI NOBET ─────────────────────────────
+     Bildirilen: "bi de muzik bazen duruyor, ne alaka."
+     Iki ayri sessiz yol vardi:
+     1) Akis bekcisinin tamir sayaci yalnizca kaynak degisince
+        sifirlaniyordu. Gun boyu dinlenen bir istasyon uc kez takilip
+        uc kez de duzelse sayac uste kaliyor, dorduncu donmada bekci
+        artik hicbir sey yapmiyordu. "Ust uste uc deneme" ARDISIK
+        demektir; arada saglam akan yayin o hakki geri verir.
+     2) Ses oturumu (iOS): arama, baska uygulama, uyku sonrasi
+        AudioContext askiya aliniyor; medya elemani "caliyor"
+        gorunuyor, cikista ses yok. Bu nobet KAYIT sirasinda vardi
+        (kayit.js) ama normal dinlemede yoktu -- baglami uyandiran
+        tek yol ekrana dokunmakti.
+     Ikisi de zamana bagli; burada kuralin kodda durdugu olculuyor. */
+  K('Akis tamir hakki iyilesince geri geliyor',
+     /_akisSaglam >= AKIS_SAGLAM_TIK\){ _akisTamir = 0/.test(TUM_KOD)
+     && /AKIS_SAGLAM_TIK = 15/.test(TUM_KOD),
+     '30 sn saglam akis -> sayac sifir');
+  K('Ses oturumu askidayken uyandiriliyor',
+     /function oturumBekcisi\(\)/.test(TUM_KOD)
+     && /setInterval\(oturumBekcisi, 1000\)/.test(TUM_KOD)
+     && /if\(_kullaniciDuraklatti\)\{ _oturumTamir = 0; return; \}/.test(TUM_KOD)
+     && /if\(!baslatildi\) return;/.test(TUM_KOD),
+     'kullanici duraklattiysa ve hic calmadiysa karismiyor');
+  /* Baglam CALISIYOR ama eleman duraklamissa dokunmuyoruz: bu
+     neredeyse her zaman kulaklik cikmasidir ve kendiliginden devam
+     etmek hoparlorden bagirmak demek. */
+  K('Kulaklik cikinca kendiliginden calmiyor',
+     /if\(actx\.state === 'running'\)\{ if\(!ses\.paused\) _oturumTamir = 0; return; \}/.test(TUM_KOD),
+     'baglam calisiyorsa mudahale yok');
 
   /* ── SOUND BANKS KIPINDE MODUL SOL ALTA INIYOR ──────────────────
      Istenen: "orbitape moduna gecince REC, CAM, yildiz, volume,

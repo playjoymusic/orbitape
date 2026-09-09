@@ -474,16 +474,6 @@ SAHNELER.push({
                   if(window.merkezUygula) merkezUygula(); }catch(e){} }
 });
 /* Yildizlar en ust kademede: ekran uzaya aciliyor (bkz. body.uzay). */
-/* Gecisin ORTASI yakalaniyor: deri hala hafif goruluyor, arkasi
-   uzaya acilmis. Bitmis hali duz karanlik ve anlatmiyor. */
-SAHNELER.push({
-  dosya:'25-uzay.png', mood:false, bekle:2600,
-  kunye:{ ad:'Slow Horizon', alt:'LIVE · AMBIENT · NL', kaynak:'', lisans:'' },
-  kur:()=>{ try{ AYAR.deri = 56; AYAR.merkez = 'halka'; deriUygula();
-                 if(window.merkezUygula) merkezUygula(); }catch(e){}
-            try{ setTimeout(function(){ AYAR.yildiz = 4; AYAR.yildizIsik = 2;
-                 if(window.uzayUygula) uzayUygula(); }, 200); }catch(e){} }
-});
 
 /* ── ARAMA (BUYUTEC) ──────────────────────────────────────────────
    Kullanicinin istegi: buyutece basilinca cikan istasyon listesinden
@@ -524,7 +514,7 @@ const SADECE = (process.env.GALERI_SADECE || '').split(',').filter(Boolean);
      - Yerlerine ucuncu duz renk deri ve arsiv tarafi geldi. */
 const MAGAZA_SIRA = ['01-radyo-radiotape.png', '22-cark.png',
   '10-skins.png', '23-deri-lilies.png', '24-deri-cutout.png',
-  '09-fx-ana.png', '25-uzay.png', '19-arsiv-humans.png'];
+  '09-fx-ana.png', '11-deri-mint.png', '19-arsiv-humans.png'];
 const SECIM = MAGAZA
   ? MAGAZA_SIRA.map((ad, i)=>{
       const s = SAHNELER.find(x=>x.dosya === ad);
