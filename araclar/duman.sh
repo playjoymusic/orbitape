@@ -73,15 +73,34 @@ if [ "$KATI" = 1 ] && [ ! -f "$KAYNAK_INDEX" ]; then
   echo "  HAYIR  yayin/index.html yok — once: python3 araclar/derle.py"
   exit 1
 fi
+# SADECE index.html'e BAKMAK YETMIYOR (kosu #145): assetlinks.json
+# degisen bir push'ta index.html hic degismemisti, bu yuzden bekleme
+# ilk denemede "yetisti" deyip cikti ve asagidaki kontroller hala eski
+# surumu servis eden kenara sordu; "assetlinks depodakiyle ayni" HAYIR
+# yandi. Yayin isi o sirada normal calisiyordu -- yanlis alarm.
+# Bekleme artik index.html VE assetlinks.json'un ikisini birden
+# bekliyor; hangisi yetismediyse sonda ayri ayri yaziliyor.
+KAYNAK_AL="$KOK/.well-known/assetlinks.json"
+KATI_AL_SONUC=0
 if [ "$KATI" = 1 ] && [ -f "$KAYNAK_INDEX" ]; then
   ozet(){ shasum -a 256 "$1" 2>/dev/null | cut -d' ' -f1 || sha256sum "$1" | cut -d' ' -f1; }
+  # assetlinks JSON olarak karsilastiriliyor: bosluk ve anahtar sirasi
+  # degisirse ozet tutmaz ama dosya aslinda aynidir.
+  duz(){ python3 -c "import json,sys;print(json.dumps(json.load(open(sys.argv[1])),sort_keys=True))" "$1" 2>/dev/null; }
   bizim=$(ozet "$KAYNAK_INDEX")
+  bizim_al=''; [ -f "$KAYNAK_AL" ] && bizim_al=$(duz "$KAYNAK_AL")
   KATI_SONUC=1; t0=$(date +%s)
+  [ -n "$bizim_al" ] && KATI_AL_SONUC=1
   while :; do
     # '/index.html' 307 ile '/'a gidiyor (html_handling); kullanicinin
     # aldigi dosyayi olcmek icin dogrudan '/' isteniyor.
     "${CURL[@]}" -L -o /tmp/duman_index "$ADRES/" 2>/dev/null
-    [ "$(ozet /tmp/duman_index)" = "$bizim" ] && { KATI_SONUC=0; break; }
+    [ "$(ozet /tmp/duman_index)" = "$bizim" ] && KATI_SONUC=0
+    if [ -n "$bizim_al" ]; then
+      "${CURL[@]}" -L -o /tmp/duman_al "$ADRES/.well-known/assetlinks.json" 2>/dev/null
+      [ "$(duz /tmp/duman_al)" = "$bizim_al" ] && KATI_AL_SONUC=0
+    fi
+    [ "$KATI_SONUC" = 0 ] && [ "$KATI_AL_SONUC" = 0 ] && break
     [ $(( $(date +%s) - t0 )) -ge "$BEKLE" ] && break
     echo "  … yayin henuz yetismedi, 15 sn sonra tekrar"
     sleep 15
@@ -212,6 +231,10 @@ K "Bilinmeyen adres 404 sayfasini gosteriyor" \
 if [ "$KATI" = 1 ] && [ -f "$KAYNAK_INDEX" ]; then
   K "Yayindaki sayfa derlenmis kopyayla ayni" "$KATI_SONUC" \
     "$BEKLE sn beklendi; yayin ya yetismedi ya da baska bir surumu servis ediyor"
+  if [ -f "$KAYNAK_AL" ]; then
+    K "Yayindaki assetlinks depodakiyle ayni" "$KATI_AL_SONUC" \
+      "$BEKLE sn beklendi; yayin yetismedi ya da kenar eski dosyayi tutuyor"
+  fi
 fi
 
 echo
