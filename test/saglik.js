@@ -4495,6 +4495,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         && (bekliyor || gercek),
         bekliyor ? 'bicim tamam, PARMAK IZI BEKLIYOR (Play Console verecek)'
                  : 'parmak izi yerinde');
+      /* Anahtar degistiginde eski anahtarla kurulmus cihazlarin da
+         dogrulanmasi icin listede birden fazla parmak izi olabilir.
+         Hepsi ayni bicim kuraluna uymak zorunda: tek bir bozuk satir
+         dosyanin tamamini gecersiz kilar ve TWA sessizce duser. */
+      {
+        const hepsi = ((g.target||{}).sha256_cert_fingerprints||[]);
+        const bozuk = hepsi.filter(x=>!(/^PARMAK_IZI_BEKLIYOR/.test(x)
+                                      || /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/i.test(x)));
+        K('assetlinks parmak izlerinin hepsi gecerli bicimde',
+          hepsi.length >= 1 && bozuk.length === 0,
+          bozuk.length ? ('bozuk: ' + bozuk[0]) : (hepsi.length + ' parmak izi'));
+      }
       K('assetlinks.json JSON olarak servis ediliyor',
         /\/\.well-known\/assetlinks\.json[\s\S]{0,140}Content-Type:\s*application\/json/.test(hd),
         'yanlis tur = Chrome dosyayi okumaz, dogrulama sessizce duser');
