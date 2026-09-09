@@ -1053,6 +1053,56 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return vardi && dustu;
     }), 'yeni raf yeni niyet: eski kelime birlikte gidiyor');
 
+  /* ── RAF, CALAN ISTASYONU TAKIP EDER ────────────────────────────
+     Bildirilen: "yukarda DISCO FUNK yaziyor, radyolar baska yerde
+     kalmis... eger bir radyo caliyorsa hemen onun turunu tespit edip
+     yukariya yazmali, temasi rengi gelmeli."
+     ◁ / ▷ raf suzgeci uygulamiyor (bkz. _gecUygun) ve bu BILEREK
+     boyle. Yanlis olan gostergeydi: baska rafin istasyonu calarken
+     ust satir, halka ve renk eski rafi gosteriyordu. */
+  K('Calan istasyon rafi belirliyor', await pg.evaluate(async()=>{
+      const eskiAile = AKTIF_AILE, eskiMod = mod, eskiFav = _favMod;
+      mod = 'radio'; _favMod = false; AKTIF_AILE = 'DISCO FUNK';
+      rafCalanaUysun({ grup:'JAZZ', ad:'X', mp3:'https://sahte.test/x' });
+      const gecti = AKTIF_AILE === 'JAZZ';
+      modAdiYaz();
+      const yazi = (document.getElementById('modAd').textContent || '').trim();
+      /* Ayni raftan gelen istasyon hicbir sey degistirmiyor. */
+      rafCalanaUysun({ grup:'JAZZ', ad:'Y', mp3:'https://sahte.test/y' });
+      const sabit = AKTIF_AILE === 'JAZZ';
+      /* Tanimsiz bir grup rafi bozmuyor. */
+      rafCalanaUysun({ grup:'BOYLE BIR RAF YOK', ad:'Z' });
+      const korundu = AKTIF_AILE === 'JAZZ';
+      AKTIF_AILE = eskiAile; mod = eskiMod; _favMod = eskiFav;
+      try{ modAdiYaz(); }catch(e){}
+      return gecti && yazi === 'JAZZ' && sabit && korundu;
+    }), 'baska rafin istasyonu calinca raf ve ust yazi ona geciyor');
+  /* Favori kipinde ve aramada kullanici rafin DISINA bilerek cikmis:
+     orada raf degistirmek onun secimini bozar. */
+  K('Favori ve aramada raf degismiyor', await pg.evaluate(async()=>{
+      const eskiAile = AKTIF_AILE, eskiMod = mod, eskiFav = _favMod, eskiEt = _etiket;
+      mod = 'radio'; AKTIF_AILE = 'DISCO FUNK';
+      _favMod = true;  rafCalanaUysun({ grup:'JAZZ' });
+      const favSabit = AKTIF_AILE === 'DISCO FUNK';
+      _favMod = false; _etiket = 'funk'; rafCalanaUysun({ grup:'JAZZ' });
+      const araSabit = AKTIF_AILE === 'DISCO FUNK';
+      _etiket = eskiEt; AKTIF_AILE = eskiAile; mod = eskiMod; _favMod = eskiFav;
+      return favSabit && araSabit;
+    }), 'favori ve arama raflari asiyor, raf yerinde kaliyor');
+  /* Raf secili degilken ("vazgectim, hepsi calsin") raf null kaliyor
+     ama ust satir yine calanin turunu soyluyor. */
+  K('Raf yokken ust satir calani soyluyor', await pg.evaluate(async()=>{
+      const eskiAile = AKTIF_AILE, eskiMod = mod, eskiSon = _sonCalan;
+      mod = 'radio'; AKTIF_AILE = null;
+      _sonCalan = { grup:'ELECTRONIC', ad:'X' };
+      modAdiYaz();
+      const yazi = (document.getElementById('modAd').textContent || '').trim();
+      const rafBos = AKTIF_AILE === null;
+      _sonCalan = eskiSon; AKTIF_AILE = eskiAile; mod = eskiMod;
+      try{ modAdiYaz(); }catch(e){}
+      return yazi === 'ELECTRONIC' && rafBos;
+    }), 'secim bozulmuyor, ekran yine de ne dinledigini biliyor');
+
   /* ── SOUND BANKS: IKI DUNYA, TEK KAPI ───────────────────────────
      Eski ORBITAPE tarafi (arsiv havuzlari, nebula, gezegenler, FX)
      silinmedi; ayarlardaki bir dugmenin arkasina kondu.
@@ -2027,6 +2077,55 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       bozuk.length ? bozuk.map(x=>x.ad+' (stil '+x.css+', koyu '+x.koyu
                                   +', CSP engeli '+x.engel+')').join(' | ')
                    : yazi.map(x=>x.ad.replace('.html','')).join(', ') + ' — stil var, CSP temiz');
+  }
+
+  /* ── ILK ACILISTA ORTADA CARK ───────────────────────────────────
+     Kullanicinin sozu: "ilk acilinca carkli olan acilmali."
+     Varsayilan zaten 'cark'. Sorun sudur: skins paneli acilirken
+     AYAR.merkez'i KALICI olarak 'yuvarlak' yaziyordu, yani panele bir
+     kez bakan herkesin deposunda yanlis deger kaldi. Panel duzeltildi
+     ama duzeltme eski depoyu temizlemiyor -- bunu bir kerelik damga
+     yapiyor (merkezOnar). Iki sey birden olculuyor: damgasiz depo
+     onariliyor, damgali depo ELLENMIYOR (yoksa kullanicinin kendi
+     secimi her acilista silinirdi). */
+  {
+    /* DEPO AYNI KAYNAKTA PAYLASILIYOR: bu blok kendi tohumunu ekiyor
+       ve isi bitince ONCEKI HALI geri yaziyor. Ilk yazilista geri
+       koyma yoktu ve bir sonraki testin sayfasi bu blogun deposuyla
+       acildi -- tur kontrolu "kutu isaretli" diye atlandi. Baska bir
+       testin zeminini bozan test, test degildir. */
+    const oncekiDepo = await pg.evaluate(()=>{
+      try{ return { a:localStorage.getItem('orbitape.ayar'),
+                    t:localStorage.getItem('orbitape.tur') }; }
+      catch(e){ return { a:null, t:null }; }
+    });
+    const acVeOku = async (depo)=>{
+      const s3 = await pg.context().newPage();
+      await s3.addInitScript(d=>{
+        try{ localStorage.setItem('orbitape.ayar', d); }catch(e){}
+      }, JSON.stringify(depo));
+      await s3.goto(S, {waitUntil:'load'});
+      await s3.waitForTimeout(700);
+      const m = await s3.evaluate(()=>{
+        try{ return String(AYAR.merkez); }catch(e){ return 'okunamadi'; }
+      });
+      await s3.close();
+      return m;
+    };
+    const eski = await acVeOku({ sesAcildi:true, merkez:'yuvarlak' });
+    const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, merkez:'halka' });
+    await pg.evaluate(d=>{
+      try{
+        if(d.a === null) localStorage.removeItem('orbitape.ayar');
+        else localStorage.setItem('orbitape.ayar', d.a);
+        if(d.t === null) localStorage.removeItem('orbitape.tur');
+        else localStorage.setItem('orbitape.tur', d.t);
+      }catch(e){}
+    }, oncekiDepo);
+    K('Ilk acilista ortada cark', eski === 'cark',
+      'damgasiz depoda merkez=' + eski + ' (yuvarlak yaziliydi)');
+    K('Onarim kullanicinin secimini silmiyor', yeni === 'halka',
+      'damgali depoda merkez=' + yeni);
   }
 
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───
@@ -10480,6 +10579,44 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        g.merkezDort && g.merkezSecili, oz || 'uc tus, secili isaretli');
     K('Yukari kaydirma galeriyi kapatir', g.kaydirKapatti, oz || 'tepedeyken yukari cekis');
     K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
+
+  /* ── OFF'TA CARK, DERIDE DISK ────────────────────────────────────
+     Iki istek arka arkaya geldi ve ilk bakista celisiyorlar:
+       "skinsler gezilmeye baslandiginda o yuvarlak olanla goster ilk"
+       "skinse basinca ilk bu kare olmali, default carkli olan, OFF ken"
+     Celiski degil: disk, GOSTERILECEK BIR DERI oldugu icin isteniyor.
+     OFF'ta gosterilecek deri yok; orada disk zorlamasi yalnizca
+     uygulamanin kendi carkini gizler. Kural iki yonlu: deriye gecince
+     disk odunc alinir, OFF'a donunce hemen geri verilir. */
+  const mrkOd = await pg.evaluate(async ()=>{
+    const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+    const c = {};
+    try{
+      const eskiDeri = AYAR.deri|0, eskiMerkez = AYAR.merkez;
+      try{ if(window.deriGaleriAcik && deriGaleriAcik()) deriGaleriKapa(); }catch(e){}
+      await bek(200);
+      AYAR.deri = 0; AYAR.merkez = 'cark';
+      try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
+      document.getElementById('deriFirca').click();
+      for(let i = 0; i < 40 && !(window.deriGaleriAcik && deriGaleriAcik()); i++) await bek(80);
+      await bek(250);
+      c.offCark   = AYAR.merkez === 'cark';         // OFF: kullanicinin merkezi duruyor
+      window.deriGaleriAdim(1);  await bek(250);
+      c.deriDisk  = AYAR.merkez === 'yuvarlak';     // deri: disk odunc alindi
+      window.deriGaleriAdim(-1); await bek(250);
+      c.geriCark  = AYAR.merkez === 'cark';         // OFF'a donus: odunc geri verildi
+      try{ deriGaleriKapa(); }catch(e){}
+      await bek(200);
+      AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
+    }catch(e){ c.hata = String(e && e.message || e); }
+    return c;
+  });
+  K('Skins OFF ile acilinca ortada cark kaliyor', mrkOd.offCark === true,
+     mrkOd.hata || 'merkez=' + (mrkOd.offCark ? 'cark' : 'degisti'));
+  K('Deriye gecince disk odunc, OFF\'a donunce geri',
+     mrkOd.deriDisk === true && mrkOd.geriCark === true,
+     mrkOd.hata || 'deri->yuvarlak, OFF->cark');
 
     /* ── SERITTE HER SEY SABIT YERDE ──────────────────────────────
        Kullanicinin sozu: "minimize olunca tek sabit olmali; arada 2

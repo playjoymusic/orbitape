@@ -9770,7 +9770,7 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -9793,10 +9793,24 @@
         if(_a.sesKapa === true) AYAR.sesKapa = true;
         if(_a.carkSesCal === false) AYAR.carkSesCal = false;
         if(typeof _a.carkSesSev === 'number') AYAR.carkSesSev = Math.max(0, Math.min(3, _a.carkSesSev|0));
-        if(typeof _a.merkez === 'string' && ['cark','halka','yuvarlak','faz'].indexOf(_a.merkez) >= 0)
+        /* ── BIR KERELIK ONARIM: ORTADAKI ALET ────────────────────
+           KULLANICININ SOZU: "ilk acilinca carkli olan acilmali."
+           Varsayilan zaten 'cark'. Ama skins paneli acilirken
+           AYAR.merkez'i KALICI olarak 'yuvarlak' yaziyordu -- panele
+           bir kez bakmis olmak yetiyordu (9 Eylul'de duzeltildi:
+           artik odunc aliniyor, panel kapaninca geri veriliyor).
+           Hata isledigi surece herkesin deposunda yanlis deger
+           kaldi ve duzeltme onu kendiliginden temizlemiyor.
+           Damgasi olmayan depo BIR KEZ varsayilana donuyor; damga
+           basildiktan sonra kullanicinin secimi aynen korunuyor.
+           Ayni desen ses ayarlarinda da kullanildi (sesAcildi):
+           zorlama degil, hatanin izini silmek. */
+        if(_a.merkezOnar && typeof _a.merkez === 'string'
+           && ['cark','halka','yuvarlak','faz'].indexOf(_a.merkez) >= 0)
           AYAR.merkez = _a.merkez;
       }
       AYAR.sesAcildi = true;
+      AYAR.merkezOnar = true;
       if(_a.arac    === true)  AYAR.arac    = true;
       /* TUTORIALS: varsayilan ACIK. Yalnizca kullanici kapattiysa
          kapali geliyor -- yeni gelen kisi anlatimsiz kalmasin. */
@@ -10145,6 +10159,11 @@
   function ayarKaydet(){
     try{ localStorage.setItem('orbitape.ayar', JSON.stringify(AYAR)); }catch(e){ _yut(e); }
   }
+  /* BIR KERELIK DAMGALAR HEMEN YAZILIYOR (sesAcildi, merkezOnar).
+     Yoksa hicbir ayara dokunmayan kullanicida damga hic basilmiyor
+     ve onarim her acilista tekrar calisiyordu -- zararsiz ama
+     kullanicinin sonraki secimini de her seferinde geri alirdi. */
+  try{ ayarKaydet(); }catch(e){ _yut(e); }
   /* Aramadan yapilan ACIK secim: raf kapisi bu tek cagriyi gecirir.
      Kullanicinin kendi sectigi seyi reddetmek, kapinin isi degil. */
   var _secildi = false;
@@ -12503,6 +12522,9 @@
     if(!item) return;
     try{ _sonCalan = item; }catch(e){ _yut(e); }
     try{ aileSecimKesinlesti(item); }catch(e){ _yut(e); }
+    /* SIRA ONEMLI: once raf calana uyar, sonra yazi yazilir --
+       tersi olsaydi ust satir bir an eski rafin adiyla cikardi. */
+    try{ rafCalanaUysun(item); }catch(e){ _yut(e); }
     try{ modAdiYaz(); }catch(e){ _yut(e); }      // yeni ses geldi: yazi katilasir ya da silik kalir
     /* İLK SES KATEGORİYE TAKILMAZ ────────────────────────────────
        Açılış kategorisi RADIOTAPE. Radyo gelmeyip yedeğe düşülünce
@@ -13207,6 +13229,43 @@
        demektir. Raf her degistiginde cark ona doner. */
     try{ if(window.carkTazele) window.carkTazele(); }catch(e){ _yut(e); }
     return AKTIF_AILE;
+  }
+
+  /* ── RAF, CALAN ISTASYONU TAKIP EDER ──────────────────────────────
+     KULLANICININ SOZU: "yukarda DISCO FUNK yaziyor, radyolar baska
+     yerde kalmis. Nerden gelirsem geleyim kutuphaneler turler
+     karismamali. Eger bir radyo caliyorsa hemen onun turunu tespit
+     edip yukariya yazmali, temasi rengi gelmeli."
+
+     Hakli ve sebebi tek satirda yaziliydi: ◁ / ▷ tuslari BILEREK raf
+     suzgeci uygulamiyor (bkz. _gecUygun -- "gecmis dinlenenlerin
+     kaydidir, secili rafin degil"). Yani geri basip baska bir rafin
+     istasyonuna donmek MUMKUN ve dogru. Yanlis olan sey ekrandi:
+     istasyon RADIOTAPE'ten caliyor, ust satir hala DISCO FUNK
+     yaziyor, halka DISCO FUNK'ta duruyor, renk DISCO FUNK'in.
+     Gosterge yalan soyluyordu.
+
+     Cozum "geri tusunu hapsetmek" degil -- o bir kez denendi ve geri
+     alindi. Cozum RAFIN MUZIGI TAKIP ETMESI: calan istasyonun kendi
+     grubu neyse raf oraya gecer. Ust yazi, renk, cark ve siradaki
+     istasyonlar bir anda ayni seyi soyler.
+
+     UC YERDE DOKUNMUYOR, cunku oralarda kullanici rafin DISINA
+     bilerek cikmis:
+       · favori kipi  -- favoriler her raftan gelir
+       · arama        -- kelime raflari asar
+       · raf secili degil ("vazgectim, hepsi calsin")
+     O uc durumda raf oldugu gibi kaliyor; ust satir yine de calanin
+     turunu yaziyor (bkz. modAdiYaz). */
+  function rafCalanaUysun(item){
+    try{
+      if(typeof mod === 'undefined' || mod !== 'radio') return;
+      if(!item || !item.grup) return;
+      if(!AKTIF_AILE || item.grup === AKTIF_AILE) return;
+      if(AILE_ADLAR.indexOf(item.grup) < 0) return;
+      if(_favMod || _etiket) return;
+      aileSec(item.grup, true);
+    }catch(e){ _yut(e); }
   }
 
   /* ══ SU AN NE CALIYOR ═════════════════════════════════════════════
@@ -16126,7 +16185,20 @@
            da kapsadigi icin yazilmisti ama radyo bir ustteki satirda
            zaten donuyor, geriye sadece MIXTAPE kaliyor. Sonuc: mixtape
            kanalinda ekranda RADIOTAPE yaziyordu. */
-        if(typeof mod !== 'undefined' && mod === 'radio') ad = AKTIF_AILE || '';
+        /* RAF SECILI DEGILSE (favori, arama, "hepsi calsin") ust satir
+           yine de CALANIN turunu soyluyor: kullanicinin sozu "eger bir
+           radyo caliyorsa hemen onun turunu tespit edip yukariya
+           yazmali". Bos birakmak, ekranin ne dinledigini bilmemesi
+           demekti. Renk de bu addan geliyor (asagida aileRenk). */
+        if(typeof mod !== 'undefined' && mod === 'radio'){
+          ad = AKTIF_AILE || '';
+          if(!ad){
+            try{
+              const _g = _sonCalan && _sonCalan.grup;
+              if(_g && AILE_ADLAR.indexOf(_g) >= 0) ad = _g;
+            }catch(_a){ _yut(_a); }
+          }
+        }
         /* ARSIV KANALININ ADI: SOUNDS.
            Once 'ORBITAPE' yaziyordu ve markanin yaninda 'ORBITAPE
            ORBITAPE' diye iki kez cikiyordu: kanal adi markanin adiyla

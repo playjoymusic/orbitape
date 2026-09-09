@@ -177,6 +177,40 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
      gelmeli. Panelde merkezi ELLE degistirdiyse o secim kalir --
      orada karar veren kullanicidir. */
   let _merkezOnce = null;
+  let _merkezElle = false;
+  /* ── ODUNC MERKEZ YALNIZCA DERI VARKEN ──────────────────────────
+     Eski kural: galeri acilir acilmaz merkez 'yuvarlak' oluyordu --
+     "deriye bakan kisi DERIYE bakiyor, halka acikken govde kalkiyor
+     ve gorulecek sey hic cizilmiyor." Dogru, ama TEK bir yerde
+     yanlis: OFF'ta gosterilecek deri YOK. Orada disk zorlamasi
+     yalnizca uygulamanin kendi carkini gizliyordu.
+     Kullanicinin sozu: "skinse basinca ilk bu kare olmali, default
+     carkli olan, OFF ken."
+     Kural netlesti ve iki yonlu calisiyor:
+       · deri secili -> disk ODUNC alinir
+       · OFF'a donulur -> odunc hemen geri verilir
+     Panelde merkezi ELLE seciyorsa o bir KARAR: o oturumda bir daha
+     odunc alinmiyor, secim oldugu gibi kaliyor. */
+  function merkezOdunc(){
+    try{
+      if(typeof AYAR === 'undefined' || !AYAR) return;
+      if(_merkezElle) return;
+      const yaz = ()=>{
+        try{ ayarKaydet(); }catch(e){ yut(e); }
+        try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
+      };
+      if((AYAR.deri|0) > 0){
+        if(AYAR.merkez !== 'yuvarlak'){
+          _merkezOnce = AYAR.merkez;               // kapaninca geri verilecek
+          AYAR.merkez = 'yuvarlak';
+          yaz();
+        }
+      }else if(_merkezOnce){
+        AYAR.merkez = _merkezOnce; _merkezOnce = null;
+        yaz();
+      }
+    }catch(e){ yut(e); }
+  }
   function el(t, sinif){ const e = document.createElement(t); if(sinif) e.className = sinif; return e; }
   function merkezIsaret(){
     try{
@@ -387,6 +421,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC']].map(([k, ad])=>{
       const t = tus('mrk', ad, T(ad), ()=>{
         _merkezOnce = null;                        // elle secildi: odunc degil karar
+        _merkezElle = true;                        // bu oturumda bir daha odunc alinmiyor
         try{ AYAR.merkez = k; ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
         merkezIsaret(); diskleriTazele();
@@ -455,6 +490,9 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       AYAR.deri = n|0;
       try{ ayarKaydet(); }catch(e){ yut(e); }
       try{ deriUygula(); }catch(e){ yut(e); }
+      /* GEZINIRKEN DE AYNI KURAL: deriye gecince disk odunc aliniyor,
+         OFF'a donunce hemen geri veriliyor (bkz. merkezOdunc). */
+      try{ merkezOdunc(); }catch(e){ yut(e); }
       /* MERKEZ DE YENIDEN UYGULANIYOR. Cizimli bir deriye gecince
          halka kapanmali, duz bir deriye donunce eski tercih geri
          gelmeli (bkz. index.html: cizimliDeriMi). Bu cagri olmadan
@@ -515,23 +553,14 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   function ac(){
     try{
       kur();
-      /* ── GALERI ACILINCA ONCE DISK ────────────────────────────
-         Kullanicinin sozu: "skinsler gezilmeye baslandiginda o
-         yuvarlak olanla goster ilk. halkayi isteyen acar bakar."
-         Dogru: deriye bakan kisi DERIYE bakiyor. Halka acikken
-         govde kalkiyor ve derinin ortasinda gorulecek sey hic
-         cizilmiyor -- yani gezinirken en cok merak edilen sey
-         gizli kaliyordu.
-         Halka bir dokunus uzakta: bu pencerenin kendi RING
-         anahtari ve merkez satirindaki DISC/WHEEL/FREQUENCY. */
-      try{
-        if(typeof AYAR !== 'undefined' && AYAR.merkez !== 'yuvarlak'){
-          _merkezOnce = AYAR.merkez;              // kapaninca geri verilecek
-          AYAR.merkez = 'yuvarlak';
-          try{ ayarKaydet(); }catch(e2){ yut(e2); }
-          try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e2){ yut(e2); }
-        }
-      }catch(e){ yut(e); }
+      /* ── ACILISTA: DERI VARSA DISK, OFF'TA KULLANICININ MERKEZI ──
+         "Skinsler gezilmeye baslandiginda o yuvarlak olanla goster
+         ilk" istegi duruyor -- ama yalnizca gosterilecek bir deri
+         varken. OFF'ta gosterilecek deri yok; orada disk zorlamasi
+         yalnizca uygulamanin kendi carkini gizliyordu. Bkz.
+         merkezOdunc. */
+      _merkezElle = false;
+      try{ merkezOdunc(); }catch(e){ yut(e); }
       /* 9 Eylul: ONCE SERIT ACILIYOR. Kullanicinin sozu: "ilk o
          kucuk penceremiz acilsin; sol kosesinde asagiya bir ok olsa,
          belli eden liste oldugunu. Isteyen listeyi acar." Tam izgara
