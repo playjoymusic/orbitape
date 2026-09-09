@@ -160,6 +160,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Satir ici style niteligi yazilmiyor (CSP sessizce reddeder)', kacak === 0,
       kacak ? kacak + ' yerde var' : 'stil CSSOM ile yaziliyor');
   }
+  /* ── PENCERE YONTEMI KOPARILARAK CAGRILMIYOR ────────────────────
+     Bulunan: galeri karelerini tembel cizen dongu su satiri
+     tasiyordu:
+        const sonra = window.requestIdleCallback || (f=>setTimeout(f,16));
+     Islev referansi window'dan KOPARILIP cagriliyordu -- 'this'
+     kayboluyor. Chromium affediyor, WebKit affetmiyor: TypeError
+     firlatiyor, yani ekranda SOMETHING BROKE. Kullanicinin paneli
+     tam da skins gezerken gormesinin sebebi bu olabilir; bizim
+     tarayicimizda hic patlamadigi icin uc taramada da gorunmedi.
+     Ayrica requestIdleCallback Safari'ye 17.4'te geldi -- eski bir
+     telefonda hic yok.
+     Kural: bu yontem window uzerinden cagrilacak. */
+  {
+    const kodSade2 = TUM_KOD.replace(/\/\*[\s\S]*?\*\//g, ' ')
+                            .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const kopuk = /=\s*window\.requestIdleCallback\s*\|\|/.test(kodSade2)
+               || /=\s*window\.requestIdleCallback\s*;/.test(kodSade2);
+    K('requestIdleCallback window uzerinden cagriliyor', kopuk === false,
+      kopuk ? 'referans koparilmis -- WebKit TypeError firlatir'
+            : 'kopuk cagri yok');
+  }
   const dosyaBoy = fs.statSync('index.html').size;
   /* Tavan 400 -> 500 KB. Uygulama gercekten buyudu (tur, gecmis, FX
      ipucu, kamera seviyesi) ve dosyanin buyuk kismi YORUM: neyin neden
@@ -665,7 +686,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        yedek yol ve o durumda ilk basis da kaybolmuyor).
        Yine de tavansiz birakilmiyor -- kacak buyume burada da
        yakalansin diye kendi tavani var. */
-    const _IU_TAVAN = { 'kayit.js': 24 };
+    /* ── DERI_CIZIM.JS'IN KENDI TAVANI: 18 KB ──────────────────
+       12 KB kurali "tek bir DOKUNUS buyuk bir indirme baslatmasin"
+       diye kondu. deri_cizim.js o kurala tam olarak girmiyor ve
+       sebebi olculebilir:
+         · Dosya SKINS PANELI ACILINCA iniyor, ama panel INMEYI
+           BEKLEMIYOR -- serit aninda aciliyor, cizimler tembel
+           dongude (cizimleriCiz) kare kare doluyor. Yani kullanici
+           bos ekrana bakmiyor.
+         · Icinde artik UC seri var: tablo uslupleri, ekran
+           uslupleri ve doga serisi -- otuz uc cizimli deri, her
+           biri iki resim (arka plan + disk). Resim dosyasi YOK;
+           bunlarin tamami kod, yani alternatifi megabaytlarca PNG
+           olurdu.
+         · Olculen boy 14,4 KB brotli. Tavan 18: bugunku degil,
+           birkac deri daha eklenirse de sessizce asilmayacak bir
+           sinir. Uzerine cikmak yine yaziyla olacak.
+       ILK CIZIM tavanina dokunmuyor: bu dosya acilista inmiyor. */
+    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 18 };
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
     const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
@@ -4223,6 +4261,44 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   }));
   K('manifest.json bagli',    pwa.manifest, 'var');
   K('apple-touch-icon',       pwa.ikon, 'var');
+  /* ── ANA EKRAN SIMGESI MAGAZADAKIYLE AYNI OLCUDE ────────────────
+     Bildirilen: "telefonda ana ekrana ekleyince sanki eski ikon
+     cikiyor."
+     Cikiyordu. Buyutmeyi yalnizca MAGAZA gorseline uygulamistik;
+     uygulamanin kendi simgeleri (apple-touch-icon, icon-192/512 ve
+     maskeli cift) eski, kucuk halinde kalmisti. Olculdu: halkanin
+     kapladigi alan %6 iken magazadaki %12-17'ydi.
+     Bu kontrol simgenin GERCEKTEN dolu oldugunu olcuyor: karenin
+     ortasindaki halkalarin kapladigi alan. Simge yeniden
+     kucultulurse ya da eski dosya geri gelirse kirmizi yaniyor.
+     Maskeli surum bilerek daha kucuk: Android onu daireye kirpiyor,
+     guvenli alan merkezdeki %80. */
+  {
+    const fs2 = require('fs');
+    const olc = (yol)=>{
+      /* PNG'yi cozmek icin bagimlilik yok: yalnizca dosyanin
+         boyutuna bakmak yeterli degil, o yuzden Playwright'in
+         tuvalinden gecuyoruz. */
+      return pg.evaluate(async (b64)=>{
+        const im = new Image();
+        await new Promise((r,j)=>{ im.onload=r; im.onerror=j; im.src='data:image/png;base64,'+b64; });
+        const c = document.createElement('canvas');
+        c.width = c.height = 128;
+        const x = c.getContext('2d'); if(!x) return -1;
+        x.drawImage(im, 0, 0, 128, 128);
+        const d = x.getImageData(0,0,128,128).data;
+        let n = 0;
+        for(let i=0;i<d.length;i+=4) if(d[i]+d[i+1]+d[i+2] > 90) n++;
+        return Math.round(1000*n/(128*128))/10;
+      }, fs2.readFileSync(yol).toString('base64'));
+    };
+    const normal = await olc('apple-touch-icon.png');
+    const maske  = await olc('icon-512-maskable.png');
+    K('Ana ekran simgesi dolu (eski kucuk simge degil)', normal >= 15,
+      'halkalarin kapladigi alan %' + normal + ' (eskisi %6)');
+    K('Maskeli simge guvenli alanda kaliyor', maske > 0 && maske < normal,
+      'maskeli %' + maske + ' < normal %' + normal);
+  }
   K('viewport viewport-fit',  /viewport-fit=cover/.test(pwa.viewport), pwa.viewport.slice(0,52));
   K('theme-color',            pwa.tema, 'var');
   K('<html lang="en">',       pwa.lang==='en', pwa.lang||'YOK');
@@ -5613,6 +5689,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         return !!a && !!b && getComputedStyle(b).pointerEvents==='auto';
       });
       const ing = await p7.evaluate(()=>document.getElementById('hata').textContent);
+      /* ── HATANIN KENDISI PANELDE GORUNUYOR MU ─────────────────
+         Panel bugune kadar yalnizca "SOMETHING BROKE" diyordu;
+         hatanin ne oldugu COPY DETAILS'in arkasindaydi. Sahada
+         bedeli olculdu: kullanici paneli goruyor, tarif ediyor,
+         ama metin hicbir zaman gelmiyor -- dort adim otede duruyor
+         ve kimse o dort adimi atmiyor. Elimizde ekran goruntusu
+         var, sebep yok. Ilk satir artik panelin icinde ve
+         secilebilir (uzun basip kopyalanabiliyor). */
+      const gorunen = await p7.evaluate(()=>{
+        const m = document.getElementById('hataMetin');
+        if(!m) return null;
+        const s2 = getComputedStyle(m);
+        return { yazi:(m.textContent||''), gorunur:s2.display!=='none',
+                 secilebilir:(s2.userSelect||s2.webkitUserSelect)==='text' };
+      });
       /* ── KAPANABILIYOR MU ─────────────────────────────────────
          Panel bir kez acilinca bir daha kapanmiyordu: kapatma yok,
          zaman asimi yok, sifirlama yok. Tek bir zararsiz ust duzey
@@ -5628,7 +5719,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await p7.waitForTimeout(400);
       const yenidenActi = await acik();
       return { kapali0, redActi, redKayit, hataActi, kayitSayisi, metin, gecirir, dugme, ing,
-               kapandi, kayitDuruyor, yenidenActi };
+               kapandi, kayitDuruyor, yenidenActi, gorunen };
     } finally { await kapat(); }
   })();
   K('Acilista hata paneli KAPALI', ht.kapali0, 'kullanici bos yere korkmuyor');
@@ -5640,6 +5731,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ht.kapandi===true && ht.kayitDuruyor===true && ht.yenidenActi===true,
      ht.kapandi ? 'DISMISS kapatiyor, kayit duruyor, yeni hata yine aciyor'
                 : 'panel kapanmiyor -- oturum boyunca ekranda kaliyor');
+  K('Hatanin ilk satiri PANELDE yaziyor',
+     !!ht.gorunen && ht.gorunen.gorunur === true
+     && /sinama-hata/.test(ht.gorunen.yazi) && ht.gorunen.secilebilir === true,
+     ht.gorunen ? ('"' + String(ht.gorunen.yazi).slice(0,60) + '" · secilebilir '
+                   + ht.gorunen.secilebilir) : 'kutu yok');
   K('Panel dokunusu GECIRIYOR', ht.gecirir===true && ht.dugme===true,
      'ses ve kanallar erisilebilir kaliyor, sadece dugmeler dokunus aliyor');
   K('Hata metninde kimlik/gecmis YOK',
@@ -10700,11 +10796,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      oz || 'once serit, ok ile izgara');
     /* Bildirilen: "bu alt ok cok mu kucuk, ben bilmesem basmam ona."
        Sessiz birakilan bir tus, olmayan bir tustur. */
-    K('Liste oku tus gibi gorunuyor ve ne acacagini soyluyor',
+    /* YAZI YOK, TUS VAR. Once yanina ALL kelimesi konmustu;
+       kullanici "bu cikan yazi ne" dedi ve hakliydi -- ust satirda
+       zaten uc yazi var. Kesfedilebilirlik kelimeyle degil TUS
+       OLARAK saglaniyor: cerceve, tam opaklik, 44 piksel. */
+    K('Liste oku tus gibi gorunuyor',
        g.okEn >= 44 && g.okBoy >= 30 && g.okSaydam >= 0.95
-       && g.okCerceve === true && /ALL/.test(g.okYazi || ''),
+       && g.okCerceve === true,
        (g.okEn||0) + 'x' + (g.okBoy||0) + ' px, saydamlik ' + (g.okSaydam)
-       + ', cerceve ' + g.okCerceve + ', yazi "' + (g.okYazi||'') + '"');
+       + ', cerceve ' + g.okCerceve);
   K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
@@ -10796,6 +10896,36 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Deriye gecince disk odunc, OFF\'a donunce geri',
      mrkOd.deriDisk === true && mrkOd.geriCark === true,
      mrkOd.hata || 'deri->yuvarlak, OFF->cark');
+  /* ── PANELI KAPATMAK MERKEZI GERI CEVIRMIYOR ────────────────────
+     Bildirilen: "DISC secili ama skinsi seciyorum, hop cark hali
+     cikiyor."
+     Odunc IKI yerde birden geri veriliyordu: OFF'a donunce (dogru)
+     ve PANEL KAPANINCA (yanlis -- ikincisi OFF icin yazilmisti,
+     deri secme sirasi eklendikten sonra anlamsizlasti). Akis suydu:
+     cark aciktan paneli ac, bir deri sec (ekranda DISC yanar),
+     paneli kapat -> cark geri doner. Kullanicinin gordugu: "DISC
+     yaziyor ama cark cikti."
+     Kural tek: disk deriye ait. Deri duruyorsa odunc de duruyor. */
+  K('Deri seciliyken panel kapaninca cark geri gelmiyor', await pg.evaluate(async()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const eskiDeri = AYAR.deri|0, eskiMerkez = AYAR.merkez;
+      try{ if(window.deriGaleriAcik && deriGaleriAcik()) deriGaleriKapa(); }catch(e){}
+      await bek(150);
+      AYAR.deri = 0; AYAR.merkez = 'cark';
+      try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
+      document.getElementById('deriFirca').click();
+      for(let i = 0; i < 40 && !(window.deriGaleriAcik && deriGaleriAcik()); i++) await bek(80);
+      await bek(250);
+      window.deriGaleriAdim(1); await bek(300);
+      const acikkenDisk = AYAR.merkez === 'yuvarlak';
+      try{ deriGaleriKapa(); }catch(e){}
+      await bek(350);
+      const kapaninca = AYAR.merkez;
+      const deriDuruyor = (AYAR.deri|0) > 0;
+      AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
+      return acikkenDisk && deriDuruyor && kapaninca === 'yuvarlak';
+    }), 'deri acikken merkez disk kaliyor');
 
     /* ── SERITTE HER SEY SABIT YERDE ──────────────────────────────
        Kullanicinin sozu: "minimize olunca tek sabit olmali; arada 2

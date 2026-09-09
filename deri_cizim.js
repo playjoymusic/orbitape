@@ -113,7 +113,26 @@ const DERI_USLUP = {
   /* UFO — kullanicinin istegi: "ufolu uzayli seyler de yap."
      Ellilerin B-filmi afisi: gece mavisi, asit yesili isin, mercan
      kirmizisi tabak, solgun krem ay. */
-  ufo      : { pal:["#e2543c","#8fe04a","#f2d9a8","#1b3a58","#0a1220"], tohum:51 }
+  ufo      : { pal:["#e2543c","#8fe04a","#f2d9a8","#1b3a58","#0a1220"], tohum:51 },
+  /* ── DOGA / DINGINLIK SERISI (9 Eylul) ────────────────────────────
+     Kullanicinin sozu: "daha doga relax mood vs olsun, koyu tonlar.
+     ama duz renk degil, yine cok sanatsal cizimler uzerinden --
+     hatta bizim ekranimizdaki ogelerle etkilesimli gibi gorunen,
+     sanki onlara ozel yapilmis gibi."
+     Hepsi KOYU ve hepsi diskin cevresine gore kuruluyor (bkz.
+     DERI_CIZIM'deki seri basligi). Paletler dogadan: gece yesili,
+     ay isigi, kum, kor, murekkep suyu. */
+  pines    : { pal:["#12241c","#c8d98a","#dfe8ea","#16303a","#070d11"], tohum:13 },
+  tide     : { pal:["#123040","#2b6f7a","#cfe6ea","#0e2331","#060e16"], tohum:27 },
+  canyon   : { pal:["#5a2f22","#8a4a2c","#e6c9a0","#2a1a18","#100a0b"], tohum:39 },
+  rain     : { pal:["#2a3a4a","#7fb2d8","#dbe8f2","#1b2733","#0a1018"], tohum:47 },
+  moss     : { pal:["#1d3a24","#3f6b34","#b9d6a2","#132a1a","#070f0a"], tohum:55 },
+  dune     : { pal:["#5a4630","#8a6b44","#e8d6b4","#2a2118","#100d0a"], tohum:61 },
+  koi      : { pal:["#1a2a33","#d8613c","#e8dcc8","#12212a","#070e13"], tohum:73 },
+  northern : { pal:["#2fa88a","#5f7fd8","#cfe8f2","#12203a","#060b16"], tohum:83 },
+  bamboo   : { pal:["#24422c","#4f7a3c","#bcd8a8","#16301f","#080f0b"], tohum:91 },
+  embers   : { pal:["#e0662a","#a83418","#ffd9a0","#2a1810","#0d0806"], tohum:97 },
+  cave     : { pal:["#3a4048","#6f7d88","#cfe0e8","#1c2229","#080c10"], tohum:19 }
 };
 function _uslup(d){ return (d && DERI_USLUP[d.cizim]) || {}; }
 function _pal(d){ const u = _uslup(d); return (d && d.pal) || u.pal || ['#888']; }
@@ -576,6 +595,257 @@ const DERI_HALKA = {
       c.beginPath();
       c.ellipse(o + k*S*0.035, o - S*0.005, S*0.028, S*0.015, k*0.6, 0, Math.PI*2); c.fill();
     });
+  },
+
+  /* ══ DOGA / DINGINLIK SERISI — HALKALAR ══════════════════════════
+     Diskin kendisi de sahnenin parcasi: PINES'te ay, TIDE'da su
+     halkalari, EMBERS'ta korun kendisi. Arka plan diski
+     kusatiyorsa, disk de o dunyadan bir sey tasimali. */
+
+  /* PINES — dolunay: yuzeyinde solgun kraterler, kenarinda hale. */
+  pines(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    const h = c.createRadialGradient(o, o, S*0.20, o, o, S*0.5);
+    h.addColorStop(0, _zemRgba(p[2], 0.30)); h.addColorStop(1, _zemRgba(p[2], 0));
+    c.fillStyle = h; c.fillRect(0, 0, S, S);
+    const ay = c.createRadialGradient(o - S*0.08, o - S*0.10, S*0.02, o, o, S*0.34);
+    ay.addColorStop(0, p[2]); ay.addColorStop(1, _zemRgba(p[2], 0.62));
+    c.fillStyle = ay; c.beginPath(); c.arc(o, o, S*0.34, 0, Math.PI*2); c.fill();
+    c.fillStyle = _zemRgba(p[3], 0.30);
+    for(let i = 0; i < 9; i++){
+      const a = r()*Math.PI*2, q = r()*S*0.28;
+      c.beginPath(); c.arc(o + Math.cos(a)*q, o + Math.sin(a)*q, S*(0.012 + r()*0.030), 0, Math.PI*2);
+      c.fill();
+    }
+  },
+  /* TIDE — merkezden yayilan su halkalari. */
+  tide(c, S, d){
+    const p = _pal(d), o = S/2;
+    const g = c.createLinearGradient(0, 0, 0, S);
+    g.addColorStop(0, p[3]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    for(let i = 1; i <= 10; i++){
+      c.strokeStyle = _zemRgba(p[2], 0.42 - i*0.033);
+      c.lineWidth = S*(0.016 - i*0.0009);
+      c.beginPath();
+      for(let t = 0; t <= 48; t++){
+        const q = t/48*Math.PI*2;
+        const rr = S*0.048*i*(1 + 0.05*Math.sin(q*3 + i));
+        const x = o + Math.cos(q)*rr, y = o + Math.sin(q)*rr;
+        if(t) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.closePath(); c.stroke();
+    }
+    c.fillStyle = _zemRgba(p[2], 0.85);
+    c.beginPath(); c.arc(o, o, S*0.035, 0, Math.PI*2); c.fill();
+  },
+  /* CANYON — kaya kesiti: tabaka tabaka, her biri baska tonda. */
+  canyon(c, S, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d));
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    let y = 0;
+    for(let i = 0; y < S; i++){
+      const h = S*(0.03 + r()*0.09);
+      c.fillStyle = _zemRgba(p[i % 3], 0.45 + (i % 3)*0.16);
+      c.beginPath(); c.moveTo(0, y);
+      for(let x = 0; x <= S; x += S/8) c.lineTo(x, y + (r()-0.5)*S*0.02);
+      c.lineTo(S, y + h); c.lineTo(0, y + h); c.closePath(); c.fill();
+      y += h;
+    }
+  },
+  /* RAIN — cam uzerinde damlalar; ortada buyuk bir tanesi. */
+  rain(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    const g = c.createLinearGradient(0, 0, 0, S);
+    g.addColorStop(0, p[3]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    const q = c.createRadialGradient(o, o, 0, o, o, S*0.42);
+    q.addColorStop(0, _zemRgba(p[1], 0.42)); q.addColorStop(1, _zemRgba(p[1], 0));
+    c.fillStyle = q; c.fillRect(0, 0, S, S);
+    for(let i = 0; i < 60; i++){
+      const x = r()*S, y = r()*S, rr = S*(0.010 + r()*0.045);
+      c.fillStyle = _zemRgba(p[2], 0.14);
+      c.beginPath(); c.ellipse(x, y, rr, rr*1.22, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = _zemRgba(p[2], 0.38);
+      c.beginPath(); c.arc(x - rr*0.3, y - rr*0.42, rr*0.28, 0, Math.PI*2); c.fill();
+    }
+  },
+  /* MOSS — merkezden disa acilan egrelti spirali. */
+  moss(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    const g = c.createRadialGradient(o, o, 0, o, o, S*0.5);
+    g.addColorStop(0, _zemRgba(p[2], 0.32)); g.addColorStop(1, _zemRgba(p[4], 0.6));
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    for(let k = 0; k < 5; k++){
+      const a0 = k/5*Math.PI*2;
+      c.strokeStyle = _zemRgba(p[k % 3], 0.62);
+      for(let i = 0; i < 20; i++){
+        const t = i/20, a = a0 + t*2.0, rr = S*0.46*t;
+        const x = o + Math.cos(a)*rr, y = o + Math.sin(a)*rr;
+        const yap = S*0.07*(1 - t*0.7);
+        c.lineWidth = S*0.006;
+        [-1, 1].forEach(function(s){
+          c.beginPath(); c.moveTo(x, y);
+          c.quadraticCurveTo(x + Math.cos(a + s*1.2)*yap*0.7, y + Math.sin(a + s*1.2)*yap*0.7,
+                             x + Math.cos(a + s*0.8)*yap,     y + Math.sin(a + s*0.8)*yap);
+          c.stroke();
+        });
+      }
+    }
+  },
+  /* DUNE — kum sirtlari, ustte ince ay isigi hatti. */
+  dune(c, S, d){
+    const p = _pal(d);
+    const g = c.createLinearGradient(0, 0, 0, S);
+    g.addColorStop(0, p[4]); g.addColorStop(0.4, p[3]); g.addColorStop(1, p[0]);
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    for(let i = 0; i < 5; i++){
+      const y = S*(0.30 + i*0.16), e = S*(0.06 + i*0.02);
+      c.fillStyle = _zemRgba(p[i % 3], 0.45 + i*0.11);
+      c.beginPath(); c.moveTo(-S*0.1, y + e*0.6);
+      c.bezierCurveTo(S*0.3, y - e, S*0.65, y + e, S*1.1, y - e*0.4);
+      c.lineTo(S*1.1, S*1.1); c.lineTo(-S*0.1, S*1.1); c.closePath(); c.fill();
+      c.strokeStyle = _zemRgba(p[2], 0.22); c.lineWidth = S*0.005;
+      c.beginPath(); c.moveTo(-S*0.1, y + e*0.6);
+      c.bezierCurveTo(S*0.3, y - e, S*0.65, y + e, S*1.1, y - e*0.4); c.stroke();
+    }
+  },
+  /* KOI — tek bir balik, merkezin cevresinde donuyor. */
+  koi(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    const g = c.createRadialGradient(o, o, 0, o, o, S*0.5);
+    g.addColorStop(0, _zemRgba(p[3], 0.65)); g.addColorStop(1, _zemRgba(p[4], 0.95));
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    for(let i = 1; i <= 5; i++){
+      c.strokeStyle = _zemRgba(p[2], 0.16); c.lineWidth = S*0.006;
+      c.beginPath(); c.arc(o, o, S*0.085*i, 0, Math.PI*2); c.stroke();
+    }
+    const koi = (a, q, boy, ana, ben)=>{
+      c.save(); c.translate(o + Math.cos(a)*q, o + Math.sin(a)*q); c.rotate(a + Math.PI/2);
+      c.fillStyle = ana;
+      c.beginPath(); c.ellipse(0, 0, boy, boy*0.34, 0, 0, Math.PI*2); c.fill();
+      c.beginPath(); c.moveTo(-boy*0.9, 0);
+      c.quadraticCurveTo(-boy*1.5, -boy*0.42, -boy*1.7, -boy*0.06);
+      c.quadraticCurveTo(-boy*1.5,  boy*0.42, -boy*0.9, 0);
+      c.closePath(); c.fill();
+      c.fillStyle = ben;
+      [[0.25,-0.10,0.20],[-0.15,0.12,0.15]].forEach(function(k){
+        c.beginPath(); c.ellipse(boy*k[0], boy*k[1], boy*k[2], boy*k[2]*0.72, 0, 0, Math.PI*2); c.fill();
+      });
+      c.restore();
+    };
+    koi(0.7, S*0.28, S*0.12, _zemRgba(p[1], 0.92), _zemRgba(p[0], 0.8));
+    koi(3.6, S*0.34, S*0.09, _zemRgba(p[2], 0.85), _zemRgba(p[0], 0.7));
+  },
+  /* NORTHERN — perdeler, merkezden yukari acilan isik. */
+  northern(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.fillStyle = _zemRgba('#ffffff', 0.6);
+    for(let i = 0; i < 70; i++) c.fillRect(r()*S, r()*S, S*0.006, S*0.006);
+    for(let i = 0; i < 5; i++){
+      const x0 = S*(0.06 + i*0.20), renk = p[i % 3];
+      const q = c.createLinearGradient(0, S*0.10, 0, S*0.92);
+      q.addColorStop(0, _zemRgba(renk, 0));
+      q.addColorStop(0.4, _zemRgba(renk, 0.42));
+      q.addColorStop(1, _zemRgba(renk, 0));
+      c.fillStyle = q;
+      c.beginPath(); c.moveTo(x0, S*0.10);
+      for(let t = 0; t <= 14; t++){ const s = t/14;
+        c.lineTo(x0 + Math.sin(s*3.4 + i)*S*0.07, S*(0.10 + s*0.82)); }
+      for(let t = 14; t >= 0; t--){ const s = t/14;
+        c.lineTo(x0 + S*0.09 + Math.sin(s*3.4 + i)*S*0.07, S*(0.10 + s*0.82)); }
+      c.closePath(); c.fill();
+    }
+    c.fillStyle = _zemRgba(p[4], 0.9);
+    c.beginPath(); c.moveTo(0, S*0.86);
+    [[0.2,0.76],[0.45,0.83],[0.7,0.74],[1,0.82]].forEach(function(k){ c.lineTo(S*k[0], S*k[1]); });
+    c.lineTo(S, S); c.lineTo(0, S); c.closePath(); c.fill();
+  },
+  /* BAMBOO — dikey govdeler ve capraz yapraklar. */
+  bamboo(c, S, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d));
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    const sis = c.createLinearGradient(0, S*0.25, 0, S*0.75);
+    sis.addColorStop(0, _zemRgba(p[3], 0)); sis.addColorStop(0.5, _zemRgba(p[3], 0.5));
+    sis.addColorStop(1, _zemRgba(p[3], 0));
+    for(let i = 0; i < 6; i++){
+      const x = S*(0.08 + i*0.17), kal = S*(0.020 + r()*0.026);
+      c.strokeStyle = _zemRgba(p[i % 2], 0.55 + r()*0.3); c.lineWidth = kal;
+      c.beginPath(); c.moveTo(x, S*1.02); c.lineTo(x + (r()-0.5)*S*0.06, -S*0.02); c.stroke();
+      c.lineWidth = kal*1.3;
+      for(let y = S*0.94; y > 0; y -= S*0.16){
+        c.beginPath(); c.moveTo(x - kal*0.6, y); c.lineTo(x + kal*0.6, y); c.stroke();
+      }
+    }
+    c.fillStyle = sis; c.fillRect(0, S*0.25, S, S*0.5);
+    for(let i = 0; i < 14; i++){
+      const x = r()*S, y = r()*S, boy = S*(0.09 + r()*0.11), a = (r()-0.5)*3;
+      c.save(); c.translate(x, y); c.rotate(a);
+      c.fillStyle = _zemRgba(p[2], 0.35 + r()*0.35);
+      c.beginPath(); c.moveTo(0, 0);
+      c.quadraticCurveTo(boy*0.5, -boy*0.16, boy, 0);
+      c.quadraticCurveTo(boy*0.5,  boy*0.16, 0, 0);
+      c.closePath(); c.fill(); c.restore();
+    }
+  },
+  /* EMBERS — korun kendisi: ortasi beyaz sicak, kenarlari kul. */
+  embers(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    const g = c.createRadialGradient(o, o + S*0.06, 0, o, o, S*0.5);
+    g.addColorStop(0, p[2]); g.addColorStop(0.22, p[0]);
+    g.addColorStop(0.55, _zemRgba(p[1], 0.55)); g.addColorStop(1, _zemRgba(p[4], 0.9));
+    c.fillStyle = g; c.beginPath(); c.arc(o, o, S*0.5, 0, Math.PI*2); c.fill();
+    /* Kul catlaklari: koyu, dallanan cizgiler. */
+    c.strokeStyle = _zemRgba(p[4], 0.7);
+    for(let i = 0; i < 14; i++){
+      const a = r()*Math.PI*2;
+      c.lineWidth = S*(0.004 + r()*0.010);
+      c.beginPath(); c.moveTo(o + Math.cos(a)*S*0.10, o + Math.sin(a)*S*0.10);
+      let x = o + Math.cos(a)*S*0.10, y = o + Math.sin(a)*S*0.10, aa = a;
+      for(let k = 0; k < 5; k++){
+        aa += (r()-0.5)*0.9;
+        x += Math.cos(aa)*S*0.07; y += Math.sin(aa)*S*0.07;
+        c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+    for(let i = 0; i < 40; i++){
+      const a = r()*Math.PI*2, q = Math.pow(r(), 0.6)*S*0.48;
+      c.fillStyle = _zemRgba(i % 3 ? p[0] : p[2], 0.8);
+      c.beginPath(); c.arc(o + Math.cos(a)*q, o + Math.sin(a)*q, S*(0.004 + r()*0.008), 0, Math.PI*2);
+      c.fill();
+    }
+  },
+  /* CAVE — magara agzi: karanlik cerceve, ortada aydinlik. */
+  cave(c, S, d){
+    const p = _pal(d), o = S/2, r = _tohumlu(_tohum(d));
+    const g = c.createRadialGradient(o, o, S*0.03, o, o, S*0.5);
+    g.addColorStop(0, p[2]); g.addColorStop(0.34, p[3]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    c.fillStyle = p[4];
+    c.beginPath();
+    c.rect(0, 0, S, S);
+    c.moveTo(o + S*0.40, o);
+    for(let t = 64; t >= 0; t--){
+      const a = t/64*Math.PI*2;
+      const rr = S*(0.30 + 0.07*Math.sin(a*5 + 1.1) + 0.035*Math.sin(a*11));
+      c.lineTo(o + Math.cos(a)*rr, o + Math.sin(a)*rr);
+    }
+    c.closePath(); c.fill('evenodd');
+    c.fillStyle = _zemRgba(p[4], 0.95);
+    for(let i = 0; i < 10; i++){
+      const a = r()*Math.PI*2, boy = S*(0.04 + r()*0.10);
+      const x = o + Math.cos(a)*S*0.34, y = o + Math.sin(a)*S*0.34;
+      c.beginPath(); c.moveTo(x, y);
+      c.lineTo(x - Math.sin(a)*S*0.03, y + Math.cos(a)*S*0.03);
+      c.lineTo(x - Math.cos(a)*boy, y - Math.sin(a)*boy);
+      c.closePath(); c.fill();
+    }
   }
 };
 function deriHalkaAdresi(d){
@@ -1706,6 +1976,534 @@ const DERI_CIZIM = {
       c.ellipse(ax + k[0]*s*0.17, ay - s*1.40, s*0.13, s*0.07, k[0]*0.6, 0, Math.PI*2);
       c.fill();
     });
+    c.restore();
+  },
+
+  /* ══ DOGA / DINGINLIK SERISI — ARKA PLANLAR ══════════════════════
+     Kullanicinin sozu: "olaya farkli yaklas, daha doga relax mood vs
+     olsun, koyu tonlar. ama duz renk degil, yine cok sanatsal
+     cizimler uzerinden -- hatta bizim ekranimizdaki ogelerle
+     etkilesimli gibi gorunen, sanki onlara ozel yapilmis gibi."
+
+     Onceki iki seri (tablo uslupleri, ekran uslupleri) EKRANDAN
+     BAGIMSIZ resimlerdi: kompozisyon kendi icinde kuruluyor, disk
+     de uzerine oturuyordu. Bu seri tersini yapiyor -- kompozisyon
+     DISKI BILEREK kuruluyor. Diskin ekrandaki yeri olculdu
+     (390x844 ve 430x932'de merkez 0.50W / 0.50H, yaricap 0.39W;
+     kisa ekranda 0.33H'e cikiyor). Onun icin her cizim diskin
+     cevresini bir OLAY YERI gibi kullaniyor: dallar oradan
+     dolaniyor, dalgalar oradan yayiliyor, ay onun arkasinda
+     duruyor, ates isigi asagidan ona vuruyor.
+     GEVSEK BAGLI: hicbir sey 0.50H cizgisine mecbur degil, cunku
+     kisa ekranda disk yukari kayiyor. Kompozisyonlar o kaymada da
+     ayakta kalacak sekilde genis tutuldu.
+
+     HEPSI KOYU. Kullanicinin istegi buydu ve pratik sebebi de var:
+     bu deriler dinlerken acik kalacak, gece de acik kalacak. */
+
+  /* PINES — gece ormani. Katman katman cam siluetleri arkaya
+     dogru soluyor, aralarinda atesbocekleri; ay diskin ARKASINDA. */
+  pines(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[4]); g.addColorStop(0.45, p[3]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Ay: diskin arkasinda, hafif saga kacik. */
+    const ay = c.createRadialGradient(W*0.58, H*0.44, 0, W*0.58, H*0.44, u*0.55);
+    ay.addColorStop(0, _zemRgba(p[2], 0.42)); ay.addColorStop(1, _zemRgba(p[2], 0));
+    c.fillStyle = ay; c.fillRect(0, 0, W, H);
+    c.fillStyle = _zemRgba(p[2], 0.85);
+    c.beginPath(); c.arc(W*0.58, H*0.44, u*0.10, 0, Math.PI*2); c.fill();
+    /* Camlar: uc katman, arkadaki en solgun. Her katman kendi
+       taban cizgisinde, yani orman gerileyerek derinlesiyor. */
+    const cam = (x, taban, boy, renk)=>{
+      c.fillStyle = renk;
+      c.beginPath(); c.moveTo(x, taban - boy);
+      const kat = 7, gen = boy*0.30;
+      for(let i = 1; i <= kat; i++){
+        const t = i/kat, y = taban - boy + boy*t, g2 = gen*t;
+        c.lineTo(x + g2, y - boy*0.03);
+        c.lineTo(x + g2*0.55, y);
+      }
+      c.lineTo(x, taban);
+      for(let i = kat; i >= 1; i--){
+        const t = i/kat, y = taban - boy + boy*t, g2 = gen*t;
+        c.lineTo(x - g2*0.55, y);
+        c.lineTo(x - g2, y - boy*0.03);
+      }
+      c.closePath(); c.fill();
+    };
+    [[0.74, 0.58, 0.30], [0.86, 0.80, 0.62], [0.99, 1.00, 1.00]].forEach(function(k, n){
+      const taban = H*k[0], renk = _zemRgba(p[n], 0.55 + n*0.22);
+      for(let x = -u*0.1; x < W + u*0.1; x += u*(0.10 + r()*0.09)){
+        cam(x, taban + (r()-0.5)*u*0.02, u*k[1]*(0.5 + r()*0.5) * k[2] + u*0.10, renk);
+      }
+    });
+    /* Atesbocekleri: az sayida, diskin cevresinde toplanmis. */
+    for(let i = 0; i < 26; i++){
+      const a = r()*Math.PI*2, q = u*(0.34 + r()*0.34);
+      const x = W*0.5 + Math.cos(a)*q, y = H*0.5 + Math.sin(a)*q*0.85;
+      const s = u*(0.004 + r()*0.006);
+      const h2 = c.createRadialGradient(x, y, 0, x, y, s*7);
+      h2.addColorStop(0, _zemRgba(p[1], 0.85)); h2.addColorStop(1, _zemRgba(p[1], 0));
+      c.fillStyle = h2; c.beginPath(); c.arc(x, y, s*7, 0, Math.PI*2); c.fill();
+      c.fillStyle = _zemRgba(p[1], 0.95);
+      c.beginPath(); c.arc(x, y, s, 0, Math.PI*2); c.fill();
+    }
+    c.restore();
+  },
+  /* TIDE — ay isigindaki deniz. Halkalar DISKTEN yayiliyor:
+     merkez orasi, dalga oradan disari acilıyor. */
+  tide(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[4]); g.addColorStop(0.42, p[3]); g.addColorStop(1, p[0]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Ay ve ufuk. Onizlemede ust yari cok bostu; ay hem
+       kompozisyonu topluyor hem su yolunun kaynagini soyluyor. */
+    const ay = c.createRadialGradient(W*0.5, H*0.17, 0, W*0.5, H*0.17, u*0.42);
+    ay.addColorStop(0, _zemRgba(p[2], 0.34)); ay.addColorStop(1, _zemRgba(p[2], 0));
+    c.fillStyle = ay; c.fillRect(0, 0, W, H*0.40);
+    c.fillStyle = _zemRgba(p[2], 0.88);
+    c.beginPath(); c.arc(W*0.5, H*0.17, u*0.075, 0, Math.PI*2); c.fill();
+    c.fillStyle = _zemRgba(p[2], 0.36); c.fillRect(0, H*0.30, W, u*0.005);
+    /* Yayilan halkalar: merkez diskin merkezi. Uzaklastikca
+       inceliyor ve soluyor -- suya atilan tasin izi. */
+    const cx = W*0.5, cy = H*0.50;
+    for(let i = 1; i <= 16; i++){
+      const rr = u*0.16*i, a = Math.max(0, 0.34 - i*0.019);
+      if(a <= 0.01) continue;
+      c.strokeStyle = _zemRgba(p[2], a);
+      c.lineWidth = u*(0.010 - i*0.0004);
+      c.beginPath();
+      for(let t = 0; t <= 64; t++){
+        const q = t/64*Math.PI*2;
+        const dal = 1 + 0.035*Math.sin(q*3 + i*0.7);
+        const x = cx + Math.cos(q)*rr*dal, y = cy + Math.sin(q)*rr*dal*0.42;
+        if(t) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.closePath(); c.stroke();
+    }
+    /* Ay yolu: dikey isik suzulmesi, alta dogru genisliyor. */
+    const yol = c.createLinearGradient(0, H*0.30, 0, H);
+    yol.addColorStop(0, _zemRgba(p[2], 0.30)); yol.addColorStop(1, _zemRgba(p[2], 0));
+    c.fillStyle = yol;
+    c.beginPath(); c.moveTo(W*0.44, H*0.30); c.lineTo(W*0.56, H*0.30);
+    c.lineTo(W*0.86, H); c.lineTo(W*0.14, H); c.closePath(); c.fill();
+    /* Kopukler */
+    c.fillStyle = _zemRgba(p[2], 0.5);
+    for(let i = 0; i < 200; i++) c.fillRect(r()*W, H*(0.32 + r()*0.68), u*0.004, u*0.002);
+    c.restore();
+  },
+  /* CANYON — gece kanyonu. Katmanli kaya duvarlari iki yandan
+     ICERI kapaniyor ve tam ortada disk icin bir aciklik birakiyor;
+     yukarida ince bir gokyuzu seridi ve yildizlar. */
+  canyon(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const gok = c.createLinearGradient(0, 0, 0, H*0.42);
+    gok.addColorStop(0, p[3]); gok.addColorStop(1, p[4]);
+    c.fillStyle = gok; c.fillRect(0, 0, W, H*0.42);
+    c.fillStyle = _zemRgba('#ffffff', 0.65);
+    for(let i = 0; i < 70; i++) c.fillRect(r()*W, r()*H*0.36, u*0.004, u*0.004);
+    /* Duvarlar: her biri kendi katman cizgileriyle. Sol duvar
+       genisce, sag duvar dar -- simetri yok, kanyon da simetrik
+       degil. */
+    const duvar = (yon, taban, renk, katRenk)=>{
+      c.save();
+      c.beginPath();
+      c.moveTo(yon > 0 ? W : 0, 0);
+      const n = 9;
+      for(let i = 0; i <= n; i++){
+        const t = i/n;
+        const genis = taban * (0.55 + 0.45*Math.sin(t*2.4 + (yon>0?1.1:0.2)));
+        c.lineTo((yon > 0 ? W - genis*W : genis*W), H*t);
+      }
+      c.lineTo(yon > 0 ? W : 0, H);
+      c.closePath();
+      c.fillStyle = renk; c.fill();
+      c.clip();
+      /* Tabaka cizgileri: yatay, hafif egimli, farkli kalinlikta. */
+      c.strokeStyle = katRenk;
+      for(let y = 0; y < H; y += u*0.028){
+        c.lineWidth = u*(0.002 + r()*0.004);
+        c.beginPath(); c.moveTo(-W*0.1, y); c.lineTo(W*1.1, y + (r()-0.5)*u*0.03); c.stroke();
+      }
+      c.restore();
+    };
+    duvar(-1, 0.30, p[0], _zemRgba(p[1], 0.22));
+    duvar( 1, 0.22, p[1], _zemRgba(p[0], 0.24));
+    /* On plandaki zemin: alt ucte koyu bir kutle. */
+    c.fillStyle = _zemRgba(p[4], 0.92);
+    c.beginPath(); c.moveTo(0, H*0.88);
+    c.quadraticCurveTo(W*0.5, H*0.82, W, H*0.90);
+    c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
+    c.restore();
+  },
+  /* RAIN — pencereden yagmur. Cam uzerinde damlalar ve akan
+     izler; arkada bulanik isiklar, diskin arkasinda en buyugu. */
+  rain(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[4]); g.addColorStop(0.5, p[3]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Bulanik isiklar: sehir. Diskin arkasinda buyuk bir tane. */
+    const isik = (x, y, rr, renk, a)=>{
+      const q = c.createRadialGradient(x, y, 0, x, y, rr);
+      q.addColorStop(0, _zemRgba(renk, a)); q.addColorStop(1, _zemRgba(renk, 0));
+      c.fillStyle = q; c.beginPath(); c.arc(x, y, rr, 0, Math.PI*2); c.fill();
+    };
+    isik(W*0.5, H*0.48, u*0.62, p[1], 0.26);
+    for(let i = 0; i < 14; i++){
+      isik(r()*W, H*(0.15 + r()*0.75), u*(0.05 + r()*0.13),
+           [p[0], p[1], p[2]][i % 3], 0.16 + r()*0.18);
+    }
+    /* Akan izler: yukaridan asagi, kalinliklari farkli. */
+    c.lineCap = 'round';
+    for(let i = 0; i < 26; i++){
+      const x = r()*W, y0 = r()*H*0.7, uz = u*(0.10 + r()*0.32);
+      c.strokeStyle = _zemRgba(p[2], 0.10 + r()*0.12);
+      c.lineWidth = u*(0.003 + r()*0.005);
+      c.beginPath(); c.moveTo(x, y0);
+      c.bezierCurveTo(x + (r()-0.5)*u*0.02, y0 + uz*0.4,
+                      x + (r()-0.5)*u*0.02, y0 + uz*0.7, x, y0 + uz);
+      c.stroke();
+    }
+    /* Damlalar: cam uzerinde, ustte parlak bir nokta. */
+    for(let i = 0; i < 130; i++){
+      const x = r()*W, y = r()*H, rr = u*(0.004 + r()*0.011);
+      c.fillStyle = _zemRgba(p[2], 0.13);
+      c.beginPath(); c.ellipse(x, y, rr, rr*1.25, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = _zemRgba(p[2], 0.30);
+      c.beginPath(); c.arc(x - rr*0.3, y - rr*0.45, rr*0.30, 0, Math.PI*2); c.fill();
+    }
+    c.restore();
+  },
+  /* MOSS — makro. Egrelti yapraklari DORT KOSEDEN diske dogru
+     kivriliyor; orta boslukta ince bir isik sizmasi. */
+  moss(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    /* Merkez isigi ONIZLEMEDE COK SONUKTU: egrelti dallari zeminden
+       ayrismiyordu. Isik guclendirildi, kenar karartmasi hafifledi. */
+    const isik = c.createRadialGradient(W*0.5, H*0.47, 0, W*0.5, H*0.47, u*0.90);
+    isik.addColorStop(0, _zemRgba(p[2], 0.34));
+    isik.addColorStop(0.45, _zemRgba(p[1], 0.20));
+    isik.addColorStop(1, _zemRgba(p[4], 0.42));
+    c.fillStyle = isik; c.fillRect(0, 0, W, H);
+    /* Egrelti dali: sap boyunca kuculen yapraklar, ucu kivrik. */
+    const dal = (x0, y0, aci, boy, renk, kal)=>{
+      const n = 22;
+      c.strokeStyle = renk;
+      for(let i = 0; i < n; i++){
+        const t = i/n;
+        const a = aci + t*1.5;                        // ucu kivriliyor
+        const x = x0 + Math.cos(a)*boy*t, y = y0 + Math.sin(a)*boy*t;
+        const yap = boy*0.16*(1 - t*0.75);
+        c.lineWidth = u*0.004*kal;
+        [-1, 1].forEach(function(s){
+          c.beginPath(); c.moveTo(x, y);
+          c.quadraticCurveTo(x + Math.cos(a + s*1.2)*yap*0.7, y + Math.sin(a + s*1.2)*yap*0.7,
+                             x + Math.cos(a + s*0.8)*yap,     y + Math.sin(a + s*0.8)*yap);
+          c.stroke();
+        });
+      }
+      c.lineWidth = u*0.006*kal; c.strokeStyle = renk;
+      c.beginPath(); c.moveTo(x0, y0);
+      for(let i = 0; i <= n; i++){
+        const t = i/n, a = aci + t*1.5;
+        c.lineTo(x0 + Math.cos(a)*boy*t, y0 + Math.sin(a)*boy*t);
+      }
+      c.stroke();
+    };
+    const kose = [[-0.05,-0.05, 0.5], [1.05,-0.05, 2.2], [-0.05,1.05, -0.8], [1.05,1.05, 3.6]];
+    kose.forEach(function(k, i){
+      for(let j = 0; j < 4; j++){
+        dal(W*k[0], H*k[1], k[2] + (j-1.5)*0.38 + r()*0.2,
+            u*(0.60 + r()*0.34), _zemRgba(p[(i + j) % 3], 0.62 + j*0.10), 1 + j*0.45);
+      }
+    });
+    /* Zerreler: havada asili spor tanecikleri. */
+    c.fillStyle = _zemRgba(p[2], 0.35);
+    for(let i = 0; i < 90; i++) c.fillRect(r()*W, r()*H, u*0.004, u*0.004);
+    c.restore();
+  },
+  /* DUNE — gece colu. Uzun yumusak kum sirtlari; bir tanesi tam
+     diskin altindan geciyor, ufuk cizgisi gibi. */
+  dune(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[4]); g.addColorStop(0.34, p[3]); g.addColorStop(1, p[0]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = _zemRgba('#ffffff', 0.55);
+    for(let i = 0; i < 60; i++) c.fillRect(r()*W, r()*H*0.34, u*0.004, u*0.004);
+    /* Sirtlar: her biri bir onceki katmanin ustunde ve daha koyu.
+       0.62H'teki sirt diskin hemen altindan geciyor. */
+    const sirt = [[0.36, 0.10], [0.48, 0.16], [0.62, 0.22], [0.78, 0.30], [0.94, 0.40]];
+    sirt.forEach(function(k, i){
+      const y = H*k[0], egri = u*k[1];
+      c.fillStyle = _zemRgba(p[i % 3], 0.55 + i*0.10);
+      c.beginPath(); c.moveTo(-W*0.05, y + egri*0.6);
+      c.bezierCurveTo(W*0.28, y - egri, W*0.62, y + egri*0.9, W*1.05, y - egri*0.4);
+      c.lineTo(W*1.05, H*1.05); c.lineTo(-W*0.05, H*1.05); c.closePath(); c.fill();
+      /* Sirtin uzerinde ince isik hatti: ay isigi. */
+      c.strokeStyle = _zemRgba(p[2], 0.22 - i*0.03); c.lineWidth = u*0.004;
+      c.beginPath(); c.moveTo(-W*0.05, y + egri*0.6);
+      c.bezierCurveTo(W*0.28, y - egri, W*0.62, y + egri*0.9, W*1.05, y - egri*0.4);
+      c.stroke();
+    });
+    c.restore();
+  },
+  /* KOI — muerekkep havuzu. Balıklar diskin CEVRESINDE donuyor,
+     altlarinda halka halka dalgalar ve nilufer yapraklari. */
+  koi(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const derin = c.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, u*1.0);
+    derin.addColorStop(0, _zemRgba(p[3], 0.55)); derin.addColorStop(1, _zemRgba(p[4], 0.9));
+    c.fillStyle = derin; c.fillRect(0, 0, W, H);
+    /* Dalgalar: diskin merkezinden yayilan genis halkalar. */
+    for(let i = 1; i <= 9; i++){
+      c.strokeStyle = _zemRgba(p[2], 0.13 - i*0.011);
+      c.lineWidth = u*0.005;
+      c.beginPath(); c.ellipse(W*0.5, H*0.5, u*0.17*i, u*0.17*i*0.55, 0, 0, Math.PI*2); c.stroke();
+    }
+    /* Nilufer yapraklari: bir kenari centikli daireler. */
+    for(let i = 0; i < 7; i++){
+      const x = r()*W, y = H*(0.12 + r()*0.8), rr = u*(0.05 + r()*0.07), a0 = r()*6;
+      c.fillStyle = _zemRgba(p[0], 0.35 + r()*0.2);
+      c.beginPath(); c.arc(x, y, rr, a0 + 0.45, a0 + Math.PI*2); c.closePath(); c.fill();
+    }
+    /* Balik: govde bir badem, kuyruk iki yaprak. Diskin cevresinde
+       dizilmis, hepsi ayni yone donuyor. */
+    const koi = (x, y, boy, aci, ana, ben)=>{
+      c.save(); c.translate(x, y); c.rotate(aci);
+      c.fillStyle = ana;
+      c.beginPath(); c.ellipse(0, 0, boy, boy*0.34, 0, 0, Math.PI*2); c.fill();
+      c.beginPath();
+      c.moveTo(-boy*0.9, 0);
+      c.quadraticCurveTo(-boy*1.5, -boy*0.42, -boy*1.7, -boy*0.06);
+      c.quadraticCurveTo(-boy*1.5,  boy*0.42, -boy*0.9, 0);
+      c.closePath(); c.fill();
+      c.fillStyle = ben;
+      [[0.25,-0.10,0.20],[-0.15,0.12,0.15],[0.55,0.06,0.11]].forEach(function(k){
+        c.beginPath(); c.ellipse(boy*k[0], boy*k[1], boy*k[2], boy*k[2]*0.72, 0, 0, Math.PI*2); c.fill();
+      });
+      c.restore();
+    };
+    for(let i = 0; i < 5; i++){
+      const a = i/5*Math.PI*2 + 0.4;
+      const q = u*(0.46 + (i % 2)*0.16);
+      koi(W*0.5 + Math.cos(a)*q, H*0.5 + Math.sin(a)*q*0.72,
+          u*(0.055 + (i % 2)*0.018), a + Math.PI/2,
+          _zemRgba(i % 2 ? p[1] : p[2], 0.85), _zemRgba(p[0], 0.75));
+    }
+    c.restore();
+  },
+  /* NORTHERN — kuzey isiklari. Perdeler diskin ARKASINDAN
+     yukseliyor; altta kar ortulu dag silueti. */
+  northern(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[4]); g.addColorStop(0.6, p[3]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = _zemRgba('#ffffff', 0.7);
+    for(let i = 0; i < 110; i++) c.fillRect(r()*W, r()*H*0.72, u*0.004, u*0.004);
+    /* Perdeler: dikey dalgali seritler, tepesi sonuyor. */
+    for(let i = 0; i < 7; i++){
+      const x0 = W*(-0.1 + i*0.19), renk = p[i % 3];
+      const q = c.createLinearGradient(0, H*0.12, 0, H*0.72);
+      q.addColorStop(0, _zemRgba(renk, 0));
+      q.addColorStop(0.35, _zemRgba(renk, 0.30 + r()*0.18));
+      q.addColorStop(1, _zemRgba(renk, 0));
+      c.fillStyle = q;
+      c.beginPath();
+      const gen = u*(0.10 + r()*0.10);
+      c.moveTo(x0, H*0.12);
+      for(let t = 0; t <= 20; t++){
+        const s = t/20;
+        c.lineTo(x0 + Math.sin(s*3.6 + i)*u*0.09, H*(0.12 + s*0.60));
+      }
+      for(let t = 20; t >= 0; t--){
+        const s = t/20;
+        c.lineTo(x0 + gen + Math.sin(s*3.6 + i)*u*0.09, H*(0.12 + s*0.60));
+      }
+      c.closePath(); c.fill();
+    }
+    /* Dag: alt ucte, tepeleri karli. */
+    c.fillStyle = _zemRgba(p[4], 0.96);
+    c.beginPath(); c.moveTo(0, H*0.84);
+    const tepe = [[0.12,0.74],[0.26,0.80],[0.42,0.70],[0.58,0.79],[0.74,0.72],[0.90,0.81],[1,0.76]];
+    tepe.forEach(function(k){ c.lineTo(W*k[0], H*k[1]); });
+    c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
+    c.fillStyle = _zemRgba(p[2], 0.28);
+    tepe.forEach(function(k, i){
+      if(i % 2) return;
+      c.beginPath(); c.moveTo(W*k[0], H*k[1]);
+      c.lineTo(W*(k[0]+0.05), H*(k[1]+0.045));
+      c.lineTo(W*(k[0]-0.05), H*(k[1]+0.045));
+      c.closePath(); c.fill();
+    });
+    c.restore();
+  },
+  /* BAMBOO — bambu korusu. Govdeler iki YANDAN cerceveliyor,
+     orta bosluk diske kaliyor; arkada sis bandi. */
+  bamboo(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const sis = c.createLinearGradient(0, H*0.30, 0, H*0.72);
+    sis.addColorStop(0, _zemRgba(p[3], 0)); sis.addColorStop(0.5, _zemRgba(p[3], 0.45));
+    sis.addColorStop(1, _zemRgba(p[3], 0));
+    /* Govde: bogumlu, hafif egik, yukari dogru inceliyor. */
+    const govde = (x, kal, renk, egim)=>{
+      c.strokeStyle = renk; c.lineWidth = kal;
+      c.beginPath(); c.moveTo(x, H*1.02);
+      c.bezierCurveTo(x + egim*0.3, H*0.7, x + egim*0.8, H*0.35, x + egim, -H*0.02);
+      c.stroke();
+      c.lineWidth = kal*1.25;
+      for(let y = H*0.96; y > -H*0.02; y -= u*0.14){
+        const t = 1 - (y/H);
+        const dx = egim*t;
+        c.beginPath(); c.moveTo(x + dx - kal*0.6, y); c.lineTo(x + dx + kal*0.6, y); c.stroke();
+      }
+    };
+    /* Yaprak: uzun badem, sapindan cikiyor. */
+    const yaprak = (x, y, boy, aci, renk)=>{
+      c.save(); c.translate(x, y); c.rotate(aci);
+      c.fillStyle = renk;
+      c.beginPath(); c.moveTo(0, 0);
+      c.quadraticCurveTo(boy*0.5, -boy*0.16, boy, 0);
+      c.quadraticCurveTo(boy*0.5,  boy*0.16, 0, 0);
+      c.closePath(); c.fill(); c.restore();
+    };
+    /* Once arka katman (ince, solgun), sonra on katman. */
+    [[0.35, 0.010, 0.30], [1.0, 0.020, 0.62]].forEach(function(k, kat){
+      const n = kat ? 5 : 9;
+      for(let i = 0; i < n; i++){
+        /* Orta bolge bilerek bos: disk oraya oturuyor. */
+        const yan = i % 2 ? 1 : -1;
+        const x = W*0.5 + yan*W*(0.20 + r()*0.34);
+        govde(x, u*k[1]*(0.7 + r()*0.6), _zemRgba(p[kat], k[0]), (r()-0.5)*u*0.18);
+        for(let j = 0; j < 5; j++){
+          const y = H*(0.05 + r()*0.85);
+          yaprak(x + (r()-0.5)*u*0.05, y, u*(0.06 + r()*0.09),
+                 (r()-0.5)*2.2 + (yan>0 ? 0.4 : Math.PI - 0.4),
+                 _zemRgba(p[kat ? 2 : 1], 0.30 + k[2]*0.45));
+        }
+      }
+    });
+    c.fillStyle = sis; c.fillRect(0, H*0.30, W, H*0.42);
+    c.restore();
+  },
+  /* EMBERS — kor. Isik ASAGIDAN geliyor ve diske vuruyor; duman
+     onun cevresinden yukseliyor, kivilcimlar da. */
+  embers(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    /* Ates parlamasi: alttan, genis ve yumusak. */
+    const q = c.createRadialGradient(W*0.5, H*0.94, 0, W*0.5, H*0.94, u*1.15);
+    q.addColorStop(0, _zemRgba(p[0], 0.80));
+    q.addColorStop(0.30, _zemRgba(p[1], 0.34));
+    q.addColorStop(1, _zemRgba(p[4], 0));
+    c.fillStyle = q; c.fillRect(0, 0, W, H);
+    /* Duman: genis, yavas kivrilan seritler; diskin iki yanindan. */
+    for(let i = 0; i < 9; i++){
+      const x0 = W*(0.5 + (i % 2 ? 1 : -1)*(0.10 + r()*0.30));
+      const gen = u*(0.10 + r()*0.16);
+      const g2 = c.createLinearGradient(0, H*0.95, 0, H*0.05);
+      g2.addColorStop(0, _zemRgba(p[2], 0.16 + r()*0.10));
+      g2.addColorStop(1, _zemRgba(p[2], 0));
+      c.fillStyle = g2;
+      c.beginPath();
+      c.moveTo(x0, H*0.98);
+      for(let t = 0; t <= 16; t++){
+        const s = t/16;
+        c.lineTo(x0 + Math.sin(s*3.2 + i)*u*0.14, H*(0.98 - s*0.94));
+      }
+      for(let t = 16; t >= 0; t--){
+        const s = t/16;
+        c.lineTo(x0 + gen*(0.4 + s*0.8) + Math.sin(s*3.2 + i)*u*0.14, H*(0.98 - s*0.94));
+      }
+      c.closePath(); c.fill();
+    }
+    /* Kivilcimlar: asagida yogun, yukarida seyrek ve sonuk. */
+    for(let i = 0; i < 150; i++){
+      const t = Math.pow(r(), 1.7);                 // asagida toplaniyor
+      const y = H*(1 - t*0.98), x = W*0.5 + (r()-0.5)*W*(0.25 + t*1.1);
+      const s = u*(0.002 + r()*0.005);
+      c.fillStyle = _zemRgba(i % 3 ? p[0] : p[1], 0.85*(1 - t*0.75));
+      c.beginPath(); c.arc(x, y, s, 0, Math.PI*2); c.fill();
+    }
+    /* Kutukler: en altta koyu kutleler. */
+    c.fillStyle = _zemRgba(p[4], 0.95);
+    for(let i = 0; i < 5; i++){
+      c.save(); c.translate(W*(0.2 + i*0.16), H*(0.965 + (r()-0.5)*0.02));
+      c.rotate((r()-0.5)*0.8);
+      c.fillRect(-u*0.14, -u*0.016, u*0.28, u*0.032);
+      c.restore();
+    }
+    c.restore();
+  },
+  /* CAVE — magara agzi. Karanlik cerceve dort yandan iceri
+     giriyor, ortada aydinlik bir aciklik: disk tam oraya oturuyor.
+     Tavandan damla izleri, zeminde durgun su yansimasi. */
+  cave(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    /* Aciklik: disari bakan isik. */
+    const g = c.createRadialGradient(W*0.5, H*0.47, u*0.05, W*0.5, H*0.47, u*0.95);
+    g.addColorStop(0, p[2]); g.addColorStop(0.35, p[3]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Uzaktaki manzara: aciklikta gorunen tepe silueti. Onizlemede
+       aciklik BOS ve camurluydu; bir ufuk cizgisi ona derinlik
+       veriyor. */
+    c.fillStyle = _zemRgba(p[3], 0.75);
+    c.beginPath(); c.moveTo(W*0.10, H*0.62);
+    [[0.26,0.54],[0.42,0.60],[0.58,0.52],[0.74,0.61],[0.90,0.56]]
+      .forEach(function(k){ c.lineTo(W*k[0], H*k[1]); });
+    c.lineTo(W*0.92, H*0.80); c.lineTo(W*0.08, H*0.80); c.closePath(); c.fill();
+    /* Kaya cercevesi: duzensiz bir halka, iceri dogru dis dis.
+       Kenari artik SERT: onceki hali gradyanla karisip camur
+       gorunuyordu. */
+    c.fillStyle = p[4];
+    c.beginPath();
+    c.moveTo(-W*0.1, -H*0.1); c.lineTo(W*1.1, -H*0.1);
+    c.lineTo(W*1.1, H*1.1); c.lineTo(-W*0.1, H*1.1); c.closePath();
+    c.moveTo(W*0.5 + u*0.62, H*0.47);
+    for(let t = 64; t >= 0; t--){
+      const a = t/64*Math.PI*2;
+      const rr = u*(0.56 + 0.14*Math.sin(a*5 + 1.1) + 0.07*Math.sin(a*11));
+      c.lineTo(W*0.5 + Math.cos(a)*rr, H*0.47 + Math.sin(a)*rr*1.15);
+    }
+    c.closePath(); c.fill('evenodd');
+    /* Sarkitlar: tavandan asagi, sivri. Uzunlari one, kisalari
+       arkaya -- tek bir siluet degil, katmanli bir tavan. */
+    for(let kat = 0; kat < 2; kat++){
+      c.fillStyle = kat ? p[4] : _zemRgba(p[3], 0.55);
+      for(let i = 0; i < 14; i++){
+        const x = r()*W, boy = u*(0.06 + r()*0.20)*(kat ? 1 : 0.7);
+        const gen = u*(0.018 + r()*0.034);
+        c.beginPath(); c.moveTo(x - gen, 0); c.lineTo(x + gen, 0); c.lineTo(x, boy);
+        c.closePath(); c.fill();
+      }
+    }
+    /* Zeminde durgun su: yatay isik hatlari. */
+    c.strokeStyle = _zemRgba(p[2], 0.16);
+    for(let i = 0; i < 22; i++){
+      const y = H*(0.80 + r()*0.20), x = r()*W, uz = u*(0.05 + r()*0.30);
+      c.lineWidth = u*0.003;
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x + uz, y); c.stroke();
+    }
     c.restore();
   }
 };

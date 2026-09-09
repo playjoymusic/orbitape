@@ -422,6 +422,24 @@
   #hata .ht-ad{font-size:0.75rem;letter-spacing:.30em;color:#e89a82;}
   #hata .ht-not{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
     font-size:0.75rem;line-height:1.45;color:rgba(244,247,250,.62);}
+  /* ── HATANIN KENDISI EKRANDA ─────────────────────────────────────
+     Panel bugune kadar yalnizca "SOMETHING BROKE" diyordu; hatanin
+     ne oldugu COPY DETAILS'in arkasindaydi. Sahada bunun bedeli
+     olculdu: kullanici paneli goruyor, tarif ediyor ("bu ne ya"),
+     ama metin hicbir zaman gelmiyor -- dort adim otede duruyor ve
+     kimse o dort adimi atmiyor. Sonuc: elimizde ekran goruntusu
+     var, sebep yok.
+     Ilk satir artik panelin icinde. Uc satirda kesiliyor (panel bir
+     gunluk degil), secilebilir (uzun basip kopyalanabiliyor) ve
+     COPY DETAILS oldugu gibi duruyor -- bu onun yerine gecmiyor,
+     onu gereksiz kilan durumu ortadan kaldiriyor. */
+  #hata .ht-metin{font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:0.625rem;line-height:1.4;color:rgba(232,154,130,.82);
+    background:rgba(0,0,0,.35);border-radius:8px;padding:7px 9px;
+    width:100%;box-sizing:border-box;text-align:left;word-break:break-word;
+    max-height:3.9em;overflow:hidden;pointer-events:auto;
+    -webkit-user-select:text;user-select:text;}
+  #hata .ht-metin:empty{display:none;}
   #hata .ht-sira{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:2px;}
   #hata button{pointer-events:auto;appearance:none;-webkit-appearance:none;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-size:0.6875rem;letter-spacing:.2em;
@@ -3571,7 +3589,7 @@
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
      crossorigin yuzunden gereksiz bir CORS bagimliligi vardi ve jsdelivr
      12 saate kadar bayat surum verebiliyordu. -->
-<link rel="manifest" href="/manifest.json?v=6">
+<link rel="manifest" href="/manifest.json?v=7">
 <meta name="theme-color" content="#05080a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3581,8 +3599,8 @@
      'default'ta cubuk theme-color ile boyaniyor, sayfa tabana iniyor. -->
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ORBITAPE">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=6">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=7">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=7">
 <!-- ── ARAMA VE PAYLAŞIM ────────────────────────────────────────────
      Bunlar UYGULAMA için değil, uygulamayı henüz AÇMAMIŞ kişi için.
      Eskiden yoktu: Google sonuçta yalnızca "ORBITAPE" yazıyordu ve
@@ -4134,6 +4152,10 @@
   <div id="hata" aria-hidden="true" role="alert">
     <div class="ht-ad">SOMETHING BROKE</div>
     <div class="ht-not">ORBITAPE hit an error and may not work properly.<br>Reloading usually fixes it.</div>
+    <!-- Hatanin ILK satiri buraya yaziliyor (bkz. panel()). Bos
+         kalirsa CSS onu gizliyor: hicbir zaman bos bir kutu
+         gorunmuyor. -->
+    <div class="ht-metin" id="hataMetin"></div>
     <div class="ht-sira">
       <button id="hataYenile" type="button">RELOAD</button>
       <button id="hataKopya" type="button">COPY DETAILS</button>
@@ -4603,6 +4625,29 @@
       try{
         var el = document.getElementById('hata');
         if(!el) return;                      // DOM henüz yok: sessiz kal, kayıt duruyor
+        /* ── HANGI KAYIT YAZILIYOR ──────────────────────────────
+           Ilk yazimda kaydin BIRINCISI aliniyordu ve kapi bunu
+           hemen yakaladi: panelde "sinama-red" gorundu, yani
+           PANELI ACMAYAN zararsiz bir soz reddi. Kayitta iki tur
+           var ve yalnizca biri paneli aciyor (bkz. yukarida
+           "SOZ REDDI PANEL ACMIYOR"). Panel neyi gosteriyorsa onu
+           anlatmali: ilk 'error' turu. Yoksa ilk kayit.
+           Sonuncusu degil ILKI: sonrakiler cogu zaman birincinin
+           artigi. Kesme 200 karakterde -- panel bir gunluk degil,
+           bir isaret; gerisi COPY DETAILS'te. */
+        try{
+          var m = document.getElementById('hataMetin');
+          var k = null;
+          for(var i2 = 0; i2 < _hataKayit.length; i2++){
+            if(_hataKayit[i2] && _hataKayit[i2].tur === 'error'){ k = _hataKayit[i2]; break; }
+          }
+          if(!k) k = _hataKayit[0];
+          if(m && k){
+            var s = String(k.metin || '');
+            if(k.ek) s += '  (' + k.ek + ')';
+            m.textContent = s.length > 200 ? s.slice(0, 200) + '…' : s;
+          }
+        }catch(e2){ _yut(e2); }
         el.classList.add('on');
         el.setAttribute('aria-hidden','false');
       }catch(e){ _yut(e); }
@@ -5542,7 +5587,26 @@
     {ad:"PUNK WEB", zem:"#f2f0e6", yazi:"#111111", marka:"#d42600", cek:"#dedbd0", font:F3, kose:"0px", cizim:"punkweb"},
     {ad:"RISOPRINT", zem:"#efe8d6", yazi:"#1e1b16", marka:"#d43a60", cek:"#ded7c4", font:F1, kose:"2px", cizim:"risoprint"},
     /* UFO — kullanicinin istegi: "ufolu uzayli seyler de yap." */
-    {ad:"UFO", zem:"#0a1220", yazi:"#cfe0d2", marka:"#8fe04a", cek:"#1e2c3c", font:F3, kose:"50%", cizim:"ufo"}
+    {ad:"UFO", zem:"#0a1220", yazi:"#cfe0d2", marka:"#8fe04a", cek:"#1e2c3c", font:F3, kose:"50%", cizim:"ufo"},
+    /* ── DOGA / DINGINLIK SERISI (9 Eylul) ───────────────────────────
+       Kullanicinin sozu: "daha doga relax mood vs olsun, koyu tonlar.
+       ama duz renk degil, yine cok sanatsal cizimler uzerinden --
+       hatta bizim ekranimizdaki ogelerle etkilesimli gibi gorunen."
+       Onceki iki seri ekrandan BAGIMSIZ resimlerdi; bu seri
+       kompozisyonu DISKIN CEVRESINE kuruyor (bkz. deri_cizim.js:
+       diskin yeri olculdu, 0.50W / 0.50H, yaricap 0.39W). Hepsi
+       koyu: bu deriler dinlerken ve gece acik kalacak. */
+    {ad:"PINES", zem:"#070d11", yazi:"#c8d2cc", marka:"#c8d98a", cek:"#16221c", font:F2, kose:"50%", cizim:"pines"},
+    {ad:"TIDE", zem:"#060e16", yazi:"#bdd2d8", marka:"#6fc8d2", cek:"#152a34", font:F1, kose:"50%", cizim:"tide"},
+    {ad:"CANYON", zem:"#100a0b", yazi:"#d8c2a8", marka:"#c87a4a", cek:"#2a1c18", font:F2, kose:"2px", cizim:"canyon"},
+    {ad:"RAIN", zem:"#0a1018", yazi:"#c2d2e0", marka:"#7fb2d8", cek:"#1e2a36", font:F1, kose:"50%", cizim:"rain"},
+    {ad:"MOSS", zem:"#070f0a", yazi:"#bcd0b4", marka:"#8fc470", cek:"#182a1c", font:F2, kose:"50%", cizim:"moss"},
+    {ad:"DUNE", zem:"#100d0a", yazi:"#d8c8ac", marka:"#c8a068", cek:"#2a2218", font:F1, kose:"50%", cizim:"dune"},
+    {ad:"KOI", zem:"#070e13", yazi:"#c8d0d4", marka:"#e0734a", cek:"#182630", font:F2, kose:"50%", cizim:"koi"},
+    {ad:"NORTHERN", zem:"#060b16", yazi:"#c2d8e0", marka:"#4fc0a0", cek:"#16243a", font:F1, kose:"50%", cizim:"northern"},
+    {ad:"BAMBOO", zem:"#080f0b", yazi:"#bcd0b0", marka:"#7fae5c", cek:"#1a2c1e", font:F2, kose:"50%", cizim:"bamboo"},
+    {ad:"EMBERS", zem:"#0d0806", yazi:"#d8c0a8", marka:"#e0803c", cek:"#2a1a12", font:F1, kose:"50%", cizim:"embers"},
+    {ad:"CAVE", zem:"#080c10", yazi:"#c4d0d8", marka:"#8fa4b0", cek:"#1e262e", font:F1, kose:"50%", cizim:"cave"}
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
@@ -7782,8 +7846,8 @@
         artist: sanatci || (radyo ? 'LIVE RADIO' : ''),
         album:  kaynak ? (kanal + ' · ' + kaynak) : kanal,
         artwork: [
-          { src: ORTAM_KAPAK+'icon-192.png?v=6', sizes:'192x192', type:'image/png' },
-          { src: ORTAM_KAPAK+'icon-512.png?v=6', sizes:'512x512', type:'image/png' }
+          { src: ORTAM_KAPAK+'icon-192.png?v=7', sizes:'192x192', type:'image/png' },
+          { src: ORTAM_KAPAK+'icon-512.png?v=7', sizes:'512x512', type:'image/png' }
         ]
       });
     }catch(e){ _yut(e); }
@@ -9892,7 +9956,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 70) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 81) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
