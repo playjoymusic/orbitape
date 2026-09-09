@@ -44,7 +44,19 @@ const TON   = fs.readFileSync(path.join(KOK, 'test', 'ton.wav'));
    adlarla ayri bir klasore yaziyor -- yanlis kare yuklenmesin diye
    secim burada, konsolda degil. */
 const OLCU_TABLO = {
-  telefon:  { w:360, h:640,  dsf:3, ek:'' },
+  /* ── 9 EYLUL: 360x640 -> 540x960 ─────────────────────────────
+     Ikisi de 1080x1920 uretiyor (Play 9:16 istiyor). Fark sunda:
+     360 genisliginde sag alt kunyeye 118px'den az yer kaliyor ve
+     uygulama HAKLI olarak yigilma kipine geciyor -- o kipte alet
+     220px yukari kayiyor. Gercek telefonlar 9:19.5, yani orada bu
+     dal hic calismiyor; magaza karesi olmayan bir hali gosteriyordu
+     (kullanicinin sozu: "halkayi uste kaymis sekilde aliyorsun,
+     hep bu hatali"). 540'ta kunye yan yana sigiyor ve alet ekranin
+     ortasinda -- kullanicinin telefonunda gordugu hal.
+     540 de denendi: yiginma yok ama disk 380px tavaninda kalinca
+     1080'lik karede kucuk duruyordu. 405'te disk 84vw = 340 ve
+     kareyi dolduruyor; dsf 8/3 ile cikti yine tam 1080x1920. */
+  telefon:  { w:405, h:720,  dsf:8/3, ek:'' },
   tablet7:  { w:600, h:960,  dsf:2, ek:'-tablet7' },
   tablet10: { w:800, h:1280, dsf:2, ek:'-tablet10' }
 };
@@ -306,7 +318,10 @@ for(const [dosya, raf, ad, ulke] of RAF_RADYO){
     dosya: dosya + '.png', mood:false,
     kunye:{ ad:ad, alt:'LIVE · ' + raf + ' · ' + ulke, kaynak:'', lisans:'' },
     veri: raf,
+    /* ANA ARAYUZ HALKAYLA: magazadaki ilk kare uygulamanin kendi
+       yuzu olmali. Cark ayri bir kare (22-cark). */
     kur:(r)=>{ try{ aileSec(r, true); }catch(e){}
+               try{ AYAR.merkez = 'halka'; if(window.merkezUygula) merkezUygula(); }catch(e){}
                try{ const n=document.getElementById('npUst'); if(n) n.classList.remove('var'); }catch(e){} }
   });
 }
@@ -388,19 +403,43 @@ SAHNELER.push({
    fx lemeler vs." Galeride ne deri ne frekans karesi vardi --
    uygulamanin en cok konusulan iki yuzu magazada hic gorunmuyordu.
    Ucu de radyo tarafinda: nebula yok. */
+/* GALERI ASAGI KAYDIRILIYOR. Kullanicinin sozu: "skinsler
+   alttakiler olsun." Ust sirada OFF/PAPER/LINEN gibi duz renkler
+   var; magazada gosterilecek olan asagidaki cizimli deriler. */
 SAHNELER.push({
-  dosya:'10-skins.png', mood:false, npGizle:true, bekle:1400,
-  kur:()=>{ try{ const f=document.getElementById('deriFirca'); if(f) f.click(); }catch(e){} }
+  dosya:'10-skins.png', mood:false, npGizle:true, bekle:1800,
+  kur:()=>{ try{ const f=document.getElementById('deriFirca'); if(f) f.click(); }catch(e){} },
+  eylem: async function(p){
+    await p.waitForTimeout(900);
+    await p.evaluate(()=>{ const g=document.querySelector('.dg-izgara');
+      if(g) g.scrollTop = Math.max(0, g.scrollHeight - g.clientHeight - 40); });
+    await p.waitForTimeout(1200);
+  }
 });
-SAHNELER.push({
-  dosya:'11-deri.png', mood:false, bekle:1400,
-  kunye:{ ad:'Slow Horizon', alt:'LIVE · AMBIENT · NL', kaynak:'', lisans:'' },
-  /* FIELDS: duz renkli degil ama sakin bir tablo -- diskin kendisi
-     kompozisyonun merkezi oldugu icin magazada anlatilacak sey de
-     bu. Halka o derilerde zaten acilmiyor. */
-  kur:()=>{ try{ AYAR.deri = 57; deriUygula();
-                 if(window.merkezUygula) merkezUygula(); }catch(e){} }
-});
+/* ── UYGULANMIS DERILER: DUZ RENKLILER ────────────────────────
+   Kullanicinin sozu: "skinsler secilmis 1-3 ornek, tek renk
+   olanlardan yukardaki mavi yesil pembe." Galerinin ust sirasindaki
+   duz renk deriler; disk bu derilerde tek renk bir daire oluyor ve
+   arayuzun tamami o renge donuyor -- magazada anlatilacak sey bu. */
+for(const [dosya, no, ad, alt] of [
+      ['11-deri-sky',   5, 'Slow Horizon',  'LIVE · AMBIENT · NL'],
+      ['11-deri-mint',  7, 'Velvet Hours',  'LIVE · LOUNGE & LOFI · FR'],
+      ['11-deri-blush', 8, 'Night Signal',  'LIVE · RADIOTAPE · TR']]){
+  SAHNELER.push({
+    dosya: dosya + '.png', mood:false, bekle:1400,
+    kunye:{ ad:ad, alt:alt, kaynak:'', lisans:'' },
+    /* NO 'veri' ILE GECIYOR: kur() sayfaya SERILESTIRILEREK
+       gonderiliyor, kapanis (closure) degiskeni yolda kayboluyor --
+       ilk yazimda AYAR.deri undefined oluyordu ve uc kare de duz
+       karanlik ciktu. */
+    veri: no,
+    /* DUZ RENK DERIDE MERKEZ 'YUVARLAK': uygulamada bu derilerde
+       galeri diskle aciliyor ve disk kompozisyonun merkezi. Halka
+       birakilirsa acik zemin uzerinde soluk kaliyor. */
+    kur:(n)=>{ try{ AYAR.deri = n; AYAR.merkez = 'yuvarlak'; deriUygula();
+                    if(window.merkezUygula) merkezUygula(); }catch(e){} }
+  });
+}
 SAHNELER.push({
   dosya:'12-frekans.png', mood:false, bekle:1400,
   kunye:{ ad:'Deep Techno', alt:'LIVE · ELECTRONIC · DE', kaynak:'', lisans:'' },
@@ -408,23 +447,92 @@ SAHNELER.push({
                  if(window.merkezUygula) merkezUygula(); }catch(e){} }
 });
 
+
+/* ── 9 EYLUL: MAGAZA ICIN YENI KARELER ────────────────────────────
+   Kullanicinin istegi: "cicekli skins olsun, fx kismi, yildiz
+   buyutme, cark radyo kanallari, HUMANS vs cesit, tatlili skinsler,
+   circle'li. Bir ana arayuz olsun sonra cesitler. Tutorials'li
+   olmasin sakin." */
+SAHNELER.push({
+  dosya:'22-cark.png', mood:false, bekle:1400,
+  kunye:{ ad:'Night Signal', alt:'LIVE · RADIOTAPE · TR', kaynak:'', lisans:'' },
+  kur:()=>{ try{ AYAR.merkez = 'cark'; if(window.merkezUygula) merkezUygula();
+                 if(window.carkTazele) carkTazele(); }catch(e){} }
+});
+SAHNELER.push({
+  dosya:'23-deri-lilies.png', mood:false, bekle:1800,
+  kunye:{ ad:'Slow Horizon', alt:'LIVE · AMBIENT · NL', kaynak:'', lisans:'' },
+  veri: 56,
+  kur:(n)=>{ try{ AYAR.deri = n; AYAR.merkez = 'yuvarlak'; deriUygula();
+                  if(window.merkezUygula) merkezUygula(); }catch(e){} }
+});
+SAHNELER.push({
+  dosya:'24-deri-cutout.png', mood:false, bekle:1800,
+  kunye:{ ad:'Velvet Hours', alt:'LIVE · LOUNGE & LOFI · FR', kaynak:'', lisans:'' },
+  veri: 58,
+  kur:(n)=>{ try{ AYAR.deri = n; AYAR.merkez = 'yuvarlak'; deriUygula();
+                  if(window.merkezUygula) merkezUygula(); }catch(e){} }
+});
+/* Yildizlar en ust kademede: ekran uzaya aciliyor (bkz. body.uzay). */
+/* Gecisin ORTASI yakalaniyor: deri hala hafif goruluyor, arkasi
+   uzaya acilmis. Bitmis hali duz karanlik ve anlatmiyor. */
+SAHNELER.push({
+  dosya:'25-uzay.png', mood:false, bekle:2600,
+  kunye:{ ad:'Slow Horizon', alt:'LIVE · AMBIENT · NL', kaynak:'', lisans:'' },
+  kur:()=>{ try{ AYAR.deri = 56; AYAR.merkez = 'halka'; deriUygula();
+                 if(window.merkezUygula) merkezUygula(); }catch(e){}
+            try{ setTimeout(function(){ AYAR.yildiz = 4; AYAR.yildizIsik = 2;
+                 if(window.uzayUygula) uzayUygula(); }, 200); }catch(e){} }
+});
+
+/* ── ARAMA (BUYUTEC) ──────────────────────────────────────────────
+   Kullanicinin istegi: buyutece basilinca cikan istasyon listesinden
+   de bir kare. Havuz sahte ve kamu mali alan adlariyla dolu (bkz.
+   ADLAR) -- baskasinin markasi fotografa girmiyor. */
+SAHNELER.push({
+  dosya:'21-arama.png', mood:false, npGizle:true, bekle:600,
+  eylem: async function(p){
+    await p.evaluate(()=>{ try{ if(typeof araAc === 'function') araAc(); 
+      else { const b=document.getElementById('araCizgi'); if(b) b.click(); } }catch(e){} });
+    await p.waitForTimeout(700);
+    await p.evaluate(()=>{ const g=document.getElementById('araGiris');
+      if(g){ g.focus(); g.value='rain'; g.dispatchEvent(new Event('input',{bubbles:true})); } });
+    await p.waitForTimeout(1600);
+  }
+});
+
 const HEPSI = process.env.GALERI_HEPSI === '1';
+/* Tek tek kare kosmak icin: GALERI_SADECE=11-deri-sky.png,... */
+const SADECE = (process.env.GALERI_SADECE || '').split(',').filter(Boolean);
 /* MAGAZAYA GIDEN SEKIZ, sirasiyla: alet · bir tur · deri galerisi ·
    uygulanmis deri · frekans · FX · arsiv tarafi · nasil calisiyor.
    Sekiz kare bir hikaye anlatiyor; sekiz ayni carkin farkli rengi
    degil. FX ve arsiv karelerinde nebula var -- kullanici bir
    zamanlar nebulasiz istemisti ama FX'i acikca istedi, ve FX
    yalnizca o tarafta yasiyor. */
-const MAGAZA_SIRA = ['01-radyo-radiotape.png', '03-radyo-jazz.png',
-  '10-skins.png', '11-deri.png', '12-frekans.png',
-  '09-fx-ana.png', '15-arsiv-orbitape.png', '09-tur.png'];
+/* 8 Eylul: TUR KARESI CIKARILDI. Kullanicinin sozu: "tutorials
+   gorunmesin". Yerine ikinci bir FX karesi ve bir kanal karesi
+   geldi -- magazada anlatilan sey uygulamanin kendisi, ogretici
+   degil. */
+/* 8 Eylul, son hali:
+     - FREKANS karesi cikti: o secenek skins penceresinden kaldirildi
+       ("fazi yapamadin, sil lutfen"), artik secilemeyen bir sey
+       magazada gosterilmez.
+     - ARAMA karesi cikti: sonuc listesi GERCEK istasyon adlariyla
+       doluyor (Nature Radio, DrGnu ...) -- baskasinin markasi bizim
+       magaza gorselimizde duramaz.
+     - Yerlerine ucuncu duz renk deri ve arsiv tarafi geldi. */
+const MAGAZA_SIRA = ['01-radyo-radiotape.png', '22-cark.png',
+  '10-skins.png', '23-deri-lilies.png', '24-deri-cutout.png',
+  '09-fx-ana.png', '25-uzay.png', '19-arsiv-humans.png'];
 const SECIM = MAGAZA
   ? MAGAZA_SIRA.map((ad, i)=>{
       const s = SAHNELER.find(x=>x.dosya === ad);
       if(!s) throw new Error('magaza sahnesi yok: ' + ad);
       return Object.assign({}, s, { dosya: 'play-' + (i+1) + '-' + ad.replace(/^\d+-/, '') });
     })
-  : (HEPSI ? SAHNELER : SAHNELER.filter(s=>!s.mood));
+  : (SADECE.length ? SAHNELER.filter(s=>SADECE.includes(s.dosya))
+     : (HEPSI ? SAHNELER : SAHNELER.filter(s=>!s.mood)));
 
 (async()=>{
   fs.mkdirSync(CIKIS, {recursive:true});

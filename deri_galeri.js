@@ -135,11 +135,13 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        Ad ne olursa olsun sutunlar oynamiyor; uzun ad kesilip uc
        nokta ile bitiyor (asagida). Oklar da kenara yapismiyor,
        adin iki yaninda -- basparmak ayni yeri buluyor. */
-    "#deriGaleri.serit .dg-bas{display:grid;grid-template-columns:34px minmax(90px,152px) 34px 34px 34px;align-items:center;gap:2px;padding:5px 12px 4px;flex-wrap:nowrap;justify-content:center}",
+    "#deriGaleri.serit .dg-bas{display:grid;grid-template-columns:26px 34px minmax(80px,148px) 34px 34px;align-items:center;gap:2px;padding:5px 12px 4px;flex-wrap:nowrap;justify-content:center}",
     "#deriGaleri.serit .dg-secili{font-size:0.9375rem;letter-spacing:.08em;min-width:0;max-width:100%;text-align:center;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
     "#deriGaleri.serit .dg-tus{width:34px;height:32px;font-size:0.9375rem}",
     /* ▦ ile ✕ oklardan bir tik uzakta: yanlislikla kapatma azalsin. */
-    "#deriGaleri.serit .dg-tus.buyut{margin-left:8px}",
+    /* Liste oku EN SOLDA: seridin liste oldugunu soyleyen tek
+       isaret o. Dar (26px) ve sessiz -- tus degil, ipucu. */
+    "#deriGaleri.serit .dg-tus.buyut{order:-1;margin:0;width:26px;opacity:.7}",
     /* Merkez secici KENDI SATIRINDA: tam genislik, ortalanmis,
        dordu de ayni puntoda ve hicbiri kesilmiyor. */
     /* Merkez secici HEP ayni yerde: izgaranin tam genisliginde,
@@ -354,7 +356,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     bas.appendChild(halkaTus);
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
        (degistir). ▦ seritte kaliyor: tam galeriye donus. */
-    bas.appendChild(tus('buyut', 'Show all skins', '▦', buyut));
+    bas.appendChild(tus('buyut', 'Show all skins', '▾', buyut));
     bas.appendChild(tus('kapat', 'Close', '✕', kapa));
     /* ── MERKEZ SECICI (4 Eylul) ────────────────────────────────
        "minimize modunda halka, yuvarlak, cark ve faz olsun ...
@@ -518,12 +520,21 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
           try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e2){ yut(e2); }
         }
       }catch(e){ yut(e); }
-      kap.classList.remove('serit');
+      /* 9 Eylul: ONCE SERIT ACILIYOR. Kullanicinin sozu: "ilk o
+         kucuk penceremiz acilsin; sol kosesinde asagiya bir ok olsa,
+         belli eden liste oldugunu. Isteyen listeyi acar." Tam izgara
+         secmeye calistigin ekrani ortuyordu. */
+      kap.classList.add('serit');
       kap.hidden = false;
       fircaIsaret(true);
       isaretle(true);
+      seritIsaret();
       cizimleriCiz();
-      try{ if(typeof pencereAc === 'function') pencereAc(kap, kap.querySelector('.dg-kare[aria-pressed="true"]')); }catch(e){ yut(e); }
+      /* SERIT EKRANI KAPATMIYOR: pencereAc arkasini inert yapiyor ve
+         bu kipte yanlis olurdu -- serit ince bir cubuk, arkasindaki
+         disk dokunulabilir kalmali (bkz. kucult). Izgaraya gecince
+         (buyut) inert oraya geliyor. */
+      try{ const t = kap.querySelector('.dg-tus.ileri'); if(t) t.focus(); }catch(e){ yut(e); }
     }catch(e){ yut(e); }
   }
   function kucult(){

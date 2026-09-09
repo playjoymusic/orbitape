@@ -653,8 +653,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             f + ' ' + Math.round(bro(fs.readFileSync(_yayin(f)))/1024) + 'K').join(' + ')
            + ' (toplam ' + Math.round(_iuBoy/1024) + ' KB)')
         : 'istek uzerine inen modul yok');
-    /* 1100 -> 1105 KB: bkz. ILK_CIZIM_TAVAN notu. */
-    K('Ham boy < 1105 KB', dosyaBoy < 1105*1024,
+    /* 1100 -> 1105 -> 1110 KB. Bu olcu KAYNAK dosyanin boyu, yani
+       aciklamalar dahil; kullaniciya inen sey degil (o brotli olcusu
+       ve tavanin bin bayt altinda). 9 Eylul'de eklenen isler --
+       SOUNDS bolumu, uzay gecisi, galerinin serit acilmasi, klavye
+       acikken alet olcusu, aramada basilan satirin secilmesi -- ve
+       her birinin NEDEN yazisi bu dosyada duruyor. Tavan bir koruma;
+       islev eklenince yaziyla yukseltiliyor, sessizce degil. */
+    K('Ham boy < 1110 KB', dosyaBoy < 1110*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -10173,6 +10179,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.geldi = !!window.DERI_GALERI_HAZIR;
         c.acik = !!(window.deriGaleriAcik && deriGaleriAcik());
         const kap = document.getElementById('deriGaleri');
+        /* 9 Eylul: GALERI ARTIK SERIT OLARAK ACILIYOR (kullanicinin
+           istegi: "ilk o kucuk penceremiz acilsin, isteyen listeyi
+           acar"). Izgara olculeri once listeyi acmayi gerektiriyor --
+           soldaki ▾ (dg-tus.buyut) tam da bunun icin var. */
+        c.seritAcildi = kap.classList.contains('serit');
+        const okTus = kap.querySelector('.dg-tus.buyut');
+        c.listeOku = !!okTus;
+        if(okTus){ okTus.click(); await bek(260); }
+        c.izgaraAcildi = !kap.classList.contains('serit');
         c.kareSayisi = kap ? kap.querySelectorAll('.dg-kare').length : 0;
         c.kareDogru = c.kareSayisi === DERILER.length + 1;
         /* kareler ust uste binmiyor: ikinci karenin tepesi birincinin altindan sonra */
@@ -10327,11 +10342,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* FIRCA ANAHTAR: kapali -> tam -> kapali. Kucultme basligin
            isi; firca ikinci dokunusta kapatiyor (kullanici: "tekrar
            fircaya basarsam kapanmali"). */
-        f.click(); await bek(200); c.d1 = deriGaleriAcik() && !kap.classList.contains('serit');
+        /* 9 Eylul: firca artik SERIT aciyor (izgara degil). Olculen
+           sey degismedi -- "acildi mi": panel gorunur ve serit
+           kipinde. Izgaraya gecisi soldaki ▾ yapiyor, o ayri
+           olculuyor (bkz. "Galeri serit olarak aciliyor"). */
+        f.click(); await bek(200); c.d1 = deriGaleriAcik() && kap.classList.contains('serit');
         f.click(); await bek(200); c.d2 = !deriGaleriAcik();
         /* YUKARI KAYDIRMA KAPATIR (3 Eylul): "vazgectim, o an yukari
            scroll yaptigimda kapanmali tamamen o pencere." */
         f.click(); await bek(300);
+        /* Yukari kaydirma olcusu izgarada anlamli: once listeyi ac. */
+        { const ok2 = kap.querySelector('.dg-tus.buyut'); if(ok2){ ok2.click(); await bek(250); } }
         const izgara = kap.querySelector('.dg-izgara'); if(izgara) izgara.scrollTop = 0;
         const kb2 = kap.getBoundingClientRect();
         const kay = (t, y)=>kap.dispatchEvent(new PointerEvent(t, {bubbles:true, cancelable:true, pointerId:41, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:kb2.left+kb2.width/2, clientY:y}));
@@ -10359,7 +10380,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     });
     const oz = Object.keys(g).filter(k => g[k] !== true).map(k => k + '=' + g[k]).join(' ');
     K('Firca var; siralama tutamak > hold > saat > firca', g.tusVar && g.sira, oz || 'yigin dogru');
-    K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
+    K('Galeri serit olarak aciliyor, ▾ listeyi aciyor',
+     g.seritAcildi === true && g.listeOku === true && g.izgaraAcildi === true,
+     oz || 'once serit, ok ile izgara');
+  K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
     K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi && g.kucultTusuYok, oz || 'serit, kucultme tusu yok');

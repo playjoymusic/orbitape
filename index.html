@@ -201,6 +201,15 @@
                        - 2 * var(--tepe-pay)) / 1.34);
     width:min(78vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));
     aspect-ratio:1;z-index:10;}
+  /* KLAVYE ACIKKEN ALET OYNAMIYOR (9 Eylul). iOS'ta klavye acilinca
+     100dvh kuculuyor; aletin boy tavani ona bagli oldugu icin disk
+     kuculup yukari kaciyordu ("arama acilinca halka yukari kaciyor,
+     cark daha da garip"). Klavye acikken olcu 100vh -- vh klavyeden
+     etkilenmiyor. */
+  body.klavye .disk{
+    --alet-tavan:calc((var(--ust-rez) + 100vh - var(--alt-rez)
+                       - 2 * var(--tepe-pay)) / 1.34);
+    width:min(78vw,380px,calc(100vh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));}
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
      seridi okunur puntoda tasimiyor; cubuk acilinca icerigin ona yer
@@ -4429,7 +4438,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.08';
+  var ORB_SURUM = '2026.09.09';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -5971,6 +5980,7 @@
   function uzayUygula(){
     try{ document.body.classList.toggle('uzay', (AYAR.yildiz|0) === 4); }catch(e){ _yut(e); }
   }
+  try{ window['uzayUygula'] = uzayUygula; }catch(e){ _yut(e); }
   function deriUygula(){
     try{ uzayUygula(); }catch(e){ _yut(e); }
     try{
@@ -17152,12 +17162,14 @@
     const b = _stBas; _stBas = null;
     if(!b) return;
     try{
-      const t = /** @type {any} */ (e.target);
-      const st = t && t.closest ? t.closest('.st') : null;
-      if(!st || st !== b.st) return;
+      /* 9 Eylul: KARAR BASILAN SATIRIN. Once parmagin KALKTIGI
+         yerdeki satirin da ayni olmasi gerekiyordu; telefonda ilk
+         dokunus klavyeyi kapatiyor, panel kayiyor ve parmak baska
+         satirda kalkiyor -- hicbir sey olmuyordu ("bastim,
+         kapanmadi"). Kaydirma degilse basilan satir caliyor. */
       if(Math.abs(e.clientX - b.x) > 12 || Math.abs(e.clientY - b.y) > 12) return;
       e.stopPropagation();
-      araCal(parseInt(st.dataset.i, 10));
+      araCal(parseInt(b.st.dataset.i, 10));
     }catch(_){ _yut(_); }
   });
   araSonuc.addEventListener('click', e=>{
