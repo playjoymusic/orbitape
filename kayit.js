@@ -915,6 +915,38 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      acikken "sessiz" yazan bir fotograf. Buradaki okuyucu her
      parcanin hesaplanmis stilini kopyaya yaziyor. */
   const _arayuzSemOnbellek = new Map();
+  /* ── STIL ARTIK CSSOM ILE YAZILIYOR ──────────────────────────────
+     OLCULDU (uzun bir oturum boyunca konsol dinlenerek):
+       "Refused to apply inline style because it violates the
+        following Content Security Policy directive: style-src
+        'sha256-...'"   -- kayit.js:943 ve :945
+     Sebep: 'style' niteligini setAttribute ile yazmak SATIR ICI
+     STIL sayiliyor ve
+     CSP'de style-src yalnizca bir OZET tasiyor ('unsafe-hashes'
+     yok). Yani o cagri sessizce REDDEDILIYORDU. Sonuc gorunmez bir
+     hataydi: fotografa kopyalanan simgeler stilsiz kaliyor --
+     rengi, cizgi kalinligi, hatta display:none olmasi gereken
+     capraz cizgi tasinmiyordu. Ekranda hicbir sey patlamiyor;
+     yalnizca cikan fotograf yanlis oluyordu. Bu yuzden bugune kadar
+     kimse gormedi: hata konsolda duruyordu, ekranda degil.
+     CSSOM (element.style.setProperty) satir ici stil sayilmiyor,
+     CSP'ye takilmiyor ve serilestirmede ayni style niteligini
+     uretiyor -- cikti ayni, engel yok.
+     GUVENLIK GEVSEMEDI: CSP'ye 'unsafe-hashes' EKLENMEDI. Politikayi
+     gevsetmek yerine cagri dogru yola tasindi. */
+  function _stilYaz(hedef, d){
+    try{
+      const st = hedef && hedef.style;
+      if(!st) return;
+      String(d).split(';').forEach(function(p){
+        const i = p.indexOf(':');
+        if(i < 1) return;
+        const ad = p.slice(0, i).trim(), deger = p.slice(i + 1).trim();
+        if(!ad || !deger) return;
+        try{ st.setProperty(ad, deger); }catch(e){ _yut(e); }
+      });
+    }catch(e){ _yut(e); }
+  }
   function _arayuzStil(e){
     const cs = getComputedStyle(e);
     /* display ve visibility DE tasiniyor. Tasinmadan once sustur
@@ -941,9 +973,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
         const boy = Math.max(1, Math.round(r.height * K * 2));
         const kopya = sv.cloneNode(true);
         const canli = sv.querySelectorAll('*'), yenisi = kopya.querySelectorAll('*');
-        kopya.setAttribute('style', _arayuzStil(sv));
+        _stilYaz(kopya, _arayuzStil(sv));
         for(let i = 0; i < canli.length && i < yenisi.length; i++)
-          yenisi[i].setAttribute('style', _arayuzStil(canli[i]));
+          _stilYaz(yenisi[i], _arayuzStil(canli[i]));
         kopya.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         kopya.setAttribute('width', en); kopya.setAttribute('height', boy);
         const kod = new XMLSerializer().serializeToString(kopya);

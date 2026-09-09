@@ -138,6 +138,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   // ── 1. TEMEL ────────────────────────────────────────────────────────
   K('JS hatasi (sayfa)',      jsHata.length===0, jsHata.length ? jsHata[0].slice(0,80) : '0');
   K('Konsol hatasi',          konsol.length===0, konsol.length ? konsol[0] : '0');
+  /* ── SATIR ICI STIL NITELIGI YAZILMIYOR ─────────────────────────
+     Uzun bir oturum boyunca konsol dinlenerek bulundu: fotograf
+     akisi 'style' niteligini setAttribute ile yaziyordu ve CSP bunu
+     SESSIZCE reddediyordu (style-src yalnizca bir ozet tasiyor,
+     'unsafe-hashes' yok). Ekranda hicbir sey patlamiyor; yalnizca
+     cikan fotografta simgeler stilsiz kaliyordu -- rengi, cizgi
+     kalinligi, hatta gizlenmesi gereken capraz cizgi tasinmiyordu.
+     Gorunmez hatalarin en sinsi turu: konsolda duruyor, ekranda
+     degil.
+     Yol CSSOM'a tasindi (element.style.setProperty). Bu kontrol
+     cagrinin geri gelmesini engelliyor: politikayi gevsetmek
+     ('unsafe-hashes') degil, dogru yolu kullanmak esas.
+     ACIKLAMA SATIRLARI ELENIYOR: ilk yazimda bu kontrol KENDI
+     aciklamasini yakaladi -- metinde gecen ornek de bir eslesmeydi.
+     Kod ile yazi ayni dosyada duruyor; olculen sey KOD. */
+  {
+    const kodSade = TUM_KOD.replace(/\/\*[\s\S]*?\*\//g, ' ')
+                           .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const kacak = (kodSade.match(/setAttribute\(\s*['"]style['"]/g) || []).length;
+    K('Satir ici style niteligi yazilmiyor (CSP sessizce reddeder)', kacak === 0,
+      kacak ? kacak + ' yerde var' : 'stil CSSOM ile yaziliyor');
+  }
   const dosyaBoy = fs.statSync('index.html').size;
   /* Tavan 400 -> 500 KB. Uygulama gercekten buyudu (tur, gecmis, FX
      ipucu, kamera seviyesi) ve dosyanin buyuk kismi YORUM: neyin neden
@@ -2158,6 +2180,36 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     };
     const eski = await acVeOku({ sesAcildi:true, merkez:'yuvarlak' });
     const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, merkez:'halka' });
+
+    /* ── DERI HER ACILISTA KAYIYORDU ─────────────────────────────
+       Bildirilen: "UFO skiniyle kapatiyorum, app'i baska bir skinle
+       aciyor. Kapayip acsa da ayni sekilde devam etmeli."
+       Goc islevi damgayi 3 yapiyordu ama ayar yukleyici damgayi geri
+       2 yaziyordu; depoya hep "surum 2" gidiyor ve uc-numarali goc
+       HER ACILISTA yeniden calisiyordu -- 62'den buyuk her deri her
+       seferinde uc basamak asagi. Bu kontrol tam o dongunun
+       kapandigini olcuyor: ayni depo iki kez aciliyor, deri
+       kimildamamali. */
+    const deriOku = async (depo)=>{
+      const s4 = await pg.context().newPage();
+      await s4.addInitScript(d=>{
+        try{ localStorage.setItem('orbitape.ayar', d); }catch(e){}
+      }, JSON.stringify(depo));
+      await s4.goto(S, {waitUntil:'load'});
+      await s4.waitForTimeout(700);
+      const o = await s4.evaluate(()=>{
+        try{ return { deri:AYAR.deri|0, surum:AYAR.deriSurum|0,
+                      yazilan:JSON.parse(localStorage.getItem('orbitape.ayar')||'{}') }; }
+        catch(e){ return null; }
+      });
+      await s4.close();
+      return o;
+    };
+    const sonDeri = 0 + (await pg.evaluate(()=>DERILER.length));
+    const d1 = await deriOku({ sesAcildi:true, merkezOnar:true, deri:sonDeri, deriSurum:3 });
+    /* Ikinci acilis: BIRINCININ DEPOYA YAZDIGI ile. Kayma varsa
+       burada goruluyor. */
+    const d2 = await deriOku(d1 && d1.yazilan ? d1.yazilan : {});
     await pg.evaluate(d=>{
       try{
         if(d.a === null) localStorage.removeItem('orbitape.ayar');
@@ -2170,6 +2222,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       'damgasiz depoda merkez=' + eski + ' (yuvarlak yaziliydi)');
     K('Onarim kullanicinin secimini silmiyor', yeni === 'halka',
       'damgali depoda merkez=' + yeni);
+    K('Secili deri kapayip acinca yerinde kaliyor',
+      !!d1 && !!d2 && d1.deri === sonDeri && d2.deri === sonDeri,
+      'iki acilis: ' + (d1 ? d1.deri : '-') + ' -> ' + (d2 ? d2.deri : '-')
+      + ' (tabloda ' + sonDeri + ' deri)');
+    K('Goc damgasi geri sayilmiyor',
+      !!d1 && d1.surum >= 3 && !!d1.yazilan && (d1.yazilan.deriSurum|0) >= 3,
+      'depoya yazilan damga ' + (d1 && d1.yazilan ? (d1.yazilan.deriSurum|0) : '-'));
   }
 
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───

@@ -9893,7 +9893,21 @@
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
       if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 70) AYAR.deri = _a.deri|0;
-      AYAR.deriSurum = 2;
+      /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
+         KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
+         skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
+         devam etmeli."
+         Sebep tek bir rakamdi ve tam burada duruyordu. Goc islevi
+         (deriEslemeUygula) isini bitirince damgayi 3 yapiyor; bu
+         satir ise damgayi geri 2 YAZIYORDU. Yani depoya her zaman
+         "surum 2" gidiyor ve bir sonraki acilista uc-numarali goc
+         BIR KEZ DAHA calisiyordu: 62'den buyuk her deri her
+         acilista uc basamak asagi kayiyor. UFO (70) once 67, sonra
+         64... Kullanicinin gordugu sey buydu.
+         Goc bir kez calisir, damgasini basar ve bir daha girmez.
+         Damga o yuzden gocun BIRAKTIGI degerden aliniyor. */
+      AYAR.deriSurum = (typeof _a.deriSurum === 'number' && _a.deriSurum >= 3)
+                       ? (_a.deriSurum|0) : 3;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.
