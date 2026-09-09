@@ -665,9 +665,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (1116 -> 1122) "RADIOTAPE bir tur degil" isi: istasyonun kendi
        turunden raf adi (TUR_RAF) ve o tablonun VERIDEN nasil
        cikarildiginin kaydi -- sayilar yazili olmazsa tablo bir
-       sonraki okuyucu icin tahmine donusur. Tavan bir koruma;
-       islev eklenince yaziyla yukseltiliyor, sessizce degil. */
-    K('Ham boy < 1122 KB', dosyaBoy < 1122*1024,
+       sonraki okuyucu icin tahmine donusur. Son yukseltme
+       (1122 -> 1130): on bir yeni derinin satirlari, FX rezonans
+       telafisinin OLCUM kaydi, iki parmak jestinin neden
+       kaldirildigi ve telefon donunce titremenin neden olustugu.
+       Dordu de "ne yapildigi" degil "neden yapildigi" yazisi; o
+       yazilar silinirse bir sonraki kisi ayni hatalari yeniden
+       yapar. Tavan bir koruma; islev eklenince yaziyla
+       yukseltiliyor, sessizce degil. */
+    K('Ham boy < 1130 KB', dosyaBoy < 1130*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -3791,9 +3797,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const k = document.documentElement.innerHTML;
       const i = k.indexOf('AŞAĞI = agresif cutoff');
       if(i < 0) return false;
-      const blok = k.slice(i, i + 700);
-      return /6000\*Math\.pow\(180\/6000, b\)/.test(blok) && /q=0\.7 \+ b\*16/.test(blok);
-    }), '6000 -> 180 Hz, rezonans 0.7 -> 16.7');
+      const blok = k.slice(i, i + 2200);
+      /* ── UCUNCU SART: REZONANS TELAFISI ────────────────────────
+         Bildirilen: "fx'leri dolasirken cizirti oluyor... fx'te oyle
+         bir mood yok, surterken oluyor." Teshis o cumledeydi: sorun
+         TEMEL efektte. Butun oteki modlar rezonans yukselirken
+         kazanci kisiyor (dongu 0.55, karadelik 1.35); burasi
+         'makeup = 1' diyordu, yani Q 16,7'ye cikarken hicbir sey
+         geri almiyordu. Olculdu: tepe 0,90'a dayaniyor ve cikistaki
+         sert tavan surekli calisiyor -- kulaktaki "cizirti" o
+         ezilme. 1/(1+b*1.05) ile tepe 0,82. Katsayi karadelik'in
+         Q'suna gore oranlandi. Geri alinirsa cizirti geri gelir. */
+      return /6000\*Math\.pow\(180\/6000, b\)/.test(blok)
+          && /q=0\.7 \+ b\*16/.test(blok)
+          && /makeup=1\/\(1 \+ b\*1\.05\)/.test(blok);
+    }), '6000 -> 180 Hz, rezonans 0.7 -> 16.7, telafi 1/(1+b*1.05)');
   K('Sacilma odasinin cokusu hizsiz da konusuyor', await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
       const i = k.indexOf('SAÇILMA ODASI (eski adıyla KARADELİK)');
@@ -8993,13 +9011,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      !!dipSes && dipSes.yuvarla.dip===0 && dipSes.yuvarla.sinir===0.02
      && dipSes.yuvarla.ust===0.5 && dipSes.yuvarla.sifir===0,
      '%1.2 -> 0, %2 ve ustu dokunulmuyor');
-  /* Kaynakta olculuyor: jest esigi ve "iki parmak da ayni yone"
-     kurali. Iki parmakli dokunmatik jesti taklit etmek guvenilir
+  /* ── IKI PARMAKLA SES DIYE BIR SEY KALMADI ────────────────────
+     Kullanicinin karari: "iki parmak kismayi iptal ettik ya, altta
+     mutelemek tusu var zaten."
+     Once esigi yukselttik (14 -> 34 px + iki parmak ayni yone); o
+     bir yamaydi. Jest ekranin her yerinde calisiyor, seviyeyi
+     depoya yaziyor ve arkasinda gorunur bir iz birakmiyordu --
+     yanlislikla tetiklenmesi uygulamayi kalici sessiz birakiyordu.
+     Simdi dal komple kaldirildi. Olculen sey: dikey kayma artik
+     kSes'e dokunmuyor, ama iki parmakla acip kapama (gokyuzu)
+     duruyor. Iki parmakli dokunmatik jesti taklit etmek guvenilir
      degil; kural kodda duruyor mu, ona bakiyoruz. */
-  K('Iki parmak jest esigi kaza payini kaldiriyor',
-     /Math\.abs\(dy\) > 34 && ayniYon\(e\.touches\)/.test(TUM_KOD)
-     && /d0 > 12 && d1 > 12/.test(TUM_KOD),
-     '34 px + iki parmak ayni yone');
+  K('Iki parmakla ses degistirme kaldirildi',
+     !/ikiParmakSes/.test(TUM_KOD)
+     && !/karar === 'ses'/.test(TUM_KOD)
+     && /function ikiParmakZum/.test(TUM_KOD)
+     && /if\(zumBaslat\(\)\) karar = 'zum';/.test(TUM_KOD),
+     'geriye yalnizca gokyuzu dali kaldi');
+  K('Sesin tek yolu sustur tusu ve donanim tuslari',
+     /localStorage\.setItem\('orbitape\.ses'/.test(TUM_KOD)
+     && (TUM_KOD.match(/localStorage\.setItem\('orbitape\.ses'/g) || []).length === 1,
+     'depoya seviye yalnizca sustur tusundan yaziliyor');
 
   /* ── SESSIZCE OLEN CALMA: IKI NOBET ─────────────────────────────
      Bildirilen: "bi de muzik bazen duruyor, ne alaka."
@@ -10650,6 +10682,35 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     }catch(e){ c.hata = String(e && e.message || e); }
     return c;
   });
+  /* ── CIZIMLI DERIDE TUSLAR KILITLI DEGIL ────────────────────────
+     Bildirilen: "yeni skinslerde cark acilmiyor, diger WHEEL vs
+     seceneklere basilmiyor." Cizimli derilerde WHEEL/RING sonuk ve
+     basilamaz haldeydi; on bir yeni derinin hepsi cizimli olunca
+     merkez secici komple ise yaramaz oldu. Varsayilan hala disk,
+     ama kilit kalkti. */
+  K('Cizimli deride merkez tuslari basilabiliyor', await pg.evaluate(async()=>{
+      const bek = ms2 => new Promise(r => setTimeout(r, ms2));
+      const eskiDeri = AYAR.deri|0, eskiMerkez = AYAR.merkez;
+      try{ if(window.deriGaleriAcik && deriGaleriAcik()) deriGaleriKapa(); }catch(e){}
+      await bek(150);
+      /* Cizimli bir deri sec (tabloda cizim alani dolu olan ilki). */
+      let n = 0;
+      for(let i = 0; i < DERILER.length; i++) if(DERILER[i].cizim){ n = i + 1; break; }
+      AYAR.deri = n; try{ deriUygula(); merkezUygula(); }catch(e){}
+      document.getElementById('deriFirca').click();
+      for(let i = 0; i < 40 && !(window.deriGaleriAcik && deriGaleriAcik()); i++) await bek(80);
+      await bek(250);
+      const kap = document.getElementById('deriGaleri');
+      const cark = kap.querySelector('.dg-tus.mrk[data-merkez="cark"]');
+      const acik = !!cark && cark.disabled === false;
+      cark.click(); await bek(300);
+      const gecti = AYAR.merkez === 'cark' && document.body.classList.contains('merkez-cark');
+      try{ deriGaleriKapa(); }catch(e){}
+      await bek(150);
+      AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      try{ deriUygula(); merkezUygula(); }catch(e){}
+      return acik && gecti;
+    }), 'cizimli deride WHEEL basilabiliyor ve cark aciliyor');
   K('Skins OFF ile acilinca ortada cark kaliyor', mrkOd.offCark === true,
      mrkOd.hata || 'merkez=' + (mrkOd.offCark ? 'cark' : 'degisti'));
   K('Deriye gecince disk odunc, OFF\'a donunce geri',

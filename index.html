@@ -806,6 +806,9 @@
      sessiz, simge normal: kullanici bunu ariza sanir. Artik dis yay
      sonuyor, yani seviye tek bakista okunuyor: iki yay = normal,
      tek yay = kisik, capraz = susturulmus. */
+  /* DONUS SIRASINDA GECIS YOK: ara adimlar oynanmasin (bkz.
+     orientationchange). Yerlesim tek seferde oturuyor. */
+  body.donuyor *{transition:none !important;}
   #mute.kisik .y2{opacity:.22;}
   #mute.kisik{color:#8fb9b6;}
   #mute:hover{color:#cfe9e4;}
@@ -5794,18 +5797,24 @@
        yuvarlak -> derinin kendi govdesi (RING kapali)
        faz      -> ses tayfi (halkanin disinda cubuklar)
      Sinif govdede: gorunum CSS'te, secim burada. */
-  /* ── CIZIMLI DERIDE HALKA ACILMIYOR ───────────────────────────
-     Kullanicinin sozu: "cok cisimli karisik skinslerde halka
-     acilamasin." Ekranda gorulen sey de bunu soyluyordu: DRIP ya da
-     MONDRIAN gibi bir desenin uzerine ince renkli halkalar
-     binince ikisi de okunmuyor -- halka desende kayboluyor, desen
-     halkanin altinda parcalaniyor.
-     Olcut deri adi degil, derinin KENDISI: cizimli derilerin hepsi
-     (d.cizim dolu olanlar, 44-59) bir RESIM tasiyor. Duz renkli
-     derilerde hicbir sey degismiyor.
-     Zorlama gecici: AYAR.merkez'e dokunulmuyor, yalnizca o an
-     uygulanan sey 'yuvarlak' oluyor. Deri degisince eski tercih
-     kendiliginden geri geliyor. */
+  /* ── CIZIMLI DERIDE DISK VARSAYILAN, AMA KILIT DEGIL ──────────
+     Kullanicinin ilk sozu: "cok cisimli karisik skinslerde halka
+     acilamasin." Dogruydu ve sebebi ekranda goruluyordu: DRIP ya da
+     MONDRIAN gibi bir desenin uzerine ince renkli halkalar binince
+     ikisi de okunmuyor -- halka desende kayboluyor, desen halkanin
+     altinda parcalaniyor.
+     Ben bunu ZORLAMA olarak yazdim: cizimli deride merkez her zaman
+     'yuvarlak' oluyor ve WHEEL/RING tuslari basilamiyordu. Yeni on
+     bir derinin hepsi cizimli olunca sonuc su oldu -- kullanicinin
+     sozu: "yeni skinslerde cark acilmiyor, diger WHEEL vs
+     seceneklere basilmiyor."
+     Zorlama fazlaydi. Dogrusu VARSAYILAN: cizimli bir deriye
+     gecildiginde merkez diske donuyor (bkz. deri_galeri.js
+     merkezOdunc) ama tuslar acik kaliyor. Isteyen carki aciyor ve
+     ne gorecegine kendisi karar veriyor. Kural bir tavsiyedir,
+     kilit degil.
+     cizimliDeriMi duruyor: baska yerler (galeri onizlemesi, RING
+     anahtari) hala "bu deri bir RESIM tasiyor mu" diye soruyor. */
   function cizimliDeriMi(){
     try{
       const n = (AYAR.deri|0);
@@ -5815,7 +5824,7 @@
   try{ window.cizimliDeriMi = cizimliDeriMi; }catch(e){ _yut(e); }
   function merkezUygula(){
     try{
-      const m = cizimliDeriMi() ? 'yuvarlak' : (AYAR.merkez || 'cark');
+      const m = (AYAR.merkez || 'cark');
       document.body.classList.toggle('merkez-cark', m === 'cark');
       document.body.classList.toggle('merkez-faz', m === 'faz');
       /* halka/yuvarlak ayrimi RING anahtariyla ayni sey: govde mi
@@ -9195,10 +9204,32 @@
       makeup=1/(1 + a*0.45);             // kazancın yarısı kalıyor -> gerçek yükselme
       islak=a;                           // MERKEZDE 0: parmak değmediyse satürasyon YOK
     }else{                               // AŞAĞI = agresif cutoff + belirgin rezonans (vuuow)
+      /* ── REZONANS TELAFISI: BURADA EKSIKTI ─────────────────────
+         KULLANICININ SOZU: "fx'leri dolasirken o zorlanmadan olan
+         cizirtiyi cozemedik, yuklenme oluyor sanirim. yani fx'te
+         oyle bir mood yok, surterken oluyor."
+         "Mood yok" cumlesi teshisin kendisiydi: sorun TEMEL efektte,
+         yani hicbir uydu modu acik degilken. Butun otekiler rezonans
+         yukselirken kazanci kisiyor -- dongu 1/(1+b*0.55), karadelik
+         1/(1+b*1.35) -- ama TEMEL efektin alt yonu 'makeup = 1'
+         diyordu. Q 16,7'ye cikarken hicbir sey geri almiyordu.
+         OLCULDU (OfflineAudioContext, genis bantli kaynak, parmak
+         1 saniyede asagi): tepe deger 0,90'a kadar cikiyor -- yani
+         zincir tam olcegin dibine dayaniyor ve cikistaki sert tavan
+         (-3 dB, 20:1) surekli devreye giriyor. Kulakta bu, kirpma
+         degil EZILME ve pompalama olarak duyuluyor; "cizirti" denen
+         sey bu. Telafiyle tepe 0,82'ye iniyor, yani ~1,5 dB'lik bir
+         nefes payi geri geliyor ve tavan sadece gerekince calisiyor.
+         Katsayi rastgele degil: karadelik Q 22,2'de 1,35 kullaniyor;
+         Q 16,7 icin ayni orandan 1,05 cikiyor. Ayni aileden.
+         Q'nun yumusama sabiti de 0,04 -> 0,10: yuksek Q'da
+         katsayilar blok blok atlayinca filtre kendi kendine
+         cinliyor. */
       const b=-fxSeviye;                 // 0..1
       f=Math.round(6000*Math.pow(180/6000, b));   // 6000 -> 180 Hz
       q=0.7 + b*16;                      // rezonans belirgin
-      drv=1; shelf=0; makeup=1;          // drive kapalı
+      drv=1; shelf=0;
+      makeup=1/(1 + b*1.05);             // rezonans yukseldikce kis
       islak=0;                           // aşağı yönde satürasyonun hiç işi yok
     }
     /* ── ISLAK YOLLARIN TELAFISI ─────────────────────────────────
@@ -9212,7 +9243,11 @@
        0.55 => tam yolda ~3.8 dB geri. */
     const _fxYuk = Math.min(1, Math.max(Math.abs(yatay), Math.abs(fxSeviye)));
     makeup = makeup / (1 + _fxYuk * 0.55);
-    pyaz(lopass.frequency, f, t, yv(0.04)); pyaz(lopass.Q, q, t, yv(0.04));
+    /* Q'nun yumusamasi frekanstan DAHA YAVAS. Yuksek Q'da biquad
+       katsayilari her blokta yeniden hesaplaniyor; hizli degisimde
+       filtre kendi kendine cinliyor ve o cinlama kulakta cizirti.
+       0,10 sn parmagin altinda fark edilmiyor, cinlamayi kesiyor. */
+    pyaz(lopass.frequency, f, t, yv(0.04)); pyaz(lopass.Q, q, t, yv(0.10));
     if(driveIn){
       pyaz(driveIn.gain,  drv,    t, yv(0.05));
       pyaz(hishelf.gain,  shelf,  t, yv(0.05));
@@ -10456,6 +10491,57 @@
     window.addEventListener('pageshow', function(){ _zoomBorcu = true; olcuIste(); });
   })();
   window.addEventListener('resize', olcuIste);
+  /* ── TELEFON DONUNCE: ONCE KILITLEMEYI DENE, OLMAZSA TITREME ──
+     KULLANICININ SOZU: "telefonu sag sol yapinca degisir ya, yan
+     olur; sonra duzeltince titreme oluyor. Ya hic donmesin."
+     "Hic donmesin" iki ayri yerde iki ayri cevap aliyor:
+       · PLAY UYGULAMASI (Android): manifest'te "orientation":
+         "portrait" yazili ve orada donme ZATEN yok.
+       · SAFARI: web'in yonu kilitleme yetkisi yok. Screen
+         Orientation API'nin lock'u iOS'ta yok; denemek zararsiz
+         (asagida deneniyor, reddedilirse yutuluyor) ama tutmuyor.
+     Yani Safari'de donmeyi engelleyemeyiz; engelleyebilecegimiz sey
+     DONUSTEN SONRAKI TITREME. Sebebi olculdu: donus animasyonu
+     surerken olcu birkac kez degisiyor, her degisimde yerlesim
+     yeniden hesaplaniyor ve aradaki CSS gecisleri o ara adimlari
+     tek tek oynuyor -- ekranda bu "titreme" olarak goruluyor.
+     Cozum: donus basladigi anda gecisler kesiliyor, olcu ust uste
+     iki kez ayni kalana kadar bekleniyor, YERLESIM BIR KEZ
+     hesaplaniyor ve sonra gecisler geri geliyor. Tek adim, tek
+     sicrama. */
+  try{
+    const _yonKilit = ()=>{
+      try{
+        /* Koseli parantez BILEREK: tip kutuphanesinde ScreenOrientation
+           'lock' tasimiyor (Safari'de gercekten de yok). Nokta ile
+           yazmak tip denetimine iki yeni uyari ekliyordu; olmayan bir
+           seyi yoklamak hata degil. */
+        const o = screen && screen.orientation;
+        const kilit = o && o['lock'];
+        if(typeof kilit === 'function'){
+          const r = kilit.call(o, 'portrait');
+          if(r && r.catch) r.catch(()=>{});
+        }
+      }catch(e){ _yut(e); }
+    };
+    _yonKilit();
+    var _donusZaman = 0, _donusOlcu = '';
+    const _donusBitir = ()=>{
+      const k = innerWidth + 'x' + innerHeight;
+      if(k !== _donusOlcu){ _donusOlcu = k; _donusZaman = setTimeout(_donusBitir, 90); return; }
+      _donusZaman = 0;
+      document.body.classList.remove('donuyor');
+      _zoomBorcu = true; olcuIste();
+      try{ ustOlcuIste(); }catch(e){ _yut(e); }
+      try{ geriYerlestir(); }catch(e){ _yut(e); }
+    };
+    window.addEventListener('orientationchange', ()=>{
+      _yonKilit();
+      document.body.classList.add('donuyor');
+      clearTimeout(_donusZaman); _donusOlcu = '';
+      _donusZaman = setTimeout(_donusBitir, 90);
+    });
+  }catch(e){ _yut(e); }
   try{ window.addEventListener('orientationchange', olcuIste); }catch(e){ _yut(e); }
   try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', olcuIste); }catch(e){ _yut(e); }
   /* KAYMA AYRI BIR OLAY. Gorunum penceresi buyumeden de kayabiliyor
@@ -11263,30 +11349,29 @@
     window.durTazele = yaz;
   })();
 
-  (function ikiParmakSes(){
-    let etkin=false, basY=0, basSes=1, basAra=0, karar='', basZum=1;
-    let basYs=[0,0], basKim=[-1,-1];
+  /* ── IKI PARMAK: ARTIK SADECE GOKYUZU ──────────────────────────
+     KULLANICININ SOZU: "iki parmak kismayi iptal ettik ya, altta
+     mutelemek tusu var zaten."
+     Dogru karar, ve sebebi zaten olculmustu: jest ekranin HERHANGI
+     bir yerinde calisiyor, seviyeyi depoya yaziyor ve ekranda 900
+     ms'lik bir cubuktan baska iz birakmiyordu. Listeyi iki parmakla
+     kaydirmaya calisan biri uygulamayi KALICI olarak sessiz
+     birakabiliyordu -- "muzik duruyor" diye bildirilen sey buydu.
+     Esigi yukseltmek bir yamaydi; dogru cozum jesti KALDIRMAK.
+     Telefonda seviyenin iki gercek yolu zaten var: donanim tuslari
+     ve alttaki sustur tusu. Ucuncusu gizli bir tuzakti.
+     GIDEN yalnizca SES dali. Iki parmakla acip kapama (gokyuzu)
+     duruyor: o gorunur bir sey yapiyor ve yanlislikla acilirsa
+     parmak kalkinca kendiliginden kapaniyor. */
+  (function ikiParmakZum(){
+    let etkin=false, basY=0, basAra=0, karar='', basZum=1;
     const ortY = t => (t[0].clientY + t[1].clientY) / 2;
     const ara  = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-    /* IKI PARMAK DA AYNI YONE, IKISI DE EN AZ 12 PIKSEL. Ters yone
-       giden parmaklar zum; biri duruyorsa telefonu tutan parmaktir.
-       Parmak sirasi degisebiliyor, o yuzden kimlikle eslestiriliyor. */
-    const ayniYon = t=>{
-      try{
-        if(t.length !== 2) return false;
-        let a = t[0], b = t[1];
-        if(basKim[0] === b.identifier && basKim[1] === a.identifier){ const s = a; a = b; b = s; }
-        const d0 = a.clientY - basYs[0], d1 = b.clientY - basYs[1];
-        return (d0 > 12 && d1 > 12) || (d0 < -12 && d1 < -12);
-      }catch(e){ return false; }
-    };
     document.addEventListener('touchstart', e=>{
       if(e.touches.length !== 2) return;
       if(e.target && e.target.closest && e.target.closest('#ara')) return;   // sonuç listesi kaydırılabilsin
-      etkin = true; basY = ortY(e.touches); basSes = kSes;
+      etkin = true; basY = ortY(e.touches);
       basAra = ara(e.touches); karar = ''; basZum = _zum;
-      basYs  = [e.touches[0].clientY, e.touches[1].clientY];
-      basKim = [e.touches[0].identifier, e.touches[1].identifier];
       // halka/FX bu jesti üstlenmesin
       try{ pDown=false; _basili=false; }catch(_){ _yut(_); }
       /* Gokyuzu acikken ikinci parmak degdigi anda tek parmak
@@ -11298,32 +11383,16 @@
       e.preventDefault();                                   // sayfa kaymasın / yakınlaşmasın
       const dy = ortY(e.touches) - basY;
       const da = ara(e.touches) - basAra;
-      /* ── KARAR BIR KEZ ─────────────────────────────────────────
-         Iki parmak iki is yapiyor: birlikte kayarsa SES, acilip
-         kapanirsa GOKYUZU. Hangisi once esigi gecerse jest o olur
-         ve sonuna kadar oyle kalir. */
-      if(!karar){
-        if(Math.abs(da) > 26 && Math.abs(da) > Math.abs(dy) * 1.2){
-          karar = zumBaslat() ? 'zum' : 'ses';
-        /* 14 piksel COK DUSUKTU: listeyi iki parmakla kaydirmaya
-           calisan, telefonu iki parmakla tutan, ya da zum yapmaya
-           baslarken parmaklari once biraz asagi kayan herkes farkinda
-           olmadan sesi degistiriyordu. 34 piksel bilincli bir hareket;
-           ustelik IKI PARMAK DA AYNI YONE gitmis olmali -- ters yone
-           acilan parmaklar zum jestidir, ses degil. */
-        }else if(Math.abs(dy) > 34 && ayniYon(e.touches)){ karar = 'ses'; }
-        if(karar === 'ses') sesGoster();
+      /* TEK KARAR KALDI: parmaklar acilip kapanirsa GOKYUZU. Dikey
+         kayma artik hicbir sey yapmiyor. */
+      if(!karar && Math.abs(da) > 26 && Math.abs(da) > Math.abs(dy) * 1.2){
+        if(zumBaslat()) karar = 'zum';
       }
       if(karar === 'zum'){
         const b = document.querySelector('.disk');
         const g = b ? b.getBoundingClientRect().width : 300;
         _zumHedef = Math.max(1, Math.min(ZUM_TAVAN, basZum + da / (g * 0.30)));
-        return;
       }
-      if(karar !== 'ses') return;
-      const menzil = Math.max(240, window.innerHeight * 0.70);
-      kSes = Math.max(0, Math.min(1, basSes - dy / menzil));
-      sesSeviyeYaz(); sesGoster(); try{ sesDikeyYaz(); }catch(e){ _yut(e); }
     }, {passive:false});
     const bitir = ()=>{
       if(!etkin) return; etkin=false;
@@ -11331,15 +11400,8 @@
         /* Parmak kalkinca kucucuk bir acilma kalmissa geri kapaniyor:
            yanlislikla acilan gokyuzu ekranda asili kalmasin. */
         if(_zumHedef < 1.35) zumKapat();
-        karar = ''; return;
       }
       karar = '';
-      /* Duyulmaz seviyede birakma: sifira yuvarla ki simge sebebi
-         soylesin ve tek dokunus geri getirsin. */
-      const y = sesTopla(kSes);
-      if(y !== kSes){ kSes = y; sesSeviyeYaz(); }
-      try{ sesDikeyYaz(); }catch(e){ _yut(e); }
-      try{ localStorage.setItem('orbitape.ses', String(kSes)); }catch(e){ _yut(e); }
     };
     document.addEventListener('touchend', bitir, {passive:true});
     document.addEventListener('touchcancel', bitir, {passive:true});

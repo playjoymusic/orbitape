@@ -214,23 +214,20 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   function el(t, sinif){ const e = document.createElement(t); if(sinif) e.className = sinif; return e; }
   function merkezIsaret(){
     try{
-      /* CIZIMLI DERIDE YALNIZCA DISC. Uygulama o derilerde halkayi
-         zaten acmiyor (index.html: cizimliDeriMi); dugmenin acik
-         gorunmesi yalan olurdu -- basilinca hicbir sey olmayan bir
-         tus, olmayan tustan kotudur. Sonuyor ve basilamiyor. */
-      const cizimli = (typeof window.cizimliDeriMi === 'function') && window.cizimliDeriMi();
-      const m = cizimli ? 'yuvarlak'
-              : ((typeof AYAR !== 'undefined' && AYAR.merkez) || 'cark');
+      /* TUSLAR ARTIK KILITLENMIYOR. Cizimli deride merkez VARSAYILAN
+         olarak diske geciyor (merkezOdunc) ama WHEEL/RING basilabilir
+         kaliyor. Once hepsi sonuk ve basilamazdi; on bir yeni derinin
+         hepsi cizimli olunca kullanici hakli olarak "yeni skinslerde
+         cark acilmiyor" dedi. Kural bir tavsiyedir, kilit degil:
+         desenin uzerinde halka okunmuyorsa kullanici bunu bir
+         dokunusta gorur ve geri doner. */
+      const m = ((typeof AYAR !== 'undefined' && AYAR.merkez) || 'cark');
       merkezTuslari.forEach(t=>{
         t.setAttribute('aria-pressed', t.dataset.merkez === m ? 'true' : 'false');
-        const kapali = cizimli && t.dataset.merkez !== 'yuvarlak';
-        t.disabled = kapali;
-        t.style.opacity = kapali ? '0.25' : '';
+        t.disabled = false;
+        t.style.opacity = '';
       });
-      if(halkaTus){
-        halkaTus.disabled = cizimli;
-        halkaTus.style.opacity = cizimli ? '0.25' : '';
-      }
+      if(halkaTus){ halkaTus.disabled = false; halkaTus.style.opacity = ''; }
     }catch(e){ yut(e); }
   }
   let kap = null, izg = null, adYazi = null;
