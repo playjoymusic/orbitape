@@ -151,11 +151,9 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        kelime soyluyor. Genislik sabit degil (auto): yazi hangi
        dilde olursa olsun sutun ona gore aciliyor, oteki sutunlar
        (ok/ad/ok) yerinden oynamiyor. */
-    "#deriGaleri.serit .dg-tus.buyut{order:-1;margin:0;width:auto;min-width:44px;opacity:1;" +
-      "display:inline-flex;align-items:center;justify-content:center;gap:3px;" +
-      "padding:0 7px;border:1px solid currentColor;border-radius:999px;font-size:0.8125rem}",
-    "#deriGaleri.serit .dg-tus.buyut .ok{font-size:0.9375rem;line-height:1}",
-    "#deriGaleri.serit .dg-tus.buyut .ad{font-size:0.625rem;letter-spacing:.10em}",
+    "#deriGaleri.serit .dg-tus.buyut{order:-1;margin:0;width:44px;opacity:1;" +
+      "display:inline-flex;align-items:center;justify-content:center;" +
+      "border:1px solid currentColor;border-radius:999px;font-size:1rem}",
     /* Merkez secici KENDI SATIRINDA: tam genislik, ortalanmis,
        dordu de ayni puntoda ve hicbiri kesilmiyor. */
     /* Merkez secici HEP ayni yerde: izgaranin tam genisliginde,
@@ -362,7 +360,24 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
           diskYaz(disk, is.d);      // resim onbellege girdi: ortayi yeniden yaz
         }
       }catch(e){ yut(e); }
-      const sonra = window.requestIdleCallback || (f=>setTimeout(f, 16));
+      /* ── PENCERE YONTEMI KOPARILARAK CAGRILMAZ ─────────────────
+         Eskiden soyleydi:
+           const sonra = window.requestIdleCallback || (f=>setTimeout(f,16));
+           sonra(cizimleriCiz);
+         Islev referansi window'dan KOPARILIP cagriliyordu, yani
+         'this' kaybolmus oluyordu. Chromium bunu affediyor; WebKit
+         affetmiyor ve "Illegal invocation"/TypeError firlatiyor --
+         yakalanmamis bir hata, yani ekranda SOMETHING BROKE.
+         Hata tam da bu satirin calistigi yerde goruluyordu: galeri
+         karelerini tembel tembel cizen dongu burasi, yani skins
+         gezerken.
+         Ayrica requestIdleCallback Safari'ye ancak 17.4'te geldi;
+         eski bir iPhone'da tanimsiz. Iki durumu da tek satir
+         kapatiyor: yontem VARSA window uzerinden cagriliyor, yoksa
+         zamanlayiciya dusuyor. */
+      const sonra = (typeof window.requestIdleCallback === 'function')
+        ? (f)=>window.requestIdleCallback(f)
+        : (f)=>setTimeout(f, 16);
       sonra(cizimleriCiz);
     }catch(e){ yut(e); }
   }
@@ -411,15 +426,12 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     bas.appendChild(halkaTus);
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
        (degistir). ▦ seritte kaliyor: tam galeriye donus. */
-    {
-      /* Ok + kelime: ikisi ayri parcada, cunku puntolari ayri.
-         Kelime kisa ve ekranin geri kalaniyla ayni dilde. */
-      const b = tus('buyut', 'Show all skins', '', buyut);
-      const ok = document.createElement('span'); ok.className = 'ok'; ok.textContent = '▾';
-      const ad = document.createElement('span'); ad.className = 'ad'; ad.textContent = T('ALL');
-      b.appendChild(ok); b.appendChild(ad);
-      bas.appendChild(b);
-    }
+    /* Yanina ALL yazisi da konmustu; kullanici ekranda o kelimeyi
+       gorunce "bu cikan yazi ne" dedi ve haklidi -- ust satirda
+       zaten uc yazi var, dordunculuk edecek bir kelime degil.
+       Kesfedilebilirlik yaziyla degil TUS OLARAK saglaniyor:
+       cerceve, tam opaklik, 44 piksel. */
+    bas.appendChild(tus('buyut', 'Show all skins', '▾', buyut));
     bas.appendChild(tus('kapat', 'Close', '✕', kapa));
     /* ── MERKEZ SECICI (4 Eylul) ────────────────────────────────
        "minimize modunda halka, yuvarlak, cark ve faz olsun ...
@@ -620,7 +632,20 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     try{
       if(!kap || kap.hidden) return;
       const seritti = kap.classList.contains('serit');
-      if(_merkezOnce){
+      /* ── ODUNC YALNIZCA OFF'TA GERI VERILIYOR ──────────────────
+         Bildirilen: "DISC secili ama skinsi seciyorum, hop cark
+         hali cikiyor."
+         Sebep bendeydi. Odunc iki yerde birden geri veriliyordu:
+         OFF'a donunce (dogru) ve PANEL KAPANINCA (yanlis). Ikincisi
+         OFF icin yazilmisti; deri secme sirasi eklendikten sonra
+         anlamsizlasti. Sonuc su akisti: paneli cark aciktan ac ->
+         bir deri sec -> disk odunc alinir, ekranda DISC yanar ->
+         paneli kapat -> odunc geri verilir ve CARK geri doner.
+         Kullanicinin gordugu: "DISC yaziyor ama cark cikti."
+         Kural tek: disk deriye ait. Deri duruyorsa odunc de duruyor;
+         yalnizca OFF'a donuldugunde geri veriliyor. Panelin acik ya
+         da kapali olmasinin bununla ilgisi yok. */
+      if(_merkezOnce && (AYAR.deri|0) === 0){
         try{ AYAR.merkez = _merkezOnce; ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
         try{ if(window.carkTazele) window.carkTazele(); }catch(e){ yut(e); }
