@@ -10487,6 +10487,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.seritAcildi = kap.classList.contains('serit');
         const okTus = kap.querySelector('.dg-tus.buyut');
         c.listeOku = !!okTus;
+        /* ── OK BIR TUS GIBI GORUNMEK ZORUNDA ────────────────────
+           Once "tus degil, IPUCU" diye tasarlanmisti: 26 px genis,
+           %70 saydam, cerceve yok. Kullanicinin sozu: "bu alt ok cok
+           mu kucuk, ben bilmesem basmam ona." Hakli -- kesfedilmeyen
+           bir denetim yok sayilir. Olculen uc sey: parmak olcusunde
+           mi, sonuk mu, ne acacagini soyluyor mu. */
+        if(okTus){
+          const r = okTus.getBoundingClientRect();
+          const s = getComputedStyle(okTus);
+          c.okEn = Math.round(r.width); c.okBoy = Math.round(r.height);
+          c.okSaydam = +s.opacity;
+          c.okCerceve = s.borderTopStyle !== 'none' && parseFloat(s.borderTopWidth) > 0;
+          c.okYazi = (okTus.textContent || '').replace(/\s+/g,'');
+        }
         if(okTus){ okTus.click(); await bek(260); }
         c.izgaraAcildi = !kap.classList.contains('serit');
         c.kareSayisi = kap ? kap.querySelectorAll('.dg-kare').length : 0;
@@ -10684,6 +10698,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Galeri serit olarak aciliyor, ▾ listeyi aciyor',
      g.seritAcildi === true && g.listeOku === true && g.izgaraAcildi === true,
      oz || 'once serit, ok ile izgara');
+    /* Bildirilen: "bu alt ok cok mu kucuk, ben bilmesem basmam ona."
+       Sessiz birakilan bir tus, olmayan bir tustur. */
+    K('Liste oku tus gibi gorunuyor ve ne acacagini soyluyor',
+       g.okEn >= 44 && g.okBoy >= 30 && g.okSaydam >= 0.95
+       && g.okCerceve === true && /ALL/.test(g.okYazi || ''),
+       (g.okEn||0) + 'x' + (g.okBoy||0) + ' px, saydamlik ' + (g.okSaydam)
+       + ', cerceve ' + g.okCerceve + ', yazi "' + (g.okYazi||'') + '"');
   K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');

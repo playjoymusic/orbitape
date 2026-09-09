@@ -135,13 +135,27 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        Ad ne olursa olsun sutunlar oynamiyor; uzun ad kesilip uc
        nokta ile bitiyor (asagida). Oklar da kenara yapismiyor,
        adin iki yaninda -- basparmak ayni yeri buluyor. */
-    "#deriGaleri.serit .dg-bas{display:grid;grid-template-columns:26px 34px minmax(80px,148px) 34px 34px;align-items:center;gap:2px;padding:5px 12px 4px;flex-wrap:nowrap;justify-content:center}",
+    "#deriGaleri.serit .dg-bas{display:grid;grid-template-columns:auto 34px minmax(72px,140px) 34px 34px;align-items:center;gap:2px;padding:5px 10px 4px;flex-wrap:nowrap;justify-content:center}",
     "#deriGaleri.serit .dg-secili{font-size:0.9375rem;letter-spacing:.08em;min-width:0;max-width:100%;text-align:center;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
     "#deriGaleri.serit .dg-tus{width:34px;height:32px;font-size:0.9375rem}",
     /* ▦ ile ✕ oklardan bir tik uzakta: yanlislikla kapatma azalsin. */
-    /* Liste oku EN SOLDA: seridin liste oldugunu soyleyen tek
-       isaret o. Dar (26px) ve sessiz -- tus degil, ipucu. */
-    "#deriGaleri.serit .dg-tus.buyut{order:-1;margin:0;width:26px;opacity:.7}",
+    /* ── LISTE OKU ARTIK BIR TUS ─────────────────────────────────
+       Once "tus degil, IPUCU" diye yazilmisti: 26 piksel genis,
+       %70 saydam, cerceve yok. Kullanicinin sozu bu tasarimi
+       curuttu: "bu alt ok cok mu kucuk, ben bilmesem basmam ona."
+       Hakli. Bir denetimin kesfedilebilir olmasi onun ISI; sessiz
+       birakilan bir tus, olmayan bir tustur.
+       Uc sey degisti ve ucu de "basilir" diyor: cevresine oteki
+       tuslarla ayni cerceve geldi, saydamlik kalkti, ve yanina
+       ALL yazisi kondu -- ok tek basina "ne acilacak" demiyordu,
+       kelime soyluyor. Genislik sabit degil (auto): yazi hangi
+       dilde olursa olsun sutun ona gore aciliyor, oteki sutunlar
+       (ok/ad/ok) yerinden oynamiyor. */
+    "#deriGaleri.serit .dg-tus.buyut{order:-1;margin:0;width:auto;min-width:44px;opacity:1;" +
+      "display:inline-flex;align-items:center;justify-content:center;gap:3px;" +
+      "padding:0 7px;border:1px solid currentColor;border-radius:999px;font-size:0.8125rem}",
+    "#deriGaleri.serit .dg-tus.buyut .ok{font-size:0.9375rem;line-height:1}",
+    "#deriGaleri.serit .dg-tus.buyut .ad{font-size:0.625rem;letter-spacing:.10em}",
     /* Merkez secici KENDI SATIRINDA: tam genislik, ortalanmis,
        dordu de ayni puntoda ve hicbiri kesilmiyor. */
     /* Merkez secici HEP ayni yerde: izgaranin tam genisliginde,
@@ -397,7 +411,15 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     bas.appendChild(halkaTus);
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
        (degistir). ▦ seritte kaliyor: tam galeriye donus. */
-    bas.appendChild(tus('buyut', 'Show all skins', '▾', buyut));
+    {
+      /* Ok + kelime: ikisi ayri parcada, cunku puntolari ayri.
+         Kelime kisa ve ekranin geri kalaniyla ayni dilde. */
+      const b = tus('buyut', 'Show all skins', '', buyut);
+      const ok = document.createElement('span'); ok.className = 'ok'; ok.textContent = '▾';
+      const ad = document.createElement('span'); ad.className = 'ad'; ad.textContent = T('ALL');
+      b.appendChild(ok); b.appendChild(ad);
+      bas.appendChild(b);
+    }
     bas.appendChild(tus('kapat', 'Close', '✕', kapa));
     /* ── MERKEZ SECICI (4 Eylul) ────────────────────────────────
        "minimize modunda halka, yuvarlak, cark ve faz olsun ...
