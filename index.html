@@ -5513,7 +5513,33 @@
     {ad:"LILIES", zem:"#3f6e5c", yazi:"#f4efe6", marka:"#f0c1cf", cek:"#4f8370", font:F2, kose:"50%", cizim:"lilies"},
     {ad:"FIELDS", zem:"#f0b48f", yazi:"#3a1a12", marka:"#a3281a", cek:"#e6a07a", font:F1, kose:"0px", cizim:"fields"},
     {ad:"CUTOUT", zem:"#f4efe2", yazi:"#1d2a44", marka:"#1d4fb0", cek:"#e8e1cf", font:F1, kose:"8px", cizim:"cutout"},
-    {ad:"DRIP", zem:"#efe9dc", yazi:"#1a1a1a", marka:"#a8301f", cek:"#e2dbcb", font:F1, kose:"2px", cizim:"drip"}
+    {ad:"DRIP", zem:"#efe9dc", yazi:"#1a1a1a", marka:"#a8301f", cek:"#e2dbcb", font:F1, kose:"2px", cizim:"drip"},
+    /* ── EKRAN USLUPLARI SERISI (9 Eylul) ────────────────────────────
+       Kullanicinin listesi, birebir: Frutiger Aero · Dotwork ve
+       Halftone Glitch · Vaporwave ve Synthwave · Corporate Memphis
+       (Alegria) · Weirdcore ve Dreamcore · Neo-Psychedelia ·
+       Maximalist Webcore · Holographic & Iridescent · Anti-Design /
+       Punk Web · Risograph Print.
+       Onceki seri TABLO uslupleriydi (nilufer, kesik kagit, damla);
+       bu seri EKRAN uslupleri -- hepsi bir donemin ARAYUZ dilinden
+       geliyor. Cizimleri deri_cizim.js'te; burada yalnizca renkler.
+       PSYCHE'nin cizimi dosyada ZATEN vardi ama tabloya hic
+       eklenmemisti: yazilmis ve hicbir yerden ulasilamayan bir
+       uslup. Simdi ekli.
+       SONA EKLENDI, araya degil -- depoda kayitli deri numaralari
+       kaymasin (aynisi tablo serisinde de yazildi). */
+    {ad:"AERO", zem:"#d8f0f7", yazi:"#0e3d4d", marka:"#0b6b8c", cek:"#c2e2ec", font:F1, kose:"50%", cizim:"aero"},
+    {ad:"DOTWORK", zem:"#ece7dc", yazi:"#17161a", marka:"#c01a41", cek:"#d9d3c6", font:F1, kose:"2px", cizim:"dotwork"},
+    {ad:"VAPOR", zem:"#150b30", yazi:"#f0d9ff", marka:"#ff5ea8", cek:"#2a1a4d", font:F3, kose:"2px", cizim:"vapor"},
+    {ad:"ALEGRIA", zem:"#f7f1e8", yazi:"#2b2440", marka:"#5a3ce6", cek:"#e6ded1", font:F1, kose:"50%", cizim:"alegria"},
+    {ad:"DREAMCORE", zem:"#e4d6f2", yazi:"#2a2140", marka:"#6b3fb5", cek:"#d0c0e2", font:F2, kose:"50%", cizim:"dream"},
+    {ad:"NEO PSYCHE", zem:"#2e1a12", yazi:"#f7dfa8", marka:"#f2a33c", cek:"#48291d", font:F2, kose:"50%", cizim:"psyche"},
+    {ad:"WEBCORE", zem:"#101038", yazi:"#dfe8ff", marka:"#2bff9c", cek:"#242a55", font:F3, kose:"2px", cizim:"webcore"},
+    {ad:"HOLO", zem:"#14161c", yazi:"#dfe6ee", marka:"#9fe8ff", cek:"#2c2f37", font:F1, kose:"50%", cizim:"holo"},
+    {ad:"PUNK WEB", zem:"#f2f0e6", yazi:"#111111", marka:"#d42600", cek:"#dedbd0", font:F3, kose:"0px", cizim:"punkweb"},
+    {ad:"RISOPRINT", zem:"#efe8d6", yazi:"#1e1b16", marka:"#d43a60", cek:"#ded7c4", font:F1, kose:"2px", cizim:"risoprint"},
+    /* UFO — kullanicinin istegi: "ufolu uzayli seyler de yap." */
+    {ad:"UFO", zem:"#0a1220", yazi:"#cfe0d2", marka:"#8fe04a", cek:"#1e2c3c", font:F3, kose:"50%", cizim:"ufo"}
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
@@ -9831,7 +9857,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 59) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 70) AYAR.deri = _a.deri|0;
       AYAR.deriSurum = 2;
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
