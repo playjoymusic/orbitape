@@ -661,9 +661,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        NEDEN yazisi bu dosyada duruyor. Son yukseltme (1110 -> 1116)
        "MUZIK DURUYOR" isi: ses seviyesinin duyulmaz bir yerde
        birakilamamasi, kisik halin simgede gorunmesi, iki parmak
-       jestinin kaza esigi ve ses oturumu nobetcisi. Tavan bir koruma;
+       jestinin kaza esigi ve ses oturumu nobetcisi. Son yukseltme
+       (1116 -> 1122) "RADIOTAPE bir tur degil" isi: istasyonun kendi
+       turunden raf adi (TUR_RAF) ve o tablonun VERIDEN nasil
+       cikarildiginin kaydi -- sayilar yazili olmazsa tablo bir
+       sonraki okuyucu icin tahmine donusur. Tavan bir koruma;
        islev eklenince yaziyla yukseltiliyor, sessizce degil. */
-    K('Ham boy < 1116 KB', dosyaBoy < 1116*1024,
+    K('Ham boy < 1122 KB', dosyaBoy < 1122*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -1089,6 +1093,40 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       _etiket = eskiEt; AKTIF_AILE = eskiAile; mod = eskiMod; _favMod = eskiFav;
       return favSabit && araSabit;
     }), 'favori ve arama raflari asiyor, raf yerinde kaliyor');
+  /* ── RADIOTAPE BIR TUR DEGIL ────────────────────────────────────
+     Bildirilen: "bak funk kanali ama yukarda RADIOTAPE yaziyor.
+     amatorluk."
+     RADIOTAPE rafindaki istasyonlarin radyo.json'da bir 'tur' alani
+     var; raf adi verilirken o alana bakilmamis. Uygulama turu
+     biliyor, ekranda soylemiyordu. */
+  K('RADIOTAPE rafinda ust satir istasyonun turunu yaziyor', await pg.evaluate(async()=>{
+      const eskiAile = AKTIF_AILE, eskiMod = mod, eskiSon = _sonCalan;
+      mod = 'radio'; AKTIF_AILE = 'RADIOTAPE';
+      _sonCalan = { grup:'RADIOTAPE', tur:'funk', ad:'Amsterdam Funk Channel' };
+      modAdiYaz();
+      const yazi = (document.getElementById('modAd').textContent || '').trim();
+      const renk = document.documentElement.style.getPropertyValue('--d-raf');
+      /* Gercek bir rafta ise oynanmiyor: JAZZ istasyonu JAZZ yazar. */
+      AKTIF_AILE = 'JAZZ'; _sonCalan = { grup:'JAZZ', tur:'jazz' };
+      modAdiYaz();
+      const yazi2 = (document.getElementById('modAd').textContent || '').trim();
+      _sonCalan = eskiSon; AKTIF_AILE = eskiAile; mod = eskiMod;
+      try{ modAdiYaz(); }catch(e){}
+      return yazi === 'DISCO FUNK' && yazi2 === 'JAZZ' && !!renk;
+    }), 'funk kanali -> DISCO FUNK, rengi de o raftan');
+  /* Tablo veriden cikarildi; veri buyudukce eksik kalmasin diye
+     kapi soruyor: RADIOTAPE rafindaki her turun karsiligi var mi.
+     Karsiligi olmayan tur = ekranda yine 'RADIOTAPE' yazan istasyon. */
+  {
+    const ist = JSON.parse(fs.readFileSync('radyo.json','utf8'));
+    const tablo = await pg.evaluate(()=>Object.keys(TUR_RAF));
+    const eksik = [...new Set(ist.filter(x=>x && x.grup === 'RADIOTAPE')
+                                 .map(x=>String(x.tur||'').toLowerCase())
+                                 .filter(t=>t && tablo.indexOf(t) < 0))];
+    K('RADIOTAPE rafindaki her turun karsiligi var', eksik.length === 0,
+      eksik.length ? 'karsiligi yok: ' + eksik.join(', ')
+                   : tablo.length + ' tur eslesmesi, 91 istasyonun hepsi adlandirildi');
+  }
   /* Raf secili degilken ("vazgectim, hepsi calsin") raf null kaliyor
      ama ust satir yine calanin turunu soyluyor. */
   K('Raf yokken ust satir calani soyluyor', await pg.evaluate(async()=>{

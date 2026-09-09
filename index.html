@@ -13143,6 +13143,53 @@
       const a = AILELER.find(x=>x.ad === ad); return a ? a.renk : '';
     }catch(e){ return ''; }
   }
+  /* ── ISTASYONUN TURUNDEN RAF ADI ────────────────────────────────
+     KULLANICININ SOZU: "bak funk kanali ama yukarda RADIOTAPE
+     yaziyor. amatorluk."
+     Hakliydi. RADIOTAPE bir TUR DEGIL -- kodun kendi tarifi: "canli
+     yayinin kendisi, tur secmeden acilan yer". O rafta duran 91
+     istasyonun her birinin radyo.json'da bir 'tur' alani var
+     (Amsterdam Funk Channel -> 'funk') ama raf adi verilirken bu
+     alana bakilmamis. Sonuc: uygulama turu BILIYOR, ekranda
+     soylemiyor.
+
+     Tablo TAHMIN DEGIL, VERIDEN CIKARILDI: her tur icin, o turdeki
+     istasyonlarin RADIOTAPE disinda en cok hangi rafa dustugu
+     sayildi (radyo.json, 502 istasyon). Ornek: funk -> DISCO FUNK
+     13/20, latin -> WORLD & ROOTS 24/24, techno -> ELECTRONIC 10/11,
+     folk -> WORLD & ROOTS 16/17, indie -> ROCK & INDIE 12/16.
+     IKI YERDE VERI KARAR VERMEDI, KULAK VERDI:
+       soul     -- alti rafa dagilmis (en cok 2). DISCO FUNK'a
+                   yazildi: rafin eski adi zaten FUNK & RNB'ydi.
+       new age  -- AMBIENT 3 / LOUNGE & LOFI 3 berabere. AMBIENT.
+     RAFI DEGISTIRMIYOR: bu tablo yalnizca EKRANDA ne yazacagini
+     soyluyor. Istasyonun rafi radyo.json'da ne yaziyorsa odur;
+     kuyruk, suzgec ve cark ondan besleniyor. */
+  var TUR_RAF = {
+    'ambient':'AMBIENT', 'new age':'AMBIENT',
+    'classical':'ORCHESTRAL', 'soundtrack':'ORCHESTRAL', 'instrumental':'ORCHESTRAL',
+    'blues':'ROCK & INDIE', 'indie':'ROCK & INDIE', 'rock':'ROCK & INDIE',
+    'metal':'ROCK & INDIE', 'punk':'ROCK & INDIE',
+    'downtempo':'LOUNGE & LOFI', 'lofi':'LOUNGE & LOFI', 'lounge':'LOUNGE & LOFI',
+    'chillout':'LOUNGE & LOFI',
+    'jazz':'JAZZ',
+    'funk':'DISCO FUNK', 'soul':'DISCO FUNK', 'disco':'DISCO FUNK', 'r&b':'DISCO FUNK',
+    'afrobeats':'AFROBEATS', 'afrobeat':'AFROBEATS',
+    'latin':'WORLD & ROOTS', 'world':'WORLD & ROOTS', 'folk':'WORLD & ROOTS',
+    'reggae':'WORLD & ROOTS',
+    'electronic':'ELECTRONIC', 'psychedelic':'ELECTRONIC', 'dub':'ELECTRONIC',
+    'house':'ELECTRONIC', 'techno':'ELECTRONIC', 'trance':'ELECTRONIC'
+  };
+  /* Calan istasyonun turu: once kendi rafi (RADIOTAPE bir tur
+     olmadigi icin sayilmiyor), sonra 'tur' alanindan tablo. */
+  function calanTur(o){
+    try{
+      if(!o) return '';
+      if(o.grup && o.grup !== 'RADIOTAPE' && AILE_ADLAR.indexOf(o.grup) >= 0) return o.grup;
+      const r = TUR_RAF[String(o.tur || '').toLowerCase()];
+      return (r && AILE_ADLAR.indexOf(r) >= 0) ? r : '';
+    }catch(e){ return ''; }
+  }
   /* null = aile seçilmemiş: bütün liste çalıyor (bugünkü davranış). */
   var AKTIF_AILE = null;
   /* SOUND BANKS kipine girerken radyo tarafinin rafi buraya
@@ -16185,18 +16232,20 @@
            da kapsadigi icin yazilmisti ama radyo bir ustteki satirda
            zaten donuyor, geriye sadece MIXTAPE kaliyor. Sonuc: mixtape
            kanalinda ekranda RADIOTAPE yaziyordu. */
-        /* RAF SECILI DEGILSE (favori, arama, "hepsi calsin") ust satir
-           yine de CALANIN turunu soyluyor: kullanicinin sozu "eger bir
-           radyo caliyorsa hemen onun turunu tespit edip yukariya
-           yazmali". Bos birakmak, ekranin ne dinledigini bilmemesi
-           demekti. Renk de bu addan geliyor (asagida aileRenk). */
+        /* UST SATIR CALANIN TURUNU SOYLUYOR. Kullanicinin sozu: "eger
+           bir radyo caliyorsa hemen onun turunu tespit edip yukariya
+           yazmali, temasi rengi gelmeli."
+           Iki durumda rafin adi yetmiyor:
+             · raf secili degil (favori, arama, "hepsi calsin") --
+               bos birakmak ekranin ne dinledigini bilmemesi demekti
+             · raf RADIOTAPE -- o bir TUR degil, "tur secmeden acilan
+               yer". Funk kanali calarken ekranda RADIOTAPE yaziyordu.
+           Ikisinde de calanin kendi turu yaziliyor (bkz. calanTur).
+           Renk de bu addan geliyor (asagida aileRenk). */
         if(typeof mod !== 'undefined' && mod === 'radio'){
           ad = AKTIF_AILE || '';
-          if(!ad){
-            try{
-              const _g = _sonCalan && _sonCalan.grup;
-              if(_g && AILE_ADLAR.indexOf(_g) >= 0) ad = _g;
-            }catch(_a){ _yut(_a); }
+          if(!ad || ad === 'RADIOTAPE'){
+            try{ const _t = calanTur(_sonCalan); if(_t) ad = _t; }catch(_a){ _yut(_a); }
           }
         }
         /* ARSIV KANALININ ADI: SOUNDS.

@@ -612,15 +612,27 @@ const CASUS = ()=>{
          kare kuruyor ve o is bu satirin oncesinde bitmemis
          olabiliyor. Yani sayilan sey "kirk basisin bedeli" degil,
          "o sirada ne oluyorsa" idi.
-         Simdi once DURGUNLUK bekleniyor: dugum sayisi ust uste iki
-         kez ayni kalana dek (en fazla 3 sn). Iddia zayiflamadi,
-         yalnizca dogru ana bakiyor. */
+         Simdi once DURGUNLUK bekleniyor. Iddia zayiflamadi, yalnizca
+         dogru ana bakiyor.
+
+         9 EYLUL — AYNI TUZAK YINE ISIRDI (385 -> 442, GitHub kosusu;
+         ayni surum yerelde temiz). Sebep gene uygulama degil:
+         OLCULDU -- galeri acilip kirk deri gezildi ve alti kez acilip
+         kapatildi, dugum sayisi 639'da HIC degismedi. Yani sizinti
+         yok; kirilan sey olcumun kendisiydi.
+         Eski dongu TEK bir esit ornekte duruyordu: yavas makinede
+         izgara iki ornek arasinda bir an duruyor, dongu "durdu"
+         sanip cikiyor ve kalan seksen kare olcum penceresinin ICINDE
+         kuruluyordu. Artik UC KEZ ust uste ayni deger isteniyor ve
+         sure 3 sn'den 9 sn'ye cikti: bir an durmak yetmiyor,
+         gercekten durmasi gerekiyor. */
       let dugum0 = document.getElementsByTagName('*').length;
-      for(let i = 0; i < 30; i++){
+      let sabit = 0;
+      for(let i = 0; i < 90; i++){
         await b2(100);
         const su = document.getElementsByTagName('*').length;
-        if(su === dugum0) break;
-        dugum0 = su;
+        if(su === dugum0){ if(++sabit >= 3) break; }
+        else { sabit = 0; dugum0 = su; }
       }
       const eskiCal = window.cal; let n=0;
       window.cal = it => { n++; GECMIS.push(it||{mp3:'x'+n}); if(GECMIS.length>GECMIS_TAVAN) GECMIS.shift(); };
