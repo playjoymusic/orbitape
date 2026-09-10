@@ -359,9 +359,9 @@ function _kontrast(a,b){
 {
   const kon = (rgb, zem)=> A._kontrastOran(
     A._parlaklikRGB.apply(null, rgb.split(',').map(Number)), A._parlaklikHex(zem));
-  const renkler = ['95,191,122','240,172,122','242,104,60','216,203,160',
-                   '204,124,164','214,142,58','190,182,164','176,124,232',
-                   '132,150,255','53,224,216'];
+  const renkler = ['228,110,180','95,191,122','240,172,122','242,104,60',
+                   '216,203,160','204,124,164','214,142,58','232,84,100',
+                   '176,124,232','132,150,255','53,224,216'];
   const dusen = [];
   let enKotuOnce = 99, enKotuSonra = 99;
   A.DERILER.forEach((d, i)=>{

@@ -61,6 +61,13 @@ DIZIN = ["https://de1.api.radio-browser.info",
 # ROCK etiketleri ROCK & INDIE'ye, afro/latin etiketleri
 # WORLD & ROOTS'a tasindi.
 ARAMA = OrderedDict([
+    # 10 Eylul aksami: ANATOLIA rafi acildi. Dizin Turkce istasyonlari
+    # neredeyse her zaman "turkish ..." etiketiyle tutuyor; arabesk ve
+    # anadolu rock oldugu gibi yaziliyor. Raf sifirdan basladigi icin
+    # hasat burayi hedefe kadar doldurur.
+    ("ANATOLIA",     ["turkish", "turkish pop", "turkish folk", "arabesk",
+                      "turkish rock", "anadolu rock", "turkish music",
+                      "turkish jazz", "turkish classical"]),
     ("JAZZ",         ["jazz", "bebop", "big band", "swing", "smooth jazz"]),
     # 10 Eylul: DISCO FUNK ve AFROBEATS kalkti, ikisi HIP HOP & RNB
     # oldu. Bu satirdaki ad AILELER'de YOKSA hasat o kelimelerle

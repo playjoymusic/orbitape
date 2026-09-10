@@ -188,7 +188,19 @@ ELEKTRONIK = re.compile(
 # DISCO FUNK RAFI KALKTI: kullanici butun funk istasyonlarini
 # HIP HOP & RNB'ye tasidi ve o rafin adini FUNK & RNB yapti. Geriye
 # tek istasyon kalmadi; bos bir halka sessiz bir halkadir.
+# ANADOLU ISARETLERI: dizinde bu istasyonlarin etiketi neredeyse her
+# zaman "turkish ..." diye geciyor; arabesk ve anadolu rock'in
+# Ingilizcesi yok, oldugu gibi yaziliyor. Bu kalip WORLD & ROOTS'tan
+# ONCE bakiliyor -- eskiden "turk" kelimesi oraya dusuyordu ve
+# ANATOLIA rafi acilinca ayni istasyon iki rafa birden aday oluyordu.
+ANATOLIA_MUTLAK = re.compile(
+    r"\bturkish\b|\bturkce\b|\bt[uü]rk\w*|\barabesk\b|\banadolu\b|"
+    r"\bt[uü]rk[uü]\b|\bfantezi\b|\bozgun\b|\bhalk m[uü]zi[gğ]i\b", re.I)
+
 RAF_KELIME = OrderedDict([
+    # ANATOLIA EN BASTA: asagidaki raflarin hicbiri Turkce bir
+    # istasyonu kendine cekmesin.
+    ("ANATOLIA", ANATOLIA_MUTLAK),
     # HIP HOP: bosalan rafa geldi. Turevleri ve dallari da burada --
     # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
     # soul / r&b / trap BURADA: kullanicinin karari, raf dolsun.
@@ -283,6 +295,7 @@ RAF_KELIME = OrderedDict([
 #   latino / reggaeton / urbano / french / sertanejo -> WORLD
 #   instrumental TEK BASINA ORCHESTRAL yapmiyor (雨声轻音乐 -> AMBIENT)
 KADEME1 = OrderedDict([
+    ("ANATOLIA", ANATOLIA_MUTLAK),
     ("HIP HOP & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                  r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                  r"\bsoul\b|motown|g-?funk|turntabl|"
@@ -315,7 +328,9 @@ KADEME1 = OrderedDict([
                                  r"sertanejo|\bpagode\b|\bgospel\b|\bchanson\b|"
                                  r"\bfrench\b|\bmexic\w*|\bbanda\b|ranchera|"
                                  r"mariachi|grupera|vallenato|champeta|"
-                                 r"\bturk\w*|\barabic\b|\bmaroc\w*|amazigh|"
+                                 # turk KALKTI: ANATOLIA rafi acildi,
+                                 # bkz. ANATOLIA_MUTLAK.
+                                 r"\barabic\b|\bmaroc\w*|amazigh|"
                                  r"chaabi|\bbalkan\w*|\bgreek\b|\bschlager\b|"
                                  r"volksmusik|\bheimat\b|\bafrican\b|\bhindi\b|"
                                  r"bollywood|\bpersian\b|\bfarsi\b|\bklezmer\b|"
@@ -386,7 +401,7 @@ def elle_karar(ad):
 BOLGESEL = re.compile(
     r"\bregional\b|\bmexic|\bbanda\b|ranchera|nortena|norteña|mariachi|"
     r"grupera|vallenato|champeta|\bcorrido|\bbolero\b|\bcriolla\b|"
-    r"\bturk\w*|\bturkce\b|\barabic\b|\barab\b|\bmaroc|amazigh|"
+    r"\barabic\b|\barab\b|\bmaroc|amazigh|"
     r"chaabi|\bbalkan\b|\bgrcki\b|\bgreek\b|\bschlager\b|volksmusik|"
     r"\bheimat\b|\bceltic\b|\bgospel\b|\bafrican\b|afrobeats?|"
     r"\bhindi\b|bollywood|\bdesi\b|\bpersian\b|\bfarsi\b|"
@@ -438,6 +453,12 @@ AILELER = OrderedDict([
     # ELECTRONIC · JAZZ · LOUNGE & LOFI, sonra kalanlar kendi
     # aralarindaki sirayla. Renkler ADLA BIRLIKTE tasindi: JAZZ hala
     # gul, LOUNGE hala kum.
+    # ── ANATOLIA (10 Eylul aksami) ──────────────────────────────────
+    # TR ulke kara listesinden cikinca acilan raf. Kesif olcumu 15
+    # aday buldu (araclar/radyo_kesif.py); en kucuk raf bu, o yuzden
+    # EN ICTEKI halka. SIRA UYGULAMADAKININ AYNISI OLMAK ZORUNDA
+    # (saglik: "Hasat araci uygulamayla ayni raflari biliyor").
+    ("ANATOLIA",      {"renk": "#E46EB4"}),
     ("AMBIENT",       {"renk": "#5FBF7A"}),
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),
     ("ROCK & INDIE",  {"renk": "#F2683C"}),   # eski adi ROCK & COUNTRY
@@ -493,7 +514,11 @@ IBADET = re.compile(r"qurango|القارئ|التفسير|القران|القر�
 # ama canli sozu denetleyemiyoruz; NEWS & TALK ailesi kurulunca bu
 # karar yeniden ele alinacak.
 KONUSMA = re.compile(r"\btalk\s?show\b|\bpolitics?\b|\bpolitical\b|"
-                     r"\bconservative talk\b|\bchristian talk\b", re.I)
+                     r"\bconservative talk\b|\bchristian talk\b|"
+                     # 10 Eylul: Turkce yayinlarda konusma isareti
+                     # Ingilizce degil. "24 Radyo" (haber,news,talk)
+                     # kesif raporunda muzik rafina aday cikmisti.
+                     r"\bhaber\b|\bsohbet\b|\bs[oö]yle[sş]i\b", re.I)
 
 
 def temizle(kayitlar):
@@ -537,6 +562,12 @@ def _raflar(metin, elektronik_ustun=True):
     Iki tur birden geciyorsa kimse kazanmaz, RADIO'e gider."""
     # HIP HOP ELEKTRONIKTEN DE USTUN: "House vs. Hip-Hop" ikisi de
     # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
+    # ANATOLIA MUTLAK: "Turkish Pop Radio" pop degil Anadolu rafi;
+    # "Anadolu Rock" rock degil Anadolu. Cografya tur kelimesini
+    # yeniyor -- WORLD & ROOTS icin zaten kurulmus olan mantik, artik
+    # kendi rafi olan bir bolge icin.
+    if ANATOLIA_MUTLAK.search(metin):
+        return ["ANATOLIA"]
     if RAF_KELIME["HIP HOP & RNB"].search(metin):
         return ["HIP HOP & RNB"]
     # LOUNGE MUTLAK: "lounge", "smooth", "relax" gecen her sey lounge.

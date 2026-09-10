@@ -6451,7 +6451,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        iki ayri tarz oldugu icin HIP HOP & RNB.
        Sayi burada acikca yaziyor cunku halka geometrisi raf
        SAYISINDAN tureniyor: yanlis sayi yanlis halkayi sectirir. */
-    K('On DOLU aile tanimli', !!ai && ai.sayi === 10, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('On bir DOLU aile tanimli', !!ai && ai.sayi === 11, ai ? ai.adlar.join(' · ') : 'AILELER yok');
     K('Bildirilmis-bos raf halkada gorunmuyor',
       !!ai && ai.bosAdlar.every(b => !ai.halkada.includes(b)),
       ai ? ('bos: ' + (ai.bosAdlar.join(', ') || 'yok')
@@ -6573,7 +6573,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        YERINI KULLANICI VERDI: "en buyuk halka 3. sirada olsun,
        ELECTRONIC'ten sonra" -- yani distan ucuncu. Dizi icten disa
        oldugu icin WORLD & ROOTS ile ELECTRONIC'in arasinda. */
-    const SIRA = ['AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
+    /* 10 Eylul aksami: ANATOLIA en icteki halka olarak eklendi.
+       TR ulke kara listesinden cikinca acilan raf; kesif olcumu 15
+       aday buldu, yani en kucuk raf bu. On halka on bir oldu. */
+    const SIRA = ['ANATOLIA','AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
                   'JAZZ','WORLD & ROOTS','AFROBEATS','HIP HOP & RNB',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
