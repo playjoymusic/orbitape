@@ -5637,7 +5637,32 @@
     {ad:"NORTHERN", zem:"#060b16", yazi:"#c2d8e0", marka:"#4fc0a0", cek:"#16243a", font:F1, kose:"50%", cizim:"northern"},
     {ad:"BAMBOO", zem:"#080f0b", yazi:"#bcd0b0", marka:"#7fae5c", cek:"#1a2c1e", font:F2, kose:"50%", cizim:"bamboo"},
     {ad:"EMBERS", zem:"#0d0806", yazi:"#d8c0a8", marka:"#e0803c", cek:"#2a1a12", font:F1, kose:"50%", cizim:"embers"},
-    {ad:"CAVE", zem:"#080c10", yazi:"#c4d0d8", marka:"#8fa4b0", cek:"#1e262e", font:F1, kose:"50%", cizim:"cave"}
+    {ad:"CAVE", zem:"#080c10", yazi:"#c4d0d8", marka:"#8fa4b0", cek:"#1e262e", font:F1, kose:"50%", cizim:"cave"},
+    /* ── BILIM KURGU SERISI (10 Eylul) ────────────────────────────────
+       Kullanicinin sozu: "bilim kurgu ve sanat eseri tablolar serisi
+       olmali... kenarlardaki sabit ogelerle -- sag alt haric -- sanki
+       baglantiliymis gibi calismalar olsun. ama sanatsal ve modern."
+       Kompozisyon kurali bu yuzden geometrik: her deri ekrandaki dort
+       sabit yerden (sol simge sutunu, ust serit, alt sol tuslar, orta
+       disk) en az ikisine dayaniyor ve sag alt ceyrek sakin kaliyor --
+       calan parcanin kunyesi orada. */
+    {ad:"AIRLOCK", zem:"#0a1014", yazi:"#d8e4e8", marka:"#5fd8c4", cek:"#132228", font:F3, kose:"2px", cizim:"airlock"},
+    {ad:"TERRAFORM", zem:"#0b0f18", yazi:"#e8d8c0", marka:"#e8b878", cek:"#1c2438", font:F1, kose:"50%", cizim:"terra"},
+    {ad:"WARP", zem:"#05060c", yazi:"#e8e4ff", marka:"#7b5cff", cek:"#141034", font:F3, kose:"50%", cizim:"warp"},
+    {ad:"PLASMA", zem:"#0a0610", yazi:"#ffe8d0", marka:"#ff3d7f", cek:"#22103a", font:F1, kose:"50%", cizim:"plazma"},
+    {ad:"SIGNAL", zem:"#060a0c", yazi:"#e8e0c0", marka:"#4fd0b0", cek:"#12222a", font:F3, kose:"50%", cizim:"sinyal"},
+    {ad:"CRYO", zem:"#070d12", yazi:"#e4f4fa", marka:"#8fd4e8", cek:"#122630", font:F1, kose:"2px", cizim:"cryo"},
+    {ad:"SPIRAL", zem:"#05060e", yazi:"#e8e0ff", marka:"#b07cff", cek:"#150f30", font:F2, kose:"50%", cizim:"sarmal"},
+    /* ── SANAT ESERI SERISI (10 Eylul) ────────────────────────────────
+       Ressam adi degil USLUP adi -- tablo serisinde kurulmus kural.
+       Hicbiri belirli bir tabloyu yeniden cizmiyor; her biri o dilin
+       araclarini kendi kompozisyonunda kullaniyor. */
+    {ad:"POINTILLIST", zem:"#f2efe4", yazi:"#243040", marka:"#3a6ea8", cek:"#e0dccc", font:F2, kose:"50%", cizim:"nokta"},
+    {ad:"FAUVE", zem:"#f4f1e8", yazi:"#1d3557", marka:"#e8523c", cek:"#e2ded0", font:F1, kose:"2px", cizim:"fov"},
+    {ad:"CUBIST", zem:"#b8a77c", yazi:"#241f16", marka:"#8a3c2c", cek:"#a2916a", font:F1, kose:"0px", cizim:"kubik"},
+    {ad:"INK WASH", zem:"#f4f1e8", yazi:"#1a1a18", marka:"#5a5a54", cek:"#e2dfd4", font:F2, kose:"50%", cizim:"murekkep"},
+    {ad:"STAINED", zem:"#141018", yazi:"#e8dcc0", marka:"#e8b632", cek:"#221c2a", font:F2, kose:"50%", cizim:"vitray"},
+    {ad:"TAPESTRY", zem:"#2a1f18", yazi:"#e0d0b0", marka:"#c8a06a", cek:"#3c2c20", font:F2, kose:"2px", cizim:"goblen"}
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
@@ -6393,7 +6418,19 @@
       };
       kap.textContent = '';
       kap.appendChild(yap(0, 'OFF', null));
-      DERILER.forEach((d,i)=>{ kap.appendChild(yap(i+1, d.ad, d)); });
+      /* ── IZGARA TERSTEN DIZILIYOR (10 Eylul) ──────────────────
+         Kullanicinin sozu: "menuyu tam tersine cevir, yani duz
+         renkler en altta, en son sekilli tum skinsler daha once
+         gorunsun." Tablo tarihsel sirada duruyor -- once duz
+         renkler, sonra cizimliler -- ve TABLONUN SIRASI
+         DEGISTIRILMIYOR: kayitli AYAR.deri o tablodaki sira
+         numarasi, tabloyu ters cevirmek herkesin derisini baska
+         bir deriye kaydirirdi. Degisen yalnizca EKRANDAKI dizim.
+         Ayni kural galeri seridinde de gecerli (deri_galeri.js:
+         izgara kurulumu ve adim). */
+      for(let i = DERILER.length - 1; i >= 0; i--){
+        kap.appendChild(yap(i + 1, DERILER[i].ad, DERILER[i]));
+      }
       kap.dataset.kuruldu = '1';
       /* TIP KAPISI: e.target yalnizca EventTarget'tir, closest'i yok;
          dataset de Element'te degil HTMLElement'te. Ikisini de
@@ -10047,7 +10084,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 81) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 94) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde

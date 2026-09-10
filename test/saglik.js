@@ -10777,11 +10777,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         }
         if(okTus){ okTus.click(); await bek(260); }
         c.izgaraAcildi = !kap.classList.contains('serit');
-        c.kareSayisi = kap ? kap.querySelectorAll('.dg-kare').length : 0;
+        const _kk0 = kap ? kap.querySelectorAll('.dg-kare') : [];
+        c.kareSayisi = _kk0.length;
         c.kareDogru = c.kareSayisi === DERILER.length + 1;
-        /* kareler ust uste binmiyor: ikinci karenin tepesi birincinin altindan sonra */
-        const k1 = kap.querySelector('.dg-kare[data-n="1"]').getBoundingClientRect();
-        const k4 = kap.querySelector('.dg-kare[data-n="4"]').getBoundingClientRect();
+        /* ── DIZIM TERS (10 Eylul) ───────────────────────────────
+           Kullanicinin sozu: "menuyu tam tersine cevir, duz renkler
+           en altta, sekilli skinsler once." OFF basta kaliyor (o bir
+           anahtar, bir deri degil), sonra tablo SONDAN basa iniyor.
+           Tablonun kendisi dokunulmadan duruyor: kayitli AYAR.deri
+           ayni deriyi gostermeye devam ediyor. */
+        {
+          const _n = [].slice.call(_kk0).map(b=>parseInt(b.dataset.n || '0', 10));
+          c.tersSirali = _n[0] === 0 && _n[1] === DERILER.length && _n[_n.length-1] === 1;
+        }
+        /* kareler ust uste binmiyor: dorduncu karenin tepesi birincinin
+           altindan sonra. 10 Eylul: olcu SIRA NUMARASINA gore degil
+           EKRANDAKI YERE gore aliniyor -- izgara artik tersten
+           diziliyor (en yeni cizimli deriler basta), yani data-n="4"
+           data-n="1"in ustunde duruyor. Olculen sey degismedi. */
+        const k1 = _kk0[1].getBoundingClientRect();
+        const k4 = _kk0[4].getBoundingClientRect();
         c.binmiyor = k4.top >= k1.bottom - 1 && k1.height > 120;
         /* secim: kareye dokun -> deri uygulanir, galeri acik kalir */
         kap.querySelector('.dg-kare[data-n="2"]').click(); await bek(400);
@@ -10890,11 +10905,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           } else c.tusAralik = -1;
         }
         c.arkaDokunulur = !document.getElementById('tp').closest('[inert]');
+        /* OKLARIN YONU EKRANI TAKIP EDIYOR (10 Eylul): izgara tersten
+           diziliyor, bu yuzden "ileri" tablo numarasini KUCULTUYOR.
+           Olculen sey ayni: ileri bir adim, geri iki adim, ad yazisi
+           gidilen deriyi soyluyor. Deri 2'den basliyor. */
         kap.querySelector('.dg-tus.ileri').click(); await bek(300);
-        c.ileri = AYAR.deri === 3;
+        c.ileri = AYAR.deri === 1;
         kap.querySelector('.dg-tus.geri').click(); kap.querySelector('.dg-tus.geri').click(); await bek(300);
-        c.geri = AYAR.deri === 1;
-        c.adYazisi = kap.querySelector('.dg-secili').textContent.trim() === DERILER[0].ad;
+        c.geri = AYAR.deri === 3;
+        c.adYazisi = kap.querySelector('.dg-secili').textContent.trim() === DERILER[2].ad;
         /* SERITTE RING GORUNUR (3 Eylul): "halkayi acip kapama da
            gorunsun orda." Kucultunce kaybolmamali. */
         /* SERITTE RING ANAHTARI YOK. Merkez secicide zaten "RING"
@@ -11000,6 +11019,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (g.okEn||0) + 'x' + (g.okBoy||0) + ' px, saydamlik ' + (g.okSaydam)
        + ', cerceve ' + g.okCerceve);
   K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
+    K('Izgara tersten diziliyor: OFF, en yeni deri ... ilk deri', g.tersSirali === true, oz || 'OFF + ' + (g.kareSayisi - 1) + ' deri, sondan basa');
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
     K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi && g.kucultTusuYok, oz || 'serit, kucultme tusu yok');

@@ -489,7 +489,12 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     kap.appendChild(bas);
     izg = document.createElement('div'); izg.className = 'dg-izgara';
     izg.appendChild(kareYap(0, null));
-    DERILER.forEach((d, i)=>{ izg.appendChild(kareYap(i+1, d)); });
+    /* TERSTEN: en yeni cizimli deriler basta, duz renkler en sonda.
+       Tablo dokunulmadan duruyor -- kayitli numara ayni deriyi
+       gostermeye devam ediyor. Bkz. index.html: deriIzgaraKur. */
+    for(let i = DERILER.length - 1; i >= 0; i--){
+      izg.appendChild(kareYap(i + 1, DERILER[i]));
+    }
     kap.appendChild(izg);
     izg.addEventListener('click', e=>{
       try{
@@ -565,7 +570,9 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   }
   function adim(y){
     const N = DERILER.length + 1;                 // 0 = OFF dahil
-    sec((((AYAR.deri|0) + y) % N + N) % N);
+    /* ISARET TERS: izgara tersten diziliyor, "ileri" tusu ekranda
+       saga gitmeli. Ekranda sag = tabloda kucuk numara. */
+    sec((((AYAR.deri|0) - y) % N + N) % N);
   }
   function fircaIsaret(acik){
     try{
