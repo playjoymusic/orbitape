@@ -747,7 +747,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        duruyor" ile "donunce titriyor" sikayetlerinin OLCULEN
        sebepleri; o olcumler yazili olmazsa bir sonraki kisi ayni
        kapilari yeniden acar. Tavan bir koruma; islev eklenince
-       Son yukseltme (1136 -> 1144): HIP HOP RNB rafi (iki rafin
+       Son yukseltme (1136 -> 1144): HIP HOP & RNB rafi (iki rafin
        kalkmasinin ve icerigin nereye gittiginin kaydi, halka
        sirasinin kullanicidan geldigi not) ve sol sutun simgelerinin
        gercek zemine gore renklenmesi -- 82 derinin olcum sonuclari
@@ -1237,7 +1237,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ust satir, halka ve renk eski rafi gosteriyordu. */
   K('Calan istasyon rafi belirliyor', await pg.evaluate(async()=>{
       const eskiAile = AKTIF_AILE, eskiMod = mod, eskiFav = _favMod;
-      mod = 'radio'; _favMod = false; AKTIF_AILE = 'HIP HOP RNB';
+      mod = 'radio'; _favMod = false; AKTIF_AILE = 'HIP HOP & RNB';
       rafCalanaUysun({ grup:'JAZZ', ad:'X', mp3:'https://sahte.test/x' });
       const gecti = AKTIF_AILE === 'JAZZ';
       modAdiYaz();
@@ -1256,11 +1256,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      orada raf degistirmek onun secimini bozar. */
   K('Favori ve aramada raf degismiyor', await pg.evaluate(async()=>{
       const eskiAile = AKTIF_AILE, eskiMod = mod, eskiFav = _favMod, eskiEt = _etiket;
-      mod = 'radio'; AKTIF_AILE = 'HIP HOP RNB';
+      mod = 'radio'; AKTIF_AILE = 'HIP HOP & RNB';
       _favMod = true;  rafCalanaUysun({ grup:'JAZZ' });
-      const favSabit = AKTIF_AILE === 'HIP HOP RNB';
+      const favSabit = AKTIF_AILE === 'HIP HOP & RNB';
       _favMod = false; _etiket = 'funk'; rafCalanaUysun({ grup:'JAZZ' });
-      const araSabit = AKTIF_AILE === 'HIP HOP RNB';
+      const araSabit = AKTIF_AILE === 'HIP HOP & RNB';
       _etiket = eskiEt; AKTIF_AILE = eskiAile; mod = eskiMod; _favMod = eskiFav;
       return favSabit && araSabit;
     }), 'favori ve arama raflari asiyor, raf yerinde kaliyor');
@@ -1283,8 +1283,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const yazi2 = (document.getElementById('modAd').textContent || '').trim();
       _sonCalan = eskiSon; AKTIF_AILE = eskiAile; mod = eskiMod;
       try{ modAdiYaz(); }catch(e){}
-      return yazi === 'HIP HOP RNB' && yazi2 === 'JAZZ' && !!renk;
-    }), 'funk kanali -> HIP HOP RNB, rengi de o raftan');
+      return yazi === 'HIP HOP & RNB' && yazi2 === 'JAZZ' && !!renk;
+    }), 'funk kanali -> HIP HOP & RNB, rengi de o raftan');
   /* Tablo veriden cikarildi; veri buyudukce eksik kalmasin diye
      kapi soruyor: RADIOTAPE rafindaki her turun karsiligi var mi.
      Karsiligi olmayan tur = ekranda yine 'RADIOTAPE' yazan istasyon. */
@@ -2461,14 +2461,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* On halka -> DOKUZ: INDIE & LOFI bosaldi ve kaldirildi.
      DOKUZ -> ON: AFROBEAT acildi ve otuz iki istasyonla doldu.
      ON -> DOKUZ (10 Eylul): AFROBEATS ve DISCO FUNK kalkti, ikisinin
-     icerigi tek bir rafta birlesti -- HIP HOP RNB. Iki raf gitti, bir
-     raf geldi.
+     icerigi tek bir rafta birlesti -- HIP HOP & RNB.
+     DOKUZ -> ON (ayni gun): raf dolunca iceri girenlerin cogunun hip
+     hop degil AFRO oldugu goruldu; AFROBEATS 28 istasyonla geri acildi,
+     distan dorduncu halka.
      Geometri halka SAYISINDAN tureniyor, o yuzden sayi burada
      acikca yaziyor: yanlis sayida parmak baska halkayi secer. */
-  K('Radyoda halkalar tur ailesi', hs.n===9 &&
+  K('Radyoda halkalar tur ailesi', hs.n===10 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
-       && /HIP HOP RNB/.test(hs.sira)
-       && !/AFROBEATS/.test(hs.sira) && !/DISCO FUNK/.test(hs.sira)
+       && /HIP HOP & RNB/.test(hs.sira) && /AFROBEATS/.test(hs.sira)
+       && !/DISCO FUNK/.test(hs.sira)
        && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
     const ars = await pg.evaluate(()=>{
@@ -6443,9 +6445,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        afrobeats kategorileri iptal oluyor, bunlari yeni hip hop rnb
        kategorisine koy." Iki raf kalkti, bir raf geldi; ikisi de tam
        olarak bosaldi (19 + 32 istasyon) ve yeni raf 69 istasyonla
-       acildi. Sayi burada acikca yaziyor cunku halka geometrisi raf
+       acildi. AYNI GUN DOKUZ -> ON: raf dolunca iceri girenlerin cogunun
+       hip hop degil AFRO oldugu goruldu ve AFROBEATS yeniden acildi
+       (28 istasyon, distan dorduncu halka). Rafin adi da ayrildi:
+       iki ayri tarz oldugu icin HIP HOP & RNB.
+       Sayi burada acikca yaziyor cunku halka geometrisi raf
        SAYISINDAN tureniyor: yanlis sayi yanlis halkayi sectirir. */
-    K('Dokuz DOLU aile tanimli', !!ai && ai.sayi === 9, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    K('On DOLU aile tanimli', !!ai && ai.sayi === 10, ai ? ai.adlar.join(' · ') : 'AILELER yok');
     K('Bildirilmis-bos raf halkada gorunmuyor',
       !!ai && ai.bosAdlar.every(b => !ai.halkada.includes(b)),
       ai ? ('bos: ' + (ai.bosAdlar.join(', ') || 'yok')
@@ -6568,7 +6574,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ELECTRONIC'ten sonra" -- yani distan ucuncu. Dizi icten disa
        oldugu icin WORLD & ROOTS ile ELECTRONIC'in arasinda. */
     const SIRA = ['AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
-                  'JAZZ','WORLD & ROOTS','HIP HOP RNB',
+                  'JAZZ','WORLD & ROOTS','AFROBEATS','HIP HOP & RNB',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
@@ -6647,10 +6653,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Bekleyen secim yazisi silik', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
         mod = 'radio'; AKTIF_AILE = 'MIXTAPE'; _aileOncesi = null;
-        aileGezmeBasla(); AKTIF_AILE = 'HIP HOP RNB';   // gezindi
+        aileGezmeBasla(); AKTIF_AILE = 'HIP HOP & RNB';   // gezindi
         modAdiYaz();
         const bekler = document.getElementById('modAd').classList.contains('bekliyor');
-        aileSecimKesinlesti({grup:'HIP HOP RNB'});      // ses o raftan geldi
+        aileSecimKesinlesti({grup:'HIP HOP & RNB'});      // ses o raftan geldi
         modAdiYaz();
         const katilasti = !document.getElementById('modAd').classList.contains('bekliyor');
         mod = eM; AKTIF_AILE = eA; _aileOncesi = eO; modAdiYaz();

@@ -836,7 +836,7 @@ function bitir(){
        Tur ve raf adlari VERI: cevrilirse hem arama hem hasat
        araclariyla ayrisir. Sozluge kazara girmeleri kolay ve
        sonucu sessiz, o yuzden acikca yasak. */
-    const VERI = ['JAZZ','ROCK','AMBIENT','ELECTRONIC','HIP HOP RNB',
+    const VERI = ['JAZZ','ROCK','AMBIENT','ELECTRONIC','HIP HOP & RNB',
                   'ORCHESTRAL','WORLD & ROOTS','LOUNGE & LOFI','ROCK & INDIE',
                   'RADIOTAPE','NATURE','CITY','HUMANS','NOISE','SPACE','AMBIANCE'];
     const kacak = VERI.filter(a => Object.prototype.hasOwnProperty.call(sozluk, a));
