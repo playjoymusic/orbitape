@@ -623,7 +623,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      tasindi -- ikisi de gercek islev, yorum degil; olculen artis
      ~350 bayt brotli. Tavan bir koruma, bir yasak degil: islev
      eklenince bilerek ve yaziyla yukseltiliyor. */
-  const ILK_CIZIM_TAVAN = _derlendi ? 102 : 260, ILK_ACILIS_TAVAN = _derlendi ? 110 : 302;
+  /* 10 Eylul: 102 -> 104. Uc duzeltme girdi ve ucu de KOD, yorum
+     degil (yorumlar yayindan zaten dusuyor): /np gunluk sinira
+     takilinca ayni oturumda bir daha sorulmamasi, telefon donunce
+     yerlestirmenin tek sahibi olmasi + ust uste uc esit olcu kurali,
+     ve akis bekcisinin ekran kapaliyken duvar saatiyle olcmesi.
+     Olculen artis 104.539 - 104.4xx bayt araligi, yani ~0,1 KB
+     brotli; tavan 102,09'da asildi. Yeni tavan yine FREN: bugunku
+     olcumun ~%2 ustu, kacak bir buyume hala burada yakalanir. */
+  const ILK_CIZIM_TAVAN = _derlendi ? 104 : 260, ILK_ACILIS_TAVAN = _derlendi ? 110 : 302;
   K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
@@ -731,9 +739,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kaldirildigi ve telefon donunce titremenin neden olustugu.
        Dordu de "ne yapildigi" degil "neden yapildigi" yazisi; o
        yazilar silinirse bir sonraki kisi ayni hatalari yeniden
-       yapar. Tavan bir koruma; islev eklenince yaziyla
-       yukseltiliyor, sessizce degil. */
-    K('Ham boy < 1130 KB', dosyaBoy < 1130*1024,
+       yapar. Son yukseltme (1130 -> 1136): /np gunluk sinira takilinca
+       ayni oturumda bir daha sorulmamasi, telefon donunce
+       titremenin ikinci sebebi (yerlestirmenin tek sahibi olmasi ve
+       ust uste uc esit olcu kurali), ve ekran kapaliyken akis
+       bekcisinin duvar saatiyle olcmesi. Ucu de "muzik bazen
+       duruyor" ile "donunce titriyor" sikayetlerinin OLCULEN
+       sebepleri; o olcumler yazili olmazsa bir sonraki kisi ayni
+       kapilari yeniden acar. Tavan bir koruma; islev eklenince
+       yaziyla yukseltiliyor, sessizce degil. */
+    K('Ham boy < 1136 KB', dosyaBoy < 1136*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -928,6 +943,89 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        && pf.kisa === '' && pf.saglam === 'Tones On Tail - Go!',
        'kuyruktaki kimlikler kirpiliyor, yer tutucular eleniyor');
   }
+  /* ── /np GUNLUK SINIRA TAKILIRSA ─────────────────────────────
+     Ucretsiz Cloudflare planinda gunluk istek siniri dolunca /np
+     429 donuyor ve o gun boyunca donmeye devam ediyor. Kod bunu
+     zaten yiyor ve istasyona dogrudan soruyor -- muzik etkilenmiyor
+     -- ama bayrak olmazsa her tazelemede once o kapiya bir daha
+     vuruluyor: kullaniciya gecikme, sunucuya bos yuk.
+     Kontrol iki seyi birden kuruyor: 429'dan sonra ayni oturumda
+     /np'ye bir daha GIDILMEMESI, ve gidilmedigi halde parca adinin
+     dogrudan kaynaktan HALA gelmesi. Ikincisi olmazsa "istek
+     azaldi" demek, ozelligin sessizce olmesi demek olurdu. */
+  {
+    const np = await pg.evaluate(async ()=>{
+      const eskiFetch = window.fetch;
+      const gidilen = [];
+      window.fetch = function(u, o){
+        const adres = String((u && u.url) || u || '');
+        gidilen.push(adres);
+        if(adres.indexOf('/np?') >= 0)
+          return Promise.resolve(new Response('', {status:429}));
+        /* Dogrudan kaynak: tek istasyonlu Icecast yaniti */
+        return Promise.resolve(new Response(JSON.stringify({icestats:{source:{
+          listenurl:'https://ornek.test/canli', title:'Tones On Tail - Go!'}}}),
+          {status:200, headers:{'content-type':'application/json'}}));
+      };
+      const item = { radyo:'ORNEK', mp3:'https://ornek.test/canli' };
+      let ilk = '', ikinci = '';
+      try{ ilk = await parcaAl(item); }catch(e){}
+      const npIlk = gidilen.filter(x=>x.indexOf('/np?')>=0).length;
+      const bayrak = _npKapali;
+      gidilen.length = 0;
+      try{ ikinci = await parcaAl(item); }catch(e){}
+      const npIkinci = gidilen.filter(x=>x.indexOf('/np?')>=0).length;
+      window.fetch = eskiFetch;
+      _npKapali = 0;
+      return { npIlk, npIkinci, bayrak,
+               ilkAd: (ilk && ilk.a) || '', ikinciAd: (ikinci && ikinci.a) || '' };
+    });
+    K('/np 429 dedikten sonra ayni oturumda bir daha sorulmuyor',
+      np.npIlk >= 1 && np.bayrak === 1 && np.npIkinci === 0,
+      'ilk turda ' + np.npIlk + ', ikinci turda ' + np.npIkinci + ' istek');
+    K('/np kapaninca parca adi dogrudan kaynaktan geliyor',
+      !!np.ikinciAd,
+      np.ikinciAd ? ('ad: ' + np.ikinciAd) : 'ad gelmedi — ozellik sessizce olmus');
+  }
+
+  /* ── TELEFON DONUNCE TITREME ─────────────────────────────────
+     Kullanicinin sozu (10 Eylul): "telefonu sag sol yapip sonra
+     dikey olunca titreme oluyor." Iki ayri kapi birden gerekiyor
+     ve ikisi de burada olculuyor.
+       1. UST USTE UC ESIT OLCU. Tek esit ornek yetmiyordu: iOS'ta
+          donus animasyonunun ortasinda olcu bir sure sabit kalip
+          sonra bir daha degisiyor, yani tek ornek ara kareyi
+          "bitti" saniyordu ve yerlesim iki kez hesaplaniyordu.
+       2. YERLESTIRMENIN TEK SAHIBI. olcuIste'nin 120 ms'lik
+          sessizlik kapisi donus surerken erken aciliyordu; artik
+          body.donuyor varken hicbir sey yerlestirmiyor.
+     Ucuncu kontrol guvenlik icin: 'donuyor' sinifi butun gecisleri
+     kapatiyor, yani orada takili kalirsa arayuz gecissiz kilitlenir.
+     Tavan var ve gercekten kalkiyor mu, calistirarak olculuyor. */
+  {
+    const kDonus = fs.readFileSync('index.html','utf8');
+    K('Donus beklemesi ust uste uc esit olcu ariyor',
+      /DONUS_ORNEK\s*=\s*3/.test(kDonus) && /_donusEsit\s*>=\s*DONUS_ORNEK/.test(kDonus),
+      'tek ornek ara kareyi bitti sayiyordu');
+    K('Donus beklemesinin tavani var',
+      /DONUS_TAVAN\s*=\s*\d+/.test(kDonus)
+      && />=\s*DONUS_TAVAN\)\s*\{\s*_donusYerlestir/.test(kDonus),
+      'tavansiz bekleme arayuzu gecissiz kilitli birakabilir');
+    K('Donus surerken ikinci bir yerlestirme yok',
+      /classList\.contains\('donuyor'\)\)\s*return;[\s\S]{0,80}geriYerlestir/.test(kDonus),
+      'olcuIste donus bitmeden geriYerlestir cagirmamali');
+    const dn = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r, ms));
+      window.dispatchEvent(new Event('orientationchange'));
+      const hemen = document.body.classList.contains('donuyor');
+      await bek(2100);
+      return { hemen, sonra: document.body.classList.contains('donuyor') };
+    });
+    K('Donus baslayinca gecisler kesiliyor, sonra geri geliyor',
+      dn.hemen === true && dn.sonra === false,
+      'baslangic ' + dn.hemen + ', 2.1 sn sonra ' + dn.sonra);
+  }
+
   /* Mount SOYLEMEYEN kaynaklar (7.html, currentsong, stats) yalnizca
      TEK ISTASYONLU sunucularda kullanilmali. Paylasilan sunucuda
      baska bir istasyonun sarkisini gosterirler. */
@@ -9218,6 +9316,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      /_akisSaglam >= AKIS_SAGLAM_TIK\){ _akisTamir = 0/.test(TUM_KOD)
      && /AKIS_SAGLAM_TIK = 15/.test(TUM_KOD),
      '30 sn saglam akis -> sayac sifir');
+  /* ── UCUNCU SESSIZ YOL: EKRAN KAPALIYKEN BEKCI YOKTU ────────────
+     Bildirilen (10 Eylul): "bazen durma oluyor arada muzikte, birkac
+     gunde denk geldim." Olculdu: akis bekcisi document.hidden iken
+     hicbir sey yapmadan donuyordu. Gerekcesi dogruydu -- arka planda
+     tarayici zamanlayiciyi kisiyor, tik saymak yaniltir -- ama sonucu
+     sudur: radyo en cok dinlendigi durumda (ekran kapali, telefon
+     cepte) bekcisiz kaliyordu. Istasyon orada takilirsa kimse yeniden
+     baglanmiyor, kullanici telefonu eline alinca sessizlik buluyor.
+     Cozum tik saymak degil, DUVAR SAATI: gercek dunyada
+     GIZLI_DUR_SN saniye gectigi halde ses.currentTime neredeyse hic
+     ilerlememisse akis olmustur. Zamanlayicinin kisilmasi olcumu
+     bozmuyor, cunku olculen sey tik degil gecen zaman.
+     Yeniden baglanma TEK YERDE (_akisTamirEt): iki cagiran da ayni
+     tavana ve ayni sayaca uymali, yoksa kopyalar bir gun ayrisir. */
+  K('Ekran kapaliyken de akis bekleniyor',
+     /GIZLI_DUR_SN\s*=\s*\d+/.test(TUM_KOD)
+     && /if\(document\.hidden\)\{[\s\S]{0,420}gecen >= GIZLI_DUR_SN && ilerleme < 0\.5\) _akisTamirEt/.test(TUM_KOD),
+     'arka planda duvar saati ile olculuyor');
+  K('Yeniden baglanmanin tek sahibi var',
+     /function _akisTamirEt\(/.test(TUM_KOD)
+     && (TUM_KOD.match(/_akisTamirEt\(/g) || []).length === 3,
+     'bir tanim, iki cagri');
   K('Ses oturumu askidayken uyandiriliyor',
      /function oturumBekcisi\(\)/.test(TUM_KOD)
      && /setInterval\(oturumBekcisi, 1000\)/.test(TUM_KOD)
@@ -10079,6 +10199,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Gizli raf adi fotografa girmiyor',
       /offsetParent !== null[\s\S]{0,120}visibility/.test(kayitKaynak2),
       'opacity yetmiyor, visibility de soruluyor');
+    /* ── TASIMA TUSLARI FOTOGRAFA GIRMIYOR ────────────────────────
+       Ekranda o satirda bes tus var (◁| ▶ ■ |▷ ⌕); fotografa
+       yalnizca ◁| ve |▷ giriyordu, cunku otekiler hic cizilmiyordu.
+       Yarim satir, tam satirdan kotu goruniyordu. Kullanicinin sozu
+       (10 Eylul): "sol altta geri ileri butonlari var ya hic
+       olmasin". Satirin tamami disarida birakildi.
+       Kontrol KAYNAKTA ve yalnizca _kaySagAlt govdesinde: tuslarin
+       kendisi ekranda duruyor ve dinleyicileri ayni dosyada, yani
+       "dosyada gecmesin" demek yanlis olurdu. Yorumlar once
+       dusuruluyor -- bu notun kendisi kurala takilmasin diye. */
+    {
+      const _yorumsuz = kayitKaynak2.replace(/\/\*[\s\S]*?\*\//g, '')
+                                    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+      const m = _yorumsuz.match(/function _kaySagAlt\(([\s\S]*?)\n  function /);
+      const govde = m ? m[1] : '';
+      K('Tasima tuslari fotografa cizilmiyor',
+        !!govde && !/geriDug|ileriDug/.test(govde),
+        govde ? 'govde temiz' : '_kaySagAlt govdesi okunamadi');
+    }
     const kotu = [], not = [];
     (deriFoto || []).forEach(d=>{
       if(!d.olcum || !d.olcum.zemin){ kotu.push(d.ad + ': fotograf okunamadi'); return; }

@@ -1747,29 +1747,22 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       if(np.classList.contains('on')){
         const npA = parseFloat(getComputedStyle(np).opacity)||0;
         c.globalAlpha = npA;
-        const gb = kk(geriDug);
-        if(gb && getComputedStyle(geriDug).display!=='none'){
-          kat(c, ()=>{
-            c.globalAlpha = npA * (parseFloat(getComputedStyle(geriDug).opacity)||0.9);
-            const rr2 = gb.h/2;
-            c.beginPath();                                   // hap
-            c.moveTo(gb.x+rr2, gb.y); c.lineTo(gb.sag-rr2, gb.y);
-            c.arc(gb.sag-rr2, gb.oy, rr2, -Math.PI/2, Math.PI/2);
-            c.lineTo(gb.x+rr2, gb.alt); c.arc(gb.x+rr2, gb.oy, rr2, Math.PI/2, -Math.PI/2);
-            c.closePath();
-            c.fillStyle='rgba(8,14,17,.55)'; c.fill();
-            c.strokeStyle='rgba(120,180,180,.18)'; c.lineWidth=Math.max(1,K); c.stroke();
-            c.fillStyle = getComputedStyle(geriDug).color;    // ◁| işareti
-            const iw = gb.w*0.40, ih = gb.h*0.42;
-            const ix = gb.ox - iw/2, iy = gb.oy - ih/2;
-            c.fillRect(ix, iy, Math.max(1, iw*0.12), ih);
-            c.beginPath(); c.moveTo(ix+iw, iy); c.lineTo(ix+iw, iy+ih); c.lineTo(ix+iw*0.26, iy+ih/2);
-            c.closePath(); c.fill();
-          });
-        }
-        /* ▷ ve ★ de aynı şeritte; biri çizilip ötekiler çizilmeyince
-           satır kırıkmış gibi görünüyordu. Hap ortak, içindeki işaret
-           farklı. */
+        /* ── TASIMA TUSLARI FOTOGRAFA GIRMIYOR ──────────────────
+           ◁| ve |▷ eskiden ciziliyordu. Kullanicinin sozu (10
+           Eylul): "sol altta geri ileri butonlari var ya hic
+           olmasin". Sebebi olculdu ve hakliydi: ekranda o satirda
+           BES tus var (◁| ▶ ■ |▷ ⌕) ama fotografa yalnizca ikisi
+           giriyordu, cunku otekiler bu blokta hic cizilmiyordu.
+           Yarim bir satir, tam bir satirdan kotu goruniyor.
+           Iki cikis vardi: eksik ucunu de eklemek, ya da satiri
+           hic koymamak. Fotografin isi uygulamanin arayuzunu
+           belgelemek degil, o anki GORUNTUYU vermek -- deri,
+           gezegenler, halka ve kunye. Tuslar oraya bir sey
+           katmiyor, kareyi kalabaliklastiriyor. Bu yuzden satirin
+           tamami disarida.
+           ★ ve kunye KALIYOR: onlar tus degil, o karenin bilgisi
+           (parcanin adi, kaynagi, lisansi, favori olup olmadigi). */
+        /* ★ hap: yildizin arka plani ile ortak. */
         const hapArka = (el)=>{
           const bb2 = kk(el); if(!bb2 || getComputedStyle(el).display==='none') return null;
           const rr3 = bb2.h/2;
@@ -1784,16 +1777,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
           return bb2;
         };
         try{
-          if(ileriDug) kat(c, ()=>{
-            c.globalAlpha = npA * (parseFloat(getComputedStyle(ileriDug).opacity)||0);
-            const bb2 = hapArka(ileriDug); if(!bb2) return;
-            c.fillStyle = getComputedStyle(ileriDug).color;     // |▷
-            const iw2 = bb2.w*0.40, ih2 = bb2.h*0.42;
-            const ix2 = bb2.ox - iw2/2, iy2 = bb2.oy - ih2/2;
-            c.fillRect(ix2 + iw2*0.88, iy2, Math.max(1, iw2*0.12), ih2);
-            c.beginPath(); c.moveTo(ix2, iy2); c.lineTo(ix2, iy2+ih2); c.lineTo(ix2+iw2*0.74, iy2+ih2/2);
-            c.closePath(); c.fill();
-          });
+          /* |▷ de yukaridaki sebeple cizilmiyor (bkz. ust not). */
           const fd2 = document.getElementById('fav');
           if(fd2) kat(c, ()=>{
             c.globalAlpha = npA * (parseFloat(getComputedStyle(fd2).opacity)||0);

@@ -4456,7 +4456,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.09';
+  var ORB_SURUM = '2026.09.10';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -10485,6 +10485,17 @@
          "degisiklik yok" sayip cikiyordu. Borc o kapiyi deliyor. */
       if(_yerlesZaman) clearTimeout(_yerlesZaman);
       _yerlesZaman = setTimeout(()=>{ _yerlesZaman = null;
+        /* ── DONUS SURERKEN YERLESTIRME YOK ────────────────────
+           Bu 120 ms'lik sessizlik kapisi surukleme ve adres cubugu
+           icin dogru, ama telefon donerken ERKEN aciliyor: iOS'ta
+           donus animasyonunun ortasinda 120 ms olaysiz gecebiliyor
+           ve yerlesim daha olcu oturmadan bir kez hesaplaniyor.
+           Sonra donus bekcisi olcu oturunca BIR KEZ DAHA
+           hesapliyor. Ekranda gorulen iki sicrama, yani titreme.
+           Donus surerken (body.donuyor) burasi hicbir sey
+           yapmiyor; yerlestirmenin sahibi tek bir yer, donus
+           bekcisinin sonundaki _donusYerlestir. */
+        if(document.body.classList.contains('donuyor')) return;
         _zoomBorcu = false;
         try{ geriYerlestir(); }catch(e){ _yut(e); } }, 120);
     });
@@ -10603,21 +10614,45 @@
       }catch(e){ _yut(e); }
     };
     _yonKilit();
-    var _donusZaman = 0, _donusOlcu = '';
-    const _donusBitir = ()=>{
-      const k = innerWidth + 'x' + innerHeight;
-      if(k !== _donusOlcu){ _donusOlcu = k; _donusZaman = setTimeout(_donusBitir, 90); return; }
+    /* ── TEK OLCU YETMIYOR, UC OLCU LAZIM ────────────────────────
+       Ilk yazimda olcu bir kez ust uste ayni gelince "donus bitti"
+       sayiliyordu. Kullanicinin bildirdigi titreme bundan sonra da
+       surdu ve sebep olculebilir: iOS'ta donus animasyonu sirasinda
+       innerWidth/innerHeight bir sure SABIT kaliyor (ara kare),
+       sonra adres cubugu/guvenli alan oturunca bir daha degisiyor.
+       Tek ornek o ara kareyi "bitti" sanip yerlesimi erken
+       hesapliyordu; gercek olcu gelince ikinci kez hesaplaniyordu.
+       Ekranda gorulen sey iki sicrama, yani titreme.
+       Ayni hata [Y8] DOM olcumunde de yasandi ve orada da cozum
+       ayniydi: UST USTE UC ESIT ORNEK.
+       TAVAN VAR: gecisler 'donuyor' sinifiyla kapali oldugu icin
+       bekleme sonsuz olamaz. En fazla DONUS_TAVAN ms bekleniyor;
+       o sure dolarsa yerlesim yine de bir kez hesaplanip gecisler
+       geri aciliyor. Kotu ihtimalde bir sicrama olur, ama arayuz
+       hicbir kosulda gecissiz kilitli kalmaz. */
+    var _donusZaman = 0, _donusOlcu = '', _donusEsit = 0, _donusT0 = 0;
+    const DONUS_ORNEK = 3, DONUS_ARA = 90, DONUS_TAVAN = 1600;
+    const _donusYerlestir = ()=>{
       _donusZaman = 0;
       document.body.classList.remove('donuyor');
       _zoomBorcu = true; olcuIste();
       try{ ustOlcuIste(); }catch(e){ _yut(e); }
       try{ geriYerlestir(); }catch(e){ _yut(e); }
     };
+    const _donusBitir = ()=>{
+      const k = innerWidth + 'x' + innerHeight;
+      if(k !== _donusOlcu){ _donusOlcu = k; _donusEsit = 1; }
+      else _donusEsit++;
+      if(_donusEsit >= DONUS_ORNEK
+         || (Date.now() - _donusT0) >= DONUS_TAVAN){ _donusYerlestir(); return; }
+      _donusZaman = setTimeout(_donusBitir, DONUS_ARA);
+    };
     window.addEventListener('orientationchange', ()=>{
       _yonKilit();
       document.body.classList.add('donuyor');
-      clearTimeout(_donusZaman); _donusOlcu = '';
-      _donusZaman = setTimeout(_donusBitir, 90);
+      clearTimeout(_donusZaman);
+      _donusOlcu = ''; _donusEsit = 0; _donusT0 = Date.now();
+      _donusZaman = setTimeout(_donusBitir, DONUS_ARA);
     });
   }catch(e){ _yut(e); }
   try{ window.addEventListener('orientationchange', olcuIste); }catch(e){ _yut(e); }
@@ -12947,20 +12982,71 @@
      ses zincire hic girmiyor, yani takilmayi fark edebilecek baska
      hicbir olcum de yok. */
   var _akisSon = -1, _akisDurgun = 0, _akisTamir = 0, _akisSrc = '', _akisSaglam = 0;
+  var _akisSaat = 0;                     // son olcumun duvar saati (arka plan icin)
   const AKIS_DUR_SN = 8;                 // kac saniye ilerlemezse takildi sayiliyor
   const AKIS_TAMIR_TAVAN = 3;            // ust uste en fazla kac yeniden baglanma
   const AKIS_SAGLAM_TIK = 15;            // 30 sn kesintisiz akis -> tamir hakki geri geliyor
+  const GIZLI_DUR_SN = 20;               // ekran kapaliyken: kac saniyelik duvar saati
+  /* ── YENIDEN BAGLANMA ────────────────────────────────────────────
+     Tek yerde duruyor cunku iki yerden cagriliyor: onde tik sayan
+     olcum, arka planda duvar saati olcumu. Ikisi de ayni tavana ve
+     ayni sayaca uymali; iki kopya olsa biri gunun birinde otekinden
+     ayrisirdi. */
+  function _akisTamirEt(t){
+    if(_akisTamir >= AKIS_TAMIR_TAVAN){
+      try{ iz('akis: tamir tavani'); }catch(e){ _yut(e); }
+      if(mod !== 'radio') atla();
+      return;
+    }
+    _akisTamir++;
+    try{ iz('akis: yeniden baglaniyor ' + _akisTamir); }catch(e){ _yut(e); }
+    const canli = (mod === 'radio');
+    const yer = canli ? 0 : t;
+    try{ ses.load(); }catch(e){ _yut(e); }
+    const p = ses.play();
+    if(p && p.then) p.then(()=>{
+      try{ if(!canli && yer > 0 && isFinite(ses.duration) && yer < ses.duration) ses.currentTime = yer; }
+      catch(e){ _yut(e); }
+    }, e=>{ _yut(e); });
+  }
   function akisBekcisi(){
     try{
       if(!ses || !ses.src){ _akisDurgun = 0; return; }
       /* Kaynak degistiyse sayaclar sifirdan: yeni bir parcanin ilk
          saniyelerini "donmus" saymak yanlis olurdu. */
       if(ses.src !== _akisSrc){ _akisSrc = ses.src; _akisSon = -1; _akisDurgun = 0; _akisTamir = 0; _akisSaglam = 0; }
-      if(ses.paused || ses.ended){ _akisDurgun = 0; _akisSon = ses.currentTime; return; }
-      /* Sayfa arka plandayken tarayici zamanlayiciyi kisiyor ama ses
-         calmaya devam ediyor; oradaki olcum guvenilir degil. */
-      if(document.hidden){ _akisDurgun = 0; _akisSon = ses.currentTime; return; }
+      if(ses.paused || ses.ended){
+        _akisDurgun = 0; _akisSon = ses.currentTime; _akisSaat = 0; return;
+      }
+      /* ── EKRAN KAPALIYKEN DE BAKILIYOR ──────────────────────────
+         "MUZIK BAZEN DURUYOR"UN IKINCI SEBEBI (10 Eylul).
+         Burasi eskiden sayfa arka plandayken HICBIR SEY yapmadan
+         donuyordu. Gerekcesi dogruydu: tarayici arka planda
+         zamanlayiciyi kisiyor, yani "iki saniyede bir" artik iki
+         saniyede bir kosmuyor ve tik sayan olcum yaniltiyor.
+         Ama sonucu sudur: radyo tam da en cok dinlenen durumda --
+         ekran kapali, telefon cepte -- bekcisiz kaliyordu. Istasyon
+         o sirada takilirsa kimse yeniden baglanmiyor; kullanici
+         telefonu eline alinca sessizlikle karsilasiyor. Tarifi
+         birebir bu: "arada bir duruyor, birkac gunde denk geldim."
+         Cozum tik saymayi birakmak: arka planda DUVAR SAATI ile
+         ses.currentTime karsilastiriliyor. Gercek dunyada
+         GIZLI_DUR_SN saniye gectigi halde ses neredeyse hic
+         ilerlememisse -- ve eleman duraklatilmis degilse -- akis
+         olmustur. Zamanlayicinin ne kadar kisildigi onemli degil,
+         cunku olculen sey tikler degil gecen zaman.
+         Esik onde (8 sn) kullanilandan uzun: arka planda tek bir
+         gec kalmis tik yanlis alarm uretmesin. */
       const t = ses.currentTime;
+      const simdi = Date.now();
+      if(document.hidden){
+        const gecen = _akisSaat ? (simdi - _akisSaat) / 1000 : 0;
+        const ilerleme = (_akisSon >= 0) ? Math.abs(t - _akisSon) : 999;
+        _akisSaat = simdi; _akisSon = t; _akisDurgun = 0;
+        if(gecen >= GIZLI_DUR_SN && ilerleme < 0.5) _akisTamirEt(t);
+        return;
+      }
+      _akisSaat = simdi;
       if(_akisSon >= 0 && Math.abs(t - _akisSon) < 0.02){ _akisDurgun += 2; _akisSaglam = 0; }
       else {
         _akisDurgun = 0;
@@ -12976,21 +13062,7 @@
       _akisSon = t;
       if(_akisDurgun < AKIS_DUR_SN) return;
       _akisDurgun = 0;
-      if(_akisTamir >= AKIS_TAMIR_TAVAN){
-        try{ iz('akis: tamir tavani'); }catch(e){ _yut(e); }
-        if(mod !== 'radio') atla();
-        return;
-      }
-      _akisTamir++;
-      try{ iz('akis: yeniden baglaniyor ' + _akisTamir); }catch(e){ _yut(e); }
-      const canli = (mod === 'radio');
-      const yer = canli ? 0 : t;
-      try{ ses.load(); }catch(e){ _yut(e); }
-      const p = ses.play();
-      if(p && p.then) p.then(()=>{
-        try{ if(!canli && yer > 0 && isFinite(ses.duration) && yer < ses.duration) ses.currentTime = yer; }
-        catch(e){ _yut(e); }
-      }, e=>{ _yut(e); });
+      _akisTamirEt(t);
     }catch(e){ _yut(e); }
   }
   setInterval(akisBekcisi, 2000);
@@ -13511,6 +13583,8 @@
      bizim yayin adresimizle eslesmiyorsa ad GOSTERILMIYOR. Emin
      olamadigimizda susuyoruz. */
   var _parcaZaman = null, _parcaIstek = 0, _parcaSon = '', _parcaItem = null;
+  /* /np gunluk sinira takildi mi (429). Oturumluk; bkz. parcaAl. */
+  var _npKapali = 0;
   /* ── YOKLAMA ARALIGI VE GERI CEKILME ─────────────────────────
      25 saniyeydi. Olculdu: 30.000 escamanli dinleyicide bu, saniyede
      1.200 istek demek. Kenar onbellegi (bkz. olcu.js /np) o isteklerin
@@ -13758,7 +13832,23 @@
          DUSERSE ESKI YOL: /np 204 ya da hata donerse dogrudan
          istasyona soruluyor -- yani en kotu ihtimalde bugunku
          davranis, kaybolan bir ozellik yok. */
-      try{ r = await fetchZA('/np?u=' + encodeURIComponent(k.a), 5000); }catch(e){ r = null; }
+      /* ── 429 GELIRSE BU OTURUMDA BIR DAHA SORMA ────────────────
+         Ucretsiz Cloudflare planinda gunluk istek siniri dolunca
+         /np 429 donuyor ve o gun boyunca donmeye devam ediyor. Her
+         tazelemede once oraya sorup sonra istasyona gitmek, o
+         noktadan sonra ise yaramayan bir istek daha demek:
+         kullaniciya bir saniyeye kadar gecikme, sunucuya bos yuk.
+         Bayrak OTURUMLUK -- sayfa yenilenince sifirlaniyor, cunku
+         sinir gun donunce kalkiyor ve /np'nin kazanclari (CORS
+         gondermeyen istasyonlarda parca adi, istasyona tek istek,
+         dinleyicinin IP'sinin gizli kalmasi) geri gelsin istiyoruz.
+         Kalici kapatmak o kazanclari gereksiz yere feda ederdi.
+         YALNIZ 429: 500 ya da zaman asimi gecici olabilir, onlarda
+         bir sonraki tazelemede yine deneniyor. */
+      if(!_npKapali){
+        try{ r = await fetchZA('/np?u=' + encodeURIComponent(k.a), 5000); }catch(e){ r = null; }
+        if(r && r.status === 429){ _npKapali = 1; r = null; }
+      }
       if(!r || !r.ok){
         try{ r = await fetchZA(k.a, 4000); }catch(e){ continue; }
       }
