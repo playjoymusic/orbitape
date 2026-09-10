@@ -21,12 +21,14 @@ Otomatik olanlar ayrı ve onlar bunun yerine geçmez:
 
 | Ne | Nerede | Ne yakalar |
 |---|---|---|
-| Sağlık kontrolü | her push | kod ve yerleşim (793 kontrol) |
+| Sağlık kontrolü | her push | kod ve yerleşim (795 kontrol) |
 | Arıza · senaryo · motor · cihaz | her push | 266 kontrol daha |
 | Derlenmiş çıktı | her push | yayına giden kopya (19 kontrol) |
 | Canlı duman testi | 15 dakikada bir | orbitape.app ayakta mı |
 | Canlı çalma sınaması | haftada bir + elle | seçilen raf dışından çalma |
 | Radyo bağlantı kontrolü | ayda bir + elle | ölü ve sağır istasyonlar |
+| Radyo hasadı | ayda bir + elle | eksik raflara istasyon (PR açar) |
+| Radyo keşfi | yalnız elle | "bu türde ne var?" — sadece rapor |
 
 ---
 

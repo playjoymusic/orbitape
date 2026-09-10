@@ -6,7 +6,7 @@ radyo_grupla.py — radyo.json'u TEMIZLER ve AILELERE ayirir.
 NE YAPAR
   1) Cikarilacaklari cikarir:
        - ayni yayin adresinin ikinci kaydi (tekillestirme)
-       - ulke kara listesi (TR, AE)
+       - ulke kara listesi (AE; TR 10 Eylul'de cikarildi)
        - Kur'an / tefsir yayinlari (adi Arap harfli oldugu icin
          uygulamanin suzgeci yakalayamiyordu)
        - adinda/etiketinde canli konusma isareti olanlar
@@ -478,7 +478,12 @@ for _ad, _d in AILELER.items():
         TUR_GRUP[_t] = _ad
 
 # ── ELEMELER ──────────────────────────────────────────────────────
-ULKE_YASAK = {"TR", "AE"}
+# 10 Eylul: TR KARA LISTEDEN CIKTI. Kullanicinin karari -- Turkce
+# istasyonlar da havuza girebilsin. Kalan tek ulke AE; oradaki
+# yayinlarin buyuk bolumu tilavet/konusma ve IBADET suzgeci Arap
+# harfli adlari yakalayamiyor, yani ulke kaydi orada suzgec yerine
+# geciyor. TR icin boyle bir gerekce yoktu.
+ULKE_YASAK = {"AE"}
 
 # Arap harfli tilavet/tefsir yayinlari: uygulamanin suzgeci Latin
 # kokler uzerine kurulu oldugu icin bunlari goremiyordu.
@@ -770,7 +775,7 @@ def main():
 
     kalan, sayac = temizle(ham)
     print("cikarilan cift kayit : %d" % sayac["cift"])
-    print("cikarilan ulke (TR/AE): %d" % sayac["ulke"])
+    print("cikarilan ulke (AE)   : %d" % sayac["ulke"])
     print("cikarilan ibadet      : %d" % sayac["ibadet"])
     print("cikarilan konusma     : %d" % sayac["konusma"])
     kalan, kopya = tekille(kalan)

@@ -1,0 +1,63 @@
+# ORBITAPE — radyo keşfi (yalnızca rapor)
+#
+# NE YAPAR
+#   Verilen etiketler için radio-browser'a sorar, gelenleri uygulamanın
+#   kendi kurallarından geçirir, CORS başlığını sınar ve bir RAPOR
+#   yazar. **radyo.json'a hiçbir şey eklemez, PR açmaz.**
+#
+# NEDEN AYRI İŞ
+#   "Bu türde kaç istasyon var?" sorusunu hasat aracıyla sormak mümkün
+#   değil: hasat bir rafı hedefe kadar doldurur, raf zaten doluysa o
+#   etiketleri hiç sormaz. Yeni bir raf açmadan önce sayıyı görmek
+#   gerekiyor — bu iş o sayıyı veriyor.
+#
+# NEDEN BURADA KOŞUYOR
+#   Geliştirme ortamından radio-browser'a çıkış kapalı (10 Eylül'de
+#   ölçüldü: hem bulut hem yerel makine 403).
+#
+# YETKİ
+#   Sadece okuma. Bu iş depoya yazmıyor, o yüzden `contents: read`.
+#
+# SÜRE
+#   5-10 dakika (süreyi CORS sınaması belirliyor).
+
+name: Radyo keşfi
+
+on:
+  workflow_dispatch:
+    inputs:
+      etiketler:
+        description: 'Virgülle ayrılmış etiketler'
+        required: false
+        default: 'turkish,turkish pop,turkish folk,arabesk,anadolu rock,turkish rock,turkish jazz,turkish classical,ottoman,turkey'
+
+permissions:
+  contents: read
+
+jobs:
+  kesif:
+    name: Radyo kesfi
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v5
+
+      # KULLANICI GIRDISI KABUGA DOGRUDAN GIRMIYOR: ${{ }} bir `run:`
+      # satirinin icine yazilirsa GitHub o metni kabuk komutunun ICINE
+      # koyar ve bir noktali virgul yeter. Ortam degiskeni olarak
+      # verilince kabuk onu veri olarak goruyor. (Ayni karar
+      # radyo_wf.yml'de de alinmisti.)
+      - name: Kesif
+        env:
+          ETIKETLER: ${{ github.event.inputs.etiketler }}
+        run: |
+          python3 araclar/radyo_kesif.py "$ETIKETLER" radyo.json kesif.json
+
+      - name: Raporu yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: radyo-kesif
+          path: kesif.json
+          if-no-files-found: warn
