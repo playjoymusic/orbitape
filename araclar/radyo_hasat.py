@@ -62,7 +62,12 @@ DIZIN = ["https://de1.api.radio-browser.info",
 # WORLD & ROOTS'a tasindi.
 ARAMA = OrderedDict([
     ("JAZZ",         ["jazz", "bebop", "big band", "swing", "smooth jazz"]),
-    ("DISCO FUNK",   ["funk", "soul", "disco", "motown", "rnb"]),
+    # 10 Eylul: DISCO FUNK ve AFROBEATS kalkti, ikisi HIP HOP RNB
+    # oldu. Bu satirdaki ad AILELER'de YOKSA hasat o kelimelerle
+    # istasyon arar ama hicbirini ekleyemez -- sessizce. Bu yuzden
+    # raf adi degisince burasi da degismek zorunda.
+    ("HIP HOP RNB",  ["hip hop", "rap", "rnb", "r&b", "soul",
+                      "funk", "disco", "motown", "afrobeats"]),
     ("LOUNGE & LOFI",["lounge", "easy listening", "chillout", "lofi"]),
     ("ORCHESTRAL",   ["classical", "opera", "soundtrack", "baroque"]),
     ("WORLD & ROOTS",["reggae", "folk", "blues", "world music", "country",

@@ -2563,6 +2563,19 @@ function deriCizimCiz(c, W, H, d){
    Olcu ekranin kendi olcusu: kirpma olmasin diye 'cover' degil
    birebir oran. Cihaz piksel orani 1: dosya kucuk kalsin, cunku
    bu adres bir CSS degerine yaziliyor. */
+/* Son cizilen ekran tuvali burada duruyor: simgelerin rengi
+   ekrandaki GERCEK piksele gore secilebilsin diye (bkz. asagida
+   deriZeminOrta). Deri degisince yenisiyle degisiyor. */
+var _sonTuval = null;
+function orta2(cc, x, y, w, h){
+  try{
+    const g = cc.getImageData(Math.max(0, x|0), Math.max(0, y|0),
+                              Math.max(1, w|0), Math.max(1, h|0)).data;
+    let r = 0, ye = 0, m = 0, n = 0;
+    for(let i = 0; i < g.length; i += 16){ r += g[i]; ye += g[i+1]; m += g[i+2]; n++; }
+    return n ? [Math.round(r/n), Math.round(ye/n), Math.round(m/n)] : null;
+  }catch(e){ return null; }
+}
 function deriCizimAdresi(d){
   try{
     if(!(d && DERI_CIZIM[d.cizim])) return '';
@@ -2571,6 +2584,52 @@ function deriCizimAdresi(d){
     const t = document.createElement('canvas'); t.width = W; t.height = H;
     const c = t.getContext('2d'); if(!c) return '';
     deriCizimCiz(c, W, H, d);
+    /* ── SIMGELERIN ARKASINDA GERCEKTEN NE VAR ──────────────────
+       Kullanicinin sozu (10 Eylul): "sol alttaki bazi ikonlar bi
+       soft oldu, overlay gibi, pasif gibi."
+       Olculdu (82 deri, simgelerin merkezindeki piksel ekrandan
+       okundu): yedi deride sol sutun simgeleri zeminden neredeyse
+       hic ayrismiyor -- SUPREMATIST 1.02, SELBU 1.04, MONDRIAN
+       1.24, BAUHAUS 1.26, CUTOUT 1.55, PUNK WEB 1.81, FIELDS 1.92.
+       Okunurluk esigi 4.5.
+       SEBEP: simgenin rengi zaten zeminle karsilastiriliyordu
+       (okunurVurgu, bkz. index.html) ama karsilastirilan sey
+       derinin DUZ zemin rengiydi. Cizimli deride ekranda gorunen
+       sey o degil: BAUHAUS'un fircasinin arkasinda kirmizi bir blok
+       var, MONDRIAN'inkinde de. Kirmizi zemine kirmizi simge.
+       COZUM: cizim zaten burada, tuvalde. Simgelerin oturdugu iki
+       bolgenin ortalama rengi okunup sayfaya birakiliyor; renk
+       secimi artik duz zemine degil GERCEK piksele bakiyor.
+       Ucuz: iki kucuk dikdortgen, yalnizca deri degisince. */
+    try{
+      const orta = (x, y, w, h)=> orta2(c, x, y, w, h);
+      /* SOL SUTUN ust solda dikey durur (tutamak, firca, saat,
+         visual); TASIMA satiri alt solda. Olculer oransal, cunku
+         yerlesim ekran boyuna gore degisiyor. */
+      window['DERI_ZEMIN'] = {
+        sol:    orta(0.02 * W, 0.06 * H, 0.16 * W, 0.26 * H),
+        altSol: orta(0.02 * W, 0.86 * H, 0.55 * W, 0.12 * H)
+      };
+      /* ── TEK ORTALAMA YETMEDI ───────────────────────────────
+         Ilk surumde yalnizca yukaridaki iki ortalama vardi ve
+         olcum onu red etti: sol sutundaki dort simge AYNI blogun
+         uzerinde durmuyor. BAUHAUS'ta firca kirmizinin, saat
+         kremin uzerinde; tek ortalama ikisini de yanlis
+         renklendiriyordu (kontrast 11 -> 5 dustu ama 15 olcum hala
+         3'un altindaydi).
+         Bu yuzden tuval ATILMIYOR: sayfa istedigi dikdortgenin
+         ortalamasini sorabiliyor ve her simge KENDI zeminine gore
+         renkleniyor. Bellek bedeli tek bir ekran boyu tuval. */
+      _sonTuval = t;
+      window['deriZeminOrta'] = (x, y, w, h)=>{
+        try{
+          if(!_sonTuval) return null;
+          const cc = _sonTuval.getContext('2d'); if(!cc) return null;
+          const ox = _sonTuval.width / innerWidth, oy = _sonTuval.height / innerHeight;
+          return orta2(cc, x * ox, y * oy, Math.max(1, w * ox), Math.max(1, h * oy));
+        }catch(e){ return null; }
+      };
+    }catch(e){ try{ window['DERI_ZEMIN'] = null; }catch(_){ } }
     return t.toDataURL('image/png');
   }catch(e){ _yut(e); return ''; }
 }

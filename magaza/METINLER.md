@@ -42,7 +42,7 @@ licence and its artist on screen.
 
 WHAT IS INSIDE
 
-· Live radio, grouped into ten genres you choose by turning the rings
+· Live radio, grouped into nine genres you choose by turning the rings
 · An archive of public-domain and Creative Commons recordings
 · Effects you play with your finger, not with sliders
 · Record the screen with its sound, and keep it on your device

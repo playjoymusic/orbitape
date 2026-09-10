@@ -1,0 +1,371 @@
+<title>ORBITAPE Marka Künyesi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+<style>
+  :root{
+    --zem:#020203;
+    --kat:#0a0d10;
+    --kat2:#0f1418;
+    --cizgi:#1b2429;
+    --yazi:#e8f4f4;
+    --yazi2:#8fa5ac;
+    --yazi3:#5d7178;
+    --vurgu:#5adcd2;
+    --pembe:#e57ca0;
+    --mono:'Share Tech Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    --sans:-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, 'Helvetica Neue', Arial, sans-serif;
+  }
+  body{
+    background:var(--zem);
+    background-image:radial-gradient(120% 90% at 50% 0%, #0a0d12 0%, #020203 62%);
+    color:var(--yazi);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sar{max-width:920px;margin:0 auto;padding:56px 22px 96px;}
+
+  /* ── BASLIK ─────────────────────────────────────────────── */
+  header{border-bottom:1px solid var(--cizgi);padding-bottom:34px;margin-bottom:44px;}
+  .ust-etiket{font-family:var(--mono);font-size:.6875rem;letter-spacing:.34em;
+    color:var(--yazi3);text-transform:uppercase;margin:0 0 18px;}
+  .isim{font-family:var(--mono);font-size:clamp(2rem,7.5vw,3.4rem);letter-spacing:.28em;
+    margin:0;line-height:1.05;padding-left:.28em;text-wrap:balance;}
+  .isim span{display:inline-block;}
+  .alt{font-family:var(--mono);font-size:.8125rem;letter-spacing:.22em;
+    color:var(--vurgu);opacity:.75;margin:14px 0 0;padding-left:.22em;}
+  .giris{color:var(--yazi2);font-size:.9375rem;max-width:62ch;margin:22px 0 0;}
+
+  /* ── BOLUM ──────────────────────────────────────────────── */
+  section{margin:0 0 54px;}
+  h2{font-family:var(--mono);font-size:.75rem;letter-spacing:.34em;color:var(--yazi3);
+    text-transform:uppercase;margin:0 0 6px;font-weight:400;}
+  .h2-alt{color:var(--yazi2);font-size:.875rem;margin:0 0 20px;max-width:62ch;}
+
+  /* ── SWATCH IZGARASI ────────────────────────────────────── */
+  .izgara{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));}
+  .kutu{background:var(--kat);border:1px solid var(--cizgi);border-radius:10px;
+    padding:0;overflow:hidden;cursor:pointer;text-align:left;width:100%;
+    font:inherit;color:inherit;display:block;transition:border-color .15s ease;}
+  .kutu:hover,.kutu:focus-visible{border-color:#33454c;outline:none;}
+  .kutu:focus-visible{box-shadow:0 0 0 2px rgba(90,220,210,.45);}
+  .sd{height:52px;display:block;}
+  .kutu-ic{padding:10px 12px 12px;}
+  .kutu-ad{font-family:var(--mono);font-size:.6875rem;letter-spacing:.14em;
+    color:var(--yazi);display:block;}
+  .kutu-deger{font-family:var(--mono);font-size:.6875rem;color:var(--yazi3);
+    display:block;margin-top:3px;font-variant-numeric:tabular-nums;}
+  .kutu-not{font-size:.75rem;color:var(--yazi2);display:block;margin-top:6px;line-height:1.4;}
+
+  /* ── TABLO ──────────────────────────────────────────────── */
+  .kaydir{overflow-x:auto;border:1px solid var(--cizgi);border-radius:10px;background:var(--kat);}
+  table{border-collapse:collapse;width:100%;font-size:.8125rem;}
+  th{font-family:var(--mono);font-size:.625rem;letter-spacing:.2em;color:var(--yazi3);
+    text-transform:uppercase;text-align:left;font-weight:400;
+    padding:11px 14px;border-bottom:1px solid var(--cizgi);white-space:nowrap;}
+  td{padding:10px 14px;border-bottom:1px solid #131a1e;color:var(--yazi2);
+    vertical-align:middle;white-space:nowrap;}
+  tr:last-child td{border-bottom:0;}
+  td.ad{color:var(--yazi);font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;}
+  td.sayi{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.75rem;}
+  .nokta{display:inline-block;width:13px;height:13px;border-radius:50%;
+    vertical-align:-2px;margin-right:9px;}
+  .genis{white-space:normal;min-width:22ch;}
+
+  /* ── YAZI TIPI ORNEGI ───────────────────────────────────── */
+  .ornek{background:var(--kat);border:1px solid var(--cizgi);border-radius:10px;
+    padding:20px 22px;margin-bottom:10px;}
+  .ornek-etiket{font-family:var(--mono);font-size:.625rem;letter-spacing:.24em;
+    color:var(--yazi3);text-transform:uppercase;margin:0 0 12px;}
+  .ornek-yazi{margin:0 0 10px;color:var(--yazi);}
+  .o-mono{font-family:var(--mono);font-size:1.5rem;letter-spacing:.28em;padding-left:.28em;}
+  .o-sans{font-family:var(--sans);font-size:1.25rem;}
+  .o-serif{font-family:Georgia,'Times New Roman',serif;font-size:1.25rem;}
+  .ornek-kod{font-family:var(--mono);font-size:.6875rem;color:var(--yazi3);
+    margin:0;word-break:break-word;line-height:1.6;}
+
+  /* ── UYARI KUTUSU ───────────────────────────────────────── */
+  .dikkat{background:var(--kat2);border:1px solid #2a3238;border-left:3px solid var(--pembe);
+    border-radius:0 10px 10px 0;padding:16px 18px;margin:18px 0 0;}
+  .dikkat p{margin:0;color:var(--yazi2);font-size:.875rem;}
+  .dikkat strong{color:var(--yazi);font-weight:600;}
+
+  ul.liste{margin:0;padding-left:0;list-style:none;display:grid;gap:9px;}
+  ul.liste li{color:var(--yazi2);font-size:.875rem;padding-left:18px;position:relative;}
+  ul.liste li::before{content:'';position:absolute;left:0;top:.62em;width:6px;height:1px;
+    background:var(--yazi3);}
+  ul.liste b{color:var(--yazi);font-weight:600;}
+  code{font-family:var(--mono);font-size:.8125em;color:var(--vurgu);
+    background:#0d1417;border:1px solid var(--cizgi);border-radius:4px;padding:1px 5px;}
+
+  footer{border-top:1px solid var(--cizgi);margin-top:20px;padding-top:22px;
+    font-size:.8125rem;color:var(--yazi3);}
+  .kopya{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+    background:var(--vurgu);color:#04100f;font-family:var(--mono);font-size:.75rem;
+    letter-spacing:.12em;padding:9px 16px;border-radius:999px;opacity:0;
+    transition:opacity .2s ease, transform .2s ease;pointer-events:none;}
+  .kopya.gor{opacity:1;transform:translateX(-50%) translateY(0);}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+
+<div class="sar">
+
+<header>
+  <p class="ust-etiket">Marka künyesi · orbitape.app</p>
+  <h1 class="isim" id="isim"></h1>
+  <p class="alt">LIVE RADIO &nbsp;·&nbsp; SOUNDS FX</p>
+  <p class="giris">Aşağıdaki her değer uygulamanın kaynak kodundan alındı — göz kararı
+    örneklenen tek şey, harf rampasının kendi banner tasarımından okunan ara tonları.
+    Bir renk kutusuna dokunursan değeri panoya kopyalanır.</p>
+</header>
+
+<section>
+  <h2>Yazı tipleri</h2>
+  <p class="h2-alt">Üç aile var ve üçünün de işi ayrı. Uygulama <em>hiçbir</em> yazı tipi
+    dosyası taşımıyor; hepsi cihazda bulunanlara güveniyor.</p>
+
+  <div class="ornek">
+    <p class="ornek-etiket">Mono — marka, etiketler, sayılar</p>
+    <p class="ornek-yazi o-mono">ORBITAPE</p>
+    <p class="ornek-kod">font-family: 'Share Tech Mono', ui-monospace, monospace;</p>
+  </div>
+
+  <div class="ornek">
+    <p class="ornek-etiket">Sans — arayüz gövdesi (kodda F1)</p>
+    <p class="ornek-yazi o-sans">Live radio from around the world.</p>
+    <p class="ornek-kod">font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;</p>
+  </div>
+
+  <div class="ornek">
+    <p class="ornek-etiket">Serif — yalnızca iki deri (kodda F2)</p>
+    <p class="ornek-yazi o-serif">LINEN &nbsp; PAPER</p>
+    <p class="ornek-kod">font-family: Georgia, 'Times New Roman', serif;</p>
+  </div>
+
+  <div class="dikkat">
+    <p><strong>Share Tech Mono uygulamada yüklü değil.</strong> Kodda adı yazıyor ama
+      hiçbir yerden indirilmiyor — <code>@font-face</code> yok, Google Fonts bağlantısı yok.
+      Yani yazı tipi cihazda kuruluysa görünüyor, değilse sistemin kendi mono'suna
+      düşüyor. Telefonların çoğunda düşüyor. Mağaza bannerlarındaki harfler de bu yedek
+      mono; bu sayfadaki büyük ORBITAPE ise gerçek Share Tech Mono (bu sayfa onu
+      yüklüyor) — ikisini yan yana görebilirsin.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Harf rampası</h2>
+  <p class="h2-alt">Markanın sekiz harfi turkuazdan pembeye gidiyor. Bu bir gradient
+    değil — her harfin kendi rengi var, çünkü gradient harf genişliğine göre kayar ve
+    iki satıra bölününce (ORBI / TAPE) tutmaz.</p>
+  <div class="izgara" id="rampa"></div>
+</section>
+
+<section>
+  <h2>Çekirdek renkler</h2>
+  <p class="h2-alt">Uygulamanın kendi karanlık dünyası. Deriler bunların üzerine geliyor
+    ve hepsini değiştiriyor; deri kapalıyken ekranda görünen şey bu.</p>
+  <div class="izgara" id="cekirdek"></div>
+</section>
+
+<section>
+  <h2>Halka paleti — canlı radyo</h2>
+  <p class="h2-alt">Ortadaki aletin dokuz halkası, dıştan içe. Kodda <code>AILELER</code>;
+    değerler RGB dizisi olarak duruyor, hex değil.</p>
+  <div class="kaydir">
+    <table>
+      <thead><tr><th>Raf</th><th>RGB</th><th>Hex</th><th>Halka</th></tr></thead>
+      <tbody id="halkalar"></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Kanal paleti — arşiv</h2>
+  <p class="h2-alt">Arşiv tarafı bilerek sönük: krem, kum, zeytin, bakır, kurşun.
+    Kodda <code>MOD_TEMA</code>. Her kanalın bir ana, bir ikincil rengi ve kendi
+    zemin çifti var.</p>
+  <div class="kaydir">
+    <table>
+      <thead><tr><th>Kanal</th><th>Ana</th><th>İkincil</th><th>Zemin</th></tr></thead>
+      <tbody id="kanallar"></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Harf arası ve kademeler</h2>
+  <p class="h2-alt">Markayı marka yapan şey harfin kendisi kadar aradaki boşluk.
+    Uygulamada kullanılan değerler:</p>
+  <div class="kaydir">
+    <table>
+      <thead><tr><th>Nerede</th><th>Punto</th><th>Harf arası</th></tr></thead>
+      <tbody>
+        <tr><td class="ad">ORBITAPE (marka)</td><td class="sayi">—</td><td class="sayi">.30em</td></tr>
+        <tr><td class="ad">Bölüm başlıkları</td><td class="sayi">0.53125rem</td><td class="sayi">.34em</td></tr>
+        <tr><td class="ad">Etiketler (np-lab)</td><td class="sayi">0.6875rem</td><td class="sayi">.32em</td></tr>
+        <tr><td class="ad">Görsel şeridi</td><td class="sayi">0.6875rem</td><td class="sayi">.24em</td></tr>
+        <tr><td class="ad">Küçük düğme yazısı</td><td class="sayi">0.625rem</td><td class="sayi">.12em</td></tr>
+        <tr><td class="ad">Yazı alanları (zorunlu)</td><td class="sayi">1rem</td><td class="sayi">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="dikkat">
+    <p><strong>1rem bir tercih değil, kural.</strong> iOS Safari 16 pikselden küçük
+      yazılı bir alana dokunulduğunda sayfayı otomatik yakınlaştırıyor ve geri
+      alınmıyor. Girdi ve metin alanlarında punto asla 16px'in altına inmez;
+      birim testi bunu tarıyor.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Kontrast kuralları</h2>
+  <p class="h2-alt">Renk seçilmiyor, <em>çözülüyor</em>: bir renk zeminin tersine doğru
+    kaydırılıp eşik tutana kadar gidiliyor (<code>okunurVurgu</code>). Açık deride koyu,
+    koyu deride açık. Aşağıdakiler bugün kodda duran hedefler.</p>
+  <div class="kaydir">
+    <table>
+      <thead><tr><th>Ne</th><th>Hedef</th><th class="genis">Neden</th></tr></thead>
+      <tbody>
+        <tr><td class="ad">--d-simge</td><td class="sayi">4.5</td><td class="genis">Sol sütun simgeleri (fırça, saat, görsel, üç çizgi)</td></tr>
+        <tr><td class="ad">--d-cizgi</td><td class="sayi">4.5</td><td class="genis">Çark dişleri ve faz çubukları</td></tr>
+        <tr><td class="ad">Yıldızlar</td><td class="sayi">4.2</td><td class="genis">Gökyüzü, çalan yıldızın halesi ve çekirdeği</td></tr>
+        <tr><td class="ad">--d-cekirdek</td><td class="sayi">3.90</td><td class="genis">Ortadaki büyük nokta</td></tr>
+        <tr><td class="ad">--d-oluk</td><td class="sayi">3.20</td><td class="genis">Diskin oluk çizgileri</td></tr>
+        <tr><td class="ad">Raf adı</td><td class="sayi">3.20</td><td class="genis">59 deri × 10 raf, hepsi ölçülüyor</td></tr>
+        <tr><td class="ad">Gövde yazısı</td><td class="sayi">4.5</td><td class="genis">Her deride, sağlık testi ölçüyor</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Profil fotoğrafı</h2>
+  <p class="h2-alt">Instagram profil fotoğrafını <em>daire</em> olarak kırpıyor.
+    Kare tuvalin köşeleri görünmez, o yüzden ölçüler daireye göre.</p>
+  <ul class="liste">
+    <li><b>1080 × 1080 PNG</b> — Instagram yüklerken bunu istiyor, ekranda 320'ye kadar iniyor.</li>
+    <li><b>Güvenli daire: yarıçap 464 px</b> (540'ın %86'sı). Bütün yazı bunun içinde; betik ölçüp taşarsa düşüyor.</li>
+    <li><b>ORBI üstte, TAPE altta.</b> Tek satır sekiz harf, aynı okunurlukta ancak dairenin dışına taşarak sığıyor.</li>
+    <li><b>Halka kendi ölçüsünde çizilip 2× büyütülüyor.</b> Uygulamanın çizgileri sabit kalınlıkta; doğrudan 940 pikselde çizilince kıl gibi kalıyor.</li>
+    <li><b>brightness 1.32 · saturate 1.75.</b> Daha yüksek parlaklık en parlak kanalı tavana dayıyor ve turkuaz beyaza kaçıyor.</li>
+    <li><b>Alt satırlar aynı tonda.</b> İkinci satırı bir tık koyultmak 88 pikselde tamamen kaybediyordu.</li>
+  </ul>
+  <p class="ornek-kod" style="margin-top:16px">node araclar/profil.js &nbsp;·&nbsp; node araclar/profil.js --sade</p>
+</section>
+
+<footer>
+  Değerlerin kaynağı: <code>index.html</code> (AILELER, MOD_TEMA, DERILER, olukYaz,
+  okunurVurgu), <code>manifest.json</code>, <code>araclar/profil.js</code>.
+  Kodda değişirse bu sayfa eskir — tek doğru kaynak her zaman kod.
+</footer>
+
+</div>
+
+<div class="kopya" id="kopya">kopyalandı</div>
+
+<script>
+  const RAMPA = [
+    ['O','#48dcd5','72,220,213'], ['R','#4bded7','75,222,215'],
+    ['B','#48ded8','72,222,216'], ['I','#63c9ce','99,201,206'],
+    ['T','#92aebd','146,174,189'], ['A','#c294ab','194,148,171'],
+    ['P','#e47ca0','228,124,160'], ['E','#e57ca0','229,124,160']
+  ];
+  const CEKIRDEK = [
+    ['Zemin','#020203','html ve body: uygulamanın en dibi'],
+    ['Zemin degrade','#0a0a0d','body radial-gradient merkez, kenarda #020203'],
+    ['Durum çubuğu','#05080a','theme-color + manifest theme/background'],
+    ['Gövde yazısı','#e8f4f4','body color'],
+    ['Turkuaz','#5adcd2','ana vurgu — konsol, göstergeler'],
+    ['Açık turkuaz','#8ff0dd','arşiv kanalı tonu (t-lib)'],
+    ['RADIOTAPE','#35e0d8','en dış halka ve canlı radyo kimliği'],
+    ['Liste tonu','#d9d0dd','t-liste'],
+    ['Radyo tonu','#ffc79e','t-radio']
+  ];
+  const HALKA = [
+    ['RADIOTAPE','53,224,216'], ['ELECTRONIC','132,150,255'],
+    ['WORLD & ROOTS','176,124,232'], ['HIP HOP RNB','232,84,100'],
+    ['JAZZ','204,124,164'],
+    ['LOUNGE & LOFI','216,203,160'], ['ROCK & INDIE','242,104,60'],
+    ['ORCHESTRAL','240,172,122'], ['AMBIENT','95,191,122']
+  ];
+  const KANAL = [
+    ['RADIOTAPE','53,224,216','236,104,190','#08090b → #000000'],
+    ['AMBIANCE','132,150,255','212,222,255','#090b13 → #020308'],
+    ['MIXTAPE','240,172,122','236,148,118','#0f0c08 → #040302'],
+    ['HUMAN','204,124,164','226,168,140','#0f0b0f → #030204'],
+    ['ORBITAPE','154,150,172','188,182,200','#0c0c12 → #030304']
+  ];
+
+  const hex = rgb => '#' + rgb.split(',')
+    .map(n => (+n).toString(16).padStart(2,'0')).join('');
+
+  const kopyaEl = document.getElementById('kopya');
+  let kopyaZaman = null;
+  function kopyala(metin){
+    const bitir = ()=>{
+      kopyaEl.textContent = metin + ' kopyalandı';
+      kopyaEl.classList.add('gor');
+      clearTimeout(kopyaZaman);
+      kopyaZaman = setTimeout(()=> kopyaEl.classList.remove('gor'), 1400);
+    };
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(metin).then(bitir, bitir);
+        return;
+      }
+    }catch(e){}
+    /* Panoya erişim yoksa da geri bildirim veriliyor: sessizce
+       hiçbir şey olmaması "bozuk" gibi görünür. */
+    bitir();
+  }
+
+  function kutu(ad, renk, deger, not){
+    const b = document.createElement('button');
+    b.className = 'kutu';
+    b.type = 'button';
+    b.setAttribute('aria-label', ad + ', ' + deger + ', kopyala');
+    const s = document.createElement('span');
+    s.className = 'sd'; s.style.background = renk;
+    const ic = document.createElement('span');
+    ic.className = 'kutu-ic';
+    const a = document.createElement('span'); a.className = 'kutu-ad'; a.textContent = ad;
+    const d = document.createElement('span'); d.className = 'kutu-deger'; d.textContent = deger;
+    ic.appendChild(a); ic.appendChild(d);
+    if(not){ const n = document.createElement('span'); n.className='kutu-not'; n.textContent = not; ic.appendChild(n); }
+    b.appendChild(s); b.appendChild(ic);
+    b.addEventListener('click', ()=> kopyala(renk));
+    return b;
+  }
+
+  /* Marka yazısı: her harf kendi renginde. */
+  const isim = document.getElementById('isim');
+  RAMPA.forEach(([h, renk])=>{
+    const s = document.createElement('span');
+    s.textContent = h; s.style.color = renk;
+    isim.appendChild(s);
+  });
+
+  const rampa = document.getElementById('rampa');
+  RAMPA.forEach(([h, renk, rgb])=> rampa.appendChild(kutu(h, renk, renk + '  ·  ' + rgb)));
+
+  const cek = document.getElementById('cekirdek');
+  CEKIRDEK.forEach(([ad, renk, not])=> cek.appendChild(kutu(ad, renk, renk, not)));
+
+  const halkalar = document.getElementById('halkalar');
+  HALKA.forEach(([ad, rgb], i)=>{
+    const tr = document.createElement('tr');
+    const h = hex(rgb);
+    tr.innerHTML = '<td class="ad"><span class="nokta" style="background:rgb(' + rgb + ')"></span>'
+      + ad + '</td><td class="sayi">' + rgb + '</td><td class="sayi">' + h
+      + '</td><td class="sayi">' + (i === 0 ? 'en dış' : (i === HALKA.length - 1 ? 'en iç' : (i + 1) + '.')) + '</td>';
+    halkalar.appendChild(tr);
+  });
+
+  const kanallar = document.getElementById('kanallar');
+  KANAL.forEach(([ad, ana, ikinci, zemin])=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td class="ad"><span class="nokta" style="background:rgb(' + ana + ')"></span>'
+      + ad + '</td><td class="sayi">' + hex(ana) + '</td><td class="sayi">' + hex(ikinci)
+      + '</td><td class="sayi">' + zemin + '</td>';
+    kanallar.appendChild(tr);
+  });
+</script>

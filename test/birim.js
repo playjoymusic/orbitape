@@ -836,7 +836,7 @@ function bitir(){
        Tur ve raf adlari VERI: cevrilirse hem arama hem hasat
        araclariyla ayrisir. Sozluge kazara girmeleri kolay ve
        sonucu sessiz, o yuzden acikca yasak. */
-    const VERI = ['JAZZ','ROCK','AMBIENT','ELECTRONIC','DISCO FUNK','AFROBEATS',
+    const VERI = ['JAZZ','ROCK','AMBIENT','ELECTRONIC','HIP HOP RNB',
                   'ORCHESTRAL','WORLD & ROOTS','LOUNGE & LOFI','ROCK & INDIE',
                   'RADIOTAPE','NATURE','CITY','HUMANS','NOISE','SPACE','AMBIANCE'];
     const kacak = VERI.filter(a => Object.prototype.hasOwnProperty.call(sozluk, a));
@@ -887,6 +887,44 @@ function bitir(){
       t.replace('<!--anahtar:','').replace('-->','').trim()
        .split(/\s+/).filter(Boolean).forEach(a2=>yazili.add(a2));
     });
+    /* ── HER YAZI ALANI EN AZ 16 PIKSEL ─────────────────────────
+       7 Eylul, kullanicinin bildirimi: "feedback'e yazinca ekran
+       buyuyor ve geri gelmiyor."
+       iOS Safari 16 pikselden kucuk yazili bir girise dokununca
+       sayfayi otomatik yakinlastiriyor ve uygulama olcegi geri
+       alamiyor -- yani ekran bozuk kaliyor. Arama kutusu bu yuzden
+       zaten 16'ydi, geri bildirim alani atlanmisti.
+       Burasi butun dosyalarda input/textarea kurallarini tarayip
+       1rem'in (16px) altini yakaliyor. Kural bir kez yazilir,
+       unutmak serbest degil. */
+    {
+      const kucuk = [];
+      for(const f of ['index.html','saat.js','deri_galeri.js','liste.js','kayit.js','gorsel.js']){
+        const yol = path.join(KOK, f);
+        if(!fs.existsSync(yol)) continue;
+        const metin = fs.readFileSync(yol, 'utf8');
+        /* Kural blogu: secicide input/textarea gecen ve font-size
+           tasiyan her parca. */
+        const bloklar = metin.match(/[^{};]*(?:input|textarea)[^{};]*\{[^}]*\}/g) || [];
+        for(const b2 of bloklar){
+          const sec0 = (b2.split('{')[0] || '');
+          /* Yer tutucu ve tarayici ic parcalari sayilmaz: yakinlastirmayi
+             tetikleyen sey ALANIN kendi yazisi. */
+          if(/::/.test(sec0)) continue;
+          const m = b2.match(/font-size\s*:\s*([0-9.]+)(rem|px)/);
+          if(!m) continue;
+          const px = m[2] === 'rem' ? parseFloat(m[1]) * 16 : parseFloat(m[1]);
+          if(px < 16){
+            const sec = (b2.split('{')[0] || '').trim().replace(/\s+/g, ' ').slice(0, 48);
+            kucuk.push(f + ': ' + sec + ' ' + m[1] + m[2]);
+          }
+        }
+      }
+      K('Yazi alanlari 16 pikselden kucuk degil', kucuk.length === 0,
+        kucuk.length ? kucuk.join(' | ')
+                     : 'iOS kucuk yaziya dokununca sayfayi yakinlastiriyor ve geri alinamiyor');
+    }
+
     /* Koddaki anahtarlar: hem dogrudan yazilanlar hem sabitler. */
     const kodHepsi = ['index.html','kayit.js','deri_cizim.js','saat.js','deri_galeri.js','liste.js','cark.js','gorsel.js','sw.js']
       .filter(f => fs.existsSync(path.join(KOK, f)))

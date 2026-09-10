@@ -160,8 +160,33 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        kendi satirinda. Ust satir artik hic sarmadigi icin serit her
        zaman IKI satir -- bir onceki halinde bazen iki bazen ucti,
        ezberi bozan da oydu. */
-    "#deriGaleri.serit .dg-merkez{order:9;grid-column:1/-1;width:100%;justify-content:center;gap:4px;padding-top:0;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent);margin-top:2px}",
-    "#deriGaleri.serit .dg-tus.mrk{width:auto;height:24px;font-size:0.625rem;letter-spacing:.12em;padding:0 8px}"
+    /* ── IKI SATIR ARASI BES PIKSELDI ───────────────────────────
+       Kullanicinin sozu (10 Eylul): "skins mini penceresinde sol oka
+       basarken bazen cark whell vs ona basiliyor, parmak cok yakin."
+       Olculdu, hakliydi: 390x844'te ok satiri 140-172, merkez satiri
+       177-201 -- arada BES piksel. Ustelik ◀ (x 94-128) tam WHEEL'in
+       (x 120-172) ustune denk geliyor, yani yatayda da ortusuyorlar.
+       Bir bas parmagin temas alani rahat yirmi piksel; okun alt
+       kenarina basan parmak asagidaki tusa deger.
+       Aralik 5 -> 17 piksel (margin 2->10, padding 0->4). Serit
+       dokuz piksel uzuyor. Alternatif "tuslari kucult" olurdu ve
+       yanlis olurdu: sorun tuslarin boyu degil ARALIGI. */
+    "#deriGaleri.serit .dg-merkez{order:9;grid-column:1/-1;width:100%;justify-content:center;gap:4px;padding-top:4px;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent);margin-top:10px}",
+    "#deriGaleri.serit .dg-tus.mrk{width:auto;height:24px;font-size:0.625rem;letter-spacing:.12em;padding:0 8px}",
+    /* ── KISA EKRANDA ARALIK VAR AMA DAHA DAR ────────────────────
+       Yukaridaki 17 piksellik aralik seridi dokuz piksel uzatti ve
+       cihaz takimi onu iki ekranda yakaladi: 375x553 ve 360x520'de
+       serit ortadaki carkin tepesine 1-2 piksel biniyordu.
+       Denendi ve olmadi: kisa ekranda hem 17 piksel aralik hem eski
+       yukseklik ikisi birden mumkun degil -- ucu de (aralik, tus
+       boyu, serit yuksekligi) ayni yirmi alti pikseli paylasiyor.
+       Secim: tus boyu 24 -> 20 ve cizgi ile pay birlikte 8 piksele
+       iniyor. Serit eskisinden yalnizca iki piksel uzun (yani carka
+       binmiyor) ve aralik 5 -> 9 piksele cikiyor.
+       Uzun ekranlarda -- yani sikayetin geldigi telefonda -- 17
+       piksel oldugu gibi duruyor. */
+    "@media (max-height:600px){#deriGaleri.serit .dg-merkez{margin-top:8px;padding-top:0}" +
+    "#deriGaleri.serit .dg-tus.mrk{height:20px}}"
   ];
   function kurallariKur(){
     try{

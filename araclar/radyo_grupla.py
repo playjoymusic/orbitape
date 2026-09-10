@@ -193,12 +193,12 @@ RAF_KELIME = OrderedDict([
     # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
     # soul / r&b / trap BURADA: kullanicinin karari, raf dolsun.
     # lofi ve indie BURADA DEGIL -- onlar kendi rafinda kaliyor.
-    ("DISCO FUNK", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("HIP HOP RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                r"\bsoul\b|motown|g-?funk|turntabl|"
                                r"\bfunk\w*|boogie|\bdisco ?funk\b|"
                                r"\bbreakdance\b|\bmc\b", re.I)),
-    # RAF ADI "HIP HOP & RNB" DEGIL ARTIK "DISCO FUNK": kullanici
+    # RAF ADI "HIP HOP & RNB" DEGIL ARTIK "HIP HOP RNB": kullanici
     # butun funk istasyonlarini buraya tasidi ve adi ona gore
     # degistirdi. Kelime listesi ayni kaldi -- karari zaten 171 elle
     # karar ve etiket sayimi veriyor.
@@ -283,7 +283,7 @@ RAF_KELIME = OrderedDict([
 #   latino / reggaeton / urbano / french / sertanejo -> WORLD
 #   instrumental TEK BASINA ORCHESTRAL yapmiyor (雨声轻音乐 -> AMBIENT)
 KADEME1 = OrderedDict([
-    ("DISCO FUNK", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("HIP HOP RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                  r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                  r"\bsoul\b|motown|g-?funk|turntabl|"
                                  r"trip.?hop|\bbreakdance\b|"
@@ -443,17 +443,23 @@ AILELER = OrderedDict([
     ("ROCK & INDIE",  {"renk": "#F2683C"}),   # eski adi ROCK & COUNTRY
     ("LOUNGE & LOFI", {"renk": "#D8CBA0"}),   # eski adi LOUNGE
     ("JAZZ",          {"renk": "#CC7CA4"}),
-    # AFROBEATS: kullanicinin elle doldurdugu raf. Hasat bu rafa
-    # istasyon girene kadar halkada gorunmuyor. Hasat bu rafa
-    # kendiliginden istasyon ATAMIYOR -- hangi istasyonun afrobeat
-    # oldugunu etiket soylemiyor, kulak soyluyor. Doldurmasi elle,
-    # raf_revizyon.html uzerinden. Yeri distan besinci halka.
-    ("AFROBEATS",     {"renk": "#D68E3A"}),
-    ("DISCO FUNK",    {"renk": "#BEB6A4"}),   # eski adi FUNK & RNB
     # MOR LOFI'DEN GELDI: INDIE & LOFI rafi bosalinca kaldirildi ve
     # rengi burada yasiyor. Eski gri (#9A96AC) halkada oteki
     # grilerden ayirt edilmiyordu.
     ("WORLD & ROOTS", {"renk": "#B07CE8"}),
+    # ── HIP HOP RNB: AFROBEATS VE DISCO FUNK'IN YERINE ────────────
+    # 10 Eylul, kullanicinin karari: iki raf da kalkti ve icerikleri
+    # buraya tasindi. DISCO FUNK'ta 19, AFROBEATS'te 32 istasyon
+    # vardi; ikisi de tam olarak bosaldi. Yanlarina baska raflardan
+    # on iki istasyon geldi, raf 63 istasyonla acildi.
+    # AD DEGISIKLIGINDEN FAZLASI DEGIL: bu dosyadaki kelime listesi
+    # zaten hip hop / rap / r&b / soul / funk ariyordu -- raf uzun
+    # suredir hip hop rafiydi, adi DISCO FUNK'ti. Simdi adi da onu
+    # soyluyor.
+    # AFROBEATS SILINDI: hasat o rafa hicbir zaman kendiliginden
+    # istasyon atamiyordu (elle dolduruluyordu), yani burada yalnizca
+    # bir ad ve bir renk tutuyordu. Yeri distan ucuncu halka.
+    ("HIP HOP RNB",   {"renk": "#E85464"}),
     ("ELECTRONIC",    {"renk": "#8496FF"}),
     ("RADIOTAPE",     {"renk": "#35E0D8"}),   # en dista, turkuaz
 ])
@@ -518,8 +524,8 @@ def _raflar(metin, elektronik_ustun=True):
     Iki tur birden geciyorsa kimse kazanmaz, RADIO'e gider."""
     # HIP HOP ELEKTRONIKTEN DE USTUN: "House vs. Hip-Hop" ikisi de
     # ama kullanicinin karari net -- adinda hip hop geciyorsa hip hop.
-    if RAF_KELIME["DISCO FUNK"].search(metin):
-        return ["DISCO FUNK"]
+    if RAF_KELIME["HIP HOP RNB"].search(metin):
+        return ["HIP HOP RNB"]
     # LOUNGE MUTLAK: "lounge", "smooth", "relax" gecen her sey lounge.
     # "Smooth Jazz Lounge", "Jazz Lounge Bar" da dahil -- kullanicinin
     # karari: bunlar jazz degil, arka plan muzigi.
