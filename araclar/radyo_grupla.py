@@ -186,7 +186,7 @@ ELEKTRONIK = re.compile(
 # Hip-Hop" hem hip hop hem funk; hip hop once soruldugu icin dogru
 # rafa gidiyor.
 # DISCO FUNK RAFI KALKTI: kullanici butun funk istasyonlarini
-# HIP HOP & RNB'ye tasidi ve o rafin adini FUNK & RNB yapti. Geriye
+# RNB & FUNK'ye tasidi ve o rafin adini FUNK & RNB yapti. Geriye
 # tek istasyon kalmadi; bos bir halka sessiz bir halkadir.
 # ANADOLU ISARETLERI: dizinde bu istasyonlarin etiketi neredeyse her
 # zaman "turkish ..." diye geciyor; arabesk ve anadolu rock'in
@@ -205,12 +205,12 @@ RAF_KELIME = OrderedDict([
     # rap, trap, boom bap, r&b, grime, drill, dilenmis "old school".
     # soul / r&b / trap BURADA: kullanicinin karari, raf dolsun.
     # lofi ve indie BURADA DEGIL -- onlar kendi rafinda kaliyor.
-    ("HIP HOP & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("RNB & FUNK", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                r"\bsoul\b|motown|g-?funk|turntabl|"
                                r"\bfunk\w*|boogie|\bdisco ?funk\b|"
                                r"\bbreakdance\b|\bmc\b", re.I)),
-    # RAF ADI "HIP HOP & RNB" DEGIL ARTIK "HIP HOP & RNB": kullanici
+    # RAF ADI "RNB & FUNK" DEGIL ARTIK "RNB & FUNK": kullanici
     # butun funk istasyonlarini buraya tasidi ve adi ona gore
     # degistirdi. Kelime listesi ayni kaldi -- karari zaten 171 elle
     # karar ve etiket sayimi veriyor.
@@ -296,7 +296,7 @@ RAF_KELIME = OrderedDict([
 #   instrumental TEK BASINA ORCHESTRAL yapmiyor (雨声轻音乐 -> AMBIENT)
 KADEME1 = OrderedDict([
     ("ANATOLIA", ANATOLIA_MUTLAK),
-    ("HIP HOP & RNB", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
+    ("RNB & FUNK", re.compile(r"hip ?hop|hiphop|\brap\b|\btrap\b|boom ?bap|"
                                  r"\bgrime\b|\bdrill\b|\br&b\b|\brnb\b|"
                                  r"\bsoul\b|motown|g-?funk|turntabl|"
                                  r"trip.?hop|\bbreakdance\b|"
@@ -468,7 +468,7 @@ AILELER = OrderedDict([
     # rengi burada yasiyor. Eski gri (#9A96AC) halkada oteki
     # grilerden ayirt edilmiyordu.
     ("WORLD & ROOTS", {"renk": "#B07CE8"}),
-    # ── HIP HOP & RNB: AFROBEATS VE DISCO FUNK'IN YERINE ────────────
+    # ── RNB & FUNK: AFROBEATS VE DISCO FUNK'IN YERINE ────────────
     # 10 Eylul, kullanicinin karari: iki raf da kalkti ve icerikleri
     # buraya tasindi. DISCO FUNK'ta 19, AFROBEATS'te 32 istasyon
     # vardi; ikisi de tam olarak bosaldi. Yanlarina baska raflardan
@@ -485,10 +485,10 @@ AILELER = OrderedDict([
     # kendiliginden istasyon ATAMIYOR -- hangi istasyonun afrobeats
     # oldugunu etiket degil kulak soyluyor; doldurmasi elle.
     # SIRA UYGULAMADAKININ AYNISI OLMAK ZORUNDA (saglik: "Hasat araci
-    # uygulamayla ayni raflari biliyor"): distan HIP HOP & RNB ucuncu,
+    # uygulamayla ayni raflari biliyor"): distan RNB & FUNK ucuncu,
     # AFROBEATS dorduncu; dizi icten disa oldugu icin burada tersi.
     ("AFROBEATS",       {"renk": "#D68E3A"}),
-    ("HIP HOP & RNB",   {"renk": "#E85464"}),
+    ("RNB & FUNK",   {"renk": "#E85464"}),
     ("ELECTRONIC",    {"renk": "#8496FF"}),
     ("RADIOTAPE",     {"renk": "#35E0D8"}),   # en dista, turkuaz
 ])
@@ -568,8 +568,8 @@ def _raflar(metin, elektronik_ustun=True):
     # kendi rafi olan bir bolge icin.
     if ANATOLIA_MUTLAK.search(metin):
         return ["ANATOLIA"]
-    if RAF_KELIME["HIP HOP & RNB"].search(metin):
-        return ["HIP HOP & RNB"]
+    if RAF_KELIME["RNB & FUNK"].search(metin):
+        return ["RNB & FUNK"]
     # LOUNGE MUTLAK: "lounge", "smooth", "relax" gecen her sey lounge.
     # "Smooth Jazz Lounge", "Jazz Lounge Bar" da dahil -- kullanicinin
     # karari: bunlar jazz degil, arka plan muzigi.

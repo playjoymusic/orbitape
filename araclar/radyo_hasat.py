@@ -69,11 +69,11 @@ ARAMA = OrderedDict([
                       "turkish rock", "anadolu rock", "turkish music",
                       "turkish jazz", "turkish classical"]),
     ("JAZZ",         ["jazz", "bebop", "big band", "swing", "smooth jazz"]),
-    # 10 Eylul: DISCO FUNK ve AFROBEATS kalkti, ikisi HIP HOP & RNB
+    # 10 Eylul: DISCO FUNK ve AFROBEATS kalkti, ikisi RNB & FUNK
     # oldu. Bu satirdaki ad AILELER'de YOKSA hasat o kelimelerle
     # istasyon arar ama hicbirini ekleyemez -- sessizce. Bu yuzden
     # raf adi degisince burasi da degismek zorunda.
-    ("HIP HOP & RNB",  ["hip hop", "rap", "rnb", "r&b", "soul",
+    ("RNB & FUNK",  ["hip hop", "rap", "rnb", "r&b", "soul",
                       "funk", "disco", "motown"]),
     ("LOUNGE & LOFI",["lounge", "easy listening", "chillout", "lofi"]),
     ("ORCHESTRAL",   ["classical", "opera", "soundtrack", "baroque"]),

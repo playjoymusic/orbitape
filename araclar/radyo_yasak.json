@@ -76,5 +76,10 @@
  {
   "mp3": "https://icecast.tagesschau.de/ndr/tagesschau24/live/mp3/128/stream.mp3",
   "ad": "ARD Tagesschau Radio"
+ },
+ {
+  "ad": "Michael Jackson music star",
+  "mp3": "https://icy.unitedradio.it/um2908.mp3",
+  "sebep": "kisa bir loop calip duruyor; istasyon degil tek parca"
  }
 ]

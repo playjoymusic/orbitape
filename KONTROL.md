@@ -53,7 +53,7 @@ yanlış (orası arşiv tarafının yeri).
 küçüğe**. Halka yanmalı ve **halkanın altında** büyük silik yazı
 çıkmalı. Parmağın sembollere değmesi hiçbir şeyi bozmamalı.
 
-Dıştan sıra: RADIOTAPE · ELECTRONIC · HIP HOP & RNB · AFROBEATS ·
+Dıştan sıra: RADIOTAPE · ELECTRONIC · RNB & FUNK · AFROBEATS ·
 WORLD & ROOTS · JAZZ · LOUNGE & LOFI · ROCK & INDIE · ORCHESTRAL ·
 AMBIENT. On halka. Raf adları **çizim**, yazı tipi değil — biri
 ötekilerden farklı bir fontla görünüyorsa o adın çizimi tabloda yok

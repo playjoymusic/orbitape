@@ -74,7 +74,14 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     ".dg-sayac{font-size:0.6875rem;opacity:.5;margin-right:4px}",
     ".dg-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;width:34px;height:32px;padding:0;font:inherit;font-size:0.875rem;cursor:pointer;opacity:.7;-webkit-tap-highlight-color:transparent}",
     ".dg-tus:hover,.dg-tus:focus-visible{opacity:1}",
-    "#deriGaleri:not(.serit) .dg-tus.buyut{display:none}",
+    /* ── OK IKI YONE DE CALISIYOR (10 Eylul gece) ────────────────
+       Kullanicinin sozu: "soldan asagi oka basiyoruz, liste
+       aciliyor; ayni okun yukari yone olani olmali, liste tekrar
+       ordan kapatilsin. Kayboluyor kullanici."
+       Hakli: geri donusun tek yolu SKINS basligina basmakti ve
+       bunu bilen yok. Tus artik iki kipte de duruyor, yalnizca
+       yonu ve isi degisiyor -- ▾ listeyi acar, ▴ serite doner.
+       Eskiden burada "izgarada gizle" kurali vardi; kaldirildi. */
     ".dg-tus.halka{width:auto;padding:0 8px;font-size:0.625rem;letter-spacing:.22em;opacity:.45}",
     ".dg-tus.halka[aria-pressed='true']{opacity:1;color:var(--dg-vurgu);text-shadow:0 0 8px color-mix(in srgb,var(--dg-vurgu) 60%,transparent)}",
     ".dg-izgara{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));grid-auto-rows:max-content;align-items:start;gap:10px;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 10px calc(var(--kx) + env(safe-area-inset-left,0px));align-content:start}",
@@ -204,6 +211,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   let halkaTus = null, kapDinle = null, merkezTuslari = [];
+  let buyutTus = null;
   /* ── ACARKEN DISK, KAPARKEN ESKISI (9 Eylul) ──────────────────
      Kullanicinin sozu: "skins ikonuna basinca bir anda cark gidiyor;
      sadece acip kapasam bile cark kayboluyor, bunun mantigi yok."
@@ -276,9 +284,22 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
      Onizleme ekranda gorecegi seyi gostermeli: RING acikken deri
      govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye halka
      kaliyor. Kapaliyken govde geri geliyor -- kare de oyle. */
+  /* ── ONIZLEME VARSAYILAN OLARAK DISK (10 Eylul gece) ──────────
+     Kullanicinin sozu: "skinslere basinca listeyi acarsak, OFF haric
+     onizlemelerde de ilk circle gorunmeli; extra circle basmam
+     gerekmesin onizleme icin."
+     Sebep olculdu: kare RING ANAHTARINA (AYAR.halka) bakiyordu, ama
+     galeri acilinca uygulamanin merkezi zaten diske geciyor
+     (merkezOdunc) -- yani ekranda disk, onizlemede halka vardi.
+     Iki ayri sey ayni anda dogru olamaz. Kare artik MERKEZ
+     SECICISINE bakiyor: ne secildiyse onizleme onu gosteriyor.
+     RING'i baslikta secen kullanici yine halkali onizleme goruyor;
+     hicbir sey secmeyen disk goruyor. 3 Eylul'deki "onizlemeler
+     halkali olsun" karari bunun ozel hali, tersi degil. */
   function diskYaz(disk, d){
     try{
-      const halkaAcik = (typeof AYAR !== 'undefined') && !!AYAR.halka;
+      const _mrk = (typeof AYAR !== 'undefined' && AYAR.merkez) || 'cark';
+      const halkaAcik = _mrk === 'halka';
       const resim = (d.cizim && halkaOnbellek[d.cizim]) || '';
       if(halkaAcik){
         /* GOVDE YOK, HALKA VAR. Bos birakmak yanlis olurdu: kullanici
@@ -456,7 +477,10 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        zaten uc yazi var, dordunculuk edecek bir kelime degil.
        Kesfedilebilirlik yaziyla degil TUS OLARAK saglaniyor:
        cerceve, tam opaklik, 44 piksel. */
-    bas.appendChild(tus('buyut', 'Show all skins', '▾', buyut));
+    buyutTus = tus('buyut', 'Show all skins', '▾', ()=>{
+      if(kap && kap.classList.contains('serit')) buyut(); else kucult();
+    });
+    bas.appendChild(buyutTus);
     bas.appendChild(tus('kapat', 'Close', '✕', kapa));
     /* ── MERKEZ SECICI (4 Eylul) ────────────────────────────────
        "minimize modunda halka, yuvarlak, cark ve faz olsun ...
@@ -597,6 +621,13 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   function seritIsaret(){
     try{
       const acik = acikMi() && kap && kap.classList.contains('serit');
+      /* OKUN YONU KIPI SOYLUYOR: seritteyken ▾ (liste acilir),
+         izgaradayken ▴ (serite doner). Ayni tus, ayni yer. */
+      if(buyutTus){
+        buyutTus.textContent = acik ? '▾' : '▴';
+        const _et = acik ? 'Show all skins' : 'Shrink to a strip';
+        buyutTus.title = _et; buyutTus.setAttribute('aria-label', _et);
+      }
       const onceki = document.body.classList.contains('serit-acik');
       document.body.classList.toggle('serit-acik', !!acik);
       if(onceki !== !!acik){

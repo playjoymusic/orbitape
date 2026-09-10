@@ -50,7 +50,7 @@ const bek = ms => new Promise(r=>setTimeout(r, ms));
    karsilamiyor. Radyo tarafi ondan besleniyor; olmadan hicbir
    yolculuk baslamiyor. Buraya kendi listemizi koyuyoruz -- gercek
    dosyanin bicimiyle, farkli raflardan. */
-const RAFLAR = ['AMBIENT','JAZZ','ELECTRONIC','ORCHESTRAL','HIP HOP & RNB','RADIOTAPE'];
+const RAFLAR = ['AMBIENT','JAZZ','ELECTRONIC','ORCHESTRAL','RNB & FUNK','RADIOTAPE'];
 const RADYO = Array.from({length: 30}, (_, i) => ({
   /* BICIM GERCEK radyo.json'IN BICIMI. Once uydurma alan adlariyla
      (u, name, tags) yazilmisti ve liste sessizce bos kaliyordu:

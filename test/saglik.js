@@ -747,15 +747,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        duruyor" ile "donunce titriyor" sikayetlerinin OLCULEN
        sebepleri; o olcumler yazili olmazsa bir sonraki kisi ayni
        kapilari yeniden acar. Tavan bir koruma; islev eklenince
-       Son yukseltme (1136 -> 1144): HIP HOP & RNB rafi (iki rafin
+       Son yukseltme (1136 -> 1144): RNB & FUNK rafi (iki rafin
        kalkmasinin ve icerigin nereye gittiginin kaydi, halka
        sirasinin kullanicidan geldigi not) ve sol sutun simgelerinin
        gercek zemine gore renklenmesi -- 82 derinin olcum sonuclari
        da orada duruyor. Olcum yazili olmazsa bir sonraki kisi ayni
        kapiyi yeniden acar; sayilar yorumun kendisi kadar onemli.
+       Son yukseltme (1144 -> 1152): ANATOLIA rafi ve RNB & FUNK ad
+       degisikligi. Ikisi de "ne" degil "neden" yazisi: TR'nin ulke
+       kara listesinde oldugu ve hasadin yalnizca Ingilizce etiketle
+       aradigi -- yani 502 istasyonluk listede neden sifir Turkce
+       istasyon oldugu; ANATOLIA'nin neden en icteki halka oldugu
+       (kesif olcumu 15 aday); rengin neden fusya secildigi; ve raf
+       adinin neden HIP HOP & RNB'den RNB & FUNK'a dondugu (icerigin
+       agirligi funk/soul/rnb tarafinda, hip hop rafta olmayan bir
+       sey vaat ediyordu). Bir de galeri okunun neden iki yone
+       calistigi. Bu satirlar silinirse bir sonraki kisi TR'yi
+       yeniden kara listeye alir ya da rafi yeniden adlandirir.
        Tavan bir koruma; islev eklenince yaziyla yukseltiliyor,
        sessizce degil. */
-    K('Ham boy < 1144 KB', dosyaBoy < 1144*1024,
+    K('Ham boy < 1152 KB', dosyaBoy < 1152*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -1237,7 +1248,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ust satir, halka ve renk eski rafi gosteriyordu. */
   K('Calan istasyon rafi belirliyor', await pg.evaluate(async()=>{
       const eskiAile = AKTIF_AILE, eskiMod = mod, eskiFav = _favMod;
-      mod = 'radio'; _favMod = false; AKTIF_AILE = 'HIP HOP & RNB';
+      mod = 'radio'; _favMod = false; AKTIF_AILE = 'RNB & FUNK';
       rafCalanaUysun({ grup:'JAZZ', ad:'X', mp3:'https://sahte.test/x' });
       const gecti = AKTIF_AILE === 'JAZZ';
       modAdiYaz();
@@ -1256,11 +1267,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      orada raf degistirmek onun secimini bozar. */
   K('Favori ve aramada raf degismiyor', await pg.evaluate(async()=>{
       const eskiAile = AKTIF_AILE, eskiMod = mod, eskiFav = _favMod, eskiEt = _etiket;
-      mod = 'radio'; AKTIF_AILE = 'HIP HOP & RNB';
+      mod = 'radio'; AKTIF_AILE = 'RNB & FUNK';
       _favMod = true;  rafCalanaUysun({ grup:'JAZZ' });
-      const favSabit = AKTIF_AILE === 'HIP HOP & RNB';
+      const favSabit = AKTIF_AILE === 'RNB & FUNK';
       _favMod = false; _etiket = 'funk'; rafCalanaUysun({ grup:'JAZZ' });
-      const araSabit = AKTIF_AILE === 'HIP HOP & RNB';
+      const araSabit = AKTIF_AILE === 'RNB & FUNK';
       _etiket = eskiEt; AKTIF_AILE = eskiAile; mod = eskiMod; _favMod = eskiFav;
       return favSabit && araSabit;
     }), 'favori ve arama raflari asiyor, raf yerinde kaliyor');
@@ -1283,8 +1294,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const yazi2 = (document.getElementById('modAd').textContent || '').trim();
       _sonCalan = eskiSon; AKTIF_AILE = eskiAile; mod = eskiMod;
       try{ modAdiYaz(); }catch(e){}
-      return yazi === 'HIP HOP & RNB' && yazi2 === 'JAZZ' && !!renk;
-    }), 'funk kanali -> HIP HOP & RNB, rengi de o raftan');
+      return yazi === 'RNB & FUNK' && yazi2 === 'JAZZ' && !!renk;
+    }), 'funk kanali -> RNB & FUNK, rengi de o raftan');
   /* Tablo veriden cikarildi; veri buyudukce eksik kalmasin diye
      kapi soruyor: RADIOTAPE rafindaki her turun karsiligi var mi.
      Karsiligi olmayan tur = ekranda yine 'RADIOTAPE' yazan istasyon. */
@@ -2461,7 +2472,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* On halka -> DOKUZ: INDIE & LOFI bosaldi ve kaldirildi.
      DOKUZ -> ON: AFROBEAT acildi ve otuz iki istasyonla doldu.
      ON -> DOKUZ (10 Eylul): AFROBEATS ve DISCO FUNK kalkti, ikisinin
-     icerigi tek bir rafta birlesti -- HIP HOP & RNB.
+     icerigi tek bir rafta birlesti -- RNB & FUNK.
      DOKUZ -> ON (ayni gun): raf dolunca iceri girenlerin cogunun hip
      hop degil AFRO oldugu goruldu; AFROBEATS 28 istasyonla geri acildi,
      distan dorduncu halka.
@@ -2469,7 +2480,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      acikca yaziyor: yanlis sayida parmak baska halkayi secer. */
   K('Radyoda halkalar tur ailesi', hs.n===10 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
-       && /HIP HOP & RNB/.test(hs.sira) && /AFROBEATS/.test(hs.sira)
+       && /RNB & FUNK/.test(hs.sira) && /AFROBEATS/.test(hs.sira)
        && !/DISCO FUNK/.test(hs.sira)
        && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
@@ -6448,7 +6459,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        acildi. AYNI GUN DOKUZ -> ON: raf dolunca iceri girenlerin cogunun
        hip hop degil AFRO oldugu goruldu ve AFROBEATS yeniden acildi
        (28 istasyon, distan dorduncu halka). Rafin adi da ayrildi:
-       iki ayri tarz oldugu icin HIP HOP & RNB.
+       iki ayri tarz oldugu icin RNB & FUNK.
        Sayi burada acikca yaziyor cunku halka geometrisi raf
        SAYISINDAN tureniyor: yanlis sayi yanlis halkayi sectirir. */
     K('On bir DOLU aile tanimli', !!ai && ai.sayi === 11, ai ? ai.adlar.join(' · ') : 'AILELER yok');
@@ -6577,7 +6588,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        TR ulke kara listesinden cikinca acilan raf; kesif olcumu 15
        aday buldu, yani en kucuk raf bu. On halka on bir oldu. */
     const SIRA = ['ANATOLIA','AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
-                  'JAZZ','WORLD & ROOTS','AFROBEATS','HIP HOP & RNB',
+                  'JAZZ','WORLD & ROOTS','AFROBEATS','RNB & FUNK',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
       !!ai && SIRA.every((a,i)=>ai.adlar[i]===a),
@@ -6656,10 +6667,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Bekleyen secim yazisi silik', await pg.evaluate(()=>{
         const eM = mod, eA = AKTIF_AILE, eO = _aileOncesi;
         mod = 'radio'; AKTIF_AILE = 'MIXTAPE'; _aileOncesi = null;
-        aileGezmeBasla(); AKTIF_AILE = 'HIP HOP & RNB';   // gezindi
+        aileGezmeBasla(); AKTIF_AILE = 'RNB & FUNK';   // gezindi
         modAdiYaz();
         const bekler = document.getElementById('modAd').classList.contains('bekliyor');
-        aileSecimKesinlesti({grup:'HIP HOP & RNB'});      // ses o raftan geldi
+        aileSecimKesinlesti({grup:'RNB & FUNK'});      // ses o raftan geldi
         modAdiYaz();
         const katilasti = !document.getElementById('modAd').classList.contains('bekliyor');
         mod = eM; AKTIF_AILE = eA; _aileOncesi = eO; modAdiYaz();
@@ -10780,6 +10791,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         }
         if(okTus){ okTus.click(); await bek(260); }
         c.izgaraAcildi = !kap.classList.contains('serit');
+        /* ── OK IKI YONE DE CALISIYOR (10 Eylul gece) ───────────────
+           Kullanicinin sozu: "soldan asagi oka basiyoruz, liste
+           aciliyor; ayni okun yukari yone olani olmali... kayboluyor
+           kullanici." Izgara acildiktan sonra geri donusun tek yolu
+           SKINS basligina basmakti ve bunu kimse bilmiyordu.
+           Olculen sey: izgaradayken ayni tus duruyor mu, yonu donmus
+           mu, basinca serite donuyor mu. */
+        {
+          const okG = kap.querySelector('.dg-tus.buyut');
+          c.okIzgaradaVar = !!okG && getComputedStyle(okG).display !== 'none';
+          c.okYonDondu = !!okG && (okG.textContent || '').trim() === '▴';
+          if(okG){ okG.click(); await bek(260); }
+          c.okSeriteDondu = kap.classList.contains('serit');
+          const okS = kap.querySelector('.dg-tus.buyut');
+          c.okYonGeri = !!okS && (okS.textContent || '').trim() === '▾';
+          if(okS){ okS.click(); await bek(260); }   // olcumun geri kalani izgarada
+        }
         const _kk0 = kap ? kap.querySelectorAll('.dg-kare') : [];
         c.kareSayisi = _kk0.length;
         c.kareDogru = c.kareSayisi === DERILER.length + 1;
@@ -10986,19 +11014,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         kay('pointerdown', kb2.top + 200); kay('pointermove', kb2.top + 120); await bek(150);
         c.kaydirKapatti = !deriGaleriAcik();
         kay('pointerup', kb2.top + 120); await bek(100);
-        /* Karelerin ortasi RING'e gore: acikken govde yok, halka var. */
+        /* ── ONIZLEMENIN ORTASI MERKEZ SECICISINE GORE (10 Eylul) ──
+           Kullanicinin sozu: "OFF haric onizlemelerde de ilk circle
+           gorunmeli; extra circle basmam gerekmesin."
+           Once kare RING ANAHTARINA bakiyordu; galeri acilinca
+           uygulamanin merkezi zaten diske geciyor, yani ekranda disk
+           onizlemede halka oluyordu. Artik ikisi ayni sey.
+           Olculen: RING secilince kare halkali, DISC secilince
+           govdeli. */
         f.click(); await bek(400);
         const k2 = kap.querySelector('.dg-kare[data-n="2"] .dg-disk');
-        const eskiH = !!AYAR.halka;
-        if(!AYAR.halka){ kap.querySelector('.dg-tus.halka').click(); await bek(200); }
+        const eskiM = AYAR.merkez;
+        const mrkTus = k => kap.querySelector('.dg-tus.mrk[data-merkez="' + k + '"]');
+        mrkTus('halka').click(); await bek(250);
         const acikStil = getComputedStyle(k2);
         c.kareHalkali = /radial-gradient/.test(acikStil.backgroundImage)
                      && /rgba\(0, 0, 0, 0\)|transparent/.test(acikStil.backgroundColor);
-        kap.querySelector('.dg-tus.halka').click(); await bek(200);
+        mrkTus('yuvarlak').click(); await bek(250);
         const kapaliStil = getComputedStyle(k2);
         c.kareGovdeli = !/radial-gradient/.test(kapaliStil.backgroundImage)
                      && kapaliStil.boxShadow !== 'none';
-        if(!!AYAR.halka !== eskiH){ kap.querySelector('.dg-tus.halka').click(); await bek(150); }
+        if(AYAR.merkez !== eskiM && mrkTus(eskiM)){ mrkTus(eskiM).click(); await bek(150); }
         deriGaleriKapa(); await bek(200);
         c.kapandi = !deriGaleriAcik() && !document.body.classList.contains('galeri-acik');
         AYAR.deri = eskiDeri; deriUygula(); ayarKaydet();
@@ -11007,6 +11043,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     });
     const oz = Object.keys(g).filter(k => g[k] !== true).map(k => k + '=' + g[k]).join(' ');
     K('Firca var; siralama tutamak > hold > saat > firca', g.tusVar && g.sira, oz || 'yigin dogru');
+    K('Ok iki yone de calisiyor: ▾ listeyi acar, ▴ serite doner',
+      g.okIzgaradaVar === true && g.okYonDondu === true
+      && g.okSeriteDondu === true && g.okYonGeri === true,
+      oz || 'ayni tus, iki yon');
     K('Galeri serit olarak aciliyor, ▾ listeyi aciyor',
      g.seritAcildi === true && g.listeOku === true && g.izgaraAcildi === true,
      oz || 'once serit, ok ile izgara');
