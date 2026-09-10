@@ -1,0 +1,618 @@
+<title>Çıkışa Kalanlar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ground:#05080b;
+  --surface:#0b1216;
+  --line:rgba(143,240,221,.13);
+  --line-soft:rgba(143,240,221,.07);
+  --ink:#e6f2f2;
+  --ink2:#a3b8bc;
+  --muted:#6b858b;
+  --teal:#35e0d8;
+  --rose:#e27a9e;
+  --coral:#e0836f;
+  --amber:#ffc247;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --tech:'Share Tech Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.sar{max-width:960px;margin:0 auto;padding:0 22px 96px;}
+
+/* ── BASLIK ─────────────────────────────────────────── */
+header{padding:60px 0 36px;border-bottom:1px solid var(--line);}
+.goz{font-family:var(--tech);font-size:11px;letter-spacing:.34em;
+  color:var(--teal);opacity:.72;margin:0 0 18px;}
+h1{font-family:var(--sans);font-weight:600;font-size:clamp(34px,6vw,50px);
+  line-height:1.04;letter-spacing:-.022em;margin:0 0 16px;text-wrap:balance;}
+.ozet{margin:0;max-width:62ch;color:var(--ink2);font-size:16.5px;line-height:1.65;}
+.sayac{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;
+  font-family:var(--tech);font-size:11px;letter-spacing:.16em;}
+.sayac span{display:inline-flex;align-items:baseline;gap:8px;
+  padding:7px 13px;border:1px solid var(--line);border-radius:3px;
+  background:var(--surface);color:var(--muted);}
+.sayac b{font-size:15px;font-weight:400;letter-spacing:.04em;}
+.s-teal b{color:var(--teal);} .s-rose b{color:var(--rose);} .s-amber b{color:var(--amber);}
+
+/* ── SIRADAKI ADIM BANDI ───────────────────────────── */
+.simdi-bant{
+  margin-top:30px;border:1px solid rgba(226,122,158,.4);border-radius:4px;
+  background:linear-gradient(180deg,rgba(226,122,158,.08),rgba(226,122,158,.02));
+  padding:20px 22px 18px;
+}
+.simdi-et{font-family:var(--tech);font-size:10.5px;letter-spacing:.28em;
+  color:var(--rose);margin:0 0 10px;}
+.simdi-bant p:last-child{margin:0;color:var(--ink2);max-width:66ch;font-size:14.5px;}
+
+/* ── BOLUM ──────────────────────────────────────────── */
+section{margin-top:64px;}
+.b-bas{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:4px;}
+.b-bas h2{font-family:var(--tech);font-size:13px;letter-spacing:.28em;
+  font-weight:400;margin:0;text-transform:uppercase;color:var(--teal);}
+.b-bas .aciklama{font-size:13.5px;color:var(--muted);margin:0;}
+.k-yol .b-bas h2{color:var(--rose);}
+.k-pro .b-bas h2{color:var(--amber);}
+
+/* ── ZINCIR ─────────────────────────────────────────── */
+.zincir{
+  margin:22px 0 8px;padding:20px 22px;background:var(--surface);
+  border:1px solid var(--line);border-radius:4px;
+  font-family:var(--mono);font-size:12.5px;line-height:2;
+  color:var(--ink2);overflow-x:auto;white-space:pre;
+}
+.zincir b{color:var(--rose);font-weight:500;}
+.zincir i{color:var(--teal);font-style:normal;}
+.zincir u{color:var(--muted);text-decoration:none;}
+.zincir-not{font-size:13.5px;color:var(--muted);margin:12px 0 0;max-width:66ch;}
+
+/* ── ADIM SATIRLARI ─────────────────────────────────── */
+.adim{display:grid;grid-template-columns:34px 1fr auto;gap:0 18px;
+  padding:20px 0 18px;border-bottom:1px solid var(--line-soft);align-items:start;}
+.adim:last-child{border-bottom:0;}
+.sira{font-family:var(--tech);font-size:12px;color:var(--muted);padding-top:3px;}
+.k-yol .sira{color:rgba(226,122,158,.75);}
+.k-pro .sira{color:rgba(255,194,71,.7);}
+.govde h3{font-size:16.5px;font-weight:600;margin:0 0 7px;
+  letter-spacing:-.006em;line-height:1.35;text-wrap:balance;}
+.govde p{margin:0;color:var(--ink2);font-size:14.5px;line-height:1.62;max-width:66ch;}
+.govde p + p{margin-top:8px;}
+.yer{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;}
+.yer code{font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  background:var(--surface);border:1px solid var(--line-soft);
+  padding:3px 8px;border-radius:3px;white-space:nowrap;}
+.rozet{font-family:var(--tech);font-size:10.5px;letter-spacing:.14em;
+  border:1px solid var(--line);border-radius:3px;padding:5px 10px;
+  white-space:nowrap;margin-top:2px;color:var(--muted);text-align:center;}
+.r-sen{color:var(--rose);border-color:rgba(226,122,158,.45);}
+.r-ben{color:var(--teal);border-color:rgba(53,224,216,.35);}
+.r-bekle{color:var(--amber);border-color:rgba(255,194,71,.4);}
+/* 10 Eylul: biten adimlar icin. Satiri silmek yerine damgalamak
+   dogru olan -- "bunu yapmis miydik" sorusu bir daha cikmasin. */
+.r-oldu{color:#5FBF7A;border-color:rgba(95,191,122,.45);}
+.adim.bitti .govde h3{text-decoration:line-through;text-decoration-color:rgba(95,191,122,.5);}
+.adim.bitti{opacity:.72;}
+.simdi{border-left:2px solid var(--rose);padding-left:14px;
+  color:var(--ink2) !important;margin-top:11px !important;font-size:14px;}
+.simdi b{color:var(--rose);font-weight:600;}
+.k-pro .simdi{border-left-color:var(--amber);}
+.k-pro .simdi b{color:var(--amber);}
+
+/* ── KAPANDI PANELI ─────────────────────────────────── */
+.kapandi{margin-top:22px;background:var(--surface);
+  border:1px solid var(--line);border-radius:4px;padding:24px 26px 22px;}
+.kapandi > p{margin:0 0 18px;color:var(--ink2);max-width:66ch;font-size:14.5px;}
+.kapandi > p:last-child{margin-bottom:0;}
+.rakam{display:flex;flex-wrap:wrap;gap:26px;margin:0 0 20px;}
+.rakam div{font-family:var(--tech);font-size:10.5px;letter-spacing:.2em;color:var(--muted);}
+.rakam strong{display:block;font-family:var(--sans);font-size:30px;font-weight:600;
+  letter-spacing:-.02em;color:var(--teal);margin-bottom:3px;line-height:1;}
+.rakam .acikR strong{color:var(--rose);}
+.liste{margin:0;padding:0;list-style:none;display:grid;gap:10px;}
+@media (min-width:680px){ .liste{grid-template-columns:1fr 1fr;gap:10px 26px;} }
+.liste li{font-size:14px;color:var(--ink2);line-height:1.5;
+  padding-left:20px;position:relative;}
+.liste li::before{content:'';position:absolute;left:0;top:8px;width:7px;height:7px;
+  border-radius:50%;background:var(--teal);opacity:.5;}
+.liste li b{color:var(--ink);font-weight:600;}
+.liste.bugun li::before{background:var(--amber);}
+
+/* ── ZATEN IYI ──────────────────────────────────────── */
+.iyi{margin-top:32px;background:var(--surface);border:1px solid var(--line);
+  border-radius:4px;padding:22px 24px 22px;}
+.iyi h3{font-family:var(--tech);font-size:11px;letter-spacing:.26em;color:var(--teal);
+  font-weight:400;margin:0 0 6px;}
+.iyi > p{font-size:13.5px;color:var(--muted);margin:0 0 16px;max-width:66ch;}
+
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
+  font-family:var(--tech);font-size:10.5px;letter-spacing:.2em;color:var(--muted);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+
+@media (max-width:560px){
+  .adim{grid-template-columns:28px 1fr;}
+  .rozet{grid-column:2;justify-self:start;margin-top:12px;}
+  header{padding:44px 0 30px;}
+}
+</style>
+
+<div class="sar">
+
+<header>
+  <p class="goz">ORBITAPE · DURUM · 10 EYLÜL 2026</p>
+  <h1>Çıkışa Kalanlar</h1>
+  <p class="ozet">Üç soru, tek sayfa: mağazaya kadar ne kaldı, zayıf halka kaldı mı, ve
+  profesyonel bir yazılımla aramızdaki fark ne. <b>İkinci ve üçüncü sorunun cevabı artık
+  kapandı</b> — geriye yalnızca mağaza yolu kaldı.</p>
+  <div class="sayac">
+    <span class="s-rose"><b>2</b> MAĞAZA ADIMI KALDI</span>
+    <span class="s-teal"><b>35</b> ARIZA KAPANDI</span>
+    <span class="s-teal"><b>10</b> RAF · <b>81</b> DERİ</span>
+    <span class="s-teal"><b>1078</b> TEST · HEPSİ YEŞİL</span>
+  </div>
+
+  <!-- ── SIRADAKI TEK ADIM ────────────────────────────────────────
+       Sayfa uzun; en ustte tek bir cumle olmali: su an ne yapilacak. -->
+  <div class="simdi-bant">
+    <p class="simdi-et">SIRADAKİ ADIM</p>
+    <p><b>12 testçi topla ve hepsini teste sokturt.</b>
+    Listede <b>9 kişi</b> var ama panoda <b>opt-in sayısı 0</b> görünüyordu: listeye
+    eklenmek yetmiyor, herkesin katılım linkine girip <i>Become a tester</i> demesi ve
+    uygulamayı kurması gerekiyor. 14 günlük sayaç ancak sayı 12'yi geçince başlıyor —
+    yani şu an sayaç hiç işlemiyor. Kod tarafında bekleyen iş yok.</p>
+  </div>
+</header>
+
+<!-- ══ 1. MAĞAZA YOLU ══════════════════════════════════════════ -->
+<section class="k-yol">
+  <div class="b-bas">
+    <h2>1 · Play Store'da kalanlar</h2>
+    <p class="aciklama">Her şey tek yerde, sırasıyla.</p>
+  </div>
+
+  <div class="zincir"><b>kimlik doğrulaması</b>
+      └─> <b>Create app</b> ──> <b>uygulama kaydı</b>
+                              └─> <b>Play App Signing SHA-256</b>
+                                        └─> <i>assetlinks.json</i>
+                                                  └─> <i>adres çubuğu gizlenir</i>
+
+<u>Bubblewrap paketleme ve imza anahtarı bu zincirin DIŞINDA — bugün yapılabilir.</u></div>
+  <p class="zincir-not">Zincirin tamamı tek bir şeye bağlı: kimlik doğrulaması. O bitmeden
+  uygulama kaydı açılmıyor, kayıt olmadan imzalama parmak izi oluşmuyor, parmak izi olmadan
+  adres çubuğu gizlenmiyor. Bu yüzden birinci sırada.</p>
+
+  <div class="adim bitti">
+    <div class="sira">01</div>
+    <div class="govde">
+      <h3>Kimlik doğrulama</h3>
+      <p>Play Console kimlik belgesi ve cihaz doğrulaması istiyor. <b>Android bir telefon
+      gerekiyor</b> ve seninki değil — ödünç bulman lazım. Zincirin başı burası.</p>
+      <p class="simdi"><b>Not:</b> Kimlik belgesini ben görmem, yüklemem, numarasını yazmam.
+      Bu ekranları sen süreceksin; takıldığın yerde ekran görüntüsüyle yönlendiririm.</p>
+    <p class="simdi"><b>Durum:</b> Bitti — hesap açık, uygulama kayıtlı (app.orbitape.twa).</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">02</div>
+    <div class="govde">
+      <h3>Telefon doğrulama</h3>
+      <p>Aynı ekranın parçası, kısa adım.</p>
+    <p class="simdi"><b>Durum:</b> Bitti.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">03</div>
+    <div class="govde">
+      <h3>Bubblewrap ile paketi üret</h3>
+      <p>Mac'te bir kerelik kurulum: <code>brew install openjdk@17</code> ve
+      <code>npm i -g @bubblewrap/cli</code>. Bubblewrap Android SDK'yı kendisi indiriyor.
+      Elle Android kodu yazılmıyor — araç manifest adresini okuyup projeyi üretiyor.</p>
+      <p><b>Zincirin dışında:</b> kimlik doğrulaması beklemeden bugün yapılabilir. Adım adım
+      tarif hazır.</p>
+      <div class="yer"><code>magaza/PAKETLEME.md</code></div>
+      <p class="simdi"><b>Ben eşlik ederim:</b> komutları ve çıktıları birlikte okuruz.</p>
+    <p class="simdi"><b>Durum:</b> Bitti — paket üretildi, 1.0.0.0 kapalı teste yüklendi.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">04</div>
+    <div class="govde">
+      <h3>İmza anahtarı (keystore)</h3>
+      <p>Paketi imzalayan anahtar. <b>Parolayı sen belirle ve sen sakla.</b> Ben parola
+      tutmuyorum, yazmıyorum, dosyaya koymuyorum — bu anahtar kaybolursa uygulamanın
+      güncellenmesi mümkün olmaz, o yüzden yedeğini de sen alacaksın.</p>
+      <div class="yer"><code>magaza/PAKETLEME.md:81</code></div>
+    <p class="simdi"><b>Durum:</b> Bitti — Play App Signing devrede; parolayı sen belirledin ve sende duruyor.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">05</div>
+    <div class="govde">
+      <h3>Mağaza formları</h3>
+      <p>Data Safety, IARC içerik derecelendirme anketi, hedef kitle beyanı. <b>Cevapların
+      hepsi hazır</b> — kopyala-yapıştır.</p>
+      <p>Bugün bir tanesi düzeltildi: form artık mikrofon beyan ETTİRMİYOR. Uygulama mikrofonu
+      hiç istemiyor ve kullanım şartları bunu yazılı söylüyor; beyan edilseydi mağaza listesi
+      kendi şartlarımızla çelişirdi.</p>
+      <div class="yer"><code>magaza/KONSOL_CEVAPLARI.md</code><code>magaza/METINLER.md</code></div>
+    <p class="simdi"><b>Durum:</b> Bitti — formlar dolduruldu, uygulama kapalı testte yayında.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">06</div>
+    <div class="govde">
+      <h3>Metinler ve görseller</h3>
+      <p>Uygulama adı, kısa ve uzun açıklama, kategori, etiketler; sekiz ekran görüntüsü ve
+      öne çıkan görsel. Hepsi hazır ve dosya adları bugün diskle eşitlendi.</p>
+      <div class="yer"><code>magaza/METINLER.md</code><code>magaza/galeri/</code></div>
+    <p class="simdi"><b>Durum:</b> Bitti — metinler ve sekiz görsel yüklendi.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">07</div>
+    <div class="govde">
+      <h3>Parmak izini bana ver</h3>
+      <p>Uygulama kaydı açılınca Play App Signing SHA-256 oluşuyor:
+      <b>Setup → App integrity → App signing key certificate</b>. O satırı bana yolla.</p>
+      <p class="simdi"><b>Bende:</b> <code>assetlinks.json</code>'daki yer tutucuyu değiştirmek
+      2 dakika. Sonra canlıda doğrularım — adres çubuğu gerçekten gizleniyor mu.</p>
+      <div class="yer"><code>.well-known/assetlinks.json:8</code></div>
+    <p class="simdi"><b>Durum:</b> Bitti (9 Eylül) — Classical key SHA-256 depodakiyle birebir tuttu. Play'de anahtar değişmiş göründüğü için eski anahtarın parmak izi de listeye eklendi; anahtar rotasyonundan önce kurmuş bir cihazda adres çubuğu çıkmasın diye.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim">
+    <div class="sira">08</div>
+    <div class="govde">
+      <h3>Kapalı test — 12 kişi, 14 gün kesintisiz</h3>
+      <p>Google'ın şartı: <b>en az 12 test kullanıcısı</b> ve <b>14 gün boyunca kesintisiz</b>
+      katılım. Sayı 12'nin altına düşerse sayaç sıfırlanıyor, o yüzden listeyi baştan bol
+      tutmak akıllıca.</p>
+      <p class="simdi"><b>Bu bir formalite değil, ölçüm.</b> Çökme oranını otomatik ölçmeme
+      kararı verildi (gizlilik sözünü korumak için), yani <b>12 kişi tek ölçü aletimiz.</b>
+      Kimi seçeceğin, 1./7./14. günlerde tam olarak ne soracağın ve onlara göndereceğin mesaj
+      yazıldı: <code>magaza/KAPALI_TEST.md</code>.</p>
+      <p class="simdi"><b>10 Eylül durumu:</b> e-posta listesinde <b>9 kişi</b> var, panoda
+      <b>opt-in sayısı 0</b> görünüyordu. Listeye eklenmek <b>katılmak değil</b> — herkesin
+      <code>play.google.com/apps/testing/app.orbitape.twa</code> adresine girip
+      <i>Become a tester</i> demesi ve uygulamayı kurması gerekiyor. Play'de açık olan Gmail
+      hesabı listedeki adresle aynı olmazsa sayfa "test bulunamadı" diyor.
+      Link dokuz kişiye gönderildi, ilk kurulum geldi.</p>
+      <p class="simdi"><b>Sayaç ne zaman başlar:</b> sayı 12'yi geçtiği gün. Altına düşerse
+      sıfırlanıyor, o yüzden hedef 15. 12'nin altındayken geçen günler sayılmıyor — ama
+      şimdiden katılmaları boşa değil: opt-in kalıcı, 12. kişi bulunduğu gün sayaç aynı gün
+      başlıyor ve çökme kayıtları şimdiden düşmeye başlıyor.</p>
+    </div>
+    <div class="rozet r-sen">3 KİŞİ EKSİK</div>
+  </div>
+
+  <div class="adim">
+    <div class="sira">09</div>
+    <div class="govde">
+      <h3>Yayın</h3>
+      <p>Kapalı test dolunca üretim kanalına çıkış. İncelemede takılırsa çoğu zaman sebep Data
+      Safety ile gizlilik metni arasındaki bir çelişki olur — bugün ikisini de kod karşısında
+      tuttuk ve testler bir daha ayrışmalarına izin vermiyor.</p>
+    </div>
+    <div class="rozet r-sen">SENDE</div>
+  </div>
+</section>
+
+<!-- ══ 2. ZAYIF HALKALAR ═══════════════════════════════════════ -->
+<section>
+  <div class="b-bas">
+    <h2>2 · Zayıf halka kaldı mı</h2>
+    <p class="aciklama">Kısa cevap: hayır — ama on gün içinde on bir tane daha çıktı ve
+    hepsi kapandı. Liste kapanmıyor, <b>büyüyor</b>; sağlıklı olan da bu.</p>
+  </div>
+
+  <div class="kapandi">
+    <div class="rakam">
+      <div><strong>35</strong>KAPANDI</div>
+      <div class="acikR"><strong>0</strong>AÇIK ARIZA</div>
+      <div><strong>+525</strong>YENİ KONTROL</div>
+      <div><strong>1078</strong>TOPLAM KONTROL</div>
+    </div>
+    <p>Denetimde yirmi bir arıza bulundu, sonrasında dört tane daha çıktı; yirmi dördü
+    kapandı. <b>1–10 Eylül arasında on bir tane daha çıktı ve hepsi kapandı.</b> Açık arıza
+    yok. Parmak izi maddesi de 9 Eylül'de kapandı.</p>
+    <p>Bu on bir maddenin ortak yanı önemli: <b>hiçbirini test bulmadı, kullanım buldu.</b>
+    Testler sonradan yazıldı — hata bulmak için değil, aynı hatanın bir daha girmemesi için.
+    Kontrol sayısı 553'ten 1078'e bu yüzden çıktı.</p>
+    <p>En ağırı canlıda duruyordu: <b>gizlilik ve kullanım şartları sayfaları hiç stil almadan
+    açılıyordu</b> — beyaz zemin, siyah Times. CSP bütün yollara gidiyordu ama yalnızca
+    uygulamanın stil özetini taşıyordu. Ve privacy.html, Play Console'a verilen adres.</p>
+
+    <p style="margin-bottom:12px"><b>1–10 Eylül'de bulunup kapananlar:</b></p>
+    <ul class="liste bugun">
+      <li><b>Müzik bazen duruyordu — üç ayrı sessiz yol.</b> (1) Akış tamir sayacı yalnızca
+      kaynak değişince sıfırlanıyordu; gün boyu dinlenen bir istasyon üç kez takılıp üç kez
+      düzelse dördüncüde bekçi hiçbir şey yapmıyordu. (2) iOS'ta arama ya da uyku sonrası ses
+      bağlamı askıya alınıyor, eleman "çalıyor" görünüyor ama ses yok — kayıt sırasında nöbetçi
+      vardı, normal dinlemede yoktu. (3) <b>Ekran kapalıyken bekçi hiç çalışmıyordu</b>; radyo
+      en çok dinlendiği durumda bekçisizdi. Arka planda artık tik değil <b>duvar saati</b>
+      ölçülüyor.</li>
+      <li><b>Ses duyulmaz bir yerde bırakılabiliyordu.</b> "Müzik durdu" şikâyetinin gerçek
+      sebebi buydu: seviye %2'nin altına inince ses yok ama arayüzde hiçbir işaret yok. Artık
+      dip değerin altı sıfıra yuvarlanıyor ve kısık hâl simgede görünüyor.</li>
+      <li><b>Telefon dönünce titriyordu.</b> İki ayrı yerde yerleşim hesaplanıyordu: dönüşün
+      bittiğini anlamak için tek eşit ölçü yetiyordu (iOS'ta animasyon ortasında ölçü sabit
+      kalabiliyor) ve 120 ms'lik sessizlik kapısı dönüş sürerken erken açılıyordu. Artık üst
+      üste üç eşit ölçü aranıyor ve yerleştirmenin tek sahibi var.</li>
+      <li><b>Çizimli derilerde sol sütun simgeleri kayboluyordu.</b> Renk zeminin tersine
+      kaydırılıyordu ama karşılaştırılan şey derinin <i>düz</i> zemin rengiydi; oysa ekranda
+      fırçanın arkasında kırmızı bir blok var. 82 deri ölçüldü: kontrast 2'nin altında 11
+      ölçüm, en düşüğü 1.02. Artık her simge çizimin tuvalinden kendi dikdörtgeninin rengini
+      soruyor — 2'nin altı 3'e, 3'ün altı 26'dan 5'e indi.</li>
+      <li><b>Skins şeridinde parmak yanlış tuşa basıyordu.</b> Ok satırı ile WHEEL/RING/DISC
+      satırı arasında beş piksel vardı ve ◀ tam WHEEL'in üstüne denk geliyordu. Aralık 17
+      piksele çıktı; kısa ekranda tuş boyu küçültülerek 9 piksel yapıldı.</li>
+      <li><b>Uygulama kapanıp açılınca başka deriyle geliyordu.</b> Sürüm damgası her açılışta
+      geri yazılıyordu ve deri numarası kayıyordu.</li>
+      <li><b>Üstteki raf adı çalan istasyonla ayrışıyordu.</b> "Yukarıda DISCO FUNK yazıyor,
+      radyolar başka yerde kalmış." Artık çalan istasyonun kendi türünden raf adı yazılıyor;
+      RADIOTAPE bir tür sayılmıyor.</li>
+      <li><b>FX'lerde gezinirken cızırtı vardı.</b> Aşağı yönde rezonans tepe değeri 0.90'a
+      çıkıyordu; telafi eklendi, ölçülen tepe 0.82.</li>
+      <li><b>Fotoğrafta yarım tuş satırı çıkıyordu.</b> Ekranda beş tuş var, kareye yalnızca
+      ikisi giriyordu. Satırın tamamı çıkarıldı; künye, ★, bayrak ve lisans kaldı.</li>
+      <li><b>Uygulama simgesi ana ekranda çok küçüktü.</b> Dolgu oranı %6'ydı; kırpma ve
+      yeniden ölçekle %22'ye (maskeli %15) çıktı.</li>
+      <li><b>Canlı nöbetçinin kör noktası.</b> Duman testi push'tan sonra yalnızca index.html'i
+      bekliyordu; HTML dışında bir dosya değiştiğinde hiç beklemeden eski kopyaya soruyor ve
+      <b>yanlış alarm</b> veriyordu. Artık assetlinks.json'u da bekliyor.</li>
+    </ul>
+    <p style="margin-bottom:12px"><b>31 Ağustos denetiminde bulunanlar:</b></p>
+    <ul class="liste bugun">
+      <li><b>Taşıma satırı geriliyordu.</b> Tuşların arası 101px, hemen altındaki satırın arası
+      7px — aynı konsolda 14 kat fark. REC radyoya gelince alt satır genişleyince patladı.</li>
+      <li><b>Dokunma alanı 36px eşiğinin altına düşmüştü</b> (33px). Şişmiş boşluklar onu
+      gizliyormuş; gerilme kalkınca ortaya çıktı. Sebebi konsol sol üstteyken doğru olan,
+      taşınınca gereksizleşen eski bir kuraldı.</li>
+      <li><b>Üstteki iki yazı aynı satırda değildi.</b> Raf adının taban çizgisi ORBITAPE'in
+      7px yukarısındaydı: kutu ortaları eşitleniyordu ama puntolar farklı olduğu için harfler
+      farklı yükseklikte asılı kalıyordu. Artık gerçek taban çizgisi ölçülüyor — tam 0px.</li>
+      <li><b>Frekans çubukları ilk harften 4.2px soldaydı</b> (<code>text-indent</code>).
+      Ortalanmış yazıda doğru olan bir kural, sola dayalı blokta yanlıştı. Tam 0px.</li>
+    </ul>
+  </div>
+
+  <div class="iyi">
+    <h3>ASIL DERS — TESTLER NEDEN GÖRMEDİ</h3>
+    <p>O gün 550 kontrolün tamamı yalnızca uygulamayı açıyordu. Gizlilik, şartlar ve 404 sayfaları
+    hiçbir testte hiç yüklenmiyordu — canlıdaki o çıplak sayfanın aylarca orada durabilmesinin
+    sebebi bu. Sorun test sayısı değil, <b>kapsamın nerede bittiğini kimsenin yazmamış
+    olmasıydı.</b> Artık üç sayfa da gerçekten açılıyor ve her birine tek soru soruluyor:
+    kendi kılığınla mı açıldın.</p>
+  </div>
+</section>
+
+<!-- ══ 3. PROFESYONELLİK FARKI ═════════════════════════════════ -->
+<section class="k-pro">
+  <div class="b-bas">
+    <h2>3 · Profesyonellikle aramızdaki fark</h2>
+    <p class="aciklama">Yedi maddeydi, yedisi de kapandı. On gün sonra bakınca liste
+    büyüdü: aşağıya dört madde daha eklendi ve onlar da kapandı.</p>
+  </div>
+
+  <div class="kapandi">
+    <div class="rakam">
+      <div><strong>11/11</strong>KAPANDI</div>
+      <div><strong>1078</strong>KONTROL</div>
+      <div><strong>7</strong>CI KOŞUSU</div>
+      <div><strong>3</strong>MOTOR</div>
+    </div>
+    <p>Bunlar arıza değildi — arıza olmadan da bir yazılımı amatör bırakan şeylerdi.
+    Hepsi kapandı ve her birinin <i>neden</i> öyle çözüldüğü kodun içinde yazılı.</p>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">01</div>
+    <div class="govde">
+      <h3>Senaryo testi artık CI'da</h3>
+      <p>99 kontrol, on kullanıcı yolculuğu, 320px'e kadar çakışma denetimi — aylarca otomatik
+      ağın dışındaydı. Bugün tek günde <b>üç kez</b> gerçek hata yakaladı ve üçünü de yalnızca
+      elle çevirdiğim için gördük.</p>
+      <p class="simdi"><b>Durum:</b> Dosya kondu, iş CI'da koşuyor. On günde senaryo takımı
+      111 kontrole çıktı ve bu sürede iki kez gerçek hata yakaladı — biri DOM ölçümünün kendi
+      penceresiydi, ötekini düzeltmek testin kendisini düzeltmek oldu.</p>
+      <div class="yer"><code>.github/workflows/saglik.yml</code></div>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">02</div>
+    <div class="govde">
+      <h3>Saha geri bildirimi geldi</h3>
+      <p>Hata panelinde <b>SEND TO DEVELOPER</b>, ayarlarda <b>REPORT A PROBLEM</b> — ikincisi
+      önemli, çünkü kullanıcıların yaşadığı şeylerin çoğu betik hatası değil ("çalmıyor",
+      "kayıt boş çıktı") ve onlar için ekranda hiçbir kapı yoktu.</p>
+      <p><b>Otomatik gönderim yok ve olmamalı:</b> arka uç yok, gizlilik metni ve Data Safety
+      formu "hiçbir şey toplanmıyor" diyor. Bir uç noktaya gönderim ikisini de bozar,
+      üstelik üçüncü bir şirketi denkleme sokardı. <code>mailto</code> bu kısıtlar altında
+      doğru cevap: metin kullanıcının <i>kendi</i> posta uygulamasında açılıyor, okuyor,
+      ekliyor, siliyor ve gönder'e kendisi basıyor. Beş adım bire indi.</p>
+      <p>Rapor artık işe yarar bağlam taşıyor:
+      <code>world=radio shelf=RADIOTAPE audio=idle online=yes rec=off</code>. Kimlik, konum
+      ve dinleme geçmişi yok — bir test bunun bekçisi.</p>
+    </div>
+    <div class="rozet r-ben">BİTTİ</div>
+  </div>
+
+  <div class="adim">
+    <div class="sira">03</div>
+    <div class="govde">
+      <h3>Hızlı test kipi: 166 → 105 saniye</h3>
+      <p><code>node test/saglik.js hizli</code>. Atlanan tek şey <b>zaman bekleyen</b>
+      bloklar: tanıtım turu (11 kontrol, tek başına 42 saniye), FX geçiş ölçümü, FX sunumu
+      (14 kontrol). Hiçbiri "kod doğru mu" ölçmüyor — hepsi "kaç saniyede oluyor".</p>
+      <p>Atlananlar çıktının <b>başında adıyla</b> yazılıyor, yani neyin ölçülmediği
+      gizlenmiyor. CI her zaman tam turu çeviriyor ve push öncesi son tur da tam olmalı.</p>
+      <p class="simdi"><b>Dürüst not:</b> hedefim daha fazlaydı. Kalan sürenin büyük kısmı tek
+      tek bloklara değil, sayfa açılışlarına ve bekleme aralıklarına dağılmış durumda; oradan
+      koparmak her bloğu tek tek elden geçirmeyi gerektiriyor. Ölçüm elimde, sıradaki turda
+      devam edilebilir.</p>
+    </div>
+    <div class="rozet r-ben">BİTTİ</div>
+  </div>
+
+  <div class="adim">
+    <div class="sira">04</div>
+    <div class="govde">
+      <h3>Sürüm artık kendi kendine damgalanıyor</h3>
+      <p><code>csp.py</code> sürümü de yazıyor. Yeri tesadüf değil: o araç zaten <b>her push
+      öncesi çalışmak zorunda</b> — çalıştırılmazsa CSP özeti bayatlar ve uygulama hiç açılmaz.
+      Yani projedeki unutulması mümkün olmayan tek adım orası.</p>
+      <p>Sıra da önemli: önce sürüm damgalanıyor, sonra özet hesaplanıyor. Tersi olsa damga
+      dosyayı değiştirir ve az önce hesaplanan özet aynı anda bayatlardı.</p>
+    </div>
+    <div class="rozet r-ben">BİTTİ</div>
+  </div>
+
+  <div class="adim">
+    <div class="sira">05</div>
+    <div class="govde">
+      <h3>Geri alma planı yazıldı</h3>
+      <p><code>magaza/GERI_ALMA.md</code>. İki taraf ayrı ayrı: <b>web</b>
+      (<code>git revert</code> + csp.py + push, dakikalar içinde kullanıcıya ulaşır) ve
+      <b>mağaza</b> (eski sürüme dönmek mümkün değil — <i>Halt rollout</i> ve yeni bir
+      versionCode, saatler).</p>
+      <p>Ayrıca hangi sorunun hangisiyle çözüldüğü tablo halinde, ve en başta bir soru:
+      "gerçekten geri alman gerekiyor mu?" Uygulama hiç açılmıyorsa sebep neredeyse her zaman
+      bayat CSP özetidir ve geri alma gerektirmez.</p>
+    </div>
+    <div class="rozet r-ben">BİTTİ</div>
+  </div>
+
+  <div class="adim">
+    <div class="sira">06</div>
+    <div class="govde">
+      <h3>Üçüncü motor: Gecko</h3>
+      <p>Artık üç motor da sınanıyor: Chromium (sağlık, senaryo, arıza), WebKit ve Firefox.</p>
+      <p class="simdi"><b>Dürüst not:</b> Firefox bu ortamda hiç çalıştırılamadı — Playwright'ın
+      indirme sunucusu buradan kapalı, tıpkı WebKit gibi. İlk gerçek koşu CI'da olacak ve iş
+      <code>continue-on-error</code> ile başlıyor. Bu <b>geçici</b> ve sebebi yazılı: WebKit'te
+      ilk koşu bize düşen iki kontrolün uygulama hatası değil, Playwright'ın Linux derlemesinin
+      sınırı olduğunu öğretmişti. İlk yeşilden sonra o satır silinecek — kırmızısına bakılmayan
+      test, testten sayılmaz.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim">
+    <div class="sira">07</div>
+    <div class="govde">
+      <h3>LICENSE yazıldı — kod açık, marka değil</h3>
+      <p>Kaynak kod MIT: kimse kullanabilir, öğrenebilir, çatallayabilir. <b>ORBITAPE adı,
+      ikonu ve mağaza kimliği senin</b> — kimse senin adınla yayınlayamaz. Adını değiştiren
+      her şeyi alabilir.</p>
+      <p>Lisansın kapsamadığı iki şey de ayrıca yazıldı: arşiv kayıtlarının kendi Creative
+      Commons lisansları, ve canlı yayının "dinlenmek için lisanslı, saklanmak için değil"
+      kuralı. İkincisi önemli — biri bunu çatallayıp o kuralı kaldırırsa sonuçları kendisine
+      ait.</p>
+      <div class="yer"><code>LICENSE</code></div>
+    </div>
+    <div class="rozet r-ben">BİTTİ</div>
+  </div>
+
+  <div class="iyi">
+    <h3>ZATEN ÇİZGİNİN ÜSTÜNDE</h3>
+    <p>Liste tek yönlü olsa haksızlık olurdu. Bunların her biri ölçüldü ve çoğu ticari
+    yazılımdan iyi.</p>
+    <ul class="liste">
+      <li><b>Sıfır üçüncü taraf kodu.</b> Uygulamada tek bir dış kütüphane yok; tek geliştirme
+      bağımlılığı Playwright. Tedarik zinciri saldırı yüzeyi neredeyse hiç.</li>
+      <li><b>Özet tabanlı CSP.</b> Çoğu sitede <code>unsafe-inline</code> vardır; burada script
+      yalnızca kendi bloğuyla çalışıyor.</li>
+      <li><b>1073 satır belge</b> ve kodun içinde neyin <i>neden</i> öyle olduğunu anlatan
+      yorumlar — bir şeyi ikinci kez tartışmak gerekmiyor.</li>
+      <li><b>Veri kendi kendine bakılıyor.</b> İstasyon listesi ayda bir hasat ediliyor,
+      bağlantılar ayda bir denetleniyor, canlı çalma haftada bir sınanıyor.</li>
+      <li><b>Arıza senaryoları var.</b> Çoğu proje mutlu yolu test eder; burada 14 kontrol
+      "her şey bozulduğunda kullanıcı ne görüyor" diye soruyor.</li>
+      <li><b>Erişilebilirlik ciddiye alınmış.</b> Her kontrol klavyeyle erişilebilir, her
+      birinin adı var, hareket tercihine uyuluyor, yakınlaştırma açık.</li>
+    </ul>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">08</div>
+    <div class="govde">
+      <h3>Ölçüm uç noktası: körlük bitti</h3>
+      <p>Uygulama hataları sessizce yutuyor ki müzik durmasın; bedeli körlüktü. Artık
+      <code>/olcu</code> var: sürüm, kaba platform, hata imzası ve sayı. <b>Kalıcı kimlik yok</b> —
+      iki gönderimi birbirine bağlayacak hiçbir alan taşınmıyor. Varsayılan <b>kapalı</b>;
+      kullanıcı açmadan tek bayt gitmiyor. Kullanıcının kendi cümlesini yazabildiği ikinci bir
+      satır türü de var, çünkü sahadaki kusurların çoğu hiç hata fırlatmıyor.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">09</div>
+    <div class="govde">
+      <h3>Canlı nöbetçi kimseye ulaşmıyordu</h3>
+      <p>Duman testi 15 dakikada bir koşuyordu ama tek dayanağı GitHub'ın varsayılan e-postasıydı
+      ve gece 02:00'de kimse bakmıyordu. Artık kırmızı yanınca <b>issue açılıyor</b>: telefona
+      bildirim gider, kapanana kadar açık durur, yayın düzelince kendiliğinden kapanır. Bir de
+      60 gün kuralı: GitHub hareketsiz depolarda zamanlanmış işleri sessizce kapatıyor —
+      her push kapanmış nöbetçiyi geri açıyor ve bunu issue ile söylüyor.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">10</div>
+    <div class="govde">
+      <h3>Hata paneli artık ne olduğunu söylüyor</h3>
+      <p>"SOMETHING BROKE" yazan bir panel, kullanıcı için de geliştirici için de bilgi
+      taşımıyordu. Panel artık hatanın ilk satırını ekranda gösteriyor (200 karaktere kırpık,
+      seçilebilir) ve <b>gerçek hata</b> kaydını seçiyor — bir kez yutulmuş bir söz reddi
+      panelde "sinama-red" diye görünmüştü.</p>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+
+  <div class="adim bitti">
+    <div class="sira">11</div>
+    <div class="govde">
+      <h3>Telefonda üç dakikalık kontrol listesi</h3>
+      <p>Bu projede bulunan hataların neredeyse tamamını kullanım ortaya çıkardı, test değil —
+      çünkü test takımı sahte ağla, başsız bir tarayıcıda, ekranı hiç kapanmayan bir cihazda
+      koşuyor. Liste o boşluğu kapatmıyor, daraltıyor: on iki adımın hepsi gerçekten yaşanmış
+      bir hatanın üstünden geçiyor. Yeni hata çıkınca bir satır daha ekleniyor, hiçbir satır
+      silinmiyor.</p>
+      <div class="yer"><code>KONTROL.md</code></div>
+    </div>
+    <div class="rozet r-oldu">BİTTİ</div>
+  </div>
+</section>
+
+<footer>
+  <span>ORBITAPE · ÇIKIŞA KALANLAR</span>
+  <span>2 MAĞAZA ADIMI KALDI &nbsp;·&nbsp; 1078 TEST YEŞİL &nbsp;·&nbsp; 10 EYLÜL 2026</span>
+</footer>
+
+</div>

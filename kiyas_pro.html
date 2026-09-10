@@ -1,0 +1,442 @@
+<title>Spotify ve Biz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ground:#05080b;
+  --surface:#0b1216;
+  --surface2:#0e161b;
+  --line:rgba(143,240,221,.13);
+  --line-soft:rgba(143,240,221,.07);
+  --ink:#e6f2f2;
+  --ink2:#a3b8bc;
+  --muted:#6b858b;
+  --teal:#35e0d8;
+  --rose:#e27a9e;
+  --coral:#e0836f;
+  --amber:#ffc247;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --tech:'Share Tech Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+.sar{max-width:920px;margin:0 auto;padding:0 22px 96px;}
+
+header{padding:60px 0 34px;border-bottom:1px solid var(--line);}
+.goz{font-family:var(--tech);font-size:11px;letter-spacing:.34em;color:var(--teal);
+  opacity:.72;margin:0 0 18px;}
+h1{font-weight:600;font-size:clamp(34px,6vw,50px);line-height:1.04;
+  letter-spacing:-.022em;margin:0 0 16px;text-wrap:balance;}
+.ozet{margin:0;max-width:62ch;color:var(--ink2);font-size:16.5px;line-height:1.65;}
+
+/* ── ASIL BULGU ─────────────────────────────────── */
+.bulgu{margin:34px 0 0;border:1px solid rgba(255,194,71,.35);border-radius:4px;
+  background:linear-gradient(180deg,rgba(255,194,71,.07),rgba(255,194,71,.02));
+  padding:24px 24px 20px;}
+.bulgu-et{font-family:var(--tech);font-size:10.5px;letter-spacing:.28em;
+  color:var(--amber);margin:0 0 12px;}
+.bulgu h2{font-size:21px;font-weight:600;margin:0 0 12px;line-height:1.3;
+  letter-spacing:-.012em;text-wrap:balance;}
+.bulgu p{margin:0 0 11px;color:var(--ink2);max-width:64ch;}
+.bulgu p:last-child{margin-bottom:0;}
+
+/* ── HERO SAYI ──────────────────────────────────── */
+.hero{margin-top:34px;background:var(--surface);border:1px solid var(--line);
+  border-radius:4px;padding:30px 26px 26px;}
+.hero-et{font-family:var(--tech);font-size:10.5px;letter-spacing:.26em;
+  color:var(--muted);margin:0 0 20px;}
+.hero-cift{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:end;}
+@media (max-width:560px){.hero-cift{grid-template-columns:1fr;}}
+.hero-yan .ad{font-family:var(--tech);font-size:11px;letter-spacing:.2em;
+  color:var(--muted);margin:0 0 8px;}
+.hero-yan .sayi{font-size:clamp(38px,7vw,56px);font-weight:600;line-height:1;
+  letter-spacing:-.03em;margin:0;font-variant-numeric:tabular-nums;}
+.hero-yan.biz .sayi{color:var(--teal);}
+.hero-yan.onlar .sayi{color:var(--ink2);}
+.hero-yan .birim{font-size:17px;font-weight:400;color:var(--muted);margin-left:5px;}
+/* Olcek cubugu: tek renk, koyu-acik -- buyukluk isi, kimlik degil. */
+.olcek{margin-top:14px;height:8px;background:rgba(143,240,221,.07);
+  border-radius:4px;overflow:hidden;}
+.olcek i{display:block;height:100%;border-radius:4px;background:var(--teal);}
+.hero-yan.onlar .olcek i{background:rgba(163,184,188,.55);}
+.hero-not{margin:22px 0 0;padding-top:18px;border-top:1px solid var(--line-soft);
+  color:var(--ink2);font-size:14.5px;max-width:66ch;}
+
+/* ── BOLUM ──────────────────────────────────────── */
+section{margin-top:60px;}
+.b-bas{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:2px;}
+.b-bas h2{font-family:var(--tech);font-size:13px;letter-spacing:.28em;
+  font-weight:400;margin:0;text-transform:uppercase;}
+.b-bas .aciklama{font-size:13.5px;color:var(--muted);margin:0;}
+.k-onde .b-bas h2{color:var(--teal);}
+.k-geride .b-bas h2{color:var(--coral);}
+.k-yok .b-bas h2{color:var(--muted);}
+
+/* ── KIYAS SATIRI ───────────────────────────────── */
+.kiyas{display:grid;grid-template-columns:1fr 1fr;gap:4px 26px;
+  padding:20px 0 18px;border-bottom:1px solid var(--line-soft);}
+.kiyas:last-of-type{border-bottom:0;}
+.kiyas .baslik{grid-column:1 / -1;display:flex;align-items:baseline;
+  gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.kiyas h3{font-size:16.5px;font-weight:600;margin:0;letter-spacing:-.006em;}
+.etiket{font-family:var(--tech);font-size:9.5px;letter-spacing:.18em;
+  border-radius:3px;padding:3px 8px;white-space:nowrap;}
+.e-onde{color:var(--teal);border:1px solid rgba(53,224,216,.4);}
+.e-geride{color:var(--coral);border:1px solid rgba(224,131,111,.45);}
+.e-yok{color:var(--muted);border:1px solid var(--line);}
+.hane{background:var(--surface);border:1px solid var(--line-soft);
+  border-radius:4px;padding:14px 16px;}
+.hane .kim{font-family:var(--tech);font-size:9.5px;letter-spacing:.2em;
+  color:var(--muted);margin:0 0 7px;}
+.hane .deger{font-family:var(--mono);font-size:14px;color:var(--ink);
+  margin:0;line-height:1.5;font-variant-numeric:tabular-nums;}
+.hane.biz{border-color:rgba(53,224,216,.22);}
+.hane.biz .kim{color:var(--teal);}
+.kiyas .neden{grid-column:1 / -1;margin:12px 0 0;color:var(--ink2);
+  font-size:14.5px;line-height:1.6;max-width:70ch;}
+.kiyas .neden b{color:var(--ink);font-weight:600;}
+/* ── NASIL KAPANIR ──────────────────────────────────
+   Teshis tek basina ise yaramiyor: "geride" demek kolay,
+   "su adimla kapanir" demek zor. Her geride satirinin altinda
+   bu var ve dordu birbirinden farkli:
+   bedava kapananlar, karar bekleyen, ertelenmis, hic kapanmayan. */
+.cikis{grid-column:1 / -1;margin:14px 0 0;padding:13px 16px;
+  border-radius:4px;font-size:14px;line-height:1.6;max-width:70ch;}
+.cikis .et{font-family:var(--tech);font-size:9.5px;letter-spacing:.2em;
+  display:block;margin-bottom:6px;}
+.c-bedava{background:rgba(53,224,216,.07);border-left:2px solid var(--teal);color:var(--ink2);}
+.c-bedava .et{color:var(--teal);}
+.c-karar{background:rgba(255,194,71,.07);border-left:2px solid var(--amber);color:var(--ink2);}
+.c-karar .et{color:var(--amber);}
+.c-sonra{background:rgba(226,122,158,.07);border-left:2px solid var(--rose);color:var(--ink2);}
+.c-sonra .et{color:var(--rose);}
+.c-asla{background:rgba(107,133,139,.09);border-left:2px solid var(--muted);color:var(--ink2);}
+.c-asla .et{color:var(--muted);}
+.cikis b{color:var(--ink);font-weight:600;}
+@media (max-width:560px){.kiyas{grid-template-columns:1fr;}}
+
+/* ── RAKIP TABLOSU ──────────────────────────────── */
+.tablo-sar{overflow-x:auto;margin-top:20px;}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px;}
+th,td{text-align:left;padding:11px 14px 11px 0;border-bottom:1px solid var(--line-soft);
+  color:var(--ink2);vertical-align:top;}
+th{font-family:var(--tech);font-size:9.5px;letter-spacing:.2em;color:var(--muted);
+  font-weight:400;text-transform:uppercase;border-bottom-color:var(--line);}
+td:first-child{color:var(--ink);white-space:nowrap;padding-right:22px;}
+tr.biz td{color:var(--teal);}
+tr.biz td:first-child{color:var(--teal);font-weight:600;}
+
+/* ── SONUC ──────────────────────────────────────── */
+.sonuc{margin-top:34px;border-left:2px solid var(--teal);background:var(--surface);
+  padding:24px 26px;border-radius:0 4px 4px 0;}
+.sonuc h3{font-family:var(--tech);font-size:11.5px;letter-spacing:.26em;
+  color:var(--teal);font-weight:400;margin:0 0 12px;}
+.sonuc p{margin:0;color:var(--ink2);max-width:68ch;font-size:14.5px;}
+.sonuc p + p{margin-top:11px;}
+.sonuc b{color:var(--ink);font-weight:600;}
+
+.kaynak{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);}
+.kaynak h3{font-family:var(--tech);font-size:10.5px;letter-spacing:.26em;
+  color:var(--muted);font-weight:400;margin:0 0 12px;}
+.kaynak ol{margin:0;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.75;}
+.kaynak a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--line);}
+.kaynak a:hover{color:var(--teal);border-bottom-color:var(--teal);}
+.kaynak a:focus-visible{outline:1px solid var(--teal);outline-offset:3px;}
+</style>
+
+<div class="sar">
+
+<header>
+  <p class="goz">ORBITAPE · KIYAS · 31 AĞUSTOS 2026 · GÜNCELLEME 10 EYLÜL</p>
+  <h1>Spotify ve Biz</h1>
+  <p class="ozet">"Emin misin?" diye sordun. Emin olmak için ölçmek gerekiyordu. Aşağıdaki
+  her sayı ya bu makinede ölçüldü ya da kaynağı dipnotta. Bazılarında öndeyiz — ve fark
+  küçük değil. Bazılarında geriyiz, birinde ölçemiyoruz bile.</p>
+</header>
+
+<div class="bulgu">
+  <p class="bulgu-et">ASIL BULGU</p>
+  <h2>Spotify da her hafta bir şeyler kırıyor. Fark, kimin gördüğünde.</h2>
+  <p>Spotify haftada bir sürüm çıkarıyor ve kendi mühendislik yazılarına göre
+  <b>bu sürümlerin %95'inden fazlası sorunsuz gidiyor.</b> Yani yaklaşık <b>yirmi sürümden
+  biri</b> takılıyor — binlerce mühendis, beş katmanlı test halkası ve devasa bir otomasyonla.</p>
+  <p>Sürümü önce çalışanlar alıyor, sonra alfa test kullanıcıları, sonra beta, sonra
+  <b>kullanıcıların %1'i</b>, ve ancak ölçüler temizse %100. Yani hata bulmuyor değiller —
+  hatayı <b>%1'de</b> buluyorlar, %100'de değil.</p>
+  <p>Senin "her gün başka bir şey çıkıyor" dediğin şey anormal değil. Anormal olan bizim
+  hatayı <b>senin telefonunda</b> bulmamız — çünkü aramızda o %1 katmanı yok. Aşağıdaki
+  "geride" listesinin başı da tam bu.</p>
+</div>
+
+<div class="hero">
+  <p class="hero-et">TELDEN GEÇEN BOY — KULLANICININ İNDİRDİĞİ ŞEY</p>
+  <div class="hero-cift">
+    <div class="hero-yan biz">
+      <p class="ad">ORBITAPE · ölçüldü</p>
+      <p class="sayi">232<span class="birim">KB</span></p>
+      <div class="olcek"><i style="width:0.16%"></i></div>
+    </div>
+    <div class="hero-yan onlar">
+      <p class="ad">SPOTIFY ANDROID · APK</p>
+      <p class="sayi">141,5<span class="birim">MB</span></p>
+      <div class="olcek"><i style="width:100%"></i></div>
+    </div>
+  </div>
+  <p class="hero-not">Yaklaşık <b>625 kat</b>. Bu farkın önemini uyduran biz değiliz —
+  Spotify'ın kendi mühendislik yazısı söylüyor: <b>her 6 MB'lık büyüme, kurulum
+  dönüşümünü %1 düşürüyor.</b> Aynı yazıda her pull request için 50 KB'lık bir eşik
+  koyduklarını da anlatıyorlar. Bizim <i>tamamımız</i> o eşiğin dört buçuk katı.</p>
+</div>
+
+<!-- ══ ÖNDEYİZ ══════════════════════════════════════════════════ -->
+<section class="k-onde">
+  <div class="b-bas">
+    <h2>Öndeyiz</h2>
+    <p class="aciklama">Kullanıcının hissettiği eksenlerde.</p>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Toplanan veri</h3><span class="etiket e-onde">↑ ÖNDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">Hiçbir şey. Hesap yok, çerez yok, analitik yok. Cihazda kalan
+      yedi küçük değer var ve hepsi gizlilik metninde tek tek sayılı.</p></div>
+    <div class="hane"><p class="kim">SPOTIFY</p>
+      <p class="deger">Konum (posta koduna kadar), ses komutları, telefonu nasıl
+      tuttuğun (hareket sensörü), Wi-Fi'daki diğer cihazlar, tüm dinleme ve arama
+      geçmişi, bağlı cihazlardan sağlık/fitness verisi, reklam ortaklarından çıkarımlar
+      — ve dinlediğinden <b>kişilik ve duygu durumu</b> çıkarımı (2021'de patentlenmiş).</p></div>
+    <p class="neden">Bu bir derece farkı değil, <b>kategori farkı.</b> Ve bizim tarafımızda
+    bir tercih değil bir kısıt: arka uç yok, o yüzden toplayacak yer de yok. Bugün saha
+    geri bildirimini bile <code>mailto</code> ile yaptık — otomatik gönderim kurmak bu sözü
+    bozardı.</p>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Reklam, hesap, abonelik</h3><span class="etiket e-onde">↑ ÖNDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">Üçü de yok. Aç ve dinle.</p></div>
+    <div class="hane"><p class="kim">RADYO UYGULAMALARI</p>
+      <p class="deger">TuneIn, myTuner, Simple Radio, Radio Garden, Audials, Broadcasts:
+      reklamsız dinlemek için 2,99–9,99 $ ödeme gerekiyor. Gerçekten bedava ve reklamsız
+      olan yalnızca ikisi — biri hâlâ görsel banner gösteriyor ve hesap istiyor.</p></div>
+    <p class="neden">Rakiplerin tamamının para kazandığı yer tam olarak burası. Bizim orada
+    hiçbir şeyimiz yok — <b>ama bu aynı zamanda bir iş modelimiz olmadığı anlamına geliyor.</b>
+    Avantaj mı dezavantaj mı, ne istediğine bağlı.</p>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Açılış hızı</h3><span class="etiket e-onde">↑ ÖNDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE · ölçüldü</p>
+      <p class="deger">İlk boya 160 ms · yükleme 207 ms<br>JS belleği 6 MB · 313 DOM düğümü<br>60 FPS</p></div>
+    <div class="hane"><p class="kim">TİPİK NATIVE UYGULAMA</p>
+      <p class="deger">Soğuk açılış hedefi genellikle 1–2 sn; 141 MB'lık bir paket
+      cihaza kurulmuş olsa bile başlatma maliyeti taşıyor.</p></div>
+    <p class="neden">Karşılaştırma birebir değil (biz web'iz, onlar native) ama kullanıcının
+    hissettiği şey aynı: dokunduğunda açılıyor mu. <b>160 milisaniye</b> göz kırpmanın
+    yarısından kısa.</p>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Güncelleme hızı</h3><span class="etiket e-onde">↑ ÖNDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">Push → dakikalar içinde herkeste. Mağaza incelemesi yok,
+      indirme yok, kullanıcının bir şey yapması gerekmiyor.</p></div>
+    <div class="hane"><p class="kim">SPOTIFY</p>
+      <p class="deger">Haftalık sürüm treni + mağaza incelemesi + kademeli çıkış.
+      Salı %1, Çarşamba %100 — ölçüler temizse.</p></div>
+    <p class="neden">Bir hatayı düzeltip dakikalar içinde herkese ulaştırabilmek gerçek bir
+    üstünlük. <b>Ama madalyonun öbür yüzü aşağıda:</b> aynı hız, kötü bir sürümü de dakikalar
+    içinde herkese ulaştırıyor.</p>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Üçüncü taraf kod</h3><span class="etiket e-onde">↑ ÖNDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE · sayıldı</p>
+      <p class="deger">Uygulamada 0 kütüphane. Tek geliştirme bağımlılığı Playwright
+      (test), o da yayına gitmiyor.</p></div>
+    <div class="hane"><p class="kim">TİPİK BÜYÜK UYGULAMA</p>
+      <p class="deger">Yüzlerce bağımlılık; reklam, analitik ve çökme SDK'ları dahil.</p></div>
+    <p class="neden">Tedarik zinciri saldırı yüzeyi neredeyse sıfır. Ayrıca özet tabanlı CSP
+    ancak böyle mümkün oluyor — çoğu sitede <code>unsafe-inline</code> yazar, bizde
+    script yalnızca kendi bloğuyla çalışıyor.</p>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Erişilebilirlik</h3><span class="etiket e-onde">↑ ÖNDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE · test ediyor</p>
+      <p class="deger">Her kontrol klavyeyle erişilebilir ve adlandırılmış; arama sonuçları
+      listbox olarak geziliyor; hareket tercihine uyuluyor; yakınlaştırma açık.
+      Testler bunu her push'ta ölçüyor.</p></div>
+    <div class="hane"><p class="kim">SPOTIFY</p>
+      <p class="deger">Genel olarak erişilebilir sayılıyor ama kendi topluluk forumunda
+      açık şikâyetler var: ekran okuyucuyla çalma listesinde gezinememe, aramada
+      erişilebilirlik sorunları, resmî açık tema olmaması, çok küçük kaydırma hedefi.</p></div>
+    <p class="neden">Burada öne geçmemizin sebebi daha çalışkan olmamız değil: <b>küçük
+    olmak.</b> Yirmi kontrolü klavyeyle gezilebilir tutmak, iki bin kontrolü tutmaktan
+    kolaydır. Ama sonuç yine de sonuç.</p>
+  </div>
+</section>
+
+<!-- ══ GERİDEYİZ ════════════════════════════════════════════════ -->
+<section class="k-geride">
+  <div class="b-bas">
+    <h2>Gerideyiz</h2>
+    <p class="aciklama">Mühendislik süreci eksenlerinde. Biri ölçülemiyor bile.</p>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Kademeli çıkış yok</h3><span class="etiket e-geride">↓ GERİDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">%0 → %100. Push ettiğin an herkeste.</p></div>
+    <div class="hane"><p class="kim">SEKTÖR STANDARDI</p>
+      <p class="deger">%1 → %5 → %10 → %25 → %50 → %100, her adımda ölçüme bakarak.
+      Spotify'ın kendi treni: çalışan → alfa → beta → %1 → %100.</p></div>
+    <p class="neden"><b>En büyük farkımız bu ve yukarıdaki "asıl bulgu"nun cevabı.</b>
+    Web tarafında bunu yapmanın bir yolu var (sürümü kullanıcıların bir kısmına vermek),
+    mağaza tarafında ise Play zaten hazır sunuyor — kapalı testten sonra üretime %100
+    yerine %10 ile çıkmak. Bu, yapılmamış ama <b>yapılabilir</b> bir şey.</p>
+    <div class="cikis c-bedava"><span class="et">BEDAVA KAPANIR · ÇIKIŞ GÜNÜ</span>Play Console bunu <b>hazır sunuyor</b> — yazılacak kod yok. Kapalı test bitince üretime %100 yerine <b>%10</b> ile çıkıyorsun, bir gün bekliyorsun, sorun yoksa artırıyorsun. Bir ayar, iki dakika. Bu maddeyi kapatmak için bugün yapılacak hiçbir şey yok; sadece o gün %100 tuşuna basmamak yeter.</div>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Çökme oranımızı bilmiyoruz</h3><span class="etiket e-geride">↓ KISMEN KAPANDI</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">Artık bir <b>uç nokta</b> var (<code>/olcu</code>): sürüm, kaba platform,
+      hata imzası ve sayı. Kalıcı kimlik yok, varsayılan kapalı. Yani ölçü doğdu ama
+      <b>gönüllü</b>: açmayan kullanıcı sayıya girmiyor, o yüzden bu bir <i>oran</i> değil
+      <i>işaret</i>.</p></div>
+    <div class="hane"><p class="kim">SEKTÖR EŞİĞİ</p>
+      <p class="deger">Tüketici uygulamalarında <b>%99,5+</b> taban kabul ediliyor;
+      en iyiler %99,9+. %99'un altı "ciddi sorun", %97'nin altı "varoluşsal" sayılıyor.</p></div>
+    <p class="neden">Bugün "saha körlüğü"nü kapattık derken dikkatli konuşmam gerekiyordu:
+    <b>bir kanal açtık, bir gösterge açmadık.</b> Kullanıcının yazmasına bağlı bir kanal
+    oranı ölçemez. Gerçek bir çökme oranı ancak bir uç noktaya raporlamayla çıkar ve o da
+    gizlilik sözünü doğrudan etkiler. Bu bir eksiklik ve bilerek verilmiş bir taviz —
+    ikisi aynı anda doğru.</p>
+    <div class="cikis c-karar"><span class="et">KARAR VERİLDİ · (a) + (c)</span><b>Zorunlu ölçmüyoruz — ve bu bilinçli.</b> 10 Eylül güncellemesi: karar korundu ama araç eklendi. <code>/olcu</code> uç noktası yazıldı, Cloudflare Analytics Engine'e düşüyor ve <b>kullanıcı açmadan tek bayt almıyor</b>; ayrıca kullanıcının kendi cümlesini yazabildiği ikinci bir satır türü var, çünkü sahadaki kusurların çoğu hiç hata fırlatmıyor ("çark dönüyor ama radyo açılmıyor"). Gerekçe aynı kaldı: uygulamanın en güçlü sözünü ("hiçbir şey toplanmıyor") bir sayaç için harcamak yanlış bir takas. Kendi sunucumuzda anonim saymak teknik olarak mümkündü ama gizlilik metnini ve Data Safety formunu değiştirirdi.<br><br><b>Bu kararın bedeli var ve nerede ödendiği belli:</b> otomatik ölçüm yoksa ölçüm insandan gelmek zorunda. Yani <b>12 kişi artık bir formalite değil, tek ölçü aletimiz</b> — ve sorulmayan soru ölçülmemiş demektir. Kimi soracağın, ne zaman ve tam olarak <i>ne</i> soracağın yazıldı: <code>magaza/KAPALI_TEST.md</code>.<br><br>Yayından ve gerçek kullanıcıdan sonra bu soru yeniden sorulacak.</div>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Cihaz çeşitliliği</h3><span class="etiket e-geride">↓ GERİDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">CI'da üç motor (Chromium, WebKit, Gecko) — hepsi Linux'ta,
+      hepsi başsız. Gerçek cihaz: senin telefonun.</p></div>
+    <div class="hane"><p class="kim">SPOTIFY</p>
+      <p class="deger">"Binlerce cihaz yapılandırması." Alfa halkası zaten cihaz
+      çeşitliliğini devreye sokmak için var.</p></div>
+    <p class="neden">Bu boşluğu kapatmanın bir yolu var ve zaten sıradaki adım:
+    <b>12 test kullanıcısı, 14 gün.</b> On iki gerçek cihaz, otomasyonun göremediği
+    şeyleri görür. Kapalı testi bir formalite değil, cihaz çeşitliliği katmanı olarak
+    düşünmek doğru olan.</p>
+    <div class="cikis c-bedava"><span class="et">BEDAVA KAPANIR · KAPALI TESTTE</span>Kapanma yolu <b>zaten sıradaki adım</b>: 12 kişi, 14 gün. On iki gerçek telefon, gerçek Android sürümleri, gerçek ağlar — hiçbir emülatör matrisi bunu vermiyor. Tek şart onu bir formalite değil <b>ölçüm</b> olarak kullanmak: testçilere "çalışıyor mu" değil, "ne oldu, hangi telefonda" diye sor.</div>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Tek kişi, yedeği yok</h3><span class="etiket e-geride">↓ GERİDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">Bir kişi. Nöbet yok, ikinci göz yok, kod incelemesi yok.</p></div>
+    <div class="hane"><p class="kim">SPOTIFY</p>
+      <p class="deger">Onlarca ekip, sürüm treni ekibi, nöbet, otomasyon
+      (sürüm başına ~8 saat insan işi otomatikleştirilmiş).</p></div>
+    <p class="neden">Bunun tamamen kapanması mümkün değil. Kısmen kapatan şey bu depoda
+    zaten var: <b>685 otomatik kontrol</b> ve kodun içinde neyin neden öyle olduğunu
+    anlatan yorumlar. Testler ikinci gözün yerini tutmaz ama unutmayı engeller.</p>
+    <div class="cikis c-asla"><span class="et">TAM KAPANMAZ · KISMEN KAPALI</span>Bunun tamamen kapanması ancak ikinci bir insanla olur. Kısmen kapatan üç şey zaten var ya da bugün geldi: <b>685 otomatik kontrol</b> (unutmayı engelliyor), <b>geri alma planı</b> (panikle karar vermeyi engelliyor) ve <b>kademeli çıkış</b> (hatanın herkese ulaşmasını engelliyor). Yedeği olmayan bir kişinin yapabileceği en iyi şey, sürüm çıkarmayı <i>sıkıcı</i> hale getirmektir.</div>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Testler hâlâ tek katman</h3><span class="etiket e-geride">↓ GERİDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE · ölçüldü</p>
+      <p class="deger">1078 kontrolün neredeyse hepsi gerçek tarayıcıda: sağlık 793, cihaz 118,
+      senaryo 111, motor 19, arıza 18, derlenmiş çıktı 19. Üç motor sınanıyor. Tam tur ~11 dk.</p></div>
+    <div class="hane"><p class="kim">PROFESYONEL PİRAMİT</p>
+      <p class="deger">Binlerce birim testi (milisaniye) → yüzlerce bütünleşme (saniye)
+      → onlarca uçtan uca (dakika).</p></div>
+    <p class="neden">Gerçek birim testi için uygulamanın modüllere bölünmesi gerekiyor ve
+    <b>bu, mağaza çıkışından önce yapılacak en riskli iş.</b> Piramit hâlâ ters duruyor.
+    <b>10 Eylül notu:</b> sayı 685'ten 1078'e çıktı ama şekil değişmedi — eklenen kontrollerin
+    hemen hepsi yine tarayıcıda koşan üst katman. Sayının büyümesi piramidi düzeltmiyor;
+    bunu açıkça yazmak, "test sayısı arttı, demek ki olgunlaştık" demekten daha dürüst.</p>
+    <div class="cikis c-sonra"><span class="et">BİLEREK ERTELENDİ · YAYINDAN SONRA</span>Gerçek birim testi için <code>index.html</code>'in modüllere bölünmesi gerekiyor: 2–3 gün ve <b>mağaza çıkışından önce yapılabilecek en riskli iş.</b> Tek dosya olması senin bilinçli tercihindi; onu bozmanın doğru zamanı yayın öncesi değil. Bugün orta yolu kurduk (hızlı kip 166→105 sn). Bu madde <b>ertelendi, unutulmadı</b>.</div>
+  </div>
+
+  <div class="kiyas">
+    <div class="baslik"><h3>Katalog ve altyapı</h3><span class="etiket e-geride">↓ GERİDE</span></div>
+    <div class="hane biz"><p class="kim">ORBITAPE</p>
+      <p class="deger">502 istasyon + arşiv kayıtları. Öneri motoru yok, çevrimdışı
+      indirme yok, cihazlar arası devam yok.</p></div>
+    <div class="hane"><p class="kim">SPOTIFY</p>
+      <p class="deger">675 milyon kullanıcı, lisanslı katalog, öneri altyapısı,
+      çevrimdışı senkronizasyon.</p></div>
+    <p class="neden">Bu bir eksiklik değil <b>farklı bir şey olmak.</b> Ama listede
+    duruyor, çünkü kullanıcı ikisini yan yana koyduğunda bunu görecek.</p>
+    <div class="cikis c-asla"><span class="et">KAPANMAZ · EKSİKLİK DEĞİL</span>Bu bir arıza değil, <b>farklı bir şey olmak.</b> 675 milyonluk lisanslı bir katalog hedefimiz değil ve olmamalı. Listede duruyor çünkü kullanıcı ikisini yan yana koyduğunda bunu görecek — ama kapatılacak bir şey değil, anlatılacak bir şey: ORBITAPE bir müzik servisi değil, bir <i>keşif aracı</i>.</div>
+  </div>
+</section>
+
+<!-- ══ RAKİP TABLOSU ════════════════════════════════════════════ -->
+<section class="k-yok">
+  <div class="b-bas">
+    <h2>Asıl rakipler</h2>
+    <p class="aciklama">Spotify değil — radyo uygulamaları.</p>
+  </div>
+  <div class="tablo-sar">
+    <table>
+      <thead><tr><th>Uygulama</th><th>Reklam</th><th>Hesap</th><th>Ücretsiz sürümde</th></tr></thead>
+      <tbody>
+        <tr class="biz"><td>ORBITAPE</td><td>Yok</td><td>Yok</td><td>Her şey</td></tr>
+        <tr><td>TuneIn</td><td>Var</td><td>Var</td><td>Reklamsız için ödeme</td></tr>
+        <tr><td>myTuner Radio</td><td>Var</td><td>—</td><td>Reklamsız için ödeme</td></tr>
+        <tr><td>Radio Garden</td><td>Var</td><td>—</td><td>Reklamsız için ödeme</td></tr>
+        <tr><td>Simple Radio</td><td>Var</td><td>—</td><td>Reklamsız için ödeme</td></tr>
+        <tr><td>Audials Play</td><td>Var</td><td>—</td><td>Reklamsız için ödeme</td></tr>
+        <tr><td>Jango</td><td>Görsel banner</td><td>Var</td><td>Ses reklamı yok</td></tr>
+        <tr><td>FIP Radio</td><td>Yok</td><td>—</td><td>Her şey (tek yayıncı)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="hero-not" style="border-top:0;padding-top:14px">Bu tablodaki tek gerçek
+  emsalimiz FIP — o da tek bir yayıncının kendi radyosu, yani bir keşif aracı değil.
+  <b>Reklamsız, hesapsız, ücretsiz ve çok istasyonlu bir keşif aracı</b> tarifine giren
+  başka bir şey listede yok.</p>
+</section>
+
+<div class="sonuc">
+  <h3>SONUÇ</h3>
+  <p><b>Kullanıcının hissettiği her eksende öndeyiz</b> — boyut, hız, gizlilik, reklamsızlık,
+  erişilebilirlik. Bunlar küçük farklar da değil; gizlilik tarafında kategori farkı,
+  boyutta 625 kat.</p>
+  <p><b>Mühendislik sürecinde geriyiz</b> ve bu farkın büyük kısmı tek bir şeye iniyor:
+  hatayı kullanıcıların %1'inde bulan bir katman yok. Spotify da hata çıkarıyor — yirmi
+  sürümden biri — ama onların hatası binde bir kullanıcıya çarpıp geri dönüyor, bizimki
+  doğrudan sana çarpıyor.</p>
+  <p>Yani "her gün başka bir şey çıkıyor" doğru bir gözlem ama yanlış bir sonuç çıkarmaya
+  götürüyor. Hata sayımız anormal değil — <b>hatanın sana ulaşma yolu kısa.</b> Kapalı test
+  (12 kişi, 14 gün) ve üretime %10 ile çıkmak tam olarak o yolu uzatan şeyler. İkisi de
+  zaten sıradaki adımlar.</p>
+  <p style="color:var(--muted);font-size:13.5px">Bir dürüstlük notu: bugün "saha körlüğünü
+  kapattık" dedim. Doğrusu şu — <b>bir kanal açtık, bir gösterge açmadık.</b> Çökme oranımızı
+  hâlâ bilmiyoruz ve bunu bilmek gizlilik sözünü etkileyecek bir karar gerektiriyor.</p>
+</div>
+
+<div class="kaynak">
+  <h3>KAYNAKLAR</h3>
+  <ol>
+    <li><a href="https://blog.bytebytego.com/p/how-spotify-ships-to-675-million" target="_blank" rel="noopener">ByteByteGo — How Spotify Ships to 675 Million Users Every Week</a> (sürüm treni, beş halka, %95 oranı)</li>
+    <li><a href="https://engineering.atspotify.com/2023/11/the-what-why-and-how-of-mastering-app-size" target="_blank" rel="noopener">Spotify Engineering — Mastering App Size</a> (6 MB = %1 dönüşüm, 50 KB PR eşiği)</li>
+    <li><a href="https://mwm.ai/glossary/crash-free-rate" target="_blank" rel="noopener">MWM — Crash-Free Rate Benchmarks</a> (%99,5 taban, %99,9 üst seviye)</li>
+    <li><a href="https://aso.dev/google-play/rollout/" target="_blank" rel="noopener">ASO.dev — Google Play Staged Rollout</a> (%1→%5→%10→%25→%50→%100)</li>
+    <li><a href="https://www.choice.com.au/consumers-and-data/data-collection-and-use/who-has-your-data/articles/spotify-personal-data" target="_blank" rel="noopener">CHOICE — How much personal data does Spotify collect</a></li>
+    <li><a href="https://www.accessibility.com/blog/accessibility-of-spotify" target="_blank" rel="noopener">Accessibility.com — Accessibility of Spotify</a></li>
+    <li><a href="https://adlock.com/blog/top-radio-apps-without-ads/" target="_blank" rel="noopener">AdLock — Radio apps without ads</a> (rakip tablosu)</li>
+    <li><a href="https://apkpure.com/spotify-music-and-podcasts-for-android-2025/com.spotify.music" target="_blank" rel="noopener">APKPure — Spotify Android</a> (141,5 MB)</li>
+    <li>ORBITAPE'in kendi sayıları bu makinede ölçüldü: brotli boyu, ilk boya, bellek, FPS, test süreleri.</li>
+  </ol>
+</div>
+
+</div>

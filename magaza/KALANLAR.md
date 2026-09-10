@@ -33,11 +33,22 @@ Parmak izleri gizli bilgi değildir, herkese açıktır.
 
 ## 3. Kapalı test — testçiler
 
-- [ ] En az **12 testçi** (elde 7 vardı, hedef ~15)
+- [ ] En az **12 testçi** (10 Eylül: listede **9 kişi**, hedef ~15)
+- [ ] Hepsi linke girip **"Become a tester"** desin ve uygulamayı kursun
 - [ ] Hepsi **14 gün kesintisiz** opt-in kalmalı
 
-Biri arada çıkarsa sayaç sıfırlanır. Bu yüzden hedefi 12'nin biraz
-üstünde tutmak gerekiyor. Ayrıntı: `magaza/KAPALI_TEST.md`
+**En sık yapılan hata:** e-posta listesine eklemek katılmak değil.
+10 Eylül'de listede 9 kişi vardı ama panoda **"0 testers currently
+opted in"** yazıyordu — yani sayaç hiç başlamamıştı. Herkesin şu
+adrese girmesi gerekiyor:
+`https://play.google.com/apps/testing/app.orbitape.twa`
+Play'de açık olan Gmail hesabı listedeki adresle aynı olmazsa sayfa
+"test bulunamadı" diyor.
+
+Sayaç sayı **12'yi geçtiği gün** başlıyor; altına düşerse sıfırlanıyor.
+12'nin altındayken geçen günler sayılmıyor — ama şimdiden katılmaları
+boşa değil: opt-in kalıcı ve çökme kayıtları o an düşmeye başlıyor.
+Ayrıntı: `magaza/KAPALI_TEST.md`
 
 ## 4. Tablet
 
