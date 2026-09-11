@@ -17206,6 +17206,54 @@
   try{ modAdiYaz(); }catch(e){ _yut(e); }      // açılışta RADIOTAPE yazılı gelir
   try{ zeminUygula(); }catch(e){ _yut(e); }    // açılış zemini de RADIOTAPE
 
+  /* ── KLAVYE SINIFI TEK KAPIDAN GECIYOR (11 Eylul) ────────────────
+     BILDIRILEN: "androidli bir kullanici search'e basmis ve search'u
+     kapatinca halka tepede kalmis" (ekran goruntusu: cark kucuk ve
+     sol ust kosede, diskin ortasindan kaymis).
+
+     OLCULDU (390x844; taklit: diskin olcusu 304 -> 240 px):
+       klavye acildi -> disk 240@75,302 | tuval 438@-24,203
+                        SAPMA dx -46  dy -46  dw +92
+     Yani tuval HIC KIMILDAMADI.
+
+     SEBEP: 'klavye' sinifi diskin OLCUSUNU degistiriyor (body.klavye
+     .disk yuksekligi 100dvh yerine 100vh sayiyor -- telefonda bu iki
+     birim adres cubugu yuzunden esit degil), ama bir sinif degisimi
+     HICBIR OLAY URETMIYOR:
+       • carkin tuvali kendi olcusunu window 'resize' ile aliyor,
+       • olcuIste'nin ilk kapisi innerWidth/innerHeight/gorunum
+         penceresine bakip "degisiklik yok" deyip cikiyor.
+     Ikisi de sessiz kaliyor, tuval eski olcusunde kaliyor. Masaustunde
+     gorulmuyor cunku orada vh ile dvh esit.
+
+     Sinif KALKARKEN de ayni delik vardi: blur isleyicisi sinifi
+     kaldirip hicbir sey cagirmiyordu; gorunum olcumu ise yalnizca
+     geriYerlestir() cagiriyordu -- o kutulari yeniden koyuyor ama
+     tuvali kutusuna HIZALAMIYOR. Donus hatasinda da ayni yarim zincir
+     yasanmisti (bkz. _donusYerlestir'in gec bakisi).
+
+     Yerlesimin TEK SAHIBI olmali; sinif da o kapidan geciyor. Klavye
+     ANIMASYONLA acilip kapandigi icin bir de GEC BAKIS var -- 450 ms,
+     donus bekcisiyle ayni gerekce. */
+  var _klavyeGec = 0;
+  function klavyeYerlesimi(){
+    try{
+      _zoomBorcu = true; olcuIste();              // tuvaller + gec geriYerlestir
+      geriYerlestir();                            // buyutec / kunye / alt satirlar
+      if(window.carkHizala) window.carkHizala();  // carkin tuvali kutusuna
+    }catch(e){ _yut(e); }
+  }
+  function klavyeKipi(acik){
+    try{
+      const vardi = document.body.classList.contains('klavye');
+      if(!!acik === vardi) return;                // ayni hal -> bos is yok
+      document.body.classList.toggle('klavye', !!acik);
+      klavyeYerlesimi();
+      clearTimeout(_klavyeGec);
+      _klavyeGec = setTimeout(klavyeYerlesimi, 450);
+    }catch(e){ _yut(e); }
+  }
+
   /* ── EKRAN KLAVYESI OLCULUYOR ────────────────────────────────────
      Mobilde klavye acilinca layout viewport degismiyor; degisen sey
      visualViewport. position:fixed olan arama kutusu yerinde kaldigi
@@ -17252,15 +17300,12 @@
           _son = k;
           document.documentElement.style.setProperty('--klavye', k + 'px');
           /* Sinifi burasi da acabilir (odaklanma olayi kacarsa). */
-          if(k > 90) document.body.classList.add('klavye');
+          if(k > 90) klavyeKipi(true);
           /* KAPANMA: olcum sifira dondu ve kutu odakta degil. Odakta
              olani kapatmiyoruz -- eski gerekce hala gecerli: olcum
              yaniltirsa kutu yukarida kalsin, klavyenin altinda
              degil. */
-          else if(k === 0 && document.activeElement !== araGiris){
-            document.body.classList.remove('klavye');
-            try{ geriYerlestir(); }catch(e2){ _yut(e2); }
-          }
+          else if(k === 0 && document.activeElement !== araGiris) klavyeKipi(false);
         }catch(e){ _yut(e); }
       };
       vv.addEventListener('resize', yaz);
@@ -17274,10 +17319,10 @@
      dogru. Masaustunde klavye yok, o yuzden yalnizca dokunmatikte. */
   try{
     araGiris.addEventListener('focus', ()=>{
-      try{ if(MOBIL) document.body.classList.add('klavye'); }catch(e){ _yut(e); }
+      try{ if(MOBIL) klavyeKipi(true); }catch(e){ _yut(e); }
     });
     araGiris.addEventListener('blur', ()=>{
-      try{ document.body.classList.remove('klavye'); }catch(e){ _yut(e); }
+      try{ klavyeKipi(false); }catch(e){ _yut(e); }
     });
   }catch(e){ _yut(e); }
 

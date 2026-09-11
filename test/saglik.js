@@ -6995,13 +6995,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             && satir.top <= sonuc.top;
       }), 'kutu ust yariya cikiyor, sonuclar altina geciyor');
     /* Kapatma odaklanma OLAYINA bagli: olcum yaniltsa bile blur
-       kapatiyor, yani kutu klavyenin altinda kalmiyor. */
+       kapatiyor, yani kutu klavyenin altinda kalmiyor.
+       ── SINIF ARTIK TEK KAPIDAN GECIYOR (11 Eylul) ───────────────
+       Bildirilen: "search'e basmis, search'u kapatinca halka tepede
+       kalmis." Sinif diskin olcusunu degistiriyor ama bir sinif
+       degisimi hicbir OLAY uretmiyor; carkin tuvali eski olcusunde
+       kaliyordu. Kapi (klavyeKipi) yerlesimin tek sahibini cagiriyor.
+       Burada hem olaylara baglilik hem de o zincirin TAMLIGI
+       okunuyor -- carkHizala eksik kalirsa donus hatasindaki yarim
+       zincir geri gelir. Hizanin kendisi cihaz takiminda olculuyor. */
     K('Klavye kipi odaklanmaya bagli', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
-        return /addEventListener\('focus'[\s\S]{0,140}classList\.add\('klavye'\)/.test(k)
-            && /addEventListener\('blur'[\s\S]{0,140}classList\.remove\('klavye'\)/.test(k)
+        return /addEventListener\('focus'[\s\S]{0,140}klavyeKipi\(true\)/.test(k)
+            && /addEventListener\('blur'[\s\S]{0,140}klavyeKipi\(false\)/.test(k)
             && /--klavye/.test(k);
       }), 'focus acar, blur kapatir; olcum yalnizca yedek');
+    K('Klavye kipi yerlesimi bastan olcturuyor', await pg.evaluate(()=>{
+        const k = document.documentElement.innerHTML;
+        return /function klavyeKipi\([\s\S]{0,400}klavyeYerlesimi\(\)/.test(k)
+            && /function klavyeYerlesimi\([\s\S]{0,400}olcuIste\(\)/.test(k)
+            && /function klavyeYerlesimi\([\s\S]{0,400}geriYerlestir\(\)/.test(k)
+            && /function klavyeYerlesimi\([\s\S]{0,400}carkHizala\(\)/.test(k)
+            && typeof klavyeKipi === 'function';
+      }), 'olcuIste + geriYerlestir + carkHizala: zincir tam');
     /* ── RAF KAPISI TIK YAGMURU URETMEMELI ───────────────────────
        Olculen sikayet: sag ustten raf degistirip beklerken "arka
        arkaya cok hizli tiklaniyormus gibi" sesler geliyordu.

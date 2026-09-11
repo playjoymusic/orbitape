@@ -476,6 +476,58 @@ async function gokyuzuOlc(sayfa){
                       : (Object.keys(once).length + ' oge, dipten uzakliklar ayni'));
     }
 
+    /* ── KLAVYE ACILIP KAPANINCA CARK DISKINDE KALMALI ─────────
+       Kullanicinin bildirdigi: "androidli bir kullanici search'e
+       basmis ve search'u kapatinca boyle halka tepede kalmis."
+       Ekran goruntusunde cark kucuk ve sol ust kosede duruyordu.
+
+       Sebep: 'klavye' sinifi diskin olcusunu degistiriyor ama sinif
+       degisimi hicbir OLAY uretmiyor -- ne window 'resize', ne
+       olcuIste'nin olcu kapisi. Carkin tuvali eski olcusunde
+       kaliyordu.
+
+       BURADA OLCUNUN TAKLIT EDILMESI GEREKIYOR: sinifin gercek
+       etkisi (100dvh yerine 100vh) masaustunde SIFIR, cunku orada
+       o iki birim esit. Telefonda adres cubugu yuzunden esit degil.
+       O yuzden diskin olcusu elle degistiriliyor; olculen sey
+       olcunun kendisi degil ZINCIR: olcu degisince tuval diskine
+       yeniden hizalaniyor mu. */
+    {
+      const hiza = ()=>sayfa.evaluate(()=>{
+        const d = document.querySelector('.disk');
+        const t = document.getElementById('carkTuval');
+        if(!d || !t) return { yok:true };
+        const a = d.getBoundingClientRect(), b = t.getBoundingClientRect();
+        if(!a.width || !b.width) return { yok:true };
+        const pay = Math.round((a.width / 2) * 0.44);
+        return { dx: Math.round(b.left - (a.left - pay)),
+                 dy: Math.round(b.top  - (a.top  - pay)),
+                 dw: Math.round(b.width - (a.width + pay * 2)) };
+      });
+      const kur = (en)=>sayfa.evaluate(w=>{
+        document.querySelector('.disk').style.width = w || '';
+        if(typeof klavyeKipi === 'function') klavyeKipi(!!w);
+      }, en);
+
+      await kur('240px');
+      await sayfa.waitForTimeout(900);
+      const acik = await hiza();
+      await kur('');
+      await sayfa.waitForTimeout(900);
+      const kapali = await hiza();
+
+      const kotu = (o)=>!o || o.yok
+        || Math.abs(o.dx) > 2 || Math.abs(o.dy) > 2 || Math.abs(o.dw) > 2;
+      K('[' + ek.ad + '] klavye acilip kapaninca cark diskinde kaliyor',
+         !kotu(acik) && !kotu(kapali),
+         (acik && !acik.yok ? ('acik dx' + acik.dx + ' dy' + acik.dy + ' dw' + acik.dw)
+                            : 'acik olculemedi')
+         + ' | '
+         + (kapali && !kapali.yok ? ('kapali dx' + kapali.dx + ' dy' + kapali.dy
+                                     + ' dw' + kapali.dw)
+                                  : 'kapali olculemedi'));
+    }
+
     await baglam.close();
   }
 
