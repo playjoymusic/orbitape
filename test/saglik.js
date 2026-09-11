@@ -11227,23 +11227,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 2) Gercek bosluk: kapatir ve dokunusu yutar. */
         const bx = Math.max(4, mx - db.width * 1.6), by = Math.min(innerHeight - 4, my + db.height * 1.1);
         const olay = (t, Tip)=>olayXY(t, Tip, bx, by);
-        /* ── SABIT BEKLEME YERINE SESSIZLIK BEKLENIYOR (11 Eylul) ──
-           Bu kontrol iki toplu kosuda kirmizi yandi, tek basina
-           kosunca hep yesildi. Sebep asagidaki sifirlamanin ZAMANI:
-           merkez dokunusunun sonraki() cagrisi olculdu ve 0-6 ms'de
-           dusuyor, ama yuklu makinede o cagrinin gectigi an 120 ms'lik
-           sabit beklemenin DISINA cikabiliyor -- o zaman merkezin
-           cagrisi sifirlamadan SONRA geliyor ve BOSLUGUN hanesine
-           yaziliyor. Olcum hatasi, kod hatasi degil.
-           Cozum: sayac sifirlanmadan once GERCEKTEN sessizlik
-           bekleniyor -- 250 ms boyunca hic cagri gelmemesi, en fazla
-           1,5 saniye. Ayni yol daha once uc kirilgan kontrolde
-           kullanildi (yildiz haritasi, favori sorusu, organik nokta). */
-        { let son = sn, sessiz = 0;
-          for(let i = 0; i < 30 && sessiz < 250; i++){
-            await bek(50);
-            if(sn !== son){ son = sn; sessiz = 0; } else sessiz += 50;
-          } }
+        /* ── BEKLEME NEDEN YINE 120 ms (11 Eylul, GERI ALINDI) ────
+           Bu kontrol yuklu makinede birkac kez kirmizi yanmisti ve
+           bir "sessizlik beklemesi" konmustu: sayac sifirlanmadan
+           once 250 ms boyunca hic cagri gelmemesi bekleniyordu.
+           OLCULDU VE TERS TEPTI: CI'da iki kosuda birden kirmizi
+           yandi, oysa eski hali on kosu ust uste yesildi.
+           Sebep bu kontrolun oturdugu yer: SERIT kipinde ortadaki
+           alete dokunmak jesti 600 ms'lik bir pencerede yutuyor
+           (bkz. deri_galeri.js, _yutZaman). Sabit 120 ms o pencerenin
+           ICINDE kaliyor; sessizlik beklemesi ise 250 ms ile 1,5
+           saniye arasinda degisiyor ve yuklu makinede pencereyi
+           asabiliyor. Yani yeni bekleme olcumu duzeltmedi, olculen
+           seyi degistirdi.
+           Kural: bir kontrolu kararli yapmaya calisirken olctugu
+           seyin kendi zamanlamasini bozma. Eski hal geri. */
+        await bek(120);
         sn = 0;                       // merkez dokunusu sayilmasin, olculen sey BOSLUK
         olay('pointerdown', PointerEvent); c.bosKapatti = !deriGaleriAcik();
         olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);

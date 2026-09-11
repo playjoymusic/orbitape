@@ -10948,13 +10948,97 @@
       }
       _donusZaman = setTimeout(_donusBitir, DONUS_ARA);
     };
-    window.addEventListener('orientationchange', ()=>{
+    /* ── DONUS NOBETI (11 Eylul) ──────────────────────────────
+       UC KEZ YAMANDI VE UCUNDE DE AYNI SEY DENENDI: "dogru ani
+       yakala." Kullanicinin sozu bugun hala ayni: "telefonu yatay ve
+       tekrar dikey yapinca alttakiler en tabana cokuyor."
+
+       NEDEN O YAKLASIM TUTMUYOR: bu ekranda ALT'A YASLANAN her sey
+       JS ile konuluyor ve formulun tamami `window.innerHeight - bir
+       kutu` bicimindedir (buyutec, kunye, tasima satirlari, kayit
+       bilgisi, tutamak -- yirmiden fazla yer). innerHeight donus
+       sirasinda bir sure ESKI degerde kaliyor; o anda hesaplanan her
+       'bottom' oldugundan buyuk cikiyor ve blok ekranin dibine
+       yapisiyor. Sonra kimse yeniden hesaplamiyor.
+       Yani sorun "hangi ani secelim" degil: DOGRU AN YOK. iOS'ta
+       innerHeight, visualViewport ve tarayici cubugunun animasyonu
+       birbirinden bagimsiz oturuyor ve hangisinin en son oturacagi
+       surume gore degisiyor.
+
+       BU YUZDEN OLCU ANI DEGIL, YERLESIM KENDISI DEGISTI:
+       donusten sonra bir NOBET aciliyor. Nobet uc saniye boyunca
+       olcuyu izliyor ve DEGISTIGI HER SEFERINDE yerlesimi yeniden
+       kuruyor. Erken bir hesap artik kalici degil -- uzerine dogrusu
+       yaziliyor. Son olcumden sonra bir kez daha kuruluyor ki
+       nobetin bittigi an da dogru olsun.
+
+       UCUZ: olcu ayni kaldigi surece hicbir sey yapilmiyor
+       (karsilastirma uc sayi), ve nobet yalnizca donusten sonra
+       aciliyor. Ekran hic donmezse hic calismiyor. */
+    var _nobetZaman = null, _nobetSon = '', _nobetBitis = 0;
+    const _nobetOlcu = ()=>{
+      const vv = window.visualViewport;
+      return Math.round(innerWidth) + 'x' + Math.round(innerHeight)
+           + 'x' + (vv ? Math.round(vv.height) : 0);
+    };
+    const _nobetBak = ()=>{
+      try{
+        const k = _nobetOlcu();
+        if(k !== _nobetSon){
+          _nobetSon = k;
+          if(!document.body.classList.contains('donuyor')){
+            _donusYerlestir();
+            if(window.carkHizala) window.carkHizala();
+          }
+        }
+      }catch(e){ _yut(e); }
+      if(Date.now() < _nobetBitis){
+        _nobetZaman = setTimeout(_nobetBak, 160);
+      }else{
+        _nobetZaman = null;
+        /* SON SOZ: nobet biterken bir kez daha kuruluyor. Olcu son
+           160 ms'de oturduysa yukaridaki dal onu gormemis olabilir. */
+        try{
+          if(!document.body.classList.contains('donuyor')){
+            _donusYerlestir();
+            if(window.carkHizala) window.carkHizala();
+          }
+        }catch(e){ _yut(e); }
+      }
+    };
+    const _nobetAc = ()=>{
+      _nobetSon = ''; _nobetBitis = Date.now() + 3000;
+      if(!_nobetZaman) _nobetZaman = setTimeout(_nobetBak, 160);
+    };
+    const _donusBasladi = ()=>{
       _yonKilit();
       document.body.classList.add('donuyor');
       clearTimeout(_donusZaman);
       _donusOlcu = ''; _donusEsit = 0; _donusT0 = Date.now();
       _donusZaman = setTimeout(_donusBitir, DONUS_ARA);
-    });
+      _nobetAc();
+    };
+    window.addEventListener('orientationchange', _donusBasladi);
+    /* iOS 16.4'ten beri dogru olay bu; eski 'orientationchange'
+       birakilmadi cunku eski surumler yalnizca onu gonderiyor. Ikisi
+       birden gelirse zarari yok: nobet zaten tek. */
+    try{
+      if(screen && screen.orientation && screen.orientation.addEventListener)
+        screen.orientation.addEventListener('change', _donusBasladi);
+    }catch(e){ _yut(e); }
+    /* SON EMNIYET: hicbir donus olayi gelmese bile EN/BOY YER
+       DEGISTIRDIYSE ekran donmustur. Bazi tarayicilar tam ekran
+       uygulamada donus olayini hic gondermiyor; olculen sey yalan
+       soyleyemez. */
+    try{
+      var _onceYatay = innerWidth > innerHeight;
+      window.addEventListener('resize', ()=>{
+        try{
+          const y = innerWidth > innerHeight;
+          if(y !== _onceYatay){ _onceYatay = y; _donusBasladi(); }
+        }catch(e){ _yut(e); }
+      });
+    }catch(e){ _yut(e); }
   }catch(e){ _yut(e); }
   try{ window.addEventListener('orientationchange', olcuIste); }catch(e){ _yut(e); }
   try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', olcuIste); }catch(e){ _yut(e); }
