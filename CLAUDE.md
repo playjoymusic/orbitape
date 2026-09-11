@@ -19,7 +19,7 @@ oynanan efektler. Hesap yok, reklam yok, takip yok, çerez yok.
 
 | Dünya | Kaynak |
 |---|---|
-| **RADIOTAPE** | Canlı istasyonlar (`radyo.json` beyaz listesi + yedek: radio-browser) |
+| **RADIOTAPE** | Canlı istasyonlar (`radyo.json` beyaz listesi + yedek: radio-browser) — 11 Eylül: **559 istasyon, on bir raf** |
 | **ORBITAPE** | Arşiv kayıtları (`earth.json` + `earth_buyuk.json`) — 22.903 kayıt |
 
 Kaldırılanlar: Audius (lisans bilgisi döndürmüyordu), Jamendo (çalışmıyordu,
@@ -82,6 +82,24 @@ yayıncının, plak şirketinin ve icracının hakkına girer.
 
 Bu son madde önemli: bir kontrolün düşmediği bir kontrol, kontrol değildir.
 
+### 4b. Parola, token, kart bilgisi burada durmaz
+
+Bu satır 11 Eylül'de yazıldı çünkü sözlü bir kuraldı ve sözlü
+kurallar kaybolur.
+
+- **Parola, token, API anahtarı yazılmaz, tutulmaz, dosyaya konmaz,
+  ekrana getirilmez.** Onun sözü: *"Parolayı sen belirle ve sen
+  sakla"*, *"TOKEN'I BANA GÖSTERME"*. Anahtar gerekiyorsa nereden
+  alınacağı ve nereye yapıştırılacağı yazılır; **oluşturmayı ve
+  yapıştırmayı pj yapar.**
+- **Kimlik belgesi, kart/ödeme bilgisi girilmez.** *"kimlik ve kart
+  bilgilerini ben yazmam."*
+- **Hesap açılmaz.** Doğrulama kodunu pj alır, pj girer.
+- **`git push` her zaman pj'nin işidir.** Dosyalar yazılır, kapı
+  koşturulur, commit metni hazır verilir; push ona ait.
+- İmza parmak izi (SHA-256), Cloudflare hesap kimliği gibi **açık
+  tanımlayıcılar** sır değildir, konuşulabilir.
+
 ### 5. `index.html`'e pj'ye sormadan dokunulmaz
 
 Onun sözü: *"bi indexi bana sormadan hazırlama. yapılacak varsa
@@ -103,6 +121,16 @@ Tarayıcıda ya da GitHub'da bir şey yaptırılacaksa **tek adım** yazılır v
 ekran görüntüsü istenir. Adres verilecekse **baştan** verilir, tarif
 edilmez. Onun sözü: *"tek adım yaz ss iste"*, *"eb bastan adresi versen"*.
 
+### 8b. Her teslim iki kod bloğuyla biter
+
+Biri commit **Özet** satırı, biri **Açıklama** gövdesi. Özet tek
+satır, gövde NEDEN'i anlatır. **Yapılmamış bir işin commit mesajı
+uydurulmaz.**
+
+Örnek e-posta, örnek isim, yer tutucu metin **verilmez** — gerçek bir
+forma yapıştırılma ihtimali var; 10 Eylül'de tam olarak bu oldu ve
+Play testçi listesine iki örnek adres girdi.
+
 ### 9. Her iş kullanıcı diliyle anlatılır
 
 Teknik açıklamadan **önce** şu yazılır: kullanıcı ne yaşıyordu, artık ne
@@ -115,6 +143,7 @@ kullanıcı boyutunda müşteriye anlatır gibi anlatacaksın"*.
 
 ```
 index.html          Uygulamanın tamamı — tek dosya, bağımlılık yok
+radyo.json          Canlı istasyon beyaz listesi (tek kaynak, burada)
 sw.js               Çevrimdışı kabuk (ağ önce, sonra önbellek)
 privacy.html        Gizlilik metni  ->  /privacy
 404.html            Eşleşmeyen adres
@@ -130,8 +159,26 @@ CLAUDE.md           bu dosya
 GUNLUK.md           tarihli çalışma günlüğü
 ```
 
-**Veri ayrı depoda:** [playjoymusic/tracks](https://github.com/playjoymusic/tracks)
+**Arşiv verisi ayrı depoda:** [playjoymusic/tracks](https://github.com/playjoymusic/tracks)
 Yerel kopya: `~/Downloads/tracks-depo`
+
+**Radyo listesi artık orada DEĞİL.** Eskiden iki yerde duruyordu ve
+ikisini eşitlemek için iki ayrı PR açılıyordu; biri birleşip öteki
+kalırsa uygulama aylarca eski listeyi servis ediyordu ve kimse fark
+etmiyordu. Tek kaynak bu deponun kökü: `radyo.json`.
+
+**Radyo araçları** (hepsi `araclar/`):
+
+| Araç | Ne yapar |
+|---|---|
+| `radyo_hasat.py` | Eksik rafları hedefe kadar doldurur, PR açar. `raf` verilirse yalnız o rafı arar |
+| `radyo_kesif.py` | Listeye **dokunmaz**, "bu türde ne var" diye sorar ve rapor yazar |
+| `radyo_grupla.py` | Temizler (çift / ülke / ibadet / konuşma / **yapay zekâ**) ve rafa yazar |
+| `radyo_yasak.json` | Bir daha eklenmeyecek adresler |
+| `radyo_elle.json` | İnsanın verdiği raf kararları — hasat bunları bozmaz |
+
+İkisi de GitHub Actions'ta koşar: geliştirme ortamından
+radio-browser'a çıkış kapalı (11 Eylül'de yeniden ölçüldü).
 
 ---
 
@@ -240,16 +287,27 @@ Bunlar zaman kaybettirdi. Bir daha kaybettirmesin.
 
 ## Açık kalan işler
 
-Denetim raporundaki kritik ve orta maddelerin hepsi kapandı. Kalanlar:
+**11 Eylül'de gözden geçirildi.** Kapanan maddeler silinmedi,
+işaretlendi — "bunu yapmış mıydık" sorusu bir daha çıkmasın diye.
 
-| İş | Süre | Neden |
-|---|---|---|
-| Veri deposuna CI | 2 sa | `tracks`'te hiç kontrol yok; iki kere bozuk veri yayına gitti |
-| Ölü bağlantı örneklemesi | 3 sa | 22.903 bağlantının kaçı hâlâ çalıyor, kimse bilmiyor |
-| Tip denetimi (JSDoc + `tsc --checkJs`) | ~1 gün | 4.845 satır tipsiz JS; derleme adımı gerekmiyor |
-| Kullanım şartları + KVKK bölümleri | 2 sa | Gizlilik metninde eksik zorunlu başlıklar var |
-| Kayıt tamponuna tavan | 2 sa | ~24 MB/dk, sınır yok; uzun kayıtta sekme çöker |
-| Boş `catch`'lere sessiz sayaç | 1,5 sa | 345 boş catch, ~205'i kendi fonksiyonunu sarıyor |
+| İş | Durum |
+|---|---|
+| Tip denetimi | **[x]** `araclar/tip.sh` kapıda; taban `araclar/tip_taban.txt` = 79 uyarı ve yükselmesi yasak |
+| Kullanım şartları + KVKK | **[x]** `terms.html` içinde; "istasyonu çıkar" sözü ve iletişim adresi yazılı |
+| Kayıt tamponuna tavan | **[x]** 400 MB / 15 dakika (`kayit.js`: `KAYIT_TAVAN_BAYT`, `KAYIT_TAVAN_MS`) |
+| Ölü bağlantı örneklemesi | **[x]** "Radyo bağlantı kontrolü" iş akışı, ayda bir + elle |
+| Veri deposuna CI | **[ ]** `tracks` deposunda hâlâ kontrol yok. Radyo listesi artık tek kaynakta (kod deposu) olduğu için risk küçüldü ama arşiv havuzu orada duruyor |
+| Boş `catch`'lere sessiz sayaç | **[ ]** 625 yutulan hata var. Gerçek risk: bir arıza sessizce yutulup kimse görmüyor |
+
+**Mağaza tarafında kalanlar** ayrı dosyada: `magaza/KALANLAR.md`.
+11 Eylül: 12 testçi kuralı hâlâ açık tek engel (panoda 4 opt-in),
+test telefonunda ana ekran kısayolu yenilenecek, tablet desteği
+kapalı kalacak.
+
+**Profesyonel yazılımla aramızdaki fark** ikiye indi (`kiyas_pro.html`):
+kademeli çıkış yok (kod gerekmiyor — üretime %100 yerine %10 ile
+çıkmak yeterli) ve çökme **oranı** ölçülmüyor (ölçüm gönüllü; bu
+bilerek verilmiş bir taviz, kapatılacak bir eksik değil).
 
 **Konuşulan ama karara bağlanmayan:** uygulamayı ikiye bölme fikri —
 radyo ayrı, ses+FX ayrı. Karar verilmeden mimariye dokunma.

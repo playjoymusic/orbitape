@@ -293,18 +293,20 @@ footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
       kararı verildi (gizlilik sözünü korumak için), yani <b>12 kişi tek ölçü aletimiz.</b>
       Kimi seçeceğin, 1./7./14. günlerde tam olarak ne soracağın ve onlara göndereceğin mesaj
       yazıldı: <code>magaza/KAPALI_TEST.md</code>.</p>
-      <p class="simdi"><b>10 Eylül durumu:</b> e-posta listesinde <b>9 kişi</b> var, panoda
-      <b>opt-in sayısı 0</b> görünüyordu. Listeye eklenmek <b>katılmak değil</b> — herkesin
+      <p class="simdi"><b>11 Eylül durumu:</b> panoda <b>4 kişi opt-in</b>. Bir gün önce
+      0'dı, yani mekanizma çalışıyor — eksik olan tek şey sayı. Listeye eklenmek
+      <b>katılmak değil</b> — herkesin
       <code>play.google.com/apps/testing/app.orbitape.twa</code> adresine girip
       <i>Become a tester</i> demesi ve uygulamayı kurması gerekiyor. Play'de açık olan Gmail
-      hesabı listedeki adresle aynı olmazsa sayfa "test bulunamadı" diyor.
-      Link dokuz kişiye gönderildi, ilk kurulum geldi.</p>
+      hesabı listedeki adresle aynı olmazsa sayfa "test bulunamadı" diyor.</p>
+      <p class="simdi"><b>Bu, çıkışı geciktiren TEK madde.</b> Kodun tarafında bekleyen bir
+      iş yok; 14 günlük sayaç ancak 12 kişi opt-in olduğu gün başlıyor.</p>
       <p class="simdi"><b>Sayaç ne zaman başlar:</b> sayı 12'yi geçtiği gün. Altına düşerse
       sıfırlanıyor, o yüzden hedef 15. 12'nin altındayken geçen günler sayılmıyor — ama
       şimdiden katılmaları boşa değil: opt-in kalıcı, 12. kişi bulunduğu gün sayaç aynı gün
       başlıyor ve çökme kayıtları şimdiden düşmeye başlıyor.</p>
     </div>
-    <div class="rozet r-sen">3 KİŞİ EKSİK</div>
+    <div class="rozet r-sen">8 KİŞİ EKSİK</div>
   </div>
 
   <div class="adim">
@@ -339,10 +341,40 @@ footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
     yok. Parmak izi maddesi de 9 Eylül'de kapandı.</p>
     <p>Bu on bir maddenin ortak yanı önemli: <b>hiçbirini test bulmadı, kullanım buldu.</b>
     Testler sonradan yazıldı — hata bulmak için değil, aynı hatanın bir daha girmemesi için.
-    Kontrol sayısı 553'ten 1078'e bu yüzden çıktı.</p>
+    Kontrol sayısı 553'ten <b>1093'e</b> bu yüzden çıktı (11 Eylül).</p>
     <p>En ağırı canlıda duruyordu: <b>gizlilik ve kullanım şartları sayfaları hiç stil almadan
     açılıyordu</b> — beyaz zemin, siyah Times. CSP bütün yollara gidiyordu ama yalnızca
     uygulamanın stil özetini taşıyordu. Ve privacy.html, Play Console'a verilen adres.</p>
+
+    <p style="margin-bottom:12px"><b>10–11 Eylül gecesinde kapananlar:</b></p>
+    <ul class="liste bugun">
+      <li><b>Türkiye kara listedeydi ve kimse bilmiyordu.</b> 502 istasyonluk listede
+      <b>sıfır</b> Türkçe istasyon vardı. İki sebep birden: boru hattında açık bir ülke kara
+      listesi (<code>TR</code>) ve hasadın yalnızca İngilizce tür etiketiyle araması. İkisi de
+      kalktı; <b>ANATOLIA</b> rafı açıldı (en içteki halka, 11 istasyon). Bunun için önce
+      <b>listeye dokunmayan</b> bir keşif aracı yazıldı — "bu türde ne var" sorusu hasat
+      aracıyla sorulamıyordu, çünkü hasat dolu bir rafı hiç aramıyor.</li>
+      <li><b>Hasat bir rafı doldururken beşini birden kirletiyordu.</b> Yeni bir raf için
+      koşulan hasat, hedefin altındaki bütün raflara istasyon yığıyordu. Hedefi küçültmek
+      çözüm değil (yeni raf da "zaten dolu" sayılır). İş akışına <b>raf</b> kutusu kondu.</li>
+      <li><b>Yapay zekâ üretimi yayınlar listeye sızıyordu.</b> Beş tane vardı. Uygulamanın işi
+      çalanın <b>künyesini</b> göstermek; makinenin ürettiği yayında yazacak sanatçı yok.
+      Kalıcı süzgeç kondu, beşi de yasak listesinde.</li>
+      <li><b>Skins listesinden çıkış yolu yoktu.</b> ▾ ile liste açılıyordu ama geri dönmenin
+      tek yolu "SKINS" başlığına basmaktı ve bunu bilen yok. Aynı tuş artık ▴ oluyor.</li>
+      <li><b>OFF'a dönünce çark geri gelmiyordu.</b> Panelde bir kez DISC/RING'e basıldıysa
+      ödünç alınan merkez bir daha geri verilmiyordu. OFF uygulamanın kendisidir; orada
+      varsayılan çarktır.</li>
+      <li><b>Sol yıldız yanıp sönüyor ama hiçbir şey söylemiyordu.</b> Favori yokken
+      <b>sağdaki</b> yıldızı yakıp söndürüyordu — o an görünmüyor bile olabilir. Artık favori
+      yoksa yazıyla söylüyor, varsa önce soruyor.</li>
+      <li><b>Gökyüzünü büyütünce ortası boşalıyordu.</b> Her yıldızın yarıçapı en az 0,26'ydı
+      ve zumla doğrudan çarpılıyordu: büyütmek gökyüzünü ekranın dışına sürüyordu. İç sınır
+      kalktı, açılma zumdan yavaşladı, arka taraf tam siyaha indi.</li>
+      <li><b>Sallanan bir kontrol vardı ve şansla yeşil yanıyordu.</b> "Dönerken semboller ayrı
+      kalıyor" tek bir ana bakıyordu; oysa üçünün aynı gelmesi <b>bilerek</b> %12 ihtimalle
+      olan bir şey. Sekiz koşudan biri yanlış kırmızı yanıyordu. Artık on kare okunuyor.</li>
+    </ul>
 
     <p style="margin-bottom:12px"><b>1–10 Eylül'de bulunup kapananlar:</b></p>
     <ul class="liste bugun">

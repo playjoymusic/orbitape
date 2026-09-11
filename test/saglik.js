@@ -1029,6 +1029,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       /DONUS_TAVAN\s*=\s*\d+/.test(kDonus)
       && />=\s*DONUS_TAVAN\)\s*\{\s*_donusYerlestir/.test(kDonus),
       'tavansiz bekleme arayuzu gecissiz kilitli birakabilir');
+    /* ── DONUS OLCUSU GORULEN PENCEREYI DE SAYIYOR (11 Eylul) ────
+       Bildirilen: "yatay yapip tekrar dikey yapinca alttaki ogeler
+       en dibe cokuyor." Telefonda iki pencere var: innerHeight
+       YERLESIM penceresi (tarayici cubugu girip cikarken degismiyor),
+       visualViewport.height ise GORULEN pencere. Bekci yalnizca
+       innerHeight'a bakinca cubuk daha donmemisken "oturdu" deyip
+       yerlesimi erken hesapliyordu. */
+    K('Donus olcusu gorulen pencereyi de sayiyor',
+      /_donusBitir[\s\S]{0,900}?visualViewport[\s\S]{0,200}?const k = innerWidth/.test(kDonus)
+      || /const k = innerWidth[\s\S]{0,120}_vv \? Math\.round\(_vv\.height\)/.test(kDonus),
+      'yalnizca yerlesim penceresine bakan bekci erken yerlestirir');
+    K('Donusten sonra gec olcu icin bir kez daha bakiliyor',
+      /_donusYerlestir\(\);[\s\S]{0,600}setTimeout\([\s\S]{0,200}geriYerlestir/.test(kDonus),
+      'cubuk animasyonu tavandan sonra biterse yerlesim erken kalir');
     K('Donus surerken ikinci bir yerlestirme yok',
       /classList\.contains\('donuyor'\)\)\s*return;[\s\S]{0,80}geriYerlestir/.test(kDonus),
       'olcuIste donus bitmeden geriYerlestir cagirmamali');

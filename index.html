@@ -10778,11 +10778,42 @@
       try{ geriYerlestir(); }catch(e){ _yut(e); }
     };
     const _donusBitir = ()=>{
-      const k = innerWidth + 'x' + innerHeight;
+      /* ── OLCU ANAHTARINA GORUNUM PENCERESI DE GIRIYOR (11 Eylul) ──
+         Bildirilen: "yatay yapip tekrar dikey yapinca alttaki ogeler
+         en dibe cokuyor." Masaustu tarayicida yeniden uretilemedi ve
+         sebep tam olarak bu: orada boyle bir fark YOK.
+         Telefonda iki ayri pencere var. innerHeight YERLESIM
+         penceresi; tarayicinin alt/ust cubugu girip cikarken
+         degismiyor. visualViewport.height ise GORULEN pencere ve
+         donusten sonra cubuk geri gelirken hala hareket ediyor.
+         Bekci yalnizca innerHeight'a bakiyordu: uc esit olcu
+         goruyor, "oturdu" deyip yerlesimi cubuk HENUZ DONMEMISKEN
+         hesapliyordu. Cubuk sonra yerine gelince alt blok onun
+         altinda kaliyor -- ekranda "dibe coktu" diye goruluyor.
+         Ikinci delik: donus surerken (body.donuyor) gelen olaylar
+         ERTELENMIYOR, DUSURULUYOR (bkz. olcuIste'deki erken cikis).
+         Yani cubuk animasyonu donus penceresinin icinde bitiyorsa
+         o olcum hicbir zaman geri gelmiyordu.
+         Ikisi de kapandi: anahtar artik gorulen pencereyi de sayiyor,
+         ve yerlestikten sonra gec bir olcu icin bir kez daha
+         bakiliyor. */
+      const _vv = window.visualViewport;
+      const k = innerWidth + 'x' + innerHeight
+              + 'x' + (_vv ? Math.round(_vv.height) : 0);
       if(k !== _donusOlcu){ _donusOlcu = k; _donusEsit = 1; }
       else _donusEsit++;
       if(_donusEsit >= DONUS_ORNEK
-         || (Date.now() - _donusT0) >= DONUS_TAVAN){ _donusYerlestir(); return; }
+         || (Date.now() - _donusT0) >= DONUS_TAVAN){
+        _donusYerlestir();
+        /* GEC OLCU ICIN SON BIR BAKIS. Cubuk animasyonu bazi
+           surumlerde tavandan sonra bitiyor; o zaman yukaridaki
+           yerlestirme yine erken kalir. Bu tek seferlik gecikmeli
+           cagri onu duzeltiyor ve hicbir sey degismediyse
+           geriYerlestir zaten ayni sayilari yazip cikiyor. */
+        setTimeout(()=>{ try{ if(!document.body.classList.contains('donuyor'))
+          geriYerlestir(); }catch(e){ _yut(e); } }, 450);
+        return;
+      }
       _donusZaman = setTimeout(_donusBitir, DONUS_ARA);
     };
     window.addEventListener('orientationchange', ()=>{

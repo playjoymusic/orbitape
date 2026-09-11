@@ -21,8 +21,8 @@ Otomatik olanlar ayrı ve onlar bunun yerine geçmez:
 
 | Ne | Nerede | Ne yakalar |
 |---|---|---|
-| Sağlık kontrolü | her push | kod ve yerleşim (795 kontrol) |
-| Arıza · senaryo · motor · cihaz | her push | 266 kontrol daha |
+| Sağlık kontrolü | her push | kod ve yerleşim (799 kontrol) |
+| Arıza · senaryo · motor · cihaz | her push | 275 kontrol daha |
 | Derlenmiş çıktı | her push | yayına giden kopya (19 kontrol) |
 | Canlı duman testi | 15 dakikada bir | orbitape.app ayakta mı |
 | Canlı çalma sınaması | haftada bir + elle | seçilen raf dışından çalma |
