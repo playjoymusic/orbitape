@@ -334,7 +334,17 @@
      GORUNMEZ degil, KAPALI (display) -- yoksa cizmeye devam
      ederdi. Modul de kendi dongusunu birakiyor (bkz. fxAcikMi). */
   body.fx-acik #carkTuval{display:none !important;}
-  body.yildiz-zum #carkTuval,body.yildiz-zum #viz{opacity:.06;pointer-events:none;}
+  /* ── GOKYUZU ACIKKEN ARKA TARAF TAMAMEN BOS (10 Eylul gece) ─────
+     Once .06 opaklik birakiliyordu -- "tamamen kaybolmasin, yeri
+     belli olsun" diye. Kullanicinin gordugu baska: "yildizlar
+     buyurken fonda hala silik halka, cark vs gorunuyor; orasi uzay
+     boslugu gibi olsa, kir gibi duruyor." Hakli: gokyuzunde bir sey
+     ararken gozun taktigi tek sey o silik daireler oluyor ve onlar
+     bir bilgi tasimiyor.
+     Sifir opaklik yeterli -- gecis suresi ayni kaliyor, yani
+     kaybolma yine yumusak. Tuval CIZMEYE devam ediyor (display
+     degil opacity), boylece jest bitince beklemeden geri geliyor. */
+  body.yildiz-zum #carkTuval,body.yildiz-zum #viz{opacity:0;pointer-events:none;}
   .hit{position:absolute;inset:0;border:0;background:transparent;border-radius:50%;cursor:pointer;z-index:2;
     touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   .hit:focus-visible{outline:1px solid rgba(53,224,216,.35);outline-offset:10px;}
@@ -11001,7 +11011,17 @@
                  /* Altin aci: ardisik indeksler hicbir zaman ayni
                     yone dizilmiyor, gokyuzu esit dagiliyor. */
                  a: (t * 2.39996) % 6.28318,
-                 r: 0.26 + 0.70 * Math.sqrt((t % 89) / 89),
+                 /* ── IC SINIR KALKTI (10 Eylul gece) ────────────
+                    Once 0.26'ydi: HICBIR yildiz diskin ortasina
+                    yakin degildi. Yaricap zumla dogrudan carpildigi
+                    icin buyuttukce hepsi disari kaciyor ve ortada
+                    tanim geregi hicbir sey kalmiyordu.
+                    Kullanicinin gordugu: "yildizlar saga sola
+                    acilacagina sanki ortadan bize dogru olsa; orta
+                    bos buyuyor." 0.05'e inince gokyuzunun merkezi de
+                    doluyor ve buyutme ortadan disa dogru bir akis
+                    gibi okunuyor. */
+                 r: 0.05 + 0.86 * Math.sqrt((t % 89) / 89),
                  b: 0.55 + ((t * 7) % 13) / 13 * 0.85 };
       });
     }catch(e){ _yut(e); }
@@ -11116,8 +11136,18 @@
   }
   /* Yildizin ekrandaki yeri: durgun ekranda da, zumda da AYNI
      formul -- yildiz buyurken yerinden ziplamiyor. */
+  /* ── ACILMA ZUMDAN YAVAS (10 Eylul gece) ───────────────────────
+     Yaricap dogrudan zumla carpiliyordu: 4.2 kat acinca her yildiz
+     4.2 kat disari gidiyor, gokyuzu ekrani terk ediyordu. Buyutmenin
+     ISI ust uste binenleri ayirmak; bunun icin 4.2 kat sacilma
+     gerekmiyor. Katsayi 0.55: tavanda acilma 2.76 kat -- ayirmaya
+     fazlasiyla yetiyor, ama merkez bosalmiyor.
+     GORUNUR SAYI zumla artmaya devam ediyor, yani kalabalik
+     seyrelmesi kaybolmuyor. CIZIM VE DOKUNMA ayni fonksiyonu
+     kullaniyor; burada degisen sey ikisinde birden degisiyor. */
+  const YIL_ACILMA = 0.55;
   function yildizNokta(y, cx, cy, taban, olcek){
-    const rr = y.r * taban * olcek;
+    const rr = y.r * taban * (1 + (olcek - 1) * YIL_ACILMA);
     return { x: cx + Math.cos(y.a) * rr, y: cy + Math.sin(y.a) * rr };
   }
   /* Kaydirma sinirsiz degil: gokyuzunu tamamen ekran disina itip
@@ -11151,6 +11181,16 @@
       /* Acilma orani: zum 1'e yakinken katman gorunmez, acildikca
          yildizlar geliyor. */
       const gel = Math.max(0, Math.min(1, (_zum - 1) / 0.9));
+      /* ── ARKASI SIMSIYAH UZAY (10 Eylul gece) ─────────────────
+         Kullanicinin sozu: "arkasi simsiyah uzay olacak."
+         Cark/halka zaten sifir opakliga cekiliyor ama ARKADA deri
+         zemini duruyordu; acik bir deride gokyuzu gri bir kagida
+         donuyor. Siyah DOM'da degil TUVALDE: boylece ustteki arayuz
+         (kunye, konsol, ust serit) yerinde kaliyor ve yigin duzeni
+         hic degismiyor. Opaklik acilmayla birlikte geliyor, yani
+         jest yumusak basliyor. */
+      c.fillStyle = 'rgba(0,0,0,' + gel.toFixed(3) + ')';
+      c.fillRect(0, 0, W, H);
       const calan = calanYildiz();
       /* ── HARITA GIBI: BUYUDUKCE DAHA COK ISTASYON ─────────────
          Kullanicinin kurdugu benzetme buydu: "haritayi buyuttukce

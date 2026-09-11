@@ -436,6 +436,38 @@ async function gokyuzuOlc(sayfa){
     K('[' + ek.ad + '] gokyuzu kapaniyor', !!g && !g.yok && g.kapandi === true,
        g && !g.yok ? 'katman birakildi' : 'olculemedi');
 
+    /* ── DONDURUP GERI DONUNCE ALT OGELER YERINDE KALMALI ──────
+       Kullanicinin bildirdigi: "telefonu yatay yapip tekrar dikey
+       yapinca alttaki ogeler en dibe cokuyor."
+       Doner ekran yerlesimin en kirilgan ani: olcum zinciri bir
+       onceki yonun sayilariyla kosarsa alt kenar payi kayboluyor.
+       Olculen sey: dondur, geri dondur, alt kenardan uzakliklar
+       BASLANGICTAKININ AYNISI olsun (1 px tolerans). */
+    {
+      const alt = ()=>sayfa.evaluate(()=>{
+        const o = {};
+        ['araclar','tasima','np','ara'].forEach(id=>{
+          const e = document.getElementById(id); if(!e) return;
+          const r = e.getBoundingClientRect();
+          if(r.width) o[id] = Math.round(innerHeight - r.bottom);
+        });
+        return o;
+      });
+      const once = await alt();
+      await sayfa.setViewportSize({ width:ek.h, height:ek.w });
+      await sayfa.waitForTimeout(1800);
+      await sayfa.setViewportSize({ width:ek.w, height:ek.h });
+      await sayfa.waitForTimeout(2400);
+      const sonra = await alt();
+      const kayan = Object.keys(once).filter(k =>
+        !(k in sonra) || Math.abs(sonra[k] - once[k]) > 1)
+        .map(k => k + ' ' + once[k] + '->' + (k in sonra ? sonra[k] : 'yok'));
+      K('[' + ek.ad + '] donup geri gelince alt ogeler yerinde',
+         kayan.length === 0,
+         kayan.length ? kayan.join(' | ')
+                      : (Object.keys(once).length + ' oge, dipten uzakliklar ayni'));
+    }
+
     await baglam.close();
   }
 

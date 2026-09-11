@@ -9000,13 +9000,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const d2 = window.yildizDurum();
         c.zumAcildi = d2.acik === true && document.body.classList.contains('yildiz-zum');
         c.katVar = !!document.getElementById('yildizKat');
+        /* ── GOKYUZU ACIKKEN ARKA TARAF TAMAMEN BOS ───────────────
+           Kullanicinin sozu: "yildizlar buyurken fonda hala silik
+           halka, cark vs gorunuyor; orasi uzay boslugu gibi olsa,
+           kir gibi duruyor." Once .06 opaklik birakiliyordu.
+           Olculen sey: ikisi de TAM sifir. */
+        {
+          const _ct = document.getElementById('carkTuval');
+          const _vz = document.getElementById('viz');
+          c.arkaBos = (!_ct || +getComputedStyle(_ct).opacity === 0)
+                   && (!_vz || +getComputedStyle(_vz).opacity === 0);
+        }
         /* Bir yildizin ekrandaki yerini uygulamanin formuluyle bul. */
         const disk = document.querySelector('.disk').getBoundingClientRect();
         const cx = disk.left + disk.width/2, cy = disk.top + disk.height/2;
         const taban = disk.width * 0.5 * 0.9, z = window.yildizDurum().zum;
+        /* 10 Eylul: ic sinir 0.26 -> 0.05 ve acilma zumdan yavas
+           (katsayi 0.55). Bu satirlar uygulamanin formulunu BIREBIR
+           tekrarliyor -- degisirse burasi da degismek zorunda, yoksa
+           test uygulamanin cizdigi yere degil eski bir yere basar. */
         const t = 5, a = (t * 2.39996) % 6.28318,
-              r = 0.26 + 0.70 * Math.sqrt((t % 89) / 89);
-        const px = cx + Math.cos(a) * r * taban * z, py = cy + Math.sin(a) * r * taban * z;
+              r = 0.05 + 0.86 * Math.sqrt((t % 89) / 89),
+              yay = taban * (1 + (z - 1) * 0.55);
+        const px = cx + Math.cos(a) * r * yay, py = cy + Math.sin(a) * r * yay;
         const kat = document.getElementById('yildizKat');
         const oncekiCalan = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '');
         /* Karar parmak KALKINCA veriliyor (kaydirmadan ayirmak
@@ -9055,9 +9071,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const cx2 = disk2.left + disk2.width/2 + kay.x, cy2 = disk2.top + disk2.height/2 + kay.y;
         const taban2 = disk2.width * 0.5 * 0.9, z2 = window.yildizDurum().zum;
         const t2 = 5, a2 = (t2 * 2.39996) % 6.28318,
-              r2 = 0.26 + 0.70 * Math.sqrt((t2 % 89) / 89);
-        const px2 = cx2 + Math.cos(a2) * r2 * taban2 * z2,
-              py2 = cy2 + Math.sin(a2) * r2 * taban2 * z2;
+              r2 = 0.05 + 0.86 * Math.sqrt((t2 % 89) / 89),
+              yay2 = taban2 * (1 + (z2 - 1) * 0.55);
+        const px2 = cx2 + Math.cos(a2) * r2 * yay2,
+              py2 = cy2 + Math.sin(a2) * r2 * yay2;
         if(px2 > 4 && px2 < innerWidth - 4 && py2 > 4 && py2 < innerHeight - 4){
           olay('pointerdown', px2, py2); olay('pointerup', px2, py2); await bek(90);
           c.kaydiktanSonraSecim = window.yildizDurum().secili === 'Yildiz 4';
@@ -9073,11 +9090,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const dd = document.querySelector('.disk').getBoundingClientRect();
           const ccx = dd.left + dd.width/2 + kk.x, ccy = dd.top + dd.height/2 + kk.y;
           const tb2 = dd.width * 0.5 * 0.9, zz = window.yildizDurum().zum;
+          const yay3 = tb2 * (1 + (zz - 1) * 0.55);
           for(let i = 0; i < 12; i++){
             const aa = ((i+1) * 2.39996) % 6.28318,
-                  rr = 0.26 + 0.70 * Math.sqrt(((i+1) % 89) / 89);
-            const xx = ccx + Math.cos(aa) * rr * tb2 * zz,
-                  yy = ccy + Math.sin(aa) * rr * tb2 * zz;
+                  rr = 0.05 + 0.86 * Math.sqrt(((i+1) % 89) / 89);
+            const xx = ccx + Math.cos(aa) * rr * yay3,
+                  yy = ccy + Math.sin(aa) * rr * yay3;
             if(xx > 60 && xx < innerWidth - 60 && yy > 60 && yy < innerHeight - 60){
               sec2 = { i, xx, yy }; break;
             }
@@ -9146,6 +9164,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        yz.rafKadar === true && yz.rafDegisti === true, ozy || '12 / 8 istasyon');
     K('Calan istasyonun yildizi isaretli', yz.calanYildizVar === true,
        ozy || 'calan yildiz bulunuyor');
+    K('Gokyuzu acikken arka taraf tamamen bos', yz.arkaBos === true,
+      yz.arkaBos ? 'cark ve viz opakligi sifir' : 'arkada silik bir sey duruyor');
     K('Iki parmakla gokyuzu aciliyor', yz.zumAcildi === true && yz.katVar === true,
        ozy || 'zum 2.6, katman ekranda');
     K('Ilk dokunus YALNIZCA adi gosteriyor', yz.ilkDokunusAd === true
