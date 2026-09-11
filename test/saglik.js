@@ -630,8 +630,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ve akis bekcisinin ekran kapaliyken duvar saatiyle olcmesi.
      Olculen artis 104.539 - 104.4xx bayt araligi, yani ~0,1 KB
      brotli; tavan 102,09'da asildi. Yeni tavan yine FREN: bugunku
-     olcumun ~%2 ustu, kacak bir buyume hala burada yakalanir. */
-  const ILK_CIZIM_TAVAN = _derlendi ? 104 : 260, ILK_ACILIS_TAVAN = _derlendi ? 110 : 302;
+     olcumun ~%2 ustu, kacak bir buyume hala burada yakalanir.
+     11 EYLUL: 104 -> 106. Dorduncu deri serisi geldi; index'e giren
+     sey YALNIZCA yirmi bes satirlik DERILER tablosu -- cizimlerin
+     kendisi ayri dosyada ve acilista inmiyor. Olculen artis
+     103.07 -> 103.75 KB, yani 0,7 KB. Yeni tavan yine fren: bugunku
+     olcumun ~%2 ustu. Bir deri satiri ~0,03 KB; yani bu tavan
+     altmis deri daha kaldirir, kacak bir buyume yine yakalanir. */
+  const ILK_CIZIM_TAVAN = _derlendi ? 106 : 260, ILK_ACILIS_TAVAN = _derlendi ? 112 : 302;
   K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
@@ -710,8 +716,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          · Olculen boy 14,4 KB brotli. Tavan 18: bugunku degil,
            birkac deri daha eklenirse de sessizce asilmayacak bir
            sinir. Uzerine cikmak yine yaziyla olacak.
+       11 EYLUL: 18 -> 20. Dorduncu seri geldi -- boyut, akim,
+       malzeme ve isik basliklarinda YIRMI ALTI yeni cizim
+       (girisim, anaglif, imkansiz izometri, kostik, lentikuler;
+       orfik, konstruktivist, rayonist, vortisist, renk alani, hard
+       edge, kinetik, minimal; siyanotip, ebru, tezhip, girih, tipo,
+       tram, oyma, batik; tutulma, yanardoner, prizma, derin alan).
+       Olculen yeni boy 19,12 KB. Bu dosya ACILISTA INMIYOR: yalnizca
+       cizimli bir deri secilince iniyor ve inmezse kaybedilen tek
+       sey arka plandaki resim. Yani buyume kullanicinin ilk
+       saniyesine degil, yalnizca deri gezenin bir defalik
+       indirmesine yaziliyor.
        ILK CIZIM tavanina dokunmuyor: bu dosya acilista inmiyor. */
-    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 18 };
+    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 20 };
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
     const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
@@ -764,9 +781,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        sey vaat ediyordu). Bir de galeri okunun neden iki yone
        calistigi. Bu satirlar silinirse bir sonraki kisi TR'yi
        yeniden kara listeye alir ya da rafi yeniden adlandirir.
+       Son yukseltme (1152 -> 1168): dorduncu deri serisinin yirmi
+       alti satiri ve serinin NEDEN'i -- ad uslubun adi, eserin
+       degil; geometri ekrandaki dort sabit yere bagli; sag alt
+       ceyrek sakin kaliyor cunku kunye orada. Bu uc cumle
+       silinirse bir sonraki kisi belirli bir tabloyu yeniden
+       cizmeye kalkar ve kompozisyonu yazinin uzerine kurar.
        Tavan bir koruma; islev eklenince yaziyla yukseltiliyor,
        sessizce degil. */
-    K('Ham boy < 1152 KB', dosyaBoy < 1152*1024,
+    K('Ham boy < 1168 KB', dosyaBoy < 1168*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }

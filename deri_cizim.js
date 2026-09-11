@@ -161,7 +161,61 @@ const DERI_USLUP = {
   kubik    : { pal:["#b8a77c","#6f6244","#3a3428","#d8cfae","#8a3c2c"], tohum:47 },
   murekkep : { pal:["#f4f1e8","#1a1a18","#5a5a54","#9a9a92","#c8c4b8"], tohum:11 },
   vitray   : { pal:["#141018","#c8322e","#1f5fa8","#e8b632","#2f8a5c"], tohum:53 },
-  goblen   : { pal:["#2a1f18","#8a5a3c","#c8a06a","#5a6f4c","#e0d0b0"], tohum:67 }
+  goblen   : { pal:["#2a1f18","#8a5a3c","#c8a06a","#5a6f4c","#e0d0b0"], tohum:67 },
+  /* ══ DORDUNCU SERI — BOYUT, AKIM, MALZEME, ISIK (11 Eylul) ═══════
+     Kullanicinin sozu: "derin sanatsal estetik design calis, daha
+     oncekileri geride biraksin; boyutsal, kavramsal vs. akimlari
+     arastir."
+     UC KURAL BURADA DA GECERLI:
+       1. AD USLUBUN ADI, ESERIN DEGIL. Hicbiri belirli bir tabloyu
+          yeniden cizmiyor; her biri bir AKIMIN ya da bir TEKNIGIN
+          kendi araclariyla kurulmus yeni bir kompozisyon.
+       2. GEOMETRI EKRANA BAGLI. Ekranda dort sabit yer var ve
+          olculdu (390x844): sol sutun simgeleri x 0.02-0.18W,
+          y 0.06-0.32H · ust serit y ~0.05H · alt sol tus satirlari
+          y 0.86-0.95H · ortadaki disk merkez 0.50/0.50, r ~0.39W.
+          Her kompozisyon bunlarin en az ikisine dayaniyor ve SAG
+          ALT CEYREK sakin kaliyor -- calan parcanin kunyesi orada.
+       3. RASGELELIK TOHUMLU. Ekran ve fotograf ayni resmi cizmeli.
+
+     BOYUT: gozun derinlik kurdugu yollar -- girisim, iki renkli
+     kayma, katman, imkansiz izometri, kirilma, serit.
+     AKIM: yirminci yuzyilin bicim dilleri.
+     MALZEME: bir tekniğin kendi izi (gunes baskisi, murekkep kaymasi,
+     mermer suyu, tezhip altini, oyma, mum catlagi).
+     ISIK: gokyuzunun fizigi. */
+  moire    : { pal:["#07080c","#e8e4dc","#3ad1c0","#8a90a0","#1a1e26"], tohum:31 },
+  anaglif  : { pal:["#0a0a0c","#ff3b3b","#3bd9ff","#e8e8ec","#141418"], tohum:17 },
+  katman   : { pal:["#0b1020","#1c2c4c","#37507c","#6f86ac","#c8d6ea"], tohum:23 },
+  penrose  : { pal:["#101014","#e0dcd2","#a8a294","#5c584e","#2a2824"], tohum:41 },
+  kostik   : { pal:["#031218","#0a3a4a","#3fd0e0","#b8f4ff","#02080c"], tohum:59 },
+  serit    : { pal:["#0d0d12","#e85a3c","#2ab0c8","#f0ece0","#1c1c26"], tohum:71 },
+  orfik    : { pal:["#12101c","#e8623c","#2f8fd0","#f2c23c","#7a4cc0"], tohum:19 },
+  yapisal  : { pal:["#0f0f10","#e8463a","#e8e4dc","#8c8880","#1e1e20"], tohum:37 },
+  isin     : { pal:["#08070e","#f0e0a0","#e8623c","#4ac0e0","#1a1830"], tohum:43 },
+  vorteks  : { pal:["#0c0c12","#c8d0dc","#4a5a78","#e8a03c","#1a1c26"], tohum:53 },
+  alan     : { pal:["#2a1410","#c04a28","#e08a4c","#6a1c18","#f0d8b8"], tohum:13 },
+  kesin    : { pal:["#f0ece2","#1c2a4c","#e0462c","#f2b632","#0c0c10"], tohum:29 },
+  devinim  : { pal:["#0a0c14","#e8e4dc","#3ad1c0","#e8623c","#161a24"], tohum:61 },
+  siyanotip: { pal:["#0a2a4c","#164a7c","#3a7cb8","#c8e0f0","#06182c"], tohum:11 },
+  ebru     : { pal:["#f0e8d8","#1c4a6c","#c83c2c","#e0a028","#2a6a4c"], tohum:47 },
+  tezhip   : { pal:["#1a1408","#c9a227","#e8cf7a","#2a4a3c","#8a2c28"], tohum:67 },
+  /* ── RETRO UCLU (11 Eylul, ayni gece) ─────────────────────────
+     Kullanicinin sozu: "bu 3'u alakasiz, sil direkt. retro renkler
+     calis, pembe mordan git biraz fusya yavruagzi vs."
+     Girih, tipo ve tram gitti. Yerlerine gelen uclu ayni renk
+     ailesinden besleniyor: yavruagzi zemin, fusya ve mor vurgu,
+     nane ve krem nefes araligi. Uslup da o renklerin geldigi yerden
+     -- seksenlerin tasarim dili. */
+  memphis  : { pal:["#f6d9cf","#e8489a","#7b3fb8","#3fd0c0","#f2e9dd"], tohum:127 },
+  terrazzo : { pal:["#f2cfc4","#c8407c","#6a3a9c","#4cc0a8","#fdf4ec"], tohum:131 },
+  hava     : { pal:["#2a1030","#f06aa8","#a05ad8","#f8c8a0","#ffe8f2"], tohum:137 },
+  oyma     : { pal:["#0e0e0c","#e8e2d4","#8a8578","#3a382e","#c0b8a4"], tohum:97 },
+  batik    : { pal:["#10202c","#2a6a7c","#e0c84c","#c84a2c","#f0e8d0"], tohum:101 },
+  tutulma  : { pal:["#04050a","#f2e4b8","#e8a03c","#1a1c2c","#ffffff"], tohum:103 },
+  yanardoner:{ pal:["#0a0a12","#7cf0d0","#c07cf0","#f0d07c","#e8f0ff"], tohum:107 },
+  prizma   : { pal:["#08080c","#ff3b6b","#ffd23b","#3bd9ff","#f4f4f8"], tohum:109 },
+  derinalan: { pal:["#03040a","#e8e4f0","#c88a4c","#6a8ad0","#0a0c18"], tohum:113 }
 };
 function _uslup(d){ return (d && DERI_USLUP[d.cizim]) || {}; }
 function _pal(d){ const u = _uslup(d); return (d && d.pal) || u.pal || ['#888']; }
@@ -2644,6 +2698,859 @@ const DERI_CIZIM = {
       const y = H*(i/40);
       c.beginPath(); c.moveTo(0, y); c.lineTo(u*0.03 + r()*u*0.02, y + adim*0.4); c.stroke();
     }
+    c.restore();
+  },
+  /* ══ DORDUNCU SERI ═════════════════════════════════════════════
+     Bkz. DERI_USLUP'teki uzun not: ad uslubun adi, geometri ekrana
+     bagli, rasgelelik tohumlu. */
+  /* ── BOYUT ───────────────────────────────────────────────────── */
+  /* MOIRE — iki izgara, aralarinda kucuk bir aci. Goz ikisini
+     ayri ayri degil GIRISIMLERINI goruyor; desen tuvalde yok,
+     bakanda olusuyor. Ic ice iki merkez: biri ortadaki diskte,
+     oteki sol simge sutununda -- bantlar ikisinin arasinda
+     geziniyor. */
+  moire(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    /* Iki izgara, aralarinda 4 derece. Bantlar tuvalde YOK: iki
+       izgaranin ustuste gelmesinden doguyor. Cizgi kalinligi arayla
+       ayni mertebede olmali, yoksa girisim silikleserek kayboluyor --
+       ilk denemede tam bu oldu. */
+    const ara = u*0.026, kal = u*0.013;
+    const izgara = (cx, cy, aci, renk)=>{
+      c.save(); c.translate(cx, cy); c.rotate(aci);
+      c.strokeStyle = renk; c.lineWidth = kal;
+      const n = Math.ceil(Math.hypot(W, H)/ara) + 2;
+      c.beginPath();
+      for(let i = -n; i <= n; i++){ c.moveTo(i*ara, -H*1.5); c.lineTo(i*ara, H*1.5); }
+      c.stroke(); c.restore();
+    };
+    izgara(W*0.50, H*0.50, 0, _zemRgba(p[1], 0.92));
+    c.globalCompositeOperation = 'difference';
+    izgara(W*0.50, H*0.50, 0.070, _zemRgba(p[1], 0.92));
+    c.globalCompositeOperation = 'source-over';
+    /* Ikinci girisim ailesi: es merkezli halkalar, biri sol simge
+       sutununda. Dairesel moire dalga gibi okunuyor. */
+    c.globalCompositeOperation = 'difference';
+    c.strokeStyle = _zemRgba(p[2], 0.55); c.lineWidth = kal*0.8;
+    for(let k = 1; k < 46; k++){
+      c.beginPath(); c.arc(W*0.12, H*0.20, ara*k*1.15, 0, 6.2832); c.stroke();
+    }
+    c.globalCompositeOperation = 'source-over';
+    c.restore();
+  },
+  /* ANAGLIF — ayni bicim iki renkte ve birbirinden KAYIK. Kirmizi
+     ve camgobegi ust uste binince goz derinlik uyduruyor; kayma
+     ne kadar buyukse bicim o kadar one geliyor. Uc halka, uc ayri
+     kayma, yani uc ayri uzaklik. */
+  anaglif(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    /* Kayma ne kadar buyukse bicim o kadar ONDE. Uc uzaklik var ve
+       ucu de ekrandaki gercek bir seye denk geliyor: en onde alt
+       tuslarin hizasindaki izgara, ortada disk, en arkada ust serit.
+       Ilk denemede yalnizca uc halka vardi ve kavram okunmuyordu --
+       derinlik icin en az iki DUZLEM gerekiyor. */
+    const cift = (ciz, kay)=>{
+      c.globalCompositeOperation = 'lighter';
+      c.save(); c.translate(-kay, 0); c.strokeStyle = p[1]; c.fillStyle = p[1]; ciz(); c.restore();
+      c.save(); c.translate( kay, 0); c.strokeStyle = p[2]; c.fillStyle = p[2]; ciz(); c.restore();
+      c.globalCompositeOperation = 'source-over';
+    };
+    /* Arka duzlem: ust seride paralel ince cizgiler, kucuk kayma */
+    cift(()=>{
+      c.lineWidth = u*0.004;
+      for(let i = 0; i < 7; i++){
+        const y = H*(0.045 + i*0.026);
+        c.beginPath(); c.moveTo(W*0.04, y); c.lineTo(W*0.96, y); c.stroke();
+      }
+    }, u*0.006);
+    /* Orta duzlem: es merkezli halkalar */
+    cift(()=>{
+      c.lineWidth = u*0.009;
+      [0.40, 0.30, 0.20].forEach(k=>{
+        c.beginPath(); c.arc(W*0.50, H*0.48, u*k, 0, 6.2832); c.stroke();
+      });
+    }, u*0.020);
+    /* On duzlem: izgara ve dolu kare, en buyuk kayma */
+    cift(()=>{
+      c.lineWidth = u*0.005;
+      for(let i = 0; i <= 6; i++){
+        const x = W*(0.10 + i*0.133);
+        c.beginPath(); c.moveTo(x, H*0.70); c.lineTo(x, H*0.92); c.stroke();
+      }
+      for(let i = 0; i <= 3; i++){
+        const y = H*(0.70 + i*0.073);
+        c.beginPath(); c.moveTo(W*0.10, y); c.lineTo(W*0.90, y); c.stroke();
+      }
+      c.fillRect(W*0.06, H*0.14, u*0.13, u*0.13);
+    }, u*0.038);
+    c.restore();
+  },
+  /* KATMAN — derinlik perspektifle degil ORTUSMEYLE kuruluyor:
+     yedi ufuk, her biri bir oncekinin onunde, her biri biraz daha
+     acik ve biraz daha kabarik. En ondeki katman alt tuslarin
+     hizasinda duruyor; en arkadaki ust seridin altinda. */
+  katman(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d));
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[0]); g.addColorStop(1, p[1]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    for(let k = 0; k < 7; k++){
+      const t = k / 6;
+      const taban = H*(0.30 + t*0.62);
+      const yuk = H*(0.030 + t*0.075);
+      c.fillStyle = k < 3 ? p[2] : (k < 5 ? p[3] : p[4]);
+      c.globalAlpha = 0.30 + t*0.62;
+      c.beginPath(); c.moveTo(-W*0.05, H*1.05); c.lineTo(-W*0.05, taban);
+      const n = 7 + k;
+      for(let i = 0; i <= n; i++){
+        const x = -W*0.05 + (W*1.10)*(i/n);
+        const y = taban - Math.sin(i*1.7 + k)*yuk*(0.5 + r()*0.7);
+        c.lineTo(x, y);
+      }
+      c.lineTo(W*1.05, H*1.05); c.closePath(); c.fill();
+    }
+    c.globalAlpha = 1;
+    c.restore();
+  },
+  /* PENROSE — izometrik cubuklar, ama birlestikleri yer imkansiz.
+     Kagit uzerinde tutarli, uzayda degil: kavramsal sanatin en eski
+     numarasi. Uc kol ortadaki diskin cevresinde donuyor; sol simge
+     sutunu ucuncu kolun altindan geciyor. */
+  penrose(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    /* IMKANSIZ UCGEN. Uc kol; her kolun uc yuzu var ve her yuz
+       kendi isigini aliyor. Kagit uzerinde tutarli, uzayda degil:
+       goz once nesneyi kabul ediyor, sonra kabul ettigi seyin
+       olamayacagini fark ediyor. Ilk denemede kollar kisa ve dagimik
+       kalmisti -- yanilsama ancak kollar BIRLESIRSE calisiyor. */
+    const cx = W*0.50, cy = H*0.47, L = u*0.42, k = u*0.115;
+    const P = (x, y)=>[x, y];
+    const yuz = (a, b, cc, dd, renk)=>{
+      c.fillStyle = renk; c.beginPath();
+      c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(cc[0], cc[1]); c.lineTo(dd[0], dd[1]);
+      c.closePath(); c.fill();
+      c.strokeStyle = p[0]; c.lineWidth = u*0.006; c.stroke();
+    };
+    /* Ucgenin uc kosesi (izometrik) */
+    const A = P(cx, cy - L*0.62), B = P(cx + L*0.86, cy + L*0.50), C = P(cx - L*0.86, cy + L*0.50);
+    const ic = (q, t)=>P(q[0] + (cx - q[0])*t, q[1] + (cy - q[1])*t);
+    const A2 = ic(A, 0.34), B2 = ic(B, 0.34), C2 = ic(C, 0.34);
+    const kol = (u1, u2, i1, i2, r1, r2, r3)=>{
+      yuz(u1, u2, i2, i1, r1);
+      yuz(u1, [u1[0], u1[1] - k], [u2[0], u2[1] - k], u2, r2);
+      yuz(i1, [i1[0], i1[1] - k], [u1[0], u1[1] - k], u1, r3);
+    };
+    kol(A, B, A2, B2, p[1], p[2], p[3]);
+    kol(B, C, B2, C2, p[2], p[3], p[1]);
+    kol(C, A, C2, A2, p[3], p[1], p[2]);
+    /* Sol sutunun arkasinda kucuk bir es: ayni imkansizlik. */
+    c.save(); c.translate(W*0.12, H*0.17); c.scale(0.26, 0.26); c.translate(-cx, -cy);
+    kol(A, B, A2, B2, _zemRgba(p[1], 0.55), _zemRgba(p[2], 0.55), _zemRgba(p[3], 0.55));
+    kol(B, C, B2, C2, _zemRgba(p[2], 0.55), _zemRgba(p[3], 0.55), _zemRgba(p[1], 0.55));
+    kol(C, A, C2, A2, _zemRgba(p[3], 0.55), _zemRgba(p[1], 0.55), _zemRgba(p[2], 0.55));
+    c.restore();
+    c.restore();
+  },
+  /* KOSTIK — suyun altindan gecen isik. Yuzeydeki her dalga bir
+     mercek gibi davraniyor ve tabanda yogunlastigi yerde parlak bir
+     ag cikiyor. Ag yukaridan asagi seyreliyor: sag alt ceyrek
+     neredeyse karanlik. */
+  kostik(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[1]); g.addColorStop(0.55, p[0]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.globalCompositeOperation = 'lighter';
+    c.lineCap = 'round';
+    for(let i = 0; i < 34; i++){
+      const t = i/33;
+      c.strokeStyle = _zemRgba(i % 3 ? p[2] : p[3], 0.34*(1 - t*0.72));
+      c.lineWidth = u*(0.010 - t*0.005);
+      c.beginPath();
+      for(let x = -20; x <= W + 20; x += 8){
+        const f = x/W;
+        const y = H*(0.06 + t*0.92)
+                + Math.sin(f*8.1 + i*1.7)*u*0.045
+                + Math.sin(f*19.3 + i*0.9)*u*0.022;
+        if(x < 0) c.moveTo(x, y); else c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+    c.globalCompositeOperation = 'source-over';
+    c.restore();
+  },
+  /* SERIT — lentikuler baski: yuzey dar dikey seritlere bolunuyor
+     ve komsu seritler BASKA bir resimden geliyor. Bakis acisi
+     degisince oteki resim cikar; burada ikisi ayni anda duruyor ve
+     goz hangisini secegini bilemiyor. Serit genisligi sol sutundan
+     saga dogru aciliyor. */
+  serit(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const n = 46;
+    for(let i = 0; i < n; i++){
+      const x = W*(i/n), w = W/n + 0.6;
+      const t = i/(n-1);
+      if(i % 2){
+        /* Resim A: yatay bant */
+        c.fillStyle = _zemRgba(p[1], 0.85);
+        c.fillRect(x, H*(0.30 + Math.sin(t*3.1)*0.05), w, H*0.34);
+      }else{
+        /* Resim B: buyuk daire */
+        const cx = W*0.50, cy = H*0.50, yr = u*0.42;
+        const dx = x + w/2 - cx;
+        if(Math.abs(dx) < yr){
+          const yy = Math.sqrt(yr*yr - dx*dx);
+          c.fillStyle = _zemRgba(p[2], 0.80);
+          c.fillRect(x, cy - yy, w, yy*2);
+        }
+      }
+    }
+    /* Ust seritte ince bir tarak: serit fikrini basliga bagliyor. */
+    c.fillStyle = _zemRgba(p[3], 0.55);
+    for(let i = 0; i < n; i += 2) c.fillRect(W*(i/n), H*0.035, W/n, H*0.035);
+    c.restore();
+  },
+  /* ── AKIM ────────────────────────────────────────────────────── */
+  /* ORFIK — es zamanli karsitlik: renkler karismadan, YAN YANA
+     durarak titriyor. Daireler renk carkindan sirayla aliyor ve
+     birbirini kesiyor; kesisimde ucuncu bir renk goruluyor ama
+     tuvalde yok. Buyuk disk ortada, kucukleri sol sutunda. */
+  orfik(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const disk = (cx, cy, yr, i0)=>{
+      for(let k = 6; k >= 1; k--){
+        c.globalAlpha = 0.42;
+        c.fillStyle = p[1 + ((i0 + k) % 4)];
+        c.beginPath(); c.arc(cx, cy, yr*k/6, 0, 6.2832); c.fill();
+      }
+    };
+    disk(W*0.50, H*0.48, u*0.42, 0);
+    disk(W*0.13, H*0.20, u*0.16, 2);
+    disk(W*0.84, H*0.30, u*0.12, 1);
+    /* Ceyrek dilimler: carkin kendisi de bir bicim. */
+    c.globalAlpha = 0.55;
+    for(let i = 0; i < 8; i++){
+      c.fillStyle = p[1 + (i % 4)];
+      c.beginPath(); c.moveTo(W*0.50, H*0.48);
+      c.arc(W*0.50, H*0.48, u*0.44, i*0.7854, i*0.7854 + 0.39);
+      c.closePath(); c.fill();
+    }
+    c.globalAlpha = 1;
+    c.restore();
+  },
+  /* YAPISAL — konstruktivizm: diyagonal, kirmizi, ve bicim bir
+     sey ANLATIR. Capraz kirisler sol ustten sag alta inmiyor;
+     tam tersi -- sag alt ceyrege girmeden kesiliyorlar, cunku
+     kunye orada. Daire bir vurgu degil bir DUGUM: kirislerin
+     dugumlendigi yer. */
+  yapisal(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    c.save();
+    c.translate(W*0.46, H*0.44); c.rotate(-0.62);
+    [[-1.5, 0.10, p[1]], [-0.3, 0.045, p[2]], [0.9, 0.07, p[3]]].forEach(([o, kal, renk])=>{
+      c.fillStyle = renk; c.fillRect(-u*1.2, u*o*0.22, u*2.4, u*kal);
+    });
+    c.restore();
+    c.save();
+    c.translate(W*0.40, H*0.40); c.rotate(0.86);
+    c.fillStyle = p[1]; c.fillRect(-u*1.1, -u*0.020, u*1.7, u*0.040);
+    c.restore();
+    c.strokeStyle = p[2]; c.lineWidth = u*0.012;
+    c.beginPath(); c.arc(W*0.46, H*0.44, u*0.30, 0, 6.2832); c.stroke();
+    c.fillStyle = p[1];
+    c.beginPath(); c.arc(W*0.13, H*0.17, u*0.055, 0, 6.2832); c.fill();
+    c.restore();
+  },
+  /* ISIN — rayonizm: resmin konusu nesne degil, nesneden YANSIYAN
+     isin. Iki kaynak var: ortadaki disk ve sol ust kose. Isinlar
+     kesistikce renk topluyor; sag altta ikisi de zayifliyor. */
+  isin(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
+    const kaynak = (cx, cy, n, uz, renkler)=>{
+      for(let i = 0; i < n; i++){
+        const t = r()*6.2832, L = uz*(0.45 + r()*0.75);
+        c.strokeStyle = _zemRgba(renkler[(r()*renkler.length)|0], 0.16 + r()*0.30);
+        c.lineWidth = u*(0.002 + r()*0.006);
+        c.beginPath(); c.moveTo(cx + Math.cos(t)*u*0.04, cy + Math.sin(t)*u*0.04);
+        c.lineTo(cx + Math.cos(t)*L, cy + Math.sin(t)*L); c.stroke();
+      }
+    };
+    kaynak(W*0.50, H*0.47, 150, u*0.80, [p[1], p[2], p[3]]);
+    kaynak(W*0.10, H*0.14, 90, u*0.55, [p[1], p[3]]);
+    c.globalCompositeOperation = 'source-over';
+    c.restore();
+  },
+  /* VORTEKS — vortisizm: keskin kamalar bir merkeze cekiliyor,
+     ama merkez ekranin ortasi DEGIL; sol ust ceyrekte, simge
+     sutununun ucunda. Boylece disk kamalarin arasindan gecen bir
+     bosluk gibi duruyor. */
+  vorteks(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const cx = W*0.22, cy = H*0.26;
+    for(let i = 0; i < 26; i++){
+      const t = i*0.2417 + r()*0.06;
+      const g = 0.10 + r()*0.16;
+      const L = u*(0.55 + r()*1.10);
+      c.fillStyle = _zemRgba(i % 4 === 0 ? p[3] : (i % 2 ? p[1] : p[2]), 0.24 + r()*0.5);
+      c.beginPath(); c.moveTo(cx, cy);
+      c.lineTo(cx + Math.cos(t)*L, cy + Math.sin(t)*L);
+      c.lineTo(cx + Math.cos(t + g)*L, cy + Math.sin(t + g)*L);
+      c.closePath(); c.fill();
+    }
+    c.strokeStyle = _zemRgba(p[4], 0.7); c.lineWidth = u*0.004;
+    for(let k = 1; k <= 4; k++){
+      c.beginPath(); c.arc(cx, cy, u*0.12*k, -0.2, 2.6); c.stroke();
+    }
+    c.restore();
+  },
+  /* ALAN — renk alani: bicim yok, KENAR var. Iki buyuk dikdortgen
+     ust uste duruyor ve kenarlari kesin degil; goz nerede bittigini
+     soyleyemiyor. Olcek bilerek buyuk -- yakindan bakildiginda
+     renk cevreleyen bir sey olmali. */
+  alan(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const blok = (y0, y1, renk, yum)=>{
+      const g = c.createLinearGradient(0, y0 - yum, 0, y1 + yum);
+      g.addColorStop(0, _zemRgba(renk, 0));
+      g.addColorStop(0.12, _zemRgba(renk, 0.92));
+      g.addColorStop(0.88, _zemRgba(renk, 0.92));
+      g.addColorStop(1, _zemRgba(renk, 0));
+      c.fillStyle = g; c.fillRect(W*0.06, y0 - yum, W*0.88, (y1 - y0) + yum*2);
+    };
+    blok(H*0.10, H*0.44, p[1], u*0.06);
+    blok(H*0.50, H*0.78, p[2], u*0.05);
+    /* Ince bir kizil damar: iki alanin arasinda duran tek cizgi. */
+    c.fillStyle = _zemRgba(p[3], 0.55);
+    c.fillRect(W*0.06, H*0.468, W*0.88, u*0.006);
+    c.restore();
+  },
+  /* KESIN — hard edge: gecis yok, karisim yok, firca izi yok.
+     Yalnizca duz renkler ve aralarindaki cizgi. Dikey bolme sol
+     simge sutununun sag kenarindan geciyor; yatay bolme alt tus
+     satirlarinin hemen ustunde. */
+  kesin(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    c.fillStyle = p[1]; c.fillRect(0, 0, W*0.22, H*0.84);
+    c.fillStyle = p[2]; c.fillRect(W*0.22, H*0.30, W*0.44, H*0.54);
+    c.fillStyle = p[3]; c.fillRect(W*0.66, 0, W*0.34, H*0.30);
+    c.fillStyle = p[4]; c.fillRect(0, H*0.84, W, H*0.16);
+    c.strokeStyle = p[4]; c.lineWidth = u*0.005;
+    c.beginPath(); c.moveTo(W*0.22, 0); c.lineTo(W*0.22, H*0.84); c.stroke();
+    c.beginPath(); c.moveTo(0, H*0.30); c.lineTo(W, H*0.30); c.stroke();
+    c.restore();
+  },
+  /* DEVINIM — kinetik sanat: duran bir resimde HAREKET. Es
+     merkezli halkalar her turda biraz kayiyor; goz kaymayi bir
+     donus olarak okuyor. Merkez diskin merkezi, yani ekranin
+     kendi hareketiyle ayni yerde. */
+  devinim(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const cx = W*0.50, cy = H*0.50;
+    for(let k = 1; k <= 26; k++){
+      const yr = u*0.035*k;
+      const kay = k*0.26;
+      c.strokeStyle = _zemRgba(k % 5 === 0 ? p[3] : (k % 2 ? p[1] : p[2]), 0.62 - k*0.012);
+      c.lineWidth = u*0.006;
+      c.beginPath();
+      for(let i = 0; i <= 72; i++){
+        const t = i/72*6.2832;
+        const q = yr*(1 + Math.sin(t*3 + kay)*0.055);
+        const x = cx + Math.cos(t)*q, y = cy + Math.sin(t)*q*0.94;
+        if(i) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.stroke();
+    }
+    c.restore();
+  },
+  /* AZLIK — minimalizm: bir cizgi, bir kare, cok bosluk. Tek
+     gerilim cizginin YERI: alt tus satirlarinin hizasina denk
+     geliyor, yani ekrandaki gercek bir kenarin uzantisi gibi
+  /* ── MALZEME ─────────────────────────────────────────────────── */
+  /* SIYANOTIP — gunes baskisi. Kagit demir tuzuyla kaplanip
+     uzerine bir sey konuyor ve gunese birakiliyor: dokunan yer
+     beyaz, geri kalani Prusya mavisi. Silueti sol sutunda tutuyoruz;
+     lekeler firca izinin kendisi. */
+  siyanotip(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, p[1]); g.addColorStop(0.6, p[0]); g.addColorStop(1, p[4]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Firca kenari: kagidin sivanmamis kosesi. */
+    c.globalAlpha = 0.5; c.fillStyle = p[4];
+    for(let i = 0; i < 60; i++){
+      const t = i/60;
+      c.fillRect(0, H*t, W*0.02*r(), H*0.02);
+      c.fillRect(W - W*0.02*r(), H*t, W*0.02, H*0.02);
+    }
+    c.globalAlpha = 1;
+    /* Yaprak siluetleri: sap + damarlar, hepsi beyaz. */
+    const yaprak = (cx, cy, L, aci)=>{
+      c.save(); c.translate(cx, cy); c.rotate(aci);
+      c.fillStyle = _zemRgba(p[3], 0.88);
+      c.beginPath(); c.moveTo(0, 0);
+      c.quadraticCurveTo(L*0.32, -L*0.26, L, 0);
+      c.quadraticCurveTo(L*0.32, L*0.26, 0, 0);
+      c.fill();
+      c.strokeStyle = _zemRgba(p[1], 0.55); c.lineWidth = u*0.003;
+      for(let i = 1; i < 7; i++){
+        const x = L*i/7;
+        c.beginPath(); c.moveTo(x, 0);
+        c.lineTo(x + L*0.10, -L*0.12*(1 - i/8)); c.stroke();
+        c.beginPath(); c.moveTo(x, 0);
+        c.lineTo(x + L*0.10, L*0.12*(1 - i/8)); c.stroke();
+      }
+      c.restore();
+    };
+    yaprak(W*0.02, H*0.12, u*0.38, 0.55);
+    yaprak(W*0.04, H*0.30, u*0.30, -0.25);
+    yaprak(W*0.46, H*0.52, u*0.44, 2.5);
+    c.restore();
+  },
+  /* EBRU — tekne mermerciligi: renkler suyun yuzeyinde durur,
+     karismaz; tarakla tek yonde cekilince desen dogar. Cizgiler
+     once yatay bantlar, sonra dikey tarak: gercek sirasi da bu. */
+  ebru(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const bant = [];
+    for(let i = 0; i < 26; i++) bant.push({ y: H*(i/25), renk: p[1 + (i % 4)] });
+    c.lineWidth = u*0.030; c.lineCap = 'round';
+    bant.forEach((b, i)=>{
+      c.strokeStyle = _zemRgba(b.renk, 0.85);
+      c.beginPath();
+      for(let x = -10; x <= W + 10; x += 6){
+        const f = x/W;
+        /* Tarak: dikey tarak damlalari yukari-asagi cekiyor. */
+        const tarak = Math.sin(f*Math.PI*7 + i*0.35)*u*0.030;
+        const dalga = Math.sin(f*3.2 + i*0.8)*u*0.012;
+        const y = b.y + tarak + dalga;
+        if(x < 0) c.moveTo(x, y); else c.lineTo(x, y);
+      }
+      c.stroke();
+    });
+    /* Serpme damlalar: her biri kendi halkasini itiyor. */
+    for(let i = 0; i < 14; i++){
+      const cx = W*r(), cy = H*r(), yr = u*(0.02 + r()*0.05);
+      c.strokeStyle = _zemRgba(p[1 + ((r()*4)|0)], 0.5);
+      c.lineWidth = u*0.006;
+      c.beginPath(); c.arc(cx, cy, yr, 0, 6.2832); c.stroke();
+    }
+    c.restore();
+  },
+  /* TEZHIP — altin tezyinat: rumi kivrimlari bir merkezden acilir
+     ve simetriktir. Merkez ortadaki diskin merkezi; salbek (kose
+     parcasi) sol ustte, yani simge sutununun arkasinda. */
+  tezhip(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const rumi = (cx, cy, yr, n, faz, renk, kal)=>{
+      c.strokeStyle = renk; c.lineWidth = kal; c.lineCap = 'round';
+      for(let i = 0; i < n; i++){
+        const t = faz + i/n*6.2832;
+        c.beginPath();
+        c.moveTo(cx + Math.cos(t)*yr*0.18, cy + Math.sin(t)*yr*0.18);
+        c.quadraticCurveTo(
+          cx + Math.cos(t + 0.42)*yr*0.72, cy + Math.sin(t + 0.42)*yr*0.72,
+          cx + Math.cos(t - 0.10)*yr, cy + Math.sin(t - 0.10)*yr);
+        c.stroke();
+        c.beginPath();
+        c.arc(cx + Math.cos(t)*yr*0.86, cy + Math.sin(t)*yr*0.86, yr*0.045, 0, 6.2832);
+        c.fillStyle = renk; c.fill();
+      }
+    };
+    rumi(W*0.50, H*0.48, u*0.44, 16, 0, _zemRgba(p[1], 0.85), u*0.005);
+    rumi(W*0.50, H*0.48, u*0.28, 12, 0.26, _zemRgba(p[2], 0.75), u*0.004);
+    rumi(W*0.10, H*0.16, u*0.20,  9, 0.5,  _zemRgba(p[1], 0.6),  u*0.004);
+    c.strokeStyle = _zemRgba(p[3], 0.7); c.lineWidth = u*0.010;
+    c.beginPath(); c.arc(W*0.50, H*0.48, u*0.46, 0, 6.2832); c.stroke();
+    c.restore();
+  },
+  /* GIRIH — on kolu yildizdan turetilen geometrik orgu. Cizgiler
+     birbirinin altindan ve ustunden gecer; bu yuzden tek renk degil
+  /* BASKI — tipo: harf kagida BASILIR, murekkep kenardan tasar ve
+     kagit ezilir. Burada harf yok, blok var: bloklarin kenarinda
+     hafif bir golge ve kagit dokusu. Bloklar sol sutunla ust
+  /* TRAM — manga tramı: gri yok, yalnizca nokta var. Noktanin
+     buyuklugu griligi tasiyor; goz uzaktan bakinca gri goruyor.
+  /* OYMA — linol oyma: bicak izleri. Beyaz olan sey oyulmus,
+     siyah olan basilmis. Cizgiler paralel degil, bicagin gittigi
+     yonu izliyor; kivrim merkezi diskin altinda. */
+  oyma(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    /* LINOL: BEYAZ OLAN OYULMUSTUR. Bu yuzden zemin murekkep
+       (koyu), desen ise BICAK IZI (acik). Ilk denemede ikisi ayni
+       tonda kalmis ve tahta damari gibi gorunmustu; oymanin imzasi
+       kontrastin kendisi -- bicak ya girmistir ya girmemistir.
+       V bicak izi: basi ince, ortasi genis, ucu ince. */
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const iz = (x0, y0, x1, y1, en)=>{
+      const n = 16;
+      c.fillStyle = p[1];
+      c.beginPath();
+      for(let i = 0; i <= n; i++){
+        const t = i/n;
+        const x = x0 + (x1 - x0)*t, y = y0 + (y1 - y0)*t;
+        const w = en*Math.sin(t*Math.PI)*(0.6 + r()*0.5);
+        if(i) c.lineTo(x, y - w); else c.moveTo(x, y - w);
+      }
+      for(let i = n; i >= 0; i--){
+        const t = i/n;
+        const x = x0 + (x1 - x0)*t, y = y0 + (y1 - y0)*t;
+        const w = en*Math.sin(t*Math.PI)*(0.6 + r()*0.5);
+        c.lineTo(x, y + w);
+      }
+      c.closePath(); c.fill();
+    };
+    /* Zemin dokusu: uzun paralel izler, sol ustten sag alta. */
+    for(let i = 0; i < 58; i++){
+      const y = H*(-0.05 + i*0.019);
+      iz(-W*0.05, y, W*1.05, y + H*0.05, u*0.0055);
+    }
+    /* Oyulmus bicim: diskin cevresinde bir hale, kollari disari. */
+    const cx = W*0.50, cy = H*0.47;
+    for(let i = 0; i < 34; i++){
+      const t = i/34*6.2832;
+      const r1 = u*0.30, r2 = u*(0.40 + r()*0.22);
+      iz(cx + Math.cos(t)*r1, cy + Math.sin(t)*r1,
+         cx + Math.cos(t)*r2, cy + Math.sin(t)*r2, u*0.012);
+    }
+    c.fillStyle = p[4];
+    c.beginPath(); c.arc(cx, cy, u*0.28, 0, 6.2832); c.fill();
+    for(let i = 0; i < 26; i++){
+      const t = i/26*6.2832;
+      iz(cx + Math.cos(t)*u*0.06, cy + Math.sin(t)*u*0.06,
+         cx + Math.cos(t)*u*0.26, cy + Math.sin(t)*u*0.26, u*0.007);
+    }
+    c.restore();
+  },
+  /* BATIK — mum ile boya reddi. Mumun catladigi yerden boya sizar
+     ve o ince damarlar desenin imzasidir. Once alanlar, sonra
+     catlaklar: gercek sirasi da bu. */
+  batik(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    for(let i = 0; i < 16; i++){
+      const cx = W*r(), cy = H*r(), yr = u*(0.10 + r()*0.26);
+      c.fillStyle = _zemRgba(p[1 + ((r()*4)|0)], 0.42);
+      c.beginPath();
+      for(let k = 0; k <= 28; k++){
+        const t = k/28*6.2832;
+        const q = yr*(0.72 + Math.sin(t*3 + i)*0.16 + r()*0.10);
+        const x = cx + Math.cos(t)*q, y = cy + Math.sin(t)*q;
+        if(k) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.closePath(); c.fill();
+    }
+    c.strokeStyle = _zemRgba(p[0], 0.85); c.lineWidth = u*0.0035;
+    for(let i = 0; i < 70; i++){
+      let x = W*r(), y = H*r(), t = r()*6.2832;
+      c.beginPath(); c.moveTo(x, y);
+      for(let k = 0; k < 16; k++){
+        t += (r() - 0.5)*1.1;
+        x += Math.cos(t)*u*0.030; y += Math.sin(t)*u*0.030;
+        c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+    c.restore();
+  },
+  /* ── RETRO ───────────────────────────────────────────────────── */
+  /* MEMPHIS — seksenlerin Milano'su: kural, bir bicimin YANINDA
+     alakasiz bir bicim durmasidir. Kivrim, zikzak, konfeti ve dolu
+     daire ayni yuzeyde, hicbiri otekini aciklamiyor. Renk ailesi
+     kullanicinin verdigi yon: yavruagzi zemin, fusya ve mor. */
+  memphis(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    /* Konfeti: capraz cubuklar ve noktalar, her yere serpili. */
+    for(let i = 0; i < 120; i++){
+      const x = W*r(), y = H*r();
+      c.save(); c.translate(x, y); c.rotate(r()*3.14);
+      c.fillStyle = _zemRgba(p[1 + ((r()*3)|0)], 0.75);
+      if(r() < 0.55) c.fillRect(-u*0.016, -u*0.004, u*0.032, u*0.008);
+      else { c.beginPath(); c.arc(0, 0, u*0.008, 0, 6.2832); c.fill(); }
+      c.restore();
+    }
+    /* Kivrim: kalin, tek sefer, ekrani bastan sona gecen. */
+    c.strokeStyle = p[1]; c.lineWidth = u*0.035; c.lineCap = 'round';
+    c.beginPath();
+    for(let i = 0; i <= 60; i++){
+      const t = i/60, x = W*t;
+      const y = H*0.30 + Math.sin(t*9.4)*u*0.10;
+      if(i) c.lineTo(x, y); else c.moveTo(x, y);
+    }
+    c.stroke();
+    /* Zikzak: kivrimin karsisinda, alt tus satirlarinin ustunde. */
+    c.strokeStyle = p[2]; c.lineWidth = u*0.022; c.lineJoin = 'round';
+    c.beginPath();
+    for(let i = 0; i <= 12; i++){
+      const x = W*(i/12), y = H*(0.80 + (i % 2 ? 0.035 : -0.035));
+      if(i) c.lineTo(x, y); else c.moveTo(x, y);
+    }
+    c.stroke();
+    /* Uc buyuk bicim: daire, ucgen, kare -- ucu de sol sutunla
+       ortadaki diskin arasindaki bantta. */
+    c.fillStyle = _zemRgba(p[3], 0.9);
+    c.beginPath(); c.arc(W*0.16, H*0.52, u*0.11, 0, 6.2832); c.fill();
+    c.fillStyle = _zemRgba(p[2], 0.85);
+    c.beginPath(); c.moveTo(W*0.46, H*0.60); c.lineTo(W*0.62, H*0.60);
+    c.lineTo(W*0.54, H*0.44); c.closePath(); c.fill();
+    c.fillStyle = _zemRgba(p[1], 0.85);
+    c.save(); c.translate(W*0.84, H*0.62); c.rotate(0.35);
+    c.fillRect(-u*0.09, -u*0.09, u*0.18, u*0.18); c.restore();
+    c.restore();
+  },
+  /* TERRAZZO — kirik mermer parcalari cimentoya gomulur ve yuzey
+     parlatilir; desen tasarlanmaz, DAGILIR. Parcalar tohumlu, yani
+     her deri kendi dagilimini tasiyor ama hep ayni dagilimi. */
+  terrazzo(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    for(let i = 0; i < 520; i++){
+      const x = W*r(), y = H*r();
+      /* Sag alt ceyrekte seyreliyor: kunye orada okunmali. */
+      if(x > W*0.56 && y > H*0.74 && r() < 0.72) continue;
+      const yr = u*(0.006 + Math.pow(r(), 1.8)*0.036);
+      const renk = p[1 + ((r()*4)|0)];
+      c.fillStyle = _zemRgba(renk, 0.55 + r()*0.4);
+      c.save(); c.translate(x, y); c.rotate(r()*3.14);
+      c.beginPath();
+      const kose = 3 + ((r()*4)|0);
+      for(let k = 0; k < kose; k++){
+        const t = k/kose*6.2832 + r()*0.5;
+        const q = yr*(0.55 + r()*0.9);
+        const px = Math.cos(t)*q, py = Math.sin(t)*q*0.8;
+        if(k) c.lineTo(px, py); else c.moveTo(px, py);
+      }
+      c.closePath(); c.fill();
+      c.restore();
+    }
+    /* Parlatilmis yuzeyin isik bandi. */
+    const g = c.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, _zemRgba(p[4], 0.30));
+    g.addColorStop(0.42, _zemRgba(p[4], 0.00));
+    g.addColorStop(1, _zemRgba(p[2], 0.14));
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.restore();
+  },
+  /* HAVA — hava fircasi: seksenlerin poster tekniginde renk maske
+     kenarindan yumusayarak cikar. Once gecisler, sonra maskelenmis
+     krom cizgiler, en ustte ince serpme. Fusyadan mora, altta
+     yavruagzi bir isik. */
+  hava(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[0]); g.addColorStop(0.45, p[2]);
+    g.addColorStop(0.78, p[1]); g.addColorStop(1, p[3]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Ufuk halesi: diskin arkasindan cikan isik. */
+    const hg = c.createRadialGradient(W*0.50, H*0.52, u*0.04, W*0.50, H*0.52, u*0.62);
+    hg.addColorStop(0, _zemRgba(p[4], 0.55));
+    hg.addColorStop(0.5, _zemRgba(p[1], 0.22));
+    hg.addColorStop(1, _zemRgba(p[0], 0));
+    c.fillStyle = hg; c.fillRect(0, 0, W, H);
+    /* Krom seritler: ust seride paralel, kenarlari yumusak. */
+    for(let i = 0; i < 5; i++){
+      const y = H*(0.055 + i*0.030), kal = u*(0.016 - i*0.002);
+      const sg = c.createLinearGradient(0, y - kal, 0, y + kal);
+      sg.addColorStop(0, _zemRgba(p[4], 0));
+      sg.addColorStop(0.5, _zemRgba(p[4], 0.75 - i*0.12));
+      sg.addColorStop(1, _zemRgba(p[4], 0));
+      c.fillStyle = sg; c.fillRect(W*0.04, y - kal, W*0.92, kal*2);
+    }
+    /* Alt izgara: kacis noktasi ortada, seksen posterinin imzasi. */
+    c.strokeStyle = _zemRgba(p[4], 0.30); c.lineWidth = u*0.003;
+    for(let i = -8; i <= 8; i++){
+      c.beginPath(); c.moveTo(W*0.50, H*0.78);
+      c.lineTo(W*0.50 + i*W*0.16, H*1.02); c.stroke();
+    }
+    for(let i = 1; i < 7; i++){
+      const y = H*(0.78 + Math.pow(i/7, 1.9)*0.24);
+      c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
+    }
+    /* Serpme: firca ucundan kacan zerreler. */
+    c.globalAlpha = 0.5;
+    for(let i = 0; i < 900; i++){
+      c.fillStyle = r() < 0.5 ? p[4] : p[3];
+      c.fillRect(W*r(), H*r(), u*0.004, u*0.004);
+    }
+    c.globalAlpha = 1;
+    c.restore();
+  },
+  /* ── ISIK ────────────────────────────────────────────────────── */
+  /* TUTULMA — ay gunesin onune gecince geriye yalnizca TAC kalir:
+     disk siyah, cevresi beyaz. Tam tutulma birkac dakika surer ve
+     o dakikalarda gokyuzu alacakaranliktir; renkler ondan. Kara
+     disk ekrandaki diskin uzerine oturuyor. */
+  tutulma(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    const g = c.createRadialGradient(W*0.50, H*0.46, u*0.10, W*0.50, H*0.46, u*1.1);
+    g.addColorStop(0, p[3]); g.addColorStop(0.45, p[0]); g.addColorStop(1, p[0]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    for(let i = 0; i < 130; i++){
+      c.fillStyle = _zemRgba(p[4], 0.25 + r()*0.6);
+      const q = u*(0.004 + r()*0.008);
+      c.fillRect(W*r(), H*r(), q, q);
+    }
+    const cx = W*0.50, cy = H*0.46, yr = u*0.26;
+    c.globalCompositeOperation = 'lighter';
+    for(let i = 0; i < 220; i++){
+      const t = r()*6.2832;
+      const L = yr*(1.02 + Math.pow(r(), 2.2)*1.5);
+      c.strokeStyle = _zemRgba(i % 4 ? p[1] : p[2], 0.05 + r()*0.14);
+      c.lineWidth = u*0.003;
+      c.beginPath();
+      c.moveTo(cx + Math.cos(t)*yr*1.01, cy + Math.sin(t)*yr*1.01);
+      c.lineTo(cx + Math.cos(t)*L, cy + Math.sin(t)*L); c.stroke();
+    }
+    c.globalCompositeOperation = 'source-over';
+    const hg = c.createRadialGradient(cx, cy, yr*0.98, cx, cy, yr*1.20);
+    hg.addColorStop(0, _zemRgba(p[4], 0.85)); hg.addColorStop(1, _zemRgba(p[4], 0));
+    c.fillStyle = hg; c.beginPath(); c.arc(cx, cy, yr*1.20, 0, 6.2832); c.fill();
+    c.fillStyle = p[0]; c.beginPath(); c.arc(cx, cy, yr, 0, 6.2832); c.fill();
+    c.restore();
+  },
+  /* YANARDONER — ince film girisimi: sabun kabarcigi, yag lekesi,
+     bocek kanadi. Renk boyanin degil KALINLIGIN sonucu; bu yuzden
+     bantlar birbirinin icinden akiyor ve hicbiri kesin degil. */
+  yanardoner(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    c.globalCompositeOperation = 'lighter';
+    for(let k = 0; k < 5; k++){
+      const cx = W*(0.22 + k*0.16), cy = H*(0.30 + Math.sin(k*1.7)*0.22);
+      const yr = u*(0.34 + k*0.10);
+      const g = c.createRadialGradient(cx, cy, yr*0.10, cx, cy, yr);
+      g.addColorStop(0.00, _zemRgba(p[1 + (k % 3)], 0.30));
+      g.addColorStop(0.35, _zemRgba(p[1 + ((k + 1) % 3)], 0.22));
+      g.addColorStop(0.62, _zemRgba(p[1 + ((k + 2) % 3)], 0.18));
+      g.addColorStop(1.00, _zemRgba(p[0], 0));
+      c.fillStyle = g; c.beginPath(); c.arc(cx, cy, yr, 0, 6.2832); c.fill();
+    }
+    /* Girisim bantlari: ayni kalinligin es egrileri. */
+    c.lineWidth = u*0.004;
+    for(let i = 0; i < 26; i++){
+      c.strokeStyle = _zemRgba(p[1 + (i % 3)], 0.10);
+      c.beginPath();
+      for(let x = -10; x <= W + 10; x += 8){
+        const f = x/W;
+        const y = H*(0.10 + i*0.034)
+                + Math.sin(f*4.6 + i*0.5)*u*0.05
+                + Math.sin(f*11.0 + i*0.2)*u*0.018;
+        if(x < 0) c.moveTo(x, y); else c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+    c.globalCompositeOperation = 'source-over';
+    c.restore();
+  },
+  /* PRIZMA — beyaz isik bir kenardan gecince bilesenlerine ayrilir.
+     Kirilma noktasi sol ust: simge sutununun ustu. Tayf oradan sag
+     alta dogru aciliyor ama kunyenin oldugu yerde sonmus oluyor. */
+  prizma(c, W, H, d){
+    const p = _pal(d), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const kx = W*0.14, ky = H*0.12;
+    /* Gelen isin */
+    c.strokeStyle = _zemRgba(p[4], 0.85); c.lineWidth = u*0.007;
+    c.beginPath(); c.moveTo(-W*0.05, ky - H*0.06); c.lineTo(kx, ky); c.stroke();
+    /* Prizma */
+    c.fillStyle = _zemRgba(p[4], 0.10);
+    c.strokeStyle = _zemRgba(p[4], 0.55); c.lineWidth = u*0.004;
+    c.beginPath();
+    c.moveTo(kx, ky - u*0.14); c.lineTo(kx + u*0.13, ky + u*0.08);
+    c.lineTo(kx - u*0.13, ky + u*0.08); c.closePath(); c.fill(); c.stroke();
+    /* Tayf */
+    c.globalCompositeOperation = 'lighter';
+    const renkler = [p[1], p[2], p[3]];
+    for(let i = 0; i < 42; i++){
+      const t = i/41;
+      const aci = 0.42 + t*0.52;
+      const renk = renkler[(t*renkler.length)|0] || renkler[renkler.length - 1];
+      const gr = c.createLinearGradient(kx, ky, kx + Math.cos(aci)*W*1.4, ky + Math.sin(aci)*W*1.4);
+      gr.addColorStop(0, _zemRgba(renk, 0.42));
+      gr.addColorStop(0.55, _zemRgba(renk, 0.16));
+      gr.addColorStop(1, _zemRgba(renk, 0));
+      c.strokeStyle = gr; c.lineWidth = u*0.016;
+      c.beginPath(); c.moveTo(kx, ky);
+      c.lineTo(kx + Math.cos(aci)*W*1.4, ky + Math.sin(aci)*W*1.4); c.stroke();
+    }
+    c.globalCompositeOperation = 'source-over';
+    c.restore();
+  },
+  /* DERIN ALAN — uzun poz: ne kadar bakarsan o kadar cok sey
+     cikiyor. Yildizlar on planda, arkalarinda sisli gok adalar,
+     en arkada neredeyse hicbir sey. Kalabalik ust yariya toplandi;
+     alt yari bilerek derin ve bos. */
+  derinalan(c, W, H, d){
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
+    c.save();
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    c.globalCompositeOperation = 'lighter';
+    /* Uzak gok adalar: lekeler */
+    for(let i = 0; i < 90; i++){
+      const x = W*r(), y = H*(0.04 + Math.pow(r(), 1.5)*0.80);
+      const yr = u*(0.010 + Math.pow(r(), 3)*0.10);
+      const egik = r()*3.14;
+      c.save(); c.translate(x, y); c.rotate(egik);
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, yr);
+      const renk = r() < 0.55 ? p[3] : p[2];
+      g.addColorStop(0, _zemRgba(renk, 0.30 + r()*0.35));
+      g.addColorStop(1, _zemRgba(renk, 0));
+      c.fillStyle = g; c.scale(1, 0.42 + r()*0.4);
+      c.beginPath(); c.arc(0, 0, yr, 0, 6.2832); c.fill();
+      c.restore();
+    }
+    /* On plan yildizlari */
+    for(let i = 0; i < 240; i++){
+      const x = W*r(), y = H*r();
+      const parlak = Math.pow(r(), 2.6);
+      const q = u*(0.002 + parlak*0.010);
+      c.fillStyle = _zemRgba(r() < 0.75 ? p[1] : p[3], 0.35 + parlak*0.6);
+      c.beginPath(); c.arc(x, y, q, 0, 6.2832); c.fill();
+      if(parlak > 0.72){
+        c.strokeStyle = _zemRgba(p[1], 0.30); c.lineWidth = u*0.0018;
+        c.beginPath(); c.moveTo(x - q*3.2, y); c.lineTo(x + q*3.2, y);
+        c.moveTo(x, y - q*3.2); c.lineTo(x, y + q*3.2); c.stroke();
+      }
+    }
+    c.globalCompositeOperation = 'source-over';
     c.restore();
   }
 };
