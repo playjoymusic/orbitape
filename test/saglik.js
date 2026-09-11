@@ -7876,6 +7876,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     'ilk dokunus soru: '+fv.soruldu+', ikinci dokunusta kip: '+fv.kipte.mod);
   K('Favori dugmesi calarken cikar', fv.calan.var_===true, 'bos:'+fv.bos.var_+' calarken:'+fv.calan.var_+' calan:'+fv.calan.calan);
   K('Kisa basis favoriler', fv.bir.dolu===true && fv.bir.n===1, 'n='+fv.bir.n);
+  /* ── YANLISLIKLA BASILAN KAYIT GERI ALINABILIYOR (11 Eylul) ────
+     Kullanicinin sozu: "yanlislikla kayda bir sekilde basmistim,
+     geri alamadim." Cikis vardi ama iki adimdi. Kaynak olcusu:
+     ilk uc saniye bir geri alma penceresi, tusta UNDO yaziyor ve
+     tek dokunus kaydi tamamen iptal ediyor -- dosya olusmuyor. */
+  {
+    const kk = fs.readFileSync('kayit.js','utf8');
+    K('Yanlis basilan kayit tek dokunusla geri alinabiliyor',
+      /GERI_AL_MS\s*=\s*\d+/.test(kk)
+      && /geriAlPenceresi\(\)\)\{\s*kayitIptalEt/.test(kk.replace(/\s+/g,' ').replace(/ \{/g,'{'))
+      && /_kayitIptal[\s\S]{0,400}_bekleyenKayit = null/.test(kk),
+      'pencere, iptal yolu ve dosyanin olusmamasi -- ucu birden');
+  }
   K('Tekrar basis cikarir', fv.sifir.dolu===false && fv.sifir.n===0, 'n='+fv.sifir.n);
   K('Basili tutus favori kipi acar', fv.kipte.kip===true && fv.kipte.mod===true, 'kip acildi');
   K('Kipte SADECE favoriler calar', fv.favdanMi, 'calanlar: '+fv.c1+' , '+fv.c2);
@@ -8845,6 +8858,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
              telefonda dev lekeye aciliyordu). Esik artik "elde
              calisan birkac sunum var mi" sorusu; sifira dusunce
              ya da teke inince kirmizi yanar. */
+          /* 11 Eylul: bes -> ON BIR. Kullanicinin sozu: "aurora tarzi
+             ama bambaska seyler; ufo gelir gider vs." Ilk gunku "10
+             cesit" hedefi de bugun doldu. Esik yine 4'te kaliyor --
+             olcu "elde calisan birkac sunum var mi" sorusu, bir sayim
+             degil; ama HER sunumun gercekten cizdigi asagida tek tek
+             sinaniyor ve yeni alti da oradan geciyor. */
           c.cokSunum = window.gorselDurum().adet >= 4;
           /* HER SUNUM GERCEKTEN CIZIYOR MU. Bir sunumun icinde hata
              olsa (yut ile susturulur) ekran siyah kalirdi ve hicbir

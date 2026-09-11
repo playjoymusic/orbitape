@@ -473,12 +473,212 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
      tane -- kullanicinin sozu: "bu visuallari sil."
      Kod da gitti (fonksiyonlar asagida yok): olu kod birakmak
      sonraki okuyucuya yalan soyler. */
+
+  /* ══ IKINCI TAKIM (11 Eylul) ═════════════════════════════════════
+     Kullanicinin sozu: "aurora tarzi ama bambaska seyler olabilir;
+     ufo gelir gider vs gibi seyler de olur. degisik seyler dene."
+     ESKI SILINENLERIN DERSI BURADA GECERLI (bkz. yukaridaki not):
+     silinen LAVA / RIPPLE / PRISM ucu de ya veri yokken olu
+     duruyordu ya telefonda buyuk olculere aciliyordu. Bu yuzden
+     asagidakilerin hepsinde ayni uc kural:
+       · Veri yoksa da yasiyor: her hareketin bir ZAMAN bileseni var,
+         ses yalnizca genligi buyutuyor.
+       · Keskin kenar yok: her sey top() ya da gecisli dolgu.
+       · Kare basina is sabit ve kucuk; per-piksel dongu yok. */
+
+  /* 6) UFO — bir isik gelir, gecer, gider.
+     Kullanicinin istedigi sey bir NESNE degil bir OLAY: ekranda bir
+     sey beliriyor, yavasca geciyor ve kayboluyor. Uc gecis birbirini
+     kovaliyor, her biri kendi hizinda; huzme basla acilip kapaniyor.
+     Govde cizilmiyor -- yalnizca isik. Silinen sunumlarin hatasi
+     tam buydu: bicim cizince "tatli" bitiyor. */
+  function ufo(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.085)'; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const U = Math.min(W, H);
+    for(let i = 0; i < 3; i++){
+      /* Her gecis 18-30 saniyede bir ekrani basdan basa kat ediyor. */
+      const sure = 18000 + i * 6000;
+      const f = ((s.t + i * 5200) % sure) / sure;
+      const x = W * (-0.15 + f * 1.30);
+      const y = H * (0.20 + i * 0.22 + Math.sin(s.t * 0.00022 + i) * 0.05);
+      /* Kenarda sonuk, ortada tam: gelip gitme hissi buradan. */
+      const gor = Math.sin(Math.min(1, Math.max(0, f)) * Math.PI);
+      if(gor <= 0.01) continue;
+      const ton = tonZaman(s.t, i * 70);
+      const guc = [s.bas, s.orta, s.tiz][i] * gor;
+      /* Govde: yatik, genis bir isik. */
+      g.save(); g.translate(x, y); g.scale(1, 0.42);
+      top(g, 0, 0, U * (0.06 + guc * 0.05), ton, 0.35 + guc);
+      g.restore();
+      /* Huzme: asagi acilan yumusak koni. */
+      const bh = U * (0.30 + s.bas * 0.30) * gor;
+      const gen = U * (0.05 + s.bas * 0.06);
+      const gr = g.createLinearGradient(x, y, x, y + bh);
+      gr.addColorStop(0, ren(ton, 74, 0.20 * gor));
+      gr.addColorStop(1, ren(ton, 66, 0));
+      g.fillStyle = gr;
+      g.beginPath(); g.moveTo(x - gen * 0.25, y);
+      g.lineTo(x + gen * 0.25, y);
+      g.lineTo(x + gen * 1.6, y + bh);
+      g.lineTo(x - gen * 1.6, y + bh);
+      g.closePath(); g.fill();
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 7) TUNNEL — icine dogru gidilen halkalar.
+     On halka surekli buyuyup soluyor; buyume hizi SEVIYEYE bagli,
+     yani sessizde suzuluyor, yuksekte hizlaniyor. Merkez ekranin
+     ortasi: diskin oldugu yer. */
+  function tunnel(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const U = Math.min(W, H), cx = W / 2, cy = H / 2;
+    const hiz = 0.000085 + s.seviye * 0.00022;
+    for(let i = 0; i < 11; i++){
+      const f = ((s.t * hiz) + i / 11) % 1;
+      const r = U * (0.04 + f * f * 0.92);
+      const sol = Math.sin(f * Math.PI);
+      g.strokeStyle = ren(tonZaman(s.t, i * 26), 70, 0.20 * sol + s.orta * 0.16 * sol);
+      g.lineWidth = Math.max(1, U * (0.004 + (1 - f) * 0.016));
+      g.beginPath(); g.arc(cx, cy, r, 0, 6.2832); g.stroke();
+    }
+    top(g, cx, cy, U * (0.10 + s.bas * 0.14), tonZaman(s.t, 40), 0.3 + s.bas);
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 8) RAIN — dusen isik cizgileri.
+     On dort damla kendi hizinda iniyor; tiz vurusu boylarini uzatiyor.
+     Cizgi degil GECISLI dolgu: kenar yok, yani "tatli" kurali bozulmuyor. */
+  function rain(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.13)'; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const U = Math.min(W, H);
+    for(let i = 0; i < 14; i++){
+      const hiz = 0.00016 + (i % 5) * 0.00007;
+      const f = ((s.t * hiz) + i * 0.137) % 1;
+      const x = W * ((i * 0.0719 + 0.03) % 1);
+      const boy = U * (0.12 + s.tiz * 0.26 + (i % 3) * 0.04);
+      const y = -boy + f * (H + boy * 2);
+      const ton = tonZaman(s.t, i * 18);
+      const gr = g.createLinearGradient(x, y, x, y + boy);
+      gr.addColorStop(0, ren(ton, 70, 0));
+      gr.addColorStop(0.72, ren(ton, 72, 0.10 + s.tiz * 0.20));
+      gr.addColorStop(1, ren(ton, 76, 0));
+      g.fillStyle = gr;
+      g.fillRect(x - U * 0.004, y, U * 0.008, boy);
+      if(s.tiz > 0.35) top(g, x, y + boy, U * 0.018 * s.tiz, ton, s.tiz * 0.7);
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 9) ORBIT — bir merkez ve cevresinde donen isiklar.
+     Bes yorunge, her biri baska hizda; yaricaplar bantlarla nefes
+     aliyor. Uygulamanin kendi fikrine (halkalar) en yakin sunum. */
+  function orbit(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.10)'; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const U = Math.min(W, H), cx = W / 2, cy = H / 2;
+    const bant = [s.bas, s.orta, s.tiz];
+    top(g, cx, cy, U * (0.08 + s.seviye * 0.10), tonZaman(s.t, 0), 0.35 + s.seviye);
+    for(let i = 0; i < 5; i++){
+      const yr = U * (0.14 + i * 0.085) * (1 + bant[i % 3] * 0.14);
+      const a = s.t * (0.00013 + i * 0.00006) * (i % 2 ? -1 : 1) + i * 1.26;
+      const x = cx + Math.cos(a) * yr, y = cy + Math.sin(a) * yr * 0.88;
+      const ton = tonZaman(s.t, 40 + i * 46);
+      g.strokeStyle = ren(ton, 64, 0.07);
+      g.lineWidth = Math.max(1, U * 0.003);
+      g.beginPath(); g.ellipse(cx, cy, yr, yr * 0.88, 0, 0, 6.2832); g.stroke();
+      top(g, x, y, U * (0.028 + bant[i % 3] * 0.05), ton, 0.3 + bant[i % 3]);
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 10) TIDE — yatay perdeler.
+     AURORA'nin yatay kardesi: dikey degil YATAY bantlar, birbirinin
+     icinden gecerek suzuluyor. Ust ve alt kenarda soluyor, yani
+     yazinin oldugu yerler sakin kaliyor. */
+  function tide(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.10)'; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const bant = [s.bas, s.orta, s.tiz];
+    for(let i = 0; i < 7; i++){
+      const f = i / 7;
+      const hiz = 0.000042 + i * 0.000018;
+      const y = H * (0.5 + 0.40 * Math.sin(s.t * hiz + i * 1.4));
+      const guc = bant[i % 3];
+      const gen = H * (0.07 + 0.09 * guc + 0.02 * Math.sin(s.t * 0.00027 + i));
+      const ton = tonZaman(s.t, f * 130);
+      const gr = g.createLinearGradient(0, y - gen / 2, 0, y + gen / 2);
+      gr.addColorStop(0, ren(ton, 62, 0));
+      gr.addColorStop(0.5, ren(ton, 70, Math.min(0.30, 0.05 + guc * 0.26)));
+      gr.addColorStop(1, ren(ton, 62, 0));
+      g.fillStyle = gr;
+      g.fillRect(0, y - gen / 2, W, gen);
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* 11) PULSE — vurusla acilan halkalar.
+     Bas esigi gecince yeni bir halka doguyor ve buyuyerek soluyor.
+     Sessizde de yavas bir nabiz var; yani veri gelmese bile ekran
+     olu durmuyor -- silinen sunumlarin dustugu yer burasiydi. */
+  const _nabiz = [];
+  let _sonVurus = 0;
+  function pulse(W, H, s){
+    const g = ctx; if(!g) return;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = 'rgba(0,0,0,0.11)'; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const U = Math.min(W, H), cx = W / 2, cy = H / 2;
+    /* Vurus: bas esigi VE en az 260 ms ara. Veri yoksa 1,4 saniyede
+       bir kendiliginden atiyor. */
+    const ara = s.t - _sonVurus;
+    if((s.bas > 0.42 && ara > 260) || ara > 1400){
+      _sonVurus = s.t;
+      _nabiz.push({ d: s.t, guc: 0.35 + s.bas });
+      if(_nabiz.length > 7) _nabiz.shift();
+    }
+    for(let i = 0; i < _nabiz.length; i++){
+      const n = _nabiz[i];
+      const f = (s.t - n.d) / 2600;
+      if(f >= 1) continue;
+      const r = U * (0.05 + f * 0.75);
+      const sol = (1 - f) * (1 - f);
+      g.strokeStyle = ren(tonZaman(s.t, i * 34), 72, 0.26 * sol * n.guc);
+      g.lineWidth = Math.max(1, U * (0.002 + 0.014 * sol));
+      g.beginPath(); g.arc(cx, cy, r, 0, 6.2832); g.stroke();
+    }
+    top(g, cx, cy, U * (0.09 + s.bas * 0.16), tonZaman(s.t, 20), 0.3 + s.bas);
+    g.globalCompositeOperation = 'source-over';
+  }
+
   const SUNUMLAR = [
     { ad: 'AURORA', ciz: aurora, iz: false },
     { ad: 'BLOOM',  ciz: bloom,  iz: false },
     { ad: 'SILK',   ciz: silk,   iz: false },
     { ad: 'DUST',   ciz: dust,   iz: false },
-    { ad: 'PLASMA', ciz: plasma, iz: true }
+    { ad: 'PLASMA', ciz: plasma, iz: true },
+    /* 11 Eylul: alti yeni. "Aurora tarzi ama bambaska seyler; ufo
+       gelir gider vs." Bes -> on bir; kullanicinin ilk gunku "10
+       cesit" hedefi de bugun doluyor. */
+    { ad: 'UFO',    ciz: ufo,    iz: false },
+    { ad: 'TUNNEL', ciz: tunnel, iz: false },
+    { ad: 'RAIN',   ciz: rain,   iz: false },
+    { ad: 'ORBIT',  ciz: orbit,  iz: false },
+    { ad: 'TIDE',   ciz: tide,   iz: false },
+    { ad: 'PULSE',  ciz: pulse,  iz: false }
   ];
 
   /* ── TUVAL ─────────────────────────────────────────────────────── */

@@ -2108,7 +2108,27 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     for(const t of adaylar){ try{ if(MediaRecorder.isTypeSupported(t)) return t; }catch(e){ _yut(e); } }
     return '';
   }
+  /* ── YANLISLIKLA BASILAN KAYIT: GERI ALMA PENCERESI (11 Eylul) ───
+     Kullanicinin sozu: "yanlislikla kayda bir sekilde basmistim, geri
+     alamadim." Cikis yolu vardi ama IKI adimdi: REC'e bas (durur),
+     sonra yanindaki tusun DELETE oldugunu FARK ET ve ona bas. Yanlis
+     basan biri o iki adimi aramaz.
+     Simdi ilk UC SANIYE bir geri alma penceresi: o sirada tusta sure
+     degil UNDO yaziyor ve tek dokunus kaydi tamamen iptal ediyor --
+     dosya olusmuyor, SAVE hali hic gelmiyor, ekran kayda hic
+     basilmamis gibi kaliyor.
+     Pencere KISA tutuldu: uzun olsaydi gercekten kayit yapan biri
+     ilk saniyelerde sureyi goremezdi. Uc saniye "yanlis dokunus"
+     icin fazlasiyla yeter. */
+  const GERI_AL_MS = 3000;
+  var _geriAlSonu = 0, _kayitIptal = false;
+  function geriAlPenceresi(){ return _geriAlSonu && Date.now() < _geriAlSonu; }
   function sureYaz(){
+    if(geriAlPenceresi()){
+      recYazi.textContent = 'UNDO';
+      try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+      return;
+    }
     const sn=Math.floor((Date.now()-kayitBaslangic)/1000);
     recYazi.textContent=String(Math.floor(sn/60)).padStart(2,'0')+':'+String(sn%60).padStart(2,'0'); try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
     if(sn===0 || sn===60) { try{ geriYerlestir(); }catch(e){ _yut(e); } }   // basamak artınca hizayı tazele
@@ -2424,7 +2444,12 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       setTimeout(_calDevam, 120); setTimeout(_calDevam, 400); setTimeout(_calDevam, 1200);
       _durdurmaIstendi=false; _kayitSebep='';
       _kayitAktif=true;
-      kayitBaslangic=Date.now(); rec.classList.add('kayit'); sureYaz();
+      kayitBaslangic=Date.now(); rec.classList.add('kayit');
+      _geriAlSonu = Date.now() + GERI_AL_MS; _kayitIptal = false;
+      sureYaz();
+      /* Pencere kapaninca yazi kendiliginden sureye donsun: sayac
+         saniyede bir yaziyor, arada bir kare beklemeye gerek yok. */
+      setTimeout(()=>{ try{ if(kaydedici) sureYaz(); }catch(_){ _yut(_); } }, GERI_AL_MS + 40);
       kayitSayac=setInterval(sureYaz,1000);
       kayitGozcuBasla();
     }catch(e){
@@ -2499,6 +2524,15 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     try{ kaydedici.stop(); }catch(e){ _yut(e); }
     clearInterval(kayitSayac); kayitSayac=null;
   }
+  /* Iptal: durdurmayla ayni yolu kullaniyor ama bir bayrak birakiyor;
+     kayitBitir o bayragi gorunce dosyayi HIC olusturmuyor. Ayri bir
+     durdurma yolu yazmak iki yerde iki ayri temizlik demekti -- ve
+     bu dosyada tam o yuzden bir kere ses izi acik kalmisti. */
+  function kayitIptalEt(){
+    if(!kaydedici) return;
+    _kayitIptal = true; _geriAlSonu = 0;
+    kayitDurdur();
+  }
   async function kayitBitir(){
     kayitGozcuDur();
     /* SAYACI BURADA KAPATIYORUZ. Eskiden yalnızca kayitDurdur() kapatıyordu;
@@ -2528,6 +2562,20 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
        Artık dosya bellekte BEKLİYOR ve REC'in yerinde "KAYDET" çıkıyor.
        Ona dokunmak gerçek bir kullanıcı hareketi olduğu için paylaşım
        sayfası her seferinde açılıyor. */
+    if(_kayitIptal){
+      /* IPTAL: dosya olusmuyor, SAVE hali hic gelmiyor. Ekran kayda
+         hic basilmamis gibi kaliyor -- yanlis dokunusun dogru
+         karsiligi bu. */
+      _kayitIptal = false; _geriAlSonu = 0;
+      _bekleyenKayit = null;
+      rec.classList.remove('hazirla','sessiz','kaydet');
+      try{ recEtiketTazele(); }catch(e){ _yut(e); }
+      camModuTazele();
+      try{ geriYerlestir(); }catch(e){ _yut(e); }
+      try{ kisaNotYaz('RECORDING DISCARDED',
+        'That take was cancelled. Nothing was saved.'); }catch(e){ _yut(e); }
+      return;
+    }
     _bekleyenKayit = { blob: blob, ad: ad, tip: tip };
     rec.classList.remove('hazirla','sessiz');
     rec.classList.add('kaydet'); recYazi.textContent='SAVE'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
@@ -2892,6 +2940,8 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
         return;
       }
     }catch(e){ _yut(e); }
+    /* Geri alma penceresi acikken tus DURDURMUYOR, IPTAL EDIYOR. */
+    if(kaydedici && geriAlPenceresi()){ kayitIptalEt(); return; }
     if(kaydedici){ kayitDurdur(); return; }
     if(_bekleyenKayit){ kaydiPaylas(); return; }      // dokunuş taze -> paylaşım sayfası açılır
     kayitOnKontrol();
