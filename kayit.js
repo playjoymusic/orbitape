@@ -392,6 +392,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     if(_camTutuldu){ _camTutuldu = false; return; }
     /* Kayıt durmuş ve karar bekliyorsa bu tuş DELETE'tir: kamerayı değil,
        bekleyen dosyayı ilgilendirir. */
+    if(kaydedici && geriAlPenceresi()){ kayitIptalEt(); return; }
     if(_bekleyenKayit){ kaydiSil(); return; }
     if(!KAMERA) return;                           // kamera kapalı: düğmenin başka işi yok
     if(kamAciliyor) return;                       // izin beklerken ikinci istek yok
@@ -530,6 +531,15 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   function camModuTazele(){
     if(!camDug) return;
     const yz = document.getElementById('camYazi');
+    /* GERI ALMA PENCERESI: kayit yeni basladi, bu tus UNDO. */
+    if(kaydedici && geriAlPenceresi()){
+      camDug.classList.add('sil'); camDug.classList.remove('acik','bekle');
+      if(yz) yz.textContent = 'UNDO';
+      camDug.title = Y('Cancel this recording');
+      camDug.setAttribute('aria-pressed','false');
+      try{ geriYerlestir(); }catch(e){ _yut(e); }
+      return;
+    }
     if(_bekleyenKayit){
       camDug.classList.add('sil'); camDug.classList.remove('acik','bekle');
       if(yz) yz.textContent = 'DELETE';
@@ -2108,27 +2118,27 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     for(const t of adaylar){ try{ if(MediaRecorder.isTypeSupported(t)) return t; }catch(e){ _yut(e); } }
     return '';
   }
-  /* ── YANLISLIKLA BASILAN KAYIT: GERI ALMA PENCERESI (11 Eylul) ───
+  /* ── YANLISLIKLA BASILAN KAYIT: GERI ALMA (11 Eylul) ────────────
      Kullanicinin sozu: "yanlislikla kayda bir sekilde basmistim, geri
      alamadim." Cikis yolu vardi ama IKI adimdi: REC'e bas (durur),
-     sonra yanindaki tusun DELETE oldugunu FARK ET ve ona bas. Yanlis
+     sonra YANINDAKI tusun DELETE oldugunu FARK ET ve ona bas. Yanlis
      basan biri o iki adimi aramaz.
-     Simdi ilk UC SANIYE bir geri alma penceresi: o sirada tusta sure
-     degil UNDO yaziyor ve tek dokunus kaydi tamamen iptal ediyor --
-     dosya olusmuyor, SAVE hali hic gelmiyor, ekran kayda hic
-     basilmamis gibi kaliyor.
-     Pencere KISA tutuldu: uzun olsaydi gercekten kayit yapan biri
-     ilk saniyelerde sureyi goremezdi. Uc saniye "yanlis dokunus"
-     icin fazlasiyla yeter. */
+     ILK TASARIM GERI ALINDI VE SEBEBI YAZILI: REC tusunun kendisi
+     ilk uc saniye "UNDO" oluyordu, yani ayni tus bazen durdurup
+     bazen iptal ediyordu. Iki kusuru vardi:
+       · Bilerek iki saniyelik bir kayit yapan kisi kaydini
+         KAYBEDIYORDU -- tusun anlami saniyeye bagliydi.
+       · Testte de oyle oldu: CI'da kayit uc saniye dolmadan
+         durduruldu ve SAVE hic gelmedi (kosu #104). Zamana bagli
+         anlam, hem kullanici hem test icin kirilgan.
+     Dogrusu AYRI BIR TUS: ilk uc saniye YANINDAKI tus UNDO oluyor.
+     REC'in anlami hic degismiyor (her zaman durdurur), iptal ise tek
+     dokunus ve gorunur. Zaten ayni tus kayit bitince DELETE oluyor;
+     yani "bu tus kaydi iptal eder" dili kullanici icin yeni degil. */
   const GERI_AL_MS = 3000;
   var _geriAlSonu = 0, _kayitIptal = false;
   function geriAlPenceresi(){ return _geriAlSonu && Date.now() < _geriAlSonu; }
   function sureYaz(){
-    if(geriAlPenceresi()){
-      recYazi.textContent = 'UNDO';
-      try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
-      return;
-    }
     const sn=Math.floor((Date.now()-kayitBaslangic)/1000);
     recYazi.textContent=String(Math.floor(sn/60)).padStart(2,'0')+':'+String(sn%60).padStart(2,'0'); try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
     if(sn===0 || sn===60) { try{ geriYerlestir(); }catch(e){ _yut(e); } }   // basamak artınca hizayı tazele
@@ -2447,9 +2457,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       kayitBaslangic=Date.now(); rec.classList.add('kayit');
       _geriAlSonu = Date.now() + GERI_AL_MS; _kayitIptal = false;
       sureYaz();
-      /* Pencere kapaninca yazi kendiliginden sureye donsun: sayac
-         saniyede bir yaziyor, arada bir kare beklemeye gerek yok. */
-      setTimeout(()=>{ try{ if(kaydedici) sureYaz(); }catch(_){ _yut(_); } }, GERI_AL_MS + 40);
+      try{ camModuTazele(); }catch(_){ _yut(_); }
+      /* Pencere kapaninca yanindaki tus CAM'e donsun. */
+      setTimeout(()=>{ try{ camModuTazele(); }catch(_){ _yut(_); } }, GERI_AL_MS + 40);
       kayitSayac=setInterval(sureYaz,1000);
       kayitGozcuBasla();
     }catch(e){
@@ -2940,8 +2950,6 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
         return;
       }
     }catch(e){ _yut(e); }
-    /* Geri alma penceresi acikken tus DURDURMUYOR, IPTAL EDIYOR. */
-    if(kaydedici && geriAlPenceresi()){ kayitIptalEt(); return; }
     if(kaydedici){ kayitDurdur(); return; }
     if(_bekleyenKayit){ kaydiPaylas(); return; }      // dokunuş taze -> paylaşım sayfası açılır
     kayitOnKontrol();

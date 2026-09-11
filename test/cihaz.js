@@ -56,7 +56,15 @@ const EKRANLAR = [
   { ad:'iPhone 15 (393x852)',      w:393,  h:852,  dokunma:true },
   { ad:'Pro Max (430x932)',        w:430,  h:932,  dokunma:true },
   { ad:'tablet (768x1024)',        w:768,  h:1024, dokunma:true },
-  { ad:'yatay (844x390)',          w:844,  h:390,  dokunma:true }
+  { ad:'yatay (844x390)',          w:844,  h:390,  dokunma:true },
+  /* ── TABLET (11 Eylul) ────────────────────────────────────────
+     Kullanicinin sorusu: "tablet niye acmiyoruz, anlamadim."
+     Olculdu: tablette sorun "gerilmis arayuz" degil DAGILMIS
+     arayuz -- disk 380px tavaninda kaliyor, yan ogeler ekranin uc
+     kenarlarina yasliyor. Genis ekran kurali (min-width 820 VE
+     min-height 700) arayuzu ortalanmis bir kolona topluyor.
+     Bu olcu artik takimda: kolon dagilirsa burada yakalanir. */
+  { ad:'tablet (1024x1366)',       w:1024, h:1366, dokunma:true }
 ];
 
 /* Ekranda MUTLAKA tam gorunmesi gereken denetimler. Biri kayarsa

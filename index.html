@@ -210,6 +210,38 @@
     --alet-tavan:calc((var(--ust-rez) + 100vh - var(--alt-rez)
                        - 2 * var(--tepe-pay)) / 1.34);
     width:min(78vw,380px,calc(100vh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));}
+  /* ── GENIS EKRAN: TABLET (11 Eylul) ──────────────────────────
+     Kullanicinin sorusu: "tablet niye acmiyoruz, anlamadim."
+     OLCULDU (1024x1366 ve 390x844 yan yana): tabletteki sorun
+     "gerilmis arayuz" DEGIL, tam tersi -- DAGILMIS arayuz. Iki
+     sebep, ikisi de sayi:
+       1. Disk genisligi min(...) icinde 380px ile sinirli. Genis
+          ekranda 78vw hic devreye girmiyor, disk 380'de kaliyor ve
+          ekranin ortasinda kucucuk duruyor.
+       2. Yan ogeler --kx (16px) ile EKRANIN KENARINA yasli. 1024
+          pikselde sol sutun ile sag ustteki marka arasinda 990px
+          bosluk kaliyor; goz ikisini ayni arayuzun parcasi olarak
+          okuyamiyor.
+     Cozum yeni bir duzen degil, AYNI duzenin ortalanmis bir
+     KOLONDA durmasi: --kx genis ekranda kenar payi degil, kolonun
+     disinda kalan bosluk oluyor. Telefon tarafina tek satir bile
+     dokunulmuyor -- kural yalnizca 820px ustunde calisiyor.
+     Disk tavani da 380 -> 560: kolonun genisligiyle orantili.
+     NEDEN 680px KOLON: telefon duzeni 390'da tasarlandi ve
+     kunye/konsol aralik olculeri o genislige gore ayarli. 680 iki
+     kat degil, ~1,74 kat -- yani satirlar gerilmeden nefes aliyor.
+     Daha genisi bloklari yeniden birbirinden koparirdi.
+     GENISLIK TEK BASINA YETMIYOR: ilk yazimda kural yalnizca
+     min-width:820px'di ve YATAY TELEFONU da yakaladi (844x390).
+     Orada disk 560'a acilinca skins seridinin uzerine bindi --
+     cihaz takimi olctu: carkin tepesi 98, dikey bosluk -111 px.
+     Tablet demek genis VE yuksek demek; yatay telefon yuksek
+     degil. Iki olcu birlikte soruluyor. */
+  @media (min-width:820px) and (min-height:700px){
+    :root{ --kx:max(16px, calc((100vw - 680px) / 2)); }
+    .disk{ width:min(78vw,560px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan)); }
+    body.klavye .disk{ width:min(78vw,560px,calc(100vh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan)); }
+  }
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
      seridi okunur puntoda tasimiyor; cubuk acilinca icerigin ona yer

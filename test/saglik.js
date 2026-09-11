@@ -7883,11 +7883,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      tek dokunus kaydi tamamen iptal ediyor -- dosya olusmuyor. */
   {
     const kk = fs.readFileSync('kayit.js','utf8');
+    /* ILK TASARIM GERI ALINDI: REC'in KENDISI ilk uc saniye UNDO
+       oluyordu, yani ayni tus bazen durduruyor bazen iptal ediyordu.
+       Bilerek iki saniyelik kayit yapan kisi kaydini kaybediyordu ve
+       CI'da tam bu oldu (kosu #104: kayit uc saniye dolmadan
+       durduruldu, SAVE hic gelmedi). Zamana bagli anlam kirilgan.
+       Dogrusu AYRI TUS: ilk uc saniye YANINDAKI tus UNDO oluyor,
+       REC'in anlami hic degismiyor. */
     K('Yanlis basilan kayit tek dokunusla geri alinabiliyor',
       /GERI_AL_MS\s*=\s*\d+/.test(kk)
-      && /geriAlPenceresi\(\)\)\{\s*kayitIptalEt/.test(kk.replace(/\s+/g,' ').replace(/ \{/g,'{'))
+      && /UNDO/.test(kk)
+      && /geriAlPenceresi\(\)\)\{ kayitIptalEt/.test(kk.replace(/\s+/g,' ').replace(/ \{/g,'{'))
+      && !/kaydedici && geriAlPenceresi\(\)\)\{ kayitIptalEt\(\); return; \} if\(kaydedici\)\{ kayitDurdur/
+           .test(kk.replace(/\s+/g,' ').replace(/ \{/g,'{'))
       && /_kayitIptal[\s\S]{0,400}_bekleyenKayit = null/.test(kk),
-      'pencere, iptal yolu ve dosyanin olusmamasi -- ucu birden');
+      'pencere yanindaki tusta; REC her zaman durduruyor');
   }
   K('Tekrar basis cikarir', fv.sifir.dolu===false && fv.sifir.n===0, 'n='+fv.sifir.n);
   K('Basili tutus favori kipi acar', fv.kipte.kip===true && fv.kipte.mod===true, 'kip acildi');
@@ -8997,15 +9007,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const d = g.getImageData(Math.round(W/2)-6, Math.round(H/2)-6, 12, 12).data;
           let n = 0; for(let i = 3; i < d.length; i += 4) if(d[i] > 10) n++;
           return n; };
+        /* SABIT BEKLEME YERINE POLLING. Halka tuvali bostayken kare
+           hizini bilerek dusuruyor (pil); yuklu bir CI makinesinde
+           650 ms bir sonraki kareye bile yetmeyebiliyor ve test
+           uygulamayi degil KENDI BEKLEMESINI olcuyordu (kosu #104'te
+           tam bu oldu). Uc saniyeye kadar bekliyor, gelince cikiyor. */
+        const bekle = async ()=>{
+          for(let i = 0; i < 30; i++){ if(orta() > 20) return true; await bek(100); }
+          return orta() > 20;
+        };
         for(const k of ['halka','cark','yuvarlak','faz']){
-          AYAR.merkez = k; window.merkezUygula(); await bek(650);
-          c['nokta_' + k] = orta() > 20;
+          AYAR.merkez = k; window.merkezUygula(); await bek(120);
+          c['nokta_' + k] = await bekle();
         }
         AYAR.merkez = 'cark'; window.merkezUygula(); await bek(300);
         const i = DERILER.findIndex(d=>d.ad === 'PAPER');
         if(i >= 0){ AYAR.deri = i + 1; deriUygula(); }
-        document.body.classList.add('sadehalka'); await bek(700);
-        c.nokta_sadeAcikDeri = orta() > 20;
+        document.body.classList.add('sadehalka'); await bek(150);
+        c.nokta_sadeAcikDeri = await bekle();
         document.body.classList.remove('sadehalka');
       }catch(e){ c.hata = String(e && e.message || e); }
       try{ AYAR.merkez = eskiMerkez; AYAR.deri = eskiDeri;
