@@ -227,9 +227,9 @@ const DERI_USLUP = {
   junjunA  : { pal:["#efeae0","#c81f1b","#1f4fa8","#f2c200","#1b1a17"], tohum:12 },
   dunyaA   : { pal:["#e8992c","#141210","#f7f2e6","#d8541c","#1d4fb0"], tohum:19 },
   lunaA    : { pal:["#efe6d4","#2c4a8c","#d84c50","#e8a83c","#2a2620"], tohum:27 },
-  ezgitA   : { pal:["#171426","#2a2440","#e0c068","#a88a4c","#0e0c18"], tohum:15 },
+  ezgitA   : { pal:["#f4ece0","#e8c8d0","#c08a4c","#dca0aa","#5a3242"], tohum:15 },
   hombarA  : { pal:["#101a2c","#2ad0c0","#e0407c","#f0c84c","#f2f0e8"], tohum:21 },
-  burhieB  : { pal:["#1a1020","#3a2038","#c8a85c","#8ab08c","#f0e4d8"], tohum:71 },
+  burhieB  : { pal:["#3a2440","#553356","#d8b868","#9ec0a0","#f4ead8"], tohum:71 },
   tromoA   : { pal:["#1c3450","#e8c890","#f2a45c","#c8845c","#f4f0e4"], tohum:25 },
   ekoA     : { pal:["#140c1c","#f0407c","#3cc8c0","#f2c040","#9a5cf0"], tohum:38 },
   anisA    : { pal:["#e8eadc","#6a8c50","#d8809c","#e8c060","#38442c"], tohum:11 },
@@ -1298,24 +1298,26 @@ const DERI_HALKA = {
   },
   ezgitA(c, S, d){
     const p = _pal(d), o = S/2;
-    c.fillStyle = p[4]; c.beginPath(); c.arc(o, o, S*0.5, 0, Math.PI*2); c.fill();
-    /* Cember klavye: beyaz tuslar dilim dilim, siyahlar aralarinda. */
+    c.fillStyle = p[1]; c.beginPath(); c.arc(o, o, S*0.5, 0, Math.PI*2); c.fill();
+    /* Cember klavye: acik tuslar dilim dilim, koyular aralarinda. */
+    /* TUSLAR KREM, ZEMIN PEMBE: ikisi de p[1] iken dilimler
+       goruluyordu ama TUS gibi degil, isin gibi okunuyordu. */
     const N = 21;
     for(let i = 0; i < N; i++){
-      c.fillStyle = p[1];
+      c.fillStyle = p[0];
       c.beginPath(); c.moveTo(o, o);
       c.arc(o, o, S*0.48, i*2*Math.PI/N + 0.012, (i+1)*2*Math.PI/N - 0.012);
       c.closePath(); c.fill();
     }
-    c.fillStyle = p[0];
+    c.fillStyle = p[4];
     for(let i = 0; i < N; i++){
       if(i % 7 === 2 || i % 7 === 5 || i % 7 === 0) continue;
       const t = (i + 1)*2*Math.PI/N;
       c.save(); c.translate(o, o); c.rotate(t);
-      c.fillRect(-S*0.016, -S*0.48, S*0.032, S*0.30); c.restore();
+      c.fillRect(-S*0.013, -S*0.48, S*0.026, S*0.19); c.restore();
     }
-    c.fillStyle = p[2]; c.beginPath(); c.arc(o, o, S*0.17, 0, Math.PI*2); c.fill();
-    c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.070, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.17, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[2]; c.beginPath(); c.arc(o, o, S*0.070, 0, Math.PI*2); c.fill();
   },
   hombarA(c, S, d){
     const p = _pal(d), o = S/2;
@@ -1402,7 +1404,13 @@ const DERI_HALKA = {
 function deriHalkaAdresi(d){
   try{
     if(!(d && DERI_HALKA[d.cizim])) return '';
-    const S = 560;
+    /* OLCU 560'TAN 840'A CIKTI (11 Eylul). Bildirilen: "halkalar
+       okey ama pixel olmus bozuk gibi." Disk ucte bir yogunlukta
+       ekranda 900 piksele kadar buyuyor; 560'lik resim orada
+       BUYUTULUYOR ve kenarlar kirilyordu. 840 o buyutmeyi bitiriyor.
+       Bedel yalnizca bir defalik uretim: resim deri degisince bir kez
+       cizilip adres olarak saklaniyor. */
+    const S = 840;
     const t = document.createElement('canvas'); t.width = t.height = S;
     const c = t.getContext('2d'); if(!c) return '';
     /* Daireye kirp: ::after zaten yuvarlak ama tuval kare -- kirpmadan
@@ -4119,9 +4127,13 @@ const DERI_CIZIM = {
     const p = _pal(d), u = Math.min(W, H);
     c.save();
     c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
-    /* Buyuk ceyrek daire: kompozisyonun agirligi, sol ustte. */
+    /* Buyuk ceyrek daire SAG USTE ALINDI (11 Eylul). Kullanicinin
+       sozu: "baslikta soldaki ogeler koyu olmali" -- daire sol ust
+       kosedeyken simge sutunu onun uzerinde kaliyor ve simgeler
+       okunmuyordu. Kompozisyonun agirligi karsiya gecti, sol sutun
+       duz kremin uzerinde duruyor. */
     c.fillStyle = p[2];
-    c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, u*0.62, 0, Math.PI/2); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(W, 0); c.arc(W, 0, u*0.62, Math.PI/2, Math.PI); c.closePath(); c.fill();
     /* Kirmizi bant ve sari kare: karsi agirlik. */
     c.fillStyle = p[1]; c.fillRect(0, H*0.735, W*0.52, H*0.035);
     c.fillStyle = p[3]; c.fillRect(W*0.60, H*0.055, u*0.22, u*0.22);
@@ -4137,11 +4149,6 @@ const DERI_CIZIM = {
     c.strokeStyle = p[4]; c.lineWidth = u*0.016; c.lineCap = 'butt';
     c.beginPath(); c.moveTo(W*0.055, H*0.790); c.lineTo(W*0.300, H*0.735); c.stroke();
     c.beginPath(); c.moveTo(W*0.055, H*0.735); c.lineTo(W*0.300, H*0.790); c.stroke();
-    /* MIKROFON = daire + dikey. MC'nin isareti, iki bicimde. */
-    c.fillStyle = p[3];
-    c.beginPath(); c.arc(W*0.385, H*0.800, u*0.042, 0, Math.PI*2); c.fill();
-    c.fillStyle = p[4]; c.fillRect(W*0.375, H*0.800, W*0.020, H*0.075);
-    c.fillRect(W*0.335, H*0.872, W*0.100, H*0.010);
     /* Uc ilkel bicim bir arada: ucgen. */
     c.fillStyle = p[1];
     c.beginPath(); c.moveTo(W*0.93, H*0.615); c.lineTo(W*1.02, H*0.775);
@@ -4177,19 +4184,9 @@ const DERI_CIZIM = {
       const y = H*(0.615 + i*0.028);
       c.beginPath(); c.moveTo(0, y); c.lineTo(W*(0.20 + i*0.045), y); c.stroke();
     }
-    /* Pota: kalin kontur, ag kalin cizgi. */
-    c.strokeStyle = p[1]; c.lineWidth = u*0.020;
-    c.strokeRect(W*0.305, H*0.090, W*0.39, H*0.090);
-    c.lineWidth = u*0.016;
-    c.beginPath(); c.ellipse(W*0.50, H*0.192, W*0.115, H*0.015, 0, 0, Math.PI*2); c.stroke();
-    c.lineWidth = u*0.007;
-    for(let i = 0; i < 10; i++){
-      const t = i*2*Math.PI/10;
-      c.beginPath();
-      c.moveTo(W*0.50 + Math.cos(t)*W*0.115, H*0.192 + Math.sin(t)*H*0.015);
-      c.lineTo(W*0.50 + Math.cos(t)*W*0.042, H*0.256); c.stroke();
-    }
-    c.beginPath(); c.ellipse(W*0.50, H*0.250, W*0.044, H*0.008, 0, 0, Math.PI*2); c.stroke();
+    /* POTA VE AG KALKTI (11 Eylul, kullanicinin isaretledigi yer):
+       "bu isaretli yerler fazla olmus." Afiste uc bagiran sey birden
+       vardi -- tram, pota, kure. Ikisi kaldi. */
     /* KURE: adin kendisi dunya. Buyuk nesne artik yerkure, meridyen
        cizgileri ayni zamanda topun dikisleri -- iki tema tek bicimde. */
     const bx = W*0.810, by = H*0.330, br = u*0.125;
@@ -4201,15 +4198,6 @@ const DERI_CIZIM = {
     c.beginPath(); c.arc(W*0.50, H*0.50, W*0.465, -0.30, Math.PI + 0.30); c.stroke();
     c.lineWidth = u*0.012;
     c.beginPath(); c.arc(W*0.50, H*0.50, W*0.20, 0, Math.PI*2); c.stroke();
-    /* Kucuk top, sol altta: afisin ikinci vurusu. */
-    const sx = W*0.135, sy = H*0.800, sr = u*0.060;
-    c.fillStyle = p[3];
-    c.beginPath(); c.arc(sx, sy, sr, 0, Math.PI*2); c.fill();
-    c.strokeStyle = p[1]; c.lineWidth = u*0.010;
-    c.beginPath(); c.arc(sx, sy, sr, 0, Math.PI*2); c.stroke();
-    c.lineWidth = u*0.007;
-    c.beginPath(); c.moveTo(sx - sr, sy); c.lineTo(sx + sr, sy); c.stroke();
-    c.beginPath(); c.moveTo(sx, sy - sr); c.lineTo(sx, sy + sr); c.stroke();
     c.restore();
   },
   /* ── LUNA · KUBIK ────────────────────────────────────────────────
@@ -4307,55 +4295,41 @@ const DERI_CIZIM = {
   ezgitA(c, W, H, d){
     const p = _pal(d), u = Math.min(W, H);
     c.save();
+    /* KREM VE PEMBE (11 Eylul). Kullanicinin sozu: "ezgit cok koyu
+       olmus, krem tonlar pembemsi ve tatli olsun." Deco'nun dili
+       degismedi -- yelpaze, kademe, ince altin cizgi ayni; degisen
+       sey gece salonundan GUNDUZ salonuna gecmek. */
     const g = c.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, p[4]); g.addColorStop(0.5, p[0]); g.addColorStop(1, p[4]);
+    g.addColorStop(0, p[1]); g.addColorStop(0.46, p[0]); g.addColorStop(1, p[1]);
     c.fillStyle = g; c.fillRect(0, 0, W, H);
     /* Yelpaze: tepeden acilan isinlar, bir dolu bir bos. */
     const fx = W*0.50, fy = -H*0.02;
     for(let i = 0; i < 18; i++){
       const a0 = 0.30 + i*(2.54/18), a1 = a0 + (2.54/36);
-      c.fillStyle = _zemRgba(i % 2 ? p[2] : p[3], i % 2 ? 0.16 : 0.08);
+      c.fillStyle = _zemRgba(i % 2 ? p[2] : p[3], i % 2 ? 0.28 : 0.20);
       c.beginPath(); c.moveTo(fx, fy);
       c.arc(fx, fy, u*0.95, a0, a1); c.closePath(); c.fill();
     }
-    /* Kademeli yaylar: diskin ustunde ucu ucuna uc kemer. */
-    c.strokeStyle = _zemRgba(p[2], 0.85);
-    [0.215, 0.240, 0.262].forEach((k, i)=>{
-      c.lineWidth = u*(0.009 - i*0.002);
-      c.beginPath(); c.arc(W*0.50, H*0.50, W*(0.50 - k*0.30), Math.PI*1.12, Math.PI*1.88);
-      c.stroke();
-    });
-    /* PIYANO: yelpazenin merkezinde, altin konturlu. */
-    _objPiyano(c, W*0.500, H*0.168, u*0.175, p[2], p[4]);
-    /* Piyanonun altinda ince bir kaide cizgisi: Deco'da her sey bir
-       hatta oturur. Once buraya bir elips cerceve konmustu ve piyano
-       TAC gibi okunuyordu -- cerceve kalkti. */
-    c.strokeStyle = _zemRgba(p[2], 0.70); c.lineWidth = u*0.004;
-    c.beginPath(); c.moveTo(W*0.255, H*0.262); c.lineTo(W*0.745, H*0.262); c.stroke();
-    /* Kademeli sutunlar: iki yanda, Deco'nun zikzagi. */
+    /* ── DISKIN CEVRESI BOS KALIYOR (11 Eylul) ────────────────
+       Kullanicinin sozu: "halkanin ici iyi ama cevresindeki hardal
+       gibi olan cizgiler kotu", ve "piyano, abajur vs kaldir".
+       Uc sey birden kalkti: diski saran altin kemerler, tepedeki
+       piyano ve sol alttaki mikrofon. Piyano zaten DISKTE duruyor
+       (cember klavye) -- ikinci kez cizmek tekrardi.
+       Geriye Deco'nun kendi dili kaliyor: yelpaze, kademe, ince
+       cizgi. Nesne yok, akim var. */
+    /* Kademeli sutunlar: iki yanda, Deco'nun zikzagi. Altin degil
+       GUL: hardal ton diskin cevresinde agir duruyordu. */
     [0.045, 0.955].forEach((x, s)=>{
       const yon = s ? -1 : 1;
-      c.fillStyle = _zemRgba(p[2], 0.55);
+      c.fillStyle = _zemRgba(p[3], 0.85);
       for(let i = 0; i < 5; i++){
         c.fillRect(W*x - (s ? u*0.034 : 0) + yon*u*0.006*i,
                    H*(0.345 + i*0.026), u*(0.034 - i*0.005), H*0.022);
       }
     });
-    /* MIKROFON: ayagi kademeli, kapsulu yelpazenin kucugu. */
-    const mx = W*0.150, my = H*0.790;
-    c.fillStyle = _zemRgba(p[2], 0.90);
-    c.beginPath(); c.arc(mx, my - u*0.030, u*0.042, Math.PI, 0); c.fill();
-    c.fillRect(mx - u*0.008, my - u*0.030, u*0.016, u*0.090);
-    for(let i = 0; i < 3; i++)
-      c.fillRect(mx - u*(0.030 + i*0.012), my + u*(0.060 + i*0.012),
-                 u*(0.060 + i*0.024), u*0.012);
-    c.strokeStyle = _zemRgba(p[0], 0.85); c.lineWidth = u*0.004;
-    for(let i = -2; i <= 2; i++){
-      c.beginPath(); c.moveTo(mx - u*0.034, my - u*0.030 + i*u*0.013);
-      c.lineTo(mx + u*0.034, my - u*0.030 + i*u*0.013); c.stroke();
-    }
     /* Ince altin cizgiler: ust ve alt kenarda, simetrik. */
-    c.strokeStyle = _zemRgba(p[2], 0.55); c.lineWidth = u*0.003;
+    c.strokeStyle = _zemRgba(p[2], 0.75); c.lineWidth = u*0.003;
     [0.045, 0.052, 0.930, 0.937].forEach(y=>{
       c.beginPath(); c.moveTo(W*0.04, H*y); c.lineTo(W*0.96, H*y); c.stroke(); });
     c.restore();
@@ -4481,20 +4455,10 @@ const DERI_CIZIM = {
     c.lineTo(hx + hR*1.45, hy + hR*0.75);
     c.stroke();
     _hamamKubbe(c, hx, hy, hR, p[3], p[2]);
-    /* MIKROFON: ayagi kamci gibi kivriliyor. */
-    const mx = W*0.175, my = H*0.790;
-    c.strokeStyle = _zemRgba(p[2], 0.85); c.lineWidth = u*0.009;
-    c.beginPath(); c.moveTo(mx + u*0.070, my + u*0.110);
-    c.bezierCurveTo(mx - u*0.030, my + u*0.080, mx + u*0.060, my - u*0.020, mx, my - u*0.055);
-    c.stroke();
-    c.fillStyle = _zemRgba(p[4], 0.92);
-    c.beginPath(); c.ellipse(mx - u*0.010, my - u*0.085, u*0.034, u*0.046, -0.25, 0, Math.PI*2);
-    c.fill();
-    c.strokeStyle = _zemRgba(p[0], 0.70); c.lineWidth = u*0.005;
-    for(let i = -2; i <= 2; i++){
-      c.beginPath(); c.moveTo(mx - u*0.040, my - u*0.085 + i*u*0.015);
-      c.lineTo(mx + u*0.020, my - u*0.085 + i*u*0.015); c.stroke();
-    }
+    /* MIKROFON KALKTI (11 Eylul): "mikrofon vs gibi kucuk seyler
+       koyma, cocukca bunlar; o oge ile ilgili sanatsal dokunus anca
+       olur." Sahnenin isareti artik kamci kivrimlari ve isik.
+       */
     /* Sahne isigi: kubbenin fil gozleriyle ayni isik. */
     const kg = c.createRadialGradient(W*0.50, H*0.14, u*0.02, W*0.50, H*0.46, u*0.88);
     kg.addColorStop(0, _zemRgba(p[2], 0.26));
@@ -4622,13 +4586,9 @@ const DERI_CIZIM = {
               [p[1], p[2], p[3]]);
     }
     c.globalAlpha = 1;
-    /* MIKROFON: sol altta, ardinda iki yanki kopyasi. */
-    for(let y = 2; y >= 0; y--){
-      c.globalAlpha = 1 - y*0.30;
-      _objMikrofon(c, W*0.140 + y*u*0.022, H*0.800 - y*u*0.012, u*0.090,
-                   [p[3], p[2], p[1]][y], p[0]);
-    }
-    c.globalAlpha = 1;
+    /* MIKROFON KALKTI (11 Eylul): "eko da mikrofonu da kaldir,
+       mikrofon vs gibi kucuk seyler koyma cocukca bunlar." Yankinin
+       kendisi zaten adin isareti. */
     c.restore();
   },
   /* ── ANIS · ARTS & CRAFTS ────────────────────────────────────────
