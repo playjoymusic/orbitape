@@ -106,5 +106,30 @@
   "ad": "SMR247Jams",
   "mp3": "https://servidor39.brlogic.com:7148/live",
   "sebep": "etiket anahtar kelime coplugu (android auto, apple auto, digital radio)"
+ },
+ {
+  "ad": "RadyoAura",
+  "mp3": "https://stream.radiaura.net/station-ea8ab46e-ae01-4b71-ad9a-fef58665b89c",
+  "sebep": "yapay zeka uretimi yayin (etiketinde ai); kunye yok"
+ },
+ {
+  "ad": "RadiAura",
+  "mp3": "https://stream.radiaura.net/station-12a6e82e-a8f1-4cc6-8c37-80d73b0582e2",
+  "sebep": "yapay zeka uretimi yayin (etiketinde ai); kunye yok"
+ },
+ {
+  "ad": "Steady State Radio",
+  "mp3": "https://radio.steadystateradio.com/listen/steady_state/radio.mp3",
+  "sebep": "yapay zeka uretimi yayin (etiketinde ai); kunye yok"
+ },
+ {
+  "ad": "MIBL Radio — Instrumental",
+  "mp3": "https://www.miblradio.com.au/mibl2",
+  "sebep": "yapay zeka uretimi yayin (etiketinde ai); kunye yok"
+ },
+ {
+  "ad": "ROBOTARIIS RADIO",
+  "mp3": "https://subwave.robotariis.com/stream.mp3",
+  "sebep": "yapay zeka uretimi yayin (etiketinde ai); kunye yok"
  }
 ]
