@@ -160,3 +160,52 @@ düzeltme gelir; o düzeltme uygulamayı geçici olarak kaldırıyor.
 Dördü de yeşile dönünce `App content` bölümü tamamlanmış olur.
 Kalan engel yalnızca **paketleme** tarafında: Bubblewrap, imza
 anahtarı, assetlinks, sonra iç test ve 12 kullanıcı / 14 gün.
+
+---
+
+## 5. ÜRETİM ERİŞİMİ BAŞVURUSU — bu bir kutucuk değil, FORM
+
+*(11 Eylül'de Google'ın kendi sayfası okunarak yazıldı:
+support.google.com/googleplay/android-developer/answer/14151465)*
+
+14 gün dolunca "üretime çık" düğmesine basılmıyor; **yazılı bir
+başvuru** dolduruluyor ve Google onu okuyup karar veriyor. Üç bölüm:
+
+**Bölüm 1 — kapalı test hakkında**
+
+| Soru | Ne hazırlanmalı |
+|---|---|
+| Testçi bulmak ne kadar zordu? | Dürüst bir cümle |
+| Testçiler **bütün özellikleri** kullandı mı? | Çark, arşiv, arama, favori, kayıt, alarm, deriler, görseller — kim neyi denedi |
+| Kullanım, beklenen gerçek kullanıcı davranışına uydu mu? | Kaç gün, ne sıklıkta açıldı |
+| Hangi geri bildirim geldi, **nasıl topladın**? | Toplama yolunu şimdiden kur |
+
+**Bölüm 2 — uygulama hakkında:** hedef kitle, değer önerisi
+(neden bu, başka bir radyo uygulaması değil), **ilk yıl kurulum
+tahmini**.
+
+**Bölüm 3 — üretime hazırlık:** testten ne öğrendin ve **neyi
+değiştirdin**, üretime hazır olduğuna nasıl karar verdin.
+
+### Buradaki asıl risk
+
+Google'ın sayfası geri çevirme sebeplerini iki başlıkta topluyor:
+**12'den az opt-in testçi** ve **yetersiz testçi katılımı**
+("insufficient tester engagement"). Yani on iki kişiyi listeye ekleyip
+kimsenin uygulamayı açmaması, sayı tutsa bile başvuruyu geri
+getirebiliyor. **Sayı yeterli değil, kullanım gerekiyor.**
+
+Bunun tek panzehiri test boyunca **kayıt tutmak**: kim hangi özelliği
+denedi, ne yazdı. İki hafta sonra hatırlayarak doldurulacak bir form
+değil bu. Geri bildirimler `magaza/KAPALI_TEST.md` içine, geldikçe.
+
+### Süre
+
+Sayfa **hiçbir son tarih vermiyor** — "şu tarihe kadar" diye bir
+baskı yok. Ama sayaç 12'nci opt-in testçi geldiği gün başlıyor ve
+altına düşerse sıfırlanıyor. Başvuru incelemesi ayrıca **7 gün ya da
+biraz fazlası**. Yani en iyi ihtimalle: 12 kişi tamam → +14 gün →
+başvuru → +7 gün.
+
+Sayfa hesap cezası, uygulama kaldırma ya da yeniden başvuru için
+bekleme süresi **öngörmüyor**.
