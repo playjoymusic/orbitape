@@ -1838,22 +1838,41 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         if(s[0]===s[1] && s[1]===s[2]) tut++;
         _uclukTurSem = null;
       }
-      /* Donme sirasinda uc yuva ayri sembol almali. */
-      bekleGoster(); await bek(2400);
-      const y = [...document.querySelectorAll('#bekleGly .yuva')].map(e=>e.dataset.sem);
+      /* ── DONME SIRASINDA UC YUVA AYRI SEMBOL ALMALI ─────────────
+         BU KONTROL SALLANIYORDU (10 Eylul, CI'da kirmizi yandi).
+         Sebep testte: tek bir ana bakiyordu. Ama UCLUK_SANS = 0.12,
+         yani her cekiliste ucunun AYNI cikmasi BILEREK %12 ihtimalle
+         olan bir sey -- oyunun kendisi. Tek bakis, sekiz kosudan
+         birinde o ani yakalayip "bozuk" diyordu.
+         Olculecek sey "su an ucu ayri mi" degil, "yuvalar birbirinden
+         BAGIMSIZ mi donuyor". O yuzden donerken bir dizi kare
+         okunuyor ve en az birinde ucunun AYRI olmasi bekleniyor.
+         Yuvalar 620 ms'de bir sirayla degisiyor; on kare ~3 sn eder
+         ve birden cok cekilise denk gelir. Yanlis kirmizi ihtimali
+         0.12^n'e iner. */
+      bekleGoster();
+      let ayriGorundu = false, kare = 0;
+      for(let i = 0; i < 10; i++){
+        await bek(300);
+        const y = [...document.querySelectorAll('#bekleGly .yuva')].map(e=>e.dataset.sem);
+        if(y.length === 3){
+          kare++;
+          if(!(y[0] === y[1] && y[1] === y[2])) ayriGorundu = true;
+        }
+      }
       try{ bekleDondur(); }catch(e){}
       return { sans:UCLUK_SANS, oran:+(tut/N*100).toFixed(2),
-               donerkenAyni:(y[0]===y[1] && y[1]===y[2]) };
+               kare, donerkenAyni:!ayriGorundu };
     });
     const hedef = sn.yok ? 0 : sn.sans*100;
     K('Ucluk sansi ayarlandigi gibi', !sn.yok
       && Math.abs(sn.oran - hedef) < 2.5,
       sn.yok ? 'UCLUK_SANS tanimli degil'
              : ('istenen %' + hedef + ', olculen %' + sn.oran + ' (4000 tur)'));
-    K('Donerken semboller ayri kaliyor', !sn.yok && !sn.donerkenAyni,
+    K('Donerken semboller ayri kaliyor', !sn.yok && sn.kare > 0 && !sn.donerkenAyni,
       sn.yok ? '-' : (sn.donerkenAyni
-        ? 'donerken de hepsi ayni: zar yanlis yerde atiliyor'
-        : 'zar yalnizca oturma aninda'));
+        ? ('donerken hicbir karede ayri cikmadi (' + sn.kare + ' kare): zar yanlis yerde atiliyor')
+        : ('zar yalnizca oturma aninda — ' + sn.kare + ' kare okundu')));
     /* ── KIL PAYI VE GERILIM ─────────────────────────────────────
        Kullanicinin istegi: "ilk 2 ayni oldu, 3'u beklettin, hop
        gelmedi. Ya da hop geldi." Yani KAYBETMEK de oyunun parcasi:
