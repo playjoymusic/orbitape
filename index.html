@@ -5722,7 +5722,6 @@
     {ad:"MOIRE", zem:"#07080c", yazi:"#e8e4dc", marka:"#3ad1c0", cek:"#141820", font:F3, kose:"50%", cizim:"moire"},
     {ad:"ANAGLYPH", zem:"#0a0a0c", yazi:"#e8e8ec", marka:"#3bd9ff", cek:"#16161c", font:F1, kose:"2px", cizim:"anaglif"},
     {ad:"PARALLAX", zem:"#0b1020", yazi:"#c8d6ea", marka:"#6f86ac", cek:"#18203a", font:F1, kose:"50%", cizim:"katman"},
-    {ad:"PENROSE", zem:"#101014", yazi:"#e0dcd2", marka:"#a8a294", cek:"#1e1e24", font:F3, kose:"0px", cizim:"penrose"},
     {ad:"CAUSTIC", zem:"#031218", yazi:"#b8f4ff", marka:"#3fd0e0", cek:"#0a2430", font:F1, kose:"50%", cizim:"kostik"},
     {ad:"LENTICULAR", zem:"#0d0d12", yazi:"#f0ece0", marka:"#e85a3c", cek:"#1a1a26", font:F3, kose:"2px", cizim:"serit"},
     {ad:"ORPHIC", zem:"#12101c", yazi:"#f2e4d0", marka:"#f2c23c", cek:"#221e34", font:F2, kose:"50%", cizim:"orfik"},
@@ -5737,7 +5736,7 @@
     {ad:"ILLUMINATED", zem:"#1a1408", yazi:"#f2e4b8", marka:"#e8cf7a", cek:"#2c2210", font:F2, kose:"50%", cizim:"tezhip"},
     {ad:"LINOCUT", zem:"#0e0e0c", yazi:"#e8e2d4", marka:"#b0a894", cek:"#1e1e1a", font:F2, kose:"0px", cizim:"oyma"},
     {ad:"BATIK", zem:"#10202c", yazi:"#f0e8d0", marka:"#e0c84c", cek:"#1c3240", font:F2, kose:"50%", cizim:"batik"},
-    {ad:"ECLIPSE", zem:"#04050a", yazi:"#f2e4b8", marka:"#e8a03c", cek:"#101220", font:F1, kose:"50%", cizim:"tutulma"},
+    {ad:"NOX", zem:"#04050a", yazi:"#f2e4b8", marka:"#e8a03c", cek:"#101220", font:F1, kose:"50%", cizim:"tutulma"},
     {ad:"IRIDESCENT", zem:"#0a0a12", yazi:"#e8f0ff", marka:"#7cf0d0", cek:"#16162a", font:F2, kose:"50%", cizim:"yanardoner"},
     {ad:"PRISM", zem:"#08080c", yazi:"#f4f4f8", marka:"#ffd23b", cek:"#16161e", font:F3, kose:"50%", cizim:"prizma"},
     {ad:"DEEP FIELD", zem:"#03040a", yazi:"#e8e4f0", marka:"#c88a4c", cek:"#0e1020", font:F1, kose:"50%", cizim:"derinalan"},
@@ -5753,7 +5752,7 @@
     {ad:"LUNA", zem:"#efe6d4", yazi:"#2a2620", marka:"#c8343c", cek:"#d8cfbd", font:F2, kose:"50%", cizim:"lunaA"},
     {ad:"EZGİT", zem:"#f4ece0", yazi:"#462c38", marka:"#a8465e", cek:"#e2d7c8", font:F2, kose:"2px", cizim:"ezgitA"},
     {ad:"HOMBAR", zem:"#101a2c", yazi:"#f2f0e8", marka:"#2ad0c0", cek:"#1c2840", font:F3, kose:"0px", cizim:"hombarA"},
-    {ad:"BURHIE", zem:"#3a2440", yazi:"#f4e8dc", marka:"#e0c078", cek:"#48304e", font:F2, kose:"50%", cizim:"burhieB"},
+    {ad:"BURHIE", zem:"#2b2233", yazi:"#f0e9de", marka:"#d2b47e", cek:"#372c40", font:F2, kose:"50%", cizim:"burhieB"},
     {ad:"TROMOKOLO", zem:"#1c3450", yazi:"#f2e6cc", marka:"#f2a45c", cek:"#28425e", font:F2, kose:"50%", cizim:"tromoA"},
     {ad:"EKO", zem:"#140c1c", yazi:"#f4ecf8", marka:"#f0407c", cek:"#221830", font:F3, kose:"50%", cizim:"ekoA"},
     {ad:"ANİŞ", zem:"#e8eadc", yazi:"#2e3826", marka:"#b03c64", cek:"#d6d9c6", font:F2, kose:"50%", cizim:"anisA"},
@@ -5972,8 +5971,19 @@
          beyaz bir leke birakiyordu ("garip doku, parlama"). Cizimli
          deride kaliyor -- orada zemin fotograf gibi ve gerekli. */
       const _duzHale = !d.cizim;
-      const _tersHale = _duzHale ? 'transparent'
-                      : (acik ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.70)');
+      /* ── HALE HER ZAMAN KOYU (11 Eylul) ───────────────────────
+         Bildirilen: "dunyada soldaki ustteki ogeler -- firca, saat,
+         gorsel -- koyu olmali, acik renk olmaz."
+         OLCULDU: simgelerin RENGI zaten koyuydu (DUNYA'da
+         rgb(122,22,10)); acik goruneni HALEYDI. Acik zeminli
+         derilerde hale rgba(255,255,255,.85) yaziliyordu, yani koyu
+         bir simgenin cevresinde BEYAZ bir isik -- ekranda simge
+         koyu degil pus icinde duruyor.
+         Halenin isi rengi tersine cevirmek degil, simgenin KENARINI
+         vermek. Koyu bir hale iki yonde de calisiyor: koyu simgenin
+         altini pekistiriyor, acik simgeyi de zeminden ayiriyor.
+         Tek deger kaldi. */
+      const _tersHale = _duzHale ? 'transparent' : 'rgba(0,0,0,.55)';
       /* ── SIMGENIN ARKASINDA GERCEKTEN NE VAR ──────────────────
          Kullanicinin sozu (10 Eylul): "sol alttaki bazi ikonlar bi
          soft oldu, overlay gibi, pasif gibi."
@@ -10205,7 +10215,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 124) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 123) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde

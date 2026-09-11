@@ -11227,6 +11227,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 2) Gercek bosluk: kapatir ve dokunusu yutar. */
         const bx = Math.max(4, mx - db.width * 1.6), by = Math.min(innerHeight - 4, my + db.height * 1.1);
         const olay = (t, Tip)=>olayXY(t, Tip, bx, by);
+        /* ── SABIT BEKLEME YERINE SESSIZLIK BEKLENIYOR (11 Eylul) ──
+           Bu kontrol iki toplu kosuda kirmizi yandi, tek basina
+           kosunca hep yesildi. Sebep asagidaki sifirlamanin ZAMANI:
+           merkez dokunusunun sonraki() cagrisi olculdu ve 0-6 ms'de
+           dusuyor, ama yuklu makinede o cagrinin gectigi an 120 ms'lik
+           sabit beklemenin DISINA cikabiliyor -- o zaman merkezin
+           cagrisi sifirlamadan SONRA geliyor ve BOSLUGUN hanesine
+           yaziliyor. Olcum hatasi, kod hatasi degil.
+           Cozum: sayac sifirlanmadan once GERCEKTEN sessizlik
+           bekleniyor -- 250 ms boyunca hic cagri gelmemesi, en fazla
+           1,5 saniye. Ayni yol daha once uc kirilgan kontrolde
+           kullanildi (yildiz haritasi, favori sorusu, organik nokta). */
+        { let son = sn, sessiz = 0;
+          for(let i = 0; i < 30 && sessiz < 250; i++){
+            await bek(50);
+            if(sn !== son){ son = sn; sessiz = 0; } else sessiz += 50;
+          } }
         sn = 0;                       // merkez dokunusu sayilmasin, olculen sey BOSLUK
         olay('pointerdown', PointerEvent); c.bosKapatti = !deriGaleriAcik();
         olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);

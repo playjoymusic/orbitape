@@ -187,7 +187,6 @@ const DERI_USLUP = {
   moire    : { pal:["#07080c","#e8e4dc","#3ad1c0","#8a90a0","#1a1e26"], tohum:31 },
   anaglif  : { pal:["#0a0a0c","#ff3b3b","#3bd9ff","#e8e8ec","#141418"], tohum:17 },
   katman   : { pal:["#0b1020","#1c2c4c","#37507c","#6f86ac","#c8d6ea"], tohum:23 },
-  penrose  : { pal:["#101014","#e0dcd2","#a8a294","#5c584e","#2a2824"], tohum:41 },
   kostik   : { pal:["#031218","#0a3a4a","#3fd0e0","#b8f4ff","#02080c"], tohum:59 },
   serit    : { pal:["#0d0d12","#e85a3c","#2ab0c8","#f0ece0","#1c1c26"], tohum:71 },
   orfik    : { pal:["#12101c","#e8623c","#2f8fd0","#f2c23c","#7a4cc0"], tohum:19 },
@@ -229,7 +228,7 @@ const DERI_USLUP = {
   lunaA    : { pal:["#efe6d4","#2c4a8c","#d84c50","#e8a83c","#2a2620"], tohum:27 },
   ezgitA   : { pal:["#f4ece0","#e8c8d0","#c08a4c","#dca0aa","#5a3242"], tohum:15 },
   hombarA  : { pal:["#101a2c","#2ad0c0","#e0407c","#f0c84c","#f2f0e8"], tohum:21 },
-  burhieB  : { pal:["#3a2440","#553356","#d8b868","#9ec0a0","#f4ead8"], tohum:71 },
+  burhieB  : { pal:["#2b2233","#3b3046","#d2b47e","#a99cb4","#f2ece0"], tohum:71 },
   tromoA   : { pal:["#1c3450","#e8c890","#f2a45c","#c8845c","#f4f0e4"], tohum:25 },
   ekoA     : { pal:["#140c1c","#f0407c","#3cc8c0","#f2c040","#9a5cf0"], tohum:38 },
   anisA    : { pal:["#e8eadc","#6a8c50","#d8809c","#e8c060","#38442c"], tohum:11 },
@@ -587,40 +586,6 @@ function _objAy(c, x, y, R, yuz, golge, krater){
   });
   c.restore();
 }
-/* DUNYA: adin kendisi (kullanicinin sozu: "dunya dunya olsun").
-   Meridyen ve paraleller topun dikisleriyle ayni cizgiler -- iki tema
-   tek bicimde bulusuyor. Kitalar GENEL lekelerdir, harita degil. */
-function _objDunya(c, x, y, R, deniz, kara, cizgi){
-  c.save(); c.translate(x, y);
-  c.fillStyle = deniz;
-  c.beginPath(); c.arc(0, 0, R, 0, Math.PI*2); c.fill();
-  c.save();
-  c.beginPath(); c.arc(0, 0, R, 0, Math.PI*2); c.clip();
-  c.fillStyle = kara;
-  [[-0.42, -0.34, 0.46, 0.30, -0.4], [0.22, -0.52, 0.34, 0.20, 0.3],
-   [0.30, 0.26, 0.40, 0.34, -0.2], [-0.30, 0.52, 0.30, 0.22, 0.5],
-   [-0.72, 0.18, 0.22, 0.16, 0.0]].forEach(([kx, ky, kw, kh, a])=>{
-    c.save(); c.translate(R*kx, R*ky); c.rotate(a);
-    c.beginPath(); c.ellipse(0, 0, R*kw, R*kh, 0, 0, Math.PI*2); c.fill();
-    c.restore();
-  });
-  /* Paraleller: kurenin uzerinde yassilan elipsler. */
-  c.strokeStyle = cizgi; c.lineWidth = R*0.055;
-  [-0.55, 0, 0.55].forEach(k=>{
-    c.beginPath();
-    c.ellipse(0, R*k, R*Math.sqrt(Math.max(0.04, 1 - k*k)), R*0.13, 0, 0, Math.PI*2);
-    c.stroke();
-  });
-  /* Meridyenler: kutupdan kutba iki yay ve bir dikey. */
-  c.beginPath(); c.moveTo(0, -R); c.lineTo(0, R); c.stroke();
-  [0.52, -0.52].forEach(k=>{
-    c.beginPath(); c.ellipse(0, 0, R*Math.abs(k), R, 0, 0, Math.PI*2); c.stroke();
-  });
-  c.restore();
-  c.strokeStyle = cizgi; c.lineWidth = R*0.10;
-  c.beginPath(); c.arc(0, 0, R, 0, Math.PI*2); c.stroke();
-  c.restore();
-}
 
 const DERI_HALKA = {
   /* LUNA — DISK AYIN KENDISI (11 Eylul). Kullanicinin sozu: "luna ay
@@ -652,18 +617,22 @@ const DERI_HALKA = {
   /* DUNYA — DISK DUNYANIN KENDISI (11 Eylul). Kullanicinin sozu:
      "dunya dunya olsun." Topun dikisleriyle meridyenler ayni
      cizgiler; pop afisin kalin konturu ikisini de tasiyor. */
+  /* DUNYA — DISK YINE TOPUN KENDISI (11 Eylul, geri alindi).
+     Bir ara disk yerkureye cevrilmisti; kullanicinin sozu:
+     "dunyanin eskisi iyiydi, yenisini sil eskiyi koy." Eski hal
+     geri: siyah top, mavi dikisler, kenarda tram halkasi. */
   dunyaA(c, S, d){
     const p = _pal(d), o = S/2;
-    c.fillStyle = p[2]; c.beginPath(); c.arc(o, o, S*0.5, 0, Math.PI*2); c.fill();
-    /* Tram halkasi: afisin nokta rastiri, kenarda. */
-    c.fillStyle = _zemRgba(p[1], 0.30);
-    for(let i = 0; i < 64; i++){
-      const t = i*Math.PI/32;
-      c.beginPath();
-      c.arc(o + Math.cos(t)*S*0.465, o + Math.sin(t)*S*0.465, S*0.012, 0, Math.PI*2);
-      c.fill();
-    }
-    _objDunya(c, o, o, S*0.415, p[4], p[3], p[1]);
+    c.fillStyle = p[1]; c.beginPath(); c.arc(o, o, S*0.5, 0, Math.PI*2); c.fill();
+    /* Topun dikisleri: bir dik, bir yatay, iki yay. */
+    c.strokeStyle = p[4]; c.lineWidth = S*0.022; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(o, o - S*0.5); c.lineTo(o, o + S*0.5); c.stroke();
+    c.beginPath(); c.moveTo(o - S*0.5, o); c.lineTo(o + S*0.5, o); c.stroke();
+    c.beginPath(); c.ellipse(o - S*0.30, o, S*0.20, S*0.50, 0, -Math.PI/2, Math.PI/2); c.stroke();
+    c.beginPath(); c.ellipse(o + S*0.30, o, S*0.20, S*0.50, 0, Math.PI/2, -Math.PI/2); c.stroke();
+    c.lineCap = 'butt';
+    c.strokeStyle = _zemRgba(p[0], 0.55); c.lineWidth = S*0.012;
+    c.beginPath(); c.arc(o, o, S*0.44, 0, Math.PI*2); c.stroke();
   },
 
   bauhaus(c, S, d){
@@ -3380,47 +3349,6 @@ const DERI_CIZIM = {
     c.globalAlpha = 1;
     c.restore();
   },
-  /* PENROSE — izometrik cubuklar, ama birlestikleri yer imkansiz.
-     Kagit uzerinde tutarli, uzayda degil: kavramsal sanatin en eski
-     numarasi. Uc kol ortadaki diskin cevresinde donuyor; sol simge
-     sutunu ucuncu kolun altindan geciyor. */
-  penrose(c, W, H, d){
-    const p = _pal(d), u = Math.min(W, H);
-    c.save();
-    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
-    /* IMKANSIZ UCGEN. Uc kol; her kolun uc yuzu var ve her yuz
-       kendi isigini aliyor. Kagit uzerinde tutarli, uzayda degil:
-       goz once nesneyi kabul ediyor, sonra kabul ettigi seyin
-       olamayacagini fark ediyor. Ilk denemede kollar kisa ve dagimik
-       kalmisti -- yanilsama ancak kollar BIRLESIRSE calisiyor. */
-    const cx = W*0.50, cy = H*0.47, L = u*0.42, k = u*0.115;
-    const P = (x, y)=>[x, y];
-    const yuz = (a, b, cc, dd, renk)=>{
-      c.fillStyle = renk; c.beginPath();
-      c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(cc[0], cc[1]); c.lineTo(dd[0], dd[1]);
-      c.closePath(); c.fill();
-      c.strokeStyle = p[0]; c.lineWidth = u*0.006; c.stroke();
-    };
-    /* Ucgenin uc kosesi (izometrik) */
-    const A = P(cx, cy - L*0.62), B = P(cx + L*0.86, cy + L*0.50), C = P(cx - L*0.86, cy + L*0.50);
-    const ic = (q, t)=>P(q[0] + (cx - q[0])*t, q[1] + (cy - q[1])*t);
-    const A2 = ic(A, 0.34), B2 = ic(B, 0.34), C2 = ic(C, 0.34);
-    const kol = (u1, u2, i1, i2, r1, r2, r3)=>{
-      yuz(u1, u2, i2, i1, r1);
-      yuz(u1, [u1[0], u1[1] - k], [u2[0], u2[1] - k], u2, r2);
-      yuz(i1, [i1[0], i1[1] - k], [u1[0], u1[1] - k], u1, r3);
-    };
-    kol(A, B, A2, B2, p[1], p[2], p[3]);
-    kol(B, C, B2, C2, p[2], p[3], p[1]);
-    kol(C, A, C2, A2, p[3], p[1], p[2]);
-    /* Sol sutunun arkasinda kucuk bir es: ayni imkansizlik. */
-    c.save(); c.translate(W*0.12, H*0.17); c.scale(0.26, 0.26); c.translate(-cx, -cy);
-    kol(A, B, A2, B2, _zemRgba(p[1], 0.55), _zemRgba(p[2], 0.55), _zemRgba(p[3], 0.55));
-    kol(B, C, B2, C2, _zemRgba(p[2], 0.55), _zemRgba(p[3], 0.55), _zemRgba(p[1], 0.55));
-    kol(C, A, C2, A2, _zemRgba(p[3], 0.55), _zemRgba(p[1], 0.55), _zemRgba(p[2], 0.55));
-    c.restore();
-    c.restore();
-  },
   /* KOSTIK — suyun altindan gecen isik. Yuzeydeki her dalga bir
      mercek gibi davraniyor ve tabanda yogunlastigi yerde parlak bir
      ag cikiyor. Ag yukaridan asagi seyreliyor: sag alt ceyrek
@@ -3599,13 +3527,20 @@ const DERI_CIZIM = {
       g.addColorStop(0.12, _zemRgba(renk, 0.92));
       g.addColorStop(0.88, _zemRgba(renk, 0.92));
       g.addColorStop(1, _zemRgba(renk, 0));
-      c.fillStyle = g; c.fillRect(W*0.06, y0 - yum, W*0.88, (y1 - y0) + yum*2);
+      /* ── ALANLAR KENARA DAYANIYOR (11 Eylul) ────────────────
+         Once iki yanda %6 pay birakiliyordu (W*0.06 .. W*0.94):
+         tuvalin kenari gibi dursun diye. Ekranda oyle durmuyordu --
+         kullanicinin sozu: "alti okey de yanlar tam olsun, dayansin
+         kenarlara." Renk alani bir tablo degil ZEMIN; zeminin
+         kenari olmaz. Dikey sinirlar duruyor, degisen yalnizca
+         yatay pay. */
+      c.fillStyle = g; c.fillRect(0, y0 - yum, W, (y1 - y0) + yum*2);
     };
     blok(H*0.10, H*0.44, p[1], u*0.06);
     blok(H*0.50, H*0.78, p[2], u*0.05);
     /* Ince bir kizil damar: iki alanin arasinda duran tek cizgi. */
     c.fillStyle = _zemRgba(p[3], 0.55);
-    c.fillRect(W*0.06, H*0.468, W*0.88, u*0.006);
+    c.fillRect(0, H*0.468, W, u*0.006);
     c.restore();
   },
   /* KESIN — hard edge: gecis yok, karisim yok, firca izi yok.
@@ -4187,12 +4122,31 @@ const DERI_CIZIM = {
     /* POTA VE AG KALKTI (11 Eylul, kullanicinin isaretledigi yer):
        "bu isaretli yerler fazla olmus." Afiste uc bagiran sey birden
        vardi -- tram, pota, kure. Ikisi kaldi. */
-    /* KURE: adin kendisi dunya. Buyuk nesne artik yerkure, meridyen
-       cizgileri ayni zamanda topun dikisleri -- iki tema tek bicimde. */
-    const bx = W*0.810, by = H*0.330, br = u*0.125;
-    _objDunya(c, bx, by, br, p[4], p[3], p[1]);
-    c.fillStyle = _zemRgba(p[2], 0.75);
-    c.beginPath(); c.ellipse(bx - br*0.40, by - br*0.50, br*0.24, br*0.13, -0.6, 0, Math.PI*2); c.fill();
+    /* TOP: buyuk, kalin konturlu, ustunde tek parlama. Bir ara yerine
+       yerkure konmustu ve geri alindi (kullanici: "eskisi iyiydi").
+       POTA GITTI, TOP KALDI: isaretlenen sey potaydi. */
+    const bx = W*0.815, by = H*0.330, br = u*0.115;
+    c.fillStyle = p[3];
+    c.beginPath(); c.arc(bx, by, br, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[1]; c.lineWidth = u*0.014;
+    c.beginPath(); c.arc(bx, by, br, 0, Math.PI*2); c.stroke();
+    c.lineWidth = u*0.010; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(bx, by - br); c.lineTo(bx, by + br); c.stroke();
+    c.beginPath(); c.moveTo(bx - br, by); c.lineTo(bx + br, by); c.stroke();
+    c.beginPath(); c.ellipse(bx - br*0.62, by, br*0.40, br, 0, -Math.PI/2, Math.PI/2); c.stroke();
+    c.beginPath(); c.ellipse(bx + br*0.62, by, br*0.40, br, 0, Math.PI/2, -Math.PI/2); c.stroke();
+    c.lineCap = 'butt';
+    c.fillStyle = _zemRgba(p[2], 0.85);
+    c.beginPath(); c.ellipse(bx - br*0.38, by - br*0.48, br*0.26, br*0.15, -0.6, 0, Math.PI*2); c.fill();
+    /* Kucuk top, sol altta: afisin ikinci vurusu. */
+    const sx = W*0.135, sy = H*0.800, sr = u*0.060;
+    c.fillStyle = p[3];
+    c.beginPath(); c.arc(sx, sy, sr, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[1]; c.lineWidth = u*0.010;
+    c.beginPath(); c.arc(sx, sy, sr, 0, Math.PI*2); c.stroke();
+    c.lineWidth = u*0.007;
+    c.beginPath(); c.moveTo(sx - sr, sy); c.lineTo(sx + sr, sy); c.stroke();
+    c.beginPath(); c.moveTo(sx, sy - sr); c.lineTo(sx, sy + sr); c.stroke();
     /* Saha: kalin beyaz yay, diskin cevresinde. */
     c.strokeStyle = p[2]; c.lineWidth = u*0.016;
     c.beginPath(); c.arc(W*0.50, H*0.50, W*0.465, -0.30, Math.PI + 0.30); c.stroke();
