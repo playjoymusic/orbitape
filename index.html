@@ -10807,11 +10807,22 @@
         _donusYerlestir();
         /* GEC OLCU ICIN SON BIR BAKIS. Cubuk animasyonu bazi
            surumlerde tavandan sonra bitiyor; o zaman yukaridaki
-           yerlestirme yine erken kalir. Bu tek seferlik gecikmeli
-           cagri onu duzeltiyor ve hicbir sey degismediyse
-           geriYerlestir zaten ayni sayilari yazip cikiyor. */
-        setTimeout(()=>{ try{ if(!document.body.classList.contains('donuyor'))
-          geriYerlestir(); }catch(e){ _yut(e); } }, 450);
+           yerlestirme yine erken kalir.
+           BU CAGRI _donusYerlestir'IN KENDISI: ilk yazimda yalnizca
+           geriYerlestir cagriliyordu ve ekranda carkin tuvali
+           halkalarin ortasindan kayiyordu (kullanicinin gorduğu:
+           "bak carka ne oldu yatay dikeyden sonra"). Sebep yarim
+           zincir: geriYerlestir kutulari yeniden koyuyor ama tuvali
+           kutusuna HIZALAMIYOR; hizalama olcuIste/carkHizala
+           tarafinda. Yerlesimin tek bir sahibi olmali -- gec bakis
+           da ayni kapidan geciyor. */
+        setTimeout(()=>{
+          try{
+            if(document.body.classList.contains('donuyor')) return;
+            _donusYerlestir();
+            if(window.carkHizala) window.carkHizala();
+          }catch(e){ _yut(e); }
+        }, 450);
         return;
       }
       _donusZaman = setTimeout(_donusBitir, DONUS_ARA);

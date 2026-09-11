@@ -119,6 +119,25 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
   }
   const ANAHTAR = 'orbitape.alarm';
   const ERTELE_DK = 7;
+  /* ── UYANMA RAFI (11 Eylul) ─────────────────────────────────────
+     Kullanicinin sozu: "uyanma secilen baska bir turle de acilabilsin."
+     MOTOR ZATEN VARDI: uyanHazirla() alarm kuruluyken calacak
+     istasyonu ONCEDEN seciyor ve secerken depo.sabah.aile'ye bakiyor.
+     Eksik olan yalnizca ekrandaki secim satiriydi; 7 Eylul'de
+     kullanicinin kendi istegiyle kaldirilmisti ("istasyon secenegini
+     kapat, kaldigimiz yerden devam etsin") ve alan hep bos kalmisti.
+     Simdi geri geliyor ama VARSAYILAN hala "kaldigin yerden": bos
+     deger listenin basinda ve ilk acilista secili olan o. Yani eski
+     davranis hicbir sey yapmayan icin aynen duruyor. */
+  function uyanRaflari(){
+    var r = [''];
+    try{
+      if(typeof AILELER !== 'undefined' && AILELER && AILELER.length){
+        AILELER.forEach(function(a){ if(a && a.ad && !a.bos) r.push(a.ad); });
+      }
+    }catch(e){ yut(e); }
+    return r;
+  }
   const TEKRAR = ['off','daily','weekdays','weekends'];
   const TEKRAR_AD = { off:'ONCE', daily:'EVERY DAY', weekdays:'WEEKDAYS', weekends:'WEEKENDS' };   // goster() T() ile ceviriyor
 
@@ -560,6 +579,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); f(); }); return b;
   }
   let uykuDkYazi, uykuDurum, uykuBasla, sabahSaatGiris, sabahTekrar, sabahAnahtar, sabahDurum, calanKutu, notYazi, sabahGeri;
+  let sabahRaf;
   let hizliTuslar = [];
   /* BASILI TUTUNCA HIZLANIR: ilk dokunus 5 dk, sonra 400 ms'de bir,
      iki saniye sonra 120 ms'de bir. Parmagini kaldirmadan 5'ten
@@ -650,6 +670,24 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     const sa = el('div', 'st-satir');
     sabahTekrar = tus('tekrar', '', ()=>{ depo.sabah.tekrar = TEKRAR[(TEKRAR.indexOf(depo.sabah.tekrar) + 1) % TEKRAR.length]; if(depo.sabah.acik) depo.sabah.hedef = sabahHedefHesapla(); yaz(); goster(); });
     sa.appendChild(sabahTekrar);
+    /* ── HANGI RAFLA UYANILACAK ──────────────────────────────────
+       Tekrar tusuyla AYNI dilde: tek dugme, her dokunusta bir
+       sonraki secenek. Ayri bir liste penceresi acmiyor -- alarm
+       bolumunde iki satir var ve ucuncu bir pencere orayi
+       kalabaliklastirirdi.
+       Ilk secenek bos: "KEEP PLAYING", yani uyumadan once ne
+       dinliyorsan sabah o. Bos olmayan bir raf secilirse
+       uyanHazirla o rafin istasyonlarindan birini onceden elde
+       tutuyor ve saat gelince aga hic sormadan onu caliyor. */
+    sabahRaf = tus('raf', '', ()=>{
+      var L = uyanRaflari();
+      var i = L.indexOf(depo.sabah.aile || '');
+      depo.sabah.aile = L[(i < 0 ? 0 : i + 1) % L.length];
+      _uyanItem = null;                 // secim degisti: eldeki aday duser
+      try{ uyanHazirla(); }catch(e){ yut(e); }
+      yaz(); goster();
+    });
+    sa.appendChild(sabahRaf);
     s.appendChild(sa);
     /* Alarmin ne zaman calacagi TEK BAKISTA: saatin altinda geri
        sayim. "Kurdum mu, tuttu mu" sorusunu ekran cevapliyor -- bu
@@ -719,6 +757,7 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       sabahSaatGiris.value = depo.sabah.saat;
       sabahSaatGiris.classList.toggle('kurulu', !!depo.sabah.acik);
         sabahTekrar.textContent = T(TEKRAR_AD[depo.sabah.tekrar]);
+      if(sabahRaf) sabahRaf.textContent = depo.sabah.aile || T('KEEP PLAYING');
       /* "alarm sayfasinda en alttaki on off anlamadim, o niye var"
          (3 Eylul): tus alarmin kendi anahtariydi ama yalnizca ON/OFF
          yaziyordu -- neyin acik oldugu yazmiyordu. Artik adiyla. */

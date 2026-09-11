@@ -1040,9 +1040,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       /_donusBitir[\s\S]{0,900}?visualViewport[\s\S]{0,200}?const k = innerWidth/.test(kDonus)
       || /const k = innerWidth[\s\S]{0,120}_vv \? Math\.round\(_vv\.height\)/.test(kDonus),
       'yalnizca yerlesim penceresine bakan bekci erken yerlestirir');
+    /* GEC BAKIS YERLESIMIN AYNI KAPISINDAN GECMELI. Ilk yazimda
+       yalnizca geriYerlestir cagriliyordu: kutular yeniden kondu ama
+       carkin tuvali kutusuna hizalanmadi ve halkalarin ortasindan
+       kaydi (kullanici: "bak carka ne oldu yatay dikeyden sonra").
+       Yerlesimin tek sahibi var; gec bakis da onu cagiriyor. */
     K('Donusten sonra gec olcu icin bir kez daha bakiliyor',
-      /_donusYerlestir\(\);[\s\S]{0,600}setTimeout\([\s\S]{0,200}geriYerlestir/.test(kDonus),
-      'cubuk animasyonu tavandan sonra biterse yerlesim erken kalir');
+      /setTimeout\([\s\S]{0,400}_donusYerlestir\(\);[\s\S]{0,120}carkHizala/.test(kDonus),
+      'gec bakis _donusYerlestir + carkHizala cagirmali');
     K('Donus surerken ikinci bir yerlestirme yok',
       /classList\.contains\('donuyor'\)\)\s*return;[\s\S]{0,80}geriYerlestir/.test(kDonus),
       'olcuIste donus bitmeden geriYerlestir cagirmamali');
@@ -10511,6 +10516,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.ertelendi = d3.erteleHedef > Date.now() + 6*60000 && d3.erteleHedef <= Date.now() + 7*60000 + 1000 && d3.erteleme === 1;
         /* kilit ekranindaki play gecede "uyan" demek */
         c.kilitPlay = saatKilitPlay() === true && saatKip() === '' && ses.loop === false;
+        /* ── UYANMA RAFI SECICISI (11 Eylul) ────────────────────
+           Kullanicinin sozu: "uyanma secilen baska bir turle de
+           acilabilsin." Motor zaten vardi (uyanHazirla, sabah.aile);
+           eksik olan ekrandaki secim satiriydi.
+           Olculen sey: (1) varsayilan BOS -- yani eski davranis
+           "kaldigin yerden devam" duruyor, (2) dokununca gercek bir
+           raf adi yaziliyor, (3) bir tur atinca basa donuyor. */
+        {
+          const rf = document.querySelector('#saatPanel .st-tus.raf');
+          c.rafTusuVar = !!rf;
+          if(rf){
+            const eskiAile = saatDurum().depo.sabah.aile || '';
+            c.rafVarsayilanBos = eskiAile === '';
+            rf.click(); await bek(60);
+            const ilk = saatDurum().depo.sabah.aile || '';
+            c.rafSecildi = !!ilk && (typeof AILELER !== 'undefined')
+                        && AILELER.some(a=>a.ad === ilk);
+            /* tur at: bos degere geri donmeli */
+            for(let i = 0; i < 40 && (saatDurum().depo.sabah.aile || '') !== ''; i++){
+              rf.click(); await bek(15);
+            }
+            c.rafDonguBasaDondu = (saatDurum().depo.sabah.aile || '') === '';
+          }
+        }
         /* tekrar: her gun -> durdurunca ertesi gune kurulur, alarm acik kalir */
         await bek(300);
         const dOnce = saatDurum().depo.sabah;
@@ -10660,6 +10689,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Erteleme: sifira iner, sessiz dongu, 7 dk sonraya', st.gece && st.geceSusmuyor && st.ertelendi, ozet || 'gece kipi');
     K('Kilit ekraninda play gecede uyandiriyor', st.kilitPlay, ozet || 'dongu birakildi');
     K('Her gun: durdurunca ertesi gune kurulur', st.tekrarKuruldu && st.ikinciSeviye && st.ucuncuTam, ozet || '2. seviye 0.25+, 3. tam');
+    /* ── UYANMA RAFI (11 Eylul) ─────────────────────────────────
+       Kullanicinin sozu: "uyanma secilen baska bir turle de
+       acilabilsin." Varsayilan BOS kalmali -- 7 Eylul'deki karar
+       ("kaldigimiz yerden devam") hicbir sey secmeyen icin aynen
+       duruyor; secim isteyen tek dokunusla aliyor. */
+    K('Alarmda uyanma rafi secilebiliyor',
+      st.rafTusuVar === true && st.rafVarsayilanBos === true
+      && st.rafSecildi === true && st.rafDonguBasaDondu === true,
+      ozet || 'varsayilan KEEP PLAYING, dokununca raf, tur atinca basa');
     K('Saat paneli kapaniyor, depo ve carpan temiz', st.kapandi && st.depoTemiz && st.katGeri, ozet || 'temiz');
     K('Alarm tek dugmeyle kuruluyor (anahtar yok)',
        st.anahtarAdli && st.anahtarYok, ozet || 'SET / CANCEL');
