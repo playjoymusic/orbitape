@@ -428,6 +428,12 @@ const CASUS = ()=>{
       const depo = (()=>{ try{ return JSON.parse(localStorage.getItem('orbitape.fav')||'[]').length; }
                           catch(e){ return -1; } })();
       calanlar = [];
+      /* 10 Eylul: sol yildiz ONCE SORUYOR. Ilk dokunus kipi acmiyor,
+         "PLAY FAVOURITES?" diye soruyor; ikincisi aciyor. Kullanicinin
+         sozu: "favori varsa ona basinca favori liste calsin mi diye
+         sorsun ilk." Cikis hala tek dokunus. */
+      favKipDegis(); await b2(120);
+      const soruldu = (_favMod === false);
       favKipDegis(); await b2(300);
       const kipte = _favMod;
       for(let i=0;i<3;i++){ sonraki(true); await b2(160); }
@@ -437,10 +443,11 @@ const CASUS = ()=>{
       const kapandi = !_favMod;
       window.cal = eskiCal;
       return { n, depo, kipte, hepsiFavori, calanN:calanlar.length, kapandi,
-               raf:AKTIF_AILE, eskiRaf };
+               soruldu, raf:AKTIF_AILE, eskiRaf };
     });
     K('[Y4] Iki favori isaretlendi', fav.n===2, fav.n + ' kayit');
     K('[Y4] Favoriler cihazda kaliyor', fav.depo===2, fav.depo + ' kayit depoda');
+    K('[Y4] Sol yildiz once soruyor', fav.soruldu===true, 'ilk dokunus kipi acmiyor');
     K('[Y4] Favori kipi aciliyor', fav.kipte===true, 'kip acik');
     K('[Y4] Kipte SADECE favoriler caliyor', fav.hepsiFavori===true,
        fav.calanN + ' calmanin hepsi favoriden');

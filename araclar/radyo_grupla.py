@@ -734,6 +734,25 @@ def grupla(kayitlar):
             o["grup"] = "RADIOTAPE"
             continue
 
+        # 1b) ANATOLIA: TEK ETIKET YETER (10 Eylul gece)
+        #     Olculdu (Radyo kesfi #2): "Radio 44" (hits,pop,top40,
+        #     turkish music), "Super 2 FM", "Tarsus FM", "Radyo Ender",
+        #     "Metropol FM (Berlin)" ve "Metropol FM (Stuttgart)"
+        #     hepsi RADIOTAPE'e dusuyordu. Sebep asagidaki "tek
+        #     basina bir etiket yetmez" kurali: iki ayri etiket ayni
+        #     rafi soylemezse karar verilmiyor.
+        #     O kural TUR icin dogru -- tek "classical" etiketi bir
+        #     istasyonu ORCHESTRAL yapmaz. Ama ANATOLIA bir tur degil
+        #     bir COGRAFYA: "turkish music" etiketi bir tahmin degil
+        #     bir beyandir, istasyon kendi dilini soyluyor. Bir tane
+        #     yeter.
+        #     KONUSMA VE IBADET SUZGECI BUNDAN ONCE GECTI (temizle),
+        #     yani buraya gelen zaten muzik yayini sayiliyor.
+        if ANATOLIA_MUTLAK.search(ad + " " + etiket):
+            o["grup"] = "ANATOLIA"
+            o["saf"] = 1
+            continue
+
         # 2) ISIM KONUSUYORSA O KONUSUR.
         isim_raf = _raflar(ad)
         if len(isim_raf) == 1:

@@ -782,6 +782,10 @@
   #favAc svg{width:15px;height:15px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;}
   #favAc.bos{opacity:.42;}                      /* hiç favori yok */
   #favAc.acik{color:#ffd98a;border-color:rgba(255,217,138,.45);background:rgba(26,22,10,.75);}
+  /* SORU HALI: kip degil, bekleyen bir soru. Kipin sarisindan
+     ayrilsin diye yalnizca cerceve ve opaklik degisiyor -- dolu
+     yildiz (fill) kipin isareti olarak kaliyor. */
+  #favAc.soru{opacity:1;border-color:rgba(255,217,138,.75);}
   #favAc.acik svg{fill:currentColor;}
   #favAc:hover{color:#cfe9e4;}
   /* Kanal rengi ALMIYORLAR: sol taraf tek renk. */
@@ -4456,7 +4460,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.10';
+  var ORB_SURUM = '2026.09.11';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -12761,20 +12765,64 @@
          saklamak depoyu gereksiz şişiriyor. */
       FAV.push({ mp3:aktifItem.mp3, ad:aktifItem.ad||'', sanatci:aktifItem.sanatci||'',
                  etiket:aktifItem.etiket||'', lisans:aktifItem.lisans||'', radyo:!!aktifItem.radyo });
+      /* ── UC YUZUN USTU: EN ESKISI DUSER ─────────────────────────
+         Kullanicinin sozu: "sagdan favori eklenirse app'i silene
+         kadar dursun, silinmesin." Kural bu: favoriler cihazda
+         (localStorage) duruyor -- sunucu yok, oturum yok, sureli
+         degil; uygulama silinene kadar kaliyor. Tek istisna bu satir
+         ve o da bir tavan: uc yuz birinci favori eklenirse EN ESKISI
+         duser, cunku sinirsiz buyuyen bir liste cihazin deposunu
+         doldurur. Ekleyen kisi icin gorunur bir kayip degil (bir
+         ekleme = bir cikma) ve tavan yaziyla duruyor. */
       if(FAV.length > FAV_TAVAN) FAV.shift();
     }
     favYaz(); favTazele();
     try{ tik(); }catch(e){ _yut(e); }
   }
+  /* ── SOL YILDIZ ONCE SORAR (10 Eylul gece) ──────────────────────
+     Kullanicinin sozu: "favorinin soldaki yildizina basinca yaniyor
+     ama favoride bir sey yok. Ve bir daha bastim sonmedi de. Favori
+     varsa ona basinca 'favori liste calsin mi' diye sorsun ilk."
+     Iki ayri kusur olculdu:
+       1. FAVORI YOKKEN sol yildiza basmak SAG yildizi iki kez
+          yakip sonduruyordu. Sag yildiz o an gorunmuyor bile
+          olabilir; basilan tus hicbir sey soylemiyordu.
+       2. Kipe girmek tek dokunusla oluyordu. Kullanici ne oldugunu
+          anlamadan butun havuz favorilere daralıyordu.
+     Uygulamada pencere/dialog YOK ve olmayacak -- soru da uygulamanin
+     kendi diliyle soruluyor: ilk dokunus yildizi HAZIR hale getirip
+     ekrana "PLAY FAVOURITES?" yaziyor, ikinci dokunus kipi aciyor.
+     Uc buçuk saniye icinde dokunulmazsa soru kendiliginden geri
+     cekiliyor. Kip ACIKKEN soru yok: tek dokunus kapatiyor -- cikis
+     her zaman tek adim olmali. */
+  var _favSoru = null;
+  function _favSoruBitir(){
+    try{
+      if(_favSoru){ clearTimeout(_favSoru); _favSoru = null; }
+      const a = document.getElementById('favAc');
+      if(a) a.classList.remove('soru');
+    }catch(e){ _yut(e); }
+  }
   function favKipDegis(){
     if(!_favMod && !FAV.length){
-      /* Boş listeyle kipe girmek anlamsız: yıldız iki kez yanıp söner. */
-      const d = document.getElementById('fav'); if(!d) return;
-      d.classList.add('kip'); setTimeout(()=>d.classList.remove('kip'), 140);
-      setTimeout(()=>{ d.classList.add('kip'); setTimeout(()=>d.classList.remove('kip'), 140); }, 240);
+      /* FAVORI YOK: basilan tus bunu SOYLESIN. Yaniltici bir yanip
+         sonme degil, okunur bir cumle. */
+      _favSoruBitir();
+      try{ geciciAdGoster('NO FAVOURITES YET'); }catch(e){ _yut(e); }
+      try{ const a = document.getElementById('favAc');
+           if(a){ a.classList.add('soru'); setTimeout(()=>a.classList.remove('soru'), 420); } }catch(e){ _yut(e); }
       return;
     }
+    if(!_favMod && !_favSoru){
+      /* ILK DOKUNUS: soru. */
+      try{ const a = document.getElementById('favAc'); if(a) a.classList.add('soru'); }catch(e){ _yut(e); }
+      try{ geciciAdGoster('PLAY FAVOURITES?'); }catch(e){ _yut(e); }
+      _favSoru = setTimeout(()=>{ _favSoru = null; _favSoruBitir(); }, 3500);
+      return;
+    }
+    _favSoruBitir();
     _favMod = !_favMod;
+    try{ geciciAdGoster(_favMod ? 'FAVOURITES' : 'ALL AGAIN'); }catch(e){ _yut(e); }
     favTazele();
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){ _yut(e); }
     try{ sonraki(true); }catch(e){ _yut(e); }

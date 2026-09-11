@@ -239,7 +239,10 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   function merkezOdunc(){
     try{
       if(typeof AYAR === 'undefined' || !AYAR) return;
-      if(_merkezElle) return;
+      /* ELLE SECIM DAMGASI OFF'U BAGLAMIYOR: asagidaki OFF dali her
+         zaman calisiyor, damga yalnizca DERI tarafindaki oduncu
+         durduruyor. */
+      if(_merkezElle && (AYAR.deri|0) > 0) return;
       const yaz = ()=>{
         try{ ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
@@ -250,9 +253,24 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
           AYAR.merkez = 'yuvarlak';
           yaz();
         }
-      }else if(_merkezOnce){
-        AYAR.merkez = _merkezOnce; _merkezOnce = null;
-        yaz();
+      }else{
+        /* ── OFF HER ZAMAN CARK (10 Eylul gece) ──────────────────
+           Kullanicinin sozu: "skinslerde oklarla gezip ya da basta
+           bir seye basip tekrar OFF'a basinca cark gidiyor. OFF'a
+           basinca hep ilk acilan carkli mood olacak; kisi isterse
+           degistirir."
+           Eski hal iki yerde birden sessiz kaliyordu: panelde bir
+           kere DISC/RING'e basildiysa (_merkezElle) odunc hic geri
+           verilmiyordu, ve galeri zaten 'yuvarlak' ikeneken acildiysa
+           geri verilecek bir sey (_merkezOnce) yoktu. Iki durumda da
+           OFF'a donen kullanici carkini bulamiyordu.
+           OFF uygulamanin KENDISI: orada varsayilan carktir, oduncun
+           ya da onceki secimin sozu gecmez. Elle secim damgasi da
+           siliniyor -- bir sonraki deride odunc yeniden calissin. */
+        if(AYAR.merkez !== 'cark'){
+          AYAR.merkez = 'cark'; yaz();
+        }
+        _merkezOnce = null; _merkezElle = false;
       }
     }catch(e){ yut(e); }
   }
@@ -708,11 +726,14 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
          Kural tek: disk deriye ait. Deri duruyorsa odunc de duruyor;
          yalnizca OFF'a donuldugunde geri veriliyor. Panelin acik ya
          da kapali olmasinin bununla ilgisi yok. */
-      if(_merkezOnce && (AYAR.deri|0) === 0){
-        try{ AYAR.merkez = _merkezOnce; ayarKaydet(); }catch(e){ yut(e); }
+      /* 10 Eylul: OFF'ta geri verilen sey ONCEKI secim degil CARK.
+         Bkz. merkezOdunc -- kullanici "OFF'a basinca hep ilk acilan
+         carkli mood olacak" dedi ve kapanis da ayni kurali izliyor. */
+      if((AYAR.deri|0) === 0 && AYAR.merkez !== 'cark'){
+        try{ AYAR.merkez = 'cark'; ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
         try{ if(window.carkTazele) window.carkTazele(); }catch(e){ yut(e); }
-        _merkezOnce = null;
+        _merkezOnce = null; _merkezElle = false;
       }
       kap.hidden = true;
       kap.classList.remove('serit');

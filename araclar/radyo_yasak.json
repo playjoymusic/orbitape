@@ -81,5 +81,30 @@
   "ad": "Michael Jackson music star",
   "mp3": "https://icy.unitedradio.it/um2908.mp3",
   "sebep": "kisa bir loop calip duruyor; istasyon degil tek parca"
+ },
+ {
+  "ad": "OZ Tarkan Radio",
+  "mp3": "https://eu8.fastcast4u.com/proxy/oztarkan?mp=/stream",
+  "sebep": "ayni yayin: oteki adres kaldi"
+ },
+ {
+  "ad": "Sinnfunk",
+  "mp3": "https://radio.sinnfunk.live/listen/sinnfunk/radio.mp3",
+  "sebep": "etiketinde talk radio var; muzik rafi degil"
+ },
+ {
+  "ad": "SomaFM Groove Salad (128k MP3)",
+  "mp3": "https://ice6.somafm.com/groovesalad-128-mp3",
+  "sebep": "ayni yayin: 256k MP3 kaldi"
+ },
+ {
+  "ad": "WALM 2 HD",
+  "mp3": "https://icecast.walmradio.com:8443/walm2",
+  "sebep": "ilahi/christian agirlikli; muzik rafi degil"
+ },
+ {
+  "ad": "SMR247Jams",
+  "mp3": "https://servidor39.brlogic.com:7148/live",
+  "sebep": "etiket anahtar kelime coplugu (android auto, apple auto, digital radio)"
  }
 ]

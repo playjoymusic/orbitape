@@ -28,8 +28,10 @@ NE YAPAR
   5) Mevcut radyo.json ile birlestirir, ayni yayin adresini teker.
 
 KULLANIM
-  python3 araclar/radyo_hasat.py mevcut.json cikti.json [hedef]
+  python3 araclar/radyo_hasat.py mevcut.json cikti.json [hedef] [raf]
     hedef: raf basina toplanacak en fazla istasyon (varsayilan 40)
+    raf  : verilirse YALNIZCA o raf aranir (orn. "ANATOLIA").
+           Bos birakilirsa hedefin altindaki butun raflar aranir.
 """
 
 import json
@@ -133,6 +135,15 @@ def main():
         print(__doc__)
         return 1
     hedef = int(sys.argv[3]) if len(sys.argv) > 3 else 40
+    # ── TEK RAF (10 Eylul gece) ──────────────────────────────────
+    # Kullanicinin sozu: "sacma istasyonlar gelecek." Hakliydi: yeni
+    # bir raf acmak icin kosulan hasat, hedefin altindaki BUTUN
+    # raflari birden dolduruyordu -- ANATOLIA icin 40 yazmak AMBIENT,
+    # JAZZ, ORCHESTRAL, AFROBEATS ve RNB & FUNK'a da eli yuzu belirsiz
+    # istasyon getiriyordu. Hedefi kucultmek cozum degil: 1 yazilinca
+    # ANATOLIA da "zaten dolu" sayilir ve hicbir sey gelmez.
+    # Dogru ayar RAF: verilirse yalnizca o raf aranir.
+    tek_raf = (sys.argv[4].strip() if len(sys.argv) > 4 else "")
 
     with open(sys.argv[1], encoding="utf-8") as f:
         mevcut = json.load(f)
@@ -165,7 +176,14 @@ def main():
     print("mevcut liste: %d istasyon" % len(mevcut))
     yeni = []
 
+    if tek_raf and tek_raf not in ARAMA:
+        print("::error::boyle bir raf yok: %s (secenekler: %s)"
+              % (tek_raf, ", ".join(ARAMA)))
+        return 1
+
     for raf, etiketler in ARAMA.items():
+        if tek_raf and raf != tek_raf:
+            continue
         gerek = max(0, hedef - sayim.get(raf, 0))
         if not gerek:
             print("%-14s zaten %d, aranmadi" % (raf, sayim.get(raf, 0)))

@@ -2478,7 +2478,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      distan dorduncu halka.
      Geometri halka SAYISINDAN tureniyor, o yuzden sayi burada
      acikca yaziyor: yanlis sayida parmak baska halkayi secer. */
-  K('Radyoda halkalar tur ailesi', hs.n===10 &&
+  /* ON -> ON BIR (10 Eylul gece): ANATOLIA acildi ve icine ilk
+     istasyonlar girdi. Halka SAYISI burada acikca yaziyor cunku
+     geometri ondan tureniyor -- yanlis sayi baska halkayi sectirir. */
+  K('Radyoda halkalar tur ailesi', hs.n===11 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
        && /RNB & FUNK/.test(hs.sira) && /AFROBEATS/.test(hs.sira)
        && !/DISCO FUNK/.test(hs.sira)
@@ -7773,6 +7776,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     cal({mp3:'f2', ad:'Fav 2', etiket:'netlabel', lisans:SERBEST}); await bek(60); favDegis();
     cal({mp3:'f3', ad:'Fav 3', etiket:'netlabel', lisans:SERBEST}); await bek(60);
     const iki = gor();
+    /* ── ONCE SORAR, SONRA ACAR (10 Eylul gece) ─────────────────
+       Kullanicinin sozu: "favori varsa ona basinca 'favori liste
+       calsin mi' diye sorsun ilk." Ilk dokunus kipi ACMIYOR, soruyor;
+       ikincisi aciyor. Cikis tek dokunus -- her zaman tek adim. */
+    favKipDegis(); await bek(120);
+    const soruldu = (_favMod === false) && !!_favSoru;
     favKipDegis(); await bek(150);
     const kipte = gor();
     /* Kaynagi DOGRUDAN olcuyoruz: sonraki() uzerinden olcunce arka
@@ -7791,6 +7800,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const depo = (()=>{ try{ return JSON.parse(localStorage.getItem('orbitape.fav')||'[]').length; }catch(e){ return -1; } })();
     /* bos listeyle kipe girilmemeli */
     FAV = []; favYaz(); favTazele(); favKipDegis(); await bek(60);
+    favKipDegis(); await bek(60);          // ikinci dokunus da acmamali
     const bosKip = _favMod;
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
     /* TEMIZ BIRAK: sonraki kontroller (kayit, REC) bu durumdan
@@ -7798,9 +7808,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     _favMod = false; FAV = []; favTazele();
     AKTIF_MOD = eskiMod;
     cal({mp3:'temiz', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(80);
-    return { bos, calan, bir, sifir, iki, kipte, favdanMi, c1, c2, kapali, depo, bosKip };
+    return { bos, calan, bir, sifir, iki, kipte, favdanMi, c1, c2, kapali, depo, bosKip, soruldu };
   });
 
+  K('Sol yildiz once soruyor, sonra aciyor', fv.soruldu===true && fv.kipte.mod===true,
+    'ilk dokunus soru: '+fv.soruldu+', ikinci dokunusta kip: '+fv.kipte.mod);
   K('Favori dugmesi calarken cikar', fv.calan.var_===true, 'bos:'+fv.bos.var_+' calarken:'+fv.calan.var_+' calan:'+fv.calan.calan);
   K('Kisa basis favoriler', fv.bir.dolu===true && fv.bir.n===1, 'n='+fv.bir.n);
   K('Tekrar basis cikarir', fv.sifir.dolu===false && fv.sifir.n===0, 'n='+fv.sifir.n);
@@ -7815,8 +7827,33 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const a = document.getElementById('favAc'); if(!a) return null;
     const eski = AKTIF_MOD; AKTIF_MOD = null;
+    /* TEMIZ BASLANGIC: onceki olcumlerden askida bir SORU kalmis
+       olabilir ve o zaman ilk dokunus soruyu ONAYLAR. Olculen sey
+       "ilk dokunus soruyor" oldugu icin baslangic kesin olmali. */
+    try{ if(typeof _favSoruBitir === 'function') _favSoruBitir(); }catch(e){}
+    _favMod = false;
     FAV = [{mp3:'q1',ad:'A'},{mp3:'q2',ad:'B'}]; favYaz(); favTazele(); await bek(60);
     const kapali = { gor:a.classList.contains('var'), acik:a.classList.contains('acik') };
+    /* 10 Eylul: ilk dokunus SORU, ikincisi kipi aciyor. Bkz.
+       favKipDegis -- kullanici "favori liste calsin mi diye sorsun
+       ilk" dedi. Cikis hala tek dokunus. */
+    /* 140 ms YETMIYORDU: bu tusun dinleyicisi kayit.js modulunu
+       ISTEK UZERINE indiriyor ve dokunusu modul gelince oynatiyor.
+       Olculdu -- 140 ms'de hicbir sey olmamis gibi gorunuyordu
+       (soru sinifi=false, kip=false), yani test kodu degil KENDI
+       BEKLEMESINI olcuyordu. */
+    /* SABIT BEKLEME YERINE DEGISIMI BEKLE: bu tusun dinleyicisi
+       kayit.js modulunu ISTEK UZERINE indiriyor, yani ilk dokunusun
+       ne kadar surede karsilik bulacagi makineye gore degisiyor.
+       140 ve 400 ms'de olculdu, ikisinde de "hicbir sey olmamis"
+       cikti -- test kodu degil KENDI BEKLEMESINI olcuyordu.
+       Artik bir sey DEGISENE kadar bekliyoruz (en fazla 3 sn). */
+    a.click();
+    for(let i = 0; i < 30; i++){
+      if(a.classList.contains('soru') || _favMod) break;
+      await bek(100);
+    }
+    const soru = { soru:a.classList.contains('soru'), mod:_favMod };
     a.click(); await bek(200);
     const acik = { acik:a.classList.contains('acik'), mod:_favMod };
     a.click(); await bek(200);
@@ -7851,10 +7888,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
     AKTIF_MOD = eski;
-    return { kapali, acik, tekrar, hiza };
+    return { kapali, soru, acik, tekrar, hiza };
   });
   K('Sol ustte favori yildizi var', !!fa && fa.kapali.gor===true, 'tasima satirinin sonunda');
-  K('Yildiza basis kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'tek basis');
+  K('Ilk basis soruyor, kipi acmiyor', !!fa && fa.soru.mod===false && fa.soru.soru===true,
+    fa ? ('soru sinifi=' + fa.soru.soru + ' kip=' + fa.soru.mod) : 'favAc yok');
+  K('Ikinci basis kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'iki basis');
   K('Tekrar basis kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
   K('Konsol kayit satirinin USTUNDE, sol kenarlar hizali',
      !!fa && fa.hiza.tasma <= 0 && fa.hiza.sol <= 2,
