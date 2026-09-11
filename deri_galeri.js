@@ -531,12 +531,12 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     kap.appendChild(bas);
     izg = document.createElement('div'); izg.className = 'dg-izgara';
     izg.appendChild(kareYap(0, null));
-    /* TERSTEN: en yeni cizimli deriler basta, duz renkler en sonda.
+    /* EKRAN SIRASI TEK YERDE: ters blok, sonra sona eklenen yeniler.
        Tablo dokunulmadan duruyor -- kayitli numara ayni deriyi
-       gostermeye devam ediyor. Bkz. index.html: deriIzgaraKur. */
-    for(let i = DERILER.length - 1; i >= 0; i--){
+       gostermeye devam ediyor. Bkz. index.html: deriEkranSirasi. */
+    deriEkranSirasi().forEach(i=>{
       izg.appendChild(kareYap(i + 1, DERILER[i]));
-    }
+    });
     kap.appendChild(izg);
     izg.addEventListener('click', e=>{
       try{
@@ -611,10 +611,15 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   function adim(y){
-    const N = DERILER.length + 1;                 // 0 = OFF dahil
-    /* ISARET TERS: izgara tersten diziliyor, "ileri" tusu ekranda
-       saga gitmeli. Ekranda sag = tabloda kucuk numara. */
-    sec((((AYAR.deri|0) - y) % N + N) % N);
+    /* ADIM EKRANA GORE ATILIYOR, TABLOYA GORE DEGIL. Once "tabloda
+       bir eksik" yaziliydi ve ters dizilimde bu dogru sonucu
+       veriyordu; artik sira iki parcali (ters blok + sona eklenen
+       yeniler), yani tablo numarasindan ekran yonu cikarilamiyor.
+       Sira neyse komsu da odur. */
+    const s = [0].concat(deriEkranSirasi().map(i=>i + 1));  // 0 = OFF
+    const N = s.length;
+    const p = s.indexOf(AYAR.deri|0);
+    sec(s[(((p < 0 ? 0 : p) + y) % N + N) % N]);
   }
   function fircaIsaret(acik){
     try{

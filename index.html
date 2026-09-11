@@ -5747,9 +5747,45 @@
        yavruagzi zemin, fusya ve mor vurgu. */
     {ad:"MEMPHIS", zem:"#f6d9cf", yazi:"#3a1430", marka:"#c82a70", cek:"#ecccc0", font:F1, kose:"0px", cizim:"memphis"},
     {ad:"TERRAZZO", zem:"#f2cfc4", yazi:"#3c1230", marka:"#c8407c", cek:"#e6c0b4", font:F2, kose:"50%", cizim:"terrazzo"},
-    {ad:"AIRBRUSH", zem:"#2a1030", yazi:"#ffe8f2", marka:"#f06aa8", cek:"#3c1a44", font:F2, kose:"50%", cizim:"hava"}
+    {ad:"AIRBRUSH", zem:"#2a1030", yazi:"#ffe8f2", marka:"#f06aa8", cek:"#3c1a44", font:F2, kose:"50%", cizim:"hava"},
+    {ad:"JUNJUN", zem:"#efeae0", yazi:"#1b1a17", marka:"#c81f1b", cek:"#dcd7cc", font:F1, kose:"0px", cizim:"junjunA"},
+    {ad:"DÜNYA", zem:"#e8992c", yazi:"#171310", marka:"#a81c10", cek:"#d0862a", font:F1, kose:"50%", cizim:"dunyaA"},
+    {ad:"LUNA", zem:"#efe6d4", yazi:"#2a2620", marka:"#c8343c", cek:"#d8cfbd", font:F2, kose:"50%", cizim:"lunaA"},
+    {ad:"EZGİT", zem:"#171426", yazi:"#f2e8dc", marka:"#e0c068", cek:"#231f36", font:F2, kose:"2px", cizim:"ezgitA"},
+    {ad:"HOMBAR", zem:"#101a2c", yazi:"#f2f0e8", marka:"#2ad0c0", cek:"#1c2840", font:F3, kose:"0px", cizim:"hombarA"},
+    {ad:"BURHIE", zem:"#1a1020", yazi:"#f0e4d8", marka:"#d8b868", cek:"#2a1c30", font:F2, kose:"50%", cizim:"burhieB"},
+    {ad:"TROMOKOLO", zem:"#1c3450", yazi:"#f2e6cc", marka:"#f2a45c", cek:"#28425e", font:F2, kose:"50%", cizim:"tromoA"},
+    {ad:"EKO", zem:"#140c1c", yazi:"#f4ecf8", marka:"#f0407c", cek:"#221830", font:F3, kose:"50%", cizim:"ekoA"},
+    {ad:"ANİŞ", zem:"#e8eadc", yazi:"#2e3826", marka:"#b03c64", cek:"#d6d9c6", font:F2, kose:"50%", cizim:"anisA"},
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
+  /* ── EKRANDAKI SIRA (tablonun sirasi DEGIL) ──────────────────────
+     Iki ayri istek var ve ikisi de dogru:
+       10 Eylul — "menuyu tam tersine cevir, duz renkler en altta."
+       11 Eylul — "bunlari skinslerin sonuna at", "en sona koyarsin
+                   en alta."
+     Tablo append-only kalmak ZORUNDA: kayitli AYAR.deri o tablodaki
+     sira numarasi, basa bir satir eklemek herkesin derisini baska bir
+     deriye kaydirirdi. Yani yeni deriler hep sona yaziliyor -- ve ters
+     dizilimde sona yazilan sey ekranin EN BASINDA cikiyor, tam
+     istenmeyen yerde.
+     Cozum sirayi ikiye ayirmak: TERS BLOK (ilk DERI_TERS_SON deri)
+     10 Eylul'deki gorunumunu aynen koruyor, ondan SONRAKI her deri
+     tablo sirasiyla ve ekranin altina diziliyor. Boylece yeni gelen
+     her deri en alta iniyor ve kimsenin kayitli numarasi oynamiyor.
+     DERI_TERS_SON = 90: 10 Eylul'de tabloda tam bu kadar deri vardi
+     (91. sira MOIRE, o gunden sonra eklenenlerin ilki). Sayi
+     TARIHSEL bir sinir, bir tercih degil -- degistirilmemeli. */
+  const DERI_TERS_SON = 90;
+  function deriEkranSirasi(){
+    const s = [], k = Math.min(DERI_TERS_SON, DERILER.length);
+    for(let i = k - 1; i >= 0; i--) s.push(i);
+    for(let i = k; i < DERILER.length; i++) s.push(i);
+    return s;
+  }
+  /* Galeri seridi ayri dosyada (deri_galeri.js) ve ayni sirayi
+     kullaniyor: iki yerde iki ayri dizim, iki ayri menu demektir. */
+  try{ window.deriEkranSirasi = deriEkranSirasi; }catch(e){ _yut(e); }
   /* Deri, govdeye tek sinif + koke bir avuc degisken yaziyor. Otuz
      ayri CSS blogu yerine tek blok: bakim tek yerde. */
   /* ── OLUK CIZGISI VE CEKIRDEK: MARKA + RAF ──────────────────────
@@ -6513,9 +6549,9 @@
          bir deriye kaydirirdi. Degisen yalnizca EKRANDAKI dizim.
          Ayni kural galeri seridinde de gecerli (deri_galeri.js:
          izgara kurulumu ve adim). */
-      for(let i = DERILER.length - 1; i >= 0; i--){
+      deriEkranSirasi().forEach(i=>{
         kap.appendChild(yap(i + 1, DERILER[i].ad, DERILER[i]));
-      }
+      });
       kap.dataset.kuruldu = '1';
       /* TIP KAPISI: e.target yalnizca EventTarget'tir, closest'i yok;
          dataset de Element'te degil HTMLElement'te. Ikisini de
@@ -10169,7 +10205,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 115) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 124) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde

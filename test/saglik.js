@@ -727,8 +727,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        sey arka plandaki resim. Yani buyume kullanicinin ilk
        saniyesine degil, yalnizca deri gezenin bir defalik
        indirmesine yaziliyor.
-       ILK CIZIM tavanina dokunmuyor: bu dosya acilista inmiyor. */
-    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 20 };
+       ILK CIZIM tavanina dokunmuyor: bu dosya acilista inmiyor.
+
+       11 EYLUL (ikinci yukseltme): 20 -> 26. KISI SERISI geldi --
+       dokuz ad (JUNJUN, DUNYA, LUNA, EZGIT, HOMBAR, BURHIE,
+       TROMOKOLO, EKO, ANIS) ve her ad icin iki secenek, yani ON
+       SEKIZ yeni cizim. Ustune kullanicinin ayrica istedigi sey
+       geldi: "kucuk ogeler yok genelde. motor basket topu mikrofon
+       renkli saclar ada percussion balik vs. bunlar onemli."
+       O nesneler ORTAK yazildi (_objMotor, _objBasketTop,
+       _objMikrofon, _objSac, _objDavul, _objBalik, _objGitar,
+       _objPiyano, _objFirca, _objBust, _objSulama, _objZil,
+       _tromoYildiz, _anisCicek, _hamamKubbe, _hombarKol): on sekiz
+       deri ayni on alti nesneyi paylasiyor, her deri kendi kopyasini
+       tasisaydi dosya bunun birkac kati olurdu.
+       Olculen yeni boy 25,85 KB brotli. Bedel yine ayni yere
+       yaziliyor: dosya ACILISTA INMIYOR, yalnizca cizimli bir deri
+       secilince iniyor. Ilk saniye degismedi (ILK CIZIM 104,5 KB,
+       tavan 106).
+       SECIM SONRASI DUSECEK: bu on sekizin dokuzu kullanici sectikten
+       sonra silinecek. Tavan o zaman yeniden olculup indirilmeli. */
+    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 26 };
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
     const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
@@ -11018,15 +11037,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const _kk0 = kap ? kap.querySelectorAll('.dg-kare') : [];
         c.kareSayisi = _kk0.length;
         c.kareDogru = c.kareSayisi === DERILER.length + 1;
-        /* ── DIZIM TERS (10 Eylul) ───────────────────────────────
-           Kullanicinin sozu: "menuyu tam tersine cevir, duz renkler
-           en altta, sekilli skinsler once." OFF basta kaliyor (o bir
-           anahtar, bir deri degil), sonra tablo SONDAN basa iniyor.
-           Tablonun kendisi dokunulmadan duruyor: kayitli AYAR.deri
-           ayni deriyi gostermeye devam ediyor. */
+        /* ── DIZIM: TERS BLOK, SONRA YENILER (10/11 Eylul) ───────
+           10 Eylul: "menuyu tam tersine cevir, duz renkler en altta,
+           sekilli skinsler once."
+           11 Eylul: "bunlari skinslerin sonuna at", "en sona
+           koyarsin en alta."
+           Ikisi birden ancak sirayi ikiye ayirarak tutuyor: ilk
+           DERI_TERS_SON deri tersten (10 Eylul'un gorunumu aynen),
+           ondan sonraki her deri tablo sirasiyla ve EN ALTA. Tablo
+           append-only kaliyor, kayitli AYAR.deri oynamiyor.
+           Kaynak tek: deriEkranSirasi(). Test o kaynagi degil
+           EKRANDAKI SONUCU okuyor -- fonksiyonu kendisiyle
+           dogrulamak hicbir sey dogrulamaz. */
         {
           const _n = [].slice.call(_kk0).map(b=>parseInt(b.dataset.n || '0', 10));
-          c.tersSirali = _n[0] === 0 && _n[1] === DERILER.length && _n[_n.length-1] === 1;
+          const k = Math.min(DERI_TERS_SON, DERILER.length);
+          const bek = [0];
+          for(let i = k; i >= 1; i--) bek.push(i);
+          for(let i = k + 1; i <= DERILER.length; i++) bek.push(i);
+          c.tersSirali = _n.length === bek.length && _n.every((v, i)=> v === bek[i]);
+          /* OFF basta, ters blogun sonu ilk deri, en altta en yeni. */
+          c.dizimOzet = _n[0] + '|' + _n[1] + '..' + _n[k] + '|' + _n[_n.length-1];
         }
         /* kareler ust uste binmiyor: dorduncu karenin tepesi birincinin
            altindan sonra. 10 Eylul: olcu SIRA NUMARASINA gore degil
@@ -11269,7 +11300,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (g.okEn||0) + 'x' + (g.okBoy||0) + ' px, saydamlik ' + (g.okSaydam)
        + ', cerceve ' + g.okCerceve);
   K('Galeri istek uzerine iniyor, butun deriler + OFF', g.geldi && g.acik && g.kareDogru && g.binmiyor, oz || g.kareSayisi + ' kare');
-    K('Izgara tersten diziliyor: OFF, en yeni deri ... ilk deri', g.tersSirali === true, oz || 'OFF + ' + (g.kareSayisi - 1) + ' deri, sondan basa');
+    K('Izgara dizimi: OFF, ters blok, en yeniler en altta', g.tersSirali === true, oz || ('OFF + ' + (g.kareSayisi - 1) + ' deri; ' + g.dizimOzet));
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
     K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi && g.kucultTusuYok, oz || 'serit, kucultme tusu yok');
