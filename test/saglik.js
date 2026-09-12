@@ -11261,9 +11261,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            seyin kendi zamanlamasini bozma. Eski hal geri. */
         await bek(120);
         sn = 0;                       // merkez dokunusu sayilmasin, olculen sey BOSLUK
+        /* ── ARA DEGERLER DE KAYDA GIRIYOR (12 Eylul) ─────────────
+           Bu kontrol CI'da kirmizi yandi ve bu makinede uretilemedi:
+           on kosu, alti cekirdek yapay yuk ve tam paralel kapi --
+           hepsi yesil. Belirleyici veri CI'nin kendisinde: AYNI
+           commit (53f7442) "Saglik kontrolu" isinde yesil, "Yayin"
+           isinde kirmizi. Yani kod degil, kosucunun o andaki hali.
+           Daha once buraya bir tahmin yazilmisti (sessizlik
+           beklemesi) ve olculen seyi bozdugu icin CI'yi DAHA COK
+           kirmizi yapti. Bu yuzden davranis degistirilmiyor;
+           yalnizca adimlarin ara degerleri kayda giriyor. Bir
+           sonraki kirmizi hangi adimda kirildigini SOYLEYECEK:
+           panel o an acik miydi, kapanma ne kadar surdu, sayaci
+           hangi olay artirdi. */
+        c.bosOnceAcik = deriGaleriAcik();
+        const _t0 = Date.now();
         olay('pointerdown', PointerEvent); c.bosKapatti = !deriGaleriAcik();
-        olay('pointerup', PointerEvent); olay('click', MouseEvent); await bek(150);
-        window.sonraki = eSn; c.bosYutuldu = sn === 0;
+        c.bosKapatmaMs = Date.now() - _t0;
+        olay('pointerup', PointerEvent); c.snUp = sn;
+        olay('click', MouseEvent); c.snClick = sn;
+        c.bosGecenMs = Date.now() - _t0;
+        await bek(150);
+        window.sonraki = eSn; c.snSon = sn;
+        /* ── OLCULEN SEY: DOKUNUS HANDLER'A ULASTI MI ─────────────
+           Once "150 ms sonra sayac sifir mi" diye soruluyordu ve bu
+           yanlisti: sayac takimin TAMAMINI dinliyor, yalnizca bu uc
+           olayi degil. Ara degerler eklenince sebep gorundu --
+           basarisiz kosuda sn(up/click/son) = 0/0/1: iki olay da
+           yutulmus, cagri 150 ms'lik beklemenin ICINDE gelmis.
+           Yalitilmis on iki kosuda hic gelmiyor; yalnizca tam takim
+           icinde geliyor, yani kaynagi ONCEKI bir kontrolun
+           gecikmeli zamanlayicisi (kip degisimi 120 ms, lisans
+           elemesi 40 ms, arama 200/700 ms -- bkz. index.html).
+           Zamanlama kosucuya gore kayiyor: AYNI commit (53f7442)
+           "Saglik kontrolu" isinde yesil, "Yayin" isinde kirmizi.
+           Olay yayilimi SENKRON'dur. Yutma basarisiz olsaydi cagri
+           click'in kendisinde gelirdi. 150 ms sonra gelen bir cagri
+           bu dokunustan gelmis olamaz -- baskasinin kuyrugundan
+           gelmistir. O yuzden karar click anindaki sayaca bakiyor;
+           gec gelen cagri OLCUDE KALIYOR (snSon) ama kontrolu
+           kirmiyor.
+           Olculen sey daralmadi: yutma calismazsa snClick artar.
+           Daha once buraya bir "sessizlik beklemesi" konmus ve
+           olculen seyi bozdugu icin CI'yi daha cok kirmizi
+           yapmisti; bu sefer bekleme degil SORU duzeltildi. */
+        c.bosYutuldu = c.snClick === 0;
         if(window.__yut) window.__yut.n = yN;
         /* FIRCA ANAHTAR: kapali -> tam -> kapali. Kucultme basligin
            isi; firca ikinci dokunusta kapatiyor (kullanici: "tekrar
@@ -11338,7 +11380,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
     K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi && g.kucultTusuYok, oz || 'serit, kucultme tusu yok');
     K('RING anahtari galeri basliginda, ayarlarla ayni', g.ringAnahtari && g.ringGeri, oz || 'AYAR.halka iki yerden');
-    K('Seritte bosluga dokunus kapatir ve yutulur', g.bosKapatti && g.bosYutuldu, oz || 'sonraki() 0');
+    K('Seritte bosluga dokunus kapatir ve yutulur', g.bosKapatti && g.bosYutuldu,
+       'acikti=' + g.bosOnceAcik + ' kapatti=' + g.bosKapatti
+       + ' kapanmaMs=' + g.bosKapatmaMs + ' gecenMs=' + g.bosGecenMs
+       + ' sn(up/click/son)=' + g.snUp + '/' + g.snClick + '/' + g.snSon);
     K('Ortadaki alete dokunus pencereyi kapatmaz', g.merkezKapatmaz === true,
        oz || 'carka degen el paneli ucurmuyor');
     K('Firca anahtar gibi: ac / kapa', g.d1 && g.d2 && g.kapandi, oz || 'iki dokunus');
