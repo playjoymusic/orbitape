@@ -863,6 +863,37 @@ function bitir(){
     K('tr.json: her anahtar kodda geciyor', yetim.length === 0,
       yetim.length ? ('kodda bulunamadi: ' + yetim.slice(0,6).join(' | ')) : anahtarlar.length + ' anahtarin hepsi');
 
+    /* ── TERS YON: EKRANDA OLUP SOZLUKTE OLMAYAN ─────────────────
+       Bu soru bir sure BILEREK sorulmuyordu ve gerekcesi soyleydi:
+       "ceviri eksik olabilir, o zaman Ingilizce gorunur ve bu bir
+       kusur degil bir ara durumdur."
+       OLCUM ONU RED ETTI (12 Eylul): CLOCK IN VISUALS satiri eklendi,
+       sozluge yazilmadi ve DORT DILDE birden Ingilizce kaldi --
+       kullanicinin Ispanyolca ekraninda tek basina duran bir satir
+       olarak goruldu. Yani "ara durum" kendiliginden bitmiyor;
+       kimse bakmazsa kalici oluyor.
+       Simdi soruluyor ama DAR bir yerden: yalnizca ayar panelinin
+       satir etiketleri. Butun metinleri taramak istasyon ve sarki
+       adlarina dokunma riskiydi -- panel etiketleri sayili ve
+       hepsi cevrilmeli. */
+    const panelEtiket = [];
+    /* Panelin TAMAMI: basindan son satira (RESET SETTINGS) kadar.
+       Ilk yazimda bitis olarak 'temaIzgara' alinmisti ve o panelin
+       BASINDA duruyor -- dilim yedi etikette bitiyordu, yani olcu
+       kendi kapsamini kaybediyordu. */
+    const _ayarBas = KAYNAK.indexOf('<div id="ayar"');
+    const _ayarSon = KAYNAK.indexOf('</div>', KAYNAK.indexOf('RESET SETTINGS', _ayarBas));
+    const bolum = KAYNAK.slice(_ayarBas, _ayarSon);
+    (bolum.match(/<span>([A-Z][A-Z0-9 '&·]{2,40})<\/span>/g) || []).forEach(t=>{
+      const m = t.match(/<span>(.+)<\/span>/);
+      if(m && !/^(REC|CAM)$/.test(m[1])) panelEtiket.push(m[1]);
+    });
+    const cevrilmemis = panelEtiket.filter(a => !Object.prototype.hasOwnProperty.call(sozluk, a));
+    K('Ayar panelinde cevrilmemis satir yok',
+      panelEtiket.length >= 20 && cevrilmemis.length === 0,
+      cevrilmemis.length ? ('sozlukte yok: ' + cevrilmemis.join(' | '))
+                         : panelEtiket.length + ' etiketin hepsi sozlukte');
+
     /* ── VERI CEVRILMIYOR ─────────────────────────────────────────
        Tur ve raf adlari VERI: cevrilirse hem arama hem hasat
        araclariyla ayrisir. Sozluge kazara girmeleri kolay ve
