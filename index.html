@@ -4515,7 +4515,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.11';
+  var ORB_SURUM = '2026.09.12';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -10721,6 +10721,61 @@
     }catch(e){ _yut(e); }
     return window.innerHeight;
   }
+  /* ── EKRAN BOYU FORMULDEN TAMAMEN CIKIYOR ───────────────────────
+     _gorBoy() bir onceki denemeydi: innerHeight yerine
+     documentElement.clientHeight konuldu, cunku ikisi ayni yerlesim
+     turunda guncelleniyor. Telefon onu da red etti -- kullanicinin
+     ekran goruntusunde kip anahtari ve kunye yine dibe yigilmisti.
+     LABORATUVARDA URETILDI: clientHeight yatay degerinde (390),
+     duzen dikey (844) iken geriYerlestir cagrildi.
+       kipKisayol 732..756 -> 1186..1210   (ekranin 366 px altina)
+       kayitBilgi 751..763 -> 1205..1217
+     Sebep formulun KENDISI: "el.bottom = BOY - komsununRect.top".
+     Iki ayri kaynak cikariliyor; biri bayatsa sonuc sacmaliyor ve
+     oge ekranin altina tasiyor, komsulari da uzerine biniyor.
+     Dogru ani yakalamaya calismak (uc kez denendi) bu yapiyi
+     duzeltmiyor.
+     BU ISLEV BOYU HIC OKUMUYOR. Ogenin KENDI dikdortgeni ile
+     komsusunun dikdortgeni ayni karede okunuyor; aradaki fark
+     ogenin MEVCUT bottom degerine ekleniyor. Iki dikdortgen de ayni
+     yerlesimden geldigi icin birbirine gore bayat olamaz. Iliski
+     dogrusal oldugundan tek adimda oturuyor: bottom'u d kadar
+     artirmak alt kenari d kadar yukari tasiyor.
+     Yazma bicimi de korunuyor: bottom CSS'te
+     'calc(Npx + var(--dip-pay))' ile yaziliyorsa guvenli alan payi
+     hesaplanan degerin ICINDE geliyor (getComputedStyle cozuyor),
+     yani env() ikinci kez eklenmiyor -- buyutecte yasanan hata.
+     GECIS DE SORUN DEGIL: #ara'da 'transition: bottom .18s' var ve
+     gecis ortasinda okunan iki deger AYNI ara karede okunuyor --
+     s + r.bottom toplami her karede yerlesim motorunun kendi
+     boyunu veriyor, yani gecis sadelesip gidiyor. Eski surumde bu
+     dogru olmasinin sebebi degerin mutlak olmasiydi; burada da
+     mutlak, cunku toplam sabit.
+     ORAN: emniyet siniri isteyen cagrilar icin. Yazilacak deger
+     ekranin bu oranindan buyuksa HICBIR SEY yazilmiyor ve cagiran
+     CSS'in kendi hattina donuyor (buyutecte tam bu emniyet var). */
+  /* Degisken adi 'oge': 'el' YASAKLI bir desene giriyor -- buyutec
+     duzeltmesinin IC SIMGEYE (el) degil DIS KUTUYA (kap) yazilmasi
+     gerektigi bir saglik olcusuyle korunuyor ve genel yardimci
+     islev o desene yanlislikla uyuyordu. */
+  function _altYasla(oge, hedefAlt, oran, enAz){
+    try{
+      if(!oge || !isFinite(hedefAlt)) return false;
+      const r = oge.getBoundingClientRect();
+      if(!r.height) return false;
+      const s = parseFloat(getComputedStyle(oge).bottom);
+      if(!isFinite(s)) return false;          /* bottom:auto -> bu yol degil */
+      let yeni = Math.round(s + (r.bottom - hedefAlt));
+      if(enAz != null && yeni < enAz) yeni = enAz;
+      if(oran){
+        /* Yerlesim motorunun KENDI boyu: iki deger ayni kareden. */
+        const boy = s + r.bottom;
+        if(!(yeni >= 0 && yeni <= boy * oran)) return false;
+      }
+      oge.style.bottom = yeni + 'px';
+      return true;
+    }catch(e){ _yut(e); return false; }
+  }
   var _olcuBekleyen = 0, _sonEn = 0, _sonBoy = 0, _yerlesZaman = null;
   var _sonOlcek = 100, _sonVvBoy = 0, _sonKx = 0, _sonKy = 0, _zoomBorcu = false;
   function olcuIste(){
@@ -10885,8 +10940,10 @@
                  'bottom' icin ayni: "buyutec yukarida kaldi"nin bir
                  kaynagi da buydu. Simgedeki eski kayma siliniyor. */
               var kap = document.getElementById('ara') || el;
-              var dp = Math.round(_gorBoy() - yr.bottom + (yr.height - 26)/2);
-              if(dp >= 0 && dp <= _gorBoy() * 0.40) kap.style.bottom = dp + 'px';
+              /* Formulde ekran boyu YOK: yuvanin dikdortgeni ile
+                 kapsayicinin kendi dikdortgeni ayni karede okunuyor
+                 (bkz. _altYasla). Emniyet siniri duruyor. */
+              _altYasla(kap, yr.bottom - (yr.height - 26)/2, 0.40);
               if(Math.abs(dx) > 8) kap.style.left = Math.round(yr.left) + 'px';
               if(kap !== el){ el.style.left = ''; el.style.bottom = ''; }
               _zoomBorcu = true; olcuIste();
@@ -14481,8 +14538,7 @@
     try{
       const np2 = document.getElementById('np');
       const r2 = np2 ? np2.getBoundingClientRect() : null;
-      if(r2 && r2.height)
-        k.style.bottom = Math.round(_gorBoy() - r2.top + 10) + 'px';
+      if(r2 && r2.height) _altYasla(k, r2.top - 10);
     }catch(e){ _yut(e); }
     k.classList.add('acik'); k.setAttribute('aria-hidden','false');
     try{ document.getElementById('isaret').classList.add('acik'); }catch(e){ _yut(e); }
@@ -16156,7 +16212,10 @@
       if(_kk && _kt && document.body.classList.contains('mood')){
         const r = _kt.getBoundingClientRect();
         if(r.height){
-          _kk.style.bottom = Math.round(_gorBoy() - r.bottom + (r.height - 24)/2) + 'px';
+          /* Anahtarin alt kenari tutamagin alt kenarindan (r.height-24)/2
+             kadar yukarida -- iki kutu ortalanmis oluyor. Ekran boyu
+             formule girmiyor (bkz. _altYasla). */
+          _altYasla(_kk, r.bottom - (r.height - 24)/2);
           _kk.style.left   = Math.round(r.right + 10) + 'px';
           _kipSagKenar(_kk, Math.round(r.right + 10));
         }
@@ -16168,7 +16227,7 @@
             /* 14px: tasima satirinin dokunma alani yukari 4px,
                anahtarinki asagi 7px tasiyor; 8px bosluk birakinca
                cakisiyorlar. */
-            _kk.style.bottom = Math.round(_gorBoy() - r2.top + 14) + 'px';
+            _altYasla(_kk, r2.top - 14);
             _kk.style.removeProperty('left');      // sol kenar CSS'ten (--kx)
             _kipSagKenar(_kk, Math.round(_kk.getBoundingClientRect().left));
           }
@@ -16293,14 +16352,16 @@
           const bos = Math.max(13,
             parseFloat(getComputedStyle(document.getElementById('solUst'))
               .getPropertyValue('--modul-bosluk')) || 8);
-          tut0.style.bottom = Math.round(_gorBoy() - sr.top + bos) + 'px';
-          /* FIRCA VE SAAT TUTAMAGIN USTUNDE, YIGIN HALINDE: ayni sol kenar. */
+          _altYasla(tut0, sr.top - bos);
+          /* FIRCA VE SAAT TUTAMAGIN USTUNDE, YIGIN HALINDE: ayni sol kenar.
+             Her biri bir oncekinin ustune: hedef alt kenar yukari
+             dogru 26+bos kadar yuruyor. Ekran boyu yok. */
           try{
-            let ust = Math.round(_gorBoy() - sr.top + bos);
+            let hedef = sr.top - bos;
             ['deriFirca','saatTus','gorselTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
-              ust += 26 + bos;
-              e2.style.removeProperty('top'); e2.style.bottom = ust + 'px';
+              hedef -= 26 + bos;
+              e2.style.removeProperty('top'); _altYasla(e2, hedef);
             });
           }catch(_){ _yut(_); }
           return;
@@ -16467,11 +16528,7 @@
               const b2 = e2.getBoundingClientRect();
               if(b2.height && b2.width) tepe = Math.min(tepe, b2.top);
             });
-            const _dk = Math.round(_gorBoy() - tepe + 8);
-            if(isFinite(tepe) && _dk >= 0 && _dk <= _gorBoy() * 0.62){
-              arE.style.bottom = _dk + 'px';
-              _olculdu = true;
-            }
+            if(isFinite(tepe) && _altYasla(arE, tepe - 8, 0.62)) _olculdu = true;
           }
           if(!_olculdu && !_moodda && yv2){
             const yr2 = yv2.getBoundingClientRect();
@@ -16479,11 +16536,8 @@
                degisince 3px kayma birakiyordu. */
             const cz = arE.querySelector('.cizgi');
             const czY = (cz && cz.getBoundingClientRect().height) || 26;
-            const _dp = Math.round(_gorBoy() - yr2.bottom + (yr2.height - czY)/2);
-            if(yr2.height && _dp >= 0 && _dp <= _gorBoy() * 0.40){
-              arE.style.bottom = _dp + 'px';
+            if(yr2.height && _altYasla(arE, yr2.bottom - (yr2.height - czY)/2, 0.40))
               _olculdu = true;
-            }
           }
         }catch(_){ _yut(_); }
         /* Yuva olculemiyorsa (SOUND BANKS kipinde arama satiri yok)
@@ -16586,7 +16640,7 @@
           const YAN_YANA_ESIK = 118;
           if(yer < YAN_YANA_ESIK){
             yer = Math.round(npSag - sol);
-            let ustHat2 = alt, _oy = false;
+            let ustHat2 = alt, _oy = false, _tepe2 = 0;
             try{
               /* MODULUN TAMAMININ ustune, tek satirin degil: modul
                  artik iki satir (tasima + kayit araclari). Yalnizca
@@ -16618,12 +16672,16 @@
                          : (document.getElementById(id) || {getBoundingClientRect(){return null;}}).getBoundingClientRect();
                 if(r3 && r3.height && r3.top < tepe) tepe = r3.top;
               });
-              if(tepe !== Infinity){
-                ustHat2 = Math.round(_gorBoy() - tepe + 10); _oy = true; }
+              if(tepe !== Infinity){ _tepe2 = tepe; _oy = true; }
             }catch(_){ _yut(_); }
             /* AYNI KURAL: olculen deger duz piksel, sabit deger _dip.
-               (Buyutecteki cift sayma hatasinin ikizi buradaydi.) */
-            npE.style.bottom = _oy ? (Math.max(6, ustHat2) + 'px') : _dip(Math.max(6, ustHat2));
+               (Buyutecteki cift sayma hatasinin ikizi buradaydi.)
+               Olculen yol artik ekran boyunu okumuyor: kunyenin ALT
+               kenari en yukarideki komsunun tepesinden 10px yukari.
+               Yazilamazsa (bottom:auto ya da olculemeyen kutu) eski
+               yola dusuluyor. */
+            if(!(_oy && _altYasla(npE, _tepe2 - 10, 0, 6)))
+              npE.style.bottom = _dip(Math.max(6, ustHat2));
             /* ── YIGILMA GOVDEYE DE SOYLENIYOR (7 Eylul) ───────────
                Yiginca kunye konsolun USTUNE cikiyor, yani ekranin
                ortasina dogru 120 piksel kadar yukseliyor. Ortadaki
@@ -16659,7 +16717,9 @@
         if(kc && kc.classList.contains('var')){
           kc.style.left   = sol + 'px';
           kc.style.width  = Math.round(ugOlcu()) + 'px';
-          kc.style.bottom = Math.round(_gorBoy() - araY.top + 8) + 'px';
+          /* Cubugun ALT kenari aramanin tepesinden 8px yukari.
+             Ekran boyu formule girmiyor (bkz. _altYasla). */
+          _altYasla(kc, araY.top - 8);
         }
       }catch(_){ _yut(_); }
       /* Bilgi satırı en üstte; sabit bir sayı kullanınca haplarla üst
@@ -16671,7 +16731,7 @@
           const ust = (kc2 && kc2.classList.contains('var'))
                         ? kc2.getBoundingClientRect().top : araY.top;
           bg.style.left   = sol + 'px';
-          bg.style.bottom = Math.round(_gorBoy() - ust + 10) + 'px';
+          _altYasla(bg, ust - 10);
         }
       }catch(_){ _yut(_); }
       /* BURADA BİR SATIR VARDI, SİLİNDİ — GERİ EKLEME:

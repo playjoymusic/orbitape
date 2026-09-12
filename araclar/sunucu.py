@@ -119,6 +119,23 @@ class H(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
+    # ── ISTEMCI BAGLANTIYI KESINCE SUNUCU OLMEMELI ────────────────
+    # OLCULDU: kapi iki ayri kosuda "ERR_CONNECTION_REFUSED" ile
+    # coktu; besi de ayni anda, yani dosya degil SUNUCU gitmisti.
+    # Kayitta sebep duruyor: index.html'in ortasinda
+    # ConnectionResetError [Errno 104]. Tarayici sayfayi yarida
+    # birakinca (Playwright sekmeyi kapatiyor, ya da olcum sirasinda
+    # yeniden yukluyor) socketserver istisnayi yukari tasiyip
+    # sureci dusuruyordu. Dosya buyudukce (index.html 1,17 MB) bu
+    # pencere genisledi ve her kosuda yakalanir oldu.
+    # Kesilen bir baglanti bir HATA DEGIL: karsi taraf artik
+    # dinlemiyor, sunucunun yapacagi is yok. Yutuluyor.
+    def handle_one_request(self):
+        try:
+            super().handle_one_request()
+        except (ConnectionResetError, BrokenPipeError):
+            self.close_connection = True
+
 
 # Bu dosya `import sunucu` ile de okunabilsin diye sunucu yalnizca
 # dogrudan calistirilinca ayaga kalkiyor. kontrol.sh, 8765'te CEVAP
@@ -126,6 +143,11 @@ class H(http.server.SimpleHTTPRequestHandler):
 # eslesir() fonksiyonlarini buradan aliyor -- ayni kurali iki yerde
 # yazmamak icin.
 if __name__ == '__main__':
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("127.0.0.1", PORT), functools.partial(H, directory=KOK)) as s:
+    # ── ES ZAMANLI ISTEKLER ───────────────────────────────────────
+    # Tek is parcacikli sunucuda bir istegin coktugu an sira duruyor.
+    # ThreadingTCPServer her istegi ayri is parcaciginda goruyor:
+    # bir baglanti kesilirse yalnizca o is parcacigi biter.
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    socketserver.ThreadingTCPServer.daemon_threads = True
+    with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), functools.partial(H, directory=KOK)) as s:
         s.serve_forever()

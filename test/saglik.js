@@ -7123,7 +7123,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Buyutec yuvasina oturuyor, env iki kere eklenmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         /* Kaynak: olculen yuvadan gelen deger duz px yaziliyor. */
-        const duz = /yr2\.bottom[\s\S]{0,220}\+ 'px'/.test(k);
+        /* Olculen deger artik _altYasla ile yaziliyor: formulde
+           ekran boyu yok, guvenli alan payi da mevcut bottom'un
+           icinde geliyor (getComputedStyle cozuyor), yani env()
+           ikinci kez eklenmiyor. Aranan sey bu yol. */
+        const duz = /_altYasla\(arE, yr2\.bottom/.test(k);
         const eskiHata = /_dip\(Math\.max\(6, alt \+ _fark\)\)/.test(k);
         try{ geriYerlestir(); }catch(e){ return false; }
         const ar = document.getElementById('ara');
@@ -12023,6 +12027,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Yakinlastirma borcu esitlik kapisini deliyor',
          /if\(!_zoomBorcu\n\s*&& _en === _sonEn/.test(g1),
          'olculer ayni gelse bile borc varsa yerlesim yapiliyor');
+      /* ── EKRAN BOYU YERLESIM FORMULUNDEN CIKTI ────────────────
+         Uc kez "dogru ani yakalama" denendi, ucu de tutmadi. Dorduncu
+         denemede kaynak degistirildi (innerHeight -> clientHeight) ve
+         o da tutmadi: telefonda kip anahtari ile kunye yine dibe
+         yigildi. Hata formulun KENDISINDE: "el.bottom = BOY - rect".
+         Iki ayri kaynak cikariliyordu. Artik yerlesim iki dikdortgeni
+         birbirine gore koyuyor (_altYasla) ve boyu hic okumuyor.
+         Bu kontrol formulun geri sizmasini engelliyor. */
+      K('Yerlesim ekran boyundan konum uretmiyor',
+         /function _altYasla/.test(kaynak)
+         && !/style\.bottom\s*=\s*Math\.round\(_gorBoy\(\)\s*-/.test(kaynak),
+         'bottom degeri _gorBoy() - rect bicimiyle yazilmiyor');
       K('Yerinden cikan ogeyi bekci geri koyuyor',
          /_bekciZaman = setInterval\(bak, 2000\)/.test(kaynak)
          && /r\.top > _gorBoy\(\)/.test(kaynak),
@@ -12081,8 +12097,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          hattina donuluyor; (2) bekci artik "ekranin disina cikti
          mi" degil "yuvasindan kopmus mu" diye soruyor. */
       K('Buyutec bozuk olcumu reddediyor',
-         /_dp >= 0 && _dp <= _gorBoy\(\) \* 0\.40/.test(kaynak),
-         'dip degeri ekranin alt %40 disina cikarsa CSS hattina donuluyor');
+         /_altYasla\(arE, yr2\.bottom - \(yr2\.height - czY\)\/2, 0\.40\)/.test(kaynak)
+         && /if\(!\(yeni >= 0 && yeni <= boy \* oran\)\) return false;/.test(kaynak),
+         'emniyet siniri _altYasla icinde: disina cikarsa hic yazilmiyor');
       /* ── BEKCI YERINDEN OYNAYANI GERI ITIYOR ────────────────────
          Kullanici uc kez "buyutec yukarida kaldi" dedi ve her
          seferinde bir SEBEP bulunup kapatildi; her seferinde baska
@@ -12172,7 +12189,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          && /Math\.abs\(d\) > 8 \|\| Math\.abs\(dx\) > 8/.test(kaynak)
          /* Duzeltme DIS KUTUYA (#ara) yaziliyor; simgeye (#araCizgi,
             relative) yazilinca buyutec yuvanin iki kati saga gidiyordu. */
-         && /kap\.style\.bottom = dp \+ 'px';/.test(kaynak)
+         && /_altYasla\(kap, yr\.bottom - \(yr\.height - 26\)\/2, 0\.40\)/.test(kaynak)
          && /kap\.style\.left = Math\.round\(yr\.left\) \+ 'px';/.test(kaynak)
          && !/el\.style\.bottom = yeni \+ 'px';/.test(kaynak),
          'ekranin icinde ama yanlis yerdeyse dis kutu yuvaya geri itiliyor');

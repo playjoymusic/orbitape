@@ -476,6 +476,83 @@ async function gokyuzuOlc(sayfa){
                       : (Object.keys(once).length + ' oge, dipten uzakliklar ayni'));
     }
 
+    /* ── BAYAT innerHeight YERLESIMI BOZMAMALI (11 Eylul) ──────
+       Kullanicinin uc aydir bildirdigi: "telefonu yatay yapip tekrar
+       dikey yapinca yazilar, ogeler en tabana cokuyor."
+       UC KEZ ZAMANLAMA YAMANDI, UCU DE TUTMADI. Sebep zamanlama
+       degilmis: alta yaslanan her sey `yukseklik - rect` ile
+       konuluyor ve iki sayi AYRI kaynaktan geliyordu. rect her zaman
+       guncel; window.innerHeight iOS'ta donus sirasinda bir sure
+       eski degerde kaliyor. Fark kadar kayma oluyor.
+       OLCULDU: innerHeight 120 px bayatlatildiginda kayit bilgisi
+       81 -> -39, kip kisayolu 88 -> -32 (tam 120 px asagi, ekranin
+       dibi). Duzeltmeden sonra ikisi de yerinde.
+       Bu kontrol bayatligi ELLE uretiyor: gercek telefonda olan sey
+       bu ve tarayicida baska turlu olusmuyor. */
+    {
+      const bayatOlc = await sayfa.evaluate(async()=>{
+        const bek = m=>new Promise(r=>setTimeout(r,m));
+        const oku = ()=>{
+          const H = document.documentElement.clientHeight, o = {};
+          ['np','kayitBilgi','ayarTut','kipKisayol','kamCubuk'].forEach(id=>{
+            const e = document.getElementById(id); if(!e) return;
+            const r = e.getBoundingClientRect();
+            if(r.width) o[id] = Math.round(H - r.bottom);
+          });
+          return o;
+        };
+        /* Olcum sirasinda clientHeight taklit edildigi icin GERCEK
+           boy disaridan veriliyor -- yoksa olcunun kendisi yalan
+           soyler. */
+        const oku2 = (H)=>{
+          const o = {};
+          ['np','kayitBilgi','ayarTut','kipKisayol','kamCubuk'].forEach(id=>{
+            const e = document.getElementById(id); if(!e) return;
+            const r = e.getBoundingClientRect();
+            if(r.width) o[id] = Math.round(H - r.bottom);
+          });
+          return o;
+        };
+        try{ if(window.geriYerlestir) geriYerlestir(); }catch(e){}
+        await bek(250);
+        const once = oku();
+        const asil = Object.getOwnPropertyDescriptor(window, 'innerHeight')
+                  || Object.getOwnPropertyDescriptor(Object.getPrototypeOf(window), 'innerHeight');
+        const bayat = document.documentElement.clientHeight - 120;
+        Object.defineProperty(window, 'innerHeight', { configurable:true, get(){ return bayat; } });
+        /* ── IKINCI KAYNAK DA BAYATLATILIYOR ──────────────────────
+           Ilk surumde yalnizca innerHeight bayatlatiliyordu ve
+           duzeltme documentElement.clientHeight'e gecince bu
+           kontrol YESILE DONDU -- ama telefon hala bozuktu
+           (kullanicinin ekran goruntusu: kip anahtari ve kunye
+           dibe yigilmis). Yani olcum kendi duzeltmemi olcuyordu,
+           hatayi degil.
+           Artik ikisi de bayatlatiliyor: dogru kod yerlesimi
+           EKRAN BOYUNDAN hic okumamali, iki dikdortgeni
+           birbirine gore koymali (bkz. _altYasla). Hangi boy
+           kaynagi bayatlarsa bayatlasin sonuc degismemeli. */
+        const kok = document.documentElement;
+        const asilCH = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(kok), 'clientHeight');
+        Object.defineProperty(kok, 'clientHeight', { configurable:true, get(){ return bayat; } });
+        try{ if(window.geriYerlestir) geriYerlestir(); }catch(e){}
+        await bek(250);
+        const sonra = oku2(bayat + 120);
+        try{ delete kok.clientHeight; }catch(e){}
+        try{ if(asilCH && !(('clientHeight') in kok)) Object.defineProperty(kok, 'clientHeight', asilCH); }catch(e){}
+        try{ Object.defineProperty(window, 'innerHeight', asil); }catch(e){}
+        try{ if(window.geriYerlestir) geriYerlestir(); }catch(e){}
+        await bek(150);
+        return { once, sonra };
+      });
+      const o = bayatOlc.once || {}, n = bayatOlc.sonra || {};
+      const kayan = Object.keys(o).filter(k => !(k in n) || Math.abs(n[k] - o[k]) > 2)
+        .map(k => k + ' ' + o[k] + '->' + (k in n ? n[k] : 'yok'));
+      K('[' + ek.ad + '] bayat innerHeight yerlesimi bozmuyor',
+         Object.keys(o).length > 0 && kayan.length === 0,
+         kayan.length ? kayan.join(' | ')
+                      : (Object.keys(o).length + ' oge, 120 px bayatlikta yerinde'));
+    }
+
     /* ── KLAVYE ACILIP KAPANINCA CARK DISKINDE KALMALI ─────────
        Kullanicinin bildirdigi: "androidli bir kullanici search'e
        basmis ve search'u kapatinca boyle halka tepede kalmis."
