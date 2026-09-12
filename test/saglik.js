@@ -806,9 +806,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ceyrek sakin kaliyor cunku kunye orada. Bu uc cumle
        silinirse bir sonraki kisi belirli bir tabloyu yeniden
        cizmeye kalkar ve kompozisyonu yazinin uzerine kurar.
+       Son yukseltme (1168 -> 1176): kabartma kararinin OLCUME
+       baglanmasi. Kural kullanicidan geldi: "butonlarin altinda
+       karisik cizim yoksa, duzse sakin kabartma yapma." Eskiden
+       karar "deri cizimli mi" idi; yazi artik neden yetmedigini
+       tasiyor -- alt perde ekranin dibini zeminin %86-95'i ile
+       kapatiyor, yani cizimli bir deride bile tuslarin oturdugu
+       serit tek ton olabiliyor (isaretlenen ornekler LUNA ve
+       DUNYA). Olcunun neden ortalamadan sapma degil KOMSU FARKI
+       oldugu da yazili: sapma bir degradeyi desen sanıyordu, LUNA
+       5.97 veriyordu. Esigin nereden geldigi (79 derinin dagilimi,
+       1.49 PINES bos / 1.66 DECO desenli) o satirlarda duruyor.
+       Silinirse bir sonraki kisi esigi rastgele oynatir ya da
+       karari yeniden "cizimli mi" diye sorar.
        Tavan bir koruma; islev eklenince yaziyla yukseltiliyor,
        sessizce degil. */
-    K('Ham boy < 1168 KB', dosyaBoy < 1168*1024,
+    K('Ham boy < 1176 KB', dosyaBoy < 1176*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -12012,7 +12025,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          'olculer ayni gelse bile borc varsa yerlesim yapiliyor');
       K('Yerinden cikan ogeyi bekci geri koyuyor',
          /_bekciZaman = setInterval\(bak, 2000\)/.test(kaynak)
-         && /r\.top > window\.innerHeight/.test(kaynak),
+         && /r\.top > _gorBoy\(\)/.test(kaynak),
          'iki saniyede bir tek olcum, yalnizca sekme gorunurken');
       /* ── DURUM CUBUGU: OZNITELIK DEGIL, DUGUM ──────────────────
          6 Eylul: theme-color'i ayni meta dugumunun content'ini
@@ -12026,6 +12039,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          && /durumCubuguYaz\(d\.zem\)/.test(kaynak)
          && /durumCubuguYaz\(_d \? _d\.zem : zm\[1\]\)/.test(kaynak),
          'html zemini, theme-color ve zeminUygula uclu tutarli');
+      /* ── KABARTMA KARARI OLCUME BAGLI ──────────────────────────
+         Kullanicinin kurali: "butonlarin altinda karisik cizim
+         yoksa, duzse sakin kabartma yapma." Karar deriye elle
+         yazilan bir alandan degil, tuslarin oturdugu seridin
+         KOMSU FARKINDAN cikiyor; boylece yeni bir deri eklendiginde
+         kimse karar vermeyi unutamiyor. */
+      K('Kabartma karari tuslarin altindaki piksele bakiyor',
+         /DERI_ALT_SOL_FARK/.test(kaynak)
+         && /classList\.toggle\('duztus'/.test(kaynak),
+         'olcum esigin altindaysa tus zemini ve golge dusuyor');
+      K('Duz seritte kip anahtari da kabartmasiz',
+         /body\.deri\.duztus #kipKisayol \.anahtar\{box-shadow:none/.test(kaynak)
+         && /body\.deri\.duztus #kipKisayol \.anahtar b\{box-shadow:none/.test(kaynak),
+         'anahtar kendi golgesini tasiyor, --d-golge ona islemiyor');
       K('Durum cubugu rengi meta DUGUMU yenilenerek yaziliyor',
          /function durumCubuguYaz/.test(kaynak)
          && /removeChild\(m\)/.test(kaynak)
@@ -12054,7 +12081,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          hattina donuluyor; (2) bekci artik "ekranin disina cikti
          mi" degil "yuvasindan kopmus mu" diye soruyor. */
       K('Buyutec bozuk olcumu reddediyor',
-         /_dp >= 0 && _dp <= window\.innerHeight \* 0\.40/.test(kaynak),
+         /_dp >= 0 && _dp <= _gorBoy\(\) \* 0\.40/.test(kaynak),
          'dip degeri ekranin alt %40 disina cikarsa CSS hattina donuluyor');
       /* ── BEKCI YERINDEN OYNAYANI GERI ITIYOR ────────────────────
          Kullanici uc kez "buyutec yukarida kaldi" dedi ve her
@@ -12448,7 +12475,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Ekran disindaki eleman tabani belirlemiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return /if\(k\.top <= halkaAlt\) return;/.test(k)
-            && /if\(k\.top >= window\.innerHeight\) return;/.test(k);
+            && /if\(k\.top >= _gorBoy\(\)\) return;/.test(k);
       }), 'halkanin ustundeki ve ekran disindaki elemanlar eleniyor');
   }
   {

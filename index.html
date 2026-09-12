@@ -2822,6 +2822,19 @@
     box-shadow:0 1px 2px var(--d-dis-golge),
                inset 0 1px 0 var(--d-isik) !important;}
   body.deri:not(.mood) #kipKisayol .anahtar b{background:var(--d-vurgu, var(--d-marka)) !important;}
+  /* ── DUZ SERITTE ANAHTAR DA KABARTMASIZ ──────────────────────
+     Kullanicinin kurali: tuslarin altinda desen yoksa kabartma
+     yok. Kip anahtari kendi golgesini tasiyor, yani --d-golge'yi
+     'none' yapmak ona islemiyordu -- isaretlenen ekran
+     goruntusunde ORBITAPE anahtari hala kabarikti.
+     CERCEVE KALIYOR: daha once "swichtin cercevesi gorunmuyor"
+     denmisti; kalkan sey yalnizca olculu golge takimi. Yolun
+     icindeki renk farki ve topuzun yeri durumu tasimaya devam
+     ediyor. */
+  body.deri.duztus #kipKisayol .anahtar{box-shadow:none !important;}
+  body.deri.duztus #kipKisayol .anahtar b{box-shadow:none !important;}
+  body.deri.duztus #ayar .anahtar{box-shadow:none !important;}
+  body.deri.duztus #ayar .sat.kapi{box-shadow:none !important;}
   /* NEFES: yalnizca canli yayinda. Arsivde nokta yok -- yani
      "hareket eden = canli" tek kuralla okunuyor. */
   body.deri:not(.mood) #kipKisayol .anahtar b::after{
@@ -3666,14 +3679,14 @@
 <meta property="og:site_name" content="ORBITAPE">
 <meta property="og:title" content="ORBITAPE — live radio">
 <meta property="og:description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
-<meta property="og:image" content="https://orbitape.app/paylas.png">
+<meta property="og:image" content="https://orbitape.app/paylas.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ORBITAPE — LIVE RADIO · SOUND ARCHIVE; orbital rings on a black field.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ORBITAPE — a sound explorer">
 <meta name="twitter:description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
-<meta name="twitter:image" content="https://orbitape.app/paylas.png">
+<meta name="twitter:image" content="https://orbitape.app/paylas.png?v=2">
 </head>
 <body>
   <!-- Sayfanın tek başlığı. Ekranda GÖRÜNMÜYOR çünkü marka adı zaten
@@ -6475,6 +6488,39 @@
         if(d.cizim && !window.DERI_CIZIM_HAZIR) deriCizimYukle();
         const _ciz = (d.cizim && typeof deriCizimAdresi === 'function')
                    ? deriCizimAdresi(d) : '';
+        /* ── KABARTMA KARARI CIZIM CIZILDIKTEN SONRA ────────────────
+           Yukarida kabartma "deri cizimli mi" sorusuna gore
+           veriliyordu. Kullanicinin kurali bu degil: "butonlarin
+           altinda karisik cizim yoksa, duzse sakin kabartma yapma."
+           Cizimli bir deride bile tuslarin oturdugu serit duz
+           olabiliyor -- alt perde ekranin dibini zeminin %86-95'i
+           ile kapatiyor. Isaretlenen iki ornek (LUNA, DUNYA) tam
+           olarak buydu: cizim yukarida, tuslarin altinda tek ton.
+           deri_cizim.js o seridin KOMSU FARKINI olcup birakiyor
+           (DERI_ALT_SOL_FARK). Esik 1.60 ve olculdu: 79 cizimli
+           derinin serit degerleri 0 ile 8.69 arasinda; gozle
+           bakildiginda 1.49'da (PINES) altta anlatacak bir sey yok,
+           1.66'da (DECO) yelpaze deseni tam tuslarin arkasinda.
+           Esigin altinda kalan 65 deride tus zemini ve kabartma
+           dusuyor, simge dogrudan zeminin uzerinde duruyor --
+           sol ustteki uc simge gibi. */
+        try{
+          /* window['...'] ile okunuyor: nokta yazimi tip denetiminde
+             "Window uzerinde boyle bir alan yok" uyarisi uretiyor --
+             DERI_ZEMIN de ayni sebeple boyle yaziliyor. */
+          const _fark = window['DERI_ALT_SOL_FARK'];
+          const _duzTus = !_ciz || !(typeof _fark === 'number')
+            /* '>=' ile yaziliyor: '<' isareti bu dosyada CSP
+               denetiminin etiket taramasini yanlis tetikliyor. */
+            || !(_fark >= 1.60);
+          if(_duzTus){
+            k.setProperty('--d-tus-zem', 'transparent');
+            k.setProperty('--d-golge', 'none');
+          }
+          /* Kip anahtari kendi kabartmasini tasiyor (--d-golge'den
+             beslenmiyor): sinif onu da ayni karara bagliyor. */
+          document.body.classList.toggle('duztus', !!_duzTus);
+        }catch(e){ _yut(e); }
         const _hal = (d.cizim && typeof deriHalkaAdresi === 'function')
                    ? deriHalkaAdresi(d) : '';
         if(_hal){ k.setProperty('--d-halka-resim', 'url("' + _hal + '")'); }
@@ -10652,6 +10698,29 @@
     vizArka.width = w; vizArka.height = h;
     return true;
   }
+  /* ── GORUNEN YUKSEKLIK: RECT ILE AYNI KAYNAKTAN (11 Eylul) ──────
+     OLCULDU: window.innerHeight 120 px bayatken alta yaslanan ogeler
+     TAM 120 px asagi kaydi -- kayit bilgisi 81 -> -39, kip kisayolu
+     88 -> -32; yani ekranin dibine yapistilar. Kullanicinin uc aydir
+     soyledigi sey bu: "yatay yapip tekrar dikey yapinca yazilar en
+     tabana cokuyor."
+     SEBEP KARISIK KOORDINAT, ZAMANLAMA DEGIL. Bu ekranda alta
+     yaslanan her sey `yukseklik - rect` ile konuluyor. rect
+     (getBoundingClientRect) YERLESIM penceresinin koordinatinda ve
+     her zaman guncel; window.innerHeight ise iOS'ta donus sirasinda
+     bir sure ESKI degerde kaliyor. Iki AYRI kaynaktan gelen iki sayi
+     cikarilinca aradaki bayatlik kadar kayma oluyor.
+     documentElement.clientHeight rect ile AYNI kaynaktir: yerlesim
+     motoru ikisini birlikte gunceller, aralarinda bayatlik OLAMAZ.
+     Boylece "dogru ani yakalamak" gerekmiyor; formul yapisi geregi
+     dogru. innerHeight yalnizca yedek (cok eski tarayici). */
+  function _gorBoy(){
+    try{
+      const h = document.documentElement && document.documentElement.clientHeight;
+      if(h && h > 0) return h;
+    }catch(e){ _yut(e); }
+    return window.innerHeight;
+  }
   var _olcuBekleyen = 0, _sonEn = 0, _sonBoy = 0, _yerlesZaman = null;
   var _sonOlcek = 100, _sonVvBoy = 0, _sonKx = 0, _sonKy = 0, _zoomBorcu = false;
   function olcuIste(){
@@ -10778,7 +10847,7 @@
         if(!el) return;
         var r = el.getBoundingClientRect();
         if(!r.width && !r.height) return;
-        var disari = r.bottom < 0 || r.top > window.innerHeight
+        var disari = r.bottom < 0 || r.top > _gorBoy()
                   || r.right < 0 || r.left > window.innerWidth;
         /* ── EKRANIN ICINDE AMA YANLIS YERDE ─────────────────────
            Ilk bekci yalnizca "ekranin disina cikti mi" diye
@@ -10816,8 +10885,8 @@
                  'bottom' icin ayni: "buyutec yukarida kaldi"nin bir
                  kaynagi da buydu. Simgedeki eski kayma siliniyor. */
               var kap = document.getElementById('ara') || el;
-              var dp = Math.round(window.innerHeight - yr.bottom + (yr.height - 26)/2);
-              if(dp >= 0 && dp <= window.innerHeight * 0.40) kap.style.bottom = dp + 'px';
+              var dp = Math.round(_gorBoy() - yr.bottom + (yr.height - 26)/2);
+              if(dp >= 0 && dp <= _gorBoy() * 0.40) kap.style.bottom = dp + 'px';
               if(Math.abs(dx) > 8) kap.style.left = Math.round(yr.left) + 'px';
               if(kap !== el){ el.style.left = ''; el.style.bottom = ''; }
               _zoomBorcu = true; olcuIste();
@@ -11412,7 +11481,7 @@
     try{
       const k = zumKatAl(); if(!k || !_zumCtx) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const W = Math.round(window.innerWidth), H = Math.round(window.innerHeight);
+      const W = Math.round(window.innerWidth), H = Math.round(_gorBoy());
       if(k.width !== W * dpr || k.height !== H * dpr){
         k.width = W * dpr; k.height = H * dpr;
         k.style.width = W + 'px'; k.style.height = H + 'px';
@@ -14413,7 +14482,7 @@
       const np2 = document.getElementById('np');
       const r2 = np2 ? np2.getBoundingClientRect() : null;
       if(r2 && r2.height)
-        k.style.bottom = Math.round(window.innerHeight - r2.top + 10) + 'px';
+        k.style.bottom = Math.round(_gorBoy() - r2.top + 10) + 'px';
     }catch(e){ _yut(e); }
     k.classList.add('acik'); k.setAttribute('aria-hidden','false');
     try{ document.getElementById('isaret').classList.add('acik'); }catch(e){ _yut(e); }
@@ -16087,7 +16156,7 @@
       if(_kk && _kt && document.body.classList.contains('mood')){
         const r = _kt.getBoundingClientRect();
         if(r.height){
-          _kk.style.bottom = Math.round(window.innerHeight - r.bottom + (r.height - 24)/2) + 'px';
+          _kk.style.bottom = Math.round(_gorBoy() - r.bottom + (r.height - 24)/2) + 'px';
           _kk.style.left   = Math.round(r.right + 10) + 'px';
           _kipSagKenar(_kk, Math.round(r.right + 10));
         }
@@ -16099,7 +16168,7 @@
             /* 14px: tasima satirinin dokunma alani yukari 4px,
                anahtarinki asagi 7px tasiyor; 8px bosluk birakinca
                cakisiyorlar. */
-            _kk.style.bottom = Math.round(window.innerHeight - r2.top + 14) + 'px';
+            _kk.style.bottom = Math.round(_gorBoy() - r2.top + 14) + 'px';
             _kk.style.removeProperty('left');      // sol kenar CSS'ten (--kx)
             _kipSagKenar(_kk, Math.round(_kk.getBoundingClientRect().left));
           }
@@ -16165,7 +16234,7 @@
          fark goruyor. */
       const alt = 2 + gd;
       const sol = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16);
-      const hat = window.innerHeight - alt;      // arama ve sag alt blok bu hatta biter
+      const hat = _gorBoy() - alt;      // arama ve sag alt blok bu hatta biter
 
       /* MODUL IKI KIPTE DE ALT SOL KOSEDE (bkz. CSS). Konsolun ustunu
          hesaplayan blok SILINDI: konsol sag ustteyken #ust'un ve
@@ -16224,10 +16293,10 @@
           const bos = Math.max(13,
             parseFloat(getComputedStyle(document.getElementById('solUst'))
               .getPropertyValue('--modul-bosluk')) || 8);
-          tut0.style.bottom = Math.round(window.innerHeight - sr.top + bos) + 'px';
+          tut0.style.bottom = Math.round(_gorBoy() - sr.top + bos) + 'px';
           /* FIRCA VE SAAT TUTAMAGIN USTUNDE, YIGIN HALINDE: ayni sol kenar. */
           try{
-            let ust = Math.round(window.innerHeight - sr.top + bos);
+            let ust = Math.round(_gorBoy() - sr.top + bos);
             ['deriFirca','saatTus','gorselTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
               ust += 26 + bos;
@@ -16398,8 +16467,8 @@
               const b2 = e2.getBoundingClientRect();
               if(b2.height && b2.width) tepe = Math.min(tepe, b2.top);
             });
-            const _dk = Math.round(window.innerHeight - tepe + 8);
-            if(isFinite(tepe) && _dk >= 0 && _dk <= window.innerHeight * 0.62){
+            const _dk = Math.round(_gorBoy() - tepe + 8);
+            if(isFinite(tepe) && _dk >= 0 && _dk <= _gorBoy() * 0.62){
               arE.style.bottom = _dk + 'px';
               _olculdu = true;
             }
@@ -16410,8 +16479,8 @@
                degisince 3px kayma birakiyordu. */
             const cz = arE.querySelector('.cizgi');
             const czY = (cz && cz.getBoundingClientRect().height) || 26;
-            const _dp = Math.round(window.innerHeight - yr2.bottom + (yr2.height - czY)/2);
-            if(yr2.height && _dp >= 0 && _dp <= window.innerHeight * 0.40){
+            const _dp = Math.round(_gorBoy() - yr2.bottom + (yr2.height - czY)/2);
+            if(yr2.height && _dp >= 0 && _dp <= _gorBoy() * 0.40){
               arE.style.bottom = _dp + 'px';
               _olculdu = true;
             }
@@ -16550,7 +16619,7 @@
                 if(r3 && r3.height && r3.top < tepe) tepe = r3.top;
               });
               if(tepe !== Infinity){
-                ustHat2 = Math.round(window.innerHeight - tepe + 10); _oy = true; }
+                ustHat2 = Math.round(_gorBoy() - tepe + 10); _oy = true; }
             }catch(_){ _yut(_); }
             /* AYNI KURAL: olculen deger duz piksel, sabit deger _dip.
                (Buyutecteki cift sayma hatasinin ikizi buradaydi.) */
@@ -16590,7 +16659,7 @@
         if(kc && kc.classList.contains('var')){
           kc.style.left   = sol + 'px';
           kc.style.width  = Math.round(ugOlcu()) + 'px';
-          kc.style.bottom = Math.round(window.innerHeight - araY.top + 8) + 'px';
+          kc.style.bottom = Math.round(_gorBoy() - araY.top + 8) + 'px';
         }
       }catch(_){ _yut(_); }
       /* Bilgi satırı en üstte; sabit bir sayı kullanınca haplarla üst
@@ -16602,7 +16671,7 @@
           const ust = (kc2 && kc2.classList.contains('var'))
                         ? kc2.getBoundingClientRect().top : araY.top;
           bg.style.left   = sol + 'px';
-          bg.style.bottom = Math.round(window.innerHeight - ust + 10) + 'px';
+          bg.style.bottom = Math.round(_gorBoy() - ust + 10) + 'px';
         }
       }catch(_){ _yut(_); }
       /* BURADA BİR SATIR VARDI, SİLİNDİ — GERİ EKLEME:
@@ -17205,7 +17274,7 @@
         const d = document.querySelector('.disk').getBoundingClientRect();
         /* halka yarıçapı = min(en,boy)*0.357 * (0.55 + 5*0.080) */
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
-        let taban = window.innerHeight;
+        let taban = _gorBoy();
         /* 'ayarTut' CIKTI: radyoda tutamak artik sol USTTE, alt
            seride ait degil. Yerine kayit satiri (CAM · ★ · sustur ·
            buyutec) girdi -- alt seridin gercek ust sinirini o
@@ -17236,7 +17305,7 @@
                const k = e2.getBoundingClientRect();
                if(k.height <= 0) return;
                if(k.top <= halkaAlt) return;               // halkanin ustunde: alt serit degil
-               if(k.top >= window.innerHeight) return;     // ekranin disinda
+               if(k.top >= _gorBoy()) return;     // ekranin disinda
                taban = Math.min(taban, k.top); }catch(_){ _yut(_); }
         });
         const h = el.getBoundingClientRect().height || 21;
@@ -18878,7 +18947,7 @@
            duracağı yeri (tabandan 96px) kullanıyoruz. Yoksa yazı her
            iki durumda başka yükseklikten başlıyordu. */
         const alt = (ar && ar.height) ? ar
-                  : { top: window.innerHeight - 96 - 34 };
+                  : { top: _gorBoy() - 96 - 34 };
         const cz  = t.querySelector('.cizgi');
         const h   = y.offsetHeight || 60;
         /* Taban, diskin KUTUSU değil GÖRÜNEN HALKANIN altı: kutunun

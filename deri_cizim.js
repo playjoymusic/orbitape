@@ -4671,6 +4671,47 @@ function orta2(cc, x, y, w, h){
     return n ? [Math.round(r/n), Math.round(ye/n), Math.round(m/n)] : null;
   }catch(e){ return null; }
 }
+/* ── TUSLARIN ALTINDA MALZEME VAR MI ─────────────────────────────
+   Kullanicinin kurali: "butonlarin altinda karisik cizim yoksa,
+   duzse sakin kabartma yapma."
+   Kabartma bir malzeme isareti: dokulu bir yuzeyde tus o yuzeyden
+   oyulmus gibi duruyor. Alt perde (bkz. deriCizimCiz) ekranin
+   dibini zeminin %86-95'i ile kapatiyor, yani CIZIMLI bir deride
+   bile tuslarin oturdugu serit cogu zaman TEK TON. Orada kabartma
+   anlatacak bir sey yok; geriye havada duran gri bir hap kaliyor.
+   Karar artik "deri cizimli mi" degil, "TUSLARIN ALTINDAKI PIKSEL
+   degisiyor mu".
+   OLCU ORTALAMADAN SAPMA DEGIL, KOMSU FARKI. Ilk surumde bolgenin
+   parlaklik ortalamasindan ortalama sapmasi aliniyordu ve olcum onu
+   red etti: LUNA'nin dibinde YUMUSAK bir gecis var, desen yok --
+   sapma 5.97 cikiyordu, yani "dokulu" gorunuyordu, oysa kullanici
+   onu duz olarak isaretledi. Sapma bir degrade ile bir deseni
+   ayirt etmiyor.
+   Komsu farki ayirt ediyor: her ornek 3 px sagindaki ve 3 px
+   altindaki ornekle karsilastiriliyor. 300 px'de 60 tonluk bir
+   degrade 3 px'de 0,6 veriyor -- sifira yakin; gercek bir desende
+   ayni mesafede tam kontrast var. */
+function _altSolFark(cc, x, y, w, h){
+  try{
+    const X = Math.max(0, x|0), Y = Math.max(0, y|0);
+    const W = Math.max(8, w|0), H = Math.max(8, h|0);
+    const g = cc.getImageData(X, Y, W, H).data;
+    const L = (px, py)=>{
+      const i = (py * W + px) * 4;
+      return 0.2126*g[i] + 0.7152*g[i+1] + 0.0722*g[i+2];
+    };
+    const a = 3;                       /* komsu mesafesi */
+    let s = 0, n = 0;
+    for(let py = 0; py + a < H; py += 2){
+      for(let px = 0; px + a < W; px += 2){
+        const o = L(px, py);
+        s += Math.abs(o - L(px + a, py)) + Math.abs(o - L(px, py + a));
+        n += 2;
+      }
+    }
+    return n ? s / n : 0;
+  }catch(e){ return 0; }
+}
 function deriCizimAdresi(d){
   try{
     if(!(d && DERI_CIZIM[d.cizim])) return '';
@@ -4705,6 +4746,10 @@ function deriCizimAdresi(d){
         sol:    orta(0.02 * W, 0.06 * H, 0.16 * W, 0.26 * H),
         altSol: orta(0.02 * W, 0.86 * H, 0.55 * W, 0.12 * H)
       };
+      /* Tuslarin oturdugu serit: iki tasima satiri ve ORBITAPE
+         anahtari. Kabartma karari bu bolgeye bakiyor. */
+      window['DERI_ALT_SOL_FARK'] = _altSolFark(c, 0.02 * W, 0.83 * H,
+                                                0.58 * W, 0.15 * H);
       /* ── TEK ORTALAMA YETMEDI ───────────────────────────────
          Ilk surumde yalnizca yukaridaki iki ortalama vardi ve
          olcum onu red etti: sol sutundaki dort simge AYNI blogun
