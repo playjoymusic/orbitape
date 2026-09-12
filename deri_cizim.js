@@ -64,6 +64,19 @@ function _tohumlu(n){
    karenin uzerinde uslubun adi yaziyordu ve kompozisyonu asil o
    kuruyor -- halkanin etrafindaki dunyayi bir POSTER yapan sey. */
 const DERI_USLUP = {
+  /* ── YASAYAN DERILER ────────────────────────────────────────────
+     Bu sekiz uslup bir RESMI degil bir ZEMINI tarif ediyor: uzerine
+     gelen isik (gun isigi ya da nefes) anlatacak. O yuzden paletler
+     dar ve sakin -- kalabalik bir zeminin uzerinde isigin hareketi
+     hic okunmaz. */
+  azimut   : { pal:["#1a2438","#24324c","#0f1522","#cfd8e6"] },
+  altinsaat: { pal:["#2a1d18","#3d2a20","#150e0b","#f0d8b8"] },
+  mavisaat : { pal:["#101a2e","#182642","#080d18","#c8d6ee"] },
+  nabiz    : { pal:["#0e0f14","#171a22","#06070a","#e8ecf2"] },
+  titre    : { pal:["#12100e","#1c1916","#070605","#ecdcc8"] },
+  soluk    : { pal:["#0c1412","#141e1b","#050908","#d8e8e0"] },
+  aciklik  : { pal:["#07080b","#0d0f14","#020203","#e6eaf0"] },
+  sizinti  : { pal:["#0a0a0c","#121216","#040405","#f2e6d2"] },
   bauhaus  : { pal:["#c81f1b","#1f4fa8","#f2c200","#1b1a17"] },
   selbu    : { pal:["#e8eef7","#c8322e","#5b82b4"] },
   trencadis: { pal:["#4fa08a","#e0a72c","#c1583a","#7ab5c9","#e8ddc8","#3f6f63"], tohum:23 },
@@ -1398,6 +1411,127 @@ function deriHalkaAdresi(d){
 }
 
 const DERI_CIZIM = {
+  /* ══ YASAYAN DERILER: ZEMIN SADE, ANLATAN SEY ISIK ══════════════
+     Bu sekizi cizim degil SAHNE. Uzerlerine gelen perde (gun isigi
+     ya da nefes) hareket ediyor; zemin ona bir yuzey veriyor.
+     Kalabalik bir desen konsaydi isigin gezmesi hic okunmazdi --
+     o yuzden hepsinde az sayida buyuk alan ve yumusak gecis var. */
+
+  /* AZIMUTH — ufuk cizgisi ve bos bir gok. Gunesin nereye
+     dustugunu gosterecek tek sey bu ufuk: isik alcakken cizgi
+     uzun bir golge birakiyor gibi okunuyor. */
+  azimut(c, W, H, d){
+    const p = d.pal;
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, p[2]); g.addColorStop(0.52, p[1]); g.addColorStop(1, p[0]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Ufuk ekranin ortasinda DEGIL: merkezdeki disk oraya oturuyor.
+       0,62 yuksekligi diskin altina denk geliyor. */
+    c.strokeStyle = 'rgba(207,216,230,.16)'; c.lineWidth = Math.max(1, W*0.0028);
+    c.beginPath(); c.moveTo(0, H*0.62); c.lineTo(W, H*0.62); c.stroke();
+    c.strokeStyle = 'rgba(207,216,230,.07)';
+    [0.575, 0.665].forEach(y=>{ c.beginPath(); c.moveTo(0, H*y); c.lineTo(W, H*y); c.stroke(); });
+  },
+
+  /* GOLDEN HOUR — yatay katmanlar, sicak tarafa dogru acilan.
+     Aksamustu perdesi buraya oturunca katmanlar kizariyor; ogle
+     vakti ayni zemin neredeyse kahverengi bir duvar. */
+  altinsaat(c, W, H, d){
+    const p = d.pal;
+    const g = c.createLinearGradient(0, H, 0, 0);
+    g.addColorStop(0, p[2]); g.addColorStop(0.45, p[0]); g.addColorStop(1, p[1]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.globalAlpha = 0.10; c.fillStyle = p[3];
+    for(let i = 0; i < 7; i++) c.fillRect(0, H*(0.30 + i*0.055), W, H*0.012);
+    c.globalAlpha = 1;
+  },
+
+  /* BLUE HOUR — gunes ufkun ALTINDAyken yasayan deri. Zemin zaten
+     lacivert; perde gunduz onu acmiyor, gece koyulastiriyor. Yani
+     bu deri gun icinde en sonuk, safakta ve aksam en canli. */
+  mavisaat(c, W, H, d){
+    const p = d.pal;
+    const g = c.createRadialGradient(W*0.5, H*0.78, 0, W*0.5, H*0.78, Math.max(W, H)*0.9);
+    g.addColorStop(0, p[1]); g.addColorStop(0.55, p[0]); g.addColorStop(1, p[2]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    /* Yildizlar: gecenin geldigini soyleyen tek isaret, cok az. */
+    const r = _tohumlu(d.tohum || 11);
+    c.fillStyle = 'rgba(200,214,238,.5)';
+    for(let i = 0; i < 26; i++){
+      const x = r()*W, y = r()*H*0.55, s2 = W*0.0016 + r()*W*0.0018;
+      c.beginPath(); c.arc(x, y, s2, 0, Math.PI*2); c.fill();
+    }
+  },
+
+  /* PULSE — merkeze dogru koyulasan bos bir alan. Nabiz perdesi
+     tam ortadan soluklandigi icin zemin ortada en KOYU olmali:
+     isik kendi yerini bulsun. */
+  nabiz(c, W, H, d){
+    const p = d.pal;
+    const g = c.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, Math.max(W, H)*0.75);
+    g.addColorStop(0, p[2]); g.addColorStop(0.5, p[0]); g.addColorStop(1, p[1]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+  },
+
+  /* TREMOR — yatay bantlar. Nabiz perdesi yukari asagi gezerken
+     bantlarin uzerinden geciyor ve hangi bandin aydinlandigi
+     sesle degisiyor: hareket bantlar sayesinde GORULUYOR. */
+  titre(c, W, H, d){
+    const p = d.pal;
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    const r = _tohumlu(d.tohum || 19);
+    for(let y = 0; y < H; ){
+      const h2 = H*(0.010 + r()*0.030);
+      c.globalAlpha = 0.10 + r()*0.16;
+      c.fillStyle = (r() > 0.5) ? p[1] : p[2];
+      c.fillRect(0, y, W, h2);
+      y += h2 + H*(0.004 + r()*0.016);
+    }
+    c.globalAlpha = 1;
+  },
+
+  /* BREATH — tek ton, neredeyse bos. En saf hali: ekranda hicbir
+     sey yok ve yalnizca isik nefes aliyor. */
+  soluk(c, W, H, d){
+    const p = d.pal;
+    const g = c.createLinearGradient(0, 0, W*0.3, H);
+    g.addColorStop(0, p[1]); g.addColorStop(1, p[0]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.globalAlpha = 0.05; c.fillStyle = p[3];
+    c.beginPath(); c.arc(W*0.5, H*0.5, Math.min(W,H)*0.46, 0, Math.PI*2); c.fill();
+    c.globalAlpha = 1;
+  },
+
+  /* APERTURE — eksiltme ailesi. Perde yok: karari zemin veriyor.
+     Diskin cevresi disinda her sey yutuluyor, yani ekranda yalnizca
+     calan seyin durdugu daire aydinlik. */
+  aciklik(c, W, H, d){
+    const p = d.pal;
+    c.fillStyle = p[2]; c.fillRect(0, 0, W, H);
+    const g = c.createRadialGradient(W*0.5, H*0.5, Math.min(W,H)*0.18,
+                                     W*0.5, H*0.5, Math.min(W,H)*0.62);
+    g.addColorStop(0, 'rgba(230,234,240,.16)');
+    g.addColorStop(0.42, 'rgba(230,234,240,.05)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.strokeStyle = 'rgba(230,234,240,.10)'; c.lineWidth = Math.max(1, W*0.002);
+    c.beginPath(); c.arc(W*0.5, H*0.5, Math.min(W,H)*0.40, 0, Math.PI*2); c.stroke();
+  },
+
+  /* LEAK — isik TEK kenardan siziyor, sanki ekranin arkasinda bir
+     sey yaniyor. Sag alt ceyrek bilerek karanlik: kunye orada. */
+  sizinti(c, W, H, d){
+    const p = d.pal;
+    c.fillStyle = p[2]; c.fillRect(0, 0, W, H);
+    const g = c.createLinearGradient(0, 0, W*0.78, H*0.42);
+    g.addColorStop(0, p[3]); g.addColorStop(0.16, p[1]); g.addColorStop(1, p[2]);
+    c.globalAlpha = 0.42; c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.globalAlpha = 1;
+    const g2 = c.createLinearGradient(0, 0, W*0.30, H*0.16);
+    g2.addColorStop(0, 'rgba(242,230,210,.30)'); g2.addColorStop(1, 'rgba(242,230,210,0)');
+    c.fillStyle = g2; c.fillRect(0, 0, W, H);
+  },
+
   /* BAUHAUS — kompozisyon, dagilim degil. Ilkel bicimler (daire
      ceyregi, ucgen, cubuk) az sayida ve BUYUK; ustune ince siyah
      cizgiler. Rasgelelik yok: Bauhaus tasarlanir. */
@@ -4777,4 +4911,130 @@ function deriCizimAdresi(d){
 /* Sayfa bu dosyanin gelip gelmedigini bilmek zorunda: geldiyse
    secili deri yeniden uygulaniyor ve arka plan beliriyor. */
 try{ window.DERI_CIZIM_HAZIR = true; }catch(e){}
+/* ══ YASAYAN DERILER: KURALIN KENDISI BURADA ════════════════════
+   Bu blok index.html'den BURAYA tasindi. Sebep olculdu: orada
+   dururken ilk boyamaya inen dosya 106,24 KB oldu ve tavan 106.
+   Tavani yukseltmek yerine dogru olan yapildi -- bu kod yalnizca
+   yasayan bir deri secilince lazim ve yasayan derilerin hepsi
+   cizimli, yani bu dosya zaten o anda iniyor. Acilista inmesinin
+   hicbir karsiligi yoktu.
+   Disari '2' ekiyle veriliyor: index.html'deki ayni adli kopru
+   islevler bunlari cagiriyor, modul gelmediyse sessizce dusuyor. */
+(function(){
+  /* ══ YASAYAN DERILER ════════════════════════════════════════════
+     123 derinin hepsi DURAGAN resim: secilir, boyanir, biter.
+     Buradaki iki aile resim degil KURAL: goruntuyu ureten sey bir
+     olcum. Ekrana tek bir oge, tek bir yazi EKLENMIYOR -- degisen
+     yalnizca zeminin isigi, yani kalabaligi artirmiyorlar.
+
+     GUN ISIGI: derinin bir gunesi var. Sabah alcak ve soguk, ogle
+     tepede ve duz, aksamustu uzun ve sicak, gece neredeyse yok.
+     Dinlerken kendiliginden degisiyor; ayar yok, dokunus yok.
+     MALIYETI SIFIRA YAKIN: perdenin tamami burada bir dizgi olarak
+     kuruluyor ve degiskene yaziliyor. Yeniden kurulmasi yalnizca
+     deri uygulanirken ve bes dakikada bir -- yani kare basina hic
+     is yok. */
+  var _gunZaman = 0;
+  function _gunFazi(){
+    try{
+      const t = new Date();
+      /* Gunun kesri: 0 = gece yarisi, 0.5 = ogle. */
+      return ((t.getHours()*60 + t.getMinutes()) / 1440) % 1;
+    }catch(e){ _yut(e); return 0.5; }
+  }
+  function gunPerdesiYaz(){
+    try{
+      if(!document.body.classList.contains('gunisigi')) return;
+      const f = _gunFazi();
+      /* Gunes yolu: dogu -> tepe -> bati. 06:00 ve 18:00 ufuk.
+         Kosinus bir gun boyunca tek bir yay ciziyor; saat basi
+         kirilan bir tablo degil surekli bir egri. */
+      const yay = Math.cos((f - 0.5) * 2 * Math.PI);   /* ogle +1, gece yarisi -1 */
+      const yukseklik = Math.max(0, yay);              /* ufuk altinda 0 */
+      /* ── GECE DE DERINLESIYOR ─────────────────────────────────
+         Ilk surumde gece tek bir taban degerdi ve OLCUM onu red
+         etti: 18:00, 21:00 ve gece yarisi birebir ayni perdeyi
+         veriyordu (0.100 guc, 72% yukseklik). Oysa aksamustu ile
+         gece yarisi ayni sey degil -- "mavi saat" diye bir an
+         kalmiyordu. Gunduzu yayin ARTI yarisi, geceyi EKSI yarisi
+         tasiyor: ufukta 0, gece yarisinda 1. */
+      const derinlik = Math.max(0, -yay);
+      const x = Math.round(8 + f * 84);                /* soldan saga yuruyor */
+      const y = Math.round(72 - yukseklik * 64);       /* tepedeyken yukarida */
+      /* Sicaklik: ufka yakinken kizil, tepedeyken beyaz. Altin saat
+         kendiliginden cikiyor -- ayri bir kural yazilmadi. */
+      const alcak = 1 - yukseklik;
+      let r = 255, g = Math.round(238 - alcak*70), m = Math.round(205 - alcak*130);
+      /* ── ALACAKARANLIK SOGUK ──────────────────────────────────
+         Gunes ufkun hemen altindayken gokyuzunun rengini artik
+         gunes degil sacilma veriyor: kizil degil MOR-MAVI. Pencere
+         dar (yayin -0.30 ile +0.06 arasi, yani kabaca safaktan bir
+         saat once, aksamdan bir saat sonra) ve gecis yumusak --
+         sert bir esik olsaydi belirli bir dakikada renk ziplardi. */
+      const alaca = Math.max(0, 1 - Math.abs(yay + 0.12) / 0.30);
+      if(alaca > 0){
+        r = Math.round(r + (120 - r) * alaca);
+        g = Math.round(g + (130 - g) * alaca);
+        m = Math.round(m + (225 - m) * alaca);
+      }
+      /* Gucu de alacakaranlik biraz kaldiriyor: o an gokyuzu
+         gunesten daha genis bir isik kaynagi. */
+      const guc = 0.10 + yukseklik * 0.34 + alaca * 0.14;
+      /* Gece: perde artik isik degil KARANLIK. Ayni gradyanin uzak
+         duragi koyuya gidiyor, yani tek katman iki isi de goruyor. */
+      const gece = 0.06 + derinlik * 0.46;
+      const k = document.documentElement.style;
+      /* Gun saatinin rengi de buradan: saat dongunun bir parcasi,
+         uzerine yapistirilmis bir rakam degil. Gunes sicakken
+         sicak, gece soguk ve sonuk. */
+      k.setProperty('--gd-renk',
+        'rgba(' + r + ',' + g + ',' + m + ',' + (0.45 + yukseklik*0.42).toFixed(2) + ')');
+      k.setProperty('--d-perde',
+        'radial-gradient(130% 96% at ' + x + '% ' + y + '%,'
+        + 'rgba(' + r + ',' + g + ',' + m + ',' + guc.toFixed(3) + ') 0%,'
+        + 'rgba(' + r + ',' + g + ',' + m + ',' + (guc*0.28).toFixed(3) + ') 38%,'
+        + 'rgba(6,10,20,' + gece.toFixed(3) + ') 100%)');
+    }catch(e){ _yut(e); }
+  }
+  /* Bes dakikada bir: gunes bir gunde 360 derece donuyor, bes
+     dakikada 1,25 derece -- gozle secilmeyen bir adim, yani
+     yerinde duruyormus gibi akiyor. Daha sik yoklamanin karsiligi
+     yok, daha seyrek yoklamak basamak birakir. */
+  function gunNobetiKur(){
+    try{
+      clearInterval(_gunZaman);
+      if(!document.body.classList.contains('gunisigi')) return;
+      _gunZaman = setInterval(gunPerdesiYaz, 300000);
+    }catch(e){ _yut(e); }
+  }
+  /* NEFES: kare dongusunde yazilan TEK sayi. Dongu zaten donuyor
+     (bkz. vizLoop) ve orada yumusatilmis bir ritim var; buradaki is
+     onu bir CSS degiskenine gecirmek. Yazma iki kapiya bagli:
+     nefes derisi acik mi, ve deger gozle secilecek kadar degisti mi
+     -- ikincisi olmadan her kare bir stil yazimi olurdu. */
+  var _nabizSon = -1;
+  function _nabizYaz(deger){
+    try{
+      if(!document.body.classList.contains('nefes')) return;
+      const v = Math.max(0, Math.min(1, deger || 0));
+      if(Math.abs(v - _nabizSon) < 0.012) return;      /* gozle secilmeyen fark yazilmiyor */
+      _nabizSon = v;
+      document.documentElement.style.setProperty('--d-nabiz', v.toFixed(3));
+    }catch(e){ _yut(e); }
+  }
+  try{ window['_nabizYaz'] = _nabizYaz; }catch(e){ _yut(e); }
+  try{
+    window['gunPerdesiYaz2'] = gunPerdesiYaz;
+    window['gunNobetiKur2']  = gunNobetiKur;
+    window['_nabizYaz']      = _nabizYaz;
+    window['_nabizSifirla']  = function(){ _nabizSon = -1; };
+  }catch(e){ _yut(e); }
+  /* Modul gec geldiyse secili deri zaten yeniden uygulaniyor
+     (deriCizimGeldi), yani perde o anda kuruluyor. Yine de burada
+     bir kez yoklaniyor: sayfa modulu onbellekten alirsa uygulama
+     cagriyi bizden once yapmis olabilir. */
+  try{ if(document.body && document.body.classList.contains('gunisigi')){
+    gunPerdesiYaz(); gunNobetiKur(); } }catch(e){ _yut(e); }
+})();
+
 try{ if(typeof deriCizimGeldi === 'function') deriCizimGeldi(); }catch(e){}

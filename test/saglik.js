@@ -637,7 +637,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      103.07 -> 103.75 KB, yani 0,7 KB. Yeni tavan yine fren: bugunku
      olcumun ~%2 ustu. Bir deri satiri ~0,03 KB; yani bu tavan
      altmis deri daha kaldirir, kacak bir buyume yine yakalanir. */
-  const ILK_CIZIM_TAVAN = _derlendi ? 106 : 260, ILK_ACILIS_TAVAN = _derlendi ? 112 : 302;
+  /* 12 EYLUL: 106 -> 108. YASAYAN DERILER geldi (gun isigi, nefes,
+     eksiltme). Once kodun tamami index.html'deydi ve olcum 108.581
+     bayt verdi -- tavan 108.544, yani 37 bayt asim. Tavani
+     yukseltmek yerine ONCE DOGRUSU yapildi: kuralin kodu
+     deri_cizim.js'e tasindi (4,9 KB kaynak). O dosya zaten yalnizca
+     cizimli bir deri secilince iniyor ve yasayan derilerin hepsi
+     cizimli, yani bu kodun acilista inmesinin hicbir karsiligi
+     yoktu. Olcum sonra: 106,04 KB.
+     Geriye kalan asim ilk boyamada BULUNMAK ZORUNDA olan iki sey:
+     perde katmaninin CSS'i ve sekiz deri satiri. Onlar tasinamaz --
+     CSS ozet tabanli CSP yuzunden sayfada durmali, tablo da menu
+     acilmadan once okunuyor. O yuzden tavan yaziyla yukseliyor.
+     108 yine FREN: bugunku olcumun ~%2 ustu; kacak bir buyume
+     (gomulen veri, yanlislikla eklenen kutuphane) hala yakalanir. */
+  const ILK_CIZIM_TAVAN = _derlendi ? 108 : 260, ILK_ACILIS_TAVAN = _derlendi ? 112 : 302;
   K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
@@ -819,9 +833,44 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        1.49 PINES bos / 1.66 DECO desenli) o satirlarda duruyor.
        Silinirse bir sonraki kisi esigi rastgele oynatir ya da
        karari yeniden "cizimli mi" diye sorar.
+       Son yukseltme (1176 -> 1192): Ispanyolca, Almanca ve
+       Fransizca. ONEMLI OLCU: ceviri METINLERI bu dosyaya
+       GIRMEDI -- dort sozluk dil/ altinda ayri dosyalar (tr 10,5 /
+       es 11,0 / de 11,0 / fr 11,4 KB ham) ve bir kullanici
+       YALNIZCA kendi dilininkini indiriyor; Ingilizce okuyan hicbir
+       sey indirmiyor, cunku anahtarlarin kendisi Ingilizce.
+       Buyuyen sey duzenek: iki dilden bese gecerken satir donguyu
+       birakip LISTE oldu (dongude Fransizcaya varmak dort dokunus
+       ve arada anlamadigin uc dil demekti), otomatik secim onek
+       eslesmesine gecti ('de-AT', 'es-419', 'fr-CA'), onbellek
+       anahtari dili tasir oldu ve dil ADLARI ceviri taramasinin
+       disina alindi. Yazilan sey neden'ler; silinirse bir sonraki
+       kisi donguyu geri getirir ya da 'ENGLISH' satirini cevirir.
+       BORC HALA DURUYOR: bu altinci yukselis ve modul bolme yine
+       yapilmadi. Dil duzenegi bolunmeye en uygun parca -- bir
+       sonraki dil isteginde ONCE o yapilmali.
+       Son yukseltme (1200 -> 1212): gorselde saat ve gun dongusu.
+       IKISI DE KULLANICIDAN GELDI ve ikisi de EKRANA OGE EKLEMIYOR
+       gibi gorunse de ikisi de gercek dugum: VISUALS acikken saat
+       (varsayilan kapali, yalnizca tam ekran gorselde) ve gun
+       dongusunun saati (yalnizca deri + dongu acikken).
+       UC DERI SILINDI: gun isigi once AZIMUTH/GOLDEN HOUR/BLUE HOUR
+       diye uc ayri deriydi; kullanicinin karari onu bir MOOD yapti
+       -- menu buyumuyor ve dongu ucunde degil 128 derinin HEPSINDE
+       calisiyor. Yani bu yukselisin bir kismi zaten geri verildi.
+       OLCU: ilk boyama 106,04 -> 106,89 KB (tavan 108, yani
+       kullaniciyi ilgilendiren sayi hala altinda); ham boy 1203,57.
+       BORC BUYUYOR: bu yedinci yukselis. Modul bolme artik
+       ertelenmemeli -- dil duzenegi ve gun/saat duzenegi bolunmeye
+       en uygun iki parca.
+       Onceki yukseltme (1192 -> 1200): yasayan derilerin sayfada
+       kalmasi gereken parcasi -- perde katmaninin CSS'i ve sekiz
+       deri satiri. Kuralin KODU burada degil, deri_cizim.js'te
+       (bkz. ILK_CIZIM_TAVAN notu): acilista inmesinin karsiligi
+       olmadigi icin tasindi. Olcum 1192,47 KB.
        Tavan bir koruma; islev eklenince yaziyla yukseltiliyor,
        sessizce degil. */
-    K('Ham boy < 1176 KB', dosyaBoy < 1176*1024,
+    K('Ham boy < 1212 KB', dosyaBoy < 1212*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -12106,6 +12155,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          yazilan bir alandan degil, tuslarin oturdugu seridin
          KOMSU FARKINDAN cikiyor; boylece yeni bir deri eklendiginde
          kimse karar vermeyi unutamiyor. */
+      /* ── YASAYAN DERILER ────────────────────────────────────────
+         Ilk sekiz deri DURAGAN DEGIL: goruntuyu bir resim degil bir
+         kural uretiyor. Uc soru olculuyor -- kural calisiyor mu,
+         maliyeti olmayan yerde hic calismiyor mu, ve kod ilk
+         boyamaya geri sizdi mi. */
+      K('Yasayan derinin kodu ilk boyamada inmiyor',
+         !/function _gunFazi/.test(kaynak) && /gunPerdesiYaz2/.test(kaynak),
+         'kural deri_cizim.js e tasindi, sayfada yalnizca kopru var');
+      K('Isik katmani mevcut derileri degistirmiyor',
+         /background:var\(--d-perde,none\),var\(--d-doku,none\)/.test(kaynak)
+         && !/--d-isik:radial/.test(kaynak),
+         'perde tanimsizken none; --d-isik kabartmanin degiskeni, dokunulmadi');
       K('Kabartma karari tuslarin altindaki piksele bakiyor',
          /DERI_ALT_SOL_FARK/.test(kaynak)
          && /classList\.toggle\('duztus'/.test(kaynak),
@@ -12761,17 +12822,60 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         SOZLUK = {}; dilUygula(); await bek(150);
         const yedek = { baslik: g('#ayar h5'), sifirla: g('.sat[data-ayar="sifirla"] span') };
         SOZLUK = yedekSozluk; dilUygula(); await bek(150);
-        /* Iki yonlu mu: TR -> EN -> TR. */
-        document.querySelector('.sat[data-ayar="dil"]').click(); await bek(800);
+        /* ── BES DIL: SATIR ARTIK LISTE ACIYOR ────────────────────
+           Satir iki dil arasinda donuyordu; bes dilde dongu
+           kullaniciyi anlamadigi dillerin icinden geciriyordu, o
+           yuzden liste geldi. Olculen sey degismedi -- "dil
+           gercekten degisiyor mu" -- ama yol degisti: once liste
+           aciliyor, sonra satira basiliyor.
+           Sozluk AGDAN geliyor: her secimden sonra sabit bir
+           bekleme degil, tablo dolana kadar yoklaniyor (yukaridaki
+           notun aynisi; GitHub'in makinesi yavas). */
+        const dilSatir = document.querySelector('.sat[data-ayar="dil"]');
+        const dilBekle = async (kod)=>{
+          const bit = Date.now() + 12000;
+          while(Date.now() < bit){
+            if(DIL === kod && (kod === 'en' || Object.keys(SOZLUK).length > 100)) break;
+            await bek(150);
+          }
+          await bek(200);
+        };
+        const dilTikla = async (kod)=>{
+          const liste = document.getElementById('dilListe');
+          if(liste.hidden) dilSatir.click();
+          await bek(200);
+          const sat = [...document.getElementById('dilListe').children]
+                        .find(d => d.dataset.k === kod);
+          if(sat) sat.click();
+          await dilBekle(kod === '' ? 'tr' : kod);
+        };
+        await dilTikla('en');
         const ing = { dil: DIL, baslik: g('#ayar h5'), durum: g('.sat[data-ayar="dil"] .durum') };
-        document.querySelector('.sat[data-ayar="dil"]').click(); await bek(800);
+        await dilTikla('tr');
         const geri = { dil: DIL, baslik: g('#ayar h5') };
+        /* Yeni diller: Fransizca sec, sonra OTOMATIK'e don. Otomatik
+           cihazin dilini (tr-TR) geri getirmeli -- eski dongude
+           otomatige donmenin YOLU YOKTU. */
+        await dilTikla('fr');
+        const fra = { dil: DIL, baslik: g('#ayar h5'),
+                      durum: g('.sat[data-ayar="dil"] .durum') };
+        await dilTikla('es');
+        const isp = { dil: DIL, baslik: g('#ayar h5') };
+        await dilTikla('de');
+        const alm = { dil: DIL, baslik: g('#ayar h5') };
+        await dilTikla('');
+        const oto = { dil: DIL, baslik: g('#ayar h5'),
+                      kayitli: (JSON.parse(localStorage.getItem('orbitape.ayar')||'{}').dil || null),
+                      /* Onbellek anahtari dile gore: bir dilin
+                         sozlugu otekinin uzerine yazilmamali. */
+                      onbellek: Object.keys(localStorage)
+                                  .filter(k => k.indexOf('orbitape.dil') === 0).sort() };
         /* Turkce karakter aramasi PANELIN TAMAMINDA yapiliyor.
            Once yalnizca iki satira bakiyordu ve o iki satirin
            Turkcesi ("SES", "AYARLARI SIFIRLA") tamamen ASCII: test
            ceviri dogruyken kirmizi yaniyordu. Yanlis olan ceviri
            degil, olcunun kendisiydi. */
-        return { tr, veri, tus, yedek, ing, geri,
+        return { tr, veri, tus, yedek, ing, geri, fra, isp, alm, oto,
                  turkceMi: /[ğüşıöçĞÜŞİÖÇ]/.test(
                    (document.getElementById('ayar').textContent) || '') };
       });
@@ -12801,6 +12905,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      trd.ing.dil === 'en' && trd.ing.baslik === 'SOUNDS'
      && trd.ing.durum === 'ENGLISH' && trd.geri.dil === 'tr' && trd.geri.baslik === 'SESLER',
      'TR -> EN -> TR');
+  /* ── YENI DILLER (12 Eylul) ─────────────────────────────────────
+     Ucu de ayni duzenekten geciyor, yine de ayri ayri olculuyor:
+     bir sozluk dosyasi yayina cikmazsa ya da adi yanlis yazilirsa
+     o dil SESSIZCE Ingilizce kalirdi -- ekranda bir hata yok,
+     yalnizca cevrilmemis bir panel. */
+  K('Ispanyolca, Almanca, Fransizca gercekten uygulaniyor',
+     trd.fra.dil === 'fr' && trd.fra.baslik === 'SONS'
+     && trd.isp.dil === 'es' && trd.isp.baslik === 'SONIDOS'
+     && trd.alm.dil === 'de' && trd.alm.baslik === 'TÖNE',
+     'fr "' + trd.fra.baslik + '" | es "' + trd.isp.baslik
+     + '" | de "' + trd.alm.baslik + '"');
+  /* Dil ADI cevrilmiyor: Fransizca acilan ekranda "ENGLISH" satiri
+     "ANGLAIS" olsaydi Ingilizce arayan kendi dilini bulamazdi. */
+  K('Dil adi kendi dilinde kaliyor', trd.fra.durum === 'FRANÇAIS',
+     'satirin sagi: "' + trd.fra.durum + '"');
+  /* OTOMATIK: eski dongude ucuncu bir durak yoktu, yani bir kez
+     elle sectikten sonra telefonun diline donmenin YOLU YOKTU. */
+  K('OTOMATIK telefonun diline geri donuyor',
+     trd.oto.dil === 'tr' && trd.oto.baslik === 'SESLER' && trd.oto.kayitli === null,
+     'secim silindi, cihaz dili (tr) geri geldi');
+  /* Bes dilde tek bir onbellek anahtari bir dilin sozlugunu
+     otekinin uzerine yazardi: anahtar dili tasiyor. */
+  K('Sozluk onbellegi dile gore ayri',
+     trd.oto.onbellek.length > 1
+     && trd.oto.onbellek.every(k => /^orbitape\.dil\.(tr|es|de|fr)$/.test(k)),
+     trd.oto.onbellek.join(', '));
   }
 
   await b.close();

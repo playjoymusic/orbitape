@@ -2736,9 +2736,123 @@
      capraz bandi diskin ve tuslarin ONUNDEN geciyordu. Desen bir
      MALZEME ozelligi -- kagidin dokusu neredeyse orada, ustunde
      degil. z-index 0 ile butun icerigin arkasina gecti. */
+  /* ── ISIK: YENI BIR KATMAN DEGIL, AYNI KATMANIN IKINCI ZEMINI ──
+     Yasayan deriler (gun isigi, nefes) icin bir perde gerekiyordu.
+     Ayri bir eleman ya da ::before EKLENMEDI: ::before ile ::after
+     ayni yigin icinde ve boyama sirasi ::before'u ALTA koyuyor --
+     yani resim isigin ustune biner, tam tersi lazim. Yeni bir
+     z-index ise diskin ve tuslarin siralamasini yeniden acardi.
+     CSS'in kendi coklu arka plan listesi bu iki soruyu da sormadan
+     cozuyor: listedeki ILK katman en ustte. Isik once, resim sonra.
+     Degiskenin adi '--d-perde': '--d-isik' ZATEN VAR ve kabartmanin
+     ust kenarindaki parlak cizgiyi tasiyor. Ayni adi kullanmak o
+     123 derinin kabartmasini bir gradyanla degistirirdi.
+     '--d-perde' tanimli degilse 'none' geliyor, yani mevcut 123
+     derinin hicbirinde tek bir piksel degismiyor.
+     Olcu listesi ikili: birincisi isigin (auto), ikincisi resmin. */
   body.deri::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-    background:var(--d-doku,none);background-size:var(--d-doku-olcu,auto);
+    background:var(--d-perde,none),var(--d-doku,none);
+    background-size:auto,var(--d-doku-olcu,auto);
+    background-repeat:no-repeat,repeat;
     opacity:var(--d-doku-sef,0);}
+  /* ── NEFES: TEK DEGISKEN, KARE BASINA TEK YAZMA ───────────────
+     Gorsellestirici degil ZEMININ KENDISI sese gore soluklanan
+     aile. Maliyet kritik: uygulama zaten bir kare dongusu
+     calistiriyor ve orada yumusatilmis bir ritim var (_ritYum).
+     Yeni dongu ACILMADI; o dongu yalnizca '--d-nabiz' adinda tek
+     bir sayiyi yaziyor ve geri kalan her sey CSS'te calc ile
+     cozuluyor. Kare basina bir degisken yazmak, kare basina bir
+     gradyan dizgisi kurmaktan kat kat ucuz -- ve yazma yalnizca
+     nefes derisi acikken oluyor (bkz. _nabizYaz). */
+  /* ── GORSELDE SAAT: DIJITAL, INCE, GENIS ────────────────────
+     Gorsel tam ekran akiyor; saat onun ONUNE degil ICINE oturmali.
+     Uc karar:
+       · INCE ve BUYUK. Kalin bir yazi gorseli keser; ince bir yazi
+         buyuk olsa bile uzerine biner, altindan gecmez.
+       · GENIS ARALIK. Rakamlar arasi 0,18em: saat bir SAYI degil
+         bir yuzey gibi okunuyor, yani gorselin parcasi oluyor.
+       · SANIYE YOK. Saniye goz cekiyor ve gorselin isi zaten goz
+         cekmek -- ikisi birbiriyle yarisirdi. Dakika yeter.
+     Rakamlar tabular: 1'den 2'ye gecerken satir kaymiyor.
+     Renk sabit beyaz DEGIL: gorselin kendi vurgusundan geliyor,
+     yani her gorselde ayni aileye ait duruyor. */
+  #gorselSaat{position:fixed;z-index:2;left:0;right:0;
+    top:calc(50% - 0.62em);text-align:center;pointer-events:none;
+    font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:clamp(46px,13.5vw,104px);line-height:1;font-weight:400;
+    /* Aralik 0,18 -> 0,30em: rakamlar birbirinden ayrilinca saat bir
+       SAYI olmaktan cikip bir yuzey gibi duruyor. Ayni boyutta
+       daha genis bir iz birakiyor ama daha az yer kapliyor gibi
+       okunuyor -- gorselin onune gecmiyor. */
+    letter-spacing:.30em;text-indent:.30em;
+    font-variant-numeric:tabular-nums;
+    color:var(--gs-renk,rgba(255,255,255,.82));
+    text-shadow:0 0 26px rgba(0,0,0,.5);
+    opacity:0;transition:opacity .5s ease;}
+  /* Yalnizca gorsel acikken ve ayar aciksa. Iki kapi da CSS'te:
+     JS bir sinif koyuyor, gorunurlugun kurali burada duruyor. */
+  body.gorsel-acik.gorsel-saat #gorselSaat{opacity:1;}
+  /* Tarih satiri: saatin altinda, cok kucuk ve cok genis. Saati
+     okuyan goz zaten orada; tarih onu aramayan icin var, o yuzden
+     sonuk. Buyuk harf ve kisa -- uzun bir tarih bicimi bu genislikte
+     satiri ikiye bolerdi. */
+  /* BOSLUK COCUGUN KENDI em'INDE: font-size .155em yazildigi an
+     'margin-top:.42em' artik saatin degil TARIHIN puntosuna gore
+     olculuyor, yani neredeyse sifir -- ilk denemede tarih saatin
+     uzerine bindi (goruldu). 2.6em burada ~0,40 saat em'i ediyor. */
+  #gorselSaat .gs-tarih{display:block;margin-top:2.6em;
+    font-size:.155em;letter-spacing:.50em;text-indent:.50em;
+    opacity:.42;font-weight:400;}
+  /* ── GUN SAATI: DONGUNUN GORUNEN YUZU ────────────────────────
+     Gun dongusu acikken carkin hemen ustunde duran kucuk saat.
+     Isi sussuz: dongunun ACIK oldugunu ve simdi gunun neresinde
+     oldugumuzu soyluyor -- zeminin isigi degisirken "neden" sorusu
+     cevapsiz kalmasin diye.
+     YERI OLCUYE BAGLI DEGIL: ekranin ortasinda, carkin tepesinin
+     biraz ustunde. Sag alt ceyrege (kunye) ve sol alt kosaya
+     (tuslar) dokunmuyor; ust seritte de marka yazisi var, o yuzden
+     ikisinin arasindaki bos bantta duruyor.
+     RENGI PERDEDEN: gunes sicakken sicak, gece soguk. Yani saat de
+     dongunun bir parcasi, uzerine yapistirilmis bir rakam degil. */
+  #gunSaat{position:fixed;z-index:6;left:0;right:0;
+    top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 96px);
+    text-align:center;pointer-events:auto;cursor:pointer;
+    font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:0.78rem;letter-spacing:.34em;text-indent:.34em;
+    font-variant-numeric:tabular-nums;
+    color:var(--gd-renk,rgba(255,235,205,.72));
+    -webkit-tap-highlight-color:transparent;
+    opacity:0;transition:opacity .45s ease;}
+  /* DERI SARTI: perde 'body.deri::after' katmaninda yasiyor, yani
+     deri kapaliyken gosterecek bir yuzey yok. Saatin orada durmasi
+     calismayan bir anahtari gostermek olurdu. */
+  body.deri.gunisigi #gunSaat{opacity:1;}
+  body:not(.deri) #gunSaat,body:not(.gunisigi) #gunSaat{pointer-events:none;}
+  /* Saatin altinda gunun nerede oldugunu gosteren ince bir cizgi:
+     sol uc safak, sag uc aksam, isaret simdi. Bir satir yazi yerine
+     bir OLCEK -- okumaya gerek yok, bakinca anlasiliyor. */
+  #gunSaat .gd-yol{display:block;width:92px;height:1px;margin:7px auto 0;
+    background:linear-gradient(90deg,
+      rgba(255,235,205,.10) 0%, rgba(255,235,205,.34) 50%, rgba(255,235,205,.10) 100%);
+    position:relative;}
+  #gunSaat .gd-yol b{position:absolute;top:-2px;width:5px;height:5px;
+    border-radius:50%;background:var(--gd-renk,rgba(255,235,205,.9));
+    left:calc(var(--gd-yer,50%) - 2.5px);
+    box-shadow:0 0 8px var(--gd-renk,rgba(255,235,205,.8));}
+  body.deri.nefes{
+    --d-perde:radial-gradient(118% 86% at 50% calc(54% - var(--d-nabiz,0)*13%),
+      rgba(255,255,255,calc(.026 + var(--d-nabiz,0)*.225)) 0%,
+      rgba(255,255,255,calc(.010 + var(--d-nabiz,0)*.085)) 34%,
+      rgba(0,0,0,0) 62%);}
+  /* Ses yokken nabiz sifira iniyor ve perde neredeyse kayboluyor:
+     duran bir radyoda hicbir sey kipirdamiyor -- "canli" olan sey
+     sesin kendisi, animasyon degil. */
+  body.deri.nefes.durgun{--d-nabiz:0;}
+  /* ── GUN ISIGI: KARE BASINA HIC MALIYET YOK ───────────────────
+     Perdenin tamami JS'te bir dizgi olarak kuruluyor ve DEGISKENE
+     yaziliyor; yeniden kurulmasi yalnizca deri uygulanirken ve
+     bes dakikada bir. Yani bu ailenin surekli bir bedeli YOK.
+     Degisken tanimli degilse 'none'. */
   /* ── DERININ ULASMASI GEREKEN GERI KALAN YERLER ───────────────
      Ilk surumde yalnizca zemin, dort tus ve marka deriden geliyordu.
      Ekran goruntusunde uc sey siritti ve ucu de haklı bir sikayet:
@@ -3191,6 +3305,31 @@
     margin:9px 0 2px;max-height:132px;overflow-y:auto;overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;}
   #temaIzgara[hidden]{display:none;}
+  /* ── DIL LISTESI ──────────────────────────────────────────────
+     Renk kutusu degil YAZI listesi: bir dili tanitan sey adinin
+     kendi yazilisi. Satirlar panelin kendi satir dilinde (ayni
+     punto, ayni harf araligi); secili olanin solunda ince bir
+     cubuk ve sagda bir tik var -- renk tek basina erisilebilir bir
+     bilgi degil. */
+  #dilListe{display:flex;flex-direction:column;gap:2px;margin:7px 0 2px;}
+  #dilListe[hidden]{display:none;}
+  #dilListe .dl{display:flex;align-items:center;justify-content:space-between;
+    gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
+    border:1px solid transparent;background:rgba(255,255,255,.04);
+    font-size:.72rem;letter-spacing:.12em;color:#cfd6dc;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .18s ease, border-color .18s ease;}
+  #dilListe .dl:hover{background:rgba(255,255,255,.09);}
+  #dilListe .dl .oto-alt{opacity:.55;letter-spacing:.08em;}
+  #dilListe .dl.secili{border-color:rgba(255,255,255,.45);
+    background:rgba(255,255,255,.10);color:#fff;}
+  #dilListe .dl .tik{opacity:0;}
+  #dilListe .dl.secili .tik{opacity:1;}
+  #dilListe .dl:focus-visible{outline:1px solid #fff;outline-offset:2px;}
+  body.deri #dilListe .dl{background:var(--d-tus-zem, rgba(255,255,255,.04));
+    color:var(--d-yazi2, var(--d-yazi)) !important;}
+  body.deri #dilListe .dl.secili{border-color:var(--d-halka) !important;
+    color:var(--d-yazi) !important;}
   /* ── hidden GERCEKTEN GIZLESIN ────────────────────────────────
      Tarayicinin kendi kurali [hidden]{display:none} zayif kaliyor:
      yukaridaki '#ayar .sat{display:flex}' ondan daha ozgul, yani
@@ -3979,6 +4118,15 @@
          siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
       <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── GORSELDE SAAT ─────────────────────────────────────────
+         VISUALS tam ekran ve ekranin geri kalani soner: o sirada
+         saate bakmanin yolu telefonu kilitleyip acmaktan geciyordu.
+         Saat yalnizca VISUALS ACIKKEN goruluyor; normal ekranda
+         hicbir sey degismiyor, yani kalabaligi artirmiyor.
+         Varsayilan KAPALI: gorseli acan kisi ekranda bir sey
+         GORMEK istiyor, once onu gostermek dogru. -->
+    <div class="sat" data-ayar="gorselSaat" role="switch" tabindex="-1">
+      <span>CLOCK IN VISUALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat islem" data-ayar="yildiz" role="button" tabindex="-1">
       <span>STARS</span><span class="durum">NORMAL</span></div>
     <!-- Parlaklik YOGUNLUKTAN AYRI: kalabalik ama silik bir gokyuzu
@@ -4049,8 +4197,24 @@
          Sagdaki deger her zaman KENDI dilinde yaziyor (ENGLISH /
          TURKCE): "Language: Ingilizce" gibi bir satir, dili
          bilmeyen icin okunmaz olurdu. -->
-    <div class="sat islem" data-ayar="dil" role="button" tabindex="-1">
-      <span>LANGUAGE</span><span class="durum">ENGLISH</span></div>
+    <!-- ── BES DIL: DONGU DEGIL LISTE (12 Eylul) ──────────────────
+         Satir iki dil arasinda donuyordu ve iki dilde bu dogruydu:
+         tek dokunus, tek karsilik. Bes dilde donguyle Fransizcaya
+         gecmek dort dokunus ve arada uc kez ekranin tamamen
+         anlamadigin bir dile gecmesi demek -- kullanici nerede
+         oldugunu kaybediyor. Liste hepsini AYNI ANDA gosteriyor:
+         bir dokunus, ve hangi dillerin oldugu da goruluyor.
+         Tema satiri da boyle calisiyor (bkz. #temaIzgara); yeni bir
+         kalip degil, olanin aynisi.
+         OTOMATIK GERI GELDI: eski dongude ucuncu bir durak yoktu ve
+         hakliydi -- dongude "otomatik"in ne gosterecegi yazmiyordu.
+         Listede yaziyor (yaninda hangi dile dustugu duruyor) ve
+         gerekli: bir kez elle sectikten sonra telefonun diline
+         donmenin baska yolu yoktu. -->
+    <div class="sat islem" data-ayar="dil" role="button" tabindex="-1"
+         aria-expanded="false" aria-controls="dilListe">
+      <span>LANGUAGE</span><span class="durum" data-dil-atla>ENGLISH</span></div>
+    <div id="dilListe" role="listbox" aria-label="Language" hidden></div>
     <!-- ── SORUN BILDIR ────────────────────────────────────────────
          Hata paneli yalnizca BETIK HATASINDA cikiyor. Yasanan
          seylerin cogu betik hatasi degil: "calmiyor", "sesi cok
@@ -5774,6 +5938,30 @@
     {ad:"TROMOKOLO", zem:"#1c3450", yazi:"#f2e6cc", marka:"#f2a45c", cek:"#28425e", font:F2, kose:"50%", cizim:"tromoA"},
     {ad:"EKO", zem:"#140c1c", yazi:"#f4ecf8", marka:"#f0407c", cek:"#221830", font:F3, kose:"50%", cizim:"ekoA"},
     {ad:"ANİŞ", zem:"#e8eadc", yazi:"#2e3826", marka:"#b03c64", cek:"#d6d9c6", font:F2, kose:"50%", cizim:"anisA"},
+    /* ── YASAYAN DERILER (12 Eylul) ─────────────────────────────
+       Ilk sekizi DURAGAN OLMAYAN aile: goruntuyu bir resim degil
+       bir KURAL uretiyor. 'kip' alani hangi kural oldugunu
+       soyluyor; alan yoksa hicbir sey degismiyor, yani yukaridaki
+       123 deri bu satirlardan etkilenmiyor.
+         kip:"gun"   -> derinin bir gunesi var, gun boyunca yuruyor
+         kip:"nefes" -> zemin sesin ritmiyle soluklaniyor
+       Ucuncu aile (aciklik, sizinti) kipsiz: karari zeminin kendisi
+       veriyor, yani hicbir sey olcmuyor ve hicbir sey maliyeti yok.
+       EKRANA OGE EKLENMIYOR: degisen tek sey zeminin isigi.
+
+       GUN DONGUSU BURADA DEGIL. Ilk denemede uc ayri gun derisi
+       vardi (AZIMUTH, GOLDEN HOUR, BLUE HOUR) ve kullanicinin
+       karari onlari kaldirdi: gun isigi bir DERI degil bir MOOD --
+       menude uc satir daha acmak yerine, hangi deri secili olursa
+       olsun onun uzerine binen tek bir anahtar. Anahtar skins
+       seridinde (bkz. deri_galeri.js) ve acikken carkin yaninda
+       bir saat beliriyor. Boylece hem menu buyumuyor hem de gun
+       dongusu 128 derinin HEPSINDE calisiyor -- ucunde degil. */
+    {ad:"PULSE",       zem:"#0e0f14", yazi:"#eef1f6", marka:"#4de0d0", cek:"#171a22", font:F3, kose:"50%", cizim:"nabiz",     kip:"nefes"},
+    {ad:"TREMOR",      zem:"#12100e", yazi:"#f2e6d6", marka:"#e07a4c", cek:"#1c1916", font:F3, kose:"0px", cizim:"titre",     kip:"nefes"},
+    {ad:"BREATH",      zem:"#0c1412", yazi:"#e2efe8", marka:"#6fd8b0", cek:"#141e1b", font:F2, kose:"50%", cizim:"soluk",     kip:"nefes"},
+    {ad:"APERTURE",    zem:"#07080b", yazi:"#eceff4", marka:"#c8cede", cek:"#0d0f14", font:F2, kose:"50%", cizim:"aciklik"},
+    {ad:"LEAK",        zem:"#0a0a0c", yazi:"#f4ece0", marka:"#f0b464", cek:"#121216", font:F2, kose:"50%", cizim:"sizinti"},
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* ── EKRANDAKI SIRA (tablonun sirasi DEGIL) ──────────────────────
@@ -6331,6 +6519,144 @@
       _cubukZaman.push(setTimeout(yaz, 420));
     }catch(e){ _yut(e); }
   }
+  /* ══ GUN SAATI: DONGUNUN ACIP KAPAYAN YUZU ══════════════════════
+     Gun dongusu bir DERI degil bir MOOD: hangi deri secili olursa
+     olsun onun uzerine biniyor. Bu saat onun gorunen yuzu --
+     acikken carkin ustunde duruyor, ustune basinca dongu kapaniyor.
+     Acmak skins seridindeki SUN anahtarindan (bkz. deri_galeri.js);
+     kapatmak hem oradan hem buradan. */
+  var _gdDugum = null, _gdZaman = 0, _gdSon = '';
+  function gunSaatYaz(){
+    try{
+      if(!_gdDugum || !AYAR.gunDongusu) return;
+      const t = new Date();
+      const yeni = String(t.getHours()).padStart(2,'0') + ':'
+                 + String(t.getMinutes()).padStart(2,'0');
+      const f = (t.getHours()*60 + t.getMinutes()) / 1440;
+      /* Isaret gunun neresinde oldugumuzu gosteriyor: sol uc gece
+         yarisi, orta ogle, sag uc yine gece yarisi. */
+      _gdDugum.style.setProperty('--gd-yer', (f*100).toFixed(1) + '%');
+      if(yeni !== _gdSon){ _gdSon = yeni; _gdDugum.firstChild.nodeValue = yeni; }
+    }catch(e){ _yut(e); }
+  }
+  function gunSaatKur(){
+    try{
+      clearInterval(_gdZaman); _gdZaman = 0;
+      if(!AYAR.gunDongusu) return;
+      if(!_gdDugum){
+        const e = document.createElement('div');
+        e.id = 'gunSaat'; e.setAttribute('role','button'); e.setAttribute('tabindex','0');
+        e.setAttribute('aria-label','Day cycle');
+        e.appendChild(document.createTextNode('--:--'));
+        const y = document.createElement('span'); y.className = 'gd-yol';
+        y.appendChild(document.createElement('b'));
+        e.appendChild(y);
+        const bas = (ev)=>{ ev.preventDefault(); ev.stopPropagation(); gunDongusuAc(false); };
+        e.addEventListener('click', bas);
+        e.addEventListener('pointerdown', ev=>ev.stopPropagation());
+        e.addEventListener('keydown', ev=>{
+          if(ev.key === ' ' || ev.key === 'Enter') bas(ev); });
+        document.body.appendChild(e);
+        _gdDugum = e;
+      }
+      _gdSon = ''; gunSaatYaz();
+      _gdZaman = setInterval(gunSaatYaz, 20000);
+    }catch(e){ _yut(e); }
+  }
+  /* Tek kapi: serit anahtari da, saatin kendisi de buradan geciyor. */
+  function gunDongusuAc(v){
+    try{
+      AYAR.gunDongusu = !!v;
+      ayarKaydet();
+      document.body.classList.toggle('gunisigi', !!v);
+      if(v){ gunPerdesiYaz(); }
+      else { document.documentElement.style.removeProperty('--d-perde'); }
+      gunNobetiKur(); gunSaatKur();
+      try{ if(window['deriSeritTazele']) window['deriSeritTazele'](); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  try{ window['gunDongusuAc'] = gunDongusuAc; }catch(e){ _yut(e); }
+
+  /* ══ GORSELDE SAAT ══════════════════════════════════════════════
+     Dugum bir kez kuruluyor ve gorsel kapaliyken EKRANDA DURMUYOR
+     (CSS opacity 0 + gorsel-acik kapisi). Yazma dakikada bir:
+     saniye gosterilmiyor, yani daha sik yazmanin karsiligi yok --
+     ve gorsel tam ekran akarken her saniye bir DOM yazmasi bosuna
+     is olurdu. */
+  var _gsDugum = null, _gsZaman = 0, _gsSon = '';
+  function gorselSaatYaz(){
+    try{
+      if(!AYAR.gorselSaat) return;
+      const t = new Date();
+      /* 24 saat: uygulamanin kendi saat paneli de oyle ve AM/PM
+         genis aralikli bir yuzeyde fazladan iki harf demek. */
+      const ss = String(t.getHours()).padStart(2,'0');
+      const dd = String(t.getMinutes()).padStart(2,'0');
+      const yeni = ss + ':' + dd;
+      if(yeni === _gsSon) return;            /* ayni dakika: DOM'a dokunulmuyor */
+      _gsSon = yeni;
+      if(!_gsDugum) return;
+      _gsDugum.firstChild.nodeValue = yeni;
+      /* Tarih CIHAZIN dilinde: uygulamanin arayuz dili Ingilizce
+         olsa bile telefonun tarih bicimi kullaniciya tanidik olan.
+         Yil YOK -- ekranda yili merak eden kimse yok. */
+      try{
+        const tr = _gsDugum.querySelector('.gs-tarih');
+        if(tr) tr.textContent = t.toLocaleDateString(undefined,
+          { weekday:'short', day:'numeric', month:'short' }).toUpperCase();
+      }catch(e2){ _yut(e2); }
+    }catch(e){ _yut(e); }
+  }
+  function gorselSaatKur(){
+    try{
+      const acik = !!AYAR.gorselSaat;
+      document.body.classList.toggle('gorsel-saat', acik);
+      clearInterval(_gsZaman); _gsZaman = 0;
+      if(!acik){ return; }
+      if(!_gsDugum){
+        const e = document.createElement('div');
+        e.id = 'gorselSaat';
+        e.setAttribute('aria-hidden','true');   /* ekran okuyucu icin saat zaten sistemde */
+        e.appendChild(document.createTextNode('--:--'));
+        const tr = document.createElement('span'); tr.className = 'gs-tarih';
+        e.appendChild(tr);
+        document.body.appendChild(e);
+        _gsDugum = e;
+      }
+      _gsSon = ''; gorselSaatYaz();
+      /* Yirmi saniyede bir yoklaniyor: dakikanin donmesini en gec
+         yirmi saniye sonra gorur. Dakika basina tam denk getirmeye
+         calismak (bir sonraki dakikaya kadar bekle) uyku/uyanma
+         sonrasi kayiyor; ucuz yoklama daha saglam. */
+      _gsZaman = setInterval(gorselSaatYaz, 20000);
+    }catch(e){ _yut(e); }
+  }
+  try{ window['gorselSaatKur'] = gorselSaatKur; }catch(e){ _yut(e); }
+
+  /* ══ YASAYAN DERILER: DUZENEK ISTEK UZERINE INIYOR ══════════════
+     Gun isigi ve nefes kurallarinin kodu BU DOSYADA DEGIL,
+     deri_cizim.js'te. Sebebi olculdu: burada dururken ilk boyamaya
+     inen dosya 106,24 KB oldu ve tavan 106 idi. Tavani yukseltmek
+     yerine dogrusu yapildi -- bu satirlar yalnizca yasayan bir deri
+     SECILINCE lazim, yani acilista inmelerinin hicbir karsiligi
+     yok. Yasayan derilerin hepsi zaten cizimli, yani o deri
+     secildiginde deri_cizim.js kesin iniyor.
+     Burada kalan tek sey KOPRU: modul gelmediyse cagrilar sessizce
+     duser ve deri duragan bir deri gibi davranir -- eksik isik
+     olur, bozuk ekran olmaz. */
+  function gunPerdesiYaz(){
+    try{ if(window['gunPerdesiYaz2']) window['gunPerdesiYaz2'](); }catch(e){ _yut(e); }
+  }
+  function gunNobetiKur(){
+    try{ if(window['gunNobetiKur2']) window['gunNobetiKur2'](); }catch(e){ _yut(e); }
+  }
+  function yasayanSifirla(){
+    try{
+      const k = document.documentElement.style;
+      k.removeProperty('--d-perde'); k.removeProperty('--d-nabiz');
+      if(window['_nabizSifirla']) window['_nabizSifirla']();
+    }catch(e){ _yut(e); }
+  }
   function deriUygula(){
     try{
       const k = document.documentElement.style;
@@ -6340,6 +6666,14 @@
         document.body.classList.remove('halkaresim');
         document.body.classList.remove('luks');
         document.body.classList.remove('sadehalka');
+        /* Yasayan deri kipleri de duser: deri kapaninca ekranda
+           bir gunes ya da bir nabiz asili kalmamali. Nobet de
+           duruyor, yoksa kimsenin gormedigi bir perde bes dakikada
+           bir yeniden kuruluyor olurdu. */
+        document.body.classList.remove('gunisigi');
+        document.body.classList.remove('nefes');
+        gunNobetiKur();            /* sinif dustu -> nobet de duruyor */
+        yasayanSifirla();
         /* Deri kapaniyor: html'in zeminini ve durum cubugu rengini
            uygulamanin kendi degerlerine birak. */
         try{ document.documentElement.style.backgroundColor = '';
@@ -6525,6 +6859,28 @@
           /* Kip anahtari kendi kabartmasini tasiyor (--d-golge'den
              beslenmiyor): sinif onu da ayni karara bagliyor. */
           document.body.classList.toggle('duztus', !!_duzTus);
+        }catch(e){ _yut(e); }
+        /* ── YASAYAN DERI KIPI ────────────────────────────────────
+           Deri satirindaki 'kip' alani hangi kuralin calisacagini
+           soyluyor. Alan yoksa hicbir sey degismiyor: 123 derinin
+           tamami bu satirlarin disinda kaliyor. */
+        try{
+          const _kip = d.kip || '';
+          /* GUN DONGUSU DERIDEN GELMIYOR: bir mood, yani hangi deri
+             secili olursa olsun ayni anahtara bakiyor. Nefes ise
+             derinin kendi ozelligi -- o zemin o hareket icin
+             cizildi, baska bir derinin uzerinde anlami yok. */
+          document.body.classList.toggle('gunisigi', !!AYAR.gunDongusu);
+          document.body.classList.toggle('nefes',    _kip === 'nefes');
+          /* Perde ve nabiz yalnizca yasayan derilerde var;
+             digerlerinde DUSUYOR, yoksa bir onceki derinin isigi
+             yeni derinin uzerinde asili kalirdi. */
+          if(!AYAR.gunDongusu) document.documentElement.style.removeProperty('--d-perde');
+          if(_kip !== 'nefes'){ document.documentElement.style.removeProperty('--d-nabiz');
+                                try{ if(window['_nabizSifirla']) window['_nabizSifirla'](); }catch(e){ _yut(e); } }
+          if(AYAR.gunDongusu) gunPerdesiYaz();
+          gunNobetiKur();
+          gunSaatKur();
         }catch(e){ _yut(e); }
         const _hal = (d.cizim && typeof deriHalkaAdresi === 'function')
                    ? deriHalkaAdresi(d) : '';
@@ -10205,7 +10561,7 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:false, gunDongusu:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -10256,6 +10612,11 @@
          acilsin, tam tersi olsun."
          Yani kapatmak bir tercih; acmak varsayilan. */
       if(_a.karanlik === false) AYAR.karanlik = false;
+      /* Gorselde saat: varsayilan KAPALI, yani yalnizca ACILMIS
+         olmasi hatirlaniyor. */
+      if(_a.gorselSaat === true) AYAR.gorselSaat = true;
+      /* Gun dongusu: varsayilan KAPALI. */
+      if(_a.gunDongusu === true) AYAR.gunDongusu = true;
       /* SINIR 36'YDI VE BU BIR HATAYDI. Otuz deri varken yazilmisti,
          seri altmisa cikinca guncellenmedi: 37..60 arasindaki bir
          deri secilip uygulama kapatilinca deger DOGRULAMADAN
@@ -10266,7 +10627,7 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 123) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 128) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
@@ -10338,7 +10699,10 @@
       if(_a.olcum === true) AYAR.olcum = true;
       /* Yalnizca bilinen iki deger geri aliniyor: depodan bozuk bir
          deger gelirse cihazin dili gecerli kalsin. */
-      if(_a.dil === 'tr' || _a.dil === 'en') AYAR.dil = _a.dil;
+      /* Bes dil: tek tek saymak yerine listeye soruluyor. Tanimsiz
+         ya da artik desteklenmeyen bir kod DUSUYOR ve otomatik
+         secim geri geliyor -- bozuk depo yuzunden bos ekran yok. */
+      if(_dilVar(_a.dil)) AYAR.dil = _a.dil;
     }
   }catch(e){ _yut(e); }
   /* ── DUNYA ILK CIZIMDEN ONCE KURULUYOR ───────────────────────────
@@ -10391,23 +10755,73 @@
      taramak istasyon ve sarki adlarina dokunma riskiydi. */
   var SOZLUK = {};
   var DIL = 'en';
+  /* ── ONBELLEK ANAHTARI DILE GORE ────────────────────────────────
+     Tek bir 'orbitape.dil' anahtari vardi ve iki dil varken sorun
+     degildi. Bes dilde ayni anahtar bir dilin sozlugunu otekinin
+     uzerine yazar: kullanici Almancaya gecer, onbellekten Ispanyolca
+     doner ve ag gelene kadar ekran karisik kalir. Anahtar artik
+     dili tasiyor. Eski tekil anahtar acilista bir kez siliniyor. */
   var DIL_ONBELLEK = 'orbitape.dil';
+  /* ── DESTEKLENEN DILLER ─────────────────────────────────────────
+     Sira EKRANDAKI sira. Ad HER ZAMAN kendi dilinde yaziyor:
+     "Dil: Almanca" gibi bir satir, Almanca okuyan icin okunmaz
+     olurdu -- bir kullanici kendi dilini yalnizca kendi yazilisiyla
+     taniyor. Ingilizce sozluk YOK: anahtarlarin kendisi Ingilizce,
+     yani 'en' hicbir dosya indirmiyor.
+     Kod ISO 639-1; eslesme navigator.language'in ONEKINE bakiyor
+     ('de-AT', 'es-419', 'fr-CA' hepsi tutuyor). */
+  const DILLER = [
+    { k:'en', ad:'ENGLISH'  },
+    { k:'tr', ad:'TÜRKÇE'   },
+    { k:'es', ad:'ESPAÑOL'  },
+    { k:'de', ad:'DEUTSCH'  },
+    { k:'fr', ad:'FRANÇAIS' }
+  ];
+  function _dilVar(k){
+    try{ return DILLER.some(d => d.k === k); }catch(e){ return false; }
+  }
+  function _dilAd(k){
+    try{ const d = DILLER.find(x => x.k === k); return d ? d.ad : 'ENGLISH'; }
+    catch(e){ return 'ENGLISH'; }
+  }
   /* Kaplar KUTULARIN KENDISI degil, satirlarin tamami: SKIP dugmesi
      kutunun kardesi, icinde degil. Once '#turKutu' yazilmisti ve
      SKIP Ingilizce kalmisti. */
   const DIL_ALAN = ['#ayar', '#agyok', '#hata', '#turAlt', '#fxAlt', '#fxEl', '#fotoOnizle'];
+  /* Kullanici bir dil SECTIYSE o; secmediyse telefonun dili.
+     Telefonun dili listede yoksa Ingilizce. */
   function dilSec(){
     try{
-      if(AYAR.dil === 'tr' || AYAR.dil === 'en') return AYAR.dil;
-      const d = String((navigator.languages && navigator.languages[0])
-                       || navigator.language || 'en').toLowerCase();
-      return d.indexOf('tr') === 0 ? 'tr' : 'en';
+      if(_dilVar(AYAR.dil)) return AYAR.dil;
+      return dilOtomatik();
+    }catch(e){ return 'en'; }
+  }
+  /* AYRI BIR ISLEV: "otomatik" ne secerdi sorusunun cevabi, secim
+     yapilmisken de lazim -- dil listesindeki OTOMATIK satiri hangi
+     dile duseceni yaninda yaziyor (bkz. dilListeYaz). */
+  function dilOtomatik(){
+    try{
+      const diller = (navigator.languages && navigator.languages.length)
+                   ? navigator.languages : [navigator.language || 'en'];
+      for(const ham of diller){
+        /* ONEK eslesmesi: 'de-AT', 'es-419', 'fr-CA', 'tr-CY'.
+           Tam eslesme arayan bir kural bu kullanicilari Ingilizceye
+           dusururdu ve telefonu Almanca olan biri icin uygulama
+           "dil destegi yok" gibi gorunurdu. */
+        const kod = String(ham || '').toLowerCase().split('-')[0];
+        if(_dilVar(kod)) return kod;
+      }
+      return 'en';
     }catch(e){ return 'en'; }
   }
   /* Tek gecis noktasi. Sozlukte yoksa gelen metin oldugu gibi
      donuyor -- eksik ceviri gorunur, bos ekran olmaz. */
+  /* Kosul artik "dil Turkce mi" degil "sozlukte karsiligi var mi":
+     bes dille birlikte dil adini sormak her yeni dilde bu satiri da
+     degistirmek demekti. Ingilizcede SOZLUK bos kaliyor, yani metin
+     oldugu gibi donuyor. */
   function Y(s){
-    try{ return (DIL === 'tr' && SOZLUK[s]) ? SOZLUK[s] : s; }catch(e){ return s; }
+    try{ return SOZLUK[s] || s; }catch(e){ return s; }
   }
   /* Iki satirlik metinler: <br> ile ayrilan her cumle AYRI anahtar.
      Sozlukte ekranda gorunen cumleler duruyor; bir cumle degisince
@@ -10431,6 +10845,21 @@
       for(const d of dugumler){
         const ham = d.nodeValue, t = ham.trim();
         if(!t) continue;
+        /* ── CEVRILMEYECEK ALTAGAClar ────────────────────────────
+           Bir dilin ADI kendi yazilisiyla durmali: Fransizca acilan
+           ekranda "ENGLISH" satiri "ANGLAIS" olsaydi, Ingilizce
+           arayan biri kendi dilini bulamazdi. Ayrica bu dugumlerin
+           metni JS'ten yeniden yaziliyor ve tarayici ILK gordugu
+           degeri "asil" diye saklar: sonraki gecis onu geri
+           koyardi. Iki sebep de ayni kurala cikiyor -- isaretli
+           alan taranmiyor. */
+        /* Bos catch YOK: yutulan her hata _yut'tan geciyor ve
+           sayiliyor (bkz. 'Yutulan hatalar sayiliyor'). Sessiz bir
+           catch, korlugun ta kendisi. */
+        let atla = false;
+        try{ atla = !!(d.parentElement && d.parentElement.closest('[data-dil-atla]')); }
+        catch(e2){ _yut(e2); }
+        if(atla) continue;
         if(!_dilAsil.has(d)) _dilAsil.set(d, t);
         const hedef = Y(_dilAsil.get(d));
         if(t !== hedef) d.nodeValue = ham.replace(t, hedef);
@@ -10468,22 +10897,37 @@
   function dilYukle(){
     try{
       DIL = dilSec();
-      if(DIL !== 'tr'){ SOZLUK = {}; dilUygula(); return; }
-      /* Once onbellek: ikinci acilista beklemeden Turkce geliyor. */
+      /* Ingilizce sozluk yok: anahtarlarin kendisi Ingilizce. */
+      if(DIL === 'en'){ SOZLUK = {}; dilUygula(); return; }
+      const anahtar = DIL_ONBELLEK + '.' + DIL;
+      /* Once onbellek: ikinci acilista beklemeden kendi dili geliyor. */
       try{
-        const c = localStorage.getItem(DIL_ONBELLEK);
+        const c = localStorage.getItem(anahtar);
         if(c){ const t = JSON.parse(c); if(t && typeof t === 'object'){ SOZLUK = t; dilUygula(); } }
       }catch(e){ _yut(e); }
-      fetch('dil/tr.json')
+      /* Onbellek yoksa once TEMIZLENIYOR: bir onceki dilin sozlugu
+         ekranda asili kalmasin. Ag gelene kadar Ingilizce duruyor --
+         karisik degil, eksik. */
+      if(!SOZLUK || !Object.keys(SOZLUK).length){ SOZLUK = {}; dilUygula(); }
+      const isteyen = DIL;      /* yaris: kullanici beklerken dili degistirebilir */
+      fetch('dil/' + DIL + '.json')
         .then(r => r.ok ? r.json() : null)
         .then(t => {
           if(!t || typeof t !== 'object') return;
+          /* Gec gelen cevap YENI secimi ezmesin: iki dil arasinda
+             hizli gidip gelince yavas olan cevap sonra donuyor ve
+             ekrani geri aliyordu. */
+          if(isteyen !== DIL) return;
           SOZLUK = t; dilUygula();
-          try{ localStorage.setItem(DIL_ONBELLEK, JSON.stringify(t)); }catch(e){ _yut(e); }
+          try{ localStorage.setItem(anahtar, JSON.stringify(t)); }catch(e){ _yut(e); }
         })
         .catch(e => _yut(e));   /* Dosya gelmezse Ingilizce kaliyor. */
     }catch(e){ _yut(e); }
   }
+  /* Eski tekil onbellek anahtari (Turkce sozluk) bir kez temizleniyor:
+     yeni surumde hicbir yerden okunmuyor, yerinde durursa bos yere
+     depo tutar. */
+  try{ localStorage.removeItem(DIL_ONBELLEK); }catch(e){ _yut(e); }
   try{ dilYukle(); }catch(e){ _yut(e); }
 
   /* ── SOUND BANKS KIPINI KUR / KALDIR ─────────────────────────────
@@ -12325,6 +12769,10 @@
     _calAgirlik += ((playing?1:0) - _calAgirlik) * 0.040;
     _ritYum     += ((seviyeVar? level : 0) - _ritYum) * 0.16;   // ritim de kare-atlamasın
     const rit = _ritYum;
+    /* YASAYAN DERI: ayni yumusatilmis ritim zemine de gidiyor.
+       Yeni dongu yok, yeni olcum yok -- var olan sayinin ikinci bir
+       okuyucusu. Yazma nefes derisi kapaliyken hic olmuyor. */
+    try{ if(window['_nabizYaz']) window['_nabizYaz'](rit); }catch(e){ _yut(e); }
     const energy = 0.4 + 0.4*_calAgirlik + rit*0.7;
     const err = hataAt>Date.now();
     // basış "nefesi": kısa süre içeri çekilme
@@ -17620,8 +18068,13 @@
         const el3 = kut.querySelector('.sat[data-ayar="deri"] .durum');
         if(el3) el3.textContent = Y(DERI_AD[AYAR.deri|0] || 'OFF');
         /* Dil satirinin sagi HER ZAMAN kendi dilinde. */
+        /* Dil satirinin sagi HER ZAMAN kendi dilinde. Secim
+           yapilmamissa yaninda bir nokta: kullanici bunun kendi
+           sectigi bir dil mi yoksa telefondan mi geldigini
+           ayirt edebilsin. */
         const el4 = kut.querySelector('.sat[data-ayar="dil"] .durum');
-        if(el4) el4.textContent = (DIL === 'tr') ? 'TÜRKÇE' : 'ENGLISH';
+        if(el4) el4.textContent = _dilAd(DIL) + (_dilVar(AYAR.dil) ? '' : ' ·');
+        try{ dilListeYaz(); }catch(e){ _yut(e); }
         const el5 = kut.querySelector('.sat[data-ayar="carkSesSev"] .durum');
         if(el5) el5.textContent = Y(CARK_SEV_AD[AYAR.carkSesSev|0] || 'MID');
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
@@ -17784,6 +18237,99 @@
       izgaraYaz();
     }
     window.temaSec = temaSec;
+    /* ── DIL LISTESI ──────────────────────────────────────────────
+       Tema izgarasinin aynisi, kutular yerine satirlar. Ilk
+       OTOMATIK satiri, altinda bes dil. */
+    var dilKutu = null;
+    function dilListeKur(){
+      try{
+        dilKutu = dilKutu || document.getElementById('dilListe');
+        if(!dilKutu || dilKutu.children.length) return;
+        const satirYap = (kod, ad, altYazi)=>{
+          const d = document.createElement('div');
+          d.className = 'dl'; d.dataset.k = kod;
+          d.setAttribute('role','option');
+          d.setAttribute('tabindex','-1');
+          const a1 = document.createElement('span'); a1.textContent = ad;
+          /* Dil adi cevrilmiyor (bkz. _dilYazi notu). 'AUTO' satiri
+             ISTISNA: o bir dil adi degil bir secenek, cevrilmeli --
+             o yuzden isaret yalnizca kodu olan satirlara konuyor. */
+          if(kod) a1.setAttribute('data-dil-atla', '');
+          if(altYazi){
+            const a2 = document.createElement('span');
+            a2.className = 'oto-alt'; a2.textContent = altYazi;
+            a2.setAttribute('data-dil-atla', '');
+            a1.appendChild(document.createTextNode(' '));
+            a1.appendChild(a2);
+          }
+          const t = document.createElement('span');
+          t.className = 'tik'; t.textContent = '✓'; t.setAttribute('aria-hidden','true');
+          d.appendChild(a1); d.appendChild(t);
+          d.addEventListener('click', e=>{ e.stopPropagation(); dilSecUygula(kod); });
+          d.addEventListener('pointerdown', e=>e.stopPropagation());
+          d.addEventListener('keydown', e=>{
+            if(e.key===' '||e.key==='Enter'){ e.preventDefault(); dilSecUygula(kod); } });
+          return d;
+        };
+        /* OTOMATIK once: "hicbir sey secme" secenegi listenin
+           basinda duruyor, tema izgarasindaki gibi. */
+        dilKutu.appendChild(satirYap('', 'AUTO', ''));
+        DILLER.forEach(d => dilKutu.appendChild(satirYap(d.k, d.ad, '')));
+      }catch(e){ _yut(e); }
+    }
+    function dilListeYaz(){
+      try{
+        if(!dilKutu) return;
+        const secili = _dilVar(AYAR.dil) ? AYAR.dil : '';
+        [...dilKutu.children].forEach(d=>{
+          const s2 = (d.dataset.k === secili);
+          d.classList.toggle('secili', s2);
+          d.setAttribute('aria-selected', s2 ? 'true' : 'false');
+          /* OTOMATIK satiri hangi dile dustugunu YAZIYOR. Eski
+             dongude ucuncu bir durak istenmemisti cunku "otomatik"in
+             ne gosterecegi ekranda yazmiyordu; burada yaziyor. */
+          if(d.dataset.k === ''){
+            const alt = d.querySelector('.oto-alt');
+            if(alt) alt.textContent = '· ' + _dilAd(dilOtomatik());
+            else{
+              const a2 = document.createElement('span');
+              a2.className = 'oto-alt'; a2.textContent = '· ' + _dilAd(dilOtomatik());
+              a2.setAttribute('data-dil-atla', '');
+              d.firstChild.appendChild(document.createTextNode(' '));
+              d.firstChild.appendChild(a2);
+            }
+          }
+        });
+      }catch(e){ _yut(e); }
+    }
+    function dilListeAc(a){
+      try{
+        dilKutu = dilKutu || document.getElementById('dilListe');
+        if(!dilKutu) return;
+        dilKutu.hidden = !a;
+        const sat = document.querySelector('#ayar .sat[data-ayar="dil"]');
+        if(sat) sat.setAttribute('aria-expanded', a ? 'true' : 'false');
+        [...dilKutu.children].forEach(d=>d.setAttribute('tabindex', a ? '0' : '-1'));
+        if(a) dilListeYaz();
+      }catch(e){ _yut(e); }
+    }
+    function dilSecUygula(kod){
+      try{
+        /* Bos dizgi = OTOMATIK: alan SILINIYOR, 'auto' diye bir
+           deger yazilmiyor. Boylece dilSec() tek kural calistiriyor
+           ("secim var mi") ve depoda anlami kodda aranan bir dize
+           durmuyor. */
+        if(kod) AYAR.dil = kod; else delete AYAR.dil;
+        ayarKaydet();
+        try{ dilYukle(); }catch(e){ _yut(e); }
+        dilListeYaz();
+        /* Sagdaki deger ve panelin oteki yazilari hemen tazelensin. */
+        try{ yildizYaz(); }catch(e){ _yut(e); }
+      }catch(e){ _yut(e); }
+    }
+    /* window['...'] ile yaziliyor: nokta yazimi tip denetiminde
+       "Window uzerinde boyle bir alan yok" uyarisi uretiyor. */
+    try{ window['dilSecUygula'] = dilSecUygula; }catch(e){ _yut(e); }
     function izgaraAc(a){
       if(!izgara) return;
       izgara.hidden = !a;
@@ -17802,15 +18348,11 @@
         return;
       }
       if(k === 'dil'){
-        /* Iki durum arasinda donuyor. Ucuncu bir "OTOMATIK" durumu
-           BILEREK yok: kullanici bu satira ancak dili degistirmek
-           icin dokunuyor ve "otomatik"in ne gosterecegi ekranda
-           yazmiyor -- ucuncu durak, secimi kolaylastirmaz. Ilk
-           acilistaki otomatik secim zaten calisiyor (AYAR.dil bos). */
-        AYAR.dil = (dilSec() === 'tr') ? 'en' : 'tr';
-        ayarKaydet();
-        try{ dilYukle(); }catch(e){ _yut(e); }
-        yildizYaz();
+        /* Satir artik dil DEGISTIRMIYOR, listeyi aciyor: bes dilde
+           dongu kullaniciyi anlamadigi dillerin icinden geciriyordu
+           (bkz. markup notu). Tema satiriyla ayni davranis. */
+        dilListeKur();
+        dilListeAc(!!document.getElementById('dilListe').hidden);
         return;
       }
       if(k === 'carkSesSev'){
@@ -18026,6 +18568,7 @@
       if(k === 'aramaSes' && !AYAR.aramaSes){ try{ aramaDurdur(); }catch(e){ _yut(e); } }
       /* Tik ACILDIYSA tek bir tik: degisikligi duyarak anla. */
       if(k === 'tikSes' && AYAR.tikSes){ try{ tik(); }catch(e){ _yut(e); } }
+      if(k === 'gorselSaat'){ try{ gorselSaatKur(); }catch(e){ _yut(e); } }
     };
     kut.querySelectorAll('.sat').forEach(el=>{
       el.addEventListener('click', e=>{ e.stopPropagation(); sec(el); });
@@ -18053,6 +18596,10 @@
        arsiv havuzlarini yukluyor ve blogu yerlestiriyor. */
     try{ deriUygula(); }catch(e){ _yut(e); }
   try{ moodUygula(true); }catch(e){ _yut(e); }
+  /* Gorselde saat: dugum acilista kuruluyor ama gorunmuyor --
+     gorunurlugun iki kapisi da CSS'te (bkz. body.gorsel-acik). */
+  try{ gorselSaatKur(); }catch(e){ _yut(e); }
+  try{ gunSaatKur(); }catch(e){ _yut(e); }
   })();
 
   function araAc(){

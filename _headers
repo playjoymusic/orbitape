@@ -200,7 +200,23 @@
 # degisiyor: bir gun taze, bir ay "eskisini goster arkada yenile".
 # Bayat bir kopya hicbir seyi bozmuyor; sozluk hic gelmezse de
 # uygulama Ingilizce kaliyor.
+# Bes dil var (tr, es, de, fr); Ingilizcenin sozlugu YOK cunku
+# anahtarlarin kendisi Ingilizce. Her dosya ayri bir blok:
+# Cloudflare'de '/dil/*' yazmak butun eslesen kurallari uygular ve
+# baska bloklarla karisabiliyor -- dosyalar sayili, tek tek yaziliyor.
 /dil/tr.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/dil/es.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/dil/de.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/dil/fr.json
   Content-Type: application/json; charset=utf-8
   Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
 
@@ -233,10 +249,10 @@
 
 # index.html
 /
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-e/qXhvfPGqZiveX0M5xfbsTeDxJSuFzNIanZ5tredeY='; style-src 'sha256-whQuEwuZx/RSVzP9NXsEpf+n2N8QbwhFMiPTLEnnwOI='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-r32f2YGGo6ljfUVQ+PyBXCySwLrnZLYesltRqO/0OnE='; style-src 'sha256-t+8QxU9ACiDrORCRjR/tTpFXdjNUZyBKUpntktGIrHo='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-e/qXhvfPGqZiveX0M5xfbsTeDxJSuFzNIanZ5tredeY='; style-src 'sha256-whQuEwuZx/RSVzP9NXsEpf+n2N8QbwhFMiPTLEnnwOI='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-r32f2YGGo6ljfUVQ+PyBXCySwLrnZLYesltRqO/0OnE='; style-src 'sha256-t+8QxU9ACiDrORCRjR/tTpFXdjNUZyBKUpntktGIrHo='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy

@@ -787,16 +787,47 @@ function bitir(){
      ceviri eksik olabilir, o zaman Ingilizce gorunur ve bu bir
      kusur degil bir ara durumdur. */
   try{
-    const sozluk = JSON.parse(fs.readFileSync(path.join(KOK, 'dil/tr.json'), 'utf8'));
+    /* ── BES DIL (12 Eylul) ───────────────────────────────────────
+       Ispanyolca, Almanca ve Fransizca eklendi. Ingilizcenin sozlugu
+       YOK: anahtarlarin kendisi Ingilizce, yani 'en' hicbir dosya
+       indirmiyor.
+       Kontroller artik her dil icin ayri ayri donuyor; asil yeni
+       soru ANAHTAR KUMESI AYNI MI: bir dile yeni bir satir eklenip
+       otekilere eklenmezse o dilde o satir sessizce Ingilizce
+       kalirdi -- ekranda yarisi cevrilmis bir panel, kimsenin
+       bildirmeyecegi bir kusur. */
+    const DILLER_T = ['tr', 'es', 'de', 'fr'];
+    const sozlukler = {};
+    DILLER_T.forEach(kod=>{
+      sozlukler[kod] = JSON.parse(fs.readFileSync(path.join(KOK, 'dil/' + kod + '.json'), 'utf8'));
+    });
+    const sozluk = sozlukler.tr;
     const anahtarlar = Object.keys(sozluk).filter(a => a !== '_');
 
-    K('tr.json: gecerli ve dolu', anahtarlar.length > 100,
-      anahtarlar.length + ' anahtar');
+    DILLER_T.forEach(kod=>{
+      const sz = sozlukler[kod];
+      const ah = Object.keys(sz).filter(a => a !== '_');
+      K(kod + '.json: gecerli ve dolu', ah.length > 100, ah.length + ' anahtar');
+      /* Bos ya da Ingilizcesiyle ayni birakilmis ceviri: ya unutulmus
+         ya da anlamsiz. Ikisi de sozlukte yer kaplamamali. */
+      const bos = ah.filter(a => !String(sz[a]).trim());
+      K(kod + '.json: bos ceviri yok', bos.length === 0, bos.join(', '));
+    });
 
-    /* Bos ya da Ingilizcesiyle ayni birakilmis ceviri: ya unutulmus
-       ya da anlamsiz. Ikisi de sozlukte yer kaplamamali. */
-    const bos = anahtarlar.filter(a => !String(sozluk[a]).trim());
-    K('tr.json: bos ceviri yok', bos.length === 0, bos.join(', '));
+    /* ── DORT SOZLUK AYNI ANAHTARLARI TASIYOR ────────────────────
+       Karsilastirma tr'ye gore: eksik olan hic cevrilmemis, fazla
+       olan ise ekranda karsiligi olmayan bir satir demek (kodda
+       gecmeyen anahtar zaten asagida ayrica yakalaniyor). */
+    DILLER_T.filter(k => k !== 'tr').forEach(kod=>{
+      const ah = Object.keys(sozlukler[kod]).filter(a => a !== '_');
+      const eksik = anahtarlar.filter(a => ah.indexOf(a) < 0);
+      const fazla = ah.filter(a => anahtarlar.indexOf(a) < 0);
+      K(kod + '.json: anahtar kumesi tr ile ayni',
+        eksik.length === 0 && fazla.length === 0,
+        (eksik.length || fazla.length)
+          ? ('eksik: ' + eksik.slice(0,4).join(' | ') + '  fazla: ' + fazla.slice(0,4).join(' | '))
+          : ah.length + ' anahtar birebir');
+    });
 
     /* Anahtar kodda GERCEKTEN geciyor mu. Bir metin degisip sozluk
        unutulursa burasi kirmizi yanar; yoksa ekranda sessizce
@@ -839,31 +870,49 @@ function bitir(){
     const VERI = ['JAZZ','ROCK','AMBIENT','ELECTRONIC','RNB & FUNK',
                   'ORCHESTRAL','WORLD & ROOTS','LOUNGE & LOFI','ROCK & INDIE',
                   'RADIOTAPE','NATURE','CITY','HUMANS','NOISE','SPACE','AMBIANCE'];
-    const kacak = VERI.filter(a => Object.prototype.hasOwnProperty.call(sozluk, a));
-    K('tr.json: tur ve raf adlari cevrilmemis', kacak.length === 0,
-      kacak.length ? ('veri cevrilmis: ' + kacak.join(', ')) : 'adlar veri olarak duruyor');
+    DILLER_T.forEach(kod=>{
+      const kacak = VERI.filter(a => Object.prototype.hasOwnProperty.call(sozlukler[kod], a));
+      K(kod + '.json: tur ve raf adlari cevrilmemis', kacak.length === 0,
+        kacak.length ? ('veri cevrilmis: ' + kacak.join(', ')) : 'adlar veri olarak duruyor');
+    });
 
     /* Tus etiketleri de cevrilmiyor: bu satirdaki genislik olculu
        ("uc satir ayni sag kenarda" testi). Karar index.html'de
        yazili; burasi onu yerinde tutuyor. */
     const TUS = ['REC','CAM'];
-    const tusKacak = TUS.filter(a => Object.prototype.hasOwnProperty.call(sozluk, a));
-    K('tr.json: kisa tus etiketleri cevrilmemis', tusKacak.length === 0,
-      tusKacak.join(', ') || 'REC/CAM oldugu gibi');
+    DILLER_T.forEach(kod=>{
+      const tusKacak = TUS.filter(a => Object.prototype.hasOwnProperty.call(sozlukler[kod], a));
+      K(kod + '.json: kisa tus etiketleri cevrilmemis', tusKacak.length === 0,
+        tusKacak.join(', ') || 'REC/CAM oldugu gibi');
+    });
 
     /* Duzenegin kendisi yerinde mi: dosya yayina cikmazsa ya da
        cagri silinirse Turkce SESSIZCE kaybolur. */
+    /* Adres artik sabit degil, secilen dilden kuruluyor. */
     K('Sozluk yayina cikan bir dosyadan yukleniyor',
-      /fetch\('dil\/tr\.json'\)/.test(kod) && /function Y\(s\)/.test(kod)
+      /fetch\('dil\/' \+ DIL \+ '\.json'\)/.test(kod) && /function Y\(s\)/.test(kod)
       && /function Ym\(s\)/.test(kod),
       'fetch + Y + Ym yerinde');
+    /* Desteklenen diller tek yerde: liste kodda, dosyalar diskte.
+       Ikisi ayrilirsa menude secilebilen ama inmeyen bir dil olur. */
+    const listeKod = (kod.match(/const DILLER = \[([\s\S]*?)\];/) || [])[1] || '';
+    const kodDilleri = (listeKod.match(/k:'([a-z]{2})'/g) || []).map(t => t.slice(3, 5));
+    K('Menudeki her dilin dosyasi var',
+      kodDilleri.length === 5 && kodDilleri.indexOf('en') === 0
+      && DILLER_T.every(d => kodDilleri.indexOf(d) > 0)
+      && kodDilleri.filter(d => d !== 'en')
+           .every(d => fs.existsSync(path.join(KOK, 'dil/' + d + '.json'))),
+      kodDilleri.join(', ') + ' (en sozluksuz: anahtarlar zaten Ingilizce)');
     const yoksay = fs.readFileSync(path.join(KOK, '.assetsignore'), 'utf8');
     K('Sozluk dosyasi yayindan dislanmamis',
       !/^\s*dil\//m.test(yoksay),
       '.assetsignore dil/ klasorunu engellememeli');
     const bas = fs.readFileSync(path.join(KOK, '_headers'), 'utf8');
-    K('Sozluk dosyasinin onbellek kurali var',
-      /^\/dil\/tr\.json\s*$/m.test(bas), '_headers icinde /dil/tr.json blogu');
+    DILLER_T.forEach(kod=>{
+      K('Sozluk dosyasinin onbellek kurali var: ' + kod,
+        new RegExp('^/dil/' + kod + '\\.json\\s*$', 'm').test(bas),
+        '_headers icinde /dil/' + kod + '.json blogu');
+    });
   }catch(e){
     K('tr.json okunabiliyor', false, String(e && e.message || e));
   }

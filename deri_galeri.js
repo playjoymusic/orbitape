@@ -83,6 +83,14 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        yonu ve isi degisiyor -- ▾ listeyi acar, ▴ serite doner.
        Eskiden burada "izgarada gizle" kurali vardi; kaldirildi. */
     ".dg-tus.halka{width:auto;padding:0 8px;font-size:0.625rem;letter-spacing:.22em;opacity:.45}",
+    /* ── SUN: GUN DONGUSU ANAHTARI ─────────────────────────────
+       Gun isigi bir DERI degil bir MOOD: hangi deri secili olursa
+       olsun uzerine biniyor. O yuzden menude uc satir acmak yerine
+       burada tek bir anahtar duruyor -- RING ile ayni dilde, ayni
+       satirda. Acikken carkin ustunde bir saat beliriyor ve
+       donguyu oradan da kapatmak mumkun. */
+    ".dg-tus.gunes{width:auto;padding:0 8px;font-size:0.625rem;letter-spacing:.22em;opacity:.45}",
+    ".dg-tus.gunes[aria-pressed='true']{opacity:1;color:#f0c987;text-shadow:0 0 8px rgba(240,201,135,.6)}",
     ".dg-tus.halka[aria-pressed='true']{opacity:1;color:var(--dg-vurgu);text-shadow:0 0 8px color-mix(in srgb,var(--dg-vurgu) 60%,transparent)}",
     ".dg-izgara{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));grid-auto-rows:max-content;align-items:start;gap:10px;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 10px calc(var(--kx) + env(safe-area-inset-left,0px));align-content:start}",
     ".dg-kare{appearance:none;-webkit-appearance:none;border:0;padding:0;margin:0;position:relative;display:block;width:100%;aspect-ratio:108/172;height:auto;border-radius:12px;overflow:hidden;cursor:pointer;background:#111;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;isolation:isolate}",
@@ -125,7 +133,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
          RING oldugunu kimse bilemezdi. Merkez "yuvarlak" secilince
          halka zaten kapaniyor (merkezUygula), yani anahtar seritte
          gereksiz. Ikisi de tam galeride duruyor. */
-    "#deriGaleri.serit .dg-baslik,#deriGaleri.serit .dg-tus.halka{display:none}",
+    "#deriGaleri.serit .dg-baslik,#deriGaleri.serit .dg-tus.halka,#deriGaleri.serit .dg-tus.gunes{display:none}",
     /* YUKSEKLIK OLCULU: serit, sol ustteki simge yigininin ALTI ile
        ortadaki aletin USTU arasindaki banda sigmali ve iki yanda da
        gercek bosluk kalmali. Kullanicinin sozu: "grafiksel bosluklar
@@ -353,6 +361,17 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   /* ── KARE: DERININ KUCUK HALI ─────────────────────────────────── */
+  var gunesTus = null;
+  function gunesIsaret(){
+    try{
+      if(!gunesTus) return;
+      const a = !!(window.AYAR && window.AYAR.gunDongusu);
+      gunesTus.setAttribute('aria-pressed', a ? 'true' : 'false');
+    }catch(e){ yut(e); }
+  }
+  /* Uygulama donguyu baska bir yerden (carkin ustundeki saat)
+     kapatirsa serit de haberdar olsun. */
+  try{ window['deriSeritTazele'] = gunesIsaret; }catch(e){}
   function kareYap(n, d){
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'dg-kare'; b.dataset.n = String(n);
@@ -488,6 +507,17 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       halkaIsaret(); diskleriTazele();
     });
     bas.appendChild(halkaTus);
+    /* SUN: gun dongusu. Uygulama tarafindaki tek kapiyi cagiriyor
+       (gunDongusuAc); isaretini de oradan okuyor, yani iki yerde
+       iki ayri durum tutulmuyor. */
+    gunesTus = tus('gunes', 'Day cycle', T('SUN'), ()=>{
+      try{
+        const a = !(window.AYAR && window.AYAR.gunDongusu);
+        if(typeof window.gunDongusuAc === 'function') window.gunDongusuAc(a);
+      }catch(e){ yut(e); }
+      gunesIsaret();
+    });
+    bas.appendChild(gunesTus);
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
        (degistir). ▦ seritte kaliyor: tam galeriye donus. */
     /* Yanina ALL yazisi da konmustu; kullanici ekranda o kelimeyi
@@ -565,7 +595,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   }
   function isaretle(kaydir){
     try{
-      halkaIsaret();
+      halkaIsaret(); gunesIsaret();
       const n = AYAR.deri|0;
       /* ── COK UZUN AD KISALIYOR ────────────────────────────────
          Serit sabit izgara: uzun ad sutunlari itemiyor ama kesik
