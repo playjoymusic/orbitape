@@ -849,7 +849,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        BORC HALA DURUYOR: bu altinci yukselis ve modul bolme yine
        yapilmadi. Dil duzenegi bolunmeye en uygun parca -- bir
        sonraki dil isteginde ONCE o yapilmali.
-       Son yukseltme (1200 -> 1212): gorselde saat ve gun dongusu.
+       Son yukseltme (1212 -> 1224): tanitim turunun yeniden kurulmasi
+       ve REHBER. Sira kullanicidan geldi ve gerekcesi yazili (bkz.
+       'ACILIS SIRASI KULLANICIDAN GELDI'); uc atlama kurali, saat
+       panelinin turda gercekten acilip kapanmasi, ve "kayboldum"
+       halini bosa giden dokunustan taniyan rehber de burada.
+       Rehberin neden BOSA GIDEN DOKUNUSU olctugu ve abartmamanin uc
+       kurali (oturumda bir kez, anahtara bagli, tur bitiminden 30 sn
+       sonra) o satirlarda duruyor -- silinirse bir sonraki kisi ya
+       esigi rastgele oynatir ya da yardimi her firsatta cikarir.
+       Ayrica SHELF adiminin metni birlestirilmekten cikip iki tam
+       cumleye bolundu: birlestirilen dizgi hicbir sozluk anahtarina
+       uymuyordu ve o adim BES DILDE Ingilizce kaliyordu.
+       OLCU: ilk boyama 106,89 -> 107,50 KB (tavan 108, yani
+       kullaniciyi ilgilendiren sayi hala altinda); ham boy 1212,20.
+       Onceki yukseltme (1200 -> 1212): gorselde saat ve gun dongusu.
        IKISI DE KULLANICIDAN GELDI ve ikisi de EKRANA OGE EKLEMIYOR
        gibi gorunse de ikisi de gercek dugum: VISUALS acikken saat
        (varsayilan kapali, yalnizca tam ekran gorselde) ve gun
@@ -870,7 +884,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        olmadigi icin tasindi. Olcum 1192,47 KB.
        Tavan bir koruma; islev eklenince yaziyla yukseltiliyor,
        sessizce degil. */
-    K('Ham boy < 1212 KB', dosyaBoy < 1212*1024,
+    K('Ham boy < 1224 KB', dosyaBoy < 1224*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -3082,13 +3096,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     } finally { await kapat(); }
   })();
   if(!tan){ yavas('Tanitimlar (6 kontrol)'); } else {
-  K('Acilis turu kisa: alti adim', tan.acilis.length <= 7,
+  /* ── KURAL DEGISTI (12 Eylul, kullanici) ────────────────────────
+     Eski kural "acilis turu KISA olsun, alti adim" idi ve gerekcesi
+     suydu: tur her acilista cikiyor, uzun olursa zulum oluyor.
+     Kullanici o dengeyi baska turlu kurdu: tur uzadi ama KAPANMASI
+     kolaylasti -- her acilista cikiyor, uc kez SKIP'e basan bir daha
+     gormuyor (bkz. TUR_ATLAMA_TAVAN). Yani "kisalik" ile korunan sey
+     artik atlama sayacıyla korunuyor.
+     Sira da kullanicidan geldi ve bu olcu onu yerinde tutuyor:
+       ORBITAPE · GENRES · THE CENTRE · NOW PLAYING · FAVOURITES ·
+       TIMER · SKINS · VISUALS · SETTINGS · READY
+     On bir ust sinir: onuncu adimdan sonra bir kisilik pay var,
+     daha fazlasi listeye sessizce adim eklendigi anlamina gelir. */
+  K('Acilis turu on adim, sirasi yerinde', tan.acilis.length <= 11,
      tan.acilis.length + ' adim: ' + tan.acilis.join(' · '));
-  /* Uygulamaya OZGU olan jest kalmali; evrensel simgeler dusmeli. */
+  /* Uygulamaya OZGU jest (halka) ve kullanicinin saydigi duraklar.
+     SELECT ve SHELF uzun tura tasindi: halkalar GENRES'te zaten
+     gosteriliyor, ayni seyi iki kez anlatmanin anlami yok.
+     CONTROLS ve TOOLS acilista YOK: oynat/dur evrensel simgeler. */
   K('Acilista ogreten adimlar kaliyor',
-     ['GENRES','SELECT','SHELF','SETTINGS'].every(a=>tan.acilis.includes(a))
-     && !tan.acilis.includes('CONTROLS'),
-     'halka jesti ve iki referans noktasi var, oynat/dur yok');
+     ['GENRES','THE CENTRE','NOW PLAYING','FAVOURITES','TIMER',
+      'SKINS','VISUALS','SETTINGS'].every(a=>tan.acilis.includes(a))
+     && !tan.acilis.includes('CONTROLS') && !tan.acilis.includes('TOOLS'),
+     'halka jesti, cark, kunye, favori, alarm, deri, gorsel ve ayarlar var; oynat/dur yok');
   K('Istenince tur tam anlatiyor',
      tan.uzun.length > tan.acilis.length
      /* RECORD -> PHOTO: radyo turunda anlatilan sey artik kilit
@@ -7214,9 +7244,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const basliklar = a.map(x=>x.bas);
         const sur = l => l.reduce((t,x)=>t + x.duraklar.reduce((u,d)=>u+d.sure,0), 0);
         const sure = sur(a);
-        /* Acilis turu KISA olmali: olculdu, 11 adim 17,6 sn idi;
-           simdi 6 adim ~10 sn. Ust sinir 13 sn -- bu esik asilirsa
-           birileri acilis listesine yeniden adim eklemis demektir. */
+        /* ── ACILIS SURESI: YENI SINIRLAR (12 Eylul) ─────────────
+           Once "6 sn ile 13 sn arasi" idi ve o, alti adimlik kisa
+           turun olcusuydu. Kullanicinin istedigi sira on adim ve
+           OLCULDU: ham toplam 17,9 sn, ekranda 1,18 katiyla 21,1 sn.
+           Yeni aralik 12-22 sn (ham): alt sinir listenin sessizce
+           kirpilmasini, ust sinir sessizce uzamasini yakaliyor.
+           DURUST NOT: 21 saniye her acilista uzun bir sure. Bunu
+           dengeleyen sey turun kendisi degil, UC ATLAMA kurali --
+           istemeyen kisi uc dokunusla kurtuluyor. */
         const kisaSure = sur(kisa);
         /* Halka duraklari CANLI geometriden gelmeli: en dis durak
            en dis halkanin yaricapina esit olsun. */
@@ -7239,7 +7275,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             && eksik.length === 0
             && Math.abs(gez[0] - enDis) < 0.001
             && sure > 12000 && sure < 32000
-            && kisaSure > 6000 && kisaSure < 13000;
+            && kisaSure > 12000 && kisaSure < 22000;
       }), 'Tam liste bugunku yerlesimi anlatiyor, hedefler ekranda; acilis listesi kisa');
     /* GOSTEREREK ANLATSIN: kullanicinin istegi "halkalarin yanmasi,
        menunun acilmasi vs gibi her seyi gostererek". Yani adimlarin
@@ -12875,7 +12911,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            Turkcesi ("SES", "AYARLARI SIFIRLA") tamamen ASCII: test
            ceviri dogruyken kirmizi yaniyordu. Yanlis olan ceviri
            degil, olcunun kendisiydi. */
-        return { tr, veri, tus, yedek, ing, geri, fra, isp, alm, oto,
+        /* Adim metinleri: TAM tur (uzun adimlar dahil) sorulacak,
+           cunku kacan kusur tam orada yasiyordu. Ayni kelimeler
+           (marka adi, dilde birebir ayni olan sozcukler) eleniyor:
+           onlar eksik ceviri degil. */
+        let turEksik = [];
+        try{
+          const _y = window._turYavas;
+          window._turYavas = true;                 /* uzun adimlar da gelsin */
+          const AYNI = ['ORBITAPE','GENRES','TIMER','VISUALS','PHOTO',
+                        'READY','MINIMAL','NORMAL','MAX','AUTO','CREDITS'];
+          turAdimlari().forEach(a=>{
+            [a.bas, a.metin].forEach(t=>{
+              String(t || '').split('<br>').forEach(x=>{
+                const q = x.trim();
+                if(q && AYNI.indexOf(q) < 0 && Y(q) === q) turEksik.push(q);
+              });
+            });
+          });
+          window._turYavas = _y;
+          turEksik = [...new Set(turEksik)];
+        }catch(e){ turEksik = ['olculemedi: ' + (e && e.message)]; }
+        return { tr, veri, tus, yedek, ing, geri, fra, isp, alm, oto, turEksik,
                  turkceMi: /[ğüşıöçĞÜŞİÖÇ]/.test(
                    (document.getElementById('ayar').textContent) || '') };
       });
@@ -12896,6 +12953,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Hata ve tur metinleri de Turkce',
      trd.tr.agyok === 'BAĞLANTI YOK' && trd.tr.atla === 'GEÇ',
      '"' + trd.tr.agyok + '" | SKIP -> "' + trd.tr.atla + '"');
+  /* ── TUR METINLERI DE CEVRILMELI (12 Eylul) ─────────────────────
+     Bu soru sorulmuyordu ve bir kusur tam oradan kacti: SHELF
+     adiminin metni kodda BIRLESTIRILEREK kuruluyordu
+     ((mood ? 'Top right' : 'Top left') + ': the genre...') ve
+     birlestirme sonucu hicbir sozluk anahtarina uymadigi icin adim
+     BES DILDE de Ingilizce kaliyordu. Gorunmuyordu cunku o adim
+     yalnizca ayarlardan istenen tam turda cikiyor -- yani kimse
+     bakmazsa kalici bir eksik.
+     Artik butun adimlarin baslik ve metin parcalari tek tek
+     sozluge soruluyor. Karsiligi Ingilizcesiyle AYNI olanlar
+     elenmiyor ama bir kenara yaziliyor: ORBITAPE bir marka,
+     GENRES Fransizca'da ayni kelime -- bunlar kusur degil. */
+  K('Tur metinleri sozlukte var',
+     Array.isArray(trd.turEksik) && trd.turEksik.length === 0,
+     (trd.turEksik && trd.turEksik.length)
+       ? ('sozlukte yok: ' + trd.turEksik.slice(0,4).join(' | '))
+       : 'butun adim metinleri cevrili');
   K('Tur ve raf adlari CEVRILMIYOR', trd.veri === true && trd.tus === true,
      'JAZZ/AMBIENT/NATURE/RADIOTAPE ve REC/CAM oldugu gibi');
   K('Sozluk gelmezse Ingilizce kaliyor',

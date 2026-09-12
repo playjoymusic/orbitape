@@ -19502,10 +19502,31 @@
   }
   function biliniyor(ad){ try{ return kullanimKume().has(ad); }catch(e){ return false; } }
   try{ window.kullanildi = kullanildi; }catch(e){ _yut(e); }
+  /* ── UC ATLAMA (12 Eylul, kullanici) ─────────────────────────────
+     "ama sen kapama. sadece bu mesaji bi daha gostermeme diyerek her
+      acilir gosterelim. 3 skipten sonra bidaha gostermezsin."
+     Yani tur KENDILIGINDEN kapanmiyor: her acilista cikiyor. Kapanmasi
+     iki yoldan biriyle oluyor -- kutu isaretlenirse (kalici karar) ya
+     da kullanici UC KEZ atlarsa (davranisla verilmis karar).
+     Uc, cunku bir kez atlamak "simdi degil" demek; uc kez atlamak
+     "bunu istemiyorum" demek. Sayac yalnizca SKIP'e basilinca artiyor;
+     turu sonuna kadar izlemek sayaci artirmiyor -- izleyen kisi
+     rahatsiz degil. */
+  const TUR_ATLAMA_ANAHTAR = 'orbitape.turAtlama';
+  const TUR_ATLAMA_TAVAN = 3;
+  function turAtlamaSayisi(){
+    try{ return Math.max(0, parseInt(localStorage.getItem(TUR_ATLAMA_ANAHTAR) || '0', 10) || 0); }
+    catch(e){ return 0; }
+  }
+  function turAtlamaArtir(){
+    try{ localStorage.setItem(TUR_ATLAMA_ANAHTAR, String(turAtlamaSayisi() + 1)); }
+    catch(e){ _yut(e); }
+  }
   function turGosterilsinMi(){
     /* Ayarlardaki TUTORIALS anahtari: kapaliysa ne acilis turu ne FX
        sunumu cikiyor. Depoya bakmadan once buna bakiliyor. */
     try{ if(AYAR && AYAR.tanitim === false) return false; }catch(e){ _yut(e); }
+    if(turAtlamaSayisi() >= TUR_ATLAMA_TAVAN) return false;
     try{ return localStorage.getItem(TUR_ANAHTAR) !== '1'; }catch(e){ return true; }
   }
   /* İKİ AYRI KUTU. Açılış turu ile FX sunumu artık aynı düğmeleri
@@ -19661,25 +19682,58 @@
        'bilir' alani ise ikinci yarisi: kullanici o iSi bir kez kendi
        yaptiysa adim acilista hic cikmiyor. */
     const hepsi = [
+      /* ── ACILIS SIRASI KULLANICIDAN GELDI (12 Eylul) ───────────
+         "acildi hop baslar turler ustunde parmak surter, sonra
+         carki dondurur, sonra sag alttan baslar sanatci ismi,
+         favori, sonra sol yukardaki alarm acilip kapanir, skinse
+         sadece parmakla gosterir, visuali, ve en son ayarlar
+         acilir; ordan tutorialsin kapandigini gosterir."
+         Sira artik DIZININ KENDI SIRASI: acilista 'uzun' olanlar
+         duserken geriye tam olarak bu kalıyor --
+           ORBITAPE · GENRES · THE CENTRE · NOW PLAYING ·
+           FAVOURITES · TIMER · SKINS · VISUALS · SETTINGS · READY
+         Uzun tur ayni diziyi bastan sona oynatiyor, yani iki
+         tempoda tek sira var; ikisini ayri tutmak birini
+         guncelleyip otekini unutmanin yoluydu. */
       { bas:'ORBITAPE', metin:'Live radio from around the world.<br>Tap the centre to start.',
         duraklar:[{hedef:{disk:0.10, aci:0}, sure:1700}] },
       { bas:'GENRES', metin:'Hold on the rings.<br>Each ring is a genre.',
         bilir:'halka', duraklar: halkaGezi },
-      { bas:'SELECT', metin:'Release on a ring to open it.<br>Release outside to cancel.',
+      { bas:'SELECT', uzun:true, metin:'Release on a ring to open it.<br>Release outside to cancel.',
         bilir:'halka', duraklar:[{hedef:{disk:H(secK), aci:0}, sure:1400,
                    oynat:()=>{ try{ modAdiTut(adlar[secK]); halkaYak(adlar[secK]); }catch(e){ _yut(e); } }}] },
       /* YER KIPE BAGLI: radyoda raf adi SOL ustte (gezegenler yok,
          orasi bos), arsivde markanin solunda sag ustte. Tur ekranda
          ne varsa onu soylemeli -- sabit "top right" yazsaydi
          radyoda yanlis yere baktirirdi. */
-      { bas:'SHELF', metin:(document.body.classList.contains('mood') ? 'Top right' : 'Top left')
-          + ': the genre you are in.<br>Tap the marks or the name for the list.',
+      /* ── BIRLESTIRILEN METIN CEVRILMIYORDU ─────────────────────
+         Eskiden soyleydi:
+           (mood ? 'Top right' : 'Top left') + ': the genre you are
+            in.<br>Tap the marks or the name for the list.'
+         Anahtar = EKRANDAKI METNIN KENDISI oldugu icin birlestirme
+         sonucu hicbir sozluk anahtarina uymuyordu: bu adim BES
+         DILDE de Ingilizce kaliyordu. Gorunmuyordu cunku adim
+         'uzun', yani yalnizca ayarlardan istenen tam turda cikiyor.
+         Artik iki TAM cumle, iki ayri anahtar. */
+      { bas:'SHELF', uzun:true, metin:(document.body.classList.contains('mood')
+          ? 'Top right: the genre you are in.' : 'Top left: the genre you are in.')
+          + '<br>Tap the marks or the name for the list.',
         bilir:'halka', duraklar:[{hedef:'#modAd', sure:800, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
                   {hedef:'#bekle', sure:900,
                    oynat:()=>{ try{ halkaYak(adlar[Math.max(0,n-2)]); }catch(e){ _yut(e); } }}] },
       /* SOL ALT, BIRINCI SATIR. Dort tusun dordu de tek tek
          gosteriliyor: ikisi gecmis, ikisi calma denetimi ve hangisinin
          hangisi oldugu yalnizca simgeden anlasilmiyor. */
+      { bas:'THE CENTRE', metin:'Turn the ring of teeth to change shelf.<br>Or set the centre to FREQUENCY and watch the sound.',
+        duraklar:[{hedef:{disk:1.12, aci:0}, sure:1500}] },
+      { bas:'NOW PLAYING', metin:'Bottom right: the station first,<br>then the track it is playing.',
+        duraklar:[{hedef:'#np', sure:1300}] },
+      { bas:'WHAT IS THIS?', uzun:true, metin:'Heard something good?<br>This asks your phone to name it.',
+        duraklar:[{hedef:yaDa('#tani','#np'), sure:1200}] },
+      /* AYARLAR: soylemek yetmiyor, ACILIYOR. El uc cizgiye iner,
+         panel gercekten iner, iki satir gosterilir ve panel kapanir. */
+      { bas:'FAVOURITES', metin:'The star keeps a station.<br>The list opens from the same place.',
+        duraklar:[{hedef:'#favAc', sure:1400}] },
       { bas:'CONTROLS', uzun:true, metin:'Bottom left: play, stop, and back<br>and forward through what you heard.',
         duraklar:[{hedef:'#geri', sure:520}, {hedef:'#dur', sure:560},
                   {hedef:'#duraklat', sure:520}, {hedef:'#ileri', sure:520}] },
@@ -19704,31 +19758,36 @@
            · CENTRE -> cark/faz secimi de yeni; ekranin ortasindaki
                        seyin degisebildigini kimse kendiliginden
                        bulmuyor. */
-      { bas:'SKINS', uzun:true, metin:'The brush: every look, live.<br>Tap again for a slim strip that stays.',
-        duraklar:[{hedef:'#deriFirca', sure:900}] },
-      { bas:'TIMER', uzun:true, metin:'Sleep fades the sound out.<br>The alarm brings back what you were playing.',
-        duraklar:[{hedef:'#saatTus', sure:900}] },
+      { bas:'TIMER', metin:'Sleep fades the sound out.<br>The alarm brings back what you were playing.',
+        duraklar:[{hedef:'#saatTus', sure:760,
+                   oynat:()=>{ try{ if(window.saatAc) window.saatAc(); }catch(e){ _yut(e); } }},
+                  {hedef:yaDa('#saatPanel','#saatTus'), sure:1500},
+                  {hedef:'#saatTus', sure:620,
+                   oynat:()=>{ try{ if(window.saatKapa) window.saatKapa(); }catch(e){ _yut(e); } }}] },
       /* VISUAL: ayni zamanda EKRAN KILIDI. Ikisini birlikte
          soylemek gerekiyor -- yoksa "dokunuyorum, sarki
          degismiyor" bir kusur gibi gorunur. */
-      { bas:'VISUALS', uzun:true, metin:'Full screen, moving with the sound.<br>Touch only opens its strip — nothing skips.',
+      { bas:'SKINS', metin:'The brush: every look, live.<br>Tap again for a slim strip that stays.',
+        duraklar:[{hedef:'#deriFirca', sure:900}] },
+      /* SAAT PANELI GERCEKTEN ACILIP KAPANIYOR (kullanicinin istegi:
+         "sol yukardaki alarm acilip kapanir"). Soylemek yetmiyordu:
+         tusun ne actigini gormeden kimse ona basmiyor. Ayarlar adimi
+         da ayni sekilde calisiyor -- yeni bir kalip degil. */
+      { bas:'VISUALS', metin:'Full screen, moving with the sound.<br>Touch only opens its strip — nothing skips.',
         duraklar:[{hedef:yaDa('#gorselTus','#deriFirca'), sure:1400}] },
       /* ORTADAKI ALET: DISPLAY degil, ekranin ortasi. Tur bunu
          gostermek zorunda cunku ayarlarda degil, halkanin kendi
          cevresinde yasiyor. */
-      { bas:'THE CENTRE', uzun:true, metin:'Turn the ring of teeth to change shelf.<br>Or set the centre to FREQUENCY and watch the sound.',
-        duraklar:[{hedef:{disk:1.12, aci:0}, sure:1500}] },
-      { bas:'NOW PLAYING', uzun:true, metin:'Bottom right: the station first,<br>then the track it is playing.',
-        duraklar:[{hedef:'#np', sure:1300}] },
-      { bas:'WHAT IS THIS?', uzun:true, metin:'Heard something good?<br>This asks your phone to name it.',
-        duraklar:[{hedef:yaDa('#tani','#np'), sure:1200}] },
-      /* AYARLAR: soylemek yetmiyor, ACILIYOR. El uc cizgiye iner,
-         panel gercekten iner, iki satir gosterilir ve panel kapanir. */
       { bas:'SETTINGS', bilir:'ayar', metin:'Bottom left: three lines.<br>Sound, display, playback — and every tutorial.',
         duraklar:[{hedef:'#ayarTut', sure:820,
                    oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){ _yut(e); } }},
-                  {hedef:yaDa('#ayar .sat.kapi','#ayarTut'), sure:1000},
-                  {hedef:yaDa('#ayar .sat[data-ayar="tema"]','#ayarTut'), sure:1000},
+                  /* Ikinci durak ARTIK TUTORIALS SATIRI. Kullanicinin
+                     istegi: "en son ayarlar acilir, ordan tutorialsin
+                     kapandigini gosterir." Tur kendini nerede
+                     kapatacagini gosteriyor -- kapatmiyor, yerini
+                     soyluyor. */
+                  {hedef:yaDa('#ayar .sat[data-ayar="tanitim"]','#ayarTut'), sure:1250},
+                  {hedef:yaDa('#ayar .sat.kapi','#ayarTut'), sure:900},
                   {hedef:'#ayarTut', sure:700,
                    oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){ _yut(e); } }}] },
       /* ── AYARLARDAN ISTENINCE UC ADIM DAHA ────────────────────
@@ -19737,8 +19796,6 @@
          orada yarim anlatmanin anlami yok. Ayni liste, yavas tempo
          ve uc ek durak. */
       ...(_turYavas ? [
-        { bas:'FAVOURITES', metin:'The star keeps a station.<br>The list opens from the same place.',
-          duraklar:[{hedef:'#favAc', sure:1500}] },
         /* Bu durak once "REC radyoda calismaz" diyordu: tus
            gorunuyordu ama sonuktu ve sebebini soyleyen yoktu.
            Artik ayni yerde CALISAN bir sey var, o yuzden metin de
@@ -19777,7 +19834,15 @@
      Ayni adim listesi, ayri tempo: her durak 1.75 kat uzuyor. */
   var _turYavas = false;
   const TUR_YAVAS_KAT = 1.75;
-  const _sure = ms => Math.round(ms * (_turYavas ? TUR_YAVAS_KAT : 1));
+  /* ── ACILIS TEMPOSU 1.00 -> 1.18 (12 Eylul, kullanici) ─────────
+     "tutorials asiri hizli olmasin cok yavas ta olmasin. ama sanki
+     biraz hizliyiz, onu dusurelim minik."
+     Minik: her durak %18 uzuyor. Iki katina cikarmak turu bir
+     bekleme haline getirirdi; %18 yaziyi bitirmeye yetiyor ve
+     akis hissini bozmuyor. Ayarlardan istenen tur eskisi gibi
+     1.75 kat -- oraya basan kisi okumaya geliyor. */
+  const TUR_ACILIS_KAT = 1.18;
+  const _sure = ms => Math.round(ms * (_turYavas ? TUR_YAVAS_KAT : TUR_ACILIS_KAT));
   /* Tur bir seyi GECICI degistirdiyse (ORBITAPE onizlemesi dunyayi
      aciyor) bitiste geri alan islev burada bekliyor. */
   var _turGeri = null;
@@ -19904,7 +19969,13 @@
        Depoya HICBIR SEY yazilmiyor: kutu isaretlenmedigi surece karar
        kalici degil. Kullanici ayarlardan HOW IT WORKS'e basarsa tur
        yine tam haliyle oynuyor. */
-    if(!zorla && !turOgretecekVarMi()) return;
+    /* ── "OGRETECEK SEY KALMADI" KAPISI KALKTI (12 Eylul) ────────
+       Eskiden kullanici halkayi ve ayar panelini bir kez kullandiysa
+       tur hic acilmiyordu. Yeni kural bunu degistiriyor: tur HER
+       ACILISTA cikiyor, kapanmasi kullanicinin karariyla oluyor --
+       kutu ya da uc atlama (bkz. turGosterilsinMi). Islev duruyor
+       cunku ayarlardan istenen tur onu hala sormuyor; yalnizca
+       acilis kapisi olmaktan cikti. */
     /* AĞ YOKKEN TUR YOK: "no connection" panelinin üstüne binip iki
        mesaj birden okunmuyordu. Kutu işaretlenmediği sürece depoya
        hiçbir şey yazılmıyor, yani tur bir dahaki açılışta yine çıkar. */
@@ -20073,6 +20144,9 @@
        Iceride dort denetim var ve tur akmiyorken hicbiri anlamli
        degil. */
     try{ if(t){ t.setAttribute('inert',''); t.setAttribute('aria-hidden','true'); } }catch(e){ _yut(e); }
+    /* Rehberin bekleme sayaci burada basliyor: tur biter bitmez
+       yardim cikarsa iki anlatim ust uste biner. */
+    try{ _turBitisZamani = Date.now(); }catch(e){ _yut(e); }
     _turAkiyor = false; _turListe = null;
     /* Onizleme geri aliniyor: ORBITAPE turu dunyayi GECICI acmisti,
        anahtar hala kapali ve ekran oldugu gibi geri donmeli. Nerede
@@ -20135,12 +20209,98 @@
         kt.classList.toggle('sec', y); kt.setAttribute('aria-checked', y?'true':'false'); };
       if(kt){ kt.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
               kt.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); cevir(); } }); }
-      if(at){ at.addEventListener('click', e=>{ e.stopPropagation(); turBitir(); });
-              at.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); turBitir(); } }); }
+      /* SKIP acilis turunda sayaci artiriyor (bkz. TUR_ATLAMA_TAVAN).
+         FX sunumunun kendi kutusu var, onun sayaci yok. */
+      const atla = ()=>{
+        if(atlaId === 'turAtla' && !_turYavas){ try{ turAtlamaArtir(); }catch(e){ _yut(e); } }
+        turBitir();
+      };
+      if(at){ at.addEventListener('click', e=>{ e.stopPropagation(); atla(); });
+              at.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); atla(); } }); }
     };
     bagla('turKutu','turAtla');
     bagla('fxKutu','fxAtla');
   }catch(e){ _yut(e); }
+  /* ══ REHBER: KAYBOLDUGUNU HISSEDINCE TEK BIR EL ═════════════════
+     Kullanicinin istegi: "biri tutorialslari kapamazsa, ara ara
+     kullanamadigi seyler ya da caresiz kayboldu gibi bazen olabilir.
+     ya da skinse girdi degistirdi ama skinden dolayi kaybolmus gibi.
+     bi sure sonra skini elle gosterebilirsin. ara ara rehber gibi
+     bisey olsun ama abartma."
+
+     NEYI OLCUYORUZ: "kayboldum" hissi dogrudan olculemez, ama BOSA
+     GIDEN DOKUNUS olculur -- hicbir seye denk gelmeyen, yani zemine
+     inen dokunuslar. Biri ne arayacagini bilmedigi zaman ekrana
+     rastgele dokunuyor. Dort dokunus alti saniyede: bu bir kaza
+     degil, bir arayis.
+
+     ABARTMAMANIN UC KURALI, hepsi olculebilir:
+       1. OTURUMDA BIR KEZ. Ikinci kez cikan yardim yardim degil
+          rahatsizliktir.
+       2. AYARLARDAKI ANAHTARA BAGLI. TUTORIALS kapaliysa hic yok --
+          kullanici zaten "bana anlatma" demis.
+       3. SESSIZ ANLARDA DEGIL. Tur akiyorsa, bir pencere acikse ya
+          da tur biteli 30 saniye olmadiysa cikmiyor.
+
+     NEYI GOSTERIYOR: son bir dakikada deri seridi acilip kapandiysa
+     FIRCAYI (kullanicinin tarif ettigi durum: "skinden dolayi
+     kaybolmus gibi"), yoksa UC CIZGIYI -- her seyin durdugu yer.
+     Metin yeni degil: adimlarin kendi metinleri, yani bes dilde
+     zaten cevrili. */
+  var _bosDokunus = [], _rehberVerildi = false, _deriSonKapanis = 0, _turBitisZamani = 0;
+  const REHBER_ESIK = 4, REHBER_PENCERE = 6000, REHBER_BEKLEME = 30000;
+  function rehberOlurMu(){
+    try{
+      if(_rehberVerildi) return false;
+      if(AYAR && AYAR.tanitim === false) return false;   /* anahtar kapali */
+      if(_turAkiyor) return false;
+      if(Date.now() - (_turBitisZamani || 0) < REHBER_BEKLEME) return false;
+      /* Acik bir pencere varsa kullanici kaybolmus degil, bakiyor. */
+      if(document.body.classList.contains('ayar-acik')) return false;
+      if(window.deriGaleriAcik && window.deriGaleriAcik()) return false;
+      if(window.saatAcik && window.saatAcik()) return false;
+      if(window.gorselAcikMi && window.gorselAcikMi()) return false;
+      return true;
+    }catch(e){ return false; }
+  }
+  function rehberVer(){
+    try{
+      if(!rehberOlurMu()) return;
+      _rehberVerildi = true;
+      /* Deri seridinin kapanis saati modulden geliyor (bkz.
+         deri_galeri.js): index bu modulu her zaman yuklemiyor,
+         o yuzden degeri window uzerinden okuyoruz. */
+      let _dk = 0;
+      try{ _dk = +(window['_deriSonKapanis'] || _deriSonKapanis) || 0; }catch(e2){ _dk = 0; }
+      const deriden = (Date.now() - _dk) < 60000;
+      const hedef = deriden ? '#deriFirca' : '#ayarTut';
+      const e = document.querySelector(hedef);
+      if(!e || !(e.getBoundingClientRect().width > 1)) return;
+      const adim = deriden
+        ? { bas:'SKINS', metin:'The brush: every look, live.<br>Tap again for a slim strip that stays.',
+            duraklar:[{hedef:'#deriFirca', sure:1900}] }
+        : { bas:'SETTINGS', metin:'Bottom left: three lines.<br>Sound, display, playback — and every tutorial.',
+            duraklar:[{hedef:'#ayarTut', sure:1900}] };
+      turBasla(true, [adim], null);
+    }catch(err){ _yut(err); }
+  }
+  /* Zemine inen dokunus: hedefi govde ya da tuvallerden biri. Bir
+     tusa, panele ya da diske denk gelen dokunus BOSA GITMEMISTIR. */
+  try{
+    window.addEventListener('pointerdown', (ev)=>{
+      try{
+        const t = ev.target;
+        if(!(t instanceof Element)) return;
+        if(t.closest('button,[role="button"],[role="switch"],[role="option"],input,a,#ayar,#tur,#ara,#fav,#deriGaleri,#saatPanel,.disk,#viz,#carkTuval')) return;
+        const s2 = Date.now();
+        _bosDokunus = _bosDokunus.filter(x => s2 - x < REHBER_PENCERE);
+        _bosDokunus.push(s2);
+        if(_bosDokunus.length >= REHBER_ESIK){ _bosDokunus = []; rehberVer(); }
+      }catch(e){ _yut(e); }
+    }, {capture:true, passive:true});
+  }catch(e){ _yut(e); }
+  try{ window['rehberVer'] = rehberVer; }catch(e){ _yut(e); }
+
   /* Açılıştan kısa süre sonra: karşılama eli ile çakışmasın diye
      el zaten "dokun" diyorsa tur onun üstüne biniyor, sorun değil —
      tur da aynı yeri gösteriyor. */

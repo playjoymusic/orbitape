@@ -745,6 +745,12 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     }catch(e){ yut(e); }
   }
   function kapa(){
+    /* Serit kapandi: uygulamaya SAATI birakiyoruz. Rehber "deriyi
+       degistirdi ve kayboldu" durumunu buradan taniyor (bkz.
+       index.html, rehberVer) -- kapanistan sonraki bir dakika
+       icinde bosa giden dokunuslar birikirse el FIRCAYI gosteriyor,
+       uc cizgiyi degil. */
+    try{ window['_deriSonKapanis'] = Date.now(); }catch(e){}
     try{
       if(!kap || kap.hidden) return;
       const seritti = kap.classList.contains('serit');
