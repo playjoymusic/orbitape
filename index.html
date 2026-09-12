@@ -2921,21 +2921,21 @@
   /* SAAT TUSU: mantik ve panel saat.js'te (istek uzerine). */
   #deriFirca{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:auto;bottom:calc(190px + var(--dip-pay));
-    width:40px;height:26px;display:flex;align-items:center;
+    top:auto;bottom:calc(206px + var(--dip-pay));
+    width:44px;height:32px;display:flex;align-items:center;
     color:#35e0d8;opacity:.72;cursor:pointer;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #deriFirca svg{width:20px;height:20px;}
+  #deriFirca svg{width:26px;height:26px;}
   #deriFirca:hover,#deriFirca:focus-visible,body.galeri-acik #deriFirca{opacity:1;}
   body.klavye #deriFirca{opacity:0;pointer-events:none;}
   body.deri #deriFirca{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
   #saatTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:auto;bottom:calc(154px + var(--dip-pay));
-    width:40px;height:26px;display:flex;align-items:center;
+    top:auto;bottom:calc(162px + var(--dip-pay));
+    width:44px;height:32px;display:flex;align-items:center;
     color:#35e0d8;opacity:.72;cursor:pointer;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #saatTus svg{width:20px;height:20px;}
+  #saatTus svg{width:26px;height:26px;}
   #saatTus:hover,#saatTus:focus-visible,body.saat-acik #saatTus,#saatTus.kurulu{opacity:1;}
   #saatTus.caliyor{animation:saatCal .9s ease-in-out infinite alternate;}
   @keyframes saatCal{from{opacity:.4}to{opacity:1}}
@@ -2951,10 +2951,10 @@
   #gorselTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;bottom:calc(118px + var(--dip-pay));
-    width:40px;height:26px;display:flex;align-items:center;
+    width:44px;height:32px;display:flex;align-items:center;
     color:#35e0d8;opacity:.72;cursor:pointer;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #gorselTus svg{width:20px;height:20px;}
+  #gorselTus svg{width:26px;height:26px;}
   #gorselTus:hover,#gorselTus:focus-visible,#gorselTus[aria-pressed="true"]{opacity:1;}
   body.klavye #gorselTus{opacity:0;pointer-events:none;}
   body.deri #gorselTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
@@ -3040,18 +3040,23 @@
      alttakiler 6'sar azaliyor, eski 34/27/20 oraninin ayni egimi. */
   /* 4 Eylul: raf adi bloku goruntuden cikinca tutamak EN USTE
      dayaniyor -- artik altinda duracagi bir cubuk yok. */
+  /* 12 Eylul, kullanici: "sol ustteki ayarlar, saat, firca, visual
+     -- o ogeleri daha buyuk yap." Uc simge 20 -> 26 px oldu; ucgen
+     de ayni oranda buyuyor, yoksa yiginin tepesi otekilerin yaninda
+     kuculmus duruyor. Azalan egim korunuyor (32/25/17, eski oran
+     25/19/13 ile ayni). */
   body:not(.mood) #ayarTut{
     top:calc(15px + env(safe-area-inset-top, 0px));
-    bottom:auto;width:25px;height:22px;gap:4px;}
-  body:not(.mood) #ayarTut span:nth-child(1){width:25px;}
-  body:not(.mood) #ayarTut span:nth-child(2){width:19px;}
-  body:not(.mood) #ayarTut span:nth-child(3){width:13px;}
+    bottom:auto;width:32px;height:26px;gap:5px;}
+  body:not(.mood) #ayarTut span:nth-child(1){width:32px;}
+  body:not(.mood) #ayarTut span:nth-child(2){width:25px;}
+  body:not(.mood) #ayarTut span:nth-child(3){width:17px;}
   /* Acikken uc cizgi esitlenip duz bir yigin oluyor: ucgen kapaniyor.
      Eski davranisin birebir aynisi. */
   /* Acikken uc cizgi esitleniyor: ucgen kapaniyor. Arsivde zaten
      duzler (34), o yuzden kural yalnizca radyoya yaziliyor. */
-  body:not(.mood).ayar-acik #ayarTut span:nth-child(2){width:25px;}
-  body:not(.mood).ayar-acik #ayarTut span:nth-child(3){width:25px;}
+  body:not(.mood).ayar-acik #ayarTut span:nth-child(2){width:32px;}
+  body:not(.mood).ayar-acik #ayarTut span:nth-child(3){width:32px;}
 
   /* Panel ARAMA CIZGISININ USTUNDEN aciliyor.
      Once ucgenin hemen ustunden (38px) aciliyordu ve ekranin dibinde
@@ -16357,10 +16362,15 @@
              Her biri bir oncekinin ustune: hedef alt kenar yukari
              dogru 26+bos kadar yuruyor. Ekran boyu yok. */
           try{
+            /* ADIM SABIT DEGIL OLCULEN: simge kutusu buyuyunce
+               (20 -> 26 px, 12 Eylul) sabit 26 adim yiginin ustteki
+               ogelerini birbirine bindiriyordu. Kutu boyu CSS'ten
+               geliyor, olcu de oradan gelmeli. */
             let hedef = sr.top - bos;
             ['deriFirca','saatTus','gorselTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
-              hedef -= 26 + bos;
+              const y2 = e2.getBoundingClientRect().height || 26;
+              hedef -= y2 + bos;
               e2.style.removeProperty('top'); _altYasla(e2, hedef);
             });
           }catch(_){ _yut(_); }
@@ -16398,10 +16408,15 @@
             let ust = Math.round(tr.bottom + 14);
             /* 6 Eylul: gorsel tusu yiginin EN ALTINDA -- kullanicinin
                sozu "solda skins'in altina". */
+            /* ADIM SABIT DEGIL OLCULEN (12 Eylul): kullanici
+               simgeleri buyuttu (20 -> 26 px, kutu 26 -> 32), sabit
+               26 adim yiginin ogelerini birbirine bindiriyordu.
+               Kutu boyu CSS'ten geliyor, adim da oradan geliyor;
+               aradaki 12 px hava aynen duruyor. */
             ['saatTus','deriFirca','gorselTus'].forEach(id=>{
               const e2 = document.getElementById(id); if(!e2) return;
               e2.style.removeProperty('bottom'); e2.style.top = ust + 'px';
-              ust += 26 + 12;
+              ust += (e2.getBoundingClientRect().height || 26) + 12;
             });
           }
         }catch(_){ _yut(_); }
