@@ -99,6 +99,34 @@ try{ window.CARK_BASLADI = true; }catch(e){}
   /* Dort kademe: seviye carpani. MAX kasten yuksek -- kullanicinin
      sozu: "cok acilabilir de bu arada, tatli bir his o ses." */
   const CARK_SEV = [0.6, 1, 1.8, 3];
+  /* ── BAGLAMI PARMAK INERKEN/KALKARKEN UYANDIR (12 Eylul) ────────
+     Bildirilen: "sessize aldim, cark sesi gelmedi; sesi acip app'i
+     kapatip acinca geri geldi."
+     OLCULDU (is/tik3.js): bir cevirme jestinde 41 tikin 40'i
+     hicbir kullanici olayinin icinde degil -- rAF'tan ve
+     pointermove'dan cikiyor. iOS bir ses baglamini YALNIZCA
+     kullanici etkinligi sayilan bir olayin icinde uyandiriyor ve
+     pointermove ile rAF bu listede YOK (touchend, pointerdown,
+     click, keydown var). Eleman susturulunca isletim sistemi hicbir
+     sey uretmeyen baglami askiya aliyor; ondan sonra carkin
+     tikSesi icindeki resume() cagrisi hicbir zaman tutmuyor --
+     yani tikirti kaliciya yakin bicimde susuyor. Sesi acip
+     uygulamayi yeniden baslatinca baglam askiya alinmadigi icin
+     geri geliyor. Sustur tusuyla tikirtinin dogrudan bir baglantisi
+     YOK; ortak olan sey baglam.
+     Uyandirma bu yuzden jestin kendisine tasindi: parmak inerken
+     (bas) ve kalkarken (birak). Sustur davranisi ve kapandigi gibi
+     acilma kurali hic degismiyor. */
+  function sesiAc(){
+    try{
+      sesBaglamiAl();
+      const ac = (typeof actx !== 'undefined') ? actx : null;
+      if(ac && ac.state !== 'running' && ac.state !== 'closed'){
+        const s = ac.resume();
+        if(s && typeof s.catch === 'function') s.catch(()=>{});
+      }
+    }catch(e){ yut(e); }
+  }
   function tikSesi(guc){
     try{
       if(!AYAR || AYAR.carkSes === false) return;
@@ -118,7 +146,44 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          ama 'suspended' edilmiyordu. iOS baglami arka plandan
          donunce, sekme degisince ya da ses duraklayinca askiya
          aliyor. Simdi uyandiriliyor. */
-      if(ac.state !== 'running'){ try{ ac.resume(); }catch(e){} }
+      /* ── DONMUS SAATE ZAMANLAMA (12 Eylul) ────────────────────
+         Kullanicinin bildirimi: "sessize aldim, cark sesi gelmedi;
+         sesi acip app'i kapatip acinca geri geldi."
+         URETILDI: baglam askiya alinip carkTik cagrildi. Ses dugumu
+         KURULUYOR ve start() cagriliyor -- ama askidaki baglamda
+         currentTime DONMUS. Olculdu: start(t0) yazildi, sonra
+         baglam 0,44 saniye ileri atladi. Yani 60 ms'lik tik
+         GECMISE zamanlaniyor ve hic duyulmuyor.
+         resume() ASENKRON: bir onceki surum onu cagirip hemen
+         ayni satirda currentTime okuyordu, yani duzeltme
+         calismiyordu.
+         Sustur tusu bunu neden tetikliyor: ses sifira inince
+         ses.muted=true oluyor (bkz. sesSeviyeYaz) ve hicbir sey
+         uretmeyen baglami isletim sistemi bir sure sonra askiya
+         aliyor. Sustur tusunun kendisiyle tikirtinin bir baglantisi
+         YOK -- ortak olan sey baglam.
+         COZUM: askidayken once UYAN, sonra zamanla. Saat resume
+         cozuldukten SONRA yeniden okunuyor. */
+      if(ac.state !== 'running'){
+        let sz = null;
+        try{ sz = ac.resume(); }catch(e){}
+        if(sz && typeof sz.then === 'function'){
+          const istek = Date.now();
+          sz.then(()=>{
+            /* Gec cozulen bir uyanma artik o dokunusa ait degil:
+               parmak coktan gitti, geciken bir tik kafa karistirir. */
+            if(Date.now() - istek > 250) return;
+            try{ _tikCal(ac, guc); }catch(e){ yut(e); }
+          }).catch(()=>{});
+          return;
+        }
+      }
+      _tikCal(ac, guc);
+    }catch(e){ yut(e); }
+  }
+  /* Sesin kendisi: saat BURADA okunuyor, yani her cagrida taze. */
+  function _tikCal(ac, guc){
+    try{
       const t = ac.currentTime;
       const g = ac.createGain();
       const kat = CARK_SEV[Math.max(0, Math.min(3, (AYAR.carkSesSev|0)))] || 1;
@@ -150,7 +215,24 @@ try{ window.CARK_BASLADI = true; }catch(e){}
       if(!disk || !tuval) return false;
       const b = disk.getBoundingClientRect();
       if(!b.width) return false;
-      R = b.width / 2;
+      /* ── HALKA BOYU CARKI TASIMIYOR (12 Eylul) ─────────────────
+         Kullanicinin sozu: "dikkatsiz sert cevrilince ortadaki
+         halkalara dokunuyor parmak."
+         Ayarlardaki RING SIZE diski scale ile kuculturuyor; kutu
+         rect'i de o olcekli hali veriyor. Yaricap carpandan
+         ARINDIRILIYOR, yani disler her kademede AYNI yaricapta
+         kaliyor ve halka onlarin icine dogru cekiliyor. Aradaki
+         bant ne carkin bandi ne de diskin kutusu: kayan parmak
+         oraya denk gelince hicbir sey olmuyor.
+         Ikisi birlikte kuculseydi oran sabit kalir, sorun oldugu
+         yerde dururdu. */
+      /* offsetWidth DUZEN genisligi: transform'u da, onun 0,8
+         saniyelik gecisini de gormuyor. rect'ten kat'i bolmeyi
+         denedim ve olcum yakaladi -- gecis sirasinda rect
+         animasyonun ortasindaki degeri veriyor, yani cark her
+         kademe degisiminde yanlis yaricapla kuruluyordu. */
+      const ham = (disk['offsetWidth'] | 0) || b.width;
+      R = ham / 2;
       /* ── FAZ DAHA COK YER ISTIYOR ─────────────────────────────
          Cark kipinde en disardaki sey ad cemberi (1.28R) ve pay
          0.44R yetiyordu. Faz kipinde cubuk menzili acildi: vurusta
@@ -176,13 +258,16 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          (MENZIL 0.28). Iki kip artik ayni payi kullaniyor -- ayni
          seyi cizdikleri icin. */
       const pay = Math.round(R * 0.44);   // adların çemberi için yer
-      const boy = Math.round(b.width + pay * 2);
+      const boy = Math.round(R * 2 + pay * 2);
       /* Piksel yogunlugu uygulamanin kendi tuvaliyle ayni: mobilde
          1.5. Once 2'ydi ve bu tuval ekrandaki en genis yuzey. */
       const dpr = Math.min(window.devicePixelRatio || 1, MOBIL_CIHAZ ? 1.5 : 2);
       tuval.style.width = boy + 'px'; tuval.style.height = boy + 'px';
-      tuval.style.left = Math.round(b.left - pay) + 'px';
-      tuval.style.top  = Math.round(b.top  - pay) + 'px';
+      /* Tuval diskin MERKEZINE oturuyor: olcek kutuyu kucultuyor
+         ama merkezi oynatmiyor (transform-origin ortada). */
+      const mx = b.left + b.width / 2, my = b.top + b.height / 2;
+      tuval.style.left = Math.round(mx - boy / 2) + 'px';
+      tuval.style.top  = Math.round(my - boy / 2) + 'px';
       if(tuval.width !== boy * dpr){ tuval.width = boy * dpr; tuval.height = boy * dpr; }
       ctx = tuval.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -589,6 +674,7 @@ try{ window.CARK_BASLADI = true; }catch(e){}
          bir duvar degil: ayni bant, ayni jest, ayni sonuc -- tek
          fark disler yerine ses cubuklari. */
       if((kip !== 'cark' && kip !== 'faz') || !R || kapali || !acikMi() || !bandaMi(e)) return;
+      sesiAc();
       basili = true; oturuyor = false; hiz = 0;
       sonAci = aciBul(e); sonZaman = performance.now();
       e.preventDefault(); e.stopPropagation();
@@ -614,6 +700,9 @@ try{ window.CARK_BASLADI = true; }catch(e){}
     try{
       if(!basili) return;
       basili = false;
+      /* Savrulmanin tikleri parmak kalktiktan SONRA geliyor; iOS'ta
+         uyandirma hakki tam da burada dogar (touchend). */
+      sesiAc();
       /* Hız düşükse elle getirilmiş demektir: doğrudan otur.
          Savrulmuşsa atalet çalışır, hız sınırlanıyor ki çark
          dakikalarca dönmesin. */

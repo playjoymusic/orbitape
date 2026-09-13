@@ -576,10 +576,21 @@ async function gokyuzuOlc(sayfa){
         if(!d || !t) return { yok:true };
         const a = d.getBoundingClientRect(), b = t.getBoundingClientRect();
         if(!a.width || !b.width) return { yok:true };
-        const pay = Math.round((a.width / 2) * 0.44);
-        return { dx: Math.round(b.left - (a.left - pay)),
-                 dy: Math.round(b.top  - (a.top  - pay)),
-                 dw: Math.round(b.width - (a.width + pay * 2)) };
+        /* ── OLCU RECT'TEN DEGIL DUZENDEN (12 Eylul) ────────────
+           RING SIZE kademesi diski transform:scale ile kucultuyor;
+           rect o olcekli hali veriyor. Cark ise KASTEN olcekten
+           bagimsiz: yaricapini duzen genisliginden (offsetWidth)
+           aliyor ki disler her kademede ayni yerde kalsin ve
+           halkayla arasinda olu bir bant acilsin.
+           Bu yuzden beklenen tuval boyu rect'ten degil duzenden
+           hesaplaniyor; merkez ise iki tarafta da ayni (olcek
+           merkezi oynatmiyor). */
+        const R = (d['offsetWidth'] || a.width) / 2;
+        const pay = Math.round(R * 0.44);
+        const boy = Math.round(R * 2 + pay * 2);
+        return { dx: Math.round((b.left + b.width / 2) - (a.left + a.width / 2)),
+                 dy: Math.round((b.top  + b.height / 2) - (a.top  + a.height / 2)),
+                 dw: Math.round(b.width - boy) };
       });
       const kur = (en)=>sayfa.evaluate(w=>{
         document.querySelector('.disk').style.width = w || '';

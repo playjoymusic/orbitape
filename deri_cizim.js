@@ -4903,6 +4903,28 @@ function deriCizimAdresi(d){
           return orta2(cc, x * ox, y * oy, Math.max(1, w * ox), Math.max(1, h * oy));
         }catch(e){ return null; }
       };
+      /* ── SIMGENIN ARKASI DUZ MU? (12 Eylul) ─────────────────
+         Kullanicinin sozu: "bu yukledigim skinslerde sanirim acik
+         renk oldugundan sol ustteki ogeler bi garip olmus kaymali
+         gibi."
+         Simgelerin altinda ters tonda bir HALE var ve ikinci
+         golgesi 1 px asagi kaydirilmis. Koyu derilerde koyu hale
+         gorunmuyordu; acik deride ayni hale simgenin kaymis bir
+         kopyasi gibi okunuyor.
+         Hale zaten yalnizca DEGISKEN bir zemin icin vardi: duz bir
+         blogun uzerinde simgenin rengi (--d-simge) zaten 4,5
+         kontrastla seciliyor, yani hale hicbir is yapmiyor.
+         Karar deri deri degil piksele gore veriliyor: simgenin
+         kendi dikdortgeninde komsu farki (ayni olcu, bkz.
+         _altSolFark). */
+      window['deriZeminFark'] = (x, y, w, h)=>{
+        try{
+          if(!_sonTuval) return null;
+          const cc = _sonTuval.getContext('2d'); if(!cc) return null;
+          const ox = _sonTuval.width / innerWidth, oy = _sonTuval.height / innerHeight;
+          return _altSolFark(cc, x * ox, y * oy, Math.max(8, w * ox), Math.max(8, h * oy));
+        }catch(e){ return null; }
+      };
     }catch(e){ try{ window['DERI_ZEMIN'] = null; }catch(_){ } }
     return t.toDataURL('image/png');
   }catch(e){ _yut(e); return ''; }

@@ -105,7 +105,12 @@
   .vignette{position:fixed;inset:0;pointer-events:none;z-index:42;background:radial-gradient(120% 100% at 50% 50%,transparent 40%,rgba(0,0,0,.96) 100%);}
   #noise{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated;opacity:0;transition:opacity .12s linear;pointer-events:none;z-index:50;mix-blend-mode:screen;}
   .flash{position:fixed;inset:0;background:#0e2c2c;opacity:0;pointer-events:none;z-index:51;}
-  .disk{transition:opacity .8s ease, transform .8s ease;}
+  .disk{transition:opacity .8s ease, transform .8s ease;
+    /* HALKA BOYU (bkz. ayarlar: RING SIZE). Olcek DUZENI degistirmiyor
+       -- kutu ayni yerde, yalnizca cizim ve dokunus alani kuculuyor.
+       Carkin yaricapi bu carpandan arindiriliyor (cark.js: olc), yani
+       disler yerinde kaliyor. */
+    transform:scale(var(--halka-kat,1));}
   /* ── GECISTE SOLUKLASMA KALKTI (3 Eylul, kullanici) ────────────
      "bastik sarki gecmek icin ... bi siliniyor gibi, o anlik halka
      transparan oluyor, background'u goruyoruz anlik. o olmasin."
@@ -330,9 +335,9 @@
   }
   /* Basış nefesi: transform derleyicide çalışır, ana iş parçacığı takılsa bile akar. */
   @keyframes diskNefes{
-    0%  {transform:scale(1);}
-    36% {transform:scale(var(--nfs,.93));}
-    100%{transform:scale(1);}
+    0%  {transform:scale(var(--halka-kat,1));}
+    36% {transform:scale(calc(var(--halka-kat,1) * var(--nfs,.93)));}
+    100%{transform:scale(var(--halka-kat,1));}
   }
   .disk.nefes{transition:none;animation:diskNefes var(--nsure,480ms) cubic-bezier(.32,.02,.24,1);
     will-change:transform;}
@@ -3088,11 +3093,15 @@
      ve golge yolun kendisini takip ediyor, kutusunu degil. */
   body.deri #deriFirca,body.deri #saatTus,body.deri #gorselTus,
   body.deri #ayarTut{opacity:.88;}
+  /* IKINCI GOLGE SILINDI (12 Eylul). 1 px asagi kaydirilmis koyu
+     bir golgeydi ve acik zeminde simgenin KAYMIS bir kopyasi gibi
+     okunuyordu -- kullanicinin gordugu "kaymali gibi" tam buydu.
+     Geriye simetrik tek hale kaldi; o da yalnizca zemin gercekten
+     desenliyse yaziliyor (--d-hale, bkz. deriUygula). */
   body.deri #deriFirca svg,body.deri #saatTus svg,body.deri #gorselTus svg{
-    filter:drop-shadow(0 0 2px var(--d-ters-hale, rgba(0,0,0,.6)))
-           drop-shadow(0 1px 1px var(--d-ters-hale, rgba(0,0,0,.6)));}
+    filter:drop-shadow(0 0 2px var(--d-hale, var(--d-ters-hale, rgba(0,0,0,.6))));}
   body.deri #ayarTut span{
-    box-shadow:0 0 2px var(--d-ters-hale, rgba(0,0,0,.6));}
+    box-shadow:0 0 2px var(--d-hale, var(--d-ters-hale, rgba(0,0,0,.6)));}
   /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ─────────────────────
      Bir ara buradaki iki nesnenin (uc cizgi ve kip anahtari)
      ALTINI koyulastiriyorduk: ikisi panelden ustte ciziliyor
@@ -4114,6 +4123,18 @@
          devami. -->
     <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
       <span>RING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── HALKA BOYU: BES KADEME ────────────────────────────────
+         Kullanicinin sozu: "dikkatsiz sert cevrilince ortadaki
+         halkalara dokunuyor parmak... isteyen halkayi buyutur
+         kucultur mu yapsak, 5 kademe."
+         Kademe kucultururken CARKI YERINDE BIRAKIYOR: disler ayni
+         yaricapta kaliyor, halka iceri cekiliyor. Aradaki bant
+         hicbir seye dokunmayan bir olu bolge oluyor -- sert
+         cevirirken kayan parmak artik halkaya degil ona denk
+         geliyor. Ikisi birlikte kuculseydi oran degismez, sorun
+         oldugu yerde kalirdi. -->
+    <div class="sat islem" data-ayar="halkaBoy" role="button" tabindex="-1">
+      <span>RING SIZE</span><span class="durum">MEDIUM</span></div>
     <!-- ALL BLACK: zemin her rafta simsiyah. Tema secili olsa bile
          siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
@@ -6237,11 +6258,32 @@
         const _sol = ['ayarTut','deriFirca','saatTus','gorselTus'];
         const _ol = (d.cizim && typeof window['deriZeminOrta'] === 'function')
                   ? window['deriZeminOrta'] : null;
+        /* ── HALE ARTIK SIMGE SIMGE ──────────────────────────
+           Kullanicinin sozu (12 Eylul): "bu yukledigim skinslerde
+           sanirim acik renk oldugundan sol ustteki ogeler bi garip
+           olmus kaymali gibi."
+           Hale (--d-ters-hale) DEGISKEN bir zemin icin kondu: duz
+           bir blogun uzerinde simgenin rengi zaten 4,5 kontrastla
+           seciliyor, hale bir sey eklemiyor. Koyu deride koyu hale
+           gozukmuyordu; acik deride ayni hale kaymis bir kopya gibi
+           okunuyor.
+           Karar deri adiyla degil PIKSELLE veriliyor: simgenin
+           kendi dikdortgeninde komsu farki (deriZeminFark, ayni
+           olcu ve ayni esik -- bkz. kabartma karari). Cizimi
+           olmayan deride zemin tanimi geregi duz: hale kapali. */
+        const _fk = (d.cizim && typeof window['deriZeminFark'] === 'function')
+                  ? window['deriZeminFark'] : null;
         for(const _id of _sol){
           const _e = document.getElementById(_id); if(!_e) continue;
           _e.style.removeProperty('--d-simge');
+          const _rh = _e.getBoundingClientRect();
+          let _f = 0;
+          if(_fk && _rh.width >= 2 && _rh.height >= 2)
+            _f = _fk(_rh.left, _rh.top, _rh.width, _rh.height) || 0;
+          if(_f >= 1.60) _e.style.removeProperty('--d-hale');
+          else _e.style.setProperty('--d-hale', 'transparent');
           if(!_ol) continue;
-          const _r = _e.getBoundingClientRect();
+          const _r = _rh;
           if(_r.width < 2 || _r.height < 2) continue;
           const _z = _ol(_r.left, _r.top, _r.width, _r.height);
           if(!_z) continue;
@@ -10561,7 +10603,7 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:false, gunDongusu:false };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:false, gunDongusu:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -10584,6 +10626,8 @@
         if(_a.sesKapa === true) AYAR.sesKapa = true;
         if(_a.carkSesCal === false) AYAR.carkSesCal = false;
         if(typeof _a.carkSesSev === 'number') AYAR.carkSesSev = Math.max(0, Math.min(3, _a.carkSesSev|0));
+        /* Halka boyu: kademe sayisi degisirse eski kayit tasmasin. */
+        if(typeof _a.halkaBoy === 'number') AYAR.halkaBoy = Math.max(0, Math.min(4, _a.halkaBoy|0));
         /* ── BIR KERELIK ONARIM: ORTADAKI ALET ────────────────────
            KULLANICININ SOZU: "ilk acilinca carkli olan acilmali."
            Varsayilan zaten 'cark'. Ama skins paneli acilirken
@@ -11757,6 +11801,29 @@
   const YILDIZ_AD     = ['MINIMAL','LOW','NORMAL','DENSE','COSMIC'];
   /* Cark tikirtisinin dort kademesi (bkz. cark.js CARK_SEV). */
   const CARK_SEV_AD   = ['LOW','MID','HIGH','MAX'];
+  /* ── HALKA BOYU ──────────────────────────────────────────────────
+     Bes kademe. EN BUYUGU (XL) bugune kadarki tek boy: kimse ayara
+     girmezse gorunusun bozulmamasi icin olcek orada tam 1.
+     Adimlar 0,05 -- "cok asiri degil" sozune gore: en kucuk kademe
+     bile halkayi yalnizca %20 kuculturuyor, yani halka hala ekranin
+     ana ogesi. Ilk acilis M (iki tik kucuk): carkla halka arasinda
+     parmak kalinligi kadar olu bolge aciliyor ama halka kucuk
+     durmuyor. */
+  const HALKA_KAT = [1.00, 0.95, 0.90, 0.85, 0.80];
+  const HALKA_AD  = ['FULL','LARGE','MEDIUM','SMALL','TINY'];
+  function halkaBoyYaz(){
+    try{
+      const i = Math.max(0, Math.min(HALKA_KAT.length - 1, AYAR.halkaBoy | 0));
+      document.documentElement.style.setProperty('--halka-kat', String(HALKA_KAT[i]));
+      /* Cark kendi yaricapini diskin kutusundan okuyor; olcek
+         degisince yeniden olcmesi gerekiyor. */
+      try{ if(window['carkTazele']) window['carkTazele'](); }catch(e){ _yut(e); }
+      try{ window.dispatchEvent(new Event('resize')); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
+  /* Kayitli kademe ILK CIZIMDEN once yaziliyor: olcek sonradan
+     binseydi halka gozle gorulur bicimde kuculurdu. */
+  halkaBoyYaz();
   /* ── YOGUNLUK VE PARLAKLIK AYRI ─────────────────────────────────
      Istenen: "yildizlar da acilip kisilir, yogunluk ayri parlaklik
      ayri."
@@ -18077,6 +18144,8 @@
         try{ dilListeYaz(); }catch(e){ _yut(e); }
         const el5 = kut.querySelector('.sat[data-ayar="carkSesSev"] .durum');
         if(el5) el5.textContent = Y(CARK_SEV_AD[AYAR.carkSesSev|0] || 'MID');
+        const el6 = kut.querySelector('.sat[data-ayar="halkaBoy"] .durum');
+        if(el6) el6.textContent = Y(HALKA_AD[AYAR.halkaBoy|0] || 'MEDIUM');
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
            baska is yapmaz. */
@@ -18353,6 +18422,11 @@
            (bkz. markup notu). Tema satiriyla ayni davranis. */
         dilListeKur();
         dilListeAc(!!document.getElementById('dilListe').hidden);
+        return;
+      }
+      if(k === 'halkaBoy'){
+        AYAR.halkaBoy = ((AYAR.halkaBoy|0) + 1) % HALKA_KAT.length;
+        ayarKaydet(); halkaBoyYaz(); yildizYaz();
         return;
       }
       if(k === 'carkSesSev'){
