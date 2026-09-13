@@ -2802,7 +2802,19 @@
          cekmek -- ikisi birbiriyle yarisirdi. Dakika yeter.
      Rakamlar tabular: 1'den 2'ye gecerken satir kaymiyor.
      Renk sabit beyaz DEGIL: gorselin kendi vurgusundan geliyor,
-     yani her gorselde ayni aileye ait duruyor. */
+     yani her gorselde ayni aileye ait duruyor.
+     LED FONTU BURADA DEGIL (13 Eylul): kullanici bu saati de DSEG7
+     Modern'e gecirmek istedi ama BU DOSYADA gercek bir font DOSYASI
+     kurali YAZILAMAZ -- 'Font dosyasi gomulu degil' testi (bkz.
+     saglik.js) tam olarak bunu yakalar, hatta salt METIN olarak
+     gecen bir aninmasi bile yeter (bu yuzden burada o kural sozcugu
+     bilerek hic yazilmiyor). O kontrol Honfleur lisansi yuzunden var
+     (bkz. testin kendi yorumu) ve bu dosyaya boyle bir kural bir
+     daha sessizce girmesin diye bilerek katidir. Font kurali yerine
+     gorsel.js'in kendi listesinde: o zaten "istek uzerine" iniyor VE
+     bu saat ancak gorsel acikken (body.gorsel-acik) gorunur -- yani
+     gorsel.js kesin yuklenmis olur, font o zamana kadar hazir. Bkz.
+     gorsel.js KURALLAR: '#gorselSaat{font-family:...DSEG7 Modern...}'. */
   #gorselSaat{position:fixed;z-index:2;left:0;right:0;
     top:calc(50% - 0.62em);text-align:center;pointer-events:none;
     font-family:'Share Tech Mono',ui-monospace,monospace;

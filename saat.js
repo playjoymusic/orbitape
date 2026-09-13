@@ -65,7 +65,14 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
        (keshikan.net/fonts-e.html). Yalnizca BUYUK deger burada
        kullaniliyor (.st-deger); panelin geri kalani hala Share Tech
        Mono -- kucuk etiketlerde LED fontu okunmuyor, sadece rakamda
-       ise yariyor. Dosya font-src 'self' altinda, CSP degismedi. */
+       ise yariyor. Dosya font-src 'self' altinda, CSP degismedi.
+       Ayni gun: gorselin ustundeki saat de (index.html: #gorselSaat,
+       "CLOCK IN VISUALS") ayni fonta gecti -- ama @font-face'i
+       BURADAN kopyalamadi, kendi @font-face'ini gorsel.js'e ekledi.
+       Sebep: bu panel VE gorsel birbirinden bagimsiz, ikisi de
+       "istek uzerine" iniyor; biri acilmadan digeri de acilabilir.
+       Ayni @font-face iki dosyada tekrar etmesi zararsiz (tarayici
+       ayni kaynagi iki kez kaydetmiş olur, tek seferde kullanir). */
     "@font-face{font-family:'DSEG7 Modern';font-style:normal;font-weight:700;font-display:swap;src:url('/yazitipi/DSEG7-Modern-700.woff2') format('woff2')}",
     ".st-deger{font-family:'DSEG7 Modern','Share Tech Mono',ui-monospace,monospace}",
     ".st-bas{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}",

@@ -134,7 +134,31 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     "#gorselSerit .gs-tus:hover,#gorselSerit .gs-tus:focus-visible{opacity:1}",
     "#gorselSerit .gs-ad{font-size:0.6875rem;letter-spacing:.24em;min-width:104px;text-align:center;opacity:.9;color:var(--d-marka,#4de0d0)}",
     "#gorselSerit .gs-sayac{font-size:0.625rem;opacity:.45;padding-right:4px}",
-    "@media (max-height:480px){#gorselSerit{top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 46px)}}"
+    "@media (max-height:480px){#gorselSerit{top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 46px)}}",
+    /* ── GORSELIN USTUNDEKI SAAT: LED FONTU (13 Eylul) ────────────
+       Kullanicinin ekran goruntusu: uyku/alarm panelindeki buyuk
+       rakam (saat.js) DSEG7 Modern'e gecmisti (3687c3e) ama BU saat
+       -- gorselin ustundeki, "CLOCK IN VISUALS" -- ayri bir eleman,
+       ona hic dokunulmamisti; hala eski fontta duruyordu. Kullanici
+       baska bir dijital font (Digital-7) buldu ama lisansi ev
+       kullanimiyla sinirli, dagitim icin ucretli ($24.95,
+       style-7.com) -- kullanilmadi. Zaten depoda ucretsiz/ticari
+       kullanima acik DSEG7 Modern ayni goruntuyu veriyor.
+       @font-face BURADA, index.html'DE DEGIL: index.html'in kendi
+       'Font dosyasi gomulu degil' testi (Honfleur lisans bekcisi)
+       orada bir @font-face/url(.woff) gorunce KIRMIZI YANAR --
+       haklı, o test bu depoya baska bir font dosyasi asla sessizce
+       girmesin diye var. Gorsel.js ayri bir dosya oldugu icin o
+       testin taradigi index.html HTML'ine hic girmiyor (saat.js'teki
+       kopyasi da ayni sebeple orada, index.html'de degil).
+       Ozel oncelik: duz '#gorselSaat{...}' index.html'deki STATIK
+       kuralla AYNI ozgullukte (tek ID) -- CSSOM'un sonradan
+       eklenmesine guvenmemek icin 'body' eklenerek ozgulluk bilerek
+       yukseltildi, boylece kaynak sirasindan BAGIMSIZ olarak kazanir
+       (olculdu: bkz. test/saglik.js "Gorseldeki saat de LED
+       fontunda"). */
+    "@font-face{font-family:'DSEG7 Modern';font-style:normal;font-weight:700;font-display:swap;src:url('/yazitipi/DSEG7-Modern-700.woff2') format('woff2')}",
+    "body #gorselSaat{font-family:'DSEG7 Modern','Share Tech Mono',ui-monospace,monospace}"
   ];
   function kurallariKur(){
     try{

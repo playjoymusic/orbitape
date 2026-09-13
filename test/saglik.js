@@ -9242,6 +9242,45 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        grOz || 'kapali kip bedava');
   }
 
+  /* ── GORSELDEKI SAAT DE LED FONTUNDA (13 Eylul) ────────────────
+     3687c3e yalnizca uyku/alarm PANELinin buyuk rakamina LED fontu
+     (DSEG7 Modern) getirmisti, index.html'e bilerek dokunmamisti.
+     Kullanicinin sonradan attigi ekran goruntusu GORSELIN USTUNDEKI
+     saatti (#gorselSaat, "CLOCK IN VISUALS") -- ayri bir eleman,
+     hic degismemisti. Font artik burada da, ama @font-face index.
+     html'de DEGIL gorsel.js'in kendi CSSOM kuralinda (bkz. o dosyanin
+     yorumu: index.html'in 'Font dosyasi gomulu degil' lisans-bekcisi
+     testi orada bir @font-face gorunce kirmizi yanar). Bu yuzden bu
+     kontrol GORSEL.JS YUKLENMIS OLMASINI sart kosuyor -- yukaridaki
+     gorsel testleri zaten bunu saglamis durumda (window.GORSEL_HAZIR).
+     Iki ayri olcum: 'yuklendi' olmadan font-family metninde 'DSEG7
+     Modern' gecmesi tek basina yetmez (yazi dogru, dosya kayip
+     olabilir); ikisi birden gercek kanit. */
+  {
+    const gsFont = await pg.evaluate(async ()=>{
+        const bek = ms2 => new Promise(r=>setTimeout(r,ms2));
+        const oncedenAcikMi = !!(window.gorselAcikMi && window.gorselAcikMi());
+        if(!oncedenAcikMi) window.gorselAc();
+        await bek(200);
+        AYAR.gorselSaat = true; gorselSaatKur();
+        let yuklendi = false;
+        try{
+          await document.fonts.load("700 16px 'DSEG7 Modern'");
+          yuklendi = document.fonts.check("700 16px 'DSEG7 Modern'");
+        }catch(e){}
+        const e = document.getElementById('gorselSaat');
+        const fam = e ? getComputedStyle(e).fontFamily : '(eleman yok)';
+        AYAR.gorselSaat = false; gorselSaatKur();
+        if(!oncedenAcikMi) window.gorselKapa();
+        await bek(200);
+        return { yuklendi, fam };
+      });
+    K('Gorseldeki saat de LED fontunda',
+      gsFont.yuklendi && /DSEG7 Modern/i.test(gsFont.fam),
+      gsFont.yuklendi ? ('yuklendi, font-family: ' + gsFont.fam)
+                      : ('DSEG7 Modern yuklenmedi -- font-family: ' + gsFont.fam));
+  }
+
   /* ── GORSEL ACIKKEN EKRAN KILITLI ───────────────────────────────
      Kullanicinin karari (6 Eylul): HOLD kaldirildi, kilit isini
      gorselin kendisi yapiyor. "Visual acikken ortadaki sarki
