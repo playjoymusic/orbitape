@@ -871,7 +871,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        BORC HALA DURUYOR: bu altinci yukselis ve modul bolme yine
        yapilmadi. Dil duzenegi bolunmeye en uygun parca -- bir
        sonraki dil isteginde ONCE o yapilmali.
-       Son yukseltme (1212 -> 1224): tanitim turunun yeniden kurulmasi
+       Son yukseltme (1224 -> 1236): iki kucuk, adi konabilen is ayni
+       partide: (1) favori kipin artik rafa gore suzulmesi (ORBITAPE
+       favorileri RADIOTAPE ile karismasin, kullanicinin sozu) ve
+       raf/mod degisince otomatik sifirlanmasi; (2) ANİŞ'in ekranda
+       koseye atilmasi (AYAR.deri sirasi bozulmadan, yalnizca
+       goruntulenme sirasi). Ikisi de birer kac satirlik NEDEN yorumu
+       tasiyor -- silinirse bir sonraki kisi favori havuzunun neden
+       AKTIF_MOD'a gore suzuldugunu ya da ANİŞ'in neden ozel bir
+       istisna listesinde oldugunu bilemez. OLCU: ham boy 1223,49 ->
+       1226,13 KB (+2,64 KB, ikisi birden). Kirpma denenmedi -- bu
+       dosyanin kendi tarihi zaten kirpmanin bu tavanda ise yaramadigini
+       defalarca yazili birakti.
+       Onceki yukseltme (1212 -> 1224): tanitim turunun yeniden kurulmasi
        ve REHBER. Sira kullanicidan geldi ve gerekcesi yazili (bkz.
        'ACILIS SIRASI KULLANICIDAN GELDI'); uc atlama kurali, saat
        panelinin turda gercekten acilip kapanmasi, ve "kayboldum"
@@ -906,7 +918,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        olmadigi icin tasindi. Olcum 1192,47 KB.
        Tavan bir koruma; islev eklenince yaziyla yukseltiliyor,
        sessizce degil. */
-    K('Ham boy < 1224 KB', dosyaBoy < 1224*1024,
+    K('Ham boy < 1236 KB', dosyaBoy < 1236*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
