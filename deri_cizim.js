@@ -241,7 +241,7 @@ const DERI_USLUP = {
   lunaA    : { pal:["#efe6d4","#2c4a8c","#d84c50","#e8a83c","#2a2620"], tohum:27 },
   ezgitA   : { pal:["#f4ece0","#e8c8d0","#c08a4c","#dca0aa","#5a3242"], tohum:15 },
   hombarA  : { pal:["#101a2c","#2ad0c0","#e0407c","#f0c84c","#f2f0e8"], tohum:21 },
-  burhieB  : { pal:["#2b2233","#3b3046","#d2b47e","#a99cb4","#f2ece0"], tohum:71 },
+  burhieB  : { pal:["#123a8c","#e8331f","#ff8c1a","#ffd23f","#f5f1e6","#0b0b10"], tohum:71 },
   tromoA   : { pal:["#1c3450","#e8c890","#f2a45c","#c8845c","#f4f0e4"], tohum:25 },
   ekoA     : { pal:["#140c1c","#f0407c","#3cc8c0","#f2c040","#9a5cf0"], tohum:38 },
   anisA    : { pal:["#e8eadc","#6a8c50","#d8809c","#e8c060","#38442c"], tohum:11 },
@@ -311,41 +311,6 @@ function _hombarKol(c, x, y, R, renk, dugmeRenk){
   });
   c.restore();
 }
-/* BURHIE'nin kucuk hamami: kubbe ve FIL GOZLERI. Antep hamamlarinda
-   kubbeye acilan bu delikler isigi huzme huzme iceri birakir
-   (kullanicinin istegi, 11 Eylul). Belirli bir yapi cizilmiyor --
-   cizilen sey bicimin kendisi: yarim kure, alem, isik delikleri. */
-function _hamamKubbe(c, x, y, R, renk, isikRenk){
-  c.save(); c.translate(x, y);
-  c.fillStyle = _zemRgba(renk, 0.80);
-  c.beginPath(); c.arc(0, 0, R, Math.PI, 0); c.fill();
-  c.fillRect(-R*1.06, -R*0.02, R*2.12, R*0.16);
-  /* Alem: kubbenin tepesindeki ince mil. */
-  c.strokeStyle = _zemRgba(renk, 0.80); c.lineWidth = R*0.055;
-  c.beginPath(); c.moveTo(0, -R); c.lineTo(0, -R*1.30); c.stroke();
-  /* Fil gozleri: uc sira, yukari dogru seyreliyor. */
-  c.fillStyle = _zemRgba(isikRenk, 0.85);
-  [[0.34, 5], [0.62, 4], [0.86, 2]].forEach(([yk, n])=>{
-    for(let i = 0; i < n; i++){
-      const t = Math.PI + (i + 0.5)*Math.PI/n;
-      c.beginPath();
-      c.arc(Math.cos(t)*R*yk, Math.sin(t)*R*yk, R*0.065, 0, Math.PI*2);
-      c.fill();
-    }
-  });
-  c.restore();
-}
-
-
-/* ── KISI SERISININ KUCUK NESNELERI (11 Eylul) ─────────────────────
-   Kullanicinin sozu: "kucuk ogeler yok genelde. motor basket topu
-   mikrofon renkli saclar ada percussion balik vs. bunlar onemli."
-   Desenler temayi ANLATIYORDU ama GOSTERMIYORDU. Bu nesneler o isi
-   yapiyor: her biri birkac cizgide okunan, marka tasimayan, genel
-   bir bicim. Hicbiri belirli bir urunun, modelin ya da kisinin
-   goruntusu degil.
-   Hepsi (x, y) merkezli ve R olcekli: cagiran yeri ve boyu soyluyor,
-   nesne kendi icinde bicimi biliyor. */
 function _nesneAc(c, x, y, R, a){
   c.save(); c.translate(x, y); c.rotate(a || 0); c.scale(R, R);
 }
@@ -1319,17 +1284,40 @@ const DERI_HALKA = {
     c.beginPath(); c.arc(o, o, S*0.455, 0, Math.PI*2); c.stroke();
     c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.065, 0, Math.PI*2); c.fill();
   },
+/* YENI BURHIE -- SERIT (kucuk yuvarlak onizleme)
+   Ayni dil, tek bakista okunacak kadar sade: uc mercek ve bir yay. */
   burhieB(c, S, d){
-    const p = _pal(d), o = S/2;
+    const p = _pal(d), r = _tohumlu(_tohum(d)), o = S/2;
     c.fillStyle = p[0]; c.beginPath(); c.arc(o, o, S*0.5, 0, Math.PI*2); c.fill();
-    /* Neon: iki renk, bir hale. */
-    for(let i = 0; i < 5; i++){
-      c.strokeStyle = _zemRgba(i % 2 ? p[2] : p[3], 0.12 + i*0.13);
-      c.lineWidth = S*(0.070 - i*0.012);
-      c.beginPath(); c.arc(o, o, S*0.38, -2.2, 0.9); c.stroke();
-      c.beginPath(); c.arc(o, o, S*0.24, 1.0, 3.9); c.stroke();
-    }
-    c.fillStyle = p[4]; c.beginPath(); c.arc(o, o, S*0.070, 0, Math.PI*2); c.fill();
+    c.save();
+    c.beginPath(); c.arc(o, o, S*0.5, 0, Math.PI*2); c.clip();
+    /* Ayni dil, tek bakista okunacak kadar sade: uc blok vurus,
+       bir beyaz akinti, bir siyah iplik. */
+    const vurus = (x0, y0, x1, y1, kal, renk, alfa)=>{
+      for(let i = 0; i <= 14; i++){
+        const t = i/14;
+        const q = kal*(0.60 + 0.40*Math.sin(Math.PI*t));
+        c.fillStyle = _zemRgba(renk, alfa);
+        c.beginPath();
+        c.ellipse(x0 + (x1-x0)*t, y0 + (y1-y0)*t, q, q*1.7, 0, 0, Math.PI*2);
+        c.fill();
+      }
+    };
+    vurus(S*0.26, S*0.06, S*0.20, S*0.62, S*0.085, p[1], 0.95);
+    vurus(S*0.50, S*0.04, S*0.55, S*0.58, S*0.070, p[2], 0.92);
+    vurus(S*0.74, S*0.14, S*0.70, S*0.82, S*0.065, p[3], 0.88);
+    vurus(S*0.36, S*0.52, S*0.42, S*0.98, S*0.075, p[2], 0.90);
+    c.fillStyle = _zemRgba(p[4], 0.80);
+    c.fillRect(S*0.44, S*0.18, S*0.020, S*0.40);
+    c.strokeStyle = _zemRgba(p[5], 0.82); c.lineWidth = S*0.012; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, S*0.40);
+    c.bezierCurveTo(S*0.34, S*0.16, S*0.62, S*0.78, S, S*0.46);
+    c.stroke();
+    c.fillStyle = _zemRgba(p[5], 0.90);
+    [[0.22,0.33],[0.48,0.47],[0.76,0.56]].forEach(([x,y])=>{
+      c.beginPath(); c.arc(S*x, S*y, S*0.030, 0, Math.PI*2); c.fill(); });
+    c.lineCap = 'butt';
+    c.restore();
   },
   tromoA(c, S, d){
     const p = _pal(d), o = S/2;
@@ -4482,76 +4470,124 @@ const DERI_CIZIM = {
      gelen kivrim. Gece kulubunun kadifesi ve Antep hamaminin kubbesi
      ayni dilde bulusuyor -- ikisi de egri, ikisi de sicak, ikisinde
      de ince altin kontur var. */
+/* YENI BURHIE -- TAM EKRAN CIZIM
+   Kullanicinin sozu (13 Eylul): "burhie skinini degistir, cok kotu,
+   renkleri cok koyu; abstract bisey olsun, renkleri albenili olsun."
+   Eskisi FIGURATIFTI: hamam kubbesi, cini bandi, cicekler -- koyu
+   mor bir zemin uzerinde. Yenisi hicbir sey RESMETMIYOR: birbirine
+   giren mercek bicimleri, yaylar ve bir nokta tarlasi. Zemin sicak
+   kremden safrana; uzerinde zincifre, turkuaz ve mor. */
   burhieB(c, W, H, d){
-    const p = _pal(d), u = Math.min(W, H);
+    const p = _pal(d), r = _tohumlu(_tohum(d)), u = Math.min(W, H);
     c.save();
-    const g = c.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, p[1]); g.addColorStop(0.55, p[0]); g.addColorStop(1, p[0]);
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
-    /* Kamci kivrimlari: iki yandan girip diski saran saplar. */
-    c.strokeStyle = _zemRgba(p[2], 0.75); c.lineCap = 'round';
-    for(let i = 0; i < 5; i++){
-      c.lineWidth = u*(0.010 - i*0.0014);
+    /* Kobalt tuval: uzerine surulen her sey bunun uzerinde parliyor. */
+    c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+    /* Tuval dokusu: ince benek. Boya duz bir zeminde plastik
+       gorunuyor; bu benek yuzeye kumas veriyor. */
+    for(let i = 0; i < 1400; i++){
+      const x = r()*W, y = r()*H;
+      c.fillStyle = _zemRgba(r() < 0.5 ? p[4] : p[5], 0.05 + r()*0.05);
+      c.fillRect(x, y, 1.5, 1.5);
+    }
+    /* ── FIRCA VURUSU ────────────────────────────────────────────
+       Tek bir yol boyunca ustuste binen elipsler: kenari duz degil,
+       boyanin kendisi gibi tirtikli. Alfa ve yaricap yol boyunca
+       degisiyor, yani vurusun basi ve sonu ayni yogunlukta degil --
+       spatulayla surulmus bir iz boyle davraniyor. */
+    const vurus = (x0, y0, x1, y1, kal, renk, alfa)=>{
+      /* Kenari TIRTIKLI ve icı DUZ bir band: spatulayla surulmus
+         boya boyle duruyor -- puskurtme degil, kutle. Genislik yol
+         boyunca sicriyor, iki kenar ayri ayri sapiyor. */
+      const n = 16, sol = [], sag = [];
+      const dx = x1-x0, dy = y1-y0, uz = Math.hypot(dx,dy) || 1;
+      const nx = -dy/uz, ny = dx/uz;
+      for(let i = 0; i <= n; i++){
+        const t = i/n;
+        const x = x0 + dx*t, y = y0 + dy*t;
+        const g = kal*(0.55 + 0.45*Math.sin(Math.PI*t));
+        const a1 = g*(0.72 + r()*0.56), a2 = g*(0.72 + r()*0.56);
+        sol.push([x + nx*a1, y + ny*a1]);
+        sag.push([x - nx*a2, y - ny*a2]);
+      }
+      c.fillStyle = _zemRgba(renk, alfa);
       c.beginPath();
-      c.moveTo(-W*0.05, H*(0.26 + i*0.035));
-      c.bezierCurveTo(W*0.28, H*(0.12 + i*0.05), W*0.16, H*(0.62 + i*0.04),
-                      W*0.46, H*(0.74 + i*0.03));
-      c.stroke();
+      sol.forEach(([x,y],i)=> c[i?'lineTo':'moveTo'](x,y));
+      for(let i = sag.length-1; i >= 0; i--) c.lineTo(sag[i][0], sag[i][1]);
+      c.closePath(); c.fill();
+      /* Icteki isik: dar bir ikinci gecis, boyanin tepesi. */
+      c.fillStyle = _zemRgba(p[4], 0.16);
       c.beginPath();
-      c.moveTo(W*1.05, H*(0.22 + i*0.035));
-      c.bezierCurveTo(W*0.74, H*(0.10 + i*0.05), W*0.86, H*(0.58 + i*0.04),
-                      W*0.58, H*(0.70 + i*0.03));
+      for(let i = 0; i <= n; i++){
+        const t = i/n, x = x0 + dx*t, y = y0 + dy*t;
+        const g = kal*0.22*(0.5 + r());
+        c[i?'lineTo':'moveTo'](x + nx*g, y + ny*g);
+      }
+      for(let i = n; i >= 0; i--){
+        const t = i/n, x = x0 + dx*t, y = y0 + dy*t;
+        const g = kal*0.10*(0.5 + r());
+        c.lineTo(x - nx*g, y - ny*g);
+      }
+      c.closePath(); c.fill();
+    };
+    /* Blok renkler: once genis ve koyu, ustune dar ve parlak. */
+    vurus(W*0.14, H*0.05, W*0.26, H*0.44, u*0.075, p[1], 1);
+    vurus(W*0.05, H*0.30, W*0.20, H*0.62, u*0.052, p[2], 1);
+    vurus(W*0.44, H*0.02, W*0.34, H*0.40, u*0.066, p[3], 1);
+    vurus(W*0.62, H*0.08, W*0.78, H*0.34, u*0.058, p[2], 1);
+    vurus(W*0.86, H*0.30, W*0.72, H*0.58, u*0.062, p[1], 1);
+    vurus(W*0.30, H*0.58, W*0.52, H*0.80, u*0.070, p[2], 1);
+    vurus(W*0.58, H*0.70, W*0.46, H*0.99, u*0.056, p[3], 1);
+    vurus(W*0.82, H*0.76, W*0.94, H*0.99, u*0.050, p[1], 1);
+    vurus(W*0.08, H*0.80, W*0.18, H*0.99, u*0.048, p[3], 1);
+    /* Beyaz akintilar: firçanin uzerinden asagi inen ince siritler.
+       Ucu inceliyor, yani duran degil AKAN bir iz. */
+    for(let i = 0; i < 11; i++){
+      const x = W*(0.10 + r()*0.82), y0 = H*(0.12 + r()*0.42);
+      const boy = H*(0.10 + r()*0.34), kal = u*(0.004 + r()*0.008);
+      c.fillStyle = _zemRgba(p[4], 0.55 + r()*0.35);
+      c.beginPath();
+      c.moveTo(x - kal, y0);
+      c.lineTo(x + kal, y0);
+      c.lineTo(x + kal*0.25, y0 + boy);
+      c.lineTo(x - kal*0.25, y0 + boy);
+      c.closePath(); c.fill();
+      c.beginPath(); c.arc(x, y0 + boy, kal*0.4, 0, Math.PI*2); c.fill();
+    }
+    /* ── SIYAH IPLIKLER VE BONCUKLAR ─────────────────────────────
+       Akrilikte firçadan savrulan ince cizgi: uzun bir egri ve
+       uzerinde toplanmis damlalar. Kompozisyonu birbirine baglayan
+       sey bu -- renk bloklari altta kalir, iplik hepsinin uzerinden
+       gecer. */
+    c.lineCap = 'round';
+    for(let i = 0; i < 7; i++){
+      const y = H*(0.10 + i*0.125 + r()*0.05);
+      const x0 = -W*0.05, x1 = W*1.05;
+      const k1y = y + (r()-0.5)*H*0.34, k2y = y + (r()-0.5)*H*0.34;
+      c.strokeStyle = _zemRgba(p[5], 0.78);
+      c.lineWidth = u*(0.0022 + r()*0.0026);
+      c.beginPath();
+      c.moveTo(x0, y);
+      c.bezierCurveTo(W*0.32, k1y, W*0.68, k2y, x1, y + (r()-0.5)*H*0.16);
       c.stroke();
+      /* Iplik uzerindeki damlalar */
+      const bn = 3 + ((i*3) % 4);
+      for(let k = 0; k < bn; k++){
+        const t = 0.10 + (k + r()*0.6)/(bn + 0.4);
+        const mt = 1-t;
+        const bx = mt*mt*mt*x0 + 3*mt*mt*t*W*0.32 + 3*mt*t*t*W*0.68 + t*t*t*x1;
+        const by = mt*mt*mt*y + 3*mt*mt*t*k1y + 3*mt*t*t*k2y + t*t*t*y;
+        c.fillStyle = _zemRgba(p[5], 0.88);
+        c.beginPath(); c.arc(bx, by, u*(0.006 + r()*0.010), 0, Math.PI*2); c.fill();
+      }
     }
     c.lineCap = 'butt';
-    /* Uslupli cicek: sapin ucunda, uc tac yaprak. */
-    [[0.10, 0.545, 1], [0.905, 0.505, -1]].forEach(([x, y, yon])=>{
-      c.save(); c.translate(W*x, H*y); c.scale(yon, 1);
-      c.fillStyle = _zemRgba(p[3], 0.85);
-      for(let i = 0; i < 3; i++){
-        c.save(); c.rotate(-0.7 + i*0.7);
-        c.beginPath();
-        c.moveTo(0, 0);
-        c.bezierCurveTo(-u*0.030, -u*0.070, u*0.030, -u*0.090, 0, -u*0.125);
-        c.bezierCurveTo(-u*0.026, -u*0.088, u*0.028, -u*0.068, 0, 0);
-        c.closePath(); c.fill(); c.restore();
-      }
-      c.fillStyle = _zemRgba(p[2], 0.90);
-      c.beginPath(); c.arc(0, -u*0.020, u*0.016, 0, Math.PI*2); c.fill();
-      c.restore();
-    });
-    /* Cini bandi: ust seridin altinda, sekiz kollu yildiz sirasi. */
-    for(let i = 0; i < 9; i++){
-      const x = W*(0.055 + i*0.112), y = H*0.062;
-      c.fillStyle = _zemRgba(p[3], 0.45);
-      c.save(); c.translate(x, y);
+    /* Son vurus: birkac parlak benek, boyanin isigi. */
+    for(let i = 0; i < 26; i++){
+      c.fillStyle = _zemRgba(p[4], 0.30 + r()*0.45);
       c.beginPath();
-      for(let k = 0; k < 16; k++){
-        const t = k*Math.PI/8, q = u*(k % 2 ? 0.010 : 0.026);
-        c[k ? 'lineTo' : 'moveTo'](Math.cos(t)*q, Math.sin(t)*q);
-      }
-      c.closePath(); c.fill(); c.restore();
+      c.ellipse(r()*W, r()*H, u*(0.003 + r()*0.008), u*(0.002 + r()*0.005), r()*3.1, 0, Math.PI*2);
+      c.fill();
     }
-    /* HAMAM: kemerli bir cerceve icinde kubbe, fil gozleriyle. */
-    const hx = W*0.215, hy = H*0.250, hR = u*0.150;
-    c.strokeStyle = _zemRgba(p[2], 0.75); c.lineWidth = u*0.005;
-    c.beginPath();
-    c.moveTo(hx - hR*1.45, hy + hR*0.75);
-    c.lineTo(hx - hR*1.45, hy - hR*0.35);
-    c.bezierCurveTo(hx - hR*1.10, hy - hR*1.70, hx + hR*1.10, hy - hR*1.70,
-                    hx + hR*1.45, hy - hR*0.35);
-    c.lineTo(hx + hR*1.45, hy + hR*0.75);
-    c.stroke();
-    _hamamKubbe(c, hx, hy, hR, p[3], p[2]);
-    /* MIKROFON KALKTI (11 Eylul): "mikrofon vs gibi kucuk seyler
-       koyma, cocukca bunlar; o oge ile ilgili sanatsal dokunus anca
-       olur." Sahnenin isareti artik kamci kivrimlari ve isik.
-       */
-    /* Sahne isigi: kubbenin fil gozleriyle ayni isik. */
-    const kg = c.createRadialGradient(W*0.50, H*0.14, u*0.02, W*0.50, H*0.46, u*0.88);
-    kg.addColorStop(0, _zemRgba(p[2], 0.26));
-    kg.addColorStop(1, _zemRgba(p[0], 0));
-    c.fillStyle = kg; c.fillRect(0, 0, W, H*0.92);
     c.restore();
   },
   /* ── TROMOKOLO · SURREALIST ──────────────────────────────────────

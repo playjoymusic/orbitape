@@ -3114,16 +3114,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      SELECT ve SHELF uzun tura tasindi: halkalar GENRES'te zaten
      gosteriliyor, ayni seyi iki kez anlatmanin anlami yok.
      CONTROLS ve TOOLS acilista YOK: oynat/dur evrensel simgeler. */
+  /* ── NOW PLAYING ARTIK KOSULLU (13 Eylul, kullanici) ──────────
+     "sag alttaki ogeler daha gelmedigi icin orayi bosver."
+     Kunye adimi yalnizca CALAN bir sey varken cikiyor: bos bir
+     kutuyu gostermenin karsiligi yok. Bu yuzden "her zaman var"
+     listesinden cikti; yerine kosulun kendisi olculuyor (asagida).
+     SHELF geri geldi: liste artik gercekten aciliyor. */
   K('Acilista ogreten adimlar kaliyor',
-     ['GENRES','THE CENTRE','NOW PLAYING','FAVOURITES','TIMER',
+     ['GENRES','SHELF','THE CENTRE','FAVOURITES','TIMER',
       'SKINS','VISUALS','SETTINGS'].every(a=>tan.acilis.includes(a))
      && !tan.acilis.includes('CONTROLS') && !tan.acilis.includes('TOOLS'),
-     'halka jesti, cark, kunye, favori, alarm, deri, gorsel ve ayarlar var; oynat/dur yok');
+     'halka jesti, raf, cark, favori, alarm, deri, gorsel ve ayarlar var; oynat/dur yok');
   K('Istenince tur tam anlatiyor',
      tan.uzun.length > tan.acilis.length
      /* RECORD -> PHOTO: radyo turunda anlatilan sey artik kilit
         degil, calisan bir is (ekranin fotografi). */
-     && ['CONTROLS','TOOLS','NOW PLAYING','PHOTO'].every(a=>tan.uzun.includes(a)),
+     && ['CONTROLS','TOOLS','PHOTO'].every(a=>tan.uzun.includes(a)),
      tan.uzun.length + ' adim (ayarlardan acilan)');
   K('Yaptigi is bir daha anlatilmiyor',
      !tan.bilen.includes('GENRES') && !tan.bilen.includes('SETTINGS'),
@@ -7310,9 +7316,70 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            alan blok girdi (ORBITAPE turu dunyayi gecici aciyor) ve
            ayarGoster(false) araligin disinda kalmisti. Kontrol dogru
            seyi ariyor, yalnizca dilim kisaydi. */
-        const bitirKapatir = /function turBitir\(\)[\s\S]{0,2200}ayarGoster\(false\)/.test(govde);
-        return yanma && panel && acar && kapar && acildi && kapandi && bitirKapatir;
-      }), 'halkaYak + ayarGoster(true/false); turBitir de kapatiyor');
+        /* ── SABIT PENCERE YERINE ISLEVIN KENDISI (13 Eylul) ────
+           Once "turBitir'den sonraki 2200 karakter" icinde araniyordu
+           ve pencere iki kez yetmedi: isleve her satir eklendiginde
+           kontrol yanlis sebeple kirmiziya donuyordu. Artik islevin
+           GOVDESI kesilip icine bakiliyor -- uzunlugundan bagimsiz. */
+        const bas = govde.indexOf('function turBitir()');
+        const govdeSonu = bas < 0 ? -1 : govde.indexOf('\n  function ', bas + 10);
+        const turBitirGovde = bas < 0 ? '' : govde.slice(bas, govdeSonu < 0 ? bas + 6000 : govdeSonu);
+        const bitirKapatir = /ayarGoster\(false\)/.test(turBitirGovde);
+        /* ── LISTE VE ALARM GERCEKTEN ACILIYOR MU ───────────────
+           Kullanicinin sozu (13 Eylul): "orbitape ustune gelince sag
+           ustte liste acilmali... alarm skins ve visual hizli
+           gececek." Ikisi de bir sure yalnizca ISARET ediyordu:
+           adim listeden bahsediyor ama hicbir sey acilmiyordu.
+           Sebep olculdu -- liste.js ve saat.js istek uzerine iniyor
+           ve adim sirasinda yetismiyorlardi. Modulu getiren yollar
+           (listeBas / saatBas) adimin icinde olmali. */
+        const shelf = a.find(x=>x.bas === 'SHELF');
+        const timer = a.find(x=>x.bas === 'TIMER');
+        const shelfK = shelf ? shelf.duraklar.map(d=>String(d.oynat||'')).join(' ') : '';
+        const timerK = timer ? timer.duraklar.map(d=>String(d.oynat||'')).join(' ') : '';
+        const listeAcar = /listeBas/.test(shelfK) && /listeKapa/.test(shelfK);
+        const alarmAcar = /saatBas/.test(timerK) && /saatKapa/.test(timerK);
+        return yanma && panel && acar && kapar && acildi && kapandi && bitirKapatir
+               && listeAcar && alarmAcar;
+      }), 'halkaYak + ayarGoster(true/false) + listeBas/Kapa + saatBas/Kapa; turBitir de kapatiyor');
+    /* ── KUNYE ADIMI KOSULLU (13 Eylul, kullanici) ──────────────
+       "sag alttaki ogeler daha gelmedigi icin orayi bosver."
+       Acilisin ilk saniyelerinde henuz hicbir sey calmiyor olabilir;
+       bos bir kutuyu gostermenin karsiligi yok. Olculen sey kuralin
+       kendisi: kunye BOSKEN adim yok, DOLUYKEN var. */
+    K('Kunye adimi yalnizca calan bir sey varken cikiyor', await pg.evaluate(()=>{
+        const el = document.getElementById('npAd');
+        if(!el) return false;
+        const eski = el.textContent;
+        const eskiY = _turYavas; _turYavas = true;
+        el.textContent = '';
+        const bos = turAdimlari().some(x=>x.bas === 'NOW PLAYING');
+        el.textContent = 'Test Istasyonu';
+        const dolu = turAdimlari().some(x=>x.bas === 'NOW PLAYING');
+        el.textContent = eski; _turYavas = eskiY;
+        return !bos && dolu;
+      }), 'bos kunyede adim yok, dolu kunyede var');
+    /* Kunye adimi ekrandaki yaziyi DONDURUYOR: el gosterirken
+       yayindan yeni bir parca gelirse yazi degismesin (kullanicinin
+       sozu: "sarki dondurman lazim, sarki tanitirken"). Dondurma
+       turBitir'de her kosulda cozuluyor. */
+    K('Kunye adimi yaziyi donduruyor, tur bitince cozuluyor', await pg.evaluate(()=>{
+        const el = document.getElementById('npAd');
+        if(!el) return false;
+        const eski = el.textContent;
+        const eskiY = _turYavas; _turYavas = true;
+        el.textContent = 'Test Istasyonu';
+        const ad = turAdimlari().find(x=>x.bas === 'NOW PLAYING');
+        el.textContent = eski; _turYavas = eskiY;
+        if(!ad) return false;
+        const kaynak = ad.duraklar.map(d=>String(d.oynat||'')).join(' ');
+        const dondurur = /_npDondur\s*=\s*true/.test(kaynak);
+        const govde = document.documentElement.innerHTML;
+        const bas = govde.indexOf('function turBitir()');
+        const sonu = bas < 0 ? -1 : govde.indexOf('\n  function ', bas + 10);
+        const g = bas < 0 ? '' : govde.slice(bas, sonu < 0 ? bas + 6000 : sonu);
+        return dondurur && /_npDondur\s*=\s*false/.test(g);
+      }), 'adimda _npDondur=true, turBitir cozuyor');
     /* ── UCLUK: UC SEMBOL AYNI ──────────────────────────────────
        Yirmi bir sembolun ucunun ayni gelmesi ~1/441. Olunca kisa
        bir kutlama: renkler cemberde donuyor, birkac yildiz firliyor,
