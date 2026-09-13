@@ -8228,6 +8228,44 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Tekrar tutus kipi kapatir', fv.kapali.mod===false, 'normale dondu');
   K('Favoriler cihazda kalir', fv.depo===2, fv.depo+' kayit depoda');
   K('Bos listeyle kipe girilmez', fv.bosKip===false, 'yildiz iki kez yanip soner');
+  /* ── FAVORI KIPI CERCEVESI FAREYLE UZERINE GELINCE KAYBOLMUYOR ────
+     Kullanicinin sozu: "favori yildizinin cercevesi ters, secili
+     degilken cerceveli, seciliyken degil." Olcum (13 Eylul, gercek
+     Playwright hover + gecis animasyonu bitince getComputedStyle):
+     favori kipi (.kip) acikken fare #fav'in uzerine gelince cerceve
+     kipin kendi rengine (currentColor, derinin yazi rengi) degil DUZ
+     hover rengine donuyordu -- yani secili durumun cercevesi TAM DA
+     fare uzerindeyken kayboluyor, secili OLMAYAN yildizinki ise ayni
+     anda beliriyordu. Sebep: #fav.kip ve #fav:hover ayni ozgullukte
+     oldugu icin kaynak sirasinda sonraki (:hover) kazaniyordu.
+     Duzeltme: #fav.kip:hover eklendi (bkz. CSS). Burada once/sonra
+     cerceve rengi karsilastiriliyor: kip acikken hover cerceveyi
+     DEGISTIRMEMELI. */
+  {
+    const eskiDeri2 = await pg.evaluate(()=> AYAR.deri);
+    let fk = { hata: 'olculemedi' };
+    try{
+      await pg.evaluate(()=>{ AYAR.deri = 1; deriUygula(); });
+      await pg.evaluate(()=>{ document.getElementById('fav').classList.add('var','kip'); });
+      await pg.waitForTimeout(350);
+      const once = await pg.evaluate(()=> getComputedStyle(document.getElementById('fav')).borderColor);
+      await pg.hover('#fav', {timeout:3000});
+      await pg.waitForTimeout(350);
+      const sonra = await pg.evaluate(()=> getComputedStyle(document.getElementById('fav')).borderColor);
+      fk = { once, sonra, ayni: once === sonra };
+    }catch(e){ fk = { hata: String(e && e.message || e) }; }
+    try{
+      await pg.mouse.move(0, 0);
+      await pg.evaluate((eski)=>{
+        const el = document.getElementById('fav');
+        if(el) el.classList.remove('var', 'kip');
+        AYAR.deri = eski; deriUygula();
+      }, eskiDeri2);
+    }catch(e){}
+    K('Favori kipinin cercevesi fare uzerindeyken kaybolmuyor',
+      !fk.hata && fk.ayni === true,
+      fk.hata ? ('hata: ' + fk.hata) : ('once: ' + fk.once + ', hover: ' + fk.sonra));
+  }
   /* Sol USTTE tasima satirinin sonunda GIRIS yildizi: tek basisla
      favori kipi. Eskiden sol altta REC/CAM yanindaydi. */
   const fa = await pg.evaluate(async ()=>{

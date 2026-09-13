@@ -1760,6 +1760,19 @@
   #fav.dolu svg{fill:currentColor;}
   #fav.kip{border-color:currentColor;background:rgba(20,34,34,.85);}
   #fav:hover{border-color:rgba(120,180,180,.34);}
+  /* ── KIP CERCEVESI HOVER'DA KAYBOLUYORDU (13 Eylul) ─────────────
+     Kullanicinin sozu: "favori yildizinin cercevesi ters, secili
+     degilken cerceveli, seciliyken degil." Olcum (Playwright,
+     getComputedStyle, gecis animasyonu bitince): FAVORI KIPI acikken
+     (.kip) fare uzerine gelince cerceve rgb(74,71,64) [currentColor,
+     derinin yazi rengi] -> rgba(120,180,180,.34) [duz hover rengi]
+     oluyordu -- yani secili durumun kendine ozgu cercevesi TAM DA
+     uzerine gelinince siliniyor, secili OLMAYAN yildizinki ise ayni
+     anda beliriyordu (.18 -> .34). Sebep: #fav.kip ve #fav:hover
+     ayni ozgullukte (ID+tek sinif), kaynak sirasinda sonraki (:hover)
+     kazaniyordu. Duzeltme: iki sinifli secici (#fav.kip:hover) daha
+     ozgul, kip'in cercevesi artik fare uzerindeyken de kaliyor. */
+  #fav.kip:hover{border-color:currentColor;}
   #fav.liste{color:#d9d0dd;} #fav.radio{color:#ffc79e;}
   #np .np-gez{display:flex;flex-direction:row;align-items:center;gap:16px;margin:0;pointer-events:none;}
   /* ── ULKE BAYRAGI: YILDIZIN SOLUNDA ───────────────────────────
