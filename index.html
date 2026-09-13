@@ -6029,6 +6029,22 @@
     {ad:"BREATH",      zem:"#0c1412", yazi:"#e2efe8", marka:"#6fd8b0", cek:"#141e1b", font:F2, kose:"50%", cizim:"soluk",     kip:"nefes"},
     {ad:"APERTURE",    zem:"#07080b", yazi:"#eceff4", marka:"#c8cede", cek:"#0d0f14", font:F2, kose:"50%", cizim:"aciklik"},
     {ad:"LEAK",        zem:"#0a0a0c", yazi:"#f4ece0", marka:"#f0b464", cek:"#121216", font:F2, kose:"50%", cizim:"sizinti"},
+    /* ── BAR + UMUT: KULLANICININ ISTEDIGI IKI YENI DERI (13 Eylul) ──
+       Kullanicinin tarifi: "bar NYC gokdelenler, tepeden bakiyor, 50.
+       kattan gibi" -- BAR gece, yuksek kattan asagi bakan bir gokdelen
+       manzarasi: neredeyse siyah lacivert zemin, altin/amber pencere
+       isiklari marka rengi. "umutta palmiye vs south carolina" -- UMUT
+       sicak bir sahil temasi: kum rengi zemin, palmiye yesili dokusu,
+       gunbatimi kiremidi marka rengi. Ikisi de WCAG kontrasti olculerek
+       secildi (bkz. test/birim.js "Deri kontrasti olculuyor"): BAR
+       yazi/zem 12.2, marka/zem 10.3; UMUT yazi/zem 9.2, marka/zem 5.7 --
+       ikisi de esiklerin (4.5 / 3.0) rahatca ustunde. Sona eklendi:
+       depolama numarasi (AYAR.deri) hicbir eski derinin numarasini
+       kaydirmasin diye tablo hep append-only (bkz. DERI_TERS_SON
+       yorumu). Ekranda nerede gorunecekleri ayri bir is (siralama,
+       henuz belirsiz). */
+    {ad:"BAR", zem:"#0d1420", yazi:"#c7d3e6", marka:"#f0b94f", cek:"#232e3f", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"4px", panel:"#141d2c", doku:"repeating-linear-gradient(0deg,rgba(240,185,79,.16) 0 1px,rgba(0,0,0,0) 1px 13px),repeating-linear-gradient(90deg,rgba(240,185,79,.12) 0 1px,rgba(0,0,0,0) 1px 9px)", dokuOlcu:"auto", dokuSef:".5", tel:"rgba(255,255,255,.13)", luks:1},
+    {ad:"UMUT", zem:"#ecdfba", yazi:"#3f3420", marka:"#8f3a1e", cek:"#d4c49a", isik:"rgba(255,250,235,.85)", golgeRenk:"rgba(90,70,30,.30)", disGolge:"rgba(90,70,30,.52)", halka:"rgba(0,0,0,.20)", font:F2, kose:"50%", panel:"#efe4c4", doku:"repeating-linear-gradient(58deg,rgba(58,122,66,.16) 0 3px,rgba(0,0,0,0) 3px 11px),repeating-linear-gradient(-58deg,rgba(58,122,66,.10) 0 2px,rgba(0,0,0,0) 2px 13px)", dokuOlcu:"auto", dokuSef:".5"},
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* ── EKRANDAKI SIRA (tablonun sirasi DEGIL) ──────────────────────
@@ -10792,9 +10808,10 @@
          asagida (ayni tuzak yildiz kademesinde de yasandi, bkz.
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. 13 Eylul: iki deri (SLATE SILK,
-         JET) kaldirildi, 128 -> 126; sinir da burada elle indi. */
+         JET) kaldirildi (128 -> 126), sonra BAR ve UMUT eklendi
+         (126 -> 128) -- sinir de her ikisinde elle guncellendi. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 126) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 128) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
