@@ -3472,6 +3472,13 @@
   body.zem{background-color:var(--zem2);
     background-image:radial-gradient(120% 120% at 50% 45%,var(--zem1) 0%,var(--zem2) 70%);}
 
+  /* ── GECE MODU (KIRMIZI FILTRE) ────────────────────────────────
+     Kullanicinin istegi: karanlikta ekran goz kamastirmasin --
+     astronomlarin kirmizi fenerindeki mantik. Tek katman, TIKLAMA
+     GECIRIR (yalnizca gorsel), her seyin ustunde durur. */
+  body.gece::before{content:'';position:fixed;inset:0;z-index:9000;
+    pointer-events:none;background:rgba(255,20,0,.16);mix-blend-mode:multiply;}
+
   /* ── TANITIM TURU ────────────────────────────────────────────────
      İlk açılışta bir kez çıkar, kendi kendine ilerler, sağdaki SKIP
      ile atlanır. "Don't show this again" işaretlenirse bir daha
@@ -4152,6 +4159,10 @@
          GORMEK istiyor, once onu gostermek dogru. -->
     <div class="sat" data-ayar="gorselSaat" role="switch" tabindex="-1">
       <span>CLOCK IN VISUALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- GECE MODU: ekrani kirmiziya kaydirir -- astronomlarin
+         kirmizi fenerindeki mantik, karanlikta goz kamasmasin. -->
+    <div class="sat" data-ayar="geceModu" role="switch" tabindex="-1">
+      <span>NIGHT MODE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <div class="sat islem" data-ayar="yildiz" role="button" tabindex="-1">
       <span>STARS</span><span class="durum">NORMAL</span></div>
     <!-- Parlaklik YOGUNLUKTAN AYRI: kalabalik ama silik bir gokyuzu
@@ -7148,6 +7159,14 @@
       const _d = DERILER[(AYAR.deri|0) - 1];
       durumCubuguYaz(_d ? _d.zem : zm[1]);
     }catch(e){ _yut(e); }
+  }
+
+  /* Gece modu (kirmizi filtre): tek is, govdeye siniflandirma
+     eklemek/cikarmak -- CSS katmani (body.gece::before) gerisini
+     yapiyor. Ayri bir fonksiyon: hem ayar panelinden (sec()) hem
+     acilista (kayitli deger) ayni kapidan cagrilsin diye. */
+  function geceModuUygula(){
+    try{ document.body.classList.toggle('gece', !!AYAR.geceModu); }catch(e){ _yut(e); }
   }
 
   /* ── ALTI HALKA ──────────────────────────────────────────────────
@@ -10673,7 +10692,7 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:false, gunDongusu:false };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:false, gunDongusu:false, geceModu:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -10731,6 +10750,8 @@
       if(_a.gorselSaat === true) AYAR.gorselSaat = true;
       /* Gun dongusu: varsayilan KAPALI. */
       if(_a.gunDongusu === true) AYAR.gunDongusu = true;
+      /* Gece modu (kirmizi filtre): varsayilan KAPALI. */
+      if(_a.geceModu === true) AYAR.geceModu = true;
       /* SINIR 36'YDI VE BU BIR HATAYDI. Otuz deri varken yazilmisti,
          seri altmisa cikinca guncellenmedi: 37..60 arasindaki bir
          deri secilip uygulama kapatilinca deger DOGRULAMADAN
@@ -18118,6 +18139,7 @@
   AKTIF_MOD = 'RADIOTAPE';           // açılış her zaman en dış halka: radyo + müzik
   try{ modAdiYaz(); }catch(e){ _yut(e); }      // açılışta RADIOTAPE yazılı gelir
   try{ zeminUygula(); }catch(e){ _yut(e); }    // açılış zemini de RADIOTAPE
+  try{ geceModuUygula(); }catch(e){ _yut(e); }  // kayitli gece modu acilista uygulanir
 
   /* ── KLAVYE SINIFI TEK KAPIDAN GECIYOR (11 Eylul) ────────────────
      BILDIRILEN: "androidli bir kullanici search'e basmis ve search'u
@@ -18727,6 +18749,7 @@
          ama hicbir sey cikmaz -- yani yalan soyleyen bir dugme.
          Damgalar siliniyor; bir sonraki acilista tur yine cikiyor. */
       if(k === 'karanlik'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
+      if(k === 'geceModu'){ try{ geceModuUygula(); }catch(e){ _yut(e); } }
       /* CAR MODE ACILDI ve zincir zaten kurulu: eleman zincirden
          sokulemez (spec), tek yol yeniden acilis. Kapatildiysa
          zincir bir sonraki calmada kurulur, yenileme gerekmez. */

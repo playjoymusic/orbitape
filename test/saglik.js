@@ -135,6 +135,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Anahtar bu sayfada KAPALI kaliyor -- zemin sistemi olculebilsin. */
   await pg.evaluate(()=>{ try{ AYAR.karanlik = false; zeminUygula(); }catch(e){} });
 
+  /* ── GECE MODU (KIRMIZI FILTRE) ───────────────────────────────
+     Kullanicinin istegi: ekrani kirmiziya kaydiran, TIKLAMA GECIREN
+     bir katman -- astronomlarin kirmizi fenerindeki mantik. Katman
+     bir DOM elemani degil (body.gece::before), yani "eleman var mi"
+     diye sorulamaz: bilgisayarli goruntuye bakmadan kanitlamanin
+     yolu, o sozde-elemanin HESAPLANMIS stilini okumak. */
+  const gece = await pg.evaluate(async ()=>{
+    const varsayilan = AYAR.geceModu === false;
+    const kapaliSinif = document.body.classList.contains('gece');
+    AYAR.geceModu = true; geceModuUygula();
+    const oncesi = getComputedStyle(document.body, '::before');
+    const acikSinif = document.body.classList.contains('gece');
+    const gorunur = oncesi.content !== 'none' && oncesi.position === 'fixed';
+    const tiklamaGecer = oncesi.pointerEvents === 'none';
+    AYAR.geceModu = false; geceModuUygula();
+    const kapandiSinif = document.body.classList.contains('gece');
+    return { varsayilan, kapaliSinif, acikSinif, gorunur, tiklamaGecer, kapandiSinif };
+  });
+  K('Gece modu varsayilan kapali', gece.varsayilan === true && gece.kapaliSinif === false,
+     'AYAR.geceModu varsayilani kapali: ' + gece.varsayilan + ', body.gece: ' + gece.kapaliSinif);
+  K('Gece modu acilinca kirmizi katman gorunur ve tiklama gecirir',
+     gece.acikSinif === true && gece.gorunur === true && gece.tiklamaGecer === true,
+     'body.gece=' + gece.acikSinif + ', katman=' + gece.gorunur + ', pointer-events:none=' + gece.tiklamaGecer);
+  K('Gece modu kapaninca katman kalkiyor', gece.kapandiSinif === false,
+     'body.gece=' + gece.kapandiSinif);
+
   // ── 1. TEMEL ────────────────────────────────────────────────────────
   K('JS hatasi (sayfa)',      jsHata.length===0, jsHata.length ? jsHata[0].slice(0,80) : '0');
   K('Konsol hatasi',          konsol.length===0, konsol.length ? konsol[0] : '0');
