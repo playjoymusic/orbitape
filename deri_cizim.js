@@ -1375,9 +1375,25 @@ const DERI_HALKA = {
     }
   },
 };
+function _dResolveDd(d){
+  return { zem:d.zem, yazi:d.yazi, marka:d.marka, cek:d.cek, font:d.font,
+           cizim:d.cizim, pal:_pal(d), tohum:_tohum(d) };
+}
+/* HALKA RESMI ONBELLEGI. Halka resmi ekran boyutuna gore degismiyor
+   (sabit 840x840 kare) -- deri basina bir kez cizilip sonsuza kadar
+   yeniden kullaniliyor. 13 Eylul: 41 derinin OZEL halkasi yoktu,
+   DISC/cember kipinde diskin ustunde bos/varsayilan oluk kaliyordu.
+   Simdi ozel halkasi olmayan ama govde deseni (DERI_CIZIM) olan
+   her deri icin o govde deseni ayni kirpilmis tuvale cizilip halka
+   olarak kullaniliyor -- yeni bir cizim yazmaya gerek kalmadan. */
+var _halkaOnbellek = {};
 function deriHalkaAdresi(d){
   try{
-    if(!(d && DERI_HALKA[d.cizim])) return '';
+    if(!(d && d.cizim)) return '';
+    if(_halkaOnbellek[d.cizim] !== undefined) return _halkaOnbellek[d.cizim];
+    const _oh = DERI_HALKA[d.cizim];
+    const _gd = DERI_CIZIM[d.cizim];
+    if(!(_oh || _gd)){ _halkaOnbellek[d.cizim] = ''; return ''; }
     /* OLCU 560'TAN 840'A CIKTI (11 Eylul). Bildirilen: "halkalar
        okey ama pixel olmus bozuk gibi." Disk ucte bir yogunlukta
        ekranda 900 piksele kadar buyuyor; 560'lik resim orada
@@ -1396,9 +1412,10 @@ function deriHalkaAdresi(d){
        cizilmedi (fotografta ve ekranda varsayilan oluklar kaldi).
        Cizim tarafinda ayni cozum zaten vardi; iki yol ayristi.
        Tek yol: buradan da _pal/_tohum ile geciyor. */
-    DERI_HALKA[d.cizim](c, S, d);
+    if(_oh){ _oh(c, S, d); }
+    else{ _gd(c, S, S, _dResolveDd(d)); }
     c.restore();
-    return t.toDataURL('image/png');
+    return (_halkaOnbellek[d.cizim] = t.toDataURL('image/png'));
   }catch(e){ _yut(e); return ''; }
 }
 
@@ -4798,8 +4815,7 @@ function _zemRgba(h, a){
 function deriCizimCiz(c, W, H, d){
   const f = DERI_CIZIM[d && d.cizim]; if(!f) return false;
   /* Palet ve tohum uslupten cozuluyor; deri satiri isterse ezer. */
-  const dd = { zem:d.zem, yazi:d.yazi, marka:d.marka, cek:d.cek, font:d.font,
-               cizim:d.cizim, pal:_pal(d), tohum:_tohum(d) };
+  const dd = _dResolveDd(d);
   f(c, W, H, dd);
   /* ── AFIS YAZISI KALDIRILDI ─────────────────────────────────
      Bir sure her uslubun adi (BAUHAUS, POP ART, DECO...) cizimin

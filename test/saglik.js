@@ -11269,10 +11269,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* cizimli kare tuvali var ve dolu */
         const cz = DERILER.findIndex(d=>d.cizim) + 1;
         for(let i = 0; i < 60 && !window.DERI_CIZIM_HAZIR; i++) await bek(100);
-        await bek(1500);
-        const tv = kap.querySelector('.dg-kare[data-n="' + cz + '"] canvas');
-        let dolu = 0;
-        if(tv){ const d = tv.getContext('2d').getImageData(0,0,tv.width,tv.height).data; for(let i=3;i<d.length;i+=4) if(d[i]>0) dolu++; }
+        /* SABIT BEKLEME YERINE YOKLAMA (13 Eylul): deri_galeri.js'in
+           cizimleriCiz() fonksiyonu galeri dosemelerini
+           requestIdleCallback/setTimeout(16ms) ile TEK TEK, sistem
+           yukune gore degisen bir hizda ciziyor. Sabit bir bekleme
+           (once 1500ms) yuk altinda yetmeyip testi ARADA SIRADA
+           basarisiz birakiyordu (olculdu). Simdi tuval doluluk
+           oranini tekrar tekrar olcup yeterince dolar dolmaz devam
+           ediyor (en fazla 4 saniye, 40 x 100ms). */
+        let tv = null, dolu = 0;
+        for(let i = 0; i < 40; i++){
+          tv = kap.querySelector('.dg-kare[data-n="' + cz + '"] canvas');
+          dolu = 0;
+          if(tv){ const d = tv.getContext('2d').getImageData(0,0,tv.width,tv.height).data; for(let j=3;j<d.length;j+=4) if(d[j]>0) dolu++; }
+          if(tv && dolu > tv.width * tv.height * 0.5) break;
+          await bek(100);
+        }
         c.tuvalDolu = !!tv && dolu > tv.width * tv.height * 0.5;
         /* RING anahtari baslikta (3 Eylul): ayni AYAR.halka, ayni
            islev; basinca ayarlardaki anahtarla birlikte degisiyor. */

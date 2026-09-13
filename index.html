@@ -11004,6 +11004,7 @@
                dolar. Arsivden kalan bir istasyon calmaya devam
                etmesin diye siradaki ses de radyodan aliniyor. */
   function moodUygula(ilk){
+    const _favModOncekiMod = AKTIF_MOD;
     try{
       document.body.classList.toggle('mood', !!AYAR.mood);
       if(AYAR.mood){
@@ -11078,6 +11079,17 @@
            zinciri bunu yapiyor ama halka vurgusu ayri. */
         try{ halkaYak(AKTIF_AILE); }catch(e){ _yut(e); }
       }
+      /* FAVORI KIPI SOUND BANKS AC/KAPA'DA DA SIFIRLANIR (13 Eylul):
+         moodUygula AKTIF_MOD'u dogrudan degistiriyor (modSec'i
+         atlayarak) -- ayni sifirlama burada da gerekli, yoksa
+         RADIOTAPE'te acilan favori kipi ORBITAPE'e gecince de
+         acik/yanlis havuzla kalir. */
+      try{
+        if(AKTIF_MOD !== _favModOncekiMod){
+          _favMod = false; _favSira = []; _favIdx = 0;
+          favTazele();
+        }
+      }catch(e){ _yut(e); }
       /* Arama havuzu da kipe bagli (bkz. araHavuzlar): dizin yeniden
          kurulsun, yoksa oteki dunyanin kayitlari aramada kalir. */
       try{ _araIdx = null; _araSay = -1; }catch(e){ _yut(e); }
@@ -13679,17 +13691,26 @@
   function favYaz(){ try{ localStorage.setItem(FAV_ANAHTAR, JSON.stringify(FAV)); }catch(e){ _yut(e); } }
   function favNo(o){ const u = o && o.mp3; if(!u) return -1; return FAV.findIndex(x=>x.mp3===u); }
   function favMi(o){ return favNo(o) >= 0; }
+  /* ── FAVORI HAVUZU RAFA GORE AYRILIR (13 Eylul) ──────────────────
+     Kullanicinin sozu: "orbitape kısmındaki favoriler radyo rafıyla
+     bağlantılı olmamamlı." FAV TEK dizi (canli radyo + arsiv birlikte
+     saklanir, radyo bayragiyla ayrisir) ama favori KIPI (favGec ile
+     sirayla calma) o an hangi rafta oldugumuza gore SUZULMELI --
+     yoksa ORBITAPE'teyken RADIOTAPE favorileri calmaya baslar. */
+  function _favBaglamCanliMi(){ return AKTIF_MOD === 'RADIOTAPE'; }
+  function _favHavuz(){ const canli = _favBaglamCanliMi(); return FAV.filter(x => !!x.radyo === canli); }
   function favTazele(){
     /* Sol alttaki giriş yıldızı: kayıt satırı göründüğü sürece hep
        orada. Favori yoksa soluk; kip açıkken dolu ve sarı. */
     try{
       const a = document.getElementById('favAc');
       if(a){
+        const _hv = _favHavuz().length;
         a.classList.add('var');
-        a.classList.toggle('bos', FAV.length === 0);
+        a.classList.toggle('bos', _hv === 0);
         a.classList.toggle('acik', _favMod);
         a.setAttribute('aria-pressed', _favMod ? 'true' : 'false');
-        a.title = _favMod ? 'Favourites — on' : (FAV.length ? 'Favourites ('+FAV.length+')' : 'Favourites — none yet');
+        a.title = _favMod ? 'Favourites — on' : (_hv ? 'Favourites ('+_hv+')' : 'Favourites — none yet');
       }
     }catch(e){ _yut(e); }
     /* "BU NE?" YALNIZCA CANLI YAYINDA. Arsiv kayitlarinin adi ve
@@ -13752,7 +13773,7 @@
     }catch(e){ _yut(e); }
   }
   function favKipDegis(){
-    if(!_favMod && !FAV.length){
+    if(!_favMod && !_favHavuz().length){
       /* FAVORI YOK: basilan tus bunu SOYLESIN. Yaniltici bir yanip
          sonme degil, okunur bir cumle. */
       _favSoruBitir();
@@ -13775,14 +13796,18 @@
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(e){ _yut(e); }
     try{ sonraki(true); }catch(e){ _yut(e); }
   }
-  /* sonraki() buradan besleniyor: kip açıkken havuz FAVORİLER. */
-  var _favSira = [], _favIdx = 0;
+  /* sonraki() buradan besleniyor: kip açıkken havuz FAVORİLER --
+     ama yalnizca O AN hangi rafta oldugumuzun favorileri (_favHavuz). */
+  var _favSira = [], _favIdx = 0, _favSiraCanli = null;
   function favGec(){
-    if(!_favMod || !FAV.length) return false;
-    if(_favIdx >= _favSira.length || !_favSira.length){
-      _favSira = FAV.slice();
+    if(!_favMod) return false;
+    const havuz = _favHavuz();
+    if(!havuz.length) return false;
+    const canli = _favBaglamCanliMi();
+    if(_favSiraCanli !== canli || _favIdx >= _favSira.length || !_favSira.length){
+      _favSira = havuz.slice();
       for(let i=_favSira.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [_favSira[i],_favSira[j]]=[_favSira[j],_favSira[i]]; }
-      _favIdx = 0;
+      _favIdx = 0; _favSiraCanli = canli;
     }
     const o = _favSira[_favIdx++];
     if(!o) return false;
@@ -18003,6 +18028,7 @@
     modSec(ad, zorla);
   }
   function modSec(ad, zorla){
+    const _oncekiMod = AKTIF_MOD;
     AKTIF_MOD = (!zorla && AKTIF_MOD === ad) ? null : ad;
     /* Halkadan raf secmeyi ogrendi: acilis turunun GENRES/SELECT/
        SHELF adimlari bir daha cikmayacak (bkz. kullanildi). */
@@ -18012,6 +18038,15 @@
        hicbir sey degismiyordu. Yeni bir raf yeni bir sans demek:
        sayac sifirlaniyor, durus kalkiyor. */
     try{ arsivDevam(); }catch(e){ _yut(e); }
+    /* FAVORI KIPI RAF DEGISINCE SIFIRLANIR (13 Eylul). Kullanicinin
+       sozu: "favori sıfırlanmalı mod degistirince." Sag alttaki
+       yildiz onceki raftan kalma acik/kapali durumda takilip
+       kalmasin ve _favSira onceki rafin havuzuyla calmaya devam
+       etmesin diye AKTIF_MOD gercekten degistiginde temizleniyor. */
+    if(AKTIF_MOD !== _oncekiMod){
+      _favMod = false; _favSira = []; _favIdx = 0;
+      try{ favTazele(); }catch(e){ _yut(e); }
+    }
     try{ etkilesimSay(); }catch(e){ _yut(e); }
     modAdiGoster(); zeminUygula();
     /* Arsiv tarafinda da ayni kural: cark o an nerede oldugumuzu
