@@ -9257,28 +9257,45 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Modern' gecmesi tek basina yetmez (yazi dogru, dosya kayip
      olabilir); ikisi birden gercek kanit. */
   {
+    /* DIKKAT (13 Eylul, CI'da yakalandi): bu evaluate govdesinin
+       TEPESINDE bir try/catch YOKTU -- dosyanin geri kalani (bkz.
+       'gr'/'gk' bloklari) hep boyle yapiyor, burasi istisnaydi.
+       Yerel makinede 819/819 yesildi ama CI'da ayni commit "Process
+       completed with exit code 1" ile, TEK bir "!!" satiri bile
+       basmadan coktu -- yakalanmamis bir istisna butun Node surecini
+       goturdugunde tam olarak boyle gorunur. window.gorselAc() gibi
+       cagrilar dogrudan evaluate govdesinde, cevrilmemis duruyordu;
+       CI'nin daha yavas/farkli zamanlamasinda (paylasilan kosucu)
+       gorsel.js henuz beklenen durumda degilse bu cagri firlatir ve
+       kimse yakalamaz. Simdi butun govde 'gr'/'gk' ile ayni kaliba
+       alindi: hata olursa c.hata'ya duser, kontrol KIRMIZI yanar ama
+       butun takim ayakta kalir. */
     const gsFont = await pg.evaluate(async ()=>{
         const bek = ms2 => new Promise(r=>setTimeout(r,ms2));
-        const oncedenAcikMi = !!(window.gorselAcikMi && window.gorselAcikMi());
-        if(!oncedenAcikMi) window.gorselAc();
-        await bek(200);
-        AYAR.gorselSaat = true; gorselSaatKur();
-        let yuklendi = false;
+        const c = { yuklendi:false, fam:'' };
+        let oncedenAcikMi = false;
         try{
-          await document.fonts.load("700 16px 'DSEG7 Modern'");
-          yuklendi = document.fonts.check("700 16px 'DSEG7 Modern'");
-        }catch(e){}
-        const e = document.getElementById('gorselSaat');
-        const fam = e ? getComputedStyle(e).fontFamily : '(eleman yok)';
-        AYAR.gorselSaat = false; gorselSaatKur();
-        if(!oncedenAcikMi) window.gorselKapa();
+          oncedenAcikMi = !!(window.gorselAcikMi && window.gorselAcikMi());
+          if(!oncedenAcikMi && window.gorselAc) window.gorselAc();
+          await bek(200);
+          AYAR.gorselSaat = true; gorselSaatKur();
+          try{
+            await document.fonts.load("700 16px 'DSEG7 Modern'");
+            c.yuklendi = document.fonts.check("700 16px 'DSEG7 Modern'");
+          }catch(e){}
+          const e = document.getElementById('gorselSaat');
+          c.fam = e ? getComputedStyle(e).fontFamily : '(eleman yok)';
+          AYAR.gorselSaat = false; gorselSaatKur();
+        }catch(e){ c.hata = String(e && e.message || e); }
+        try{ if(!oncedenAcikMi && window.gorselKapa) window.gorselKapa(); }catch(e){}
         await bek(200);
-        return { yuklendi, fam };
+        return c;
       });
     K('Gorseldeki saat de LED fontunda',
-      gsFont.yuklendi && /DSEG7 Modern/i.test(gsFont.fam),
-      gsFont.yuklendi ? ('yuklendi, font-family: ' + gsFont.fam)
-                      : ('DSEG7 Modern yuklenmedi -- font-family: ' + gsFont.fam));
+      !gsFont.hata && gsFont.yuklendi && /DSEG7 Modern/i.test(gsFont.fam),
+      gsFont.hata ? ('hata: ' + gsFont.hata)
+        : (gsFont.yuklendi ? ('yuklendi, font-family: ' + gsFont.fam)
+                           : ('DSEG7 Modern yuklenmedi -- font-family: ' + gsFont.fam)));
   }
 
   /* ── GORSEL ACIKKEN EKRAN KILITLI ───────────────────────────────
