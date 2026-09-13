@@ -11248,11 +11248,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         {
           const _n = [].slice.call(_kk0).map(b=>parseInt(b.dataset.n || '0', 10));
           const k = Math.min(DERI_TERS_SON, DERILER.length);
+          /* KOSEYE ATILANLAR (13 Eylul): isimle eslesen deriler (bkz.
+             DERI_KOSEYE, index.html) normal yerlerinden cikip listenin
+             EN SONUNA gidiyor -- storage sirasi (AYAR.deri) degilmiyor,
+             sadece ekrandaki yeri. Beklenen dizi de ayni kurali
+             bagimsizca kuruyor: deriEkranSirasi()'i kendisiyle
+             dogrulamak hicbir sey ispatlamaz, isim listesi (veri) okunup
+             algoritma burada ayrica yaziliyor. */
+          const kose = [];
+          for(let i = 1; i <= DERILER.length; i++){ if(DERI_KOSEYE.indexOf(DERILER[i-1].ad) >= 0) kose.push(i); }
           const bek = [0];
-          for(let i = k; i >= 1; i--) bek.push(i);
-          for(let i = k + 1; i <= DERILER.length; i++) bek.push(i);
+          for(let i = k; i >= 1; i--) if(kose.indexOf(i) < 0) bek.push(i);
+          for(let i = k + 1; i <= DERILER.length; i++) if(kose.indexOf(i) < 0) bek.push(i);
+          for(let i = 0; i < kose.length; i++) bek.push(kose[i]);
           c.tersSirali = _n.length === bek.length && _n.every((v, i)=> v === bek[i]);
-          /* OFF basta, ters blogun sonu ilk deri, en altta en yeni. */
+          /* OFF basta, ters blogun sonu ilk deri, en altta koseye atilanlar. */
           c.dizimOzet = _n[0] + '|' + _n[1] + '..' + _n[k] + '|' + _n[_n.length-1];
         }
         /* kareler ust uste binmiyor: dorduncu karenin tepesi birincinin

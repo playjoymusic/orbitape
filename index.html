@@ -6006,10 +6006,21 @@
      (91. sira MOIRE, o gunden sonra eklenenlerin ilki). Sayi
      TARIHSEL bir sinir, bir tercih degil -- degistirilmemeli. */
   const DERI_TERS_SON = 90;
+  /* ── KOSEYE ATILANLAR (13 Eylul) ──────────────────────────────────
+     Kullanicinin sozu: "anise... koy bir yana koseye." Yukaridaki
+     append-only kurali hala geciyor: storage numarasi (AYAR.deri,
+     yani DERILER'deki gercek sirasi) DEGISMIYOR -- sadece EKRANDA
+     nerede gorundugu degisiyor. Isimle eslesen deri, normal yerinden
+     (ters blok ya da kronolojik kuyruk, nerede olursa olsun) cikip
+     listenin EN SONUNA gidiyor. */
+  const DERI_KOSEYE = ['ANİŞ'];
   function deriEkranSirasi(){
+    const kose = [];
+    for(let i = 0; i < DERILER.length; i++){ if(DERI_KOSEYE.indexOf(DERILER[i].ad) >= 0) kose.push(i); }
     const s = [], k = Math.min(DERI_TERS_SON, DERILER.length);
-    for(let i = k - 1; i >= 0; i--) s.push(i);
-    for(let i = k; i < DERILER.length; i++) s.push(i);
+    for(let i = k - 1; i >= 0; i--){ if(kose.indexOf(i) < 0) s.push(i); }
+    for(let i = k; i < DERILER.length; i++){ if(kose.indexOf(i) < 0) s.push(i); }
+    for(let i = 0; i < kose.length; i++) s.push(kose[i]);
     return s;
   }
   /* Galeri seridi ayri dosyada (deri_galeri.js) ve ayni sirayi
