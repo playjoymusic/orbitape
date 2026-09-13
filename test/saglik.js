@@ -7078,6 +7078,60 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         if(!ayniSatir)  return 'ayni satirda degil';
         return true;
       }), 'bayrak yildizdan once bitiyor, ikisi ayni hatta');
+    /* ── BAYRAK GERCEKTEN BASILABILIYOR (13 Eylul) ────────────────
+       Kullanicinin sozu: "ulke bayragina basilmiyor, zaten yandaki
+       yildiza da kaciyor parmak." Iki ayri kusur, iki ayri kontrol:
+         1) BASILMIYOR: satirin kabi (.np-gez) tum satiri
+            pointer-events:none yapiyordu ve #npBayrak'ta bunu geri
+            acan bir kural YOKTU -- CSS INHERITANCE yuzunden 'none'
+            miras kaliyordu. #fav aynen bu kalibi kullaniyor
+            ('.var' hali pointer-events:auto'yu geri aciyor); bayragin
+            byle bir 'geri acma' kurali olmadan tiklamasi imkansizdi.
+            'display'/'cursor:pointer' gorsel olarak dugme gibi
+            gosteriyordu ama gercekte HICBIR dokunusu gecirmiyordu.
+         2) YILDIZA KACIYOR: gorunen kutu yalnizca bayrak harfi kadar
+            dardi (~16-20px), yildizla arasi 7px -- gercek bir
+            parmak ucu ikisinden de genis. Once yalnizca dokunma
+            alani buyutuldu (padding+esit negatif margin) ve tampon
+            1px'e dustu (olculdu); sonra .np-gez'in gap'i de
+            buyutuldu (7->16px) ki genisleyen kutuya ragmen gercek
+            bir bosluk kalsin. */
+    /* NOT: pg.evaluate() icinden dogrudan bool/string donup K()'e
+       vermek YANLIS -- K()'in ucuncu argumani (olcum) SABIT bir
+       yazidir, ikinci argumani (gecti) da '!!gecti' ile zorlanir: BOS
+       OLMAYAN HER STRING truthy'dir, yani "basarisizlik" icin donen
+       aciklama metni bile '!!' altinda true sayilir ve kontrol HICBIR
+       ZAMAN kirmizi yanmaz (13 Eylul: bu kontrol boyle yazilmisti,
+       duzeltme geri alinip olculdugunde hala 'OK' bastigi fark edildi).
+       Dogrusu -- dosyanin geri kalaninin zaten yaptigi sey (bkz.
+       'dokunma' degiskeni, 1649. satir civari): olcumu tek bir
+       degiskene al, gecti/olcum'u burada, Node tarafinda, gercek
+       degerden hesapla. */
+    const bayrakBasilma = await pg.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r,ms));
+        const f = document.getElementById('fav');
+        const e = document.getElementById('npBayrak');
+        const eskiSinif = f.className;
+        f.classList.add('var');
+        bayrakYaz({ radyo:true, ulke:'US' });
+        await bek(40);
+        /* 1) Miras kalan pointer-events:none bir daha SESSIZCE
+           geri gelmedi mi. */
+        const pe = getComputedStyle(e).pointerEvents;
+        /* 2) Genisleyen kutuya ragmen yildizla arada GERCEK bir
+           bosluk var mi (0'dan buyuk -- ortusme yok). */
+        const rb = e.getBoundingClientRect(), rf = f.getBoundingClientRect();
+        const tampon = Math.round(rf.left - rb.right);
+        bayrakYaz(null); f.className = eskiSinif;
+        return { pe, tampon };
+      });
+    K('Bayrak gercekten tiklanabiliyor',
+      bayrakBasilma.pe === 'auto' && bayrakBasilma.tampon > 0,
+      bayrakBasilma.pe !== 'auto'
+        ? ('pointer-events: ' + bayrakBasilma.pe + ' -- .np-gez\'den miras kalan \'none\' geri acilmamis, dokunus gecmiyor')
+        : (bayrakBasilma.tampon <= 0
+           ? ('yildizla ortusuyor: tampon ' + bayrakBasilma.tampon + 'px')
+           : ('pointer-events:auto, tampon ' + bayrakBasilma.tampon + 'px, yildizla ortusmuyor')));
       /* Bayrak uretici tek basina da dogru olmali: gecersiz kod
          yanlis bayrak URETMEMELI, bos donmeli. */
     K('Bayrak yalnizca gecerli koddan', await pg.evaluate(()=>{
