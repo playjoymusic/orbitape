@@ -1761,16 +1761,37 @@
   #fav.kip{border-color:currentColor;background:rgba(20,34,34,.85);}
   #fav:hover{border-color:rgba(120,180,180,.34);}
   #fav.liste{color:#d9d0dd;} #fav.radio{color:#ffc79e;}
-  #np .np-gez{display:flex;flex-direction:row;align-items:center;gap:7px;margin:0;pointer-events:none;}
+  #np .np-gez{display:flex;flex-direction:row;align-items:center;gap:16px;margin:0;pointer-events:none;}
   /* ── ULKE BAYRAGI: YILDIZIN SOLUNDA ───────────────────────────
      Bosken HIC YER KAPLAMIYOR (:empty -> display:none). Yoksa
-     arsivde ve ulkesi bilinmeyen istasyonda satirda 7px'lik bir
+     arsivde ve ulkesi bilinmeyen istasyonda satirda 16px'lik bir
      bosluk kalir ve yildiz yerinden oynar.
      Yildizla ayni yukseklikte (32px) ama dar: satirin dikey
-     hizasini bozmasin. Dokunulacak bir sey degil, bilgidir. */
+     hizasini bozmasin. GORUNEN kutu dar ama artik BASILIYOR (13
+     Eylul).
+     IKI AYRI KUSUR, KULLANICININ SOZU: "ulke bayragina basilmiyor,
+     zaten yandaki yildiza da kaciyor parmak."
+       1) BASILMIYOR: bu satirin kabi (.np-gez) tum satiri
+          pointer-events:none yapiyor (fav/isaret ayni kalibi
+          kullaniyor -- gorunmezken tiklanmasin diye). #fav kendi
+          '.var' halinde pointer-events:auto'yu GERI ACIYOR;
+          #npBayrak'ta bu geri acma hic yoktu -- eskiden "dokunulacak
+          bir sey degil, bilgidir" dogruydu, ama bu satir artik bir
+          DUGME (bkz. ulkeBas). Miras kalan 'none' hicbir dokunusu
+          gecirmiyordu.
+       2) YILDIZA KACIYOR: gorunen kutu yalnizca bayrak harfi kadar
+          dar (~16-20px), yildizla arasi 7px -- parmagin gercek
+          temas alani ikisinden de genis. IKI AYRI DUZELTME:
+          dokunma alani GENISLETILDI (padding+esit negatif margin:
+          gorunen boyut ve satirdaki yeri DEGISMEDI, yalnizca
+          tiklanabilir kutu buyudu -- +8px her yanda), VE satirin
+          gap'i 7 -> 16px (bkz. .np-gez): genisleyen kutuya ragmen
+          yildizla arada gercek bir tampon kalsin diye (olculdu:
+          yalnizca padding buyutulunce tampon 1px'e dusuyordu). */
   #npBayrak{display:flex;align-items:center;justify-content:center;
     height:32px;font-size:0.9375rem;line-height:1;flex:none;
-    cursor:pointer;user-select:none;
+    cursor:pointer;user-select:none;pointer-events:auto;
+    padding:0 8px;margin:0 -8px;
     /* Emoji bayrak bazi masaustu sistemlerinde iki harf olarak
        cizilir (ABD -> "US"). O da dogru bilgi; kirilmiyor. */
     font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
@@ -11561,40 +11582,23 @@
     window.addEventListener('pageshow', function(){ _zoomBorcu = true; olcuIste(); });
   })();
   window.addEventListener('resize', olcuIste);
-  /* ── TELEFON DONUNCE: ONCE KILITLEMEYI DENE, OLMAZSA TITREME ──
+  /* ── TELEFON DONUNCE: TITREME YOK, KILIT DE YOK ────────────────
      KULLANICININ SOZU: "telefonu sag sol yapinca degisir ya, yan
-     olur; sonra duzeltince titreme oluyor. Ya hic donmesin."
-     "Hic donmesin" iki ayri yerde iki ayri cevap aliyor:
-       · PLAY UYGULAMASI (Android): manifest'te "orientation":
-         "portrait" yazili ve orada donme ZATEN yok.
-       · SAFARI: web'in yonu kilitleme yetkisi yok. Screen
-         Orientation API'nin lock'u iOS'ta yok; denemek zararsiz
-         (asagida deneniyor, reddedilirse yutuluyor) ama tutmuyor.
-     Yani Safari'de donmeyi engelleyemeyiz; engelleyebilecegimiz sey
-     DONUSTEN SONRAKI TITREME. Sebebi olculdu: donus animasyonu
+     olur; sonra duzeltince titreme oluyor. Ya hic donmesin." O gun
+     kilit yolu secilmisti: Android'de manifest "portrait", ayrica
+     Screen Orientation API'siyle de kilitlenmeye calisiliyordu
+     (Safari'de zaten tutmuyordu). 13 Eylul: kullanicinin istegi
+     "yatay destek" -- kilit KALKTI (manifest "any", asagidaki
+     _yonKilit cagrisi silindi). Asil kazanc zaten kilit degildi:
+     TITREMEYI onleyen sey bu. Sebebi olculdu: donus animasyonu
      surerken olcu birkac kez degisiyor, her degisimde yerlesim
      yeniden hesaplaniyor ve aradaki CSS gecisleri o ara adimlari
      tek tek oynuyor -- ekranda bu "titreme" olarak goruluyor.
      Cozum: donus basladigi anda gecisler kesiliyor, olcu ust uste
      iki kez ayni kalana kadar bekleniyor, YERLESIM BIR KEZ
      hesaplaniyor ve sonra gecisler geri geliyor. Tek adim, tek
-     sicrama. */
+     sicrama -- artik her donuste, kilit denemesinden sonra degil. */
   try{
-    const _yonKilit = ()=>{
-      try{
-        /* Koseli parantez BILEREK: tip kutuphanesinde ScreenOrientation
-           'lock' tasimiyor (Safari'de gercekten de yok). Nokta ile
-           yazmak tip denetimine iki yeni uyari ekliyordu; olmayan bir
-           seyi yoklamak hata degil. */
-        const o = screen && screen.orientation;
-        const kilit = o && o['lock'];
-        if(typeof kilit === 'function'){
-          const r = kilit.call(o, 'portrait');
-          if(r && r.catch) r.catch(()=>{});
-        }
-      }catch(e){ _yut(e); }
-    };
-    _yonKilit();
     /* ── TEK OLCU YETMIYOR, UC OLCU LAZIM ────────────────────────
        Ilk yazimda olcu bir kez ust uste ayni gelince "donus bitti"
        sayiliyordu. Kullanicinin bildirdigi titreme bundan sonra da
@@ -11733,7 +11737,6 @@
       if(!_nobetZaman) _nobetZaman = setTimeout(_nobetBak, 160);
     };
     const _donusBasladi = ()=>{
-      _yonKilit();
       document.body.classList.add('donuyor');
       clearTimeout(_donusZaman);
       _donusOlcu = ''; _donusEsit = 0; _donusT0 = Date.now();

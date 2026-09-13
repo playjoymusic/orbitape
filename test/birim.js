@@ -1175,5 +1175,25 @@ function bitir(){
     K('workflow dosyalari okunabiliyor', false, String(e && e.message || e));
   }
 
+  /* ── YATAY (LANDSCAPE) DESTEK KALICI OLSUN (13 Eylul) ─────────────
+     Once "hic donmesin" denenmisti: Android'de manifest "portrait"
+     kilitliyordu, ayrica sayfa Screen Orientation API'siyle de
+     kilitlemeye calisiyordu (Safari'de zaten tutmuyordu). Kullanicinin
+     istegi degisti: "yatay destek" -- kilit kaldirildi, manifest "any"
+     oldu. Cihaz takimi (test/cihaz.js) yatay ve tablet olculerinde
+     yerlesimin BOZULMADIGINI zaten olcuyor; burada olculen sey ayri:
+     kilidin bir daha SESSIZCE geri gelmemesi. Ikisi ayri kontrol
+     cunku biri "calisiyor mu" biri "bir daha kapatilmadi mi" soruyor. */
+  try{
+    const manifest = JSON.parse(fs.readFileSync(path.join(KOK, 'manifest.json'), 'utf8'));
+    K('manifest.json yon kilitlemiyor', manifest.orientation !== 'portrait',
+      '"orientation": "' + manifest.orientation + '"');
+  }catch(e){
+    K('manifest.json okunabiliyor', false, String(e && e.message || e));
+  }
+  K('Sayfa artik yonu API ile kilitlemiyor',
+    !KAYNAK.includes("kilit.call(o, 'portrait')") && !/screen\s*\.\s*orientation\s*\[?\s*['"]?lock/.test(KAYNAK),
+    'orientation.lock cagrisi yok -- yatay donusu sayfa engellemiyor');
+
   bitir();
 })();
