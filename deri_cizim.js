@@ -241,7 +241,11 @@ const DERI_USLUP = {
   lunaA    : { pal:["#efe6d4","#2c4a8c","#d84c50","#e8a83c","#2a2620"], tohum:27 },
   ezgitA   : { pal:["#f4ece0","#e8c8d0","#c08a4c","#dca0aa","#5a3242"], tohum:15 },
   hombarA  : { pal:["#101a2c","#2ad0c0","#e0407c","#f0c84c","#f2f0e8"], tohum:21 },
-  burhieB  : { pal:["#123a8c","#e8331f","#ff8c1a","#ffd23f","#f5f1e6","#0b0b10"], tohum:71 },
+  /* Uc renk kullanicinin gonderdigi Pantone kartlarindan piksel
+     olarak ornekle alindi: #a61820 (koyu kirmizi), #f7774b
+     (turuncu), #f0d27e (sicak sari). Kobalt zemin ve siyah iplik
+     tabloya ait, onlar duruyor. */
+  burhieB  : { pal:["#123a8c","#a61820","#f7774b","#f0d27e","#f5f1e6","#0b0b10"], tohum:71 },
   tromoA   : { pal:["#1c3450","#e8c890","#f2a45c","#c8845c","#f4f0e4"], tohum:25 },
   ekoA     : { pal:["#140c1c","#f0407c","#3cc8c0","#f2c040","#9a5cf0"], tohum:38 },
   anisA    : { pal:["#e8eadc","#6a8c50","#d8809c","#e8c060","#38442c"], tohum:11 },

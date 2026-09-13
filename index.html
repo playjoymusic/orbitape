@@ -3812,6 +3812,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ORBITAPE">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=7">
+<!-- /favicon.ico ACIKCA VERILIYOR (13 Eylul): bildirilmese de
+     istenen bir yol, dosya yoksa her istek 404 (Cloudflare'de 24
+     saatte 215 adet 4xx). Uygulama simgesinden uretildi. -->
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=7">
 <!-- ── ARAMA VE PAYLAŞIM ────────────────────────────────────────────
      Bunlar UYGULAMA için değil, uygulamayı henüz AÇMAMIŞ kişi için.
@@ -5955,7 +5958,7 @@
     {ad:"LUNA", zem:"#efe6d4", yazi:"#2a2620", marka:"#c8343c", cek:"#d8cfbd", font:F2, kose:"50%", cizim:"lunaA"},
     {ad:"EZGİT", zem:"#f4ece0", yazi:"#462c38", marka:"#a8465e", cek:"#e2d7c8", font:F2, kose:"2px", cizim:"ezgitA"},
     {ad:"HOMBAR", zem:"#101a2c", yazi:"#f2f0e8", marka:"#2ad0c0", cek:"#1c2840", font:F3, kose:"0px", cizim:"hombarA"},
-    {ad:"BURHIE", zem:"#123a8c", yazi:"#f5f1e6", marka:"#ffb020", cek:"#1a4aa8", font:F2, kose:"50%", cizim:"burhieB"},
+    {ad:"BURHIE", zem:"#123a8c", yazi:"#f5f1e6", marka:"#f0d27e", cek:"#1a4aa8", font:F2, kose:"50%", cizim:"burhieB", sade:true},
     {ad:"TROMOKOLO", zem:"#1c3450", yazi:"#f2e6cc", marka:"#f2a45c", cek:"#28425e", font:F2, kose:"50%", cizim:"tromoA"},
     {ad:"EKO", zem:"#140c1c", yazi:"#f4ecf8", marka:"#f0407c", cek:"#221830", font:F3, kose:"50%", cizim:"ekoA"},
     {ad:"ANİŞ", zem:"#e8eadc", yazi:"#2e3826", marka:"#b03c64", cek:"#d6d9c6", font:F2, kose:"50%", cizim:"anisA"},
@@ -6928,7 +6931,7 @@
                    ? deriHalkaAdresi(d) : '';
         if(_hal){ k.setProperty('--d-halka-resim', 'url("' + _hal + '")'); }
         else k.removeProperty('--d-halka-resim');
-        document.body.classList.toggle('halkaresim', !!_hal);
+        document.body.classList.toggle('halkaresim', !!_hal && !d.sade);
         if(_ciz){
           k.setProperty('--d-doku', 'url("' + _ciz + '")');
           k.setProperty('--d-doku-olcu', '100% 100%');
@@ -6944,8 +6947,16 @@
           k.setProperty('--d-doku-sef', d.dokuSef || '0');
         }
         document.body.classList.add('deri');
-        /* RINGS ONLY yalnizca deri acikken anlamli; sinif da orada. */
-        document.body.classList.toggle('sadehalka', !!AYAR.halka);
+        /* RINGS ONLY yalnizca deri acikken anlamli; sinif da orada.
+           DERININ KENDISI DE ISTEYEBILIYOR (13 Eylul, kullanici:
+           "ortadaki circle'da cerceve yapma, gorselleri kesiyor").
+           Cizimli deride diskin icine derinin KENDI kucuk kopyasi
+           boyaniyor ve arkadaki tam ekran resimle hizalanmadigi icin
+           daire kenarinda dikis kaliyor -- bir tabloda hemen goze
+           batiyor. 'sade' bayragi olan deri o kopyayi almiyor:
+           govde, bilezik ve golge dusuyor, resim dairenin icinden
+           aynen geciyor. */
+        document.body.classList.toggle('sadehalka', !!AYAR.halka || !!d.sade);
       }
       try{ zeminUygula(); }catch(e){ _yut(e); }
       /* Raf adlarinin rengini JS yaziyor ve deri degisince o renk
@@ -11824,9 +11835,8 @@
     try{
       const i = Math.max(0, Math.min(HALKA_KAT.length - 1, AYAR.halkaBoy | 0));
       document.documentElement.style.setProperty('--halka-kat', String(HALKA_KAT[i]));
-      /* Cark kendi yaricapini diskin kutusundan okuyor; olcek
-         degisince yeniden olcmesi gerekiyor. */
-      try{ if(window['carkTazele']) window['carkTazele'](); }catch(e){ _yut(e); }
+      /* Carki yeniden olcturen sey resize olayi: cark.js onu
+         dinleyip olc() cagiriyor (carkTazele yalnizca hizaliyor). */
       try{ window.dispatchEvent(new Event('resize')); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
@@ -12361,12 +12371,8 @@
   }
   /* Yatay cizginin dolulugu da ayni yerden guncelleniyor: iki parmakla
      kissan da cizgi dogru gorunsun, tek gercek kSes. */
-  /* Cizgi silindi ama tek gercek kSes: sustur tusu buradan
-     tazeleniyor, yani seviye nereden degisirse degissin (jest,
-     tus, depo) simge dogru hali gosteriyor. */
-  function sesDikeyYaz(){
-    try{ if(window.muteTazele) window.muteTazele(); }catch(e){ _yut(e); }
-  }
+  /* sesDikeyYaz SILINDI (13 Eylul): ses cizgisiyle birlikte cagiran
+     da gitmisti; simgeyi tazeleyen tek yol artik window.muteTazele. */
   /* ── SES CIZGISININ DENETIMI KALDIRILDI ──────────────────────────
      Cizgi ekrandan kalkinca (bkz. "SES CIZGISI SILINDI") surukleme,
      tek dokunusla sustur, tekerlek ve ok tuslari da ulasilamaz hale
@@ -14958,7 +14964,31 @@
         if(!m) return null;
         if(kaynak.t === 'shoutcast7'){
           const par = m.split(',');
-          m = par.length > 6 ? par.slice(6).join(',').trim() : '';
+          if(par.length <= 6) m = '';
+          else {
+            /* AYNI SATIRDA BIRDEN COK KAYIT (13 Eylul). Uretildi
+               (is/kunye.js): altinci virgulden sonrasinin TAMAMI
+               aliniyordu; bazi sunucular ayni satirda art arda
+               birden cok yayinin kaydini veriyor ve o "sonrasi"
+               bizim parcamiz degil, hepsinin istatistigi. Kayit
+               siniri adin ardindaki SAYI alanlari: ad, ilk salt
+               sayi alanina kadar. Icinde virgul olan gercek adlar
+               (Earth, Wind & Fire) etkilenmiyor. */
+            const kalan = par.slice(6);
+            let bitis = kalan.length;
+            for(let i = 1; i < kalan.length; i++){
+              if(/^\s*\d{1,6}\s*$/.test(kalan[i])){ bitis = i; break; }
+            }
+            m = kalan.slice(0, bitis).join(',').trim();
+            /* SHOUTCAST bosluk yerine '+' yaziyor. Yalnizca
+               gercekten oyleyse cozuluyor: Simon + Garfunkel gibi
+               normal adlara dokunulmuyor. */
+            if(m.indexOf('+') >= 0
+               && (m.indexOf(' ') < 0 || (m.split('+').length - 1) > (m.split(' ').length - 1))){
+              m = m.replace(/\+/g, ' ');
+              try{ m = decodeURIComponent(m); }catch(e){ _yut(e); }
+            }
+          }
         }
         return m ? _parcaNesne('', m) : null;
       }
@@ -19808,8 +19838,7 @@
           + '<br>Tap the marks or the name for the list.',
         bilir:'halka', duraklar:[{hedef:'#modAd', sure:520, oynat:()=>{ try{ modAdiBirak(); }catch(e){ _yut(e); } }},
                   {hedef:'#modAd', sure:560,
-                   /* listeBas: modul inmemisse indirip aciyor.
-                      window.listeAc dogrudan calismiyordu. */
+                   /* listeBas: modul inmemisse indirip aciyor. */
                    oynat:()=>{ try{ listeBas(document.getElementById('modAd')); }catch(e){ _yut(e); } }},
                   {hedef:yaDa('#istListe','#bekle'), sure:1200},
                   {hedef:'#modAd', sure:440,
@@ -19849,8 +19878,7 @@
                        bulmuyor. */
       { bas:'TIMER', metin:'Sleep fades the sound out.<br>The alarm brings back what you were playing.',
         duraklar:[{hedef:'#saatTus', sure:560,
-                   /* saatBas: saat.js istek uzerine iniyor; panel
-                      bu yuzden hic acilmiyordu (olculdu). */
+                   /* saatBas: saat.js istek uzerine iniyor. */
                    oynat:()=>{ try{ saatBas(); }catch(e){ _yut(e); } }},
                   {hedef:yaDa('#saatPanel','#saatTus'), sure:1100},
                   {hedef:'#saatTus', sure:480,
@@ -19858,8 +19886,7 @@
       /* VISUAL: ayni zamanda EKRAN KILIDI. Ikisini birlikte
          soylemek gerekiyor -- yoksa "dokunuyorum, sarki
          degismiyor" bir kusur gibi gorunur. */
-      /* HIZLI (kullanici: "alarm skins ve visual hizli gececek").
-         Bir sey ACMIYOR, yalnizca tusu gosteriyor. 900 -> 620. */
+      /* HIZLI: bir sey acmiyor, yalnizca tusu gosteriyor. */
       { bas:'SKINS', metin:'The brush: every look, live.<br>Tap again for a slim strip that stays.',
         duraklar:[{hedef:'#deriFirca', sure:620}] },
       /* SAAT PANELI GERCEKTEN ACILIP KAPANIYOR (kullanicinin istegi:
@@ -19874,10 +19901,8 @@
       { bas:'SETTINGS', bilir:'ayar', metin:'Bottom left: three lines.<br>Sound, display, playback — and every tutorial.',
         duraklar:[{hedef:'#ayarTut', sure:620,
                    oynat:()=>{ try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){ _yut(e); } }},
-                  /* LISTE ASAGI INIYOR (kullanici: "menu acilacak,
-                     liste yani asagi inecek"). TUTORIALS satiri
-                     panelin altlarinda; el gitmeden once panel
-                     oraya kayiyor. */
+                  /* LISTE ASAGI INIYOR: TUTORIALS satiri panelin
+                     altlarinda, el gitmeden once panel oraya kayiyor. */
                   {hedef:'#ayarTut', sure:380,
                    oynat:()=>{ try{ const st = document.querySelector('#ayar .sat[data-ayar="tanitim"]');
                      if(st && st.scrollIntoView) st.scrollIntoView({block:'center', behavior:'smooth'}); }catch(e){ _yut(e); } }},
@@ -19943,12 +19968,9 @@
     /* ACILISTA: uzun adimlar dusuyor, zaten yapilan isler de dusuyor. */
     return hepsi.filter(a => !a.uzun && !(a.bilir && biliniyor(a.bilir)));
   }
-  /* Acilis turunda OGRETECEK bir sey kaldi mi? ORBITAPE ve READY
-     birer selam; tek baslarina kaldilarsa tur bir sey anlatmiyor,
-     sadece ekrani mesgul ediyor. O zaman hic acilmiyor. */
-  function turOgretecekVarMi(){
-    try{ return turAdimlari().some(a => !!a.bilir); }catch(e){ return true; }
-  }
+  /* turOgretecekVarMi SILINDI (13 Eylul): acilis kapisi 12 Eylul'de
+     kalkinca cagiran kalmamisti -- tanimli ama olu bir islevdi ve
+     ilk cizim tavaninin icinde yer tutuyordu. */
 
 
   /* ── AYARLARDAN ISTENEN TUR DAHA YAVAS ──────────────────────────

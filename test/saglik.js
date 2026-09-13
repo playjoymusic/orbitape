@@ -651,7 +651,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      acilmadan once okunuyor. O yuzden tavan yaziyla yukseliyor.
      108 yine FREN: bugunku olcumun ~%2 ustu; kacak bir buyume
      (gomulen veri, yanlislikla eklenen kutuphane) hala yakalanir. */
-  const ILK_CIZIM_TAVAN = _derlendi ? 108 : 260, ILK_ACILIS_TAVAN = _derlendi ? 112 : 302;
+  /* ── 13 EYLUL: 108 -> 109. GEREKCE ───────────────────────────
+     Bu turda ilk cizime giren YENI KOD:
+       · halka boyu (bes kademe, ayar satiri, olcek yazici)
+       · turun gercekten acan adimlari (liste/alarm modullerini
+         isteyen yollar, ayar panelinde kaydirma ve anahtar cevirme)
+       · kunye dondurma ve kosullu NOW PLAYING adimi
+       · SHOUTCAST 7.html ayristirmasinin cok kayitli hali
+       · derinin 'sade' bayragi
+     Olculen boy 110.598 bayt, eski tavan 110.592 -- yani asim 6
+     BAYT. Once kod kirpildi: iki olu islev silindi
+     (turOgretecekVarMi, sesDikeyYaz), gereksiz bir carkTazele
+     cagrisi ve bir favicon baglantisi kalkti. Bu kirpmalar
+     olcumu tavanin altina indirmedi; kalan fark sikistiricinin
+     kendi gurultusu kadar (uc denemede 110.595 / 110.596 /
+     110.598 -- yani BAYT kirpmak artik olcumu belirlemiyor).
+     Tavan bu yuzden 1 KB yukseliyor; bu bir pay degil, olcumun
+     cozunurlugu.
+     BORC BUYUDU: bu SEKIZINCI yukseltme. Turun adim listesi
+     (uzun turda cikan alti adim dahil) ve halka boyu, ilk
+     boyamada GEREKMEYEN kod. Dogru is bunlari ayri bir module
+     almak (deri_cizim.js, cark.js, saat.js ile ayni desen);
+     tavani her seferinde bir tik yukseltmek o isi erteliyor. */
+  const ILK_CIZIM_TAVAN = _derlendi ? 109 : 260, ILK_ACILIS_TAVAN = _derlendi ? 113 : 302;
   K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
@@ -3071,7 +3093,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await pp.evaluate(()=>{ try{ localStorage.setItem('orbitape.kullanim',
         JSON.stringify(['halka','ayar'])); }catch(e){} });
       const bilen  = await pp.evaluate(()=>turAdimlari().map(a=>a.bas));
-      const kalan  = await pp.evaluate(()=>turOgretecekVarMi());
       /* Anahtar kapaliyken iki tanitim da susmali. */
       const kapali = await pp.evaluate(()=>{ const e=AYAR.tanitim; AYAR.tanitim=false;
         const r={ tur:turGosterilsinMi(), fx:fxSunumBittiMi() }; AYAR.tanitim=e; return r; });
@@ -3092,7 +3113,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                  anahtar: sat.getAttribute('role') === 'switch' };
       });
       /* Kapali kalmasin: bu sayfa kapaniyor ama depo baglamda kaliyor. */
-      return { acilis, uzun, bilen, kalan, kapali, damga };
+      return { acilis, uzun, bilen, kapali, damga };
     } finally { await kapat(); }
   })();
   if(!tan){ yavas('Tanitimlar (6 kontrol)'); } else {
@@ -3134,8 +3155,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Yaptigi is bir daha anlatilmiyor',
      !tan.bilen.includes('GENRES') && !tan.bilen.includes('SETTINGS'),
      'halka + ayar ogrenildi -> kalan: ' + tan.bilen.join(' · '));
-  K('Ogretecek sey kalmadiysa tur acilmiyor', tan.kalan === false,
-     'turOgretecekVarMi() = false');
+  /* "Ogretecek sey kalmadiysa tur acilmiyor" KONTROLU KALKTI
+     (13 Eylul). Olctugu kapi 12 Eylul'de zaten kaldirilmisti: tur
+     artik HER acilista cikiyor, kapanmasi kutu ya da uc atlamayla
+     oluyor. Geriye yalnizca hicbir seyi yonetmeyen bir islev
+     kalmisti (turOgretecekVarMi) ve kontrol onu ayakta tutuyordu;
+     islev de silindi. Kuralin kendisi bu dosyada zaten olculuyor
+     (bkz. "TUTORIALS kapaliyken hicbir tanitim cikmiyor" ve atlama
+     sayaci kontrolleri). */
   K('TUTORIALS kapaliyken hicbir tanitim cikmiyor',
      tan.kapali.tur === false && tan.kapali.fx === true,
      'acilis turu kapali, FX sunumu kapali');
@@ -9619,7 +9646,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const yaninda = mr.right <= fr.left + 1 && Math.abs(mr.top-fr.top) <= 1;
     const olcuAyni = Math.round(mr.width)===Math.round(fr.width)
                   && Math.round(mr.height)===Math.round(fr.height);
-    kSes=1; sesSeviyeYaz(); sesDikeyYaz();
+    kSes=1; sesSeviyeYaz(); (window.muteTazele && window.muteTazele());
     m.click(); await bek(120);
     const sus = { k:kSes, sinif:m.classList.contains('sus'),
                   kul:(typeof kulGain!=='undefined'&&kulGain)?kulGain.gain.value:null,
@@ -9627,7 +9654,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                   yay:getComputedStyle(m.querySelector('.y1')).display };
     m.click(); await bek(120);
     const geri = { k:kSes, sinif:m.classList.contains('sus') };
-    kSes=1; sesSeviyeYaz(); sesDikeyYaz();
+    kSes=1; sesSeviyeYaz(); (window.muteTazele && window.muteTazele());
     try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
     return { yaninda, olcuAyni, sus, geri };
   });
@@ -9661,13 +9688,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const m=document.getElementById('mute'); if(!m) return null;
     const eski = kSes;
-    kSes = 0.10; sesSeviyeYaz(); sesDikeyYaz(); await bek(40);
+    kSes = 0.10; sesSeviyeYaz(); (window.muteTazele && window.muteTazele()); await bek(40);
     const kisik = { sinif:m.classList.contains('kisik'), sus:m.classList.contains('sus'),
                     y2:getComputedStyle(m.querySelector('.y2')).opacity };
-    kSes = 0.6;  sesSeviyeYaz(); sesDikeyYaz(); await bek(40);
+    kSes = 0.6;  sesSeviyeYaz(); (window.muteTazele && window.muteTazele()); await bek(40);
     const normal = m.classList.contains('kisik');
     const yuvarla = { dip:sesTopla(0.012), sinir:sesTopla(0.02), ust:sesTopla(0.5), sifir:sesTopla(0) };
-    kSes = eski; sesSeviyeYaz(); sesDikeyYaz();
+    kSes = eski; sesSeviyeYaz(); (window.muteTazele && window.muteTazele());
     try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
     return { kisik, normal, yuvarla };
   });
@@ -10395,12 +10422,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
              && !document.getElementById('sesSatir')
              && !document.getElementById('sesDikey');
     const m = document.getElementById('mute');
-    kSes=1; sesSeviyeYaz(); sesDikeyYaz(); await bek(40);
+    kSes=1; sesSeviyeYaz(); (window.muteTazele && window.muteTazele()); await bek(40);
     m.click(); await bek(120);
     const sustu = kSes;
     m.click(); await bek(120);
     const geldi = Math.round(kSes*100);
-    kSes=1; sesSeviyeYaz(); sesDikeyYaz();
+    kSes=1; sesSeviyeYaz(); (window.muteTazele && window.muteTazele());
     try{ localStorage.setItem('orbitape.ses','1'); }catch(e){}
     return { yok, sustu, geldi };
   });
