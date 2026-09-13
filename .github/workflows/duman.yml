@@ -36,8 +36,21 @@
 name: Yayın duman testi
 
 on:
-  push:
-    branches: [main]
+  # ── PUSH TETIGI KALKTI (13 Eylul) ────────────────────────────────
+  #   Kosu #207 kirmizi yandi: "Yayindaki sayfa derlenmis kopyayla
+  #   ayni" 840 saniye bekledi ve dustu. Yayin bozuk degildi --
+  #   O ANDA HENUZ CIKMAMISTI: ayni commit'te "Yayin (testler
+  #   yesilse)" isi hala In progress'ti (kapi ~8 dk, sonra derleme,
+  #   sonra wrangler). Bu is ise push ile AYNI ANDA basliyor ve
+  #   yayinin yetismesini bekliyordu; yani yaris kaybedilmek uzere
+  #   kurulmustu.
+  #   Ustelik gereksizdi: yayin.yml'nin kendi 'dogrula' isi zaten
+  #   ayni kati sinamayi (KATI=1) yayindan SONRA yapiyor --
+  #   needs: yayinla, yani yarisamaz.
+  #   Geriye bu dosyanin asil sorusu kaliyor: "site su anda ayakta
+  #   mi", 15 dakikada bir. KATI ifadesi (github.event_name ==
+  #   'push') artik her zaman 0 -- dogrusu da bu: nobetci
+  #   "saglam mi" diye soruyor, "guncel mi" diye degil.
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
