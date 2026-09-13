@@ -781,6 +781,59 @@ const CASUS = ()=>{
     await c3.close();
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     YOLCULUK 12 — ULKE BAYRAGI: ac, tekrar bas kapansin, isme bas calsin
+     Kullanicinin sozu (13 Eylul): "bayraga basinca o ulkedeki
+     istasyonlar acilsin, tekrar basarsak kapanir bayrak. bir isme
+     basarsak ta listeden baslar ve cark sag heryer o istasyon ture
+     gider." Y3 (arama) ile ayni iskelet: sahte iki istasyon, bilinen
+     bir ulke kodu, gercek tiklama yolu.
+     ══════════════════════════════════════════════════════════════ */
+  {
+    const ulke = await p2.evaluate(async ()=>{
+      const b2 = ms=>new Promise(r=>setTimeout(r,ms));
+      if(typeof mod !== 'undefined') mod = 'radio';
+      /* Sahte beyazListe: uzunluk degisti, radyoArananlar() onbellegi
+         kendiliginden tazeler (bkz. index.html, _radAraSay kontrolu). */
+      window.beyazListe = [
+        { stationuuid:'zz-test-1', name:'Test Ulke Radyo 1', url:'https://sahte.test/ulke1.mp3',
+          url_resolved:'https://sahte.test/ulke1.mp3', tags:'', grup:'JAZZ', saf:3, ulke:'ZZ' },
+        { stationuuid:'zz-test-2', name:'Test Ulke Radyo 2', url:'https://sahte.test/ulke2.mp3',
+          url_resolved:'https://sahte.test/ulke2.mp3', tags:'', grup:'AMBIENT', saf:3, ulke:'ZZ' }
+      ];
+      bayrakYaz({ radyo:true, ulke:'ZZ' });
+      if(window.ulkeKapa) window.ulkeKapa();
+      const tetik = document.getElementById('npBayrak');
+      const eskiCal = window.cal; let calan = null;
+      window.cal = it => { calan = it; };
+      tetik.click();
+      /* Ilk tiklama modulu (ulke.js) yukluyor olabilir. */
+      for(let i=0; i<60 && !window.ULKE_HAZIR; i++) await b2(50);
+      await b2(150);
+      const acilis = { acik: !!(window.ulkeAcikMi && window.ulkeAcikMi()),
+                        n: document.querySelectorAll('#ulkeListe .ul-oge').length };
+      tetik.click(); await b2(80);            // tekrar bas: kapanmali
+      const kapandiMi = !(window.ulkeAcikMi && window.ulkeAcikMi());
+      tetik.click(); await b2(150);           // yeniden ac
+      const ilkOge = document.querySelector('#ulkeListe .ul-oge');
+      const hedefAd = ilkOge ? ilkOge.querySelector('.ul-baslik').textContent : null;
+      if(ilkOge) ilkOge.click();
+      await b2(150);
+      const acikSonra = !!(window.ulkeAcikMi && window.ulkeAcikMi());
+      window.cal = eskiCal;
+      return { acilis, kapandiMi, hedefAd, calanAd: calan && calan.ad,
+               raf: (typeof AKTIF_AILE !== 'undefined' ? AKTIF_AILE : null), acikSonra };
+    });
+    K('[Y12] Bayraga basinca o ulkenin istasyonlari aciliyor',
+       ulke.acilis.acik===true && ulke.acilis.n===2, ulke.acilis.n + ' istasyon');
+    K('[Y12] Tekrar basinca kapaniyor', ulke.kapandiMi===true, 'acik: ' + !ulke.kapandiMi);
+    K('[Y12] Isme basinca o istasyon caliyor', ulke.hedefAd==='Test Ulke Radyo 1' && ulke.calanAd===ulke.hedefAd,
+       'istenen "' + ulke.hedefAd + '" | calan "' + ulke.calanAd + '"');
+    K('[Y12] Cark/raf secilenin turune gidiyor', ulke.raf==='JAZZ', 'raf ' + ulke.raf);
+    K('[Y12] Secince panel kapaniyor', ulke.acikSonra===false, 'acik: ' + ulke.acikSonra);
+    await supur(p2, 'Y12 ulke bayragi');
+  }
+
   /* ── SON: BUTUN YOLCULUK BOYUNCA JS HATASI ──────────────────── */
   K('Yolculuk boyunca JS hatasi yok', jsHata.length===0,
      jsHata.length ? jsHata[0] : '0 hata');
@@ -788,7 +841,7 @@ const CASUS = ()=>{
      gectigi rapora yaziliyor ki "test var ama bos" durumu
      gorunur olsun. */
   const yolculuk = new Set(sonuc.map(x => (x.ad.match(/^\[(Y\d+)/)||[])[1]).filter(Boolean));
-  K('On bir yolculuk da calisti', yolculuk.size === 11, yolculuk.size + ' yolculuk');
+  K('On iki yolculuk da calisti', yolculuk.size === 12, yolculuk.size + ' yolculuk');
 
   await c2.close();
   await b.close();

@@ -1770,11 +1770,12 @@
      hizasini bozmasin. Dokunulacak bir sey degil, bilgidir. */
   #npBayrak{display:flex;align-items:center;justify-content:center;
     height:32px;font-size:0.9375rem;line-height:1;flex:none;
-    pointer-events:none;user-select:none;
+    cursor:pointer;user-select:none;
     /* Emoji bayrak bazi masaustu sistemlerinde iki harf olarak
        cizilir (ABD -> "US"). O da dogru bilgi; kirilmiyor. */
     font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
-  #npBayrak:empty{display:none;}
+  #npBayrak:empty{display:none;pointer-events:none;}
+  #npBayrak:focus-visible{outline:1px solid currentColor;outline-offset:2px;border-radius:3px;}
   /* ── ORBITAPE ISARETI ─────────────────────────────────────────
      Iki cember + mil: yorunge ve makara ayni cizimde.
      Yildizin SAGINDA, blogun en sag ucunda -- kosenin imzasi.
@@ -4333,7 +4334,7 @@
            Yalnizca canli yayinda doluyor; arsiv kayitlarinda bos
            kalir ve hic yer kaplamaz.
            DEKORATIF DEGIL, BILGI: ekran okuyucudan gizlenmiyor. -->
-      <span id="npBayrak"></span>
+      <span id="npBayrak" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false"></span>
       <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
       <!-- ── ORBITAPE ISARETI ────────────────────────────────────
            Shazam dugmesinin bosalttigi yer. Kullanicinin istegi:
@@ -8390,8 +8391,46 @@
       /* Ekran okuyucu "bayrak" demesin, ULKE desin diye etiket. */
       if(b) e.setAttribute('aria-label', 'Country: ' + String(it.ulke||'').toUpperCase());
       else  e.removeAttribute('aria-label');
+      /* Bayraga basinca o ulkenin istasyonlari acilir (ulke.js).
+         Tetigin kendi ulke kodu burada tutuluyor -- ayri bir
+         degisken yerine dogrudan elemanda, panel de oradan okuyor. */
+      e.dataset.kod = b ? String(it.ulke||'').toUpperCase() : '';
+      /* Calan degisti: acik ulke listesi varsa kapat, bayat kalmasin. */
+      if(window.ULKE_HAZIR && window.ulkeKapa) window.ulkeKapa();
     }catch(e2){ _yut(e2); }
   }
+  /* ── ULKE LISTESI: BAYRAGA BASINCA (13 Eylul) ─────────────────────
+     Kullanicinin sozu: "bayraga basinca o ulkedeki istasyonlar
+     acilsin, tekrar basinca kapanir." Panel ayri dosyada (ulke.js),
+     liste.js ile ayni yukleme kalibi: istek uzerine iner. */
+  const ULKE_DOSYA = 'ulke.js';
+  let _ulkeIsteniyor = false, _ulkeBekliyor = false;
+  function ulkeYukle(){
+    try{
+      if(window.ULKE_HAZIR || _ulkeIsteniyor) return;
+      _ulkeIsteniyor = true;
+      const s = document.createElement('script'); s.src = ULKE_DOSYA; s.defer = true;
+      s.onerror = ()=>{ _ulkeIsteniyor = false; _ulkeBekliyor = false; };
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function ulkeGeldi(){
+    try{ if(_ulkeBekliyor && typeof window.ulkeAc === 'function'){ _ulkeBekliyor = false; window.ulkeAc(document.getElementById('npBayrak')); } }catch(e){ _yut(e); }
+  }
+  try{ window.ulkeGeldi = ulkeGeldi; }catch(e){ _yut(e); }
+  function ulkeBas(){
+    try{
+      if(window.ULKE_HAZIR && typeof window.ulkeDegistir === 'function'){ window.ulkeDegistir(document.getElementById('npBayrak')); return; }
+      _ulkeBekliyor = true; ulkeYukle();
+    }catch(e){ _yut(e); }
+  }
+  try{
+    const _nb = document.getElementById('npBayrak');
+    if(_nb){
+      _nb.addEventListener('click', ulkeBas);
+      _nb.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); ulkeBas(); } });
+    }
+  }catch(e){ _yut(e); }
   /* ── LİSANS ADI ───────────────────────────────────────────────────
      Depodaki lisans bir URL. Ekranda URL göstermek anlamsız; kısa adı
      yazıyoruz: "CC BY-NC-SA", "CC0", "PUBLIC DOMAIN".

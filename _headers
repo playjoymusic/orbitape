@@ -136,6 +136,11 @@
   Content-Type: text/javascript; charset=utf-8
   Cache-Control: no-cache
 
+# Ulke listesi (bayraga basinca). Istek uzerine iniyor; ayni kural.
+/ulke.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: no-cache
+
 # Cark (ortadaki alet). Istek uzerine iniyor; ayni kural.
 /cark.js
   Content-Type: text/javascript; charset=utf-8
@@ -254,10 +259,10 @@
 
 # index.html
 /
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-YEKC7tAM5sqHFkGsSeS/UG1YgYMWVFqzy5KpJ89Mrz4='; style-src 'sha256-IhpOk+rjFmRAQa6djEJ4pT4ncw9WA+JGltvRJkRicL0='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-MdlJi7fqwnVUZsYiEPfdJNwRhnWJ1+RTz+ZMdlDUmeQ='; style-src 'sha256-Kd1OSqAZanLcojPIGwD5RYMbVZpve3Pd7Fn8mYF0K+Y='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-YEKC7tAM5sqHFkGsSeS/UG1YgYMWVFqzy5KpJ89Mrz4='; style-src 'sha256-IhpOk+rjFmRAQa6djEJ4pT4ncw9WA+JGltvRJkRicL0='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-MdlJi7fqwnVUZsYiEPfdJNwRhnWJ1+RTz+ZMdlDUmeQ='; style-src 'sha256-Kd1OSqAZanLcojPIGwD5RYMbVZpve3Pd7Fn8mYF0K+Y='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy

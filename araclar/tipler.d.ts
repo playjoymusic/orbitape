@@ -137,6 +137,15 @@ interface Window {
   listeCalanIsaretle?: () => void;
   ustAdEtiket?: () => void;
 
+  /* Ulke listesi (ulke.js): bayraga basinca acilan istasyon listesi. */
+  ULKE_BASLADI?: boolean;
+  ULKE_HAZIR?: boolean;
+  ulkeGeldi?: () => void;
+  ulkeAc?: (tetik?: Element) => void;
+  ulkeKapa?: () => void;
+  ulkeDegistir?: (tetik?: Element) => void;
+  ulkeAcikMi?: () => boolean;
+
   /* FX acik mi: cark modulu ve gokyuzu jesti bunu soruyor. */
   fxAcikMi?: () => boolean;
 
