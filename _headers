@@ -112,6 +112,11 @@
   Content-Type: audio/wav
   Cache-Control: public, max-age=31536000, immutable
 
+# LED saat fontu (DSEG7 Modern, SIL OFL). tik.wav gibi: uygulamanin
+# geri kalanindan bagimsiz, disaridan gelen ve degismeyen bir dosya.
+/yazitipi/*
+  Cache-Control: public, max-age=31536000, immutable
+
 # Cizimli derilerin motoru. Istek uzerine iniyor (bkz. deriCizimYukle)
 # ama davranisi yine uygulamayla ayni anda degisiyor: eski bir motor
 # yeni bir deri tablosuyla calisirsa cizim tanimsiz kalir.

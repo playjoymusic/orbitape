@@ -58,6 +58,16 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     "#saatPanel{--st-vurgu:#35e0d8;--st-yazi:#dfe4e8;--st-zem:rgba(8,10,12,.94);position:fixed;z-index:97;left:calc(var(--kx) + env(safe-area-inset-left,0px));top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 148px);bottom:auto;width:min(92vw,340px);max-height:calc(100vh - 140px);overflow-y:auto;background:var(--st-zem);color:var(--st-yazi);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.45);padding:12px 18px 16px;font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:.08em;font-size:0.75rem}",
     "body.deri #saatPanel{--st-vurgu:var(--d-marka,var(--d-yazi));--st-yazi:var(--d-yazi);--st-zem:var(--d-panel,var(--d-zem))}",
     "#saatPanel[hidden],#saatPanel [hidden]{display:none !important}",
+    /* ── LED FONTU (13 Eylul) ─────────────────────────────────────
+       Kullanicinin sozu: dijital saat gorseli attı, "bu font,
+       meshur". DSEG7 Modern -- yedi parcali LED goruntusunu veren,
+       SIL Open Font License ile ucretsiz/ticari kullanima acik font
+       (keshikan.net/fonts-e.html). Yalnizca BUYUK deger burada
+       kullaniliyor (.st-deger); panelin geri kalani hala Share Tech
+       Mono -- kucuk etiketlerde LED fontu okunmuyor, sadece rakamda
+       ise yariyor. Dosya font-src 'self' altinda, CSP degismedi. */
+    "@font-face{font-family:'DSEG7 Modern';font-style:normal;font-weight:700;font-display:swap;src:url('/yazitipi/DSEG7-Modern-700.woff2') format('woff2')}",
+    ".st-deger{font-family:'DSEG7 Modern','Share Tech Mono',ui-monospace,monospace}",
     ".st-bas{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}",
     ".st-baslik{font-size:0.6875rem;letter-spacing:.3em;opacity:.55}",
     ".st-bolum{padding:12px 0 6px}",
