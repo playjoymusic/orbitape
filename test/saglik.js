@@ -12110,6 +12110,53 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Paylasim: iptal deftere girmiyor, pencere acikken ikinci dokunus yok sayiliyor',
       py.tekCagri && py.iptalDefterdeYok && py.kilitAcildi && py.yenidenCagrilir, pyOz || 'AbortError sessiz, kilit');
   }
+  /* ── SAVE: PAYLASIM SAYFASINI HIC ACMADAN DOGRUDAN INDIRME ───────
+     13 Eylul, kullanicinin sozu: "foto/share'e cihaza kaydet
+     secenegi eklenmeli (hem telefon hem masaustu)". SHARE zaten
+     telefonda galeriye kaydedebiliyordu ama paylasim sayfasinin
+     ICINDEN, ekstra bir adimla. SAVE o adimi atliyor: navigator.share
+     HIC cagrilmadan bir <a download> tetiklenmeli, onizleme
+     kapanmali, bekleyen fotograf temizlenmeli. document.createElement
+     sahteleniyor ki 'a' elemaninin gercek click()'i tarayicida
+     dosya indirmeye kalkismasin -- yalnizca hangi ad/href ile
+     tiklandigi kaydediliyor. */
+  {
+    const sv = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const eS = navigator.share, eC = navigator.canShare;
+        let paylasimCagrildi = false;
+        navigator.canShare = ()=>true;
+        navigator.share = ()=>{ paylasimCagrildi = true; return Promise.resolve(); };
+        const gercekCreate = document.createElement.bind(document);
+        let tiklananAd = null, tiklananHref = null;
+        document.createElement = (etiket)=>{
+          const el = gercekCreate(etiket);
+          if(String(etiket).toLowerCase() === 'a'){
+            el.click = ()=>{ tiklananAd = el.download; tiklananHref = el.href; };
+          }
+          return el;
+        };
+        _fotoBekleyen = { bayt: new Uint8Array([137,80,78,71]), ad:'orbitape-test.png' };
+        const kap = document.getElementById('fotoOnizle');
+        if(kap) kap.classList.add('var');
+        fotoKaydet();
+        await bek(80);
+        c.paylasimCagrilmadi = !paylasimCagrildi;
+        c.indirmeTetiklendi = tiklananAd === 'orbitape-test.png' && !!tiklananHref;
+        c.onizlemeKapandi = kap ? !kap.classList.contains('var') : null;
+        c.bekleyenTemizlendi = _fotoBekleyen === null;
+        document.createElement = gercekCreate;
+        navigator.share = eS; navigator.canShare = eC;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const svOz = Object.keys(sv).filter(k => sv[k] !== true).map(k => k + '=' + sv[k]).join(' ');
+    K('SAVE tusu paylasim sayfasini atlayip dogrudan cihaza indiriyor',
+      sv.paylasimCagrilmadi && sv.indirmeTetiklendi && sv.onizlemeKapandi && sv.bekleyenTemizlendi,
+      svOz || 'share cagrilmadi, indirme tetiklendi, onizleme kapandi, bekleyen temizlendi');
+  }
   /* ── CAR MODE: SES ZINCIRE GIRMIYOR ─────────────────────────────
      "CarPlay'de kesik kesik, YouTube duzgun." Kipte ses grafi hic
      kurulmamali (srcNode yok), eleman dogrudan cikisa calmali, FX ve

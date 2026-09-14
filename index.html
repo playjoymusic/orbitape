@@ -968,17 +968,22 @@
     animation:recYanip 1.6s infinite;}
   #rec.kaydet #recYazi{color:#8ff0dd;}
   /* ── FOTOGRAF ONIZLEME ────────────────────────────────────────
-     Cekilen kare tam ekran duruyor; altinda iki tus. Paylasim
+     Cekilen kare tam ekran duruyor; altinda uc tus. Paylasim
      kendiliginden acilmiyor -- o ayri bir karar (bkz. markup notu).
      Zemin tam opak: arkadaki uygulamayla karisip "hangisi fotograf"
-     sorusu olusmasin. */
+     sorusu olusmasin.
+     13 Eylul: SAVE eklendi. SHARE zaten telefonda "kaydet"i
+     yapabiliyordu ama paylasim sayfasinin ICINDE, ekstra bir dokunusla.
+     Istek acikti: "cihaza kaydet secenegi" -- yani paylasim sayfasina
+     hic girmeden, tek dokunusla dogrudan indirme. Uc tus artik ayni
+     satirda sigmayabilir diye flex-wrap eklendi (dar telefon ekrani). */
   #fotoOnizle{position:fixed;inset:0;z-index:120;display:none;
     align-items:center;justify-content:center;flex-direction:column;gap:14px;
     background:#05070a;padding:18px;box-sizing:border-box;}
   #fotoOnizle.var{display:flex;}
   #fotoResim{max-width:100%;max-height:calc(100% - 74px);object-fit:contain;
     border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6);}
-  #fotoOnizle .fo-sira{display:flex;gap:12px;}
+  #fotoOnizle .fo-sira{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
   #fotoOnizle button{font:inherit;font-size:0.8125rem;letter-spacing:.14em;
     padding:10px 20px;border-radius:999px;cursor:pointer;
     background:rgba(10,18,22,.9);color:#a9cbd2;
@@ -4016,6 +4021,7 @@
     <img id="fotoResim" alt="Photo of the screen">
     <div class="fo-sira">
       <button id="fotoPaylas" type="button">SHARE</button>
+      <button id="fotoKaydet" type="button">SAVE</button>
       <button id="fotoKapat" type="button">CLOSE</button>
     </div>
   </div>
@@ -4766,7 +4772,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.13';
+  var ORB_SURUM = '2026.09.14';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu

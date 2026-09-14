@@ -2794,11 +2794,32 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       try{ kisaNotYaz('PHOTO SAVED', 'The image went to your downloads.'); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
+  /* SAVE: SHARE'den ayri, DOGRUDAN cihaza indirme. Telefonda
+     paylasim sayfasina hic girmeden calisiyor -- "kaydet" orada bir
+     secenekti, artik ayri bir tus (13 Eylul, "foto/share'e cihaza
+     kaydet secenegi" istegi). Masaustunde zaten SHARE'in kendisi
+     ayni indirme yoluna dusuyordu (canShare yok); bu yeni tus onu
+     telefonda da tek dokunusa indiriyor. navigator.share'e HIC
+     bakmiyor -- kod fotoPaylas'in indirme dalindan (asagida) bilerek
+     ayni, ama kosulsuz. */
+  function fotoKaydet(){
+    const k = _fotoBekleyen; if(!k) return;
+    try{
+      const u = URL.createObjectURL(new Blob([k.bayt], {type:'image/png'}));
+      const a = document.createElement('a');
+      a.href = u; a.download = k.ad; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u), 8000);
+      fotoOnizleKapa();
+      try{ kisaNotYaz('PHOTO SAVED', 'The image went to your downloads.'); }catch(e){ _yut(e); }
+    }catch(e){ _yut(e); }
+  }
   (function fotoTuslari(){
     try{
       const p = document.getElementById('fotoPaylas');
+      const s = document.getElementById('fotoKaydet');
       const k = document.getElementById('fotoKapat');
       if(p) p.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fotoPaylas(); });
+      if(s) s.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fotoKaydet(); });
       if(k) k.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fotoOnizleKapa(); });
       /* Esc: acik her panelin kapanma yolu ayni olmali. */
       document.addEventListener('keydown', e=>{
