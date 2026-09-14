@@ -2529,10 +2529,29 @@ const DERI_CIZIM = {
       c.lineTo(W*1.05 + dx, H*1.05 + dy);
       c.lineTo(-W*0.05 + dx, H*1.05 + dy);
       c.closePath(); c.fill();
-      /* Kuslar: uc yay, ust solda */
+      /* Kuslar: uc yay, ust solda.
+         14 EYLUL: sahnenin geneli icin olculu dx/dy (dag ve gunes icin
+         DOGRU olcek) kuslara da OLDUGU GIBI uygulaniyordu. Olcum: iki
+         baski arasindaki kayma mesafesi (~0,049u) kucuk kuslarin kendi
+         govdesinden (s2*2 = 0,027..0,045u) BUYUKTU -- iki renk kopyasi
+         ust uste binmek yerine birbirinden tamamen kopuyor, "baski
+         kaymasi" degil "bozuk / yanlis yerde" gibi okunuyordu
+         (kullanicinin sozu: "sol ustteki ogeler kaymali gibi bozuk
+         gorunuyor"). Kus govdesine gore kucuk bir yuzeyde ince bir
+         cizgi -- dag ve gunes gibi buyuk dolgular kaymayi tolere
+         ediyor, ince cizgi etmiyor.
+         Duzeltme: kusun kendi kaymasi govde boyuyla (k[2]) AYNI ORANDA
+         kuculuyor, boylece UCU DE birbiriyle ayni oranda kayiyor
+         ("digerleri gibi olsun") ve o oran gunesin okunan kaymasina
+         yakin kaliyor. Olculen oran (saglik.js): duzeltmeden once en
+         buyuk kus icin ayri/kopmus (kayma/govde = 1,08), en kucuk kus
+         icin iki kat kopmus (1,81); duzeltmeden sonra UCUNDE DE 0,28 --
+         gunesin kayma/yaricap oranina (~0,33) yakin, okunan tek bir
+         "baski kaymasi" gibi kaliyor. */
       c.lineWidth = u*0.008; c.lineCap = 'round';
       [[0.18,0.16,1],[0.30,0.11,0.75],[0.26,0.25,0.6]].forEach(function(k){
-        const x = W*k[0] + dx, y = H*k[1] + dy, s2 = u*0.045*k[2];
+        const bk = 0.26 * k[2];
+        const x = W*k[0] + dx*bk, y = H*k[1] + dy*bk, s2 = u*0.045*k[2];
         c.beginPath(); c.moveTo(x - s2, y);
         c.quadraticCurveTo(x - s2*0.5, y - s2*0.6, x, y);
         c.quadraticCurveTo(x + s2*0.5, y - s2*0.6, x + s2, y); c.stroke();

@@ -4207,8 +4207,12 @@
          saate bakmanin yolu telefonu kilitleyip acmaktan geciyordu.
          Saat yalnizca VISUALS ACIKKEN goruluyor; normal ekranda
          hicbir sey degismiyor, yani kalabaligi artirmiyor.
-         Varsayilan KAPALI: gorseli acan kisi ekranda bir sey
-         GORMEK istiyor, once onu gostermek dogru. -->
+         Varsayilan ACIK (14 Eylul'e kadar KAPALIYDI -- "gorseli acan
+         kisi ekranda bir sey GORMEK istiyor, once onu gostermek
+         dogru" deniyordu). Kullanicinin sozu: "visual da clock
+         secenegi acik gelsin baslangicta ... isteyen sonradan
+         kapatir." Kapatmak artik bir tercih, acmak varsayilan --
+         bkz. AYAR yuklenirken gorselSaatOnar damgasi. -->
     <div class="sat" data-ayar="gorselSaat" role="switch" tabindex="-1">
       <span>CLOCK IN VISUALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- GECE MODU: ekrani kirmiziya kaydirir -- astronomlarin
@@ -10767,7 +10771,7 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:false, gunDongusu:false, geceModu:false };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, gunDongusu:false, geceModu:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -10820,9 +10824,22 @@
          acilsin, tam tersi olsun."
          Yani kapatmak bir tercih; acmak varsayilan. */
       if(_a.karanlik === false) AYAR.karanlik = false;
-      /* Gorselde saat: varsayilan KAPALI, yani yalnizca ACILMIS
-         olmasi hatirlaniyor. */
-      if(_a.gorselSaat === true) AYAR.gorselSaat = true;
+      /* ── BIR KERELIK ONARIM: GORSELDE SAAT ────────────────────
+         KULLANICININ SOZU (14 Eylul): "ayarlardaki visual da clock
+         secenegi acik gelsin baslangicta ... isteyen sonradan
+         kapatir." Varsayilan o gune kadar KAPALIYDI. Ayni tuzak
+         merkezOnar/sesAcildi'de de vardi: varsayilan degisince
+         herkesin deposunda ESKI varsayilan (kapali) kayitli kaliyor,
+         duzeltme onu kendiliginden temizlemiyor -- cunku AYAR'in
+         TAMAMI localStorage'a yaziliyor (ayarKaydet), yalnizca
+         dokunulan alanlar degil. Yani "_a.gorselSaat === false" hem
+         "kullanici kapatti" hem "hic dokunmadi, eski varsayilandi"
+         anlamina gelebiliyor -- ikisini ayirmadan yeni varsayilan
+         hicbir eski kullaniciya ulasmazdi.
+         Damgasi olmayan depo BIR KEZ yeni varsayilana (acik) donuyor;
+         damga basildiktan sonra kullanicinin secimi aynen korunuyor. */
+      if(_a.gorselSaatOnar === true && _a.gorselSaat === false) AYAR.gorselSaat = false;
+      AYAR.gorselSaatOnar = true;
       /* Gun dongusu: varsayilan KAPALI. */
       if(_a.gunDongusu === true) AYAR.gunDongusu = true;
       /* Gece modu (kirmizi filtre): varsayilan KAPALI. */

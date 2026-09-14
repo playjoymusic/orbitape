@@ -2616,6 +2616,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       'depoya yazilan damga ' + (d1 && d1.yazilan ? (d1.yazilan.deriSurum|0) : '-'));
   }
 
+  /* ── GORSELDE SAAT: VARSAYILAN ACIGA BIR KERELIK ONARIM ─────────
+     Kullanicinin sozu (14 Eylul): "visual da clock secenegi acik
+     gelsin baslangicta ... isteyen sonradan kapatir." Ayni tuzak
+     merkezOnar'daki gibi: AYAR'in TAMAMI localStorage'a yaziliyor,
+     yani eski varsayilanla (kapali) yasamis herkesin deposunda
+     "gorselSaat:false" kayitli -- damgasiz bu deger "kullanici
+     kapatti" ile ayirt edilemez. Uc durum olculuyor: (1) damgasiz
+     depo (eski kullanici, hic dokunmamis) yeni varsayilana donmeli,
+     (2) damgali depoda kullanicinin kendi kapatma karari (14
+     Eylul'den SONRA kapatilmis) silinmemeli, (3) hic depo yokken
+     (ilk kurulum) zaten acik gelmeli. */
+  {
+    const oncekiDepo2 = await pg.evaluate(()=>{
+      try{ return localStorage.getItem('orbitape.ayar'); }
+      catch(e){ return null; }
+    });
+    const gsOku = async (depo)=>{
+      const s5 = await pg.context().newPage();
+      /* AYNI TARAYICI BAGLAMI PAYLASILIYOR: bir onceki cagrinin yazdigi
+         deger localStorage'ta kalir. "depo === null" GERCEKTEN BOS
+         depoyu simule etmek icin ONCE temizliyor -- yoksa "ilk kurulum"
+         bir onceki alt testin artigini okur (bu hatayi bir kere
+         yasadik: ilkKurulum yanlislikla kapatanKullanici'nin degerini
+         devraldi). */
+      await s5.addInitScript(d=>{
+        try{
+          if(d === null) localStorage.removeItem('orbitape.ayar');
+          else localStorage.setItem('orbitape.ayar', d);
+        }catch(e){}
+      }, depo === null ? null : JSON.stringify(depo));
+      await s5.goto(S, {waitUntil:'load'});
+      await s5.waitForTimeout(700);
+      const v = await s5.evaluate(()=>{
+        try{ return !!AYAR.gorselSaat; }catch(e){ return 'okunamadi'; }
+      });
+      await s5.close();
+      return v;
+    };
+    const eskiKullanici = await gsOku({ sesAcildi:true, merkezOnar:true, gorselSaat:false });
+    const kapatanKullanici = await gsOku({ sesAcildi:true, merkezOnar:true, gorselSaatOnar:true, gorselSaat:false });
+    const ilkKurulum = await gsOku(null);
+    await pg.evaluate(d=>{
+      try{
+        if(d === null) localStorage.removeItem('orbitape.ayar');
+        else localStorage.setItem('orbitape.ayar', d);
+      }catch(e){}
+    }, oncekiDepo2);
+    K('Gorselde saat eski kullanicida yeni varsayilana (acik) donuyor',
+      eskiKullanici === true,
+      'damgasiz depoda (eskiden kapaliydi) gorselSaat=' + eskiKullanici);
+    K('Gorselde saat kullanicinin kapatma karari silinmiyor',
+      kapatanKullanici === false,
+      'damgali depoda (kullanici kapatmis) gorselSaat=' + kapatanKullanici);
+    K('Gorselde saat ilk kurulumda zaten acik',
+      ilkKurulum === true,
+      'depo hic yokken gorselSaat=' + ilkKurulum);
+  }
+
   // ── 2. DONMA SINIFI: kalici CSS filtreleri / derleyici katmanlari ───
   /* KALICI olan sayilir. Kosu #237 (3 Eylul) bunu rastgele kirmiziya
      cevirdi: semboller o an ucluk gelmis, #bekle'nin 5 sn'lik
@@ -11012,6 +11070,73 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Ozel halkasi olmayan deride govde deseni kareye sikistirilmiyor',
       !hk.hata && !hk.anahtarYok && typeof hk.gelenH === 'number' && hk.gelenH > hk.gelenS * 1.5,
       hk.hata || (hk.anahtarYok ? 'DERI_CIZIM disinda kalan anahtar yok' : hkOz));
+  }
+  /* ── RISOPRINT: KUSLAR BASKI KAYMASINDA DAGILMIYOR ─────────────
+     Kullanicinin gonderdigi ikinci gorsel ("cizim kesilmesi") ile
+     ayni mesajda geldi: "sol ustteki ogeler bir kaymali gibi bozuk
+     gorunuyor". RISOPRINT govde sahnesi (deri_cizim.js) daglari ve
+     gunesi KASITLI kaydirarak iki murekkeple basilmis gibi ciziyor
+     -- bu uslubun imzasi. Ama kuslar (ust solda, uc kucuk yay) ayni
+     MUTLAK kaymayi aliyordu: dag ve gunes gibi buyuk dolgular icin
+     kucuk kalan bu kayma, kucuk kus govdesi icin kendi genisliginden
+     BUYUKTU -- iki renk kopyasi ust uste binmek yerine tamamen
+     kopuyor, "baski kaymasi" degil "bozuk/yanlis yerde" okunuyordu.
+     OLCUM: c.moveTo/quadraticCurveTo cagrilarini gercek fonksiyonu
+     CALISTIRARAK yakaliyoruz (sahte bir kaydedici baglam ile) ve her
+     kus icin GERCEK kayma mesafesini GERCEK govde genisligine (span
+     = 2*s2) bolup oran cikariyoruz -- yeniden turetilmis bir sayi
+     degil, kodun o an urettigi koordinatlarin kendisi.
+     Duzeltmeden ONCE (u=844 icin) olculen: en buyuk kus 0,54, orta
+     0,72, en kucuk 0,90 -- ucu de FARKLI ve gunesin kendi oranindan
+     (0,16) kat kat buyuk. Duzeltmeden SONRA: ucu de 0,141 -- hem
+     birbirine esit ("digerleri gibi olsun") hem gunesin oranina
+     (0,16) yakin, yani okunan TEK bir "baski kaymasi". */
+  {
+    const rk = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        if(typeof deriCizimYukle === 'function') deriCizimYukle();
+        let t = 0;
+        while(typeof DERI_CIZIM === 'undefined' && t < 4000){ await bek(50); t += 50; }
+        if(typeof DERI_CIZIM === 'undefined' || !DERI_CIZIM.risoprint){ c.yok = true; return c; }
+        const moveTo = [], quad = [];
+        const sahteBaglam = new Proxy({}, {
+          get(_, prop){
+            if(prop === 'moveTo') return (x,y)=>moveTo.push([x,y]);
+            if(prop === 'quadraticCurveTo') return (cx,cy,x,y)=>quad.push([x,y]);
+            if(prop === 'createLinearGradient') return ()=>({addColorStop(){}});
+            if(['save','restore','beginPath','closePath','fill','stroke',
+                'fillRect','arc','lineTo'].indexOf(prop) >= 0) return ()=>{};
+            return undefined;
+          },
+          set(){ return true; }
+        });
+        const sahteDeri = { pal:['#ff4f79','#2b5ce6','#efe8d6','#1e1b16'], tohum:64 };
+        DERI_CIZIM.risoprint(sahteBaglam, 844, 844, sahteDeri);
+        if(moveTo.length !== 8 || quad.length !== 12){
+          c.sekilDegisti = true; c.moveToSayisi = moveTo.length; c.quadSayisi = quad.length;
+          return c;
+        }
+        const uzaklik = (a, b)=> Math.hypot(a[0]-b[0], a[1]-b[1]);
+        const oranlar = [0, 1, 2].map(i=>{
+          const bas1 = moveTo[1 + i], bas2 = moveTo[5 + i];
+          const bit1 = quad[i*2 + 1];
+          const genislik = bit1[0] - bas1[0];
+          const kayma = uzaklik(bas1, bas2);
+          return kayma / genislik;
+        });
+        c.oranlar = oranlar.map(o=>Math.round(o*1000)/1000);
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const rkOz = rk.oranlar ? 'kus oranlari: ' + rk.oranlar.join(', ') : (rk.hata || (rk.yok ? 'DERI_CIZIM.risoprint yok' : 'sekil degisti, sayim tutmuyor'));
+    K('Risoprint kuslari baski kaymasinda dagilmiyor',
+      !!rk.oranlar && rk.oranlar.every(o => o > 0.06 && o < 0.24),
+      rkOz);
+    K('Risoprint uc kusun kaymasi birbirine esit',
+      !!rk.oranlar && (Math.max(...rk.oranlar) - Math.min(...rk.oranlar)) < 0.03,
+      rkOz);
   }
   /* ── BEKCI BUYUTECI YUVASINA GERI KOYUYOR, IKI KATINA ITMIYOR ──
      Mac'te pencere boyu degisince buyutec yuvasinin tam iki kati
