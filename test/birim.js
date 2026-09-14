@@ -787,16 +787,16 @@ function bitir(){
      ceviri eksik olabilir, o zaman Ingilizce gorunur ve bu bir
      kusur degil bir ara durumdur. */
   try{
-    /* ── BES DIL (12 Eylul) ───────────────────────────────────────
-       Ispanyolca, Almanca ve Fransizca eklendi. Ingilizcenin sozlugu
-       YOK: anahtarlarin kendisi Ingilizce, yani 'en' hicbir dosya
-       indirmiyor.
+    /* ── ALTI DIL (12 Eylul, 14 Eylul'de Italyanca eklendi) ─────────
+       Ispanyolca, Almanca, Fransizca ve Italyanca eklendi. Ingilizcenin
+       sozlugu YOK: anahtarlarin kendisi Ingilizce, yani 'en' hicbir
+       dosya indirmiyor.
        Kontroller artik her dil icin ayri ayri donuyor; asil yeni
        soru ANAHTAR KUMESI AYNI MI: bir dile yeni bir satir eklenip
        otekilere eklenmezse o dilde o satir sessizce Ingilizce
        kalirdi -- ekranda yarisi cevrilmis bir panel, kimsenin
        bildirmeyecegi bir kusur. */
-    const DILLER_T = ['tr', 'es', 'de', 'fr'];
+    const DILLER_T = ['tr', 'es', 'de', 'fr', 'it'];
     const sozlukler = {};
     DILLER_T.forEach(kod=>{
       sozlukler[kod] = JSON.parse(fs.readFileSync(path.join(KOK, 'dil/' + kod + '.json'), 'utf8'));
@@ -929,7 +929,7 @@ function bitir(){
     const listeKod = (kod.match(/const DILLER = \[([\s\S]*?)\];/) || [])[1] || '';
     const kodDilleri = (listeKod.match(/k:'([a-z]{2})'/g) || []).map(t => t.slice(3, 5));
     K('Menudeki her dilin dosyasi var',
-      kodDilleri.length === 5 && kodDilleri.indexOf('en') === 0
+      kodDilleri.length === 6 && kodDilleri.indexOf('en') === 0
       && DILLER_T.every(d => kodDilleri.indexOf(d) > 0)
       && kodDilleri.filter(d => d !== 'en')
            .every(d => fs.existsSync(path.join(KOK, 'dil/' + d + '.json'))),

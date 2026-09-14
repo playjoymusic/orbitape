@@ -808,8 +808,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        secilince iniyor. Ilk saniye degismedi (ILK CIZIM 104,5 KB,
        tavan 106).
        SECIM SONRASI DUSECEK: bu on sekizin dokuzu kullanici sectikten
-       sonra silinecek. Tavan o zaman yeniden olculup indirilmeli. */
-    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 26 };
+       sonra silinecek. Tavan o zaman yeniden olculup indirilmeli.
+
+       14 EYLUL: 26 -> 27. deriHalkaAdresi() icindeki iki kusur duzeltildi:
+       (1) halka gorseli sabit 840x840 tuvale ciziliyordu, devicePixelRatio'ya
+       hic bakmiyordu -- yuksek yogunluklu telefonlarda puruzlu/pikselli
+       cikiyordu (kullanicinin gonderdigi pembe halka gorseli buydu);
+       simdi Math.round(560 * min(DPR,3)) ile cihaza gore olcekleniyor.
+       (2) DERI_HALKA'si olmayan 41 deri, govde sahnesini KARE bir tuvale
+       zorlayarak ciziyordu; sahnenin kendisi ekranin dikey oranina (390x844)
+       gore tasarlandigi icin bu kirpma bazi cizimlerin ucunu kesiyordu
+       ("cizim kesilmis cervevedemnn" — kullanicinin ikinci gorseli buydu).
+       Simdi once kendi dikey oraninda ciziliyor, sonra kareye ortadan
+       kirpiliyor (cover), boyutlar degil.
+       Olculen yeni boy 26,06 KB brotli (onceki 25,85 KB'den fark: DPR
+       olcekleme + oran-once-kirp mantigi). Tavan yine bugunku degil,
+       birazcik pay birakiyor. */
+    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 27 };
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
     const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
@@ -13339,6 +13354,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const isp = { dil: DIL, baslik: g('#ayar h5') };
         await dilTikla('de');
         const alm = { dil: DIL, baslik: g('#ayar h5') };
+        /* ITALYANCA (14 Eylul): ayni duzenekten geciyor, ayni sekilde
+           sinaniyor -- yeni bir yol yazmaya gerek yok. */
+        await dilTikla('it');
+        const ita = { dil: DIL, baslik: g('#ayar h5'),
+                      durum: g('.sat[data-ayar="dil"] .durum') };
         await dilTikla('');
         const oto = { dil: DIL, baslik: g('#ayar h5'),
                       kayitli: (JSON.parse(localStorage.getItem('orbitape.ayar')||'{}').dil || null),
@@ -13372,7 +13392,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           window._turYavas = _y;
           turEksik = [...new Set(turEksik)];
         }catch(e){ turEksik = ['olculemedi: ' + (e && e.message)]; }
-        return { tr, veri, tus, yedek, ing, geri, fra, isp, alm, oto, turEksik,
+        return { tr, veri, tus, yedek, ing, geri, fra, isp, alm, ita, oto, turEksik,
                  turkceMi: /[ğüşıöçĞÜŞİÖÇ]/.test(
                    (document.getElementById('ayar').textContent) || '') };
       });
@@ -13430,20 +13450,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      && trd.alm.dil === 'de' && trd.alm.baslik === 'TÖNE',
      'fr "' + trd.fra.baslik + '" | es "' + trd.isp.baslik
      + '" | de "' + trd.alm.baslik + '"');
+  /* ITALYANCA (14 Eylul): ayri bir dil, kullanicinin istegi
+     "İtalyanca dil desteği ekle" idi. Ayni duzenek, ayni olcum. */
+  K('Italyanca gercekten uygulaniyor',
+     trd.ita.dil === 'it' && trd.ita.baslik === 'SUONI',
+     'it "' + trd.ita.baslik + '"');
   /* Dil ADI cevrilmiyor: Fransizca acilan ekranda "ENGLISH" satiri
      "ANGLAIS" olsaydi Ingilizce arayan kendi dilini bulamazdi. */
   K('Dil adi kendi dilinde kaliyor', trd.fra.durum === 'FRANÇAIS',
      'satirin sagi: "' + trd.fra.durum + '"');
+  K('Italyanca adi da kendi dilinde kaliyor', trd.ita.durum === 'ITALIANO',
+     'satirin sagi: "' + trd.ita.durum + '"');
   /* OTOMATIK: eski dongude ucuncu bir durak yoktu, yani bir kez
      elle sectikten sonra telefonun diline donmenin YOLU YOKTU. */
   K('OTOMATIK telefonun diline geri donuyor',
      trd.oto.dil === 'tr' && trd.oto.baslik === 'SESLER' && trd.oto.kayitli === null,
      'secim silindi, cihaz dili (tr) geri geldi');
-  /* Bes dilde tek bir onbellek anahtari bir dilin sozlugunu
+  /* Alti dilde tek bir onbellek anahtari bir dilin sozlugunu
      otekinin uzerine yazardi: anahtar dili tasiyor. */
   K('Sozluk onbellegi dile gore ayri',
      trd.oto.onbellek.length > 1
-     && trd.oto.onbellek.every(k => /^orbitape\.dil\.(tr|es|de|fr)$/.test(k)),
+     && trd.oto.onbellek.every(k => /^orbitape\.dil\.(tr|es|de|fr|it)$/.test(k)),
      trd.oto.onbellek.join(', '));
   }
 
