@@ -10928,6 +10928,76 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Fotografta ulke bayragi da var', /getElementById\('npBayrak'\)/.test(kayitKaynak2),
       '#npBayrak kunyeyle birlikte ciziliyor');
   }
+  /* ── HALKA RESMI: DPR'A GORE OLCEKLENIYOR, GOVDE SIKISMIYOR ──────
+     14 Eylul, kullanicinin sozu (pembe bir ekran goruntusu + ikinci
+     bir cizim ornegi ile): "halka puruzlu bozukluk, ic cizgiler
+     yuvarlak ic ice olan" ve "cizimlerin bazilarinin bitis noktasi,
+     bazi circle'larda cizim kesilmis cervevede." deriHalkaAdresi'nde
+     iki ayri kok sebep:
+       1) Resim SABIT 840x840 uretiliyordu, devicePixelRatio'ya hic
+          bakilmiyordu -- yuksek yogunluklu ekranlarda buyutuluyor,
+          kenarlar kiriliyordu.
+       2) Ozel halkasi olmayan derilerde govde deseni (ekranin
+          GERCEK -- dar/uzun -- oranina gore yazilmis) KAREYE
+          SIKISTIRILARAK cagiriliyordu; oranlar kayiyor, daire
+          kirpmasi tasarlanmamis bir yeri kesiyordu.
+     Asagida ikisi ayri ayri olculuyor. */
+  {
+    const hk = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        /* 1) DPR OLCEKLEME: ayni deri, iki farkli devicePixelRatio,
+           uretilen PNG'nin GERCEK piksel genisligi olculuyor. Eski
+           kodda ikisi de 840 donerdi -- DPR'a hic bakilmiyordu. */
+        const eskiTanim = Object.getOwnPropertyDescriptor(window, 'devicePixelRatio');
+        const boyutOlc = async (dpr)=>{
+          Object.defineProperty(window, 'devicePixelRatio', { value: dpr, configurable:true });
+          _halkaOnbellek = {};
+          const d = DERILER.find(x => x && x.cizim);
+          const veri = deriHalkaAdresi(d);
+          return await new Promise(res=>{
+            const im = new Image();
+            im.onload = ()=> res(im.naturalWidth);
+            im.onerror = ()=> res(0);
+            im.src = veri;
+          });
+        };
+        c.boy1 = await boyutOlc(1);
+        c.boy3 = await boyutOlc(3);
+        if(eskiTanim) Object.defineProperty(window, 'devicePixelRatio', eskiTanim);
+        else delete window.devicePixelRatio;
+        _halkaOnbellek = {};
+        /* 2) GOVDE SIKISMIYOR: DERI_CIZIM'de olup DERI_HALKA'da OLMAYAN
+           bir anahtar (yani govde-fallback yolunu kullanan bir deri)
+           casus bir fonksiyonla sariliyor; gercekten hangi YUKSEKLIKLE
+           cagirildigi yakalaniyor. Eski kodda H her zaman S (kare)
+           idi; simdi portre orani (~S*844/390, S'ten cok daha uzun)
+           olmasi gerekiyor. */
+        const anahtar = Object.keys(DERI_CIZIM).find(k => !DERI_HALKA[k]);
+        if(anahtar){
+          const gercek = DERI_CIZIM[anahtar];
+          let gelenH = null;
+          DERI_CIZIM[anahtar] = function(cc, W, H, dd){ gelenH = H; return gercek(cc, W, H, dd); };
+          const sahte = { ad:'TEST', zem:'#222222', yazi:'#eeeeee', marka:'#00aaaa',
+                          cek:'#333333', font:'sans-serif', cizim:anahtar };
+          deriHalkaAdresi(sahte);
+          DERI_CIZIM[anahtar] = gercek;
+          c.anahtar = anahtar; c.gelenH = gelenH;
+          c.gelenS = Math.round(560 * Math.min(window.devicePixelRatio || 1, 3));
+        }else{ c.anahtarYok = true; }
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const hkOz = 'DPR1=' + hk.boy1 + ' DPR3=' + hk.boy3
+      + ' | ' + (hk.anahtar || '-') + ' H=' + hk.gelenH + ' S=' + hk.gelenS;
+    K('Halka resmi cihaz piksel oranina gore olcekleniyor',
+      !hk.hata && hk.boy1 === 560 && hk.boy3 === 1680,
+      hk.hata || hkOz);
+    K('Ozel halkasi olmayan deride govde deseni kareye sikistirilmiyor',
+      !hk.hata && !hk.anahtarYok && typeof hk.gelenH === 'number' && hk.gelenH > hk.gelenS * 1.5,
+      hk.hata || (hk.anahtarYok ? 'DERI_CIZIM disinda kalan anahtar yok' : hkOz));
+  }
   /* ── BEKCI BUYUTECI YUVASINA GERI KOYUYOR, IKI KATINA ITMIYOR ──
      Mac'te pencere boyu degisince buyutec yuvasinin tam iki kati
      saga gitti (yuva 225, buyutec 412). Bekci kaymayi duzeltirken

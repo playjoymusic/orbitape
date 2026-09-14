@@ -1380,12 +1380,12 @@ function _dResolveDd(d){
            cizim:d.cizim, pal:_pal(d), tohum:_tohum(d) };
 }
 /* HALKA RESMI ONBELLEGI. Halka resmi ekran boyutuna gore degismiyor
-   (sabit 840x840 kare) -- deri basina bir kez cizilip sonsuza kadar
-   yeniden kullaniliyor. 13 Eylul: 41 derinin OZEL halkasi yoktu,
-   DISC/cember kipinde diskin ustunde bos/varsayilan oluk kaliyordu.
-   Simdi ozel halkasi olmayan ama govde deseni (DERI_CIZIM) olan
-   her deri icin o govde deseni ayni kirpilmis tuvale cizilip halka
-   olarak kullaniliyor -- yeni bir cizim yazmaya gerek kalmadan. */
+   (sabit KARE) -- deri basina bir kez cizilip sonsuza kadar yeniden
+   kullaniliyor. 13 Eylul: 41 derinin OZEL halkasi yoktu, DISC/cember
+   kipinde diskin ustunde bos/varsayilan oluk kaliyordu. Simdi ozel
+   halkasi olmayan ama govde deseni (DERI_CIZIM) olan her deri icin
+   o govde deseni ayni kirpilmis tuvale cizilip halka olarak
+   kullaniliyor -- yeni bir cizim yazmaya gerek kalmadan. */
 var _halkaOnbellek = {};
 function deriHalkaAdresi(d){
   try{
@@ -1394,13 +1394,23 @@ function deriHalkaAdresi(d){
     const _oh = DERI_HALKA[d.cizim];
     const _gd = DERI_CIZIM[d.cizim];
     if(!(_oh || _gd)){ _halkaOnbellek[d.cizim] = ''; return ''; }
-    /* OLCU 560'TAN 840'A CIKTI (11 Eylul). Bildirilen: "halkalar
-       okey ama pixel olmus bozuk gibi." Disk ucte bir yogunlukta
-       ekranda 900 piksele kadar buyuyor; 560'lik resim orada
-       BUYUTULUYOR ve kenarlar kirilyordu. 840 o buyutmeyi bitiriyor.
-       Bedel yalnizca bir defalik uretim: resim deri degisince bir kez
-       cizilip adres olarak saklaniyor. */
-    const S = 840;
+    /* OLCU: CIHAZ PIKSEL ORANINA GORE (14 Eylul, ikinci duzeltme).
+       11 Eylul'de 560'tan 840'a cikarilmisti ama devicePixelRatio HIC
+       hesaba katilmiyordu -- 840 SABIT bir deger. Disk CSS'te en
+       fazla 560px genisliginde (.disk{width:min(...,560px,...)}),
+       ama yogunlugu 2-3 olan (cogu modern telefon) bir ekranda GERCEK
+       piksel karsiligi 1120-1680'e kadar cikiyor; 840'lik sabit resim
+       oralarda hala BUYUTULUYOR ve kenarlar kiriliyor. Kullanicinin
+       sozu, pembe bir ekran goruntusuyle: "halka puruzlu, ic cizgiler
+       bozuk, yuvarlak ic ice olan." Simdi DPR'a gore olcekleniyor --
+       cark.js'teki ayni yaklasim (bkz. o dosyada 'dpr'), tavan 3:
+       daha yuksek raporlayan nadir cihazlarda gereksiz bellek/sure
+       harcanmasin. Bu cizim TEK SEFERLIK ve onbelleklendigi icin
+       (asagida _halkaOnbellek) cark.js'teki gibi kare-basi maliyet
+       kaygisi yok -- cark her karede yeniden ciziyor, bu ise deri
+       degisince bir kez. */
+    const DPR = Math.min(window.devicePixelRatio || 1, 3);
+    const S = Math.round(560 * DPR);
     const t = document.createElement('canvas'); t.width = t.height = S;
     const c = t.getContext('2d'); if(!c) return '';
     /* Daireye kirp: ::after zaten yuvarlak ama tuval kare -- kirpmadan
@@ -1413,7 +1423,32 @@ function deriHalkaAdresi(d){
        Cizim tarafinda ayni cozum zaten vardi; iki yol ayristi.
        Tek yol: buradan da _pal/_tohum ile geciyor. */
     if(_oh){ _oh(c, S, d); }
-    else{ _gd(c, S, S, _dResolveDd(d)); }
+    else{
+      /* ── GOVDE DESENI KAREYE SIKISTIRILMIYOR, KIRPILIYOR (14 Eylul)
+         Kullanicinin sozu: "cizimlerin bazilarinin bitis noktasi,
+         bazi circle'larda cizim kesilmis cervevede."
+         _gd fonksiyonlari EKRANIN GERCEK (dar-uzun) oranina gore
+         tasarlandi -- her yerde oyle cagriliyor (bkz. deriCizimAdresi:
+         W=innerWidth, H=innerHeight, kendi yorumu: "kirpma olmasin
+         diye cover DEGIL birebir oran"). Burada eskiden _gd(c,S,S,...)
+         ile KARE cagriliyordu: bir portre kompozisyonu kareye
+         SIKISTIRILINCE (orn. H*0.62'deki ufuk cizgisi gibi oranlar
+         kayiyor) daire kirpmasi tasarlanmamis bir yeri kesiyordu.
+         Cozum: once dosyanin her yerinde referans alinan portre
+         oraninda (390x844) cizip, SONRA kareye 'cover' ile (CSS
+         object-fit:cover gibi, dikeyde ortadan) kirpiyoruz.
+         Kompozisyon artik SIKISMIYOR; yalnizca ust/alt fazlasi
+         kesiliyor -- ekranda zaten boyle davraniyor, farkli degil. */
+      const PW = 390, PH = 844;
+      const bufH = Math.round(PH * (S / PW));
+      const buf = document.createElement('canvas'); buf.width = S; buf.height = bufH;
+      const bc = buf.getContext('2d');
+      if(bc){
+        _gd(bc, S, bufH, _dResolveDd(d));
+        const ky = Math.round((bufH - S) / 2);
+        c.drawImage(buf, 0, ky, S, S, 0, 0, S, S);
+      }
+    }
     c.restore();
     return (_halkaOnbellek[d.cizim] = t.toDataURL('image/png'));
   }catch(e){ _yut(e); return ''; }
