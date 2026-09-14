@@ -2099,8 +2099,19 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
        Adimlarin paylastigi her sey buradan gecmek zorunda. */
     const g = { c:c, W:W, H:H, K:K, gorNo:gorNo, renk:renk, kareBas:_kareBas, simdi:_simdi };
     _kayZemin(g);
-    _kayKamera(g);
+    /* ── SIRA: DISK ONCE, KAMERA SONRA (14 Eylul) ─────────────────
+       Bkz. _kayKamera/_kayDisk tanimlarindaki "govde <  kamera < halka
+       tuvali" notu -- ekranda bu sira z-index ile saglaniyor (kam
+       z-index 2, disk govdesi 0). Kayit tuvalinde z-index yok, sira
+       CAGRI SIRASI. Once burada TERSTI: kamera cizilip UZERINE deri
+       govdesi (opak zemin + cizimli deride tek parca resim) basiliyordu
+       -- yani kamera HER ZAMAN kaybolurdu, deri acikken de kapaliyken
+       de. Simdi disk once cizilip kamera onun UZERINE aliniyor, tipki
+       ekranda oldugu gibi: kamera kendi olculen kutusunda (56%'lik
+       dairesi) diskin ortasini kapatiyor, disk kenarindaki bilezik/
+       golge disarida kalip goruluyor. */
     _kayDisk(g);
+    _kayKamera(g);
     _kaySolUst(g);
     _kaySagUst(g);
     _kaySemboller(g);
@@ -2671,7 +2682,11 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
                   renk:(KANAL_RENK[gorNo] || KANAL_RENK.lib),
                   kareBas:t, simdi:t, foto:true,
                   semboller: semboller || new Map() };
-      _kayZemin(g); _kayKamera(g); _kayDisk(g); _kayCark(g); _kaySolUst(g); _kaySagUst(g);
+      /* SIRA: disk once, kamera sonra -- ayni gerekce _kayZemin'in
+         hemen sonrasindaki kayitCiz() notunda (kayitCiz de ayni
+         hatayi tasiyordu: kamera cizilip UZERINE deri govdesi
+         basiliyor, fotografta kamera hic gorunmuyordu). */
+      _kayZemin(g); _kayDisk(g); _kayKamera(g); _kayCark(g); _kaySolUst(g); _kaySagUst(g);
       _kaySemboller(g); _kaySagAlt(g); _kaySolAlt(g); _kaySesCubugu(g);
       /* ARAYUZ KATMANI: kullanicinin istegi "ne goruyorsak o, yani o
          anda". Tuslar da fotografta. Vinyetten ONCE ciziliyor ki

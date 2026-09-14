@@ -11197,6 +11197,66 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Kamera cizimli derinin ustunde, halka kameranin ustunde',
       !!kamKat.deliniyor && !!kamKat.kapaliyken,
       kamKat.hata || 'kam z-index 2, viz 3; kapaliyken 0');
+    /* ── FOTOGRAFTA KAMERA GERCEKTEN GORUNUYOR MU (14 Eylul) ──────────
+       Kullanicinin sozu: "photo ve rec ciktisinda kamera acik olmasina
+       ragmen gorunmuyor, circle sadece." Yukaridaki kontrol yalnizca
+       EKRANDAKI z-index'i olcuyor; kayit tuvalinde z-index YOK, sira
+       CAGRI SIRASI (bkz. kayit.js: kayitCiz/fotoKaresi). Once o sira
+       TERSTI: kamera cizilip UZERINE deri govdesi (cizimli deride
+       tek parca opak resim) basiliyordu -- kamera hep kaybolurdu.
+       BU KONTROL GERCEK PIKSELE bakiyor: sahte kamera cihazi
+       (--use-fake-device-for-media-stream) duz degil, hareketli bir
+       desen veriyor. Kamera acikken kaydedilen karenin ORTA pikseli
+       bu yuzden ayni deri+kamera KAPALI karesinden FARKLI olmali.
+       Ayni olmasi = kamera cizilmis ama disk uzerine binmis demek. */
+    const kamPiksel = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const eskiDeri = AYAR.deri|0, eskiHalka = !!AYAR.halka;
+        const no = DERILER.findIndex(d => d && d.cizim) + 1;
+        /* AYAR.halka VARSAYILAN ACIK ("RINGS ONLY"): govde yerine
+           halka gosterilir ve _kayDisk BASKA bir yoldan (vizArka)
+           ciziyor -- bildirilen hatanin gectigi _deriDisk yolu o
+           zaman hic calismaz. Kullanicinin ekran goruntusundeki gibi
+           TAM DERI govdesini gormek icin bu anahtar acikca kapatiliyor. */
+        AYAR.deri = no; AYAR.halka = false; deriUygula(); await bek(300);
+        kayitTuvalKur();
+        /* MERKEZ '.disk'TEN OKUNUYOR, '#kam'DAN DEGIL: kamera kapaliyken
+           #kam display:none -> getBoundingClientRect sifir -> kk() null
+           donuyor. Disk her zaman gorunur ve kamera onun TAM merkezinde
+           (left:50%;top:50%) durduğu icin ayni nokta iki durumda da
+           gecerli. */
+        const okuOrta = ()=>{
+          const kb = kk(document.querySelector('.disk'), true);
+          if(!kb || !kb.w) return null;
+          const cx = Math.round(kb.ox), cy = Math.round(kb.oy);
+          if(cx < 0 || cy < 0 || cx >= kayitCtx.canvas.width || cy >= kayitCtx.canvas.height) return null;
+          return Array.from(kayitCtx.getImageData(cx, cy, 1, 1).data);
+        };
+        fotoKaresi();
+        const kapaliRenk = okuOrta();
+        document.getElementById('cam').click();
+        for(let i=0;i<20;i++){ await bek(150); if(document.getElementById('kam').videoWidth) break; }
+        c.kamAcikMi = !!kamAcik;
+        c.videoHazir = !!(document.getElementById('kam').videoWidth);
+        fotoKaresi();
+        const acikRenk = okuOrta();
+        document.getElementById('cam').click(); await bek(300);
+        AYAR.deri = eskiDeri; AYAR.halka = eskiHalka; deriUygula(); await bek(200);
+        c.kapaliRenk = kapaliRenk; c.acikRenk = acikRenk;
+        if(kapaliRenk && acikRenk){
+          let fark = 0;
+          for(let i=0;i<3;i++) fark += Math.abs(kapaliRenk[i]-acikRenk[i]);
+          c.fark = fark;
+        }
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('Cizimli deride kamera acikken fotografta gercekten gorunuyor',
+      !!kamPiksel.kamAcikMi && !!kamPiksel.videoHazir && (kamPiksel.fark||0) > 20,
+      kamPiksel.hata || ('kapali=' + JSON.stringify(kamPiksel.kapaliRenk)
+      + ' acik=' + JSON.stringify(kamPiksel.acikRenk) + ' fark=' + kamPiksel.fark));
     K('Deri acikken fotograf ekranin zeminini ve diskini tasiyor',
       kotu.length === 0 && (deriFoto || []).length === 2,
       kotu.length ? kotu.join(', ') : not.join(' | '));
