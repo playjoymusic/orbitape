@@ -11088,6 +11088,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const dg = document.querySelector('#saatPanel .st-deger');
         const bs = document.querySelector('#saatPanel .st-tus.basla');
         const dkYazi = dg ? dg.textContent : '';
+        /* ── "MIN" ETIKETI LED FONTUNDA DEGIL (13 Eylul) ────────────
+           Kullanicinin sozu: "burdaki font bozulmus, burayi
+           ellemeyecektin, eski haline getir." uykuDkYazi tek dugumde
+           "30 min" yaziyordu ve hepsi DSEG7 Modern aliyordu -- DSEG7
+           yalnizca rakam icin cizilmis, harfleri bozuyordu. Olculen
+           sey: rakam DSEG7'de KALMALI (bu dogruydu, "visual kismi iyi
+           olmus"), birim etiketi (.st-birim) ESKI fonta donmeli. */
+        const birim = dg ? dg.querySelector('.st-birim') : null;
+        c.birimVar = !!birim;
+        c.birimFontEski = !!birim && !/DSEG7/i.test(getComputedStyle(birim).fontFamily);
+        c.sayiFontLed = !!dg && /DSEG7/i.test(getComputedStyle(dg).fontFamily);
         uykuKur(45); await bek(300);
         /* BUYUK OLAN "NE KURDUM", KUCUK OLAN "NE KALDI". Once tersiydi
            ve kullanici hakli olarak itiraz etti: "saat kuruyorum 5 dk,
@@ -11150,6 +11161,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Saat tusu var, tutamagin yaninda', st.tusVar && st.tusAltinda, ozet || 'radyoda altinda, arsivde ustunde');
     K('Saat modulu istek uzerine iniyor ve panel aciliyor', st.moduLGeldi && st.acildi, ozet || 'saat.js');
     K('Uyku sayaci kuruluyor ve iptal ediliyor', st.uykuKuruldu && st.uykuIptal, ozet || '45 dk');
+    K('Sayac rakami LED fontunda, "min" etiketi eski fontta',
+      st.sayiFontLed && st.birimVar && st.birimFontEski,
+      ozet || 'rakam DSEG7 Modern, .st-birim Share Tech Mono');
     K('Sabah hedefi secilen saatte ve ileride', st.hedefIleride && st.hedefSaati, ozet || 'hedef dogru');
     K('Alarm kisik basliyor (ilk saniye < %12)', st.kisikBasladi && st.caliyor, ozet || 'rampa 0.04 -> 0.25 @15s -> 0.75 @60s');
     K('Gercek yayin calinca geceden uyaniyor', st.geceCarpanSifir === true && st.uyandi === true,
@@ -11440,9 +11454,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
              sadece ekrandaki yeri. Beklenen dizi de ayni kurali
              bagimsizca kuruyor: deriEkranSirasi()'i kendisiyle
              dogrulamak hicbir sey ispatlamaz, isim listesi (veri) okunup
-             algoritma burada ayrica yaziliyor. */
+             algoritma burada ayrica yaziliyor.
+             13 Eylul, ikinci istek: "LUNA, DÜNYA, EZGİT, JUNJUN, ANİŞ
+             sona" -- artik BEŞ isim var ve ARALARINDA sira istendi.
+             Storage sirasi bu isimleri DERI_KOSEYE'nin yazilis sirasiyla
+             tutmuyor, o yuzden bu dongu de artik DERILER'i degil
+             DOGRUDAN DERI_KOSEYE'yi geziyor -- index.html'deki kaynakla
+             ayni degisiklik, iki bagimsiz yazim hala ayni kurali
+             kuruyor. */
           const kose = [];
-          for(let i = 1; i <= DERILER.length; i++){ if(DERI_KOSEYE.indexOf(DERILER[i-1].ad) >= 0) kose.push(i); }
+          for(const ad of DERI_KOSEYE){ const i = DERILER.findIndex(d => d.ad === ad); if(i >= 0) kose.push(i + 1); }
           const bek = [0];
           for(let i = k; i >= 1; i--) if(kose.indexOf(i) < 0) bek.push(i);
           for(let i = k + 1; i <= DERILER.length; i++) if(kose.indexOf(i) < 0) bek.push(i);

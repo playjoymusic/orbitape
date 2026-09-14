@@ -6084,11 +6084,20 @@
      yani DERILER'deki gercek sirasi) DEGISMIYOR -- sadece EKRANDA
      nerede gorundugu degisiyor. Isimle eslesen deri, normal yerinden
      (ters blok ya da kronolojik kuyruk, nerede olursa olsun) cikip
-     listenin EN SONUNA gidiyor. */
-  const DERI_KOSEYE = ['ANİŞ'];
+     listenin EN SONUNA gidiyor.
+     13 Eylul, ikinci istek: "LUNA, DÜNYA, EZGİT, JUNJUN, ANİŞ sona" --
+     bu kez BEŞ isim, VE aralarinda belirli bir sira istendi. Storage
+     sirasi bu beşini JUNJUN, DÜNYA, LUNA, EZGİT, ANİŞ diye tutuyor
+     (append-only, degismiyor) -- ekranda bu sirayla gorunselerdi
+     istenen sira BOZULURDU. O yuzden asagidaki dongu artik DERILER'i
+     degil DOGRUDAN DERI_KOSEYE listesini geziyor: koseye atilanlarin
+     ekrandaki sirasi artik bu dizinin YAZILIS sirasi, storage sirasi
+     degil. (bkz. test/saglik.js "TERS BLOK, SONRA YENILER" -- oradaki
+     bagimsiz beklenti de ayni kurala gecirildi.) */
+  const DERI_KOSEYE = ['LUNA', 'DÜNYA', 'EZGİT', 'JUNJUN', 'ANİŞ'];
   function deriEkranSirasi(){
     const kose = [];
-    for(let i = 0; i < DERILER.length; i++){ if(DERI_KOSEYE.indexOf(DERILER[i].ad) >= 0) kose.push(i); }
+    for(const ad of DERI_KOSEYE){ const i = DERILER.findIndex(d => d.ad === ad); if(i >= 0) kose.push(i); }
     const s = [], k = Math.min(DERI_TERS_SON, DERILER.length);
     for(let i = k - 1; i >= 0; i--){ if(kose.indexOf(i) < 0) s.push(i); }
     for(let i = k; i < DERILER.length; i++){ if(kose.indexOf(i) < 0) s.push(i); }

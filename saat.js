@@ -75,6 +75,10 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
        ayni kaynagi iki kez kaydetmiş olur, tek seferde kullanir). */
     "@font-face{font-family:'DSEG7 Modern';font-style:normal;font-weight:700;font-display:swap;src:url('/yazitipi/DSEG7-Modern-700.woff2') format('woff2')}",
     ".st-deger{font-family:'DSEG7 Modern','Share Tech Mono',ui-monospace,monospace}",
+    /* Sayac harfi ("min") LED fontunda okunmuyordu -- bkz. uykuDkYaz
+       yorumu. Bu kural digerinden daha ozgul (.st-deger .st-birim),
+       kaynak sirasindan BAGIMSIZ kazanir. */
+    ".st-deger .st-birim{font-family:'Share Tech Mono',ui-monospace,monospace}",
     ".st-bas{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}",
     ".st-baslik{font-size:0.6875rem;letter-spacing:.3em;opacity:.55}",
     ".st-bolum{padding:12px 0 6px}",
@@ -735,6 +739,24 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
     if(depo.sabah.acik) depo.sabah.hedef = sabahHedefHesapla();
     yaz(); goster();
   }
+  /* ── "MIN" ETIKETI LED FONTUNDA BOZULUYORDU (13 Eylul) ───────────
+     Kullanicinin sozu: "burdaki font bozulmus, burayi ellemeyecektin,
+     eski haline getir -- visual kismi iyi olmus." Olcum: uykuDkYazi
+     tek bir metin dugumu olarak "30 min" yaziyordu ve TUMU .st-deger
+     sinifindan DSEG7 Modern aliyordu -- DSEG7 yalnizca RAKAM icin
+     cizilmis (7 parcali LED), harfleri (m/i/n) ya bos ya da yanlis
+     segmentlerle ciziyor. Niyet zaten yorumda yaziliydi ("yalnizca
+     BUYUK deger", saat.js basindaki LED FONTU notu) ama kod ikisini
+     tek dugumde birlestirmisti. Duzeltme: sayi duz metin (miras
+     DSEG7 kalir, o zaten dogruydu -- "visual kismi iyi"), birim
+     ("min") ayri bir span'de ve .st-birim o span'i eski fonta
+     (Share Tech Mono) geri donduruyor. */
+  function uykuDkYaz(dk){
+    uykuDkYazi.textContent = '';
+    uykuDkYazi.appendChild(document.createTextNode(String(dk)));
+    const b = el('span', 'st-birim', ' ' + T('MIN'));
+    uykuDkYazi.appendChild(b);
+  }
   function goster(){
     try{
       const f = document.getElementById('saatTus');
@@ -757,13 +779,13 @@ try{ window.SAAT_BASLADI = true; }catch(e){}
       if(depo.uykuBitis){
         const kalanSn = Math.max(0, Math.round((depo.uykuBitis - s) / 1000));
         const dk = Math.floor(kalanSn / 60), sn = kalanSn % 60;
-        uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
+        uykuDkYaz(depo.uykuDk);
         uykuDkYazi.classList.add('kosuyor');
         uykuDkYazi.classList.add('kurulu');
         uykuDurum.textContent = T('Fades out at') + ' ' + saatYazisi(depo.uykuBitis)
           + ' · ' + dk + ':' + String(sn).padStart(2, '0');
       }else{
-        uykuDkYazi.textContent = depo.uykuDk + ' ' + T('MIN');
+        uykuDkYaz(depo.uykuDk);
         uykuDkYazi.classList.remove('kosuyor');
         uykuDkYazi.classList.remove('kurulu');
         uykuDurum.textContent = (kip === 'gece' && depo.sabah.acik)
