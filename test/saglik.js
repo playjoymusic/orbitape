@@ -958,8 +958,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (bkz. ILK_CIZIM_TAVAN notu): acilista inmesinin karsiligi
        olmadigi icin tasindi. Olcum 1192,47 KB.
        Tavan bir koruma; islev eklenince yaziyla yukseltiliyor,
-       sessizce degil. */
-    K('Ham boy < 1236 KB', dosyaBoy < 1236*1024,
+       sessizce degil.
+       14 EYLUL: 1236 -> 1240. BURHIE'deki 'sade' bayragi kaldirildi
+       (kullanicinin sozu: "burhie skininde circle hala yok") ve
+       neden-ne-zaman-ne-olculdu yorumu DERILER dizisine eklendi.
+       Ham boy 1236,47 KB. Ekrana giden hicbir sey buyumedi -- tek
+       degisen bir dizi girdisindeki tek anahtar (sade:true silindi)
+       ve onu aciklayan yorum. */
+    K('Ham boy < 1240 KB', dosyaBoy < 1240*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -11137,6 +11143,47 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Risoprint uc kusun kaymasi birbirine esit',
       !!rk.oranlar && (Math.max(...rk.oranlar) - Math.min(...rk.oranlar)) < 0.03,
       rkOz);
+  }
+  /* ── BURHIE'DE HALKA RESMI GERCEKTEN GORUNUYOR ─────────────────
+     Kullanicinin sozu (14 Eylul): "burhie skininde circle hala yok."
+     Sebep 'sade' bayragiydi (index.html, DERILER): 13 Eylul'de baska
+     bir kirpma/hizalama sorununu gizlemek icin konmustu, ama BURHIE'nin
+     kendi halka fonksiyonu (DERI_HALKA.burhieB) tam ekran sahnenin bir
+     kirpmasi degil -- bastan disk icin cizilmis kendi kompozisyonu,
+     yani o sorun ona hic uygulanmiyordu. Bayrak kaldirildi (14 Eylul).
+     OLCUM: bayrak varken --d-halka-resim zaten doluydu (resim
+     uretiliyordu) ama .disk arka plani hep 'none' kaliyordu -- yalnizca
+     CSS sinifi (halkaresim) engelliyordu. Bu kontrol GERCEKTEN EKRANDA
+     GORUNENI olcuyor: .disk'in hesaplanmis arka plan resmi. */
+  {
+    const bh = await pg.evaluate(async ()=>{
+      const c = {};
+      try{
+        const i = DERILER.findIndex(d => d.ad === 'BURHIE');
+        if(i < 0){ c.yok = true; return c; }
+        const eskiDeri = AYAR.deri, eskiHalka = AYAR.halka;
+        AYAR.deri = i + 1; AYAR.halka = false; deriUygula();
+        await new Promise(r=>setTimeout(r, 300));
+        /* Resim '.disk' UZERINDE degil, '.disk::after' USTUNDE --
+           css: 'body.deri.halkaresim .disk::after{background:
+           var(--d-halka-resim) ...}'. Sozde eleman icin computed
+           style ayri sorgulanmali, dogrudan .disk uzerinde her
+           zaman 'none' doner. */
+        const disk = document.querySelector('.disk');
+        c.halkaresimSinif = document.body.classList.contains('halkaresim');
+        c.diskArkaPlan = disk ? getComputedStyle(disk, '::after').backgroundImage : '';
+        c.resimUretildi = !!document.documentElement.style.getPropertyValue('--d-halka-resim');
+        AYAR.deri = eskiDeri; AYAR.halka = eskiHalka; deriUygula();
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const bhOz = bh.hata || (bh.yok ? 'BURHIE bulunamadi' :
+      'sinif=' + bh.halkaresimSinif + ' uretildi=' + bh.resimUretildi
+      + ' arkaplan=' + (bh.diskArkaPlan === 'none' ? 'none' : 'resim var'));
+    K('Burhie derisinde halka resmi diskte gorunuyor',
+      !bh.hata && !bh.yok && bh.resimUretildi && bh.halkaresimSinif
+      && !!bh.diskArkaPlan && bh.diskArkaPlan !== 'none',
+      bhOz);
   }
   /* ── BEKCI BUYUTECI YUVASINA GERI KOYUYOR, IKI KATINA ITMIYOR ──
      Mac'te pencere boyu degisince buyutec yuvasinin tam iki kati

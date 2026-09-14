@@ -6024,7 +6024,25 @@
     {ad:"LUNA", zem:"#efe6d4", yazi:"#2a2620", marka:"#c8343c", cek:"#d8cfbd", font:F2, kose:"50%", cizim:"lunaA"},
     {ad:"EZGİT", zem:"#f4ece0", yazi:"#462c38", marka:"#a8465e", cek:"#e2d7c8", font:F2, kose:"2px", cizim:"ezgitA"},
     {ad:"HOMBAR", zem:"#101a2c", yazi:"#f2f0e8", marka:"#2ad0c0", cek:"#1c2840", font:F3, kose:"0px", cizim:"hombarA"},
-    {ad:"BURHIE", zem:"#123a8c", yazi:"#f5f1e6", marka:"#f0d27e", cek:"#1a4aa8", font:F2, kose:"50%", cizim:"burhieB", sade:true},
+    /* BURHIE'DE "sade:true" 14 EYLUL'DE KALDIRILDI. Bayrak 13 Eylul'de
+       "YENI BURHIE" degisimiyle kondu -- kullanicinin o gunku sozu:
+       "ortadaki circle'da cerceve yapma, gorselleri kesiyor". O tarihte
+       cizimli derilerin cogu diskin icine TAM EKRAN sahnenin kendi
+       kucuk kopyasini basiyordu ve hizalanmayinca kenarda dikis
+       kaliyordu -- 'sade' o dikisi gizlemenin hizli yoluydu: halka
+       resmini hic gostermeden govde/bilezik/golgeyi de dusurup arka
+       plani daireden aynen gecirmek.
+       Ama BURHIE'nin kendi halka fonksiyonu (deri_cizim.js:
+       DERI_HALKA.burhieB) TAM EKRAN sahnenin bir kirpmasi DEGIL --
+       bastan disk icin cizilmis, kendi kapali kompozisyonu (uc firca
+       vurusu, bir iplik, uc nokta). Kirpma/hizalama sorunu ona hic
+       uygulanmiyor. Bayrak kaldirildiktan sonra ne oldugu OLCULDU
+       (saglik.js): --d-halka-resim zaten dolu geliyordu (bayrak
+       yalniz CSS sinifini engelliyordu), kaldirilinca .disk'in
+       arka plani o resmi aliyor -- 14 Eylul'e kadar hicbir zaman
+       almiyordu. Kullanicinin sozu (14 Eylul): "burhie skininde
+       circle hala yok." */
+    {ad:"BURHIE", zem:"#123a8c", yazi:"#f5f1e6", marka:"#f0d27e", cek:"#1a4aa8", font:F2, kose:"50%", cizim:"burhieB"},
     {ad:"TROMOKOLO", zem:"#1c3450", yazi:"#f2e6cc", marka:"#f2a45c", cek:"#28425e", font:F2, kose:"50%", cizim:"tromoA"},
     {ad:"EKO", zem:"#140c1c", yazi:"#f4ecf8", marka:"#f0407c", cek:"#221830", font:F3, kose:"50%", cizim:"ekoA"},
     {ad:"ANİŞ", zem:"#e8eadc", yazi:"#2e3826", marka:"#b03c64", cek:"#d6d9c6", font:F2, kose:"50%", cizim:"anisA"},
