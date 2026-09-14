@@ -146,6 +146,17 @@ interface Window {
   ulkeDegistir?: (tetik?: Element) => void;
   ulkeAcikMi?: () => boolean;
 
+  /* Favori listesi (favori.js): yildiza kisa dokunusta acilan,
+     favorilenmis her seyi (radyo + arsiv karisik) gosteren liste. */
+  FAVORI_BASLADI?: boolean;
+  FAVORI_HAZIR?: boolean;
+  favoriGeldi?: () => void;
+  favoriAc?: () => void;
+  favoriKapa?: () => void;
+  favoriDegistir?: () => void;
+  favoriAcikMi?: () => boolean;
+  favoriBas?: () => void;
+
   /* FX acik mi: cark modulu ve gokyuzu jesti bunu soruyor. */
   fxAcikMi?: () => boolean;
 

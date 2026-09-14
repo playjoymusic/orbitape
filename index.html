@@ -8650,6 +8650,9 @@
     }catch(e){ _yut(e); }   // sesin geldiği yer
     /* Ulke bayragi yildizin solunda, kendi kutusunda. */
     try{ bayrakYaz(item); }catch(e){ _yut(e); }
+    /* Calan degisti: acik favori listesi varsa kapat, bayat kalmasin
+       (ulke.js'teki ayni kuralin favori listesi karsiligi). */
+    try{ if(window.FAVORI_HAZIR && window.favoriKapa) window.favoriKapa(); }catch(e){ _yut(e); }
     /* Lisans kendi satırında, en altta. Yoksa hiç yer kaplamıyor
        (canlı radyoda ve kendi parçalarımızda lisans satırı çıkmaz). */
     try{
@@ -13898,8 +13901,15 @@
     else{
       /* Sadece çalmaya yetecek alanlar saklanıyor; bütün nesneyi
          saklamak depoyu gereksiz şişiriyor. */
+      /* 'grup' 14 Eylul'de eklendi: favori listesinden TEK BIR kaydi
+         secince cark/gosterge de o turun ailesine gitsin diye (bkz.
+         favori.js: sec()). Yalnizca radyo tarafinda anlamli (ulke.js
+         ve araCal() da ayni alani boyle kullaniyor); arsiv kaydinda
+         bos kalsa da zarari yok, sec() zaten yalnizca radyo+grup ikisi
+         BIRLIKTE varsa aileSec cagiriyor. */
       FAV.push({ mp3:aktifItem.mp3, ad:aktifItem.ad||'', sanatci:aktifItem.sanatci||'',
-                 etiket:aktifItem.etiket||'', lisans:aktifItem.lisans||'', radyo:!!aktifItem.radyo });
+                 etiket:aktifItem.etiket||'', lisans:aktifItem.lisans||'', radyo:!!aktifItem.radyo,
+                 grup:aktifItem.grup||'' });
       /* ── UC YUZUN USTU: EN ESKISI DUSER ─────────────────────────
          Kullanicinin sozu: "sagdan favori eklenirse app'i silene
          kadar dursun, silinmesin." Kural bu: favoriler cihazda
@@ -13980,6 +13990,45 @@
     cal(o);
     return true;
   }
+  /* ── FAVORI LISTESI: YILDIZA KISA DOKUNUSTA (14 Eylul) ────────────
+     Kullanicinin sozu: "favori secilince artik ulke bayraklarindaki
+     gibi liste sacilacak ... basinca calmaya baslar listeden. o kadar."
+     Panel ayri dosyada (favori.js), ulke.js ile AYNI yukleme kalibi:
+     istek uzerine iner. Basili tutma (eski KARISIK CALMA kipi,
+     favKipDegis) DOKUNULMADAN kayit.js'te kaliyor -- yalnizca #favAc'in
+     KISA dokunusu artik favKipDegis() yerine burayi cagiriyor. */
+  const FAVORI_DOSYA = 'favori.js';
+  let _favoriIsteniyor = false, _favoriBekliyor = false;
+  function favoriYukle(){
+    try{
+      if(window.FAVORI_HAZIR || _favoriIsteniyor) return;
+      _favoriIsteniyor = true;
+      const s = document.createElement('script'); s.src = FAVORI_DOSYA; s.defer = true;
+      s.onerror = ()=>{ _favoriIsteniyor = false; _favoriBekliyor = false; };
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function favoriGeldi(){
+    try{ if(_favoriBekliyor && typeof window.favoriAc === 'function'){ _favoriBekliyor = false; window.favoriAc(); } }catch(e){ _yut(e); }
+  }
+  try{ window.favoriGeldi = favoriGeldi; }catch(e){ _yut(e); }
+  /* KISA DOKUNUS: favori yoksa eski "NO FAVOURITES YET" yanip sonmesi
+     (favKipDegis'teki AYNI davranis, koda kopyalanmadi -- favKipDegis
+     zaten bos havuzda listeyi hic acmadan bunu yapiyor, burada da
+     ayni kontrol tekrarlaniyor cunku favKipDegis burada CAGRILMIYOR). */
+  function favoriBas(){
+    try{
+      if(!FAV.length){
+        try{ geciciAdGoster('NO FAVOURITES YET'); }catch(e){ _yut(e); }
+        try{ const a = document.getElementById('favAc');
+             if(a){ a.classList.add('soru'); setTimeout(()=>a.classList.remove('soru'), 420); } }catch(e){ _yut(e); }
+        return;
+      }
+      if(window.FAVORI_HAZIR && typeof window.favoriDegistir === 'function'){ window.favoriDegistir(); return; }
+      _favoriBekliyor = true; favoriYukle();
+    }catch(e){ _yut(e); }
+  }
+  try{ window.favoriBas = favoriBas; }catch(e){ _yut(e); }
   /* ── GERI/ILERI AILENIN ICINDE KALIR ──────────────────────────────
      Gecmis tek bir dizi ama radyo modunda gezinme SECILI AILEYE
      hapsedilmis durumda: JAZZ'tayken geri basmak bir onceki JAZZ

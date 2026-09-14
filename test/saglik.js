@@ -8307,6 +8307,148 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Tekrar tutus kipi kapatir', fv.kapali.mod===false, 'normale dondu');
   K('Favoriler cihazda kalir', fv.depo===2, fv.depo+' kayit depoda');
   K('Bos listeyle kipe girilmez', fv.bosKip===false, 'yildiz iki kez yanip soner');
+  /* ── FAVORI LISTESI: SECINCE CARK/GOSTERGE DE O TURE GIDIYOR (14 Eylul)
+     Kullanicinin sozu: "favori secilince artik ulke bayraklarindaki gibi
+     liste sacilacak ... basinca da ustteki gosterge + cark o istasyona
+     gitmeli, bu standart ... hangi track olursa olsun tum sistem hangi
+     turde oldugunu gostermeli." Once favorilere TEK TEK erismenin yolu
+     yoktu (yalnizca karisik calma, favGec); simdi favori.js bunu acan
+     bir liste. Olculen sey kullanicinin asil sikayeti: radyo favorisi
+     secilince AKTIF_AILE (cark/gostergenin okudugu deger) BASKA bir
+     aileden favorinin KENDI grubuna GERCEKTEN gidiyor mu. */
+  {
+    const fl = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      const eskiMod = mod, eskiAktifMod = AKTIF_MOD, eskiAile = AKTIF_AILE;
+      try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
+      FAV = []; _favMod = false; favTazele();
+      /* Baslangicta BASKA bir ailedeyiz: aksi halde gecis "yanlislikla"
+         dogru gorunebilirdi. */
+      AKTIF_AILE = 'JAZZ'; mod = 'lib'; AKTIF_MOD = null;
+      cal({mp3:'flv1', ad:'Favori Radyo', radyo:true, grup:'ELECTRONIC'}); await bek(80);
+      favDegis(); await bek(60);
+      cal({mp3:'flv2', ad:'Favori Arsiv', sanatci:'Sanatci X', etiket:'netlabel', lisans:SERBEST}); await bek(80);
+      favDegis(); await bek(60);
+      c.favSayisi = FAV.length;
+      c.grupKaydedildi = FAV.some(x=>x.mp3==='flv1' && x.grup==='ELECTRONIC');
+      AKTIF_AILE = 'JAZZ'; mod = 'lib';
+      try{ window.favoriBas(); }catch(e){}
+      for(let i=0;i<60 && !window.FAVORI_HAZIR;i++) await bek(100);
+      c.modulGeldi = !!window.FAVORI_HAZIR;
+      await bek(80);
+      c.acikMi = !!(window.favoriAcikMi && window.favoriAcikMi());
+      const ogeler = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
+      c.ogeSayisi = ogeler.length;
+      const radyoLi = ogeler.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Radyo');
+      c.radyoLiVar = !!radyoLi;
+      const arsivLiOnce = ogeler.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
+      c.arsivLiVar = !!arsivLiOnce;
+      if(radyoLi) radyoLi.click();
+      await bek(120);
+      c.aileRadyodanSonra = AKTIF_AILE;
+      c.modRadyodanSonra = mod;
+      c.calanRadyo = (aktifItem && aktifItem.mp3) || '';
+      c.kapandiMi1 = !(window.favoriAcikMi && window.favoriAcikMi());
+      /* Simdi arsiv ogesini sec: mod 'lib'e gecmeli (arama/ulke listesi
+         gibi arsivde aileSec cagirmiyor, o yuzden aile burada sinanmiyor). */
+      AKTIF_AILE = 'JAZZ'; mod = 'radio';
+      try{ window.favoriBas(); }catch(e){}
+      await bek(150);
+      const ogeler2 = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
+      const arsivLi = ogeler2.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
+      c.arsivAltYazi = arsivLi ? (arsivLi.querySelector('.fl-alt')||{}).textContent : '';
+      if(arsivLi) arsivLi.click();
+      await bek(120);
+      c.modArsivdanSonra = mod;
+      c.calanArsiv = (aktifItem && aktifItem.mp3) || '';
+      c.kapandiMi2 = !(window.favoriAcikMi && window.favoriAcikMi());
+      /* Favori yokken KISA dokunus (favoriBas) panel ACMAMALI -- eski
+         "NO FAVOURITES YET" yanip sonmesi hala calismali. */
+      FAV = []; favYaz(); favTazele();
+      try{ window.favoriBas(); }catch(e){}
+      await bek(80);
+      c.bosPanelAcilmadi = !(window.favoriAcikMi && window.favoriAcikMi());
+      /* TEMIZ BIRAK */
+      try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
+      FAV = []; _favMod = false; favTazele();
+      mod = eskiMod; AKTIF_MOD = eskiAktifMod; AKTIF_AILE = eskiAile;
+      cal({mp3:'temizFl', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(80);
+      return c;
+    });
+    K('Favori secilince kendi grubu da saklaniyor', fl.grupKaydedildi === true,
+      'favSayisi=' + fl.favSayisi);
+    K('Favori listesi aciliyor ve iki favoriyi de gosteriyor',
+      fl.modulGeldi && fl.acikMi && fl.ogeSayisi === 2 && fl.radyoLiVar && fl.arsivLiVar,
+      'oge=' + fl.ogeSayisi + ' radyoLi=' + fl.radyoLiVar + ' arsivLi=' + fl.arsivLiVar);
+    K('Radyo favorisi secilince cark/gosterge o turun ailesine gidiyor',
+      fl.aileRadyodanSonra === 'ELECTRONIC' && fl.modRadyodanSonra === 'radio' && fl.calanRadyo === 'flv1',
+      'aile=' + fl.aileRadyodanSonra + ' mod=' + fl.modRadyodanSonra + ' calan=' + fl.calanRadyo);
+    K('Secim sonrasi favori listesi kendiliginden kapaniyor',
+      fl.kapandiMi1 === true && fl.kapandiMi2 === true,
+      'kapandi1=' + fl.kapandiMi1 + ' kapandi2=' + fl.kapandiMi2);
+    K('Arsiv favorisi secilince kutuphane moduna geciyor',
+      fl.modArsivdanSonra === 'lib' && fl.calanArsiv === 'flv2',
+      'mod=' + fl.modArsivdanSonra + ' calan=' + fl.calanArsiv);
+    K('Arsiv favorisinde sanatci alt satirda gorunuyor', fl.arsivAltYazi === 'Sanatci X',
+      'altyazi="' + fl.arsivAltYazi + '"');
+    K('Favori yokken kisa dokunus panel acmiyor', fl.bosPanelAcilmadi === true,
+      'acildi mi: ' + !fl.bosPanelAcilmadi);
+  }
+  /* ── #favAc'IN GERCEK JESTI: KISA=LISTE, UZUN=ESKI KIP (14 Eylul) ──
+     kayit.js'teki tek 'click' dinleyicisi pointerdown/pointerup ikilisine
+     bolundu (favori.js'in yerlestigi yer). Burada GERCEK PointerEvent'lerle
+     dogrulaniyor: kisa dokunus favori.js'i acar, FAV_TUT esigini asan bir
+     basis ESKI favKipDegis() sorusunu (basili tutus) tetiklemeye devam
+     ediyor -- kullanicinin sozu: "sadece favoriyi calmak isterse basili
+     tutar, yildiz ayni kalir." */
+  {
+    const jest = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        if(!window.KAYIT_MODULU_HAZIR){
+          window.kayitYukle();
+          for(let i=0;i<60 && !window.KAYIT_MODULU_HAZIR;i++) await bek(100);
+        }
+      }catch(e){}
+      c.kayitGeldi = !!window.KAYIT_MODULU_HAZIR;
+      try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
+      FAV = []; _favMod = false; _favSoru = null; favTazele();
+      cal({mp3:'jst1', ad:'Jest Favori', radyo:true, grup:'JAZZ'}); await bek(80);
+      favDegis(); await bek(60);
+      const fa = document.getElementById('favAc');
+      const orta = ()=>{ const r = fa.getBoundingClientRect();
+        return { clientX:r.left+r.width/2, clientY:r.top+r.height/2, bubbles:true, cancelable:true, pointerId:77, pointerType:'touch' }; };
+      /* KISA DOKUNUS: liste acilmali, soru/kip TETIKLENMEMELI. */
+      fa.dispatchEvent(new PointerEvent('pointerdown', orta()));
+      await bek(80);
+      fa.dispatchEvent(new PointerEvent('pointerup', orta()));
+      for(let i=0;i<40 && !window.FAVORI_HAZIR;i++) await bek(50);
+      await bek(80);
+      c.kisaActi = !!(window.favoriAcikMi && window.favoriAcikMi());
+      c.kisaSoruYok = _favSoru === null && !fa.classList.contains('soru');
+      try{ if(window.favoriKapa) window.favoriKapa(); }catch(e){}
+      /* UZUN BASIS: liste ACILMAMALI, eski soru/kip tetiklenmeli. */
+      fa.dispatchEvent(new PointerEvent('pointerdown', orta()));
+      await bek(600);                       // FAV_TUT (450ms) asildi
+      c.uzunSoruActi = _favSoru !== null || fa.classList.contains('soru');
+      c.uzunListeAcmadi = !(window.favoriAcikMi && window.favoriAcikMi());
+      fa.dispatchEvent(new PointerEvent('pointerup', orta()));
+      /* TEMIZ BIRAK */
+      _favSoru = null; fa.classList.remove('soru');
+      try{ if(window.favoriKapa) window.favoriKapa(); }catch(e){}
+      try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
+      FAV = []; _favMod = false; favTazele();
+      return c;
+    });
+    K('Kisa dokunus favori listesini aciyor (gercek jest)',
+      jest.kayitGeldi && jest.kisaActi && jest.kisaSoruYok,
+      'geldi=' + jest.kayitGeldi + ' acti=' + jest.kisaActi + ' soruYok=' + jest.kisaSoruYok);
+    K('Basili tutus eski favori kipi sorusunu tetikliyor, listeyi acmiyor',
+      jest.uzunSoruActi && jest.uzunListeAcmadi,
+      'soru=' + jest.uzunSoruActi + ' listeKapali=' + jest.uzunListeAcmadi);
+  }
   /* ── FAVORI KIPI CERCEVESI FAREYLE UZERINE GELINCE KAYBOLMUYOR ────
      Kullanicinin sozu: "favori yildizinin cercevesi ters, secili
      degilken cerceveli, seciliyken degil." Olcum (13 Eylul, gercek
@@ -8345,42 +8487,57 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       !fk.hata && fk.ayni === true,
       fk.hata ? ('hata: ' + fk.hata) : ('once: ' + fk.once + ', hover: ' + fk.sonra));
   }
-  /* Sol USTTE tasima satirinin sonunda GIRIS yildizi: tek basisla
-     favori kipi. Eskiden sol altta REC/CAM yanindaydi. */
+  /* Sol USTTE tasima satirinin sonunda GIRIS yildizi. Eskiden sol
+     altta REC/CAM yanindaydi.
+     14 EYLUL: KISA basisin anlami degisti. Once bu yildiza kisa
+     dokunmak dogrudan SORU/KIP dansini (favKipDegis) tetikliyordu;
+     simdi kisa dokunus favori LISTESINI aciyor (favori.js), eski
+     dans BASILI TUTUSA tasindi (bkz. kayit.js: #favAc'in pointerdown/
+     pointerup ikilisi -- kullanicinin sozu: "sadece favoriyi calmak
+     isterse basili tutar, yildiz ayni kalir"). Bu test artik
+     TIKLAMA DEGIL, GERCEK bir basili tutus simule ediyor. */
   const fa = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const a = document.getElementById('favAc'); if(!a) return null;
     const eski = AKTIF_MOD; AKTIF_MOD = null;
+    /* Bu jest kayit.js'te yasiyor (istek uzerine iner) -- once modulun
+       geldiginden emin oluyoruz, yoksa pointerdown'a cevap veren
+       kimse olmaz. */
+    try{
+      if(!window.KAYIT_MODULU_HAZIR){
+        window.kayitYukle();
+        for(let i = 0; i < 40 && !window.KAYIT_MODULU_HAZIR; i++) await bek(100);
+      }
+    }catch(e){}
     /* TEMIZ BASLANGIC: onceki olcumlerden askida bir SORU kalmis
-       olabilir ve o zaman ilk dokunus soruyu ONAYLAR. Olculen sey
-       "ilk dokunus soruyor" oldugu icin baslangic kesin olmali. */
+       olabilir ve o zaman ilk basili tutus soruyu ONAYLAR. Olculen sey
+       "ilk basis soruyor" oldugu icin baslangic kesin olmali. */
     try{ if(typeof _favSoruBitir === 'function') _favSoruBitir(); }catch(e){}
     _favMod = false;
     FAV = [{mp3:'q1',ad:'A'},{mp3:'q2',ad:'B'}]; favYaz(); favTazele(); await bek(60);
+    try{ if(window.favoriKapa) window.favoriKapa(); }catch(e){}
     const kapali = { gor:a.classList.contains('var'), acik:a.classList.contains('acik') };
-    /* 10 Eylul: ilk dokunus SORU, ikincisi kipi aciyor. Bkz.
+    /* 10 Eylul: ilk basili tutus SORU, ikincisi kipi aciyor. Bkz.
        favKipDegis -- kullanici "favori liste calsin mi diye sorsun
-       ilk" dedi. Cikis hala tek dokunus. */
-    /* 140 ms YETMIYORDU: bu tusun dinleyicisi kayit.js modulunu
-       ISTEK UZERINE indiriyor ve dokunusu modul gelince oynatiyor.
-       Olculdu -- 140 ms'de hicbir sey olmamis gibi gorunuyordu
-       (soru sinifi=false, kip=false), yani test kodu degil KENDI
-       BEKLEMESINI olcuyordu. */
-    /* SABIT BEKLEME YERINE DEGISIMI BEKLE: bu tusun dinleyicisi
-       kayit.js modulunu ISTEK UZERINE indiriyor, yani ilk dokunusun
-       ne kadar surede karsilik bulacagi makineye gore degisiyor.
-       140 ve 400 ms'de olculdu, ikisinde de "hicbir sey olmamis"
-       cikti -- test kodu degil KENDI BEKLEMESINI olcuyordu.
-       Artik bir sey DEGISENE kadar bekliyoruz (en fazla 3 sn). */
-    a.click();
-    for(let i = 0; i < 30; i++){
-      if(a.classList.contains('soru') || _favMod) break;
-      await bek(100);
-    }
+       ilk" dedi. Cikis hala tek basili tutus. */
+    /* GERCEK BASILI TUTUS: pointerdown, FAV_TUT esigini asan sabit bir
+       bekleme, pointerup -- #fav'daki (ustteki yildiz) AYNI esik. Sabit
+       bekleme burada dogru: modulun gelisi yukarida zaten beklendi,
+       geriye kalan tek belirsizlik jestin kendi suresi (bilinen sabit,
+       FAV_TUT). */
+    const tut = async ()=>{
+      const r = a.getBoundingClientRect();
+      const opts = { clientX:r.left+r.width/2, clientY:r.top+r.height/2,
+                      bubbles:true, cancelable:true, pointerId:53, pointerType:'touch' };
+      a.dispatchEvent(new PointerEvent('pointerdown', opts));
+      await bek(FAV_TUT + 200);
+      a.dispatchEvent(new PointerEvent('pointerup', opts));
+    };
+    await tut();
     const soru = { soru:a.classList.contains('soru'), mod:_favMod };
-    a.click(); await bek(200);
+    await tut();
     const acik = { acik:a.classList.contains('acik'), mod:_favMod };
-    a.click(); await bek(200);
+    await tut();
     const tekrar = { acik:a.classList.contains('acik'), mod:_favMod };
     /* Tasima satiri sag ustteki marka yazisina carpmiyor mu ve sol
        ust blok arama cizgisiyle ayni sol kenardan mi basliyor. */
@@ -8415,10 +8572,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     return { kapali, soru, acik, tekrar, hiza };
   });
   K('Sol ustte favori yildizi var', !!fa && fa.kapali.gor===true, 'tasima satirinin sonunda');
-  K('Ilk basis soruyor, kipi acmiyor', !!fa && fa.soru.mod===false && fa.soru.soru===true,
+  K('Ilk basili tutus soruyor, kipi acmiyor', !!fa && fa.soru.mod===false && fa.soru.soru===true,
     fa ? ('soru sinifi=' + fa.soru.soru + ' kip=' + fa.soru.mod) : 'favAc yok');
-  K('Ikinci basis kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'iki basis');
-  K('Tekrar basis kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
+  K('Ikinci basili tutus kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'iki tutus');
+  K('Tekrar basili tutus kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
   K('Konsol kayit satirinin USTUNDE, sol kenarlar hizali',
      !!fa && fa.hiza.tasma <= 0 && fa.hiza.sol <= 2,
      'dikey bosluk '+(fa?-fa.hiza.tasma:'-')+'px | sol hiza '+(fa?fa.hiza.sol:'-')+'px');
@@ -13407,7 +13564,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        · taban asilirsa KIRMIZI -- yeni bir sessiz hata gelmis demektir
        · altina duserse taban guncellenir (mandal, geri kaymaz)
      Asil kiymeti sayi degil, YANINDAKI LISTE: hangi hatalarin
-     yutuldugunu ilk kez goruyoruz. */
+     yutuldugunu ilk kez goruyoruz.
+
+     14 EYLUL: 22 -> 27. Favori listesi (favori.js) icin #favAc'a
+     GERCEK basili-tutus jestleri simule eden testler eklendi (bkz.
+     "Ilk basili tutus soruyor..." ve "Kisa dokunus favori listesini
+     aciyor (gercek jest)"). Her simule pointerdown, kayit.js'teki
+     fa.setPointerCapture(e.pointerId)'i cagiriyor -- ama SAHTE
+     pointerId'nin laboratuvarda "aktif" bir dokunus oturumu yok,
+     tarayici bunu reddediyor ve _yut() yutuyor. Bu YENI bir uretim
+     hatasi DEGIL: ayni tuzak dosyada onceden de vardi (bkz. 3846,
+     7858, 12470 civarindaki "sahte pointerId" notlari) ve gercek bir
+     dokunusta (gercek pointerId'li, tarayicinin kendi olusturdugu)
+     hic olmuyor. Olculen: 5 yeni yutum, hepsi ayni iki mesajdan
+     (setPointerCapture / releasePointerCapture "No active pointer"). */
   {
     const yb = await pg.evaluate(()=>{
       const y = window.__yut || { n:0, ilk:[] };

@@ -2992,18 +2992,48 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     geriGit(); });
   ['pointerdown','mousedown','touchstart'].forEach(t=>
     geriDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
-  /* ★ kısa basış favorile, basılı tutuş favori kipi. Halkalardaki
-     dille aynı: tutuş kip açıyor. */
-  /* Sol alttaki yıldız: TEK BASIŞ favori kipini açıp kapatıyor. */
+  /* ★ kısa basış favori LISTESINI acar/kapatir, basılı tutuş eski
+     KARISIK CALMA kipini (favKipDegis) degistirmeye devam eder.
+     14 Eylul, kullanicinin sozu: "üşke bayrafı gıbı liste acılsın
+     birine basınca calmaya baslar listeden ... sadece favoriyi calmak
+     isterse basılı tutar, yıldız aynı kalır." Yani DEGISEN yalnizca
+     KISA dokunusun anlami -- basili tutma jesti (esik: FAV_TUT, ustteki
+     #fav ile AYNI deger) ve favKipDegis()'in kendisi HIC DOKUNULMADI. */
+  var _favAcBekle = null, _favAcBasti = false;
   try{
     const fa = document.getElementById('favAc');
     if(fa){
-      const ac = e=>{ if(e){ e.preventDefault(); e.stopPropagation(); }
-        try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
-        favKipDegis(); };
-      fa.addEventListener('click', ac);
-      fa.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') ac(e); });
-      ['pointerdown','mousedown','touchstart'].forEach(t=>
+      fa.addEventListener('pointerdown', e=>{
+        e.preventDefault(); e.stopPropagation();
+        _favAcBasti = true;
+        if(_favAcBekle) clearTimeout(_favAcBekle);
+        _favAcBekle = setTimeout(()=>{
+          _favAcBekle = null; _favAcBasti = false;
+          try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+          favKipDegis();
+        }, FAV_TUT);
+        try{ fa.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+      });
+      const favAcBirak = e=>{
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        if(_favAcBekle){ clearTimeout(_favAcBekle); _favAcBekle = null; }
+        if(_favAcBasti){                                    // süre dolmadan bıraktı: kısa basış
+          _favAcBasti = false;
+          try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+          try{ if(typeof window.favoriBas === 'function') window.favoriBas(); }catch(_){ _yut(_); }
+        }
+      };
+      fa.addEventListener('pointerup', favAcBirak);
+      fa.addEventListener('pointercancel', ()=>{ if(_favAcBekle){ clearTimeout(_favAcBekle); _favAcBekle=null; } _favAcBasti=false; });
+      fa.addEventListener('lostpointercapture', ()=>{ if(_favAcBekle){ clearTimeout(_favAcBekle); _favAcBekle=null; } _favAcBasti=false; });
+      fa.addEventListener('keydown', e=>{
+        if(e.key==='Enter'||e.key===' '){
+          e.preventDefault();
+          try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
+          try{ if(typeof window.favoriBas === 'function') window.favoriBas(); }catch(_){ _yut(_); }
+        }
+      });
+      ['mousedown','touchstart','click'].forEach(t=>
         fa.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
       favTazele();
     }
