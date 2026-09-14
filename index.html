@@ -4354,6 +4354,17 @@
          zaten hareketin kendisi. Ne gittigi panelde yaziyor. -->
     <div class="sat islem" id="geriSat" role="button" tabindex="-1">
       <span>REPORT A PROBLEM</span><span class="durum">OPEN</span></div>
+    <!-- ── SKINS RANDOM SWITCH ───────────────────────────────────
+         Kullanicinin sozu: "ayarlarda en alta bir yerde ama
+         belgelerin ustu olsun yine en alt degil ... skins random
+         switch'i olsun. onu acarsa biri her acilista baska skins
+         deri gelsin." Belgelerin (PRIVACY/TERMS) HEMEN ustunde,
+         RESET'in degil -- o gercekten en altta ve bilerek yalniz
+         kaliyor (bkz. SIFIRLA notu). VARSAYILAN KAPALI: acmak bir
+         tercih, secili deri varsayilan olarak SABIT kaliyor (bkz.
+         AYAR yuklenirken deriRastgele/deriTorba notu). -->
+    <div class="sat" data-ayar="deriRastgele" role="switch" tabindex="-1">
+      <span>RANDOM SKIN ON OPEN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <a class="sat bag" href="/privacy" target="_blank" rel="noopener" tabindex="-1">
       <span>PRIVACY</span><span class="durum">OPEN</span></a>
     <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
@@ -10745,6 +10756,23 @@
       }
     }catch(e){ _yut(e); }
   }
+  /* ── SKINS RANDOM SWITCH: TORBA KARISTIRMA (14 Eylul) ──────────────
+     Kullanicinin sozu: "random yani karisik tum listeyi doner. bitince
+     liste tekrar basa doner." Duz Math.random() ile her acilista bir
+     deri secmek "karisik" olurdu ama TUR GARANTISI vermezdi -- ayni
+     deri art arda iki-uc kez cikabilir, bazilari hic cikmayabilirdi.
+     Fisher-Yates ile 1..n'in TAM bir karisimi uretiliyor (torba); her
+     acilista torbadan bir tane cekiliyor (pop), torba bitince yeniden
+     karistirilip doluyor. Boylece n acilislik her turda HER deri tam
+     bir kez gorunuyor -- "tum listeyi doner" sozu bu. */
+  function deriTorbaKaristir(n){
+    const d = []; for(let i = 1; i <= n; i++) d.push(i);
+    for(let i = d.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = d[i]; d[i] = d[j]; d[j] = t;
+    }
+    return d;
+  }
   function calindiRadyoTemizle(){
     let n = 0;
     for(let i = _calindiSira.length - 1; i >= 0; i--){
@@ -10799,7 +10827,7 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, gunDongusu:false, geceModu:false };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, gunDongusu:false, geceModu:false, deriRastgele:false, deriTorba:[] };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -10900,6 +10928,35 @@
          Damga o yuzden gocun BIRAKTIGI degerden aliniyor. */
       AYAR.deriSurum = (typeof _a.deriSurum === 'number' && _a.deriSurum >= 3)
                        ? (_a.deriSurum|0) : 3;
+      /* ── SKINS RANDOM SWITCH: HER ACILISTA FARKLI DERI ────────────
+         KULLANICININ SOZU (14 Eylul): "ayarlarda en alta bir yerde
+         ama belgelerin ustu olsun ... skins random switch'i olsun.
+         onu acarsa biri her acilista baska skins deri gelsin. random
+         yani karisik tum listeyi doner. bitince liste tekrar basa
+         doner."
+         VARSAYILAN KAPALI VE BILEREK: hemen yukaridaki "HER ACILISTA
+         DERI KAYIYORDU" duzeltmesi secili deriyi ACILISLAR ARASI
+         SABIT tutmak icin yapildi (kullanicinin o zamanki sikayeti
+         tam tersiydi: "kapayip acsa da ayni sekilde devam etmeli").
+         Bu yeni anahtar o garantiyi BOZMUYOR -- yalnizca kullanici
+         ACIKCA anahtari actiysa devreye giriyor, kapaliyken AYAR.deri
+         bir yukarideki satirin (depodan gelen, sabit secim) elinde
+         kaliyor.
+         TORBA (deriTorbaKaristir): duz rastgelelik degil, bkz. o
+         fonksiyonun yorumu. Torba DEPODA saklaniyor ki bir sonraki
+         acilis bir onceki turun KALDIGI yerden devam etsin -- yoksa
+         her acilista sifirdan karistirma, bazi deriler hic cikmadan
+         torba yeniden dolardi.
+         SINIR 128: satir ~10887'deki (_a.deri <= 128) ile AYNI olmak
+         ZORUNDA -- o satirin yorumundaki tuzak burada da gecerli.
+         Birim testi ikisini de DERILER.length'e karsi sinar. */
+      if(_a.deriRastgele === true) AYAR.deriRastgele = true;
+      if(Array.isArray(_a.deriTorba))
+        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 128).map(n=>n|0);
+      if(AYAR.deriRastgele){
+        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(128);
+        AYAR.deri = AYAR.deriTorba.pop();
+      }
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
          de sebebi var, ikisi de burada yaziyor.

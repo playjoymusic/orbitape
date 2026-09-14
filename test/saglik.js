@@ -698,8 +698,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      (uzun turda cikan alti adim dahil) ve halka boyu, ilk
      boyamada GEREKMEYEN kod. Dogru is bunlari ayri bir module
      almak (deri_cizim.js, cark.js, saat.js ile ayni desen);
-     tavani her seferinde bir tik yukseltmek o isi erteliyor. */
-  const ILK_CIZIM_TAVAN = _derlendi ? 109 : 260, ILK_ACILIS_TAVAN = _derlendi ? 113 : 302;
+     tavani her seferinde bir tik yukseltmek o isi erteliyor.
+     14 EYLUL: 109 -> 110. BORC BUYUDU (DOKUZUNCU yukseltme): skins
+     random switch anahtari (deriRastgele/deriTorba) ve onu
+     dogrulayan/karistiran kod AYAR ile birlikte ilk boyamada
+     iniyor -- ekrana hicbir yeni oge girmedi ama karar mantigi
+     buyudu. Olculdu: 109,004 KB brotli (yayin/index.html). */
+  const ILK_CIZIM_TAVAN = _derlendi ? 110 : 260, ILK_ACILIS_TAVAN = _derlendi ? 113 : 302;
   K('Ilk cizim icin inen boy < ' + ILK_CIZIM_TAVAN + ' KB', bro(ham) < ILK_CIZIM_TAVAN*1024,
       Math.round(bro(ham)/1024) + ' KB brotli (' + _yayin('index.html') + ') — ilk boyama buna bagli');
   /* ── 296 KB: BU YUKSELTMENIN KARSILIGI OLCULDU ──────────────
@@ -964,8 +969,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        neden-ne-zaman-ne-olculdu yorumu DERILER dizisine eklendi.
        Ham boy 1236,47 KB. Ekrana giden hicbir sey buyumedi -- tek
        degisen bir dizi girdisindeki tek anahtar (sade:true silindi)
-       ve onu aciklayan yorum. */
-    K('Ham boy < 1240 KB', dosyaBoy < 1240*1024,
+       ve onu aciklayan yorum.
+       14 EYLUL (ikinci yukselis ayni gun): 1240 -> 1244. Skins
+       random switch: yeni AYAR anahtari (deriRastgele), torba
+       yontemi (deriTorbaKaristir + yukleme/suzme kodu) ve ayarlar
+       panelindeki yeni satir, hepsi gerekcelerini tasiyan
+       yorumlarla. Ham boy 1243,04 KB. */
+    K('Ham boy < 1244 KB', dosyaBoy < 1244*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -2620,6 +2630,80 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Goc damgasi geri sayilmiyor',
       !!d1 && d1.surum >= 3 && !!d1.yazilan && (d1.yazilan.deriSurum|0) >= 3,
       'depoya yazilan damga ' + (d1 && d1.yazilan ? (d1.yazilan.deriSurum|0) : '-'));
+  }
+
+  /* ── SKINS RANDOM SWITCH ─────────────────────────────────────────
+     Kullanicinin sozu (14 Eylul): "skins random switch'i olsun. onu
+     acarsa biri her acilista baska skins deri gelsin. random yani
+     karisik tum listeyi doner. bitince liste tekrar basa doner."
+     Torba ALGORITMASININ KENDISI (permutasyon, tekrarsizlik) birim
+     testinde olculuyor (test/birim.js, node, tarayicisiz -- hizli).
+     Burasi TELLERIN GERCEKTEN BAGLI oldugunu olcuyor: gercek
+     localStorage + gercek AYAR yukleme yolu.
+     UC DURUM: (1) anahtar KAPALIYKEN depoda bir torba dursa bile
+     dokunulmuyor -- yukaridaki "DERI HER ACILISTA KAYIYORDU"
+     garantisi bozulmuyor; (2) anahtar ACIKKEN ve depoda TEK
+     elemanli bir torba varsa o eleman cekiliyor ve torba bos
+     yaziliyor; (3) anahtar ACIKKEN ve torba BOS/YOK ise yeni bir
+     tam torba karistirilip BIRI hemen cekiliyor (geri kalan
+     DERILER.length - 1 uzunlugunda). */
+  {
+    const oncekiDepo3 = await pg.evaluate(()=>{
+      try{ return { a:localStorage.getItem('orbitape.ayar'),
+                    t:localStorage.getItem('orbitape.tur') }; }
+      catch(e){ return { a:null, t:null }; }
+    });
+    const dsOku = async (depo)=>{
+      const s6 = await pg.context().newPage();
+      await s6.addInitScript(d=>{
+        try{ localStorage.setItem('orbitape.ayar', d); }catch(e){}
+      }, JSON.stringify(depo));
+      await s6.goto(S, {waitUntil:'load'});
+      await s6.waitForTimeout(700);
+      const v = await s6.evaluate(()=>{
+        try{
+          const yazilan = JSON.parse(localStorage.getItem('orbitape.ayar')||'{}');
+          return { deri:AYAR.deri|0, torbaBoy:(AYAR.deriTorba||[]).length,
+                    yaziliTorbaBoy:(yazilan.deriTorba||[]).length,
+                    sayi:(0 + (typeof DERILER !== 'undefined' ? DERILER.length : 0)) };
+        }catch(e){ return null; }
+      });
+      await s6.close();
+      return v;
+    };
+    const kapaliAmaTorbaVar = await dsOku(
+      { sesAcildi:true, merkezOnar:true, deri:5, deriSurum:3, deriRastgele:false, deriTorba:[9,9,9] });
+    const tekElemanliTorba = await dsOku(
+      { sesAcildi:true, merkezOnar:true, deriSurum:3, deriRastgele:true, deriTorba:[42] });
+    const bosTorba = await dsOku(
+      { sesAcildi:true, merkezOnar:true, deriSurum:3, deriRastgele:true, deriTorba:[] });
+    const torbasiz = await dsOku(
+      { sesAcildi:true, merkezOnar:true, deriSurum:3, deriRastgele:true });
+    await pg.evaluate(d=>{
+      try{
+        if(d.a === null) localStorage.removeItem('orbitape.ayar');
+        else localStorage.setItem('orbitape.ayar', d.a);
+        if(d.t === null) localStorage.removeItem('orbitape.tur');
+        else localStorage.setItem('orbitape.tur', d.t);
+      }catch(e){}
+    }, oncekiDepo3);
+    K('Anahtar KAPALIYKEN depodaki torbaya dokunulmuyor',
+      !!kapaliAmaTorbaVar && kapaliAmaTorbaVar.deri === 5,
+      'deri=' + (kapaliAmaTorbaVar ? kapaliAmaTorbaVar.deri : '-') + ' (depoda 5 yaziliydi, torba yoksayildi)');
+    K('Tek elemanli torbadan o eleman cekiliyor',
+      !!tekElemanliTorba && tekElemanliTorba.deri === 42 && tekElemanliTorba.yaziliTorbaBoy === 0,
+      'deri=' + (tekElemanliTorba ? tekElemanliTorba.deri : '-')
+      + ', geri kalan torba=' + (tekElemanliTorba ? tekElemanliTorba.yaziliTorbaBoy : '-'));
+    K('Bos torba yeniden karisiyor ve biri hemen cekiliyor',
+      !!bosTorba && bosTorba.deri >= 1 && bosTorba.deri <= bosTorba.sayi
+      && bosTorba.yaziliTorbaBoy === bosTorba.sayi - 1,
+      'deri=' + (bosTorba ? bosTorba.deri : '-') + ', geri kalan torba='
+      + (bosTorba ? bosTorba.yaziliTorbaBoy : '-') + ' (tabloda ' + (bosTorba ? bosTorba.sayi : '-') + ' deri)');
+    K('Torba hic yokken de (ilk kez aciliyor) yeni tur basliyor',
+      !!torbasiz && torbasiz.deri >= 1 && torbasiz.deri <= torbasiz.sayi
+      && torbasiz.yaziliTorbaBoy === torbasiz.sayi - 1,
+      'deri=' + (torbasiz ? torbasiz.deri : '-') + ', geri kalan torba='
+      + (torbasiz ? torbasiz.yaziliTorbaBoy : '-'));
   }
 
   /* ── GORSELDE SAAT: VARSAYILAN ACIGA BIR KERELIK ONARIM ─────────

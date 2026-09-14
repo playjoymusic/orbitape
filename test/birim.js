@@ -65,6 +65,7 @@ const MANIFEST = [
   'const F2',
   'const F3',
   'const DERILER',
+  'function deriTorbaKaristir',
   'const GEZ_CIZIM',
   'function _parlaklikRGB',
   'function _parlaklikHex',
@@ -473,6 +474,49 @@ K('Her arsiv rafinin cizimi var',
   const sinir = m ? +m[1] : -1;
   K('Deri siniri tablonun boyuyla ayni', sinir === A.DERILER.length,
     'ayarlardaki sinir ' + sinir + ', tabloda ' + A.DERILER.length + ' deri');
+}
+
+/* ── SKINS RANDOM SWITCH: TORBA SINIRI DA TABLOYLA AYNI MI ───────
+   Ayni tuzak burada da var: deriRastgele acikken torba
+   deriTorbaKaristir(128) ile dolduruluyor ve depodan gelen torba
+   ayni 128 ile suzuluyor (n <= 128). Ikisi de DERILER.length'ten
+   ayrilirsa ya torbada asla cikmayacak deriler olur ya da var
+   olmayan bir deri numarasi secilir. Yukaridaki kontrolle AYNI
+   yontem: sayi kaynaktan regex ile okunuyor, elle kopyalanmiyor. */
+{
+  const kaynak = require('fs').readFileSync(KOK + '/index.html', 'utf8');
+  const m1 = kaynak.match(/deriTorbaKaristir\((\d+)\)/);
+  const m2 = kaynak.match(/n > 0 && n <= (\d+)\)\.map\(n=>n\|0\)/);
+  const sinir1 = m1 ? +m1[1] : -1;
+  const sinir2 = m2 ? +m2[1] : -1;
+  K('Torba doldurma siniri tablonun boyuyla ayni', sinir1 === A.DERILER.length,
+    'deriTorbaKaristir(' + sinir1 + '), tabloda ' + A.DERILER.length + ' deri');
+  K('Depodan gelen torbanin suzgeci de ayni sinirda', sinir2 === A.DERILER.length,
+    'suzgecte ' + sinir2 + ', tabloda ' + A.DERILER.length + ' deri');
+}
+
+/* ── TORBA GERCEKTEN 1..n'IN BIR PERMUTASYONU MU ─────────────────
+   "Random yani karisik tum listeyi doner" sozunun olcumu: bir
+   torbada HER sayi TAM BIR KEZ bulunmali (ne eksik ne tekrar),
+   yoksa bazi deriler hic cikmaz ya da art arda tekrar eder. Birden
+   fazla n ile deneniyor (kucuk, orta, gercek boyut) ve birkac kez
+   tekrarlanip her seferinde dogrulanıyor -- Fisher-Yates'in kendisi
+   sansa dayali, tek bir kosu yanlislikla gecebilirdi. */
+{
+  function permutasyonMu(n){
+    for(let deneme = 0; deneme < 12; deneme++){
+      const d = A.deriTorbaKaristir(n);
+      if(d.length !== n) return false;
+      const gorulen = new Set(d);
+      if(gorulen.size !== n) return false;
+      for(let i = 1; i <= n; i++) if(!gorulen.has(i)) return false;
+    }
+    return true;
+  }
+  K('Torba 1 elemanla dogru calisiyor', permutasyonMu(1));
+  K('Torba kucuk boyda tam permutasyon (tekrarsiz, eksiksiz)', permutasyonMu(5));
+  K('Torba gercek deri sayisinda tam permutasyon (tekrarsiz, eksiksiz)',
+    permutasyonMu(A.DERILER.length));
 }
 
 function bitir(){
