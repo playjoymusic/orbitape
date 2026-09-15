@@ -107,6 +107,10 @@ interface Window {
      zumu. Testin ve olcumun tek kapisi bu ikisi. */
   yildizDurum?: () => any;
   yildizZumAyar?: (v: number) => void;
+  /* Yildiz konum formulunun kendisi (15 Eylul, bagimsiz suruklenme):
+     testler eski formulu kopyalamak yerine GERCEK fonksiyonu
+     cagirsin diye. */
+  yildizNoktaTest?: (y: any, cx: number, cy: number, taban: number, olcek: number, zaman?: number) => { x: number, y: number };
   /* Gokyuzu acikken cark jesti hic baslamiyor: cark.js bunu soruyor. */
   yildizZumAcik?: () => boolean;
   /* Dokunus ortadaki aletin uzerinde mi: pencerelerin "bosluk"
