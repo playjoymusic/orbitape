@@ -13708,6 +13708,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          de tutarli ve guclu cikiyor (en zayifi bile >= 190). Esik 120 --
          ikisini net ayiran, ortadaki bir deger; cizginin KALINLIGI
          degil, YALNIZCA kenar yumusatmasi degisti. */
+      /* ── CI'DA TEK CEKIMLE ARA SIRA SIFIR (15 Eylul, GitHub Actions
+         run #378 ve #380) ────────────────────────────────────────
+         Yerelde bu kontrol hep gecti; CI'da iki ayri, birbiriyle
+         ILGISIZ commit'te (biri deri/halka koduna hic dokunmuyordu)
+         dort halkanin sapmasi da TAM SIFIR geldi -- yani ekran
+         goruntusu SWISS derisi uygulanmadan once alinmis. deriUygula()
+         kendisi senkron (CSS custom property atamasi), demek ki 400ms
+         sabit bekleme CI'nin yuklu bir aninda BOYAMA/compositor'un
+         isini bitirmesine yetmiyor. Sabit bekleme yerine TEKRAR DENE:
+         olcum esigin altinda kalirsa ekrani yeniden al, her denemede
+         biraz daha uzun bekle. Tavan 5 deneme / toplam ~3600ms ek
+         bekleme -- normal calismada ilk denemede geciyor (deneme
+         sayisi rapora yaziliyor), yalniz CI'nin yavas anini tolere
+         ediyor. */
       {
         const masaustuHalka = await (async ()=>{
           let bg = null;
@@ -13726,55 +13740,66 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             const R = kutu.width / 2;
             const cx = Math.round(kutu.x + kutu.width / 2), cy = Math.round(kutu.y + kutu.height / 2);
             const seritGenislik = Math.max(8, Math.round(R * 0.56));
-            const png = await sayfa.screenshot({ clip: { x: cx, y: cy - 1, width: seritGenislik, height: 2 } });
-            const b64 = png.toString('base64');
-            /* PNG COZME NODE'DA DEGIL, TARAYICIDA: projede bir gorsel
-               kutuphanesi yok (bilerek -- tek dosya, bagimliliksiz
-               felsefesi testlere de tasindi). Image()+canvas tarayicinin
-               kendi kod cozucusunu kullaniyor, yeni paket gerekmiyor. */
-            const sapmalar = await sayfa.evaluate(async (b64)=>{
-              const img = new Image();
-              const yuklendi = new Promise((res, rej)=>{ img.onload = res; img.onerror = rej; });
-              img.src = 'data:image/png;base64,' + b64;
-              await yuklendi;
-              const c = document.createElement('canvas'); c.width = img.width; c.height = 1;
-              const cx2 = c.getContext('2d'); cx2.drawImage(img, 0, 0);
-              const veri = cx2.getImageData(0, 0, img.width, 1).data;
-              /* ZEMIN SERIDIN SOLUNDAN DEGIL SAGINDAN: serit MERKEZDEN
-                 basliyor, yani ilk piksel cekirdegin (kirmizi dolgu)
-                 TAM ICINDE -- onu "zemin" sanmak her seyi kirmizidan
-                 sapma olarak olcuyordu (ilk denemede butun degerler
-                 hatali sekilde ~392 cikti, ayni derinlik gercek zeminle
-                 kirmizinin farkiydi). Seridin SAG UCU (dordunca halkanin
-                 disinda, R'nin disina tasmadan) her zaman duz zemin. */
-              const zemin = [veri[(img.width-1)*4], veri[(img.width-1)*4+1], veri[(img.width-1)*4+2]];
-              const d = [];
-              for(let x = 0; x < img.width; x++){
-                const i = x * 4;
-                d.push(Math.abs(veri[i] - zemin[0]) + Math.abs(veri[i+1] - zemin[1]) + Math.abs(veri[i+2] - zemin[2]));
-              }
-              return d;
-            }, b64);
-            /* Dort oluk halkasinin ORTA noktalari (bkz. index.html
-               body.deri .disk::after): (20.66+21.05)/2, (30.16+30.55)/2,
-               (39.66+40.05)/2, (49.66+50.05)/2 -- yuzde olarak R'nin. */
-            const yuzdeler = [20.855, 30.355, 39.855, 49.855];
-            const enZayif = yuzdeler.map(y=>{
-              const merkez = Math.round(y/100 * R);
-              let tepe = 0;
-              for(let dx = -3; dx <= 3; dx++){
-                const x = merkez + dx;
-                if(x >= 0 && x < sapmalar.length) tepe = Math.max(tepe, sapmalar[x]);
-              }
-              return tepe;
-            });
-            return { enZayif, min: Math.min(...enZayif) };
+            const birOlcum = async ()=>{
+              const png = await sayfa.screenshot({ clip: { x: cx, y: cy - 1, width: seritGenislik, height: 2 } });
+              const b64 = png.toString('base64');
+              /* PNG COZME NODE'DA DEGIL, TARAYICIDA: projede bir gorsel
+                 kutuphanesi yok (bilerek -- tek dosya, bagimliliksiz
+                 felsefesi testlere de tasindi). Image()+canvas tarayicinin
+                 kendi kod cozucusunu kullaniyor, yeni paket gerekmiyor. */
+              const sapmalar = await sayfa.evaluate(async (b64)=>{
+                const img = new Image();
+                const yuklendi = new Promise((res, rej)=>{ img.onload = res; img.onerror = rej; });
+                img.src = 'data:image/png;base64,' + b64;
+                await yuklendi;
+                const c = document.createElement('canvas'); c.width = img.width; c.height = 1;
+                const cx2 = c.getContext('2d'); cx2.drawImage(img, 0, 0);
+                const veri = cx2.getImageData(0, 0, img.width, 1).data;
+                /* ZEMIN SERIDIN SOLUNDAN DEGIL SAGINDAN: serit MERKEZDEN
+                   basliyor, yani ilk piksel cekirdegin (kirmizi dolgu)
+                   TAM ICINDE -- onu "zemin" sanmak her seyi kirmizidan
+                   sapma olarak olcuyordu (ilk denemede butun degerler
+                   hatali sekilde ~392 cikti, ayni derinlik gercek zeminle
+                   kirmizinin farkiydi). Seridin SAG UCU (dordunca halkanin
+                   disinda, R'nin disina tasmadan) her zaman duz zemin. */
+                const zemin = [veri[(img.width-1)*4], veri[(img.width-1)*4+1], veri[(img.width-1)*4+2]];
+                const d = [];
+                for(let x = 0; x < img.width; x++){
+                  const i = x * 4;
+                  d.push(Math.abs(veri[i] - zemin[0]) + Math.abs(veri[i+1] - zemin[1]) + Math.abs(veri[i+2] - zemin[2]));
+                }
+                return d;
+              }, b64);
+              /* Dort oluk halkasinin ORTA noktalari (bkz. index.html
+                 body.deri .disk::after): (20.66+21.05)/2, (30.16+30.55)/2,
+                 (39.66+40.05)/2, (49.66+50.05)/2 -- yuzde olarak R'nin. */
+              const yuzdeler = [20.855, 30.355, 39.855, 49.855];
+              const enZayif = yuzdeler.map(y=>{
+                const merkez = Math.round(y/100 * R);
+                let tepe = 0;
+                for(let dx = -3; dx <= 3; dx++){
+                  const x = merkez + dx;
+                  if(x >= 0 && x < sapmalar.length) tepe = Math.max(tepe, sapmalar[x]);
+                }
+                return tepe;
+              });
+              return { enZayif, min: Math.min(...enZayif) };
+            };
+            let sonuc = await birOlcum(), deneme = 1;
+            while(sonuc.min < 120 && deneme < 5){
+              deneme++;
+              await sayfa.waitForTimeout(300 * deneme);
+              sonuc = await birOlcum();
+            }
+            sonuc.deneme = deneme;
+            return sonuc;
           }catch(e){ return { hata: String(e && e.message || e) }; }
           finally { try{ if(bg) await bg.context().close(); }catch(e){} }
         })();
         K('Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu',
            typeof masaustuHalka.min === 'number' && masaustuHalka.min >= 120,
-           masaustuHalka.hata || ('dort halkanin sapmasi: ' + JSON.stringify(masaustuHalka.enZayif) + ' (esik 120)'));
+           masaustuHalka.hata || ('dort halkanin sapmasi: ' + JSON.stringify(masaustuHalka.enZayif) + ' (esik 120)'
+             + (masaustuHalka.deneme > 1 ? (', ' + masaustuHalka.deneme + '. denemede') : '')));
       }
       /* ── SKINS: ACAN TUS KAPATAN TUS ────────────────────────────
          Kullanicinin sozu: "HIDE'a basinca skins penceresi
