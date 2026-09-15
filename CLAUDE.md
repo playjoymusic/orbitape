@@ -137,6 +137,20 @@ Teknik açıklamadan **önce** şu yazılır: kullanıcı ne yaşıyordu, artık
 yaşayacak. Gerçek hayattaki karşılığı. Onun sözü: *"bana herseyi bir de
 kullanıcı boyutunda müşteriye anlatır gibi anlatacaksın"*.
 
+### 10. Bazı ülkelerin radyoları kullanılmaz
+
+15 Eylül'de yazıldı — sözlü bir karardı, hiçbir dosyada durmuyordu.
+Bir daha kaybolmasın diye buraya kondu.
+
+Kural tek: **AE, CN, IL, RU** menşeli hiçbir istasyon `radyo.json`'a
+girmez. Gerekçe yayın kalitesi ya da lisans değil, doğrudan ülke —
+tartışmaya açık değil, değiştirmek gerekirse önce pj'ye sorulur.
+
+Uygulanan yer: `araclar/radyo_grupla.py` → `ULKE_YASAK`. Yeni bir
+hasat bu kümedeki bir ülkeden istasyon getirirse orada elenir.
+15 Eylül'de listede kalan tek ihlal 13 Rus istasyonuydu (`ulke:"RU"`)
+— elle `radyo.json`'dan çıkarıldı.
+
 ---
 
 ## Depo düzeni

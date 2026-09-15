@@ -6,7 +6,7 @@ radyo_grupla.py — radyo.json'u TEMIZLER ve AILELERE ayirir.
 NE YAPAR
   1) Cikarilacaklari cikarir:
        - ayni yayin adresinin ikinci kaydi (tekillestirme)
-       - ulke kara listesi (AE; TR 10 Eylul'de cikarildi)
+       - ulke kara listesi (AE, CN, IL, RU; TR 10 Eylul'de cikarildi)
        - Kur'an / tefsir yayinlari (adi Arap harfli oldugu icin
          uygulamanin suzgeci yakalayamiyordu)
        - adinda/etiketinde canli konusma isareti olanlar
@@ -500,11 +500,16 @@ for _ad, _d in AILELER.items():
 
 # ── ELEMELER ──────────────────────────────────────────────────────
 # 10 Eylul: TR KARA LISTEDEN CIKTI. Kullanicinin karari -- Turkce
-# istasyonlar da havuza girebilsin. Kalan tek ulke AE; oradaki
+# istasyonlar da havuza girebilsin. AE oradan beri listede; oradaki
 # yayinlarin buyuk bolumu tilavet/konusma ve IBADET suzgeci Arap
 # harfli adlari yakalayamiyor, yani ulke kaydi orada suzgec yerine
 # geciyor. TR icin boyle bir gerekce yoktu.
-ULKE_YASAK = {"AE"}
+# 15 Eylul: CN, IL, RU eklendi. Kullanicinin karari (CLAUDE.md kural
+# 10'da yazili): bu ulkelerin radyosu kullanilmayacak -- gerekce
+# yayin kalitesi ya da lisans degil, dogrudan ulke. RU'nun 13 kaydi
+# o gun radyo.json'dan da elle cikarildi (bu kural gecmisi
+# baglamiyor, yalnizca BUNDAN SONRAKI hasatlari suzuyor).
+ULKE_YASAK = {"AE", "CN", "IL", "RU"}
 
 # Arap harfli tilavet/tefsir yayinlari: uygulamanin suzgeci Latin
 # kokler uzerine kurulu oldugu icin bunlari goremiyordu.
