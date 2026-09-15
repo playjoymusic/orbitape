@@ -94,9 +94,15 @@ const DERI_USLUP = {
      koc boynuzu kancasi, nazar boncugu ve gunes/yildiz patlamasi.
      Palet ailesi kilim'le akraba (sicak kirmizi/toprak) ama her
      motif kendi tonuna kayiyor; NAZAR lacivert/mavi -- bu motifin
-     kendi rengi, baska turlusu taninmaz. */
+     kendi rengi, baska turlusu taninmaz.
+
+     AYNI GUN, CHEVRON CIKARILDI: kullanici ekran goruntusu gonderip
+     "bunu sil" dedi. Deri hic push edilmemisti (yalnizca yerel
+     commit), yani hicbir kullanicinin kayitli deri numarasi bundan
+     etkilenmedi -- append-only kurali zaten "yayindaki" numaralar
+     icin, burada henuz yayinda olan bir numara yoktu. Seri simdi
+     bes motif: DIAMOND, MEDALLION, RAMSHORN, EVIL EYE, SUNBURST. */
   diamond  : { pal:["#8a2a24","#c9702f","#2f5d52","#f2e2c4","#1d0f0e"] },
-  chevron  : { pal:["#a3352a","#e0a83c","#1f4a45","#f0ddb8","#241210"] },
   medallion: { pal:["#8a2420","#d4a13c","#1c2b4a","#e8ddc0","#0d1220"] },
   ramshorn : { pal:["#6b3a20","#c77a2e","#2e4636","#e8d3a8","#241408"] },
   nazar    : { pal:["#0f2a52","#3f9fd6","#eef3f7","#d4443c","#070d18"] },
@@ -693,22 +699,6 @@ const DERI_HALKA = {
       const r = S*(0.46 - i*0.07);
       c.beginPath();
       c.moveTo(o, o - r); c.lineTo(o + r, o); c.lineTo(o, o + r); c.lineTo(o - r, o);
-      c.closePath(); c.fill();
-    }
-  },
-  /* CHEVRON — nested zikzak madalyon (12 kollu yildiz gibi kirilan halka). */
-  chevron(c, S, d){
-    const p = _pal(d), o = S/2;
-    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
-    for(let i = 6; i >= 1; i--){
-      c.fillStyle = [p[0], p[1], p[2]][i % 3];
-      const r = S*0.062*i;
-      c.beginPath();
-      for(let k = 0; k < 12; k++){
-        const a1 = k*Math.PI/6, rr = r*(k % 2 ? 1 : 0.6);
-        const x = o + Math.cos(a1)*rr, y = o + Math.sin(a1)*rr;
-        if(k) c.lineTo(x, y); else c.moveTo(x, y);
-      }
       c.closePath(); c.fill();
     }
   },
@@ -1857,26 +1847,6 @@ const DERI_CIZIM = {
       }
     }
     c.globalAlpha = 1;
-    c.fillStyle = p[4];
-    c.beginPath(); c.arc(cx, cy, rDisk*1.08, 0, Math.PI*2); c.fill();
-    c.strokeStyle = p[3]; c.lineWidth = u*0.012;
-    c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
-    c.restore();
-  },
-  /* CHEVRON — yatay zikzak bantlar, oyalanmis kilim bordurunun aynisi. */
-  chevron(c, W, H, d){
-    const p = d.pal, u = Math.min(W, H), cx = W*0.5, cy = H*0.5, rDisk = u*0.40;
-    c.save();
-    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
-    const bant = u*0.09, adim = bant*0.5;
-    for(let y = -bant, sira = 0; y < H + bant; y += bant, sira++){
-      c.fillStyle = [p[0], p[1], p[2]][sira % 3];
-      c.beginPath();
-      c.moveTo(-u*0.1, y);
-      for(let x = -u*0.1; x <= W + u*0.1; x += adim) c.lineTo(x, y + (Math.round(x/adim) % 2 ? bant*0.5 : 0));
-      for(let x = W + u*0.1; x >= -u*0.1; x -= adim) c.lineTo(x, y + bant + (Math.round(x/adim) % 2 ? bant*0.5 : 0));
-      c.closePath(); c.fill();
-    }
     c.fillStyle = p[4];
     c.beginPath(); c.arc(cx, cy, rDisk*1.08, 0, Math.PI*2); c.fill();
     c.strokeStyle = p[3]; c.lineWidth = u*0.012;

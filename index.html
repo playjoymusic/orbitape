@@ -6294,10 +6294,14 @@
        (DERI_USLUP + DERI_HALKA + DERI_CIZIM, "KILIM SERISI"
        basligi altinda). Sona eklendi: depolama numarasi (AYAR.deri)
        hicbir eski derinin numarasini kaydirmasin diye tablo hep
-       append-only. Alti deri, sinir 128 -> 134 oldu (bkz. "128"
-       gecen ayar/torba satirlari, asagida). */
+       append-only. Bes deri, sinir 128 -> 133 oldu (bkz. "128"
+       gecen ayar/torba satirlari, asagida).
+
+       AYNI GUN, CHEVRON CIKARILDI: kullanici ekran goruntusu gonderip
+       "bunu sil" dedi. Bu deri hic push edilmemisti (yalnizca yerel
+       commit), yani hicbir kullanicinin kayitli deri numarasi bundan
+       etkilenmedi. */
     {ad:"DIAMOND",   zem:"#4a1c17", yazi:"#f2e2c4", marka:"#c9702f", cek:"#6b2a22", font:F2, kose:"2px",  cizim:"diamond"},
-    {ad:"CHEVRON",   zem:"#5c211a", yazi:"#f0ddb8", marka:"#3fada0", cek:"#7a2f24", font:F2, kose:"2px",  cizim:"chevron"},
     {ad:"MEDALLION", zem:"#182444", yazi:"#e8ddc0", marka:"#d4a13c", cek:"#22335e", font:F2, kose:"50%", cizim:"medallion"},
     {ad:"RAMSHORN",  zem:"#432411", yazi:"#e8d3a8", marka:"#c77a2e", cek:"#5a301a", font:F2, kose:"2px",  cizim:"ramshorn"},
     {ad:"EVIL EYE",  zem:"#0d1f3d", yazi:"#eef3f7", marka:"#3f9fd6", cek:"#16294f", font:F1, kose:"50%", cizim:"nazar"},
@@ -11123,9 +11127,11 @@
          esitligini kontrol ediyor. 13 Eylul: iki deri (SLATE SILK,
          JET) kaldirildi (128 -> 126), sonra BAR ve UMUT eklendi
          (126 -> 128) -- sinir de her ikisinde elle guncellendi.
-         15 Eylul: KILIM SERISI (alti deri) eklendi, 128 -> 134. */
+         15 Eylul: KILIM SERISI eklendi, 128 -> 134, sonra ayni gun
+         CHEVRON kullanicinin istegiyle cikarildi (hic push edilmemis
+         bir deriydi), 134 -> 133. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 134) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 133) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
@@ -11160,14 +11166,14 @@
          acilis bir onceki turun KALDIGI yerden devam etsin -- yoksa
          her acilista sifirdan karistirma, bazi deriler hic cikmadan
          torba yeniden dolardi.
-         SINIR 134: satir ~10887'deki (_a.deri <= 134) ile AYNI olmak
+         SINIR 133: satir ~10887'deki (_a.deri <= 133) ile AYNI olmak
          ZORUNDA -- o satirin yorumundaki tuzak burada da gecerli.
          Birim testi ikisini de DERILER.length'e karsi sinar. */
       if(_a.deriRastgele === true) AYAR.deriRastgele = true;
       if(Array.isArray(_a.deriTorba))
-        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 134).map(n=>n|0);
+        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 133).map(n=>n|0);
       if(AYAR.deriRastgele){
-        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(134);
+        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(133);
         AYAR.deri = AYAR.deriTorba.pop();
         /* ── MERKEZ DE BERABER CIRCLE'A DONMELI (15 Eylul) ─────────
            Kullanicinin sozu: "bu sekilde acildiginda circle modu

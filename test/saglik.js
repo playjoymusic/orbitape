@@ -840,7 +840,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Olculen yeni boy 26,98 KB brotli (onceki 26,06 KB'den fark: 6
        yeni palet + 12 yeni cizim fonksiyonu). Eski tavan (27) bu
        olcume yalnizca ~20 bayt pay birakiyordu -- bir sonraki kucuk
-       eklemede bile kirmizi yanardi. Tavan simdi gercek payla yukseldi. */
+       eklemede bile kirmizi yanardi. Tavan simdi gercek payla yukseldi.
+
+       AYNI GUN: CHEVRON kullanicinin istegiyle cikarildi (ekran
+       goruntusu gonderip "bunu sil" dedi; hic push edilmemis bir
+       deriydi). Seri simdi bes motif. Olculen yeni boy 26,82 KB
+       brotli (bir motif cikince kazanc kucuk: ~0,16 KB, cunku palet
+       ve fonksiyon sayisi degil, tek bir fonksiyonun kod boyu dustu).
+       Tavan 28'de birakildi -- ~1,18 KB pay var, dusurmenin faydasi
+       yok. */
     const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 28 };
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
