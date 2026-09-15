@@ -986,8 +986,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        farkli hata sayisi (u) eklendi -- _olcumDurum() fonksiyonu ve
        neden/ne-zaman-ne-olctu yorumlari. Ekrana giden hicbir sey
        degismedi, yalnizca gonullu tanilama kanali guclendi. Ham boy
-       1248,93 KB. */
-    K('Ham boy < 1252 KB', dosyaBoy < 1252*1024,
+       1248,93 KB.
+       15 EYLUL (ayni gun, ikinci yukselis): 1252 -> 1254,6. Iki ayri
+       ekleme: (1) yildiz-zum acikken kip degistirince cark/viz'in
+       karanlik kalmasini onleyen moodUygula() duzeltmesi (bkz.
+       "GOKYUZU ACIKKEN KIP DEGISTIRME KARARTMASI" yorumu). (2)
+       "Identify with Shazam" baglantisi GERI GELDI -- daha once
+       AYNI GUN icinde bir kez denenip geri alinmisti (terk etme
+       sorunu: uygulamadan cikinca canli yayin geri donusu
+       bozuluyordu), kullanici karari degistirdi ("shazam yap ya,
+       eski fikirdi o silmek") ve bu kez window.open ile (sekme
+       degismiyor, ses kesilmiyor) ve yalnizca parca adi gelmeyince
+       geri geldi -- bkz. "IDENTIFY WITH SHAZAM" yorumu. */
+    K('Ham boy < 1260 KB', dosyaBoy < 1260*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -1068,28 +1079,41 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'yeni kaynakta yeniden yaziliyor');
   }
 
-  /* ── "BU NE?" DUGMESI KALDIRILDI ────────────────────────
-     Burada Shazam'i acan dugmenin uc kontrolu vardi: yalnizca canli
-     yayinda gorunmesi, iki basisla gitmesi, platform yonlendirmesi.
-     Dugme kaldirildi -- kullanicinin karari: "shazami cikar su anlik,
-     icine entegre et sarkiyi bulan sistem."
-     Temel sorun tanima degil TERK ETMEKTI: basinca calan ses duruyor,
-     baska bir uygulama aciliyor, geri donunce canli yayin baska bir
-     yerinden giriyor.
-     BU KONTROL NOBETTE KALIYOR: dugme geri gelirse ya da disariya
-     tanima baglantisi acilirsa burasi kirmizi yanar. */
+  /* ── "IDENTIFY WITH SHAZAM": BIR KEZ KALDIRILDI, SONRA GERI GELDI ──
+     ONCEKI KARAR (bu yorumun eski hali): dugme kaldirilmisti --
+     "shazami cikar su anlik, icine entegre et sarkiyi bulan sistem."
+     Gerekce: uygulamadan cikip Shazam'i acmak canli yayini
+     KOPARIYORDU -- basinca ses duruyor, geri donunce yayin baska bir
+     yerinden giriyordu.
+     15 EYLUL: kullanici kararini degistirdi -- "shazam yap ya. eski
+     fikirdi o silmek." Dugme GERI GELDI ama ayni riski TASIMAYACAK
+     SEKILDE: sarkiTaniAc() location.href DEGIL window.open KULLANIYOR
+     -- ORBITAPE'in kendi sekmesi/penceresi HIC DEGISMIYOR, ses arka
+     planda calmaya devam ediyor, donuste yeniden baglanma gerekmiyor.
+     Sadece parca adi VERMEYEN canli yayinlarda gorunuyor (bkz.
+     _npSanatciYaz) -- arsivde her kaydin adi zaten var.
+     LOGO KOPYALANMADI: kullanici pngwing.com'dan indirdigi gercek
+     Shazam logosunu istedi ama bu Anthropic kuraliyla cakisiyor
+     (bir markanin logosunu birebir kopyalamak yasak). Marka rengine
+     yakin mavi + kendi cizdigimiz kucuk bir ikon var, gercek marka
+     gorseli yok.
+     BU KONTROL NOBETTE KALIYOR, ama artik YOKLUGU degil DOGRU
+     SEKLI ariyor: location.href ile acilirsa, ya da gercek logo
+     goruntusu (img/data-uri) eklenirse burasi kirmizi yanar. */
   {
     const kaynak = fs.readFileSync('index.html','utf8');
-    /* HTML YORUMLARI DA CIKARILIYOR. Ilk yazimda yalnizca JS
-       yorumlari (/* *​/) siliniyordu ve dosyadaki
-       "<!-- Burada Shazam'i acan bir dugme vardi -->" aciklamasi
-       testi dusuruyordu: kod temizdi, gerekceyi anlatan cumle
-       kirmizi yakiyordu. Aranan sey KODDA gecmesi. */
+    /* HTML YORUMLARI DA CIKARILIYOR: aciklama cumleleri icinde gecen
+       "shazam" kelimesi testi yanlis dusurmesin/yanlis gecirmesin
+       diye aranan sey hep KODUN KENDISI. */
     const kod = kaynak.replace(/\/\*[\s\S]*?\*\//g, '')
                       .replace(/<!--[\s\S]*?-->/g, '');
-    K('Disariya tanima baglantisi yok',
-       !/id="tani"/.test(kod) && !/shazam/i.test(kod) && !/intent:\/\//.test(kod),
-       'dugme, ozel sema ve intent adresi -- ucu de kodda yok');
+    K('Sarki tanima disari YENI SEKME/PENCEREYLE aciliyor (location.href degil)',
+       /function sarkiTaniAc/.test(kod) && /window\.open\(/.test(kod)
+       && !/location\.href\s*=\s*['"](shazam:|intent:)/i.test(kod),
+       'ORBITAPE sekmesi degismiyor, canli yayin arka planda calmaya devam ediyor');
+    K('Gercek Shazam logosu kopyalanmadi (marka gorseli yok)',
+       !/<img[^>]*shazam/i.test(kod) && !/data:image\/[^"']*shazam/i.test(kod),
+       'yalnizca kendi cizdigimiz ikon + "Shazam" yazisi var, marka gorseli yok');
 
   /* ══ SU AN NE CALIYOR ═════════════════════════════════════════════
      Shazam dugmesinin yerine gelen sey. Kaynak MIKROFON DEGIL,
@@ -1308,7 +1332,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* HICBIR SEY GONDERILMIYOR. Gizlilik metnindeki ve Play Data
      Safety formundaki "hicbir veri toplanmiyor" cevabinin teknik
      karsiligi: ne mikrofon aciliyor ne de ses bir tanima servisine
-     yollaniyor. Bu kontrol o cevabin bekcisi. */
+     yollaniyor. Bu kontrol o cevabin bekcisi.
+     15 EYLUL: "shazam" kelimesi artik kodda GECIYOR (sarkiTaniAc --
+     bkz. yukaridaki "IDENTIFY WITH SHAZAM" kontrolu) ama TEK YONLU:
+     kullaniciyi kendi telefonundaki Shazam'a yonlendiriyor, SES
+     YOLLAMIYOR. Bu yuzden asil aranan sey daralti: parcaAl'in
+     (otomatik metadata cekme) govdesinde "shazam" GECMEMELI, ve
+     getUserMedia/audd/acrcloud HICBIR YERDE gecmemeli -- mikrofon
+     hala hic acilmiyor. */
   K('Parca adi icin mikrofon ya da tanima servisi kullanilmiyor', await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
       const kod = k.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
@@ -1316,10 +1347,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const i0 = kod.indexOf('async function parcaAl(');
       const govde = kod.slice(i0, i0 + 900);
       return i0 > 0
-        && !/getUserMedia/.test(govde)
-        && !/audd|acrcloud|shazam/i.test(kod)
+        && !/getUserMedia/.test(kod)
+        && !/audd|acrcloud/i.test(kod)
+        && !/shazam/i.test(govde)
         && /fetchZA\(k\.a/.test(govde);
-    }), 'yalnizca istasyonun acik adresi soruluyor');
+    }), 'yalnizca istasyonun acik adresi soruluyor; Shazam varsa da yalniz tek yonlu disari baglanti (window.open)');
   /* SADECE CANLI YAYIN. Arsiv kayitlarinda parcanin adi zaten
      elimizde; orada sormak hem gereksiz hem de yanlis sonuc verir. */
   K('Parca sorgusu yalnizca canli yayinda', await pg.evaluate(async ()=>{
@@ -8636,14 +8668,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const eskiDeri2 = await pg.evaluate(()=> AYAR.deri);
     let fk = { hata: 'olculemedi' };
+    /* GECIS BITENE KADAR BEKLE, SABIT SURE DEGIL (15 Eylul, CI'da
+       kirmizi yandi). Olculen: CI'da 350ms sabit bekleme bazen
+       gecisi (transition) tam bitirmeden okuyordu -- renkler 1
+       birim farkli kalıyordu: "once: rgb(75, 72, 66), hover:
+       rgb(74, 71, 64)". Iki ardisik okuma AYNI degeri verene kadar
+       bekleniyor artik (bekKosul'un ayni ruhu: yavas makinede
+       tavana kadar bekler, hizli makinede hemen doner), tavan 1.5 sn. */
+    const kenarOku = ()=> pg.evaluate(()=> getComputedStyle(document.getElementById('fav')).borderColor);
+    const kenarSabitle = async ()=>{
+      let onceki = null;
+      for(let i=0;i<50;i++){
+        const simdi = await kenarOku();
+        if(simdi === onceki) return simdi;
+        onceki = simdi;
+        await pg.waitForTimeout(30);
+      }
+      return onceki;
+    };
     try{
       await pg.evaluate(()=>{ AYAR.deri = 1; deriUygula(); });
       await pg.evaluate(()=>{ document.getElementById('fav').classList.add('var','kip'); });
-      await pg.waitForTimeout(350);
-      const once = await pg.evaluate(()=> getComputedStyle(document.getElementById('fav')).borderColor);
+      const once = await kenarSabitle();
       await pg.hover('#fav', {timeout:3000});
-      await pg.waitForTimeout(350);
-      const sonra = await pg.evaluate(()=> getComputedStyle(document.getElementById('fav')).borderColor);
+      const sonra = await kenarSabitle();
       fk = { once, sonra, ayni: once === sonra };
     }catch(e){ fk = { hata: String(e && e.message || e) }; }
     try{
@@ -10092,6 +10140,56 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Gokyuzu acikken cark pasif, kuculunce geri geliyor',
        yz.carkPasif === true && yz.turDegismedi === true
        && yz.kucultunceGeriGeldi === true, ozy || 'zumda tur degismiyor');
+  }
+
+  /* ── GOKYUZU ACIKKEN KIP DEGISTIRME KARARTMASI (15 Eylul) ────────────
+     Bildirilen: radyo tarafinda yildizlari buyutup (yildiz-zum acik,
+     bkz. CSS: body.yildiz-zum #carkTuval,#viz{opacity:0}) hemen
+     ardindan ORBITAPE'e (mood) gecince ekran karanlik kaliyor, cark/
+     viz GEC geliyor.
+     Olculen (Playwright, /tmp/olcu_zum_karart.js): duzeltmeden once
+     kip degistikten sonra sinif 240 karede (~4.2 sn) HIC kalkmiyordu
+     -- kalkmasini saglayan tek yer zumCiz()'in eased geri-donusu ve
+     onu tetikleyen sey yalnizca gokyuzu ICINDEKI bir sonraki jestti;
+     kip degistiren dugmenin zumla ilgisi yoktu. Duzeltmeden sonra
+     sinif kip degisir degismez (ayni tick) kalkiyor, cark/viz kendi
+     olagan 320ms'lik opaklik gecisiyle (bkz. #carkTuval,#viz{
+     transition:opacity .32s ease}) geri geliyor -- tipki zum hic
+     acilmamis gibi. */
+  {
+    const kd = await pg.evaluate(async ()=>{
+      const c = {};
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiBl = beyazListe, eskiDenendi = _blDenendi, eskiAile = AKTIF_AILE,
+            eskiMood = AYAR.mood;
+      try{
+        AYAR.mood = false; moodUygula(false); await bek(200);
+        _blDenendi = true; _blSoz = null;
+        beyazListe = Array.from({length:20},(_,i)=>({
+          stationuuid:'kd'+i, name:'Karartma '+i, url:'https://sahte.test/kd'+i,
+          url_resolved:'https://sahte.test/kd'+i, grup:'JAZZ', saf:1, ulke:'TR', tags:'jazz' }));
+        AKTIF_AILE = 'JAZZ';
+        window.yildizZumAyar(3.5);
+        for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 3.5) > 0.05; i++) await bek(30);
+        c.zumAcildi = document.body.classList.contains('yildiz-zum');
+        /* Kip degisimi ZUM OTURMUSKEN tetikleniyor -- tam bildirilen sirayla. */
+        AYAR.mood = true; moodUygula(false);
+        /* AYNI TICK: eased animasyonu beklemeden sinif hemen kalkmali. */
+        c.sinifAnindaKalkti = !document.body.classList.contains('yildiz-zum');
+        await bek(500);   /* 320ms'lik opaklik gecisi otursun */
+        const ct = document.getElementById('carkTuval');
+        c.carkGeriGeldi = !!ct && +getComputedStyle(ct).opacity > 0.95;
+        c.moodAcikKaldi = document.body.classList.contains('mood') === true;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      try{ AYAR.mood = eskiMood; moodUygula(false); }catch(e){}
+      beyazListe = eskiBl; _blDenendi = eskiDenendi; AKTIF_AILE = eskiAile;
+      return c;
+    });
+    K('Gokyuzu acikken kip degisince sinif ayni anda kalkiyor',
+       kd.sinifAnindaKalkti === true, kd.hata || 'yildiz-zum eased beklemeden kalkti');
+    K('Kip degisince cark/viz 320ms icinde geri geliyor, karanlik kalmiyor',
+       kd.carkGeriGeldi === true && kd.moodAcikKaldi === true,
+       kd.hata || 'opaklik gecisi tamamlandi');
   }
 
   /* ── YILDIZLAR BUYURKEN BAGIMSIZ SURUKLENIYOR (15 Eylul) ──────────

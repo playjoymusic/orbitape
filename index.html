@@ -1079,6 +1079,23 @@
     /* Sanatci adi da kirpilmiyor: atifin ikinci yarisi bu. */
     white-space:normal;overflow-wrap:anywhere;}
   #np .np-sanatci:empty{display:none;}
+  /* ── "IDENTIFY WITH SHAZAM" (15 Eylul) ─────────────────────────
+     Yalnizca istasyon parca adi VERMEYINCE gorunur (bkz. JS:
+     _npSanatciYaz) -- .np-sanatci normalde bos kalinca zaten
+     gizleniyordu (yukaridaki :empty kurali), bu dugme geldiginde
+     div artik bos SAYILMIYOR ve gorunuyor.
+     LOGO YOK: gercek Shazam isaretini kopyalamiyoruz (bkz. JS'teki
+     not). Marka rengine yakin mavi + kendi cizdigimiz kucuk bir
+     "dinle" ikonu (iki yay + nokta) var, gercek marka gorseli yok. */
+  #np .np-tani{display:inline-flex;align-items:center;gap:4px;border:none;background:none;
+    padding:2px 0;margin:-2px 0;font:inherit;color:#4fb6ff;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;}
+  #np .np-tani svg{width:12px;height:12px;flex:none;stroke:currentColor;stroke-width:1.3;
+    fill:none;stroke-linecap:round;}
+  #np .np-tani circle{fill:currentColor;stroke:none;}
+  #np .np-tani span{text-decoration:underline;text-underline-offset:2px;}
+  #np .np-tani:hover,#np .np-tani:focus-visible{color:#7fcbff;}
+  #np .np-tani:focus-visible{outline:1px solid rgba(127,203,255,.7);outline-offset:2px;border-radius:4px;}
   /* ── SU AN CALAN PARCA ────────────────────────────────────────
      Istasyon adinin altinda, ondan kucuk ve bir tik daha parlak
      degil DAHA SILIK: istasyon nerede oldugunu, parca o an ne
@@ -8663,6 +8680,68 @@
     if(o.radyo) return true;
     return lisansSerbest(o.lisans);
   }
+  /* ── "IDENTIFY WITH SHAZAM" (15 Eylul) ────────────────────────────
+     Kullanicinin sozu: "her sanatci ismi cikmiyor... sag alttaki
+     tusun yanina bir buton... telefondaki shazam'i acacak" + netlestirme
+     turunda "B: Sadece isim gelmeyince goster". Yaklasik %72 istasyon
+     (bkz. asagidaki "531 istasyon..." olcumu) hicbir yapili bilgi
+     yollamiyor -- o zaman .np-sanatci zaten BOS kaliyordu, simdi
+     onun yerine bu baglanti geliyor.
+     UYGULAMADAN CIKMAK CANLI YAYINI KOPARABILIR (daha once bir kez
+     denenip TAMAMEN kaldirilmisti -- bkz. asagidaki "Disariya tanima
+     baglantisi yok" kontrolu ve KALANLAR/GUNLUK): geri donunce akis
+     baska bir yerinden giriyordu. Bu yuzden:
+       - window.open KULLANILIYOR, location.href DEGIL: ORBITAPE'in
+         KENDI SEKMESI/PENCERESI HIC DEGISMIYOR, arka planda canli
+         yayin calmaya devam ediyor.
+       - Ses hic durdurulmuyor: donuste yayin zaten kaldigi (o an
+         yayinlanan) yerden geliyor, yeniden baglanma gerekmiyor.
+     LOGO KULLANILMIYOR: Anthropic kurali bir markanin logosunu
+     birebir kopyalamaya izin vermiyor (kullanicinin gonderdigi
+     pngwing.com goruntusu dahil). Marka rengine yakin mavi + kendi
+     cizdigimiz kucuk bir ikon var (bkz. CSS #np .np-tani), gercek
+     Shazam isareti yok. */
+  function sarkiTaniAc(e){
+    try{ if(e){ e.stopPropagation(); e.preventDefault(); } }catch(_e1){ _yut(_e1); }
+    try{
+      const ua = navigator.userAgent || '';
+      if(/Android/.test(ua)){
+        const yedek = encodeURIComponent('https://play.google.com/store/apps/details?id=com.shazam.android');
+        window.open('intent://open#Intent;package=com.shazam.android;scheme=shazam;S.browser_fallback_url=' + yedek + ';end', '_blank');
+      }else if(/iP(hone|ad|od)/.test(ua)){
+        window.open('shazam://', '_blank');
+        /* Uygulama acildiysa sayfa gizlenir (document.hidden); acilmadiysa
+           kisa bir sure sonra App Store'a yonlendiriyoruz. */
+        setTimeout(()=>{
+          try{ if(!document.hidden) window.open('https://apps.apple.com/app/shazam-music-discovery/id284993459', '_blank'); }catch(_e2){ _yut(_e2); }
+        }, 900);
+      }else{
+        window.open('https://www.shazam.com/', '_blank');
+      }
+    }catch(_e3){ _yut(_e3); }
+  }
+  /* .np-sanatci normalde duz metin (bkz. CSS :empty{display:none}).
+     Sanatci/parca bilgisi yoksa VE canli yayindaysak (arsivde her
+     kaydin adi zaten var, tanima gerekmiyor) bunun yerine tek
+     dugmelik bir baglanti yaziliyor. */
+  function _npSanatciYaz(sanatci, radyoMu){
+    try{
+      if(!sanatci && radyoMu){
+        npSanatci.innerHTML = '';
+        const b = document.createElement('button');
+        b.type = 'button'; b.id = 'npTani'; b.className = 'np-tani';
+        b.setAttribute('aria-label', 'Identify with Shazam');
+        b.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
+          + '<path d="M2.4 8a5.6 5.6 0 0 1 5.6-5.6M8 2.4A5.6 5.6 0 0 1 13.6 8"/>'
+          + '<path d="M4.6 8a3.4 3.4 0 0 1 3.4-3.4M8 4.6A3.4 3.4 0 0 1 11.4 8"/>'
+          + '<circle cx="8" cy="8" r="1.15"/></svg><span>Shazam</span>';
+        b.addEventListener('click', sarkiTaniAc);
+        npSanatci.appendChild(b);
+      }else{
+        npSanatci.textContent = sanatci;
+      }
+    }catch(e){ _yut(e); }
+  }
   function simdiCalan(item){
     if(!item) return;
     let ad = item.ad;
@@ -8701,7 +8780,7 @@
        kunyeyi gosterirken yeni bir parca gelirse yazi elin altinda
        degisiyordu. Adim boyunca asili kaliyor; ses akmaya devam
        ediyor, donan sey yalnizca YAZI. */
-    if(!_npDondur){ npAd.textContent = ad; npSanatci.textContent = sanatci; }
+    if(!_npDondur){ npAd.textContent = ad; _npSanatciYaz(sanatci, !!item.radyo); }
     /* KAYNAK SANATÇIYLA AYNIYSA İKİ KEZ YAZILMIYOR: aynı ad yan yana
        iki kere çıkıyordu. Bilgi eklemeyen tekrar, gürültü. */
     try{
@@ -11318,6 +11397,25 @@
                etmesin diye siradaki ses de radyodan aliniyor. */
   function moodUygula(ilk){
     const _favModOncekiMod = AKTIF_MOD;
+    /* ── KIP DEGISIRKEN GOKYUZU ZUMU ANINDA KAPANIYOR (15 Eylul, olculdu) ──
+       Bildirilen: yildizlari buyutup (yildiz-zum sinifi acikken
+       #carkTuval ve #viz gizli, bkz. CSS) hemen ardindan ORBITAPE'e
+       gecince ekran karanlik kaliyor, cark/viz GEC geliyor.
+       Olculen (Playwright, /?radyo=1, yildizZumAyar(3.5) + moodAc()):
+       sinif kip degistikten SONRA da kaliyordu -- 240 kare (~4.2 sn)
+       boyunca hic kalkmadi, cunku kalkmasini saglayan tek yer zumCiz()
+       icindeki eased geri-donus (_zum += (_zumHedef-_zum)*0.18) ve
+       _zumHedef'i 1'e ceken sey yalnizca kullanicinin GOKYUZU
+       ICINDEKI bir sonraki jesti (zumKapat cagrisi). Kip degistiren
+       dugmenin (moodAc/moodKapat) zumla hic ilgisi yoktu.
+       Kullanicinin daha once soyledigi kural da bu yondeydi: "hangi
+       turde buyuttuysek baska ture gecemezsin" (cark.js jest basinda
+       soruyor) -- burada da ayni ruh: kip degisince gokyuzu ANINDA
+       kapanir, eased animasyonu beklemez. zumBitti() ayni scope'ta
+       (asagida tanimli, function hoisting sayesinde burada erisiliyor)
+       animasyonsuz temizliyor. */
+    try{ if(typeof zumAcikMi === 'function' && zumAcikMi()
+         && typeof zumBitti === 'function') zumBitti(); }catch(e){ _yut(e); }
     try{
       document.body.classList.toggle('mood', !!AYAR.mood);
       if(AYAR.mood){
