@@ -10972,6 +10972,24 @@
       if(AYAR.deriRastgele){
         if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(128);
         AYAR.deri = AYAR.deriTorba.pop();
+        /* ── MERKEZ DE BERABER CIRCLE'A DONMELI (15 Eylul) ─────────
+           Kullanicinin sozu: "bu sekilde acildiginda circle modu
+           acik olmali, cark ya da wheel degil."
+           Kural zaten VARDI (bkz. deri_galeri.js merkezOdunc: "deri
+           secili -> disk odunc alinir") ama yalnizca deri GALERIDEN
+           ELLE secilince calisiyordu. Random-on-open o fonksiyonu
+           hic cagirmiyor, AYAR.deri'yi burada DOGRUDAN yaziyor --
+           onceki oturum carkli/OFF kapandiysa (AYAR.merkez='cark'),
+           bu oturum rastgele bir deriyle acilsa da merkez carkta
+           TAKILI kaliyordu.
+           OLCUM: depoda merkez='cark', deri=0 (OFF) yazan bir
+           oturumdan sonra, deriRastgele:true + torba:[42] ile
+           yeniden acildi. Duzeltmeden ONCE: AYAR.deri=42 oluyordu
+           ama AYAR.merkez hala 'cark', govde sinifi 'merkez-cark'
+           TASIYORDU. Duzeltmeden SONRA: AYAR.merkez='yuvarlak',
+           govde sinifinda 'merkez-cark' YOK (bkz. test/saglik.js,
+           "Random skin on open: merkez de circle'a donuyor"). */
+        if(AYAR.merkez !== 'yuvarlak') AYAR.merkez = 'yuvarlak';
       }
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ────
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin

@@ -2713,6 +2713,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       + (torbasiz ? torbasiz.yaziliTorbaBoy : '-'));
   }
 
+  /* ── RANDOM SKIN ON OPEN: MERKEZ DE CIRCLE'A DONMELI (15 Eylul) ───
+     Kullanicinin sozu: "bu sekilde acildiginda circle modu acik
+     olmali, cark ya da wheel degil."
+     Kural zaten VARDI (deri_galeri.js merkezOdunc: "deri secili ->
+     disk odunc alinir") ama yalnizca deri GALERIDEN ELLE secilince
+     calisiyordu. Random-on-open o fonksiyonu hic cagirmadan
+     AYAR.deri'yi index.html icinde dogrudan yaziyordu -- onceki
+     oturum carkli/OFF kapandiysa (AYAR.merkez='cark'), yeni oturum
+     rastgele bir deriyle acilsa da merkez carkta takili kaliyordu.
+     OLCUM: depoda merkez='cark', deri=0 (OFF) yazan bir oturumdan
+     sonra, deriRastgele:true + tek elemanli torba ([42]) ile yeniden
+     acildi. */
+  {
+    const oncekiDepo4 = await pg.evaluate(()=>{
+      try{ return { a:localStorage.getItem('orbitape.ayar'),
+                    t:localStorage.getItem('orbitape.tur') }; }
+      catch(e){ return { a:null, t:null }; }
+    });
+    const s7 = await pg.context().newPage();
+    await s7.addInitScript(d=>{
+      try{ localStorage.setItem('orbitape.ayar', d); }catch(e){}
+    }, JSON.stringify({ sesAcildi:true, merkezOnar:true, deriSurum:3,
+                         merkez:'cark', deri:0, deriRastgele:true, deriTorba:[42] }));
+    await s7.goto(S, {waitUntil:'load'});
+    await s7.waitForTimeout(700);
+    const rsm = await s7.evaluate(()=>{
+      try{ return { deri:AYAR.deri|0, merkez:AYAR.merkez,
+                    carkSinifi:document.body.classList.contains('merkez-cark') }; }
+      catch(e){ return null; }
+    });
+    await s7.close();
+    await pg.evaluate(d=>{
+      try{
+        if(d.a === null) localStorage.removeItem('orbitape.ayar');
+        else localStorage.setItem('orbitape.ayar', d.a);
+        if(d.t === null) localStorage.removeItem('orbitape.tur');
+        else localStorage.setItem('orbitape.tur', d.t);
+      }catch(e){}
+    }, oncekiDepo4);
+    K('Random skin on open: merkez de circle\'a donuyor, cark degil',
+      !!rsm && rsm.deri === 42 && rsm.merkez === 'yuvarlak' && rsm.carkSinifi === false,
+      rsm ? ('deri=' + rsm.deri + ' merkez=' + rsm.merkez + ' merkez-cark sinifi=' + rsm.carkSinifi)
+          : 'olculemedi');
+  }
+
   /* ── GORSELDE SAAT: VARSAYILAN ACIGA BIR KERELIK ONARIM ─────────
      Kullanicinin sozu (14 Eylul): "visual da clock secenegi acik
      gelsin baslangicta ... isteyen sonradan kapatir." Ayni tuzak
