@@ -9880,18 +9880,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           c.arkaBos = (!_ct || +getComputedStyle(_ct).opacity === 0)
                    && (!_vz || +getComputedStyle(_vz).opacity === 0);
         }
-        /* Bir yildizin ekrandaki yerini uygulamanin formuluyle bul. */
+        /* Bir yildizin ekrandaki yerini uygulamanin formuluyle bul.
+           SEED (a, r, dfaz...) burada tekrarlaniyor -- degisirse
+           burasi da degismek zorunda. Asil KONUM HESABI (rr0, sinuslu
+           surukleme) TEKRARLANMIYOR: gercek yildizNokta cagriliyor
+           (window.yildizNoktaTest), yoksa 15 Eylul'deki bagimsiz
+           surukleme eklenince test kendi eski/sabit formuluyle
+           uygulamanin artik surukledigi yerin yanina basardi. */
+        const yildizSeed = (t)=>({
+          a: (t * 2.39996) % 6.28318,
+          r: 0.05 + 0.86 * Math.sqrt((t % 89) / 89),
+          dfaz: (t * 3.71) % 6.28318, dfaz2: (t * 5.19) % 6.28318,
+          dhiz: 0.00011 + ((t * 13) % 29) / 29 * 0.00017,
+          dgenR: 0.10 + ((t * 17) % 23) / 23 * 0.22,
+          dgenA: 0.05 + ((t * 19) % 31) / 31 * 0.11 });
         const disk = document.querySelector('.disk').getBoundingClientRect();
         const cx = disk.left + disk.width/2, cy = disk.top + disk.height/2;
         const taban = disk.width * 0.5 * 0.9, z = window.yildizDurum().zum;
-        /* 10 Eylul: ic sinir 0.26 -> 0.05 ve acilma zumdan yavas
-           (katsayi 0.55). Bu satirlar uygulamanin formulunu BIREBIR
-           tekrarliyor -- degisirse burasi da degismek zorunda, yoksa
-           test uygulamanin cizdigi yere degil eski bir yere basar. */
-        const t = 5, a = (t * 2.39996) % 6.28318,
-              r = 0.05 + 0.86 * Math.sqrt((t % 89) / 89),
-              yay = taban * (1 + (z - 1) * 0.55);
-        const px = cx + Math.cos(a) * r * yay, py = cy + Math.sin(a) * r * yay;
+        const p0 = window.yildizNoktaTest(yildizSeed(5), cx, cy, taban, z);
+        const px = p0.x, py = p0.y;
         const kat = document.getElementById('yildizKat');
         const oncekiCalan = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '');
         /* Karar parmak KALKINCA veriliyor (kaydirmadan ayirmak
@@ -9939,11 +9946,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const disk2 = document.querySelector('.disk').getBoundingClientRect();
         const cx2 = disk2.left + disk2.width/2 + kay.x, cy2 = disk2.top + disk2.height/2 + kay.y;
         const taban2 = disk2.width * 0.5 * 0.9, z2 = window.yildizDurum().zum;
-        const t2 = 5, a2 = (t2 * 2.39996) % 6.28318,
-              r2 = 0.05 + 0.86 * Math.sqrt((t2 % 89) / 89),
-              yay2 = taban2 * (1 + (z2 - 1) * 0.55);
-        const px2 = cx2 + Math.cos(a2) * r2 * yay2,
-              py2 = cy2 + Math.sin(a2) * r2 * yay2;
+        const p2 = window.yildizNoktaTest(yildizSeed(5), cx2, cy2, taban2, z2);
+        const px2 = p2.x, py2 = p2.y;
         if(px2 > 4 && px2 < innerWidth - 4 && py2 > 4 && py2 < innerHeight - 4){
           olay('pointerdown', px2, py2); olay('pointerup', px2, py2); await bek(90);
           c.kaydiktanSonraSecim = window.yildizDurum().secili === 'Yildiz 4';
@@ -9959,14 +9963,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const dd = document.querySelector('.disk').getBoundingClientRect();
           const ccx = dd.left + dd.width/2 + kk.x, ccy = dd.top + dd.height/2 + kk.y;
           const tb2 = dd.width * 0.5 * 0.9, zz = window.yildizDurum().zum;
-          const yay3 = tb2 * (1 + (zz - 1) * 0.55);
           for(let i = 0; i < 12; i++){
-            const aa = ((i+1) * 2.39996) % 6.28318,
-                  rr = 0.05 + 0.86 * Math.sqrt(((i+1) % 89) / 89);
-            const xx = ccx + Math.cos(aa) * rr * yay3,
-                  yy = ccy + Math.sin(aa) * rr * yay3;
-            if(xx > 60 && xx < innerWidth - 60 && yy > 60 && yy < innerHeight - 60){
-              sec2 = { i, xx, yy }; break;
+            const pp = window.yildizNoktaTest(yildizSeed(i+1), ccx, ccy, tb2, zz);
+            if(pp.x > 60 && pp.x < innerWidth - 60 && pp.y > 60 && pp.y < innerHeight - 60){
+              sec2 = { i, xx:pp.x, yy:pp.y }; break;
             }
           }
           if(sec2){ olay('pointerdown', sec2.xx, sec2.yy); olay('pointerup', sec2.xx, sec2.yy); await bek(120); }
@@ -10057,6 +10057,63 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Gokyuzu acikken cark pasif, kuculunce geri geliyor',
        yz.carkPasif === true && yz.turDegismedi === true
        && yz.kucultunceGeriGeldi === true, ozy || 'zumda tur degismiyor');
+  }
+
+  /* ── YILDIZLAR BUYURKEN BAGIMSIZ SURUKLENIYOR (15 Eylul) ──────────
+     Kullanicinin sozu: "buyutunce sabit bir hal aliyor ya, o olmadan
+     orijinal hali olmaz mi... uzay boslugunda yavas agir su
+     icindeymis gibi hareket edemez mi." Durgun halini ("zaten cok
+     iyi") DEGISTIRMEDEN buyurken (olcek>1) her yildiz kendi
+     fazinda/hizinda yavas bir sinuse binip birbirinden bagimsiz
+     kayiyor -- bkz. index.html yildizNokta.
+     UC OLCUM: (1) olcek=1'de (zum kapali) yeni formul ESKI rijit
+     formulle BIREBIR ayni pikseli veriyor -- durgun hal bozulmadi.
+     (2) ayni yildiz, ayni olcek, FARKLI zaman -> konum DEGISIYOR --
+     artik zumda sabit degil. (3) iki FARKLI yildiz, ayni olcek, ayni
+     zaman -> kayma YONLERI birbirinden meshur derecede farkli --
+     hepsi ayni anda ayni yone degil, bagimsiz. */
+  {
+    const bs = await pg.evaluate(()=>{
+      try{
+        if(!window.yildizNoktaTest) return { hata:'yildizNoktaTest yok' };
+        const seed = (t)=>({
+          a: (t * 2.39996) % 6.28318, r: 0.05 + 0.86 * Math.sqrt((t % 89) / 89),
+          dfaz: (t * 3.71) % 6.28318, dfaz2: (t * 5.19) % 6.28318,
+          dhiz: 0.00011 + ((t * 13) % 29) / 29 * 0.00017,
+          dgenR: 0.10 + ((t * 17) % 23) / 23 * 0.22,
+          dgenA: 0.05 + ((t * 19) % 31) / 31 * 0.11 });
+        const y1 = seed(3), y2 = seed(11), cx = 0, cy = 0, taban = 100;
+        const rijit = (y, olcek)=>{
+          const rr = y.r * taban * (1 + (olcek - 1) * 0.55);
+          return { x: cx + Math.cos(y.a) * rr, y: cy + Math.sin(y.a) * rr };
+        };
+        /* (1) durgun hal (olcek=1): eski rijit formulle fark 0. */
+        const durgunYeni = window.yildizNoktaTest(y1, cx, cy, taban, 1, 12345);
+        const durgunEski = rijit(y1, 1);
+        const durgunFark = Math.hypot(durgunYeni.x - durgunEski.x, durgunYeni.y - durgunEski.y);
+        /* (2) buyurken (olcek=3), ayni yildiz iki farkli zamanda. */
+        const t1 = window.yildizNoktaTest(y1, cx, cy, taban, 3, 10000);
+        const t2 = window.yildizNoktaTest(y1, cx, cy, taban, 3, 40000);
+        const zamanlaDegisti = Math.hypot(t1.x - t2.x, t1.y - t2.y);
+        /* (3) buyurken (olcek=3), ayni an, iki farkli yildizin RIJIT
+           konumdan sapma YONU (aci). Kilitliyse (hepsi ayni yone
+           kayarsa) bu iki aci birbirine yakin cikardi. */
+        const zaman = 12345;
+        const p1 = window.yildizNoktaTest(y1, cx, cy, taban, 3, zaman);
+        const p2 = window.yildizNoktaTest(y2, cx, cy, taban, 3, zaman);
+        const e1 = rijit(y1, 3), e2 = rijit(y2, 3);
+        const ac1 = Math.atan2(p1.y - e1.y, p1.x - e1.x);
+        const ac2 = Math.atan2(p2.y - e2.y, p2.x - e2.x);
+        let yonFarki = Math.abs(ac1 - ac2); if(yonFarki > Math.PI) yonFarki = 2*Math.PI - yonFarki;
+        return { durgunFark, zamanlaDegisti, yonFarkiDerece: yonFarki * 180 / Math.PI };
+      }catch(e){ return { hata: String(e && e.message || e) }; }
+    });
+    K('Durgun halde (zum kapali) formul degismedi',
+       bs.durgunFark === 0, bs.hata || ('fark ' + bs.durgunFark + ' px'));
+    K('Buyurken yildiz artik zamanla hareket ediyor (sabit degil)',
+       bs.zamanlaDegisti > 0.5, bs.hata || (bs.zamanlaDegisti + ' px, iki zaman arasi'));
+    K('Buyurken iki yildiz birbirinden bagimsiz yone kayiyor',
+       bs.yonFarkiDerece > 20, bs.hata || (Math.round(bs.yonFarkiDerece) + ' derece fark'));
   }
 
   /* ── SOUND BANKS'TEN DONUS ──────────────────────────────────────

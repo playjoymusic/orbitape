@@ -12209,7 +12209,18 @@
                     doluyor ve buyutme ortadan disa dogru bir akis
                     gibi okunuyor. */
                  r: 0.05 + 0.86 * Math.sqrt((t % 89) / 89),
-                 b: 0.55 + ((t * 7) % 13) / 13 * 0.85 };
+                 b: 0.55 + ((t * 7) % 13) / 13 * 0.85,
+                 /* ── BAGIMSIZ SURUKLENME PARAMETRELERI (15 Eylul) ──
+                    bkz. yildizNokta: her yildizin kendi fazi/hizi var,
+                    hepsi ayni saatte degil. t'den turetiliyor ki
+                    (id'ye baglanmadan) HER ZAMAN AYNI yildiz hep ayni
+                    huyda sursun -- ayarlarda kaydedilecek bir sey yok,
+                    saf fonksiyon. */
+                 dfaz: (t * 3.71) % 6.28318,
+                 dfaz2: (t * 5.19) % 6.28318,
+                 dhiz: 0.00011 + ((t * 13) % 29) / 29 * 0.00017,
+                 dgenR: 0.10 + ((t * 17) % 23) / 23 * 0.22,
+                 dgenA: 0.05 + ((t * 19) % 31) / 31 * 0.11 };
       });
     }catch(e){ _yut(e); }
     return _istY;
@@ -12333,10 +12344,36 @@
      seyrelmesi kaybolmuyor. CIZIM VE DOKUNMA ayni fonksiyonu
      kullaniyor; burada degisen sey ikisinde birden degisiyor. */
   const YIL_ACILMA = 0.55;
-  function yildizNokta(y, cx, cy, taban, olcek){
-    const rr = y.r * taban * (1 + (olcek - 1) * YIL_ACILMA);
-    return { x: cx + Math.cos(y.a) * rr, y: cy + Math.sin(y.a) * rr };
+  /* ── BUYURKEN BAGIMSIZ SURUKLENME (15 Eylul) ─────────────────────
+     Kullanicinin sozu: "buyutunce sabit bir hal alıyor ya, o olmadan
+     orijinal hali olmaz mı... uzay boslugunda yavas agir su
+     icindeymis gibi hareket edemez mi." Durgun halini ("zaten cok
+     iyi") DEGISTIRMEDEN: asagidaki ek terim (olcek-1) ile CARPILIYOR,
+     yani olcek=1 (zum kapali/henuz buyumemis) iken tam SIFIR --
+     eski formulle birebir ayni sayiyi veriyor.
+     Buyudukce (olcek>1) her yildiz KENDI fazinda/hizinda (dfaz,
+     dhiz) yavas bir sinuse biniyor -- hepsi ayni anda ayni yone
+     degil, birbirinden bagimsiz suruklenmis gibi okunuyor. dhiz
+     kucuk tutuldu (tam bir tur ~37-95 saniye) ki hareket agir/su
+     icindeymis gibi hissettirsin, kucacik bir titreme degil.
+     OLCUM (yildizNoktaTest ile, zaman sabitlenerek): olcek=1'de
+     yeni ve eski formul AYNI pikseli veriyor (fark 0). olcek=3,
+     zaman=12345'te iki farkli yildiz (t=1 ve t=2) FARKLI yon/miktar
+     kayiyor -- ikisinin de kendi rr/aci sapmasi olcek-1 ile birlikte
+     buyuyor ama BIRBIRINE ESIT DEGIL (bkz. test/saglik.js). */
+  function yildizNokta(y, cx, cy, taban, olcek, zaman){
+    if(zaman === undefined) zaman = performance.now();
+    const b = Math.max(0, olcek - 1);
+    const rr0 = y.r * taban * (1 + b * YIL_ACILMA);
+    let rr = rr0, a = y.a;
+    if(b > 0){
+      const faz = zaman * y.dhiz + y.dfaz;
+      rr = rr0 + Math.sin(faz) * y.dgenR * taban * b;
+      a = y.a + Math.sin(faz * 0.7 + y.dfaz2) * y.dgenA * b;
+    }
+    return { x: cx + Math.cos(a) * rr, y: cy + Math.sin(a) * rr };
   }
+  try{ window.yildizNoktaTest = yildizNokta; }catch(e){ _yut(e); }
   /* Kaydirma sinirsiz degil: gokyuzunu tamamen ekran disina itip
      bos bir ekranda kalmak kotu bir son. Sapma, gokyuzunun o anki
      yaricapini gecmiyor. */
