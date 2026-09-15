@@ -83,6 +83,24 @@ const DERI_USLUP = {
   aerosol  : { pal:["#ff4d8d","#3ad1ff","#ffe14d","#8cff6b","#f5f5f7"], tohum:41 },
   deco     : { pal:["#1f1f38","#33335c","#e8c46a"] },
   kilim    : { pal:["#8f2f28","#c9702f","#2f5d52","#e8d9be","#1d0f0e"] },
+  /* ── KILIM SERISI (15 Eylul) ─────────────────────────────────────
+     Kullanicinin gonderdigi iki fotograf: telefon vitrinde, ekranda
+     kilim dokusu, diskin yerinde deseni ozetleyen yuvarlak bir
+     madalyon -- dort ayri kilim. Tek KILIM derisi zaten vardi (duz
+     baklava dokusu); istenen bunun bir SERI olmasi, her biri kendi
+     motifiyle. Alti gercek Anadolu kilim motifi secildi (ressam
+     adi degil desen adi -- SANAT ESERI serisindeki kuralin aynisi):
+     ic ice baklava tarlasi, zikzak bordur, oyma gul madalyon,
+     koc boynuzu kancasi, nazar boncugu ve gunes/yildiz patlamasi.
+     Palet ailesi kilim'le akraba (sicak kirmizi/toprak) ama her
+     motif kendi tonuna kayiyor; NAZAR lacivert/mavi -- bu motifin
+     kendi rengi, baska turlusu taninmaz. */
+  diamond  : { pal:["#8a2a24","#c9702f","#2f5d52","#f2e2c4","#1d0f0e"] },
+  chevron  : { pal:["#a3352a","#e0a83c","#1f4a45","#f0ddb8","#241210"] },
+  medallion: { pal:["#8a2420","#d4a13c","#1c2b4a","#e8ddc0","#0d1220"] },
+  ramshorn : { pal:["#6b3a20","#c77a2e","#2e4636","#e8d3a8","#241408"] },
+  nazar    : { pal:["#0f2a52","#3f9fd6","#eef3f7","#d4443c","#070d18"] },
+  sunburst : { pal:["#e8a13c","#c94f2e","#8a3a1a","#f2e0b8","#1d0d08"] },
   pop      : { pal:["#ffd400","#00b7e0","#e8007d","#111111","#ffffff"] },
   suprem   : { pal:["#111111","#d81f26","#f2f0eb"] },
   mondrian : { pal:["#d8231f","#1b57c4","#f2c200","#111111","#f7f5f0"] },
@@ -663,6 +681,90 @@ const DERI_HALKA = {
       c.closePath(); c.fill();
     }
   }  ,
+  /* ── KILIM SERISI — HALKALAR ──────────────────────────────────────
+     Disk her birinde o motifin KUCUK bir madalyonu -- fotograftaki
+     "ortasinda kendi deseninin ozeti" hissi. */
+  /* DIAMOND — ic ice baklava, eskisiyle ayni iskelet ama kendi paleti. */
+  diamond(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    for(let i = 5; i >= 0; i--){
+      c.fillStyle = [p[0], p[1], p[2], p[3]][i % 4];
+      const r = S*(0.46 - i*0.07);
+      c.beginPath();
+      c.moveTo(o, o - r); c.lineTo(o + r, o); c.lineTo(o, o + r); c.lineTo(o - r, o);
+      c.closePath(); c.fill();
+    }
+  },
+  /* CHEVRON — nested zikzak madalyon (12 kollu yildiz gibi kirilan halka). */
+  chevron(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    for(let i = 6; i >= 1; i--){
+      c.fillStyle = [p[0], p[1], p[2]][i % 3];
+      const r = S*0.062*i;
+      c.beginPath();
+      for(let k = 0; k < 12; k++){
+        const a1 = k*Math.PI/6, rr = r*(k % 2 ? 1 : 0.6);
+        const x = o + Math.cos(a1)*rr, y = o + Math.sin(a1)*rr;
+        if(k) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.closePath(); c.fill();
+    }
+  },
+  /* MEDALLION — oyma gul: petal halkasi, gobek ve cekirdek. */
+  medallion(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.fillStyle = p[0]; c.beginPath(); c.arc(o, o, S*0.46, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[2];
+    for(let i = 0; i < 16; i++){
+      const a1 = i/16*Math.PI*2;
+      c.save(); c.translate(o + Math.cos(a1)*S*0.30, o + Math.sin(a1)*S*0.30); c.rotate(a1);
+      c.beginPath(); c.ellipse(0, 0, S*0.085, S*0.042, 0, 0, Math.PI*2); c.fill();
+      c.restore();
+    }
+    c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.155, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[1]; c.beginPath(); c.arc(o, o, S*0.065, 0, Math.PI*2); c.fill();
+  },
+  /* RAMSHORN — dort kanca merkezden disari kivriliyor (koc boynuzu). */
+  ramshorn(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.fillStyle = p[0]; c.beginPath(); c.arc(o, o, S*0.46, 0, Math.PI*2); c.fill();
+    for(let i = 0; i < 4; i++){
+      c.save(); c.translate(o, o); c.rotate(i*Math.PI/2);
+      c.strokeStyle = p[2]; c.lineWidth = S*0.045; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(0, -S*0.06);
+      c.quadraticCurveTo(S*0.22, -S*0.12, S*0.20, -S*0.30);
+      c.quadraticCurveTo(S*0.18, -S*0.40, S*0.05, -S*0.38);
+      c.stroke();
+      c.restore();
+    }
+    c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.09, 0, Math.PI*2); c.fill();
+  },
+  /* NAZAR — klasik nazar boncugu: lacivert, beyaz, mavi, kara gobek. */
+  nazar(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    [[0.46, p[0]], [0.34, p[2]], [0.20, p[1]], [0.08, p[4]]].forEach(function(k){
+      c.fillStyle = k[1]; c.beginPath(); c.arc(o, o, S*k[0], 0, Math.PI*2); c.fill();
+    });
+  },
+  /* SUNBURST — gunes: on alti isin, cekirdekte sicak nokta. */
+  sunburst(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.fillStyle = p[0]; c.beginPath(); c.arc(o, o, S*0.46, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[1];
+    for(let i = 0; i < 16; i++){
+      c.save(); c.translate(o, o); c.rotate(i*Math.PI/8);
+      c.beginPath(); c.moveTo(-S*0.020, -S*0.14); c.lineTo(S*0.020, -S*0.14); c.lineTo(0, -S*0.40);
+      c.closePath(); c.fill(); c.restore();
+    }
+    c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.13, 0, Math.PI*2); c.fill();
+  },
   pop(c, S, d){
     const p = _pal(d), o = S/2;
     for(let i = 0; i < 9; i++){
@@ -1731,6 +1833,156 @@ const DERI_CIZIM = {
        gidik". Desen artik kenara kadar. */
     c.restore();
   }  ,
+  /* ══ KILIM SERISI — ARKA PLANLAR ══════════════════════════════════
+     DOGA serisiyle ayni kural: kompozisyon DISKI BILEREK kuruluyor
+     (merkez 0.50W/0.50H, yaricap ~0.39W -- bkz. yukaridaki DOGA
+     basligi). Kilimde bu, fotograftaki "kumasin ortasinda temiz bir
+     madalyon" hissi: desen kenarlara dogru dokunuyor, diskin
+     cevresinde bir HALKA acikta birakiliyor ki disk kendi kucuk
+     motifiyle (bkz. HALKA fonksiyonlari) okunsun -- iki katman
+     ust uste binip bulanmasin. */
+  /* DIAMOND — ic ice baklava tarlasi, kenarlara dogru sikilasan. */
+  diamond(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H), cx = W*0.5, cy = H*0.5, rDisk = u*0.40;
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const a = u*0.11;
+    for(let y = -a, sira = 0; y < H + a; y += a*0.75, sira++){
+      for(let x = -a; x < W + a; x += a){
+        c.fillStyle = [p[0], p[1], p[2]][(sira + Math.round(x/a)) % 3];
+        c.globalAlpha = 0.85;
+        c.beginPath();
+        c.moveTo(x, y - a*0.34); c.lineTo(x + a*0.30, y); c.lineTo(x, y + a*0.34); c.lineTo(x - a*0.30, y);
+        c.closePath(); c.fill();
+      }
+    }
+    c.globalAlpha = 1;
+    c.fillStyle = p[4];
+    c.beginPath(); c.arc(cx, cy, rDisk*1.08, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[3]; c.lineWidth = u*0.012;
+    c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
+    c.restore();
+  },
+  /* CHEVRON — yatay zikzak bantlar, oyalanmis kilim bordurunun aynisi. */
+  chevron(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H), cx = W*0.5, cy = H*0.5, rDisk = u*0.40;
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const bant = u*0.09, adim = bant*0.5;
+    for(let y = -bant, sira = 0; y < H + bant; y += bant, sira++){
+      c.fillStyle = [p[0], p[1], p[2]][sira % 3];
+      c.beginPath();
+      c.moveTo(-u*0.1, y);
+      for(let x = -u*0.1; x <= W + u*0.1; x += adim) c.lineTo(x, y + (Math.round(x/adim) % 2 ? bant*0.5 : 0));
+      for(let x = W + u*0.1; x >= -u*0.1; x -= adim) c.lineTo(x, y + bant + (Math.round(x/adim) % 2 ? bant*0.5 : 0));
+      c.closePath(); c.fill();
+    }
+    c.fillStyle = p[4];
+    c.beginPath(); c.arc(cx, cy, rDisk*1.08, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[3]; c.lineWidth = u*0.012;
+    c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
+    c.restore();
+  },
+  /* MEDALLION — seyrek benek tarlasi ve diskin cevresinde oyma dis halkasi. */
+  medallion(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H), cx = W*0.5, cy = H*0.5, rDisk = u*0.40;
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const a = u*0.10;
+    for(let y = -a, sira = 0; y < H + a; y += a*0.87, sira++){
+      for(let x = -a; x < W + a; x += a){
+        c.fillStyle = (sira + Math.round(x/a)) % 2 ? p[1] : p[0];
+        c.globalAlpha = 0.55;
+        c.beginPath(); c.arc(x, y, a*0.16, 0, Math.PI*2); c.fill();
+      }
+    }
+    c.globalAlpha = 1;
+    c.fillStyle = p[4];
+    c.beginPath(); c.arc(cx, cy, rDisk*1.16, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[2];
+    for(let i = 0; i < 28; i++){
+      const a1 = i/28*Math.PI*2;
+      c.beginPath(); c.arc(cx + Math.cos(a1)*rDisk*1.10, cy + Math.sin(a1)*rDisk*1.10, u*0.017, 0, Math.PI*2); c.fill();
+    }
+    c.strokeStyle = p[3]; c.lineWidth = u*0.010;
+    c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
+    c.restore();
+  },
+  /* RAMSHORN — ust ve alt kenarda kivrik kanca seridi, ortada seyrek benekler. */
+  ramshorn(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H), cx = W*0.5, cy = H*0.5, rDisk = u*0.40;
+    const r = _tohumlu(d.tohum);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const boynuz = (x, y, s, renk, ters)=>{
+      const yon = ters ? -1 : 1;
+      c.strokeStyle = renk; c.lineWidth = s*0.22; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(x, y + s*0.5);
+      c.quadraticCurveTo(x + yon*s*0.6, y + s*0.2, x + yon*s*0.55, y - s*0.15);
+      c.quadraticCurveTo(x + yon*s*0.50, y - s*0.42, x + yon*s*0.18, y - s*0.40);
+      c.stroke();
+    };
+    const boy = u*0.14;
+    for(let x = boy*0.6, i = 0; x < W; x += boy*1.15, i++){
+      boynuz(x, H*0.08, boy*0.55, [p[0], p[1], p[2]][i % 3], i % 2 === 0);
+      boynuz(x, H*0.96, boy*0.55, [p[0], p[1], p[2]][(i + 1) % 3], i % 2 !== 0);
+    }
+    for(let i = 0; i < 46; i++){
+      const a1 = r()*Math.PI*2, q = rDisk*1.30 + r()*(u*0.36);
+      const x = cx + Math.cos(a1)*q, y = cy + Math.sin(a1)*q*0.94;
+      if(x < 0 || x > W || y < H*0.16 || y > H*0.90) continue;
+      c.fillStyle = [p[0], p[1], p[2]][i % 3]; c.globalAlpha = 0.6;
+      c.beginPath(); c.arc(x, y, u*0.010, 0, Math.PI*2); c.fill();
+    }
+    c.globalAlpha = 1;
+    c.fillStyle = p[4];
+    c.beginPath(); c.arc(cx, cy, rDisk*1.10, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[3]; c.lineWidth = u*0.010;
+    c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
+    c.restore();
+  },
+  /* NAZAR — dagilmis nazar boncuklari, disk cevresinde acik. */
+  nazar(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H), cx = W*0.5, cy = H*0.5, rDisk = u*0.40;
+    const r = _tohumlu(d.tohum);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const goz = (x, y, s)=>{
+      c.fillStyle = p[0]; c.beginPath(); c.arc(x, y, s, 0, Math.PI*2); c.fill();
+      c.fillStyle = p[2]; c.beginPath(); c.arc(x, y, s*0.68, 0, Math.PI*2); c.fill();
+      c.fillStyle = p[1]; c.beginPath(); c.arc(x, y, s*0.36, 0, Math.PI*2); c.fill();
+      c.fillStyle = p[4]; c.beginPath(); c.arc(x, y, s*0.14, 0, Math.PI*2); c.fill();
+    };
+    for(let i = 0; i < 42; i++){
+      const x = r()*W, y = r()*H;
+      if(Math.hypot(x - cx, y - cy) < rDisk*1.18) continue;
+      goz(x, y, u*(0.018 + r()*0.028));
+    }
+    c.strokeStyle = p[1]; c.lineWidth = u*0.010;
+    c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
+    c.restore();
+  },
+  /* SUNBURST — diskten disari acilan gunes isinlari. */
+  sunburst(c, W, H, d){
+    const p = d.pal, u = Math.min(W, H), cx = W*0.5, cy = H*0.5, rDisk = u*0.40, R = Math.hypot(W, H);
+    c.save();
+    c.fillStyle = p[4]; c.fillRect(0, 0, W, H);
+    const isin = 40;
+    for(let i = 0; i < isin; i++){
+      c.fillStyle = i % 2 ? p[1] : p[0];
+      c.globalAlpha = 0.85;
+      c.beginPath(); c.moveTo(cx, cy);
+      c.arc(cx, cy, R, i/isin*Math.PI*2, (i + 0.5)/isin*Math.PI*2);
+      c.closePath(); c.fill();
+    }
+    c.globalAlpha = 1;
+    c.fillStyle = p[4];
+    c.beginPath(); c.arc(cx, cy, rDisk*1.06, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[3]; c.lineWidth = u*0.012;
+    c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
+    c.restore();
+  },
   /* POP — duz parlak alanlar, kalin siyah kontur, tram noktalari. */
   pop(c, W, H, d){
     const p = d.pal, u = Math.min(W, H), r = _tohumlu(11);

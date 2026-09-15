@@ -6279,6 +6279,29 @@
        henuz belirsiz). */
     {ad:"BAR", zem:"#0d1420", yazi:"#c7d3e6", marka:"#f0b94f", cek:"#232e3f", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"4px", panel:"#141d2c", doku:"repeating-linear-gradient(0deg,rgba(240,185,79,.16) 0 1px,rgba(0,0,0,0) 1px 13px),repeating-linear-gradient(90deg,rgba(240,185,79,.12) 0 1px,rgba(0,0,0,0) 1px 9px)", dokuOlcu:"auto", dokuSef:".5", tel:"rgba(255,255,255,.13)", luks:1},
     {ad:"UMUT", zem:"#ecdfba", yazi:"#3f3420", marka:"#8f3a1e", cek:"#d4c49a", isik:"rgba(255,250,235,.85)", golgeRenk:"rgba(90,70,30,.30)", disGolge:"rgba(90,70,30,.52)", halka:"rgba(0,0,0,.20)", font:F2, kose:"50%", panel:"#efe4c4", doku:"repeating-linear-gradient(58deg,rgba(58,122,66,.16) 0 3px,rgba(0,0,0,0) 3px 11px),repeating-linear-gradient(-58deg,rgba(58,122,66,.10) 0 2px,rgba(0,0,0,0) 2px 13px)", dokuOlcu:"auto", dokuSef:".5"},
+    /* ── KILIM SERISI (15 Eylul) ─────────────────────────────────────
+       Kullanicinin gonderdigi iki fotograf: telefon vitrinde, kilim
+       dokulu bir kaplama, diskin yerinde deseni ozetleyen yuvarlak
+       bir madalyon. Tek KILIM derisi zaten vardi (yukarida, duz
+       baklava dokusu); istenen bunun bir SERI olmasi -- "aynısında
+       seri yapsana, 6 tane". Alti gercek Anadolu kilim motifi
+       secildi, ressam degil DESEN adi (SANAT ESERI serisindeki
+       kural burada da gecerli): ic ice baklava tarlasi, zikzak
+       bordur, oyma gul madalyon, koc boynuzu kancasi, nazar boncugu,
+       gunes/yildiz patlamasi. Renkler test/birim.js "Deri kontrasti
+       olculuyor" ile dogrulandi (yazi/zem >= 4.5, marka/zem >= 3.0,
+       cekirdek zeminin tersine). Cizimler deri_cizim.js'te
+       (DERI_USLUP + DERI_HALKA + DERI_CIZIM, "KILIM SERISI"
+       basligi altinda). Sona eklendi: depolama numarasi (AYAR.deri)
+       hicbir eski derinin numarasini kaydirmasin diye tablo hep
+       append-only. Alti deri, sinir 128 -> 134 oldu (bkz. "128"
+       gecen ayar/torba satirlari, asagida). */
+    {ad:"DIAMOND",   zem:"#4a1c17", yazi:"#f2e2c4", marka:"#c9702f", cek:"#6b2a22", font:F2, kose:"2px",  cizim:"diamond"},
+    {ad:"CHEVRON",   zem:"#5c211a", yazi:"#f0ddb8", marka:"#3fada0", cek:"#7a2f24", font:F2, kose:"2px",  cizim:"chevron"},
+    {ad:"MEDALLION", zem:"#182444", yazi:"#e8ddc0", marka:"#d4a13c", cek:"#22335e", font:F2, kose:"50%", cizim:"medallion"},
+    {ad:"RAMSHORN",  zem:"#432411", yazi:"#e8d3a8", marka:"#c77a2e", cek:"#5a301a", font:F2, kose:"2px",  cizim:"ramshorn"},
+    {ad:"EVIL EYE",  zem:"#0d1f3d", yazi:"#eef3f7", marka:"#3f9fd6", cek:"#16294f", font:F1, kose:"50%", cizim:"nazar"},
+    {ad:"SUNBURST",  zem:"#3a1a10", yazi:"#f2e0b8", marka:"#e8a13c", cek:"#4c2414", font:F2, kose:"50%", cizim:"sunburst"},
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* ── EKRANDAKI SIRA (tablonun sirasi DEGIL) ──────────────────────
@@ -11099,9 +11122,10 @@
          asagisi). Sayi elle yaziliyor ve birim testi ikisinin
          esitligini kontrol ediyor. 13 Eylul: iki deri (SLATE SILK,
          JET) kaldirildi (128 -> 126), sonra BAR ve UMUT eklendi
-         (126 -> 128) -- sinir de her ikisinde elle guncellendi. */
+         (126 -> 128) -- sinir de her ikisinde elle guncellendi.
+         15 Eylul: KILIM SERISI (alti deri) eklendi, 128 -> 134. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 128) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 134) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
@@ -11136,14 +11160,14 @@
          acilis bir onceki turun KALDIGI yerden devam etsin -- yoksa
          her acilista sifirdan karistirma, bazi deriler hic cikmadan
          torba yeniden dolardi.
-         SINIR 128: satir ~10887'deki (_a.deri <= 128) ile AYNI olmak
+         SINIR 134: satir ~10887'deki (_a.deri <= 134) ile AYNI olmak
          ZORUNDA -- o satirin yorumundaki tuzak burada da gecerli.
          Birim testi ikisini de DERILER.length'e karsi sinar. */
       if(_a.deriRastgele === true) AYAR.deriRastgele = true;
       if(Array.isArray(_a.deriTorba))
-        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 128).map(n=>n|0);
+        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 134).map(n=>n|0);
       if(AYAR.deriRastgele){
-        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(128);
+        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(134);
         AYAR.deri = AYAR.deriTorba.pop();
         /* ── MERKEZ DE BERABER CIRCLE'A DONMELI (15 Eylul) ─────────
            Kullanicinin sozu: "bu sekilde acildiginda circle modu

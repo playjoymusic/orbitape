@@ -828,8 +828,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kirpiliyor (cover), boyutlar degil.
        Olculen yeni boy 26,06 KB brotli (onceki 25,85 KB'den fark: DPR
        olcekleme + oran-once-kirp mantigi). Tavan yine bugunku degil,
-       birazcik pay birakiyor. */
-    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 27 };
+       birazcik pay birakiyor.
+
+       15 EYLUL: 27 -> 28. KILIM SERISI geldi -- pj'nin gonderdigi 4
+       referans fotograftaki (kilim/desen motifli telefon kilifi,
+       ortada halkayla uyumlu madalyon) 6 yeni cizimli deri: DIAMOND,
+       CHEVRON, MEDALLION, RAMSHORN, EVIL EYE (nazar), SUNBURST.
+       Her biri DERI_USLUP'a bir palet, DERI_HALKA'ya bir disk-ikon
+       cizimi, DERI_CIZIM'e "disk bilerek kurulan" tam ekran kompozisyon
+       ekledi (DOGA serisinin disk-ankraji kuralina uyularak).
+       Olculen yeni boy 26,98 KB brotli (onceki 26,06 KB'den fark: 6
+       yeni palet + 12 yeni cizim fonksiyonu). Eski tavan (27) bu
+       olcume yalnizca ~20 bayt pay birakiyordu -- bir sonraki kucuk
+       eklemede bile kirmizi yanardi. Tavan simdi gercek payla yukseldi. */
+    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 28 };
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
     const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
