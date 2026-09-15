@@ -1105,17 +1105,22 @@
     /* Sanatci adi da kirpilmiyor: atifin ikinci yarisi bu. */
     white-space:normal;overflow-wrap:anywhere;}
   #np .np-sanatci:empty{display:none;}
-  /* ── "IDENTIFY WITH SHAZAM" (15 Eylul) ─────────────────────────
-     Yalnizca istasyon parca adi VERMEYINCE gorunur (bkz. JS:
-     _npSanatciYaz) -- .np-sanatci normalde bos kalinca zaten
-     gizleniyordu (yukaridaki :empty kurali), bu dugme geldiginde
-     div artik bos SAYILMIYOR ve gorunuyor.
+  /* ── "IDENTIFY WITH SHAZAM" (15 Eylul, 2. surum) ────────────────
+     ILK SURUM: npSanatci'nin ICINDEYDI, yalnizca sanatci adi
+     VERMEYINCE gorunuyordu. Kullanicinin sozu: "sanatci ismi
+     verende de dursun ne kaybederiz" -- artik npSanatci'den TAMAMEN
+     BAGIMSIZ, kendi satirinda, canli yayinda HER ZAMAN görünüyor
+     (sanatci adi olsun olmasin). Statik HTML'de duruyor, yeri hic
+     kaymiyor -- "basilmiyor, bir yere gitmiyor" geri bildiriminin bir
+     parcasi da buydu: dugme her parca degisiminde yeniden
+     yaratiliyordu, simdi sabit.
      LOGO YOK: gercek Shazam isaretini kopyalamiyoruz (bkz. JS'teki
      not). Marka rengine yakin mavi + kendi cizdigimiz kucuk bir
      "dinle" ikonu (iki yay + nokta) var, gercek marka gorseli yok. */
   #np .np-tani{display:inline-flex;align-items:center;gap:4px;border:none;background:none;
-    padding:2px 0;margin:-2px 0;font:inherit;color:#4fb6ff;cursor:pointer;
+    padding:2px 0;margin-top:2px;font:inherit;color:#4fb6ff;cursor:pointer;
     -webkit-tap-highlight-color:transparent;}
+  #np .np-tani[hidden]{display:none;}
   #np .np-tani svg{width:12px;height:12px;flex:none;stroke:currentColor;stroke-width:1.3;
     fill:none;stroke-linecap:round;}
   #np .np-tani circle{fill:currentColor;stroke:none;}
@@ -4552,6 +4557,21 @@
         <span class="np-kaynak" id="npKaynak"></span>
         <div class="np-sanatci" id="npSanatci"></div>
       </div>
+      <!-- ── SARKI TANIMA: KENDI SATIRI, SABIT YER (15 Eylul) ───────
+           Once npSanatci'nin ICINDE, yalnizca sanatci adi YOKSA
+           cikiyordu -- kullanicinin sozu: "sanatci ismi verende de
+           dursun ne kaybederiz." Artik npSanatci'den BAGIMSIZ,
+           ayrı bir satir: sanatci adi olsun olmasin, canli yayinda
+           HER ZAMAN ayni yerde. Statik HTML'de duruyor (dinamik
+           olusturulmuyor), tek olay dinleyicisi kurulusta baglaniyor
+           -- boylece "her parca degisiminde yeniden yaratilan dugme"
+           degil, yeri hic kaymayan sabit bir satir. Gorunurlugu
+           simdiCalan()'da item.radyo'ya gore ayarlaniyor. -->
+      <button type="button" id="npTani" class="np-tani" hidden aria-label="Identify with Shazam">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M2.4 8a5.6 5.6 0 0 1 5.6-5.6M8 2.4A5.6 5.6 0 0 1 13.6 8"/>
+          <path d="M4.6 8a3.4 3.4 0 0 1 3.4-3.4M8 4.6A3.4 3.4 0 0 1 11.4 8"/>
+          <circle cx="8" cy="8" r="1.15"/></svg><span>Shazam</span></button>
       <!-- LİSANS: CC BY ailesinde eseri kullanırken lisansı belirtmek
            lisansın kendi şartı. Kendi parçalarımızda ve canlı yayında
            boş kalır, o zaman hiç yer kaplamaz. -->
@@ -8741,38 +8761,46 @@
     if(o.radyo) return true;
     return lisansSerbest(o.lisans);
   }
-  /* ── "IDENTIFY WITH SHAZAM" (15 Eylul) ────────────────────────────
-     Kullanicinin sozu: "her sanatci ismi cikmiyor... sag alttaki
-     tusun yanina bir buton... telefondaki shazam'i acacak" + netlestirme
-     turunda "B: Sadece isim gelmeyince goster". Yaklasik %72 istasyon
-     (bkz. asagidaki "531 istasyon..." olcumu) hicbir yapili bilgi
-     yollamiyor -- o zaman .np-sanatci zaten BOS kaliyordu, simdi
-     onun yerine bu baglanti geliyor.
-     UYGULAMADAN CIKMAK CANLI YAYINI KOPARABILIR (daha once bir kez
-     denenip TAMAMEN kaldirilmisti -- bkz. asagidaki "Disariya tanima
-     baglantisi yok" kontrolu ve KALANLAR/GUNLUK): geri donunce akis
-     baska bir yerinden giriyordu. Bu yuzden:
-       - window.open KULLANILIYOR, location.href DEGIL: ORBITAPE'in
-         KENDI SEKMESI/PENCERESI HIC DEGISMIYOR, arka planda canli
-         yayin calmaya devam ediyor.
-       - Ses hic durdurulmuyor: donuste yayin zaten kaldigi (o an
-         yayinlanan) yerden geliyor, yeniden baglanma gerekmiyor.
-     LOGO KULLANILMIYOR: Anthropic kurali bir markanin logosunu
-     birebir kopyalamaya izin vermiyor (kullanicinin gonderdigi
-     pngwing.com goruntusu dahil). Marka rengine yakin mavi + kendi
-     cizdigimiz kucuk bir ikon var (bkz. CSS #np .np-tani), gercek
-     Shazam isareti yok. */
+  /* ── "IDENTIFY WITH SHAZAM" (15 Eylul, 2. surum) ──────────────────
+     ILK SURUM: yalnizca sanatci adi gelmeyince, npSanatci'nin
+     ICINDE, her parca degisiminde YENIDEN YARATILARAK gorunuyordu.
+     Kullanicinin geri bildirimi: "shazam olmamis ki bi yere gitmiyor
+     basilmiyor... yeri o zaman en altta sabit olsun, sanatci ismi
+     verende de dursun ne kaybederiz." Iki ayri sikayet, iki ayri
+     duzeltme:
+       (1) YER: artik npSanatci'den BAGIMSIZ, statik HTML'deki kendi
+           satiri (#npTani) -- her parca degisiminde yaratilip
+           atilmiyor, canli yayinda HER ZAMAN ayni yerde (bkz.
+           simdiCalan'daki hidden ayari). Sanatci adi olsun olmasin
+           ikisi de gorunur.
+       (2) CALISMIYOR: eski kod window.open ile ozel URL semasi
+           (shazam://, intent://) aciyordu. BAZI mobil tarayicilar
+           window.open'i ozel semalar icin SESSIZCE reddediyor --
+           "basilmiyor, bir yere gitmiyor" sikayeti tam bu. Ozel sema
+           gercek bir SAYFA DEGIL: location.href ile de acilsa
+           ORBITAPE'in sekmesi degismiyor -- ya isletim sistemi
+           uygulamaya GECIYOR (sayfa arka planda, yayin kesilmiyor)
+           ya da uygulama yoksa hicbir sey olmuyor (gercek bir gecis
+           hic yasanmiyor). Once denenip geri alinan sey BASKAYDI:
+           GERCEK bir https sayfasina location.href ile gitmekti
+           (App Store / Play Store) -- o hala window.open ile, cunku
+           o GERCEKTEN sekmeyi degistirir. */
   function sarkiTaniAc(e){
     try{ if(e){ e.stopPropagation(); e.preventDefault(); } }catch(_e1){ _yut(_e1); }
     try{
       const ua = navigator.userAgent || '';
       if(/Android/.test(ua)){
         const yedek = encodeURIComponent('https://play.google.com/store/apps/details?id=com.shazam.android');
-        window.open('intent://open#Intent;package=com.shazam.android;scheme=shazam;S.browser_fallback_url=' + yedek + ';end', '_blank');
+        /* location.href: intent:// ozel bir sema, sayfa degil (bkz.
+           yukaridaki yorum). window.open BAZI Android tarayicilarinda
+           bunu reddediyordu. */
+        location.href = 'intent://open#Intent;package=com.shazam.android;scheme=shazam;S.browser_fallback_url=' + yedek + ';end';
       }else if(/iP(hone|ad|od)/.test(ua)){
-        window.open('shazam://', '_blank');
+        location.href = 'shazam://';
         /* Uygulama acildiysa sayfa gizlenir (document.hidden); acilmadiysa
-           kisa bir sure sonra App Store'a yonlendiriyoruz. */
+           kisa bir sure sonra App Store'a yonlendiriyoruz -- BU GERCEK
+           bir https sayfasi, o yuzden window.open: yeni sekmede acilir,
+           ORBITAPE'inki degismez. */
         setTimeout(()=>{
           try{ if(!document.hidden) window.open('https://apps.apple.com/app/shazam-music-discovery/id284993459', '_blank'); }catch(_e2){ _yut(_e2); }
         }, 900);
@@ -8781,26 +8809,19 @@
       }
     }catch(_e3){ _yut(_e3); }
   }
+  /* npTani KURULUS SIRASINDA BIR KEZ baglaniyor (bkz. yukaridaki
+     "statik HTML" notu) -- her parca degisiminde yeniden
+     yaratilmiyor, o yuzden dinleyici de bir kez ekleniyor. */
+  try{ const _nt = document.getElementById('npTani'); if(_nt) _nt.addEventListener('click', sarkiTaniAc); }catch(e){ _yut(e); }
   /* .np-sanatci normalde duz metin (bkz. CSS :empty{display:none}).
-     Sanatci/parca bilgisi yoksa VE canli yayindaysak (arsivde her
-     kaydin adi zaten var, tanima gerekmiyor) bunun yerine tek
-     dugmelik bir baglanti yaziliyor. */
+     Shazam dugmesi artik burada degil, kendi satirinda (#npTani) --
+     bu fonksiyon yalnizca sanatci/parca metnini yaziyor. */
   function _npSanatciYaz(sanatci, radyoMu){
     try{
-      if(!sanatci && radyoMu){
-        npSanatci.innerHTML = '';
-        const b = document.createElement('button');
-        b.type = 'button'; b.id = 'npTani'; b.className = 'np-tani';
-        b.setAttribute('aria-label', 'Identify with Shazam');
-        b.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
-          + '<path d="M2.4 8a5.6 5.6 0 0 1 5.6-5.6M8 2.4A5.6 5.6 0 0 1 13.6 8"/>'
-          + '<path d="M4.6 8a3.4 3.4 0 0 1 3.4-3.4M8 4.6A3.4 3.4 0 0 1 11.4 8"/>'
-          + '<circle cx="8" cy="8" r="1.15"/></svg><span>Shazam</span>';
-        b.addEventListener('click', sarkiTaniAc);
-        npSanatci.appendChild(b);
-      }else{
-        npSanatci.textContent = sanatci;
-      }
+      npSanatci.textContent = sanatci || '';
+      /* Dugme sanatci adindan BAGIMSIZ: canli yayinda her zaman var. */
+      const nt = document.getElementById('npTani');
+      if(nt) nt.hidden = !radyoMu;
     }catch(e){ _yut(e); }
   }
   function simdiCalan(item){

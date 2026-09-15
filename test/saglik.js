@@ -1095,20 +1095,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      KOPARIYORDU -- basinca ses duruyor, geri donunce yayin baska bir
      yerinden giriyordu.
      15 EYLUL: kullanici kararini degistirdi -- "shazam yap ya. eski
-     fikirdi o silmek." Dugme GERI GELDI ama ayni riski TASIMAYACAK
-     SEKILDE: sarkiTaniAc() location.href DEGIL window.open KULLANIYOR
-     -- ORBITAPE'in kendi sekmesi/penceresi HIC DEGISMIYOR, ses arka
-     planda calmaya devam ediyor, donuste yeniden baglanma gerekmiyor.
-     Sadece parca adi VERMEYEN canli yayinlarda gorunuyor (bkz.
-     _npSanatciYaz) -- arsivde her kaydin adi zaten var.
+     fikirdi o silmek." Dugme GERI GELDI.
+     15 EYLUL (2. surum, ayni gun): ILK GERI GELISINDE sarkiTaniAc()
+     ozel URL semalarini (shazam://, intent://) window.open ile
+     aciyordu. Kullanicinin geri bildirimi: "basilmiyor, bir yere
+     gitmiyor." Sebep: bazi mobil tarayicilar window.open'i ozel
+     semalar icin SESSIZCE reddediyor. Duzeltme: ozel sema GERCEK BIR
+     SAYFA DEGIL, location.href ile de acilsa ORBITAPE'in sekmesi
+     degismiyor -- isletim sistemi ya uygulamaya GECIYOR (sayfa arka
+     planda kaliyor) ya da uygulama yoksa hicbir sey olmuyor. Riskli
+     olan (ve once denenip geri alinan) GERCEK bir https sayfasina
+     location.href ile gitmekti (App Store/Play Store/shazam.com) --
+     o hala window.open ile aciliyor, cunku o GERCEKTEN sekmeyi
+     degistirir.
+     Artik sanatci adi olsun olmasin, canli yayinda HER ZAMAN
+     gorunuyor (bkz. _npSanatciYaz) -- kullanicinin sozu: "sanatci
+     ismi verende de dursun ne kaybederiz."
      LOGO KOPYALANMADI: kullanici pngwing.com'dan indirdigi gercek
      Shazam logosunu istedi ama bu Anthropic kuraliyla cakisiyor
      (bir markanin logosunu birebir kopyalamak yasak). Marka rengine
      yakin mavi + kendi cizdigimiz kucuk bir ikon var, gercek marka
-     gorseli yok.
-     BU KONTROL NOBETTE KALIYOR, ama artik YOKLUGU degil DOGRU
-     SEKLI ariyor: location.href ile acilirsa, ya da gercek logo
-     goruntusu (img/data-uri) eklenirse burasi kirmizi yanar. */
+     gorseli yok. */
   {
     const kaynak = fs.readFileSync('index.html','utf8');
     /* HTML YORUMLARI DA CIKARILIYOR: aciklama cumleleri icinde gecen
@@ -1116,10 +1123,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        diye aranan sey hep KODUN KENDISI. */
     const kod = kaynak.replace(/\/\*[\s\S]*?\*\//g, '')
                       .replace(/<!--[\s\S]*?-->/g, '');
-    K('Sarki tanima disari YENI SEKME/PENCEREYLE aciliyor (location.href degil)',
-       /function sarkiTaniAc/.test(kod) && /window\.open\(/.test(kod)
-       && !/location\.href\s*=\s*['"](shazam:|intent:)/i.test(kod),
-       'ORBITAPE sekmesi degismiyor, canli yayin arka planda calmaya devam ediyor');
+    K('Sarki tanima OZEL SEMAYI location.href ile aciyor (shazam:/intent:)',
+       /function sarkiTaniAc/.test(kod)
+       && /location\.href\s*=\s*'shazam:\/\/'/.test(kod)
+       && /location\.href\s*=\s*'intent:\/\//.test(kod),
+       'ozel sema sayfa degil -- window.open bazi tarayicilarda bunu reddediyordu');
+    K('Sarki tanima GERCEK https sayfalarina window.open ile gidiyor (sekme degismiyor)',
+       /window\.open\(['"]https:\/\/apps\.apple\.com/.test(kod)
+       && /window\.open\(['"]https:\/\/www\.shazam\.com/.test(kod)
+       && !/location\.href\s*=\s*['"]https?:\/\//.test(kod),
+       'App Store yedegi ve masaustu yolu ikisi de window.open, hicbir yerde location.href = http(s)');
+    K('Shazam dugmesi sanatci adindan bagimsiz (her zaman gorunur)',
+       /function _npSanatciYaz/.test(kod)
+       && /npSanatci\.textContent\s*=\s*sanatci/.test(kod)
+       && /nt\.hidden\s*=\s*!radyoMu/.test(kod),
+       'sanatci adi olsun olmasin, canli yayinda goruniyor');
     K('Gercek Shazam logosu kopyalanmadi (marka gorseli yok)',
        !/<img[^>]*shazam/i.test(kod) && !/data:image\/[^"']*shazam/i.test(kod),
        'yalnizca kendi cizdigimiz ikon + "Shazam" yazisi var, marka gorseli yok');
