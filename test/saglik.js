@@ -1006,8 +1006,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        hata sayisindan BAGIMSIZ kapali basliyor -- ilk denemede
        yalnizca hata sayisina baglanmisti ama kullanicinin kendi
        cihazinda 7 hata birikince satir yine ekrandaydi, "hala
-       duruyor" dedi). Hepsi kod + yorum, yeni bir dosya yok. */
-    K('Ham boy < 1266 KB', dosyaBoy < 1266*1024,
+       duruyor" dedi). Hepsi kod + yorum, yeni bir dosya yok.
+       15 EYLUL (Shazam, 3. surum, sonra TAMAMEN KALDIRILDI): 1263 ->
+       1267,7 -> 1259,6. Once App Store yedegini gercek bir <a>'ya
+       tasiyan bir duzeltme geldi (Safari'nin setTimeout icindeki
+       window.open'i engellemesi), sonra kullanicinin son karari:
+       "shazamı koyma sil, grafiksel olarak da olmadı zaten." Butun
+       ozellik (dugme, yedek link, sarkiTaniAc, gorsel.js'teki
+       z-index istisnasi) kaldirildi -- 1263'un de altina indi. */
+    K('Ham boy < 1263 KB', dosyaBoy < 1263*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -1088,59 +1095,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'yeni kaynakta yeniden yaziliyor');
   }
 
-  /* ── "IDENTIFY WITH SHAZAM": BIR KEZ KALDIRILDI, SONRA GERI GELDI ──
-     ONCEKI KARAR (bu yorumun eski hali): dugme kaldirilmisti --
-     "shazami cikar su anlik, icine entegre et sarkiyi bulan sistem."
-     Gerekce: uygulamadan cikip Shazam'i acmak canli yayini
-     KOPARIYORDU -- basinca ses duruyor, geri donunce yayin baska bir
-     yerinden giriyordu.
-     15 EYLUL: kullanici kararini degistirdi -- "shazam yap ya. eski
-     fikirdi o silmek." Dugme GERI GELDI.
-     15 EYLUL (2. surum, ayni gun): ILK GERI GELISINDE sarkiTaniAc()
-     ozel URL semalarini (shazam://, intent://) window.open ile
-     aciyordu. Kullanicinin geri bildirimi: "basilmiyor, bir yere
-     gitmiyor." Sebep: bazi mobil tarayicilar window.open'i ozel
-     semalar icin SESSIZCE reddediyor. Duzeltme: ozel sema GERCEK BIR
-     SAYFA DEGIL, location.href ile de acilsa ORBITAPE'in sekmesi
-     degismiyor -- isletim sistemi ya uygulamaya GECIYOR (sayfa arka
-     planda kaliyor) ya da uygulama yoksa hicbir sey olmuyor. Riskli
-     olan (ve once denenip geri alinan) GERCEK bir https sayfasina
-     location.href ile gitmekti (App Store/Play Store/shazam.com) --
-     o hala window.open ile aciliyor, cunku o GERCEKTEN sekmeyi
-     degistirir.
-     Artik sanatci adi olsun olmasin, canli yayinda HER ZAMAN
-     gorunuyor (bkz. _npSanatciYaz) -- kullanicinin sozu: "sanatci
-     ismi verende de dursun ne kaybederiz."
-     LOGO KOPYALANMADI: kullanici pngwing.com'dan indirdigi gercek
-     Shazam logosunu istedi ama bu Anthropic kuraliyla cakisiyor
-     (bir markanin logosunu birebir kopyalamak yasak). Marka rengine
-     yakin mavi + kendi cizdigimiz kucuk bir ikon var, gercek marka
-     gorseli yok. */
+  /* ── "IDENTIFY WITH SHAZAM" -- KALDIRILDI (15 Eylul, 3. kez) ──────
+     Uc kez elden gecti -- eklendi, kaldirildi (yayindan kopma),
+     tekrar eklendi, iki kez duzeltildi (window.open reddi, sonra
+     Safari'nin setTimeout icindeki window.open'i engellemesi) -- ve
+     kullanicinin son karari sil oldu: "grafiksel olarak da olmadi
+     zaten." #npTani/#npTaniYedek'e ve sarkiTaniAc()'a bakan butun
+     kontroller kaldirildi (bkz. index.html'deki ayni basliktaki not). */
   {
-    const kaynak = fs.readFileSync('index.html','utf8');
-    /* HTML YORUMLARI DA CIKARILIYOR: aciklama cumleleri icinde gecen
-       "shazam" kelimesi testi yanlis dusurmesin/yanlis gecirmesin
-       diye aranan sey hep KODUN KENDISI. */
-    const kod = kaynak.replace(/\/\*[\s\S]*?\*\//g, '')
-                      .replace(/<!--[\s\S]*?-->/g, '');
-    K('Sarki tanima OZEL SEMAYI location.href ile aciyor (shazam:/intent:)',
-       /function sarkiTaniAc/.test(kod)
-       && /location\.href\s*=\s*'shazam:\/\/'/.test(kod)
-       && /location\.href\s*=\s*'intent:\/\//.test(kod),
-       'ozel sema sayfa degil -- window.open bazi tarayicilarda bunu reddediyordu');
-    K('Sarki tanima GERCEK https sayfalarina window.open ile gidiyor (sekme degismiyor)',
-       /window\.open\(['"]https:\/\/apps\.apple\.com/.test(kod)
-       && /window\.open\(['"]https:\/\/www\.shazam\.com/.test(kod)
-       && !/location\.href\s*=\s*['"]https?:\/\//.test(kod),
-       'App Store yedegi ve masaustu yolu ikisi de window.open, hicbir yerde location.href = http(s)');
-    K('Shazam dugmesi sanatci adindan bagimsiz (her zaman gorunur)',
-       /function _npSanatciYaz/.test(kod)
-       && /npSanatci\.textContent\s*=\s*sanatci/.test(kod)
-       && /nt\.hidden\s*=\s*!radyoMu/.test(kod),
-       'sanatci adi olsun olmasin, canli yayinda goruniyor');
-    K('Gercek Shazam logosu kopyalanmadi (marka gorseli yok)',
-       !/<img[^>]*shazam/i.test(kod) && !/data:image\/[^"']*shazam/i.test(kod),
-       'yalnizca kendi cizdigimiz ikon + "Shazam" yazisi var, marka gorseli yok');
 
   /* ══ SU AN NE CALIYOR ═════════════════════════════════════════════
      Shazam dugmesinin yerine gelen sey. Kaynak MIKROFON DEGIL,
@@ -1360,13 +1322,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Safety formundaki "hicbir veri toplanmiyor" cevabinin teknik
      karsiligi: ne mikrofon aciliyor ne de ses bir tanima servisine
      yollaniyor. Bu kontrol o cevabin bekcisi.
-     15 EYLUL: "shazam" kelimesi artik kodda GECIYOR (sarkiTaniAc --
-     bkz. yukaridaki "IDENTIFY WITH SHAZAM" kontrolu) ama TEK YONLU:
-     kullaniciyi kendi telefonundaki Shazam'a yonlendiriyor, SES
-     YOLLAMIYOR. Bu yuzden asil aranan sey daralti: parcaAl'in
-     (otomatik metadata cekme) govdesinde "shazam" GECMEMELI, ve
-     getUserMedia/audd/acrcloud HICBIR YERDE gecmemeli -- mikrofon
-     hala hic acilmiyor. */
+     15 EYLUL: "Identify with Shazam" ozelligi tamamen kaldirildi
+     (bkz. index.html'deki not) -- "shazam" kelimesi kodda artik hic
+     gecmiyor. Asil aranan sey degismedi: parcaAl'in (otomatik
+     metadata cekme) govdesinde getUserMedia/audd/acrcloud HICBIR
+     YERDE gecmemeli -- mikrofon hala hic acilmiyor. */
   K('Parca adi icin mikrofon ya da tanima servisi kullanilmiyor', await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
       const kod = k.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
@@ -1376,9 +1336,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return i0 > 0
         && !/getUserMedia/.test(kod)
         && !/audd|acrcloud/i.test(kod)
-        && !/shazam/i.test(govde)
+        && !/shazam/i.test(kod)
         && /fetchZA\(k\.a/.test(govde);
-    }), 'yalnizca istasyonun acik adresi soruluyor; Shazam varsa da yalniz tek yonlu disari baglanti (window.open)');
+    }), 'yalnizca istasyonun acik adresi soruluyor; "shazam" kelimesi kodda hic yok');
   /* SADECE CANLI YAYIN. Arsiv kayitlarinda parcanin adi zaten
      elimizde; orada sormak hem gereksiz hem de yanlis sonuc verir. */
   K('Parca sorgusu yalnizca canli yayinda', await pg.evaluate(async ()=>{
