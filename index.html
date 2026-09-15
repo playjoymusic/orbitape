@@ -14100,7 +14100,7 @@
          sorun baglanti degil -- arsiv sunucusu. Yanlis metafor
          gostermek yanlis sebep gostermekten kotudur (bkz. yukaridaki
          "panel yeniden kullaniliyor ama METIN DEGISIYOR" notu). */
-      try{ const sg = el.querySelector('.ay-sinyal'), al = el.querySelector('.ay-alt');
+      try{ const sg = /** @type {any} */ (el.querySelector('.ay-sinyal')), al = /** @type {any} */ (el.querySelector('.ay-alt'));
            if(sg) sg.hidden = true; if(al) al.hidden = true; }catch(e){ _yut(e); }
       el.classList.add('on'); el.setAttribute('aria-hidden','false');
       try{ bekle.classList.remove('on'); }catch(_){ _yut(_); }
@@ -14123,7 +14123,7 @@
         if(not) not.innerHTML   = Ym('ORBITAPE streams from the internet.<br>'
                                 + 'It resumes by itself when you are back online.');
         /* SINYAL/ALT geri acik: gercek "ag yok" durumuna donuluyor. */
-        try{ const sg = el.querySelector('.ay-sinyal'), al = el.querySelector('.ay-alt');
+        try{ const sg = /** @type {any} */ (el.querySelector('.ay-sinyal')), al = /** @type {any} */ (el.querySelector('.ay-alt'));
              if(sg) sg.hidden = false; if(al) al.hidden = false; }catch(e){ _yut(e); }
       }
     }catch(e){ _yut(e); }
