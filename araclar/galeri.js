@@ -31,12 +31,37 @@ const TON   = fs.readFileSync(path.join(KOK, 'test', 'ton.wav'));
    Play telefon karelerinin yaninda tablet kareleri de istiyor ve
    depoda tek bir tablet olcusu yoktu. Ayni sahneler, ayni betik --
    degisen yalnizca gorunum alani ve piksel yogunlugu:
-     telefon   360x640  x3  -> 1080x1920
-     tablet7   600x960  x2  -> 1200x1920
-     tablet10  800x1280 x2  -> 1600x2560
-   800 piksel uygulamanin genis kolon esigini (700) asiyor, yani
-   tablet karesi tablet yerlesimini gosteriyor -- kirpilmis bir
-   telefon degil.
+     telefon   405x720   x8/3 -> 1080x1920
+     tablet7   1200x1920 x1   -> 1200x1920
+     tablet10  1600x2560 x1   -> 1600x2560
+
+   15 EYLUL DUZELTME -- ESKI OLCU YANLIS SEYI GOSTERIYORDU:
+   burada onceden "tablet7 600x960, tablet10 800x1280" yaziyordu ve
+   yorum "800 piksel genis kolon esigini (700) asiyor" diyordu. Olcu
+   YANLISTI: index.html'deki gercek kural IKI kosul (satir ~245):
+     @media (min-width:820px) and (min-height:700px)
+   700 yalnizca YUKSEKLIK esigi; GENISLIK esigi 820. 600 ve 800
+   ikisi de 820'nin ALTINDA, yani bu iki olcude uygulama hic tablet
+   duzenine gecmiyordu -- magazaya gidecek "tablet" kareleri aslinda
+   BUYUTULMUS TELEFON goruntusuydu, gercekte tablette gorunen
+   ortalanmis kolon degil. Mağaza tarafinin "gercek bir tablette hic
+   gorulmedi" notu bu yuzden hakliydi; sorun yalnizca dogrulama
+   eksikligi degil, olcunun kendisiydi.
+
+   ILK DUZELTME DENEMESI DE YANLISTI: CSS genisligini dogrudan
+   1200/1600'e esitleyip dsf:1 yapmak esigi asiyordu ama gercekci
+   degildi -- hicbir gercek tablet CSS'te 1200-1600px genisliginde
+   degil, ve o kadar genis bir govdede disk 560px tavaninda kalinca
+   ekranin yarisindan fazlasi bos siyah kaliyordu (goruntulenip
+   yakalandi). Duzeltme: test/cihaz.js'te ZATEN olculu iki gercek
+   cihaz genisligi kullanildi --
+     tablet7  (768x1024, 820 ALTINDA -- gercek 7" de coguniukla
+               boyle: telefon duzeni, ama daha genis/kaliteli govde)
+     tablet10 (1024x1366, 820 USTUNDE -- cihaz.js'in dogruladigi
+               GERCEK tablet duzeni, ortalanmis kolon)
+   Ikisi de zaten dokunma/tasma testinden gecmis olculer; piksel
+   yogunlugu (dsf) yukseltilerek Play'in istedigi cozunurluge
+   cikartildi, CSS genisligi degismedi.
      GALERI_OLCU=tablet7 node araclar/galeri.js
    ── MAGAZA SETI ───────────────────────────────────────────────
    Play telefon basina en fazla 8 kare aliyor ve galeride 12 kare
@@ -56,9 +81,9 @@ const OLCU_TABLO = {
      540 de denendi: yiginma yok ama disk 380px tavaninda kalinca
      1080'lik karede kucuk duruyordu. 405'te disk 84vw = 340 ve
      kareyi dolduruyor; dsf 8/3 ile cikti yine tam 1080x1920. */
-  telefon:  { w:405, h:720,  dsf:8/3, ek:'' },
-  tablet7:  { w:600, h:960,  dsf:2, ek:'-tablet7' },
-  tablet10: { w:800, h:1280, dsf:2, ek:'-tablet10' }
+  telefon:  { w:405,  h:720,  dsf:8/3, ek:'' },
+  tablet7:  { w:768,  h:1024, dsf:1.5, ek:'-tablet7' },
+  tablet10: { w:1024, h:1366, dsf:2,   ek:'-tablet10' }
 };
 const OLCU_AD = process.env.GALERI_OLCU || 'telefon';
 const OLCU = OLCU_TABLO[OLCU_AD] || OLCU_TABLO.telefon;

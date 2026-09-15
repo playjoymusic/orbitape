@@ -58,19 +58,40 @@ Ayrıntı: `magaza/KAPALI_TEST.md`
 
 ## 4. Tablet
 
-- [ ] Tablet ekran görüntüsü **yükleme** (7" ve 10" yuvaları boş kalsın)
+- [x] **2026-09-15 — GÖRSELLER ÜRETİLDİ, YÜKLEME pj'de.** Eski gerekçe
+      "arayüz telefonun gerilmiş hali" idi; 11 Eylül'de gerçek bir
+      tablet düzeni yazıldı (`@media (min-width:820px) and
+      (min-height:700px)`, sütun `--kx:max(16px,(100vw-680px)/2)`,
+      disk tavanı 380 → 560 px) ve cihaz takımına 1024×1366 eklendi.
+- [ ] Play Console'a **yükleme** — dosyalar hazır, bu adımı pj yapar
+      (mağaza erişimi burada yok).
 
-**GEREKÇE 11 EYLÜL'DE DEĞİŞTİ — karar aynı kaldı.** Eski gerekçe
-"arayüz telefonun gerilmiş hali" idi; artık değil: 11 Eylül'de
-gerçek bir tablet düzeni yazıldı (`@media (min-width:820px) and
-(min-height:700px)`, sütun `--kx:max(16px,(100vw-680px)/2)`, disk
-tavanı 380 → 560 px) ve cihaz takımına 1024×1366 eklendi.
+**15 Eylül'de bulunan asıl sorun:** ekran görüntülerini üreten
+`araclar/galeri.js` tablet kareleri 600 ve 800 piksel genişlikte
+çekiyordu — ikisi de yukarıdaki `min-width:820px` eşiğinin ALTINDA,
+yani "tablet" diye üretilen kareler aslında hiç tablet düzenine
+geçmiyordu, büyütülmüş telefon görüntüsüydü. Bu yüzden mağazaya
+yüklenecek görsel gerçek tablet yerleşimini hiçbir zaman göstermiyordu
+— "gerçek bir tablette görülmedi" endişesi haklıydı, ama sorun
+donanımda değil ölçüdeydi.
 
-Yeni gerekçe: **düzen var ama hiçbir gerçek tablette görülmedi.**
-Play'de "tablet desteğini kapat" diye bir anahtar yok; belirleyen şey
-ekran görüntüleridir. 7"/10" yuvalarını boş bırakırsan Play uygulamayı
-tablet kullanıcılarına önermez ve tablet kalite kontrollerine sokmaz.
-Lansmandan sonra bir tablette bakılıp görseller eklenecek.
+Düzeltme: `test/cihaz.js`'in zaten dokunma/taşma testinden geçirdiği
+iki gerçek genişlik kullanıldı — 768px (eşiğin altı, telefon düzeni,
+çoğu gerçek 7" tablet de zaten böyle) ve 1024px (eşiğin üstü, gerçek
+tablet düzeni). Sekizer kare her iki klasörde yeniden üretildi ve
+gözle kontrol edildi (Playwright/Chromium, gerçek cihaz değil — bkz.
+`test/cihaz.js` başındaki "NE ÖLÇMÜYOR" notu): üst üste binme yok,
+disk ortalı kolon içinde. Tek gözlem: 1024×1366'da (10" seti) disk
+560px tavanında kaldığı için ekranın üst/alt kısmında boşluk kalıyor
+— bu bir kırılma değil, bugünkü disk-boyutu tavanının bir sonucu;
+istenirse ayrı bir konu olarak konuşulabilir.
+
+Dosyalar: `magaza/play-tablet7/` (1152×1536) ve
+`magaza/play-tablet10/` (2048×2732), ikisi de Play'in 7"/10" yükleme
+kurallarının içinde (320–3840 px, 9:16–16:9 arası). Play'de "tablet
+desteğini kapat" diye bir anahtar yok; belirleyen şey ekran
+görüntüleridir — bu iki yuva doluncaya kadar Play uygulamayı tablet
+kullanıcılarına önermez ve tablet kalite kontrollerine sokmaz.
 
 ---
 

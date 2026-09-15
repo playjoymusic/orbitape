@@ -209,8 +209,20 @@ betikten cikiyor -- elle cizilen hicbir sey yok.
 | Uygulama simgesi | `magaza/play-icon-512.png` | 512x512, **32 bit (alfa kanalli)** |
 | One cikan gorsel | `magaza/one-cikan-1024x500.png` | 1024x500 |
 | Telefon (8 adet) | `magaza/play/play-1..8-*.png` | 1080x1920 |
-| 7" tablet (8 adet) | `magaza/play-tablet7/` | 1200x1920 |
-| 10" tablet (8 adet) | `magaza/play-tablet10/` | 1600x2560 |
+| 7" tablet (8 adet) | `magaza/play-tablet7/` | 1152x1536 |
+| 10" tablet (8 adet) | `magaza/play-tablet10/` | 2048x2732 |
+
+**15 Eylul -- tablet olculeri duzeltildi.** Burada onceden 1200x1920
+/ 1600x2560 yaziyordu ve `araclar/galeri.js` bu ikisini CSS genisligi
+600 / 800 piksellik bir gorunum alanindan uretiyordu. index.html'deki
+gercek tablet kurali `min-width:820px` -- 600 ve 800 ikisi de bunun
+ALTINDA, yani o kareler hic tablet yerlesimine gecmiyordu, sadece
+buyutulmus telefon goruntusuydu. Duzeltme `test/cihaz.js`'in zaten
+dogruladigi iki gercek genislik kullaniyor (768 -> telefon yerlesimi,
+esigin altinda; 1024 -> gercek tablet yerlesimi, esigin ustunde),
+yalnizca piksel yogunlugu Play'in istedigi cozunurluge cikartiyor.
+Cikti olculeri bu yuzden degisti; detay `araclar/galeri.js` basindaki
+"15 EYLUL DUZELTME" notunda.
 
 **Neden ayri bir klasor:** `magaza/galeri/` 12 kare tutuyor ama Play
 telefon basina en fazla 8 aliyor. Secim konsolda degil BETIKTE
