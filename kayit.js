@@ -1631,7 +1631,23 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     try{
       const ta = (TEMA[gorNo] || TEMA.lib).ana;
       const nebEl = document.querySelector('#mark .neb');
-      const nb = kk(nebEl);
+      /* TAZE ISTENIYOR (15 Eylul): kk()'nin onbellegi bir olcumu 7 kare
+         boyunca gecerli sayiyor -- disk gibi HER KAREDE var olan ama
+         yalnizca KONUMU degisen elemanlar icin dogru. Nebula ve uydular
+         ise ORBITAPE (mood) kapatilinca TAMAMEN KAYBOLUYOR (#mark,
+         #uydular{display:none}) -- yani onlar icin degisen konum degil,
+         VAR OLUP OLMAMA. Kullanicinin sozu: "ilk RADIOTAPE'e girdim,
+         hic ORBITAPE'e gecmezsem olmuyor; ORBITAPE'e gidip geri gelince
+         oluyor." Olculdu: ORBITAPE'teyken foto cekilince nebulanin kutusu
+         onbellege yaziliyor; hemen ardindan RADIOTAPE'e donup (nebula
+         artik 0x0, ekranda yok) ikinci fotograf cekilince kk() taze
+         istemedigi icin 7 kare once yazilan ESKI kutuyu geri veriyordu
+         ve nebula, artik ekranda olmadigi halde fotografa cizilmeye
+         devam ediyordu (olcum: eski kutuden okunan piksel
+         [40,102,107,255] -- zemin degil, nebulanin kendi rengi).
+         'taze:true' ile HER karede gercek olcum isteniyor: eleman o an
+         gercekten 0x0 ise kk() zaten null donuyor, cizim atlaniyor. */
+      const nb = kk(nebEl, true);
       if(nb){
         const nr = Math.min(nb.w, nb.h)/2;
         /* Ekrandaki renk dönüşü kayda da girsin: nebulanın o anki
@@ -1661,7 +1677,10 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       const sonuk = uyduKap && uyduKap.classList.contains('sonuk');
       UYDULAR.forEach(u=>{
         const d = uyduDug && uyduDug[u.fx]; if(!d) return;
-        const nk = kk(d.querySelector('.nk')); if(!nk) return;
+        /* Ayni gerekce nebuladaki gibi: uydular da ORBITAPE kapaninca
+           tumden kayboluyor, taze istenmezse eski konumlari yapisip
+           kalabiliyor. */
+        const nk = kk(d.querySelector('.nk'), true); if(!nk) return;
         const rr = Math.min(nk.w, nk.h)/2;
         const gk = GOK[u.gk]; if(!gk) return;
         if(!(rr > 0)) return;

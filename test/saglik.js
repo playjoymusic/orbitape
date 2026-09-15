@@ -11264,6 +11264,74 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       !!kamPiksel.kamAcikMi && !!kamPiksel.videoHazir && (kamPiksel.fark||0) > 20,
       kamPiksel.hata || ('kapali=' + JSON.stringify(kamPiksel.kapaliRenk)
       + ' acik=' + JSON.stringify(kamPiksel.acikRenk) + ' fark=' + kamPiksel.fark));
+    /* ── ORBITAPE'TEN DONUNCE NEBULA/UYDULAR FOTOGRAFA YAPISMIYOR (15 Eylul) ──
+       Kullanicinin sozu: "ilk RADIOTAPE'e girdim, hic ORBITAPE'e
+       gecmezsem olmuyor; ORBITAPE'e gidip geri gelince oluyor." --
+       ekran goruntusunde sol ustte gezegen/ay/saat/palet simgeleri
+       ust uste yigilmis cikiyordu, RADIOTAPE'te CANLI EKRANDA o alan
+       BOS (bkz. index.html: "Radyo tarafinda sol ust BOS: nebula ve
+       gezegenler yalnizca arsivde var").
+       SEBEP: kk() olcum onbellegi bir konumu 7 kare boyunca gecerli
+       sayiyor -- diskin NEFES alirken konumu degistigi ama HER ZAMAN
+       var oldugu durum icin dogru bir kisayol. Nebula ve uydular ise
+       ORBITAPE (mood) kapaninca TAMAMEN KAYBOLUYOR (#mark, #uydular
+       display:none) -- yani degisen konum degil, VAR OLUP OLMAMA.
+       ORBITAPE'teyken foto cekilince nebulanin kutusu onbellege
+       yaziliyordu; RADIOTAPE'e donup (nebula artik yok) hemen ikinci
+       fotograf cekilince kk() taze istemedigi icin ESKI kutuyu geri
+       veriyor, nebula ekranda olmadigi halde fotografa cizilmeye
+       devam ediyordu.
+       OLCUM: ayni adimlar tekrarlandi. Duzeltmeden ONCE, RADIOTAPE'e
+       donup cekilen ikinci fotografta eski nebula konumundaki piksel
+       zeminden [40,102,107,255] kadar sapiyordu (nebulanin kendi
+       rengi). Duzeltmeden SONRA (kk(nebEl,true) -- taze istendi) ayni
+       piksel zeminle ayni cikiyor ([1,1,2,255], sapma ~0). */
+    const gezegenSizinti = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        const eskiMood = !!AYAR.mood;
+        AYAR.mood = true; moodUygula(); await bek(400);
+        const nebEl = document.querySelector('#mark .neb');
+        const r1 = nebEl ? nebEl.getBoundingClientRect() : null;
+        c.nebVarMoodIken = !!(r1 && r1.width && r1.height);
+        kayitTuvalKur();
+        fotoKaresi();                 /* nebulanin konumu onbellege yaziliyor */
+        AYAR.mood = false; moodUygula(); await bek(400);
+        const r2 = nebEl ? nebEl.getBoundingClientRect() : null;
+        c.nebYokRadyodayken = !(r2 && (r2.width || r2.height));
+        fotoKaresi();                 /* asil sinanan kare: sizinti burada olurdu */
+        let piksel = null;
+        if(r1 && r1.width){
+          const ox = Math.round((r1.left + r1.width/2) * KAYIT_K);
+          const oy = Math.round((r1.top + r1.height/2) * KAYIT_K);
+          if(ox >= 0 && oy >= 0 && ox < kayitCtx.canvas.width && oy < kayitCtx.canvas.height)
+            piksel = Array.from(kayitCtx.getImageData(ox, oy, 1, 1).data);
+        }
+        /* Zemin karsilastirmasi: tuvalin ayni satirinda, nebuladan uzak
+           bir nokta (sag kenara yakin) -- "duz zemin" ne renk, ona bakiyor. */
+        let zemin = null;
+        if(r1 && r1.width){
+          const zx = Math.min(kayitCtx.canvas.width - 2, Math.round((r1.left + r1.width/2) * KAYIT_K) + Math.round(KAYIT_EN*0.35));
+          const zy = Math.round((r1.top + r1.height/2) * KAYIT_K);
+          if(zx >= 0 && zy >= 0 && zy < kayitCtx.canvas.height)
+            zemin = Array.from(kayitCtx.getImageData(zx, zy, 1, 1).data);
+        }
+        AYAR.mood = eskiMood; moodUygula(); await bek(300);
+        c.piksel = piksel; c.zemin = zemin;
+        if(piksel && zemin){
+          let fark = 0;
+          for(let i = 0; i < 3; i++) fark += Math.abs(piksel[i] - zemin[i]);
+          c.fark = fark;
+        }
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('ORBITAPE\'ten donunce nebula/uydular fotografa yapismiyor',
+      !!gezegenSizinti.nebVarMoodIken && !!gezegenSizinti.nebYokRadyodayken
+      && typeof gezegenSizinti.fark === 'number' && gezegenSizinti.fark < 20,
+      gezegenSizinti.hata || ('eski nebula konumu=' + JSON.stringify(gezegenSizinti.piksel)
+      + ' zemin=' + JSON.stringify(gezegenSizinti.zemin) + ' fark=' + gezegenSizinti.fark));
     K('Deri acikken fotograf ekranin zeminini ve diskini tasiyor',
       kotu.length === 0 && (deriFoto || []).length === 2,
       kotu.length ? kotu.join(', ') : not.join(' | '));
