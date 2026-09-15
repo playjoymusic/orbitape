@@ -981,8 +981,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        0,30%'a genisletildi (kullanicinin sozu: "bilgisayarda duzelt").
        Govdeye ya da cizgi kalinligina dokunulmadi, yalnizca kenar
        yumusatma araligi ve onu anlatan olcum yorumlari eklendi. Ham
-       boy 1244,08 KB. */
-    K('Ham boy < 1248 KB', dosyaBoy < 1248*1024,
+       boy 1244,08 KB.
+       15 EYLUL: 1248 -> 1252. /olcu govdesine durum ozeti (d) ve
+       farkli hata sayisi (u) eklendi -- _olcumDurum() fonksiyonu ve
+       neden/ne-zaman-ne-olctu yorumlari. Ekrana giden hicbir sey
+       degismedi, yalnizca gonullu tanilama kanali guclendi. Ham boy
+       1248,93 KB. */
+    K('Ham boy < 1252 KB', dosyaBoy < 1252*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -8451,10 +8456,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      yoktu (yalnizca karisik calma, favGec); simdi favori.js bunu acan
      bir liste. Olculen sey kullanicinin asil sikayeti: radyo favorisi
      secilince AKTIF_AILE (cark/gostergenin okudugu deger) BASKA bir
-     aileden favorinin KENDI grubuna GERCEKTEN gidiyor mu. */
+     aileden favorinin KENDI grubuna GERCEKTEN gidiyor mu.
+
+     15 EYLUL -- SABIT BEKLEME KALDIRILDI: bu blok GitHub'in kendi
+     makinesinde (CI) rastgele kirmizi yaniyordu ("849/853, favori
+     testleri dustu") ama YEREL DEĞİL -- kanit: ayni commit'in IKI
+     ayri CI kosusu (Saglik kontrolu / Yayin) FARKLI sonuc verdi, bu
+     da testin kararsiz (flaky) oldugunu gosterir, kodun bozuk oldugunu
+     degil. Sebep: cal()/favDegis()/tiklama sonrasi durumun GERCEKTEN
+     oturdugunu beklemek yerine sabit bir sure (bek(60..150)) sayiliyordu
+     -- CI'in yavas bir aninda bu sureler yetmiyordu. Asagida sabit
+     sureler yerine GERCEK KOSULU bekleyen bekKosul() var; basarili
+     durumda ESKISI KADAR HIZLI (kosul zaten dogruysa hemen doner),
+     yavas durumda ise 1.5-2 sn'ye kadar sabirli. */
   {
     const fl = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const bekKosul = async (kosul, tavanMs)=>{
+        const adim = 20, devir = Math.ceil((tavanMs||1500) / adim);
+        for(let i=0;i<devir;i++){
+          if(kosul()) return true;
+          await bek(adim);
+        }
+        return kosul();
+      };
       const c = {};
       const eskiMod = mod, eskiAktifMod = AKTIF_MOD, eskiAile = AKTIF_AILE;
       try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
@@ -8462,17 +8487,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       /* Baslangicta BASKA bir ailedeyiz: aksi halde gecis "yanlislikla"
          dogru gorunebilirdi. */
       AKTIF_AILE = 'JAZZ'; mod = 'lib'; AKTIF_MOD = null;
-      cal({mp3:'flv1', ad:'Favori Radyo', radyo:true, grup:'ELECTRONIC'}); await bek(80);
-      favDegis(); await bek(60);
-      cal({mp3:'flv2', ad:'Favori Arsiv', sanatci:'Sanatci X', etiket:'netlabel', lisans:SERBEST}); await bek(80);
-      favDegis(); await bek(60);
+      cal({mp3:'flv1', ad:'Favori Radyo', radyo:true, grup:'ELECTRONIC'});
+      await bekKosul(()=> !!(aktifItem && aktifItem.mp3 === 'flv1'));
+      favDegis();
+      await bekKosul(()=> FAV.some(x=>x.mp3==='flv1'));
+      cal({mp3:'flv2', ad:'Favori Arsiv', sanatci:'Sanatci X', etiket:'netlabel', lisans:SERBEST});
+      await bekKosul(()=> !!(aktifItem && aktifItem.mp3 === 'flv2'));
+      favDegis();
+      await bekKosul(()=> FAV.some(x=>x.mp3==='flv2'));
       c.favSayisi = FAV.length;
       c.grupKaydedildi = FAV.some(x=>x.mp3==='flv1' && x.grup==='ELECTRONIC');
       AKTIF_AILE = 'JAZZ'; mod = 'lib';
       try{ window.favoriBas(); }catch(e){}
       for(let i=0;i<60 && !window.FAVORI_HAZIR;i++) await bek(100);
       c.modulGeldi = !!window.FAVORI_HAZIR;
-      await bek(80);
+      await bekKosul(()=> !!(window.favoriAcikMi && window.favoriAcikMi())
+        && document.querySelectorAll('#favoriListe .fl-oge').length >= 2);
       c.acikMi = !!(window.favoriAcikMi && window.favoriAcikMi());
       const ogeler = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
       c.ogeSayisi = ogeler.length;
@@ -8481,7 +8511,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const arsivLiOnce = ogeler.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
       c.arsivLiVar = !!arsivLiOnce;
       if(radyoLi) radyoLi.click();
-      await bek(120);
+      await bekKosul(()=> !(window.favoriAcikMi && window.favoriAcikMi()) && mod === 'radio');
       c.aileRadyodanSonra = AKTIF_AILE;
       c.modRadyodanSonra = mod;
       c.calanRadyo = (aktifItem && aktifItem.mp3) || '';
@@ -8490,26 +8520,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          gibi arsivde aileSec cagirmiyor, o yuzden aile burada sinanmiyor). */
       AKTIF_AILE = 'JAZZ'; mod = 'radio';
       try{ window.favoriBas(); }catch(e){}
-      await bek(150);
+      await bekKosul(()=> !!(window.favoriAcikMi && window.favoriAcikMi())
+        && [...document.querySelectorAll('#favoriListe .fl-oge')]
+             .some(li=>(li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv'));
       const ogeler2 = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
       const arsivLi = ogeler2.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
       c.arsivAltYazi = arsivLi ? (arsivLi.querySelector('.fl-alt')||{}).textContent : '';
       if(arsivLi) arsivLi.click();
-      await bek(120);
+      await bekKosul(()=> !(window.favoriAcikMi && window.favoriAcikMi()) && mod === 'lib');
       c.modArsivdanSonra = mod;
       c.calanArsiv = (aktifItem && aktifItem.mp3) || '';
       c.kapandiMi2 = !(window.favoriAcikMi && window.favoriAcikMi());
       /* Favori yokken KISA dokunus (favoriBas) panel ACMAMALI -- eski
-         "NO FAVOURITES YET" yanip sonmesi hala calismali. */
+         "NO FAVOURITES YET" yanip sonmesi hala calismali. Bu OLUMSUZ
+         bir beklenti (bir seyin OLMAMASI): kosul yok, sabit bir sure
+         yeterli -- gec acilma riski erken kapanmadan cok daha az. */
       FAV = []; favYaz(); favTazele();
       try{ window.favoriBas(); }catch(e){}
-      await bek(80);
+      await bek(150);
       c.bosPanelAcilmadi = !(window.favoriAcikMi && window.favoriAcikMi());
       /* TEMIZ BIRAK */
       try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
       FAV = []; _favMod = false; favTazele();
       mod = eskiMod; AKTIF_MOD = eskiAktifMod; AKTIF_AILE = eskiAile;
-      cal({mp3:'temizFl', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(80);
+      cal({mp3:'temizFl', ad:'Temiz', etiket:'netlabel', lisans:SERBEST});
+      await bekKosul(()=> !!(aktifItem && aktifItem.mp3 === 'temizFl'));
       return c;
     });
     K('Favori secilince kendi grubu da saklaniyor', fl.grupKaydedildi === true,
@@ -13850,7 +13885,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        4. alti saat kapisi tutuyor mu (her acilista gonderilmiyor).
      Ucuncusu asil olan: govde ALANLARIYLA birlikte okunuyor, yani
      ileride biri "sadece sunu da ekleyelim" derse burasi kirmizi
-     yanar. */
+     yanar. 15 Eylul'de tam bunu yaptik: nobetciye "hangi durumda"
+     (d) ve "kac farkli hata" (u) bilgisi eklendi, bilincli bir karar
+     olarak -- alan sayisi dortten altiya cikti, asagidaki test de
+     onunla birlikte guncellendi (bkz. magaza/GUNCELLEME_YAYINI.md,
+     "secilim yanliligi" siniri icin). */
   {
     const olc = await pg.evaluate(async ()=>{
       const bek=ms=>new Promise(r=>setTimeout(r,ms));
@@ -13899,11 +13938,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Olcum acikken tek gonderim yapiyor',
        !!olc && olc.acikken === true && olc.ikinci === false,
        'alti saat kapisi ikinci denemeyi durduruyor');
-    /* Govde SADECE su dort alani tasiyabilir. Yeni bir alan eklemek
+    /* Govde SADECE su alti alani tasiyabilir (15 Eylul: dortten
+       altiya -- bkz. yukaridaki baslik yorumu). Yeni bir alan eklemek
        bilincli bir karar olmali; sessizce sizmamali. */
-    K('Olcum govdesi yalnizca dort alan',
-       !!olc && olc.alanlar === 'n,p,v,y',
+    K('Olcum govdesi yalnizca alti alan',
+       !!olc && olc.alanlar === 'd,n,p,u,v,y',
        'giden alanlar: ' + (olc ? olc.alanlar : '-'));
+    /* ── 15 EYLUL: DURUM (d) VE UNIKAL (u) ICERIGI DOGRU MU ────────
+       Alan sayisinin dogru olmasi yetmez -- ICERIGIN de dogru
+       oldugunu gostermek lazim: durum kalibina uyuyor mu, unikal
+       gercekten farkli imza sayisini mi tasiyor. */
+    K('Olcum durum ozeti kaliba uyuyor',
+       !!olc && /^(archive|radio)\|[01]\|[01]\|[\d.]+$/.test(
+         (JSON.parse(olc.govde || '{}').d) || ''),
+       'd=' + (olc ? JSON.parse(olc.govde || '{}').d : '-'));
+    /* u TUM farkli imza sayisi, y ise onlarin yalnizca EN COK
+       tekrarlayan sekizi -- oturumda 8'den fazla farkli imza birikmis
+       olabilir (bkz. yutBasi/yutSonu bu dosyada), o zaman u > y.length
+       GERCEK ve DOGRU durum. Yanlis olan u < y.length olmasidir --
+       en cok sekizin disinda hicbir imza kalmadigini iddia eder ki
+       matematiksel olarak imkansiz. */
+    K('Olcum unikal sayisi en az y.length kadar (uzun kuyruk gorunuyor)',
+       !!olc && JSON.parse(olc.govde || '{}').u
+         >= JSON.parse(olc.govde || '{}').y.length,
+       'u=' + (olc ? JSON.parse(olc.govde).u : '-')
+       + ' y.length=' + (olc ? JSON.parse(olc.govde).y.length : '-'));
     K('Olcum govdesinde kimlik ve dinleme izi yok',
        !!olc && !/kimlik|id"|session|istasyon|station|arama|search|fav|konum|lat|lon/i.test(olc.govde)
              && !/Mozilla|AppleWebKit/.test(olc.govde),

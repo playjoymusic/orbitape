@@ -579,6 +579,37 @@ function bitir(){
       && yaz[0].blobs[2].length === 90 && yaz[0].doubles[1] === 0,
       'surum/ortam kaliba uymazsa bilinmiyor, metin 90 karakter');
 
+    /* ── 15 EYLUL: DURUM OZETI (d) VE FARKLI IMZA SAYISI (u) ──────
+       Ikisi de kalibina uyarsa satira giriyor, uymazsa (ya da hic
+       gelmezse) SESSIZCE bos/sifir kaliyor -- istek reddedilmiyor.
+       'd' serbest metin degil, o yuzden KIRPMA degil TAM KALIP testi:
+       yarim ya da bozuk bir deger yariya kirpilip gitmemeli, ya
+       tamamen kabul ya tamamen bos. */
+    yaz.length = 0;
+    const c3b = await at(JSON.stringify({ v:'2026.09.01', p:'mobil-webkit', n:3, u:5,
+                                          y:[{i:'boom @12', n:3}], d:'radio|1|0|2.5' }));
+    K('Olcum: durum ve unikal gecerliyse satira giriyor',
+      c3b.status === 204 && yaz.length === 1
+      && yaz[0].blobs[3] === 'radio|1|0|2.5' && yaz[0].doubles[2] === 5,
+      'gecerli kalip aynen yaziliyor');
+
+    yaz.length = 0;
+    const c3c = await at(JSON.stringify({ v:'2026.09.01', p:'mobil-webkit', n:1, u:99999,
+                                          y:[{i:'boom @12', n:1}],
+                                          d:'<script>alert(1)</script>' }));
+    K('Olcum: kalibina uymayan durum bosa duser, unikal tavanla sinirlanir',
+      c3c.status === 204 && yaz.length === 1
+      && yaz[0].blobs[3] === '' && yaz[0].doubles[2] === 500 /* olcu.js UNIKAL_TAVAN */
+      && !/script|alert/.test(JSON.stringify(yaz)),
+      'bozuk deger istegi reddetmiyor, sadece o alani bosaltiyor');
+
+    yaz.length = 0;
+    const c3d = await at(JSON.stringify({ v:'2026.09.01', p:'mobil-webkit', n:0, y:[] }));
+    K('Olcum: d/u hic gelmezse eskisi gibi calisiyor (geriye donuk)',
+      c3d.status === 204 && yaz.length === 1
+      && yaz[0].blobs[3] === '' && yaz[0].doubles[2] === 0,
+      'eski istemci govdesi (bu iki alan olmadan) kirilmiyor');
+
     const c4 = await at(JSON.stringify({ v:'2026.09.01' }), null);
     const c5 = await at('{{{');
     const c6 = await at('[1,2]');

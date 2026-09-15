@@ -4818,12 +4818,24 @@
      kullanici ayarlardan actiysa.
 
      NE GIDIYOR: surum, kaba ortam (mobil/masaustu + motor), en cok
-     tekrarlayan sekiz hata imzasi (mesaj + satir no) ve toplam sayi.
+     tekrarlayan sekiz hata imzasi (mesaj + satir no), toplam sayi,
+     KAC FARKLI imza oldugu (u) ve dort alanlik bir durum ozeti (d:
+     dunya/ses caliyor mu/cevrimici mi/dpr -- bkz. _olcumDurum).
      NE GITMIYOR: kalici kimlik, oturum numarasi, parmak izi,
      istasyon adi, sarki adi, arama kelimesi, favori, konum, tam
      userAgent. Iki gonderimi birbirine baglayacak hicbir alan yok.
      Uc noktanin kendisi de beyaz liste uyguluyor (bkz. olcu.js):
      buradan yanlislikla fazladan bir sey ciksa bile depoya gecmez.
+
+     15 EYLUL -- u VE d NEDEN EKLENDI: nobetci (olcu_nobet.py) yalnizca
+     "en cok tekrarlayan 8 imza"yi goruyordu -- HANGI DURUMDA olustugu
+     (arsivde mi radyoda mi, ses caliyor muydu) ve TOPLAM kac farkli
+     hata cesidi oldugu (8'in disinda kalan uzun kuyruk) hic gitmiyordu.
+     Ikisi de zaten kullanicinin "SEND TO DEVELOPER" postasinda vardi
+     (bkz. hataMetni() 'state' satiri) -- yeni bir veri kategorisi degil,
+     var olan bilginin ikinci (gonullu, toplu) kanala da eklenmesi.
+     SINIR: bu, opt-in olcumun secilim yanliligini (yalnizca acan
+     gorunur) KAPATMAZ -- bkz. magaza/GUNCELLEME_YAYINI.md.
 
      NE ZAMAN: acilistan 25 sn sonra bir kez ve alti saatte birden
      sik degil. Acilis anina yuk bindirmemek icin gecikmeli;
@@ -4842,6 +4854,21 @@
       return cihaz + '-' + motor;
     }catch(_){ return 'bilinmiyor'; }
   }
+  /* DORT ALAN, BORUYLA AYRILMIS METIN -- serbest metin degil, sabit
+     sozluk + sayi. hataMetni()'deki 'state' satirinin dort alt kumesi
+     (world/audio/online/dpr); geri kalanlari (shelf, graph, rec) -- bu
+     ilk surumde disarida birakildi, olcum icin en degerli dordu bunlar.
+     Kalip olcu.js'te DURUM_KALIP ile ayrica dogrulaniyor: uyusmazsa
+     bos gider, istek reddedilmez. */
+  function _olcumDurum(){
+    try{
+      var d = document.body.classList.contains('mood') ? 'archive' : 'radio';
+      var a = (typeof ses !== 'undefined' && ses && !ses.paused) ? 1 : 0;
+      var o = (typeof navigator.onLine === 'boolean' ? navigator.onLine : true) ? 1 : 0;
+      var p = window.devicePixelRatio || 1;
+      return d + '|' + a + '|' + o + '|' + p;
+    }catch(_){ return ''; }
+  }
   function olcumGonder(){
     try{
       if(!AYAR || AYAR.olcum !== true) return false;      // kapali: hicbir sey kurulmuyor
@@ -4856,7 +4883,8 @@
       for(i = 0; i < Math.min(8, adlar.length); i++)
         imzalar.push({ i: String(adlar[i]).slice(0, 90), n: d[adlar[i]].n });
       var govde = JSON.stringify({ v: ORB_SURUM, p: _olcumOrtam(),
-                                   n: toplam, y: imzalar });
+                                   n: toplam, u: adlar.length, y: imzalar,
+                                   d: _olcumDurum() });
       /* keepalive: sekme kapanirken de yola ciksin. Cevap
          OKUNMUYOR -- uc nokta 204 donuyor ve istemcinin davranisi
          sonuca gore degismiyor. Hata da yutuluyor: bir olcum
