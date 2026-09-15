@@ -997,8 +997,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        bozuluyordu), kullanici karari degistirdi ("shazam yap ya,
        eski fikirdi o silmek") ve bu kez window.open ile (sekme
        degismiyor, ses kesilmiyor) ve yalnizca parca adi gelmeyince
-       geri geldi -- bkz. "IDENTIFY WITH SHAZAM" yorumu. */
-    K('Ham boy < 1260 KB', dosyaBoy < 1260*1024,
+       geri geldi -- bkz. "IDENTIFY WITH SHAZAM" yorumu.
+       15 EYLUL (ayarlar menusu revizyonu): 1254,6 -> 1263. Bes ayri
+       ekleme: yildiz yogunlugu varsayilani FULL, SOUNDS -> AUDIO,
+       Skins random + Ring bolumu tasinmasi, "No Connection" retro
+       gorunumu (ay-sinyal/ay-alt, CSS animasyonlu, ek dosya yok) ve
+       ADVANCED katlanir bolumu (DIAGNOSTICS + SEND DIAGNOSTICS,
+       hata sayisindan BAGIMSIZ kapali basliyor -- ilk denemede
+       yalnizca hata sayisina baglanmisti ama kullanicinin kendi
+       cihazinda 7 hata birikince satir yine ekrandaydi, "hala
+       duruyor" dedi). Hepsi kod + yorum, yeni bir dosya yok. */
+    K('Ham boy < 1266 KB', dosyaBoy < 1266*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -11942,7 +11951,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         try{ Object.defineProperty(document, 'visibilityState', { configurable:true, get:()=>'visible' }); }catch(e){}
         try{ ses.src = 'https://ornek.gecersiz/yayin.mp3'; }catch(e){}
         try{ ses.dispatchEvent(new Event('play')); }catch(e){}
-        await bek(200);
+        /* SABIT 200 MS CI'DA KIRMIZI YANDI (15 Eylul, GitHub kosusu
+           #378: 857/858, "Gercek yayin calinca geceden uyaniyor").
+           Yerelde hep gecti -- GitHub'in makinesi 'play' olayinin
+           isleyicisini daha gec calistirdigi icin sabit bir sure
+           kararsiz. Favori-hover testinde kullanilan kalibin aynisi:
+           sabit bekleme yerine uyanana kadar yoklama, tavan var. */
+        { const _t0 = Date.now();
+          while(Date.now() - _t0 < 1500){
+            if(saatKip() !== 'gece' && !document.body.classList.contains('gece')) break;
+            await bek(50);
+          }
+        }
         try{ delete document.visibilityState; }catch(e){}
         void gorOnce;
         c.uyandi = saatKip() !== 'gece' && _uykuKat === 1

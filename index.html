@@ -440,7 +440,33 @@
     font-family:'Share Tech Mono',ui-monospace,monospace;
     opacity:0;transition:opacity .4s ease;}
   #agyok.on{display:flex;opacity:1;}
+  /* ── SINYAL ARANIYOR: RETRO-ANALOG GORUNUM (15 Eylul) ────────────
+     Geri bildirim: "No Connection ekrani daha retro-analog olabilir,
+     ornek: 'Searching for signal...' + radyo dalgasi illustrasyonu."
+     Uc esmerkezli yay, radar/radyo tarayicisi gibi disa dogru
+     PING atip sonup gidiyor -- CSS animasyonu, ek gorsel dosya yok.
+     Yalnizca GERCEK "ag yok" durumunda gorunur: "NOTHING WOULD PLAY"
+     (arsiv hata durumu, bkz. arsivDurdur) farkli bir sorun, orada
+     sinyal aranmiyor -- bu yuzden JS o durumda .ay-sinyal/.ay-alt'i
+     gizliyor (bkz. arsivDurdur/arsivDevam). */
+  #agyok .ay-sinyal{position:relative;width:38px;height:38px;flex:none;}
+  #agyok .ay-sinyal i{position:absolute;inset:0;border-radius:50%;
+    border:1px solid rgba(232,169,130,.55);
+    animation:ayPing 2.4s cubic-bezier(.2,.6,.35,1) infinite;}
+  #agyok .ay-sinyal i:nth-child(2){animation-delay:.8s;}
+  #agyok .ay-sinyal i:nth-child(3){animation-delay:1.6s;}
+  @keyframes ayPing{
+    0%{transform:scale(.28);opacity:.9;}
+    100%{transform:scale(1);opacity:0;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #agyok .ay-sinyal i{animation:none;opacity:.35;transform:scale(.72);}
+  }
   #agyok .ay-ad{font-size:0.75rem;letter-spacing:.30em;color:#e8a982;}
+  #agyok .ay-alt{font-size:0.625rem;letter-spacing:.22em;
+    color:rgba(232,169,130,.55);animation:ayNefes 2.4s ease-in-out infinite;}
+  @keyframes ayNefes{0%,100%{opacity:.4;}50%{opacity:.9;}}
+  @media (prefers-reduced-motion:reduce){ #agyok .ay-alt{animation:none;opacity:.65;} }
   #agyok .ay-not{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
     font-size:0.75rem;line-height:1.45;color:rgba(244,247,250,.62);}
   #agyok .ay-tekrar{pointer-events:auto;appearance:none;-webkit-appearance:none;margin-top:2px;
@@ -4381,32 +4407,43 @@
          kullaniciya bir secim degil bir bilmece sunar. Tek satir
          kaldi ve paneli aciyor; posta yolu panelin icinde, cevap
          isteyenler icin bir alt satir olarak duruyor. -->
-    <!-- ── DIAGNOSTICS ────────────────────────────────────────────
-         Uygulama hatalari sessizce yutuyor: muzik durmasin diye.
-         Bedeli, sahada bir sey ters gidince elimizde hicbir sey
-         olmamasi. Bu satir o sessiz defteri GORUNUR yapiyor.
-         Sayi sifirsa satir da yok -- gosterecek bir sey olmadan
-         menude yer tutmuyor. Basinca defter panoya kopyalaniyor;
-         aga hicbir sey gitmiyor, gonderme karari kullanicinin. -->
-    <div class="sat islem" id="taniSatir" data-ayar="tanilama" role="button" tabindex="-1" hidden>
-      <span>DIAGNOSTICS</span><span class="durum">0</span></div>
-    <!-- ── OLCUM: VARSAYILAN KAPALI, GORUNURLUGU DE TANISATIR'A BAGLI
-         (15 Eylul: "Diagnostics & Hata Yonetimi Alani ... cok goze
-         batiyor, ayarlarin derinine tasinabilir ya da yalnizca hata
-         olustugunda gorunur kilinabilir" -- ikinci yol secildi, cunku
-         DIAGNOSTICS satiri zaten ayni kuralla calisiyordu (bkz. yukari
-         yorum), ikisini AYNI kapiya baglamak yeni bir gosterge
-         gerektirmiyor. Sayi sifirsa (hic hata yutulmadiysa) bu anahtar
-         da yok -- sikayet edecek bir sey olmayan sirada gonderecek
-         diagnostic de yok. Yukaridaki satir defteri GORUNUR yapiyor
-         ama gondermeyi kullaniciya birakiyor; kimse gondermezse sahada
-         ne bozuldugunu ogrenemiyoruz. Bu anahtar o kapiyi aciyor -- ve
-         KAPALI duruyor. Acilirsa giden sey: surum, kaba platform ve
-         yutulan hata imzalari. Kalici kimlik yok; istasyon, sarki,
-         arama kelimesi, favori, konum yok. Ayrintisi /privacy
-         sayfasinda ve olcu.js'in basinda. -->
-    <div class="sat" id="olcumSatir" data-ayar="olcum" role="switch" tabindex="-1" hidden>
-      <span>SEND DIAGNOSTICS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── ADVANCED: DIAGNOSTICS + SEND DIAGNOSTICS BURADA (15 Eylul)
+         Geri bildirim: "Diagnostics & Hata Yonetimi Alani ... cok goze
+         batiyor." ILK DENEME: DIAGNOSTICS/SEND DIAGNOSTICS'i yalnizca
+         hata VARSA gostermek -- ama pj'nin kendi cihazinda gercekten 7
+         hata birikmisti ve satir yine ekrandaydi, "hala duruyor" dedi.
+         Dogru istek hata sayisindan BAGIMSIZ: panel KAPALI baslasin,
+         isteyen ADVANCED'a tiklayip acsin. "deri" (SKINS) ile ayni
+         kalip -- acan satir kapatiyor da, ayri HIDE tusu yok (bkz.
+         "HIDE KALKTI: KAPATAN SEY YINE SKINS" yorumu, deriIzgara
+         yaninda). -->
+    <div class="sat islem" id="gelismisSatir" data-ayar="gelismis" role="button" tabindex="-1"
+         aria-expanded="false" aria-controls="gelismisKutu">
+      <span>ADVANCED</span><span class="durum">SHOW</span></div>
+    <div id="gelismisKutu" hidden>
+      <!-- ── DIAGNOSTICS ────────────────────────────────────────────
+           Uygulama hatalari sessizce yutuyor: muzik durmasin diye.
+           Bedeli, sahada bir sey ters gidince elimizde hicbir sey
+           olmamasi. Bu satir o sessiz defteri GORUNUR yapiyor.
+           Sayi sifirsa satir da yok -- gosterecek bir sey olmadan
+           menude yer tutmuyor (ADVANCED acik olsa bile). Basinca
+           defter panoya kopyalaniyor; aga hicbir sey gitmiyor,
+           gonderme karari kullanicinin. -->
+      <div class="sat islem" id="taniSatir" data-ayar="tanilama" role="button" tabindex="-1" hidden>
+        <span>DIAGNOSTICS</span><span class="durum">0</span></div>
+      <!-- ── OLCUM: VARSAYILAN KAPALI ────────────────────────────────
+           Yukaridaki satir defteri GORUNUR yapiyor ama gondermeyi
+           kullaniciya birakiyor; kimse gondermezse sahada ne
+           bozuldugunu ogrenemiyoruz. Bu anahtar o kapiyi aciyor -- ve
+           KAPALI duruyor. Hata sayisina bagli DEGIL: ADVANCED acikken
+           her zaman burada, isteyen hic hata olmadan da onceden
+           acabilsin. Acilirsa giden sey: surum, kaba platform ve
+           yutulan hata imzalari. Kalici kimlik yok; istasyon, sarki,
+           arama kelimesi, favori, konum yok. Ayrintisi /privacy
+           sayfasinda ve olcu.js'in basinda. -->
+      <div class="sat" id="olcumSatir" data-ayar="olcum" role="switch" tabindex="-1">
+        <span>SEND DIAGNOSTICS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    </div>
     <!-- ── KELIMEYLE SOYLEMEK ────────────────────────────────────
          Yukaridaki anahtar MAKINENIN gordugunu gonderiyor: hata
          imzalari. Ama sahada bozulan seylerin cogu hata firlatmiyor
@@ -4525,7 +4562,9 @@
   <!-- AĞ YOK: sonsuza kadar dönen bekleme sembolü yerine tek cümle.
        Ağ geri gelince kendiliğinden kayboluyor ve çalmaya devam ediyor. -->
   <div id="agyok" aria-hidden="true" role="status">
+    <div class="ay-sinyal" id="agyokSinyal" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="ay-ad">NO CONNECTION</div>
+    <div class="ay-alt" id="agyokAlt">SEARCHING FOR SIGNAL…</div>
     <div class="ay-not">ORBITAPE streams from the internet.<br>It resumes by itself when you are back online.</div>
     <button class="ay-tekrar" id="agyokTekrar" type="button">TRY AGAIN</button>
   </div>
@@ -14036,6 +14075,12 @@
       if(ad)  ad.textContent  = Y('NOTHING WOULD PLAY');
       if(not) not.textContent = Y('Twelve recordings in a row failed to load. '
                               + 'The archive server may be busy, or blocked on this network.');
+      /* SINYAL/ALT yaziyi gizle: burada aranan bir "sinyal" yok,
+         sorun baglanti degil -- arsiv sunucusu. Yanlis metafor
+         gostermek yanlis sebep gostermekten kotudur (bkz. yukaridaki
+         "panel yeniden kullaniliyor ama METIN DEGISIYOR" notu). */
+      try{ const sg = el.querySelector('.ay-sinyal'), al = el.querySelector('.ay-alt');
+           if(sg) sg.hidden = true; if(al) al.hidden = true; }catch(e){ _yut(e); }
       el.classList.add('on'); el.setAttribute('aria-hidden','false');
       try{ bekle.classList.remove('on'); }catch(_){ _yut(_); }
       try{ if(bekleInt){ clearInterval(bekleInt); bekleInt=null; } }catch(_){ _yut(_); }
@@ -14056,6 +14101,9 @@
         if(ad)  ad.textContent  = Y('NO CONNECTION');
         if(not) not.innerHTML   = Ym('ORBITAPE streams from the internet.<br>'
                                 + 'It resumes by itself when you are back online.');
+        /* SINYAL/ALT geri acik: gercek "ag yok" durumuna donuluyor. */
+        try{ const sg = el.querySelector('.ay-sinyal'), al = el.querySelector('.ay-alt');
+             if(sg) sg.hidden = false; if(al) al.hidden = false; }catch(e){ _yut(e); }
       }
     }catch(e){ _yut(e); }
   }
@@ -16670,8 +16718,21 @@
     try{ if(document.getElementById('ara').classList.contains('acik')) return; }catch(e){ _yut(e); }
     if(_kayitAktif) return;
     /* Kısa bir soluk: kanal geçişinin kendi hareketi otursun, sonra
-       hemen gir. (Eskiden 900 ms'ti, geç kalıyordu.) */
-    _fxSunumZaman = setTimeout(()=>{ _fxSunumZaman = null; fxSunumBasla(); }, 320);
+       hemen gir. (Eskiden 900 ms'ti, geç kalıyordu -- bu yuzden
+       kanal degisiminin KENDI bekleme suresi hala 320 ms, asagida
+       degismiyor.) */
+    var _bekle = 320;
+    /* SADECE acilis turu YENI kapandiysa (bkz. _anaTurOtomatik) ek
+       bir pay veriliyor -- kapanis animasyonuna nefes alacak yer.
+       _anaTurBittiZaman sayfa basina EN FAZLA BIR KEZ yaziliyor, o
+       yuzden bu kanal degisiminin genel hizini ETKILEMIYOR. */
+    if(_anaTurBittiZaman){
+      try{
+        var _gecenMs = Date.now() - _anaTurBittiZaman;
+        if(_gecenMs >= 0 && _gecenMs < 900) _bekle = 900 - _gecenMs;
+      }catch(e){ _yut(e); }
+    }
+    _fxSunumZaman = setTimeout(()=>{ _fxSunumZaman = null; fxSunumBasla(); }, _bekle);
   }
   /* ── FX İPUCU: TÜR BAŞINA VE SÜRELİ ─────────────────────────────
      Eskiden tek bir "1" vardı: kişi bir kez sürtünce ipucu ömür boyu
@@ -18730,19 +18791,17 @@
         if(el6) el6.textContent = Y(HALKA_AD[AYAR.halkaBoy|0] || 'MEDIUM');
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
-           baska is yapmaz. SEND DIAGNOSTICS anahtari da (olcumSatir)
-           AYNI kapiya bagli -- 15 Eylul, "cok goze batiyor" geri
-           bildirimi: hic hata yutulmamis sirada gonderecek bir sey de
-           yok, o yuzden anahtar da menude gorunmuyor. */
+           baska is yapmaz (ADVANCED acik olsa bile). SEND DIAGNOSTICS
+           (olcumSatir) hata sayisina bagli DEGIL -- ikisi de artik
+           ADVANCED'in arkasinda, panelin kendisi kapali basliyor
+           (bkz. HTML'deki gelismisKutu yorumu, 15 Eylul). */
         const ts = document.getElementById('taniSatir');
-        const n = yutSayisi();
         if(ts){
+          const n = yutSayisi();
           ts.hidden = !n;
           const d = ts.querySelector('.durum');
           if(d) d.textContent = n > 999 ? '999+' : String(n);
         }
-        const os = document.getElementById('olcumSatir');
-        if(os) os.hidden = !n;
       }catch(e){ _yut(e); }
     }
     /* RING: ayni karede uygula. Iki kumanda var -- ayarlardaki
@@ -19067,6 +19126,34 @@
                vardi ve ikisi de baska yerde kapatildi: CSS'te
                hidden calismiyordu, ve diskin gorunmez dokunma alani
                panelin uzerindeki dokunuslari yakaliyordu. */
+            try{
+              const oncekiY = _satirY;
+              const yeniY = el.getBoundingClientRect().top;
+              if(isFinite(oncekiY) && Math.abs(yeniY - oncekiY) > 1)
+                kut.scrollTop += (yeniY - oncekiY);
+            }catch(_){ _yut(_); }
+          }
+        }catch(e){ _yut(e); }
+        return;
+      }
+      if(k === 'gelismis'){
+        /* ── ADVANCED: DIAGNOSTICS + SEND DIAGNOSTICS BURADA ────────
+           "deri" (SKINS) ile ayni kalip: satir hem aciyor hem
+           kapatiyor, ayri HIDE tusu yok (bkz. yukaridaki "HIDE
+           KALKTI" yorumu). Hata sayisindan BAGIMSIZ kapali basliyor
+           -- kullanicinin kendi cihazinda 7 hata birikmisken bile
+           "hala duruyor" dedigi icin (15 Eylul), gosterge artik
+           yalnizca kullanicinin kendi tiklamasi. */
+        try{
+          let _satirY = NaN;
+          try{ _satirY = el.getBoundingClientRect().top; }catch(_){ _yut(_); }
+          const kap = document.getElementById('gelismisKutu');
+          if(kap){
+            const acik = !kap.hidden;
+            kap.hidden = acik;
+            el.setAttribute('aria-expanded', acik ? 'false' : 'true');
+            const dr = el.querySelector('.durum');
+            if(dr) dr.textContent = Y(acik ? 'SHOW' : 'HIDE');
             try{
               const oncekiY = _satirY;
               const yeniY = el.getBoundingClientRect().top;
@@ -20134,6 +20221,18 @@
      önizlemesi, FX açıp kapama) ve tur biterken her şey geri
      alınıyor; çalan ses ve seçili kategori bozulmuyor. */
   var _turAdim = 0, _turZaman = null, _turAkiyor = false;
+  /* ── ACILIS TURU BITINCE FX IPUCU HEMEN UST USTE BINMESIN ───────
+     15 Eylul geri bildirimi: "tur bitince FX ipucu hemen ust uste
+     biniyor". Ilk denemede _turBitisZamani (rehber icin zaten var
+     olan, HER turBitir()'de yazilan damga) kullanildi ve bu YANLIS
+     cikti: kanal degisiminde de her turBitir() sonrasi fxSunumDene()
+     hemen geliyor (bkz. "FX sunumu HER kanal degisiminde" testi) ve
+     o akis zaten HIZLI olmali -- "eskiden 900 ms'ti, gec kaliyordu"
+     yorumu tam bunu anlatiyor. O yuzden AYRI, TEK KULLANIMLIK bir
+     bayrak: yalnizca sayfa acilir acilmaz KENDILIGINDEN baslayan
+     karsilama turu icin isaretleniyor (bkz. asagidaki setTimeout),
+     baska hicbir turBasla/fxSunumBasla cagrisi bunu ellemiyor. */
+  var _anaTurOtomatik = false, _anaTurBittiZaman = 0;
   const TUR_ANAHTAR = 'orbitape.tur';
   /* ── NEYI ZATEN BILIYOR ──────────────────────────────────────────
      Kullanicinin sozu: "tutoriallar bilen insan icin zulum olacaktir;
@@ -20856,6 +20955,13 @@
   try{ window.pencereAcikMi = pencereAcikMi; window.merkezDokunus = merkezDokunus;
        window.kisayolDokunus = kisayolDokunus; }catch(e){ _yut(e); }
   function turBitir(){
+    /* Bkz. _anaTurOtomatik tanimi: bu cagri GERCEKTEN acilis turunu
+       mu kapatiyor, yoksa baska bir turBitir() cagrisi mi (kanal
+       degisimindeki FX sunumu, elle tekrar oynatma, ya da her ihtimale
+       karsi savunmaci bos cagri) -- once (asagida _turAkiyor false
+       olmadan) bakiliyor, bayrak HER cagrida tuketiliyor. */
+    const _anaTurGercektenBitti = _anaTurOtomatik && _turAkiyor;
+    _anaTurOtomatik = false;
     /* ERKEN BITEN HER TUR SAYILIYOR (13 Eylul, kullanici: "3 skip
        yaptim, hep cikti"). Olculdu: SKIP'e basinca sayac duzgun
        artiyor. Eksik olan KAPSAMDI -- yalnizca SKIP tusu sayiliyordu.
@@ -20876,6 +20982,7 @@
     /* Rehberin bekleme sayaci burada basliyor: tur biter bitmez
        yardim cikarsa iki anlatim ust uste biner. */
     try{ _turBitisZamani = Date.now(); }catch(e){ _yut(e); }
+    if(_anaTurGercektenBitti){ try{ _anaTurBittiZaman = Date.now(); }catch(e){ _yut(e); } }
     _turAkiyor = false; _turListe = null;
     /* Onizleme geri aliniyor: ORBITAPE turu dunyayi GECICI acmisti,
        anahtar hala kapali ve ekran oldugu gibi geri donmeli. Nerede
@@ -21041,8 +21148,10 @@
 
   /* Açılıştan kısa süre sonra: karşılama eli ile çakışmasın diye
      el zaten "dokun" diyorsa tur onun üstüne biniyor, sorun değil —
-     tur da aynı yeri gösteriyor. */
-  setTimeout(()=>{ try{ turBasla(); }catch(e){ _yut(e); } }, 1400);
+     tur da aynı yeri gösteriyor.
+     _anaTurOtomatik: SADECE bu tek çağrı işaretliyor -- bkz.
+     turBitir()'deki kullanım ve fxSunumDene()'deki bekleme. */
+  setTimeout(()=>{ try{ _anaTurOtomatik = true; turBasla(); }catch(e){ _yut(e); } }, 1400);
 
   /* ── İLK DOKUNUŞ NEREYE OLURSA OLSUN BAŞLATSIN ───────────────────
      Tarayıcı sesi ancak GERÇEK bir dokunuşun içinde açıyor; önceki
