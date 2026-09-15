@@ -2389,29 +2389,42 @@
          yuvarlagin ustundeki cizgiler de puruzlu olmasin."
          Her kenara 0,09'luk bir gecis kondu: tarayici o araligi
          yumusatiyor, cizgi ayni kalinlikta ama kenari temiz.
-         Govdeye, kenarina, golgesine dokunulmuyor. */
+         Govdeye, kenarina, golgesine dokunulmuyor.
+         14 EYLUL -- 0,09 TELEFONDA YETTI, MASAUSTUNDE YETMEDI:
+         kullanicinin sozu "bilgisayarda gorunuyor, telefonda
+         gorunmuyor diyebilirim." Olcum: disk masaustunde (1x piksel
+         sıklığı, fare/harici monitor) ~346 CSS px, yani 0,09%'luk
+         gecis ~0,31 GERCEK PIKSELE dusuyor -- tarayicinin
+         yumusatabilecegi en az genislikten (~1px) kucuk, kenar
+         merdivenli kaliyor. Telefonda ayni disk 3x piksel sıklığında
+         cizildigi icin (~4px gecis) sorun hic gorunmuyordu. 0,09 ->
+         0,30 yapildi: masaustunde ~1,04 px'e cikiyor, tarayici
+         yumusatabiliyor; telefonda zaten fazlasiyla genis kaliyor,
+         cizginin KALINLIGI (dolgu genisligi) DEGISMEDI, yalnizca
+         kenar gecisi genisledi. */
       radial-gradient(circle at 50% 50%,
-        transparent 0 20.57%, var(--d-oluk,var(--d-halka)) 20.66% 21.05%, transparent 21.14% 30.07%,
-        var(--d-oluk,var(--d-halka)) 30.16% 30.55%, transparent 30.64% 39.57%,
-        var(--d-oluk,var(--d-halka)) 39.66% 40.05%, transparent 40.14% 49.57%,
-        var(--d-oluk,var(--d-halka)) 49.66% 50.05%, transparent 50.14%),
+        transparent 0 20.36%, var(--d-oluk,var(--d-halka)) 20.66% 21.05%, transparent 21.35% 29.86%,
+        var(--d-oluk,var(--d-halka)) 30.16% 30.55%, transparent 30.85% 39.36%,
+        var(--d-oluk,var(--d-halka)) 39.66% 40.05%, transparent 40.35% 49.36%,
+        var(--d-oluk,var(--d-halka)) 49.66% 50.05%, transparent 50.35%),
       /* cekirdek: basili dugme -- dolgu ustte, kabartma altinda,
          yani 10% ile 10.4% arasindaki ince serit rim olarak kaliyor */
       radial-gradient(circle at 50% 50%,   var(--d-cekirdek,var(--d-cek)) 0 10%, transparent 10%),
       radial-gradient(circle at 50% 50.4%, var(--d-cek-isik,var(--d-oluk-isik,var(--d-isik))) 0 10.4%, transparent 10.4%),
       radial-gradient(circle at 50% 49.6%, var(--d-cek-golge,var(--d-golge-renk)) 0 10.4%, transparent 10.4%),
-      /* oluklarin ALT kenari: isik */
+      /* oluklarin ALT kenari: isik. Bunda gecis hic yoktu (sert
+         kenar) -- ayni 14 Eylul olcumune gore 0,30 gecis eklendi. */
       radial-gradient(circle at 50% 50.5%,
-        transparent 0 20.6%, var(--d-oluk-isik,var(--d-isik)) 20.6% 21.1%, transparent 21.1% 30.1%,
-        var(--d-oluk-isik,var(--d-isik)) 30.1% 30.6%, transparent 30.6% 39.6%,
-        var(--d-oluk-isik,var(--d-isik)) 39.6% 40.1%, transparent 40.1% 49.6%,
-        var(--d-oluk-isik,var(--d-isik)) 49.6% 50.1%, transparent 50.1%),
-      /* oluklarin UST kenari: golge */
+        transparent 0 20.3%, var(--d-oluk-isik,var(--d-isik)) 20.6% 21.1%, transparent 21.4% 29.8%,
+        var(--d-oluk-isik,var(--d-isik)) 30.1% 30.6%, transparent 30.9% 39.3%,
+        var(--d-oluk-isik,var(--d-isik)) 39.6% 40.1%, transparent 40.4% 49.3%,
+        var(--d-oluk-isik,var(--d-isik)) 49.6% 50.1%, transparent 50.4%),
+      /* oluklarin UST kenari: golge -- ayni gecis */
       radial-gradient(circle at 50% 49.5%,
-        transparent 0 20.6%, var(--d-golge-renk) 20.6% 21.1%, transparent 21.1% 30.1%,
-        var(--d-golge-renk) 30.1% 30.6%, transparent 30.6% 39.6%,
-        var(--d-golge-renk) 39.6% 40.1%, transparent 40.1% 49.6%,
-        var(--d-golge-renk) 49.6% 50.1%, transparent 50.1%);}
+        transparent 0 20.3%, var(--d-golge-renk) 20.6% 21.1%, transparent 21.4% 29.8%,
+        var(--d-golge-renk) 30.1% 30.6%, transparent 30.9% 39.3%,
+        var(--d-golge-renk) 39.6% 40.1%, transparent 40.4% 49.3%,
+        var(--d-golge-renk) 49.6% 50.1%, transparent 50.4%);}
   /* ── CALMA TUSLARI DA AYNI MALZEMEDEN ─────────────────────────
      Ilk surumde yalnizca .tus/.yuva deriye giriyordu; calma satiri
      (#geri #dur #duraklat #ileri) uygulamanin kendi koyu turkuazinda
@@ -2672,29 +2685,32 @@
      asagi kaydirilmis oldugu icin cizginin altindan cikiyor. */
   body.deri.luks .disk::after{
     background:
+      /* 14 Eylul: ayni "masaustunde puruzlu" olcumu -- bkz.
+         body.deri .disk::after ust kisimdaki not. Ucu geciste de
+         (tel katmani) hic gecis yoktu, o da eklendi. */
       radial-gradient(circle at 50% 50%,
-        transparent 0 20.57%, var(--d-oluk,var(--d-halka)) 20.66% 21.05%, transparent 21.14% 30.07%,
-        var(--d-oluk,var(--d-halka)) 30.16% 30.55%, transparent 30.64% 39.57%,
-        var(--d-oluk,var(--d-halka)) 39.66% 40.05%, transparent 40.14% 49.57%,
-        var(--d-oluk,var(--d-halka)) 49.66% 50.05%, transparent 50.14%),
+        transparent 0 20.36%, var(--d-oluk,var(--d-halka)) 20.66% 21.05%, transparent 21.35% 29.86%,
+        var(--d-oluk,var(--d-halka)) 30.16% 30.55%, transparent 30.85% 39.36%,
+        var(--d-oluk,var(--d-halka)) 39.66% 40.05%, transparent 40.35% 49.36%,
+        var(--d-oluk,var(--d-halka)) 49.66% 50.05%, transparent 50.35%),
       radial-gradient(circle at 50% 50%,   var(--d-cekirdek,var(--d-cek)) 0 10%, transparent 10%),
       radial-gradient(circle at 50% 50.9%,
-        transparent 0 20.7%, var(--d-tel) 20.7% 21%, transparent 21% 30.2%,
-        var(--d-tel) 30.2% 30.5%, transparent 30.5% 39.7%,
-        var(--d-tel) 39.7% 40%, transparent 40% 49.7%,
-        var(--d-tel) 49.7% 50%, transparent 50%),
+        transparent 0 20.4%, var(--d-tel) 20.7% 21%, transparent 21.3% 29.9%,
+        var(--d-tel) 30.2% 30.5%, transparent 30.8% 39.4%,
+        var(--d-tel) 39.7% 40%, transparent 40.3% 49.4%,
+        var(--d-tel) 49.7% 50%, transparent 50.3%),
       radial-gradient(circle at 50% 50.4%, var(--d-cek-isik,var(--d-oluk-isik,var(--d-isik))) 0 10.4%, transparent 10.4%),
       radial-gradient(circle at 50% 49.6%, var(--d-cek-golge,var(--d-golge-renk)) 0 10.4%, transparent 10.4%),
       radial-gradient(circle at 50% 50.5%,
-        transparent 0 20.6%, var(--d-oluk-isik,var(--d-isik)) 20.6% 21.1%, transparent 21.1% 30.1%,
-        var(--d-oluk-isik,var(--d-isik)) 30.1% 30.6%, transparent 30.6% 39.6%,
-        var(--d-oluk-isik,var(--d-isik)) 39.6% 40.1%, transparent 40.1% 49.6%,
-        var(--d-oluk-isik,var(--d-isik)) 49.6% 50.1%, transparent 50.1%),
+        transparent 0 20.3%, var(--d-oluk-isik,var(--d-isik)) 20.6% 21.1%, transparent 21.4% 29.8%,
+        var(--d-oluk-isik,var(--d-isik)) 30.1% 30.6%, transparent 30.9% 39.3%,
+        var(--d-oluk-isik,var(--d-isik)) 39.6% 40.1%, transparent 40.4% 49.3%,
+        var(--d-oluk-isik,var(--d-isik)) 49.6% 50.1%, transparent 50.4%),
       radial-gradient(circle at 50% 49.5%,
-        transparent 0 20.6%, var(--d-golge-renk) 20.6% 21.1%, transparent 21.1% 30.1%,
-        var(--d-golge-renk) 30.1% 30.6%, transparent 30.6% 39.6%,
-        var(--d-golge-renk) 39.6% 40.1%, transparent 40.1% 49.6%,
-        var(--d-golge-renk) 49.6% 50.1%, transparent 50.1%);}
+        transparent 0 20.3%, var(--d-golge-renk) 20.6% 21.1%, transparent 21.4% 29.8%,
+        var(--d-golge-renk) 30.1% 30.6%, transparent 30.9% 39.3%,
+        var(--d-golge-renk) 39.6% 40.1%, transparent 40.4% 49.3%,
+        var(--d-golge-renk) 49.6% 50.1%, transparent 50.4%);}
   /* Tuslarda, uydularda ve anahtarda da ayni kenar. */
   body.deri.luks .tus,body.deri.luks .yuva,
   body.deri.luks #geri,body.deri.luks #dur,
@@ -4794,7 +4810,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.14';
+  var ORB_SURUM = '2026.09.15';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu

@@ -974,8 +974,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        random switch: yeni AYAR anahtari (deriRastgele), torba
        yontemi (deriTorbaKaristir + yukleme/suzme kodu) ve ayarlar
        panelindeki yeni satir, hepsi gerekcelerini tasiyan
-       yorumlarla. Ham boy 1243,04 KB. */
-    K('Ham boy < 1244 KB', dosyaBoy < 1244*1024,
+       yorumlarla. Ham boy 1243,04 KB.
+       14 EYLUL (ucuncu yukselis ayni gun): 1244 -> 1248. Masaustunde
+       (dpr=1) halka kenarinin puruzlu cikmasi: .disk::after'daki oluk/
+       isik/golge/tel radial-gradient'lerinin kenar gecisi 0,09%'dan
+       0,30%'a genisletildi (kullanicinin sozu: "bilgisayarda duzelt").
+       Govdeye ya da cizgi kalinligina dokunulmadi, yalnizca kenar
+       yumusatma araligi ve onu anlatan olcum yorumlari eklendi. Ham
+       boy 1244,08 KB. */
+    K('Ham boy < 1248 KB', dosyaBoy < 1248*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -13277,8 +13284,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            2. KAYNAK. Renk markadan tureniyor, tabloya elle otuz
               satir yazilmiyor. */
       {
+        /* 2400 -> 2900 (14 Eylul): masaustunde halka kenari puruzu icin
+           --d-oluk-isik'e kadar olan yorum uzadi (bkz. index.html, ayni
+           blok). Olculdu: --d-oluk-isik'e kadar gereken uzunluk 2879. */
         const blok = kaynak.slice(kaynak.indexOf('body.deri .disk::after{'),
-                                  kaynak.indexOf('body.deri .disk::after{') + 2400);
+                                  kaynak.indexOf('body.deri .disk::after{') + 2900);
         const iOluk = blok.indexOf('--d-oluk,var(--d-halka)');
         const iCek  = blok.indexOf('--d-cekirdek,var(--d-cek)');
         const iIsik = blok.indexOf('var(--d-oluk-isik,var(--d-isik))');
@@ -13340,6 +13350,90 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            oluklar.toplam === 0
              ? (oluklar.sayi + ' deri: oluk >= 2.60, cekirdek >= 3.20 (ya da o derinin tavani)')
              : (oluklar.toplam + ' sapma: ' + oluklar.kotu.join(', ')));
+      }
+      /* ── MASAUSTUNDE (SEYREK PIKSEL) HALKA KENARI PURUZSUZ MU (14 Eylul) ──
+         Kullanicinin sozu: "bilgisayarda duzelt... telefinda gorunmuyor
+         diyebilirim." Butun bu dosyadaki testler TELEFON olcusunde
+         (bkz. ortak.js: dpr 2-3) kosuyor -- masaustu (harici monitor,
+         dpr=1 gibi seyrek piksel sıklığı) hic denenmemis, bu yuzden bu
+         kusur hic yakalanamamis.
+         OLCUM: masaustu boyutunda (1440x900, dpr=1) SWISS derisinin
+         (cizimsiz, duz oluk gorunumu) merkezinden gecen 1 piksellik
+         tarama satirinda dort oluk halkasinin da zeminden SAPMASI
+         olculdu. Eski halde (kenar gecisi 0,09%, ~0,3 GERCEK piksel)
+         en ince halka pikselin tam ortasina denk gelmeyince neredeyse
+         kayboluyordu (dort halkanin en zayifi: sapma toplami 67/765).
+         Kenar gecisi 0,30%'a (~1 gercek piksel) cikarilinca dorducu
+         de tutarli ve guclu cikiyor (en zayifi bile >= 190). Esik 120 --
+         ikisini net ayiran, ortadaki bir deger; cizginin KALINLIGI
+         degil, YALNIZCA kenar yumusatmasi degisti. */
+      {
+        const masaustuHalka = await (async ()=>{
+          let bg = null;
+          try{
+            const { sayfa } = await sayfaAc(b, { baglamEk:
+              { viewport:{ width:1440, height:900 }, deviceScaleFactor:1 } });
+            bg = sayfa;
+            await sayfa.evaluate(async ()=>{
+              const bek = ms=>new Promise(r=>setTimeout(r,ms));
+              const no = DERILER.findIndex(d => d && d.ad === 'SWISS') + 1;
+              AYAR.deri = no; AYAR.halka = false; deriUygula(); await bek(400);
+            });
+            const el = await sayfa.$('.disk');
+            const kutu = el ? await el.boundingBox() : null;
+            if(!kutu) return { hata: '.disk bulunamadi' };
+            const R = kutu.width / 2;
+            const cx = Math.round(kutu.x + kutu.width / 2), cy = Math.round(kutu.y + kutu.height / 2);
+            const seritGenislik = Math.max(8, Math.round(R * 0.56));
+            const png = await sayfa.screenshot({ clip: { x: cx, y: cy - 1, width: seritGenislik, height: 2 } });
+            const b64 = png.toString('base64');
+            /* PNG COZME NODE'DA DEGIL, TARAYICIDA: projede bir gorsel
+               kutuphanesi yok (bilerek -- tek dosya, bagimliliksiz
+               felsefesi testlere de tasindi). Image()+canvas tarayicinin
+               kendi kod cozucusunu kullaniyor, yeni paket gerekmiyor. */
+            const sapmalar = await sayfa.evaluate(async (b64)=>{
+              const img = new Image();
+              const yuklendi = new Promise((res, rej)=>{ img.onload = res; img.onerror = rej; });
+              img.src = 'data:image/png;base64,' + b64;
+              await yuklendi;
+              const c = document.createElement('canvas'); c.width = img.width; c.height = 1;
+              const cx2 = c.getContext('2d'); cx2.drawImage(img, 0, 0);
+              const veri = cx2.getImageData(0, 0, img.width, 1).data;
+              /* ZEMIN SERIDIN SOLUNDAN DEGIL SAGINDAN: serit MERKEZDEN
+                 basliyor, yani ilk piksel cekirdegin (kirmizi dolgu)
+                 TAM ICINDE -- onu "zemin" sanmak her seyi kirmizidan
+                 sapma olarak olcuyordu (ilk denemede butun degerler
+                 hatali sekilde ~392 cikti, ayni derinlik gercek zeminle
+                 kirmizinin farkiydi). Seridin SAG UCU (dordunca halkanin
+                 disinda, R'nin disina tasmadan) her zaman duz zemin. */
+              const zemin = [veri[(img.width-1)*4], veri[(img.width-1)*4+1], veri[(img.width-1)*4+2]];
+              const d = [];
+              for(let x = 0; x < img.width; x++){
+                const i = x * 4;
+                d.push(Math.abs(veri[i] - zemin[0]) + Math.abs(veri[i+1] - zemin[1]) + Math.abs(veri[i+2] - zemin[2]));
+              }
+              return d;
+            }, b64);
+            /* Dort oluk halkasinin ORTA noktalari (bkz. index.html
+               body.deri .disk::after): (20.66+21.05)/2, (30.16+30.55)/2,
+               (39.66+40.05)/2, (49.66+50.05)/2 -- yuzde olarak R'nin. */
+            const yuzdeler = [20.855, 30.355, 39.855, 49.855];
+            const enZayif = yuzdeler.map(y=>{
+              const merkez = Math.round(y/100 * R);
+              let tepe = 0;
+              for(let dx = -3; dx <= 3; dx++){
+                const x = merkez + dx;
+                if(x >= 0 && x < sapmalar.length) tepe = Math.max(tepe, sapmalar[x]);
+              }
+              return tepe;
+            });
+            return { enZayif, min: Math.min(...enZayif) };
+          }catch(e){ return { hata: String(e && e.message || e) }; }
+          finally { try{ if(bg) await bg.context().close(); }catch(e){} }
+        })();
+        K('Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu',
+           typeof masaustuHalka.min === 'number' && masaustuHalka.min >= 120,
+           masaustuHalka.hata || ('dort halkanin sapmasi: ' + JSON.stringify(masaustuHalka.enZayif) + ' (esik 120)'));
       }
       /* ── SKINS: ACAN TUS KAPATAN TUS ────────────────────────────
          Kullanicinin sozu: "HIDE'a basinca skins penceresi
