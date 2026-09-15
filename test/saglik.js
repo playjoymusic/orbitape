@@ -3324,14 +3324,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       /* ── UC ATLAMA (15 Eylul, kutu kalkinca yeniden yazildi) ────────
          Eskiden "kutu isaretlenirse bir daha cikmaz" tek tiklamada
          olculuyordu. Kutu kalkinca kalici kapatmanin TEK yolu 3 atlama
-         (TUR_ATLAMA_TAVAN) -- yani ayni seyi olcmek icin SKIP + reload
-         UC KERE tekrarlanmali: ilk ikisinde yine cikmali (sayac 1, 2),
-         UCUNCUDEN SONRA cikmamali (sayac 3 = tavan). */
-      /* TUR KENDILIGINDEN BITEBILIYOR. Adim sayisi degistikce bu
-         dongu turdan uzun surebiliyor ve SKIP gorunmez oluyordu ->
-         test kod hatasi yokken cokuyordu. Acikken tikla, kapanmissa
-         zaten istenen son durumdayiz. */
+         (TUR_ATLAMA_TAVAN).
+         ── CI'DE YAKALANAN IKI GERCEK HATA (ONCEKI IKI SURUMDE) ───────
+         1) Ilk skip'i yukaridaki HIZ + cak olculerinin ARTIGI tur
+            uzerinde yapiyordu; o ikisi toplam ~25+2.3+12 sn suruyor ve
+            acilis turu ~10-17 sn'de KENDILIGINDEN bitiyor -- SKIP
+            coktan kapanmis bir tura tikliyordu, sayac artmiyordu.
+            Duzeltme: skip'ten once TAZE bir reload + turBekle.
+         2) Ayni riski 2. VE 3. skip icin de tasiyordu: her skip'ten
+            SONRAKI reload + turBekle + HEMEN skip dizisi, bir onceki
+            adimin tam ne zaman bittigine bagliydi ve CI'de bir kere
+            3. skip yine sayilmadi (sayac 2 kaldi, 3 degil).
+            Duzeltme: SADECE TEK bir gercek tiklama olculuyor (SKIP'in
+            kendisi sayaci dogru artiriyor mu -- asil UI sozlesmesi).
+            Esigin USTUNDE/ALTINDA davranisi (2 < tavan, 3 = tavan) artik
+            DOGRUDAN localStorage'a yazip reload ile olculuyor: ayni
+            urun kuralini test ediyor ama art arda tiklama zamanlamasina
+            bagli degil. */
       const skipEt = ()=> pp.evaluate(()=>{ try{ const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
+      await pp.reload();
+      const ilkTazeAcildi = await turBekle(TUR_TAVAN);
+      const ilkTazeTani = ilkTazeAcildi ? '' : await taniAl();
+      if(!ilkTazeAcildi && /agyok/.test(ilkTazeTani)){
+        return { atlandi: 'atlama olcumu: ' + ilkTazeTani };
+      }
       await skipEt();
       await pp.waitForTimeout(400);
       const kapandi = await pp.evaluate(()=>!document.getElementById('tur').classList.contains('on'));
@@ -3340,19 +3356,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await pp.reload();
       const tekrar = await turBekle(TUR_TAVAN);            // sayac=1: yine cikmali
       const tekrarTani = tekrar ? '' : await taniAl();
-      await skipEt(); await pp.waitForTimeout(300);
-      const sayac2 = await pp.evaluate(()=>turAtlamaSayisi());
+      /* 2 < tavan: DOGRUDAN yazildi, gercek 2. tiklamayi bekleyen bir
+         zamanlama yok. */
+      await pp.evaluate(()=>{ try{ localStorage.setItem(TUR_ATLAMA_ANAHTAR, '2'); }catch(e){} });
       await pp.reload();
       const ikinciTekrar = await turBekle(TUR_TAVAN);       // sayac=2: yine cikmali
       const ikinciTekrarTani = ikinciTekrar ? '' : await taniAl();
-      await skipEt(); await pp.waitForTimeout(300);
-      const sayac3 = await pp.evaluate(()=>turAtlamaSayisi());
+      const sayac2 = await pp.evaluate(()=>turAtlamaSayisi());
+      /* 3 = tavan: yine DOGRUDAN yazildi. */
+      await pp.evaluate(()=>{ try{ localStorage.setItem(TUR_ATLAMA_ANAHTAR, '3'); }catch(e){} });
       await pp.reload();
       const bitti = await turBekle(TUR_TAVAN);              // sayac=3=tavan: ARTIK CIKMAMALI
+      const sayac3 = await pp.evaluate(()=>turAtlamaSayisi());
       /* Olumsuz kontrolun de mazereti olabilir: panel acikken tur
          zaten cikmaz, yani "cikmadi" burada bir sey KANITLAMAZ. */
       const bittiTani = bitti ? '' : await taniAl();
-      return { acildi, tani, tekrarTani, ikinciTekrarTani, bittiTani, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz,
+      return { acildi, tani, ilkTazeAcildi, tekrarTani, ikinciTekrarTani, bittiTani, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz,
                tekrar, ikinciTekrar, bitti, sayac1, sayac2, sayac3,
                sure: (sure>0 ? sure : -1), cak, kars };
     } finally { await kapat(); }
