@@ -102,41 +102,31 @@ when publishing an app for the first time."*
 
 ## 6. Ayarlar menüsü revizyonu (temizlik + kategori düzeni)
 
-**2026-09-15 — pj'nin sözü, sıraya alındı, henüz başlanmadı.** Aşağıdaki
-maddelerin hepsi tek bir oturumda ele alınacak — dağınık yapılırsa
-ayarlar paneli yarı-eski yarı-yeni bir karışıklığa döner.
+- [x] **2026-09-15 — KAPANDI.** Tek oturumda, üç commit'te teslim edildi.
 
-- [ ] **Onboarding çakışması**: ilk açılışta halkalarda gezinirken
-      "Don't show this again / SKIP" ve "Don't show effect tips / SKIP"
-      ipucu pencereleri üst üste binebiliyor. Tek bir akışta (şık bir
-      modal ya da mini interaktif tur) birleştirilecek.
-- [ ] **Diagnostics çok ön planda**: alt menüdeki "Diagnostics" ve
-      "Send Diagnostics" geliştirici debug alanı olarak değerli ama
-      son kullanıcı arayüzünde fazla göze çarpıyor, uygulamanın
-      "sanatsal/keşif" hissini bozuyor. Ayarların daha derinine
-      (ya da yalnızca hata anında görünür bir yere) taşınacak.
-- [ ] **"No Connection" ekranı retro estetiğe uysun**: şu an işlevsel
-      ama düz. Örnek yön: sinyal kaybetmiş bir radyo dalgası
-      illüstrasyonu eşliğinde "Sinyal Aranıyor..." efekti.
-- [ ] **"Sounds" → "Audio"**: ayarlardaki bu bölüm adı değişecek,
-      5 dilin hepsinde (tr/es/de/fr/it) çevirisiyle birlikte.
-- [ ] **Bölümler kategoriye göre yeniden düzenlenecek** (genel bir
-      geçiş, "sen bak" dendi — aşağıdaki iki madde bu geçişin
-      içindeki KESIN kararlar):
-  - [ ] **Skins random** şu an kendi başına/ayrı duruyor — **Skins**
-        bölümünün EN ALTINA taşınacak.
-  - [ ] **Ring ile ilgili ayarlar** kendi başlarına dağınık —
-        hepsi tek bir **Ring** bölümünde toplanacak.
-- [ ] **Yıldız yoğunluğu/seyrekliği**: mood (tam ekran görselleştirici)
-      açıldığında varsayılan **FULL** (en yoğun) olacak; kullanıcı
-      isterse kendi ayarından azaltabilecek — şu an varsayılan bu
-      değil.
-- [ ] **Çeviri kuralı**: yukarıdakilerden ekrana çıkan/değişen HER
-      metin 5 dilin hepsine eklenecek — pj'nin sözü: "bişey eklenirse
-      çevirisini unutma."
+- [x] **Onboarding çakışması**: tek seferlik açılış turu bitince FX
+      ipucunun hemen üst üste binmesi giderildi (tek kullanımlık
+      `_anaTurOtomatik`/`_anaTurBittiZaman` bayrağı — paylaşılan
+      `_turBitisZamani` kullanan ilk deneme tüm kanal değişimlerini
+      geciktiriyordu, testler yakaladı, geri alındı).
+- [x] **Diagnostics çok ön planda**: pj'nin kararıyla (hata sayısından
+      BAĞIMSIZ, her zaman gizli) yeni bir **ADVANCED** açılır satırının
+      arkasına taşındı; DIAGNOSTICS ve SEND DIAGNOSTICS artık panel
+      kapalı başlıyor.
+- [x] **"No Connection" ekranı retro estetiğe uysun**: sinyal halkası
+      animasyonu + "SEARCHING FOR SIGNAL…" metni eklendi.
+- [x] **"Sounds" → "Audio"**: 5 dilin hepsinde çevrildi.
+- [x] **Bölümler kategoriye göre yeniden düzenlendi**:
+  - [x] **Skins random**, Skins bölümünün en altına taşındı.
+  - [x] **Ring ayarları** tek bir Ring bölümünde toplandı.
+- [x] **Yıldız yoğunluğu/seyrekliği**: mood açıldığında varsayılan
+      **FULL** oldu.
+- [x] **Çeviri kuralı**: yukarıdakilerin hepsi 5 dile eklendi.
 
-Kapsam büyük ve dokunulan yer index.html + dil/*.json — tek task
-olarak ele alınacak, kural 6 (tek seferde bir açık iş) geçerli.
+Ayrıca aynı oturumda, bu maddenin dışından iki bildirim daha kapandı:
+Shazam düğmesi (`location.href` özel şema için, `window.open` yalnızca
+gerçek https yedek adresler için — konum artık sanatçı adından bağımsız,
+sabit) ve tip denetimi kapısındaki 4 yeni uyarı (taban 79'a geri döndü).
 
 - **Android TV**: leanback sarmalayıcı + D-pad ile gezilebilen
   "TV modu" gerekiyor. Kapsamı konuşuldu, ertelendi.
