@@ -4153,8 +4153,12 @@
          ayarlarinin yanina yazilmis olmasiydi. -->
     <!-- AUDIO -> SOUNDS (8 Eylul): kullanicinin sozu "audio adini da
          sounds yap, insanlar daha iyi anlar." Arsiv kipinin adi
-         SOUND BANKS, yani karisma yok. -->
-    <h5>SOUNDS</h5>
+         SOUND BANKS, yani karisma yok.
+         SOUNDS -> AUDIO (15 Eylul): kullanici karar degistirdi, ayarlar
+         menusu revizyonunun bir parcasi olarak "Sounds"un adi Audio
+         olsun dedi. SOUND BANKS (arsiv kipi anahtari) hala ayri ve
+         degismedi -- yalnizca bu bolum basligi degisti. -->
+    <h5>AUDIO</h5>
     <!-- ── BUTUN SESLER ────────────────────────────────────────────
          Tek anahtar: arama, tik ve cark tikirtisi birden susuyor.
          MUZIGI KAPATMIYOR -- kullanicinin sozu acikti: "muzigi
@@ -4210,27 +4214,16 @@
     <!-- Otuz deri tek ekranda: satiri otuz kere tiklamak diye bir sey
          yok. Kareler acilista degil, ILK ACILISTA kuruluyor. -->
     <div id="deriIzgara" class="deri-izgara" hidden></div>
-    <!-- ── RING (eski adi RINGS ONLY; 3 Eylul, kullanici: "adi ring
-         olsun") ─────────────────────────────────────────────────
-         Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
-         zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
-         kaliyor. Yalnizca deri acikken anlamli: deri kapaliyken
-         zaten oyle duruyor. SKINS'in hemen altinda: ayni konunun
-         devami. -->
-    <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
-      <span>RING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- ── HALKA BOYU: BES KADEME ────────────────────────────────
-         Kullanicinin sozu: "dikkatsiz sert cevrilince ortadaki
-         halkalara dokunuyor parmak... isteyen halkayi buyutur
-         kucultur mu yapsak, 5 kademe."
-         Kademe kucultururken CARKI YERINDE BIRAKIYOR: disler ayni
-         yaricapta kaliyor, halka iceri cekiliyor. Aradaki bant
-         hicbir seye dokunmayan bir olu bolge oluyor -- sert
-         cevirirken kayan parmak artik halkaya degil ona denk
-         geliyor. Ikisi birlikte kuculseydi oran degismez, sorun
-         oldugu yerde kalirdi. -->
-    <div class="sat islem" data-ayar="halkaBoy" role="button" tabindex="-1">
-      <span>RING SIZE</span><span class="durum">MEDIUM</span></div>
+    <!-- ── SKINS RANDOM SWITCH (15 Eylul: MORE'dan buraya tasindi) ──
+         Kullanicinin sozu: "skins random switch'i olsun. onu acarsa
+         biri her acilista baska skins deri gelsin" + "skins
+         bolumunun en altina koy" (ayarlar menusu revizyonu, 15
+         Eylul). SKINS izgarasinin hemen alti: ayni konunun devami,
+         Skins bolumunde en alt satir bu. VARSAYILAN KAPALI: acmak
+         bir tercih, secili deri varsayilan olarak SABIT kaliyor
+         (bkz. AYAR yuklenirken deriRastgele/deriTorba notu). -->
+    <div class="sat" data-ayar="deriRastgele" role="switch" tabindex="-1">
+      <span>RANDOM SKIN ON OPEN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ALL BLACK: zemin her rafta simsiyah. Tema secili olsa bile
          siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
@@ -4258,6 +4251,36 @@
          ile seyrek ama parlak bir gokyuzu cok farkli iki his. -->
     <div class="sat islem" data-ayar="yildizIsik" role="button" tabindex="-1">
       <span>STARLIGHT</span><span class="durum">NORMAL</span></div>
+
+    <!-- ── RING: KENDI BOLUMU (15 Eylul, ayarlar menusu revizyonu) ──
+         Once RING ve RING SIZE satirlari DISPLAY'in icinde, SKINS'in
+         hemen altinda duruyordu (adi RING olmasinin gerekcesi de o
+         zamandan: 3 Eylul, kullanici "adi ring olsun" demisti).
+         Kullanici bu kez butun ring ile ilgili ayarlarin TEK BASINA
+         kendi bolumunde toplanmasini istedi ("sen bak" dendigi genel
+         yeniden duzenlemenin icindeki KESIN karar). Iki satir da
+         DAVRANIS olarak DEGISMEDI, yalnizca yeri degisti. -->
+    <h5>RING</h5>
+    <!-- ── RING (eski adi RINGS ONLY; 3 Eylul, kullanici: "adi ring
+         olsun") ─────────────────────────────────────────────────
+         Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
+         zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
+         kaliyor. Yalnizca deri acikken anlamli: deri kapaliyken
+         zaten oyle duruyor. -->
+    <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
+      <span>RING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── HALKA BOYU: BES KADEME ────────────────────────────────
+         Kullanicinin sozu: "dikkatsiz sert cevrilince ortadaki
+         halkalara dokunuyor parmak... isteyen halkayi buyutur
+         kucultur mu yapsak, 5 kademe."
+         Kademe kucultururken CARKI YERINDE BIRAKIYOR: disler ayni
+         yaricapta kaliyor, halka iceri cekiliyor. Aradaki bant
+         hicbir seye dokunmayan bir olu bolge oluyor -- sert
+         cevirirken kayan parmak artik halkaya degil ona denk
+         geliyor. Ikisi birlikte kuculseydi oran degismez, sorun
+         oldugu yerde kalirdi. -->
+    <div class="sat islem" data-ayar="halkaBoy" role="button" tabindex="-1">
+      <span>RING SIZE</span><span class="durum">MEDIUM</span></div>
 
     <!-- ── PLAYBACK: SES CIHAZDAN NASIL CIKIYOR ────────────────────
          Tek satirlik bir bolum ama kendi sorusu var ve o soru ne
@@ -4367,15 +4390,22 @@
          aga hicbir sey gitmiyor, gonderme karari kullanicinin. -->
     <div class="sat islem" id="taniSatir" data-ayar="tanilama" role="button" tabindex="-1" hidden>
       <span>DIAGNOSTICS</span><span class="durum">0</span></div>
-    <!-- ── OLCUM: VARSAYILAN KAPALI ────────────────────────────────
-         Yukaridaki satir defteri GORUNUR yapiyor ama gondermeyi
-         kullaniciya birakiyor; kimse gondermezse sahada ne bozuldugunu
-         ogrenemiyoruz. Bu anahtar o kapiyi aciyor -- ve KAPALI
-         duruyor. Acilirsa giden sey: surum, kaba platform ve yutulan
-         hata imzalari. Kalici kimlik yok; istasyon, sarki, arama
-         kelimesi, favori, konum yok. Ayrintisi /privacy sayfasinda
-         ve olcu.js'in basinda. -->
-    <div class="sat" data-ayar="olcum" role="switch" tabindex="-1">
+    <!-- ── OLCUM: VARSAYILAN KAPALI, GORUNURLUGU DE TANISATIR'A BAGLI
+         (15 Eylul: "Diagnostics & Hata Yonetimi Alani ... cok goze
+         batiyor, ayarlarin derinine tasinabilir ya da yalnizca hata
+         olustugunda gorunur kilinabilir" -- ikinci yol secildi, cunku
+         DIAGNOSTICS satiri zaten ayni kuralla calisiyordu (bkz. yukari
+         yorum), ikisini AYNI kapiya baglamak yeni bir gosterge
+         gerektirmiyor. Sayi sifirsa (hic hata yutulmadiysa) bu anahtar
+         da yok -- sikayet edecek bir sey olmayan sirada gonderecek
+         diagnostic de yok. Yukaridaki satir defteri GORUNUR yapiyor
+         ama gondermeyi kullaniciya birakiyor; kimse gondermezse sahada
+         ne bozuldugunu ogrenemiyoruz. Bu anahtar o kapiyi aciyor -- ve
+         KAPALI duruyor. Acilirsa giden sey: surum, kaba platform ve
+         yutulan hata imzalari. Kalici kimlik yok; istasyon, sarki,
+         arama kelimesi, favori, konum yok. Ayrintisi /privacy
+         sayfasinda ve olcu.js'in basinda. -->
+    <div class="sat" id="olcumSatir" data-ayar="olcum" role="switch" tabindex="-1" hidden>
       <span>SEND DIAGNOSTICS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ── KELIMEYLE SOYLEMEK ────────────────────────────────────
          Yukaridaki anahtar MAKINENIN gordugunu gonderiyor: hata
@@ -4387,17 +4417,9 @@
          zaten hareketin kendisi. Ne gittigi panelde yaziyor. -->
     <div class="sat islem" id="geriSat" role="button" tabindex="-1">
       <span>REPORT A PROBLEM</span><span class="durum">OPEN</span></div>
-    <!-- ── SKINS RANDOM SWITCH ───────────────────────────────────
-         Kullanicinin sozu: "ayarlarda en alta bir yerde ama
-         belgelerin ustu olsun yine en alt degil ... skins random
-         switch'i olsun. onu acarsa biri her acilista baska skins
-         deri gelsin." Belgelerin (PRIVACY/TERMS) HEMEN ustunde,
-         RESET'in degil -- o gercekten en altta ve bilerek yalniz
-         kaliyor (bkz. SIFIRLA notu). VARSAYILAN KAPALI: acmak bir
-         tercih, secili deri varsayilan olarak SABIT kaliyor (bkz.
-         AYAR yuklenirken deriRastgele/deriTorba notu). -->
-    <div class="sat" data-ayar="deriRastgele" role="switch" tabindex="-1">
-      <span>RANDOM SKIN ON OPEN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- SKINS RANDOM SWITCH (deriRastgele) BURADAN TASINDI (15 Eylul):
+         kullanici "skins bolumunun en altina" dedi -- bkz. DISPLAY
+         icindeki SKINS izgarasinin hemen alti, artik orada. -->
     <a class="sat bag" href="/privacy" target="_blank" rel="noopener" tabindex="-1">
       <span>PRIVACY</span><span class="durum">OPEN</span></a>
     <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
@@ -10950,7 +10972,16 @@
      cark ile aciliyoruz"); otekiler: 'halka' (orijinal), 'yuvarlak'
      (derinin govdesi), 'faz' (ses tayfi). carkSes: cark cevrilirken
      cikan tik sesi -- ayarlarin AUDIO bolumunden kapatilabiliyor. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:1, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, gunDongusu:false, geceModu:false, deriRastgele:false, deriTorba:[] };
+  /* yildiz VARSAYILANI COSMIC'E CIKTI (15 Eylul, kullanici: "ilk
+     yildiz yogunluk ve seyreklik full mood ta olsun, isteyen kisar").
+     Onceki varsayilan 1 (LOW) idi -- ORBITAPE'e ilk giren biri
+     gokyuzunu seyrek goruyordu, oysa mood tam da bu goksel etkinin
+     en cok is yaptigi yer. YILDIZ_KADEME[4]='COSMIC' (en yogun);
+     yalnizca YENI kullaniciyi etkiler, kayitli tercihi olan
+     birinin degeri bu satirdan hic etkilenmez (localStorage'daki
+     deger her zaman kazanir). Kullanici "isteyen kisar" dedigi icin
+     ayardan asagi cekilebilir kalmali -- kilit yok. */
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, gunDongusu:false, geceModu:false, deriRastgele:false, deriTorba:[] };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -18699,14 +18730,19 @@
         if(el6) el6.textContent = Y(HALKA_AD[AYAR.halkaBoy|0] || 'MEDIUM');
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
-           baska is yapmaz. */
+           baska is yapmaz. SEND DIAGNOSTICS anahtari da (olcumSatir)
+           AYNI kapiya bagli -- 15 Eylul, "cok goze batiyor" geri
+           bildirimi: hic hata yutulmamis sirada gonderecek bir sey de
+           yok, o yuzden anahtar da menude gorunmuyor. */
         const ts = document.getElementById('taniSatir');
+        const n = yutSayisi();
         if(ts){
-          const n = yutSayisi();
           ts.hidden = !n;
           const d = ts.querySelector('.durum');
           if(d) d.textContent = n > 999 ? '999+' : String(n);
         }
+        const os = document.getElementById('olcumSatir');
+        if(os) os.hidden = !n;
       }catch(e){ _yut(e); }
     }
     /* RING: ayni karede uygula. Iki kumanda var -- ayarlardaki

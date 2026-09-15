@@ -14256,15 +14256,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            otomatige donmenin YOLU YOKTU. */
         await dilTikla('fr');
         const fra = { dil: DIL, baslik: g('#ayar h5'),
+                      sifirla: g('.sat[data-ayar="sifirla"] span'),
                       durum: g('.sat[data-ayar="dil"] .durum') };
         await dilTikla('es');
-        const isp = { dil: DIL, baslik: g('#ayar h5') };
+        const isp = { dil: DIL, baslik: g('#ayar h5'),
+                      sifirla: g('.sat[data-ayar="sifirla"] span') };
         await dilTikla('de');
-        const alm = { dil: DIL, baslik: g('#ayar h5') };
+        const alm = { dil: DIL, baslik: g('#ayar h5'),
+                      sifirla: g('.sat[data-ayar="sifirla"] span') };
         /* ITALYANCA (14 Eylul): ayni duzenekten geciyor, ayni sekilde
            sinaniyor -- yeni bir yol yazmaya gerek yok. */
         await dilTikla('it');
         const ita = { dil: DIL, baslik: g('#ayar h5'),
+                      sifirla: g('.sat[data-ayar="sifirla"] span'),
                       durum: g('.sat[data-ayar="dil"] .durum') };
         await dilTikla('');
         const oto = { dil: DIL, baslik: g('#ayar h5'),
@@ -14311,8 +14315,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      trd.tr.dil === 'tr' && trd.tr.lang === 'tr' && trd.tr.sozluk > 100,
      'dil ' + trd.tr.dil + ' | lang="' + trd.tr.lang + '" | ' + trd.tr.sozluk + ' anahtar');
   /* 8 Eylul: bolumun adi AUDIO -> SOUNDS (kullanicinin istegi:
-     "audio adini sounds yap"), karsiligi SES -> SESLER. */
-  K('Ayarlar Turkce', trd.turkceMi === true && trd.tr.baslik === 'SESLER'
+     "audio adini sounds yap"), karsiligi SES -> SESLER.
+     15 Eylul: geri SOUNDS -> AUDIO (ayarlar menusu revizyonu,
+     magaza/KALANLAR.md #6), karsiligi SESLER -> SES. */
+  K('Ayarlar Turkce', trd.turkceMi === true && trd.tr.baslik === 'SES'
      && trd.tr.sifirla === 'AYARLARI SIFIRLA',
      '"' + trd.tr.baslik + '" | "' + trd.tr.sifirla + '"');
   K('Ekran okuyucu adlari da Turkce', trd.tr.etiket === 'Ayarlar',
@@ -14340,28 +14346,39 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Tur ve raf adlari CEVRILMIYOR', trd.veri === true && trd.tus === true,
      'JAZZ/AMBIENT/NATURE/RADIOTAPE ve REC/CAM oldugu gibi');
   K('Sozluk gelmezse Ingilizce kaliyor',
-     trd.yedek.baslik === 'SOUNDS' && trd.yedek.sifirla === 'RESET SETTINGS',
+     trd.yedek.baslik === 'AUDIO' && trd.yedek.sifirla === 'RESET SETTINGS',
      'eksik ceviri Ingilizce gorunuyor, bos ekran olmuyor');
   K('Dil iki yonlu degisiyor',
-     trd.ing.dil === 'en' && trd.ing.baslik === 'SOUNDS'
-     && trd.ing.durum === 'ENGLISH' && trd.geri.dil === 'tr' && trd.geri.baslik === 'SESLER',
+     trd.ing.dil === 'en' && trd.ing.baslik === 'AUDIO'
+     && trd.ing.durum === 'ENGLISH' && trd.geri.dil === 'tr' && trd.geri.baslik === 'SES',
      'TR -> EN -> TR');
   /* ── YENI DILLER (12 Eylul) ─────────────────────────────────────
      Ucu de ayni duzenekten geciyor, yine de ayri ayri olculuyor:
      bir sozluk dosyasi yayina cikmazsa ya da adi yanlis yazilirsa
      o dil SESSIZCE Ingilizce kalirdi -- ekranda bir hata yok,
      yalnizca cevrilmemis bir panel. */
+  /* 15 Eylul: baslik artik AUDIO -- ve AUDIO fr/es/de/it'te de AYNI
+     KELIME (dort dilde de yaygin sekilde oldugu gibi kullaniliyor,
+     bkz. dil/*.json). Yani baslik tek basina "gercekten cevrildi mi"
+     sorusunu artik kanitlamiyor -- Ingilizceyle esit olmasi HATA
+     DEGIL. Kanit RESET SETTINGS satirindan geliyor: o hala dilden
+     dile FARKLI, sozluk gelmediyse Ingilizce ('RESET SETTINGS')
+     kalirdi. */
   K('Ispanyolca, Almanca, Fransizca gercekten uygulaniyor',
-     trd.fra.dil === 'fr' && trd.fra.baslik === 'SONS'
-     && trd.isp.dil === 'es' && trd.isp.baslik === 'SONIDOS'
-     && trd.alm.dil === 'de' && trd.alm.baslik === 'TÖNE',
-     'fr "' + trd.fra.baslik + '" | es "' + trd.isp.baslik
-     + '" | de "' + trd.alm.baslik + '"');
+     trd.fra.dil === 'fr' && trd.fra.baslik === 'AUDIO'
+     && trd.fra.sifirla === 'RÉINITIALISER LES RÉGLAGES'
+     && trd.isp.dil === 'es' && trd.isp.baslik === 'AUDIO'
+     && trd.isp.sifirla === 'RESTABLECER AJUSTES'
+     && trd.alm.dil === 'de' && trd.alm.baslik === 'AUDIO'
+     && trd.alm.sifirla === 'EINSTELLUNGEN ZURÜCKSETZEN',
+     'fr "' + trd.fra.sifirla + '" | es "' + trd.isp.sifirla
+     + '" | de "' + trd.alm.sifirla + '"');
   /* ITALYANCA (14 Eylul): ayri bir dil, kullanicinin istegi
      "İtalyanca dil desteği ekle" idi. Ayni duzenek, ayni olcum. */
   K('Italyanca gercekten uygulaniyor',
-     trd.ita.dil === 'it' && trd.ita.baslik === 'SUONI',
-     'it "' + trd.ita.baslik + '"');
+     trd.ita.dil === 'it' && trd.ita.baslik === 'AUDIO'
+     && trd.ita.sifirla === 'RIPRISTINA IMPOSTAZIONI',
+     'it "' + trd.ita.sifirla + '"');
   /* Dil ADI cevrilmiyor: Fransizca acilan ekranda "ENGLISH" satiri
      "ANGLAIS" olsaydi Ingilizce arayan kendi dilini bulamazdi. */
   K('Dil adi kendi dilinde kaliyor', trd.fra.durum === 'FRANÇAIS',
@@ -14371,7 +14388,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* OTOMATIK: eski dongude ucuncu bir durak yoktu, yani bir kez
      elle sectikten sonra telefonun diline donmenin YOLU YOKTU. */
   K('OTOMATIK telefonun diline geri donuyor',
-     trd.oto.dil === 'tr' && trd.oto.baslik === 'SESLER' && trd.oto.kayitli === null,
+     trd.oto.dil === 'tr' && trd.oto.baslik === 'SES' && trd.oto.kayitli === null,
      'secim silindi, cihaz dili (tr) geri geldi');
   /* Alti dilde tek bir onbellek anahtari bir dilin sozlugunu
      otekinin uzerine yazardi: anahtar dili tasiyor. */
