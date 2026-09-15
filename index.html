@@ -3590,7 +3590,26 @@
   #tur{position:fixed;inset:0;z-index:120;pointer-events:none;opacity:0;
     transition:opacity .5s ease;font-family:'Share Tech Mono',ui-monospace,monospace;}
   #tur.on{opacity:1;}
-  #tur .perde{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,rgba(0,0,0,0) 30%,rgba(0,0,0,.42) 100%);}
+  /* ── ARKA PLAN TEMAYA UYUYOR (15 Eylul) ────────────────────────
+     Once sabit siyahti. Kullanicinin sozu: "tatli backgroundla o
+     anki tema renkleri ile." --d-zem HER DERIDE zaten var
+     (deriUygula, :root uzerinde) -- sabiti onunla degistirmek
+     yetiyor, yeni bir renk tablosu gerekmiyor. color-mix destegi
+     yoksa (eski tarayici) rgba yedek olarak once yaziliyor. */
+  #tur .perde{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,rgba(0,0,0,0) 30%,rgba(0,0,0,.42) 100%);
+    background:radial-gradient(120% 90% at 50% 50%,color-mix(in srgb, var(--d-zem,#05080a) 0%, transparent) 30%,color-mix(in srgb, var(--d-zem,#05080a) 76%, transparent) 100%);}
+  /* display:none KAPALIYKEN: WCAG 4.1.2 denetimi 'aria-hidden agacinda
+     odaklanabilir eleman kalmasin' diyor. #tur.opacity:0 gorsel olarak
+     gizler ama getBoundingClientRect genisligi sifirlamaz -- SKIP/kutu
+     bu yuzden hep '.alt.gor' ile ayni kapiyi kullaniyordu, carpi da
+     ayni kapidan geciyor. */
+  #tur .kapat{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));
+    right:calc(14px + env(safe-area-inset-right,0px));width:34px;height:34px;
+    display:none;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;
+    border:1px solid rgba(150,200,195,.35);border-radius:50%;background:rgba(8,16,18,.55);
+    color:#cfe9e4;font-size:1.05rem;line-height:1;}
+  #tur.on .kapat{display:flex;}
+  #tur .kapat:hover{color:#eafffb;border-color:rgba(180,240,230,.6);}
   #tur .el{position:absolute;left:0;top:0;width:34px;height:45px;color:#bff3e8;
     transform:translate(-11px,-8px);opacity:0;
     transition:transform .95s cubic-bezier(.33,.9,.3,1), opacity .4s ease;}
@@ -3616,6 +3635,9 @@
     display:flex;align-items:center;justify-content:space-between;
     padding:0 calc(18px + env(safe-area-inset-left,0px)) 0 calc(18px + env(safe-area-inset-right,0px));
     pointer-events:none;}
+  /* #turAlt'ta kutu kalkinca TEK COCUK kaldi (SKIP); space-between
+     onu sola yapistirirdi -- SKIP hep SAGDAYDI, yeri degismesin. */
+  #tur .alt#turAlt{justify-content:flex-end;}
   /* İki alt satır da varsayılan olarak KAPALI; hangisi gerekiyorsa
      JS onu açıyor (turBasla -> #turAlt, fxSunumBasla -> #fxAlt). */
   #tur .alt{display:none;}
@@ -4027,6 +4049,14 @@
   </div>
   <div id="tur" aria-hidden="true" inert>
     <div class="perde"></div>
+    <!-- ── ÇARPI İLE ANINDA KAPAT (15 Eylul) ─────────────────────
+         Kullanicinin sozu: "carpi ile kapat." Butun turlarda ayni
+         (acilis, SOUND BANKS, EFFECTS, HOW IT WORKS'ten istenen) --
+         turBitir() zaten NEREDE kesilirse kesilsin dogru temizligi
+         yapiyor (bkz. turBitir basi). Metni cevrilmiyor: tek
+         basina '#tur' DIL_ALAN'da degil, ekledigimiz tek kelime
+         de ikon niyetine (x). -->
+    <button class="kapat" id="turKapat" type="button" aria-label="Close">✕</button>
     <div class="halka"></div>
     <svg class="el" viewBox="0 0 44 58" fill="none" stroke="currentColor" stroke-width="2"
          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -4037,8 +4067,14 @@
     <div class="yazi"></div>
     <div class="cizgi"></div>
     <!-- AÇILIŞ TURUNUN alt satırı. Yalnızca ilk giriş turunda görünür. -->
+    <!-- "DON'T SHOW THIS AGAIN" KUTUSU KALKTI (15 Eylul). Kullanicinin
+         sozu: "bir tek skip [olsun]." Kutuya artik gerek yok: 3
+         atlamada zaten kalici kapaniyor (bkz. TUR_ATLAMA_TAVAN, 12-13
+         Eylul'den beri kodda). FX sunumunun KENDI kutusu (#fxKutu,
+         hemen alttaki blok) BILEREK duruyor -- onun boyle bir sayaci
+         yok (turBitir'deki '!_fxSunumAkiyor' sartina bak), kutusu
+         kalksaydi kalici kapatmanin hicbir yolu kalmazdi. -->
     <div class="alt" id="turAlt">
-      <span class="kutu" id="turKutu" role="checkbox" aria-checked="false" tabindex="0"><i></i>Don't show this again</span>
       <span class="atla" id="turAtla" role="button" tabindex="0">SKIP</span>
     </div>
     <!-- FX SUNUMUNUN KENDİ alt satırı. AYRI DÜĞMELER, AYRI KAYIT:
@@ -4356,8 +4392,15 @@
          yapmayan bir dugme olurdu.
          Yukaridaki uc satir bundan ETKILENMIYOR: anahtar
          KENDILIGINDEN cikmayi kapatiyor, elle istemeyi degil. -->
+    <!-- ── "GUIDE" (15 Eylul, eskiden SHOW ON OPEN) ─────────────────
+         Kullanicinin sozu: "adi da rehber olur her dilde, kullanim
+         kilavuzu gibi ... istediginde ordan bastigi gibi izleyebilsin."
+         Iki degisiklik: ad degisti VE davranis degisti -- eskiden
+         acinca yalniz bir sonraki acilisa isaretliyordu (bkz. asagidaki
+         k==='tanitim' isleyicisi), simdi basinca turu HEMEN de
+         baslatiyor. -->
     <div class="sat" data-ayar="tanitim" role="switch" tabindex="-1">
-      <span>SHOW ON OPEN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+      <span>GUIDE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ── EN ALT: okumaya ve bilmeye hakki olan seyler ───────────
          Sik kullanilmaz ama her zaman ULASILABILIR olmali. Sirasi da
          bu yuzden en altta: onem sirasi yukaridan asagi. -->
@@ -19236,7 +19279,15 @@
       if(k === 'tanitim' && AYAR.tanitim){
         try{ localStorage.removeItem(TUR_ANAHTAR);
              localStorage.removeItem(FXSUNUM_ANAHTAR);
-             localStorage.removeItem(FXSUNUM_LISTE); }catch(e){ _yut(e); }
+             localStorage.removeItem(FXSUNUM_LISTE);
+             /* 15 Eylul: GUIDE artik basinca da HEMEN izlenebiliyor,
+                yalniz bir sonraki acilisi isaretlemiyor. Eski sayimin
+                kalintisi kapatmasin diye atlama sayaci da sifirlaniyor
+                (kullanicinin sozu: "istediginde ordan bastigi gibi
+                izleyebilsin" -- yani her basista taze bir sans). */
+             localStorage.removeItem(TUR_ATLAMA_ANAHTAR); }catch(e){ _yut(e); }
+        try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){ _yut(e); }
+        setTimeout(()=>{ try{ turBasla(true); }catch(e){ _yut(e); } }, 260);
       }
       /* Kilit zemini aninda etkiliyor: acinca tema saflasiyor,
          kapayinca rafin rengi geri karisiyor. */
@@ -20276,16 +20327,17 @@
     const y = t.querySelector('.yazi');
     y.classList.remove('gor');
     setTimeout(()=>{
-      /* ── TUR METINLERI TEK YERDE CEVRILIYOR ────────────────────
-         Otuza yakin adimin her birini ayri ayri sarmak yerine
-         cevirinin tek gecidi burasi: butun turlar (acilis, ORBITAPE
-         tanitimi, FX sunumu) bu satirdan geciyor. Adim eklendiginde
-         cevrilmesi icin bir sey yapmak gerekmiyor -- unutulacak bir
-         adim kalmiyor.
-         Ym: metin iki satirlik ve <br> ile ayriliyor; her cumle
-         sozlukte AYRI anahtar. Boylece sozlukte ekranda gorunen
-         cumleler duruyor, birlestirilmis uzun diziler degil. */
-      y.innerHTML = '<b>'+Y(baslik)+'</b>'+Ym(metin);
+      /* ── UZUN ACIKLAMA CUMLESI KALKTI (15 Eylul) ────────────────
+         Kullanicinin sozu: "bizim tanitimda yazilar olmasin, bir tek
+         skip. elle gostererek dolasir." Artik yalniz KISA baslik
+         kaliyor (bas) -- konum zaten halka/el ile gosteriliyor,
+         okumaya gerek yok. 'metin' parametresi hala her adimda
+         geliyor (turAdimlari/fxSunumAdimlari) ama BURADA
+         KULLANILMIYOR: adimlarin ingilizce cumlelerini silmek
+         otuza yakin satiri tek tek elden gecirmek demekti, oysa
+         onlari BURADA gostermemek ayni sonucu tek satirla veriyor.
+         Metin bir gun geri istenirse adimlarda hazir duruyor. */
+      y.innerHTML = '<b>'+Y(baslik)+'</b>';
       /* Yazı ALT SATIRDAN yukarı doğru yerleşiyor: noktalar hemen
          üstünde, yazı onun üstünde. Diskin altındaki büyük kategori
          yazısıyla çakışmasın diye taban da kontrol ediliyor. */
@@ -20974,19 +21026,18 @@
     if(t){ t.classList.remove('on','gor'); t.setAttribute('aria-hidden','true');
            setTimeout(()=>{ try{ t.querySelector('.halka').classList.remove('gor');
                                  t.querySelector('.yazi').classList.remove('gor'); }catch(e){ _yut(e); } }, 500); }
-    /* Kutu işaretliyse bir daha gösterme. İşaretli değilse hiçbir şey
-       yazmıyoruz: bir sonraki açılışta yine çıkar.
-       HANGİ kutuya bakıldığı ekranda ne olduğuna bağlı — ikisi ayrı
-       düğme, ayrı anahtar. Açılış turunun kutusu FX'i, FX'in kutusu
-       açılış turunu ASLA kapatmıyor. */
+    /* Kutu işaretliyse bir daha gösterme. FX sunumunun kendi kutusu
+       hâlâ duruyor (#fxKutu) -- onun sayaci yok, kalici kapatmanin
+       tek yolu bu. AÇILIŞ TURUNUN KUTUSU (#turKutu) 15 Eylul'de
+       KALKTI ("bir tek skip olsun"): o daldaki kalici kapatma artik
+       tek yoldan geliyor, TUR_ATLAMA_TAVAN (bkz. turAtlamaArtir,
+       yukarida bu fonksiyonun basinda cagriliyor). */
     if(_fxSunumuydu){
       if(turKutuDurum('fxKutu')){
         try{ localStorage.setItem(FXSUNUM_ANAHTAR, '1'); }catch(e){ _yut(e); }
         try{ const kt = document.getElementById('fxKutu');
              if(kt){ kt.classList.remove('sec'); kt.setAttribute('aria-checked','false'); } }catch(e){ _yut(e); }
       }
-    } else if(turKutuDurum('turKutu')){
-      try{ localStorage.setItem(TUR_ANAHTAR, '1'); }catch(e){ _yut(e); }
     }
     /* Tur bitti: hâlâ hiçbir yere dokunulmadıysa karşılama eli
        kendi kuralıyla çıkabilsin. */
@@ -21013,6 +21064,14 @@
     };
     bagla('turKutu','turAtla');
     bagla('fxKutu','fxAtla');
+    /* ÇARPI: hangi tur akiyorsa aksin (acilis, SOUND BANKS, EFFECTS,
+       HOW IT WORKS'ten istenen) turBitir() zaten dogru temizligi
+       kendisi yapiyor -- SKIP'ten farki yok, o da ayni fonksiyona
+       gidiyor. Sayaca da SKIP ile AYNI kuraldan giriyor (bkz.
+       turBitir basindaki '_bitti' kontrolu): zorla (yavas) turda
+       sayilmiyor, kendiliginden acilan hizli turda sayiliyor. */
+    const kapatTus = document.getElementById('turKapat');
+    if(kapatTus){ kapatTus.addEventListener('click', e=>{ e.stopPropagation(); turBitir(); }); }
   }catch(e){ _yut(e); }
   /* ══ REHBER: KAYBOLDUGUNU HISSEDINCE TEK BIR EL ═════════════════
      Kullanicinin istegi: "biri tutorialslari kapamazsa, ara ara

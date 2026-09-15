@@ -1013,8 +1013,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        window.open'i engellemesi), sonra kullanicinin son karari:
        "shazamı koyma sil, grafiksel olarak da olmadı zaten." Butun
        ozellik (dugme, yedek link, sarkiTaniAc, gorsel.js'teki
-       z-index istisnasi) kaldirildi -- 1263'un de altina indi. */
-    K('Ham boy < 1263 KB', dosyaBoy < 1263*1024,
+       z-index istisnasi) kaldirildi -- 1263'un de altina indi.
+       15 EYLUL (ayarlara YOUTUBE baglantisi): 1259,6 -> 1260 (yuvarlanmis).
+       15 EYLUL (tanitim turu sadelestirmesi): 1260 -> 1264,5. Kullanicinin
+       istegi: "bizim tanitimda yazilar olmasin, bir tek skip ... carpi
+       ile kapat ... adi da rehber olur." Uzun aciklama cumlesi ekrandan
+       kalkti (turYaz artik yalniz kisa basligi yaziyor), arka plan
+       --d-zem ile temaya uydu, sag ustte carpi (#turKapat) eklendi,
+       "Don't show this again" kutusu (#turKutu) kaldirildi -- kalici
+       kapatma artik yalniz 3 atlama (TUR_ATLAMA_TAVAN), "SHOW ON OPEN"
+       ayari "GUIDE" oldu ve basinca turu hemen de baslatiyor. Hepsi
+       kod + yorum, yeni dosya yok; tavan 1268'e cekildi. */
+    K('Ham boy < 1268 KB', dosyaBoy < 1268*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -3218,10 +3228,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          ölçüp yaziyoruz. */
       const taniAl = ()=> pp.evaluate(()=>{
         const p = [];
-        try{ if(!turGosterilsinMi()) p.push('depoda orbitape.tur=1 (kutu isaretli sayiliyor)'); }catch(e){ p.push('turGosterilsinMi okunamadi'); }
+        try{ if(!turGosterilsinMi()) p.push('depoda orbitape.tur=1'); }catch(e){ p.push('turGosterilsinMi okunamadi'); }
         try{ if(document.getElementById('agyok').classList.contains('on')) p.push('agyok paneli acik (_agBos='+_agBos+')'); }catch(e){}
         try{ if(_turAkiyor) p.push('_turAkiyor zaten true'); }catch(e){}
-        try{ if(document.getElementById('turKutu').classList.contains('sec')) p.push('turKutu isaretli'); }catch(e){}
+        /* KUTU KALKTI (15 Eylul): kalici kapatmanin tek olcutu artik
+           atlama sayaci. */
+        try{ if(typeof turAtlamaSayisi==='function' && turAtlamaSayisi() >= TUR_ATLAMA_TAVAN)
+               p.push('turAtlamaSayisi='+turAtlamaSayisi()+' (tavana ulasti)'); }catch(e){}
         return p.length ? p.join(' + ') : 'sebep bulunamadi';
       });
       const tani = acildi ? '' : await taniAl();
@@ -3240,10 +3253,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const ingilizce = await pp.evaluate(()=>{
         const t=document.getElementById('tur').textContent||'';
         return !/[ğüşıöçĞÜŞİÖÇ]/.test(t); });
+      /* KUTU KALKTI (15 Eylul, kullanici: "bir tek skip olsun"). Simdi
+         olculen: SKIP metni dogru mu, cikis carpisi (#turKapat) var mi
+         ve saga yakin mi (sag ust kose), kutu gercekten DOM'da yok mu
+         -- ucu de tek olcumde. */
       const dugme = await pp.evaluate(()=>{
-        const a=document.getElementById('turAtla'), k=document.getElementById('turKutu');
-        return { atla:(a&&a.textContent||'').trim(), kutu:(k&&k.textContent||'').trim(),
-                 atlaSagda: a && k ? a.getBoundingClientRect().left > k.getBoundingClientRect().left : false }; });
+        const a=document.getElementById('turAtla'), x=document.getElementById('turKapat');
+        const vw = window.innerWidth;
+        return { atla:(a&&a.textContent||'').trim(),
+                 kutuYok: !document.getElementById('turKutu'),
+                 carpiVar: !!x,
+                 carpiSagda: x ? x.getBoundingClientRect().right > vw*0.7 : false }; });
       /* ilerliyor mu — yine tavana kadar: adim suresi makineye gore
          birkac yuz milisaniye kayabiliyor, "ilerliyor mu" sorusunun
          cevabi bundan degismemeli. */
@@ -3301,54 +3321,67 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         });
         await pp.waitForTimeout(1500);
       }
-      /* SKIP: kutu isaretlenmeden -> tekrar cikmali */
+      /* ── UC ATLAMA (15 Eylul, kutu kalkinca yeniden yazildi) ────────
+         Eskiden "kutu isaretlenirse bir daha cikmaz" tek tiklamada
+         olculuyordu. Kutu kalkinca kalici kapatmanin TEK yolu 3 atlama
+         (TUR_ATLAMA_TAVAN) -- yani ayni seyi olcmek icin SKIP + reload
+         UC KERE tekrarlanmali: ilk ikisinde yine cikmali (sayac 1, 2),
+         UCUNCUDEN SONRA cikmamali (sayac 3 = tavan). */
       /* TUR KENDILIGINDEN BITEBILIYOR. Adim sayisi degistikce bu
          dongu turdan uzun surebiliyor ve SKIP gorunmez oluyordu ->
          test kod hatasi yokken cokuyordu. Acikken tikla, kapanmissa
          zaten istenen son durumdayiz. */
-      await pp.evaluate(()=>{ try{ const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
+      const skipEt = ()=> pp.evaluate(()=>{ try{ const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
+      await skipEt();
       await pp.waitForTimeout(400);
       const kapandi = await pp.evaluate(()=>!document.getElementById('tur').classList.contains('on'));
       const temiz = await pp.evaluate(()=>({fx:FXMOD, oniz:_onizMod}));
+      const sayac1 = await pp.evaluate(()=>turAtlamaSayisi());
       await pp.reload();
-      const tekrar = await turBekle(TUR_TAVAN);
+      const tekrar = await turBekle(TUR_TAVAN);            // sayac=1: yine cikmali
       const tekrarTani = tekrar ? '' : await taniAl();
-      /* kutu isaretli -> bir daha cikmamali */
-      /* DOGRUDAN element.click(): tur kendiliginden kapanmis olabilir
-         ve o zaman Playwright "gorunmuyor" diye bekliyor. Burada
-         olculen sey kutunun ISI, tiklanabilirligi degil. */
-      await pp.evaluate(()=>{ try{ const k=document.getElementById('turKutu'); if(k) k.click();
-                                   const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
-      await pp.waitForTimeout(300);
+      await skipEt(); await pp.waitForTimeout(300);
+      const sayac2 = await pp.evaluate(()=>turAtlamaSayisi());
       await pp.reload();
-      const bitti = await turBekle(TUR_TAVAN);
+      const ikinciTekrar = await turBekle(TUR_TAVAN);       // sayac=2: yine cikmali
+      const ikinciTekrarTani = ikinciTekrar ? '' : await taniAl();
+      await skipEt(); await pp.waitForTimeout(300);
+      const sayac3 = await pp.evaluate(()=>turAtlamaSayisi());
+      await pp.reload();
+      const bitti = await turBekle(TUR_TAVAN);              // sayac=3=tavan: ARTIK CIKMAMALI
       /* Olumsuz kontrolun de mazereti olabilir: panel acikken tur
          zaten cikmaz, yani "cikmadi" burada bir sey KANITLAMAZ. */
       const bittiTani = bitti ? '' : await taniAl();
-      return { acildi, tani, tekrarTani, bittiTani, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz, tekrar, bitti,
+      return { acildi, tani, tekrarTani, ikinciTekrarTani, bittiTani, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz,
+               tekrar, ikinciTekrar, bitti, sayac1, sayac2, sayac3,
                sure: (sure>0 ? sure : -1), cak, kars };
     } finally { await kapat(); }
   })();
-  if(tur && tur.atlandi){ yavas('Tanitim turu (11 kontrol) — olculemedi: '+tur.atlandi); }
-  else if(!tur){ yavas('Tanitim turu (11 kontrol)'); } else {
+  if(tur && tur.atlandi){ yavas('Tanitim turu (12 kontrol) — olculemedi: '+tur.atlandi); }
+  else if(!tur){ yavas('Tanitim turu (12 kontrol)'); } else {
   K('Tur ilk acilista cikiyor', tur.acildi, tur.acildi ? 'gorunur' : ('cikmadi: '+tur.tani));
   K('Tur INGILIZCE', tur.ingilizce, 'turkce karakter yok');
   K('Tur kendi ilerliyor', tur.ilerledi, '2.4 sn icinde adim degisti');
   K('Tur HIZLI (<20 sn)', tur.sure > 0 && tur.sure < 20000, (tur.sure/1000).toFixed(1)+' sn');
   K('Tur katmanlari cakismiyor', tur.cak === 0, tur.cak+' cakisma / 8 olcum');
   K('Tur sirasinda karsilama eli YOK', tur.kars === false, 'ortadaki el kapali');
-  K('SKIP sagda, kutu solda', tur.dugme.atla==='SKIP' && /Don.t show this again/.test(tur.dugme.kutu) && tur.dugme.atlaSagda,
-     tur.dugme.atla+' | '+tur.dugme.kutu);
+  /* KUTU KALKTI (15 Eylul, kullanici: "bir tek skip olsun"). #turKutu
+     artik DOM'da hic yok; kapatma carpisi (#turKapat) sag ust kosede. */
+  K('SKIP dogru, kutu yok, carpi sagda', tur.dugme.atla==='SKIP' && tur.dugme.kutuYok && tur.dugme.carpiVar && tur.dugme.carpiSagda,
+     tur.dugme.atla+' | kutuYok='+tur.dugme.kutuYok+' | carpiSagda='+tur.dugme.carpiSagda);
   K('SKIP turu kapatiyor', tur.kapandi, 'kapandi');
   K('Tur bitince temiz birakiyor', tur.temiz.fx==='' && tur.temiz.oniz==='', 'FX "'+tur.temiz.fx+'" | onizleme "'+tur.temiz.oniz+'"');
   /* Ayni kural burada da: panel acikken tur zaten cikmaz, o yuzden
      "cikti/cikmadi" hicbir sey soylemez -- olcum yapilamadi, atlandi. */
   if(!tur.tekrar && /agyok/.test(tur.tekrarTani))
-    yavas('Kutu isaretlenmezse TEKRAR cikar — olculemedi: '+tur.tekrarTani);
-  else K('Kutu isaretlenmezse TEKRAR cikar', tur.tekrar, tur.tekrar ? 'standart davranis' : ('cikmadi: '+tur.tekrarTani));
+    yavas('1. skipten sonra TEKRAR cikar — olculemedi: '+tur.tekrarTani);
+  else K('1. skipten sonra TEKRAR cikar (sayac 1<3)', tur.tekrar && tur.sayac1===1, 'sayac='+tur.sayac1+' | '+(tur.tekrar?'cikti':'cikmadi: '+tur.tekrarTani));
+  if(!tur.ikinciTekrar && /agyok/.test(tur.ikinciTekrarTani))
+    yavas('2. skipten sonra TEKRAR cikar — olculemedi: '+tur.ikinciTekrarTani);
+  else K('2. skipten sonra TEKRAR cikar (sayac 2<3)', tur.ikinciTekrar && tur.sayac2===2, 'sayac='+tur.sayac2+' | '+(tur.ikinciTekrar?'cikti':'cikmadi: '+tur.ikinciTekrarTani));
   if(!tur.bitti && /agyok/.test(tur.bittiTani))
-    yavas('Kutu isaretlenirse bir daha cikmaz — olculemedi: '+tur.bittiTani);
-  else K('Kutu isaretlenirse bir daha cikmaz', !tur.bitti, 'depoya yazildi');
+    yavas('3. skipten sonra bir daha cikmaz — olculemedi: '+tur.bittiTani);
+  else K('3. skipten sonra bir daha cikmaz (TUR_ATLAMA_TAVAN)', !tur.bitti && tur.sayac3===3, 'sayac='+tur.sayac3+' (tavan=3)');
   }
 
   /* ── TANITIMLAR: KISA, OGRENILENI TEKRARLAMAYAN, KAPATILABILIR ───
@@ -5477,10 +5510,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     modSec('HUMAN',    true); await bek(700);
     const turSonra = _fxSunumAkiyor, turSonraAlt = alt();
     /* Kutuyu isaretle + SKIP: bir daha cikmamali */
-    /* FX sunumunun KENDI kutusu ve KENDI skip'i (acilis turununki degil) */
+    /* FX sunumunun KENDI kutusu ve KENDI skip'i (acilis turununki degil).
+       Acilis turunun KUTUSU 15 Eylul'de kalkti; karsiliginda simdi
+       olculen sey onun ATLAMA SAYACI (turAtlamaSayisi) -- FX'in kutusuna
+       basmak o sayaci ARTIRMAMALI. */
     const turDepoOnce = (()=>{ try{ return localStorage.getItem('orbitape.tur'); }catch(e){ return null; } })();
+    const turSayaciOnce = (()=>{ try{ return turAtlamaSayisi(); }catch(e){ return -1; } })();
     document.getElementById('fxKutu').click(); await bek(60);
-    const turKutusuTemiz = !document.getElementById('turKutu').classList.contains('sec');
+    const turKutusuTemiz = turSayaciOnce === (()=>{ try{ return turAtlamaSayisi(); }catch(e){ return -2; } })();
     document.getElementById('fxAtla').click(); await bek(250);
     const turDepoSonra = (()=>{ try{ return localStorage.getItem('orbitape.tur'); }catch(e){ return null; } })();
     const turDeposuTemiz = (turDepoOnce === turDepoSonra);
@@ -5556,7 +5593,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     _fxKullanildi = true;
     if(AKTIF_MOD) modSec(AKTIF_MOD, false);
     AKTIF_MOD = null;
-    try{ ['turKutu','fxKutu'].forEach(i=>document.getElementById(i).classList.remove('sec')); }catch(e){}
+    /* turKutu 15 Eylul'de kalkti (DOM'da yok); temizlenecek tek kutu fxKutu. */
+    try{ const k=document.getElementById('fxKutu'); if(k) k.classList.remove('sec'); }catch(e){}
     cal({mp3:'temiz2', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(120);
     try{ recPasifYaz(); }catch(e){}
     return { bir, birAlt, gecen, iki, ayni, ayniAlt, radyo, turSonra, turSonraAlt, kutuDepo, kapali,
@@ -5658,7 +5696,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        !!ust && ust.tut.gorunur === true && ust.cakisma === false,
        'uc cizgi panelin disinda ve tiklanabilir');
   }
-  K('FX sunumunun KENDI kutusu var', fs2.turKutusuTemiz===true, '#fxKutu ayri, acilis turununki etkilenmiyor');
+  K('FX kutusu acilis turunun atlama sayacini etkilemiyor', fs2.turKutusuTemiz===true, '#fxKutu ayri, turAtlamaSayisi degismedi');
   K('FX kutusu acilis turunu kapatmaz', fs2.turDeposuTemiz===true, 'orbitape.tur degismedi');
   K('Efekt kullanimi depoya YAZMAZ', fs2.depoTemiz===true, 'kalici hukmu yalniz kutu verir');
   K('Efekt kullanilinca o oturum susar', fs2.kullandiktanSonra===false, 'ayni oturumda cikmiyor');
