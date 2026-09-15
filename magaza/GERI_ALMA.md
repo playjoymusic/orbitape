@@ -93,7 +93,8 @@ Play Console'da **eski bir sürüme dönmek mümkün değil**: sürüm kodu
 
 Bu yüzden **kademeli çıkış** (staged rollout) önemli: üretime %100
 yerine önce %10 ile çıkarsan, kötü bir sürüm kullanıcıların yalnızca
-onda birine ulaşır ve *Halt rollout* gerçekten işe yarar.
+onda birine ulaşır ve *Halt rollout* gerçekten işe yarar. Adım adım
+nasıl yapılacağı (%10 → izle → %50 → %100): `magaza/GUNCELLEME_YAYINI.md`.
 
 ---
 

@@ -88,6 +88,12 @@ kalan %90 o sürümü hiç almaz. %100'de durdurma yok; tek çare yeni
 sürüm çıkarıp incelemeyi beklemek. Kullanıcı yokken bu kolun değeri
 düşük, kullanıcı biriktikçe artıyor.
 
+- [x] **2026-09-15 — SOMUT ADIMA ÇEVRİLDİ.** Gerekçe buradaydı ama
+      "yayınlarken ne yapılacağı" hiçbir yerde yazmıyordu — bir sonraki
+      güncellemede unutulma riski vardı. Adım adım kontrol listesi artık
+      `magaza/GUNCELLEME_YAYINI.md`'de: %10 → izle → %50 → %100, ya da
+      alarm varsa Halt rollout.
+
 Kaynak: Play Console Help — "Release app updates with staged
 rollouts": *"Staged rollouts can only be used for app updates, not
 when publishing an app for the first time."*
