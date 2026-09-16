@@ -83,13 +83,17 @@ async function pikselFarki(page, bufA, bufB){
     permissions: ['camera']
   });
   const p = await ctx.newPage();
-  await p.addInitScript(() => { try{ localStorage.setItem('orbitape.tur', '1'); }catch(e){} });
+  await p.addInitScript(() => { try{
+    localStorage.setItem('orbitape.rehberAcilisRadio', '3');
+    localStorage.setItem('orbitape.rehberAcilisOrbitape', '3');
+  }catch(e){} });
   await p.goto(ADRES, { waitUntil: 'load' });
   await p.waitForTimeout(2500);
   await p.evaluate(() => {
     try{ if(typeof karsilamaKapat === 'function') karsilamaKapat(); }catch(e){}
     const t = document.getElementById('tanit'); if(t) t.remove();
-    const r = document.getElementById('tur'); if(r) r.remove();
+    try{ if(typeof rehberKapa === 'function') rehberKapa(); }catch(e){}
+    const r = document.getElementById('rehber'); if(r) r.remove();
   });
   await p.waitForTimeout(400);
 

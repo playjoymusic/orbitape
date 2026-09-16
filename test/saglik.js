@@ -86,9 +86,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ancak boyle calisiyor. */
   const c = await b.newContext(Object.assign({}, TELEFON, {
     permissions:['camera'], userAgent:IPHONE_UA }));
-  /* TANITIM TURU testlerin ustune binmesin: kutu isaretlenmis gibi
-     davranan bayrak. Tur kendi bolumunde ayrica sinaniyor. */
-  await c.addInitScript(()=>{ try{ localStorage.setItem('orbitape.tur','1'); }catch(e){} });
+  /* REHBER KARTI testlerin ustune binmesin: acilis sayaci tavana
+     kadar cikmis gibi davranan bayrak. Kart kendi bolumunde ayrica
+     sinaniyor. */
+  await c.addInitScript(()=>{ try{
+    localStorage.setItem('orbitape.rehberAcilisRadio','3');
+    localStorage.setItem('orbitape.rehberAcilisOrbitape','3');
+  }catch(e){} });
   const { sayfa: pg } = await sayfaAc(c, {
     bekle: 2500,
     once: ()=>{ window.__gum=0;
@@ -1728,7 +1732,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const dokunma = await pg.evaluate(async ()=>{
       const bek = ms => new Promise(r=>setTimeout(r,ms));
-      try{ turBitir(); }catch(e){}
       try{ document.body.classList.remove('oniz'); }catch(e){}
       await bek(260);
       /* LISTE EKSIKTI. 2 Eylul denetimi: 'rec' (REC/PHOTO) ve arama
@@ -1802,7 +1805,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kontrast = await pg.evaluate(async ()=>{
       const bek = ms => new Promise(r=>setTimeout(r,ms));
       const eskiDeri = AYAR.deri; AYAR.deri = 0; deriUygula();
-      try{ turBitir(); }catch(e){}
       try{ document.body.classList.remove('oniz'); }catch(e){}
       await bek(400);
       const rgba = t => { const m = String(t).match(/rgba?\(([^)]+)\)/);
@@ -1898,18 +1900,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const odak = await pg.evaluate(async ()=>{
       const bek = ms => new Promise(r=>setTimeout(r,ms));
-      try{ turBitir(); }catch(e){}
-      await bek(200);
-      const tur = document.getElementById('tur');
+      try{ if(typeof rehberKapa === 'function') rehberKapa(); }catch(e){}
+      await bek(500);
+      const tur = document.getElementById('rehber');
       const turKapali = !!tur && tur.hasAttribute('inert');
-      /* Tur akarken erisilebilir olmali: gorunmez ama Tab'la
+      /* Rehber acikken erisilebilir olmali: gorunmez ama Tab'la
          yakalanabilir hali en kotusu. */
       let turAcik = null;
       try{
-        if(typeof turBasla === 'function'){ turBasla(true); await bek(300);
+        if(typeof rehberAc === 'function'){ rehberAc(); await bek(300);
           turAcik = !!tur && !tur.hasAttribute('inert')
                  && tur.getAttribute('aria-hidden') === 'false';
-          turBitir(); await bek(200); }
+          rehberKapa(); await bek(500); }
       }catch(e){ turAcik = 'yok'; }
       /* Ayar paneli: acilinca arka plan inert, kapaninca odak geri. */
       const tut = document.getElementById('ayarTut');
@@ -1928,15 +1930,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       }catch(e){}
       return { turKapali, turAcik, arkaKapandi, odakGeriGeldi };
     });
-    K('Tanitim turu kapaliyken Tab sirasindan cikiyor', odak.turKapali === true,
-      odak.turKapali ? 'tur inert, denetimleri yakalanamiyor'
-                     : 'tur gorunmuyor ama Tab ile icine giriliyor');
+    K('Rehber karti kapaliyken Tab sirasindan cikiyor', odak.turKapali === true,
+      odak.turKapali ? 'rehber inert, denetimleri yakalanamiyor'
+                     : 'rehber gorunmuyor ama Tab ile icine giriliyor');
     if(odak.turAcik === 'yok' || odak.turAcik === null)
-      yavas('Tanitim turu akarken ekran okuyucuya aciliyor — olculemedi: tur baslatilamadi');
+      yavas('Rehber karti acikken ekran okuyucuya aciliyor — olculemedi: kart acilamadi');
     else
-      K('Tanitim turu akarken ekran okuyucuya aciliyor', odak.turAcik === true,
-        odak.turAcik ? 'akarken inert ve aria-hidden kalkiyor'
-                     : 'akarken de gizli kaliyor: ekran okuyucu turu duymuyor');
+      K('Rehber karti acikken ekran okuyucuya aciliyor', odak.turAcik === true,
+        odak.turAcik ? 'acikken inert ve aria-hidden kalkiyor'
+                     : 'acikken de gizli kaliyor: ekran okuyucu karti duymuyor');
     K('Pencere acikken arka plan Tab sirasindan cikiyor', odak.arkaKapandi === true,
       odak.arkaKapandi ? 'ayarlar acikken arkadaki oynatici erisilemez'
                        : 'Tab ile arkadaki oynaticiya geciliyor (odak tuzagi yok)');
@@ -2372,7 +2374,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const kl = await pg.evaluate(async ()=>{
       const bek = ms => new Promise(r=>setTimeout(r,ms));
-      try{ turBitir(); }catch(e){}
       try{ document.body.classList.remove('oniz'); }catch(e){}
       await bek(220);
       const t = document.getElementById('ayarTut'); if(t) t.click();   // paneli ac
@@ -3176,345 +3177,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Yeniden deneme dongusu calisiyor', ttr.s >= 3, ttr.s+' deneme');
   K('Yeniden denemede TITREME yok', ttr.g <= 2, ttr.s+' denemede '+ttr.g+' gorsel gecis');
 
-  /* ── TANITIM TURU ───────────────────────────────────────────────
-     Ilk acilista cikar, kendi ilerler, SKIP ile kapanir. Kutu
-     isaretlenmezse bir sonraki acilista yine cikar (standart).
-     Bittiginde hicbir sey secili birakmaz. */
-  /* HIZLI kipte atlaniyor: bu blok yirmi saniyelik bir turun
-     bitmesini bekliyor ve tek basina butun surenin dortte biri. */
-  const tur = HIZLI ? null : await (async()=>{
-    /* Bu test "normal ilk acilis"i temsil ediyor, yani AGI OLAN bir
-       cihazi — o yuzden 'sahte' ag. Iki fark var ve ikisi de bilerek:
-       · ORTA BOY havuzlar: tur 20 saniyede bitmeli, cok buyuk bir
-         havuz yuklenirken gecen zaman olcume karisiyor. Ama COK
-         KUCUK de olamiyor: bu blok sayfayi uc kere aciyor ve
-         "calindi" damgalari ayni baglamda kaliyor. Sekiz kayitlik
-         havuz ikinci acilista tukeniyor, arsiv ust uste 12 kez
-         calamiyor ve uygulama "NOTHING WOULD PLAY" panelini aciyor --
-         o panel acikken tur (dogru olarak) hic cikmiyor. Test yine
-         kodda hicbir sey bozulmamisken kirmizi yaniyordu.
-       · SES ACIK. Bu blok bir zamanlar ses:false ile kosuyordu
-         ("tur ekraninin ustune calan parcanin kunyesi binmesin"
-         diye). Iki sebeple kaldirildi:
-         1) Olculen sey zaten etkilenmiyordu: tur.cak yalnizca #tur
-            icindeki katmanlari ve halkanin ustunu karsilastiriyor;
-            calan parcanin kunyesi bu olcume hic girmiyor.
-         2) Yan etkisi olcumu bozuyordu: reddedilen her ses dosyasi
-            uygulama icin "calmayan parca" demek. Tur onizlemesi
-            arsive gectiginde bunlar ust uste 12'yi buluyor, uygulama
-            "NOTHING WOULD PLAY" panelini aciyor ve o panel acikken
-            tur (dogru olarak) HIC cikmiyor. Yani test, kodda hicbir
-            sey bozulmamisken kirmizi yaniyordu; sebep uygulama degil,
-            testin cihazi bozuk gibi gostermesiydi.
-         Simdi cihazin agi calisiyor -- olcmek istedigimiz "normal ilk
-         acilis" tam olarak bu. */
-    const { sayfa: pp, kapat } = await sayfaAc(b, {
-      bekle: 2400,
-      sayilar: {buyuk:24, earth:60, radyo:16} });
-    try{
-      /* NEDEN SABIT BEKLEME DEGIL DE BEKLEYIP-BAKMA:
-         Bu blogun uc kontrolu ("acilista cikiyor", "kendi ilerliyor",
-         "kutu isaretlenmezse tekrar cikar") tek bir anlik olcume
-         dayaniyordu: 2.4 sn bekle, bak. Makine yuklendiginde tur
-         2.4 sn'de degil 3 sn'de aciliyor ve test, kodda hicbir sey
-         bozulmamisken kirmizi yaniyordu -- ayni surum bir kosuda
-         yesil, bir kosuda kirmizi. Olculmek istenen sey "tur cikiyor
-         mu"; "tam 2400 ms'de cikiyor mu" degil.
-         Simdi bir tavana kadar bakiliyor ve cikar cikmaz devam
-         ediliyor. Olumsuz kontrol ("bir daha cikmamali") ayni tavanin
-         sonuna kadar bekliyor -- yoksa olumsuz kontrol olumluden
-         kolay gecerdi ve karsilastirma durust olmazdi. */
-      const TUR_TAVAN = 9000;
-      const turBekle = async (tavan)=>{
-        const t = Date.now();
-        for(;;){
-          if(await pp.evaluate(()=>document.getElementById('tur').classList.contains('on'))) return true;
-          if(Date.now() - t >= tavan) return false;
-          await pp.waitForTimeout(150);
-        }
-      };
-      const acildi = await turBekle(TUR_TAVAN);
-      /* TUR CIKMADIYSA SEBEBINI SOYLE. "gorunur degil" demek, saati
-         iki gun sonra bakan kisiye hicbir sey anlatmiyor. Turu
-         bastiran uc sebep var ve ucu de kodda yazili: kutu daha once
-         isaretlenmis olabilir, "no connection" paneli acik olabilir,
-         ya da tur zaten akiyor sayiliyor olabilir. Hangisi oldugunu
-         ölçüp yaziyoruz. */
-      const taniAl = ()=> pp.evaluate(()=>{
-        const p = [];
-        try{ if(!turGosterilsinMi()) p.push('depoda orbitape.tur=1'); }catch(e){ p.push('turGosterilsinMi okunamadi'); }
-        try{ if(document.getElementById('agyok').classList.contains('on')) p.push('agyok paneli acik (_agBos='+_agBos+')'); }catch(e){}
-        try{ if(_turAkiyor) p.push('_turAkiyor zaten true'); }catch(e){}
-        /* KUTU KALKTI (15 Eylul): kalici kapatmanin tek olcutu artik
-           atlama sayaci. */
-        try{ if(typeof turAtlamaSayisi==='function' && turAtlamaSayisi() >= TUR_ATLAMA_TAVAN)
-               p.push('turAtlamaSayisi='+turAtlamaSayisi()+' (tavana ulasti)'); }catch(e){}
-        return p.length ? p.join(' + ') : 'sebep bulunamadi';
-      });
-      const tani = acildi ? '' : await taniAl();
-      /* OLCEMEDIGIMIZI OLCTUK GIBI GOSTERME.
-         Tur, "NOTHING WOULD PLAY" / "NO CONNECTION" paneli acikken
-         (dogru olarak) hic cikmiyor -- bu uygulamanin kurali, kodda
-         yazili. Test makinesi yuklendiginde arsiv onizlemesinde ust
-         uste 12 parca calamayip panel acilabiliyor; o zaman ortada
-         bir hata YOK, sadece olcum yapilamiyor.
-         Once bu durumu kirmizi yaziyorduk: bakan kisi olmayan bir
-         hatayi ariyordu. Simdi ATLANDI diyoruz ve sebebini yaziyoruz.
-         Surekli atlaniyorsa bu da gorunur olur. */
-      if(!acildi && /agyok/.test(tani)){
-        return { atlandi: tani };
-      }
-      const ingilizce = await pp.evaluate(()=>{
-        const t=document.getElementById('tur').textContent||'';
-        return !/[ğüşıöçĞÜŞİÖÇ]/.test(t); });
-      /* KUTU KALKTI (15 Eylul, kullanici: "bir tek skip olsun"). Simdi
-         olculen: SKIP metni dogru mu, cikis carpisi (#turKapat) var mi
-         ve saga yakin mi (sag ust kose), kutu gercekten DOM'da yok mu
-         -- ucu de tek olcumde. */
-      const dugme = await pp.evaluate(()=>{
-        const a=document.getElementById('turAtla'), x=document.getElementById('turKapat');
-        const vw = window.innerWidth;
-        return { atla:(a&&a.textContent||'').trim(),
-                 kutuYok: !document.getElementById('turKutu'),
-                 carpiVar: !!x,
-                 carpiSagda: x ? x.getBoundingClientRect().right > vw*0.7 : false }; });
-      /* ilerliyor mu — yine tavana kadar: adim suresi makineye gore
-         birkac yuz milisaniye kayabiliyor, "ilerliyor mu" sorusunun
-         cevabi bundan degismemeli. */
-      const y1 = await pp.evaluate(()=>document.querySelector('#tur .yazi').textContent);
-      let y2 = y1;
-      {
-        const t = Date.now();
-        while(Date.now() - t < 9000){
-          await pp.waitForTimeout(200);
-          y2 = await pp.evaluate(()=>document.querySelector('#tur .yazi').textContent);
-          if(y2 !== y1) break;
-        }
-      }
-      /* HIZ: tur bastan sona 20 saniyeyi gecmemeli. */
-      const t0 = Date.now();
-      let sure = -1;
-      while(Date.now()-t0 < 25000){
-        if(!(await pp.evaluate(()=>document.getElementById('tur').classList.contains('on')))){ sure = Date.now()-t0; break; }
-        await pp.waitForTimeout(250);
-      }
-      /* katmanlar cakisiyor mu */
-      await pp.reload(); await pp.waitForTimeout(2300);
-      /* KARSILAMA ELI TUR SIRASINDA OLCULUYOR, sonrasinda degil.
-         Tur kisaldi (EFFECTS/SHAPE/CHANNEL adimlari kalkti) ve
-         asagidaki 8x1.5 sn'lik dongu turdan uzun surer oldu: olcum
-         tur BITTIKTEN sonraya dusuyor, el o zaman haklı olarak
-         cikiyor ve test kod hatasi yokken kirmizi yaniyordu.
-         Olculmek istenen sey "tur ACIKKEN el yok". */
-      const kars = await pp.evaluate(()=>
-        document.getElementById('tur').classList.contains('on')
-        && document.getElementById('karsilama').classList.contains('on'));
-      let cak = 0;
-      for(let i=0;i<8;i++){
-        cak += await pp.evaluate(()=>{
-          /* TUR KAPANDIYSA OLCME. Acilis turu 17,6 sn'den ~10 sn'ye
-             indi; asagidaki 8x1,5 sn'lik dongu ondan uzun surer oldu
-             ve son olcumler tur BITTIKTEN sonraya dusuyor. Kapali
-             turun katmanlari ekranda kalan son yerlerinde duruyor,
-             yani olculen sey yerlesim degil, olcumun gec yapilmasi --
-             bir kez tam boyle "1 cakisma / 8 olcum" yazdi. */
-          if(!document.getElementById('tur').classList.contains('on')) return 0;
-          const g=e=>{const k=document.querySelector(e).getBoundingClientRect();return [k.top,k.bottom];};
-          const cz=document.querySelector('#tur .cizgi');
-          const d=document.querySelector('.disk').getBoundingClientRect();
-          const ha=d.top+d.height*0.5+Math.min(d.width,d.height)*0.357*HALKA_DIS;
-          const yz=document.querySelector('#tur .yazi');
-          /* HENUZ YERLESTIRILMEMISSE OLCME. Yazinin top'u adim
-             basina hesaplaniyor; bos oldugu an eleman sayfanin
-             tepesinde duruyor ve her olcum "cakisma" sayiliyordu --
-             olculen sey yerlesim degil, olcumun erken yapilmasiydi. */
-          if(!yz.style.top) return 0;
-          const y=g('#tur .yazi'), a=g('#tur .alt');
-          const c=cz.style.display==='none'?null:g('#tur .cizgi');
-          return ((c && y[1]>c[0]) || y[1]>a[0] || y[0]<ha) ? 1 : 0;
-        });
-        await pp.waitForTimeout(1500);
-      }
-      /* ── UC ATLAMA (15 Eylul, kutu kalkinca yeniden yazildi) ────────
-         Eskiden "kutu isaretlenirse bir daha cikmaz" tek tiklamada
-         olculuyordu. Kutu kalkinca kalici kapatmanin TEK yolu 3 atlama
-         (TUR_ATLAMA_TAVAN).
-         ── CI'DE YAKALANAN IKI GERCEK HATA (ONCEKI IKI SURUMDE) ───────
-         1) Ilk skip'i yukaridaki HIZ + cak olculerinin ARTIGI tur
-            uzerinde yapiyordu; o ikisi toplam ~25+2.3+12 sn suruyor ve
-            acilis turu ~10-17 sn'de KENDILIGINDEN bitiyor -- SKIP
-            coktan kapanmis bir tura tikliyordu, sayac artmiyordu.
-            Duzeltme: skip'ten once TAZE bir reload + turBekle.
-         2) Ayni riski 2. VE 3. skip icin de tasiyordu: her skip'ten
-            SONRAKI reload + turBekle + HEMEN skip dizisi, bir onceki
-            adimin tam ne zaman bittigine bagliydi ve CI'de bir kere
-            3. skip yine sayilmadi (sayac 2 kaldi, 3 degil).
-            Duzeltme: SADECE TEK bir gercek tiklama olculuyor (SKIP'in
-            kendisi sayaci dogru artiriyor mu -- asil UI sozlesmesi).
-            Esigin USTUNDE/ALTINDA davranisi (2 < tavan, 3 = tavan) artik
-            DOGRUDAN localStorage'a yazip reload ile olculuyor: ayni
-            urun kuralini test ediyor ama art arda tiklama zamanlamasina
-            bagli degil. */
-      const skipEt = ()=> pp.evaluate(()=>{ try{ const a=document.getElementById('turAtla'); if(a) a.click(); }catch(e){} });
-      await pp.reload();
-      const ilkTazeAcildi = await turBekle(TUR_TAVAN);
-      const ilkTazeTani = ilkTazeAcildi ? '' : await taniAl();
-      if(!ilkTazeAcildi && /agyok/.test(ilkTazeTani)){
-        return { atlandi: 'atlama olcumu: ' + ilkTazeTani };
-      }
-      await skipEt();
-      await pp.waitForTimeout(400);
-      const kapandi = await pp.evaluate(()=>!document.getElementById('tur').classList.contains('on'));
-      const temiz = await pp.evaluate(()=>({fx:FXMOD, oniz:_onizMod}));
-      const sayac1 = await pp.evaluate(()=>turAtlamaSayisi());
-      await pp.reload();
-      const tekrar = await turBekle(TUR_TAVAN);            // sayac=1: yine cikmali
-      const tekrarTani = tekrar ? '' : await taniAl();
-      /* 2 < tavan: DOGRUDAN yazildi, gercek 2. tiklamayi bekleyen bir
-         zamanlama yok. */
-      await pp.evaluate(()=>{ try{ localStorage.setItem(TUR_ATLAMA_ANAHTAR, '2'); }catch(e){} });
-      await pp.reload();
-      const ikinciTekrar = await turBekle(TUR_TAVAN);       // sayac=2: yine cikmali
-      const ikinciTekrarTani = ikinciTekrar ? '' : await taniAl();
-      const sayac2 = await pp.evaluate(()=>turAtlamaSayisi());
-      /* 3 = tavan: yine DOGRUDAN yazildi. */
-      await pp.evaluate(()=>{ try{ localStorage.setItem(TUR_ATLAMA_ANAHTAR, '3'); }catch(e){} });
-      await pp.reload();
-      const bitti = await turBekle(TUR_TAVAN);              // sayac=3=tavan: ARTIK CIKMAMALI
-      const sayac3 = await pp.evaluate(()=>turAtlamaSayisi());
-      /* Olumsuz kontrolun de mazereti olabilir: panel acikken tur
-         zaten cikmaz, yani "cikmadi" burada bir sey KANITLAMAZ. */
-      const bittiTani = bitti ? '' : await taniAl();
-      return { acildi, tani, ilkTazeAcildi, tekrarTani, ikinciTekrarTani, bittiTani, ingilizce, dugme, ilerledi:y1!==y2, kapandi, temiz,
-               tekrar, ikinciTekrar, bitti, sayac1, sayac2, sayac3,
-               sure: (sure>0 ? sure : -1), cak, kars };
-    } finally { await kapat(); }
-  })();
-  if(tur && tur.atlandi){ yavas('Tanitim turu (12 kontrol) — olculemedi: '+tur.atlandi); }
-  else if(!tur){ yavas('Tanitim turu (12 kontrol)'); } else {
-  K('Tur ilk acilista cikiyor', tur.acildi, tur.acildi ? 'gorunur' : ('cikmadi: '+tur.tani));
-  K('Tur INGILIZCE', tur.ingilizce, 'turkce karakter yok');
-  K('Tur kendi ilerliyor', tur.ilerledi, '2.4 sn icinde adim degisti');
-  K('Tur HIZLI (<20 sn)', tur.sure > 0 && tur.sure < 20000, (tur.sure/1000).toFixed(1)+' sn');
-  K('Tur katmanlari cakismiyor', tur.cak === 0, tur.cak+' cakisma / 8 olcum');
-  K('Tur sirasinda karsilama eli YOK', tur.kars === false, 'ortadaki el kapali');
-  /* KUTU KALKTI (15 Eylul, kullanici: "bir tek skip olsun"). #turKutu
-     artik DOM'da hic yok; kapatma carpisi (#turKapat) sag ust kosede. */
-  K('SKIP dogru, kutu yok, carpi sagda', tur.dugme.atla==='SKIP' && tur.dugme.kutuYok && tur.dugme.carpiVar && tur.dugme.carpiSagda,
-     tur.dugme.atla+' | kutuYok='+tur.dugme.kutuYok+' | carpiSagda='+tur.dugme.carpiSagda);
-  K('SKIP turu kapatiyor', tur.kapandi, 'kapandi');
-  K('Tur bitince temiz birakiyor', tur.temiz.fx==='' && tur.temiz.oniz==='', 'FX "'+tur.temiz.fx+'" | onizleme "'+tur.temiz.oniz+'"');
-  /* Ayni kural burada da: panel acikken tur zaten cikmaz, o yuzden
-     "cikti/cikmadi" hicbir sey soylemez -- olcum yapilamadi, atlandi. */
-  if(!tur.tekrar && /agyok/.test(tur.tekrarTani))
-    yavas('1. skipten sonra TEKRAR cikar — olculemedi: '+tur.tekrarTani);
-  else K('1. skipten sonra TEKRAR cikar (sayac 1<3)', tur.tekrar && tur.sayac1===1, 'sayac='+tur.sayac1+' | '+(tur.tekrar?'cikti':'cikmadi: '+tur.tekrarTani));
-  if(!tur.ikinciTekrar && /agyok/.test(tur.ikinciTekrarTani))
-    yavas('2. skipten sonra TEKRAR cikar — olculemedi: '+tur.ikinciTekrarTani);
-  else K('2. skipten sonra TEKRAR cikar (sayac 2<3)', tur.ikinciTekrar && tur.sayac2===2, 'sayac='+tur.sayac2+' | '+(tur.ikinciTekrar?'cikti':'cikmadi: '+tur.ikinciTekrarTani));
-  if(!tur.bitti && /agyok/.test(tur.bittiTani))
-    yavas('3. skipten sonra bir daha cikmaz — olculemedi: '+tur.bittiTani);
-  else K('3. skipten sonra bir daha cikmaz (TUR_ATLAMA_TAVAN)', !tur.bitti && tur.sayac3===3, 'sayac='+tur.sayac3+' (tavan=3)');
-  }
-
-  /* ── TANITIMLAR: KISA, OGRENILENI TEKRARLAMAYAN, KAPATILABILIR ───
-     Kullanicinin sozu: "tutoriallar bilen insan icin zulum olacaktir
-     hem azalt kullaniyorsa ozellikleri ve de ayarlarda tutoriallari
-     kapama tusu olsun."
-     Uc ayri soz, uc ayri kontrol. Adim ADLARI da olculuyor cunku
-     "kisaldi" demek yetmiyor: dogru adimlarin kaldigini gostermek
-     lazim -- halkayi tutup birakma jesti uygulamaya OZGU, oynat/dur
-     simgeleri degil. */
-  const tan = HIZLI ? null : await (async()=>{
-    const { sayfa: pp, kapat } = await sayfaAc(b, { bekle: 2600,
-      sayilar:{buyuk:24, earth:60, radyo:16} });
-    try{
-      const acilis = await pp.evaluate(()=>turAdimlari().map(a=>a.bas));
-      const uzun   = await pp.evaluate(()=>{ const e=_turYavas; _turYavas=true;
-        const l=turAdimlari().map(a=>a.bas); _turYavas=e; return l; });
-      /* Ogrendigini isaretle: halkadan raf secti, ayar panelini acti. */
-      await pp.evaluate(()=>{ try{ localStorage.setItem('orbitape.kullanim',
-        JSON.stringify(['halka','ayar'])); }catch(e){} });
-      const bilen  = await pp.evaluate(()=>turAdimlari().map(a=>a.bas));
-      /* Anahtar kapaliyken iki tanitim da susmali. */
-      const kapali = await pp.evaluate(()=>{ const e=AYAR.tanitim; AYAR.tanitim=false;
-        const r={ tur:turGosterilsinMi(), fx:fxSunumBittiMi() }; AYAR.tanitim=e; return r; });
-      /* Tekrar acinca damgalar silinmeli: yoksa anahtar acik gorunur
-         ama hicbir sey cikmaz -- yalan soyleyen bir dugme. */
-      const damga = await pp.evaluate(()=>{
-        try{ localStorage.setItem('orbitape.tur','1');
-             localStorage.setItem('orbitape.fxKapat3','1'); }catch(e){}
-        const sat = document.querySelector('#ayar .sat[data-ayar="tanitim"]');
-        if(!sat) return { yok:true };
-        sat.click();                    // kapat
-        const kapaliyken = AYAR.tanitim;
-        sat.click();                    // tekrar ac
-        let t=null, f=null;
-        try{ t = localStorage.getItem('orbitape.tur');
-             f = localStorage.getItem('orbitape.fxKapat3'); }catch(e){}
-        return { kapaliyken, acikken:AYAR.tanitim, tur:t, fx:f,
-                 anahtar: sat.getAttribute('role') === 'switch' };
-      });
-      /* Kapali kalmasin: bu sayfa kapaniyor ama depo baglamda kaliyor. */
-      return { acilis, uzun, bilen, kapali, damga };
-    } finally { await kapat(); }
-  })();
-  if(!tan){ yavas('Tanitimlar (6 kontrol)'); } else {
-  /* ── KURAL DEGISTI (12 Eylul, kullanici) ────────────────────────
-     Eski kural "acilis turu KISA olsun, alti adim" idi ve gerekcesi
-     suydu: tur her acilista cikiyor, uzun olursa zulum oluyor.
-     Kullanici o dengeyi baska turlu kurdu: tur uzadi ama KAPANMASI
-     kolaylasti -- her acilista cikiyor, uc kez SKIP'e basan bir daha
-     gormuyor (bkz. TUR_ATLAMA_TAVAN). Yani "kisalik" ile korunan sey
-     artik atlama sayacıyla korunuyor.
-     Sira da kullanicidan geldi ve bu olcu onu yerinde tutuyor:
-       ORBITAPE · GENRES · THE CENTRE · NOW PLAYING · FAVOURITES ·
-       TIMER · SKINS · VISUALS · SETTINGS · READY
-     On bir ust sinir: onuncu adimdan sonra bir kisilik pay var,
-     daha fazlasi listeye sessizce adim eklendigi anlamina gelir. */
-  K('Acilis turu on adim, sirasi yerinde', tan.acilis.length <= 11,
-     tan.acilis.length + ' adim: ' + tan.acilis.join(' · '));
-  /* Uygulamaya OZGU jest (halka) ve kullanicinin saydigi duraklar.
-     SELECT ve SHELF uzun tura tasindi: halkalar GENRES'te zaten
-     gosteriliyor, ayni seyi iki kez anlatmanin anlami yok.
-     CONTROLS ve TOOLS acilista YOK: oynat/dur evrensel simgeler. */
-  /* ── NOW PLAYING ARTIK KOSULLU (13 Eylul, kullanici) ──────────
-     "sag alttaki ogeler daha gelmedigi icin orayi bosver."
-     Kunye adimi yalnizca CALAN bir sey varken cikiyor: bos bir
-     kutuyu gostermenin karsiligi yok. Bu yuzden "her zaman var"
-     listesinden cikti; yerine kosulun kendisi olculuyor (asagida).
-     SHELF geri geldi: liste artik gercekten aciliyor. */
-  K('Acilista ogreten adimlar kaliyor',
-     ['GENRES','SHELF','THE CENTRE','FAVOURITES','TIMER',
-      'SKINS','VISUALS','SETTINGS'].every(a=>tan.acilis.includes(a))
-     && !tan.acilis.includes('CONTROLS') && !tan.acilis.includes('TOOLS'),
-     'halka jesti, raf, cark, favori, alarm, deri, gorsel ve ayarlar var; oynat/dur yok');
-  K('Istenince tur tam anlatiyor',
-     tan.uzun.length > tan.acilis.length
-     /* RECORD -> PHOTO: radyo turunda anlatilan sey artik kilit
-        degil, calisan bir is (ekranin fotografi). */
-     && ['CONTROLS','TOOLS','PHOTO'].every(a=>tan.uzun.includes(a)),
-     tan.uzun.length + ' adim (ayarlardan acilan)');
-  K('Yaptigi is bir daha anlatilmiyor',
-     !tan.bilen.includes('GENRES') && !tan.bilen.includes('SETTINGS'),
-     'halka + ayar ogrenildi -> kalan: ' + tan.bilen.join(' · '));
-  /* "Ogretecek sey kalmadiysa tur acilmiyor" KONTROLU KALKTI
-     (13 Eylul). Olctugu kapi 12 Eylul'de zaten kaldirilmisti: tur
-     artik HER acilista cikiyor, kapanmasi kutu ya da uc atlamayla
-     oluyor. Geriye yalnizca hicbir seyi yonetmeyen bir islev
-     kalmisti (turOgretecekVarMi) ve kontrol onu ayakta tutuyordu;
-     islev de silindi. Kuralin kendisi bu dosyada zaten olculuyor
-     (bkz. "TUTORIALS kapaliyken hicbir tanitim cikmiyor" ve atlama
-     sayaci kontrolleri). */
-  K('TUTORIALS kapaliyken hicbir tanitim cikmiyor',
-     tan.kapali.tur === false && tan.kapali.fx === true,
-     'acilis turu kapali, FX sunumu kapali');
-  K('TUTORIALS acilinca damgalar siliniyor',
-     tan.damga.anahtar === true && tan.damga.kapaliyken === false
-     && tan.damga.acikken === true && tan.damga.tur === null && tan.damga.fx === null,
-     'anahtar satiri var; acinca "bir daha gosterme" kaydi kalkiyor');
-  }
-
   K('Raflar ayri, ORBITAPE hepsi', ay, 'muzik BEATS, ses NATURE, ikisi de ORBITAPE te');
   const sf = await pg.evaluate(()=>{
     const t=(e,a)=>({etiket:e,ad:a});
@@ -4145,7 +3807,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ◁ hep var (bir onceki varsa). ▷ SADECE 2+ adim geridesen cikar —
      tek adimda ortaya basinca zaten ayni yere donuluyor. */
   const gc = await pg.evaluate(async ()=>{
-    turBitir(); const eskiMod = AKTIF_MOD; AKTIF_MOD = null; gecmisSifirla();
+    const eskiMod = AKTIF_MOD; AKTIF_MOD = null; gecmisSifirla();
     const P = n=>({mp3:'x'+n, ad:'Track '+n, etiket:'netlabel', lisans:SERBEST});
     const gor = ()=>({ pos:_gecPos, n:GECMIS.length,
       geri:geriDug.classList.contains('var'),
@@ -5453,12 +5115,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          soyluyor: dinleyici calisti mi, e.detail kacti, zincirin
          hangi adiminda kaldi. Kirmizi olursa log dogrudan yeri
          gosteriyor -- bir daha korlemesine yama yok. */
-      const o = window.sonraki, oS = window.sesBaglamiAl, oE = window.etkilesimSay;
+      const o = window.sonraki, oS = window.sesBaglamiAl;
       let sayac = 0, adim = [], gorulenDetail = -1;
       window.sonraki = function(){ sayac++; adim.push('sonraki'); };
       try{
         window.sesBaglamiAl = function(){ adim.push('ses'); };
-        window.etkilesimSay = function(){ adim.push('etkilesim'); };
         const el = document.getElementById('tp');
         el.addEventListener('click', ev=>{ gorulenDetail = ev.detail; adim.push('dinleyici'); },
                             {capture:true, once:true});
@@ -5466,7 +5127,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* SENKRON: dinleyici sonraki()'yi ayni anda cagiriyor.
            Beklersek arka plandaki lisans elemesi araya girip sayaci
            ikiye cikariyor -- testin kendi gurultusu. */
-      }finally{ window.sonraki = o; window.sesBaglamiAl = oS; window.etkilesimSay = oE; }
+      }finally{ window.sonraki = o; window.sesBaglamiAl = oS; }
       cikti.klavye = sayac;
       cikti.klavyeIz = adim.join('>') + ' | detail=' + gorulenDetail;
       /* 6) Ve isaretci click'i AYNI yoldan IKI kere calismamali:
@@ -5715,176 +5376,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Kamera cubugu secenek', await pg.evaluate(()=>typeof kamCubukDegis==='function' && typeof _kamCubukAcik!=='undefined'),
      'CAM basili tutus');
 
-  /* FX SUNUMU: kanal degisiminin hemen ardindan cikar, efekt
-     kullanilana kadar HER degisimde tekrar cikar. Kapatma secenegi
-     (SKIP + kutu) ancak TUM kanallar birer kez gorduKten SONRA
-     beliriyor; kutu isaretlenip kapatilinca bir daha hic cikmiyor. */
-  /* HIZLI kipte atlaniyor: FX sunumu bes ayri kanal degisimini ve
-     her birinin animasyonunu bekliyor -- 9.4 sn. */
-  const fs2 = HIZLI ? null : await pg.evaluate(async ()=>{
-    const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    /* FX sunumunun KENDI alt satiri (#fxAlt). Acilis turununki (#turAlt) ayri. */
-    const alt = ()=>{ try{ return getComputedStyle(document.getElementById('fxAlt')).display; }catch(e){ return '?'; } };
-    const sil = ()=>{ try{ ['orbitape.fxKapat3','orbitape.fxSunumKat3']
-                             .forEach(k=>localStorage.removeItem(k)); }catch(e){} };
-    sil();
-    _fxKullanildi=false; turBitir();
-    const t0 = Date.now();
-    modSec('HUMAN', true);
-    let gecen = 0;
-    while(!_fxSunumAkiyor && Date.now()-t0 < 2000){ await bek(40); }
-    gecen = Date.now()-t0;
-    const bir = _fxSunumAkiyor, birAlt = alt();
-    turBitir(); await bek(200);
-    modSec('AMBIANCE', true); await bek(700);
-    const iki = _fxSunumAkiyor;          // BASKA kanal: YINE cikmali
-    turBitir(); await bek(200);
-    modSec('HUMAN', true); await bek(700);
-    const ayni = _fxSunumAkiyor;         // AYNI kanal: yine cikmali (kullanilmadi)
-    const ayniAlt = alt();               // tur donmedi -> SKIP yok
-    turBitir(); await bek(200);
-    modSec('RADIOTAPE', true); await bek(700);
-    const radyo = _fxSunumAkiyor;        // canli yayinda CIKMAMALI
-    turBitir(); await bek(200);
-    /* Tum efektli kanallar birer kez gordu -> bundan sonra SKIP cikar */
-    modSec('ORBITAPE', true); await bek(700); turBitir(); await bek(150);
-    modSec('RECORDS',  true); await bek(700); turBitir(); await bek(150);
-    modSec('HUMAN',    true); await bek(700);
-    const turSonra = _fxSunumAkiyor, turSonraAlt = alt();
-    /* Kutuyu isaretle + SKIP: bir daha cikmamali */
-    /* FX sunumunun KENDI kutusu ve KENDI skip'i (acilis turununki degil).
-       Acilis turunun KUTUSU 15 Eylul'de kalkti; karsiliginda simdi
-       olculen sey onun ATLAMA SAYACI (turAtlamaSayisi) -- FX'in kutusuna
-       basmak o sayaci ARTIRMAMALI. */
-    const turDepoOnce = (()=>{ try{ return localStorage.getItem('orbitape.tur'); }catch(e){ return null; } })();
-    const turSayaciOnce = (()=>{ try{ return turAtlamaSayisi(); }catch(e){ return -1; } })();
-    document.getElementById('fxKutu').click(); await bek(60);
-    const turKutusuTemiz = turSayaciOnce === (()=>{ try{ return turAtlamaSayisi(); }catch(e){ return -2; } })();
-    document.getElementById('fxAtla').click(); await bek(250);
-    const turDepoSonra = (()=>{ try{ return localStorage.getItem('orbitape.tur'); }catch(e){ return null; } })();
-    const turDeposuTemiz = (turDepoOnce === turDepoSonra);
-    const kutuDepo = (()=>{ try{ return localStorage.getItem('orbitape.fxKapat3'); }catch(e){ return null; } })();
-    modSec('AMBIANCE', true); await bek(800);
-    const kapali = _fxSunumAkiyor;       // kutu isaretlendi -> CIKMAMALI
-    turBitir(); await bek(150);
-
-    /* ── SUNUM EKRANDAYKEN ILK DOKUNUS EFEKTI ACAR ────────────────
-       Canli kullanimda bildirilen kusur: "orbitape tarafinda fx'ler
-       acilmiyor." Olculdu ve dogruydu -- sunum ekrandayken bir
-       gezegene ILK basista efekt acilip hemen kapaniyordu:
-         fxModGec -> fxSunumBitir -> turBitir -> fxNormale
-       ve fxNormale acik efekti kapatir. Turun kendi onizlemesi icin
-       dogru, kullanicinin secimi icin yanlis.
-       Olculen: sunum akarken bir gezegene basildiginda efekt ACIK
-       kaliyor mu, ve sunum gercekten kapaniyor mu. */
-    try{ localStorage.removeItem('orbitape.fxKapat3'); }catch(e){}
-    _fxKullanildi = false; FXMOD = ''; turBitir(); await bek(150);
-    modSec('HUMAN', true);
-    { const t1 = Date.now();
-      while(!_fxSunumAkiyor && Date.now()-t1 < 2500) await bek(40); }
-    const sunumAcikti = _fxSunumAkiyor;
-    uyduDug['dongu'].click(); await bek(300);
-    const ilkDokunusFX = FXMOD;                 // 'dongu' kalmali
-    const ilkDokunusSunum = _fxSunumAkiyor;     // sunum kapanmali
-    fxNormale(); turBitir(); await bek(150);
-
-    /* ── EFEKT KULLANIMI: SADECE BU OTURUM SUSAR ───────────────────
-       Yalniz KAPATMA anahtarini siliyoruz; "hangi kanallar gordu"
-       listesi yukaridaki turdan dolu kaldi — gercek hayatta da cihazda
-       kalir, bu yuzden yeniden acilista SKIP hazir olmali. */
-    try{ localStorage.removeItem('orbitape.fxKapat3'); }catch(e){}
-    _fxKullanildi=false; FXMOD='';
-    fxModGec('ana'); await bek(200);
-    /* Depoya HICBIR SEY yazilmamali: kalici hukmu yalniz kutu verir. */
-    const depoTemiz = (()=>{ try{
-      return localStorage.getItem('orbitape.fxKapat3') === null; }catch(e){ return null; } })();
-    fxNormale(); await bek(150);
-    modSec('HUMAN', true); await bek(800);
-    const kullandiktanSonra = _fxSunumAkiyor;      // bu oturumda CIKMAMALI
-    turBitir(); await bek(200);
-    /* YENIDEN ACILIS taklidi: oturum bayragini sifirla, depo aynen dursun */
-    _fxKullanildi = false;
-    modSec('RECORDS', true); await bek(800);
-    const yenidenAcilista = _fxSunumAkiyor;        // YINE CIKMALI
-    const yenidenAlt = alt();                      // liste dolu -> SKIP acik
-    turBitir(); await bek(200);
-    /* ── KIPE GIRER GIRMEZ DE CIKIYOR ───────────────────────────
-       Sunum yalnizca KANAL degisimine bagliydi. Ama ORBITAPE
-       tarafina gecmek bir kanal secmek degil: kip aciliyor, raf
-       'ORBITAPE' oluyor ve kimse bir sey secmemis oluyor -- yani
-       efektler, bu tarafin butun meselesi oldugu halde kendilerini
-       hic tanitmiyordu. Kullanicinin istegi: "orbitape tarafina
-       gecince hemen fx'ler gosterilmeli, tutorial gibi."
-       Iki yon de olculuyor: kipe GIRERKEN cikiyor, kipten
-       CIKARKEN cikmiyor (radyoda efektin isi yok). */
-    _fxKullanildi = false;
-    AYAR.mood = false; moodUygula(false); await bek(420);
-    turBitir(); await bek(150);
-    const kiptenCikinca = _fxSunumAkiyor;
-    AYAR.mood = true;  moodUygula(false); await bek(900);
-    const kipeGirince = _fxSunumAkiyor;
-    turBitir(); await bek(200);
-    AYAR.mood = false; moodUygula(false); await bek(420);
-    turBitir(); await bek(200);
-    /* TEMIZ BIRAK: kategori kapali, calan sey arsivden, REC aktif.
-       VE SUNUM SUSUYOR: bundan sonraki testler kip degistirdikce
-       (ki cogu degistiriyor) el gezdiren bir katman aciliyordu ve
-       uc olcum bozuluyordu. _fxKullanildi uygulamanin KENDI susma
-       yolu -- "bu oturumda efekte dokunuldu" demek; testin geri
-       kalani da tam olarak oyle bir oturum. */
-    _fxKullanildi = true;
-    if(AKTIF_MOD) modSec(AKTIF_MOD, false);
-    AKTIF_MOD = null;
-    /* turKutu 15 Eylul'de kalkti (DOM'da yok); temizlenecek tek kutu fxKutu. */
-    try{ const k=document.getElementById('fxKutu'); if(k) k.classList.remove('sec'); }catch(e){}
-    cal({mp3:'temiz2', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(120);
-    try{ recPasifYaz(); }catch(e){}
-    return { bir, birAlt, gecen, iki, ayni, ayniAlt, radyo, turSonra, turSonraAlt, kutuDepo, kapali,
-             depoTemiz, kullandiktanSonra, yenidenAcilista, yenidenAlt,
-             turKutusuTemiz, turDeposuTemiz, kipeGirince, kiptenCikinca,
-             sunumAcikti, ilkDokunusFX, ilkDokunusSunum };
-  });
-  if(!fs2){ yavas('FX sunumu (14 kontrol)'); } else {
-  K('FX sunumu kanal degisiminde cikar', fs2.bir===true, 'ilk degisimde gorundu');
-  K('Sunuma HEMEN giriyor', fs2.gecen < 700, fs2.gecen+' ms');
-  K('FX sunumu HER kanal degisiminde', fs2.iki===true && fs2.ayni===true, 'yeni kanalda da ayni kanalda da');
-  K('Ilk turda SKIP/kutu YOK', fs2.birAlt==='none' && fs2.ayniAlt==='none', 'alt satir gizli');
-  K('Tum kanallar dondukten sonra SKIP cikar', fs2.turSonra===true && fs2.turSonraAlt!=='none',
-     'alt satir: '+fs2.turSonraAlt);
-  K('Kutu isaretlenince bir daha cikmaz', fs2.kutuDepo==='1' && fs2.kapali===false, 'depo='+fs2.kutuDepo);
-  K('RADIOTAPE te FX sunumu YOK', fs2.radyo===false, 'canli yayinda cikmiyor');
-  K('ORBITAPE tarafina gecince sunum hemen cikiyor',
-     fs2.kipeGirince===true && fs2.kiptenCikinca===false,
-     'kipe girerken var, radyoya donerken yok');
-  /* ── ELIN GEZDIGI ALAN: MERKEZDEN EN DIS HALKAYA ─────────────
-     Once diskin ancak ucte biri geziliyordu (0.30-0.34) ve
-     gosterim "kucuk bir daire icinde oynatiliyor" gibi
-     okunuyordu. Kullanicinin sozu: "elin ortadan kenarlara ama EN
-     KENARLARA kadar halkanin gosterilsin."
-     SINIR TAHMIN DEGIL, HESAP: _turNokta yariçapi
-     R = min(en,boy)/2 sayiyor; gorunen en dis halka ise
-     min(en,boy)*0.357*HALKA_DIS. Orani 0.357*HALKA_DIS/0.5.
-     Iki yonlu olculuyor: merkezden BASLIYOR ve halkayi ASMIYOR.
-     Asmasi da hata olurdu -- el halkanin disinda gezerse
-     gosterdigi sey artik disk degil. */
-  {
-    const el = await pg.evaluate(()=>{
-      try{
-        const d = fxSunumAdimlari()[0].duraklar
-                  .filter(x=>x.hedef && x.hedef.disk !== undefined)
-                  .map(x=>x.hedef.disk);
-        if(!d.length) return null;
-        const sinir = 0.357*HALKA_DIS/0.5;
-        return { enYakin:Math.min(...d), enUzak:Math.max(...d),
-                 sinir:Math.round(sinir*1000)/1000, sayi:d.length };
-      }catch(e){ return null; }
-    });
-    K('El merkezden en dis halkaya kadar geziyor',
-       !!el && el.sayi >= 3
-       && el.enYakin <= 0.10
-       && el.enUzak >= el.sinir*0.88 && el.enUzak <= el.sinir,
-       el ? ('merkez '+el.enYakin+' -> kenar '+el.enUzak+' (halka siniri '+el.sinir+')') : 'olculemedi');
-  }
   /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ───────────────────────
      Bir ara uc cizginin ve kip anahtarinin ALTINI koyulastirmistik:
      ikisi de panelden ustte cizildigi icin (z-index 96 > 95)
@@ -5937,16 +5428,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Paneli kapatan tutamak yine gorunur',
        !!ust && ust.tut.gorunur === true && ust.cakisma === false,
        'uc cizgi panelin disinda ve tiklanabilir');
-  }
-  K('FX kutusu acilis turunun atlama sayacini etkilemiyor', fs2.turKutusuTemiz===true, '#fxKutu ayri, turAtlamaSayisi degismedi');
-  K('FX kutusu acilis turunu kapatmaz', fs2.turDeposuTemiz===true, 'orbitape.tur degismedi');
-  K('Efekt kullanimi depoya YAZMAZ', fs2.depoTemiz===true, 'kalici hukmu yalniz kutu verir');
-  K('Efekt kullanilinca o oturum susar', fs2.kullandiktanSonra===false, 'ayni oturumda cikmiyor');
-  K('Sunum ekrandayken ILK dokunus efekti aciyor',
-     fs2.sunumAcikti===true && fs2.ilkDokunusFX==='dongu' && fs2.ilkDokunusSunum===false,
-     'sunum kapaniyor ama secim duruyor (FXMOD=' + fs2.ilkDokunusFX + ')');
-  K('Yeniden acilista YINE cikar', fs2.yenidenAcilista===true, 'her acilista hatirlatma');
-  K('Yeniden acilista SKIP hazir', fs2.yenidenAlt!=='none', 'alt satir: '+fs2.yenidenAlt);
   }
 
   /* ── KILIT EKRANI (MediaSession) ────────────────────────────────
@@ -6038,20 +5519,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     _agBos = 99; agYokAc(); await bek(120);
     const acik = { panel: el.classList.contains('on'), bekle: document.getElementById('bekle').classList.contains('on'),
                    yazi: (el.textContent||'').replace(/\s+/g,' ').trim() };
-    /* Ag yokken acilis turu ve karsilama eli bastirilmali */
-    const eskiTur = (()=>{ try{ return localStorage.getItem('orbitape.tur'); }catch(e){ return null; } })();
-    try{ localStorage.removeItem('orbitape.tur'); }catch(e){}
-    turBitir(); turBasla(); await bek(150);
-    const turCikti = document.getElementById('tur').classList.contains('on');
-    turBitir();
+    /* Ag yokken karsilama eli bastirilmali. karsilamaAc() bunu KENDI
+       kapisinda yapiyor (bkz. index.html: #agyok acikken hic acmaz),
+       yani burada dogrudan cagirip sonucu okumak yetiyor. */
     karsilamaAc(); await bek(120);
     const elCikti = document.getElementById('karsilama').classList.contains('on');
-    try{ if(eskiTur!==null) localStorage.setItem('orbitape.tur', eskiTur); }catch(e){}
     basari('earth'); await bek(150);                 // bir kaynak geldi -> panel kapanmali
     const kapandi = !el.classList.contains('on');
     _agBos = oncekiBos; agYokKapa();
     return { anahtar, kb, geri: geri && geri.length===1 && geri[0].ad==='A', tavan,
-             bayat: bayat===null, acik, kapandi, turCikti, elCikti,
+             bayat: bayat===null, acik, kapandi, elCikti,
              ingilizce: !/[ğüşıöçĞÜŞİÖÇ]/.test(el.textContent||'') };
   });
   /* Kaynak sayisi 5'ten 3'e indi (Audius, Jamendo, PLAYJOY, netlabel
@@ -6063,7 +5540,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Bayat onbellek atiliyor', !!ags && ags.bayat===true, '3 haftadan eski');
   K('Ag yokken panel cikiyor', !!ags && ags.acik.panel===true && ags.acik.bekle===false, 'bekleme sembolu yerine');
   K('Panel Ingilizce', !!ags && ags.ingilizce===true, (ags?ags.acik.yazi.slice(0,42):'-'));
-  K('Ag yokken acilis turu YOK', !!ags && ags.turCikti===false, 'iki mesaj ust uste binmiyor');
   K('Ag yokken karsilama eli YOK', !!ags && ags.elCikti===false, 'dokununca baslayacak sey yok');
   K('Ag gelince panel kapaniyor', !!ags && ags.kapandi===true, 'kendiliginden');
 
@@ -7835,12 +7311,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            "farkli kaynak hala yaziliyor" ancak arsivde olculebilir. */
         return ayni === '' && farkli2 === 'ARCHIVE.ORG';
       }), 'ayni ad iki kez yok; farkli kaynak hala yaziliyor');
-    /* ── ACILIS TURU ────────────────────────────────────────────────
-       Tur EKRANIN BUGUNKU HARITASINI gezmeli. Yerlesim degistikce
-       tur bayatliyor ve kimse fark etmiyor -- bu yuzden test, tur
-       metnini degil TUR HEDEFLERINI olcuyor: her adimin gosterdigi
-       elemanin gercekten belgede olup olmadigina bakiyor. Ekrandan
-       silinen bir tusa isaret eden bir adim burada dusuyor. */
     /* ── OLCULEN DEGERE env() EKLENMEZ ──────────────────────────────
        IKI KERE YASANDI, ikisinde de ekranda ayni sekilde goruldu:
        "buyutec havada / yukari kaymis, yeri bos, ustundekinin uzerine
@@ -7872,160 +7342,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const sol = Math.abs(a.left - y.left) < 2.5;
         return duz && !eskiHata && merkez && sol;
       }), 'ara ile araYuva ayni merkezde; olculen deger _dip disinda');
-    /* ── HANGI LISTE OLCULUYOR ──────────────────────────────────
-       turAdimlari() artik iki ayri liste doruyor: acilistaki KISA
-       liste (uzun adimlar ve kullanicinin zaten yaptigi isler
-       dusuyor) ve ayarlardan istenen TAM liste.
-       Bu kontrol "bugunku uygulamayi anlatiyor mu" diye soruyor,
-       yani hedeflerin hepsi ekranda mi -- o soru TAM liste icin
-       gecerli. Kisa listenin uzunlugu ise ayrica olculuyor
-       (bkz. "Acilis turu kisa: alti adim").
-       AYRICA depoyu gecici temizliyoruz: bu sayfa yuzlerce kontrolden
-       geciyor, ayar paneli defalarca aciliyor ve "ogrenildi" damgasi
-       coktan yaziliyor -- olcum onu degil, listenin kendisini
-       olcmeli. */
-    K('Acilis turu bugunku uygulamayi anlatiyor', await pg.evaluate(()=>{
-        const eskiK = (()=>{ try{ return localStorage.getItem('orbitape.kullanim'); }catch(e){ return null; } })();
-        try{ localStorage.removeItem('orbitape.kullanim'); }catch(e){}
-        const eskiY = _turYavas; _turYavas = true;
-        const a = turAdimlari();
-        _turYavas = false;
-        const kisa = turAdimlari();
-        _turYavas = eskiY;
-        try{ if(eskiK !== null) localStorage.setItem('orbitape.kullanim', eskiK); }catch(e){}
-        const basliklar = a.map(x=>x.bas);
-        const sur = l => l.reduce((t,x)=>t + x.duraklar.reduce((u,d)=>u+d.sure,0), 0);
-        const sure = sur(a);
-        /* ── ACILIS SURESI: YENI SINIRLAR (12 Eylul) ─────────────
-           Once "6 sn ile 13 sn arasi" idi ve o, alti adimlik kisa
-           turun olcusuydu. Kullanicinin istedigi sira on adim ve
-           OLCULDU: ham toplam 17,9 sn, ekranda 1,18 katiyla 21,1 sn.
-           Yeni aralik 12-22 sn (ham): alt sinir listenin sessizce
-           kirpilmasini, ust sinir sessizce uzamasini yakaliyor.
-           DURUST NOT: 21 saniye her acilista uzun bir sure. Bunu
-           dengeleyen sey turun kendisi degil, UC ATLAMA kurali --
-           istemeyen kisi uc dokunusla kurtuluyor. */
-        const kisaSure = sur(kisa);
-        /* Halka duraklari CANLI geometriden gelmeli: en dis durak
-           en dis halkanin yaricapina esit olsun. */
-        const gez = a[1].duraklar.map(d=>d.hedef.disk);
-        const enDis = halkaIc() + (halkaAdlar().length-1)*halkaAra();
-        /* Her CSS hedefi belgede var mi? (disk hedefleri gecilir) */
-        const hedefler = [];
-        a.forEach(x=>x.duraklar.forEach(d=>{
-          if(typeof d.hedef === 'string') hedefler.push(d.hedef); }));
-        const eksik = hedefler.filter(h=>!document.querySelector(h));
-        /* EFFECTS / SHAPE / CHANNEL adimlari kalkti (gezegenler ve
-           kanal gecisi yok). RECORD ise TAM listede duruyor ama
-           acilis listesinde yok: REC radyoda sonuk gorunuyor, yani
-           anlatilmasi gerekiyor -- ama ilk acilista degil, isteyene. */
-        return basliklar.includes('GENRES') && basliklar.includes('SETTINGS')
-            && basliklar.includes('NOW PLAYING') && basliklar.includes('CONTROLS')
-            && basliklar.includes('TOOLS') && !basliklar.includes('VOLUME')
-            && !basliklar.includes('EFFECTS') && !basliklar.includes('SHAPE')
-            && !basliklar.includes('CHANNEL') && !basliklar.includes('CATEGORIES')
-            && eksik.length === 0
-            && Math.abs(gez[0] - enDis) < 0.001
-            && sure > 12000 && sure < 32000
-            && kisaSure > 12000 && kisaSure < 22000;
-      }), 'Tam liste bugunku yerlesimi anlatiyor, hedefler ekranda; acilis listesi kisa');
-    /* GOSTEREREK ANLATSIN: kullanicinin istegi "halkalarin yanmasi,
-       menunun acilmasi vs gibi her seyi gostererek". Yani adimlarin
-       bir kismi SADECE isaret etmiyor, ekranda bir sey oynatiyor.
-       Olculen sey: halka gezisinde halkaYak cagriliyor mu ve SETTINGS
-       adimi paneli gercekten acip kapatiyor mu. */
-    K('Tur gostererek anlatiyor: halka yaniyor, panel aciliyor', await pg.evaluate(()=>{
-        /* Yine TAM liste: SETTINGS adimi acilis listesinde kullanici
-           paneli daha once actiysa (bu sayfada defalarca acildi)
-           dusuyor. Olculen sey adimin KENDISI. */
-        const eskiY = _turYavas; _turYavas = true;
-        const a = turAdimlari();
-        _turYavas = eskiY;
-        const kaynak = a.map(x=>x.duraklar.map(d=>String(d.oynat||'')).join(' ')).join(' ');
-        const yanma = /halkaYak/.test(kaynak);
-        const panel = /ayarGoster/.test(kaynak);
-        /* SETTINGS adiminda ACMA ve KAPAMA ikisi de olmali: yalnizca
-           acsa tur bitince panel acik kalirdi. */
-        const st = a.find(x=>x.bas === 'SETTINGS');
-        const stK = st ? st.duraklar.map(d=>String(d.oynat||'')).join(' ') : '';
-        const acar  = /ayarGoster\(true\)/.test(stK);
-        const kapar = /ayarGoster\(false\)/.test(stK);
-        /* Panel gercekten aciliyor mu: cagirip bakiyoruz, sonra geri. */
-        let acildi = false;
-        try{ window.ayarGoster(true);
-             acildi = document.body.classList.contains('ayar-acik');
-             window.ayarGoster(false); }catch(e){}
-        const kapandi = !document.body.classList.contains('ayar-acik');
-        /* turBitir da kapatmali (tur ortasinda SKIP). */
-        const govde = document.documentElement.innerHTML;
-        /* Pencere 1400 -> 2200: turBitir'in basina onizlemeyi geri
-           alan blok girdi (ORBITAPE turu dunyayi gecici aciyor) ve
-           ayarGoster(false) araligin disinda kalmisti. Kontrol dogru
-           seyi ariyor, yalnizca dilim kisaydi. */
-        /* ── SABIT PENCERE YERINE ISLEVIN KENDISI (13 Eylul) ────
-           Once "turBitir'den sonraki 2200 karakter" icinde araniyordu
-           ve pencere iki kez yetmedi: isleve her satir eklendiginde
-           kontrol yanlis sebeple kirmiziya donuyordu. Artik islevin
-           GOVDESI kesilip icine bakiliyor -- uzunlugundan bagimsiz. */
-        const bas = govde.indexOf('function turBitir()');
-        const govdeSonu = bas < 0 ? -1 : govde.indexOf('\n  function ', bas + 10);
-        const turBitirGovde = bas < 0 ? '' : govde.slice(bas, govdeSonu < 0 ? bas + 6000 : govdeSonu);
-        const bitirKapatir = /ayarGoster\(false\)/.test(turBitirGovde);
-        /* ── LISTE VE ALARM GERCEKTEN ACILIYOR MU ───────────────
-           Kullanicinin sozu (13 Eylul): "orbitape ustune gelince sag
-           ustte liste acilmali... alarm skins ve visual hizli
-           gececek." Ikisi de bir sure yalnizca ISARET ediyordu:
-           adim listeden bahsediyor ama hicbir sey acilmiyordu.
-           Sebep olculdu -- liste.js ve saat.js istek uzerine iniyor
-           ve adim sirasinda yetismiyorlardi. Modulu getiren yollar
-           (listeBas / saatBas) adimin icinde olmali. */
-        const shelf = a.find(x=>x.bas === 'SHELF');
-        const timer = a.find(x=>x.bas === 'TIMER');
-        const shelfK = shelf ? shelf.duraklar.map(d=>String(d.oynat||'')).join(' ') : '';
-        const timerK = timer ? timer.duraklar.map(d=>String(d.oynat||'')).join(' ') : '';
-        const listeAcar = /listeBas/.test(shelfK) && /listeKapa/.test(shelfK);
-        const alarmAcar = /saatBas/.test(timerK) && /saatKapa/.test(timerK);
-        return yanma && panel && acar && kapar && acildi && kapandi && bitirKapatir
-               && listeAcar && alarmAcar;
-      }), 'halkaYak + ayarGoster(true/false) + listeBas/Kapa + saatBas/Kapa; turBitir de kapatiyor');
-    /* ── KUNYE ADIMI KOSULLU (13 Eylul, kullanici) ──────────────
-       "sag alttaki ogeler daha gelmedigi icin orayi bosver."
-       Acilisin ilk saniyelerinde henuz hicbir sey calmiyor olabilir;
-       bos bir kutuyu gostermenin karsiligi yok. Olculen sey kuralin
-       kendisi: kunye BOSKEN adim yok, DOLUYKEN var. */
-    K('Kunye adimi yalnizca calan bir sey varken cikiyor', await pg.evaluate(()=>{
-        const el = document.getElementById('npAd');
-        if(!el) return false;
-        const eski = el.textContent;
-        const eskiY = _turYavas; _turYavas = true;
-        el.textContent = '';
-        const bos = turAdimlari().some(x=>x.bas === 'NOW PLAYING');
-        el.textContent = 'Test Istasyonu';
-        const dolu = turAdimlari().some(x=>x.bas === 'NOW PLAYING');
-        el.textContent = eski; _turYavas = eskiY;
-        return !bos && dolu;
-      }), 'bos kunyede adim yok, dolu kunyede var');
-    /* Kunye adimi ekrandaki yaziyi DONDURUYOR: el gosterirken
-       yayindan yeni bir parca gelirse yazi degismesin (kullanicinin
-       sozu: "sarki dondurman lazim, sarki tanitirken"). Dondurma
-       turBitir'de her kosulda cozuluyor. */
-    K('Kunye adimi yaziyi donduruyor, tur bitince cozuluyor', await pg.evaluate(()=>{
-        const el = document.getElementById('npAd');
-        if(!el) return false;
-        const eski = el.textContent;
-        const eskiY = _turYavas; _turYavas = true;
-        el.textContent = 'Test Istasyonu';
-        const ad = turAdimlari().find(x=>x.bas === 'NOW PLAYING');
-        el.textContent = eski; _turYavas = eskiY;
-        if(!ad) return false;
-        const kaynak = ad.duraklar.map(d=>String(d.oynat||'')).join(' ');
-        const dondurur = /_npDondur\s*=\s*true/.test(kaynak);
-        const govde = document.documentElement.innerHTML;
-        const bas = govde.indexOf('function turBitir()');
-        const sonu = bas < 0 ? -1 : govde.indexOf('\n  function ', bas + 10);
-        const g = bas < 0 ? '' : govde.slice(bas, sonu < 0 ? bas + 6000 : sonu);
-        return dondurur && /_npDondur\s*=\s*false/.test(g);
-      }), 'adimda _npDondur=true, turBitir cozuyor');
     /* ── UCLUK: UC SEMBOL AYNI ──────────────────────────────────
        Yirmi bir sembolun ucunun ayni gelmesi ~1/441. Olunca kisa
        bir kutlama: renkler cemberde donuyor, birkac yildiz firliyor,
@@ -8174,54 +7490,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const k = document.documentElement.innerHTML;
         return sonuc && /window\.moodKapat/.test(k);
       }), 'tek dokunus radyoya donuyor, ayarlardaki kapiyla ayni islev');
-    /* ── ORBITAPE TANITIMI: ANAHTARI ACMADAN ────────────────────
-       Ayarlardaki kapinin uzerinde "sound banks & effects" yaziyor
-       ve o iki kelime neyin acildigini anlatmiyor. Kapinin altindaki
-       "SEE IT FIRST" dunyayi GECICI aciyor.
-       Bu kontrolun asil isi geri donusu olcmek: tur bitince ekran
-       oldugu gibi geri gelmeli, AYAR.mood degismemeli ve depoya
-       hicbir sey yazilmamali. Yoksa kullanici hic istemedigi bir
-       dunyada kalir ve ayardaki anahtar kapali gorundugu icin nasil
-       cikacagini da bilemez. */
-    K('ORBITAPE tanitimi anahtari ACMIYOR', await pg.evaluate(async ()=>{
-        const bek = ms=>new Promise(r=>setTimeout(r,ms));
-        const onceMood = AYAR.mood, onceMod = mod;
-        const onceDepo = (()=>{ try{ return localStorage.getItem('orbitape.ayar')||''; }catch(e){ return ''; } })();
-        turBitir();
-        try{ document.getElementById('agyok').classList.remove('on'); }catch(e){}
-        moodTuruBasla();
-        await bek(700);
-        const acikken = document.body.classList.contains('mood')
-                     && mod === 'lib'
-                     && document.getElementById('tur').classList.contains('on');
-        turBitir();
-        await bek(400);
-        const sonraDepo = (()=>{ try{ return localStorage.getItem('orbitape.ayar')||''; }catch(e){ return ''; } })();
-        const geri = AYAR.mood === onceMood && mod === onceMod
-                  && document.body.classList.contains('mood') === false
-                  && sonraDepo === onceDepo;
-        return acikken && geri;
-      }), 'dunya gecici aciliyor, bitince geri geliyor, depo degismiyor');
-    /* Tur baslamazsa (ag yokken turBasla vazgeciyor) onizleme acik
-       kalmamali: baslamadigini gorup geri alan satir var mi. */
-    K('Tanitim baslamazsa onizleme geri aliniyor', await pg.evaluate(()=>{
-        const k = document.documentElement.innerHTML;
-        return /if\(!_turAkiyor\) geri\(\)/.test(k);
-      }), 'turBasla sessizce vazgecerse dunya acik kalmiyor');
-    /* Ayarlardan istenen tur DAHA YAVAS ve DAHA UZUN: acilistaki
-       selam hizli gecmeli ama ogrenmeye gelen kisi yaziyi
-       bitiremeden el bir sonraki yere gidiyordu. */
-    K('Ayarlardan istenen tur yavas ve uzun', await pg.evaluate(()=>{
-        const say = ()=>turAdimlari().length;
-        _turYavas = false; const hizli = say();
-        _turYavas = true;  const yavas = say();
-        _turYavas = false;
-        const k = document.documentElement.innerHTML;
-        const kat = /TUR_YAVAS_KAT\s*=\s*1\.75/.test(k);
-        const uygulaniyor = /_turZaman = setTimeout\(\(\)=>turDurak\(ad, no\+1\), _sure\(d\.sure\)\)/.test(k);
-        const elle = /_turYavas = !!zorla/.test(k);
-        return yavas > hizli && kat && uygulaniyor && elle;
-      }), 'yavas kipte adim sayisi da artiyor');
     K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return /item\.grup !== AKTIF_AILE/.test(k)
@@ -14729,7 +13997,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           sifirla: g('.sat[data-ayar="sifirla"] span'),
           etiket: document.getElementById('ayar').getAttribute('aria-label'),
           agyok: g('#agyok .ay-ad'),
-          atla: g('#turAtla'),
           dilDurum: g('.sat[data-ayar="dil"] .durum')
         };
         /* VERI: ceviri gecidi tur/raf adlarina DOKUNMAMALI. */
@@ -14804,28 +14071,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            Turkcesi ("SES", "AYARLARI SIFIRLA") tamamen ASCII: test
            ceviri dogruyken kirmizi yaniyordu. Yanlis olan ceviri
            degil, olcunun kendisiydi. */
-        /* Adim metinleri: TAM tur (uzun adimlar dahil) sorulacak,
-           cunku kacan kusur tam orada yasiyordu. Ayni kelimeler
-           (marka adi, dilde birebir ayni olan sozcukler) eleniyor:
-           onlar eksik ceviri degil. */
-        let turEksik = [];
-        try{
-          const _y = window._turYavas;
-          window._turYavas = true;                 /* uzun adimlar da gelsin */
-          const AYNI = ['ORBITAPE','GENRES','TIMER','VISUALS','PHOTO',
-                        'READY','MINIMAL','NORMAL','MAX','AUTO','CREDITS'];
-          turAdimlari().forEach(a=>{
-            [a.bas, a.metin].forEach(t=>{
-              String(t || '').split('<br>').forEach(x=>{
-                const q = x.trim();
-                if(q && AYNI.indexOf(q) < 0 && Y(q) === q) turEksik.push(q);
-              });
-            });
-          });
-          window._turYavas = _y;
-          turEksik = [...new Set(turEksik)];
-        }catch(e){ turEksik = ['olculemedi: ' + (e && e.message)]; }
-        return { tr, veri, tus, yedek, ing, geri, fra, isp, alm, ita, oto, turEksik,
+        return { tr, veri, tus, yedek, ing, geri, fra, isp, alm, ita, oto,
                  turkceMi: /[ğüşıöçĞÜŞİÖÇ]/.test(
                    (document.getElementById('ayar').textContent) || '') };
       });
@@ -14845,26 +14091,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      '"' + trd.tr.baslik + '" | "' + trd.tr.sifirla + '"');
   K('Ekran okuyucu adlari da Turkce', trd.tr.etiket === 'Ayarlar',
      'panel aria-label: "' + trd.tr.etiket + '"');
-  K('Hata ve tur metinleri de Turkce',
-     trd.tr.agyok === 'BAĞLANTI YOK' && trd.tr.atla === 'GEÇ',
-     '"' + trd.tr.agyok + '" | SKIP -> "' + trd.tr.atla + '"');
-  /* ── TUR METINLERI DE CEVRILMELI (12 Eylul) ─────────────────────
-     Bu soru sorulmuyordu ve bir kusur tam oradan kacti: SHELF
-     adiminin metni kodda BIRLESTIRILEREK kuruluyordu
-     ((mood ? 'Top right' : 'Top left') + ': the genre...') ve
-     birlestirme sonucu hicbir sozluk anahtarina uymadigi icin adim
-     BES DILDE de Ingilizce kaliyordu. Gorunmuyordu cunku o adim
-     yalnizca ayarlardan istenen tam turda cikiyor -- yani kimse
-     bakmazsa kalici bir eksik.
-     Artik butun adimlarin baslik ve metin parcalari tek tek
-     sozluge soruluyor. Karsiligi Ingilizcesiyle AYNI olanlar
-     elenmiyor ama bir kenara yaziliyor: ORBITAPE bir marka,
-     GENRES Fransizca'da ayni kelime -- bunlar kusur degil. */
-  K('Tur metinleri sozlukte var',
-     Array.isArray(trd.turEksik) && trd.turEksik.length === 0,
-     (trd.turEksik && trd.turEksik.length)
-       ? ('sozlukte yok: ' + trd.turEksik.slice(0,4).join(' | '))
-       : 'butun adim metinleri cevrili');
+  K('Hata metinleri de Turkce',
+     trd.tr.agyok === 'BAĞLANTI YOK',
+     '"' + trd.tr.agyok + '"');
   K('Tur ve raf adlari CEVRILMIYOR', trd.veri === true && trd.tus === true,
      'JAZZ/AMBIENT/NATURE/RADIOTAPE ve REC/CAM oldugu gibi');
   K('Sozluk gelmezse Ingilizce kaliyor',

@@ -44,13 +44,16 @@ const secilen = process.argv.slice(2).map(Number).filter(n => n > 0);
   const p = await c.newPage();
   await p.goto(ADRES);
   await p.waitForTimeout(3500);
-  /* Tanitim turu ekrani kapatiyor: bir kez bastirip yeniden aciliyor. */
-  await p.evaluate(() => { try { localStorage.setItem('orbitape.tur', '1'); } catch (e) {} });
+  /* Rehber karti ekrani kapatiyor: bir kez bastirip yeniden aciliyor. */
+  await p.evaluate(() => { try {
+    localStorage.setItem('orbitape.rehberAcilisRadio', '3');
+    localStorage.setItem('orbitape.rehberAcilisOrbitape', '3');
+  } catch (e) {} });
   await p.reload();
   await p.waitForTimeout(3800);
 
   /* KARSILAMA ELI KAPANIYOR: ortadaki el tam cekirdegin uzerinde
-     duruyor ve karsilastirilacak seyi orten tek sey o. Tanitim turu
+     duruyor ve karsilastirilacak seyi orten tek sey o. Rehber karti
      gibi bu da olcumun disinda kalmali. */
   await p.evaluate(() => {
     try{ if(typeof karsilamaKapat === 'function') karsilamaKapat(); }catch(e){}
