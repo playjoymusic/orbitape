@@ -2966,9 +2966,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* ON -> ON BIR (10 Eylul gece): ANATOLIA acildi ve icine ilk
      istasyonlar girdi. Halka SAYISI burada acikca yaziyor cunku
      geometri ondan tureniyor -- yanlis sayi baska halkayi sectirir. */
-  K('Radyoda halkalar tur ailesi', hs.n===11 &&
+  /* ON BIR -> ON IKI (16 Eylul): PODCASTS acildi. b0d5a85'te "On iki
+     DOLU aile tanimli", SIRA listesi ve tur dongusu duzeltildi ama bu
+     kontrol atlanmis -- hala 11 bekliyordu, PODCASTS'i da aramiyordu.
+     saglik.js CI'da bu yuzden kirmizi kaliyordu, ortam dalgalanmasi
+     degildi. */
+  K('Radyoda halkalar tur ailesi', hs.n===12 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
        && /RNB & FUNK/.test(hs.sira) && /AFROBEATS/.test(hs.sira)
+       && /PODCASTS/.test(hs.sira)
        && !/DISCO FUNK/.test(hs.sira)
        && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
