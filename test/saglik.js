@@ -13843,8 +13843,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                  body.deri .disk::after): (20.66+21.05)/2, (30.16+30.55)/2,
                  (39.66+40.05)/2, (49.66+50.05)/2 -- yuzde olarak R'nin. */
               const yuzdeler = [20.855, 30.355, 39.855, 49.855];
+              /* ── OLCEK DUZELTMESI (16 Eylul) ───────────────────────
+                 Kullanicinin GERCEK CI logu: dort halkanin sapmasi
+                 [283,279,279,13] -- ilk uc GUCLU, dorduncusu (en icteki)
+                 ZAYIF. Once "yine o bilinen ekran testi" sanildi ama
+                 degil: retry 5 kez denedi, HEP AYNI SONUC -- yani
+                 zamanlama (paint gecikmesi) degil, SABIT bir hata.
+                 TESHIS: merkez pikseli tek tek tarayip (±6 pencere) asil
+                 tepe noktasini buldum -- her halka bir onceki formulun
+                 tahmininden 1 PIKSEL DAHA FAZLA kayiyordu (halka1: +1,
+                 halka2: +2, halka3: +3, halka4: +4). Dorduncu halkada bu
+                 kayma testin ±3 penceresinin DISINA tasiyordu -- halka
+                 aslinda GUCLU (279) ama ±3 pencere onu hic gormuyordu.
+                 SEBEP: 'y/100 * R' formulu duz R kullaniyordu ama CSS'te
+                 (.disk::after) iki katman var: (1) inset:13% kutuyu
+                 R*0.74'e kucultuyor, (2) 'circle at 50% 50%' boyut
+                 belirtmiyor, yani CSS varsayilani 'farthest-corner'
+                 devreye giriyor -- bir KAREnin merkezden KOSESINE
+                 uzakligi kenar uzunlugunun yarisinin √2 kati. Gercek
+                 olcek: R*0.74*√2 ≈ R*1.0465, duz R degil. Dogru
+                 formulle (asagida) R=171 icin dort halka da HESAPLANAN
+                 merkezde birebir cikti (37,54,71,89 -- olculen tepe
+                 noktalariyla TAM esti), pencere ±3'e sigdi. */
+              const OLCEK = 0.74 * Math.SQRT2;
               const enZayif = yuzdeler.map(y=>{
-                const merkez = Math.round(y/100 * R);
+                const merkez = Math.round(y/100 * R * OLCEK);
                 let tepe = 0;
                 for(let dx = -3; dx <= 3; dx++){
                   const x = merkez + dx;

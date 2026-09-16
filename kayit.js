@@ -762,8 +762,17 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      tarayici) Array.from ile en azindan surrogate cifti BOLUNMUYOR. */
   function _grafemler(metin){
     try{
-      if(typeof Intl !== 'undefined' && Intl.Segmenter){
-        const seg = new Intl.Segmenter(undefined, {granularity:'grapheme'});
+      /* TIP DENETIMI (16 Eylul): 'Intl.Segmenter' es2020 kutuphane
+         hedefinde tanimli degil (tip.sh: --lib es2020,dom,dom.iterable),
+         taban 79 uyariyi 81'e cikarip kapiyi kirmiziya dusurdu (KIRMIZI:
+         "YENI tip hatasi girmis", CI logu). Kodun kendisi dogru calisiyor
+         (tarayicida gercek API var, yalnizca TIP TANIMI eksik) -- proje
+         genelinde bu durumda kullanilan kalip: 'any'ye cast (bkz. index.html
+         '_gel', 'e.target' cast'leri). Kutuphane hedefini yukseltmek
+         (es2022) daha genis bir degisiklik olurdu, burada kapsam disi. */
+      const IntlAny = /** @type {any} */ (Intl);
+      if(typeof Intl !== 'undefined' && IntlAny.Segmenter){
+        const seg = new IntlAny.Segmenter(undefined, {granularity:'grapheme'});
         return Array.from(seg.segment(metin), s=>s.segment);
       }
     }catch(e){ _yut(e); }
