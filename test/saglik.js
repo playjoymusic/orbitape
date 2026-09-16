@@ -10232,24 +10232,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         }
         c.ekrandaYildizVar = !!sec2;
         const kutu = window.yildizDurum().adKutu;
-        /* ── KUTU BAYRAGI TAM SARMALIYOR MU (16 Eylul, ikinci duzeltme) ──
-           Kullanicinin sozu, ekran goruntusuyle: "yildizlari buyutup
-           isme bakinca cerceve yarim kaliyor bayrak gelince."
-           Chromium'da measureText(ad) (isim+bayrak TEK dizge) makul
-           olcuyor ama GERCEK CIHAZDA (WebKit) bayrak fillText'te
-           measureText'in rapor ettiginden daha genis cikabiliyor --
-           motorlar arasi bilinen fark. O yuzden kutu artik yalnizca
-           ISMIN (motordan motora guvenilir) genisligine SABIT bir
-           bayrak payi (40px) ekleyerek hesaplaniyor; burada da AYNI
-           SEKILDE dogrulaniyor: kutu, yalnizca ismin genisliginden
-           belirgin (>=30px) daha genis mi -- yani gercekten bir
-           bayrak payi ayrilmis mi, sonradan "unutulup" tekrar salt
-           isim genisligine donulmemis mi. */
-        if(kutu && sec2){
+        /* ── CERCEVE KALKTI, DOKUNMA ALANI GERCEK METINDEN HESAPLANIYOR
+           (16 Eylul, ucuncu duzeltme) ─────────────────────────────
+           Once "measureText(ad)" (Chromium'da dogru, WebKit'te dar),
+           sonra "isim + sabit bayrak payi" (uzun isimlerde ekran
+           genisligine carpip yine kesiliyordu) denendi, ikisi de
+           gercek cihazda ayni sikayeti ("cerceve yarim kaliyor")
+           tekrar uretti. Kullanicinin sozu: "sil tamamen ya da bayrak
+           ve tam ismi tek cerceve yap." Cerceve TAMAMEN kaldirildi
+           (index.html, yildiz haritasi ad cizimi) -- artik tasacak
+           bir kutu yok, isim+bayrak dogrudan golgeyle yaziliyor.
+           Dokunma alani da GERCEK cizilen dizgenin (isim+bosluk+bayrak,
+           TEK olcum) genisliginden turetiliyor, ayri bir sabit pay
+           formulunden degil -- yani "metinden dar kutu" turu bir hata
+           artik yapisal olarak mumkun degil. Burada dogrulanan: adKutu
+           genisligi, GERCEKTEN cizilen tam metnin (yakalanan
+           _yakalananAd, bayrak dahil) olculen genisliginden kucuk
+           DEGIL. */
+        if(kutu && sec2 && c.adMetni){
           const _olcCtx = document.createElement('canvas').getContext('2d');
           _olcCtx.font = "600 15px 'Share Tech Mono', ui-monospace, monospace";
-          const isimGen = _olcCtx.measureText('Yildiz ' + sec2.i).width;
-          c.kutuBayrakPayi = (kutu.x2 - kutu.x1) - isimGen;
+          c.tamMetinGen = _olcCtx.measureText(c.adMetni).width;
+          c.kutuGen = kutu.x2 - kutu.x1;
         }
         c.adKutusuVar = !!kutu && (kutu.x2 - kutu.x1) > 40 && (kutu.y2 - kutu.y1) > 24;
         if(kutu){
@@ -10333,9 +10337,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        yz.adBayrakli === true,
        yz.adMetni ? ('yakalanan metin: "' + yz.adMetni + '"')
                   : 'ad metni yakalanamadi');
-    K('Ad kutusu bayrak icin sabit bir pay tasiyor (cerceve yarim kalmiyor)',
-       typeof yz.kutuBayrakPayi === 'number' && yz.kutuBayrakPayi >= 30,
-       'pay: ' + yz.kutuBayrakPayi + 'px (isim genisligi ustune)');
+    K('Dokunma alani gercek metni (bayrak dahil) hicbir zaman dar kesmiyor',
+       typeof yz.kutuGen === 'number' && typeof yz.tamMetinGen === 'number'
+       && yz.kutuGen >= yz.tamMetinGen,
+       'alan ' + yz.kutuGen + 'px >= metin ' + (yz.tamMetinGen && yz.tamMetinGen.toFixed(1)) + 'px olmali');
     K('Buyudukce daha cok istasyon geliyor (harita)',
        yz.azdaSeyrek === true && yz.cokdaHepsi === true && yz.artanSira === true,
        ozy || 'az acikta seyrek, sonuna kadar acikta rafin tamami');
@@ -12062,6 +12067,55 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       !bh.hata && !bh.yok && bh.resimUretildi && bh.halkaresimSinif
       && !!bh.diskArkaPlan && bh.diskArkaPlan !== 'none',
       bhOz);
+  }
+  /* ── BAR / UMUT ARTIK BIR CIZIM, BIR DOKU DEGIL (16 Eylul) ─────────
+     Kullanicinin sozu: "bar umutu çöz anlattım çizim olacak resim
+     gibi... Bar NYC - umut Miami stil." Ikisi de eskiden yalnizca
+     doku (izgara) tasiyordu -- deri satirinda 'cizim' alani hic
+     yoktu. Bu kontrol UC SEYI birden dogruluyor: (1) satirlarda
+     dogru cizim adi bagli, (2) o fonksiyon GERCEKTEN piksel
+     boyuyor (bos/tek renk tuval degil -- en az iki farkli renk:
+     zemin ve siluet), (3) halka onizlemesi de (deriHalkaAdresi)
+     uretiliyor -- "onizlemede circle'lar kayik" sikayetinin kok
+     nedeni bu iki deride: govde deseni MERKEZE ALINARAK cizildi
+     (bkz. deri_cizim.js barNYC/umutMiami yorumu), yani kirpilan
+     halka da tanidik kaliyor. */
+  {
+    const bu = await pg.evaluate(async ()=>{
+      const c = {};
+      try{
+        for(const ad of ['BAR', 'UMUT']){
+          const i = DERILER.findIndex(d => d.ad === ad);
+          const d = i >= 0 ? DERILER[i] : null;
+          const k = ad.toLowerCase();
+          c[k + '_cizimAdi'] = d ? d.cizim : null;
+          if(!(d && DERI_CIZIM[d.cizim])){ c[k + '_var'] = false; continue; }
+          const W = 220, H = 476;
+          const tv = document.createElement('canvas'); tv.width = W; tv.height = H;
+          const cx = tv.getContext('2d');
+          DERI_CIZIM[d.cizim](cx, W, H, { pal: _pal(d), tohum: _tohum(d) });
+          const veri = cx.getImageData(0, 0, W, H).data;
+          const renkler = new Set();
+          for(let p2 = 0; p2 < veri.length; p2 += 4*97)
+            renkler.add(veri[p2] + ',' + veri[p2+1] + ',' + veri[p2+2]);
+          c[k + '_var'] = true;
+          c[k + '_renkSayisi'] = renkler.size;
+          c[k + '_halka'] = deriHalkaAdresi(d).indexOf('data:image') === 0;
+        }
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    const buOz = bu.hata || JSON.stringify(bu);
+    K('BAR artik NYC silueti, UMUT artik Miami sahnesi cizimi',
+      !bu.hata && bu.bar_cizimAdi === 'barNYC' && bu.umut_cizimAdi === 'umutMiami',
+      buOz);
+    K('Iki cizim de gercekten piksel boyuyor (bos tuval degil)',
+      !bu.hata && bu.bar_var && bu.umut_var
+      && bu.bar_renkSayisi >= 5 && bu.umut_renkSayisi >= 5,
+      buOz);
+    K('Iki cizimin de halka onizlemesi uretiliyor',
+      !bu.hata && bu.bar_halka === true && bu.umut_halka === true,
+      buOz);
   }
   /* ── BEKCI BUYUTECI YUVASINA GERI KOYUYOR, IKI KATINA ITMIYOR ──
      Mac'te pencere boyu degisince buyutec yuvasinin tam iki kati

@@ -6278,8 +6278,16 @@
        kaydirmasin diye tablo hep append-only (bkz. DERI_TERS_SON
        yorumu). Ekranda nerede gorunecekleri ayri bir is (siralama,
        henuz belirsiz). */
-    {ad:"BAR", zem:"#0d1420", yazi:"#c7d3e6", marka:"#f0b94f", cek:"#232e3f", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"4px", panel:"#141d2c", doku:"repeating-linear-gradient(0deg,rgba(240,185,79,.16) 0 1px,rgba(0,0,0,0) 1px 13px),repeating-linear-gradient(90deg,rgba(240,185,79,.12) 0 1px,rgba(0,0,0,0) 1px 9px)", dokuOlcu:"auto", dokuSef:".5", tel:"rgba(255,255,255,.13)", luks:1},
-    {ad:"UMUT", zem:"#ecdfba", yazi:"#3f3420", marka:"#8f3a1e", cek:"#d4c49a", isik:"rgba(255,250,235,.85)", golgeRenk:"rgba(90,70,30,.30)", disGolge:"rgba(90,70,30,.52)", halka:"rgba(0,0,0,.20)", font:F2, kose:"50%", panel:"#efe4c4", doku:"repeating-linear-gradient(58deg,rgba(58,122,66,.16) 0 3px,rgba(0,0,0,0) 3px 11px),repeating-linear-gradient(-58deg,rgba(58,122,66,.10) 0 2px,rgba(0,0,0,0) 2px 13px)", dokuOlcu:"auto", dokuSef:".5"},
+    /* ── BAR / UMUT: DOKUDAN CIZIME (16 Eylul) ─────────────────────
+       Ikisi de eskiden yalnizca CSS'in dokuyabildigi bir izgara
+       (doku/dokuOlcu/dokuSef) tasiyordu. Kullanicinin sozu: "bunlar
+       ayni tasarim... cizim olacak resim gibi. Bar NYC - umut Miami
+       stil." Artik ikisinin de kendi DERI_CIZIM sahnesi var (bkz.
+       deri_cizim.js: barNYC, umutMiami); doku alanlari SILINDI --
+       cizim varken hic okunmuyorlardi (bkz. yukarida "CIZIMLI DERIDE
+       DOKU ALANLARI YOK" yorumu), tasimanin bir anlami kalmadi. */
+    {ad:"BAR", zem:"#0d1420", yazi:"#c7d3e6", marka:"#f0b94f", cek:"#232e3f", isik:"rgba(255,255,255,.11)", golgeRenk:"rgba(0,0,0,.70)", disGolge:"rgba(0,0,0,.84)", halka:"rgba(255,255,255,.16)", font:F1, kose:"4px", panel:"#141d2c", tel:"rgba(255,255,255,.13)", luks:1, cizim:"barNYC"},
+    {ad:"UMUT", zem:"#ecdfba", yazi:"#3f3420", marka:"#8f3a1e", cek:"#d4c49a", isik:"rgba(255,250,235,.85)", golgeRenk:"rgba(90,70,30,.30)", disGolge:"rgba(90,70,30,.52)", halka:"rgba(0,0,0,.20)", font:F2, kose:"50%", panel:"#efe4c4", cizim:"umutMiami"},
     /* ── KILIM SERISI (15 Eylul) ─────────────────────────────────────
        Kullanicinin gonderdigi iki fotograf: telefon vitrinde, kilim
        dokulu bir kaplama, diskin yerinde deseni ozetleyen yuvarlak
@@ -12663,45 +12671,46 @@
              hataya hic girmiyor. */
           const bay = bayrak(y.ulke);
           const ad = bay ? (adTemel + '  ' + bay) : adTemel;
-          /* ── KUTU BAYRAGI TAM SARMALIYOR (16 Eylul, ikinci duzeltme) ──
-             Kullanicinin sozu, ekran goruntusuyle: "yıldızları buyutup
-             isme bakınca çerçeve yarım kalıyor bayrak gelince."
-             Ilk halde kutu genisligi dogrudan c.measureText(ad).width
-             ile (ad = isim+bosluk+bayrak TEK dizge) hesaplaniyordu.
-             Chromium'da bu dogru olcuyor (bkz. asagidaki not) ama
-             GERCEK CIHAZDA (WebKit/Safari) bayrak emoji'sinin fillText
-             ile ciktigi GENISLIK, measureText'in rapor ettiginden daha
-             GENIS cikiyor -- motorlar arasi bilinen bir tutarsizlik
-             (bkz. CLAUDE.md "Yerlesim testlerini WebKit'te kosturma":
-             piksel hizasi zaten motordan motora farkli). Sonuc: kutu
-             dar hesaplaniyor, bayrak sag kenardan tasiyor, cerceve
-             "yarim" gorunuyordu.
-             Duzeltme: kutu genisligi ARTIK yalnizca ISMIN (adTemel,
-             duz Latin harfleri -- motordan motora guvenilir olcuyor)
-             genisligine dayaniyor; bayrak icin SABIT bir guvenlik payi
-             (BAYRAK_PAY) ekleniyor, emoji'nin kendi motoru ne rapor
-             ederse etsin kutu onu HER ZAMAN icine alacak kadar genis
-             kaliyor. Olcum (bu tarayicida, Share Tech Mono 15px):
-             measureText('  🇳🇱') ~28px; BAYRAK_PAY 40px, ~12px pay
-             birakiyor -- Safari'nin fazladan genisligini yutacak kadar. */
-          const BAYRAK_PAY = 40;
-          const gen = Math.min(W - 16, c.measureText(adTemel).width + (bay ? BAYRAK_PAY : 0) + 26);
+          /* ── CERCEVE TAMAMEN KALDIRILDI (16 Eylul, ucuncu duzeltme) ──
+             Onceki iki deneme (once measureText(ad), sonra sabit
+             BAYRAK_PAY guvenlik payi) ikisi de kutuyu METNIN
+             GENISLIGINE gore hesaplamaya calisiyordu. Ikinci ekran
+             goruntusu bunun neden kirilgan oldugunu gosterdi: UZUN bir
+             istasyon adinda ("Hitradio Antenne Sachsen-A") kutu zaten
+             ekran genisligine ('Math.min(W-16, ...)') CARPIYOR ve
+             ORADA kesiliyor -- ama fillText o kesilen genislikten
+             HABERSIZ, metni KENDI dogal genisliginde ciziyor. Sonuc:
+             hangi payi verirsen ver, yeterince uzun bir isimde kutu
+             daima metinden dar kalabiliyordu ve cerceve yine "yarim"
+             goruyordu ("Dance Wave!" ornegindeki gibi kisa isimlerde
+             de ayni riskti, yalnizca daha az fark ediliyordu).
+             Kullanicinin kendi sozu: "sil tamamen ya da bayrak ve tam
+             ismi tek cerceve yap." Ikincisi az once tam ustune tekrar
+             dustugu icin, BIRINCISI seciliyor: kutunun kendisi
+             (dolgu + kenar cizgisi) tamamen kaldirildi. Isim ve bayrak
+             artik dogrudan halkanin uzerine, koyu bir METIN GOLGESI
+             ile yaziliyor -- gölge bir DIKDORTGEN degil, HER ZAMAN
+             metnin kendi seklini takip ediyor, yani "metinden dar
+             kutu" turu bir hata artik YAPISAL OLARAK mumkun degil. */
           const boy = 30;
-          let ax = Math.max(gen / 2 + 6, Math.min(W - gen / 2 - 6, p.x));
+          /* Kutu yokken "yarisi disari tasan bir kutu" riski de yok --
+             burada yalnizca metnin ekran KENARINA yapismasini
+             onluyoruz, sabit bir pay yeterli (isim ne kadar uzun
+             olursa olsun kirilan bir hesap degil). */
+          let ax = Math.max(70, Math.min(W - 70, p.x));
           let ay = p.y - rad - 20;
           if(ay - boy / 2 < 8) ay = p.y + rad + 20;
-          c.fillStyle = 'rgba(8,16,20,' + (0.80 * gel).toFixed(3) + ')';
-          c.beginPath();
-          if(c.roundRect) c.roundRect(ax - gen/2, ay - boy/2, gen, boy, 8);
-          else c.rect(ax - gen/2, ay - boy/2, gen, boy);
-          c.fill();
-          c.strokeStyle = 'rgba(' + halkaDeriRengi('90,220,210', undefined, YILDIZ_ESIK) + ',' + (0.45 * gel).toFixed(3) + ')';
-          c.lineWidth = 1; c.stroke();
+          c.save();
+          c.shadowColor = 'rgba(0,0,0,' + (0.85 * gel).toFixed(3) + ')';
+          c.shadowBlur = 6; c.shadowOffsetY = 1;
           c.fillStyle = yaziRenk + (0.97 * gel).toFixed(3) + ')';
           c.fillText(ad, ax, ay + 1);
-          /* Kutu bir dugme: dokunma alani cizilen kutudan biraz
-             genis, ama komsu yildizlarin uzerine tasmayacak kadar. */
-          _adKutu = { id:y.id, x1:ax - gen/2 - 6, x2:ax + gen/2 + 6,
+          c.restore();
+          /* Dokunma alani: gorunen bir kutu kalmadi ama isim hala bir
+             dugme -- alan artik GERCEK metin genisliginden (bayrak
+             dahil, TEK dizge) cikiyor, sabit bir kutuya baglanmiyor. */
+          const dokunGen = Math.min(W - 16, c.measureText(ad).width + 24);
+          _adKutu = { id:y.id, x1:ax - dokunGen/2 - 6, x2:ax + dokunGen/2 + 6,
                       y1:ay - boy/2 - 6, y2:ay + boy/2 + 6 };
         }
       }

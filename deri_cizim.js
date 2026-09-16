@@ -101,7 +101,7 @@ const DERI_USLUP = {
      commit), yani hicbir kullanicinin kayitli deri numarasi bundan
      etkilenmedi -- append-only kurali zaten "yayindaki" numaralar
      icin, burada henuz yayinda olan bir numara yoktu. Seri simdi
-     bes motif: DIAMOND, MEDALLION, RAMSHORN, NAZAR, SUNBURST. */
+     bes motif: DIAMOND, MEDALLION, RAMSHORN, EVIL EYE, SUNBURST. */
   diamond  : { pal:["#8a2a24","#c9702f","#2f5d52","#f2e2c4","#1d0f0e"] },
   medallion: { pal:["#8a2420","#d4a13c","#1c2b4a","#e8ddc0","#0d1220"] },
   ramshorn : { pal:["#6b3a20","#c77a2e","#2e4636","#e8d3a8","#241408"] },
@@ -273,6 +273,15 @@ const DERI_USLUP = {
   tromoA   : { pal:["#1c3450","#e8c890","#f2a45c","#c8845c","#f4f0e4"], tohum:25 },
   ekoA     : { pal:["#140c1c","#f0407c","#3cc8c0","#f2c040","#9a5cf0"], tohum:38 },
   anisA    : { pal:["#e8eadc","#6a8c50","#d8809c","#e8c060","#38442c"], tohum:11 },
+  /* ── BAR / UMUT: GERCEK BIR SAHNE (16 Eylul) ─────────────────────
+     Kullanicinin sozu: "bar umutu çöz anlattım çizim olacak resim
+     gibi... Bar NYC - umut Miami stil." Ikisi de eskiden yalnizca
+     bir DOKU tasiyordu (ince izgara), cizim degildi. Paletler
+     kendi deri satirlarindaki renklerden turetildi -- BAR'in
+     lacivert/altini, UMUT'un krem/kiremidi degismedi, yalnizca
+     bir SAHNEYE donustu. */
+  barNYC   : { pal:["#0d1420","#1a2740","#f0b94f","#c7d3e6","#050a12"], tohum:131 },
+  umutMiami: { pal:["#ecdfba","#f0895a","#8f3a1e","#4a9d8f","#f4c9a3"], tohum:137 },
 };
 function _uslup(d){ return (d && DERI_USLUP[d.cizim]) || {}; }
 function _pal(d){ const u = _uslup(d); return (d && d.pal) || u.pal || ['#888']; }
@@ -5066,6 +5075,176 @@ const DERI_CIZIM = {
     c.fillStyle = _zemRgba(p[0], 0.88);
     c.beginPath(); c.ellipse(W*0.155, H*0.795, u*0.150, u*0.110, 0, 0, Math.PI*2); c.fill();
     _objSulama(c, W*0.155, H*0.795, u*0.090, p[4], p[2]);
+    c.restore();
+  },
+  /* ── BAR · NEW YORK CITY ──────────────────────────────────────────
+     Kullanicinin sozu: "bar umutu çöz anlattım çizim olacak resim
+     gibi... Bar NYC." BAR eskiden yalnizca ince altin bir izgara
+     dokusuydu; artik gece cokerken bir Manhattan ufku -- altin
+     pencereler, kademeli tacli ve igneli bir art-deco kule (Chrysler
+     Building'in SILUETINE yakin bir bicim, kopyasi degil -- gercek
+     binanin cizimi ya da fotografi yok, yalnizca "kademeli tac +
+     igne" formu, sehir siluetlerinde ortak bir dil).
+     ONIZLEME ICIN MERKEZE ALINDI: kule govdesi ve isikli catlar
+     H*0.30-0.65 bandinda duruyor. Sebebi: deriHalkaAdresi() ozel
+     halkasi olmayan cizimleri "cover" ile kareye kirpiyor ve bu
+     kirpma her zaman tam bu bandi (dikeyde ortadaki ~%46'lik dilimi)
+     aliyor -- kullanicinin ayri bildirdigi "onizlemede circle'lar
+     kayik" sikayetinin kok nedeni de buydu (bkz. deriHalkaAdresi
+     yorumu). Yeni cizilen bu iki deride en TANIDIK parca bilerek o
+     banda yerlestirildi ki onizlemede de dogru yerde otursun. */
+  barNYC(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    /* Gece gokyuzu: tepede en koyu, ufka dogru altin sis. */
+    const g = c.createLinearGradient(0, 0, 0, H*0.62);
+    g.addColorStop(0, p[4]); g.addColorStop(0.55, p[0]); g.addColorStop(1, p[1]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H*0.62);
+    c.fillStyle = p[4]; c.fillRect(0, H*0.62, W, H*0.38);   // sokak karanligi
+    /* Ay/isik halesi: kulenin arkasinda, yumusak. */
+    const mx = W*0.62, my = H*0.34, mR = u*0.20;
+    const mg = c.createRadialGradient(mx, my, 0, mx, my, mR);
+    mg.addColorStop(0, _zemRgba(p[3], 0.55)); mg.addColorStop(1, _zemRgba(p[3], 0));
+    c.fillStyle = mg; c.beginPath(); c.arc(mx, my, mR, 0, Math.PI*2); c.fill();
+    /* Arka sira: alcak, sis rengi, dolgu -- derinlik hissi. */
+    const arkaRenk = _zemRgba(p[1], 0.55);
+    let x = -u*0.02;
+    while(x < W + u*0.05){
+      const w = u*(0.06 + r()*0.05), boy = H*(0.12 + r()*0.10);
+      c.fillStyle = arkaRenk; c.fillRect(x, H*0.63 - boy, w, boy);
+      x += w + u*0.012;
+    }
+    /* On sira binalar: koyu siluet + isikli pencereler. */
+    const onRenk = p[4], taban = H*0.63;
+    const binalar = [
+      {x:0.00, w:0.16, boy:0.22}, {x:0.15, w:0.13, boy:0.30},
+      {x:0.27, w:0.10, boy:0.18}, {x:0.70, w:0.12, boy:0.26},
+      {x:0.81, w:0.11, boy:0.19}, {x:0.91, w:0.11, boy:0.24},
+    ];
+    binalar.forEach(function(b){
+      const x0 = W*b.x, w = W*b.w, boy = H*b.boy;
+      c.fillStyle = onRenk; c.fillRect(x0, taban - boy, w, boy);
+      const kx = Math.max(2, Math.floor(w/(u*0.020)));
+      const ky = Math.max(2, Math.floor(boy/(u*0.026)));
+      for(let iy = 0; iy < ky; iy++) for(let ix = 0; ix < kx; ix++){
+        if(r() < 0.38) continue;
+        c.fillStyle = _zemRgba(p[3], 0.25 + r()*0.5);
+        c.fillRect(x0 + w*0.14 + ix*(w*0.72/kx), taban - boy + boy*0.10 + iy*(boy*0.82/ky), u*0.010, u*0.014);
+      }
+    });
+    /* HERO KULE: merkeze yakin, kademeli art-deco tac + igne. */
+    const hx = W*0.50, govdeBoy = H*0.30, govdeW = W*0.15;
+    c.fillStyle = onRenk; c.fillRect(hx - govdeW/2, taban - govdeBoy, govdeW, govdeBoy);
+    let ty = taban - govdeBoy, tw = govdeW;
+    for(let k = 0; k < 3; k++){
+      const nw = tw*0.66, nh = H*0.035;
+      c.fillRect(hx - nw/2, ty - nh, nw, nh);
+      ty -= nh; tw = nw;
+    }
+    c.beginPath(); c.moveTo(hx - u*0.006, ty); c.lineTo(hx + u*0.006, ty);
+    c.lineTo(hx, ty - H*0.09); c.closePath(); c.fill();
+    /* Kule pencereleri: dikey iki sira, altin, seyrek sonuk. */
+    for(let iy = 0; iy < 14; iy++){
+      if(r() < 0.3) continue;
+      const yy = taban - govdeBoy*0.94 + iy*(govdeBoy*0.85/14);
+      c.fillStyle = _zemRgba(p[3], 0.30 + r()*0.55);
+      c.fillRect(hx - govdeW*0.30, yy, u*0.010, u*0.016);
+      c.fillRect(hx + govdeW*0.30 - u*0.010, yy, u*0.010, u*0.016);
+    }
+    /* BAR'i hatirlatan ince altin cizgiler: sokak, bir tezgahin
+       raylari gibi, ufkun altina seriliyor. */
+    c.strokeStyle = _zemRgba(p[3], 0.5); c.lineWidth = u*0.006;
+    c.beginPath(); c.moveTo(0, taban); c.lineTo(W, taban); c.stroke();
+    c.strokeStyle = _zemRgba(p[3], 0.14); c.lineWidth = u*0.004;
+    for(let i = 1; i <= 9; i++){
+      const y = taban + i*H*0.041;
+      c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
+    }
+    c.restore();
+  },
+  /* ── UMUT · MIAMI ──────────────────────────────────────────────────
+     "umut Miami stil": gun batimi, iki palmiye, Ocean Drive'a yakin
+     pastel cepheler (yuvarlatilmis art-deco silueti, gercek bir
+     binanin kopyasi degil). Palet UMUT'un kendi renklerinden: krem
+     gokyuzu, mercan gunes, kiremit siluet, camgobegi deniz.
+     ONIZLEME ICIN MERKEZE ALINDI: gunes ve cephe catlari H*0.30-0.65
+     bandinda (bkz. barNYC'deki ayni not, ayni sebep). */
+  umutMiami(c, W, H, d){
+    const p = d.pal, r = _tohumlu(d.tohum), u = Math.min(W, H);
+    c.save();
+    /* ILK DENEME OLCUMU: ayri bir "deniz" seridi (H*0.58-0.68) binalarin
+       ARALARINDAKI bosluklardan sizip yatay, dagitici bir camgobegi
+       kusak gibi gorunuyordu (binalarin tepesi zaten o bandin
+       USTUNDE kaliyordu, bandi orten tek sey bina govdeleriydi).
+       Kaldirildi; camgobegi artik yalnizca sokak seviyesinde INCE
+       bir kordon -- Miami'nin kendi rengi, bant degil vurgu. */
+    const g = c.createLinearGradient(0, 0, 0, H*0.68);
+    g.addColorStop(0, p[0]); g.addColorStop(0.45, p[1]); g.addColorStop(1, p[2]);
+    c.fillStyle = g; c.fillRect(0, 0, W, H*0.68);
+    c.fillStyle = p[0]; c.fillRect(0, H*0.68, W, H*0.32);     // kaldirim
+    /* Gunes: cephelerin hemen ustunde, ortada. */
+    const sx = W*0.50, sy = H*0.36, R = u*0.17;
+    const sgg = c.createLinearGradient(0, sy - R, 0, sy + R);
+    sgg.addColorStop(0, p[1]); sgg.addColorStop(1, p[2]);
+    c.fillStyle = sgg; c.beginPath(); c.arc(sx, sy, R, 0, Math.PI*2); c.fill();
+    c.strokeStyle = _zemRgba(p[0], 0.35); c.lineWidth = u*0.004;
+    for(let i = 1; i <= 4; i++){
+      c.beginPath(); c.moveTo(sx - R, sy + i*R*0.42); c.lineTo(sx + R, sy + i*R*0.42); c.stroke();
+    }
+    /* Art-deco cephe sirasi: yuvarlatilmis ust, pastel renk dongusu. */
+    const renkler = [p[2], p[4], p[1]];
+    const cepheY = H*0.68, n = 6, bw = W/n;
+    for(let i = 0; i < n; i++){
+      const x0 = i*bw, w = bw*0.86, boy = H*(0.12 + ((i*37) % 5)*0.012);
+      const renk = renkler[i % renkler.length];
+      const topY = cepheY - boy + w*0.22;
+      c.fillStyle = _zemRgba(renk, 0.92);
+      c.beginPath();
+      c.moveTo(x0, cepheY);
+      c.lineTo(x0, topY);
+      c.arc(x0 + w/2, topY, w/2, Math.PI, 0);
+      c.lineTo(x0 + w, cepheY);
+      c.closePath(); c.fill();
+      /* Yuvarlak vitray (porthole) + alt pencere seridi. */
+      c.fillStyle = _zemRgba(p[0], 0.85);
+      c.beginPath(); c.arc(x0 + w/2, topY + w*0.30, w*0.10, 0, Math.PI*2); c.fill();
+      c.fillStyle = _zemRgba(p[4], r() < 0.5 ? 0.55 : 0.22);
+      c.fillRect(x0 + w*0.30, cepheY - boy*0.5, w*0.40, boy*0.30);
+    }
+    /* Sokak seviyesinde ince camgobegi kordon (eski "deniz seridi"nin
+       yerine, bkz. yukaridaki olcum yorumu). */
+    c.strokeStyle = _zemRgba(p[3], 0.55); c.lineWidth = u*0.010;
+    c.beginPath(); c.moveTo(0, cepheY); c.lineTo(W, cepheY); c.stroke();
+    /* Palmiyeler: iki yanda, kiremit renginde siluet. ILK DENEME
+       OLCUMU: yaprak uclari govdeyle AYNI acida disari FISKIRIYORDU
+       (cos/sin ile duz radyal cizgiler) -- havai fisek gibi durdu,
+       palmiye gibi degil. Gercek yaprak yercekimiyle SARKIYOR: govde
+       yonunden bagimsiz, her yaprak ucuna SABIT bir asagi pay
+       (+boy*0.34) eklendi; bezier de once disari sonra asagi kiriliyor. */
+    const palmiye = (x, taban, boy, kat)=>{
+      c.strokeStyle = p[4]; c.lineWidth = u*0.015*kat; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(x, taban);
+      c.quadraticCurveTo(x - u*0.03*kat, taban - boy*0.55, x - u*0.01*kat, taban - boy);
+      c.stroke();
+      const tx = x - u*0.01*kat, ty = taban - boy;
+      c.lineWidth = u*0.010*kat;
+      for(let i = 0; i < 6; i++){
+        const a = -Math.PI*0.92 + i*(Math.PI*0.84/5);   // -166° -> -14°, tepede yelpaze
+        const cx1 = tx + Math.cos(a)*boy*0.30, cy1 = ty + Math.sin(a)*boy*0.55;
+        const ex = tx + Math.cos(a)*boy*0.60, ey = ty + Math.sin(a)*boy*0.20 + boy*0.34;
+        c.beginPath(); c.moveTo(tx, ty);
+        c.quadraticCurveTo(cx1, cy1, ex, ey);
+        c.stroke();
+      }
+    };
+    palmiye(W*0.10, H*0.80, H*0.30, 1.0);
+    palmiye(W*0.92, H*0.76, H*0.24, 0.85);
+    /* Kaldirim cizgileri. */
+    c.strokeStyle = _zemRgba(p[4], 0.18); c.lineWidth = u*0.005;
+    for(let i = 1; i <= 6; i++){
+      const y = H*0.68 + i*H*0.045;
+      c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
+    }
     c.restore();
   },
 };
