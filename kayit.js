@@ -2730,7 +2730,31 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     try{
       kayitTuvalKur();
       if(!kayitCtx || !viz.width) return false;
-      _kkNo++;                                  // olcum onbellegi tazelensin
+      /* ── TEK KARELIK CEKIMDE ONBELLEK TAM SIFIRLANIYOR (16 Eylul) ────
+         Kullanicinin sozu: "o an cektik ve onizleme geliyor ya, orda
+         cark vs kayiyor... cogu oge alta kayiyor... alttan kesik."
+         Bazi ogeler dogru, COGU kaymis olmasi (hepsi degil) tek bir
+         olcek hatasini degil, TUTARSIZ bir onbellegi isaret ediyor.
+         SEBEP: fotoCek() once kayitTuvalKur()'u CAGIRIYOR, sonra
+         'await fotoArayuzHazirla(...)' ile HER simge icin yeni bir
+         Image() cozulmesini bekliyor (_arayuzSembol: im.onload) --
+         ilk fotografta onbellek bos oldugundan bu bekleme birden
+         cok kare surebilir. Bu bekleme SIRASINDA telefonun adres
+         cubugu toplanip/acilirsa (dokunus sonrasi cok yaygin bir iOS
+         davranisi) yerlesim degisir. kk()'nin onbellegi bir olcumu
+         SON 7 KAREYE kadar geciyor sayiyor (bkz. kk() basi) -- yani
+         bu bekleme sirasinda TAZELENMIS bazi ogeler (kk() baska bir
+         yerden cagrilmissa) YENI yerlesimle, DAHA ONCE olculup hala
+         "taze" sayilan ogeler ESKI yerlesimle karisik cikabiliyor.
+         Ayni mekanizma nebula/uydular icin de bulunmustu (bkz.
+         _kaySolUst: "taze:true"), orada TEK bir eleman icin cozuldu;
+         burada TUM kareyi etkileyen genel hali. COZUM: _kkNo'yu 7'nin
+         USTUNDE bir miktar atlatmak -- kk()'nin gecerlilik kosulu
+         'v.no > _kkNo - 7' oldugundan, bu atlama SECICI degil, o ana
+         kadarki HER onbellek girdisini gecersiz kiliyor; kare, tek
+         seferlik bir cekim oldugu icin (30 fps'lik surekli kayit
+         degil) yeniden olcmenin maliyeti onemsiz. */
+      _kkNo += 8;                                // olcum onbellegi TAMAMEN tazelensin
       const t = performance.now();
       const gorNo = gorunum(mod);
       const g = { c:kayitCtx, W:KAYIT_EN, H:KAYIT_BOY, K:KAYIT_K, gorNo:gorNo,

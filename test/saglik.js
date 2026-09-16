@@ -11711,6 +11711,43 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Bayrak fotografta kutulu harfe bolunmuyor',
       bayrakBol.bayrakCagri === 1 && bayrakBol.metinCagri === 2,
       bayrakBol.hata || ('bayrak fillText='+bayrakBol.bayrakCagri+' (1 olmali), metin fillText='+bayrakBol.metinCagri+' (2 olmali)'));
+
+    /* ── FOTOGRAFTA OGELER BIRBIRINE KAYMIYOR (16 Eylul) ─────────
+       Kullanicinin sozu: "o an cektik ve onizleme geliyor ya, orda
+       cark vs kayiyor... cogu oge alta kayiyor... alttan kesik." Kok
+       sebep: fotoCek() -> kayitTuvalKur() -> 'await
+       fotoArayuzHazirla(...)' (her simge icin yeni bir Image() cozumu,
+       ilk cekimde cok kare surebilir) -> fotoKaresi(). Bu bekleme
+       SIRASINDA yerlesim degisirse (mobilde cok yaygin), kk()'nin "son
+       7 kare gecerli" onbellegi BAZI ogeleri ESKI, BASKA ogeleri YENI
+       yerlesimle karistirabiliyor -- tek bir olcek hatasi degil,
+       TUTARSIZ bir karisim (kullanicinin sozu de tam bunu anlatiyor:
+       "COGU oge", hepsi degil). Duzeltme: fotoKaresi() artik _kkNo'yu
+       7'nin USTUNDE atlatiyor (+8), yani o ana kadarki HER onbellek
+       girdisi cekim ONCESINDE gecersiz sayiliyor.
+       ASAGIDAKI OLCUM: dogrudan MEKANIZMAYI sinniyor -- kk()'nin
+       gecerlilik kurali 'v.no > _kkNo - 7' oldugundan, fotoKaresi()
+       cagrisi ONCESI ve SONRASI arasindaki _kkNo FARKININ en az 8
+       olmasi, o ana kadarki HER onbellek girdisinin (7 kare sinirinin
+       disina cikarilarak) gecersiz sayilacagini garanti ediyor.
+       (Once bir eleman tasiyip kk()'nin onbellekten mi tuval degeri
+       donduğunu olcmeyi denedim: '.disk' surekli kendi 'nefes'
+       animasyonuyla transform yazdigi icin benim tasimam hemen
+       eziliyordu, olcum yanlis kirmizi verdi -- o yuzden dogrudan
+       _kkNo atlamasina bakiliyor, bir DOM yan etkisine degil.) */
+    const kkTaze = await pg.evaluate(async ()=>{
+      const c = {};
+      try{
+        kayitTuvalKur();
+        const oncekiKkNo = _kkNo;
+        fotoKaresi();
+        c.fark = _kkNo - oncekiKkNo;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('Foto cekiminde onbellek tam tazeleniyor (_kkNo >=8 atliyor)',
+      !kkTaze.hata && kkTaze.fark >= 8,
+      kkTaze.hata || ('_kkNo farki: '+kkTaze.fark+' (>=8 olmali, 7 kare sinirinin tamami asilsin)'));
   }
   /* ── HALKA RESMI: DPR'A GORE OLCEKLENIYOR, GOVDE SIKISMIYOR ──────
      14 Eylul, kullanicinin sozu (pembe bir ekran goruntusu + ikinci
