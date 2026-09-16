@@ -155,6 +155,15 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      'var' hoisted olduğu için önce undefined görünüyor, guard çalışıyor. */
   var kamAkis = null, kamAcik = false;
 
+  /* ── ON / ARKA KAMERA (16 Eylul) ───────────────────────────────────
+     Kullanicinin sozu: "kamera acildiktan sonra isteyen kamerayi
+     dondursun diye ... arka m-kamera on kamera yan istedigim."
+     Varsayilan ON (facingMode 'user') -- eskisi gibi, davranis
+     degismedi. _kamYon donus tusuyla degisiyor (bkz. kamDondur):
+     kamera ACIKSA akis hemen o yuzle yeniden kuruluyor, KAPALIYSA
+     yalnizca TERCIH degisiyor ve bir sonraki acilista uygulaniyor. */
+  var _kamYon = 'user', _kamDonuyor = false;
+
   /* ── KAMERA AÇILIRKEN MÜZİK KESİLMESİN ────────────────────────────
      iOS'ta getUserMedia çağrısı ses oturumunu (AVAudioSession) yeniden
      kuruyor; bu sırada <audio> elemanı duraklayabiliyor. Bu container'da
@@ -237,7 +246,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
       if(!ses.paused) calmayiKoru(3000);          // açılış sarsıntısını yut
       kamAkis = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:'user', width:{ideal:480}, height:{ideal:480} },   // minik pencere: küçük çözünürlük yeter
+        video:{ facingMode:_kamYon, width:{ideal:480}, height:{ideal:480} },   // minik pencere: küçük çözünürlük yeter
         audio:false });
       kamEl.srcObject = kamAkis;
       try{ kamEl.muted = true; kamEl.volume = 0; }catch(e){ _yut(e); }   // ses oturumunu hiç istemesin
@@ -250,6 +259,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          CSS'in kamerayi bilmesinin tek yolu bu sinif. */
       try{ document.body.classList.add('kam'); }catch(e){ _yut(e); }
       camYaz();
+      try{ kamYonYaz(); }catch(e){ _yut(e); }        // ayna/dondurme dugmesi guncel yuze gore
       kamIzleyiciKur();                             // iz biterse sessizce kapat
       return true;
     }catch(e){
@@ -302,6 +312,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      yanındaki yer kayıt bitince yine DELETE olarak beliriyor. */
   const KAMERA = true;
   const camDug = document.getElementById('cam');
+  /* Dondurme tusu: CAM'in hemen yaninda, ayni satirda (bkz. index.html
+     #araclar). Yalnizca kamera acikken gorunur -- camYaz() veriyor. */
+  const camDonDug = document.getElementById('camDon');
   /* ── KAMERA SEVİYESİ ─────────────────────────────────────────────
      Açılış yumuşak (%22). Çizgiyi sürükleyerek %6 ile %80 arasında
      ayarlanıyor; seçim hatırlanıyor. Kayıt tuvali kameranın GERÇEK
@@ -524,6 +537,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     if(camDug.classList.contains('sil')) return;   // silme modunda kamera durumu yazılmaz
     camDug.classList.toggle('acik', !!kamAcik);
     camDug.setAttribute('aria-pressed', kamAcik ? 'true' : 'false');
+    /* DONDURME TUSU YALNIZCA KAMERA ACIKKEN: kapaliyken donecek bir
+       goruntu yok, dugme orada dursa da hicbir ise yaramaz. */
+    if(camDonDug) camDonDug.classList.toggle('var', !!kamAcik && !!KAMERA);
     try{ kamCubukYaz(); }catch(e){ _yut(e); }
   }
   /* CAM <-> DELETE geçişi. Tek yerden yazılıyor ki iki durum birbirine
@@ -561,6 +577,74 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     camDug.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') kamDegis(e); });
     ['pointerdown','touchstart','mousedown'].forEach(t=>
       camDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+  }
+  /* ── DONUS SIMGESI VE AYNA ────────────────────────────────────────
+     On kamerada onizleme AYNALI (kullanicinin kendi goruntusu gibi,
+     #kam CSS'i scaleX(-1)); arka kamerada bu YANLIS olur -- gercek
+     dunyayi ayna gibi ters gosterir. '.arka' sinifi mirror'i kapatiyor
+     (bkz. index.html #kam.arka).
+     Dugmenin baslik/etiketi HANGI YUZE GECILECEGINI soyluyor (o anki
+     durumu degil -- basinca ne olacagini), diger kisa notlarla ayni
+     kalipta (bkz. kamNotYaz). */
+  function kamYonYaz(){
+    try{ if(kamEl) kamEl.classList.toggle('arka', _kamYon === 'environment'); }catch(e){ _yut(e); }
+    try{
+      if(!camDonDug) return;
+      const t = (_kamYon === 'environment') ? Y('Switch to front camera') : Y('Switch to back camera');
+      camDonDug.title = t; camDonDug.setAttribute('aria-label', t);
+    }catch(e){ _yut(e); }
+  }
+  /* ── KAMERA DONDUR: ON <-> ARKA (16 Eylul) ─────────────────────────
+     Kullanicinin sozu: "kamera acildiktan sonra isteyen kamerayi
+     dondursun diye ... arka m-kamera on kamera yan istedigim."
+     KAPALIYKEN basilirsa yalnizca TERCIH degisir (bir sonraki CAM
+     acilisinda uygulanir) -- akis yok, donecek bir sey yok.
+     ACIKKEN basilirsa eski akis YENISI HAZIR OLUNCAYA KADAR canli
+     kaliyor: getUserMedia basarisiz olursa (ör. cihazda arka kamera
+     yok) kullanici kararmis bir ekranda kalmiyor, eski yuze donuluyor. */
+  async function kamDondur(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
+    if(!KAMERA || !camDonDug || _kamDonuyor) return;
+    _kamYon = (_kamYon === 'user') ? 'environment' : 'user';
+    kamYonYaz();
+    if(!kamAcik) return;                              // yalniz tercih degisti, akis yok
+    _kamDonuyor = true;
+    camDonDug.classList.add('bekle');
+    const eskiAkis = kamAkis;
+    try{
+      const yeniAkis = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:_kamYon, width:{ideal:480}, height:{ideal:480} }, audio:false });
+      kamAkis = yeniAkis;
+      /* TIP DENETIMI: kamEl 'HTMLElement' olarak cikarimlanmis (dom
+         lib'inde getElementById boyle donuyor), srcObject/play video
+         elemanina ozel. kamAc()'ta da ayni durum var (taban 79'un
+         parcasi) -- burada YENI bir hata satiri eklememek icin ayni
+         kalibi (any-cast) kullaniyoruz, bkz. _grafemler() yorumu. */
+      const kv = /** @type {any} */ (kamEl);
+      kv.srcObject = kamAkis;
+      try{ await kv.play(); }catch(e2){ _yut(e2); }
+      try{ await ilkKare(kamEl); }catch(e2){ _yut(e2); }
+      if(eskiAkis){ try{ eskiAkis.getTracks().forEach(t=>t.stop()); }catch(e2){ _yut(e2); } }
+      kamIzleyiciKur();                               // iz biterse sessizce kapat
+    }catch(e3){
+      /* DONMEDI: eski yuze geri don, akis eskisi gibi kalsin -- kamera
+         birden kararmasin. */
+      _kamYon = (_kamYon === 'user') ? 'environment' : 'user';
+      kamYonYaz();
+      kamAkis = eskiAkis;
+      kisaNotYaz('CAMERA DID NOT SWITCH',
+        'This device could not open the other camera. Staying on the current one.');
+      _yut(e3);
+    }
+    _kamDonuyor = false;
+    camDonDug.classList.remove('bekle');
+  }
+  if(camDonDug){
+    kamYonYaz();                                        // acilis etiketi: "Switch to back camera"
+    camDonDug.addEventListener('click', kamDondur);
+    camDonDug.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') kamDondur(e); });
+    ['pointerdown','touchstart','mousedown'].forEach(t=>
+      camDonDug.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
   }
   function kamKapat(){
     kamAcik = false;

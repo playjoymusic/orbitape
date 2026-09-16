@@ -911,6 +911,20 @@
   #mute.kisik{color:#8fb9b6;}
   #mute:hover{color:#cfe9e4;}
   #mute:focus-visible{outline:1px solid currentColor;outline-offset:2px;}
+  /* ── DONDUR: on/arka kamera degistirme (16 Eylul) ───────────────
+     #mute/#favAc ile AYNI olcu ve kilik -- yeni bir stil dili
+     eklenmiyor. Yalnizca kamera acikken gorunur (.var, kayit.js). */
+  #camDon{display:none;align-items:center;justify-content:center;
+    width:32px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
+    background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
+    cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
+    color:#5adcd2;transition:color .2s, border-color .2s, background .2s, opacity .25s;}
+  #camDon.var{display:flex;opacity:.88;}
+  #camDon.var:hover{opacity:1;color:#cfe9e4;}
+  #camDon:focus-visible{outline:1px solid currentColor;outline-offset:2px;}
+  #camDon.bekle{opacity:.5;pointer-events:none;}          /* donus surerken ikinci istek yok */
+  #camDon svg{width:17px;height:17px;display:block;fill:none;stroke:currentColor;
+    stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
   body.t-liste #favAc{color:#b6adbe;} body.t-radio #favAc{color:#d6a483;}
   /* Yükseklik 32px: sağ alttaki ◁ ★ ▷ ile aynı. Dolgu dikeyde değil,
      satırın kendi yüksekliğinden geliyor -> yazı uzasa da (SAVE/DELETE,
@@ -2035,6 +2049,12 @@
   #kam.on{display:block;opacity:calc(var(--kv,100) / 100);}   /* seviye #kamCubuk'tan */
   /* sürüklerken yumuşatma yok: kamera parmağı anında takip etsin */
   #kam.surukle{transition:none;}
+  /* ── ARKA KAMERADA AYNA YOK (16 Eylul) ────────────────────────────
+     On kamerada onizleme aynali (yukarida scaleX(-1)) -- kullanici
+     kendi goruntusunu ayna gibi gorsun diye. Arka kamerada bu YANLIS:
+     gercek dunyayi ters gosterir. kayit.js: kamYonYaz() donus tusuna
+     basilinca bu sinifi ekleyip cikariyor. */
+  #kam.arka{transform:translate(-50%,-50%);}
 
   /* ── CAM: ön kamerayı açıp kapatan düğme (REC'in yanında) ─────────
      Seviye ayarı YOK. Kamera tek ve kısık bir seviyede açılıyor; oranı
@@ -2478,7 +2498,7 @@
   body.deri #geri svg,body.deri #dur svg,body.deri #duraklat svg,body.deri #ileri svg{
     stroke:var(--d-yazi) !important;fill:var(--d-yazi) !important;}
   /* Ikinci satirin tuslari da govdeden: cerceve degil kabartma. */
-  body.deri #rec,body.deri #cam,body.deri #mute,body.deri #favAc,body.deri #araCizgi{
+  body.deri #rec,body.deri #cam,body.deri #camDon,body.deri #mute,body.deri #favAc,body.deri #araCizgi{
     background:var(--d-tus-zem,transparent) !important;
     box-shadow:var(--d-golge,none) !important;
     border-radius:var(--d-kose,50%) !important;}
@@ -2487,7 +2507,7 @@
      kayboluyor degil: acik/kapali farki hala kabartmanin var
      olup olmamasiyla okunuyor. REC'in kirmizi noktasi haric --
      o bir DURUM isareti, her deride ayni anlami tasimali. */
-  body.deri #cam.var,body.deri #cam.pasif,
+  body.deri #cam.var,body.deri #cam.pasif,body.deri #camDon.var,
   body.deri #mute.var,body.deri #favAc.var,body.deri #araCizgi.var{
     background:var(--d-tus-zem,transparent) !important;
     color:var(--d-yazi) !important;}
@@ -2959,10 +2979,10 @@
   /* Ikinci satir: kendi renkleri var (turkuaz/kirmizi). Deri acikken
      onlar da malzemeye uyuyor -- REC'in kirmizi noktasi haric, o bir
      DURUM isareti ve her deride ayni anlami tasimali. */
-  body.deri #rec,body.deri #cam,body.deri #mute,body.deri #favAc,
+  body.deri #rec,body.deri #cam,body.deri #camDon,body.deri #mute,body.deri #favAc,
   body.deri #araCizgi,body.deri #tani{
     color:var(--d-yazi) !important;border-color:var(--d-tus-kenar) !important;}
-  body.deri #mute svg,body.deri #favAc svg,body.deri #araCizgi svg{
+  body.deri #mute svg,body.deri #favAc svg,body.deri #araCizgi svg,body.deri #camDon svg{
     stroke:var(--d-yazi) !important;}
   body.deri #favAc svg{fill:var(--d-yazi) !important;}
   body.deri #araYuva{border-color:var(--d-tus-kenar) !important;}
@@ -3766,7 +3786,7 @@
      ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
   @media (max-width:480px){
     #tasima{gap:6px;} #araclar{gap:6px;}
-    #geri,#ileri,#dur,#duraklat{width:34px;} #fav,#favAc,#mute{width:30px;}
+    #geri,#ileri,#dur,#duraklat{width:34px;} #fav,#favAc,#mute,#camDon{width:30px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
     #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:0.5625rem;letter-spacing:.14em;}
@@ -3843,14 +3863,14 @@
      ona relative yazmak onu yerinden oynatiyordu (olculdu: 11
      yerlesim kontrolu kirmiziya dondu). Fixed bir eleman zaten
      kendi ::after'i icin kapsayici blok, ekleme gerekmiyor. */
-  #geri,#dur,#duraklat,#ileri,#mute,#favAc,#cam,#araCizgi{
+  #geri,#dur,#duraklat,#ileri,#mute,#favAc,#cam,#camDon,#araCizgi{
     position:relative;}
   /* ANA ARAYUZDE CERCEVE YOK (8 Eylul): "rec cam vs cerceveleri
      iptal et, havada olsunlar." Duz derilerde zaten boyleydi. Dokunma
      alani degismiyor -- o ::after ile veriliyor. */
   body:not(.deri) #geri,body:not(.deri) #dur,body:not(.deri) #duraklat,
   body:not(.deri) #ileri,body:not(.deri) #rec,body:not(.deri) #cam,
-  body:not(.deri) #mute,body:not(.deri) #favAc,body:not(.deri) #fav,
+  body:not(.deri) #camDon,body:not(.deri) #mute,body:not(.deri) #favAc,body:not(.deri) #fav,
   body:not(.deri) #araCizgi,body:not(.deri) #ara .cizgi{
     background:transparent;border-color:transparent;box-shadow:none;}
   /* 44 PIKSEL: Apple'in kendi esigi. Once 40'ti ve genislik yalnizca
@@ -3859,7 +3879,7 @@
      olcusunde ayni sekilde yakaladi. Gorunum degismiyor; buyuyen sey
      yalnizca dokunulacak yer. */
   #geri::after,#dur::after,#duraklat::after,#ileri::after,
-  #mute::after,#favAc::after,#cam::after,#ayarTut::after,#araCizgi::after,
+  #mute::after,#favAc::after,#cam::after,#camDon::after,#ayarTut::after,#araCizgi::after,
   #deriFirca::after,#saatTus::after,#gorselTus::after{
     /* 8 Eylul: 14px/40px -> 6px/38px. Satir araligi 7 -> 6'ya inince
        komsu tuslarin dokunma katmanlari birbirine giriyordu ve
@@ -4727,6 +4747,20 @@
            orada kendi tasarimiyla duracak. -->
       <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
       <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
+      <!-- ── KAMERA DONDUR: on/arka gecisi (16 Eylul) ─────────────────
+           Kullanicinin sozu: "kamera acildiktan sonra isteyen kamerayi
+           dondursun diye ... arka m-kamera on kamera yan istedigim."
+           CAM'in hemen yaninda, AYNI satirda: bu satir zaten diskin/
+           halkanin DISINDA (sol ust kose, bkz. #solUst), yani "hemen
+           alti halkaya carpar mi" endisesi burada devreye girmiyor --
+           disk ortada, bu dugme kosede duruyor.
+           Yalnizca kamera ACIKKEN gorunur (.var, kayit.js: camYaz());
+           kapaliyken donecek bir goruntu olmadigi icin gizli -- boylece
+           kamera kapaliyken satir eskisi gibi 4 ogeye (REC·CAM·sustur·★)
+           donuyor, genislik sorunu (eskiden yasanan 5 ogelik tasma)
+           yalnizca kamera acikken ve gecici olarak devreye giriyor,
+           orada da araclarSigdir() zaten oraniyor. -->
+      <div id="camDon" role="button" tabindex="0" title="Switch camera" aria-label="Switch camera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a8 8 0 0 1 13.9-5.3M20 4v4.6h-4.6"/><path d="M20 15a8 8 0 0 1-13.9 5.3M4 20v-4.6h4.6"/></svg></div>
       <!-- ── SUSTUR ─────────────────────────────────────────────────
            Hoparlor cizmedik: uygulamanin kendi sembol dili nokta ve
            yay. Ortada bir kaynak noktasi, sagina yayilan iki yay --
@@ -12610,7 +12644,25 @@
         if(sec){
           c.font = "600 15px 'Share Tech Mono', ui-monospace, monospace";
           c.textAlign = 'center'; c.textBaseline = 'middle';
-          const ad = (y.ad || '').slice(0, 26);
+          const adTemel = (y.ad || '').slice(0, 26);
+          /* ── ULKE BAYRAGI ADIN YANINDA (16 Eylul) ──────────────────
+             Kullanicinin sozu: "bayraga sadece 2 parmak yildizlar
+             buyutulunce istasyonun ya her yildiz bir yildiza basinca
+             isim geliyor ya yaninda ulkesinin bayragi da lazim o
+             kadar."
+             Ayni bayrak() fonksiyonu kullaniliyor (ULKE ISO kodundan
+             iki bolgesel gosterge harfine ceviren, #npBayrak'ta da
+             kullanilan TEK kaynak) -- yeni bir bayrak cizim yolu YOK.
+             TEK fillText cagrisiyla yaziliyor (bayrak adin icine
+             katilmis halde): bir bayrak iki Unicode "bolgesel
+             gosterge" kod noktasindan olusuyor ve tarayici bunlari
+             yalnizca AYNI fillText cagrisinda gorurse birlestirip
+             bayrak ciziyor -- ayri cagrilara bolunse "D E" gibi
+             kutulu harfe donusuyor (foto ceken kyz()'de yasanan hata,
+             16 Eylul'de duzeltildi). Burada zaten TEK cagri var, o
+             hataya hic girmiyor. */
+          const bay = bayrak(y.ulke);
+          const ad = bay ? (adTemel + '  ' + bay) : adTemel;
           const gen = Math.min(W - 16, c.measureText(ad).width + 26);
           const boy = 30;
           let ax = Math.max(gen / 2 + 6, Math.min(W - gen / 2 - 6, p.x));

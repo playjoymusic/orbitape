@@ -4185,6 +4185,49 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'akis birakildi');
   K('Kamera penceresi HALKANIN ICINDE', cam.olcu && cam.olcu.kam < cam.olcu.disHalka && cam.olcu.kam > cam.olcu.icHalka,
      'kamera '+(cam.olcu&&cam.olcu.kam)+'px | en dis halka '+(cam.olcu&&cam.olcu.disHalka)+'px');
+  /* ── KAMERA DONDUR: ON <-> ARKA (16 Eylul) ────────────────────────
+     Kullanicinin sozu: "kamera acildiktan sonra isteyen kamerayi
+     dondursun diye ... arka m-kamera on kamera yan istedigim."
+     Olculen: (1) dugme yalniz kamera acikken gorunuyor -- kapaliyken
+     donecek bir goruntu yok; (2) basinca _kamYon 'user' <-> 'environment'
+     arasinda gidip geliyor; (3) on kamerada onizleme aynali, arka
+     kamerada degil (#kam.arka gercek dunyayi ters gostermesin diye);
+     (4) donus sirasinda kamera KAPANMIYOR, akis canli kaliyor --
+     kullanici kararmis bir ekranda kalmiyor. */
+  const kamDonus = await pg.evaluate(async ()=>{
+    const bek = ms=>new Promise(r=>setTimeout(r,ms));
+    const c = {};
+    const camDonT = document.getElementById('camDon');
+    const kamElT = document.getElementById('kam');
+    c.kapaliyken_gizli = !camDonT.classList.contains('var');
+    document.getElementById('cam').click(); await bek(700);
+    c.acilinca_gorunur = camDonT.classList.contains('var');
+    c.baslangicYuz = _kamYon;
+    c.baslangicAynali = !kamElT.classList.contains('arka');
+    camDonT.click(); await bek(700);
+    c.donunceYuz = _kamYon;
+    c.donunceAynasiz = kamElT.classList.contains('arka');
+    c.donunceAcik = !!kamAcik;
+    c.donunceAkisVar = !!(kamAkis && kamAkis.getTracks().length);
+    camDonT.click(); await bek(700);
+    c.geriDonunceYuz = _kamYon;
+    c.geriDonunceAynali = !kamElT.classList.contains('arka');
+    document.getElementById('cam').click(); await bek(400);
+    c.kapaninca_gizli = !camDonT.classList.contains('var');
+    return c;
+  });
+  K('Kamera dondurme tusu yalniz kamera acikken gorunur',
+    kamDonus.kapaliyken_gizli === true && kamDonus.acilinca_gorunur === true && kamDonus.kapaninca_gizli === true,
+    JSON.stringify(kamDonus));
+  K('Kamera dondurme tusu on/arka arasinda geciyor',
+    kamDonus.baslangicYuz === 'user' && kamDonus.donunceYuz === 'environment' && kamDonus.geriDonunceYuz === 'user',
+    JSON.stringify(kamDonus));
+  K('Arka kamerada ayna kapaniyor, on kamerada aciliyor',
+    kamDonus.baslangicAynali === true && kamDonus.donunceAynasiz === true && kamDonus.geriDonunceAynali === true,
+    JSON.stringify(kamDonus));
+  K('Donme sirasinda kamera acik ve akis canli kaliyor',
+    kamDonus.donunceAcik === true && kamDonus.donunceAkisVar === true,
+    JSON.stringify(kamDonus));
   /* ── ◁ ve ▷ AYNI HIZADA MI ──────────────────────────────────────
      DUZELTILEN KARARSIZ TEST: bu kontrol CI'da bir kez dustu, sonraki
      calistirmada gecti. Ayni kod, farkli sonuc — en zararli test turu,
@@ -10117,7 +10160,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
               sec2 = { i, xx:pp.x, yy:pp.y }; break;
             }
           }
+          /* ── ULKE BAYRAGI ADIN YANINDA (16 Eylul) ─────────────────
+             Kullanicinin sozu: "bayraga sadece 2 parmak yildizlar
+             buyutulunce istasyonun ... yaninda ulkesinin bayragi da
+             lazim." Sahte istasyonlarin hepsi ulke:'TR' tasiyor
+             (yukarida). Ad kutusu cizilirken TEK fillText cagrisiyla
+             adin icine katilan bayragi GERCEKTEN yakalamak icin
+             fillText'e casus takiliyor: boluk pörçük gelirse (D E
+             gibi kutulu harf, kyz()'deki eski hata) burada da ortaya
+             cikardi -- ama burada TEK cagri var, o hataya girmiyor. */
+          let _yakalananAd = null;
+          const _eskiFillText = CanvasRenderingContext2D.prototype.fillText;
+          CanvasRenderingContext2D.prototype.fillText = function(metin, ...geri){
+            if(typeof metin === 'string' && /^Yildiz \d/.test(metin)) _yakalananAd = metin;
+            return _eskiFillText.apply(this, [metin, ...geri]);
+          };
           if(sec2){ olay('pointerdown', sec2.xx, sec2.yy); olay('pointerup', sec2.xx, sec2.yy); await bek(120); }
+          CanvasRenderingContext2D.prototype.fillText = _eskiFillText;
+          c.adMetni = _yakalananAd;
+          c.adBayrakli = !!(_yakalananAd && /\u{1F1F9}\u{1F1F7}/u.test(_yakalananAd));
         }
         c.ekrandaYildizVar = !!sec2;
         const kutu = window.yildizDurum().adKutu;
@@ -10199,6 +10260,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Secilen yildizin adi da bir dugme', yz.ekrandaYildizVar === true
        && yz.adKutusuVar === true && yz.adKutusuActi === true,
        ozy || 'ada basmak istasyonu aciyor');
+    K('Yildiz haritasinda secilen istasyonun ulke bayragi da yaziliyor',
+       yz.adBayrakli === true,
+       yz.adMetni ? ('yakalanan metin: "' + yz.adMetni + '"')
+                  : 'ad metni yakalanamadi');
     K('Buyudukce daha cok istasyon geliyor (harita)',
        yz.azdaSeyrek === true && yz.cokdaHepsi === true && yz.artanSira === true,
        ozy || 'az acikta seyrek, sonuna kadar acikta rafin tamami');
