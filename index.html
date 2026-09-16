@@ -2914,42 +2914,15 @@
   #gorselSaat .gs-tarih{display:block;margin-top:2.6em;
     font-size:.155em;letter-spacing:.50em;text-indent:.50em;
     opacity:.42;font-weight:400;}
-  /* ── GUN SAATI: DONGUNUN GORUNEN YUZU ────────────────────────
-     Gun dongusu acikken carkin hemen ustunde duran kucuk saat.
-     Isi sussuz: dongunun ACIK oldugunu ve simdi gunun neresinde
-     oldugumuzu soyluyor -- zeminin isigi degisirken "neden" sorusu
-     cevapsiz kalmasin diye.
-     YERI OLCUYE BAGLI DEGIL: ekranin ortasinda, carkin tepesinin
-     biraz ustunde. Sag alt ceyrege (kunye) ve sol alt kosaya
-     (tuslar) dokunmuyor; ust seritte de marka yazisi var, o yuzden
-     ikisinin arasindaki bos bantta duruyor.
-     RENGI PERDEDEN: gunes sicakken sicak, gece soguk. Yani saat de
-     dongunun bir parcasi, uzerine yapistirilmis bir rakam degil. */
-  #gunSaat{position:fixed;z-index:6;left:0;right:0;
-    top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 96px);
-    text-align:center;pointer-events:auto;cursor:pointer;
-    font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:0.78rem;letter-spacing:.34em;text-indent:.34em;
-    font-variant-numeric:tabular-nums;
-    color:var(--gd-renk,rgba(255,235,205,.72));
-    -webkit-tap-highlight-color:transparent;
-    opacity:0;transition:opacity .45s ease;}
-  /* DERI SARTI: perde 'body.deri::after' katmaninda yasiyor, yani
-     deri kapaliyken gosterecek bir yuzey yok. Saatin orada durmasi
-     calismayan bir anahtari gostermek olurdu. */
-  body.deri.gunisigi #gunSaat{opacity:1;}
-  body:not(.deri) #gunSaat,body:not(.gunisigi) #gunSaat{pointer-events:none;}
-  /* Saatin altinda gunun nerede oldugunu gosteren ince bir cizgi:
-     sol uc safak, sag uc aksam, isaret simdi. Bir satir yazi yerine
-     bir OLCEK -- okumaya gerek yok, bakinca anlasiliyor. */
-  #gunSaat .gd-yol{display:block;width:92px;height:1px;margin:7px auto 0;
-    background:linear-gradient(90deg,
-      rgba(255,235,205,.10) 0%, rgba(255,235,205,.34) 50%, rgba(255,235,205,.10) 100%);
-    position:relative;}
-  #gunSaat .gd-yol b{position:absolute;top:-2px;width:5px;height:5px;
-    border-radius:50%;background:var(--gd-renk,rgba(255,235,205,.9));
-    left:calc(var(--gd-yer,50%) - 2.5px);
-    box-shadow:0 0 8px var(--gd-renk,rgba(255,235,205,.8));}
+  /* ── GUN SAATI KALDIRILDI (16 Eylul) ─────────────────────────
+     Skin uzerinde, carkin/halkanin hemen ustunde surekli duran bir
+     saat+ilerleme-cizgisi vardi (deri+gun dongusu aciksa her deri
+     degisiminde geri geliyordu). pj'nin kararı: bu, halkanin
+     uzerine binen bir hata olarak gorunuyor, istenmiyor -- silindi.
+     GUN DONGUSU'NUN KENDISI DURUYOR: --d-perde isigi, 'gunisigi'
+     sinifi, SUN anahtari (deri_galeri.js) hep calisiyor; kaldirilan
+     yalnizca bu gorsel saat DUGUMU (asagida JS tarafi: gunSaatYaz/
+     gunSaatKur ve cagrildigi 3 yer de kaldirildi). */
   body.deri.nefes{
     --d-perde:radial-gradient(118% 86% at 50% calc(54% - var(--d-nabiz,0)*13%),
       rgba(255,255,255,calc(.026 + var(--d-nabiz,0)*.225)) 0%,
@@ -6898,51 +6871,17 @@
       _cubukZaman.push(setTimeout(yaz, 420));
     }catch(e){ _yut(e); }
   }
-  /* ══ GUN SAATI: DONGUNUN ACIP KAPAYAN YUZU ══════════════════════
+  /* ══ GUN SAATI KALDIRILDI (16 Eylul) ═════════════════════════
      Gun dongusu bir DERI degil bir MOOD: hangi deri secili olursa
-     olsun onun uzerine biniyor. Bu saat onun gorunen yuzu --
-     acikken carkin ustunde duruyor, ustune basinca dongu kapaniyor.
-     Acmak skins seridindeki SUN anahtarindan (bkz. deri_galeri.js);
-     kapatmak hem oradan hem buradan. */
-  var _gdDugum = null, _gdZaman = 0, _gdSon = '';
-  function gunSaatYaz(){
-    try{
-      if(!_gdDugum || !AYAR.gunDongusu) return;
-      const t = new Date();
-      const yeni = String(t.getHours()).padStart(2,'0') + ':'
-                 + String(t.getMinutes()).padStart(2,'0');
-      const f = (t.getHours()*60 + t.getMinutes()) / 1440;
-      /* Isaret gunun neresinde oldugumuzu gosteriyor: sol uc gece
-         yarisi, orta ogle, sag uc yine gece yarisi. */
-      _gdDugum.style.setProperty('--gd-yer', (f*100).toFixed(1) + '%');
-      if(yeni !== _gdSon){ _gdSon = yeni; _gdDugum.firstChild.nodeValue = yeni; }
-    }catch(e){ _yut(e); }
-  }
-  function gunSaatKur(){
-    try{
-      clearInterval(_gdZaman); _gdZaman = 0;
-      if(!AYAR.gunDongusu) return;
-      if(!_gdDugum){
-        const e = document.createElement('div');
-        e.id = 'gunSaat'; e.setAttribute('role','button'); e.setAttribute('tabindex','0');
-        e.setAttribute('aria-label','Day cycle');
-        e.appendChild(document.createTextNode('--:--'));
-        const y = document.createElement('span'); y.className = 'gd-yol';
-        y.appendChild(document.createElement('b'));
-        e.appendChild(y);
-        const bas = (ev)=>{ ev.preventDefault(); ev.stopPropagation(); gunDongusuAc(false); };
-        e.addEventListener('click', bas);
-        e.addEventListener('pointerdown', ev=>ev.stopPropagation());
-        e.addEventListener('keydown', ev=>{
-          if(ev.key === ' ' || ev.key === 'Enter') bas(ev); });
-        document.body.appendChild(e);
-        _gdDugum = e;
-      }
-      _gdSon = ''; gunSaatYaz();
-      _gdZaman = setInterval(gunSaatYaz, 20000);
-    }catch(e){ _yut(e); }
-  }
-  /* Tek kapi: serit anahtari da, saatin kendisi de buradan geciyor. */
+     olsun onun uzerine biniyor. Eskiden bunun gorunen bir yuzu de
+     vardi -- carkin ustunde duran, ustune basinca dongu kapatan bir
+     saat dugumu (gunSaatYaz/gunSaatKur, #gunSaat). pj'nin karari:
+     halkanin uzerine binen bir hata gibi goruluyordu, kaldirildi
+     (bkz. yukarida index.html CSS taraf, ayni tarihli not).
+     ACMA/KAPAMA HALA CALISIYOR: tek yolu simdi skins seridindeki
+     SUN anahtari (bkz. deri_galeri.js) -- asagidaki gunDongusuAc()
+     ayni gorevi goruyor, yalnizca ekrana dugum eklemiyor. */
+  /* Tek kapi: serit anahtari buradan geciyor. */
   function gunDongusuAc(v){
     try{
       AYAR.gunDongusu = !!v;
@@ -6950,7 +6889,7 @@
       document.body.classList.toggle('gunisigi', !!v);
       if(v){ gunPerdesiYaz(); }
       else { document.documentElement.style.removeProperty('--d-perde'); }
-      gunNobetiKur(); gunSaatKur();
+      gunNobetiKur();
       try{ if(window['deriSeritTazele']) window['deriSeritTazele'](); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
@@ -7259,7 +7198,6 @@
                                 try{ if(window['_nabizSifirla']) window['_nabizSifirla'](); }catch(e){ _yut(e); } }
           if(AYAR.gunDongusu) gunPerdesiYaz();
           gunNobetiKur();
-          gunSaatKur();
         }catch(e){ _yut(e); }
         const _hal = (d.cizim && typeof deriHalkaAdresi === 'function')
                    ? deriHalkaAdresi(d) : '';
@@ -19392,7 +19330,6 @@
   /* Gorselde saat: dugum acilista kuruluyor ama gorunmuyor --
      gorunurlugun iki kapisi da CSS'te (bkz. body.gorsel-acik). */
   try{ gorselSaatKur(); }catch(e){ _yut(e); }
-  try{ gunSaatKur(); }catch(e){ _yut(e); }
   })();
 
   function araAc(){
