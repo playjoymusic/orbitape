@@ -72,6 +72,13 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        # KABUK ACIKCA bash: is bir container icinde kosuyor
+        # (mcr.microsoft.com/playwright), container'da varsayilan
+        # kabuk 'sh' oluyor ve 'sh' -o pipefail'i tanimiyor.
+        # OLCULDU: "Illegal option -o pipefail", exit 2 -- rehber
+        # PR'inde onizleme adimi bu yuzden kirmizi yaniyordu, kodla
+        # ilgisi yoktu.
+        shell: bash
         run: |
           set -o pipefail
           npx wrangler versions upload 2>&1 | tee /tmp/onizleme.txt
