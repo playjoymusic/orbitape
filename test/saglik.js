@@ -4337,6 +4337,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     kamTekDonanim.acikMi_once === true && kamTekDonanim.tikandi === false
       && kamTekDonanim.acikMi_sonra === true && kamTekDonanim.kamElOn_sonra === true,
     JSON.stringify(kamTekDonanim));
+  /* ── DONDURME: DONANIM GEC SERBEST KALIRSA GERCEKTEN DONUYOR MU
+     (16 Eylul, dorduncu tur) ─────────────────────────────────────
+     Bir onceki duzeltme (yukaridaki test) "sonsuza tikanmayi" cozdu,
+     ama pj'nin gercek Android cihazinda ekran goruntusu farkli bir
+     sey gosterdi: TIKANMIYOR ama "CAMERA DID NOT SWITCH" ile ESKI
+     kameraya geri donuyor -- yani yeni istek HIZLICA REDDEDILIYOR,
+     asilı kalmiyor. Teori: track.stop() donunce Android donanimi
+     AYNI AN bosaltmiyor, kisa bir gecikmeyle bosaltiyor; hemen
+     ardindan gelen istek bu yuzden reddediliyor. Burada bu davranis
+     TAKLIT EDILIYOR: sahte getUserMedia, bir onceki akisin stop()'u
+     cagrildiktan sonraki 400 ms icinde gelen HER istegi reddediyor,
+     400 ms'den SONRA gelen istegi kabul ediyor -- tipki gec serbest
+     kalan gercek donanim gibi. kayit.js'teki 350 ms + (gerekirse)
+     450 ms'lik bekleme paylari dogruysa donus GERCEKTEN tamamlanir
+     (_kamYon degisir, "CAMERA DID NOT SWITCH" notu CIKMAZ); bekleme
+     olmasaydi ilk istek hep bu 400 ms'lik pencereye denk gelir, test
+     kirmizi olurdu (asagida Rule-4 ile ayrica kanitlandi). */
+  const kamGecSerbest = await pg.evaluate(async ()=>{
+    const bek = ms=>new Promise(r=>setTimeout(r,ms));
+    const c = {};
+    const _orjGUM = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    let _sonDurmaZamani = 0;
+    navigator.mediaDevices.getUserMedia = function(kisit){
+      const simdi = Date.now();
+      if(_sonDurmaZamani && (simdi - _sonDurmaZamani) < 400){
+        return Promise.reject(new Error('NotReadableError'));  // donanim henuz serbest degil
+      }
+      return _orjGUM(kisit).then(function(s){
+        s.getTracks().forEach(function(t){
+          const orjDurdur = t.stop.bind(t);
+          t.stop = function(){ _sonDurmaZamani = Date.now(); orjDurdur(); };
+        });
+        return s;
+      });
+    };
+    try{
+      document.getElementById('cam').click(); await bek(700);
+      c.acikMi_once = !!kamAcik;
+      c.yonOnce = _kamYon;
+      const camDonT = document.getElementById('camDon');
+      camDonT.click();
+      for(let i = 0; i < 60 && camDonT.classList.contains('bekle'); i++) await bek(50);
+      c.tikandi = camDonT.classList.contains('bekle');
+      c.acikMi_sonra = !!kamAcik;
+      c.kamElOn_sonra = document.getElementById('kam').classList.contains('on');
+      c.yonSonra = _kamYon;
+      c.notPaneli = document.body.innerText.includes('CAMERA DID NOT SWITCH');
+    } finally {
+      navigator.mediaDevices.getUserMedia = _orjGUM;
+      document.getElementById('cam').click(); await bek(400);
+    }
+    return c;
+  });
+  K('Donanim gec serbest kalsa bile kamera gercekten doner, eskiye geri dusmuyor',
+    kamGecSerbest.acikMi_once === true && kamGecSerbest.tikandi === false
+      && kamGecSerbest.acikMi_sonra === true && kamGecSerbest.kamElOn_sonra === true
+      && kamGecSerbest.yonSonra !== kamGecSerbest.yonOnce && kamGecSerbest.notPaneli === false,
+    JSON.stringify(kamGecSerbest));
   /* ── ◁ ve ▷ AYNI HIZADA MI ──────────────────────────────────────
      DUZELTILEN KARARSIZ TEST: bu kontrol CI'da bir kez dustu, sonraki
      calistirmada gecti. Ayni kod, farkli sonuc — en zararli test turu,
@@ -14597,7 +14655,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      7858, 12470 civarindaki "sahte pointerId" notlari) ve gercek bir
      dokunusta (gercek pointerId'li, tarayicinin kendi olusturdugu)
      hic olmuyor. Olculen: 5 yeni yutum, hepsi ayni iki mesajdan
-     (setPointerCapture / releasePointerCapture "No active pointer"). */
+     (setPointerCapture / releasePointerCapture "No active pointer").
+
+     16 EYLUL: 27 -> 28. 'kamGecSerbest' testi (dondurme, kayit.js),
+     Android'de donanimin GEC serbest kalmasini taklit ediyor: sahte
+     getUserMedia ILK istegi BILEREK NotReadableError ile reddediyor
+     (400 ms'lik pencere), kayit.js bunu _yut(eIlk) ile yutup 450 ms
+     sonra YENIDEN deniyor -- tasarimin kendisi bu (bkz. kamDondur
+     yorumu). Gercek kullanicida da olabilir (donanim gercekten gec
+     serbest kalirsa) ama YUTULMASI dogru: kullaniciya hata gostermeye
+     degmez, ikinci deneme zaten kurtariyor. Olculen: 1 yeni yutum. */
   {
     const yb = await pg.evaluate(()=>{
       const y = window.__yut || { n:0, ilk:[] };

@@ -665,7 +665,30 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      YENIDEN istenip (akis zaten durduruldugu icin eskisini geri
      kullanamayiz) geri donuluyor; o da olmazsa kamera tamamen
      kapatilip kullaniciya CAM'e tekrar basmasi soyleniyor -- yari
-     acik/yari kapali bir durumda birakilmiyor. */
+     acik/yari kapali bir durumda birakilmiyor.
+
+     ── DUZELTME (16 Eylul, dorduncu tur): pj'nin gercek Android
+     cihazinda ekran goruntusu -- artik SONSUZA TIKANMIYOR (bir onceki
+     duzeltme dogrulandi) ama YENI yuz de acilamiyor, "CAMERA DID NOT
+     SWITCH" ile eski kameraya donuyor. Demek ki istek TAKILMIYOR,
+     HIZLICA REDDEDILIYOR -- yani _kamDonuyor donanimi bosaltip yeni
+     istegi HEMEN ardindan yolluyor ama isletim sistemi kamerayi henuz
+     GERCEKTEN serbest birakmamis oluyor (Android'de track.stop()
+     cagrisi donunce donanim ayni an bosalmiyor, kisa bir gecikmeyle
+     bosaliyor). KANIT: asagidaki 'kamTekDonanim2' testi, bunu tam bu
+     sekilde davranan sahte bir getUserMedia ile simule ediyor --
+     gecikme eklenmeden ONCE test kirmiziydi (yeni yuz hep reddediliyor,
+     kamera hep eskisine donuyordu), eklendikten SONRA yesile donuyor.
+     DUZELTME: durdurma ile yeni istek arasina KISA BIR BEKLEME payi
+     (350 ms) kondu; o da yetmezse (donanim hala mesgulse) DAHA UZUN
+     bir bekleyisle (450 ms) BIR KERE daha denendi, ancak o da basarisiz
+     olursa eski yuze geri donuluyor. Boylece "titriyor ama donmuyor"
+     sikayetinin GERCEK nedeni (donanimin gec serbest kalmasi) once
+     zaman asimiyla guvenli hale getirildi, simdi de bu bekleme payiyla
+     ASIL DONMESI saglanmaya calisiliyor. */
+  function _bekle(ms){
+    return new Promise(function(coz){ setTimeout(coz, ms); });
+  }
   function _zamanAsimiyla(p, ms){
     return new Promise(function(coz, red){
       const zt = setTimeout(function(){ red(new Error('KAMERA_ZAMAN_ASIMI')); }, ms);
@@ -708,7 +731,14 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     const eskiAkis = kamAkis; kamAkis = null;
     if(eskiAkis){ try{ eskiAkis.getTracks().forEach(t=>{ try{ t.onended=null; }catch(e0){ _yut(e0); } t.stop(); }); }catch(e0){ _yut(e0); } }
     try{
-      await _kamAkisUygula(await _kamIste(_kamYon));
+      await _bekle(350);                                // donanim serbest kalsin (bkz. yukaridaki yorum)
+      try{
+        await _kamAkisUygula(await _kamIste(_kamYon));
+      }catch(eIlk){
+        await _bekle(450);                              // hala mesgulse bir kere daha, daha uzun bekleyip dene
+        await _kamAkisUygula(await _kamIste(_kamYon));
+        _yut(eIlk);
+      }
     }catch(e3){
       /* YENI yuz acilamadi (hata ya da zaman asimi) -- ESKI yuze
          YENIDEN istekle donulmeye calisiliyor (akis zaten durduruldugu
