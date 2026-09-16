@@ -743,12 +743,39 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     }
     return en;
   }
+  /* ── HARF BOLME: GRAFEM KUMESI, KOD BIRIMI DEGIL ────────────────
+     OLCUM (16 Eylul): ulke bayragi (#npBayrak, orn. Almanya icin
+     'D'+'E' bolge gostergesi ikilisi) fotografta iki ayri kutulu
+     harf olarak cikiyordu -- kullanicinin sozu: "fotoya bak alt
+     taraf yok... bayrak D E kutulari". Sebep: 'metin.split("")' UTF-16
+     KOD BIRIMINE gore bolunuyor; bayrak emojisi ekran-disi duzlemde
+     oldugundan iki kod biriminden (surrogate cift) olusuyor ve
+     split('') bunu ORTADAN kesiyor. Cizim dongusu ('for...of') kod
+     NOKTASINA gore dogru geziyordu ama HER kod noktasini AYRI bir
+     fillText() cagrisina veriyordu -- iki bolge-gostergesi harfi
+     (RI D, RI E) tarayiciya iki ayri cagriyla gidince tek bayrak
+     olarak KAYNASMIYOR, her biri kendi kutulu harfi olarak basiliyor.
+     COZUM: Intl.Segmenter ile GRAFEM kumesine gore bol -- Unicode
+     kurali (UAX#29) ardisik iki "Bolge Gostergesi" harfini TEK grafem
+     sayiyor, yani ikisi ARTIK AYNI fillText cagrisina giriyor ve
+     tarayici bayrak olarak kaynastirabiliyor. Segmenter yoksa (eski
+     tarayici) Array.from ile en azindan surrogate cifti BOLUNMUYOR. */
+  function _grafemler(metin){
+    try{
+      if(typeof Intl !== 'undefined' && Intl.Segmenter){
+        const seg = new Intl.Segmenter(undefined, {granularity:'grapheme'});
+        return Array.from(seg.segment(metin), s=>s.segment);
+      }
+    }catch(e){ _yut(e); }
+    return Array.from(metin);            // en kotu ihtimalde de kod noktasi bozulmuyor
+  }
   // harf aralıklı metin (canvas'ta letterSpacing her yerde yok, elle yazıyoruz)
   function kyz(c, metin, x, y, aralik, hiza){
     metin = String(metin||''); if(!metin) return 0;
-    const gen = metin.split('').reduce((t,h)=>t+c.measureText(h).width+aralik, 0) - aralik;
+    const harfler = _grafemler(metin);
+    const gen = harfler.reduce((t,h)=>t+c.measureText(h).width+aralik, 0) - aralik;
     let ix = hiza==='sag' ? x-gen : x;
-    for(const h of metin){ c.fillText(h, ix, y); ix += c.measureText(h).width + aralik; }
+    for(const h of harfler){ c.fillText(h, ix, y); ix += c.measureText(h).width + aralik; }
     return gen;
   }
   const KANAL_RENK = {lib:'#a6fbea', radio:'#ffc79e', liste:'#d9d0dd'};

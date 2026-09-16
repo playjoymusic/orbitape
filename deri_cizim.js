@@ -101,7 +101,7 @@ const DERI_USLUP = {
      commit), yani hicbir kullanicinin kayitli deri numarasi bundan
      etkilenmedi -- append-only kurali zaten "yayindaki" numaralar
      icin, burada henuz yayinda olan bir numara yoktu. Seri simdi
-     bes motif: DIAMOND, MEDALLION, RAMSHORN, EVIL EYE, SUNBURST. */
+     bes motif: DIAMOND, MEDALLION, RAMSHORN, NAZAR, SUNBURST. */
   diamond  : { pal:["#8a2a24","#c9702f","#2f5d52","#f2e2c4","#1d0f0e"] },
   medallion: { pal:["#8a2420","#d4a13c","#1c2b4a","#e8ddc0","#0d1220"] },
   ramshorn : { pal:["#6b3a20","#c77a2e","#2e4636","#e8d3a8","#241408"] },
@@ -5288,79 +5288,12 @@ try{ window.DERI_CIZIM_HAZIR = true; }catch(e){}
      kuruluyor ve degiskene yaziliyor. Yeniden kurulmasi yalnizca
      deri uygulanirken ve bes dakikada bir -- yani kare basina hic
      is yok. */
-  var _gunZaman = 0;
-  function _gunFazi(){
-    try{
-      const t = new Date();
-      /* Gunun kesri: 0 = gece yarisi, 0.5 = ogle. */
-      return ((t.getHours()*60 + t.getMinutes()) / 1440) % 1;
-    }catch(e){ _yut(e); return 0.5; }
-  }
-  function gunPerdesiYaz(){
-    try{
-      if(!document.body.classList.contains('gunisigi')) return;
-      const f = _gunFazi();
-      /* Gunes yolu: dogu -> tepe -> bati. 06:00 ve 18:00 ufuk.
-         Kosinus bir gun boyunca tek bir yay ciziyor; saat basi
-         kirilan bir tablo degil surekli bir egri. */
-      const yay = Math.cos((f - 0.5) * 2 * Math.PI);   /* ogle +1, gece yarisi -1 */
-      const yukseklik = Math.max(0, yay);              /* ufuk altinda 0 */
-      /* ── GECE DE DERINLESIYOR ─────────────────────────────────
-         Ilk surumde gece tek bir taban degerdi ve OLCUM onu red
-         etti: 18:00, 21:00 ve gece yarisi birebir ayni perdeyi
-         veriyordu (0.100 guc, 72% yukseklik). Oysa aksamustu ile
-         gece yarisi ayni sey degil -- "mavi saat" diye bir an
-         kalmiyordu. Gunduzu yayin ARTI yarisi, geceyi EKSI yarisi
-         tasiyor: ufukta 0, gece yarisinda 1. */
-      const derinlik = Math.max(0, -yay);
-      const x = Math.round(8 + f * 84);                /* soldan saga yuruyor */
-      const y = Math.round(72 - yukseklik * 64);       /* tepedeyken yukarida */
-      /* Sicaklik: ufka yakinken kizil, tepedeyken beyaz. Altin saat
-         kendiliginden cikiyor -- ayri bir kural yazilmadi. */
-      const alcak = 1 - yukseklik;
-      let r = 255, g = Math.round(238 - alcak*70), m = Math.round(205 - alcak*130);
-      /* ── ALACAKARANLIK SOGUK ──────────────────────────────────
-         Gunes ufkun hemen altindayken gokyuzunun rengini artik
-         gunes degil sacilma veriyor: kizil degil MOR-MAVI. Pencere
-         dar (yayin -0.30 ile +0.06 arasi, yani kabaca safaktan bir
-         saat once, aksamdan bir saat sonra) ve gecis yumusak --
-         sert bir esik olsaydi belirli bir dakikada renk ziplardi. */
-      const alaca = Math.max(0, 1 - Math.abs(yay + 0.12) / 0.30);
-      if(alaca > 0){
-        r = Math.round(r + (120 - r) * alaca);
-        g = Math.round(g + (130 - g) * alaca);
-        m = Math.round(m + (225 - m) * alaca);
-      }
-      /* Gucu de alacakaranlik biraz kaldiriyor: o an gokyuzu
-         gunesten daha genis bir isik kaynagi. */
-      const guc = 0.10 + yukseklik * 0.34 + alaca * 0.14;
-      /* Gece: perde artik isik degil KARANLIK. Ayni gradyanin uzak
-         duragi koyuya gidiyor, yani tek katman iki isi de goruyor. */
-      const gece = 0.06 + derinlik * 0.46;
-      const k = document.documentElement.style;
-      /* Gun saatinin rengi de buradan: saat dongunun bir parcasi,
-         uzerine yapistirilmis bir rakam degil. Gunes sicakken
-         sicak, gece soguk ve sonuk. */
-      k.setProperty('--gd-renk',
-        'rgba(' + r + ',' + g + ',' + m + ',' + (0.45 + yukseklik*0.42).toFixed(2) + ')');
-      k.setProperty('--d-perde',
-        'radial-gradient(130% 96% at ' + x + '% ' + y + '%,'
-        + 'rgba(' + r + ',' + g + ',' + m + ',' + guc.toFixed(3) + ') 0%,'
-        + 'rgba(' + r + ',' + g + ',' + m + ',' + (guc*0.28).toFixed(3) + ') 38%,'
-        + 'rgba(6,10,20,' + gece.toFixed(3) + ') 100%)');
-    }catch(e){ _yut(e); }
-  }
-  /* Bes dakikada bir: gunes bir gunde 360 derece donuyor, bes
-     dakikada 1,25 derece -- gozle secilmeyen bir adim, yani
-     yerinde duruyormus gibi akiyor. Daha sik yoklamanin karsiligi
-     yok, daha seyrek yoklamak basamak birakir. */
-  function gunNobetiKur(){
-    try{
-      clearInterval(_gunZaman);
-      if(!document.body.classList.contains('gunisigi')) return;
-      _gunZaman = setInterval(gunPerdesiYaz, 300000);
-    }catch(e){ _yut(e); }
-  }
+  /* gunPerdesiYaz()/gunNobetiKur()/_gunFazi() 16 Eylul'de gun
+     dongusuyle birlikte kaldirildi -- pj'nin karari (skin ustunde
+     surekli goze carpan bir saat/isik hatasi gibi duruyordu).
+     --d-perde degiskeni SILINMEDI: hemen asagidaki _nabizYaz onu
+     'nefes' derileri icin farkli bir yoldan (CSS kurali uzerinden)
+     dolduruyor. */
   /* NEFES: kare dongusunde yazilan TEK sayi. Dongu zaten donuyor
      (bkz. vizLoop) ve orada yumusatilmis bir ritim var; buradaki is
      onu bir CSS degiskenine gecirmek. Yazma iki kapiya bagli:
@@ -5378,17 +5311,13 @@ try{ window.DERI_CIZIM_HAZIR = true; }catch(e){}
   }
   try{ window['_nabizYaz'] = _nabizYaz; }catch(e){ _yut(e); }
   try{
-    window['gunPerdesiYaz2'] = gunPerdesiYaz;
-    window['gunNobetiKur2']  = gunNobetiKur;
     window['_nabizYaz']      = _nabizYaz;
     window['_nabizSifirla']  = function(){ _nabizSon = -1; };
   }catch(e){ _yut(e); }
   /* Modul gec geldiyse secili deri zaten yeniden uygulaniyor
-     (deriCizimGeldi), yani perde o anda kuruluyor. Yine de burada
-     bir kez yoklaniyor: sayfa modulu onbellekten alirsa uygulama
-     cagriyi bizden once yapmis olabilir. */
-  try{ if(document.body && document.body.classList.contains('gunisigi')){
-    gunPerdesiYaz(); gunNobetiKur(); } }catch(e){ _yut(e); }
+     (deriCizimGeldi). Eskiden burada gun dongusu icin de bir
+     yoklama vardi (bkz. yukaridaki 16 Eylul notu); gun dongusu
+     kalkinca o yoklama da kalkti. */
 })();
 
 try{ if(typeof deriCizimGeldi === 'function') deriCizimGeldi(); }catch(e){}

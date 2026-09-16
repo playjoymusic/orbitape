@@ -135,31 +135,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Anahtar bu sayfada KAPALI kaliyor -- zemin sistemi olculebilsin. */
   await pg.evaluate(()=>{ try{ AYAR.karanlik = false; zeminUygula(); }catch(e){} });
 
-  /* ── GECE MODU (KIRMIZI FILTRE) ───────────────────────────────
-     Kullanicinin istegi: ekrani kirmiziya kaydiran, TIKLAMA GECIREN
-     bir katman -- astronomlarin kirmizi fenerindeki mantik. Katman
-     bir DOM elemani degil (body.gece::before), yani "eleman var mi"
-     diye sorulamaz: bilgisayarli goruntuye bakmadan kanitlamanin
-     yolu, o sozde-elemanin HESAPLANMIS stilini okumak. */
-  const gece = await pg.evaluate(async ()=>{
-    const varsayilan = AYAR.geceModu === false;
-    const kapaliSinif = document.body.classList.contains('gece');
-    AYAR.geceModu = true; geceModuUygula();
-    const oncesi = getComputedStyle(document.body, '::before');
-    const acikSinif = document.body.classList.contains('gece');
-    const gorunur = oncesi.content !== 'none' && oncesi.position === 'fixed';
-    const tiklamaGecer = oncesi.pointerEvents === 'none';
-    AYAR.geceModu = false; geceModuUygula();
-    const kapandiSinif = document.body.classList.contains('gece');
-    return { varsayilan, kapaliSinif, acikSinif, gorunur, tiklamaGecer, kapandiSinif };
-  });
-  K('Gece modu varsayilan kapali', gece.varsayilan === true && gece.kapaliSinif === false,
-     'AYAR.geceModu varsayilani kapali: ' + gece.varsayilan + ', body.gece: ' + gece.kapaliSinif);
-  K('Gece modu acilinca kirmizi katman gorunur ve tiklama gecirir',
-     gece.acikSinif === true && gece.gorunur === true && gece.tiklamaGecer === true,
-     'body.gece=' + gece.acikSinif + ', katman=' + gece.gorunur + ', pointer-events:none=' + gece.tiklamaGecer);
-  K('Gece modu kapaninca katman kalkiyor', gece.kapandiSinif === false,
-     'body.gece=' + gece.kapandiSinif);
+  /* ── GECE MODU ANAHTARI KALDIRILDI (16 Eylul) ─────────────────
+     AYAR.geceModu, geceModuUygula() ve ayarlardaki NIGHT MODE
+     anahtari silindi -- pj'nin karari. body.gece::before katmani
+     testi burada KALMADI cunku artik onu ayardan tetikleyen kod
+     yok; katmanin kendisi hala CSS'te duruyor, cunku saat.js'teki
+     uyku/alarm ozelligi ayni siniti BAGIMSIZ olarak kullaniyor
+     (bkz. asagida "UYKU ZAMANLAYICISI" bolumundeki gece kontrolleri
+     -- onlar hala gecerli, bu degisiklik onlari etkilemedi). */
 
   // ── 1. TEMEL ────────────────────────────────────────────────────────
   K('JS hatasi (sayfa)',      jsHata.length===0, jsHata.length ? jsHata[0].slice(0,80) : '0');
@@ -833,7 +816,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        15 EYLUL: 27 -> 28. KILIM SERISI geldi -- pj'nin gonderdigi 4
        referans fotograftaki (kilim/desen motifli telefon kilifi,
        ortada halkayla uyumlu madalyon) 6 yeni cizimli deri: DIAMOND,
-       CHEVRON, MEDALLION, RAMSHORN, EVIL EYE (nazar), SUNBURST.
+       CHEVRON, MEDALLION, RAMSHORN, NAZAR, SUNBURST.
        Her biri DERI_USLUP'a bir palet, DERI_HALKA'ya bir disk-ikon
        cizimi, DERI_CIZIM'e "disk bilerek kurulan" tam ekran kompozisyon
        ekledi (DOGA serisinin disk-ankraji kuralina uyularak).
@@ -11699,6 +11682,35 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        fotografta HIC cizilmiyordu. */
     K('Fotografta ulke bayragi da var', /getElementById\('npBayrak'\)/.test(kayitKaynak2),
       '#npBayrak kunyeyle birlikte ciziliyor');
+    /* ── BAYRAK KUTULU HARFE BOLUNMUYOR (16 Eylul) ──────────────────
+       Kullanicinin sozu: "fotoya bak alt taraf yok... hersey bozuk"
+       -- ekran goruntusunde ulke bayragi (orn. Almanya) tek bayrak
+       yerine iki kutulu harf ('D' 'E') olarak cikiyordu. Sebep:
+       kyz() harf araligi icin metni TEK TEK fillText() ile basiyordu;
+       bayrak iki "bolge gostergesi" kod noktasindan olusuyor ve
+       ikisi AYRI cagrilara girince tarayici onlari bayrak olarak
+       KAYNASTIRAMIYOR. Asagida gercek kyz() bir bayrak dizisiyle
+       cagrilip fillText kac kez cagrildigi sayiliyor: TEK cagri
+       olmali (iki kod noktasi ayni cagriya girsin), duz metinde ise
+       harf sayisi kadar cagri kalmali (harf araligi bozulmasin). */
+    const bayrakBol = await pg.evaluate(()=>{
+      const c = {};
+      try{
+        const cv = document.createElement('canvas'); cv.width=200; cv.height=50;
+        const cx = cv.getContext('2d'); cx.font = '16px sans-serif';
+        const cagrilar=[]; const gercek = cx.fillText.bind(cx);
+        cx.fillText = function(m,x,y){ cagrilar.push(m); return gercek(m,x,y); };
+        kyz(cx, '\uD83C\uDDE9\uD83C\uDDEA', 10, 10, 2, 'sol');   // DE bayragi
+        c.bayrakCagri = cagrilar.length;
+        cagrilar.length = 0;
+        kyz(cx, 'AB', 10, 10, 2, 'sol');
+        c.metinCagri = cagrilar.length;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('Bayrak fotografta kutulu harfe bolunmuyor',
+      bayrakBol.bayrakCagri === 1 && bayrakBol.metinCagri === 2,
+      bayrakBol.hata || ('bayrak fillText='+bayrakBol.bayrakCagri+' (1 olmali), metin fillText='+bayrakBol.metinCagri+' (2 olmali)'));
   }
   /* ── HALKA RESMI: DPR'A GORE OLCEKLENIYOR, GOVDE SIKISMIYOR ──────
      14 Eylul, kullanicinin sozu (pembe bir ekran goruntusu + ikinci
@@ -13527,9 +13539,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          kural uretiyor. Uc soru olculuyor -- kural calisiyor mu,
          maliyeti olmayan yerde hic calismiyor mu, ve kod ilk
          boyamaya geri sizdi mi. */
-      K('Yasayan derinin kodu ilk boyamada inmiyor',
-         !/function _gunFazi/.test(kaynak) && /gunPerdesiYaz2/.test(kaynak),
-         'kural deri_cizim.js e tasindi, sayfada yalnizca kopru var');
+      /* 'Yasayan derinin kodu ilk boyamada inmiyor' kontrolu 16
+         Eylul'de kaldirildi: gun dongusu (gunPerdesiYaz2 koprusu)
+         tamamen silindi, test ettigi kopru artik yok. Nefes'in
+         kendi agirligi zaten deri_cizim.js'te, ayri bir kopru
+         kontrolu hic yazilmamisti. */
       K('Isik katmani mevcut derileri degistirmiyor',
          /background:var\(--d-perde,none\),var\(--d-doku,none\)/.test(kaynak)
          && !/--d-isik:radial/.test(kaynak),

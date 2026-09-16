@@ -2914,15 +2914,16 @@
   #gorselSaat .gs-tarih{display:block;margin-top:2.6em;
     font-size:.155em;letter-spacing:.50em;text-indent:.50em;
     opacity:.42;font-weight:400;}
-  /* ── GUN SAATI KALDIRILDI (16 Eylul) ─────────────────────────
-     Skin uzerinde, carkin/halkanin hemen ustunde surekli duran bir
-     saat+ilerleme-cizgisi vardi (deri+gun dongusu aciksa her deri
-     degisiminde geri geliyordu). pj'nin kararı: bu, halkanin
-     uzerine binen bir hata olarak gorunuyor, istenmiyor -- silindi.
-     GUN DONGUSU'NUN KENDISI DURUYOR: --d-perde isigi, 'gunisigi'
-     sinifi, SUN anahtari (deri_galeri.js) hep calisiyor; kaldirilan
-     yalnizca bu gorsel saat DUGUMU (asagida JS tarafi: gunSaatYaz/
-     gunSaatKur ve cagrildigi 3 yer de kaldirildi). */
+  /* ── GUN DONGUSU TAMAMEN KALDIRILDI (16 Eylul) ────────────────
+     Once yalnizca ekrandaki saat dugumu (#gunSaat) kaldirilmisti;
+     ayni gun pj kararini genisletti: butun ozellik (mood, --d-perde
+     isigi, 'gunisigi' sinifi, deri_galeri.js'teki SUN anahtari)
+     kaldirildi -- gunDongusuAc/gunPerdesiYaz/gunNobetiKur ve butun
+     cagri yerleri silindi (bkz. asagidaki JS taraf, ayni tarihli not).
+     --d-perde DEGISKENI SILINMEDI: 'nefes' derileri (hemen asagidaki
+     body.deri.nefes kurali) ayni degiskeni kendi CSS'inde dolduruyor,
+     o yuzden tanimi burada duruyor -- yalnizca JS'in ona GUN DONGUSU
+     ICIN yazmasi kalkti. */
   body.deri.nefes{
     --d-perde:radial-gradient(118% 86% at 50% calc(54% - var(--d-nabiz,0)*13%),
       rgba(255,255,255,calc(.026 + var(--d-nabiz,0)*.225)) 0%,
@@ -4262,10 +4263,9 @@
          bkz. AYAR yuklenirken gorselSaatOnar damgasi. -->
     <div class="sat" data-ayar="gorselSaat" role="switch" tabindex="-1">
       <span>CLOCK IN VISUALS</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- GECE MODU: ekrani kirmiziya kaydirir -- astronomlarin
-         kirmizi fenerindeki mantik, karanlikta goz kamasmasin. -->
-    <div class="sat" data-ayar="geceModu" role="switch" tabindex="-1">
-      <span>NIGHT MODE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- GECE MODU (NIGHT MODE) anahtari 16 Eylul'de kaldirildi:
+         pj'nin karari. body.gece sinifi hala var (bkz. saat.js
+         uyku/alarm ozelligi), yalnizca bu manuel anahtar gitti. -->
     <div class="sat islem" data-ayar="yildiz" role="button" tabindex="-1">
       <span>STARS</span><span class="durum">NORMAL</span></div>
     <!-- Parlaklik YOGUNLUKTAN AYRI: kalabalik ama silik bir gokyuzu
@@ -6271,7 +6271,7 @@
     {ad:"DIAMOND",   zem:"#4a1c17", yazi:"#f2e2c4", marka:"#c9702f", cek:"#6b2a22", font:F2, kose:"2px",  cizim:"diamond"},
     {ad:"MEDALLION", zem:"#182444", yazi:"#e8ddc0", marka:"#d4a13c", cek:"#22335e", font:F2, kose:"50%", cizim:"medallion"},
     {ad:"RAMSHORN",  zem:"#432411", yazi:"#e8d3a8", marka:"#c77a2e", cek:"#5a301a", font:F2, kose:"2px",  cizim:"ramshorn"},
-    {ad:"EVIL EYE",  zem:"#0d1f3d", yazi:"#eef3f7", marka:"#3f9fd6", cek:"#16294f", font:F1, kose:"50%", cizim:"nazar"},
+    {ad:"NAZAR",  zem:"#0d1f3d", yazi:"#eef3f7", marka:"#3f9fd6", cek:"#16294f", font:F1, kose:"50%", cizim:"nazar"},
     {ad:"SUNBURST",  zem:"#3a1a10", yazi:"#f2e0b8", marka:"#e8a13c", cek:"#4c2414", font:F2, kose:"50%", cizim:"sunburst"},
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
@@ -6871,29 +6871,15 @@
       _cubukZaman.push(setTimeout(yaz, 420));
     }catch(e){ _yut(e); }
   }
-  /* ══ GUN SAATI KALDIRILDI (16 Eylul) ═════════════════════════
-     Gun dongusu bir DERI degil bir MOOD: hangi deri secili olursa
-     olsun onun uzerine biniyor. Eskiden bunun gorunen bir yuzu de
-     vardi -- carkin ustunde duran, ustune basinca dongu kapatan bir
-     saat dugumu (gunSaatYaz/gunSaatKur, #gunSaat). pj'nin karari:
-     halkanin uzerine binen bir hata gibi goruluyordu, kaldirildi
-     (bkz. yukarida index.html CSS taraf, ayni tarihli not).
-     ACMA/KAPAMA HALA CALISIYOR: tek yolu simdi skins seridindeki
-     SUN anahtari (bkz. deri_galeri.js) -- asagidaki gunDongusuAc()
-     ayni gorevi goruyor, yalnizca ekrana dugum eklemiyor. */
-  /* Tek kapi: serit anahtari buradan geciyor. */
-  function gunDongusuAc(v){
-    try{
-      AYAR.gunDongusu = !!v;
-      ayarKaydet();
-      document.body.classList.toggle('gunisigi', !!v);
-      if(v){ gunPerdesiYaz(); }
-      else { document.documentElement.style.removeProperty('--d-perde'); }
-      gunNobetiKur();
-      try{ if(window['deriSeritTazele']) window['deriSeritTazele'](); }catch(e){ _yut(e); }
-    }catch(e){ _yut(e); }
-  }
-  try{ window['gunDongusuAc'] = gunDongusuAc; }catch(e){ _yut(e); }
+  /* ══ GUN DONGUSU TAMAMEN KALDIRILDI (16 Eylul) ══════════════════
+     gunDongusuAc(), asagidaki gunPerdesiYaz/gunNobetiKur bekci
+     fonksiyonlari, deri_cizim.js'teki gercek uygulamalari
+     (gunPerdesiYaz2/gunNobetiKur2) ve deri_galeri.js'teki SUN
+     anahtari (gunesTus) kaldirildi. pj'nin karari: skin ustunde
+     surekli goze carpan bir hata gibi duruyordu. --d-perde
+     degiskeni SILINMEDI, yalnizca gun dongusu icin yazilmasi
+     kalkti -- 'nefes' derileri onu hala kendi CSS kurallarinda
+     kullaniyor. */
 
   /* ══ GORSELDE SAAT ══════════════════════════════════════════════
      Dugum bir kez kuruluyor ve gorsel kapaliyken EKRANDA DURMUYOR
@@ -6962,12 +6948,8 @@
      Burada kalan tek sey KOPRU: modul gelmediyse cagrilar sessizce
      duser ve deri duragan bir deri gibi davranir -- eksik isik
      olur, bozuk ekran olmaz. */
-  function gunPerdesiYaz(){
-    try{ if(window['gunPerdesiYaz2']) window['gunPerdesiYaz2'](); }catch(e){ _yut(e); }
-  }
-  function gunNobetiKur(){
-    try{ if(window['gunNobetiKur2']) window['gunNobetiKur2'](); }catch(e){ _yut(e); }
-  }
+  /* gunPerdesiYaz()/gunNobetiKur() bekci fonksiyonlari 16 Eylul'de
+     gun dongusuyle birlikte kaldirildi (bkz. deri_cizim.js). */
   function yasayanSifirla(){
     try{
       const k = document.documentElement.style;
@@ -6985,12 +6967,10 @@
         document.body.classList.remove('luks');
         document.body.classList.remove('sadehalka');
         /* Yasayan deri kipleri de duser: deri kapaninca ekranda
-           bir gunes ya da bir nabiz asili kalmamali. Nobet de
-           duruyor, yoksa kimsenin gormedigi bir perde bes dakikada
-           bir yeniden kuruluyor olurdu. */
-        document.body.classList.remove('gunisigi');
+           bir nabiz asili kalmamali (gun dongusu 16 Eylul'de
+           tamamen kaldirildi, burada eskiden onun da temizligi
+           vardi). */
         document.body.classList.remove('nefes');
-        gunNobetiKur();            /* sinif dustu -> nobet de duruyor */
         yasayanSifirla();
         /* Deri kapaniyor: html'in zeminini ve durum cubugu rengini
            uygulamanin kendi degerlerine birak. */
@@ -7184,20 +7164,17 @@
            tamami bu satirlarin disinda kaliyor. */
         try{
           const _kip = d.kip || '';
-          /* GUN DONGUSU DERIDEN GELMIYOR: bir mood, yani hangi deri
-             secili olursa olsun ayni anahtara bakiyor. Nefes ise
-             derinin kendi ozelligi -- o zemin o hareket icin
-             cizildi, baska bir derinin uzerinde anlami yok. */
-          document.body.classList.toggle('gunisigi', !!AYAR.gunDongusu);
-          document.body.classList.toggle('nefes',    _kip === 'nefes');
+          /* GUN DONGUSU KALDIRILDI (16 Eylul): 'gunisigi' sinifi ve
+             ona bagli --d-perde yazimi artik burada kurulmuyor.
+             Nefes kendi ozelligi -- o zemin o hareket icin cizildi,
+             baska bir derinin uzerinde anlami yok. */
+          document.body.classList.toggle('nefes', _kip === 'nefes');
           /* Perde ve nabiz yalnizca yasayan derilerde var;
              digerlerinde DUSUYOR, yoksa bir onceki derinin isigi
              yeni derinin uzerinde asili kalirdi. */
-          if(!AYAR.gunDongusu) document.documentElement.style.removeProperty('--d-perde');
-          if(_kip !== 'nefes'){ document.documentElement.style.removeProperty('--d-nabiz');
+          if(_kip !== 'nefes'){ document.documentElement.style.removeProperty('--d-perde');
+                                document.documentElement.style.removeProperty('--d-nabiz');
                                 try{ if(window['_nabizSifirla']) window['_nabizSifirla'](); }catch(e){ _yut(e); } }
-          if(AYAR.gunDongusu) gunPerdesiYaz();
-          gunNobetiKur();
         }catch(e){ _yut(e); }
         const _hal = (d.cizim && typeof deriHalkaAdresi === 'function')
                    ? deriHalkaAdresi(d) : '';
@@ -7410,13 +7387,13 @@
     }catch(e){ _yut(e); }
   }
 
-  /* Gece modu (kirmizi filtre): tek is, govdeye siniflandirma
-     eklemek/cikarmak -- CSS katmani (body.gece::before) gerisini
-     yapiyor. Ayri bir fonksiyon: hem ayar panelinden (sec()) hem
-     acilista (kayitli deger) ayni kapidan cagrilsin diye. */
-  function geceModuUygula(){
-    try{ document.body.classList.toggle('gece', !!AYAR.geceModu); }catch(e){ _yut(e); }
-  }
+  /* GECE MODU (kirmizi filtre) KALDIRILDI (16 Eylul): ayarlar
+     panelindeki NIGHT MODE anahtari, AYAR.geceModu ve bu fonksiyon
+     silindi -- pj'nin karari. body.gece::before KATMANI VE SINIFI
+     SILINMEDI: uyku/alarm ozelligi (saat.js) ayni 'gece' sinifini
+     kendi calisma anini karartmak icin BAGIMSIZ olarak
+     ekleyip/kaldiriyor (bkz. saat.js, satir ~300). Bu fonksiyon
+     yalnizca KULLANICI TERCIHI olan manuel anahtari kaldiriyordu. */
 
   /* ── ALTI HALKA ──────────────────────────────────────────────────
      İÇTEN DIŞA: dört alt kategori (hacme göre), sonra iki üst kategori.
@@ -10975,7 +10952,7 @@
      birinin degeri bu satirdan hic etkilenmez (localStorage'daki
      deger her zaman kazanir). Kullanici "isteyen kisar" dedigi icin
      ayardan asagi cekilebilir kalmali -- kilit yok. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, gunDongusu:false, geceModu:false, deriRastgele:false, deriTorba:[] };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, tanitim:true, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[] };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -11044,10 +11021,8 @@
          damga basildiktan sonra kullanicinin secimi aynen korunuyor. */
       if(_a.gorselSaatOnar === true && _a.gorselSaat === false) AYAR.gorselSaat = false;
       AYAR.gorselSaatOnar = true;
-      /* Gun dongusu: varsayilan KAPALI. */
-      if(_a.gunDongusu === true) AYAR.gunDongusu = true;
-      /* Gece modu (kirmizi filtre): varsayilan KAPALI. */
-      if(_a.geceModu === true) AYAR.geceModu = true;
+      /* Gun dongusu ve gece modu 16 Eylul'de kaldirildi: eski
+         depoda bu anahtarlar kalmis olsa bile artik okunmuyor. */
       /* SINIR 36'YDI VE BU BIR HATAYDI. Otuz deri varken yazilmisti,
          seri altmisa cikinca guncellenmedi: 37..60 arasindaki bir
          deri secilip uygulama kapatilinca deger DOGRULAMADAN
@@ -18610,7 +18585,6 @@
   AKTIF_MOD = 'RADIOTAPE';           // açılış her zaman en dış halka: radyo + müzik
   try{ modAdiYaz(); }catch(e){ _yut(e); }      // açılışta RADIOTAPE yazılı gelir
   try{ zeminUygula(); }catch(e){ _yut(e); }    // açılış zemini de RADIOTAPE
-  try{ geceModuUygula(); }catch(e){ _yut(e); }  // kayitli gece modu acilista uygulanir
 
   /* ── KLAVYE SINIFI TEK KAPIDAN GECIYOR (11 Eylul) ────────────────
      BILDIRILEN: "androidli bir kullanici search'e basmis ve search'u
@@ -19251,7 +19225,6 @@
          ama hicbir sey cikmaz -- yani yalan soyleyen bir dugme.
          Damgalar siliniyor; bir sonraki acilista tur yine cikiyor. */
       if(k === 'karanlik'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
-      if(k === 'geceModu'){ try{ geceModuUygula(); }catch(e){ _yut(e); } }
       /* CAR MODE ACILDI ve zincir zaten kurulu: eleman zincirden
          sokulemez (spec), tek yol yeniden acilis. Kapatildiysa
          zincir bir sonraki calmada kurulur, yenileme gerekmez. */

@@ -62,6 +62,21 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        oyle. */
     ".dg-bas{display:flex;align-items:center;gap:4px;flex:none;flex-wrap:wrap;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 6px calc(var(--kx) + env(safe-area-inset-left,0px))}",
     ".dg-merkez{order:9;flex:1 0 100%;justify-content:center;margin-top:2px;padding-top:3px;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent)}",
+    /* dg-anlam: yalnizca NAZAR icin (16 Eylul, pj: "ismi nazar
+       boncugu, diger dillere ayni anlamda cevir"). Once yalnizca bu
+       aciklama satiri eklenmisti (ad "EVIL EYE" olarak kalmisti,
+       skin adlari cevrilmiyor kurali geregi); AYNI GUN pj ismin
+       KENDISININ de degismesini istedi ("klonla, ismi baska yap") --
+       DERILER'deki ad artik "NAZAR" (bkz. index.html). Bu aciklama
+       satiri hala duruyor: "NAZAR" tek basina her dilde anlasilmaz,
+       altindaki kucuk yazi (T('Evil eye bead')) anlamini ceviriyor.
+       Kontrol hala cizim==='nazar'e bakiyor, ad string'ine degil --
+       isim degisse de bu satir kendiliginden dogru kaliyor.
+       dg-merkez ile ayni desen (order+tam genislik): flex-wrap
+       satirinin gerisine, kendi satirina duser, baska hicbir
+       yerlesime dokunmaz. */
+    ".dg-anlam{order:10;flex:1 0 100%;text-align:center;font-size:0.6875rem;letter-spacing:.08em;opacity:.55;margin-top:2px}",
+    ".dg-anlam:empty{display:none}",
     ".dg-secili{flex:1 1 90px}",
     ".dg-baslik{font-size:0.6875rem;letter-spacing:.3em;opacity:.55;margin-right:6px;background:transparent;border:0;color:inherit;font-family:inherit;cursor:pointer;padding:4px 2px}",
     ".dg-baslik:hover,.dg-baslik:focus-visible{opacity:.9}",
@@ -187,6 +202,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        dokuz piksel uzuyor. Alternatif "tuslari kucult" olurdu ve
        yanlis olurdu: sorun tuslarin boyu degil ARALIGI. */
     "#deriGaleri.serit .dg-merkez{order:9;grid-column:1/-1;width:100%;justify-content:center;gap:4px;padding-top:4px;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent);margin-top:10px}",
+    "#deriGaleri.serit .dg-anlam{order:10;grid-column:1/-1;margin-top:4px}",
     "#deriGaleri.serit .dg-tus.mrk{width:auto;height:24px;font-size:0.625rem;letter-spacing:.12em;padding:0 8px}",
     /* ── KISA EKRANDA ARALIK VAR AMA DAHA DAR ────────────────────
        Yukaridaki 17 piksellik aralik seridi dokuz piksel uzatti ve
@@ -301,7 +317,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       if(halkaTus){ halkaTus.disabled = false; halkaTus.style.opacity = ''; }
     }catch(e){ yut(e); }
   }
-  let kap = null, izg = null, adYazi = null;
+  let kap = null, izg = null, adYazi = null, anlamYazi = null;
   const halkaOnbellek = {};
   let cizimSirasi = [];
 
@@ -360,18 +376,11 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       });
     }catch(e){ yut(e); }
   }
+  /* SUN (gun dongusu) anahtari 16 Eylul'de kaldirildi -- pj'nin
+     karari. gunesTus/gunesIsaret/deriSeritTazele burada dururdu,
+     uygulama tarafindaki tek kapisi (gunDongusuAc) index.html'den
+     silindi. */
   /* ── KARE: DERININ KUCUK HALI ─────────────────────────────────── */
-  var gunesTus = null;
-  function gunesIsaret(){
-    try{
-      if(!gunesTus) return;
-      const a = !!(window.AYAR && window.AYAR.gunDongusu);
-      gunesTus.setAttribute('aria-pressed', a ? 'true' : 'false');
-    }catch(e){ yut(e); }
-  }
-  /* Uygulama donguyu baska bir yerden (carkin ustundeki saat)
-     kapatirsa serit de haberdar olsun. */
-  try{ window['deriSeritTazele'] = gunesIsaret; }catch(e){}
   function kareYap(n, d){
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'dg-kare'; b.dataset.n = String(n);
@@ -507,17 +516,6 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       halkaIsaret(); diskleriTazele();
     });
     bas.appendChild(halkaTus);
-    /* SUN: gun dongusu. Uygulama tarafindaki tek kapiyi cagiriyor
-       (gunDongusuAc); isaretini de oradan okuyor, yani iki yerde
-       iki ayri durum tutulmuyor. */
-    gunesTus = tus('gunes', 'Day cycle', T('SUN'), ()=>{
-      try{
-        const a = !(window.AYAR && window.AYAR.gunDongusu);
-        if(typeof window.gunDongusuAc === 'function') window.gunDongusuAc(a);
-      }catch(e){ yut(e); }
-      gunesIsaret();
-    });
-    bas.appendChild(gunesTus);
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
        (degistir). ▦ seritte kaliyor: tam galeriye donus. */
     /* Yanina ALL yazisi da konmustu; kullanici ekranda o kelimeyi
@@ -556,6 +554,9 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       });
       t.dataset.merkez = k; mrk.appendChild(t); return t;
     });
+    anlamYazi = document.createElement('span'); anlamYazi.className = 'dg-anlam';
+    anlamYazi.setAttribute('aria-live', 'polite');
+    bas.appendChild(anlamYazi);
     kap.appendChild(el('i', 'dg-tutamak'));
     bas.appendChild(mrk);
     kap.appendChild(bas);
@@ -595,7 +596,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
   }
   function isaretle(kaydir){
     try{
-      halkaIsaret(); gunesIsaret();
+      halkaIsaret();
       const n = AYAR.deri|0;
       /* ── COK UZUN AD KISALIYOR ────────────────────────────────
          Serit sabit izgara: uzun ad sutunlari itemiyor ama kesik
@@ -606,6 +607,10 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
         const _ad = n ? (DERI_AD[n] || '') : T('OFF');
         adYazi.textContent = (_ad.length > 22) ? (_ad.slice(0, 21).trim() + '…') : _ad;
         adYazi.title = _ad;
+      }
+      if(anlamYazi){
+        const _d = n ? DERILER[n-1] : null;
+        anlamYazi.textContent = (_d && _d.cizim === 'nazar') ? T('Evil eye bead') : '';
       }
       if(!izg) return;
       izg.querySelectorAll('.dg-kare').forEach(b=>{
