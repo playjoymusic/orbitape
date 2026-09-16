@@ -4188,7 +4188,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'kaydedici '+cam.sonra.kaydedici+' | bekleyen dosya '+cam.sonra.bekleyen);
   K('CAM kapaninca iz kapaniyor', cam.kapali.kamAcik===false && cam.kapali.iz===false,
      'akis birakildi');
-  K('Kamera penceresi HALKANIN ICINDE', cam.olcu && cam.olcu.kam < cam.olcu.disHalka && cam.olcu.kam > cam.olcu.icHalka,
+  /* ── KAMERA EN DIS HALKAYA KADAR DOLUYOR (16 Eylul) ────────────────
+     Once kamera %56 idi (bkz. index.html #kam yorumu) ve en dis
+     halkadan belirgin kucuk kaliyordu -- kullanicinin ekran goruntusu:
+     "bak bosluk var cerceveyle oraya kadar buyut." Artik %63,5 --
+     en dis halkanin CAPIYLA AYNI olcude (HALKA_DIS=0.89 uzerinden).
+     Once "kesinlikle kucuk" (<) doğrulaniyordu, artik "neredeyse esit"
+     (±4px yuvarlama payi) doğrulaniyor; ic halkadan hala buyuk olmali
+     (kamera halkalarin GOVDESINI degil ARASINI doldurmali). */
+  K('Kamera penceresi en dis halkaya kadar doluyor, bosluk kalmiyor',
+     cam.olcu && Math.abs(cam.olcu.kam - cam.olcu.disHalka) <= 4 && cam.olcu.kam > cam.olcu.icHalka,
      'kamera '+(cam.olcu&&cam.olcu.kam)+'px | en dis halka '+(cam.olcu&&cam.olcu.disHalka)+'px');
   /* ── KAMERA DONDUR: ON <-> ARKA (16 Eylul) ────────────────────────
      Kullanicinin sozu: "kamera acildiktan sonra isteyen kamerayi
@@ -4278,6 +4287,56 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     JSON.stringify(kamRaceDonus));
   K('Dondururken yetim (durdurulmamis) ikinci bir akis kalmiyor',
     kamRaceDonus.canliIzSayisi_sonra === 1, JSON.stringify(kamRaceDonus));
+  /* ── DONDURME: TEK KAMERALI CIHAZDA TIKANMIYOR (16 Eylul, ucuncu tur)
+     ──────────────────────────────────────────────────────────────
+     pj'nin Android'li arkadasi: "kamera döndürmeye basıyorum sadece
+     titriyormuş ikon ama kamera dönmüyormuş." KOK NEDEN (bkz. kayit.js,
+     kamDondur yorumu): eski tasarim YENI kamerayi ESKISI hala aciKKEN
+     istiyordu -- cogu Android cihazda/tarayicida bu MUMKUN DEGIL, ikinci
+     istek ne hata verir ne sonuclanir, SONSUZA KADAR bekler. Burada bu
+     davranis TAKLIT EDILIYOR: getUserMedia'nin sahte surumu, bir onceki
+     donduruden kalan akis HALA CANLIYSA (durdurulmamissa) hic
+     cozulmeyen bir Promise donduruyor -- tipki tek donanimli bir Android
+     cihazda oldugu gibi. Duzeltme DOGRUYSA (eski akis yeni istekten
+     ONCE durduruluyorsa) donus makul surede tamamlanir; duzeltme
+     olmasaydi bu test SONSUZA dek beklerdi (asagida da ayrica bir ust
+     sinir var, ölçüm o yuzden guvenli). */
+  const kamTekDonanim = await pg.evaluate(async ()=>{
+    const bek = ms=>new Promise(r=>setTimeout(r,ms));
+    const c = {};
+    const _orjGUM = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    let _sonAkis = null;
+    navigator.mediaDevices.getUserMedia = function(kisit){
+      if(_sonAkis && _sonAkis.getTracks().some(t=>t.readyState !== 'ended')){
+        return new Promise(()=>{});   // Android'deki tikanmayi taklit ediyor: hic cozulmuyor
+      }
+      return _orjGUM(kisit).then(function(s){ _sonAkis = s; return s; });
+    };
+    try{
+      document.getElementById('cam').click(); await bek(700);
+      c.acikMi_once = !!kamAcik;
+      const camDonT = document.getElementById('camDon');
+      const basla = Date.now();
+      camDonT.click();
+      /* En fazla 3 sn bekleniyor -- duzeltme dogruysa donus bundan cok
+         once biter (eski akis zaten durdurulmus, sahte GUM aninda
+         cozuluyor). Bitmemesse test "tikandi" sonucunu dogru raporlar,
+         SONSUZA dek asili kalmaz. */
+      for(let i = 0; i < 60 && camDonT.classList.contains('bekle'); i++) await bek(50);
+      c.tikandi = camDonT.classList.contains('bekle');
+      c.gecenMs = Date.now() - basla;
+      c.acikMi_sonra = !!kamAcik;
+      c.kamElOn_sonra = document.getElementById('kam').classList.contains('on');
+    } finally {
+      navigator.mediaDevices.getUserMedia = _orjGUM;
+      document.getElementById('cam').click(); await bek(400);
+    }
+    return c;
+  });
+  K('Dondurme tek kameral (Android benzeri) cihazda tikanmiyor',
+    kamTekDonanim.acikMi_once === true && kamTekDonanim.tikandi === false
+      && kamTekDonanim.acikMi_sonra === true && kamTekDonanim.kamElOn_sonra === true,
+    JSON.stringify(kamTekDonanim));
   /* ── ◁ ve ▷ AYNI HIZADA MI ──────────────────────────────────────
      DUZELTILEN KARARSIZ TEST: bu kontrol CI'da bir kez dustu, sonraki
      calistirmada gecti. Ayni kod, farkli sonuc — en zararli test turu,

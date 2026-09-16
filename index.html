@@ -2035,9 +2035,15 @@
      Eskiden diskin TAM KUTUSUNU kaplıyordu (inset:0). Kutu halkalardan
      çok daha geniş: en dış halkanın çapı kutunun %63,5'i. Kamera
      dairesi halkaların epey dışına taşıyor ve dikdörtgen gibi
-     görünüyordu. Artık %56 — en dış halkanın bir tık içinde kalıyor,
-     halkalar dışarıda görünmeye devam ediyor. */
-  #kam{position:absolute;left:50%;top:50%;width:56%;height:56%;z-index:0;
+     görünüyordu. %56 yapılmıştı ama bu kez GEREĞİNDEN KÜÇÜK kaldı --
+     kullanıcının ekran görüntüsü: kamera dairesiyle en dış halka
+     arasında belirgin bir BOŞLUK var, "skinslerde hepsinde bir
+     standardı var ortasında ... o kadar büyüt." Artık %63,5 -- en
+     dış halkanın ÇAPIYLA AYNI (bkz. kayit.js: HALKA_DIS=0.89, test:
+     "Kamera penceresi en dis halkaya kadar doluyor"), boşluk kalmıyor
+     ama halka çizgisi hâlâ kameranın ÜSTÜNDE kalıp kenarı çiziyor
+     (z-index 0 kamerada, #viz z-index 1'de -- aşağıdaki not). */
+  #kam{position:absolute;left:50%;top:50%;width:63.5%;height:63.5%;z-index:0;
     border-radius:50%;object-fit:cover;transform:translate(-50%,-50%) scaleX(-1);
     /* .6s -> .28s: kare artik beklendigi icin (kayit.js: ilkKare)
        bu sure "goruntu yolda" demek degil. .6s'te kamera hazir olsa

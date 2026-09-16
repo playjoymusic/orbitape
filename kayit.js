@@ -639,51 +639,94 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      nasil davranirsa davransin, eski izin sonu YENI akisi etkilemiyor.
      Ayrica basari sonrasi kamEl/govde siniflari ve kamAcik ACIKCA
      yeniden dogrulaniyor (guvenlik payi): araya giren beklenmedik bir
-     'ended' onceki durumu bozmus olsa bile son durum dogru kaliyor. */
+     'ended' onceki durumu bozmus olsa bile son durum dogru kaliyor.
+
+     ── DUZELTME (16 Eylul, ucuncu tur): pj'nin Android'li arkadasi:
+     "kamera döndürmeye basıyorum sadece titriyormuş ikon ama kamera
+     dönmüyormuş." KOK NEDEN: yukaridaki tasarim eski akisi BILEREK
+     canli tutuyordu (yenisi hazir oluncaya kadar) -- iyi niyetli bir
+     guvenlik payiydi ama bir VARSAYIMA dayaniyordu: cihazin AYNI ANDA
+     IKI kamera akisini acik tutabildigi. Bircok Android cihaz/tarayici
+     bunu YAPAMIYOR -- tek kamera donanimi var, ikinci getUserMedia
+     istegi BIRINCI hala aciksa ne hata firlatiyor ne de sonuclaniyor,
+     sonsuza kadar BEKLIYOR (cozulmeyen bir Promise). _kamDonuyor hic
+     false olmuyor, dugme "bekle" sinifinda takili kaliyor -- kullanici
+     bastikca dokunus animasyonu oynuyor ("titriyor") ama donus hic
+     gerceklesmiyor, cunku beklenen Promise hic cozulmuyor.
+     DUZELTME: sira TERS CEVRILDI. Eski akis ARTIK YENI istekten ONCE
+     durduruluyor -- donanim once serbest birakiliyor, boylece tek
+     kameral bir cihazda da ikinci istek TIKANMIYOR. Kararan ekran
+     riski (asil onceki tasarimin onlemeye calistigi sey) iki yolla
+     azaltiliyor: (1) video elemaninin srcObject'i BILEREK hemen
+     temizlenmiyor -- akis durunca video son karede DONUK kaliyor,
+     kararmiyor; (2) her getUserMedia denemesine bir ZAMAN ASIMI
+     (6 sn) kondu, cozulmeyen bir Promise'in dugmeyi bir daha SONSUZA
+     kadar kitlemesi artik mumkun degil. Yeni yuz acilamazsa ESKI yuz
+     YENIDEN istenip (akis zaten durduruldugu icin eskisini geri
+     kullanamayiz) geri donuluyor; o da olmazsa kamera tamamen
+     kapatilip kullaniciya CAM'e tekrar basmasi soyleniyor -- yari
+     acik/yari kapali bir durumda birakilmiyor. */
+  function _zamanAsimiyla(p, ms){
+    return new Promise(function(coz, red){
+      const zt = setTimeout(function(){ red(new Error('KAMERA_ZAMAN_ASIMI')); }, ms);
+      p.then(function(v){ clearTimeout(zt); coz(v); }, function(e){ clearTimeout(zt); red(e); });
+    });
+  }
+  function _kamIste(yon){
+    return _zamanAsimiyla(navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:yon, width:{ideal:480}, height:{ideal:480} }, audio:false }), 6000);
+  }
+  async function _kamAkisUygula(yeniAkis){
+    kamAkis = yeniAkis;
+    /* TIP DENETIMI: kamEl 'HTMLElement' olarak cikarimlanmis (dom
+       lib'inde getElementById boyle donuyor), srcObject/play video
+       elemanina ozel. kamAc()'ta da ayni durum var (taban 79'un
+       parcasi) -- burada YENI bir hata satiri eklememek icin ayni
+       kalibi (any-cast) kullaniyoruz, bkz. _grafemler() yorumu. */
+    const kv = /** @type {any} */ (kamEl);
+    kv.srcObject = kamAkis;
+    try{ await kv.play(); }catch(e2){ _yut(e2); }
+    try{ await ilkKare(kamEl); }catch(e2){ _yut(e2); }
+    kv.classList.add('on'); kamAcik = true;
+    try{ document.body.classList.add('kam'); }catch(e2){ _yut(e2); }
+    kamIzleyiciKur();                                 // iz biterse sessizce kapat
+    try{ camYaz(); }catch(e2){ _yut(e2); }
+  }
   async function kamDondur(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
     if(!KAMERA || !camDonDug || _kamDonuyor) return;
+    const eskiYon = _kamYon;
     _kamYon = (_kamYon === 'user') ? 'environment' : 'user';
     kamYonYaz();
     if(!kamAcik) return;                              // yalniz tercih degisti, akis yok
     _kamDonuyor = true;
     camDonDug.classList.add('bekle');
-    const eskiAkis = kamAkis;
-    if(eskiAkis){ try{ eskiAkis.getTracks().forEach(t=>{ try{ t.onended=null; }catch(e0){ _yut(e0); } }); }catch(e0){ _yut(e0); } }
+    /* Eski akis ONCE durduruluyor: donanim serbest kalsin ki tek
+       kameral cihazlarda ikinci istek tikanmasin (bkz. yukaridaki
+       yorum). kamEl.srcObject BILEREK dokunulmuyor -- video son
+       karede donuk kalir, ekran kararmaz. */
+    const eskiAkis = kamAkis; kamAkis = null;
+    if(eskiAkis){ try{ eskiAkis.getTracks().forEach(t=>{ try{ t.onended=null; }catch(e0){ _yut(e0); } t.stop(); }); }catch(e0){ _yut(e0); } }
     try{
-      const yeniAkis = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:_kamYon, width:{ideal:480}, height:{ideal:480} }, audio:false });
-      kamAkis = yeniAkis;
-      /* TIP DENETIMI: kamEl 'HTMLElement' olarak cikarimlanmis (dom
-         lib'inde getElementById boyle donuyor), srcObject/play video
-         elemanina ozel. kamAc()'ta da ayni durum var (taban 79'un
-         parcasi) -- burada YENI bir hata satiri eklememek icin ayni
-         kalibi (any-cast) kullaniyoruz, bkz. _grafemler() yorumu. */
-      const kv = /** @type {any} */ (kamEl);
-      kv.srcObject = kamAkis;
-      try{ await kv.play(); }catch(e2){ _yut(e2); }
-      try{ await ilkKare(kamEl); }catch(e2){ _yut(e2); }
-      /* GUVENLIK PAYI: araya giren beklenmedik bir 'ended' bu durumlari
-         degistirmis olabilir -- basari burada, son soz burada olsun. */
-      kv.classList.add('on'); kamAcik = true;
-      try{ document.body.classList.add('kam'); }catch(e2){ _yut(e2); }
-      if(eskiAkis){ try{ eskiAkis.getTracks().forEach(t=>t.stop()); }catch(e2){ _yut(e2); } }
-      kamIzleyiciKur();                               // iz biterse sessizce kapat
-      try{ camYaz(); }catch(e2){ _yut(e2); }
+      await _kamAkisUygula(await _kamIste(_kamYon));
     }catch(e3){
-      /* DONMEDI: eski yuze geri don, akis eskisi gibi kalsin -- kamera
-         birden kararmasin. Yukarida eski izin 'onended' kancasi
-         BILEREK temizlenmisti (yeni akis basarili olursa diye) -- ama
-         donus basarisiz oldu, eski akis hala CANLI ve GERCEK kamera
-         bu, o yuzden gozcu de geri takiliyor: yoksa bu akis biterse
-         (ör. kullanici uygulamadan cikip donerse) artik kimse
-         kamKapat() cagirmaz, dugme "acik" gorunup akis olu kalir. */
-      _kamYon = (_kamYon === 'user') ? 'environment' : 'user';
-      kamYonYaz();
-      kamAkis = eskiAkis;
-      kamIzleyiciKur();
-      kisaNotYaz('CAMERA DID NOT SWITCH',
-        'This device could not open the other camera. Staying on the current one.');
+      /* YENI yuz acilamadi (hata ya da zaman asimi) -- ESKI yuze
+         YENIDEN istekle donulmeye calisiliyor (akis zaten durduruldugu
+         icin eskisini geri kullanamiyoruz, taze bir istek gerekiyor). */
+      _kamYon = eskiYon; kamYonYaz();
+      try{
+        await _kamAkisUygula(await _kamIste(eskiYon));
+        kisaNotYaz('CAMERA DID NOT SWITCH',
+          'This device could not open the other camera. Staying on the current one.');
+      }catch(e4){
+        /* Ikisi de olmadi: kamerayi tamamen kapat, yari acik/yari
+           kapali bir durumda birakma -- kullanici CAM'e tekrar
+           basinca temiz bir baslangic yapsin. */
+        kamKapat();
+        kisaNotYaz('CAMERA UNAVAILABLE',
+          'Could not reopen the camera. Turn CAM off and on again to retry.');
+        _yut(e4);
+      }
       _yut(e3);
     }
     _kamDonuyor = false;
