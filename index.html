@@ -12663,7 +12663,29 @@
              hataya hic girmiyor. */
           const bay = bayrak(y.ulke);
           const ad = bay ? (adTemel + '  ' + bay) : adTemel;
-          const gen = Math.min(W - 16, c.measureText(ad).width + 26);
+          /* ── KUTU BAYRAGI TAM SARMALIYOR (16 Eylul, ikinci duzeltme) ──
+             Kullanicinin sozu, ekran goruntusuyle: "yıldızları buyutup
+             isme bakınca çerçeve yarım kalıyor bayrak gelince."
+             Ilk halde kutu genisligi dogrudan c.measureText(ad).width
+             ile (ad = isim+bosluk+bayrak TEK dizge) hesaplaniyordu.
+             Chromium'da bu dogru olcuyor (bkz. asagidaki not) ama
+             GERCEK CIHAZDA (WebKit/Safari) bayrak emoji'sinin fillText
+             ile ciktigi GENISLIK, measureText'in rapor ettiginden daha
+             GENIS cikiyor -- motorlar arasi bilinen bir tutarsizlik
+             (bkz. CLAUDE.md "Yerlesim testlerini WebKit'te kosturma":
+             piksel hizasi zaten motordan motora farkli). Sonuc: kutu
+             dar hesaplaniyor, bayrak sag kenardan tasiyor, cerceve
+             "yarim" gorunuyordu.
+             Duzeltme: kutu genisligi ARTIK yalnizca ISMIN (adTemel,
+             duz Latin harfleri -- motordan motora guvenilir olcuyor)
+             genisligine dayaniyor; bayrak icin SABIT bir guvenlik payi
+             (BAYRAK_PAY) ekleniyor, emoji'nin kendi motoru ne rapor
+             ederse etsin kutu onu HER ZAMAN icine alacak kadar genis
+             kaliyor. Olcum (bu tarayicida, Share Tech Mono 15px):
+             measureText('  🇳🇱') ~28px; BAYRAK_PAY 40px, ~12px pay
+             birakiyor -- Safari'nin fazladan genisligini yutacak kadar. */
+          const BAYRAK_PAY = 40;
+          const gen = Math.min(W - 16, c.measureText(adTemel).width + (bay ? BAYRAK_PAY : 0) + 26);
           const boy = 30;
           let ax = Math.max(gen / 2 + 6, Math.min(W - gen / 2 - 6, p.x));
           let ay = p.y - rad - 20;

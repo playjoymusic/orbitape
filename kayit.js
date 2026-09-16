@@ -242,6 +242,15 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   async function kamAc(){
     if(!KAMERA) return;                           // getUserMedia'nın tek çağrıldığı yer; anahtar kapalıyken hiç girilmiyor
     if(kamAcik || !kamEl) return false;
+    /* ── SIZINTI KORUMASI (16 Eylul, kamDondur duzeltmesiyle birlikte) ──
+       kamAcik yanlislikla false olsa bile ELDE hala CANLI bir kamAkis
+       kalmis olabilir (bkz. asagidaki kamDondur yorumu -- eski akisin
+       'ended' olayi yanlis akisi kapatinca boyle bir yetim kaliyordu).
+       Yeni istek yapmadan once onu STOP ediyoruz; yoksa iki akis
+       ustuste acik kalir ve kameranin donanim gostergesi (telefonun
+       kendi kirmizi/yesil noktasi) hic sonmez -- kullanicinin sozu:
+       "yukarda kirmizi ... kayittayiz saniliyor ama degiliz". */
+    if(kamAkis){ try{ kamAkis.getTracks().forEach(t=>{ try{ t.onended=null; }catch(e0){ _yut(e0); } t.stop(); }); }catch(e0){ _yut(e0); } kamAkis=null; }
     try{
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
       if(!ses.paused) calmayiKoru(3000);          // açılış sarsıntısını yut
@@ -601,7 +610,36 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      acilisinda uygulanir) -- akis yok, donecek bir sey yok.
      ACIKKEN basilirsa eski akis YENISI HAZIR OLUNCAYA KADAR canli
      kaliyor: getUserMedia basarisiz olursa (ör. cihazda arka kamera
-     yok) kullanici kararmis bir ekranda kalmiyor, eski yuze donuluyor. */
+     yok) kullanici kararmis bir ekranda kalmiyor, eski yuze donuluyor.
+
+     ── DUZELTME (16 Eylul, ikinci tur): "DONMEYE BASIYORUM, kamera
+     ORTA HALKADAN SILINIYOR, cam da kapanmiyor, sonsuz donguye
+     giriyor... yukarda kirmizi kayittayiz saniliyor ama degiliz."
+     KOK NEDEN: kamAc() acilista eski akisin (o zamanki tek akis)
+     izine bir 'onended' kancasi takiyordu (kamIzleyiciKur, bkz.
+     yukarida) -- iz biterse kamKapat() cagirsin diye. Donus sirasinda
+     eski akis stop() ile kapatiliyordu ama bu kanca HIC temizlenmiyordu.
+     Bazi tarayici motorlarinda (ozellikle gercek cihazda, WebKit)
+     manuel stop() de 'ended' olayini tetikliyor -- ya da cihaz iki
+     kamerayi ayni anda acik tutamayip eskisini KENDISI sonlandiriyor.
+     Ikisinde de eski kancanin hedefi olan kamKapat() calisiyor; ama o
+     an kamAkis DEGISKENI ZATEN YENI akisa cevrilmis oluyor -- yani
+     kamKapat() yanlislikla YENI, henuz ekrana yeni gelmis akisi
+     kapatiyordu: kamEl.srcObject=null (halkadan siliniyordu), kamAcik
+     false oluyordu (cizim dongusu artik kamerayi cizmiyordu) AMA
+     kamAkis'i null'a cekerken asil CANLI kalan (durdurulmamis) akis
+     ORTADA YETIM kaliyordu -- donanimin kendisi kapanmiyordu, telefonun
+     kamera gostergesi (kullanicinin sozuyle "yukarda kirmizi") sonmeden
+     kaliyordu. Sonraki her CAM/dondurme denemesi kamAcik=false gorup
+     YENIDEN getUserMedia cagiriyor, bir onceki yetim hic durdurulmadan
+     -- ustuste yigilan, hicbiri kapanmayan akislar "sonsuz dongu" gibi
+     hissettiriyordu.
+     DUZELTME: eski akisin izindeki 'onended' kancasi, onu durdurmadan
+     HEMEN once temizleniyor (t.onended=null) -- artik hangi motorda
+     nasil davranirsa davransin, eski izin sonu YENI akisi etkilemiyor.
+     Ayrica basari sonrasi kamEl/govde siniflari ve kamAcik ACIKCA
+     yeniden dogrulaniyor (guvenlik payi): araya giren beklenmedik bir
+     'ended' onceki durumu bozmus olsa bile son durum dogru kaliyor. */
   async function kamDondur(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
     if(!KAMERA || !camDonDug || _kamDonuyor) return;
@@ -611,6 +649,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     _kamDonuyor = true;
     camDonDug.classList.add('bekle');
     const eskiAkis = kamAkis;
+    if(eskiAkis){ try{ eskiAkis.getTracks().forEach(t=>{ try{ t.onended=null; }catch(e0){ _yut(e0); } }); }catch(e0){ _yut(e0); } }
     try{
       const yeniAkis = await navigator.mediaDevices.getUserMedia({
         video:{ facingMode:_kamYon, width:{ideal:480}, height:{ideal:480} }, audio:false });
@@ -624,14 +663,25 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       kv.srcObject = kamAkis;
       try{ await kv.play(); }catch(e2){ _yut(e2); }
       try{ await ilkKare(kamEl); }catch(e2){ _yut(e2); }
+      /* GUVENLIK PAYI: araya giren beklenmedik bir 'ended' bu durumlari
+         degistirmis olabilir -- basari burada, son soz burada olsun. */
+      kv.classList.add('on'); kamAcik = true;
+      try{ document.body.classList.add('kam'); }catch(e2){ _yut(e2); }
       if(eskiAkis){ try{ eskiAkis.getTracks().forEach(t=>t.stop()); }catch(e2){ _yut(e2); } }
       kamIzleyiciKur();                               // iz biterse sessizce kapat
+      try{ camYaz(); }catch(e2){ _yut(e2); }
     }catch(e3){
       /* DONMEDI: eski yuze geri don, akis eskisi gibi kalsin -- kamera
-         birden kararmasin. */
+         birden kararmasin. Yukarida eski izin 'onended' kancasi
+         BILEREK temizlenmisti (yeni akis basarili olursa diye) -- ama
+         donus basarisiz oldu, eski akis hala CANLI ve GERCEK kamera
+         bu, o yuzden gozcu de geri takiliyor: yoksa bu akis biterse
+         (ör. kullanici uygulamadan cikip donerse) artik kimse
+         kamKapat() cagirmaz, dugme "acik" gorunup akis olu kalir. */
       _kamYon = (_kamYon === 'user') ? 'environment' : 'user';
       kamYonYaz();
       kamAkis = eskiAkis;
+      kamIzleyiciKur();
       kisaNotYaz('CAMERA DID NOT SWITCH',
         'This device could not open the other camera. Staying on the current one.');
       _yut(e3);

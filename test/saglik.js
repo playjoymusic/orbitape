@@ -816,7 +816,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        15 EYLUL: 27 -> 28. KILIM SERISI geldi -- pj'nin gonderdigi 4
        referans fotograftaki (kilim/desen motifli telefon kilifi,
        ortada halkayla uyumlu madalyon) 6 yeni cizimli deri: DIAMOND,
-       CHEVRON, MEDALLION, RAMSHORN, NAZAR, SUNBURST.
+       CHEVRON, MEDALLION, RAMSHORN, EVIL EYE (nazar), SUNBURST.
        Her biri DERI_USLUP'a bir palet, DERI_HALKA'ya bir disk-ikon
        cizimi, DERI_CIZIM'e "disk bilerek kurulan" tam ekran kompozisyon
        ekledi (DOGA serisinin disk-ankraji kuralina uyularak).
@@ -1026,8 +1026,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        "Don't show this again" kutusu (#turKutu) kaldirildi -- kalici
        kapatma artik yalniz 3 atlama (TUR_ATLAMA_TAVAN), "SHOW ON OPEN"
        ayari "GUIDE" oldu ve basinca turu hemen de baslatiyor. Hepsi
-       kod + yorum, yeni dosya yok; tavan 1268'e cekildi. */
-    K('Ham boy < 1268 KB', dosyaBoy < 1268*1024,
+       kod + yorum, yeni dosya yok; tavan 1268'e cekildi.
+       16 EYLUL: 1268 -> 1272. Yildiz haritasinda ad kutusunun bayragi
+       tam sarmalamasi duzeltmesi (BAYRAK_PAY sabiti + Chromium/WebKit
+       measureText farkini anlatan yorum, bkz. "KUTU BAYRAGI TAM
+       SARMALIYOR" basligi). Ekrana giden tek sey kutunun genisligi;
+       buyume neredeyse tamamen yorumdan. Ham boy 1268,69 KB. */
+    K('Ham boy < 1272 KB', dosyaBoy < 1272*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -4228,6 +4233,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Donme sirasinda kamera acik ve akis canli kaliyor',
     kamDonus.donunceAcik === true && kamDonus.donunceAkisVar === true,
     JSON.stringify(kamDonus));
+  /* ── DONDURME: ESKI IZIN GEC GELEN "ENDED" OLAYI YENI AKISI VURMASIN
+     (16 Eylul, ikinci tur) ────────────────────────────────────────
+     Kullanicinin sozu, art arda: "DONMEYE BASIYORUM kamera kayitta
+     kaliyor yukarda kirmizi devam ama orta halkadan siliniyor o an
+     gorunmuyor cam de kapanmiyor bu arada. sonsuz bir donguye giriyor.
+     ... kayitta degilken kamera acikken yukarda kirmizi kayittayiz
+     ibaresini gosterme, kayittayiz saniliyor ama degiliz."
+     KOK NEDEN (bkz. kayit.js, kamDondur yorumu): acilista eski izin
+     ustune takilan 'onended' kancasi (kamIzleyiciKur) donus sirasinda
+     hic temizlenmiyordu. Chromium'un sahte kamerasinda manuel stop()
+     'ended' FIRLATMIYOR (spesifikasyona uygun) -- o yuzden bu hata
+     gercek cihazda (WebKit) gorulup burada hic yakalanamamisti. Testte
+     gercek cihazdaki bu davranis TAKLIT EDILIYOR: stop() cagrildiginda
+     izin kendisi de 'ended' olayini firlatsin diye MediaStreamTrack
+     prototipi GECICI olarak yamalaniyor -- boylece hata, sahte
+     kamerayla da, motor farki beklemeden, burada olculebiliyor. */
+  const kamRaceDonus = await pg.evaluate(async ()=>{
+    const bek = ms=>new Promise(r=>setTimeout(r,ms));
+    const c = {};
+    const _orjStop = MediaStreamTrack.prototype.stop;
+    MediaStreamTrack.prototype.stop = function(){
+      _orjStop.call(this);
+      try{ this.dispatchEvent(new Event('ended')); }catch(e){}
+    };
+    try{
+      document.getElementById('cam').click(); await bek(700);
+      c.acikMi_once = !!kamAcik;
+      const camDonT = document.getElementById('camDon');
+      camDonT.click(); await bek(700);
+      c.acikMi_sonra = !!kamAcik;
+      c.kamElOn_sonra = document.getElementById('kam').classList.contains('on');
+      c.govdeKam_sonra = document.body.classList.contains('kam');
+      c.canliIzSayisi_sonra = (kamAkis ? kamAkis.getTracks().filter(t=>t.readyState!=='ended').length : 0);
+    } finally {
+      MediaStreamTrack.prototype.stop = _orjStop;
+      document.getElementById('cam').click(); await bek(400);
+    }
+    return c;
+  });
+  K('Dondururken eski izin gec gelen "ended" olayi yeni akisi kapatmiyor',
+    kamRaceDonus.acikMi_once === true && kamRaceDonus.acikMi_sonra === true
+      && kamRaceDonus.kamElOn_sonra === true && kamRaceDonus.govdeKam_sonra === true,
+    JSON.stringify(kamRaceDonus));
+  K('Dondururken yetim (durdurulmamis) ikinci bir akis kalmiyor',
+    kamRaceDonus.canliIzSayisi_sonra === 1, JSON.stringify(kamRaceDonus));
   /* ── ◁ ve ▷ AYNI HIZADA MI ──────────────────────────────────────
      DUZELTILEN KARARSIZ TEST: bu kontrol CI'da bir kez dustu, sonraki
      calistirmada gecti. Ayni kod, farkli sonuc — en zararli test turu,
@@ -10182,6 +10232,25 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         }
         c.ekrandaYildizVar = !!sec2;
         const kutu = window.yildizDurum().adKutu;
+        /* ── KUTU BAYRAGI TAM SARMALIYOR MU (16 Eylul, ikinci duzeltme) ──
+           Kullanicinin sozu, ekran goruntusuyle: "yildizlari buyutup
+           isme bakinca cerceve yarim kaliyor bayrak gelince."
+           Chromium'da measureText(ad) (isim+bayrak TEK dizge) makul
+           olcuyor ama GERCEK CIHAZDA (WebKit) bayrak fillText'te
+           measureText'in rapor ettiginden daha genis cikabiliyor --
+           motorlar arasi bilinen fark. O yuzden kutu artik yalnizca
+           ISMIN (motordan motora guvenilir) genisligine SABIT bir
+           bayrak payi (40px) ekleyerek hesaplaniyor; burada da AYNI
+           SEKILDE dogrulaniyor: kutu, yalnizca ismin genisliginden
+           belirgin (>=30px) daha genis mi -- yani gercekten bir
+           bayrak payi ayrilmis mi, sonradan "unutulup" tekrar salt
+           isim genisligine donulmemis mi. */
+        if(kutu && sec2){
+          const _olcCtx = document.createElement('canvas').getContext('2d');
+          _olcCtx.font = "600 15px 'Share Tech Mono', ui-monospace, monospace";
+          const isimGen = _olcCtx.measureText('Yildiz ' + sec2.i).width;
+          c.kutuBayrakPayi = (kutu.x2 - kutu.x1) - isimGen;
+        }
         c.adKutusuVar = !!kutu && (kutu.x2 - kutu.x1) > 40 && (kutu.y2 - kutu.y1) > 24;
         if(kutu){
           const mx = (kutu.x1 + kutu.x2) / 2, my = (kutu.y1 + kutu.y2) / 2;
@@ -10264,6 +10333,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        yz.adBayrakli === true,
        yz.adMetni ? ('yakalanan metin: "' + yz.adMetni + '"')
                   : 'ad metni yakalanamadi');
+    K('Ad kutusu bayrak icin sabit bir pay tasiyor (cerceve yarim kalmiyor)',
+       typeof yz.kutuBayrakPayi === 'number' && yz.kutuBayrakPayi >= 30,
+       'pay: ' + yz.kutuBayrakPayi + 'px (isim genisligi ustune)');
     K('Buyudukce daha cok istasyon geliyor (harita)',
        yz.azdaSeyrek === true && yz.cokdaHepsi === true && yz.artanSira === true,
        ozy || 'az acikta seyrek, sonuna kadar acikta rafin tamami');
@@ -11765,7 +11837,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const cx = cv.getContext('2d'); cx.font = '16px sans-serif';
         const cagrilar=[]; const gercek = cx.fillText.bind(cx);
         cx.fillText = function(m,x,y){ cagrilar.push(m); return gercek(m,x,y); };
-        kyz(cx, '\uD83C\uDDE9\uD83C\uDDEA', 10, 10, 2, 'sol');   // DE bayragi
+        kyz(cx, '🇩🇪', 10, 10, 2, 'sol');   // DE bayragi
         c.bayrakCagri = cagrilar.length;
         cagrilar.length = 0;
         kyz(cx, 'AB', 10, 10, 2, 'sol');
@@ -11776,8 +11848,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Bayrak fotografta kutulu harfe bolunmuyor',
       bayrakBol.bayrakCagri === 1 && bayrakBol.metinCagri === 2,
       bayrakBol.hata || ('bayrak fillText='+bayrakBol.bayrakCagri+' (1 olmali), metin fillText='+bayrakBol.metinCagri+' (2 olmali)'));
-
-    /* ── FOTOGRAFTA OGELER BIRBIRINE KAYMIYOR (16 Eylul) ─────────
+    /* ── FOTOGRAFTA OGELER BIRBIRINE KAYMIYOR (16 Eylul) ─────────────
        Kullanicinin sozu: "o an cektik ve onizleme geliyor ya, orda
        cark vs kayiyor... cogu oge alta kayiyor... alttan kesik." Kok
        sebep: fotoCek() -> kayitTuvalKur() -> 'await
@@ -12799,8 +12870,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            olculuyor (bkz. "Galeri serit olarak aciliyor"). */
         f.click(); await bek(200); c.d1 = deriGaleriAcik() && kap.classList.contains('serit');
         f.click(); await bek(200); c.d2 = !deriGaleriAcik();
-        /* YUKARI KAYDIRMA KAPATIR (3 Eylul): "vazgectim, o an yukari
-           scroll yaptigimda kapanmali tamamen o pencere." */
+        /* YUKARI KAYDIRMA ARTIK KAPATMIYOR (16 Eylul): 3 Eylul'de
+           eklenen "yukari kaydirma kapatir" jesti KALDIRILDI.
+           Kullanicinin sozu: "cok hizli elimi asagiya ya da yukari
+           cekince pencere kapaniyor ... onu da kaldir, artik baska
+           yollar var zaten." KOK SEBEP: liste TEPEDEYKEN yapilan
+           sirf "listeyi kaydir" hareketi de parmagi YUKARI cekmekti --
+           "kapat" jesti ile ayni fiziksel harekete denk geliyordu,
+           hizli bir kaydirma yanlislikla paneli kapatiyordu. Artik
+           tek kapatma yollari ✕ dugmesi ve bosluga dokunus; asagidaki
+           olcu bunu TERSINDEN dogruluyor -- ayni sert kaydirma jesti
+           artik paneli KAPATMIYOR. */
         f.click(); await bek(300);
         /* Yukari kaydirma olcusu izgarada anlamli: once listeyi ac. */
         { const ok2 = kap.querySelector('.dg-tus.buyut'); if(ok2){ ok2.click(); await bek(250); } }
@@ -12808,7 +12888,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const kb2 = kap.getBoundingClientRect();
         const kay = (t, y)=>kap.dispatchEvent(new PointerEvent(t, {bubbles:true, cancelable:true, pointerId:41, pointerType:'touch', isPrimary:true, buttons:(t==='pointerup'?0:1), clientX:kb2.left+kb2.width/2, clientY:y}));
         kay('pointerdown', kb2.top + 200); kay('pointermove', kb2.top + 120); await bek(150);
-        c.kaydirKapatti = !deriGaleriAcik();
+        c.kaydirdiktaAcikKaldi = deriGaleriAcik();
         kay('pointerup', kb2.top + 120); await bek(100);
         /* ── ONIZLEMENIN ORTASI MERKEZ SECICISINE GORE (10 Eylul) ──
            Kullanicinin sozu: "OFF haric onizlemelerde de ilk circle
@@ -12817,8 +12897,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            uygulamanin merkezi zaten diske geciyor, yani ekranda disk
            onizlemede halka oluyordu. Artik ikisi ayni sey.
            Olculen: RING secilince kare halkali, DISC secilince
-           govdeli. */
-        f.click(); await bek(400);
+           govdeli.
+           NOT (16 Eylul): eskiden buradaki f.click() paneli TEKRAR
+           aciyordu, cunku yukaridaki kaydirma paneli kapatmisti. Artik
+           kaydirma kapatmadigi icin panel zaten acik -- kosulsuz
+           f.click() burada onu YANLISLIKLA KAPATIRDI. */
+        if(!deriGaleriAcik()){ f.click(); } await bek(400);
         const k2 = kap.querySelector('.dg-kare[data-n="2"] .dg-disk');
         const eskiM = AYAR.merkez;
         const mrkTus = k => kap.querySelector('.dg-tus.mrk[data-merkez="' + k + '"]');
@@ -12885,7 +12969,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        g.tepeBosluk && g.baslikKucultur, oz || 'ust pay var, baslik dugme');
     K('Merkez secici seritte: cark / halka / yuvarlak',
        g.merkezDort && g.merkezSecili, oz || 'uc tus, secili isaretli');
-    K('Yukari kaydirma galeriyi kapatir', g.kaydirKapatti, oz || 'tepedeyken yukari cekis');
+    K('Yukari kaydirma artik galeriyi KAPATMIYOR (tepedeyken hizli kaydirma)',
+      g.kaydirdiktaAcikKaldi === true, oz || 'tepedeyken yukari cekis, panel acik kalmali');
     K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
 
   /* ── OFF'TA CARK, DERIDE DISK ────────────────────────────────────
@@ -13945,9 +14030,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                  body.deri .disk::after): (20.66+21.05)/2, (30.16+30.55)/2,
                  (39.66+40.05)/2, (49.66+50.05)/2 -- yuzde olarak R'nin. */
               const yuzdeler = [20.855, 30.355, 39.855, 49.855];
-              /* ── OLCEK DUZELTMESI (16 Eylul) ───────────────────────
+              /* ── OLCEK DUZELTMESI (16 Eylul) ─────────────────────────
                  Kullanicinin GERCEK CI logu: dort halkanin sapmasi
-                 [283,279,279,13] -- ilk uc GUCLU, dorduncusu (en icteki)
+                 [283,279,279,13] -- ilk uc GUCLU, dorduncusu (en ictekı)
                  ZAYIF. Once "yine o bilinen ekran testi" sanildi ama
                  degil: retry 5 kez denedi, HEP AYNI SONUC -- yani
                  zamanlama (paint gecikmesi) degil, SABIT bir hata.

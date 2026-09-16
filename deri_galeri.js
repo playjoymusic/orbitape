@@ -62,16 +62,10 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        oyle. */
     ".dg-bas{display:flex;align-items:center;gap:4px;flex:none;flex-wrap:wrap;padding:6px calc(var(--kx) + env(safe-area-inset-right,0px)) 6px calc(var(--kx) + env(safe-area-inset-left,0px))}",
     ".dg-merkez{order:9;flex:1 0 100%;justify-content:center;margin-top:2px;padding-top:3px;border-top:1px solid color-mix(in srgb,var(--dg-yazi) 12%,transparent)}",
-    /* dg-anlam: yalnizca NAZAR icin (16 Eylul, pj: "ismi nazar
-       boncugu, diger dillere ayni anlamda cevir"). Once yalnizca bu
-       aciklama satiri eklenmisti (ad "EVIL EYE" olarak kalmisti,
-       skin adlari cevrilmiyor kurali geregi); AYNI GUN pj ismin
-       KENDISININ de degismesini istedi ("klonla, ismi baska yap") --
-       DERILER'deki ad artik "NAZAR" (bkz. index.html). Bu aciklama
-       satiri hala duruyor: "NAZAR" tek basina her dilde anlasilmaz,
-       altindaki kucuk yazi (T('Evil eye bead')) anlamini ceviriyor.
-       Kontrol hala cizim==='nazar'e bakiyor, ad string'ine degil --
-       isim degisse de bu satir kendiliginden dogru kaliyor.
+    /* dg-anlam: yalnizca EVIL EYE icin (16 Eylul, pj: "ismi nazar
+       boncugu, diger dillere ayni anlamda cevir"). Ad DEGISMIYOR --
+       raf/tur adlari gibi skin adlari da cevrilmiyor kurali burada
+       da geciyor -- bu yalnizca ufak, sonuk bir aciklama satiri.
        dg-merkez ile ayni desen (order+tam genislik): flex-wrap
        satirinin gerisine, kendi satirina duser, baska hicbir
        yerlesime dokunmaz. */
@@ -234,7 +228,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       KURALLAR.forEach(k=>{ try{ st.sheet.insertRule(k, st.sheet.cssRules.length); }catch(e){ yut(e); } });
     }catch(e){ yut(e); }
   }
-  let halkaTus = null, kapDinle = null, merkezTuslari = [];
+  let halkaTus = null, merkezTuslari = [];
   let buyutTus = null;
   /* ── ACARKEN DISK, KAPARKEN ESKISI (9 Eylul) ──────────────────
      Kullanicinin sozu: "skins ikonuna basinca bir anda cark gidiyor;
@@ -582,7 +576,6 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       else if(e.key === 'ArrowRight'){ e.preventDefault(); adim(1); }
     });
     document.body.appendChild(kap);
-    try{ if(kapDinle) kapDinle(); }catch(e){ yut(e); }
   }
 
   function halkaIsaret(){
@@ -844,37 +837,19 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       if(e.type === 'click') _yutJest = false;
     }catch(err){ yut(err); }
   }
-  /* ── YUKARI KAYDIRMA KAPATIR (3 Eylul) ──────────────────────────
-     "vazgectim o an yukari scroll yaptigimda kapanmali tamamen o
-     pencere." Tam galeride kareler kendi icinde kayiyor: yalnizca
-     LISTENIN TEPESINDEYKEN yukari cekmek kapatiyor (asagi inerken
-     kapanmasi galeriyi kullanilmaz yapardi). Seritte kayacak bir
-     sey yok, her yukari hareket kapatir. */
-  let _kayBas = null;
-  function kayBasla(e){
-    try{
-      if(!acikMi()){ _kayBas = null; return; }
-      _kayBas = { y: e.clientY, tepede: kap.classList.contains('serit') || !izg || izg.scrollTop <= 2 };
-    }catch(err){ yut(err); }
-  }
-  function kayHareket(e){
-    try{
-      if(!_kayBas || !acikMi()) return;
-      if(!_kayBas.tepede) return;
-      if(_kayBas.y - e.clientY > 48){ _kayBas = null; kapa(); }
-    }catch(err){ yut(err); }
-  }
-  try{
-    kapDinle = ()=>{
-      if(!kap || kap.dataset.kayBagli) return;
-      kap.dataset.kayBagli = '1';
-      kap.addEventListener('pointerdown', kayBasla, {passive:true});
-      kap.addEventListener('pointermove', kayHareket, {passive:true});
-      kap.addEventListener('pointerup', ()=>{ _kayBas = null; }, {passive:true});
-      kap.addEventListener('pointercancel', ()=>{ _kayBas = null; }, {passive:true});
-      kap.addEventListener('wheel', e=>{ try{ if(e.deltaY < -12 && (kap.classList.contains('serit') || !izg || izg.scrollTop <= 2)) kapa(); }catch(err){ yut(err); } }, {passive:true});
-    };
-  }catch(e){ yut(e); }
+  /* ── YUKARI KAYDIRMA ARTIK KAPATMIYOR (16 Eylul) ─────────────────
+     3 Eylul'de eklenmisti: liste tepedeyken parmagi yukari cekmek
+     paneli kapatiyordu. Kullanicinin sozu (16 Eylul): "cok hizli
+     elimi asagiya ya da yukari cekince pencere kapaniyor ... onu da
+     kaldir o secenegi, artik baska yollar var zaten. acele asagiya
+     ya da yukari cikmak isteyince tak atip kapatiyor listeyi."
+     SORUN SU: liste TEPEDEYKEN yapilan ilk gercek is de "asagi
+     kaydir" -- parmak YUKARI dogru cekiliyor (ekran icerigi asagi
+     kaysin diye). Yani "kapat" jesti ile "listeyi kullan" jesti
+     tepede AYNI harekete denk geliyordu; hizli/sert bir kaydirma
+     kapatma esigini (48px) kolayca asiyordu. Artik ✕ dugmesi ve
+     bosluga dokunus (disari()) kapatmanin tek yollari -- ikisi de
+     yanlislikla tetiklenmiyor, listeyi kullanmayla celismiyor. */
   try{
     window.addEventListener('pointerdown', disari, {capture:true, passive:false});
     ['pointerup','click','touchstart','touchend','mousedown','mouseup'].forEach(t=>
