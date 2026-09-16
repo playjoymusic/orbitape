@@ -3588,9 +3588,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   const nb = await pg.evaluate(async()=>{
     const eskiKanal = mod, eskiAile = AKTIF_AILE;
     mod = 'radio'; AKTIF_AILE = AILE_ADLAR[0];
-    const tur = [AKTIF_AILE];
-    for(let i=0;i<11;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
     const aileSayi = AILE_ADLAR.length;
+    const tur = [AKTIF_AILE];
+    /* DONGU UZUNLUGU SABIT YAZILMISTI (11): PODCASTS eklenince (12.
+       aile) 11 basista tam tur atmiyordu, tur[aileSayi] tanimsiz
+       kaliyordu. Asagidaki yorum zaten "AILELER'den okunuyor" diyordu
+       ama dongunun kendisi bunu yapmiyordu -- simdi gercekten yapiyor. */
+    for(let i=0;i<aileSayi;i++){ modSiraGec(); tur.push(AKTIF_AILE); await new Promise(r=>setTimeout(r,10)); }
     AKTIF_AILE = eskiAile; mod = eskiKanal;
     return { tur, aileSayi };
   });
@@ -7024,7 +7028,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        iki ayri tarz oldugu icin RNB & FUNK.
        Sayi burada acikca yaziyor cunku halka geometrisi raf
        SAYISINDAN tureniyor: yanlis sayi yanlis halkayi sectirir. */
-    K('On bir DOLU aile tanimli', !!ai && ai.sayi === 11, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+    /* ON BIR -> ON IKI (16 Eylul). PODCASTS acildi: araclar/
+       radyo_grupla.py'deki 10 Eylul notu ("NEWS & TALK ailesi
+       kurulunca bu karar yeniden ele alinacak") gerceklesti. Eskiden
+       komple atilan KONUSMA istasyonlari SIYASI (kalici yasak) ve
+       PODCAST_ADAY (bu rafa girer) diye ikiye bolundu. Raf ANATOLIA'dan
+       hemen sonra, dolu dogdu, o yuzden 'bos' damgasi yok. */
+    K('On iki DOLU aile tanimli', !!ai && ai.sayi === 12, ai ? ai.adlar.join(' · ') : 'AILELER yok');
     K('Bildirilmis-bos raf halkada gorunmuyor',
       !!ai && ai.bosAdlar.every(b => !ai.halkada.includes(b)),
       ai ? ('bos: ' + (ai.bosAdlar.join(', ') || 'yok')
@@ -7149,7 +7159,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* 10 Eylul aksami: ANATOLIA en icteki halka olarak eklendi.
        TR ulke kara listesinden cikinca acilan raf; kesif olcumu 15
        aday buldu, yani en kucuk raf bu. On halka on bir oldu. */
-    const SIRA = ['ANATOLIA','AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
+    /* 16 Eylul: PODCASTS eklendi, ANATOLIA'dan hemen sonra. On bir
+       halka on iki oldu. */
+    const SIRA = ['ANATOLIA','PODCASTS','AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
                   'JAZZ','WORLD & ROOTS','AFROBEATS','RNB & FUNK',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
