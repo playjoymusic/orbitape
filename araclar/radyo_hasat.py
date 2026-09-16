@@ -70,6 +70,19 @@ ARAMA = OrderedDict([
     ("ANATOLIA",     ["turkish", "turkish pop", "turkish folk", "arabesk",
                       "turkish rock", "anadolu rock", "turkish music",
                       "turkish jazz", "turkish classical"]),
+    # 16 Eylul: PODCASTS rafi acildi. radyo_grupla.SIYASI zaten
+    # politics/political/conservative talk/christian talk/haber/news
+    # gecen HER SEYI temizle()'de atiyor -- burada aranan etiketler
+    # kasten NOTR (dizinde "news talk" gibi bilesikler de var, onlar
+    # da SIYASI'nin \bnews\b'ine takilip elenir).
+    # KULLANICININ KARARI: "haber riskli, o da olmasin" -- yani bu raf
+    # siyasi/haber DEGIL, sirf muzik olmayan sohbet/talk yayini demek.
+    # UYARI: etiket suzgeci "talk" yazan HER istasyonu siyasi saymaz;
+    # ABD'de bircok yerel "talk radio" istasyonu etiketinde politics
+    # yazmadan da agirlikli siyasi/haber yorumu yapar. Digrer raflarda
+    # oldugu gibi (AFROBEATS) bu hasat SONUCU gozle/kulakla suzulmeden
+    # PR birlestirilmemeli.
+    ("PODCASTS",     ["talk", "talk radio", "talkradio", "talk show"]),
     ("JAZZ",         ["jazz", "bebop", "big band", "swing", "smooth jazz"]),
     # 10 Eylul: DISCO FUNK ve AFROBEATS kalkti, ikisi RNB & FUNK
     # oldu. Bu satirdaki ad AILELER'de YOKSA hasat o kelimelerle

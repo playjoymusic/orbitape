@@ -241,12 +241,15 @@
      Orada disk 560'a acilinca skins seridinin uzerine bindi --
      cihaz takimi olctu: carkin tepesi 98, dikey bosluk -111 px.
      Tablet demek genis VE yuksek demek; yatay telefon yuksek
-     degil. Iki olcu birlikte soruluyor. */
-  @media (min-width:820px) and (min-height:700px){
-    :root{ --kx:max(16px, calc((100vw - 680px) / 2)); }
-    .disk{ width:min(78vw,560px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan)); }
-    body.klavye .disk{ width:min(78vw,560px,calc(100vh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan)); }
-  }
+     degil. Iki olcu birlikte soruluyor.
+     16 EYLUL: GERI ALINDI. Kullanicinin sozu: "telefonda nasil
+     goruyorsak tablette de ayni sekilde onun ekraninin buyutune
+     gore entegre olacak, baska kural varsa bosver." 560px'lik tavan
+     ve 680px'lik hayali kolon tam olarak byle bir "baska kural" --
+     kaldirildi. Artik tablet ve masaustunde de yukaridaki TEK
+     kural gecerli: disk 78vw, --kx sabit (satir ~58). Ekran ne
+     kadar buyurse disk ve kenar paylari da telefonda oldugu gibi
+     otomatik buyuyor/kuculuyor. */
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
      seridi okunur puntoda tasimiyor; cubuk acilinca icerigin ona yer
@@ -3814,27 +3817,18 @@
      gizliyordu, gerilme kalkinca ortaya cikti. Artik 34px tus + 6px
      bosluk: alan 40px, WCAG'in AA tabaninin cok uzerinde. */
 
-  /* ── GENIS EKRANDA TEK KOLON ──────────────────────────────────────
-     Arayuzun her parcasi ekranin KOSELERINE sabitli. Telefonda ekran
-     dar oldugu icin hepsi bir arada duruyor ve tek bir nesne gibi
-     okunuyor. 1400px'lik bir pencerede ayni parcalar birbirinden
-     metrelerce uzaga dagiliyordu: REC sol uctan, ◁ ★ sag uctan,
-     calan istasyon en sag altta. Kullanici masaustunde acinca
-     "alakasiz, eski surum gibi" dedi -- surum guncelDI, dagilan
-     duzendi.
-     Cozum: kose sabitlerini ekranin degil ORTALANMIS BIR KOLONUN
-     kenarina baglamak. Kolon disk kadar genis; dar ekranda sorgu hic
-     devreye girmiyor, yani telefon davranisi bire bir ayni kaliyor. */
-  @media (min-width:700px){
-    :root{ --kol:560px; --yan:calc((100vw - var(--kol)) / 2); }
-    .disk{ width:min(74vw, 440px, calc(100dvh - var(--ust-rez) - var(--alt-rez)), var(--alet-tavan)); }
-    #ust        { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
-    #np         { right:calc(var(--yan) + var(--kx) + env(safe-area-inset-right, 0px)); }
-    #rapor      { right:calc(var(--yan) + 10px + env(safe-area-inset-right, 0px)); }
-    #ara        { left:calc(var(--yan) + var(--kx) + env(safe-area-inset-left, 0px)); }
-    #solUst     { left:calc(var(--yan) + var(--kx) + env(safe-area-inset-left, 0px)); }
-    #kayitBilgi { left:calc(var(--yan) + var(--kx) + env(safe-area-inset-left, 0px)); }
-  }
+  /* ── GENIS EKRANDA TEK KOLON (27 Agustos) -- 16 EYLUL'DE GERI ALINDI ──
+     O gun kose sabitlerini ORTALANMIS BIR KOLONUN (560px) kenarina
+     baglamistik, cunku dagilmis gorunuyordu. Ama bu, --kx'in kendisini
+     genis ekranda gercek kenar payi olmaktan cikarip 404px'e kadar
+     cikan gizli bir ikinci degisken (--yan) yaratti -- 15 Eylul'de
+     bulunan hizalama hatalarinin kok sebebi buydu.
+     Kullanicinin sozu (16 Eylul): "telefonda nasil goruyorsak
+     tablette de ayni sekilde onun ekraninin buyutune gore entegre
+     olacak, baska kural varsa bosver. Bilgisayarda da entegre olsun
+     otomatik." Yani masaustunde de TEK kural: --kx sabit, disk 78vw
+     -- ayri bir kolon yok, ayri bir --yan yok. Genis pencerede
+     ogelerin birbirinden uzaklasmasi artik kabul edilen davranis. */
   /* KAYNAK RAPORU MARKA YAZISININ ALTINDA BASLIYOR: ust satirin
      uzerine biniyordu ve ORBITAPE yazisiyla uc sembolu, yaninda da
      tur adini tamamen ortuyordu -- panel acikken hangi rafta
@@ -3960,20 +3954,20 @@
      · twitter:*    : X önizlemesi (summary_large_image = geniş kart)
      Önizleme görseli KENDİ ekranımız; üzerinde başkasının istasyon
      adı ya da sanatçısı YOK — bkz. paylas.png üretimi (araclar/). -->
-<meta name="description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
+<meta name="description" content="Live radio from around the world, grouped into twelve genres. No account, no ads, no tracking.">
 <link rel="canonical" href="https://orbitape.app/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://orbitape.app/">
 <meta property="og:site_name" content="ORBITAPE">
 <meta property="og:title" content="ORBITAPE — live radio">
-<meta property="og:description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
+<meta property="og:description" content="Live radio from around the world, grouped into twelve genres. No account, no ads, no tracking.">
 <meta property="og:image" content="https://orbitape.app/paylas.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ORBITAPE — LIVE RADIO · SOUND ARCHIVE; orbital rings on a black field.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ORBITAPE — a sound explorer">
-<meta name="twitter:description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
+<meta name="twitter:description" content="Live radio from around the world, grouped into twelve genres. No account, no ads, no tracking.">
 <meta name="twitter:image" content="https://orbitape.app/paylas.png?v=2">
 </head>
 <body>
@@ -4941,7 +4935,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.15';
+  var ORB_SURUM = '2026.09.16';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -15068,6 +15062,22 @@
        uzak ton secildi. JAZZ'in gulu (204,124,164) bes halka,
        WORLD & ROOTS'un moru (176,124,232) alti halka disarida. */
     { ad:'ANATOLIA',       renk:'228,110,180' },   // ICTEN 1. (en kucuk halka)
+    /* ── PODCASTS (16 Eylul) ───────────────────────────────────────
+       araclar/radyo_grupla.py'deki 10 Eylul notu gerceklesti: KONUSMA
+       torbasi SIYASI (kalici yasak: politics/political/conservative
+       talk/christian talk/haber) ve PODCAST_ADAY (talk show/sohbet/
+       soylesi) diye ikiye bolundu; ikincisi artik atilmiyor, bu rafa
+       yaziliyor. Kullanicinin acik kararı: "haber de riskli, o da
+       olmasin" -- haber SIYASI tarafinda kaldi.
+       YER: ANATOLIA'dan hemen sonraki halka, kullanicinin sozu.
+       RENK: kullanicinin secimi, gul kurusu-gri (176,142,147) --
+       ANATOLIA'nin canli fusyasindan bilerek sonuk, konusma yayini
+       muzik rafi gibi parlak gorunmesin.
+       CIZIM YOK: GEZ_CIZIM.ad icinde 'PODCASTS' icin ozel vektor harf
+       cizimi yok, modGezYaz() bunu duz yaziya dusuruyor (CIZIM VARSA
+       CIZIM YOKSA YAZI kurali) -- calisir ama oteki raflar gibi ozel
+       cizilmis gorunmuyor, istenirse ayri iş. */
+    { ad:'PODCASTS',       renk:'176,142,147' },   // ICTEN 2.
     { ad:'AMBIENT',        renk:'95,191,122'  },   // 2.
     { ad:'ORCHESTRAL',     renk:'240,172,122' },   // 2.
     { ad:'ROCK & INDIE',   renk:'242,104,60'  },   // 3. (eski adi ROCK & COUNTRY)
