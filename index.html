@@ -9746,6 +9746,7 @@
   let korDelay=null, korLfo=null, korDerin=null, korWet=null;   // chorus
   let delay2=null, delay2G=null;                          // multi-tap eko ikinci vuruş
   let grafikCalisti=false, buParcaSinyal=false, calBaslangic=0, sonAtla=0, baslamaTimer=null;   // gözcü + 5sn başlama zaman aşımı
+  let _agRetryTimer=null;   // arşiv parçasında AG hatasında (kod 2 veya 4 -- ikisi de gerçek olabiliyor) tek seferlik tekrar deneme -- bkz. ses 'error' dinleyicisi
   let lopass=null, fxSeviye=0;              // 0 = doğal/net, 1 = en uzak/boğuk
   /* ── PARMAK ILE SES ARASINDAKI YUMUSATICI ────────────────────────
      Bildirilen: "bazi FX odalarinda bir anda cok boostlaniyor, hep
@@ -14682,6 +14683,54 @@
   ses.addEventListener('ended', ()=>{ sonraki(false); });   // biten medya (jamendo/kütüphane/mixtape) -> sıradaki; canlı yayın 'ended' vermez
   ses.addEventListener('error', ()=>{
     const kod = (ses.error && ses.error.code) || 0;
+    const _url = ses.getAttribute('src') || '';
+    /* GECICI SUNUCU HATASI ILE GERCEK OLU LINK AYNI SEY DEGIL (17 Eylul).
+       Onun sozu: "hala bazen cok ariyor bazi yerlere ulasamiyor."
+       Olcum: canli sitede ORBITAPE'te art arda parca atlarken agdan
+       yakalandi -- archive.org'un /download/ adresi bir parcada 503
+       (gecici, "su an mesgulum") dondu, HEMEN ARDINDAN AYNI oturumda
+       BASKA bir parca sorunsuz 206 ile calisti. Yani 503 kalici bir
+       kayip degil, cogu zaman birkac saniye icinde kendini duzeltiyor.
+       Once bu ayrimi yapmadan HER hatada direkt earthOluIsaretle()
+       cagriliyordu: kullanicinin ekraninda gordugu "sürekli arıyor,
+       bulamıyor" hissi, gecici bir sunucu yuklenmesini KALICI kayip
+       sanip saglikli kayitlari da kara listeye atmaktan geliyordu.
+       KOD 2 DEGIL KOD 4: Playwright'ta GERCEK bir HTTP 503 yaniti
+       simule edilip olculdu (kod 2 varsayimiyla degil) -- Chromium
+       audio/video elemanina 2xx/206 disi bir HTTP durumu geldiginde
+       MEDIA_ERR_SRC_NOT_SUPPORTED (kod 4) veriyor, MEDIA_ERR_NETWORK
+       (kod 2) DEGIL. Once yalniz kod 2'de tekrar deneyip kod 4'te
+       hemen kara listeliyorduk -- yani gercek archive.org 503'u bu
+       kapidan hic gecmiyordu; ilk yazilan duzeltme olcerken kirmizi
+       cikip yakalandi (bkz. test: ag_hata_dogrula.js). Simdi HER IKI
+       kodda da once bir kez tekrar deniyor.
+       DUZELTME: ilk hatada hemen kara listeleme/atlama YOK -- AYNI
+       url ~1.2 sn sonra bir KEZ tekrar denenir (archive.org'un o anki
+       yuku genelde bu surede biter). O deneme de hata verirse,
+       eskisi gibi davranilir (kara listele + atla).
+       Genel 6 sn'lik baslamaTimer (yukarida) zaten bir guvenlik agi:
+       tekrar deneme takilirsa bile parca 6 sn'de baslamamissa atla()
+       yine de calisir -- kullanici hicbir zaman sonsuza kadar bekleyip
+       kalmaz.
+       KANIT (Playwright, test/../ag_hata_dogrula.js, 17 Eylul):
+         SENARYO            | 300ms'de kara liste | 4000ms'de kara liste
+         tekrar basarili    | ESKI KOD: evet       | ESKI KOD: evet
+                             | YENI KOD: HAYIR      | YENI KOD: HAYIR
+         tekrar da basarisiz| ESKI KOD: evet       | ESKI KOD: evet
+                             | YENI KOD: HAYIR      | YENI KOD: evet
+       ESKI KOD (bu duzeltme `false &&` ile gecici kapatilip olculdu)
+       her iki senaryoda da 300ms'de kara listeliyor -- tekrar basarili
+       olacak parca bile kurtarilamadan atiliyordu. YENI KOD sadece
+       gercekten iki kez ust uste basarisiz olani (4000ms) kara
+       listeliyor, tek seferlik 503'u degil. */
+    if((kod===2 || kod===4) && aktifItem && /^(ert|ozl):/.test(aktifItem.id||'') && _url===aktifItem.mp3 && !aktifItem._agTekrar){
+      aktifItem._agTekrar = true;
+      clearTimeout(_agRetryTimer);
+      _agRetryTimer = setTimeout(()=>{
+        if(aktifItem && ses.getAttribute('src')===_url){ try{ ses.load(); ses.play().catch(()=>{}); }catch(e){ _yut(e); } }
+      }, 1200);
+      return;                     // ilk hata: kara listeleme YOK, atlama YOK -- once tekrar dene
+    }
     if(kod===2 || kod===4){                                  // 1 = ABORTED (parça değiştirildi) -> ölü SAYMA
       if(aktifItem && /^(ert|ozl):/.test(aktifItem.id||'') && ses.getAttribute('src')===aktifItem.mp3)
         earthOluIsaretle(aktifItem.mp3);
