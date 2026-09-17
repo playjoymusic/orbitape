@@ -11020,7 +11020,14 @@
      birinin degeri bu satirdan hic etkilenmez (localStorage'daki
      deger her zaman kazanir). Kullanici "isteyen kisar" dedigi icin
      ayardan asagi cekilebilir kalmali -- kilit yok. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:1, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[] };
+  /* carkSesSev VARSAYILANI MAX'A CIKTI (17 Eylul, kullanici: "cark
+     sesi max acilsin yani default max olsun o da. isteyen ayarlardan
+     kisar"). Onceki varsayilan 1 (MID) idi. CARK_SEV_AD =
+     ['LOW','MID','HIGH','MAX'], yani MAX index 3. Yukaridaki yildiz
+     duzeltmesiyle ayni desen: yalnizca YENI kullaniciyi etkiler,
+     kayitli tercihi olanin degeri asagidaki _a.carkSesSev okumasi
+     yuzunden hep kazanir -- bu satir sadece ILK acilisin varsayilanidir. */
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[] };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){

@@ -3891,11 +3891,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Kamera dondurme tusu yalniz kamera acikken gorunur',
     kamDonus.kapaliyken_gizli === true && kamDonus.acilinca_gorunur === true && kamDonus.kapaninca_gizli === true,
     JSON.stringify(kamDonus));
+  /* ── VARSAYILAN 17 Eylul'de ARKAYA DONDU ──────────────────────────
+     Kullanicinin sozu: "kamera ilk ters acilacakti selfie acilamsin
+     ilk tersi acilsin. isteyen cevirir." Asagidaki beklenen sira
+     bu yuzden ONCEKINE GORE TERS: kamera artik 'environment' ile
+     aciliyor (aynasiz), ilk dondurme 'user'e (aynali) geciyor. */
   K('Kamera dondurme tusu on/arka arasinda geciyor',
-    kamDonus.baslangicYuz === 'user' && kamDonus.donunceYuz === 'environment' && kamDonus.geriDonunceYuz === 'user',
+    kamDonus.baslangicYuz === 'environment' && kamDonus.donunceYuz === 'user' && kamDonus.geriDonunceYuz === 'environment',
     JSON.stringify(kamDonus));
   K('Arka kamerada ayna kapaniyor, on kamerada aciliyor',
-    kamDonus.baslangicAynali === true && kamDonus.donunceAynasiz === true && kamDonus.geriDonunceAynali === true,
+    kamDonus.baslangicAynali === false && kamDonus.donunceAynasiz === false && kamDonus.geriDonunceAynali === false,
     JSON.stringify(kamDonus));
   K('Donme sirasinda kamera acik ve akis canli kaliyor',
     kamDonus.donunceAcik === true && kamDonus.donunceAkisVar === true,
