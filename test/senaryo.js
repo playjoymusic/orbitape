@@ -288,8 +288,12 @@ const CASUS = ()=>{
        'ses ya da karsilama/rehber ekranda');
     await supur(pg, 'Y1 acilis');
 
-    /* Rehberi kapat -- gercek dugme (eskiden turAtla, tur kalkinca yerini aldi). */
-    await pg.evaluate(()=>{ const a=document.getElementById('rehberKapat'); if(a) a.click(); });
+    /* Rehberi kapat -- 17 Eylul'de ayri bir kapat (X) tusu kalkti
+       (kullanicinin sozu: "zaten parmagi cekince kapaniyor, carpi
+       olmasin"); gercek kullanicinin yaptigi sey rehberTus'a (?)
+       tekrar dokunmak, ama testte dogrudan rehberKapa() cagirmak
+       ayni sonucu veriyor ve dokunus koordinatlarina bagli degil. */
+    await pg.evaluate(()=>{ if(typeof window.rehberKapa === 'function') window.rehberKapa(); });
     await bek(500);
     /* Halkanin ortasina bas: uygulamanin ana kapisi. */
     const d = await pg.evaluate(()=>{ const r=document.querySelector('.disk').getBoundingClientRect();
