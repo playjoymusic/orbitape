@@ -164,10 +164,10 @@ async function sahne(b, s){
      degil. */
   const c = await b.newContext({ viewport:{width:OLCU.w, height:OLCU.h}, deviceScaleFactor:OLCU.dsf,
                                  isMobile:true, hasTouch:true });
-  /* Acilis turu ve karsilama eli fotografta olmasin (turu ISTEYEN
-     sahne kendi aciyor). */
+  /* Rehber karti ve karsilama eli fotografta olmasin. */
   await c.addInitScript(()=>{ try{
-    localStorage.setItem('orbitape.tur','1');
+    localStorage.setItem('orbitape.rehberAcilisRadio','3');
+    localStorage.setItem('orbitape.rehberAcilisOrbitape','3');
     /* FX IPUCU: efekt acilinca "These four are the effects" balonu
        cikiyor ve fotografin ortasina oturuyor. Hakki harcanmis
        sayiliyor -- bugun ve gecmis, butun raflar icin. */
@@ -222,15 +222,11 @@ async function sahne(b, s){
     }catch(e){}
   }, Object.assign({dunya: s.mood ? 'lib' : 'radio'}, s.kunye || KUNYE.arsiv));
 
-  /* OGRETICI AKISLAR SUSTURULUYOR. Depo anahtarlarini yazmak
-     yetmedi: modSec() raf secince fxSunumDene() 320 ms sonra
-     baslayan bir zamanlayici kuruyor ve fotograf tam o sirada
-     cekiliyordu -- alti arsiv karesinin ustunde de "EFFECTS / Tap
-     one, then drag inside the disc" balonu ve el vardi. Fonksiyonun
-     kendisi bosa cikariliyor. */
+  /* OGRETICI AKISLAR SUSTURULUYOR. FX ipucu balonu ("These four are
+     the effects") acilinca fotografin ortasina oturuyor -- bir raf
+     secilir secilmez zamanlayicisi kuruluyor, fotograf tam o sirada
+     cekilebiliyordu. Fonksiyonun kendisi bosa cikariliyor. */
   await p.evaluate(()=>{
-    try{ window.fxSunumDene = function(){}; }catch(e){}
-    try{ window.fxSunumBasla = function(){}; }catch(e){}
     try{ window.fxIpucuAc = function(){}; }catch(e){}
     /* KARSILAMA ELI: "ekrana dokun" eli. Bir kez kapatmak yetmiyor --
        fonksiyon kendi gozcusuyle geri aciliyor (ses susturuldugu icin
@@ -303,7 +299,6 @@ async function sahne(b, s){
   await p.evaluate(()=>{
     try{ fxIpucuKapat(true); }catch(e){}
     try{ document.getElementById('fxIpucu').classList.remove('on'); }catch(e){}
-    try{ if(!window.__turIstendi){ turBitir(); document.getElementById('tur').classList.remove('on'); } }catch(e){}
   });
   await p.waitForTimeout(s.bekle || 1100);
 
@@ -316,7 +311,7 @@ async function sahne(b, s){
 /* ── SAHNELER ────────────────────────────────────────────────────
    Sira anlatinin sirasi: once RADIOTAPE raflari (uygulamanin ilk
    acilan dunyasi), sonra FX, sonra halka menusu, sonra ORBITAPE
-   raflari, en sonda arama ve tur.                                */
+   raflari, sonra deri ve frekans kareleri.                       */
 const RAF_RADYO = [
   ['01-radyo-radiotape',   'RADIOTAPE',      'Night Signal',      'TR'],
   ['02-radyo-electronic',  'ELECTRONIC',     'Deep Techno',       'DE'],
@@ -411,12 +406,12 @@ for(const [dosya, raf, kunye] of RAF_ARSIV){
         tuslarinin, TERMS/PRIVACY yazisi da CAM tusunun uzerine
         biniyor. Fotografta gosterilecek bir hal degil; ayri bir is
         olarak duruyor.
-   Yerine acilis turu: metni bizim, ekrani bizim.               */
-SAHNELER.push({
-  dosya:'09-tur.png', mood:false, npGizle:true, bekle:900,
-  kur:()=>{ try{ window.__turIstendi = true;      // bu sahne turu ISTIYOR
-                 localStorage.removeItem('orbitape.tur'); turBitir(); turBasla(true); }catch(e){} }
-});
+   ── ESKI TUR SAHNESI DE KALKTI ─────────────────────────────────
+   '09-tur.png' adim adim ilerleyen eski tanitim turunu (SKIP ile
+   kapanan, kendiliginden akan katman) fotograflıyordu. O tur
+   kaldirildi, yerine statik #rehber karti geldi (rehberAc/rehberKapa).
+   Kartin kendi ozel bir fotografi henuz yok -- yeni bir tasarim
+   isi, bu betigin kapsaminda degil. */
 
 /* ── MAGAZAYA GIDEN SET: NEBULASIZ ─────────────────────────────
    Nebula ve gezegenler yalnizca SOUND BANKS kipinde var; kullanici
@@ -499,6 +494,86 @@ SAHNELER.push({
                   if(window.merkezUygula) merkezUygula(); }catch(e){} }
 });
 /* Yildizlar en ust kademede: ekran uzaya aciliyor (bkz. body.uzay). */
+/* ── YILDIZ ZUM: ISTASYONLARIN GOKYUZU (16 Eylul) ─────────────────
+   pj'nin istegi: "istasyonlari gosteren ortadaki halkadan cift
+   parmak buyuttugumuz" haldeki bir kare, mumkunse bir istasyonun
+   adi da acik (ismine basilmis ornek).
+   GERCEK PARMAK YOK: pinch jesti dokunmatik olmayan bir tarayicida
+   simule edilmiyor. index.html zaten test icin bir kapi biraktigi
+   icin (window.yildizZumAyar, window.yildizDurum,
+   window.yildizNoktaTest -- ucu de saglik.js testlerinin kullandigi
+   ayni kancalar) o kapidan giriliyor: gercek pinch'in URETTIGI
+   SONUC durumu (olcek buyumus) dogrudan kuruluyor.
+   AD KUTUSU: yildizSec() en yakin yildizi TIKLAMADAN buluyor, yani
+   kutuyu acmak icin gercek bir dokunus gerekiyor. Ilk istasyonun
+   (t=1) ekran konumu yildizNoktaTest ile -- KURULUMDAKI FORMULUN
+   BIREBIR AYNISI, index.html degismedi -- onceden hesaplanip tam o
+   noktaya tiklaniyor. */
+const yildizAc_ = async function(p){
+  await p.evaluate(()=>{ try{ AKTIF_AILE = null; }catch(e){} });
+  await p.evaluate(()=>{ try{ window.yildizZumAyar(3.4); }catch(e){} });
+  for(let i = 0; i < 25; i++){
+    const z = await p.evaluate(()=>{ try{ return window.yildizDurum().zum; }catch(e){ return 1; } });
+    if(z > 3.15) break;
+    await p.waitForTimeout(120);
+  }
+  await p.waitForTimeout(200);
+  const nokta = async ()=> p.evaluate(()=>{
+    try{
+      const d = document.querySelector('.disk');
+      const r = d.getBoundingClientRect();
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const taban = r.width * 0.5 * 0.9;
+      const t = 1;   // beyazListe'nin ilk istasyonu (aile filtresi yok)
+      const y = { a:(t * 2.39996) % 6.28318, r:0.05 + 0.86 * Math.sqrt((t % 89) / 89),
+        dfaz:(t * 3.71) % 6.28318, dfaz2:(t * 5.19) % 6.28318,
+        dhiz:0.00011 + ((t * 13) % 29) / 29 * 0.00017,
+        dgenR:0.10 + ((t * 17) % 23) / 23 * 0.22, dgenA:0.05 + ((t * 19) % 31) / 31 * 0.11 };
+      const olcek = window.yildizDurum().zum;
+      return window.yildizNoktaTest(y, cx, cy, taban, olcek);
+    }catch(e){ return null; }
+  });
+  let pt = await nokta();
+  if(pt) await p.mouse.click(pt.x, pt.y);
+  await p.waitForTimeout(250);
+  let sec = await p.evaluate(()=>{ try{ return window.yildizDurum().secili; }catch(e){ return null; } });
+  if(!sec){
+    /* Ic ici yanlissa (bos tiklama gokyuzunu kapatir) bir kez daha
+       dene: yeniden ac, yeniden hesapla, yeniden tikla. */
+    await p.evaluate(()=>{ try{ window.yildizZumAyar(3.4); }catch(e){} });
+    await p.waitForTimeout(500);
+    pt = await nokta();
+    if(pt) await p.mouse.click(pt.x, pt.y);
+    await p.waitForTimeout(250);
+  }
+  await p.waitForTimeout(300);
+};
+SAHNELER.push({
+  dosya:'25-yildiz-zum.png', mood:false, npGizle:true, bekle:300,
+  kunye:{ ad:'', alt:'', kaynak:'', lisans:'' },
+  veri: ISTASYONLAR,
+  /* beyazListe DOGRUDAN KURULUYOR, GERCEK radyo.json'A DOKUNULMUYOR:
+     ADRES kendi sunucumuz (127.0.0.1:8765) oldugu icin ag()'daki
+     "yerel adrese dokunma" kapisi /radyo.json isteğini de GERCEK
+     depodaki dosyaya (551 gercek istasyon) yonlendiriyor -- ilk
+     denemede ekrana gercek bir istasyonun adi ("101.4 HATAY TEMPO
+     FM") cikti, tam da bu dosyanin baştan beri kacindigi hata
+     (bkz. yukarida "ARAMA SAHNESI NEDEN YOK"). ag()'i degistirmek
+     butun sahneleri etkiler; onun yerine yalnizca bu sahnede
+     beyazListe'yi normalize edilmis SAHTE listeyle degistiriyoruz
+     -- sekil beyazListeYukle()'nin ürettigi ile birebir ayni
+     (bkz. index.html ~15895). */
+  kur:(ist)=>{
+    try{
+      beyazListe = ist.map(function(x){
+        return { stationuuid:(x.id||'').replace(/^rb:/,''), name:x.ad, url:x.mp3, url_resolved:x.mp3,
+                 tags:x.etiket||'', lastcheckup:1, lastcheckok:1, grup:x.grup||'', saf:+x.saf||3, ulke:x.ulke||'' };
+      });
+      AKTIF_AILE = null;
+    }catch(e){}
+  },
+  eylem: yildizAc_
+});
 
 /* ── ARAMA (BUYUTEC) ──────────────────────────────────────────────
    Kullanicinin istegi: buyutece basilinca cikan istasyon listesinden

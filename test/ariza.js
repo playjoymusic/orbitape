@@ -77,9 +77,9 @@ async function ac(tarayici, ses, secenek){
   });
   await p.goto(KOK + '/index.html', {waitUntil:'load'});
   await p.waitForTimeout(1800);
-  /* Tur/onizleme kapali: acikken yerlesim gecici ve olcum yalan
-     olur. (Bu ders 30 Agustos'ta ogrenildi.) */
-  await p.evaluate(()=>{ try{turBitir();}catch(e){}
+  /* Rehber/onizleme kapali: acikken yerlesim gecici ve olcum yalan
+     olur. (Bu ders 30 Agustos'ta ogrenildi, tur -> rehber olunca da gecerliligini korudu.) */
+  await p.evaluate(()=>{ try{rehberKapa();}catch(e){}
     try{ document.body.classList.remove('oniz'); }catch(e){} });
   return { p, c, yutulan };
 }
@@ -332,7 +332,7 @@ async function ekran(p){
     });
     await p.goto(KOK + '/index.html', {waitUntil:'load'});
     await p.waitForTimeout(5200);   /* nobetin 1,5 sn'sini de kapsiyor */
-    await p.evaluate(()=>{ try{turBitir();}catch(e){}
+    await p.evaluate(()=>{ try{rehberKapa();}catch(e){}
       try{ document.body.classList.remove('oniz'); }catch(e){} });
     await p.waitForTimeout(600);
 

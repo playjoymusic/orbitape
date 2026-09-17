@@ -65,7 +65,10 @@ const KUNYE = {
 async function cek(b, {w, h, dsf, dosya}){
   const c = await b.newContext({viewport:{width:w, height:h}, deviceScaleFactor:dsf,
                                 isMobile:w<600, hasTouch:w<600});
-  await c.addInitScript(()=>{ try{ localStorage.setItem('orbitape.tur','1'); }catch(e){} });
+  await c.addInitScript(()=>{ try{
+    localStorage.setItem('orbitape.rehberAcilisRadio','3');
+    localStorage.setItem('orbitape.rehberAcilisOrbitape','3');
+  }catch(e){} });
   const p = await c.newPage();
   await ag(p);
   await p.goto(ADRES);

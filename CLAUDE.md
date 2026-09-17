@@ -296,6 +296,19 @@ Bunlar zaman kaybettirdi. Bir daha kaybettirmesin.
   PythonAnywhere archive.org'a erişebiliyor — uzun hasatlar orada koşuyor.
 - **`device_bash` GitHub'dan çekebiliyor ama itemiyor.** Kimlik bilgisi yok.
 - **Sığ klon (`--depth 1`) push edemiyor.** Klonlarken `--depth` kullanma.
+- **Masaüstü halka-kenar testi CI'da tutarsız.** `saglik.js`'teki
+  "Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu" kontrolü
+  16 Eylül'de piksel-kayması hatası bulunup düzeltildikten SONRA bile
+  ara sıra dört halkanın da sapmasını `[0,0,0,0]` ölçüyor (5 denemeye
+  rağmen) — 16 Eylül'de aynı gün hem "Sağlık kontrolü" iş akışında hem
+  "Onizleme" konteynerinin içindeki "Kapi" adımında, ikisi de o anki
+  değişiklikle (rehber/guide) ilgisiz bir dalda. Kesin kök neden
+  kanıtlanmadı (Kural 4), muhtemel aday: CI çalıştırıcısı yükleniyken
+  paint/font gecikmesi 5 denemenin toplam ~1,9 saniyesine sığmıyor.
+  **Düzeltme yok — geri alınıp ölçülerek kanıtlanabilecek bir şey
+  bulununca yazılacak.** Şimdilik kırmızı çıkarsa işi yeniden çalıştır
+  (Re-run); üçüncü kez görülürse test kodunun kendisine (font/paint
+  bekleme, deneme bütçesi) el atılmalı.
 
 ---
 

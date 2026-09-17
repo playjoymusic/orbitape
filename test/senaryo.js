@@ -257,8 +257,8 @@ const CASUS = ()=>{
     await pg.goto(S); await bek(2600);
 
     const acilis = await pg.evaluate(()=>({
-      tur: !!document.getElementById('tur'),
-      turGorunur: (()=>{ const t=document.getElementById('tur');
+      rehber: !!document.getElementById('rehber'),
+      rehberGorunur: (()=>{ const t=document.getElementById('rehber');
         return !!t && getComputedStyle(t).display!=='none' && +getComputedStyle(t).opacity>0.05; })(),
       raf: AKTIF_AILE, kanal: mod,
       /* OLCU 'ilk calindi mi' DEGIL, 'ses duyuluyor mu'. Uygulama
@@ -277,19 +277,19 @@ const CASUS = ()=>{
       yolGosteriliyor: (()=>{
         const g = id=>{ const e=document.getElementById(id);
           return !!e && getComputedStyle(e).display!=='none' && +getComputedStyle(e).opacity>0.05; };
-        return document.getElementById('ses').paused===false || g('karsilama') || g('tur');
+        return document.getElementById('ses').paused===false || g('karsilama') || g('rehber');
       })()
     }));
-    K('[Y1] Ilk acilista tur cikiyor', acilis.turGorunur===true, 'gorunur');
+    K('[Y1] Ilk acilista rehber cikiyor', acilis.rehberGorunur===true, 'gorunur');
     K('[Y1] Acilis rafi RADIOTAPE', acilis.raf==='RADIOTAPE', String(acilis.raf));
     K('[Y1] Oto-oynatma yoklamasi olculu', acilis.olculu===true,
        acilis.yoklama + ' play() cagrisi (ustuste denemiyor)');
     K('[Y1] Sessiz kalirsa yol gosteriliyor', acilis.yolGosteriliyor===true,
-       'ses ya da karsilama/tur ekranda');
+       'ses ya da karsilama/rehber ekranda');
     await supur(pg, 'Y1 acilis');
 
-    /* Turu ATLA ile kapat -- gercek dugme. */
-    await pg.evaluate(()=>{ const a=document.getElementById('turAtla'); if(a) a.click(); });
+    /* Rehberi kapat -- gercek dugme (eskiden turAtla, tur kalkinca yerini aldi). */
+    await pg.evaluate(()=>{ const a=document.getElementById('rehberKapat'); if(a) a.click(); });
     await bek(500);
     /* Halkanin ortasina bas: uygulamanin ana kapisi. */
     const d = await pg.evaluate(()=>{ const r=document.querySelector('.disk').getBoundingClientRect();
@@ -316,7 +316,10 @@ const CASUS = ()=>{
      ayni seyi mi soyluyor.
      ══════════════════════════════════════════════════════════════ */
   const c2 = await b.newContext(Object.assign({}, TELEFON, {userAgent:IPHONE_UA}));
-  await c2.addInitScript(()=>{ try{ localStorage.setItem('orbitape.tur','1'); }catch(e){} });
+  await c2.addInitScript(()=>{ try{
+    localStorage.setItem('orbitape.rehberAcilisRadio','3');
+    localStorage.setItem('orbitape.rehberAcilisOrbitape','3');
+  }catch(e){} });
   const { sayfa: p2 } = await sayfaAc(c2, { ag: agKur, bekle: 2600, git:false, once: CASUS });
   p2.on('pageerror', e => jsHata.push('Y2+: ' + e.message.slice(0,90)));
   await p2.goto(S); await bek(2600);
