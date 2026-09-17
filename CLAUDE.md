@@ -296,19 +296,27 @@ Bunlar zaman kaybettirdi. Bir daha kaybettirmesin.
   PythonAnywhere archive.org'a erişebiliyor — uzun hasatlar orada koşuyor.
 - **`device_bash` GitHub'dan çekebiliyor ama itemiyor.** Kimlik bilgisi yok.
 - **Sığ klon (`--depth 1`) push edemiyor.** Klonlarken `--depth` kullanma.
-- **Masaüstü halka-kenar testi CI'da tutarsız.** `saglik.js`'teki
-  "Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu" kontrolü
-  16 Eylül'de piksel-kayması hatası bulunup düzeltildikten SONRA bile
-  ara sıra dört halkanın da sapmasını `[0,0,0,0]` ölçüyor (5 denemeye
-  rağmen) — 16 Eylül'de aynı gün hem "Sağlık kontrolü" iş akışında hem
-  "Onizleme" konteynerinin içindeki "Kapi" adımında, ikisi de o anki
-  değişiklikle (rehber/guide) ilgisiz bir dalda. Kesin kök neden
-  kanıtlanmadı (Kural 4), muhtemel aday: CI çalıştırıcısı yükleniyken
-  paint/font gecikmesi 5 denemenin toplam ~1,9 saniyesine sığmıyor.
-  **Düzeltme yok — geri alınıp ölçülerek kanıtlanabilecek bir şey
-  bulununca yazılacak.** Şimdilik kırmızı çıkarsa işi yeniden çalıştır
-  (Re-run); üçüncü kez görülürse test kodunun kendisine (font/paint
-  bekleme, deneme bütçesi) el atılmalı.
+- **Masaüstü halka-kenar testi CI'da tutarsızdı — 17 Eylül'de DÜZELTİLDİ.**
+  `saglik.js`'teki "Masaustunde (dpr=1) halka kenari kayip degil,
+  tutarli guclu" kontrolü 16 Eylül'de piksel-kayması hatası bulunup
+  düzeltildikten SONRA bile ara sıra dört halkanın da sapmasını
+  `[0,0,0,0]` ölçüyordu (5 denemeye rağmen) — 16 Eylül'de "Sağlık
+  kontrolü" ve "Onizleme"de, 17 Eylül'de de PR #36 birleştikten sonra
+  `main`'in "Yayin (testler yesilse)" iş akışında (canlı yayını
+  durdurdu). Üçüncü görülüşte kendi kuralımız gereği kod seviyesine
+  inildi (Kural 4). KANIT: yerelde kasıtlı olarak "istasyon verisi geç
+  geliyor" durumu kurulup ekran görüntüsüyle doğrulandı — uygulamanın
+  `#agyok` ("INTERNET YOK / SEARCHING FOR SIGNAL") paneli disk'in TAM
+  ÜSTÜNÜ (z-index 96 > 10) kaplıyor; test bunu hiç sormuyor, sadece
+  körlemesine "biraz daha bekle" diyordu. Panel açıkken beklemenin
+  ölçüme faydası yok — hep aynı (kaplı) yeri fotoğraflıyordu. Yerel
+  bir denemede: eski kodla yapay 6,5 sn ağ gecikmesinde 4 denemenin
+  2'si kırmızı; aynı gecikmede düzeltilmiş kodla 0/birkaç kırmızı.
+  **Düzeltme:** ekran almadan önce `#agyok`/`#hata` panelinin GERÇEKTEN
+  kapalı olduğu `waitForFunction` ile (kör sabit bekleme yerine)
+  doğrulanıyor; hâlâ kırmızı çıkarsa artık log paneli açık kalıp
+  kalmadığını doğrudan söylüyor (`panelAcikKaldi`). Üçüncü kez aynı
+  desen görülürse artık tahmin değil, gerçek bir teşhis var.
 
 ---
 
