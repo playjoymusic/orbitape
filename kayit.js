@@ -1158,6 +1158,40 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       return im;
     }catch(e){ return null; }
   }
+  /* ── FOTOGRAFTAN ONCE BEKLE SEMBOLLERI DE HAZIRLANMALI (17 Eylul,
+     ikinci tur) ─────────────────────────────────────────────────────
+     Kullanicinin sozu (ilk duzeltmeden SONRA, ekran goruntusuyle):
+     "yine semboller ilk etapta cikmiyor ... ilk foto 2. foto bak."
+     Ilk duzeltme (decode() ile _arayuzSembol/_kayArayuz -- ayarTut,
+     saatTus, rec/cam gibi TUS simgeleri) DOGRUYDU ama EKSIKTI: eksik
+     kalan simgeler ayri bir okuyucudan geliyor -- _kaySemboller() /
+     sembolResmi(), MIXTAPE'in altindaki uc "yuva" (bkz. #ust, kanal
+     adlarinin hemen alti -- pj'nin ekran goruntusunde ORBITAPE
+     yazisinin hemen altindaki uc simge, tam olarak "sag ust").
+     sembolResmi() ONLOAD'I HIC BEKLEMIYORDU: 'new Image(); im.src=...'
+     yazip ANINDA donuyordu; _kaySemboller de yalnizca 'im.complete'
+     doğruysa ciziyordu. Ilk fotografta bu yaris HER ZAMAN kaybediliyordu
+     (resim henuz cozunmemis); _semResim onbellegine GIRDIKTEN sonraki
+     her cizim (ikinci foto) kazaniyordu -- ayni kok neden
+     (_arayuzSembol ile), farkli okuyucu, gozden kacan ikinci yer.
+     COZUM AYNI DESENDE: foto cekilmeden once bu sembolleri de
+     decode() ile ONCEDEN hazirla. sembolResmi() sonucu zaten paylasilan
+     _semResim onbellegine yaziyor -- yani _kaySemboller'in senkron
+     cagirisi bir CACHE HIT alip dogrudan cizilebilir resmi bulacak. */
+  async function _bekleSembolleriHazirla(){
+    try{
+      if(!bekle || !bekleGly || !bekle.classList.contains('on')) return;
+      const gorNo = gorunum(mod);
+      const renk = KANAL_RENK[gorNo] || KANAL_RENK.lib;
+      const isler = [...bekleGly.querySelectorAll('.yuva svg')].map(sv=>{
+        const im = sembolResmi(sv, renk);
+        if(!im || (im.complete && im.naturalWidth)) return Promise.resolve();
+        if(typeof im.decode === 'function') return im.decode().catch(()=>{});
+        return new Promise(r=>{ im.onload = r; im.onerror = r; });
+      });
+      await Promise.all(isler);
+    }catch(e){ _yut(e); }
+  }
   /* ══ ARAYUZ KATMANI — YALNIZCA FOTOGRAFTA ═══════════════════════
      KAYITTA YOK, FOTOGRAFTA VAR ve bu bir karar:
      · Kayit bir KLIP. Icinde duran tuslar "ekran kaydi" damgasi gibi
@@ -3046,7 +3080,11 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   async function fotoCek(){
     fotoCakisi();
     let semboller = null;
-    try{ kayitTuvalKur(); semboller = await fotoArayuzHazirla(KAYIT_K); }catch(e){ _yut(e); }
+    try{
+      kayitTuvalKur();
+      const [h1] = await Promise.all([fotoArayuzHazirla(KAYIT_K), _bekleSembolleriHazirla()]);
+      semboller = h1;
+    }catch(e){ _yut(e); }
     if(!fotoKaresi(semboller)){
       try{ kisaNotYaz('PHOTO DID NOT WORK',
         'The screen could not be captured. Reloading usually fixes it.'); }catch(e){ _yut(e); }
