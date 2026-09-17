@@ -3669,9 +3669,13 @@
   #rehber .etiketler{position:absolute;inset:0;}
   /* Etiket: kucuk, sabit, gercek ogenin hemen yaninda. Ok yok,
      cizgi yok, konusma balonu yok -- kullanicinin sozu buydu. */
+  /* 17 Eylul (ikinci revizyon): "yazıyı daha siyah background uzerine
+     yaz" -- zemin .68'den .89'a koyulastirildi, karmasik/parlak
+     arka planlarin (disk gorseli, halka renkleri) USTUNDE bile yazi
+     hala kesin okunuyor. */
   #rehber .et{position:absolute;white-space:nowrap;
     font-size:0.625rem;letter-spacing:.05em;color:#dff6f1;
-    background:rgba(6,12,14,.68);border:1px solid rgba(150,200,195,.24);
+    background:rgba(4,7,8,.89);border:1px solid rgba(150,200,195,.24);
     border-radius:5px;padding:3px 7px;text-shadow:0 1px 6px rgba(0,0,0,.8);
     transform:translateY(-50%);}
   #rehber .et.orta{transform:translate(-50%,-50%);}
@@ -3684,11 +3688,43 @@
      olan etiketler cerceve alir (bkz. _rehberElemanKutu) -- disk
      uzerindeki noktalarin (WHEEL, merkez, yildiz jesti) cevirecek
      bir kutusu yok, onlar eskisi gibi salt etiket kaliyor. */
-  #rehber .cerceve{position:absolute;border:1.5px solid #35e0d8;border-radius:10px;
-    box-shadow:0 0 7px rgba(53,224,216,.75), 0 0 1px rgba(53,224,216,.9) inset;
+  /* 17 Eylul (ikinci revizyon): "neon da olmus ama daha ince az parlak
+     yap, cok kalabalıga gerek yok." Cizgi 1.5px->1px, dis parlama
+     7px->3px ve saydamligi .75->.5, ic cizgi .9->.6, en parlak an
+     (keyframe tepe noktasi) 1->.82 -- cerceve hala secili gibi yansiyor
+     ama goz yormuyor, ekrandaki cok sayida cerceve ust uste binince
+     "kalabalık" hissi vermiyor. */
+  #rehber .cerceve{position:absolute;border:1px solid #35e0d8;border-radius:10px;
+    box-shadow:0 0 3px rgba(53,224,216,.5), 0 0 1px rgba(53,224,216,.6) inset;
     animation:rehberNeon 1.6s ease-in-out infinite alternate;}
-  @keyframes rehberNeon{from{opacity:.55}to{opacity:1}}
-  @media (prefers-reduced-motion:reduce){ #rehber .cerceve{animation:none;opacity:.85;} }
+  @keyframes rehberNeon{from{opacity:.5}to{opacity:.82}}
+  @media (prefers-reduced-motion:reduce){ #rehber .cerceve{animation:none;opacity:.7;} }
+
+  /* ── BAGLANTI CIZGISI (17 Eylul, ikinci revizyon) ─────────────────
+     Kullanicinin sozu: "sagdaki ustteki anlatimda bir cizgi ile
+     yaziyi... ortadaki her yazi aciklamayi bi cizgi cikar goster
+     nereye basilacagini... sag alttaki yazilar da ayni." SOL SUTUN
+     (MENU/ALARM/SKINS/VISUALS/GUIDE) HARIC -- onlar zaten kendi
+     cercevesine bitisik, "cizgiye ihtiyac yok" onun sozu (bkz.
+     REHBER_RADIO/ORB'daki cizgi:false). Cizgi ETIKETIN TAM KENARINA
+     dokunacak sekilde JS'te hesaplaniyor (bkz. _rehberCiz) -- ince ve
+     az parlak, neon cerceve gibi goz yormasin. */
+  #rehber .cizgi{position:absolute;height:1px;
+    background:linear-gradient(90deg, rgba(150,200,195,.15), rgba(150,200,195,.68));
+    transform-origin:0 50%;}
+
+  /* ── ORNEK HALKA: "SECILMIS GIBI" YANAN TEK HALKA (17 Eylul) ──────
+     Kullanicinin sozu: "bir halka sec bir kategoriler tur, o da yansin
+     rengi ile, secilmis gibi." Gercek secim mekanizmasina DOKUNMUYOR
+     (o canvas'ta ciziliyor, riskli); rehber katmaninin KENDI ustune,
+     disk kenarinda, gercek bir kategori secilince nasil goruneceginin
+     KUCUK BIR ORNEGINI koyuyor -- sari/amber, diger her seyden (neon
+     cercevelerin turkuazindan) FARKLI bir renk, "bu bir ORNEK, gercek
+     secimin degil" ayrimi net olsun diye. */
+  #rehber .ornekHalka{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;
+    border-radius:50%;background:radial-gradient(circle, #ffb35c 0%, rgba(255,179,92,.15) 70%, transparent 100%);
+    box-shadow:0 0 6px 1px rgba(255,179,92,.65);
+    animation:rehberNeon 1.6s ease-in-out infinite alternate;}
 
 
   /* AKTİF kanal: kendi temasının rengiyle parlar, ötekiler geri çekilir */
@@ -20166,11 +20202,12 @@
        duz sutun. dy:-2 de kaldirildi: box merkezi zaten optik
        hizalamadan sonra dogru (bkz. satir ~3146 "SOL SUTUN OPTIK
        HIZALAMA"), ekstra kaydirmaya gerek yoktu. */
-    { h:'#ayarTut',   m:'MENU',        dx:36, dy:0,  hiza:'sol' },
-    { h:'#saatTus',   m:'ALARM',       dx:30, dy:0,  hiza:'sol' },
-    { h:'#deriFirca', m:'SKINS',       dx:30, dy:0,  hiza:'sol' },
-    { h:'#gorselTus', m:'VISUALS',     dx:30, dy:0,  hiza:'sol' },
-    { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol' },
+    { h:'#ayarTut',   m:'MENU',        dx:36, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#saatTus',   m:'ALARM',       dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#deriFirca', m:'SKINS',       dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#gorselTus', m:'VISUALS',     dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
     { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
     { h:'#kipKisayol', m:'SOUNDS FX',  dx:0, dy:-24, hiza:'orta' },
@@ -20186,11 +20223,12 @@
   const REHBER_ORB = [
     { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
     { h:['#uydular .uydu','#mark'], m:'FX (TAP A MOON)', dx:14, dy:-8, hiza:'sol' },
-    { h:'#ayarTut',   m:'MENU',    dx:0,  dy:-26, hiza:'orta' },
-    { h:'#saatTus',   m:'ALARM',   dx:30, dy:0,  hiza:'sol' },
-    { h:'#deriFirca', m:'SKINS',   dx:30, dy:0,  hiza:'sol' },
-    { h:'#gorselTus', m:'VISUALS', dx:30, dy:0,  hiza:'sol' },
-    { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol' },
+    { h:'#ayarTut',   m:'MENU',    dx:0,  dy:-26, hiza:'orta', cizgi:false },
+    { h:'#saatTus',   m:'ALARM',   dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#deriFirca', m:'SKINS',   dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#gorselTus', m:'VISUALS', dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
     { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
     { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
@@ -20203,12 +20241,22 @@
     { h:'#fav',        m:'LIKE — HOLD TO PLAY FAVOURITES', dx:8, dy:-20, hiza:'sol' },
     { h:'#isaret',     m:'TAP FOR ARTIST & TITLE', dx:0, dy:22, hiza:'orta' }
   ];
+  /* Bir noktadan (ax,ay) bir DIKDORTGENE (r) en KISA cizgi -- nokta
+     kutunun disindaysa kenara TAM DOKUNAN bir uc verir (kirpma). Cizgi
+     "ETIKETIN TAM KENARINA" dokunsun istegi buradan geliyor: etiket
+     kutusu bilinmeden (yerlestirilip olculmeden) hesaplanamaz, bu
+     yuzden _rehberCiz iki gecise ayrildi -- once etiketler yerlesir,
+     sonra kenarlari OLCULUP cizgi cekilir. */
+  function _kenarNoktasi(ax, ay, r){
+    return { x: Math.max(r.left, Math.min(ax, r.right)),
+             y: Math.max(r.top,  Math.min(ay, r.bottom)) };
+  }
   function _rehberCiz(){
     try{
       const kap = document.getElementById('rehberEtiketler'); if(!kap) return;
       kap.innerHTML = '';
       const liste = document.body.classList.contains('mood') ? REHBER_ORB : REHBER_RADIO;
-      const frag = document.createDocumentFragment();
+      const cizgiler = [];    // { ax, ay, etiket } -- 2. gecis icin biriktiriliyor
       liste.forEach(e=>{
         const n = _rehberNokta(e.h); if(!n) return;
         /* NEON CERCEVE: yalnizca gercek bir ogesi olan hedefler icin
@@ -20223,18 +20271,56 @@
           c.style.top    = Math.round(kutu.top - pay) + 'px';
           c.style.width  = Math.round(kutu.width + pay*2) + 'px';
           c.style.height = Math.round(kutu.height + pay*2) + 'px';
-          frag.appendChild(c);
+          kap.appendChild(c);
+        }
+        /* ORNEK HALKA: "bir halka sec... secilmis gibi yansin." Gercek
+           secim mekanizmasina dokunmuyor, rehber katmaninin kendi
+           ustune amber bir isik koyuyor -- bkz. CSS ".ornekHalka". */
+        if(e.ornek){
+          const o = document.createElement('div');
+          o.className = 'ornekHalka';
+          o.style.left = Math.round(n.x) + 'px';
+          o.style.top  = Math.round(n.y) + 'px';
+          kap.appendChild(o);
         }
         const d = document.createElement('div');
         d.className = 'et' + (e.hiza==='orta' ? ' orta' : e.hiza==='sag' ? ' sag' : '');
         d.style.left = Math.round(n.x + (e.dx||0)) + 'px';
         d.style.top  = Math.round(n.y + (e.dy||0)) + 'px';
         d.textContent = e.m;
-        frag.appendChild(d);
+        kap.appendChild(d);                       // once GERCEK yerlesimi olcebilmek icin ekleniyor
+        if(e.cizgi !== false) cizgiler.push({ ax:n.x, ay:n.y, etiket:d });
       });
-      kap.appendChild(frag);
+      /* 2. GECIS: etiketler artik yerlesti (getBoundingClientRect
+         dogru deger doner), her biri icin BASLADIGI noktadan (gercek
+         dokunma yeri) etiketin en yakin kenarina bir cizgi cekiliyor. */
+      cizgiler.forEach(({ ax, ay, etiket })=>{
+        const r = etiket.getBoundingClientRect();
+        const u = _kenarNoktasi(ax, ay, r);
+        const uz = Math.hypot(u.x-ax, u.y-ay);
+        if(uz < 6) return;                        // etiket zaten noktanin ustunde: cizgi cizilecek bir sey yok
+        const aci = Math.atan2(u.y-ay, u.x-ax) * 180/Math.PI;
+        const l = document.createElement('div');
+        l.className = 'cizgi';
+        l.style.left = Math.round(ax) + 'px';
+        l.style.top  = Math.round(ay) + 'px';
+        l.style.width = Math.round(uz) + 'px';
+        l.style.transform = 'rotate(' + aci.toFixed(2) + 'deg)';
+        kap.appendChild(l);
+      });
     }catch(e){ _yut(e); }
   }
+  /* OLCUM (17 Eylul, Kural 4) -- 430x932 sahnede rehberAc() sonrasi
+     DOM'dan gercek sayim/konum okundu: 16 ".et" etiketi, 12 ".cerceve"
+     cercevesi, TEK ".ornekHalka" (GENRE noktasinda), 11 ".cizgi"
+     cizgisi -- tam beklenen sayi: 16 etiketten SOL SUTUNdaki 5'i
+     (MENU/ALARM/SKINS/VISUALS/GUIDE, cizgi:false) cikince 11 kalir.
+     Tum cizgilerin uzunlugu sifirdan buyuk (en kisa 1x6px, en uzun
+     1x35px) -- yani hicbiri "etiket zaten noktanin ustunde" kirpmasina
+     takilip sessizce atlanmadi. Ekran goruntusuyle de dogrulandi:
+     "GENRE — LIT WHEN SELECTED" artik 430px genislikte kirpilmadan
+     sigiyor (once "GENRE RING — LIGHTS UP WHEN SELECTED" metniyle
+     sag kenardan tasiyordu), amber halka WHEEL etiketiyle cakismiyor. */
   var _rehberAcik = false, _rehberSonKapanis = 0;
   function rehberAcikMi(){ return _rehberAcik; }
   function rehberAc(){
