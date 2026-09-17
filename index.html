@@ -1345,9 +1345,9 @@
   /* Arama kutusunun ICI kanalin rengini alabilir (acikken orasi
      kendi dunyasi) ama KAPALI buyutec markanin yesili -- yukarida
      ayrica yaziliyor. */
-  body.t-lib   #ara, body.t-lib   #karsilama{color:#8ff0dd;}
-  body.t-liste #ara, body.t-liste #karsilama{color:#d9d0dd;}
-  body.t-radio #ara, body.t-radio #karsilama{color:#ffc79e;}
+  body.t-lib   #ara, body.t-lib   #karsilama, body.t-lib   #ipucuEl{color:#8ff0dd;}
+  body.t-liste #ara, body.t-liste #karsilama, body.t-liste #ipucuEl{color:#d9d0dd;}
+  body.t-radio #ara, body.t-radio #karsilama, body.t-radio #ipucuEl{color:#ffc79e;}
 
   /* ── KARŞILAMA: bir kereye mahsus, ortada dokunan el ──────────────
      Tarayıcı sesi kendiliğinden başlatmaya izin vermiyor. İlk açılışta
@@ -1385,6 +1385,29 @@
   }
   @media (prefers-reduced-motion:reduce){
     #karsilama .el,#karsilama .dalga{animation-duration:4.8s;}
+  }
+  /* ── IPUCU ELI: KULLANILMAYAN ANA EYLEMLER (17 Eylul) ─────────────
+     Karsilama ile AYNI GORSEL DIL (ayni el SVG'si, ayni dalga
+     animasyonu, ayni renk kurali yukarida) -- kullaniciya "el = buraya
+     dokun" dili yalnizca BIR kez ogretiliyor, sonra her yerde ayni
+     anlama geliyor. Farki: merkezde sabit durmuyor; position:fixed
+     left/top JS'den (ipucuGoster) geliyor ve transform ile o noktaya
+     ortalaniyor. Boyu kucuk -- tum ekrani degil, tek bir dugmeyi
+     isaret ediyor. Bkz. "KARSILAMA ELI" ve "IPUCU ELI" script blogu. */
+  #ipucuEl{position:fixed;z-index:150;display:none;pointer-events:none;
+    opacity:0;transition:opacity .45s ease;transform:translate(-50%,-50%);}
+  #ipucuEl.on{display:block;opacity:1;}
+  #ipucuEl.gidiyor{opacity:0;}
+  #ipucuEl .isaret{position:relative;width:96px;height:96px;}
+  #ipucuEl .dalga{position:absolute;left:50%;top:50%;width:42px;height:42px;margin:-21px 0 0 -21px;
+    border-radius:50%;border:1.3px solid currentColor;opacity:0;
+    animation:kDalga 2.4s cubic-bezier(.2,.7,.3,1) infinite;}
+  #ipucuEl .dalga.d2{animation-delay:.24s;}
+  #ipucuEl .el{position:absolute;left:50%;top:50%;width:30px;height:auto;
+    margin:-8px 0 0 -8px;color:currentColor;
+    animation:kEl 2.4s cubic-bezier(.4,0,.2,1) infinite;}
+  @media (prefers-reduced-motion:reduce){
+    #ipucuEl .el,#ipucuEl .dalga{animation-duration:4.8s;}
   }
   /* --ug: en uzun kanal adının genişliği, çalışma anında ölçülüyor (araCizgiOlcu).
      Hem kapalı çizgi hem açık arama kutusu bu genişlikte -> soldan taşmıyor. */
@@ -4035,6 +4058,20 @@
 
 
   <div id="karsilama" aria-hidden="true">
+    <div class="isaret">
+      <span class="dalga"></span><span class="dalga d2"></span>
+      <svg class="el" viewBox="0 0 44 58" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16.5 31V10.5a3.6 3.6 0 1 1 7.2 0V28"/>
+        <path d="M23.7 22.5a3.3 3.3 0 1 1 6.6 0V30"/>
+        <path d="M30.3 25.5a3.3 3.3 0 1 1 6.6 0V38c0 8.8-5.6 14.6-13.4 14.6h-2.4c-4.1 0-6.9-1.9-8.7-5.4L6.6 36.4a3.5 3.5 0 0 1 5.8-3.9l4.1 5.3"/>
+      </svg>
+    </div>
+  </div>
+  <!-- ── IPUCU ELI: KULLANILMAYAN ANA EYLEMLER (17 Eylul) ─────────────
+       Karsilama'nin AYNI el SVG'si -- CSS'te aciklandigi gibi JS ile
+       hedef dugmenin (rehberTus ya da disk) yanina tasiniyor. -->
+  <div id="ipucuEl" aria-hidden="true">
     <div class="isaret">
       <span class="dalga"></span><span class="dalga d2"></span>
       <svg class="el" viewBox="0 0 44 58" fill="none" stroke="currentColor" stroke-width="2"
@@ -7521,6 +7558,12 @@
     _moodGez = true;                       // kip açıldı: bırakış artık "tık" değil
     _moodVurgu = (o >= zarSinir()) ? _halkaNo(o) : -1;
     try{ modAdiTut(_moodVurgu >= 0 ? halkaAdlar()[_moodVurgu] : ''); }catch(_){ _yut(_); }
+    /* CARK KULLANILDI: bir daha "carka basmadin" ipucu cikmasin.
+       Bkz. "IPUCU ELI" -- _ipucuCarkGoruldu ondan once tanimli degilse
+       (script henuz o satira gelmediyse) sessizce yutuluyor, cunku bu
+       fonksiyon ancak kullanici parmagini disk uzerinde gezdirince
+       calisir -- o ana kadar butun script zaten bir kere calismis olur. */
+    try{ _ipucuCarkGoruldu = true; if(typeof ipucuKapat === 'function') ipucuKapat(); }catch(_){ _yut(_); }
   }
   /* İlk ses başlayana kadar false: o süre boyunca disk bölünmez,
      her basış radyoyu açar. sonraki() ve cal() true yapıyor. */
@@ -19908,6 +19951,97 @@
       if(_karsAcik) karsilamaKapat();
     }, {capture:true, passive:true}));
 
+  /* ── IPUCU ELI: KULLANILMAYAN ANA EYLEMLER (17 Eylul) ─────────────
+     Kullanicinin sozu: "bi sure sonra basmazsa bi el ? ikonunu
+     gopsterecek. çarka bi sure basmazsa bi el çarkı gosterecek ...
+     bi kac hatirlatma olsun kullanmadigi ana seyler olursa."
+     Iki hedef: rehberTus (?) ve disk (cark/kategori gezinme). Ikisi de
+     bu OTURUMDA hic kullanilmadiysa, bir sure hareketsizlik sonra el
+     karsilama ile AYNI GORSEL DILDE ama o dugmenin yanina TASINARAK
+     gosteriliyor. Bir hedef kullanilinca (bkz. rehberAc, moodGeziAc)
+     bir daha O HEDEF icin asla cikmiyor. Hicbir sey localStorage'a
+     YAZILMIYOR -- karsilama gibi her acilista sifirdan baslar,
+     dolayisiyla privacy.html'e eklenecek yeni bir anahtar da yok.
+
+     OLCUM (17 Eylul, Playwright, gercek zamanlayicilarla, hicbir esik
+     kisaltilmadan): diske BIR kere dokunup (karsilama kapanir) 23.5sn
+     hareketsiz kalindiginda el REHBERTUS'un yanina cikti (ekran
+     goruntusu). window.rehberAc()/rehberKapa() (dugmenin kendi
+     cagirdigi fonksiyonlar) cagrildiginda el hemen kapandi. Bir
+     IPUCU_TEKRAR_ESIK (50sn) daha sonra el bu kez DISKTE cikti --
+     rehber kullanildigi icin siradaki hedef cark'a gecmisti (ekran
+     goruntusu). Diskte GERCEK bir surukleme jesti (mouse down + 24px
+     esigi asan hareket + up) uygulanip iki hedef de kullanilinca, bir
+     50sn daha beklenince ARTIK hic el cikmadi (ikisi de goruldu,
+     zamanlayici kendini durdurdu). Konsolda hata sifir. */
+  const ipucuEl = $('ipucuEl');
+  const IPUCU_ILK_ESIK = 22000;      // acilistan/son hareketten sonra ilk hatirlatmaya kadar
+  const IPUCU_TEKRAR_ESIK = 50000;   // hatirlatmalar arasi (gosterilen HER ipucundan sonra)
+  const IPUCU_TAVAN = 3;             // bir hedef en fazla bu kadar hatirlatilir
+  var _ipucuRehberGoruldu = false, _ipucuCarkGoruldu = false;
+  var _ipucuRehberSayac = 0, _ipucuCarkSayac = 0;
+  var _ipucuAcik = false, _ipucuZamanlayici = null, _ipucuSiradaki = 'rehber';
+  var _ipucuSonrakiZaman = Date.now() + IPUCU_ILK_ESIK;
+  function ipucuEngelliMi(){
+    /* Baska bir gorsel ipucu ya da panel zaten ekrandaysa el cikmaz --
+       ust uste binen iki isaret kafa karistirir, tek ipucu dili yeter. */
+    try{
+      if(_karsAcik || (typeof _rehberAcik !== 'undefined' && _rehberAcik)) return true;
+      if(document.body.classList.contains('gorsel-acik')) return true;  // tam ekran gorsel
+      if(document.body.classList.contains('ulke-acik')) return true;    // ulke listesi acik
+      if(document.body.classList.contains('ayar-acik')) return true;    // ayarlar acik
+      const ag = document.getElementById('agyok');
+      if(ag && ag.classList.contains('on')) return true;                // ag yok paneli acik
+    }catch(e){ _yut(e); }
+    return false;
+  }
+  function ipucuKapat(){
+    if(!_ipucuAcik || !ipucuEl) return;
+    _ipucuAcik = false;
+    ipucuEl.classList.add('gidiyor');
+    setTimeout(()=>{ ipucuEl.classList.remove('on','gidiyor'); }, 480);
+  }
+  function ipucuGoster(hedef){
+    if(!ipucuEl || ipucuEngelliMi()) return;
+    const h = document.getElementById(hedef === 'rehber' ? 'rehberTus' : 'tp');
+    if(!h) return;
+    const r = h.getBoundingClientRect();
+    if(!r.width && !r.height) return;      // eleman gizliyse (ör. klavye kipinde rehberTus) hedef alinamaz
+    /* rehber: dugmenin hemen SOLUNA (metni oraya dogru okunur), cark:
+       diskin UST-ORTASINA (parmagin gezdigi halka bandina yakin). */
+    let cx, cy;
+    if(hedef === 'rehber'){ cx = r.left - 6; cy = r.top + r.height/2; }
+    else{ cx = r.left + r.width/2; cy = r.top + r.height*0.32; }
+    ipucuEl.style.left = cx + 'px';
+    ipucuEl.style.top  = cy + 'px';
+    ipucuEl.classList.remove('gidiyor');
+    ipucuEl.classList.add('on');
+    _ipucuAcik = true;
+    if(hedef === 'rehber') _ipucuRehberSayac++; else _ipucuCarkSayac++;
+    _ipucuSonrakiZaman = Date.now() + IPUCU_TEKRAR_ESIK;
+    setTimeout(ipucuKapat, 3200);          // kalici degil, kendiliginden kapanir
+  }
+  function ipucuDenetle(){
+    if(_ipucuAcik || ipucuEngelliMi()) return;
+    const adaylar = [];
+    if(!_ipucuRehberGoruldu && _ipucuRehberSayac < IPUCU_TAVAN) adaylar.push('rehber');
+    if(!_ipucuCarkGoruldu  && _ipucuCarkSayac  < IPUCU_TAVAN) adaylar.push('cark');
+    if(!adaylar.length){ if(_ipucuZamanlayici){ clearInterval(_ipucuZamanlayici); _ipucuZamanlayici = null; } return; }
+    const hedef = adaylar.includes(_ipucuSiradaki) ? _ipucuSiradaki : adaylar[0];
+    _ipucuSiradaki = (hedef === 'rehber') ? 'cark' : 'rehber';   // ikisi de acikken donusumlu
+    ipucuGoster(hedef);
+  }
+  function ipucuHareketGordu(){ _ipucuSonrakiZaman = Date.now() + IPUCU_ILK_ESIK; }
+  ['pointerdown','touchstart','keydown'].forEach(t=>
+    document.addEventListener(t, ipucuHareketGordu, {capture:true, passive:true}));
+  function ipucuZamanlayiciKur(){
+    if(!ipucuEl) return;
+    if(_ipucuZamanlayici) clearInterval(_ipucuZamanlayici);
+    _ipucuZamanlayici = setInterval(()=>{
+      if(Date.now() >= _ipucuSonrakiZaman) ipucuDenetle();
+    }, 1000);
+  }
+
   /* ── BOS YERE BASMAK SECIMI IPTAL EDER ───────────────────────────
      Sag ustteki isim dugmesiyle raflar arasinda geziliyor ama secim
      ANINDA calmiyor: calan ses bitene kadar eski raf devam ediyor.
@@ -20116,6 +20250,8 @@
       const rt = document.getElementById('rehberTus');
       if(rt) rt.setAttribute('aria-pressed','true');
       if(_karsAcik) karsilamaKapat();
+      /* REHBER KULLANILDI: bir daha "?" ipucu eli cikmasin. Bkz. "IPUCU ELI". */
+      try{ _ipucuRehberGoruldu = true; if(typeof ipucuKapat === 'function') ipucuKapat(); }catch(_){ _yut(_); }
     }catch(e){ _yut(e); }
   }
   function rehberKapa(){
@@ -20401,6 +20537,7 @@
        en çok gerekiyor. Artık sayfa açılır açılmaz 2 saniyelik saat
        başlıyor, karar tek ölçüte bakıyor: kulağa ses geliyor mu. */
     karsilamaKur();
+    ipucuZamanlayiciKur();
     let ilk=null;
     moodYaz();                                   // açılış kanalı: hatırlanan kanal
     /* İLK PARÇA hatırlanan kanaldan geliyor. Radyo değilse dizine hiç

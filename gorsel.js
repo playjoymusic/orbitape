@@ -115,11 +115,17 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
       + "body.gorsel-acik #deriGaleri,body.gorsel-acik #modDalga,"
       + "body.gorsel-acik #ayar,body.gorsel-acik #saatPanel,body.gorsel-acik #istListe,"
       + "body.gorsel-acik #geriBil,body.gorsel-acik #rapor,body.gorsel-acik #uydular,"
-      + "body.gorsel-acik #araclar,body.gorsel-acik #mark,body.gorsel-acik #tp"
+      + "body.gorsel-acik #araclar,body.gorsel-acik #mark,body.gorsel-acik #tp,"
+      + "body.gorsel-acik #ipucuEl"
       + "{display:none !important}",
     /* 17 Eylul: rehberTus (?) bu listeye SONRADAN eklendi -- kendisi
        16 Eylul'de dogdu, bu liste 7 Eylul'den kalmaydi, aradan kacmis.
-       Kullanicinin sozu: "visual modunda soru isareti ikonu gorunuyor." */
+       Kullanicinin sozu: "visual modunda soru isareti ikonu gorunuyor."
+       ipucuEl (el ipucusu) da AYNI GUN eklendi, ayni sebeple listede:
+       #tp gorsel acikken zaten .disk ile gizleniyor ama ipucuEl ayri
+       bir eleman (position:fixed, .disk'in disinda), o yuzden kendisi
+       de acikca yazilmali -- yoksa disk gizliyken elin isaret ettigi
+       hedef kaybolur ama el havada asili kalir. */
     /* KATMAN: butun dokunuslari yutuyor. Serit onun USTUNDE
        (z-index 97 > 96), yani tek calisan sey gorsel menusu. */
     "#gorselKat{position:fixed;inset:0;z-index:96;display:none;background:transparent;"
