@@ -332,7 +332,7 @@ işaretlendi — "bunu yapmış mıydık" sorusu bir daha çıkmasın diye.
 | Kayıt tamponuna tavan | **[x]** 400 MB / 15 dakika (`kayit.js`: `KAYIT_TAVAN_BAYT`, `KAYIT_TAVAN_MS`) |
 | Ölü bağlantı örneklemesi | **[x]** "Radyo bağlantı kontrolü" iş akışı, ayda bir + elle |
 | Veri deposuna CI | **[ ]** `tracks` deposunda hâlâ kontrol yok. Radyo listesi artık tek kaynakta (kod deposu) olduğu için risk küçüldü ama arşiv havuzu orada duruyor |
-| Boş `catch`'lere sessiz sayaç | **[ ]** 625 yutulan hata var. Gerçek risk: bir arıza sessizce yutulup kimse görmüyor |
+| Boş `catch`'lere sessiz sayaç | **[x]** 15 Eylül'de eklendi: `_yut()` her yakaladığını sayıyor (index.html + kayit.js, ~950 çağrı), `ADVANCED` altında `DIAGNOSTICS` satırı bu sayacı gösteriyor (sıfırsa satır da yok). Göndermek ayrı bir adım: `SEND DIAGNOSTICS` anahtarı — varsayılan KAPALI — açılırsa yalnızca sürüm, kaba platform ve hata imzaları gidiyor (kimlik/istasyon/şarkı/konum yok, bkz. `olcu.js` başı ve `/privacy`) |
 
 **Mağaza tarafında kalanlar** ayrı dosyada: `magaza/KALANLAR.md`.
 11 Eylül: 12 testçi kuralı hâlâ açık tek engel (panoda 4 opt-in),
