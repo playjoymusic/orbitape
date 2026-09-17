@@ -86,13 +86,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ancak boyle calisiyor. */
   const c = await b.newContext(Object.assign({}, TELEFON, {
     permissions:['camera'], userAgent:IPHONE_UA }));
-  /* REHBER KARTI testlerin ustune binmesin: acilis sayaci tavana
-     kadar cikmis gibi davranan bayrak. Kart kendi bolumunde ayrica
-     sinaniyor. */
-  await c.addInitScript(()=>{ try{
-    localStorage.setItem('orbitape.rehberAcilisRadio','3');
-    localStorage.setItem('orbitape.rehberAcilisOrbitape','3');
-  }catch(e){} });
+  /* REHBER KARTI testlerin ustune binmiyor: 17 Eylul'den beri rehber
+     kendiliginden hic acilmiyor (yalniz basili tutunca), eski acilis-
+     sayaci mekanizmasi kalkti. Kart kendi bolumunde ayrica sinaniyor. */
   const { sayfa: pg } = await sayfaAc(c, {
     bekle: 2500,
     once: ()=>{ window.__gum=0;

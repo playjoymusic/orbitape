@@ -41,6 +41,15 @@ try{ window.ULKE_BASLADI = true; }catch(e){}
     "#ulkeListe{--ul-vurgu:#35e0d8;--ul-yazi:#dfe4e8;--ul-zem:rgba(8,10,12,.94);position:fixed;z-index:97;right:calc(var(--kx) + env(safe-area-inset-right,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px));width:min(84vw,300px);max-height:50vh;display:flex;flex-direction:column;background:var(--ul-zem);color:var(--ul-yazi);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:.06em;font-size:0.75rem;overflow:hidden}",
     "body.deri #ulkeListe{--ul-vurgu:var(--d-marka,var(--d-yazi));--ul-yazi:var(--d-yazi);--ul-zem:var(--d-panel,var(--d-zem))}",
     "#ulkeListe[hidden]{display:none !important}",
+    /* 17 Eylul: Kullanicinin sozu: "ulke bayragina basip listeyi
+       gezerken arkada halkaya degiyor. Listeler acikken arka tarafa
+       basamamaliyiz." Bu panel actx bir body sinifi eklemiyordu --
+       ayar/deriGaleri gibi digerlerinin hepsi '.hit' (diskin dokunma
+       katmani) kapatan bir sinif ekliyor (bkz. index.html: body.ayar-
+       acik .hit{pointer-events:none}), yalniz bu panel eklemiyordu,
+       o yuzden panel acikken diskin kendisi hala dokunus aliyordu.
+       Ayni desen burada da: body.ulke-acik .hit'i kapatiyoruz. */
+    "body.ulke-acik .hit{pointer-events:none !important}",
     ".ul-bas{display:flex;align-items:baseline;gap:10px;padding:12px 16px 8px;color:var(--ul-vurgu)}",
     ".ul-ad{font-size:0.8125rem;letter-spacing:.2em;font-weight:700}",
     ".ul-say{font-size:0.6875rem;opacity:.55;color:var(--ul-yazi)}",
@@ -155,6 +164,7 @@ try{ window.ULKE_BASLADI = true; }catch(e){}
       if(!k) return;                 // bayrak bos: gosterecek ulke yok
       _kod = k;
       kap.hidden = false;
+      try{ document.body.classList.add('ulke-acik'); }catch(e){ yut(e); }
       yerlestir();
       doldur();
     }catch(e){ yut(e); }
@@ -163,6 +173,7 @@ try{ window.ULKE_BASLADI = true; }catch(e){}
     try{
       if(!kap || kap.hidden) return;
       kap.hidden = true;
+      try{ document.body.classList.remove('ulke-acik'); }catch(e){ yut(e); }
     }catch(e){ yut(e); }
   }
   function acikMi(){ return !!kap && !kap.hidden; }

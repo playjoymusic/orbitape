@@ -280,7 +280,10 @@ const CASUS = ()=>{
         return document.getElementById('ses').paused===false || g('karsilama') || g('rehber');
       })()
     }));
-    K('[Y1] Ilk acilista rehber cikiyor', acilis.rehberGorunur===true, 'gorunur');
+    /* 17 Eylul: rehber artik ilk acilista KENDILIGINDEN CIKMIYOR.
+       Kullanicinin sozu: "ilk acilista olmayacak dedik, sadece ortaya
+       basma olacak" -- yalniz (?) tusuna basili tutulunca aciliyor. */
+    K('[Y1] Ilk acilista rehber KENDILIGINDEN cikmiyor', acilis.rehberGorunur===false, 'gizli');
     K('[Y1] Acilis rafi RADIOTAPE', acilis.raf==='RADIOTAPE', String(acilis.raf));
     K('[Y1] Oto-oynatma yoklamasi olculu', acilis.olculu===true,
        acilis.yoklama + ' play() cagrisi (ustuste denemiyor)');
@@ -288,13 +291,6 @@ const CASUS = ()=>{
        'ses ya da karsilama/rehber ekranda');
     await supur(pg, 'Y1 acilis');
 
-    /* Rehberi kapat -- 17 Eylul'de ayri bir kapat (X) tusu kalkti
-       (kullanicinin sozu: "zaten parmagi cekince kapaniyor, carpi
-       olmasin"); gercek kullanicinin yaptigi sey rehberTus'a (?)
-       tekrar dokunmak, ama testte dogrudan rehberKapa() cagirmak
-       ayni sonucu veriyor ve dokunus koordinatlarina bagli degil. */
-    await pg.evaluate(()=>{ if(typeof window.rehberKapa === 'function') window.rehberKapa(); });
-    await bek(500);
     /* Halkanin ortasina bas: uygulamanin ana kapisi. */
     const d = await pg.evaluate(()=>{ const r=document.querySelector('.disk').getBoundingClientRect();
       return {x:Math.round(r.left+r.width/2), y:Math.round(r.top+r.height/2)}; });
@@ -320,10 +316,6 @@ const CASUS = ()=>{
      ayni seyi mi soyluyor.
      ══════════════════════════════════════════════════════════════ */
   const c2 = await b.newContext(Object.assign({}, TELEFON, {userAgent:IPHONE_UA}));
-  await c2.addInitScript(()=>{ try{
-    localStorage.setItem('orbitape.rehberAcilisRadio','3');
-    localStorage.setItem('orbitape.rehberAcilisOrbitape','3');
-  }catch(e){} });
   const { sayfa: p2 } = await sayfaAc(c2, { ag: agKur, bekle: 2600, git:false, once: CASUS });
   p2.on('pageerror', e => jsHata.push('Y2+: ' + e.message.slice(0,90)));
   await p2.goto(S); await bek(2600);

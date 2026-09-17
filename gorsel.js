@@ -110,13 +110,16 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
        durumu da temizleniyor. Buradaki liste ikinci emniyet -- bir
        panel kapanmayi kacirirsa yine de ekranda gorunmuyor. */
     "body.gorsel-acik #ayarTut,body.gorsel-acik #saatTus,body.gorsel-acik #deriFirca,"
-      + "body.gorsel-acik #gorselTus,body.gorsel-acik #kipKisayol,body.gorsel-acik #solUst,"
+      + "body.gorsel-acik #gorselTus,body.gorsel-acik #rehberTus,body.gorsel-acik #kipKisayol,body.gorsel-acik #solUst,"
       + "body.gorsel-acik #ara,body.gorsel-acik #araCizgi,body.gorsel-acik #bekle,"
       + "body.gorsel-acik #deriGaleri,body.gorsel-acik #modDalga,"
       + "body.gorsel-acik #ayar,body.gorsel-acik #saatPanel,body.gorsel-acik #istListe,"
       + "body.gorsel-acik #geriBil,body.gorsel-acik #rapor,body.gorsel-acik #uydular,"
       + "body.gorsel-acik #araclar,body.gorsel-acik #mark,body.gorsel-acik #tp"
       + "{display:none !important}",
+    /* 17 Eylul: rehberTus (?) bu listeye SONRADAN eklendi -- kendisi
+       16 Eylul'de dogdu, bu liste 7 Eylul'den kalmaydi, aradan kacmis.
+       Kullanicinin sozu: "visual modunda soru isareti ikonu gorunuyor." */
     /* KATMAN: butun dokunuslari yutuyor. Serit onun USTUNDE
        (z-index 97 > 96), yani tek calisan sey gorsel menusu. */
     "#gorselKat{position:fixed;inset:0;z-index:96;display:none;background:transparent;"
