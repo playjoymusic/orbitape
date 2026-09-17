@@ -3143,14 +3143,28 @@
   .deri-izgara button.kapa::after{display:none;}
   .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
-  /* SAAT TUSU: mantik ve panel saat.js'te (istek uzerine). */
+  /* ── SOL SUTUN OPTIK HIZALAMA (17 Eylul) ─────────────────────────
+     Kullanicinin sozu: "yamuk yamuk, hicbisey hizali degil -- hepsi
+     sola yaslanacak, grafiksel standart." Kutu kenarlari zaten ayni
+     (hepsi ayni --kx'ten basliyor, olculdu: getBoundingClientRect
+     hepsinde left=12px). Yamukluk kutudan degil CIZIMDEN geliyor:
+     ayarTut'un uc cubugu dikdortgen, kutunun sol kenarina TAM biniyor;
+     firca/saat/gorsel/rehber ise 24'luk viewBox icinde yuvarlak
+     seкillеr (daire, dalga) ve cizimin kendisi sol kenardan 2-3px
+     iceride basliyor (yerel test sayfasinda olculdu, bkz.
+     align_test.html: firca 2.75px, saat 2.25px, gorsel 1.75px,
+     rehber 2.25px -- ortalama 2.25px). Duzeltme: SVG'yi kendi
+     kutusu icinde o kadar sola kaydir (margin-left negatif). Tek
+     ortak deger kullanildi (4 simgenin farki 1px'in altinda, ayri
+     ayri sayı MIRA gibi durur). Sonuc olculdu: 5 simgenin cizilen
+     sol kenari artik 1px'in altinda fark ile ayni hizada. */
   #deriFirca{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;bottom:calc(206px + var(--dip-pay));
     width:44px;height:32px;display:flex;align-items:center;
     color:#35e0d8;opacity:.72;cursor:pointer;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #deriFirca svg{width:26px;height:26px;}
+  #deriFirca svg{width:26px;height:26px;margin-left:-2.25px;}
   #deriFirca:hover,#deriFirca:focus-visible,body.galeri-acik #deriFirca{opacity:1;}
   body.klavye #deriFirca{opacity:0;pointer-events:none;}
   body.deri #deriFirca{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
@@ -3160,7 +3174,7 @@
     width:44px;height:32px;display:flex;align-items:center;
     color:#35e0d8;opacity:.72;cursor:pointer;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #saatTus svg{width:26px;height:26px;}
+  #saatTus svg{width:26px;height:26px;margin-left:-2.25px;}
   #saatTus:hover,#saatTus:focus-visible,body.saat-acik #saatTus,#saatTus.kurulu{opacity:1;}
   #saatTus.caliyor{animation:saatCal .9s ease-in-out infinite alternate;}
   @keyframes saatCal{from{opacity:.4}to{opacity:1}}
@@ -3179,7 +3193,7 @@
     width:44px;height:32px;display:flex;align-items:center;
     color:#35e0d8;opacity:.72;cursor:pointer;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #gorselTus svg{width:26px;height:26px;}
+  #gorselTus svg{width:26px;height:26px;margin-left:-2.25px;}
   #gorselTus:hover,#gorselTus:focus-visible,#gorselTus[aria-pressed="true"]{opacity:1;}
   body.klavye #gorselTus{opacity:0;pointer-events:none;}
   body.deri #gorselTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
@@ -3187,14 +3201,17 @@
      VISUALS'in hemen altina/yaninda: kullanicinin sozu "visualın
      altında bi ikon koy." Yigindaki yeri diger uc simge gibi JS'te
      (bkz. _tutamakYerlestir) -- buradaki bottom yalnizca ilk kare
-     icin yedek. Ayni cizim dili: 24'luk viewBox, 1.7 stroke. */
+     icin yedek. Ayni cizim dili: 24'luk viewBox, 1.7 stroke.
+     17 Eylul: kullanicinin sozu "soru işareyi ikonunu küçült" --
+     26 -> 22px. Optik hizalama duzeltmesi (yukarida #deriFirca
+     yorumu) kucuk boyutta yeniden olculdu: -1.9px. */
   #rehberTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;bottom:calc(74px + var(--dip-pay));
     width:44px;height:32px;display:flex;align-items:center;
     color:#35e0d8;opacity:.72;cursor:pointer;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #rehberTus svg{width:26px;height:26px;}
+  #rehberTus svg{width:22px;height:22px;margin-left:-1.9px;}
   #rehberTus:hover,#rehberTus:focus-visible,#rehberTus[aria-pressed="true"]{opacity:1;}
   body.klavye #rehberTus{opacity:0;pointer-events:none;}
   body.deri #rehberTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
@@ -4072,11 +4089,13 @@
        ekrani da buydu, kullanicinin referansi da o. -->
   <div id="gorselTus" role="button" tabindex="0" aria-label="Visuals"
        aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 12h2.6l2-5.6 3 11.4 2.6-8.2 1.9 4.6 1.5-2.2h5.2"/></svg></div>
-  <!-- ── REHBER TUSU (16 Eylul) ──────────────────────────────────
+  <!-- ── REHBER TUSU (16 Eylul, 17 Eylul basili-tut) ────────────────
        Eski adim adim turun yerine: gercek ekranin ustune, gercek
-       ogelerin yanina kucuk etiketler koyan sabit bir kart. Basinca
-       acilir, tekrar basinca kapanir (bkz. rehberAcKapa). Ilk 3
-       acilista kendiliginden de cikiyor. -->
+       ogelerin yanina kucuk etiketler koyan sabit bir kart. BASILI
+       TUTULDUGU surece gorunur, birakinca kapanir (bkz. rehberAc/
+       rehberKapa cagrilari, script sonu) -- klavyede Space/Enter hala
+       acik/kapali anahtar gibi calisiyor. Ilk 3 acilista kendiliginden
+       de cikiyor (rehberIlkAcilis), o zaman da kapat (X) ile kapanir. -->
   <div id="rehberTus" role="button" tabindex="0" aria-label="Guide"
        aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.4 9.1a2.6 2.6 0 1 1 3.9 2.3c-1 .55-1.3 1.1-1.3 2.15"/><circle cx="12" cy="16.9" r=".9" fill="currentColor" stroke="none"/></svg></div>
   <!-- ── KIP KISAYOLU ────────────────────────────────────────────
@@ -4869,7 +4888,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.16';
+  var ORB_SURUM = '2026.09.17';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -20052,7 +20071,20 @@
   }
   try{
     const rt = document.getElementById('rehberTus');
-    if(rt){ rt.addEventListener('click', e=>{ e.stopPropagation(); rehberAcKapa(); });
+    /* ── 17 EYLUL: TIKLA-AC/KAPA YERINE BASILI TUT ─────────────────
+       Kullanicinin sozu: "sadece soru isaretine basili tutarsak
+       ciksin, elimizi cekince zaten yok." Eskiden tusa basmak
+       rehberi ACIK BIRAKIYORDU (tekrar basmak gerekiyordu) -- simdi
+       parmak/imlec tusun UZERINDEYKEN gorunuyor, cekilince hemen
+       kapaniyor (rehberKapa'nin kendi 400ms soluklasmasi ayni kaliyor,
+       kapat (X) tusuyla ayni his). Klavye ayri: basili tutma klavyede
+       dogal degil, o yuzden Space/Enter hala ESKI ACIK/KAPALI anahtar
+       gibi calisiyor (bkz. keydown asagida) -- erisilebilirlik icin. */
+    if(rt){ rt.addEventListener('pointerdown', e=>{ e.stopPropagation(); rehberAc(); });
+            rt.addEventListener('pointerup', e=>{ e.stopPropagation(); rehberKapa(); });
+            rt.addEventListener('pointercancel', ()=>{ rehberKapa(); });
+            rt.addEventListener('pointerleave', ()=>{ if(_rehberAcik) rehberKapa(); });
+            rt.addEventListener('contextmenu', e=>{ e.preventDefault(); });
             rt.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); rehberAcKapa(); } }); }
     const rk = document.getElementById('rehberKapat');
     if(rk){ rk.addEventListener('click', e=>{ e.stopPropagation(); rehberKapa(); }); }
