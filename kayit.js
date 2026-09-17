@@ -155,14 +155,22 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
      'var' hoisted olduğu için önce undefined görünüyor, guard çalışıyor. */
   var kamAkis = null, kamAcik = false;
 
-  /* ── ON / ARKA KAMERA (16 Eylul) ───────────────────────────────────
-     Kullanicinin sozu: "kamera acildiktan sonra isteyen kamerayi
-     dondursun diye ... arka m-kamera on kamera yan istedigim."
-     Varsayilan ON (facingMode 'user') -- eskisi gibi, davranis
-     degismedi. _kamYon donus tusuyla degisiyor (bkz. kamDondur):
-     kamera ACIKSA akis hemen o yuzle yeniden kuruluyor, KAPALIYSA
-     yalnizca TERCIH degisiyor ve bir sonraki acilista uygulaniyor. */
-  var _kamYon = 'user', _kamDonuyor = false;
+  /* ── ON / ARKA KAMERA (16 Eylul, varsayilan 17 Eylul'de degisti) ────
+     Kullanicinin sozu (16 Eylul): "kamera acildiktan sonra isteyen
+     kamerayi dondursun diye ... arka m-kamera on kamera yan
+     istedigim." O gun varsayilan ON (facingMode 'user') olarak
+     birakilmisti -- eski davranis korunsun diye.
+     Kullanicinin sozu (17 Eylul): "kamera ilk ters acilacakti selfie
+     acilamsin ilk tersi acilsin. isteyen cevirir." Yani varsayilan
+     simdi ARKA (facingMode 'environment'); isteyen camDon tusuyla
+     one cevirir. facingMode DUZ BIR METIN olarak verildigi icin
+     (exact degil) spesifikasyona gore IDEAL sayilir: arka kamerasi
+     olmayan bir cihazda (masaustu webcam gibi) istek reddedilmez,
+     tarayici eldeki en yakin kamerayi acar.
+     _kamYon donus tusuyla degisiyor (bkz. kamDondur): kamera ACIKSA
+     akis hemen o yuzle yeniden kuruluyor, KAPALIYSA yalnizca TERCIH
+     degisiyor ve bir sonraki acilista uygulaniyor. */
+  var _kamYon = 'environment', _kamDonuyor = false;
 
   /* ── KAMERA AÇILIRKEN MÜZİK KESİLMESİN ────────────────────────────
      iOS'ta getUserMedia çağrısı ses oturumunu (AVAudioSession) yeniden
@@ -1216,6 +1224,27 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   /* SVG -> Image. Yuklenmesi asenkron oldugu icin sozle donuyor;
      fotograf akisi zaten "once cek, sonra paylas" oldugu icin
      beklemek serbest (paylasim ayri bir dokunusta aciliyor). */
+  /* ── ILK FOTOGRAFTA BAZI SIMGELER EKSIK CIKIYORDU (17 Eylul) ──────
+     Kullanicinin sozu: "ilk photo cekince sag ustteki sembol vs
+     bişeyleri almıyor bir daha photoya basınca herşeyi alıyor."
+     KOK NEDEN: 'onload' bir <img>'in BAYTLARININ indigini soyler,
+     WebKit'te (Safari/iOS -- uygulamanin asil hedefi) canvas'a
+     ANINDA cizilebilecegini degil. SVG data: URI'lerinde WebKit
+     resmi kendi is parcaciginda (off-main-thread) cozumluyor; onload
+     bazen bu cozumleme bitmeden ates alabiliyor. Sonuc: fotografta
+     o simge BOS (seffaf) cikiyor -- tam da asagidaki eski notun
+     ("hazir degilse o sembol atlaniyor") anlattigi durum. Onbellege
+     GIRDIKTEN sonraki her cizim (ikinci fotograf) calisiyor cunku o
+     noktada WebKit cozumlemeyi coktan bitirmis oluyor.
+     Bu container Chromium'da calisiyor ve Chromium'un cozumleme
+     hattinda bu yaris yok, yani burada KIRMIZI bir olcum
+     uretilemedi -- WebKit bu depoda yerel kurulamiyor (bkz.
+     test/ortak.js, motorSec notu), yalnizca CI'da caliisyor.
+     COZUM 'onload' YERINE 'decode()': HTMLImageElement.decode()
+     tam olarak bunun icin var -- MDN: cozunmemis bir resmi cizmenin
+     yol actigi "decoding tax"i onlemek icin. Donen soz resim
+     GERCEKTEN cizilebilir olmadan cozulmuyor; eski tarayicilarda
+     (decode yoksa) davranis degismesin diye onload'a dusuluyor. */
   function _arayuzSembol(sv, K){
     return new Promise(coz => {
       try{
@@ -1236,9 +1265,14 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
         const varOlan = _arayuzSemOnbellek.get(anahtar);
         if(varOlan && varOlan.complete && varOlan.naturalWidth) return coz(varOlan);
         const im = new Image();
-        im.onload = ()=>{ _arayuzSemOnbellek.set(anahtar, im); coz(im); };
+        const hazir = ()=>{ _arayuzSemOnbellek.set(anahtar, im); coz(im); };
         im.onerror = ()=> coz(null);
         im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(kod);
+        if(typeof im.decode === 'function'){
+          im.decode().then(hazir).catch(()=>{ if(im.complete && im.naturalWidth) hazir(); else coz(null); });
+        } else {
+          im.onload = hazir;                 // eski tarayici: decode() yok
+        }
       }catch(e){ _yut(e); coz(null); }
     });
   }
