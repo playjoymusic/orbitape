@@ -332,7 +332,20 @@ işaretlendi — "bunu yapmış mıydık" sorusu bir daha çıkmasın diye.
 | Kayıt tamponuna tavan | **[x]** 400 MB / 15 dakika (`kayit.js`: `KAYIT_TAVAN_BAYT`, `KAYIT_TAVAN_MS`) |
 | Ölü bağlantı örneklemesi | **[x]** "Radyo bağlantı kontrolü" iş akışı, ayda bir + elle |
 | Veri deposuna CI | **[ ]** `tracks` deposunda hâlâ kontrol yok. Radyo listesi artık tek kaynakta (kod deposu) olduğu için risk küçüldü ama arşiv havuzu orada duruyor |
-| Boş `catch`'lere sessiz sayaç | **[ ]** 625 yutulan hata var. Gerçek risk: bir arıza sessizce yutulup kimse görmüyor |
+| Boş `catch`'lere sessiz sayaç | **[x]** 15 Eylül'de eklendi: `_yut()` her yakaladığını sayıyor (index.html + kayit.js, ~950 çağrı), `ADVANCED` altında `DIAGNOSTICS` satırı bu sayacı gösteriyor (sıfırsa satır da yok). Göndermek ayrı bir adım: `SEND DIAGNOSTICS` anahtarı — varsayılan KAPALI — açılırsa yalnızca sürüm, kaba platform ve hata imzaları gidiyor (kimlik/istasyon/şarkı/konum yok, bkz. `olcu.js` başı ve `/privacy`) |
+
+**17 Eylül'de eklendi, henüz başlanmadı** (açık iş -- arşiv agır hata
+düzeltmesi `main`'e inip yeşil onaylanana kadar Kural 6 gereği sıraya
+alındı):
+
+| İş | Onun sözü |
+|---|---|
+| **[x]** Genel rehber (tüm ekranı saran uzun basılı-tutma rehberi) KENDİLİĞİNDEN asla açılmayacak -- 17 Eylül'de "REHBER: KAYBOLDUGUNU HISSEDINCE" bloğu (zemine 6sn'de 4 kez dokununca `rehberAc()` çağıran mekanizma) tamamen kaldırıldı. Tek tek elle gösterilen ipuçları (IPUCU ELI, PR #42) ayrı ve kaldı | *"rehberi kendin hicbir zaman acma. yani genel olanı. tekl tek elle ghostermeler kalsın."* + *"zaten acılısta yok ya artık. guade."* |
+| **[x]** Rehberin etiket metinleri artık 6 dilin hepsinde (`dil/*.json`) gösteriliyor -- `_rehberCiz()` içinde `d.textContent = Y(e.m)`. REC/CAM bilerek çevrilmedi (ekrandaki düğmenin kendisi zaten harfi harfine öyle yazıyor). Çeviriler 3 kez kontrol edildi, ekran taşması ölçülüp (Almanca'da en kötü 512px/430px) kısaltılarak düzeltildi | *"rehber turkce ve 5 dil olabilir. kisi hangi dili kullaniyorsa. sadece extra rehberi de ekle."* |
+| **[ ]** (17 Eylül'de fark edildi, KÜÇÜK, ayrı iş) "PINCH: OPEN SKY..." rehber etiketi sol kenardan hafif taşıyor (İngilizce'de bile -25px) -- rehber i18n işiyle İLGİSİZ, önceden vardı. Düzeltilecekse ayrı konuşulacak | ölçüm: `test/../rehber_dil_dogrula.js` |
+| **[ ]** Fotoğraf/ekran görüntüsü hatası: ilk çekimde sağ üstteki sembol vb. öğeler görüntüye girmiyor, ikinci basışta hepsi giriyor -- kök nedeni bulunacak | *"ilk photo çekince sağ üstteki sembol vs bişeyleri almıyor bir daha photoya basınca herşeyi alıyor."* |
+| **[ ]** Kamera ilk açılışta arka (ters) kamerayla açılsın, ön (selfie) kamerayla değil -- kullanıcı isterse kendi çevirir | *"kamera ilk ters açılacaktı selfie açılmasın ilk tersi açılsın. isteyen çevirir."* |
+| **[ ]** Çark sesi varsayılan olarak maksimumda açılsın -- isteyen ayarlardan kısar | *"çark sesi max açılsın yani default max olsun o da. isteyen ayarlardan kısar."* |
 
 **Mağaza tarafında kalanlar** ayrı dosyada: `magaza/KALANLAR.md`.
 11 Eylül: 12 testçi kuralı hâlâ açık tek engel (panoda 4 opt-in),
@@ -346,3 +359,27 @@ bilerek verilmiş bir taviz, kapatılacak bir eksik değil).
 
 **Konuşulan ama karara bağlanmayan:** uygulamayı ikiye bölme fikri —
 radyo ayrı, ses+FX ayrı. Karar verilmeden mimariye dokunma.
+
+**17 Eylül -- "sound postcard" / sosyal paylaşım fikri (büyük, kapsamı
+netleşmedi, koda başlanmadı):** Onun sözü: *"Şu anda 'ben şu anda
+dünyanın neresinden ne dinliyorum' deneyimi bireysel. Ama bunu 'Ben
+Tokyo'da bir gece radyosuna denk geldim' şeklinde paylaşabilseydin çok
+güçlü olurdu. Orbit → Tokyo → 01:43 → Jazz → 37 dakika gibi paylaşılabilir
+'sound postcard'lar. Bence bu ürünün büyüme motoru olabilir."*
+
+Küçük buglardan (fotoğraf, kamera, çark sesi) ayrı tutuldu çünkü boyutu
+farklı -- bu bir özellik/mimari kararı, tek satırlık bir düzeltme değil.
+Netleşmesi gereken sorular (koda başlamadan pj ile konuşulacak):
+- **Gizlilik çelişkisi:** "Telemetri / hata toplayıcı ekleme" başlığı
+  altında zaten YAPILMAYACAKLAR'da: *"Gizlilik metni 'hiçbir şey
+  toplanmıyor' diyor ve kod bunu tutuyor... Bu bozulmayacak."* Bir
+  "şu an ne dinliyorum, nerede" paylaşımı sunucuya HİÇBİR ŞEY
+  göndermeden, tamamen cihazda (ör. paylaşılabilir bir görsel/kart
+  üretip yerel paylaşım sayfasına (`navigator.share`) vererek) mı
+  yapılacak? Öyleyse gizlilik sözü bozulmaz.
+- Konum ("Tokyo") radyonun kendi meta verisinden mi geliyor yoksa
+  kullanıcının GERÇEK konumundan mı -- ikisi çok farklı şey.
+  Radyonun ülke/şehir etiketiyse sorun yok, cihaz konumuysa yeni bir
+  izin ve yeni bir gizlilik satırı demek.
+  Değiştirmek gerekiyorsa önce pj'ye sorulur (Kural 5) -- şimdilik
+  yalnızca bu dosyada duruyor.
