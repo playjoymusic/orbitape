@@ -20336,7 +20336,30 @@
         d.className = 'et' + (e.hiza==='orta' ? ' orta' : e.hiza==='sag' ? ' sag' : '');
         d.style.left = Math.round(n.x + (e.dx||0)) + 'px';
         d.style.top  = Math.round(n.y + (e.dy||0)) + 'px';
-        d.textContent = e.m;
+        /* 17 Eylul: rehber artik secili dilde -- Y() 'dil/*.json'daki
+           sozlukten okuyor, karsiligi yoksa (ya da dil Ingilizceyse)
+           metin oldugu gibi (Ingilizce) kalir. _rehberCiz() rehber HER
+           ACILISTA yeniden cagirildigi icin (bkz. rehberAc) ayrica bir
+           "dil degisti, yeniden ciz" olayina gerek yok -- bir sonraki
+           acilista guncel dil zaten kullanilir.
+           Onun sozu: "rehber turkce ve 5 dil olabilir. kisi hangi dili
+           kullaniyorsa. sadece extra rehberi de ekle." 6 dilin hepsine
+           (dil/*.json) yeni anahtarlar eklendi; REC ve CAM BILEREK
+           cevrilmedi -- ekrandaki dugmenin kendisi zaten harfi harfine
+           "REC"/"CAM" yaziyor, farkli bir kelime rehberi dugmeyle
+           celisir.
+           OLCUM (Kural 4, Playwright, test/../rehber_dil_dogrula.js,
+           430x932, 6 locale): her dilde rehber acilip 16 etiketin
+           GERCEK ekran konumu (getBoundingClientRect) okundu. Ilk
+           turda GUIDE ve GENRE etiketleri TR/DE/ES/FR/IT'nin
+           bazilarinda ekran disina tastigi (kirpildigi) olculdu --
+           en kotusu Almanca'da sag kenar 512px (ekran 430px). Ceviri
+           metinleri kisaltilip AYNI olcum tekrarlandi: artik hicbir
+           dilde bu iki etiket tasmiyor. (PINCH etiketinin sol kenarda
+           az miktarda tasmasi ONCEDEN VARDI -- Ingilizce'de de ayni
+           olcumde -25px cikiyor, bu degisiklikle ilgisiz, ayrica not
+           edildi.) */
+        d.textContent = Y(e.m);
         kap.appendChild(d);                       // once GERCEK yerlesimi olcebilmek icin ekleniyor
         if(e.cizgi !== false) cizgiler.push({ ax:n.x, ay:n.y, etiket:d });
       });
@@ -20567,66 +20590,28 @@
   }
   try{ window.pencereAcikMi = pencereAcikMi; window.merkezDokunus = merkezDokunus;
        window.kisayolDokunus = kisayolDokunus; }catch(e){ _yut(e); }
-  /* ══ REHBER: KAYBOLDUGUNU HISSEDINCE ══════════════════════════════
-     Kullanicinin istegi: "biri tutorialslari kapamazsa, ara ara
-     kullanamadigi seyler ya da caresiz kayboldu gibi bazen olabilir.
-     ya da skinse girdi degistirdi ama skinden dolayi kaybolmus gibi.
-     bi sure sonra skini elle gosterebilirsin. ara ara rehber gibi
-     bisey olsun ama abartma."
-
-     NEYI OLCUYORUZ: "kayboldum" hissi dogrudan olculemez, ama BOSA
-     GIDEN DOKUNUS olculur -- hicbir seye denk gelmeyen, yani zemine
-     inen dokunuslar. Biri ne arayacagini bilmedigi zaman ekrana
-     rastgele dokunuyor. Dort dokunus alti saniyede: bu bir kaza
-     degil, bir arayis.
-
-     ABARTMAMANIN IKI KURALI, olculebilir:
-       1. OTURUMDA BIR KEZ. Ikinci kez cikan yardim yardim degil
-          rahatsizliktir.
-       2. SESSIZ ANLARDA DEGIL. Kart zaten acikken, bir pencere acikse
-          ya da kart yeni kapandiysa cikmiyor.
-
-     NEYI YAPIYOR: eskiden tek bir el tek bir yeri gosteren kucuk bir
-     tur baslatiyordu (SKINS ya da SETTINGS'e gore); simdi rehber
-     karti dogrudan aciliyor -- kart zaten butun ekrani etiketliyor,
-     ayri bir hedef secmeye gerek kalmadi. */
-  var _bosDokunus = [], _rehberVerildi = false;
-  const REHBER_ESIK = 4, REHBER_PENCERE = 6000, REHBER_BEKLEME = 30000;
-  function rehberOlurMu(){
-    try{
-      if(_rehberVerildi || _rehberAcik) return false;
-      if(Date.now() - (_rehberSonKapanis || 0) < REHBER_BEKLEME) return false;
-      /* Acik bir pencere varsa kullanici kaybolmus degil, bakiyor. */
-      if(document.body.classList.contains('ayar-acik')) return false;
-      if(window.deriGaleriAcik && window.deriGaleriAcik()) return false;
-      if(window.saatAcik && window.saatAcik()) return false;
-      if(window.gorselAcikMi && window.gorselAcikMi()) return false;
-      return true;
-    }catch(e){ return false; }
-  }
-  function rehberVer(){
-    try{
-      if(!rehberOlurMu()) return;
-      _rehberVerildi = true;
-      rehberAc();
-    }catch(err){ _yut(err); }
-  }
-  /* Zemine inen dokunus: hedefi govde ya da tuvallerden biri. Bir
-     tusa, panele ya da diske denk gelen dokunus BOSA GITMEMISTIR. */
-  try{
-    window.addEventListener('pointerdown', (ev)=>{
-      try{
-        const t = ev.target;
-        if(!(t instanceof Element)) return;
-        if(t.closest('button,[role="button"],[role="switch"],[role="option"],input,a,#ayar,#rehber,#ara,#fav,#deriGaleri,#saatPanel,.disk,#viz,#carkTuval')) return;
-        const s2 = Date.now();
-        _bosDokunus = _bosDokunus.filter(x => s2 - x < REHBER_PENCERE);
-        _bosDokunus.push(s2);
-        if(_bosDokunus.length >= REHBER_ESIK){ _bosDokunus = []; rehberVer(); }
-      }catch(e){ _yut(e); }
-    }, {capture:true, passive:true});
-  }catch(e){ _yut(e); }
-  try{ window['rehberVer'] = rehberVer; }catch(e){ _yut(e); }
+  /* ══ REHBER OTOMATIK ACILMASI KALDIRILDI (17 Eylul) ═════════════════
+     Eskiden burada "REHBER: KAYBOLDUGUNU HISSEDINCE" vardi: zemine
+     (bos yere) 6sn icinde 4 kez dokununca uygulama GENEL rehberi
+     (rehberAc()) kendiliginden aciyordu -- "kayboldum" hissi boyle
+     tahmin ediliyordu.
+     Onun sozu: "rehberi kendin hicbir zaman acma. yani genel olanı.
+     tekl tek elle ghostermeler kalsın." Yani GENEL rehber artik HICBIR
+     KOSULDA kendiliginden acilmiyor -- yalnizca kullanici '?' dugmesine
+     kendi basarsa aciliyor (bkz. rehberTus pointerdown -> rehberAc()).
+     TEK TEK EL IPUCU (asagida "IPUCU ELI") bundan AYRI ve KALIYOR:
+     o rehberi ACMIYOR, yalnizca kullanilmamis bir dugmenin/carkin
+     yanina kucuk bir el ikonu gosteriyor -- pj'nin "tek tek elle
+     gostermeler kalsın" dedigi tam olarak bu.
+     KANIT (Kural 4, Playwright, test/../rehber_otomatik_kapat.js):
+     gercekten bos bir noktaya (elementFromPoint ile dogrulanmis,
+     hicbir dugme/diske denk gelmeyen bir nokta) 6 kez ~200ms arayla
+     dokunulan sahnede:
+       ESKI KOD  -> rehberAcik:true  (rehber kendiliginden acildi)
+       YENI KOD  -> rehberAcik:false, window.rehberVer:'undefined'
+     Duzeltme "false &&" yerine dogrudan blogun kendisi gecici geri
+     eklenip ayni olcum tekrar kosturuldu, sonra kaldirildi -- eski
+     kod olcumde kirmizi verdi, yeni kod vermedi. */
 
   /* İlk-3-açılış çağrısı kalkti (17 Eylul, bkz. yukarida rehberAcKapa
      sonrasi yorum) -- rehber artik boot'ta kendiliginden acilmiyor. */
