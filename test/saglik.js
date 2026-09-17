@@ -13413,10 +13413,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          sabit bekleme CI'nin yuklu bir aninda BOYAMA/compositor'un
          isini bitirmesine yetmiyor. Sabit bekleme yerine TEKRAR DENE:
          olcum esigin altinda kalirsa ekrani yeniden al, her denemede
-         biraz daha uzun bekle. Tavan 5 deneme / toplam ~3600ms ek
-         bekleme -- normal calismada ilk denemede geciyor (deneme
-         sayisi rapora yaziliyor), yalniz CI'nin yavas anini tolere
-         ediyor. */
+         biraz daha uzun bekle. Tavan 5 deneme; normal calismada ilk
+         denemede geciyor (deneme sayisi rapora yaziliyor), yalniz
+         CI'nin yavas anini tolere ediyor.
+         17 EYLUL GUNCELLEMESI: ayni desen (dort halka da TAM SIFIR,
+         5 denemede de) UCUNCU kez gorulunce ("bilinen tuzaklar"daki
+         kendi kuralimiz geregi) kod seviyesinde el atildi. KANIT: bu
+         SIFIR deseni "boyama gec kaldi" ile degil, disk uzerini KAPLAYAN
+         bir panelle (#agyok "INTERNET YOK" ya da #hata) ACIKLANIYOR --
+         yerelde kasitli olarak agin gec cevap verdigi bir durum kurulup
+         ekran goruntusuyle dogrulandi (bkz. asagidaki panelKapaliMi).
+         O yuzden asagida ekran almadan once panelin GERCEKTEN kapali
+         olmasini (bloklamadan, polling ile, esik buyudukce daha uzun)
+         bekliyoruz -- kor bir sabit bekleme yerine gercek bir kosula
+         bakiyoruz, ayni 15 Eylul'deki ilkeyle. */
       {
         const masaustuHalka = await (async ()=>{
           let bg = null;
@@ -13429,6 +13439,37 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
               const no = DERILER.findIndex(d => d && d.ad === 'SWISS') + 1;
               AYAR.deri = no; AYAR.halka = false; deriUygula(); await bek(400);
             });
+            /* ── DISKI KAPATAN PANEL VAR MI (17 Eylul) ──────────────────
+               KANIT (yerelde CPU/ag hic yavas degilken, kasitli "istasyon
+               verisi henuz yok" durumu kurulup ekran goruntusuyle
+               dogrulandi): #agyok ("INTERNET YOK/SEARCHING FOR SIGNAL")
+               ya da #hata paneli acikken bu olcum HER ZAMAN dort halkada
+               da TAM SIFIR veriyor -- CI'daki [0,0,0,0] deseniyle birebir
+               ayni. Ikisi de z-index (96/98) ile diskin (z-index:10) TAM
+               USTUNU kapliyor; disk kendisi hala orada ve boyutu dogru
+               olcülüyor, sadece resmi kaplayan duz renkli bir panel var.
+               Eski kod bunu hic sormuyordu, sadece "biraz daha bekle"
+               diyordu -- panel kapanmadan o beklemenin olcume hicbir
+               faydasi yok, hep ayni (kapali) yeri fotograflamis oluyordu.
+               Simdi ekran almadan once GERCEKTEN kapali mi diye soruyoruz;
+               kapaliysa hemen devam, degilse kapanana ya da sure dolana
+               kadar (bloklamadan, polling ile) bekliyoruz. Bu, 15 Eylul'de
+               yazilan "sabit bekleme yerine gercege bak" ilkesinin ayni
+               olcume bir kez daha uygulanmasi. */
+            const panelKapaliMi = () => sayfa.evaluate(()=>{
+              const acik = id => { const el = document.getElementById(id); return !!(el && el.classList.contains('on')); };
+              return !acik('agyok') && !acik('hata');
+            });
+            const panelKapanmasiniBekle = async (ms) => {
+              try{
+                await sayfa.waitForFunction(()=>{
+                  const acik = id => { const el = document.getElementById(id); return !!(el && el.classList.contains('on')); };
+                  return !acik('agyok') && !acik('hata');
+                }, { timeout: ms });
+                return true;
+              }catch(e){ return false; } // zaman asimi -- panel hala acik, olcum yine de yapilip gercek durum raporlanacak
+            };
+            await panelKapanmasiniBekle(5000);
             const el = await sayfa.$('.disk');
             const kutu = el ? await el.boundingBox() : null;
             if(!kutu) return { hata: '.disk bulunamadi' };
@@ -13507,9 +13548,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             while(sonuc.min < 120 && deneme < 5){
               deneme++;
               await sayfa.waitForTimeout(300 * deneme);
+              await panelKapanmasiniBekle(1000 * deneme);
               sonuc = await birOlcum();
             }
             sonuc.deneme = deneme;
+            /* Basarisizsa TESHIS icin: panel hala acik mi? 4. bir olayda
+               "hala ayni sey mi" diye tahmin etmek yerine log dogrudan
+               soylesin. */
+            if(sonuc.min < 120) sonuc.panelAcikKaldi = !(await panelKapaliMi());
             return sonuc;
           }catch(e){ return { hata: String(e && e.message || e) }; }
           finally { try{ if(bg) await bg.context().close(); }catch(e){} }
@@ -13517,7 +13563,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         K('Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu',
            typeof masaustuHalka.min === 'number' && masaustuHalka.min >= 120,
            masaustuHalka.hata || ('dort halkanin sapmasi: ' + JSON.stringify(masaustuHalka.enZayif) + ' (esik 120)'
-             + (masaustuHalka.deneme > 1 ? (', ' + masaustuHalka.deneme + '. denemede') : '')));
+             + (masaustuHalka.deneme > 1 ? (', ' + masaustuHalka.deneme + '. denemede') : '')
+             + (masaustuHalka.panelAcikKaldi ? ' -- INTERNET YOK/hata paneli disk uzerinde acik kaldi' : '')));
       }
       /* ── SKINS: ACAN TUS KAPATAN TUS ────────────────────────────
          Kullanicinin sozu: "HIDE'a basinca skins penceresi
