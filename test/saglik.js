@@ -2102,6 +2102,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           da atilsaydi semboller donerken de hep ayni cikardi ve
           oyun hissi biterdi. */
   {
+    /* Bu blok eski soyut ALIEN oyununu (ucluk, kil payi, gerilim)
+       olcuyor -- MOOD MODUYLA (varsayilan ACIK, bkz. moodAktifMi)
+       ilgisi yok, o AYRI bir bolumde (asagida) test ediliyor.
+       AYAR.sembolSpin burada gecici olarak ACILIYOR: acilmazsa 18
+       Eylul'de eklenen mood-modu kilidi yuzunden bekleDondur() hicbir
+       sey yapmadan doner (dogru davranis) ve bu eski olcumler hep
+       yanlislikla FALSE cikar -- moodAktifMi() varsayilan olarak
+       (mod==='radio' ve sembolSpin kapali) burada zaten TRUE'dur. */
+    const _eskiSembolSpin = await pg.evaluate(()=>{ const e = AYAR.sembolSpin; AYAR.sembolSpin = true; return e; });
     const sn = await pg.evaluate(async ()=>{
       const bek = ms => new Promise(r=>setTimeout(r,ms));
       if(typeof UCLUK_SANS !== 'number') return { yok:true };
@@ -2187,6 +2196,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Kil payinda gerilim ve sonme calisiyor', !oy.yok
       && oy.gor.gerilim > 0 && oy.gor.sondu > 0,
       oy.yok ? '-' : ('gerilim ' + oy.gor.gerilim + ' kez, sonme ' + oy.gor.sondu + ' kez'));
+    await pg.evaluate((e)=>{ AYAR.sembolSpin = e; }, _eskiSembolSpin);
+  }
+
+  /* ══ MOOD SEMBOLLERI: TEK DOKUNUS SONSUZ CALIŞMALI, DİĞER İKİ SEMBOL
+     HAREKET ETMEMELİ (18 Eylul, canliya ciktiktan SONRA gelen bildirim) ══
+     pj'nin sozu: "spin kapaliyken semnolelre tek tek basilamoyor. bir
+     kere oluyor galiba bir daha hgic olmuyor. spin gibi o da sonsuz
+     olmali. ve tek hangi sembole bastiysak sadece rengi degissin. baska
+     sembol hareket etmesin."
+     KOK NEDEN: cal() her yeni parcada bekleGoster()'i (yukleme
+     baslarken) ve bekleDondur()'u (ses baslayinca) MOOD MODUNU hic
+     sormadan cagiriyordu. Ikisi de UC yuvayi da rastgele yeniden
+     yaziyordu:
+       (1) dokunulmayan iki sembol de "hareket ediyormus" gibi
+           goruluyordu (bekleGoster'in ilk tazelemesi + bekleDondur'un
+           _turSonucu oturmasi),
+       (2) dataset.sem "M" onekini kaybedip moodSembolSec() (mood.js)
+           "M" kontrolunden gecemedigi icin ayni sembole bir DAHA
+           dokununca hicbir sey olmuyordu.
+     DUZELTME: moodAktifMi() true VE uc yuva da zaten "M" onekiyle
+     kilitliyse (moodYuvalarKilitliMi) ne bekleGoster ne bekleDondur
+     yuvalara dokunuyor -- yalnizca dokunulan yuvayi moodVurgula()
+     (mood.js) renklendiriyor.
+     KANIT (Kural 4): uc yuvaya elle "M" kilidi konup bekleGoster() ve
+     ardindan bekleDondur() cagirildi -- duzeltme VARKEN dataset.sem
+     BIREBIR AYNI kaldi. Duzeltme GERI ALINIP (moodAktifMi kontrolleri
+     kaldirilip) ayni olcum tekrar kosturuldugunda dataset.sem'in HER
+     IKI cagridan sonra da degistigi gozlemlendi -- yani bu kontrol
+     gercekten dusuyor, kanit budur. */
+  {
+    const mn = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      if(typeof moodAktifMi !== 'function' || typeof bekleGoster !== 'function'
+         || typeof bekleDondur !== 'function') return { yok:true };
+      const eskiSpin = AYAR.sembolSpin, eskiMod = mod;
+      try{ bekleDondur(); }catch(e){}                    // varsa donen zamanlayiciyi durdur
+      AYAR.sembolSpin = false; mod = 'radio';             // mood modu aktif
+      const y = [...document.querySelectorAll('#bekleGly .yuva')];
+      if(y.length !== 3){ AYAR.sembolSpin = eskiSpin; mod = eskiMod; return { yok:true }; }
+      const onceki = ['M0','M1','M2'];                    // "kilitli" mood durumu
+      y.forEach((el,i)=>{ el.dataset.sem = onceki[i]; });
+      bekleGoster();
+      await bek(700);                                     // ilk tazeleme gecikmesi (i*130+220) gecsin
+      const sonGoster = y.map(el=>el.dataset.sem);
+      bekleDondur();
+      await bek(1900);                                    // en gec oturma (2*175+520+360) gecsin
+      const sonDondur = y.map(el=>el.dataset.sem);
+      AYAR.sembolSpin = eskiSpin; mod = eskiMod;
+      try{ bekleDondur(); }catch(e){}
+      return { yok:false, onceki, sonGoster, sonDondur };
+    });
+    K('Mood modunda bekleGoster kilitli sembolleri degistirmiyor', !mn.yok
+      && JSON.stringify(mn.sonGoster) === JSON.stringify(mn.onceki),
+      mn.yok ? 'test kosulamadi (fonksiyon/yuva eksik)'
+             : ('once ' + JSON.stringify(mn.onceki) + ', bekleGoster sonrasi ' + JSON.stringify(mn.sonGoster)));
+    K('Mood modunda bekleDondur kilitli sembolleri degistirmiyor', !mn.yok
+      && JSON.stringify(mn.sonDondur) === JSON.stringify(mn.onceki),
+      mn.yok ? '-' : ('once ' + JSON.stringify(mn.onceki) + ', bekleDondur sonrasi ' + JSON.stringify(mn.sonDondur)));
   }
 
   /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────
