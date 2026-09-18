@@ -2199,61 +2199,85 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     await pg.evaluate((e)=>{ AYAR.sembolSpin = e; }, _eskiSembolSpin);
   }
 
-  /* ══ MOOD SEMBOLLERI: TEK DOKUNUS SONSUZ CALIŞMALI, DİĞER İKİ SEMBOL
-     HAREKET ETMEMELİ (18 Eylul, canliya ciktiktan SONRA gelen bildirim) ══
-     pj'nin sozu: "spin kapaliyken semnolelre tek tek basilamoyor. bir
-     kere oluyor galiba bir daha hgic olmuyor. spin gibi o da sonsuz
-     olmali. ve tek hangi sembole bastiysak sadece rengi degissin. baska
-     sembol hareket etmesin."
-     KOK NEDEN: cal() her yeni parcada bekleGoster()'i (yukleme
-     baslarken) ve bekleDondur()'u (ses baslayinca) MOOD MODUNU hic
-     sormadan cagiriyordu. Ikisi de UC yuvayi da rastgele yeniden
-     yaziyordu:
-       (1) dokunulmayan iki sembol de "hareket ediyormus" gibi
-           goruluyordu (bekleGoster'in ilk tazelemesi + bekleDondur'un
-           _turSonucu oturmasi),
-       (2) dataset.sem "M" onekini kaybedip moodSembolSec() (mood.js)
-           "M" kontrolunden gecemedigi icin ayni sembole bir DAHA
-           dokununca hicbir sey olmuyordu.
-     DUZELTME: moodAktifMi() true VE uc yuva da zaten "M" onekiyle
-     kilitliyse (moodYuvalarKilitliMi) ne bekleGoster ne bekleDondur
-     yuvalara dokunuyor -- yalnizca dokunulan yuvayi moodVurgula()
-     (mood.js) renklendiriyor.
-     KANIT (Kural 4): uc yuvaya elle "M" kilidi konup bekleGoster() ve
-     ardindan bekleDondur() cagirildi -- duzeltme VARKEN dataset.sem
-     BIREBIR AYNI kaldi. Duzeltme GERI ALINIP (moodAktifMi kontrolleri
-     kaldirilip) ayni olcum tekrar kosturuldugunda dataset.sem'in HER
-     IKI cagridan sonra da degistigi gozlemlendi -- yani bu kontrol
-     gercekten dusuyor, kanit budur. */
+  /* ══ MOOD DOKUNUSU: SADECE O GECISTE, SADECE O YUVA SABIT KALMALI
+     (18 Eylul, IKI bildirim ust uste geldi) ══
+     1. bildirim: "spin kapaliyken semnolelre tek tek basilamoyor. bir
+        kere oluyor... spin gibi o da sonsuz olmali. ve tek hangi
+        sembole bastiysak sadece rengi degissin. baska sembol hareket
+        etmesin." -- ILK duzeltme uc yuvayi KALICI kilitledi (asiri
+        yorumlanmisti).
+     2. bildirim (canliya ciktiktan SONRA, ilk duzeltme YANLIS
+        cikinca): "her istasyon gecicsinde yie semboller dönmeli. o
+        sadece tek durumda dönmeyecek... tek sembol secilirse ...
+        gecereken sectigimiz sembol haric diger 2 si de dönecek. ama
+        atıyorum bir sonraki hamle ben halkdan gectim yine 3 sembol
+        dönüsü devam etmeli. istasyın gecislerinde... sadece tek
+        sembole basarsak o an diger 2 sembol döner sadece."
+     DOGRU KURAL: kilit KALICI degil, TEK GECISLIK. mood.js dokunulan
+     .yuva'yi index.html'deki _moodKilitliYuva'ya yaziyor; bekleGoster/
+     bekleDondur SADECE o yuvayi bu gecis boyunca atlayip digger ikisini
+     her zamanki gibi donduruyor; bekleDondur bitince kilit TUKETILIYOR
+     (null'a donuyor) -- bir sonraki gecis (nereden gelirse gelsin) uc
+     yuvayi da serbest buluyor.
+     KANIT (Kural 4): uc yuvaya GERCEKTE HIC URETILEMEYECEK yer
+     tutucular ('M97','M98','M99' -- MOOD_IKON_LIST en fazla 15 ikon,
+     yani M0..M14 disina hicbir gercek kod yolu cikamaz) konup ORTADAKI
+     yuva kilitlendi: bekleGoster+bekleDondur SONRASI kilitli yuva
+     BIREBIR AYNI kalirken oteki ikisi DEGISMELI; ardindan kilit
+     tuketildigi icin AYNI yuvalara AYNI yer tutucular yeniden konup
+     kilitsiz bir bekleGoster daha calistirildi -- bu kez UCU DE
+     degismeli (bir onceki kilit gecerli DEGIL). Duzeltme GERI ALINIP
+     (kilit satirlari kaldirilip) ayni olcum tekrar kosturuldugunda
+     kilitli yuvanin da digger ikisiyle birlikte degistigi, yani
+     kontrolun gercekten dustugu gozlemlendi. */
   {
     const mn = await pg.evaluate(async ()=>{
       const bek = ms => new Promise(r=>setTimeout(r,ms));
       if(typeof moodAktifMi !== 'function' || typeof bekleGoster !== 'function'
-         || typeof bekleDondur !== 'function') return { yok:true };
-      const eskiSpin = AYAR.sembolSpin, eskiMod = mod;
+         || typeof bekleDondur !== 'function' || typeof _moodKilitliYuva === 'undefined') return { yok:true };
+      const eskiSpin = AYAR.sembolSpin, eskiMod = mod, eskiKilit = _moodKilitliYuva;
       try{ bekleDondur(); }catch(e){}                    // varsa donen zamanlayiciyi durdur
+      /* bekleDondur() kendi oturma zamanlayicilarini KURUYOR (kilitsiz,
+         cunku _moodKilitliYuva bu cagrida henuz null'du) -- bu satirlar
+         en gec ~1230ms sonra da olsa uc yuvaya da yazacak. Asagida
+         yerlestirilecek 'M97/M98/M99' yer tutuculari bu GECIKMELI
+         yazmalardan SONRA konulmali, yoksa kilitli yuva da bu eski
+         zamanlayicidan bir deger alip test yanlislikla dusuyor
+         (bulundu: ilk yazimda GECIS 1'in kilitli yuvasi 'M98' yerine
+         gercek bir alien degeriyle cikiyordu). */
+      await bek(1400);
       AYAR.sembolSpin = false; mod = 'radio';             // mood modu aktif
       const y = [...document.querySelectorAll('#bekleGly .yuva')];
       if(y.length !== 3){ AYAR.sembolSpin = eskiSpin; mod = eskiMod; return { yok:true }; }
-      const onceki = ['M0','M1','M2'];                    // "kilitli" mood durumu
-      y.forEach((el,i)=>{ el.dataset.sem = onceki[i]; });
+      const bas = ['M97','M98','M99'];                   // gercekte asla uretilmeyecek degerler
+      // ── GECIS 1: ORTADAKI yuva "dokunulmus" -- kilitli ──
+      y.forEach((el,i)=>{ el.dataset.sem = bas[i]; });
+      _moodKilitliYuva = y[1];
       bekleGoster();
       await bek(700);                                     // ilk tazeleme gecikmesi (i*130+220) gecsin
-      const sonGoster = y.map(el=>el.dataset.sem);
+      const gecis1Goster = y.map(el=>el.dataset.sem);
       bekleDondur();
       await bek(1900);                                    // en gec oturma (2*175+520+360) gecsin
-      const sonDondur = y.map(el=>el.dataset.sem);
-      AYAR.sembolSpin = eskiSpin; mod = eskiMod;
+      const gecis1Dondur = y.map(el=>el.dataset.sem);
+      // ── GECIS 2: kilit BIR ONCEKI geciste tuketildi, simdi kilitsiz ──
+      y.forEach((el,i)=>{ el.dataset.sem = bas[i]; });    // ayni uc yuva, yer tutuculara donduruldu
+      bekleGoster();
+      await bek(700);
+      const gecis2Goster = y.map(el=>el.dataset.sem);
+      AYAR.sembolSpin = eskiSpin; mod = eskiMod; _moodKilitliYuva = eskiKilit;
       try{ bekleDondur(); }catch(e){}
-      return { yok:false, onceki, sonGoster, sonDondur };
+      return { yok:false, bas, gecis1Goster, gecis1Dondur, gecis2Goster };
     });
-    K('Mood modunda bekleGoster kilitli sembolleri degistirmiyor', !mn.yok
-      && JSON.stringify(mn.sonGoster) === JSON.stringify(mn.onceki),
+    K('Mood dokunusunda YALNIZCA dokunulan yuva bekleGoster boyunca sabit kalir', !mn.yok
+      && mn.gecis1Goster[1] === 'M98' && mn.gecis1Goster[0] !== 'M97' && mn.gecis1Goster[2] !== 'M99',
       mn.yok ? 'test kosulamadi (fonksiyon/yuva eksik)'
-             : ('once ' + JSON.stringify(mn.onceki) + ', bekleGoster sonrasi ' + JSON.stringify(mn.sonGoster)));
-    K('Mood modunda bekleDondur kilitli sembolleri degistirmiyor', !mn.yok
-      && JSON.stringify(mn.sonDondur) === JSON.stringify(mn.onceki),
-      mn.yok ? '-' : ('once ' + JSON.stringify(mn.onceki) + ', bekleDondur sonrasi ' + JSON.stringify(mn.sonDondur)));
+             : ('once ' + JSON.stringify(mn.bas) + ', bekleGoster sonrasi ' + JSON.stringify(mn.gecis1Goster)));
+    K('Mood dokunusunda kilitli yuva bekleDondur sonrasi da sabit, otekiler oturdu', !mn.yok
+      && mn.gecis1Dondur[1] === 'M98' && mn.gecis1Dondur[0] !== 'M97' && mn.gecis1Dondur[2] !== 'M99',
+      mn.yok ? '-' : ('bekleDondur sonrasi ' + JSON.stringify(mn.gecis1Dondur)));
+    K('Bir sonraki gecis kilidi tuketir, uc yuva da yeniden serbest doner', !mn.yok
+      && mn.gecis2Goster[0] !== 'M97' && mn.gecis2Goster[1] !== 'M98' && mn.gecis2Goster[2] !== 'M99',
+      mn.yok ? '-' : ('once ' + JSON.stringify(mn.bas) + ', kilitsiz gecis sonrasi ' + JSON.stringify(mn.gecis2Goster)));
   }
 
   /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────

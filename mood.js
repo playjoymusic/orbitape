@@ -21,7 +21,9 @@
  *
  * SAYFADAN KULLANILANLAR
  *   AILELER, aileSec, cal, beyazListe, sesBaglamiAl, actx, AYAR, tik,
- *   _secildi, _yut, ALIEN (yalnizca yorumda anilir).
+ *   _secildi, _yut, ALIEN (yalnizca yorumda anilir), _moodKilitliYuva
+ *   (dokunulan yuvayi bekleGoster/bekleDondur'a bildiren tek-gecislik
+ *   kilit -- bkz. index.html moodAktifMi tanimindaki not).
  */
 
   const MOOD_SEMBOL = ['AGAC','PIYANO','ORKESTRA','SAKSAFON','BLUES','LOUNGE','KULAKLIK','PIRAMIT','SALSA','UZAY','SENTEZ','DANS','FUNK','METAL','REGGAE'];
@@ -89,15 +91,23 @@
       try{ if(AYAR.tikSes && typeof tik === 'function') tik(); }catch(_){ _yut(_); }
       if(ist.grup && typeof aileSec === 'function'){ try{ aileSec(ist.grup, true); }catch(e){ _yut(e); } }
       _secildi = true;
+      /* DOKUNULAN YUVA BU GECIS BOYUNCA SABIT KALSIN (18 Eylul, ikinci
+         duzeltme): index.html'deki _moodKilitliYuva'ya yaziyoruz --
+         cal()'in tetikledigi bekleGoster()/bekleDondur() bu YUVAYI
+         atlayip digger ikisini her zamanki gibi donduruyor. Kilit
+         TEK GECISLIK: bekleDondur() kendi icinde tuketip sifirliyor,
+         bir sonraki istasyon gecisinde (mood dokunusu olsun olmasin)
+         uc yuva da yeniden serbest kalir. */
+      try{ _moodKilitliYuva = yuv; }catch(_){ _yut(_); }
       cal({ id:ist.id, mp3:ist.mp3, ad:ist.ad, sanatci:'', radyo:true, grup:ist.grup, ulke:ist.ulke });
       moodVurgula(yuv, ist.grup);
     }catch(e){ _yut(e); }
   }
   /* Basilan yuva, secilen istasyonun kendi tur rengini alir (AILELER'
-     deki gercek renk -- uydurma degil). "En kotu" (kullanicinin sozu)
-     yalnizca dokunulan yuva renklenir, oteki ikisi etkilenmez. Kisa
-     sureli: hemen ardindan gelen yeni parca kendi bekleGoster()
-     dongusunu baslatip yuvalari zaten tazeleyecek. */
+     deki gercek renk -- uydurma degil). Sabit kalma suresi renk
+     vurgusuyla ayni degil: renk 1400 ms'de soner (asagida), ama yuva
+     _moodKilitliYuva sayesinde BU ISTASYON GECISI TAMAMEN oturana
+     kadar (bekleDondur bitene kadar) hic yeniden yazilmaz. */
   function moodVurgula(yuv, grup){
     try{
       const aile = (typeof AILELER !== 'undefined' ? AILELER : []).find(a=>a.ad===grup);
