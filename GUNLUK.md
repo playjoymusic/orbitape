@@ -395,3 +395,78 @@ veriliyor.
 | Lisanssız kaynak | 2 (Jamendo, Audius) | 0 |
 | Yayına çıkma | elle dosya yükleme | push → otomatik |
 | Tarayıcı kapsamı | Chromium | Chromium + WebKit |
+
+---
+
+> **Not:** yukarıdaki iki bölüm ("Süreç dersleri", "Sayılarla") 27
+> Ağustos anlık görüntüsü. Eylül'ün günlük kaydı aşağıda **18 Eylül**
+> maddesiyle başlıyor -- bu dosya o güne kadar düzenli işlenmemişti
+> (bkz. o maddenin kendisi, CLAUDE.md Kural 11'in de sebebi).
+
+## 18 Eylül — yıldız gökyüzü (D5) dört tur, ve "belge bayatlığı"
+
+### Yıldız büyütme/zoom: bant, soluk, taşan düğmeler, takılma
+
+Aynı özellik (gökyüzü/pinch-zoom) üzerinde art arda dört ayrı şikayet
+geldi, hepsi tek turda kapandı:
+
+1. **Ekranın altında derinin kendi rengi bir bant halinde kalıyordu.**
+   İlk düzeltme (tuval boyunu kendi `getBoundingClientRect()`'inden
+   okumak) `main`'e gitti ama **`Yayın` işi kırmızıydı** (tip.sh
+   `tipler.d.ts` eksikliğinden düşüyordu) -- yani düzeltme pj'nin
+   test ettiği sürümde HİÇ CANLI OLMAMIŞTI. `Sağlık kontrolü`
+   yeşiliyle `Yayın` yeşilini karıştırmak buradaki asıl hataydı,
+   bkz. CLAUDE.md'ye zaten yazılı "ikisi ayrı" notu -- bir daha
+   ayrım netleştirildi: ikisi de ekran görüntüsüyle teyit edilecek.
+2. `tipler.d.ts` düzeltmesi gidince bant kayboldu ama İKİNCİ bir bant
+   kaldı: skin değişirken KISA bir anlık flaş. Kök neden farklıydı --
+   `documentElement.style.backgroundColor` skin rengini `<html>`'e
+   yazıyordu, reflow'un tek karelik gecikmesinde bu renk sızıyordu.
+   `body.yildiz-zum{background:#000}` güvenlik ağı eklendi.
+3. pj: *"yıldızlar da soluk hersey soluk."* `gel` (açılma oranı)
+   payda 0.9 -> 0.2: tam parlaklık zum=1.9 yerine zum=1.26'da geliyor.
+4. pj: *"buyutec te var... sadece sag alttaki bilgiler ve orbitape
+   ismi... geri kalan yok."* Beş araç tuşu + arama + mod anahtarı
+   `body.yildiz-zum` altında opacity:0'a çekildi (`#np`/`#ust`
+   dokunulmadı).
+5. pj: *"yıldızlar takılarak buyuyup kuculuyor."* Kök neden: zum
+   adımı (`_zum += (_zumHedef-_zum)*0.18`) HER ÇAĞRIDA sabit orandı,
+   kare atlanınca "dur, sonra sıçra" görünümü veriyordu. Adım artık
+   `zumAdimKatsayi(dt)` ile gerçek geçen süreye göre ölçekleniyor --
+   kare atlanırsa telafi ediyor. Test (`window.__zumAdimKatsayi`)
+   GERÇEK fonksiyonu çağırıyor, kopya formül değil.
+
+`test/saglik.js`: 849/849. `araclar/tip.sh`: 69 uyarı, taban sabit.
+
+### Teslim yolu: GitHub web editörü büyük dosyada işe yaramadı
+
+`index.html` (~1,3 MB) GitHub'ın tarayıcı-içi editörüne TextEdit
+üzerinden kopyala-yapıştırla taşınmaya çalışıldı. TextEdit .html
+dosyasını RENDER ediyor (kod değil, sayfa gibi gösteriyor); "Make
+Plain Text" de render edilmiş HALİ düzleştiriyor, ham kaynağı geri
+getirmiyor -- GitHub kutusuna yanlışlıkla sayfanın görünen YAZILARI
+(kod değil) yapıştırılmış, commit edilmeden fark edilip durduruldu.
+
+**Bulunan gerçek yol:** pj'nin Mac'inde zaten `~/Downloads/orbitape`
+adında GERÇEK bir git klonu ve GitHub Desktop kuruluydu (3 aydır
+kullanılıyormuş, bu oturumda yeniden keşfedildi). Bundan sonraki
+teslim yolu: dosyalar doğrudan o klasöre yazılır, `git commit` da
+buradan (device_bash) yapılır -- **push'u pj GitHub Desktop'tan tek
+tuşla yapar.** Kural 8'deki "burada GitHub kimlik bilgisi yok, push
+pj'de" ilkesiyle birebir uyumlu, sadece "commit'i nereden hazırlıyoruz"
+kısmı değişti (GitHub web editörü yerine yerel klon).
+
+### İki ayrı "belge bayatlığı" ve Kural 11
+
+Aynı gün İKİ belge, gerçek durumu YANSITMIYORDU:
+
+- `magaza/KALANLAR.md`'de "iOS ana ekran kısayolu" maddesi -- ORBITAPE
+  hiç iOS'ta değil (yalnızca Google Play/Android), madde hiç geçerli
+  olmamış. pj: *"ios'ta yokuz lan google play'deyiz."*
+- `CLAUDE.md`'nin "Açık kalan işler" tablosunda `tracks` deposu CI'ı
+  hâlâ **[ ]** yazıyordu -- oysa `.github/workflows/kontrol.yml` ve
+  `dogrula.py` ÖNCEDEN yazılıp pushlanmıştı (`766d27b`).
+
+İkisi de gerçek hafıza kaybı değil, konuşmaların `GUNLUK.md`'ye
+işlenmemesiydi. pj: *"tüm konuşmalar günlükten okuncak hep her zaman.
+ilk hafıza kaybında."* -> CLAUDE.md Kural 11.

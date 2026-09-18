@@ -11,15 +11,13 @@ Biten maddeyi silme; **[x]** işaretle ve tarihini yaz. Böylece
 - [x] **2026-09-11 — ANDROID İÇİN KAPANDI.** Android'e uygulama
       Play üzerinden **paket olarak** iniyor (TWA, `app.orbitape.twa`);
       ikonu APK taşıyor, ana ekran kısayolunun bununla ilgisi yok.
-- [ ] **Yalnızca iOS için geçerli:** iPhone'da ana ekran kısayolunu
-      **sil**, orbitape.app'i Safari'de aç, **yeniden ekle**
-
-Neden (iOS): iOS ikonu ve adı kısayol eklendiği **anda** kopyalar.
-Site güncellense bile eski kısayol eski ikonu göstermeye devam eder.
-Uygulamanın **içeriği** bundan etkilenmiyor — servis çalışanı
-önce-ağ, yani her açılışta en yeni dosya iniyor. Etkilenen tek şey
-kısayolun kendi bilgileri: ikon, ad ve uzun basınca çıkan kısayollar
-(`manifest.json` → "Live radio", "Sound archive").
+- [x] **2026-09-18 — MADDE TAMAMEN KAPANDI, KONU DIŞI.** iOS dağıtımı
+      YOK -- ORBITAPE yalnızca Google Play'de (Android, TWA). Aşağıdaki
+      "iOS ana ekran kısayolu" satırı hiç geçerli olmayan bir öğeydi
+      (belge yazılırken çoklu-platform ihtimaline karşı bırakılmış
+      olmalı). pj: *"ios'ta yokuz lan google play'deyiz."* Bir daha
+      gündeme gelmesin diye satır SİLİNMEDİ, konu dışı olarak burada
+      işaretlendi (üstteki kural: biten/kapanan maddeyi silme).
 
 ## 2. assetlinks parmak izi
 

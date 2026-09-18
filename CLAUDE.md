@@ -151,6 +151,34 @@ hasat bu kümedeki bir ülkeden istasyon getirirse orada elenir.
 15 Eylül'de listede kalan tek ihlal 13 Rus istasyonuydu (`ulke:"RU"`)
 — elle `radyo.json`'dan çıkarıldı.
 
+### 11. Her oturum GUNLUK.md ile başlar, her oturum GUNLUK.md'ye yazar
+
+18 Eylül'de yazıldı. Aynı gün içinde İKİ AYRI belge bayatlığı ortaya
+çıktı: (1) `magaza/KALANLAR.md`'de hiç geçerli olmamış bir "iOS ana
+ekran kısayolu" maddesi (uygulama yalnızca Google Play'de, iOS
+dağıtımı hiç yok) açık gibi duruyordu; (2) `tracks` deposunda CI kapısı
+aslında ÖNCEDEN kurulup pushlanmıştı ama bu dosyanın "Açık kalan
+işler" tablosu hâlâ **[ ]** (yapılmadı) diyordu. İkisi de gerçek hafıza
+kaybı değildi -- konuşmalar `GUNLUK.md`'ye düzenli işlenmediği için bir
+sonraki oturum (ya da bağlam sıkıştırması sonrası aynı oturum) elindeki
+TEK kaynağı (dosyalar) gerçek durum sanıyordu. Onun sözü: *"tüm
+konuşmalar günlükten okuncak hep her zaman. ilk hafıza kaybında."*
+
+İki yönlü kural:
+
+- **Oturum başında** (yeni oturum ya da bağlam sıkıştırması/özet sonrası
+  "hafıza kaybı" durumu): kod okumadan önce `GUNLUK.md`'nin SONU
+  okunur -- en son hangi kararın, hangi gerekçeyle verildiği orada.
+- **Önemli bir konuşma/karar bittiğinde**: `GUNLUK.md`'ye tarihli bir
+  madde olarak işlenir -- yalnızca kod değişince değil, bir şeyin
+  ZATEN yapılmış olduğu anlaşıldığında, bir belgenin bayat çıktığı
+  anlaşıldığında, ya da pj bir kararı sözlü verdiğinde de (10. madde
+  bu yüzden var, ama tek tek her karar için genel kural budur).
+
+Amaç 27 Ağustos'taki "Süreç dersleri" bölümüyle aynı: altı ay sonra
+"bunu konuşmuş muyduk" sorusunun cevabı bir dosyada dursun, bir
+oturumun hafızasında değil.
+
 ---
 
 ## Depo düzeni
