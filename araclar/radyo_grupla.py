@@ -10,8 +10,10 @@ NE YAPAR
        - Kur'an / tefsir yayinlari (adi Arap harfli oldugu icin
          uygulamanin suzgeci yakalayamiyordu)
        - adinda/etiketinde siyasi/haber isareti olanlar (kalici yasak)
-       - geriye kalan konusma/talk-show/sohbet yayinlari PODCASTS
-         rafina gider, cikarilmaz (16 Eylul)
+       - konusma/talk-show/sohbet yayinlari da cikarilir (18 Eylul --
+         bkz. PODCAST_ADAY altindaki not; 16 Eylul'de bunlar icin ayri
+         bir PODCASTS rafi acilmisti, tek istasyonla kaldigi icin
+         kapatildi, eski davranisa donuldu)
   2) Kalan her istasyona 'grup' alani yazar.
 
 NEDEN AYRI DOSYA
@@ -461,14 +463,13 @@ AILELER = OrderedDict([
     # EN ICTEKI halka. SIRA UYGULAMADAKININ AYNISI OLMAK ZORUNDA
     # (saglik: "Hasat araci uygulamayla ayni raflari biliyor").
     ("ANATOLIA",      {"renk": "#E46EB4"}),
-    # ── PODCASTS (16 Eylul) ──────────────────────────────────────────
-    # NEWS & TALK ailesi: 10 Eylul'deki KONUSMA notu gerceklesti (bkz.
-    # SIYASI / PODCAST_ADAY). ANATOLIA'dan hemen sonraki halka --
-    # kullanicinin karari, boyut da ona gore kucuk bekleniyor.
-    # Renk kullanicinin secimi: gul kurusu-gri, ANATOLIA'nin canli
-    # pembesinden bilerek sonuk -- konusma yayini muzik rafi gibi
-    # parlak gorunmesin.
-    ("PODCASTS",      {"renk": "#B08E93"}),
+    # ── PODCASTS KAPATILDI (18 Eylul) ────────────────────────────────
+    # 16 Eylul'de burada ayri bir raf vardi (renk #B08E93). Bir hafta
+    # sonra OLCULDU: radyo.json'da tek istasyon (BBC Radio 4 Extra).
+    # Kullanicinin sozu: "podcasti de sil ya bos zaten 1 istasyom var"
+    # -> "radı sil bbc yi de sil. ya da kapat." Raf da, PODCAST_ADAY'in
+    # PODCASTS'e yazma mantigi da kaldirildi; o eslesme artik temizle()
+    # icinde SIYASI gibi tamamen ATILIYOR (bkz. asagidaki not).
     ("AMBIENT",       {"renk": "#5FBF7A"}),
     ("ORCHESTRAL",    {"renk": "#F0AC7A"}),
     ("ROCK & INDIE",  {"renk": "#F2683C"}),   # eski adi ROCK & COUNTRY
@@ -541,32 +542,43 @@ YAPAY = re.compile(r"\bai\b|\bai[ -]?radio\b|\bai[ -]?music\b|"
 
 # 16 Eylul: NEWS & TALK ailesi kuruldu (raf adi PODCASTS), 10 Eylul'de
 # burada yazan not gerceklesti. Eski tek torba KONUSMA ikiye bolundu.
+# 18 Eylul: PODCASTS rafi KAPATILDI (bkz. AILELER'deki not) -- bir
+# hafta sonra olculdu, radyo.json'da tek istasyon kalmisti. PODCAST_ADAY
+# asagida hala var ama artik bir rafa YAZDIRMIYOR, temizle() icinde
+# SIYASI ile ayni muameleyi goruyor: eslesen kayit tamamen atiliyor.
+# Yani eski (16 Eylul oncesi) davranisa donuldu, tek fark deseninin
+# artik "talk"/"talkradio"yu da yakalamasi (asagidaki not).
 #
 # SIYASI: KALICI YASAK. Kullanicinin karari: "haber riskli, o da
 # olmasin" -- yani salt "talk show" degil, ideolojik/gundem icerikli
-# hicbir yayin PODCASTS rafina giremez, temizle() bunlari tamamen atar.
+# hicbir yayin listeye giremez, temizle() bunlari tamamen atar.
 SIYASI = re.compile(r"\bpolitics?\b|\bpolitical\b|"
                      r"\bconservative talk\b|\bchristian talk\b|"
                      r"\bhaber\b|\bnews\b", re.I)
 
-# PODCAST_ADAY: siyasi/haber OLMAYAN konusma yayinlari. Bunlar
-# temizle()'de ATILMAZ, grupla()'da PODCASTS rafina yazilir (bkz.
-# ANATOLIA_MUTLAK'a benzer mutlak-oncelik deseni).
+# PODCAST_ADAY: siyasi/haber OLMAYAN konusma yayinlari. 18 Eylul'e
+# kadar bunlar temizle()'de ATILMAZDI, grupla()'da PODCASTS rafina
+# yaziliyordu (bkz. ANATOLIA_MUTLAK'a benzer mutlak-oncelik deseni).
+# PODCASTS kapatilinca bu yol da kapandi -- artik SIYASI gibi
+# temizle()'de dogrudan atiliyor (asagida).
 # 10 Eylul: Turkce yayinlarda konusma isareti Ingilizce degil.
 # "24 Radyo" (haber,news,talk) kesif raporunda muzik rafina aday
 # cikmisti -- ama o HABER, yani SIYASI'ya giriyor, buraya degil.
-# 16 Eylul: BARE "talk"/"talkradio" EKLENDI. radyo_hasat.py PODCASTS
-# icin dizine tag=talk diye soracak; dizindeki istasyonlarin cogu
-# etiketinde yalnizca "talk" yazar, "talk show" degil. Bu kelime
-# olmadan hasat edilen hicbir istasyon bu rafa gercekten dusmuyordu,
-# hepsi siniflandirilamayip RADIOTAPE'e (belirsiz raf) dusuyordu.
+# 16 Eylul: BARE "talk"/"talkradio" EKLENDI. radyo_hasat.py o gun
+# PODCASTS icin dizine tag=talk diye soruyordu; dizindeki istasyonlarin
+# cogu etiketinde yalnizca "talk" yazar, "talk show" degil. Bu kelime
+# olmadan hasat edilen hicbir istasyon o rafa gercekten dusmuyordu,
+# hepsi siniflandirilamayip RADIOTAPE'e (belirsiz raf) dusuyordu. Raf
+# kapandi ama deseni ayni tutuyoruz: bu icerik hala muzik degil,
+# atilmasi gereken sey ayni.
 PODCAST_ADAY = re.compile(r"\btalk\s?shows?\b|\btalk\s?radio\b|\btalk\b|"
                           r"\bsohbet\b|\bs[oö]yle[sş]i\b", re.I)
 
 
 def temizle(kayitlar):
     """Cikanlari sayarak dondur: (kalan, sayac)."""
-    sayac = {"cift": 0, "ulke": 0, "ibadet": 0, "siyasi": 0, "yapay": 0}
+    sayac = {"cift": 0, "ulke": 0, "ibadet": 0, "siyasi": 0, "yapay": 0,
+              "podcast": 0}
     gorulen = set()
     kalan = []
     for o in kayitlar:
@@ -590,9 +602,13 @@ def temizle(kayitlar):
         if SIYASI.search(ad + " " + etiket):
             sayac["siyasi"] += 1
             continue
-        # PODCAST_ADAY BURADA ATILMAZ: grupla() bunlari PODCASTS
-        # rafina yazacak. temizle()'nin isi yalnizca kalici yasaklari
-        # elemek, siniflandirma degil.
+        # 18 Eylul: PODCASTS rafi kapandi (bkz. AILELER'deki not).
+        # PODCAST_ADAY eslesmesi artik SIYASI gibi burada tamamen
+        # atiliyor -- eskiden (16 Eylul'e kadar) da boyleydi, kisa bir
+        # sure ayri bir rafa yazilmisti, o yol kapandi.
+        if PODCAST_ADAY.search(ad + " " + etiket):
+            sayac["podcast"] += 1
+            continue
         gorulen.add(url)
         kalan.append(o)
     return kalan, sayac
@@ -802,15 +818,10 @@ def grupla(kayitlar):
             o["saf"] = 1
             continue
 
-        # 1c) PODCASTS: ANATOLIA ILE AYNI MANTIK (16 Eylul).
-        #     Bu istasyonlar muzik degil konusma -- asagidaki isim/etiket
-        #     tur taramasina girerse yanlislikla bir muzik rafina duser
-        #     (ornek: "Talk Radio Jazz Hour"). SIYASI icerik temizle()'de
-        #     zaten elendi, buraya gelen "sohbet/talk show" guvenli sayilir.
-        if PODCAST_ADAY.search(ad + " " + etiket):
-            o["grup"] = "PODCASTS"
-            o["saf"] = 1
-            continue
+        # 1c) PODCASTS KAPANDI (18 Eylul): PODCAST_ADAY eslesenler artik
+        #     buraya hic gelmiyor -- temizle() onlari SIYASI gibi
+        #     baştan atiyor. Bu adim bilerek bos birakildi, numaralama
+        #     asagidaki adimlarla karissin diye (2) degistirilmedi.
 
         # 2) ISIM KONUSUYORSA O KONUSUR.
         isim_raf = _raflar(ad)
@@ -887,6 +898,7 @@ def main():
     print("cikarilan ulke (AE)   : %d" % sayac["ulke"])
     print("cikarilan ibadet      : %d" % sayac["ibadet"])
     print("cikarilan siyasi/haber: %d" % sayac["siyasi"])
+    print("cikarilan konusma/podcast: %d" % sayac["podcast"])
     print("cikarilan yapay zeka  : %d" % sayac["yapay"])
     kalan, kopya = tekille(kalan)
     print("cikarilan ayni yayin  : %d" % len(kopya))
