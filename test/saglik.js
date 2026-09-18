@@ -9608,7 +9608,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           let _yakalananAd = null;
           const _eskiFillText = CanvasRenderingContext2D.prototype.fillText;
           CanvasRenderingContext2D.prototype.fillText = function(metin, ...geri){
-            if(typeof metin === 'string' && /^Yildiz \d/.test(metin)) _yakalananAd = metin;
+            /* SIRA DEGISTI (17 Eylul): bayrak artik BASTA yazildigi icin
+               "Yildiz N" metnin basinda degil, icinde geciyor -- ^ ile
+               ankorlanmis kalinca yakalama hep bos donuyordu. Iceren
+               kontrole gevsetildi, konum onemsiz. */
+            if(typeof metin === 'string' && /Yildiz \d/.test(metin)) _yakalananAd = metin;
             return _eskiFillText.apply(this, [metin, ...geri]);
           };
           if(sec2){ olay('pointerdown', sec2.xx, sec2.yy); olay('pointerup', sec2.xx, sec2.yy); await bek(120); }

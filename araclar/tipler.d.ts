@@ -93,6 +93,9 @@ interface Window {
   /* RING anahtari: ayarlar ve galeri basligi ayni islevi cagiriyor (index.html). */
   halkaDegistir?: () => void;
 
+  /* Mood sembolleri (mood.js): #bekle'deki 3 sembolun veri + secim mantigi. */
+  MOOD_HAZIR?: boolean;
+
   /* Cark (cark.js): ortadaki alet. */
   CARK_BASLADI?: boolean;
   CARK_HAZIR?: boolean;
