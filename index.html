@@ -366,9 +366,16 @@
      yerler ekrandan cikar, bu dogru davranis.
      Acikken cark/faz tuvali ve halka soluyor: geriye yalnizca
      gokyuzu kaliyor (istenen buydu). */
-  #yildizKat{position:fixed;inset:0;z-index:60;display:none;touch-action:none;}
+  /* width/height:100% SART: canvas bir "replaced element", inset:0
+     TEK BASINA onu germiyor (CSS: pozisyonlu replaced ogeler auto
+     genislik/yukseklikte KENDI IC BOYUNA -- burada varsayilan
+     300x150 -- doner, dort inset'e degil). 18 Eylul'de bu yuzden
+     olculdu: getBoundingClientRect() zumCiz()'den ONCE tam 300x150
+     donuyordu, cunku JS henuz style.width/height YAZMAMISTI. */
+  #yildizKat{position:fixed;inset:0;width:100%;height:100%;z-index:60;display:none;touch-action:none;}
   body.yildiz-zum #yildizKat{display:block;}
   #carkTuval,#viz{transition:opacity .32s ease;}
+  #solUst{transition:opacity .32s ease;}
   /* FX acikken ortadaki alet gizleniyor: kullanicinin istegi ("o an
      sadece halkayi gorsek de olur") ve olculen sebep isinma. Tuval
      GORUNMEZ degil, KAPALI (display) -- yoksa cizmeye devam
@@ -385,6 +392,15 @@
      kaybolma yine yumusak. Tuval CIZMEYE devam ediyor (display
      degil opacity), boylece jest bitince beklemeden geri geliyor. */
   body.yildiz-zum #carkTuval,body.yildiz-zum #viz{opacity:0;pointer-events:none;}
+  /* 18 Eylul: pj'nin ekran goruntuleri -- gokyuzu acikken sol alttaki
+     tasima/REC/CAM/sustur/★ satiri (#solUst, ad tarihsel: "eskiden SOL
+     ALTTAYDI") hep tam opaklikta kaliyordu. Gozun tek gitmesi gereken
+     yer gokyuzuyken orada duran, kazayla basilabilen bir dugme sirasi
+     kaliyordu -- "tum ogeler gitmiyor, yildizlar buyukken de orda
+     duruyor" sikayetinin tam kendisi. Cark/viz ile AYNI davranis:
+     kaybolma display degil opacity (jest bitince beklemeden geri
+     gelsin), dokunma da kapaniyor ki kazara REC'e basilmasin. */
+  body.yildiz-zum #solUst{opacity:0;pointer-events:none;}
   .hit{position:absolute;inset:0;border:0;background:transparent;border-radius:50%;cursor:pointer;z-index:2;
     touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   .hit:focus-visible{outline:1px solid rgba(53,224,216,.35);outline-offset:10px;}
@@ -2065,12 +2081,21 @@
      görünüyordu. %56 yapılmıştı ama bu kez GEREĞİNDEN KÜÇÜK kaldı --
      kullanıcının ekran görüntüsü: kamera dairesiyle en dış halka
      arasında belirgin bir BOŞLUK var, "skinslerde hepsinde bir
-     standardı var ortasında ... o kadar büyüt." Artık %63,5 -- en
-     dış halkanın ÇAPIYLA AYNI (bkz. kayit.js: HALKA_DIS=0.89, test:
-     "Kamera penceresi en dis halkaya kadar doluyor"), boşluk kalmıyor
-     ama halka çizgisi hâlâ kameranın ÜSTÜNDE kalıp kenarı çiziyor
-     (z-index 0 kamerada, #viz z-index 1'de -- aşağıdaki not). */
-  #kam{position:absolute;left:50%;top:50%;width:63.5%;height:63.5%;z-index:0;
+     standardı var ortasında ... o kadar büyüt." %63,5 yapılmıştı --
+     yanlıştı, HALKA_DIS(0.89) yanlış yarıçapla çarpılmıştı (aşağıya
+     bak).
+     18 Eylul, IKINCI OLCUM: kullanici hala bosluk gorduğunu soyledi
+     ("çoğunda boşluk var... çerçeveye kadar büyüt"). OLCULDU (debug
+     kutu cizilerek): gercek halkalar (_diskOran/_halkaNo, index.html)
+     btn'in (#tp, .disk ile AYNI kutu) TAM YARICAPINA gore normalize --
+     en dis halka rr = halkaIc() + 10*halkaAra() = 0.36+0.53 = 0.89,
+     yani disk CAPININ %89'u. Kamera ise HALKA_DIS'i YANLIS bir
+     yaricapla (disk.width*0.357, birçok baska yerde farkli bir amacla
+     kullanilan kucuk bir olcek) carpiyordu: 0.357*0.89*2 = %63,5 --
+     gercek halkadan COK kucuk, tam da kullanicinin gordugu bosluk.
+     Dogrusu: HALKA_DIS dogrudan disk CAPININ orani (%89), disk
+     YARICAPININ degil -- disk.width*0.357 hic girmemeliydi. */
+  #kam{position:absolute;left:50%;top:50%;width:89%;height:89%;z-index:0;
     border-radius:50%;object-fit:cover;transform:translate(-50%,-50%) scaleX(-1);
     /* .6s -> .28s: kare artik beklendigi icin (kayit.js: ilkKare)
        bu sure "goruntu yolda" demek degil. .6s'te kamera hazir olsa
@@ -12725,11 +12750,36 @@
       if(u > en){ _kayX = _kayX / u * en; _kayY = _kayY / u * en; }
     }catch(e){ _yut(e); }
   }
+  /* ── 18 EYLUL: DIBE YAPISAN RENKLI BANT ─────────────────────────
+     pj'nin ekran goruntuleri -- gokyuzu acikken ekranin en altinda
+     o anki derinin kendi zemin rengi ince bir serit halinde
+     kaliyordu ("en altta banner bant olusuyor"). Kok neden burasiydi:
+     tuval boyu window.innerWidth + _gorBoy() (yani
+     documentElement.clientHeight) ile AYRI AYRI hesaplanip
+     ATANIYORDU. _gorBoy()'un KENDI yorumu (bkz. tanimi) bu ikisinin
+     ayni yerlesim karesinden gelmedigi HER durumda bayatlayabilecegini
+     zaten soyluyor -- ayni sinif hata #kipKisayol/#kayitBilgi icin
+     11 Eylul'de bir kez, "ekran boyu formulden tamamen cikiyor"
+     baslikli notta bir kez daha yazildi (_altYasla). Tuval de aynen
+     onlar gibi "ekranin boyu ne kadar" diye SORUYORDU; ayri kaynak
+     bayatsa (Android'de adres cubugu/klavye geçişi gibi durumlarda)
+     tuval kisa ölçülüp KISA CIZILIYOR ve altta derinin gercek zemini
+     bant gibi gorunuyordu.
+     DUZELTME: #yildizKat'in position:fixed;inset:0 CSS'i zaten TAM
+     ekrani kapladigina gore, boyu _gorBoy()/innerWidth'ten degil
+     KENDI getBoundingClientRect()'inden okunuyor -- ayni tuval, ayni
+     karede, kendi kendinden bayat olamaz (_altYasla ile ayni ilke).
+     KANIT: saglik.js "Gokyuzu tuvali ekran boyu kaynaginin bayatligina
+     BAGLI DEGIL" -- _gorBoy() kasten yanlis bir deger dondurecek
+     sekilde degistirilip tuvalin GERCEK yuksekligin degismedigi
+     olculuyor. */
   function zumCiz(){
     try{
       const k = zumKatAl(); if(!k || !_zumCtx) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const W = Math.round(window.innerWidth), H = Math.round(_gorBoy());
+      const kr = k.getBoundingClientRect();
+      const W = Math.round(kr.width) || Math.round(window.innerWidth),
+            H = Math.round(kr.height) || Math.round(_gorBoy());
       if(k.width !== W * dpr || k.height !== H * dpr){
         k.width = W * dpr; k.height = H * dpr;
         k.style.width = W + 'px'; k.style.height = H + 'px';
@@ -12953,9 +13003,16 @@
         const u = Math.hypot(p.x - mx, p.y - my);
         if(u < enU){ enU = u; en = L[i]; }
       }
-      /* Bosluga dokunmak gokyuzunu kapatir -- her acik pencerede
-         oldugu gibi. */
-      if(!en || enU > YIL_DOKUNU){ zumKapat(); return; }
+      /* BOSLUGA DOKUNMAK ARTIK KAPATMIYOR (18 Eylul). Eskiden "her
+         acik pencerede oldugu gibi" kapatiyordu. Kullanicinin sozu:
+         "yıldızlar acıkken 2 parmak sonrasi. siyah alana basınca
+         kapanıyor. kapanmasın sadece ne zaman aynı sekilde 2 parmak
+         yaparsa kapanır ... yıldızların arasındaki siyahlıkta
+         backgrounda basınca da kapanıyor o olmasın." Tek kapatma
+         yolu simdi asagidaki iki parmak jesti (_zumHedef esigin
+         altina inince, bkz. 13298 civari) -- bosluga dokunus artik
+         hicbir sey yapmiyor, secili yildiz da degismiyor. */
+      if(!en || enU > YIL_DOKUNU) return;
       if(_zumSecili && _zumSecili.id === en.id){ yildizAc(en); return; }
       /* ILK DOKUNUS: yalnizca adi. Calan sey degismiyor. */
       _zumSecili = en;
@@ -12970,9 +13027,10 @@
      kalsin kisi isterse tekrar kapatir yildiz modunu." Yani: cal()
      hala calisiyor (calan istasyonun yildizi parlak yanar, _zumSecili
      sifirlanir ki secim/isim durumu kalmasin), ama gokyuzu ACIK kalir.
-     Kapatma yollari (bosluga dokunmak, zum'u geri kisip esigin altina
-     inmek) DEGISMEDI -- yalnizca "istasyon sectim" artik otomatik
-     kapatma SEBEBI degil. */
+     KAPATMA YOLU SONRADAN DEGISTI (18 Eylul, ucuncu istek): o gun
+     "bosluga dokunmak" da bir kapatma yoluydu, artik degil -- bkz.
+     zumSec() icindeki not. Tek kapatma yolu simdi zum'u geri kisip
+     esigin altina inmek (ayni iki parmak jestini tekrarlamak). */
   function yildizAc(y){
     try{
       try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
@@ -20928,13 +20986,47 @@
      Dosya hic gelmezse (kopuk hat) bir kez daha isteniyor. Iki kez
      CALISTIRMAK ise yasak: ust duzey const'lar yeniden bildirilir
      ve SyntaxError olur -- o yuzden BASLADI imzasi varken yeni
-     istek atilmiyor. */
-  var _kayIstendi = false, _kayTekrar = 0, _kayBekTus = null, _kayBekZaman = 0;
+     istek atilmiyor.
+
+     ── 18 EYLUL COKMESI: "Identifier 'rec' has already been
+     declared" ────────────────────────────────────────────────────
+     pj'nin kendi cihazindan (Android, SamsungBrowser, zayif hat)
+     gelen gercek hata raporuyla yakalandi. Kok neden BASLADI
+     kontrolunun kendisi degil, ASAGIDAKI NOBETCI'ydi (bkz. 4000ms
+     sonraki ilk istek + 8sn'de bir uc kez tekrar): eski kod nobet
+     her tetiklendiginde HAZIR degilse -- BASLADI'ya bile bakmadan --
+     _kayIstendi'yi sifirlayip kayitYukle()'yi yeniden cagiriyordu.
+     Zayif hatta ilk istek 8-12 saniyede henuz INMEMIS olabilir
+     (dosya hala yolda, BASLADI da HAZIR da hala yanlis) -- bu anda
+     nobet ikinci bir <script> etiketi ekliyor. Sonra IKI istek de
+     ayri ayri tamamlanip calisinca ust duzey `const rec` iki kez
+     bildiriliyor: SyntaxError, sayfa o an icin bozuluyor.
+     kayitYukle()'nin kendi BASLADI kontrolu bunu YAKALAYAMIYOR
+     cunku nobet o kontrolden ONCE _kayIstendi'yi sifirliyor ve o
+     anda BASLADI da henuz olusmamis oluyor -- kontrol var ama
+     bakacak bir isaret yok.
+     DUZELTME: nobet artik "HAZIR degil mi" diye degil, "son istegin
+     UZERINDEN GERCEKTEN yeterince (15 sn) zaman gecti mi VE hala
+     BASLAMADI mi" diye soruyor -- ilk istek hala yolda oldugu surece
+     dokunmuyor. Ayrica yeniden denerken eski <script> etiketi DOM'dan
+     siliniyor (bazi tarayicilarda gec gelen icraati onluyor, olcum
+     yok ama zararsiz ve ucretsiz bir onlem). KANIT: asagida
+     `window.__kayNobetKontrol()` yardimcisi (yalnizca testte
+     cagriliyor) eski davranisi (BASLADI yokken, 8 sn'de bir, kosulsuz
+     yeniden istek) ve yeniyi (BASLADI yokken bile 15 sn dolmadan
+     istek atmiyor) ayirt etmeyi sagliyor -- bkz. saglik.js "Nobetci
+     hala yolda olan istegi ikinci kez baslatmiyor". */
+  var _kayIstendi = false, _kayTekrar = 0, _kayBekTus = null, _kayBekZaman = 0,
+      _kayIstekZamani = 0, _kayEtiket = null;
   function kayitYukle(){
     try{
       if(_kayIstendi) return;
       if(window.KAYIT_MODULU_BASLADI || window.KAYIT_MODULU_HAZIR){ _kayIstendi = true; return; }
       _kayIstendi = true;
+      _kayIstekZamani = Date.now();
+      /* Onceki denemeden kalan etiket varsa silinir -- gec gelen bir
+         icraati engelleyebilir, garanti degil ama zararsiz (18 Eylul). */
+      try{ if(_kayEtiket && _kayEtiket.parentNode) _kayEtiket.parentNode.removeChild(_kayEtiket); }catch(e2){ _yut(e2); }
       const s = document.createElement('script');
       s.src = 'kayit.js';
       s.defer = true;
@@ -20951,6 +21043,7 @@
           setTimeout(kayitYukle, 2000);
         }catch(e){ _yut(e); }
       };
+      _kayEtiket = s;
       document.body.appendChild(s);
     }catch(e){ _yut(e); }
   }
@@ -21007,11 +21100,26 @@
          yalnizca hic dokunmayan kullanici icin. */
       setTimeout(kayitYukle, 4000);
       let kalan = 3;
+      /* 18 Eylul cokmesi (bkz. kayitYukle() ustundeki uzun not): bu
+         fonksiyon HAZIR degil diye kosulsuz yeniden istemek yerine,
+         once BASLADI'ya (istek gercekten yolda mi) sonra da son
+         istegin GERCEK yasina bakiyor. Ayri fonksiyon: test bunu
+         gercek 15 saniye beklemeden, sahte bir _kayIstekZamani ile
+         dogrudan cagirabiliyor. */
+      function _kayNobetKontrol(){
+        if(window.KAYIT_MODULU_BASLADI || window.KAYIT_MODULU_HAZIR || kalan <= 0){ clearInterval(nobet); return false; }
+        if(_kayIstekZamani && (Date.now() - _kayIstekZamani) < 15000) return false;
+        kalan--; _kayIstendi = false; kayitYukle();
+        return true;
+      }
+      try{
+        window.__kayNobetKontrol = _kayNobetKontrol;
+        /* Testin GERCEK istek yasini sahte geciktirebilmesi icin:
+           yalnizca testte cagriliyor, gercek akista hic dokunulmuyor. */
+        window.__kaySahteIstekYasi = (ms)=>{ _kayIstekZamani = Date.now() - ms; };
+      }catch(e2){ _yut(e2); }
       const nobet = setInterval(()=>{
-        try{
-          if(window.KAYIT_MODULU_HAZIR || kalan <= 0){ clearInterval(nobet); return; }
-          kalan--; _kayIstendi = false; kayitYukle();
-        }catch(e){ _yut(e); clearInterval(nobet); }
+        try{ _kayNobetKontrol(); }catch(e){ _yut(e); clearInterval(nobet); }
       }, 8000);
     });
   }catch(e){ _yut(e); }

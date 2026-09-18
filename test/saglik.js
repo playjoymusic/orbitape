@@ -3343,11 +3343,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      DOLU aile tanimli", SIRA listesi ve tur dongusu duzeltildi ama bu
      kontrol atlanmis -- hala 11 bekliyordu, PODCASTS'i da aramiyordu.
      saglik.js CI'da bu yuzden kirmizi kaliyordu, ortam dalgalanmasi
-     degildi. */
-  K('Radyoda halkalar tur ailesi', hs.n===12 &&
+     degildi.
+     ON IKI -> ON BIR (18 Eylul): PODCASTS KAPANDI. Bir hafta sonra
+     olculdu, radyo.json'da tek istasyon kalmisti. Kullanicinin sozu:
+     "podcasti de sil ya bos zaten 1 istasyom var" -> "radı sil bbc
+     yi de sil. ya da kapat." Sayi ve bu kontrol de geri alindi. */
+  K('Radyoda halkalar tur ailesi', hs.n===11 &&
        /ELECTRONIC/.test(hs.sira) && /RADIOTAPE/.test(hs.sira)
        && /RNB & FUNK/.test(hs.sira) && /AFROBEATS/.test(hs.sira)
-       && /PODCASTS/.test(hs.sira)
+       && !/PODCASTS/.test(hs.sira)
        && !/DISCO FUNK/.test(hs.sira)
        && !/MIXTAPE/.test(hs.sira), hs.sira);
   {
@@ -4222,7 +4226,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                     bekleyen: !!_bekleyenKayit, kamAcik: !!kamAcik };
     const d = document.querySelector('.disk').getBoundingClientRect();
     const kk2 = document.getElementById('kam').getBoundingClientRect();
-    const R = Math.min(d.width,d.height)*0.357;
+    /* R = disk YARICAPI (18 Eylul'e kadar burada disk.width*0.357
+       vardi -- baska bir amacla kullanilan KUCUK bir olcekti, gercek
+       halka geometrisiyle (asagidaki not) ilgisi yoktu. Gercek halkalar
+       #tp'nin (== .disk kutusu) TAM yaricapina gore normalize:
+       _diskOran() = mesafe / (r.width/2). Bu yuzden R = d.width/2. */
+    const R = d.width/2;
     const olcu = { kam: Math.round(kk2.width),
                    disHalka: Math.round(2*R*HALKA_DIS),
                    icHalka:  Math.round(2*R*halkaIc()) };
@@ -4237,11 +4246,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* ── KAMERA EN DIS HALKAYA KADAR DOLUYOR (16 Eylul) ────────────────
      Once kamera %56 idi (bkz. index.html #kam yorumu) ve en dis
      halkadan belirgin kucuk kaliyordu -- kullanicinin ekran goruntusu:
-     "bak bosluk var cerceveyle oraya kadar buyut." Artik %63,5 --
-     en dis halkanin CAPIYLA AYNI olcude (HALKA_DIS=0.89 uzerinden).
-     Once "kesinlikle kucuk" (<) doğrulaniyordu, artik "neredeyse esit"
-     (±4px yuvarlama payi) doğrulaniyor; ic halkadan hala buyuk olmali
-     (kamera halkalarin GOVDESINI degil ARASINI doldurmali). */
+     "bak bosluk var cerceveyle oraya kadar buyut." %63,5 yapilmisti --
+     en dis halkanin CAPIYLA AYNI SANILMISTI (HALKA_DIS=0.89 uzerinden)
+     ama yanlis bir yaricapla (disk.width*0.357) carpilmisti.
+     18 Eylul, IKINCI OLCUM: kullanici yine bosluk bildirdi. Debug
+     kutularla olculdu (bkz. index.html #kam yorumu): gercek en dis
+     halka disk CAPININ %89'u (_diskOran/_halkaNo, disk == #tp), %63,5
+     degil. Kamera artik %89 -- bu kontrol de dogru olcege gore
+     duzeltildi (R = d.width/2, eskiden d.width*0.357 idi).
+     "Kesinlikle kucuk" (<) yerine "neredeyse esit" (±4px yuvarlama
+     payi) doğrulaniyor; ic halkadan hala buyuk olmali (kamera
+     halkalarin GOVDESINI degil ARASINI doldurmali). */
   K('Kamera penceresi en dis halkaya kadar doluyor, bosluk kalmiyor',
      cam.olcu && Math.abs(cam.olcu.kam - cam.olcu.disHalka) <= 4 && cam.olcu.kam > cam.olcu.icHalka,
      'kamera '+(cam.olcu&&cam.olcu.kam)+'px | en dis halka '+(cam.olcu&&cam.olcu.disHalka)+'px');
@@ -7097,8 +7112,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kurulunca bu karar yeniden ele alinacak") gerceklesti. Eskiden
        komple atilan KONUSMA istasyonlari SIYASI (kalici yasak) ve
        PODCAST_ADAY (bu rafa girer) diye ikiye bolundu. Raf ANATOLIA'dan
-       hemen sonra, dolu dogdu, o yuzden 'bos' damgasi yok. */
-    K('On iki DOLU aile tanimli', !!ai && ai.sayi === 12, ai ? ai.adlar.join(' · ') : 'AILELER yok');
+       hemen sonra, dolu dogdu, o yuzden 'bos' damgasi yok.
+       ON IKI -> ON BIR (18 Eylul): PODCASTS KAPANDI, bir hafta sonra
+       olculdu tek istasyon kalmisti ("podcasti de sil ya bos zaten 1
+       istasyom var"). PODCAST_ADAY artik SIYASI gibi temizle()'de
+       atiliyor, bir rafa yazmiyor -- bkz. radyo_grupla.py. */
+    K('On bir DOLU aile tanimli', !!ai && ai.sayi === 11, ai ? ai.adlar.join(' · ') : 'AILELER yok');
     K('Bildirilmis-bos raf halkada gorunmuyor',
       !!ai && ai.bosAdlar.every(b => !ai.halkada.includes(b)),
       ai ? ('bos: ' + (ai.bosAdlar.join(', ') || 'yok')
@@ -7224,8 +7243,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        TR ulke kara listesinden cikinca acilan raf; kesif olcumu 15
        aday buldu, yani en kucuk raf bu. On halka on bir oldu. */
     /* 16 Eylul: PODCASTS eklendi, ANATOLIA'dan hemen sonra. On bir
-       halka on iki oldu. */
-    const SIRA = ['ANATOLIA','PODCASTS','AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
+       halka on iki oldu.
+       18 Eylul: PODCASTS KAPANDI (tek istasyon kalmisti, "podcasti de
+       sil ya bos zaten 1 istasyom var"). On iki halka yine on bir. */
+    const SIRA = ['ANATOLIA','AMBIENT','ORCHESTRAL','ROCK & INDIE','LOUNGE & LOFI',
                   'JAZZ','WORLD & ROOTS','AFROBEATS','RNB & FUNK',
                   'ELECTRONIC','RADIOTAPE'];
     K('Halka sirasi kullanicinin dikte ettigi gibi',
@@ -9469,6 +9490,68 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ky.ilkBasisIsledi === true, ozk || 'gelince o dokunus oynatiliyor');
   }
 
+  /* ── NOBETCI HALA YOLDA OLAN ISTEGI IKINCI KEZ BASLATMIYOR ───────
+     18 Eylul: pj'nin kendi cihazindan (Android, SamsungBrowser,
+     zayif hat) gelen gercek cokme raporu: "Identifier 'rec' has
+     already been declared (kayit.js:1:1)". Kok neden bu bekcinin
+     kendisiydi: HAZIR degilse -- ilk istek hala yolda olsa bile --
+     kosulsuz ikinci bir <script src="kayit.js"> ekliyordu; ikisi de
+     tamamlanirsa ust duzey `const rec` iki kez bildiriliyor ve
+     SyntaxError'la sayfa o an icin bozuluyordu.
+     Olculen: ilk istek atildiktan HEMEN sonra (gercekte hala yolda
+     olabilecegi an) bekci bir kez daha denenirse ikinci bir etiket
+     eklenmemeli; ama istek GERCEKTEN eski (15 sn+) ve hala
+     BASLAMADIYSA bekci yine devreye girmeli -- sessiz "hic gelmedi"
+     durumu (7 Eylul'de eklenen israr) kaybolmasin. */
+  {
+    const nb = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          /* kayit.js'in gercekte hic bitmemesini saglar: ilk istek
+             sonsuza kadar "yolda" kalir, tam da cokmeye yol acan an. */
+          await sayfa.route('**/kayit.js*', () => new Promise(()=>{}));
+          return await sayfa.evaluate(() => {
+            const c = {};
+            let sayac = 0;
+            const orijinal = document.createElement.bind(document);
+            document.createElement = function(etiket){
+              const el = orijinal(etiket);
+              if(etiket === 'script'){
+                const yaz = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src').set;
+                Object.defineProperty(el, 'src', {
+                  set(v){ if(v && v.indexOf('kayit.js') !== -1) sayac++; yaz.call(el, v); },
+                  get(){ return el.getAttribute('src'); }
+                });
+              }
+              return el;
+            };
+            window.kayitYukle();                 // ilk istek: hala yolda kalacak
+            c.ilkIstekSayisi = sayac;
+            /* Taze istek: bekci HEMEN yeniden denerse ikinci etiket
+               EKLENMEMELI. */
+            c.tazeyken = window.__kayNobetKontrol();
+            c.tazeSonraSayac = sayac;
+            /* Istek 20 sn once atilmis GIBI davran (gercekte 15 sn
+               esigi asiyor): bekci artik yeniden denemeli -- sessiz
+               "hic gelmedi" durumu hala calisiyor. */
+            window.__kaySahteIstekYasi(20000);
+            c.eskiyken = window.__kayNobetKontrol();
+            c.eskiSonraSayac = sayac;
+            return c;
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const ozn = Object.keys(nb).filter(k=>nb[k]!==true && typeof nb[k]!=='number').map(k=>k+'='+nb[k]).join(' ');
+    K('Nobetci hala yolda olan istegi ikinci kez baslatmiyor',
+       nb.ilkIstekSayisi === 1 && nb.tazeyken === false && nb.tazeSonraSayac === 1,
+       ozn || ('ilk=' + nb.ilkIstekSayisi + ' taze-bekci=' + nb.tazeyken + ' taze-sonra=' + nb.tazeSonraSayac));
+    K('Nobetci GERCEKTEN eski (15 sn+) ve hala baslamamis istegi yine deniyor',
+       nb.eskiyken === true && nb.eskiSonraSayac === 2,
+       ozn || ('eski-bekci=' + nb.eskiyken + ' eski-sonra=' + nb.eskiSonraSayac));
+  }
+
   /* ── DERI DEGISINCE CARK AYNI KAREDE YENILENIYOR ───────────────
      Bildirilen: "skins sectik, pencereyi kapattik, carkin ustunde
      bir bant gibi bir sey oluyor; dondurmeye baslayinca yok
@@ -9855,12 +9938,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      gecme. yildizlarda kalsin kisi isterse tekrar kapatir yildiz
      modunu." Once ikinci dokunus (istasyonu acmak) gokyuzunu de
      kapatiyordu -- artik kapatmiyor, yalnizca kullanicinin kendi
-     kapatmasi (bosluga dokunmak, zum'u geri kismak) kapatiyor.
+     kapatmasi (zum'u geri kismak) kapatiyor.
+     18 Eylul, UCUNCU ISTEK: "siyah alana basınca kapanıyor. kaopanamasın
+     ... yıldızların arasındaki siyahlıkta backraoubnda basınca da
+     kapanıyr o olmasın." Bosluga dokunmak da BIR kapatma yoluydu,
+     artik degil -- tek kapatma yolu ayni iki parmak jestini tekrarlamak
+     (zum'u esigin altina kismak).
      Olculenler: raf degisince gokyuzu degisiyor mu, calan istasyonun
      yildizi bulunuyor mu, iki parmak jesti gokyuzunu aciyor mu, ilk
      dokunus YALNIZCA adi mi gosteriyor, ikinci dokunus istasyonu
-     aciyor mu VE gokyuzu acik mi kaliyor, ve bosluga dokunus hala
-     kapatiyor mu. */
+     aciyor mu VE gokyuzu acik mi kaliyor, ve bosluga dokunus ARTIK
+     kapatMIYOR mu. */
   {
     const yz = await pg.evaluate(async ()=>{
       const c = {};
@@ -9941,19 +10029,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            SONRA sinif hala YERINDE mi. Secim/isim durumu (_zumSecili)
            temizleniyor -- calan istasyon artik "calan" olarak parlak
            yaniyor, "secili" olarak isim gostermiyor -- ama gokyuzunun
-           KENDISI acik kaliyor. Kapatma yolu (bosluga dokunus) hemen
-           altta ayrica olculuyor: kullanici hala kendisi kapatabiliyor,
-           yalnizca "istasyon sectim" artik otomatik kapatma SEBEBI
+           KENDISI acik kaliyor. Kapatma yolu artik yalnizca iki parmak
+           jestini tekrarlamak (zum'u esigin altina kismak); bosluga
+           dokunus (hemen altta olculuyor) artik BIR kapatma yolu
            degil. */
         await bek(350);
         c.gokyuzuAcikKaldi = document.body.classList.contains('yildiz-zum');
         c.secimTemizlendi = window.yildizDurum().secili === null;
-        /* Bosluga dokunus da kapatir. */
+        /* 18 Eylul, UCUNCU ISTEK: bosluga dokunus ARTIK KAPATMIYOR.
+           Sabit bir sure bekleyip (eskisi gibi "kapanana kadar" degil,
+           kapanmayacagini olcuyoruz) sinifin hala yerinde oldugunu
+           dogruluyoruz. */
         window.yildizZumAyar(2.6);
         for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 2.6) > 0.02; i++) await bek(30);
         dok(2, 2);
-        for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
-        c.boslukKapatti = !document.body.classList.contains('yildiz-zum');
+        await bek(300);
+        c.boslukAcikKaldi = document.body.classList.contains('yildiz-zum');
 
         /* ── TEK PARMAKLA KAYDIRMA ────────────────────────────────
            Ekrandan tasan yildizlara ulasmanin yolu. Kaydirdiktan
@@ -10122,8 +10213,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Istasyon acilinca gokyuzu KENDILIGINDEN kapanmiyor, kisi kapatana kadar acik kalir',
        yz.gokyuzuAcikKaldi === true && yz.secimTemizlendi === true,
        ozy || 'acik kaldi, secim/isim durumu temizlendi (calan yildiz parlak yaniyor)');
-    K('Gokyuzunde bosluga dokunus kapatir', yz.boslukKapatti === true,
-       ozy || 'her acik pencere gibi');
+    K('Gokyuzunde bosluga dokunus ARTIK kapatmiyor', yz.boslukAcikKaldi === true,
+       ozy || 'tek kapatma yolu: iki parmak jestini tekrarlamak');
     K('Tek parmakla gokyuzu kayiyor, kaydirma secim degil',
        yz.kaydi === true && yz.kaydirmaSecmedi === true && yz.kaydirinca_acik === true,
        ozy || 'ekrandan tasan yildizlara ulasiliyor');
@@ -10146,6 +10237,92 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Gokyuzu acikken cark pasif, kuculunce geri geliyor',
        yz.carkPasif === true && yz.turDegismedi === true
        && yz.kucultunceGeriGeldi === true, ozy || 'zumda tur degismiyor');
+  }
+
+  /* ── GOKYUZU TUVALI EKRAN DIBINDE BANT BIRAKMIYOR (18 Eylul) ─────
+     pj'nin ekran goruntuleri: birden cok deride, gokyuzu acikken
+     ekranin en altinda o anki derinin zemin rengi ince bir bant
+     halinde kaliyordu. Kok neden: tuval boyu window.innerWidth ve
+     _gorBoy() ile AYRI hesaplaniyordu; bu ikinci deger (aslinda
+     documentElement.clientHeight) bazi durumlarda gercek ekrandan
+     kisa olabiliyor (11 Eylul'de AYNI sinif hata baska bir yerde
+     bulunup _altYasla ile duzeltilmisti). Kisa olculen tuval kisa
+     ciziliyor, altta derinin gercek zemini bant gibi goruluyordu.
+     DUZELTME: tuval artik KENDI getBoundingClientRect()'inden
+     olcuyor (#yildizKat'in CSS'i zaten position:fixed;inset:0;
+     width/height:100% -- kendi kendinden bayat olamaz).
+     OLCULEN: _gorBoy() KASTEN 120px kisa donecek sekilde degistirilip
+     tuvalin GERCEK ekran boyuna ragmen dogru olculdugu kontrol
+     ediliyor -- tam pj'nin cihazindaki (Android, arac cubugu/klavye
+     gecisi) durumu taklit ediyor. */
+  {
+    const bant = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            const c = {};
+            const gorBoyOrijinal = _gorBoy;
+            _gorBoy = function(){ return gorBoyOrijinal() - 120; };
+            try{
+              window.yildizZumAyar(2.6);
+              for(let i=0;i<60 && Math.abs(window.yildizDurum().zum-2.6)>0.02;i++) await bek(30);
+              await bek(200);
+              const kat = document.getElementById('yildizKat');
+              const gercekBoy = document.documentElement.getBoundingClientRect().height;
+              c.tuvalBoy = parseFloat(kat.style.height);
+              c.gercekBoy = gercekBoy;
+              c.fark = Math.abs(gercekBoy - c.tuvalBoy);
+            }finally{ _gorBoy = gorBoyOrijinal; }
+            return c;
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const ozb = Object.keys(bant).filter(k=>bant[k]!==true).map(k=>k+'='+bant[k]).join(' ');
+    K('Gokyuzu tuvali ekran boyu kaynaginin bayatligina BAGLI DEGIL (dipte bant kalmiyor)',
+       typeof bant.fark === 'number' && bant.fark === 0,
+       ozb || ('tuval=' + bant.tuvalBoy + 'px gercek=' + bant.gercekBoy + 'px'));
+  }
+
+  /* ── GOKYUZU ACIKKEN SOL ALTTAKI TASIMA/ARACLAR DA KAYBOLUYOR
+     (18 Eylul) ────────────────────────────────────────────────────
+     pj'nin ekran goruntuleri: gokyuzu acikken #solUst (tasima
+     oklari + REC/CAM/sustur/★) hep tam opaklikta kaliyordu --
+     "tum ogeler gitmiyor, yildizlar buyukken de orda duruyor".
+     Cark/viz ile AYNI davranis eklendi: body.yildiz-zum #solUst
+     {opacity:0;pointer-events:none}. Olculen: acilinca kayboluyor
+     VE dokunulamaz oluyor mu, kapaninca geri geliyor mu. */
+  {
+    const su = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            const c = {};
+            const solUst = document.getElementById('solUst');
+            c.acilmadanOnceGorunur = +getComputedStyle(solUst).opacity > 0.95;
+            window.yildizZumAyar(2.6);
+            for(let i=0;i<60 && Math.abs(window.yildizDurum().zum-2.6)>0.02;i++) await bek(30);
+            await bek(400);
+            c.acikkenOpaklik = +getComputedStyle(solUst).opacity;
+            c.acikkenDokunulamiyor = getComputedStyle(solUst).pointerEvents === 'none';
+            window.yildizZumAyar(1);
+            for(let i=0;i<40 && document.body.classList.contains('yildiz-zum');i++) await bek(30);
+            await bek(400);
+            c.kapaninceGeriGeldi = +getComputedStyle(solUst).opacity > 0.95;
+            return c;
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const ozs = Object.keys(su).filter(k=>su[k]!==true && typeof su[k]!=='number').map(k=>k+'='+su[k]).join(' ');
+    K('Gokyuzu acikken sol alt (tasima/REC/CAM/★) da kayboluyor, kapaninca geri geliyor',
+       su.acilmadanOnceGorunur === true && su.acikkenOpaklik === 0
+       && su.acikkenDokunulamiyor === true && su.kapaninceGeriGeldi === true,
+       ozs || ('acikken-opaklik=' + su.acikkenOpaklik));
   }
 
   /* ── GOKYUZU ACIKKEN KIP DEGISTIRME KARARTMASI (15 Eylul) ────────────
