@@ -2441,6 +2441,80 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       ms.yok ? '-' : ('bos/kirik cizim index: ' + JSON.stringify(ms.bosBBox)));
   }
 
+  /* ══ BASILAN MOOD SEMBOLU KALICI RENKLI KALIR (18 Eylul, sonraki istek) ══
+     Onceki istek "kilitlenen yuva SABIT kalsin" idi (yukarida); bu
+     AYRI bir istek -- rengiyle ilgili. Onun sozu: "sadece bastıgımız
+     sembol ayrı renk olmalı ya renk temadan alır ya turden ya da
+     basınca neonlu olur digerleri aynen devam. neonsuz" -- iki turlu
+     AskUserQuestion ile netlestirildi: renk kaynagi zaten var olan
+     tur/janr rengi (moodVurgula, AILELER'deki gercek renk -- uydurma
+     degil), suresi ONCEDEN 1400 ms'de sonen bir "flash" iken artik
+     KALICI -- bir sonraki dokunusa/gecise kadar.
+     IKI PARCALI DUZELTME, IKISI DE AYRI OLCULDU:
+       1) mood.js moodVurgula(): renk sonduren setTimeout SATIRI
+          kaldirildi -- artik --mood-renk ve .mood-sec siliniyor DIYE
+          bir kod yolu bu fonksiyonda yok.
+       2) index.html yuvaYaz(): TERS bir risk dogurdu -- (1) tek basina
+          yeterli DEGIL, cunku dokunulan yuva bir sonraki istasyon
+          geciminde (kilit tuketilince) normal donmeye devam ediyor ve
+          BASKA bir ikonla yeniden yaziliyor (bkz. _moodKilitliYuva);
+          --mood-renk/.mood-sec HICBIR YERDE silinmezse o renk, artik
+          tamamen ILGISIZ bir sonraki ikona da yapisik kalirdi (yalanci
+          "bunu da mi ben sectim" izlenimi). Duzeltme: yuvaYaz() HER
+          cizdiginde (normal donme, cark, ucluk -- hepsisi tek kapidan
+          buradan geciyor) once eski vurguyu siliyor.
+     OLCUM (asagidaki testin kendisi, /tmp/prove_renk.js'nin ayni
+     deseni): moodVurgula() cagrildiktan 1600 ms SONRA (eski kod TAM
+     1400 ms'de siliyordu) sinif/renk hala duruyor mu diye bakiliyor,
+     sonra AYNI yuvaya yuvaYaz() ile yeni bir ikon yazilip vurgunun
+     gercekten gittigi dogrulaniyor. Kural 4 GEREGI ikisi de AYRI AYRI
+     geri alinip olculdu: (1) moodVurgula'daki setTimeout satiri geri
+     eklenince "1600msSonra" kontrolu KIRMIZI yandi (renk 1400 ms'de
+     zaten silinmisti); (2) yuvaYaz'daki temizleme satiri kaldirilinca
+     "yenidenYazilinca" kontrolu KIRMIZI yandi (eski renk yeni ikona
+     yapisik kaldi) -- ikisi de duzeltmeler geri konunca yeniden
+     yesile döndu. */
+  {
+    const rk = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      if(typeof MOOD_IKON_LIST === 'undefined'){
+        try{ moodYukle(); }catch(e){}
+        for(let i=0;i<20 && typeof MOOD_IKON_LIST === 'undefined'; i++) await bek(150);
+      }
+      if(typeof moodVurgula !== 'function' || typeof yuvaYaz !== 'function'
+         || typeof MOOD_IKON_LIST === 'undefined' || typeof AILELER === 'undefined'){
+        return { yok:true };
+      }
+      const aile = AILELER.find(a=>a.renk);
+      if(!aile) return { yok:true };
+      const yuv = document.createElement('div');
+      yuv.className = 'yuva';
+      document.body.appendChild(yuv);
+      yuvaYaz(yuv, MOOD_IKON_LIST[0]);                 // baslangic: sıradan bir ikon
+      moodVurgula(yuv, aile.ad);
+      const hemenSonra = { sinif: yuv.classList.contains('mood-sec'),
+                            renk: yuv.style.getPropertyValue('--mood-renk') };
+      await bek(1600);                                  // eski kod TAM 1400 ms'de sonduruyordu
+      const msSonra = { sinif: yuv.classList.contains('mood-sec'),
+                         renk: yuv.style.getPropertyValue('--mood-renk') };
+      yuvaYaz(yuv, MOOD_IKON_LIST[1]);                  // yuva BASKA bir ikonla yeniden yazildi
+      const yenidenYazilinca = { sinif: yuv.classList.contains('mood-sec'),
+                                  renk: yuv.style.getPropertyValue('--mood-renk') };
+      yuv.remove();
+      return { yok:false, beklenenRenk: 'rgb(' + aile.renk + ')', hemenSonra, msSonra, yenidenYazilinca };
+    });
+    K('Mood dokunusunun rengi dokunur dokunmaz uygulanir', !rk.yok
+      && rk.hemenSonra.sinif === true && rk.hemenSonra.renk === rk.beklenenRenk,
+      rk.yok ? 'test kosulamadi (moodVurgula/yuvaYaz/MOOD_IKON_LIST/AILELER eksik)'
+             : ('beklenen=' + rk.beklenenRenk + ', olcum=' + JSON.stringify(rk.hemenSonra)));
+    K('Mood rengi 1400 ms sinirini asip 1,6 sn sonra da KALICI duruyor (artik sonmuyor)', !rk.yok
+      && rk.msSonra.sinif === true && rk.msSonra.renk === rk.beklenenRenk,
+      rk.yok ? '-' : ('1,6 sn sonra: ' + JSON.stringify(rk.msSonra)));
+    K('Ayni yuvaya baska bir ikon yazilinca eski mood rengi otomatik kalkar', !rk.yok
+      && rk.yenidenYazilinca.sinif === false && rk.yenidenYazilinca.renk === '',
+      rk.yok ? '-' : ('yeniden yazim sonrasi: ' + JSON.stringify(rk.yenidenYazilinca)));
+  }
+
   /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────
      Kullanicinin istegi: "kategori adinin tam altini, hep oradaki
      yazinin uzunlugunda, caldigina dair bir hareket."
