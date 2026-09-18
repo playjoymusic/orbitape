@@ -10325,6 +10325,178 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ozs || ('acikken-opaklik=' + su.acikkenOpaklik));
   }
 
+  /* ── GOKYUZU ACIKKEN "SADECE YILDIZLAR" (18 Eylul, ikinci tur) ────
+     pj'nin sozu: "bunda buyutec te var imdat ya. sadece sag alttaki
+     bilgiler olsun (#np) ve ustteki sagdaki orbitape tur ismi (#ust).
+     geri kalan yok sadece yildizlar. hepsinde her skinste."
+     #carkTuval/#viz/#solUst zaten kapaniyordu (yukarida); bes kucuk
+     arac tusu (ayarlar/deri/saat/gorsel/rehber), arama kutusu ve alt
+     sol ORBITAPE<->RADIO anahtari (#kipKisayol) acik kalmisti.
+     AYNI opacity/pointer-events deseni eklendi -- olculen: yedisi de
+     kayboluyor VE dokunulamaz oluyor mu, kapaninca geri geliyor mu,
+     #np ve #ust'e HIC DOKUNULMADI mi (kullanicinin acikca istedigi
+     iki sey). */
+  {
+    const yz2 = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            const c = {};
+            const idler = ['ayarTut','deriFirca','saatTus','gorselTus','rehberTus','ara','kipKisayol'];
+            const els = idler.map(id=>document.getElementById(id));
+            c.oncesiHepsiGorunur = els.every(el=>el && +getComputedStyle(el).opacity > 0.4);
+            const np = document.getElementById('np'), ust = document.getElementById('ust');
+            /* #np varsayilan olarak opacity:0 -- yalnizca calar durumda
+               (baska bir mekanizmayla) goruluyor. Bu yuzden "dokunulmadi"
+               MUTLAK bir esikle degil, ONCESI/SONRASI FARKIYLA olculuyor:
+               zoom kendi acilmasin/kapanmasin, #np/#ust ne haldeyse
+               ONCESINDE de AYNI halde kalsin -- calmiyorsa calmadan,
+               caliyorsa calarak. */
+            const npOncesi = np ? +getComputedStyle(np).opacity : null;
+            const ustOncesi = ust ? +getComputedStyle(ust).opacity : null;
+            window.yildizZumAyar(2.6);
+            for(let i=0;i<60 && Math.abs(window.yildizDurum().zum-2.6)>0.02;i++) await bek(30);
+            await bek(400);
+            c.acikkenHepsiKayboldu = els.every(el=>!el || (+getComputedStyle(el).opacity === 0 && getComputedStyle(el).pointerEvents === 'none'));
+            c.npDokunulmadi = !np || Math.abs(+getComputedStyle(np).opacity - npOncesi) < 0.05;
+            c.ustDokunulmadi = !ust || Math.abs(+getComputedStyle(ust).opacity - ustOncesi) < 0.05;
+            window.yildizZumAyar(1);
+            for(let i=0;i<40 && document.body.classList.contains('yildiz-zum');i++) await bek(30);
+            await bek(400);
+            c.kapaninceHepsiGeriGeldi = els.every(el=>!el || +getComputedStyle(el).opacity > 0.4);
+            return c;
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const ozy = Object.keys(yz2).filter(k=>yz2[k]!==true).map(k=>k+'='+yz2[k]).join(' ');
+    K('Gokyuzu acikken sadece yildizlar: bes arac tusu+arama+ORBITAPE anahtari da kayboluyor, #np/#ust duruyor',
+       yz2.oncesiHepsiGorunur === true && yz2.acikkenHepsiKayboldu === true
+       && yz2.npDokunulmadi === true && yz2.ustDokunulmadi === true
+       && yz2.kapaninceHepsiGeriGeldi === true,
+       ozy || 'hepsi beklendigi gibi');
+  }
+
+  /* ── GOKYUZU ACIKKEN ARKA PLAN DAIMA SIYAH (18 Eylul, bant ikinci
+     tur) ────────────────────────────────────────────────────────
+     pj'nin sozu: "skinler yuklenirken cok kisa alt tarafta bu bant
+     gibi yer gec degisiyor... tam ekran olsun background her zaman
+     her durumda." #yildizKat kendi rect'inden dogru boyutlaniyordu
+     (bkz. yukarideki test) ama ARKASINDAKI <html> zemini hala o anki
+     derinin rengiydi (deriUygula -> documentElement.style.backgroundColor
+     = d.zem) -- skin degisirken tek karelik bir olcum/reflow farkinda
+     bu renk goruluyordu, siyah degil. Duzeltme: body.yildiz-zum{
+     background:#000} -- <body> <html>'in onune geciyor, skin rengi
+     ne olursa olsun gokyuzu acikken zemin daima siyah. */
+  {
+    const zk = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            const c = {};
+            /* Acik/parlak bir deri sec (ilk 30 derinin en acigi
+               yerine bilerek AYAR.deri'yi degistirip deriUygula'yi
+               yeniden cagirmak yerine dogrudan documentElement
+               zeminini kasten acik bir renge zorluyoruz -- deri
+               secim mekanigi ayri bir konu, burada sinanan tek sey
+               body.yildiz-zum kuralinin zemin uzerindeki gucu). */
+            document.documentElement.style.backgroundColor = '#ffcc00';
+            window.yildizZumAyar(2.6);
+            for(let i=0;i<60 && Math.abs(window.yildizDurum().zum-2.6)>0.02;i++) await bek(30);
+            await bek(200);
+            c.acikkenZemin = getComputedStyle(document.body).backgroundColor;
+            window.yildizZumAyar(1);
+            for(let i=0;i<40 && document.body.classList.contains('yildiz-zum');i++) await bek(30);
+            document.documentElement.style.backgroundColor = '';
+            return c;
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const ozk = Object.keys(zk).filter(k=>zk[k]!==true).map(k=>k+'='+zk[k]).join(' ');
+    K('Gokyuzu acikken govde zemini daima siyah (skin rengi ne olursa olsun)',
+       zk.acikkenZemin === 'rgb(0, 0, 0)',
+       ozk || ('zemin=' + zk.acikkenZemin));
+  }
+
+  /* ── GOKYUZU ACILINCA TAM PARLAKLIGA COK DAHA CABUK ULASILIYOR
+     (18 Eylul, "hersey soluk") ─────────────────────────────────────
+     pj'nin sozu: "bak yildizlar da soluk hersey soluk. genele sorun
+     bu hepsini coz." Kok neden: acilma orani (gel) tam parlakliga
+     ESKIDEN ancak zum=1.9'da ulasiyordu (payda 0.9, ZUM_ESIK=1.06'dan
+     0.84 birim sonra) -- pinch'i sonuna kadar (4.2'ye) surdurmeyen
+     kullanicida gokyuzu KALICI olarak soluk gorunuyordu. Payda
+     0.9 -> 0.2: tam parlaklik artik zum=1.26'da geliyor. Olculen:
+     zum=1.3'te (eski formulle gel=0.33 olurdu) yeni formulle gel
+     neredeyse tam (>=0.98) mi. */
+  {
+    const gp = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            window.yildizZumAyar(1.3);
+            for(let i=0;i<60 && Math.abs(window.yildizDurum().zum-1.3)>0.01;i++) await bek(30);
+            await bek(200);
+            const gel = window.__zumGelOlcu;
+            window.yildizZumAyar(1);
+            return { gel };
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    K('Zum=1.3 gibi kisa bir acilista bile gokyuzu artik neredeyse tam parlak (soluk kalmiyor)',
+       typeof gp.gel === 'number' && gp.gel >= 0.98,
+       'zum=1.3 gel=' + gp.gel + (gp.hata ? (' hata=' + gp.hata) : ''));
+  }
+
+  /* ── GOKYUZU BUYUME ADIMI ARTIK KARE ATLAMASINDAN BAGIMSIZ
+     (18 Eylul, "takila takila buyuyup kuculuyor") ────────────────────
+     pj'nin sozu: "yıldızlar takılarak buyuyup kuculuyor o kadar cok
+     sorun var ki." Kok neden: zum adimi HER CAGRIDA sabit bir orandi
+     (cagrilar arasi GERCEK sure ne olursa olsun) -- kare atlaninca
+     "dur, sonra sicra" gorunumu veriyordu. Duzeltme: adim artik
+     zumAdimKatsayi(dt) ile GECEN GERCEK SUREYE gore olcekleniyor,
+     window.__zumAdimKatsayi olarak disari birakildi (yildizNoktaTest
+     ile ayni ilke -- test kopya formul degil GERCEK fonksiyonu
+     cagiriyor). Olculen UC sey: (1) tam 60fps'te (dt=16.67ms) eski
+     0.18 ile BIREBIR ayni sonucu veriyor mu (normal hizda davranis
+     degismedi), (2) kare atlaninca (dt=33.3ms, bir kare kayip) adim
+     daha BUYUK mu (kayip zamani telafi ediyor mu -- "dur sonra sicra"
+     yerine "kesintisiz ilerle"), (3) asiri buyuk dt (sekme arka
+     plandan donus, 5000ms) 200ms'de kesiliyor mu (tek karede hedefe
+     isinma olmasin diye). */
+  {
+    const ak = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(()=>{
+            const f = window.__zumAdimKatsayi;
+            if(typeof f !== 'function') return { yok: true };
+            return {
+              tam60: f(1000/60),
+              birKareAtlandi: f(1000/60*2),
+              cokBuyukDt: f(5000),
+              esikUstu: f(5000) === f(300)
+            };
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const okTam60 = typeof ak.tam60 === 'number' && Math.abs(ak.tam60 - 0.18) < 0.0005;
+    const okBuyudu = typeof ak.birKareAtlandi === 'number' && ak.birKareAtlandi > ak.tam60;
+    const okKesildi = ak.esikUstu === true;
+    K('Gokyuzu buyume adimi kare-hizindan bagimsiz: 60fps davranisi ayni, kare atlaninca telafi ediyor, asiri dt 200ms de kesiliyor',
+       !ak.hata && !ak.yok && okTam60 && okBuyudu && okKesildi,
+       ak.hata || (ak.yok ? '__zumAdimKatsayi yok' : ('tam60=' + ak.tam60 + ' birKareAtlandi=' + ak.birKareAtlandi + ' esikUstu=' + ak.esikUstu)));
+  }
+
   /* ── GOKYUZU ACIKKEN KIP DEGISTIRME KARARTMASI (15 Eylul) ────────────
      Bildirilen: radyo tarafinda yildizlari buyutup (yildiz-zum acik,
      bkz. CSS: body.yildiz-zum #carkTuval,#viz{opacity:0}) hemen

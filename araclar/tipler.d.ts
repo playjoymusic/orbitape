@@ -58,6 +58,16 @@ interface Window {
      diye. Yalnizca testte cagriliyor, bkz. index.html kayitYukle(). */
   __kayNobetKontrol?: () => boolean;
   __kaySahteIstekYasi?: (ms: number) => void;
+  /* 18 Eylul, "hersey soluk" duzeltmesi: zumCiz()'in her karede
+     hesapladigi acilma orani (gel) test icin disari birakiliyor --
+     tam parlakliga hangi zum degerinde ulasildigini dogrudan
+     olcebilmek icin. */
+  __zumGelOlcu?: number;
+  /* 18 Eylul, "takila takila buyuyup kuculuyor" duzeltmesi: zum
+     adiminin kare-hizindan bagimsiz katsayisini hesaplayan GERCEK
+     fonksiyon -- test eski adimi kopyalamak yerine dogrudan bunu
+     cagiriyor (yildizNoktaTest ile ayni ilke). */
+  __zumAdimKatsayi?: (dt: number) => number;
   /* Kayit hedefi (MediaStreamDestination): grafigi index.html
      kuruyor, kaydi modul aliyor -- ortak yer window. */
   kayitHedef?: any;

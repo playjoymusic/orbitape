@@ -401,6 +401,37 @@
      kaybolma display degil opacity (jest bitince beklemeden geri
      gelsin), dokunma da kapaniyor ki kazara REC'e basilmasin. */
   body.yildiz-zum #solUst{opacity:0;pointer-events:none;}
+  /* 18 Eylul gece: pj'nin sozu -- "sadece sag alttaki bilgiler olsun
+     (#np) ve ustteki sagdaki ORBITAPE tur ismi (#ust), geri kalan yok
+     sadece yildizlar." Yukaridaki #carkTuval/#viz/#solUst zaten
+     kapaniyordu ama bes kucuk arac tusu (ayarlar/deri/saat/gorsel/
+     rehber), arama kutusu ve alt sol ORBITAPE<->RADIO anahtari
+     (#kipKisayol) acik kaliyordu -- ekranda "sadece yildizlar"
+     degil, ustune binmis bir dugme sepeti goruluyordu. AYNI
+     opacity/pointer-events deseni: kaybolma anlik degil, jest
+     bitince beklemeden geri geliyor. */
+  body.yildiz-zum #ayarTut,body.yildiz-zum #deriFirca,
+  body.yildiz-zum #saatTus,body.yildiz-zum #gorselTus,
+  body.yildiz-zum #rehberTus,body.yildiz-zum #ara,
+  body.yildiz-zum #kipKisayol{opacity:0;pointer-events:none;
+    transition:opacity .32s ease;}
+  /* ── 18 EYLUL: SKIN DEGISIRKEN ANLIK BANT (ikinci tur) ───────────
+     pj'nin sozu: "skinler yuklenirken cok kisa alt tarafta bu bant
+     gibi yer gec degisiyor." Kok neden #yildizKat'in KENDI boyu
+     degil (o zaten kendi rect'inden okunuyor, bkz. zumCiz) --
+     ARKASINDAKI <html> elemaninin zemini. deriUygula() skin
+     degisince documentElement.style.backgroundColor'u O SKININ
+     kendi rengine (d.zem) yaziyor (bkz. deriUygula). Gokyuzu acikken
+     bu dogru degil: yildiz haritasinin arkasi HER ZAMAN simsiyah uzay
+     olmali ("ARKASI SIMSIYAH UZAY" karari, 10 Eylul), skin rengi
+     degil. Tuval kendi karesinde tam ekrani kapliyor olsa bile, CSS
+     boyutu ile gercek düzen (reflow) arasindaki TEK KARELIK gecikme
+     (skin degisince tarayici bir sonraki karede yeniden olcuyor)
+     boyle bir bosluk varsa artik SIYAH goruluyor, skin rengi degil.
+     <body> html'in oniine geciyor (CSS2.1 body->html zemin devri)
+     ve inline stilin ustune !important olmadan da basiyor cunku
+     FARKLI ELEMAN. */
+  body.yildiz-zum{background:#000;}
   .hit{position:absolute;inset:0;border:0;background:transparent;border-radius:50%;cursor:pointer;z-index:2;
     touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   .hit:focus-visible{outline:1px solid rgba(53,224,216,.35);outline-offset:10px;}
@@ -12618,6 +12649,10 @@
   const YIL_DOKUNU = 40;
   var _zum = 1, _zumHedef = 1, _zumKat = null, _zumCtx = null,
       _zumSecili = null;
+  /* 18 Eylul, "takila takila buyuyup kuculuyor": bkz. zumCiz'deki
+     zumAdimKatsayi acikla masi. 0 -> henuz kare cizilmedi (yeni
+     acilis/kapanis sonrasi ilk karede eski 60fps adimini kullan). */
+  var _zumSonKare = 0;
   /* Gokyuzu ekrandan tasiyor; tek parmakla surukleniyor. Kaydirma
      merkezden sapma olarak tutuluyor, cizim ve dokunma AYNI degeri
      kullaniyor -- yoksa gorunen yer ile basilan yer ayrisir. */
@@ -12677,9 +12712,9 @@
   var _zumKare = 0;
   function zumDongu(){
     if(_zumKare) return;
-    const tur = ()=>{
+    const tur = (ts)=>{
       _zumKare = 0;
-      try{ zumCiz(); }catch(e){ _yut(e); }
+      try{ zumCiz(ts); }catch(e){ _yut(e); }
       if(zumAcikMi()) _zumKare = requestAnimationFrame(tur);
     };
     _zumKare = requestAnimationFrame(tur);
@@ -12688,6 +12723,7 @@
     try{ document.body.classList.remove('yildiz-zum'); }catch(e){ _yut(e); }
     _zum = 1; _zumHedef = 1; _zumSecili = null; _adKutu = null;
     _kayX = 0; _kayY = 0;
+    _zumSonKare = 0;
   }
   /* Gokyuzunun merkezi: diskin ortasi + kaydirma. */
   function zumMerkez(){
@@ -12773,7 +12809,36 @@
      BAGLI DEGIL" -- _gorBoy() kasten yanlis bir deger dondurecek
      sekilde degistirilip tuvalin GERCEK yuksekligin degismedigi
      olculuyor. */
-  function zumCiz(){
+  /* ── 18 EYLUL: TAKILA TAKILA BUYUYUP KUCULUYOR (kare-hizindan
+     bagimsiz yumusatma) ────────────────────────────────────────
+     pj'nin sozu: "yıldızlar takılarak buyuyup kuculuyor o kadar
+     cok sorun var ki." ESKI adim HER CAGRIDA sabit bir orandi
+     (_zum += (_zumHedef-_zum)*0.18), cagrilar arasi GERCEK sure ne
+     olursa olsun. rAF duzenli akarken (60 kare/sn, ~16.7ms) sorun
+     yok, ama cihaz o an baska bir isle mesgulken (skin gecisi, cop
+     toplama, arka plan islemi) bir veya birkac kare atlanirsa
+     GORUNEN sey: ekran atlanan surede OLDUGU YERDE DONUYOR (hic
+     ilerleme yok, cunku bir sonraki cagriya kadar hic kod calismadi),
+     sonra tek seferde KUCUK bir adim atiyor -- "takılarak buyuyup
+     kuculuyor" tam olarak boyle gorunur (donma + sicrama, donma +
+     sicrama...).
+     DUZELTME: adim artik CAGRILAR ARASI GECEN GERCEK SUREYE (dt,
+     rAF'in kendi zaman damgasindan) gore olcekleniyor -- kare
+     atlanirsa bir sonraki cagri o kayip zamani TELAFI EDECEK kadar
+     buyuk bir adim atiyor, goz bunu "dururken sicrama" degil kesintisiz
+     hareket olarak okuyor. dt=1000/60 (tam 60fps) iken formul eski
+     0.18'i BIREBIR verir -- normal hizda davranis degismiyor, yalnizca
+     duzensiz hizda duzeliyor. dt cok buyukse (sekme arka plana alinip
+     geri donulmesi gibi) 200ms'de kesiliyor, yoksa tek karede hedefe
+     "isinma" olur. Formul PAYLASILAN/TEST EDILEBILIR bir fonksiyon:
+     yildizNoktaTest ile ayni ilke, testler eski adimi kopyalamak
+     yerine GERCEK fonksiyonu cagiriyor (bkz. window.__zumAdimKatsayi). */
+  function zumAdimKatsayi(dt){
+    const d = Math.min(200, Math.max(0, dt));
+    return 1 - Math.pow(1 - 0.18, d / (1000 / 60));
+  }
+  try{ window.__zumAdimKatsayi = zumAdimKatsayi; }catch(e){ _yut(e); }
+  function zumCiz(ts){
     try{
       const k = zumKatAl(); if(!k || !_zumCtx) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -12787,14 +12852,35 @@
       const c = _zumCtx;
       c.setTransform(dpr, 0, 0, dpr, 0, 0);
       c.clearRect(0, 0, W, H);
-      _zum += (_zumHedef - _zum) * 0.18;
+      const _simdi = (typeof ts === 'number' && ts) ? ts : performance.now();
+      const _dt = _zumSonKare ? (_simdi - _zumSonKare) : (1000 / 60);
+      _zumSonKare = _simdi;
+      _zum += (_zumHedef - _zum) * zumAdimKatsayi(_dt);
       if(_zumHedef <= 1 && _zum < ZUM_ESIK){ zumBitti(); return; }
       const m = zumMerkez(); if(!m) return;
       const cx = m.x, cy = m.y, taban = m.taban;
       const L = istYildizKur();
       /* Acilma orani: zum 1'e yakinken katman gorunmez, acildikca
          yildizlar geliyor. */
-      const gel = Math.max(0, Math.min(1, (_zum - 1) / 0.9));
+      /* ── 18 EYLUL: "HERSEY SOLUK" (gel penceresi cok genisti) ────
+         pj'nin sozu: "bak yildizlar da soluk hersey soluk. genele
+         sorun bu hepsini coz." ONCEKI PAYDA (0.9) demekti ki tam
+         parlakliga (gel=1) ancak _zum=1.9'da ulasiliyordu -- ZUM_ESIK
+         (1.06, "acik" sayilan en dusuk deger) ile 1.9 arasinda KALAN
+         HER YERDE (genis bir aralik) hem yildizlar hem arka planin
+         kararma orani orantili dusuktu, yani "yildizlar soluk, hersey
+         bir kat perde ardinda" gorunuyordu. Elle pinch ile TAM 4.2'ye
+         kadar surekli acmayan/tutmayan kullanicida (ör. deri seridini
+         gezerken kisa/orta bir acilista kalan) bu SOLUK hal GECICI
+         degil, gordugu YERLESIK durum oluyordu -- ekran goruntuleri
+         hep bu ara bolgeyi yakaliyordu.
+         DUZELTME: payda 0.9 -> 0.2. Tam parlaklik artik zum=1.26'da
+         gelir (esikten hemen sonra); yumusak baslama HALA var (ilk
+         piksellik hareket hala 0'dan geliyor) ama pencere ZUM_ESIK'e
+         COK daha yakin sikistirildi. Boylece kisa/orta acilis da tam
+         parlak gorunur, sadece TAM en bastaki ilk an yumusuyor. */
+      const gel = Math.max(0, Math.min(1, (_zum - 1) / 0.2));
+      try{ window.__zumGelOlcu = gel; }catch(e2){ _yut(e2); }
       /* ── ARKASI SIMSIYAH UZAY (10 Eylul gece) ─────────────────
          Kullanicinin sozu: "arkasi simsiyah uzay olacak."
          Cark/halka zaten sifir opakliga cekiliyor ama ARKADA deri
