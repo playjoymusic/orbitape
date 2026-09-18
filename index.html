@@ -8063,6 +8063,21 @@
     try{ return !AYAR.sembolSpin && typeof mod !== 'undefined' && mod === 'radio'; }
     catch(e){ return false; }
   }
+  /* MOOD MODUNDA semboller BIR KEZ atanip KILITLENIR: uc yuvanin da
+     dataset.sem'i "M" onekiyle basliyorsa bir daha kendiliginden
+     yeniden yazilmazlar (bkz. bekleGoster/bekleDondur). Henuz
+     kilitlenmemisse (mood.js daha inmedi ya da yuvalar bos) normal
+     atama akisina birakiyoruz -- ayni deri_cizim.js deseni: "gelmezse
+     zararsiz varsayilana duser". */
+  function moodYuvalarKilitliMi(){
+    try{
+      const y = yuvalar();
+      /* uclukBak()'taki (asagida) ayni desen: querySelectorAll Element
+         donuyor, dataset HTMLElement'te -- tip denetimi bunu zaten
+         bilinen bir daralma bosluğu sayiyor (bkz. tip.sh altbilgisi). */
+      return y.length === 3 && y.every(el => String((/** @type {any} */ (el)).dataset.sem||'').charAt(0) === 'M');
+    }catch(e){ return false; }
+  }
   /* ── SEMBOL HİZASI ────────────────────────────────────────────────
      Her glifin mürekkebi farklı yükseklikte: ∴ dibe yakın, ☽ yukarıda,
      ⌇ upuzun. Taban çizgisine dizilince kimi tavana kimi tabana yapışıyordu.
@@ -8486,11 +8501,22 @@
     bekle.classList.add('buyuk','on');
     bekleGenisligiAyarla();
     if(bekleInt) return;
+    /* MOOD MODUNDA (radyo + SYMBOL SPIN kapali) semboller kilitliyse
+       bir daha ELLE DOKUNULMADAN degismez -- ne yeniden cizim ne de
+       surekli-donen makara. pj'nin bildirdigi iki hata da BURADAN
+       geliyordu: her yeni parca yuklendiginde (cal() -> bekleGoster())
+       ucu de yeniden rastgele yazilip (1) ucu de "hareket ediyormus"
+       gibi gorunuyordu, (2) dataset.sem "M" onekini kaybedip bir
+       DAHA dokunulamaz hale geliyordu (moodSembolSec, mood.js, "M"
+       kontrolunden gecemiyordu). Olcum: bkz. test/saglik.js
+       "Mood modunda bekleGoster kilitli sembolleri yeniden yazmiyor". */
+    if(moodAktifMi() && moodYuvalarKilitliMi()) return;
     // her yeni parcada 3'u de yumusak gecisle tazelenir (EARTH'te ses hemen basliyor,
     // yoksa hep ayni ucluyu gorurduk)
     yuvalar().forEach((el,i)=>{ setTimeout(()=>{ el.classList.add('doniyor');
       setTimeout(()=>{ yuvaYaz(el, alienSec());
                        el.classList.remove('doniyor'); }, 220); }, i*130); });
+    if(moodAktifMi()) return;   // MOOD MODUNDA surekli-donen makara YOK: semboller sabit kalir, sadece dokunma renk degistirir.
     bekleInt=setInterval(()=>{
       const y=yuvalar(); if(!y.length) return;
       const i=(_bekleTik++)%3;                      // her turda TEK yuva degisir
@@ -8549,6 +8575,12 @@
     try{ agYokKapa(); }catch(e){ _yut(e); }          // ses geldi: ağ çalışıyor
     if(bekleInt){ clearInterval(bekleInt); bekleInt=null; }
     try{ bekle.classList.remove('gerilim','sondu'); }catch(e){ _yut(e); }
+    /* MOOD MODUNDA "kim tuttu" oyunu YOK: semboller bekleGoster()'de
+       zaten kilitlendi, burada yeniden oturtulurlarsa hem ucu de
+       "hareket eder" hem de dataset.sem "M" onekini kaybedip bir
+       DAHA dokunulamaz olur -- pj'nin bildirdigi iki hatanin ikinci
+       tetigi de buydu (bkz. bekleGoster'deki olcum notu). */
+    if(moodAktifMi()) return;
     const hedef = _turSonucu();
     const y = yuvalar();
     const ikiAyni = hedef[0] === hedef[1];
