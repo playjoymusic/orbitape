@@ -12941,10 +12941,20 @@
       zumDongu();
     }catch(_){ _yut(_); }
   }
+  /* GOKYUZU ARTIK ISTASYON ACILINCA KENDILIGINDEN KAPANMIYOR (18 Eylul,
+     ikinci istek). Once yildizAc() kendi icinde zumKapat() cagiriyordu --
+     istasyona basar basmaz ana ekrana donuyordun. Kullanicinin sozu:
+     "istasyona tiklayinca ana ekrana geciyorsun gecme. yildizlarda
+     kalsin kisi isterse tekrar kapatir yildiz modunu." Yani: cal()
+     hala calisiyor (calan istasyonun yildizi parlak yanar, _zumSecili
+     sifirlanir ki secim/isim durumu kalmasin), ama gokyuzu ACIK kalir.
+     Kapatma yollari (bosluga dokunmak, zum'u geri kisip esigin altina
+     inmek) DEGISMEDI -- yalnizca "istasyon sectim" artik otomatik
+     kapatma SEBEBI degil. */
   function yildizAc(y){
     try{
       try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
-      _zumSecili = null; zumKapat();
+      _zumSecili = null;
       try{ _secildi = true; }catch(_){ _yut(_); }
       try{ cal({ id:y.id, mp3:y.mp3, ad:y.ad, sanatci:'', radyo:true,
                  grup:y.grup, saf:y.saf, ulke:y.ulke }); }catch(_){ _yut(_); }

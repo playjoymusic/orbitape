@@ -9789,10 +9789,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      2 parmak halkayi buyutebilelim, bir yildiza basinca ilk ismini
      cikarsin daha acmasin, ama o isme basinca o istasyona gidelim.
      Her zaman acik olan istasyonun yildizi daha parlak olacak."
+     18 Eylul, IKINCI ISTEK: "istasyona tiklayinca ana ekrana geciyorsun
+     gecme. yildizlarda kalsin kisi isterse tekrar kapatir yildiz
+     modunu." Once ikinci dokunus (istasyonu acmak) gokyuzunu de
+     kapatiyordu -- artik kapatmiyor, yalnizca kullanicinin kendi
+     kapatmasi (bosluga dokunmak, zum'u geri kismak) kapatiyor.
      Olculenler: raf degisince gokyuzu degisiyor mu, calan istasyonun
      yildizi bulunuyor mu, iki parmak jesti gokyuzunu aciyor mu, ilk
      dokunus YALNIZCA adi mi gosteriyor, ikinci dokunus istasyonu
-     aciyor mu, ve bosluga dokunus kapatiyor mu. */
+     aciyor mu VE gokyuzu acik mi kaliyor, ve bosluga dokunus hala
+     kapatiyor mu. */
   {
     const yz = await pg.evaluate(async ()=>{
       const c = {};
@@ -9866,8 +9872,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         dok(px, py); await bek(150);
         c.ikinciDokunusActi = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '')
                               === 'https://sahte.test/y4';
-        for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
-        c.gokyuzuKapandi = !document.body.classList.contains('yildiz-zum');
+        /* GOKYUZU ARTIK ISTASYON ACILINCA KENDILIGINDEN KAPANMIYOR
+           (18 Eylul, ikinci istek -- bkz. index.html yildizAc()).
+           Once burada "sinif silinene kadar bekle, silindi mi"
+           olculuyordu; simdi TERSI dogru olan: bir sure GECTIKTEN
+           SONRA sinif hala YERINDE mi. Secim/isim durumu (_zumSecili)
+           temizleniyor -- calan istasyon artik "calan" olarak parlak
+           yaniyor, "secili" olarak isim gostermiyor -- ama gokyuzunun
+           KENDISI acik kaliyor. Kapatma yolu (bosluga dokunus) hemen
+           altta ayrica olculuyor: kullanici hala kendisi kapatabiliyor,
+           yalnizca "istasyon sectim" artik otomatik kapatma SEBEBI
+           degil. */
+        await bek(350);
+        c.gokyuzuAcikKaldi = document.body.classList.contains('yildiz-zum');
+        c.secimTemizlendi = window.yildizDurum().secili === null;
         /* Bosluga dokunus da kapatir. */
         window.yildizZumAyar(2.6);
         for(let i = 0; i < 60 && Math.abs(window.yildizDurum().zum - 2.6) > 0.02; i++) await bek(30);
@@ -10037,8 +10055,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ozy || 'zum 2.6, katman ekranda');
     K('Ilk dokunus YALNIZCA adi gosteriyor', yz.ilkDokunusAd === true
        && yz.ilkDokunusCalmadi === true, ozy || 'muzik devam ediyor');
-    K('Ikinci dokunus o istasyona geciyor', yz.ikinciDokunusActi === true
-       && yz.gokyuzuKapandi === true, ozy || 'gecince gokyuzu kapaniyor');
+    K('Ikinci dokunus o istasyona geciyor', yz.ikinciDokunusActi === true,
+       ozy || 'istasyon actilir');
+    K('Istasyon acilinca gokyuzu KENDILIGINDEN kapanmiyor, kisi kapatana kadar acik kalir',
+       yz.gokyuzuAcikKaldi === true && yz.secimTemizlendi === true,
+       ozy || 'acik kaldi, secim/isim durumu temizlendi (calan yildiz parlak yaniyor)');
     K('Gokyuzunde bosluga dokunus kapatir', yz.boslukKapatti === true,
        ozy || 'her acik pencere gibi');
     K('Tek parmakla gokyuzu kayiyor, kaydirma secim degil',
