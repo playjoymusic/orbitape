@@ -409,11 +409,25 @@
      (#kipKisayol) acik kaliyordu -- ekranda "sadece yildizlar"
      degil, ustune binmis bir dugme sepeti goruluyordu. AYNI
      opacity/pointer-events deseni: kaybolma anlik degil, jest
-     bitince beklemeden geri geliyor. */
+     bitince beklemeden geri geliyor.
+     ── 18 EYLUL (ikinci gece), pj: "skinlerde olmuyor" ──────────────
+     Ilk denemede !important YOKTU ve deri (skin) acikken bu bes tus
+     GERI GELIYORDU -- kok neden: `body.deri #ayarTut,...{opacity:.88}`
+     (asagida, "deri disari" bolumu) AYNI ozelligi (opacity) AYNI
+     ozgullukte (body.SINIF #id -- 1,1,1) ama DOSYADA DAHA ASAGIDA
+     yaziyor; CSS'te ozgulluk esitse KAYNAKTA SONRAKI KAZANIR. Yani
+     hem body.yildiz-zum hem body.deri aynı anda acikken (skinli bir
+     derideyken zoom acmak) deri kurali BASIYORDU -- "skinlerde
+     olmuyor" tam olarak buydu, "her skinste" degil cunku varsayilan
+     (skinsiz/OFF) deride cakisan kural hic yok. DOSYADAKI SIRAYA
+     guvenmek KIRILGAN (deri CSS'i ileride tasinirsa yine bozulur);
+     bunun yerine ayni desenin BASKA YERDE zaten kullanildigi gibi
+     (bkz. asagida body.deri #viz,#noise{display:none !important})
+     !important ile KOSULSUZ kazandirildi. */
   body.yildiz-zum #ayarTut,body.yildiz-zum #deriFirca,
   body.yildiz-zum #saatTus,body.yildiz-zum #gorselTus,
   body.yildiz-zum #rehberTus,body.yildiz-zum #ara,
-  body.yildiz-zum #kipKisayol{opacity:0;pointer-events:none;
+  body.yildiz-zum #kipKisayol{opacity:0 !important;pointer-events:none !important;
     transition:opacity .32s ease;}
   /* ── 18 EYLUL: SKIN DEGISIRKEN ANLIK BANT (ikinci tur) ───────────
      pj'nin sozu: "skinler yuklenirken cok kisa alt tarafta bu bant
@@ -430,8 +444,30 @@
      boyle bir bosluk varsa artik SIYAH goruluyor, skin rengi degil.
      <body> html'in oniine geciyor (CSS2.1 body->html zemin devri)
      ve inline stilin ustune !important olmadan da basiyor cunku
-     FARKLI ELEMAN. */
-  body.yildiz-zum{background:#000;}
+     FARKLI ELEMAN.
+     ── 18 EYLUL (ikinci gece), pj: "altta yine bant" ────────────────
+     !important OLMADAN yetiyordu ama yalniz SKINSIZ (varsayilan)
+     deride. Skinli deride `body.deri{background:var(--d-zem)
+     !important;...}` (asagida, "deri disari" bolumu) zaten kendi
+     !important'ini tasiyordu -- iki kural da <body> uzerinde AYNI
+     ozellikte (background) yarisinca !important olan HER ZAMAN
+     kazanir, ozgulluk/sira bile bakilmiyor. Yani deri acikken bu
+     kural hicbir zaman calismiyordu, ekranda yine skinin kendi
+     zemin rengi goruluyordu -- "altta yine bant" tam bu. Duzeltme:
+     bu kural da !important'e cikti; iki !important cakisinca CSS
+     yine ozgulluk/sira'ya donuyor, ve bu kural (body.yildiz-zum,
+     1,1,0'dan biraz daha ozgul degil ama DOSYADA body.deri
+     kuralindan SONRA kazanir sandim ama YANLIS OLCTUM -- dosyada
+     bu kural `body.deri` kuralindan (asagida, 2422. satir civari)
+     ONCE geliyormus; iki !important esit ozgullukte cakisinca SONRAKI
+     kazanir ve skin zemin rengi (var(--d-zem)) yine goruluyordu.
+     Yeni test bunu YAKALADI (bkz. test/saglik.js, "Skin acikken de
+     gokyuzu ayni kurallara uyuyor"). DUZELTME: dosya sirasina
+     guvenmek yerine ozgullugu GERCEKTEN yukseltildi -- `html`
+     onekiyle secici bir tur adi daha kazaniyor (body.deri: 0,1,1 ->
+     html body.yildiz-zum: 0,1,2), artik dosyadaki sira ne olursa
+     olsun kazaniyor. */
+  html body.yildiz-zum{background:#000 !important;}
   .hit{position:absolute;inset:0;border:0;background:transparent;border-radius:50%;cursor:pointer;z-index:2;
     touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   .hit:focus-visible{outline:1px solid rgba(53,224,216,.35);outline-offset:10px;}

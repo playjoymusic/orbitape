@@ -10423,6 +10423,52 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ozk || ('zemin=' + zk.acikkenZemin));
   }
 
+  /* ── GOKYUZU + GERCEK BIR SKIN AYNI ANDA ACIKKEN DE AYNI KURALLAR
+     (18 Eylul, ucuncu gece) ────────────────────────────────────────
+     pj: "skinlerde olmuyr yıldızlar ttriyor ustune vbısey biniyor...
+     altta bak yine bant." Onceki iki test (yukarida) hep SKINSIZ
+     (varsayilan) deride olculmustu -- kok neden tam olarak ORADA
+     gizliydi: body.yildiz-zum kurallari ile body.deri kurallari AYNI
+     ozellikte (opacity, background) AYNI ozgullukte cakisiyordu, ve
+     skinsiz deride cakisan bir body.deri kurali HIC YOKTU, o yuzden
+     onceki testler yesil kalip gercek hatayi hic yakalamadi. Simdi
+     GERCEK bir skin acilip (AYAR.deri=1) UZERINE gokyuzu acilarak
+     ayni iki sey olculuyor: bes arac tusu+arama+anahtar gercekten
+     kayboluyor mu, zemin gercekten siyah mi. */
+  {
+    const zs = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            const c = {};
+            AYAR.deri = 1; deriUygula();
+            await bek(120);
+            c.deriAcik = document.body.classList.contains('deri');
+            const idler = ['ayarTut','deriFirca','saatTus','gorselTus','rehberTus','ara','kipKisayol'];
+            const els = idler.map(id=>document.getElementById(id));
+            window.yildizZumAyar(2.6);
+            for(let i=0;i<60 && Math.abs(window.yildizDurum().zum-2.6)>0.02;i++) await bek(30);
+            await bek(400);
+            c.acikkenHepsiKayboldu = els.every(el=>!el || (+getComputedStyle(el).opacity === 0 && getComputedStyle(el).pointerEvents === 'none'));
+            c.acikkenZemin = getComputedStyle(document.body).backgroundColor;
+            window.yildizZumAyar(1);
+            for(let i=0;i<40 && document.body.classList.contains('yildiz-zum');i++) await bek(30);
+            await bek(300);
+            AYAR.deri = 0; deriUygula();
+            return c;
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const ozs2 = Object.keys(zs).filter(k=>zs[k]!==true && k!=='acikkenZemin').map(k=>k+'='+zs[k]).join(' ');
+    K('Skin acikken de gokyuzu ayni kurallara uyuyor (araclar kayboluyor, zemin siyah -- !important cakismasi yok)',
+       !zs.hata && zs.deriAcik === true && zs.acikkenHepsiKayboldu === true
+       && zs.acikkenZemin === 'rgb(0, 0, 0)',
+       zs.hata || (ozs2 + ' zemin=' + zs.acikkenZemin));
+  }
+
   /* ── GOKYUZU ACILINCA TAM PARLAKLIGA COK DAHA CABUK ULASILIYOR
      (18 Eylul, "hersey soluk") ─────────────────────────────────────
      pj'nin sozu: "bak yildizlar da soluk hersey soluk. genele sorun
