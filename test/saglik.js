@@ -2280,6 +2280,77 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       mn.yok ? '-' : ('once ' + JSON.stringify(mn.bas) + ', kilitsiz gecis sonrasi ' + JSON.stringify(mn.gecis2Goster)));
   }
 
+  /* ══ MOOD DOKUNUSU SONRASI DIGER IKI YUVA DA TEKRAR TIKLANABILMELI
+     (18 Eylul, UCUNCU bildirim, IKI KEZ ust uste geldi) ══
+     "sembol tek tıklama . sanki bi kere oluyor sonra tekrar basmak
+     sityoru mfonksiyon bitiyor bi daha da gelmiyor... semboller
+     durduktean sonra ne zaman istersek tek olarak 1 sembole
+     tıklayabiliyoruz. her tek bir sembole tıkladııöızda diger ikisi
+     dönüypr darkı istasyon degisitirdigi icin. bu kadar. bu her zaman
+     yapılabilir." -- yani: ilk dokunustan SONRA da, artik kilitli
+     olmayan iki yuvadan HERHANGI birine tekrar dokunulabilmeli.
+     KOK NEDEN (Kural 4 olcumu, /tmp/repro_mood2.js ile): _turSonucu()
+     icindeki rast() kapanisi mood moduna bakmadan DOGRUDAN
+     ALIEN[Math.random()...] okuyordu; bekleDondur() kilitli OLMAYAN
+     yuvalari bu 'hedef'le yeniden yaziyor (yuvaYaz), yani gecis
+     bitince o iki yuvanin dataset.sem'i 'M' onekini kaybediyordu.
+     mood.js'teki moodSembolSec() ise "if(!anahtar.startsWith('M'))
+     return;" ile TAM BURADA sessizce cikiyor -- ikinci dokunus hicbir
+     sey yapmiyordu. DUZELTME BULGUSU (fix ONCESI olcum):
+       gecis1MoodMu = [false, true, false]   (sadece kilitli yuva mood)
+       ikinciCalisti = false                 (ikinci tikla hicbir sey olmadi)
+     alienSec() zaten mood-farkindali secim yapan fonksiyon (bekleGoster
+     donme fazi bunu kullaniyor); rast() de ayni fonksiyona baglaninca
+     (fix SONRASI, ayni olcumle): gecis1MoodMu=[true,true,true],
+     ikinciCalisti=true. */
+  {
+    const mn2 = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      if(typeof moodAktifMi !== 'function' || typeof bekleGoster !== 'function'
+         || typeof bekleDondur !== 'function' || typeof moodSembolSec !== 'function'
+         || typeof _moodKilitliYuva === 'undefined') return { yok:true };
+      const eskiSpin = AYAR.sembolSpin, eskiMod = mod, eskiKilit = _moodKilitliYuva;
+      try{ bekleDondur(); }catch(e){}
+      await bek(1400);
+      AYAR.sembolSpin = false; mod = 'radio';
+      if(typeof MOOD_IKON_LIST === 'undefined' || !MOOD_IKON_LIST || !MOOD_IKON_LIST.length){
+        try{ moodYukle(); }catch(e){}
+        for(let i=0;i<20 && (typeof MOOD_IKON_LIST === 'undefined' || !MOOD_IKON_LIST.length); i++) await bek(150);
+      }
+      const y = [...document.querySelectorAll('#bekleGly .yuva')];
+      if(y.length !== 3 || typeof MOOD_IKON_LIST === 'undefined' || !MOOD_IKON_LIST.length){
+        AYAR.sembolSpin = eskiSpin; mod = eskiMod; return { yok:true };
+      }
+      // ucunu de gercek mood cizimiyle oturt ('M' onekli olsun diye)
+      y.forEach((el,i)=>{ yuvaYaz(el, MOOD_IKON_LIST[i % MOOD_IKON_LIST.length]); });
+      // ORTADAKI yuvaya "dokunulmus" gibi kilitle ve bir gecis calistir
+      _moodKilitliYuva = y[1];
+      bekleGoster();
+      await bek(700);
+      bekleDondur();
+      await bek(1900);
+      const gecis1 = y.map(el=>el.dataset.sem);
+      const gecis1MoodMu = gecis1.map(s => /^M/.test(String(s)));
+      // kilitli OLMAYAN bir yuvaya (y[0]) IKINCI kez dokunulmus gibi cagir
+      const oncekiAnahtar = y[0].dataset.sem;
+      let ikinciCalisti = null;
+      try{
+        moodSembolSec(y[0]);
+        ikinciCalisti = (_moodKilitliYuva === y[0]);
+      }catch(e){ ikinciCalisti = 'HATA:'+e.message; }
+      AYAR.sembolSpin = eskiSpin; mod = eskiMod; _moodKilitliYuva = eskiKilit;
+      try{ bekleDondur(); }catch(e){}
+      return { yok:false, gecis1, gecis1MoodMu, oncekiAnahtar, ikinciCalisti };
+    });
+    K('Mood gecisi bitince kilitli OLMAYAN yuvalar da mood ikonunda kalir', !mn2.yok
+      && mn2.gecis1MoodMu[0] === true && mn2.gecis1MoodMu[1] === true && mn2.gecis1MoodMu[2] === true,
+      mn2.yok ? 'test kosulamadi (fonksiyon/yuva/MOOD_IKON_LIST eksik)'
+              : ('gecis sonrasi ' + JSON.stringify(mn2.gecis1) + ' -> mood mu: ' + JSON.stringify(mn2.gecis1MoodMu)));
+    K('Kilitli olmayan bir yuvaya IKINCI kez dokununca da istasyon degisimi tetiklenir', !mn2.yok
+      && mn2.ikinciCalisti === true,
+      mn2.yok ? '-' : ('ikinci dokunustan once anahtar=' + mn2.oncekiAnahtar + ', ikinciCalisti=' + mn2.ikinciCalisti));
+  }
+
   /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────
      Kullanicinin istegi: "kategori adinin tam altini, hep oradaki
      yazinin uzunlugunda, caldigina dair bir hareket."
