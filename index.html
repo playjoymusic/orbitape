@@ -8553,7 +8553,14 @@
       const s0 = _uclukTurSem || ALIEN[Math.random()*ALIEN.length|0];
       return [s0, s0, s0];
     }
-    const rast = ()=>ALIEN[Math.random()*ALIEN.length|0];
+    /* OLCUM (2026-09-18, /tmp/repro_mood2.js): mood modunda kilitli
+       olmayan yuvalar bekleDondur() sonrasi ALIEN[...] ile yazildigi icin
+       dataset.sem 'M' onekini kaybediyor, moodSembolSec() bir daha o
+       yuvaya asla tepki vermiyordu (gecis1MoodMu=[false,true,false],
+       ikinciCalisti=false). alienSec() zaten mood-farkindali secim
+       yapiyor (bekleGoster() donme fazi bunu kullaniyor) -- rast() de
+       ayni fonksiyona gecince son oturma da mood ikonlarini koruyor. */
+    const rast = ()=>alienSec();
     const z = Math.random();
     if(z < UCLUK_SANS){ const a0 = rast(); return [a0,a0,a0]; }
     if(z < UCLUK_SANS + UCLUK_KIL_PAYI){
