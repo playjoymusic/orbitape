@@ -399,9 +399,137 @@ veriliyor.
 ---
 
 > **Not:** yukarıdaki iki bölüm ("Süreç dersleri", "Sayılarla") 27
-> Ağustos anlık görüntüsü. Eylül'ün günlük kaydı aşağıda **18 Eylül**
-> maddesiyle başlıyor -- bu dosya o güne kadar düzenli işlenmemişti
-> (bkz. o maddenin kendisi, CLAUDE.md Kural 11'in de sebebi).
+> Ağustos anlık görüntüsü. Bu dosya 28 Ağustos'tan 17 Eylül'e kadar
+> günü gününe işlenmedi -- CLAUDE.md Kural 11'in doğrudan sebebi bu
+> boşluktu. Aradaki bölüm 18 Eylül'de, CLAUDE.md'nin o güne kadar
+> tuttuğu tarihli notlardan **geriye dönük derlendi** (aşağıdaki
+> "28 Ağustos – 17 Eylül" maddesi) -- 21-25 Ağustos'takiyle aynı
+> dürüstlük kuralıyla: kararlar ve gerekçeler doğru, günü gününe akış
+> yok, mağaza/dağıtım tarafı bilerek dışarıda (ayrı dosyada, o dosyanın
+> kendi notu var).
+
+## 28 Ağustos – 17 Eylül — sıkıştırılmış özet
+*(18 Eylül'de, CLAUDE.md'nin tarihli notlarından geriye dönük derlendi
+-- bkz. yukarıdaki not ve aşağıdaki "18 Eylül" maddesindeki Kural 11
+hikâyesi. Mağaza/dağıtım tarafı burada yok, `magaza/KALANLAR.md`'de.)*
+
+### 10-11 Eylül — kimlik/parola kuralı yazıya döküldü, radyo 559 istasyona çıktı
+
+10 Eylül'de gerçek bir hata oldu: Play testçi listesine örnek/yer
+tutucu iki e-posta adresi girildi. Sözlü duran "parola ve kimlik
+bilgisi burada yazılmaz" kuralı bu yüzden 11 Eylül'de CLAUDE.md'ye
+Kural 4b olarak geçirildi -- sözlü kural kaybolur, yazılı kalır.
+Aynı madde push'un her zaman pj'nin işi olduğunu da netleştirdi.
+
+11 Eylül'de radyo listesi **559 istasyon, 11 rafa** ulaştı ve "Açık
+kalan işler" tablosu topluca gözden geçirildi: tip denetimi, kullanım
+şartları + KVKK, kayıt tamponu tavanı ve ölü bağlantı örneklemesi
+**[x]** olarak işaretlendi (madde silinmedi, "yapılmış mıydık"
+sorusu bir daha çıkmasın diye).
+
+### 15 Eylül — ülke yasağı ve sessiz hata sayacı
+
+pj sözlü bir karar verdi: **AE, CN, IL, RU** menşeli hiçbir istasyon
+`radyo.json`'a girmeyecek -- gerekçe yayın kalitesi değil, doğrudan
+ülke. Hiçbir dosyada durmadığı için kaybolma riski vardı, CLAUDE.md
+Kural 10 olarak yazıldı. Aynı gün listede kalan tek ihlal olan 13 Rus
+istasyonu (`ulke:"RU"`) elle `radyo.json`'dan çıkarıldı.
+
+Aynı gün boş `catch` bloklarına sessiz bir sayaç eklendi: `_yut()`
+yakaladığı her hatayı sayıyor (index.html + kayit.js, ~950 çağrı
+noktası), `ADVANCED` altında `DIAGNOSTICS` satırı bu sayacı gösteriyor
+(sıfırsa satır da yok). Göndermek ayrı bir adım: `SEND DIAGNOSTICS`
+anahtarı varsayılan KAPALI, açılsa bile yalnızca sürüm, kaba platform
+ve hata imzaları gidiyor -- kimlik, istasyon, şarkı, konum yok.
+Gizlilik metniyle çelişmiyor, kod da bunu tutuyor.
+
+### 16-17 Eylül — masaüstü halka-kenar testi CI'da tutarsızdı, kök nedene inildi
+
+**Kullanıcı karşılığı:** üç ayrı sefer aynı test kırmızı yandı ve iki
+kere de "muhtemelen CI gürültüsü" denip geçildi -- üçüncüsünde 17
+Eylül'de PR #36 birleştikten sonra `main`'in "Yayin (testler yesilse)"
+işi kırmızıya döndü, yani **canlı yayın gerçekten durdu.**
+
+Kural 4 ("ölçüm olmadan düzeltme yok") gereği üçüncü görülüşte kod
+seviyesine inildi: yerelde kasıtlı olarak "istasyon verisi geç geliyor"
+durumu kurulup ekran görüntüsüyle doğrulandı. Gerçek suçlu, testin
+kendisinin hiç sormadığı bir şeydi -- `#agyok` ("INTERNET YOK /
+SEARCHING FOR SIGNAL") paneli disk'in tam üstünü kaplıyordu (z-index
+96 > 10), test ekran görüntüsünü panel açıkken alıyordu ve hep aynı
+kaplı yeri ölçüyordu. Düzeltme: ekran almadan önce panelin GERÇEKTEN
+kapandığı `waitForFunction` ile doğrulanıyor (kör sabit bekleme
+yerine); hâlâ kırmızı çıkarsa artık "panel açık kaldı" diye doğrudan
+söylüyor. Yerel ölçüm: eski kodla yapay 6,5 sn gecikmede 4 denemenin
+2'si kırmızı, düzeltilmiş kodla aynı gecikmede 0/birkaç kırmızı.
+
+### 17 Eylül — genel rehber kaldırıldı, elle gösterimler 6 dile çevrildi
+
+**Kullanıcı karşılığı:** uygulamayı ilk açan kullanıcı artık zemine
+6 saniyede 4 kez dokununca aniden bütün ekranı saran uzun bir rehbere
+zorlanmıyor -- pj'nin sözü: *"rehberi kendin hiçbir zaman açma. yani
+genel olanı. tek tek elle göstermeler kalsın."* `rehberAc()`'ı
+kendiliğinden tetikleyen "REHBER: KAYBOLDUĞUNU HİSSEDİNCE" bloğu
+tamamen kaldırıldı. Elle, tek tek gösterilen ipuçları (İPUCU ELİ,
+PR #42) ayrı ve yerinde kaldı.
+
+Kalan ipucu etiketleri (PINCH ile gökyüzünü açma dahil) artık 6 dilin
+hepsinde (`dil/*.json`) gösteriliyor. Çeviriler 3 kez kontrol edildi,
+ekran taşması ölçüldü (en kötü durum Almanca, 512px/430px) ve
+kısaltılarak düzeltildi. **Küçük, ayrı bırakılan bir kalıntı:**
+"PINCH: OPEN SKY..." etiketi sol kenardan hafif taşıyor (İngilizce'de
+bile ~-25px) -- bu, i18n işinden ÖNCE de vardı, çeviriyle ilgisiz.
+Düzeltilecekse ayrı konuşulacak, şimdilik bilinen küçük bir kusur.
+
+### 17 Eylül — fotoğrafta semboller kayboluyordu: iki ayrı kök neden
+
+**Kullanıcı karşılığı:** ilk fotoğraf çekiminde sağ üstteki sembol ve
+benzeri öğeler görüntüye hiç girmiyordu, ikinci basışta hepsi
+giriyordu -- pj: *"ilk photo çekince sağ üstteki sembol vs bişeyleri
+almıyor bir daha photoya basınca herşeyi alıyor."*
+
+Aynı hastalığın iki farklı yerde tekrarı çıktı: (1) `_arayuzSembol()`
+simgeyi `onload` ile "hazır" sayıyordu, WebKit'te SVG data-URI
+çözümlemesi `onload`'dan SONRA bitebiliyor -- `HTMLImageElement.decode()`
+ile düzeltildi. (2) PR #46 sonrası pj'nin gönderdiği gerçek ekran
+görüntüsüyle (*"yoo yine semboller ilk etapta çıkmıyor... ilk foto
+2. foto bak."*) asıl suçlu bulundu: MIXTAPE altındaki üç "yuva"
+sembolünü çizen `sembolResmi()`, `onload`'ı hiç beklemeden anında
+dönüyordu. Yeni `_bekleSembolleriHazirla()` fotoğraftan önce bu
+sembolleri de `decode()` ile ısıtıyor. Kural 4 ile kanıtlandı:
+düzeltme yokken zorla açılıp foto çekilince üst şerit boş çıktı
+(pj'nin ekran görüntüsüyle birebir), düzeltme varken ilk çekimde de
+doldu.
+
+### 17 Eylül — kamera varsayılan yönü, çark sesi varsayılanı
+
+İki küçük, birbirinden bağımsız varsayılan değişikliği: kamera artık
+ilk açılışta arka (`environment`) kamerayla açılıyor, ön/selfie ile
+değil -- *"kamera ilk ters açılacaktı selfie açılmasın ilk tersi
+açılsın. isteyen çevirir."* Çark sesi varsayılanı MID'den MAX'a
+çekildi -- *"çark sesi max açılsın yani default max olsun o da.
+isteyen ayarlardan kısar."* İkisi de yalnızca YENİ kullanıcıyı
+etkiliyor, kayıtlı tercihi olan kullanıcıda localStorage her zaman
+kazanıyor.
+
+### 17 Eylül — "sound postcard" fikri ortaya atıldı, karara bağlanmadı
+
+pj'nin sözü: *"Şu anda 'ben şu anda dünyanın neresinden ne
+dinliyorum' deneyimi bireysel. Ama bunu 'Ben Tokyo'da bir gece
+radyosuna denk geldim' şeklinde paylaşabilseydin çok güçlü olurdu.
+Orbit → Tokyo → 01:43 → Jazz → 37 dakika gibi paylaşılabilir 'sound
+postcard'lar. Bence bu ürünün büyüme motoru olabilir."*
+
+Küçük buglardan (fotoğraf, kamera, çark sesi) bilerek ayrı tutuldu --
+bu bir özellik/mimari kararı, tek satırlık bir düzeltme değil. Koda
+başlanmadı, iki soru netleşmeden başlanmayacak: (1) gizlilik çelişkisi
+-- "hiçbir şey toplanmıyor" sözü zaten YAPILMAYACAKLAR'da dururken bu
+paylaşım tamamen cihazda mı kalacak (ör. `navigator.share`), sunucuya
+hiçbir şey gitmeden mi; (2) paylaşılan "Tokyo" konumu radyonun kendi
+meta verisinden mi geliyor yoksa kullanıcının gerçek cihaz konumundan
+mı -- ikisi çok farklı izin/gizlilik anlamına geliyor. Değiştirmek
+gerekirse önce pj'ye sorulacak (Kural 5).
+
+---
 
 ## 18 Eylül — yıldız gökyüzü (D5) dört tur, ve "belge bayatlığı"
 
