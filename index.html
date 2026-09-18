@@ -591,6 +591,10 @@
   /* non-scaling-stroke: kutu daraltılınca çizgi kalınlaşmasın, ekranda hep aynı. */
   #bekle .yuva svg *{vector-effect:non-scaling-stroke;}
   #bekle .yuva.doniyor{opacity:.22;transform:translateY(-3px) scale(.94);}
+  /* MOOD SECIMI: basilan yuva secilen istasyonun kendi tur rengine
+     boyanir (bkz. moodVurgula) -- oteki iki yuva etkilenmez. */
+  #bekle .yuva.mood-sec svg{color:var(--mood-renk,currentColor);
+    transition:color .25s ease;}
   /* ── GERILIM: ILK IKISI TUTTU, UCUNCU BEKLIYOR ────────────────
      "Tam 2 olunca patlayacakmis gibi minik icerden hafif etkilenir."
      Hafif: yalnizca oturan iki sembol, cok kucuk bir nefes ve bir
@@ -4299,6 +4303,13 @@
          ile ayni dil): tek dokunus, tek satir, ayri panel yok. -->
     <div class="sat islem" data-ayar="carkSesSev" role="button" tabindex="-1">
       <span>WHEEL VOLUME</span><span class="durum">MID</span></div>
+    <!-- ── SYMBOL SPIN (17 Eylul) ────────────────────────────────
+         Varsayilan KAPALI. Acikken sag ustteki 3 sembol eski soyut
+         oyunu oynar (rastgele donme + ucluk kutlamasi). Kapaliyken
+         (varsayilan), radyo modunda, semboller mood ikonuna donusur
+         ve birine dokununca ilgili istasyona gecer. -->
+    <div class="sat" data-ayar="sembolSpin" role="switch" tabindex="-1">
+      <span>SYMBOL SPIN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
 
     <!-- ── DISPLAY: EKRANDA NE GORUNUYOR ───────────────────────────
          Sira ONEM ve BAGLILIK: once zeminin kendisi (tema, kilit),
@@ -4981,7 +4992,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.17';
+  var ORB_SURUM = '2026.09.18';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -8015,6 +8026,43 @@
     '<path d="M3 12 C6.4 7.6 12 7 15.6 12 C12 17 6.4 16.4 3 12 Z"/><path d="M15.6 12 L21 8.4 V15.6 Z"/><circle cx="7" cy="11" r="0.9" fill="currentColor" stroke="none"/>',
     '<path d="M12 21 V12.4"/><path d="M12 12.4 C10 10.4 8.8 8.2 8.6 5.2 M8.6 8.8 L5.6 6.8 M9.8 10.6 L6.6 10.4"/><path d="M12 12.4 C14 10.4 15.2 8.2 15.4 5.2 M15.4 8.8 L18.4 6.8 M14.2 10.6 L17.4 10.4"/>'
   ];
+  /* ── MOOD SEMBOLLERI (17 Eylul) ──────────────────────────────────
+     Kullanicinin istegi: sag ustteki (#bekle) 3 sembol RADIOTAPE
+     modunda anlam tasisin -- her biri birden fazla, elle secilmis
+     GERCEK istasyona baglansin (tur/grup degil, spesifik istasyon).
+     AYAR.sembolSpin AÇIKSA eski soyut ALIEN oyunu ve carkiCevir()
+     davranisi degismeden kalir. KAPALIYKEN (varsayilan) -- ve sadece
+     radyo modunda -- yuvalar bu ikonlari gosterir, birine dokununca
+     o an o yuvadaki sembolun havuzundan rastgele bir istasyona
+     ANINDA gecilir (carka/geziye dokunmadan). Kullanicinin sozu:
+     "nereye basarsam basayim normal akisimiza geri donmeli, kalmasin
+     o mood ta" -- bu yuzden aileSec()+_secildi+cal() ile TAM OLARAK
+     arama sonucu/yildiz secimiyle ayni guvenli yol kullaniliyor
+     (bkz. araCal, yildizAc): kapi tek seferlik, kalici bir "mood modu"
+     state'i yok, bir sonraki cal() cagrisinda iz kalmiyor.
+     ── VERI VE SECIM MANTIGI AYRI DOSYADA (mood.js, 17 Eylul) ────────
+     Once buradaydi: 15 sembol x 20-28 istasyonun kimligi bile "Ilk
+     cizim icin inen boy" (ilk boyama butcesi) testini astirdi (110 KB
+     -> 112 KB brotli, olculdu) -- veri ilk boyamada hic gerekmiyor,
+     yalnizca radyo modunda ve sembole gercekten dokununca lazim. Ayni
+     cark.js/deri_cizim.js deseni: moodYukle() istek uzerine cekiyor.
+     Gelmemisse alienSec() sessizce eski ALIEN'e duser -- zararsiz. */
+  const MOOD_DOSYA = 'mood.js';
+  var _moodIsteniyor = false;
+  function moodYukle(){
+    try{
+      if(window.MOOD_HAZIR || _moodIsteniyor) return;
+      _moodIsteniyor = true;
+      const s = document.createElement('script');
+      s.src = MOOD_DOSYA;
+      s.defer = true;
+      document.head.appendChild(s);
+    }catch(e){ _yut(e); }
+  }
+  function moodAktifMi(){
+    try{ return !AYAR.sembolSpin && typeof mod !== 'undefined' && mod === 'radio'; }
+    catch(e){ return false; }
+  }
   /* ── SEMBOL HİZASI ────────────────────────────────────────────────
      Her glifin mürekkebi farklı yükseklikte: ∴ dibe yakın, ☽ yukarıda,
      ⌇ upuzun. Taban çizgisine dizilince kimi tavana kimi tabana yapışıyordu.
@@ -8034,8 +8082,16 @@
     iz('yuvaYaz/getBBox');
     /* HANGI sembol yazildi: ucluk kontrolu bunu okuyor. Cizimin
        kendisi anahtar -- ALIEN dizisindeki sira degisse bile dogru
-       kalir. */
-    try{ el.dataset.sem = String(ALIEN.indexOf(cizim)); }catch(e){ _yut(e); }
+       kalir.
+       MOOD ikonu icin AYRI on ek ("M"): ALIEN.indexOf() bir mood
+       cizimi icin -1 doner, ucu de -1 olunca uclukBak() yanlislikla
+       "ucu de ayni" saniyordu (olculdu: mood modunda kutlama surekli
+       tetikleniyordu). "M"+index hicbir zaman ALIEN'in sayisal
+       index'iyle carpismiyor, esitlik kontrolu dogru kalir. */
+    try{
+      const _ai = ALIEN.indexOf(cizim);
+      el.dataset.sem = _ai >= 0 ? String(_ai) : ('M' + MOOD_IKON_LIST.indexOf(cizim));
+    }catch(e){ _yut(e); }
     el.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + cizim + '</svg>';
     const sv = el.firstChild;
     try{
@@ -8104,6 +8160,19 @@
   var _uclukTurSem = null;          // bu turda hepsi ayni olacaksa sembol
   function alienSec(){
     if(_uclukTurSem) return _uclukTurSem;
+    /* MOOD MODU: radyoda ve AYAR.sembolSpin kapaliyken (varsayilan)
+       yuvalar soyut ALIEN yerine anlamli mood ikonlarini gosterir.
+       Ucluk oyunu (yukarida) MUAF DEGIL -- kazara ucu ayni gelirse
+       kutlama yine calisir, zararsiz bir bonus, engellemeye gerek yok.
+       VERI AYRI DOSYADA (mood.js): henuz inmediyse (window.MOOD_HAZIR
+       yok) bu seferlik eski ALIEN'e duseriz ve yuklemeyi tetikleriz --
+       bir sonraki cagrida mood gelmis olur. Sessiz ve zararsiz, ayni
+       deri_cizim.js'in "gelmezse duz zeminde kalir" deseni. */
+    if(moodAktifMi()){
+      if(window.MOOD_HAZIR && typeof MOOD_IKON_LIST !== 'undefined')
+        return MOOD_IKON_LIST[Math.random()*MOOD_IKON_LIST.length|0];
+      moodYukle();
+    }
     return ALIEN[Math.random()*ALIEN.length|0];
   }
   /* AYNI UCLUK IKI KEZ KUTLANMASIN. Ilk yazimda bu bir SURE
@@ -11027,7 +11096,15 @@
      duzeltmesiyle ayni desen: yalnizca YENI kullaniciyi etkiler,
      kayitli tercihi olanin degeri asagidaki _a.carkSesSev okumasi
      yuzunden hep kazanir -- bu satir sadece ILK acilisin varsayilanidir. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[] };
+  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[],
+    /* SEMBOL SPIN (17 Eylul): varsayilan KAPALI. Acikken sag ustteki
+       3 sembol eski soyut oyunu oynar (rastgele donme + ucluk
+       kutlamasi + tik'te carkiCevir). Kapaliyken (varsayilan) --
+       yalnizca radyo modunda -- ayni semboller mood ikonuna donusur,
+       birine dokununca dogrudan ilgili istasyona gecer. Bkz.
+       moodAktifMi(). Adin "SPIN" olmasi bilerek: acik olan hal, eski
+       DONEN/oyun halidir. */
+    sembolSpin:false };
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -11052,6 +11129,9 @@
         if(typeof _a.carkSesSev === 'number') AYAR.carkSesSev = Math.max(0, Math.min(3, _a.carkSesSev|0));
         /* Halka boyu: kademe sayisi degisirse eski kayit tasmasin. */
         if(typeof _a.halkaBoy === 'number') AYAR.halkaBoy = Math.max(0, Math.min(4, _a.halkaBoy|0));
+        /* SEMBOL SPIN (17 Eylul): varsayilan kapali, sadece daha
+           once acmis kullanicida acik kalsin. */
+        if(_a.sembolSpin === true) AYAR.sembolSpin = true;
         /* ── BIR KERELIK ONARIM: ORTADAKI ALET ────────────────────
            KULLANICININ SOZU: "ilk acilinca carkli olan acilmali."
            Varsayilan zaten 'cark'. Ama skins paneli acilirken
@@ -12692,8 +12772,12 @@
              kutulu harfe donusuyor (foto ceken kyz()'de yasanan hata,
              16 Eylul'de duzeltildi). Burada zaten TEK cagri var, o
              hataya hic girmiyor. */
+          /* SIRA DEGISTI (17 Eylul): bayrak BASTA, isim saginda.
+             Kullanicinin sozu: "bayrak basta olsun ulke yani,
+             saginda da isim." Hala TEK fillText cagrisi -- bayrak
+             emojisinin iki bolgesel gosterge kod noktasi ayrilmiyor. */
           const bay = bayrak(y.ulke);
-          const ad = bay ? (adTemel + '  ' + bay) : adTemel;
+          const ad = bay ? (bay + '  ' + adTemel) : adTemel;
           /* ── CERCEVE TAMAMEN KALDIRILDI (16 Eylul, ucuncu duzeltme) ──
              Onceki iki deneme (once measureText(ad), sonra sabit
              BAYRAK_PAY guvenlik payi) ikisi de kutuyu METNIN
@@ -17003,6 +17087,19 @@
     ustAdEtiket(); window.addEventListener('resize', ustAdEtiket);
     try{ window.ustAdEtiket = ustAdEtiket; }catch(e){ _yut(e); }
   }catch(e){ _yut(e); }
+  /* ── MOOD SEMBOLU SECIMI ────────────────────────────────────────────
+     Bir yuvaya (tek sembole) dokununca o sembolun mood havuzundan
+     rastgele bir istasyona gecer. GUVENLI YOL: arama sonucu ve yildiz
+     secimiyle (araCal, yildizAc) BIREBIR ayni desen -- aileSec() rafi/
+     zemini/carki yeni istasyonun ailesine getiriyor, _secildi bayragi
+     cal()'in raf kapisini bir kerelik aciyor. Ikisi de KENDI KENDINI
+     sifirliyor, kalici bir "mood modu" state'i hic olusmuyor -- bir
+     sonraki ileri/geri/cark tusu tamamen normal akista devam eder.
+     Kullanicinin sozu: "nereye basarsam basayim normal akisimiza geri
+     donmeli, kalmasin o mood ta."
+     KENDISI mood.js'te (bkz. dosyanin basindaki NEDEN AYRI DOSYA notu):
+     tik handler'i asagida, fonksiyon henuz inmemisse (typeof kontrolu)
+     sessizce eski carkiCevir()'e duser. */
   /* ── SEMBOLLER DE AYNI DUGME ──────────────────────────────────────
      Ayri bir davranis YOK: iki hedef, tek is -- yoksa "hangisi ne
      yapiyordu" sorusu dogar.
@@ -17025,18 +17122,25 @@
     }
     if(_sm) _sm.addEventListener('click', e=>{
       e.stopPropagation();
-      /* ── IKI ISLEV, TEK HEDEF ──────────────────────────────────
-         Ayarlardaki SYMBOL SPIN kapaliyken semboller raf adiyla
-         ayni isi yapiyor (eski davranis, degismedi).
-         Acikken ise carki ceviriyor ve BASKA HICBIR SEYE
-         dokunmuyor: sarki atlamiyor, raf degismiyor, oda
-         degismiyor. Kullanicinin istegi tam olarak buydu --
-         dinlerken eli oyalayacak bir sey. */
       /* ── SEMBOLLER YALNIZCA DONER (4 Eylul) ────────────────────
          Kullanicinin sozu: "sembollere sadece sembolleri dondurmek
          icin basilacak, ayarlardaki secenegi kapat, sabit olsun."
          Liste artik yalnizca sagdaki ADDAN aciliyor; sembol tek is
-         yapiyor ve o is her zaman ayni. */
+         yapiyor ve o is her zaman ayni.
+         ── MOOD MODU (17 Eylul) ──────────────────────────────────
+         AYAR.sembolSpin AÇIKSA bu satirin altina hic inmiyoruz --
+         yukaridaki eski davranis (carkiCevir) BIREBIR ayni kaliyor.
+         KAPALIYKEN (varsayilan) ve radyodaysak, tek bir yuvaya
+         dokunmak o yuvadaki mood ikonunun havuzundan rastgele bir
+         istasyona ANINDA gecer -- carka dokunmuyor. */
+      if(moodAktifMi()){
+        const _hd = /** @type {any} */ (e.target);
+        const yuv = _hd && _hd.closest ? _hd.closest('.yuva') : null;
+        /* mood.js henuz inmediyse (typeof) sessizce klasige duseriz --
+           carkiCevir() zararsiz varsayilan, moodYukle() zaten alienSec()
+           icinde tetiklenmis olur. */
+        if(yuv && typeof moodSembolSec === 'function'){ moodSembolSec(yuv); return; }
+      }
       carkiCevir();
     });
   }catch(e){ _yut(e); }
@@ -20244,6 +20348,10 @@
   const REHBER_RADIO = [
     { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
     { h:{disk:0.55,aci:52},   m:'PINCH: OPEN SKY, TAP A STAR FOR A STATION', dx:-8, dy:10, hiza:'sag' },
+    /* SPIN MODE (17 Eylul): #bekle -- radyoda ve SYMBOL SPIN kapaliyken
+       (varsayilan), bir sembole dokununca ilgili mood'a ait rastgele
+       bir istasyona gecer. */
+    { h:'#bekle', m:'SPIN MODE — TAP A SYMBOL FOR A MOOD STATION', dx:0, dy:-24, hiza:'orta' },
     /* ── SOL SUTUN ETIKET HIZALAMA (17 Eylul) ────────────────────────
        Kullanicinin sozu: "soldaki yazılar yamuk, ikonlar duzelip, bu
        yazıların da alt alta hizalı ikona daha yakın olmalı." Olcum
