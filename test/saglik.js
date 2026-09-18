@@ -2220,9 +2220,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      (null'a donuyor) -- bir sonraki gecis (nereden gelirse gelsin) uc
      yuvayi da serbest buluyor.
      KANIT (Kural 4): uc yuvaya GERCEKTE HIC URETILEMEYECEK yer
-     tutucular ('M97','M98','M99' -- MOOD_IKON_LIST en fazla 30 ikon
-     (18 Eylul'de 15'ten 30'a cikti), yani M0..M29 disina hicbir gercek
-     kod yolu cikamaz) konup ORTADAKI
+     tutucular ('M97','M98','M99' -- MOOD_IKON_LIST 18 Eylul'de 15'ten
+     30'a, sonra ayni gun icinde 30'dan 34'e, 34'ten 38'e cikti, yani
+     M0..M37 disina hicbir gercek kod yolu cikamaz) konup ORTADAKI
      yuva kilitlendi: bekleGoster+bekleDondur SONRASI kilitli yuva
      BIREBIR AYNI kalirken oteki ikisi DEGISMELI; ardindan kilit
      tuketildigi icin AYNI yuvalara AYNI yer tutucular yeniden konup
@@ -2352,18 +2352,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       mn2.yok ? '-' : ('ikinci dokunustan once anahtar=' + mn2.oncekiAnahtar + ', ikinciCalisti=' + mn2.ikinciCalisti));
   }
 
-  /* ══ MOOD SEMBOL SETI: 30 IKON / 11 GERCEK KATEGORI (18 Eylul) ══
+  /* ══ MOOD SEMBOL SETI: 38 IKON / 14 GERCEK KATEGORI (18 Eylul) ══
      Kullanicinin istegi: "sekli garip anlasilmayan seyleri cikar...
      30 tane olsun semboller." PIYANO/ORKESTRA/SAKSAFON/BLUES (kutu-
      tarak ve asma-kilit gibi okunan, ayirt edilemeyen sekiller)
      kaldirildi, kalan 11 kategori 2-3'er gorsel varyantla 30'a
-     tamamlandi (bkz. mood.js basindaki not). Bu kontrol o yapinin
-     BOZULMADIGINI olcuyor: sayi, kategori kumesi, MOOD_SEMBOL ->
-     MOOD_ISTASYON eslesmesi VE -- 18 Eylul'de bizzat bu calisma
-     sirasinda bulunan gercek bir hata yuzunden -- her ikonun
-     uygulamanin GERCEK #bekle .yuva svg CSS'i (stroke:currentColor,
-     fill:none, dinamik getBBox() viewBox) altinda GERCEKTEN gorunur
-     bir sey cizdigi.
+     tamamlandi (bkz. mood.js basindaki not).
+     AYNI GUN, UCUNCU ISTEK: "araba bisiklet spor yapan biri ya da
+     halter de olur ekle bunları da 30'ar istasyon bi de bagla" --
+     kullanicinin kendi sozu "EKLE" (var olani DEGISTIR degil), yani
+     30 sayisi burada BILEREK asiliyor. SPOR (iki varyant: elleri
+     yerde ayaklari havada bir insan + halter), ARABA, BISIKLET
+     eklendi -- 30+4=34 ikon, 11+3=14 kategori.
+     AYNI GUN, DORDUNCU ISTEK: onizlemeyi gorunce "aynı stil o
+     koleksiyone 3-4 tane daha ekleyeceksin" -- SPOR'a kosan insan +
+     spor ayakkabi, ARABA'ya direksiyon, BISIKLET'e kask eklendi.
+     Kategori/istasyon havuzu sayisi DEGISMEDI (hala 14/3 yeni), yalniz
+     gorsel varyant sayisi artti -- 34+4=38 ikon.
+     Asagidaki kontrol o ustune eklenen yapiyi da kapsayacak sekilde
+     guncellendi.
+     Bu kontrol yapinin BOZULMADIGINI olcuyor: sayi, kategori kumesi,
+     MOOD_SEMBOL -> MOOD_ISTASYON eslesmesi VE -- 18 Eylul'de bizzat
+     bu calisma sirasinda bulunan gercek bir hata yuzunden -- her
+     ikonun uygulamanin GERCEK #bekle .yuva svg CSS'i
+     (stroke:currentColor, fill:none, dinamik getBBox() viewBox)
+     altinda GERCEKTEN gorunur bir sey cizdigi.
      OLCUM: yeni 30 ikonluk set Chromium'da #bekle icine (CSS'in
      gecerli oldugu tek yer) canli yuvaYaz() ile basilip ekran
      goruntusuyle tek tek karsilastirildi. 29/30 ilk denemede dogruydu;
@@ -2397,7 +2410,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          || typeof MOOD_ISTASYON === 'undefined' || typeof yuvaYaz !== 'function'){
         return { yok:true };
       }
-      const beklenen = ['AGAC','LOUNGE','KULAKLIK','PIRAMIT','SALSA','UZAY','SENTEZ','DANS','FUNK','METAL','REGGAE'];
+      const beklenen = ['AGAC','LOUNGE','KULAKLIK','PIRAMIT','SALSA','UZAY','SENTEZ','DANS','FUNK','METAL','REGGAE','SPOR','ARABA','BISIKLET'];
       const kaldirilan = ['PIYANO','ORKESTRA','SAKSAFON','BLUES'];
       const kategoriler = Object.keys(MOOD_ISTASYON);
       const eksikKategori = beklenen.filter(k => !kategoriler.includes(k));
@@ -2427,18 +2440,67 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         eksikKategori, fazlaKaldirilan, orphan, bosBBox
       };
     });
-    K('Mood sembol seti tam 30 ikon / 30 kategori-eslesmesi tasiyor', !ms.yok
-      && ms.uzunlukSembol === 30 && ms.uzunlukIkon === 30,
+    K('Mood sembol seti tam 38 ikon / 38 kategori-eslesmesi tasiyor', !ms.yok
+      && ms.uzunlukSembol === 38 && ms.uzunlukIkon === 38,
       ms.yok ? 'test kosulamadi (MOOD_IKON_LIST/MOOD_SEMBOL/MOOD_ISTASYON/yuvaYaz eksik)'
              : ('MOOD_SEMBOL.length=' + ms.uzunlukSembol + ', MOOD_IKON_LIST.length=' + ms.uzunlukIkon));
-    K('Beklenen 11 kategorinin hepsi MOOD_ISTASYON icinde duruyor', !ms.yok && ms.eksikKategori.length === 0,
+    K('Beklenen 14 kategorinin hepsi MOOD_ISTASYON icinde duruyor', !ms.yok && ms.eksikKategori.length === 0,
       ms.yok ? '-' : ('eksik: ' + JSON.stringify(ms.eksikKategori)));
     K('Kaldirilan PIYANO/ORKESTRA/SAKSAFON/BLUES havuzlari geri gelmemis', !ms.yok && ms.fazlaKaldirilan.length === 0,
       ms.yok ? '-' : ('hala duran: ' + JSON.stringify(ms.fazlaKaldirilan)));
     K('MOOD_SEMBOL icinde MOOD_ISTASYON da karsiligi olmayan (yetim) kategori yok', !ms.yok && ms.orphan.length === 0,
       ms.yok ? '-' : ('yetim: ' + JSON.stringify(ms.orphan)));
-    K('30 mood ikonu da GERCEK #bekle CSS altinda gorunur bir sekil ciziyor (bos/kirik degil)', !ms.yok && ms.bosBBox.length === 0,
+    K('38 mood ikonu da GERCEK #bekle CSS altinda gorunur bir sekil ciziyor (bos/kirik degil)', !ms.yok && ms.bosBBox.length === 0,
       ms.yok ? '-' : ('bos/kirik cizim index: ' + JSON.stringify(ms.bosBBox)));
+  }
+
+  /* ══ SPOR/ARABA/BISIKLET GERCEKTEN BAGLI: DOKUNUS -> CALMA (18 Eylul) ══
+     Kullanicinin sozu: "ekle bunları da 30'ar istasyon bi de bagla" --
+     "bagla" kismi burada olculuyor. Yalnizca veri/sekil dogru diye
+     (yukaridaki kontrol) dokunusun GERCEKTEN oynatmayi tetikledigi
+     kanitlanmis olmuyor -- moodSembolSec() kendi ici, dataset.sem
+     'M'+index formatinda olmali, MOOD_SEMBOL[index] uzerinden
+     MOOD_ISTASYON'a gitmeli, beyazListe'de o kimlikte bir istasyon
+     bulmali ve cal()'i o istasyonla cagirmali. cal() sahte
+     calinamayacagi icin (agi gercekten acar) gecici susturulup
+     (bkz. yukarida GECMIS testindeki ayni desen) hangi istasyonla
+     cagrildigi yakalaniyor. */
+  {
+    const baglanti = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      if(typeof moodSembolSec !== 'function' || typeof MOOD_SEMBOL === 'undefined'
+         || typeof MOOD_ISTASYON === 'undefined'){
+        return { yok:true };
+      }
+      if(!(typeof beyazListe !== 'undefined' && beyazListe && beyazListe.length)){
+        try{ await beyazListeYukle(); }catch(e){}
+        for(let i=0;i<20 && !(typeof beyazListe !== 'undefined' && beyazListe && beyazListe.length); i++) await bek(150);
+      }
+      if(!(typeof beyazListe !== 'undefined' && beyazListe && beyazListe.length)) return { yok:true, agYok:true };
+      const eskiCal = window.cal, eskiKilit = _moodKilitliYuva;
+      const sonuclar = [];
+      for(const ad of ['SPOR','ARABA','BISIKLET']){
+        const idx = MOOD_SEMBOL.indexOf(ad);
+        if(idx < 0){ sonuclar.push({ ad, yok:true }); continue; }
+        let calan = null;
+        window.cal = (it)=>{ calan = it; };
+        const yuv = document.createElement('div');
+        yuv.className = 'yuva'; yuv.dataset.sem = 'M' + idx;
+        document.body.appendChild(yuv);
+        try{ moodSembolSec(yuv); }catch(e){}
+        yuv.remove();
+        const havuz = MOOD_ISTASYON[ad];
+        const uuid = calan && calan.id ? String(calan.id).replace('rb:','') : null;
+        sonuclar.push({ ad, calandi: !!calan, havuzda: !!(uuid && havuz.indexOf(uuid) !== -1), uuid });
+      }
+      window.cal = eskiCal; _moodKilitliYuva = eskiKilit;
+      return { yok:false, sonuclar };
+    });
+    K('SPOR/ARABA/BISIKLET dokununca gercekten kendi istasyon havuzundan calar',
+      !baglanti.yok && (baglanti.sonuclar || []).every(s => !s.yok && s.calandi && s.havuzda),
+      baglanti.yok ? ('test kosulamadi' + (baglanti.agYok ? ' (beyazListe gelmedi)' : ''))
+        : (baglanti.sonuclar || []).map(s => s.yok ? (s.ad+': listede yok')
+            : s.ad + ': calandi=' + s.calandi + ' havuzda=' + s.havuzda).join(' | '));
   }
 
   /* ══ BASILAN MOOD SEMBOLU KALICI RENKLI KALIR (18 Eylul, sonraki istek) ══
@@ -11229,6 +11291,47 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      !!recKip && recKip.moodda!=='none' && recKip.moodSonuk===false,
      'mood: '+(recKip?recKip.moodda:'-')+', sonuk: '+(recKip?recKip.moodSonuk:'-'));
 
+  /* ── COBALT / JADE / POP: DISK MERKEZI BEYAZ DEGIL, KOYU GRI (18 Eylul)
+     Kullanicinin sozu, 3 ekran goruntusuyle birlikte: "bu 3 skinsin
+     ortasındaki beyaz yerler koyu gri olacak."
+     OLCULDU: bu ucunun markasi #ffffff; olukYaz() oluk/cekirdek
+     renklerini markadan tohumluyordu ve beyaz HER zemine karsi zaten
+     yuksek kontrastli oldugu icin hedefeCoz() daha ilk denemede
+     (zeminin ucte biri bile karismadan) "yeterli" deyip duruyordu.
+     Once, duzeltmeden ONCE, gercekten kirmizi yandigi asagida ayrica
+     dogrulandi (KURAL 4) -- burada yalnizca DUZELTILMIS hali kaliyor. */
+  {
+    const merkezGri = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const say = h=>{ const t=String(h).trim();
+        const m = t.replace('#','');
+        return /^[0-9a-fA-F]{6}$/.test(m)
+          ? [parseInt(m.slice(0,2),16),parseInt(m.slice(2,4),16),parseInt(m.slice(4,6),16)] : null; };
+      const parlaklik = rgb => rgb ? (0.299*rgb[0]+0.587*rgb[1]+0.114*rgb[2])/255 : 1;
+      const eskiDeri = AYAR.deri, eskiHalka = !!AYAR.halka;
+      AYAR.halka = false;
+      const cikti = [];
+      for(const ad of ['COBALT','JADE','POP']){
+        const no = DERILER.findIndex(d => d && d.ad === ad) + 1;
+        if(no < 1){ cikti.push({ ad, yok:true }); continue; }
+        AYAR.deri = no; deriUygula(); try{ olukYaz(); }catch(e){}
+        await bek(120);
+        const dv = a => getComputedStyle(document.documentElement).getPropertyValue(a).trim();
+        const cek = say(dv('--d-cekirdek')), oluk = say(dv('--d-oluk'));
+        cikti.push({ ad, cek, oluk, cekParlaklik: parlaklik(cek), olukParlaklik: parlaklik(oluk) });
+      }
+      AYAR.halka = eskiHalka; AYAR.deri = eskiDeri; deriUygula(); try{ olukYaz(); }catch(e){}
+      return cikti;
+    });
+    const KOYU_TAVAN = 0.45; /* beyaz 1.0; 0.45'in altinda artik "gri", beyaz degil */
+    const kotular = (merkezGri || []).filter(d => d.yok
+      || !(d.cekParlaklik < KOYU_TAVAN) || !(d.olukParlaklik < KOYU_TAVAN));
+    K('COBALT/JADE/POP diskin ortasi artik beyaz degil, koyu gri',
+      (merkezGri || []).length === 3 && kotular.length === 0,
+      (merkezGri || []).map(d => d.yok ? (d.ad+': listede yok')
+        : d.ad+' cekirdek '+Math.round((d.cekParlaklik||0)*100)+'% oluk '+Math.round((d.olukParlaklik||0)*100)+'%').join(' | '));
+  }
+
   /* ── DERI ACIKKEN FOTOGRAF EKRANI KOPYALIYOR MU ─────────────────
      2 Eylul'de olculdu: bir deri acikken cekilen fotograf neredeyse
      BOSTU. Ekranda krem zemin, doku ve disk; fotografta zemin
@@ -13687,12 +13790,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            (bkz. olukYaz). Rafin rengi zemine cok yakinsa saf marka
            tonuna donuluyor -- kontrol o guvenligin de yerinde
            oldugunu soruyor, yoksa cizgi zemine gomulebilirdi. */
+        /* 18 Eylul: kok artik her zaman d.marka DEGIL -- COBALT/JADE/POP
+           (merkezGri:1) icin sabit koyu gri tohum (bkz. yukarida
+           "MARKA BEYAZ, OLUK/CEKIRDEK BEYAZ CIKIYORDU"). Karisim da o
+           yuzden artik d.marka'dan degil, kokRenk'ten kuruluyor -- diger
+           57 deride kokRenk zaten d.marka'nin ta kendisi, davranis
+           degismedi, sadece degiskenin adi ve merkezGri'li 3 deri icin
+           kaynagi degisti. */
         K('Ortadaki cizgi ve nokta markadan ve raftan tureniyor',
            /function olukYaz\(\)/.test(kaynak)
-           && /const karisim = _hexKaris\(raf, d\.marka, 0\.42\);/.test(kaynak)
+           && /const kokRenk = d\.merkezGri \? MERKEZ_GRI_TOHUM : d\.marka;/.test(kaynak)
+           && /const karisim = _hexKaris\(raf, kokRenk, 0\.42\);/.test(kaynak)
            && />= 1\.8\) ana = karisim;/.test(kaynak)
            && /try\{ olukYaz\(\); \}catch/.test(kaynak),
-           'marka + raf karisimi, zemine gomulurse saf markaya donuyor');
+           'marka (ya da merkezGri tohumu) + raf karisimi, zemine gomulurse saf markaya donuyor');
         /* ── SABIT ORAN DEGIL, OLCULEN SONUC ──────────────────────
            Bu kontrol bir kez YANLIS SEYI sordu: kaynakta
            "0.60 : 0.48" yaziyor mu diye bakiyordu. Yani bir SAYIYI
@@ -13721,8 +13832,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
               kotu.push(d.ad + ' yazilmadi'); continue;
             }
             /* Tavan: ana rengin kendisi. Hedefi asamayan deride
-               beklenen sey hedef degil, bu tavan. */
-            const tavan = oran(d.marka, d.zem);
+               beklenen sey hedef degil, bu tavan.
+               COBALT/JADE/POP (merkezGri:1) icin "ana renk" artik
+               d.marka (beyaz) DEGIL -- olukYaz() bunlarda sabit koyu
+               gri tohumdan (#3a3a3a, index.html'deki MERKEZ_GRI_TOHUM)
+               baslıyor (18 Eylul, "ortasindaki beyaz yerler koyu gri
+               olacak"). Tavan da ayni tohumdan olculmeli; yoksa test
+               beyazin (yuksek kontrast) tavanini bekleyip gri
+               tohumun (dusuk kontrast) sonucunu "yetersiz" sayar --
+               tam olarak COBALT/POP'ta olan buydu (18 Eylul, ilk tam
+               kosu: cekirdek 2.74 / 2.83, "sapma" diye isaretlendi). */
+            const KOK_RENK_TEST = d.merkezGri ? '#3a3a3a' : d.marka;
+            const tavan = oran(KOK_RENK_TEST, d.zem);
             const bekOluk = Math.min(2.60, tavan) - 0.05;
             const bekCek  = Math.min(3.20, tavan) - 0.05;
             if(oran(ol, d.zem) < bekOluk)

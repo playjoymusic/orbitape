@@ -44,7 +44,7 @@
      moodSembolSec() zaten MOOD_SEMBOL[index] -> MOOD_ISTASYON[ad] seklinde
      calisiyor, tekrarlanan ad ayni havuzu bulur -- baska hicbir kod
      degismedi (index.html'e hic dokunulmadi). */
-  const MOOD_SEMBOL = ['AGAC','AGAC','AGAC','PIRAMIT','PIRAMIT','LOUNGE','LOUNGE','LOUNGE','KULAKLIK','KULAKLIK','KULAKLIK','SALSA','SALSA','UZAY','UZAY','UZAY','SENTEZ','SENTEZ','SENTEZ','DANS','DANS','DANS','FUNK','FUNK','FUNK','METAL','METAL','REGGAE','REGGAE','REGGAE'];
+  const MOOD_SEMBOL = ['AGAC','AGAC','AGAC','PIRAMIT','PIRAMIT','LOUNGE','LOUNGE','LOUNGE','KULAKLIK','KULAKLIK','KULAKLIK','SALSA','SALSA','UZAY','UZAY','UZAY','SENTEZ','SENTEZ','SENTEZ','DANS','DANS','DANS','FUNK','FUNK','FUNK','METAL','METAL','REGGAE','REGGAE','REGGAE','SPOR','SPOR','ARABA','BISIKLET','SPOR','SPOR','ARABA','BISIKLET'];
   /* İKINCI TUR (18 Eylul, ayni gun): "mum, koltuk, kuyruklu yildiz,
      maraka(eski)" da cikarildi, yerine "tv, sandalye, kalem, masa,
      kedi, kopek" kondu -- ayni "cagristirmali olsun, kategoriyle
@@ -63,6 +63,30 @@
      bir cam agaci gorunuyor (bkz. render kaniti: onceki -> ok,
      sonraki -> agac). Digerlerinin hepsi (29/30) ilk denemede dogru
      cikti, tek sorun buydu. */
+  /* ── UCUNCU TUR: 3 YENI KATEGORI (18 Eylul, ayni gun, ucuncu istek) ──
+     Kullanicinin sozu (3 ekran goruntusuyle -- COBALT/JADE/POP'un
+     ortasindaki beyaz nokta sikayetiyle AYNI mesajda): "insanlarin
+     mood unu da soylüyorsun ... kalem kadeh tv vs [gibi] ... ama araba
+     bisiklet spor yapan biri ya da halter de olur ekle bunları da
+     30'ar istasyon bi de bagla." Sonra ayrica: "hepsini yap aynı anda
+     push layalım."
+     Once kategori KISITI ("30 tane olsun") 18 Eylul'un ilk isteğiydi;
+     bu UCUNCU istek bilerek o sayinin USTUNE cikiyor -- kullanicinin
+     kendi sozu "bunları da EKLE" (var olan 30'u degistirmek degil,
+     ustune eklemek). O yuzden var olan 11 kategori/30 ikona
+     DOKUNULMADI, uctane YENI kategori (SPOR, ARABA, BISIKLET) ve
+     dort YENI cizim eklendi (SPOR iki varyant tasiyor: elleri yerde
+     ayaklari havada duran bir insan VE halter -- kullanicinin sozunde
+     "spor yapan biri YA DA halter" ayni fikrin iki hali gibi
+     okundugu icin tek kategoride birlestirildi; araba ve bisiklet
+     kendi kategorilerinde, cunku ikisi de baska bir HAREKET turu).
+     ISTASYON HAVUZLARI (30'ar, MOOD_ISTASYON'da asagida): var olan on
+     bir kategori gibi radyo.json'daki GERCEK istasyonlardan -- SPOR
+     enerjik elektronik/dans (workout hissi), ARABA klasik rock/yol
+     (surus hissi), BISIKLET daha hafif funk/disco/pop (pedal hissi) --
+     uc havuz birbirinden AYRIK (hicbir kimlik iki kategoride birden
+     yok), CLAUDE.md'nin lisans kapisindan (lisansSerbest) zaten
+     GECMIS istasyonlar, cunku hepsi radyo.json'un kendisinden. */
   const MOOD_IKON_LIST = [
     "<path d=\"M12 21V16.4\"/><path d=\"M12 16.4L7.6 16.4L12 9.4L9.2 9.4L12 4L14.8 9.4L12 9.4L16.4 16.4Z\"/>",
     "<path d=\"M12 4.4C8.2 4.4 5.6 7.4 6.4 10.6C4.6 11.2 4 13.6 5.6 15C5 17 6.6 19 9 18.6C9.6 20.2 14.4 20.2 15 18.6C17.4 19 19 17 18.4 15C20 13.6 19.4 11.2 17.6 10.6C18.4 7.4 15.8 4.4 12 4.4Z\"/><path d=\"M12 18.8V21.6\"/>",
@@ -93,7 +117,37 @@
     "<path d=\"M2.6 19.4 L9 8.6 L13.4 15 L16.4 10.8 L21.4 19.4Z\"/>",
     "<circle cx=\"12\" cy=\"12\" r=\"4.4\"/><path d=\"M12 3V5.4M12 18.6V21M3 12H5.4M18.6 12H21M5.9 5.9L7.6 7.6M16.4 16.4L18.1 18.1M5.9 18.1L7.6 16.4M16.4 7.6L18.1 5.9\"/>",
     "<path d=\"M2.6 9.4C5 6.6 7.6 6.6 10 9.4C12.4 12.2 15 12.2 17.4 9.4C18.6 8 19.8 7.4 21.4 7.4\"/><path d=\"M2.6 15C5 12.2 7.6 12.2 10 15C12.4 17.8 15 17.8 17.4 15C18.6 13.6 19.8 13 21.4 13\"/>",
-    "<path d=\"M5 19C5 10 12 4 19 4C19 12 14 19 5 19Z\"/><path d=\"M6 18C10 14 13 10 17 6\"/>"
+    "<path d=\"M5 19C5 10 12 4 19 4C19 12 14 19 5 19Z\"/><path d=\"M6 18C10 14 13 10 17 6\"/>",
+    /* SPOR varyant 1: elleri yerde, ayaklari havada duran insan
+       (amuda kalkis / "spor yapan biri sanki elleri yerde ayaklari
+       yukarda"). Bas asagida (yere yakin), govde yukari, bacaklar
+       tepede acik bir Λ, kollar bastan asagi ellere iniyor. */
+    "<path d=\"M12 12L6 3M12 12L18 3\"/><path d=\"M12 12L8 21M12 12L16 21\"/><circle cx=\"12\" cy=\"15.4\" r=\"1.8\"/>",
+    /* SPOR varyant 2: halter (bar + iki agirlik). */
+    "<path d=\"M7 12H17\"/><rect x=\"4.6\" y=\"9\" width=\"2.4\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"10.2\" width=\"2.4\" height=\"3.6\" rx=\"1\"/><rect x=\"17\" y=\"9\" width=\"2.4\" height=\"6\" rx=\"1\"/><rect x=\"19.6\" y=\"10.2\" width=\"2.4\" height=\"3.6\" rx=\"1\"/>",
+    /* ARABA: yandan araba -- kaporta/on cam hatti, govde, iki tekerlek. */
+    "<path d=\"M3.4 17L4.8 11.8C5.2 10.2 6.6 9 8.2 9H15.8C17.4 9 18.8 10.2 19.2 11.8L20.6 17\"/><path d=\"M2.4 14.6H21.6V17H2.4Z\"/><circle cx=\"7\" cy=\"18.6\" r=\"2\"/><circle cx=\"17\" cy=\"18.6\" r=\"2\"/>",
+    /* BISIKLET: iki teker + kadro ucgeni + gidon/sele. */
+    "<circle cx=\"6\" cy=\"18\" r=\"3.2\"/><circle cx=\"18\" cy=\"18\" r=\"3.2\"/><path d=\"M6 18L11 9L15 18M11 9H14.4M6 18H15\"/><path d=\"M14.4 9L16.6 6.4M8.8 9H11.4\"/>",
+    /* ── DORDUNCU TUR: AYNI KOLEKSIYONA 4 IKON DAHA (18 Eylul, ayni gun,
+       dorduncu istek) ── Kullanicinin sozu, onizlemeyi gorunce: "aynı
+       stil o koleksiyone 3-4 tane daha ekleyeceksin." Kategori/istasyon
+       havuzlarina DOKUNULMADI -- SPOR/ARABA/BISIKLET zaten 30'ar
+       gercek istasyonla bagliydi (bkz. MOOD_ISTASYON), bu turda
+       yalnizca AYNI uc kategoriye yeni GORSEL varyantlar eklendi
+       (var olan AGAC/LOUNGE/... kategorilerinin 2-3 varyant tasimasiyla
+       ayni desen). */
+    /* SPOR varyant 3: kosan insan (bas, egik govde, one/arkaya acilmis
+       bacaklar, ters yonde sallanan kollar). */
+    "<circle cx=\"16\" cy=\"4.6\" r=\"1.8\"/><path d=\"M14.4 7L10 10.6L13.6 13.2L10.8 20.8L7 22\"/><path d=\"M10 10.6L6.2 9.4M13.6 13.2L17.8 17.4L20.6 19.4\"/>",
+    /* SPOR varyant 4: spor ayakkabi (taban + govde + iki bag/dikis
+       cizgisi). */
+    "<path d=\"M3 18.4C3 16.6 4.4 15.4 6.2 15.4H10L13.6 12.2C14.4 11.4 15.6 11.2 16.6 11.6L19.4 12.8C20.4 13.2 21 14.2 21 15.2V17C21 18.3 19.9 19.4 18.6 19.4H4.6C3.7 19.4 3 18.7 3 17.8Z\"/><path d=\"M10 15.4V12.6M13 15.4V13.4\"/>",
+    /* ARABA varyant 2: direksiyon -- dis halka, gobek, uc kollu Y. */
+    "<circle cx=\"12\" cy=\"12\" r=\"8\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><path d=\"M12 10V4M10.3 13.1L5.2 16M13.7 13.1L18.8 16\"/>",
+    /* BISIKLET varyant 2: kask -- kubbe hatti, alt kenar, havalandirma
+       cizgileri. */
+    "<path d=\"M4 15.4C4 9 7.6 5 12 5C16.4 5 20 9 20 15.4\"/><path d=\"M4 15.4H20V17.4C20 18 19.4 18.4 18.8 18.4H5.2C4.6 18.4 4 18 4 17.4Z\"/><path d=\"M8.4 8.6V15M12 6.6V15M15.6 8.6V15\"/>"
   ];
   const MOOD_ISTASYON = {
   /* Deger: radyo.json'daki gercek "id" alaninin "rb:" onekli UUID kismi.
@@ -118,7 +172,25 @@
   DANS: ["e1480c4f-467f-44ec-8b57-653abdfc7c7e","652a2fa1-d3fe-4724-a3eb-3d6b7fb1e687","32fed468-cfe3-11e9-a861-52543be04c81","038c8fb4-6939-11e9-af37-52543be04c81","2c274ca7-ad5e-44f1-9ec3-daec5452bea6","78363b80-d1dd-4a4c-9087-6ed976878360","df1b947f-d1b1-4483-a078-402570a812f3","b421583d-b66d-49da-8980-f912448af8a7","40694d2e-2fd1-435f-b672-299a8587a49f","8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76","53548d01-14fa-4c90-92c5-8a13ce0ae0fd","88a2899f-a42f-43ed-b2bc-6d5e40b8131c","110ae9c2-a80a-45fe-93fc-c4662ad3ab27","0653bfab-cb60-44e9-9511-d89b993c48f9","0df2b943-49bb-4843-9f07-c73f0fa30e50","47f4b8f2-a516-4763-b597-36622e573838","8dc26fca-2006-4960-b493-5f9ee020bf0d","4d4286f4-d818-4f06-82e0-7eecf834de1a","f99eb819-ce65-47c9-9f08-580254a5c8f5","4dca42c7-eb1e-4471-a886-0f8c51a9806c","b7e57990-b3ad-44a9-9458-2f8f58dcbde2","6623c04a-8c8d-4ef7-aa6a-d14361fbb0be","ef0f4fda-76d2-4fc1-88f0-8e150b0509bd","005d4865-d4a4-42bf-a4dd-a8127d9c59c5","df2ef0fb-5019-4eb0-bfea-fa21e6a7e609","f9533da3-f2c1-11e8-a471-52543be04c81","4cc3e959-b572-4285-99e2-069151d03b5e","a36cb1a5-f9b5-4739-a86a-987d256b7d0e"],
   FUNK: ["9d8cf601-dc3c-49be-89c2-019ec28726a9","ca0d4e4d-658b-43cc-abce-710075ae358d","a03d0d90-73ec-451d-bb7e-b698f9b3698e","8aaf1e64-f9eb-46f5-9844-2da720f9f83f","b421583d-b66d-49da-8980-f912448af8a7","40694d2e-2fd1-435f-b672-299a8587a49f","8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76","53548d01-14fa-4c90-92c5-8a13ce0ae0fd","0653bfab-cb60-44e9-9511-d89b993c48f9","4d4286f4-d818-4f06-82e0-7eecf834de1a","fba3d98e-87bd-4ad5-98d0-2fdb6970a1c0","954a3105-c6df-452b-a70c-577cee41355a","9f0466be-b6b0-4f7c-baff-f64555494804","9467b580-dd8b-44d6-b99a-6ac688a50786","df2ef0fb-5019-4eb0-bfea-fa21e6a7e609","f9533da3-f2c1-11e8-a471-52543be04c81","a08f5f5a-b392-4615-b0f4-c0fb43575a60","7afae7e3-8d06-42f5-b59e-a52d6e09e60e","9cd294c5-180a-45c4-bf87-d80e77960d78","3998f9ae-ed80-4319-8109-0acb29efb256","6affdd69-650a-46a9-94bf-cff80541e152","f215e3f4-6f2b-4279-98e6-7c304a159fa7","bd78ca13-a5ed-4a0d-ad43-5408434e18d6","6d4127ba-cd83-45c2-90ad-57dfd90b1457","b455fce7-a75a-4ea4-b08b-ea5e6444392d","ed39bcfe-7256-46a6-a9d2-5529605946b5","3648af4c-a9bd-4852-9d25-2e18f962fbde","e6c5d27f-362c-48a9-8eb9-9dcc902b9bfe"],
   METAL: ["1dda6ddb-db9c-4b4f-ac89-b337dc5af20f","ea537888-17c8-461b-b41b-5e9cee913e44","652a2fa1-d3fe-4724-a3eb-3d6b7fb1e687","32fed468-cfe3-11e9-a861-52543be04c81","038c8fb4-6939-11e9-af37-52543be04c81","ca2d0aa2-6fc8-4761-beb6-ce692a4a9bf5","64f0a21e-1f0f-4f3b-a903-1d4e872fa094","2c274ca7-ad5e-44f1-9ec3-daec5452bea6","08429f60-383a-46ee-9bdf-03b442aab240","78363b80-d1dd-4a4c-9087-6ed976878360","d4f41697-61c8-4cd5-bcd3-93c0d5248a84","33798616-837b-4418-935d-4f947562ddb8","69cdf0f5-ed69-4bf2-be17-719a17c5681f","70133397-5845-4524-bcda-701da75f46fa","40694d2e-2fd1-435f-b672-299a8587a49f","8a18c2ff-bdb9-4bfc-9707-091c12086fea","8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76","42c0308b-908d-4243-92e5-05d658ecb781","694bc694-cd35-4224-b622-630b735af327","88a2899f-a42f-43ed-b2bc-6d5e40b8131c","110ae9c2-a80a-45fe-93fc-c4662ad3ab27","0df2b943-49bb-4843-9f07-c73f0fa30e50","2ed9fe39-62df-4484-9473-24c0621a5de8","98a2bd0a-a207-4c3c-b273-df0a0dba20dc","47f4b8f2-a516-4763-b597-36622e573838","8dc26fca-2006-4960-b493-5f9ee020bf0d","afe8da7e-5b5f-463d-8e34-2e264a07dbb6","4bd0c575-f6ae-46b0-8efb-3267b9cb211c"],
-  REGGAE: ["40694d2e-2fd1-435f-b672-299a8587a49f","8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76","e84c98aa-761a-42ec-acb5-cd20fbb8f0cb","43ea0516-a17e-4b65-8999-61791c800ca6","fba3d98e-87bd-4ad5-98d0-2fdb6970a1c0","77871905-48cd-465c-8d25-dd14ae536656","a7760c28-7212-4155-9610-21fea3bcd5e0","db695122-b64f-4be3-a2b6-633e8722d4ba","1e586ac9-e78b-4522-b7ad-5cbf483257d1","8db50028-caf7-4a39-a70b-2b71500560f6","c0dccbae-c3c0-4d19-b82c-d6803c4cc045","6984559c-32fa-47e8-ae3e-781070a5765a","bf16cbc0-164f-4736-bc61-0ffa1c988f47","e49f5776-8aea-4db8-ba6e-4b12b262d4ab","a1c99f81-f8d1-4f6d-b9e3-714763a72b7d","cef8689a-a858-4400-aaaf-f6e57a633836","631e9ffd-0dcf-4f60-8e9a-002889792757","a3253a96-a1ba-4cf5-bf4b-ec7988afcfd3","f48ce4f1-3f31-11e8-b74d-52543be04c81","960eb3a4-0601-11e8-ae97-52543be04c81","f4dee6f0-22a3-11ea-aa0c-52543be04c81","701106b9-59e3-11ea-be63-52543be04c81","2a2eeadb-3126-4048-b8f1-383c7f98c956","4b14986a-9f8c-422f-a78f-4fe28363e950","3511172e-a0f1-4568-9d34-87c3ef0fa608","0e3c61c0-3980-4848-8ae6-ff68d550a5f6","13acd5a9-d83b-4689-9853-0351c905590f","1a29a057-1127-4906-b93e-dd2a7bdb57bf"]
+  REGGAE: ["40694d2e-2fd1-435f-b672-299a8587a49f","8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76","e84c98aa-761a-42ec-acb5-cd20fbb8f0cb","43ea0516-a17e-4b65-8999-61791c800ca6","fba3d98e-87bd-4ad5-98d0-2fdb6970a1c0","77871905-48cd-465c-8d25-dd14ae536656","a7760c28-7212-4155-9610-21fea3bcd5e0","db695122-b64f-4be3-a2b6-633e8722d4ba","1e586ac9-e78b-4522-b7ad-5cbf483257d1","8db50028-caf7-4a39-a70b-2b71500560f6","c0dccbae-c3c0-4d19-b82c-d6803c4cc045","6984559c-32fa-47e8-ae3e-781070a5765a","bf16cbc0-164f-4736-bc61-0ffa1c988f47","e49f5776-8aea-4db8-ba6e-4b12b262d4ab","a1c99f81-f8d1-4f6d-b9e3-714763a72b7d","cef8689a-a858-4400-aaaf-f6e57a633836","631e9ffd-0dcf-4f60-8e9a-002889792757","a3253a96-a1ba-4cf5-bf4b-ec7988afcfd3","f48ce4f1-3f31-11e8-b74d-52543be04c81","960eb3a4-0601-11e8-ae97-52543be04c81","f4dee6f0-22a3-11ea-aa0c-52543be04c81","701106b9-59e3-11ea-be63-52543be04c81","2a2eeadb-3126-4048-b8f1-383c7f98c956","4b14986a-9f8c-422f-a78f-4fe28363e950","3511172e-a0f1-4568-9d34-87c3ef0fa608","0e3c61c0-3980-4848-8ae6-ff68d550a5f6","13acd5a9-d83b-4689-9853-0351c905590f","1a29a057-1127-4906-b93e-dd2a7bdb57bf"],
+  /* ── UCUNCU TUR: SPOR / ARABA / BISIKLET (18 Eylul) ────────────────
+     Yukaridaki MOOD_IKON_LIST'in ustundeki nota bkz. Her ucu de
+     radyo.json'daki (yani zaten lisans kapisindan gecmis, beyaz
+     listedeki) GERCEK istasyonlardan secildi -- UUID'ler
+     araclar/radyo_grupla.py'nin urettigi 'grup' ve 'etiket' alanlarina
+     bakilarak elendi:
+       SPOR:     enerjik elektronik/dans/house/techno (workout hissi)
+       ARABA:    rock/klasik rock (surus, yol hissi)
+       BISIKLET: funk/disco/pop, daha hafif (pedal hissi)
+     Diger kategorilerde de zaten gorulen sey (ayni istasyonun birden
+     fazla mood havuzunda gecmesi, ör. "8c45fcc8..." DANS+FUNK+METAL+
+     REGGAE'de birden) burada da var -- yeni sey yalnizca UC YENI
+     havuzun BIRBIRINE gore ayrik olmasi (hicbir kimlik SPOR/ARABA/
+     BISIKLET'ten ikisinde birden yok), eski havuzlarla cakisma
+     sorun degil, zaten kurulu davranis. */
+  SPOR: ["ef0f4fda-76d2-4fc1-88f0-8e150b0509bd","e7516606-f5e4-4f5a-9b4c-c1f0a5a6462e","1e11d73a-7eed-40ac-90a2-2ac0c4205007","7cecc2a0-6167-49fa-aad5-abcfec674430","68df3c3b-d0e5-4290-8a5e-364a33e2d334","8be21138-e88f-43c4-8deb-00a9020ae38b","038c8fb4-6939-11e9-af37-52543be04c81","85e0f258-1f07-4dcb-a776-20287579d460","991dd9d5-2a83-47ff-a8bb-99e1e948ffe6","61a0c6db-e038-4d58-8977-1e9e90ef5e8f","2dd9ec68-b0e7-47c8-bc52-86579a8de0af","13acd5a9-d83b-4689-9853-0351c905590f","9b825eb6-0fa3-44b8-842d-93f9d8d3986f","d074385f-1061-486d-95ab-aeaa51b7778d","005d4865-d4a4-42bf-a4dd-a8127d9c59c5","5d50b9af-852d-43eb-89dd-b9b934e3f551","db35a186-97bf-447f-8f23-b3724ec63e6b","184e39db-422d-4f57-aff9-548af086f160","09d3b2bb-e368-4217-8270-2b98611b88c8","21ebd718-0d21-41dd-899c-56fd80f005ab","3d9dcff7-8fd2-4eda-9d77-cfe259c62a70","962cc6df-0601-11e8-ae97-52543be04c81","e2f8a671-835a-4223-ad0f-33ac7aa9ed05","5558dc4e-c104-49fe-828d-eadae5631f16","df1b947f-d1b1-4483-a078-402570a812f3","60ceaabd-4efd-4f47-b961-0dab6f475731","736c9d38-8947-4d73-b5d8-347c592654fc","621be7ed-d1a1-48f6-8176-489e1406b4a3","206f93c5-5f3c-4ba1-82c2-19a42582fcc2","1e13ed4e-daa9-4728-8550-e08d89c1c8e7"],
+  ARABA: ["f9533da3-f2c1-11e8-a471-52543be04c81","652a2fa1-d3fe-4724-a3eb-3d6b7fb1e687","0730a3ce-73e4-4f39-b60c-ffeaa6ee1f1b","32fed468-cfe3-11e9-a861-52543be04c81","a2b92b15-ce28-4007-a756-b431abeb1059","7347794b-6214-40b8-8fc2-ba450b1a5009","290a6027-3ced-449c-9a55-1c7fa392d7b5","f51dc707-4538-4f8d-8fd2-2933013c8389","ca2d0aa2-6fc8-4761-beb6-ce692a4a9bf5","64f0a21e-1f0f-4f3b-a903-1d4e872fa094","1d86737b-bf6f-41f2-bd52-cd29d4a73688","6f4b6359-24af-411b-add3-402761ec7557","8aaf1e64-f9eb-46f5-9844-2da720f9f83f","a08f5f5a-b392-4615-b0f4-c0fb43575a60","08429f60-383a-46ee-9bdf-03b442aab240","78363b80-d1dd-4a4c-9087-6ed976878360","d4f41697-61c8-4cd5-bcd3-93c0d5248a84","62633b87-8938-43c0-94e6-324b944eb138","83d4e85a-51c8-44fe-98b5-243af96bac71","a9fdc88f-c2be-4c90-8162-a874c9119242","b421583d-b66d-49da-8980-f912448af8a7","f8cb5a6f-6767-44a8-9cbe-28532bfc7db4","7994106c-e293-41bf-ad54-df742486e7da","7adf48b1-93a1-44d7-a0a0-97863b1fd692","69cdf0f5-ed69-4bf2-be17-719a17c5681f","70133397-5845-4524-bcda-701da75f46fa","34631647-80f2-4928-8a9f-1662f1e881ce","6cf16bdf-528e-4ce5-a9d0-37db1cba7a5d","40694d2e-2fd1-435f-b672-299a8587a49f","8a18c2ff-bdb9-4bfc-9707-091c12086fea"],
+  BISIKLET: ["bafbd6cc-65e0-4af7-907b-dd1c425e8917","4a116b98-e289-4630-9b62-b93a67159c7e","f94514ec-c316-4d21-bd27-b7f0e8e1944b","3998f9ae-ed80-4319-8109-0acb29efb256","61f28b98-91ee-476b-9863-099b2aa58d10","bbed394d-8907-435f-8714-8b24c1c56399","7567754c-e4e1-45c6-bd92-c41dc58ef78c","4d439873-1304-432f-823e-866fdb85d580","9f901849-e6ba-406c-af95-73cd1a6f5358","85817f91-210b-4ab8-b03c-b9b333b39874","5b35f143-21f9-49a4-ba85-e587591a15aa","e1d428c9-6896-4b27-ae75-e00e69e0ca7d","439fafd7-b35b-4a6c-b22f-d9e4fbd9dfd4","c77c45c4-cf37-414c-ae34-868f7d9cd944","360bb528-cea3-4e8e-84c6-3970c55bda71","373e8330-81d4-4498-adca-1e2a73ae0908","43718921-41a0-48f5-9645-c467d19a5095","78538523-2d96-4ab3-8202-8ed1a73bf84f","6512fd8f-a693-4b42-9c69-a3300d4db38f","fdffc27f-a096-4be8-b3bf-2c51a943a1d1","a438e66d-2ba7-46b4-89c9-01bc4204e161","d39a9f9f-e9b3-454a-994a-d474f8c4e82e","0b09090d-cd77-4b14-b37a-a4b0b7481212","3648af4c-a9bd-4852-9d25-2e18f962fbde","bf64595a-eed4-49de-94e5-87c1bb813a74","e9fddd49-3ee2-4597-8574-1b7dbd00aac0","53548d01-14fa-4c90-92c5-8a13ce0ae0fd","5c7a7785-6f77-4819-87c0-8776138fe996","95adc04f-2a0d-4ae4-b3ce-572c8ace6513","3c360903-2913-4aa5-a55d-08988733074d"]
 };
 
   function moodSembolSec(yuv){
