@@ -53,6 +53,11 @@ interface Window {
      modul de gelisini haber veren taraf. */
   kayitYukle?: () => void;
   kayitGeldi?: () => void;
+  /* 18 Eylul cokmesi sonrasi eklendi: nobetcinin yeniden-deneme
+     kararini test gercek 15 sn beklemeden dogrudan tetikleyebilsin
+     diye. Yalnizca testte cagriliyor, bkz. index.html kayitYukle(). */
+  __kayNobetKontrol?: () => boolean;
+  __kaySahteIstekYasi?: (ms: number) => void;
   /* Kayit hedefi (MediaStreamDestination): grafigi index.html
      kuruyor, kaydi modul aliyor -- ortak yer window. */
   kayitHedef?: any;
