@@ -2220,8 +2220,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      (null'a donuyor) -- bir sonraki gecis (nereden gelirse gelsin) uc
      yuvayi da serbest buluyor.
      KANIT (Kural 4): uc yuvaya GERCEKTE HIC URETILEMEYECEK yer
-     tutucular ('M97','M98','M99' -- MOOD_IKON_LIST en fazla 15 ikon,
-     yani M0..M14 disina hicbir gercek kod yolu cikamaz) konup ORTADAKI
+     tutucular ('M97','M98','M99' -- MOOD_IKON_LIST en fazla 30 ikon
+     (18 Eylul'de 15'ten 30'a cikti), yani M0..M29 disina hicbir gercek
+     kod yolu cikamaz) konup ORTADAKI
      yuva kilitlendi: bekleGoster+bekleDondur SONRASI kilitli yuva
      BIREBIR AYNI kalirken oteki ikisi DEGISMELI; ardindan kilit
      tuketildigi icin AYNI yuvalara AYNI yer tutucular yeniden konup
@@ -2349,6 +2350,95 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Kilitli olmayan bir yuvaya IKINCI kez dokununca da istasyon degisimi tetiklenir', !mn2.yok
       && mn2.ikinciCalisti === true,
       mn2.yok ? '-' : ('ikinci dokunustan once anahtar=' + mn2.oncekiAnahtar + ', ikinciCalisti=' + mn2.ikinciCalisti));
+  }
+
+  /* ══ MOOD SEMBOL SETI: 30 IKON / 11 GERCEK KATEGORI (18 Eylul) ══
+     Kullanicinin istegi: "sekli garip anlasilmayan seyleri cikar...
+     30 tane olsun semboller." PIYANO/ORKESTRA/SAKSAFON/BLUES (kutu-
+     tarak ve asma-kilit gibi okunan, ayirt edilemeyen sekiller)
+     kaldirildi, kalan 11 kategori 2-3'er gorsel varyantla 30'a
+     tamamlandi (bkz. mood.js basindaki not). Bu kontrol o yapinin
+     BOZULMADIGINI olcuyor: sayi, kategori kumesi, MOOD_SEMBOL ->
+     MOOD_ISTASYON eslesmesi VE -- 18 Eylul'de bizzat bu calisma
+     sirasinda bulunan gercek bir hata yuzunden -- her ikonun
+     uygulamanin GERCEK #bekle .yuva svg CSS'i (stroke:currentColor,
+     fill:none, dinamik getBBox() viewBox) altinda GERCEKTEN gorunur
+     bir sey cizdigi.
+     OLCUM: yeni 30 ikonluk set Chromium'da #bekle icine (CSS'in
+     gecerli oldugu tek yer) canli yuvaYaz() ile basilip ekran
+     goruntusuyle tek tek karsilastirildi. 29/30 ilk denemede dogruydu;
+     index 0 ('agac' varyanti) govdesi yanlis kurulmus 6 noktali bir
+     yoldu ve cam agaci degil, asagi bakan bir ok gibi cikiyordu --
+     duz JSON/uzunluk kontrolu bunu YAKALAYAMAZDI (dizi uzunlugu ve
+     kategori adi zaten dogruydu, yalniz cizimin kendisi bozuktu).
+     Duzeltme (ayni desenin index 2'deki 'orman' ikonundan buyutulmus
+     hali) sonrasi ayni canli render'da duzgun bir cam agaci cikti.
+     DURUST NOT: "ok yerine agac" turu bir sekil hatasi -- yol GECERLI,
+     kapali ve bos olmayan bir alan ciziyor, yalniz YANLIS sekli -- hicbir
+     otomatik kontrolle yakalanamaz, bu tamamen GORSEL karsilastirmayla
+     bulundu ve asagidaki kontrol bunu YENIDEN yakalayacagini iddia
+     etmiyor. Asagidaki getBBox() kontrolu FARKLI, yine de gercek bir
+     riski (elle SVG path string'i degistirirken bozuk/bos bir yol
+     yazmak -- ör. "<path d=\"\"/>" ya da hatali sozdizimi) olculebilir
+     sekilde yakalıyor: MOOD_SEMBOL/MOOD_IKON_LIST uzunlugu ve kategori
+     eslesmesiyle birlikte, her biri KASITLI olarak bozulup (uzunluk
+     kisaltildi, bir kategori MOOD_ISTASYON'dan silindi, kaldirilan bir
+     kategori geri eklendi, MOOD_SEMBOL var olmayan bir ada isaret
+     ettirildi, bir ikon bos path'e cevrildi) kontrolun DUSTUGU, sonra
+     geri alinca DUZELDIGI tek tek olculerek kanitlandi (5/5). */
+  {
+    const ms = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      if(typeof MOOD_IKON_LIST === 'undefined' || typeof MOOD_SEMBOL === 'undefined'){
+        try{ moodYukle(); }catch(e){}
+        for(let i=0;i<20 && typeof MOOD_IKON_LIST === 'undefined'; i++) await bek(150);
+      }
+      if(typeof MOOD_IKON_LIST === 'undefined' || typeof MOOD_SEMBOL === 'undefined'
+         || typeof MOOD_ISTASYON === 'undefined' || typeof yuvaYaz !== 'function'){
+        return { yok:true };
+      }
+      const beklenen = ['AGAC','LOUNGE','KULAKLIK','PIRAMIT','SALSA','UZAY','SENTEZ','DANS','FUNK','METAL','REGGAE'];
+      const kaldirilan = ['PIYANO','ORKESTRA','SAKSAFON','BLUES'];
+      const kategoriler = Object.keys(MOOD_ISTASYON);
+      const eksikKategori = beklenen.filter(k => !kategoriler.includes(k));
+      const fazlaKaldirilan = kaldirilan.filter(k => kategoriler.includes(k));
+      const orphan = MOOD_SEMBOL.filter(ad => !MOOD_ISTASYON[ad]);
+      // GERCEK CSS altinda render kontrolu -- #bekle disinda bu CSS gecerli degil
+      const bekle = document.getElementById('bekle');
+      const kutu = document.createElement('div');
+      kutu.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+      bekle.appendChild(kutu);
+      const bosBBox = [];
+      MOOD_IKON_LIST.forEach((cizim,i)=>{
+        const yuv = document.createElement('div');
+        yuv.className = 'yuva';
+        kutu.appendChild(yuv);
+        yuvaYaz(yuv, cizim);
+        const sv = yuv.firstChild;
+        let b = null;
+        try{ b = sv.getBBox(); }catch(e){}
+        if(!b || b.width < 0.5 || b.height < 0.5) bosBBox.push(i);
+      });
+      kutu.remove();
+      return {
+        yok:false,
+        uzunlukSembol: MOOD_SEMBOL.length,
+        uzunlukIkon: MOOD_IKON_LIST.length,
+        eksikKategori, fazlaKaldirilan, orphan, bosBBox
+      };
+    });
+    K('Mood sembol seti tam 30 ikon / 30 kategori-eslesmesi tasiyor', !ms.yok
+      && ms.uzunlukSembol === 30 && ms.uzunlukIkon === 30,
+      ms.yok ? 'test kosulamadi (MOOD_IKON_LIST/MOOD_SEMBOL/MOOD_ISTASYON/yuvaYaz eksik)'
+             : ('MOOD_SEMBOL.length=' + ms.uzunlukSembol + ', MOOD_IKON_LIST.length=' + ms.uzunlukIkon));
+    K('Beklenen 11 kategorinin hepsi MOOD_ISTASYON icinde duruyor', !ms.yok && ms.eksikKategori.length === 0,
+      ms.yok ? '-' : ('eksik: ' + JSON.stringify(ms.eksikKategori)));
+    K('Kaldirilan PIYANO/ORKESTRA/SAKSAFON/BLUES havuzlari geri gelmemis', !ms.yok && ms.fazlaKaldirilan.length === 0,
+      ms.yok ? '-' : ('hala duran: ' + JSON.stringify(ms.fazlaKaldirilan)));
+    K('MOOD_SEMBOL icinde MOOD_ISTASYON da karsiligi olmayan (yetim) kategori yok', !ms.yok && ms.orphan.length === 0,
+      ms.yok ? '-' : ('yetim: ' + JSON.stringify(ms.orphan)));
+    K('30 mood ikonu da GERCEK #bekle CSS altinda gorunur bir sekil ciziyor (bos/kirik degil)', !ms.yok && ms.bosBBox.length === 0,
+      ms.yok ? '-' : ('bos/kirik cizim index: ' + JSON.stringify(ms.bosBBox)));
   }
 
   /* ── FREKANS CIZGISI: YAZIYLA AYNI HATTA VE AYNI GENISLIKTE ──────

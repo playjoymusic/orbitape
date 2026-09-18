@@ -26,23 +26,74 @@
  *   kilit -- bkz. index.html moodAktifMi tanimindaki not).
  */
 
-  const MOOD_SEMBOL = ['AGAC','PIYANO','ORKESTRA','SAKSAFON','BLUES','LOUNGE','KULAKLIK','PIRAMIT','SALSA','UZAY','SENTEZ','DANS','FUNK','METAL','REGGAE'];
+  /* ── SEMBOL SETI GENISLETILDI (18 Eylul) ─────────────────────────────
+     Kullanicinin sozu: "eski sembollerim de olsun. sekli garip
+     anlasilmayan seyleri cikar" -- ekran goruntusuyle isaret ettigi
+     PIYANO (kutu+cizgi, kapi/tarak gibi okunuyordu), SAKSAFON ve BLUES
+     (ikisi de asma kilit gibi okunuyordu, birbirinden ayirt edilemiyordu)
+     ve ORKESTRA (dalgali blob, hicbir seye benzemiyordu) KALDIRILDI --
+     o 4 kategorinin istasyon havuzu artik mood dokunusundan erisilmiyor
+     (istasyonlarin kendisi radyo.json'da duruyor, normal gezinmeden hala
+     bulunabilirler). Kalan 11 kategorinin GERCEK istasyon havuzuna
+     (MOOD_ISTASYON) DOKUNULMADI. "30 tane olsun semboller" istegi ve
+     "sembol cagristirmali olsun, bir sembolun 10 ayri duyguyu/eylemi
+     temsil edebilir" sozu geregi: her kategori artik 2-3 GORSEL VARYANT
+     tasiyor (ayni kategoriye birden fazla index isaret ediyor) -- 11
+     kategori x ortalama ~2.7 varyant = 30 ikon. MOOD_SEMBOL bu yuzden
+     kategori adini TEKRAR EDIYOR (index 0-2 hepsi 'AGAC' gibi);
+     moodSembolSec() zaten MOOD_SEMBOL[index] -> MOOD_ISTASYON[ad] seklinde
+     calisiyor, tekrarlanan ad ayni havuzu bulur -- baska hicbir kod
+     degismedi (index.html'e hic dokunulmadi). */
+  const MOOD_SEMBOL = ['AGAC','AGAC','AGAC','PIRAMIT','PIRAMIT','LOUNGE','LOUNGE','LOUNGE','KULAKLIK','KULAKLIK','KULAKLIK','SALSA','SALSA','UZAY','UZAY','UZAY','SENTEZ','SENTEZ','SENTEZ','DANS','DANS','DANS','FUNK','FUNK','FUNK','METAL','METAL','REGGAE','REGGAE','REGGAE'];
+  /* İKINCI TUR (18 Eylul, ayni gun): "mum, koltuk, kuyruklu yildiz,
+     maraka(eski)" da cikarildi, yerine "tv, sandalye, kalem, masa,
+     kedi, kopek" kondu -- ayni "cagristirmali olsun, kategoriyle
+     birebir eslesmesi sart degil" ilkesiyle (kullanicinin sozu: "her
+     sembol 10 ayri duygu durumu ve cesitli istasyon... isimler yanlis
+     sakin onlara bakma"). Kategori-index eslesmesi (MOOD_SEMBOL)
+     DEGISMEDI, yalnizca bu dizideki cizimler yer degistirdi. */
+  /* OLCUM (18 Eylul, uygulamanin GERCEK #bekle .yuva svg CSS'iyle --
+     stroke:currentColor, fill:none, dinamik getBBox() viewBox --
+     Chromium'da canli render alinip 30 ikon tek tek goruntuyle
+     karsilastirildi): index 0 (ilk AGAC varyanti) cam agaci degil,
+     asagi bakan bir ok gibi cikiyordu -- 6 noktali yol yanlis
+     kurulmustu. Duzeltme: index 2'deki (orman) orta agacin ayni,
+     kanitlanmis cizim deseni (govde + 2 katli govde-ucgen) buyutulup
+     tek basina kullanildi. Duzeltmeden SONRA canli render'da duzgun
+     bir cam agaci gorunuyor (bkz. render kaniti: onceki -> ok,
+     sonraki -> agac). Digerlerinin hepsi (29/30) ilk denemede dogru
+     cikti, tek sorun buydu. */
   const MOOD_IKON_LIST = [
-    "<path d=\"M12 3 L6.4 12H9L4.4 20H19.6L15 12H17.6Z\"/><path d=\"M12 20V22\"/>",
-    "<path d=\"M4 6H20V18H4Z\"/><path d=\"M8 6V13M12 6V13M16 6V13\"/>",
-    "<path d=\"M9 4C7 4 6 6 7 8C5 9 5 12 7 13C6 15 7 18 9.5 18C10 20 14 20 14.5 18C17 18 18 15 17 13C19 12 19 9 17 8C18 6 17 4 15 4C13.5 5.5 10.5 5.5 9 4Z\"/>",
-    "<path d=\"M9 4H14C15 4 16 5 16 6V14C16 16.2 14.2 18 12 18C9.8 18 8 16.2 8 14\"/><path d=\"M8 14V9C8 7.5 9 6.5 10.5 6.5\"/><circle cx=\"12\" cy=\"19.4\" r=\"1.4\"/>",
-    "<path d=\"M14 3 L14 13\"/><circle cx=\"14\" cy=\"3\" r=\"1.2\"/><path d=\"M8 13C8 9.6 10.7 7 14 7C17.3 7 20 9.6 20 13C20 16.4 17.3 19 14 19C10.7 19 8 16.4 8 13Z\"/><circle cx=\"14\" cy=\"13\" r=\"2.4\"/>",
-    "<path d=\"M5 4H19L12 12L5 4Z\"/><path d=\"M12 12V19M8 19H16\"/>",
-    "<path d=\"M4 14V12C4 7.6 7.6 4 12 4C16.4 4 20 7.6 20 12V14\"/><rect x=\"2.6\" y=\"13\" width=\"4\" height=\"6\" rx=\"1.4\"/><rect x=\"17.4\" y=\"13\" width=\"4\" height=\"6\" rx=\"1.4\"/>",
+    "<path d=\"M12 21V16.4\"/><path d=\"M12 16.4L7.6 16.4L12 9.4L9.2 9.4L12 4L14.8 9.4L12 9.4L16.4 16.4Z\"/>",
+    "<path d=\"M12 4.4C8.2 4.4 5.6 7.4 6.4 10.6C4.6 11.2 4 13.6 5.6 15C5 17 6.6 19 9 18.6C9.6 20.2 14.4 20.2 15 18.6C17.4 19 19 17 18.4 15C20 13.6 19.4 11.2 17.6 10.6C18.4 7.4 15.8 4.4 12 4.4Z\"/><path d=\"M12 18.8V21.6\"/>",
+    "<path d=\"M6.4 21 V18 M6.4 18 L3.6 18 L6.4 13 L4.4 13 L6.4 9 L8.4 13 L6.4 13 L9.2 18 Z\"/><path d=\"M17.6 21 V19 M17.6 19 L15 19 L17.6 14.6 L15.8 14.6 L17.6 11 L19.4 14.6 L17.6 14.6 L20.2 19 Z\"/><path d=\"M12 21 V16.8 M12 16.8 L8.6 16.8 L12 10.6 L9.8 10.6 L12 6 L14.2 10.6 L12 10.6 L15.4 16.8 Z\"/>",
     "<path d=\"M12 4 L21 19H3Z\"/><path d=\"M7.5 19 L12 11 L16.5 19\"/>",
-    "<circle cx=\"7.5\" cy=\"7.5\" r=\"3.5\"/><circle cx=\"16.5\" cy=\"7.5\" r=\"3.5\"/><path d=\"M7.5 11V19M16.5 11V19\"/>",
+    "<circle cx=\"12\" cy=\"5\" r=\"2.6\"/><path d=\"M12 7.6 V14.4 M8.4 20.6 L12 14.4 L15.6 20.6 M7.6 10.4 H16.4\"/>",
+    "<path d=\"M5 4H19L12 12L5 4Z\"/><path d=\"M12 12V19M8 19H16\"/>",
+    "<rect x=\"3.4\" y=\"5.4\" width=\"17.2\" height=\"12\" rx=\"1.4\"/><path d=\"M9 20.6H15M12 17.4V20.6\"/>",
+    "<path d=\"M7.6 3.6V13.6\"/><path d=\"M7.6 13.6H16.4V16.2H7.6Z\"/><path d=\"M8.4 16.2V20.6M15.6 16.2V20.6\"/>",
+    "<path d=\"M4 14V12C4 7.6 7.6 4 12 4C16.4 4 20 7.6 20 12V14\"/><rect x=\"2.6\" y=\"13\" width=\"4\" height=\"6\" rx=\"1.4\"/><rect x=\"17.4\" y=\"13\" width=\"4\" height=\"6\" rx=\"1.4\"/>",
+    "<circle cx=\"12\" cy=\"12\" r=\"8\"/>",
+    "<path d=\"M15.4 3.8 A8.2 8.2 0 1 0 15.4 20.2 A9.6 9.6 0 0 1 15.4 3.8Z\"/>",
+    "<circle cx=\"6\" cy=\"7\" r=\"1.8\"/><path d=\"M6 9.2V14.4M4 20L6 14.4L8 20M4.4 11.6H7.6\"/><circle cx=\"18\" cy=\"7\" r=\"1.8\"/><path d=\"M18 9.2V14.4M16 20L18 14.4L20 20M16.4 11.6H19.6\"/><circle cx=\"12\" cy=\"5\" r=\"2\"/><path d=\"M12 7.2V13.6M9.6 20L12 13.6L14.4 20M9.8 10.4H14.2\"/>",
+    "<path d=\"M4.6 19.4L15.4 4.6C16.2 3.5 17.8 3.4 18.8 4.4C19.8 5.4 19.7 7 18.6 7.8L7.8 19.4L4 20.6Z\"/><path d=\"M14 6.6L17.4 9\"/>",
     "<circle cx=\"12\" cy=\"12\" r=\"4.6\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9.4\" ry=\"3\" transform=\"rotate(-20 12 12)\"/>",
+    "<path d=\"M12 12 C12 10.5 13.2 9.4 14.6 9.6 C16.6 9.9 17.8 12 17.2 14 C16.4 16.6 13.6 17.8 11 16.8 C7.8 15.6 6.4 12 7.8 9 C9.6 5.2 14.4 3.8 18 6\"/>",
+    "<path d=\"M3.6 8.4H20.4V10.4H3.6Z\"/><path d=\"M6 10.4V20.6M18 10.4V20.6\"/>",
     "<path d=\"M3 12H7L9 6L14 18L16 12H21\"/>",
+    "<path d=\"M3.6 8 L7.2 4.4 L10.8 8 L14.4 4.4 L18 8 L20.4 5.6\"/><path d=\"M3.6 16 L7.2 12.4 L10.8 16 L14.4 12.4 L18 16 L20.4 13.6\"/>",
+    "<path d=\"M17.6 4.4 C13 4.4 8.8 8.6 8.8 14.4 C8.8 17 10.4 19 12.8 19.4 C12.8 16.4 12.8 12 17.6 4.4Z\"/><path d=\"M12.8 19.4 L6 21.6\"/><path d=\"M11 9.6 L14.6 8.4 M10.2 12.6 L14.2 11.2 M9.8 15.6 L13.4 14.4\"/>",
     "<circle cx=\"12\" cy=\"11\" r=\"6.4\"/><path d=\"M12 4.6V17.4M5.6 11H18.4M7.5 6.5L16.5 15.5M16.5 6.5L7.5 15.5\"/><path d=\"M12 17.4V20\"/>",
+    "<path d=\"M12 3.4 L14.4 9.8 L21.2 10.2 L15.8 14.4 L17.8 21 L12 17 L6.2 21 L8.2 14.4 L2.8 10.2 L9.6 9.8Z\"/>",
+    "<path d=\"M6.4 20.6V12C6.4 8.4 8.8 6 12 6C15.2 6 17.6 8.4 17.6 12V20.6\"/><path d=\"M6.4 12L4 7.6L8.4 9.6M17.6 12L20 7.6L15.6 9.6\"/><path d=\"M9.4 15.4V16.2M14.6 15.4V16.2\"/><path d=\"M9.8 18.2C10.8 19 13.2 19 14.2 18.2\"/>",
     "<circle cx=\"12\" cy=\"12\" r=\"8.4\"/><circle cx=\"12\" cy=\"12\" r=\"2.6\"/><circle cx=\"12\" cy=\"12\" r=\"0.8\" fill=\"currentColor\" stroke=\"none\"/>",
+    "<path d=\"M7.4 13.6 A3.6 3.6 0 0 1 8 6.6 A4.8 4.8 0 0 1 17 8.2 A3 3 0 0 1 16.6 13.6Z\"/><path d=\"M8.6 16.4 L7.6 19.6 M12 16.4 L11 19.6 M15.4 16.4 L14.4 19.6\"/>",
+    "<path d=\"M7 20.6V13C7 9 9.2 6.4 12 6.4C14.8 6.4 17 9 17 13V20.6\"/><path d=\"M7 12.4C5.2 12.4 4 14.2 4.4 16.4C4.8 18.4 6.4 19 7 17.8M17 12.4C18.8 12.4 20 14.2 19.6 16.4C19.2 18.4 17.6 19 17 17.8\"/><circle cx=\"9.6\" cy=\"14.4\" r=\"0.8\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"14.4\" cy=\"14.4\" r=\"0.8\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M11.2 16.8H12.8L12 18Z\" fill=\"currentColor\" stroke=\"none\"/>",
     "<path d=\"M13 3 L6 13H11L10 21L18 10H13Z\"/>",
-    "<circle cx=\"12\" cy=\"12\" r=\"4.4\"/><path d=\"M12 3V5.4M12 18.6V21M3 12H5.4M18.6 12H21M5.9 5.9L7.6 7.6M16.4 16.4L18.1 18.1M5.9 18.1L7.6 16.4M16.4 7.6L18.1 5.9\"/>"
+    "<path d=\"M2.6 19.4 L9 8.6 L13.4 15 L16.4 10.8 L21.4 19.4Z\"/>",
+    "<circle cx=\"12\" cy=\"12\" r=\"4.4\"/><path d=\"M12 3V5.4M12 18.6V21M3 12H5.4M18.6 12H21M5.9 5.9L7.6 7.6M16.4 16.4L18.1 18.1M5.9 18.1L7.6 16.4M16.4 7.6L18.1 5.9\"/>",
+    "<path d=\"M2.6 9.4C5 6.6 7.6 6.6 10 9.4C12.4 12.2 15 12.2 17.4 9.4C18.6 8 19.8 7.4 21.4 7.4\"/><path d=\"M2.6 15C5 12.2 7.6 12.2 10 15C12.4 17.8 15 17.8 17.4 15C18.6 13.6 19.8 13 21.4 13\"/>",
+    "<path d=\"M5 19C5 10 12 4 19 4C19 12 14 19 5 19Z\"/><path d=\"M6 18C10 14 13 10 17 6\"/>"
   ];
   const MOOD_ISTASYON = {
   /* Deger: radyo.json'daki gercek "id" alaninin "rb:" onekli UUID kismi.
@@ -53,10 +104,11 @@
      stationuuid ile arayip gercek mp3/ad/grup/ulke'yi oradan okuyor -- ayni
      istYildizKur()'un s.stationuuid -> id:'rb:'+... donusumu (bkz. orada). */
   AGAC: ["3f4be720-c996-439f-be3b-cce594ea2852","b828a184-3488-48f2-ab60-38a5e435a9fe","8492e24d-7908-4cc4-9ee7-c3d5475c42d7","44b7f191-9478-46b0-a3b5-5a0ea2b2d64e","6445c180-6a73-4e3f-834f-4ff6246d30fe","550f80dd-53b8-4139-939b-7e95f9e78b4b","4dad0ae3-720a-434e-b350-7186e4c5ea6f","95277bca-2c9a-4c08-b2e7-0854e5793f8e","77eaf32d-241f-4f25-b7d6-347783cd4471","bb7572df-2619-43fd-9ce1-c2a288671fe2","0e14eb3e-a217-421a-ba6a-133bf5c3f95b","87aa35fa-37b4-47bf-bb10-bceeb024a7d3","eca094c6-8bf7-46a7-a958-233e290272d4","ca0d4e4d-658b-43cc-abce-710075ae358d","2babf29a-811c-4a51-93c3-9f3531ef2e97","1665ae4c-74dc-44f0-bd0a-7a0d0291aa8c","750cbe31-150e-4cd2-8ec5-a6a8a9a7c8b2","22ed63fd-57bf-469a-9c71-4524834b74d0","70094073-a1a6-4c73-b871-6b25dddee813","8f14d1fa-31f6-4fd7-9dcb-8ed0e3bf3d18","49902d2d-672d-4130-b42a-90592d0460c5","03f081d4-4b70-46b2-b353-b47b502495b2","77871905-48cd-465c-8d25-dd14ae536656","0f89b1e4-ea1d-47e1-906b-7581691b6849","22b4735f-78fe-41db-bb98-800333352815","954a3105-c6df-452b-a70c-577cee41355a","c1484aa5-b758-47a1-b098-69db58d6fb78","9467b580-dd8b-44d6-b99a-6ac688a50786"],
-  PIYANO: ["0c7c0c0c-5981-440f-bc8a-98530962c191","dd514cb7-fca6-427a-add8-bcf5892b6c3d","8e0f1ea7-495d-495e-9f49-1a320e2bc5d1","79839c1c-bfb8-40a4-aed7-f31191cbd015","43d3984d-fd02-454e-b7a3-4d7ea82cea11","89b63085-db05-4c2b-86a4-ee2f17ed2018","cf670706-e552-4ffd-b0fc-0a3b55315cf6","5143bb9a-3c5e-4c53-a6ec-0108435caf5a","6816e8cd-8b06-4d68-b61f-4d9f54015f95","750cbe31-150e-4cd2-8ec5-a6a8a9a7c8b2","26bcf620-4738-4778-acec-e64d19b4335f","df2ef0fb-5019-4eb0-bfea-fa21e6a7e609","4f30d107-82f3-4e4e-99e4-44e05adcb2e9","ee614813-177f-4b83-ae6a-5e5b22d440d1","eb987d1a-ef9c-47dd-a70f-f35a34b11313","cabd4859-ac2b-4d27-b1ba-a29ddf7e8c58","510506e7-6bc0-4b91-b6a1-fc024ccad1a8","66bda19f-02fe-4462-a6c1-dbdcbf9feebe","0b7755a2-fc2b-4cc0-beff-f0af12b6b3c5","34a15ee8-a71b-4004-8fce-83650b46af66"],
-  ORKESTRA: ["3f4be720-c996-439f-be3b-cce594ea2852","07e6c4b7-b1b5-430b-a7a8-166260a775ee","0c7c0c0c-5981-440f-bc8a-98530962c191","dd514cb7-fca6-427a-add8-bcf5892b6c3d","8e0f1ea7-495d-495e-9f49-1a320e2bc5d1","79839c1c-bfb8-40a4-aed7-f31191cbd015","89b63085-db05-4c2b-86a4-ee2f17ed2018","cf670706-e552-4ffd-b0fc-0a3b55315cf6","29010f42-faef-4a9e-b15c-3ad1613b45cb","5143bb9a-3c5e-4c53-a6ec-0108435caf5a","6816e8cd-8b06-4d68-b61f-4d9f54015f95","a5331ae6-1196-46c4-b8d6-6a013018bbfe","2babf29a-811c-4a51-93c3-9f3531ef2e97","bd1c441c-132a-4d48-a3f3-bdb386f4b09a","7cc0c486-92cb-4509-9b93-775e41950ed3","5b9cc676-01d6-4c32-9dae-32bd42a79bbd","a214dd51-1724-4053-a034-73bfcdb06a9b","c81f7ce5-a1fd-42d3-b843-8ec7ec867d48","8bbc6e30-276c-483b-afba-352c55ecc633","1665ae4c-74dc-44f0-bd0a-7a0d0291aa8c","750cbe31-150e-4cd2-8ec5-a6a8a9a7c8b2","9f3d4c02-c3f0-4f00-bebe-509ff81b4d54","19ea3079-8757-467a-befb-0db17b50d1be","ffd351fe-219e-4c6e-b14f-9c2e02fbe45e","4a41d046-1a98-46f1-b888-d2618081d0a3","8890f793-36f4-4218-8f53-3d34a75db66a","6b6ed0fb-38bc-4c6a-90db-6a70b8501477","209340db-4929-11e8-b1b0-52543be04c81"],
-  SAKSAFON: ["e1480c4f-467f-44ec-8b57-653abdfc7c7e","9211a090-f78c-48e8-b5bf-3f0bf27f5bf2","07e6c4b7-b1b5-430b-a7a8-166260a775ee","8e0f1ea7-495d-495e-9f49-1a320e2bc5d1","79839c1c-bfb8-40a4-aed7-f31191cbd015","43d3984d-fd02-454e-b7a3-4d7ea82cea11","5143bb9a-3c5e-4c53-a6ec-0108435caf5a","750cbe31-150e-4cd2-8ec5-a6a8a9a7c8b2","26bcf620-4738-4778-acec-e64d19b4335f","a2b92b15-ce28-4007-a756-b431abeb1059","1d86737b-bf6f-41f2-bd52-cd29d4a73688","42c0308b-908d-4243-92e5-05d658ecb781","4d4286f4-d818-4f06-82e0-7eecf834de1a","4bd0c575-f6ae-46b0-8efb-3267b9cb211c","fba3d98e-87bd-4ad5-98d0-2fdb6970a1c0","70094073-a1a6-4c73-b871-6b25dddee813","9fd6e036-c08b-49d3-a8b7-c8b282892ffe","77871905-48cd-465c-8d25-dd14ae536656","64381ada-fe89-46eb-8049-b1fc79e4dbbe","02569932-0b3c-4938-9d3e-b00b2158d40b","a1e34b61-f532-4308-b2b9-b44c69f8507d","0f89b1e4-ea1d-47e1-906b-7581691b6849","b6b0fabd-6fc2-4eae-8156-abcb32e951cc","c72d442a-d73b-40f1-b741-e143b620eecf","954a3105-c6df-452b-a70c-577cee41355a","9f0466be-b6b0-4f7c-baff-f64555494804","282facce-8ae7-46a5-9e24-a946abe9fc7d","df2ef0fb-5019-4eb0-bfea-fa21e6a7e609"],
-  BLUES: ["652a2fa1-d3fe-4724-a3eb-3d6b7fb1e687","961e719c-0601-11e8-ae97-52543be04c81","a648882e-b8d3-422a-9a79-307ccab8c406","a2b92b15-ce28-4007-a756-b431abeb1059","a03d0d90-73ec-451d-bb7e-b698f9b3698e","6f3f2d9c-ea04-4490-86df-a68b64170e3d","8aaf1e64-f9eb-46f5-9844-2da720f9f83f","1d86737b-bf6f-41f2-bd52-cd29d4a73688","08429f60-383a-46ee-9bdf-03b442aab240","78363b80-d1dd-4a4c-9087-6ed976878360","d4f41697-61c8-4cd5-bcd3-93c0d5248a84","69cdf0f5-ed69-4bf2-be17-719a17c5681f","53548d01-14fa-4c90-92c5-8a13ce0ae0fd","bc97d762-e996-44da-93f6-5769cadd2059","88a2899f-a42f-43ed-b2bc-6d5e40b8131c","37b84f17-81b6-4f44-8562-fd62b53be6f4","4d4286f4-d818-4f06-82e0-7eecf834de1a","f99eb819-ce65-47c9-9f08-580254a5c8f5","4bd0c575-f6ae-46b0-8efb-3267b9cb211c","09ca95f0-641c-44fd-bd0a-327859ac15f7","960dd7a5-0601-11e8-ae97-52543be04c81","64381ada-fe89-46eb-8049-b1fc79e4dbbe","a08f5f5a-b392-4615-b0f4-c0fb43575a60","6f4b6359-24af-411b-add3-402761ec7557","ab754ccd-8e6c-4132-979d-5eda0844828b","cad28be0-3d75-4b8a-aef4-a951ff362706","7afae7e3-8d06-42f5-b59e-a52d6e09e60e","ade78f50-e134-4d3c-95ab-8bc9cccc431c"],
+  /* PIYANO, ORKESTRA, SAKSAFON, BLUES havuzlari 18 Eylul'de KALDIRILDI
+     (bkz. MOOD_IKON_LIST ustundeki not -- o dort sembolun ciziminden
+     kaynaklanan karisiklik). Istasyonlarin kendisi radyo.json'da duruyor,
+     normal gezinmeden hala erisilebilirler -- yalnizca mood dokunusu
+     kisayolundan cikarildilar. */
   LOUNGE: ["e1480c4f-467f-44ec-8b57-653abdfc7c7e","3f4be720-c996-439f-be3b-cce594ea2852","b828a184-3488-48f2-ab60-38a5e435a9fe","8492e24d-7908-4cc4-9ee7-c3d5475c42d7","44b7f191-9478-46b0-a3b5-5a0ea2b2d64e","6445c180-6a73-4e3f-834f-4ff6246d30fe","77eaf32d-241f-4f25-b7d6-347783cd4471","9d8cf601-dc3c-49be-89c2-019ec28726a9","960eb2e9-0601-11e8-ae97-52543be04c81","ca0d4e4d-658b-43cc-abce-710075ae358d","8e0f1ea7-495d-495e-9f49-1a320e2bc5d1","43d3984d-fd02-454e-b7a3-4d7ea82cea11","5143bb9a-3c5e-4c53-a6ec-0108435caf5a","1665ae4c-74dc-44f0-bd0a-7a0d0291aa8c","750cbe31-150e-4cd2-8ec5-a6a8a9a7c8b2","22ed63fd-57bf-469a-9c71-4524834b74d0","ef0f4fda-76d2-4fc1-88f0-8e150b0509bd","70094073-a1a6-4c73-b871-6b25dddee813","9fd6e036-c08b-49d3-a8b7-c8b282892ffe","8f14d1fa-31f6-4fd7-9dcb-8ed0e3bf3d18","49902d2d-672d-4130-b42a-90592d0460c5","03f081d4-4b70-46b2-b353-b47b502495b2","77871905-48cd-465c-8d25-dd14ae536656","9637f981-0601-11e8-ae97-52543be04c81","64381ada-fe89-46eb-8049-b1fc79e4dbbe","02569932-0b3c-4938-9d3e-b00b2158d40b","a1e34b61-f532-4308-b2b9-b44c69f8507d","0f89b1e4-ea1d-47e1-906b-7581691b6849"],
   KULAKLIK: ["2bcc90cc-55d3-4852-8644-6df52d642bef","0e14eb3e-a217-421a-ba6a-133bf5c3f95b","d5468df4-e6d0-11e9-a96c-52543be04c81","07e6c4b7-b1b5-430b-a7a8-166260a775ee","0c7c0c0c-5981-440f-bc8a-98530962c191","dd514cb7-fca6-427a-add8-bcf5892b6c3d","79839c1c-bfb8-40a4-aed7-f31191cbd015","43d3984d-fd02-454e-b7a3-4d7ea82cea11","5143bb9a-3c5e-4c53-a6ec-0108435caf5a","6816e8cd-8b06-4d68-b61f-4d9f54015f95","a5331ae6-1196-46c4-b8d6-6a013018bbfe","9f3d4c02-c3f0-4f00-bebe-509ff81b4d54","04963e61-76f5-411c-9fed-2a3b08f9054d","b29a1971-9369-4b82-a0b7-a5115d55712f","26bcf620-4738-4778-acec-e64d19b4335f","2c274ca7-ad5e-44f1-9ec3-daec5452bea6","22ed63fd-57bf-469a-9c71-4524834b74d0","ef0f4fda-76d2-4fc1-88f0-8e150b0509bd","70094073-a1a6-4c73-b871-6b25dddee813","9fd6e036-c08b-49d3-a8b7-c8b282892ffe","8f14d1fa-31f6-4fd7-9dcb-8ed0e3bf3d18","49902d2d-672d-4130-b42a-90592d0460c5","03f081d4-4b70-46b2-b353-b47b502495b2","77871905-48cd-465c-8d25-dd14ae536656","9637f981-0601-11e8-ae97-52543be04c81","64381ada-fe89-46eb-8049-b1fc79e4dbbe","02569932-0b3c-4938-9d3e-b00b2158d40b","a1e34b61-f532-4308-b2b9-b44c69f8507d"],
   PIRAMIT: ["0730a3ce-73e4-4f39-b60c-ffeaa6ee1f1b","c21d3998-f91b-48e4-9bb1-74fa12ffb9e5","038c8fb4-6939-11e9-af37-52543be04c81","8aaf1e64-f9eb-46f5-9844-2da720f9f83f","1d86737b-bf6f-41f2-bd52-cd29d4a73688","78363b80-d1dd-4a4c-9087-6ed976878360","d4f41697-61c8-4cd5-bcd3-93c0d5248a84","8c45fcc8-a9fe-4e07-9a53-67b6a2a1fc76","42c0308b-908d-4243-92e5-05d658ecb781","bc97d762-e996-44da-93f6-5769cadd2059","f99eb819-ce65-47c9-9f08-580254a5c8f5","4bd0c575-f6ae-46b0-8efb-3267b9cb211c","12f45ca4-3d96-4937-85e0-a424d36a4d09","960dd7a5-0601-11e8-ae97-52543be04c81","0f790e00-fd3b-431f-9b7e-047fac185cdb","4a116b98-e289-4630-9b62-b93a67159c7e","61f28b98-91ee-476b-9863-099b2aa58d10","a1dbd7d6-d0c7-4479-b91e-e44b64718d65","a96e06f8-4d64-11ea-b877-52543be04c81","39e5d255-c3ad-4f81-9957-a1ceb59a3488","e9fddd49-3ee2-4597-8574-1b7dbd00aac0","5ff66832-e6b3-486b-bac8-e00ca29b6f67","3af5df1b-a5c9-4931-a732-a235c7ba2014","58940095-dc8b-477f-a7e1-cbac01932f5c","5fc794f4-46d3-4d09-aa96-99efaa85d470","5bfc4b1a-def1-44ab-8d6d-e7c63820f781","3aa2641c-45aa-4ee8-b1e2-1b397fac47e5","47cea623-5cb5-11e9-a622-52543be04c81"],
