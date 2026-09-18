@@ -156,16 +156,24 @@
     }catch(e){ _yut(e); }
   }
   /* Basilan yuva, secilen istasyonun kendi tur rengini alir (AILELER'
-     deki gercek renk -- uydurma degil). Sabit kalma suresi renk
-     vurgusuyla ayni degil: renk 1400 ms'de soner (asagida), ama yuva
-     _moodKilitliYuva sayesinde BU ISTASYON GECISI TAMAMEN oturana
-     kadar (bekleDondur bitene kadar) hic yeniden yazilmaz. */
+     deki gercek renk -- uydurma degil).
+     KALICI (18 Eylul, ikinci istek -- ilkinde 1400 ms'de sonuyordu,
+     "bir sonraki dokunusa kadar kalici olsun" sozuyle degisti):
+     burada artik bir sonme yok, renk BIR SONRAKI DOKUNUSA/GECISE
+     kadar duruyor. Sonme sorumlulugu buradan degil, index.html'deki
+     yuvaYaz()'dan geliyor -- her yeni cizimde (sembol degisince) o
+     yuvanin mood-sec'i ve --mood-renk'i siliniyor, yani BASKA bir
+     ikon o yuvaya yazilir yazilmaz eski renk otomatik gider. Bu yuva
+     _moodKilitliYuva sayesinde zaten BU ISTASYON GECISI TAMAMEN
+     oturana kadar (bekleDondur bitene kadar) yeniden yazilmiyor, o
+     yuzden renk EN AZ o kadar kesin kalir; sonrasinda (yeni bir
+     dokunus ya da normal donme) yuvaYaz calisinca kendiliginden
+     kalkiyor. */
   function moodVurgula(yuv, grup){
     try{
       const aile = (typeof AILELER !== 'undefined' ? AILELER : []).find(a=>a.ad===grup);
       if(aile && aile.renk){ yuv.style.setProperty('--mood-renk', 'rgb(' + aile.renk + ')'); }
       yuv.classList.add('mood-sec');
-      setTimeout(()=>{ try{ yuv.classList.remove('mood-sec'); }catch(e){ _yut(e); } }, 1400);
     }catch(e){ _yut(e); }
   }
 

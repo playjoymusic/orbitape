@@ -8094,6 +8094,18 @@
   const _kutuOnbellek = {};
   function yuvaYaz(el, cizim){
     iz('yuvaYaz/getBBox');
+    /* MOOD VURGUSUNU TEMIZLE (18 Eylul, renk kalici olunca eklendi):
+       moodVurgula() (mood.js) dokunulan yuvaya 'mood-sec' sinifini ve
+       --mood-renk'i KALICI koyuyor -- artik burada bir sonme yok.
+       Sonmenin YERI burasi: bu yuvaya HERHANGI bir yeni cizim
+       yazildigi an (normal donme, cark, ucluk -- hepsi tek kapidan,
+       buradan geciyor), eski vurgu artik BASKA bir sembole ait demektir,
+       o yuzden once temizleniyor. Dokunulan yuva zaten _moodKilitliYuva
+       sayesinde kendi gecisi boyunca BURAYA hic ugramiyor (bkz.
+       bekleGoster/bekleDondur'daki kilit atlamasi), yani kendi rengini
+       kendi kendine silmiyor -- ancak bir SONRAKI geciste, yeniden
+       yazildiginda gider. */
+    try{ el.classList.remove('mood-sec'); el.style.removeProperty('--mood-renk'); }catch(e){ _yut(e); }
     /* HANGI sembol yazildi: ucluk kontrolu bunu okuyor. Cizimin
        kendisi anahtar -- ALIEN dizisindeki sira degisse bile dogru
        kalir.
