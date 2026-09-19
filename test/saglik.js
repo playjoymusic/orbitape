@@ -5989,7 +5989,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     _agBos = 6; const alti = agYokMu();
     _agBos = eskiBos; _sonBasari = eskiBasari;
 
-    /* Olculen yavaslik: zaman asimi carpani buyutuyor, tavani var. */
+    /* Olculen yavaslik: zaman asimi carpani buyutuyor, tavani var.
+       19 EYLUL (Kural 4, olculdu): bu sinama `pg` -- BASTAN SONA TEK
+       bir sayfada, yuzlerce test boyunca paylasilan sayfa -- uzerinde
+       kosuyor. corsVarMi() artik (bu oturumdaki agyok-paneli
+       duzeltmesiyle) AYNI AG_OLCUM'u okuyup yaziyor; sayfanin onceki
+       yuzlerce testinde (radyo/istasyon islemleri) gercek, kucuk
+       zaman asimlari birikip AG_OLCUM'u testten ONCE zaten tavana
+       (2.5) tasiyabiliyor. O zaman "bir zaman asimi daha ekleyince
+       BUYUR mu" sorusu anlamsizlasiyor -- tavandaki bir sey buyuyemez,
+       ve test yanlislikla kirmizi yaniyor (olcum: baslangicta
+       olcumBasi=2.5=tavan, DBG ile dogrulandi). Digger sinamalar
+       _agBos/_sonBasari'yi nasil kaydedip geri koyuyorsa, AG_OLCUM da
+       ayni sekilde BILINEN bir tabana sabitleniyor -- boylece bu blok
+       sayfanin gecmisinden bagimsiz, kendi olcumune bakiyor. */
+    const eskiOlcum = AG_OLCUM;
+    AG_OLCUM = 1;
     const olcumBasi = AG_OLCUM;
     const eskiFetch = window.fetch;
     /* Bu sinama BILEREK ag hatasi uretiyor; uygulamanin "sessizce
@@ -6013,7 +6028,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await beyazListeYukle().catch(()=>{});
       blDamga = _blDenendi;
       beyazListe = eskiListe; _blDenendi = eskiDamga; _blSonDeneme = 0;
-    }finally{ window.fetch = eskiFetch; AG_OLCUM = olcumBasi; }
+    }finally{ window.fetch = eskiFetch; AG_OLCUM = eskiOlcum; }
     /* Gec dusen reddler de sayaca islesin diye once bekleniyor,
        sonra sayac geri aliniyor. */
     await bek(120);
@@ -12227,6 +12242,113 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Foto cekiminde onbellek tam tazeleniyor (_kkNo >=8 atliyor)',
       !kkTaze.hata && kkTaze.fark >= 8,
       kkTaze.hata || ('_kkNo farki: '+kkTaze.fark+' (>=8 olmali, 7 kare sinirinin tamami asilsin)'));
+    /* ── KAYIT VIDEOSUNDA SAG-ALTTAKI KUNYE ZIPLIYORDU (19 Eylul) ────
+       Kullanicinin sozu: "sag alttaki yazı da etkileniyor bi yukarı
+       bi aşağıya", ve bazı karelerde üst üste binmiş/bozuk metin.
+       Yukarıdaki iki test (nebula/uydular, foto tazeleme) aynı kk()
+       7-kare-onbellek mekanizmasının İKİ AYRI belirtisini kapatmıştı
+       ama üçüncüsü açıktı: fotoKaresi() TEK KARE öncesi onbelleği
+       +8 atlatıyor, ama VIDEO KAYDI (kayitCiz()) her karede sadece
+       _kkNo++ yapıyor — kunye satırları (npUst/npAd/npSanatci/
+       npKaynak/npLisans/npBayrak/★) taze istemediği için #np içinde
+       bir satır kayınca (parça değişimi, npUst görünür/gizli, satır
+       sayısı değişimi) bu kayma videoya 6 kareye kadar GEÇ yansıyordu
+       -- kaydın kendisinde "zıplama" görünümü.
+       OLCUM: npAd doğrudan kaydırılıp (translateY 40px) AYNI "kare"
+       içinde kk(npAd) okundu. taze istenmeden (eski davranış) canlı
+       kutuyla dönen kutu arasında 40px fark vardı; taze istenince
+       (kk(npAd,true) -- kayit.js'teki güncel domMetin/domMetinCok
+       çağrılarının yaptığı gibi) fark kalmadı. Kaynak taraması da
+       kunye satırlarının gerçekten `true` (taze) ile çağrıldığını
+       doğruluyor -- ileride biri bu parametreyi kaldırırsa burada
+       kırmızı yanar. */
+    const kunyeKayma = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        kayitTuvalKur();
+        const npAd = document.getElementById('npAd');
+        const eskiMetin = npAd.textContent, eskiTransform = npAd.style.transform;
+        npAd.textContent = 'KURAL 4 SINAMA';
+        await bek(30);
+        _kkNo++;
+        kk(npAd, true);                              // onbellege ilk kutuyu yaz
+        _kkNo++;                                      // "bir sonraki kare"
+        npAd.style.transform = 'translateY(40px)';    // GERCEK bir kayma, ayni karede
+        const canli = npAd.getBoundingClientRect().top;
+        const eskiDavranis = kk(npAd);                // taze istenmeden -- STALE donebilir
+        const yeniDavranis = kk(npAd, true);           // bugunku kod: taze istiyor
+        npAd.style.transform = eskiTransform; npAd.textContent = eskiMetin;
+        c.canli = canli;
+        c.eskiY = eskiDavranis ? eskiDavranis.y / KAYIT_K : null;
+        c.yeniY = yeniDavranis ? yeniDavranis.y / KAYIT_K : null;
+        c.eskiFark = (typeof c.eskiY === 'number') ? Math.abs(c.eskiY - canli) : null;
+        c.yeniFark = (typeof c.yeniY === 'number') ? Math.abs(c.yeniY - canli) : null;
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('Mekanizma: kk(el,true) kayan kutuyu ayni karede yakaliyor',
+      !kunyeKayma.hata && kunyeKayma.eskiFark > 30 && kunyeKayma.yeniFark < 1,
+      kunyeKayma.hata || ('canli='+kunyeKayma.canli+' taze-istenmeden-fark='+kunyeKayma.eskiFark
+        +' taze-istenince-fark='+kunyeKayma.yeniFark));
+    const kayitKaynak3 = fs.readFileSync('kayit.js','utf8');
+    const kunyeTazeSayisi = (kayitKaynak3.match(
+      /domMetin\(c, np(Ust|Kaynak)[^;]*'s(a|o)[lg]', null, true\)|domMetinCok\(c, np(Ad|Sanatci), 'sag', true\)|domMetin\(c, lz, lz\.textContent, 'sag', null, true\)/g) || []).length;
+    K('Kayit videosunda kunye satirlari taze olculuyor (kaynak)',
+      kunyeTazeSayisi >= 5,
+      kunyeTazeSayisi + ' satir taze isteniyor (>=5 olmali: npUst, npAd, npSanatci, npKaynak, npLisans)');
+    /* ── KAMERA DAIRESI EKRANDAKI BOYUTTAN FARKLI CIZILEBILIYORDU (19 Eylul) ──
+       Kullanicinin sozu: "kamera bu boyıtta acılıyor. phto veya rec
+       cekiminde de aynı bout olmalı." #kam CSS'te '.disk'in %89'u --
+       yani '.disk' nefes alirken/RING SIZE degisirken #kam'in piksel
+       kutusu da degisiyor, tipki '.disk'in kendisi gibi. Ama
+       _kayKamera() bu kutuyu (kb) kk(kamEl) ILE (taze ISTEMEDEN)
+       okuyordu -- oysa hemen yanindaki '.disk' (_deriDisk) ve '#viz'
+       (_kayDisk) taze isteniyordu. Asagidaki olcum mekanizmayi
+       dogrudan sinniyor (bkz. yukaridaki kunye testiyle ayni teknik):
+       #kam dogrudan buyutulup ayni "kare" icinde kk() okunuyor. */
+    const kamKayma = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const c = {};
+      try{
+        kayitTuvalKur();
+        const kam = document.getElementById('kam');
+        if(!kam){ c.kamerasiz = true; return c; }
+        if(!kam.videoWidth){
+          const camBtn = document.getElementById('cam');
+          if(camBtn) camBtn.click();
+          for(let i=0;i<20;i++){ await bek(150); if(kam.videoWidth) break; }
+        }
+        if(!kam.videoWidth){ c.kamerasiz = true; return c; }
+        _kkNo++;
+        kk(kam, true);
+        await bek(30);
+        _kkNo++;
+        const eskiTransform = kam.style.transform;
+        kam.style.transform = 'translate(-50%,-50%) scale(1.2)';
+        const canli = kam.getBoundingClientRect().width;
+        const eskiDavranis = kk(kam);
+        const yeniDavranis = kk(kam, true);
+        kam.style.transform = eskiTransform;
+        c.canli = canli;
+        c.eskiW = eskiDavranis ? eskiDavranis.w / KAYIT_K : null;
+        c.yeniW = yeniDavranis ? yeniDavranis.w / KAYIT_K : null;
+        c.eskiFark = (typeof c.eskiW === 'number') ? Math.abs(c.eskiW - canli) : null;
+        c.yeniFark = (typeof c.yeniW === 'number') ? Math.abs(c.yeniW - canli) : null;
+        /* Kamerayi biz actiysak kapatalim -- sonraki testleri etkilemesin. */
+        try{ const camBtn = document.getElementById('cam');
+             if(camBtn && kamAcik) camBtn.click(); }catch(e2){}
+      }catch(e){ c.hata = String(e && e.message || e); }
+      return c;
+    });
+    K('Mekanizma: kamera kutusu da ayni karede taze yakalaniyor',
+      !kamKayma.hata && (kamKayma.kamerasiz || (kamKayma.eskiFark > 30 && kamKayma.yeniFark < 1)),
+      kamKayma.hata || (kamKayma.kamerasiz ? 'kamera acilamadi, atlandi'
+        : ('canli='+kamKayma.canli+' taze-istenmeden-fark='+kamKayma.eskiFark
+           +' taze-istenince-fark='+kamKayma.yeniFark)));
+    K('Kayit ciziminde kamera kutusu taze olculuyor (kaynak)',
+      /const kb = kk\(kamEl, true\)/.test(kayitKaynak3),
+      '_kayKamera() artik .disk/#viz gibi taze istiyor');
   }
   /* ── HALKA RESMI: DPR'A GORE OLCEKLENIYOR, GOVDE SIKISMIYOR ──────
      14 Eylul, kullanicinin sozu (pembe bir ekran goruntusu + ikinci

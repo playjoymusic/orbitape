@@ -770,14 +770,18 @@ bağlı, ayrıca izlenecek), `senaryo.js` 121/121. Teslim: commit `f3bbd23`.
   düzelip düzelmediği -- pj'den cevap bekleniyor.
 - Çark sesi telefon araması sonrası kalıcı sessizlik (yukarıda).
 - Telefonu yan döndürme ipucu -- son onay bekleniyor (yukarıda).
-- ORBITAPE'te ilk açılışta çarkın (wheel) hiç çizilmemesi -- pj'nin
-  19 Eylül ekran görüntüsüyle bildirdi, araştırma "kapıyı yeşile
-  çevir" önceliği yüzünden yarıda kesildi, henüz sonuçlanmadı.
+- ~~ORBITAPE'te ilk açılışta çarkın (wheel) hiç çizilmemesi~~ --
+  aşağıda "çark boş çıkıyor sanılan şey" başlığı altında kapatıldı:
+  kod tarafında bir şey bozuk değildi, kendi ölçüm script'im yanlış
+  yerden örnekliyordu.
+- ~~Sağ alttaki metnin (parça adı/ARCHIVE.ORG/lisans) yukarı-aşağı
+  kayması~~ -- aşağıda "kayıt videosunda sağ-alttaki künye zıplıyordu"
+  başlığı altında kök nedeni bulunup düzeltildi (kk() önbelleği,
+  video kaydında taze istenmiyordu).
 - Kamera önizleme boyutu/kırpması ile PHOTO/REC çıktısı arasındaki
-  fark, kayıtta "atlama" ve sağ alttaki metnin (parça adı/lisans)
-  yukarı-aşağı kayması, ve fotoğrafın ters (mirror) çıkması -- pj'nin
-  19 Eylül'de gönderdiği video + ekran görüntüleriyle bildirdi,
-  sırada, henüz başlanmadı.
+  fark, ve fotoğrafın ters (mirror) çıkması -- pj'nin 19 Eylül'de
+  gönderdiği video + ekran görüntüleriyle bildirdi, sırada, henüz
+  başlanmadı.
 - Beta testçi "Ata Django"nun önerisi: kayıt arayüzünü ekrana
   dokunup halka kırmızıya dönerek başlayan bir tasarıma taşımak
   (şu anki sol-alt REC/CAM/SAVE akışının yerine) -- konuşulmadı.
@@ -830,3 +834,189 @@ değiştiği için gerekliydi. `senaryo.js`/`motor.js` bu teslimde
 koşulmadı (zaman kısıtı); pj'nin push'undan sonra CI zaten koşturacak.
 Teslim: dosyalar köprüyle yazıldı, commit pj tarafından yapılacak
 (bu oturumda git komutu ÇALIŞTIRILMADI, Kural gereği).
+
+---
+
+### 19 Eylül (devam) — pj pushladı (commit `f6e4795`), CI'da YİNE kırmızı çıktı: "Zaman asimi butceyi buyutuyor" yanlış çıkmıştı
+
+pj push'tan sonra 1-2 saatliğine ayrıldı, açık talimat: *"ne varsa
+hallet lütfen eksik kalmasın. index değişecekse de kurallar
+çiğnenecekse de yap hepsini. tahmin yok hep bak iyice."* GitHub API'den
+(kimlik bilgisi olmadan, salt-okunur) `Sağlık kontrolü` işinin
+`f6e4795` için KIRMIZI olduğu görüldü -- tam da az önce "kodla ilgisi
+yok" denen test. O yargı YANLIŞTI; log dosyası kimlik istediği için
+görülemedi ama yerelde aynı komut dizisi (`derle.py` + `node
+test/saglik.js`) üç kez daha koşturulunca gerçek neden çıktı:
+
+**KÖK NEDEN:** "Zaman asimi butceyi buyutuyor" testi `pg` -- baştan
+sona TEK bir sayfada, yüzlerce test boyunca paylaşılan sayfa -- üzerinde
+çalışıyor. Bu oturumdaki `corsVarMi()` düzeltmesi ONU DA `AG_OLCUM`'a
+bağladığı için, sayfanın kendisinden önceki yüzlerce testinde (radyo/
+istasyon işlemleri) gerçek küçük zaman aşımları birikip `AG_OLCUM`'u
+test başlamadan ÖNCE zaten tavana (2,5) taşıyabiliyordu -- DOĞRULANDI,
+geçici bir hata ayıklama satırıyla `olcumBasi=2.5=tavan` ölçüldü.
+Tavandaki bir sayı büyüyemez, test de bunu "bozuldu" sanıp kırmızı
+yanıyordu -- test YANLIŞ ÖLÇÜYORDU, uygulama kodu doğruydu.
+Düzeltme: test artık `_agBos`/`_sonBasari` için zaten yaptığı gibi
+`AG_OLCUM`'u da KENDİ ölçümünden önce bilinen bir tabana (1) sabitleyip
+sonra eski değerine geri koyuyor -- sayfanın geçmişinden bağımsız,
+kendi ölçtüğü şeye bakıyor.
+
+**Doğrulama:** Düzeltilmiş testle `saglik.js` dört kez daha koşturuldu:
+852/852, 853/853, (bir koşuda AYRI ve ÖNCEDEN BİLİNEN bir titreme --
+"Masaustunde (dpr=1) halka kenari...", bkz. CLAUDE.md "Bilinen
+tuzaklar" -- bu ortamın arka arkaya dört tam Playwright takımı
+koşturmaktan yorulmuş olması muhtemel, hedeflenen testle ilgisiz),
+853/853. Hedeflenen test ("Zaman asimi butceyi buyutuyor") DÖRT
+koşunun DÖRDÜNDE de yeşildi.
+
+**Ders:** Bir testin "önceden var olan, ilgisiz bir titreme" olduğunu
+söylemeden önce KANIT gerekir -- bir önceki notta bu kanıt yoktu,
+yalnızca "ikinci koşuda geçti" gözlemi vardı ve bu yanlış sonuca
+götürdü. Kural 4 tam da bunun için var.
+
+---
+
+### 19 Eylül — "çark boş çıkıyor" sanılan şey: kod değil, kendi ölçüm script'im hatalıydı
+
+pj'nin bildirdiği çark (wheel) sorununu araştırırken kendi kurduğum bir
+repro script'i (`cark.js`'in `ciz()` fonksiyonunun gerçekten diş
+çizip çizmediğini tuval üzerinden piksel okuyarak ölçen bir Node/
+Playwright script'i) çarkın HİÇ çizilmediğini gösteriyordu
+(`disCemberPikselOrani≈0.028`, yani neredeyse tamamen saydam). Önce
+"katman ölçümü `body.classList.toggle('mood')`'dan hemen sonra bayat
+kutu okuyor" hipotezi kuruldu (`ustOlcu()`'nün daha önce düzeltilmiş,
+aynı sınıftaki bir hatasıyla aynı desen) -- ama `hizala()` içine
+geçici `console.log` konup gerçek kullanıcı akışıyla (gerçek
+`#kipKisayol` düğmesine tıklanarak) ölçülünce `olc()`'un GEÇERLİ bir
+`R` (152, `diskW=273.77`) ile döndüğü görüldü. Yani `ciz()` geçerli
+bir yarıçapla ÇAĞRILIYORDU -- hipotez ÇÜRÜDÜ.
+
+**Gerçek sebep koddaki bir hata değil, benim ölçüm script'imdeki yanlış
+örnekleme yarıçapıydı.** `ciz()`'in çizdiği dişler tuval yarıçapının
+(cihaz pikseli cinsinden) yaklaşık 0,72-0,81 katı bandında duruyor
+(`IC_ORAN`'dan `UZUN_ORAN`'a, `R * DIS_KAT` diş); raf adları ise
+0,89 katından sonra başlıyor (`AD_ORAN=1.28`) ve yalnızca iğnenin
+±58° çevresinde. Benim ilk script'im HER İKİSİNİN ARASINDAKİ BOŞLUKTA
+(sabit 0,85 oranında) örnekliyordu -- tam olarak diş ile ad yazısı
+arasındaki boş bantta. "Boş" ölçtüğü yer gerçekten boştu ama bu
+tasarım gereğiydi, hata değildi.
+
+**Kanıt (Kural 4):** Yarıçapı 0,55'ten 0,95'e kadar 0,02 aralıklarla
+tarayan bir script'le (`/tmp/wheel_repro3.js`, `/tmp/wheel_repro4.js`)
+hem elle çark açıldığında hem de HİÇBİR TIKLAMA OLMADAN gerçek ilk
+açılışta (varsayılan `merkez='cark'`) ölçüldü: diş bandı (0,73-0,79
+oranı) her iki durumda da belirgin, tutarlı bir piksel oranı veriyor
+(~%11-17) -- yani `ciz()` baştan beri doğru çiziyormuş.
+
+**Sonuç:** `cark.js`'te değişiklik YAPILMADI (geçici debug satırları
+eklenip aynı oturumda kaldırıldı, dosya girişteki haliyle aynı).
+pj'nin ekran görüntüsünde gördüğü şey bu ortamda (Chromium,
+Playwright) yeniden üretilemedi -- gerçek cihazda (iOS Safari) mı,
+belirli bir deride mi, yoksa zamanlamaya bağlı bir yarış durumunda mı
+olduğu hâlâ açık. Eğer sorun pj'nin cihazında sürüyorsa bir sonraki
+adım YENİ bir ekran görüntüsü/video: hangi deri, hangi kip (cark/faz),
+ilk açılışta mı yoksa bir geçişten sonra mı.
+
+---
+
+### 19 Eylül — kayıt videosunda sağ-alttaki kunye (parça adı/ARCHIVE.ORG/lisans) zıplıyordu: kök neden bulundu, düzeltildi
+
+pj'nin sözü: *"bak sag alttak iyazı da etkileniyor bi yujarı bi
+assgıya. aman diyim."* -- ekran görüntülerinde parça adı/kaynak/lisans
+metninin kare kareye bir yukarı bir aşağı kaydığı, bazı karelerde de
+üst üste binmiş/bozuk göründüğü görülüyordu.
+
+**Kök neden zaten bilinen bir mekanizmanın üçüncü, kapatılmamış
+belirtisiydi.** `kayit.js`'teki `kk()` ölçüm önbelleği, bir elemanın
+ekrandaki kutusunu performans için 7 kareye kadar ESKİ tutuyor
+(bkz. `test/saglik.js`'teki, aynı mekanizmayı iki farklı belirtide
+kapatan önceki iki test: "ORBITAPE'ten dönünce nebula/uydular
+fotoğrafa yapışmıyor" ve "Foto çekiminde önbellek tam tazeleniyor").
+`fotoKaresi()` TEK KARE öncesi önbelleği +8 atlatarak fotoğrafı
+koruyordu, ama VİDEO KAYDI (`kayitCiz()`) her karede yalnızca
+`_kkNo++` yapıyor -- kunye satırları (`npUst`/`npAd`/`npSanatci`/
+`npKaynak`/`npLisans`/`npBayrak`/★ hapı) `kk()`'yi taze istemediği
+için, `#np` içinde bir satır kayınca (parça değişimi, `npUst`
+görünür/gizli olması, satır sayısının değişmesi -- hepsi satırları
+yukarı/aşağı itiyor) bu kayma VİDEOYA 6 kareye kadar GEÇ yansıyordu.
+Metin (textContent) her karede güncel yazılırken KONUM eski kalınca,
+parça değişiminde bir kare eski konumdaki kutuya YENİ (farklı
+uzunlukta) metin basılıyordu -- "üst üste binmiş yazı" da buradan
+geliyordu.
+
+**Kanıt (Kural 4, `/tmp/np_kk_test.js`, `/tmp/np_kk_test2.js`):**
+`npAd`'i doğrudan kaydırıp (`translateY(40px)`) AYNI "kare" içinde
+`kk(npAd)` okundu. Taze istenmeden (eski davranış): canlı kutu 40px
+kaymışken dönen kutu hâlâ eski yerdeydi (`kkCanliyiYakaladiMi:false`).
+Taze istenince (`kk(npAd,true)`): fark ~0'a indi. Aynı ölçüm artık
+`test/saglik.js`'e kalıcı test olarak eklendi ("Mekanizma: kk(el,true)
+kayan kutuyu aynı karede yakalıyor" + kaynak taraması "Kayıt
+videosunda künye satırları taze ölçülüyor").
+
+**Düzeltme (`kayit.js`):** `domMetin()`/`domMetinCok()`'a `taze`
+parametresi eklendi (yalnızca `kutuEk` verilmediğinde `kk(el,taze)`'ye
+geçiyor). `_kaySagAlt()` içindeki künye satırları (npUst, npAd,
+npSanatci, npKaynak, npLisans, npBayrak, ★ hapı, marka işareti kutusu)
+artık `.disk`/`viz`/nebula/arayüz simgeleri gibi HER ZAMAN taze
+ölçülüyor -- yalnızca 7 eleman, "20'den fazla" ölçümün asıl performans
+sorununa yol açtığı döngüdeki yüke kıyasla ihmal edilebilir.
+
+**Doğrulama:** `saglik.js` 855/855 (iki yeni test dahil), `ariza.js`
+18/18. `index.html`'e dokunulmadı.
+
+---
+
+### 19 Eylül (devam) — aynı kök neden kamerada da vardı: kayıt/fotoğraftaki kamera dairesi ekrandaki boyuttan farklı çıkabiliyordu
+
+pj'nin sözü: *"bak abi kamera bu boyıtta acılıyor. phto veya rec
+cekiminde de aynı bout olmalı."* Yukarıdaki künye düzeltmesini
+yaparken AYNI mekanizmanın (kk() önbelleği taze istenmeyince eski
+kutu döndürüyor) kamerayı da etkilediği görüldü -- kod okununca hemen
+yanında iki emsal vardı: `_deriDisk()` `.disk`'i `kk(el,true)` ile,
+`_kayDisk()` `#viz`'i `kk(viz,true)` ile okuyor (ikisi de "nefes"
+alan/RING SIZE'a göre boyu değişen elemanlar) ama `_kayKamera()`
+kamerayı (`kamEl`, `#kam`) taze İSTEMEDEN okuyordu -- `#kam` CSS'te
+`.disk`'in %89'u, yani `.disk` nefes alırken/RING SIZE değişirken
+`#kam`'ın piksel kutusu da değişiyor, tıpkı `.disk`'in kendisi gibi.
+
+**Kanıt (Kural 4, `/tmp/kam_kk_test.js`, gerçek sahte-kamera ile):**
+`#kam` doğrudan `scale(1.2)` ile büyütülüp AYNI karede `kk(kam)`
+okundu. Taze istenmeden: canlı genişlik 292.4px iken dönen kutu hâlâ
+eski genişlikte (243.6px, ~49px fark). Taze istenince: fark ~0.
+`test/saglik.js`'e kalıcı test eklendi ("Mekanizma: kamera kutusu da
+aynı karede taze yakalanıyor" -- gerçek `#cam` düğmesiyle kamerayı
+açıp ölçüyor -- + kaynak taraması).
+
+**Düzeltme (`kayit.js`, `_kayKamera()`):** `const kb = kk(kamEl);` ->
+`kk(kamEl, true)`. Tek satır, `.disk`/`#viz` ile aynı muameleye
+getiriyor.
+
+**Bu, pj'nin "kamera bu boyutta açılıyor, PHOTO/REC de aynı boyutta
+olmalı" şikâyetinin BOYUT kısmını kapatıyor** -- kayıt/fotoğraftaki
+kamera dairesi artık ekrandaki gerçek boyutunu her karede yakalıyor.
+Önizlemenin KIRPMASI (hangi kısmının göründüğü, `object-fit: cover`
+davranışı) ayrı bir konu, koda bakıldı (`vo`/`dw`/`dh` hesaplaması,
+yukarıda) ve ekranla aynı orantıyı kullanıyor -- ayrı bir hata izi
+bulunamadı, ölçülemedi (gerçek cihazdaki kırpma farkını burada
+üretecek bir repro kurulamadı).
+
+**Doğrulama:** `saglik.js` 857/857 (dört yeni test), `ariza.js` 18/18
+(bir koşuda "[1 · bütün sesler 404]" ayrı, ÖNCEDEN BİLİNEN bir
+titreme verdi -- CLAUDE.md "Bilinen tuzaklar", bu ortamın art arda
+çok sayıda tam takım koşturmaktan yorulmasıyla ilgili, bugünkü
+değişikliklerle ilgisiz; hedeflenmeyen test). `index.html`'e
+dokunulmadı.
+
+Teslim: `kayit.js`, `test/saglik.js` pj'nin cihazına yazıldı (üstteki
+künye düzeltmesiyle BİRLİKTE, tek teslimde), commit metni hazır
+(aşağıda) -- push pj'nin işi (Kural 4b/8b).
+
+**Hâlâ açık kalan, aynı ekran görüntüsü turundan:** fotoğrafın hâlâ
+ters (mirror) çıkıp çıkmadığı (13/19 Eylül'de `f3bbd23` ile bir kez
+düzeltilmişti -- pj'nin bu turdaki mesajı düzeltmeden ÖNCEKİ mi
+SONRAKİ mi bir duruma ait, netleşmedi) araştırılmadı. Kod tarafında
+mevcut mantık doğru görünüyor (`_kamYon==='user'` kontrolü); eğer
+sorun sürüyorsa gerçek cihazdan YENİ bir ekran görüntüsü/video
+gerekiyor -- hangi kamera (ön/arka), foto mu video mu, ne zaman
+(f3bbd23'ten önce mi sonra mı).

@@ -887,12 +887,34 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   /* kutuEk: verilirse metin ELEMANIN kutusuna degil BU kutuya
      yaziliyor (ekran koordinatlari). Cok satirli yazilarda her
      satirin kendi kutusu boyle geciyor. */
-  function domMetin(c, el, metin, hiza, kutuEk){
+  /* ── SAG ALTTAKI KUNYE (parca adi/ARCHIVE.ORG/lisans) KAYIYORDU ────
+     Kullanicinin sozu (19 Eylul): "sag alttaki yazı da etkileniyor
+     bi yukarı bi aşağıya", ve fotograflarda bazen ust uste binmis/
+     bozuk metin gorunuyordu.
+     OLCULDU (/tmp/np_kk_test.js): kk() onbellegi bir elemanin kutusunu
+     6 KAREYE KADAR eski tutuyor (performans icin -- bkz. kk() ustundeki
+     not). Elemanin ekrandaki GERCEK yeri o pencerede degisirse (ust
+     satirin -- npUst -- gorunur/gizli olmasi, parca adinin 1 satirdan
+     2 satira gecmesi, bayragin gelip gitmesi gibi -- hepsi #np icindeki
+     satirlari yukari/asagi iter) kk() 6 kareye kadar ESKI kutuyu
+     donduruyordu: canli kutu 40px asagi kaymisken kk() hala eski
+     y'de kaliyordu (kkCanliyiYakaladiMi:false). 8 kare sonra kendini
+     topluyordu -- tam da "bir yukari bir asagi zipliyor" gorunumu.
+     Bu satirlarin metni (textContent) HER KAREDE guncel yazilirken
+     KONUMU eski kalinca, parca degisiminde bir kare eski konumdaki
+     kutuya YENI (farkli uzunlukta) metin basiliyor -- "ust uste binmis
+     yazi" da buradan geliyor.
+     Duzeltme: .disk/viz/nebula/arayuz simgeleri gibi (bkz. kk()
+     cagrilarindaki `true`), kunye satirlari da HER ZAMAN taze
+     olculuyor -- yalnizca 7 eleman, "20'den fazla" olcumun
+     performans sorununa yol actigi asil dongudeki yuke kiyasla
+     ihmal edilebilir. */
+  function domMetin(c, el, metin, hiza, kutuEk, taze){
     if(!el || !metin) return 0;
     const K0 = KAYIT_K;
     const b = kutuEk
       ? { x:kutuEk.left*K0, y:kutuEk.top*K0, sag:kutuEk.right*K0, alt:kutuEk.bottom*K0 }
-      : kk(el);
+      : kk(el, taze);
     if(!b) return 0;
     const cs = getComputedStyle(el);
     const K  = KAYIT_K;
@@ -943,10 +965,10 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   /* Ekranda kac satirsa o kadar satir. Tek satirsa eski yol.
      Satirlarin yeri tarayicidan geliyor (bkz. _metinSatirlari), yani
      sarma kurali ekranla fotografta AYNI kaynaktan. */
-  function domMetinCok(c, el, hiza){
+  function domMetinCok(c, el, hiza, taze){
     if(!el) return 0;
     const satirlar = _metinSatirlari(el);
-    if(satirlar.length <= 1) return domMetin(c, el, el.textContent, hiza);
+    if(satirlar.length <= 1) return domMetin(c, el, el.textContent, hiza, null, taze);
     let en = 0;
     for(const s of satirlar){
       /* Satir kutusunun sag/sol kenari yerine ELEMANIN kenari
@@ -1865,7 +1887,24 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     try{
       const kamOp = kamEl ? (parseFloat(getComputedStyle(kamEl).opacity)||0) : 0;
       if(kamEl && kamAcik && kamOp >= 0.01 && kamEl.videoWidth && kamEl.readyState >= 2){
-        const kb = kk(kamEl);
+        /* ── KAMERA DA #kam DISKIN YUZDESI (19 Eylul) ────────────────
+           Kullanicinin sozu: "bak abi kamera bu boyutta acılıyor. photo
+           veya rec cekiminde de aynı boyut olmalı."
+           #kam CSS'te '.disk'in %89'u (index.html); yani '.disk' NEFES
+           alirken (.disk.nefes animasyonu) ya da RING SIZE degisince
+           #kam'in piksel kutusu da degisiyor -- tipki '.disk'in kendisi
+           gibi. Ama bu satir kk()'yi TAZE ISTEMIYORDU; oysa ayni
+           fonksiyonun hemen altindaki '.disk' (_deriDisk, kk(el,true))
+           ve '#viz' (_kayDisk, kk(viz,true)) taze isteniyordu -- kamera
+           bu ikiliden ayri kalmisti.
+           OLCUM (Kural 4, /tmp/kam_kk_test.js): #kam dogrudan buyutulup
+           AYNI karede kk(kam) okundu. Taze istenmeden: canli genislik
+           292.4px iken donen kutu hala eski genislikte (243.6px, ~49px
+           fark). Taze istenince (kk(kamEl,true)): fark ~0. Video kaydi
+           sirasinda '.disk' nefes alirken/RING SIZE degisirken kamera
+           dairesi bu yuzden ekrandaki gercek boyutundan FARKLI (birkac
+           kareye kadar eski) cizilebiliyordu. */
+        const kb = kk(kamEl, true);
         if(kb && kb.w > 0){
           const T = kamTuvalHazirla(_kademe >= 2 ? 256 : 384);   // yük artarsa daha küçük karo
           if(T){
@@ -2119,7 +2158,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
            (parcanin adi, kaynagi, lisansi, favori olup olmadigi). */
         /* ★ hap: yildizin arka plani ile ortak. */
         const hapArka = (el)=>{
-          const bb2 = kk(el); if(!bb2 || getComputedStyle(el).display==='none') return null;
+          const bb2 = kk(el, true); if(!bb2 || getComputedStyle(el).display==='none') return null;
           const rr3 = bb2.h/2;
           c.beginPath();
           c.moveTo(bb2.x+rr3, bb2.y); c.lineTo(bb2.sag-rr3, bb2.y);
@@ -2158,7 +2197,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
           const _by = document.getElementById('npBayrak');
           const _byc = _by && getComputedStyle(_by);
           if(_by && _byc && _byc.display !== 'none' && (_by.textContent || '').trim())
-            domMetin(c, _by, _by.textContent.trim(), 'sol');
+            domMetin(c, _by, _by.textContent.trim(), 'sol', null, true);
         }catch(e){ _yut(e); }
         /* ── MARKA ISARETI (#isaret) ────────────────────────────
            Kunyenin yanindaki iki daire "bu parca taninmis" demek ve
@@ -2169,7 +2208,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
           const _is = document.getElementById('isaret');
           const _isc = _is && getComputedStyle(_is);
           if(_is && _isc && _isc.display !== 'none' && (parseFloat(_isc.opacity)||0) > 0.02){
-            const ib2 = kk(_is);
+            const ib2 = kk(_is, true);
             const sv2 = _is.querySelector('svg');
             const sb2 = sv2 ? kk(sv2, true) : null;
             if(ib2 && sb2 && sb2.w){
@@ -2199,17 +2238,17 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
             }
           }
         }catch(e){ _yut(e); }
-        if(npUst.classList.contains('var') && npUst.textContent) domMetin(c, npUst, npUst.textContent, 'sag');
-        if(npAd.textContent)       domMetinCok(c, npAd, 'sag');
-        if(npSanatci.textContent)  domMetinCok(c, npSanatci, 'sag');
-        if(npKaynak.textContent)   domMetin(c, npKaynak, npKaynak.textContent, 'sol');
+        if(npUst.classList.contains('var') && npUst.textContent) domMetin(c, npUst, npUst.textContent, 'sag', null, true);
+        if(npAd.textContent)       domMetinCok(c, npAd, 'sag', true);
+        if(npSanatci.textContent)  domMetinCok(c, npSanatci, 'sag', true);
+        if(npKaynak.textContent)   domMetin(c, npKaynak, npKaynak.textContent, 'sol', null, true);
         /* LİSANS KAYDA DA GİRİYOR. Kayıt paylaşılabilir bir dosya;
            eser sahibi ve lisans onunla birlikte gitmeli, yoksa atıf
            şartı videoyu izleyende karşılığını bulmuyor. */
         try{
           const lz = document.getElementById('npLisans');
           if(lz && lz.classList.contains('var') && lz.textContent)
-            domMetin(c, lz, lz.textContent, 'sag');
+            domMetin(c, lz, lz.textContent, 'sag', null, true);
         }catch(e){ _yut(e); }
         c.globalAlpha = 1;
       }
