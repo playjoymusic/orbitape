@@ -5113,7 +5113,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.18';
+  var ORB_SURUM = '2026.09.19';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -11310,7 +11310,13 @@
      duzeltmesiyle ayni desen: yalnizca YENI kullaniciyi etkiler,
      kayitli tercihi olanin degeri asagidaki _a.carkSesSev okumasi
      yuzunden hep kazanir -- bu satir sadece ILK acilisin varsayilanidir. */
-  var AYAR = { aramaSes:true, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[],
+  /* aramaSes VARSAYILANI KAPANDI (19 Eylul, kullanici: "search arama
+     sesi ilk kapalı açılsın. ayarlardan isteyen açar"). Onceki
+     varsayilan true idi -- arama kutusuna her harf yazildiginda
+     duyulan kisa ses, yeni kullaniciyi bilgilendirmeden karsiliyordu.
+     Ayni desen: yalnizca YENI kullaniciyi etkiler, kayitli tercihi
+     olanin degeri asagidaki _a.aramaSes okumasi yuzunden hep kazanir. */
+  var AYAR = { aramaSes:false, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[],
     /* SEMBOL SPIN (17 Eylul): varsayilan KAPALI. Acikken sag ustteki
        3 sembol eski soyut oyunu oynar (rastgele donme + ucluk
        kutlamasi + tik'te carkiCevir). Kapaliyken (varsayilan) --
@@ -20676,7 +20682,7 @@
     { h:'#ayarTut',   m:'MENU',        dx:36, dy:0,  hiza:'sol', cizgi:false },
     { h:'#saatTus',   m:'ALARM',       dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#deriFirca', m:'SKINS',       dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#gorselTus', m:'VISUALS',     dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#gorselTus', m:'VISUAL / HOLD',     dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
@@ -20697,7 +20703,7 @@
     { h:'#ayarTut',   m:'MENU',    dx:0,  dy:-26, hiza:'orta', cizgi:false },
     { h:'#saatTus',   m:'ALARM',   dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#deriFirca', m:'SKINS',   dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#gorselTus', m:'VISUALS', dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#gorselTus', m:'VISUAL / HOLD', dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
     { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },

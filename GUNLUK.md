@@ -649,3 +649,63 @@ eklendi. Testin gerçekten yakaladığı doğrulandı: düzeltme geçici
 olarak geri alınıp test kırmızıya döndü (`#np` rengi zum açık/kapalı
 aynı kaldı: `rgb(74,71,64)` = `rgb(74,71,64)`), düzeltme geri
 uygulanınca yeşile döndü. Tam takım: 851/851 geçti.
+
+## 19 Eylül — üç küçük revizyon: GUIDE etiketi, arama sesi varsayılanı, CAM kırmızı ikon açıklaması
+
+**GUIDE etiketi:** pj'nin sözü: *"GUIDE'ı basılı tutunca çıkan listede
+şu an 'VISUALS' yazıyor — bunu 'VISUAL / HOLD' yap."* `REHBER_RADIO`
+ve `REHBER_ORB` dizilerindeki `#gorselTus` etiketi değiştirildi. Bu
+metin aynı zamanda `dil/*.json` dosyalarında çeviri ANAHTARI olarak
+kullanıldığı için (`Y('VISUALS')` gibi), yalnızca index.html'i
+değiştirmek yeterli değildi -- eski "VISUALS" anahtarına bağlı 5 dilin
+çevirisi artık HİÇ eşleşmeyip İngilizce'ye düşerdi. Beş dile de yeni
+"VISUAL / HOLD" anahtarı eklendi (mevcut "HOLD TO ..." çevirilerindeki
+kalıp -- TR "BASILI TUT", ES "MANTÉN PULSADO", DE "GEDRÜCKT HALTEN",
+FR "MAINTENIR", IT "TIENI PREMUTO" -- takip edilerek).
+
+**Arama sesi varsayılanı kapandı:** pj'nin sözü: *"search arama sesi
+ilk kapalı açılsın. ayarlardan isteyen açar."* `AYAR.aramaSes`
+varsayılanı `true` -> `false` (çark sesi/yıldız yoğunluğu
+değişiklikleriyle aynı desen: yalnızca YENİ kullanıcıyı etkiler,
+kayıtlı tercihi olanın değeri hep kazanır). Bu değişiklik `test/saglik.js`'teki
+mevcut "Ayar paneli çalışıyor" testinin bir varsayımını bozdu: test
+tek bir tıkın `AYAR.aramaSes`'i `false`'a getirdiğini SABİT
+varsayıyordu (eski varsayılan `true` olduğu için tesadüfen doğruydu).
+Test artık ESKİ değere GÖRELİ ölçüyor (tıkın gerçekten tersine
+çevirdiğini, anahtarın görünür durumunun -- sınıf + aria -- yeni
+değerle eştiğini), ve "ses kapalıyken `aramaBaslat()` başlamıyor"
+kısmı ayrıca, tık yönünden bağımsız olarak `AYAR.aramaSes` açıkça
+`false`'a alınıp sınandı. Ayrıca fabrika değerini doğrudan ölçen yeni
+kalıcı bir test eklendi ("aramaSes varsayılan KAPALI"); düzeltme geçici
+geri alınıp kırmızıya döndüğü, geri uygulanınca yeşile döndüğü
+doğrulandı (Kural 4). Tam takım: 852/852 geçti (bir ara koşuda ilgisiz
+üç yıldız-haritası testi ortamdan kaynaklı tek seferlik titreşimle
+kırmızı yanıp bir sonraki koşuda temiz çıktı -- kod değişikliğiyle
+ilgisi yok, dokunulan satırlarla kesişmiyor).
+
+**CAM'in kırmızı "kayıttayız" ikonu -- kod değil, telefonun kendi
+uyarısı:** pj'nin ilk raporu CAM düğmesinin kendi noktasının
+RADIOTAPE'te turuncu-kırmızı yanmasıydı (`body.t-radio #cam.acik`) --
+ama asıl kastettiği farklı çıktı: *"yukarda bi anda cam u acınca
+telefon kırmızı kamera ikonu vs bişey çıkarıyor ya. kamera kayıt
+ikonu."* Bu, iOS/Android'in KENDİ gizlilik göstergesi -- kamera erişimi
+her açıldığında telefon işletim sistemi durum çubuğunda bunu gösterir,
+Instagram/Snapchat dahil HER uygulamada aynı şekilde çıkar. Web
+sayfası bunu KAPATAMAZ/gizleyemez -- tarayıcılar bunu bilerek
+engelliyor, aksi halde bir site kamerayı kullanıcı bilmeden
+açabilirdi. Ölçülen: `kayit.js`'te `getUserMedia` zaten yalnızca
+kullanıcı CAM'e bastığında çağrılıyor ve iş bitince akış hemen
+durduruluyor (`t.stop()`) -- yani gösterge zaten mümkün olan EN KISA
+sürede çıkıp kayboluyor, kod tarafında yapılabilecek bir şey yok.
+pj'ye açıklandı, kod değişikliği yapılmadı.
+
+**Kuyruğa alınan, henüz başlanmayan (Kural 6):**
+- Çark sesi telefon araması sonrası kalıcı sessizlik -- pj'den ölçüm
+  (Safari uzaktan hata ayıklama) ya da tanılama eklentisi onayı
+  bekleniyor.
+- Telefonu yan döndürme ipucu (Visual moduna özel, ilk 3 açılışta,
+  çizim + kapanış mantığı) -- kapsam konuşuldu, kapanış davranışı
+  netleşti (döner dönmez VEYA ~5 sn sonra kapanır), son "onay"
+  bekleniyor.
+- Fotoğraf çekiminde kamera çerçevesinden puslu bir efekt kaydedilen
+  fotoğrafa giriyor -- henüz incelenmedi.

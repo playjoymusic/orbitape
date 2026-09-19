@@ -135,6 +135,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Anahtar bu sayfada KAPALI kaliyor -- zemin sistemi olculebilsin. */
   await pg.evaluate(()=>{ try{ AYAR.karanlik = false; zeminUygula(); }catch(e){} });
 
+  /* ── aramaSes VARSAYILANI KAPALI (19 Eylul) ───────────────────────
+     Kullanicinin sozu: "search arama sesi ilk kapalı acılsın.
+     ayarlaredan isteyen acar." Onceki varsayilan true idi. Burada,
+     asagidaki "Ayarlar Paneli" testi anahtara DOKUNMADAN ONCE
+     olculuyor -- fabrika degeri budur, birazdan gelecek ac/kapa testi
+     ARTIK YONE BAKMAKSIZIN (relative) calisiyor. */
+  const aramaSesVarsayilan = await pg.evaluate(()=> AYAR.aramaSes);
+  K('aramaSes (arama kutusu tus sesi) varsayilan KAPALI',
+     aramaSesVarsayilan === false, 'varsayilan=' + aramaSesVarsayilan);
+
   /* ── GECE MODU ANAHTARI KALDIRILDI (16 Eylul) ─────────────────
      AYAR.geceModu, geceModuUygula() ve ayarlardaki NIGHT MODE
      anahtari silindi -- pj'nin karari. body.gece::before katmani
@@ -1057,18 +1067,33 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const acikOdak = [...kut.querySelectorAll('.sat')].every(el=>el.getAttribute('tabindex')==='0');
 
       sat('aramaSes').click(); await new Promise(r=>setTimeout(r,20));
-      const kapandi = AYAR.aramaSes === false;
+      /* 19 Eylul: aramaSes varsayilani false'a dondu (kullanici: "search
+         arama sesi ilk kapali acilsin, ayarlardan isteyen acar") --
+         tek tikin hangi yone gittigi artik SABIT degil. Test bu yuzden
+         ESKI degere GORELI olcuyor: tikin gercekten TERSINE cevirdigi
+         ve anahtarin GORUNUR durumunun (sinif + aria) o yeni degerle
+         eslestigi -- hangi yonde basladigina bakmadan. */
+      const yeniDeger = AYAR.aramaSes;
+      const gercektenTersine = yeniDeger === !eski.a;
       const depo    = JSON.parse(localStorage.getItem('orbitape.ayar')||'{}');
       /* DURUM ARTIK ANAHTARDA, YAZIDA DEGIL. Ac/kapa satirlarinda
          ON/OFF yazisi yerine saga sola kayan bir anahtar var
          (kullanici istegi). Bilgi kaybolmadi: aria-checked ve
          '.acik' sinifi durumu tasiyor, ekran okuyucu da onu okuyor. */
-      const kapaliSinif = !sat('aramaSes').classList.contains('acik');
-      const kapaliAria  = sat('aramaSes').getAttribute('aria-checked') === 'false';
+      const sinifDogru = sat('aramaSes').classList.contains('acik') === (yeniDeger === true);
+      const ariaDogru  = sat('aramaSes').getAttribute('aria-checked') === String(yeniDeger === true);
       const anahtarVar  = !!sat('aramaSes').querySelector('.anahtar');
 
+      /* Bu kisim yukaridaki tik testinden BAGIMSIZ: yon ne olursa
+         olsun, anahtar KAPALIYKEN aramaBaslat() ses baslatmamali
+         (bkz. aramaBaslat() ici "if(!AYAR.aramaSes) return"). Yukarida
+         bir tik sonucu aramaSes simdi TRUE olabilir -- burada acikca
+         false'a alinip oyle sinaniyor. */
+      const oncekiAramaSes = AYAR.aramaSes;
+      AYAR.aramaSes = false;
       let calisti = false;
       try{ aramaDurdur(); aramaBaslat(); calisti = !!aramaCalisyor; aramaDurdur(); }catch(e){}
+      AYAR.aramaSes = oncekiAramaSes;
 
       const turkce = /[cgisouCGISOU]/.test('') || /[\u00e7\u011f\u0131\u015f\u00f6\u00fc\u00c7\u011e\u0130\u015e\u00d6\u00dc]/.test(kut.textContent||'');
 
@@ -1076,8 +1101,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const kapandiPanel = !document.body.classList.contains('ayar-acik');
 
       AYAR.aramaSes = eski.a; AYAR.tikSes = eski.t; ayarKaydet();
-      return kapaliOdak && kapaliInert && acik && acikOdak && kapandi
-          && depo.aramaSes === false && kapaliSinif && kapaliAria && anahtarVar
+      return kapaliOdak && kapaliInert && acik && acikOdak && gercektenTersine
+          && depo.aramaSes === yeniDeger && sinifDogru && ariaDogru && anahtarVar
           && calisti === false && !turkce && kapandiPanel;
     }), 'ac/kapa, ses susuyor, cihazda kaliyor, kapaliyken sekmeyle gezilemiyor');
   /* ARAMA GOSTERIMI KAPANMIYOR: kapatilan sey gurultu, bilgi degil.
