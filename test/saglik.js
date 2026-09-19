@@ -13662,52 +13662,74 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Paylasim: iptal deftere girmiyor, pencere acikken ikinci dokunus yok sayiliyor',
       py.tekCagri && py.iptalDefterdeYok && py.kilitAcildi && py.yenidenCagrilir, pyOz || 'AbortError sessiz, kilit');
   }
-  /* ── SAVE: PAYLASIM SAYFASINI HIC ACMADAN DOGRUDAN INDIRME ───────
-     13 Eylul, kullanicinin sozu: "foto/share'e cihaza kaydet
-     secenegi eklenmeli (hem telefon hem masaustu)". SHARE zaten
-     telefonda galeriye kaydedebiliyordu ama paylasim sayfasinin
-     ICINDEN, ekstra bir adimla. SAVE o adimi atliyor: navigator.share
-     HIC cagrilmadan bir <a download> tetiklenmeli, onizleme
-     kapanmali, bekleyen fotograf temizlenmeli. document.createElement
-     sahteleniyor ki 'a' elemaninin gercek click()'i tarayicida
-     dosya indirmeye kalkismasin -- yalnizca hangi ad/href ile
-     tiklandigi kaydediliyor. */
+  /* ── SAVE tusu 19 Eylul'de kaldirildi (fotoKaydet() ve dugmesi
+     kayit.js/index.html'den silindi -- bkz. oradaki yorum). Bu test
+     artik olmayan bir fonksiyonu cagiriyordu, kaldirildi. Yerine
+     asagida "_kayKamera aynayi yalniz on kamerada uyguluyor" testi
+     eklendi (ayni gunun ikinci fotograf duzeltmesi: ayna hatasi). */
+  /* ── FOTOGRAFTA/KAYITTA KAMERA AYNASI YALNIZ ON KAMERADA (19 Eylul) ──
+     Kullanicinin ekran goruntusu: RADIOTAPE'te cekilen fotografta
+     istasyon yazisi ve saat TERS (aynali) cikiyordu -- 17 Eylul'de
+     arka kamera varsayilan olunca ortaya cikan bir hata. Sozu: "ahala
+     cekince ters ... ters cekim isine de bak."
+     SEBEP: ekrandaki canli onizleme aynayi DOGRU sekilde yalniz on
+     kamerada acip kapatiyor (kamYonYaz(): #kam.arka, yukarida). Ama
+     hem FOTOGRAF hem VIDEO KAYDI icin kullanilan tek compositing yolu,
+     _kayKamera(), _kamYon'a hic bakmadan HER ZAMAN kc.scale(-1,1)
+     uyguluyordu.
+     OLCUM: sahte kamera cihazinin (--use-fake-device-for-media-stream)
+     duz olmayan, sol/sag asimetrik deseninden yararlanilarak AYNI VIDEO
+     KARESI icinde (araya await/bek konmadan) dort kare aliniyor:
+     'environment' ve 'user' yonlerinde, kamera kutusunun sol ve sag
+     ceyreginden birer piksel. Duzeltmeden ONCE bu dort okuma iki cifte
+     ayrilmiyordu -- 'environment' ve 'user' AYNI noktada TIPATIP AYNI
+     piksel veriyordu (ikisi de kosulsuz aynali). Duzeltmeden SONRA
+     'environment'in solu 'user'in sagiyla (ve tersi) eslesiyor --
+     birbirinin aynasi -- ve ayni noktada iki yon birbirinden acikca
+     farkli cikiyor. */
   {
-    const sv = await pg.evaluate(async ()=>{
+    const kamAyna = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const c = {};
       try{
-        const eS = navigator.share, eC = navigator.canShare;
-        let paylasimCagrildi = false;
-        navigator.canShare = ()=>true;
-        navigator.share = ()=>{ paylasimCagrildi = true; return Promise.resolve(); };
-        const gercekCreate = document.createElement.bind(document);
-        let tiklananAd = null, tiklananHref = null;
-        document.createElement = (etiket)=>{
-          const el = gercekCreate(etiket);
-          if(String(etiket).toLowerCase() === 'a'){
-            el.click = ()=>{ tiklananAd = el.download; tiklananHref = el.href; };
-          }
-          return el;
+        const eskiYon = _kamYon;
+        const kamElT = document.getElementById('kam');
+        const acilanBiz = !kamAcik;
+        if(acilanBiz) document.getElementById('cam').click();
+        for(let i=0;i<20;i++){ await bek(150); if(kamElT.videoWidth) break; }
+        kayitTuvalKur();
+        const oku = (yon, fx)=>{
+          _kamYon = yon;
+          if(!fotoKaresi()) return null;
+          const kb = kk(kamElT, true);
+          if(!kb || !kb.w) return null;
+          const x = Math.round(kb.x + kb.w*fx), y = Math.round(kb.y + kb.h*0.5);
+          if(x<0||y<0||x>=kayitCtx.canvas.width||y>=kayitCtx.canvas.height) return null;
+          return Array.from(kayitCtx.getImageData(x,y,1,1).data);
         };
-        _fotoBekleyen = { bayt: new Uint8Array([137,80,78,71]), ad:'orbitape-test.png' };
-        const kap = document.getElementById('fotoOnizle');
-        if(kap) kap.classList.add('var');
-        fotoKaydet();
-        await bek(80);
-        c.paylasimCagrilmadi = !paylasimCagrildi;
-        c.indirmeTetiklendi = tiklananAd === 'orbitape-test.png' && !!tiklananHref;
-        c.onizlemeKapandi = kap ? !kap.classList.contains('var') : null;
-        c.bekleyenTemizlendi = _fotoBekleyen === null;
-        document.createElement = gercekCreate;
-        navigator.share = eS; navigator.canShare = eC;
+        /* Dordu de ARADA AWAIT OLMADAN, tek is parcaciginda: video
+           karesi bu dort cagri arasinda degismiyor. */
+        const envSol = oku('environment', 0.35), envSag = oku('environment', 0.65);
+        const userSol = oku('user', 0.35), userSag = oku('user', 0.65);
+        _kamYon = eskiYon;
+        c.videoHazir = !!kamElT.videoWidth;
+        const fark = (a,b)=>{ let t=0; for(let i=0;i<3;i++) t+=Math.abs(a[i]-b[i]); return t; };
+        if(envSol && envSag) c.asimetri = fark(envSol, envSag);           // desen gercekten sol/sag farkli mi
+        if(envSol && userSag) c.eslesmeCapraz1 = fark(envSol, userSag);   // env-sol == user-sag (ayna)
+        if(envSag && userSol) c.eslesmeCapraz2 = fark(envSag, userSol);   // env-sag == user-sol (ayna)
+        if(envSol && userSol) c.aynaliFarkli = fark(envSol, userSol);     // env != user ayni noktada
+        if(acilanBiz){ document.getElementById('cam').click(); await bek(300); }
       }catch(e){ c.hata = String(e && e.message || e); }
       return c;
     });
-    const svOz = Object.keys(sv).filter(k => sv[k] !== true).map(k => k + '=' + sv[k]).join(' ');
-    K('SAVE tusu paylasim sayfasini atlayip dogrudan cihaza indiriyor',
-      sv.paylasimCagrilmadi && sv.indirmeTetiklendi && sv.onizlemeKapandi && sv.bekleyenTemizlendi,
-      svOz || 'share cagrilmadi, indirme tetiklendi, onizleme kapandi, bekleyen temizlendi');
+    K('_kayKamera aynayi yalniz on kamerada uyguluyor (foto/kayitta yon dogru)',
+      !!kamAyna.videoHazir && (kamAyna.asimetri||0) > 20
+      && (kamAyna.eslesmeCapraz1 !== undefined && kamAyna.eslesmeCapraz1 < 20)
+      && (kamAyna.eslesmeCapraz2 !== undefined && kamAyna.eslesmeCapraz2 < 20)
+      && (kamAyna.aynaliFarkli||0) > 20,
+      kamAyna.hata || ('asimetri=' + kamAyna.asimetri
+        + ' capraz=' + kamAyna.eslesmeCapraz1 + '/' + kamAyna.eslesmeCapraz2
+        + ' aynaliFarkli=' + kamAyna.aynaliFarkli));
   }
   /* ── CAR MODE: SES ZINCIRE GIRMIYOR ─────────────────────────────
      "CarPlay'de kesik kesik, YouTube duzgun." Kipte ses grafi hic

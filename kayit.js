@@ -1877,9 +1877,24 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
             const vo = kamEl.videoWidth/kamEl.videoHeight;      // object-fit: cover (kare kutu)
             let dw = boy, dh = boy;
             if(vo > 1) dw = boy*vo; else dh = boy/vo;
+            /* AYNA YALNIZ ON (SELFIE) KAMERADA (19 Eylul, pj: "ahala
+               cekince ters ... ters cekim isine de bak").
+               OLCUM: ekrandaki canli onizleme aynayi DOGRU sekilde
+               _kamYon'a gore acip kapatiyor (kamYonYaz(), yukarida --
+               #kam varsayilan aynali, '.arka' sinifi arka kamerada
+               aynayi kapatiyor). Ama bu fonksiyon -- hem FOTOGRAF hem
+               VIDEO KAYDI icin kullanilan tek compositing yolu --
+               _kamYon'a hic bakmadan HER ZAMAN aynaliyordi. Arka kamera
+               17 Eylul'de varsayilan olunca bu fark gorunur hale geldi:
+               ekranda dogru (aynasiz) duran goruntu, kaydedilen
+               fotografta/videoda ters (aynali) cikiyordu -- ayna
+               metni, saat, her sey solla sag donmus. Duzeltme: ayna
+               yalnizca _kamYon === 'user' iken uygulaniyor, tipki
+               #kam.arka'nin yaptigi gibi. */
             kc.save();
             try{
-              kc.translate(boy/2, boy/2); kc.scale(-1, 1);        // ayna
+              kc.translate(boy/2, boy/2);
+              if(_kamYon === 'user') kc.scale(-1, 1);   // ayna -- yalniz on kamerada
               kc.drawImage(kamEl, -dw/2, -dh/2, dw, dh);
             }catch(e){ _yut(e); }
             finally{ kc.restore(); }
@@ -3167,32 +3182,19 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       try{ kisaNotYaz('PHOTO SAVED', 'The image went to your downloads.'); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
-  /* SAVE: SHARE'den ayri, DOGRUDAN cihaza indirme. Telefonda
-     paylasim sayfasina hic girmeden calisiyor -- "kaydet" orada bir
-     secenekti, artik ayri bir tus (13 Eylul, "foto/share'e cihaza
-     kaydet secenegi" istegi). Masaustunde zaten SHARE'in kendisi
-     ayni indirme yoluna dusuyordu (canShare yok); bu yeni tus onu
-     telefonda da tek dokunusa indiriyor. navigator.share'e HIC
-     bakmiyor -- kod fotoPaylas'in indirme dalindan (asagida) bilerek
-     ayni, ama kosulsuz. */
-  function fotoKaydet(){
-    const k = _fotoBekleyen; if(!k) return;
-    try{
-      const u = URL.createObjectURL(new Blob([k.bayt], {type:'image/png'}));
-      const a = document.createElement('a');
-      a.href = u; a.download = k.ad; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(u), 8000);
-      fotoOnizleKapa();
-      try{ kisaNotYaz('PHOTO SAVED', 'The image went to your downloads.'); }catch(e){ _yut(e); }
-    }catch(e){ _yut(e); }
-  }
+  /* SAVE tusu 19 Eylul'de kaldirildi (pj: "share ksımını acınca zaten
+     save files var ... o yuzden save scenegi var ya ilk photo ya
+     basınca. onu kaldır"). 13 Eylul'de navigator.share'i atlayip
+     dogrudan indirmek icin eklenmisti, ama telefonun kendi paylasim
+     sayfasi zaten "Save to Files/Photos" secenegi veriyor -- ayni isi
+     yapan ikinci bir tus fazlaydi. fotoKaydet() ve dugmesi kaldirildi;
+     tek yol artik fotoPaylas() (SHARE), masaustunde canShare yoksa o
+     da zaten dogrudan indirmeye dusuyor (yukarida). */
   (function fotoTuslari(){
     try{
       const p = document.getElementById('fotoPaylas');
-      const s = document.getElementById('fotoKaydet');
       const k = document.getElementById('fotoKapat');
       if(p) p.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fotoPaylas(); });
-      if(s) s.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fotoKaydet(); });
       if(k) k.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fotoOnizleKapa(); });
       /* Esc: acik her panelin kapanma yolu ayni olmali. */
       document.addEventListener('keydown', e=>{
