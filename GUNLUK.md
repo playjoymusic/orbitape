@@ -1101,3 +1101,121 @@ gerçek yayın hattında da doğrulanmış oldu. (O sırada "Sağlık kontrolü
 #460" ayrı bir koşuda alakasız, ÖNCEDEN BİLİNEN masaüstü halka-kenarı
 titremesiyle kırmızı çıktı -- bağımsız bir test koşusu, bizim
 değişikliğimizle ilgisi yok.)
+
+---
+
+### 19 Eylül (devam) — favoriler RADIOTAPE/ORBITAPE'e göre ayrıldı, yol açan gerçek bir bağlam hatası da bulundu
+
+pj'nin sözü: *"favoriye basınca radyotape teki favori istasyonları
+gormemeliyim, kafa karısır ... skins vs orbitape'e gecis bunu
+etkilemesin ... orbitape teki skins orayı ilgilendirsin radyotape
+tarafındakini değil."* Bu maddede yalnızca favoriler ele alındı
+(skins/random-skins ayrı bir iş, aşağıda "açık kalanlar"a eklendi).
+
+**14 Eylül'deki karar tersine döndü.** O gün favori LİSTESİ (kısa
+dokunuşla açılan panel, `favori.js`) bilerek "hepsiyle karışık, tek
+liste" yapılmıştı ("*hepsi tek listede karisik*"). pj şimdi tam
+tersini istiyor: liste, o an hangi dünyadaysan (RADIOTAPE/ORBITAPE)
+SADECE onun favorilerini göstermeli. `favori.js`'in başındaki eski
+gerekçe silinmedi, üstüne yeni karar yazıldı (iki tarih de duruyor).
+
+**Düzeltme, favGec() (uzun basılı tutuşla giren "sadece favoriler
+çal" kipi) zaten kullandığı süzgeci ödünç alarak yapıldı:**
+`favori.js`'teki `ogeleriTopla()` artık `FAV.slice().reverse()`
+değil, `_favHavuz()` (favGec'in kendi süzgeci) üzerinden geçiyor --
+yani liste de, karışık-çalma kipi de artık AYNI kuralı kullanıyor.
+
+**Bunu ölçerken GERÇEK, önceden fark edilmemiş bir hata bulundu:**
+`_favBaglamCanliMi()` (favorinin "şu an canlı radyo mu arşiv mi"
+sorusunun tek cevabı) `AKTIF_MOD === 'RADIOTAPE'` okuyordu. Ama
+`moodUygula()`'nın ORBITAPE'ten RADIOTAPE'e DÖNÜŞ dalı `AKTIF_MOD`'u
+`'RADIOTAPE'` string'ine değil `null`'a çeviriyor (o dalın amacı "raf
+seçimini sıfırla", "hangi dünyadayız" sorusuna cevap vermek değil).
+**Kanıt (Kural 4, `/tmp/fav_ctx_test.js`):** açılış
+`{mod:'radio',AKTIF_MOD:'RADIOTAPE',canli:true}` -> ORBITAPE'e giriş
+`{mod:'lib',AKTIF_MOD:'ORBITAPE',canli:false}` -> RADIOTAPE'e dönüş
+`{mod:'radio',AKTIF_MOD:null,canli:FALSE}` -- yani ORBITAPE'e bir kez
+girip geri dönen HERKESİN favori bağlamı sessizce arşivde takılı
+kalıyordu. **Düzeltme:** ölçüt `AKTIF_MOD` yerine uygulamanın zaten
+her yerde (cal/atla) tek doğru kaynak olarak kullandığı `mod`
+('radio'|'lib') değişkenine çevrildi. `test/saglik.js`'e kalıcı bir
+regresyon testi eklendi (açılış -> ORBITAPE -> dönüş, üç ardışık
+ölçüm).
+
+**Test tarafında da iz bırakan bir sorun çıktı:** paylaşılan test
+sayfasında (859 testin tamamı aynı sekmede sırayla koşuyor) iki eski
+test bloğu (★ FAVORİLER, İKİ YILDIZ İKİ PARLAKLIK) yalnızca
+`AKTIF_MOD`'u değiştirip `mod`'a hiç dokunmuyordu -- eski (hatalı)
+mantık altında bu sorun çıkarmıyordu, düzeltilmiş mantık altında
+kendilerinden önceki testten kalan `mod` değerine göre rastgele
+kırmızı yanmaya başladılar. Üçü de (bu ikisi + yeni bulunan "İkinci
+basılı tutuş kipi açar" testi) `mod`'u artık açıkça yakalayıp yazıp
+geri alıyor, leftover state'e güvenmiyor.
+
+**Doğrulama:** `node test/saglik.js` düzeltmeden hemen önce 858/859
+("İkinci basılı tutuş kipi açar" kırmızı), düzeltmeden sonra 859/859
+(iki ayrı tam koşu, aralarında hiçbir kırmızı yok, bilinen halka-kenarı
+titremesi bile çıkmadı).
+
+Değişen dosyalar: `index.html` (`_favBaglamCanliMi` tek satır +
+Kural 4 yorumu, `_headers`/CSP yeniden üretildi), `favori.js`
+(`ogeleriTopla` süzgeç), `test/saglik.js` (üç test bloğu düzeltmesi +
+yeni regresyon testi + yeniden yazılan favori-listesi test grubu).
+
+---
+
+### 19 Eylül (devam) — "ORBITAPE'te bir mod/tur seçiliyken geçişler yavaş" gerçek sebebi bulundu: ön-yükleme borusu mod açıkken hiç çalışmıyordu
+
+pj'nin sözü: *"be orbitape tarafında ses araları arama suresi uzun ya
+gec buluyorç. hala tam cozmedik"* ve az sonra: *"bence bi ses calarken
+sıradfaki coktan biseyi hazır olmalı yani bi tık hızlanrıacak bisey."*
+Bu, daha önce tam çözülmemiş, bilinen ama teşhis edilmemiş bir
+şikâyetti.
+
+**Uygulamada zaten bir ön-yükleme borusu vardı** (`kuyruk` dizisi +
+`hazirla()` + gizli `<audio>` elemanları `onbellekler`/`onbellekIsit()`
+-- sıradaki 1-2 kaydın baytlarını tarayıcı ağ önbelleğine önden
+indirir, gerçek `ses` elemanı aynı url'e geçince sıfırdan inmez).
+**Kod okunarak** (Kural 4 -- tahmin değil) şu bulundu: bu boru
+YALNIZCA "mod kapalı, düz kütüphane gezintisi" (`sonraki()`'nin
+`kuyruktanAl()` dalı) tarafından besleniyor. Bir tur/aile seçilince
+(`AKTIF_MOD` dolunca -- ORBITAPE'in EN ÇOK kullanılan hali) `sonraki()`
+doğrudan `modGec()`'e sapıyor, o da `earthAl()`'i ÇIPLAK çağırıp
+`cal()`'a veriyor -- `kuyruktanAl()`'a hiç uğramıyor, yani `kuyruk`
+hep boş kalıyor ve ön-yükleme borusunun ısıtacak hiçbir şeyi
+olmuyordu. Her geçiş, sıfırdan bir ağ isteğiyle başlıyordu -- "geç
+buluyor" hissi tam burdan geliyordu.
+
+**Düzeltme:** `earthAl()`'in MOD dalındaki seçim mantığını (sırayla,
+CALINDI/EARTH_KARA elenerek) TÜKETMEDEN (`_modIdx`'e dokunmadan)
+tekrarlayan yeni bir fonksiyon (`modHavuzOnizle`) eklendi.
+`onbellekIsit()` artık `AKTIF_MOD` doluyken (RADIOTAPE hariç -- o
+dalda zaten `modGec()` `earthAl()`'e hiç uğramıyor) `kuyruk` yerine
+bu fonksiyondan besleniyor. Mevcut ısıtma/tampon kısıtları (`_arsivDurdu`
+kapısı, `tamponYeterliMi()` -- çalan parçanın bant genişliğini
+yemesin) AYNEN korundu, yalnızca KAYNAK değişti.
+
+**Kanıt (Kural 4):** `/tmp/prefetch_debug.js` ile taze bir sayfada bir
+tur seçilip `onbellekIsit()` çağrıldı -- düzeltmeden ÖNCE (kapı
+zorla kapatılarak simüle edildi) gizli onbellek elemanlarının `src`'i
+boş kaldı; düzeltmeden SONRA sıradaki iki adayın url'i doğru sırayla
+ısıtıldı. `test/saglik.js`'e kalıcı bir regresyon testi eklendi
+("Mod (tur/aile) açıkken sıradaki kayıt ağ önbelleğine önden
+ısıtılıyor mu").
+
+**Doğrulama:** `node test/saglik.js` (tam koşu, favoriler
+düzeltmesiyle BİRLİKTE) 859/859, hiçbir kırmızı yok. Ham boy tavanı
+bu değişiklikle 1276 -> 1280 KB'a çekildi (kendi Kural 4 yorumunda
+ayrıntılı).
+
+**Ölçülemeyen kısım, dürüstçe:** bu düzeltme gerçek ağ gecikmesini
+ölçüp azalttığını KANITLAMIYOR -- kanıtladığı şey, ön-yükleme
+borusunun artık mod açıkken de gerçekten çalıştığı (doğru url'leri
+doğru zamanda ısıttığı). Kullanıcının hissettiği "bir tık hızlanma"
+gerçek cihazda, gerçek archive.org gecikmesiyle doğrulanmalı --
+pj'den bu turdan sonra "hâlâ yavaş mı" diye bir geri bildirim
+istenecek.
+
+Değişen dosyalar: `index.html` (`modHavuzOnizle` + `onbellekIsit`
+değişikliği, `_headers`/CSP yeniden üretildi), `test/saglik.js`
+(yeni regresyon testi + Ham boy tavanı).

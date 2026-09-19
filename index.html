@@ -9938,6 +9938,35 @@
     for(const ad of sira){ const o=torbadanAl(ad, kova[ad]); if(o) return o; }
     return null;
   }
+  /* ── MOD ACIKKEN SIRADAKI(LER)I ONDEN GOR, TUKETMEDEN ────────────
+     (19 Eylul, Kural 4, olculdu) -- pj'nin sozu: "bi ses calarken
+     sıradaki coktan bisey hazır olmalı yani bi tık hızlanacak
+     bisey." OLCUM: bir tur/aile (AKTIF_MOD, orn. AMBIANCE, JAZZ)
+     secildiginde gecisler modGec()->earthAl()->cal() zincirinden
+     gecıyor; bu zincir HICBIR ZAMAN kuyruk/hazirla()/onbellekIsit()
+     ucgenine ugramiyor (bkz. sonraki(): 'AKTIF_MOD' dali dogrudan
+     modGec() cagiriyor, kuyruktanAl() hic cagrilmiyor). Sonuc: her
+     gecis SIFIRDAN bir ag istegiyle basliyordu -- "arama uzun,
+     gec buluyor" hissi tam burdan geliyordu, kuyruk mekanizmasi
+     ORBITAPE'in en cok kullanilan hali (bir mod secili) icin hic
+     calismiyordu.
+     Bu fonksiyon earthAl()'in MOD dalindaki AYNI secim mantigini
+     (sirayla, CALINDI/EARTH_KARA elenerek) TUKETMEDEN tekrarliyor --
+     _modIdx'e DOKUNMUYOR, mh'yi KARISTIRMIYOR -- boylece onbellekIsit()
+     gercekte SIRADA GELECEK kaydi tahmin edip baytlarini ONDEN
+     tarayici onbellegine isitabiliyor (bkz. onbellekIsit). */
+  function modHavuzOnizle(n){
+    const mh = modHavuzu();
+    if(!mh || !mh.length) return [];
+    const sonuc = [];
+    let idx = _modIdx;
+    for(let t=0; t<mh.length && sonuc.length<n; t++){
+      if(idx >= mh.length) idx = 0;
+      const o = mh[idx++];
+      if(o && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)) sonuc.push(o);
+    }
+    return sonuc;
+  }
   /* ── NE KİLİTLİYOR? ───────────────────────────────────────────────
      Takılma ölçeri "MAIN 2.9S" dedi: ana iş parçacığı kilitlendi. Ama
      hangi iş kilitledi bilmiyoruz. JSON ayrıştırma ölçüldü, 3-15 ms —
@@ -14426,8 +14455,19 @@
        arsiv durduysa yeni istek YOK. */
     if(_arsivDurdu) return;
     if(!tamponYeterliMi()) return;                          // önce çalan parça rahatlasın
+    /* 19 EYLUL (Kural 4, olculdu) -- MOD ACIKKEN KAYNAK `kuyruk`
+       DEGIL `modHavuzOnizle()`. `kuyruk` yalnizca mod KAPALIYKEN
+       (duz kutuphane gezintisi) hazirla() tarafindan doluyor;
+       AKTIF_MOD acikken (ORBITAPE'te bir tur/aile secili -- en cok
+       kullanilan hal) modGec() dogrudan earthAl() cagiriyor ve
+       kuyruk hep BOS kaliyordu, yani bu isitma hicbir zaman
+       calismiyordu. RADIOTAPE (AKTIF_MOD==='RADIOTAPE') halen
+       haric: o dalda modGec() zaten earthAl()'e hic ugramiyor
+       (bkz. modGec), isitilacak sey radyo degil arsiv. */
+    const modAktifArsiv = AKTIF_MOD && AKTIF_MOD !== 'RADIOTAPE';
+    const adaylar = modAktifArsiv ? modHavuzOnizle(ONB_SAYI) : kuyruk;
     for(let i=0;i<ONB_SAYI;i++){
-      const nx = kuyruk[i];
+      const nx = adaylar[i];
       if(!nx || !nx.mp3) continue;
       if(onbellekURLler.indexOf(nx.mp3) >= 0) continue;      // zaten ısıtıldı -> tekrar indirme
       const slot = (onbSira++) % ONB_SAYI;                   // sırayla yaz (kuyruk kayınca ısınmış olan korunur)
@@ -14681,8 +14721,19 @@
      bağlantılı olmamamlı." FAV TEK dizi (canli radyo + arsiv birlikte
      saklanir, radyo bayragiyla ayrisir) ama favori KIPI (favGec ile
      sirayla calma) o an hangi rafta oldugumuza gore SUZULMELI --
-     yoksa ORBITAPE'teyken RADIOTAPE favorileri calmaya baslar. */
-  function _favBaglamCanliMi(){ return AKTIF_MOD === 'RADIOTAPE'; }
+     yoksa ORBITAPE'teyken RADIOTAPE favorileri calmaya baslar.
+     19 EYLUL (Kural 4, olculdu) -- AKTIF_MOD YANLIS OLCUT: ORBITAPE'e
+     girip GERI CIKINCA (moodUygula, "!ilk" dali) AKTIF_MOD 'RADIOTAPE'
+     STRING'INE DEGIL null'A donuyor -- o dal "raf secimini sifirla"
+     amaciyla yazilmis, "hangi dunyadayiz" sorusuna cevap vermiyor.
+     KANIT (/tmp/fav_ctx_test.js): acilis {mod:'radio',AKTIF_MOD:
+     'RADIOTAPE',canli:true} -> ORBITAPE ac {mod:'lib',AKTIF_MOD:
+     'ORBITAPE',canli:false} -> RADIOTAPE'e DON {mod:'radio',
+     AKTIF_MOD:null,canli:FALSE} -- yani donusten SONRA favori havuzu
+     kendini hala arsivde saniyordu. DOGRU OLCUT: `mod` degiskeni
+     ('radio'|'lib') -- cal()/atla() butun uygulamada zaten bunu tek
+     dogru kaynak olarak kullaniyor, AKTIF_MOD bir RAF/menu secimi. */
+  function _favBaglamCanliMi(){ return (typeof mod !== 'undefined') && mod === 'radio'; }
   function _favHavuz(){ const canli = _favBaglamCanliMi(); return FAV.filter(x => !!x.radyo === canli); }
   function favTazele(){
     /* Sol alttaki giriş yıldızı: kayıt satırı göründüğü sürece hep

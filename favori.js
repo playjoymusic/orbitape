@@ -11,8 +11,15 @@
  *   secip dinlemenin yolu yoktu. Bu dosya o eksigi kapatiyor.
  *
  * NE GOSTERIR
- *   FAV dizisinin TAMAMI, radyo/arsiv AYRIMSIZ tek listede (kullanicinin
- *   sozu: "hepsi tek listede karisik"). En son eklenen en ustte.
+ *   19 EYLUL: pj kararini DEGISTIRDI. 14 Eylul'de "hepsi tek listede
+ *   karisik" isteniyordu, bugun tam tersi: "favoriye basınca
+ *   radyotape teki favori istasyonları gormemeliyim. kafa karısır."
+ *   Artik FAV'in TAMAMI degil, yalnizca O AN icinde bulunulan dunyanin
+ *   (_favHavuz(): RADIOTAPE'teyken radyo favorileri, ORBITAPE'teyken
+ *   arsiv favorileri) kayitlari listeleniyor -- favori KIPI'nin
+ *   (favGec, kayit.js) zaten kullandigi AYNI suzgec, iki dunya arasinda
+ *   RADIOTAPE/ORBITAPE switch'i disinda gecis olmadigi icin. En son
+ *   eklenen en ustte.
  *
  * SECIM: ARAMANIN VE ULKE LISTESININ AYNI TARIFI
  *   araCal() (index.html) nasil calisiyorsa bu da oyle:
@@ -113,13 +120,18 @@ try{ window.FAVORI_BASLADI = true; }catch(e){}
     document.body.appendChild(kap);
   }
 
-  /* ── VERI: FAV'IN TAMAMI, EN YENI EN USTTE ────────────────────────
-     FAV zaten ekleme sirasinda (en eski basta). Gosterimde tersine
-     ceviriyoruz: kullanici az once favoriledigini en ustte gormeli. */
+  /* ── VERI: O AN ICINDE BULUNULAN DUNYANIN FAVORILERI, EN YENI EN USTTE
+     19 EYLUL: FAV'in TAMAMI degil, _favHavuz() (index.html) -- favori
+     KIPI'nin (favGec) kullandigi AYNI suzgec, bkz. dosya basi yorumu.
+     _favHavuz tanimsizsa (beklenmez ama savunmaci) FAV'in tamamina
+     duser. FAV zaten ekleme sirasinda (en eski basta). Gosterimde
+     tersine ceviriyoruz: kullanici az once favoriledigini en ustte
+     gormeli. */
   function ogeleriTopla(){
     try{
       if(typeof FAV === 'undefined' || !Array.isArray(FAV)) return [];
-      return FAV.slice().reverse();
+      const havuz = (typeof _favHavuz === 'function') ? _favHavuz() : FAV;
+      return havuz.slice().reverse();
     }catch(e){ yut(e); return []; }
   }
   function calanMp3(){ try{ return (_sonCalan && _sonCalan.mp3) || ''; }catch(e){ return ''; } }

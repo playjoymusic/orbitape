@@ -428,6 +428,60 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        i0 > 0 && /_modHavuzSay !== say/.test(kaynak.slice(i0, i0 + 600)),
        'onbellek yalnizca mod adina bakmiyor');
   }
+  /* ── MOD ACIKKEN SIRADAKI KAYDIN BAYTLARI ONDEN ISITILIYOR MU
+     (19 Eylul, Kural 4, olculdu) ────────────────────────────────────
+     pj'nin sozu: "bi ses calarken sıradaki coktan bisey hazır olmalı
+     yani bi tık hızlanacak bisey." OLCULEN KUSUR: bir tur/aile
+     (AKTIF_MOD) secildiginde gecisler modGec()->earthAl()->cal()
+     zincirinden geciyor ve bu zincir onbellekIsit()'in okudugu
+     `kuyruk` dizisine HIC ugramiyordu (kuyruk yalnizca mod KAPALIYKEN
+     hazirla() ile doluyor) -- yani ORBITAPE'in en cok kullanilan
+     hali icin siradaki kaydin baytlari hicbir zaman onden
+     isitilmiyordu. Duzeltme: onbellekIsit() artik AKTIF_MOD acikken
+     (ve RADIOTAPE degilken) modHavuzOnizle()'den besleniyor. */
+  {
+    const mp = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiAktifMod = AKTIF_MOD, eskiDunya = mod, eskiDurdu = _arsivDurdu,
+            eskiH = earthHavuz.slice(), eskiAd = _modAdi, eskiSay = _modHavuzSay,
+            eskiHata = ustUsteHata;
+      try{
+        try{ ses.removeAttribute('src'); }catch(e){}
+        onbellekDurdur();
+        ustUsteHata = 0;
+        earthHavuz.length = 0;
+        earthHavuz.push(
+          {id:'mp:1', mp3:'https://sahte.test/mp1.mp3', ad:'Mp1', lisans:SERBEST},
+          {id:'mp:2', mp3:'https://sahte.test/mp2.mp3', ad:'Mp2', lisans:SERBEST});
+        _modAdi = null; _modHavuzSay = -1;
+        mod = 'lib'; AKTIF_MOD = 'ORBITAPE';
+        /* PAYLASILAN SAYFADA (859 testin hepsi ayni sekmede) baska
+           testlerden kalan zamanlayicilar (hazirla/radyoKuyrukDoldur/
+           agRetry) ara sira _arsivDurdu'yu geri true'ya cevirebiliyor
+           tam bu pencerede -- o yuzden TEK seferlik sabit bekleme
+           yerine, GERCEK KOSULU (isindi mi) bekleyen bir dongu var;
+           her turda _arsivDurdu yeniden zorlanip onbellekIsit() tekrar
+           deneniyor. Kosul zaten dogruysa ESKISI KADAR HIZLI (ilk
+           turda) doner. */
+        let srcs = [], isindi = false;
+        for(let i=0; i<15 && !isindi; i++){
+          _arsivDurdu = false;
+          onbellekIsit();
+          await bek(100);
+          srcs = onbellekler.map(a=>a.getAttribute('src')||'');
+          isindi = srcs.some(s=>s.indexOf('mp1.mp3')>=0 || s.indexOf('mp2.mp3')>=0);
+        }
+        return { isindi, srcs };
+      } finally {
+        onbellekDurdur();
+        earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
+        AKTIF_MOD = eskiAktifMod; mod = eskiDunya; _arsivDurdu = eskiDurdu;
+        _modAdi = eskiAd; _modHavuzSay = eskiSay; ustUsteHata = eskiHata;
+      }
+    });
+    K('Mod (tur/aile) acikken siradaki kayit ag onbellegine onden isitiliyor',
+      mp.isindi === true, 'onbellek src\'leri: ' + mp.srcs.join(' | '));
+  }
   /* ══ SERT ZAMAN ASIMI GERI ALINDI — KONTROLLERI DE ═══════════════
      Buraya uc kontrol konulmustu: fetchZA gercek bir zamanlayiciyla
      yarissin, cevapsiz sunucu kilitlemesin, yavas cevap kesilmesin.
@@ -1066,8 +1120,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ayni senaryo 8 kez ust uste temiz cikti (oncesinde ayni kosu
        arada bir kirmizi cikiyordu). Ekrana giden hicbir sey degismedi,
        yalnizca durmus arsivin gercekten durmasi saglamlastirildi. Ham
-       boy 1273,95 KB. */
-    K('Ham boy < 1276 KB', dosyaBoy < 1276*1024,
+       boy 1273,95 KB.
+       19 EYLUL (ikinci degisiklik ayni gun): 1276 -> 1280. pj'nin sozu:
+       "bi ses calarken sıradaki coktan bisey hazır olmalı yani bi tık
+       hızlanacak bisey" -- ORBITAPE'te bir tur/aile (AKTIF_MOD) secili
+       oldugunda gecisler (modGec->earthAl->cal) onbellekIsit()'in
+       besledigi `kuyruk` mekanizmasina HIC ugramiyordu (kuyruk yalnizca
+       mod KAPALIYKEN hazirla() ile doluyor), yani ORBITAPE'in en cok
+       kullanilan hali icin siradaki kaydin baytlari hicbir zaman onden
+       isitilmiyordu -- her gecis sifirdan bir ag istegiyle basliyordu.
+       KANIT: modGec() kodu okunarak dogrulandi, kuyruktanAl() bu dalda
+       hic cagrilmiyor (bkz. sonraki(), 'AKTIF_MOD' dali). Duzeltme:
+       modHavuzOnizle() adinda, earthAl()'in MOD dalindaki secim
+       mantigini TUKETMEDEN (idx'i degistirmeden) tekrarlayan yeni bir
+       fonksiyon eklendi; onbellekIsit() artik AKTIF_MOD acikken (ve
+       RADIOTAPE degilken) bu fonksiyondan besleniyor. Ekrana giden
+       hicbir sey degismedi, yalnizca mevcut on-yukleme borusu ORBITAPE
+       mod gezintisine de baglandi. */
+    K('Ham boy < 1280 KB', dosyaBoy < 1280*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -8414,7 +8484,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Kisa basis favorile, basili tutus favori kipi. Cihazda kalir. */
   const fv = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    const eskiMod = AKTIF_MOD; AKTIF_MOD = null; gecmisSifirla();
+    const eskiMod = AKTIF_MOD, eskiDunya = mod;
+    /* 19 EYLUL: `mod` ARTIK ACIKCA 'lib' YAZILIYOR. Bu bloktaki
+       ornek favoriler (f1/f2/f3) radyo bayragi TASIMIYOR (archive
+       tarzi), yani _favHavuz() bunlari yalnizca canli=false (mod
+       !== 'radio') iken kapsar. Eskiden bu satir yalnizca AKTIF_MOD'u
+       sifirliyordu ve _favBaglamCanliMi() O DEGERE bakiyordu; suzgec
+       artik `mod`'a bakiyor (bkz. _favBaglamCanliMi'nin kendi Kural 4
+       yorumu) -- mod'u ayarlamayan bu blok, suitin baska bir testinden
+       kalma 'radio' degeriyle havuzu BOS buluyor, kip hic acilmiyordu. */
+    AKTIF_MOD = null; mod = 'lib'; gecmisSifirla();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
     FAV = []; _favMod = false; favTazele();
     const d = document.getElementById('fav');
@@ -8460,7 +8539,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* TEMIZ BIRAK: sonraki kontroller (kayit, REC) bu durumdan
        etkilenmesin. */
     _favMod = false; FAV = []; favTazele();
-    AKTIF_MOD = eskiMod;
+    AKTIF_MOD = eskiMod; mod = eskiDunya;
     cal({mp3:'temiz', ad:'Temiz', etiket:'netlabel', lisans:SERBEST}); await bek(80);
     return { bos, calan, bir, sifir, iki, kipte, favdanMi, c1, c2, kapali, depo, bosKip, soruldu };
   });
@@ -8547,39 +8626,45 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await bekKosul(()=> FAV.some(x=>x.mp3==='flv2'));
       c.favSayisi = FAV.length;
       c.grupKaydedildi = FAV.some(x=>x.mp3==='flv1' && x.grup==='ELECTRONIC');
+      /* 1. ORBITAPE'TEYKEN AC (mod='lib'): 19 EYLUL'den itibaren yalnizca
+         O DUNYANIN favorisi (arsiv/flv2) gorunmeli, radyo favorisi
+         (flv1) GORUNMEMELI -- kullanicinin sozu: "favoriye basınca
+         radyotape teki favori istasyonları gormemeliyim, kafa karısır." */
       AKTIF_AILE = 'JAZZ'; mod = 'lib';
       try{ window.favoriBas(); }catch(e){}
       for(let i=0;i<60 && !window.FAVORI_HAZIR;i++) await bek(100);
       c.modulGeldi = !!window.FAVORI_HAZIR;
       await bekKosul(()=> !!(window.favoriAcikMi && window.favoriAcikMi())
-        && document.querySelectorAll('#favoriListe .fl-oge').length >= 2);
+        && document.querySelectorAll('#favoriListe .fl-oge').length >= 1);
       c.acikMi = !!(window.favoriAcikMi && window.favoriAcikMi());
-      const ogeler = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
-      c.ogeSayisi = ogeler.length;
-      const radyoLi = ogeler.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Radyo');
-      c.radyoLiVar = !!radyoLi;
-      const arsivLiOnce = ogeler.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
-      c.arsivLiVar = !!arsivLiOnce;
-      if(radyoLi) radyoLi.click();
-      await bekKosul(()=> !(window.favoriAcikMi && window.favoriAcikMi()) && mod === 'radio');
-      c.aileRadyodanSonra = AKTIF_AILE;
-      c.modRadyodanSonra = mod;
-      c.calanRadyo = (aktifItem && aktifItem.mp3) || '';
-      c.kapandiMi1 = !(window.favoriAcikMi && window.favoriAcikMi());
-      /* Simdi arsiv ogesini sec: mod 'lib'e gecmeli (arama/ulke listesi
-         gibi arsivde aileSec cagirmiyor, o yuzden aile burada sinanmiyor). */
-      AKTIF_AILE = 'JAZZ'; mod = 'radio';
-      try{ window.favoriBas(); }catch(e){}
-      await bekKosul(()=> !!(window.favoriAcikMi && window.favoriAcikMi())
-        && [...document.querySelectorAll('#favoriListe .fl-oge')]
-             .some(li=>(li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv'));
-      const ogeler2 = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
-      const arsivLi = ogeler2.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
+      const ogelerArsivde = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
+      c.ogeSayisiArsivde = ogelerArsivde.length;
+      c.radyoLiVarArsivde = ogelerArsivde.some(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Radyo');
+      const arsivLi = ogelerArsivde.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
+      c.arsivLiVar = !!arsivLi;
       c.arsivAltYazi = arsivLi ? (arsivLi.querySelector('.fl-alt')||{}).textContent : '';
       if(arsivLi) arsivLi.click();
       await bekKosul(()=> !(window.favoriAcikMi && window.favoriAcikMi()) && mod === 'lib');
       c.modArsivdanSonra = mod;
       c.calanArsiv = (aktifItem && aktifItem.mp3) || '';
+      c.kapandiMi1 = !(window.favoriAcikMi && window.favoriAcikMi());
+      /* 2. RADIOTAPE'E GEC (mod='radio'): artik yalnizca RADYO favorisi
+         (flv1) gorunmeli, arsiv favorisi (flv2) GORUNMEMELI. */
+      AKTIF_AILE = 'JAZZ'; mod = 'radio';
+      try{ window.favoriBas(); }catch(e){}
+      await bekKosul(()=> !!(window.favoriAcikMi && window.favoriAcikMi())
+        && [...document.querySelectorAll('#favoriListe .fl-oge')]
+             .some(li=>(li.querySelector('.fl-baslik')||{}).textContent === 'Favori Radyo'));
+      const ogelerRadyoda = Array.from(document.querySelectorAll('#favoriListe .fl-oge'));
+      c.ogeSayisiRadyoda = ogelerRadyoda.length;
+      c.arsivLiVarRadyoda = ogelerRadyoda.some(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Arsiv');
+      const radyoLi = ogelerRadyoda.find(li => (li.querySelector('.fl-baslik')||{}).textContent === 'Favori Radyo');
+      c.radyoLiVar = !!radyoLi;
+      if(radyoLi) radyoLi.click();
+      await bekKosul(()=> !(window.favoriAcikMi && window.favoriAcikMi()) && mod === 'radio');
+      c.aileRadyodanSonra = AKTIF_AILE;
+      c.modRadyodanSonra = mod;
+      c.calanRadyo = (aktifItem && aktifItem.mp3) || '';
       c.kapandiMi2 = !(window.favoriAcikMi && window.favoriAcikMi());
       /* Favori yokken KISA dokunus (favoriBas) panel ACMAMALI -- eski
          "NO FAVOURITES YET" yanip sonmesi hala calismali. Bu OLUMSUZ
@@ -8599,22 +8684,54 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     });
     K('Favori secilince kendi grubu da saklaniyor', fl.grupKaydedildi === true,
       'favSayisi=' + fl.favSayisi);
-    K('Favori listesi aciliyor ve iki favoriyi de gosteriyor',
-      fl.modulGeldi && fl.acikMi && fl.ogeSayisi === 2 && fl.radyoLiVar && fl.arsivLiVar,
-      'oge=' + fl.ogeSayisi + ' radyoLi=' + fl.radyoLiVar + ' arsivLi=' + fl.arsivLiVar);
+    K('Favori listesi ORBITAPE\'teyken yalnizca arsiv favorisini gosteriyor',
+      fl.modulGeldi && fl.acikMi && fl.ogeSayisiArsivde === 1 && !fl.radyoLiVarArsivde && fl.arsivLiVar,
+      'oge=' + fl.ogeSayisiArsivde + ' radyoLi=' + fl.radyoLiVarArsivde + ' arsivLi=' + fl.arsivLiVar);
+    K('Favori listesi RADIOTAPE\'teyken yalnizca radyo favorisini gosteriyor',
+      fl.ogeSayisiRadyoda === 1 && !fl.arsivLiVarRadyoda && fl.radyoLiVar,
+      'oge=' + fl.ogeSayisiRadyoda + ' arsivLi=' + fl.arsivLiVarRadyoda + ' radyoLi=' + fl.radyoLiVar);
     K('Radyo favorisi secilince cark/gosterge o turun ailesine gidiyor',
       fl.aileRadyodanSonra === 'ELECTRONIC' && fl.modRadyodanSonra === 'radio' && fl.calanRadyo === 'flv1',
       'aile=' + fl.aileRadyodanSonra + ' mod=' + fl.modRadyodanSonra + ' calan=' + fl.calanRadyo);
     K('Secim sonrasi favori listesi kendiliginden kapaniyor',
       fl.kapandiMi1 === true && fl.kapandiMi2 === true,
       'kapandi1=' + fl.kapandiMi1 + ' kapandi2=' + fl.kapandiMi2);
-    K('Arsiv favorisi secilince kutuphane moduna geciyor',
+    K('Arsiv favorisi secilince kutuphane modunda kaliyor',
       fl.modArsivdanSonra === 'lib' && fl.calanArsiv === 'flv2',
       'mod=' + fl.modArsivdanSonra + ' calan=' + fl.calanArsiv);
     K('Arsiv favorisinde sanatci alt satirda gorunuyor', fl.arsivAltYazi === 'Sanatci X',
       'altyazi="' + fl.arsivAltYazi + '"');
     K('Favori yokken kisa dokunus panel acmiyor', fl.bosPanelAcilmadi === true,
       'acildi mi: ' + !fl.bosPanelAcilmadi);
+  }
+  /* ── FAVORI BAGLAMI: ORBITAPE'TEN DONUNCE DE RADIOTAPE SAYILIYOR MU
+     (19 Eylul, Kural 4, olculdu) ───────────────────────────────────
+     _favBaglamCanliMi() eskiden AKTIF_MOD === 'RADIOTAPE' okuyordu.
+     moodUygula()'nin "!ilk" dali (ORBITAPE'ten RADIOTAPE'e DONUS)
+     AKTIF_MOD'u 'RADIOTAPE' STRING'ine degil null'a yaziyor -- o dal
+     yalnizca raf secimini sifirlamak icin yazilmisti, "hangi
+     dunyadayiz" sorusuna cevap vermiyordu. KANIT (/tmp/fav_ctx_test.js):
+     acilis {mod:'radio',AKTIF_MOD:'RADIOTAPE',canli:true} -> ORBITAPE
+     ac {mod:'lib',AKTIF_MOD:'ORBITAPE',canli:false} -> RADIOTAPE'e DON
+     {mod:'radio',AKTIF_MOD:null,canli:FALSE (HATALI)}. Duzeltme:
+     _favBaglamCanliMi artik `mod==='radio'` okuyor -- cal()/atla()
+     butun uygulamada zaten bunu tek dogru kaynak olarak kullaniyor. */
+  {
+    const fb = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiMood = AYAR.mood, eskiMod = mod, eskiAktifMod = AKTIF_MOD;
+      AYAR.mood = false; moodUygula(); await bek(200);
+      const baslangic = _favBaglamCanliMi();
+      AYAR.mood = true; moodUygula(); await bek(200);
+      const orbitapede = _favBaglamCanliMi();
+      AYAR.mood = false; moodUygula(); await bek(200);
+      const donusteRadiotape = _favBaglamCanliMi();
+      AYAR.mood = eskiMood; mod = eskiMod; AKTIF_MOD = eskiAktifMod;
+      return { baslangic, orbitapede, donusteRadiotape };
+    });
+    K('Favori baglami: ORBITAPE\'ten donunce RADIOTAPE olarak taniniyor',
+      fb.baslangic === true && fb.orbitapede === false && fb.donusteRadiotape === true,
+      'baslangic=' + fb.baslangic + ' orbitape=' + fb.orbitapede + ' donus=' + fb.donusteRadiotape);
   }
   /* ── #favAc'IN GERCEK JESTI: KISA=LISTE, UZUN=ESKI KIP (14 Eylul) ──
      kayit.js'teki tek 'click' dinleyicisi pointerdown/pointerup ikilisine
@@ -8736,7 +8853,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   const fa = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const a = document.getElementById('favAc'); if(!a) return null;
-    const eski = AKTIF_MOD; AKTIF_MOD = null;
+    const eski = AKTIF_MOD, eskiDunya = mod; AKTIF_MOD = null;
+    /* 19 EYLUL: `mod` ARTIK ACIKCA 'lib' YAZILIYOR -- AYNI SINIFTAN
+       HATA (_favBaglamCanliMi fix'inden sonra) burada da cikti.
+       Asagidaki FAV ornekleri (q1/q2) radyo bayragi TASIMIYOR (arsiv
+       tarzi); eskiden AKTIF_MOD=null yeterliydi cunku eski
+       _favBaglamCanliMi() AKTIF_MOD==='RADIOTAPE' okuyordu (null ise
+       false, yani 'arsiv baglam' -- dogru sonuc TESADUFEN cikiyordu).
+       Yeni olcut `mod` oldugu icin bu sayfanin paylastigi `pg`
+       ustunde onceki testten kalan `mod` degeri (ozellikle 'radio'
+       ise) _favHavuz()'u BOS dondurup ikinci basili tutusun
+       'NO FAVOURITES YET' dalina dusmesine (kip hic acilmamasina)
+       sebep oluyordu. Kalici cozum: bu testin kendi baglamini acikca
+       yazmasi -- leftover state'e guvenmemek (bkz. ayni fix: "FAVORILER"
+       ve "IKI YILDIZ" bloklari). */
+    mod = 'lib';
     /* Bu jest kayit.js'te yasiyor (istek uzerine iner) -- once modulun
        geldiginden emin oluyoruz, yoksa pointerdown'a cevap veren
        kimse olmaz. */
@@ -8805,7 +8936,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     void ar; void ad; void su;
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
-    AKTIF_MOD = eski;
+    AKTIF_MOD = eski; mod = eskiDunya;
     return { kapali, soru, acik, tekrar, hiza };
   });
   K('Sol ustte favori yildizi var', !!fa && fa.kapali.gor===true, 'tasima satirinin sonunda');
@@ -11166,7 +11297,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* Sol ustteki yildiz favori YOKKEN bilerek sonuk ('bos' sinifi):
        bos bir bolume gonderen bir kapi parlak durmamali. Bu kontrol
        iki yildizin DOLU listedeki farkini olcuyor. */
-    const eskiFav = FAV.slice();
+    const eskiFav = FAV.slice(), eskiDunya = mod;
+    /* 19 EYLUL: asagidaki 'q1' ornek favorisi radyo bayragi TASIMIYOR
+       (archive tarzi) -- favTazele()'nin okudugu _favHavuz() bunu
+       yalnizca mod!=='radio' iken kapsar (bkz. _favBaglamCanliMi'nin
+       Kural 4 yorumu). mod'u acikca ayarlamazsak suitte onceki bir
+       testten kalma deger 'radio' olabilir, havuz BOS gorunur, favAc
+       hep 'bos' sinifinda kalir ve bu test yanlis kirmizi/yesil verir. */
+    mod = 'lib';
     FAV = [{mp3:'q1',ad:'A'}]; favYaz(); favTazele();
     f.classList.add('var'); f.classList.remove('dolu','kip');
     fa.classList.add('var'); await bek(300);
@@ -11174,7 +11312,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     f.classList.add('dolu'); await bek(300);
     const dolu = +getComputedStyle(f).opacity;
     f.classList.remove('dolu');
-    FAV = eskiFav; favYaz(); favTazele();
+    FAV = eskiFav; mod = eskiDunya; favYaz(); favTazele();
     try{ if(!FAV.length) localStorage.removeItem('orbitape.fav'); }catch(e){}
     return { bos, dolu };
   });
