@@ -598,3 +598,54 @@ Aynı gün İKİ belge, gerçek durumu YANSITMIYORDU:
 İkisi de gerçek hafıza kaybı değil, konuşmaların `GUNLUK.md`'ye
 işlenmemesiydi. pj: *"tüm konuşmalar günlükten okuncak hep her zaman.
 ilk hafıza kaybında."* -> CLAUDE.md Kural 11.
+
+## 19 Eylül — açık renkli skinlerde yıldız zumu ve `#np` isimleri soluk/koyu çıkıyordu
+
+**Kullanıcı karşılığı:** pj bir ekran kaydı yolladı ("bazı skinsler
+açıkken yıldızları büyütünce yıldızlar hem soluk hem koyu bir ton
+var... parlak beyaz degil kendi renginde... sag alttaki isimler de
+aynı sekilde etkileniyor"). Kaydın kare-kare analizi (ffmpeg +
+piksel-fark) tek başına sonuç vermedi -- pj'nin bu sözlü tarifi asıl
+ipucuydu, kod okumaya oradan gidildi.
+
+**Kök neden:** `halkaDeriRengi(rgb, deriNo, esik)` bir rengi HER ZAMAN
+derinin KENDİ zemini (`d.zem`) ile kıyaslayıp kontrast düzeltiyordu.
+Ama yıldız-zumu katmanı (`zumCiz`) hangi skin açık olursa olsun
+ekranı gerçekten SİYAHA boyuyor (`body.yildiz-zum{background:#000}`,
+14-18 Eylül'den kalma bir düzeltme). Açık zeminli bir deride (örn.
+PAPER, zemin `#f2efe6`) saf beyaz bir yıldız rengi -- aslında siyah
+üstünde çizilirken -- PAPER'ın AÇIK zeminine göre "zaten okunur"
+sayılıp KOYULAŞTIRILIYORDU (ölçülen: `255,255,255` -> `108,108,108`).
+`#np` isimleri de aynı hastalıktan muzdaripti: skin metin rengi
+değişkenleriyle (`--d-yazi`) boyanıyorlardı, o değişken de PAPER'ın
+KOYU metin tonuydu -- zum açıkken siyah zemin üstünde neredeyse
+görünmez kalıyordu.
+
+**Düzeltme:** `halkaDeriRengi`'ye 4. ve opsiyonel bir parametre
+eklendi: `zeminGorunen` -- verilirse kontrast o zemine göre
+hesaplanıyor, verilmezse eskisi gibi derinin kendi zemini kullanılıyor
+(diğer 10 çağrı yeri -- halka, disk çekirdek ışığı, her zaman görünen
+yıldız işaretleri -- dokunulmadan kaldı). `zumCiz` içindeki 4 çağrı
+yeri artık `'#000000'` gönderiyor. `#np` için de `.yildiz-zum.deri`
+gibi FAZLADAN sınıf taşıyan, kesin olarak daha yüksek özgüllükte yeni
+bir CSS kuralı eklendi (dosyadaki sıraya güvenmek yerine -- bu
+deponun kendi "DOSYADAKI SIRAYA GUVENMEK KIRILGAN" dersi tekrar
+uygulandı), yalnızca isimleri (`.np-ad`, `.np-sanatci`, `.np-parca`,
+`.np-kaynak`, `.np-lisans`, `.np-ust`, `b`) kapsıyor -- pj'nin sözü
+"isimler" içindi, küçük etiketler (`.np-yasal`/`.np-lab`/`small`/`s`)
+bilerek dışarıda bırakıldı.
+
+**Ölçüm (Kural 4):** PAPER derisinde saf beyaz, eski yolla
+`108,108,108`'e koyulaşıyordu; yeni `'#000000'` referansıyla
+`255,255,255` (zaten en yüksek kontrast, hiç dokunulmuyor) kalıyor.
+`#np .np-ad`'ın gerçek ekran rengi: zum kapalıyken derinin kendi koyu
+tonu (`rgb(74,71,64)`), zum açılınca parlak/beyaza yakın
+(`rgba(244,247,250,.9)`) -- iki durum arasındaki fark 177 birim
+(0-255 skalasında).
+
+**Kalıcı test:** `test/saglik.js`'e "Acik renkli deride yildiz zumu
+artik kendi zemine gore degil daima siyaha gore kontrastli" testi
+eklendi. Testin gerçekten yakaladığı doğrulandı: düzeltme geçici
+olarak geri alınıp test kırmızıya döndü (`#np` rengi zum açık/kapalı
+aynı kaldı: `rgb(74,71,64)` = `rgb(74,71,64)`), düzeltme geri
+uygulanınca yeşile döndü. Tam takım: 851/851 geçti.

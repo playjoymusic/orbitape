@@ -3136,6 +3136,35 @@
   body.deri #np small,body.deri #np s{
     color:var(--d-yazi2, var(--d-yazi)) !important;
     -webkit-text-fill-color:var(--d-yazi2, var(--d-yazi)) !important;}
+  /* ── GOKYUZUNDE #np: AYNI KOK, BASKA BELIRTI (19 Eylul) ────────────
+     pj'nin sozu: "yildizlar hem soluk hem koyu bir ton var... sag
+     alttaki isimler de ayni sekilde etkileniyor." Yukaridaki iki kural
+     #np yazisini derinin --d-yazi/--d-yazi-guclu rengine boyuyor --
+     dogru, cunku normalde #np derinin GERCEK (acik/krem) zemini
+     uzerinde duruyor. Ama yildiz-zum acikken zemin zorla siyaha
+     donuyor (html body.yildiz-zum{background:#000 !important}) ve
+     #np hala ekranda kalan tek yazi (bkz. "sadece sag alttaki bilgiler
+     olsun" karari, 18 Eylul) -- acik zeminli bir deride --d-yazi
+     genelde KOYU bir ton (acik zeminde okunsun diye), siyahin
+     UZERINDE ise neredeyse gorunmez/donuk kaliyor. Ayni hastalik,
+     zumCiz'deki yildiz renginin ta kendisi (bkz. halkaDeriRengi
+     basindaki not).
+     DUZELTME: iki secici de FAZLADAN bir sinif tasiyor
+     (.yildiz-zum.deri), yani ozgullugu asagidaki kurallardan KESIN
+     olarak daha yuksek -- dosya sirasina guvenmiyoruz (bu deponun
+     kendi tecrubesi: "DOSYADAKI SIRAYA GUVENMEK KIRILGAN").
+     Tek bir parlak ton kullanildi (butun --d-yazi-guclu/--d-yazi
+     kademelerini birebir taklit etmek yerine): zum acikken zemin her
+     zaman ayni siyah, yani kademelendirmenin bir anlami yok, tek
+     onemli olan koyu degil PARLAK olmasi. Kucuk etiketler
+     (.np-yasal/.np-lab/small/s) bilerek disarida -- pj'nin sozu
+     "isimler" icin, bu etiketler o degil. */
+  body.yildiz-zum.deri #np .np-ad,body.yildiz-zum.deri #np .np-sanatci,
+  body.yildiz-zum.deri #np b,body.yildiz-zum.deri #np .np-parca,
+  body.yildiz-zum.deri #np .np-kaynak,body.yildiz-zum.deri #np .np-lisans,
+  body.yildiz-zum.deri #np .np-ust{
+    color:rgba(244,247,250,.9) !important;
+    -webkit-text-fill-color:rgba(244,247,250,.9) !important;}
   body.deri #kipKisayol .ad{background:none !important;color:var(--d-marka) !important;
     -webkit-text-fill-color:var(--d-marka) !important;}
   body.deri #kipKisayol .anahtar{border-color:var(--d-tus-kenar) !important;
@@ -6575,17 +6604,44 @@
      Yildizlar 4.2 istiyor: o esik ayni zeminde koyu bir tona
      dusuyor, yani gercekten GOLGE gibi duruyor. */
   const YILDIZ_ESIK = 4.2;
-  function halkaDeriRengi(rgbDizi, deriNo, esik){
+  /* ── GOKYUZUNDE YANLIS ZEMINE GORE KONTRAST (19 Eylul) ─────────────
+     pj'nin sozu: "yildizlari buyuttugumde... hem soluk hem koyu bir
+     ton var, parlak beyaz degil, kendi renginde degil ki sag alttaki
+     isimler de ayni sekilde etkileniyor... bir skin serisinde olan
+     bisey demek ki o."
+     KOK NEDEN: bu fonksiyon rengi HER ZAMAN derinin kendi zemine
+     (d.zem) gore kontrastli hale getiriyordu -- dogru varsayim,
+     CUNKU normalde (halka/disk) o renk gercekten derinin zemini
+     UZERINDE duruyor. Ama zum katmaninda (zumCiz) zemin ARTIK derinin
+     zemini degil: `html body.yildiz-zum{background:#000 !important}`
+     ile zorla SIYAH. Acik/krem zeminli bir deride (--PAPER, --COBALT
+     vb.) bu fonksiyon rengi "acik zeminde okunsun" diye KOYULASTIRIYOR
+     -- ama gercekte renk artik siyahin UZERINDE, yani tam tersi olmasi
+     gerekiyordu. Sonuc: donuk, yanlis tonda yildizlar -- ve `#np`
+     yazi rengi de ayni kokten (asagida, "GOKYUZUNDE #np" bolumu).
+     "Bir skin serisinde" dedigi tam bu: yalnizca ACIK zeminli deriler
+     etkileniyor, koyu zeminli derilerde d.zem zaten siyaha yakin
+     oldugu icin fark neredeyse hic yok.
+     DUZELTME: cagiran taraf (zumCiz) artik zemin olarak GERCEKTEN
+     gorunen rengi (siyah) veriyor -- yeni, OPSIYONEL 4. parametre.
+     Verilmezse eski davranis (d.zem) aynen duruyor, yani halka/disk
+     gibi baska hicbir cagrı etkilenmiyor.
+     GEL (acilma orani) ile SIYAHA karisik bir zemin hesaplamadik:
+     gel neredeyse aninda (zum=1.26'da) 1'e ulasiyor VE yildizin kendi
+     opakligi de ayni gel ile carpiliyor -- yani gel dusukken renk zaten
+     gorunmuyor. Karisim eklemek olcumsuz bir incelik olurdu. */
+  function halkaDeriRengi(rgbDizi, deriNo, esik, zeminGorunen){
     try{
       const n = (deriNo === undefined)
         ? ((typeof AYAR !== 'undefined') ? (AYAR.deri|0) : 0) : (deriNo|0);
       if(!n || !rgbDizi) return rgbDizi;
       const d = DERILER[n-1]; if(!d) return rgbDizi;
       const es = (typeof esik === 'number' && esik > 0) ? esik : 2.4;
-      const anahtar = n + '|' + rgbDizi + '|' + es;
+      const zemin = zeminGorunen || d.zem;
+      const anahtar = n + '|' + rgbDizi + '|' + es + '|' + zemin;
       const varOlan = _halkaDeriOnbellek.get(anahtar);
       if(varOlan) return varOlan;
-      const v = okunurVurgu(rgbDizi, d.zem, es);
+      const v = okunurVurgu(rgbDizi, zemin, es);
       const m = v ? v.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/) : null;
       const sonuc = m ? (m[1] + ',' + m[2] + ',' + m[3]) : rgbDizi;
       if(_halkaDeriOnbellek.size > 400) _halkaDeriOnbellek.clear();
@@ -12942,7 +12998,9 @@
       /* ZUM KATMANINDAKI YILDIZLAR DA DERIDEN. Burasi sabit beyazdi
          (236,250,248) ve gokyuzu acik bir deride bembeyaz kaliyordu
          -- kullanicinin "hala beyaz" dedigi yer tam burasi. */
-      const yaziRenk = 'rgba(' + halkaDeriRengi('236,250,248', undefined, YILDIZ_ESIK) + ',';
+      /* ZUM KATMANI HER ZAMAN SIYAH UZERINDE: zemin referansi #000 --
+         bkz. halkaDeriRengi basindaki 19 Eylul notu. */
+      const yaziRenk = 'rgba(' + halkaDeriRengi('236,250,248', undefined, YILDIZ_ESIK, '#000000') + ',';
       /* ── BOS YILDIZLAR ONCE VE SONUK ──────────────────────────
          Kullanici: "bazi yildizlar bos ya da basilamiyor; bossa
          biraz daha sonuk yapabilirsin buyutunce."
@@ -12953,7 +13011,7 @@
          basilabilen sey oluyor. */
       try{
         if(typeof ZERRE !== 'undefined' && ZERRE && ZERRE.length){
-          c.fillStyle = 'rgba(' + halkaDeriRengi('190,214,214') + ',' + (0.13 * gel).toFixed(3) + ')';
+          c.fillStyle = 'rgba(' + halkaDeriRengi('190,214,214', undefined, undefined, '#000000') + ',' + (0.13 * gel).toFixed(3) + ')';
           for(let zi = 0; zi < ZERRE.length; zi++){
             const z = ZERRE[zi];
             const rr = z.rD * taban * _zum;
@@ -12978,8 +13036,8 @@
         const rad = (bu ? 3.6 : 2.0 + y.b * 1.4) * (0.85 + _zum * 0.08);
         if(bu || sec){
           const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad * 5);
-          const _zh = halkaDeriRengi('255,255,255', undefined, YILDIZ_ESIK);
-          const _zt = halkaDeriRengi('90,220,210', undefined, YILDIZ_ESIK);
+          const _zh = halkaDeriRengi('255,255,255', undefined, YILDIZ_ESIK, '#000000');
+          const _zt = halkaDeriRengi('90,220,210', undefined, YILDIZ_ESIK, '#000000');
           g.addColorStop(0, 'rgba(' + _zh + ',' + (0.55 * gel).toFixed(3) + ')');
           g.addColorStop(0.35, 'rgba(' + _zt + ',' + (0.30 * gel).toFixed(3) + ')');
           g.addColorStop(1, 'rgba(' + _zt + ',0)');

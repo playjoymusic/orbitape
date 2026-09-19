@@ -10469,6 +10469,84 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        zs.hata || (ozs2 + ' zemin=' + zs.acikkenZemin));
   }
 
+  /* ── ACIK RENKLI SKINDE YILDIZ ZUMU HALA KENDI ZEMININE GORE
+     KONTRAST DUZELTIYORDU (19 Eylul) ───────────────────────────────
+     pj: "bazı skinsler açıkken yıldızları büyütünce yıldızlar hem
+     soluk hem koyu bir ton var ... parlak beyaz degil kendi renginde
+     ... sag alttaki isimler de aynı sekilde etkileniyor." Kok neden:
+     halkaDeriRengi() zum katmaninda da HER ZAMAN derinin kendi zemini
+     (d.zem) ile kontrast hesapliyordu -- oysa zum katmani ac hangi
+     skin olursa olsun ekrani gercekten SIYAHA boyuyor (body.yildiz-zum
+     -> #000). Acik renkli bir deride (orn. PAPER, zem #f2efe6) beyaz
+     bir yildiz rengi, aslinda siyah zemin ustunde cizilirken PAPER'in
+     ACIK zeminine karsi "zaten okunur" sayilip KOYULASTIRILIYORDU.
+     Duzeltme: halkaDeriRengi'ye 4. parametre (zeminGorunen) eklendi,
+     zum katmanindaki 4 cagri '#000000' geciyor. #np isimleri de ayni
+     kok nedenden etkileniyordu (deri metin rengi degiskenleriyle
+     boyaniyordu), .yildiz-zum.deri ekstra sinifiyla ozgullugu daha
+     yuksek bir kural eklendi (DOSYADAKI SIRAYA GUVENMEK KIRILGAN --
+     bu yuzden dosyadaki konumdan degil ekstra siniftan ozgulluk
+     alindi). */
+  {
+    const yz = await (async ()=>{
+      try{
+        const { sayfa } = await sayfaAc(b, { ag:'yerel', bekle:1500 });
+        try{
+          return await sayfa.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            const c = {};
+            const idx = DERILER.findIndex(d=>d.ad==='PAPER') + 1;
+            c.paperVarMi = idx > 0;
+            AYAR.deri = idx || 1; deriUygula();
+            await bek(120);
+            c.deriAcik = document.body.classList.contains('deri');
+
+            // 1) Zum katmani her zaman siyaha karsi hesaplamali: saf beyaz,
+            //    siyah zemine karsi zaten en yuksek kontrastta -- hic
+            //    koyulasmadan (255,255,255) donmeli.
+            c.beyazZumRengi = halkaDeriRengi('255,255,255', undefined, YILDIZ_ESIK, '#000000');
+
+            // 2) Ayni fonksiyon override VERILMEDEN cagrilirsa (skinin
+            //    kendi zeminine gore, diger -- zum disi -- cagiranlarin
+            //    kullandigi eski yol) acik zeminde beyazi hala koyulastirir;
+            //    bu satir DEGISMEDI, cunku o cagrilar zum katmaninda degil.
+            c.beyazEskiYolRengi = halkaDeriRengi('255,255,255', undefined, YILDIZ_ESIK);
+
+            // 3) #np isimlerinin gercek ekran rengi: skin acikken (zum yok)
+            //    kendi koyu deri rengi, zum acilinca parlak/beyaza yakin
+            //    olmali.
+            const npAd = document.querySelector('#np .np-ad');
+            c.npVarMi = !!npAd;
+            if(npAd) c.npRengiZumsuz = getComputedStyle(npAd).color;
+            window.yildizZumAyar(2.6);
+            for(let i=0;i<60 && Math.abs(window.yildizDurum().zum-2.6)>0.02;i++) await bek(30);
+            await bek(300);
+            if(npAd) c.npRengiZumla = getComputedStyle(npAd).color;
+            window.yildizZumAyar(1);
+            for(let i=0;i<40 && document.body.classList.contains('yildiz-zum');i++) await bek(30);
+            await bek(200);
+            AYAR.deri = 0; deriUygula();
+            return c;
+          });
+        }finally{ try{ await sayfa.context().close(); }catch(e){} }
+      }catch(e){ return { hata:String(e && e.message || e) }; }
+    })();
+    const parlaklik = (rgbStr)=>{
+      if(!rgbStr) return -1;
+      const m = String(rgbStr).match(/[\d.]+/g);
+      if(!m || m.length<3) return -1;
+      return (+m[0] + +m[1] + +m[2]) / 3;
+    };
+    const zumParlak = parlaklik(yz.npRengiZumla);
+    const zumsuzParlak = parlaklik(yz.npRengiZumsuz);
+    const ozs3 = Object.keys(yz).filter(k=>yz[k]!==true).map(k=>k+'='+yz[k]).join(' ');
+    K('Acik renkli deride yildiz zumu artik kendi zemine gore degil daima siyaha gore kontrastli (19 Eylul)',
+       !yz.hata && yz.paperVarMi === true && yz.deriAcik === true && yz.npVarMi === true
+       && yz.beyazZumRengi === '255,255,255'
+       && zumParlak >= 220 && zumsuzParlak >= 0 && zumsuzParlak < 150 && (zumParlak - zumsuzParlak) >= 60,
+       yz.hata || (ozs3 + ' zumParlak=' + zumParlak.toFixed(1) + ' zumsuzParlak=' + zumsuzParlak.toFixed(1)));
+  }
+
   /* ── GOKYUZU ACILINCA TAM PARLAKLIGA COK DAHA CABUK ULASILIYOR
      (18 Eylul, "hersey soluk") ─────────────────────────────────────
      pj'nin sozu: "bak yildizlar da soluk hersey soluk. genele sorun
