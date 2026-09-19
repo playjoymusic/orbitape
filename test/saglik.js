@@ -450,9 +450,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         onbellekDurdur();
         ustUsteHata = 0;
         earthHavuz.length = 0;
-        earthHavuz.push(
-          {id:'mp:1', mp3:'https://sahte.test/mp1.mp3', ad:'Mp1', lisans:SERBEST},
-          {id:'mp:2', mp3:'https://sahte.test/mp2.mp3', ad:'Mp2', lisans:SERBEST});
+        /* 19 EYLUL (ucuncu gecis, TAM sette olcerken bulundu) --
+           ONCE 2 sahte kayitla denendi ve PAYLASILAN, GERCEKTEN CALAN
+           sayfada arasira dustu. SEBEP: `ses.removeAttribute('src')`
+           uygulamanin kendi "ses bos/olu kaldi" bekcisini (bkz.
+           sesDuyuluyorMu / 'boş/çalamayan parçayı otomatik gec')
+           GERCEKTEN tetikleyebiliyor -- bu bekci de gercek sonraki()
+           zincirini (modGec->earthAl->cal) bu testin kurdugu 2 kayitlik
+           sahte havuz uzerinde calistirip TEK basimda ikisini de
+           tuketebiliyordu (mh.length===_modIdx). modHavuzOnizle() bu
+           siniri kasten asmiyor (bkz. yukaridaki yorum) -- yani bu,
+           urundeki bir hata degil, testin havuzunun gercekci
+           olmayacak kadar kucuk olmasiydi. DUZELTME: havuzu 10 kayda
+           cikar -- gercek bekci 1-2 kez devreye girse bile hala
+           tuketilmemis aday kalir, oncelemenin kendisi olculebilir. */
+        for(let i=1;i<=10;i++)
+          earthHavuz.push({id:'mp:'+i, mp3:'https://sahte.test/mp'+i+'.mp3', ad:'Mp'+i, lisans:SERBEST});
         _modAdi = null; _modHavuzSay = -1;
         mod = 'lib'; AKTIF_MOD = 'ORBITAPE';
         /* PAYLASILAN SAYFADA (859 testin hepsi ayni sekmede) baska
@@ -469,14 +482,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           onbellekIsit();
           await bek(100);
           srcs = onbellekler.map(a=>a.getAttribute('src')||'');
-          isindi = srcs.some(s=>s.indexOf('mp1.mp3')>=0 || s.indexOf('mp2.mp3')>=0);
+          isindi = srcs.some(s=>/\/mp\d+\.mp3/.test(s));
         }
         return { isindi, srcs };
       } finally {
         onbellekDurdur();
         earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
         AKTIF_MOD = eskiAktifMod; mod = eskiDunya; _arsivDurdu = eskiDurdu;
-        _modAdi = eskiAd; _modHavuzSay = eskiSay; ustUsteHata = eskiHata;
+        ustUsteHata = eskiHata;
+        /* 19 EYLUL (bagimsiz incelemede bulundu) -- eskiAd/eskiSay'i
+           GERI YAZMAK YETMEZ. Test sirasinda modHavuzu() sahte
+           mp:1/mp:2 kayitlarini _modHavuz'a ISLEMISTI; eskiAd/eskiSay
+           geri yazilinca modHavuzu()'nun kendi onbellek-geçerlilik
+           sarti (_modAdi!==AKTIF_MOD || _modHavuzSay!==say) tam da
+           testten ONCEKI durumla ayni ciktigi icin YENIDEN
+           HESAPLAMAYABILIR -- yani _modHavuz sahte kayitlarla
+           kirlenmis kalir, paylasilan sayfada (859 test tek sekmede)
+           SONRAKI bir test AKTIF_MOD='ORBITAPE' iken gercek arsiv
+           yerine bu iki sahte kaydi gorebilir. Duzeltme: _modAdi
+           acikca null'a zorlanip bir sonraki gercek cagrinin HER
+           ZAMAN yeniden hesaplamasi saglaniyor -- eskiAd/eskiSay'in
+           kendisi artik hic okunmuyor. */
+        _modAdi = null; _modHavuzSay = -1;
       }
     });
     K('Mod (tur/aile) acikken siradaki kayit ag onbellegine onden isitiliyor',

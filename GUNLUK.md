@@ -1219,3 +1219,67 @@ istenecek.
 Değişen dosyalar: `index.html` (`modHavuzOnizle` + `onbellekIsit`
 değişikliği, `_headers`/CSP yeniden üretildi), `test/saglik.js`
 (yeni regresyon testi + Ham boy tavanı).
+
+---
+
+### 19 Eylül (devam) — CI'daki kırmızı tek seferlik arızaydı; pj'nin isteğiyle bağımsız inceleme yapıldı, 2 küçük gerçek sorun bulunup düzeltildi
+
+Commit `1264d87` push edildikten sonra "Sağlık kontrolü #462" CI'da
+kırmızı çıktı, ~8dk42sn'de hiçbir başarısız-test özeti yazmadan
+bitti (log arama: `DUZELTILECEK` 0/0 sonuç). GitHub'ın "Explain
+error" YZ özelliği güvenilmez çıktı (kodla eşleşmeyen, uydurma
+öneriler verdi) -- kullanılmadı. Kural 4 gereği CI'nın adımları
+BİREBİR (derle.py -> yayin/ -> repo kökünden http sunucu -> saglik.js)
+yerelde üç kez tekrarlandı, üçünde de hiç kırmızı çıkmadı. Sonuç:
+paylaşımlı runner'da bir kerelik altyapı arızası (muhtemelen taze
+kurulan Chromium sürümüyle ilgili), kod hatası değil. **Doğrulandı:**
+pj işi yeniden çalıştırdı, hem "Sağlık kontrolü" hem "Yayın" hiçbir
+kod değişikliği olmadan yeşile döndü.
+
+pj bunun üzerine *"check et. agent koy vs"* dedi -- bağımsız bir
+inceleme ajanı bugünkü iki değişikliği (favoriler + mod-ön-yükleme)
+ayrıca gözden geçirdi. İki gerçek (küçük) sorun buldu:
+
+1. **`modHavuzOnizle()` torba sınırını aşabiliyordu.** `earthAl()`
+   torbanın sonuna gelince torbayı karıştırıp baştan başlıyor;
+   önizleme fonksiyonu bu karıştırmayı YAPMADIĞI için, torbanın tam
+   son kaydında "sıradaki" tahmini eski sıraya göre veriyordu --
+   gerçekte `earthAl()` o ana gelince farklı bir kayıt dönüyordu.
+   Yanlış bir şey ÇALINMIYORDU (CALINDI/EARTH_KARA url bazlı, kendini
+   düzeltiyor), sadece boşa bir indirme oluyordu. **Düzeltme:**
+   fonksiyon artık torbanın ÖTESİNE hiç bakmıyor, sınırda daha az
+   (hatta sıfır) aday dönebiliyor -- "az ısıtmak, yanlış ısıtmaktan
+   iyi".
+2. **Yeni testin `finally` bloğu `_modAdi`/`_modHavuzSay`'i eski
+   değerlerine geri yazıyordu**, ama bu tam da `modHavuzu()`'nun
+   önbellek-geçerlilik şartıyla (`_modAdi!==AKTIF_MOD ||
+   _modHavuzSay!==say`) eşleşip önbelleği YENİDEN HESAPLATMAYABİLİYORDU
+   -- yani `_modHavuz` testin sahte kayıtlarıyla kirli kalıp,
+   paylaşılan tek sayfalı test setinde (860 test) SONRAKİ bir test
+   aynı `AKTIF_MOD`'a denk gelirse gerçek arşiv yerine bu sahte
+   kayıtları görebilirdi. **Düzeltme:** `finally`'de `_modAdi`/
+   `_modHavuzSay` eski değere değil, kasıtlı olarak `null`/`-1`'e
+   zorlanıyor -- bir sonraki gerçek çağrı HER ZAMAN yeniden hesaplıyor.
+
+Bu iki düzeltmeyi doğrularken **testin kendi kurulumunda üçüncü,
+ayrı bir sorun** çıktı: yeni test yalnızca 2 sahte kayıt kullanıyordu.
+Tam (860 testlik, GERÇEKTEN çalan) sayfada uygulamanın kendi "ses boş
+kaldı" bekçisi bu 2 kaydı test penceresinde gerçekten tüketebiliyordu
+-- `modHavuzOnizle()`'nin (yukarıdaki 1. madde) kasıtlı "torba sınırını
+aşma" reddi bu durumda haklı olarak boş dönüyordu, test de düşüyordu.
+Ürün kodunda hata yoktu, testin havuzu gerçekçi olmayacak kadar
+küçüktü. **Düzeltme:** sahte kayıt sayısı 10'a çıkarıldı.
+
+pj *"sen biseylerin ustunu mu ortuyorsun... herşey %100 olmalı"*
+dedi -- bu yüzden tüm süreç şeffaf tutuldu ve düzeltmeler bitince tam
+takım yeniden çalıştırıldı: **saglik.js 860/860, ariza.js 18/18,
+senaryo.js 121/121 -- hepsi temiz.** Ara denemelerde (düzeltmeler
+tamamlanmadan önce) favoriler paneli ve yıldız-haritası gibi bugünkü
+değişikliklerle ilgisiz birkaç test ara sıra düştü -- bunlar dosyada
+zaten "CI'da bazen kararsız" diye NOT edilmiş, zamanlamaya bağlı
+testler (bkz. favoriler test bloğunun kendi yorumu); son temiz koşuda
+hepsi geçti, tekrar dokunulmadı.
+
+Değişen dosyalar (bu turda): `index.html` (`modHavuzOnizle` sınır
+düzeltmesi, CSP yeniden üretildi), `test/saglik.js` (test `finally`
+düzeltmesi + sahte kayıt sayısı 2 -> 10).

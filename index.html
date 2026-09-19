@@ -9954,15 +9954,28 @@
      (sirayla, CALINDI/EARTH_KARA elenerek) TUKETMEDEN tekrarliyor --
      _modIdx'e DOKUNMUYOR, mh'yi KARISTIRMIYOR -- boylece onbellekIsit()
      gercekte SIRADA GELECEK kaydi tahmin edip baytlarini ONDEN
-     tarayici onbellegine isitabiliyor (bkz. onbellekIsit). */
+     tarayici onbellegine isitabiliyor (bkz. onbellekIsit).
+     19 EYLUL (ikinci gecis, bagimsiz incelemede bulundu) -- TORBA
+     KIRILIMINI ASMIYOR. earthAl() torba sonuna gelince (_modIdx >=
+     mh.length) mh'yi KARISTIRIP _modIdx'i sifirliyor (bkz. yukarida).
+     Bu fonksiyon o karistirmayi YAPMADIGI icin, torbanin son
+     kaydinin tam ustunde bir onizleme "torbanin eski sirasindaki
+     bir sonraki kayit" derdi -- ama gercek earthAl() o ana gelince
+     torbayi ONCE karistirir, yani gercekte BASKA bir kayit doner.
+     Isitilan url o zaman calmayacak bir url olurdu (yanlis deger
+     degil, sadece bosa harcanan bir indirme -- CALINDI/EARTH_KARA
+     ikisi de url bazli oldugu icin gercek bir hataya yol acmiyordu,
+     ama "gercekte sirada geleni tahmin ediyorum" sozunu tutmuyordu).
+     DUZELTME: torbanin kirildigi noktanin OTESINE hic bakmiyor --
+     mevcut turun bittigi yerde onizleme de biter, doner sayisi n'den
+     az olabilir (onbellekIsit zaten bos/eksik adayi es geciyor). Az
+     isitmak, YANLIS isitmaktan iyi. */
   function modHavuzOnizle(n){
     const mh = modHavuzu();
     if(!mh || !mh.length) return [];
     const sonuc = [];
-    let idx = _modIdx;
-    for(let t=0; t<mh.length && sonuc.length<n; t++){
-      if(idx >= mh.length) idx = 0;
-      const o = mh[idx++];
+    for(let idx=_modIdx; idx<mh.length && sonuc.length<n; idx++){
+      const o = mh[idx];
       if(o && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)) sonuc.push(o);
     }
     return sonuc;
