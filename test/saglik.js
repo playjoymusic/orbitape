@@ -1041,8 +1041,33 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        tam sarmalamasi duzeltmesi (BAYRAK_PAY sabiti + Chromium/WebKit
        measureText farkini anlatan yorum, bkz. "KUTU BAYRAGI TAM
        SARMALIYOR" basligi). Ekrana giden tek sey kutunun genisligi;
-       buyume neredeyse tamamen yorumdan. Ham boy 1268,69 KB. */
-    K('Ham boy < 1272 KB', dosyaBoy < 1272*1024,
+       buyume neredeyse tamamen yorumdan. Ham boy 1268,69 KB.
+       19 EYLUL: 1272 -> 1276. Arsiv "durdu" (_arsivDurdu) durumuna
+       ragmen ag'a yeni istek atabilen DORT AYRI sizinti kapatildi:
+       (1) onbellekIsit()'in hazirla() bitis blogundan ve basarili
+       cal() sonrasindan da cagrilabilmesi -- artik fonksiyonun en
+       basinda tek kontrol noktasi var. (2-3) ses 'error'
+       dinleyicisindeki "bir kere tekrar dene" mekanizmasinin iki ayri
+       yaris penceresi (giris aninda ve 1200ms bekleme sonunda). (4)
+       EN SON BULUNAN, en sinsi olani: oynat()'in play() sozu
+       reddedilince calisan "crossOrigin birak, tekrar yukle" dalı --
+       'error' OLAYINDAN TAMAMEN BAGIMSIZ bir ikinci yol, ilk uc
+       duzeltmeden SONRA bile test/ariza.js'i CI'da (yerelde degil)
+       ara sira kirmizi yapmaya devam etti. /tmp/leak_debug.js ile
+       konan izler bu dorduncu yolu once yerinde yakaladi (arsivDurdur
+       cagrildiktan ~300ms sonra, retry zamanlayicisinin KENDI
+       korumasi dogru calismisken bile ag sekmesinde ayni url'e yeni
+       istek cikiyordu). AYRI bir BULGU: test/ariza.js ucuncu bir
+       liste dosyasini (earth_giris.json -- moodUygula() ARSIV'e
+       girer girmez ONCE onu cekiyor) hic mocklamiyordu, yani senaryo
+       gercek depodaki 700 gercek archive.org kaydiyla karisiyordu --
+       bu da test/ariza.js'te ayrica duzeltildi (kendi Kural 4
+       yorumuyla, dosyanin basinda). Butun bu duzeltmeler dogrulanirken
+       ayni senaryo 8 kez ust uste temiz cikti (oncesinde ayni kosu
+       arada bir kirmizi cikiyordu). Ekrana giden hicbir sey degismedi,
+       yalnizca durmus arsivin gercekten durmasi saglamlastirildi. Ham
+       boy 1273,95 KB. */
+    K('Ham boy < 1276 KB', dosyaBoy < 1276*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }

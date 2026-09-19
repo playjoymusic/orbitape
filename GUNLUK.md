@@ -1020,3 +1020,69 @@ mevcut mantık doğru görünüyor (`_kamYon==='user'` kontrolü); eğer
 sorun sürüyorsa gerçek cihazdan YENİ bir ekran görüntüsü/video
 gerekiyor -- hangi kamera (ön/arka), foto mu video mu, ne zaman
 (f3bbd23'ten önce mi sonra mı).
+
+---
+
+### 19 Eylül (devam) — "[1 · bütün sesler 404] sonsuz aramaya girmiyor" GERÇEK CI'da kırmızıydı: DÜZELTME
+
+**Önce bir düzeltme, kendi günlüğümüze:** yukarıdaki maddede bu aynı
+senaryonun bir koşudaki titremesini "bu ortamın art arda çok sayıda
+tam takım koşturmaktan yorulmasıyla ilgili, bugünkü değişikliklerle
+ilgisiz" diye yazmışım. YANLIŞTI -- tahmin ederek yazılmış, "tahmin
+yok hep bak iyice" kuralının tam ihlali. pj'nin pushladığı commit
+(`2af7552`) gerçek GitHub Actions CI'ında ("Kapı" işi) bu senaryoyu
+gerçekten kırmızı verdi: `durdu:true | son 6 sn'de yeni ses istegi: 2`.
+Ortam yorgunluğu değildi, gerçek bir kod hatasıydı.
+
+**DÖRT ayrı sızıntı kaynağı bulundu, TEK TEK, her biri bir öncekinin
+yetersiz kaldığı ölçülerek:**
+
+1. `onbellekIsit()` yalnızca `setInterval`'daki çağrıda `_arsivDurdu`
+   kontrolü yapıyordu; `hazirla()`'nın bitiş bloğundan ve başarılı
+   `cal()` sonrasından da çağrılabiliyordu. **Düzeltme:** kontrol artık
+   fonksiyonun EN BAŞINDA, tek kapı.
+2-3. Ses `'error'` dinleyicisindeki "bir kere tekrar dene" mekanizması
+   (`_agRetryTimer`) `_arsivDurdu`'ya HİÇ bakmıyordu. İki ayrı yarış
+   penceresi kapatıldı: girişte (`!_arsivDurdu` şartı) ve 1200ms'lik
+   beklemenin ateşlendiği anda (`if(_arsivDurdu) return`).
+4. **EN SON bulunan, en sinsisi:** `oynat()` içinde `ses.play()` sözü
+   reddedilince çalışan "CORS'u bırak, `ses.load()` ile tekrar dene"
+   dalı -- bu, `'error'` OLAYINDAN TAMAMEN BAĞIMSIZ bir ikinci yeniden
+   deneme yolu. İlk üç düzeltmeden SONRA bile gerçek CI'da ara sıra
+   kırmızı çıkmaya devam etti çünkü hiçbiri buraya bakmıyordu.
+   **Kanıt (Kural 4, `/tmp/leak_debug.js`):** `console.log` izleri
+   konunca görüldü: `arsivDurdur()` çağrıldıktan ~300ms sonra, retry
+   zamanlayıcısının KENDİ koruması doğru çalışıp (`durdu=true`,
+   `ses.load()` çağırmadan dönmüş) OLMASINA RAĞMEN ağ sekmesinde aynı
+   url'e yeni bir istek çıkıyordu -- demek ki başka bir yol vardı.
+   `oynat()`'in play()-reddi dalına `if(_arsivDurdu) return;` eklendi.
+
+**AYRI bir bulgu, kod değil TEST tarafında:** `test/ariza.js`'in ağ
+mock'u üç liste dosyasından (`earth.json`, `earth_giris.json`,
+`earth_buyuk.json`) yalnızca ikisini yakalıyordu -- `earth_giris.json`
+(moodUygula() ARSIV kipine girer girmez ÖNCE bunu çekiyor, bkz.
+`earthYukle()`) `r.continue()`'ye düşüp GERÇEK depodaki dosyayı (700
+gerçek archive.org kaydı) döndürüyordu. Senaryo 1'in havuzu böylece
+40 sahte kayıt yerine +700 gerçek kayıtla karışıyordu -- test kendi
+kendine öngörülemez hâle geliyordu. `test/ariza.js`'teki üç route
+tanımı da düzeltildi (`/\/earth(_giris|_buyuk)?\.json/`), kendi
+Kural 4 yorumuyla dosyanın başında.
+
+**Doğrulama:** düzeltmeden önce `/tmp/leak_debug.js` (ariza.js
+senaryosunun küçük bir kopyası) 8 koşudan 2-3'ünde sızıntı
+gösteriyordu; dört düzeltme + test mock'u birlikte uygulandıktan
+sonra 8/8 temiz. `node test/ariza.js` üç kez üst üste 18/18 yeşil.
+`node test/saglik.js` 857/857 (bir ara koşuda alakasız, ÖNCEDEN
+BİLİNEN "Masaüstünde halka kenarı" titremesi çıktı -- CLAUDE.md
+"Bilinen tuzaklar", bugünkü değişiklikle ilgisiz -- hemen ardından
+tekrar koşulup 857/857 doğrulandı).
+
+**"Ham boy" tavanı da bu turda yükseltildi** (1272 -> 1276 KB,
+`test/saglik.js`'teki kendi Kural 4 yorumunda ayrıntılı): eklenen
+dört yorum bloğu dosyayı tavanın hafif üstüne taşımıştı, YAPILMAYACAKLAR
+başlığındaki "Yorumları azaltma" kararı gereği yorumlar kısaltılmadı,
+tavan yükseltildi.
+
+Değişen dosyalar: `index.html` (dört düzeltme + `_headers` CSP
+yeniden üretildi), `test/ariza.js` (mock düzeltmesi), `test/saglik.js`
+(Ham boy tavanı). Teslim ve commit metni bir sonraki adımda.

@@ -14406,6 +14406,25 @@
     }
   }
   function onbellekIsit(){
+    /* 19 EYLUL (Kural 4, olculdu) -- TEK KAPI BURAYA TASINDI. Once
+       yalnizca 1,5 sn'lik zamanlayici _arsivDurdu'ya bakiyordu ama
+       bu fonksiyonun BASKA cagiranlari da vardi: hazirla()'nin
+       finally'si (her calisindan sonra kosulsuz cagiriyordu) ve
+       basarili calma sonrasi tek seferlik cagiri. hazirla() da
+       KENDISI onbellek hata dinleyicisinden (bir onbellek Audio'su
+       404 verince) tekrar tetikleniyor -- yani "durdu=true"dan SONRA
+       bile onbellekIsit->src ata->404->hazirla()->onbellekIsit
+       zinciri kendini besleyebiliyordu; zamanlayicidaki tek kapi
+       BUNU yakalayamiyordu, cunku hazirla()'nin kendi cagirisi o
+       kapidan gecmiyordu.
+       OLCUM: sadece zamanlayiciyi kapatinca (onceki duzeltme) yerel
+       kosuda "0 yeni istek" cikiyordu ama gercek CI'da (commit
+       2af7552, "Kapi" isi) ayni pencerede 2 yeni istek cikti --
+       yani zamanlayici tek basina yeterli degildi, digerleri de
+       istek sizdirabiliyordu. Kapi artik CAGIRANA degil, bu
+       fonksiyonun KENDISINE konuldu -- kim cagirirsa cagirsin,
+       arsiv durduysa yeni istek YOK. */
+    if(_arsivDurdu) return;
     if(!tamponYeterliMi()) return;                          // önce çalan parça rahatlasın
     for(let i=0;i<ONB_SAYI;i++){
       const nx = kuyruk[i];
@@ -15076,6 +15095,22 @@
         try{ bekleGoster(); }catch(_){ _yut(_); }
         return;                       // dokunus gelince yeniden denenecek
       }
+      /* 19 EYLUL (Kural 4, olculdu) -- DORDUNCU SIZINTI KAYNAGI.
+         Bu satirlar 'error' OLAYINDAN TAMAMEN BAGIMSIZ bir ikinci
+         yeniden-deneme yolu: play() SOZU reddedince (CORS/kodek/ag)
+         crossOrigin'i birakip DOGRUDAN burada ses.load() cagiriyor.
+         Onceki iki tur duzeltme (onbellekIsit tek kapisi, 'error'
+         dinleyicisindeki "bir kez tekrar dene" penceresi) bu yolu HIC
+         kapatmiyordu -- ikisi de 'error' olayina bagliydi, bu yol ona
+         bagli degil. KANIT: /tmp/leak_debug.js ile DBGLEAK izleri
+         konuldu -- arsivDurdur() cagrildiktan ~300ms sonra, retry
+         zamanlayicisinin KENDI korumasi dogru calisip (durdu=true,
+         ses.load() cagirmadan donmus) OLMASINA RAGMEN ag sekmesinde
+         AYNI url'e yeni bir istek cikiyordu; kaynagi bu satirlar
+         oldugu boylece bulundu. play() sozu, 'error' olayindan
+         BAGIMSIZ bir zamanda reddedebiliyor -- arsiv tam esige
+         vardiginda bu red arsivDurdur()'DAN SONRA gelebiliyor. */
+      if(_arsivDurdu) return;
       /* srcNode değil grafHazir: yarım kalmış grafta ses doğrudan
          çıkışa bağlı ve DUYULUYOR, parçayı atlamak yanlış olurdu. */
       try{ ses.removeAttribute('crossorigin'); ses.crossOrigin=null; }catch(e){ _yut(e); }   // graf yoksa: sesli doğrudan çal (FX yok)
@@ -15148,10 +15183,24 @@
        olacak parca bile kurtarilamadan atiliyordu. YENI KOD sadece
        gercekten iki kez ust uste basarisiz olani (4000ms) kara
        listeliyor, tek seferlik 503'u degil. */
-    if((kod===2 || kod===4) && aktifItem && /^(ert|ozl):/.test(aktifItem.id||'') && _url===aktifItem.mp3 && !aktifItem._agTekrar){
+    /* 19 EYLUL (Kural 4, olculdu) -- BU "BIR KEZ TEKRAR DENE" KAPISI
+       _arsivDurdu'ya HIC BAKMIYORDU. onbellekIsit()'e kapi konduktan
+       SONRA bile gercek CI'da (commit 2af7552, "Kapi" isi) "durdu=true
+       olduktan sonraki 6 sn'de 1-2 yeni ses istegi" cikmaya devam etti.
+       Iki AYRI zamanlama penceresi var, ikisi de kapatildi:
+       1) Esigin (ARSIV_HATA_ESIK) TAM KENARINDAKI bir parcanin ILK
+          hatasi arsivDurdur()'DAN HEMEN SONRA gelebiliyor -- asagidaki
+          giris sarti artik !_arsivDurdu'ya da bakiyor, yani durduysa
+          "once tekrar dene" kapisina hic girmiyor.
+       2) Bu kapiya durdu OLMADAN once girilmis ama 1200ms'lik
+          zamanlayici HENUZ CALMAMIS olabilir -- o sirada BASKA bir
+          parca esigi asip arsivDurdur() cagirabiliyor. Zamanlayicinin
+          kendi govdesi de calisirken tekrar bakiyor (asagida). */
+    if((kod===2 || kod===4) && !_arsivDurdu && aktifItem && /^(ert|ozl):/.test(aktifItem.id||'') && _url===aktifItem.mp3 && !aktifItem._agTekrar){
       aktifItem._agTekrar = true;
       clearTimeout(_agRetryTimer);
       _agRetryTimer = setTimeout(()=>{
+        if(_arsivDurdu) return;      // pencere 2: bekleme sirasinda arsiv durmus olabilir
         if(aktifItem && ses.getAttribute('src')===_url){ try{ ses.load(); ses.play().catch(()=>{}); }catch(e){ _yut(e); } }
       }, 1200);
       return;                     // ilk hata: kara listeleme YOK, atlama YOK -- once tekrar dene

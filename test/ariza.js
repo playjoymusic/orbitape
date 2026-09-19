@@ -62,11 +62,23 @@ async function ac(tarayici, ses, secenek){
   await p.route('**/*', async r=>{
     const u = r.request().url();
     if(u.startsWith(KOK)){
-      /* Listeler: senaryoya gore dolu ya da bos. */
+      /* Listeler: senaryoya gore dolu ya da bos.
+         19 EYLUL (Kural 4, olculdu) -- EARTH_GIRIS UNUTULMUSTU. Uc
+         liste var (earth.json, earth_giris.json, earth_buyuk.json)
+         ama bu duzen yalnizca ikisini yakaliyordu; earth_giris.json
+         (moodUygula() ARSIV'e girer girmez ONCE bunu cekiyor) buradan
+         r.continue()'ya duserek GERCEK depodaki dosyayi (700 gercek
+         archive.org kaydi) donduruyordu. Sonuc: senaryo 1'in havuzu
+         40 sahte kayit degil, +700 gercek kayitla karisikti -- test
+         BAZEN gercek bir archive.org url'i sectikten dakikalar sonra
+         kendi 404 mock'una carpiyor, ariza senaryosunu ongorulemez
+         kiliyordu. KANIT: /tmp/leak_debug.js ile bu liste de sahte
+         veriyle mocklanip ayni senaryo 8 kez ust uste temiz cikti
+         (oncesinde ayni kosu arada bir kirmizi cikiyordu). */
       if(/\/radyo\.json/.test(u))
         return r.fulfill({status:200, contentType:'application/json',
           body: JSON.stringify(se.liste ? RADYO : [])});
-      if(/\/earth(_buyuk)?\.json/.test(u))
+      if(/\/earth(_giris|_buyuk)?\.json/.test(u))
         return r.fulfill({status:200, contentType:'application/json',
           body: JSON.stringify(se.liste ? ARSIV : [])});
       return r.continue();
@@ -251,7 +263,7 @@ async function ekran(p){
       if(u.startsWith(KOK)){
         if(/\/radyo\.json/.test(u)) return r.fulfill({status:200,
           contentType:'application/json', body:JSON.stringify(RADYO)});
-        if(/\/earth(_buyuk)?\.json/.test(u)) return r.fulfill({status:200,
+        if(/\/earth(_giris|_buyuk)?\.json/.test(u)) return r.fulfill({status:200,
           contentType:'application/json', body:JSON.stringify(ARSIV)});
         return r.continue();
       }
@@ -322,7 +334,7 @@ async function ekran(p){
       if(u.startsWith(KOK)){
         if(/\/radyo\.json/.test(u)) return r.fulfill({status:200,
           contentType:'application/json', body:JSON.stringify(RADYO)});
-        if(/\/earth(_buyuk)?\.json/.test(u)) return r.fulfill({status:200,
+        if(/\/earth(_giris|_buyuk)?\.json/.test(u)) return r.fulfill({status:200,
           contentType:'application/json', body:JSON.stringify(ARSIV)});
         return r.continue();
       }
