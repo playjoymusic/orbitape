@@ -1085,4 +1085,19 @@ tavan yükseltildi.
 
 Değişen dosyalar: `index.html` (dört düzeltme + `_headers` CSP
 yeniden üretildi), `test/ariza.js` (mock düzeltmesi), `test/saglik.js`
-(Ham boy tavanı). Teslim ve commit metni bir sonraki adımda.
+(Ham boy tavanı). Teslim: cihaza yazıldı, hash'ler eşleşti, commit
+metni pj'ye verildi (Kural 8b).
+
+**SONUÇ, gerçek CI'da doğrulandı:** pj pushladı (`93dc97b`). Bu iki
+işten önceki son İKİ push (`f6e4795`, `2af7552`) "Sağlık kontrolü"nde
+yeşil ama "Yayin (testler yesilse)"de KIRMIZI kalmıştı -- ikisi de
+gerçekte hiç canlıya çıkmamış demek, çünkü Yayin'in "Kapı" adımı
+`araclar/kontrol.sh` üzerinden `ariza.js`'i de çalıştırıyor, Sağlık
+kontrolü çalıştırmıyor (`saglik.yml`'de yalnızca saglik.js + motor
+denkliği var). `93dc97b` ile "Yayin (testler yesilse) #217" YEŞİLE
+DÖNDÜ -- Kapı geçti, Wrangler yayınladı, yayın sonrası canlı duman
+testi de geçti. Yani bu turun düzeltmesi yalnızca yerel ölçümle değil,
+gerçek yayın hattında da doğrulanmış oldu. (O sırada "Sağlık kontrolü
+#460" ayrı bir koşuda alakasız, ÖNCEDEN BİLİNEN masaüstü halka-kenarı
+titremesiyle kırmızı çıktı -- bağımsız bir test koşusu, bizim
+değişikliğimizle ilgisi yok.)
