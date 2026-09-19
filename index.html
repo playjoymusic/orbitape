@@ -14419,7 +14419,17 @@
   // çalan parça takılırsa arka plan indirmesini derhal kes; toparlayınca tekrar dene
   ses.addEventListener('waiting', onbellekDurdur);
   ses.addEventListener('stalled', onbellekDurdur);
-  setInterval(()=>{ if(tamponYeterliMi()) onbellekIsit(); }, 1500);   // uygun zamanda sessizce ısıt
+  /* 19 EYLUL (Kural 4, olculdu) -- BU ZAMANLAYICI _arsivDurdu'ya
+     BAKMIYORDU. Uygulama "NOTHING WOULD PLAY" deyip ana arama
+     dongusunu (atla/sonraki) durdurduktan SONRA bile, bu 1,5 sn'lik
+     isitma araligi kuyruktaki bir sonraki adayi sessizce indirmeye
+     calismaya devam ediyordu -- yani "sonsuz arama girmiyor" sozu tam
+     dogru degildi, arka planda hala TEK bir kanaldan istek sizabiliyordu.
+     OLCUM: test/ariza.js senaryo 1 (butun sesler 404) -- durdu=true
+     olduktan sonraki 6 sn'de 1 yeni ses istegi cikiyordu (37 denemenin
+     sonuncusu, esik gecildikten sonra). Asagidaki kapiyla DUZELTMEDEN
+     SONRA ayni pencerede 0 yeni istek. */
+  setInterval(()=>{ if(!_arsivDurdu && tamponYeterliMi()) onbellekIsit(); }, 1500);   // uygun zamanda sessizce ısıt
 
   // ── frekans arama sesi: yumuşak ANALOG synth tonu (cutoff baya kapalı VCF), "tı—tı—tı" 3 ton -> bekle -> tekrar ──
   let aramaCalisyor=false, aramaTimer=null, aramaLoop=null;
@@ -15382,15 +15392,58 @@
      grafiği kuruyor ve ses kesiliyor. Bağlanan medya elemanı geri alınamadığı
      için (spec) tek çare bu istasyonları kuyruğa HİÇ almamak.
      Test 'cors' kipinde: başlık yoksa fetch REDDEDİLİR, cevabı beklemeye
-     gerek kalmaz. Hepsi tek turda paralel ve 1.1 sn ile sınırlı -> çalma
-     anına gecikme eklemiyor, kuyruk dolarken arkada bitiyor. */
+     gerek kalmaz. Hepsi tek turda paralel -> çalma anına gecikme eklemiyor,
+     kuyruk dolarken arkada bitiyor.
+
+     19 EYLÜL — BÜTÇE SABİTTİ, KAPIYI KİLİTLİYORDU (Kural 4, ölçüldü).
+     Bütçe eskiden yalnızca `1100*AG_KAT` idi ve AG_KAT iPhone'da HİÇBİR
+     ZAMAN 1'den yükselmiyor (navigator.connection yok, bkz. fetchZA
+     başındaki not). Yani yavaş ama ÇALIŞAN bir hatta (zayıf LTE, kalabalık
+     otel wifi'ı) her istasyon bu 1,1 sn'yi aşıyor, `gecti[k]` hep false
+     kalıyor, `ekle` hiç artmıyor, `basari('radyo')` hiç çağrılmıyor —
+     ve bu, "#agyok" panelini kapatan TEK istasyon-kaynaklı yoldu. Panel
+     bir kez açılınca (bkz. satır ~21105 `if(!ilk) agYokAc()`) yalnızca
+     gerçek bir çalma, arşiv listesinin ayrı yoldan gelmesi, sekme
+     görünürlük/online olayı ya da elle "TEKRAR DENE" onu kapatabiliyordu
+     — veri sonunda gelse bile DEĞİL.
+     KANIT (temiz izolasyon -- ilk ölçümde bir yan yol karışmıştı, bkz.
+     aşağı): beyaz liste (radyo.json) ve AMBIANCE havuzu (earth_buyuk.json)
+     BOŞ döndürülüp yalnızca radio-browser + sahte.test istasyon yolu
+     bırakıldı, üstüne her isteğe 1500ms'lik saf bir zamanlama gecikmesi
+     bindirildi (`sahteAg` DEĞİŞTİRİLMEDEN). Düzeltmeden ÖNCE: panel
+     t≈2,5sn'de açılıyor, t=16sn'nin sonunda hâlâ açık (istasyon kontrolü
+     her denemede aynı 1,1 sn'de düşüyor). Düzeltmeden SONRA: ilk deneme
+     yine 1,1 sn'de düşüp AG_OLCUM'u 1,5'e çıkarıyor, boot IIFE'nin
+     sonunda zaten tetiklenen arka plan denemesi (radyoKuyrukDoldur)
+     1,65 sn'lik yeni bütçeyle 1500ms'lik gecikmeyi aşıyor, basari('radyo')
+     çağrılıyor ve panel t≈5,6sn'de kapanıp kapalı kalıyor.
+     İLK ÖLÇÜMDE YANLIŞ SİNYAL: earth_buyuk.json'ı ayıklamadan yapılan
+     ilk denemede panel AYNI ZAMANLA (t≈5sn) kapanıyor gibi göründü ama
+     bu yanıltıcıydı — uzunYukle() (AMBIANCE havuzu, AYAR.mood'dan
+     BAĞIMSIZ, arka planda %ihtimalle tetikleniyor) aynı anda kendi
+     başarılı isteğiyle basari('uzun') çağırıp paneli kapatıyordu; bu
+     yol düzeltmeyle ilgisiz ve şansa bağlı. Yukarıdaki temiz ölçüm bu
+     yan yolu da kapatarak yalnızca corsVarMi/AG_OLCUM etkisini izole
+     ediyor (bkz. test/saglik.js "Yavas ama calisan hatta..." kontrolü).
+     DÜZELTME: corsVarMi artık fetchZA'nın zaten kullandığı AG_OLCUM
+     (uyarlanabilir yavaşlık çarpanı, tavan 2,5) çarpanını da kullanıyor
+     VE kendi zaman aşımı da AG_OLCUM'u besliyor — böylece istasyon
+     kontrolü, uygulamanın geri kalanıyla AYNI "hat yavaş" öğrenmesini
+     paylaşıyor, artık tek başına sabit ve kör değil. */
   async function corsVarMi(u){
     try{
       const kontrol = new AbortController();
-      const zamanlayici = setTimeout(()=>{ try{ kontrol.abort(); }catch(_){ _yut(_); } }, Math.round(1100*AG_KAT));
+      const sure = Math.round(1100*AG_KAT*AG_OLCUM);
+      const t0 = Date.now();
+      const zamanlayici = setTimeout(()=>{
+        try{ if(AG_OLCUM < OLCUM_TAVAN) AG_OLCUM = Math.min(OLCUM_TAVAN, AG_OLCUM + 0.5); }catch(_){ _yut(_); }
+        try{ kontrol.abort(); }catch(_){ _yut(_); }
+      }, sure);
       const r = await fetch(u, { method:'GET', mode:'cors', signal:kontrol.signal,
                                  headers:{ 'Range':'bytes=0-1' }, cache:'no-store' });
       clearTimeout(zamanlayici);
+      // Cabuk cevap: hat toparlandi, butceyi geri indir (fetchZA ile ayni kural).
+      if(AG_OLCUM > 1 && (Date.now() - t0) < sure * 0.3) AG_OLCUM = Math.max(1, AG_OLCUM - 0.25);
       try{ if(r.body && r.body.cancel) r.body.cancel(); }catch(_){ _yut(_); }   // akışı hemen bırak
       return true;
     }catch(e){ return false; }

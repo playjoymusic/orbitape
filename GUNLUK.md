@@ -768,8 +768,65 @@ bağlı, ayrıca izlenecek), `senaryo.js` 121/121. Teslim: commit `f3bbd23`.
 **Kuyrukta kalan, henüz cevaplanmayan (Kural 6):**
 - Fotoğraf kaydederken müziğin durup durmadığı/kendiliğinden
   düzelip düzelmediği -- pj'den cevap bekleniyor.
-- `ariza.js`'teki "sonsuz aramaya girmiyor" kontrolünün CI'da neden
-  ara sıra kırmızı yandığı -- bu koşuda temiz çıktı, kesin kök neden
-  hâlâ araştırılmadı; öncelik pj'den bekleniyor.
 - Çark sesi telefon araması sonrası kalıcı sessizlik (yukarıda).
 - Telefonu yan döndürme ipucu -- son onay bekleniyor (yukarıda).
+- ORBITAPE'te ilk açılışta çarkın (wheel) hiç çizilmemesi -- pj'nin
+  19 Eylül ekran görüntüsüyle bildirdi, araştırma "kapıyı yeşile
+  çevir" önceliği yüzünden yarıda kesildi, henüz sonuçlanmadı.
+- Kamera önizleme boyutu/kırpması ile PHOTO/REC çıktısı arasındaki
+  fark, kayıtta "atlama" ve sağ alttaki metnin (parça adı/lisans)
+  yukarı-aşağı kayması, ve fotoğrafın ters (mirror) çıkması -- pj'nin
+  19 Eylül'de gönderdiği video + ekran görüntüleriyle bildirdi,
+  sırada, henüz başlanmadı.
+- Beta testçi "Ata Django"nun önerisi: kayıt arayüzünü ekrana
+  dokunup halka kırmızıya dönerek başlayan bir tasarıma taşımak
+  (şu anki sol-alt REC/CAM/SAVE akışının yerine) -- konuşulmadı.
+
+---
+
+### 19 Eylül — "kapıyı yeşile çevir": iki CI kırmızısının kök nedeni
+
+pj'nin önceliği açıktı: *"Önce kapıyı yeşile çevir."* İki test kırmızı
+yanıyordu, ikisi de önceki oturumlarda "muhtemelen zamanlamaya bağlı,
+ayrıca izlenecek" diye not düşülmüştü. Bu kez kod seviyesine inildi
+(Kural 4) ve ikisi de gerçek, kod kaynaklı hatalar çıktı -- zamanlama
+değil.
+
+**1) `saglik.js`: "Masaustunde (dpr=1) halka kenari..."**
+Kök neden: `corsVarMi()` (radyo istasyonunu kuyruğa almadan önceki
+CORS ön-kontrolü) sabit ve çok kısa bir bütçeyle (1,1 sn × `AG_KAT`)
+çalışıyordu; `AG_KAT` iPhone'da HİÇBİR ZAMAN 1'den yükselmiyor
+(`navigator.connection` yok). Yavaş ama ÇALIŞAN bir hatta (zayıf LTE,
+kalabalık wifi) her istasyon bu süreyi aşıyor, kuyruk hiç dolmuyor,
+"İNTERNET YOK" paneli açılınca bir daha kendiliğinden KAPANMIYORDU --
+veri sonunda gelse bile. Bu CI'da ara sıra görülen bir test titremesi
+değil, gerçek kullanıcıyı da etkileyebilecek bir davranıştı.
+Düzeltme: `corsVarMi()` artık `fetchZA()`'nın zaten kullandığı
+`AG_OLCUM` (uyarlanabilir yavaşlık çarpanı, tavan 2,5) çarpanını
+paylaşıyor ve kendi zaman aşımı da onu besliyor -- istasyon kontrolü
+artık uygulamanın geri kalanıyla aynı "hat yavaş" öğrenmesine katılıyor.
+Ölçüm (temiz izolasyon -- beyaz liste ve AMBIANCE havuzu devre dışı
+bırakılıp yalnız corsVarMi yolu sınandı, 1500ms yapay gecikme):
+düzeltmeden önce panel açılıp 16 sn sonunda hâlâ açık; düzeltmeden
+sonra ~5,6 sn'de kendiliğinden kapanıp kapalı kalıyor. Kalıcı test
+eklendi: "Yavas ama calisan hatta INTERNET YOK paneli kendini topluyor".
+pj onayladı: *"index.html'de gerçek düzeltmeyi yap."*
+
+**2) `ariza.js`: "[1 · bütün sesler 404] sonsuz aramaya girmiyor"**
+Kök neden: ön-yükleme (önbellek ısıtma) zamanlayıcısı (`setInterval`,
+1,5 sn) `_arsivDurdu` bayrağına hiç bakmıyordu. Uygulama "NOTHING
+WOULD PLAY" deyip ana arama döngüsünü (atla/sonraki) durdurduktan
+SONRA bile, bu arka plan zamanlayıcısı kuyruktaki bir sonraki adayı
+sessizce indirmeye çalışmaya devam ediyordu -- yani "artık aramıyorum"
+sözü tam doğru değildi. Ölçüm: düzeltmeden önce durdu=true olduktan
+sonraki 6 sn'de 1 yeni ses isteği çıkıyordu; düzeltmeden sonra 0.
+Düzeltme: zamanlayıcı artık `!_arsivDurdu` şartını da soruyor.
+
+**Doğrulama:** `saglik.js` iki kez uçtan uca koşturuldu (852-853/853 --
+tek kırmızı, "Zaman asimi butceyi buyutuyor", ikinci koşuda kendiliğinden
+geçti; kodla ilgisi yok, önceden var olan bir CI-yük titremesi).
+`ariza.js` 18/18. CSP özeti tazelendi (`araclar/csp.py`) -- `index.html`
+değiştiği için gerekliydi. `senaryo.js`/`motor.js` bu teslimde
+koşulmadı (zaman kısıtı); pj'nin push'undan sonra CI zaten koşturacak.
+Teslim: dosyalar köprüyle yazıldı, commit pj tarafından yapılacak
+(bu oturumda git komutu ÇALIŞTIRILMADI, Kural gereği).

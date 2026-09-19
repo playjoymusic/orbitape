@@ -14559,6 +14559,81 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
              + (masaustuHalka.deneme > 1 ? (', ' + masaustuHalka.deneme + '. denemede') : '')
              + (masaustuHalka.panelAcikKaldi ? ' -- INTERNET YOK/hata paneli disk uzerinde acik kaldi' : '')));
       }
+      /* ── YAVAS AMA CALISAN HATTA "INTERNET YOK" PANELI KENDINI
+         TOPLUYOR MU (19 Eylul, Kural 4) ──────────────────────────
+         Yukaridaki halka-kenari testinin CI'da ara sira dusmesinin
+         GERCEK nedeni buradaydi: panel bir kez acilinca hicbir sekilde
+         kapanmiyordu, ne kadar beklenirse beklensin. KOK: corsVarMi()
+         (istasyonu kuyruga almadan once yapilan CORS on-kontrolu) sabit
+         ve cok kisa bir butceyle (1,1 sn * AG_KAT) calisiyordu; AG_KAT
+         iPhone'da HICBIR ZAMAN 1'den yukselmiyor (navigator.connection
+         yok). Yani yavas ama CALISAN bir hatta (zayif LTE, kalabalik
+         wifi) her istasyon bu sureyi asiyor, kuyruk hic dolmuyor,
+         basari('radyo') hic cagirilmiyor -- panelin tek istasyon-
+         kaynakli kapanma yolu bu.
+         TEMIZ IZOLASYON GEREKLI: beyaz liste (radyo.json) GERCEK dis
+         adresler tasiyor -- sahteAg onlari r.abort() ile eliyor, bu da
+         "yavas ama calisiyor" senaryosunu HEMEN "hic calismiyor"a
+         donusturup yanlis sey olcerdi. AMBIANCE havuzu (earth_buyuk.json)
+         de AYAR.mood'dan BAGIMSIZ, arka planda %ihtimalle yukleniyor
+         (bkz. uzunYukle/UZUN_ORAN) ve basari('uzun') cagirip paneli
+         corsVarMi ile ILGISIZ bir sekilde kapatabiliyor -- ilk olcumde
+         tam bu sansa carpilip yanlis sonuc alindi. Asagida ikisi de BOS
+         donduruluyor ki yalniz radio-browser + sahte.test istasyon yolu
+         (corsVarMi'nin gercekten calistigi yer) olculsun.
+         OLCUM (once/sonra, ayni sahte ag + yalniz zamanlama gecikmesi
+         eklenerek -- istekler AYNI sekilde basarili donuyor, yalniz gec):
+         1500ms gecikmede DUZELTMEDEN ONCE panel t~2,5sn'de aciliyor ve
+         16 sn'nin sonunda hala acik (AG_OLCUM hic yukselmiyor, her
+         deneme ayni 1,1 sn'de dusuyordu); DUZELTMEDEN SONRA ilk deneme
+         yine 1,1 sn'de dusup AG_OLCUM'u 1,5'e cikariyor, boot IIFE'nin
+         sonunda zaten tetiklenen arka plan denemesi (radyoKuyrukDoldur)
+         1,65 sn'lik yeni butceyle 1500ms'lik gecikmeyi asiyor, basari
+         ('radyo') panel t~5,6sn'de kapanip kapali kaliyor. */
+      {
+        const yavasHatToparlanma = await (async ()=>{
+          let bg = null;
+          try{
+            const GECIKME_MS = 1500;
+            const { sayfa } = await sayfaAc(b, {
+              ekAg: async (sf)=>{
+                // Yan yollar BOS -- yalniz radio-browser + sahte.test
+                // istasyon yolu (corsVarMi) sinaniyor, bkz. yukaridaki not.
+                await sf.route('**/radyo.json',       r=>r.fulfill({status:200, contentType:'application/json', body:'[]'}));
+                await sf.route('**/earth_buyuk.json', r=>r.fulfill({status:200, contentType:'application/json', body:'[]'}));
+                await sf.route('**/earth.json',       r=>r.fulfill({status:200, contentType:'application/json', body:'[]'}));
+                await sf.route('**/*', async r=>{
+                  await new Promise(res=>setTimeout(res, GECIKME_MS));
+                  await r.fallback();
+                });
+              },
+              baglamEk: { viewport:{ width:1440, height:900 }, deviceScaleFactor:1 },
+              bekle: 0,
+            });
+            bg = sayfa;
+            const kapaliSorgu = ()=>{
+              const acik = id => { const el = document.getElementById(id); return !!(el && el.classList.contains('on')); };
+              return !acik('agyok') && !acik('hata');
+            };
+            // Once ilk denemenin basarisiz olup paneli GERCEKTEN ACMASINI
+            // bekle -- yoksa "henuz acilmadi" ile "kapandi" ayirt edilemez
+            // ve test hicbir sey olcmeden gecebilir (once bu hatayi yaptik).
+            let acildi = false;
+            try{ await sayfa.waitForFunction(()=>{
+              const el = document.getElementById('agyok');
+              return !!(el && el.classList.contains('on'));
+            }, { timeout: 8000 }); acildi = true; }catch(e){ acildi = false; }
+            let kapandi = false;
+            try{ await sayfa.waitForFunction(kapaliSorgu, { timeout: 15000 }); kapandi = true; }
+            catch(e){ kapandi = await sayfa.evaluate(kapaliSorgu); }
+            return { acildi, kapandi };
+          }catch(e){ return { hata: String(e && e.message || e) }; }
+          finally { try{ if(bg) await bg.context().close(); }catch(e){} }
+        })();
+        K('Yavas ama calisan hatta INTERNET YOK paneli kendini topluyor',
+           yavasHatToparlanma.acildi === true && yavasHatToparlanma.kapandi === true,
+           yavasHatToparlanma.hata || ('panel acildi=' + yavasHatToparlanma.acildi + ', sonra kapandi=' + yavasHatToparlanma.kapandi));
+      }
       /* ── SKINS: ACAN TUS KAPATAN TUS ────────────────────────────
          Kullanicinin sozu: "HIDE'a basinca skins penceresi
          kapanmiyor; SKINS yazisiyla aciliyor ya, yine SKINS'e
