@@ -709,3 +709,67 @@ pj'ye açıklandı, kod değişikliği yapılmadı.
   bekleniyor.
 - Fotoğraf çekiminde kamera çerçevesinden puslu bir efekt kaydedilen
   fotoğrafa giriyor -- henüz incelenmedi.
+
+## 19 Eylül — fotoğraf: SAVE tuşu kaldırıldı, kamera aynası düzeltildi
+
+pj iki ekran görüntüsü gönderdi: paylaşım sayfasına gelmeden önceki
+foto önizlemesinde çekilen görüntü ters (aynalı) çıkıyordu (bir
+istasyon logosundaki yazı ve tarih tersten okunuyordu), ve iOS paylaşım
+sayfası "fazla" bir adım gibi duruyordu. Onun sözü: *"bence share
+ksımını acınca zaten save files var . o yuzdemn save scenegi var ya
+ilk photo ya basınca. onu kalsdır. ve ters cekim isine de bak."*
+
+**SAVE tuşu kaldırıldı.** 13 Eylül'de `navigator.share`'i atlayıp
+doğrudan cihaza indirmek için eklenmişti (`fotoKaydet()`), ama telefonun
+kendi paylaşım sayfası (SHARE tuşu, `fotoPaylas()`) zaten "Save to
+Files/Photos" seçeneği veriyor -- aynı işi yapan ikinci bir tuş
+fazlaydı. Düğme (`#fotoKaydet`), fonksiyon ve ona ait test (test/saglik.js,
+"SAVE tuşu paylaşım sayfasını atlayıp doğrudan cihaza indiriyor")
+silindi. Tek yol artık SHARE; masaüstünde `canShare` yoksa o da zaten
+aynı doğrudan-indirme dalına düşüyor (değişmedi).
+
+**Kamera aynası düzeltildi.** Kök neden ekrandaki CANLI önizleme ile
+FOTOĞRAF/VİDEO için kullanılan çizim yolunun tutarsız olmasıydı:
+`kamYonYaz()` ekrandaki önizlemeyi doğru şekilde yalnız ön (selfie)
+kamerada aynalıyordu (`#kam.arka` sınıfı arka kamerada aynayı
+kapatıyor), ama hem fotoğraf hem video kaydı için kullanılan TEK
+compositing yolu, `_kayKamera()` (kayit.js), kamera yönüne hiç
+bakmadan HER ZAMAN `kc.scale(-1,1)` uyguluyordu. Arka kamera 17
+Eylül'de varsayılan olunca bu fark görünür hale geldi: ekranda doğru
+duran görüntü, kaydedilen fotoğrafta/videoda ters çıkıyordu. Düzeltme:
+ayna artık yalnızca `_kamYon === 'user'` iken uygulanıyor -- tıpkı
+`#kam.arka`'nın yaptığı gibi. Bu fonksiyon hem fotoğraf hem video kaydı
+tarafından paylaşıldığı için düzeltme ikisini de kapsıyor.
+
+**Ölçüm ve kalıcı test (Kural 4):** Chromium'un sahte kamera cihazı
+(`--use-fake-device-for-media-stream`) düz değil, sol/sağ asimetrik bir
+desen veriyor. Yeni test, ARADA HİÇ BEKLEME KOYMADAN (aynı video
+karesi içinde) hem `'environment'` hem `'user'` yönüyle birer kare
+alıp kamera kutusunun sol/sağ çeyreğinden birer piksel okuyor.
+Düzeltmeden ÖNCE (kasıtlı geri alınıp ölçüldü): iki yön TIPATIP AYNI
+pikseli veriyordu (`aynaliFarkli=0`) -- yani kamera yönünün fotoğrafa
+hiçbir etkisi yoktu, test doğru şekilde kırmızı yandı. Düzeltmeden
+SONRA: `'environment'`in solu `'user'`in sağıyla birebir eşleşiyor
+(`capraz=0/0`, ayna ilişkisi) ve aynı noktada iki yön belirgin şekilde
+farklı çıkıyor (`aynaliFarkli=216`) -- test yeşile döndü.
+
+**Test kapsamı genişletildi:** Bu oturumda daha önce yalnızca
+`saglik.js` koşulduğu, CI'ın ayrıca çalıştırdığı `ariza.js` ve
+`senaryo.js`'nin atlandığı fark edilmişti (pj'nin gönderdiği bir CI
+kırmızısı ekran görüntüsüyle ortaya çıktı -- `ariza.js`'teki "[1 ·
+bütün sesler 404] sonsuz aramaya girmiyor" kontrolü CI'da iki kez
+kırmızı yanmıştı, kod değişikliğimle ilgisiz). Bu teslimde üç dosya da
+koşuldu: `saglik.js` 851/851 (bir kontrol, ilgisiz bir "buyuteç" testi,
+kendi tasarımı gereği "ölçülemedi" diyerek atlandı -- kırmızı değil),
+`ariza.js` 18/18 (daha önce CI'da kırmızı yanan "sonsuz aramaya
+girmiyor" kontrolü bu koşuda temiz çıktı -- muhtemelen zamanlamaya
+bağlı, ayrıca izlenecek), `senaryo.js` 121/121. Teslim: commit `f3bbd23`.
+
+**Kuyrukta kalan, henüz cevaplanmayan (Kural 6):**
+- Fotoğraf kaydederken müziğin durup durmadığı/kendiliğinden
+  düzelip düzelmediği -- pj'den cevap bekleniyor.
+- `ariza.js`'teki "sonsuz aramaya girmiyor" kontrolünün CI'da neden
+  ara sıra kırmızı yandığı -- bu koşuda temiz çıktı, kesin kök neden
+  hâlâ araştırılmadı; öncelik pj'den bekleniyor.
+- Çark sesi telefon araması sonrası kalıcı sessizlik (yukarıda).
+- Telefonu yan döndürme ipucu -- son onay bekleniyor (yukarıda).
