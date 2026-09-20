@@ -699,6 +699,21 @@ durduruluyor (`t.stop()`) -- yani gösterge zaten mümkün olan EN KISA
 sürede çıkıp kayboluyor, kod tarafında yapılabilecek bir şey yok.
 pj'ye açıklandı, kod değişikliği yapılmadı.
 
+## 20 Eylül — beş yeni tablo dili skini
+
+**Kullanıcı karşılığı:** pj, KILIM serisinin ardından yeni beş deri daha
+istedi: "direkt koy", ama bunlar düz renk değil, tablo gibi derin ve
+sanatsal olmalı.
+
+**Yapılan:** `FRESCO`, `NOCTURNE`, `HERBARIUM`, `MOSAIC` ve `LUMEN FIELD`
+sona eklendi. Her birinin hem küçük önizleme madalyonu hem de uygulama
+ekranında kullanılan ayrı bir sahnesi var; belirli bir ressamın ya da
+tablonun kopyası yapılmadı. Deri tablosu append-only kaldı.
+
+**Kontrol:** deri sayısı 138'den 143'e çıktı; ayar, rastgele torba ve radyo
+derisi sınırları 143'e güncellendi. `node test/birim.js` geçti. Tam sağlık
+testi yerel Playwright Chromium eksik olduğu için çalışmadı.
+
 **Kuyruğa alınan, henüz başlanmayan (Kural 6):**
 - Çark sesi telefon araması sonrası kalıcı sessizlik -- pj'den ölçüm
   (Safari uzaktan hata ayıklama) ya da tanılama eklentisi onayı

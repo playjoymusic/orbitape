@@ -6497,6 +6497,21 @@
     {ad:"RAMSHORN",  zem:"#432411", yazi:"#e8d3a8", marka:"#c77a2e", cek:"#5a301a", font:F2, kose:"2px",  cizim:"ramshorn"},
     {ad:"NAZAR",  zem:"#0d1f3d", yazi:"#eef3f7", marka:"#3f9fd6", cek:"#16294f", font:F1, kose:"50%", cizim:"nazar"},
     {ad:"SUNBURST",  zem:"#3a1a10", yazi:"#f2e0b8", marka:"#e8a13c", cek:"#4c2414", font:F2, kose:"50%", cizim:"sunburst"},
+    {ad:"CHROMATIC DRIFT", zem:"#10152a", yazi:"#f2ecdf", marka:"#ff6b5e", cek:"#202a4a", font:F2, kose:"50%", cizim:"chromaticDrift"},
+    {ad:"VEIL", zem:"#e8e1d4", yazi:"#2e2631", marka:"#8e3b5f", cek:"#d4c9bb", font:F2, kose:"50%", cizim:"veil"},
+    {ad:"TIDAL MEMORY", zem:"#071b24", yazi:"#e0f2f0", marka:"#45c6c8", cek:"#103442", font:F1, kose:"50%", cizim:"tidalMemory"},
+    {ad:"GILDED VOID", zem:"#120f16", yazi:"#f1dfb1", marka:"#d9a441", cek:"#201a20", font:F2, kose:"2px", cizim:"gildedVoid"},
+    {ad:"AFTERIMAGE", zem:"#0d1018", yazi:"#e9edf4", marka:"#ff5470", cek:"#1b2230", font:F3, kose:"50%", cizim:"afterimage"},
+     /* ── TABLO DILI SERISI (20 Eylul) ────────────────────────────────
+       Kullanicinin istegi: tablo gibi sanatsal ve derin. Bes yeni deri,
+       belirli bir eseri kopyalamadan fresk, gece resmi, herbaryum,
+       mozaik ve renk alani dillerini kendi kompozisyonlariyla kuruyor.
+       Sona eklendi: eski deri numaralari kaymasin diye append-only. */
+     {ad:"FRESCO", zem:"#34252a", yazi:"#f0dfb7", marka:"#e2b96f", cek:"#563933", font:F2, kose:"2px", cizim:"fresco"},
+     {ad:"NOCTURNE", zem:"#070b18", yazi:"#d9c7a3", marka:"#c58c58", cek:"#172743", font:F2, kose:"50%", cizim:"nocturne"},
+     {ad:"HERBARIUM", zem:"#101d18", yazi:"#e9dfc1", marka:"#c8b56a", cek:"#294632", font:F2, kose:"2px", cizim:"herbarium"},
+     {ad:"MOSAIC", zem:"#82455a", yazi:"#f0dfbf", marka:"#e2bd62", cek:"#a65e55", font:F1, kose:"2px", cizim:"mosaic"},
+     {ad:"LUMEN FIELD", zem:"#0b0a16", yazi:"#e9d7b0", marka:"#e6a45e", cek:"#30234d", font:F2, kose:"50%", cizim:"lumenfield"},
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* ── EKRANDAKI SIRA (tablonun sirasi DEGIL) ──────────────────────
@@ -11475,9 +11490,9 @@
          (126 -> 128) -- sinir de her ikisinde elle guncellendi.
          15 Eylul: KILIM SERISI eklendi, 128 -> 134, sonra ayni gun
          CHEVRON kullanicinin istegiyle cikarildi (hic push edilmemis
-         bir deriydi), 134 -> 133. */
+         bir deriydi), 133 -> 128; yeni besliyle 133 -> 143. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 133) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 143) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
@@ -11512,14 +11527,14 @@
          acilis bir onceki turun KALDIGI yerden devam etsin -- yoksa
          her acilista sifirdan karistirma, bazi deriler hic cikmadan
          torba yeniden dolardi.
-         SINIR 133: satir ~10887'deki (_a.deri <= 133) ile AYNI olmak
+         SINIR 143: satir ~10887'deki (_a.deri <= 143) ile AYNI olmak
          ZORUNDA -- o satirin yorumundaki tuzak burada da gecerli.
          Birim testi ikisini de DERILER.length'e karsi sinar. */
       if(_a.deriRastgele === true) AYAR.deriRastgele = true;
       if(Array.isArray(_a.deriTorba))
-        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 133).map(n=>n|0);
+        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 143).map(n=>n|0);
       if(AYAR.deriRastgele){
-        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(133);
+        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(143);
         AYAR.deri = AYAR.deriTorba.pop();
         /* ── MERKEZ DE BERABER CIRCLE'A DONMELI (15 Eylul) ─────────
            Kullanicinin sozu: "bu sekilde acildiginda circle modu
@@ -11575,7 +11590,7 @@
       if(_a.temaKilit === true) AYAR.temaKilit = true;
       if(_a.deriKilit === true) AYAR.deriKilit = true;
       if(typeof _a.radyoDeri === 'number' && _a.radyoDeri >= 0
-         && _a.radyoDeri <= 133) AYAR.radyoDeri = _a.radyoDeri|0;
+         && _a.radyoDeri <= 143) AYAR.radyoDeri = _a.radyoDeri|0;
       if(_a.radyoMerkez === 'cark' || _a.radyoMerkez === 'faz'
          || _a.radyoMerkez === 'yuvarlak') AYAR.radyoMerkez = _a.radyoMerkez;
       /* SINIR ELLE YAZILIYOR, YILDIZ_KADEME.length ILE DEGIL.

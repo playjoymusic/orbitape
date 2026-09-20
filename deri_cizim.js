@@ -282,6 +282,11 @@ const DERI_USLUP = {
      bir SAHNEYE donustu. */
   barNYC   : { pal:["#0d1420","#1a2740","#f0b94f","#c7d3e6","#050a12"], tohum:131 },
   umutMiami: { pal:["#ecdfba","#f0895a","#8f3a1e","#4a9d8f","#f4c9a3"], tohum:137 },
+  fresco   : { pal:["#b95b45","#e2b96f","#315b58","#f0dfb7","#34252a"], tohum:149 },
+  nocturne : { pal:["#111c35","#273f68","#c58c58","#d9c7a3","#070b18"], tohum:157 },
+  herbarium: { pal:["#243d2f","#719b68","#c8b56a","#e9dfc1","#101d18"], tohum:163 },
+  mosaic   : { pal:["#d56b48","#3b7890","#e2bd62","#82455a","#f0dfbf"], tohum:173 },
+  lumenfield: { pal:["#251b3d","#58458a","#e6a45e","#e9d7b0","#0b0a16"], tohum:181 },
 };
 function _uslup(d){ return (d && DERI_USLUP[d.cizim]) || {}; }
 function _pal(d){ const u = _uslup(d); return (d && d.pal) || u.pal || ['#888']; }
@@ -763,6 +768,127 @@ const DERI_HALKA = {
       c.closePath(); c.fill(); c.restore();
     }
     c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.13, 0, Math.PI*2); c.fill();
+  },
+  fresco(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.fillStyle = p[0]; c.beginPath(); c.arc(o, o, S*0.45, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[1];
+    for(let i = 0; i < 8; i++){
+      const a = i*Math.PI/4;
+      c.save(); c.translate(o + Math.cos(a)*S*0.27, o + Math.sin(a)*S*0.27); c.rotate(a);
+      c.beginPath(); c.moveTo(0, -S*0.18); c.quadraticCurveTo(S*0.12, -S*0.08, 0, S*0.10); c.quadraticCurveTo(-S*0.12, -S*0.08, 0, -S*0.18); c.fill(); c.restore();
+    }
+    c.fillStyle = p[3]; c.beginPath(); c.arc(o, o, S*0.13, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[2]; c.lineWidth = S*0.018; c.beginPath(); c.arc(o, o, S*0.34, 0, Math.PI*2); c.stroke();
+  },
+  nocturne(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.fillStyle = p[0]; c.beginPath(); c.arc(o, o, S*0.46, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[1];
+    for(let i = 0; i < 7; i++){
+      c.globalAlpha = 0.45 + i*0.06; c.beginPath(); c.arc(o + S*(i%2 ? 0.04 : -0.04), o + S*(0.20 - i*0.055), S*(0.18 - i*0.015), 0, Math.PI*2); c.fill();
+    }
+    c.globalAlpha = 1; c.fillStyle = p[2]; c.beginPath(); c.arc(o - S*0.13, o - S*0.14, S*0.09, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[3]; c.beginPath(); c.arc(o - S*0.10, o - S*0.17, S*0.07, 0, Math.PI*2); c.fill();
+  },
+  herbarium(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.strokeStyle = p[0]; c.lineWidth = S*0.035; c.beginPath(); c.arc(o, o, S*0.44, 0, Math.PI*2); c.stroke();
+    for(let i = 0; i < 6; i++){
+      const a = i*Math.PI/3, x = o + Math.cos(a)*S*0.25, y = o + Math.sin(a)*S*0.25;
+      c.strokeStyle = p[1]; c.lineWidth = S*0.018; c.beginPath(); c.moveTo(o, o); c.quadraticCurveTo(x, y, x + Math.cos(a)*S*0.12, y + Math.sin(a)*S*0.12); c.stroke();
+      c.fillStyle = i%2 ? p[2] : p[3]; c.beginPath(); c.ellipse(x, y, S*0.07, S*0.025, a, 0, Math.PI*2); c.fill();
+    }
+    c.fillStyle = p[2]; c.beginPath(); c.arc(o, o, S*0.08, 0, Math.PI*2); c.fill();
+  },
+  mosaic(c, S, d){
+    const p = _pal(d), o = S/2, a = S*0.13;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    for(let y = -a; y < S + a; y += a) for(let x = -a; x < S + a; x += a){
+      c.fillStyle = p[(Math.round(x/a) + Math.round(y/a)) % 4]; c.globalAlpha = 0.82;
+      c.save(); c.translate(x + a/2, y + a/2); c.rotate(((x+y)/a % 2)*0.12);
+      c.fillRect(-a*0.43, -a*0.43, a*0.86, a*0.86); c.restore();
+    }
+    c.globalAlpha = 1; c.fillStyle = p[4]; c.beginPath(); c.arc(o, o, S*0.43, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[1]; c.lineWidth = S*0.02; c.beginPath(); c.arc(o, o, S*0.34, 0, Math.PI*2); c.stroke();
+  },
+  lumenfield(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    for(let i = 0; i < 12; i++){
+      const a = i*Math.PI/6, x = o + Math.cos(a)*S*0.30, y = o + Math.sin(a)*S*0.30;
+      c.fillStyle = i%2 ? p[1] : p[2]; c.globalAlpha = 0.48;
+      c.beginPath(); c.moveTo(o, o); c.quadraticCurveTo(x, y, x + Math.cos(a+0.18)*S*0.28, y + Math.sin(a+0.18)*S*0.28); c.lineTo(x + Math.cos(a-0.18)*S*0.28, y + Math.sin(a-0.18)*S*0.28); c.closePath(); c.fill();
+    }
+    c.globalAlpha = 1; c.fillStyle = p[0]; c.beginPath(); c.arc(o, o, S*0.37, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[3]; c.globalAlpha = 0.75; c.beginPath(); c.arc(o - S*0.05, o - S*0.08, S*0.18, 0, Math.PI*2); c.fill(); c.globalAlpha = 1;
+  },
+  chromaticDrift(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.lineCap = 'round';
+    for(let i = 0; i < 7; i++){
+      const y = S*(0.16 + i*0.11), bend = S*(0.10 + i*0.018);
+      c.strokeStyle = p[i % 4]; c.globalAlpha = 0.48 + i*0.06; c.lineWidth = S*(0.018 + i*0.004);
+      c.beginPath(); c.moveTo(-S*0.08, y);
+      c.bezierCurveTo(S*0.24, y - bend, S*0.66, y + bend, S*1.08, y - bend*0.35); c.stroke();
+    }
+    c.globalAlpha = 1; c.strokeStyle = p[3]; c.lineWidth = S*0.012;
+    c.beginPath(); c.arc(o, o, S*0.33, -0.8, 1.7); c.stroke();
+  },
+  veil(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    for(let i = 0; i < 6; i++){
+      c.fillStyle = _zemRgba(p[i % 4], 0.34);
+      c.beginPath(); c.ellipse(S*(0.18 + i*0.14), o, S*(0.18 + i*0.025), S*0.62, -0.34 + i*0.12, 0, Math.PI*2); c.fill();
+    }
+    c.strokeStyle = _zemRgba(p[1], 0.72); c.lineWidth = S*0.012;
+    c.beginPath(); c.arc(o, o, S*0.36, 0.3, Math.PI*1.65); c.stroke();
+  },
+  tidalMemory(c, S, d){
+    const p = _pal(d), o = S/2;
+    const g = c.createLinearGradient(0, 0, 0, S);
+    g.addColorStop(0, p[0]); g.addColorStop(1, p[4]); c.fillStyle = g; c.fillRect(0, 0, S, S);
+    c.lineCap = 'round';
+    for(let i = 0; i < 12; i++){
+      const y = S*(0.10 + i*0.073);
+      c.strokeStyle = i % 3 ? p[1] : p[2]; c.globalAlpha = 0.35 + (i % 4)*0.10; c.lineWidth = S*(0.006 + (i % 3)*0.003);
+      c.beginPath(); c.moveTo(-S*0.05, y);
+      c.bezierCurveTo(S*0.20, y - S*0.08, S*0.36, y + S*0.08, S*0.58, y);
+      c.bezierCurveTo(S*0.78, y - S*0.08, S*0.92, y + S*0.07, S*1.05, y - S*0.01); c.stroke();
+    }
+    c.globalAlpha = 1; c.strokeStyle = p[3]; c.lineWidth = S*0.014;
+    c.beginPath(); c.arc(o, o, S*0.38, Math.PI*0.12, Math.PI*1.78); c.stroke();
+  },
+  gildedVoid(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    c.strokeStyle = p[0]; c.lineWidth = S*0.018;
+    c.strokeRect(S*0.12, S*0.12, S*0.76, S*0.76);
+    c.strokeStyle = p[1]; c.lineWidth = S*0.010;
+    for(let i = 0; i < 4; i++){
+      const inset = S*(0.21 + i*0.075); c.strokeRect(inset, inset, S - inset*2, S - inset*2);
+    }
+    c.fillStyle = p[2]; c.beginPath(); c.arc(o, o, S*0.19, 0, Math.PI*2); c.fill();
+    c.fillStyle = p[4]; c.beginPath(); c.arc(o, o, S*0.11, 0, Math.PI*2); c.fill();
+    c.strokeStyle = p[3]; c.lineWidth = S*0.008;
+    c.beginPath(); c.moveTo(S*0.16, S*0.84); c.lineTo(S*0.84, S*0.16); c.stroke();
+  },
+  afterimage(c, S, d){
+    const p = _pal(d), o = S/2;
+    c.fillStyle = p[4]; c.fillRect(0, 0, S, S);
+    const katman = (dx, renk, alpha)=>{
+      c.save(); c.translate(dx, -dx*0.35); c.globalAlpha = alpha; c.strokeStyle = renk; c.lineWidth = S*0.018;
+      c.beginPath(); c.arc(o, o, S*0.31, 0, Math.PI*2); c.stroke();
+      c.strokeRect(S*0.27, S*0.27, S*0.46, S*0.46); c.restore();
+    };
+    katman(-S*0.035, p[0], 0.72); katman(S*0.035, p[1], 0.72); katman(0, p[2], 0.82);
+    c.strokeStyle = p[3]; c.lineWidth = S*0.008;
+    c.beginPath(); c.moveTo(S*0.15, o); c.lineTo(S*0.85, o); c.moveTo(o, S*0.15); c.lineTo(o, S*0.85); c.stroke();
   },
   pop(c, S, d){
     const p = _pal(d), o = S/2;
@@ -1961,6 +2087,36 @@ const DERI_CIZIM = {
     c.strokeStyle = p[3]; c.lineWidth = u*0.012;
     c.beginPath(); c.arc(cx, cy, rDisk, 0, Math.PI*2); c.stroke();
     c.restore();
+  },
+  fresco(c, W, H, d){
+    const p = d.pal, u = Math.min(W,H), cx = W*0.5, cy = H*0.50, r = u*0.40;
+    c.fillStyle = p[4]; c.fillRect(0,0,W,H); c.fillStyle = p[0]; c.fillRect(0,H*0.18,W,H*0.56);
+    c.strokeStyle = _zemRgba(p[3],0.42); c.lineWidth = u*0.012;
+    for(let i=0;i<5;i++){ c.beginPath(); c.moveTo(W*0.08+i*W*0.2,H*0.18); c.lineTo(W*0.18+i*W*0.2,H*0.74); c.stroke(); }
+    c.fillStyle = p[1]; c.beginPath(); c.arc(cx,cy,r*1.18,0,Math.PI*2); c.fill(); c.fillStyle = p[2]; c.beginPath(); c.arc(cx,cy,r*0.92,0,Math.PI*2); c.fill(); c.fillStyle = p[3]; c.beginPath(); c.arc(cx,cy,r*0.55,0,Math.PI*2); c.fill();
+  },
+  nocturne(c, W, H, d){
+    const p = d.pal, u = Math.min(W,H), cx = W*0.5, cy = H*0.50;
+    const g = c.createLinearGradient(0,0,0,H); g.addColorStop(0,p[0]); g.addColorStop(1,p[4]); c.fillStyle=g; c.fillRect(0,0,W,H);
+    c.fillStyle = p[1]; c.beginPath(); c.arc(cx,cy,u*0.42,0,Math.PI*2); c.fill(); c.fillStyle = p[2]; c.beginPath(); c.arc(cx-u*0.12,cy-u*0.13,u*0.13,0,Math.PI*2); c.fill(); c.fillStyle = p[3]; c.beginPath(); c.arc(cx-u*0.08,cy-u*0.17,u*0.10,0,Math.PI*2); c.fill();
+    c.strokeStyle = _zemRgba(p[3],0.35); c.lineWidth=u*0.008;
+    for(let i=0;i<9;i++){ c.beginPath(); c.moveTo(0,H*(0.68+i*0.035)); c.quadraticCurveTo(W*0.5,H*(0.62+i*0.035),W,H*(0.68+i*0.035)); c.stroke(); }
+  },
+  herbarium(c, W, H, d){
+    const p = d.pal, u = Math.min(W,H), cx = W*0.5, cy = H*0.50;
+    c.fillStyle=p[4]; c.fillRect(0,0,W,H); c.strokeStyle=p[0]; c.lineWidth=u*0.015; c.strokeRect(W*0.08,H*0.18,W*0.84,H*0.56);
+    for(let i=0;i<7;i++){ const a=-1.1+i*0.36, ex=cx+Math.cos(a)*u*0.42, ey=cy+Math.sin(a)*u*0.42; c.strokeStyle=p[1]; c.lineWidth=u*0.009; c.beginPath(); c.moveTo(cx,cy); c.quadraticCurveTo(cx+Math.cos(a)*u*0.18,cy+Math.sin(a)*u*0.18,ex,ey); c.stroke(); c.fillStyle=i%2?p[2]:p[3]; c.beginPath(); c.ellipse(ex,ey,u*0.07,u*0.025,a,0,Math.PI*2); c.fill(); }
+    c.fillStyle=p[2]; c.beginPath(); c.arc(cx,cy,u*0.09,0,Math.PI*2); c.fill();
+  },
+  mosaic(c, W, H, d){
+    const p=d.pal,u=Math.min(W,H),cx=W*0.5,cy=H*0.5,a=u*0.12; c.fillStyle=p[4]; c.fillRect(0,0,W,H);
+    for(let y=H*0.16,iy=0;y<H*0.78;y+=a,iy++) for(let x=0,ix=0;x<W;x+=a,ix++){ c.fillStyle=p[(ix+iy)%4]; c.globalAlpha=0.82; c.save(); c.translate(x+a*0.5,y+a*0.5); c.rotate(((ix+iy)%2)*0.12); c.fillRect(-a*0.42,-a*0.42,a*0.84,a*0.84); c.restore(); }
+    c.globalAlpha=1; c.fillStyle=p[4]; c.beginPath(); c.arc(cx,cy,u*0.40,0,Math.PI*2); c.fill(); c.strokeStyle=p[1]; c.lineWidth=u*0.012; c.beginPath(); c.arc(cx,cy,u*0.34,0,Math.PI*2); c.stroke();
+  },
+  lumenfield(c, W, H, d){
+    const p=d.pal,u=Math.min(W,H),cx=W*0.5,cy=H*0.5; c.fillStyle=p[4]; c.fillRect(0,0,W,H);
+    for(let i=0;i<14;i++){ const a=i*Math.PI/7, x=cx+Math.cos(a)*u*0.28,y=cy+Math.sin(a)*u*0.28; c.fillStyle=i%2?p[1]:p[2]; c.globalAlpha=0.40; c.beginPath(); c.moveTo(cx,cy); c.quadraticCurveTo(x,y,x+Math.cos(a+0.16)*u*0.32,y+Math.sin(a+0.16)*u*0.32); c.lineTo(x+Math.cos(a-0.16)*u*0.32,y+Math.sin(a-0.16)*u*0.32); c.closePath(); c.fill(); }
+    c.globalAlpha=1; c.fillStyle=p[0]; c.beginPath(); c.arc(cx,cy,u*0.40,0,Math.PI*2); c.fill(); c.fillStyle=p[3]; c.globalAlpha=0.72; c.beginPath(); c.arc(cx-u*0.05,cy-u*0.08,u*0.18,0,Math.PI*2); c.fill(); c.globalAlpha=1;
   },
   /* POP — duz parlak alanlar, kalin siyah kontur, tram noktalari. */
   pop(c, W, H, d){
