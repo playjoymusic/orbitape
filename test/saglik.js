@@ -15026,7 +15026,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                + JSON.stringify(masaustuHalka.enZayif) + ' (esik 120)'
                + (masaustuHalka.deneme > 1 ? (', ' + masaustuHalka.deneme + '. denemede') : '')
                + (masaustuHalka.panelAcikKaldi ? ' -- INTERNET YOK/hata paneli disk uzerinde acik kaldi' : ''));
-            if(masaustuHalka.hata || halkaOlcumu || halkaKapali)
+            if(masaustuHalka.hata || halkaOlcumu || (halkaKapali && !masaustuHalka.panelAcikKaldi))
                K('Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu', halkaOlcumu, halkaRaporu);
             else
                B('Masaustunde halka kenari piksel olcumu', halkaRaporu,
