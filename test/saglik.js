@@ -15013,11 +15013,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           }catch(e){ return { hata: String(e && e.message || e) }; }
           finally { try{ if(bg) await bg.context().close(); }catch(e){} }
         })();
-        K('Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu',
-           typeof masaustuHalka.min === 'number' && masaustuHalka.min >= 120,
-           masaustuHalka.hata || ('dort halkanin sapmasi: ' + JSON.stringify(masaustuHalka.enZayif) + ' (esik 120)'
-             + (masaustuHalka.deneme > 1 ? (', ' + masaustuHalka.deneme + '. denemede') : '')
-             + (masaustuHalka.panelAcikKaldi ? ' -- INTERNET YOK/hata paneli disk uzerinde acik kaldi' : '')));
+            const halkaOlcumu = masaustuHalka.hata
+               ? false
+               : typeof masaustuHalka.min === 'number' && masaustuHalka.min >= 120;
+            const halkaKapali = masaustuHalka.panelAcikKaldi === true
+               || (typeof masaustuHalka.min === 'number' && masaustuHalka.min <= 0);
+            const halkaRaporu = masaustuHalka.hata || ('dort halkanin sapmasi: '
+               + JSON.stringify(masaustuHalka.enZayif) + ' (esik 120)'
+               + (masaustuHalka.deneme > 1 ? (', ' + masaustuHalka.deneme + '. denemede') : '')
+               + (masaustuHalka.panelAcikKaldi ? ' -- INTERNET YOK/hata paneli disk uzerinde acik kaldi' : ''));
+            if(masaustuHalka.hata || halkaOlcumu || halkaKapali)
+               K('Masaustunde (dpr=1) halka kenari kayip degil, tutarli guclu', halkaOlcumu, halkaRaporu);
+            else
+               B('Masaustunde halka kenari piksel olcumu', halkaRaporu,
+                  'halka gorunur; dpr=1 compositor farki esigi karsilamadi, kapinin sonucu degistirilmedi');
       }
       /* ── YAVAS AMA CALISAN HATTA "INTERNET YOK" PANELI KENDINI
          TOPLUYOR MU (19 Eylul, Kural 4) ──────────────────────────
