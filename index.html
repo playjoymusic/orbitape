@@ -13344,7 +13344,9 @@
       /* Yakalama yalnizca GERCEK dokunusta: sentetik olayda etkin
          bir isaretci yok, cagri atiyor ve sessiz hata defterini
          bosuna sisiriyor (olculdu). */
-      if(e.isTrusted){ try{ _zumKat.setPointerCapture(e.pointerId); }catch(_){ _yut(_); } }
+      if(e.isTrusted && e.pointerId != null){
+        try{ _zumKat.setPointerCapture(e.pointerId); }catch(_){ /* pointer already ended */ }
+      }
     }catch(_){ _yut(_); }
   }
   function zumSurukle(e){
@@ -13362,7 +13364,9 @@
     try{
       if(!_basli) return;
       _basli = false;
-      if(e.isTrusted){ try{ _zumKat.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); } }
+      if(e.isTrusted && e.pointerId != null){
+        try{ _zumKat.releasePointerCapture(e.pointerId); }catch(_){ /* pointer already ended */ }
+      }
       if(_suruk){ _suruk = false; return; }        // kaydirma secim degil
       zumSec(e.clientX, e.clientY);
     }catch(_){ _yut(_); }
@@ -17218,14 +17222,18 @@
          disina cikmadiysa" sarti bu. */
       if(k < 0 && _moodVurgu >= 0 && _o <= 1.06) k = _moodVurgu;
       modAdiBirak();
-      try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
+      if(e.isTrusted && e.pointerId != null){
+        try{ btn.releasePointerCapture(e.pointerId); }catch(_){ /* pointer already ended */ }
+      }
       if(k >= 0){ try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
                   halkaSec(k); }               // halkada bıraktı -> o raf
       _moodVurgu = -1;
       return;                                   // boşlukta bıraktı -> hiçbir şey olmaz
     }
     try{ hizYaz(true); }catch(_){ _yut(_); }          // parmak kalkınca detune'u kesinleştir
-    try{ btn.releasePointerCapture(e.pointerId); }catch(_){ _yut(_); }
+    if(e.isTrusted && e.pointerId != null){
+      try{ btn.releasePointerCapture(e.pointerId); }catch(_){ /* pointer already ended */ }
+    }
     if(!pMoved){
       /* ── NEREYE BASILDI ────────────────────────────────────────
          Ortadaki zarın İÇİ  -> sıradaki ses (eskisi gibi).
@@ -20360,7 +20368,9 @@
       _favBasti = true;
       if(_favBekle) clearTimeout(_favBekle);
       _favBekle = setTimeout(()=>{ _favBekle = null; _favBasti = false; favKipDegis(); }, FAV_TUT);
-      try{ favDug.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+      if(e.isTrusted && e.pointerId != null){
+        try{ favDug.setPointerCapture(e.pointerId); }catch(_){ /* pointer already ended */ }
+      }
     });
     const favBirak = e=>{
       if(e){ e.preventDefault(); e.stopPropagation(); }
