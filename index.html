@@ -17115,7 +17115,9 @@
     _moodAday = !FXMOD && _ilkCalindi;
     if(_moodBekle){ clearTimeout(_moodBekle); _moodBekle = null; }
     if(_moodAday) _moodBekle = setTimeout(()=>{ _moodBekle = null; moodGeziAc(e); }, MOOD_TUT);
-    try{ btn.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+    if(e.isTrusted && e.pointerId != null){
+      try{ btn.setPointerCapture(e.pointerId); }catch(_){ /* pointer already ended */ }
+    }
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
   }, {passive:false});
   /* ── BIRAKMA GÜVENCESİ ────────────────────────────────────────────
@@ -17421,7 +17423,8 @@
   function fxIpucuYerlestir(){
     const el = document.getElementById('fxEl'); if(!el) return;
     try{
-      const d = document.querySelector('.disk').getBoundingClientRect();
+      const disk = document.querySelector('.disk'); if(!disk) return;
+      const d = disk.getBoundingClientRect();
       const R = Math.min(d.width, d.height)*0.357;
       el.style.left = Math.round(d.left + d.width/2) + 'px';
       el.style.top  = Math.round(d.top + d.height/2) + 'px';

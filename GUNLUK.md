@@ -720,6 +720,14 @@ testi yerel Playwright Chromium eksik olduğu için çalışmadı.
 ailesi var. Toplam deri sayısı 143'ten 148'e çıktı; sınırlar 148'e
 güncellendi. `node test/birim.js` tekrar geçti.
 
+**CI kırmızısı (20 Eylül):** `dafc1b` sağlık koşusunda 864/867 kontrol
+geçti; üç kırmızı, sentetik pointer olayında `setPointerCapture` çağrısının
+sessiz hata defterine yazılması ve `.disk` henüz yokken FX ipucunun
+`getBoundingClientRect()` çağırmasıydı. Üretim kodunda sentetik olaylar için
+pointer yakalama kapatıldı, gerçek pointer yarışında hata defteri
+şişirilmiyor ve FX ipucunda disk yoksa erken dönülüyor. Yerel birim kapısı
+126/126 geçti; CI sonucu bu düzeltme pushlandıktan sonra yeniden ölçülecek.
+
 **Kuyruğa alınan, henüz başlanmayan (Kural 6):**
 - Çark sesi telefon araması sonrası kalıcı sessizlik -- pj'den ölçüm
   (Safari uzaktan hata ayıklama) ya da tanılama eklentisi onayı
