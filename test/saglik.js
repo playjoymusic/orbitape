@@ -954,7 +954,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        ve fonksiyon sayisi degil, tek bir fonksiyonun kod boyu dustu).
        Tavan 28'de birakildi -- ~1,18 KB pay var, dusurmenin faydasi
        yok. */
-    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 28 };
+    /* Yeni radyal deri serisi derlenmis deri_cizim.js'i 29 KB'a cikardi;
+       30 KB tavani olculen ciktiya gercek pay birakir. */
+    const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 30 };
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
     const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
