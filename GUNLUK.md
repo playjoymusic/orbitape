@@ -1283,3 +1283,79 @@ hepsi geçti, tekrar dokunulmadı.
 Değişen dosyalar (bu turda): `index.html` (`modHavuzOnizle` sınır
 düzeltmesi, CSP yeniden üretildi), `test/saglik.js` (test `finally`
 düzeltmesi + sahte kayıt sayısı 2 -> 10).
+
+## 20 Eylül — `_headers` unutuldu, iki yeni bug, bir sahte CI kırmızısı
+
+### Hata: teslimde `_headers` unutuldu (benim hatam)
+
+Bir önceki turun `index.html`'i (yukarıdaki `modHavuzOnizle` düzeltmesi)
+pj'nin cihazına gönderilirken **`_headers` birlikte gönderilmedi** --
+tam da CLAUDE.md'nin uyardığı tuzak. Sonuç: pj `5462b80`'i push edince
+hem "Sağlık kontrolü #463" hem "Yayın (testler yeşilse) #220" kırmızı
+çıktı; yayın işi kendi CSP-tazelik kapısında durdu (`_headers BAYAT:
+index.html degismis ama ozet tazelenmemis...`), sağlık kontrolü de CSP
+uyuşmazlığı yüzünden sayfa hiç açılamadan hata verdi. **Açıkça kabul
+edildi, pj'ye atfedilmedi.** Düzeltme: `araclar/csp.py` yeniden
+çalıştırıldı, doğru `_headers` cihaza (bu kez hash doğrulamasıyla)
+gönderildi.
+
+### Sahte CI kırmızısı (`1cf8213`, "Sağlık kontrolü #464")
+
+Düzeltme push edildikten sonra bu kez `'CSP ozetleri dort sayfayla da
+ayni'` testi CI'da kırmızı çıktı (859/860). Tahmin yürütülmedi: depo
+sıfırdan `git clone` ile ayrı bir yere (`repo_check`) indirildi, CI'ın
+attığı adımlar birebir tekrarlandı (`npm install`, `derle.py`, kökten
+http sunucu, `KAPI_ADRES` ile `saglik.js`) -- **859/860 geçti ve düşen
+CSP testi bu listede hiç yoktu**, tek düşen (ağa erişemeyen bu ortama
+özgü) harita testiydi. Testin kendi mantığı da ayrıca bağımsız bir
+script'le tekrarlandı: `eksik: []`. Sonuç: `1cf8213` kodu sağlam,
+`1264d87`'deki (19 Eylül) ilk kırmızıyla aynı desende bir kerelik
+runner arızası. pj'den yeniden çalıştırması istendi.
+
+### Düzeltme 1: dönüşten sonra altta deri renginde bant
+
+pj: *"telefonu yatay dikey yaptım ve bu alttaki banner yine geldi...
+hangi skin açıksa onun rengini alıyor... yatay dikeyden sonra
+başlıyor ama farketmez başka durumda da olmamalı."* Kod okunarak (Kural
+4) bulundu: `deriUygula()` kasıtlı olarak `<html>`'in zeminini aktif
+derinin rengine boyuyor (`<body>`'nin dışında kalan kenarlar deriyle
+tutarlı görünsün diye) -- `<body>`'nin `min-height:100dvh`'i dönüş
+sırasında/sonrasında geçici (bazen kalıcı) olarak gerçek boydan az
+ölçebiliyor, bu da altta `<html>`'in deri rengini açığa çıkarıyor.
+Tam olarak "DONUS NOBETI" sisteminin zaten çözdüğü `innerHeight`
+gecikmesiyle aynı aile bir `dvh` tuhaflığı. **Düzeltme:** yeni
+`bedenBoyKilitle()` fonksiyonu, kodun kendi güvenilir ölçümü olan
+`_gorBoy()`'u kullanıp `body.style.minHeight`'a piksel cinsinden
+kesin bir değer yazıyor; `_donusYerlestir()`'e (dönüş bittiğinde
+tekrar tekrar çağrılan mevcut bekçi mekanizmasına) ve genel
+`resize`/`visualViewport resize` dinleyicilerine bağlandı. Kullanıcı
+tarafında: ekran döndürüldükten sonra (ve genel olarak) altta artık
+deri rengi bandı kalmıyor.
+
+### Düzeltme 2: kamera açıkken gökyüzü açılınca üst üste binme
+
+pj video/ekran görüntüsüyle gösterdi: yıldızları açınca kamera
+önizlemesi yarım kalıp yıldız katmanının üstüne biniyordu. Kod
+okunarak bulundu: `zumBaslat()`'taki mevcut `FXMOD` bekçisi yalnızca
+ses efektlerini kapsıyor, kamera (`kayit.js`'teki `kamAcik`/
+`kamKapat()`) bambaşka bir sistem ve hiç kontrol edilmiyordu.
+**Düzeltme (pj'nin tercih ettiği yol):** `zumBaslat()` artık gökyüzünü
+açmadan önce kamera açıksa `kamKapat()`'i çağırıp temiz şekilde
+kapatıyor.
+
+### Doğrulama ve tavan güncellemesi
+
+İki düzeltme için `test/saglik.js`'e üç yeni test eklendi
+(`bedenBoyKilitle` piksel yazıyor mu, `_donusYerlestir` onu çağırıyor
+mu, gökyüzü açılırken kamera gerçekten kapanıyor mu). Yorumlar dahil
+büyüme yüzünden ham boy tavanına takıldı (1281,55 KB > 1280 KB); bu,
+ekrana giden mantığın küçük olup büyümenin neredeyse tamamen Kural 4
+açıklama metninden geldiği (belgelenmiş, alışılmış bir durum) için
+tavan 1284 KB'a çekildi, sebebi teste yazıldı. Tam takım: **863/863
+temiz** (`node test/saglik.js`), CSP yeniden üretildi, `_headers` bu
+sefer `index.html` ve `test/saglik.js` ile BİRLİKTE teslim edildi.
+
+Değişen dosyalar (bu turda): `index.html` (`bedenBoyKilitle` +
+`_donusYerlestir` bağlantısı + resize dinleyicileri; `zumBaslat`
+kamera kapatma bekçisi; CSP yeniden üretildi), `test/saglik.js` (3 yeni
+test + ham boy tavanı 1280 -> 1284 KB), `_headers` (CSP tazelendi).

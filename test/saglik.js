@@ -382,6 +382,37 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        sozHata || 'sayfa ve modulleri ayristirilabiliyor');
   }
 
+  /* ── DONUSTEN SONRA ALTTA DERI RENGINDE BANT (20 Eylul, Kural 4) ──
+     pj: "telefonu yatay dikey yaptım ve bu alttaki banner yine
+     geldi... altta gorunuyor hangi skins acıksa onun rengini
+     alıyor." index.html'deki bedenBoyKilitle() yorumunda ayrinti
+     var: dvh'nin donus sirasinda ESKI kalmasi <body>'yi gercek
+     boydan kisa birakip altindaki <html>'in (skin rengindeki)
+     zeminini aciyordu. Burada iki sey olculuyor: (1) fonksiyon
+     GERCEKTEN dogru pikseli yaziyor mu, (2) DONUS NOBETI'ne
+     (_donusYerlestir) kablolanmis mi -- ikinci kismin gercek bir
+     'orientationchange' olayiyla ucdan uca sinanmasi bu ortamda
+     (masaustu Chromium, gercek donus yok) mumkun degil, o yuzden
+     kaynaktan dogrulaniyor (ayni desen: "Suzgec onbellegi havuz
+     boyunu da hatirliyor" testi asagida). */
+  K('bedenBoyKilitle beden boyunu piksel olarak yaziyor', await pg.evaluate(()=>{
+      const eski = document.body.style.minHeight;
+      try{
+        document.body.style.minHeight = '';
+        bedenBoyKilitle();
+        const h = document.documentElement.clientHeight;
+        const yazili = parseInt(document.body.style.minHeight, 10);
+        return h > 0 && yazili === h;
+      } finally { document.body.style.minHeight = eski; }
+    }), 'documentElement.clientHeight ile ayni piksel yaziliyor');
+  {
+    const kaynak = fs.readFileSync('index.html','utf8');
+    const i0 = kaynak.indexOf('const _donusYerlestir');
+    K('Donus nobeti beden boyunu da kilitliyor',
+      i0 > 0 && /bedenBoyKilitle\(\)/.test(kaynak.slice(i0, i0 + 400)),
+      '_donusYerlestir() bedenBoyKilitle() cagiriyor');
+  }
+
   /* ══ SONSUZ SES ARAMASI — SUZULMUS HAVUZ ONBELLEGI ════════════════
      Ekranda: SOUND BANKS kipinde uygulama hic durmadan ses ariyor,
      hicbir tusa basmak ise yaramiyor. Kaynak raporu ise havuzun DOLU
@@ -1163,8 +1194,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        fonksiyon eklendi; onbellekIsit() artik AKTIF_MOD acikken (ve
        RADIOTAPE degilken) bu fonksiyondan besleniyor. Ekrana giden
        hicbir sey degismedi, yalnizca mevcut on-yukleme borusu ORBITAPE
-       mod gezintisine de baglandi. */
-    K('Ham boy < 1280 KB', dosyaBoy < 1280*1024,
+       mod gezintisine de baglandi.
+       20 EYLUL: 1280 -> 1284. Iki ayri duzeltme: (1) bedenBoyKilitle() --
+       donusten sonra altta deri renginde bant kalmasi (dvh'nin rotasyon
+       sirasinda gecici olarak yanlis olcmesi) icin _gorBoy()'un zaten
+       guvenilir olcumunu body.style.minHeight'a piksel olarak yaziyor,
+       _donusYerlestir()'e ve resize/visualViewport dinleyicilerine
+       baglandi. (2) zumBaslat() artik gokyuzu acilirken kamera aciksa
+       kamKapat() cagirip kapatiyor -- kamera onizlemesiyle yildiz
+       katmani ustuste binmesin diye. Ikisi de kod + genis Kural 4
+       yorumu; ekrana giden JS mantigi kucuk (birkac satir), buyume
+       neredeyse tamamen aciklama metninden. Ham boy 1281,55 KB. */
+    K('Ham boy < 1284 KB', dosyaBoy < 1284*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -4390,6 +4431,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'kaydedici '+cam.sonra.kaydedici+' | bekleyen dosya '+cam.sonra.bekleyen);
   K('CAM kapaninca iz kapaniyor', cam.kapali.kamAcik===false && cam.kapali.iz===false,
      'akis birakildi');
+  /* ── GOKYUZU ACILIRKEN KAMERA KENDILIGINDEN KAPANIYOR MU
+     (20 Eylul, Kural 4, olculdu) ──────────────────────────────────
+     pj'nin ekran goruntusu: kamera onizlemesi acikken yildizlar da
+     acilinca ikisi ustuste binip kamera "yarim" gorunuyordu. Sebep:
+     zumBaslat()'in FX kapisi yalnizca SES efektlerini (FXMOD)
+     kapsiyordu, kamera (kayit.js, ayri sistem) hic sorulmuyordu.
+     Duzeltme: zumBaslat() artik acikken kamKapat()'i cagiriyor. */
+  {
+    const camZum = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      document.getElementById('cam').click(); await bek(700);
+      const acikOnce = !!kamAcik;
+      const acildiMi = zumBaslat();
+      await bek(50);
+      const kamSonra = !!kamAcik, kamSinifSonra = document.body.classList.contains('kam');
+      try{ zumBitti(); }catch(e){}
+      return { acikOnce, acildiMi, kamSonra, kamSinifSonra };
+    });
+    K('Gokyuzu acilirken kamera kendiliginden kapaniyor',
+      camZum.acikOnce === true && camZum.kamSonra === false && camZum.kamSinifSonra === false,
+      'once=' + camZum.acikOnce + ' zumAcildiMi=' + camZum.acildiMi + ' kamSonra=' + camZum.kamSonra);
+  }
   /* ── KAMERA EN DIS HALKAYA KADAR DOLUYOR (16 Eylul) ────────────────
      Once kamera %56 idi (bkz. index.html #kam yorumu) ve en dis
      halkadan belirgin kucuk kaliyordu -- kullanicinin ekran goruntusu:

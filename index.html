@@ -5117,7 +5117,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.19';
+  var ORB_SURUM = '2026.09.20';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -12071,6 +12071,43 @@
     }catch(e){ _yut(e); }
     return window.innerHeight;
   }
+  /* ── DONUSTEN SONRA ALTTA DERI RENGINDE BANT (20 Eylul, Kural 4,
+     kod okunarak bulundu) ────────────────────────────────────────
+     pj'nin sozu: "telefonu yatay dikey yaptım ve bu alttaki banner
+     yine geldi... backround tektir yani niye 3 parcayız." ve sonra:
+     "altta gorunuyor hangi skins acıksa onun rengini alıyor."
+     SEBEP: deriUygula() skin degisince <html>'in zeminini (
+     documentElement.style.backgroundColor) o skinin kendi rengine
+     yaziyor -- bu KASITLI, ekranin disina tasan kenarlarin skin
+     rengiyle uyumlu gorunmesi icin (bkz. yukarida "18 Eylul: skin
+     degisirken anlik bant" yorumu). <body>'nin kendi zemini (#020203,
+     her zaman koyu) normalde bunun ONUNE geciyor cunku <body>
+     `min-height:100dvh` ile her zaman gorunen alani KAPLAMASI
+     gerekiyor.
+     Donus sirasinda bu tutmuyor: dvh biriminin GORSEL GORUNUME gore
+     yeniden hesaplanmasi tarayicinin kendi isi ve donus+adres cubugu
+     animasyonu bitene kadar bir sure ESKI (kucuk) deger verebiliyor
+     -- tipki innerHeight'in DONUS NOBETI yorumunda anlatilan ayni
+     hastaligi. <body> o an gercek boydan KISA kalinca dibinde bir
+     serit acilip altindaki <html> -- yani skin rengi -- gorunuyor.
+     "App'i kapatip acinca duzeliyor" da bunu dogruluyor: tam
+     yeniden yukleme dvh'yi baştan dogru hesaplatiyor, basit donus
+     ise bazen etmiyor.
+     DUZELTME: dvh biriminin kendi kendine dogru hesaplamasina
+     guvenmek yerine, zaten guvenilir oldugu KANITLANMIS ayni kaynak
+     (_gorBoy() -- documentElement.clientHeight, DONUS NOBETI'nde
+     kullanilan) ile <body>'nin min-height'i DUZ PIKSEL olarak
+     ZORLANIYOR. Boylece dvh'nin ne zaman/dogru hesaplanacagina hic
+     bagli kalinmiyor. DONUS NOBETI zaten donus bitene kadar
+     _donusYerlestir()'i tekrar tekrar cagiriyor (bkz. asagida) --
+     bu fonksiyon oraya eklenince ayni tekrar-dene guvencesini
+     bedava aliyor, yeni bir zamanlayiciya gerek yok. */
+  function bedenBoyKilitle(){
+    try{
+      const h = _gorBoy();
+      if(h > 0) document.body.style.minHeight = h + 'px';
+    }catch(e){ _yut(e); }
+  }
   /* ── EKRAN BOYU FORMULDEN TAMAMEN CIKIYOR ───────────────────────
      _gorBoy() bir onceki denemeydi: innerHeight yerine
      documentElement.clientHeight konuldu, cunku ikisi ayni yerlesim
@@ -12356,6 +12393,7 @@
       _zoomBorcu = true; olcuIste();
       try{ ustOlcuIste(); }catch(e){ _yut(e); }
       try{ geriYerlestir(); }catch(e){ _yut(e); }
+      try{ bedenBoyKilitle(); }catch(e){ _yut(e); }   // bkz. bedenBoyKilitle yorumu -- alttaki deri bandi
     };
     const _donusBitir = ()=>{
       /* ── OLCU ANAHTARINA GORUNUM PENCERESI DE GIRIYOR (11 Eylul) ──
@@ -12504,7 +12542,15 @@
      (yakinlastirilmis sayfayi surukleyince) ve o zaman 'resize'
      gelmiyor, yalnizca 'scroll' geliyor. */
   try{ if(window.visualViewport) window.visualViewport.addEventListener('scroll', olcuIste); }catch(e){ _yut(e); }
+  /* 20 EYLUL -- bedenBoyKilitle yorumu: DONUS NOBETI disinda da
+     tetiklensin diye ('baska durumda da olmamali' -- pj). Sade
+     'resize' de eklendi cunku donus olayi hic gelmeyen bazi
+     tarayicilarda bile innerWidth/innerHeight yer degistiriyor
+     (bkz. yukaridaki SON EMNIYET yorumu, ayni desen). */
+  try{ window.addEventListener('resize', bedenBoyKilitle); }catch(e){ _yut(e); }
+  try{ if(window.visualViewport) window.visualViewport.addEventListener('resize', bedenBoyKilitle); }catch(e){ _yut(e); }
   vizSize();
+  bedenBoyKilitle();
 
   /* organik yarıçap (katmanlı sinüsler = akışkan zar)
      cAci/cMik: PARMAĞA UZANMA. cAci o yöndeki açı, cMik ise tepe noktasında
@@ -12834,6 +12880,23 @@
     if(typeof AYAR !== 'undefined' && AYAR && AYAR.mood) return false;
     /* FX acikken gokyuzu da acilmiyor: o an islemci sesin. */
     try{ if(FXMOD) return false; }catch(e){ _yut(e); }
+    /* 20 EYLUL (Kural 4, kod okunarak bulundu) -- KAMERA ACIKKEN
+       GOKYUZU DE ACILIRSA IKISI USTUSTE BINIYORDU. pj'nin ekran
+       goruntusu: kamera onizlemesinin YARISI gorunuyor, ustunde
+       yildizlar var. SEBEP: yukaridaki FXMOD kapisi yalnizca SES
+       efektlerini (uydu/dongu/karadelik) kapsiyor -- kamera (kayit.js,
+       kamAcik/body.kam) TAMAMEN AYRI bir sistem ve burada hic
+       sorulmuyordu. Iki katman (#kam z-index:2 kamerada, #yildizKat
+       gokyuzunde) ayni anda acik kalinca CSS'te hangisinin ustte
+       kaldigi durum durum degisiyor -- "yarisi geldi" tam bu.
+       pj'nin sozu: "kamera ya kapansın ya da baska yoldan çöz."
+       DUZELTME: gokyuzu acilirken kamera acuksa, kayit.js'in kendi
+       temiz kapatma yolundan (kamKapat -- akisi durdurur, body.kam
+       sinifini kaldirir) kapatiliyor. Kayit (REC) etkilenmiyor: o
+       ayri bir bayrak (_kayitAktif), burada dokunulmuyor. */
+    try{
+      if(typeof kamAcik !== 'undefined' && kamAcik && typeof kamKapat === 'function') kamKapat();
+    }catch(e){ _yut(e); }
     if(!zumAcikMi()){
       try{ if(window.pencereAcikMi && window.pencereAcikMi()) return false; }catch(e){ _yut(e); }
     }
