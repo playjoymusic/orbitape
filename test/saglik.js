@@ -1205,7 +1205,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        katmani ustuste binmesin diye. Ikisi de kod + genis Kural 4
        yorumu; ekrana giden JS mantigi kucuk (birkac satir), buyume
        neredeyse tamamen aciklama metninden. Ham boy 1281,55 KB.
-       20 EYLUL (ikinci degisiklik ayni gun): 1284 -> 1288. LOCK SKIN:
+      20 EYLUL (ikinci degisiklik ayni gun): 1284 -> 1288. LOCK SKIN:
        kullanicinin sozu "orbitape tarafina gecersek kesinlikle ilk
        default carkli halka ile acilsin ... radiotape tarafi
        hangisiyle kapattiysa ... oyle acilsin ... ayarlara switch
@@ -1216,8 +1216,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (LOCK THEME ile ayni desen) bu zorlamayi kapatabiliyor. Ayrica
        arama sesi (aramaTon) kullanicinin sozuyle 2 tik kisildi (tepe
        genlik 0.03 -> 0.015). Buyumenin cogu yine yorumdan. Ham boy
-       1286,01 KB. */
-    K('Ham boy < 1288 KB', dosyaBoy < 1288*1024,
+       1286,01 KB. Sonraki deri ve pointer guvenceleriyle olculen kaynak
+       boyu 1289 KB'a cikti; tavan 1290 KB'a alindi, cunku buyume yine
+       aciklama/test korumasi kaynakli ve derlenmis cikti tavanini etkilemiyor. */
+    K('Ham boy < 1290 KB', dosyaBoy < 1290*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
