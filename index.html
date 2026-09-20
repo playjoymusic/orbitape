@@ -6512,6 +6512,16 @@
      {ad:"HERBARIUM", zem:"#101d18", yazi:"#e9dfc1", marka:"#c8b56a", cek:"#294632", font:F2, kose:"2px", cizim:"herbarium"},
      {ad:"MOSAIC", zem:"#82455a", yazi:"#f0dfbf", marka:"#e2bd62", cek:"#a65e55", font:F1, kose:"2px", cizim:"mosaic"},
      {ad:"LUMEN FIELD", zem:"#0b0a16", yazi:"#e9d7b0", marka:"#e6a45e", cek:"#30234d", font:F2, kose:"50%", cizim:"lumenfield"},
+      /* ── ISINLI GRAFIK SERISI (20 Eylul) ────────────────────────────
+        SUNBURST'in merkezden acilan cizgi fikri bes yeni deriyle
+        farkli malzeme ve renklerde deneniyor: kuzey isigi, eski
+        bilimsel kadran, mercan gunesi, mavi saat ve altin perde.
+        Sona eklendi; append-only kuralina uyuyor. */
+      {ad:"AURORA RAYS", zem:"#07151d", yazi:"#d4f1d8", marka:"#36c5a0", cek:"#16434c", font:F1, kose:"50%", cizim:"aurorarays"},
+      {ad:"AMBER DIAL", zem:"#080604", yazi:"#f1dfb2", marka:"#e5bd62", cek:"#2d1a0c", font:F3, kose:"2px", cizim:"amberdial"},
+      {ad:"CORAL SUN", zem:"#180c1b", yazi:"#f2b36d", marka:"#e45d4b", cek:"#4d1b32", font:F2, kose:"50%", cizim:"coralsun"},
+      {ad:"BLUE HOUR RAYS", zem:"#080d24", yazi:"#dce8e6", marka:"#a8d8e8", cek:"#182d61", font:F1, kose:"50%", cizim:"bluehourrays"},
+      {ad:"GOLDEN VEIL", zem:"#120810", yazi:"#f0d59b", marka:"#d7a548", cek:"#421a25", font:F2, kose:"2px", cizim:"goldenveil"},
   ];
   const DERI_AD = ['OFF'].concat(DERILER.map(d=>d.ad));
   /* ── EKRANDAKI SIRA (tablonun sirasi DEGIL) ──────────────────────
@@ -11490,9 +11500,9 @@
          (126 -> 128) -- sinir de her ikisinde elle guncellendi.
          15 Eylul: KILIM SERISI eklendi, 128 -> 134, sonra ayni gun
          CHEVRON kullanicinin istegiyle cikarildi (hic push edilmemis
-         bir deriydi), 133 -> 128; yeni besliyle 133 -> 143. */
+         bir deriydi), 133 -> 128; yeni iki besliyle 133 -> 148. */
       deriEslemeUygula(_a);
-      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 143) AYAR.deri = _a.deri|0;
+      if(typeof _a.deri === 'number' && _a.deri > 0 && _a.deri <= 148) AYAR.deri = _a.deri|0;
       /* ── HER ACILISTA DERI KAYIYORDU ────────────────────────────
          KULLANICININ SOZU: "UFO skiniyle kapatiyorum, app'i baska bir
          skinle aciyor, yine yenilerden. Kapayip acsa da ayni sekilde
@@ -11527,14 +11537,14 @@
          acilis bir onceki turun KALDIGI yerden devam etsin -- yoksa
          her acilista sifirdan karistirma, bazi deriler hic cikmadan
          torba yeniden dolardi.
-         SINIR 143: satir ~10887'deki (_a.deri <= 143) ile AYNI olmak
+         SINIR 148: satir ~10887'deki (_a.deri <= 148) ile AYNI olmak
          ZORUNDA -- o satirin yorumundaki tuzak burada da gecerli.
          Birim testi ikisini de DERILER.length'e karsi sinar. */
       if(_a.deriRastgele === true) AYAR.deriRastgele = true;
       if(Array.isArray(_a.deriTorba))
-        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 143).map(n=>n|0);
+        AYAR.deriTorba = _a.deriTorba.filter(n=>typeof n === 'number' && n > 0 && n <= 148).map(n=>n|0);
       if(AYAR.deriRastgele){
-        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(143);
+        if(!AYAR.deriTorba.length) AYAR.deriTorba = deriTorbaKaristir(148);
         AYAR.deri = AYAR.deriTorba.pop();
         /* ── MERKEZ DE BERABER CIRCLE'A DONMELI (15 Eylul) ─────────
            Kullanicinin sozu: "bu sekilde acildiginda circle modu
@@ -11590,7 +11600,7 @@
       if(_a.temaKilit === true) AYAR.temaKilit = true;
       if(_a.deriKilit === true) AYAR.deriKilit = true;
       if(typeof _a.radyoDeri === 'number' && _a.radyoDeri >= 0
-         && _a.radyoDeri <= 143) AYAR.radyoDeri = _a.radyoDeri|0;
+         && _a.radyoDeri <= 148) AYAR.radyoDeri = _a.radyoDeri|0;
       if(_a.radyoMerkez === 'cark' || _a.radyoMerkez === 'faz'
          || _a.radyoMerkez === 'yuvarlak') AYAR.radyoMerkez = _a.radyoMerkez;
       /* SINIR ELLE YAZILIYOR, YILDIZ_KADEME.length ILE DEGIL.

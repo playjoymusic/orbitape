@@ -714,6 +714,12 @@ tablonun kopyası yapılmadı. Deri tablosu append-only kaldı.
 derisi sınırları 143'e güncellendi. `node test/birim.js` geçti. Tam sağlık
 testi yerel Playwright Chromium eksik olduğu için çalışmadı.
 
+**Aynı gün devamı:** SUNBURST çizgisini sürdüren ikinci beşli eklendi:
+`AURORA RAYS`, `AMBER DIAL`, `CORAL SUN`, `BLUE HOUR RAYS` ve
+`GOLDEN VEIL`. Her birinin farklı ışın/eğri çizgi yapısı ve ayrı renk
+ailesi var. Toplam deri sayısı 143'ten 148'e çıktı; sınırlar 148'e
+güncellendi. `node test/birim.js` tekrar geçti.
+
 **Kuyruğa alınan, henüz başlanmayan (Kural 6):**
 - Çark sesi telefon araması sonrası kalıcı sessizlik -- pj'den ölçüm
   (Safari uzaktan hata ayıklama) ya da tanılama eklentisi onayı
