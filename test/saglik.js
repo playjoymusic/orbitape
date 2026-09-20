@@ -1204,8 +1204,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kamKapat() cagirip kapatiyor -- kamera onizlemesiyle yildiz
        katmani ustuste binmesin diye. Ikisi de kod + genis Kural 4
        yorumu; ekrana giden JS mantigi kucuk (birkac satir), buyume
-       neredeyse tamamen aciklama metninden. Ham boy 1281,55 KB. */
-    K('Ham boy < 1284 KB', dosyaBoy < 1284*1024,
+       neredeyse tamamen aciklama metninden. Ham boy 1281,55 KB.
+       20 EYLUL (ikinci degisiklik ayni gun): 1284 -> 1288. LOCK SKIN:
+       kullanicinin sozu "orbitape tarafina gecersek kesinlikle ilk
+       default carkli halka ile acilsin ... radiotape tarafi
+       hangisiyle kapattiysa ... oyle acilsin ... ayarlara switch
+       koy". moodUygula() (RADIOTAPE<->ORBITAPE gecisinin tek kapisi)
+       artik deriKilit KAPALIYKEN (varsayilan) ORBITAPE'e girerken
+       deriyi/merkezi radyoDeri/radyoMerkez'e saklayip OFF+carka
+       zorluyor, donuste geri veriyor; yeni "LOCK SKIN" anahtari
+       (LOCK THEME ile ayni desen) bu zorlamayi kapatabiliyor. Ayrica
+       arama sesi (aramaTon) kullanicinin sozuyle 2 tik kisildi (tepe
+       genlik 0.03 -> 0.015). Buyumenin cogu yine yorumdan. Ham boy
+       1286,01 KB. */
+    K('Ham boy < 1288 KB', dosyaBoy < 1288*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -3371,6 +3383,79 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       !!rsm && rsm.deri === 42 && rsm.merkez === 'yuvarlak' && rsm.carkSinifi === false,
       rsm ? ('deri=' + rsm.deri + ' merkez=' + rsm.merkez + ' merkez-cark sinifi=' + rsm.carkSinifi)
           : 'olculemedi');
+  }
+
+  /* ── LOCK SKIN (20 Eylul) ──────────────────────────────────────────
+     Kullanicinin sozu: "orbitape tarafina gecersek kesinlikle ilk
+     default carkli halka ile acilsin her zaman her durumda ... ama
+     radiotape tarafi hangisiyle kapattiysa skins ... oyle acilsin ...
+     ayarlara belki bisey koyarsin swicth." moodUygula() (RADIOTAPE<->
+     ORBITAPE gecisinin TEK kapisi) artik deriKilit KAPALIYKEN
+     (varsayilan) ORBITAPE'e girince deriyi/merkezi radyoDeri/
+     radyoMerkez'e saklayip OFF+carka zorluyor, RADIOTAPE'e donunce
+     sakladigini geri veriyor; LOCK SKIN acilirsa (eski davranis) hic
+     dokunmuyor. */
+  {
+    const ls = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiMood = AYAR.mood, eskiMod = mod, eskiAktifMod = AKTIF_MOD;
+      const eskiDeri = AYAR.deri, eskiMerkez = AYAR.merkez, eskiKilit = AYAR.deriKilit;
+      const eskiRadyoDeri = AYAR.radyoDeri, eskiRadyoMerkez = AYAR.radyoMerkez;
+
+      // Once temiz bir RADIOTAPE durumu kur.
+      AYAR.mood = false; mod = 'radio'; moodUygula(false); await bek(160);
+
+      // 1) KILIT KAPALI (varsayilan): RADIOTAPE'te bir deri sec, ORBITAPE'e gec.
+      AYAR.deriKilit = false;
+      AYAR.deri = 42; AYAR.merkez = 'yuvarlak';
+      AYAR.mood = true; moodUygula(false); await bek(320);
+      const zorlandiMi = (AYAR.deri === 0 && AYAR.merkez === 'cark');
+      const saklandiMi = (AYAR.radyoDeri === 42 && AYAR.radyoMerkez === 'yuvarlak');
+
+      // RADIOTAPE'e donunce eski deri geri gelmeli.
+      AYAR.mood = false; moodUygula(false); await bek(320);
+      const geriGeldiMi = (AYAR.deri === 42 && AYAR.merkez === 'yuvarlak');
+
+      // 2) KILIT ACIK: deri hic degismemeli, ne girerken ne donerken.
+      AYAR.deri = 17; AYAR.merkez = 'cark'; AYAR.deriKilit = true;
+      AYAR.mood = true; moodUygula(false); await bek(320);
+      const kilitliGirerkenDegismediMi = (AYAR.deri === 17);
+      AYAR.mood = false; moodUygula(false); await bek(320);
+      const kilitliDonerkenDegismediMi = (AYAR.deri === 17);
+
+      AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      AYAR.deriKilit = eskiKilit; AYAR.radyoDeri = eskiRadyoDeri; AYAR.radyoMerkez = eskiRadyoMerkez;
+      moodUygula(false); await bek(200);
+      /* moodUygula kendi AKTIF_MOD'unu yazar (ORBITAPE ya da null) --
+         testten ONCEKI gercek degeri (acilista 'RADIOTAPE') geri
+         zorluyoruz, yoksa sonraki "Acilista RADIOTAPE" kontrolu
+         bizim temizligimizi degil moodUygula'nin varsayilanini olcer. */
+      AKTIF_MOD = eskiAktifMod; mod = eskiMod;
+
+      return { zorlandiMi, saklandiMi, geriGeldiMi, kilitliGirerkenDegismediMi, kilitliDonerkenDegismediMi };
+    });
+    K('LOCK SKIN kapaliyken ORBITAPE her zaman default deriyle aciliyor',
+      ls.zorlandiMi && ls.saklandiMi,
+      'zorlandi=' + ls.zorlandiMi + ' saklandi=' + ls.saklandiMi);
+    K("LOCK SKIN kapaliyken RADIOTAPE'e donunce eski deri geri geliyor",
+      ls.geriGeldiMi, 'geriGeldi=' + ls.geriGeldiMi);
+    K('LOCK SKIN aciksa deri iki dunyada da degismiyor',
+      ls.kilitliGirerkenDegismediMi && ls.kilitliDonerkenDegismediMi,
+      'girerken=' + ls.kilitliGirerkenDegismediMi + ' donerken=' + ls.kilitliDonerkenDegismediMi);
+  }
+
+  /* ── ARAMA SESI 2 TIK KISILDI (20 Eylul) ────────────────────────────
+     Kullanicinin sozu: "search arama sesinin 2 tık daha kısık
+     baslatalım." Ses seviyesi bir Web Audio kazanc egrisi (gain
+     envelope tepe degeri); gercek ses seviyesini yerelde olcmenin
+     yolu yok, bu yuzden dogrudan kaynaktaki sabit kontrol ediliyor
+     (ayni desen: "Donus nobeti beden boyunu da kilitliyor"). */
+  {
+    const kaynakAr = fs.readFileSync('index.html', 'utf8');
+    const iAr = kaynakAr.indexOf('ARAMA_TON_TEPE');
+    K('Arama sesi tepe genligi 0.03tan 0.015e kisildi',
+      iAr > 0 && /ARAMA_TON_TEPE\s*=\s*0\.015/.test(kaynakAr.slice(iAr, iAr + 60)),
+      'ARAMA_TON_TEPE = 0.015 (eskisi 0.03)');
   }
 
   /* ── GORSELDE SAAT: VARSAYILAN ACIGA BIR KERELIK ONARIM ─────────

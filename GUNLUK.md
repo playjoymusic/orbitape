@@ -1359,3 +1359,64 @@ Değişen dosyalar (bu turda): `index.html` (`bedenBoyKilitle` +
 `_donusYerlestir` bağlantısı + resize dinleyicileri; `zumBaslat`
 kamera kapatma bekçisi; CSP yeniden üretildi), `test/saglik.js` (3 yeni
 test + ham boy tavanı 1280 -> 1284 KB), `_headers` (CSP tazelendi).
+
+## 20 Eylül (devam) — LOCK SKIN + arama sesi kısıldı
+
+pj: *"orbitape tarafına gecersek kesinlikle ilk default çarklı halka
+ile acılsın her zaman her durumda ... ama radiotap tarafı hangisiyle
+kapattıysa skins ... öyle açılsın ... ayarlara belki bisey koyarsın
+switch ... bi lock tehme bisey var zaten o fonksiyonunu yitirdi mi"*
++ *"search arama sesinin 2 tık daha kısık başlatalım."*
+
+### LOCK SKIN
+
+Kod okunarak (Kural 4) bulundu: RADIOTAPE <-> ORBITAPE geçişinin TEK
+kapısı `moodUygula()` (dosyanın kendi yorumu: *"Tek kapı. İki dünya
+arasındaki geçişin BAŞKA yolu yok."*). Deri (skin) o zamana kadar
+TEK ve GLOBAL bir ayardı, hangi dünyada olunduğuna bakmıyordu.
+pj'nin bahsettiği "lock" zaten var olan `LOCK THEME` (temaKilit)
+anahtarıydı -- deri için bir eşi yoktu, o yüzden "işlevini yitirdi
+mi" sorusunun cevabı: hiç var olmamıştı.
+
+**Eklenen:** `AYAR.deriKilit` (varsayılan KAPALI/kilitsiz) +
+`AYAR.radyoDeri`/`radyoMerkez` (RADIOTAPE'in kendi derisini saklayan
+depo alanları). `moodUygula()` içine iki nokta eklendi:
+- RADIOTAPE'ten ORBITAPE'e GERÇEK bir geçişte (`mod` değişkeni henüz
+  'lib' değilken -- böylece açılışta zaten ORBITAPE'teyken bu
+  fonksiyon tekrar çağrılırsa saklanan değer EZİLMİYOR), kilit
+  kapalıysa mevcut deri/merkez `radyoDeri`/`radyoMerkez`'e saklanıp
+  deri OFF + merkez cark'a zorlanıyor.
+  ORBITAPE'e geçince ekran her zaman default çarklı halkayla açılır.
+- ORBITAPE'ten RADIOTAPE'e dönüşte, kilit kapalıysa saklanan deri
+  geri veriliyor -- RADIOTAPE hangi deriyle kapatıldıysa onunla
+  devam eder.
+
+Kilit AÇILIRSA (ayarlardaki yeni "LOCK SKIN" anahtarı, "LOCK THEME"
+ile aynı yerde/desende) bu zorlama tamamen devre dışı kalır, deri
+eskisi gibi tek ve sabit kalır -- pj'nin istediği "seçenekli" kısım
+bu. FX açılınca çarkın gitmesi davranışına dokunulmadı.
+
+**Test:** 3 yeni test (`test/saglik.js`) -- kilit kapalıyken zorlama
+ve saklamayı, RADIOTAPE'e dönüşte geri gelmeyi, kilit açıkken hiçbir
+şeyin değişmediğini ölçüyor. Yol boyunca "LOCK SKIN" satırının 5 dilin
+hepsinde çevirisi eksik çıktı (`test/birim.js`'in kendi kapısı
+yakaladı) -- `dil/{tr,de,es,fr,it}.json`'a "RANDOM SKIN ON OPEN"in
+hemen yanına eklendi.
+
+### Arama sesi 2 tık kısıldı
+
+`aramaTon()`'daki tepe genlik (`ARAMA_TON_TEPE`) 0.03'ten 0.015'e
+indirildi (iki "tık" × -3dB). Zarfın şekli (atak/sönüm, filtre)
+değişmedi, yalnızca seviye. Kaynaktaki sabiti okuyan bir kaynak-regex
+testi eklendi (gerçek ses seviyesi yerelde ölçülemiyor).
+
+**Tam takım:** `araclar/kontrol.sh` iki kez çalıştırıldı (ilki
+çeviri eksiğinde kırmızı çıktı, düzeltilip yeniden koşuldu) --
+ikincisinde saglik 867/867, arıza 18/18, senaryo 121/121, motor
+19/19, cihaz 156/156, derlenmiş çıktı 19/19, hepsi temiz. Ham boy
+tavanı 1284 -> 1288 KB'a çekildi (büyümenin çoğu yorum).
+
+Değişen dosyalar: `index.html` (LOCK SKIN mekanizması, arama sesi
+seviyesi, CSP yeniden üretildi), `test/saglik.js` (4 yeni test + ham
+boy tavanı 1284 -> 1288 KB), `_headers` (CSP tazelendi),
+`dil/{tr,de,es,fr,it}.json` ("LOCK SKIN" çevirileri).

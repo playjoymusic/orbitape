@@ -4474,6 +4474,13 @@
          (bkz. AYAR yuklenirken deriRastgele/deriTorba notu). -->
     <div class="sat" data-ayar="deriRastgele" role="switch" tabindex="-1">
       <span>RANDOM SKIN ON OPEN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── LOCK SKIN (20 Eylul) ────────────────────────────────────
+         "LOCK THEME" ile ayni desen. KAPALIYKEN (varsayilan):
+         ORBITAPE'e gecince deri her zaman OFF/carka doner, RADIOTAPE
+         kendi derisini hatirlar (bkz. moodUygula). ACIKKEN: deri
+         eskisi gibi tek ve sabit, iki dunya da ayni deriyi paylasir. -->
+    <div class="sat" data-ayar="deriKilit" role="switch" tabindex="-1">
+      <span>LOCK SKIN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ALL BLACK: zemin her rafta simsiyah. Tema secili olsa bile
          siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
@@ -11363,6 +11370,20 @@
      Ayni desen: yalnizca YENI kullaniciyi etkiler, kayitli tercihi
      olanin degeri asagidaki _a.aramaSes okumasi yuzunden hep kazanir. */
   var AYAR = { aramaSes:false, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[],
+    /* ── LOCK SKIN (20 Eylul) ─────────────────────────────────────
+       Kullanicinin sozu: "orbitape tarafina gecersek kesinlikle ilk
+       default carkli halka ile acilsin her zaman her durumda ...
+       ama radiotape tarafi hangisiyle kapattiysa skins ... oyle
+       acilsin ... ayarlara belki bisey koyarsin swicth. bi lock
+       tehme bisey var zaten o fonksiyonunu yitirdi mi."
+       "LOCK THEME" (temaKilit) zaten var ve ayni desende calisiyor;
+       "LOCK SKIN" onun deri karsiligi. VARSAYILAN KAPALI (kilitsiz):
+       moodUygula() RADIOTAPE'ten ORBITAPE'e geciste deriyi/merkezi
+       radyoDeri/radyoMerkez'e SAKLAYIP OFF+carka zorluyor, geri
+       donuste sakladigini GERI VERIYOR -- bkz. moodUygula yorumu.
+       Kilit ACILIRSA (deriKilit:true) bu zorlama devre disi kalir,
+       deri eskisi gibi tek ve tum uygulamada sabit kalir. */
+    deriKilit:false, radyoDeri:0, radyoMerkez:'cark',
     /* SEMBOL SPIN (17 Eylul): varsayilan KAPALI. Acikken sag ustteki
        3 sembol eski soyut oyunu oynar (rastgele donme + ucluk
        kutlamasi + tik'te carkiCevir). Kapaliyken (varsayilan) --
@@ -11552,6 +11573,11 @@
       if(typeof _a.tema === 'number' && _a.tema >= 0
          && _a.tema < TEMALAR.length) AYAR.tema = _a.tema|0;
       if(_a.temaKilit === true) AYAR.temaKilit = true;
+      if(_a.deriKilit === true) AYAR.deriKilit = true;
+      if(typeof _a.radyoDeri === 'number' && _a.radyoDeri >= 0
+         && _a.radyoDeri <= 133) AYAR.radyoDeri = _a.radyoDeri|0;
+      if(_a.radyoMerkez === 'cark' || _a.radyoMerkez === 'faz'
+         || _a.radyoMerkez === 'yuvarlak') AYAR.radyoMerkez = _a.radyoMerkez;
       /* SINIR ELLE YAZILIYOR, YILDIZ_KADEME.length ILE DEGIL.
          Sebep sirasi: ayarlar betigin BASINDA okunuyor, YILDIZ_KADEME
          ise gorsellestirici bolumunde -- yani burada henuz TANIMSIZ.
@@ -11818,6 +11844,14 @@
                etmesin diye siradaki ses de radyodan aliniyor. */
   function moodUygula(ilk){
     const _favModOncekiMod = AKTIF_MOD;
+    /* ── LOCK SKIN: RADIOTAPE<->ORBITAPE GECISINDE DERI (20 Eylul) ──
+       'mod' DEGISKENI SU AN HANGI DUNYADA OLDUGUMUZU SOYLUYOR --
+       asagidaki if(AYAR.mood) kolu onu 'lib' yapmadan ONCE okunuyor.
+       Boylece "gercekten RADIOTAPE'ten geliyoruz" ile "zaten
+       ORBITAPE'teyken (ac. acilista) tekrar cagriliyoruz" ayirt
+       ediliyor -- ikincisinde radyoDeri'yi SIFIRLA'nmis (0/OFF)
+       deriyle EZMEMEK gerekiyor (bkz. asagidaki dal). */
+    const _oncekiDunya = (typeof mod !== 'undefined') ? mod : 'radio';
     /* ── KIP DEGISIRKEN GOKYUZU ZUMU ANINDA KAPANIYOR (15 Eylul, olculdu) ──
        Bildirilen: yildizlari buyutup (yildiz-zum sinifi acikken
        #carkTuval ve #viz gizli, bkz. CSS) hemen ardindan ORBITAPE'e
@@ -11840,6 +11874,18 @@
     try{
       document.body.classList.toggle('mood', !!AYAR.mood);
       if(AYAR.mood){
+        /* ── LOCK SKIN KAPALIYSA: ORBITAPE HER ZAMAN DEFAULT DERIYLE
+           ACILIR. Sadece GERCEK bir RADIOTAPE->ORBITAPE gecisinde
+           (yukaridaki _oncekiDunya kontrolu) mevcut deri/merkez
+           radyoDeri/radyoMerkez'e saklaniyor; yoksa (mesela acilista
+           AYAR.mood zaten true'yken bu fonksiyon ikinci kez cagirilirsa,
+           bkz. moodUygula(true) notu) uzerine yazilmiyor. */
+        if(!AYAR.deriKilit && _oncekiDunya !== 'lib'){
+          AYAR.radyoDeri = AYAR.deri|0;
+          AYAR.radyoMerkez = AYAR.merkez || 'cark';
+          AYAR.deri = 0;
+          AYAR.merkez = 'cark';
+        }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
         /* Radyo tarafinin rafi UNUTULMUYOR, saklaniyor: kipten
@@ -11879,6 +11925,13 @@
            'RADIOTAPE' yapiyor ve mod zaten radyo. Burada sifirlamak
            o degeri eziyordu (test yakaladi). Yalnizca kullanici kipi
            KAPATTIGINDA temizlik gerekiyor. */
+        /* LOCK SKIN KAPALIYSA: RADIOTAPE'e donerken kendi derisini
+           geri aliyor (bkz. yukaridaki saklama). Kilit ACIKSA deriye
+           hic dokunulmuyor -- eskisi gibi sabit kaliyor. */
+        if(!AYAR.deriKilit){
+          AYAR.deri = AYAR.radyoDeri|0;
+          AYAR.merkez = AYAR.radyoMerkez || 'cark';
+        }
         try{ fxNormale(); }catch(e){ _yut(e); }
         try{ AKTIF_MOD = null; }catch(e){ _yut(e); }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
@@ -11919,6 +11972,19 @@
          kurulsun, yoksa oteki dunyanin kayitlari aramada kalir. */
       try{ _araIdx = null; _araSay = -1; }catch(e){ _yut(e); }
       try{ gecmisSifirla(); }catch(e){ _yut(e); }
+      /* LOCK SKIN: yukarida AYAR.deri/merkez degistiyse (ya zorlandi
+         ya geri verildi) ekrana da yansitiliyor -- merkezUygula()
+         zaten deriUygula()'yi da cagiriyor (bkz. o fonksiyonun
+         yorumu). Kilit acikken bu iki satir hicbir seyi degistirmez,
+         zararsiz tekrar-uygulama. */
+      if(!AYAR.deriKilit){
+        try{ ayarKaydet(); }catch(e){ _yut(e); }
+        try{ merkezUygula(); deriIzgaraIsaret(); }catch(e){ _yut(e); }
+        try{
+          const _drSat = document.querySelector('.sat[data-ayar="deri"] .durum');
+          if(_drSat) _drSat.textContent = DERI_AD[AYAR.deri|0] || 'OFF';
+        }catch(e){ _yut(e); }
+      }
       try{ modAdiYaz(); zeminUygula(); moodYaz(); }catch(e){ _yut(e); }
       /* ── CARK AYNI ANDA OTEKI DUNYAYA GECIYOR ─────────────────
          Bildirilen: "ORBITAPE'e geciyorum, carkta hala RADIOTAPE
@@ -14568,6 +14634,13 @@
 
   // ── frekans arama sesi: yumuşak ANALOG synth tonu (cutoff baya kapalı VCF), "tı—tı—tı" 3 ton -> bekle -> tekrar ──
   let aramaCalisyor=false, aramaTimer=null, aramaLoop=null;
+  /* ── ARAMA SESI 2 TIK KISILDI (20 Eylul) ───────────────────────────
+     Kullanicinin sozu: "search arama sesinin 2 tık daha kısık
+     baslatalım." Tepe genlik 0.03 idi -- her "tık" -3dB (genlik
+     carpani ~0.708) sayilarak iki tik uygulandi: 0.03 * 0.708^2 ≈
+     0.015. Zarfin sekli (atak/sonum sureleri, filtre) DOKUNULMADI,
+     yalnizca tepe seviyesi. */
+  const ARAMA_TON_TEPE = 0.015;   // eskisi 0.03; -6dB (2 tık × -3dB)
   function aramaTon(t, freq){                 // tek yumuşak, karanlık analog ton
     try{
       const o1=actx.createOscillator(); o1.type='triangle'; o1.frequency.value=freq;
@@ -14581,7 +14654,7 @@
       lp.frequency.exponentialRampToValueAtTime(280, t+0.30);
       // genlik zarfı: yumuşak atak + orta sönüm (perküsif DEĞİL), baya kısık
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(0.03, t+0.045);
+      g.gain.linearRampToValueAtTime(ARAMA_TON_TEPE, t+0.045);
       g.gain.exponentialRampToValueAtTime(0.0001, t+0.34);
       o1.start(t); o2.start(t); o1.stop(t+0.38); o2.stop(t+0.38);
     }catch(e){ _yut(e); }
