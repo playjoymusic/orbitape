@@ -1504,3 +1504,126 @@ yok` kontrolü de kırmızı göründü; kaynak `ALIEN` listesinde üç yasak re
 statik olarak eşleşmiyor, bu yüzden hangi tarayıcı bayrağının düştüğü
 ölçülmeden sembol silinmeyecek. Yeni `_headers` ile yeniden CI koşulması
 bekleniyor.
+
+### 21 Eylül — arşiv havuzunun güncel ölçümü
+
+Eski büyük hasat günlüğünde havuzun **22.903 kayıt** olduğu yazılıydı:
+3.888'den bu sayıya çıkılmış, 19.052 yeni kayıt içeri alınmıştı. Yeni
+Mac'teki mevcut dosyalar bugün yeniden sayıldı: `earth.json` **12.952**,
+`earth_buyuk.json` **5.198**, toplam ana arşiv **18.150 kayıt**. `earth_giris.json`
+**700 kayıtlık** hızlı açılış alt kümesi; ana toplamın üstüne eklenmez.
+
+Sonuç: arşivin zenginleştirilmesi geçmişte gerçekten yapıldı, ancak günlükteki
+22.903 sayısı bugünkü dosya durumunu artık temsil etmiyor. Yeni hasat veya
+yeniden dengeleme bu oturumda yapılmadı; yapılacaksa ayrı bir iş olarak
+ölçümle başlanacak. Bu ölçüm yalnızca dosya sayımıdır, içerik silindiği ya da
+taşındığı sonucunu tek başına kanıtlamaz.
+
+### 21 Eylül — Yeni açık arşiv kaynakları için ön araştırma
+
+pj, ORBITAPE arşivini başka kaynaklarla zenginleştirmenin Google Play ve
+lisans yolunu zorlayıp zorlamayacağını sordu. Karar: kaynak eklenmedi.
+Önce mevcut Internet Archive hattındaki 22.903 -> 18.150 farkının nedeni
+bulunacak; yeni kaynak ancak aynı lisans kapısından ve gerçek tarayıcı uyumu
+ölçümünden sonra değerlendirilecek.
+
+Araştırma sonucu:
+
+- **Internet Archive:** mevcut kaynak olarak en uygun aday. Resmî metadata
+  şemasında `licenseurl` ve `rights` alanları var; ancak boş/belirsiz lisans
+  kayıtları yine elenmeli. Yeni bir servis değil, mevcut hasadın güvenli
+  biçimde genişletilmesi tercih ediliyor.
+- **Freesound:** API var ama token/OAuth kimlik doğrulaması gerekiyor;
+  lisanslar kayıt bazında CC0, CC BY, Sampling+ vb. değişiyor. Sampling+
+  ve belirsiz kayıtlar ORBITAPE'in türev kayıt kuralına uygun değil. Şimdilik
+  eklenmeyecek.
+- **Wikimedia Commons:** dosya bazında lisans ve atıf kontrolü gerekiyor;
+  kaynak resmî olarak yeniden kullanımı anlatıyor ama lisans doğruluğu için
+  garanti vermiyor. Ses dosyalarının formatı ve Safari uyumu da ayrıca
+  ölçülmeli. Genel bir Commons havuzunu doğrudan çalmak güvenli bir kaynak
+  sayılmayacak.
+- **Audius:** lisans metadata'sı olmadığı için daha önce doğru olarak
+  çıkarıldı.
+- **Jamendo:** önceki denemede API/çalışma ve lisans akışı güvenilir olmadığı
+  için çıkarıldı; yeniden ekleme kararı yok.
+
+Kullanılan resmî belgeler: `archive.org/developers/metadata-schema`,
+`freesound.org/docs/api`, `commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia`
+ve Creative Commons'ın lisans alan kişi için rehberi. Sonraki somut iş,
+önce mevcut arşiv farkını ve kaynak geçmişini ölçmek; yeni sağlayıcı
+eklemek değil.
+
+**FMA için ek ölçüm:** FMA gerçekten bağımsız sanatçı ve açık lisanslı müzik
+barındırıyor; fakat resmî kullanım şartları belirli dosyaların lisansına uyma
+zorunluluğunun yanında MP3 dosyalarına doğrudan deep-link vermeyi ve otomatik
+isteklerle veri kazımayı yasaklıyor. Bu nedenle FMA canlı URL sağlayıcısı
+olarak eklenmeyecek. İleride yalnızca küçük, elle/kurala uygun seçilmiş bir
+yedek havuz düşünülebilir: kayıt kendi depomuzda tutulur, lisans URL'si,
+sanatçı, başlık ve FMA kaynak sayfası saklanır. `FMA-Limited` kayıtları kesin
+olarak alınmaz; yalnız kişisel indirme/dinleme/streaming içindir. CC BY/SA/NC
+kayıtlarında atıf, ticari kullanım ve türev kayıt yükümlülükleri ayrıca
+karşılanmadan import yapılmayacak.
+
+### 21 Eylül — Internet Archive'da daha önce çekilmeyen çocuk ve seri adayları
+
+Eski hasat tekniği kayda geçirildi: `araclar/hasat.py` mevcut adresleri önce
+çıkarıyor; 28 sorgu planıyla aday topluyor; sorgunun içinde lisans alanı dolu,
+`mediatype:audio` ve `NOT licenseurl:*nd*` şartlarını uyguluyor; item başına
+en fazla 6 MP3, 400 KB'dan büyük dosyaları alıyor; `_64kb`, `_vbr`, `_128kbps`
+gibi türev bit hızlarını tek kayda indiriyor; kalıcı `/download/{id}/{file}`
+linki yazıyor; 8 işçiyle çalışıp her 50 kayıtta durumu diske kaydediyor.
+
+Zaten hedeflenen/çekilen ana kümeler: field recording, soundscape, ambient,
+nature, space, NASA Audio Collection, rain/ocean/forest/wind/birds/wildlife,
+LibriVox, old-time radio, audiobook/poetry, interview, history, storytelling,
+oral history, speech, lecture, radio drama ve folklore. `arsiv_ayikla.py`
+sonradan video seslerini ve LibriVox/audiobook/poetry kayıtlarını tamamen
+çıkarıyor; bu yüzden çocuk serileri eski havuzda bulunmuş olsa bile bugün
+oynatılan havuzda yok.
+
+Yeni API taraması:
+
+- `collection:librivoxaudio` + `title:(fairy OR children OR nursery OR bedtime
+  OR goblins OR beaver)` + lisans filtresi: **221 item**.
+- Temiz aday örnekleri: `Grimm's Fairy Tales`, `Hans Christian Andersen Fairy
+  Tale Collection`, Andrew Lang'in `Grey/Red/Violet/Pink/Diamond/Crimson Fairy
+  Book` serileri, `Five Children and It`, `Box-Car Children`, `Railway
+  Children`, `Aesop for Children`, `Uncle Wiggily's Airship: Bedtime Stories`,
+  `Our Old Nursery Rhymes`, `Stories the Iroquois Tell Their Children`,
+  `Music Talks With Children`.
+- `collection:children` diye doğrudan koleksiyon araması: **0**; çocuk alanı
+  tek bir koleksiyonda değil, başlık/metadata üzerinden dağılmış.
+- Genel çocuk/masal araması **14.353**, fakat çok gürültülü: podcast, hukuk,
+  haber ve çocuk kelimesi geçen yetişkin içerikleri de dönüyor; doğrudan
+  alınmayacak.
+- `oldtimeradio`: lisanslı **1.566** item; zaten eski planın içindeydi.
+- `etree`: lisans filtresiyle yalnız **1** item; yedek kaynak olarak anlamlı
+  değil.
+- Doğa başlık/subject araması **76.270** item; mevcut doğa planı zaten var,
+  ama bu sayı ses kalitesi ve tekrar temizliği yapılmadan kullanılmayacak.
+
+Karar bekleyen öneri: çocukları genel ORBITAPE havuzuna rastgele karıştırmak
+yerine ayrı, küçük bir **CHILDREN** rafı/serisi yapmak. İlk deneme 221 itemin
+hepsini değil, yalnızca Public Domain/CC0 olan ve gerçek MP3 dosyası bulunan
+seçilmiş 20-50 itemi aynı hasat tekniğiyle ölçmek olmalı. Kod ve havuz henüz
+değiştirilmedi. Başlangıç adımı olarak `araclar/cocuk_hasat.py` yazıldı:
+mevcut havuzları yalnız tekrarları elemek için okuyor, 20 LibriVox itemiyle
+sınırlı kalıyor, yalnız Public Domain/CC0 lisanslarını alıyor, 400 KB altını
+ve türev bitrate kopyalarını eliyor, kalıcı `/download/` linki ve kaynak
+metadata'sı taşıyor, sonucu yalnız `cocuk_adaylari.json` dosyasına yazıyor.
+Ana arşivlere ve uygulamaya dokunmuyor. `python3.14 -m py_compile` geçti;
+ağ ortamında henüz çalıştırılmadı.
+
+### 21 Eylül — KIDS en küçük ORBITAPE halkası olarak kararlaştırıldı
+
+pj'nin kararı: masallar ve ailelerin çocuklarla açacağı içerik, uygulamanın
+yaş kitlesini küçültmeden ORBITAPE içinde ayrı bir **KIDS** serisi olacak.
+KIDS en içteki/en küçük halka olarak sınıflandırma tablosuna eklendi; kendi
+altın teması ve çizimi var, genel ORBITAPE havuzunun yerine geçmiyor. Testte
+arşiv halka sayısı 12'den 13'e, kategori sayısı 16'dan 17'ye güncellendi;
+`index.html` ve `test/saglik.js` sözdizimi kontrolleri geçti.
+
+KIDS'in gerçek masal kayıtları henüz Archive.org'dan çekilip `earth.json`e
+eklenmedi. `cocuk_hasat.py` bunları ayrı `cocuk_adaylari.json` dosyasına
+çıkaracak; 20 Public Domain/CC0 LibriVox itemiyle sınırlı ilk deneme ve
+dinleme/uygunluk kontrolü tamamlanmadan ana havuza karıştırılmayacak.
