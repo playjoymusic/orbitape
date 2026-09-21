@@ -5287,15 +5287,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* ARAMA ARTIK earthTamBekle() CAGIRIYOR: acilista yalnizca
            700 kayitlik baslangic dosyasi iniyor, arama tam havuzu
            istiyor. Kalip da onu izliyor. */
-        istekliIkili: (k.match(/earthTamBekle\(\); uzunYukle\(\);/g)||[]).length === 1
-                   && (k.match(/earthYukle\(\); uzunYukle\(\);/g)||[]).length === 0,
+      istekliIkili: ((k.match(/earthTamBekle\(\);\s*uzunYukle\(\);/g)||[]).length
+            + (k.match(/Promise\.all\(\[earthTamBekle\(\),\s*uzunYukle\(\)\]\)/g)||[]).length) === 1
+            && (k.match(/earthYukle\(\);\s*uzunYukle\(\);/g)||[]).length === 0,
         /* modSec: kanal degisiminde de yok */
         modSecTemiz: /if\(mod==='lib'\)\{ earthYukle\(\); \}/.test(k),
         /* kaynaktanCek: zar kapisi */
         zarVar: /UZUN_ORAN = 0\.28/.test(k)
              && /!uzunHavuz\.length && !_uzSoz && Math\.random\(\) < UZUN_ORAN\) uzunYukle\(\)/.test(k),
         /* arama: dogrudan, zarsiz */
-        aramaDogrudan: /try\{ earthTamBekle\(\); uzunYukle\(\); \}catch\(e\)\{ _yut\(e\); \} \}/.test(k),
+      aramaDogrudan: /try\{\s*(?:earthTamBekle\(\);\s*uzunYukle\(\);|Promise\.all\(\[earthTamBekle\(\),\s*uzunYukle\(\)\]\))/.test(k),
         /* toplam cagri sayisi: tanim + zar + arama = 3 */
         cagri: (k.match(/uzunYukle\(\)/g)||[]).length
       };

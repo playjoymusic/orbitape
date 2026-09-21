@@ -1449,3 +1449,23 @@ Değişen dosyalar: `index.html` (LOCK SKIN mekanizması, arama sesi
 seviyesi, CSP yeniden üretildi), `test/saglik.js` (4 yeni test + ham
 boy tavanı 1284 -> 1288 KB), `_headers` (CSP tazelendi),
 `dil/{tr,de,es,fr,it}.json` ("LOCK SKIN" çevirileri).
+
+## 21 Eylül — mağaza durumu
+
+pj'nin bildirdiği güncel durum:
+
+- Tablet görselleri Play Console'a yüklendi; bu madde kapandı.
+- Kapalı test üçüncü gününde ve 13 kişi opt-in durumda. Gereken 12 kişi
+  eşiği aşılmış durumda; 14 kesintisiz günün tamamlanması bekleniyor.
+
+Böylece mağaza tarafında kalan tek aktif iş kapalı test süresinin bitmesi.
+Kod tarafında yalnızca `tracks` deposuna CI, PINCH rehber etiketinin küçük
+taşması ve cihaz üzerinde Safari/WebKit kontrolü kaldı. Android TV ve sound
+postcard karar bekleyen, yayını engellemeyen işlerdir.
+
+### Android TV kapsamı netleştirildi
+
+Android TV'de hedef bütün uygulama değil, yalnızca **RADIOTAPE** bölümü.
+İki parmakla yıldız büyütme gibi dokunmatik hareketler TV kapsamına
+girmiyor; bu hareketler Mac'te de bulunmuyor. Kumandayla radyo seçme,
+çalma/durdurma ve ses kontrolü çalışacak; mevcut skin'ler korunacak.
