@@ -1627,3 +1627,19 @@ KIDS'in gerçek masal kayıtları henüz Archive.org'dan çekilip `earth.json`e
 eklenmedi. `cocuk_hasat.py` bunları ayrı `cocuk_adaylari.json` dosyasına
 çıkaracak; 20 Public Domain/CC0 LibriVox itemiyle sınırlı ilk deneme ve
 dinleme/uygunluk kontrolü tamamlanmadan ana havuza karıştırılmayacak.
+
+### 21 Eylül — Arşiv hasadı zenginleştirildi
+
+KIDS ayrı rafı kaldırıldı; çocuk/masal içeriği mevcut HUMAN kapsamına
+gidecek. Arşivi genel olarak zenginleştirmek için `araclar/hasat.py` planına
+yeni aday kümeleri eklendi: **bioacoustic**, **biophony**, Hamilton
+bioacoustics, Aporee sound map, urban soundscape, Great 78 ve 78 RPM, folk
+music, traditional music, scientific recording ve experimental electronic.
+
+Bunlar yeni kaynak değil, yine Internet Archive içindeki kayıtlar. Mevcut
+lisans sorgusu, ND elemesi, yalnız MP3 seçimi, 400 KB alt sınırı, türev bitrate
+birleştirme, 8 işçi ve kalıcı `/download/` link kuralı aynen geçerli. Hasat bu
+Mac'te ağ kapalı olduğu için henüz çalıştırılmadı; değişiklik yalnız aday
+planını hazırlıyor. Halka sayısı artırılmayacak: vintage/78 RPM/folk/traditional
+music adayları mevcut **RECORDS** rafında birleşecek; biyoakustik, sound map,
+şehir, bilim ve deneysel sesler de mevcut raf sınıflarına dağıtılacak.

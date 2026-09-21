@@ -3652,9 +3652,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        hepsi var ve ilk sirada"), RECORDS EN DISTA.
        Sira KAYIT SAYISINA GORE DEGIL: TALKS 4.123 kayitla ictekilerden
        biri, RECORDS 1.745 kayitla en distaki. Sunum sirasi. */
-   K('Arsiv kanalinda halkalar 13 raf', ars.n===13 && /^KIDS INDUSTRIAL/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
+   K('Arsiv kanalinda halkalar 12 raf', ars.n===12 && /^INDUSTRIAL/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
     K('En icte INDUSTRIAL, en dista ORBITAPE',
-      /^KIDS INDUSTRIAL NOISE DARK/.test(ars.ad) && /BEATS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
+      /^INDUSTRIAL NOISE DARK/.test(ars.ad) && /BEATS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
     /* MEZAR TASI: bir tur TALKS diye bir raf vardi (sesli kitap,
        siir, radyo tiyatrosu). Kullanici kapatti ve icerigi arsivden
        cikardi: tek basina arsivin dortte biriydi ve rastgele calan
