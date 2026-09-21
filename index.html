@@ -9443,6 +9443,14 @@
     iz('earthYukle');
     /* Radyo tarafinda arsivin isi yok: ne aramada, ne kuyrukta. */
     if(!AYAR.mood) return 0;
+    /* HIZLI ILK SES: ag isteginden once cihazdaki son havuzu kullan.
+       Eski yol onbellege ancak ag istegi basarisiz olursa bakiyordu;
+       bu da RADIOTAPE'ten ORBITAPE'e donuste kullaniciyi gereksiz yere
+       earth_giris.json bekletiyordu. Onbellek varsa ses hemen secilir,
+       guncel liste arkadan yine indirilir. */
+    if(!earthHavuz.length){
+      try{ earthOnbellekten(); }catch(e){ _yut(e); }
+    }
     /* Havuz elde ama TAM DEGILSE, arkadaki inisi burada yeniden
        planla: kullanici arsivden cikip geri dondugunde tam liste
        tamamlansin. */
@@ -19997,7 +20005,7 @@
     if(araKut.classList.contains('acik')) return;
     araKut.classList.add('acik'); document.body.classList.add('arama-acik');
     try{ geriYerlestir(); }catch(e){ _yut(e); }   // acilinca sol kenara don
-    /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
+     /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
        tarayacagi sey de o. */
     if(!AYAR.mood){ try{ radyoListe(); }catch(e){ _yut(e); } }
     /* ARAMA TAM HAVUZU ISTER. Acilista yalnizca 700 kayitlik
@@ -20005,11 +20013,22 @@
        demek, 16.424 kaydin ustunde oturup kullaniciyi geri
        cevirmek olurdu. Burada tam liste isteniyor ve asagidaki
        tazeleme dongusu geldiginde listeyi kendiliginden yeniliyor. */
-    else { try{ earthTamBekle(); uzunYukle(); }catch(e){ _yut(e); } }
     silGoster();
     _araDokunuldu = false;                    // yeni acilis: temiz sayfa
     setTimeout(()=>{ try{ araGiris.focus(); araGiris.select(); }catch(e){ _yut(e); } }, 40);
-    araYap();                                 // bos kutu -> tum liste
+    araYap();                                 // bos kutu -> eldeki liste hemen gorunsun
+    /* Tam arama havuzunu ilk cizimden SONRA getir. Iki buyuk JSON'u
+       arama paneli acilir acilmaz baslatmak, ilk sesi ve ilk sonucu
+       ayni bant genisligine mahkum ediyordu. */
+    if(AYAR.mood){
+      setTimeout(()=>{
+        try{
+          Promise.all([earthTamBekle(), uzunYukle()]).then(()=>{
+            if(araKut.classList.contains('acik')) araYap();
+          }).catch(e=>_yut(e));
+        }catch(e){ _yut(e); }
+      }, 0);
+    }
     /* HAVUZLAR AGDAN GELIYOR. Yukaridaki cagri o an elde ne varsa onu
        yaziyor; radyo listesi 200 ms sonra gelirse liste bos kalirdi.
        Iki kez tazeleniyor -- kullanici ilk harfi yazana kadar liste
