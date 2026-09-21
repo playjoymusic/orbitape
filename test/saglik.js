@@ -5278,6 +5278,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const uz = await pg.evaluate(()=>{
       const k = document.documentElement.innerHTML;
+         const y = k.replace(/\s+/g, ' ');
       const kes = (bas, boy)=>{ const i = k.indexOf(bas); return i<0 ? '' : k.slice(i, i+boy); };
       return {
         /* Istekli ikili 'earthYukle(); uzunYukle();' dosyada TEK
@@ -5287,16 +5288,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* ARAMA ARTIK earthTamBekle() CAGIRIYOR: acilista yalnizca
            700 kayitlik baslangic dosyasi iniyor, arama tam havuzu
            istiyor. Kalip da onu izliyor. */
-      istekliIkili: ((k.match(/earthTamBekle\(\);\s*uzunYukle\(\);/g)||[]).length
-            + (k.match(/Promise\.all\(\[earthTamBekle\(\),\s*uzunYukle\(\)\]\)/g)||[]).length) === 1
-            && (k.match(/earthYukle\(\);\s*uzunYukle\(\);/g)||[]).length === 0,
+      istekliIkili: ((y.match(/earthTamBekle\(\);\s*uzunYukle\(\);/g)||[]).length
+         + (y.match(/Promise\.all\(\[earthTamBekle\(\),\s*uzunYukle\(\)\]\)/g)||[]).length) === 1
+         && (y.match(/earthYukle\(\);\s*uzunYukle\(\);/g)||[]).length === 0,
         /* modSec: kanal degisiminde de yok */
-        modSecTemiz: /if\(mod==='lib'\)\{ earthYukle\(\); \}/.test(k),
+      modSecTemiz: /if\(mod==='lib'\)\{\s*earthYukle\(\);\s*\}/.test(y)
+         || /if\(AYAR\.mood\)\{.{0,1200}?earthYukle\(\);/.test(y),
         /* kaynaktanCek: zar kapisi */
-        zarVar: /UZUN_ORAN = 0\.28/.test(k)
-             && /!uzunHavuz\.length && !_uzSoz && Math\.random\(\) < UZUN_ORAN\) uzunYukle\(\)/.test(k),
+            zarVar: /UZUN_ORAN = 0\.28/.test(y)
+               && /!uzunHavuz\.length && !_uzSoz && Math\.random\(\) < UZUN_ORAN\) uzunYukle\(\)/.test(y),
         /* arama: dogrudan, zarsiz */
-      aramaDogrudan: /try\{\s*(?:earthTamBekle\(\);\s*uzunYukle\(\);|Promise\.all\(\[earthTamBekle\(\),\s*uzunYukle\(\)\]\))/.test(k),
+      aramaDogrudan: /try\{ (?:earthTamBekle\(\); uzunYukle\(\);|Promise\.all\(\[earthTamBekle\(\), uzunYukle\(\)\]\))/.test(y),
         /* toplam cagri sayisi: tanim + zar + arama = 3 */
         cagri: (k.match(/uzunYukle\(\)/g)||[]).length
       };
@@ -8505,7 +8507,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const kod = fsx.readFileSync('index.html','utf8');
       K('Once kucuk dosya, tam havuz arkadan',
          /EARTH_GIRIS_URL\s*=\s*"\/earth_giris\.json"/.test(kod)
-         && /listeCek\(EARTH_GIRIS_URL/.test(kod)
+         && /listeCek\s*\(\s*EARTH_GIRIS_URL/.test(kod)
          && /try\{ earthTamYukle\(\); \}catch/.test(kod)
          && /earthTamBekle\(\); uzunYukle\(\)/.test(kod),
          'earthYukle giris dosyasini aliyor, tam havuzu beklemeden basliyor, arama tam havuzu istiyor');
