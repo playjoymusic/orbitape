@@ -8507,9 +8507,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const kod = fsx.readFileSync('index.html','utf8');
       K('Once kucuk dosya, tam havuz arkadan',
          /EARTH_GIRIS_URL\s*=\s*"\/earth_giris\.json"/.test(kod)
-         && /listeCek\s*\(\s*EARTH_GIRIS_URL/.test(kod)
-         && /try\{ earthTamYukle\(\); \}catch/.test(kod)
-         && /earthTamBekle\(\); uzunYukle\(\)/.test(kod),
+         && /listeCek[\s\S]{0,80}EARTH_GIRIS_URL/.test(kod)
+          && /try\{ earthTamYukle\(\); \}catch/.test(kod)
+          && (/earthTamBekle\(\);\s*uzunYukle\(\)/.test(kod)
+             || /Promise\.all\(\[earthTamBekle\(\),\s*uzunYukle\(\)\]\)/.test(kod)),
          'earthYukle giris dosyasini aliyor, tam havuzu beklemeden basliyor, arama tam havuzu istiyor');
     }
 
