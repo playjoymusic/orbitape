@@ -322,11 +322,23 @@ Bunlar zaman kaybettirdi. Bir daha kaybettirmesin.
   `window['tremG']` `undefined` verir, adıyla erişilmeli.
 - **`.assetsignore` dosyayı hiç yüklemez.** `_headers` oraya yazılırsa
   Cloudflare onu hiç görmez ve başlıklar sessizce uygulanmaz.
+- **`index.html` değişince `_headers` de değişir.** Satır içi script/style
+  özeti CSP'ye yazılıdır; `index.html`'i commit edip `python3 araclar/csp.py`
+  çıktısını commit etmemek CI'da `BAYAT: index.html: script özeti eksik`
+  kırmızısı üretir. Her index değişikliğinde önce `csp.py`, sonra `derle.py`,
+  sonra sağlık kapısı çalışır; `_headers` aynı teslimde gönderilir.
+- **CSP kırmızısı uygulama hatası değildir.** Sağlık 864/866 gibi neredeyse
+  tamamen yeşil olup yalnız CSP'de düşerse önce `_headers` tazeliği kontrol
+  edilir; sembol, raf veya ses koduna dokunulmaz.
 - **Cloudflare tek dosya sınırı 25 MiB.** 30 MB'lık bir ara dosya depoya
   girdi ve yayını düşürdü. Artık `.gitignore`'da ve testte kontrolü var.
 - **Bu ortamda ağ kısıtlı.** archive.org, Jamendo, radio-browser, orbitape.app
   buradan erişilemez. GitHub erişilebilir. WebKit indirilemez.
   PythonAnywhere archive.org'a erişebiliyor — uzun hasatlar orada koşuyor.
+- **Yerel sağlık testi sunucu ister.** `node test/saglik.js` tek başına
+  `127.0.0.1:8765` üzerinde sunucu yoksa `ERR_CONNECTION_REFUSED` ile durur;
+  testten önce kökte yerel HTTP sunucusu açılır. Playwright tarayıcısı da
+  ayrıca kurulu olmalıdır.
 - **`device_bash` GitHub'dan çekebiliyor ama itemiyor.** Kimlik bilgisi yok.
 - **Sığ klon (`--depth 1`) push edemiyor.** Klonlarken `--depth` kullanma.
 - **Masaüstü halka-kenar testi CI'da tutarsızdı — 17 Eylül'de DÜZELTİLDİ.**

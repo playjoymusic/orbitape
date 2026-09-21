@@ -1643,3 +1643,8 @@ Mac'te ağ kapalı olduğu için henüz çalıştırılmadı; değişiklik yaln�
 planını hazırlıyor. Halka sayısı artırılmayacak: vintage/78 RPM/folk/traditional
 music adayları mevcut **RECORDS** rafında birleşecek; biyoakustik, sound map,
 şehir, bilim ve deneysel sesler de mevcut raf sınıflarına dağıtılacak.
+
+Bu turda tekrar eden CI hatası ayrıca kalıcı kurala çevrildi: `index.html`
+değiştiğinde `_headers` CSP özetleri aynı teslimde `csp.py` ile yenilenecek;
+yerel `saglik.js` çalıştırılmadan önce HTTP sunucusu ve Playwright kontrol
+edilecek. Sağlıkta yalnız CSP düşerse uygulama kodu kurcalanmayacak.
