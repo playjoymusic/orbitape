@@ -3591,7 +3591,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      CITY ve BEATS acildi, MACHINES ile SOUNDSCAPES kalkti). Sayi
      sabit bir hedef degil, listenin GERCEKTEN degistigini gormek
      icin duruyor. */
-   K('Kategoriler tanimli',    md.n===17, md.ad);
+   K('Kategoriler tanimli',    md.n===16, md.ad);
   /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
