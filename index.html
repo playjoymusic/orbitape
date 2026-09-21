@@ -1750,7 +1750,7 @@
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,'Helvetica Neue',Arial,sans-serif;
     /* 16px ZORUNLU: iOS Safari daha küçük yazılı girişe dokununca sayfayı
        otomatik yakınlaştırıyor -> çerçeve genişliyor, halka sola kayıyordu. */
-    font-size:1rem;-webkit-appearance:none;border-radius:0;}
+    font-size:1rem;appearance:none;-webkit-appearance:none;border-radius:0;}
   #ara input::-webkit-search-cancel-button{display:none;}
   #ara input::placeholder{color:currentColor;opacity:.42;
     font-family:'Share Tech Mono',monospace;font-size:0.6875rem;letter-spacing:.30em;}
@@ -3543,7 +3543,7 @@
     font-size:0.9375rem;letter-spacing:.26em;font-weight:400;color:#5adcd2;
     text-indent:.26em;}
   #ayar .sat.kapi i{font-style:normal;font-size:0.5625rem;letter-spacing:.16em;
-       tutmak isteniyorsa yolu opaklik degil boy olurdu. */
+    /* Tutmak isteniyorsa yolu opaklik degil boy olurdu. */
     color:rgba(244,247,250,.60);font-family:'Share Tech Mono',ui-monospace,monospace;}
   /* ACIKKEN: cerceve ve yazi FX tarafinin morumsu rengine geciyor --
      "oteki dunyaya girdim" hissi kapinin kendisinde. */
