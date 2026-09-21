@@ -174,6 +174,11 @@ konuşmalar günlükten okuncak hep her zaman. ilk hafıza kaybında."*
   ZATEN yapılmış olduğu anlaşıldığında, bir belgenin bayat çıktığı
   anlaşıldığında, ya da pj bir kararı sözlü verdiğinde de (10. madde
   bu yüzden var, ama tek tek her karar için genel kural budur).
+- **Konuşmanın tamamı bağlamdır:** kullanıcı sorunu ve istediği sonuç,
+  teknik karar ve gerekçesi, ölçüm/test/CI sonucu, commit/push durumu ve
+  açık sonraki adım `GUNLUK.md`'ye yazılır. Yeni sohbette bunların
+  otomatik taşınacağı varsayılmaz; günlüğe girmeyen bilgi kalıcı kabul
+  edilmez.
 
 Amaç 27 Ağustos'taki "Süreç dersleri" bölümüyle aynı: altı ay sonra
 "bunu konuşmuş muyduk" sorusunun cevabı bir dosyada dursun, bir

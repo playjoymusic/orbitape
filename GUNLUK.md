@@ -1469,3 +1469,38 @@ Android TV'de hedef bütün uygulama değil, yalnızca **RADIOTAPE** bölümü.
 İki parmakla yıldız büyütme gibi dokunmatik hareketler TV kapsamına
 girmiyor; bu hareketler Mac'te de bulunmuyor. Kumandayla radyo seçme,
 çalma/durdurma ve ses kontrolü çalışacak; mevcut skin'ler korunacak.
+
+## 21 Eylül — Kural 11 genişletildi: konuşmanın tamamı kalıcı kayda girecek
+
+Yeni bir sohbette yalnızca kod değil, önceki konuşmanın bağlamı da bilinmeli.
+Bu yüzden bundan sonra her oturum sonunda şu dört şey `GUNLUK.md`'ye
+yazılacak: **kullanıcının söylediği sorun ve istediği sonuç, alınan teknik
+karar ve gerekçesi, ölçüm/test/CI sonucu, açık kalan sonraki adım.**
+
+Dosya taşınması, eski-yeni bilgisayar farkı, yanlış teşhis, hangi commit'in
+pushlandığı, hangi Action'ın kırmızı/yeşil olduğu ve kullanıcının süreç
+talimatları da bu kaydın parçasıdır. Yeni oturum veya bağlam sıkıştırması
+sonrasında kod okumadan önce bu bölüm ve günlüğün sonu okunacak; sohbetin
+otomatik olarak taşınacağı varsayılmayacak. Günlükte olmayan eski bir karar
+varmış gibi davranılmayacak, belirsizse belirsiz olduğu yazılacak.
+
+**Bu oturumun kaydı:** Eski diskteki `ORBITAPE DATA` klasörü yeni Mac'in
+`Downloads` klasörüne bütünüyle taşınmış; depo yolu ve içerik korunmuş.
+GitHub Actions'taki kırmızı sağlık kontrolü, arşiv yükleme testinin kaynak
+metnini fazla katı regex'lerle araması nedeniyle incelendi. `test/saglik.js`
+çağrı biçimlerini boşluk ve `Promise.all` düzeninden bağımsız denetleyecek
+şekilde güncellendi; `node --check` ve üç kaynak koşulu geçti. Ardından
+`index.html` içindeki eksik CSS yorum başlangıcı düzeltildi ve standart
+`appearance` eklendi; VS Code Problems paneli 5 uyarıdan 0'a indi.
+Değişiklikler GitHub Desktop'tan pushlandı; yeni Sağlık kontrolü ve Yayın
+Action'ı çalışmaya başladı. Tam sağlık testi yerelde Playwright ve uzun
+bekleme nedeniyle tamamlanamadı; bu nedenle CI sonucu kesinleşmeden iş
+tamamlandı sayılmayacak. Sonraki CI koşusunda sağlık yine kırmızı çıktı:
+`_headers`, `index.html`'deki son CSS değişikliğinden sonra yeniden
+üretilmemişti ve CSP testi bunu doğru biçimde yakaladı. Apple Silicon için
+çalışan Python `~/.local/bin/python3.14` ile `araclar/csp.py` çalıştırıldı;
+`_headers` ve sürüm damgası yenilendi. Aynı CI koşusunda `İstenmeyen işaret
+yok` kontrolü de kırmızı göründü; kaynak `ALIEN` listesinde üç yasak regex
+statik olarak eşleşmiyor, bu yüzden hangi tarayıcı bayrağının düştüğü
+ölçülmeden sembol silinmeyecek. Yeni `_headers` ile yeniden CI koşulması
+bekleniyor.
