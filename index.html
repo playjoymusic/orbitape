@@ -1044,8 +1044,12 @@
      okunuyordu (CAM'de 20px olculdu). Ayak izini artik #araclar'in
      min-width'i koruyor, tuslar yazilarini sariyor, bos alan satirin
      sonunda birikiyor. Kunye yerlesimi etkilenmiyor. */
-  #rec{min-width:0;} #cam{min-width:0;}
+  #rec{min-width:82px;} #cam{min-width:70px;}
   #araclar{min-width:201px;}
+  /* REC/CAM durum yazisi degisse de sol blok ve diger ogeler oynamasin. */
+  #recYazi,#camYazi{display:inline-block;min-width:4.6em;text-align:center;}
+  #rec.kaydet #recYazi{min-width:4.6em;}
+  body.kam:not(.kayit) #rec{display:none !important;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
   /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
@@ -1151,7 +1155,7 @@
        sanatcisi, kaynagi ve lisansi tam yaziliyor. Bu bir tasarim
        tercihi degil, CC BY ailesinin sarti -- "..." ile biten bir
        atif atif sayilmaz. */
-    pointer-events:none;user-select:none;max-width:min(86vw,460px);text-align:right;opacity:0;transition:opacity .55s ease;
+    pointer-events:none;user-select:none;max-width:min(86vw,460px);min-height:5.4em;text-align:right;opacity:0;transition:opacity .55s ease;
     /* ── BLOGA TAVAN KOYMAK YANLISTI (6 Eylul) ─────────────────
        Bir sure burada max-height + overflow:hidden vardi. Blok
        ALTTAN sabit (bottom:7px), yani tavan gelince kutu USTTEN
