@@ -1656,6 +1656,21 @@ kurallarını kopyalamadan SIGNALS için en az 5 temsilciyi başlangıç dosyas�
 yerleştiriyor. Dosya hâlâ 700 kayıt; ölçüm `signals_hint=5`, gzip yaklaşık
 60 KB. Mevcut tam havuz değişmedi.
 
+### 22 Eylül — Visual açıkken araçlar ve kamera çerçevesi
+
+Visual açıkken sol üstteki ayarlar, alarm, skin ve guide simgeleri CSS ile
+tamamen gizleniyordu; kullanıcı bunların aktif olduğunu ama görünmediğini
+bildirdi. `gorsel.js` içinde bu dört araç ve visual düğmesi artık hold katmanının
+üstünde, yumuşak ama görünür ve basılabilir kalıyor. Visual şeridindeki kapatma
+X'i daha belirgin yapıldı; ORBITAPE tarafındaki visual da RADIOTAPE kadar
+karanlık kalmaması için ölçülü parlaklık artışı aldı.
+
+RADIOTAPE kamera fotoğraf/video çıktısında görünen ani çerçevenin kökü bulundu:
+canlı `#kam` maskesi `%52 -> %94`, kayıt ara tuval maskesi yanlışlıkla `%26 ->
+%47` idi. `kayit.js` maskesi canlı oranlarla eşitlendi. `gorsel.js`, `kayit.js`,
+`test/saglik.js` ve inline script parse kontrolleri geçti; tam Playwright sağlık
+koşusu henüz çalıştırılmadı.
+
 ### 22 Eylül — SIGNALS rafı eklendi
 
 pj'nin seçimiyle tek yeni arşiv halkası **SIGNALS** oldu. Numbers station,

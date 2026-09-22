@@ -62,6 +62,12 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
   const KURALLAR = [
     "#gorselTuval{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none;background:#000;opacity:0;transition:opacity .45s ease}",
     "body.gorsel-acik #gorselTuval{opacity:1}",
+     /* Visual acikken sol ustteki araclar kaybolmasin: hold katmani
+       dokunusu yutuyor ama bu tuslar ustte kalip calismali. */
+     "body.gorsel-acik #ayarTut,body.gorsel-acik #saatTus,body.gorsel-acik #deriFirca,body.gorsel-acik #rehberTus,body.gorsel-acik #gorselTus{display:block !important;z-index:98;opacity:.72;pointer-events:auto}",
+     "body.gorsel-acik #ayarTut:hover,body.gorsel-acik #saatTus:hover,body.gorsel-acik #deriFirca:hover,body.gorsel-acik #rehberTus:hover,body.gorsel-acik #gorselTus:hover,body.gorsel-acik #ayarTut:focus-visible,body.gorsel-acik #saatTus:focus-visible,body.gorsel-acik #deriFirca:focus-visible,body.gorsel-acik #rehberTus:focus-visible,body.gorsel-acik #gorselTus:focus-visible{opacity:1}",
+     /* ORBITAPE tarafinda visual fazla sönük kalmasin. */
+     "body.gorsel-acik.mood #gorselTuval{filter:brightness(1.22) saturate(1.08)}",
     /* Halka ve cark cekiliyor: kullanicinin istedigi "halka cekilir o
        gelir" tam olarak bu. display:none -- opacity degil: gorunmez
        ama cizilen bir tuval hala islemci yakar. */
@@ -141,6 +147,7 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
     /* Tuslar 34x30 idi -- basparmak icin kucuk. Kullanicinin sozu: "visual penceresi kucuk, carpiya basamadim, uygulamayi kapatmak zorunda kaldim." 44x40: kapatma tusu artik parmak olcusunde. */
     "#gorselSerit .gs-tus{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;width:44px;height:40px;padding:0;font:inherit;font-size:0.875rem;cursor:pointer;opacity:.7;-webkit-tap-highlight-color:transparent}",
     "#gorselSerit .gs-tus:hover,#gorselSerit .gs-tus:focus-visible{opacity:1}",
+    "#gorselSerit .gs-tus:last-child{opacity:1;color:#fff;background:rgba(220,245,245,.16);border:1px solid rgba(220,245,245,.58);border-radius:50%;box-shadow:0 0 12px rgba(160,240,230,.38)}",
     "#gorselSerit .gs-ad{font-size:0.6875rem;letter-spacing:.24em;min-width:104px;text-align:center;opacity:.9;color:var(--d-marka,#4de0d0)}",
     "#gorselSerit .gs-sayac{font-size:0.625rem;opacity:.45;padding-right:4px}",
     "@media (max-height:480px){#gorselSerit{top:calc(var(--sut,15px) + env(safe-area-inset-top,0px) + 46px)}}",

@@ -1515,10 +1515,12 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       const tuval = document.createElement('canvas'); tuval.width = tuval.height = boy;
       const maske = document.createElement('canvas'); maske.width = maske.height = boy;
       const m = maske.getContext('2d');
-      const g = m.createRadialGradient(boy/2, boy/2, boy*0.26, boy/2, boy/2, boy*0.47);
-      g.addColorStop(0,'rgba(0,0,0,1)');
-      g.addColorStop(0.55,'rgba(0,0,0,.42)');
-      g.addColorStop(1,'rgba(0,0,0,0)');
+      /* Canli #kam maskesiyle ayni oranlar: kayit/fotograf yolunda
+        daha kucuk ikinci bir daire gorunmesin. */
+      const g = m.createRadialGradient(boy/2, boy/2, 0, boy/2, boy/2, boy*0.5);
+      g.addColorStop(0.52,'rgba(0,0,0,1)');
+      g.addColorStop(0.76,'rgba(0,0,0,.42)');
+      g.addColorStop(0.94,'rgba(0,0,0,0)');
       m.fillStyle = g; m.fillRect(0,0,boy,boy);
       _kamT = { boy:boy, tuval:tuval, ctx:tuval.getContext('2d'), maske:maske };
       return _kamT;
