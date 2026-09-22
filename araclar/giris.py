@@ -33,7 +33,6 @@ Kullanim:  python3 araclar/giris.py
 import gzip
 import json
 import os
-import re
 
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KAYNAK = os.path.join(KOK, 'earth.json')
@@ -42,7 +41,6 @@ HEDEF = os.path.join(KOK, 'earth_giris.json')
 # 700: olculdu -> 58 KB gzip. 500 (41 KB) rafi seyreltiyor, 900 (75 KB)
 # kazanci azaltiyor. Amac "ilk sesi hizli ver", "havuzu tasi" degil.
 SAYI = 700
-SIGNALS = re.compile(r'numbers ?station|shortwave|radio ?signals?|irdial|conet|telsiz|ham radio|cb radio|pirate radio|airchecks|telemetry|interference|static|calls?[-_]', re.I)
 
 
 def main():
@@ -53,27 +51,6 @@ def main():
 
     adim = max(1, len(hepsi) // SAYI)
     ornek = hepsi[::adim][:SAYI]
-    # Yeni SIGNALS rafı seyrek olduğu için düz aralıklı örnekleme onu
-    # neredeyse tamamen kaçırabiliyor. Başlangıç dosyası her rafı göstermeli;
-    # tam havuzun kuralını kopyalamadan yalnız bu raf için en az beş kaynak
-    # işaretini güvenceye alıyoruz. Sayı yine 700 kalıyor.
-    secili = {x.get('mp3') for x in ornek if isinstance(x, dict)}
-    sinyaller = [x for x in hepsi
-                 if isinstance(x, dict)
-                 and x.get('mp3') not in secili
-                 and SIGNALS.search(' '.join(str(x.get(k) or '') for k in ('etiket', 'mp3')))]
-    mevcut = sum(1 for x in ornek
-                 if isinstance(x, dict)
-                 and SIGNALS.search(' '.join(str(x.get(k) or '') for k in ('etiket', 'mp3'))))
-    for aday in sinyaller:
-        if mevcut >= 5 or not ornek:
-            break
-        for i in range(len(ornek) - 1, -1, -1):
-            eski = ornek[i]
-            if not (isinstance(eski, dict) and SIGNALS.search(' '.join(str(eski.get(k) or '') for k in ('etiket', 'mp3')))):
-                ornek[i] = aday
-                mevcut += 1
-                break
 
     metin = json.dumps(ornek, ensure_ascii=False, separators=(',', ':'))
     with open(HEDEF, 'w', encoding='utf-8') as f:

@@ -81,7 +81,7 @@ UZUN_ESIK_MB = 25
 # zenginleşen bir tür, eski toplam hedef yüzünden yapay olarak sıfırlanmaz.
 # Kanal başına öge tavanı yalnızca tek bir Archive.org iteminin havuzu
 # ele geçirmesini önler.
-TAVAN = {'AMBIANCE': 2, 'SIGNALS': 2, 'HUMAN': 1, 'ORBITAPE': 4}
+TAVAN = {'AMBIANCE': 2, 'HUMAN': 1, 'ORBITAPE': 4}
 
 CALMAYAN = re.compile(r'\.(zip|torrent|txt|xml|json|jpg|jpeg|png|gif|pdf|md5|sqlite)$', re.I)
 ITEM = re.compile(r'archive\.org/download/([^/]+)/')
@@ -127,10 +127,10 @@ def kalip_oku():
     guclu = re.compile('(' + '|'.join(kelimeler('DIN_GUCLU')) + ')', re.I)
     # DIN_ZAYIF bilerek OKUNMUYOR: arsivde tek basina yetmiyor, sebebi
     # dosyanin basinda. Radyo tarafinda kullanilmaya devam ediyor.
-    return mod('AMBIANCE'), mod('HUMAN'), mod('SIGNALS'), muaf, guclu
+    return mod('AMBIANCE'), mod('HUMAN'), muaf, guclu
 
 
-AMB, INS, SIG, MUAF, GUCLU = kalip_oku()
+AMB, INS, MUAF, GUCLU = kalip_oku()
 
 
 def metin(r):
@@ -138,10 +138,8 @@ def metin(r):
 
 
 def kanal(r):
-    """SIGNALS önce, sonra HUMAN: haberleşme kayıtları ayrı rafta."""
+    """HUMAN önce bakılır: insan sesi olan hiçbir şey AMBIANCE'a girmez."""
     t = metin(r)
-    if SIG.search(t):
-        return 'SIGNALS'
     if INS.search(t):
         return 'HUMAN'
     if AMB.search(t):
@@ -275,7 +273,7 @@ def main(argv):
 
     # Her geçerli aday alınır. Yalnız item başına tavan uygulanır; kategori
     # dengesi artık yapay toplam bütçeyle sınırlanmaz.
-    kanallar = ('AMBIANCE', 'SIGNALS', 'HUMAN', 'ORBITAPE')
+    kanallar = ('AMBIANCE', 'HUMAN', 'ORBITAPE')
     secilen, dokum = [], {}
     havuzlar = {k: [r for r in aday if r['_kanal'] == k] for k in kanallar}
     for k in kanallar:

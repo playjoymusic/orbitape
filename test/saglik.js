@@ -1221,8 +1221,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        1286,01 KB. Sonraki deri ve pointer guvenceleriyle olculen kaynak
        boyu 1289 KB'a cikti; tavan 1290 KB'a alindi, cunku buyume yine
        aciklama/test korumasi kaynakli ve derlenmis cikti tavanini etkilemiyor.
-       22 EYLUL SIGNALS rafi: index.html 1.321.361 bayt / 1290,39 KB oldu;
-       tavan 1292 KB'a alindi. Artis yine kucuk kod + yorum kaynakli. */
+      22 EYLUL visual ve kamera guvenceleri: index.html 1.321.361 bayt /
+      1290,39 KB oldu; tavan 1292 KB'a alindi. Artis yine kucuk kod + yorum
+      kaynakli. */
     K('Ham boy < 1292 KB', dosyaBoy < 1292*1024,
       Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
@@ -3593,7 +3594,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      CITY ve BEATS acildi, MACHINES ile SOUNDSCAPES kalkti). Sayi
      sabit bir hedef degil, listenin GERCEKTEN degistigini gormek
      icin duruyor. */
-   K('Kategoriler tanimli',    md.n===17, md.ad);
+   K('Kategoriler tanimli',    md.n===16, md.ad);
   /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
@@ -3654,9 +3655,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        hepsi var ve ilk sirada"), RECORDS EN DISTA.
        Sira KAYIT SAYISINA GORE DEGIL: TALKS 4.123 kayitla ictekilerden
        biri, RECORDS 1.745 kayitla en distaki. Sunum sirasi. */
-   K('Arsiv kanalinda halkalar 13 raf', ars.n===13 && /^INDUSTRIAL/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
+   K('Arsiv kanalinda halkalar 12 raf', ars.n===12 && /^INDUSTRIAL/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
     K('En icte INDUSTRIAL, en dista ORBITAPE',
-      /^INDUSTRIAL NOISE DARK/.test(ars.ad) && /SIGNALS HUMANS BEATS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
+      /^INDUSTRIAL NOISE DARK/.test(ars.ad) && /BEATS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
     /* MEZAR TASI: bir tur TALKS diye bir raf vardi (sesli kitap,
        siir, radyo tiyatrosu). Kullanici kapatti ve icerigi arsivden
        cikardi: tek basina arsivin dortte biriydi ve rastgele calan
