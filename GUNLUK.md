@@ -1648,3 +1648,17 @@ Bu turda tekrar eden CI hatası ayrıca kalıcı kurala çevrildi: `index.html`
 değiştiğinde `_headers` CSP özetleri aynı teslimde `csp.py` ile yenilenecek;
 yerel `saglik.js` çalıştırılmadan önce HTTP sunucusu ve Playwright kontrol
 edilecek. Sağlıkta yalnız CSP düşerse uygulama kodu kurcalanmayacak.
+
+### 22 Eylül — SIGNALS rafı eklendi
+
+pj'nin seçimiyle tek yeni arşiv halkası **SIGNALS** oldu. Numbers station,
+shortwave, radio signals, telsiz, ham/CB radio, pirate radio, aircheck,
+telemetry, interference ve static kayıtları artık HUMAN'dan önce SIGNALS'a
+girecek. Eski kayıtlar da başlık yerine güvenilir etiket ve archive.org kaynak
+kimliği/dosya adı üzerinden yeniden sınıflandırılacak; uygulamanın serbest
+başlık kuralı korunuyor.
+
+SIGNALS yeni hasat sınıflandırıcısına da eklendi; mevcut kategori bütçesi yok,
+yalnız item başına parça tavanı var. Yeni rafın ayrı tema ve çizimi eklendi,
+test sayısı 16'dan 17 kategoriye ve 12'den 13 arşiv rafına güncellendi.
+Python, JavaScript ve inline script kontrolleri geçti.

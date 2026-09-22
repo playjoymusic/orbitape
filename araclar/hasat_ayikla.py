@@ -76,13 +76,12 @@ from lisans_filtre import serbest_mi                     # noqa: E402
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UZUN_ESIK_MB = 25
 
-# Havuzun tamamı için tavan. Ölçüm 25 binde rahat diyor; hedef biraz
-# altında tutuluyor ki bir sonraki hasat için de yer kalsın.
-TOPLAM_HEDEF = 25000
-
-# Kanal başına öge tavanı. AMBIANCE kıt, HUMAN bol: aynı tavanı
-# koyarsak kıt olan daha da kıt kalır.
-TAVAN = {'AMBIANCE': 2, 'HUMAN': 1, 'ORBITAPE': 4}
+# Türler arasında toplam veya eşitlik tavanı yok. Telif, tekrar, bitrate,
+# bozuk adres ve item başına tavan filtreleri kalır; böylece AMBIANCE gibi
+# zenginleşen bir tür, eski toplam hedef yüzünden yapay olarak sıfırlanmaz.
+# Kanal başına öge tavanı yalnızca tek bir Archive.org iteminin havuzu
+# ele geçirmesini önler.
+TAVAN = {'AMBIANCE': 2, 'SIGNALS': 2, 'HUMAN': 1, 'ORBITAPE': 4}
 
 CALMAYAN = re.compile(r'\.(zip|torrent|txt|xml|json|jpg|jpeg|png|gif|pdf|md5|sqlite)$', re.I)
 ITEM = re.compile(r'archive\.org/download/([^/]+)/')
@@ -128,10 +127,10 @@ def kalip_oku():
     guclu = re.compile('(' + '|'.join(kelimeler('DIN_GUCLU')) + ')', re.I)
     # DIN_ZAYIF bilerek OKUNMUYOR: arsivde tek basina yetmiyor, sebebi
     # dosyanin basinda. Radyo tarafinda kullanilmaya devam ediyor.
-    return mod('AMBIANCE'), mod('HUMAN'), muaf, guclu
+    return mod('AMBIANCE'), mod('HUMAN'), mod('SIGNALS'), muaf, guclu
 
 
-AMB, INS, MUAF, GUCLU = kalip_oku()
+AMB, INS, SIG, MUAF, GUCLU = kalip_oku()
 
 
 def metin(r):
@@ -139,8 +138,10 @@ def metin(r):
 
 
 def kanal(r):
-    """HUMAN önce bakılır: insan sesi olan hiçbir şey AMBIANCE'a girmez."""
+    """SIGNALS önce, sonra HUMAN: haberleşme kayıtları ayrı rafta."""
     t = metin(r)
+    if SIG.search(t):
+        return 'SIGNALS'
     if INS.search(t):
         return 'HUMAN'
     if AMB.search(t):
@@ -271,32 +272,21 @@ def main(argv):
         for r in d:
             simdi[kanal(r)] += 1
     mevcut_toplam = sum(len(d) for d in havuz.values())
-    butce = max(0, TOPLAM_HEDEF - mevcut_toplam)
 
-    # Her kanal aynı büyüklüğe çekiliyor. Kıt olan önce doyuruyor;
-    # artan yer bol olanlara paylaştırılıyor.
-    kanallar = ('AMBIANCE', 'HUMAN', 'ORBITAPE')
-    hedef = {k: (mevcut_toplam + butce) // len(kanallar) for k in kanallar}
-
+    # Her geçerli aday alınır. Yalnız item başına tavan uygulanır; kategori
+    # dengesi artık yapay toplam bütçeyle sınırlanmaz.
+    kanallar = ('AMBIANCE', 'SIGNALS', 'HUMAN', 'ORBITAPE')
     secilen, dokum = [], {}
-    kalan_butce = butce
-    # Kıt kanaldan başla: bol olan, kıt olanın yerini yemesin.
     havuzlar = {k: [r for r in aday if r['_kanal'] == k] for k in kanallar}
-    for k in sorted(kanallar, key=lambda x: len(havuzlar[x])):
-        ihtiyac = max(0, hedef[k] - simdi[k])
-        pay = min(ihtiyac, kalan_butce)
+    for k in kanallar:
         ogeler = collections.defaultdict(list)
         for r in havuzlar[k]:
             ogeler[r['_item']].append(r)
         alinan = []
         for oge in sorted(ogeler, key=sira):
-            if len(alinan) >= pay:
-                break
             alinan += ogeden_sec(ogeler[oge], TAVAN[k])
-        alinan = alinan[:pay]
         dokum[k] = (len(havuzlar[k]), len(ogeler), len(alinan))
         secilen += alinan
-        kalan_butce -= len(alinan)
 
     # ── Havuza kat ───────────────────────────────────────────────────
     ek = {'earth': 0, 'earth_buyuk': 0}
