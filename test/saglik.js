@@ -12144,8 +12144,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     return { radyoda, parlak, yazi, foto, onizleme, kayitBasladi, moodda, moodSonuk,
              kilitSonuk, kilitAcik, kilitMetin };
   });
-  K('Radyoda tus duruyor, parlak ve PHOTO diyor',
-     !!recKip && recKip.radyoda!=='none' && recKip.parlak===true && recKip.yazi==='PHOTO',
+  K('Radyoda tus duruyor, parlak ve PIC diyor',
+     !!recKip && recKip.radyoda!=='none' && recKip.parlak===true && recKip.yazi==='PIC',
      recKip ? ('display '+recKip.radyoda+', parlak '+recKip.parlak+', yazi "'+recKip.yazi+'"') : '-');
   K('Radyoda basinca onizleme aciliyor ve SHARE paylasima gonderiyor',
      !!recKip && recKip.onizleme===true && recKip.foto===true && recKip.kayitBasladi===false,

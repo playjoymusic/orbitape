@@ -3270,12 +3270,12 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          kaliyordu. Sonuk/parlak kararinin tek sahibi recPasifYaz;
          burasi yalnizca YAZIYI kuruyor. */
       /* TUS YAZILARI CEVRILMIYOR -- eksiklik degil karar.
-         REC / PHOTO / CAM bu satirda yan yana duran kisa etiketler
+        REC / PIC / CAM bu satirda yan yana duran kisa etiketler
          ve genisligi olculu (araclarYenidenSigdir; "uc satir ayni
          sag kenarda" testi). "FOTOGRAF" sigmiyor. Turlerdeki
          ANLATIM Turkce ve tusa kendi adiyla isaret ediyor:
-         "PHOTO bu ekrani gorsel olarak sakliyor." */
-      recYazi.textContent = 'REC';
+        "PIC bu ekrani gorsel olarak sakliyor." */
+      recYazi.textContent = f ? 'PIC' : 'REC';
       rec.title = Y(f ? 'Photo of this screen' : 'Screen recording');
       try{ araclarYenidenSigdir(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
