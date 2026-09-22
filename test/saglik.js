@@ -5409,7 +5409,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   await pg.click('#rec'); await pg.waitForTimeout(2200);
   const bek = await pg.evaluate(()=>({v:!!_bekleyenKayit, boy:_bekleyenKayit?_bekleyenKayit.blob.size:0}));
   K('Kayit SAVE bekliyor',    bek.v && bek.boy>50000, Math.round(bek.boy/1024)+' KB');
-  K('SAVE + DELETE cikti',    (await pg.evaluate(()=>document.getElementById('camYazi').textContent))==='DELETE', 'SAVE | DELETE');
+   K('REC + CAM etiketleri sabit',
+       await pg.evaluate(()=>document.getElementById('camYazi').textContent === 'CAM'
+          && document.getElementById('recYazi').textContent === 'REC'
+          && document.getElementById('rec').classList.contains('kaydet')
+          && document.getElementById('cam').classList.contains('sil')),
+       'REC/CAM sabit | durum kaydet/sil sinifi');
   await pg.click('#cam'); await pg.waitForTimeout(500);
   K('DELETE kaydi siliyor',   (await pg.evaluate(()=>!_bekleyenKayit)), 'temizlendi');
   /* KIPI GERI KAPAT. Acik birakmak sonraki testleri bozdu: gecmis,
@@ -5429,10 +5434,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   let carpmaEn = -999, temelFark = 999, _tani = '';
   for(const w of [360,390,430]){
     await pg.setViewportSize({width:w, height:844}); await pg.waitForTimeout(350);
-    for(const [yz,sil] of [['REC',0],['120:45',0],['SAVE',1]]){
+      for(const [yz,sil] of [['REC',0],['REC',0],['REC',1]]){
       const t = await pg.evaluate(([y,s])=>{
         recYazi.textContent=y; const cm=document.getElementById('cam'), z=document.getElementById('camYazi');
-        if(s){ cm.classList.add('sil'); z.textContent='DELETE'; } else { cm.classList.remove('sil'); z.textContent='CAM'; }
+            if(s){ cm.classList.add('sil'); z.textContent='CAM'; } else { cm.classList.remove('sil'); z.textContent='CAM'; }
         rec.classList.add('var'); cm.classList.add('var');
         document.getElementById('favAc').classList.add('var');
         for(const id of ['geri','fav','ileri']) document.getElementById(id).classList.add('var');
