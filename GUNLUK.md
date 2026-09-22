@@ -1649,6 +1649,13 @@ değiştiğinde `_headers` CSP özetleri aynı teslimde `csp.py` ile yenilenecek
 yerel `saglik.js` çalıştırılmadan önce HTTP sunucusu ve Playwright kontrol
 edilecek. Sağlıkta yalnız CSP düşerse uygulama kodu kurcalanmayacak.
 
+22 Eylül'de SIGNALS eklendikten sonra sağlık kapısı `earth_giris.json` içinde
+SIGNALS yalnızca 1 kayıt kaldığı için kırmızı oldu. Kök neden düz aralıklı
+700 örneklemenin seyrek rafı kaçırmasıydı; `araclar/giris.py` artık tam raf
+kurallarını kopyalamadan SIGNALS için en az 5 temsilciyi başlangıç dosyasına
+yerleştiriyor. Dosya hâlâ 700 kayıt; ölçüm `signals_hint=5`, gzip yaklaşık
+60 KB. Mevcut tam havuz değişmedi.
+
 ### 22 Eylül — SIGNALS rafı eklendi
 
 pj'nin seçimiyle tek yeni arşiv halkası **SIGNALS** oldu. Numbers station,
