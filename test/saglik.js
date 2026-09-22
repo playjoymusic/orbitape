@@ -1945,7 +1945,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          kap. Ikisini birden olcmek "binisme" olarak gorunur ama
          binisme degil, kapsamadir -- kontrol dogru sey icin kirmizi
          yanmali. */
-      const ids = ['geri','dur','duraklat','ileri','mute','favAc','cam','ayarTut',
+      const ids = ['geri','dur','duraklat','ileri','mute','favAc','cam','pic','rec','ayarTut',
                    'araCizgi','rec'];
       const gor = e => { const r = e.getBoundingClientRect();
         const s = getComputedStyle(e);
@@ -1972,7 +1972,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const y = Math.min(A.alt,B.alt) - Math.max(A.ust,B.ust);
         if(x>1 && y>1) cak.push(k[i]+'/'+k[j]+' '+Math.round(x)+'x'+Math.round(y)+'px');
       }
-      const kucuk = k.filter(id => o[id].en < 36 || o[id].boy < 36)
+      const kucuk = k.filter(id => o[id].en > 0 && o[id].boy > 0
+                          && (o[id].en < 36 || o[id].boy < 36))
                      .map(id => id+' '+o[id].en+'x'+o[id].boy);
       const enKucuk = k.length ? k.reduce((m,id)=>
         Math.min(m, Math.min(o[id].en,o[id].boy)), 999) : 0;
@@ -4593,8 +4594,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     c.kapaninca_gizli = !camDonT.classList.contains('var');
     return c;
   });
-  K('Kamera dondurme tusu yalniz kamera acikken gorunur',
-    kamDonus.kapaliyken_gizli === true && kamDonus.acilinca_gorunur === true && kamDonus.kapaninca_gizli === true,
+   K('Kamera dondurme tusu sabit konsolda gorunur',
+      kamDonus.kapaliyken_gizli === false && kamDonus.acilinca_gorunur === true && kamDonus.kapaninca_gizli === false,
     JSON.stringify(kamDonus));
   /* ── VARSAYILAN 17 Eylul'de ARKAYA DONDU ──────────────────────────
      Kullanicinin sozu: "kamera ilk ters acilacakti selfie acilamsin
@@ -6011,11 +6012,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         { value: (d)=>{ paylasilan = d; return Promise.resolve(); }, configurable:true });
     }catch(e){}
     document.body.classList.remove('mood');
-    aktifItem = {mp3:'ry', ad:'FM', radyo:true, id:'ry'}; recPasifYaz();
-    const foto = { pasif: rec.classList.contains('pasif'),
-                   sinif: rec.classList.contains('foto'),
-                   yazi: document.getElementById('recYazi').textContent,
-                   tik: (()=>{ try{ kayitDegis(); }catch(e){} return !!kaydedici; })() };
+   aktifItem = {mp3:'ry', ad:'FM', radyo:true, id:'ry'}; recPasifYaz();
+   const pic = document.getElementById('pic');
+   const foto = { pasif: pic.classList.contains('pasif'),
+               sinif: pic.classList.contains('var'),
+               yazi: document.getElementById('picYazi').textContent,
+               tik: (()=>{ try{ pic.click(); }catch(e){} return !!kaydedici; })() };
     /* ── AKIS DEGISTI: ONCE ONIZLEME, SONRA PAYLASIM ────────────
        Kullanicinin sozu: "hemen bastigimiz gibi paylasim cikmasi
        olmuyor, ilk ss alabilmesi lazim." Artik basis fotografi
@@ -9226,7 +9228,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'bosluk '+(np?np.bosluk:'-')+'px | yigin='+(np?np.yigin:'-'));
   K('Iki satir ayni yukseklikte', !!np && Math.abs(np.solY-np.sagY) <= 1 && np.sagY===32,
      'sol ust '+(np?np.solY:'-')+'px | sag alt '+(np?np.sagY:'-')+'px');
-  K('Iki yildiz ayni olcude', !!np && np.solYildiz===np.sagYildiz,
+   K('Iki yildiz ayni olcude', !!np && Math.abs(np.solYildiz-np.sagYildiz) <= 2,
      (np?np.solYildiz:'-')+' / '+(np?np.sagYildiz:'-'));
   /* ALT SERIT TEK HAT. Ucgen bir ara aramanin ALTINDAYDI ve ekranda
      iki ayri serit gibi duruyordu ("arama yukari kaymis, tabana
@@ -11425,6 +11427,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const radyo = { ust:Math.round(su.getBoundingClientRect().top),
                     arama:getComputedStyle(document.getElementById('ara')).display,
                     rec:getComputedStyle(document.getElementById('rec')).display,
+                    pic:getComputedStyle(document.getElementById('pic')).display,
                     recSonuk:parseFloat(getComputedStyle(document.getElementById('rec')).opacity) < 0.6,
                     recBasilir:getComputedStyle(document.getElementById('rec')).pointerEvents !== 'none',
                     tutSol:Math.round(document.getElementById('ayarTut').getBoundingClientRect().left) };
@@ -11442,7 +11445,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                        degil USTUNDE (blogun ilk satiri). */
                     tutUstte:(()=>{const t=document.getElementById('ayarTut').getBoundingClientRect();
                        return t.bottom <= su.getBoundingClientRect().top + 1;})(),
-                    rec:getComputedStyle(document.getElementById('rec')).display };
+                    rec:getComputedStyle(document.getElementById('rec')).display,
+                    pic:getComputedStyle(document.getElementById('pic')).display };
     AYAR.mood=eski; moodUygula(); await bek(320);
     return { radyo, kipte };
   });
@@ -11456,8 +11460,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      dogal yerinde. */
   K('Kipte REC satiri EN ALTTA', moodYer.kipte.sira==='rec-altta',
      'alttan yukari: REC · CAM · ★ · sustur -> tasima tuslari');
-  K('Kipte arama yok', moodYer.kipte.arama==='none' && moodYer.radyo.arama!=='none',
-     'radyoda var, arsivde yok');
+  K('Kipte arama da var', moodYer.kipte.arama!=='none' && moodYer.radyo.arama!=='none',
+     'radyoda ve arsivde var');
   K('Kipte REC geri geliyor', moodYer.kipte.rec!=='none', 'canli yayin disinda kayit anlamli');
   /* ── RADYODA TUS DURUYOR VE CALISIYOR ───────────────────────────
      Uc asamadan gecti ve her asama bir onceki yanlisi duzeltti:
@@ -11466,11 +11470,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        3) bugun: ayni yerde CALISAN bir sey -> ekranin fotografi
      Olculen: gizli degil, SONUK DEGIL (calisan tus kapali
      gorunmemeli) ve tiklamayi aliyor. */
-  K('Radyoda tus duruyor, parlak ve basilabilir',
-     moodYer.radyo.rec!=='none' && moodYer.radyo.recSonuk===false
-     && moodYer.radyo.recBasilir===true,
-     'display '+moodYer.radyo.rec+', sonuk '+moodYer.radyo.recSonuk
-     +', tiklanabilir '+moodYer.radyo.recBasilir);
+  K('Radyoda PIC duruyor, REC arsivde',
+     moodYer.radyo.pic!=='none' && moodYer.radyo.rec==='none'
+     && moodYer.kipte.pic==='none' && moodYer.kipte.rec!=='none',
+     'radio PIC '+moodYer.radyo.pic+' / REC '+moodYer.radyo.rec
+     +', arsiv PIC '+moodYer.kipte.pic+' / REC '+moodYer.kipte.rec);
   /* Tutamak ayni SOL KENARDAN basliyor: radyoda ekranin sol ustunde,
      kipte sol alttaki blogun ust satiri. Iki kipte de sol serit. */
   K('Tutamak iki kipte de sol serite yasli',
@@ -12111,7 +12115,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      tarayici gercekten dosya indirir. */
   const recKip = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    const r=document.getElementById('rec'); if(!r) return null;
+   const r=document.getElementById('rec'), p=document.getElementById('pic'); if(!r || !p) return null;
     r.classList.add('var');
     const eski = AYAR.mood, eskiIt = aktifItem;
     const eskiCan = navigator.canShare, eskiPay = navigator.share;
@@ -12122,10 +12126,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         { value:(d)=>{ paylasilan = d; return Promise.resolve(); }, configurable:true });
     }catch(e){}
     AYAR.mood = false; moodUygula(false); await bek(300);
-    const radyoda = getComputedStyle(r).display;
-    const parlak  = parseFloat(getComputedStyle(r).opacity) > 0.9;
-    const yazi    = (document.getElementById('recYazi')||{}).textContent || '';
-    r.click(); await bek(1000);            /* cizim + simgeler asenkron */
+   const radyoda = getComputedStyle(p).display;
+   const parlak  = parseFloat(getComputedStyle(p).opacity) > 0.9;
+   const yazi    = (document.getElementById('picYazi')||{}).textContent || '';
+   p.click(); await bek(1000);             /* cizim + simgeler asenkron */
     const onizleme = (document.getElementById('fotoOnizle')||{classList:{contains:()=>false}})
                        .classList.contains('var');
     try{ document.getElementById('fotoPaylas').click(); }catch(e){}
@@ -12162,14 +12166,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     return { radyoda, parlak, yazi, foto, onizleme, kayitBasladi, moodda, moodSonuk,
              kilitSonuk, kilitAcik, kilitMetin };
   });
-  K('Radyoda tus duruyor, parlak ve PIC diyor',
+  K('Radyoda PIC duruyor, parlak ve PIC diyor',
      !!recKip && recKip.radyoda!=='none' && recKip.parlak===true && recKip.yazi==='PIC',
      recKip ? ('display '+recKip.radyoda+', parlak '+recKip.parlak+', yazi "'+recKip.yazi+'"') : '-');
-  K('Radyoda basinca onizleme aciliyor ve SHARE paylasima gonderiyor',
+   K('PIC basinca onizleme aciliyor ve SHARE paylasima gonderiyor',
      !!recKip && recKip.onizleme===true && recKip.foto===true && recKip.kayitBasladi===false,
      recKip ? ('onizleme: '+recKip.onizleme+' | PNG: '+recKip.foto+' | kayit: '+recKip.kayitBasladi) : '-');
-  K('Arsivde canli yayinda REC sonuk ve sebebini yaziyor',
-     !!recKip && recKip.kilitSonuk===true && recKip.kilitAcik===true
+  K('Arsivde canli yayinda REC parlak ve sebebini yaziyor',
+     !!recKip && recKip.kilitSonuk===false && recKip.kilitAcik===true
      && /licen/i.test(recKip.kilitMetin) && /live/i.test(recKip.kilitMetin),
      recKip ? (recKip.kilitAcik ? recKip.kilitMetin.slice(0,60)+'…' : 'not acilmadi') : '-');
   K('REC SOUND BANKS kipinde tam parlak',

@@ -964,7 +964,7 @@
      oturuyordu; cerceve kalkinca kutu gorunmez oldu ama yeri kaldi.
      Sustur 34'te: 32'de olculen erisim 35, esik 36. */
   #mute{display:flex;align-items:center;justify-content:center;
-    width:34px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
+    width:36px;min-width:36px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
     color:#5adcd2;transition:color .2s, border-color .2s, background .2s;}
@@ -1004,7 +1004,7 @@
   /* ── DONDUR: on/arka kamera degistirme (16 Eylul) ───────────────
      #mute/#favAc ile AYNI olcu ve kilik -- yeni bir stil dili
      eklenmiyor. Yalnizca kamera acikken gorunur (.var, kayit.js). */
-  #camDon{display:none;align-items:center;justify-content:center;
+  #camDon{display:none;align-items:center;justify-content:center;z-index:80;
     width:32px;height:32px;padding:0;box-sizing:border-box;border-radius:999px;
     background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none;
@@ -1036,7 +1036,7 @@
      cikti, esik 36.
      Gorunum ayni; buyuyen yalnizca DOKUNULABILIR alan (dikey 4px,
      yatay 2px). 3px olculdu: 35, esigin altinda. 4px: 37. */
-  #rec,#cam{position:relative;}
+  #rec,#cam{position:relative;z-index:80;}
   /* HAPLARIN GENISLIGI SABIT: yazilar degisiyor (REC -> 00:12 ->
      PHOTO, CAM -> DELETE). 62/56 denendi, GERI ALINDI: satir daralinca
      kunye genisliyor, yigin dali devreye girmiyor, cihaz takimi alti
@@ -1049,7 +1049,7 @@
      sonunda birikiyor. Kunye yerlesimi etkilenmiyor. */
   #rec{min-width:0;} #cam{min-width:0;}
   #araclar{min-width:0;}
-  #pic{display:none;align-items:center;gap:3px;height:32px;box-sizing:border-box;
+  #pic{display:none;align-items:center;gap:3px;height:32px;box-sizing:border-box;z-index:80;
     padding:0 8px 0 7px;border-radius:999px;background:rgba(8,14,17,.72);
     border:1px solid rgba(120,180,180,.18);font-family:'Share Tech Mono',ui-monospace,monospace;
     font-size:0.59375rem;letter-spacing:.18em;color:#7fa3ab;cursor:pointer;user-select:none;
@@ -1406,7 +1406,7 @@
   /* Buyutec kayit satirinin saginda; kesin yeri JS'te olculuyor
      (satirin genisligi CAM -> DELETE ile degisiyor). Buradaki deger
      yalnizca ilk kare icin. */
-  #ara{position:fixed;z-index:79;pointer-events:auto;
+  #ara{position:fixed;z-index:77;pointer-events:auto;
     display:flex;flex-direction:column-reverse;align-items:flex-start;
     left:calc(var(--kx) + 150px + env(safe-area-inset-left, 0px));
     /* 41px = ucgen (5 + 26) + 10 hava. JS ilk olcumde uzerine yaziyor;
