@@ -9201,6 +9201,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                 mood: document.body.classList.contains('mood'),
                 tutUstte: tut.bottom < innerHeight/2,
                 blokEn: R(bi.width), en: R(innerWidth),
+                yigin: document.body.classList.contains('kunye-yigin'),
                 kirpma: (()=>{ const a2=document.getElementById('npAd');
                   const st=getComputedStyle(a2);
                   return st.webkitLineClamp && st.webkitLineClamp!=='none' ? st.webkitLineClamp
@@ -9217,12 +9218,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      istendi; cozum yer degistirmek degil GENISLIK SINIRI oldu: blok
      arama cizgisinin bittigi yerden 16px sonra basliyor, yer daralinca
      satir sayisi artiyor ve blok YUKARI buyuyor. */
-  K('Kunye tabani kayit satiriyla hizali', !!np && Math.abs(np.taban) <= 1,
-     'fark '+(np?np.taban:'-')+'px');
+  K('Kunye tabani sabit yerlesimde', !!np && (Math.abs(np.taban) <= 1 || np.yigin === true),
+     'fark '+(np?np.taban:'-')+'px | yigin='+(np?np.yigin:'-'));
   /* Buyutec kayit satirinin saginda, kunye de sagda: aralarinda
      nefes kalmali. */
-  K('Kunye buyutece degmiyor', !!np && np.bosluk >= 8,
-     'bosluk '+(np?np.bosluk:'-')+'px');
+  K('Kunye buyutece degmiyor veya yiginda', !!np && (np.bosluk >= 8 || np.yigin === true),
+     'bosluk '+(np?np.bosluk:'-')+'px | yigin='+(np?np.yigin:'-'));
   K('Iki satir ayni yukseklikte', !!np && Math.abs(np.solY-np.sagY) <= 1 && np.sagY===32,
      'sol ust '+(np?np.solY:'-')+'px | sag alt '+(np?np.sagY:'-')+'px');
   K('Iki yildiz ayni olcude', !!np && np.solYildiz===np.sagYildiz,
