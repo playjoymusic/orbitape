@@ -329,6 +329,9 @@
      diskin sigmasi icin cap 32px olurdu. kay 0: alti modelde binme
      (320x460'ta 70px). kay 96: 8-22px. 220 temiz. */
   body.kunye-yigin{ --alt-rez:max(268px, 40vh); --alet-kay:220px; }
+  @media (max-width:300px){
+    body.kunye-yigin{ --alt-rez:180px; --alet-kay:0px; }
+  }
   @media (max-height:480px){
     /* Serit yatayda sola yanasiyor: aletin ustunde degil. */
     body.serit-acik{ --ust-rez:56px; }
@@ -893,13 +896,13 @@
      asagidaki kayit satiri ve sag alttaki ★ ile birebir ayni. */
   /* 8 Eylul: 7 -> 6. Cerceveler kalkinca aradaki bosluk daha genis
      okunuyordu; 4 denendi ama dokunma alanlari birbirine girdi. */
-  #tasima{display:flex;align-items:center;gap:6px;}
+  #tasima{display:flex;align-items:center;gap:2px;}
   /* ── SOL UST SATIR: REC · CAM · ★ ─────────────────────────────────
      Eskiden sol ALTTAYDI; arama en alta indigi icin oraya sigmiyordu.
      Simdi tasima satirinin altinda. Kutu artik konumlandirilmiyor
      (position:fixed kalkti), yerini ust bloktan aliyor.
      Boşluk 7px: tasima satiriyla ayni. */
-  #araclar{display:flex;align-items:center;gap:6px;}
+  #araclar{display:flex;align-items:center;gap:2px;}
   /* SATIRLAR PANELIN IKI KENARINA DA DEGIYOR. Eski tirtik panel
      gelince gorunur oldu (alt satir 206, ust satir 154 -> sag ust
      kosede 52px bosluk). "Satirlari germe" hatasi tekrarlanmiyor:
@@ -1016,7 +1019,7 @@
   /* Yükseklik 32px: sağ alttaki ◁ ★ ▷ ile aynı. Dolgu dikeyde değil,
      satırın kendi yüksekliğinden geliyor -> yazı uzasa da (SAVE/DELETE,
      00:12) hap büyümüyor, iki köşe hizada kalıyor. */
-  #rec,#cam{display:none;align-items:center;gap:6px;height:32px;box-sizing:border-box;
+  #rec,#cam{display:none;align-items:center;gap:3px;height:32px;box-sizing:border-box;
     /* 8 Eylul: 11/9 -> 8/7. Kullanicinin sozu: "CAM yaziyor,
        cercevesinde bosluk var." PHOTO'nun genisligini min-width
        tutuyor, yani satirin olcusu degismiyor; daralan yalniz CAM. */
@@ -1044,11 +1047,11 @@
      okunuyordu (CAM'de 20px olculdu). Ayak izini artik #araclar'in
      min-width'i koruyor, tuslar yazilarini sariyor, bos alan satirin
      sonunda birikiyor. Kunye yerlesimi etkilenmiyor. */
-  #rec{min-width:82px;} #cam{min-width:70px;}
-  #araclar{min-width:201px;}
+  #rec{min-width:0;} #cam{min-width:0;}
+  #araclar{min-width:0;}
   /* REC/CAM durum yazisi degisse de sol blok ve diger ogeler oynamasin. */
-  #recYazi,#camYazi{display:inline-block;min-width:4.6em;text-align:center;}
-  #rec.kaydet #recYazi{min-width:4.6em;}
+  #recYazi,#camYazi{display:inline-block;min-width:3.2em;text-align:center;}
+  #rec.kaydet #recYazi{min-width:3.2em;}
   body.kam:not(.kayit) #rec{display:none !important;}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
@@ -3983,12 +3986,12 @@
      yazilan kazanir, yukariya konunca 38px'lik tanimlar bunu eziyordu
      ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
   @media (max-width:480px){
-    #tasima{gap:6px;} #araclar{gap:6px;}
+    #tasima{gap:2px;} #araclar{gap:2px;}
     #geri,#ileri,#dur,#duraklat{width:34px;} #fav,#favAc,#mute,#camDon{width:30px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
-    #rec,#cam{padding:0 8px 0 7px;gap:5px;font-size:0.5625rem;letter-spacing:.14em;}
-    #araclar{min-width:198px;}
+    #rec,#cam{padding:0 6px 0 5px;gap:2px;font-size:0.5625rem;letter-spacing:.14em;}
+    #araclar{min-width:0;}
     /* Sabit genislikler de bu olcude yeniden kuruluyor: dar ekranda
        en genis yazi 63 (PHOTO/CHECK/00:00) ve 57 (DELETE). Ustteki
        73/67 burada 10px fazla yer yerdi. */
@@ -5128,7 +5131,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.22';
+  var ORB_SURUM = '2026.09.23';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -18544,8 +18547,11 @@
                kenari en yukarideki komsunun tepesinden 10px yukari.
                Yazilamazsa (bottom:auto ya da olculemeyen kutu) eski
                yola dusuluyor. */
-            if(!(_oy && _altYasla(npE, _tepe2 - 10, 0, 6)))
-              npE.style.bottom = _dip(Math.max(6, ustHat2));
+            /* KUNYE SAG ALTTA KALIR. Daraltirken onu konsolun tepesine
+              tasimak, pencereyi saga-sola cekerken yazinin bir anda
+              ekranin ortasina firlamasina neden oluyordu. Genislik
+              daralir, satir sayisi artar; taban sabit kalir. */
+            npE.style.bottom = _dip(Math.max(2, alt));
             /* ── YIGILMA GOVDEYE DE SOYLENIYOR (7 Eylul) ───────────
                Yiginca kunye konsolun USTUNE cikiyor, yani ekranin
                ortasina dogru 120 piksel kadar yukseliyor. Ortadaki
@@ -21686,7 +21692,7 @@
     if(_r) _r.classList.add('var');
     if(_c) _c.classList.add('var');
     if(_f){ _f.classList.add('var'); _f.classList.add('bos'); }
-    if(_ry) _ry.textContent = document.body.classList.contains('mood') ? 'REC' : 'PHOTO';
+    if(_ry) _ry.textContent = document.body.classList.contains('mood') ? 'REC' : 'PIC';
     /* Dokunusta modulu cagiran dinleyici ZATEN VAR (yukarida,
        yakalama asamasinda #rec,#cam icin) ve dokunusu akilda tutup
        modul gelince oynatiyor. Burada ikincisini kurmak gereksiz. */
