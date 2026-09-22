@@ -6066,11 +6066,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Kullanicinin istegi: "radyo modunda rec yerine fotograf makinesi
      olsun, basinca ss alsin ayni ekrani ve o anda share menusu
      acilsin". Uc kontrol, ucu de ayri bir yalanin onunde:
-     · tus PHOTO diyor mu       -> REC yazip fotograf cekmesin
+   · tus PIC diyor mu         -> REC yazip fotograf cekmesin
      · tus sonuk degil mi        -> calisan tus kapali gorunmesin
      · basinca PNG uretiliyor mu -> "cekti" deyip bos donmesin       */
-  K('Radyoda tus PHOTO diyor',
-     rp.foto.yazi === 'PHOTO' && rp.foto.sinif === true,
+  K('Radyoda tus PIC diyor',
+     rp.foto.yazi === 'PIC' && rp.foto.sinif === true,
      'yazi "' + rp.foto.yazi + '" | foto sinifi ' + rp.foto.sinif);
   K('Radyoda tus sonuk degil', rp.foto.pasif === false,
      'calisan tus kapali gorunmuyor');
