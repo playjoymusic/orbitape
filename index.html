@@ -1049,10 +1049,24 @@
      sonunda birikiyor. Kunye yerlesimi etkilenmiyor. */
   #rec{min-width:0;} #cam{min-width:0;}
   #araclar{min-width:0;}
+  #pic{display:none;align-items:center;gap:3px;height:32px;box-sizing:border-box;
+    padding:0 8px 0 7px;border-radius:999px;background:rgba(8,14,17,.72);
+    border:1px solid rgba(120,180,180,.18);font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:0.59375rem;letter-spacing:.18em;color:#7fa3ab;cursor:pointer;user-select:none;
+    white-space:nowrap;flex:none;position:relative;}
+  #pic.var{display:flex;}
+  body.mood #pic{display:none !important;}
+  #pic .nokta{width:8px;height:8px;border-radius:50%;background:#7fb7c4;box-shadow:0 0 8px rgba(127,183,196,.5);}
+  #pic::before{content:'';position:absolute;inset:-4px -2px;border-radius:999px;}
+  #pic.cakti{color:#eaf6ff;border-color:rgba(200,235,245,.6);}
+  #pic.cakti .nokta{background:#eaf6ff;box-shadow:0 0 16px rgba(235,248,255,.95);}
+  #picYazi{display:inline-block;min-width:3.2em;text-align:center;}
   /* REC/CAM durum yazisi degisse de sol blok ve diger ogeler oynamasin. */
   #recYazi,#camYazi{display:inline-block;min-width:3.2em;text-align:center;}
   #rec.kaydet #recYazi{min-width:3.2em;}
-  body.kam:not(.kayit) #rec{display:none !important;}
+  body:not(.mood) #rec{display:none !important;}
+  body.mood #rec{opacity:1 !important;}
+  body.mood #rec .nokta{background:#5adcd2;box-shadow:0 0 8px rgba(90,220,210,.45);}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
     border-radius:999px;}
   /* ── TUS MODUL GELINCE CIZILIYOR ────────────────────────────
@@ -3957,7 +3971,7 @@
      (body.mood #ara{display:none}) ama yuva 26px'lik bos bir kutu
      olarak duruyordu ve yildizi satirin ilerisine itiyordu: ekranda
      sustur ile yildiz arasinda anlamsiz bir bosluk. */
-  body.mood #araYuva{display:none;}
+  body.mood #araYuva{display:block;}
   /* ── MEZAR TASI: "TUTAMAK DUZ, IKI KIPTE DE" ─────────────────
      Burada bir kural vardi ve uc cizgiyi esitliyordu (34/27/20 ->
      34/34/34). Gerekcesi dogruydu: tutamak alt sol konsolun UST
@@ -3973,7 +3987,7 @@
   /* ARAMA BU KIPTE YOK. Arsiv tarafinda gezinme halkalarla ve
      gezegenlerle yapiliyor; arama cizgisi hem modulun altinda yer
      istiyor hem de o tarafin dili degil. */
-  body.mood #ara{display:none;}
+  body.mood #ara{display:block;}
 
   /* ── DAR EKRANDA SOL UST DARALIYOR ───────────────────────────────
      390px'te olculdu: sol ust satir 190px, sag ustteki kategori adi
@@ -3987,10 +4001,10 @@
      ve sorgu hicbir sey yapmiyor gibi gorunuyordu. */
   @media (max-width:480px){
     #tasima{gap:2px;} #araclar{gap:2px;}
-    #geri,#ileri,#dur,#duraklat{width:34px;} #fav,#favAc,#mute,#camDon{width:30px;}
+    #geri,#ileri,#dur,#duraklat,#favAc,#mute,#camDon{width:36px;}
     /* REC/CAM en genis parca: yazi 1px kuculuyor, harf arasi
        daraliyor, dolgu iniyor -> her biri 62px'ten ~48px'e. */
-    #rec,#cam{padding:0 6px 0 5px;gap:2px;font-size:0.5625rem;letter-spacing:.14em;}
+    #pic,#rec,#cam{padding:0 6px 0 5px;gap:2px;font-size:0.5625rem;letter-spacing:.14em;}
     #araclar{min-width:0;}
     /* Sabit genislikler de bu olcude yeniden kuruluyor: dar ekranda
        en genis yazi 63 (PHOTO/CHECK/00:00) ve 57 (DELETE). Ustteki
@@ -4934,6 +4948,7 @@
            calismayan bir tus duruyordu. Yalnizca SOUND BANKS kipinde
            gorunuyor (bkz. CSS: body:not(.mood) #rec). Silinmedi --
            orada kendi tasarimiyla duracak. -->
+      <div id="pic" role="button" tabindex="0" title="Photo of this screen"><span class="nokta"></span><span id="picYazi">PIC</span></div>
       <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
       <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
       <!-- ── KAMERA DONDUR: on/arka gecisi (16 Eylul) ─────────────────
@@ -21687,12 +21702,15 @@
      Artik ilk karede oradalar; dokunusta modul hemen geliyor, inmezse
      geri cekiliyorlar. */
   try{
-    const _r = document.getElementById('rec'), _c = document.getElementById('cam'),
+        const _p = document.getElementById('pic'), _r = document.getElementById('rec'), _c = document.getElementById('cam'),
+          _d = document.getElementById('camDon'),
           _f = document.getElementById('favAc'), _ry = document.getElementById('recYazi');
+    if(_p) _p.classList.add('var');
+        if(_d && !document.body.classList.contains('mood')) _d.classList.add('var');
     if(_r) _r.classList.add('var');
     if(_c) _c.classList.add('var');
     if(_f){ _f.classList.add('var'); _f.classList.add('bos'); }
-    if(_ry) _ry.textContent = document.body.classList.contains('mood') ? 'REC' : 'PIC';
+    if(_ry) _ry.textContent = 'REC';
     /* Dokunusta modulu cagiran dinleyici ZATEN VAR (yukarida,
        yakalama asamasinda #rec,#cam icin) ve dokunusu akilda tutup
        modul gelince oynatiyor. Burada ikincisini kurmak gereksiz. */

@@ -45,7 +45,7 @@
    Iki imza var: burada "basladim", en sonda "bitirdim". Boylece
    "hic gelmedi" ile "yarida kaldi" karismiyor. */
 try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
-  const rec=$('rec'), recYazi=$('recYazi');
+  const rec=$('rec'), recYazi=$('recYazi'), pic=$('pic');
   let kaydedici=null, kayitParcalari=[], kayitBaslangic=0, kayitSayac=null, sesliKayit=false;
   /* KAYIT HEDEFI IKI DOSYANIN ORTAK ISI: ses grafigi index.html'de
      kuruluyor ve hedefi ILK SESLE BIRLIKTE baglıyor (olculdu: sonradan
@@ -458,8 +458,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          bilgi olurdu, o yuzden radyoda .pasif dusuyor.
          Arsivde canli bir yayin calarken (yayin) tus yine kapali:
          orada gercekten yapilacak bir sey yok. */
-      const fotoVar = radyoda && (typeof fotoDesteklenirMi === 'function')
-                      && fotoDesteklenirMi();
+      const fotoVar = false;
       /* SIRA ONEMLI: fotograf varsa tus KAPALI DEGIL, nokta.
          Ilk yazilisinda kural "(radyoda && !fotoVar) || yayin"
          seklindeydi ve radyoda da sonuk kaliyordu -- cunku radyoda
@@ -467,8 +466,8 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          Kilit yalnizca ARSIVDE canli yayin calarken anlamli. */
       const kapali = !kayitta && (fotoVar ? false : (radyoda || yayin));
       rec.classList.toggle('pasif', kapali);
-      rec.title = Y(kapali ? 'Recording is off during live radio'
-                : (fotoVar && !kayitta ? 'Photo of this screen' : 'Screen recording'));
+      rec.title = Y(kapali ? 'Recording is off during live radio' : 'Screen recording');
+      if(pic) pic.classList.toggle('var', radyoda && typeof fotoDesteklenirMi === 'function' && fotoDesteklenirMi());
       /* YAZI DA BURADA. Ayri bir cagriya birakilirsa tusun GORUNUSU
          ile YAZISI iki farkli anda guncelleniyor ve arada bir kare
          boyunca "REC" yazan bir tus fotograf cekiyor. Bir kare bile
@@ -556,7 +555,10 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     camDug.setAttribute('aria-pressed', kamAcik ? 'true' : 'false');
     /* DONDURME TUSU YALNIZCA KAMERA ACIKKEN: kapaliyken donecek bir
        goruntu yok, dugme orada dursa da hicbir ise yaramaz. */
-    if(camDonDug) camDonDug.classList.toggle('var', !!kamAcik && !!KAMERA);
+    if(camDonDug){
+      const radyoda = !document.body.classList.contains('mood');
+      camDonDug.classList.toggle('var', radyoda || (!!kamAcik && !!KAMERA));
+    }
     try{ kamCubukYaz(); }catch(e){ _yut(e); }
   }
   /* CAM <-> DELETE geçişi. Tek yerden yazılıyor ki iki durum birbirine
@@ -582,7 +584,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       camDug.classList.remove('sil');
       if(yz) yz.textContent = 'CAM';
       camDug.title = Y('Front camera');
-      camDug.classList.toggle('var', !!KAMERA);
+      camDug.classList.add('var');
       camYaz();
     }
     try{ recPasifYaz(); }catch(e){ _yut(e); }
@@ -3262,8 +3264,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       if(kaydedici || _bekleyenKayit) return;
       if(rec.classList.contains('hazirla') || rec.classList.contains('kontrol')
          || rec.classList.contains('kayit') || rec.classList.contains('kaydet')) return;
-      const f = radyodaMi() && fotoDesteklenirMi();
-      rec.classList.toggle('foto', f);
+      const f = false;
       /* 'pasif' BURADA TEMIZLENMIYOR. Bir kez oyle yazildi ve
          recPasifYaz'in kararini hemen ardindan siliyordu: arsivde
          canli yayin calarken tus sonuk olmasi gerekirken parlak
@@ -3275,8 +3276,8 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          sag kenarda" testi). "FOTOGRAF" sigmiyor. Turlerdeki
          ANLATIM Turkce ve tusa kendi adiyla isaret ediyor:
         "PIC bu ekrani gorsel olarak sakliyor." */
-      recYazi.textContent = f ? 'PIC' : 'REC';
-      rec.title = Y(f ? 'Photo of this screen' : 'Screen recording');
+      recYazi.textContent = 'REC';
+      rec.title = Y('Screen recording');
       try{ araclarYenidenSigdir(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
@@ -3366,16 +3367,6 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
        nedenini hicbir yerde bulamiyordu. */
     try{
       const radyoda = !document.body.classList.contains('mood');
-      /* ── RADYODA TUS ARTIK BOS DEGIL: FOTOGRAF ──────────────────
-         Kayit hala yok (istasyonlar dinlenmek icin lisansli), ama
-         "su an bunu dinliyorum" demenin bir yolu var: ekranin
-         fotografi. Ses yok, yayin yok -- yalnizca o anki ekran.
-         Kip degisiminde tusun YAZISI da degisiyor (recEtiketTazele),
-         yani REC yazan bir tus fotograf cekmiyor. */
-      if(radyoda && !kaydedici && !_bekleyenKayit && fotoDesteklenirMi()){
-        fotoCek();
-        return;
-      }
       if(!kaydedici && !_bekleyenKayit && (radyoda || akisMi())){
         recPasifYaz();
         /* KISA VE ANLASILIR. Once uc satirlik bir lisans aciklamasi
@@ -3391,15 +3382,18 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     if(_bekleyenKayit){ kaydiPaylas(); return; }      // dokunuş taze -> paylaşım sayfası açılır
     kayitOnKontrol();
   }
-  /* Tus IKI islev icin var: kayit (arsiv) ve fotograf (radyo).
-     MediaRecorder olmayan bir tarayicida kayit yok ama fotograf
-     yine calisiyor -- tus o zaman da gorunuyor, cunku radyo tarafi
-     bu cihazda da tam calisiyor. */
-  if(kayitDesteklenirMi() || fotoDesteklenirMi()){
+  /* REC yalnizca SOUND BANKS kaydidir; PIC fotografi ayri bir dugmedir. */
+  if(kayitDesteklenirMi()){
     rec.classList.add('var');
     rec.addEventListener('click', kayitDegis);
     rec.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') kayitDegis(e); });
-    try{ recEtiketTazele(); }catch(e){ _yut(e); }
+    recYazi.textContent = 'REC';
+  }
+  if(pic && !document.body.classList.contains('mood') && fotoDesteklenirMi()){
+    pic.classList.add('var');
+    const cek = e=>{ e.preventDefault(); e.stopPropagation(); fotoCek(); };
+    pic.addEventListener('click', cek);
+    pic.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cek(e); } });
   }
   // ◁| bir önceki — sol altta REC'in üstünde.
   geriDug.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
