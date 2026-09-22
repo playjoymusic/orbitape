@@ -567,7 +567,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     /* GERI ALMA PENCERESI: kayit yeni basladi, bu tus UNDO. */
     if(kaydedici && geriAlPenceresi()){
       camDug.classList.add('sil'); camDug.classList.remove('acik','bekle');
-      if(yz) yz.textContent = 'UNDO';
+      if(yz) yz.textContent = 'CAM';
       camDug.title = Y('Cancel this recording');
       camDug.setAttribute('aria-pressed','false');
       try{ geriYerlestir(); }catch(e){ _yut(e); }
@@ -575,7 +575,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     }
     if(_bekleyenKayit){
       camDug.classList.add('sil'); camDug.classList.remove('acik','bekle');
-      if(yz) yz.textContent = 'DELETE';
+      if(yz) yz.textContent = 'CAM';
       camDug.title = Y('Discard recording');
       camDug.setAttribute('aria-pressed','false');
     }else{
@@ -2537,7 +2537,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   function geriAlPenceresi(){ return _geriAlSonu && Date.now() < _geriAlSonu; }
   function sureYaz(){
     const sn=Math.floor((Date.now()-kayitBaslangic)/1000);
-    recYazi.textContent=String(Math.floor(sn/60)).padStart(2,'0')+':'+String(sn%60).padStart(2,'0'); try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    recYazi.textContent='REC';
     if(sn===0 || sn===60) { try{ geriYerlestir(); }catch(e){ _yut(e); } }   // basamak artınca hizayı tazele
   }
   /* ── ÖN KONTROL ───────────────────────────────────────────────────
@@ -2554,7 +2554,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   async function kayitOnKontrol(){
     if(_onKontrol || kaydedici) return;
     _onKontrol = true;
-    rec.classList.add('kontrol'); recYazi.textContent = 'CHECK'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    rec.classList.add('kontrol'); recYazi.textContent = 'REC';
     try{ geriYerlestir(); }catch(e){ _yut(e); }
     try{
       try{ sesBaglamiAl(); if(actx) await actx.resume(); }catch(e){ _yut(e); }
@@ -2927,7 +2927,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     _kayitGercekSn = _kayitBasZaman ? (performance.now()-_kayitBasZaman)/1000 : 0;
     _durdurmaIstendi = true;
     kayitGozcuDur();
-    rec.classList.add('hazirla'); recYazi.textContent='···'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    rec.classList.add('hazirla'); recYazi.textContent='REC';
     try{ kaydedici.stop(); }catch(e){ _yut(e); }
     clearInterval(kayitSayac); kayitSayac=null;
   }
@@ -2985,7 +2985,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     }
     _bekleyenKayit = { blob: blob, ad: ad, tip: tip };
     rec.classList.remove('hazirla','sessiz');
-    rec.classList.add('kaydet'); recYazi.textContent='SAVE'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
+    rec.classList.add('kaydet'); recYazi.textContent='REC';
     camModuTazele();                 // yanındaki tuş: CAM -> DELETE
     try{ geriYerlestir(); }catch(e){ _yut(e); }
   }
@@ -3275,7 +3275,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          sag kenarda" testi). "FOTOGRAF" sigmiyor. Turlerdeki
          ANLATIM Turkce ve tusa kendi adiyla isaret ediyor:
          "PHOTO bu ekrani gorsel olarak sakliyor." */
-      recYazi.textContent = f ? 'PHOTO' : 'REC';
+      recYazi.textContent = 'REC';
       rec.title = Y(f ? 'Photo of this screen' : 'Screen recording');
       try{ araclarYenidenSigdir(); }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
