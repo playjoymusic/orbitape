@@ -10469,7 +10469,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            tiklayamama sorunu olmasin."
            Once EKRANDA DURAN bir yildiz seciliyor: kaydirmadan
            sonra 4 numara ekran disinda kalmis olabiliyor. */
-        let sec2 = null;
+      let sec2 = null;
+      const secAdaylari = [];
         {
           const kk = window.yildizDurum().kay;
           const dd = document.querySelector('.disk').getBoundingClientRect();
@@ -10477,8 +10478,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const tb2 = dd.width * 0.5 * 0.9, zz = window.yildizDurum().zum;
           for(let i = 0; i < 12; i++){
             const pp = window.yildizNoktaTest(yildizSeed(i+1), ccx, ccy, tb2, zz);
-            if(pp.x > 60 && pp.x < innerWidth - 60 && pp.y > 60 && pp.y < innerHeight - 60){
-              sec2 = { i, xx:pp.x, yy:pp.y }; break;
+                  if(pp.x > 60 && pp.x < innerWidth - 60 && pp.y > 60 && pp.y < innerHeight - 60){
+                     secAdaylari.push({ i, xx:pp.x, yy:pp.y });
+                     if(!sec2) sec2 = secAdaylari[secAdaylari.length - 1];
             }
           }
           /* ── ULKE BAYRAGI ADIN YANINDA (16 Eylul) ─────────────────
@@ -10500,7 +10502,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             if(typeof metin === 'string' && /Yildiz \d/.test(metin)) _yakalananAd = metin;
             return _eskiFillText.apply(this, [metin, ...geri]);
           };
-          if(sec2){ olay('pointerdown', sec2.xx, sec2.yy); olay('pointerup', sec2.xx, sec2.yy); await bek(120); }
+               /* Zum sirasinda yildizlar bagimsiz hareket ediyor. Yavas CI
+                   motorunda ilk sentetik dokunus, hesaplanan nokta ile
+                   gercek cizim arasinda 40px'lik secim alaninin disina
+                   kayabiliyor. Adaylarin guncel noktalarini sirayla dene;
+                   isim olusmadan sonraki adaya gecme. */
+               for(const aday of secAdaylari){
+                  if(_yakalananAd) break;
+                  const dn = document.querySelector('.disk').getBoundingClientRect();
+                  const km = window.yildizDurum().kay;
+                  const kp = window.yildizNoktaTest(
+                     yildizSeed(aday.i), dn.left + dn.width/2 + km.x,
+                     dn.top + dn.height/2 + km.y, dn.width * 0.5 * 0.9,
+                     window.yildizDurum().zum);
+                  olay('pointerdown', kp.x, kp.y); olay('pointerup', kp.x, kp.y);
+                  await bek(80);
+               }
           CanvasRenderingContext2D.prototype.fillText = _eskiFillText;
           c.adMetni = _yakalananAd;
           c.adBayrakli = !!(_yakalananAd && /\u{1F1F9}\u{1F1F7}/u.test(_yakalananAd));
