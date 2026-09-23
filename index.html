@@ -1207,6 +1207,12 @@
     color:rgba(244,247,250,.8);text-shadow:0 1px 10px rgba(0,0,0,.42);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:1px;}
   #np .np-ust.var{display:block;}
+  @media (max-width:480px){
+    /* Alt kontrol satiri yalnizca switch, kamera ve temel dugmeler icin
+       kalir. Parca/istasyon bilgisi onun ustunde, sagda durur; isim ve
+       lisans mobilde kontrol satirina giremez. */
+    #np{bottom:calc(48px + var(--dip-pay));max-width:min(52vw,220px);}
+  }
   #np .np-lab{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:0.6875rem;letter-spacing:.32em;color:#7fa3ab;}
   /* Sağ alttaki çalma göstergesi KALDIRILDI: aynı gösterge sağ üstte
      aktif kanal adının solunda zaten duruyor, ikisi gereksizdi.
