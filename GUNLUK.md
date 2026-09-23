@@ -1747,3 +1747,20 @@ yeniden çağrılıp farklı veya boş bir liste içinden arama yapılmıyor. Bu
 test/saglik.js`, inline script parse ve VS Code Problems kontrolleri geçti;
 CI doğrulaması ve push henüz yapılmadı. Sol-alt görünüm için ayrı bir ekran
 ölçümü olmadan CSS'e rastgele dokunulmayacak.
+
+### 23 Eylül — Büyük etkileşim yeniden yapılandırması yapılmayacak
+
+pj, uygulamanın şu an çalıştığını ve gerçek kalan şikâyetin yalnızca FX
+geçişlerinde bazen duyulan cızırtı olduğunu netleştirdi. FX, iki parmak zoom,
+kamera/kayıt, ekran görseli ve skin sistemlerini baştan yapılandırmak gerekli
+değil; çalışan davranışı bozma riski, bu dar sorunun faydasından büyük.
+Karar: büyük mimari refactor iptal. Yalnızca ölçülebilen FX cızırtısı için
+dar, geri alınabilir bir düzeltme ve ona özel test yapılacak. Yıldız/alt satır
+değişiklikleri ayrı tutulacak ve doğrulanmadan pushlanmayacak.
+
+Ayrıca canlı ekran görüntüsünde alt araç satırının (PIC/CAM/mute/favori)
+içinde anlamsız geniş boşluklar görüldü. Kök neden satırın doğal genişliğinin
+kilitli olmaması ve opsiyonel araçların değişken görünürlüğüydü. `#araclar`
+artık `width:max-content`, `flex:none`, `flex-wrap:nowrap` ve sabit `6px`
+aralık kullanıyor; dar ekran kuralı da aynı ölçüyü koruyor. Inline script parse
+ve VS Code Problems kontrolü geçti. Bu CSS değişikliği henüz pushlanmadı.
