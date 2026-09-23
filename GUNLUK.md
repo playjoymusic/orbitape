@@ -1684,3 +1684,66 @@ SIGNALS yeni hasat sınıflandırıcısına da eklendi; mevcut kategori bütçes
 yalnız item başına parça tavanı var. Yeni rafın ayrı tema ve çizimi eklendi,
 test sayısı 16'dan 17 kategoriye ve 12'den 13 arşiv rafına güncellendi.
 Python, JavaScript ve inline script kontrolleri geçti.
+
+### 23 Eylül — Sağlık kontrolünde yıldız ölçümü kökten düzeltildi
+
+Kullanıcı, konuşmaların tamamının `GUNLUK.md`'ye yazılması kuralını yeniden
+hatırlattı; çalışma kökü `/Users/joy/Downloads/ORBITAPE DATA/orbitape` olarak
+korunuyor. `tracks` deposundaki mavi noktanın yalnızca macOS `.DS_Store`
+değişikliği olduğu görüldü; commit edilmeden atıldı.
+
+Sağlık kontrolü `36x32 / 38x32` ölçümünü kırmızı gösteriyordu. İlk bakışta
+2 px tolerans eksik sanıldı; ancak gerçek kök neden `solYildiz` ve
+`sagYildiz` değerlerinin `"36x32"` gibi metin dönmesi ve testin bu iki metni
+çıkararak `NaN` üretmesiydi. `test/saglik.js` içindeki kontrol artık genişlik
+ve yüksekliği ayrı sayısal değerler olarak karşılaştırıyor; 2 px tolerans
+gerçekten uygulanıyor. `node --check test/saglik.js`, Problems denetimi ve
+`36x32 / 38x32` davranış kontrolü geçti.
+
+Düzeltme `8c8f70d` (`Fix numeric star size tolerance check`) olarak pushlandı.
+Sağlık kontrolü #508 ve Yayın #265 aynı commit için başlatıldı; son durum bu
+kaydın yazıldığı anda henüz sonuçlanmamıştı. Önceki #507 koşusunda WebKit ve
+Gecko yeşildi; yalnız Chromium sağlık koşusunda iki ölçüm kontrolü düşmüştü.
+
+Uzun vadeli karar: bu ölçüm yamalarıyla yetinilmeyecek. Yıldız/halkaların
+konumu ve dokunma alanı tek geometri kaynağından hesaplanacak; Pointer Events,
+`setPointerCapture`, `touch-action` ve CSS pikseli/canvas pikseli ayrımı tek
+etkileşim katmanında tutulacak. Görsel ölçü ile dokunma hit-box'ı ayrılacak;
+testler piksel eşitliği yerine seçimin, rafın ve resize sonrası davranışın
+doğruluğunu ölçecek. Bu mimari iş henüz başlatılmadı; ayrı ve planlı bir iş
+olarak ele alınacak.
+
+### 23 Eylül — Etkileşim geometri çalışmasının ilk güvenli dilimi
+
+Yapısal düzeltme başlatıldı; uygulamanın FX, kamera/kayıt, ekran görseli ve
+skin katmanları bu ilk dilimde değiştirilmedi. Önce yıldız/gökyüzü jesti ele
+alındı çünkü çizim ile seçim zaten `yildizNokta()` ve `zumMerkez()` üzerinden
+aynı matematiğe yakındı. Yeni `yildizSahne()` tek karelik merkez, liste ve
+görünür yıldız sayısı snapshot'ı üretiyor; hem `zumCiz()` hem `zumSec()` bunu
+kullanıyor. Böylece aynı jest içinde DOM merkezi, raf listesi veya zoom değeri
+iki farklı anda okunup görünen yıldız ile seçilen yıldızın ayrışması önleniyor.
+
+Ayrıca `pointercancel` ve `lostpointercapture` için ortak `zumIptal()` eklendi;
+kesilen bir parmak hareketi `_basli`/`_suruk` durumunu bir sonraki jeste
+taşımıyor. Inline script parse kontrolü ve VS Code Problems kontrolü geçti.
+Bu küçük dilim pushlanmadı; sonraki adım aynı geometri sözleşmesi için dar bir
+sağlık testi eklemek, ardından FX sürükleme yüzeyini ayrı bir iş olarak
+ortaklaştırmak. Kamera/kayıt ve visual/skin katmanlarına geçmeden önce her
+dilim ayrı test edilecek.
+
+### 23 Eylül — Geometri dilimi CI sonucu beklenmeden pushlanmayacak
+
+`8c8f70d` sonrası sağlık koşusunda eski `36x32 / 38x32` ölçüm kontrolü geçti;
+ancak **Seçilen yıldızın adı da bir düğme** kontrolü `adKutuActi=false` ile
+kırmızı kaldı. Bu koşu, yerel `yildizSahne()` ve
+`pointercancel`/`lostpointercapture` düzenlemeleri pushlanmadan çalıştı.
+Karar: yeni yapısal değişiklik pushlanmayacak; önce bu tek kontrolün neden
+adı açmadığı ölçülecek, sonra yıldız dilimi yeniden doğrulanacak.
+
+Ad kutusu kök düzeltmesi uygulandı: `_adKutu` artık adı çizerken kullanılan
+aynı istasyon nesnesini `item` olarak taşıyor; ikinci dokunuşta `istYildizKur()`
+yeniden çağrılıp farklı veya boş bir liste içinden arama yapılmıyor. Bu,
+`adKutuActi` kontrolündeki kimlik ayrışmasını hedefliyor. `node --check
+test/saglik.js`, inline script parse ve VS Code Problems kontrolleri geçti;
+CI doğrulaması ve push henüz yapılmadı. Sol-alt görünüm için ayrı bir ekran
+ölçümü olmadan CSS'e rastgele dokunulmayacak.

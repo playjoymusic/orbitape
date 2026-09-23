@@ -1172,7 +1172,7 @@
        Genislik lazim cunku kunye artik KIRPILMIYOR: eserin adi,
        sanatcisi, kaynagi ve lisansi tam yaziliyor. Bu bir tasarim
        tercihi degil, CC BY ailesinin sarti -- "..." ile biten bir
-       atif atif sayilmaz. */
+       atif ati f sayilmaz. */
     pointer-events:none;user-select:none;max-width:min(86vw,460px);text-align:right;opacity:0;transition:opacity .55s ease;
     /* ── BLOGA TAVAN KOYMAK YANLISTI (6 Eylul) ─────────────────
        Bir sure burada max-height + overflow:hidden vardi. Blok
@@ -13063,6 +13063,12 @@
     return { x: b.left + b.width / 2 + _kayX, y: b.top + b.height / 2 + _kayY,
              taban: b.width * 0.5 * 0.9 };
   }
+  function yildizSahne(){
+    const m = zumMerkez();
+    if(!m) return null;
+    const liste = istYildizKur();
+    return { ...m, liste, gorunur: yildizGorunurSayi(liste.length, _zum) };
+  }
   /* Yildizin ekrandaki yeri: durgun ekranda da, zumda da AYNI
      formul -- yildiz buyurken yerinden ziplamiyor. */
   /* ── ACILMA ZUMDAN YAVAS (10 Eylul gece) ───────────────────────
@@ -13187,9 +13193,9 @@
       _zumSonKare = _simdi;
       _zum += (_zumHedef - _zum) * zumAdimKatsayi(_dt);
       if(_zumHedef <= 1 && _zum < ZUM_ESIK){ zumBitti(); return; }
-      const m = zumMerkez(); if(!m) return;
-      const cx = m.x, cy = m.y, taban = m.taban;
-      const L = istYildizKur();
+      const sahne = yildizSahne(); if(!sahne) return;
+      const cx = sahne.x, cy = sahne.y, taban = sahne.taban;
+      const L = sahne.liste;
       /* Acilma orani: zum 1'e yakinken katman gorunmez, acildikca
          yildizlar geliyor. */
       /* ── 18 EYLUL: "HERSEY SOLUK" (gel penceresi cok genisti) ────
@@ -13232,7 +13238,7 @@
          zumla buyuyor: az actiysan seyrek ve rahat, sonuna kadar
          actiysan rafin tamami. Sira sabit oldugu icin gorunen bir
          yildiz bir daha kaybolmuyor, uzerine yenileri geliyor. */
-      const gorunur = yildizGorunurSayi(L.length, _zum);
+      const gorunur = sahne.gorunur;
       /* ZUM KATMANINDAKI YILDIZLAR DA DERIDEN. Burasi sabit beyazdi
          (236,250,248) ve gokyuzu acik bir deride bembeyaz kaliyordu
          -- kullanicinin "hala beyaz" dedigi yer tam burasi. */
@@ -13351,7 +13357,7 @@
              dugme -- alan artik GERCEK metin genisliginden (bayrak
              dahil, TEK dizge) cikiyor, sabit bir kutuya baglanmiyor. */
           const dokunGen = Math.min(W - 16, c.measureText(ad).width + 24);
-          _adKutu = { id:y.id, x1:ax - dokunGen/2 - 6, x2:ax + dokunGen/2 + 6,
+          _adKutu = { id:y.id, item:y, x1:ax - dokunGen/2 - 6, x2:ax + dokunGen/2 + 6,
                       y1:ay - boy/2 - 6, y2:ay + boy/2 + 6 };
         }
       }
@@ -13408,20 +13414,19 @@
       /* Ad kutusu bir dugme: acikken ona basmak dogrudan aciyor. */
       if(_adKutu && mx >= _adKutu.x1 && mx <= _adKutu.x2
          && my >= _adKutu.y1 && my <= _adKutu.y2){
-        const L0 = istYildizKur();
-        for(let i = 0; i < L0.length; i++) if(L0[i].id === _adKutu.id){ yildizAc(L0[i]); return; }
+        if(_adKutu.item && _adKutu.item.id === _adKutu.id){ yildizAc(_adKutu.item); return; }
       }
-      const L = istYildizKur();
-      const m = zumMerkez();
-      if(!m){ zumKapat(); return; }
+      const sahne = yildizSahne();
+      if(!sahne){ zumKapat(); return; }
+      const L = sahne.liste;
       /* YALNIZCA GORUNENLER SECILEBILIR. Cizilmemis bir yildizi
          secmek, kullanicinin bakmadigi bir seyi acmak olurdu. */
-      const gorunur = yildizGorunurSayi(L.length, _zum);
+      const gorunur = sahne.gorunur;
       const calan0 = calanYildiz();
       let en = null, enU = 1e9;
       for(let i = 0; i < L.length; i++){
         if(i >= gorunur && !(calan0 && calan0.id === L[i].id)) continue;
-        const p = yildizNokta(L[i], m.x, m.y, m.taban, _zum);
+        const p = yildizNokta(L[i], sahne.x, sahne.y, sahne.taban, _zum);
         const u = Math.hypot(p.x - mx, p.y - my);
         if(u < enU){ enU = u; en = L[i]; }
       }
