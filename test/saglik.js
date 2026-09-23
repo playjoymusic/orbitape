@@ -9193,7 +9193,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                   const h=Math.round(t.getBoundingClientRect().height);
                   t.style.transform=e; return h; })(),
                 sagY:R(g.height),
-                solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
+                        solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
+                        yildizOlcuAyni:Math.abs(R(fa.width)-R(sf.width)) <= 2
+                           && Math.abs(R(fa.height)-R(sf.height)) <= 2,
                 /* Buyutec 7 Eylul'de TASIMA satirina tasindi (radyoda
                    kayit satiri bes ogeyle 238px'e cikiyor ve sag alt
                    kunyeye yer kalmiyordu). Olcu de onunla birlikte
@@ -9228,7 +9230,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'bosluk '+(np?np.bosluk:'-')+'px | yigin='+(np?np.yigin:'-'));
   K('Iki satir ayni yukseklikte', !!np && Math.abs(np.solY-np.sagY) <= 1 && np.sagY===32,
      'sol ust '+(np?np.solY:'-')+'px | sag alt '+(np?np.sagY:'-')+'px');
-   K('Iki yildiz ayni olcude', !!np && Math.abs(np.solYildiz-np.sagYildiz) <= 2,
+   K('Iki yildiz ayni olcude', !!np && np.yildizOlcuAyni === true,
      (np?np.solYildiz:'-')+' / '+(np?np.sagYildiz:'-'));
   /* ALT SERIT TEK HAT. Ucgen bir ara aramanin ALTINDAYDI ve ekranda
      iki ayri serit gibi duruyordu ("arama yukari kaymis, tabana
