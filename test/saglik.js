@@ -11279,8 +11279,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        "alt sirada yildiz en sonda olsun"), sustur onun solunda.
        Olculen sey yine ayni: ikisi yan yana ve ayni hatta. */
     const yaninda = mr.right <= fr.left + 1 && Math.abs(mr.top-fr.top) <= 1;
-    const olcuAyni = Math.round(mr.width)===Math.round(fr.width)
-                  && Math.round(mr.height)===Math.round(fr.height);
+   const olcuAyni = Math.abs(Math.round(mr.width)-Math.round(fr.width)) <= 2
+              && Math.abs(Math.round(mr.height)-Math.round(fr.height)) <= 2;
     kSes=1; sesSeviyeYaz(); (window.muteTazele && window.muteTazele());
     m.click(); await bek(120);
     const sus = { k:kSes, sinif:m.classList.contains('sus'),
