@@ -468,10 +468,12 @@ const CASUS = ()=>{
       const once = { raf:AKTIF_AILE, ad:document.getElementById('modAd').textContent,
                      m1:m1(), kanal:mod,
                      rec:getComputedStyle(document.getElementById('rec')).display,
+               pic:getComputedStyle(document.getElementById('pic')).display,
                      arama:getComputedStyle(document.getElementById('ara')).display };
       AYAR.mood = true; moodUygula(); await b2(560);
       const kipte = { kanal:mod, raf:AKTIF_AILE, mod:AKTIF_MOD,
                       rec:getComputedStyle(document.getElementById('rec')).display,
+                      pic:getComputedStyle(document.getElementById('pic')).display,
                       arama:getComputedStyle(document.getElementById('ara')).display,
                       modulAlt: (()=>{ const r=document.getElementById('solUst').getBoundingClientRect();
                         return innerHeight - r.bottom < 140; })() };
@@ -479,15 +481,16 @@ const CASUS = ()=>{
       const sonra = { raf:AKTIF_AILE, ad:document.getElementById('modAd').textContent,
                       m1:m1(), kanal:mod,
                       rec:getComputedStyle(document.getElementById('rec')).display,
+                      pic:getComputedStyle(document.getElementById('pic')).display,
                       recSonuk:parseFloat(getComputedStyle(document.getElementById('rec')).opacity) < 0.6 };
       return { once, kipte, sonra };
     });
     K('[Y5] Kipte kanal arsive geciyor', kip.kipte.kanal==='lib' && kip.kipte.raf===null,
        'kanal ' + kip.kipte.kanal);
     K('[Y5] Kipte acilis rafi ORBITAPE', kip.kipte.mod==='ORBITAPE', String(kip.kipte.mod));
-    K('[Y5] Kipte REC geliyor, arama gidiyor',
-       kip.kipte.rec!=='none' && kip.kipte.arama==='none',
-       'REC ' + kip.kipte.rec + ' | arama ' + kip.kipte.arama);
+    K('[Y5] Kipte REC geliyor, PIC gidiyor, arama kaliyor',
+       kip.kipte.rec!=='none' && kip.kipte.pic==='none' && kip.kipte.arama!=='none',
+       'REC ' + kip.kipte.rec + ' | PIC ' + kip.kipte.pic + ' | arama ' + kip.kipte.arama);
     K('[Y5] Kipte modul alta iniyor', kip.kipte.modulAlt===true, 'sol alt kose');
     K('[Y5] Donunce ayni rafa donuluyor',
        kip.sonra.raf==='ELECTRONIC' && kip.sonra.kanal==='radio', String(kip.sonra.raf));
@@ -502,9 +505,9 @@ const CASUS = ()=>{
        Kayit kurali degismedi -- canli yayin kaydedilmiyor.
        Degisen, o yerin artik bos olmamasi. Radyoya donunce tus
        PARLAK olmali; sonuk kalirsa calisan bir tus kapali gorunur. */
-    K('[Y5] Donunce tus duruyor ve parlak',
-       kip.sonra.rec!=='none' && kip.sonra.recSonuk===false,
-       'radyoda fotograf var, tus kapali gorunmuyor');
+    K('[Y5] Donunce PIC duruyor ve parlak',
+       kip.sonra.pic!=='none' && kip.sonra.rec==='none' && kip.sonra.recSonuk===false,
+       'radyoda PIC var, REC yok');
     await supur(p2, 'Y5 kip donusu');
   }
 
