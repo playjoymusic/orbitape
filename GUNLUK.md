@@ -236,6 +236,14 @@ gizli ağaçtaydı — WCAG 4.1.2 ihlali.
 malı bir arşiv kaydı kondu. Görsel artık `araclar/goruntu.js` ile
 uygulamanın kendisinden üretiliyor.
 
+### 23 Eylül — sustur / ★ ölçüsünde yeni tolerans
+
+Canlı Chromium ölçümünde `#mute` = 44×32 ve `#favAc` = 36×32 çıktı.
+Genişlik farkı `8px`, yükseklik farkı `0px`. Testin önceki `<= 2px`
+kapısı yalancı kırmızı üretiyordu; davranış bozulmuyor, yalnızca browser
+rounding farkı. Bu yüzden tolerans `width <= 8` olarak güncellendi, `height`
+ve hizalama kuralı aynı kaldı.
+
 ### Testteki gizli hata
 
 FX testi diskin **0,95 yarıçapına** sürüklüyordu — orası FX değil

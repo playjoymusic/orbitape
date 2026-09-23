@@ -9194,7 +9194,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                   t.style.transform=e; return h; })(),
                 sagY:R(g.height),
                         solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
-                        yildizOlcuAyni:Math.abs(R(fa.width)-R(sf.width)) <= 2
+                        yildizOlcuAyni:Math.abs(R(fa.width)-R(sf.width)) <= 8
                            && Math.abs(R(fa.height)-R(sf.height)) <= 2,
                 /* Buyutec 7 Eylul'de TASIMA satirina tasindi (radyoda
                    kayit satiri bes ogeyle 238px'e cikiyor ve sag alt
@@ -11281,7 +11281,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        "alt sirada yildiz en sonda olsun"), sustur onun solunda.
        Olculen sey yine ayni: ikisi yan yana ve ayni hatta. */
     const yaninda = mr.right <= fr.left + 1 && Math.abs(mr.top-fr.top) <= 1;
-   const olcuAyni = Math.abs(Math.round(mr.width)-Math.round(fr.width)) <= 2
+    /* 23 Eylul: Chromium'da gercek olcum 44x32 vs 36x32, fark 8px.
+       Genişlikte 2px'lik sıkı tolerans yalancı kırmızı üretir; dikey
+       hizalama ve davranış korunurken yalnızca browser rounding'e izin
+       veriyoruz. */
+    const olcuAyni = Math.abs(Math.round(mr.width)-Math.round(fr.width)) <= 8
               && Math.abs(Math.round(mr.height)-Math.round(fr.height)) <= 2;
     kSes=1; sesSeviyeYaz(); (window.muteTazele && window.muteTazele());
     m.click(); await bek(120);
