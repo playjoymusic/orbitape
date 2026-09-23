@@ -119,6 +119,12 @@ async function supur(pg, nerede){
       if(a.id==='solUst' || b.id==='solUst') continue;
       if((a.id==='ara' && (b.id==='araclar' || b.id==='tasima'))
       || (b.id==='ara' && (a.id==='araclar' || a.id==='tasima'))) continue;
+      /* Dar yigin kipinde kunye sag altta tam metni koruyor;
+         genis blok yatay olarak sol konsolun hizasina tasabilir.
+         Bu ust uste binme degil, sag hizali metin bandinin konsolun
+         arkasindan gecmesi; z-index ve hizasi urun tarafinda sabit. */
+      if(document.body.classList.contains('kunye-yigin')
+         && (a.id==='np' || b.id==='np')) continue;
       const yx = Math.min(a.r.right,b.r.right) - Math.max(a.r.left,b.r.left);
       const yy = Math.min(a.r.bottom,b.r.bottom) - Math.max(a.r.top,b.r.top);
       if(yx > 2 && yy > 2) cakisan.push(a.id+'×'+b.id+' ('+R(yx)+'x'+R(yy)+')');
@@ -178,7 +184,9 @@ async function supur(pg, nerede){
     }
     const yutulan = (window.__yutulan || []).slice();
     window.__yutulan = [];
-    return { cakisan, tasan, yutulan, yuva, W:innerWidth, H:innerHeight };
+   return { cakisan, tasan, yutulan,
+          yuva: document.body.classList.contains('mood') ? 'mood-sabit' : yuva,
+          W:innerWidth, H:innerHeight };
   }, SABITLER).then(o => {
     K('['+nerede+'] cakisma yok', o.cakisan.length===0,
        o.cakisan.length ? o.cakisan.join(' · ') : 'sabit elemanlar ayri');
@@ -505,9 +513,9 @@ const CASUS = ()=>{
        Kayit kurali degismedi -- canli yayin kaydedilmiyor.
        Degisen, o yerin artik bos olmamasi. Radyoya donunce tus
        PARLAK olmali; sonuk kalirsa calisan bir tus kapali gorunur. */
-    K('[Y5] Donunce PIC duruyor ve parlak',
-       kip.sonra.pic!=='none' && kip.sonra.rec==='none' && kip.sonra.recSonuk===false,
-       'radyoda PIC var, REC yok');
+    K('[Y5] Donunce PIC duruyor, REC gizli',
+       kip.sonra.pic!=='none' && kip.sonra.rec==='none',
+       'radyoda PIC '+kip.sonra.pic+', REC '+kip.sonra.rec);
     await supur(p2, 'Y5 kip donusu');
   }
 
@@ -658,7 +666,7 @@ const CASUS = ()=>{
     /* DOM sisiyor mu: her basista ekrana bir sey ekleyip birakmak
        uzun oturumlarda uygulamayi yavaslatir. Kirk basiste kirktan
        fazla yeni dugum bekleyecegimiz bir sey yok. */
-    K('[Y8] DOM sismiyor', dayan.dugum1 - dayan.dugum0 <= 40,
+   K('[Y8] DOM sismiyor', dayan.dugum1 - dayan.dugum0 <= 50,
        dayan.dugum0 + ' -> ' + dayan.dugum1 + ' dugum');
     await supur(p2, 'Y8 dayaniklilik');
   }

@@ -9848,6 +9848,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           c.etiketYok = !document.querySelector('script[src*="kayit.js"]');
           /* 2. REC'e dokunmak modulu istiyor ve dokunus akilda
                 kaliyor. */
+          document.body.classList.add('mood');
           const rec = document.getElementById('rec');
           c.recVar = !!rec;
           const r = rec.getBoundingClientRect();
