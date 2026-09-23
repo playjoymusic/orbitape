@@ -1057,7 +1057,7 @@
     white-space:nowrap;flex:none;position:relative;}
   #pic.var{display:flex;}
   body:not(.mood) #pic{display:flex !important;}
-  body.mood #pic{display:flex !important;visibility:hidden;opacity:0;pointer-events:none;}
+  body.mood #pic{display:none !important;}
   #pic .nokta{width:8px;height:8px;border-radius:50%;background:#7fb7c4;box-shadow:0 0 8px rgba(127,183,196,.5);}
   #pic::before{content:'';position:absolute;inset:-4px -2px;border-radius:999px;}
   #pic.cakti{color:#eaf6ff;border-color:rgba(200,235,245,.6);}
@@ -1066,7 +1066,7 @@
   /* REC/CAM durum yazisi degisse de sol blok ve diger ogeler oynamasin. */
   #recYazi,#camYazi{display:inline-block;min-width:3.2em;text-align:center;}
   #rec.kaydet #recYazi{min-width:3.2em;}
-  body:not(.mood) #rec{display:flex !important;visibility:hidden;opacity:0;pointer-events:none;}
+  body:not(.mood) #rec{display:none !important;}
   body.mood #rec{opacity:1 !important;}
   body.mood #rec .nokta{background:#5adcd2;box-shadow:0 0 8px rgba(90,220,210,.45);}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
@@ -2653,7 +2653,7 @@
   body.deri #geri svg,body.deri #dur svg,body.deri #duraklat svg,body.deri #ileri svg{
     stroke:var(--d-yazi) !important;fill:var(--d-yazi) !important;}
   /* Ikinci satirin tuslari da govdeden: cerceve degil kabartma. */
-  body.deri #rec,body.deri #cam,body.deri #camDon,body.deri #mute,body.deri #favAc,body.deri #araCizgi{
+  body.deri #pic,body.deri #rec,body.deri #cam,body.deri #camDon,body.deri #mute,body.deri #favAc,body.deri #araCizgi{
     background:var(--d-tus-zem,transparent) !important;
     box-shadow:var(--d-golge,none) !important;
     border-radius:var(--d-kose,50%) !important;}
@@ -2662,7 +2662,7 @@
      kayboluyor degil: acik/kapali farki hala kabartmanin var
      olup olmamasiyla okunuyor. REC'in kirmizi noktasi haric --
      o bir DURUM isareti, her deride ayni anlami tasimali. */
-  body.deri #cam.var,body.deri #cam.pasif,body.deri #camDon.var,
+  body.deri #pic,body.deri #cam.var,body.deri #cam.pasif,body.deri #camDon.var,
   body.deri #mute.var,body.deri #favAc.var,body.deri #araCizgi.var{
     background:var(--d-tus-zem,transparent) !important;
     color:var(--d-yazi) !important;}
@@ -3134,9 +3134,10 @@
   /* Ikinci satir: kendi renkleri var (turkuaz/kirmizi). Deri acikken
      onlar da malzemeye uyuyor -- REC'in kirmizi noktasi haric, o bir
      DURUM isareti ve her deride ayni anlami tasimali. */
-  body.deri #rec,body.deri #cam,body.deri #camDon,body.deri #mute,body.deri #favAc,
+  body.deri #pic,body.deri #rec,body.deri #cam,body.deri #camDon,body.deri #mute,body.deri #favAc,
   body.deri #araCizgi,body.deri #tani{
     color:var(--d-yazi) !important;border-color:var(--d-tus-kenar) !important;}
+  body.deri #pic .nokta{background:var(--d-yazi) !important;box-shadow:0 0 8px var(--d-yazi) !important;}
   body.deri #mute svg,body.deri #favAc svg,body.deri #araCizgi svg,body.deri #camDon svg{
     stroke:var(--d-yazi) !important;}
   body.deri #favAc svg{fill:var(--d-yazi) !important;}
