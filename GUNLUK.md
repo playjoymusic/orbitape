@@ -1799,3 +1799,20 @@ kontrol düğmeleriyle çakışma yok. VS Code hata denetimi ve `node --check`
 temiz geçti; tam `saglik.js hizli` koşusu bu ortamda 180 saniyede tamamlanmadı.
 `_headers` CSP özeti `csp.py` ile yenilendi. Push yapılmadı; pj'nin pushu
 bekleniyor.
+
+### 23 Eylül — Android kısa ekranlarında halka merkezi düzeltildi
+
+Bir Android test cihazı videosunda halka ve çarkın ekranın üstüne çıktığı,
+sağ-alt künyenin de sola girdiği görüldü. Ölçüm: 360x568 ve 360x640'da halka
+merkezi yaklaşık 106px yukarıdaydı; kök neden `body.kunye-yigin` içindeki
+`--alet-kay:220px` ve büyük alt rezervdi. Yığınlı mobil yerleşimde padding ve
+kayma sıfırlandı, rezerv ortak `max(190px,25vh)` kuralına alındı.
+
+Doğrulama: 360x568, 390x844, 412x915 ve 360x640 ölçümlerinin tamamında halka
+merkez farkı en fazla 0,01px, halka ekrana sığıyor. Kamera çevirme düğmesi
+28x28px, iç simge 14x14px yapıldı; tüm ölçümlerde sabit kaldı. CSP ve JS
+sözdizimi kontrolleri geçti.
+
+Alt taşıma/ses/favori kontrollerini ayarlar panelinde yeniden gruplama fikri
+bu dilimde başlatılmadı; DOM ve erişilebilirlik sözleşmesi ayrı bir iş olarak
+ölçülerek yapılacak. Bu değişiklik henüz pushlanmadı.
