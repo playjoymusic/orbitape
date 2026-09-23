@@ -1047,7 +1047,8 @@
      okunuyordu (CAM'de 20px olculdu). Ayak izini artik #araclar'in
      min-width'i koruyor, tuslar yazilarini sariyor, bos alan satirin
      sonunda birikiyor. Kunye yerlesimi etkilenmiyor. */
-  #rec{min-width:0;} #cam{min-width:0;}
+  #pic,#rec{width:52px;min-width:52px;justify-content:center;}
+  #rec{min-width:52px;} #cam{min-width:0;}
   #araclar{min-width:0;}
   #pic{display:none;align-items:center;gap:3px;height:32px;box-sizing:border-box;z-index:80;
     padding:0 8px 0 7px;border-radius:999px;background:rgba(8,14,17,.72);
@@ -1056,7 +1057,7 @@
     white-space:nowrap;flex:none;position:relative;}
   #pic.var{display:flex;}
   body:not(.mood) #pic{display:flex !important;}
-  body.mood #pic{display:none !important;}
+  body.mood #pic{display:flex !important;visibility:hidden;opacity:0;pointer-events:none;}
   #pic .nokta{width:8px;height:8px;border-radius:50%;background:#7fb7c4;box-shadow:0 0 8px rgba(127,183,196,.5);}
   #pic::before{content:'';position:absolute;inset:-4px -2px;border-radius:999px;}
   #pic.cakti{color:#eaf6ff;border-color:rgba(200,235,245,.6);}
@@ -1065,7 +1066,7 @@
   /* REC/CAM durum yazisi degisse de sol blok ve diger ogeler oynamasin. */
   #recYazi,#camYazi{display:inline-block;min-width:3.2em;text-align:center;}
   #rec.kaydet #recYazi{min-width:3.2em;}
-  body:not(.mood) #rec{display:none !important;}
+  body:not(.mood) #rec{display:flex !important;visibility:hidden;opacity:0;pointer-events:none;}
   body.mood #rec{opacity:1 !important;}
   body.mood #rec .nokta{background:#5adcd2;box-shadow:0 0 8px rgba(90,220,210,.45);}
   #rec::before,#cam::before{content:'';position:absolute;inset:-4px -2px;
@@ -1758,6 +1759,13 @@
   /* Çizgi/giriş satırı kanal adlarıyla AYNI genişlikte (soldan taşmıyor).
      Sonuç listesi ise ayrı bir yüzey; okunabilir kalsın diye daha geniş. */
   #ara.acik .kutu{display:flex;flex-direction:column-reverse;width:min(74vw,268px);max-width:calc(100vw - 32px);}
+  body.gorsel-acik #araYuva,
+  body.kam #ara,
+  body.kam #araYuva,
+  body.kayit #ara,
+  body.kayit #araYuva,
+  body:has(#fotoOnizle.var) #ara,
+  body:has(#fotoOnizle.var) #araYuva{display:none !important;visibility:hidden !important;pointer-events:none !important;}
   #ara .satir{display:flex;align-items:center;gap:6px;border-bottom:1px solid currentColor;
     width:var(--ug,200px);margin-right:auto;flex-direction:row-reverse;}
   /* SİL (×): yazı sağa yaslı olduğu için sol uçta duruyor, yolu kesmiyor. */
@@ -18430,7 +18438,7 @@
              (olculdu, gizlilik baglantisi ekranin disina cikiyordu). */
           const yv = document.getElementById('araYuva');
           const yr = yv ? yv.getBoundingClientRect() : null;
-          if(!_moodda && yr && yr.width && !arE.classList.contains('acik'))
+          if(yr && yr.width && !arE.classList.contains('acik'))
             arSol = Math.round(yr.left);
         }catch(_){ _yut(_); }
         arE.style.left = arSol + 'px';
