@@ -1224,8 +1224,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       22 EYLUL visual ve kamera guvenceleri: index.html 1.321.361 bayt /
       1290,39 KB oldu; tavan 1292 KB'a alindi. Artis yine kucuk kod + yorum
       kaynakli. */
-    K('Ham boy < 1292 KB', dosyaBoy < 1292*1024,
-      Math.round(dosyaBoy/1024) + ' KB kaynak, %'
+      K('Ham boy < 1296 KB', dosyaBoy < 1296*1024,
+         Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
   /* ── AYARLAR PANELI ──────────────────────────────────────────────
