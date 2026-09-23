@@ -10354,7 +10354,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         beyazListe = Array.from({length:20},(_,i)=>({
           stationuuid:'y'+i, name:'Yildiz '+i, url:'https://sahte.test/y'+i,
           url_resolved:'https://sahte.test/y'+i, grup:(i<12?'JAZZ':'AMBIENT'),
-          saf:1, ulke:'TR', tags:'jazz' }));
+          saf:1, ulke:'TR', tags:'jazz', lisans:'CC0' }));
         AKTIF_AILE = 'JAZZ';
         c.rafKadar = window.yildizDurum().sayi === 12;
         AKTIF_AILE = 'AMBIENT';

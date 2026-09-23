@@ -1779,3 +1779,23 @@ ve VS Code Problems kontrolü geçti. Bu CSS değişikliği henüz pushlanmadı.
 kabul edildi; genişlik toleransı `<=8px`, yükseklik toleransı `<=2px` olarak
 bırakıldı. Değişiklik pj tarafından pushlandı. Büyük geometri ve FX çalışmaları
 ayrı, açık işler olarak kaldı.
+
+### 23 Eylül — büyüteç REC satırından ayrıldı
+
+Kullanıcı küçük telefonda büyütecin REC'in üstüne geldiğini ve RADIOTAPE ile
+ORBITAPE'te araçların aynı yerde sabit kalması gerektiğini bildirdi. Ölçümde
+`#ara` ayrı bir `fixed` konum sahibi, yuvası ise başka satırda olduğu için
+iki yerleşim kaynağı ayrışabiliyordu. `#araYuva`, taşıma satırından çıkarılıp
+REC/CAM/mute/favori satırına alındı; kapalı büyüteç artık iki dünyanın ortak
+flex satırındaki gerçek yuvayı izliyor.
+
+Aynı sağlık kırmızısında sahte yıldız istasyonlarının lisans alanı taşımadığı
+da bulundu. Üretimdeki son lisans kapısı bunları haklı olarak eliyordu; test
+fikstürüne `CC0` eklendi, böylece kontrol gerçekten ad kutusuna basıp doğru
+istasyonu açmayı ölçüyor.
+
+390x844 ve 360x568 ölçümlerinde büyüteç-yuva merkez farkı en fazla 1,92px,
+kontrol düğmeleriyle çakışma yok. VS Code hata denetimi ve `node --check`
+temiz geçti; tam `saglik.js hizli` koşusu bu ortamda 180 saniyede tamamlanmadı.
+`_headers` CSP özeti `csp.py` ile yenilendi. Push yapılmadı; pj'nin pushu
+bekleniyor.

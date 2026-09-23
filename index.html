@@ -4925,15 +4925,6 @@
            govdedeki 'mood' sinifi ve 'durdu' durumu karar veriyor. -->
       <button id="duraklat" type="button" title="Stop" aria-label="Stop" aria-pressed="false"><svg viewBox="0 0 14 12" aria-hidden="true"><rect class="d1" x="2.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="d2" x="8.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="stp" x="2.6" y="1.3" width="9.4" height="9.4" rx="1.4"/><path class="oyn" d="M3.2 1.1 L3.2 10.9 L12 6 Z"/></svg></button>
       <button id="ileri" type="button" title="Next in history" aria-label="Next in history"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="11.7" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M0.6 1.1 L0.6 10.9 L9.8 6 Z"/></svg></button>
-      <!-- BUYUTECIN YUVASI BURADA. Once kayit satirindaydi; orada
-           radyoda bes oge oluyordu (REC·CAM·sustur·buyutec·★), satir
-           238px'e cikiyor ve 390px'lik telefonda kunyeye 106px
-           kaliyordu (esik 118 -> kunye konsolun USTUNE yiginiyordu).
-           Buraya alinca kalabalik satir 32px hafifliyor ve iki satir
-           neredeyse ayni genislige geliyor (186/206) -- panelin tek
-           parca okunmasinin asil sebebi bu. Anlam olarak da yeri
-           burasi: arama "calacak bir sey bul" demek. -->
-      <i id="araYuva" aria-hidden="true"></i>
     </div>
     <!-- IKINCI SATIR: kayit araclari, favori girisi ve ses.
          NEDEN BU DAGILIM: 360px'te olculdu -- sag ustteki satir
@@ -4974,15 +4965,11 @@
            bir cizgi geliyor. Ayni dil sag ustteki calma gostergesinde
            ve halkalarda da kullaniliyor. -->
       <div id="mute" role="button" tabindex="0" title="Mute" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle class="kay" cx="7.5" cy="12" r="2.6"/><path class="y1" d="M12.4 8.6a5.6 5.6 0 0 1 0 6.8"/><path class="y2" d="M16.1 6.1a10 10 0 0 1 0 11.8"/><path class="cap" d="M5 19 L19 5"/></svg></div>
-      <!-- ── BUYUTECIN YUVASI ───────────────────────────────────────
-           Arama kutusu (#ara) satirin bir parcasi OLAMAZ: acilinca
-           yukari dogru buyuyup butun ekrani kaplamasi gerekiyor, yani
-           akistan bagimsiz durmali. Ama kapaliyken satirda YER
-           TUTMALI, yoksa yildiz onun uzerine gelir.
-           Bu bos kutu o yeri tutuyor; buyutec calisma aninda tam
-           onun uzerine konumlaniyor. Boylece yildiz satirin SONUNDA
-           kaliyor ve aradaki bosluklar satirin kendi bosluguyla ayni
-           -- elle hicbir sayi hizalanmiyor. -->
+       <!-- BUYUTECIN YUVASI: ayni kontrol satirinda sabit kalir. Arama
+         acilinca #ara ayri fixed panel olarak buyur; kapaliyken bu
+         bos kutunun gercek konumu hem RADIOTAPE hem ORBITAPE icin
+         ortak hizalama kaynagidir. -->
+       <i id="araYuva" aria-hidden="true"></i>
       <!-- ★ EN SONDA. Istenen: "alt sirada yildiz en sonda olsun." -->
       <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
     </div>
