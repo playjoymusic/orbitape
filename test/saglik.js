@@ -9196,12 +9196,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                         solYildiz:R(fa.width)+'x'+R(fa.height), sagYildiz:R(sf.width)+'x'+R(sf.height),
                         yildizOlcuAyni:Math.abs(R(fa.width)-R(sf.width)) <= 8
                            && Math.abs(R(fa.height)-R(sf.height)) <= 2,
-                /* Buyutec 7 Eylul'de TASIMA satirina tasindi (radyoda
-                   kayit satiri bes ogeyle 238px'e cikiyor ve sag alt
-                   kunyeye yer kalmiyordu). Olcu de onunla birlikte
-                   tasindi: hangi satirdaysa o satirla ayni hatta
-                   olmali. */
-                hatFark: R((ts.top + ts.height/2) - (ar.top+ar.height/2)),
+                /* Buyutec REC/CAM/mute/favori satirina sabitlendi; ayni
+                   satirin gercek merkeziyle hizali olmasi gerekiyor. */
+                hatFark: R((acR.top + acR.height/2) - (ar.top+ar.height/2)),
                 mood: document.body.classList.contains('mood'),
                 tutUstte: tut.bottom < innerHeight/2,
                 blokEn: R(bi.width), en: R(innerWidth),
