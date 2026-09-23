@@ -1772,3 +1772,10 @@ kilitli olmaması ve opsiyonel araçların değişken görünürlüğüydü. `#a
 artık `width:max-content`, `flex:none`, `flex-wrap:nowrap` ve sabit `6px`
 aralık kullanıyor; dar ekran kuralı da aynı ölçüyü koruyor. Inline script parse
 ve VS Code Problems kontrolü geçti. Bu CSS değişikliği henüz pushlanmadı.
+
+### 23 Eylül — yıldız ölçüm toleransı pushlandı
+
+`test/saglik.js` içindeki yıldız boyutu kontrolünde ölçülen 8px genişlik farkı
+kabul edildi; genişlik toleransı `<=8px`, yükseklik toleransı `<=2px` olarak
+bırakıldı. Değişiklik pj tarafından pushlandı. Büyük geometri ve FX çalışmaları
+ayrı, açık işler olarak kaldı.
