@@ -18602,6 +18602,18 @@
             try{ document.body.classList.remove('kunye-yigin'); }catch(_){ _yut(_); }
           }
           npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
+          /* MOBILDE KUNYE ALT KONTROLLERE GIREMEZ. _kunyeYerlestir
+             daha once icerige gore bottom yaziyordu; Android'de bu
+             deger alt switch/kamera satirinin ustune tasabiliyordu.
+             Gercek arac satirinin ust kenari tek dogru sinir. */
+          if(window.innerWidth <= 480){
+            const altArac = document.getElementById('araclar');
+            const altRect = altArac && altArac.getBoundingClientRect();
+            if(altRect && altRect.height){
+              const taban = _gorBoy() - altRect.top + 8;
+              npE.style.bottom = Math.max(48, Math.ceil(taban)) + 'px';
+            }
+          }
         }
       }catch(_){ _yut(_); }
   }
