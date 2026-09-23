@@ -1513,6 +1513,13 @@ statik olarak eşleşmiyor, bu yüzden hangi tarayıcı bayrağının düştüğ
 ölçülmeden sembol silinmeyecek. Yeni `_headers` ile yeniden CI koşulması
 bekleniyor.
 
+## 24 Eylül — temiz tabana dönüldü
+
+Android halka ve ayarlar yerleşimi için yapılan yerel deneme sağlık kapısı
+tamamlanmadan bırakıldı ve GitHub Desktop'tan silindi. Canlıdaki son yeşil
+sürüm korunuyor; bu oturumdan yeni ürün kodu pushlanmadı. Sonraki iş temiz
+`main` tabanından, tek küçük kapsamla başlayacak.
+
 ### 21 Eylül — arşiv havuzunun güncel ölçümü
 
 Eski büyük hasat günlüğünde havuzun **22.903 kayıt** olduğu yazılıydı:
