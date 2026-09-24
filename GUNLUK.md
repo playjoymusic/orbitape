@@ -1903,3 +1903,9 @@ Kök neden eski `body.klavye #ara { top:160px }` kuralının panel içindeki
 arama kutusunu aşağı itmesiydi. Panel içi arama için `top`/`bottom` normal
 akisa sifirlandi. Ayni uc olcum smoke testte yesil: arama ust ucte birlik
 alanda, önceki konumundan yukarıda ve giriş satırı sonuçların üstünde.
+
+25 Eylül CI koşusunda tek kırmızı `Ham boy < 1296 KB` kaldı. Ölçüm:
+`index.html` 1.327.209 byte, eski tavan 1.327.104 byte; fark yalnızca 105
+byte. Yeni arama paneli korumaları ve test açıklamaları eklendiği için yorum
+budanmadı; kaynak tavanı 1 KB kontrollü olarak 1297 KB'a yükseltildi. `node
+--check`, `git diff --check` ve `126/126` birim kapısı geçti.
