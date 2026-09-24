@@ -17046,7 +17046,7 @@
     const _gorselGecis = !!kullanici || !aramaGosterimiVarMi();
     if(_gorselGecis){
       document.body.classList.add('firing','gecis');
-      setTimeout(()=>document.body.classList.remove('gecis'),220);
+      setTimeout(()=>document.body.classList.remove('gecis','firing'),220);
     }
     try{ ses.pause(); }catch(e){ _yut(e); }                                          // çalanı DURDUR -> her tık/mood YENİ ses bulacak
     if(_gorselGecis){ aramaBaslat(); bekleGoster(); }                      // frekans + WAIT... göster
