@@ -7967,6 +7967,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        her zaman bostur. Klavye acikken arama yukari tasiniyor. */
     K('Klavye acikken arama yukarida', await pg.evaluate(()=>{
         const el = document.getElementById('ara');
+      try{ ayarGoster(true); araAc(); }catch(e){ return false; }
         const once = el.getBoundingClientRect();
         document.body.classList.add('klavye');
         const sonra = el.getBoundingClientRect();
@@ -7978,6 +7979,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const sonuc = el.querySelector('.sonuc').getBoundingClientRect();
         el.classList.remove('acik');
         document.body.classList.remove('klavye');
+      try{ araKapa(); ayarGoster(false); }catch(e){}
         return sonra.top < innerHeight * 0.35
             && sonra.top < once.top
             && satir.top <= sonuc.top;

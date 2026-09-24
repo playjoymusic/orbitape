@@ -1875,3 +1875,11 @@ olmasını ve dış simgenin gizli kalmasını ölçecek şekilde güncellendi. 
 arama testi de önce ayarları açıp SEARCH akışını kuruyor. Yerel birim kapısı
 `126/126`, JS sözdizimi ve diff kontrolleri yeşil; tam sağlık koşusu bu ortamda
 Chromium kapanması/port sorunları nedeniyle yeniden sayaç veremedi.
+
+CI yeniden `864/866` verdiğinde kalan iki kırmızı ayrıştırıldı:
+`Klavye acikken arama yukarida` testi aramayı artık ayarlar paneline taşınmış
+halde değil, kapalı panelde ölçüyordu; test gerçek `ayarGoster(true)` +
+`araAc()` akışına alındı. `Kunye tabani sabit yerlesimde` farkının kökü mobil
+yerleşimdeki `+2px` taban payıydı; sağlık kontrolünün 1px toleransıyla çeliştiği
+ölçüldü ve araç satırına göre `+1px` yapıldı. CSP, sözdizimi/diff kontrolleri
+ve `126/126` birim testi tekrar geçti. Bu son değişiklikler henüz pushlanmadı.

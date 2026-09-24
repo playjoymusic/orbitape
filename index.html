@@ -18638,7 +18638,7 @@
             const altArac = document.getElementById('araclar');
             const altRect = altArac && altArac.getBoundingClientRect();
             if(altRect && altRect.height){
-              const taban = _gorBoy() - altRect.bottom + 2;
+              const taban = _gorBoy() - altRect.bottom + 1;
               npE.style.bottom = Math.max(2, Math.ceil(taban)) + 'px';
             }
           }
