@@ -1549,17 +1549,19 @@
      "Kapali arama tek buyutec" olcumu dusuyor (denendi, kirmizi).
      Deri tarafi zaten hap gibi boyuyordu (body.deri #araCizgi). */
   #araYuva{display:block;width:26px;height:32px;flex:none;}
-  #ara .cizgi{width:26px;height:26px;display:flex;align-items:center;
+  #ara .cizgi,#np .np-gez .cizgi{width:26px;height:26px;display:flex;align-items:center;
     justify-content:center;cursor:pointer;box-sizing:border-box;
     border-radius:999px;background:rgba(8,14,17,.72);
     border:1px solid rgba(120,180,180,.18);
     -webkit-tap-highlight-color:transparent;}
   /* Buyutec temanin vurgu renginde; tema yoksa kanalin rengi
      (kutunun kendi 'color' degeri) geciyor. */
-  #ara .cizgi{color:#5adcd2;}
-  #ara .cizgi svg{flex:0 0 auto;width:14px;height:14px;opacity:.66;transition:opacity .25s;}
-  #ara .cizgi:hover svg{opacity:1;}
-  #ara.acik .cizgi{display:none;}
+  #ara .cizgi,#np .np-gez .cizgi{color:#5adcd2;}
+  #ara .cizgi,#np .np-gez .cizgi{flex:0 0 auto;}
+  #np .np-gez .cizgi{pointer-events:auto;}
+  #ara .cizgi svg,#np .np-gez .cizgi svg{flex:0 0 auto;width:14px;height:14px;opacity:.66;transition:opacity .25s;}
+  #ara .cizgi:hover svg,#np .np-gez .cizgi:hover svg{opacity:1;}
+  body.arama-acik #araCizgi{display:none;}
   /* etiket aktifken: kapalıyken de kelime görünsün, çizgi biraz parlasın */
   #ara .etiket{order:2;margin-bottom:3px;font-family:'Share Tech Mono',monospace;font-size:0.625rem;letter-spacing:.26em;
     color:currentColor;opacity:.82;cursor:pointer;padding:1px 0 2px;
@@ -4782,6 +4784,7 @@
            kalir ve hic yer kaplamaz.
            DEKORATIF DEGIL, BILGI: ekran okuyucudan gizlenmiyor. -->
       <span id="npBayrak" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false"></span>
+      <div class="cizgi" id="araCizgi" role="button" tabindex="0" aria-label="Search"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.7 7.7 L11 11"/></svg></div>
       <button id="fav" type="button" title="Favourite (hold: play favourites)" aria-label="Favourite" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></button>
       <!-- ── ORBITAPE ISARETI ────────────────────────────────────
            Shazam dugmesinin bosalttigi yer. Kullanicinin istegi:
@@ -4889,7 +4892,6 @@
   </div>
   <div id="ara">
       <div class="etiket" id="araEtiket" role="button" tabindex="0"></div>
-      <div class="cizgi" id="araCizgi" role="button" tabindex="0" aria-label="Search"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.7 7.7 L11 11"/></svg></div>
       <div class="kutu">
         <!-- GIZLILIK BAGLANTISI. Yeri bilinçli: alt şerit dolu (solda
              REC·CAM·★, sağda ◁ ★ ▷) ve 360px'te aralarında 29px
