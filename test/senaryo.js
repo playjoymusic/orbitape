@@ -483,6 +483,7 @@ const CASUS = ()=>{
                       rec:getComputedStyle(document.getElementById('rec')).display,
                       pic:getComputedStyle(document.getElementById('pic')).display,
                       arama:getComputedStyle(document.getElementById('ara')).display,
+                      aramaYuvada:document.getElementById('ara').parentElement === document.getElementById('ayar'),
                       modulAlt: (()=>{ const r=document.getElementById('solUst').getBoundingClientRect();
                         return innerHeight - r.bottom < 140; })() };
       AYAR.mood = false; moodUygula(); await b2(620);
@@ -497,7 +498,7 @@ const CASUS = ()=>{
        'kanal ' + kip.kipte.kanal);
     K('[Y5] Kipte acilis rafi ORBITAPE', kip.kipte.mod==='ORBITAPE', String(kip.kipte.mod));
     K('[Y5] Kipte REC geliyor, PIC gidiyor, arama kaliyor',
-       kip.kipte.rec!=='none' && kip.kipte.pic==='none' && kip.kipte.arama!=='none',
+       kip.kipte.rec!=='none' && kip.kipte.pic==='none' && kip.kipte.aramaYuvada,
        'REC ' + kip.kipte.rec + ' | PIC ' + kip.kipte.pic + ' | arama ' + kip.kipte.arama);
     K('[Y5] Kipte modul alta iniyor', kip.kipte.modulAlt===true, 'sol alt kose');
     K('[Y5] Donunce ayni rafa donuluyor',
