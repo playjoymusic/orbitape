@@ -1193,6 +1193,10 @@
        kendiliginden bandin icinde kaliyor ve TABAN HIC OYNAMIYOR. */
     }
   #np .np-bilgi{display:flex;flex-direction:column;align-items:flex-end;gap:3px;max-width:100%;}
+  #np .np-gez{display:flex;align-items:center;gap:6px;margin:0;pointer-events:auto;}
+  #np .np-gez #tasima{display:flex;align-items:center;gap:2px;}
+  #np .np-gez #tasima button{width:36px;min-width:36px;height:32px;}
+  #np .np-gez #araCizgi{display:none !important;}
   /* KUNYE KIRPILMIYOR -- iki satirla sinirlamak denendi ve GERI
      ALINDI: CC BY ailesinde atfi kisaltmak lisansin sartina aykiri
      ("..." ile biten bir atif atif sayilmaz) ve saglik takiminin
@@ -3563,6 +3567,17 @@
     font-size:0.53125rem;letter-spacing:.34em;font-weight:400;
     color:rgba(244,247,250,.58);}
   #ayar h5:first-of-type{margin-top:10px;}
+  #ayarAra{display:flex;align-items:center;justify-content:space-between;
+    width:100%;margin:0 0 8px;padding:9px 10px;box-sizing:border-box;
+    border:1px solid rgba(90,220,210,.25);border-radius:8px;
+    background:rgba(8,20,22,.72);color:#5adcd2;cursor:pointer;
+    font-family:'Share Tech Mono',ui-monospace,monospace;font-size:.6875rem;
+    letter-spacing:.22em;}
+  #ayarAra::after{content:'⌕';font-size:1.15rem;letter-spacing:0;}
+  #ayar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
+    padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
+  #ayar #araclar > div{flex:0 0 auto;}
+  #solUst{display:none !important;}
   /* ── SATIR ALTI NOT ─────────────────────────────────────────────
      Bir anahtarin BEDELINI soyleyen tek satir. Kullanicinin CAR
      MODE'da yasadigi sey buydu: anahtar aciliyor, FX ve REC
@@ -4399,6 +4414,8 @@
          tabindex KAPALIYKEN -1: panel aria-hidden iken satirlar
          odaklanabilir kalirsa ekran okuyucu "gorunmeyen ama
          odaklanabilen dugme" durumuna duser (WCAG 4.1.2). -->
+    <div id="ayarAra" role="button" tabindex="-1" aria-label="Search">SEARCH</div>
+    <div id="ayarAraclar" aria-label="Photo and camera controls"></div>
     <div class="sat kapi" data-ayar="mood" role="switch" tabindex="-1"
          aria-checked="false" aria-label="ORBITAPE sound banks">
       <span class="kapi-yazi">
@@ -19506,6 +19523,21 @@
     const tut = document.getElementById('ayarTut');
     const kut = document.getElementById('ayar');
     if(!tut || !kut) return;
+    const ayarAra = document.getElementById('ayarAra');
+    const ayarAraclar = document.getElementById('ayarAraclar');
+    const npGez = document.querySelector('#np .np-gez');
+    const tasima = document.getElementById('tasima');
+    const araclar = document.getElementById('araclar');
+    const fav = document.getElementById('fav');
+    if(ayarAraclar && araclar) ayarAraclar.append(araclar);
+    if(npGez && tasima && fav) npGez.insertBefore(tasima, fav.nextSibling);
+    if(ayarAra) ayarAra.addEventListener('click', ()=>{
+      kapa();
+      try{ araAc(); }catch(e){ _yut(e); }
+    });
+    if(ayarAra) ayarAra.addEventListener('keydown', e=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); ayarAra.click(); }
+    });
     function yildizYaz(){
       try{
         const el = kut.querySelector('.sat[data-ayar="yildiz"] .durum');

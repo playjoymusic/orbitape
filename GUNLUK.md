@@ -1544,6 +1544,15 @@ bulunacak; yeni kaynak ancak aynı lisans kapısından ve gerçek tarayıcı uyu
 
 Araştırma sonucu:
 
+## 24 Eylül — alt kontrol satırı sadeleştirildi
+
+Kullanıcı kararı: alt satır boşalacak; yalnız favori yıldızı kalacak.
+PIC, REC ve CAM ayarlar paneline taşındı. Ayarların ilk satırı SEARCH;
+basılınca panel kapanıp arama açılıyor. Play/stop konsolu favori yıldızının
+sağına alındı. Odaklı Chromium kontrolünde düğüm sahipliği ve aç/kapa akışı
+geçti; `node --check` ve CSP üretimi de temiz. Tam sağlık koşusu henüz
+çalıştırılmadı.
+
 - **Internet Archive:** mevcut kaynak olarak en uygun aday. Resmî metadata
   şemasında `licenseurl` ve `rights` alanları var; ancak boş/belirsiz lisans
   kayıtları yine elenmeli. Yeni bir servis değil, mevcut hasadın güvenli
