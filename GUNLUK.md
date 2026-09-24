@@ -1891,3 +1891,9 @@ panel kapanıyor, arama açılıyor ve odak `#araGiris`e veriliyor. Ayarlar tekr
 açıldığında arama yüzeyi yeniden panel içine alınıyor. Playwright smoke testi
 panelin kapandığını, aramanın açık olduğunu ve dış büyüteç/yuva elemanlarının
 gizli kaldığını doğruladı. CSP, JS sözdizimi ve diff kontrolleri temiz.
+
+Son karar güncellendi: SEARCH basınca ayarlar paneli KAPANMAYACAK; arama
+sonuçları açık ayarlar penceresinin içindeki `#araSonuc` alanına düşecek.
+Arama yüzeyi panel içinde kalıyor, panel inert olmadığı için odak ve klavye
+gezintisi korunuyor. CSP, JS sözdizimi, diff ve `126/126` birim kapısı tekrar
+geçti.
