@@ -1552,7 +1552,7 @@
      birakildi -- 34'e cikarilinca kunyenin yerine giriyor ve
      "Kapali arama tek buyutec" olcumu dusuyor (denendi, kirmizi).
      Deri tarafi zaten hap gibi boyuyordu (body.deri #araCizgi). */
-  #araYuva{display:block;width:26px;height:32px;flex:none;}
+  #araYuva,#araCizgi{display:none !important;}
   #ara .cizgi,#np .np-gez .cizgi{width:26px;height:26px;display:flex;align-items:center;
     justify-content:center;cursor:pointer;box-sizing:border-box;
     border-radius:999px;background:rgba(8,14,17,.72);
@@ -1778,6 +1778,14 @@
   /* Çizgi/giriş satırı kanal adlarıyla AYNI genişlikte (soldan taşmıyor).
      Sonuç listesi ise ayrı bir yüzey; okunabilir kalsın diye daha geniş. */
   #ara.acik .kutu{display:flex;flex-direction:column-reverse;width:min(74vw,268px);max-width:calc(100vw - 32px);}
+  /* Arama artik buyutec olarak ekranda durmuyor. Tek arama yuzeyi
+     ayarlar panelinin en ustunde aciliyor; dis konum kurallari
+     paneldeki kutuya sizmasin. */
+  #ayar > #ara{position:relative;left:auto;bottom:auto;z-index:auto;
+    width:100%;height:auto;display:none;flex:none;}
+  #ayar.ara-ic > #ara,#ayar.ara-ic > #ara.acik{display:flex;}
+  #ayar > #ara .kutu{width:100%;max-width:none;}
+  #ayar > #ara .satir{width:100%;}
   body.gorsel-acik #araYuva,
   body.kam #ara,
   body.kam #araYuva,
@@ -19523,11 +19531,15 @@
     const kut = document.getElementById('ayar');
     if(!tut || !kut) return;
     const ayarAra = document.getElementById('ayarAra');
+    const ara = document.getElementById('ara');
     const npGez = document.querySelector('#np .np-gez');
     const tasima = document.getElementById('tasima');
     const fav = document.getElementById('fav');
+    if(ara && !kut.contains(ara)){
+      kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild);
+    }
     if(ayarAra) ayarAra.addEventListener('click', ()=>{
-      kapa();
+      kut.classList.add('ara-ic');
       try{ araAc(); }catch(e){ _yut(e); }
     });
     if(ayarAra) ayarAra.addEventListener('keydown', e=>{
@@ -19621,6 +19633,8 @@
     const kapa = ()=>{ document.body.classList.remove('ayar-acik');
       tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
       try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
+      kut.classList.remove('ara-ic');
+      try{ araKapa(); }catch(e){ _yut(e); }
       try{ pencereKapa(kut); }catch(e){ _yut(e); }
       odak(false);
       /* Panel kapaninca izgara da kapaniyor: bir dahaki acilista
@@ -20088,6 +20102,8 @@
 
   function araAc(){
     if(araKut.classList.contains('acik')) return;
+    const ayar = document.getElementById('ayar');
+    if(ayar && ayar.contains(araKut)) ayar.classList.add('ara-ic');
     araKut.classList.add('acik'); document.body.classList.add('arama-acik');
     try{ geriYerlestir(); }catch(e){ _yut(e); }   // acilinca sol kenara don
      /* Yalnizca BULUNDUGUN dunyanin havuzu yukleniyor: aramanin
@@ -20139,6 +20155,8 @@
   function araKapa(){
     if(!araKut.classList.contains('acik')) return;
     araKut.classList.remove('acik'); document.body.classList.remove('arama-acik');
+    const ayar = document.getElementById('ayar');
+    if(ayar && ayar.contains(araKut)) ayar.classList.remove('ara-ic');
     try{ geriYerlestir(); }catch(e){ _yut(e); }   // kapaninca kayit satirinin yanina don
     _araListe=[]; araSonuc.textContent='';
     /* KAPANMAK = SIFIRA DONMEK.

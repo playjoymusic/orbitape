@@ -1857,3 +1857,13 @@ araç satırı `#solUst` altında bırakıldı. CSP yeniden üretildi; Problems,
 `node --check` ve `git diff --check` temiz. Hızlı sağlık koşusunda REC tıklaması
 artık geçiyor, ancak sonraki kamera sayfasında Chromium kapanması nedeniyle
 tam sayaç alınamadı.
+
+**24 Eylül devamı — büyüteç kaldırıldı, arama ayarlara taşındı:** Kullanıcı
+büyütecin iki modda da artık olmadığını ve aramanın ayarlar penceresinin en
+üstündeki `SEARCH` satırından açılacağını netleştirdi. `#ara` açılışta
+`#ayar` içine taşınıyor; `SEARCH` basınca aynı arama listesi panelin içinde
+ve giriş odağı arama kutusunda kalıyor. Dış `#araCizgi` ve `#araYuva`
+gizlendi. Eski büyüteç hizası/dokunma alanı sağlık kontrolleri kaldırıldı;
+yerine arama yüzeyinin ayarlar içinde olduğunu ölçen kontrol geldi.
+Doğrudan Playwright smoke ölçümü bu davranışı doğruladı; CSP, JS sözdizimi
+ve diff kontrolleri temiz.

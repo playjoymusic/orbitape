@@ -1946,7 +1946,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          binisme degil, kapsamadir -- kontrol dogru sey icin kirmizi
          yanmali. */
       const ids = ['geri','dur','duraklat','ileri','mute','favAc','cam','pic','rec','ayarTut',
-                   'araCizgi','rec'];
+             'rec'];
       const gor = e => { const r = e.getBoundingClientRect();
         const s = getComputedStyle(e);
         return r.width>0 && r.height>0 && s.display!=='none' && s.visibility!=='hidden'; };
@@ -9114,7 +9114,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const tekrar = { acik:a.classList.contains('acik'), mod:_favMod };
     /* Tasima satiri sag ustteki marka yazisina carpmiyor mu ve sol
        ust blok arama cizgisiyle ayni sol kenardan mi basliyor. */
-    const ar = document.getElementById('ara').getBoundingClientRect();
     const su = document.getElementById('solUst');
     const ad = document.querySelector('#ust .kanal.ad').getBoundingClientRect();
     /* KONSOL ALT SOLDA, MODULUN ILK SATIRI. Once sol ustteydi
@@ -9138,7 +9137,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const ac5 = document.getElementById('araclar').getBoundingClientRect();
     const hiza = { tasma: Math.round(ts2.bottom - ac5.top),
                    sol: Math.round(Math.abs(ts2.left - ac5.left)) };
-    void ar; void ad; void su;
+   void ad; void su;
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
     AKTIF_MOD = eski; mod = eskiDunya;
@@ -9177,7 +9176,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const R=x=>Math.round(x);
     const g  = n.querySelector('.np-gez').getBoundingClientRect();
     const bi = n.querySelector('.np-bilgi').getBoundingClientRect();
-    const ar = document.getElementById('ara').getBoundingClientRect();
     const ts = document.getElementById('tasima').getBoundingClientRect();
     const tut = document.getElementById('ayarTut').getBoundingClientRect();
     const fa = fAc.getBoundingClientRect();
@@ -9187,10 +9185,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Alt seridin gercek taban cizgisini kayit satiri belirliyor. */
     const acR = document.getElementById('araclar').getBoundingClientRect();
     const o = { taban:R(bi.bottom-acR.bottom), yildizUstte:(g.bottom <= bi.top + 1),
-                bosluk:R(bi.left - document.getElementById('araCizgi').getBoundingClientRect().right),
                 yaziSol:R(bi.left), yari:R(innerWidth/2),
                 sagHiza:R(g.right-bi.right),
-                cizgiSag:R(document.getElementById('araCizgi').getBoundingClientRect().right),
+                        aramaPaneli: document.getElementById('ara').parentElement === document.getElementById('ayar')
+                           && document.getElementById('araCizgi').getClientRects().length === 0,
 
                 /* Olcek TEMIZLENEREK olculuyor. Dar ekranda uzun bir
                    kategori adi (ornegin WORLD & ROOTS) sag ustteki
@@ -9210,7 +9208,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                            && Math.abs(R(fa.height)-R(sf.height)) <= 2,
                 /* Buyutec REC/CAM/mute/favori satirina sabitlendi; ayni
                    satirin gercek merkeziyle hizali olmasi gerekiyor. */
-                hatFark: R((acR.top + acR.height/2) - (ar.top+ar.height/2)),
                 mood: document.body.classList.contains('mood'),
                 tutUstte: tut.bottom < innerHeight/2,
                 blokEn: R(bi.width), en: R(innerWidth),
@@ -9233,22 +9230,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      satir sayisi artiyor ve blok YUKARI buyuyor. */
   K('Kunye tabani sabit yerlesimde', !!np && (Math.abs(np.taban) <= 1 || np.yigin === true),
      'fark '+(np?np.taban:'-')+'px | yigin='+(np?np.yigin:'-'));
-  /* Buyutec kayit satirinin saginda, kunye de sagda: aralarinda
-     nefes kalmali. */
-  K('Kunye buyutece degmiyor veya yiginda', !!np && (np.bosluk >= 8 || np.yigin === true),
-     'bosluk '+(np?np.bosluk:'-')+'px | yigin='+(np?np.yigin:'-'));
   K('Iki satir ayni yukseklikte', !!np && Math.abs(np.solY-np.sagY) <= 1 && np.sagY===32,
      'sol ust '+(np?np.solY:'-')+'px | sag alt '+(np?np.sagY:'-')+'px');
    K('Iki yildiz ayni olcude', !!np && np.yildizOlcuAyni === true,
      (np?np.solYildiz:'-')+' / '+(np?np.sagYildiz:'-'));
-  /* ALT SERIT TEK HAT. Ucgen bir ara aramanin ALTINDAYDI ve ekranda
-     iki ayri serit gibi duruyordu ("arama yukari kaymis, tabana
-     oturmamis"). Artik ucgenin dikey ortasi ile arama cizgisinin
-     dikey ortasi ayni hatta. */
-  /* BUYUTEC KENDI SATIRININ HATTINDA: tasima satirinin (◁ ▶ ■ ▷ 🔍)
-     dikey ortasiyla ayni eksende. */
-  K('Tasima satiri ve buyutec ayni hatta', !!np && Math.abs(np.hatFark) <= 2,
-     'orta cizgi farki '+(np?np.hatFark:'-')+'px');
+  K('Arama ayarlar panelinde, buyutec kaldirildi', !!np && np.aramaPaneli === true,
+     'arama #ayar icinde; dis cizgi gizli');
   /* ── TUTAMAK HANGI YARIDA: KIPE GORE ─────────────────────────
      Bir tur iki kipte de alt soldaydi ("sol alttakiler ayni
      olmali"). Sonra kullanici radyo icin ayrisma istedi: "3 cizgi
@@ -9278,8 +9265,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Yatayda artik carpismalari MUMKUN (kunye genis, arama solda) ama
      ayni yukseklikte degiller. Dikey ayrimin gercekten var oldugunu
      yukaridaki "Kunye arama cizgisinin USTUNDE" olcuyor. */
-  K('Arama cizgisi ekranda duruyor', !!np && np.cizgiSag > 0 && np.cizgiSag < np.en,
-     'cizgi sag '+(np?np.cizgiSag:'-')+'px');
   K('Sag alt blok sag kenarda hizali', !!np && Math.abs(np.sagHiza) <= 1, 'fark '+(np?np.sagHiza:'-')+'px');
 
   /* ════════════════════════════════════════════════════════════════
