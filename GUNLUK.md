@@ -1883,3 +1883,11 @@ halde değil, kapalı panelde ölçüyordu; test gerçek `ayarGoster(true)` +
 yerleşimdeki `+2px` taban payıydı; sağlık kontrolünün 1px toleransıyla çeliştiği
 ölçüldü ve araç satırına göre `+1px` yapıldı. CSP, sözdizimi/diff kontrolleri
 ve `126/126` birim testi tekrar geçti. Bu son değişiklikler henüz pushlanmadı.
+
+**24 Eylül devamı — SEARCH ayarlardan güvenli çıkıyor:** Kullanıcı SEARCH'e
+basınca ayarlar panelinin açık kalmasını istemedi. `#ara`, SEARCH basışından
+önce inert ayarlar dialogundan çıkarılıp doğrudan `body` altına taşınıyor;
+panel kapanıyor, arama açılıyor ve odak `#araGiris`e veriliyor. Ayarlar tekrar
+açıldığında arama yüzeyi yeniden panel içine alınıyor. Playwright smoke testi
+panelin kapandığını, aramanın açık olduğunu ve dış büyüteç/yuva elemanlarının
+gizli kaldığını doğruladı. CSP, JS sözdizimi ve diff kontrolleri temiz.

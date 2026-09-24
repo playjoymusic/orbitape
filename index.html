@@ -19539,8 +19539,12 @@
       kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild);
     }
     if(ayarAra) ayarAra.addEventListener('click', ()=>{
-      kut.classList.add('ara-ic');
-      try{ araAc(); }catch(e){ _yut(e); }
+      /* SEARCH ayarlarin icinde ikinci panel degil, disari cikis kapisi.
+        Kapatmadan once arama yuzeyini inert dialogdan cikariyoruz;
+        yoksa odak ve dokunus olaylari dialogun icinde kilitli kalir. */
+      try{ if(ara && kut.contains(ara)) document.body.append(ara); }catch(e){ _yut(e); }
+      kapa();
+      setTimeout(()=>{ try{ araAc(); }catch(e){ _yut(e); } }, 0);
     });
     if(ayarAra) ayarAra.addEventListener('keydown', e=>{
       if(e.key==='Enter' || e.key===' '){ e.preventDefault(); ayarAra.click(); }
@@ -19620,7 +19624,10 @@
         if(iz2) [...iz2.children].forEach(d=>d.setAttribute('tabindex',
           (a && !iz2.hidden) ? '0' : '-1')); }catch(e){ _yut(e); }
     };
-    const ac = ()=>{ document.body.classList.add('ayar-acik');
+    const ac = ()=>{
+      try{ araKapa(); }catch(e){ _yut(e); }
+      try{ if(ara && !kut.contains(ara)) kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild); }catch(e){ _yut(e); }
+      document.body.classList.add('ayar-acik');
       tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
       try{ kut.removeAttribute('inert'); }catch(e){ _yut(e); }
       /* Arka plan kapaniyor ve odak panele giriyor; kapanista
