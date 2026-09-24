@@ -7975,6 +7975,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const once = el.getBoundingClientRect();
         document.body.classList.add('klavye');
         const sonra = el.getBoundingClientRect();
+      const panelIci = el.parentElement === document.getElementById('ayar');
         /* Sira GERCEKTEN olculuyor: yazi kutusu sonuc listesinin
            USTUNDE mi. Yon adina bakmak yetmiyor -- bir kere 'column'
            yazildi ama DOM sirasi yuzunden sonuclar yine ustte cikti. */
@@ -7985,7 +7986,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         document.body.classList.remove('klavye');
       try{ araKapa(); ayarGoster(false); }catch(e){}
         return sonra.top < innerHeight * 0.35
-            && sonra.top < once.top
+         && (panelIci || sonra.top < once.top)
             && satir.top <= sonuc.top;
       }), 'kutu ust yariya cikiyor, sonuclar altina geciyor');
     /* Kapatma odaklanma OLAYINA bagli: olcum yaniltsa bile blur

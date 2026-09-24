@@ -1909,3 +1909,10 @@ alanda, önceki konumundan yukarıda ve giriş satırı sonuçların üstünde.
 byte. Yeni arama paneli korumaları ve test açıklamaları eklendiği için yorum
 budanmadı; kaynak tavanı 1 KB kontrollü olarak 1297 KB'a yükseltildi. `node
 --check`, `git diff --check` ve `126/126` birim kapısı geçti.
+
+25 Eylül devamı — CI klavye arama kırmızısının ikinci nedeni: panel içi
+arama artık normal akışta durduğu için `sonra.top < once.top` koşulu yeni
+tasarımda geçersizdi. Test, arama `#ayar` içindeyse üst üçte birlik konumu ve
+giriş satırının sonuçların üstünde olmasını ölçüyor; dış yüzey için eski
+hareket koşulu korunuyor. `node --check`, `git diff --check` ve birim kapısı
+geçti. Bu düzeltme henüz commit/push edilmedi.
