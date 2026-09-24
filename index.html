@@ -1196,7 +1196,6 @@
   #np .np-gez{display:flex;align-items:center;gap:6px;margin:0;pointer-events:auto;}
   #np .np-gez #tasima{display:flex;align-items:center;gap:2px;}
   #np .np-gez #tasima button{width:36px;min-width:36px;height:32px;}
-  #np .np-gez #araCizgi{display:none !important;}
   /* KUNYE KIRPILMIYOR -- iki satirla sinirlamak denendi ve GERI
      ALINDI: CC BY ailesinde atfi kisaltmak lisansin sartina aykiri
      ("..." ile biten bir atif atif sayilmaz) ve saglik takiminin
@@ -1427,6 +1426,7 @@
      yalnizca ilk kare icin. */
   #ara{position:fixed;z-index:77;pointer-events:auto;
     display:flex;flex-direction:column-reverse;align-items:flex-start;
+    width:26px;height:32px;
     left:calc(var(--kx) + 150px + env(safe-area-inset-left, 0px));
     /* 41px = ucgen (5 + 26) + 10 hava. JS ilk olcumde uzerine yaziyor;
        bu deger ilk karede aramanin ucgenin uzerine binmemesi icin. */
@@ -3341,8 +3341,6 @@
   .deri-izgara button.kapa::after{display:none;}
   .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
-  body:not(.ayar-acik) #deriFirca,body:not(.ayar-acik) #saatTus,body:not(.ayar-acik) #gorselTus,body:not(.ayar-acik) #rehberTus,
-  body:not(.ayar-acik) #mute,body:not(.ayar-acik) #favAc,body:not(.ayar-acik) #araYuva,body:not(.ayar-acik) #ara{display:none !important;}
   /* ── SOL SUTUN OPTIK HIZALAMA (17 Eylul) ─────────────────────────
      Kullanicinin sozu: "yamuk yamuk, hicbisey hizali degil -- hepsi
      sola yaslanacak, grafiksel standart." Kutu kenarlari zaten ayni
@@ -3577,7 +3575,7 @@
   #ayar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
     padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
   #ayar #araclar > div{flex:0 0 auto;}
-  #solUst{display:none !important;}
+  #ayar #solUst{display:none !important;}
   /* ── SATIR ALTI NOT ─────────────────────────────────────────────
      Bir anahtarin BEDELINI soyleyen tek satir. Kullanicinin CAR
      MODE'da yasadigi sey buydu: anahtar aciliyor, FX ve REC
@@ -4927,6 +4925,7 @@
         <div class="sonuc" id="araSonuc" role="listbox" aria-label="Results"></div>
       </div>
     </div>
+  </div>
   <div id="kayitBilgi" aria-hidden="true"></div>
   <div id="fxEl" aria-hidden="true">
     <div class="iz"></div>
@@ -18631,8 +18630,8 @@
             const altArac = document.getElementById('araclar');
             const altRect = altArac && altArac.getBoundingClientRect();
             if(altRect && altRect.height){
-              const taban = _gorBoy() - altRect.top + 8;
-              npE.style.bottom = Math.max(48, Math.ceil(taban)) + 'px';
+              const taban = _gorBoy() - altRect.bottom + 2;
+              npE.style.bottom = Math.max(2, Math.ceil(taban)) + 'px';
             }
           }
         }
@@ -19524,13 +19523,9 @@
     const kut = document.getElementById('ayar');
     if(!tut || !kut) return;
     const ayarAra = document.getElementById('ayarAra');
-    const ayarAraclar = document.getElementById('ayarAraclar');
     const npGez = document.querySelector('#np .np-gez');
     const tasima = document.getElementById('tasima');
-    const araclar = document.getElementById('araclar');
     const fav = document.getElementById('fav');
-    if(ayarAraclar && araclar) ayarAraclar.append(araclar);
-    if(npGez && tasima && fav) npGez.insertBefore(tasima, fav.nextSibling);
     if(ayarAra) ayarAra.addEventListener('click', ()=>{
       kapa();
       try{ araAc(); }catch(e){ _yut(e); }
@@ -19606,7 +19601,7 @@
        icindeki satirlar hala sekmeyle gezilebiliyordu. inert + tabindex
        ikisi birden. */
     const odak = (a)=>{
-      kut.querySelectorAll('.sat').forEach(el=>el.setAttribute('tabindex', a ? '0' : '-1'));
+      kut.querySelectorAll('.sat,#ayarAra').forEach(el=>el.setAttribute('tabindex', a ? '0' : '-1'));
       /* Izgara kutulari da kapali panelde odaklanabilir kalmamali
          (WCAG 4.1.2): kapaliyken hepsi -1. */
       try{ const iz2 = document.getElementById('temaIzgara');

@@ -3771,7 +3771,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         modSec('AMBIANCE', true);
       });
       await p3.waitForTimeout(6000);
-      return await p3.evaluate(()=>({g:window.__g, s:window.__s}));
+      return await p3.evaluate(()=>{
+        const e = new PointerEvent('pointerdown', {bubbles:true, cancelable:true, clientX:3, clientY:3});
+        document.body.dispatchEvent(e);
+        return {g:window.__g, s:window.__s,
+          firing:document.body.classList.contains('firing'),
+          bodyDownNotBlocked:!e.defaultPrevented};
+      });
     } finally { await kapat(); }
   })();
   /* ── TITREME 2: TELEFONU DONDURUNCE ─────────────────────────────
@@ -3845,6 +3851,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
   K('Yeniden deneme dongusu calisiyor', ttr.s >= 3, ttr.s+' deneme');
   K('Yeniden denemede TITREME yok', ttr.g <= 2, ttr.s+' denemede '+ttr.g+' gorsel gecis');
+   K('FIRING sinifi temizleniyor', !ttr.firing, '6 saniye sonra firing='+ttr.firing);
+   K('Body basisi engellenmiyor', ttr.bodyDownNotBlocked, 'defaultPrevented='+!ttr.bodyDownNotBlocked);
 
   K('Raflar ayri, ORBITAPE hepsi', ay, 'muzik BEATS, ses NATURE, ikisi de ORBITAPE te');
   const sf = await pg.evaluate(()=>{
@@ -5370,6 +5378,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      tarafinda her zaman pasif ve tiklanmiyor. Testin kayit yapabilmesi
      icin kipi acmasi gerekiyor; gercek kullanici da oyle yapacak. */
   await pg.evaluate(async ()=>{
+      /* Kayıt ölçümü yıldız katmanının jest durumundan bağımsız olmalı.
+          Ana sayfa paylaşıldığı için önceki zum testi #solUst'u tıklanamaz
+          bırakabiliyor; REC görünür olsa bile Playwright body'ye çarpıyor. */
+      document.body.classList.remove('yildiz-zum','firing','gecis');
     AYAR.mood = true; document.body.classList.add('mood');
     AKTIF_MOD = null;
     mod = 'lib';
@@ -11496,7 +11508,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Yaninda ekranin yarisi kadar bir cizgi vardi ve sag alttaki
      kunyenin yerini yiyordu. */
   const buyutec = await pg.evaluate(()=>{
-    const c=document.querySelector('#ara .cizgi');
+   const c=document.getElementById('araCizgi');
     const st=getComputedStyle(c, '::after');
     return { en:Math.round(c.getBoundingClientRect().width),
              cizgi:st.content, svg:!!c.querySelector('svg') };
@@ -11627,12 +11639,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const m2=()=>getComputedStyle(document.documentElement).getPropertyValue('--m2').trim();
     const m3=()=>getComputedStyle(document.documentElement).getPropertyValue('--m3').trim();
     const oto={ m1:m1(), m2:m2(), m3:m3(),
-                buyutec:getComputedStyle(document.querySelector('#ara .cizgi')).color,
+                buyutec:getComputedStyle(document.getElementById('araCizgi')).color,
                 oynat:getComputedStyle(document.getElementById('dur')).color,
                 cizgi2:getComputedStyle(document.querySelector('#ayarTut span:nth-child(2)')).backgroundColor };
     temaSec(TEMALAR.findIndex(t=>t.ad==='BAUHAUS')); await bek(140);
     const temali={ m1:m1(), m2:m2(), m3:m3(),
-                buyutec:getComputedStyle(document.querySelector('#ara .cizgi')).color,
+                buyutec:getComputedStyle(document.getElementById('araCizgi')).color,
                 oynat:getComputedStyle(document.getElementById('dur')).color,
                 cizgi2:getComputedStyle(document.querySelector('#ayarTut span:nth-child(2)')).backgroundColor };
     /* Raf degisince SAG durak degismeli (oda belli olsun), sol durak

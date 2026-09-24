@@ -1832,3 +1832,28 @@ sözdizimi kontrolleri geçti.
 Alt taşıma/ses/favori kontrollerini ayarlar panelinde yeniden gruplama fikri
 bu dilimde başlatılmadı; DOM ve erişilebilirlik sözleşmesi ayrı bir iş olarak
 ölçülerek yapılacak. Bu değişiklik henüz pushlanmadı.
+
+### 24 Eylül — hata avı ajanı ve firing/body regresyon kapısı
+
+Claude oturumunun üyelik limiti bitince aynı çalışma biçimini sürdürebilmek
+için `.github/agents/orbitape-hata-avi.agent.md` oluşturuldu. Ajanın görevi
+yalnızca kullanıcı belirtisiyle başlayan ORBITAPE hatalarını ölçmek, en küçük
+düzeltmeyi yapmak ve test etmektir; push yapmaz, arayüz metinlerini İngilizce
+tutar ve `CLAUDE.md`/`GUNLUK.md` kurallarını izler.
+
+Ekran paylaşımı olmadığı için tarayıcı davranışı doğrulanamadı. Buna rağmen
+son `firing`/body tıklaması düzeltmesinin kalıcı regresyon kapısı eksikti.
+`test/saglik.js` içindeki yeniden deneme senaryosuna iki kontrol eklendi:
+220 ms sonrasında `firing` sınıfının kalkması ve body `pointerdown` olayının
+`preventDefault` ile engellenmemesi. `node --check test/saglik.js` geçti;
+yerel `npm test` Chromium koşusu 120 saniyede sonuç vermedi ve süreç
+temizlendi. Davranış sonucu bu nedenle henüz ölçülmüş sayılmıyor.
+
+**24 Eylül devamı — REC tıklaması kök nedeni:** Sağlık koşusunda `#rec`
+görünür olmasına rağmen `pointer-events:none` ölçüldü. `ayarlar()` açılışta
+`#araclar` düğümünü kapalı `#ayarAraclar` panelinin içine taşıyordu; panelin
+`pointer-events:none` kuralı REC/CAM'e miras kalıyordu. Taşıma kaldırıldı,
+araç satırı `#solUst` altında bırakıldı. CSP yeniden üretildi; Problems,
+`node --check` ve `git diff --check` temiz. Hızlı sağlık koşusunda REC tıklaması
+artık geçiyor, ancak sonraki kamera sayfasında Chromium kapanması nedeniyle
+tam sayaç alınamadı.
