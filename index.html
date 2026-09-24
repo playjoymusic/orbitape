@@ -262,7 +262,7 @@
      YATAY DURUSTA serit SOLA yanasiyor, yani aletin ustunde degil
      yaninda: orada rezerv buyumuyor (asagidaki media). */
   body.serit-acik{ --ust-rez:214px; }
-  body.serit-acik .disk{width:min(68vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.70));}
+  body.serit-acik .disk{width:min(68vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.64));}
   /* ── FAZ SECILIYSE HALKA KUCULUYOR ────────────────────────────
      Kullanicinin sozu: "cok buyuk oldugu icin halka + faz tasiyor
      kenarlara; faz secilince halka kuculebilir ve faz ekrandan
@@ -277,7 +277,7 @@
      gittigi icin halka kuculuyordu; artik menzil daraldi (cark.js:
      MENZIL 0.28) ve halka oteki kiplerle ayni boyda. */
   body.merkez-faz .disk{width:min(78vw,380px,calc(100dvh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));}
-  body.merkez-faz.serit-acik .disk{width:min(68vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.70));}
+  body.merkez-faz.serit-acik .disk{width:min(68vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.64));}
   /* KISA EKRAN: alet ekranin ORTASINDA duruyor, yani yer acmak icin
      yaricapin kucculmesi gerekiyor. 852 yuksekliginde 74vw yetiyor;
      640-667'de yetmiyor ve serit carkin tepesine biniyordu (olculdu:
@@ -344,7 +344,7 @@
     body.serit-acik{ --ust-rez:56px; }
   }
   @media (max-height:760px){
-    body.serit-acik .disk{width:min(46vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.70));}
+    body.serit-acik .disk{width:min(46vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.64));}
   }
   /* Basış nefesi: transform derleyicide çalışır, ana iş parçacığı takılsa bile akar. */
   @keyframes diskNefes{
