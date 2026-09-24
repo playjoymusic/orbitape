@@ -1897,3 +1897,9 @@ sonuçları açık ayarlar penceresinin içindeki `#araSonuc` alanına düşecek
 Arama yüzeyi panel içinde kalıyor, panel inert olmadığı için odak ve klavye
 gezintisi korunuyor. CSP, JS sözdizimi, diff ve `126/126` birim kapısı tekrar
 geçti.
+
+25 Eylül CI koşusunda `Klavye acikken arama yukarida` yeniden kırmızı oldu.
+Kök neden eski `body.klavye #ara { top:160px }` kuralının panel içindeki
+arama kutusunu aşağı itmesiydi. Panel içi arama için `top`/`bottom` normal
+akisa sifirlandi. Ayni uc olcum smoke testte yesil: arama ust ucte birlik
+alanda, önceki konumundan yukarıda ve giriş satırı sonuçların üstünde.

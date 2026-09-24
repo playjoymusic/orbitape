@@ -1786,6 +1786,9 @@
   #ayar.ara-ic > #ara,#ayar.ara-ic > #ara.acik{display:flex;}
   #ayar > #ara .kutu{width:100%;max-width:none;}
   #ayar > #ara .satir{width:100%;}
+    /* Panel ici arama normal akista kalir. Dis yuzey kaldirildigi icin
+      klavye acikken eski fixed top:160px kuralini kullanamaz. */
+    body.klavye #ayar > #ara{top:auto;bottom:auto;height:auto;}
   body.gorsel-acik #araYuva,
   body.kam #ara,
   body.kam #araYuva,
@@ -5186,7 +5189,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.24';
+  var ORB_SURUM = '2026.09.25';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
