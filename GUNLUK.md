@@ -1867,3 +1867,11 @@ gizlendi. Eski büyüteç hizası/dokunma alanı sağlık kontrolleri kaldırıl
 yerine arama yüzeyinin ayarlar içinde olduğunu ölçen kontrol geldi.
 Doğrudan Playwright smoke ölçümü bu davranışı doğruladı; CSP, JS sözdizimi
 ve diff kontrolleri temiz.
+
+CI ekranındaki `858/866` koşusunda kalan kırmızıların bir bölümü artık
+olmayan büyüteç yuvasını, dış simgeyi ve resize bekçisini ölçüyordu. Sağlık
+testi bu kontrolleri kaldırılan arama yüzeyi yerine `#ara`nın `#ayar` içinde
+olmasını ve dış simgenin gizli kalmasını ölçecek şekilde güncellendi. Klavye
+arama testi de önce ayarları açıp SEARCH akışını kuruyor. Yerel birim kapısı
+`126/126`, JS sözdizimi ve diff kontrolleri yeşil; tam sağlık koşusu bu ortamda
+Chromium kapanması/port sorunları nedeniyle yeniden sayaç veremedi.

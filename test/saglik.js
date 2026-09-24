@@ -3004,7 +3004,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        odagi komsuya tasiyor mu, ve kac sonuc oldugu duyuruluyor mu. */
     const ark = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
-      try{ araAc(); }catch(e){ return {yok:'araAc yok'}; }
+      try{ ayarGoster(true); araAc(); }catch(e){ return {yok:'arama paneli acilamadi'}; }
       await bek(220);
       const g = document.getElementById('araGiris');
       g.value = 'a'; g.dispatchEvent(new Event('input',{bubbles:true}));
@@ -3024,7 +3024,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       satirlar[1].dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));
       await bek(80);
       const cikti = document.activeElement === satirlar[0];
-      try{ araKapa(); }catch(e){}
+      try{ araKapa(); ayarGoster(false); }catch(e){}
       await bek(160);
       return { rol, sayiVar, optVar, gezinen, indi, cikti, n:satirlar.length };
     });
@@ -8070,27 +8070,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        Bu test kaynagi okuyor: olculen degerlerin _dip'e girmedigini
        ve yerlestikten sonra buyutecin yuvasiyla AYNI HATTA
        oturdugunu dogruluyor. */
-    K('Buyutec yuvasina oturuyor, env iki kere eklenmiyor', await pg.evaluate(()=>{
-        const k = document.documentElement.innerHTML;
-        /* Kaynak: olculen yuvadan gelen deger duz px yaziliyor. */
-        /* Olculen deger artik _altYasla ile yaziliyor: formulde
-           ekran boyu yok, guvenli alan payi da mevcut bottom'un
-           icinde geliyor (getComputedStyle cozuyor), yani env()
-           ikinci kez eklenmiyor. Aranan sey bu yol. */
-        const duz = /_altYasla\(arE, yr2\.bottom/.test(k);
-        const eskiHata = /_dip\(Math\.max\(6, alt \+ _fark\)\)/.test(k);
-        try{ geriYerlestir(); }catch(e){ return false; }
-        const ar = document.getElementById('ara');
-        const yv = document.getElementById('araYuva');
-        if(!ar || !yv) return false;
-        const a = ar.getBoundingClientRect(), y = yv.getBoundingClientRect();
-        if(!a.height || !y.height) return false;
-        /* Merkezleri ayni hatta (2px tolerans) ve buyutec YUVANIN
-           ustune tasmiyor: yigilma degil, oturma. */
-        const merkez = Math.abs((a.top + a.bottom)/2 - (y.top + y.bottom)/2) < 2.5;
-        const sol = Math.abs(a.left - y.left) < 2.5;
-        return duz && !eskiHata && merkez && sol;
-      }), 'ara ile araYuva ayni merkezde; olculen deger _dip disinda');
+    K('Buyutec kaldirildi, arama panelde', await pg.evaluate(()=>{
+      const ara = document.getElementById('ara');
+      const ayar = document.getElementById('ayar');
+      return !!ara && ara.parentElement === ayar
+        && !document.getElementById('araCizgi').getClientRects().length
+        && !document.getElementById('araYuva').getClientRects().length;
+    }), 'arama #ayar icinde; dis buyutec ve yuva gizli');
     /* ── UCLUK: UC SEMBOL AYNI ──────────────────────────────────
        Yirmi bir sembolun ucunun ayni gelmesi ~1/441. Olunca kisa
        bir kutlama: renkler cemberde donuyor, birkac yildiz firliyor,
@@ -11426,7 +11412,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     AYAR.mood=false; moodUygula(); await bek(300);
     const su=document.getElementById('solUst');
     const radyo = { ust:Math.round(su.getBoundingClientRect().top),
-                    arama:getComputedStyle(document.getElementById('ara')).display,
+                    arama:document.getElementById('ara').parentElement === document.getElementById('ayar'),
                     rec:getComputedStyle(document.getElementById('rec')).display,
                     pic:getComputedStyle(document.getElementById('pic')).display,
                     recSonuk:parseFloat(getComputedStyle(document.getElementById('rec')).opacity) < 0.6,
@@ -11440,7 +11426,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                        ve tasima satiri en alta dusuyordu. */
                     sira:(()=>{const g=id=>Math.round(document.getElementById(id).getBoundingClientRect().top);
                       return g('araclar') > g('tasima') ? 'rec-altta' : 'tus-altta';})(),
-                    arama:getComputedStyle(document.getElementById('ara')).display,
+                    arama:document.getElementById('ara').parentElement === document.getElementById('ayar'),
                     tutSol:Math.round(document.getElementById('ayarTut').getBoundingClientRect().left),
                     /* KURAL DEGISTI: tutamak artik modulun ALTINDA
                        degil USTUNDE (blogun ilk satiri). */
@@ -11461,8 +11447,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      dogal yerinde. */
   K('Kipte REC satiri EN ALTTA', moodYer.kipte.sira==='rec-altta',
      'alttan yukari: REC · CAM · ★ · sustur -> tasima tuslari');
-  K('Kipte arama da var', moodYer.kipte.arama!=='none' && moodYer.radyo.arama!=='none',
-     'radyoda ve arsivde var');
+  K('Kipte arama ayarlarda var', moodYer.kipte.arama && moodYer.radyo.arama,
+     'arama paneli iki kipte de ayarlarda');
   K('Kipte REC geri geliyor', moodYer.kipte.rec!=='none', 'canli yayin disinda kayit anlamli');
   /* ── RADYODA TUS DURUYOR VE CALISIYOR ───────────────────────────
      Uc asamadan gecti ve her asama bir onceki yanlisi duzeltti:
@@ -12970,13 +12956,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       ara.style.left = '420px'; sim.style.left = '100px'; sim.style.bottom = '40px';
       await bek(4600);
       const s = sim.getBoundingClientRect(), y = yv.getBoundingClientRect();
-      return { dx: Math.round(s.left - y.left), dy: Math.round((s.top + s.height/2) - (y.top + y.height/2)),
+      const out = { dx: Math.round(s.left - y.left), dy: Math.round((s.top + s.height/2) - (y.top + y.height/2)),
                simgeLeft: sim.style.left, simgeBottom: sim.style.bottom };
+      ara.style.left = ''; sim.style.left = ''; sim.style.bottom = '';
+      return out;
     });
-    K('Bekci buyuteci yuvasina geri koyuyor (simgeye degil kutuya yaziyor)',
-      !bekci.yok && Math.abs(bekci.dx) <= 2 && Math.abs(bekci.dy) <= 3
-        && !bekci.simgeLeft && !bekci.simgeBottom,
-      JSON.stringify(bekci));
+      K('Buyutec bekcisi artik gereksiz, dis simge gizli',
+         await pg.evaluate(()=>!document.getElementById('araCizgi').getClientRects().length),
+         'arama ayarlarda; dis simge yok');
   }
   /* ── SAAT: UYKU SAYACI + SABAH ALARMI (saat.js) ─────────────────
      Kullanicinin istegi: uyku bitince fade-out; alarm kurulu ise ses
@@ -14519,11 +14506,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await bek(340);                            // 120 ms bekleme + pay
       const yv = document.getElementById('araYuva').getBoundingClientRect();
       const a2 = ar.getBoundingClientRect();
-      return { fark: Math.round(Math.abs(a2.left - yv.left)), yuvaVar: yv.width > 0 };
+      const out = { fark: Math.round(Math.abs(a2.left - yv.left)), yuvaVar: yv.width > 0 };
+      ar.style.left = '';
+      return out;
     });
-    K('Resize sonrasi buyutec yuvasina donuyor',
-       dnm.yuvaVar && dnm.fark <= 2,
-       'elle bozuldu, resize sonrasi fark ' + dnm.fark + 'px');
+    K('Resize sonrasi dis buyutec geri gelmiyor',
+       await pg.evaluate(()=>!document.getElementById('araCizgi').getClientRects().length),
+       'arama ayarlarda; dis simge gizli');
     /* ── OLAY YAGMURUNDA HER KAREDE YERLESTIRME YOK ─────────────
        Resize dinleyicisine geriYerlestir() eklenince gercek bir
        hata duzeldi (ekran donunce yerlesim guncellenmiyordu) ama
