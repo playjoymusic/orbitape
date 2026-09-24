@@ -10543,8 +10543,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         if(kutu){
           const mx = (kutu.x1 + kutu.x2) / 2, my = (kutu.y1 + kutu.y2) / 2;
           olay('pointerdown', mx, my); olay('pointerup', mx, my); await bek(150);
+         const adNo = c.adMetni && c.adMetni.match(/Yildiz (\d+)/);
           c.adKutusuActi = ((aktifItem && (aktifItem.mp3 || aktifItem.u)) || '')
-                           === ('https://sahte.test/y' + sec2.i);
+                    === ('https://sahte.test/y' + (adNo ? adNo[1] : ''));
         }
         for(let i = 0; i < 40 && document.body.classList.contains('yildiz-zum'); i++) await bek(30);
         /* ── ZUM ACIKKEN CARK PASIF ───────────────────────────────
