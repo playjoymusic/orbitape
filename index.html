@@ -19658,12 +19658,14 @@
        ikisi birden. */
     const odak = (a)=>{
       kut.querySelectorAll('.sat,#ayarAra').forEach(el=>el.setAttribute('tabindex', a ? '0' : '-1'));
+      kut.querySelectorAll('#ayarAraclar [tabindex],#ayarAraclar button').forEach(el=>el.setAttribute('tabindex', a ? '0' : '-1'));
       /* Izgara kutulari da kapali panelde odaklanabilir kalmamali
          (WCAG 4.1.2): kapaliyken hepsi -1. */
       try{ const iz2 = document.getElementById('temaIzgara');
         if(iz2) [...iz2.children].forEach(d=>d.setAttribute('tabindex',
           (a && !iz2.hidden) ? '0' : '-1')); }catch(e){ _yut(e); }
     };
+    odak(false);
     const ac = ()=>{
       try{ araKapa(); }catch(e){ _yut(e); }
       try{

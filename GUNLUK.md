@@ -2010,6 +2010,20 @@ Bu Mac'te `python3` bozuk bir Homebrew 3.7 symlink'ine
 Derleme `/usr/bin/python3` ile başarılı. Çalışma ağacı temiz; commit/push
 yapılmadı.
 
+### 25 Eylül — Settings kapalıyken gizli odak kapısı
+
+CI'de `pic, cam, mute, favAc` gizli ağaçta odaklanabilir kaldı. Kök neden,
+`odak(false)` fonksiyonunun yalnızca `.sat` ve `#ayarAra` öğelerini ele alması
+ve başlangıçta hiç çağrılmamasıydı; Settings'e taşınan `#araclar` çocukları
+`tabindex="0"` ile kalıyordu. Kapanış kapısı artık `#ayarAraclar` içindeki
+kontrolleri de -1 yapıyor ve başlangıçta da çalışıyor. Panel açılınca gerçek
+kullanım için yeniden 0 oluyor.
+
+Ölçüm: kapalı panelde gizli odak listesi `[]`; açık panelde `pic, cam,
+camDon, mute, favAc` değerleri 0 ve `#ayar aria-hidden="false"`. CSP ve
+yayın derlemesi geçti. Kaynak boyu 1.329.300 / 1.332.224 byte; kapının
+2.924 byte altında.
+
 ### 25 Eylül (son durum süpürmesi) — Eski denemeler geçersiz kılındı
 
 Bu günlüğün önceki 25 Eylül maddelerinde geçen `#ayarAlt`/ikinci tutamak,
