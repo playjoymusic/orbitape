@@ -46,6 +46,7 @@
    "hic gelmedi" ile "yarida kaldi" karismiyor. */
 try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   const rec=$('rec'), recYazi=$('recYazi'), pic=$('pic');
+  const kayitOnay=$('kayitOnay'), kayitOnayEvet=$('kayitOnayEvet'), kayitOnayHayir=$('kayitOnayHayir');
   let kaydedici=null, kayitParcalari=[], kayitBaslangic=0, kayitSayac=null, sesliKayit=false;
   /* KAYIT HEDEFI IKI DOSYANIN ORTAK ISI: ses grafigi index.html'de
      kuruluyor ve hedefi ILK SESLE BIRLIKTE baglıyor (olculdu: sonradan
@@ -2504,8 +2505,11 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     _kaySagUst(g);
     _kaySemboller(g);
     _kaySagAlt(g);
-    _kaySolAlt(g);
-    _kaySesCubugu(g);
+     /* VIDEO KAYDINDA SOL ALT KOSENIN TAMAMI BOS KALIR. REC/CAM ve
+       arama zaten arayuz katmaniydi; ses cubugu da gecici bir jest
+       gostergesiydi. Ciktida yalnizca sol ust, sag ust ve sag alt
+       bilgi bloklari kalir. Fotograf akisi bu iki katmani kendi
+       cagirarak ekrani belgelemeye devam eder. */
     _kayVinyet(g);
   }
   function kayitDesteklenirMi(){
@@ -2994,6 +2998,14 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
 
   /* Kaydedilmeyi bekleyen dosya. Yeni kayda başlanana kadar duruyor. */
   var _bekleyenKayit = null;
+  function kayitOnayKapat(){
+    if(kayitOnay) kayitOnay.hidden = true;
+  }
+  function kayitOnayAc(){
+    try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){ _yut(e); }
+    if(kayitOnay) kayitOnay.hidden = false;
+    if(kayitOnayEvet) kayitOnayEvet.focus();
+  }
   /* ── PAYLASIM: IPTAL HATA DEGIL, IKINCI DOKUNUS BEKLER ─────────────
      Saha olcumu (issue #7): "Share canceled" x4 ve "earlier share has
      not yet completed" x1 defterde hata olarak duruyordu. Birincisi
@@ -3336,6 +3348,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   }
   function kayitBekleyeniBirak(){
     _bekleyenKayit = null;
+    kayitOnayKapat();
     rec.classList.remove('kaydet'); recYazi.textContent='REC'; try{ araclarYenidenSigdir(); }catch(_){ _yut(_); }
     try{ recEtiketTazele(); }catch(e){ _yut(e); }    // radyoya donuldiyse PHOTO
     try{ camModuTazele(); }catch(e){ _yut(e); }      // DELETE -> CAM, kamera durumu geri gelir
@@ -3379,7 +3392,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       }
     }catch(e){ _yut(e); }
     if(kaydedici){ kayitDurdur(); return; }
-    if(_bekleyenKayit){ kaydiPaylas(); return; }      // dokunuş taze -> paylaşım sayfası açılır
+    if(_bekleyenKayit){ kayitOnayAc(); return; }
     kayitOnKontrol();
   }
   /* REC yalnizca SOUND BANKS kaydidir; PIC fotografi ayri bir dugmedir. */
@@ -3389,6 +3402,12 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     rec.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') kayitDegis(e); });
     recYazi.textContent = 'REC';
   }
+  if(kayitOnayEvet) kayitOnayEvet.addEventListener('click', e=>{
+    e.preventDefault(); e.stopPropagation(); kayitOnayKapat(); kaydiPaylas();
+  });
+  if(kayitOnayHayir) kayitOnayHayir.addEventListener('click', e=>{
+    e.preventDefault(); e.stopPropagation(); kayitOnayKapat(); kaydiSil();
+  });
   if(pic && !document.body.classList.contains('mood') && fotoDesteklenirMi()){
     pic.classList.add('var');
     const cek = e=>{ e.preventDefault(); e.stopPropagation(); fotoCek(); };

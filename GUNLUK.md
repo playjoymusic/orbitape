@@ -1916,3 +1916,18 @@ tasarımda geçersizdi. Test, arama `#ayar` içindeyse üst üçte birlik konumu
 giriş satırının sonuçların üstünde olmasını ölçüyor; dış yüzey için eski
 hareket koşulu korunuyor. `node --check`, `git diff --check` ve birim kapısı
 geçti. Bu düzeltme henüz commit/push edilmedi.
+
+25 Eylül — kontrol yerleşimi ve kayıt çıktısı: RADIOTAPE için ikinci Settings
+tutacağı (#ayarAlt) ORBITAPE anahtarının üstüne, aynı panel aç/kapa yoluna
+bağlandı. Panel açılınca #araclar içindeki PIC/CAM/kamera çevirme/favori
+satırı #ayarAraclar içine taşınıyor, kapanınca eski yerine dönüyor. Bekleyen
+kayıt artık ikinci REC basışında doğrudan paylaşılmıyor; panelde çerçeveli
+SAVE RECORDING? / YES / NO sorusu çıkıyor. YES mevcut paylaşım/indirme,
+NO mevcut silme yolunu kullanıyor.
+
+Kayıt videosu için ölçülen kural: sol alt arayüz çıktıda olmayacak. Video
+döngüsünden _kaySolAlt ve _kaySesCubugu çağrıları çıkarıldı; fotograf akışı
+ekranı belgelemeye devam ettiği için kendi çağrılarını koruyor. Böylece
+kayıtta yalnızca sol üst, sağ üst ve sağ alt bilgi blokları kalıyor. CSP
+yenilendi; JS syntax ve diff kontrolleri geçti. Tam npm test koşusu 120 saniye
+sınırında sonuç vermeden kesildi.

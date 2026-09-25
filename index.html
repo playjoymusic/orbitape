@@ -3352,6 +3352,20 @@
   .deri-izgara button.kapa::after{display:none;}
   .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
+  #ayarAlt{display:none;position:fixed;z-index:96;left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    bottom:calc(150px + var(--dip-pay));width:32px;height:26px;flex-direction:column;
+    align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;opacity:.72;
+    transition:opacity .22s ease;-webkit-tap-highlight-color:transparent;}
+  body:not(.mood) #ayarAlt{display:flex;}
+  #ayarAlt:hover,#ayarAlt:focus-visible{opacity:1;}
+  body.ayar-acik #ayarAlt{opacity:0;pointer-events:none;}
+  #ayarAlt span{display:block;height:3.5px;border-radius:3px;background:#35e0d8;}
+  #ayarAlt span:nth-child(1){width:32px;}
+  #ayarAlt span:nth-child(2){width:25px;background:rgb(var(--tv, 140,177,186));}
+  #ayarAlt span:nth-child(3){width:17px;background:#e27a9e;}
+  body.deri #ayarAlt span{background:var(--d-simge, var(--d-yazi)) !important;}
+  #ayarAlt::after{content:'';position:absolute;left:50%;top:50%;width:48px;height:48px;
+    transform:translate(-50%,-50%);background:transparent;pointer-events:auto;}
   /* ── SOL SUTUN OPTIK HIZALAMA (17 Eylul) ─────────────────────────
      Kullanicinin sozu: "yamuk yamuk, hicbisey hizali degil -- hepsi
      sola yaslanacak, grafiksel standart." Kutu kenarlari zaten ayni
@@ -3588,6 +3602,18 @@
   #ayarAra::after{content:'⌕';font-size:1.15rem;letter-spacing:0;}
   #ayar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
     padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
+  #ayarAraclar:empty{display:none;}
+  #ayarAraclar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
+    padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
+  #kayitOnay{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin:0 0 10px;padding:9px 10px;border:1px solid rgba(255,169,130,.42);
+    border-radius:8px;color:#ffc4aa;font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:.625rem;letter-spacing:.16em;}
+  #kayitOnay[hidden]{display:none !important;}
+  #kayitOnay div{display:flex;gap:6px;}
+  #kayitOnay button{padding:6px 8px;border:1px solid currentColor;border-radius:5px;
+    background:transparent;color:inherit;font:inherit;letter-spacing:.12em;cursor:pointer;}
+  #kayitOnayEvet{color:#8ff0dd !important;}
   #ayar #araclar > div{flex:0 0 auto;}
   #ayar #solUst{display:none !important;}
   /* ── SATIR ALTI NOT ─────────────────────────────────────────────
@@ -4367,6 +4393,8 @@
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
+    <div id="ayarAlt" role="button" tabindex="0" aria-label="Settings"
+      aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
   <!-- PALET: deri galerisi (deri_galeri.js, istek uzerine). Radyoda uc
        cizginin altinda, SOUND BANKS'te ustunde; saat tusu onun altinda.
        Simge ressam paleti: "firca iyi degil" (3 Eylul). Dokunus dongusu
@@ -4428,6 +4456,13 @@
          odaklanabilen dugme" durumuna duser (WCAG 4.1.2). -->
     <div id="ayarAra" role="button" tabindex="-1" aria-label="Search">SEARCH</div>
     <div id="ayarAraclar" aria-label="Photo and camera controls"></div>
+    <div id="kayitOnay" role="group" aria-label="Save recording" hidden>
+      <span>SAVE RECORDING?</span>
+      <div>
+        <button id="kayitOnayEvet" type="button">YES</button>
+        <button id="kayitOnayHayir" type="button">NO</button>
+      </div>
+    </div>
     <div class="sat kapi" data-ayar="mood" role="switch" tabindex="-1"
          aria-checked="false" aria-label="ORBITAPE sound banks">
       <span class="kapi-yazi">
@@ -19555,6 +19590,11 @@
     const npGez = document.querySelector('#np .np-gez');
     const tasima = document.getElementById('tasima');
     const fav = document.getElementById('fav');
+    const ayarAraclar = document.getElementById('ayarAraclar');
+    const araclar = document.getElementById('araclar');
+    const araclarAna = araclar ? araclar.parentElement : null;
+    const araclarSonraki = araclar ? araclar.nextElementSibling : null;
+    const altTut = document.getElementById('ayarAlt');
     if(ara && !kut.contains(ara)){
       kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild);
     }
@@ -19644,7 +19684,10 @@
     };
     const ac = ()=>{
       try{ araKapa(); }catch(e){ _yut(e); }
-      try{ if(ara && !kut.contains(ara)) kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild); }catch(e){ _yut(e); }
+      try{
+        if(ara && !kut.contains(ara)) kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild);
+        if(araclar && ayarAraclar && !ayarAraclar.contains(araclar)) ayarAraclar.appendChild(araclar);
+      }catch(e){ _yut(e); }
       document.body.classList.add('ayar-acik');
       tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
       try{ kut.removeAttribute('inert'); }catch(e){ _yut(e); }
@@ -19655,7 +19698,12 @@
       /* Izgara panel her acildiginda degil, ILK acildiginda
          kuruluyor; sonra yalnizca secili kutu tazeleniyor. */
       try{ izgaraKur(); izgaraYaz(); }catch(e){ _yut(e); } };
-    const kapa = ()=>{ document.body.classList.remove('ayar-acik');
+    const kapa = ()=>{
+      try{
+        if(araclar && araclarAna && !araclarAna.contains(araclar))
+          araclarAna.insertBefore(araclar, araclarSonraki);
+      }catch(e){ _yut(e); }
+      document.body.classList.remove('ayar-acik');
       tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
       try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
       kut.classList.remove('ara-ic');
@@ -19666,6 +19714,13 @@
          ayarlar listesi karsilasin, otuz bes renk degil. */
       try{ izgaraAc(false); }catch(e){ _yut(e); } };
     const cevir = ()=>{ document.body.classList.contains('ayar-acik') ? kapa() : ac(); };
+    if(altTut){
+      altTut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
+      altTut.addEventListener('pointerdown', e=>e.stopPropagation());
+      altTut.addEventListener('keydown', e=>{
+        if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); cevir(); }
+      });
+    }
     /* ── TURUN PANELI GOSTEREBILMESI ICIN ───────────────────────────
        Acilis turu "ayarlar sol ustte" demekle yetinmiyor, PANELI
        ACIP kapatiyor. Bunu sahte bir tik ureterek yapamaz (dinleyici
