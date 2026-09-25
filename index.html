@@ -3352,20 +3352,6 @@
   .deri-izgara button.kapa::after{display:none;}
   .deri-izgara button[aria-pressed="true"]{outline:2px solid #4de0d0;outline-offset:2px;}
   #ayarTut:hover,#ayarTut:focus-visible,body.ayar-acik #ayarTut{opacity:1;}
-  #ayarAlt{display:none;position:fixed;z-index:96;left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    bottom:calc(150px + var(--dip-pay));width:32px;height:26px;flex-direction:column;
-    align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;opacity:.72;
-    transition:opacity .22s ease;-webkit-tap-highlight-color:transparent;}
-  body:not(.mood) #ayarAlt{display:flex;}
-  #ayarAlt:hover,#ayarAlt:focus-visible{opacity:1;}
-  body.ayar-acik #ayarAlt{opacity:0;pointer-events:none;}
-  #ayarAlt span{display:block;height:3.5px;border-radius:3px;background:#35e0d8;}
-  #ayarAlt span:nth-child(1){width:32px;}
-  #ayarAlt span:nth-child(2){width:25px;background:rgb(var(--tv, 140,177,186));}
-  #ayarAlt span:nth-child(3){width:17px;background:#e27a9e;}
-  body.deri #ayarAlt span{background:var(--d-simge, var(--d-yazi)) !important;}
-  #ayarAlt::after{content:'';position:absolute;left:50%;top:50%;width:48px;height:48px;
-    transform:translate(-50%,-50%);background:transparent;pointer-events:auto;}
   /* ── SOL SUTUN OPTIK HIZALAMA (17 Eylul) ─────────────────────────
      Kullanicinin sozu: "yamuk yamuk, hicbisey hizali degil -- hepsi
      sola yaslanacak, grafiksel standart." Kutu kenarlari zaten ayni
@@ -4393,8 +4379,6 @@
   <!-- AYARLAR: tutamak + alttan acilan panel. Metinler INGILIZCE. -->
   <div id="ayarTut" role="button" tabindex="0" aria-label="Settings"
        aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
-    <div id="ayarAlt" role="button" tabindex="0" aria-label="Settings"
-      aria-expanded="false" aria-controls="ayar"><span></span><span></span><span></span></div>
   <!-- PALET: deri galerisi (deri_galeri.js, istek uzerine). Radyoda uc
        cizginin altinda, SOUND BANKS'te ustunde; saat tusu onun altinda.
        Simge ressam paleti: "firca iyi degil" (3 Eylul). Dokunus dongusu
@@ -19592,12 +19576,10 @@
     const fav = document.getElementById('fav');
     const ayarAraclar = document.getElementById('ayarAraclar');
     const araclar = document.getElementById('araclar');
-    const araclarAna = araclar ? araclar.parentElement : null;
-    const araclarSonraki = araclar ? araclar.nextElementSibling : null;
-    const altTut = document.getElementById('ayarAlt');
     if(ara && !kut.contains(ara)){
       kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild);
     }
+    try{ if(araclar && ayarAraclar && !ayarAraclar.contains(araclar)) ayarAraclar.appendChild(araclar); }catch(e){ _yut(e); }
     if(ayarAra) ayarAra.addEventListener('click', ()=>{
       /* SEARCH panelin icindeki arama kapisi: sonuclar ayni ayarlar
         penceresinde acilir, panel kapanmaz. */
@@ -19686,7 +19668,6 @@
       try{ araKapa(); }catch(e){ _yut(e); }
       try{
         if(ara && !kut.contains(ara)) kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild);
-        if(araclar && ayarAraclar && !ayarAraclar.contains(araclar)) ayarAraclar.appendChild(araclar);
       }catch(e){ _yut(e); }
       document.body.classList.add('ayar-acik');
       tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
@@ -19699,10 +19680,6 @@
          kuruluyor; sonra yalnizca secili kutu tazeleniyor. */
       try{ izgaraKur(); izgaraYaz(); }catch(e){ _yut(e); } };
     const kapa = ()=>{
-      try{
-        if(araclar && araclarAna && !araclarAna.contains(araclar))
-          araclarAna.insertBefore(araclar, araclarSonraki);
-      }catch(e){ _yut(e); }
       document.body.classList.remove('ayar-acik');
       tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
       try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
@@ -19714,13 +19691,6 @@
          ayarlar listesi karsilasin, otuz bes renk degil. */
       try{ izgaraAc(false); }catch(e){ _yut(e); } };
     const cevir = ()=>{ document.body.classList.contains('ayar-acik') ? kapa() : ac(); };
-    if(altTut){
-      altTut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
-      altTut.addEventListener('pointerdown', e=>e.stopPropagation());
-      altTut.addEventListener('keydown', e=>{
-        if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); cevir(); }
-      });
-    }
     /* ── TURUN PANELI GOSTEREBILMESI ICIN ───────────────────────────
        Acilis turu "ayarlar sol ustte" demekle yetinmiyor, PANELI
        ACIP kapatiyor. Bunu sahte bir tik ureterek yapamaz (dinleyici
@@ -21227,7 +21197,7 @@
        duz sutun. dy:-2 de kaldirildi: box merkezi zaten optik
        hizalamadan sonra dogru (bkz. satir ~3146 "SOL SUTUN OPTIK
        HIZALAMA"), ekstra kaydirmaya gerek yoktu. */
-    { h:'#ayarTut',   m:'MENU',        dx:36, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#ayarTut',   m:'MENU — OPEN FOR PHOTO, CAMERA, RECORDING & FAVOURITES', dx:36, dy:0,  hiza:'sol', cizgi:false },
     { h:'#saatTus',   m:'ALARM',       dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#deriFirca', m:'SKINS',       dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#gorselTus', m:'VISUAL / HOLD',     dx:30, dy:0,  hiza:'sol', cizgi:false },
@@ -21237,10 +21207,6 @@
     { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
     { h:'#kipKisayol', m:'SOUNDS FX',  dx:0, dy:-24, hiza:'orta' },
     { h:'#araCizgi',   m:'SEARCH',     dx:0, dy:-24, hiza:'orta' },
-    { h:'#favAc',      m:'FAVOURITES', dx:0, dy:-24, hiza:'orta' },
-    { h:'#rec',        m:'REC',        dx:0, dy:-24, hiza:'orta' },
-    { h:'#cam',        m:'CAM',        dx:0, dy:-24, hiza:'orta' },
-    { h:'#mute',       m:'MUTE',       dx:0, dy:-22, hiza:'orta' },
     { h:'#npBayrak',   m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
     { h:'#fav',        m:'LIKE — HOLD TO PLAY FAVOURITES', dx:8, dy:-20, hiza:'sol' },
     { h:'#isaret',     m:'TAP FOR ARTIST & TITLE', dx:0, dy:22, hiza:'orta' }
@@ -21248,7 +21214,7 @@
   const REHBER_ORB = [
     { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
     { h:['#uydular .uydu','#mark'], m:'FX (TAP A MOON)', dx:14, dy:-8, hiza:'sol' },
-    { h:'#ayarTut',   m:'MENU',    dx:0,  dy:-26, hiza:'orta', cizgi:false },
+    { h:'#ayarTut',   m:'MENU — OPEN FOR PHOTO, CAMERA, RECORDING & FAVOURITES', dx:0,  dy:-26, hiza:'orta', cizgi:false },
     { h:'#saatTus',   m:'ALARM',   dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#deriFirca', m:'SKINS',   dx:30, dy:0,  hiza:'sol', cizgi:false },
     { h:'#gorselTus', m:'VISUAL / HOLD', dx:30, dy:0,  hiza:'sol', cizgi:false },
@@ -21258,10 +21224,6 @@
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
     { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
     { h:'#kipKisayol', m:'RADIO',       dx:0, dy:-24, hiza:'orta' },
-    { h:'#favAc',      m:'FAVOURITES',  dx:0, dy:-24, hiza:'orta' },
-    { h:'#rec',        m:'REC',         dx:0, dy:-24, hiza:'orta' },
-    { h:'#cam',        m:'CAM',         dx:0, dy:-24, hiza:'orta' },
-    { h:'#mute',       m:'MUTE',        dx:0, dy:-22, hiza:'orta' },
     { h:'#npBayrak',   m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
     { h:'#fav',        m:'LIKE — HOLD TO PLAY FAVOURITES', dx:8, dy:-20, hiza:'sol' },
     { h:'#isaret',     m:'TAP FOR ARTIST & TITLE', dx:0, dy:22, hiza:'orta' }

@@ -1937,3 +1937,17 @@ sonra `index.html` 1.331.425 byte / 1300,22 KiB ölçüldü; eski 1298 KiB tavan
 2.273 byte aşıldı. Büyüme yeni davranış, ölçüm açıklamaları ve kayıtlı yorum
 kararıyla geldi; açıklamalar budanmadı. `test/saglik.js` tavanı ölçümün hemen
 üstündeki kontrollü 1301 KiB'e çıkarıldı.
+
+25 Eylül — kontrol yerleşimi son kararı: Alt kontrol satırı kapalı ekranda
+görünmeyecek. `#araclar` artık uygulama kurulurken kalıcı olarak
+`#ayarAraclar` içine alınıyor; panel kapanınca alt konsola geri dönmüyor.
+Böylece PIC/CAM/kamera çevirme/favori yalnız Settings açıldığında görülüyor.
+Eklenen ikinci alt Settings tutacağı da kaldırıldı; Settings için tek kapı
+`#ayarTut` kaldı.
+
+25 Eylül — rehber de yeni düzene uyarlandı: `MENU` etiketi artık fotoğraf,
+kamera, kayıt ve favorilerin Settings içinden açıldığını söylüyor. Rehberden
+artık bağımsız `FAVOURITES`, `REC`, `CAM` ve `MUTE` hedefleri çıkarıldı; bu
+öğeler kapalı ekranda yok ve rehberin sıfır ölçülü hedef üretmesi engellendi.
+Yeni MENU metni beş dil dosyasına eklendi; JSON, CSP, syntax ve diff
+kontrolleri geçti.
