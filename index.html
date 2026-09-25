@@ -13394,7 +13394,16 @@
              burada yalnizca metnin ekran KENARINA yapismasini
              onluyoruz, sabit bir pay yeterli (isim ne kadar uzun
              olursa olsun kirilan bir hesap degil). */
-          let ax = Math.max(70, Math.min(W - 70, p.x));
+          /* 25 Eylul olcumu (360x640): secili yildizin metni 196px
+             genislikteydi, merkez 70px sinirina dayaninca dokunma kutusu
+             x=-11px'e cikiyordu -- 11px ekran disiydi. Eski sabit 70px
+             siniri yalnizca METIN MERKEZINI koruyordu, dokunma alaninin
+             yarim genisligini hesaba katmiyordu. Simdiden dokunma genisligi
+             once olculuyor; 8px iki kenarda birakilip merkez hem metni
+             hem BUTUN dokunma kutusunu ekran icinde tutuyor. */
+          const dokunGen = Math.min(W - 32, c.measureText(ad).width + 24);
+          const kenar = dokunGen / 2 + 6;
+          let ax = Math.max(kenar + 8, Math.min(W - kenar - 8, p.x));
           let ay = p.y - rad - 20;
           if(ay - boy / 2 < 8) ay = p.y + rad + 20;
           c.save();
@@ -13406,8 +13415,7 @@
           /* Dokunma alani: gorunen bir kutu kalmadi ama isim hala bir
              dugme -- alan artik GERCEK metin genisliginden (bayrak
              dahil, TEK dizge) cikiyor, sabit bir kutuya baglanmiyor. */
-          const dokunGen = Math.min(W - 16, c.measureText(ad).width + 24);
-          _adKutu = { id:y.id, item:y, x1:ax - dokunGen/2 - 6, x2:ax + dokunGen/2 + 6,
+          _adKutu = { id:y.id, item:y, x1:ax - kenar, x2:ax + kenar,
                       y1:ay - boy/2 - 6, y2:ay + boy/2 + 6 };
         }
       }
@@ -18138,10 +18146,13 @@
         if(su2){
           const r2 = su2;
           if(r2.height){
-            /* 14px: tasima satirinin dokunma alani yukari 4px,
-               anahtarinki asagi 7px tasiyor; 8px bosluk birakinca
-               cakisiyorlar. */
-            _altYasla(_kk, r2.top - 14);
+            /* 25 Eylul olcumu: once 14px bosluk birakiliyordu; kip
+               anahtari PLAY/STOP konsolunun belirgin bir ust satiri
+               gibi degil, birkac satir yukarida asilii gorunuyordu.
+               Kullanici sozlesmesi: anahtar konsolunun TAM ust satiri.
+               8px hem dokunma alanlarini birbirine sokmaz hem de
+               iki ogeyi tek sol alt yigin olarak okutur. */
+            _altYasla(_kk, r2.top - 8);
             _kk.style.removeProperty('left');      // sol kenar CSS'ten (--kx)
             _kipSagKenar(_kk, Math.round(_kk.getBoundingClientRect().left));
           }
@@ -18641,18 +18652,16 @@
             try{ document.body.classList.remove('kunye-yigin'); }catch(_){ _yut(_); }
           }
           npE.style.maxWidth = (yer > 96 ? yer : 96) + 'px';
-          /* MOBILDE KUNYE ALT KONTROLLERE GIREMEZ. _kunyeYerlestir
-             daha once icerige gore bottom yaziyordu; Android'de bu
-             deger alt switch/kamera satirinin ustune tasabiliyordu.
-             Gercek arac satirinin ust kenari tek dogru sinir. */
-          if(window.innerWidth <= 480){
-            const altArac = document.getElementById('araclar');
-            const altRect = altArac && altArac.getBoundingClientRect();
-            if(altRect && altRect.height){
-              const taban = _gorBoy() - altRect.bottom + 1;
-              npE.style.bottom = Math.max(2, Math.ceil(taban)) + 'px';
-            }
-          }
+          /* MOBILDE KUNYE ALT KONTROLLERE GIREMEZ.
+             25 Eylul: bu blok Settings tasindiktan sonra bayat bir
+             varsayimi olmustu. PIC/REC/CAM artik kapali #ayar
+             icinde; `altArac` gorunur olsa da kullanicinin onunde
+             degil. Eski hesap ayrica `_gorBoy() - altRect.bottom`
+             ile ekran yuksekligini yeniden kullaniyordu. Cihaz
+             testinde innerHeight 120px bayatlatilinca kunye tam 120px
+             asagi kaydi (her modelde ayni fark). Artik kunye sabit
+             2px tabanini ve yalnizca gercek gorunur komsularin
+             olcumuyle yigilma kararini kullaniyor. */
         }
       }catch(_){ _yut(_); }
   }

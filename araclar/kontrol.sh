@@ -80,8 +80,32 @@ port_bosalt(){
     sleep 1
   fi
 }
+
+# macOS'ta `setsid` kurulu degildir. Betik daha once yalnizca Linux/CI
+# yolunu varsayiyordu; yerel tam kapı tip ve birim testlerinden sonra
+# `setsid: command not found` ile duruyordu. Olcum (25 Eylül 2026):
+# komut `command -v setsid` vermedi, ayni komutun Linux CI'daki tam kapisi
+# yesildi. `nohup` her iki platformda var; PID de `$!` ile ayni sekilde
+# alinabiliyor. Sunucu betiginin PID'si temizlik icin ayrica saklanir.
+sunucu_baslat(){
+  local kok="$1" port="$2" log="$3" servis_koku="${4:-}"
+  local args=("$kok/araclar/sunucu.py")
+  # Dizinde bosluk varsa duz string bilesimi yolu iki parca boluyordu:
+  # `--kok /Users/.../ORBITAPE DATA/orbitape/yayin`. Diziyi kurmak yerine
+  # tek tek arguman vermek yerel macOS yolunu da Linux CI yoluyla ayni
+  # sozlesmeye getiriyor.
+  [ -z "$servis_koku" ] || args+=(--kok "$servis_koku")
+  args+=(--port "$port")
+  if command -v setsid >/dev/null 2>&1; then
+    setsid nohup python3 "${args[@]}" >"$log" 2>&1 &
+  else
+    nohup python3 "${args[@]}" >"$log" 2>&1 &
+  fi
+  echo $!
+}
+
 port_bosalt
-setsid nohup python3 araclar/sunucu.py >/tmp/orbitape_sunucu.log 2>&1 &
+SUNUCU_PID=$(sunucu_baslat "$KOK" 8765 /tmp/orbitape_sunucu.log)
 sleep 2
 if ! python3 araclar/sunucu_dogrula.py; then
   echo "  Bak: /tmp/orbitape_sunucu.log"
@@ -154,8 +178,7 @@ echo "  (takimlar $(( $(date +%s) - t0 )) sn)"
 # fonksiyonlar, ses grafi, cizim) yorumsuz kopyada da gecmeli.
 echo
 echo "  ▸ derlenmis cikti (yayin/)"
-setsid nohup python3 araclar/sunucu.py --kok yayin --port 8766 >/tmp/yayin_sunucu.log 2>&1 &
-YAYIN_PID=$!
+YAYIN_PID=$(sunucu_baslat "$KOK" 8766 /tmp/yayin_sunucu.log "$KOK/yayin")
 sleep 2
 KAPI_ADRES=http://127.0.0.1:8766/index.html node test/motor.js > /tmp/orbitape_yayin_motor.log 2>&1
 yk=$?

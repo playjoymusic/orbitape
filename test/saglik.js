@@ -9157,28 +9157,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
    FAV = [{mp3:'q1',ad:'A',radyo:true},{mp3:'q2',ad:'B',radyo:true}]; favYaz(); favTazele(); await bek(60);
     try{ if(window.favoriKapa) window.favoriKapa(); }catch(e){}
     const kapali = { gor:a.classList.contains('var'), acik:a.classList.contains('acik') };
-    /* 10 Eylul: ilk basili tutus SORU, ikincisi kipi aciyor. Bkz.
-       favKipDegis -- kullanici "favori liste calsin mi diye sorsun
-       ilk" dedi. Cikis hala tek basili tutus. */
-    /* GERCEK BASILI TUTUS: pointerdown, FAV_TUT esigini asan sabit bir
-       bekleme, pointerup -- #fav'daki (ustteki yildiz) AYNI esik. Sabit
-       bekleme burada dogru: modulun gelisi yukarida zaten beklendi,
-       geriye kalan tek belirsizlik jestin kendi suresi (bilinen sabit,
-       FAV_TUT). */
-    const tut = async ()=>{
-      const r = a.getBoundingClientRect();
-      const opts = { clientX:r.left+r.width/2, clientY:r.top+r.height/2,
-                      bubbles:true, cancelable:true, pointerId:53, pointerType:'touch' };
-      a.dispatchEvent(new PointerEvent('pointerdown', opts));
-      await bek(FAV_TUT + 200);
-      a.dispatchEvent(new PointerEvent('pointerup', opts));
-    };
-    await tut();
-    const soru = { soru:a.classList.contains('soru'), mod:_favMod };
-    await tut();
-    const acik = { acik:a.classList.contains('acik'), mod:_favMod };
-    await tut();
-    const tekrar = { acik:a.classList.contains('acik'), mod:_favMod };
+    /* Uzun basili tutus asagida AYRI bir Playwright sayfasinda
+       olculuyor. Burada yalniz gorunurluk ve DOM sahipligi kalir. */
     /* Tasima satiri sag ustteki marka yazisina carpmiyor mu ve sol
        ust blok arama cizgisiyle ayni sol kenardan mi basliyor. */
     const su = document.getElementById('solUst');
@@ -9209,13 +9189,49 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
     AKTIF_MOD = eski; mod = eskiDunya;
-    return { kapali, soru, acik, tekrar, hiza };
+    return { kapali, hiza };
   });
+
+  /* Bu jest ayri sayfada olculuyor: saglik.js 800+ kontrolu tek sayfada
+     paylasiyor ve onceki pointer/panel/modul durumu gercek fare jestini
+     bozuyordu. Yeni sayfa ayni sahte agi context seviyesinde alir; urun
+     kodunda degisiklik yok, yalniz olcum yalitimi var. */
+  const izole = await pg.context().newPage();
+  let soruCanli={soru:false,mod:false}, acikCanli={acik:false,mod:false}, tekrarCanli={mod:false};
+  try{
+    await izole.goto(S);
+    await izole.waitForTimeout(1200);
+    const s = await izole.evaluate(async ()=>{
+      if(!window.KAYIT_MODULU_HAZIR){
+        window.kayitYukle();
+        for(let i=0;i<40 && !window.KAYIT_MODULU_HAZIR;i++) await new Promise(r=>setTimeout(r,100));
+      }
+      AKTIF_MOD='RADIOTAPE'; mod='radio'; _favMod=false; _favSoruBitir();
+      FAV=[{mp3:'live-q1',ad:'Live One',radyo:true,lisans:'CC0'},
+           {mp3:'live-q2',ad:'Live Two',radyo:true,lisans:'CC0'}];
+      favYaz(); favTazele(); ayarGoster(true);
+      await new Promise(r=>setTimeout(r,350));
+      const r=document.getElementById('favAc').getBoundingClientRect();
+      return {x:r.left+r.width/2,y:r.top+r.height/2,tut:FAV_TUT};
+    });
+    const tutCanli = async ()=>{
+      await izole.mouse.move(s.x,s.y); await izole.mouse.down();
+      await izole.waitForTimeout(s.tut+200); await izole.mouse.up();
+    };
+    await tutCanli();
+    soruCanli = await izole.evaluate(()=>({soru:favAc.classList.contains('soru'),mod:_favMod}));
+    await tutCanli();
+    acikCanli = await izole.evaluate(()=>({acik:favAc.classList.contains('acik'),mod:_favMod}));
+    await tutCanli();
+    tekrarCanli = await izole.evaluate(()=>({mod:_favMod}));
+  } finally { await izole.close(); }
+
   K('Sol ustte favori yildizi var', !!fa && fa.kapali.gor===true, 'tasima satirinin sonunda');
-  K('Ilk basili tutus soruyor, kipi acmiyor', !!fa && fa.soru.mod===false && fa.soru.soru===true,
-    fa ? ('soru sinifi=' + fa.soru.soru + ' kip=' + fa.soru.mod) : 'favAc yok');
-  K('Ikinci basili tutus kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'iki tutus');
-  K('Tekrar basili tutus kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
+  K('Ilk basili tutus soruyor, kipi acmiyor',
+     soruCanli.mod===false && soruCanli.soru===true,
+     'soru sinifi=' + soruCanli.soru + ' kip=' + soruCanli.mod);
+  K('Ikinci basili tutus kipi acar', acikCanli.mod===true && acikCanli.acik===true, 'iki tutus');
+  K('Tekrar basili tutus kipi kapatir', tekrarCanli.mod===false, 'kapandi');
   K('Konsol ve Settings sahipligi dogru',
      !!fa && fa.hiza.sol <= 2 && fa.hiza.araclarSahip,
      'sol hiza '+(fa?fa.hiza.sol:'-')+'px | araclar Settings icinde='+(fa?fa.hiza.araclarSahip:false));
@@ -11496,6 +11512,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const su=document.getElementById('solUst');
     const radyo = { ust:Math.round(su.getBoundingClientRect().top),
                     arama:document.getElementById('ara').parentElement === document.getElementById('ayar'),
+                    settings:document.getElementById('ayarAraclar')?.contains(document.getElementById('araclar'))===true,
                     rec:getComputedStyle(document.getElementById('rec')).display,
                     pic:getComputedStyle(document.getElementById('pic')).display,
                     recSonuk:parseFloat(getComputedStyle(document.getElementById('rec')).opacity) < 0.6,
@@ -14551,7 +14568,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        yaride, alt konsola 100px'den fazla mesafede. */
     K('Radyoda kip anahtari modulun ust satiri',
        !!tt.radyoSonuc && !tt.radyoSonuc.cakisma
-       && tt.radyoSonuc.ustunde >= 4 && tt.radyoSonuc.ustunde <= 20
+       && tt.radyoSonuc.ustunde >= 6 && tt.radyoSonuc.ustunde <= 10
        && tt.radyoSonuc.solHiza <= 1
        && tt.radyoSonuc.tutUzak === true,
        tt.radyoSonuc ? ('arada '+tt.radyoSonuc.ustunde+'px, sol fark '

@@ -2165,3 +2165,27 @@ Bu ölçüm, sorunun yalnızca eski süreçlerin üst üste binmesi olmadığın
 kanıtlıyor. Sayfa kapanış düzeltmesi ve yerel sunucu betiği yerinde; sağlık
 testinin hangi iç bloğa girmeden/asılı kalarak süreyi tükettiği hâlâ ayrıca
 izole edilmeli.
+
+### 25 Eylül — yerel kapı, kip satırı ve küçük ekran düzeltmeleri
+
+Kullanıcı, sol altta PLAY/STOP konsolunun hem üstünde bulunması gereken
+ORBITAPE/RADIO kip düğmesinin fazla yukarıda kaldığını ve son CI'da kırmızı
+sayısının 7'den 3'e, sonra yeniden 5'e çıktığını bildirdi. Ölçümde kip düğmesi
+konsolun 14 px üstündeydi; küçük ekranlarda kunye konumu da Settings'e
+taşınmış eski mobil alt-kontrol hesabı yüzünden bayat `innerHeight` ile
+yeniden hesaplanıyordu.
+
+Üretimde yalnız iki ölçülü düzeltme yapıldı: RADIOTAPE kip düğmesi konsolun
+8 px üstüne sabitlendi; PIC/REC/CAM artık kapalı Settings içinde olduğu için
+eski mobil kunye yükseltme hesabı kaldırıldı. Seçili yıldız ad kutusu artık
+dokunma genişliğini de ölçüp iki kenarda 8 px bırakıyor; 360x640 ölçümünde
+kutu x=-11 px'ten güvenli sınıra alındı. Cihaz testi `#np` sarmalayıcısı yerine
+gerçek `.np-bilgi` kartını ölçüyor. Favori uzun-basış testi, paylaşılan uzun
+sağlık sayfasındaki sentetik pointer durumundan çıkmak için ayrı bir
+Playwright sayfasında gerçek fareyle çalışıyor.
+
+Yerel ölçüm sonuçları: tip 69 uyarı (taban değişmedi), birim 126/126, sağlık
+869/869, cihaz 156/156, arıza 18/18, senaryo 121/121, motor 19/19, derlenmiş
+çıktı motoru 19/19. macOS'ta `setsid` bulunmadığı için tam kapı düzeltildi;
+boşluklu workspace yolu dizi olarak güvenli geçirildi. Bu kayıt commit ve push
+öncesi son tam kapı ile doğrulandı.

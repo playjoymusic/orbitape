@@ -301,7 +301,13 @@ async function kunyeOlc(sayfa){
         return { sol:r.left, sag:r.right, ust:r.top, alt:r.bottom }; };
       const d = document.querySelector('.disk');
       if(!d) return { yok:true };
-      const D = kut(d), N = kut(np);
+      /* #np ekranin sag altinda gorunen KUNYE KARTINI degil,
+         butun yerlesim yuzeyini saran bir kap. Eski test kapin
+         kutusunu "gorunen kunye" saniyordu; sonuc her modelde
+         aletle kesisme (-170..-440px), ama gercek metin altta
+         duruyordu. Olculecek gorunur bilgi blogu. */
+      const gorunur = np.querySelector('.np-bilgi') || np;
+      const D = kut(d), N = kut(gorunur);
       const kesis = !(N.sag <= D.sol || N.sol >= D.sag || N.alt <= D.ust || N.ust >= D.alt);
       /* Ust satira da bakiliyor: alet yukari kaydirilirken bu sefer
          de tepeye binmesin -- bir kusuru duzeltirken otekini
