@@ -8283,10 +8283,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                return o.kk.gor && saginda >= 4 && saginda <= 14
                       && ayniSatir <= 2 && ustunde && tasmaz(o);
         };
+        /* Konsolun dugme satiri sola kaydirildi (--konsol-sol); kip
+           anahtari onun ilk SIMGESINE hizalanir, kutusuna degil. */
+        const KAY = Math.round(parseFloat(getComputedStyle(document.documentElement)
+          .getPropertyValue('--konsol-sol'))||0);
         const radyoDogru = (o)=>{
                if(!o.kk || !o.ta) return false;
                /* REC/CAM artik kapali Settings panelinde; gorunen komsu tasima satiri. */
-               const solHiza = Math.abs(o.kk.l - o.ta.l) <= 1;
+               const solHiza = Math.abs(o.kk.l - (o.ta.l + KAY)) <= 1;
           /* Ve modulun USTUNDE, uzerine binmeden. */
           const ustunde = o.kk.b <= o.ta.t;
           return o.kk.gor && solHiza && ustunde && tasmaz(o);
@@ -9191,8 +9195,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        esitleniyor) -- bosluklari sisirerek degil. */
    const ts2 = document.getElementById('tasima').getBoundingClientRect();
    const solBlok = document.getElementById('solUst').getBoundingClientRect();
+   /* 25 Eylul: konsolun dugme satiri sola kaydirildi (--konsol-sol)
+      ki ilk simge yukaridaki yardimci sutunla ayni cizgiden baslasin.
+      #solUst KUTUSU yerinde kaldi; hizalanan sey ilk simge. */
+   const kaySm = Math.round(parseFloat(getComputedStyle(document.documentElement)
+     .getPropertyValue('--konsol-sol'))||0);
    const hiza = { tasma: 0,
-               sol: Math.round(Math.abs(ts2.left - solBlok.left)),
+               sol: Math.round(Math.abs((ts2.left + kaySm) - solBlok.left)),
                araclarSahip: document.getElementById('ayarAraclar').contains(document.getElementById('araclar')) };
    void ad; void su;
     FAV = []; favYaz(); _favMod=false; favTazele();
@@ -9376,22 +9385,35 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   const kenar = await pg.evaluate(()=>{
     const R=x=>Math.round(x);
     const g=id=>document.getElementById(id).getBoundingClientRect();
-    const kx=Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx'))||16);
-    /* Sol kenari tasiyan iki nesne: ust blok ve alt soldaki ayar
-       tutamagi. Arama artik tek bir buyutec ve tutamagin saginda. */
-    /* Sol kenari tasiyan iki nesne: ust soldaki tutamak ve alt
-       soldaki kayit satiri. Konsol sagda, o olcuye girmiyor. */
-   const sol=[g('tasima').left, g('ayarTut').left];
+    const kok=getComputedStyle(document.documentElement);
+    const kx=Math.round(parseFloat(kok.getPropertyValue('--kx'))||16);
+    const kay=Math.round(parseFloat(kok.getPropertyValue('--konsol-sol'))||0);
+    /* 25 Eylul: konsol sola kaydirildi. Kullanicinin istediği
+       hizalama buydu: "konsolun bütün olarak sola çekilmesi
+       lazım, yukarıdaki ile aynı yerde başlamalı."
+       Olculebilir olan KUTUNUN solu degil, ilk SIMGENIN mürekkebi:
+       kutu kenardan `kay` kadar içeride, simge tam kenarda. O yüzden
+       kutu 3px'te olsa da hizalanan deger kutu + kay = --kx. */
+    const simgeSol=R(g('tasima').left + kay);
+    const sol=[simgeSol, g('ayarTut').left];
     /* Sag kenari tasiyan iki nesne: sag ustteki yazi blogu ve sag
-       alttaki kunye. Konsol artik SOLDA, bu olcuye girmiyor. */
+       alttaki kunye. */
     const sag=[innerWidth-g('ust').right, innerWidth-g('np').right];
     return { solFark:R(Math.max(...sol)-Math.min(...sol)),
              sagFark:R(Math.max(...sag)-Math.min(...sag)),
-             solSag:R(Math.abs(Math.min(...sol)-Math.min(...sag))), kx };
+             solSag:R(Math.abs(Math.min(...sol)-Math.min(...sag))),
+             kx, kay, simgeSol, kutuSol:R(g('tasima').left) };
   });
-   K('Sol kenarlar tek hizada', kenar.solFark <= 1, 'play satiri / tutamak fark '+kenar.solFark+'px');
+  K('Sol kenarlar tek hizada', kenar.solFark <= 1,
+    'ilk simge ' + kenar.simgeSol + 'px / tutamak fark ' + kenar.solFark + 'px');
   K('Sag kenarlar tek hizada', kenar.sagFark <= 1, 'sag ust / kunye fark '+kenar.sagFark+'px');
   K('Sag ve sol pay esit', kenar.solSag <= 1, 'pay '+kenar.kx+'px, fark '+kenar.solSag+'px');
+  /* Kayma tam istenen kadar mi, fazla degil: simge kenarda, kutu
+     `kay` kadar iceride. */
+  K('Konsolun kaymasi kadar, simge tam kenarda',
+     kenar.simgeSol === kenar.kx && kenar.kutuSol === kenar.kx - kenar.kay,
+     'kutu ' + kenar.kutuSol + ' + kayma ' + kenar.kay + ' = ' + kenar.simgeSol
+     + ' (kenar payi ' + kenar.kx + ')');
 
   /* ── 2. IKI YAZI AYNI TABAN CIZGISINDE ───────────────────────────
      Ust seritte karsilikli iki yazi var: solda raf adi (14px), sagda
@@ -14549,12 +14571,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     for(const id of ['geri','ileri']) document.getElementById(id).classList.add('var');
     const R=x=>Math.round(x);
     const q=s2=>document.querySelector(s2).getBoundingClientRect();
+    /* Konsolun dugme satiri sola kaydirildi (--konsol-sol); hizalanan
+       sey ilk simge, kutu degil. Bkz. index.html :root. */
+    const KAY=R(parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue('--konsol-sol'))||0);
     const olc=()=>{ geriYerlestir();
       const t1=q('#tasima');
       const enGenis=t1.right;
       return { enGenis:R(enGenis),
             tasan:0,
-            solHiza:R(Math.abs(t1.left-document.getElementById('solUst').getBoundingClientRect().left)),
+            solHiza:R(Math.abs((t1.left+KAY)-document.getElementById('solUst').getBoundingClientRect().left)),
             araclarSahip:document.getElementById('ayarAraclar').contains(document.getElementById('araclar')) }; };
     const kisa = olc();
     /* IKINCI OLCUM: SOUND BANKS kipi. Orada REC geri geliyor ve
@@ -14679,9 +14705,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         return s3 ? s3.getBoundingClientRect() : null; })();
       const RADYO_ID = ['ayarTut','deriFirca','saatTus','gorselTus','rehberTus'];
       const radyoYigin = RADYO_ID.map(id=>document.getElementById(id).getBoundingClientRect());
+      /* Konsol sola kaydirildi (--konsol-sol): kip anahtari onun
+         KUTUSUNA degil, ilk simgenin cizgisine hizalanir. */
+      const KAY = Math.round(parseFloat(getComputedStyle(document.documentElement)
+        .getPropertyValue('--konsol-sol'))||0);
       const radyoSonuc = (rb && sb) ? {
         ustunde : Math.round(sb.top - rb.bottom),
-        solHiza : Math.round(Math.abs(rb.left - sb.left)),
+        solHiza : Math.round(Math.abs(rb.left - (sb.left + KAY))),
         cakisma : rb.bottom > sb.top + 0.5,
         /* RADIOTAPE'DE YARDIMCI SUTUN TEPEDE: bes ogenin de alt
            kenari ekranin yarisi ALTINDA olmali. (ORBITAPE'de

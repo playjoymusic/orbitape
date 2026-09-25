@@ -55,7 +55,19 @@
        Onceden her kose kendi sayisini tasiyordu (sol 16, sag 18, ust
        sag 13...) ve ekranda "sagi solu hizali degil" olarak
        goruluyordu. Tek kaynak: burasi. */
-    --kx:16px;}
+    --kx:16px;
+    /* --konsol-sol: KONSOLUN SOLA KAYMASI. Kullanicinin sozu:
+       "play stop geri vs. konsolun bütün olarak sola çekilmesi
+       lazım, yukarıdaki ile aynı yerde başlamalı."
+       Sebep ölçüldü: konsolun KUTUSU zaten kenardaydı (14px), ama
+       ilk düğmenin simgesi kendi 36px kutusunda ortalandığı için
+       mürekkebi 25px'te başlıyordu; üstteki yardımcı sütun ve kip
+       düğmesi ise 14px'te. Arada 11px vardı ve konsol içeri
+       gözüküyordu. Kayma 11px: ilk simgenin mürekkebi artık kenar
+       payına oturuyor, yani "yukarıdaki ile aynı yerde".
+       Negatif margin: kutu eski yerinde kalıyor, kaydirilan sadece
+       düğme satırı -- yanına modül yazan blok yerinde duruyor. */
+    --konsol-sol:11px;}
   @media (max-width:480px){ :root{--kx:14px;} }
   /* overflow-x:hidden -> arama kutusu/klavye açılırken sayfa yana kaymasın. */
   *{box-sizing:border-box;} html,body{height:100%;overscroll-behavior:none;overflow-x:hidden;max-width:100%;}
@@ -903,7 +915,11 @@
      asagidaki kayit satiri ve sag alttaki ★ ile birebir ayni. */
   /* 8 Eylul: 7 -> 6. Cerceveler kalkinca aradaki bosluk daha genis
      okunuyordu; 4 denendi ama dokunma alanlari birbirine girdi. */
-  #tasima{display:flex;align-items:center;gap:2px;}
+  #tasima{display:flex;align-items:center;gap:2px;
+    /* Sola kayma: bkz. :root --konsol-sol. Simge kutunun icinde
+       ortalandigi icin ilk simge 11px iceride basliyordu; konsol
+       ustteki yardimci sutunla ayni cizgiden baslamiyordu. */
+    margin-left:calc(var(--konsol-sol, 0px) * -1);}
   /* ── SOL UST SATIR: REC · CAM · ★ ─────────────────────────────────
      Eskiden sol ALTTAYDI; arama en alta indigi icin oraya sigmiyordu.
      Simdi tasima satirinin altinda. Kutu artik konumlandirilmiyor
@@ -4464,7 +4480,7 @@
        role=switch ve aria-checked=true: ekran okuyucu icin acik bir
        anahtar -- kapatinca radyo tarafina donuluyor. -->
   <div id="kipKisayol" role="switch" aria-checked="false" tabindex="0"
-       aria-label="Sound banks" title="Open the archive">
+       aria-label="Switch to ORBITAPE">
     <i class="anahtar" aria-hidden="true"><b></b></i>
     <!-- YAZI: anahtar tek basina "bir sey acik" diyor ama NEREYE
          goturdugunu soylemiyordu. Yer var -- alt satir (araclar)
@@ -18102,8 +18118,16 @@
       const k = document.getElementById('kipKisayol'); if(!k) return;
       const acik = document.body.classList.contains('mood');
       k.setAttribute('aria-checked', acik ? 'true' : 'false');
-      k.setAttribute('aria-label', 'Sound banks');
-      k.setAttribute('title', acik ? 'Back to live radio' : 'Open the archive');
+      /* ETIKET DUZGUN. Once "Sound banks" yaziyordu ve `title` ile
+         "Open the archive" geliyordu: bu dugme ne bir arsiv acar ne
+         de sound banks acar -- kipi degistirir. Yanlis metin ekran
+         okuyucuda da yanlis soyluyordu.
+         `title` KALDIRILDI: gorunur yazi (ORBITAPE / RADIO) zaten
+         ne yapilacagini soyluyor, ayrica bir tooltip ayni isi
+         tekrarliyor ve fare altindaki konsolun uzerine gelip
+         kapatiyor. */
+      k.setAttribute('aria-label', acik ? 'Switch to live radio' : 'Switch to ORBITAPE');
+      k.removeAttribute('title');
     }catch(e){ _yut(e); }
   }
   /* ── ANAHTARIN SAG KENARI TASIMA SATIRIYLA AYNI ───────────────
@@ -18184,9 +18208,16 @@
       }
       const r = _konsolKutu();
       if(r && r.height){
+        /* Konsol sola kaydirildi (--konsol-sol): kutu kenardan 11px
+           iceride ama ilk simgesi kenardan basliyor. Kip anahtari
+           simgeye degil KUTUYA hizalanir -- yukaridaki yardimci sutun
+           da kenarda duruyor, iki satir ayni cizgide olmali. */
+        const kay = parseFloat(getComputedStyle(document.documentElement)
+          .getPropertyValue('--konsol-sol')) || 0;
+        const sol = Math.round(r.left + kay);
         _altYasla(_kk, r.top - 8);
-        _kk.style.left = Math.round(r.left) + 'px';
-        _kipSagKenar(_kk, Math.round(r.left));
+        _kk.style.left = sol + 'px';
+        _kipSagKenar(_kk, sol);
       }
     }catch(e){ _yut(e); }
   }
@@ -19685,7 +19716,17 @@
       try{ izgaraKur(); izgaraYaz(); }catch(e){ _yut(e); } };
     const kapa = ()=>{
       document.body.classList.remove('ayar-acik');
+      /* KAPANINCA TUTAMAK GERI DONMELI. Sadece satir ici `bottom`
+         silinince tutamak CSS yedegine dustu: ORBITAPE'de JS her
+         acilista `bottom` yaziyor, o yazilan deger silinince
+         `bottom:calc(115px + dip)` devreye giriyor ve tutamak
+         600px yerine 703px'e kaciyordu -- tam da ikon sutunun
+         uzerine (olculdu: ayarTut 600..626 -> menu ac/kapa ->
+         703..729, 1,5 sn sonra da ayni yerde). RADIOTAPE'te
+         `top` ustun geldigi icin sorun gorunmuyordu.
+         Cozum: yeri yazmak degil, YERLESIMI TAZELEMEK. */
       try{ tut.style.removeProperty('bottom'); }catch(e){ _yut(e); }
+      try{ geriYerlestir(); }catch(e){ _yut(e); }
       tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
       try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
       kut.classList.remove('ara-ic');
