@@ -1847,7 +1847,29 @@ son `firing`/body tıklaması düzeltmesinin kalıcı regresyon kapısı eksikti
 220 ms sonrasında `firing` sınıfının kalkması ve body `pointerdown` olayının
 `preventDefault` ile engellenmemesi. `node --check test/saglik.js` geçti;
 yerel `npm test` Chromium koşusu 120 saniyede sonuç vermedi ve süreç
-temizlendi. Davranış sonucu bu nedenle henüz ölçülmüş sayılmıyor.
+ temizlendi. Davranış sonucu bu nedenle henüz ölçülmüş sayılmıyor.
+
+### 25 Eylül — Settings araçları, kayıt onayı ve CI `0` sonucu
+
+Kullanıcı kontrollerin Settings içinde toplanmasını, REC kaydının
+kaybolmadan önce onay istemesini ve kaydedilen videoda sol-alt araçların
+görünmemesini istedi. `#araclar` kalıcı olarak `#ayarAraclar` içine taşındı,
+eski `#ayarAlt` kaldırıldı. Guide metinleri yeni düzene göre güncellendi;
+Almanca, İspanyolca, Fransızca, İtalyanca ve Türkçe çeviriler de aynı kararı
+yansıtıyor.
+
+REC bitince artık `SAVE RECORDING?` onayı gösteriliyor. Video çiziminde
+`_kaySolAlt` ve `_kaySesCubugu` dışarıda bırakıldı; fotoğraf yolu bu araçları
+koruyor. Böylece video yalnız kayıt görüntüsünü taşırken fotoğraf gerçek
+ekran düzenini koruyor.
+
+**Ölçülen durum:** `index.html` 1.329.151 bayt; 1.332.224 baytlık kaynak
+boyu kapısının altında. JavaScript sözdizimi, JSON ayrıştırma, CSP üretimi
+ve `git diff --check` geçti. Ancak `npm run hizli` zaman aşımına uğradı.
+CI'da görülen `0` değerinin tam test sonucu değil, hangi alt sayaç veya
+assertion olduğu henüz belirlenmedi. Bu nedenle kırmızı CI sonucu düzelmiş
+sayılmıyor; tamamlanan bir sağlık koşusundan gerçek düşen kontrol alınması
+sonraki adımdır.
 
 **24 Eylül devamı — REC tıklaması kök nedeni:** Sağlık koşusunda `#rec`
 görünür olmasına rağmen `pointer-events:none` ölçüldü. `ayarlar()` açılışta
