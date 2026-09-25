@@ -6063,6 +6063,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     await bek(900);                     /* cizim + simgeler asenkron */
     foto.onizleme = (document.getElementById('fotoOnizle')||{classList:{contains:()=>false}})
                       .classList.contains('var');
+      foto.solKontrollerGizli = ['solUst','ayarTut','deriFirca','saatTus','gorselTus','rehberTus','kipKisayol']
+         .every(id=>getComputedStyle(document.getElementById(id)).display==='none');
     foto.basistaPaylasim = !!paylasilan;
     try{ document.getElementById('fotoPaylas').click(); }catch(e){}
     await bek(300);
@@ -6115,6 +6117,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Basinca once ONIZLEME aciliyor, paylasim ACILMIYOR',
      rp.foto.onizleme === true && rp.foto.basistaPaylasim === false,
      'onizleme ' + rp.foto.onizleme + ' | basista paylasim ' + rp.foto.basistaPaylasim);
+  K('Foto onizlemede sol kontroller kadraj disinda', rp.foto.solKontrollerGizli === true,
+     'sol konsol ve yardimci tuslar gizli');
   K('SHARE tusu PNG paylasima gonderiyor',
      !!rp.foto.dosya && rp.foto.dosya.tur === 'image/png'
      && rp.foto.dosya.boy > 20000 && /^orbitape-.*\.png$/.test(rp.foto.dosya.ad),
@@ -8184,7 +8188,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        cubuklarinin altina tasindi (kullanicinin istegi); arsivde
        oldugu yerde, konsolun ust satirinda kaldi ("ORBITAPE kismi
        icin demedim"). Anahtarin yeri de o yuzden iki turlu:
-         arsivde -> tutamagin SATIRINDA ve SAGINDA
+         arsivde -> konsolun USTUNDE ve AYNI SOL KENARDA
          radyoda -> alttaki iki satirla AYNI SOL KENARDA
        Ikisinde de olculen sey ayni: gorunuyor mu, dogru komsuya
        yaslanmis mi, ekrandan tasiyor mu, etiketi kipe gore
@@ -8220,10 +8224,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            kendisi. */
         const tasmaz = (o)=> o.kk.r <= window.innerWidth - 8;
         const arsivDogru = (o)=>{
-          if(!o.kk || !o.tut || !o.ta || !o.ar) return false;
-          const ayniSatir = Math.abs((o.kk.t+o.kk.b)/2 - (o.tut.t+o.tut.b)/2) <= 3;
-          const sagda     = o.kk.l >= o.tut.r && o.kk.l - o.tut.r <= 16;
-          return o.kk.gor && ayniSatir && sagda && tasmaz(o);
+               if(!o.kk || !o.ta) return false;
+               const solHiza = Math.abs(o.kk.l - o.ta.l) <= 1;
+               const ustunde = o.kk.b <= o.ta.t;
+               return o.kk.gor && solHiza && ustunde && tasmaz(o);
         };
         const radyoDogru = (o)=>{
                if(!o.kk || !o.ta) return false;
@@ -8968,6 +8972,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         }
       }catch(e){}
       c.kayitGeldi = !!window.KAYIT_MODULU_HAZIR;
+      try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){}
+      await bek(300);
       try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
       FAV = []; _favMod = false; _favSoru = null; favTazele();
       cal({mp3:'jst1', ad:'Jest Favori', radyo:true, grup:'JAZZ'}); await bek(80);
@@ -8993,6 +8999,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       /* TEMIZ BIRAK */
       _favSoru = null; fa.classList.remove('soru');
       try{ if(window.favoriKapa) window.favoriKapa(); }catch(e){}
+      try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){}
       try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
       FAV = []; _favMod = false; favTazele();
       return c;
@@ -9299,7 +9306,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        tutamagi. Arama artik tek bir buyutec ve tutamagin saginda. */
     /* Sol kenari tasiyan iki nesne: ust soldaki tutamak ve alt
        soldaki kayit satiri. Konsol sagda, o olcuye girmiyor. */
-    const sol=[g('araclar').left, g('ayarTut').left];
+   const sol=[g('tasima').left, g('ayarTut').left];
     /* Sag kenari tasiyan iki nesne: sag ustteki yazi blogu ve sag
        alttaki kunye. Konsol artik SOLDA, bu olcuye girmiyor. */
     const sag=[innerWidth-g('ust').right, innerWidth-g('np').right];
@@ -9307,7 +9314,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
              sagFark:R(Math.max(...sag)-Math.min(...sag)),
              solSag:R(Math.abs(Math.min(...sol)-Math.min(...sag))), kx };
   });
-  K('Sol kenarlar tek hizada', kenar.solFark <= 1, 'kayit satiri / tutamak fark '+kenar.solFark+'px');
+   K('Sol kenarlar tek hizada', kenar.solFark <= 1, 'play satiri / tutamak fark '+kenar.solFark+'px');
   K('Sag kenarlar tek hizada', kenar.sagFark <= 1, 'sag ust / kunye fark '+kenar.sagFark+'px');
   K('Sag ve sol pay esit', kenar.solSag <= 1, 'pay '+kenar.kx+'px, fark '+kenar.solSag+'px');
 

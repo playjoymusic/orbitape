@@ -1794,6 +1794,13 @@
   body.kam #araYuva,
   body.kayit #ara,
   body.kayit #araYuva,
+  body:has(#fotoOnizle.var) #solUst,
+  body:has(#fotoOnizle.var) #ayarTut,
+  body:has(#fotoOnizle.var) #deriFirca,
+  body:has(#fotoOnizle.var) #saatTus,
+  body:has(#fotoOnizle.var) #gorselTus,
+  body:has(#fotoOnizle.var) #rehberTus,
+  body:has(#fotoOnizle.var) #kipKisayol,
   body:has(#fotoOnizle.var) #ara,
   body:has(#fotoOnizle.var) #araYuva{display:none !important;visibility:hidden !important;pointer-events:none !important;}
   #ara .satir{display:flex;align-items:center;gap:6px;border-bottom:1px solid currentColor;
@@ -4019,6 +4026,9 @@
      yedegi. */
   body.mood #solUst{
     bottom:calc(2px + var(--dip-pay));
+  }
+  body.mood #kipKisayol{
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
   }
   body.mood #tasima  {order:2;}
   body.mood #araclar {order:3;}
@@ -18152,14 +18162,13 @@
            radyoda tutamak sol uste -> modulun ustune, sola dayali
          Ikisinde de sabit sayi yok, olculen bir komsu var. */
       if(_kk && _kt && document.body.classList.contains('mood')){
-        const r = _kt.getBoundingClientRect();
-        if(r.height){
-          /* Anahtarin alt kenari tutamagin alt kenarindan (r.height-24)/2
-             kadar yukarida -- iki kutu ortalanmis oluyor. Ekran boyu
-             formule girmiyor (bkz. _altYasla). */
-          _altYasla(_kk, r.bottom - (r.height - 24)/2);
-          _kk.style.left   = Math.round(r.right + 10) + 'px';
-          _kipSagKenar(_kk, Math.round(r.right + 10));
+        const r = _konsolKutu();
+        if(r && r.height){
+          /* Anahtar konsolun ustunde, baslangici geri tusuyla ayni
+             dikey cizgide. Tutamak artik bu hizalama zincirine girmez. */
+          _altYasla(_kk, r.top - 14);
+          _kk.style.left = Math.round(r.left) + 'px';
+          _kipSagKenar(_kk, Math.round(r.left));
         }
       }else if(_kk){
         const su2 = _konsolKutu();

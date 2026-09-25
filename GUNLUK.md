@@ -2036,6 +2036,31 @@ Test radyo dalında artık görünen komşuyu ölçüyor; REC/CAM panel yuvası 
 Settings kontrolünde ölçülüyor. İki kip ölçümü `radio=true`, `archive=true`;
 `node --check test/saglik.js` geçti. Ürün CSS'i değiştirilmedi.
 
+### 25 Eylül — Sol konsol hizası ve PIC kadraj kapısı
+
+Ölçümle görülen iki kullanıcı sorunu düzeltildi. SOUND BANKS kipinde kip
+anahtarı artık tutamağın sağına değil play/stop konsolunun üstüne, geri
+tuşuyla aynı sol x çizgisine yaslanıyor. 390px ölçümünde ikisi de 14px'te;
+anahtar konsolun üstünde.
+
+PIC önizlemesi açıldığında `#solUst`, kip anahtarı, tutamak, SKINS, TIMER,
+VISUALS ve GUIDE gizleniyor ve dokunma almıyor; böylece hiçbir sol alt öğe
+fotoğrafın içine girmiyor. Tarayıcı ölçümü: `sameLeft=true`, `above=true`,
+`photoControlsHidden=true`. CSP ve yayın derlemesi geçti; kaynak boyu
+1.329.568 / 1.332.224 byte.
+
+### 25 Eylül — Favori jesti ve sol kenar testlerinin güncellenmesi
+
+CI'deki favori kısa/uzun jest testi, `#favAc` Settings içine taşındıktan sonra
+paneli açmadan gerçek PointerEvent gönderiyordu; bu nedenle liste açılmıyor
+ve eski uzun basış sonucu okunamıyordu. Test artık jestten önce Settings'i
+açıyor, sonunda kapatıyor. 390px tarayıcı ölçümü: favori liste `open=true`,
+soru yok, modül hazır.
+
+Aynı kontrolde `araclar` kapalı Settings içinde ölçüldüğü için 17px sahte sol
+hiza farkı üretiyordu. Kapı artık görünür `tasima` satırı ile `ayarTut`u
+karşılaştırıyor. Ölçüm: sol fark `0px`; kip anahtarı konsolun üstünde.
+
 ### 25 Eylül (son durum süpürmesi) — Eski denemeler geçersiz kılındı
 
 Bu günlüğün önceki 25 Eylül maddelerinde geçen `#ayarAlt`/ikinci tutamak,
