@@ -1898,6 +1898,23 @@ arama testi de önce ayarları açıp SEARCH akışını kuruyor. Yerel birim ka
 `126/126`, JS sözdizimi ve diff kontrolleri yeşil; tam sağlık koşusu bu ortamda
 Chromium kapanması/port sorunları nedeniyle yeniden sayaç veremedi.
 
+### 25 Eylül (devam) — CI kırmızısında REC testinin eski yerleşime güvenmesi
+
+GitHub Actions ekranında sağlık kontrolü, Playwright'ın tekrar tekrar
+`#ayarTut` pointer olaylarını kestiğini göstererek kırmızı kaldı. Kök neden
+ölçüldü: `#rec.closest('#ayar') === true`, kapalı panelde REC'in kutusu
+`0x0`, `#ayar` ise `opacity:0; pointer-events:none` durumunda. Ürün kontrolü
+Settings içine taşınmışken sağlık testi panel kapalıyken doğrudan `#rec`
+tıklıyordu; bu kullanıcı akışı değildi.
+
+`test/saglik.js` kayıt senaryosu, REC/CAM'e basmadan önce Settings tutamağını
+açacak ve senaryo bitince paneli kapatacak şekilde düzeltildi. `node --check`
+ve `git diff --check` geçti. Tam `npm test` koşusu bu Mac ortamında 120 saniye
+içinde sonuç/assertion üretmeden zaman aşımına uğradı; CI'ın yeşile döndüğü
+henüz iddia edilmiyor. Değişiklik yerelde hazır, commit/push henüz yapılmadı;
+sonraki adım pj'nin bu test düzeltmesini pushlayıp Action'ı yeniden
+çalıştırmasıdır.
+
 CI yeniden `864/866` verdiğinde kalan iki kırmızı ayrıştırıldı:
 `Klavye acikken arama yukarida` testi aramayı artık ayarlar paneline taşınmış
 halde değil, kapalı panelde ölçüyordu; test gerçek `ayarGoster(true)` +

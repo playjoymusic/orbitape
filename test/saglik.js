@@ -5396,6 +5396,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     try{ recPasifYaz(); }catch(e){}
   });
   await pg.waitForTimeout(400);
+  /* REC/CAM artik Settings panelinin icinde. Kapatilmis panelde #rec
+     0x0 olur ve Playwright tiklamasi ayar tutamagina carpar; test de
+     gercek kullanici akisi gibi once Settings'i acmali. */
+  await pg.evaluate(()=>document.getElementById('ayarTut').click());
+  await pg.waitForTimeout(350);
   await pg.click('#rec'); await pg.waitForTimeout(800);
   /* SURUKLEME YARICAPI 0.95 -> 0.40 (ZAR_SINIR 0.47'nin ICI).
      Eski hali diskin DISINA, halkalarin uzerine cikiyordu; orasi FX
@@ -5443,6 +5448,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   await pg.evaluate(()=>{ AYAR.mood = false; document.body.classList.remove('mood');
     mod = 'radio'; AKTIF_MOD = null;
     try{ _araIdx = null; _araSay = -1; }catch(e){} });
+   await pg.evaluate(()=>{
+      if(document.body.classList.contains('ayar-acik'))
+         document.getElementById('ayarTut').click();
+   });
+   await pg.waitForTimeout(350);
 
   // ── 8. HIZA: REC satiri karsidaki dugmelere carpmiyor ───────────────
   /* Arama artik REC satirinin USTUNDE. Tek gercek sinir karsidaki
