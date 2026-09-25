@@ -8226,10 +8226,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           return o.kk.gor && ayniSatir && sagda && tasmaz(o);
         };
         const radyoDogru = (o)=>{
-          if(!o.kk || !o.ta || !o.ar) return false;
-          /* SOLA DAYALI: alttaki iki satirla ayni sol kenar. */
-          const solHiza = Math.abs(o.kk.l - o.ta.l) <= 1
-                       && Math.abs(o.kk.l - o.ar.l) <= 1;
+               if(!o.kk || !o.ta) return false;
+               /* REC/CAM artik kapali Settings panelinde; gorunen komsu tasima satiri. */
+               const solHiza = Math.abs(o.kk.l - o.ta.l) <= 1;
           /* Ve modulun USTUNDE, uzerine binmeden. */
           const ustunde = o.kk.b <= o.ta.t;
           return o.kk.gor && solHiza && ustunde && tasmaz(o);

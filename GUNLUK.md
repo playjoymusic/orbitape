@@ -2024,6 +2024,18 @@ camDon, mute, favAc` değerleri 0 ve `#ayar aria-hidden="false"`. CSP ve
 yayın derlemesi geçti. Kaynak boyu 1.329.300 / 1.332.224 byte; kapının
 2.924 byte altında.
 
+### 25 Eylül — Kip kısayolu testinin Settings düzenine uyarlanması
+
+CI'deki `Kip kisayolu her kipte kendi komsusuna yasli` kontrolü, radyo
+kipinde `#araclar` satırını hâlâ görünür alt konsol komşusu saydığı için
+kırmızıydı. Güncel düzende REC/CAM araçları kalıcı olarak kapalı Settings
+panelinde; `getBoundingClientRect()` panel dolgusu nedeniyle 33px döndürüyor.
+Görünen komşu yalnız `#tasima` satırı ve kip kısayolu onunla 16px'te hizalı.
+
+Test radyo dalında artık görünen komşuyu ölçüyor; REC/CAM panel yuvası ayrı
+Settings kontrolünde ölçülüyor. İki kip ölçümü `radio=true`, `archive=true`;
+`node --check test/saglik.js` geçti. Ürün CSS'i değiştirilmedi.
+
 ### 25 Eylül (son durum süpürmesi) — Eski denemeler geçersiz kılındı
 
 Bu günlüğün önceki 25 Eylül maddelerinde geçen `#ayarAlt`/ikinci tutamak,
