@@ -1055,7 +1055,7 @@
      min-width'i koruyor, tuslar yazilarini sariyor, bos alan satirin
      sonunda birikiyor. Kunye yerlesimi etkilenmiyor. */
   #pic,#rec{width:52px;min-width:52px;justify-content:center;}
-  #rec{min-width:52px;} #cam{min-width:0;}
+  #rec{min-width:52px;} #cam{width:58px;min-width:58px;}
   #araclar{min-width:0;}
   #pic{display:none;align-items:center;gap:3px;height:32px;box-sizing:border-box;z-index:80;
     padding:0 8px 0 7px;border-radius:999px;background:rgba(8,14,17,.72);
@@ -1108,7 +1108,7 @@
      "DELETE" üç harften uzun olduğu için genişlik dengeleniyor
      (satır arama çizgisini geçemez). */
   #cam.sil{color:#ffa892;border-color:rgba(255,150,120,.42);background:rgba(28,10,8,.78);
-    padding-left:10px;}
+    padding-left:7px;}
   #cam.sil .nokta{display:none;}
   #cam.sil:hover{color:#ffc9bb;}
   #rec.kayit{color:#ff6b6b;border-color:rgba(255,90,90,.45);background:rgba(30,8,10,.55);}
@@ -9337,6 +9337,20 @@
     try{ ses.addEventListener('pause', ortamDurum); }catch(e){ _yut(e); }
     try{ ses.addEventListener('ended', ortamDurum); }catch(e){ _yut(e); }
   }
+  /* SAYFA GERCEKTEN KAPANIRKEN SESI BIRAK (25 Eylul)
+     Ekran kilidi bilerek disarida: MediaSession lock-screen player'in
+     calmaya devam etmesi istenen davranis. `visibilitychange` burada
+     kullanilmaz; kilit ekraninda da ayni olayi verir. `pagehide` ve
+     `beforeunload` ise navigasyon/gercek sayfa kapanisi icin en dar
+     kapanma kapilaridir. Mobil tarayici uygulamayi bellekten oldururse
+     JavaScript calistirmaya firsat vermeyebilir; bu durumda web sayfasi
+     bunu garanti edemez. */
+  function kapanirkenSesiBirak(){
+    try{ if(ses && !ses.paused) ses.pause(); }catch(e){ _yut(e); }
+    try{ ortamDurum(); }catch(e){ _yut(e); }
+  }
+  try{ window.addEventListener('pagehide', kapanirkenSesiBirak); }catch(e){ _yut(e); }
+  try{ window.addEventListener('beforeunload', kapanirkenSesiBirak); }catch(e){ _yut(e); }
   function ortamKunye(ad, sanatci, item){
     ortamKur();
     if(!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
