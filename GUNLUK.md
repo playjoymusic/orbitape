@@ -1990,3 +1990,19 @@ artık bağımsız `FAVOURITES`, `REC`, `CAM` ve `MUTE` hedefleri çıkarıldı;
 öğeler kapalı ekranda yok ve rehberin sıfır ölçülü hedef üretmesi engellendi.
 Yeni MENU metni beş dil dosyasına eklendi; JSON, CSP, syntax ve diff
 kontrolleri geçti.
+
+### 25 Eylül (son durum süpürmesi) — Eski denemeler geçersiz kılındı
+
+Bu günlüğün önceki 25 Eylül maddelerinde geçen `#ayarAlt`/ikinci tutamak,
+REC satırını `#solUst` altında bırakma ve SEARCH akışındaki ara denemeler
+artık geçerli durum değildir. Güncel gerçek: tek Settings kapısı
+`#ayarTut`; `#araclar` kalıcı olarak `#ayarAraclar` içindedir; SEARCH ve
+REC/CAM yalnız Settings paneli açıkken görünür.
+
+Güncel sağlık testi de bu sözleşmeyi izler: kayıt senaryosu önce Settings'i
+açar, bitince kapatır; kayıt hizası artık tutamakla değil panel yuvasıyla
+ölçülür. `ayarAlt`, `temelFark` ve eski `Kayit satiri ve tutamak` assertion'ı
+temizlendi. `node --check test/saglik.js`, `git diff --check` ve ham boy
+kapısı geçti: 1.329.151 / 1.332.224 bayt. Tam Chromium koşusu bu ortamda
+zaman aşımına uğradı; CI sonucu yeniden çalıştırılmadan yeşil kabul
+edilmiyor. Değişiklikler henüz commit/push edilmedi.

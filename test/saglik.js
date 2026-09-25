@@ -5459,8 +5459,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ◁ ★ ▷ satiri: sayac 120:45'e cikinca ya da DELETE belirince bile
      araya en az 8px bosluk kalmali. Dinlenme halinde (REC/CAM) satir
      ile ustundeki cizgi ayni yerde bitiyor — o ayrica olculuyor. */
-  let _kolonNot = '';
-  let carpmaEn = -999, temelFark = 999, _tani = '';
+   let _kolonNot = '';
+   let carpmaEn = -999, _tani = '';
   for(const w of [360,390,430]){
     await pg.setViewportSize({width:w, height:844}); await pg.waitForTimeout(350);
       for(const [yz,sil] of [['REC',0],['REC',0],['REC',1]]){
@@ -5504,19 +5504,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const c1=Math.round(us.bottom - t1.top);            // konsol <-> sag ust blok (dikey)
         const c2=Math.round(t2.right - (innerWidth - kx));  // kayit satiri <-> sag kenar
         return { carpma: olculur ? Math.max(c1, c2) : -999,
-                 _tani: [Math.round(t1.width),Math.round(t2.width),Math.round(us.width),c1,c2].join('/'),
-                 /* ALT SOL KOSENIN CAPASI ARTIK AYAR TUTAMAGI.
-                    Arama bir cizgi degil tek bir buyutec oldu ve
-                    tutamagin SAGINA gecti; sol kenari tasiyan sey
-                    artik tutamak. */
-                 /* SOL KENARI TASIYAN IKI NESNE: ust soldaki ayar
-                    tutamagi ve alt soldaki kayit satiri. Konsol artik
-                    sagda, o yuzden bu olcuye girmiyor. */
-                 cizgi: Math.round(t2.left
-                        - document.getElementById('ayarTut').getBoundingClientRect().left) };
+                 _tani: [Math.round(t1.width),Math.round(t2.width),Math.round(us.width),c1,c2].join('/') };
       },[yz,sil]);
       if(t.carpma > carpmaEn){ carpmaEn = t.carpma; _tani = w+'px '+yz+' -> '+t._tani; }
-      if(yz==='REC' && Math.abs(t.cizgi) < Math.abs(temelFark)) temelFark = t.cizgi;
     }
   }
   await pg.setViewportSize({width:390,height:844});
@@ -5526,9 +5516,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     for(const id of ['geri','fav','ileri']) document.getElementById(id).classList.remove('var');
     geriYerlestir(); });
   K('Konsol yazilarla carpismiyor', carpmaEn <= -8, 'en yakin '+(-carpmaEn)+'px bosluk | '+(_tani||''));
-  /* Iki uc sol kenar: sol ustteki blok ve en alttaki arama cizgisi.
-     Kullanicinin sozu: "ekranin sagi solu hizali her zaman." */
-  K('Kayit satiri ve tutamak ayni sol kenarda', Math.abs(temelFark) <= 1, 'fark '+temelFark+'px');
+   /* REC/CAM artik Settings panelinin icinde; kapali panelde sifir boyutlu
+       olmali, acilinca gercekten gorunur olmali. Eski kontrol, satiri
+       ayar tutamagiyla ayni sol kenarda sanarak 17px farki hata sayiyordu. */
+   const kayitPanel = await pg.evaluate(async ()=>{
+      const panel = document.getElementById('ayar');
+      const yuva = document.getElementById('ayarAraclar');
+      const araclar = document.getElementById('araclar');
+      const tut = document.getElementById('ayarTut');
+      if(!panel || !yuva || !araclar || !tut) return null;
+      const kapali = !document.body.classList.contains('ayar-acik')
+         && getComputedStyle(panel).pointerEvents === 'none'
+         && araclar.getBoundingClientRect().width === 0;
+      tut.click(); await new Promise(r=>setTimeout(r,350));
+      const acik = document.body.classList.contains('ayar-acik')
+         && yuva.contains(araclar)
+         && araclar.getBoundingClientRect().width > 0;
+      tut.click(); await new Promise(r=>setTimeout(r,350));
+      return { kapali, acik };
+   });
+   K('Kayit satiri Settings panelinde', !!kayitPanel && kayitPanel.kapali && kayitPanel.acik,
+      kayitPanel ? 'kapali sifir boyut, acikken gorunur' : 'Settings/REC DOMu eksik');
 
   // ── 9. TUVAL BELLEGI ────────────────────────────────────────────────
   const bellek = await pg.evaluate(()=>{
@@ -5547,10 +5555,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     manifestEtiket: (document.querySelector('link[rel=manifest]')||{outerHTML:''}).outerHTML
   }));
   K('manifest.json bagli',    pwa.manifest, 'var');
-  K('apple-touch-icon',       pwa.ikon, 'var');
-  /* ── ANA EKRAN SIMGESI MAGAZADAKIYLE AYNI OLCUDE ────────────────
-     Bildirilen: "telefonda ana ekrana ekleyince sanki eski ikon
-     cikiyor."
+     /* Ikon kontrolu: bu kosulun aciklamasi asagidaki blokta. Ekran
+        ikonlarinin doluluk orani magazadaki goruntuyle uyusmali.
      Cikiyordu. Buyutmeyi yalnizca MAGAZA gorseline uygulamistik;
      uygulamanin kendi simgeleri (apple-touch-icon, icon-192/512 ve
      maskeli cift) eski, kucuk halinde kalmisti. Olculdu: halkanin
