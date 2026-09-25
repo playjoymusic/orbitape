@@ -122,7 +122,16 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        kuculse bile serit onun uzerine denk geliyor. Cozum dikey
        degil YATAY: serit sola yanasiyor, alet ortada kaliyor ve
        ikisi yan yana duruyor. */
-    "@media (max-height:480px){#deriGaleri.serit{left:calc(var(--kx) + env(safe-area-inset-left,0px));transform:none;width:min(44vw,300px);max-width:44vw}}",
+    /* 25 Eylul: kisa yatayda serit sola yaslaniyordu ve sol alt
+       yardimci yiginin USTUNE biniyordu. Simdi yigin da altta
+       oldugu icin serit, sutunun tam ustune oturuyordu (olculdu:
+       yatay 844x390'da serit 133..209, ayarTut 138..164).
+       Sol kenar sabit bir sayi degil, yerlesimin yayinladigi
+       OLCULEN sutun sag kenaridir (--sol-sutun-sag); simge
+       kutusu buyuyunca eski sabit deger yanlis kalirdi.
+       Genislik de kalan alanla sinirlanir, yoksa ekrandan
+       tasardi. */
+    "@media (max-height:480px){#deriGaleri.serit{left:calc(var(--sol-sutun-sag,60px) + 8px);transform:none;width:min(44vw,300px);max-width:calc(100vw - var(--sol-sutun-sag,60px) - 16px)}}",
     "#deriGaleri.serit .dg-baslik{margin-right:2px}",
     /* ── SERIT IKI SATIR ────────────────────────────────────────
        Tek satira sigdirma denendi ve olmadi: yedi denetim yan yana

@@ -177,8 +177,26 @@ async function seritOlc(sayfa){
     const r = kap.getBoundingClientRect();
     const st = document.getElementById('saatTus');
     const us = document.getElementById('ust');
-    const alt = Math.max(st ? st.getBoundingClientRect().bottom : 0,
-                         us ? us.getBoundingClientRect().bottom : 0);
+    /* 25 Eylul: eski olcum "serit, saat tusunun altinda kalsin"
+       diyordu. O sozlesme yardimci yigin tepedeyken dogruydu;
+       yigin sol ALTA indikten sonra serit yiginin ustunde
+       kalmasi beklenen durum -- saat tusu artik seridin
+       ALTINDA, ona gore olcmek her aygitta kirmizi veriyordu
+       (9 cihaz). Dogru soru degismedi: serit ust banttan
+       asagi iniyor mu ve sol yardimci sutununa binmiyor mu. */
+    const alt = us ? us.getBoundingClientRect().bottom : 0;
+    /* SOL YARDIMCI SUTUNU: seritle dikeyde kesisiyor mu. */
+    let sutunBiner = false, sutun = '';
+    ['rehberTus','gorselTus','deriFirca','saatTus','ayarTut'].forEach(id=>{
+      const e = document.getElementById(id); if(!e) return;
+      const q = e.getBoundingClientRect();
+      if(!q.width || !q.height) return;
+      if(!(r.right <= q.left || r.left >= q.right
+        || r.bottom <= q.top || r.top >= q.bottom)){
+        sutunBiner = true;
+        sutun = (sutun ? sutun + ', ' : '') + id;
+      }
+    });
     /* SERIT CARKIN USTUNE BINMEZ. Olculdu: bir ara 18 px biniyordu
        ve kullanici "halkaya degiyor" dedi. Cizilen ilk piksele
        bakiliyor, elemanin kutusuna degil -- tuval diskten buyuk. */
@@ -215,7 +233,7 @@ async function seritOlc(sayfa){
              top: Math.round(r.top), alt: Math.round(alt),
              sol: Math.round(r.left), sag: Math.round(r.right),
              icerde: r.left >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1,
-             binmiyor: r.top >= alt - 1 };
+             binmiyor: r.top >= alt - 1, sutunBiner, sutun };
   });
 }
 
@@ -420,8 +438,11 @@ async function gokyuzuOlc(sayfa){
 
     const s = await seritOlc(sayfa);
     K('[' + ek.ad + '] skins seridi yerinde',
-       !!s && !s.yok && s.serit === true && s.icerde === true && s.binmiyor === true,
-       s && !s.yok ? ('top ' + s.top + ' >= ' + s.alt) : 'serit acilmadi');
+       !!s && !s.yok && s.serit === true && s.icerde === true
+       && s.binmiyor === true && s.sutunBiner === false,
+       s && !s.yok ? ('top ' + s.top + ' >= ' + s.alt
+                      + (s.sutunBiner ? ', SUTUNA BINDI: ' + s.sutun : ', sutun temiz'))
+                   : 'serit acilmadi');
     K('[' + ek.ad + '] serit ortadaki alete binmiyor',
        !!s && !s.yok && s.carkKesisiyor === false,
        s && !s.yok ? ('carkin tepesi ' + s.carkTepe + ', dikey bosluk ' + s.carkBosluk + ' px')

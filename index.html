@@ -3522,9 +3522,14 @@
      de ayni oranda buyuyor, yoksa yiginin tepesi otekilerin yaninda
      kuculmus duruyor. Azalan egim korunuyor (32/25/17, eski oran
      25/19/13 ile ayni). */
+  /* 25 Eylul: RADIOTAPE'de de ayarlar ve yardimci ikonlar sol altta
+     kalir. Eski `top:15px` kurali butun sol sutunu ekranin ustune
+     tasiyor, kip anahtari da ayni yiginla ust satira karisiyordu.
+     Artik iki kip ayni tabani paylasir; kip anahtari konsolun tam
+     ustune, yardimci yigin onun ustune yerlestirilir. */
   body:not(.mood) #ayarTut{
-    top:calc(15px + env(safe-area-inset-top, 0px));
-    bottom:auto;width:32px;height:26px;gap:5px;}
+    top:auto;bottom:calc(115px + var(--dip-pay));
+    width:40px;height:26px;gap:5px;}
   body:not(.mood) #ayarTut span:nth-child(1){width:32px;}
   body:not(.mood) #ayarTut span:nth-child(2){width:25px;}
   body:not(.mood) #ayarTut span:nth-child(3){width:17px;}
@@ -18114,49 +18119,21 @@
     }catch(e){ _yut(e); }
   }
   function _kipKisayoluHizala(){
-    /* ── KIP KISAYOLU TUTAMAGIN SATIRINA OTURUYOR ─────────────────
-       CSS'te ikisine de ayni 'bottom' verilmisti ve tutmadi: tutamak
-       dar ekranda baska bir kuralla yukari kayiyor, kisayol oldugu
-       yerde kaliyordu -- olculdu, arada 29px fark vardi ve anahtar
-       cizgilerin ustunde duruyordu.
-       Cozum tahmin degil OLCUM: tutamagin gercek kutusundan
-       hesaplaniyor ve DUZ px yaziliyor. env(safe-area-inset-bottom)
-       EKLENMIYOR -- olculen deger onu zaten iceriyor, bir daha
-       eklemek notch'lu telefonlarda iki kat sayardi. */
+    /* Iki kip ayni sozlesmeyi paylasir: kip anahtari PLAY/STOP
+       konsolunun tam ustunde, ayni sol kenarda. 25 Eylul olcumu:
+       RADIOTAPE'de anahtar y=179, ORBITAPE'de y=173 idi; konsol
+       ise y=810. Eski mode dallari bu iki farkli yolu ayri hesapliyordu.
+       Simdi tek olcum, tek kural: konsolun gercek ust kenarindan 8px
+       bosluk birakilir. `_altYasla` guvenli alan payini zaten icerir. */
     try{
-      const _kt = document.getElementById('ayarTut');
       const _kk = document.getElementById('kipKisayol');
+      if(!_kk) return;
       _kipAnahtarYaz();
-      /* KIP KOSULU KALKTI: anahtar iki kipte de duruyor. Yeri ise
-         kipe gore, cunku TUTAMAK kipe gore:
-           arsivde tutamak yaninda  -> onun satirina, onun sagina
-           radyoda tutamak sol uste -> modulun ustune, sola dayali
-         Ikisinde de sabit sayi yok, olculen bir komsu var. */
-      if(_kk && _kt && document.body.classList.contains('mood')){
-        const r = _konsolKutu();
-        if(r && r.height){
-          /* Anahtar konsolun ustunde, baslangici geri tusuyla ayni
-             dikey cizgide. Tutamak artik bu hizalama zincirine girmez. */
-          _altYasla(_kk, r.top - 14);
-          _kk.style.left = Math.round(r.left) + 'px';
-          _kipSagKenar(_kk, Math.round(r.left));
-        }
-      }else if(_kk){
-        const su2 = _konsolKutu();
-        if(su2){
-          const r2 = su2;
-          if(r2.height){
-            /* 25 Eylul olcumu: once 14px bosluk birakiliyordu; kip
-               anahtari PLAY/STOP konsolunun belirgin bir ust satiri
-               gibi degil, birkac satir yukarida asilii gorunuyordu.
-               Kullanici sozlesmesi: anahtar konsolunun TAM ust satiri.
-               8px hem dokunma alanlarini birbirine sokmaz hem de
-               iki ogeyi tek sol alt yigin olarak okutur. */
-            _altYasla(_kk, r2.top - 8);
-            _kk.style.removeProperty('left');      // sol kenar CSS'ten (--kx)
-            _kipSagKenar(_kk, Math.round(_kk.getBoundingClientRect().left));
-          }
-        }
+      const r = _konsolKutu();
+      if(r && r.height){
+        _altYasla(_kk, r.top - 8);
+        _kk.style.left = Math.round(r.left) + 'px';
+        _kipSagKenar(_kk, Math.round(r.left));
       }
     }catch(e){ _yut(e); }
   }
@@ -18167,7 +18144,14 @@
      kayiyordu (saglik: "sol fark 7px"). */
   function _konsolKutu(){
     var l=Infinity, t=Infinity, r=-Infinity, b=-Infinity, v=false;
-    ['tasima','araclar'].forEach(function(id){
+    /* 25 Eylul olcumu: araclar kalici olarak Settings panelinin icinde.
+       Panel kapaliyken de transform nedeniyle rect'i sifir DEGIL
+       (x=31, y=211, 266x42); listeye alinca konsolun tepesi 211
+       gorunuyor, kip anahtari ve yardimci yigin da y=179/-7'ye
+       yerlesiyordu. GORUNUR konsol yalniz #solUst ve onun icindeki
+       tasima satiri; araclar panel acikken ayrica bir yuzey olarak
+       olcum degil, ayri bir ayar yuzeyi. */
+    ['tasima'].forEach(function(id){
       var e = document.getElementById(id); if(!e) return;
       var q = e.getBoundingClientRect();
       if(!q.width || !q.height) return;
@@ -18239,120 +18223,47 @@
   }
   function _tutamakYerlestir(y){
       void y;
-      /* ── TUTAMAK SOL UST: FREKANS CUBUKLARININ ALTI ──────────────
-         Bir tur alt sol konsolun UST SATIRIYDI ve yeri modulun
-         olculen ustunden geliyordu. O yer kip anahtarini 50px
-         iceri itiyordu (once tutamak, sonra anahtar); kullanici
-         tutamagi yukari, anahtari sola istedi.
-         Yeni yer yine SABIT SAYI DEGIL, OLCUM: radyoda frekans
-         cubugunun (#modDalga) alt kenari + 8px. Raf adinin puntosu
-         14 ile 11 arasinda degisiyor (bkz. _solUstAdSigdir), yani
-         cubugun yeri de degisiyor -- sabit bir top bir puntoda
-         bosluk birakir, otekinde cubuga biner.
-         OLCULEN DEGER DUZ PIKSEL: rect zaten gercek ekran
-         koordinati, guvenli alan payi icinde. _dip() ile yazilirsa
-         env() ikinci kez eklenir (buyutecte tam bu hata yasandi). */
+      /* SOL-ALT YIGIN: iki kip ayni tabani paylasir.
+         25 Eylul olcumu: RADIOTAPE'de ayar/icon yigini y=15..219,
+         ORBITAPE'de y=-14..198 idi; kip anahtari da y=179/173'te
+         kalmisti, oysa PLAY/STOP y=810 idi. Kullanici karari her iki
+         kipte de eski sol-alt yigini istiyor.
+
+         Tek olcum: #solUst'in gercek ust kenarindan 8px bosluk alinir
+         (kip anahtarinin alt kenaridir). Yardimci ikonlar bu cizginin
+         ustunde, eski dikey sirayla yigilir:
+         GUIDE -> VISUAL -> SKINS -> ALARM -> SETTINGS.
+         Boylece ust boslukta kalir, altta tek bir tutarli yigin olur. */
       try{
-        const tut0 = document.getElementById('ayarTut');
-        if(!tut0) return;
-        if(document.body.classList.contains('mood')){
-          /* ── ARSIV: DEGISMEDI. Tutamak modulun OLCULEN ustunde.
-             Sabit bir sayiyla verilemez cunku satir sayisi kipe
-             gore degisiyor (REC geri geliyor, ses cizgisi yalnizca
-             farede var): sabit sayi bir durumda bosluk birakir,
-             otekinde modulun uzerine biner -- eskisi tam olarak
-             oyleydi ve "arada asili kalmis" diye goruldu.
-             OLCULEN DEGER DUZ PIKSEL: rect zaten gercek ekran
-             koordinati, guvenli alan payi icinde. _dip() ile
-             yazilirsa env() ikinci kez eklenir. */
-          tut0.style.removeProperty('top');
-          const su1 = _konsolKutu();
-          if(!su1){ tut0.style.removeProperty('bottom'); return; }
-          const sr = su1;
-          if(!sr.height) return;
-          /* EN AZ 13px: satirlarin arasi 8px ama DOKUNMA ALANLARI
-             kutulardan buyuk -- tutamaginki asagi 7px, tuslarinki
-             yukari 4px tasiyor. 8px bosluk birakinca iki alan
-             cakisiyordu (olculdu: dur/ayarTut 7x2px). */
-          const bos = Math.max(13,
-            parseFloat(getComputedStyle(document.getElementById('solUst'))
-              .getPropertyValue('--modul-bosluk')) || 8);
-          _altYasla(tut0, sr.top - bos);
-          /* FIRCA VE SAAT TUTAMAGIN USTUNDE, YIGIN HALINDE: ayni sol kenar.
-             Her biri bir oncekinin ustune: hedef alt kenar yukari
-             dogru 26+bos kadar yuruyor. Ekran boyu yok. */
-          try{
-            /* ADIM SABIT DEGIL OLCULEN: simge kutusu buyuyunce
-               (20 -> 26 px, 12 Eylul) sabit 26 adim yiginin ustteki
-               ogelerini birbirine bindiriyordu. Kutu boyu CSS'ten
-               geliyor, olcu de oradan gelmeli. */
-            let hedef = sr.top - bos;
-            /* rehberTus EN SONDA: yiginin en UZAK ucu, yani VISUALS'in
-               UZERINDE (bkz. onaylanan maket, orb_pt: guide.y < visuals.y --
-               kullanicinin "visualın altında bi ikon koy" sozu radyoda
-               asagi, arsivde yukari demek, cunku yigin arsivde YUKARI
-               dogru buyuyor). */
-            ['deriFirca','saatTus','gorselTus','rehberTus'].forEach(id=>{
-              const e2 = document.getElementById(id); if(!e2) return;
-              const y2 = e2.getBoundingClientRect().height || 26;
-              hedef -= y2 + bos;
-              e2.style.removeProperty('top'); _altYasla(e2, hedef);
-            });
-          }catch(_){ _yut(_); }
-          try{ if(typeof _rehberAcik !== 'undefined' && _rehberAcik) _rehberCiz(); }catch(_){ _yut(_); }
-          return;
-        }
-        /* ── RADYO: FREKANS CUBUGUNUN ALTI ───────────────────────
-           Sabit bir top yeterli degil: raf adinin puntosu 14 ile 11
-           arasinda degisiyor (bkz. _solUstAdSigdir), yani cubugun
-           yeri de degisiyor. Sabit sayi bir puntoda bosluk birakir,
-           otekinde cubuga biner. */
-        /* 4 Eylul: sol ustteki ad bloku goruntuden cikti, tutamagin
-           altinda duracagi bir cubuk yok. Yer artik CSS'te (en ust);
-           JS yalnizca firca ve saati onun altina diziyor. */
-        tut0.style.removeProperty('bottom');
-        tut0.style.removeProperty('top');
+        const r = _konsolKutu();
+        if(!r || !r.height) return;
+        const taban = r.top - 8;
+        const yigin = ['rehberTus','gorselTus','deriFirca','saatTus','ayarTut'];
+        let alt = taban - 8;
+        yigin.forEach(id=>{
+          const e = document.getElementById(id); if(!e) return;
+          /* Onceki kip yolundan kalan top degerini temizle. */
+          e.style.removeProperty('top');
+          const h = e.getBoundingClientRect().height || 32;
+          _altYasla(e, alt);
+          alt -= h + 12;
+        });
+        /* SUTUNUN SAG KENARI YAYINLANIYOR. Kisa yatayda deri
+           seridi sola yaslanir ve eskiden bu sutunun USTUNDE
+           kalirdi; simdi sutun da altta oldugu icin serit
+           ayar tutamaginin uzerine biniyordu (olculdu: yatay
+           844x390'da serit 133..209, ayarTut 138..164).
+           Sabit bir genislik yazmak yerine gercek olcum
+           yayinlaniyor: simge kutusu buyuyunce yanlis kalir. */
         try{
-          const tr = tut0.getBoundingClientRect();
-          if(tr.height){
-            /* ARALIK 10 -> 18: simgeler 26 px yuksek ve dokunma
-               alanlari 44 px. 10 px aralikta iki komsu alan
-               CAKISIYOR -- fircaya basarken uc cizgiye ya da saate
-               gelmek isten degil. 26 + 18 = 44: alanlar tam bitisik,
-               ust uste binmiyor. Gorunumde degisen tek sey biraz
-               daha hava. */
-            /* ── SIRA VE ARALIK (6 Eylul) ─────────────────────
-               Kullanicinin sozu: "ayarlar altinda hold, altinda
-               alarm, altinda skins. Firca, alarm ve kilit bir tik
-               birbirlerine daha yakin olabilirler; cok da
-               sikistirma."
-               Aralik 18 -> 12 px: simge 26 px, yani dokunma
-               alanlari 38 px araliga oturuyor -- 44 px'lik alanlar
-               kagit uzerinde 6 px binisiyor ama simgeler arasi
-               bosluk hala gozle secilir. Daha azi (8) olculdu:
-               komsu alanlar gercekten karisiyor. */
-            let ust = Math.round(tr.bottom + 14);
-            /* 6 Eylul: gorsel tusu yiginin EN ALTINDA -- kullanicinin
-               sozu "solda skins'in altina". */
-            /* ADIM SABIT DEGIL OLCULEN (12 Eylul): kullanici
-               simgeleri buyuttu (20 -> 26 px, kutu 26 -> 32), sabit
-               26 adim yiginin ogelerini birbirine bindiriyordu.
-               Kutu boyu CSS'ten geliyor, adim da oradan geliyor;
-               aradaki 12 px hava aynen duruyor. */
-            /* rehberTus EN SONDA: yiginin en altinda, VISUALS'in
-               altinda -- kullanicinin sozu "visualın altında bi ikon
-               koy." */
-            ['saatTus','deriFirca','gorselTus','rehberTus'].forEach(id=>{
-              const e2 = document.getElementById(id); if(!e2) return;
-              e2.style.removeProperty('bottom'); e2.style.top = ust + 'px';
-              ust += (e2.getBoundingClientRect().height || 26) + 12;
-            });
-          }
+          let sag = 0;
+          yigin.forEach(id=>{
+            const e = document.getElementById(id); if(!e) return;
+            sag = Math.max(sag, e.getBoundingClientRect().right || 0);
+          });
+          if(sag > 0) document.documentElement.style
+            .setProperty('--sol-sutun-sag', Math.ceil(sag) + 'px');
         }catch(_){ _yut(_); }
-        /* REHBER ACIKKEN CANLI KALSIN: bu fonksiyon zaten her yerlesim
-           degisiminde (mod gecisi, ekran donmesi, klavye) cagriliyor --
-           ayri bir resize/orientationchange dinleyicisi eklemeye gerek
-           yok, ayni kancaya biniyoruz. */
         try{ if(typeof _rehberAcik !== 'undefined' && _rehberAcik) _rehberCiz(); }catch(_){ _yut(_); }
       }catch(_){ _yut(_); }
   }
@@ -18745,6 +18656,17 @@
          kurala uymuyordu. */
       _tutamakYerlestir(y);        // radyoda cubugun altina, arsivde modulun ustune
       _kipKisayoluHizala();        // arsivde tutamaga, radyoda module yasli
+      /* Panel acikken tutamak panelin altinda kalmasin. Ayni
+         olcum ac() ile: offsetTop (transform'dan bagimsiz), yari
+         yolda yanlis konum birakmaz. */
+      if(document.body.classList.contains('ayar-acik')){
+        try{
+          const pn = document.getElementById('ayar');
+          const tt = document.getElementById('ayarTut');
+          const ust = pn ? pn.offsetTop : 0;
+          if(ust > 40 && tt) _altYasla(tt, ust - 12);
+        }catch(e){ _yut(e); }
+      }
       ugOlcu();
       _buyutecYerlestir(y);        // buyutec kendi yuvasinin uzerine
       _kunyeYerlestir(y);          // sag alt kunye: taban aramayla ayni hat
@@ -19653,6 +19575,26 @@
         if(ara && !kut.contains(ara)) kut.insertBefore(ara, ayarAra ? ayarAra.nextSibling : kut.firstChild);
       }catch(e){ _yut(e); }
       document.body.classList.add('ayar-acik');
+      /* Panel sol-alt yardimci yiginin uzerine aciliyor. Ayar
+         tutamagi panelin altinda kalirsa gorunmez ve paneli
+         kapatma yolu kaybolur; panel acilirken one yaslanir,
+         kapaninca CSS tabanina doner.
+         OLÇUM offsetTop ILE: panelin acilma gecisi transform
+         (.26s) ve opacity; getBoundingClientRect gecis boyunca
+         KAYIYOR (translateY(12px) -> 0). Onceki yol bir kez
+         hemen, bir kez de 400ms sonra olcup yari yolda bakiyordu:
+         yari yolda olcum 12px yanlis yer veriyor, dogru yer
+         veren olcum 400ms sonra geliyordu -- saglik testi
+         340ms'de baktigi icin bazi kosullarda tutamak panelin
+         4px ustunde kaliyordu. offsetTop transform'dan
+         ETKILENMEZ: panelin yerlesim ust kenaridir, gecis
+         bitmeden de dogru. Klavye acilken panel ustune
+         tasiyor (body.klavye #ayar top:12px); 40px altinda
+         olcum yok sayilir, tutamak yiginda kalir. */
+      try{
+        const ust = kut.offsetTop;
+        if(ust > 40 && kut.offsetHeight) _altYasla(tut, ust - 12);
+      }catch(e){ _yut(e); }
       tut.setAttribute('aria-expanded','true'); kut.setAttribute('aria-hidden','false');
       try{ kut.removeAttribute('inert'); }catch(e){ _yut(e); }
       /* Arka plan kapaniyor ve odak panele giriyor; kapanista
@@ -19664,6 +19606,7 @@
       try{ izgaraKur(); izgaraYaz(); }catch(e){ _yut(e); } };
     const kapa = ()=>{
       document.body.classList.remove('ayar-acik');
+      try{ tut.style.removeProperty('bottom'); }catch(e){ _yut(e); }
       tut.setAttribute('aria-expanded','false'); kut.setAttribute('aria-hidden','true');
       try{ kut.setAttribute('inert',''); }catch(e){ _yut(e); }
       kut.classList.remove('ara-ic');

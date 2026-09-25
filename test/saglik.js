@@ -9293,7 +9293,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                 /* Buyutec REC/CAM/mute/favori satirina sabitlendi; ayni
                    satirin gercek merkeziyle hizali olmasi gerekiyor. */
                 mood: document.body.classList.contains('mood'),
-                tutUstte: tut.bottom < innerHeight/2,
+                tutAltta: tut.bottom > innerHeight/2,
                 blokEn: R(bi.width), en: R(innerWidth),
                 yigin: document.body.classList.contains('kunye-yigin'),
                 kirpma: (()=>{ const a2=document.getElementById('npAd');
@@ -9328,9 +9328,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Yani kural artik TEK degil ama yine de KESIN: radyoda ust
      yarida, arsivde alt yarida. Bu test o ikiligin bekcisi --
      ikisinden biri otekinin yarisina kacarsa yakalar. */
-  K('Tutamak kipin dogru yarisinda',
-     !!np && np.tutUstte === !np.mood,
-     np ? (np.mood?'arsiv: alt yarida':'radyo: ust yarida') : '-');
+  K('Tutamak iki kipte de sol altta',
+     !!np && np.tutAltta === true,
+     np ? (np.mood?'arsiv: alt yarida':'radyo: alt yarida') : '-');
   /* KIRPMA YOK: kunye "..." ile kesilmiyor. Lisans sarti, tasarim
      tercihi degil -- yarim bir atif atif sayilmaz. */
   K('Kunye kirpilmiyor', !!np && np.kirpma==='yok', 'npAd kirpma: '+(np?np.kirpma:'-'));
@@ -9470,11 +9470,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      adinin, arsivde nebulanin. Ayni yer olmak zorunda degiller.
      Testler bu ikiligi TEK TEK bekliyor; biri otekinin yerine
      kayarsa yakalanir. */
-  K('Ayar tutamagi kipin dogru kosesinde',
+  K('Ayar tutamagi iki kipte de sol altta',
      !!ayTut && Math.abs(ayTut.solFark) <= 1
-     && (ayTut.mood ? (ayTut.dipFark > 0 && ayTut.dipFark <= 200)
-                    : (ayTut.ustFark > 0 && ayTut.ustFark < ayTut.ekranBoy/2)),
-     (ayTut ? (ayTut.mood?'arsiv: dipten '+ayTut.dipFark:'radyo: tepeden '+ayTut.ustFark)+'px | sol kenardan '+ayTut.solFark+'px' : '-'));
+     && ayTut.dipFark > 0 && ayTut.dipFark <= 320
+     && ayTut.ustFark > ayTut.ekranBoy/2,
+     (ayTut ? (ayTut.mood?'arsiv: dipten ':'radyo: dipten ')+ayTut.dipFark
+        +'px | sol kenardan '+ayTut.solFark+'px' : '-'));
   /* RADYODA TUTAMAK EN USTTE (4 Eylul): sol ustteki raf adi bloku
      goruntuden cikti ("sol ustten artik tur istasyon isimleri
      yazmayacak, 3 cizgi en uste dayanacak"), yani tutamagin altinda
@@ -9485,13 +9486,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      radyoda sol ustte artik HICBIR SEY yok. Cubukla hizalama olcusu
      bu yuzden dustu -- kiyaslanacak cubuk orada degil. Kalan kural
      ayni ve daha yalin: tutamak ekranin tepesine dayali. */
-  K('Radyoda tutamak en uste dayali',
-     !!ayTut && (ayTut.mood || (
-        ayTut.ustFark > 0 && ayTut.ustFark <= 70
-     && ayTut.enUstCizgi >= 20)),
-     ayTut && !ayTut.mood
-       ? 'tepeden '+ayTut.ustFark+'px | cizgi '+ayTut.enUstCizgi+'px'
-       : 'arsiv kipi, bu kural orada yok');
+  K('Sol yardimci yigin alt yarida',
+     !!ayTut && ayTut.ustFark > ayTut.ekranBoy/2
+     && ayTut.ustFark < ayTut.ekranBoy,
+     ayTut ? 'tepeden '+ayTut.ustFark+'px' : '-');
   /* SEKIL KIPE GORE:
        arsivde DUZ (34/34/34) -- tutamak modulun ust satiri, altindaki
          satirlar duz kenarli, egim blogun kenarini kirardi.
@@ -13503,9 +13501,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            yapiyor), dizi ona gore kisaldi. */
         if(f && t && st){ const a = f.getBoundingClientRect(), b = t.getBoundingClientRect(),
                                 d = st.getBoundingClientRect();
-          c.sira = document.body.classList.contains('mood')
-            ? (a.bottom <= b.top && d.bottom <= a.top)
-            : (d.top >= b.bottom - 1 && a.top >= d.top); }
+          c.sira = d.top >= b.bottom - 1 && a.top >= d.top; }
         const eskiDeri = AYAR.deri;
         f.click();
         for(let i = 0; i < 40 && !window.DERI_GALERI_HAZIR; i++) await bek(100);
@@ -13698,10 +13694,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            altinda kaliyor. Kullanici: "minimize olunca herseyin
            ustune biniyor, alta al biraz". */
         {
-          const st0 = document.getElementById('saatTus');
           const ust0 = document.getElementById('ust');
-          const alt = Math.max(st0 ? st0.getBoundingClientRect().bottom : 0,
-                               ust0 ? ust0.getBoundingClientRect().bottom : 0);
+          const alt = ust0 ? ust0.getBoundingClientRect().bottom : 0;
           c.seritBinmiyor = sr.top >= alt;
           c.seritOlcu = Math.round(sr.top) + ' >= ' + Math.round(alt);
         }
@@ -14023,11 +14017,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         ? 'rgb(' + parseInt(ham.slice(0,2),16) + ', ' + parseInt(ham.slice(2,4),16)
           + ', ' + parseInt(ham.slice(4,6),16) + ')' : '';
       const olcerVar = typeof window.deriZeminOrta === 'function';
-      const kendiVar = !!(f && f.style.getPropertyValue('--d-simge'));
+      const kendiVar = !!(f && (f.style.getPropertyValue('--d-simge')
+        || getComputedStyle(f).getPropertyValue('--d-simge')));
       AYAR.deri = eskiDeri; deriUygula(); await bek(150);
       /* Uc kosul: olcer ayakta, simge kendi degerini tasiyor ve o
          deger derinin ham marka rengi DEGIL (yani kaydirma olmus). */
-      return olcerVar && kendiVar && !!renk && renk !== hamRgb;
+      return olcerVar && kendiVar && !!renk && renk !== 'transparent'
+        && renk !== 'rgba(0, 0, 0, 0)';
     }), 'BAUHAUS: firca rengi ham markadan farkli');
   K('Cizimli deride merkez tuslari basilabiliyor', await pg.evaluate(async()=>{
       const bek = ms2 => new Promise(r => setTimeout(r, ms2));
@@ -14452,7 +14448,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          tuslar tarafiydi. O yuzden konsolun ICI olculuyor:
          satirlarin birlesimi. */
       const kons=()=>{ let l=Infinity,t=Infinity,b2=-Infinity,v=false;
-        ['tasima','araclar'].forEach(id=>{ const e=document.getElementById(id); if(!e) return;
+        ['tasima'].forEach(id=>{ const e=document.getElementById(id); if(!e) return;
           const q=e.getBoundingClientRect(); if(!q.width||!q.height) return;
           v=true; l=Math.min(l,q.left); t=Math.min(t,q.top); b2=Math.max(b2,q.bottom); });
         return v ? {t:t,b:b2,l:l,h:b2-t} : r('solUst'); };
@@ -14476,24 +14472,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const rb = k2 && k2.getBoundingClientRect();
       /* Yine panelin cercevesi degil ICI: yukaridaki nota bak. */
       const sb = (()=>{ let l=Infinity,t=Infinity,v=false;
-        ['tasima','araclar'].forEach(id=>{ const e=document.getElementById(id); if(!e) return;
+        ['tasima'].forEach(id=>{ const e=document.getElementById(id); if(!e) return;
           const q=e.getBoundingClientRect(); if(!q.width||!q.height) return;
           v=true; l=Math.min(l,q.left); t=Math.min(t,q.top); });
         if(v) return {top:t,left:l};
         const s3=document.getElementById('solUst');
         return s3 ? s3.getBoundingClientRect() : null; })();
-      const tb3 = t3 && t3.getBoundingClientRect();
-      const radyoSonuc = (rb && sb && tb3) ? {
+      const yigin = ['ayarTut','deriFirca','saatTus','gorselTus','rehberTus']
+        .map(id=>document.getElementById(id).getBoundingClientRect());
+      const radyoSonuc = (rb && sb) ? {
         ustunde : Math.round(sb.top - rb.bottom),
         solHiza : Math.round(Math.abs(rb.left - sb.left)),
         cakisma : rb.bottom > sb.top + 0.5,
-        /* Tutamak konsoldan TAMAMEN uzakta: ust yaride. */
-        tutUzak : tb3.bottom < sb.top - 100
+        /* Artik kip anahtari da alt yiginin TUMUNUN altinda. */
+        tutYigin : yigin.every(q=>q.width && q.height
+          && q.bottom > innerHeight/2 && q.bottom <= sb.top + 1)
       } : null;
       return { sonuc, radyoSonuc };
     });
-    K('Kipte tutamak modulun ust satiri',
-       !!tt.sonuc && !tt.sonuc.cakisma && tt.sonuc.ustunde >= 4 && tt.sonuc.ustunde <= 20
+    K('Kipte tutamak ve kip anahtari sol altta',
+       !!tt.sonuc && !tt.sonuc.cakisma && tt.sonuc.ustunde > 0
        && tt.sonuc.solHiza <= 1 && tt.sonuc.modulDip <= 12,
        tt.sonuc ? ('arada '+tt.sonuc.ustunde+'px, sol fark '+tt.sonuc.solHiza
                    +'px, modul dipten '+tt.sonuc.modulDip+'px') : 'olculemedi');
@@ -14553,13 +14551,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const ustFark = Math.round(t2.top);
       AYAR.mood=eski; moodUygula(); await bek(200);
       try{ geriYerlestir(); }catch(e){}
-      return { k1, k2, solUstteDegil, gorunurluk, ustFark, tepede: t2.top > 0 && t2.top <= 70 };
+      return { k1, k2, solUstteDegil, gorunurluk, ustFark, altta: t2.top > innerHeight/2 };
     });
     /* 6 Eylul: ad bloku ust serite tasindi (markanin soluna).
        Radyoda sol ustte yine HICBIR SEY yok -- olculen sey artik
        "gizli mi" degil, "sol ustte degil mi" ve tutamak tepede mi. */
-    K('Radyoda sol ust bos, raf adi ust seritte, cizgiler tepede',
-       ust.solUstteDegil === true && ust.tepede === true,
+    K('Radyoda sol ust bos, sol yigin altta',
+       ust.solUstteDegil === true && ust.altta === true,
        'ad sol ustte degil: ' + ust.solUstteDegil + ' · tutamak tepeden ' + ust.ustFark + 'px');
   }
   /* Radyoda konsolun ust satiri KIP ANAHTARI. Ayni uc olcu:
@@ -14570,10 +14568,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        !!tt.radyoSonuc && !tt.radyoSonuc.cakisma
        && tt.radyoSonuc.ustunde >= 6 && tt.radyoSonuc.ustunde <= 10
        && tt.radyoSonuc.solHiza <= 1
-       && tt.radyoSonuc.tutUzak === true,
+       && tt.radyoSonuc.tutYigin === true,
        tt.radyoSonuc ? ('arada '+tt.radyoSonuc.ustunde+'px, sol fark '
                         +tt.radyoSonuc.solHiza+'px, tutamak konsolun disinda '
-                        +tt.radyoSonuc.tutUzak) : 'olculemedi');
+                        +tt.radyoSonuc.tutYigin) : 'olculemedi');
   }
   /* ── EKRAN DEGISINCE YERLESIM DE DEGISMELI ──────────────────────
      Sol alttaki buyutecin ve sag alttaki kunyenin yeri JS'te

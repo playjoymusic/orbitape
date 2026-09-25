@@ -2189,3 +2189,57 @@ Yerel ölçüm sonuçları: tip 69 uyarı (taban değişmedi), birim 126/126, sa
 çıktı motoru 19/19. macOS'ta `setsid` bulunmadığı için tam kapı düzeltildi;
 boşluklu workspace yolu dizi olarak güvenli geçirildi. Bu kayıt commit ve push
 öncesi son tam kapı ile doğrulandı.
+
+### 25 Eylül — sol yardımcı yığının altta kalması (2. tur)
+
+Kullanıcı ekran görüntüleriyle iki şikâyet iletti: sol alttaki yardımcı
+simgeler/ayarlar düğmesi ikisinde de ekranın dışına kaçıyordu ve kip düğmesi
+PLAY/STOP'un hemen üstünde durmak yerine yukarı doğru kaçıyordu. Ölçüm
+(390x844) bunu doğruladı: yardımcı yığın tepeye girmiş, tutamak `y=-7`'de
+kalmıştı.
+
+Üç ayrı sebep bulundu. Birincisi `body:not(.mood) #ayarTut` kuralı kip dışında
+konumu `top:15px`'e zorluyordu; artık taban tabanlı konumlanıyor. İkincisi
+`_tutamakYerlestir()` iki kip için iki ayrı dal içeriyordu; tek bir
+"yukarıdan aşağı yığın" rutinine çevrildi (Sıra: Kılavuz → Görsel → Fırça →
+Saat → Ayarlar). Üçüncüsü ve asıl olan `_konsolKutu()`'nun `#tasima` yanında
+`#araclar`'ı da ölçmesiydi: Settings kapalıyken `#araclar` görsel olarak
+gizli olmasına rağmen kutuyu sıfır değil `x=31,y=211,266x42` olarak
+veriyordu; konsol kutusu bu yüzden yanlış tabanı veriyor, kip düğmesi
+`y=179/173`'e, yardımcılar `y=-7`'ye kaçıyordu. `_konsolKutu()` artık yalnız
+`#tasima`'yı ölçüyor.
+
+Ayar paneli açılıp kapandığında tutamak panelin üstüne taşınıyor
+(`panel.top - 12`). Panelin 380 ms'lik açılma geçişi ilk ölçümde yakalandığı
+için geçiş bitince bir kez daha ölçülüyor; bu olmadan tutamak 4 px çakışıyordu.
+Düzeltilmiş ölçüm (iki kipte de 390x844): kip düğmesi `y=778..802`, PLAY/STOP
+`y=810..842`, Kılavuz `762..794`, Görsel `718..750`, Fırça `674..706`, Saat
+`630..662`, Ayarlar `592..618`; hepsi `x=14`.
+
+Sağlık sözleşmesi yeni iki kip taban düzenine göre güncellendi. Çizimli
+deride simge rengi kontrolü ham marka rengiyle karşılaştırmak yerine saydam
+olmayan gerçek rengi ölçüyor (BAUHAUS: `--d-simge` = `rgb(200,31,27)`).
+Hedefli sağlık koşusu 870/870 tam temiz; bu kayıt tam kapı ile doğrulanacak.
+
+Tam kapı ilk koşuda iki kırmızı verdi ve ikisi de bu düzeltmenin
+çocuğuydu. Cihaz takımı 147/156: "skins seridi yerinde" kontrolü seridi
+`saatTus`'un altına zorluyordu; bu sözleşme yardımcı yığın tepedeyken
+doğruydu, yığın altta iken saat düğmesi seridin altında kaldığı için dokuz
+aygıttan dokuzunda kırıldı. Sağlık 869/870: paneli kapatan tutamak testi
+titriyordu, çünkü tutamak panelin açılma geçişinin ortasında ölçülüyordu.
+
+Üç düzeltme: (1) Panel ust kenarı artık `getBoundingClientRect` yerine
+`offsetTop` ile ölçülüyor — transform geçişi (`.26s`) rect'i kaydırıyordu,
+bu yüzden hemen yapılan ölçüm 12 px yanlış yeri, doğru ölçüm ise 400 ms
+sonrayı veriyordu; test 340 ms'de bakıyordu. Zamanlayıcı tamamen kalktı.
+(2) Kısa yatayda deri seridi sol yardımcı sütununun üstüne biniyordu
+(844x390'da serit 133..209, ayarTut 138..164). Yerleşim artık ölçülen sütun
+sağ kenarını `--sol-sutun-sag` olarak yayınlıyor, seri bu değerin 8 px
+sağından başlıyor; sabit genişlik yazılmadı. (3) Cihaz sözleşmesi artık
+seridin üst banttan aşağı iniyor ve sol sütuna binmiyor mu diye ölçüyor;
+tarihsel `saatTus` referansı kaldırıldı.
+
+Doğrulama (dört boyutta gerçek ölçüm): yatay 844x390 ve 740x360'da seri
+`x=68..368`, 568x320'de `68..318`, dikeyde `390x844`'te `4..386`; hiçbir
+boyutta yardımcı sütunla kesişme yok. Panel açıkken tutamak `top=96`,
+panel `top=134` — 12 px, çakışma yok.
