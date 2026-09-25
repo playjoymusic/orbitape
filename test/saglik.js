@@ -9282,10 +9282,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const tut = document.getElementById('ayarTut').getBoundingClientRect();
     const fa = fAc.getBoundingClientRect();
     const sf = document.getElementById('fav').getBoundingClientRect();
-    /* Taban olcusu KAYIT SATIRINA gore: buyutec 26px, kayit satiri
-       32px ve ikisinin ORTASI hizali -- alt kenarlari 3px farkli.
-       Alt seridin gercek taban cizgisini kayit satiri belirliyor. */
-    const acR = document.getElementById('araclar').getBoundingClientRect();
+    /* Taban olcusu ALT SOL KONSOLA gore. Once referans #araclar'di
+       (kayit satiri); 25 Eylul'de o satir kalici olarak Settings
+       panelinin ICINE tasindi, panel kapaliyken dikdortgeni
+       anlamsiz (olculdu: 83..211) ve bu olcu 589px fark veriyordu.
+       Artik referans her iki kipte de gecerli olan #solUst: kunye
+       tabani onunla ayni hatta. */
+    const acR = document.getElementById('solUst').getBoundingClientRect();
     const o = { taban:R(bi.bottom-acR.bottom), yildizUstte:(g.bottom <= bi.top + 1),
                 yaziSol:R(bi.left), yari:R(innerWidth/2),
                 sagHiza:R(g.right-bi.right),
@@ -9969,8 +9972,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           rec.dispatchEvent(new PointerEvent('pointerdown', ort));
           rec.dispatchEvent(new PointerEvent('pointerup', ort));
           rec.click();                       /* modul yok: bu tiklama bosa gider */
-          await bek(120);
-          c.istendi = !!document.querySelector('script[src*="kayit.js"]');
+          /* SABIT 120ms BEKLEME YETMIYOR. Kapı altı takımı aynı anda
+             koşuyor; bu sayfa yoğunken istek etiketi eklenmeden
+             kontrol ediliyordu ve iki test kirmizi donuyordu. Artik
+             "istendi" sorusu 1,2 sn boyunca yoklama ile soruluyor:
+             etiket eklendi VEYA modul basladi. Ikisi de ayni yonu
+             gosterir: modul istendi. */
+          for(let i=0;i<24;i++){
+            c.istendi = !!document.querySelector('script[src*="kayit.js"]')
+              || !!window.KAYIT_MODULU_BASLADI;
+            if(c.istendi) break;
+            await bek(50);
+          }
           /* 3. Modul gelene kadar bekle ve ILK BASISIN oynatildigini
                 gor: kayit modu degisiyor mu. */
           for(let i = 0; i < 60 && !window.KAYIT_MODULU_HAZIR; i++) await bek(100);

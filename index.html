@@ -56,17 +56,13 @@
        sag 13...) ve ekranda "sagi solu hizali degil" olarak
        goruluyordu. Tek kaynak: burasi. */
     --kx:16px;
-    /* --konsol-sol: KONSOLUN SOLA KAYMASI. Kullanicinin sozu:
-       "play stop geri vs. konsolun bütün olarak sola çekilmesi
-       lazım, yukarıdaki ile aynı yerde başlamalı."
-       Sebep ölçüldü: konsolun KUTUSU zaten kenardaydı (14px), ama
-       ilk düğmenin simgesi kendi 36px kutusunda ortalandığı için
-       mürekkebi 25px'te başlıyordu; üstteki yardımcı sütun ve kip
-       düğmesi ise 14px'te. Arada 11px vardı ve konsol içeri
-       gözüküyordu. Kayma 11px: ilk simgenin mürekkebi artık kenar
-       payına oturuyor, yani "yukarıdaki ile aynı yerde".
-       Negatif margin: kutu eski yerinde kalıyor, kaydirilan sadece
-       düğme satırı -- yanına modül yazan blok yerinde duruyor. */
+    /* --konsol-sol: KONSOLUN SOLA KAYMASI. "Konsolun bütün olarak
+       sola çekilmesi lazım, yukarıdaki ile aynı yerde başlamalı."
+       Ölçüldü: konsolun KUTUSU kenardaydı (14px) ama ilk simge
+       36px'lik düğmede ortalandığı için mürekkebi 25px'te
+       başlıyordu; üstteki sütun 14px'te. Kayma 11px mürekkebi
+       kenara oturtuyor. Negatif margin: kutu yerinde kalıyor,
+       kaydırılan sadece düğme satırı. */
     --konsol-sol:11px;}
   @media (max-width:480px){ :root{--kx:14px;} }
   /* overflow-x:hidden -> arama kutusu/klavye açılırken sayfa yana kaymasın. */
@@ -122,7 +118,7 @@
        -- kutu ayni yerde, yalnizca cizim ve dokunus alani kuculuyor.
        Carkin yaricapi bu carpandan arindiriliyor (cark.js: olc), yani
        disler yerinde kaliyor. */
-    transform:scale(var(--halka-kat,1));}
+    transform:translateY(6px) scale(var(--halka-kat,1));}
   /* ── GECISTE SOLUKLASMA KALKTI (3 Eylul, kullanici) ────────────
      "bastik sarki gecmek icin ... bi siliniyor gibi, o anlik halka
      transparan oluyor, background'u goruyoruz anlik. o olmasin."
@@ -3539,21 +3535,23 @@
      kuculmus duruyor. Azalan egim korunuyor (32/25/17, eski oran
      25/19/13 ile ayni). */
   /* ── IKI KIP, IKI YER (25 Eylul) ───────────────────────────────
-     Once "her iki kipte de sol altta" diye tek tabana baglandi ve
-     RADIOTAPE'in sol UST duzeni kayboldu. Kullanici duzeltti:
-     "bunlar orbitape switch hariç yukarıdaki eski yerine geri
-     dönmeli." Yani:
-       RADIOTAPE -> yardimci sutun SOL USTTE (ayarlar en ustte),
-                    kip anahtari TEK BASINA, player'in ustunde.
-       ORBITAPE  -> yardimci sutun SOL ALTTA, en altta KILAVUZ;
-                    kip anahtari KILAVUZ'UN SAGINDA, ayni satirda.
-     Iki kip birbirine karismasin diye burada ayri kural yaziliyor. */
+     RADIOTAPE -> yardimci sutun SOL USTTE (ayarlar en ustte), kip
+     anahtari TEK BASINA player'in ustunde. ORBITAPE -> sutun SOL
+     ALTTA, en altta KILAVUZ; anahtar KILAVUZ'UN SAGINDA. */
   body:not(.mood) #ayarTut{
     top:calc(15px + env(safe-area-inset-top, 0px));
     bottom:auto;width:32px;height:26px;gap:5px;}
   body:not(.mood) #ayarTut span:nth-child(1){width:32px;}
   body:not(.mood) #ayarTut span:nth-child(2){width:25px;}
   body:not(.mood) #ayarTut span:nth-child(3){width:17px;}
+  /* PANEL DIBI: KAYDIRMA NASIL OLURSA OLSUN SABIT.
+     `background-color:inherit` panelin zeminini alir; deri
+     degisince cubuk da uyuyor. */
+  #ayarDip{position:sticky;bottom:0;z-index:2;
+    background-color:inherit;
+    margin-top:6px;padding-top:2px;
+    border-top:1px solid rgba(255,255,255,.10);}
+  body.deri #ayarDip{border-top-color:var(--d-kenar, rgba(255,255,255,.10));}
   /* Acikken uc cizgi esitlenip duz bir yigin oluyor: ucgen kapaniyor.
      Eski davranisin birebir aynisi. */
   /* Acikken uc cizgi esitleniyor: ucgen kapaniyor. Arsivde zaten
@@ -3577,10 +3575,18 @@
      dogruydu, asagi inince tutamagin ustunden degil ekranin
      tepesinden aciliyordu. */
   #ayar{position:fixed;z-index:95;
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    /* SOLA DEGIL, SUTUNUN SAGINA: "menu biraz daha saga acilabilir,
+       soldaki ikonlar ustune binmesin diye." Panel once --kx'ten
+       basliyor, 300px genis oldugu icin sutunun (14..58) tamamini
+       ortuyordu. Artik yerini OLCULEN sutunun sag kenarindan
+       aliyor (--sol-sutun-sag); genislik kalan alanla sinirli. */
+    left:calc(var(--sol-sutun-sag, 58px) + 8px);
     top:auto;bottom:calc(46px + var(--dip-pay));
     transform:translateY(12px);
-    width:min(84vw,300px);padding:14px 16px 12px;
+    width:min(84vw,300px);
+    max-width:calc(100vw - var(--sol-sutun-sag, 58px) - 16px
+      - env(safe-area-inset-right, 0px));
+    padding:14px 16px 12px;
     background:rgba(10,13,15,.94);border:1px solid rgba(255,255,255,.10);
     border-radius:14px;opacity:0;pointer-events:none;
     transition:transform .26s cubic-bezier(.2,.8,.3,1), opacity .22s ease;}
@@ -4236,20 +4242,12 @@
   #ayarTut::after,#deriFirca::after,#saatTus::after,#gorselTus::after,#rehberTus::after{
     width:max(calc(100% + 14px), 48px);height:48px;}
   /* ── GORUNMEZ DUGMENIN DOKUNMA ALANI DA KAPANMALI (25 Eylul) ────
-     Yukardaki `pointer-events:auto` bir MIRSAL etkisi degil: kendi
-     degeri. O yuzden `body.yildiz-zum` (ve `body.klavye`) ogeleri
-     `pointer-events:none` yapsa bile oge GORUNMEZ olup TIKLANABILIR
-     kaliyordu -- cunku dokunma alani devrede.
-     OLculdu (yildizlar 3,5 kat buyukken, gercek dokunus):
-       pointerdown hedefi = deriFirca, click hedefi = deriFirca,
-       skin galerisi ACILDI. Ayni noktaya notr bir yere (195,300)
-         dokununca galeri kapali kaldi -- yani dokunus gercekten
-         gizli dugmeye gidiyordu.
-     Kullanicinin sozu: "yıldızlar çift parmak büyütüldüğünde de
-     soldaki ögeler görünmese de tıklanmasında." Dogruydu.
-     Cozum: gizlenen kipte dokunma alanini da kapat. Gorunur kipte
-     ::after'in `auto` degeri aynen durur, dokunma alani buyuklugunu
-     kaybetmez. */
+     Yukardaki `pointer-events:auto` bir MIRSAL etkisi degil, kendi
+     degeri: bu yuzden `body.yildiz-zum` ve `body.klavye` ogeleri
+     `none` yapsa bile oge GORUNMEZ olup TIKLANABILIR kaliyordu.
+     Olculdu (3,5 kat buyuk halde, gercek dokunus): pointerdown ve
+     click hedefi = deriFirca, skin galerisi ACILDI; notr noktada
+     kapali kaldi. Cozum: gizlenen kipte dokunma alani da kapanir. */
   body.yildiz-zum #geri::after,body.yildiz-zum #dur::after,
   body.yildiz-zum #duraklat::after,body.yildiz-zum #ileri::after,
   body.yildiz-zum #mute::after,body.yildiz-zum #favAc::after,
@@ -4830,6 +4828,18 @@
     <!-- SKINS RANDOM SWITCH (deriRastgele) BURADAN TASINDI (15 Eylul):
          kullanici "skins bolumunun en altina" dedi -- bkz. DISPLAY
          icindeki SKINS izgarasinin hemen alti, artik orada. -->
+    <!-- PANEL DIBI: SABIT. "Search'u acinca altina terms privacy
+         geliyor, onlar en altta sabit kalacak." Once kaydirma
+         gerektiriyordu (panel 146..810, baglantilar 1290..1417).
+         Artik alt cubuk: kaydirma ne olursa olsun panelin dibinde.
+         RESET de ayni cubukta: tek basista soruyor, bes saniye
+         sonra kendiliginden geri donuyor. -->
+    <div id="ayarDip">
+    <!-- ── SIFIRLA ────────────────────────────────────────────────
+         Tek basista SORUYOR, ikinci basista yapiyor -- geri alinamaz
+         bir isi tek dokunusa baglamak dogru olmaz. -->
+    <div class="sat islem" data-ayar="sifirla" role="button" tabindex="-1">
+      <span>RESET SETTINGS</span><span class="durum">RESET</span></div>
     <a class="sat bag" href="/privacy" target="_blank" rel="noopener" tabindex="-1">
       <span>PRIVACY</span><span class="durum">OPEN</span></a>
     <a class="sat bag" href="/terms" target="_blank" rel="noopener" tabindex="-1">
@@ -4852,14 +4862,7 @@
          ayni kalip, ayni gerekce. -->
     <a class="sat bag" href="https://www.instagram.com/orbitape.app/" target="_blank" rel="noopener" tabindex="-1">
       <span>INSTAGRAM</span><span class="durum">OPEN</span></a>
-    <!-- ── SIFIRLA ────────────────────────────────────────────────
-         En altta ve bilerek: yanlislikla basilacak bir yer degil.
-         Tek basista SORUYOR, ikinci basista yapiyor -- geri alinamaz
-         bir isi tek dokunusa baglamak dogru olmaz. Soru bes saniye
-         sonra kendiliginden geri donuyor; yani "acaba ne olacak"
-         diye basip birakan kisi bir sey kaybetmiyor. -->
-    <div class="sat islem" data-ayar="sifirla" role="button" tabindex="-1">
-      <span>RESET SETTINGS</span><span class="durum">RESET</span></div>
+    </div><!-- /ayarDip -->
   </div>
   <!-- Dikey ses cubugu SILINDI; yerine gelen yatay cizgi de
        silindi. Seviye: sustur tusu + iki parmakla dikey jest. -->
@@ -5235,7 +5238,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.25';
+  var ORB_SURUM = '2026.09.26';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
      gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
@@ -14034,6 +14037,7 @@
       : ['53,224,216','236,104,190','150,140,255','104,160,240'];
     return { T:T, teal:teal, mag:mag, HALKA_RENK:HALKA_RENK };
   }
+  const HALKA_KAY = 6;   /* halka/cark dikey kaymasi, px */
   function vizLoop(zaman){
     /* KİLİT BİTTİĞİ AN: kare döngüsü kilit bitince İLK çalışan şeydir.
        Tam bu noktada geçmişin SON kaydı, kilitlenen işin ta kendisidir —
@@ -14126,7 +14130,10 @@
     _sonKare = t;
     if(document.hidden) return;                        // arka plandayken hiç çizme
     const W=viz.width,H=viz.height; if(!W) return;
-    const dpr=DPR, cx=W/2, cy=H/2, R=Math.min(W,H)*0.357;
+    /* HALKA 6px ASAGI (25 Eylul). Cark ise .disk'in kutusundan
+       konumlanir (cark.js: olc) -- ikisi birlikte oynatilmazsa
+       halka yukarida, cark asagida kalir. */
+    const dpr=DPR, cx=W/2, cy=H/2 + HALKA_KAY, R=Math.min(W,H)*0.357;
     const hafifCizim = MOBIL && _basili;        // parmak diskteyken hafif mod   /* tuval %40 büyüdü -> çarpan 0.5'ten 0.357'ye: halka/grafik boyutu AYNI, sadece kenar boşluğu var */
     vctx.clearRect(0,0,W,H);
     seviyeOku();
@@ -18173,19 +18180,12 @@
     }catch(e){ _yut(e); }
   }
   function _kipKisayoluHizala(){
-    /* ── KIP ANAHTARI: IKI KIPTE IKI YER (25 Eylul) ───────────────
-       RADIOTAPE: PLAY/STOP konsolunun tam ustunde, ayni sol kenarda.
-       Burada yardimci sutun tepede oldugu icin o satir bos -- anahtar
-       yalniz kalan orada durur.
-       ORBITAPE: yardimci sutun altta ve EN ALTTAKI OGE KILAVUZ.
-       Kullanici sozlesmesi: "en alt satır player, bir üstte
-       guide'dan başlayan line yukarı doğru, radio switch de o
-       guide'ın sağında." Anahtar bu yuzden KILAVUZ'UN SAGINDA,
-       ayni satirda, dikey olarak Kılavuz'un ortasina hizali.
-
-       ONCEDEN TEK KURAL VARDI (konsolun ustunde, iki kipte de) ve
-       ORBITAPE'de KILAVUZ'A bindi: Kılavuz 762..794, anahtar
-       778..802 -- 16 px ust uste. Iki ayri kural, iki ayri yer. */
+    /* ── KIP ANAHTARI: IKI KIPTE IKI YER (25 Eylul) ───────────
+       RADIOTAPE: PLAY/STOP'un tam ustunde, ayni sol kenarda.
+       ORBITAPE: sutunun en altindaki oge KILAVUZ; anahtar onun
+       SAGINDA, ayni satirda, dikey olarak Kılavuz'un ortasina
+       hizali. (Tek kural kalmis olsa anahtar KILAVUZ'A biniyordu:
+       762..794 / 778..802.) */
     try{
       const _kk = document.getElementById('kipKisayol');
       if(!_kk) return;
@@ -18563,10 +18563,20 @@
                buyutecin sagina gecebiliyor. */
             /* Kipte konsolun ICI olculuyor: panelin kenarligi ve
                dolgusu kunyeye kalan yeri 7px daraltiyordu. */
-            const adaylar = document.body.classList.contains('mood')
-                          ? [_konsolKutu()]
-                          : [document.getElementById('araclar').getBoundingClientRect(),
-                             arE && arE.getBoundingClientRect()];
+            /* KONSOL HER ZAMAN ADAY (25 Eylul). Uzun sarki
+               basligi konsolun uzerine biniyordu: kunyenin sol
+               kenari #araclar'in sagindan hesaplaniyordu, ama
+               #araclar artik KAPALI panelin icinde (olculdu:
+               83..211) ve konsol hic girmiyordu. Artik adaylar her
+               kipte konsolu iceriyor; #araclar yalniz panelin
+               disindayken sayiliyor. */
+            const panel = document.getElementById('ayar');
+            const araclarD = document.getElementById('araclar');
+            const araclarIcinde = !!(panel && araclarD
+              && araclarD.closest && araclarD.closest('#ayar') === panel);
+            const adaylar = [_konsolKutu(),
+              (araclarIcinde ? null : (araclarD && araclarD.getBoundingClientRect())),
+              (arE && arE.getBoundingClientRect())];
             let en = 0;
             adaylar.forEach(r2=>{ if(!r2) return;
               if(r2.width && r2.right > en) en = r2.right; });
