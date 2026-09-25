@@ -8966,6 +8966,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const jest = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const c = {};
+      const eskiMod = mod, eskiAktifMod = AKTIF_MOD;
       try{
         if(!window.KAYIT_MODULU_HAZIR){
           window.kayitYukle();

@@ -2088,3 +2088,12 @@ temizlendi. `node --check test/saglik.js`, `git diff --check` ve ham boy
 kapısı geçti: 1.329.151 / 1.332.224 bayt. Tam Chromium koşusu bu ortamda
 zaman aşımına uğradı; CI sonucu yeniden çalıştırılmadan yeşil kabul
 edilmiyor. Değişiklikler henüz commit/push edilmedi.
+
+### 25 Eylül — CI #555'te favori jesti testi ReferenceError ile durdu
+
+CI ekranındaki kırmızı `!! 0` değeri test sonucu değil, log aramasının
+0 eşleşmesiydi. Gerçek hata `eskiMod is not defined`: favori jesti
+`pg.evaluate` bloğunun temizliğinde `eskiMod` ve `eskiAktifMod` geri
+yazılıyor, fakat blok başında saklanmıyordu. İkisi tanımlandı; `node
+--check test/saglik.js` geçti. Tam sağlık koşusu yerelde 120 saniyede
+bitmedi; CI yeniden yeşil görülmeden tamamlanmış sayılmıyor.
