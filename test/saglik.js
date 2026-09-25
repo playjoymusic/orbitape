@@ -8251,6 +8251,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                  .map(x=>x.textContent.trim()).join('|'); };
         const olc = ()=>({ kk:R('kipKisayol'), tut:R('ayarTut'),
                            ta:R('tasima'), ar:R('araclar'),
+                           kil:R('rehberTus'),
                            yazi:etiket(),
                            acik:document.getElementById('kipKisayol')
                                 .getAttribute('aria-checked') });
@@ -8268,11 +8269,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            hicbir sey yok, sorun degil. Olculecek sey ekranin
            kendisi. */
         const tasmaz = (o)=> o.kk.r <= window.innerWidth - 8;
+        /* ARSIVDE (25 Eylul) KOMSUSU DEGISTI: anahtar artik sol
+           alttaki yiginin EN ALTINDAKI KILAVUZ'un saginda, ayni
+           satirda. Eskiden konsolun ustunde, tasima satiriyla ayni
+           sol kenarda duruyordu; kullanici "radio switch de o
+           guide'ın sağında olacak" dedi. Olculen: saginda mi, ayni
+           satirda mi, konsola degiyor mu. */
         const arsivDogru = (o)=>{
-               if(!o.kk || !o.ta) return false;
-               const solHiza = Math.abs(o.kk.l - o.ta.l) <= 1;
+               if(!o.kk || !o.ta || !o.kil) return false;
+               const saginda = o.kk.l - o.kil.r;
+               const ayniSatir = Math.abs((o.kk.t + o.kk.h/2) - (o.kil.t + o.kil.h/2));
                const ustunde = o.kk.b <= o.ta.t;
-               return o.kk.gor && solHiza && ustunde && tasmaz(o);
+               return o.kk.gor && saginda >= 4 && saginda <= 14
+                      && ayniSatir <= 2 && ustunde && tasmaz(o);
         };
         const radyoDogru = (o)=>{
                if(!o.kk || !o.ta) return false;
@@ -8285,7 +8294,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         return radyoDogru(r1) && arsivDogru(r2)
             && r1.yazi === 'ORBITAPE' && r2.yazi === 'RADIO'
             && r1.acik === 'false'    && r2.acik === 'true';
-      }), 'radyoda sola dayali, arsivde uc cizginin saginda; radyoda ORBITAPE (kapali), arsivde RADIO (acik)');
+      }), 'radyoda sola dayali, arsivde kilavuzun saginda; radyoda ORBITAPE (kapali), arsivde RADIO (acik)');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
     K('Kip kisayolu radyoya donduruyor', await pg.evaluate(async ()=>{
@@ -9294,6 +9303,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                    satirin gercek merkeziyle hizali olmasi gerekiyor. */
                 mood: document.body.classList.contains('mood'),
                 tutAltta: tut.bottom > innerHeight/2,
+                tutUstte: tut.bottom <= innerHeight/2,
                 blokEn: R(bi.width), en: R(innerWidth),
                 yigin: document.body.classList.contains('kunye-yigin'),
                 kirpma: (()=>{ const a2=document.getElementById('npAd');
@@ -9328,9 +9338,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Yani kural artik TEK degil ama yine de KESIN: radyoda ust
      yarida, arsivde alt yarida. Bu test o ikiligin bekcisi --
      ikisinden biri otekinin yarisina kacarsa yakalar. */
-  K('Tutamak iki kipte de sol altta',
-     !!np && np.tutAltta === true,
-     np ? (np.mood?'arsiv: alt yarida':'radyo: alt yarida') : '-');
+  K('Ayar tutamagi iki kipte kipe gore yarida',
+     !!np && (np.mood ? np.tutAltta === true : np.tutUstte === true),
+     np ? (np.mood?'ORBITAPE: alt yarida':'RADIOTAPE: ust yarida') : '-');
   /* KIRPMA YOK: kunye "..." ile kesilmiyor. Lisans sarti, tasarim
      tercihi degil -- yarim bir atif atif sayilmaz. */
   K('Kunye kirpilmiyor', !!np && np.kirpma==='yok', 'npAd kirpma: '+(np?np.kirpma:'-'));
@@ -9470,11 +9480,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      adinin, arsivde nebulanin. Ayni yer olmak zorunda degiller.
      Testler bu ikiligi TEK TEK bekliyor; biri otekinin yerine
      kayarsa yakalanir. */
-  K('Ayar tutamagi iki kipte de sol altta',
+  K('Ayar tutamagi iki kipte kipe gore yarida, sol seritte',
      !!ayTut && Math.abs(ayTut.solFark) <= 1
-     && ayTut.dipFark > 0 && ayTut.dipFark <= 320
-     && ayTut.ustFark > ayTut.ekranBoy/2,
-     (ayTut ? (ayTut.mood?'arsiv: dipten ':'radyo: dipten ')+ayTut.dipFark
+     && (ayTut.mood ? (ayTut.dipFark > 0 && ayTut.dipFark <= 320)
+                     : (ayTut.ustFark >= 0 && ayTut.ustFark <= 40)),
+     (ayTut ? (ayTut.mood?'ORBITAPE: dipten '+ayTut.dipFark
+                          :'RADIOTAPE: tepeden '+ayTut.ustFark)
         +'px | sol kenardan '+ayTut.solFark+'px' : '-'));
   /* RADYODA TUTAMAK EN USTTE (4 Eylul): sol ustteki raf adi bloku
      goruntuden cikti ("sol ustten artik tur istasyon isimleri
@@ -9486,10 +9497,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      radyoda sol ustte artik HICBIR SEY yok. Cubukla hizalama olcusu
      bu yuzden dustu -- kiyaslanacak cubuk orada degil. Kalan kural
      ayni ve daha yalin: tutamak ekranin tepesine dayali. */
-  K('Sol yardimci yigin alt yarida',
-     !!ayTut && ayTut.ustFark > ayTut.ekranBoy/2
-     && ayTut.ustFark < ayTut.ekranBoy,
-     ayTut ? 'tepeden '+ayTut.ustFark+'px' : '-');
+  K('Sol yardimci yigin kipe gore yarida',
+     !!ayTut && (ayTut.mood ? (ayTut.ustFark > ayTut.ekranBoy/2
+                               && ayTut.ustFark < ayTut.ekranBoy)
+                            : (ayTut.ustFark < ayTut.ekranBoy/2)),
+     ayTut ? (ayTut.mood?'alt yarida':'ust yarida')+', tepeden '+ayTut.ustFark+'px' : '-');
   /* SEKIL KIPE GORE:
        arsivde DUZ (34/34/34) -- tutamak modulun ust satiri, altindaki
          satirlar duz kenarli, egim blogun kenarini kirardi.
@@ -10340,6 +10352,145 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Gorsel kapaninca kilit de kalkiyor',
        gk.kapandi === true && gk.denetimlerGeldi === true && gk.katmanGitti === true,
        gkOz || 'denetimler geri geldi');
+  }
+
+  /* ── GORSEL ACIIKEN HICBIR SEY TASMIYOR (25 Eylul) ──────────────
+     Kullanicinin sozu: "visual sırasında bisey tasmasın." Iki ayri
+     sey olcuyoruz, ikisi de gozle zor gorulur:
+       1) ACIKKEN: hicbir denetim ekranin disina cikiyor mu, yatay
+          kaydirma cubugu doguyor mu.
+       2) KAPANINCA: sol sutun ve kip anahtari birebir eski yerine
+          donuyor mu. "Dondu" demek yetmez; en azindan 0,5 piksel
+          fark olmamali -- yarim piksel kayma gorsunur. */
+  {
+    const gs = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const ids=['rehberTus','gorselTus','deriFirca','saatTus','ayarTut',
+                 'kipKisayol','tasima','np','ust','mark','isaret','solUst'];
+      const al=()=>{const o={};ids.forEach(id=>{const e=document.getElementById(id);
+        if(!e)return;const r=e.getBoundingClientRect();if(!r.width||!r.height)return;
+        o[id]=[r.left,r.top,r.right,r.bottom];});return o;};
+      const once=al();
+      try{ document.getElementById('gorselTus').click(); }catch(e){}
+      for(let i=0;i<80 && !(window.gorselAcikMi && window.gorselAcikMi()); i++) await bek(100);
+      await bek(700);
+      const acik=!!(window.gorselAcikMi && window.gorselAcikMi());
+      /* 1) Ekran disina tasan var mi (acikken). */
+      const tasan=[];
+      ids.forEach(id=>{const r=once[id]?al()[id]:null; if(!r)return;
+        if(r[0]<-1||r[2]>innerWidth+1||r[1]<-1||r[3]>innerHeight+1)
+          tasan.push(id+' '+r.map(Math.round).join(','));});
+      const kaydirma=document.documentElement.scrollWidth > innerWidth+1;
+      try{ window.gorselKapa && window.gorselKapa(); }catch(e){}
+      for(let i=0;i<60 && (window.gorselAcikMi && window.gorselAcikMi()); i++) await bek(100);
+      await bek(900);
+      /* 2) Kapaninca yer degistirdi mi. */
+      const sonra=al();
+      const kaydi=[];
+      ids.forEach(id=>{ if(!once[id]||!sonra[id])return;
+        const f=['left','top','right','bottom'].map((k,i)=>Math.abs(once[id][i]-sonra[id][i]));
+        if(Math.max(...f) > 0.5) kaydi.push(id+' '+once[id].map(Math.round).join(',')
+          +' -> '+sonra[id].map(Math.round).join(','));});
+      return { acik, tasan, kaydirma, kaydi };
+    });
+    K('Gorsel aciken hicbir sey tasmiyor',
+       !!gs && gs.acik === true && gs.tasan.length === 0 && gs.kaydirma === false,
+       gs ? (gs.acik ? (gs.tasan.length ? 'tasan: '+gs.tasan.join(' | ')
+                                      : 'yatay kaydirma yok, tasma yok') : 'ACILMADI')
+          : 'olculemedi');
+    K('Gorsel kapaninca sol sutun ayni yere donuyor',
+       !!gs && gs.kaydi.length === 0,
+       gs ? (gs.kaydi.length ? 'kaydi: '+gs.kaydi.join(' | ') : 'sutun, anahtar ve player yerinde') : '-');
+  }
+
+  /* ── YILDIZ BUYUTULUNCE SOLDEKI GORUNMEZ OGE TIKLANAMAZ ─────────
+     Kullanicinin sozu: "yıldızlar çift parmak büyütüldüğünde de
+     soldaki ögeler görünmese de..." Buyutulunca sol sutun
+     opacity:0 ile kayboluyor. Gorunmeyen hata: gorunmez dugme
+     TIKLANABILIR kalirsa parmak yildiz alaninda gizli bir dugmeyi
+     tetikler, kullanici ne oldugunu anlamaz.
+     Iki katmanli olcum:
+       1) CSS: alti ogenin de saydamligi 0 ve pointer-events none.
+       2) GERCEK DOKUNUS: her birinin MERKEZINE dokunuluyor ve
+          o dugmenin yaptigi isin olmadigi goruluyor.
+     OLCUM NOTU: `elementFromPoint` Chromium'da pointer-events:none
+     kuralini YANSITMIYOR -- ayni noktada gizli dugmeyi donduruyor.
+     O yuzden o yontem kullanilmadi: CSS dogru yazsa bile test
+     kirmizi veriyordu. Tek dogruluk kaynagi gercek dokunus. */
+  {
+    const yz = await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const ids=['rehberTus','gorselTus','deriFirca','saatTus','ayarTut','kipKisayol'];
+      const nokta = ()=>ids.map(id=>{const e=document.getElementById(id);
+        if(!e)return null; const r=e.getBoundingClientRect();
+        if(!r.width||!r.height)return null;
+        return {id, x:Math.round(r.left+r.width/2), y:Math.round(r.top+r.height/2)};})
+        .filter(Boolean);
+      try{ window.yildizZumAyar(3.5); }catch(e){}
+      for(let i=0;i<60 && !document.body.classList.contains('yildiz-zum'); i++) await bek(50);
+      await bek(500);
+      const zoom=document.body.classList.contains('yildiz-zum');
+      let pe=0, gizli=0;
+      ids.forEach(id=>{const e=document.getElementById(id); if(!e)return;
+        const st=getComputedStyle(e);
+        if(st.pointerEvents === 'none') pe++;
+        if(parseFloat(st.opacity) === 0) gizli++;});
+      return { zoom, pe, gizli, toplam:ids.length, nokta:nokta() };
+    });
+    /* GERCEK DOKUNUS: alti noktaya da dokun, hicbiri kendi isini
+       yapmasin. */
+    let sizan = null;
+    if(yz && yz.zoom && yz.nokta.length){
+      for(const n of yz.nokta){
+        try{ await pg.touchscreen.tap(n.x, n.y); await pg.waitForTimeout(220); }catch(e){}
+      }
+      await pg.waitForTimeout(300);
+      sizan = await pg.evaluate(()=>{
+        const gal = document.getElementById('deriGaleri');
+        const rb  = document.getElementById('rehber');
+        return { ayar:document.body.classList.contains('ayar-acik'),
+                 galeri:!!gal && !gal.hidden,
+                 rehber:!!rb && rb.getAttribute('aria-hidden') !== 'true'
+                          && getComputedStyle(rb).display !== 'none',
+                 gorsel:!!(window.gorselAcikMi && window.gorselAcikMi()),
+                 zoom:document.body.classList.contains('yildiz-zum'),
+                 mood:!!(document.body.classList.contains('mood')) };
+      });
+    }
+    K('Yildiz buyutulunca soldakiler gorunmez ve TIKLANAMAZ',
+       !!yz && yz.zoom === true && yz.pe === yz.toplam && yz.gizli === yz.toplam
+       && !!sizan && sizan.ayar === false && sizan.galeri === false
+       && sizan.rehber === false && sizan.gorsel === false && sizan.zoom === true,
+       yz ? (yz.zoom ? (yz.pe+'/'+yz.toplam+' oge pointer-events:none, '
+                    +yz.gizli+'/'+yz.toplam+' saydam; '
+                    +(sizan ? 'dokunus sonrasi: '
+                       +['ayar','galeri','rehber','gorsel'].filter(k=>sizan[k])
+                              .join(',')+' ACIK'
+                       +' · zoom '+(sizan.zoom?'duruyor':'kayboldu!')
+                       +' · kip '+(sizan.mood?'mood':'radio')
+                     : 'dokunus yapilamadi'))
+                  : 'ZOOM ACILMADI')
+          : 'olculemedi');
+    /* GUCLU TEMIZLIK. Bu blok sayfayi buyutulmus halde birakirsa
+       SONRAKI 260 testin hepsi kirmizi doner (zaman once "841/875"
+       idi). Yalnizca yildizZumAyar(1) yeterli olmayabilir: gecis
+       yarida kalirsa sinif kalir. O yuzden sinif zorla kaldirilir,
+       kip eski haline getirilir, paneller kapatilir ve yerlesim
+       bir kez daha tazelenir. */
+    try{ await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      try{ window.yildizZumAyar(1); }catch(e){}
+      await bek(400);
+      document.body.classList.remove('yildiz-zum');
+      try{ if(typeof AYAR!=='undefined') AYAR.mood=false; }catch(e){}
+      try{ if(typeof moodUygula==='function') moodUygula(false); }catch(e){}
+      ['ayar-acik','galeri-acik','gorsel-acik','deri','kayit','kam']
+        .forEach(c=>document.body.classList.remove(c));
+      try{ const g=document.getElementById('deriGaleri'); if(g) g.hidden=true; }catch(e){}
+      try{ const s=document.getElementById('saatPanel'); if(s) s.hidden=true; }catch(e){}
+      try{ if(typeof geriYerlestir==='function') geriYerlestir(); }catch(e){}
+      await bek(500);
+    }); }catch(e){}
   }
 
   /* ── ORTADAKI ORGANIK NOKTA HER KIPTE ──────────────────────────
@@ -13694,9 +13845,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            altinda kaliyor. Kullanici: "minimize olunca herseyin
            ustune biniyor, alta al biraz". */
         {
+          /* Serit ust bandin altinda kalmali VE sol yardimci
+             sutununun USTUNDEKI iki ogeyi (ayarlar, saat) gostermemeli.
+             25 Eylul: sutun RADIOTAPE'de yine tepede, ORBITAPE'de
+             altta. Iki kipte de guvli olan soru "serit sutunun
+             basina dogru iki ogeye degiyor mu" -- ORBITAPE'de
+             sutun zaten seridin cok altta, soru kendiliğinden
+             gecer. */
           const ust0 = document.getElementById('ust');
           const alt = ust0 ? ust0.getBoundingClientRect().bottom : 0;
-          c.seritBinmiyor = sr.top >= alt;
+          const ustIki = ['ayarTut','saatTus'].map(id=>{
+            const e = document.getElementById(id);
+            return e ? e.getBoundingClientRect() : null;
+          }).filter(q => q && q.width && q.height);
+          const degdi = ustIki.filter(q => !(sr.right <= q.left || sr.left >= q.right
+            || sr.bottom <= q.top || sr.top >= q.bottom)).map(q => Math.round(q.top));
+          c.sutunaDegdi = degdi.length;
+          c.seritBinmiyor = sr.top >= alt && degdi.length === 0;
           c.seritOlcu = Math.round(sr.top) + ' >= ' + Math.round(alt);
         }
         /* ── OK SATIRI ILE MERKEZ SATIRI ARASINDAKI ARALIK ──────
@@ -14438,7 +14603,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await bek(120);
       const r=id=>{ const e=document.getElementById(id); if(!e) return null;
         const b=e.getBoundingClientRect();
-        return {t:b.top,b:b.bottom,l:b.left,h:b.height}; };
+        return {t:b.top,b:b.bottom,l:b.left,r:b.right,h:b.height,o:(b.top+b.bottom)/2}; };
       /* ── OLCU PANELIN ICINDEN ─────────────────────────────────
          #solUst artik gorunur bir kap: 1px kenarlik + 6px dolgu,
          yani kutusu tuslardan 7px disarida. Hiza kurali TUSLAR
@@ -14453,11 +14618,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           v=true; l=Math.min(l,q.left); t=Math.min(t,q.top); b2=Math.max(b2,q.bottom); });
         return v ? {t:t,b:b2,l:l,h:b2-t} : r('solUst'); };
       const tut=r('ayarTut'), su=kons();
-      const sonuc = (tut && su) ? {
-        ustunde : Math.round(su.t - tut.b),            // arada kalan hava
+      /* SOL YIGIN: ORBITAPE'de altta, en altta KILAVUZ; kip anahtari
+         kilavuzun SAGINDA, ayni satirda. Kullanicinin sozlesmesi:
+         "en alt satır player, bir üstte guide'dan başlayan line
+         yukarı doğru, radio switch de o guide'ın sağında." */
+      const kil = r('rehberTus'), ana = r('kipKisayol');
+      const yigin = ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus']
+        .map(id=>document.getElementById(id).getBoundingClientRect());
+      const sonuc = (tut && su && kil && ana) ? {
+        ustunde : Math.round(su.t - ana.b),           // anahtar ile player arasi
         solHiza : Math.round(Math.abs(tut.l - su.l)),  // ayni sol kenar
         modulDip: Math.round(window.innerHeight - su.b),
-        cakisma : tut.b > su.t + 0.5
+        cakisma : tut.b > su.t + 0.5,
+        /* Kip anahtari kilavuzun saginda mi, ayni satirda mi. */
+        anahtarSagda : Math.round(ana.l - kil.r),
+        anahtarUst   : Math.round(kil.t - ana.t),
+        anahtarOrta  : Math.round(Math.abs(ana.o - kil.o)),
+        /* KILAVUZ yiginin EN ALTINDA mi (satiri oradan basliyor). */
+        kilavuzEnAltta: yigin.every(q => !q.width || q.bottom <= kil.b + 0.5),
+        /* Yigin player'in ustunde mi, ust bosluk birakarak mi. */
+        yiginUstunde: yigin.every(q => !q.width || q.bottom <= su.t + 0.5)
       } : null;
       AYAR.mood = eskiMood; moodUygula(); await bek(320);
       try{ geriYerlestir(); }catch(e){}
@@ -14465,8 +14645,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          cubuklarinin altina gitti. Konsolun ust satiri artik
          TUTAMAK degil KIP ANAHTARI -- olculen nesne de o.
          Tutamak icin ayrica sorulan sey: alt konsola hic
-         degmiyor mu. */
-      await bek(120);
+         degmiyor mu.
+
+         SABIT BEKLEME YETMIYOR. Kip degisiminden sonra yigin bir
+         sure daha tasiniyor; 320ms'de olculen halde ikonlar mood
+         (alt) yerlerinde, kip anahtari radyo (ust) yerinde
+         oluyor ve ikisi kesisiyordu -- bir kosuda kirmizi veren
+         tam olarak bu yaristi. Simdi yerlesim OTURANA kadar
+         bekleniyor: iki olculu ardisik ayniysa bitti sayilir. */
+      {
+        const izle=['ayarTut','deriFirca','saatTus','gorselTus','rehberTus','kipKisayol']
+          .map(id=>{const e=document.getElementById(id);
+            return e?Math.round(e.getBoundingClientRect().top)+'/'+Math.round(e.getBoundingClientRect().left):'-';});
+        for(let tur=0; tur<20; tur++){
+          await bek(80);
+          const simdi=['ayarTut','deriFirca','saatTus','gorselTus','rehberTus','kipKisayol']
+            .map(id=>{const e=document.getElementById(id);
+              return e?Math.round(e.getBoundingClientRect().top)+'/'+Math.round(e.getBoundingClientRect().left):'-';});
+          if(simdi.every((v,i)=>v===izle[i])) break;
+          for(let i=0;i<izle.length;i++) izle[i]=simdi[i];
+        }
+      }
       const k2 = document.getElementById('kipKisayol');
       const t3 = document.getElementById('ayarTut');
       const rb = k2 && k2.getBoundingClientRect();
@@ -14478,23 +14677,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         if(v) return {top:t,left:l};
         const s3=document.getElementById('solUst');
         return s3 ? s3.getBoundingClientRect() : null; })();
-      const yigin = ['ayarTut','deriFirca','saatTus','gorselTus','rehberTus']
-        .map(id=>document.getElementById(id).getBoundingClientRect());
+      const RADYO_ID = ['ayarTut','deriFirca','saatTus','gorselTus','rehberTus'];
+      const radyoYigin = RADYO_ID.map(id=>document.getElementById(id).getBoundingClientRect());
       const radyoSonuc = (rb && sb) ? {
         ustunde : Math.round(sb.top - rb.bottom),
         solHiza : Math.round(Math.abs(rb.left - sb.left)),
         cakisma : rb.bottom > sb.top + 0.5,
-        /* Artik kip anahtari da alt yiginin TUMUNUN altinda. */
-        tutYigin : yigin.every(q=>q.width && q.height
-          && q.bottom > innerHeight/2 && q.bottom <= sb.top + 1)
+        /* RADIOTAPE'DE YARDIMCI SUTUN TEPEDE: bes ogenin de alt
+           kenari ekranin yarisi ALTINDA olmali. (ORBITAPE'de
+           yigin altta, o yuzden ayni olcu kip duyarli olmak
+           zorunda: asagida ayri olculuyor.) */
+        sutunUstte : radyoYigin.every(q=>q.width && q.height
+          && q.bottom <= innerHeight/2),
+        /* Kip anahtari TEK BASINA: yiginin hicbir uyesine
+           dokunmuyor. */
+        /* BOYUTSUZ OGE SAYILMAZ. Gorunmez (0x0) bir dugme varsa
+           sol/sag kenar 0'a duser ve "cakisiyor" hesabi yanlis
+           TRUE cikar: rb.left >= q.right (14 >= 0) dogrulanir da
+           dikeyler de cakismiyor gorunur. Olculebilir bir oge ancak
+           gercekten dokunulabilir bir ogedir. */
+        /* BURADA CAKISMA YOK SARTI ARANIYOR, CAKISMA DEGIL. Sart
+           zaten "cakismiyor" yonunde yazili (biri dogruysa
+           dokunmuyorlar), onun basina `!` koymak sonucu TERS
+           ceviriyordu: ust uste binmeyen her oge "degen" sayiliyor
+           ve test urun saglamken kirmizi veriyordu. */
+        anahtarYalniz : radyoYigin.every(q=>!(q.width && q.height)
+          || rb.right <= q.left || rb.left >= q.right
+          || rb.bottom <= q.top || rb.top >= q.bottom),
+        sutunTepede : Math.round(Math.min(...radyoYigin.map(q=>q.top))),
+        /* TESHIS: kim kimi kesti. Hata olunca bu yazi hangi ogenin
+           nerede durdugunu soyler, sonraki kosusta tahmin yurutmaz. */
+        detay : 'KIP['+[Math.round(rb.left),Math.round(rb.top),Math.round(rb.right),Math.round(rb.bottom)]
+          +'] ' + RADYO_ID.map((id,i)=>{const q=radyoYigin[i];
+            const dgor = (q.width && q.height)
+              && !(rb.right <= q.left || rb.left >= q.right
+                || rb.bottom <= q.top || rb.top >= q.bottom);
+            return id+'('+Math.round(q.width)+'x'+Math.round(q.height)+' @'
+              +Math.round(q.left)+','+Math.round(q.top)+')'+(dgor?' DEGEN':'');}).join(' ')
       } : null;
       return { sonuc, radyoSonuc };
     });
-    K('Kipte tutamak ve kip anahtari sol altta',
-       !!tt.sonuc && !tt.sonuc.cakisma && tt.sonuc.ustunde > 0
-       && tt.sonuc.solHiza <= 1 && tt.sonuc.modulDip <= 12,
-       tt.sonuc ? ('arada '+tt.sonuc.ustunde+'px, sol fark '+tt.sonuc.solHiza
-                   +'px, modul dipten '+tt.sonuc.modulDip+'px') : 'olculemedi');
+    K('Kipte kip anahtari kilavuzun saginda, ayni satirda',
+       !!tt.sonuc && tt.sonuc.anahtarSagda >= 4 && tt.sonuc.anahtarSagda <= 14
+       /* Dikey: anahtar 24px, kilavuz 32px. ORTA hizalı olduklari icin
+          anahtarin ust kenarı kilavuzun ust kenarindan 4px ASAGIDA
+          olmali (isaret: kilavuzUst - anahtarUst = -4). */
+       && tt.sonuc.anahtarUst >= -6 && tt.sonuc.anahtarUst <= -2
+       && tt.sonuc.anahtarOrta <= 2,
+       tt.sonuc ? ('anahtar kilavuzun '+tt.sonuc.anahtarSagda+'px saginda, '
+                   +tt.sonuc.anahtarUst+'px asagida, merkez fark '
+                   +tt.sonuc.anahtarOrta+'px') : 'olculemedi');
+    K('Kipte satiri kilavuzdan basliyor, player ust bos',
+       !!tt.sonuc && tt.sonuc.kilavuzEnAltta === true
+       && tt.sonuc.yiginUstunde === true && tt.sonuc.cakisma === false
+       && tt.sonuc.ustunde > 0 && tt.sonuc.ustunde <= 14 && tt.sonuc.modulDip <= 12,
+       tt.sonuc ? ('kilavuz en altta: '+tt.sonuc.kilavuzEnAltta
+                   +' · yigin player ustu: '+tt.sonuc.yiginUstunde
+                   +' · arada '+tt.sonuc.ustunde+'px, modul dipten '
+                   +tt.sonuc.modulDip+'px, sol fark '+tt.sonuc.solHiza+'px') : 'olculemedi');
     /* ── OLCUM SIRASI: TUTAMAK CUBUKTAN SONRA ────────────────────
      CIHAZDA GORULEN HATA: uygulama acilir acilmaz uc cizgi raf
      adinin UZERINE biniyordu. Sebep sira: _tutamakYerlestir
@@ -14556,22 +14796,38 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* 6 Eylul: ad bloku ust serite tasindi (markanin soluna).
        Radyoda sol ustte yine HICBIR SEY yok -- olculen sey artik
        "gizli mi" degil, "sol ustte degil mi" ve tutamak tepede mi. */
-    K('Radyoda sol ust bos, sol yigin altta',
-       ust.solUstteDegil === true && ust.altta === true,
-       'ad sol ustte degil: ' + ust.solUstteDegil + ' · tutamak tepeden ' + ust.ustFark + 'px');
+    /* 25 Eylul: kullanicinin duzeltmesiyle RADIOTAPE'te sol sutun
+       ESKI YERINE, yani TEPEDE dondu. Once "sol yigin altta" diyordu
+       (2. tur); o kural bu testte yaziliydi ve geri alindi. */
+    K('Radyoda sol ust bos, tutamak tepede',
+       ust.solUstteDegil === true && ust.altta === false
+       && ust.ustFark >= 0 && ust.ustFark <= 40,
+       'ad sol ustte degil: ' + ust.solUstteDegil + ' · tutamak tepeden '
+       + ust.ustFark + 'px · altta: ' + ust.altta);
   }
   /* Radyoda konsolun ust satiri KIP ANAHTARI. Ayni uc olcu:
        modulun uzerine binmiyor, arada satir boslugu var, ayni sol
        kenardan basliyor. Tutamak ise bu blogun disinda -- ust
        yaride, alt konsola 100px'den fazla mesafede. */
-    K('Radyoda kip anahtari modulun ust satiri',
+    K('Radyoda kip anahtari modulun ust satiri, yalniz',
        !!tt.radyoSonuc && !tt.radyoSonuc.cakisma
        && tt.radyoSonuc.ustunde >= 6 && tt.radyoSonuc.ustunde <= 10
        && tt.radyoSonuc.solHiza <= 1
-       && tt.radyoSonuc.tutYigin === true,
+       && tt.radyoSonuc.anahtarYalniz === true,
        tt.radyoSonuc ? ('arada '+tt.radyoSonuc.ustunde+'px, sol fark '
-                        +tt.radyoSonuc.solHiza+'px, tutamak konsolun disinda '
-                        +tt.radyoSonuc.tutYigin) : 'olculemedi');
+                         +tt.radyoSonuc.solHiza+'px, yigina degen var mi '
+                         +!tt.radyoSonuc.anahtarYalniz
+                         + (tt.radyoSonuc.detay ? ' | ' + tt.radyoSonuc.detay : '')) : 'olculemedi');
+    /* RADIOTAPE'DE SOL SUTUN TEPEDE. Kullanicinin duzeltmesi:
+       "bunlar orbitape switch hariç yukarıdaki eski yerine geri
+       dönmeli." Kriter: bes yardimci ogenin de alt kenarı ekranın
+       yarisinin altinda, en ust nesne ekranin tepesine yasli. */
+    K('Radyoda yardimci yigin sol ustte',
+       !!tt.radyoSonuc && tt.radyoSonuc.sutunUstte === true
+       && tt.radyoSonuc.sutunTepede >= 0 && tt.radyoSonuc.sutunTepede <= 40,
+       tt.radyoSonuc ? ('sutun tepede: '+tt.radyoSonuc.sutunUstte
+                        +' · en ust nesne tepeden '+tt.radyoSonuc.sutunTepede+'px')
+                      : 'olculemedi');
   }
   /* ── EKRAN DEGISINCE YERLESIM DE DEGISMELI ──────────────────────
      Sol alttaki buyutecin ve sag alttaki kunyenin yeri JS'te
@@ -15866,4 +16122,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
    const kotu = raporYaz();
   process.exit(kotu.length ? 1 : 0);
-})().catch(e=>{ console.log('SAGLIK TESTI COKTU:', e.message); raporYaz(); process.exit(2); });
+})().catch(e=>{
+  /* COKME IZINI KAYBOLMASIN. process.exit() boruya yazilan stdout'u
+     bosaltmadan oldurulebiliyor: onceki kosuda "605/605 temiz"
+     gorundu, halbuki suite burada COKMUSTU (260 test hic kosmadi).
+     Bu yuzden iz once STDERR'e ve bir dosyaya yaziliyor; ekrana
+     yazilan ozet tek basina guvenilir degil. */
+  const iz = (e && (e.stack || (e.message + '\n' + e))) || String(e);
+  try{ require('fs').writeFileSync('/tmp/orbitape_saglik_cokme.txt', iz); }catch(_){}
+  try{ require('fs').appendFileSync('/tmp/orbitape_saglik_cokme.txt',
+        '\n--- zaman: ' + new Date().toISOString() + '\n'); }catch(_){}
+  try{ process.stderr.write('SAGLIK TESTI COKTU: ' + (e && e.message) + '\n' + iz + '\n'); }catch(_){}
+  raporYaz();
+  process.exit(2); });

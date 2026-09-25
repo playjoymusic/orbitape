@@ -3522,14 +3522,19 @@
      de ayni oranda buyuyor, yoksa yiginin tepesi otekilerin yaninda
      kuculmus duruyor. Azalan egim korunuyor (32/25/17, eski oran
      25/19/13 ile ayni). */
-  /* 25 Eylul: RADIOTAPE'de de ayarlar ve yardimci ikonlar sol altta
-     kalir. Eski `top:15px` kurali butun sol sutunu ekranin ustune
-     tasiyor, kip anahtari da ayni yiginla ust satira karisiyordu.
-     Artik iki kip ayni tabani paylasir; kip anahtari konsolun tam
-     ustune, yardimci yigin onun ustune yerlestirilir. */
+  /* ── IKI KIP, IKI YER (25 Eylul) ───────────────────────────────
+     Once "her iki kipte de sol altta" diye tek tabana baglandi ve
+     RADIOTAPE'in sol UST duzeni kayboldu. Kullanici duzeltti:
+     "bunlar orbitape switch hariç yukarıdaki eski yerine geri
+     dönmeli." Yani:
+       RADIOTAPE -> yardimci sutun SOL USTTE (ayarlar en ustte),
+                    kip anahtari TEK BASINA, player'in ustunde.
+       ORBITAPE  -> yardimci sutun SOL ALTTA, en altta KILAVUZ;
+                    kip anahtari KILAVUZ'UN SAGINDA, ayni satirda.
+     Iki kip birbirine karismasin diye burada ayri kural yaziliyor. */
   body:not(.mood) #ayarTut{
-    top:auto;bottom:calc(115px + var(--dip-pay));
-    width:40px;height:26px;gap:5px;}
+    top:calc(15px + env(safe-area-inset-top, 0px));
+    bottom:auto;width:32px;height:26px;gap:5px;}
   body:not(.mood) #ayarTut span:nth-child(1){width:32px;}
   body:not(.mood) #ayarTut span:nth-child(2){width:25px;}
   body:not(.mood) #ayarTut span:nth-child(3){width:17px;}
@@ -4214,6 +4219,31 @@
      dokunulacak yer. */
   #ayarTut::after,#deriFirca::after,#saatTus::after,#gorselTus::after,#rehberTus::after{
     width:max(calc(100% + 14px), 48px);height:48px;}
+  /* ── GORUNMEZ DUGMENIN DOKUNMA ALANI DA KAPANMALI (25 Eylul) ────
+     Yukardaki `pointer-events:auto` bir MIRSAL etkisi degil: kendi
+     degeri. O yuzden `body.yildiz-zum` (ve `body.klavye`) ogeleri
+     `pointer-events:none` yapsa bile oge GORUNMEZ olup TIKLANABILIR
+     kaliyordu -- cunku dokunma alani devrede.
+     OLculdu (yildizlar 3,5 kat buyukken, gercek dokunus):
+       pointerdown hedefi = deriFirca, click hedefi = deriFirca,
+       skin galerisi ACILDI. Ayni noktaya notr bir yere (195,300)
+         dokununca galeri kapali kaldi -- yani dokunus gercekten
+         gizli dugmeye gidiyordu.
+     Kullanicinin sozu: "yıldızlar çift parmak büyütüldüğünde de
+     soldaki ögeler görünmese de tıklanmasında." Dogruydu.
+     Cozum: gizlenen kipte dokunma alanini da kapat. Gorunur kipte
+     ::after'in `auto` degeri aynen durur, dokunma alani buyuklugunu
+     kaybetmez. */
+  body.yildiz-zum #geri::after,body.yildiz-zum #dur::after,
+  body.yildiz-zum #duraklat::after,body.yildiz-zum #ileri::after,
+  body.yildiz-zum #mute::after,body.yildiz-zum #favAc::after,
+  body.yildiz-zum #cam::after,body.yildiz-zum #camDon::after,
+  body.yildiz-zum #ayarTut::after,body.yildiz-zum #araCizgi::after,
+  body.yildiz-zum #deriFirca::after,body.yildiz-zum #saatTus::after,
+  body.yildiz-zum #gorselTus::after,body.yildiz-zum #rehberTus::after,
+  body.klavye #ayarTut::after,body.klavye #deriFirca::after,
+  body.klavye #saatTus::after,body.klavye #gorselTus::after,
+  body.klavye #rehberTus::after{pointer-events:none;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
@@ -18119,16 +18149,39 @@
     }catch(e){ _yut(e); }
   }
   function _kipKisayoluHizala(){
-    /* Iki kip ayni sozlesmeyi paylasir: kip anahtari PLAY/STOP
-       konsolunun tam ustunde, ayni sol kenarda. 25 Eylul olcumu:
-       RADIOTAPE'de anahtar y=179, ORBITAPE'de y=173 idi; konsol
-       ise y=810. Eski mode dallari bu iki farkli yolu ayri hesapliyordu.
-       Simdi tek olcum, tek kural: konsolun gercek ust kenarindan 8px
-       bosluk birakilir. `_altYasla` guvenli alan payini zaten icerir. */
+    /* ── KIP ANAHTARI: IKI KIPTE IKI YER (25 Eylul) ───────────────
+       RADIOTAPE: PLAY/STOP konsolunun tam ustunde, ayni sol kenarda.
+       Burada yardimci sutun tepede oldugu icin o satir bos -- anahtar
+       yalniz kalan orada durur.
+       ORBITAPE: yardimci sutun altta ve EN ALTTAKI OGE KILAVUZ.
+       Kullanici sozlesmesi: "en alt satır player, bir üstte
+       guide'dan başlayan line yukarı doğru, radio switch de o
+       guide'ın sağında." Anahtar bu yuzden KILAVUZ'UN SAGINDA,
+       ayni satirda, dikey olarak Kılavuz'un ortasina hizali.
+
+       ONCEDEN TEK KURAL VARDI (konsolun ustunde, iki kipte de) ve
+       ORBITAPE'de KILAVUZ'A bindi: Kılavuz 762..794, anahtar
+       778..802 -- 16 px ust uste. Iki ayri kural, iki ayri yer. */
     try{
       const _kk = document.getElementById('kipKisayol');
       if(!_kk) return;
       _kipAnahtarYaz();
+      if(document.body.classList.contains('mood')){
+        const _kt = document.getElementById('rehberTus');
+        if(_kt){
+          const g = _kt.getBoundingClientRect();
+          if(g.height){
+            /* Dikey hizalama KILAVUZ'UN ORTASINDAN: anahtar 24px,
+               kilavuz 32px. Alt kenari kılavuzun altindan 4px
+               yukarida birakirsak iki nesne ortasinda durur. */
+            _kk.style.removeProperty('left');
+            _altYasla(_kk, g.top + (g.height + 24) / 2);
+            _kk.style.left = Math.round(g.right + 8) + 'px';
+            _kipSagKenar(_kk, Math.round(g.right + 8));
+            return;
+          }
+        }
+      }
       const r = _konsolKutu();
       if(r && r.height){
         _altYasla(_kk, r.top - 8);
@@ -18221,49 +18274,75 @@
         if(su0){ su0.style.top = ''; su0.style.transform = ''; }
       }catch(_){ _yut(_); }
   }
+  /* Sol yardimci sutunu iki kipte IKI FARKLI yerde durur. Ortak
+     kısım: sol kenar (--kx) ve ic bosluklar. Farkli olan: taban. */
+  var _SOL_SUTUN = ['rehberTus','gorselTus','deriFirca','saatTus','ayarTut'];
+  /* SUTUNUN KUTUSUNU YAYINLA: deri seridi bu sutunla ayni yatayda
+     duruyor. Iki olcum: sag kenar (kisa yatayda seridi saga kaydirmak
+     icin) ve alt kenar (radyoda seridi sutunun ALTINA indirmek icin).
+     Sabit sayi yazmiyoruz: simge kutusu buyuyunca yanlis kalir. */
+  function _sutunYayinla(mood){
+    void mood;
+    try{
+      let sag = 0;
+      _SOL_SUTUN.forEach(id=>{
+        const e = document.getElementById(id); if(!e) return;
+        const r = e.getBoundingClientRect();
+        if(r.width && r.right > sag) sag = r.right;
+      });
+      if(sag > 0) document.documentElement.style
+        .setProperty('--sol-sutun-sag', Math.ceil(sag) + 'px');
+    }catch(_){ _yut(_); }
+  }
   function _tutamakYerlestir(y){
       void y;
-      /* SOL-ALT YIGIN: iki kip ayni tabani paylasir.
-         25 Eylul olcumu: RADIOTAPE'de ayar/icon yigini y=15..219,
-         ORBITAPE'de y=-14..198 idi; kip anahtari da y=179/173'te
-         kalmisti, oysa PLAY/STOP y=810 idi. Kullanici karari her iki
-         kipte de eski sol-alt yigini istiyor.
+      /* ── IKI KIP, IKI TABAN (25 Eylul) ───────────────────────────
+         RADIOTAPE: sutun SOL USTTE. Ayarlar en ustte (CSS top:15px),
+         altina dogru Saat -> Fırca -> Görsel -> Kılavuz. Kılavuz
+         yiginin en altinda kalir, cunku alt satiri o boslukta ozel
+         bir yere sahip: kip anahtari.
+         ORBITAPE: sutun SOL ALTTA ve TERSI: en altta Kılavuz,
+         yukarı dogru Görsel -> Fırça -> Saat -> Ayarlar. Kullanici
+         sozle bu sozu verdi: "en alt satır player, bir üstte
+         guide'dan başlayan line yukarı doğru, radio switch de o
+         guide'ın sağında."
 
-         Tek olcum: #solUst'in gercek ust kenarindan 8px bosluk alinir
-         (kip anahtarinin alt kenaridir). Yardimci ikonlar bu cizginin
-         ustunde, eski dikey sirayla yigilir:
-         GUIDE -> VISUAL -> SKINS -> ALARM -> SETTINGS.
-         Boylece ust boslukta kalir, altta tek bir tutarli yigin olur. */
+         Neden iki dal: tek bir taban iki kipte de calismiyordu.
+         Tek tabanla RADIOTAPE'in ust duzeni kayboldu; ayri dallarla
+         kip anahtari da tutamakla ayni satira biniyordu (olculdu:
+         Kılavuz 762..794, anahtar 778..802). */
       try{
-        const r = _konsolKutu();
-        if(!r || !r.height) return;
-        const taban = r.top - 8;
-        const yigin = ['rehberTus','gorselTus','deriFirca','saatTus','ayarTut'];
-        let alt = taban - 8;
-        yigin.forEach(id=>{
-          const e = document.getElementById(id); if(!e) return;
-          /* Onceki kip yolundan kalan top degerini temizle. */
-          e.style.removeProperty('top');
-          const h = e.getBoundingClientRect().height || 32;
-          _altYasla(e, alt);
-          alt -= h + 12;
-        });
-        /* SUTUNUN SAG KENARI YAYINLANIYOR. Kisa yatayda deri
-           seridi sola yaslanir ve eskiden bu sutunun USTUNDE
-           kalirdi; simdi sutun da altta oldugu icin serit
-           ayar tutamaginin uzerine biniyordu (olculdu: yatay
-           844x390'da serit 133..209, ayarTut 138..164).
-           Sabit bir genislik yazmak yerine gercek olcum
-           yayinlaniyor: simge kutusu buyuyunce yanlis kalir. */
-        try{
-          let sag = 0;
-          yigin.forEach(id=>{
+        const mood = document.body.classList.contains('mood');
+        if(mood){
+          const r = _konsolKutu();
+          if(!r || !r.height) return;
+          let alt = r.top - 8;
+          _SOL_SUTUN.forEach(id=>{
             const e = document.getElementById(id); if(!e) return;
-            sag = Math.max(sag, e.getBoundingClientRect().right || 0);
+            e.style.removeProperty('top');
+            const h = e.getBoundingClientRect().height || 32;
+            _altYasla(e, alt);
+            alt -= h + 12;
           });
-          if(sag > 0) document.documentElement.style
-            .setProperty('--sol-sutun-sag', Math.ceil(sag) + 'px');
-        }catch(_){ _yut(_); }
+        }else{
+          /* Radyoda taban CSS'te: ayarlar ustte, digerleri onun
+             altina dizilir. Adim sabit degil OLCULEN: kutu boyu
+             CSS'ten gelir, olcu oradan gelir. */
+          const tut0 = document.getElementById('ayarTut');
+          if(!tut0) return;
+          tut0.style.removeProperty('bottom');
+          tut0.style.removeProperty('top');
+          let ust = 0;
+          const tr = tut0.getBoundingClientRect();
+          if(tr.height) ust = tr.bottom + 14;
+          ['saatTus','deriFirca','gorselTus','rehberTus'].forEach(id=>{
+            const e = document.getElementById(id); if(!e) return;
+            e.style.removeProperty('bottom');
+            e.style.top = Math.round(ust) + 'px';
+            ust += (e.getBoundingClientRect().height || 26) + 12;
+          });
+        }
+        _sutunYayinla(mood);
         try{ if(typeof _rehberAcik !== 'undefined' && _rehberAcik) _rehberCiz(); }catch(_){ _yut(_); }
       }catch(_){ _yut(_); }
   }

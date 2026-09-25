@@ -185,9 +185,17 @@ async function seritOlc(sayfa){
        (9 cihaz). Dogru soru degismedi: serit ust banttan
        asagi iniyor mu ve sol yardimci sutununa binmiyor mu. */
     const alt = us ? us.getBoundingClientRect().bottom : 0;
-    /* SOL YARDIMCI SUTUNU: seritle dikeyde kesisiyor mu. */
+    /* SOL YARDIMCI SUTUNUN UST KISMI: serit sutunun BASINA dogru
+       iki ogeye (ayarlar, saat) degiyor mu.
+       Neden yalnizca ust iki? RADIOTAPE'de sutun tepede ve serit
+       133'te; seridi sutunun TAMAMININ altina indirmek merkezdeki
+       aletin uzerine biniyordu (olculdu: 390x844'te serit
+       227..313, cark 272'den basliyor). Yerlesim degismedigi icin
+       serit ust iki ogenin altinda kalir -- eski sozlesmenin de
+       baktigi sey buydu. ORBITAPE'de sutun zaten altta, soru
+       kendiliginden gecer. */
     let sutunBiner = false, sutun = '';
-    ['rehberTus','gorselTus','deriFirca','saatTus','ayarTut'].forEach(id=>{
+    ['ayarTut','saatTus'].forEach(id=>{
       const e = document.getElementById(id); if(!e) return;
       const q = e.getBoundingClientRect();
       if(!q.width || !q.height) return;

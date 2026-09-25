@@ -2243,3 +2243,40 @@ Doğrulama (dört boyutta gerçek ölçüm): yatay 844x390 ve 740x360'da seri
 `x=68..368`, 568x320'de `68..318`, dikeyde `390x844`'te `4..386`; hiçbir
 boyutta yardımcı sütunla kesişme yok. Panel açıkken tutamak `top=96`,
 panel `top=134` — 12 px, çakışma yok.
+
+### 25 Eylül — iki kipin yerleşimi ayrıldı (3. tur)
+
+Kullanıcı 2. turdaki düzeltmeyi "karıştırdım" diye geri çevirdi:
+"bunlar orbitape switch hariç yukarıdaki eski yerine geri dönmeli."
+2. turda iki kipi tek tabana bağlamak (hepsi sol altta) RADIOTAPE'in sol
+üst düzenini silmişti; ayrıca kip düğmesi Kılavuz'la üst üste binmişti
+(ölçüm: Kılavuz 762..794, anahtar 778..802 — 16 px çakışma).
+
+Yeni sözleşme iki kip, iki yer:
+  RADIOTAPE  yardımcı sütun SOL ÜSTTE (Ayarlar 15..41 → Saat 55..87 →
+             Fırça 99..131 → Görsel 143..175 → Kılavuz 187..219),
+             kip düğmesi TEK BAŞINA player'ın üstünde (778..802).
+  ORBITAPE   yardımcı sütun SOL ALTTA ve en altta KILAVUZ (770..802),
+             yukarı doğru Görsel → Fırça → Saat → Ayarlar; kip düğmesi
+             KILAVUZ'UN SAĞINDA, aynı satırda (66..170, 774..798).
+
+"Herşey nizami" isteği doğrultusunda üç ek kontrol:
+  * Kısa yatayda deri seridi sol sütunun üstüne biniyordu (844x390'da
+    serit 133..209, ayarTut 138..164). Yerleşim ölçülen sütun sağ
+    kenarını `--sol-sutun-sag` olarak yayınlıyor, seri 8 px sağından
+    başlıyor; genişlik kalan alanla sınırlanıyor.
+  * Görsel sunum açıkken hiçbir öğe ekran dışına çıkmıyor, yatay
+    kaydırma oluşmuyor ve kapanınca sol sütun birebir yerine dönüyor
+    (0,5 piksel tolerans). Ölçüldü, değişiklik gerekmedi.
+  * Yıldızlar 3,5 kat büyütülünce sol sütun `opacity:0` ve
+    `pointer-events:none` oluyor; parmağın gittiği yer `yildizKat`.
+    Zaten doğruydu, teste bağlandı.
+
+Deri seridini RADIOTAPE'te sütunun altına indirmek denendi ve
+GERİ ALINDI: serit 227'ye inince ortadaki alete biniyordu (cark 272'den
+başlıyor). Serit yerinde kaldı; kısa yataydaki kayma çözüldü.
+
+Bir ölçüm tuzağı notu: `index.html` değişince `_headers` yenilenmezse
+CSP satır içi script'i ENGELLİYOR ve uygulama hiç çalışmıyor; o durumda
+sayfa saf CSS konumlarını gösterdiği için "yerleşim bozuldu" sanılıyor.
+Ölçümden önce `python3 araclar/csp.py` çalıştırılmalı.
