@@ -42,6 +42,45 @@ const TUM_KOD = (function(){
 const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
 
+/* UI SAHIPLIK SOZLESMESI: Bir kontrol tek bir yuzeyin cocugu olmali.
+    Tasima yapilip eski DOM yerinde kalirsa gorunur arayuz ile testin
+    baktigi yer ayrisir; bu kapı o ayrismi erken ve acik adla yakalar. */
+function sahiplikKontrolu(){
+   const root = document;
+   const beklenen = {
+      araclar: '#ayarAraclar',
+      ara: '#ayar',
+      tasima: '#solUst'
+   };
+   const sonuc = {};
+   for(const [id, yuzey] of Object.entries(beklenen)){
+      const el = root.getElementById(id);
+      const kutu = root.querySelector(yuzey);
+      sonuc[id] = !!el && !!kutu && kutu.contains(el);
+   }
+   const ids = ['ayarAraclar','araclar','ara','solUst','tasima','np'];
+   const tekil = ids.every(id=>root.querySelectorAll('#'+id).length === 1);
+   return { sonuc, tekil };
+}
+
+function raporYaz(){
+   if(atlanan.length){
+      console.log('║ ·  HIZLI KIP — atlanan yavas bloklar: ' + atlanan.join(' | '));
+      console.log('║ ·  Tam tur icin: node test/saglik.js');
+   }
+   if(bilgi.length){
+      const eb = Math.max(...bilgi.map(x=>x.ad.length));
+      console.log('\n║ BILGI (hukum degil — olcunun guvenilir olmadigi yerler)');
+      for(const x of bilgi) console.log('║ ·  ' + x.ad.padEnd(eb) + ' : ' + x.deger + '  — ' + x.neden);
+   }
+   const kotu = sonuc.filter(s=>!s.gecti);
+   const en = sonuc.length ? Math.max(...sonuc.map(s=>s.ad.length)) : 0;
+   console.log('\n╔═ ORBITAPE SAGLIK RAPORU ' + '═'.repeat(Math.max(0,en+28)) );
+   for(const s of sonuc) console.log('║ ' + (s.gecti?'OK':'!!') + '  ' + s.ad.padEnd(en) + ' : ' + s.olcum);
+   console.log('╚═ ' + (sonuc.length-kotu.length) + '/' + sonuc.length + ' gecti' + (kotu.length? '  —  DUZELTILECEK: '+kotu.map(k=>k.ad).join(', ') : '  —  HEPSI TEMIZ') + '\n');
+   return kotu;
+}
+
 /* BILGI SATIRI — yazdirilir, HUKUM SAYILMAZ (motor.js'teki ile ayni
    fikir). Bazi seyler bu kurulumda guvenilir olculemiyor; onlari
    "dustu" saymak testi yalanci yapar, hic yazmamak kor birakir.
@@ -111,6 +150,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Dinleyiciler takildiktan SONRA gidiliyor: acilistaki bir JS hatasi
      yakalanmazsa bu testin varlik sebebi kalmaz. */
   await pg.goto(S); await pg.waitForTimeout(2500);
+   const sahiplik = await pg.evaluate(sahiplikKontrolu);
+   for(const [id, gecti] of Object.entries(sahiplik.sonuc)){
+      K('UI sahipligi: '+id, gecti, gecti ? 'dogru yuzeyde' : 'yanlis/eksik yuzey');
+   }
+   K('UI sahipligi: IDler tekil', sahiplik.tekil,
+      sahiplik.tekil ? 'tum kritik IDler tek' : 'kritik ID tekrarli');
   /* ALL BLACK anahtarinin KENDISI once olculuyor (varsayilani acik
      mi, gercekten karartiyor mu), sonra kapatiliyor ki asagidaki
      zemin kontrolleri sistemi olcebilsin. */
@@ -15799,20 +15844,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
   await b.close();
 
-  if(atlanan.length){
-    console.log('║ ·  HIZLI KIP — atlanan yavas bloklar: ' + atlanan.join(' | '));
-    console.log('║ ·  Tam tur icin: node test/saglik.js');
-  }
-  /* BILGI satirlari raporun basinda, hukumden AYRI. */
-  if(bilgi.length){
-    const eb = Math.max(...bilgi.map(x=>x.ad.length));
-    console.log('\n║ BILGI (hukum degil — olcunun guvenilir olmadigi yerler)');
-    for(const x of bilgi) console.log('║ ·  ' + x.ad.padEnd(eb) + ' : ' + x.deger + '  — ' + x.neden);
-  }
-  const kotu = sonuc.filter(s=>!s.gecti);
-  const en = Math.max(...sonuc.map(s=>s.ad.length));
-  console.log('\n╔═ ORBITAPE SAGLIK RAPORU ' + '═'.repeat(Math.max(0,en+28)) );
-  for(const s of sonuc) console.log('║ ' + (s.gecti?'OK':'!!') + '  ' + s.ad.padEnd(en) + ' : ' + s.olcum);
-  console.log('╚═ ' + (sonuc.length-kotu.length) + '/' + sonuc.length + ' gecti' + (kotu.length? '  —  DUZELTILECEK: '+kotu.map(k=>k.ad).join(', ') : '  —  HEPSI TEMIZ') + '\n');
+   const kotu = raporYaz();
   process.exit(kotu.length ? 1 : 0);
-})().catch(e=>{ console.log('SAGLIK TESTI COKTU:', e.message); process.exit(2); });
+})().catch(e=>{ console.log('SAGLIK TESTI COKTU:', e.message); raporYaz(); process.exit(2); });

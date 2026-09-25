@@ -2097,3 +2097,31 @@ CI ekranındaki kırmızı `!! 0` değeri test sonucu değil, log aramasının
 yazılıyor, fakat blok başında saklanmıyordu. İkisi tanımlandı; `node
 --check test/saglik.js` geçti. Tam sağlık koşusu yerelde 120 saniyede
 bitmedi; CI yeniden yeşil görülmeden tamamlanmış sayılmıyor.
+
+### 25 Eylül — UI sahiplik ve test durumu için kalıcı kapının ilk adımı
+
+Tek tek Settings/alt konsol düzeltmelerinin aynı sınıf regresyonları tekrar
+ürettiği görüldü. Kök desenler: taşınan DOM'un eski yüzeyde kalabilmesi,
+CSS/JS/testlerin aynı yerleşimi ayrı ayrı sahiplenmesi, uzun sağlık koşusunda
+kip ve panel durumlarının sızması, geometri ölçümlerinin zamanlamaya bağlı
+olması ve timeout sonrası `0/0` gibi yanıltıcı rapor oluşması.
+
+Kalıcı çözümün ilk dilimi `test/saglik.js`'e eklendi: `#araclar`, `#ara` ve
+`#tasima` için beklenen yüzeyleri doğrulayan UI sahiplik sözleşmesi; kritik
+ID'lerin tekilliği; raporu tek yerde üreten `raporYaz()`; test çökse veya
+zaman aşımına uğrasa o ana kadarki sonuçları yazan catch yolu. Böylece DOM
+sahipliği artık yalnızca belirli bir jest testinin yan etkisi olarak değil,
+başlangıç kapısı olarak ölçülüyor.
+
+İlk hızlı çalıştırmada yardımcının `pg.evaluate` içinde olmayan `root`
+parametresine güvendiği bulundu ve `document` kullanacak şekilde düzeltildi;
+`node --check test/saglik.js` geçti. Hızlı sağlık koşusu bu makinede gerçek
+assertion sonucuna ulaşamadı: yerel sunucu hazırlığı `mktemp` çakışmasıyla
+bozuldu, benzersiz log yollarıyla ikinci denemede de `python3 araclar/sunucu.py`
+portu açamadan çıktı ve Playwright beklemede kaldı. Bu nedenle sahiplik
+kapısının yeşil olduğu iddia edilmiyor; `0/0` sonucu geçerli test sonucu
+sayılmıyor.
+
+Sonraki kalıcı dilimler: ortak test durumu sıfırlama sözleşmesi (kalıcılık
+testleri açık istisna olacak), bölüm bazlı sağlık raporu ve tekil geometri
+snapshot/invalidation yolu. Bu değişiklikler henüz commit/push edilmedi.
