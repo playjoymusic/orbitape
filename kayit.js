@@ -383,7 +383,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     let surukle = false;
     kamCubuk.addEventListener('pointerdown', e=>{
       e.preventDefault(); e.stopPropagation(); surukle = true;
-      try{ kamCubuk.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+      try{ kamCubuk.setPointerCapture(e.pointerId); }catch(e){
+        if(!e || (e.name !== 'NotFoundError' && e.name !== 'InvalidStateError')) _yut(e);
+      }
       oku(e);
     });
     kamCubuk.addEventListener('pointermove', e=>{ if(surukle){ e.preventDefault(); oku(e); } });
@@ -3151,6 +3153,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     fotoCakisi();
     let semboller = null;
     try{
+      if(kamAcik && kamEl) await ilkKare(kamEl);
       kayitTuvalKur();
       const [h1] = await Promise.all([fotoArayuzHazirla(KAYIT_K), _bekleSembolleriHazirla()]);
       semboller = h1;
@@ -3441,7 +3444,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
           try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }
           favKipDegis();
         }, FAV_TUT);
-        try{ fa.setPointerCapture(e.pointerId); }catch(_){ _yut(_); }
+        try{ fa.setPointerCapture(e.pointerId); }catch(e){
+          if(!e || (e.name !== 'NotFoundError' && e.name !== 'InvalidStateError')) _yut(e);
+        }
       });
       const favAcBirak = e=>{
         if(e){ e.preventDefault(); e.stopPropagation(); }

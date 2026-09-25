@@ -32,6 +32,8 @@ BEYAZ EKRAN GUVENCESI
 """
 import os, re, sys, shutil, subprocess
 
+PYTHON3 = shutil.which("python3") or shutil.which("python3.7") or sys.executable
+
 KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CIKTI = os.path.join(KOK, "yayin")
 TERSER = os.path.join(KOK, "node_modules", ".bin", "terser")
@@ -160,7 +162,7 @@ def main():
             open(yol, "w", encoding="utf-8").write(c)
             boy[ad] = (len(k.encode()), len(c.encode()))
     # CSP ozetleri YENI dosyadan.
-    p = subprocess.run([sys.executable, os.path.join(KOK, "araclar", "csp.py"), "--kok", CIKTI],
+    p = subprocess.run([PYTHON3, os.path.join(KOK, "araclar", "csp.py"), "--kok", CIKTI],
                        capture_output=True, text=True)
     if p.returncode != 0:
         raise SystemExit("csp.py --kok yayin: " + p.stderr.strip()[:400])

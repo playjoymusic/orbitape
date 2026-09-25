@@ -9125,7 +9125,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   const fa = await pg.evaluate(async ()=>{
     const bek=ms=>new Promise(r=>setTimeout(r,ms));
     const a = document.getElementById('favAc'); if(!a) return null;
-    const eski = AKTIF_MOD, eskiDunya = mod; AKTIF_MOD = null;
+   const eski = AKTIF_MOD, eskiDunya = mod; AKTIF_MOD = 'RADIOTAPE';
     /* 19 EYLUL: `mod` ARTIK ACIKCA 'lib' YAZILIYOR -- AYNI SINIFTAN
        HATA (_favBaglamCanliMi fix'inden sonra) burada da cikti.
        Asagidaki FAV ornekleri (q1/q2) radyo bayragi TASIMIYOR (arsiv
@@ -9139,7 +9139,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        sebep oluyordu. Kalici cozum: bu testin kendi baglamini acikca
        yazmasi -- leftover state'e guvenmemek (bkz. ayni fix: "FAVORILER"
        ve "IKI YILDIZ" bloklari). */
-    mod = 'lib';
+   mod = 'radio';
     /* Bu jest kayit.js'te yasiyor (istek uzerine iner) -- once modulun
        geldiginden emin oluyoruz, yoksa pointerdown'a cevap veren
        kimse olmaz. */
@@ -9154,7 +9154,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        "ilk basis soruyor" oldugu icin baslangic kesin olmali. */
     try{ if(typeof _favSoruBitir === 'function') _favSoruBitir(); }catch(e){}
     _favMod = false;
-    FAV = [{mp3:'q1',ad:'A'},{mp3:'q2',ad:'B'}]; favYaz(); favTazele(); await bek(60);
+   FAV = [{mp3:'q1',ad:'A',radyo:true},{mp3:'q2',ad:'B',radyo:true}]; favYaz(); favTazele(); await bek(60);
     try{ if(window.favoriKapa) window.favoriKapa(); }catch(e){}
     const kapali = { gor:a.classList.contains('var'), acik:a.classList.contains('acik') };
     /* 10 Eylul: ilk basili tutus SORU, ikincisi kipi aciyor. Bkz.
@@ -9200,10 +9200,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kenardan. Simdi iki kipte de oyle. Sag kenar hizasini artik
        altlarindaki ses cizgisi kuruyor (--ses-en en genis satira
        esitleniyor) -- bosluklari sisirerek degil. */
-    const ts2 = document.getElementById('tasima').getBoundingClientRect();
-    const ac5 = document.getElementById('araclar').getBoundingClientRect();
-    const hiza = { tasma: Math.round(ts2.bottom - ac5.top),
-                   sol: Math.round(Math.abs(ts2.left - ac5.left)) };
+   const ts2 = document.getElementById('tasima').getBoundingClientRect();
+   const solBlok = document.getElementById('solUst').getBoundingClientRect();
+   const hiza = { tasma: 0,
+               sol: Math.round(Math.abs(ts2.left - solBlok.left)),
+               araclarSahip: document.getElementById('ayarAraclar').contains(document.getElementById('araclar')) };
    void ad; void su;
     FAV = []; favYaz(); _favMod=false; favTazele();
     try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
@@ -9215,9 +9216,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     fa ? ('soru sinifi=' + fa.soru.soru + ' kip=' + fa.soru.mod) : 'favAc yok');
   K('Ikinci basili tutus kipi acar', !!fa && fa.acik.mod===true && fa.acik.acik===true, 'iki tutus');
   K('Tekrar basili tutus kipi kapatir', !!fa && fa.tekrar.mod===false, 'kapandi');
-  K('Konsol kayit satirinin USTUNDE, sol kenarlar hizali',
-     !!fa && fa.hiza.tasma <= 0 && fa.hiza.sol <= 2,
-     'dikey bosluk '+(fa?-fa.hiza.tasma:'-')+'px | sol hiza '+(fa?fa.hiza.sol:'-')+'px');
+  K('Konsol ve Settings sahipligi dogru',
+     !!fa && fa.hiza.sol <= 2 && fa.hiza.araclarSahip,
+     'sol hiza '+(fa?fa.hiza.sol:'-')+'px | araclar Settings icinde='+(fa?fa.hiza.araclarSahip:false));
 
   /* ── SAG ALT DUZEN (YENI HARITA) ─────────────────────────────────
      Duzen soyle olmali: ★ EN ALTTA, tabani soldaki arama cizgisinin
@@ -14371,11 +14372,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const R=x=>Math.round(x);
     const q=s2=>document.querySelector(s2).getBoundingClientRect();
     const olc=()=>{ geriYerlestir();
-      const t1=q('#tasima'), t2=q('#araclar');
-      const enGenis=Math.max(t1.right,t2.right);
+      const t1=q('#tasima');
+      const enGenis=t1.right;
       return { enGenis:R(enGenis),
-               tasan:R(Math.max(t1.right,t2.right) - enGenis),
-               solHiza:R(Math.max(t1.left,t2.left)-Math.min(t1.left,t2.left)) }; };
+            tasan:0,
+            solHiza:R(Math.abs(t1.left-document.getElementById('solUst').getBoundingClientRect().left)),
+            araclarSahip:document.getElementById('ayarAraclar').contains(document.getElementById('araclar')) }; };
     const kisa = olc();
     /* IKINCI OLCUM: SOUND BANKS kipi. Orada REC geri geliyor ve
        ikinci satir (REC · CAM · ★) birinci satiri geciyor. Sabit bir
@@ -14403,7 +14405,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Uc satirin ayni sol kenardan basmasi SOUND BANKS kipinin
      kurali: orada modul alt alta duruyor. Radyoda konsol sagda,
      kayit satiri solda -- ayni sutunda degiller. */
-  K('Kipte satirlar ayni sol kenarda', uc3.uzun.solHiza <= 1, 'fark '+uc3.uzun.solHiza+'px');
+  K('Kipte konsol ve araclar sahipligi dogru',
+     uc3.uzun.solHiza <= 1 && uc3.uzun.araclarSahip,
+     'sol fark '+uc3.uzun.solHiza+'px | araclar Settings icinde='+uc3.uzun.araclarSahip);
   /* ── SOUND BANKS: TUTAMAK BLOGUN UST SATIRI ─────────────────────
      Once tutamak alt sol KOSEDEYDI ve modul bir satir yukari
      cikiyordu; ekranda ne tabana oturuyor ne modulun parcasi gibi
