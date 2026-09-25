@@ -2125,3 +2125,43 @@ sayılmıyor.
 Sonraki kalıcı dilimler: ortak test durumu sıfırlama sözleşmesi (kalıcılık
 testleri açık istisna olacak), bölüm bazlı sağlık raporu ve tekil geometri
 snapshot/invalidation yolu. Bu değişiklikler henüz commit/push edilmedi.
+
+### 25 Eylül (devam) — yerel sağlık betiğinin yanlış kökü
+
+Yarım kalan sağlık kapısını yeniden çalıştırırken `npm run hizli` sunucu
+olmadan `ERR_CONNECTION_REFUSED` verdi ve catch yolu `0/0` raporu üretti;
+bu geçerli bir başarı değildir. `test/saglik.sh` de sabit `/tmp/work`
+klasörünü servis ettiği için depo kökünden çalıştırıldığında aynı sözleşmeyi
+kullanmıyordu.
+
+`test/saglik.sh` artık kendi dosya konumundan depo kökünü buluyor, `8765`
+portunda yalnızca bu kökü HTTP ile servis ediyor, hazır olmayı `curl` ile
+ölçüyor ve çıkışta sunucuyu kapatıyor. `bash -n test/saglik.sh` geçti.
+Gerçek Chromium sağlık koşusu bu Mac'te 120 saniyede rapora ulaşmadı; bu
+yüzden sağlık kapısı hâlâ yeşil kabul edilmiyor. Sonraki adım tek sunuculu
+koşuda hangi sağlık bloğunun bu süreyi tükettiğini görünür ölçmek.
+
+### 25 Eylül (devam 2) — ana test sayfası kapanışı ve koşu temizliği
+
+Sağlık testinin ana sayfası `pg`, `sayfaAc()` tarafından döndürülen `kapat`
+ sözleşmesini almadan açık bırakılıyordu. `test/saglik.js` artık `kapatPg`
+ alıyor ve tarayıcı kapanmadan önce çağırıyor. `node --check`, `bash -n` ve
+`git diff --check` geçti.
+
+Bu düzeltmeden sonra tek koşu yine 120 saniyede rapor vermedi; dolayısıyla
+ana sayfa sızıntısı olası bir kaynak olsa da kök neden olarak kanıtlanmadı.
+Araştırmada terminal zaman aşımının `npm`/Node çocuklarını bıraktığı ve birden
+çok sağlık koşusunun aynı anda çalıştığı görüldü. Eski süreçler kapatıldı;
+bundan sonraki ölçüm yalnızca temiz bir süreç tabanında kabul edilecek.
+
+### 25 Eylül (devam 3) — temiz koşuda da sağlık raporu yok
+
+`npm run birim` bu oturumda 0 çıkış koduyla tamamlandı. Ardından portu ve
+önceki Node/Chromium süreçlerini temizleyip yalnızca tek bir `npm run hizli`
+koşturuldu; bu koşu da 120 saniyede sağlık raporu üretmedi. Sonuç sayaçsız
+olduğu için başarı kabul edilmiyor. Koşu ve sunucu süreçleri kapatıldı.
+
+Bu ölçüm, sorunun yalnızca eski süreçlerin üst üste binmesi olmadığını
+kanıtlıyor. Sayfa kapanış düzeltmesi ve yerel sunucu betiği yerinde; sağlık
+testinin hangi iç bloğa girmeden/asılı kalarak süreyi tükettiği hâlâ ayrıca
+izole edilmeli.

@@ -128,7 +128,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* REHBER KARTI testlerin ustune binmiyor: 17 Eylul'den beri rehber
      kendiliginden hic acilmiyor (yalniz basili tutunca), eski acilis-
      sayaci mekanizmasi kalkti. Kart kendi bolumunde ayrica sinaniyor. */
-  const { sayfa: pg } = await sayfaAc(c, {
+   const { sayfa: pg, kapat: kapatPg } = await sayfaAc(c, {
     bekle: 2500,
     once: ()=>{ window.__gum=0;
       const o = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
@@ -15842,7 +15842,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      trd.oto.onbellek.join(', '));
   }
 
-  await b.close();
+   await kapatPg();
+   await b.close();
 
    const kotu = raporYaz();
   process.exit(kotu.length ? 1 : 0);
