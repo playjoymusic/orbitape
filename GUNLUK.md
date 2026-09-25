@@ -1991,6 +1991,25 @@ artık bağımsız `FAVOURITES`, `REC`, `CAM` ve `MUTE` hedefleri çıkarıldı;
 Yeni MENU metni beş dil dosyasına eklendi; JSON, CSP, syntax ve diff
 kontrolleri geçti.
 
+### 25 Eylül — CI/H1 ve teslim öncesi bayatlık denetimi
+
+`f406daa` tabanında kaynak `index.html` içinde erişilebilir H1 var. CI'nin
+`derle.py` adımı root'tan `yayin/` üretiyor; sistem Python'ıyla yeniden
+çalıştırıldı ve üretilen `yayin/index.html` içinde de
+`<h1 class="gizli-baslik">` kaldığı ölçüldü. Bu nedenle eski CI ekranındaki
+tek H1 kırmızısı mevcut HEAD'de yeniden üretilemedi; eski koşuya ait kabul
+ediliyor, yeni CI koşusu ile doğrulanacak.
+
+Teslim öncesi taramada `index.html` 1.329.151 byte, ham boy kapısı 1.332.224
+byte: geçiyor. `ayarAlt`, `temelFark` ve eski REC yerleşimi aktif kod/testte
+yok; kalan eşleşmeler tarihsel yorum veya güncel yerleşim kontrolünün
+açıklaması. Aktif arayüz metinleri İngilizce/çeviri anahtarları üzerinden.
+
+Bu Mac'te `python3` bozuk bir Homebrew 3.7 symlink'ine
+(`/usr/local/opt/python/bin/python3.7`) işaret ediyor; bu depo hatası değil.
+Derleme `/usr/bin/python3` ile başarılı. Çalışma ağacı temiz; commit/push
+yapılmadı.
+
 ### 25 Eylül (son durum süpürmesi) — Eski denemeler geçersiz kılındı
 
 Bu günlüğün önceki 25 Eylül maddelerinde geçen `#ayarAlt`/ikinci tutamak,
