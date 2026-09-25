@@ -2061,6 +2061,18 @@ Aynı kontrolde `araclar` kapalı Settings içinde ölçüldüğü için 17px sa
 hiza farkı üretiyordu. Kapı artık görünür `tasima` satırı ile `ayarTut`u
 karşılaştırıyor. Ölçüm: sol fark `0px`; kip anahtarı konsolun üstünde.
 
+### 25 Eylül — Favori basılı tutuşunun doğru kip bağlamı
+
+CI'deki `Ilk basili tutus soruyor` kırmızısı, gerçek jest testinin radyo
+favorisini kurarken `mod` değişkenini radyo olarak sabitlememesinden çıktı;
+favori havuzu boş sanılıp soru açılmıyordu. Test artık `mod='radio'` ve
+`AKTIF_MOD='RADIOTAPE'` ile gerçek kullanıcı bağlamını kuruyor.
+
+390px ölçümü: `shortOpen=true`, `longQuestion=true`, `longClosed=true`;
+Settings içinde `#araclar` da doğrulanıyor. `REC satırı EN ALTTA` ve `REC/CAM
+sol üstte` eski görünür konsol varsayımlarıydı; artık Settings paneli
+sözleşmesine göre ölçülüyor.
+
 ### 25 Eylül (son durum süpürmesi) — Eski denemeler geçersiz kılındı
 
 Bu günlüğün önceki 25 Eylül maddelerinde geçen `#ayarAlt`/ikinci tutamak,

@@ -8269,6 +8269,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const il = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const c = {};
+      const eskiMod = mod, eskiAktifMod = AKTIF_MOD;
       try{
         const eM = mod, eA = AKTIF_AILE;
         mod = 'radio'; AKTIF_AILE = 'JAZZ'; modAdiYaz();
@@ -8975,7 +8976,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{ if(window.ayarGoster) window.ayarGoster(true); }catch(e){}
       await bek(300);
       try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
-      FAV = []; _favMod = false; _favSoru = null; favTazele();
+      FAV = []; _favMod = false; _favSoru = null; mod = 'radio'; AKTIF_MOD = 'RADIOTAPE'; favTazele();
       cal({mp3:'jst1', ad:'Jest Favori', radyo:true, grup:'JAZZ'}); await bek(80);
       favDegis(); await bek(60);
       const fa = document.getElementById('favAc');
@@ -9002,6 +9003,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{ if(window.ayarGoster) window.ayarGoster(false); }catch(e){}
       try{ localStorage.removeItem('orbitape.fav'); }catch(e){}
       FAV = []; _favMod = false; favTazele();
+      mod = eskiMod; AKTIF_MOD = eskiAktifMod;
       return c;
     });
     K('Kisa dokunus favori listesini aciyor (gercek jest)',
@@ -11458,8 +11460,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                     /* Sira 'order' ile yaziliyor, yonu cevirerek
                        degil: column-reverse ilk cocugu dibe koyuyor
                        ve tasima satiri en alta dusuyordu. */
-                    sira:(()=>{const g=id=>Math.round(document.getElementById(id).getBoundingClientRect().top);
-                      return g('araclar') > g('tasima') ? 'rec-altta' : 'tus-altta';})(),
+                              settings:document.getElementById('ayarAraclar')?.contains(document.getElementById('araclar'))===true,
                     arama:document.getElementById('ara').parentElement === document.getElementById('ayar'),
                     tutSol:Math.round(document.getElementById('ayarTut').getBoundingClientRect().left),
                     /* KURAL DEGISTI: tutamak artik modulun ALTINDA
@@ -11479,8 +11480,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Sira ters: dibe en yakin olan REC · CAM · ★ · sustur satiri,
      ustunde tasima tuslari -- en cok basilan sey basparmagin
      dogal yerinde. */
-  K('Kipte REC satiri EN ALTTA', moodYer.kipte.sira==='rec-altta',
-     'alttan yukari: REC · CAM · ★ · sustur -> tasima tuslari');
+  K('REC satiri Settings panelinde', moodYer.radyo.settings && moodYer.kipte.settings,
+     'REC · CAM · ★ · sustur panel yuvasinda');
   K('Kipte arama ayarlarda var', moodYer.kipte.arama && moodYer.radyo.arama,
      'arama paneli iki kipte de ayarlarda');
   K('Kipte REC geri geliyor', moodYer.kipte.rec!=='none', 'canli yayin disinda kayit anlamli');
@@ -12110,8 +12111,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                  && document.querySelector('#tasima #dur')),
     sagAltta: document.querySelectorAll('#np .np-gez button').length,
     sagAlttaki: [...document.querySelectorAll('#np .np-gez button')].map(b=>b.id).join(','),
-    kayitSolUstte: !!(document.querySelector('#solUst #rec') && document.querySelector('#solUst #cam')),
-    solAltBos: !document.querySelector('body > #araclar')
+   kayitSettings: document.getElementById('ayarAraclar')?.contains(document.getElementById('araclar'))===true,
+   solAltBos: !document.querySelector('body > #araclar')
   }));
   K('Tasima tuslari sol ustte', takim.solUstte===true, '◁ ‖ ▷ tek yerde');
   /* Sag alt kosede iki dugme var ve ikisi de AYNI SEY hakkinda:
@@ -12119,7 +12120,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      buradan gitti -- ayni is icin iki takim tus olmasin diye. */
   K('Sag altta tasima tusu yok', takim.sagAltta<=2 && !/geri|ileri|dur/.test(takim.sagAlttaki),
      'kalan: '+takim.sagAlttaki);
-  K('REC ve CAM sol uste tasindi', takim.kayitSolUstte===true && takim.solAltBos===true, 'sol alt bosaldi');
+   K('REC ve CAM Settings paneline tasindi', takim.kayitSettings===true && takim.solAltBos===true, 'sol alt bosaldi');
 
   /* ── 7. AYNI TUS, IKI IS ────────────────────────────────────────
      Canli yayin kaydedilmiyor -- istasyonlar dinlenmek icin
