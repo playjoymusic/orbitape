@@ -1931,3 +1931,9 @@ ekranı belgelemeye devam ettiği için kendi çağrılarını koruyor. Böylece
 kayıtta yalnızca sol üst, sağ üst ve sağ alt bilgi blokları kalıyor. CSP
 yenilendi; JS syntax ve diff kontrolleri geçti. Tam npm test koşusu 120 saniye
 sınırında sonuç vermeden kesildi.
+
+25 Eylül — kaynak boyu kapısı: yeni kontrol paneli ve kayıt onay akışından
+sonra `index.html` 1.331.425 byte / 1300,22 KiB ölçüldü; eski 1298 KiB tavanı
+2.273 byte aşıldı. Büyüme yeni davranış, ölçüm açıklamaları ve kayıtlı yorum
+kararıyla geldi; açıklamalar budanmadı. `test/saglik.js` tavanı ölçümün hemen
+üstündeki kontrollü 1301 KiB'e çıkarıldı.

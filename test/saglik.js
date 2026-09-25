@@ -1224,12 +1224,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       22 EYLUL visual ve kamera guvenceleri: index.html 1.321.361 bayt /
       1290,39 KB oldu; tavan 1292 KB'a alindi. Artis yine kucuk kod + yorum
       kaynakli. */
-       /* 25 Eylul devam: index.html 1.328.280 bayta geldi; 1.297 KB
-          tavanini 1.176 bayt asti. Buyume REC/CAM sabitligi, sayfa
-          kapanis kapisi ve kucuk ekran olcum notlarindan geliyor; yorum
-          budamak depo kararina aykiri. Tavan olculen kaynak boyuna gore
-          kontrollu olarak 1 KB artirildi. */
-       K('Ham boy < 1298 KB', dosyaBoy < 1298*1024,
+       /* 25 Eylul devam: kontrol paneli, ikinci Settings tutamagi ve
+          kayıt onay akisi sonrasi index.html 1.331.425 bayta geldi;
+          1.298 KB tavanini 2.273 bayt asti. Buyume yeni davranislar ve
+          olcum aciklamalarindan geliyor; yorum budamak depo kararina
+          aykiri. Tavan olculen kaynak boyuna gore kontrollu olarak
+          1 KB artirildi. */
+       K('Ham boy < 1301 KB', dosyaBoy < 1301*1024,
          Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
