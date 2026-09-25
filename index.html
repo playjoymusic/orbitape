@@ -4449,7 +4449,17 @@
          odaklanabilir kalirsa ekran okuyucu "gorunmeyen ama
          odaklanabilen dugme" durumuna duser (WCAG 4.1.2). -->
     <div id="ayarAra" role="button" tabindex="-1" aria-label="Search">SEARCH</div>
-    <div id="ayarAraclar" aria-label="Photo and camera controls"></div>
+    <div id="ayarAraclar" aria-label="Photo and camera controls">
+      <div id="araclar">
+        <div id="pic" role="button" tabindex="0" title="Photo of this screen"><span class="nokta"></span><span id="picYazi">PIC</span></div>
+        <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
+        <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
+        <div id="camDon" role="button" tabindex="0" title="Switch camera" aria-label="Switch camera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a8 8 0 0 1 13.9-5.3M20 4v4.6h-4.6"/><path d="M20 15a8 8 0 0 1-13.9 5.3M4 20v-4.6h4.6"/></svg></div>
+        <div id="mute" role="button" tabindex="0" title="Mute" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle class="kay" cx="7.5" cy="12" r="2.6"/><path class="y1" d="M12.4 8.6a5.6 5.6 0 0 1 0 6.8"/><path class="y2" d="M16.1 6.1a10 10 0 0 1 0 11.8"/><path class="cap" d="M5 19 L19 5"/></svg></div>
+        <i id="araYuva" aria-hidden="true"></i>
+        <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
+      </div>
+    </div>
     <div id="kayitOnay" role="group" aria-label="Save recording" hidden>
       <span>SAVE RECORDING?</span>
       <div>
@@ -5011,53 +5021,6 @@
            govdedeki 'mood' sinifi ve 'durdu' durumu karar veriyor. -->
       <button id="duraklat" type="button" title="Stop" aria-label="Stop" aria-pressed="false"><svg viewBox="0 0 14 12" aria-hidden="true"><rect class="d1" x="2.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="d2" x="8.4" y="1.1" width="3.2" height="9.8" rx="0.7"/><rect class="stp" x="2.6" y="1.3" width="9.4" height="9.4" rx="1.4"/><path class="oyn" d="M3.2 1.1 L3.2 10.9 L12 6 Z"/></svg></button>
       <button id="ileri" type="button" title="Next in history" aria-label="Next in history"><svg viewBox="0 0 14 12" aria-hidden="true"><rect x="11.7" y="1.1" width="1.7" height="9.8" rx="0.6"/><path d="M0.6 1.1 L0.6 10.9 L9.8 6 Z"/></svg></button>
-    </div>
-    <!-- IKINCI SATIR: kayit araclari, favori girisi ve ses.
-         NEDEN BU DAGILIM: 360px'te olculdu -- sag ustteki satir
-         (kategori adi + ORBITAPE) 201px yer kapliyor ve solda yalnizca
-         127px kaliyor. Ilk satira bes denetim koyunca 186px oluyor ve
-         carpiyordu; emniyet olcegi devreye girip haplari kuculttugu
-         icin de sag alttaki ★ ile ayni olcude olmuyorlardi.
-         Ikinci satirin karsisinda HICBIR SEY YOK (sag ustteki satir
-         yukarida bitiyor), yani genis olabilir. Bu yuzden ilk satirda
-         yalnizca uc tasima tusu duruyor: 114px, rahatca siginyor. -->
-    <div id="araclar">
-      <!-- REC RADYO TARAFINDA YOK. Canli yayin kaydedilmiyor: dugme
-           orada her zaman pasifti, yani ekranda hicbir zaman
-           calismayan bir tus duruyordu. Yalnizca SOUND BANKS kipinde
-           gorunuyor (bkz. CSS: body:not(.mood) #rec). Silinmedi --
-           orada kendi tasarimiyla duracak. -->
-      <div id="pic" role="button" tabindex="0" title="Photo of this screen"><span class="nokta"></span><span id="picYazi">PIC</span></div>
-      <div id="rec" role="button" tabindex="0" title="Screen recording"><span class="nokta"></span><span id="recYazi">REC</span></div>
-      <div id="cam" role="button" tabindex="0" title="Front camera" aria-pressed="false"><span class="nokta"></span><span id="camYazi">CAM</span></div>
-      <!-- ── KAMERA DONDUR: on/arka gecisi (16 Eylul) ─────────────────
-           Kullanicinin sozu: "kamera acildiktan sonra isteyen kamerayi
-           dondursun diye ... arka m-kamera on kamera yan istedigim."
-           CAM'in hemen yaninda, AYNI satirda: bu satir zaten diskin/
-           halkanin DISINDA (sol ust kose, bkz. #solUst), yani "hemen
-           alti halkaya carpar mi" endisesi burada devreye girmiyor --
-           disk ortada, bu dugme kosede duruyor.
-           Yalnizca kamera ACIKKEN gorunur (.var, kayit.js: camYaz());
-           kapaliyken donecek bir goruntu olmadigi icin gizli -- boylece
-           kamera kapaliyken satir eskisi gibi 4 ogeye (REC·CAM·sustur·★)
-           donuyor, genislik sorunu (eskiden yasanan 5 ogelik tasma)
-           yalnizca kamera acikken ve gecici olarak devreye giriyor,
-           orada da araclarSigdir() zaten oraniyor. -->
-      <div id="camDon" role="button" tabindex="0" title="Switch camera" aria-label="Switch camera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a8 8 0 0 1 13.9-5.3M20 4v4.6h-4.6"/><path d="M20 15a8 8 0 0 1-13.9 5.3M4 20v-4.6h4.6"/></svg></div>
-      <!-- ── SUSTUR ─────────────────────────────────────────────────
-           Hoparlor cizmedik: uygulamanin kendi sembol dili nokta ve
-           yay. Ortada bir kaynak noktasi, sagina yayilan iki yay --
-           "ses cikiyor". Susunca yaylar sonuyor ve uzerine capraz
-           bir cizgi geliyor. Ayni dil sag ustteki calma gostergesinde
-           ve halkalarda da kullaniliyor. -->
-      <div id="mute" role="button" tabindex="0" title="Mute" aria-label="Mute" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle class="kay" cx="7.5" cy="12" r="2.6"/><path class="y1" d="M12.4 8.6a5.6 5.6 0 0 1 0 6.8"/><path class="y2" d="M16.1 6.1a10 10 0 0 1 0 11.8"/><path class="cap" d="M5 19 L19 5"/></svg></div>
-       <!-- BUYUTECIN YUVASI: ayni kontrol satirinda sabit kalir. Arama
-         acilinca #ara ayri fixed panel olarak buyur; kapaliyken bu
-         bos kutunun gercek konumu hem RADIOTAPE hem ORBITAPE icin
-         ortak hizalama kaynagidir. -->
-       <i id="araYuva" aria-hidden="true"></i>
-      <!-- ★ EN SONDA. Istenen: "alt sirada yildiz en sonda olsun." -->
-      <div id="favAc" role="button" tabindex="0" title="Favourites" aria-label="Favourites" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></div>
     </div>
   </div>
   <!-- ── SU AN CALAN: BUYUK KART ──────────────────────────────────
