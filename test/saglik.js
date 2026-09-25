@@ -5525,9 +5525,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const araclar = document.getElementById('araclar');
       const tut = document.getElementById('ayarTut');
       if(!panel || !yuva || !araclar || !tut) return null;
+      const panelStil = getComputedStyle(panel);
       const kapali = !document.body.classList.contains('ayar-acik')
-         && getComputedStyle(panel).pointerEvents === 'none'
-         && araclar.getBoundingClientRect().width === 0;
+         && panelStil.pointerEvents === 'none'
+         && panelStil.opacity === '0'
+         && panel.hasAttribute('inert');
       tut.click(); await new Promise(r=>setTimeout(r,350));
       const acik = document.body.classList.contains('ayar-acik')
          && yuva.contains(araclar)
