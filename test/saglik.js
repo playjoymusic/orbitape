@@ -3613,12 +3613,46 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const p=[]; const gor=e=>{const s=getComputedStyle(e); return s.display!=='none' && s.visibility!=='hidden' && +s.opacity>0.01;};
     document.querySelectorAll('body *').forEach(e=>{
       if(e.closest('#rapor')) return;                 // gelistirici paneli (D tusu)
+      /* #np SAYILMAZ (25 Eylul). Bu blok yalnizca YAYINDAN GELEN
+         veriyi gosterir: npAd istasyon adi, npParca parca, npSanatci
+         sanatci, npKaynak kaynak, npLisans lisans, npBayrak bayrak.
+         radyo.json'da turkce adli istasyonlar VAR ("Radyo Gokceada",
+         "Super 2 FM") ve moodSembolSec() RASTGELE indeks sectigi icin
+         arada bir o istasyon ekrana cikiyor; test de "arayuz
+         Ingilizce degil" sanip dustu (876/877). Cevirisi de yanlis
+         olurdu: istasyonun adi neyse o gosterilir. Ayni dusunce
+         zaten baska yerde yazili: "Doldurma isimler kunyeye yazilmiyor".
+         Yani bu bir istisna degil, sozlestirmenin dogru yolu. */
+      if(e.closest('#np')) return;
       if(!gor(e)) return;
       for(const n of e.childNodes) if(n.nodeType===3 && n.textContent.trim()) p.push(n.textContent.trim());
     });
     const t=[...new Set(p)].join(' | ');
     const tr=/[çğışöüÇĞİŞÖÜ]|\b(kayıt|kaydet|kamera|halka|tuş|aç|kapat|yok|var|ses)\b/i;
-    return tr.test(t) ? (t.match(tr)[0]+' -> '+t.slice(0,60)) : null;
+    if(!tr.test(t)) return null;
+    /* TANI: sadece "ilk bulunan -> ilk 60 karakter" yetmiyordu; hatanin
+       NEREDE oldugunu bilmeden ayiklanamadi. Simdi sucul dugumun
+       kimligini de yaziyoruz (25 Eylul: 876/877 kosusunda bu test
+       dustu, "ü -> ORBITAPE — a sound explorer..." cikti; h1 gizli
+       baslik, sucul satir onun oldugu). */
+    let sucul = 'bulunamadi';
+    for(const e of document.querySelectorAll('body *')){
+      if(e.closest('#rapor') || e.closest('#np') || !gor(e)) continue;
+      for(const n of e.childNodes){
+        if(n.nodeType===3 && n.textContent.trim() && tr.test(n.textContent)){
+          const z=[]; let x=e;
+          while(x && x!==document.body){
+            if(x.id) z.unshift('#'+x.id);
+            if(typeof x.className==='string' && x.className) z.unshift('.'+x.className.split(' ')[0]);
+            x=x.parentElement;
+          }
+          sucul = z.join('<')+' :: '+n.textContent.trim().slice(0,40);
+          break;
+        }
+      }
+      if(sucul!=='bulunamadi') break;
+    }
+    return t.match(tr)[0]+' -> '+t.slice(0,60)+'  ||  sucul: '+sucul;
   });
   K('Arayuz tamamen Ingilizce', dil===null, dil||'temiz');
 
@@ -8269,16 +8303,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            hicbir sey yok, sorun degil. Olculecek sey ekranin
            kendisi. */
         const tasmaz = (o)=> o.kk.r <= window.innerWidth - 8;
-        /* ARSIVDE (25 Eylul) KOMSUSU DEGISTI: anahtar artik sol
-           alttaki yiginin EN ALTINDAKI KILAVUZ'un saginda, ayni
-           satirda. Eskiden konsolun ustunde, tasima satiriyla ayni
-           sol kenarda duruyordu; kullanici "radio switch de o
-           guide'ın sağında olacak" dedi. Olculen: saginda mi, ayni
-           satirda mi, konsola degiyor mu. */
+        /* ARSIVDE (25 Eylul, ikinci tur) KOMSUSU DEGISTI: anahtar
+           artik UC CIZGININ (ayarTut) saginda, ayni satirda. Once
+           kilavuzun yanindaydi ("radio switch kilavuzun saginda"),
+           sonra kullanici baska bir duzen istedi: "radyo yazan
+           switch'in solunda ayarlar cizgileri var olacak... ikonlar
+           onun ustunde olsun, sola dayarken hizali yap." Yani satirin
+           sol ucu uc cizgi, anahtar onun saginda, diger ikonlar
+           ustune yigiliyor. */
         const arsivDogru = (o)=>{
-               if(!o.kk || !o.ta || !o.kil) return false;
-               const saginda = o.kk.l - o.kil.r;
-               const ayniSatir = Math.abs((o.kk.t + o.kk.h/2) - (o.kil.t + o.kil.h/2));
+               if(!o.kk || !o.ta || !o.tut) return false;
+               const saginda = o.kk.l - o.tut.r;
+               const ayniSatir = Math.abs((o.kk.t + o.kk.h/2) - (o.tut.t + o.tut.h/2));
                const ustunde = o.kk.b <= o.ta.t;
                return o.kk.gor && saginda >= 4 && saginda <= 14
                       && ayniSatir <= 2 && ustunde && tasmaz(o);
@@ -8298,7 +8334,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         return radyoDogru(r1) && arsivDogru(r2)
             && r1.yazi === 'ORBITAPE' && r2.yazi === 'RADIO'
             && r1.acik === 'false'    && r2.acik === 'true';
-      }), 'radyoda sola dayali, arsivde kilavuzun saginda; radyoda ORBITAPE (kapali), arsivde RADIO (acik)');
+      }), 'radyoda sola dayali, arsivde uc cizginin saginda; radyoda ORBITAPE (kapali), arsivde RADIO (acik)');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
     K('Kip kisayolu radyoya donduruyor', await pg.evaluate(async ()=>{
@@ -12812,6 +12848,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* Fotograf cizimi EKRANDAKI TUSLARI biliyor mu: yeni bir tus
        eklenip bu listeye yazilmazsa ciktida sessizce kaybolur --
        deriFirca ve saatTus'ta tam boyle oldu. */
+    /* 25 Eylul: kullanicinin istegi "radyo tarafindaki pic'te de
+       sol alt bos olsun, resmi yakalarken." Karsilastigi kare
+       ORBITAPE kamera cekimiydi; orada sol alt tamamen bos. Cizim
+       listesinde dur/ileri/geri (konsol) ve kip anahtari vardi.
+       Iki liste de ayni olmak zorunda (asagidaki test bunu
+       sayiyor), o yuzden ikisini birden denetle. */
+    {
+      const _liste = kayitKaynak2.match(/\['ayarTut'[\s\S]*?\]/g) || [];
+      const _solAlt = /'kipKisayol'|'geri'|'dur'|'duraklat'|'ileri'/;
+      K('Sol alt kume fotografta cizilmiyor',
+        _liste.length >= 2 && _liste.every(l => !_solAlt.test(l)),
+        _liste.length + ' liste, sol alt kume ' + (_liste.every(l => !_solAlt.test(l)) ? 'yok' : 'VAR'));
+    }
     K('Fotograf yeni tuslari da ciziyor',
       /'ayarTut','deriFirca','saatTus'/.test(kayitKaynak2)
       && (kayitKaynak2.match(/'ayarTut','deriFirca','saatTus'/g) || []).length >= 2,
@@ -14670,11 +14719,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         modulDip: Math.round(window.innerHeight - su.b),
         cakisma : tut.b > su.t + 0.5,
         /* Kip anahtari kilavuzun saginda mi, ayni satirda mi. */
-        anahtarSagda : Math.round(ana.l - kil.r),
-        anahtarUst   : Math.round(kil.t - ana.t),
-        anahtarOrta  : Math.round(Math.abs(ana.o - kil.o)),
-        /* KILAVUZ yiginin EN ALTINDA mi (satiri oradan basliyor). */
+        /* 25 Eylul: satirin sol ucu artik UC CIZGI (ayarTut),
+           anahtar onun sAGINDA. Once kilavuzun yanindaydi. */
+        anahtarSagda : Math.round(ana.l - tut.r),
+        anahtarSutunSagda : Math.round(ana.l - kil.r),
+        /* Dikey referans da UC CIZGI: satirin sol ucu o artik. */
+        anahtarUst   : Math.round(tut.t - ana.t),
+        anahtarOrta  : Math.round(Math.abs(ana.o - tut.o)),
+        /* 25 Eylul: satiri UC CIZGIDEN basliyor, ikonlar ustune
+           yigiliyor. Yani en altta ayar tutamagi, en ustte kilavuz
+           olmali. */
         kilavuzEnAltta: yigin.every(q => !q.width || q.bottom <= kil.b + 0.5),
+        tutEnAltta: yigin.every(q => !q.width || q.bottom <= tut.b + 0.5),
+        kilavuzEnUstte: yigin.every(q => !q.width || q.top >= kil.t - 0.5),
         /* Yigin player'in ustunde mi, ust bosluk birakarak mi. */
         yiginUstunde: yigin.every(q => !q.width || q.bottom <= su.t + 0.5)
       } : null;
@@ -14760,21 +14817,28 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       } : null;
       return { sonuc, radyoSonuc };
     });
-    K('Kipte kip anahtari kilavuzun saginda, ayni satirda',
+    K('Kipte kip anahtari uc cizginin saginda, ayni satirda',
        !!tt.sonuc && tt.sonuc.anahtarSagda >= 4 && tt.sonuc.anahtarSagda <= 14
-       /* Dikey: anahtar 24px, kilavuz 32px. ORTA hizalı olduklari icin
-          anahtarin ust kenarı kilavuzun ust kenarindan 4px ASAGIDA
-          olmali (isaret: kilavuzUst - anahtarUst = -4). */
-       && tt.sonuc.anahtarUst >= -6 && tt.sonuc.anahtarUst <= -2
+       /* Dikey: anahtar 24px, uc cizgi 26px. ORTA hizalilar:
+          anahtarin ust kenari uc cizginin ust kenarindan 1px ASAGIDA
+          (isaret: tutUst - anahtarUst = -1). */
+       && tt.sonuc.anahtarUst >= -3 && tt.sonuc.anahtarUst <= 1
        && tt.sonuc.anahtarOrta <= 2,
-       tt.sonuc ? ('anahtar kilavuzun '+tt.sonuc.anahtarSagda+'px saginda, '
-                   +tt.sonuc.anahtarUst+'px asagida, merkez fark '
-                   +tt.sonuc.anahtarOrta+'px') : 'olculemedi');
-    K('Kipte satiri kilavuzdan basliyor, player ust bos',
-       !!tt.sonuc && tt.sonuc.kilavuzEnAltta === true
+       tt.sonuc ? ('anahtar uc cizginin '+tt.sonuc.anahtarSagda
+                   +'px saginda, ' +tt.sonuc.anahtarUst
+                   +'px asagida, merkez fark '+tt.sonuc.anahtarOrta
+                   +'px · kilavuzun saginda ' +tt.sonuc.anahtarSutunSagda
+                   +'px (olmamali)') : 'olculemedi');
+    /* 25 Eylul: satirin sol ucu artik uc cizgi; ikonlar onun
+       USTUNDE yigiliyor (kullanicinin istegi). Kilavuz artik
+       yiginin EN USTUNDE, en altta degil. */
+    K('Kipte satiri uc cizgiden basliyor, player ust bos',
+       !!tt.sonuc && tt.sonuc.tutEnAltta === true
+       && tt.sonuc.kilavuzEnUstte === true
        && tt.sonuc.yiginUstunde === true && tt.sonuc.cakisma === false
        && tt.sonuc.ustunde > 0 && tt.sonuc.ustunde <= 14 && tt.sonuc.modulDip <= 12,
-       tt.sonuc ? ('kilavuz en altta: '+tt.sonuc.kilavuzEnAltta
+       tt.sonuc ? ('uc cizgi en altta: '+tt.sonuc.tutEnAltta
+                   +' · kilavuz en ustte: '+tt.sonuc.kilavuzEnUstte
                    +' · yigin player ustu: '+tt.sonuc.yiginUstunde
                    +' · arada '+tt.sonuc.ustunde+'px, modul dipten '
                    +tt.sonuc.modulDip+'px, sol fark '+tt.sonuc.solHiza+'px') : 'olculemedi');

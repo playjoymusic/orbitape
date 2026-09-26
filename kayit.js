@@ -2380,8 +2380,15 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     try{
       /* deriFirca ve saatTus 3 Eylul'de eklendi; listeye girmedikleri
          icin fotografta yoktular -- ekranda duran iki tus ciktida
-         kayipti. */
-      ['ayarTut','deriFirca','saatTus','kipKisayol','geri','dur','duraklat','ileri',
+         kayipti.
+         25 Eylul: SOL ALT KUME CIKARILDI. Kullanicinin istegi:
+         "radyo tarafindaki pic'te de sol alt bos olsun, resmi
+         yakalarken." Karsilastigi kare ORBITAPE kamera cekimiydi:
+         orada sol alt tamamen bos. Cizilan listede dur/ileri/geri
+         (konsol) ve kip anahtari vardi, yani cikti doluydu.
+         Kalanlar ust serit: ayar tutamagi, deri, saat, kayit
+         araclari ve arama cizgisi. */
+      ['ayarTut','deriFirca','saatTus',
        'rec','cam','mute','favAc','araCizgi'].forEach(id=>{
         ciz(document.getElementById(id));
       });
@@ -2393,7 +2400,9 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   async function fotoArayuzHazirla(K){
     const harita = new Map();
     try{
-      const idler = ['ayarTut','deriFirca','saatTus','kipKisayol','geri','dur','duraklat','ileri',
+      /* Liste cizim listesiyle Ayni olmali (bkz. yukaridaki gerekce):
+         sol alt kume hazirlanmaz. */
+      const idler = ['ayarTut','deriFirca','saatTus',
                      'rec','cam','mute','favAc','araCizgi'];
       const isler = [];
       idler.forEach(id=>{
@@ -3153,6 +3162,17 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     fotoCakisi();
     let semboller = null;
     try{
+      /* YERLESIMI OTURT (25 Eylul). Kullanicinin bildirdigi hata:
+         PIC'e basip, menuyu acip kapayip sonra cektiginde sol ust
+         simgeler UST USTE BINMIS cikiyordu -- ekran sonradan
+         duzeliyordu, yani foto uc karede yerlesim daha tasimamis
+         bir ani yakaliyordu. Cozum: cekimden once olcum
+         tetiklenip iki kare bekleniyor; artik "sonradan duzelir"
+         yerine cekim aninda dogru konumda oluyor. */
+      try{ if(typeof geriYerlestir === 'function') geriYerlestir(); }catch(_){ _yut(_); }
+      await new Promise(r=>setTimeout(r, 60));
+      try{ if(typeof geriYerlestir === 'function') geriYerlestir(); }catch(_){ _yut(_); }
+      await new Promise(r=>setTimeout(r, 60));
       if(kamAcik && kamEl) await ilkKare(kamEl);
       kayitTuvalKur();
       const [h1] = await Promise.all([fotoArayuzHazirla(KAYIT_K), _bekleSembolleriHazirla()]);

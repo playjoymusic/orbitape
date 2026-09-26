@@ -2280,3 +2280,74 @@ Bir ölçüm tuzağı notu: `index.html` değişince `_headers` yenilenmezse
 CSP satır içi script'i ENGELLİYOR ve uygulama hiç çalışmıyor; o durumda
 sayfa saf CSS konumlarını gösterdiği için "yerleşim bozuldu" sanılıyor.
 Ölçümden önce `python3 araclar/csp.py` çalıştırılmalı.
+
+### 25 Eylül — sol alt yeni düzen, fotoğrafta sol alt boş (4. tur)
+
+Kullanıcı üç madde bildirdi; üçü de ölçülerek yapıldı.
+
+**(1) Fotoğrafta simgeler üst üste biniyordu — hata.** "Ben pic'le foto
+çektim, menüyü kapatınca böyle oldu, düzeldi sonradan ama bu bir bug."
+Çıktıda sol üstteki deri/saat simgeleri aynı yere binmiş, ekran sonra
+düzelmiş. Sebep: foto çekimi, yerleşimin oturmasını BEKLEMEDEN ölçüm
+alıyordu; yani üç karede "sonradan düzelir" hali yakalanıyordu.
+Çözüm `kayit.js` `fotoCek()`: çekimden önce `geriYerlestir()` çağrılıp
+iki kare bekleniyor (60 ms + 60 ms). Artık çekim anında konum doğru.
+
+**(2) ORBITAPE sol alt yeniden dizildi (yalnız bu kip).** "Radyo yazan
+switch'in solunda ayarlar çizgileri var olacak... ikonlar onun üstünde
+olsun, sola dayarken hizalı yap." Önceki turda satır Kılavuz'dan başlıyor
+ve anahtar Kılavuz'un sağındaydı. Yeni düzen: satırın sol ucu ÜÇ ÇİZGİ
+(`ayarTut`), anahtar hemen sağında (+8 px), diğer ikonlar satırın ÜSTÜNE
+yığılmış (Saat → Fırça → Görsel → Kılavuz).
+
+Ölçüm (390x844, ORBITAPE): ayarTut 14..54 / 776..802, anahtar 62..166 /
+777..801 (8 px sağda, dikey merkez farkı ≤2), Saat 732..764, Fırça
+688..720, Görsel 644..676, Kılavuz 600..632. Çakışma yok.
+
+Bu arada iki hata çıktı ve düzeltildi:
+  * Mood dalındaki `return` kaybolmuştu; kod oradan sonra RADIOTAPE
+    dalına düşüp sol kenarı `3 + 11 = 14` ile tekrar yazıyordu, yani
+    anahtar üç çizginin ÜSTÜNE biniyordu.
+  * `_kipSagKenar` kelepçesi sınırı konsolun sağ kenarıydı; "ORBITAPE"
+    yazısıyla 139 px geniş olan anahtar 62 yerine 14'e çekiliyordu.
+    Üçüncü parametre `sinir` eklendi, ORBITAPE'de ekranın sağ kenarı
+    kullanılıyor (368 px): yer varken taşımasın diye.
+
+**(3) Fotoğrafta sol alt boş olsun.** "Radyo tarafındaki pic'te de sol alt
+boş olsun, resmi yakalırken." Karşılaştığı kare ORBITAPE kamera çekimi:
+orada sol alt tamamen boş. `kayit.js` iki liste (çizim listesi ve simge
+hazırlık listesi) birlikte daraltıldı: konsol (`geri`, `dur`,
+`duraklat`, `ileri`) ve kip düğmesi (`kipKisayol`) çıkarıldı. Kalan üst
+şerit: ayar tutamağı, fırça, saat, REC/CAM/sessiz/favori, arama çizgisi.
+
+Yeni sözleşmeler teste bağlandı: "Sol alt küme fotoğrafta çizilmiyor"
+(her iki listede de yasaklı kimlik yok) ve ORBITAPE ölçümünün komşusu
+artık Kılavuz değil üç çizgi (dikey referans da ona çevrildi; Kılavuz
+yığının en üstünde olduğu için `anahtarUst` 177 px sapıyordu).
+
+**(4) Kapıda çıkan KIRMIZI "Arayuz tamamen Ingilizce" — testin kapsamı
+yanlıştı, uygulama değil.** 876/877 koşusunda bu test düştü ve tek
+ipucu "ü -> ORBITAPE — a sound explorer: live radio, public-domain and C"
+(ilk 60 karakter, gizli `<h1>`). Kullanıcının tahmini isabetliydi:
+Türkçe radyolarda.
+
+Ölçüm: `radyo.json`'daki 539 istasyonda Türkçe karakterli ad var:
+**"Radyo Gökçeada"** (`e1480c4f-…`) ve "Süper 2 FM". "Radyo Gökçeada"
+`mood.js` `MOOD_ISTASYON` içinde LOUNGE ve DANS havuzlarının **ilk
+istasyonu**; `moodSembolSec()` rastgele indeks seçtiği için o istasyon
+arada ekrana çıkıyor. Tarayıcıda doğrulandı: `cal({ad:'Radyo Gökçeada'})`
+→ görünen düğüm tam olarak
+`.radio < #np < .np-bilgi < .np-ad < #npAd :: "Radyo Gökçeada"`.
+
+Yani ekranda duran şey uygulamanın Türkçe metni değil, **yayından gelen
+veri**: `#np` bloğu yalnız `npAd` (istasyon), `npParca`, `npSanatci`,
+`npKaynak`, `npLisans`, `npBayrak` gösteriyor. Bunları çevirmek de yanlış
+olurdu — istasyonun adı neyse odur. Aynı düşünce sözleşmede zaten yazılı:
+"Doldurma isimler kunyeye yazılmıyor". Bu yüzden düzeltme uygulamada
+değil, testin kapsamında: dil taraması `#np`'yi atlıyor (dar istisna,
+sadece o blok).
+
+Test ayrıca kırıldıktan sonra nereyi suçladığını söylemiyordu; teşhisi
+kalıcı yaptım: bulunan düğümün id/sınıf zinciri ve metni de yazılıyor.
+Ayrıca not: bu test bu yüzden **kararsızdı** — aynı kod üst üste koşularda
+bir yeşil bir kırmızı verebiliyordu; `#np` istisnası onu da bitirdi.

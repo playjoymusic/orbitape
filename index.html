@@ -18155,7 +18155,7 @@
      Bu fonksiyon artik hicbir seyi germiyor; sadece OLCUYOR ve
      tasma varsa geri bildiriyor. Tasma yoksa -- ki olculdu, yok --
      yapacak isi de yoktur. */
-  function _kipSagKenar(kk, sol){
+  function _kipSagKenar(kk, sol, sinir){
     try{
       /* HEDEF: konsolun EN GENIS satiri, tasima satiri degil.
          Blogun sag kenarini zaten en genis satir ciziyor. */
@@ -18167,6 +18167,13 @@
       });
       kk.style.width = '';                       // dogal olcusunde kalir
       kk.style.justifyContent = '';
+      /* SINIR: konsolun sag keni varsayilan. ORBITAPE'de anahtar
+         artik uc cizginin saginda ve genisligi buyuk ("ORBITAPE"
+         yazisiyla 139px). Konsola gore kelepce ucuzdu: 25 Eylul
+         olcumuyle sol kenar 62 yerine 14'e cekildi, yani uc cizginin
+         USTUNE bindi. Yer varken neden tasirsin: sinir ekranin
+         sag kenarindan gelir. */
+      if(sinir != null) sag = sinir;
       if(!sag) return;
       const dogal = kk.getBoundingClientRect().width;
       /* GUVENLIK KAPISI: dar ekranda etiket konsolun sag kenarini
@@ -18191,18 +18198,21 @@
       if(!_kk) return;
       _kipAnahtarYaz();
       if(document.body.classList.contains('mood')){
-        const _kt = document.getElementById('rehberTus');
+        const _kt = document.getElementById('ayarTut');
         if(_kt){
           const g = _kt.getBoundingClientRect();
           if(g.height){
-            /* Dikey hizalama KILAVUZ'UN ORTASINDAN: anahtar 24px,
-               kilavuz 32px. Alt kenari kılavuzun altindan 4px
-               yukarida birakirsak iki nesne ortasinda durur. */
+            /* ORBITAPE: anahtar UC CIZGININ SAGINDA, ayni satirda.
+               25 Eylul: once kilavuzun yaninda duruyordu; kullanicinin
+               istegi "radyo yazan switch'in solunda ayarlar
+               cizgileri var olacak... ikonlar onun ustunde olsun." */
             _kk.style.removeProperty('left');
-            _altYasla(_kk, g.top + (g.height + 24) / 2);
+            _altYasla(_kk, g.top + g.height / 2 + 12);
             _kk.style.left = Math.round(g.right + 8) + 'px';
-            _kipSagKenar(_kk, Math.round(g.right + 8));
-            return;
+            _kipSagKenar(_kk, Math.round(g.right + 8),
+              Math.round(innerWidth - (parseFloat(getComputedStyle(document.documentElement)
+                .getPropertyValue('--kx')) || 16) - 8));
+            return;                 /* yeri bu kip belirledi */
           }
         }
       }
@@ -18345,10 +18355,15 @@
       try{
         const mood = document.body.classList.contains('mood');
         if(mood){
+          /* ALT SATIR: UC CIZGI, USTUNDE IKONLAR. Kullanicinin
+             istedigi (yalniz ORBITAPE): "radyo yazan switch'in solunda
+             ayarlar cizgileri var olacak... ikonlar onun ustunde
+             olsun, sola dayarken hizali yap." Kip anahtarinin yeri
+             _kipKisayoluHizala()'da: uc cizginin saginda. */
           const r = _konsolKutu();
           if(!r || !r.height) return;
           let alt = r.top - 8;
-          _SOL_SUTUN.forEach(id=>{
+          ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus'].forEach(id=>{
             const e = document.getElementById(id); if(!e) return;
             e.style.removeProperty('top');
             const h = e.getBoundingClientRect().height || 32;
