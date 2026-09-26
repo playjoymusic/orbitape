@@ -2962,3 +2962,46 @@ hedefe gidiyor, ama seçim ekranı ayakta kalıyor.
 
 ÖLÇÜM: açılışta katman açık ✓ → ortaya dokunduktan sonra hâlâ açık ✓
 → kola dokununca kapandı ve kip değişti (ORBITAPE) ✓.
+
+### 26 Eylül — üç kademeli dikey kip anahtarı
+
+Kip anahtarı iki kip arasında gidip geliyordu; artık **üç kademeli
+ve dikey**: alt RADIOTAPE, orta JOYTAPE, üst ORBITAPE. Kullanıcının
+kuralı: "bence switch sabit olsun, hem güzel görünür" — anahtar iki
+kipte de **aynı yerde** duruyor (sol altta, konsolun üstünde), yalnız
+topuzun yeri ve rengi kipi söylüyor. Topuzun rengi odanın rengi:
+turkuaz / pembe / turuncu. Kip adı yazısı gitti; yerine dikey **MOODS**.
+
+Dokunuşun yüksekliği kipi seçiyor (üst 1/3 ORBITAPE, orta JOYTAPE,
+alt RADIOTAPE). Klavye ve yardımcı çağrılar için düğmenin kendisi
+bir sonraki kademeye geçiyor.
+
+**Dört hata, dördü de ölçümle bulundu:**
+
+1. `_adim()`'ın iç üçlüsü **ters** yazılmıştı (`joy` varsa `'orbit'`
+   diyordu). Sonuç: ORBITAPE'den radyoya dönüş hiç çalışmıyordu —
+   `modKolaGit('orbit')` çağrılıp kip yerinde kalıyordu.
+2. Topuzun `top` değeri `"65px" + "px"` idi; geçersiz olduğu için
+   tarayıcı düşürüyordu, konum boş kalıyordu.
+3. Anahtar 78 px olunca geri düğmesinin 8 px üstüne düştü; geri
+   düğmesinin dokunma alanı 36×35'e düştü (ölçü 44). Çözüm: anahtar
+   yukarı alındı **ve** `#geri`'ye görünmez 44×44 alan eklendi.
+4. `<script src="kollar.js">` etiketi inline betikten **önce** idi;
+   `saglik.js` ilk `</script>`'i arıyor, etiketi oraya alınca betik
+   bloğu boş kaldı ve üç "hoisted" kontrolü kırmızı verdi.
+
+**Ölü kod.** ORBITAPE'ye özel yerleştirme dalı `if(false && _kt)`
+durumundaydı; tamamen silindi (ilk boyama bütçesine 65 bayt).
+Kalan ölü dal olmadığı için `topuz` yalnız CSS taban konumuyla da
+doğru duruyor.
+
+**Sözlük.** `Sound banks` ve `Open the archive` anahtarları artık
+kodda geçmiyordu (iki kapı dili kalktı); beş dilden de silindi,
+183 anahtarda eşit.
+
+**Ölçüm (390×844).** Anahtar kutu 684..762, üç kipte de aynı.
+Topuz: 65px turkuaz · 36.5px pembe · 8px turuncu. ORBITAPE'de üç
+çizgi 776..802'de, anahtar onun 14 px üstünde bitiyor — binme yok.
+Kapı: saglik 890/890 · ariza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 · yayın 19/19. İlk çizim 112.603 B (tavan 112.640).
+Tip ratchet: TEMIZ — 69.

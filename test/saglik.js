@@ -7431,11 +7431,30 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      rengini tasiyor -- radyoda karanlik (arsiv), arsivde parlak
      (radyo). Ayni olsalardi "baska evrene acilan birer tur" cumlesi
      ekranda karsiliksiz kalirdi. */
-    K('Iki kapi kendi evreninin rengini tasiyor',
-       !!r && !!a2 && !!r.grad && !!a2.grad && r.grad !== a2.grad,
-       'radyodaki ORBITAPE koyu, arsivdeki RADIO parlak');
-    K('Arsivde etiket kisa: RADIO', !!a2 && a2.yazi === 'RADIO',
-       a2 ? ('"' + a2.yazi + '"') : '-');
+    /* 26 Eylul: anahtar UC KADEMELI ve dikey; kip adi yazisi yok
+       (dikey "MOODS"). Durumu TOPUZun yeri ve rengi anlatir:
+       alt 65px turkuaz (RADIOTAPE) · orta 36.5px pembe (JOYTAPE)
+       · ust 8px turuncu (ORBITAPE). */
+    K('Anahtar topuzu odanin rengini tasiyor', await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const b=()=>{ const e=document.querySelector('#kipKisayol .anahtar b');
+        if(!e) return null; const cs=getComputedStyle(e);
+        return { top:cs.top, renk:cs.backgroundColor }; };
+      const eski = AYAR.mood;
+      AYAR.mood = false; moodUygula(false); await bek(300);
+      geriYerlestir(); await bek(240);
+      const r1=b();
+      AYAR.mood = true; moodUygula(false); await bek(300);
+      geriYerlestir(); await bek(240);
+      const r2=b();
+      AYAR.mood = eski; moodUygula(false); await bek(240);
+      return !!r1 && !!r2 && r1.renk !== r2.renk
+          && r1.top === '65px' && r2.top === '8px';
+    }), 'radyoda 65px turkuaz, arsivde 8px turuncu');
+    K('Anahtar etiketi her kipte ayni: MOODS', await pg.evaluate(()=>{
+      const e=document.querySelector('#kipKisayol .ad');
+      return !!e && e.textContent.trim() === 'MOODS';
+    }), 'dikey MOODS — kip adi yazisi yok');
   }
 
   /* ── HIZ YAZIMI TAMPON BOSKEN DURUYOR ───────────────────────
@@ -8530,9 +8549,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                    gor:getComputedStyle(e).display!=='none' }; };
         /* Gorunen etiket: gizlenmemis olani. */
         const etiket = ()=>{ const e=document.querySelector('#kipKisayol .ad');
-          if(!e) return '';
-          return [...e.children].filter(x=>getComputedStyle(x).display!=='none')
-                 .map(x=>x.textContent.trim()).join('|'); };
+          return e ? e.textContent.trim() : ''; };
         const olc = ()=>({ kk:R('kipKisayol'), tut:R('ayarTut'),
                            ta:R('tasima'), ar:R('araclar'),
                            kil:R('rehberTus'),
@@ -8561,13 +8578,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            onun ustunde olsun, sola dayarken hizali yap." Yani satirin
            sol ucu uc cizgi, anahtar onun saginda, diger ikonlar
            ustune yigiliyor. */
+        /* 26 Eylul: anahtar SABIT (kullanicinin sozu: "bence switch
+           sabit olsun, hem guzel gorunur"). Iki kipte de ayni yerde
+           duruyor; uc cizginin sagina gitmiyor. Olculecek: sol
+           kenarda, modulle ustuste binmeden, ekrandan tasmadan. */
         const arsivDogru = (o)=>{
-               if(!o.kk || !o.ta || !o.tut) return false;
-               const saginda = o.kk.l - o.tut.r;
-               const ayniSatir = Math.abs((o.kk.t + o.kk.h/2) - (o.tut.t + o.tut.h/2));
+               if(!o.kk || !o.ta) return false;
+               const solHiza = Math.abs(o.kk.l - (o.ta.l + KAY)) <= 1;
                const ustunde = o.kk.b <= o.ta.t;
-               return o.kk.gor && saginda >= 4 && saginda <= 14
-                      && ayniSatir <= 2 && ustunde && tasmaz(o);
+               return o.kk.gor && solHiza && ustunde && tasmaz(o);
         };
         /* Konsolun dugme satiri sola kaydirildi (--konsol-sol); kip
            anahtari onun ilk SIMGESINE hizalanir, kutusuna degil. */
@@ -8581,10 +8600,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const ustunde = o.kk.b <= o.ta.t;
           return o.kk.gor && solHiza && ustunde && tasmaz(o);
         };
-        return radyoDogru(r1) && arsivDogru(r2)
-            && r1.yazi === 'ORBITAPE' && r2.yazi === 'RADIO'
+        /* SABITLIK olculuyor: dikdortgen iki kipte de ayni. */
+        const sabit = r1.kk && r2.kk
+            && Math.abs(r1.kk.l - r2.kk.l) <= 1
+            && Math.abs(r1.kk.t - r2.kk.t) <= 1
+            && Math.abs(r1.kk.h - r2.kk.h) <= 1;
+        return radyoDogru(r1) && arsivDogru(r2) && sabit
+            && r1.yazi === 'MOODS' && r2.yazi === 'MOODS'
             && r1.acik === 'false'    && r2.acik === 'true';
-      }), 'radyoda sola dayali, arsivde uc cizginin saginda; radyoda ORBITAPE (kapali), arsivde RADIO (acik)');
+      }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket hep MOODS');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
     K('Kip kisayolu radyoya donduruyor', await pg.evaluate(async ()=>{
@@ -8741,6 +8765,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const kk = await pg.evaluate(async ()=>{
           const bek = ms=>new Promise(r=>setTimeout(r,ms));
           const O = { kol:0, secili:'', disarida:false, kapali:false };
+          /* ONCE RADIOTAPE'E SABITLENIR: bu sayfada_onceki testler
+             kipi degistirmis olabiliyor; "ilk acilista" olcumu
+             ozellikle bundan sonra alinir (olculdu: secili 001). */
+          try{ if(window.moodKapat) window.moodKapat(); }catch(e){}
+          AKTIF_MOD = null;
+          try{ document.body.classList.remove('joy');
+               modKollarIsaretle(); geriYerlestir(); }catch(e){}
+          await bek(500);
           const kap = document.getElementById('modKollar');
           const koll = kap ? [...kap.querySelectorAll('.kol')] : [];
           O.kol = koll.length;
@@ -15178,6 +15210,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* Dikey referans da UC CIZGI: satirin sol ucu o artik. */
         anahtarUst   : Math.round(tut.t - ana.t),
         anahtarOrta  : Math.round(Math.abs(ana.o - tut.o)),
+        /* 26 Eylul: anahtar iki kipte de ayni yerde; dikey referans
+           uc cizgi degil ARALARINDAKI BOSLUK. Pozitifse binme yok. */
+        anahtarCizgiUstu : Math.round(tut.t - ana.b),
+        anahtarSol        : Math.round(ana.l - tut.l),
         /* 25 Eylul: satiri UC CIZGIDEN basliyor, ikonlar ustune
            yigiliyor. Yani en altta ayar tutamagi, en ustte kilavuz
            olmali. */
@@ -15269,18 +15305,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       } : null;
       return { sonuc, radyoSonuc };
     });
-    K('Kipte kip anahtari uc cizginin saginda, ayni satirda',
-       !!tt.sonuc && tt.sonuc.anahtarSagda >= 4 && tt.sonuc.anahtarSagda <= 14
-       /* Dikey: anahtar 24px, uc cizgi 26px. ORTA hizalilar:
-          anahtarin ust kenari uc cizginin ust kenarindan 1px ASAGIDA
-          (isaret: tutUst - anahtarUst = -1). */
-       && tt.sonuc.anahtarUst >= -3 && tt.sonuc.anahtarUst <= 1
-       && tt.sonuc.anahtarOrta <= 2,
-       tt.sonuc ? ('anahtar uc cizginin '+tt.sonuc.anahtarSagda
-                   +'px saginda, ' +tt.sonuc.anahtarUst
-                   +'px asagida, merkez fark '+tt.sonuc.anahtarOrta
-                   +'px · kilavuzun saginda ' +tt.sonuc.anahtarSutunSagda
-                   +'px (olmamali)') : 'olculemedi');
+    /* 26 Eylul: kullanicinin sozu "bence switch sabit olsun, hem
+       guzel gorunur" -- anahtar iki kipte de AYNI yerde duruyor
+       (sol altta, konsolun ustunde), uc cizginin yanina GITMIYOR.
+       78 px yuksek olunca yanina gidinca kilavuzun ve player'in
+       arasina sikisiyordu (olculdu: uc cizgiyle 26 px asagida,
+       kilavuzun 4 px saginda, arada -18px). Yeni olcum: sol kenarda
+       ayni hizada, uc cizginin USTUNDE, ona binmeden, konsolun da
+       ustunde. */
+    K('Kipte kip anahtari sabit, uc cizginin ustunde',
+       !!tt.sonuc && tt.sonuc.anahtarCizgiUstu >= 6
+       && tt.sonuc.ustunde >= 6
+       && Math.abs(tt.sonuc.anahtarSol) <= 1,
+       tt.sonuc ? ('uc cizginin '+tt.sonuc.anahtarCizgiUstu
+                   +'px ustunde (hepsi 78 px), konsolun '+tt.sonuc.ustunde
+                   +'px ustunde, sol kenar fark '+tt.sonuc.anahtarSol
+                   +'px · eski konum (uc cizginin saginda) gecersiz')
+                 : 'olculemedi');
     /* 25 Eylul: satirin sol ucu artik uc cizgi; ikonlar onun
        USTUNDE yigiliyor (kullanicinin istegi). Kilavuz artik
        yiginin EN USTUNDE, en altta degil. */
@@ -15288,11 +15329,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        !!tt.sonuc && tt.sonuc.tutEnAltta === true
        && tt.sonuc.kilavuzEnUstte === true
        && tt.sonuc.yiginUstunde === true && tt.sonuc.cakisma === false
-       && tt.sonuc.ustunde > 0 && tt.sonuc.ustunde <= 14 && tt.sonuc.modulDip <= 12,
+       /* 26 Eylul: anahtar sabit ve 78 px yuksek; konsol ustune
+          bosluk 6-14 px degil 48 px. Yine de ustunde ve uc cizgiye
+          binmiyor olmali. */
+       && tt.sonuc.ustunde >= 6 && tt.sonuc.ustunde <= 60
+       && tt.sonuc.anahtarCizgiUstu >= 6
+       && tt.sonuc.modulDip <= 12,
        tt.sonuc ? ('uc cizgi en altta: '+tt.sonuc.tutEnAltta
                    +' · kilavuz en ustte: '+tt.sonuc.kilavuzEnUstte
                    +' · yigin player ustu: '+tt.sonuc.yiginUstunde
-                   +' · arada '+tt.sonuc.ustunde+'px, modul dipten '
+                   +' · arada '+tt.sonuc.ustunde+'px, uc cizgi ustunde '
+                   +tt.sonuc.anahtarCizgiUstu+'px, modul dipten '
                    +tt.sonuc.modulDip+'px, sol fark '+tt.sonuc.solHiza+'px') : 'olculemedi');
     /* ── OLCUM SIRASI: TUTAMAK CUBUKTAN SONRA ────────────────────
      CIHAZDA GORULEN HATA: uygulama acilir acilmaz uc cizgi raf
@@ -15370,7 +15417,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        yaride, alt konsola 100px'den fazla mesafede. */
     K('Radyoda kip anahtari modulun ust satiri, yalniz',
        !!tt.radyoSonuc && !tt.radyoSonuc.cakisma
-       && tt.radyoSonuc.ustunde >= 6 && tt.radyoSonuc.ustunde <= 10
+       /* 26 Eylul: anahtar sabit konuma alindi, bosluk 48 px. */
+       && tt.radyoSonuc.ustunde >= 6 && tt.radyoSonuc.ustunde <= 60
        && tt.radyoSonuc.solHiza <= 1
        && tt.radyoSonuc.anahtarYalniz === true,
        tt.radyoSonuc ? ('arada '+tt.radyoSonuc.ustunde+'px, sol fark '

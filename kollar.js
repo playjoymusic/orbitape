@@ -138,6 +138,11 @@
       }else{
         if(!document.body.classList.contains('mood') && window.moodAc) window.moodAc();
         AKTIF_MOD = (m === 'joy') ? 'JOYTAPE' : 'ORBITAPE';
+        /* body.joy ANINDA: anahtar topuzunun rengi ve yeri buna
+           bakiyor (olculdu: JOYTAPE secilince topuz turuncu
+           kalmisti, cunku sinif moodUygula'da degil burada
+           guncelleniyor). */
+        try{ document.body.classList.toggle('joy', m === 'joy'); }catch(e){ _yut(e); }
         modKollarIsaretle();
         modAdiYaz();
         geriYerlestir();

@@ -1848,6 +1848,14 @@
     -webkit-tap-highlight-color:transparent;
     color:#5adcd2;opacity:.9;pointer-events:auto;
     transition:color .18s, border-color .18s, background .18s;}
+  /* DOKUNMA ALANI (26 Eylul): gorunen kutu 38x32, parmak 44 px.
+     Uc kademeli kip anahtari 78 px yuksek olunca geri dugmesinin
+     USTUNE yakin kaldi ve yukari yuruYus 20 px'te kesildi (olculdu:
+     "36x35"). Eslesen yumusak kutu 44x44: gorsunur degil, dokunma
+     alani buyuk. */
+  #geri::after{content:'';position:absolute;left:50%;top:50%;
+    width:44px;height:44px;transform:translate(-50%,-50%);
+    border-radius:999px;}
   #geri svg{width:15px;height:13px;display:block;fill:currentColor;opacity:.9;}
   #geri.var{display:flex;opacity:.9;pointer-events:auto;}
   /* ── KONSOLUN RENGI: ORBITAPE'IN KENDI TURKUAZI ──────────────────
@@ -2320,126 +2328,39 @@
      yaziyor ve acik duruyor. Tek nesne, iki yon. */
   #kipKisayol{
     position:fixed;z-index:96;display:flex;align-items:center;
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px) + 50px);
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     bottom:calc(116px + var(--dip-pay));
-    height:24px;gap:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    height:78px;gap:8px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
     opacity:.72;transition:opacity .22s ease;}
-  body:not(.mood) #kipKisayol{
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px));}
-  #kipKisayol:hover,
-  #kipKisayol:focus-visible{opacity:1;}
-  /* Etiket kipe gore: ikisi de HTML'de duruyor, gorunen CSS'le
-     seciliyor -- JS'in her kip degisiminde yazi yazmasi gerekmiyor. */
-  #kipKisayol .lm{display:none;}
-  body.mood #kipKisayol .lr{display:none;}
-  body.mood #kipKisayol .lm{display:inline;}
-  /* Anahtarin bicimi ayarlardaki KAPI satirinin anahtariyla ayni
-     (46x24, 18px topuz): ayni jest, ayni gorunum. Tek fark rengi --
-     orada acik/kapali durumu anlatiyor, burada NEREYE gidecegini. */
-  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:46px;height:24px;
-    border-radius:12px;background:rgba(53,224,216,.22);
-    border:1px solid rgba(53,224,216,.45);
-    transition:background .18s ease;}
-  #kipKisayol .anahtar b{position:absolute;top:2px;right:2px;
-    width:18px;height:18px;border-radius:50%;background:#35e0d8;
-    transition:right .18s ease;}
-  /* Yazi: sol ustteki denetimlerle ayni dil -- kucuk, aralikli,
-     buyuk harf. Rengi anahtarin rengi. */
-  /* ── ETIKET: SAG ALTTAKI KUNYENIN DILI ────────────────────────
-     Once 600 kalinlikta ve .14em harf araligiyla yaziliyordu -- ust
-     seritteki teknik etiketlerin dili. Kullanicinin istegi: "en sag
-     alttaki sarki/sanatci ismi tarzi bir sey olabilir."
-     Dogru istek: bu bir baslik degil, bir DURUM adi; kunye nasil
-     sakin yaziyorsa bu da oyle yazmali. Olculer #np .np-sanatci'dan
-     birebir aliniyor -- ayni punto, ayni kalinlik, ayni harf araligi.
-     Yan fayda: dar ve alcak, yani anahtar da daralip alt satirlarla
-     hizalanabiliyor. */
-  /* ── MEZAR TASI: ETIKET "KUNYENIN DILI"YDI ───────────────────
-     Bir tur sag alttaki sarki/sanatci kunyesinin dili verilmisti
-     (sistem sans, 12/400, .012em). Kullanici sonra baska bir sey
-     istedi ve daha dogrusu: "radyo arayuzundeki swichtin
-     yanindaki ORBITAPE yazisi, ORBITAPE arayuzundeki sag ustteki
-     renkler, tema ve font olsun -- aynisini koy."
-     Gerekcesi de var: bu etiket bir kunye degil, MARKANIN ADI.
-     Sag ustte hangi harflerle yaziliyorsa burada da oyle
-     yazilmali; ayni kelime iki ayri yazi tipiyle iki ayri sey
-     gibi okunuyordu.
-     OLCULER #ust .kanal.ad'DAN BIREBIR: ayni yazi tipi, ayni
-     kalinlik (700), ayni harf araligi (.30em).
-     margin-right: letter-spacing son harften SONRA da bosluk
-     birakiyor; anahtarin genisligi o bos havayi saymasin diye geri
-     aliniyor (ayni duzeltme markada da var). */
-  /* ── MEZAR TASI: GRADYAN --m1/--m3/--m2'DEN GELIYORDU ─────────
-     Yani markaRengi() ne yazdiysa bu etiket de onu aliyordu: raf
-     degisince, tema degisince, ORBITAPE tarafina gecince renk
-     doniyordu. Kullaganin itirazi yerindeydi:
-       "bunlarin ikisi de tur degisimlerinden etkilenmesinler.
-        baska evrene acilan birer tur."
-     Bu etiket bir DURUM ya da tur gostergesi degil, bir KAPI. Ustune
-     bastiginda gidecegin evren, o an hangi rafta oldugunla
-     degismiyor; o yuzden rengi de degismemeli. Iki kip icin iki
-     SABIT kimlik asagida; degisken yok, markaRengi() buraya
-     dokunmuyor. */
-  #kipKisayol .ad{
-    font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:0.75rem;font-weight:700;letter-spacing:.30em;line-height:1;
-    margin-right:-.30em;white-space:nowrap;
-    /* ARSIVDEKI ETIKET = "RADIO": gidecegi yerin, yani radyonun
-       kendi parlak markasi. Ucu de bizim ana renklerimiz, sabit. */
-    background:linear-gradient(102deg,#35e0d8 0%,#86dcd0 48%,#e8a97e 100%);
-    -webkit-background-clip:text;background-clip:text;
-    -webkit-text-fill-color:transparent;color:transparent;
-    text-shadow:none;}
-  #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
-  #kipKisayol:active .anahtar b{right:4px;}
-  /* ── RADYODAYKEN: KAPALI VE ARSIVIN RENGI ─────────────────────
-     Topuz SOLDA (kapali) cunku arsiv kapali; rengi de arsivin
-     rengi (leylak, gezegenlerin ve lib rafinin tonu) cunku anahtar
-     "buraya basinca gidecegin yeri" soyluyor -- arsivde turkuaz
-     yaziyor ve radyoya goturuyor, burada leylak yaziyor ve arsive
-     goturuyor. */
-  /* ── TONUN UC ADIMI ───────────────────────────────────────────
-     1) #c6b6d6 -- griye caliyordu, arsivin kendi leylagindan
-        ayrisamiyordu.
-     2) #bda8e0 -- acik menekse. Kullanici "evet mor olsun" dedi
-        ama ekledi: "icinde darktan gelen gri de olsun."
-     3) #afa1cb -- BUGUNKU. Menekse ile ARSIVIN KENDI ANTRASITI
-        (MOD_TEMA.ORBITAPE.ana = 154,150,172) %60/%40 karisimi:
-          0.6*(189,168,224) + 0.4*(154,150,172) = (175,161,203)
-        Uydurma bir gri degil, arsiv tarafinin zaten kullandigi
-        gri. Anahtar "gidecegin yeri" soyluyor; o yerin havasi da
-        artik renginin icinde. */
-  /* ── 4) BUGUNKU: DARK AGIRLIKLI UC RENK ──────────────────────
-     Kullanicinin son istegi: "radyodaki ORBITAPE yazisi dark
-     renkler arti bizim ana uc renk olsun ama dark agirlikli. ve
-     onun tusu da."
-     Uydurma bir palet degil, olculu bir karisim: her durak
-     %45 kendi markarengimiz + %55 arsivin grafiti (62,64,78).
-       turkuaz  0.45*(53,224,216)  + 0.55*(62,64,78) = (58,136,140)
-       cam gogu 0.45*(134,220,208) + 0.55*(62,64,78) = (94,134,137)
-       kehribar 0.45*(232,169,126) + 0.55*(62,64,78) = (139,111,100)
-     Uc rengimiz de duruyor ama hepsi karanlik tarafa cekilmis --
-     yani kapinin ardindaki evrenin havasi. */
-  /* ── BUGUNKU: GUL KURUSUNDAN ARSIVIN GRISINE ─────────────────
-     Kullanicinin tarifi: "bizim ana rengimizde, gul kurusundan
-     etkilenmeli; solundan gul kurusuyken dark griye donsun --
-     ORBITAPE moodunun ilk rengi."
-     Iki ucu da bizim: sol uc #e27a9e (uc cizginin ucuncusundeki gul
-     kurusu), sag uc arsivin antrasiti (154,150,172). Yani kelime
-     soldan sonuna dogru radyodan arsive geciyor -- kapinin kendisi
-     bir gecis. */
-  body:not(.mood) #kipKisayol .ad{
-    background:linear-gradient(102deg,#e27a9e 0%,#c08a9a 34%,#a89099 68%,#9a96ac 100%);
-    -webkit-background-clip:text;background-clip:text;}
-  body:not(.mood) #kipKisayol .anahtar{
-    background:rgba(196,141,160,.14);border-color:rgba(196,141,160,.40);}
-  /* Topuz da ayni uc rengi tasiyor: 18px'lik bir daire icin gradyan
-     abartili gorunmuyor, tersine yazi ile ayni nesne oldugu
-     anlasiliyor. */
-  body:not(.mood) #kipKisayol .anahtar b{right:26px;
-    background:linear-gradient(135deg,#e27a9e 0%,#b28d9f 52%,#9a96ac 100%);}
-  body:not(.mood) #kipKisayol:hover .anahtar{background:rgba(196,141,160,.26);}
-  body:not(.mood) #kipKisayol:active .anahtar b{right:24px;}
+  #kipKisayol:hover,#kipKisayol:focus-visible{opacity:1;}
+  /* Anahtar SABIT ve DIKEY: alt RADIOTAPE, orta JOYTAPE, ust
+     ORBITAPE. Topuzun rengi odanin rengi (topuz JS yaziyor). */
+  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:24px;
+    height:78px;border-radius:12px;background:rgba(53,224,216,.10);
+    border:1px solid rgba(53,224,216,.32);transition:background .2s ease;}
+  #kipKisayol .anahtar u{position:absolute;left:50%;width:5px;height:5px;
+    margin-left:-2.5px;border-radius:50%;background:rgba(53,224,216,.42);}
+  #kipKisayol .anahtar u:nth-of-type(1){top:8px;}
+  #kipKisayol .anahtar u:nth-of-type(2){top:36.5px;}
+  #kipKisayol .anahtar u:nth-of-type(3){top:65px;}
+  /* top:65px = RADIOTAPE (alt kademe); JS digerlerini yazar. */
+  #kipKisayol .anahtar b{position:absolute;left:2px;top:65px;
+    width:18px;height:18px;
+    border-radius:50%;background:#35e0d8;
+    box-shadow:0 0 10px rgba(53,224,216,.5);
+    transition:top .22s ease,background .22s ease,box-shadow .22s ease;}
+  /* MOODS yazisi: 8px kucuk oldugu icin WCAG AA esigi 4.5. Ilk
+     renk 4.07 idi (kirmizi); isiklastirildi. Font agirligi 700:
+     marka diliyle ayni olmali (test: "Anahtar etiketi markanin
+     diliyle yaziliyor"). */
+  #kipKisayol .ad{writing-mode:vertical-rl;
+    font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:.5rem;font-weight:700;letter-spacing:.26em;
+    color:rgba(216,234,238,.78);text-shadow:none;
+    -webkit-text-fill-color:rgba(216,234,238,.78);}
+  body.joy #kipKisayol .anahtar{background:rgba(226,122,158,.12);
+    border-color:rgba(226,122,158,.40);}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .anahtar, #kipKisayol .anahtar b{transition:none;}
   }
@@ -4326,7 +4247,6 @@
        role="main" DISK'e veriliyor cunku uygulamanin ana icerigi bu:
        halkalar, gorsellestirme ve calma dugmesi burada.
        Gorsel hicbir sey degismiyor -- role bir etiket, bir kutu degil. -->
-  <script src="kollar.js" defer></script>
   <div class="disk" role="main" aria-label="Player">
     <video id="kam" playsinline muted autoplay aria-hidden="true"></video>
     <canvas id="viz"></canvas>
@@ -4480,22 +4400,15 @@
   <div id="kamTus" role="button" tabindex="0" aria-expanded="false"
        aria-label="Recording and camera tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.6" y="6.5" width="18.8" height="13" rx="3.2"/><circle cx="12" cy="13" r="3.7"/></svg></div>
   <div id="yelpaze" role="menu" hidden></div>
-  <!-- ── KIP KISAYOLU ────────────────────────────────────────────
-       SOUND BANKS kipindeyken radyoya donmek icin ayarlari acmak,
-       en ustteki kapiyi bulmak ve anahtari cevirmek gerekiyordu:
-       uc adim. Bu anahtar o kapinin AYNISI, uc cizginin sagina
-       hizalanmis duruyor ve tek dokunusla radyoya donuyor.
-       RENGI RADYONUN: turkuaz, yani "buraya basinca gidecegin yer".
-       Yalnizca bu kipte var (CSS: body.mood).
-       role=switch ve aria-checked=true: ekran okuyucu icin acik bir
-       anahtar -- kapatinca radyo tarafina donuluyor. -->
+  <!-- UC KADEMELI DIKEY KIP ANAHTARI (26 Eylul, kullanici):
+       alt RADIOTAPE · orta JOYTAPE · ust ORBITAPE. Dokunusun
+       yuksekligi kipi secer, topuz odanin rengini alir, sabit
+       durur. Kip adi yazisi yok; dikey MOODS yeter. -->
+  
   <div id="kipKisayol" role="switch" aria-checked="false" tabindex="0"
-       aria-label="Switch to ORBITAPE">
-    <i class="anahtar" aria-hidden="true"><b></b></i>
-    <!-- YAZI: anahtar tek basina "bir sey acik" diyor ama NEREYE
-         goturdugunu soylemiyordu. Yer var -- alt satir (araclar)
-         bundan genis, yani sagdan tasmiyor. -->
-    <span class="ad" aria-hidden="true"><span class="lr">ORBITAPE</span><span class="lm">RADIO</span></span>
+       aria-label="Choose your orbit">
+    <i class="anahtar" aria-hidden="true"><b></b><u></u><u></u><u></u></i>
+    <span class="ad" aria-hidden="true">MOODS</span>
   </div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <!-- ── EN UST: BASKA BIR DUNYAYA KAPI ──────────────────────────
@@ -11978,6 +11891,11 @@
          && typeof zumBitti === 'function') zumBitti(); }catch(e){ _yut(e); }
     try{
       document.body.classList.toggle('mood', !!AYAR.mood);
+      /* JOYTAPE ucuncu kip: ayni yerlesimi (govde.mood) kullanir,
+         yalniz kendi rengi ve havuzu farklidir. */
+      try{ document.body.classList.toggle('joy',
+        !!AYAR.mood && typeof AKTIF_MOD !== 'undefined' && AKTIF_MOD === 'JOYTAPE');
+      }catch(e){ _yut(e); }
       if(AYAR.mood){
         /* ── LOCK SKIN KAPALIYSA: ORBITAPE HER ZAMAN DEFAULT DERIYLE
            ACILIR. Sadece GERCEK bir RADIOTAPE->ORBITAPE gecisinde
@@ -17376,14 +17294,39 @@
   try{
     const _kk = document.getElementById('kipKisayol');
     if(_kk){
-      const _kapat = (e)=>{ try{ e.stopPropagation(); e.preventDefault(); }catch(_){ _yut(_); }
-                            try{
-                              if(document.body.classList.contains('mood')){
-                                if(window.moodKapat) window.moodKapat();
-                              }else{
-                                if(window.moodAc) window.moodAc();
-                              }
-                            }catch(_){ _yut(_); } };
+      /* DOKUNUSUN YUKSEKLIGI KIPI SECER (26 Eylul): anahtar uc
+         kademeli ve dikey; ust uca basmak ORBITAPE, orta JOYTAPE,
+         alta basmak RADIOTAPE. Klavye ve yardimci cagrilar (test)
+         icin tusun kendisi bir sonraki kademeye gecer. */
+      /* 26 Eylul, TERSLIK HATASI: ic ucle ters yazilmis -- 'joy' sinifi
+         varsa 'orbit', yoksa 'joy' donuyordu. Sonuc: ORBITAPE'den
+         radyoya donus hic calismiyordu (olculdu: anahtara programatik
+         tik -> modKolaGit('orbit'), kip degismiyor). Duzeltildi:
+         mood+joy = JOYTAPE, mood+joy yok = ORBITAPE, mood yok =
+         RADIOTAPE. */
+      const _adim = ()=>{
+        try{
+          if(!document.body.classList.contains('mood')) return 'radio';
+          return document.body.classList.contains('joy') ? 'joy' : 'orbit';
+        }catch(_){ return 'radio'; }
+      };
+      const _kapat = (e)=>{
+        try{ e.stopPropagation(); e.preventDefault(); }catch(_){ _yut(_); }
+        try{
+          const h = /** @type {any} */ (e);
+          const r = _kk.getBoundingClientRect();
+          const yuk = h && h.clientY ? (h.clientY - r.top) / Math.max(1, r.height) : -1;
+          let m = _adim();
+          if(yuk >= 0){ if(yuk < 0.34) m = 'orbit';
+                         else if(yuk < 0.67) m = 'joy';
+                         else m = 'radio'; }
+          else { m = (m === 'radio') ? 'orbit' : (m === 'joy' ? 'orbit' : 'radio'); }
+          if(typeof window !== 'undefined' && typeof window.modKolaGit === 'function')
+            window.modKolaGit(m);
+          else if(m === 'radio'){ if(window.moodKapat) window.moodKapat(); }
+          else if(window.moodAc) window.moodAc();
+        }catch(_){ _yut(_); }
+      };
       _kk.addEventListener('click', _kapat);
       _kk.addEventListener('pointerdown', e=>{ try{ e.stopPropagation(); }catch(_){ _yut(_); } });
       _kk.addEventListener('keydown', e=>{
@@ -17991,40 +17934,25 @@
      TEBEL kaliyor. CSS burada kalir: CSP style-src hash'li, modul
      icinden <style> enjekte edilemez. */
   function _kipAnahtarYaz(){
+    /* UC KADEME (26 Eylul): topuzun YER kipi, RENGI odanin rengi.
+       alt 65px = RADIOTAPE (turkuaz) · orta 36.5px = JOYTAPE
+       (pembe) · ust 8px = ORBITAPE (turuncu). */
     try{
       const k = document.getElementById('kipKisayol'); if(!k) return;
-      const acik = document.body.classList.contains('mood');
-      k.setAttribute('aria-checked', acik ? 'true' : 'false');
-      /* ETIKET DUZGUN. Once "Sound banks" yaziyordu ve `title` ile
-         "Open the archive" geliyordu: bu dugme ne bir arsiv acar ne
-         de sound banks acar -- kipi degistirir. Yanlis metin ekran
-         okuyucuda da yanlis soyluyordu.
-         `title` KALDIRILDI: gorunur yazi (ORBITAPE / RADIO) zaten
-         ne yapilacagini soyluyor, ayrica bir tooltip ayni isi
-         tekrarliyor ve fare altindaki konsolun uzerine gelip
-         kapatiyor. */
-      k.setAttribute('aria-label', acik ? 'Switch to live radio' : 'Switch to ORBITAPE');
-      k.removeAttribute('title');
+      const mood = document.body.classList.contains('mood');
+      const joy = document.body.classList.contains('joy');
+      k.setAttribute('aria-checked', mood ? 'true' : 'false');
+      k.setAttribute('aria-label', mood ? 'Switch to live radio' : 'Choose your orbit');
+      const b = /** @type {any} */ (k.querySelector('.anahtar b'));
+      if(b){
+        b.style.top = mood ? (joy ? '36.5px' : '8px') : '65px';
+        b.style.background = mood ? (joy ? '#e27a9e' : '#d9723c') : '#35e0d8';
+        b.style.boxShadow = '0 0 10px ' + (mood
+          ? (joy ? 'rgba(226,122,158,.55)' : 'rgba(217,114,60,.55)')
+          : 'rgba(53,224,216,.5)');
+      }
     }catch(e){ _yut(e); }
   }
-  /* ── ANAHTARIN SAG KENARI TASIMA SATIRIYLA AYNI ───────────────
-     Sol alttaki konsol uc satir: tutamak+anahtar, tasima tuslari,
-     kayit araclari. Uc satirin sag kenarlari uc ayri yerde
-     bitiyordu (188 / 168 / 232 px) ve blok tirtikli okunuyordu --
-     kullanicinin sozu: "radiotape yazisi cok tasiyor, sag taraftan
-     tasmamali."
-     COZUM BOSLUK SISIRMEK DEGIL. Bir tur tasima satiri
-     space-between ile gerilmisti ve tuslarin arasi 101px olmustu;
-     o yol kapali.
-     SONRA ANAHTAR gerildi (sag kenari konsolun sag kenarina
-     esitlendi, etiket space-between ile saga itildi). O DA KAPALI:
-     toggle ile kelimenin arasinda 80px'lik bir bosluk kaliyordu ve
-     kelime havada duruyordu. Iki eleman bir arada okunmaliysa yan
-     yana durmali.
-     BUGUNKU KURAL: etiket toggle'in HEMEN yanindadir (CSS gap).
-     Bu fonksiyon artik hicbir seyi germiyor; sadece OLCUYOR ve
-     tasma varsa geri bildiriyor. Tasma yoksa -- ki olculdu, yok --
-     yapacak isi de yoktur. */
   function _kipSagKenar(kk, sol, sinir){
     try{
       /* HEDEF: konsolun EN GENIS satiri, tasima satiri degil.
@@ -18062,23 +17990,17 @@
       const _kk = document.getElementById('kipKisayol');
       if(!_kk) return;
       _kipAnahtarYaz();
-      if(document.body.classList.contains('mood')){
-        const _kt = document.getElementById('ayarTut');
-        if(_kt){
-          const g = _kt.getBoundingClientRect();
-          if(g.height){
-            /* ORBITAPE: anahtar UC CIZGININ saginda (25 Eylul;
-               once kilavuzun yanindaydi, kullanicinin istegi). */
-            _kk.style.removeProperty('left');
-            _altYasla(_kk, g.top + g.height / 2 + 12);
-            _kk.style.left = Math.round(g.right + 8) + 'px';
-            _kipSagKenar(_kk, Math.round(g.right + 8),
-              Math.round(innerWidth - (parseFloat(getComputedStyle(document.documentElement)
-                .getPropertyValue('--kx')) || 16) - 8));
-            return;                 /* yeri bu kip belirledi */
-          }
-        }
-      }
+      /* SABIT (26 Eylul, kullanici): "bence switch sabit olsun, hem
+         guzel gorunur". Once arsivde anahtar UC CIZGININ yanina
+         tasiniyordu; 78 px yuksek olunca kilavuzun ve player'in
+         arasina sikisiyordu (olculdu: uc cizgiyle 26 px asagida,
+         kilavuzun 4 px saginda, arada -18px). Artik her iki kipte
+         de ayni yerde duruyor: sol altta, konsolun ustunde. */
+      /* ORBITAPE'ye OZEL YERLESTIRME SILINDI (26 Eylul). Anahtar
+         iki kipte de ayni yerde; asagidaki konsol hizalamasi her
+         iki kip icin de gecerli. Olu kod `if(false && _kt)` ile
+         uyutuldu, sonra tamamen kaldi: hem yanlis bir dal oluyordu
+         hem de ilk boyama butcesine bosta yer yiyordu (65 bayt). */
       const r = _konsolKutu();
       if(r && r.height){
         /* Konsol sola kaydirildi (--konsol-sol): kutu kenardan 11px
@@ -18088,7 +18010,13 @@
         const kay = parseFloat(getComputedStyle(document.documentElement)
           .getPropertyValue('--konsol-sol')) || 0;
         const sol = Math.round(r.left + kay);
-        _altYasla(_kk, r.top - 8);
+        /* SABIT YER (26 Eylul): anahtar 78 px yuksek ve iki kipte de
+           ayni yerde duracak. Yer secimi kip DEGIL, iki kipin de
+           payastigi seridi bos birakacak sekilde: arsivde uc cizgi
+           776-802 arasinda duruyor, anahtar onun 14 px ustunde
+           bitiyor (684..762). Radyoda konsol 810'da, aradaki 48 px
+           bosluk kasitli -- anahtar yukaridaki ikonlara degmiyor. */
+        _altYasla(_kk, r.top - 48);
         _kk.style.left = sol + 'px';
         _kipSagKenar(_kk, sol);
       }
@@ -21759,6 +21687,12 @@
     try{ geriYerlestir(); }catch(e){ _yut(e); }
   }catch(e){ _yut(e); }
 </script>
+<!-- UC KOLLU MOD SECICI (kollar.js). Etiket bilerek inline
+     betikten SONRA: test/saglik.js ilk </script> ile inline betigi
+     kesiyor ve bu etiket once gelirse blok bosalip butun kaynak
+     kontrolleri yanlis okunuyor (olculdu: AILELER/ARSIV_ADLAR
+     "hoisted" kontrolleri kirmizi, "ustOlcu() cagrisi bulunamadi"). -->
+<script src="kollar.js" defer></script>
   <!-- KAYIT / KAMERA / FOTOGRAF: bkz. kayit.js. Buradan KALDIRILDI:
        modul artik istek uzerine iniyor (bkz. kayitYukle). Dinlemek
        icin gerekmiyor ve zayif hatta ilk saniyeler sese kaliyor. -->
