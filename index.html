@@ -443,7 +443,7 @@
      !important ile KOSULSUZ kazandirildi. */
   body.yildiz-zum #ayarTut,body.yildiz-zum #deriFirca,
   body.yildiz-zum #saatTus,body.yildiz-zum #gorselTus,
-  body.yildiz-zum #rehberTus,body.yildiz-zum #fanTus,body.yildiz-zum #ara,
+  body.yildiz-zum #rehberTus,body.yildiz-zum #kamTus,body.yildiz-zum #ara,
   body.yildiz-zum #kipKisayol{opacity:0 !important;pointer-events:none !important;
     transition:opacity .32s ease;}
   /* ── 18 EYLUL: SKIN DEGISIRKEN ANLIK BANT (ikinci tur) ───────────
@@ -3438,19 +3438,16 @@
   body.klavye #rehberTus{opacity:0;pointer-events:none;}
   body.deri #rehberTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
   /* YELPAZE (25 Eylul): kullanicinin istegi. Gerekce kayit.js. */
-  #fanTus{position:fixed;z-index:96;
+  #kamTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:auto;bottom:calc(115px + var(--dip-pay));
-    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-    cursor:pointer;-webkit-tap-highlight-color:transparent;opacity:.72;
-    transition:opacity .22s ease;}
-  #fanTus svg{width:19px;height:19px;fill:currentColor;stroke:none;}
-  #fanTus:hover,#fanTus:focus-visible,#fanTus[aria-expanded="true"]{opacity:1;}
-  body.klavye #fanTus{opacity:0;pointer-events:none;}
-  /* KIRMIZI nokta (once sadece konum vardi, ekranda BEYAZ duruyordu). */
-  #fanTus .nokta{position:absolute;top:0;right:0;width:7px;height:7px;
-    border-radius:50%;background:#e2564a;
-    box-shadow:0 0 6px rgba(226,86,74,.8);}
+    top:auto;bottom:calc(78px + var(--dip-pay));
+    width:32px;height:32px;display:flex;align-items:center;
+    justify-content:center;cursor:pointer;opacity:.72;color:#35e0d8;
+    -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
+  #kamTus svg{width:20px;height:20px;}
+  #kamTus:hover,#kamTus:focus-visible,#kamTus[aria-expanded="true"]{opacity:1;}
+  body.klavye #kamTus{opacity:0;pointer-events:none;}
+  body.deri #kamTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
   #yelpaze{position:fixed;z-index:97;display:flex;flex-direction:column;gap:6px;
     padding:8px;border-radius:12px;background:rgba(8,14,17,.92);
     border:1px solid rgba(120,180,180,.18);}
@@ -3466,8 +3463,8 @@
   #yelpaze .fanOge[aria-disabled="true"]{opacity:.42;}
   #yelpaze .fanOge[aria-disabled="true"] .nokta{background:#6b4a48;}
   /* Kamera acikken ikon KALIR; gizleme yalniz kayit/foto/gorsel. */
-  body.gorsel-acik #fanTus,body.kayit #fanTus,
-  body:has(#fotoOnizle.var) #fanTus,body.gorsel-acik #yelpaze,
+  body.gorsel-acik #kamTus,body.kayit #kamTus,
+  body:has(#fotoOnizle.var) #kamTus,body.gorsel-acik #yelpaze,
   body.kayit #yelpaze,
   body:has(#fotoOnizle.var) #yelpaze{display:none !important;}
   /* ── SOL SUTUN: DERIDE DAHA GOZE GELIYOR ──────────────────────
@@ -4492,8 +4489,14 @@
        aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.4 9.1a2.6 2.6 0 1 1 3.9 2.3c-1 .55-1.3 1.1-1.3 2.15"/><circle cx="12" cy="16.9" r=".9" fill="currentColor" stroke="none"/></svg></div>
   <!-- YELPAZE (25 Eylul): soru isaretinin altinda yuvarlak kayit
        simgesi + kirmizi nokta; icerigi kayit.js kurar. -->
-  <div id="fanTus" role="button" tabindex="0" aria-expanded="false"
-       aria-label="Recording and camera tools"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.2"/></svg><span class="nokta" aria-hidden="true"></span></div>
+  <!-- KAMERA + YELPAZE, TEK DUGME (26 Eylul). Once burada kayit
+       simgesi + ayri bir kirmizi nokta vardi; kullanici "sadece
+       kamera ikonu istiyorum, nokta kirmizi vs olmayacak" dedi.
+       Simdi ikon bir fotograf makinesi (objektif onden), oteki
+       ikonlarla ayni turkuaz cizim dilinde. Basinca yelpaze
+       (PIC / REC / CAM) acilir. -->
+  <div id="kamTus" role="button" tabindex="0" aria-expanded="false"
+       aria-label="Recording and camera tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.6" y="6.5" width="18.8" height="13" rx="3.2"/><circle cx="12" cy="13" r="3.7"/></svg></div>
   <div id="yelpaze" role="menu" hidden></div>
   <!-- ── KIP KISAYOLU ────────────────────────────────────────────
        SOUND BANKS kipindeyken radyoya donmek icin ayarlari acmak,
@@ -18308,7 +18311,7 @@
   }
   /* Sol yardimci sutunu iki kipte IKI FARKLI yerde durur. Ortak
      kısım: sol kenar (--kx) ve ic bosluklar. Farkli olan: taban. */
-  var _SOL_SUTUN = ['fanTus','rehberTus','gorselTus','deriFirca','saatTus','ayarTut'];
+  var _SOL_SUTUN = ['kamTus','rehberTus','gorselTus','deriFirca','saatTus','ayarTut'];
   /* SUTUNUN KUTUSUNU YAYINLA: deri seridi bu sutunla ayni yatayda
      duruyor. Iki olcum: sag kenar (kisa yatayda seridi saga kaydirmak
      icin) ve alt kenar (radyoda seridi sutunun ALTINA indirmek icin).
@@ -18351,7 +18354,7 @@
           const r = _konsolKutu();
           if(!r || !r.height) return;
           let alt = r.top - 8;
-          ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','fanTus'].forEach(id=>{
+          ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','kamTus'].forEach(id=>{
             const e = document.getElementById(id); if(!e) return;
             e.style.removeProperty('top');
             const h = e.getBoundingClientRect().height || 32;
@@ -18366,10 +18369,19 @@
           if(!tut0) return;
           tut0.style.removeProperty('bottom');
           tut0.style.removeProperty('top');
-          let ust = 0;
+          /* OLCUM BASARISIZSA HICBIR KONUM YAZILMAZ (26 Eylul).
+             Foto onizlemesi sutunu display:none yapiyor; o an yapilan
+             yerlestirmede tr.height = 0 idi ve kod ust=0 ile devam
+             edip saatTus'a top:14px yaziyor, altindaki dort ikon da
+             onun uzerine yigiliyordu. Olcum: foto sonrasi saatTus 0,
+             deriFirca 38, gorselTus 76, rehberTus 114, kamTus 152
+             (dogru: 55/99/143/187/231). Bozuk durum yazmak yerine
+             hic yazmiyoruz; acik panelin kapanmasi geriYerlestir'i
+             cagiriyor (bkz. kayit.js fotoOnizleKapa). */
           const tr = tut0.getBoundingClientRect();
-          if(tr.height) ust = tr.bottom + 14;
-          ['saatTus','deriFirca','gorselTus','rehberTus','fanTus'].forEach(id=>{
+          if(!tr.height) return;
+          let ust = tr.bottom + 14;
+          ['saatTus','deriFirca','gorselTus','rehberTus','kamTus'].forEach(id=>{
             const e = document.getElementById(id); if(!e) return;
             e.style.removeProperty('bottom');
             e.style.top = Math.round(ust) + 'px';
@@ -21724,58 +21736,23 @@
       try{ merkezUygula(); }catch(e){ _yut(e); } }, 120); });
   }catch(e){ _yut(e); }
   /* ══ KAYIT MODULU ISTEK UZERINE ═══════════════════════════════════
-     Onceden sayfanin sonundaki bir betik etiketiyle HER ACILISTA
-     iniyordu. Olculdu: derlenmis hali 86 KB ve dinlemek icin
-     gerekmiyor. Zayif hatta bunun bedeli dogrudan kullanicinin
-     duydugu sey: ilk saniyeler sese degil, kayit modulune de
-     gidiyor.
+     Once sayfanin sonundaki betik etiketiyle HER ACILISTA iniyordu
+     (derlenmis hali 86 KB, dinlemeye gerek yok) ve zayif hatta ilk
+     saniyeler sese degil module gidiyordu. Yeni sira: once ses,
+     sonra gerisi -- REC/CAM'e dokunulunca (asil sebep), ilk ses
+     geldikten 1,5 sn sonra (bosta), hicbiri olmazsa 10 sn'de (taban).
+     Boylece REC'e uzanan biri modulu neredeyse her zaman hazir buluyor.
+     ILK BASIS BOSA GITMEZ: modul yoldayken basilan tus akilda
+     tutuluyor, dosya "bitirdim" imzasi atinca bir kez oynatiliyor
+     (sinir 6 sn). Dosya hic gelmezse bir kez daha isteniyor; iki kez
+     CALISTIRMAK yasak (ust duzey const yeniden bildirilir ->
+     SyntaxError), o yuzden BASLADI imzasi varken yeni istek atilmiyor.
+     18 EYLUL COKMESI: "Identifier 'rec' has already been declared"
+     (pj'nin Android/SamsungBrowser gercek hata raporu) -- kok neden
+     modulun IIFE'si icinde kalmayan bir adi disariya siziyordu; her
+     yuklemede ikinci kez bildirilip dosyayi dusuruyordu. Duzeltme:
+     disari sizan adlar modulun kapsamina alindi. */
 
-     Yeni sira -- once ses, sonra gerisi:
-       1. REC ya da CAM'e dokunulunca (asil sebep),
-       2. ilk ses geldikten 1,5 sn sonra (bosta, kimse beklemiyorken),
-       3. hicbiri olmazsa acilistan 10 sn sonra (taban).
-     Boylece REC'e uzanan biri modulu neredeyse her zaman hazir
-     buluyor.
-
-     ILK BASIS BOSA GITMEZ. Modul yoldayken basilan tus akilda
-     tutuluyor; dosya "bitirdim" imzasini atinca (kayitGeldi) o
-     dokunus bir kez oynatiliyor. Sinir 6 saniye: daha gec gelen bir
-     modulun kendi basina kayit baslatmasi, kullanicinin vazgectigi
-     bir isi yapmak olurdu.
-
-     Dosya hic gelmezse (kopuk hat) bir kez daha isteniyor. Iki kez
-     CALISTIRMAK ise yasak: ust duzey const'lar yeniden bildirilir
-     ve SyntaxError olur -- o yuzden BASLADI imzasi varken yeni
-     istek atilmiyor.
-
-     ── 18 EYLUL COKMESI: "Identifier 'rec' has already been
-     declared" ────────────────────────────────────────────────────
-     pj'nin kendi cihazindan (Android, SamsungBrowser, zayif hat)
-     gelen gercek hata raporuyla yakalandi. Kok neden BASLADI
-     kontrolunun kendisi degil, ASAGIDAKI NOBETCI'ydi (bkz. 4000ms
-     sonraki ilk istek + 8sn'de bir uc kez tekrar): eski kod nobet
-     her tetiklendiginde HAZIR degilse -- BASLADI'ya bile bakmadan --
-     _kayIstendi'yi sifirlayip kayitYukle()'yi yeniden cagiriyordu.
-     Zayif hatta ilk istek 8-12 saniyede henuz INMEMIS olabilir
-     (dosya hala yolda, BASLADI da HAZIR da hala yanlis) -- bu anda
-     nobet ikinci bir <script> etiketi ekliyor. Sonra IKI istek de
-     ayri ayri tamamlanip calisinca ust duzey `const rec` iki kez
-     bildiriliyor: SyntaxError, sayfa o an icin bozuluyor.
-     kayitYukle()'nin kendi BASLADI kontrolu bunu YAKALAYAMIYOR
-     cunku nobet o kontrolden ONCE _kayIstendi'yi sifirliyor ve o
-     anda BASLADI da henuz olusmamis oluyor -- kontrol var ama
-     bakacak bir isaret yok.
-     DUZELTME: nobet artik "HAZIR degil mi" diye degil, "son istegin
-     UZERINDEN GERCEKTEN yeterince (15 sn) zaman gecti mi VE hala
-     BASLAMADI mi" diye soruyor -- ilk istek hala yolda oldugu surece
-     dokunmuyor. Ayrica yeniden denerken eski <script> etiketi DOM'dan
-     siliniyor (bazi tarayicilarda gec gelen icraati onluyor, olcum
-     yok ama zararsiz ve ucretsiz bir onlem). KANIT: asagida
-     `window.__kayNobetKontrol()` yardimcisi (yalnizca testte
-     cagriliyor) eski davranisi (BASLADI yokken, 8 sn'de bir, kosulsuz
-     yeniden istek) ve yeniyi (BASLADI yokken bile 15 sn dolmadan
-     istek atmiyor) ayirt etmeyi sagliyor -- bkz. saglik.js "Nobetci
-     hala yolda olan istegi ikinci kez baslatmiyor". */
   var _kayIstendi = false, _kayTekrar = 0, _kayBekTus = null, _kayBekZaman = 0,
       _kayIstekZamani = 0, _kayEtiket = null;
   function kayitYukle(){
@@ -21823,9 +21800,19 @@
     document.addEventListener('pointerdown', e=>{
       try{
         const h = /** @type {any} */ (e.target);
-        const t = h && h.closest ? h.closest('#rec,#cam') : null;
+        /* #kamTus DA eklendi (26 Eylul): modul ~5 sn'de tembel
+           yukleniyor, o sure kadar kamera ikonuna basinca HICBIR
+           sey olmuyordu ("basinca zaten aciliyor" dedi). Simge
+           yelpazeyi acan tek dugme; modul onu da beklesin. */
+        const t = h && h.closest ? h.closest('#rec,#cam,#kamTus') : null;
         if(!t) return;
         if(window.KAYIT_MODULU_HAZIR) return;
+        /* YAZIM HATASI DUZELTILDI (26 Eylul): atama _kayBekZamen,
+           okuma _kayBekZaman. Bu yuzden kayitGeldi() her zaman
+           "6 sn gecti" sanip GERI DONUYORDU -- modulun ilk dokunusu
+           oynatmasi hic calismiyordu, yani REC/CAM'e modul yoldayken
+           basmak bosuna gidiyordu ("ilk basis bosa gitmez" yazisi
+           dosyada iki kez vardi, ikisi de yalan). */
         _kayBekTus = t; _kayBekZaman = Date.now();
         kayitYukle();
       }catch(_){ _yut(_); }

@@ -2754,3 +2754,53 @@ kısaltıldı. Tip denetimi 69/69 taban değişmede.
 yazdım ve kapının sunucusunu öldürdüm; üç takım `ERR_CONNECTION_REFUSED`
 aldı. Kural zaten notlarımda yazılıydı: **kapı koşarken 8765'e
 dokunma.** Kendi pid'imi tutup onu öldürmek doğru yol.
+
+### 26 Eylül — foto sonrası kayma, iki nokta, kamera ikonu, "ilk dokunuş" yalanı
+
+Kullanıcı dört şey bildirdi; ölçümün üçü gerçek hatayı gösterdi.
+
+**(1) "pic'ten sonra ikonları yukarı kayması hâlâ devam ediyor."**
+Gerçek hata, ölçümle görüldü: foto öncesi sütun 15/55/99/143/187/231,
+önizleme kapanınca **0/38/76/114/152** — `saatTus` tepeye taşınıyor,
+altındaki dört ikon onun üstüne yığılıyordu. KÖK NEDEN: foto önizlemesi
+sütunu `display:none` yapıyor; o an çalışan yerleştirmede
+`ayarTut.getBoundingClientRect().height` **0** dönüyordu ve kod
+`ust=0` ile devam edip `saatTus`'a `top:14px` yazıyordu. Bozuk durumu
+yazmak yerine **hiç yazmıyor** (`if(!tr.height) return;`) + önizleme
+kapanınca `geriYerlestir()` iki kez çağrılıyor (senkron + 120 ms).
+Düzeltme sonrası: foto öncesi ve sonrası birebir aynı, kayma yok.
+Test: "Fotodan sonra sol sutun yerinde kaliyor".
+
+**(2) "beyaz nokta kırmızı olacak, y-tı yanına gelmiş, bir de 2 tane
+olmuşlar."** KÖK NEDEN: ikon zaten **dolu bir daire** (kayıt simgesi),
+benim eklediğim ayrı kırmızı rozet ikinci nokta yapıyordu; rozet
+ikonanın sağına yapışık durduğu için "alakasız" görünüyordu. Sonra
+kullanıcı netleştirdi: **"sadece kamera ikonu istiyorum, nokta kırmızı
+vs olmayacak."** Son hâli: `#fanTus` butonu kaldırıldı, yerine **tek**
+`#kamTus` — bir fotoğraf makinesi (objektif önden), öteki ikonlarla
+aynı turkuaz çizim dilinde, nokta ve kırmızı yok. Yelpaze (PIC / REC /
+CAM + döndürme) bu ikonun içinde; REC RADIOTAPE'de soluk (yasal).
+Test: "Sol sutunda kirmizi nokta yok, ikon kamera" — düğmede `.nokta`
+ögesi yok, sütundaki her kutu ve alt öğeleri için hesaplanan
+renk/dolgu/çizgi/stroke tonlarında kırmızı aranıyor (R > G+40 ve
+R > B+40) ve SVG'de `<rect>` gövde + `<circle>` objektif aranıyor.
+
+**(3) Yeni bulgu — "ilk dokunuş boşa gitmez" YALANDI.** Kullanıcının
+"basınca zaten açılıyor" beklentisini ölçerken: kamera ikonuna modul
+yüklenmeden (ilk ~5 saniye) basınca **hiçbir şe** olmuyordu. İzledim:
+`kayitGeldi()` ilk dokunuşu oynatması gerekiyor, ama kontrol
+`Date.now() - _kayBekZaman > 6000` idi ve atama **`_kayBekZamen`**
+(noktasız) olarak yapılıyordu. Bildirilen değişken `_kayBekZaman`
+olduğu için atama tanımsız bir değişkene gidiyor, okunan hep 0 kalıyor,
+"6 saniye geçti" sanıp **her seferinde geri dönüyordu**. Yani REC ve
+CAM'de de ilk dokunuş modül yoldayken boşa gidiyordu — dosyada bu
+kural iki kez yazılıydı, ikisi de yalandı. Düzeltildi. Ayrıca
+`#kamTus` de "modülü bekle" listesine eklendi: ilk 5 saniyede ikona
+basmak da artık yelpazeyi açıyor (ölçüldü: 1,1 sn'de basıldı, 0,9 sn
+sonra modul hazır + yelpaze 4 öğeyle açık). Testler (birim.js, üç
+statik kontrol): yazım her yerde aynı, 6 sn penceresi ve
+`kayitGeldi()` çağrısı yerinde, `#kamTus` bekleme listesinde.
+
+**(4) Bayt.** 1.252 bayt yedek. "KAYIT MODULU ISTEK UZERINE" bloğu
+(3.139 bayt) 1.180 bayta indirildi: eski yükleme sırası, ilk dokunuşun
+boşa gitmemesi kuralı, 18 Eylül çökmesinin kök nedeni korundu.

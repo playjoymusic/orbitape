@@ -3232,6 +3232,15 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       /* Goruntu bellekte durmasin: 400 KB'lik bir data URL. */
       if(im) im.removeAttribute('src');
       _fotoBekleyen = null;
+      /* SUTUN YERLESIMI: onizleme sirasinda sutun gizliydi, o an
+         yapilan yerlestirme olcum alamadi (bkz. index.html
+         _tutamakYerlestir radar dalindaki koruma). Onizleme kapaninca
+         olcum yeniden alinmali -- yoksa ikonlar kirik yerde kaliyor
+         (olcu: saatTus 0, kamTus 152; dogru 55 ve 231).
+         Iki kez cagiriyoruz: biri senkron (panelin kapanma animasyonu
+         icinde), biri 120 ms sonra (yerlesim olculdugunde). */
+      try{ if(typeof geriYerlestir === 'function'){ geriYerlestir();
+             setTimeout(()=>{ try{ geriYerlestir(); }catch(e){ _yut(e); } }, 120); } }catch(e){ _yut(e); }
     }catch(e){ _yut(e); }
   }
   /* SHARE: telefonun kendi paylasim sayfasi. Buradan galeriye
@@ -3547,7 +3556,7 @@ try{
 
   /* ── YELPAZE (25 Eylul) ────────────────────────────────────────────
      Kullanicinin istegi: sol sutunda soru isaretinin ALTINDA yuvarlak
-     bir kayit simgesi + kirmizi nokta; basinca o noktaya BAGLI yelpaze.
+     bir kamera simgesi (objektif onden); basinca yelpaze (PIC/REC/CAM).
      Icindekiler: REC, PIC, CAM, kamera dondurme. "Radyo tarafinda rec
      yazsakli, daha soft yap koyu gibi; orbitape modunda o da acik."
 
@@ -3560,7 +3569,7 @@ try{
      kuruluyor, yani ORBITAPE'de o tusa basmak hicbir sey yapmiyordu
      (kullanicinin "pic'e basmiyorum" sikayeti). Buradaki yol iki kipte
      de calisir. */
-  const _fanTus = document.getElementById('fanTus');
+  const _fanTus = document.getElementById('kamTus');
   const _fanCep = document.getElementById('yelpaze');
   if(_fanTus && _fanCep){
     /* Dort oge: etiket + islev. */
@@ -3660,7 +3669,7 @@ try{
       document.addEventListener('pointerdown', e=>{
         if(_fanCep.hidden) return;
         const t = /** @type {any} */ (e.target);
-        if(t && (t.closest('#yelpaze') || t.closest('#fanTus'))) return;
+        if(t && (t.closest('#yelpaze') || t.closest('#kamTus'))) return;
         fanAc(false);
       }, true);
     }catch(e){ _yut(e); }

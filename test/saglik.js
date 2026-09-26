@@ -8588,12 +8588,37 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                         if(!e) return null; const b=e.getBoundingClientRect();
                         return {t:Math.round(b.top), b:Math.round(b.bottom),
                                 d:getComputedStyle(e).display}; };
-        const n = document.querySelector('#fanTus .nokta');
-        const ns = n ? getComputedStyle(n) : null;
-        const nokta = ns ? { renk:ns.backgroundColor, gen:ns.width+'x'+ns.height,
-                             sag:ns.right, ust:ns.top } : null;
+        const noktaYok = !document.querySelector('#kamTus .nokta');
+        const sv = document.querySelector('#kamTus svg');
+        const govde = sv ? sv.querySelector('rect') : null;
+        const obj = sv ? sv.querySelector('circle') : null;
+        const kameraCizim = !!(govde && obj);
+        /* KIRMIZI NOKTA araniyor, kirmizi piksel degil. Onceki yazim
+           her kirmizi TONU sayiyordu ve tasarimdaki pembe cubugu
+           (#ayarTut'un 17x4 px marka cubugu, rgb(226,122,158)) yakaladi
+           -- kullanici bunu hic soylemedi. Daraltma: nokta = 10 px'den
+           kucuk VE yuvarlak (border-radius >= %40). Kullanicinin
+           sozuyddu: nokta, iki tane, alakasiz duruyor. */
+        let kirmiziYok = true, kirmiziNokta = '';
+        ['ayarTut','deriFirca','saatTus','gorselTus','rehberTus','kamTus'].forEach(id=>{
+          const e = document.getElementById(id); if(!e) return;
+          [e, ...e.querySelectorAll('*')].forEach(el=>{
+            const cs = getComputedStyle(el);
+            const rr = el.getBoundingClientRect();
+            const yuvarlak = parseFloat(cs.borderRadius) || 0;
+            const daire = rr.width <= 10 && rr.height <= 10
+              && yuvarlak >= Math.min(rr.width, rr.height) * 0.4;
+            ['color','backgroundColor','fill','stroke'].forEach(oz=>{
+              const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(cs[oz]||'');
+              if(!m || !daire) return;
+              const r=+m[1], g=+m[2], b2=+m[3];
+              if(r > g+40 && r > b2+40){ kirmiziYok = false;
+                kirmiziNokta = id+' '+oz+' '+cs[oz]+' '+Math.round(rr.width)+'x'+Math.round(rr.height); }
+            });
+          });
+        });
         const eskiMood = AYAR.mood;
-        const oku = ()=>{ const f=R('fanTus'), s=R('rehberTus');
+        const oku = ()=>{ const f=R('kamTus'), s=R('rehberTus');
                          return { fan:f, soru:s, mood:document.body.classList.contains('mood') }; };
         AYAR.mood = false; moodUygula(false); await bek(320);
         const radyo = oku();
@@ -8602,20 +8627,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         AYAR.mood = eskiMood; moodUygula(false); await bek(240);
         /* KAMERA: ikon kalsin. */
         document.body.classList.add('kam'); await bek(160);
-        const kamGizli = getComputedStyle(document.getElementById('fanTus')).display;
+        const kamGizli = getComputedStyle(document.getElementById('kamTus')).display;
         document.body.classList.remove('kam'); await bek(120);
         /* KAYIT: gizli kalsin (onceki kural bozulmadi mi). */
         document.body.classList.add('kayit'); await bek(160);
-        const kayitGizli = getComputedStyle(document.getElementById('fanTus')).display;
+        const kayitGizli = getComputedStyle(document.getElementById('kamTus')).display;
         document.body.classList.remove('kayit'); await bek(120);
-        return { radyo, orbitape, nokta, kamGizli, kayitGizli };
+        return { radyo, orbitape, noktaYok, kirmiziYok, kirmiziNokta, kameraCizim, kamGizli, kayitGizli };
       });
       const y = yp || {};
       const R2 = y.radyo || {}, O2 = y.orbitape || {};
-      K('Yelpaze noktasi kirmizi ve ikona yapisik',
-        !!(y.nokta && /rgb\(2\d\d, *[1-9]\d, *[1-9]\d\)/.test(y.nokta.renk||'')
-            && /^7pxx7px$/.test(y.nokta.gen||'') && y.nokta.sag === '0px'),
-        y.nokta ? (y.nokta.renk + ' · ' + y.nokta.gen + ' · right ' + y.nokta.sag) : 'nokta yok');
+      /* KIRMIZI NOKTA BIRAKILDI (26 Eylul). Kullanicinin son sozu:
+         "sadece kamera ikonu istiyorum, nokta kirmizi vs olmayacak."
+         OLCUM: (1) dugmenin icinde .nokta OGESI YOK, (2) butun
+         sol sutunda kirmizi tonu YOK, (3) ikon kamera cizimi:
+         24'luk viewBox'ta bir <rect> govde + <circle> objektif. */
+      K('Sol sutunda kirmizi nokta yok, ikon kamera',
+        !!(y.noktaYok === true && y.kirmiziYok === true && y.kameraCizim === true),
+        '.nokta ogesi: ' + (y.noktaYok ? 'yok' : 'VAR')
+        + ' · kirmizi nokta: ' + (y.kirmiziYok ? 'yok' : 'VAR ' + (y.kirmiziNokta||''))
+        + ' · kamera cizimi: ' + (y.kameraCizim ? 'dikdortgen + objektif' : 'yok'));
       K('Yelpaze radyoda soru isaretinin ALTINDA',
         !!(R2.fan && R2.soru && R2.fan.t >= R2.soru.b),
         R2.fan && R2.soru ? ('yelpaze ' + R2.fan.t + '..' + R2.fan.b
@@ -8627,6 +8658,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Yelpaze kamera acikken KALIR, kayitta gizlenir',
         y.kamGizli && y.kamGizli !== 'none' && y.kayitGizli === 'none',
         'kamera: ' + y.kamGizli + ' · kayit: ' + y.kayitGizli);
+    }
+    /* ── FOTODAN SONRA SUTUN KAYMIYOR (26 Eylul) ────────────────────
+       Kullanicinin sozu: "pic'ten sonra ikonlari yukari kaymasi hala
+       devam ediyor." Olcum: foto oncesi 15/55/99/143/187/231,
+       onizleme kapandiktan sonra 0/38/76/114/152 -- yani saatTus
+       tepeye tasliyor, altindaki dort ikon da onun uzerine yigiliyordu.
+       KOK NEDEN: foto onizlemesi sutunu display:none yapiyor; o an
+       calisan yerlestirmede ayarTut'un olcumu height=0 donuyor ve kod
+       ust=0 ile devam edip saatTus'a top:14px yaziyordu. Bozuk durum
+       YAZMAK yerine hic yazmiyor + onizleme kapaninca geriYerlestir
+       cagriliyor (kayit.js fotoOnizleKapa).
+       OLCUM: fotodan once ve sonra ayni kutular, en fazla 1 px fark. */
+    {
+      const fp = await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const ID = ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','kamTus'];
+        const olc = ()=>{ const o={}; ID.forEach(id=>{
+            const e=document.getElementById(id); if(!e){ o[id]=-1; return; }
+            const b=e.getBoundingClientRect(); o[id]=b.height?Math.round(b.top):-1; });
+          return o; };
+        const once = olc();
+        const fan = document.getElementById('kamTus');
+        if(fan) fan.click();
+        await bek(420);
+        const pic = document.getElementById('pic');
+        if(pic) pic.click();
+        await bek(1300);
+        const k = document.getElementById('fotoKapat');
+        if(k) k.click();
+        await bek(1500);
+        const sonra = olc();
+        return { once, sonra };
+      });
+      const f = fp || {};
+      const fark = [];
+      ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','kamTus'].forEach(id=>{
+        const a=(f.once||{})[id], b2=(f.sonra||{})[id];
+        if(typeof a!=='number' || typeof b2!=='number' || a<0 || b2<0) fark.push(id+':gizli');
+        else if(Math.abs(a-b2)>1) fark.push(id+':'+a+'->'+b2);
+      });
+      K('Fotodan sonra sol sutun yerinde kaliyor',
+        fark.length===0,
+        fark.length ? fark.join(' · ')
+                    : 'oncesi ve sonrasi ayni: ' + ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','kamTus']
+                        .map(id=>Math.round((f.once||{})[id])).join('/'));
     }
     K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;

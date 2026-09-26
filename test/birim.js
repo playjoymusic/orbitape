@@ -139,6 +139,30 @@ console.log('BIRIM TESTLERI  (tarayicisiz, index.html\'den cikarilarak)\n');
    Bu kural 23.405 kaydin hangi rafta gorunecegini belirliyor ve bir
    kere sessizce bozuldu: karar SARKININ ADINA bakiyordu ve "Tidal
    Wave" adli bir caz parcasi NATURE rafina dusuyordu. */
+/* ── 26 EYLUL: YAZIM HATASI, "ILK BASIS BOSA GITMEZ" YALANDI ──────
+   kayitGeldi() ilk dokunusu oynatmali: modul yoldayken REC/CAM (ve
+   yeni #kamTus) tusuna basiliyor, modul gelince o dokunus bir kez
+   daha oynatiliyor. Kontrol: `Date.now() - _kayBekZaman > 6000`.
+   Gercekte ATAMA `_kayBekZamen` (nokta yok), OKUMA `_kayBekZaman`
+   idi; bildirilen degisken `_kayBekZaman` oldugu icin atama tanimsiz
+   bir degiskene gidiyordu, okunan hep 0 kalip "6 sn gecti" saniyor,
+   GERI DONUYORDU. Yani ilk dokunus yolla gidiyordu. Test, yazimin
+   ikisinde de ayni oldugunu ve modulun gercekten ilk dokunusu
+   oynatabilmesini olcer. */
+{
+  const y = KAYNAK;
+  K('Bekleyen dokunus degiskeni yazimi dogru (hepsi _kayBekZaman)',
+    /_kayBekZaman\s*=/.test(y) && !/_kayBekZamen/.test(y),
+    'atama ve okuma ayni ad: ' + (/_kayBekZaman\s*=\s*0\b/.test(y) ? 'degisken tanimli' : 'TANIM YOK')
+    + (/_kayBekZamen/.test(y) ? ' · YANLIS YAZIM DA VAR' : ' · yanlis yazim yok'));
+  K('Kayit modulu ilk dokunusu oynatabiliyor (6 sn penceresi)',
+    /Date\.now\(\)\s*-\s*_kayBekZaman\s*>\s*6000/.test(y)
+    && /kayitGeldi\(\)/.test(y),
+    'kayitGeldi icinde 6 sn penceresi ve modul sonunda cagriliyor');
+  K('Kayit modulu kamera ikonunu da bekliyor',
+    /closest\('#rec,#cam,#kamTus'\)/.test(y),
+    'pointerdown yakalayicisi #kamTus taniyor (ilk 5 sn bosuna gitmesin)');
+}
 K('Raf karari sarkinin adina bakmiyor',
   A.arsivRaf(kayit('', 'Tidal Wave')) !== 'NATURE'
   && A.arsivRaf(kayit('', 'Machine Gun')) !== 'MACHINES',
