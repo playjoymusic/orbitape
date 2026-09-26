@@ -2351,3 +2351,73 @@ Test ayrıca kırıldıktan sonra nereyi suçladığını söylemiyordu; teşhis
 kalıcı yaptım: bulunan düğümün id/sınıf zinciri ve metni de yazılıyor.
 Ayrıca not: bu test bu yüzden **kararsızdı** — aynı kod üst üste koşularda
 bir yeşil bir kırmızı verebiliyordu; `#np` istisnası onu da bitirdi.
+
+### 25 Eylül — radyoda istek seli (istemci) ve Worker wall time'ı
+
+**Kullanıcı iki ayrı şey bildirdi.** Birincisi ağ panelindeki sayılar
+("sayılar normal mi, anormal varsa silelim"), ikincisi Cloudflare
+Worker analizi.
+
+**(A) İstemci: RADIOTAPE'te durma tavanı yoktu.** Arşivde tavan vardı
+(`ARSIV_HATA_ESIK = 12` → `arsivDurdur()`), radyoda **hiçbir durma
+koşulu yoktu**: `atla()` → `sonraki()` → `radyoGec()` zinciri kurmadan
+ilerliyor, her turda 3 yeniden bağlanma isteği daha ekleniyor, kuyruk
+boş kalınca 800 ms'lik kendini çağırma da sonsuzdu. Kullanıcının ölçtüğü
+tablo bunun sonucu: tek hostta **314 istek**, toplam 94+ kayıt, hepsi
+404/403/401.
+
+Yerel ölçüm (45 sn, açık uygulama): 22 istek / 19 host, tek `cal()` —
+yani fırtına yalnız "hiçbiri oynamıyor" durumunda. Aynı yerde
+`stream-eurodance90.fr` 9 başarılı / 44 hata (%83) ve
+`kathy.torontocast.com` 51/24.
+
+Çözüm: tavan radyoya da uygulandı. `atla()` artık `mod==='radio'` ve
+`AKTIF_MOD==='RADIOTAPE'` için de sayıyor; kuyruk boşken 800 ms'lik
+kendi çağırması da aynı sayacı okuyor. Aynı sayaç, aynı esik, aynı
+panel — metin radyoya uygun ("Twelve stations in a row failed to load.
+The station servers may be busy…", beş dile eklendi).
+
+OLCUM (tarayıcıda, radyo kipi): `atla()` 15 kez → 12. çağrıda sayaç
+eşiğe değiyor, `_arsivDurdu = true`, panel "NOTHING WOULD PLAY" + radyo
+metniyle açılıyor. `sonraki()` çağrısı **tavana kadar 11 kez** artıyor,
+sonraki 3 çağrıda **0 kez daha** artıyor → yeni istek yok.
+
+Düzeltme notu: bu satırda ilk yazım "13. çağrıdan sonra `sonraki()` hiç
+çağrılmıyor, toplam 0" diyordu ve test kırmızı verdi. Beklenti yanlıştı:
+tavana kadar 11 çağrı OLUR (her başarısız istasyon bir sonrakini
+denemeli), durduktan sonra artmaz. Test artık ikisini birden
+denetliyor: `tavana kadar 0 < x < eşik+3` **ve** `tavan sonrası === 0`.
+Test: "Radyoda da hata tavani var", "Radyo tavaninda durup istemiyor",
+"Radyo 'hicbiri calmadi' metni bes dilde". (Var olan "Arsivde hata
+tavani gercekten okunuyor" testi de guncellendi: cagri artik parametreli.)
+
+**(B) Worker: 4 saniyelik wall time.** Cloudflare olçümü worker'ın
+CPU'sunu değil WALL TIME'ını gösteriyordu: sürekli ~4000 ms, yani tam
+`NP_ZAMAN = 4000`'e takılı. İsteklerin büyük bölümü zaman aşımını
+bekliyor. Ayrıca hata oranları yüksek: radio.mana.bzh 310/314,
+stream-eurodance90.fr 9/44.
+
+Kök neden yapısal: **başarılı yanıtlar 25 sn önbellekli, hatalar hiç
+önbelleklenmiyor.** Aynı ölü kaynağa gelen her istek yeniden tam 4 sn
+bekliyor.
+
+İki değişiklik:
+  * `NP_ZAMAN` 4000 → **2500** (ölçülen çalışan kaynaklar 546-763 ms;
+    4 katından az bir zaman aşımı. İstemci 204'te zaten kendi yoluna
+    dönüyor, kaybedilen tek şey "yavaş kaynağa 4 sn beklemek").
+  * **Başarısız kaynak hatırlanıyor**: `_npKotu` (host → bitiş anı),
+    60 sn, kova sınırı 256. Ölü hosta istek gelince ağ hiç kurulmuyor,
+    doğrudan 204. Başarılı yanıt hatırlarmayı siliyor.
+
+Kapsam notu (bilerek): hatırlama **host** bazında, yani 60 sn içinde
+o hostun başarılı bir ucu bile atlanır. Bu yanlış değil, kastı: o
+hosttan gelen isteklerin hepsi aynı ses durumuna tabi. Test bu yüzden
+"düzelen kaynak yeniden denenir" diye değil, **sözleşme** olarak
+denetleniyor (hata hatırlanıyor, başarı siliyor, pencerede sonu var).
+
+**(C) Yan bulgu: `olcu.js` ikili dosyaydı.** `kirp()` içindeki
+`replace(/[\x00-\x1f]/g, ' ')` regex'i **literal bayt** olarak yazılmıştı
+— dosyada gerçek bir NUL (0x00) ve 0x1F vardı. Davranışı doğruydu
+(aralık aynı), ama dosya "data" sayılıyordu: git ikili diff gösteriyor,
+grep "Binary file matches" diyordu, editörler dosyayı açmayı reddediyordu.
+Escape olarak yazıldı; aynı davranış, artık UTF-8 metin.

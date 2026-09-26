@@ -80,6 +80,7 @@
   "DRAG INSIDE": "İÇİNDE SÜRÜKLE",
   "NO RESULTS": "SONUÇ YOK",
   "NOTHING WOULD PLAY": "HİÇBİRİ ÇALMADI",
+  "Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.": "Arka arkaya on iki istasyon yüklenemedi. İstasyon sunucuları meşgul olabilir ya da bu ağda engelli olabilir.",
   "Twelve recordings in a row failed to load. The archive server may be busy, or blocked on this network.": "Arka arkaya on iki kayıt yüklenemedi. Arşiv sunucusu meşgul olabilir ya da bu ağda engelli olabilir.",
   "DIAGNOSTICS COPIED": "TANI KOPYALANDI",
   "Paste it into a message to hello@orbitape.app. Nothing was sent automatically.": "hello@orbitape.app adresine göndereceğin bir mesaja yapıştır. Otomatik hiçbir şey gönderilmedi.",

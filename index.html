@@ -2361,14 +2361,9 @@
     -webkit-tap-highlight-color:transparent;opacity:.72;
     transition:opacity .22s ease;}
   /* ── KIP KISAYOLU ─────────────────────────────────────────────
-     ARSIVDE: uc cizginin saginda. Tutamak 40px, arasinda 10px
-     bosluk, yani anahtar 50px'ten basliyor. Dikeyde tutamagin
-     ORTASINA hizali -- iki kipte de degismedi.
-     RADYODA: tutamak sol uste gitti, o bagimlilik bitti; anahtar
-     alttaki iki satirla (tasima, araclar) AYNI sol kenardan
-     basliyor. Kullanicinin sozu: "bu alttaki swichti sola
-     dayarsin, yaninda yazi rahat olur." Kazanc 50px ve dogrudan
-     etikete gidiyor. */
+     ORBITAPE'de uc cizginin saginda (arasi 8px, dikeyde ortasina
+     hizali), RADIOTAPE'de konsolun ustunde. Yeri JS yaziyor
+     (_kipKisayoluHizala); burasi ilk kare yedegi. */
   /* ── ANAHTAR IKI KIPTE DE VAR ─────────────────────────────────
      Once yalnizca arsivdeydi ("radyoya don"). Radyo tarafinda ayni
      kapiya ulasmak icin ayarlari acmak gerekiyordu -- iki taraf
@@ -14913,15 +14908,18 @@
      "ag yok" olmayabilir -- listeler kendi kokumuzden geldiyse
      internet calisiyor demektir. Yanlis sebep gostermek, hic sebep
      gostermemekten kotudur. */
-  function arsivDurdur(){
+  /* 25 EYLUL: `radyo` argumani -- ayni durum radyoda da vardi ama
+     tavani yoktu (olcum: tek hosta 314 istek, 94+ kayit, 404/403). */
+  function arsivDurdur(radyo){
     try{
       if(_arsivDurdu) return;
       _arsivDurdu = true;
       const el = document.getElementById('agyok'); if(!el) return;
       const ad = el.querySelector('.ay-ad'), not = el.querySelector('.ay-not');
       if(ad)  ad.textContent  = Y('NOTHING WOULD PLAY');
-      if(not) not.textContent = Y('Twelve recordings in a row failed to load. '
-                              + 'The archive server may be busy, or blocked on this network.');
+      if(not) not.textContent = Y(radyo
+        ? 'Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.'
+        : 'Twelve recordings in a row failed to load. The archive server may be busy, or blocked on this network.');
       /* SINYAL/ALT yaziyi gizle: burada aranan bir "sinyal" yok,
          sorun baglanti degil -- arsiv sunucusu. Yanlis metafor
          gostermek yanlis sebep gostermekten kotudur (bkz. yukaridaki
@@ -14955,12 +14953,12 @@
     }catch(e){ _yut(e); }
   }
   function atla(){ const now=Date.now(); if(now-sonAtla<300) return; sonAtla=now;
-    if(mod==='lib'){
+    /* 25 EYLUL: kural artik IKISINE birden. Saymazsak dongu kurmadan
+       ilerliyordu (atla -> sonraki -> radyoGec -> cal), her turda +3
+       yeniden baglanma istegi. */
+    if(mod==='lib' || mod==='radio' || AKTIF_MOD==='RADIOTAPE'){
       ustUsteHata++;
-      /* TAVAN: burada DURUYORUZ. sonraki() cagrilmiyor, yani dongu
-         gercekten kesiliyor -- sayaci okuyup yine devam etmek
-         hicbir seyi degistirmezdi. */
-      if(ustUsteHata >= ARSIV_HATA_ESIK){ arsivDurdur(); return; }
+      if(ustUsteHata >= ARSIV_HATA_ESIK){ arsivDurdur(mod!=='lib'); return; }
     }
     sonraki(false); }   // boş/çalamayan parçayı otomatik (sessiz) geç
   /* ── BİR ÖNCEKİ (◁) — TEK ADIM ────────────────────────────────
@@ -17081,6 +17079,7 @@
            eski davranis (uc bos tur) duruyor. */
         const _esik = (typeof AKTIF_AILE !== 'undefined' && AKTIF_AILE) ? 1 : 3;
         if(_radyoBos >= _esik){ try{ calindiRadyoTemizle(); }catch(e){ _yut(e); } _radyoBos = 0; }
+        if(++ustUsteHata >= ARSIV_HATA_ESIK){ arsivDurdur(true); return; }
         setTimeout(()=>{ if(!cekiliyor && (mod==='radio' || AKTIF_MOD==='RADIOTAPE')) radyoGec(); }, 800);
       }
       radyoKuyrukDoldur();

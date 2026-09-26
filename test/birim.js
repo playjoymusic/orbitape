@@ -674,8 +674,10 @@ function bitir(){
     };
     const gercekFetch = globalThis.fetch;
     let istenen = null;
+    let fetchSayi = 0;
     globalThis.fetch = async (u, o)=>{
       istenen = { u:String(u), basliklar:(o&&o.headers)||{} };
+      fetchSayi++;
       if(String(u).indexOf('patlat') >= 0) throw new Error('kaynak yok');
       return new Response('{"now":"A - B"}', {status:200,
         headers:{'content-type':'application/json'}});
@@ -709,11 +711,53 @@ function bitir(){
         && /ORBITAPE/.test(JSON.stringify(istenen.basliklar)),
         'cerez ve yetki basligi yok, kendimizi tanitiyoruz');
 
+      /* 25 EYLUL: host degisti. Artik basarisiz kaynak 60 sn
+         hatirlaniyor, yani somafm.com bir ustteki patlat.json ile
+         olu isaretlendi; ayni hostu kullanmak bu testi de 204'e
+         dusururdu. Yayin.ornek.com beyaz listede (npEnv) ve basarili. */
       globalThis.fetch = async ()=> new Response('x'.repeat(200*1024), {status:200,
         headers:{'content-type':'text/plain'}});
-      const p7 = await np('https://somafm.com/kocaman.json');
+      const p7 = await np('https://yayin.ornek.com/kocaman.json');
       K('np: govde tavani var', (await p7.text()).length === 96*1024,
         '96 KB ustu kirpiliyor');
+
+      /* 25 EYLUL: BASARISIZ KAYNAK HATIRLANIYOR. Olcum (Cloudflare,
+         24 saat): radio.mana.bzh 310 basarili / 314 hata,
+         stream-eurodance90.fr 9/44. Basarili yanitlar onbellekli,
+         hatalar hic onbelleklenmiyordu: ayni olu kaynaga gelen her
+         istek tam 4 sn (NP_ZAMAN) bekliyordu. Olculecek: ikinci
+         istek icin ag KURULMAMALI. */
+      globalThis.fetch = async (u, o)=>{
+        istenen = { u:String(u), basliklar:(o&&o.headers)||{} };
+        fetchSayi++;
+        if(String(u).indexOf('olu') >= 0) return new Response('yok', {status:404});
+        return new Response('{"now":"A - B"}', {status:200,
+          headers:{'content-type':'application/json'}});
+      };
+      const o1 = await np('https://yayin.ornek.com/olu.json');
+      const o1Sayi = fetchSayi;
+      const o2 = await np('https://yayin.ornek.com/olu.json');
+      K('np: olu kaynak hatirlaniyor, ag kurulmuyor',
+        o1.status === 204 && o2.status === 204 && fetchSayi === o1Sayi,
+        'birinci istek bir ag denemesi, ikincisi ' + (fetchSayi - o1Sayi)
+        + ' ag denemesi (0 olmali)');
+      /* KAPSAM DIKKATI: hatirlama HOST bazinda, 60 sn. Ayni
+         hostun basarili bir ucu bile bu pencerede atlanir -- bu
+         yanlis degil, kastidir: o hosttan gelen isteklerin tamami
+         ayni ses durumuna tabi. Ileride test edilebilmesi icin
+         burada yapilabilir olan SOZLESME denetleniyor: hata
+         hatirlaniyor mu, basari hatirlarmayi siliyor mu, pencerede
+         sonu var mi. Zamanla oynamak testte mumkun degil. */
+      {
+        const k = fs.readFileSync('olcu.js','utf8');
+        const kk = /npKotu\(h, false\)/.test(k)
+          && /npKotu\(h, true\)/.test(k)
+          && /_npKotu\.set\(h, Date\.now\(\) \+ NP_SUSLU\)/.test(k)
+          && (/\(_npKotu\.get\(h\) \|\| 0\) > Date\.now\(\)\)/.test(k));
+        K('np: hatirlama pencereli ve basarida siliniyor', kk,
+          kk ? 'hata 60 sn hatirlaniyor, basari siliyor'
+             : 'hatirlama sinirsiz ya da basarida temizlenmiyor');
+      }
     } finally {
       globalThis.fetch = gercekFetch;
     }

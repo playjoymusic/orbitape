@@ -2966,12 +2966,87 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           da onu denemisti ve ise yaramamisti. */
   {
     const k = fs.readFileSync('index.html','utf8');
-    const tavanOkunuyor = /if\(ustUsteHata >= ARSIV_HATA_ESIK\)\{\s*arsivDurdur\(\);\s*return;/.test(k);
+    /* 25 EYLUL: cagri parametreli oldu: arsivDurdur(mod!=='lib') --
+       radyo icin metin farkli (bkz. "Radyoda da hata tavani var"). */
+    const tavanOkunuyor = /if\(ustUsteHata >= ARSIV_HATA_ESIK\)\{\s*arsivDurdur\([^)]*\);\s*return;/.test(k);
     const esik = (k.match(/const ARSIV_HATA_ESIK\s*=\s*(\d+)/) || [])[1];
     K('Arsivde hata tavani gercekten okunuyor',
       tavanOkunuyor && Number(esik) > 0 && Number(esik) <= 30,
       tavanOkunuyor ? ('esik ' + esik + ' ust uste hata, sonra duruyor')
                     : 'sayac artiyor ama okunmuyor: sonsuz dongu geri geldi');
+    /* 25 EYLUL: RADYODA TAVAN YOKTU. Kullanicinin ag paneli
+       gonderisi: tek hosta 314 istek, toplam 94+ kayit, hepsi
+       404/403/401. Arsivde tavan vardi (yukaridaki kontrol), radyoda
+       HICBIR durma kosulu yoktu: atla() -> sonraki() -> radyoGec()
+       zinciri kurmadan ilerliyor, her turda 3 yeniden baglanma
+       istegi daha ekleniyor, kuyruk bos kalinca 800 ms'lik kendini
+       yeniden cagirma da sonsuzdu. */
+    {
+      const sayacRadyoda = /if\(mod==='lib' \|\| mod==='radio' \|\| AKTIF_MOD==='RADIOTAPE'\)\{\s*ustUsteHata\+\+;/.test(k);
+      const bosKuyrukTavani = /if\(\+\+ustUsteHata >= ARSIV_HATA_ESIK\)\{ arsivDurdur\(true\); return; \}/.test(k);
+      K('Radyoda da hata tavani var', sayacRadyoda && bosKuyrukTavani,
+        'atla() sayaci: ' + (sayacRadyoda?'var':'YOK')
+        + ' · bos kuyrukta tavan: ' + (bosKuyrukTavani?'var':'YOK'));
+    }
+    /* TAVAN GERCEKTEN TUTUYOR MU: radyoda atla() sayaci doldurulunca
+       panel acilmali, "hicbiri calmadi" demeli ve -- asil onemli --
+       sonraki() CAGRILMAMALI (yani yeni istek atilmamali). */
+    const radyoTavan = await pg.evaluate(async ()=>{
+      const bek = ms => new Promise(r=>setTimeout(r,ms));
+      const el = document.getElementById('agyok');
+      const eskiMod = mod, eskiHata = ustUsteHata, eskiDurdu = _arsivDurdu;
+      const eskiAyar = AYAR.mood;
+      let sonrakiCagrildi = 0;
+      const eskiSonraki = sonraki;
+      try{
+        window.sonraki = function(){ sonrakiCagrildi++; };
+        AYAR.mood = false; mod = 'radio';
+        ustUsteHata = 0; _arsivDurdu = false;
+        el.classList.remove('on');
+        for(let i=0;i<ARSIV_HATA_ESIK + 3;i++){ sonAtla = 0; atla(); await bek(30); }
+        /* Olculecek asil sey "toplam kac kez sonraki() cagrildi" degil:
+           TAVANDAN SONRA CAGRILIYOR MU. Sayi tavana kadar artar, sonra
+           SABIT kalir. (Ilk yazimda toplam sayi 0 bekleniyordu; o
+           yanlisti -- 11 cagri tavana kadar olur, sonrasi artmaz.) */
+        const durduktanSonra = sonrakiCagrildi;
+        for(let i=0;i<4;i++){ sonAtla = 0; atla(); await bek(30); }
+        const sonuc = {
+          panel: el.classList.contains('on'),
+          durdu: _arsivDurdu === true,
+          baslik: (el.querySelector('.ay-ad')||{}).textContent || '',
+          not: (el.querySelector('.ay-not')||{}).textContent || '',
+          durduktanSonra: durduktanSonra,
+          tavanSonrasi: sonrakiCagrildi - durduktanSonra
+        };
+        window.sonraki = eskiSonraki;
+        mod = eskiMod; ustUsteHata = eskiHata; _arsivDurdu = eskiDurdu;
+        AYAR.mood = eskiAyar; el.classList.remove('on');
+        try{ arsivDevam(); }catch(_){}
+        return sonuc;
+      }catch(e){ return {hata:String(e).slice(0,90)}; }
+    });
+    K('Radyo tavaninda durup istemiyor',
+      radyoTavan && radyoTavan.durdu === true && radyoTavan.panel === true
+      && radyoTavan.tavanSonrasi === 0
+      && radyoTavan.durduktanSonra > 0 && radyoTavan.durduktanSonra < Number(esik) + 3
+      && /Twelve stations in a row failed/.test(radyoTavan.not),
+      radyoTavan && radyoTavan.hata ? ('hata: ' + radyoTavan.hata)
+                 : radyoTavan ? ('durdu:' + radyoTavan.durdu + ' · panel:' + radyoTavan.panel
+                    + ' · tavana kadar ' + radyoTavan.durduktanSonra
+                    + ' kez sonraki(), sonrasi ' + radyoTavan.tavanSonrasi
+                    + ' kez daha (0 olmali)'
+                    + ' · metin: "' + radyoTavan.not.slice(0,44) + '"')
+                 : 'olculemedi');
+    /* Radyo metni BES DILDE de var mi (sozluk anahtari). */
+    {
+      const K2 = 'Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.';
+      const eksik = ['tr','es','de','fr','it'].filter(d=>{
+        try{ return !JSON.parse(fs.readFileSync('dil/'+d+'.json','utf8'))[K2]; }
+        catch(e){ return true; }
+      });
+      K('Radyo "hicbiri calmadi" metni bes dilde', eksik.length === 0,
+        eksik.length ? ('eksik: ' + eksik.join(', ')) : 'tr, es, de, fr, it hepsi var');
+    }
     /* Cikis yollarinin UCU de kodda duruyor mu. */
     const cikis = {
       'basarili calma': /const basladi=\(\)=>\{ ustUsteHata=0;[^\n]*arsivDevam\(\)/.test(k),

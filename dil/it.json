@@ -80,6 +80,7 @@
   "DRAG INSIDE": "TRASCINA DENTRO",
   "NO RESULTS": "NESSUN RISULTATO",
   "NOTHING WOULD PLAY": "NIENTE SI È RIPRODOTTO",
+  "Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.": "Dodici stazioni di fila non si sono caricate. I server delle stazioni potrebbero essere occupati, o bloccati su questa rete.",
   "Twelve recordings in a row failed to load. The archive server may be busy, or blocked on this network.": "Dodici registrazioni di fila non si sono caricate. Il server dell'archivio potrebbe essere occupato, o bloccato su questa rete.",
   "DIAGNOSTICS COPIED": "DIAGNOSTICA COPIATA",
   "Paste it into a message to hello@orbitape.app. Nothing was sent automatically.": "Incollala in un messaggio a hello@orbitape.app. Non è stato inviato nulla automaticamente.",
