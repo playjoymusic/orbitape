@@ -443,7 +443,7 @@
      !important ile KOSULSUZ kazandirildi. */
   body.yildiz-zum #ayarTut,body.yildiz-zum #deriFirca,
   body.yildiz-zum #saatTus,body.yildiz-zum #gorselTus,
-  body.yildiz-zum #rehberTus,body.yildiz-zum #ara,
+  body.yildiz-zum #rehberTus,body.yildiz-zum #fanTus,body.yildiz-zum #ara,
   body.yildiz-zum #kipKisayol{opacity:0 !important;pointer-events:none !important;
     transition:opacity .32s ease;}
   /* ── 18 EYLUL: SKIN DEGISIRKEN ANLIK BANT (ikinci tur) ───────────
@@ -3437,6 +3437,35 @@
   #rehberTus:hover,#rehberTus:focus-visible,#rehberTus[aria-pressed="true"]{opacity:1;}
   body.klavye #rehberTus{opacity:0;pointer-events:none;}
   body.deri #rehberTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
+  /* YELPAZE (25 Eylul): kullanicinin istegi. Gerekce kayit.js. */
+  #fanTus{position:fixed;z-index:96;
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    top:auto;bottom:calc(115px + var(--dip-pay));
+    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;opacity:.72;
+    transition:opacity .22s ease;}
+  #fanTus svg{width:19px;height:19px;fill:currentColor;stroke:none;}
+  #fanTus:hover,#fanTus:focus-visible,#fanTus[aria-expanded="true"]{opacity:1;}
+  body.klavye #fanTus{opacity:0;pointer-events:none;}
+  #fanTus .nokta{position:absolute;top:1px;right:1px;}
+  #yelpaze{position:fixed;z-index:97;display:flex;flex-direction:column;gap:6px;
+    padding:8px;border-radius:12px;background:rgba(8,14,17,.92);
+    border:1px solid rgba(120,180,180,.18);}
+  #yelpaze[hidden]{display:none;}
+  #yelpaze .fanOge{display:flex;align-items:center;gap:7px;padding:6px 8px;
+    border-radius:8px;font:600 .625rem/1 'Share Tech Mono',monospace;
+    letter-spacing:.18em;cursor:pointer;min-height:32px;
+    -webkit-tap-highlight-color:transparent;}
+  #yelpaze .fanOge svg{width:16px;height:16px;fill:none;stroke:currentColor;
+    stroke-width:1.6;stroke-linecap:round;}
+  #yelpaze .fanOge .nokta{width:9px;height:9px;border-radius:50%;
+    background:#e2564a;flex:none;}
+  #yelpaze .fanOge[aria-disabled="true"]{opacity:.42;}
+  #yelpaze .fanOge[aria-disabled="true"] .nokta{background:#6b4a48;}
+  body.gorsel-acik #fanTus,body.kam #fanTus,body.kayit #fanTus,
+  body:has(#fotoOnizle.var) #fanTus,body.gorsel-acik #yelpaze,
+  body.kam #yelpaze,body.kayit #yelpaze,
+  body:has(#fotoOnizle.var) #yelpaze{display:none !important;}
   /* ── SOL SUTUN: DERIDE DAHA GOZE GELIYOR ──────────────────────
      Kullanicinin sozu (7 Eylul): "bazi karisik skins'lerde soldaki
      ogeler kayboluyor, daha belirgin renkler tonlar olmali."
@@ -4457,6 +4486,11 @@
        ikonu ipucu istegi ayri, henuz yapilmadi.) -->
   <div id="rehberTus" role="button" tabindex="0" aria-label="Guide"
        aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.4 9.1a2.6 2.6 0 1 1 3.9 2.3c-1 .55-1.3 1.1-1.3 2.15"/><circle cx="12" cy="16.9" r=".9" fill="currentColor" stroke="none"/></svg></div>
+  <!-- YELPAZE (25 Eylul): soru isaretinin altinda yuvarlak kayit
+       simgesi + kirmizi nokta; icerigi kayit.js kurar. -->
+  <div id="fanTus" role="button" tabindex="0" aria-expanded="false"
+       aria-label="Recording and camera tools"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.2"/></svg><span class="nokta" aria-hidden="true"></span></div>
+  <div id="yelpaze" role="menu" hidden></div>
   <!-- ── KIP KISAYOLU ────────────────────────────────────────────
        SOUND BANKS kipindeyken radyoya donmek icin ayarlari acmak,
        en ustteki kapiyi bulmak ve anahtari cevirmek gerekiyordu:
@@ -6095,42 +6129,19 @@
            Markanin kendi iki rengi kaliplarin cogunda duruyor: yazi
            tanidik kalmaya devam ediyor. */
         /* ── TUR RENGI ONDE, MARKA ARKADA AMA HEP VAR ─────────────
-           IKI ADIMDA BURAYA GELINDI.
-           Once havuzun yarisi markanin kendi renkleriydi ve yazi
-           hangi turde olursak olalim ayni yesil-pembe ikilisine
-           donuyordu -- "cok tutucu, kayboluyoruz sayfalarda".
-           Sonra kural tersine cevrildi ve tur rengi one alindi, ama
-           bu sefer marka bazi odalarda tamamen kayboldu ve bazi
-           turler (ELECTRONIC gibi) tek renk gibi cikti.
-           Kullanicinin son sozu ikisinin ortasi:
-             "hafif de olsa bizim ana renklerden yesil, yoksa da gul
-              kurusu olmali. tonlar kirmizi mor vs oraya giderse
-              kesin krem rengi etkisi olsun. electronic cok tek renk
-              olmus, koy bizim gul kurusundan ya da 3. renkten."
-
-           BUGUNKU KURAL -- HER YAZI UC DURAK:
-             1. DURAK : TURUN KENDI RENGI. Istisnasiz. Kirmizi
-                        kirmizi girer, mor mor girer.
-             2. DURAK : ayni rengin bir tonu -- ust ton, derin ton,
-                        komsu ton (mor->menekse, kirmizi->kiremit),
-                        oteki komsu ton ya da temanin vurgusu.
-                        Cesit buradan geliyor.
-             3. DURAK : MARKA DOKUNUSU. Yazinin son harflerinde,
-                        hafif: rengin %15'i turun renginden geliyor
-                        ki damga gibi degil solma gibi dursun.
-           MARKA DOKUNUSU NASIL SECILIYOR:
-             · Sira yesil -> gul kurusu -> krem.
-             · Bir renk turun rengine cok yakinsa (uzaklik < 130)
-               ATLANIYOR: gorunmeyecek bir dokunus dokunus degil.
-             · TURUN TONU KIRMIZI/MOR KUSAGINDA ise (ton acisi
-               275-360 ya da 0-30) dogrudan KREM. Orada yesil
-               cigirtkan, gul kurusu ise turun rengine karisiyor.
-             · Krem her zaman uyar, yani dokunus HICBIR ZAMAN
-               bos kalmiyor -- marka her odada var, sadece
-               yuksek sesle degil.
-           Secim yine HESAPLANIYOR (raf adi + tema numarasi): ayni
-           odada yazi kaynamiyor, oda degisince kombinasyon
-           degisiyor. */
+           Once yazi hep ayni yesil-pembe idi ("kayboluyoruz"),
+           sonra sadece turun rengi oldu ve marka bazi odalarda
+           kayboldu. Kullanicinin isi ikisinin ortasi: "yesil olmali,
+           yoksa da gul kurusu; tonlar kirmizi mor'a giderse krem."
+           KURAL -- HER YAZI UC DURAK: (1) turun kendi rengi,
+           istisnasiz; (2) ayni rengin bir tonu (ust/derin/komsu:
+           mor->menekse, kirmizi->kiremit); (3) son harflerde marka
+           dokunusu, rengin %15'i. Dokunus sirasi: yesil -> gul
+           kurusu -> krem; renk turun rengine cok yakinsa (uzaklik
+           < 130) ATLANIR, tur tonu kirmizi/mor kusakdaysa (acisi
+           275-360 ya da 0-30) dogrudan krem. Krem her zaman uyar:
+           marka her odada var, sadece yuksek sesle degil. Secim
+           hesaplanir (raf + tema) -> ayni oda degismez. */
         let raf = '';
         try{ if(AKTIF_AILE) raf = aileRenk(AKTIF_AILE); }catch(e){ _yut(e); }
         const T = temaAl();
@@ -16296,34 +16307,18 @@
   }
 
   /* ══ SU AN NE CALIYOR ═════════════════════════════════════════════
-     Canli yayinda calan parcanin adini gosteriyor. Kaynak MIKROFON
-     DEGIL, istasyonun KENDI bildirimi: Icecast/AzuraCast/SomaFM gibi
-     yayin yazilimlarinin acik "now playing" adresi.
+     Canli yayinda calan parcanin adi. Kaynak MIKROFON DEGIL,
+     istasyonun KENDI bildirimi (Icecast/AzuraCast/SomaFM gibi acik
+     "now playing" adresleri).
 
-     NEDEN BOYLE: Shazam'in yaptigi is (sesi dinleyip parmak iziyle
-     eslestirmek) web'e kapali. Tek yol birkac saniyelik sesi paralı
-     bir servise gondermek olurdu ve bu, gizlilik metnindeki ve Play
-     Data Safety formundaki "hicbir veri toplanmiyor" cevabini bozar.
-     Buradaki yol hicbir sey GONDERMIYOR: tarayici zaten yayini
-     aldigi sunucuya "su an ne caliyor" diye soruyor, o kadar.
-     Ustelik sonuc tahmin degil: istasyonun kendi soyledigi ad.
+     NEDEN: Shazam'in isi web'e kapali; tek yolu birkac saniyelik
+     sesi paral servise gondermek, bu da gizlilik metnindeki "hicbir
+     veri toplanmiyor" cevabini bozardi. Burada HICBIR sey gonderilmiyor:
+     tarayici zaten yayini aldigi sunucuya soruyor. Sonuc tahmin degil,
+     istasyonun kendi soyledigi ad.
 
-     OLCULDU, TAHMIN EDILMEDI: 531 istasyonun tamami tarayicida tek
-     tek denendi (simdicalan.html). 149'unda ad okunabiliyor (%28).
-     Kaynak dagilimi: AzuraCast 59, Icecast 54, SomaFM 24, Radio.co 12.
-     Kalanlar CORS'a takiliyor ya da o adresi hic acmiyor.
-
-     EN ONEMLI KURAL -- YANLIS AD, BOS SATIRDAN KOTUDUR:
-     Olcumde su goruldu: paylasilan bir sunucudaki iki ayri istasyon
-     (Relax & Meditation ve Blues, ikisi de mml1.prostream.se) AYNI
-     sarkiyi gosterdi. Sebep: o adres sunucudaki BUTUN istasyonlari
-     donduruyor ve ilk yazimda listenin ilki aliniyordu. Yani
-     kullanici Blues dinlerken ekranda baska bir istasyonun sarkisi
-     yaziyordu. 531 istasyonun 263'u paylasilan sunucularda, yani bu
-     kucuk bir kenar durum degil.
-     Bu yuzden asagida her kaynak icin ESLESTIRME var: donen liste
-     bizim yayin adresimizle eslesmiyorsa ad GOSTERILMIYOR. Emin
-     olamadigimizda susuyoruz. */
+     OLCULDU (simdicalan.html, 531 istasyon tek tek): 149'unda ad
+     okunabiliyor (%28). */
   var _parcaZaman = null, _parcaIstek = 0, _parcaSon = '', _parcaItem = null;
   /* /np gunluk sinira takildi mi (429). Oturumluk; bkz. parcaAl. */
   var _npKapali = 0;
@@ -18310,7 +18305,7 @@
   }
   /* Sol yardimci sutunu iki kipte IKI FARKLI yerde durur. Ortak
      kısım: sol kenar (--kx) ve ic bosluklar. Farkli olan: taban. */
-  var _SOL_SUTUN = ['rehberTus','gorselTus','deriFirca','saatTus','ayarTut'];
+  var _SOL_SUTUN = ['fanTus','rehberTus','gorselTus','deriFirca','saatTus','ayarTut'];
   /* SUTUNUN KUTUSUNU YAYINLA: deri seridi bu sutunla ayni yatayda
      duruyor. Iki olcum: sag kenar (kisa yatayda seridi saga kaydirmak
      icin) ve alt kenar (radyoda seridi sutunun ALTINA indirmek icin).
@@ -18353,7 +18348,7 @@
           const r = _konsolKutu();
           if(!r || !r.height) return;
           let alt = r.top - 8;
-          ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus'].forEach(id=>{
+          ['ayarTut','saatTus','deriFirca','gorselTus','fanTus','rehberTus'].forEach(id=>{
             const e = document.getElementById(id); if(!e) return;
             e.style.removeProperty('top');
             const h = e.getBoundingClientRect().height || 32;
@@ -18371,7 +18366,7 @@
           let ust = 0;
           const tr = tut0.getBoundingClientRect();
           if(tr.height) ust = tr.bottom + 14;
-          ['saatTus','deriFirca','gorselTus','rehberTus'].forEach(id=>{
+          ['saatTus','deriFirca','gorselTus','rehberTus','fanTus'].forEach(id=>{
             const e = document.getElementById(id); if(!e) return;
             e.style.removeProperty('bottom');
             e.style.top = Math.round(ust) + 'px';

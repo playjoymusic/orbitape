@@ -2529,3 +2529,106 @@ kapalı; ORBITAPE açık → kapalı; panel açıkken tutamak inert zincirinde
 **yok**. Test: "Ayar tutamagi paneli acip kapatiyor" (gerçek
 pointerdown+click, ayrıca inert kontrolü) ve "Yanan halka tek karede
 buyumuyor" (sözleşme: `rR *= 1.035` gitmiş, yerine kademeli var).
+
+### 25 Eylül — yelpaze (fan) menüsü, halka salınımı, arama kipi
+
+**1) HALKA: salınım küçültüldü.** Kullanıcı: "basılınca yukarı aşağı
+oynanmamalı." Ölçüm (tuval pikseli, 40 ms aralıkla, 3 sn): toplam
+salinim **18,4 px**, en büyük tek adım 2,0 px. `esne`'deki ritim ve
+sinüs katsayıları düşürüldü → 12,0 px / 1,6 px. Halka tepki vermeye
+devam ediyor, ama yerinden oynamıyor.
+
+**2) ARAMA KİPİ TAŞIMIYOR.** Kullanıcının kuralı: "radyo search'inde
+sadece radyo, orbitape modunda search'te radyo istasyonu olamaz."
+Havuzlar zaten öyleydi (`araHavuzlar`: `!AYAR.mood` → `radyoArananlar()`,
+`AYAR.mood` → `earthHavuz`+`uzunHavuz`). Sorun **seçimde**: RADIOTAPE'de
+bir istasyon seçilince `aileSec(grup, true)` uygulamayı ORBITAPE'e
+taşıyordu. ÖLÇÜM (tarayıcıda, tam akış: ayarlar → SEARCH → yaz →
+sonuç): sütun `15/55/99/143/187` → `776/732/688/644/600`, 197 ölçümün
+**69'u** yer değiştirmiş. `araCal()`'deki çağrı artık yalnız hâlihazırda
+ORBITAPE'teyken aile değiştiriyor.
+
+Bu bir testi kırmızıya düşürdü: `[Y3] Raf secilen seyin rafina geciyor`
+→ "raf RADIOTAPE | secilenin rafi JAZZ". Test **eski** sözleşmeyi
+taşıyordu; kullanıcının kuralı onu geçersiz kılıyor, test yeni
+sözleşmeye çevrildi (`[Y3] Kip aramayla degismiyor`).
+
+**3) YELPAZE (fan) — yeni özellik.** Kullanıcının isteği: sol sütunda
+soru işaretinin altında **yuvarlak kayıt simgesi + kırmızı nokta**;
+basınca o noktaya bağlı yelpaze açılsın; içinde REC, PIC, CAM, kamera
+döndürme. "Radyo tarafında REC daha soluk/koyu olsun, ORBITAPE'de o da
+açık." Ayrıca: "kamera kaydı, ekran kaydı, pic önizlemesi ya da
+görsel ekranında yeni ikon çıkmasın taşmasın."
+
+Kod yerleşimi: markup+CSS `index.html` (yelpaze öğeleri JS ile kurulur,
+boyut sınırı var), mantık `kayit.js` (REC/PIC/CAM'ın zaten sahibi).
+
+**Öğeler düğmeye değil, işleve bağlandı** — ölçülmüş bir kusur:
+`#pic`'in dinleyicisi yalnız radyo kipinde ve `fotoDesteklenirMi()`
+doğruysa kuruluyor, yani **ORBITAPE'de PIC ölüydü** (kullanıcının
+"pic'e basmıyorum bazı durumlarda" şikâyeti). Doğrudan `fotoCek()`,
+`kayitDegis()`, `kamDegis()`, `kamDondur()` çağrılınca iki kipte de
+çalışır.
+
+Radyoda REC yasal olarak açılmıyor (ekran kaydı canlı yayınlarda yasal
+değil): öğe soluk (`aria-disabled`, CSS opacity .42) ve basılınca
+kısa not çıkıyor — "RECORDING RADIO IS NOT ALLOWED", beş dile eklendi
+(tr/es/de/fr/it). Metin `kisaNotYaz` içinde çevrildiği için çağrı
+yerine sarmalama yapılmadı; TEK argümanla çağrıldığında ekrana
+"undefined" yazıyordu (ölçüldü, düzeltildi).
+
+ÖLÇÜM (390x844): RADIOTAPE'de simge soru işaretinin altında (fan 231,
+? 187..219), yelpaze ikonanın **8 px** sağında açılıyor, dört öge
+doğru sırada, REC `aria-disabled=true`; ORBITAPE'de simge ?'nin altında
+(600 / 556..588), REC `aria-disabled=false`; kayıt başlayınca yelpaze
+kapanıyor ve simge `display:none` oluyor, kayıt bitince geri geliyor.
+Testler: "Yelpaze: simge, dort oge, bagli konum", "Yelpaze: radyoda REC
+kapali, ORBITAPE'de acik", "Yelpaze: disari dokununca kapanir, kayitta
+gizlenir".
+
+**4) Yer kapmasi.** `index.html` ham boy sınırı (1301 KB) yelpaze
++1.4 KB, NPYOK yaması +1.4 KB getirdi; ikisi de sığmadı. Sıkıştırılan
+yorumlar (ölçüm/kural/karar korundu, anlatım giderildi): "TUR RENGI
+ONDE, MARKA ARKADA", "SU AN NE CALIYOR", "SATIRLAR GERILMIYOR", "YIGIN
+DALI: KAYMA", "KIP ANAHTARI: IKI KIPTE IKI YER", "EKRAN BOYU FORMULDEN
+CIKIYOR" kısmen, "NEFES PAYI", "SES CIZGISI".
+
+**5) NPYOK yaması KAPSAM DIŞI BIRAKILDI (bilerek).** `parcaAl` için
+"ölü kaynağı 6 saat hatırla" fikri Claude'in analiziyle birebir aynı
+ve doğru; ancak index.html'a sığmadı. Kullanıcının kararıyla sonraki
+tura bırakıldı. Kaydedilen ölçüm: Cloudflare 24 saat — radio.mana.bzh
+310 başarılı / 314 hata, stream-eurodance90.fr 9/44. `/np`'nin 25 sn
+önbelleği tasarım (Claude'in tespiti doğru), israf `parcaKaynaklari()`'nın
+5-8 aday denemesini öğrenmemesinde. Kalıcı çözüm hasatta `np_tipi`
+yazmak (radyo.json), ama o ayrı bir iş.
+
+**6) Kilit ekranı — ölçüldü, zaten uygulamalı.** `navigator.mediaSession`
+kurulu: `playbackState`, play/pause/stop/next/prev işleyicileri,
+`MediaMetadata` (başlık, sanatçı, kanal·kaynak, artwork 192/512) ve
+arka plan ses oturumu nöbetçisi (`oturumBekcisi`). Yani telefon
+kilitlendiğinde müzik devam eder, kilit ekranında parça yazar. Tek
+çalışmayan şey uygulamayı ana ekrandan tamamen kapatmak — iOS ve
+Android'da işletim sistemi kısıtı, hiçbir uygulama engelleyemez.
+
+**7) Freesound — karar bekliyor.** Claude'in uyarısı yerinde: API
+varsayılan olarak ticari olmayan kullanım için ücretsiz, CC-BY atfı
+her yerde zorunlu, API key başına tek uygulama. ORBITAPE'de sponsorlu
+skin/yatırım varsa "ticari" sayılır → lisans görüşmesi gerekir. Teknik
+not: preview (mp3/ogg) URL'leri OAuth'suz geliyor, günde 2.000 istek
+sınırı hasat hacmini belirleyecek. Kalıbın kendisi hazır:
+`araclar/hasat.py` (296 satır) + `araclar/lisans_filtre.py` (174 satır).
+
+**8) KAZA: yorum sıkıştırırken `*/` unutuldu (tip denetimi yakaladı).**
+Yer açarken "SU AN NE CALIYOR" blogunu sıkıştırdım ve kapanış `*/`
+işaretini yazmayı UNUTTUM. Sonuc: sonraki satirlar yoruma gomuldu
+(`var _parcaZaman = null, _parcaIstek = 0, _parcaSon = '', _parcaItem =
+null;` dahil) — yani o dort degisken calisma aninda `undefined` olurdu
+ve `parcaAl()` ReferenceError verirdi. Tip denetimi "Cannot find name"
+ile yakaladi (83 uyari, taban 69).
+
+Ders: yorumu daraltirken SONUNDA `*/` oldugunu gozle degil, asagidaki
+sirayla dogrula: (1) sıkıştırılan metnin `*/` ile bitişi, (2) tip
+denetimi sayısı tabana döndü mü. Bu ikinci turda ikisi de kontrol
+edildi. NOT: ilk denemede ayrica NPYOK geri alma işlemi
+`if(npYokMu(item.mp3)) return '';` satirini yoruda birakmisti — o da
+silindi. Ikisi de aynı seansta, ikisi de kapıdan geçmedi.

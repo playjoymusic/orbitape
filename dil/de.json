@@ -80,6 +80,7 @@
   "DRAG INSIDE": "INNEN ZIEHEN",
   "NO RESULTS": "KEINE TREFFER",
   "NOTHING WOULD PLAY": "NICHTS LIESS SICH ABSPIELEN",
+  "RECORDING RADIO IS NOT ALLOWED": "Aufnahmen von Radiosendern sind gesetzlich nicht erlaubt.",
   "Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.": "Zwölf Sender hintereinander liessen sich nicht laden. Die Stream-Server sind vielleicht ausgelastet oder in diesem Netz blockiert.",
   "Twelve recordings in a row failed to load. The archive server may be busy, or blocked on this network.": "Zwölf Aufnahmen hintereinander liessen sich nicht laden. Der Archivserver ist vielleicht ausgelastet oder in diesem Netz blockiert.",
   "DIAGNOSTICS COPIED": "DIAGNOSE KOPIERT",

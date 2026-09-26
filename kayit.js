@@ -3545,6 +3545,146 @@ try{
   });
 }catch(e){ try{ _yut(e); }catch(e2){} }
 
+  /* ── YELPAZE (25 Eylul) ────────────────────────────────────────────
+     Kullanicinin istegi: sol sutunda soru isaretinin ALTINDA yuvarlak
+     bir kayit simgesi + kirmizi nokta; basinca o noktaya BAGLI yelpaze.
+     Icindekiler: REC, PIC, CAM, kamera dondurme. "Radyo tarafinda rec
+     yazsakli, daha soft yap koyu gibi; orbitape modunda o da acik."
+
+     Radyoda REC neden kapali: ekran kaydi canli yayinlarda yasal
+     degil. Oge soluk (CSS aria-disabled) ve basinca metin cikar;
+     kayit BASLAMAZ.
+
+     OGEler dogrudan ISLEVI cagirir, DOM tusunu degil: #pic'in
+     dinleyicisi yalniz radyo kipinde ve fotoDesteklenirMi() dogruysa
+     kuruluyor, yani ORBITAPE'de o tusa basmak hicbir sey yapmiyordu
+     (kullanicinin "pic'e basmiyorum" sikayeti). Buradaki yol iki kipte
+     de calisir. */
+  const _fanTus = document.getElementById('fanTus');
+  const _fanCep = document.getElementById('yelpaze');
+  if(_fanTus && _fanCep){
+    /* Dort oge: etiket + islev. */
+    const _fanHavuz = [
+      { id:'fanRec', yazi:'REC', islev:()=>{
+          if(!(typeof AYAR !== 'undefined' && AYAR.mood)){
+            /* kisaNotYaz ceviriyi KENDI yapiyor (Y() sarmalamak
+               hataya yol acardi) ve govde zorunlu: tek argumanda
+               ekrana "undefined" yaziyordu (olcum). */
+            try{ kisaNotYaz('REC LOCKED', 'RECORDING RADIO IS NOT ALLOWED'); }catch(e){ _yut(e); }
+            return;
+          }
+          try{ kayitDegis(); }catch(e){ _yut(e); }
+        } },
+      { id:'fanPic', yazi:'PIC', islev:()=>{ try{ fotoCek(); }catch(e){ _yut(e); } } },
+      { id:'fanCam', yazi:'CAM', islev:()=>{ try{ kamDegis(); }catch(e){ _yut(e); } } },
+      { id:'fanDon', yazi:'', islev:()=>{ try{ kamDondur(); }catch(e){ _yut(e); } } }
+    ];
+    /* Dondurme simgesi: ayni yol simgesi (oklar). */
+    const _fanOkSvg = '<svg viewBox="0 0 24 24" aria-hidden="true">'
+      + '<path d="M4 9a8 8 0 0 1 13.9-5.3M20 4v4.6h-4.6"/>'
+      + '<path d="M20 15a8 8 0 0 1-13.9 5.3M4 20v-4.6h4.6"/></svg>';
+    _fanHavuz.forEach(h=>{
+      try{
+        const o = document.createElement('div');
+        o.className = 'fanOge'; o.id = h.id;
+        o.setAttribute('role','menuitem'); o.setAttribute('tabindex','0');
+        const n = document.createElement('span');
+        n.className = 'nokta'; n.setAttribute('aria-hidden','true');
+        o.appendChild(n);
+        if(h.yazi){
+          const y = document.createElement('span');
+          y.className = 'fanYazi'; y.textContent = h.yazi; o.appendChild(y);
+        }else{
+          o.setAttribute('aria-label', Y('Switch camera'));
+          o.insertAdjacentHTML('beforeend', _fanOkSvg);
+        }
+        const cal = (e)=>{
+          try{ if(e){ e.preventDefault(); e.stopPropagation(); }
+            fanAc(false); h.islev();
+          }catch(_){ _yut(_); }
+        };
+        o.addEventListener('click', cal);
+        o.addEventListener('keydown', e=>{
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); cal(e); } });
+        ['pointerdown','touchstart','mousedown'].forEach(t=>
+          o.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+        _fanCep.appendChild(o);
+      }catch(e){ _yut(e); }
+    });
+    const _fanRecKapali = ()=> !(typeof AYAR !== 'undefined' && AYAR.mood);
+    function fanDurum(){
+      try{
+        const o = document.getElementById('fanRec');
+        if(o){
+          const kapali = _fanRecKapali();
+          o.setAttribute('aria-disabled', kapali ? 'true' : 'false');
+          o.setAttribute('title', kapali ? Y('RECORDING RADIO IS NOT ALLOWED') : Y('Screen recording'));
+        }
+      }catch(e){ _yut(e); }
+    }
+    /* Yelpaze ikona BAGLI: konum her acilista ikonun olculmus
+       kutusundan; ekrana sigmiyorsa yukaridan itilir. */
+    function fanYer(){
+      try{
+        const r = _fanTus.getBoundingClientRect();
+        if(!r.height) return;
+        const c = _fanCep.getBoundingClientRect();
+        const g = c.width || 96, y = c.height || 176;
+        let sol = Math.round(r.right + 8);
+        if(sol + g > innerWidth - 6) sol = Math.max(6, Math.round(r.left - g - 8));
+        let ust = Math.round(r.top - 10);
+        if(ust + y > innerHeight - 6) ust = Math.max(6, Math.round(innerHeight - 6 - y));
+        if(ust < 6) ust = 6;
+        _fanCep.style.left = sol + 'px';
+        _fanCep.style.top = ust + 'px';
+      }catch(e){ _yut(e); }
+    }
+    function fanAc(ac){
+      try{
+        const y = ac !== false;
+        _fanCep.hidden = !y;
+        _fanTus.setAttribute('aria-expanded', y ? 'true' : 'false');
+        if(y){ fanDurum(); fanYer(); }
+      }catch(e){ _yut(e); }
+    }
+    const fanTik = (e)=>{ try{ if(e) e.stopPropagation(); fanAc(_fanCep.hidden); }catch(_){ _yut(_); } };
+    try{
+      _fanTus.addEventListener('click', fanTik);
+      _fanTus.addEventListener('keydown', e=>{
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fanTik(e); } });
+      ['pointerdown','touchstart','mousedown'].forEach(t=>
+        _fanTus.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+    }catch(e){ _yut(e); }
+    /* Dışarı dokunmak kapatır. */
+    try{
+      document.addEventListener('pointerdown', e=>{
+        if(_fanCep.hidden) return;
+        const t = /** @type {any} */ (e.target);
+        if(t && (t.closest('#yelpaze') || t.closest('#fanTus'))) return;
+        fanAc(false);
+      }, true);
+    }catch(e){ _yut(e); }
+    /* Kip degisince REC durumu degissin; kayit/kamera/foto/gorsel
+       baslayinca yelpaze KAPANSIN ("yeni ikon cikmasin tasmasin"). */
+    const _fanKapan = ()=>{
+      try{
+        if(['kayit','kam','gorsel-acik'].some(c=>document.body.classList.contains(c))) return true;
+        const f = document.getElementById('fotoOnizle');
+        return !!(f && f.classList.contains('var'));
+      }catch(e){ return false; }
+    };
+    try{
+      new MutationObserver(()=>{
+        try{
+          if(_fanKapan()) fanAc(false);
+          else if(!_fanCep.hidden) fanDurum();
+        }catch(e){ _yut(e); }
+      }).observe(document.body, {attributes:true, attributeFilter:['class']});
+      /** @type {any} */ (window).yelpazeDurum = fanDurum;
+    }catch(e){ _yut(e); }
+    try{ fanDurum(); }catch(e){ _yut(e); }
+  }
+
 /* ── "BITIRDIM" IMZASI ────────────────────────────────────────────
    EN SONA konuyor: yukaridaki her sey hatasiz bittiyse atiliyor.
    Dosya yarida koptuysa imza da yok. Degiskene degil window'a
