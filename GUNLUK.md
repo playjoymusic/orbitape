@@ -2804,3 +2804,161 @@ statik kontrol): yazım her yerde aynı, 6 sn penceresi ve
 **(4) Bayt.** 1.252 bayt yedek. "KAYIT MODULU ISTEK UZERINE" bloğu
 (3.139 bayt) 1.180 bayta indirildi: eski yükleme sırası, ilk dokunuşun
 boşa gitmemesi kuralı, 18 Eylül çökmesinin kök nedeni korundu.
+
+### 26 Eylül — üç kollu arayüz: RADIOTAPE · JOYTAPE · ORBITAPE
+
+Kullanıcı üç kollu bir arayüz çizimi verdi ve kuralları tek tek
+söyledi: "RADIOTAPE sadece radyo, JOYTAPE bütün müzikler, ORBITAPE
+sadece sound fx'ler"; "insan konuşması üzerine her şey" → HUMANS;
+"müzik olan ambient" → müzik tarafında; "records olmayacak", sonra
+"beats'i de iptal et"; "bu görsel olacak... aynısını yap"; "üç kol
+ilk açılışta, bir kola basarsak kapanacak, basılmazsa RADIOTAPE'ten
+devam".
+
+**1) SINIFLANDIRMA: yeni bir tespit değil, var olanın adlandırılması.**
+Kodda müzik testi ZATEN vardı (`_muzikMi`: MUZIK_DEGIL eler, yani
+alan kaydı/uzay sesi/radyo programı; MUZIK_KALIP tanır; etiket
+yoksa arşiv kimliğine bakar) ve müzik kayıtları `RECORDS` rafına
+gidiyordu. JOYTAPE o ölçümün adı; sınıflandırma yeniden yazılmadı.
+
+ÖLÇÜM (26.263 kayıt) — kararın her adımı sayıyla:
+  * RECORDS varken: JOYTAPE 3.194 · HUMANS 5.979 · NATURE 2.746 ·
+    AMBIANCE 811 · NOISE 637 · CITY 1.619
+  * JOYTAPE 12.365 · ORBITAPE 13.898 (toplam 26.263, kayıt kaybolmadı)
+
+**2) "Müzikse FX'ten kaldır o halkayı" — bu ölçümü bozdu, ölçtüm.**
+Müzik kontrolünü raf sorgusundan önce aldım (kullanici öyle
+istedi) ve sonuç şuydu:
+      raf          önce     sonra
+      NATURE       4.449 -> 2.348
+      AMBIANCE     3.425 ->   254
+      NOISE        1.636 ->   445
+      INDUSTRIAL   1.081 ->   218
+      DARK         1.616 ->   182
+      BEATS        1.274 ->    94
+Tek kelime değil, ALAN KAYDI işaretleriydi: "ambient" 5.692,
+"experimental" 4.048, "electronic" 3.524 kayıt JOYTAPE'ye gidiyordu;
+"noise" 2.000 kayıttaydı. Kullanıcının kararı iki maddede geldi:
+"noise'u da kaldır" (NOISE bir ses efekti rafı, müzik kelimesi
+değil → MUZIK_KALIP'ten çıkarıldı) ve alan kaydı işaretleri de
+veto listesine girdi (MUZIK_DEGIL'e `ambience|soundscape|phonograph|
+aporee|bioacoustic`). Sonuç: AMBIANCE 254→811, NOISE 445→637,
+NATURE 2.348→2.746, DARK 182→377, INDUSTRIAL 218→295 toparladı;
+JOYTAPE 13.894→12.365. Geriye kalan incelme kullanıcının isteğiyle
+ilgili: BEATS 1.274→94 ve RECORDS 5.224→0, ikisi de müzikti.
+
+**3) HUMANS: sesli kitap/şiir gerçekten orada.**
+LibriVox etiketi `librivoxaudio · audio_books · poetry · literature ·
+nature · philosophy` — içinde NATURE'in kelimesi var, HUMANS'inki
+yok. Konuşma/kitap etiketli 4.650 kaydın HUMANS'a gideni 1.240'tı
+(NATURE 2.123, OTHERS 1.043). `librivox · audio_books · poetry ·
+poems · literature · stories · novels · prose` eklendi (kelime
+kelime ölçüldü: `master` +0/+84, `voice` +0 müzik/378 müzik çalıyordu
+→ kullanıcı iptal etti, eklenmedi). İki kural listesi vardı
+(MODLAR'ın HUMAN'ı ve arşiv raflarının HUMANS'ı) → ikisi de
+genişletildi.
+
+**4) İLK AÇILIŞ KATMANI — iki gerçek hata, ikisi de ölçüldü.**
+  * `forEach(o=>{ ... KOL_SIMGELERI[i] ... })` — `i` tanımsızdı,
+    ilk düğümde patlıyordu, kollar hiç oluşmuyordu. Type denetimi de
+    aynı satırı işaret ediyordu (70 uyarı → 69).
+  * `pointer-events`'i yeni CSS'te kaybetmiştim: katman TÜM ekranı
+    yutuyordu. Ölçüm: 2. halkada basılı tutmak `_moodGez`'i kurmuyordu,
+    3. halka ancak katman bir önceki dokunuşla kapandıktan sonra
+    çalışıyordu — yani halkada gezinme bozuktu. Katman geçirgen
+    yapıldı; kola basılınca kip değişir ve kapanır, başka yere
+    basılınca katman kapanır ama dokunuş hedefine gider.
+  * `backdrop-filter` kaldırıldı: sayfada kalıcı CSS filtresi yasak
+    (pil; test/saglik.js "Kalıcı CSS filtresi/katmanı").
+
+**5) ÇİZİM — kullanıcının görseline sadık.** Yerleşim `.disk`'in
+ÖLÇÜLEN kutusundan (sabit piksel yok, halka büyüyünce kollar da
+uzaklaşıyor): üst −90°, sol alt 150°, sağ alt 30°. Her dal
+halkanın içine ince çizgi + nokta ile uzanıyor — "üç çatallı"nın
+estetiği oradan geliyor. Simge yolları çizime göre çizildi (kule,
+kaset, halkalı gezegen); soldaki sütun ikonlarının yolları
+kopyalanmadı ("soldaki ikonlar gibi olmasın" dedi). Alt başlıklar
+tek satır (0.4375rem, .08em) — ilk hâlde iki satıra bölünüyordu.
+
+**6) Testler.** 14 test eski sözleşmeyi kodluydu (RECORDS var,
+12 raf, "ORBITAPE hepsini kapsıyor", "gürültü NOISE'ta", ...);
+hepsi yeni kurala taşındı ve gerekçesi yazıldı. İki tanesi
+GERÇEK hatayı yakaladı: kalıcı filtre ve boş `catch`. Yeni iki test:
+"Üç kollu seçici ilk açılışta duruyor" (3 kol, RADIOTAPE seçili,
+halka dışında) ve "JOYTAPE yalnızca müzik veriyor" (kip değişiyor,
+katman kapanıyor, havuzun tamamı JOYTAPE rafında). 890/890.
+
+**Bayt:** 671 yedek. Beş blok sıkıştırıldı: "CORS ELEMESİ",
+"KAYIT MODULU ISTEK UZERINE", "18 EYLUL SKIN", "AGC'NIN MATEMATIGI",
+"GENIS EKRAN: TABLET", "MOD ACIKKEN SIRADAKI", "DONUSTEN SONRA
+ALTTA DERI RENGINDE BANT", "OLCUM: KAPALIYKEN", "OLUK CIZGISI" —
+hepsinin ölçümü ve kararı korunarak hikâye kısaldı.
+
+**Kalan (kullanıcıdan):** sol alttaki anahtar 3 kademeli olacak
+(sabit, dikey: alt RADIOTAPE / orta JOYTAPE / üst ORBITAPE, düğme
+odanın renginde, yazı yok) ve ORBITAPE'de sol sütunun gezegenlerin
+altına inmesi.
+
+### 26 Eylül — yatayda dallar play tusunun ustune biniyordu (cihaz testi)
+
+Kapi "tuslar parmak olcusunde" kirmizisi verdi (yatay 844x390):
+play alani 22x60, dort yakin noktadan biri kaciyordu. Sebep
+olculdu: yatayda `.disk` cok kisa kaliyor (~130 px), dallarin
+yaricapi `0.54 * 130 = 70 px` cikiyor ve dugumler play tusunun
+dokunma alaninin USTUNE biniyordu.
+
+DUZELTME 1 — alt sinir: `R = max(min(kisa,uzun)*0.54, 150)`.
+OLCUM (iki yon): play alani 60x60, kacan nokta 0.
+DUZELTME 2 — kenar payi 40 px: yatayda ust dugum ekran disina
+cikiyordu (tepe -16), daire 44 px oldugu icin 10 px yeterli
+degildi; yarim kutu 37 + 3 = 40.
+
+### 26 Eylül — üç kolun görseli: ışık, derinlik, dış halka, canlılık
+
+Kullanıcı ilk render'ı "yamuk ikonlar, çevreleyen yuvarlak bir şey
+yok, çok saçma" diye reddetti ve "örneği birebir yapacaksın, hani 3
+boyut ışık vs derinlik" dedi. Düzeltilenler:
+
+* **Daire artık kâre değil**: 50 -> 56 px; ışık yukarıdan geliyor
+  (radial gradient), dışarıda 22 px yumuşak hale, içerinde iç gölge.
+  Seçili kolda hale 30 px'ye çıkıp dolgu güçleniyor.
+* **İkon 26 -> 33 px**, kayıklık ölçüldü: 0 px (önceki render'da
+  çizimdeki gibi görünmüyordu).
+* **Açıklamalar beyaz-krem** `rgba(238,228,205,.6)` — dal rengi
+  değil ("aynı renk estetik değil, zşen").
+* **DIŞ HALKA**: üç kolu birleştiren cember, yarıçapı tam R (kollar
+  da aynı yarıçapta olduğu için cember üçünün merkezinden geçiyor).
+  İç gölge + iki renkli kenar parıltısı.
+* **DİNAMİK**: Web Animations API ile sonsuz nabız — halka 6.4 sn'de
+  ölçek+faz, üç kol 4.2/5.1/6.0 sn'de parlaklık. CSS `@keyframes`
+  gerekmedi; CSP `style-src` hash'li olduğu için modül içinden
+  `<style>` enjekte EDİLEMEZ, CSSOM serbest — halkanın stili
+  kayit.js'ten veriliyor.
+
+**Bütçe notu (önemli).** Yayın çıktısı brotli 110 KB tavanını
+ilk açılışta aştı (110.7). Yorum kırpmak İŞE YARAMADI: derleyici
+yorumları zaten soyuyor, ölçülen şey gerçek kod. Çözüm: üç kolun
+JS'i `kayit.js`'e taşındı (modülün bayt tavanı yok), CSS
+index.html'de kaldı. Ölçüm: 110.7 -> 109.98 KB. Bu, ilk çizim
+bütçesinin gerçek koruması: yavaş hatta kullanıcı ilk boyamayı
+bekliyor.
+
+**Test notu.** `_muzikMi` artık `arsivRaf`'ın İLK adımı olduğu için
+`birim.js`'in kopyaladığı fonksiyon kümesine `_sesMi` de eklenmeli;
+eklenmedigi zaman `ReferenceError` veriyordu (birim 131/131).
+
+### 26 Eylül — ilk açılış katmanının kapanma kuralı
+
+Kullanıcının kuralı: katman her ilk açılışta bir kez çıkar; **ortaya
+basılınca (örtmek için) KAPANMAZ** — sadece üç koldan birine basılınca
+kapanır. Kapandıktan sonra o turda (uygulama kapanana kadar) bir daha
+çıkmaz; yol **sol alttaki anahtardan**.
+
+Bunu ben yanlış yapmıştım: "kol değilse her dokunuş katmanı kapatır"
+diyerek bir document pointerdown dinleyicisi koymuştum (katmanın
+halka gezinmesini yuttuğunu düzeltirken). O dinleyici kaldırıldı;
+katman `pointer-events:none` olduğu için o dokunuş zaten altındaki
+hedefe gidiyor, ama seçim ekranı ayakta kalıyor.
+
+ÖLÇÜM: açılışta katman açık ✓ → ortaya dokunduktan sonra hâlâ açık ✓
+→ kola dokununca kapandı ve kip değişti (ORBITAPE) ✓.

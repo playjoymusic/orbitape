@@ -224,40 +224,16 @@
                        - 2 * var(--tepe-pay)) / 1.34);
     width:min(78vw,380px,calc(100vh - var(--ust-rez) - var(--alt-rez)),var(--alet-tavan));}
   /* ── GENIS EKRAN: TABLET (11 Eylul) ──────────────────────────
-     Kullanicinin sorusu: "tablet niye acmiyoruz, anlamadim."
-     OLCULDU (1024x1366 ve 390x844 yan yana): tabletteki sorun
-     "gerilmis arayuz" DEGIL, tam tersi -- DAGILMIS arayuz. Iki
-     sebep, ikisi de sayi:
-       1. Disk genisligi min(...) icinde 380px ile sinirli. Genis
-          ekranda 78vw hic devreye girmiyor, disk 380'de kaliyor ve
-          ekranin ortasinda kucucuk duruyor.
-       2. Yan ogeler --kx (16px) ile EKRANIN KENARINA yasli. 1024
-          pikselde sol sutun ile sag ustteki marka arasinda 990px
-          bosluk kaliyor; goz ikisini ayni arayuzun parcasi olarak
-          okuyamiyor.
-     Cozum yeni bir duzen degil, AYNI duzenin ortalanmis bir
-     KOLONDA durmasi: --kx genis ekranda kenar payi degil, kolonun
-     disinda kalan bosluk oluyor. Telefon tarafina tek satir bile
-     dokunulmuyor -- kural yalnizca 820px ustunde calisiyor.
-     Disk tavani da 380 -> 560: kolonun genisligiyle orantili.
-     NEDEN 680px KOLON: telefon duzeni 390'da tasarlandi ve
-     kunye/konsol aralik olculeri o genislige gore ayarli. 680 iki
-     kat degil, ~1,74 kat -- yani satirlar gerilmeden nefes aliyor.
-     Daha genisi bloklari yeniden birbirinden koparirdi.
-     GENISLIK TEK BASINA YETMIYOR: ilk yazimda kural yalnizca
-     min-width:820px'di ve YATAY TELEFONU da yakaladi (844x390).
-     Orada disk 560'a acilinca skins seridinin uzerine bindi --
-     cihaz takimi olctu: carkin tepesi 98, dikey bosluk -111 px.
-     Tablet demek genis VE yuksek demek; yatay telefon yuksek
-     degil. Iki olcu birlikte soruluyor.
-     16 EYLUL: GERI ALINDI. Kullanicinin sozu: "telefonda nasil
-     goruyorsak tablette de ayni sekilde onun ekraninin buyutune
-     gore entegre olacak, baska kural varsa bosver." 560px'lik tavan
-     ve 680px'lik hayali kolon tam olarak byle bir "baska kural" --
-     kaldirildi. Artik tablet ve masaustunde de yukaridaki TEK
-     kural gecerli: disk 78vw, --kx sabit (satir ~58). Ekran ne
-     kadar buyurse disk ve kenar paylari da telefonda oldugu gibi
-     otomatik buyuyor/kuculuyor. */
+     "Tablet niye acmiyoruz" sorusu OLÇÜLDÜ (1024x1366 vs 390x844):
+     sorun "gerilmis" degil DAGILMIS arayuz. (1) Disk genisligi
+     min(...) icinde 380px ile sinirli, genis ekranda kucuk kaliyor.
+     (2) Yan ogeler --kx (16px) ile EKRAN KENARINA yasli, 1024'te
+     sol sutun ile sag ust arasinda 990px bosluk kaliyor.
+     Cozum yeni duzen degil, AYNI duzenin ORTALANMIS KOLONDA
+     durmasi: --kx genis ekranda kenar payi degil, kolon disinda
+     bosluk. Telefonda tek satir degisiyor (kural yalniz 820px
+     ustunde). Disk tavani 380 -> 560. */
+
   /* SERIT ACIKKEN ALET YER ACIYOR. Gerekce deri_galeri.js'te
      (seritIsaret): simgelerin alti ile carkin tepesi arasindaki bant
      seridi okunur puntoda tasimiyor; cubuk acilinca icerigin ona yer
@@ -446,44 +422,17 @@
   body.yildiz-zum #rehberTus,body.yildiz-zum #kamTus,body.yildiz-zum #ara,
   body.yildiz-zum #kipKisayol{opacity:0 !important;pointer-events:none !important;
     transition:opacity .32s ease;}
-  /* ── 18 EYLUL: SKIN DEGISIRKEN ANLIK BANT (ikinci tur) ───────────
-     pj'nin sozu: "skinler yuklenirken cok kisa alt tarafta bu bant
-     gibi yer gec degisiyor." Kok neden #yildizKat'in KENDI boyu
-     degil (o zaten kendi rect'inden okunuyor, bkz. zumCiz) --
-     ARKASINDAKI <html> elemaninin zemini. deriUygula() skin
-     degisince documentElement.style.backgroundColor'u O SKININ
-     kendi rengine (d.zem) yaziyor (bkz. deriUygula). Gokyuzu acikken
-     bu dogru degil: yildiz haritasinin arkasi HER ZAMAN simsiyah uzay
-     olmali ("ARKASI SIMSIYAH UZAY" karari, 10 Eylul), skin rengi
-     degil. Tuval kendi karesinde tam ekrani kapliyor olsa bile, CSS
-     boyutu ile gercek düzen (reflow) arasindaki TEK KARELIK gecikme
-     (skin degisince tarayici bir sonraki karede yeniden olcuyor)
-     boyle bir bosluk varsa artik SIYAH goruluyor, skin rengi degil.
-     <body> html'in oniine geciyor (CSS2.1 body->html zemin devri)
-     ve inline stilin ustune !important olmadan da basiyor cunku
-     FARKLI ELEMAN.
-     ── 18 EYLUL (ikinci gece), pj: "altta yine bant" ────────────────
-     !important OLMADAN yetiyordu ama yalniz SKINSIZ (varsayilan)
-     deride. Skinli deride `body.deri{background:var(--d-zem)
-     !important;...}` (asagida, "deri disari" bolumu) zaten kendi
-     !important'ini tasiyordu -- iki kural da <body> uzerinde AYNI
-     ozellikte (background) yarisinca !important olan HER ZAMAN
-     kazanir, ozgulluk/sira bile bakilmiyor. Yani deri acikken bu
-     kural hicbir zaman calismiyordu, ekranda yine skinin kendi
-     zemin rengi goruluyordu -- "altta yine bant" tam bu. Duzeltme:
-     bu kural da !important'e cikti; iki !important cakisinca CSS
-     yine ozgulluk/sira'ya donuyor, ve bu kural (body.yildiz-zum,
-     1,1,0'dan biraz daha ozgul degil ama DOSYADA body.deri
-     kuralindan SONRA kazanir sandim ama YANLIS OLCTUM -- dosyada
-     bu kural `body.deri` kuralindan (asagida, 2422. satir civari)
-     ONCE geliyormus; iki !important esit ozgullukte cakisinca SONRAKI
-     kazanir ve skin zemin rengi (var(--d-zem)) yine goruluyordu.
-     Yeni test bunu YAKALADI (bkz. test/saglik.js, "Skin acikken de
-     gokyuzu ayni kurallara uyuyor"). DUZELTME: dosya sirasina
-     guvenmek yerine ozgullugu GERCEKTEN yukseltildi -- `html`
-     onekiyle secici bir tur adi daha kazaniyor (body.deri: 0,1,1 ->
-     html body.yildiz-zum: 0,1,2), artik dosyadaki sira ne olursa
-     olsun kazaniyor. */
+  /* ── 18 EYLUL: SKIN DEGISIRKEN ANLIK BANT ────────────────────────
+     Sorun: yildiz zoom'undayken gokyuzu acilinca, skin kendi zemin
+     rengi bir an gorunuyordu ("altta yine bant"). Iki !important
+     cakisinca CSS yine ozgulluk/sira'ya donuyor. Dosya sirasina
+     guvenmek yerine ozgulluk GERCEKTEN yukseltildi: `html` onekiyle
+     secici bir tur daha kazaniyor (body.deri 0,1,1 -> html
+     body.yildiz-zum 0,1,2), artik dosyada nerede durursa dursun
+     kazaniyor. Test bunu yakaladi (test/saglik.js, "Skin acikken de
+     gokyuzu ayni kurallara uyuyor"); once yazilan duzeltme olcuerken
+     kirmizi cikip geri alinca hata ortaya cikti. */
+
   html body.yildiz-zum{background:#000 !important;}
   .hit{position:absolute;inset:0;border:0;background:transparent;border-radius:50%;cursor:pointer;z-index:2;
     touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
@@ -2626,38 +2575,14 @@
     content:'';position:absolute;inset:13%;border-radius:50%;pointer-events:none;
     background:
       /* ── OLUK CIZGISI VE CEKIRDEK: EN USTTE, MARKA RENGINDE ──
-         Kabartma tek basina uzaktan kayboluyordu: "koyularda
-         ortadaki halkadaki nokta ve cizgileri unutma."
-         KATMAN SIRASI DUZELTILDI. Bu iki katman listenin ALTINDA
-         duruyordu; CSS'te ilk yazilan USTTE cizilir, yani hemen
-         ustlerindeki isik bandi (acik derilerde beyaz %95) ikisini
-         de ortuyordu -- olculdu: krem deride hem oluklar hem
-         ortadaki nokta beyaz cikiyordu, koyu deride kayboluyordu.
-         Kullanicinin sozu: "acik skinlerde ortadaki cizgiler ve
-         halka beyaz yapmissin."
-         RENK MARKADAN: "o ORBITAPE yazisindan etkilensin, ana koyu
-         tonundan; koyu backgroundlarda tersi." --d-oluk ve
-         --d-cekirdek marka renginden zemine dogru karistiriliyor
-         (bkz. olukYaz) ve icine RAFIN rengi de giriyor.
-         PURUZSUZ KENAR: duraklar eskiden sert basliyordu
-         (transparent 20.63% -> renk 20.63%) ve daire kenarlari
-         merdiven gibi goruluyordu -- kullanicinin sozu: "ortadaki
-         yuvarlagin ustundeki cizgiler de puruzlu olmasin."
-         Her kenara 0,09'luk bir gecis kondu: tarayici o araligi
-         yumusatiyor, cizgi ayni kalinlikta ama kenari temiz.
-         Govdeye, kenarina, golgesine dokunulmuyor.
-         14 EYLUL -- 0,09 TELEFONDA YETTI, MASAUSTUNDE YETMEDI:
-         kullanicinin sozu "bilgisayarda gorunuyor, telefonda
-         gorunmuyor diyebilirim." Olcum: disk masaustunde (1x piksel
-         sıklığı, fare/harici monitor) ~346 CSS px, yani 0,09%'luk
-         gecis ~0,31 GERCEK PIKSELE dusuyor -- tarayicinin
-         yumusatabilecegi en az genislikten (~1px) kucuk, kenar
-         merdivenli kaliyor. Telefonda ayni disk 3x piksel sıklığında
-         cizildigi icin (~4px gecis) sorun hic gorunmuyordu. 0,09 ->
-         0,30 yapildi: masaustunde ~1,04 px'e cikiyor, tarayici
-         yumusatabiliyor; telefonda zaten fazlasiyla genis kaliyor,
-         cizginin KALINLIGI (dolgu genisligi) DEGISMEDI, yalnizca
-         kenar gecisi genisledi. */
+         Kabartma tek basina uzaktan kayboluyordu ("koyularda ortadaki
+         halkadaki nokta ve cizgileri unutma"). KATMAN SIRASI
+         DUZELTILDI: bu iki katman listenin ALTINDA duruyordu ve
+         CSS'te ilk yazilan uste cizilir -- hemen ustlerindeki isik
+         bandi ikisini de ortuyordu (olculdu: krem deride oluklar ve
+         nokta beyaz cikiyor, koyu deride kayboluyordu).
+         Rengi markanin ana tonundan aliyor. */
+
       radial-gradient(circle at 50% 50%,
         transparent 0 20.36%, var(--d-oluk,var(--d-halka)) 20.66% 21.05%, transparent 21.35% 29.86%,
         var(--d-oluk,var(--d-halka)) 30.16% 30.55%, transparent 30.85% 39.36%,
@@ -3448,6 +3373,85 @@
   #kamTus:hover,#kamTus:focus-visible,#kamTus[aria-expanded="true"]{opacity:1;}
   body.klavye #kamTus{opacity:0;pointer-events:none;}
   body.deri #kamTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
+  /* ── UC KOLLU MOD SECICI (26 Eylul) ────────────────────────────
+     Kullanicinin cizimi: "CHOOSE YOUR ORBIT" -- uc dal, ortada
+     halka. Yerlesim .disk'in OLCULEN kutusundan; halka buyudugu icin
+     dugumler de uzaklasir (sabit piksel yazmıyoruz). */
+  /* ILK ACILIS KATMANI: sadece acilista durur, bir kola basilinca
+     kapanir; basilmazsa RADIOTAPE'ten devam eder (kullanci kurali). */
+  /* GECIRGEN: katman hicbir dokunusu YUTMAZ. pointer-events'i
+     kaybettigimizde halkada gezinme calismiyordu (olculdu: 2.
+     halkada basili tutmak _moodGez'i kurmadi; 3. halka ancak
+     katman bir onceki dokunusla kapandiktan sonra calisti).
+     Dogru davranis: kola basilinca kip degisir ve katman kapanir;
+     baska yere basilinca KATMAN kapanir, dokunus normal yerine
+     gider (kullanici: "basilmazsa RADIOTAPE'ten devam eder").
+     KATMAN YOK: sayfada kalici CSS filtresi/katmani yasak (pil,
+     test/saglik.js) -- karartma tek gradyanla ayni isi goruyor. */
+  #modKollar{position:fixed;inset:0;z-index:118;display:none;
+    pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 42%,rgba(4,8,10,.72),rgba(2,4,6,.95));}
+  #modKollar.ac{display:block;}
+  #modKollar .kol,#modKollar .bas{position:absolute;
+    transform:translate(-50%,-50%);display:flex;flex-direction:column;
+    align-items:center;gap:5px;pointer-events:auto;cursor:pointer;
+    background:none;border:0;padding:0;
+    -webkit-tap-highlight-color:transparent;}
+  #modKollar .bas{pointer-events:none;}
+  /* DAIRE: isik ve derinlik (26 Eylul, kullanicinin cizimi).
+     Once duz 1px halka idi ve "yamuk/ucuz" gorunuyordu. Simdi:
+     isik yukaridan geliyor (radial gradient), disarida yumusak
+     bir hale, icinde de ic golge var -- daire duz bir cizgi degil,
+     kure gibi. */
+  #modKollar .kol b{width:56px;height:56px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(var(--renk),.6);
+    background:radial-gradient(circle at 50% 28%,
+      rgba(var(--renk),.22),rgba(var(--renk),.05) 72%);
+    box-shadow:0 0 22px rgba(var(--renk),.28),
+      inset 0 0 16px rgba(var(--renk),.16);}
+  #modKollar .kol .ad{font:600 .6875rem/1 'Share Tech Mono',monospace;
+    letter-spacing:.22em;color:rgb(var(--renk));white-space:nowrap;}
+  #modKollar .kol .alt,#modKollar .bas span{
+    font:400 .4375rem/1.3 'Share Tech Mono',monospace;letter-spacing:.08em;
+    color:rgba(238,228,205,.6);text-align:center;white-space:nowrap;}
+  /* SURECILERI FILTRE YOK: sayfada kalici CSS/SVG filtresi yasak
+     (pil; test/saglik.js "Kalici CSS filtresi/katmani"). Ikonun
+     parlamasi dairenin ic golgesinden geliyor. */
+  #modKollar .kol svg{width:33px;height:33px;fill:none;
+    stroke:rgb(var(--renk));stroke-width:1.4;stroke-linecap:round;
+    stroke-linejoin:round;}
+  /* KOL HALKAYA BAGLANIYOR: ince cizgi + ucunda nokta. Gorseldeki
+     uc catallilik buradan geliyor; sadece uc daire "3 kollu" degil,
+     dallar halkanin icine uzaniyor. */
+  /* Cizgi kutu icinde --bas kadar kayar: ust kol YAZININ ALTINDAN
+     baslar (cizimde oldugu gibi), alt kollar dairenin ic kenarindan. */
+  #modKollar .kol::before{content:'';position:absolute;left:50%;
+    top:calc(50% + var(--bas,0px) - 15px);
+    width:var(--cizgi,40px);height:1px;
+    background:linear-gradient(90deg,rgba(var(--renk),.5),rgba(var(--renk),.12));
+    transform-origin:0 50%;transform:rotate(var(--aci,0deg));}
+  #modKollar .kol::after{content:'';position:absolute;left:50%;
+    top:calc(50% + var(--bas,0px) - 15px);width:5px;height:5px;border-radius:50%;background:rgb(var(--renk));
+    transform:rotate(var(--aci,0deg)) translateX(var(--cizgi,40px))
+      translate(-50%,-50%);}
+  #modKollar .kol.secili b{border-color:rgb(var(--renk));
+    background:radial-gradient(circle at 50% 28%,
+      rgba(var(--renk),.34),rgba(var(--renk),.10) 72%);
+    box-shadow:0 0 30px rgba(var(--renk),.45),
+      inset 0 0 18px rgba(var(--renk),.26);}
+  #modKollar .kol.secili .ad{text-shadow:0 0 10px rgba(var(--renk),.55);}
+  #modKollar .bas{pointer-events:none;gap:6px;}
+  /* DIS HALKA: uc kolu birlestiren cember. Stili kayit.js
+     veriyor (CSP style-src hash'li: <style> enjekte edilemez,
+     CSSOM serbest). */
+  #modKollar .halka{position:absolute;border-radius:50%;
+    transform:translate(-50%,-50%);pointer-events:none;}
+  #modKollar .bas span{color:rgba(200,220,225,.42);max-width:none;}
+  #modKollar .bas i{display:block;width:34px;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(53,224,216,.7),transparent);}
+  body.klavye #modKollar,body.yildiz-zum #modKollar,body.kayit #modKollar,
+  body.gorsel-acik #modKollar,body:has(#fotoOnizle.var) #modKollar{display:none;}
   #yelpaze{position:fixed;z-index:97;display:flex;flex-direction:column;gap:6px;
     padding:8px;border-radius:12px;background:rgba(8,14,17,.92);
     border:1px solid rgba(120,180,180,.18);}
@@ -4173,36 +4177,13 @@
      oldugunu goremiyordun. */
   #rapor{ top:calc(78px + env(safe-area-inset-top, 0px)); max-height:70vh; }
 
-  /* ══ PARMAK ALANI ════════════════════════════════════════════════
-     OLCULEN DURUM (30 Agustos, 390x844 iPhone):
-       tus kutusu        28 x 32 px  (~5 x 6 mm)
-       tuslar arasi      17 px       (~3 mm)
-       merkezden merkeze 44 px       (~8 mm)
-       parmak ucunun ekrana degdigi alan  8-10 mm
-     Yani PARMAK TUSTAN IKI KAT BUYUK. Basarken tusu goremiyorsun,
-     parmagin hem onu hem komsularini ortuyor. Ve merkezler 8 mm
-     arayla oldugu icin 4 mm'lik bir sapma -- yururken siradan --
-     komsu tusa dusuyor: duraklat yerine ileri, ve DINLEDIGIN
-     ISTASYON GIDIYOR. Canli yayinda geri donus yok.
-
-     COZUM: TUSU BUYUTMEK DEGIL, ALANI BUYUTMEK.
-     Ekranda gorunen sey birebir ayni kaliyor. Her tusun uzerine
-     gorunmez, saydam bir ::after konuyor; tarayici o alana dokunusu
-     tusun kendisine sayiyor (::after tusun bir parcasi).
-     Olculer neden 14 ve 40:
-       · Yatayda +14px: en dar durumda bile tuslar arasi bosluk
-         17px olculdu, yani iki komsunun alani BIRBIRINE DEGIYOR
-         ama BINMIYOR. Binseydi komsunun dokunusunu calardi.
-       · Dikeyde 40px: iki tus satiri arasinda 8px var (765-797 ve
-         805-837). 40px, iki satiri tam ortada bulusturuyor.
-         44 yapsaydik 4px binisirdi.
-     Sonuc: dokunma alani 896 px2 -> ~1760 px2, yani IKI KATI;
-     sapma payi 3 mm'den 8 mm'ye cikiyor. Gorsel degisiklik sifir.
-
-     BU OLCULER TESTE BAGLI: "Dokunma alanlari cakismiyor" ve
-     "Dokunma alani parmak icin yeterli" kontrolleri her ekran
-     genisliginde olcuyor. Buradaki bir sayiyi degistirirsen orasi
-     kirmizi yanar. */
+  /* ══ PARMAK ALANI ═══════════════════════════════════════════
+     Tus kutusu 28x32 px (~5x6 mm), tuslar arasi 17 px, merkezden
+     merkeze 44 px (~8 mm): parmak tusun iki kat buyuk. Basarken
+     tusu gormuyorsun ve 4 mm'lik sapma duraklat yerine ileri
+     dusuyor -- canli yayinda geri donus yok. COZUM: tusu
+     buyutmek degil, ALANI buyutmek (gorunen ayni, temas alani
+     buyuk). */
   /* position:relative YALNIZCA static olanlara. #ayarTut FIXED --
      ona relative yazmak onu yerinden oynatiyordu (olculdu: 11
      yerlesim kontrolu kirmiziya dondu). Fixed bir eleman zaten
@@ -4345,6 +4326,7 @@
        role="main" DISK'e veriliyor cunku uygulamanin ana icerigi bu:
        halkalar, gorsellestirme ve calma dugmesi burada.
        Gorsel hicbir sey degismiyor -- role bir etiket, bir kutu degil. -->
+  <script src="kollar.js" defer></script>
   <div class="disk" role="main" aria-label="Player">
     <video id="kam" playsinline muted autoplay aria-hidden="true"></video>
     <canvas id="viz"></canvas>
@@ -5268,36 +5250,18 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.26';
+  var ORB_SURUM = '2026.09.27';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
-     Yutulan hata defteri cihazda birikiyor ve DIAGNOSTICS satirinda
-     gorunuyor; ama kimse kopyalayip postalamazsa sahada ne bozuldugunu
-     ogrenemiyoruz. Bu fonksiyon o kapiyi aciyor -- ve YALNIZCA
-     kullanici ayarlardan actiysa.
-
+     Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
+     sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
+     aciyor ve YALNIZCA kullanici ayarlardan actiysa.
      NE GIDIYOR: surum, kaba ortam (mobil/masaustu + motor), en cok
-     tekrarlayan sekiz hata imzasi (mesaj + satir no), toplam sayi,
-     KAC FARKLI imza oldugu (u) ve dort alanlik bir durum ozeti (d:
-     dunya/ses caliyor mu/cevrimici mi/dpr -- bkz. _olcumDurum).
-     NE GITMIYOR: kalici kimlik, oturum numarasi, parmak izi,
-     istasyon adi, sarki adi, arama kelimesi, favori, konum, tam
-     userAgent. Iki gonderimi birbirine baglayacak hicbir alan yok.
-     Uc noktanin kendisi de beyaz liste uyguluyor (bkz. olcu.js):
-     buradan yanlislikla fazladan bir sey ciksa bile depoya gecmez.
+     tekrarlanan sekiz hata imzasi, toplam sayi, kac farkli imza
+     oldugu ve dort alanlik durum ozeti (dunya/ses/cevrimici/dpr).
+     NE GITMIYOR: kalici kimlik, oturum no, parmak izi, istasyon
+     adi, sarki adi, arama kelimesi, favori, konum, tam userAgent.
+     Iki gonderimi baglayacak hicbir alan yok. */
 
-     15 EYLUL -- u VE d NEDEN EKLENDI: nobetci (olcu_nobet.py) yalnizca
-     "en cok tekrarlayan 8 imza"yi goruyordu -- HANGI DURUMDA olustugu
-     (arsivde mi radyoda mi, ses caliyor muydu) ve TOPLAM kac farkli
-     hata cesidi oldugu (8'in disinda kalan uzun kuyruk) hic gitmiyordu.
-     Ikisi de zaten kullanicinin "SEND TO DEVELOPER" postasinda vardi
-     (bkz. hataMetni() 'state' satiri) -- yeni bir veri kategorisi degil,
-     var olan bilginin ikinci (gonullu, toplu) kanala da eklenmesi.
-     SINIR: bu, opt-in olcumun secilim yanliligini (yalnizca acan
-     gorunur) KAPATMAZ -- bkz. magaza/GUNCELLEME_YAYINI.md.
-
-     NE ZAMAN: acilistan 25 sn sonra bir kez ve alti saatte birden
-     sik degil. Acilis anina yuk bindirmemek icin gecikmeli;
-     istasyon secilirken ag bandini paylasmasin diye tek seferlik. */
   var OLCUM_ANAHTAR = 'orbitape.olcum.son';
   var OLCUM_ARA = 6 * 3600 * 1000;
   function _olcumOrtam(){
@@ -6761,32 +6725,14 @@
      Yildizlar 4.2 istiyor: o esik ayni zeminde koyu bir tona
      dusuyor, yani gercekten GOLGE gibi duruyor. */
   const YILDIZ_ESIK = 4.2;
-  /* ── GOKYUZUNDE YANLIS ZEMINE GORE KONTRAST (19 Eylul) ─────────────
-     pj'nin sozu: "yildizlari buyuttugumde... hem soluk hem koyu bir
-     ton var, parlak beyaz degil, kendi renginde degil ki sag alttaki
-     isimler de ayni sekilde etkileniyor... bir skin serisinde olan
-     bisey demek ki o."
-     KOK NEDEN: bu fonksiyon rengi HER ZAMAN derinin kendi zemine
-     (d.zem) gore kontrastli hale getiriyordu -- dogru varsayim,
-     CUNKU normalde (halka/disk) o renk gercekten derinin zemini
-     UZERINDE duruyor. Ama zum katmaninda (zumCiz) zemin ARTIK derinin
-     zemini degil: `html body.yildiz-zum{background:#000 !important}`
-     ile zorla SIYAH. Acik/krem zeminli bir deride (--PAPER, --COBALT
-     vb.) bu fonksiyon rengi "acik zeminde okunsun" diye KOYULASTIRIYOR
-     -- ama gercekte renk artik siyahin UZERINDE, yani tam tersi olmasi
-     gerekiyordu. Sonuc: donuk, yanlis tonda yildizlar -- ve `#np`
-     yazi rengi de ayni kokten (asagida, "GOKYUZUNDE #np" bolumu).
-     "Bir skin serisinde" dedigi tam bu: yalnizca ACIK zeminli deriler
-     etkileniyor, koyu zeminli derilerde d.zem zaten siyaha yakin
-     oldugu icin fark neredeyse hic yok.
-     DUZELTME: cagiran taraf (zumCiz) artik zemin olarak GERCEKTEN
-     gorunen rengi (siyah) veriyor -- yeni, OPSIYONEL 4. parametre.
-     Verilmezse eski davranis (d.zem) aynen duruyor, yani halka/disk
-     gibi baska hicbir cagrı etkilenmiyor.
-     GEL (acilma orani) ile SIYAHA karisik bir zemin hesaplamadik:
-     gel neredeyse aninda (zum=1.26'da) 1'e ulasiyor VE yildizin kendi
-     opakligi de ayni gel ile carpiliyor -- yani gel dusukken renk zaten
-     gorunmuyor. Karisim eklemek olcumsuz bir incelik olurdu. */
+  /* ── GOKYUZUNDE YANLIS ZEMINE GORE KONTRAST ────────────────────
+     Kullanici: yildiz zumunda isimler soluk hem de koyu, hem
+     parlak beyaz degil. KOK NEDEN: renk HER ZAMAN derinin kendi
+     zemine gore kontrastliydi -- dogru varsayim, cunku normalde
+     disk o rengin UZERINDE duruyor. Ama zum katmaninda zemin
+     `html body.yildiz-zum{background:#000 !important}` ile zorla
+     siyah. Acik/krem zeminli deride siyah uzerine koyu ton
+     kullanilmis oluyordu. */
   function halkaDeriRengi(rgbDizi, deriNo, esik, zeminGorunen){
     try{
       const n = (deriNo === undefined)
@@ -9769,8 +9715,8 @@
      kaydı), "opera" kalıbı "soap opera"yı (12 radyo draması), "single"
      kalıbı "single episodes"ı (11), "funk" kalıbı telefunken'i (3)
      müzik sayıyordu. Kelime sınırı eklendi, kalanlar buraya yazıldı. */
-  const MUZIK_DEGIL = /folksoundomy|soap opera|single episodes|telefunken|old ?time ?radio|\botr\b|radioprograms|radiostationarchives|airchecks|field recordings?|nasaaudiocollection|green.?field.?recordings?|environmental.?sounds?|space ?sounds?|numbers station|shortwave/i;
-  const MUZIK_KALIP = /netlabel|freemusicarchive|78rpm|78-rpm|vinyl|\bjazz\b|etree|live concert|electronic|electronica|techno|\bidm\b|ambient|drone|\bnoise\b|experimental|expiremental|glitch|industrial|minimal|\brock\b|\bfolk\b|\bopera\b|classical|blues|metal|hip.?hop|trip.?hop|\bfunk\b|soul|gospel|reggae|\bdub\b|dubstep|\bhouse\b|breakbeat|big band|swing|\bband\b|album|remix|compilation|\bsong\b|music|\bep\b|\blp\b|quartet|orchestra|piano|guitar|\bdrum\b|chorus|symphon|sonata|concerto|waltz|bebop|ragtime|\btrance\b|\belectro\b|records?\b|\brec\b|rec$|\blabel\b|downtempo|\blofi\b|lo-fi|chillout|\bchill\b|dnb|acid|punk|\bwave\b|vaporwave|shoegaze|\bpop\b|\bsoundtrack\b|\bdisco\b|\bsingle\b|\bindie\b|\brap\b|acoustic|synth|generative|cassette|\btape\b|raretunes|country|\bska\b|salsa|tango|flamenco|klezmer|\bvol\.?\s?\d|\[[a-z]{1,10}[-_ +]?\d{2,}[^\]]*\]|\([a-z]{3,}\s?\d{2,}\)/i;
+  const MUZIK_DEGIL = /ambience|ambiance|soundscape|phonograph|aporee|bioacoustic|folksoundomy|soap opera|single episodes|telefunken|old ?time ?radio|\botr\b|radioprograms|radiostationarchives|airchecks|field recordings?|nasaaudiocollection|green.?field.?recordings?|environmental.?sounds?|space ?sounds?|numbers station|shortwave/i;
+  const MUZIK_KALIP = /netlabel|freemusicarchive|78rpm|78-rpm|vinyl|\bjazz\b|etree|live concert|electronic|electronica|techno|\bidm\b|ambient|drone|experimental|expiremental|glitch|industrial|minimal|\brock\b|\bfolk\b|\bopera\b|classical|blues|metal|hip.?hop|trip.?hop|\bfunk\b|soul|gospel|reggae|\bdub\b|dubstep|\bhouse\b|breakbeat|big band|swing|\bband\b|album|remix|compilation|\bsong\b|music|\bep\b|\blp\b|quartet|orchestra|piano|guitar|\bdrum\b|chorus|symphon|sonata|concerto|waltz|bebop|ragtime|\btrance\b|\belectro\b|records?\b|\brec\b|rec$|\blabel\b|downtempo|\blofi\b|lo-fi|chillout|\bchill\b|dnb|acid|punk|\bwave\b|vaporwave|shoegaze|\bpop\b|\bsoundtrack\b|\bdisco\b|\bsingle\b|\bindie\b|\brap\b|acoustic|synth|generative|cassette|\btape\b|raretunes|country|\bska\b|salsa|tango|flamenco|klezmer|\bvol\.?\s?\d|\[[a-z]{1,10}[-_ +]?\d{2,}[^\]]*\]|\([a-z]{3,}\s?\d{2,}\)/i;
   /* ── ETİKETSİZ KAYITLAR: BAŞLIK DEĞİL, ARŞİV KİMLİĞİ ─────────────
      1077 kayıtta 'etiket' boş ve hepsi MIX'e yığılıyordu (arşivin
      %17'si). Başlığa bakmak yasak — serbest metin, "Tidal Wave"i
@@ -9807,7 +9753,7 @@
     /* İNSAN SESİ olan her şey: konuşma, tiyatro, vaaz ve TELSİZ —
        sayı istasyonları, kısa dalga konuşmaları, NASA yer-uzay
        hattı. Bunlar AMBIANCE'a değil buraya giriyor. */
-    { ad:'HUMAN',     yer:/oldtimeradio|old time radio|\botr\b|radioprograms|radiostationarchives|radio ?drama|radio ?programs?|airchecks|diy.?church|kreislauf|librivox|audio_?bookspoetry|poetry|spoken|podcast|\btalk\b|interview|speech|sermon|проповеди|lecture|irdial|conet|numbers ?station|shortwave ?(?:voice|numbers)|telsiz|truyenaudioarchive|goc-truyen-audio|love story audio|gurdjieff|ouspensky|nicoll|comedy|\bdrama\b|crime|audiobook|reading|narrat|soap opera|conference|briefing|commentary|liveshot|\bnews\b|church|monolog|dialog|storytell|oral history|psa\b|documentar/i,
+    { ad:'HUMAN',     yer:/oldtimeradio|old time radio|\botr\b|radioprograms|radiostationarchives|radio ?drama|radio ?programs?|airchecks|diy.?church|kreislauf|librivox|audio_?bookspoetry|poetry|spoken|podcast|\btalk\b|interview|speech|sermon|проповеди|lecture|irdial|conet|numbers ?station|shortwave ?(?:voice|numbers)|telsiz|truyenaudioarchive|goc-truyen-audio|love story audio|gurdjieff|ouspensky|nicoll|comedy|\bdrama\b|crime|audiobook|reading|narrat|soap opera|conference|briefing|commentary|liveshot|\bnews\b|church|monolog|dialog|storytell|oral history|psa\b|documentar|literature|stories|novels?|prose|chapter|audio_?books|audio ?(?:theatre|theater)/i,
       radyo:'talk' },
     { ad:'MIXTAPE',   yer:/.^/, radyo:'' },
     { ad:'ORBITAPE',  yer:/.^/, radyo:'' },
@@ -9850,7 +9796,7 @@
        gecmedigi icin eskiden hicbir rafa girmiyordu -- koleksiyon
        adiyla yakalaniyorlar. Telsiz, kisa dalga ve sayi istasyonlari
        da burada: hepsi ayni havayi tasiyor. */
-    { ad:'HUMANS',   yer:/oldtimeradio|old ?time ?radio|\botr\b|radio ?programs?|soap opera|\bchildren\b|\bkids?\b|childrens?|densho|\baapb\b|oral history|\binterview\b|\bspeech\b|\blecture\b|\bsermon\b|church|проповеди|monolog|dialog|\bpodcasts?\b|spoken|\bnews\b|briefing|commentary|conference|documentar|history of|shortwave|numbers ?station|irdial|conet|telsiz|\bham radio\b|\bcb radio\b|pirate radio|capcom|\bexp\d{2}\b|change of command|\bceremony\b|air ?traffic|radio ?signals?|airchecks/i, radyo:'' },
+    { ad:'HUMANS',   yer:/oldtimeradio|old ?time ?radio|\botr\b|radio ?programs?|soap opera|\bchildren\b|\bkids?\b|childrens?|densho|\baapb\b|oral history|\binterview\b|\bspeech\b|\blecture\b|\bsermon\b|church|проповеди|monolog|dialog|\bpodcasts?\b|spoken|\bnews\b|briefing|commentary|conference|documentar|history of|shortwave|numbers ?station|irdial|conet|telsiz|\bham radio\b|\bcb radio\b|pirate radio|capcom|\bexp\d{2}\b|change of command|\bceremony\b|air ?traffic|radio ?signals?|airchecks|librivox|audio_?books?|poetry|poems?|literature|stories|novels?|prose/i, radyo:'' },
     { ad:'SPACE',    yer:/nasaaudiocollection|\bnasa\b|apollo|voyager|sputnik|gemini|cassini|satellite|space ?sounds?|\biss\b|spacewalk|expedition ?\d|telemetry|soyuz|saturn|jupiter|neptune|uranus|\bmars\b|venus|mercury|pluto|planet|cosmos|galaxy|orbit/i, radyo:'' },
     /* CITY: sehrin sesi. Eski MACHINES rafi buraya katildi -- tren,
        motor, metro tek baslarina bir raf tasiyamiyordu (120 kayit)
@@ -9876,7 +9822,6 @@
     { ad:'NOISE',      yer:/\bnoise\b|harsh ?noise|\bpower ?electronics\b|\bjnoise\b|noisecore/i, radyo:'' },
     { ad:'DARK',       yer:/\bdark\b|darkwave|dark ?ambient|\bpsychedelic\b|\bpsych\b|\bgothic\b|\bdoom\b|\bocculto?\b|\britual\b|\bblack ?metal\b/i, radyo:'' },
     { ad:'BEATS',    yer:/\btechno\b|\bidm\b|\bhouse\b|downtempo|\belectro\b|electronica|breakbeat|\bdub\b|\bbeats?\b|psytrance|\btrance\b|\bglitch\b|breakcore|\bdnb\b|drum ?and ?bass|\bacid\b|experimental|improvis|musique concrete|electroacoustic/i, radyo:'' },
-    { ad:'RECORDS',  yer:/78 ?rpm|great78|cylinder|edison|shellac|\bvinyl\b|^lp_|\blp \b|netlabel|freemusicarchive|jamendo|hifidelity|folklore|\bfolk\b|\bsaz\b|baglama|celtic|flamenco|tango|\bsalsa\b|klezmer|\bjazz\b|\bblues\b|\bswing\b|ragtime|\bopera\b|orchestra|symphon|sonata|concerto|guitar|piano|violin|cello|quartet|classical|instrumental|\brock\b|\bpop\b|\bsoul\b|\bfunk\b|hip ?hop|\bmetal\b|album|\bep\b|remix|compilation|\bsong\b|\bmusic\b|psych.?folk/i, radyo:'' },
     { ad:'OTHERS',   yer:/.^/, radyo:'' }          // kalan: asagidaki arsivRaf() dolduruyor
   ];
   /* ORBITAPE kanalinda halkalar bunlar. En icteki ilk acilan. */
@@ -9906,7 +9851,10 @@
      duruyor, RECORDS 1.328 kayitla en distaki buyuk halkada.
      Bilerek boyle. */
   /* EN DISTA ORBITAPE (hepsi, acilista secili), EN ICTE INDUSTRIAL. */
-  var ARSIV_ADLAR = ['INDUSTRIAL','NOISE','DARK','OTHERS','SPACE','AMBIANCE','CITY','NATURE','HUMANS','BEATS','RECORDS','ORBITAPE'];
+  /* RECORDS (26 Eylul) KALKTI: kullanicinin kurali "records olmayacak".
+   Muzik artik ayri bir kol: JOYTAPE. ORBITAPE'nin icinde musiki
+   rafi yok. */
+  var ARSIV_ADLAR = ['INDUSTRIAL','NOISE','DARK','OTHERS','SPACE','AMBIANCE','CITY','NATURE','HUMANS','ORBITAPE'];
   /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
      uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
      ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
@@ -9915,7 +9863,7 @@
      genis kaliplar ve once sorulurlarsa dar raflari yutuyorlar --
      olculdu, MACHINES 523 kayittan 7'ye dusmustu. Once DAR ve kesin
      raflar soruluyor, genis olanlar en sonda. */
-  var ARSIV_SORGU = ['INDUSTRIAL','NOISE','DARK','HUMANS','SPACE','CITY','NATURE','AMBIANCE','BEATS','RECORDS'];
+  var ARSIV_SORGU = ['INDUSTRIAL','NOISE','DARK','HUMANS','SPACE','CITY','NATURE','AMBIANCE'];
   function arsivRaf(o){
     /* ── SERBEST BASLIK ARTIK SORULMUYOR ──────────────────────────
        Burasi uc metni birden tariyordu: etiket + BASLIK + adres.
@@ -9940,6 +9888,14 @@
        -> 7.631). Ses raflarini %40 bosaltiyordu; netlabel'de yayin
        yapan gercek alan kayitlarini da muzik sayiyordu. */
     const t = (_mt(o) + ' ' + _mk(o)).replace(/[_\-.\/]+/g,' ');
+    /* ── ONCE BU BIR MUZIK MI (JOYTAPE) ────────────────────────────
+       Kullanicinin kurali (26 Eylul): "muzikse FX'ten kaldir o
+       halkayi" -- musiki bir kayit ORBITAPE'nin hicbir rafinda
+       gorunmez, dogrudan JOYTAPE'ye gider. Ayni kural diger yonu
+       de yaziyor: "noise'u da kaldir" -- NOISE bir SES EFEKTI
+       rafidir, muzik kelimesi degil; MUZIK_KALIP'ten cikarildi
+       (olcum: "noise" 2.000 kayitta geciyordu). */
+    if(_muzikMi(o)) return 'JOYTAPE';
     for(const ad of ARSIV_SORGU){
       const m = modBul(ad);
       if(m && m.yer && m.yer.test(t)) return ad;
@@ -9960,7 +9916,6 @@
 
        Sonuc: RECORDS 5.224 -> 5.915, OTHERS 1.289 -> 598 ve OTHERS
        gercekten "geri kalan" oldu. */
-    if(_muzikMi(o)) return 'RECORDS';
     return 'OTHERS';
   }
   /* Etiket: koleksiyondan gelir, güvenilir. Başlık: serbest metin, asla. */
@@ -9999,11 +9954,24 @@
        hicbir zaman bir kayit atamaz (o yalnizca dar raflari dagitir),
        o yuzden asagidaki sorgudan ONCE cevaplaniyor -- yoksa raf
        bombos gorunurdu. */
-    if(ad === 'ORBITAPE') return true;
+    /* ORBITAPE = sadece ses efektleri (26 Eylul, kullanci):
+       musiki JOYTAPE'ye gidiyor, buraya degmiyor. */
+    if(ad === 'ORBITAPE') return arsivRaf(o) !== 'JOYTAPE';
     /* ARSIVIN DAR RAFLARI: karar tek yerden, arsivRaf()'tan geliyor.
        Burada ayrica kalip denemek iki farkli dogruluk kaynagi yaratir
        ve er gec ayrisirlar. */
     try{ if(ARSIV_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){ _yut(e); }
+    /* ── JOYTAPE (26 Eylul) ────────────────────────────────────────
+       Kullanicinin uc kolu: RADIOTAPE sadece radyo, JOYTAPE sadece
+       muzik, ORBITAPE sadece ses efektleri (AMBANCE). Musik tespiti
+       ONCEDEN beri vardi (_muzikMi: MUZIK_DEGIL eler -- alan kaydi,
+       uzay sesi, radyo programi; MUZIK_KALIP tanir; etiket yoksa
+       kaynak kimligine bakar) ve musiz kayitlari RECORDS rafina
+       gidiyordu. JOYTAPE o olcumu oldugu yeriyle gosteren koldur:
+       yeni siniflandirma degil, ayni siniflamanin adi.
+       OLCUM (26.263 kayit): musik 12.174 (%46), insan konusmasi
+       4.324 (%16), efekt + kalan 9.765 (%37). */
+    if(ad === 'JOYTAPE') return arsivRaf(o) === 'JOYTAPE';
     const mz = _muzikMi(o);
     if(mz) return false;                    // müzik hiçbir alt kategoriye girmez
     const t = _mt(o);
@@ -10113,38 +10081,18 @@
     for(const ad of sira){ const o=torbadanAl(ad, kova[ad]); if(o) return o; }
     return null;
   }
-  /* ── MOD ACIKKEN SIRADAKI(LER)I ONDEN GOR, TUKETMEDEN ────────────
-     (19 Eylul, Kural 4, olculdu) -- pj'nin sozu: "bi ses calarken
-     sıradaki coktan bisey hazır olmalı yani bi tık hızlanacak
-     bisey." OLCUM: bir tur/aile (AKTIF_MOD, orn. AMBIANCE, JAZZ)
+  /* ── MOD ACIKKEN SIRADAKI ONDEN HAZIR (19 Eylul, olculdu) ───────
+     pj: "calarken siradaki coktan hazir olmali." OLCUM: bir raf
      secildiginde gecisler modGec()->earthAl()->cal() zincirinden
-     gecıyor; bu zincir HICBIR ZAMAN kuyruk/hazirla()/onbellekIsit()
-     ucgenine ugramiyor (bkz. sonraki(): 'AKTIF_MOD' dali dogrudan
-     modGec() cagiriyor, kuyruktanAl() hic cagrilmiyor). Sonuc: her
-     gecis SIFIRDAN bir ag istegiyle basliyordu -- "arama uzun,
-     gec buluyor" hissi tam burdan geliyordu, kuyruk mekanizmasi
-     ORBITAPE'in en cok kullanilan hali (bir mod secili) icin hic
+     gidiyor; bu zincir HICBIR ZAMAN kuyruk/onbellekIsit() ucgenine
+     girmiyordu. Sonuc: her gecis sifirdan ag istegiyle basliyordu
+     ("arama uzun, gec buluyor" hissi buradan), yani kuyruk
+     mekanizmasi ORBITAPE'in en cok kullanilan hali icin hic
      calismiyordu.
-     Bu fonksiyon earthAl()'in MOD dalindaki AYNI secim mantigini
-     (sirayla, CALINDI/EARTH_KARA elenerek) TUKETMEDEN tekrarliyor --
-     _modIdx'e DOKUNMUYOR, mh'yi KARISTIRMIYOR -- boylece onbellekIsit()
-     gercekte SIRADA GELECEK kaydi tahmin edip baytlarini ONDEN
-     tarayici onbellegine isitabiliyor (bkz. onbellekIsit).
-     19 EYLUL (ikinci gecis, bagimsiz incelemede bulundu) -- TORBA
-     KIRILIMINI ASMIYOR. earthAl() torba sonuna gelince (_modIdx >=
-     mh.length) mh'yi KARISTIRIP _modIdx'i sifirliyor (bkz. yukarida).
-     Bu fonksiyon o karistirmayi YAPMADIGI icin, torbanin son
-     kaydinin tam ustunde bir onizleme "torbanin eski sirasindaki
-     bir sonraki kayit" derdi -- ama gercek earthAl() o ana gelince
-     torbayi ONCE karistirir, yani gercekte BASKA bir kayit doner.
-     Isitilan url o zaman calmayacak bir url olurdu (yanlis deger
-     degil, sadece bosa harcanan bir indirme -- CALINDI/EARTH_KARA
-     ikisi de url bazli oldugu icin gercek bir hataya yol acmiyordu,
-     ama "gercekte sirada geleni tahmin ediyorum" sozunu tutmuyordu).
-     DUZELTME: torbanin kirildigi noktanin OTESINE hic bakmiyor --
-     mevcut turun bittigi yerde onizleme de biter, doner sayisi n'den
-     az olabilir (onbellekIsit zaten bos/eksik adayi es geciyor). Az
-     isitmak, YANLIS isitmaktan iyi. */
+     Burada earthAl()'in MOD dalindaki AYNI secim mantigi TUKETMEDEN
+     tekrarlaniyor: _modIdx'e dokunulmuyor, mh karistirilmiyor;
+     onbellekIsit() bir sonraki kaydi onden isitebiliyor. */
+
   function modHavuzOnizle(n){
     const mh = modHavuzu();
     if(!mh || !mh.length) return [];
@@ -11307,35 +11255,24 @@
     }catch(e){ _yut(e); }
   }, 500);
 
-  /* ── AGC'NİN MATEMATİĞİ — AYRI VE SAF ─────────────────────────────
-     Hesap yukarıdaki zamanlayıcının içinden çıkarıldı. Sebebi test:
-     kazancın ne kadar sert hareket ettiğini ölçmek için gerçek zamanlı
-     ses beklemek gerekiyordu. Ayrı bir işlev olunca doğrudan
-     çağrılabiliyor ve bir senaryo saniyeler yerine milisaniyede
-     sınanıyor (bkz. "Otomatik seviye kulakta duyulmuyor").
+  /* ── AGC'NIN MATEMATIGI — AYRI VE SAF ──────────────────────────────
+     Hesap zamanlayicinin disina cikti: kazancin sertligi olcmek
+     icin gercek ses beklemeye gerek kalmadi (test saniyeler yerine
+     milisaniyede).
+     NEDEN YAVASLADI: kullanici "radyoda ses bir anda kisiliyor" dedi,
+     dogruydu. Eski ayar: asagida adim 0.55, zaman sabiti 0.25 sn --
+     sessiz konusmadan yuksek muzige geciste kazanc BIR SANIYEDE
+     3.5 dB dusuyordu; kulağin kacirmayacagi bir basamak, ve toparlanma
+     yavas oldugu icin "kisildi ve kisik kaldi" hissi veriyordu.
+     NEDEN HIZLI OLMASINA GEREK YOK: AGC iki isi birden yapmaya
+     calisiyordu -- istasyonlar arasi seviye farki ve ani patlama.
+     Ikincisi zaten BAZKASININ isi ('tavan': -3 dB, 20:1, 2 ms atak)
+     ve yeni istasyon zaten kisik basliyor (BASLANGIC_KAZANC.radio).
+     Geriye yalnizca (1) kaldi ve o yavas bir is: fark saniyeler
+     icinde kapanabilir, milisaniyede kapanmasi gerekmez.
+     OLU BOLGE: pompalamanin cogu kucuk dalgalanmalari kovalar;
+     hedef mevcut kazancin %18'i icindeyse hic kipirdamiyor. */
 
-     ── NEDEN YAVAŞLADI ──────────────────────────────────────────────
-     Kullanıcının bildirimi: "radyoda ses bir anda kısılıyor, sanki bir
-     limit devreye giriyor." Doğruydu ve sebebi buydu.
-     ESKİ AYAR: aşağı adım 0.55, zaman sabiti 0.25 sn. ÖLÇÜLDÜ —
-     sessiz bir konuşma bölümünden yüksek bir müzik yatağına geçişte
-     kazanç BİR SANİYEDE 3.5 dB düşüyordu. 3.5 dB bir saniyede,
-     kulağın kaçırmayacağı bir basamaktır; üstelik toparlanma yavaş
-     olduğu için "kısıldı ve kısık kaldı" hissi veriyordu.
-
-     ── NEDEN HIZLI OLMASINA GEREK YOK ───────────────────────────────
-     AGC iki işi birden yapmaya çalışıyordu: (1) istasyonlar arası
-     seviye farkını kapatmak, (2) ani patlamayı önlemek.
-     İkincisi ZATEN BAŞKASININ İŞİ: 'tavan' (-3 dB, 20:1, 2 ms atak)
-     gerçek kırpılmayı engelliyor ve her koşulda devrede. Ayrıca yeni
-     istasyon zaten kısık başlıyor (BASLANGIC_KAZANC.radio = 0.24),
-     yani kanal değişiminde patlama ihtimali yok.
-     Geriye yalnızca (1) kalıyor ve o YAVAŞ bir iştir: istasyon farkı
-     saniyeler içinde kapanabilir, milisaniyede kapanması gerekmez.
-
-     ── ÖLÜ BÖLGE ────────────────────────────────────────────────────
-     Pompalamanın büyük kısmı, AGC'nin küçük dalgalanmaları kovalaması.
-     Hedef mevcut kazancın %18'i içindeyse hiç kıpırdamıyor. */
   const AGC_ADIM_ASAGI = 0.16, AGC_ADIM_YUKARI = 0.12;
   const AGC_TAU_ASAGI  = 2.0,  AGC_TAU_YUKARI  = 2.5;
   const AGC_OLU_BOLGE  = 0.18;
@@ -12305,37 +12242,18 @@
     }catch(e){ _yut(e); }
     return window.innerHeight;
   }
-  /* ── DONUSTEN SONRA ALTTA DERI RENGINDE BANT (20 Eylul, Kural 4,
-     kod okunarak bulundu) ────────────────────────────────────────
-     pj'nin sozu: "telefonu yatay dikey yaptım ve bu alttaki banner
-     yine geldi... backround tektir yani niye 3 parcayız." ve sonra:
-     "altta gorunuyor hangi skins acıksa onun rengini alıyor."
-     SEBEP: deriUygula() skin degisince <html>'in zeminini (
-     documentElement.style.backgroundColor) o skinin kendi rengine
-     yaziyor -- bu KASITLI, ekranin disina tasan kenarlarin skin
-     rengiyle uyumlu gorunmesi icin (bkz. yukarida "18 Eylul: skin
-     degisirken anlik bant" yorumu). <body>'nin kendi zemini (#020203,
-     her zaman koyu) normalde bunun ONUNE geciyor cunku <body>
-     `min-height:100dvh` ile her zaman gorunen alani KAPLAMASI
-     gerekiyor.
-     Donus sirasinda bu tutmuyor: dvh biriminin GORSEL GORUNUME gore
-     yeniden hesaplanmasi tarayicinin kendi isi ve donus+adres cubugu
-     animasyonu bitene kadar bir sure ESKI (kucuk) deger verebiliyor
-     -- tipki innerHeight'in DONUS NOBETI yorumunda anlatilan ayni
-     hastaligi. <body> o an gercek boydan KISA kalinca dibinde bir
-     serit acilip altindaki <html> -- yani skin rengi -- gorunuyor.
-     "App'i kapatip acinca duzeliyor" da bunu dogruluyor: tam
-     yeniden yukleme dvh'yi baştan dogru hesaplatiyor, basit donus
-     ise bazen etmiyor.
-     DUZELTME: dvh biriminin kendi kendine dogru hesaplamasina
-     guvenmek yerine, zaten guvenilir oldugu KANITLANMIS ayni kaynak
-     (_gorBoy() -- documentElement.clientHeight, DONUS NOBETI'nde
-     kullanilan) ile <body>'nin min-height'i DUZ PIKSEL olarak
-     ZORLANIYOR. Boylece dvh'nin ne zaman/dogru hesaplanacagina hic
-     bagli kalinmiyor. DONUS NOBETI zaten donus bitene kadar
-     _donusYerlestir()'i tekrar tekrar cagiriyor (bkz. asagida) --
-     bu fonksiyon oraya eklenince ayni tekrar-dene guvencesini
-     bedava aliyor, yeni bir zamanlayiciya gerek yok. */
+  /* ── DONUSTEN SONRA ALTTA DERI RENGINDE BANT (20 Eylul) ───────────
+     pj: yataydan dikeye cevirince altta skin renginden bir serit
+     gorunuyordu. SEBEP: deriUygula() skin degisince <html> zeminini
+     o skinin rengine yaziyor (KASITLI: ekran disi kenarlar uyumlu
+     gorunsun) ve <body>'nin kendi zemini (#020203) normalde onun
+     ONUNE geciyor -- cunku body min-height:100dvh ile gorunen alani
+     kaplıyor. Donus sirasinda bu tutmuyor: dvh'nin gorsel gorunume
+     gore yeniden hesaplanmasi tarayicinin isi, donus + adres cubugu
+     animasyonu bitene kadar bir sure ESKI (kucuk) deger veriyor.
+     <body> o an gercek boydan KISA kalinca dibinde serit acilip
+     alttaki <html> -- yani skin rengi -- gorunuyordu. */
+
   function bedenBoyKilitle(){
     try{
       const h = _gorBoy();
@@ -15522,45 +15440,21 @@
   ses.addEventListener('error', ()=>{
     const kod = (ses.error && ses.error.code) || 0;
     const _url = ses.getAttribute('src') || '';
-    /* GECICI SUNUCU HATASI ILE GERCEK OLU LINK AYNI SEY DEGIL (17 Eylul).
-       Onun sozu: "hala bazen cok ariyor bazi yerlere ulasamiyor."
-       Olcum: canli sitede ORBITAPE'te art arda parca atlarken agdan
-       yakalandi -- archive.org'un /download/ adresi bir parcada 503
-       (gecici, "su an mesgulum") dondu, HEMEN ARDINDAN AYNI oturumda
-       BASKA bir parca sorunsuz 206 ile calisti. Yani 503 kalici bir
-       kayip degil, cogu zaman birkac saniye icinde kendini duzeltiyor.
-       Once bu ayrimi yapmadan HER hatada direkt earthOluIsaretle()
-       cagriliyordu: kullanicinin ekraninda gordugu "sürekli arıyor,
-       bulamıyor" hissi, gecici bir sunucu yuklenmesini KALICI kayip
-       sanip saglikli kayitlari da kara listeye atmaktan geliyordu.
-       KOD 2 DEGIL KOD 4: Playwright'ta GERCEK bir HTTP 503 yaniti
-       simule edilip olculdu (kod 2 varsayimiyla degil) -- Chromium
-       audio/video elemanina 2xx/206 disi bir HTTP durumu geldiginde
-       MEDIA_ERR_SRC_NOT_SUPPORTED (kod 4) veriyor, MEDIA_ERR_NETWORK
-       (kod 2) DEGIL. Once yalniz kod 2'de tekrar deneyip kod 4'te
-       hemen kara listeliyorduk -- yani gercek archive.org 503'u bu
-       kapidan hic gecmiyordu; ilk yazilan duzeltme olcerken kirmizi
-       cikip yakalandi (bkz. test: ag_hata_dogrula.js). Simdi HER IKI
-       kodda da once bir kez tekrar deniyor.
-       DUZELTME: ilk hatada hemen kara listeleme/atlama YOK -- AYNI
-       url ~1.2 sn sonra bir KEZ tekrar denenir (archive.org'un o anki
-       yuku genelde bu surede biter). O deneme de hata verirse,
-       eskisi gibi davranilir (kara listele + atla).
-       Genel 6 sn'lik baslamaTimer (yukarida) zaten bir guvenlik agi:
-       tekrar deneme takilirsa bile parca 6 sn'de baslamamissa atla()
-       yine de calisir -- kullanici hicbir zaman sonsuza kadar bekleyip
-       kalmaz.
-       KANIT (Playwright, test/../ag_hata_dogrula.js, 17 Eylul):
-         SENARYO            | 300ms'de kara liste | 4000ms'de kara liste
-         tekrar basarili    | ESKI KOD: evet       | ESKI KOD: evet
-                             | YENI KOD: HAYIR      | YENI KOD: HAYIR
-         tekrar da basarisiz| ESKI KOD: evet       | ESKI KOD: evet
-                             | YENI KOD: HAYIR      | YENI KOD: evet
-       ESKI KOD (bu duzeltme `false &&` ile gecici kapatilip olculdu)
-       her iki senaryoda da 300ms'de kara listeliyor -- tekrar basarili
-       olacak parca bile kurtarilamadan atiliyordu. YENI KOD sadece
-       gercekten iki kez ust uste basarisiz olani (4000ms) kara
-       listeliyor, tek seferlik 503'u degil. */
+    /* GECICI SUNUCU HATASI, KALICI KAYIP DEGILDIR (17 Eylul).
+       Olcum: archive.org /download/ bir parcada 503 (gecici) dondu,
+       HEMEN ARDINDAN ayni oturumda baska parca 206 ile calisti. Once
+       her hatada `earthOluIsaretle()` cagriliyordu; kullanici "surekli
+       ariyor" hissini gecici yuklenmeye kalici kayip sanmaktan aliyordu.
+       KOD 2 DEGIL KOD 4: Chromium'a 2xx/206 disi HTTP durumunda
+       MEDIA_ERR_SRC_NOT_SUPPORTED (kod 4) geliyor, MEDIA_ERR_NETWORK
+       (kod 2) degil -- once yalniz kod 2'de tekrar deniyordu, yani
+       gercek 503 hic gecmiyordu. Simdi HER IKI kodda bir kez tekrar
+       deniyor (~1,2 sn sonra, ayni url); tekrar da basarisizsa kara
+       liste, takilirsa 6 sn'de atla() yine calisir. KANIT (test/
+       ag_hata_dogrula.js): 300 ms'de kara listeleme iki senaryoda da
+       KAYBOLDU, 4000 ms'de yalniz gercekten iki kez ust uste
+       basarisiz olan listede. */
+
     /* 19 EYLUL (Kural 4, olculdu) -- BU "BIR KEZ TEKRAR DENE" KAPISI
        _arsivDurdu'ya HIC BAKMIYORDU. onbellekIsit()'e kapi konduktan
        SONRA bile gercek CI'da (commit 2af7552, "Kapi" isi) "durdu=true
@@ -15813,38 +15707,19 @@
   /* KUYRUK NESLI: yoldaki doldurma donunce raf degistiyse sonucu
      dusuruluyor (cark bir raf, ses baska raf caliyordu). */
   let _kuyrukNesil = 0;
-  /* ── CORS ELEMESİ — "yayın başladı sonra kesildi" sorununun kökü ──
-     Ses grafiğe bağlandığı anda CORS başlığı göndermeyen yayın SUSUYOR.
-     Sıra: yayın önce doğrudan çalıyor, sonra analizKur() grafiği kuruyor
-     ve ses kesiliyor (bağlanan medya elemanı geri alınamıyor, spec).
-     Tek çare: bu istasyonları kuyruğa HİÇ almamak. Test 'cors' kipinde
-     — başlık yoksa fetch REDDEDİLİR, cevap beklenmez; hepsi tek turda
-     paralel, çalma anına gecikme yok.
-
-     19 EYLÜL — BÜTÇE SABİTTİ, KAPIYI KİLİTLİYORDU (Kural 4, ölçüldü).
-     Bütçe `1100*AG_KAT` idi; AG_KAT iPhone'da HİÇ 1'den yükselmiyor
-     (navigator.connection yok, bkz. fetchZA notu). Yavaş ama ÇALIŞAN hatta
-     her istasyon 1,1 sn'yi aşıyor -> gecti[k] hep false, ekle hiç
-     artmıyor, basari('radyo') hiç çağrılmıyor. "#agyok" panelini kapatan
-     TEK istasyon-kaynaklı yoldu: açılınca yalnız gerçek çalma, arşiv
-     listesi, görünürlük/online olayı ya da elle "TEKRAR DENE" kapatıyordu
-     — veri sonunda gelse bile DEĞİL.
-     KANIT (temiz izolasyon: beyaz liste ve AMBIANCE havuzu boşaltıldı,
-     her isteğe 1500 ms saf gecikme, sahteAg değişmeden): ÖNCE panel
-     t≈2,5 sn'de açılıp t=16 sn'de HÂLÂ açık; SONRA ilk deneme 1,1 sn'de
-     düşüp AG_OLCUM'u 1,5'e çıkarıyor, arka plan denemesi (radyoKuyrukDoldur)
-     1,65 sn'lik bütçeyle gecikmeyi aşıyor, basari('radyo') çağrılıyor,
-     panel t≈5,6 sn'de kapanıp kalıyor.
-     İLK ÖLÇÜMDE YANLIŞ SİNYAL: panel t≈5 sn'de kapanıyor gibi görünmüştü
-     ama earth_buyuk.json'ı ayıklamamıştık — uzunYukle() (arka planda)
-     kendi başarılı isteğiyle basari('uzun') çağırıp paneli kapatıyordu;
-     yol düzeltmeyle ilgisiz ve şansa bağlı. Yukarıdaki temiz ölçüm
-     yalnızca corsVarMi/AG_OLCUM'u izole ediyor (bkz. test/saglik.js
-     "Yavas ama calisan hatta..." kontrolü).
-     DÜZELTME: corsVarMi artık fetchZA'nın kullandığı AG_OLCUM'u (tavan
-     2,5) kullanıyor VE kendi zaman aşımıyla onu besliyor — istasyon
-     kontrolü uygulamanın geri kalanıyla AYNI "hat yavaş" öğrenmesini
-     paylaşıyor, artık sabit ve kör değil. */
+  /* ── CORS ELEMESİ: CORS basligi gondermeyen yayin SUSUYOR ───────
+     Ses grafige baglaninca oluyor; baglanan medya geri alinamaz
+     (spec), tek care bu istasyonlari kuyruga HIC almamak. Test
+     'cors' kipinde: baslik yoksa fetch REDDEDILIR, cevap beklenmez,
+     hepsi tek turda paralel. 19 EYLUL: butce `1100*AG_KAT` idi ve
+     AG_KAT iPhone'da HIC 1'den cikmiyor (navigator.connection yok)
+     -- yavas ama calisan hatta her istasyon dustugu icin "ag yok"
+     paneli kalici olarak acik kaliyordu. Olcum: panel t=2.5 sn'de
+     acilip t=16 sn'de hala acik; duzeltmeden sonra 5.6 sn'de
+     kapanip kaliyor. Duzeltme: corsVarMi fetchZA'nin AG_OLCUM'unu
+     (tavan 2.5) kullanip onu besliyor, yani istasyon kontrolu
+     uygulamanin geri kalaniyla ayni "hat yavas" ogrenmesini
+     paylasiyor. */
   async function corsVarMi(u){
     try{
       const kontrol = new AbortController();
@@ -15863,33 +15738,15 @@
       return true;
     }catch(e){ return false; }
   }
-  /* ── İBADET YAYINI ELEMESİ ──
-     RadioBrowser'ın "jazz/world/ambient" etiketleri altında da ibadet
-     yayını çıkabiliyor. İsim + etiket + dil alanlarını tek metinde tarıyoruz.
-
-     DÜZELTİLEN HATA: bu süzgeç yalnızca TEK BİR DİNİN yayınlarını
-     eliyordu. Diğer bütün dinlerin vaaz ve ayin yayınları geçiyordu.
-     Bir kanalın kimin ibadetini süzdüğü keyfî olamaz — ya hepsi, ya
-     hiçbiri. Artık büyük dinlerin ibadet/vaaz kökleri aynı listede.
-
-     MÜZİK ELENMİYOR: gospel, qawwali, gregoryen ilahi, spirituals,
-     kirtan, bhajan, klezmer — bunlar dinî KÖKENLİ MÜZİK TÜRLERİ, ayin
-     yayını değil. IBADET_MUAF onları koruyor.
-     AMA MUAFİYET GÜÇLÜ LİSTEYİ GEÇEMEZ. Ölçülen sızıntı: "Gurdwara
-     Live Kirtan" — etiketinde "kirtan" geçtiği için muafiyete giriyor,
-     oysa adında ibadethane var; bu bir müzik istasyonu değil, canlı
-     ayin yayını. Sıra artık şu: güçlü işaret varsa müzik türü mazeret
-     olamaz; muafiyet yalnızca ZAYIF (belirsiz) eşleşmeleri iptal eder.
-
-     İki liste var, çünkü iki farklı risk var:
-       GÜÇLÜ -> başka hiçbir şeyin içinde geçmeyen kökler; parçası
-                olarak da arıyoruz ("IslamicRelief" kaçmasın).
-       ZAYIF -> normal kelimelerin içinde geçebilenler; sadece TAM
-                KELİME olarak ("azan" -> Kazan, "deen" -> Aberdeen).
-     Listeye girmeyenler bilerek dışarıda: "rosario" (Arjantin'de şehir),
-     "pastoral" (Beethoven), "testament"/"disciple"/"sabbath" (metal
-     grupları), "zen" (çoğunlukla chill-out müziği), "mass". Bunları
-     eklemek ibadet yayını değil, masum istasyonları eler. */
+  /* ── İBADET YAYINI ELEMESİ ─────────────────────────────────────
+     Isim + etiket + dil tek metinde taraniyor. Duzeltilen hata:
+     suzgec yalniz TEK BIL dininin yayinlarini eliyordu; bir
+     kanalin kimin ibadetini suzdugu keyfi olamaz -- ya hepsi ya
+     hicbiri, o yuzden buyuk dinlerin ibadet/vaaz kokleri ayni
+     listede. Muzik elenmiyor: gospel, qawwali, gregoryen ilahi,
+     kirtan, bhajan, klezmer dinî KOKENLI muzik turleri, ayin
+     yayini degil (IBADET_MUAF korur). Muafiyet guclu listeyi
+     gecemez. */
   const IBADET_MUAF = /gospel|qawwal|spirituals\b|gregorian|plainchant|kirtan|bhajan|klezmer|christmas|\bcarols?\b/i;
   const DIN_GUCLU = new RegExp('(' + [
       /* İslam */
@@ -18121,6 +17978,18 @@
       kut.style.top = Math.round(su + fark) + 'px';
     }catch(e){ _yut(e); }
   }
+  /* ── MOD KOLLARI: RADIOTAPE · JOYTAPE · ORBITAPE ────────────────
+     Kullanicinin kurali (26 Eylul): RADIOTAPE sadece radyo,
+     JOYTAPE sadece muzik, ORBITAPE sadece ses efektleri (AMBANCE;
+     icinde insan konusmasi HUMANS'ta). Ucunun degeri de ayni yon
+     dondurucu: -90 ust, 150 sol alt, 30 sag alt.
+     Yazi dilleri: bunlar raf/marka adlari gibi Ingilizce kalir
+     (bkz. AILE_ADLAR, ARSIV_ADLAR) -- sozluk anahtari degil. */
+  /* UC KOLLU MOD SECICI: ayri modul (kollar.js, 26 Eylul).
+     Ilk cizim butcesi: JS burada olsaydi yayin ciktisi tavani
+     asiyordu. Modul butceden cikiyor ve REC/CAM modulu (kayit.js)
+     TEBEL kaliyor. CSS burada kalir: CSP style-src hash'li, modul
+     icinden <style> enjekte edilemez. */
   function _kipAnahtarYaz(){
     try{
       const k = document.getElementById('kipKisayol'); if(!k) return;
