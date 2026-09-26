@@ -2474,3 +2474,58 @@ BODY donuyor, ama hesaplanan stil `pointer-events:auto` diyor — yani
 tutamagin degil, onun ustunde bir seyin vurusu yutuyor. Iki ayri
 bulgu; ustu kaplayan seyi bulmak icin ayri bir tur gerekiyor, bu
 turda kapidan gecmesi icin dokunulmadi.
+
+### 25 Eylül — halkanın "anlık düzeltmesi" ve ayar tutamağının ölü olması
+
+Kullanıcı iki ayrı şey bildirdi: "ortadaki halka" (çark değil)
+bastığında anlık konum değiştiriyor, ve fotoğrafta üstte "CAM/sessiz/
+yıldız" kalıyor. (Fotoğraf kısmı bir önceki kayıtta: bkz. "Sol sütun
+asla çakışmaz" başlığı.)
+
+**ÖLÇÜM DİKKATİ (bu turda iki kez yalan söyledi):**
+  1) Bir ölçümde "tutamağa basınca panel açılmıyor, tutamak tıklanamıyor"
+     çıktı. Sonra `body.className` boş çıktı — yani sayfa hiç
+     açılmamış. Sebep: bayat `araclar/sunucu.py` (eski `index.html` +
+     `_headers` veya eşleşmeyen CSP). `csp.py` + sunucuyu yeniden
+     başlatınca her şey düzeldi. Kural: garip bir ölçüm gelirse ÖNCE
+     `body.className` ve `typeof AYAR` kontrolü.
+  2) `elementsFromPoint` Chromium'da `pointer-events` ve `inert`
+     yansıtmaz; yalnız BODY dönmesi "hit-test dışı" demektir ama
+     nedenini yine de `inert` zinciriyle doğrulamak gerekti.
+
+**(1) HALKA: anlık sıçrama.** Kodda iki ayrı neden var, ikisi de
+sayısal olarak ölçüldü:
+  * `halkaYak()` (raf/aile değişince çağrılıyor) `_yakVurgu = k`
+    yazınca halka `rR *= 1.035` ile **tek karede** %3,5 büyüyor, 900 ms
+    sonra (`HALKA_YANMA`) yine **tek karede** küçülüyor. Tuval
+    pikselinden ölçülen medyan yarıçap: 277,3 → 280,8 (3,5 px). Küçük
+    ama tek karede olduğu için "düzeltme" gibi okunuyor — kullanıcının
+    tarif ettiği şey tam olarak bu.
+  * Sürekli salınım: `esne = 1 + rit*(...) + 0.03*sin(vt*1.2+k*1.3)` —
+    dokuz halkanın dokuz fazı, ±%3. Kullanıcı bunu da zikretti ama
+    "çok minik" dedi; bu yüzden **salınıma dokunulmadı** (tasarım
+    tercihi, kullanıcı onu istemedi).
+
+Düzeltme: hedef ayrı tutuluyor (`_yakKalan`), ölçü her karede %18
+kadar hedefe gidiyor (`_yakYumusak`). OLCUM (sonra): 0 → 0,548 → 0,751
+→ 0,863 → … → 0,998 (80 ms aralıkla, en büyük adım bir karenin
+kendisi), 900 ms sonra geri sönüp sıfırlanıyor. Geri bildirim kaybolmadı,
+sadece ani sıçrama gitti.
+
+**(2) AYAR TUTAMAĞI ÖLÜDÜ — asıl bulgu.** Panel açılınca
+`_arkaKapat()` (modal tuzağı) BODY'nin tüm çocuklarını `inert` yapıyor;
+`#ayarTut` de body çocuğu olduğu için **o da inert** oluyordu. Yani
+"ayarları aç → tutamağa tekrar bas → kapat" yolu **hiç çalışmıyordu**
+(ölçüm: `elementsFromPoint` o noktada yalnız BODY, inert zinciri
+tutamakta bitiyordu). RADIOTAPE'de perdeye basmak da kapatmıyordu;
+ORBITAPE'dehandle yukarıda kaldığı için bir yol bulunuyordu.
+
+Düzeltme: `_arkaKapat` tutamağı muaf tutuyor (`if(c.id === 'ayarTut')
+return;`). Modal davranışı bozulmadı — arka plan yine inert, sadece
+"paneli kapatan" tutamak canlı.
+
+OLCUM (sonra): RADIOTYPE 4 basış: kapalı → açık → kapalı → açık →
+kapalı; ORBITAPE açık → kapalı; panel açıkken tutamak inert zincirinde
+**yok**. Test: "Ayar tutamagi paneli acip kapatiyor" (gerçek
+pointerdown+click, ayrıca inert kontrolü) ve "Yanan halka tek karede
+buyumuyor" (sözleşme: `rR *= 1.035` gitmiş, yerine kademeli var).

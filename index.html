@@ -332,10 +332,9 @@
      -8, 320x460 -22, 280x545 -11). Ortalama istegi bu daldan
      karsilanmiyor -- normal telefonlarda (kunye tek satir) alet
      zaten tam ortada, bkz. --alet-kay:0. */
-  /* YIGIN DALI: KAYMA GERI KONDU. Kunye yigildiginda ortalamak
-     mumkun degil -- 320x568'de alt blok 268px istiyor, ortalanmis bir
-     diskin sigmasi icin cap 32px olurdu. kay 0: alti modelde binme
-     (320x460'ta 70px). kay 96: 8-22px. 220 temiz. */
+  /* YIGIN DALI: kayma 0. Kunye yigilince ortalamak mumkun degil
+     (320x568'de alt blok 268px istiyor); olcum: kay 0 alti modelde
+     binme, kay 96'da 8-22px, kay 220 temiz. */
   body.kunye-yigin{padding-top:0;padding-bottom:0;--alt-rez:max(190px,25vh);--alet-kay:0px;}
   /* KISA ANDROID EKRANLARINDA HALKA ORTADA KALIR (23 Eylul).
      Yiginli kunye icin 220px'lik yukari kayma, 360x568'de merkezi
@@ -4023,17 +4022,12 @@
      okunmasiydi.
      Satirlarin genisligi birbirine yakinken calisiyordu. REC radyo
      tarafina da gelince alt satir 162'den 218px'e cikti ve gerilme
-     payi patladi -- masaustunde OLCULDU: tasima satiri 247px, icerigi
-     152px, yani tuslarin arasi 101px. Hemen altindaki satirin arasi
-     7px. Ayni konsolda, ust uste iki satir, arasindaki fark 14 kat.
-     Kullanicinin sozu: "geri tusu ile play, play tusu ile stop cok
-     uzun, hepsi araları iste. ona bak hata gibi."
-     AYNI SIKAYET ARSIV KIPINDE DE YASANMISTI ve orada dogru cozum
-     bulunmustu (asagida, body.mood #tasima): satirlar KENDI
-     olculerinde kalir, hepsi ayni SOL kenardan baslar, aralari
-     esittir. Simdi o kural iki kipte de gecerli -- yani tek kural.
-     (Bu blokta anlatilan "ses cizgisi" artik yok -- ucuncu satir
-     tamamen silindi; kural iki satir icin ayni.) */
+     payi patladi (olcum: ust satir 247px, icerigi 152px, tus arasi
+     101px; alt satir 7px -- 14 kat fark). Kullanicinin sozu: "geri
+     tusu ile play, play tusu ile stop cok uzun, hepsi aralari
+     iste, ona bak hata gibi." Cozum arsiv kipinde bulunmustu:
+     satirlar KENDI olculerinde kalir, ayni SOL kenardan baslar,
+     aralari esittir. O kural iki kipte de gecerli. */
   #tasima{width:auto;justify-content:flex-start;}
   /* ── SOUND BANKS: TUTAMAK BLOGUN EN USTUNDE ───────────────────
      ONCE tutamak alt sol KOSEDEYDI ve modul bir satir yukari
@@ -14129,6 +14123,9 @@
        konumlanir (cark.js: olc) -- ikisi birlikte oynatilmazsa
        halka yukarida, cark asagida kalir. */
     const dpr=DPR, cx=W/2, cy=H/2 + HALKA_KAY, R=Math.min(W,H)*0.357;
+    /* 25 Eylul: vurgu yumusamasi (kare basina %18). */
+    _yakYumusak += ((_yakVurgu >= 0 ? 1 : 0) - _yakYumusak) * 0.18;
+    if(_yakVurgu < 0 && _yakYumusak < 0.004){ _yakYumusak = 0; _yakKalan = -1; }
     const hafifCizim = MOBIL && _basili;        // parmak diskteyken hafif mod   /* tuval %40 büyüdü -> çarpan 0.5'ten 0.357'ye: halka/grafik boyutu AYNI, sadece kenar boşluğu var */
     vctx.clearRect(0,0,W,H);
     seviyeOku();
@@ -14216,7 +14213,8 @@
       const _kEsne = Math.min(k, 4);
       const esne = 1 + rit*(0.06+0.024*_kEsne) + 0.03*Math.sin(vt*1.2+k*1.3);
       let rR = R*(_ic + k*_ara)*squeeze*esne;              // aralik halka sayisindan
-      if((_moodGez && _moodVurgu === k) || _yakVurgu === k) rR *= 1.035;   // yanan halka hafif büyür
+      /* 25 Eylul: kademeli buyume (bkz. _yakYumusak). */
+      if((_moodGez && _moodVurgu === k) || _yakKalan === k) rR *= 1 + 0.035*_yakYumusak;
       /* Halka DÖNDÜRÜLMÜŞ bir eksende çiziliyor; uzanma yönü ekran açısı
          olduğu için yerel açıya çevriliyor (ekran açısı = yerel + rot). */
       const rot = _dondur;
@@ -14908,8 +14906,8 @@
      "ag yok" olmayabilir -- listeler kendi kokumuzden geldiyse
      internet calisiyor demektir. Yanlis sebep gostermek, hic sebep
      gostermemekten kotudur. */
-  /* 25 EYLUL: `radyo` argumani -- ayni durum radyoda da vardi ama
-     tavani yoktu (olcum: tek hosta 314 istek, 94+ kayit, 404/403). */
+  /* 25 EYLUL: `radyo` argumani -- radyoda da ayni durum vardi, tavani
+     yoktu (olcum: tek hosta 314 istek, 404/403). */
   function arsivDurdur(radyo){
     try{
       if(_arsivDurdu) return;
@@ -14953,9 +14951,8 @@
     }catch(e){ _yut(e); }
   }
   function atla(){ const now=Date.now(); if(now-sonAtla<300) return; sonAtla=now;
-    /* 25 EYLUL: kural artik IKISINE birden. Saymazsak dongu kurmadan
-       ilerliyordu (atla -> sonraki -> radyoGec -> cal), her turda +3
-       yeniden baglanma istegi. */
+    /* 25 EYLUL: kural IKISINE birden. Saymazsak dongu kurmadan
+       ilerliyordu (atla -> sonraki -> radyoGec -> cal). */
     if(mod==='lib' || mod==='radio' || AKTIF_MOD==='RADIOTAPE'){
       ustUsteHata++;
       if(ustUsteHata >= ARSIV_HATA_ESIK){ arsivDurdur(mod!=='lib'); return; }
@@ -17232,7 +17229,11 @@
   /* Sag ustten raf secince YANAN halka. Sonme suresi ile rafin
      baslama suresi AYNI olmali: kullanici "halka sondugu an
      aktiflesin" dedi -- isik sonuyorsa karar verilmis demektir. */
-  var _yakVurgu = -1;
+  /* 25 EYLUL: VURGU KADEMELI. _yakVurgu tek karede yaziliyordu:
+     halka %3,5 ANINDA buyuyor, 900 ms sonra yine tek karede
+     kuculuyordu ("bastigim an duzeltme oluyor"). OLCUM: medyan
+     yaricap 277,3 -> 280,8. Simdi kademeli. */
+  var _yakVurgu = -1, _yakYumusak = 0, _yakKalan = -1;
   const HALKA_YANMA = 900;
   function _diskOran(e){
     const r = btn.getBoundingClientRect();
@@ -17683,7 +17684,7 @@
       /* Kendi bayragi var: eskiden parmak gezinmesinin bayragini
          (_moodGez) odunc aliyordu ve o kip kalkinca anlamsiz kalirdi.
          Ayrica surtme (FX) o 900 ms boyunca engelleniyordu. */
-      _yakVurgu = k;
+      _yakVurgu = k; _yakKalan = k;
       if(_yakZaman) clearTimeout(_yakZaman);
       _yakZaman = setTimeout(()=>{ _yakZaman = null; _yakVurgu = -1; }, HALKA_YANMA);
     }catch(e){ _yut(e); }
@@ -18166,12 +18167,10 @@
       });
       kk.style.width = '';                       // dogal olcusunde kalir
       kk.style.justifyContent = '';
-      /* SINIR: konsolun sag keni varsayilan. ORBITAPE'de anahtar
-         artik uc cizginin saginda ve genisligi buyuk ("ORBITAPE"
-         yazisiyla 139px). Konsola gore kelepce ucuzdu: 25 Eylul
-         olcumuyle sol kenar 62 yerine 14'e cekildi, yani uc cizginin
-         USTUNE bindi. Yer varken neden tasirsin: sinir ekranin
-         sag kenarindan gelir. */
+      /* SINIR: varsayilan konsolun sag kenar. ORBITAPE'de anahtar
+         uc cizginin saginda ve genis ("ORBITAPE" yazisiyla 139px);
+         konsola gore kelepce onu 62 yerine 14'e cekip uc cizginin
+         USTUNE bindiriyordu (olcum). Yer varken tasirmasin. */
       if(sinir != null) sag = sinir;
       if(!sag) return;
       const dogal = kk.getBoundingClientRect().width;
@@ -18187,11 +18186,8 @@
   }
   function _kipKisayoluHizala(){
     /* ── KIP ANAHTARI: IKI KIPTE IKI YER (25 Eylul) ───────────
-       RADIOTAPE: PLAY/STOP'un tam ustunde, ayni sol kenarda.
-       ORBITAPE: sutunun en altindaki oge KILAVUZ; anahtar onun
-       SAGINDA, ayni satirda, dikey olarak Kılavuz'un ortasina
-       hizali. (Tek kural kalmis olsa anahtar KILAVUZ'A biniyordu:
-       762..794 / 778..802.) */
+       RADIOTAPE: PLAY/STOP'un ustunde, ayni sol kenarda.
+       ORBITAPE: UC CIZGININ saginda, ayni satirda. */
     try{
       const _kk = document.getElementById('kipKisayol');
       if(!_kk) return;
@@ -18201,10 +18197,8 @@
         if(_kt){
           const g = _kt.getBoundingClientRect();
           if(g.height){
-            /* ORBITAPE: anahtar UC CIZGININ SAGINDA, ayni satirda.
-               25 Eylul: once kilavuzun yaninda duruyordu; kullanicinin
-               istegi "radyo yazan switch'in solunda ayarlar
-               cizgileri var olacak... ikonlar onun ustunde olsun." */
+            /* ORBITAPE: anahtar UC CIZGININ saginda (25 Eylul;
+               once kilavuzun yanindaydi, kullanicinin istegi). */
             _kk.style.removeProperty('left');
             _altYasla(_kk, g.top + g.height / 2 + 12);
             _kk.style.left = Math.round(g.right + 8) + 'px';
@@ -18354,11 +18348,8 @@
       try{
         const mood = document.body.classList.contains('mood');
         if(mood){
-          /* ALT SATIR: UC CIZGI, USTUNDE IKONLAR. Kullanicinin
-             istedigi (yalniz ORBITAPE): "radyo yazan switch'in solunda
-             ayarlar cizgileri var olacak... ikonlar onun ustunde
-             olsun, sola dayarken hizali yap." Kip anahtarinin yeri
-             _kipKisayoluHizala()'da: uc cizginin saginda. */
+          /* ALT SATIR: UC CIZGI, USTUNDE IKONLAR (yalniz ORBITAPE):
+             kullanicinin istegi. Anahtar _kipKisayoluHizala()'da. */
           const r = _konsolKutu();
           if(!r || !r.height) return;
           let alt = r.top - 8;
@@ -21485,6 +21476,11 @@
       const cocuklar = document.body ? [...document.body.children] : [];
       cocuklar.forEach(c=>{
         if(c === el || c.tagName === 'SCRIPT') return;
+        /* 25 EYLUL: TUTAMAK KISITLANMAZ. Arka plan inert oluyor
+           (modal tuzak) ve tutamak da body cocugu oldugu icin inert
+           kaliyordu: "tutamaga tekrar bas, kapansin" yolu HIC
+           calismiyordu (olcum: elementsFromPoint yalniz BODY). */
+        if(c.id === 'ayarTut') return;
         if(kapali){
           if(!c.hasAttribute('inert')){
             c.setAttribute('inert',''); c.setAttribute('data-inertti','1');

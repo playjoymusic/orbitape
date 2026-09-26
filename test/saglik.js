@@ -3093,6 +3093,54 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                       : (olc.length + ' durum temiz · RADIOTAPE ustteki: '
                          + olc.filter(x=>!x.mood).map(x=>x.ustteki).join('/')));
     }
+    /* 25 EYLUL: TUTAMAK PANELI ACIP KAPATIYOR. Kullanici ayarlari
+       acamiyordu: panel open deyince arka plan inert oluyor (modal
+       tuzak, _arkaKapat) ve tutamak da body cocugu oldugu icin O DA
+       inert kaliyordu -- yani "tutamaga tekrar bas" yolu hic
+       calismiyordu. OLCUM: elementsFromPoint tutamagin noktasinda
+       yalniz BODY donuyordu, inert zinciri tutamakta bitiyordu. */
+    {
+      const t = await pg.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r,ms));
+        const el = document.getElementById('ayarTut');
+        const kapali = ()=>!document.body.classList.contains('ayar-acik');
+        const inertMi = ()=>{ let x=el, v=false; while(x){ if(x.hasAttribute && x.hasAttribute('inert')) v=true; x=x.parentElement; } return v; };
+        try{ window.ayarGoster(false); }catch(_){}
+        await bek(320);
+        const durum = { baslangic: kapali(), ilk:null, ikinci:null, inertAcik:null };
+        const r = el.getBoundingClientRect();
+        const x = Math.round(r.left + r.width/2), y = Math.round(r.top + r.height/2);
+        const dok = ()=>{ el.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, clientX:x, clientY:y}));
+          el.dispatchEvent(new MouseEvent('click', {bubbles:true, clientX:x, clientY:y})); };
+        dok(); await bek(420); durum.ilk = kapali();
+        durum.inertAcik = inertMi();
+        dok(); await bek(420); durum.ikinci = kapali();
+        try{ window.ayarGoster(false); }catch(_){}
+        await bek(240);
+        durum.sonda = kapali();
+        return durum;
+      });
+      K('Ayar tutamagi paneli acip kapatiyor',
+        t && t.baslangic === true && t.ilk === false && t.ikinci === true
+        && t.inertAcik === false && t.sonda === true,
+        t ? ('ilk bas: ' + (t.ilk?'acik':'KAPALI') + ' · panel acikken inert: '
+             + t.inertAcik + ' · ikinci bas: ' + (t.ikinci?'acik':'kapali'))
+          : 'olculemedi');
+    }
+    /* 25 EYLUL: HALKA VURGUSU KADEMELI. _yakVurgu tek karede
+       yaziliyordu: halka %3,5 ANINDA buyuyor, 900 ms sonra yine tek
+       karede kuculuyordu. Kullanicinin "bastigim an duzeltme
+       oluyor, sanki konumu degisiyor" dedigi sey. OLCUM (tuval
+       pikseli, medyan yaricap): 277,3 -> 280,8. */
+    {
+      const k = fs.readFileSync('index.html','utf8');
+      const kademeli = /rR \*= 1 \+ 0\.035\*_yakYumusak/.test(k)
+        && /_yakYumusak \+= \(\(_yakVurgu >= 0 \? 1 : 0\)/.test(k)
+        && !/rR \*= 1\.035/.test(k);
+      K('Yanan halka tek karede buyumuyor', kademeli,
+        kademeli ? 'kademeli buyume (kare basina %18), ani %3,5 yok'
+                 : 'hala rR *= 1.035: tek karede siçrama duruyor');
+    }
     /* Radyo metni BES DILDE de var mi (sozluk anahtari). */
     {
       const K2 = 'Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.';
