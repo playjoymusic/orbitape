@@ -3141,6 +3141,48 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         kademeli ? 'kademeli buyume (kare basina %18), ani %3,5 yok'
                  : 'hala rR *= 1.035: tek karede siçrama duruyor');
     }
+    /* 25 EYLUL: OLU KAYNAK HATIRLAMA (cihazda, 6 saat). Gerekce:
+       parcaBasla zaten tek oturum icinde 5 basarisiz denemeden sonra
+       susuyordu, ama her yeni oturum ayni olu adaylari yeniden
+       deniyordu. Cloudflare 24 saat: radio.mana.bzh 310 basarili /
+       314 hata, stream-eurodance90.fr 9/44. OLCUM: isaretlenen
+       istasyon ikinci aramada HIC network'e cikmamali. */
+    {
+      const npk = await pg.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r,ms));
+        try{ localStorage.removeItem('orbitape.npyok'); }catch(_){}
+        const sonuc = {};
+        try{
+          npYokIsaretle('https://olgu.test/yayin');
+          sonuc.isaretlendi = npYokMu('https://olgu.test/yayin') === true;
+          sonuc.baskaYok = npYokMu('https://baska.test/yayin') === false;
+          /* SURE: eski damga "doldu" sayilmamali. */
+          const d = JSON.parse(localStorage.getItem('orbitape.npyok') || '{}');
+          d['https://eski.test/yayin'] = Date.now() - (7*3600*1000);
+          localStorage.setItem('orbitape.npyok', JSON.stringify(d));
+          sonuc.suresiDoldu = npYokMu('https://eski.test/yayin') === false;
+          /* TAVAN: 300'u asarsa en eskisi atilir. */
+          const cok = {};
+          for(let i=0;i<320;i++) cok['u'+i] = Date.now() - i*1000;
+          localStorage.setItem('orbitape.npyok', JSON.stringify(cok));
+          npYokIsaretle('u999');
+          const son = JSON.parse(localStorage.getItem('orbitape.npyok') || '{}');
+          sonuc.tavan = Object.keys(son).length;
+          localStorage.removeItem('orbitape.npyok');
+          return sonuc;
+        }catch(e){ return {hata:String(e).slice(0,90)}; }
+      });
+      K('Olu kaynak 6 saat hatirlaniyor, tavanli',
+        /* bayraklar "olmus olsun" anlaminda: baskaYok=true -> baska
+           istasyon hatirlanMAMIS, suresiDoldu=true -> 7 saatlik eski
+           damga unutulMUS. Ilk yazimda kosul tersydi (=== false) ve
+           test kendi dogru ciktisiyla kirmizi verdi. */
+        npk && npk.isaretlendi === true && npk.baskaYok === true
+        && npk.suresiDoldu === true && npk.tavan <= 300,
+        npk ? ('isaretli:' + npk.isaretlendi + ' · baska yapi:' + npk.baskaYok
+              + ' · 7 saat sonra unutuldu:' + npk.suresiDoldu + ' · tavan:' + npk.tavan)
+            : 'olculemedi');
+    }
     /* Radyo metni BES DILDE de var mi (sozluk anahtari). */
     {
       const K2 = 'Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.';
@@ -8528,6 +8570,64 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const k = document.documentElement.innerHTML;
         return sonuc && /window\.moodKapat/.test(k);
       }), 'tek dokunus radyoya donuyor, ayarlardaki kapiyla ayni islev');
+    /* ── YELPAZE IKONU: 26 EYLUL, KULLANICI DORT UYARI ──────────────
+       1) acik nokta BEYAZ duruyordu ve saga yapisikti -> kirmizi,
+          ikona yapisik, 7px.
+       2) kamera acilca ikon KAYBOLUYORDU -> artik kalir.
+       3) ORBITAPE'de ikon araya girip duruyordu; kural: "en sonda
+          olacak, soru isaretinin de ustunde" -> dizinin SONUNCUSU.
+          ORBITAPE sutunu asagidan yukariya diziliyor, yani sonuncu
+          en ustte durur. Radyoda sonuncu = en altta (? altinda).
+       4) kayit/foto/gorsel durumunda gizli KALIYOR (onceki kural).
+       Olcum: her iki kipte dikdortgen karsilastirmasi, kamera icin
+       gercek display degeri. */
+    {
+      const yp = await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const R = id=>{ const e=document.getElementById(id);
+                        if(!e) return null; const b=e.getBoundingClientRect();
+                        return {t:Math.round(b.top), b:Math.round(b.bottom),
+                                d:getComputedStyle(e).display}; };
+        const n = document.querySelector('#fanTus .nokta');
+        const ns = n ? getComputedStyle(n) : null;
+        const nokta = ns ? { renk:ns.backgroundColor, gen:ns.width+'x'+ns.height,
+                             sag:ns.right, ust:ns.top } : null;
+        const eskiMood = AYAR.mood;
+        const oku = ()=>{ const f=R('fanTus'), s=R('rehberTus');
+                         return { fan:f, soru:s, mood:document.body.classList.contains('mood') }; };
+        AYAR.mood = false; moodUygula(false); await bek(320);
+        const radyo = oku();
+        AYAR.mood = true;  moodUygula(false); await bek(320);
+        const orbitape = oku();
+        AYAR.mood = eskiMood; moodUygula(false); await bek(240);
+        /* KAMERA: ikon kalsin. */
+        document.body.classList.add('kam'); await bek(160);
+        const kamGizli = getComputedStyle(document.getElementById('fanTus')).display;
+        document.body.classList.remove('kam'); await bek(120);
+        /* KAYIT: gizli kalsin (onceki kural bozulmadi mi). */
+        document.body.classList.add('kayit'); await bek(160);
+        const kayitGizli = getComputedStyle(document.getElementById('fanTus')).display;
+        document.body.classList.remove('kayit'); await bek(120);
+        return { radyo, orbitape, nokta, kamGizli, kayitGizli };
+      });
+      const y = yp || {};
+      const R2 = y.radyo || {}, O2 = y.orbitape || {};
+      K('Yelpaze noktasi kirmizi ve ikona yapisik',
+        !!(y.nokta && /rgb\(2\d\d, *[1-9]\d, *[1-9]\d\)/.test(y.nokta.renk||'')
+            && /^7pxx7px$/.test(y.nokta.gen||'') && y.nokta.sag === '0px'),
+        y.nokta ? (y.nokta.renk + ' · ' + y.nokta.gen + ' · right ' + y.nokta.sag) : 'nokta yok');
+      K('Yelpaze radyoda soru isaretinin ALTINDA',
+        !!(R2.fan && R2.soru && R2.fan.t >= R2.soru.b),
+        R2.fan && R2.soru ? ('yelpaze ' + R2.fan.t + '..' + R2.fan.b
+                             + ' · soru ' + R2.soru.t + '..' + R2.soru.b) : 'olculemedi');
+      K("Yelpaze ORBITAPE'de soru isaretinin USTUNDE ve en basta",
+        !!(O2.mood === true && O2.fan && O2.soru && O2.fan.b <= O2.soru.t),
+        O2.fan && O2.soru ? ('yelpaze ' + O2.fan.t + '..' + O2.fan.b
+                             + ' · soru ' + O2.soru.t + '..' + O2.soru.b) : 'olculemedi');
+      K('Yelpaze kamera acikken KALIR, kayitta gizlenir',
+        y.kamGizli && y.kamGizli !== 'none' && y.kayitGizli === 'none',
+        'kamera: ' + y.kamGizli + ' · kayit: ' + y.kayitGizli);
+    }
     K('Raf disindan gelen istek calmiyor', await pg.evaluate(()=>{
         const k = document.documentElement.innerHTML;
         return /item\.grup !== AKTIF_AILE/.test(k)

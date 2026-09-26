@@ -3447,7 +3447,10 @@
   #fanTus svg{width:19px;height:19px;fill:currentColor;stroke:none;}
   #fanTus:hover,#fanTus:focus-visible,#fanTus[aria-expanded="true"]{opacity:1;}
   body.klavye #fanTus{opacity:0;pointer-events:none;}
-  #fanTus .nokta{position:absolute;top:1px;right:1px;}
+  /* KIRMIZI nokta (once sadece konum vardi, ekranda BEYAZ duruyordu). */
+  #fanTus .nokta{position:absolute;top:0;right:0;width:7px;height:7px;
+    border-radius:50%;background:#e2564a;
+    box-shadow:0 0 6px rgba(226,86,74,.8);}
   #yelpaze{position:fixed;z-index:97;display:flex;flex-direction:column;gap:6px;
     padding:8px;border-radius:12px;background:rgba(8,14,17,.92);
     border:1px solid rgba(120,180,180,.18);}
@@ -3462,9 +3465,10 @@
     background:#e2564a;flex:none;}
   #yelpaze .fanOge[aria-disabled="true"]{opacity:.42;}
   #yelpaze .fanOge[aria-disabled="true"] .nokta{background:#6b4a48;}
-  body.gorsel-acik #fanTus,body.kam #fanTus,body.kayit #fanTus,
+  /* Kamera acikken ikon KALIR; gizleme yalniz kayit/foto/gorsel. */
+  body.gorsel-acik #fanTus,body.kayit #fanTus,
   body:has(#fotoOnizle.var) #fanTus,body.gorsel-acik #yelpaze,
-  body.kam #yelpaze,body.kayit #yelpaze,
+  body.kayit #yelpaze,
   body:has(#fotoOnizle.var) #yelpaze{display:none !important;}
   /* ── SOL SUTUN: DERIDE DAHA GOZE GELIYOR ──────────────────────
      Kullanicinin sozu (7 Eylul): "bazi karisik skins'lerde soldaki
@@ -12336,38 +12340,21 @@
     }catch(e){ _yut(e); }
   }
   /* ── EKRAN BOYU FORMULDEN TAMAMEN CIKIYOR ───────────────────────
-     _gorBoy() bir onceki denemeydi: innerHeight yerine
-     documentElement.clientHeight konuldu, cunku ikisi ayni yerlesim
-     turunda guncelleniyor. Telefon onu da red etti -- kullanicinin
-     ekran goruntusunde kip anahtari ve kunye yine dibe yigilmisti.
-     LABORATUVARDA URETILDI: clientHeight yatay degerinde (390),
-     duzen dikey (844) iken geriYerlestir cagrildi.
-       kipKisayol 732..756 -> 1186..1210   (ekranin 366 px altina)
-       kayitBilgi 751..763 -> 1205..1217
-     Sebep formulun KENDISI: "el.bottom = BOY - komsununRect.top".
-     Iki ayri kaynak cikariliyor; biri bayatsa sonuc sacmaliyor ve
-     oge ekranin altina tasiyor, komsulari da uzerine biniyor.
-     Dogru ani yakalamaya calismak (uc kez denendi) bu yapiyi
-     duzeltmiyor.
-     BU ISLEV BOYU HIC OKUMUYOR. Ogenin KENDI dikdortgeni ile
-     komsusunun dikdortgeni ayni karede okunuyor; aradaki fark
-     ogenin MEVCUT bottom degerine ekleniyor. Iki dikdortgen de ayni
-     yerlesimden geldigi icin birbirine gore bayat olamaz. Iliski
-     dogrusal oldugundan tek adimda oturuyor: bottom'u d kadar
-     artirmak alt kenari d kadar yukari tasiyor.
-     Yazma bicimi de korunuyor: bottom CSS'te
-     'calc(Npx + var(--dip-pay))' ile yaziliyorsa guvenli alan payi
-     hesaplanan degerin ICINDE geliyor (getComputedStyle cozuyor),
-     yani env() ikinci kez eklenmiyor -- buyutecte yasanan hata.
-     GECIS DE SORUN DEGIL: #ara'da 'transition: bottom .18s' var ve
-     gecis ortasinda okunan iki deger AYNI ara karede okunuyor --
-     s + r.bottom toplami her karede yerlesim motorunun kendi
-     boyunu veriyor, yani gecis sadelesip gidiyor. Eski surumde bu
-     dogru olmasinin sebebi degerin mutlak olmasiydi; burada da
-     mutlak, cunku toplam sabit.
-     ORAN: emniyet siniri isteyen cagrilar icin. Yazilacak deger
-     ekranin bu oranindan buyuksa HICBIR SEY yazilmiyor ve cagiran
-     CSS'in kendi hattina donuyor (buyutecte tam bu emniyet var). */
+     innerHeight yerine clientHeight denendi (ikisi de ayni yerlesim
+     turunda guncelleniyor), telefon reddetti: kip anahtari ve kunye
+     yine dibe yigilmisti. LABORATUVARDA URETILDI: yatay 390 / dikey
+     844'te geriYerlestir -> kipKisayol 732..756 -> 1186..1210.
+     Sebep formulun kendisi: "el.bottom = BOY - komsununRect.top" iki
+     ayri kaynak cikariliyor, biri bayatsa sonuc sacmaliyor.
+     DUZELTME: bu islev BOY'u hic okumuyor; oge ve komsunun kendi
+     dikdortgeni ayni karede okunup fark mevcut bottom'a ekleniyor,
+     yani birbirine gore bayat olamaz. bottom CSS'te
+     'calc(Npx + var(--dip-pay))' ise guvenli pay hesaplanan degerin
+     ICINDE gelir, env() iki kez eklenmez (buyutec hatasi). Gecis de
+     sorun degil. ORAN: emniyet siniri isteyen cagrilarda ekranin bu
+     oranindan buyugune HICBIR SEY yazilmaz. */
+
+
   /* Degisken adi 'oge': 'el' YASAKLI bir desene giriyor -- buyutec
      duzeltmesinin IC SIMGEYE (el) degil DIS KUTUYA (kap) yazilmasi
      gerektigi bir saglik olcusuyle korunuyor ve genel yardimci
@@ -15824,49 +15811,37 @@
      dusuruluyor (cark bir raf, ses baska raf caliyordu). */
   let _kuyrukNesil = 0;
   /* ── CORS ELEMESİ — "yayın başladı sonra kesildi" sorununun kökü ──
-     Ses grafiğe bağlandığı anda, CORS başlığı göndermeyen bir yayın SUSUYOR.
-     Duyulan sıra tam olarak şu: yayın önce doğrudan çalıyor, sonra analizKur()
-     grafiği kuruyor ve ses kesiliyor. Bağlanan medya elemanı geri alınamadığı
-     için (spec) tek çare bu istasyonları kuyruğa HİÇ almamak.
-     Test 'cors' kipinde: başlık yoksa fetch REDDEDİLİR, cevabı beklemeye
-     gerek kalmaz. Hepsi tek turda paralel -> çalma anına gecikme eklemiyor,
-     kuyruk dolarken arkada bitiyor.
+     Ses grafiğe bağlandığı anda CORS başlığı göndermeyen yayın SUSUYOR.
+     Sıra: yayın önce doğrudan çalıyor, sonra analizKur() grafiği kuruyor
+     ve ses kesiliyor (bağlanan medya elemanı geri alınamıyor, spec).
+     Tek çare: bu istasyonları kuyruğa HİÇ almamak. Test 'cors' kipinde
+     — başlık yoksa fetch REDDEDİLİR, cevap beklenmez; hepsi tek turda
+     paralel, çalma anına gecikme yok.
 
      19 EYLÜL — BÜTÇE SABİTTİ, KAPIYI KİLİTLİYORDU (Kural 4, ölçüldü).
-     Bütçe eskiden yalnızca `1100*AG_KAT` idi ve AG_KAT iPhone'da HİÇBİR
-     ZAMAN 1'den yükselmiyor (navigator.connection yok, bkz. fetchZA
-     başındaki not). Yani yavaş ama ÇALIŞAN bir hatta (zayıf LTE, kalabalık
-     otel wifi'ı) her istasyon bu 1,1 sn'yi aşıyor, `gecti[k]` hep false
-     kalıyor, `ekle` hiç artmıyor, `basari('radyo')` hiç çağrılmıyor —
-     ve bu, "#agyok" panelini kapatan TEK istasyon-kaynaklı yoldu. Panel
-     bir kez açılınca (bkz. satır ~21105 `if(!ilk) agYokAc()`) yalnızca
-     gerçek bir çalma, arşiv listesinin ayrı yoldan gelmesi, sekme
-     görünürlük/online olayı ya da elle "TEKRAR DENE" onu kapatabiliyordu
+     Bütçe `1100*AG_KAT` idi; AG_KAT iPhone'da HİÇ 1'den yükselmiyor
+     (navigator.connection yok, bkz. fetchZA notu). Yavaş ama ÇALIŞAN hatta
+     her istasyon 1,1 sn'yi aşıyor -> gecti[k] hep false, ekle hiç
+     artmıyor, basari('radyo') hiç çağrılmıyor. "#agyok" panelini kapatan
+     TEK istasyon-kaynaklı yoldu: açılınca yalnız gerçek çalma, arşiv
+     listesi, görünürlük/online olayı ya da elle "TEKRAR DENE" kapatıyordu
      — veri sonunda gelse bile DEĞİL.
-     KANIT (temiz izolasyon -- ilk ölçümde bir yan yol karışmıştı, bkz.
-     aşağı): beyaz liste (radyo.json) ve AMBIANCE havuzu (earth_buyuk.json)
-     BOŞ döndürülüp yalnızca radio-browser + sahte.test istasyon yolu
-     bırakıldı, üstüne her isteğe 1500ms'lik saf bir zamanlama gecikmesi
-     bindirildi (`sahteAg` DEĞİŞTİRİLMEDEN). Düzeltmeden ÖNCE: panel
-     t≈2,5sn'de açılıyor, t=16sn'nin sonunda hâlâ açık (istasyon kontrolü
-     her denemede aynı 1,1 sn'de düşüyor). Düzeltmeden SONRA: ilk deneme
-     yine 1,1 sn'de düşüp AG_OLCUM'u 1,5'e çıkarıyor, boot IIFE'nin
-     sonunda zaten tetiklenen arka plan denemesi (radyoKuyrukDoldur)
-     1,65 sn'lik yeni bütçeyle 1500ms'lik gecikmeyi aşıyor, basari('radyo')
-     çağrılıyor ve panel t≈5,6sn'de kapanıp kapalı kalıyor.
-     İLK ÖLÇÜMDE YANLIŞ SİNYAL: earth_buyuk.json'ı ayıklamadan yapılan
-     ilk denemede panel AYNI ZAMANLA (t≈5sn) kapanıyor gibi göründü ama
-     bu yanıltıcıydı — uzunYukle() (AMBIANCE havuzu, AYAR.mood'dan
-     BAĞIMSIZ, arka planda %ihtimalle tetikleniyor) aynı anda kendi
-     başarılı isteğiyle basari('uzun') çağırıp paneli kapatıyordu; bu
-     yol düzeltmeyle ilgisiz ve şansa bağlı. Yukarıdaki temiz ölçüm bu
-     yan yolu da kapatarak yalnızca corsVarMi/AG_OLCUM etkisini izole
-     ediyor (bkz. test/saglik.js "Yavas ama calisan hatta..." kontrolü).
-     DÜZELTME: corsVarMi artık fetchZA'nın zaten kullandığı AG_OLCUM
-     (uyarlanabilir yavaşlık çarpanı, tavan 2,5) çarpanını da kullanıyor
-     VE kendi zaman aşımı da AG_OLCUM'u besliyor — böylece istasyon
-     kontrolü, uygulamanın geri kalanıyla AYNI "hat yavaş" öğrenmesini
-     paylaşıyor, artık tek başına sabit ve kör değil. */
+     KANIT (temiz izolasyon: beyaz liste ve AMBIANCE havuzu boşaltıldı,
+     her isteğe 1500 ms saf gecikme, sahteAg değişmeden): ÖNCE panel
+     t≈2,5 sn'de açılıp t=16 sn'de HÂLÂ açık; SONRA ilk deneme 1,1 sn'de
+     düşüp AG_OLCUM'u 1,5'e çıkarıyor, arka plan denemesi (radyoKuyrukDoldur)
+     1,65 sn'lik bütçeyle gecikmeyi aşıyor, basari('radyo') çağrılıyor,
+     panel t≈5,6 sn'de kapanıp kalıyor.
+     İLK ÖLÇÜMDE YANLIŞ SİNYAL: panel t≈5 sn'de kapanıyor gibi görünmüştü
+     ama earth_buyuk.json'ı ayıklamamıştık — uzunYukle() (arka planda)
+     kendi başarılı isteğiyle basari('uzun') çağırıp paneli kapatıyordu;
+     yol düzeltmeyle ilgisiz ve şansa bağlı. Yukarıdaki temiz ölçüm
+     yalnızca corsVarMi/AG_OLCUM'u izole ediyor (bkz. test/saglik.js
+     "Yavas ama calisan hatta..." kontrolü).
+     DÜZELTME: corsVarMi artık fetchZA'nın kullandığı AG_OLCUM'u (tavan
+     2,5) kullanıyor VE kendi zaman aşımıyla onu besliyor — istasyon
+     kontrolü uygulamanın geri kalanıyla AYNI "hat yavaş" öğrenmesini
+     paylaşıyor, artık sabit ve kör değil. */
   async function corsVarMi(u){
     try{
       const kontrol = new AbortController();
@@ -16575,8 +16550,35 @@
     return null;
   }
 
+  /* ── OLU KAYNAK HATIRLAMA (6 saat) ─────────────────────────────────
+     parcaBasla tek OTURUM icinde 5 denemeden sonra susuyordu;
+     her yeni oturum ayni olu adaylari yeniden deniyordu (ogrenme
+     yok). Cloudflare: radio.mana.bzh 310/314, eurodance90.fr 9/44.
+     Suresiz degil, tavanli. Kalici cozum: hasatta np_tipi. */
+  const NPYOK_ANAHTAR = 'orbitape.npyok';
+  const NPYOK_OMUR = 6*3600*1000;
+  const NPYOK_TAVAN = 300;
+  function _npYokOku(){
+    try{ const h = localStorage.getItem(NPYOK_ANAHTAR); const d = h ? JSON.parse(h) : {};
+         return (d && typeof d === 'object') ? d : {}; }catch(e){ return {}; }
+  }
+  function npYokMu(u){
+    try{ const t = _npYokOku()[u]; return !!(t && (Date.now()-t) <= NPYOK_OMUR); }
+    catch(e){ return false; }
+  }
+  function npYokIsaretle(u){
+    try{
+      const d = _npYokOku(); d[u] = Date.now();
+      const k = Object.keys(d);
+      if(k.length > NPYOK_TAVAN){
+        k.sort((a,b)=>d[a]-d[b]).slice(0, k.length - NPYOK_TAVAN).forEach(x=>delete d[x]);
+      }
+      localStorage.setItem(NPYOK_ANAHTAR, JSON.stringify(d));
+    }catch(e){ _yut(e); }   /* kota dolu / gizli sekme: sessizce vazgec */
+  }
   async function parcaAl(item){
     if(!item || !item.radyo || !item.mp3) return '';
+    if(npYokMu(item.mp3)) return '';
     const kaynaklar = parcaKaynaklari(item.mp3);
     for(const k of kaynaklar){
       let r = null;
@@ -16752,6 +16754,7 @@
          degil -- hic vermeyen bir istasyonda bes denemeden sonra
          susuyoruz, bosuna sunucu yormayalim. */
       _parcaDeneme = ad ? 0 : (_parcaDeneme || 0) + 1;
+      if(!ad && _parcaDeneme >= 5) npYokIsaretle(item.mp3);
       /* Ayni ad ust uste geldiyse aralik uzuyor: parca degismemis,
          daha sik sormanin bir karsiligi yok. Degisince tabana. */
       const ayniMi = ad && _parcaSonAd && String(ad) === String(_parcaSonAd);
@@ -18348,7 +18351,7 @@
           const r = _konsolKutu();
           if(!r || !r.height) return;
           let alt = r.top - 8;
-          ['ayarTut','saatTus','deriFirca','gorselTus','fanTus','rehberTus'].forEach(id=>{
+          ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','fanTus'].forEach(id=>{
             const e = document.getElementById(id); if(!e) return;
             e.style.removeProperty('top');
             const h = e.getBoundingClientRect().height || 32;

@@ -3666,9 +3666,10 @@ try{
     }catch(e){ _yut(e); }
     /* Kip degisince REC durumu degissin; kayit/kamera/foto/gorsel
        baslayinca yelpaze KAPANSIN ("yeni ikon cikmasin tasmasin"). */
+    /* Kamera (body.kam) BILEREK kapamiyor -- ikon kalsin. */
     const _fanKapan = ()=>{
       try{
-        if(['kayit','kam','gorsel-acik'].some(c=>document.body.classList.contains(c))) return true;
+        if(['kayit','gorsel-acik'].some(c=>document.body.classList.contains(c))) return true;
         const f = document.getElementById('fotoOnizle');
         return !!(f && f.classList.contains('var'));
       }catch(e){ return false; }

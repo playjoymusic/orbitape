@@ -2632,3 +2632,125 @@ denetimi sayısı tabana döndü mü. Bu ikinci turda ikisi de kontrol
 edildi. NOT: ilk denemede ayrica NPYOK geri alma işlemi
 `if(npYokMu(item.mp3)) return '';` satirini yoruda birakmisti — o da
 silindi. Ikisi de aynı seansta, ikisi de kapıdan geçmedi.
+
+### 25 Eylül — Claude'in iki bulgusu: ölü kaynak hafızası + yeni arşiv
+
+Kullanıcı "kalanları yap" dedi; iki iş geldi.
+
+**(1) NPYOK: ölü istasyon kaynağını 6 saat hatırla.** Claude'in tespiti
+doğruydu ve benim ölçümlerimle birebir tutuyor: `/np`'nin istasyon
+başına 25 saniyelik önbelleği **tasarım** (popüler sunucuya binlerce
+değil tek istek, CORS'sız istasyonlardan da künye, dinleyicinin IP'si
+sızmıyor, 429'da o oturumda bir daha sorulmuyor). İsraf
+`parcaKaynaklari()`'nın: bir istasyon URL'sinden yola çıkıp 5-8
+now-playing kalıbını (icecast/azuracast/shoutcast/radioking/zeno/
+triton/somafm) sırayla deniyor ve **öğrenmiyor**.
+
+Ölçüm (Cloudflare, 24 saat): radio.mana.bzh 310 başarılı / 314 hata,
+stream-eurodance90.fr 9/44 (%83 hata), kathy.torontocast 51/24.
+`parcaBasla` zaten tek oturum içinde 5 başarısız denemeden sonra
+susuyordu; **ama her yeni oturum sıfırdan başlıyordu**.
+
+Çözüm: `npYokMu` / `npYokIsaretle` — localStorage'da `orbitape.npyok`,
+6 saatlik ömür, 300 kayıt tavanı (en eskisi atılır), kota doluysa
+sessizce vazgeçer. `parcaAl` başında atlar, 5 deneme sonuçsuzsa
+işaretler. Kalıcı çözüm hasatta `radyo.json`'a `np_tipi` yazmak —
+runtime'da tahmin etmeyi tamamen kaldırır; ayrı bir iş.
+
+Test: "Olu kaynak 6 saat hatirlaniyor, tavanli" — işaretlenen
+ikinci aramada `true`, başka istasyon `false`, 7 saatlik eski damga
+`false` (süre doldu), 320 kayıtta tavan ≤ 300.
+
+Bayt notu: +873 baytlik yama için "EKRAN BOYU FORMULDEN TAMAMEN
+CIKIYOR" ve "OLU KAYNAK HATIRLAMA" blokları sıkıştırıldı. Bu sefer
+kapanış işareti **kontrol edilerek** kondu: dosyada baştan bir `*/`
+fazla var (bir dizgede geçiyor) o yüzden eşitlik değil FARK
+kontrol ediliyor (1 olmalı) + blok başlıkları ve çağrı sayıları
+doğrulanıyor. Bir önceki seansta aynı işlem `*/` unuttuğu için dört
+değişken yoruma gömülmüştü.
+
+**(2) Yeni arşiv kaynağı: Freesound hasat modülü.**
+`araclar/hasat_freesound.py` — `hasat.py` ile aynı desen (sunucuda,
+kesintide kaldığı yerden devam, 25 kayıtta bir diske yaz, `earth.json`
+ile **birebir aynı kayıt şekli**).
+
+ÇÖZÜLMÜŞ TASARIM SORULARI:
+  * **Anahtar dosyaya yazılmaz**: yalnız `FREESOUND_KEY` ortam
+    değişkeni. GitHub'a sızarsa iptal edilir. `--deneme` modu
+    anahtarsız çalışır (kayıt yazmaz) ve ağ yoksa 3 ardışık hatada
+    durur — ilk hâli 28 sorguyu 30 sn zaman aşımıyla deneyip 200 sn'yi
+    aşıyordu (ölçüldü, düzeltildi: deneme modu 8 sn + tek deneme).
+  * **Preview URL'leri**: asıl indirme OAuth2 istiyor; preview
+    (hq-mp3 → lq-mp3 → hq-ogg) URL'leri doğrudan geliyor ve zaten
+    uygulamada çalan ses bu. `bicim` alanına hangisinin seçildiği yazılır.
+  * **Lisans kapısı**: `lisans_filtre.py` ile AYNI sınıflandırma —
+    ND elenir (uygulama efekt uyguluyor = türev), NC kabul edilir ve
+    etiketine `nc` eklenir, lisanssız reddedilir.
+  * **Atf zorunlu** (CC-BY): `sanatci` alanına `"kullanıcı (Freesound)"`
+    yazılır, etiketlere `freesound` eklenir; ekrandaki kaynak buradan
+    gelir.
+
+ÇEVRİMDIŞI DOĞRULAMA (ağ/anahtar gerekmeden, `kayit_kur` üzerinde):
+CC-BY kabul + atf doğru; CC-BY-NC kabul + "nc" işareti; CC-BY-ND red;
+lisanssız red; id'siz red; hq yokken lq'ya düşüyor. 28 etiketlik
+sorgu listesi kısa ve etiketlenebilir sesler için (yelpaze, saat,
+çark sesleri hep kısa).
+
+BEKLENEN KARAR: Freesound API'si varsayılan olarak **ticari olmayan**
+kullanım için ücretsiz, anahtar başına tek uygulama. ORBITAPE'de
+sponsorlu skin/yatırım varsa "ticari" sayılır → lisans görüşmesi
+gerekir. Modül anahtarsız ve kapalı geliyor; karar verilene kadar
+`earth.json`'a dokunulmaz.
+
+### 26 Eylül — yelpaze ikonu: dört kullanıcı uyarısı (hepsi benim hatam)
+
+Kullanıcı dört madde saydı, hepsi geçerliydi.
+
+**1) Nokta beyazdı ve sağda "alakasız" duruyordu.** `#fanTus .nokta`
+kuralında yalnız `position:absolute;top:1px;right:1px` vardı — boyut
+ve renk **hiç yazılmamıştı**. Tabanda `.nokta` diye genel bir kural da
+olmadığı için (her düğme kendi rengini yazıyor: `#pic .nokta`,
+`#rec .nokta`, `#cam .nokta`) boş `<span>` ekranda **beyaz** bir nokta
+olarak duruyordu. Düzeltme: `width:7px;height:7px;background:#e2564a`
++ `box-shadow:0 0 6px rgba(226,86,74,.8)`, `top:0;right:0` (ikona
+yapışık). Ölçüm: `rgb(226, 86, 74) · 7px x 7px · right 0`.
+
+**2) "cam'ı açtım mı gitti. o ikon gitti."** Gizleme kuralı
+`body.kam` için de `#fanTus`'u kapatıyordu. Kullanıcının kuralı
+ayrışmış: **kamera açıkken ikon kalsın**, gizleme yalnız *kayıt*,
+*foto önizleme* ve *görsel* durumunda. `kayit.js`'teki `_fanKapan()`
+da aynı listeyi kullanıyordu, ikisi de güncellendi (aksi hâlde ikon
+görünür ama menü açılmazdı — iki kuralın ayrışması tam da bu tuzağa
+düşmüş).
+
+**3) ORBITAPE'de ikon "araya girmiş".** Kural net: "en sonda olacak,
+soru işaretinin de üstünde". ORBITAPE sütunu **aşağıdan yukarıya**
+diziliyor, yani dizinin **sonuncusu en üstte** duruyor; RADIOTAPE'de
+sonuncu en altta (`?` altında). Dizi iki kipte de
+`['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','fanTus']`
+oldu — fark yok, çünkü dizgi yönü zaten farklı. Ölçüm: RADIOTAPE
+yelpaze 231..263 / soru 187..219 (altında); ORBITAPE yelpaze 556..588
+/ soru 600..632 (üstünde).
+
+**4) Freesound modülü silindi.** Kullanıcı "hallet, sana güvenemedim"
+dedi: `araclar/hasat_freesound.py` kaldırıldı. Hiçbir şeye bağlı
+değildi (anahtarsız çalışmıyor, `earth.json`'a dokunmuyordu), bu
+yüzden temiz silme; hatta günlük + ölçümler kayıtta kalsın diye
+sayılar burada duruyor.
+
+**Dört yeni test** (`test/saglik.js`, "Yelpaze ..."): noktanın rengi/
+boyutu/konumu, iki kipteki dikdörtgen karşılaştırması, kamera açıkken
+görünür + kayıtta gizli. Ölçüm `moodUygula()` ile yapılıyor (tıklama
+değil) ki diğer testlerin durumunu bozmasın.
+
+**Bayt:** 880 bayt yer açıldı. "CORS ELEMESİ" bloğu (3.247 bayt) 1.560
+bayta indirildi — kök neden, karar, temiz izolasyon ölçümü (panel
+2,5 sn'de açılıp 16 sn'de hâlâ açık → düzeltmeden sonra 5,6 sn'de
+kapanıyor), ilk ölçümdeki yanlış sinyal (`uzunYukle()`'in kendi
+başarılı isteği paneli kapatıyordu) ve düzeltme korunarak hikâye
+kısaltıldı. Tip denetimi 69/69 taban değişmede.
+
+**Bir de benim hatam:** ölçüm yaparken `lsof -ti:8765 | xargs kill`
+yazdım ve kapının sunucusunu öldürdüm; üç takım `ERR_CONNECTION_REFUSED`
+aldı. Kural zaten notlarımda yazılıydı: **kapı koşarken 8765'e
+dokunma.** Kendi pid'imi tutup onu öldürmek doğru yol.
