@@ -2421,3 +2421,56 @@ denetleniyor (hata hatırlanıyor, başarı siliyor, pencerede sonu var).
 (aralık aynı), ama dosya "data" sayılıyordu: git ikili diff gösteriyor,
 grep "Binary file matches" diyordu, editörler dosyayı açmayı reddediyordu.
 Escape olarak yazıldı; aynı davranış, artık UTF-8 metin.
+
+### 25 Eylül — fotoğrafta kayıt araçları satırı, sol sütun değişmezi
+
+Kullanıcı iki görsel daha gönderdi (RADIOTAPE, ANATOLIA açık).
+
+**(1) Fotoğrafta "CAM · sessiz · yıldız" kalıyordu.** Bir önceki
+turda konsol (geri/dur/duraklat/ileri) ve kip düğmesini çıkarmıştım;
+ama kayıt araçları satırı (`rec`, `cam`, `mute`, `favAc`) listede
+kalmıştı. Kullanıcının fotoğrafında üstte "CAM", ses simgesi ve yıldız
+görünüyordu — yani sol alt değil, sol ÜST doluydu; istediği "sol alt
+boş" değil, fotoğrafın **konsol kümesiyle** sınırlı olmasıydı. Satır
+zaten konsolun parçası (etiketleriyle birlikte), o yüzden o da
+çıkarıldı. Çizim listesi artık: ayar tutamağı, fırça, saat, arama
+çizgisi. Test `Sol alt kume fotografta cizilmiyor` yasaklı küme
+listesini genişettiği için ikisini birden denetliyor.
+
+**(2) Sol sütun çakışması: KULLANICIDA VAR, YERELDE YOK.** Görselde
+`≡` ayarlar tutamağı paletin üstüne binmiş; kullanıcı "ayarlardan
+search'e bastım, bir şarkı seçtim, hop, ayarların altındaki ikonlar
+yukarı fırlıyor, sonra düzeliyor" diye anlatıyor.
+
+Ölçüm (390x844, iki kip, panel açık/kapalı = 4 durum):
+  RADIOTAPE panel kapalı: ayar@15 saat@55 deri@99 gors@143 rehb@187
+  RADIOTAPE panel açık  : aynı (ayarlar RADIOTAPE'de CSS ile 15'te
+                         sabit; ac()'in _altYasla'ya yazdigi satir ici
+                         `bottom:722px` top'a yeniliyor, yani burada
+                         tasima olmuyor)
+  ORBITAPE panel kapalı : ayar@776 saat@732 deri@688 gors@644 rehb@600
+  ORBITAPE panel açık  : ayar@96 ... (ac(): offsetTop-12; yani panel
+                         134'ün 12 px ustune atliyor)
+  → DORT DURUMUN DORTU DE TEMIZ. Cakisma yok.
+
+Yol boyunca iki ara sıra olcunun yakaladigi ANLIK GORUNTU vardi:
+bir kanarya kosusunda tutamak 96..122'de, panel KAPALI, diger dort
+ikon yerinde (55/99/143/187) — yani tam olarak kullanicinin cektigi
+sekil. Sekiz ayri ac/kapa yolunu tek tek denedim (tutamak tusu,
+Escape, ayarGoster(true/false), iki kip), hepsi dogru donuyor; yani
+bu AN OLAY tekrarlanabilir degil, kodda kalici bir durum degil.
+
+Bu yuzden cozum tahmin degil, KURAL: "sol sutun hicbir durumda ust uste
+binmiyor" testi yazildi. Iki kipte de panel acik ve kapaliyken bes oge
+icin kutular karsilastiriliyor. Ayni sey AND'IN 4 farkli durumda
+tutulmasi cok kolay unutuluyor; test etkileyici 2 ekran goruntusunu
+kendisi sozluye bagliyor. Gelecekte ayni ekran goruntusu tekrar
+cikarsa kapi KIRMISI verir.
+
+**Yan bulgu (raporlanmadi, duzeltilmedi):** RADIOTAPE'de panel acikken
+tutamaga ikinci kez basmak paneli KAPATMIYOR (olcum: acik:true kaliyor),
+ORBITAPE'de kapatiyor. `elementsFromPoint` tutamagin noktasinda yalniz
+BODY donuyor, ama hesaplanan stil `pointer-events:auto` diyor — yani
+tutamagin degil, onun ustunde bir seyin vurusu yutuyor. Iki ayri
+bulgu; ustu kaplayan seyi bulmak icin ayri bir tur gerekiyor, bu
+turda kapidan gecmesi icin dokunulmadi.

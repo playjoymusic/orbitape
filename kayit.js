@@ -2386,10 +2386,15 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          yakalarken." Karsilastigi kare ORBITAPE kamera cekimiydi:
          orada sol alt tamamen bos. Cizilan listede dur/ileri/geri
          (konsol) ve kip anahtari vardi, yani cikti doluydu.
-         Kalanlar ust serit: ayar tutamagi, deri, saat, kayit
-         araclari ve arama cizgisi. */
-      ['ayarTut','deriFirca','saatTus',
-       'rec','cam','mute','favAc','araCizgi'].forEach(id=>{
+         Kalanlar ust serit: ayar tutamagi, deri, saat, arama
+         cizgisi.
+         25 EYLUL (ikinci tur): kayit araclari satirida da kalan
+         vardi -- kullanicinin fotografinda "CAM", sessiz ve yildiz
+         gorunuyordu, yani sol ust bos degil, yarim kalmisti. Ayni
+         gerekce: bu satir da konsolun parcasi (REC/CAM/sustur/
+         favori + etiketleri). Cikti yalnizca sol ust yardimci sutun
+         ve arama cizgisi. */
+      ['ayarTut','deriFirca','saatTus','araCizgi'].forEach(id=>{
         ciz(document.getElementById(id));
       });
     }catch(e){ _yut(e); }
@@ -2401,9 +2406,8 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     const harita = new Map();
     try{
       /* Liste cizim listesiyle Ayni olmali (bkz. yukaridaki gerekce):
-         sol alt kume hazirlanmaz. */
-      const idler = ['ayarTut','deriFirca','saatTus',
-                     'rec','cam','mute','favAc','araCizgi'];
+         sol alt kume ve kayit araclari hazirlanmaz. */
+      const idler = ['ayarTut','deriFirca','saatTus','araCizgi'];
       const isler = [];
       idler.forEach(id=>{
         const el = document.getElementById(id); if(!el) return;

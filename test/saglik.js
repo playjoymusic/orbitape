@@ -3037,6 +3037,62 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                     + ' kez daha (0 olmali)'
                     + ' · metin: "' + radyoTavan.not.slice(0,44) + '"')
                  : 'olculemedi');
+    /* 25 EYLUL: SOL SUTUN ASLA CAKISMAZ. Kullanicinin cektigi
+       ekranlarda sol ustte uc cizgi, paletin USTUNE binmis gorunuyordu
+       ("ayarlardan search'e bastim, bir sarki sectim, hop, ayarlarin
+       altindaki ikonlar yukariliyor, sonra duzeliyor"). Panel
+       ACILKEN tutamagi panelin 12 px ustune tasiyor (ac(): offsetTop
+       - 12; ORBITAPE'de 776 -> 96 olculdu) ve kapaninca geri
+       donuyor. O arada yanlis bir olcumde tutamagin yeri
+       (panoIcinde kalip o sutunun arasina dusmesi) mumkun; boyle
+       bir kare gorundugu icin kalici degil, KALICI KURAL haline
+       getirildi: iki kipte de, panel acik ve kapaliyken bes
+       oge hicbir sekilde cakismamali. */
+    {
+      const olc = await pg.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r,ms));
+        const idler = ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus'];
+        const kutu = ()=> idler.map(id=>{ const e=document.getElementById(id);
+          const r=e.getBoundingClientRect();
+          return {id, l:r.left, t:r.top, r:r.right, b:r.bottom, w:r.width}; });
+        const cakisma = (a)=>{ for(let i=0;i<a.length;i++) for(let j=i+1;j<a.length;j++){
+            const A=a[i], B=a[j];
+            if(A.w>0 && A.l < B.r-0.5 && B.l < A.r-0.5 && A.t < B.b-0.5 && B.t < A.b-0.5)
+              return A.id+' x '+B.id; } return null; };
+        /* moodUygula() yalnizca AYAR.mood'u degil AKTIF_MOD, AKTIF_AILE
+           ve 'mod' degiskenini de oynatiyor. Ilk yazimda yalnizca
+           AYAR.mood geri veriliyordu ve BIR SONRAKI kontrol
+           ("Acilista RADIOTAPE") AKTIF_MOD=null gorerek kirmiziya
+           dondu -- test testi kirdi. Ayni tuzak bir onceki kontrolde de
+           yasamisti (bkz. "DURUMU TAM GERI VER" notu). */
+        const eskiMood = AYAR.mood, eskiAile = AKTIF_AILE,
+              eskiMod = AKTIF_MOD, eskiKanal = mod, kayit = [];
+        for(const mood of [false, true]){
+          AYAR.mood = mood; moodUygula(false); await bek(280);
+          geriYerlestir(); await bek(180);
+          for(const acik of [false, true]){
+            try{ window.ayarGoster(acik); }catch(_){}
+            await bek(340); geriYerlestir(); await bek(180);
+            const a = kutu();
+            kayit.push({ mood:mood, acik:acik, cakisma:cakisma(a),
+              ustteki: a.filter(x=>x.w>0).sort((p,q)=>p.t-q.t)[0].id,
+              sira: a.filter(x=>x.w>0).map(x=>x.id.slice(0,4)+'@'+Math.round(x.t)).join(' ') });
+          }
+        }
+        try{ window.ayarGoster(false); }catch(_){}
+        AYAR.mood = eskiMood; moodUygula(false); await bek(240);
+        AKTIF_AILE = eskiAile; AKTIF_MOD = eskiMod; mod = eskiKanal;
+        try{ geriYerlestir(); }catch(_){}
+        await bek(160);
+        return kayit;
+      });
+      const cakisan = olc.filter(x=>x.cakisma);
+      K('Sol sutun hicbir durumda ust uste binmiyor', cakisan.length === 0,
+        cakisan.length ? (cakisan.map(x=>(x.mood?'ORBITAPE':'RADIOTAPE')
+                        + (x.acik?'/panel acik':'/kapali') + ': ' + x.cakisma).join(' · '))
+                      : (olc.length + ' durum temiz · RADIOTAPE ustteki: '
+                         + olc.filter(x=>!x.mood).map(x=>x.ustteki).join('/')));
+    }
     /* Radyo metni BES DILDE de var mi (sozluk anahtari). */
     {
       const K2 = 'Twelve stations in a row failed to load. The station servers may be busy, or blocked on this network.';
@@ -12923,18 +12979,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* Fotograf cizimi EKRANDAKI TUSLARI biliyor mu: yeni bir tus
        eklenip bu listeye yazilmazsa ciktida sessizce kaybolur --
        deriFirca ve saatTus'ta tam boyle oldu. */
-    /* 25 Eylul: kullanicinin istegi "radyo tarafindaki pic'te de
-       sol alt bos olsun, resmi yakalarken." Karsilastigi kare
-       ORBITAPE kamera cekimiydi; orada sol alt tamamen bos. Cizim
-       listesinde dur/ileri/geri (konsol) ve kip anahtari vardi.
-       Iki liste de ayni olmak zorunda (asagidaki test bunu
-       sayiyor), o yuzden ikisini birden denetle. */
+    /* 25 Eylul (birinci tur): kullanicinin istegi "radyo tarafindaki
+       pic'te de sol alt bos olsun, resmi yakalarken." Karsilastigi
+       kare ORBITAPE kamera cekimiydi; orada sol alt tamamen bos.
+       Cizim listesinde dur/ileri/geri (konsol) ve kip anahtari vardi.
+       25 Eylul (ikinci tur): kalan kayit araclari satiri da temizlendi
+       -- kullanicinin fotografinda "CAM", sessiz ve yildiz hâlâ
+       gorunuyordu, yani sol alt bos degil, yarim kalmisti. REC/CAM/
+       sustur/favori da konsolun parcasi. Iki liste de ayni olmak
+      zorunda (asagidaki test bunu sayiyor), o yuzden ikisini birden
+       denetle. */
     {
       const _liste = kayitKaynak2.match(/\['ayarTut'[\s\S]*?\]/g) || [];
-      const _solAlt = /'kipKisayol'|'geri'|'dur'|'duraklat'|'ileri'/;
+      const _yok = /'kipKisayol'|'geri'|'dur'|'duraklat'|'ileri'|'rec'|'cam'|'mute'|'favAc'/;
       K('Sol alt kume fotografta cizilmiyor',
-        _liste.length >= 2 && _liste.every(l => !_solAlt.test(l)),
-        _liste.length + ' liste, sol alt kume ' + (_liste.every(l => !_solAlt.test(l)) ? 'yok' : 'VAR'));
+        _liste.length >= 2 && _liste.every(l => !_yok.test(l)),
+        _liste.length + ' liste, yasakli kume ' + (_liste.every(l => !_yok.test(l)) ? 'yok' : 'VAR'));
     }
     K('Fotograf yeni tuslari da ciziyor',
       /'ayarTut','deriFirca','saatTus'/.test(kayitKaynak2)
