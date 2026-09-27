@@ -3720,7 +3720,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       AYAR.deriKilit = false;
       AYAR.deri = 42; AYAR.merkez = 'yuvarlak';
       AYAR.mood = true; moodUygula(false); await bek(320);
-      const zorlandiMi = (AYAR.deri === 0 && AYAR.merkez === 'cark');
+      /* 27 Eylul: arsivin merkezi artik zorla CARK degil HALKA
+         (kullanicinin sozu: "orbitape te bence cark ilk acilmasin.
+         skins'ler sayfasindan istege bagli zaten aciliyor"). DERI
+         zorlamasi aynen durur: default deri. */
+      const zorlandiMi = (AYAR.deri === 0 && AYAR.merkez === 'yuvarlak');
       const saklandiMi = (AYAR.radyoDeri === 42 && AYAR.radyoMerkez === 'yuvarlak');
 
       // RADIOTAPE'e donunce eski deri geri gelmeli.

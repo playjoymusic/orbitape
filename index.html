@@ -7108,9 +7108,23 @@
     }catch(e){ return false; }
   }
   try{ window.cizimliDeriMi = cizimliDeriMi; }catch(e){ _yut(e); }
-  function merkezUygula(){
+  /* CARK ORBITAPE'DE OTOMATIK ACILMAZ (27 Eylul, kullanicinin sozu:
+     "orbitape te bence cark ilk acilmasin. skins'ler sayfasindan
+     istege bagli zaten aciliyor. boylece gezegenler ve yukaridaki sey
+     ust uste binmez."). Olcum: gecersiz yazida cark tuvali halka
+     yerine gosteriyordu; gezegen satiri (y 640) ve halkanin tepesindeki
+     gezegen ikonu birbirine ve "HUMANS/INDUSTRIAL" yazilarina
+     biniyordu. Yozorlama sadece BU GIRIS icin gecerli: kullanicinin
+     kayitli tercihi (AYAR.merkez) SILINMEZ, radyoda aynen durur ve
+     skins/ayar sayfasindan secim yine calisir. */
+  function merkezUygula(zorlama){
     try{
-      const m = (AYAR.merkez || 'cark');
+      /* Kural burada, cagri yerinde degil: carkGeldi() (veri geldi)
+         dahil BASKA bir yol merkezUygula()'yi parametresiz cagirip
+         zorlamayi eziyordu -- olculdu: ORBITAPE'de cark yine acik
+         kaldi. O yuzden karar tek yerde: mood'da ve kullanici bu
+         oturumda secim yapmadiysa HALKA gosterilir. */
+      const m = zorlama || (AYAR.merkez || 'cark');
       document.body.classList.toggle('merkez-cark', m === 'cark');
       document.body.classList.toggle('merkez-faz', m === 'faz');
       /* halka/yuvarlak ayrimi RING anahtariyla ayni sey: govde mi
@@ -12098,7 +12112,16 @@
           AYAR.radyoDeri = AYAR.deri|0;
           AYAR.radyoMerkez = AYAR.merkez || 'cark';
           AYAR.deri = 0;
-          AYAR.merkez = 'cark';
+          /* CARK ORBITAPE'DE OTOMATIK ACILMAZ (27 Eylul, kullanicinin
+             sozu: "orbitape te bence cark ilk acilmasin. skins'ler
+             sayfasindan istege bagli zaten aciliyor. boylece
+             gezegenler ve yukaridaki sey ust uste binmez."). Buraya
+             once 'cark' yaziliyordu: arsivin merkezi zorla carkti.
+             Olculdu: gezegen satiri (y 640) ve halkanin tepesindeki
+             gezegen ikonu (247-277) ust uste biniyordu. Simdi HALKA.
+             Radyo tarafi kendi kayitli merkezini koruyor (radyoMerkez)
+             ve istenirse cark yine skins/ayar sayfasindan secilir. */
+          AYAR.merkez = 'yuvarlak';
         }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
@@ -19808,6 +19831,8 @@
     try{ window.moodKapat = ()=>{
       if(!AYAR.mood) return;
       AYAR.mood = false; ayarKaydet(); yaz(); kapa(); moodUygula(false);
+      /* Radyoya donerken merkez kayitli tercihe doner. */
+      try{ merkezUygula(); }catch(e){ _yut(e); }
     }; }catch(e){ _yut(e); }
     /* ── ACMA DA AYNI KAPIDAN ────────────────────────────────────
        Kip kisayolu iki yonlu oldu: radyodayken arsivi aciyor. Ayni
@@ -19816,6 +19841,7 @@
     try{ window.moodAc = ()=>{
       if(AYAR.mood) return;
       AYAR.mood = true; ayarKaydet(); yaz(); kapa(); moodUygula(false);
+      try{ merkezUygula(); }catch(e){ _yut(e); }
     }; }catch(e){ _yut(e); }
     tut.addEventListener('click', e=>{ e.stopPropagation(); cevir(); });
     tut.addEventListener('pointerdown', e=>e.stopPropagation());

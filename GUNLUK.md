@@ -3219,3 +3219,36 @@ taşan etiket sayısı 0. Sözlükler 5 dilde 184 anahtar, hepsi eşleşiyor
 Kapı yeşil: saglik 891/891 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19 · ilk boyama 111.4 KB
 (tavan 112.6).
+
+### 27 Eylül — ORBITAPE'de çark ilk açılmıyor
+
+Kullanıcının cümlesi: "orbitape te bence çark ilk açılmasın. skins'ler
+sayfasından isteğe bağlı zaten açılıyor. böylece gezegenler ve
+yukarıdaki şey üst üste binmez."
+
+**Asıl sebep ölçüldü:** arşive geçerken `moodUygula` merkezi zorla
+`'cark'` YAZIYORDU (`AYAR.merkez = 'cark'`) — yani çark bir varsayılan
+değil, kip açılışında dayatılıyordu. Ölçülen sonuç: gezegen ikonu
+247-277, halkanın tepesi 291, gezegen satırı 644 — ikon çizginin
+tellerine, "HUMANS/INDUSTRIAL" yazılarına biniyordu.
+
+**Düzeltme:** arşivde merkez `'yuvarlak'` (halka). Radyo tarafı kendi
+kayıtlı merkezini koruyor (`AYAR.radyoMerkez`) ve dönünce geri alıyor
+(ölçüldü: radyo → çark, ORBITAPE → halka, geri → çark). Çark yine
+skins/ayar sayfasından isteğe bağlı açılabiliyor.
+
+**İki yanlış yol denendi ve ölçümle elendi:**
+1. `_merkezKullanici` bayrağı → `carkGeldi()` içinde set edildi; o bir
+   "veri geldi" bildirimi, kullanıcı seçimi değil → bayrag hep true
+   kaldı, çark yine açıldı.
+2. Kararı `moodAc`'a koymak → `carkGeldi()` parametresiz
+   `merkezUygula()` çağırıp zorlamayı ezdi (ölçüldü: ORBITAPE'de
+   merkez yine `cark`). Karar `AYAR.merkez`'te olunca tek yerden
+   çalışıyor.
+
+Test güncellendi: "LOCK SKIN kapalıyken ORBITAPE her zaman default
+deriyle açılıyor" kontrolü merkez için `'cark'` bekliyordu; deri
+zorlaması aynen dururken merkez beklentisi `'yuvarlak'` oldu.
+
+Kapı yeşil: saglik 891/891 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19.
