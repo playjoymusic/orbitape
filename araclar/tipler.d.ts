@@ -230,9 +230,11 @@ interface Window {
      oldugu icin betikler calistiktan sonra window uzerinde hazir. */
   REHBER_RADIO?: any;
   REHBER_ORB?: any;
+  REHBER_JOY?: any;
 }
 
 /* Ayni iki tablo index.html'de BARE isimle okunuyor (klar kodu).
    Bu yuzden global tanim da gerekli; Window kaydi tek basina yetmiyor. */
 declare const REHBER_RADIO: any;
 declare const REHBER_ORB: any;
+declare const REHBER_JOY: any;

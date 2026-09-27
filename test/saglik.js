@@ -150,6 +150,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* Dinleyiciler takildiktan SONRA gidiliyor: acilistaki bir JS hatasi
      yakalanmazsa bu testin varlik sebebi kalmaz. */
   await pg.goto(S); await pg.waitForTimeout(2500);
+
+  /* YENI KURAL (27 Eylul, kullanicinin sozu): "acilis ekrani acikken
+     bir kez ortaya bastik mi artik arkasi inaktif olmali. cunku
+     radiotape'e basinca sanki tekrar sarki degisiyor. ya arkasi
+     tiklaniyor ya bir sey." Olcum: secici acikken diskin ustune
+     gelen hedef katmanin kendisi. */
+  const arkaPlan = await pg.evaluate(()=>{
+    const k=document.getElementById('modKollar');
+    const acik=!!(k && k.classList.contains('ac'));
+    if(!acik) return {acik:false, katman:false, ustte:''};
+    const tp=document.getElementById('tp'); const r=tp.getBoundingClientRect();
+    const e=document.elementFromPoint(Math.round(r.left+r.width/2), Math.round(r.top+r.height/2));
+    const katman = e===k || !!(e && e.closest && e.closest('#modKollar'));
+    return {acik:true, katman:katman, ustte:(e && (e.id||e.className)) || '?'};});
+  K('Acilis ekrani acikken arka plan inaktif', !arkaPlan.acik || arkaPlan.katman,
+     arkaPlan.acik ? ('diskin ustunde: ' + arkaPlan.ustte) : 'secici acik degil (donus kullanici)');
+  /* 27 Eylul: acilis secici (uc kol) arka plani INAKTIF yapiyor --
+     dokunus katmana gidiyor, arkaya gecmiyor. Testlerin cogu NORMAL
+     akisi olcer, o yuzden olcume baslamadan once bir secim yapilir
+     (dallardan birine basilir). */
+  await pg.evaluate(()=>{ const k=document.getElementById('modKollar');
+    if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+  await pg.waitForTimeout(900);
    const sahiplik = await pg.evaluate(sahiplikKontrolu);
    for(const [id, gecti] of Object.entries(sahiplik.sonuc)){
       K('UI sahipligi: '+id, gecti, gecti ? 'dogru yuzeyde' : 'yanlis/eksik yuzey');
@@ -2092,7 +2115,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{ if(!ayarAcik && typeof window.ayarGoster === 'function') window.ayarGoster(true); }catch(e){}
       try{ const ay = document.getElementById('agyok'); if(ay){ ay.classList.add('on'); ay.style.display='flex'; } }catch(e){}
       await bek(350);
-      const secici = ['#modAd','#kipKisayol .ad','#recYazi','#camYazi',
+      const secici = ['#modAd','#kipKisayol .uck-ad','#recYazi','#camYazi',
         '#ayar .sat > span','#ayar .sat .durum','#ayar h5','#ayar .kapi-yazi b',
         '#ayar .kapi-yazi i','#agyok .ay-ad','#agyok .ay-not','#agyok .ay-tekrar',
         '#fxEl .yazi','#np .ad','#np .alt','#kisaNot'];
@@ -2103,7 +2126,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const r = el.getBoundingClientRect();
           if(cs.display==='none' || cs.visibility==='hidden' || r.width<2 || r.height<2) return;
           /* Elemanin ve atalarinin opakligi */
-          let op = 1; for(let e = el; e; e = e.parentElement) op *= parseFloat(getComputedStyle(e).opacity) || 1;
+          let op = 1;
+          for(let e = el; e; e = e.parentElement){
+            /* DUZELTME: `parseFloat(...) || 1` opakligi 0 olan
+               elemanda 1 DONUYORDU (0 falsy) -- yani gorunmez yazi
+               ("opacity:0") kontrast olcumune giriyor ve her kosuda
+               kirmiziydi. Simdi 0 da 0 sayiliyor. */
+            const o = parseFloat(getComputedStyle(e).opacity);
+            op *= isNaN(o) ? 1 : o;
+          };
           if(op < 0.6) return;
           const metin = (el.textContent || '').trim(); if(!metin) return;
           /* DEGRADE YAZI: renk 'transparent', gorunen sey
@@ -4573,6 +4604,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const mod0  = await p2.evaluate(()=>AKTIF_MOD);
       const depo  = await p2.evaluate(()=>{ try{ return localStorage.getItem('orbitape.mod'); }catch(e){ return 'x'; } });
       const bay0  = await p2.evaluate(()=>_ilkCalindi);
+      /* 27 Eylul: acilis secici (uc kol) arka plani INAKTIF yapiyor --
+         dokunus katmana gidiyor. Bu kontrol yeni bir sayfada ilk acilis
+         halini kurup HALKA basiyor; once secim yapilmali. RADIOTAPE
+         dali secilir, yani mod0/depo olcumleri degismez. */
+      await p2.evaluate(()=>{ const k=document.getElementById('modKollar');
+        if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+      await p2.waitForTimeout(950);
       const kb = await p2.evaluate(()=>{const r=document.getElementById('tp').getBoundingClientRect();
         return {x:r.left+r.width/2, y:r.top+r.height/2, R:r.width/2};});
       /* 480 -> 760: tutma esigi 550 ms'ye cikti (MOOD_TUT). */
@@ -7372,8 +7410,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            degil; tasma olcumu konsolun gercek satirlariyla yapilir. */
         if(!kk || !ta) return null;
         const enSag = Math.max(ta.right, ar ? ar.right : 0);
-        const ad = document.querySelector('#kipKisayol .ad');
-        const gor = [...ad.children].find(x=>getComputedStyle(x).display!=='none') || ad;
+        /* 27 Eylul (v2 kademeli switch): tek .ad yerine UC isim
+           (.uck-ad) var; secili olan opacite 1, digerleri 0. */
+        const kap = document.querySelector('#kipKisayol');
+        const adlar = [...document.querySelectorAll('#kipKisayol .uck-ad')];
+        const gor = adlar.find(x=>getComputedStyle(x).opacity !== '0') || adlar[0] || kap;
         const st = getComputedStyle(gor);
         /* Olcut artik kunye degil MARKA: sag ustteki ORBITAPE. */
         const mk = document.querySelector('#ust .kanal.ad');
@@ -7396,7 +7437,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                     KAPSAYICIDAN okunuyor -- cocukta 'none' cikar
                     ve bu dogru davranistir. */
                  dolgu: st.webkitTextFillColor || st.color,
-                 grad: sadeGrad(getComputedStyle(ad).backgroundImage),
+                 grad: sadeGrad(getComputedStyle(kap).backgroundImage),
                  markaGrad: ms ? sadeGrad(ms.backgroundImage) : '',
                  yazi: gor.textContent.trim() };
       };
@@ -7458,18 +7499,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        r ? ('"' + r.yazi + '" ' + r.font + ' ' + r.punto + '/' + r.kalinlik
             + ' ' + r.aralik + 'em | marka: ' + r.markaFont + '/' + r.markaKalinlik
             + ' ' + r.markaAralik + 'em') : '-');
-  /* ── MEZAR TASI: GRADYAN DA MARKANINKIYLE AYNI OLMALIYDI ─────
-     Bu test bir zamanlar r.grad === r.markaGrad diyordu, cunku etiket
-     --m1/--m3/--m2 degiskenlerini kullaniyordu ve tema degisince
-     marka ile birlikte donuyordu. Kullanici bunu geri aldi:
-       "bunlarin ikisi de tur degisimlerinden etkilenmesinler.
-        baska evrene acilan birer tur."
-     Kural degisti, test de degisti: artik SABITLIK olculuyor. */
+  /* ── KAPI ETIKETI TURLERLE DEGISMEZ (v2) ──────────────────────
+     Bir zamanlar etiket bir GRADYANDI ve test r.grad ===
+     r.markaGrad diyordu. V2 kademeli switch'te etiket tek renk
+     (kendi duraginin rengi) ve secili olan opacite 1. Kural ayni:
+       "bunlarin ikisi de tur degisimlerinden etkilenmesinler."
+     yani raf degisince etiket rengi KALIR. */
     K('Kapi etiketi tur degisiminden etkilenmiyor',
        !!r && !!kons.radyoBaskaRaf
-       && r.grad === kons.radyoBaskaRaf.grad
-       && !!r.markaGrad && r.markaGrad !== kons.radyoBaskaRaf.markaGrad,
-       'raf degisti: marka gradyani degisti, kapi etiketi ayni kaldi');
+       && r.dolgu === kons.radyoBaskaRaf.dolgu && r.dolgu !== '',
+       r ? ('raf degisti, etiket rengi ayni kaldi: ' + r.dolgu) : '-');
   /* Iki kapi BIRBIRINDEN de farkli olmali: her biri gidecegi evrenin
      rengini tasiyor -- radyoda karanlik (arsiv), arsivde parlak
      (radyo). Ayni olsalardi "baska evrene acilan birer tur" cumlesi
@@ -7484,37 +7523,62 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        odanin satiri calisir ve RADIOTAPE yazar, digeri soluk kalir.
        Olcum: radyoda iki kapi farkli renkte; ortapoda turuncu (ORBITAPE)
        ve RADIOTAPE yazan, altta soluk. */
-    K('Iki kapi dugmesi odanin rengini tasiyor', await pg.evaluate(async ()=>{
+    K('Kip yolunun duraklari odanin rengini tasiyor', await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
-      const b=(id)=>{ const e=document.getElementById(id);
-        if(!e) return null; const k=e.querySelector('.anahtar b');
-        return { renk:getComputedStyle(k).backgroundColor,
-                 zemin:getComputedStyle(e.querySelector('.anahtar')).backgroundColor,
-                 yazi:(e.querySelector('.ad')||{}).textContent,
-                 op:getComputedStyle(e).opacity }; };
+      const k=document.getElementById('kipKisayol');
+      const renk=()=>{ const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
+        const g=l.find(x=>parseFloat(getComputedStyle(x).opacity)>0.9);
+        return { kip:g?g.dataset.kip:'', renk:g?getComputedStyle(g).color:'',
+                 soluk:l.filter(x=>x!==g).map(x=>getComputedStyle(x).color) }; };
       const eski = AYAR.mood;
-      AYAR.mood = false; moodUygula(false); await bek(300);
-      geriYerlestir(); await bek(260);
-      const r1={ o:b('kipOrbit'), j:b('kipJoy') };
-      AYAR.mood = true; moodUygula(false); await bek(320);
-      geriYerlestir(); await bek(260);
-      const r2={ o:b('kipOrbit'), j:b('kipJoy') };
-      AYAR.mood = eski; moodUygula(false); await bek(260);
-      return !!r1.o && !!r1.j && !!r2.o && !!r2.j
-          && r1.o.renk !== r1.j.renk
-          && r1.o.yazi === 'ORBITAPE' && r1.j.yazi === 'JOYTAPE'
-          && r2.o.yazi === 'ORBITAPE' && r2.j.yazi === 'JOYTAPE'
-          && r2.o.renk !== r2.j.renk
-          && parseFloat(r2.j.op) > 0.9;
-    }), 'radyoda [ORBITAPE] [JOYTAPE] · ortapoda da ikisi de acik (JOYTAPE her kipte acilabiliyor)');
-    K('Iki kapi ayni yerde ve ayni fontta', await pg.evaluate(()=>{
-      const o=document.getElementById('kipOrbit'), j=document.getElementById('kipJoy');
-      if(!o || !j) return false;
-      const a=o.getBoundingClientRect(), c=j.getBoundingClientRect();
-      const fa=getComputedStyle(o.querySelector('.ad')), fc=getComputedStyle(j.querySelector('.ad'));
-      return Math.abs(a.left-c.left) <= 1 && a.height === c.height
-          && fa.fontFamily === fc.fontFamily && fa.fontWeight === fc.fontWeight;
-    }), 'alt alta, ayni sol kenar, ayni yazi tipi');
+      /* KIP DURUMUNUN TAMAMI: mood + joy. Yalniz AYAR.mood geri
+         alininca bazen JOYTAPE'de kaliniyordu (oklar modKolaGit
+         ile gidiyor, o da body.joy ekliyor) ve sonraki kontroller
+         ("carki cevirmek...", "bekci yerinden...") radyo varsayiyor:
+         olculdu, ikisi de tam bu yuzden kirmiziydi. */
+      const eskiJoy = AYAR.joy;
+      const eskiSinif = document.body.className;
+      AYAR.mood = false; moodUygula(false); await bek(340); geriYerlestir(); await bek(340);
+      const r1 = renk();
+      /* v2 yolun alt duragindan yukarı: klavyede ArrowUp bir sonraki
+         duragi secer (RADIOTAPE -> JOYTAPE -> ORBITAPE). */
+      k.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));
+      await bek(460); const r2 = renk();
+      k.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));
+      await bek(460); const r3 = renk();
+      /* moodAc() gecikmeli bitiyor: 420 px bekleyince geri alma, sonra
+         gelen sinfa tekrar mood+joy birakiyordu. Olculdu: bu kontrol
+         ORBITAPE/JOYTAPE'de kaliyordu ve sonraki iki kontrol radyo
+         varsayiyor -- cark JOYTAPE'de FARKLI bir izgaraya oturuyor
+         (360/11 yerine 360/5: kalan -6.55, kirmizi). O yuzden iki kez,
+         arada 1.2 sn bekleyerek geri aliniyor. */
+      const radyoya = ()=>{
+        AYAR.mood = false; AYAR.joy = false;
+        try{ moodUygula(false); }catch(e){}
+        document.body.classList.remove('mood','joy');
+        try{ if(typeof window.modKolaGit === 'function') window.modKolaGit('radio'); }catch(e){}
+      };
+      if(eskiSinif.indexOf('mood') < 0){
+        radyoya(); await bek(1200); radyoya(); await bek(420);
+      }else{
+        AYAR.mood = eski; if(eskiJoy !== undefined) AYAR.joy = eskiJoy;
+        moodUygula(false); await bek(420);
+      }
+      return r1.kip==='radio' && r2.kip==='joy' && r3.kip==='orbit'
+          && r1.renk!==r2.renk && r2.renk!==r3.renk && r1.renk!==r3.renk
+          && r1.soluk.every(c=>c===r2.soluk[0]);
+    }), 'uc durak sirayla acilir, her biri kendi odasinin renginde; secili olmayanlar soluk');
+    K('Kip yolunun isimleri tek sirada ve ayni fontta', await pg.evaluate(()=>{
+      const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
+      if(l.length!==3) return false;
+      const r=l.map(e=>e.getBoundingClientRect());
+      const f=l.map(e=>getComputedStyle(e));
+      return r.every(x=>x.width>0) && r.every(x=>Math.abs(x.left-r[0].left)<=5)  /* secili olmayan isim 4px kayarak giriyor */
+          && r[0].top<r[1].top && r[1].top<r[2].top
+          && new Set(f.map(x=>x.fontFamily)).size===1
+          && new Set(f.map(x=>x.fontWeight)).size===1
+          && new Set(f.map(x=>x.fontSize)).size===1;
+    }), 'uc isim alt alta, ayni sol kenar, ayni yazi tipi');
   }
 
   /* ── HIZ YAZIMI TAMPON BOSKEN DURUYOR ───────────────────────
@@ -8607,15 +8671,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           const r=e.getBoundingClientRect();
           return { l:r.left, r:r.right, t:r.top, b:r.bottom, h:r.height,
                    gor:getComputedStyle(e).display!=='none' }; };
-        /* Gorunen etiket: gizlenmemis olani. */
-        const etiket = ()=>{ const e=document.querySelector('#kipKisayol .ad');
-          return e ? e.textContent.trim() : ''; };
+        /* Gorunen isim: opacitesi 1 olan (v2: uc isim yan yana). */
+        const etiket = ()=>{ const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
+          const g=l.find(x=>getComputedStyle(x).opacity!=='0');
+          return g ? g.textContent.trim() : ''; };
         const olc = ()=>({ kk:R('kipKisayol'), tut:R('ayarTut'),
                            ta:R('tasima'), ar:R('araclar'),
                            kil:R('rehberTus'),
                            yazi:etiket(),
                            acik:document.getElementById('kipKisayol')
-                                .getAttribute('aria-checked') });
+                                .getAttribute('aria-valuenow') });
         const eskiMood = AYAR.mood;
         AYAR.mood = false; moodUygula(false); await bek(220);
         geriYerlestir(); await bek(160);
@@ -8671,23 +8736,29 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 27 Eylul: satir daima kendi odasinin adini yazar (arti
            secilen kipte "RADIOTAPE" degil) ve her iki satir da
            calisir -- ORBITAPE'den JOYTAPE'ye gecilir. */
+        /* v2: secili durak ARTIK kipin kendi adi (0=RADIOTAPE,
+           1=JOYTAPE, 2=ORBITAPE) ve aria-valuenow onu soyler. */
         return radyoDogru(r1) && arsivDogru(r2) && sabit
-            && r1.yazi === 'ORBITAPE' && r2.yazi === 'ORBITAPE';
+            && r1.yazi === 'RADIOTAPE' && r2.yazi === 'ORBITAPE'
+            && r1.acik === '0' && r2.acik === '2';
       }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket hep MOODS');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
-    K('Kip kisayolu radyoya donduruyor', await pg.evaluate(async ()=>{
+    K('Kip kislayolu radyoya donduruyor', await pg.evaluate(async ()=>{
         const bek = ms=>new Promise(r=>setTimeout(r,ms));
         const eskiMood = AYAR.mood;
         AYAR.mood = true; moodUygula(false); await bek(220);
-        document.getElementById('kipKisayol').click();
-        await bek(260);
+        /* v2: dokunus YUKSEKLIGI kipi secer (click dinleyicisi yok);
+           klavyede Home en alt duragi (RADIOTAPE) secer. */
+        const k=document.getElementById('kipKisayol');
+        k.dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true}));
+        await bek(300);
         const sonuc = AYAR.mood === false && mod === 'radio'
-                   && !document.body.classList.contains('mood');
+                   && !document.body.classList.contains('mood')
+                   && k.getAttribute('aria-valuenow') === '0';
         AYAR.mood = eskiMood; moodUygula(false); await bek(120);
-        const k = document.documentElement.innerHTML;
-        return sonuc && /window\.moodKapat/.test(k);
-      }), 'tek dokunus radyoya donuyor, ayarlardaki kapiyla ayni islev');
+        return sonuc;
+      }), 'yolun alt duragi / klavyede Home radyoya donuyor');
     /* ── YELPAZE IKONU: 26 EYLUL, KULLANICI DORT UYARI ──────────────
        1) acik nokta BEYAZ duruyordu ve saga yapisikti -> kirmizi,
           ikona yapisik, 7px.
@@ -13315,16 +13386,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const c = {};
       try{
-        const eskiMood = !!AYAR.mood;
-        AYAR.mood = true; moodUygula(); await bek(400);
-        /* 27 Eylul: nebula SILINDI; onbellege sizan nesne artik
-           gezegenler (#uydular). Ayni sinama, yeni nesne. */
+        /* 27 Eylul: gezegenler yalniz ORBITAPE'de kuruluyor; AYAR.mood
+           yazmak yetmiyor -- sinifin kendisi konulup yerlesim
+           tazeleniyor (aksi halde #uydular .uydu sorgusu bos doner). */
+        const eskiMood = document.body.classList.contains('mood');
+        if(!eskiMood){ document.body.classList.add('mood'); await bek(60);
+                        geriYerlestir(); await bek(430); }
         const nebEl = document.querySelector('#uydular .uydu');
         const r1 = nebEl ? nebEl.getBoundingClientRect() : null;
         c.nebVarMoodIken = !!(r1 && r1.width && r1.height);
         kayitTuvalKur();
         fotoKaresi();                 /* nebulanin konumu onbellege yaziliyor */
-        AYAR.mood = false; moodUygula(); await bek(400);
+        document.body.classList.remove('mood'); geriYerlestir(); await bek(420);
         const r2 = nebEl ? nebEl.getBoundingClientRect() : null;
         c.nebYokRadyodayken = !(r2 && (r2.width || r2.height));
         fotoKaresi();                 /* asil sinanan kare: sizinti burada olurdu */
@@ -13344,18 +13417,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           if(zx >= 0 && zy >= 0 && zy < kayitCtx.canvas.height)
             zemin = Array.from(kayitCtx.getImageData(zx, zy, 1, 1).data);
         }
-        AYAR.mood = eskiMood; moodUygula(); await bek(300);
+        if(eskiMood){ document.body.classList.add('mood'); geriYerlestir(); await bek(320); }
         c.piksel = piksel; c.zemin = zemin;
         if(piksel && zemin){
           let fark = 0;
           for(let i = 0; i < 3; i++) fark += Math.abs(piksel[i] - zemin[i]);
           c.fark = fark;
         }
+        if(eskiMood){ document.body.classList.add('mood'); geriYerlestir(); await bek(320); }
       }catch(e){ c.hata = String(e && e.message || e); }
       return c;
     });
-    /* 27 Eylul: nebula SILINDI; olcum artik gezegenlerin fotografa
-       yapisip yapismadigi ve sirasinin bozulmamasi. */
     K('ORBITAPE\'ten donunce gezegenler fotografa yapisamiyor',
       !!gezegenSizinti.nebVarMoodIken && !!gezegenSizinti.nebYokRadyodayken
       && typeof gezegenSizinti.fark === 'number' && gezegenSizinti.fark < 20,
@@ -15680,10 +15752,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          /DERI_ALT_SOL_FARK/.test(kaynak)
          && /classList\.toggle\('duztus'/.test(kaynak),
          'olcum esigin altindaysa tus zemini ve golge dusuyor');
-      K('Duz seritte kip anahtari da kabartmasiz',
-         /body\.deri\.duztus #kipKisayol \.anahtar\{box-shadow:none/.test(kaynak)
-         && /body\.deri\.duztus #kipKisayol \.anahtar b\{box-shadow:none/.test(kaynak),
-         'anahtar kendi golgesini tasiyor, --d-golge ona islemiyor');
+      K('Duz seritte ayar anahtari da kabartmasiz',
+         /body\.deri\.duztus #ayar \.anahtar\{box-shadow:none/.test(kaynak)
+         && /body\.deri\.duztus #ayar \.sat\.kapi\{box-shadow:none/.test(kaynak),
+         'v2 kademeli switch deri kurali tasimiyor; ayar anahtari ve KAPI satiri duz');
       K('Durum cubugu rengi meta DUGUMU yenilenerek yaziliyor',
          /function durumCubuguYaz/.test(kaynak)
          && /removeChild\(m\)/.test(kaynak)

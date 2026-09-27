@@ -76,8 +76,6 @@
         d.setAttribute('role','button');
         d.setAttribute('tabindex','0');
         d.style.setProperty('--renk', o.renk);
-        /* ust kolun cizgisi yazinin altindan baslasin */
-        d.style.setProperty('--bas', (i === 0 ? '34px' : '-14px'));
         d.setAttribute('aria-label', o.ad + ' — ' + o.alt);
         d.innerHTML = '<b><svg viewBox="0 0 24 24" aria-hidden="true">'
                     + KOL_SIMGELERI[i] + '</svg></b>'
@@ -117,7 +115,21 @@
   function modKollarKapa(){
     try{
       const kap = document.getElementById('modKollar');
-      if(kap) kap.classList.remove('ac');
+      if(!kap) return;
+      /* YUMUSAK KAPANIS (27 Eylul, kullanici: "acilis arayuzu hafifce
+         kapansin smooth, her sey homojen renkler hareketler"). Once
+         sinif bir anda dusuyordu: ekran kayboluyordu. Simdi once
+         .kapanis ile soluklasip kuculuyor, 260 ms sonra .ac gidiyor.
+         Ayni sure/ease her yerde: gezegen satiri da .26s
+         cubic-bezier(.25,1.3,.4,1) kullaniyor. */
+      if(kap.classList.contains('ac') && !kap.classList.contains('kapanis')){
+        kap.classList.add('kapanis');
+        setTimeout(()=>{ try{
+          kap.classList.remove('kapanis','ac');
+        }catch(e){ _yut(e); } }, 260);
+        return;
+      }
+      kap.classList.remove('kapanis','ac');
     }catch(e){ _yut(e); }
   }
   function modKollarAc(){
@@ -184,16 +196,27 @@
          0.866*R <= Hr - 66 - 4. Once diskten turetiliyordu ve dal
          cerceveyi 10 px tasiyordu. */
       const Hr = r.width/2;
-      const R = Math.max(90, Math.min(150, Math.floor((Hr - 70)/0.866)));
+      /* R, dugumun GERCEK yarim boyutundan (27 Eylul, kullanici:
+         "biraz dallarini ac ve cap acilsin"): yarim boyut ~50 px, cerceve
+         yaricapi 151 -> R 108 (once 94). Uc dal da ayni R, 120 derece
+         aralikta: kollar arasi mesafe ucunun de R*sqrt(3). */
+      const _yb = Math.max.apply(null, Array.prototype.map.call(koll, el=>{
+        const q = el.getBoundingClientRect();
+        return Math.max(q.width, q.height); }))/2;
+      const R = Math.max(96, Math.min(160, Math.floor((Hr - _yb - 6)/0.866)));
       MOD_KOLLARI.forEach((o,i)=>{
         const e = /** @type {any} */ (koll[i]); if(!e) return;
         const a = o.ac * Math.PI/180;
         /* Kenar siniri: yatayda ust dugum ekran disina cikiyordu
            (olculdu: top -16). */
         const P2 = 40;   /* yarim kutu 37 + 3 pay */
-        const dx2 = o.dx || 0;
+        /* dx KALDIRILDI (27 Eylul, kullanici: "her sey birbirine esit
+           olsun"). Alt iki dal +/-16 px disari kacaridi: kollar arası
+           mesafe 171 / 171 / 194 olcuyordu -- ucgen esit kenarli
+           degildi. Simdi uc dal da ayni yaricapta (R) ve 120 derece
+           aralikla, yani uc mesafe de R*sqrt(3) ve birebir esit. */
         const mx2 = Math.max(P2, Math.min(innerWidth - P2,
-                      Math.round(cx + Math.cos(a)*R + dx2)));
+                      Math.round(cx + Math.cos(a)*R)));
         const my2 = Math.max(P2, Math.min(innerHeight - P2,
                       Math.round(cy + Math.sin(a)*R)));
         e.style.left = mx2 + 'px';
@@ -202,31 +225,35 @@
            --bas cizginin BASLADIGI yeri kaydirir (ust kol yazinin
            altindan baslasin diye 34, alt kollar -14) ve nokta
            yaricap kadar gidince tam MERKEZE varir. */
-        const bas = (i === 0 ? 34 : -14);
-        /* CIZGILER TAM MERKEZDE BULUSUYOR (27 Eylul): uzunluk tam
-           yaricap. Once 0.62*R idi, ucu merkezden 38-48 px kaliyordu
-           ve alt dallar daralinca cizgi halkanin ICINE giriyordu
-           ("balik cizgiler halkalara giriyor"). */
-        /* CIZGI UZUNLUGU IZDU$UM (27 Eylul): cizgi kutu merkezinden
-           DEGIL, bas kaydirmasindan basliyor ve yataga egilmis;
-           bu yuzden "R eksi bas" yanlis oluyordu (nokta 50 px kayiyordu).
-           Dogru: baslama noktasindan merkeze olan MESAFE, projeksiyon. */
+        /* CIZGI: HALKA KENARINDAN TAM MERKEZE (27 Eylul, kullanicinin
+           sozleri: "cizgiler halkalara tasmasin", "halkayi daha cizginin
+           disina kaydir", "radyotapein cizgisi ile noktasi bile
+           tutmuyor", "her sey birbirine esit olsun").
+           Onceki yontem SABIT dikey kayma kullaniyordu (--bas 34 /
+           -14) ve 32 px'lik kaydirmayi yalniz JS varsayiyordu; CSS
+           uygulamadigi icin ucu merkezden 32 px kaliyordu. Simdi
+           baslama noktasi halkanin KENARI + 5 px, yon merkeze dogru;
+           ucu TAM merkez -- uc nokta da ayni yerde bulusur ve
+           halkalarin hicbirine girmez. */
         const _b = e.getBoundingClientRect();
-        /* CIZGI DAIRENIN KENARINDAN BASLAR (27 Eylul, kullanici:
-           "halkanin icine girmis cizgi"): baslama noktasi dal
-           merkezinden merkeze dogru 32 px (daire yaricapi 28 + pay)
-           kaydirilir. */
-        let _sx = _b.left + _b.width/2, _sy = _b.top + _b.height/2 + bas - 15;
-        {
-          const ux = cx - _sx, uy = cy - _sy, L = Math.hypot(ux, uy) || 1;
-          _sx += ux/L*32; _sy += uy/L*32;
-        }
-        /* ACI DE MERKEZE GORE (27 Eylul, kullanici: "mavi bir nokta
-           var, iste ortasi orasi", "ordan baslasin 3 cizgi de"):
-           ucun de baslama noktasi mavi merkezde bitecek. Sabit aci
-           (ac+180) baslama kaydirmasi yuzunden 25 px sapma vardi. */
+        const _bx = _b.left + _b.width/2, _by = _b.top + _b.height/2;
+        const _h = e.querySelector('b');
+        const _hr = _h ? _h.getBoundingClientRect() : _b;
+        const _rx = _hr.left + _hr.width/2, _ry = _hr.top + _hr.height/2;
+        const _rr = _hr.width/2 + 5;
+        let ux = cx - _rx, uy = cy - _ry;
+        const L = Math.hypot(ux, uy) || 1; ux /= L; uy /= L;
+        const _sx = _rx + ux*_rr, _sy = _ry + uy*_rr;
+        e.style.setProperty('--basX', Math.round(_sx - _bx) + 'px');
+        e.style.setProperty('--basY', Math.round(_sy - _by) + 'px');
         const _aci = Math.atan2(cy - _sy, cx - _sx);
-        const ciz = Math.max(10, Math.round(Math.hypot(cx - _sx, cy - _sy)));
+        /* Uc nokta KESISMEYECEK: hepsi tam merkezde binyordu, yani
+           ucu de ust uste biniyordu ("grafiksel olarak hatali").
+           Simdi her nokta kendi cizgisinin sonunda, merkezden AYNI
+           12 px uzakta duruyor: eksenler merkezde bulusuyor, noktalar
+           ucgenin kendi yerinde ve birbirine binmiyor. */
+        const _merkeze = Math.hypot(cx - _sx, cy - _sy);
+        const ciz = Math.max(10, Math.round(_merkeze - 12));
         e.style.setProperty('--aci', (_aci*180/Math.PI + 360) % 360 + 'deg');
         e.style.setProperty('--cizgi', ciz + 'px');
       });
@@ -283,59 +310,78 @@
      MOD_KOLLARI undefined olur, .forEach patlar ve dugumler hic
      kurulmaz (olculdu: katman aciliyordu, 0 dugum vardi). */
   try{ modKollarAc(); }catch(e){ _yut(e); }
-try{ /** @type {any} */ (window).KOLLAR_HAZIR = true; }catch(e){
+try{ /** @type {any} */ (window).KOLLAR_HAZIR = true; }catch(e){ _yut(e); }
   /* REHBER TABLOLARI (27 Eylul, index.html'den tasindi -- ilk boyama
-     butcesi). Ayni veri, ayni siralama; sadece window uzerinden. */
-    window.REHBER_RADIO = [
-    { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
-    { h:{disk:0.55,aci:52},   m:'PINCH: OPEN SKY, TAP A STAR FOR A STATION', dx:-8, dy:10, hiza:'sag' },
-    /* SPIN MODE (17 Eylul): #bekle -- radyoda ve SYMBOL SPIN kapaliyken
-       (varsayilan), bir sembole dokununca ilgili mood'a ait rastgele
-       bir istasyona gecer. */
-    { h:'#bekle', m:'SPIN MODE — TAP A SYMBOL FOR A MOOD STATION', dx:0, dy:-24, hiza:'orta' },
-    /* ── SOL SUTUN ETIKET HIZALAMA (17 Eylul) ────────────────────────
-       Kullanicinin sozu: "soldaki yazılar yamuk, ikonlar duzelip, bu
-       yazıların da alt alta hizalı ikona daha yakın olmalı." Olcum
-       (gercek uygulamada, rehber acikken .et kutulari): RADYODA
-       #ayarTut'un kutusu 32px genis (digerleri 44px, bkz. satir 3309
-       "body:not(.mood) #ayarTut{width:32px}"), merkezi de o yuzden
-       farkli (cx 30 vs 36) -- eski ortak dx:30 MENU etiketini x=60'a,
-       ALARM/SKINS/VISUALS/GUIDE'i x=66'ya dusuruyordu, yani 6px'lik
-       bir kirilma. MENU'nun dx'i 36'ya cekilince hepsi ayni x=66
-       sutununda, kendi cercevesine (frame right=51) 15px, digerlerinin
-       kendi cercevesine (frame right=63) 3px mesafede -- artik tek
-       duz sutun. dy:-2 de kaldirildi: box merkezi zaten optik
-       hizalamadan sonra dogru (bkz. satir ~3146 "SOL SUTUN OPTIK
-       HIZALAMA"), ekstra kaydirmaya gerek yoktu. */
-    { h:'#ayarTut',   m:'MENU — OPEN FOR PHOTO, CAMERA, RECORDING & FAVOURITES', dx:36, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#saatTus',   m:'ALARM',       dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#deriFirca', m:'SKINS',       dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#gorselTus', m:'VISUAL / HOLD',     dx:30, dy:0,  hiza:'sol', cizgi:false },
+     butcesi; ayni veri, ayni siralama, sadece window uzerinden).
+     UC KIP UCU TABLO: RADIOTAPE / ORBITAPE / JOYTAPE -- kullanicinin
+     sozu: "2 mood icin de olacak tanitim". Sol sutunun alti dugmesi
+     (ayar/saat/firca/gorsel/rehber/KAMERA) her uc tabloda da ayni. */
+  window.REHBER_RADIO = [
+    { h:'#bekle', m:'MOOD — TAP A SYMBOL', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#bekle', m:'SPIN — TAP A SYMBOL', dx:-8, dy:16, hiza:'sag' },
+    { h:'#ayarTus', m:'SETTINGS — PHOTO, CAMERA, RECORDING, FAVOURITES', dx:36, dy:0, hiza:'sol', cizgi:false },
+    { h:'#saatTus', m:'ALARM', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#deriFirca', m:'SKINS', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#gorselTus', m:'VISUAL / HOLD', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#kamTus', m:'CAMERA', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
+    { h:{disk:0.55,aci:52}, m:'PINCH: OPEN SKY, TAP A STAR', dx:0, dy:10, hiza:'orta' },
     { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
-    { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
-    { h:'#kipKisayol', m:'SOUNDS FX',  dx:0, dy:-24, hiza:'orta' },
-    { h:'#araCizgi',   m:'SEARCH',     dx:0, dy:-24, hiza:'orta' },
-    { h:'#npBayrak',   m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
-    { h:'#fav',        m:'LIKE — HOLD TO PLAY FAVOURITES', dx:8, dy:-20, hiza:'sol' },
-    { h:'#isaret',     m:'TAP FOR ARTIST & TITLE', dx:0, dy:22, hiza:'orta' }
+    { h:'#kipKisayol', m:'ORBITAPE · JOYTAPE · RADIO', dx:110, dy:0, hiza:'sag' },
+    { h:'.kanal.ad', m:'TAP FOR LIST', dx:0, dy:12, hiza:'orta' },
+    { h:'#araCizgi', m:'SEARCH', dx:0, dy:-24, hiza:'orta' },
+    { h:'#npBayrak', m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#fav', m:'LIKE — HOLD TO PLAY FAVOURITES', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#isaret', m:'TAP FOR ARTIST & TITLE', dx:-8, dy:22, hiza:'sag' }
   ];
+
+  /* ORBITAPE: gezegen satiri ve gezegen ikonu burada; Iki kenar
+     sarma islevi (kaynaga bakma, sekil verme) ORBITAPE'ye ozgu. */
   window.REHBER_ORB = [
-    { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
-    { h:['#uydular .uydu','#mark'], m:'FX (TAP A MOON)', dx:14, dy:-8, hiza:'sol' },
-    { h:'#ayarTut',   m:'MENU — OPEN FOR PHOTO, CAMERA, RECORDING & FAVOURITES', dx:0,  dy:-26, hiza:'orta', cizgi:false },
-    { h:'#saatTus',   m:'ALARM',   dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#deriFirca', m:'SKINS',   dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#gorselTus', m:'VISUAL / HOLD', dx:30, dy:0,  hiza:'sol', cizgi:false },
+    { h:'#bekle', m:'MOOD — TAP A SYMBOL', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#bekle', m:'SPIN — TAP A SYMBOL', dx:-8, dy:16, hiza:'sag' },
+    { h:'#ayarTus', m:'SETTINGS — PHOTO, CAMERA, RECORDING, FAVOURITES', dx:36, dy:0, hiza:'sol', cizgi:false },
+    { h:'#saatTus', m:'ALARM', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#deriFirca', m:'SKINS', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#gorselTus', m:'VISUAL / HOLD', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#kamTus', m:'CAMERA', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
+    { h:'#gezegenTus', m:'ORBIT BODIES — TAP', dx:0, dy:-56, hiza:'orta' },
+    { h:['#uydular .uydu','#mark'], m:'FX — TAP A MOON', dx:-8, dy:-8, hiza:'sag' },
     { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
-    { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
-    { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
-    { h:'#kipKisayol', m:'RADIO',       dx:0, dy:-24, hiza:'orta' },
-    { h:'#npBayrak',   m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
-    { h:'#fav',        m:'LIKE — HOLD TO PLAY FAVOURITES', dx:8, dy:-20, hiza:'sol' },
-    { h:'#isaret',     m:'TAP FOR ARTIST & TITLE', dx:0, dy:22, hiza:'orta' }
+    { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
+    { h:'#kipKisayol', m:'ORBITAPE · JOYTAPE · RADIO', dx:110, dy:0, hiza:'sag' },
+    { h:'.kanal.ad', m:'TAP FOR LIST', dx:0, dy:12, hiza:'orta' },
+    { h:'#araCizgi', m:'SEARCH', dx:0, dy:-24, hiza:'orta' },
+    { h:'#npBayrak', m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#fav', m:'LIKE — HOLD TO PLAY FAVOURITES', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#isaret', m:'TAP FOR ARTIST & TITLE', dx:-8, dy:22, hiza:'sag' }
   ];
-}
+
+  /* JOYTAPE: ayni kabuk, kendi diliyle (27 Eylul). */
+  window.REHBER_JOY = [
+    { h:'#bekle', m:'MOOD — TAP A SYMBOL', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#bekle', m:'SPIN — TAP A SYMBOL', dx:-8, dy:16, hiza:'sag' },
+    { h:'#ayarTus', m:'SETTINGS — PHOTO, CAMERA, RECORDING, FAVOURITES', dx:36, dy:0, hiza:'sol', cizgi:false },
+    { h:'#saatTus', m:'ALARM', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#deriFirca', m:'SKINS', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#gorselTus', m:'VISUAL / HOLD', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:'#kamTus', m:'CAMERA', dx:30, dy:0, hiza:'sol', cizgi:false },
+    { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
+    { h:'#gezegenTus', m:'ORBIT BODIES — TAP', dx:0, dy:-56, hiza:'orta' },
+    { h:['#uydular .uydu','#mark'], m:'FX — TAP A MOON', dx:-8, dy:-8, hiza:'sag' },
+    { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
+    { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
+    { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
+    { h:'#kipKisayol', m:'ORBITAPE · JOYTAPE · RADIO', dx:110, dy:0, hiza:'sag' },
+    { h:'.kanal.ad', m:'TAP FOR LIST', dx:0, dy:12, hiza:'orta' },
+    { h:'#araCizgi', m:'SEARCH', dx:0, dy:-24, hiza:'orta' },
+    { h:'#npBayrak', m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#fav', m:'LIKE — HOLD TO PLAY FAVOURITES', dx:-8, dy:-20, hiza:'sag' },
+    { h:'#isaret', m:'TAP FOR ARTIST & TITLE', dx:-8, dy:22, hiza:'sag' }
+  ];

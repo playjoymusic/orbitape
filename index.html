@@ -2258,16 +2258,28 @@
      (27 Eylul, kullanici: "bu orbitape tarafi icin sadece, ve
      visual sirasinda kalmasin gezegenler"). Once her kipte
      gorunuyordu. */
-  #uydular{display:none;}
-  /* GEZEGENLER ARTIK KAPALI BASLAR (27 Eylul, gorev 5): once mood'da
-     daima acikti; simdi #gezegenTus'a basilinca yumusak beliriyor.
-     display:none yerine opacity/scale -- transition icin. */
+  /* KAP (27 Eylul, olculerek duzeltildi): #uydular fixed ve EKRANI
+     KAPLAYAN bir kutu olmali. Once akis icinde (static) bir bloktu
+     ve USTUNDE transform vardi -- transform, position:fixed cocuklar
+     icin kapsayici yaratir, yani gezegenlerin JS'te yazilan top:640px
+     degeri ekrana gore degil, kutunun kosesine gore sayiliyordu.
+     Olculdu: y 1007, ekranin disinda -- gezegenler hic gorunmuyordu
+     ve rehberdeki "FX -- TAP A MOON" etiketi de ekrani tasiyordu. */
+  #uydular{display:none;position:fixed;left:0;top:0;width:100%;height:100%;
+    pointer-events:none;}
+  /* GEZEGENLER KAPALI BASLAR (gorev 5): #gezegenTus'a basilinca yumusak
+     beliriyor. Belirme cocuklara tasindi: kap tum ekran oldugu icin
+     ustundeki transform butun satiri buyutuyordu. */
   body.mood:not(.gorsel-acik) #uydular{display:block;opacity:0;
-    transform:translateY(4px) scale(.94);pointer-events:none;
-    transition:opacity .26s ease,transform .26s cubic-bezier(.25,1.3,.4,1);}
-  body.mood:not(.gorsel-acik).gezegen-acik #uydular{
-    opacity:1;transform:none;pointer-events:auto;}
-  @media (prefers-reduced-motion: reduce){ #uydular{transition:none;} }
+    transition:opacity .26s ease;}
+  body.mood:not(.gorsel-acik) #uydular .uydu{
+    transform:translate(-50%,-50%) translateY(4px) scale(.94);
+    transition:transform .26s cubic-bezier(.25,1.3,.4,1);}
+  body.mood:not(.gorsel-acik).gezegen-acik #uydular{opacity:1;}
+  body.mood:not(.gorsel-acik).gezegen-acik #uydular .uydu{
+    transform:translate(-50%,-50%);pointer-events:auto;}
+  @media (prefers-reduced-motion: reduce){
+    #uydular,#uydular .uydu{transition:none;} }
   /* GEZEGEN MENU IKONU: diger yuvarlak tuslarla (#deriFirca vs) ayni
      dil -- 22px svg, stroke 1.7, cevre faktorleriyle ortali. Yalniz
      ORBITAPE'de ve gorsel kipinde degil gorunur. Yeri JS'te. */
@@ -2421,7 +2433,10 @@
   #kipKisayol .uck-adlar{display:flex;flex-direction:column;gap:5px;}
   #kipKisayol .uck-ad{
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:0.75rem;font-weight:700;letter-spacing:.22em;line-height:1;
+    /* Harf araligi markanin diliyle ayni (.26em): 27 Eylul'de .22em
+       idi ve "Anahtar etiketi markanin diliyle yaziliyor" kontrolu
+       kirmiziydi (0.22 / 0.26). Onceki kipin yazisi da .26em'di. */
+    font-size:0.75rem;font-weight:700;letter-spacing:.26em;line-height:1;
     white-space:nowrap;color:rgba(255,255,255,.28);
     opacity:0;transform:translateX(-4px);
     transition:opacity .16s ease,transform .16s ease,color .16s ease;}
@@ -2661,9 +2676,6 @@
      Sol alt kose "hangi dunyadayim" sorusunun tek cevabi. Anahtarin
      topuzu ve yanindaki yazi rafin renginde: goz oraya bakinca hem
      dunyayi hem rafi okuyor. */
-  body.deri #kipKisayol .ad{color:var(--d-vurgu, var(--d-marka)) !important;
-    -webkit-text-fill-color:var(--d-vurgu, var(--d-marka)) !important;
-    background:none !important;}
   /* #modAd BURADAN CIKTI: rengini JS yaziyor (rafYaziRengi) cunku
      renk rafa gore degisiyor -- kullanicinin istedigi "pilot".
      !important olan bu satir satir ici rengi eziyordu ve raf adi
@@ -3156,60 +3168,11 @@
   body.yildiz-zum.deri #np .np-ust{
     color:rgba(244,247,250,.9) !important;
     -webkit-text-fill-color:rgba(244,247,250,.9) !important;}
-  body.deri #kipKisayol .ad{background:none !important;color:var(--d-marka) !important;
-    -webkit-text-fill-color:var(--d-marka) !important;}
-  body.deri #kipKisayol .anahtar{border-color:var(--d-tus-kenar) !important;
-    background:var(--d-tus-zem,transparent) !important;}
-  /* ── KIP ANAHTARI: CERCEVESI GORUNUR, DURUMU OKUNUR ───────────
-     Kullanicinin sozu: "swichtin cercevesi gorunmuyor, bosluktaki
-     bir nokta gibi. sol alttaki swich bu ipucu, bir pilot olmak
-     icin onemli bir yer."
-     Dogru istek: bu anahtar yalnizca bir dugme degil, HANGI
-     DUNYADA OLDUGUNU soyleyen tek yer. O yuzden uc sey birden
-     yapiyor:
-       1. YUVA GORUNUR: govdeden gomme (ic golge) ve cevresinde
-          ince bir kenar. Artik bosluga asili durmuyor.
-       2. TOPUZ DURUMU TASIYOR: arsivde sola yaslanip govdenin
-          sakin renginde duruyor; canli yayinda saga geciyor ve
-          MARKA rengini aliyor.
-       3. CANLI OLAN NEFES ALIYOR: radyodayken topuzun uzerinde
-          yavas yavas soluklanan bir nokta var. Arsiv kaydi durur,
-          canli yayin akar -- fark bir kelime okumadan goruluyor.
-     Uc ipucu da ayni kucuk nesnede: goz tek yere bakiyor. */
-  body.deri #kipKisayol .anahtar{
-    background:var(--d-tus-zem,transparent) !important;
-    border:1px solid var(--d-halka) !important;
-    box-shadow:inset 0 2px 3px var(--d-golge-renk),
-               inset 0 -1px 0 var(--d-isik) !important;}
-  body.deri #kipKisayol .anahtar b{
-    background:var(--d-cek) !important;
-    box-shadow:0 1px 2px var(--d-dis-golge),
-               inset 0 1px 0 var(--d-isik) !important;}
-  body.deri:not(.mood) #kipKisayol .anahtar b{background:var(--d-vurgu, var(--d-marka)) !important;}
   /* ── DUZ SERITTE ANAHTAR DA KABARTMASIZ ──────────────────────
-     Kullanicinin kurali: tuslarin altinda desen yoksa kabartma
-     yok. Kip anahtari kendi golgesini tasiyor, yani --d-golge'yi
-     'none' yapmak ona islemiyordu -- isaretlenen ekran
-     goruntusunde ORBITAPE anahtari hala kabarikti.
-     CERCEVE KALIYOR: daha once "swichtin cercevesi gorunmuyor"
-     denmisti; kalkan sey yalnizca olculu golge takimi. Yolun
-     icindeki renk farki ve topuzun yeri durumu tasimaya devam
-     ediyor. */
-  body.deri.duztus #kipKisayol .anahtar{box-shadow:none !important;}
-  body.deri.duztus #kipKisayol .anahtar b{box-shadow:none !important;}
+     Kullanicinin kurali: tuslarin altinda desen yoksa kabartma yok.
+     Ayarlardaki anahtar ve KAPI satiri da ayni kurala tabi. */
   body.deri.duztus #ayar .anahtar{box-shadow:none !important;}
   body.deri.duztus #ayar .sat.kapi{box-shadow:none !important;}
-  /* NEFES: yalnizca canli yayinda. Arsivde nokta yok -- yani
-     "hareket eden = canli" tek kuralla okunuyor. */
-  body.deri:not(.mood) #kipKisayol .anahtar b::after{
-    content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;
-    transform:translate(-50%,-50%);border-radius:50%;
-    background:var(--d-zem);animation:kipNefes 2.4s ease-in-out infinite;}
-  body.mood #kipKisayol .anahtar b::after{display:none;}
-  @keyframes kipNefes{0%,100%{opacity:.20}50%{opacity:.75}}
-  @media (prefers-reduced-motion: reduce){
-    body.deri:not(.mood) #kipKisayol .anahtar b::after{animation:none;opacity:.5;}}
-
   /* ── SAG USTTEKI UC SEMBOL: CERCEVE YOK, ALTIN YOK ────────────
      Kullanicinin sozu: "sembollere altin ya da cerceve yapma,
      onlar yine ayni mantikla gorunecek renkte direkt olabilirler."
@@ -3260,7 +3223,6 @@
   body.deri #modGez{opacity:1 !important;text-shadow:none !important;
     mix-blend-mode:normal !important;filter:none !important;}
   body.deri #modGez.cizim svg{fill:currentColor;}
-  body.deri #kipKisayol .anahtar b{background:var(--d-marka) !important;}
   /* ── SKINS IZGARASI ───────────────────────────────────────────
      Her kare o derinin KENDI malzemesinde: zemin rengi kareye,
      oluk isigi/golgesi ortadaki halkaya. Yani secmeden once neye
@@ -3388,10 +3350,21 @@
      gider (kullanici: "basilmazsa RADIOTAPE'ten devam eder").
      KATMAN YOK: sayfada kalici CSS filtresi/katmani yasak (pil,
      test/saglik.js) -- karartma tek gradyanla ayni isi goruyor. */
+  /* ARKA PLAN INAKTIF (27 Eylul, kullanici: "acilis ekrani acikken bir
+     kez ortaya bastik mi artik arkasi inaktif olmali. cunku
+     radiotape'e basinca sanki tekrar sarki degisiyor. ya arkasi
+     tiklaniyor ya bir sey."). Once katmanin pointer-events'i none
+     idi: dokunus DALLARIN ARASINDAN diskin ortasina gidiyor ve
+     "ortaya bas -> muzik baslasiyor" diye iki sey birden oluyordu.
+     Simdi katman dokunusu kendisi aliyor; dallar yine tiklanabilir
+     (bkz. .kol b) ve arka plan hicbir sey yapmiyor. */
   #modKollar{position:fixed;inset:0;z-index:118;display:none;
-    pointer-events:none;
-    background:radial-gradient(120% 90% at 50% 42%,rgba(4,8,10,.72),rgba(2,4,6,.95));}
-  #modKollar.ac{display:block;}
+    pointer-events:auto;
+    background:radial-gradient(120% 90% at 50% 42%,rgba(4,8,10,.72),rgba(2,4,6,.95));
+    opacity:0;transform:scale(.985);
+    transition:opacity .26s ease,transform .26s cubic-bezier(.25,1.3,.4,1);}
+  #modKollar.ac{display:block;opacity:1;transform:none;}
+  #modKollar.kapanis{opacity:0;transform:scale(.97);}
   #modKollar .kol,#modKollar .bas{position:absolute;
     transform:translate(-50%,-50%);display:flex;flex-direction:column;
     align-items:center;gap:5px;pointer-events:auto;cursor:pointer;
@@ -3434,25 +3407,44 @@
   /* SURECILERI FILTRE YOK: sayfada kalici CSS/SVG filtresi yasak
      (pil; test/saglik.js "Kalici CSS filtresi/katmani"). Ikonun
      parlamasi dairenin ic golgesinden geliyor. */
+  /* DALLARIN KUTUSU DISKIN USTUNE BINIYOR (27 Eylul, olculdu: 360x640
+     ekranda dallar diskin merkezine 9 px kala iniyordu; diskin dokunma
+     alani 60x39'a dustu ve "tuslar parmak olcusunde" kontrolu 8 ekranda
+     kirmiziydi). Dokunma yalniz HALKAYA: dugunun kendisi
+     pointer-events:none, icindeki <b> (halka) auto. TIK yine
+     calisiyor -- icteki tika oge .kol'a yukari DAGIYOR. */
+  #modKollar .kol{pointer-events:none;}
+  #modKollar .kol b{pointer-events:auto;cursor:pointer;}
   #modKollar .kol svg{width:33px;height:33px;fill:none;
     stroke:rgb(var(--renk));stroke-width:1.4;stroke-linecap:round;
     stroke-linejoin:round;}
   /* KOL HALKAYA BAGLANIYOR: ince cizgi + ucunda nokta. Gorseldeki
      uc catallilik buradan geliyor; sadece uc daire "3 kollu" degil,
      dallar halkanin icine uzaniyor. */
-  /* Cizgi kutu icinde --bas kadar kayar: ust kol YAZININ ALTINDAN
-     baslar (cizimde oldugu gibi), alt kollar dairenin ic kenarindan. */
-  #modKollar .kol::before{content:'';position:absolute;left:50%;
-    top:calc(50% + var(--bas,0px) - 15px);
+  /* Cizginin BASLAMA NOKTASI JS OLCUYOR (--basX/--basY): halkanin
+     kenari + 5 px, tam merkeze dogru. Once sabit dikey kayma vardi
+     (--bas 34 / -14) ve iki hatayi birden birasiyordu: cizgi halkanin
+     ICINE giriyordu ("cizgiler halkalara tasmasin") ve ucu merkezden
+     32 px kaliyordu ("cizgi ile nokta tutmuyor"). Artik ikisi de
+     olculuyor. */
+  #modKollar .kol::before{content:'';position:absolute;
+    left:calc(50% + var(--basX,0px));
+    top:calc(50% + var(--basY,0px));
     width:var(--cizgi,40px);height:1px;
     /* Merkezden baslar (27 Eylul): parlak uc mavi noktada, dal
        tarafina dogru solar. */
     background:linear-gradient(270deg,rgba(var(--renk),.5),rgba(var(--renk),.12));
     transform-origin:0 50%;transform:rotate(var(--aci,0deg));}
-  #modKollar .kol::after{content:'';position:absolute;left:50%;
-    top:calc(50% + var(--bas,0px) - 15px);width:5px;height:5px;border-radius:50%;background:rgb(var(--renk));
-    transform:rotate(var(--aci,0deg)) translateX(var(--cizgi,40px))
-      translate(-50%,-50%);}
+  /* NOKTA: 5 px daire, cizginin tam sonunda ve cizgiyle AYNI eksende.
+     Once `translate(-50%,-50%)` dondurusunden sonra geliyordu, yani
+     donmus karede -2.5 px kayiyor ve nokta cizgiden kopuyordu. Artik
+     kutu komsu koseden (left/top -2.5) basliyor, donduren sadece
+     rotate + translateX: nokta komsunun USTUNDE kaliyor. */
+  #modKollar .kol::after{content:'';position:absolute;
+    left:calc(50% + var(--basX,0px) - 2.5px);
+    top:calc(50% + var(--basY,0px) - 2.5px);
+    width:5px;height:5px;border-radius:50%;background:rgb(var(--renk));
+    transform:rotate(var(--aci,0deg)) translateX(var(--cizgi,40px));}
   #modKollar .kol.secili b{border-color:rgb(var(--renk));
     background:radial-gradient(circle at 50% 28%,
       rgba(var(--renk),.34),rgba(var(--renk),.10) 72%);
@@ -4065,7 +4057,6 @@
        marka dar ekranda .30 -> .26 daraliyor, etiket de daralmali.
        Yoksa "aynisi olsun" sozu genis ekranda tutup dar ekranda
        bozulurdu -- ki telefon dar ekran demek. */
-    #kipKisayol .ad{letter-spacing:.26em;margin-right:-.26em;}
     #bekle.buyuk{--sem:26px;} }
 
   /* ── SOUND BANKS KIPINDE MODUL SOL ALTA INIYOR ───────────────────
@@ -4590,10 +4581,13 @@
     </div>
     <!-- ORBITAPE SATIRI AYARLARDAN KALDIRILDI (27 Eylul, kullanici:
          "ayarlardan bu orbitape blokunu kaldir"). Kip gecisi artik
-         sol alttaki iki dunya dugmesinden yapiliyor.
-         DIKKAT: buraya /* */ degil <!-- --> yazilir. C tarzi yorum
-         HTML'de YORUM DEGIL, ekranda METIN olarak cizilir (olculdu:
-         ayar panelinde Turkce paragraf gorunuyordu). -->
+         sol alttaki TEK yolun uc duragindan yapiliyor.
+         DIKKAT: bir HTML yorumunun ICINDE cift tire kullanilamaz. Bu
+         yorumun onceki halinde ic ice bir HTML yorumu yazilmis ve
+         tarayici onu yorumun BITESI sayip gerisini metin ciziyordu:
+         ayar panelinde Turkce paragraf gorunuyordu (olculdu, 27
+         Eylul). Ayni hatayi yapmamak icin burada hicbir yorum
+         isareti yazilmiyor. -->
     <!-- "SEE IT FIRST" SATIRI BURADAN TASINDI (7 Eylul).
          Kapinin hemen altinda duruyordu ve orada dogruydu: ayni
          konunun ikinci satiri. Ama kullanici butun tanitimlarin tek
@@ -20748,129 +20742,16 @@
   try{ TANI_KAPI = /[?&]tani(=|&|$)/.test(location.search); TANI = TANI_KAPI; }catch(e){ _yut(e); }
   function taniPanel(){ return TANI ? document.getElementById('kayitBilgi') : null; }
   var _bilgiZaman = null;
+  /* Nebula 27 Eylul'de SILINDI ("evet nebukayi sil"): #mark
+     display:none !important, yani bu tuval hic gosterilmiyor ve
+     offsetParent'i null. Asagidaki koruma o yuzden HER KEZ donuyordu
+     ve ~10 KB cizim kodu olu oyle dolasiyordu -- ilk boyama tavani
+     asiliyordu (olculdu: brotli 112.9 KB, tavan 112.6). Olu ve cast
+     kaliyor: cast olmadan tip denetimi elemana daraltip el.style
+     hatasi uretiyordu (bkz. GUNLUK 27 Eylul). Cizim yok. */
   (function nebulaTuval(){
-    /* Nebula silindi (27 Eylul): eleman gizli, cizim de yapilmaz.
-       Tek any casti: onceki guard zinciri (getContext/offsetParent)
-       tipi Element'e daraltiyor ve el.style hatasini uretiyordu. */
     const el = /** @type {any} */ (document.querySelector('#mark .neb'));
     if(!el || !el.getContext || !el.offsetParent) return;
-    const ctx = el.getContext('2d');
-    const CSSBOY = 74;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const P = Math.round(CSSBOY * dpr);
-    el.width = P; el.height = P;
-    el.style.width = CSSBOY+'px'; el.style.height = CSSBOY+'px';
-
-    // gaz bulutu: CSS'teki inset:-35% -> kürenin 1.7 katı bir alan
-    const YAY = 1.70, KB = 34;
-    const PALET = {
-      lib:  [[.32,.34,.38,'130,245,224',.95], [.70,.62,.44,'150,110,255',.80],
-             [.56,.30,.46,'255,120,200',.60], [.44,.76,.60,'40,120,210',.65]],
-      radio:[[.32,.34,.40,'255,186,120',.95], [.70,.62,.46,'255,92,150',.85],
-             [.56,.30,.46,'186,96,255',.72], [.44,.76,.60,'150,50,180',.70]],
-      liste:[[.32,.34,.40,'226,216,206',.92], [.70,.62,.46,'158,148,178',.85],
-             [.56,.30,.46,'198,184,212',.70], [.44,.76,.60,'80,60,180',.70]]
-    };
-    // rgb -> ton döndür -> rgb. Filtre yerine bu: bedava ve katman açmıyor.
-    function tonDondur(r,g,b,derece){
-      const mx=Math.max(r,g,b)/255, mn=Math.min(r,g,b)/255, l=(mx+mn)/2, d=mx-mn;
-      let h=0, sa=0;
-      if(d>1e-6){
-        sa = l>0.5 ? d/(2-mx-mn) : d/(mx+mn);
-        const R=r/255,G=g/255,B=b/255;
-        h = (mx===R) ? ((G-B)/d + (G<B?6:0)) : (mx===G) ? ((B-R)/d + 2) : ((R-G)/d + 4);
-        h/=6;
-      }
-      h = (h + derece/360) % 1; if(h<0) h+=1;
-      if(sa===0){ const v=Math.round(l*255); return v+','+v+','+v; }
-      const q = l<0.5 ? l*(1+sa) : l+sa-l*sa, pp = 2*l-q;
-      const kn = t=>{ if(t<0)t+=1; if(t>1)t-=1;
-        if(t<1/6) return pp+(q-pp)*6*t; if(t<1/2) return q;
-        if(t<2/3) return pp+(q-pp)*(2/3-t)*6; return pp; };
-      return Math.round(kn(h+1/3)*255)+','+Math.round(kn(h)*255)+','+Math.round(kn(h-1/3)*255);
-    }
-
-    const gaz = document.createElement('canvas'); gaz.width=gaz.height=KB;
-    const gc = gaz.getContext('2d');
-    let pisAd='', pisTon=-999;
-    function gaziPisir(tema, ton){
-      if(tema===pisAd && Math.abs(ton-pisTon)<4) return;
-      pisAd=tema; pisTon=ton;
-      gc.clearRect(0,0,KB,KB);
-      for(const [x,y,r,renk,a] of (PALET[tema]||PALET.lib)){
-        const [R,G,B] = renk.split(',').map(Number);
-        const g = gc.createRadialGradient(x*KB,y*KB,0, x*KB,y*KB,r*KB);
-        g.addColorStop(0,'rgba('+tonDondur(R,G,B,ton)+','+a+')');
-        g.addColorStop(1,'rgba('+tonDondur(R,G,B,ton)+',0)');
-        gc.fillStyle=g; gc.fillRect(0,0,KB,KB);
-      }
-    }
-
-    // küre kabuğu (eski ::after): tema değiştirmiyor -> bir kez pişiyor
-    const kabuk = document.createElement('canvas'); kabuk.width=kabuk.height=P;
-    (function kabuguPisir(){
-      const k = kabuk.getContext('2d'), H=P;
-      const el2 = (gx,gy,rx,ry,renk,dur)=>{
-        k.save(); k.translate(gx*H,gy*H); k.scale(rx,ry);
-        const g=k.createRadialGradient(0,0,0,0,0,H);
-        g.addColorStop(0,renk); g.addColorStop(dur,'rgba(0,0,0,0)');
-        k.fillStyle=g; k.fillRect(-H,-H,2*H,2*H); k.restore();
-      };
-      el2(.29,.24,.11,.11,'rgba(255,255,255,.40)',1);       // speküler
-      el2(.33,.28,.40,.40,'rgba(255,255,255,.10)',1);       // difüz parıltı
-      el2(.50,.24,.37,.030,'rgba(255,255,255,.085)',.74);   // enlem kuşakları
-      el2(.50,.39,.40,.035,'rgba(0,0,0,.085)',.74);
-      el2(.50,.53,.39,.030,'rgba(255,255,255,.065)',.74);
-      el2(.50,.67,.36,.035,'rgba(0,0,0,.075)',.74);
-      el2(.50,.80,.31,.030,'rgba(255,255,255,.05)',.74);
-      el2(.74,.78,.32,.32,'rgba(150,200,235,.15)',1);       // karşı kenar sıçraması
-      // kenar ışığı
-      let g=k.createRadialGradient(H/2,H/2,H*0.40,H/2,H/2,H*0.50);
-      g.addColorStop(0,'rgba(190,235,255,0)'); g.addColorStop(.72,'rgba(190,235,255,.22)');
-      g.addColorStop(1,'rgba(190,235,255,0)');
-      k.fillStyle=g; k.fillRect(0,0,H,H);
-      // terminatör
-      g=k.createRadialGradient(.31*H,.27*H,0,.31*H,.27*H,H);
-      g.addColorStop(.30,'rgba(0,0,0,0)');  g.addColorStop(.52,'rgba(0,0,0,.20)');
-      g.addColorStop(.72,'rgba(0,0,0,.46)'); g.addColorStop(.88,'rgba(0,0,0,.74)');
-      g.addColorStop(1,  'rgba(1,2,4,.94)');
-      k.fillStyle=g; k.fillRect(0,0,H,H);
-    })();
-
-    const YILDIZ = [[.60,.26,2,0],[.34,.62,2,.9],[.72,.44,1.5,1.7],[.64,.70,1.5,2.5]];
-    const TUR = 26000, DONUS = 19000;
-    const markEl = document.getElementById('mark');
-    ctx.imageSmoothingEnabled = true;
-    try{ ctx.imageSmoothingQuality = 'high'; }catch(e){ _yut(e); }
-
-    function ciz(){
-      if(document.hidden) return;
-      const t = Date.now();
-      const tema = markEl && markEl.classList.contains('radio') ? 'radio'
-                 : markEl && markEl.classList.contains('liste') ? 'liste' : 'lib';
-      gaziPisir(tema, Math.round((t % TUR) / TUR * 360));
-      ctx.clearRect(0,0,P,P);
-      ctx.save();
-      ctx.beginPath(); ctx.arc(P/2,P/2,P/2,0,6.2832); ctx.clip();
-      // gaz: küçük tampon büyütülünce yumuşuyor -> blur filtresine gerek yok
-      const yay = P*YAY;
-      ctx.translate(P/2,P/2);
-      ctx.rotate((t % DONUS)/DONUS * 6.2832);
-      ctx.scale(1.06,1.06);
-      ctx.drawImage(gaz, -yay/2, -yay/2, yay, yay);
-      ctx.setTransform(1,0,0,1,0,0);
-      ctx.beginPath(); ctx.arc(P/2,P/2,P/2,0,6.2832); ctx.clip();
-      ctx.drawImage(kabuk,0,0);
-      for(const [x,y,r,gec] of YILDIZ){
-        const a = 0.2 + 0.75*(0.5+0.5*Math.sin((t/3400 - gec/3.4)*6.2832));
-        ctx.fillStyle='rgba(234,255,249,'+a.toFixed(2)+')';
-        ctx.beginPath(); ctx.arc(x*P,y*P,r*dpr/2,0,6.2832); ctx.fill();
-      }
-      ctx.restore();
-    }
-    ciz();
-    setInterval(ciz, 90);                    // ~11 kare/sn: yavaş bir bulut için fazlasıyla yeter
-    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) ciz(); });
   })();
 
   /* ── TAKILMA ÖLÇERİ ───────────────────────────────────────────────
@@ -21311,8 +21192,14 @@
          veriyordu ("yutulan hata butcesi: REHBER_RADIO is not
          defined"). Bos listeye dusuyor: cizim hicbir sey cizmez,
          sonraki tusa basista tablo hazir olur. */
-      const liste = document.body.classList.contains('mood')
-                 ? (window.REHBER_ORB || []) : (window.REHBER_RADIO || []);
+      /* Uc kip ucu tablo (27 Eylul): RADIOTAPE / ORBITAPE / JOYTAPE.
+         JOYTAPE de bir oda, ona kozu tablo bir onceki turda yoktu. */
+      const _b = document.body.classList.contains('mood')
+               ? (document.body.classList.contains('joy')
+                  ? (window.REHBER_JOY || window.REHBER_ORB || [])
+                  : (window.REHBER_ORB || []))
+               : (window.REHBER_RADIO || []);
+      const liste = _b;
       const cizgiler = [];    // { ax, ay, etiket } -- 2. gecis icin biriktiriliyor
       liste.forEach(e=>{
         const n = _rehberNokta(e.h); if(!n) return;

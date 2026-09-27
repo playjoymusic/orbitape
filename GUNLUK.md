@@ -3149,3 +3149,73 @@ altındaki ⏮ ▶ ⏸ ⏭ düğmelerinin parmak hedefi. Konum 8 px'de sabit.
 
 Kapı yeşil: saglik 890/890 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19.
+
+### 27 Eylül — üç kollu seçici düzeltildi, rehber ve gezegenler onarıldı
+
+Kullanıcının cümleleri birebir: "soru işaretine basılmıyor ne oldu ona.
+rehber o basılı tutulduğunda aktif", "bu ne ya noktalar hepsi kendi
+arasında eşit değil", "radyotapein çizgisi ile noktası bile tutmuyor",
+"her mood kendi çizgisinin tam sonunda olmalı bu noktalara",
+"swichler halka altına alının, sol halka yukarısındaki fxler vs bu ama
+orbitape tarafı için. 2 mood için de olacak tanıtım", "semboller de mood
+seçimi", "rehberde kamera yok", "orbit bodys tap bu arada çarkın içine
+girmiş, yukarı çek", "ayarların içindeki silinecek yeri de çöz",
+"açılış ekranı açıkken bir kere ortaya bastık mı artık arkası inaktif
+olmalı", "açılış arayüzü hafifçe kapansın smooth".
+
+**1) Rehber hiç çizmiyordu — `catch` bloğunda kalmış tablo.** `?`
+düğmesi basılı tutulunca rehber açılıyor, ama `#rehberEtiketler` BOŞ
+kalıyordu. Sebep: `REHBER_RADIO`/`REHBER_ORB` tabloları index.html'den
+kollar.js'e taşınırken `try{ ...KOLLAR_HAZIR... }catch(e){` satırının
+içinde kalmışlar; catch hiç çalışmadığı için tablolar hiç tanımlanmıyor,
+`_rehberCiz()` boş listeye düşüyordu. Ölçülen: `REHBER_*` undefined,
+0 etiket. Sonuç: 16/15 kayıt, 15 etiket, 11 çerçeve.
+
+**2) Ayarlarda ekranda metin.** HTML yorumunun İÇİNE `<!-- -->`
+yazılmıştı; içteki `-->` yorumu erken kapatıyor, gerisi metin olarak
+çiziliyordu (kullanıcının ekran görüntüsü). Gövdede taranan 46
+yorumdan yalnız BU bir tehlikeydi (içte `-->`); diğerleri ASCII `--`
+veya kutu çizgisi, tarayıcı onları toleranslı. Yazıldı: yorum
+içinde yorum işareti yazılmaz.
+
+**3) Üç kol eşit değildi.** Ölçülen kollar arası mesafe 171 / 171 /
+**194** — alt iki dal `dx:±16` ile dışarı kaymıştı. Kullanıcının
+"her şey birbirine eşit olsun" cevabı: dx kaldırıldı, üç dal da aynı
+yarıçapta (R = çerçeveden ve düğümün gerçek yarım boyutundan, 118) ve
+120° aralıkta → **204 / 204 / 204**.
+
+**4) Çizgi ile nokta tutmuyordu.** Eski yöntem sabit dikey kayma
+(`--bas: 34 / -14`) kullanıyor, 32 px'lik kaydırmayı yalnız JS
+varsayıyordu; CSS uygulamadığı için çizgi merkezden 32 px kısa
+bitiyordu. Artık başlama noktası **halkanın kenarı + 5 px**, yön
+merkeze, ucu merkezden 12 px短 nokta olarak üçü kendi ekseninde
+(yarıçap 12/12/12, ikili 19/19/22). Ayrıca `::after`'daki
+`translate(-50%,-50%)` dönüşten sonra geliyordu, nokta çizgiden
+kayıyordu; kutu komsu köşeden başlıyor, dönen sadece rotate+translateX.
+
+**5) Gezegenler ekran dışındaydı.** `#uydular` akış içinde bir bloktu
+ve üstünde `transform` vardı; transform `position:fixed` çocuklar için
+kapsayıcı yaratıyor, yani gezegenlerin `top:640px` değeri ekrana göre
+değil kutuya göre sayılıyordu. Ölçülen: **y 1007** (ekran 844).
+Kutu artık `position:fixed; inset:0`, belirme animasyonu çocuklara
+taşındı → ölçülen y 640 ✓ ve satır `#gezegenTus` ile açılıp kapanıyor.
+
+**6) Açılış ekranı arka planı yutuyordu.** Kullanıcının cümlesi:
+"radyotape'e basınca sanki tekrar şarkı değişiyor". Katmanın
+`pointer-events`'i `none` idi: dokunuş dalların arasından diskin
+ortasına gidiyordu. Artık `auto` → disk basılamıyor, dallar basılıyor
+(`.kol` kutuyu bıraktı, `.kol b` halkayı aldı; kutu diskin üstüne
+biniyordu: 360×640'ta merkezin 9 px üstünde, alan 60×39). Seçici
+260 ms `cubic-bezier(.25,1.3,.4,1)` ile solup küçülerek kapanıyor.
+
+**7) Rehber yeni tasarıma göre.** Üç tablo: RADIOTAPE / ORBITAPE /
+JOYTAPE ("2 mood için de olacak tanıtım"). Semboller mood seçici
+("sembollerle de seçim yapılıyor mood seçimi"), düğme üç durak, gezegen
+ikonu, **kamera** ("rehberde kamera yok") ve ayarlar satırı eklendi.
+Etiketler ölçülüp ekrana sığacak şekilde yerleştirildi: üç odada da
+taşan etiket sayısı 0. Sözlükler 5 dilde 184 anahtar, hepsi eşleşiyor
+(eski metinler silindi, yenileri 5 dile eklendi).
+
+Kapı yeşil: saglik 891/891 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19 · ilk boyama 111.4 KB
+(tavan 112.6).

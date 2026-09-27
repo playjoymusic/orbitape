@@ -279,7 +279,12 @@ async function modelTara(b, m, yukseklik){
   const sayfa = await baglam.newPage();
   try{
     await sahteAg(sayfa);
-    await sayfa.goto(ADRES);
+await sayfa.goto(ADRES);
+  /* 27 Eylul: acilis secici arka plani inaktif yapiyor; normal akis
+     olculmeden once bir secim yapilir. */
+  await sayfa.evaluate(()=>{ const k=document.getElementById('modKollar');
+    if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+  await sayfa.waitForTimeout(900);
     await sayfa.waitForTimeout(1800);
     const y = await olc(sayfa);
     const k = await kunyeOlc(sayfa);
@@ -432,7 +437,12 @@ async function gokyuzuOlc(sayfa){
       deviceScaleFactor:2, isMobile:true, hasTouch:true });
     const sayfa = await baglam.newPage();
     await sahteAg(sayfa);
-    await sayfa.goto(ADRES);
+await sayfa.goto(ADRES);
+  /* 27 Eylul: acilis secici arka plani inaktif yapiyor; normal akis
+     olculmeden once bir secim yapilir. */
+  await sayfa.evaluate(()=>{ const k=document.getElementById('modKollar');
+    if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+  await sayfa.waitForTimeout(900);
     await sayfa.waitForTimeout(2200);
 
     const m = await olc(sayfa);
@@ -691,7 +701,12 @@ async function gokyuzuOlc(sayfa){
           id:'rb:y'+i, mp3:'https://sahte.test/y'+i+'.mp3', ad:'Yavas Radyo '+i,
           etiket:'ambient', grup:'AMBIENT', ulke:'NL' }))) });
     });
-    await sayfa.goto(ADRES);
+await sayfa.goto(ADRES);
+  /* 27 Eylul: acilis secici arka plani inaktif yapiyor; normal akis
+     olculmeden once bir secim yapilir. */
+  await sayfa.evaluate(()=>{ const k=document.getElementById('modKollar');
+    if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+  await sayfa.waitForTimeout(900);
     await sayfa.waitForTimeout(2000);
 
     /* Panel: hat yavas ama CALISIYOR -- yalan soylememeli. */

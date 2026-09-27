@@ -87,7 +87,12 @@ async function ac(tarayici, ses, secenek){
       return r.fulfill({status:200, contentType:'application/json', body:'[]'});
     return ses(r, u);
   });
-  await p.goto(KOK + '/index.html', {waitUntil:'load'});
+await p.goto(KOK + '/index.html', {waitUntil:'load'});
+  /* 27 Eylul: acilis secici arka plani inaktif yapiyor; normal akis
+     olculmeden once bir secim yapilir. */
+  await p.evaluate(()=>{ const k=document.getElementById('modKollar');
+    if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+  await p.waitForTimeout(900);
   await p.waitForTimeout(1800);
   /* Rehber/onizleme kapali: acikken yerlesim gecici ve olcum yalan
      olur. (Bu ders 30 Agustos'ta ogrenildi, tur -> rehber olunca da gecerliligini korudu.) */
@@ -271,7 +276,12 @@ async function ekran(p){
         contentType:'application/json', body:'[]'});
       return r.fulfill({status:200, contentType:'audio/mpeg', body:Buffer.alloc(2048)});
     });
-    await p.goto(KOK + '/index.html', {waitUntil:'load'});
+await p.goto(KOK + '/index.html', {waitUntil:'load'});
+  /* 27 Eylul: acilis secici arka plani inaktif yapiyor; normal akis
+     olculmeden once bir secim yapilir. */
+  await p.evaluate(()=>{ const k=document.getElementById('modKollar');
+    if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+  await p.waitForTimeout(900);
     await p.waitForTimeout(6000);
     const e = await p.evaluate(()=>{
       const k = document.querySelector('.karsilama, #karsilama');
@@ -342,7 +352,12 @@ async function ekran(p){
         contentType:'application/json', body:'[]'});
       return r.fulfill({status:200, contentType:'audio/mpeg', body:Buffer.alloc(2048)});
     });
-    await p.goto(KOK + '/index.html', {waitUntil:'load'});
+await p.goto(KOK + '/index.html', {waitUntil:'load'});
+  /* 27 Eylul: acilis secici arka plani inaktif yapiyor; normal akis
+     olculmeden once bir secim yapilir. */
+  await p.evaluate(()=>{ const k=document.getElementById('modKollar');
+    if(k && k.classList.contains('ac')){ const b=k.querySelector('.kol b'); if(b) b.click(); } });
+  await p.waitForTimeout(900);
     await p.waitForTimeout(5200);   /* nobetin 1,5 sn'sini de kapsiyor */
     await p.evaluate(()=>{ try{rehberKapa();}catch(e){}
       try{ document.body.classList.remove('oniz'); }catch(e){} });
