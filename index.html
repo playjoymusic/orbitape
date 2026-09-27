@@ -3656,7 +3656,7 @@
      yerine 150 px; ses ve yildiz ayni satira alindi; altindaki
      ikinci satir (PIC/REC/CAM) kalkti. */
   #ayarAra{display:flex;align-items:center;justify-content:space-between;
-    width:118px;margin:0 0 8px;padding:9px 10px;box-sizing:border-box;
+    width:148px;margin:0 0 8px;padding:9px 10px;box-sizing:border-box;
     border:1px solid rgba(90,220,210,.25);border-radius:8px;
     background:rgba(8,20,22,.72);color:#5adcd2;cursor:pointer;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-size:.6875rem;
@@ -3681,7 +3681,10 @@
      satiri #ayarAra (118 px), altindaki satirda sessiz ve yildiz
      kaliyordu; o satir kalkti, ikisi aramanin sagina gecti.
      Panel 300 px; icerik 266 px: 118 + 8 + 36 + 6 + 32 = 200. */
-  #ayar #araclar{position:absolute;left:calc(17px + 118px + 5px);top:15px;
+  /* right'a bagli (27 Eylul): sabit left dar ekranda tasiyordu
+     (olculdu: 320 px'de araclar 262-348, ekran 320). Panelin sag
+     kenarina yapisir, arama kutusu genisligini korur. */
+  #ayar #araclar{position:absolute;right:17px;left:auto;top:15px;
     display:flex;align-items:center;gap:6px;margin:0;padding:0;
     border-bottom:0;}
   #ayarAraclar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
@@ -4550,14 +4553,10 @@
         <button id="kayitOnayHayir" type="button">NO</button>
       </div>
     </div>
-    <div class="sat kapi" data-ayar="mood" role="switch" tabindex="-1"
-         aria-checked="false" aria-label="ORBITAPE sound banks">
-      <span class="kapi-yazi">
-        <b>ORBITAPE</b>
-        <i>sound banks &amp; effects</i>
-      </span>
-      <i class="anahtar" aria-hidden="true"><b></b></i>
-    </div>
+    /* ORBITAPE SATIRI AYARLARDAN KALDIRILDI (27 Eylul, kullanici:
+       "ayarlardan bu orbitape blokunu kaldir"). Kip gecisi artik
+       sol alttaki iki dunya dugmesinden yapiliyor; ayarda ayni
+       islevi gostermek menuyu buyutuyordu. */
     <!-- "SEE IT FIRST" SATIRI BURADAN TASINDI (7 Eylul).
          Kapinin hemen altinda duruyordu ve orada dogruydu: ayni
          konunun ikinci satiri. Ama kullanici butun tanitimlarin tek
@@ -10422,21 +10421,14 @@
       /* Kullanicinin dedigi yer: "choose your orbit'in ustunde".
          O yazi ilk acilista 190'da duruyor; sira onun 12 px ustunde,
          en buyuk gezegenin yaricapini kadar daha yukarida. */
-      /* Kullanicinin dedigi: "o yazi ile ayni yer olabilir, zaten o
-         yazi olmayacak, gecici". Ilk acilista "CHOOSE YOUR ORBIT"
-         190'da duruyor; sira da orada. Yazi KAPALIYKEN olculmus
-         degeri sifir cikiyordu ve sira ekranin disina kaciyordu
-         (olculdu: y=-28) -- bu yuzden gorunurluk sartı var. */
-      let kollarYaziY = Math.round(innerHeight * 0.225);
-      try{
-        const t = [...document.querySelectorAll('#modKollar *')]
-          .find(e=>!e.children.length && /CHOOSE YOUR ORBIT/i.test(e.textContent||''));
-        if(t){
-          const tr = t.getBoundingClientRect();
-          if(tr.height) kollarYaziY = Math.round(tr.top + tr.height/2);
-        }
-      }catch(_){ _yut(_); }   /* bos catch yasak (saglik: Yutulan hata butcesi) */
-      const y = kollarYaziY;
+      /* SABIT Y (27 Eylul): once "CHOOSE YOUR ORBIT" yazisinin
+         yerine konuldu (190) ve o yazi gecici oldugu icin mantikli
+         gorunuyordu. Ama O YERDE KIP BASLIGI var: olculdu, gezegenler
+         168-212, ORBITAPE basligi ile ayni seride -> ust uste biniyor
+         (kullanici: "gezegenlere balk nere"). Ust bar 33'te bitiyor,
+         halka 291'de basliyor; arada bos serit var. Sira 118'e
+         alindi: ust barin altinda, basligin ustunde. */
+      const y = 150;   /* 118 cok yukaridata; basligin hemen ustunde */
       T.forEach(v=>{
         const b = uyduDug[v.u.fx]; if(!b) return;
         const vur = Math.max(30, Math.min(Math.round(v.cap*1.9), 44));
@@ -18119,12 +18111,15 @@
         e.style.pointerEvents = canli ? '' : 'none';
       };
       if(mood){
-        /* Satir daima VARDIKI ODANIN ADINI yazar; icinde
-           olmadigimiz odanin satiri soluk kalir. Icinde
-           oldugumuz odanin satiri "RADIO" olur: cikis kapisi. */
+        /* Satir daima kendi odasinin adini yazar ve calisir. */
         /* Kullanici: "adi artik RADIOTAPE, sadece RADIO yazma". */
-        satir('kipOrbit', joy ? 'ORBITAPE' : 'RADIOTAPE', joy ? O : Rc, !joy);
-        satir('kipJoy',   joy ? 'RADIOTAPE' : 'JOYTAPE', joy ? Rc : J, joy);
+        /* 27 Eylul (kullanici: "jottape ne oldu, yok mu onda bir
+           sey"): ORBITAPE'den JOYTAPE'ye gecilemiyordu -- diger satir
+           soluk kalip TIKLANAMIYORDU. Artik IKISI DE calisir ve her
+           satir kendi odasini gosterir: bastigin odaya gidersin,
+           icinde oldugun odanin satiri da ayni yaziyle durur. */
+        satir('kipOrbit', 'ORBITAPE', O, true);
+        satir('kipJoy',   'JOYTAPE',  J, true);
       }else{
         satir('kipOrbit', 'ORBITAPE', O, true);
         satir('kipJoy',   'JOYTAPE',  J, true);

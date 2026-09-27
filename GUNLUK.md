@@ -3064,3 +3064,25 @@ kelepçesi silindi. İlk çizim: 112.519 B (tavan 112.640).
 
 Kapı: saglik 890/890 · aRIZA 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 · yayın 19/19. Tip ratchet TEMIZ — 61.
+
+### 27 Eylül — ikinci tur düzeltmeleri
+
+**Ayarlardan ORBITAPE bloğu kalktı.** Kip gecisi artık yalnız sol
+alttaki iki düğmeden yapılıyor; ayarda aynı işlevi göstermek menüyü
+büyütüyordu. İki ölü sözlük anahtarı beş dilden de silindi (181 → 180).
+
+**Arama satırı.** Kutu 118 → 148 px; ses ve yıldız artık sabit bir
+`left` değil, panelin sağ kenarına (`right:17px`) yapışıyor. Sabit
+`left` dar ekranda taşıyordu (ölçü: 320 px'de 262-348, ekran 320).
+
+**Gezegenler.** "CHOOSE YOUR ORBIT" yazısının yerine konmuştu; ama
+o yerdekip başlığı var — üst üste biniyordu. Üst bar 33'te bitiyor,
+halka 291'de başlıyor; aradaki boş şeride (y=150) alındı. Bir ara
+118'e çekilmişti, kullanıcı "çok yukarı attın" dedi.
+
+**İki düğme artık ikisi de çalışıyor.** Önce odada yalnız o odanın
+satırı etkin, diğeri soluk ve TIKLANAMAZDI — kullanıcı "JOYTAPE ne
+oldu, yok mu onda bir şey" dedi: ORBITAPE'den JOYTAPE'ye
+geçilemiyordu. Artık her satır kendi odasını gösterir ve her ikisi de
+geçiş yapar; ölçülen sıra: radyo → ORBITAPE → JOYTAPE → ORBITAPE →
+JOYTAPE. Etkisizlik bittiği için `<i>` yerine düz yazı kaldı.

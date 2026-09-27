@@ -7503,10 +7503,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return !!r1.o && !!r1.j && !!r2.o && !!r2.j
           && r1.o.renk !== r1.j.renk
           && r1.o.yazi === 'ORBITAPE' && r1.j.yazi === 'JOYTAPE'
-          && r2.o.yazi === 'RADIOTAPE' && r2.j.yazi === 'JOYTAPE'
+          && r2.o.yazi === 'ORBITAPE' && r2.j.yazi === 'JOYTAPE'
           && r2.o.renk !== r2.j.renk
-          && parseFloat(r2.j.op) < 0.6;
-    }), 'radyoda [ORBITAPE] [JOYTAPE] · ortapoda [RADIOTAPE] parlak + [JOYTAPE] soluk');
+          && parseFloat(r2.j.op) > 0.9;
+    }), 'radyoda [ORBITAPE] [JOYTAPE] · ortapoda da ikisi de acik (JOYTAPE her kipte acilabiliyor)');
     K('Iki kapi ayni yerde ve ayni fontta', await pg.evaluate(()=>{
       const o=document.getElementById('kipOrbit'), j=document.getElementById('kipJoy');
       if(!o || !j) return false;
@@ -8668,8 +8668,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 27 Eylul: etiket artik kip adi (MOODS degil) ve kap
            iki satirdan olusuyor; durumu satirin yazisi ve rengi
            anlatiyor. */
+        /* 27 Eylul: satir daima kendi odasinin adini yazar (arti
+           secilen kipte "RADIOTAPE" degil) ve her iki satir da
+           calisir -- ORBITAPE'den JOYTAPE'ye gecilir. */
         return radyoDogru(r1) && arsivDogru(r2) && sabit
-            && r1.yazi === 'ORBITAPE' && r2.yazi === 'RADIOTAPE';
+            && r1.yazi === 'ORBITAPE' && r2.yazi === 'ORBITAPE';
       }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket hep MOODS');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */

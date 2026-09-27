@@ -1,8 +1,6 @@
 {
   "_": "ORBITAPE — dictionnaire de l’interface en français. LA CLÉ EST le texte anglais lui-même affiché à l’écran ; pas de clés inventées, car si la clé et l’écran vivent à deux endroits, l’un change et l’autre est oublié. Un texte sans traduction s’affiche en anglais : traduction incomplète, jamais d’écran vide. Les noms de STATION, TITRE, ARTISTE, GENRE et ÉTAGÈRE manquent volontairement : ce sont des données, pas de l’interface.",
   "Settings": "Réglages",
-  "ORBITAPE sound banks": "Banques de sons ORBITAPE",
-  "sound banks & effects": "banques de sons et effets",
   "SEARCH": "RECHERCHE",
   "CLICK": "CLIC",
   "DISPLAY": "AFFICHAGE",

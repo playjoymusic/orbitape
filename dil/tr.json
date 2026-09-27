@@ -1,8 +1,6 @@
 {
   "_": "ORBITAPE — Turkce arayuz sozlugu. ANAHTAR = ekrandaki Ingilizce metnin kendisi; uydurma anahtar yok, cunku anahtar ile ekran ayri iki yerde durursa biri degisip oteki unutuluyor. Karsiligi olmayan metin Ingilizce gorunur -- eksik ceviri olur, bos ekran olmaz. ISTASYON, SARKI, SANATCI, TUR ve RAF adlari BILEREK yok: onlar veri, arayuz degil.",
   "Settings": "Ayarlar",
-  "ORBITAPE sound banks": "ORBITAPE ses bankaları",
-  "sound banks & effects": "ses bankaları ve efektler",
   "SEARCH": "ARAMA",
   "CLICK": "TIK",
   "DISPLAY": "GÖRÜNÜM",

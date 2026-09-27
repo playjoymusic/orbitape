@@ -1,8 +1,6 @@
 {
   "_": "ORBITAPE — diccionario de la interfaz en español. LA CLAVE ES el propio texto en inglés que aparece en pantalla; no hay claves inventadas, porque si la clave y la pantalla viven en dos sitios distintos, uno cambia y el otro se olvida. Un texto sin traducción se muestra en inglés: traducción incompleta, nunca pantalla vacía. Los nombres de EMISORA, PISTA, ARTISTA, GÉNERO y ESTANTE faltan a propósito: son datos, no interfaz.",
   "Settings": "Ajustes",
-  "ORBITAPE sound banks": "Bancos de sonido ORBITAPE",
-  "sound banks & effects": "bancos de sonido y efectos",
   "SEARCH": "BUSCAR",
   "CLICK": "CLIC",
   "DISPLAY": "PANTALLA",
