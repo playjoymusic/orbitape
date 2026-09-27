@@ -15385,10 +15385,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kilavuzun 4 px saginda, arada -18px). Yeni olcum: sol kenarda
        ayni hizada, uc cizginin USTUNDE, ona binmeden, konsolun da
        ustunde. */
-    /* 27 Eylul: anahtar SABIT ve konsolun 8 px ustunde (kullanicinin
-       istedigi yer bir onceki push'taki mesafe). Iki kapi satiri
-       50 px tutuyor. Sol sutun da her kipte ustte oldugu icin uc
-       cizgiyle iliskisi kalmadi. */
+    /* 27 Eylul: anahtar SABIT ve konsolun 8 px ustunde. 2 px de
+       denendi: dokunma alani 35px'e dustu (asagidaki esik 36), yani
+       asagi inmenin bedeli orne altindaki tuslarin hedefi. */
     K('Kipte kip anahtari sabit, konsolun ustunde',
        !!tt.sonuc && tt.sonuc.ustunde >= 6 && tt.sonuc.ustunde <= 12
        && tt.sonuc.cakisma === false,

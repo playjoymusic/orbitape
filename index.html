@@ -2381,9 +2381,23 @@
     transition:background .18s ease,box-shadow .18s ease;}
   #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
   /* Yazi: sol ustteki denetimlerle ayni dil. */
-  #kipKisayol .ad{font-family:'Share Tech Mono',ui-monospace,monospace;
+  /* 3 GUN ONCE (24 eylul) YAZI TIPI -- kullanicinin istedigi:
+     aile SFMono/ Menlo'yu da iceriyor, 12 px / 700 / .30em ve yazi
+     GRADYANLA yaziliyor (markanin dili). JS artik rengi yazmiyor,
+     boylece bu gradyan gorunur. Iki kapi satiri da ayni yazi tipi:
+     kullanici "sadece sol alttaki font icin 3 gun once" dedi, diger
+     her sey (iki kapi, renkleri, yerleri) kaldi. */
+  #kipKisayol .ad{
+    font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:0.75rem;font-weight:700;letter-spacing:.30em;line-height:1;
-    margin-right:-.30em;white-space:nowrap;text-shadow:none;}
+    margin-right:-.30em;white-space:nowrap;
+    background:linear-gradient(102deg,#35e0d8 0%,#86dcd0 48%,#e8a97e 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    text-shadow:none;}
+  body:not(.mood) #kipKisayol .ad{
+    background:linear-gradient(102deg,#e27a9e 0%,#c08a9a 34%,#a89099 68%,#9a96ac 100%);
+    -webkit-background-clip:text;background-clip:text;}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .anahtar,#kipKisayol .anahtar b{transition:none;}
   }
@@ -18071,8 +18085,10 @@
         if(b){ b.style.background = rn[0];
                b.style.boxShadow = canli ? '0 0 10px ' + rn[1] : 'none'; }
         const t = /** @type {any} */ (e.querySelector('.ad'));
-        if(t){ t.textContent = ad; t.style.color = rn[0];
-               t.style.webkitTextFillColor = rn[0]; }
+        /* Yazi RENGI yazilmiyor: 3 gun onceki gradyan CSS'te duruyor
+           (yukarida). Topuz ve hap odanin rengini tasir, yazi ise
+           markanin kendi gecisi -- iki kapi de ayni yazi tipiyle. */
+        if(t){ t.textContent = ad; }
         void canli;
         /* Kullanici 27 Eylul: "swichler de oyle degistirme, aynisini
            istiyorum" -- etkisiz olan soluk kalir (.32), ikisi de ayni
@@ -18159,6 +18175,9 @@
            zipliyordu ("bayat innerHeight yerlesimi bozmuyor").
            Konsunun ust kenarina gore konumlanmak yeterli: konsol
            ekranda oldukca anahtar da ekranda. */
+        /* Konsolun 8 px ustunde SABIT. 2 px denendi: olculdu, dokunma
+           alani 35px'e dustu (esik 36) -- yani asagi inmenin bedeli
+           orne altindaki tuslarin hedefi. Yer degistirilmedi. */
         _altYasla(_kk, r.top - 8);
         /* (_y ve sutun-tabanli konum kodu silindi; burada artik
            yalnizca sabit yer hesabi var) */

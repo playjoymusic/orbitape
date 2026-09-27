@@ -3120,3 +3120,32 @@ olarak çizilir — panelde Türkçe bir paragraf belirdi
 ("bunlar aynı hizada değil"). `top:19px` ile birebir ortalandı.
 Ayrıca sabit `left` dar ekranda taşıyordu (320 px'de 262-348);
 `right:17px`'a alındı.
+
+### 27 Eylül — sol alttaki yazı tipi 3 gün önceye döndü
+
+Kullanıcının netleştirmesi: "**sadece sol alttaki font** için dedim 3 gün
+önce diye. haberin olsun. **diğer her şey kalacak, sakın elleme.**"
+
+Ben önceki turda tüm düğmeyi 24 Eylül'e geri aldım (tek kapı + JOYTAPE
+satırı gitti) — fazla geri almışım. Doğrusu: **iki kapı kalır**, değişen
+tek şey yazının kendisi.
+
+| | 9ac0056 | şimdi (3 gün önce) |
+|---|---|---|
+| yazı tipi ailesi | Share Tech Mono | **+ SFMono-Regular, Menlo** |
+| punto | 0.75rem | 0.75rem (aynı) |
+| kalınlık | 700 | 700 (aynı) |
+| harf aralığı | .30em | .30em (aynı) |
+| yazı rengi | JS oda rengini yazıyordu | **gradyan: gül kurusu → antrasit** |
+| iki kapı | ORBITAPE + JOYTAPE | **aynı** |
+| konum | konsolun 8 px üstünde | **aynı** |
+
+Yazı renginin JS'ten çıkarılması şarttı: satır rengi yazılırken
+gradyan görünmüyordu. JS artık yalnız metni yazıyor.
+
+**"Daha aşağıya" isteği ölçüldü ve yapılmadı.** 8 px → 2 px denendi:
+okuma alanı 35 px'e düştü (eşik 36). Yani aşağı inmenin bedeli, hemen
+altındaki ⏮ ▶ ⏸ ⏭ düğmelerinin parmak hedefi. Konum 8 px'de sabit.
+
+Kapı yeşil: saglik 890/890 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19.
