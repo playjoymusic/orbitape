@@ -2353,80 +2353,40 @@
   /* YATAY KAP (27 Eylul, kullanici: "radyotape orijinal hali
      kalacak"): yatay hap, kip adi YANINDA, sol altta transport
      satirinin hemen ustunde -- her kipte ayni yer. */
+  /* ── KIP DUGMESI: ELLEMEDIGIN ORIJINAL (e8867c9) ────────────────
+     Kullanici: "swichimi eski haline getir, ellemedigin haline
+     getir, kodu o tarafina". Orijinal olculer: hap 46x24, topuz
+     18 px (sol:2px), yazi 12 px / 700 / .30em aralik. Benim
+     yazdigim 44x24 ve 8 px/400/.26em idi; kullanici "bu font bu
+     buyukluk bu renk... baska bisey yapmissin" dedi. Simdi TAM o
+     olculer. Iki kapi satiri ustuste, ayni olcude, ayni sol
+     kenarda, 6 px arayla. */
   #kipKisayol{
     position:fixed;z-index:96;display:flex;flex-direction:column;
     align-items:flex-start;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     bottom:calc(116px + var(--dip-pay));
-    /* 2 px (27 Eylul, kullanici: "bunlar birbirine yakın olacak,
-       uzak değil"): iki kapi satiri neredeyse bitisik. */
-    gap:2px;
-    -webkit-tap-highlight-color:transparent;
+    gap:6px;-webkit-tap-highlight-color:transparent;
     opacity:.72;transition:opacity .22s ease;}
-  /* Tek kapi satiri: hap + kip adi, 24 px. */
-  /* font-style:normal (27 Eylul): <i> etiketi tarayicida OTOMATIK
-     italik -- yazi da ondan miras aliyordu, kullanici "yamuk yapma,
-     ayni duz yap" diye bildirdi. Duz (normal) yazildi. */
-  .kapi{display:flex;flex-direction:row;align-items:center;
-    height:24px;gap:8px;cursor:pointer;font-style:normal;}
-  .kapi:focus-visible{opacity:1;outline:1px solid currentColor;}
   #kipKisayol:hover,#kipKisayol:focus-visible{opacity:1;}
-  /* Anahtar YATAY (27 Eylul, kullanici: "moods dugmesini yatay
-     yap"). Sol RADIOTAPE, orta JOYTAPE, sag ORBITAPE; topuzun rengi
-     odanin rengi (JS yaziyor). Gerekce: dikey 78 px'lik anahtar
-     78/36/8px yonundeki yerlesimde ikon sutunuyla cakisiyordu
-     (olculdu: palet 688-720, saat 732-764, anahtar 684-762).
-     Yatay olunca blok 44x34 ve SOL KENARDA kalir; halkanin sol
-     kenari x=58 oldugu icin hicbir kipte halkaya dokunmuyor. */
-  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:44px;
-    height:24px;border-radius:12px;background:rgba(53,224,216,.10);
-    border:1px solid rgba(53,224,216,.32);transition:background .2s ease;}
-  #kipKisayol .anahtar u{position:absolute;top:50%;width:5px;height:5px;
-    margin:-2.5px 0 0 -2.5px;border-radius:50%;background:rgba(53,224,216,.42);}
-  #kipKisayol .anahtar u:nth-of-type(1){left:8px;}
-  #kipKisayol .anahtar u:nth-of-type(2){left:21.5px;}
-  #kipKisayol .anahtar u:nth-of-type(3){left:35px;}
-  /* left:2px = RADIOTAPE (sol kademe); JS digerlerini yazar. */
+  .kapi{display:flex;flex-direction:row;align-items:center;
+    height:24px;gap:9px;cursor:pointer;font-style:normal;}
+  .kapi:focus-visible{outline:1px solid currentColor;}
+  /* Anahtarin bicimi ayarlardaki KAPI satirinin anahtariyla ayni. */
+  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:46px;
+    height:24px;border-radius:12px;background:rgba(53,224,216,.22);
+    border:1px solid rgba(53,224,216,.45);transition:background .18s ease;}
   #kipKisayol .anahtar b{position:absolute;top:2px;left:2px;
-    width:18px;height:18px;
-    border-radius:50%;background:#35e0d8;
-    box-shadow:0 0 10px rgba(53,224,216,.5);
-    transition:left .22s ease,background .22s ease,box-shadow .22s ease;}
-  /* Dokunma alani gorsel yuvadan genis: uc kademe 14 px araliKLA
-     duruyor, parmak 44 px istiyor. Saydam, gorsunmez. */
-  /* Dikey tasma 6 px, yatay 0 (27 Eylul): 10 px'lik asagi tasma geri
-     dugmesinin dokunma alanini yiyordu (olcu: 36x32, esik 36).
-     Konsolun ustundeki 8 px'lik bosluk korunuyor. */
-  #kipKisayol .anahtar::before{content:'';position:absolute;inset:-6px 0;}
-  /* MOODS yazisi: 8px kucuk oldugu icin WCAG AA esigi 4.5. Ilk
-     renk 4.07 idi (kirmizi); isiklastirildi. Font agirligi 700:
-     marka diliyle ayni olmali (test: "Anahtar etiketi markanin
-     diliyle yaziliyor"). */
-  /* MOODS yazisi anahtarin OSTUNDE, yatay: 44 px'lik sol seride
-     sigmasi icin dikey degil, blok olarak duruyor. */
-  /* YAZI TIPI (27 Eylul, kullanici: "font bu olacak zaten, yamuk
-     yapma, ayni duz yap... yanlis font kullaniyorsun").
-     1) Geçmişteki TAM yığın geri geldi: 'Share Tech Mono',
-        ui-monospace, SFMono-Regular, Menlo, monospace.
-     2) Ağırlık 700 -> 400. Yazı tipi tek ağırlıklı olduğu için 700
-        tarayıcıda YAPAY kalınlaştırma yapıyor ve harfler yamuk
-        görünüyordu. Düz (400) aynı aile, düz harfler. */
-  #kipKisayol .ad{writing-mode:horizontal-tb;white-space:nowrap;
-    font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:.5rem;font-weight:400;letter-spacing:.26em;
-    color:rgba(216,234,238,.78);text-shadow:none;
-    -webkit-text-fill-color:rgba(216,234,238,.78);}
-  body.joy #kipKisayol .anahtar{background:rgba(226,122,158,.12);
-    border-color:rgba(226,122,158,.40);}
+    width:18px;height:18px;border-radius:50%;background:#35e0d8;
+    transition:background .18s ease,box-shadow .18s ease;}
+  #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
+  /* Yazi: sol ustteki denetimlerle ayni dil. */
+  #kipKisayol .ad{font-family:'Share Tech Mono',ui-monospace,monospace;
+    font-size:0.75rem;font-weight:700;letter-spacing:.30em;line-height:1;
+    margin-right:-.30em;white-space:nowrap;text-shadow:none;}
   @media (prefers-reduced-motion: reduce){
-    #kipKisayol .anahtar, #kipKisayol .anahtar b{transition:none;}
+    #kipKisayol .anahtar,#kipKisayol .anahtar b{transition:none;}
   }
-  /* SOUND BANKS kipinde de AYNI YERDE. Once ortaya alinmisti (sol
-     alti modul aldi diye) ama modul dort hapa cikinca ortaya kadar
-     uzadi ve tutamagin uzerine bindi -- olculdu, sustur tusuyla
-     cakisiyordu. Cozum tutamagi kacirmak degil: modul BIR SATIR
-     yukari cikiyor ve tutamak alt sol kosede kaliyor. Ikisi ayni
-     sol kenardan basliyor, tek bir konsol gibi okunuyor. */
   /* ── DERILER: AYNI SISTEM, BASKA MALZEME ─────────────────────
      Tema bugune kadar yalnizca IKI ZEMIN RENGI tasiyordu. Deri
      ondan fazlasi: zemin, yazi rengi, yazi tipi, kose yaricapi,
@@ -3684,7 +3644,10 @@
   /* right'a bagli (27 Eylul): sabit left dar ekranda tasiyordu
      (olculdu: 320 px'de araclar 262-348, ekran 320). Panelin sag
      kenarina yapisir, arama kutusu genisligini korur. */
-  #ayar #araclar{position:absolute;right:17px;left:auto;top:15px;
+  /* top:20px (27 Eylul, kullanici: "bunlar ayni hizada degil") —
+     arama kutusu 42 px, ses/yildiz 32 px; ikisi de ustten hizali
+     olunca ikonlar 5 px yukarida duruyordu. (42-32)/2 = 5. */
+  #ayar #araclar{position:absolute;right:17px;left:auto;top:19px;
     display:flex;align-items:center;gap:6px;margin:0;padding:0;
     border-bottom:0;}
   #ayarAraclar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
@@ -4553,10 +4516,12 @@
         <button id="kayitOnayHayir" type="button">NO</button>
       </div>
     </div>
-    /* ORBITAPE SATIRI AYARLARDAN KALDIRILDI (27 Eylul, kullanici:
-       "ayarlardan bu orbitape blokunu kaldir"). Kip gecisi artik
-       sol alttaki iki dunya dugmesinden yapiliyor; ayarda ayni
-       islevi gostermek menuyu buyutuyordu. */
+    <!-- ORBITAPE SATIRI AYARLARDAN KALDIRILDI (27 Eylul, kullanici:
+         "ayarlardan bu orbitape blokunu kaldir"). Kip gecisi artik
+         sol alttaki iki dunya dugmesinden yapiliyor.
+         DIKKAT: buraya /* */ degil <!-- --> yazilir. C tarzi yorum
+         HTML'de YORUM DEGIL, ekranda METIN olarak cizilir (olculdu:
+         ayar panelinde Turkce paragraf gorunuyordu). -->
     <!-- "SEE IT FIRST" SATIRI BURADAN TASINDI (7 Eylul).
          Kapinin hemen altinda duruyordu ve orada dogruydu: ayni
          konunun ikinci satiri. Ama kullanici butun tanitimlarin tek
@@ -10428,7 +10393,11 @@
          (kullanici: "gezegenlere balk nere"). Ust bar 33'te bitiyor,
          halka 291'de basliyor; arada bos serit var. Sira 118'e
          alindi: ust barin altinda, basligin ustunde. */
-      const y = 150;   /* 118 cok yukaridata; basligin hemen ustunde */
+      /* HALKANIN BIRAZ ALTINDA (27 Eylul, kullanici: "halkanin biraz
+         altinda olacak"). Once ustune kondu (once "biraz ustunde",
+         sonra basliga carsti diye y=150). Olcum: halka 291-565, sol
+         alt dugmeler 752-802; arada 565-752 seridi bos. Merkez 640. */
+      const y = 640;
       T.forEach(v=>{
         const b = uyduDug[v.u.fx]; if(!b) return;
         const vur = Math.max(30, Math.min(Math.round(v.cap*1.9), 44));
@@ -18104,6 +18073,7 @@
         const t = /** @type {any} */ (e.querySelector('.ad'));
         if(t){ t.textContent = ad; t.style.color = rn[0];
                t.style.webkitTextFillColor = rn[0]; }
+        void canli;
         /* Kullanici 27 Eylul: "swichler de oyle degistirme, aynisini
            istiyorum" -- etkisiz olan soluk kalir (.32), ikisi de ayni
            yerde ve ayni fontta. */

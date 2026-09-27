@@ -3086,3 +3086,37 @@ oldu, yok mu onda bir şey" dedi: ORBITAPE'den JOYTAPE'ye
 geçilemiyordu. Artık her satır kendi odasını gösterir ve her ikisi de
 geçiş yapar; ölçülen sıra: radyo → ORBITAPE → JOYTAPE → ORBITAPE →
 JOYTAPE. Etkisizlik bittiği için `<i>` yerine düz yazı kaldı.
+
+### 27 Eylül — düğme ellemediğin orijinaline döndü
+
+Kullanıcının cümlesi birebir: "swichimi eski haline getir, ellemediğin
+haline getir, kodu o tarafına." Yani referans `e8867c9` — kendisinin
+onayladığı, benim dokunmadığı sürüm.
+
+**Yanlış yaptığım:** 46×24 hap yerine 44×24, 12 px/700/.30em yazı
+yerine 8 px/400/.26em. Kullanıcı bunu üç kez tarif etmişti
+("bu font bu büyüklük bu renk"), ben ölçüp değiştirmek yerine
+kendi çizimime göre küçülttüm. Geri alındı:
+
+| | benim yaptığım | orijinal (doğru) |
+|---|---|---|
+| hap | 44×24 | **46×24** |
+| topuz | 18 px, sol 2 px | 18 px, sol 2 px (ayni) |
+| yazı | 8 px / 400 / .26em | **12 px / 700 / .30em** |
+| satır aralığı | 2 px | 6 px |
+
+İki satır da aynı sol kenarda (14 px) ve aynı ölçüde — kullanıcı
+"başlangıç noktası eşit değil, aşırı küçük olmuşlar, aşırı yakınlar"
+diye ölçtürmüştü.
+
+**Bir de kendi hatam:** ayarlardan ORBITAPE satırını silerken HTML
+içine `/* ... */` yazmıştım. HTML'de bu yorum DEĞİL, ekranda metin
+olarak çizilir — panelde Türkçe bir paragraf belirdi
+(kullanıcı: "ayarlarda hata var, orbitape yerine yazılar gelmiş").
+`<!-- -->`'e çevrildi; HTML gövdesinde başka C-tarzı yorum yok.
+
+**Dikey hizalama:** arama kutusu 42 px, ses/yıldız 32 px; ikisi de
+üstten hizalı olunca ikonlar 5 px yukarıda duruyordu
+("bunlar aynı hizada değil"). `top:19px` ile birebir ortalandı.
+Ayrıca sabit `left` dar ekranda taşıyordu (320 px'de 262-348);
+`right:17px`'a alındı.

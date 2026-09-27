@@ -7443,17 +7443,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Dogrusu da bu -- bu etiket bir kunye degil, markanin adi.
      Uc sey ayni: yazi tipi, kalinlik, harf araligi. Punto kasten
      farkli (23 / 12). */
-    /* 27 Eylul: kalinlik 700 -> 400. Yazı tipi TEK agirligli oldugu
-       icin 700 tarayicida YAPAY kalinlastirma yapiyor ve harfler
-       "yamuk" gorunuyordu (kullanici: "yamuk yapma, ayni duz yap").
-       Duz 400; aile ve harf araligi marka diliyle ayni kalir. */
+    /* 27 Eylul: etiket ELLEMEDIGIN oriijinaline dondu (12 px / 700 /
+       .30em). Once 8 px / 400 yapmistik; kullanici "bu font bu
+       buyukluk bu renk... baska bisey yapmissin" dedi. Artik aile,
+       kalinlik ve aralik markanin diliyle ayni. */
     /* 27 Eylul: etiket iki kipte de ayni (ayri test olcuyor), bu
        yuzden burada yalniz RADIOTAPE olcumu yeter. Arsiv yarisi
        marka nesnesini arsivde ariyordu; duzen degisince o nesne
        gizli kaliyor ve karsilastirma anlamsizlesiyordu. */
     K('Anahtar etiketi markanin diliyle yaziliyor',
        !!r
-       && r.font === r.markaFont && r.kalinlik === '400'   /* fontWeight STRING */
+       && r.font === r.markaFont && r.kalinlik === r.markaKalinlik
        && r.aralik !== null && Math.abs(r.aralik - r.markaAralik) <= 0.01,
        r ? ('"' + r.yazi + '" ' + r.font + ' ' + r.punto + '/' + r.kalinlik
             + ' ' + r.aralik + 'em | marka: ' + r.markaFont + '/' + r.markaKalinlik
