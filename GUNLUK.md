@@ -3252,3 +3252,40 @@ zorlaması aynen dururken merkez beklentisi `'yuvarlak'` oldu.
 
 Kapı yeşil: saglik 891/891 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19.
+
+### 27 Eylül — JOYTAPE'ye müzik rafları kondu
+
+Kullanıcının cevabı: "icine bankaları koy hallet bitir." (Sorudan
+sonra: "soru sorma yokum.")
+
+**Ölçülen durum:** müzik kayıtlarının HEPSİ tek bir `JOYTAPE`
+kovasına gidiyordu (`arsivRaf`: `if(_muzikMi(o)) return 'JOYTAPE'`) ve
+o ad `ARSIV_ADLAR`'da bile yoktu. Yani oda açılıyor, `halkaAdlar()`
+10 efekt rafını döndürüyor, müzik için **sıfır** raf görünüyordu.
+
+**Yapılan:**
+* `JOY_RENKLER` (10 raf, kendi renkleri) + `JOY_ADLAR` üst seviyede.
+  Renkler odanın sıcaklığında; RETRO ile aynı kural (doygunluk
+  .24-.38, kanal farkı ≤ 82).
+* `joyRaf(o)`: etiket + kaynak metninden tür seçimi (JAZZ, ANATOLIA,
+  ELECTRONIC, …), kalan `MIXTAPE`. `arsivRaf` müzik için artık buna
+  gidiyor.
+* `halkaAdlar()` JOYTAPE'de bu on rafı döndürüyor.
+* `modUyar` güncellendi: "ORBITAPE = müzik değil" kararı artık tek
+  kova adına değil `JOY_ADLAR` üyeliğine bakıyor.
+
+**Yanlış yol (kullanıcı düzeltirdi):** "görselleri de at" cümlesini
+gezegenlere uyguladım; kullanıcı "gezegenlerle ilgili bir şey
+demedim" dedi — kastedilen üretilen ekran görüntüleriydi. Gezegenler
+ve menü ikonu geri kondu, PNG'ler silindi, bundan sonra görüntü
+üretilmiyor.
+
+**Bir de kendi hatalı geri almam:** gezegenleri geri koyarken bölge
+sınırları kaydı; `FX MODLARI` bloğu (`var FXMOD`) silinmişti. Tip
+denetimi yakaladı (63 uyarı), blok HEAD'ten geri kondu. Aynı sırada
+üç `/** @type {any} */` cast'i de düşmüştü, onlar geri kondu. Tip tabanı
+61 → **60** (araclar/tip_taban.txt).
+
+Kapı yeşil: saglik 891/891 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19 · tip 60 (taban 60) ·
+ilk boyama 112.039 B (tavan 112.640).

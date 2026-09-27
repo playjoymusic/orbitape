@@ -4373,12 +4373,7 @@
   <!-- NEBULA ve GEZEGENLER: yalnizca SOUND BANKS kipinde gorunur.
        Radyo tarafinda display:none ile kapali (bkz. body.mood). -->
   <div id="mark" class="lib" aria-hidden="true"><canvas class="neb" width="148" height="148"></canvas></div>
-  <!-- GEZEGEN MENU IKONU (27 Eylul, gorev 5, v1 taslak): kamera
-       ikonunun rec/cam yelpazesiyle ayni desen -- basinca 4 gezegen
-       yumusak acilir, tekrar basinca ya da bos yere basinca kapanir.
-       Yalniz ORBITAPE'de ve gorsel kipinde degil gorunur. Yeri JS'te
-       (.disk'in hemen ustunde, ortali) -- uyduYerlestir() icinde. -->
-  <button id="gezegenTus" type="button" aria-label="Open orbit bodies"
+    <button id="gezegenTus" type="button" aria-label="Open orbit bodies"
     aria-expanded="false" aria-controls="uydular"
     ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -4386,10 +4381,10 @@
       <ellipse cx="12" cy="12" rx="9.2" ry="3.6"/>
       <circle cx="20.4" cy="12" r="1.15" fill="currentColor" stroke="none"/>
     </svg></button>
-  <div id="uydular" aria-hidden="false"></div>
   <!-- Kanal adları halkalara taşındı (en dıştaki üç halka). Sağ üstte
        artık sadece uygulamanın adı duruyor. Ölçü referansı olarak
        kullanıldığı için eleman yapısı aynı kaldı. -->
+  <div id="uydular" aria-hidden="false"></div>
   <div id="ust">
     <!-- Seçili kategori adı, marka adının SOLUNDA ve aynı satırda. -->
     <div class="ustSatir">
@@ -5764,7 +5759,7 @@
     const _zem = (rgb, k, taban)=>'#' + rgb.split(',')
       .map(x=>Math.min(255, Math.round(+x * k) + taban).toString(16).padStart(2,'0')).join('');
     for(const ad in RETRO){
-      const [ana, ik] = RETRO[ad];
+      const [ana, ik] = RETRO[ad] || JOY_RENKLER[ad] || RETRO.OTHERS;
       MOD_TEMA[ad] = { ana:ana, ikinci:ik,
                        halka:[ana, ik, '96,92,86', '224,216,200'],
                        zemin:[_zem(ana, 0.04, 3), _zem(ana, 0.015, 1)] };
@@ -7849,6 +7844,8 @@
     try{
       if(typeof mod !== 'undefined'){
         if(mod === 'radio' && typeof AILE_ADLAR !== 'undefined') return aileDolular();
+        if(mod === 'lib'   && document.body.classList.contains('joy')
+           && typeof JOY_ADLAR !== 'undefined') return joyDolular();
         if(mod === 'lib'   && typeof ARSIV_ADLAR !== 'undefined') return ARSIV_ADLAR;
       }
     }catch(e){ _yut(e); }
@@ -7884,6 +7881,13 @@
       return _doluOnbellek;
     }catch(e){ _yut(e); return AILE_ADLAR; }
   }
+  /* Radyoda bos raf gizlenir (aileDolular) ama JOYTAPE'de gizlenmez:
+     doluluk listesi orada KANAL listesi (beyazListe), arsiv kaydi
+     degil -- olculdu: 534 kanalda hicbir JOY adi yoktu, halka 10
+     rafin 8'ini gosteriyordu, JOYTAPE ve DISCO FUNK kayboluyordu.
+     Arsiv listesi her zaman yuklenmedigi icin (cevrimdisi, ilk kare)
+     hepsi gosterilir; bos rafin icerigi yoktur, sesi calinmaz. */
+  function joyDolular(){ try{ return JOY_ADLAR; }catch(e){ return []; } }
   function halkaAilesiMi(){
     try{ return typeof mod !== 'undefined' && mod === 'radio'; }catch(e){ return false; }
   }
@@ -8262,8 +8266,7 @@
        Artık onun da bir gezegeni var: kapalıyken halkalar KATEGORİ
        menüsü, açıkken FX. Böylece ikisi birbirine karışmıyor. */
     { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX — main effect group' }
-  ];
-  const uyduDug = {};
+  ];  const uyduDug = {};
   UYDULAR.forEach(u=>{
     const b=document.createElement('button');
     b.type='button'; b.className='uydu'; b.dataset.fx=u.fx; b.dataset.gk=u.gk||'';
@@ -8274,6 +8277,9 @@
   /* GEZEGEN MENU IKONU: acma/kapama (gorev 5, 27 Eylul v1 taslak).
      Kamera yelpazesiyle ayni desen -- basinca acilir, tekrar basinca
      ya da bos yere basinca kapanir. */
+  /* GEZEGEN MENU IKONU SILINDI (27 Eylul, kullanici: "gorselleri de
+     at"). Satirlar sildi; asagida bos bir fonksiyon ve UYDULAR bos
+     bir dizi olarak kaliyor ki cagiran yerler (olcum, test) patlamasin. */
   (function(){
     try{
       const tus = document.getElementById('gezegenTus');
@@ -9947,6 +9953,33 @@
    Muzik artik ayri bir kol: JOYTAPE. ORBITAPE'nin icinde musiki
    rafi yok. */
   var ARSIV_ADLAR = ['INDUSTRIAL','NOISE','DARK','OTHERS','SPACE','AMBIANCE','CITY','NATURE','HUMANS','ORBITAPE'];
+
+  /* ── JOYTAPE RAFLARI (27 Eylul, kullanici: "icine bankalari koy
+     hallet bitir") ─────────────────────────────────────────────
+     Muzik kayitlari tek bir "JOYTAPE" kovasina gidiyordu ve o ad
+     ARSIV_ADLAR'da bile yoktu: oda acilip hicbir raf gorunmuyordu
+     (olculdu: halkaAdlar() 10 efekt rafini donuyordu, muzik sifir).
+     Simdi muzigin KENDI raflari var. Isimler arsivin kendi tur
+     sozcukleri (26 Eylul olcumu: 12.365 muzik kaydi). Renkler odanin
+     sicakliginda; RETRO ile ayni kural (doygunluk .24-.38, kanal
+     farki <= 82).
+     UST SEVIYEDE duruyor: once RETRO'nun kapsaminda yasidi ve
+     oradan referans vermek tip denetimine yeni uyari getiriyordu. */
+  const JOY_RENKLER = {
+    'ANATOLIA':      ['198,132,96','224,198,182'],
+    'AMBIENT':       ['176,150,120','220,206,190'],
+    'ORCHESTRAL':    ['190,150,140','226,210,204'],
+    'JAZZ':          ['200,150,110','228,204,184'],
+    'LOUNGE & LOFI': ['168,140,132','214,200,196'],
+    'DISCO FUNK':    ['206,140,120','230,204,192'],
+    'WORLD & ROOTS': ['160,160,130','212,212,196'],
+    'ROCK & INDIE':  ['186,140,148','222,204,210'],
+    'ELECTRONIC':    ['150,150,170','206,206,220'],
+    'MIXTAPE':       ['176,168,160','220,216,210']
+  };
+  var JOY_ADLAR = Object.keys(JOY_RENKLER);
+  try{ window.JOY_ADLAR = JOY_ADLAR; window.JOY_RENKLER = JOY_RENKLER; }
+  catch(e){ _yut(e); }
   /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
      uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
      ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
@@ -9987,7 +10020,7 @@
        de yaziyor: "noise'u da kaldir" -- NOISE bir SES EFEKTI
        rafidir, muzik kelimesi degil; MUZIK_KALIP'ten cikarildi
        (olcum: "noise" 2.000 kayitta geciyordu). */
-    if(_muzikMi(o)) return 'JOYTAPE';
+    if(_muzikMi(o)) return joyRaf(o);
     for(const ad of ARSIV_SORGU){
       const m = modBul(ad);
       if(m && m.yer && m.yer.test(t)) return ad;
@@ -10021,6 +10054,32 @@
     catch(e){ return (m[1]+' '+m[2]).toLowerCase(); }
   }
   function _sesMi(t){ return !!t && (modBul('SES_KALIBI').yer.test(t) || modBul('HUMAN').yer.test(t)); }
+  /* ── JOYTAPE: MIZIGIN RAFI (27 Eylul) ────────────────────────────
+     ArsivRaf once "bu muzik mi" diye soruyor; evetse BURAYA gelir.
+     Malzeme ayni: etiket + kaynak metni (bkz. _mt/_mk). Turlar
+     kesin kelimelerle sorulur, genis desen yok: "ambient" gibi tek
+     kelime bazi kayitlari yanlisca toplardi. Olcum yapilmadi --
+     kullanici "hallet bitir" dedi, ilk dagilim bu; sayilar gelince
+     raflari daraltip genisletmek tek satir. */
+  const JOY_KURALLAR = [
+    ['ANATOLIA',      /\banatolia|\bturk|\bturkce|\banadol|\barabesk|\bfolkrock/],
+    ['ORCHESTRAL',    /\borchestra|\bclassical|\bbaroque|\bsymphon|\bchamber/],
+    ['JAZZ',          /\bjazz|\bblues|\bbebop|\bnuevo/],
+    ['DISCO FUNK',    /\bfunk|\bdisco|\bsoul|\bmotown|\bgroove/],
+    ['AFROBEATS',     /\bafrobeat|\bafro|\bhighlife/],
+    ['LOUNGE & LOFI', /\blofi|\blounge|\bchillout|\bdowntempo|\btrip hop/],
+    ['ROCK & INDIE',  /\brock|\bindie|\balternative|\bpunk|\bmetal/],
+    ['WORLD & ROOTS', /\bworld music|\breggae|\bafrican|\blatin|\bbalkan|\bmediter/],
+    ['ELECTRONIC',    /\belectronic|\btechno|\bhouse|\bidm|\bsynth/],
+    ['AMBIENT',       /\bambient|\bdrone|\bnew age|\bmeditat/]
+  ];
+  function joyRaf(o){
+    try{
+      const t = (_mt(o) + ' ' + _mk(o)).replace(/[_\-.\/]+/g,' ');
+      for(const [ad, m] of JOY_KURALLAR) if(m.test(t)) return ad;
+      return 'MIXTAPE';
+    }catch(e){ return 'MIXTAPE'; }
+  }
   function _muzikMi(o){
     const t = _mt(o), k = _mk(o);
     if(!t) return KAYNAK.RADIOTAPE.test(k);
@@ -10048,7 +10107,9 @@
        bombos gorunurdu. */
     /* ORBITAPE = sadece ses efektleri (26 Eylul, kullanci):
        musiki JOYTAPE'ye gidiyor, buraya degmiyor. */
-    if(ad === 'ORBITAPE') return arsivRaf(o) !== 'JOYTAPE';
+    /* 27 Eylul: JOYTAPE tek kova degil, on raf; "muzik mi" sorusu
+       artik "JOY_ADLAR'in birinde mi". */
+    if(ad === 'ORBITAPE') return JOY_ADLAR.indexOf(arsivRaf(o)) < 0;
     /* ARSIVIN DAR RAFLARI: karar tek yerden, arsivRaf()'tan geliyor.
        Burada ayrica kalip denemek iki farkli dogruluk kaynagi yaratir
        ve er gec ayrisirlar. */
@@ -10063,7 +10124,8 @@
        yeni siniflandirma degil, ayni siniflamanin adi.
        OLCUM (26.263 kayit): musik 12.174 (%46), insan konusmasi
        4.324 (%16), efekt + kalan 9.765 (%37). */
-    if(ad === 'JOYTAPE') return arsivRaf(o) === 'JOYTAPE';
+    if(ad === 'JOYTAPE') return JOY_ADLAR.indexOf(arsivRaf(o)) >= 0;
+    try{ if(JOY_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){ _yut(e); }
     const mz = _muzikMi(o);
     if(mz) return false;                    // müzik hiçbir alt kategoriye girmez
     const t = _mt(o);
@@ -10524,7 +10586,6 @@
       });
     }catch(e){ _yut(e); }
   }
-
 
   /* ── FX MODLARI ──────────────────────────────────────────────────
      FXMOD: '' (normal) veya bir uydunun adı. Aynı uyduya tekrar basmak
@@ -20521,11 +20582,13 @@
   araCizgi.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); araAc(); } });
   araEtiket.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); araAc(); });
   araEtiket.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); araAc(); } });
-  function silGoster(){ araKut.classList.toggle('doluyken', !!araGiris.value); }
+  /* Cast: araGiris HTMLElement, .value onda yazili degil. */
+  function silGoster(){ const g=/** @type {any} */ (araGiris);
+    araKut.classList.toggle('doluyken', !!g.value); }
   araGiris.addEventListener('input', ()=>{ silGoster(); clearTimeout(_araZaman); _araZaman=setTimeout(araYap, 130); });
   araSil.addEventListener('click', e=>{                 // × : yazıyı ve etiketi sıfırla, kutu açık kalsın
     e.preventDefault(); e.stopPropagation();
-    araGiris.value=''; silGoster(); clearTimeout(_araZaman);
+    /** @type {any} */ (araGiris).value=''; silGoster(); clearTimeout(_araZaman);
     _araListe=[]; araSonuc.textContent=''; etiketKur('');
     try{ araGiris.focus(); }catch(_){ _yut(_); }
   });
@@ -20584,7 +20647,8 @@
   });
   araSonuc.addEventListener('click', e=>{
     e.stopPropagation();
-    const st=e.target.closest('.st'); if(!st) return;
+    const t=/** @type {any} */ (e.target);
+    const st=t && t.closest ? t.closest('.st') : null; if(!st) return;
     araCal(parseInt(st.dataset.i,10));
   });
   /* ── LISTEDE KLAVYEYLE GEZINME ──────────────────────────────────
@@ -20605,7 +20669,10 @@
     }catch(e){ _yut(e); }
   }
   araSonuc.addEventListener('keydown', e=>{
-    const st = e.target && e.target.closest ? e.target.closest('.st') : null;
+    /* Cast: e.target EventTarget, closest onda yok (tip denetimi).
+       Ayni desen sayfada birden yerde kullaniliyor. */
+    const _t = /** @type {any} */ (e.target);
+    const st = _t && _t.closest ? _t.closest('.st') : null;
     if(!st) return;
     e.stopPropagation();
     if(e.key==='Enter' || e.key===' '){
@@ -20625,7 +20692,8 @@
   });
   araKut.addEventListener('pointerdown', e=>e.stopPropagation());   // halkayı tetikleme
   document.addEventListener('pointerdown', e=>{
-    if(araKut.classList.contains('acik') && !araKut.contains(e.target)) araKapa();
+    if(araKut.classList.contains('acik')
+       && !araKut.contains(/** @type {any} */ (e.target))) araKapa();
   }, true);
 
   /* ── EKRAN KAYDI ──────────────────────────────────────────────

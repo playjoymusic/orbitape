@@ -4042,7 +4042,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           { o:{ etiket:'jazz · vinyl · 78-rpm · 78rpm',
                 ad:"Jumpin' At Apollo",
                 mp3:'https://archive.org/download/JV-25463-1946-QmY13QXN9yZMT7TYEhnpF7N5ne6SGKUfZcbXCadqUfPRff.mp3/APOR1054.mp3' },
-            olmali:'JOYTAPE' },
+            /* 27 Eylul: hedef tek 'JOYTAPE' kovasi degil, JOYTAPE'nin
+               on rafindan biri: bu kayit caz plagi -> JAZZ. */
+            olmali:'JAZZ' },
           /* LibriVox siiri: adinda "Wind" geciyor diye NATURE'daydi.
              Sesli kitap ve siir artik TALKS rafinda. */
           { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',
@@ -4106,8 +4108,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        tamami), hicbiri RADIOTAPE'te (canli yayin) degil. */
     /* 26 Eylul: muzik JOYTAPE kolune gidiyor, ORBITAPE'te degil. */
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
-    return modUyar(muzik,'JOYTAPE') && !modUyar(muzik,'NATURE')
-        && modUyar(ses,'NATURE') && !modUyar(ses,'JOYTAPE')
+    /* 27 Eylul: muzik kaydi JOYTAPE'nin raflarindan birine gider
+       (artik tek 'JOYTAPE' adi yok), ortam sesi arsivin NATURE'ina. */
+    const joyMu=(o)=>JOY_ADLAR.indexOf(arsivRaf(o)) >= 0;
+    return joyMu(muzik) && !modUyar(muzik,'NATURE')
+        && modUyar(ses,'NATURE') && !joyMu(ses)
         && modUyar(ses,'ORBITAPE') && !modUyar(muzik,'ORBITAPE')
         && !modUyar(muzik,'RADIOTAPE') && !modUyar(ses,'RADIOTAPE');
   });
@@ -4238,18 +4243,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          uzay SPACE'e, ritim ve gurultu BEATS'e gidiyor. */
       /* 26 Eylul: "muzik olan ambient" -> JOYTAPE. Ortam sesi
          (ambience, efekt drone, room tone) ORBITAPE icinde kalir. */
+      /* 27 Eylul: muzik kayitlari tek 'JOYTAPE' kovasina degil,
+         JOYTAPE'nin KENDI on rafina gidiyor (joyRaf). Soru artik
+         "hangi rafa" degil "hangi odanin rafinda". */
       ambientKendiRafi: modUyar(t('ambience · room tone','Deep Room'),'AMBIANCE')
-                     && modUyar(t('ambient · drone','Deep Drone'),'JOYTAPE')
+                     && JOY_ADLAR.indexOf(arsivRaf(t('ambient · drone','Deep Drone'))) >= 0
                      && !modUyar(t('ambient · drone','Deep Drone'),'AMBIANCE'),
       /* 26 Eylul: 'noise' muzik listesinden cikarildi (kullanici:
          "noise'u da kaldir"), NOISE bir SES EFEKTI rafidir. */
       gurultuNoise:  modUyar(t('white noise · hiss · static','Harsh'),'NOISE')
-                  && modUyar(t('noise · experimental','Harsh'),'JOYTAPE'),
+                  && JOY_ADLAR.indexOf(arsivRaf(t('noise · experimental','Harsh'))) >= 0,
       alanKaydi:    modUyar(t('green-field-recordings','x'),'NATURE'),
       nasa:         modUyar(t('nasaaudiocollection · nasa','x'),'SPACE'),
-      baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'NATURE') && !modUyar(t('','Tidal Wave'),'JOYTAPE'),
+      baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'NATURE')
+                    && JOY_ADLAR.indexOf(arsivRaf(t('','Tidal Wave'))) < 0,
       canliYayin:   modUyar({etiket:'',ad:'FM',radyo:true},'RADIOTAPE') === true &&
-                    ['JOYTAPE','ORBITAPE','AMBIANCE','HUMAN'].every(k=>!modUyar({etiket:'',ad:'FM',radyo:true},k)),
+                    JOY_ADLAR.concat(['ORBITAPE','AMBIANCE','HUMAN']).every(k=>!modUyar({etiket:'',ad:'FM',radyo:true},k)),
       radyoSadeceYayin: !modUyar(t('netlabel · techno','Acid EP'),'RADIOTAPE') && !modUyar(t('field recordings','Rain'),'RADIOTAPE')
     };
   });
@@ -4263,7 +4272,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   const kyn = await pg.evaluate(()=>{
     const A=['RADIOTAPE','RECORDS','ORBITAPE','HUMANS','NATURE','SPACE','AMBIANCE','BEATS','CITY','NOISE','DARK','INDUSTRIAL','OTHERS'];
     /* JOYTAPE bir kip, arsiv rafi degil; onu da soruyoruz. */
-    const f=(o)=>A.concat(['JOYTAPE']).filter(a=>modUyar(o,a)).join(',');
+    /* 27 Eylul: JOYTAPE tek ad degil, on raf; hepsi sorulur. */
+    const f=(o)=>A.concat(JOY_ADLAR).filter(a=>modUyar(o,a)).join(',');
     const U=(id)=>({etiket:'', ad:'Tidal Wave', mp3:'https://archive.org/download/'+id+'/x.mp3'});
     return {
       lp:      f(U('lp_madama-butterfly_giacomo-puccini')),
@@ -4274,10 +4284,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       bos:     f({etiket:'', ad:'Tidal Wave', mp3:''}),
       talk:    f({etiket:'radio program · health', ad:'x', mp3:'https://archive.org/download/kahi950_x/a.mp3'}),
       folk:    f({etiket:'field recordings · folksoundomy', ad:'x', mp3:''}),
-      soap:    f({etiket:'old time radio · otr soap opera', ad:'x', mp3:''})
+      soap:    f({etiket:'old time radio · otr soap opera', ad:'x', mp3:''}),
+      /* 27 Eylul: kontrol Node tarafinda kuruluyor, adlar orada
+         tanimli degil -- bu yuzden burada bir kez gonderiliyor. */
+      joyAdlar: JOY_ADLAR.join('|')
     };
   });
-  K('Etiketsiz: lp_/edison/78_ muzik', /JOYTAPE/.test(kyn.lp) && /JOYTAPE/.test(kyn.edison) && /JOYTAPE/.test(kyn.r78),
+  /* 27 Eylul: etiketsiz kayitlar JOYTAPE'nin raflarina gider; raf
+     adi artik 'JOYTAPE' degil, on addan biri -- isim listesinden
+     sorulur. */
+  K('Etiketsiz: lp_/edison/78_ muzik',
+     (function(){ const rx=new RegExp(kyn.joyAdlar);
+       return rx.test(kyn.lp) && rx.test(kyn.edison) && rx.test(kyn.r78); })(),
      'lp '+kyn.lp+' | edison '+kyn.edison+' | 78 '+kyn.r78);
   /* NASA yer-uzay hatti INSAN SESI: HUMAN'a girer, AMBIANCE'a GIRMEZ.
      Kullanicinin kurali: ambiance'a asla telsiz konusmasi koyma. */
@@ -4371,8 +4389,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            "muzikse FX'ten kaldir o halkayi") -- JOYTAPE'ye gider.
            Yani ya tam bir dar rafta, ya da hicbir dar rafta degil. */
         return { tek: ornek.every(o=>{ const n=dar.filter(a=>modUyar(o,a)).length;
-                          return n===1 || (n===0 && modUyar(o,'JOYTAPE')); }),
-                 hepsi: ornek.filter(o=>!modUyar(o,'JOYTAPE'))
+                          return n===1 || (n===0 && JOY_ADLAR.indexOf(arsivRaf(o))>=0); }),
+                 hepsi: ornek.filter(o=>JOY_ADLAR.indexOf(arsivRaf(o))<0)
                           .every(o=>modUyar(o,'ORBITAPE')===true) };
       });
     K('Dar raflar birbirini dislıyor', rafDagilim.tek, 'her kayit tek dar rafa giriyor');
@@ -5278,19 +5296,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* 26 Eylul: RECORDS yerine JOYTAPE kolu. Muzik bir RAF degil, bir
      KIP: RADIOTAPE radyo, JOYTAPE muzik, ORBITAPE ses efektleri.
      Arsiv raflarinda musik rafi yok (kullanci: "records olmayacak"). */
-  K('Muzik kolu JOYTAPE, RECORDS rafi yok', await pg.evaluate(()=>
+  /* 27 Eylul: JOYTAPE artik tek kova degil, on raf; sayim onlarda. */
+  K('Muzik kolu JOYTAPE raflari, RECORDS rafi yok', await pg.evaluate(()=>
       ARSIV_ADLAR.indexOf('RECORDS') < 0
-      && ARSIV_ADLAR.indexOf('JOYTAPE') < 0
-      && modUyar({etiket:'78rpm · jazz · vinyl',ad:'x'},'JOYTAPE') === true
+      && JOY_ADLAR.every(a=>ARSIV_ADLAR.indexOf(a) < 0)
+      && JOY_ADLAR.indexOf(arsivRaf({etiket:'78rpm · jazz · vinyl',ad:'x'})) >= 0
       && modUyar({etiket:'78rpm · jazz · vinyl',ad:'x'},'ORBITAPE') === false),
-     'RECORDS yok, JOYTAPE yalnizca muzik');
+     'RECORDS yok, JOYTAPE raflari yalnizca muzik');
   /* OTHERS'in son sorusu: bu bir muzik mi? Kalip listesi uzatilmadi,
      uygulamanin kendi muzik testi soruldu. Olculdu: OTHERS 1.289 ->
      598, RECORDS 5.224 -> 5.915. */
-  K('OTHERS muzigi JOYTAPE a birakiyor', await pg.evaluate(()=>
-      arsivRaf({etiket:'opensource_audio community experimental', ad:'[LEMN018] Therma Ikarias', mp3:''}) === 'JOYTAPE'
+  /* 27 Eylul: deneysel netlabel yayini JOYTAPE'nin raflarina gider
+     (MIXTAPE: tur kelimesi yok), kalan OTHERS. */
+  K('OTHERS muzigi JOYTAPE rafina birakiyor', await pg.evaluate(()=>
+      JOY_ADLAR.indexOf(arsivRaf({etiket:'opensource_audio community experimental',
+                                   ad:'[LEMN018] Therma Ikarias', mp3:''})) >= 0
       && arsivRaf({etiket:'', ad:'Broken Doorbell', mp3:''}) === 'OTHERS'),
-     'deneysel netlabel yayini JOYTAPE, kalan OTHERS');
+     'deneysel netlabel yayini JOYTAPE raflari, kalan OTHERS');
   K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
   K('Kayit hedefi ONDEN hazir', await pg.evaluate(()=>!!kayitHedef), 'REC oncesi kurulu');
   /* latencyHint:'playback': tampon 441 -> 1024 ornek. Cizirti isleci
@@ -8939,7 +8961,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             O.aktif = AKTIF_MOD;
             try{ O.havuz = modHavuzu() ? modHavuzu().length : -1; }catch(e){ O.havuz = -1; }
             try{ O.orbitapeMuzik = modHavuzu()
-                 ? modHavuzu().filter(o=>arsivRaf(o)==='JOYTAPE').length : -1; }catch(e){}
+                 ? modHavuzu().filter(o=>JOY_ADLAR.indexOf(arsivRaf(o))>=0).length : -1; }catch(e){}
           }
           /* SONRAKI TESTLERI ETKILEMESIN: radyoya don. */
           try{ if(window.moodKapat) window.moodKapat(); }catch(e){}

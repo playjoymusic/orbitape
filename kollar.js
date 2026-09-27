@@ -340,6 +340,8 @@ try{ /** @type {any} */ (window).KOLLAR_HAZIR = true; }catch(e){ _yut(e); }
   /* ORBITAPE: gezegen satiri ve gezegen ikonu burada; Iki kenar
      sarma islevi (kaynaga bakma, sekil verme) ORBITAPE'ye ozgu. */
   window.REHBER_ORB = [
+    { h:'#gezegenTus', m:'ORBIT BODIES — TAP', dx:0, dy:-56, hiza:'orta' },
+    { h:['#uydular .uydu','#mark'], m:'FX — TAP A MOON', dx:-8, dy:-8, hiza:'sag' },
     { h:'#bekle', m:'MOOD — TAP A SYMBOL', dx:-8, dy:-20, hiza:'sag' },
     { h:'#bekle', m:'SPIN — TAP A SYMBOL', dx:-8, dy:16, hiza:'sag' },
     { h:'#ayarTus', m:'SETTINGS — PHOTO, CAMERA, RECORDING, FAVOURITES', dx:36, dy:0, hiza:'sol', cizgi:false },
@@ -349,8 +351,6 @@ try{ /** @type {any} */ (window).KOLLAR_HAZIR = true; }catch(e){ _yut(e); }
     { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:'#kamTus', m:'CAMERA', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
-    { h:'#gezegenTus', m:'ORBIT BODIES — TAP', dx:0, dy:-56, hiza:'orta' },
-    { h:['#uydular .uydu','#mark'], m:'FX — TAP A MOON', dx:-8, dy:-8, hiza:'sag' },
     { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
     { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
@@ -364,6 +364,8 @@ try{ /** @type {any} */ (window).KOLLAR_HAZIR = true; }catch(e){ _yut(e); }
 
   /* JOYTAPE: ayni kabuk, kendi diliyle (27 Eylul). */
   window.REHBER_JOY = [
+    { h:'#gezegenTus', m:'ORBIT BODIES — TAP', dx:0, dy:-56, hiza:'orta' },
+    { h:['#uydular .uydu','#mark'], m:'FX — TAP A MOON', dx:-8, dy:-8, hiza:'sag' },
     { h:'#bekle', m:'MOOD — TAP A SYMBOL', dx:-8, dy:-20, hiza:'sag' },
     { h:'#bekle', m:'SPIN — TAP A SYMBOL', dx:-8, dy:16, hiza:'sag' },
     { h:'#ayarTus', m:'SETTINGS — PHOTO, CAMERA, RECORDING, FAVOURITES', dx:36, dy:0, hiza:'sol', cizgi:false },
@@ -373,8 +375,6 @@ try{ /** @type {any} */ (window).KOLLAR_HAZIR = true; }catch(e){ _yut(e); }
     { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:'#kamTus', m:'CAMERA', dx:30, dy:0, hiza:'sol', cizgi:false },
     { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
-    { h:'#gezegenTus', m:'ORBIT BODIES — TAP', dx:0, dy:-56, hiza:'orta' },
-    { h:['#uydular .uydu','#mark'], m:'FX — TAP A MOON', dx:-8, dy:-8, hiza:'sag' },
     { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
     { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
