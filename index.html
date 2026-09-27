@@ -2361,45 +2361,65 @@
      buyukluk bu renk... baska bisey yapmissin" dedi. Simdi TAM o
      olculer. Iki kapi satiri ustuste, ayni olcude, ayni sol
      kenarda, 6 px arayla. */
+  /* UC KADEME SWITCH (27 Eylul, v2 taslak). Olculer degisken:
+     --uck-h yolun boyu, GUNLUK'te not edildigi gibi carka
+     TASMAYACAK sekilde ekran goruntusunden sonra ayarlanacak. */
+  :root{ --uck-h:128px; --uck-w:26px; }
   #kipKisayol{
-    position:fixed;z-index:96;display:flex;flex-direction:column;
-    align-items:flex-start;
+    position:fixed;z-index:96;display:flex;flex-direction:row;
+    align-items:center;gap:10px;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     bottom:calc(116px + var(--dip-pay));
-    gap:6px;-webkit-tap-highlight-color:transparent;
-    opacity:.72;transition:opacity .22s ease;}
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+    opacity:.82;transition:opacity .22s ease;touch-action:none;}
   #kipKisayol:hover,#kipKisayol:focus-visible{opacity:1;}
-  .kapi{display:flex;flex-direction:row;align-items:center;
-    height:24px;gap:9px;cursor:pointer;font-style:normal;}
-  .kapi:focus-visible{outline:1px solid currentColor;}
-  /* Anahtarin bicimi ayarlardaki KAPI satirinin anahtariyla ayni. */
-  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:46px;
-    height:24px;border-radius:12px;background:rgba(53,224,216,.22);
-    border:1px solid rgba(53,224,216,.45);transition:background .18s ease;}
-  #kipKisayol .anahtar b{position:absolute;top:2px;left:2px;
-    width:18px;height:18px;border-radius:50%;background:#35e0d8;
-    transition:background .18s ease,box-shadow .18s ease;}
-  #kipKisayol:hover .anahtar{background:rgba(53,224,216,.34);}
-  /* Yazi: sol ustteki denetimlerle ayni dil. */
-  /* 3 GUN ONCE (24 eylul) YAZI TIPI -- kullanicinin istedigi:
-     aile SFMono/ Menlo'yu da iceriyor, 12 px / 700 / .30em ve yazi
-     GRADYANLA yaziliyor (markanin dili). JS artik rengi yazmiyor,
-     boylece bu gradyan gorunur. Iki kapi satiri da ayni yazi tipi:
-     kullanici "sadece sol alttaki font icin 3 gun once" dedi, diger
-     her sey (iki kapi, renkleri, yerleri) kaldi. */
-  #kipKisayol .ad{
+  #kipKisayol .uck-yol{position:relative;flex:0 0 auto;
+    width:var(--uck-w);height:var(--uck-h);border-radius:calc(var(--uck-w)/2);
+    /* HOMOJEN GECIS: uc odanin rengi tek bir gradyanda -- ust
+       ORBITAPE (#c4736f), orta JOYTAPE (#a8703a), alt RADIOTAPE
+       (#35e0d8). Hex degerleri JS'teki O/J/Rc dizileriyle ayni
+       (_kipAnahtarYaz), renk burada da orada da tek kaynaktan. */
+    background:linear-gradient(180deg,#c4736f 0%,#a8703a 50%,#35e0d8 100%);
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
+  #kipKisayol .uck-topuz{position:absolute;left:2px;top:2px;
+    width:calc(var(--uck-w) - 8px);height:calc(var(--uck-w) - 8px);
+    border-radius:50%;background:#fff;
+    box-shadow:0 0 0 2px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.5);
+    transition:top .18s cubic-bezier(.4,0,.2,1),background .18s ease;}
+  /* Uc konum: yol yuksekligi - topuz capi kadar oynar. calc()
+     --uck-h'e bagli, sabit px degil -- boy degisirse konum da
+     dogru olcekler. */
+  #kipKisayol[aria-valuenow="0"] .uck-topuz{top:calc(var(--uck-h) - (var(--uck-w) - 4px));background:#35e0d8;}
+  #kipKisayol[aria-valuenow="1"] .uck-topuz{top:calc(50% - (var(--uck-w) - 8px)/2);background:#a8703a;}
+  #kipKisayol[aria-valuenow="2"] .uck-topuz{top:2px;background:#c4736f;}
+  /* ISIMLER: varsayilan yalniz SECILI olan gorunur; basili
+     tutulunca (.uck-acik) ucu de gorunur -- kullanicinin sozu:
+     "swiche dokundugumuz an 3 isim de alt alta kendi yerinde
+     olacak". Yazi tipi eski ORBITAPE fontuyla ayni (marka dili,
+     24 Eylul karariyla ayni aile). */
+  #kipKisayol .uck-adlar{display:flex;flex-direction:column;gap:5px;}
+  #kipKisayol .uck-ad{
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:0.75rem;font-weight:700;letter-spacing:.30em;line-height:1;
-    margin-right:-.30em;white-space:nowrap;
-    background:linear-gradient(102deg,#35e0d8 0%,#86dcd0 48%,#e8a97e 100%);
-    -webkit-background-clip:text;background-clip:text;
-    -webkit-text-fill-color:transparent;color:transparent;
-    text-shadow:none;}
-  body:not(.mood) #kipKisayol .ad{
-    background:linear-gradient(102deg,#e27a9e 0%,#c08a9a 34%,#a89099 68%,#9a96ac 100%);
-    -webkit-background-clip:text;background-clip:text;}
+    font-size:0.75rem;font-weight:700;letter-spacing:.22em;line-height:1;
+    white-space:nowrap;color:rgba(255,255,255,.28);
+    opacity:0;transform:translateX(-4px);
+    transition:opacity .16s ease,transform .16s ease,color .16s ease;}
+  /* Basili degilken sadece secili isim gorunur, kendi renginde. */
+  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"],
+  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"],
+  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
+    opacity:1;transform:none;}
+  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:#e0a09c;}
+  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:#d19a5e;}
+  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:#35e0d8;}
+  /* Basiliyken (.uck-acik) UCU DE gorunur -- soluk olanlar da. */
+  #kipKisayol.uck-acik .uck-ad{opacity:1;transform:none;color:rgba(255,255,255,.4);}
+  #kipKisayol.uck-acik .uck-ad[data-kip="orbit"]{color:#e0a09c;}
+  #kipKisayol.uck-acik .uck-ad[data-kip="joy"]{color:#d19a5e;}
+  #kipKisayol.uck-acik .uck-ad[data-kip="radio"]{color:#35e0d8;}
   @media (prefers-reduced-motion: reduce){
-    #kipKisayol .anahtar,#kipKisayol .anahtar b{transition:none;}
+    #kipKisayol .uck-topuz,#kipKisayol .uck-ad{transition:none;}
   }
   /* ── DERILER: AYNI SISTEM, BASKA MALZEME ─────────────────────
      Tema bugune kadar yalnizca IKI ZEMIN RENGI tasiyordu. Deri
@@ -4487,17 +4507,22 @@
   <div id="kamTus" role="button" tabindex="0" aria-expanded="false"
        aria-label="Recording and camera tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.6 6.5 10 4.2h4l1.4 2.3"/><rect x="2.6" y="6.5" width="18.8" height="13" rx="3.2"/><circle cx="12" cy="13" r="3.7"/></svg></div>
   <div id="yelpaze" role="menu" hidden></div>
-  <!-- IKI KAPI DUGMESI (27 Eylul, kullanici: "alt alta, ikisi de
-       gorunur", "radyotape'den sol alt JOYTAPE dugmesiyle"):
-       ustte ORBITAPE kapisi, altta JOYTAPE kapisi. RADIOTAPE'de
-       ikisi de "git" dugmesidir. Odada yalniz O ODANINKI calisir
-       ve RADIO yazar; digeri soluk kalir. RADIOTAPE'nin dugmesi
-       bir milimetre degismedi: ayni kutu, ayni olcu, ayni yer. -->
-  <div id="kipKisayol" role="group" aria-label="Choose your orbit">
-    <i class="kapi" id="kipOrbit" role="button" tabindex="0"
-       aria-label="Open ORBITAPE"><i class="anahtar" aria-hidden="true"><b></b></i><span class="ad" aria-hidden="true">ORBITAPE</span></i>
-    <i class="kapi" id="kipJoy" role="button" tabindex="0"
-       aria-label="Open JOYTAPE"><i class="anahtar" aria-hidden="true"><b></b></i><span class="ad" aria-hidden="true">JOYTAPE</span></i>
+  <!-- UC KADEME DIKEY SWITCH (27 Eylul, v2 taslak -- kullanicinin
+       yeni tarifi: "3 kademeli her kademe homojen renk gecisli...
+       swiche dokundugumuz an 3 isim de alt alta kendi yerinde
+       olacak"). Tek dikey yol, topuz uc durakta: UST=ORBITAPE,
+       ORTA=JOYTAPE, ALT=RADIOTAPE (26 Eylul'un yon kurali ayni).
+       Basili tutulunca UCU DE belirir; birakinca yalniz bulunulan
+       odanin adi kalir. TASLAK: yukseklik ekran goruntusuyle
+       dogrulanip ayarlanacak -- bkz GUNLUK.md 27 Eylul, gorev 1. -->
+  <div id="kipKisayol" class="uck" role="slider" tabindex="0"
+       aria-label="Choose your orbit" aria-valuemin="0" aria-valuemax="2" aria-valuenow="2">
+    <div class="uck-yol" aria-hidden="true"><span class="uck-topuz"></span></div>
+    <div class="uck-adlar" aria-hidden="true">
+      <span class="uck-ad" data-kip="orbit">ORBITAPE</span>
+      <span class="uck-ad" data-kip="joy">JOYTAPE</span>
+      <span class="uck-ad" data-kip="radio">RADIOTAPE</span>
+    </div>
   </div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <!-- ── EN UST: BASKA BIR DUNYAYA KAPI ──────────────────────────
@@ -17398,54 +17423,92 @@
   try{
     const _kk = document.getElementById('kipKisayol');
     if(_kk){
-      /* DOKUNUSUN YUKSEKLIGI KIPI SECER (26 Eylul): anahtar uc
-         kademeli ve dikey; ust uca basmak ORBITAPE, orta JOYTAPE,
-         alta basmak RADIOTAPE. Klavye ve yardimci cagrilar (test)
-         icin tusun kendisi bir sonraki kademeye gecer. */
-      /* 26 Eylul, TERSLIK HATASI: ic ucle ters yazilmis -- 'joy' sinifi
-         varsa 'orbit', yoksa 'joy' donuyordu. Sonuc: ORBITAPE'den
-         radyoya donus hic calismiyordu (olculdu: anahtara programatik
-         tik -> modKolaGit('orbit'), kip degismiyor). Duzeltildi:
-         mood+joy = JOYTAPE, mood+joy yok = ORBITAPE, mood yok =
-         RADIOTAPE. */
-      const _adim = ()=>{
+      /* UC KADEME DIKEY SWITCH (27 Eylul, v2 taslak). DOKUNUSUN
+         YUKSEKLIGI KIPI SECER (26 Eylul kurali geri geldi, ama bu
+         kez TEK YOL uzerinde uc durak var, iki ayri satir yok):
+         yolun UST 1/3'u ORBITAPE, ORTA 1/3'u JOYTAPE, ALT 1/3'u
+         RADIOTAPE. Basili tutulup surtunce topuz canli takip eder
+         (onizleme); parmak kalkinca o anki durak modKolaGit ile
+         KOMISYONLANIR. Kisa bir tik (surtunme yok) da ayni sekilde
+         calisir: basilan noktanin ucte biri secilir. */
+      const _mod = ()=>{
         try{
           if(!document.body.classList.contains('mood')) return 'radio';
           return document.body.classList.contains('joy') ? 'joy' : 'orbit';
         }catch(_){ return 'radio'; }
       };
-      const _kapat = (e)=>{
-        try{ e.stopPropagation(); e.preventDefault(); }catch(_){ _yut(_); }
+      const _uygula = (m)=>{
         try{
-          const h = /** @type {any} */ (e);
-          const m0 = _adim();
-          /* IKI KAPI (27 Eylul): hangi SATIRA dokunulduysa o kapı.
-             Dis tiklamalarda (klavye, yardimci cagri) sonraki
-             kipe gecis: radyo -> orbitape -> radyo, joytape ->
-             orbitape. */
-          /* closest olayin HEDEFINDE olur; ilk yazim h.closest
-           * diyordu (olayin kendisinde yok) ve her tiklamada
-           * yanlis dala dustu -- olculdu: JOYTAPE dugmesi ORBITAPE
-           * aciyordu. */
-          const tgt = (/** @type {any} */ (h)).target;
-          const satir = tgt && tgt.closest ? tgt.closest('.kapi') : null;
-          let m;
-          if(satir && satir.id === 'kipOrbit')
-            m = document.body.classList.contains('mood')
-              && !document.body.classList.contains('joy') ? 'radio' : 'orbit';
-          else if(satir && satir.id === 'kipJoy')
-            m = document.body.classList.contains('joy') ? 'radio' : 'joy';
-          else m = (m0 === 'radio') ? 'orbit' : (m0 === 'joy' ? 'orbit' : 'radio');
           if(typeof window !== 'undefined' && typeof window.modKolaGit === 'function')
             window.modKolaGit(m);
           else if(m === 'radio'){ if(window.moodKapat) window.moodKapat(); }
           else if(window.moodAc) window.moodAc();
         }catch(_){ _yut(_); }
       };
-      _kk.addEventListener('click', _kapat);
-      _kk.addEventListener('pointerdown', e=>{ try{ e.stopPropagation(); }catch(_){ _yut(_); } });
+      /* Y konumundan durak hesabi: yolun ust 1/3'u 'orbit',
+         orta 1/3'u 'joy', alt 1/3'u 'radio'. Yol bulunamazsa
+         (ilk kare, layout henuz olculmemis) mevcut moddan cikma. */
+      const _yolDurak = (clientY)=>{
+        try{
+          const yol = _kk.querySelector('.uck-yol');
+          const r = yol ? yol.getBoundingClientRect() : null;
+          if(!r || !r.height) return _mod();
+          const oran = Math.min(1, Math.max(0, (clientY - r.top) / r.height));
+          if(oran < 1/3) return 'orbit';
+          if(oran < 2/3) return 'joy';
+          return 'radio';
+        }catch(_){ return _mod(); }
+      };
+      let _surukleniyor = false;
+      const _basla = (e)=>{
+        try{ e.stopPropagation(); }catch(_){ _yut(_); }
+        _surukleniyor = true;
+        _kk.classList.add('uck-acik');
+        const y = (/** @type {any} */ (e)).clientY;
+        const d = _yolDurak(typeof y === 'number' ? y : 0);
+        _kk.setAttribute('aria-valuenow', d==='orbit'?'2':d==='joy'?'1':'0');
+      };
+      const _tasi = (e)=>{
+        if(!_surukleniyor) return;
+        try{ e.preventDefault(); }catch(_){ _yut(_); }
+        const y = (/** @type {any} */ (e)).clientY;
+        if(typeof y !== 'number') return;
+        const d = _yolDurak(y);
+        _kk.setAttribute('aria-valuenow', d==='orbit'?'2':d==='joy'?'1':'0');
+      };
+      const _birak = (e)=>{
+        if(!_surukleniyor) return;
+        _surukleniyor = false;
+        try{
+          const d = _kk.getAttribute('aria-valuenow');
+          const m = d==='2' ? 'orbit' : (d==='1' ? 'joy' : 'radio');
+          _uygula(m);
+        }catch(_){ _yut(_); }
+        /* Basili birakinca kisa bir sure ucu de gorunur kalsin
+           (kullanicinin "3 isim de alt alta" istegi tik anini
+           kapsar), sonra sadece secili isim kalir. */
+        window.setTimeout(()=>{ try{ _kk.classList.remove('uck-acik'); }catch(_){ _yut(_); } }, 260);
+      };
+      _kk.addEventListener('pointerdown', _basla);
+      _kk.addEventListener('pointermove', _tasi);
+      _kk.addEventListener('pointerup', _birak);
+      _kk.addEventListener('pointercancel', _birak);
+      /* Klavye (test/erisilebilirlik): yukari/asagi bir sonraki
+         durak, Home/End uclar. */
       _kk.addEventListener('keydown', e=>{
-        if(e.key===' ' || e.key==='Enter'){ _kapat(e); } });
+        const ke = /** @type {any} */ (e);
+        const sira = ['radio','joy','orbit'];
+        const su = sira.indexOf(_mod());
+        let hedef = null;
+        if(ke.key==='ArrowUp'){ hedef = sira[Math.min(2, su+1)]; }
+        else if(ke.key==='ArrowDown'){ hedef = sira[Math.max(0, su-1)]; }
+        else if(ke.key==='Home'){ hedef = 'radio'; }
+        else if(ke.key==='End'){ hedef = 'orbit'; }
+        else if(ke.key===' ' || ke.key==='Enter'){
+          hedef = sira[su===2 ? 0 : su+1];
+        }
+        if(hedef){ try{ ke.preventDefault(); }catch(_){ _yut(_); } _uygula(hedef); }
+      });
     }
   }catch(e){ _yut(e); }
 
@@ -18049,67 +18112,19 @@
      TEBEL kaliyor. CSS burada kalir: CSP style-src hash'li, modul
      icinden <style> enjekte edilemez. */
   function _kipAnahtarYaz(){
-    /* UC KADEME (26 Eylul): topuzun YER kipi, RENGI odanin rengi.
-       alt 65px = RADIOTAPE (turkuaz) · orta 36.5px = JOYTAPE
-       (pembe) · ust 8px = ORBITAPE (turuncu). */
+    /* UC KADEME (27 Eylul, v2 taslak): topuzun YERI ve UC ISMIN
+       hangisinin vurgulu oldugu tek bir deger -- aria-valuenow --
+       uzerinden CSS'e yazilir (yukarida #kipKisayol[aria-valuenow]
+       kurallari). 2=ORBITAPE(ust) · 1=JOYTAPE(orta) · 0=RADIOTAPE(alt),
+       26 Eylul'un yon kurali ayni. */
     try{
       const k = document.getElementById('kipKisayol'); if(!k) return;
       const mood = document.body.classList.contains('mood');
       const joy = document.body.classList.contains('joy');
-      k.setAttribute('aria-checked', mood ? 'true' : 'false');
+      const deger = !mood ? '0' : (joy ? '1' : '2');
+      k.setAttribute('aria-valuenow', deger);
       k.setAttribute('aria-label', mood ? 'Switch to live radio' : 'Choose your orbit');
-      /* IKI KAPI (27 Eylul). Her satir kendi odasini adlandirir.
-         Radyoda ikisi de acilir; odada yalniz o odanin satiri
-         "RADIO" olur ve calisir, digeri soluk kalir (olcum:
-         once uc kademeli tek anahtar vardi, kullanici "alt alta,
-         ikisi de gorunur" dedi). Renk odanin rengi. */
-      /* [dolu, parlak, zemin, cerceve] -- kullanicinin sozu:
-         "sol altta hepsi odasinin renginde". Once yalnizca
-         topuz ve yazi boyaniyordu, hapin zemini turkuaz kaliyordu. */
-      /* RENKLER (27 Eylul). Kullanici ORBITAPE dugmesini OLDUGU GIBI
-         birak: "bu switch ve orbitape yazisi kalsin elleme... o
-         gorselde attigim hali olsun, yeniden yapma istemiyorum" --
-         yani gul kurusu tonu. Yapisal degerler koddan geliyor:
-         dolgu .12, cerceve .40, parlama .55 (body.joy kuraliyla ayni).
-         RADIOTAPE taban kuralin turkuazi, JOYTAPE kahveci koyu amber. */
-      const O = ['#c4736f','rgba(196,115,111,.55)','rgba(196,115,111,.12)','rgba(196,115,111,.40)'];
-      const J = ['#a8703a','rgba(168,112,58,.55)','rgba(168,112,58,.12)','rgba(168,112,58,.40)'];
-      const Rc= ['#35e0d8','rgba(53,224,216,.5)','rgba(53,224,216,.10)','rgba(53,224,216,.32)'];
-      const satir = (kim, ad, rn, canli)=>{
-        const e = /** @type {any} */ (k.querySelector('#'+kim));
-        if(!e) return;
-        void 0;
-        const h = /** @type {any} */ (e.querySelector('.anahtar'));
-        if(h){ h.style.background = rn[2]; h.style.borderColor = rn[3]; }
-        const b = /** @type {any} */ (e.querySelector('.anahtar b'));
-        if(b){ b.style.background = rn[0];
-               b.style.boxShadow = canli ? '0 0 10px ' + rn[1] : 'none'; }
-        const t = /** @type {any} */ (e.querySelector('.ad'));
-        /* Yazi RENGI yazilmiyor: 3 gun onceki gradyan CSS'te duruyor
-           (yukarida). Topuz ve hap odanin rengini tasir, yazi ise
-           markanin kendi gecisi -- iki kapi de ayni yazi tipiyle. */
-        if(t){ t.textContent = ad; }
-        void canli;
-        /* Kullanici 27 Eylul: "swichler de oyle degistirme, aynisini
-           istiyorum" -- etkisiz olan soluk kalir (.32), ikisi de ayni
-           yerde ve ayni fontta. */
-        e.style.opacity = canli ? '' : '.32';
-        e.style.pointerEvents = canli ? '' : 'none';
-      };
-      if(mood){
-        /* Satir daima kendi odasinin adini yazar ve calisir. */
-        /* Kullanici: "adi artik RADIOTAPE, sadece RADIO yazma". */
-        /* 27 Eylul (kullanici: "jottape ne oldu, yok mu onda bir
-           sey"): ORBITAPE'den JOYTAPE'ye gecilemiyordu -- diger satir
-           soluk kalip TIKLANAMIYORDU. Artik IKISI DE calisir ve her
-           satir kendi odasini gosterir: bastigin odaya gidersin,
-           icinde oldugun odanin satiri da ayni yaziyle durur. */
-        satir('kipOrbit', 'ORBITAPE', O, true);
-        satir('kipJoy',   'JOYTAPE',  J, true);
-      }else{
-        satir('kipOrbit', 'ORBITAPE', O, true);
-        satir('kipJoy',   'JOYTAPE',  J, true);
-      }
+      k.setAttribute('aria-valuetext', !mood ? 'RADIOTAPE' : (joy ? 'JOYTAPE' : 'ORBITAPE'));
     }catch(e){ _yut(e); }
   }
   /* _kipSagKenar SILINDI (27 Eylul): kip anahtarinin sol kenara
