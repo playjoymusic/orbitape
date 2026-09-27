@@ -3005,3 +3005,62 @@ Topuz: 65px turkuaz · 36.5px pembe · 8px turuncu. ORBITAPE'de üç
 Kapı: saglik 890/890 · ariza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 · yayın 19/19. İlk çizim 112.603 B (tavan 112.640).
 Tip ratchet: TEMIZ — 69.
+
+### 27 Eylül — iki kapi düğmesi, tek düzen, üçgen seçici
+
+Kullanıcının tur boyunca verdiği yönergeler tek bir sonuca varıyor:
+**her iki kipte de aynı olan bir arayüz.** Aşağıdaki ölçümler her
+adımda alındı; kırmızı olan her yerde önce ölçüldü, sonra değiştirildi.
+
+**Sol altta iki kip düğmesi (üst üste, 2 px arayla).** Üstte ORBITAPE
+kapısı, altta JOYTAPE kapısı. RADIOTAPE'de ikisi de "git" düğmesi;
+odada yalnız o odanınki çalışır ve RADIOTAPE yazar, diğeri soluk
+kalır. İkisi de tamamen oda renginde: zemin, çerçeve, topuz, yazı.
+Renkler kullanıcının tarifinden: RADIOTAPE turkuaz, ORBITAPE gül
+kurusu, JOYTAPE kahveci koyu amber. Konum bir önceki push'taki
+mesafede: konsolun 8 px üstünde.
+
+**"Yamuk" yazı.** Düğme `<i>` elemanıydı; tarayıcı `<i>`'yi otomatik
+italik yapıyor ve yazı ondan miras alıyordu. Ayrıca yazı tipi tek
+ağırlıklı olduğu için `font-weight:700` yapay kalınlaştırma
+yapıyordu. Sonuç: `<i>` yerine düz (400) yazı. Aile ve harf aralığı
+markanınkiyle birebir (`Share Tech Mono`, .26em).
+
+**Sol sütun artık her kipte aynı.** Ayar → saat → fırça → görsel →
+kılavuz → kamera, eşit 44 px aralıkla, daima sol üstte. İki taban
+(arsivde dibe kaçan sütun) kaldırıldı. Kamera 22 px (kılavuzla aynı),
+viewfinder'lı yeni siluet, sola dayalı.
+
+**Nebula silindi.** Dört gezegen onun yerine: yatay sırada, küçükten
+büyüğe (16 → 23 → 27 → 33 px), ortalanmış, yalnız ORBITAPE'de ve
+görsel kipinde değil. Sıra "CHOOSE YOUR ORBIT" yazısının bulunduğu
+yere geldi (y≈190).
+
+**Üç kollu seçici bir eşkenar üçgen.** Üç dal da aynı yarıçapta,
+120° aralıkla; aralarındaki mesafe ölçümde 222/222/222. Çizgiler
+dairenin KENARINDAN başlıyor (içine girmiyor) ve üçü de tam olarak
+halkanın ortasındaki mavi noktada buluşuyor (sapma 0/0/0). Açıklamalar
+tek satır: *live radio* · *curated - loops* · *sound fx*.
+
+**Ayarlardan PIC/REC/CAM kalktı**; sol üstteki kamera düğmesi
+yelpazeyi açmaya devam ediyor. Arama kutusu 150 px'e indi, ses ve
+yıldız aynı satıra alındı.
+
+**Bütçe.** Rehber etiket tabloları (3,8 KB metin) `kollar.js`'e
+taşındı — ilk boyamada hiç gerekmiyorlar. Ölü `_kipSagKenar`
+kelepçesi silindi. İlk çizim: 112.519 B (tavan 112.640).
+
+**Beş gerçek hata, beşi de ölçümle bulundu:**
+1. `_adim()`'ın iç üçlüsü ters yazılmıştı (ORBITAPE'den radyoya dönüş
+   hiç çalışmıyordu).
+2. `e.closest` olayın kendisinde değil hedefte aranıyordu; her tık
+   yanış dala düşüyordu.
+3. Ölü kod silinirken `void _y;` referansı kalmıştı — her senaryoda
+   çalışma zamanı hatası.
+4. Kelepçe `innerHeight` okuyordu; cihaz testi bayatlatınca anahtar
+   42 → 128 zıplıyordu. Doğru kural: ekran boyutu okunmaz.
+5. Düğmenin dokunma genişleticisi 10 px taşarak geri düğmesinin
+   alanını 36×32'ye düşürüyordu.
+
+Kapı: saglik 890/890 · aRIZA 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 · yayın 19/19. Tip ratchet TEMIZ — 61.

@@ -3879,7 +3879,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
   // ── 4. KAMERA ANAHTARI ──────────────────────────────────────────────
   K('Kamera acik (KAMERA=true)', (await pg.evaluate(()=>KAMERA))===true, 'true');
-  K('CAM dugmesi gorunur',    (await pg.evaluate(()=>getComputedStyle(document.getElementById('cam')).display))!=='none', 'kamera acildi');
+  /* 27 Eylul, kullanici: "ayarlardan cikar; soldaki kamera aynen
+     gorevine devam". Ayarlardaki PIC/REC/CAM gizlendi, sol ustteki
+     kamera dugmesi yelpazeyi (PIC/REC/CAM) acmaya devam ediyor. */
+  K('CAM ayarlardan kalkti, yelpazede duruyor', await pg.evaluate(async()=>{
+      const gizli = getComputedStyle(document.getElementById('cam')).display === 'none';
+      const k = document.getElementById('kamTus');
+      k.click();
+      await new Promise(r=>setTimeout(r,300));
+      const f = document.getElementById('fanCam');
+      const y = !document.getElementById('yelpaze').hasAttribute('hidden');
+      return gizli && y && !!f && getComputedStyle(f).display !== 'none';
+    }), 'ayarlarda gizli · sol ustteki kamera yelpazeyi aciyor');
   K('getUserMedia hic cagrilmadi', (await pg.evaluate(()=>window.__gum))===0, (await pg.evaluate(()=>window.__gum)));
 
   // ── 5. SES GRAFI ────────────────────────────────────────────────────
@@ -4133,18 +4144,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         && getComputedStyle(u).display === 'none'
         && !document.body.classList.contains('mood');
     }), 'ikisi de var ama kapali');
-  K('SOUND BANKS acilinca geliyorlar', await pg.evaluate(async()=>{
-      const eskiMood = AYAR.mood, eskiMod = mod;
-      AYAR.mood = true; document.body.classList.add('mood');
-      await new Promise(r=>setTimeout(r,30));
+  /* 27 Eylul: NEBULA SILINDI ("evet nebukayi sil"). DORT GEZEGEN
+     yatay sirada, kucukten buyuge, yalniz ORBITAPE'de ve gorsel
+     kipinde degil. */
+  K('ORBITAPE acilinca dort gezegen sirada, nebula yok', await pg.evaluate(async()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const m = document.getElementById('mark'), u = document.getElementById('uydular');
-      const gor = getComputedStyle(m).display !== 'none'
-               && getComputedStyle(u).display !== 'none';
-      const dugme = UYDULAR.length === 4;
-      AYAR.mood = eskiMood; mod = eskiMod;
-      document.body.classList.toggle('mood', !!eskiMood);
-      return gor && dugme;
-    }), 'nebula + dort gezegen geri geliyor');
+      const nebulaYok = getComputedStyle(m).display === 'none';
+      const eski = document.body.classList.contains('mood');
+      if(!eski){ document.body.classList.add('mood'); await bek(60);
+                  geriYerlestir(); await bek(260); }
+      const g = [...document.querySelectorAll('#uydular .uydu')];
+      /* DOM sirasi gorel sirayi degil: uyduYerlestir once siraliyor,
+         sonra yerlestiriyor. Olcme GORSEL sirayi okumali: once x'e
+         gore diz, sonra cap buyukluge gore diz. */
+      const gx = g.map(e=>{const r=e.getBoundingClientRect();
+        return { x:r.left + r.width/2, y:r.top + r.height/2,
+                 kap:parseFloat(getComputedStyle(e).getPropertyValue('--cap'))||0 };})
+        .sort((a,b)=>a.x - b.x);
+      const sirali = gx.every((v,i)=>i===0 || gx[i-1].kap <= v.kap);
+      const y = gx.map(v=>v.y);
+      const tekSatir = Math.max.apply(null,y) - Math.min.apply(null,y) < 6;
+      const gor = getComputedStyle(u).display !== 'none';
+      if(!eski){ document.body.classList.remove('mood'); geriYerlestir(); await bek(200); }
+      return nebulaYok && gor && g.length === 4 && sirali && tekSatir;
+    }), 'nebula gizli · 4 gezegen ayni satirda, kucukten buyuge');
   /* Once "KANAL_SIRA tek elemanli mi" diye sorulurdu. O dizi bir
      iskeletin parcasiydi ve silindi; asil kural zaten daha basitti:
      'mod' hicbir zaman degismiyor, oteki dunya AYAR.mood ile
@@ -5728,9 +5752,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* REC/CAM artik Settings panelinin icinde. Kapatilmis panelde #rec
      0x0 olur ve Playwright tiklamasi ayar tutamagina carpar; test de
      gercek kullanici akisi gibi once Settings'i acmali. */
-  await pg.evaluate(()=>document.getElementById('ayarTut').click());
-  await pg.waitForTimeout(350);
-  await pg.click('#rec'); await pg.waitForTimeout(800);
+  /* REC/CAM artik AYARLARDA degil (27 Eylul, kullanici: "ayarlardan
+     cikar; soldaki kamera aynen gorevine devam"). Gercek akis: sol
+     ustteki kamera dugmesi -> yelpaze -> REC. Once ayarlar acilip
+     #rec tiklaniyordu; o dugme artik display:none ve Playwright
+     30 sn bekleyip dustu ("page.click: Timeout"). */
+  const fanTik = async (id)=>{
+    await pg.evaluate(()=>document.getElementById('kamTus').click());
+    await pg.waitForTimeout(400);
+    await pg.click(id);
+  };
+  await fanTik('#fanRec'); await pg.waitForTimeout(800);
   /* SURUKLEME YARICAPI 0.95 -> 0.40 (ZAR_SINIR 0.47'nin ICI).
      Eski hali diskin DISINA, halkalarin uzerine cikiyordu; orasi FX
      degil KATEGORI bolgesi. Surukleme oradan birakilinca uygulama en
@@ -5759,7 +5791,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     iz:(kayitGoruntuAkis&&kayitGoruntuAkis.getVideoTracks()[0])?kayitGoruntuAkis.getVideoTracks()[0].readyState:'-',
     dirilme:_kayitDirilme, sebep:_kayitSebep||'-' }));
   K('Kayit FX altinda ayakta', kd.durum==='recording' && kd.iz==='live', kd.durum+' / video '+kd.iz+' / dirilme '+kd.dirilme);
-  await pg.click('#rec'); await pg.waitForTimeout(2200);
+  await fanTik('#fanRec'); await pg.waitForTimeout(2200);
   const bek = await pg.evaluate(()=>({v:!!_bekleyenKayit, boy:_bekleyenKayit?_bekleyenKayit.blob.size:0}));
   K('Kayit SAVE bekliyor',    bek.v && bek.boy>50000, Math.round(bek.boy/1024)+' KB');
    K('REC + CAM etiketleri sabit',
@@ -5768,7 +5800,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           && document.getElementById('rec').classList.contains('kaydet')
           && document.getElementById('cam').classList.contains('sil')),
        'REC/CAM sabit | durum kaydet/sil sinifi');
-  await pg.click('#cam'); await pg.waitForTimeout(500);
+  await fanTik('#fanCam'); await pg.waitForTimeout(500);
   K('DELETE kaydi siliyor',   (await pg.evaluate(()=>!_bekleyenKayit)), 'temizlendi');
   /* KIPI GERI KAPAT. Acik birakmak sonraki testleri bozdu: gecmis,
      arama ve kayit testleri bir anda oteki dunyada calisiyordu
@@ -7334,8 +7366,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           if(!e || getComputedStyle(e).display==='none') return null;
           const b=e.getBoundingClientRect(); return b.width ? b : null; };
         const kk=R('kipKisayol'), ta=R('tasima'), ar=R('araclar');
-        if(!kk || !ta || !ar) return null;
-        const enSag = Math.max(ta.right, ar.right);
+        /* 27 Eylul: PIC/REC/CAM ayarlardan kalkti, o satir (#araclar)
+           bosaldi ve olcum NULL donuyordu --Anahtar etiketi markanin
+           diliyle yaziliyor" her kosuda kirmiziydi. Artik zorunlu
+           degil; tasma olcumu konsolun gercek satirlariyla yapilir. */
+        if(!kk || !ta) return null;
+        const enSag = Math.max(ta.right, ar ? ar.right : 0);
         const ad = document.querySelector('#kipKisayol .ad');
         const gor = [...ad.children].find(x=>getComputedStyle(x).display!=='none') || ad;
         const st = getComputedStyle(gor);
@@ -7407,11 +7443,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Dogrusu da bu -- bu etiket bir kunye degil, markanin adi.
      Uc sey ayni: yazi tipi, kalinlik, harf araligi. Punto kasten
      farkli (23 / 12). */
+    /* 27 Eylul: kalinlik 700 -> 400. Yazı tipi TEK agirligli oldugu
+       icin 700 tarayicida YAPAY kalinlastirma yapiyor ve harfler
+       "yamuk" gorunuyordu (kullanici: "yamuk yapma, ayni duz yap").
+       Duz 400; aile ve harf araligi marka diliyle ayni kalir. */
+    /* 27 Eylul: etiket iki kipte de ayni (ayri test olcuyor), bu
+       yuzden burada yalniz RADIOTAPE olcumu yeter. Arsiv yarisi
+       marka nesnesini arsivde ariyordu; duzen degisince o nesne
+       gizli kaliyor ve karsilastirma anlamsizlesiyordu. */
     K('Anahtar etiketi markanin diliyle yaziliyor',
-       !!r && !!a2
-       && r.font === r.markaFont && r.kalinlik === r.markaKalinlik
-       && r.aralik !== null && Math.abs(r.aralik - r.markaAralik) <= 0.01
-       && a2.font === a2.markaFont,
+       !!r
+       && r.font === r.markaFont && r.kalinlik === '400'   /* fontWeight STRING */
+       && r.aralik !== null && Math.abs(r.aralik - r.markaAralik) <= 0.01,
        r ? ('"' + r.yazi + '" ' + r.font + ' ' + r.punto + '/' + r.kalinlik
             + ' ' + r.aralik + 'em | marka: ' + r.markaFont + '/' + r.markaKalinlik
             + ' ' + r.markaAralik + 'em') : '-');
@@ -7435,26 +7478,43 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        (dikey "MOODS"). Durumu TOPUZun yeri ve rengi anlatir:
        alt 65px turkuaz (RADIOTAPE) · orta 36.5px pembe (JOYTAPE)
        · ust 8px turuncu (ORBITAPE). */
-    K('Anahtar topuzu odanin rengini tasiyor', await pg.evaluate(async ()=>{
+    /* 27 Eylul: IKI KAPI DUGMESI. Ustte ORBITAPE kapisi, altta
+       JOYTAPE kapisi; ikisi de ayni yerde, ayni fontta, tamami odanin
+       renginde. Radyoda ikisi de "git" dugmesi; odada yalniz o
+       odanin satiri calisir ve RADIOTAPE yazar, digeri soluk kalir.
+       Olcum: radyoda iki kapi farkli renkte; ortapoda turuncu (ORBITAPE)
+       ve RADIOTAPE yazan, altta soluk. */
+    K('Iki kapi dugmesi odanin rengini tasiyor', await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
-      const b=()=>{ const e=document.querySelector('#kipKisayol .anahtar b');
-        if(!e) return null; const cs=getComputedStyle(e);
-        return { top:cs.top, renk:cs.backgroundColor }; };
+      const b=(id)=>{ const e=document.getElementById(id);
+        if(!e) return null; const k=e.querySelector('.anahtar b');
+        return { renk:getComputedStyle(k).backgroundColor,
+                 zemin:getComputedStyle(e.querySelector('.anahtar')).backgroundColor,
+                 yazi:(e.querySelector('.ad')||{}).textContent,
+                 op:getComputedStyle(e).opacity }; };
       const eski = AYAR.mood;
       AYAR.mood = false; moodUygula(false); await bek(300);
-      geriYerlestir(); await bek(240);
-      const r1=b();
-      AYAR.mood = true; moodUygula(false); await bek(300);
-      geriYerlestir(); await bek(240);
-      const r2=b();
-      AYAR.mood = eski; moodUygula(false); await bek(240);
-      return !!r1 && !!r2 && r1.renk !== r2.renk
-          && r1.top === '65px' && r2.top === '8px';
-    }), 'radyoda 65px turkuaz, arsivde 8px turuncu');
-    K('Anahtar etiketi her kipte ayni: MOODS', await pg.evaluate(()=>{
-      const e=document.querySelector('#kipKisayol .ad');
-      return !!e && e.textContent.trim() === 'MOODS';
-    }), 'dikey MOODS — kip adi yazisi yok');
+      geriYerlestir(); await bek(260);
+      const r1={ o:b('kipOrbit'), j:b('kipJoy') };
+      AYAR.mood = true; moodUygula(false); await bek(320);
+      geriYerlestir(); await bek(260);
+      const r2={ o:b('kipOrbit'), j:b('kipJoy') };
+      AYAR.mood = eski; moodUygula(false); await bek(260);
+      return !!r1.o && !!r1.j && !!r2.o && !!r2.j
+          && r1.o.renk !== r1.j.renk
+          && r1.o.yazi === 'ORBITAPE' && r1.j.yazi === 'JOYTAPE'
+          && r2.o.yazi === 'RADIOTAPE' && r2.j.yazi === 'JOYTAPE'
+          && r2.o.renk !== r2.j.renk
+          && parseFloat(r2.j.op) < 0.6;
+    }), 'radyoda [ORBITAPE] [JOYTAPE] · ortapoda [RADIOTAPE] parlak + [JOYTAPE] soluk');
+    K('Iki kapi ayni yerde ve ayni fontta', await pg.evaluate(()=>{
+      const o=document.getElementById('kipOrbit'), j=document.getElementById('kipJoy');
+      if(!o || !j) return false;
+      const a=o.getBoundingClientRect(), c=j.getBoundingClientRect();
+      const fa=getComputedStyle(o.querySelector('.ad')), fc=getComputedStyle(j.querySelector('.ad'));
+      return Math.abs(a.left-c.left) <= 1 && a.height === c.height
+          && fa.fontFamily === fc.fontFamily && fa.fontWeight === fc.fontWeight;
+    }), 'alt alta, ayni sol kenar, ayni yazi tipi');
   }
 
   /* ── HIZ YAZIMI TAMPON BOSKEN DURUYOR ───────────────────────
@@ -8605,9 +8665,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             && Math.abs(r1.kk.l - r2.kk.l) <= 1
             && Math.abs(r1.kk.t - r2.kk.t) <= 1
             && Math.abs(r1.kk.h - r2.kk.h) <= 1;
+        /* 27 Eylul: etiket artik kip adi (MOODS degil) ve kap
+           iki satirdan olusuyor; durumu satirin yazisi ve rengi
+           anlatiyor. */
         return radyoDogru(r1) && arsivDogru(r2) && sabit
-            && r1.yazi === 'MOODS' && r2.yazi === 'MOODS'
-            && r1.acik === 'false'    && r2.acik === 'true';
+            && r1.yazi === 'ORBITAPE' && r2.yazi === 'RADIOTAPE';
       }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket hep MOODS');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
@@ -8704,8 +8766,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         !!(R2.fan && R2.soru && R2.fan.t >= R2.soru.b),
         R2.fan && R2.soru ? ('yelpaze ' + R2.fan.t + '..' + R2.fan.b
                              + ' · soru ' + R2.soru.t + '..' + R2.soru.b) : 'olculemedi');
-      K("Yelpaze ORBITAPE'de soru isaretinin USTUNDE ve en basta",
-        !!(O2.mood === true && O2.fan && O2.soru && O2.fan.b <= O2.soru.t),
+      /* 27 Eylul: sol sutun her kipte ayni; yelpaze dizinin sonu ve
+         soru isaretinin altinda. */
+      K("Yelpaze her kipte soru isaretinin ALTINDA ve en sonda",
+        !!(O2.mood === true && O2.fan && O2.soru && O2.fan.t >= O2.soru.b - 1),
         O2.fan && O2.soru ? ('yelpaze ' + O2.fan.t + '..' + O2.fan.b
                              + ' · soru ' + O2.soru.t + '..' + O2.soru.b) : 'olculemedi');
       K('Yelpaze kamera acikken KALIR, kayitta gizlenir',
@@ -12248,7 +12312,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      'REC · CAM · ★ · sustur panel yuvasinda');
   K('Kipte arama ayarlarda var', moodYer.kipte.arama && moodYer.radyo.arama,
      'arama paneli iki kipte de ayarlarda');
-  K('Kipte REC geri geliyor', moodYer.kipte.rec!=='none', 'canli yayin disinda kayit anlamli');
+  /* 27 Eylul: medya araclari ayarlardan kalkti, yelpazede. */
+  K('Kipte REC geri geliyor', moodYer.kipte.rec==='none', 'medya araclari ayarlarda degil');
   /* ── RADYODA TUS DURUYOR VE CALISIYOR ───────────────────────────
      Uc asamadan gecti ve her asama bir onceki yanlisi duzeltti:
        1) tus radyoda tamamen GIZLIYDI  -> kullanici ariyor, yok
@@ -12256,9 +12321,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        3) bugun: ayni yerde CALISAN bir sey -> ekranin fotografi
      Olculen: gizli degil, SONUK DEGIL (calisan tus kapali
      gorunmemeli) ve tiklamayi aliyor. */
-  K('Radyoda PIC duruyor, REC arsivde',
-     moodYer.radyo.pic!=='none' && moodYer.radyo.rec==='none'
-     && moodYer.kipte.pic==='none' && moodYer.kipte.rec!=='none',
+  K('Radyoda da arsivde de medya araclari gizli',
+     moodYer.radyo.pic==='none' && moodYer.radyo.rec==='none'
+     && moodYer.kipte.pic==='none' && moodYer.kipte.rec==='none',
      'radio PIC '+moodYer.radyo.pic+' / REC '+moodYer.radyo.rec
      +', arsiv PIC '+moodYer.kipte.pic+' / REC '+moodYer.kipte.rec);
   /* Tutamak ayni SOL KENARDAN basliyor: radyoda ekranin sol ustunde,
@@ -12952,8 +13017,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     return { radyoda, parlak, yazi, foto, onizleme, kayitBasladi, moodda, moodSonuk,
              kilitSonuk, kilitAcik, kilitMetin };
   });
-  K('Radyoda PIC duruyor, parlak ve PIC diyor',
-     !!recKip && recKip.radyoda!=='none' && recKip.parlak===true && recKip.yazi==='PIC',
+  K('Radyoda PIC yelpazede, ayarlarda degil',
+     !!recKip && recKip.radyoda==='none' && recKip.yazi==='PIC',
      recKip ? ('display '+recKip.radyoda+', parlak '+recKip.parlak+', yazi "'+recKip.yazi+'"') : '-');
    K('PIC basinca onizleme aciliyor ve SHARE paylasima gonderiyor',
      !!recKip && recKip.onizleme===true && recKip.foto===true && recKip.kayitBasladi===false,
@@ -12962,8 +13027,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      !!recKip && recKip.kilitSonuk===false && recKip.kilitAcik===true
      && /licen/i.test(recKip.kilitMetin) && /live/i.test(recKip.kilitMetin),
      recKip ? (recKip.kilitAcik ? recKip.kilitMetin.slice(0,60)+'…' : 'not acilmadi') : '-');
-  K('REC SOUND BANKS kipinde tam parlak',
-     !!recKip && recKip.moodda!=='none' && recKip.moodSonuk===false,
+  K('REC SOUND BANKS kipinde de ayarlarda gizli',
+     !!recKip && recKip.moodda==='none',
      'mood: '+(recKip?recKip.moodda:'-')+', sonuk: '+(recKip?recKip.moodSonuk:'-'));
 
   /* ── COBALT / JADE / POP: DISK MERKEZI BEYAZ DEGIL, KOYU GRI (18 Eylul)
@@ -13249,7 +13314,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{
         const eskiMood = !!AYAR.mood;
         AYAR.mood = true; moodUygula(); await bek(400);
-        const nebEl = document.querySelector('#mark .neb');
+        /* 27 Eylul: nebula SILINDI; onbellege sizan nesne artik
+           gezegenler (#uydular). Ayni sinama, yeni nesne. */
+        const nebEl = document.querySelector('#uydular .uydu');
         const r1 = nebEl ? nebEl.getBoundingClientRect() : null;
         c.nebVarMoodIken = !!(r1 && r1.width && r1.height);
         kayitTuvalKur();
@@ -13284,7 +13351,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       }catch(e){ c.hata = String(e && e.message || e); }
       return c;
     });
-    K('ORBITAPE\'ten donunce nebula/uydular fotografa yapismiyor',
+    /* 27 Eylul: nebula SILINDI; olcum artik gezegenlerin fotografa
+       yapisip yapismadigi ve sirasinin bozulmamasi. */
+    K('ORBITAPE\'ten donunce gezegenler fotografa yapisamiyor',
       !!gezegenSizinti.nebVarMoodIken && !!gezegenSizinti.nebYokRadyodayken
       && typeof gezegenSizinti.fark === 'number' && gezegenSizinti.fark < 20,
       gezegenSizinti.hata || ('eski nebula konumu=' + JSON.stringify(gezegenSizinti.piksel)
@@ -15313,27 +15382,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        kilavuzun 4 px saginda, arada -18px). Yeni olcum: sol kenarda
        ayni hizada, uc cizginin USTUNDE, ona binmeden, konsolun da
        ustunde. */
-    K('Kipte kip anahtari sabit, uc cizginin ustunde',
-       !!tt.sonuc && tt.sonuc.anahtarCizgiUstu >= 6
-       && tt.sonuc.ustunde >= 6
-       && Math.abs(tt.sonuc.anahtarSol) <= 1,
-       tt.sonuc ? ('uc cizginin '+tt.sonuc.anahtarCizgiUstu
-                   +'px ustunde (hepsi 78 px), konsolun '+tt.sonuc.ustunde
-                   +'px ustunde, sol kenar fark '+tt.sonuc.anahtarSol
-                   +'px · eski konum (uc cizginin saginda) gecersiz')
+    /* 27 Eylul: anahtar SABIT ve konsolun 8 px ustunde (kullanicinin
+       istedigi yer bir onceki push'taki mesafe). Iki kapi satiri
+       50 px tutuyor. Sol sutun da her kipte ustte oldugu icin uc
+       cizgiyle iliskisi kalmadi. */
+    K('Kipte kip anahtari sabit, konsolun ustunde',
+       !!tt.sonuc && tt.sonuc.ustunde >= 6 && tt.sonuc.ustunde <= 12
+       && tt.sonuc.cakisma === false,
+       tt.sonuc ? ('konsolun '+tt.sonuc.ustunde
+                   +'px ustunde, binme yok: '+(tt.sonuc.cakisma?'VAR':'yok')
+                   +' · sol kenar fark '+tt.sonuc.anahtarSol+'px')
                  : 'olculemedi');
     /* 25 Eylul: satirin sol ucu artik uc cizgi; ikonlar onun
        USTUNDE yigiliyor (kullanicinin istegi). Kilavuz artik
        yiginin EN USTUNDE, en altta degil. */
-    K('Kipte satiri uc cizgiden basliyor, player ust bos',
-       !!tt.sonuc && tt.sonuc.tutEnAltta === true
-       && tt.sonuc.kilavuzEnUstte === true
+    /* 27 Eylul: sol sutun HER KIPTE ustte (kullanici: "sol ustteki
+       duzen de ayni"). Ayarlar en ustte, digerleri altina esit
+       aralikla diziliyor; yigin player'in ustunde, uc cizgi yiginin
+       en ustunde. */
+    /* Artik kip farki yok: yigin ustte, aralarindaki dize sirali
+       (ayar -> saat -> firca -> gorsel -> kilavuz -> kamera), yigin
+       player'in ustunde. Kilavuzun EN USTTE olmasi artik gecerli
+       degil -- o kural arsivdeki dibe kacan tabana aitti. */
+    K('Kipte sol sutun ustte, ikonlar esit aralikla',
+       !!tt.sonuc
        && tt.sonuc.yiginUstunde === true && tt.sonuc.cakisma === false
-       /* 26 Eylul: anahtar sabit ve 78 px yuksek; konsol ustune
-          bosluk 6-14 px degil 48 px. Yine de ustunde ve uc cizgiye
-          binmiyor olmali. */
-       && tt.sonuc.ustunde >= 6 && tt.sonuc.ustunde <= 60
-       && tt.sonuc.anahtarCizgiUstu >= 6
+       && tt.sonuc.ustunde >= 6 && tt.sonuc.ustunde <= 12
        && tt.sonuc.modulDip <= 12,
        tt.sonuc ? ('uc cizgi en altta: '+tt.sonuc.tutEnAltta
                    +' · kilavuz en ustte: '+tt.sonuc.kilavuzEnUstte

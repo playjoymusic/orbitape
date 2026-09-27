@@ -1837,7 +1837,10 @@
      yapacak bir sey bulamiyor, ▷ de ortaya basmis gibi davraniyor.
      AKTIF/PASIF RENK FARKI YOK -- goz her seferinde "acik mi kapali
      mi" diye bakmasin. */
-  #geri{display:flex;z-index:72;flex:none;
+  /* position:relative (27 Eylul): #geri::after mutlak konumlu ve
+     onsuz KONUMSUZ kaldi -- genisletici yanlis yere dustugu icin
+     olcum hep 36x32 diyordu (esik 36). */
+  #geri{position:relative;display:flex;z-index:72;flex:none;
     appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;
     margin:0;                       /* boşluk .np-gez'de; ikisi aynı hizada dursun */
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
@@ -1853,8 +1856,13 @@
      USTUNE yakin kaldi ve yukari yuruYus 20 px'te kesildi (olculdu:
      "36x35"). Eslesen yumusak kutu 44x44: gorsunur degil, dokunma
      alani buyuk. */
-  #geri::after{content:'';position:absolute;left:50%;top:50%;
-    width:44px;height:44px;transform:translate(-50%,-50%);
+  /* YALNIZCA DIKEY: yatay 44 px yapilsaydi oteki transport
+     tusunun alanina biniyordu (test: "Dokunma alanlari
+     cakismiyor"). Dikey 48 px olcu 42 veriyor, esik 36. */
+  /* specificity: #geri#geri::after (0,2,1) ortak 40 px kuralini
+     ezer; 48 px ile olcu 42'ye cikiyor, esik 36. */
+  #geri#geri::after{content:'';position:absolute;left:50%;top:50%;
+    width:calc(100% + 10px);height:48px;transform:translate(-50%,-50%);
     border-radius:999px;}
   #geri svg{width:15px;height:13px;display:block;fill:currentColor;opacity:.9;}
   #geri.var{display:flex;opacity:.9;pointer-events:auto;}
@@ -2242,9 +2250,16 @@
      hicbiri ekranda yok; acilinca hepsi geri geliyor.
      Boylece kod ne olu kaliyor ne de atiliyor: gercek bir ozellik.
      Kapali kip icin gizleme TEK yerde: asagidaki iki satir. */
-  #mark, #uydular{display:none;}
-  body.mood #mark{display:flex;}
-  body.mood #uydular{display:block;}
+  /* NEBULA SILINDI (27 Eylul, kullanici: "evet nebukayi sil").
+     Gezegenler artik NEBULANIN CEVRESINDE degil, yatay sirada
+     duruyor ve HER KIPTE gorunuyor. */
+  #mark{display:none !important;}
+  /* Gezegenler yalniz ORBITAPE'de ve GORSEL kipinde degil
+     (27 Eylul, kullanici: "bu orbitape tarafi icin sadece, ve
+     visual sirasinda kalmasin gezegenler"). Once her kipte
+     gorunuyordu. */
+  #uydular{display:none;}
+  body.mood:not(.gorsel-acik) #uydular{display:block;}
   body.mood #mark{position:fixed;z-index:70;display:flex;align-items:center;cursor:pointer;
     top:calc(25px + env(safe-area-inset-top, 0px));
     left:calc(14px + env(safe-area-inset-left, 0px));}
@@ -2308,10 +2323,15 @@
      sozu: "ORBITAPE kismi icin demedim, o gibi altta olabilir;
      oradaki RADIO kelimesi iyi, hizalaniyor zaten."
      RADYO KIPI ICIN AYRI KURAL asagida (body:not(.mood)). */
+  /* TEK DIZEN (27 Eylul, kullanici: "sol ustteki duzen de ayni"):
+     taban ARTIK RADIOTAPE'ninkidir -- ustte ayarlar, altina 44 px
+     aralikla saat/firca/gorsel/kilavuz/kamera. Once taban arsiv
+     konumuydu (bottom:115px) ve radyoda body:not(.mood) kurali
+     ustune biniyordu; iki kip icin iki ayri yerlesim vardi. */
   #ayarTut{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
-    top:auto;
-    bottom:calc(115px + var(--dip-pay));
+    top:calc(15px + env(safe-area-inset-top, 0px));
+    bottom:auto;
     width:40px;height:26px;display:flex;flex-direction:column;
     align-items:flex-start;justify-content:center;gap:5px;cursor:pointer;
     -webkit-tap-highlight-color:transparent;opacity:.72;
@@ -2326,37 +2346,74 @@
      esit degildi. Artik ayni anahtar iki kipte de ayni yerde:
      radyoda ORBITAPE yaziyor ve kapali duruyor, arsivde RADIO
      yaziyor ve acik duruyor. Tek nesne, iki yon. */
+  /* YATAY KAP (27 Eylul): MOODS yazisi anahtarin ustunde, ikisi de
+     44 px genisliginde ve sol kenarda. Blok 44x34; dikey 78 px'lik
+     olcun kalinti olarak iki yerde bir daha vardi (burasi ve
+     _kipKisayoluHizala'nin yedek yeri) -- ikisi de temizlendi. */
+  /* YATAY KAP (27 Eylul, kullanici: "radyotape orijinal hali
+     kalacak"): yatay hap, kip adi YANINDA, sol altta transport
+     satirinin hemen ustunde -- her kipte ayni yer. */
   #kipKisayol{
-    position:fixed;z-index:96;display:flex;align-items:center;
+    position:fixed;z-index:96;display:flex;flex-direction:column;
+    align-items:flex-start;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     bottom:calc(116px + var(--dip-pay));
-    height:78px;gap:8px;cursor:pointer;
+    /* 2 px (27 Eylul, kullanici: "bunlar birbirine yakın olacak,
+       uzak değil"): iki kapi satiri neredeyse bitisik. */
+    gap:2px;
     -webkit-tap-highlight-color:transparent;
     opacity:.72;transition:opacity .22s ease;}
+  /* Tek kapi satiri: hap + kip adi, 24 px. */
+  /* font-style:normal (27 Eylul): <i> etiketi tarayicida OTOMATIK
+     italik -- yazi da ondan miras aliyordu, kullanici "yamuk yapma,
+     ayni duz yap" diye bildirdi. Duz (normal) yazildi. */
+  .kapi{display:flex;flex-direction:row;align-items:center;
+    height:24px;gap:8px;cursor:pointer;font-style:normal;}
+  .kapi:focus-visible{opacity:1;outline:1px solid currentColor;}
   #kipKisayol:hover,#kipKisayol:focus-visible{opacity:1;}
-  /* Anahtar SABIT ve DIKEY: alt RADIOTAPE, orta JOYTAPE, ust
-     ORBITAPE. Topuzun rengi odanin rengi (topuz JS yaziyor). */
-  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:24px;
-    height:78px;border-radius:12px;background:rgba(53,224,216,.10);
+  /* Anahtar YATAY (27 Eylul, kullanici: "moods dugmesini yatay
+     yap"). Sol RADIOTAPE, orta JOYTAPE, sag ORBITAPE; topuzun rengi
+     odanin rengi (JS yaziyor). Gerekce: dikey 78 px'lik anahtar
+     78/36/8px yonundeki yerlesimde ikon sutunuyla cakisiyordu
+     (olculdu: palet 688-720, saat 732-764, anahtar 684-762).
+     Yatay olunca blok 44x34 ve SOL KENARDA kalir; halkanin sol
+     kenari x=58 oldugu icin hicbir kipte halkaya dokunmuyor. */
+  #kipKisayol .anahtar{position:relative;flex:0 0 auto;width:44px;
+    height:24px;border-radius:12px;background:rgba(53,224,216,.10);
     border:1px solid rgba(53,224,216,.32);transition:background .2s ease;}
-  #kipKisayol .anahtar u{position:absolute;left:50%;width:5px;height:5px;
-    margin-left:-2.5px;border-radius:50%;background:rgba(53,224,216,.42);}
-  #kipKisayol .anahtar u:nth-of-type(1){top:8px;}
-  #kipKisayol .anahtar u:nth-of-type(2){top:36.5px;}
-  #kipKisayol .anahtar u:nth-of-type(3){top:65px;}
-  /* top:65px = RADIOTAPE (alt kademe); JS digerlerini yazar. */
-  #kipKisayol .anahtar b{position:absolute;left:2px;top:65px;
+  #kipKisayol .anahtar u{position:absolute;top:50%;width:5px;height:5px;
+    margin:-2.5px 0 0 -2.5px;border-radius:50%;background:rgba(53,224,216,.42);}
+  #kipKisayol .anahtar u:nth-of-type(1){left:8px;}
+  #kipKisayol .anahtar u:nth-of-type(2){left:21.5px;}
+  #kipKisayol .anahtar u:nth-of-type(3){left:35px;}
+  /* left:2px = RADIOTAPE (sol kademe); JS digerlerini yazar. */
+  #kipKisayol .anahtar b{position:absolute;top:2px;left:2px;
     width:18px;height:18px;
     border-radius:50%;background:#35e0d8;
     box-shadow:0 0 10px rgba(53,224,216,.5);
-    transition:top .22s ease,background .22s ease,box-shadow .22s ease;}
+    transition:left .22s ease,background .22s ease,box-shadow .22s ease;}
+  /* Dokunma alani gorsel yuvadan genis: uc kademe 14 px araliKLA
+     duruyor, parmak 44 px istiyor. Saydam, gorsunmez. */
+  /* Dikey tasma 6 px, yatay 0 (27 Eylul): 10 px'lik asagi tasma geri
+     dugmesinin dokunma alanini yiyordu (olcu: 36x32, esik 36).
+     Konsolun ustundeki 8 px'lik bosluk korunuyor. */
+  #kipKisayol .anahtar::before{content:'';position:absolute;inset:-6px 0;}
   /* MOODS yazisi: 8px kucuk oldugu icin WCAG AA esigi 4.5. Ilk
      renk 4.07 idi (kirmizi); isiklastirildi. Font agirligi 700:
      marka diliyle ayni olmali (test: "Anahtar etiketi markanin
      diliyle yaziliyor"). */
-  #kipKisayol .ad{writing-mode:vertical-rl;
+  /* MOODS yazisi anahtarin OSTUNDE, yatay: 44 px'lik sol seride
+     sigmasi icin dikey degil, blok olarak duruyor. */
+  /* YAZI TIPI (27 Eylul, kullanici: "font bu olacak zaten, yamuk
+     yapma, ayni duz yap... yanlis font kullaniyorsun").
+     1) Geçmişteki TAM yığın geri geldi: 'Share Tech Mono',
+        ui-monospace, SFMono-Regular, Menlo, monospace.
+     2) Ağırlık 700 -> 400. Yazı tipi tek ağırlıklı olduğu için 700
+        tarayıcıda YAPAY kalınlaştırma yapıyor ve harfler yamuk
+        görünüyordu. Düz (400) aynı aile, düz harfler. */
+  #kipKisayol .ad{writing-mode:horizontal-tb;white-space:nowrap;
     font-family:'Share Tech Mono',ui-monospace,monospace;
-    font-size:.5rem;font-weight:700;letter-spacing:.26em;
+    font-size:.5rem;font-weight:400;letter-spacing:.26em;
     color:rgba(216,234,238,.78);text-shadow:none;
     -webkit-text-fill-color:rgba(216,234,238,.78);}
   body.joy #kipKisayol .anahtar{background:rgba(226,122,158,.12);
@@ -3284,13 +3341,21 @@
   body.klavye #rehberTus{opacity:0;pointer-events:none;}
   body.deri #rehberTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
   /* YELPAZE (25 Eylul): kullanicinin istegi. Gerekce kayit.js. */
+  /* HIZALAMA (27 Eylul, kullanici: "fotoğraf makinesi saga kayık,
+     tam hizala yukardakilerle"): kamera 32 px kutuda ORTALIYDI, onde
+     gelen dort ikon 44 px kutuda sola yasli -- kamera bu yuzden 8 px
+     sagda duruyordu. Artik dort ikonla birebir ayni: kutu 44, svg
+     26, margin-left:-2.25px. Dokunma alani de 44'e cikti. */
   #kamTus{position:fixed;z-index:96;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     top:auto;bottom:calc(78px + var(--dip-pay));
-    width:32px;height:32px;display:flex;align-items:center;
-    justify-content:center;cursor:pointer;opacity:.72;color:#35e0d8;
+    width:44px;height:32px;display:flex;align-items:center;
+    cursor:pointer;opacity:.72;color:#35e0d8;
     -webkit-tap-highlight-color:transparent;transition:opacity .22s ease;}
-  #kamTus svg{width:20px;height:20px;}
+  /* 22 px, kilavuzla ayni (27 Eylul, kullanici: "fotograf makinesi
+     buyuk olmus, sagdan tasiyor; biraz kayboluyor yukarisi ile").
+     26 px hizada ama glif daha kalin gorunuyordu. */
+  #kamTus svg{width:22px;height:22px;margin-left:-1.5px;}
   #kamTus:hover,#kamTus:focus-visible,#kamTus[aria-expanded="true"]{opacity:1;}
   body.klavye #kamTus{opacity:0;pointer-events:none;}
   body.deri #kamTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
@@ -3333,9 +3398,25 @@
       inset 0 0 16px rgba(var(--renk),.16);}
   #modKollar .kol .ad{font:600 .6875rem/1 'Share Tech Mono',monospace;
     letter-spacing:.22em;color:rgb(var(--renk));white-space:nowrap;}
-  #modKollar .kol .alt,#modKollar .bas span{
+  /* ACIKLAMA SARIYOR (27 Eylul, kullanici: "alttaki aciklamalar
+     cerceve cizgisine tasmis, rahatlat biraz"). Once nowrap'ti:
+     "live · radio · streams" tek satirda 105 px kutudan tasip
+     diski gecidiyordu. Artikiki satira sarar; yazi tipi ELINDEKILER
+     gibi (Share Tech Mono) -- ozel bir font denenmedi. */
+  /* TEK SATIR (27 Eylul): iki satira sarip cerceveyi tasirdi.
+     Metinler kisaltildi (live radio / curated - loops / sound fx),
+     boylece tek satira sigiyor. */
+  #modKollar .kol .alt{
+    font:400 .4375rem/1.25 'Share Tech Mono',monospace;letter-spacing:.04em;
+    color:rgba(238,228,205,.6);text-align:center;white-space:nowrap;
+    margin:2px auto 0;padding:0;}
+  #modKollar .bas span{
     font:400 .4375rem/1.3 'Share Tech Mono',monospace;letter-spacing:.08em;
     color:rgba(238,228,205,.6);text-align:center;white-space:nowrap;}
+  /* Kaydirmalar KALDIRILDI (27 Eylul, kullanici: "yazilari ortala
+     kaymis"): metinler dairelerinden 13-24 px kayiyordu. Artik
+     dallarin yaricapi kollar.js'te daraltildigi icin yazi hem
+     dairesinin USTUNDE ortali hem de cercevenin icinde kaliyor. */
   /* SURECILERI FILTRE YOK: sayfada kalici CSS/SVG filtresi yasak
      (pil; test/saglik.js "Kalici CSS filtresi/katmani"). Ikonun
      parlamasi dairenin ic golgesinden geliyor. */
@@ -3350,7 +3431,9 @@
   #modKollar .kol::before{content:'';position:absolute;left:50%;
     top:calc(50% + var(--bas,0px) - 15px);
     width:var(--cizgi,40px);height:1px;
-    background:linear-gradient(90deg,rgba(var(--renk),.5),rgba(var(--renk),.12));
+    /* Merkezden baslar (27 Eylul): parlak uc mavi noktada, dal
+       tarafina dogru solar. */
+    background:linear-gradient(270deg,rgba(var(--renk),.5),rgba(var(--renk),.12));
     transform-origin:0 50%;transform:rotate(var(--aci,0deg));}
   #modKollar .kol::after{content:'';position:absolute;left:50%;
     top:calc(50% + var(--bas,0px) - 15px);width:5px;height:5px;border-radius:50%;background:rgb(var(--renk));
@@ -3567,8 +3650,13 @@
     font-size:0.53125rem;letter-spacing:.34em;font-weight:400;
     color:rgba(244,247,250,.58);}
   #ayar h5:first-of-type{margin-top:10px;}
+  /* ARAMA SATIRI (27 Eylul, kullanici): "search satirinda arama
+     boslugunu kisalt, zaten gerek yok uzun olmasina, liste aciliyor
+     nasil olsa. mute ve favori yildizini oraya sigdir." Kutu 266 px
+     yerine 150 px; ses ve yildiz ayni satira alindi; altindaki
+     ikinci satir (PIC/REC/CAM) kalkti. */
   #ayarAra{display:flex;align-items:center;justify-content:space-between;
-    width:100%;margin:0 0 8px;padding:9px 10px;box-sizing:border-box;
+    width:118px;margin:0 0 8px;padding:9px 10px;box-sizing:border-box;
     border:1px solid rgba(90,220,210,.25);border-radius:8px;
     background:rgba(8,20,22,.72);color:#5adcd2;cursor:pointer;
     font-family:'Share Tech Mono',ui-monospace,monospace;font-size:.6875rem;
@@ -3577,6 +3665,25 @@
   #ayar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
     padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
   #ayarAraclar:empty{display:none;}
+  /* PIC / REC / CAM (27 Eylul, kullanici: "ayarlardan cikar";
+     "soldaki kamera aynen gorevine devam"). Once kimlikle
+     gizlendi ve sol ustteki kamera dugmesi de bos yelpaze
+     acmaya basladi -- duzeltildi: yalnizca AYARLAR panelinde
+     gizleniyor, yelpaze ve kamera dugmesi oldugu gibi. */
+  /* specificity: #ayar #araclar #pic (0,2,1) kendi display:flex
+     kuralini yeniyordu; once #ayar #pic yazilmis ve PIC gorunur
+     kaliyordu (olculdu: pic 52x32). */
+  #ayar #araclar #pic,#ayar #araclar #rec,
+  #ayar #araclar #cam,#ayar #araclar #camDon{display:none !important;}
+  #ayarAraclar:empty,#ayarAraclar #araclar:empty{display:none;}
+  /* SES + YILDIZ ARAMA SATIRINDA (27 Eylul, kullanici: "mute ve
+     favori yildizini oraya sigdir"). Ayarlar panelinde arama
+     satiri #ayarAra (118 px), altindaki satirda sessiz ve yildiz
+     kaliyordu; o satir kalkti, ikisi aramanin sagina gecti.
+     Panel 300 px; icerik 266 px: 118 + 8 + 36 + 6 + 32 = 200. */
+  #ayar #araclar{position:absolute;left:calc(17px + 118px + 5px);top:15px;
+    display:flex;align-items:center;gap:6px;margin:0;padding:0;
+    border-bottom:0;}
   #ayarAraclar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
     padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
   #kayitOnay{display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -4398,17 +4505,19 @@
        ikonlarla ayni turkuaz cizim dilinde. Basinca yelpaze
        (PIC / REC / CAM) acilir. -->
   <div id="kamTus" role="button" tabindex="0" aria-expanded="false"
-       aria-label="Recording and camera tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.6" y="6.5" width="18.8" height="13" rx="3.2"/><circle cx="12" cy="13" r="3.7"/></svg></div>
+       aria-label="Recording and camera tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.6 6.5 10 4.2h4l1.4 2.3"/><rect x="2.6" y="6.5" width="18.8" height="13" rx="3.2"/><circle cx="12" cy="13" r="3.7"/></svg></div>
   <div id="yelpaze" role="menu" hidden></div>
-  <!-- UC KADEMELI DIKEY KIP ANAHTARI (26 Eylul, kullanici):
-       alt RADIOTAPE · orta JOYTAPE · ust ORBITAPE. Dokunusun
-       yuksekligi kipi secer, topuz odanin rengini alir, sabit
-       durur. Kip adi yazisi yok; dikey MOODS yeter. -->
-  
-  <div id="kipKisayol" role="switch" aria-checked="false" tabindex="0"
-       aria-label="Choose your orbit">
-    <i class="anahtar" aria-hidden="true"><b></b><u></u><u></u><u></u></i>
-    <span class="ad" aria-hidden="true">MOODS</span>
+  <!-- IKI KAPI DUGMESI (27 Eylul, kullanici: "alt alta, ikisi de
+       gorunur", "radyotape'den sol alt JOYTAPE dugmesiyle"):
+       ustte ORBITAPE kapisi, altta JOYTAPE kapisi. RADIOTAPE'de
+       ikisi de "git" dugmesidir. Odada yalniz O ODANINKI calisir
+       ve RADIO yazar; digeri soluk kalir. RADIOTAPE'nin dugmesi
+       bir milimetre degismedi: ayni kutu, ayni olcu, ayni yer. -->
+  <div id="kipKisayol" role="group" aria-label="Choose your orbit">
+    <i class="kapi" id="kipOrbit" role="button" tabindex="0"
+       aria-label="Open ORBITAPE"><i class="anahtar" aria-hidden="true"><b></b></i><span class="ad" aria-hidden="true">ORBITAPE</span></i>
+    <i class="kapi" id="kipJoy" role="button" tabindex="0"
+       aria-label="Open JOYTAPE"><i class="anahtar" aria-hidden="true"><b></b></i><span class="ad" aria-hidden="true">JOYTAPE</span></i>
   </div>
   <div id="ayar" role="dialog" aria-label="Settings" aria-hidden="true" inert>
     <!-- ── EN UST: BASKA BIR DUNYAYA KAPI ──────────────────────────
@@ -10295,27 +10404,47 @@
   function uyduYerlestir(){
     iz('uyduYerlestir');
     try{
-      const nb = document.querySelector('#mark .neb'); if(!nb) return;
-      const n = nb.getBoundingClientRect(); if(!n.width) return;
-      const mx = n.left + n.width/2, my = n.top + n.height/2, R = n.width/2;
-      // Yay SAĞA ve AŞAĞI açılıyor (sol tarafta ekran kenarı var). Her uydu
-      // bir öncekinden biraz daha uzakta: yörüngeler iç içe değil, kademeli.
-      const yer = UYDULAR.map(u=>{
-        const cap = Math.round(n.width * u.cap);
-        const r   = R*(u.uzak||1.16) + cap*0.20;
-        const a   = u.aci * Math.PI/180;
-        return { u, cap, x: mx + Math.cos(a)*r, y: my + Math.sin(a)*r };
-      });
-      yer.forEach((v,i)=>{
+      /* NEBULA YOK (27 Eylul): dort gezegen YATAY SIRADA, kucukten
+         buyuge, halkanin biraz ustunde. Once nebulanin cevresinde
+         y yay ciziyordu ve yalniz ORBITAPE'de gorunuyordu. */
+      /* UYDULAR sonra ataniyor; acilista bu fonksiyon erken
+         cagrilirsa undefined olurdu (test: "Acilis yerlesiminde TDZ
+         riski yok"). */
+      if(!UYDULAR || !UYDULAR.length) return;
+      const d = document.querySelector('.disk');
+      const r = d ? d.getBoundingClientRect() : null;
+      if(!r || !r.width) return;
+      const T = UYDULAR.map(u=>({ u, cap: Math.round(74*u.cap) }))
+                     .sort((a,b)=>a.cap - b.cap);
+      const ar = 10, BOS = 12;
+      const gen = T.reduce((s,v)=>s+v.cap, 0) + ar*(T.length-1);
+      let x = Math.round(r.left + r.width/2 - gen/2);
+      /* Kullanicinin dedigi yer: "choose your orbit'in ustunde".
+         O yazi ilk acilista 190'da duruyor; sira onun 12 px ustunde,
+         en buyuk gezegenin yaricapini kadar daha yukarida. */
+      /* Kullanicinin dedigi: "o yazi ile ayni yer olabilir, zaten o
+         yazi olmayacak, gecici". Ilk acilista "CHOOSE YOUR ORBIT"
+         190'da duruyor; sira da orada. Yazi KAPALIYKEN olculmus
+         degeri sifir cikiyordu ve sira ekranin disina kaciyordu
+         (olculdu: y=-28) -- bu yuzden gorunurluk sartı var. */
+      let kollarYaziY = Math.round(innerHeight * 0.225);
+      try{
+        const t = [...document.querySelectorAll('#modKollar *')]
+          .find(e=>!e.children.length && /CHOOSE YOUR ORBIT/i.test(e.textContent||''));
+        if(t){
+          const tr = t.getBoundingClientRect();
+          if(tr.height) kollarYaziY = Math.round(tr.top + tr.height/2);
+        }
+      }catch(_){ _yut(_); }   /* bos catch yasak (saglik: Yutulan hata butcesi) */
+      const y = kollarYaziY;
+      T.forEach(v=>{
         const b = uyduDug[v.u.fx]; if(!b) return;
-        // Dokunma alanı komşusuna taşmasın: en yakın uyduya olan mesafenin %92'si.
-        let enYakin = 1e9;
-        yer.forEach((w,k)=>{ if(k!==i) enYakin = Math.min(enYakin, Math.hypot(v.x-w.x, v.y-w.y)); });
-        const vur = Math.max(30, Math.round(Math.min(v.cap*1.9, enYakin*0.92)));
+        const vur = Math.max(30, Math.min(Math.round(v.cap*1.9), 44));
         b.style.setProperty('--cap', v.cap+'px');
         b.style.setProperty('--vur', vur+'px');
-        b.style.left = Math.round(v.x)+'px';
-        b.style.top  = Math.round(v.y)+'px';
+        b.style.left = Math.round(x + v.cap/2) + 'px';   /* transform -50% */
+        b.style.top  = y + 'px';
+        x += v.cap + ar;
       });
     }catch(e){ _yut(e); }
   }
@@ -17314,13 +17443,24 @@
         try{ e.stopPropagation(); e.preventDefault(); }catch(_){ _yut(_); }
         try{
           const h = /** @type {any} */ (e);
-          const r = _kk.getBoundingClientRect();
-          const yuk = h && h.clientY ? (h.clientY - r.top) / Math.max(1, r.height) : -1;
-          let m = _adim();
-          if(yuk >= 0){ if(yuk < 0.34) m = 'orbit';
-                         else if(yuk < 0.67) m = 'joy';
-                         else m = 'radio'; }
-          else { m = (m === 'radio') ? 'orbit' : (m === 'joy' ? 'orbit' : 'radio'); }
+          const m0 = _adim();
+          /* IKI KAPI (27 Eylul): hangi SATIRA dokunulduysa o kapı.
+             Dis tiklamalarda (klavye, yardimci cagri) sonraki
+             kipe gecis: radyo -> orbitape -> radyo, joytape ->
+             orbitape. */
+          /* closest olayin HEDEFINDE olur; ilk yazim h.closest
+           * diyordu (olayin kendisinde yok) ve her tiklamada
+           * yanlis dala dustu -- olculdu: JOYTAPE dugmesi ORBITAPE
+           * aciyordu. */
+          const tgt = (/** @type {any} */ (h)).target;
+          const satir = tgt && tgt.closest ? tgt.closest('.kapi') : null;
+          let m;
+          if(satir && satir.id === 'kipOrbit')
+            m = document.body.classList.contains('mood')
+              && !document.body.classList.contains('joy') ? 'radio' : 'orbit';
+          else if(satir && satir.id === 'kipJoy')
+            m = document.body.classList.contains('joy') ? 'radio' : 'joy';
+          else m = (m0 === 'radio') ? 'orbit' : (m0 === 'joy' ? 'orbit' : 'radio');
           if(typeof window !== 'undefined' && typeof window.modKolaGit === 'function')
             window.modKolaGit(m);
           else if(m === 'radio'){ if(window.moodKapat) window.moodKapat(); }
@@ -17943,45 +18083,58 @@
       const joy = document.body.classList.contains('joy');
       k.setAttribute('aria-checked', mood ? 'true' : 'false');
       k.setAttribute('aria-label', mood ? 'Switch to live radio' : 'Choose your orbit');
-      const b = /** @type {any} */ (k.querySelector('.anahtar b'));
-      if(b){
-        b.style.top = mood ? (joy ? '36.5px' : '8px') : '65px';
-        b.style.background = mood ? (joy ? '#e27a9e' : '#d9723c') : '#35e0d8';
-        b.style.boxShadow = '0 0 10px ' + (mood
-          ? (joy ? 'rgba(226,122,158,.55)' : 'rgba(217,114,60,.55)')
-          : 'rgba(53,224,216,.5)');
+      /* IKI KAPI (27 Eylul). Her satir kendi odasini adlandirir.
+         Radyoda ikisi de acilir; odada yalniz o odanin satiri
+         "RADIO" olur ve calisir, digeri soluk kalir (olcum:
+         once uc kademeli tek anahtar vardi, kullanici "alt alta,
+         ikisi de gorunur" dedi). Renk odanin rengi. */
+      /* [dolu, parlak, zemin, cerceve] -- kullanicinin sozu:
+         "sol altta hepsi odasinin renginde". Once yalnizca
+         topuz ve yazi boyaniyordu, hapin zemini turkuaz kaliyordu. */
+      /* RENKLER (27 Eylul). Kullanici ORBITAPE dugmesini OLDUGU GIBI
+         birak: "bu switch ve orbitape yazisi kalsin elleme... o
+         gorselde attigim hali olsun, yeniden yapma istemiyorum" --
+         yani gul kurusu tonu. Yapisal degerler koddan geliyor:
+         dolgu .12, cerceve .40, parlama .55 (body.joy kuraliyla ayni).
+         RADIOTAPE taban kuralin turkuazi, JOYTAPE kahveci koyu amber. */
+      const O = ['#c4736f','rgba(196,115,111,.55)','rgba(196,115,111,.12)','rgba(196,115,111,.40)'];
+      const J = ['#a8703a','rgba(168,112,58,.55)','rgba(168,112,58,.12)','rgba(168,112,58,.40)'];
+      const Rc= ['#35e0d8','rgba(53,224,216,.5)','rgba(53,224,216,.10)','rgba(53,224,216,.32)'];
+      const satir = (kim, ad, rn, canli)=>{
+        const e = /** @type {any} */ (k.querySelector('#'+kim));
+        if(!e) return;
+        void 0;
+        const h = /** @type {any} */ (e.querySelector('.anahtar'));
+        if(h){ h.style.background = rn[2]; h.style.borderColor = rn[3]; }
+        const b = /** @type {any} */ (e.querySelector('.anahtar b'));
+        if(b){ b.style.background = rn[0];
+               b.style.boxShadow = canli ? '0 0 10px ' + rn[1] : 'none'; }
+        const t = /** @type {any} */ (e.querySelector('.ad'));
+        if(t){ t.textContent = ad; t.style.color = rn[0];
+               t.style.webkitTextFillColor = rn[0]; }
+        /* Kullanici 27 Eylul: "swichler de oyle degistirme, aynisini
+           istiyorum" -- etkisiz olan soluk kalir (.32), ikisi de ayni
+           yerde ve ayni fontta. */
+        e.style.opacity = canli ? '' : '.32';
+        e.style.pointerEvents = canli ? '' : 'none';
+      };
+      if(mood){
+        /* Satir daima VARDIKI ODANIN ADINI yazar; icinde
+           olmadigimiz odanin satiri soluk kalir. Icinde
+           oldugumuz odanin satiri "RADIO" olur: cikis kapisi. */
+        /* Kullanici: "adi artik RADIOTAPE, sadece RADIO yazma". */
+        satir('kipOrbit', joy ? 'ORBITAPE' : 'RADIOTAPE', joy ? O : Rc, !joy);
+        satir('kipJoy',   joy ? 'RADIOTAPE' : 'JOYTAPE', joy ? Rc : J, joy);
+      }else{
+        satir('kipOrbit', 'ORBITAPE', O, true);
+        satir('kipJoy',   'JOYTAPE',  J, true);
       }
     }catch(e){ _yut(e); }
   }
-  function _kipSagKenar(kk, sol, sinir){
-    try{
-      /* HEDEF: konsolun EN GENIS satiri, tasima satiri degil.
-         Blogun sag kenarini zaten en genis satir ciziyor. */
-      let sag = 0;
-      ['tasima','araclar'].forEach(id=>{
-        const e = document.getElementById(id); if(!e) return;
-        const r2 = e.getBoundingClientRect();
-        if(r2.width && r2.right > sag) sag = r2.right;
-      });
-      kk.style.width = '';                       // dogal olcusunde kalir
-      kk.style.justifyContent = '';
-      /* SINIR: varsayilan konsolun sag kenar. ORBITAPE'de anahtar
-         uc cizginin saginda ve genis ("ORBITAPE" yazisiyla 139px);
-         konsola gore kelepce onu 62 yerine 14'e cekip uc cizginin
-         USTUNE bindiriyordu (olcum). Yer varken tasirmasin. */
-      if(sinir != null) sag = sinir;
-      if(!sag) return;
-      const dogal = kk.getBoundingClientRect().width;
-      /* GUVENLIK KAPISI: dar ekranda etiket konsolun sag kenarini
-         gecerse anahtari kirpmiyoruz -- kirpilmis kelime kotudur --
-         sadece sol kenardan iceri cekiyoruz. Genis ekranda bu dal
-         hic calismiyor. */
-      if(sol + dogal > sag){
-        const yeniSol = Math.max(8, Math.round(sag - dogal));
-        kk.style.left = yeniSol + 'px';
-      }
-    }catch(e){ _yut(e); }
-  }
+  /* _kipSagKenar SILINDI (27 Eylul): kip anahtarinin sol kenara
+     kelepcelenmesi vardi. Anahtar artigi SABIT (sol kenar, 39-112 px
+     genislik) oldugu icin kelepce hic tetiklenmiyordu; 1,3 KB olu
+     koddu ve ilk boyama butcesine bosta yer yiyordu. */
   function _kipKisayoluHizala(){
     /* ── KIP ANAHTARI: IKI KIPTE IKI YER (25 Eylul) ───────────
        RADIOTAPE: PLAY/STOP'un ustunde, ayni sol kenarda.
@@ -18010,15 +18163,41 @@
         const kay = parseFloat(getComputedStyle(document.documentElement)
           .getPropertyValue('--konsol-sol')) || 0;
         const sol = Math.round(r.left + kay);
-        /* SABIT YER (26 Eylul): anahtar 78 px yuksek ve iki kipte de
-           ayni yerde duracak. Yer secimi kip DEGIL, iki kipin de
-           payastigi seridi bos birakacak sekilde: arsivde uc cizgi
-           776-802 arasinda duruyor, anahtar onun 14 px ustunde
-           bitiyor (684..762). Radyoda konsol 810'da, aradaki 48 px
-           bosluk kasitli -- anahtar yukaridaki ikonlara degmiyor. */
-        _altYasla(_kk, r.top - 48);
+        /* YER (27 Eylul): anahtar YATAY ve 44x34; yatay yon sabit
+           (sol kenar), dikey yon IKON SUTUNUNUN BOS TARAFI:
+           sutun tepedeyse anahtar onun altinda, dipteyse ustunde.
+           Olcum: radyoda sutun 15-263 -> anahtar 275-309; arsivde
+           sutun 556-802 -> anahtar 522-556. Boylece hicbir kipte
+           palet/saat/kamera ustune binmiyor. Yatay yon her zaman
+           ayni: sol kenar. */
+        const _sut = ['ayarTut','saatTus','deriFirca','gorselTus',
+                      'rehberTus','kamTus']
+          .map(id=>{ const e=document.getElementById(id);
+                     return e ? e.getBoundingClientRect() : null; })
+          .filter(q=>q && q.height);
+        /* 27 Eylul: kip anahtarinin yeri SABIT (konsolun 8 px
+           ustunde) ve sutunla iliskisi yok. Once sutunun bos tarafini
+           arayan kod vardi; kullanici "her yerde ayni" dedi, o kod
+           olu oldu ve silindi (ilk boyama butcesine de yariyor). */
+        /* 27 Eylul: yer KIP DEGIL. Sutun daima sol ustte
+           (_tutamakYerlestir), anahtar daima konsolun 52 px
+           ustunde -- iki kapi satiri 52 px tutuyor ve geri
+           dugmesinin 8 px kala yuzunden onun yukari yurusu
+           kesiliyordu (olculdu: geri 36x32, olcu 44). */
+        /* BIR ONCEKI PUSH'TAKI MESAFE (27 Eylul, kullanici: "moodlar
+           hala alttaki konsoldan uzak, radiotape teki su anki gibi
+           olsun, bir onceki push taki mesafe yani"): konsolun 8 px
+           ustunde. Iki kapi satiri 50 px tutuyor. */
+        /* EKRAN BOYU OKUNMAZ (27 Eylul): onceki kelepce
+           Math.min(innerHeight-8, ...) ekran yuksekligine bagliydi;
+           cihaz testi innerHeight'i bayatlatinca anahtar 42 -> 128
+           zipliyordu ("bayat innerHeight yerlesimi bozmuyor").
+           Konsunun ust kenarina gore konumlanmak yeterli: konsol
+           ekranda oldukca anahtar da ekranda. */
+        _altYasla(_kk, r.top - 8);
+        /* (_y ve sutun-tabanli konum kodu silindi; burada artik
+           yalnizca sabit yer hesabi var) */
         _kk.style.left = sol + 'px';
-        _kipSagKenar(_kk, sol);
       }
     }catch(e){ _yut(e); }
   }
@@ -18144,22 +18323,17 @@
          kip anahtari da tutamakla ayni satira biniyordu (olculdu:
          Kılavuz 762..794, anahtar 778..802). */
       try{
-        const mood = document.body.classList.contains('mood');
-        if(mood){
-          /* ALT SATIR: UC CIZGI, USTUNDE IKONLAR (yalniz ORBITAPE):
-             kullanicinin istegi. Anahtar _kipKisayoluHizala()'da. */
-          const r = _konsolKutu();
-          if(!r || !r.height) return;
-          let alt = r.top - 8;
-          ['ayarTut','saatTus','deriFirca','gorselTus','rehberTus','kamTus'].forEach(id=>{
-            const e = document.getElementById(id); if(!e) return;
-            e.style.removeProperty('top');
-            const h = e.getBoundingClientRect().height || 32;
-            _altYasla(e, alt);
-            alt -= h + 12;
-          });
-        }else{
-          /* Radyoda taban CSS'te: ayarlar ustte, digerleri onun
+        /* 27 Eylul, kullanici: "sol ustteki duzen de ayni". Sol
+           sutun ARTIK HER KIPTE sol ustte: Ayarlar en ustte, altina
+           Saat -> Firca -> Gorsel -> Kilavuz -> Kamera. Iki taban
+           (arsivde dibe kacan sutun) kaldirildi; anahtar da her
+           kipte ayni yerde (konsolun ustunde), yani iki parca
+           birbirine hic girmez. */
+        /* 27 Eylul: sol sutun HER KIPTE ayni (kullanici: "sol ustteki
+           duzen de ayni"). Iki taban vardi; arsivde dibe kacan taban
+           olu oldu ve silindi. */
+        const mood = false;
+        /* Radyoda taban CSS'te: ayarlar ustte, digerleri onun
              altina dizilir. Adim sabit degil OLCULEN: kutu boyu
              CSS'ten gelir, olcu oradan gelir. */
           const tut0 = document.getElementById('ayarTut');
@@ -18184,7 +18358,6 @@
             e.style.top = Math.round(ust) + 'px';
             ust += (e.getBoundingClientRect().height || 26) + 12;
           });
-        }
         _sutunYayinla(mood);
         try{ if(typeof _rehberAcik !== 'undefined' && _rehberAcik) _rehberCiz(); }catch(_){ _yut(_); }
       }catch(_){ _yut(_); }
@@ -20509,8 +20682,11 @@
   function taniPanel(){ return TANI ? document.getElementById('kayitBilgi') : null; }
   var _bilgiZaman = null;
   (function nebulaTuval(){
-    const el = document.querySelector('#mark .neb');
-    if(!el || !el.getContext) return;
+    /* Nebula silindi (27 Eylul): eleman gizli, cizim de yapilmaz.
+       Tek any casti: onceki guard zinciri (getContext/offsetParent)
+       tipi Element'e daraltiyor ve el.style hatasini uretiyordu. */
+    const el = /** @type {any} */ (document.querySelector('#mark .neb'));
+    if(!el || !el.getContext || !el.offsetParent) return;
     const ctx = el.getContext('2d');
     const CSSBOY = 74;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -21044,58 +21220,10 @@
      yildiz-gokyuzu jesti). ARCHIVE -> SOUNDS FX oldu (kullanicinin
      sozu), PICK A GENRE -> merkeze dokunmanin ne yaptigini (calmayi
      BASLATTIGINI) soyleyecek sekilde yeniden yazildi. */
-  const REHBER_RADIO = [
-    { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
-    { h:{disk:0.55,aci:52},   m:'PINCH: OPEN SKY, TAP A STAR FOR A STATION', dx:-8, dy:10, hiza:'sag' },
-    /* SPIN MODE (17 Eylul): #bekle -- radyoda ve SYMBOL SPIN kapaliyken
-       (varsayilan), bir sembole dokununca ilgili mood'a ait rastgele
-       bir istasyona gecer. */
-    { h:'#bekle', m:'SPIN MODE — TAP A SYMBOL FOR A MOOD STATION', dx:0, dy:-24, hiza:'orta' },
-    /* ── SOL SUTUN ETIKET HIZALAMA (17 Eylul) ────────────────────────
-       Kullanicinin sozu: "soldaki yazılar yamuk, ikonlar duzelip, bu
-       yazıların da alt alta hizalı ikona daha yakın olmalı." Olcum
-       (gercek uygulamada, rehber acikken .et kutulari): RADYODA
-       #ayarTut'un kutusu 32px genis (digerleri 44px, bkz. satir 3309
-       "body:not(.mood) #ayarTut{width:32px}"), merkezi de o yuzden
-       farkli (cx 30 vs 36) -- eski ortak dx:30 MENU etiketini x=60'a,
-       ALARM/SKINS/VISUALS/GUIDE'i x=66'ya dusuruyordu, yani 6px'lik
-       bir kirilma. MENU'nun dx'i 36'ya cekilince hepsi ayni x=66
-       sutununda, kendi cercevesine (frame right=51) 15px, digerlerinin
-       kendi cercevesine (frame right=63) 3px mesafede -- artik tek
-       duz sutun. dy:-2 de kaldirildi: box merkezi zaten optik
-       hizalamadan sonra dogru (bkz. satir ~3146 "SOL SUTUN OPTIK
-       HIZALAMA"), ekstra kaydirmaya gerek yoktu. */
-    { h:'#ayarTut',   m:'MENU — OPEN FOR PHOTO, CAMERA, RECORDING & FAVOURITES', dx:36, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#saatTus',   m:'ALARM',       dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#deriFirca', m:'SKINS',       dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#gorselTus', m:'VISUAL / HOLD',     dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
-    { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
-    { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
-    { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
-    { h:'#kipKisayol', m:'SOUNDS FX',  dx:0, dy:-24, hiza:'orta' },
-    { h:'#araCizgi',   m:'SEARCH',     dx:0, dy:-24, hiza:'orta' },
-    { h:'#npBayrak',   m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
-    { h:'#fav',        m:'LIKE — HOLD TO PLAY FAVOURITES', dx:8, dy:-20, hiza:'sol' },
-    { h:'#isaret',     m:'TAP FOR ARTIST & TITLE', dx:0, dy:22, hiza:'orta' }
-  ];
-  const REHBER_ORB = [
-    { h:{disk:0.92,aci:-128}, m:'WHEEL — SPIN TO BROWSE', dx:10, dy:-8, hiza:'sol' },
-    { h:['#uydular .uydu','#mark'], m:'FX (TAP A MOON)', dx:14, dy:-8, hiza:'sol' },
-    { h:'#ayarTut',   m:'MENU — OPEN FOR PHOTO, CAMERA, RECORDING & FAVOURITES', dx:0,  dy:-26, hiza:'orta', cizgi:false },
-    { h:'#saatTus',   m:'ALARM',   dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#deriFirca', m:'SKINS',   dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#gorselTus', m:'VISUAL / HOLD', dx:30, dy:0,  hiza:'sol', cizgi:false },
-    { h:'#rehberTus', m:'GUIDE — HOLD TO SHOW, RELEASE TO HIDE', dx:30, dy:0, hiza:'sol', cizgi:false },
-    { h:{disk:0.90,aci:100}, m:'GENRE — LIT WHEN SELECTED', dx:14, dy:14, hiza:'sol', ornek:true },
-    { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
-    { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
-    { h:'.kanal.ad',   m:'TAP FOR LIST', dx:0, dy:-20, hiza:'sag' },
-    { h:'#kipKisayol', m:'RADIO',       dx:0, dy:-24, hiza:'orta' },
-    { h:'#npBayrak',   m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },
-    { h:'#fav',        m:'LIKE — HOLD TO PLAY FAVOURITES', dx:8, dy:-20, hiza:'sol' },
-    { h:'#isaret',     m:'TAP FOR ARTIST & TITLE', dx:0, dy:22, hiza:'orta' }
-  ];
+  /* REHBER TABLOLARI (27 Eylul): kollar.js'e tasindi. Ilk boyama
+     butcesi icin: 3.8 KB metin ilk cizimde hic gerekmiyor, rehber
+     ancak tusa basili tutulunca ciziliyor. Modul `defer` oldugu
+     icin betikler calistiktan sonra window.REHBER_* hazir. */
   /* Bir noktadan (ax,ay) bir DIKDORTGENE (r) en KISA cizgi -- nokta
      kutunun disindaysa kenara TAM DOKUNAN bir uc verir (kirpma). Cizgi
      "ETIKETIN TAM KENARINA" dokunsun istegi buradan geliyor: etiket
@@ -21110,7 +21238,14 @@
     try{
       const kap = document.getElementById('rehberEtiketler'); if(!kap) return;
       kap.innerHTML = '';
-      const liste = document.body.classList.contains('mood') ? REHBER_ORB : REHBER_RADIO;
+      /* window.REHBER_* (27 Eylul): tablolar kollar.js'e tasindi ve o
+         modul `defer` -- inline betik sonrasi yukleniyor. Cizim
+         daha ilk karede bir yere cagriliyorsa BAYAT isim hatasi
+         veriyordu ("yutulan hata butcesi: REHBER_RADIO is not
+         defined"). Bos listeye dusuyor: cizim hicbir sey cizmez,
+         sonraki tusa basista tablo hazir olur. */
+      const liste = document.body.classList.contains('mood')
+                 ? (window.REHBER_ORB || []) : (window.REHBER_RADIO || []);
       const cizgiler = [];    // { ax, ay, etiket } -- 2. gecis icin biriktiriliyor
       liste.forEach(e=>{
         const n = _rehberNokta(e.h); if(!n) return;
@@ -21454,7 +21589,7 @@
   var _ilkTetik = false;
   document.addEventListener('pointerdown', e=>{
     if(_ilkTetik || baslatildi) return;
-    const t = e.target;
+    const t = /** @type {any} */ (e.target);   /* tip: EventTarget -> closest yok */
     if(t && t.closest && t.closest('#tp,#ust,#rec,#cam,#araclar,#ara,#geri,#ayarTut,#ayar,#rapor,#saatTus,#saatPanel,#deriFirca,#deriGaleri,#istListe,#geriBil,#geriSat,#bekle,#mark,#uydular')) return;  // kendi başlatıcıları var
     _ilkTetik = true;
     try{ sesBaglamiAl(); if(actx) actx.resume(); }catch(_){ _yut(_); }

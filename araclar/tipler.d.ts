@@ -222,3 +222,17 @@ interface Navigator {
      kodda her zaman varlik kontrolüyle okunuyor. */
   connection?: { effectiveType?: string; saveData?: boolean };
 }
+
+interface Window {
+  /* Rehber etiket tablolari 27 Eylul'da kollar.js'e tasindi: ilk
+     boyama butcesi icin 3,8 KB metin cikti, rehber ancak tusa basili
+     tutulunca cizildigi icin geci yuklemeye razi. Modul `defer`
+     oldugu icin betikler calistiktan sonra window uzerinde hazir. */
+  REHBER_RADIO?: any;
+  REHBER_ORB?: any;
+}
+
+/* Ayni iki tablo index.html'de BARE isimle okunuyor (klar kodu).
+   Bu yuzden global tanim da gerekli; Window kaydi tek basina yetmiyor. */
+declare const REHBER_RADIO: any;
+declare const REHBER_ORB: any;

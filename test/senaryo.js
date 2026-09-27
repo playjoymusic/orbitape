@@ -497,8 +497,11 @@ const CASUS = ()=>{
     K('[Y5] Kipte kanal arsive geciyor', kip.kipte.kanal==='lib' && kip.kipte.raf===null,
        'kanal ' + kip.kipte.kanal);
     K('[Y5] Kipte acilis rafi ORBITAPE', kip.kipte.mod==='ORBITAPE', String(kip.kipte.mod));
-    K('[Y5] Kipte REC geliyor, PIC gidiyor, arama kaliyor',
-       kip.kipte.rec!=='none' && kip.kipte.pic==='none' && kip.kipte.aramaYuvada,
+    /* 27 Eylul: PIC/REC/CAM AYARLARDAN KALKTI ("ayarlardan cikar;
+       soldaki kamera aynen gorevine devam"). Arsivde medya araclari
+       gizli, arama satiri duruyor. */
+    K('[Y5] Kipte medya araclari gizli, arama kaliyor',
+       kip.kipte.rec==='none' && kip.kipte.pic==='none' && kip.kipte.aramaYuvada,
        'REC ' + kip.kipte.rec + ' | PIC ' + kip.kipte.pic + ' | arama ' + kip.kipte.arama);
     K('[Y5] Kipte modul alta iniyor', kip.kipte.modulAlt===true, 'sol alt kose');
     K('[Y5] Donunce ayni rafa donuluyor',
@@ -514,9 +517,16 @@ const CASUS = ()=>{
        Kayit kurali degismedi -- canli yayin kaydedilmiyor.
        Degisen, o yerin artik bos olmamasi. Radyoya donunce tus
        PARLAK olmali; sonuk kalirsa calisan bir tus kapali gorunur. */
-    K('[Y5] Donunce PIC duruyor, REC gizli',
-       kip.sonra.pic!=='none' && kip.sonra.rec==='none',
-       'radyoda PIC '+kip.sonra.pic+', REC '+kip.sonra.rec);
+    /* Donunce de ayni kural: ayarlarda medya araci yok; medya
+       yalnizca sol ustteki kamera dugmesinin yelpazesinde. */
+    const yelpazeVar = await p2.evaluate(()=>{
+      const k=document.getElementById('kamTus'); if(k) k.click();
+      return [...document.querySelectorAll('#yelpaze [id^="fan"]')]
+             .filter(e=>getComputedStyle(e).display!=='none').length;});
+    K('[Y5] Donunce de medya araclari gizli, yelpazede',
+       kip.sonra.pic==='none' && kip.sonra.rec==='none' && yelpazeVar >= 3,
+       'radyoda PIC '+kip.sonra.pic+', REC '+kip.sonra.rec
+       +' · yelpazede '+yelpazeVar+' arac');
     await supur(p2, 'Y5 kip donusu');
   }
 
