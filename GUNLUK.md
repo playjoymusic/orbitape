@@ -3425,3 +3425,91 @@ için duruyor. Kalan pay **165 B** — kırmızı iki kalem daha
 Kapı yeşil: saglik 892/892 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19 · ilk boyama 110 KB brotli ·
 ilk açılış 112 KB · ham 1301 KB.
+### 28 Eylül (üçüncü tur) — düğme temaya bağlandı, halkalar birleşti, dış katalog başladı
+
+**1) DÜĞME ARTIK SABİT DEĞİL.** "swichin rengi skins lere göre entegre
+olsun. sabit kalmasın... krem vs açık renk olmuş yok tema ana
+renklerimiz kullanalım, homojen geçişli her zaman." Krem ve sabit hex'ler
+kalktı; yol artık markanın üç durağını kullanıyor: `--m1` (sol) ·
+`--m2` (orta) · `--m3` (sağ). Bu üçü `markaRengi()` tarafından
+kip/raf/skin ile güncellendiği için düğme **her zaman odanın renginde**
+ve gradyan homojen. Ölçülen: deri 0→1 yapılınca orta durağ
+`rgb(119,176,180)` → `rgb(118,178,186)`, sağ `rgb(122,124,138)` →
+`rgb(122,126,143)` değişti.
+
+**2) KROSSFADE.** "modlar değişirken harfler üst üste, bir modun ismi
+gitsin diğeri öyle gelsin. fade out fade in gibi." Üç isim aynı yerde
+üst üste; geçiş **420 ms**. Ölçülen (orta uca dokunuş):
+RADIOTAPE 1.00 → 0.86 → 0.35 → 0.08 → 0.00, JOYTAPE 0.42 → 0.81 →
+0.97 → 1.00. Kalıcı `filter: blur()` denendi ve **KALDIRILDI** — kapı
+"Kalıcı CSS filtresi/katmanı" diye kırmızı veriyor.
+
+**3) İKİ KIRMIZI ÖLÇÜMLE ÇÖZÜLDÜ.**
+* Etiket rengi `--m1..3`'ü doğrudan kullanınca **rafta değişiyordu**
+  (kapı: "Kapi etiketi tur degisiminden etkilenmiyor", ölçülen
+  `rgb(67,150,146)` sabit kalmadı). Çözüm: `--k1..--k3` yalnız **kip**
+  değişince yazılıyor (`markaRengi` içinde `if(_kipSon !== AKTIF_MOD)`),
+  etiketler onu kullanıyor. Ölçülen: iki farklı rafta
+  `rgb(85,90,110)` → `rgb(85,90,110)`, değişmiyor ✓.
+* Harf aralığı markanın .26 em'i ile eşitlendi (0.30 idi).
+
+**4) HALKALAR BİRLEŞTİ — ADLAR UYDURULMADI.** Kullanıcı:
+"composers orchestra birleştir adını composers. yaparsın" · "lab ve
+machine birleşir, deneysel gibi bi isim" · "zayıf bi halka kalmasın" ·
+"bi türün içinde 2000 den az track olmasın" · "SACRED olmayacak".
+Önce **gerçek etiketler** toplandı: `araclar/hasat.py etiket` →
+`katalog-etiket/` (IA `subject` alanı, 73.143 kayıt, 12 koleksiyon),
+sonra `araclar/etiket.py` saydı. En sık: classical/romantic/baroque/
+mozart/bach **7.585** · ambient/electronic/techno/idm/glitch **7.368** ·
+experimental/noise/drone/industrial **6.171** · jazz/blues/big band
+**4.146** · folk/world/greek/arabesk **3.114** · rock/metal/indie
+**1.841**.
+
+| eski | yeni | ölçülen (12.405 havuz) |
+|---|---|---|
+| MACHINE & SYNTH + DRIFT & DRONE + CHILL & GROOVE + BEATS & RHYME | **ELECTRONIC LAB** | **6.053** |
+| SYMPHONY | **COMPOSERS** | 1.632 |
+| BLUES & JAZZ | **BLUE NOTE** | 1.243 |
+| ROOTS & ROADS + EAST & WEST | **WORLD** | 581 |
+| GROOVE & SOUL | **POP & GROOVE** | 1.084 |
+| TAPE & VINYL | kaldı | 1.772 |
+| — (yeni) | **WIKIMEDIA COMMONS** (dış) | 40 |
+Yedi halka, toplam 12.405. 2.000 eşiği **yerel havuzda** üç halkada
+altta; katalog yüz binlere çıkınca hepsi geçecek (aşağıda).
+
+**5) JOYTAPE ÇARKLA AÇILIYOR.** "yoytape modunda da çarkla açılmalı."
+`moodUygula`'daki yazma yalnız radyodan GELEN geçişlerde çalışıyordu
+(ölçüldü: `modKolaGit('joy')` sonrası merkez `yuvarlak` kalıyordu).
+Doğru yer kipin atandığı satır (`kollar.js`): ölçülen
+joy→`merkez:cark`, `merkez-cark` sınıfı var; orbit→`yuvarlak`;
+radio→kendi kayıtlı merkezine dönüyor ✓.
+
+**6) YAZI KÜÇÜLTÜLDÜ.** "yazıyı biraz küçült": 1.4375rem (23 px) →
+1.1875rem (19 px). Aile/kalınlık/harf aralığı markayla aynı
+(ölçülen 19 px / 700 / .26 em; marka 20 px / 700 / .26 em). Kutu
+147 px (187 px'ten küçük).
+
+**7) DIŞ KATALOG BAŞLADI.** "ne yüz bini milyon", "arsivler duruyor
+zaten bize sorun değil ki", "liste sorunu olmayan, çalma hızı ulaşma
+vs bu kriterlere bak", "token vs zorluk çıkaranları yapma şimdilik,
+rahat olanlar". Ölçülen seçim:
+* **RAHAT OLANLAR → toplanıyor:** archive.org (API var, sayfa 1.000,
+  ~1,7 sn; 120.127 kayıt · 32 banka yazıldı) ve Wikimedia Commons
+  (1.809.416 ses dosyası ölçüldü; 34.102 dosya · 2.621 kategori
+  tarandı, 429'larda geri çekilmeli).
+* **RAHAT OLMAYANLAR → adres bankası:** FREESOUND 736.000+ **ama 401**
+  ("credentials were not provided"; PDF'te de `&token=` şartı,
+  60/dk · 2000/gün) — token koda GÖMÜLMÜYOR (Jamendo `client_id`
+  dersi: "içinde bir client_id duruyordu, gereksiz bir açık").
+  JAMENDO/PIXABAY 400 (anahtar), LIBRIVOX/OPENGAMEART/XENO-CANTO/
+  MIXKIT/SOUNDBIBLE tarayıcıda CORS kapalı, LOC/MACAULAY **403**
+  (tarayıcı User-Agent'ıyla da), SONOTEKA özel kütüphane.
+* Kayıt başına **sadece kimlik** saklanıyor (~45 B): başlık ve ses
+  adresi oynatma anında `archive.org/metadata/<id>` ile geliyor
+  (zaten `mp3Bul` bunu yapıyor) — 1.000.000 kayıt ~45-60 MB, kullanıcı
+  "sorun değil" dedi. `katalog-etiket/` yalnız analiz içindir, depoya
+  girmez (`.gitignore` + `.assetsignore`).
+
+Kapı yeşil: saglik 892/892 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19 · ilk boyama 109 KB ·
+ilk açılış 112 KB · ham 1301 KB (pay 48 B).

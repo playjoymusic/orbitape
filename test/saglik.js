@@ -4044,7 +4044,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                 mp3:'https://archive.org/download/JV-25463-1946-QmY13QXN9yZMT7TYEhnpF7N5ne6SGKUfZcbXCadqUfPRff.mp3/APOR1054.mp3' },
             /* 27 Eylul: hedef tek 'JOYTAPE' kovasi degil, JOYTAPE'nin
                on rafindan biri: bu kayit caz plagi -> JAZZ. */
-            olmali:'BLUES & JAZZ' },
+            olmali:'BLUE NOTE' },
           /* LibriVox siiri: adinda "Wind" geciyor diye NATURE'daydi.
              Sesli kitap ve siir artik TALKS rafinda. */
           { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',

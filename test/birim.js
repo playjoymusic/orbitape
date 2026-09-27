@@ -190,14 +190,14 @@ K('Alan kaydi NATURE rafina gidiyor',
    degil. Muzik kaydi JOY_RENKLER'in adina gider; ortam sesi
    (ambience) arsivin kendi AMBIANCE rafinda kalir. */
 K('Muzik olan ambient JOYTAPE bankasinda, ortam sesi AMBIANCE',
-  A.arsivRaf(kayit('ambient · drone', 'Deep Drone')) === 'DRIFT & DRONE'
+  A.arsivRaf(kayit('ambient · drone', 'Deep Drone')) === 'ELECTRONIC LAB'
   && A.arsivRaf(kayit('ambience · room tone', 'Deep Room')) === 'AMBIANCE',
-  'muzik ambient -> DRIFT & DRONE · ortam sesi -> arsiv AMBIANCE');
+  'muzik ambient -> ELECTRONIC LAB · ortam sesi -> arsiv AMBIANCE');
 K('JOYTAPE bankalari muzigi turune gore dagitiyor',
-  A.joyRaf(kayit('jazz · bebop', 'x')) === 'BLUES & JAZZ'
-  && A.joyRaf(kayit('techno · minimal', 'x')) === 'MACHINE & SYNTH'
-  && A.joyRaf(kayit('turkce · arabesk', 'x')) === 'EAST & WEST'
-  && A.joyRaf(kayit('ambient · drone', 'x')) === 'DRIFT & DRONE'
+  A.joyRaf(kayit('jazz · bebop', 'x')) === 'BLUE NOTE'
+  && A.joyRaf(kayit('techno · minimal', 'x')) === 'ELECTRONIC LAB'
+  && A.joyRaf(kayit('turkce · arabesk', 'x')) === 'WORLD'
+  && A.joyRaf(kayit('ambient · drone', 'x')) === 'ELECTRONIC LAB'
   && A.joyRaf(kayit('tamamen bilinmeyen', 'x')) === 'TAPE & VINYL',
   A.JOY_ADLAR.length + ' banka: her biri kendi turunu aliyor, kalan TAPE & VINYL');
 K('Radyo tiyatrosu ve sozlu tarih HUMANS ta',

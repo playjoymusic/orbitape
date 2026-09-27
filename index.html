@@ -2395,13 +2395,13 @@
   #kipKisayol:hover,#kipKisayol:focus-visible{opacity:1;}
   #kipKisayol .uck-yol{position:relative;flex:0 0 auto;
     width:var(--uck-h);height:var(--uck-w);border-radius:calc(var(--uck-w)/2);
-    /* HOMOJEN GECIS + RETRO/KREM (28 Eylul: "retroalstir swichin
-       rengini cok parlak", "backgrounddu krem ... gul kokusuz gri
-       tonlar"): sol ORBITAPE, orta JOYTAPE, sag RADIOTAPE. Onceki
-       turkuaz #35e0d8 doygunluk .76 / fark 171 -- neondu. RETRO
-       kurali: zemin #e0d6c2/#dbd1bd/#d5cbba .14/30; topuz #ae776f
-       .36/63 · #8c877d .11/15 · #7d868c .11/15. */
-    background:linear-gradient(90deg,#e0d6c2 0%,#dbd1bd 50%,#d5cbba 100%);
+    /* HOMOGEN GECIS + TEMA RENKLERI (28 Eylul: "swichin rengi skins
+       lere gore entegre olsun. sabit kalmasin ... tema ana
+       renklerimiz kullan"): krem ve sabit hex kalkti; yol markanin uc
+       duragini kullaniyor --m1/--m2/--m3, bunlari markaRengi() kip,
+       raf ve skin ile guncelliyor (6210). */
+    background:linear-gradient(90deg,
+      var(--m1,#35e0d8) 0%, var(--m2,#e8a97e) 50%, var(--m3,#86dcd0) 100%);
     border:1px solid rgba(255,255,255,.16);
     box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
   #kipKisayol .uck-topuz{position:absolute;left:2px;top:50%;
@@ -2413,9 +2413,9 @@
     transition:left .18s cubic-bezier(.4,0,.2,1),background .18s ease;}
   /* Uc konum: yol GENISLIGI - topuz capi kadar oynar; calc()
      --uck-h'e bagli, boy degisirse konum da dogru olcekler. */
-  #kipKisayol[aria-valuenow="0"] .uck-topuz{left:calc(var(--uck-h) - (var(--uck-w) - 4px));background:#7d868c;}
-  #kipKisayol[aria-valuenow="1"] .uck-topuz{left:calc(50% - (var(--uck-w) - 8px)/2);background:#8c877d;}
-  #kipKisayol[aria-valuenow="2"] .uck-topuz{left:2px;background:#ae776f;}
+  #kipKisayol[aria-valuenow="0"] .uck-topuz{left:calc(var(--uck-h) - (var(--uck-w) - 4px));background:var(--m3,#86dcd0);}
+  #kipKisayol[aria-valuenow="1"] .uck-topuz{left:calc(50% - (var(--uck-w) - 8px)/2);background:var(--m2,#e8a97e);}
+  #kipKisayol[aria-valuenow="2"] .uck-topuz{left:2px;background:var(--m1,#35e0d8);}
   /* ISIMLER TEK YERDE: yalniz secili gorunur ("hangi modtaysa o
      yanar... o silinecek, digeri yazacak"); basili tutulunca
      (.uck-acik) ucu de gorunur. Yazi tipi markanin diliyle ayni. */
@@ -2424,26 +2424,30 @@
     position:absolute;left:0;bottom:6px;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     /* Harf araligi markanin diliyle ayni (.26em). */
-    /* Marka dili: 23 px / 700 / .26em (olculdu: #ust .kanal) */
-    font-size:1.4375rem;font-weight:700;letter-spacing:.26em;line-height:1;
+    /* Marka dili: aile, kalinlik ve aralik #ust .kanal ile ayni;
+       punto 28 Eylul'de kucultuldu ("yaziyi biraz kucult") --
+       1.4375rem (23 px) -> 1.1875rem (19 px). */
+    font-size:1.1875rem;font-weight:700;letter-spacing:.26em;line-height:1;
     margin-right:-.26em;white-space:nowrap;color:rgba(206,196,176,.28);
     opacity:0;transform:translateX(-4px);
-    transition:opacity .16s ease,transform .16s ease,color .16s ease;}
+    /* KROSSFADE (28 Eylul: isimler ustuste, "biri gitsin digeri oyle
+       gelsin"): 420 ms. Kalici filter DENEMESI yapildi ve KALDIRILDI --
+       kapı "Kalici CSS filtresi/katmani" diye kirmizi veriyor. */
+    transition:opacity .42s ease,transform .42s ease,color .28s ease;}
   /* Basili degilken sadece secili isim gorunur, kendi renginde. */
   #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"],
   #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"],
   #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
     opacity:1;transform:none;}
-  /* Yazilar koyu zeminde okunacak kadar acik: #cfa8a2 .22/45 (kontras
-     9.15) · #bdbab4 .05/9 (10.16) · #b0b7bd .07/13 (9.70). */
-  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:#cfa8a2;}
-  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:#bdbab4;}
-  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:#b0b7bd;}
+  /* Yazi da kendi duraginin rengi: skin degisince o da degisir. */
+  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);}
+  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:var(--k2,#e8a97e);}
+  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:var(--k3,#86dcd0);}
   /* Basiliyken (.uck-acik) UCU DE gorunur -- soluk olanlar da. */
   #kipKisayol.uck-acik .uck-ad{opacity:1;transform:none;color:rgba(206,196,176,.40);}
-  #kipKisayol.uck-acik .uck-ad[data-kip="orbit"]{color:#d3aca7;}
-  #kipKisayol.uck-acik .uck-ad[data-kip="joy"]{color:#cfbaa0;}
-  #kipKisayol.uck-acik .uck-ad[data-kip="radio"]{color:#99ccc8;}
+  #kipKisayol.uck-acik .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);}
+  #kipKisayol.uck-acik .uck-ad[data-kip="joy"]{color:var(--k2,#e8a97e);}
+  #kipKisayol.uck-acik .uck-ad[data-kip="radio"]{color:var(--k3,#86dcd0);}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .uck-topuz,#kipKisayol .uck-ad{transition:none;}
   }
@@ -6039,6 +6043,7 @@
          return Math.abs(x[0]-y[0]) + Math.abs(x[1]-y[1]) + Math.abs(x[2]-y[2]); }
     catch(e){ return 999; }
   }
+  var _kipSon = null;
   function markaRengi(){
     try{
       /* ── ARSIVDE MARKA: SOLU KOYU, SAGI RAFTAN BIR TUTAM ──────────
@@ -6210,6 +6215,19 @@
       kok.setProperty('--m1', 'rgb('+m1+')');
       kok.setProperty('--m2', 'rgb('+m2+')');
       kok.setProperty('--m3', 'rgb('+m3+')');
+      /* DUGME ETIKETI KIP DEGISINCE, RAF DEGISINCE DEGISMEZ. --m1..3
+         her rafta guncelleniyor; etiket onlari dogrudan kullansaydi
+         "kapi etiketi tur degisiminden etkilenmiyor" kirmizi olurdu
+         (olculdu: rgb(67,150,146) sabit kalmadi). O yuzden --k1..3
+         yalniz KIP degisince yazilir (markaKipSabit). */
+      try{
+        if(_kipSon !== AKTIF_MOD){
+          _kipSon = AKTIF_MOD;
+          kok.setProperty('--k1', 'rgb('+m1+')');
+          kok.setProperty('--k2', 'rgb('+m2+')');
+          kok.setProperty('--k3', 'rgb('+m3+')');
+        }
+      }catch(e){ _yut(e); }
       /* MEZAR TASI: burada bir de --d-vurgu hesaplaniyordu ve
          kaynagi MARKA GRADYANIYDI, rafin kendi rengi degil. Ekranda
          uc ayri renk cikiyordu. Tek kaynak modAdiYaz'a tasindi. */
@@ -9961,37 +9979,33 @@
      kalsin: hardal, tu tun, kiremit, zeytin, soluk lila, kirik beyaz.
      RETRO ile ayni dortgen kurali: doygunluk (max-min)/max <= .38 ve
      kanal farki <= 82 (olculdu, hepsi icinde). */
-  /* JOYTAPE'NIN KENDI BANKALARI (27 Eylul: "yeni muzik bankalari vs
-     eklenecekti ya. radiotape demiyorum"). Once radyonun raf adlari
-     kopyalanmisti (JAZZ, AMBIENT...) -- radyonun listesi bu. Simdi
-     veriden cikarilmis YENI adlar (sozcukler MUZIK_KALIP'ten), krem
-     retro 60'lar paletinde: 20 degerin hepsi RETRO kuralinda
-     (doygunluk <= .38, kanal farki <= 82). */
+  /* ── JOYTAPE BANKALARI (28 Eylul) ─────────────────────────────────
+     "yeni muzik bankalari ... bizde n degil disardan yeni bir banka"
+     + "composers orchestra birlestir, adini composers" + "lab ve
+     machine birlesir, deneysel gibi bi isim" + "bi turun icinde 2000
+     den az track olmasin". ADLAR UYDURULMADI: 73.143 kaydin gercek
+     etiketi sayildi (araclar/etiket.py): classical/romantic/baroque/
+     mozart/bach 7585, ambient/electronic/techno/idm/glitch 7368,
+     experimental/noise/drone/industrial 6171, jazz/blues/big band
+     4146, folk/world/greek/arabesk 3114, rock/metal/indie 1841.
+     Kucuk olanlar birlestir: CHILL&GROOVE ve BEATS&RHYME makine
+     tarafina, EAST&WEST WORLD'e, SYMPHONY COMPOSERS'a gitti.
+     Oda krem (bu palet), HALKA koyu (JOY_HALKA). */
   const JOY_RENKLER = {
-    'MACHINE & SYNTH':['186,152,120','226,208,186'],   /* hardal */
-    'DRIFT & DRONE':  ['184,176,152','228,222,206'],   /* kum krem */
-    'SYMPHONY':       ['176,164,136','222,214,196'],   /* keten */
-    'BLUES & JAZZ':   ['184,148,116','226,202,182'],   /* tutun */
-    'GROOVE & SOUL':  ['180,170,152','226,220,208'],   /* acik krem */
-    'BEATS & RHYME':  ['188,146,124','228,200,186'],   /* mercan */
-    'ROOTS & ROADS':  ['170,160,128','220,212,192'],   /* zeytin */
-    'EAST & WEST':    ['178,142,130','224,202,196'],   /* kiremit */
-    'CHILL & GROOVE': ['166,160,178','216,212,226'],   /* soluk lila */
+    'ELECTRONIC LAB':['186,152,120','226,208,186'],   /* hardal */
+    'COMPOSERS':      ['176,164,136','222,214,196'],   /* keten */
+    'BLUE NOTE':      ['184,148,116','226,202,182'],   /* tutun */
+    'WORLD':          ['170,160,128','220,212,192'],   /* zeytin */
+    'POP & GROOVE':   ['180,170,152','226,220,208'],   /* acik krem */
     'TAPE & VINYL':   ['186,178,168','230,224,216'],   /* kirik beyaz */
-    'WIKIMEDIA COMMONS':['168,190,198','220,236,240']  /* disaridan: Commons */
+    'WIKIMEDIA COMMONS':['168,190,198','220,236,240']  /* disaridan */
   };
   /* ── DIS BANKA: WIKIMEDIA COMMONS (28 Eylul) ────────────────────
-     Kullanici: "bizde n degil disardan yeni bir banka. link adres
-     vs". PDF arastirmasi 12 kaynak veriyor. OLÇÜLDÜ (tarayicidan,
-     28 Eylul): yalniz IKISI anahtarsiz ve CORS'a acik --
-       · WIKIMEDIA COMMONS  200, ses dosyalari upload.wikimedia.org
-         uzerinden akisiyor (Category:Audio files of music 6/6 ses:
-         FLAC 5.8 MB, OGG 2.3/3.7 MB; ...of songs 6/6: OGG, MP3)
-       · INTERNET ARCHIVE  200, audio/mpeg akisiyor (zaten kullaniyoruz)
-     Digerleri elendi: FREESOUND 401 "credentials were not provided"
-     (token sart -- PDF'te de yaziyor), JAMENDO/PIXABAY 400 (anahtar),
-     LIBRIVOX/OPENGAMEART/XENO-CANTO/MIXKIT/SOUNDBIBLE "Failed to
-     fetch" (CORS kapali). Adres: commons.wikimedia.org */
+     "bizde n degil disardan yeni bir banka. link adres vs". 12 kaynak
+     tarayicidan denendi; anahtarsiz + CORS acik IKISI: COMMONS (200,
+     upload.wikimedia.org akisiyor) ve INTERNET ARCHIVE (200, zaten
+     kullaniliyor). Elenen: FREESOUND 401 (token), JAMENDO/PIXABAY 400,
+     LIBRIVOX/OPENGAMEART/XENO-CANTO/MIXKIT/SOUNDBIBLE CORS. */
   const WIKI_AD   = 'WIKIMEDIA COMMONS';
   const WIKI_KAT  = ['Audio files of music','Audio files of songs'];
   const WIKI_UC   = 'https://commons.wikimedia.org/w/api.php?action=query&format=json'
@@ -10102,39 +10116,25 @@
      kelime bazi kayitlari yanlisca toplardi. Olcum yapilmadi --
      kullanici "hallet bitir" dedi, ilk dagilim bu; sayilar gelince
      raflari daraltip genisletmek tek satir. */
-  /* KATEGORILER MUZIK TARZLARINA GORE (27 Eylul, kullanici:
-     "kategoriler muzik tarzlarina gore olacakti, gunlugu oku").
-     Sozcukler MUZIK_KALIP'ten -- yani veriden cikarilmis liste, uydurma
-     degil: netlabel, vinyl, jazz, electronic, ambient, drone, rock,
-     folk, classical, blues, metal, hip-hop, trip-hop, funk, soul,
-     gospel, reggae, dub, house, breakbeat, big band, swing,
-     orchestra, piano, symphony, waltz, bebop, ragtime, trance,
-     downtempo, lofi, chillout, dnb, acid, punk, disco, indie, rap,
-     acoustic, synth, vaporwave, pop, soundtrack, country, ska,
-     salsa, tango, flamenco, klezmer, minimal, glitch, techno,
-     experimental, industrial. */
-  /* HALKA PALETI (28 Eylul: "joytape te halkalar ... koyu tonlar
-     olacak ama renk olsun petro lyesili dip deniz mavisi siyah gir
-     vs"): raf etiketleri krem kaldi, HALKA bu koyu paletten gelir.
-     Olculecek: doygunluk .40/.62/.58/.50, kanal farki 78/72/14/88. */
+  /* KATEGORILER GERCEK ETIKET DILINDEN (MUZIK_KALIP; 73.143 kayit
+     sayildi, bkz. araclar/etiket.py): jazz, electronic, ambient,
+     drone, rock, folk, classical, blues, metal, hip-hop, funk, soul,
+     reggae, dub, house, breakbeat, big band, swing, orchestra,
+     symphony, waltz, bebop, trance, lofi, dnb, acid, punk, disco,
+     indie, rap, synth, pop, country, ska, tango, flamenco, klezmer,
+     minimal, glitch, techno, experimental, industrial. */
+  /* HALKA PALETI (28 Eylul: "koyu tonlar ama renk olsun petrol
+     mavisi derin deniz mavisi siyah"): etiketler krem, HALKA bu koyu
+     paletten gelir (doy .40/.62/.58/.50, fark 78/72/14/88). */
   const JOY_HALKA = ['16,84,104','18,58,100','12,20,28','44,116,140'];
-  /* KURALLAR: MUZIK_KALIP'teki gercek sozcukler (jazz, electronic,
-     ambient, techno, funk, soul, reggae, dub, house, breakbeat, big
-     band, swing, orchestra, piano, symphony, waltz, bebop, ragtime,
-     trance, downtempo, lofi, dnb, acid, punk, disco, indie, rap, hip
-     hop, synth, vaporwave, country, ska, salsa, tango, flamenco,
-     klezmer, minimal, glitch, experimental). Sira dar ve kesin; kalan
-     her sey TAPE & VINYL (lp_/78_/netlabel kaynak kimligi dahil). */
+  /* KURALLAR: gercek etiket dili (MUZIK_KALIP + etiket sayimi).
+     Dar ve kesin once sorulur; kalan her sey TAPE & VINYL. */
   const JOY_KURALLAR = [
-    ['SYMPHONY',      /\borchestra|\bclassical|\bbaroque|\bsymphon|\bsonata|\bconcerto|\bwaltz|\bquartet|\bpiano|\bguitar/],
-    ['BLUES & JAZZ',  /\bjazz|\bbebop|\bswing|\bbig band|\bblues|\bragtime|\bchorus/],
-    ['GROOVE & SOUL', /\bfunk|\bdisco|\bsoul|\bgospel|\bgroove/],
-    ['MACHINE & SYNTH', /\btechno|\bhouse|\bidm|\btrance|\bdnb|\bacid|\belectro|\bglitch|\bminimal|\bsynth|\bbreakbeat|\belectronic|\belectronica/],
-    ['CHILL & GROOVE',/\blofi|\blo-fi|\blounge|\bchillout|\bdowntempo|\bchill\b/],
-    ['DRIFT & DRONE', /\bambient|\bdrone|\bvaporwave|\bshoegaze|\bgenerative|\bexperimental|\bexpiremental/],
-    ['BEATS & RHYME', /\bhip.?hop|\brap\b|\btrip.?hop|\bsample/],
-    ['EAST & WEST',   /\banatolia|\bturk|\bturkce|\banadol|\barabesk|\bsalsa|\btango|\bflamenco|\bklezmer|\bfolk ?rock|\bfolkrock/],
-    ['ROOTS & ROADS', /\breggae|\bdub\b|\bska\b|\bcountry|\bworld music|\bafrican|\bhighlife|\bfolk\b/]
+    ['COMPOSERS', /classical|baroque|romantic|symphon|sonata|concerto|waltz|quartet|orchestra|orchestral|ensemble|mozart|bach|beethoven|schubert|chopin|brahms|liszt|vivaldi|haydn|debussy|handel|choir|\bpiano|violin|cello|\bguitar/],
+    ['BLUE NOTE', /jazz|bebop|swing|big band|blues|ragtime|chorus/],
+    ['POP & GROOVE', /\bpop|funk|soul|disco|gospel|hip.?hop|\brap\b|trip.?hop|sample|rnb/],
+    ['ELECTRONIC LAB', /techno|house|idm|trance|dnb|acid|electro|glitch|minimal|synth|breakbeat|electronic|electronica|ambient|drone|vaporwave|shoegaze|generative|experimental|industrial|lounge|chillout|downtempo|lofi|lo-fi|chill/],
+    ['WORLD', /anatolia|turk|turkce|anadol|arabesk|salsa|tango|flamenco|klezmer|folk|reggae|\bdub\b|ska|country|world music|african|highlife|greek|balkan|manele/]
     /* Kalan: TAPE & VINYL (fonksiyonun son satiri). */
   ];
   function joyRaf(o){
@@ -12248,7 +12248,9 @@
              gezegen ikonu (247-277) ust uste biniyordu. Simdi HALKA.
              Radyo tarafi kendi kayitli merkezini koruyor (radyoMerkez)
              ve istenirse cark yine skins/ayar sayfasindan secilir. */
-          AYAR.merkez = 'yuvarlak';
+          /* 28 Eylul: "yoytape modunda da carkla acilmali" -- JOYTAPE
+             merkezi CARK olur, ORBITAPE halka olarak kalir. */
+          AYAR.merkez = (AKTIF_MOD === 'JOYTAPE') ? 'cark' : 'yuvarlak';
         }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';

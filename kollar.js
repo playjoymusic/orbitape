@@ -165,6 +165,15 @@
            kalmisti, cunku sinif moodUygula'da degil burada
            guncelleniyor). */
         try{ document.body.classList.toggle('joy', m === 'joy'); }catch(e){ _yut(e); }
+        /* 28 Eylul: "yoytape modunda da carkla acilmali" -- JOYTAPE
+           merkezi CARK, ORBITAPE halka. moodUygula'daki yazma yalniz
+           radyodan GELEN gecislerde calisiyordu (olculdu: modKolaGit
+           ('joy') sonrasi merkez 'yuvarlak' kaliyordu). Dogru yer
+           kipin atandigi satir. */
+        try{
+          AYAR.merkez = (m === 'joy') ? 'cark' : 'yuvarlak';
+          if(typeof merkezUygula === 'function') merkezUygula();
+        }catch(e){ _yut(e); }
         modKollarIsaretle();
         modAdiYaz();
         geriYerlestir();

@@ -263,10 +263,10 @@
 
 # index.html
 /
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-q0IwHugQ2ih9IDQgd3Jojd8ZCC0sZycgfxaCR0rIpbc='; style-src 'sha256-H8mkGR+GwZkKgKVo6PsIwFwQZxIhCI1i9wgMDyT8zNU='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-F6mSKuJvt/bw81jAze5Z2Ea9GVGyR3ZcPy0cNVzOInQ='; style-src 'sha256-GCIzlDrvvcROHNMMJL10nZTdhyIB3nVusn4hXs+8YMc='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-q0IwHugQ2ih9IDQgd3Jojd8ZCC0sZycgfxaCR0rIpbc='; style-src 'sha256-H8mkGR+GwZkKgKVo6PsIwFwQZxIhCI1i9wgMDyT8zNU='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-F6mSKuJvt/bw81jAze5Z2Ea9GVGyR3ZcPy0cNVzOInQ='; style-src 'sha256-GCIzlDrvvcROHNMMJL10nZTdhyIB3nVusn4hXs+8YMc='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy
