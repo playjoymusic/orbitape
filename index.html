@@ -9977,8 +9977,42 @@
     'ROOTS & ROADS':  ['170,160,128','220,212,192'],   /* zeytin */
     'EAST & WEST':    ['178,142,130','224,202,196'],   /* kiremit */
     'CHILL & GROOVE': ['166,160,178','216,212,226'],   /* soluk lila */
-    'TAPE & VINYL':   ['186,178,168','230,224,216']    /* kirik beyaz */
+    'TAPE & VINYL':   ['186,178,168','230,224,216'],   /* kirik beyaz */
+    'WIKIMEDIA COMMONS':['168,190,198','220,236,240']  /* disaridan: Commons */
   };
+  /* ── DIS BANKA: WIKIMEDIA COMMONS (28 Eylul) ────────────────────
+     Kullanici: "bizde n degil disardan yeni bir banka. link adres
+     vs". PDF arastirmasi 12 kaynak veriyor. OLÇÜLDÜ (tarayicidan,
+     28 Eylul): yalniz IKISI anahtarsiz ve CORS'a acik --
+       · WIKIMEDIA COMMONS  200, ses dosyalari upload.wikimedia.org
+         uzerinden akisiyor (Category:Audio files of music 6/6 ses:
+         FLAC 5.8 MB, OGG 2.3/3.7 MB; ...of songs 6/6: OGG, MP3)
+       · INTERNET ARCHIVE  200, audio/mpeg akisiyor (zaten kullaniyoruz)
+     Digerleri elendi: FREESOUND 401 "credentials were not provided"
+     (token sart -- PDF'te de yaziyor), JAMENDO/PIXABAY 400 (anahtar),
+     LIBRIVOX/OPENGAMEART/XENO-CANTO/MIXKIT/SOUNDBIBLE "Failed to
+     fetch" (CORS kapali). Adres: commons.wikimedia.org */
+  const WIKI_AD   = 'WIKIMEDIA COMMONS';
+  const WIKI_KAT  = ['Audio files of music','Audio files of songs'];
+  const WIKI_UC   = 'https://commons.wikimedia.org/w/api.php?action=query&format=json'
+                  + '&origin=*&generator=categorymembers&gcmtype=file&gcmlimit=20'
+                  + '&prop=imageinfo&iiprop=url|size|mime&gcmtitle=';
+  let _wikiCekildi = false;
+  function wikiCek(){
+    if(_wikiCekildi) return;
+    _wikiCekildi = true;
+    WIKI_KAT.forEach(kat=>{
+      fetch(WIKI_UC + encodeURIComponent('Category:'+kat)).then(r=>r.json()).then(j=>{
+        const say = (j && j.query && j.query.pages) ? Object.values(j.query.pages) : [];
+        for(const s of say){
+          const ii = s.imageinfo && s.imageinfo[0];
+          if(!ii || !/^(audio|application\/ogg)/i.test(ii.mime||'')) continue;
+          earthHavuz.push({ id:'wc:'+s.title, mp3:ii.url, tur:'muzik', dis:WIKI_AD,
+            ad:String(s.title||'').replace(/^File:/,'').replace(/\.[a-z0-9]+$/i,'') });
+        }
+      }).catch(()=>{});
+    });
+  }
   var JOY_ADLAR = Object.keys(JOY_RENKLER);
   try{ window.JOY_ADLAR = JOY_ADLAR; window.JOY_RENKLER = JOY_RENKLER; }
   catch(e){ _yut(e); }
@@ -9992,6 +10026,11 @@
      raflar soruluyor, genis olanlar en sonda. */
   var ARSIV_SORGU = ['INDUSTRIAL','NOISE','DARK','HUMANS','SPACE','CITY','NATURE','AMBIANCE'];
   function arsivRaf(o){
+    /* DISARIDAN GELEN KAYIT (28 Eylul): kendi bankasi var. Commons
+       kayitlarinda etiket/koleksiyon alani yok; kurallar bunu
+       "OTHERS" sayip JOYTAPE'ye hic girmiyordu (olculdu: 20 kayit
+       cekildi, modUyar false donuyordu, halka bos kaldi). */
+    if(o && o.dis) return o.dis;
     /* ── SERBEST BASLIK ARTIK SORULMUYOR ──────────────────────────
        Burasi uc metni birden tariyordu: etiket + BASLIK + adres.
        Oysa dosyanin kendi kurali bunun tersini soyluyor (bkz. _mt):
@@ -10100,6 +10139,7 @@
   ];
   function joyRaf(o){
     try{
+      if(o && o.dis) return o.dis;                 /* disaridan gelen kayit */
       const t = (_mt(o) + ' ' + _mk(o)).replace(/[_\-.\/]+/g,' ');
       for(const [ad, m] of JOY_KURALLAR) if(m.test(t)) return ad;
       return 'TAPE & VINYL';
@@ -10228,6 +10268,7 @@
      veri sonradan gelebiliyorsa, yalnizca anahtara bakamaz. */
   var _modHavuzSay = -1;
   function modHavuzu(){
+    if(AKTIF_MOD === 'JOYTAPE') wikiCek();         /* dis banka */
     const say = earthHavuz.length;
     if(_modAdi !== AKTIF_MOD || _modHavuzSay !== say){
       _modAdi = AKTIF_MOD;
@@ -14723,52 +14764,15 @@
     if(videoUzanti.test(f.name||'')) return null;
     return "https://archive.org/download/"+id+"/"+f.name.split('/').map(encodeURIComponent).join('/');
   }
-  // müzik-ağırlıklı temel ağırlıklar (dengeyi buradan ayarla)
-  const KOL_AGIRLIK = {
-    netlabels:5, freemusicarchive:4,               // trippy/underground müzik
-    album_recordings:2, unlockedrecordings:2,
-    "78rpm":3, prelinger:3,                          // eski kayıtlar / film sesleri
-    oldtimeradio:3, radioprograms:2.5, radio:2.5,    // eski radyo / savaş / haber konuşmaları
-    nasaaudiocollection:3.5,                         // uzay: fırlatma, astronot konuşmaları, telemetri
-    "green-field-recordings":3, "environmental-sounds":3,   // field recording / rüzgâr / kuş / doğa
-    librivoxaudio:1.5, audio_bookspoetry:1.5, audio_foreign:1.5, audio_religion:1.2, audio_tech:1.2  // sözlü "audio sesler"
-  };
-  function kolAgirlik(k){
-    const b = KOL_AGIRLIK[k] || 1;
-    const ok = OK[k]||0, f = FAIL[k]||0;
-    if(ok===0 && f>=5) return 0.002;   // bu ağda ÖLÜ (hiç başarısız + çok hata) -> neredeyse hiç seçme (✕ büyümesin)
-    const oran = (ok+1)/(ok+f+1);      // 0..1 başarı oranı (+1 yumuşatma)
-    return b * oran * oran;            // çalmayan/başarısızları sert geriye at
-  }
-  function kolSec(sadeceHizli){
-    const kaynak = sadeceHizli ? HIZLI : KOLEKSIYONLAR;
-    const uygun=kaynak.filter(k=>!KARA.has(k));
-    const havuz=uygun.length?uygun:kaynak;
-    // ağırlıklı rastgele seçim
-    let top=0; const w=havuz.map(k=>{ const x=Math.max(0.02, kolAgirlik(k)); top+=x; return x; });
-    let r=Math.random()*top;
-    for(let i=0;i<havuz.length;i++){ r-=w[i]; if(r<=0) return havuz[i]; }
-    return havuz[havuz.length-1];
-  }
-  async function birOgeBul(){
-    const kol=kolSec(birOgeBul._hizli), sayfa=1+(Math.random()*40|0);
-    const url="https://archive.org/advancedsearch.php?q="+encodeURIComponent("collection:"+kol+" AND (mediatype:audio OR mediatype:movies)")+
-      "&fl[]=identifier&rows=50&page="+sayfa+"&output=json";
-    let r;
-    try{ r=await fetchZA(url, 5000); }catch(e){ hataEkle(kol); return null; }   // geç açan -> ele, başka koleksiyon dene
-    if(!r.ok){ hataEkle(kol); return null; }
-    let docs=[]; try{ docs=(await r.json()).response.docs||[]; }catch(e){ _yut(e); }
-    if(!docs.length){ hataEkle(kol); return null; }                            // boş -> ele
-    karistir(docs);
-    for(const d of docs.slice(0,8)){ if(!d.identifier) continue;
-      if(CALINDI.has(d.identifier)) continue;                 // daha önce geldi -> atla
-      if(kuyruk.some(x=>x.id===d.identifier)) continue;       // zaten kuyrukta -> atla
-      let mp3=null; try{ mp3=await mp3Bul(d.identifier); }catch(e){ _yut(e); }
-      if(mp3){ basari(kol); calindiEkle(d.identifier); return {id:d.identifier,mp3}; }
-    }
-    return null;
-  }
-
+  /* ÖLÜ KOD KALDIRILDI (28 Eylul). KOL_AGIRLIK / kolAgirlik /
+     kolSec / birOgeBul hiç çağrılmıyordu: veri artık
+     earth_buyuk.json'dan geliyor (18 Eylul'den beri), canlı
+     archive.org araması yapılmıyor. Silinen sey: agirlik tablosu
+     (netlabels 5, freemusicarchive 4, 78rpm 3, prelinger 3,
+     oldtimeradio 3, nasaaudiocollection 3.5, green-field 3,
+     librivoxaudio 1.5 ...), basari/oran hesabi ve birOgeBul'un
+     advancedsearch cagrisi. Yardimcilar (OK/FAIL/KARA/basari/
+     hataEkle) baska yerlerde kullanildigi icin duruyor. */
   /* ── Jamendo: açık lisanslı (CC) müzik, world/folk ağırlıklı ── */
   /* ── JAMENDO KALDIRILDI ──────────────────────────────────────────
      Burada Jamendo'dan CANLI parca ceken bir blok vardi (client_id,

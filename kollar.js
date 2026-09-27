@@ -379,6 +379,8 @@ try{ /** @type {any} */ (window).KOLLAR_HAZIR = true; }catch(e){ _yut(e); }
     { h:{disk:0,aci:0}, m:'TAP CENTER TO PLAY THIS GENRE', dx:0, dy:44, hiza:'orta' },
     { h:{disk:0.88,aci:16}, m:'SHAPE IT (DRAG RING)', dx:-8, dy:-6, hiza:'sag' },
     { h:'#kipKisayol', m:'ORBITAPE · JOYTAPE · RADIO', dx:110, dy:0, hiza:'sag' },
+    { h:'#kipKisayol', m:'OUTSIDE BANK — COMMONS LIVE · OTHERS NEED A TOKEN', dx:110, dy:16, hiza:'sag', cizgi:false },
+    { h:'#kipKisayol', m:'COMMONS.WIKIMEDIA.ORG · JAMENDO · FREESOUND · PIXABAY · MIXKIT · SOUNDBIBLE · BBC SFX · 99SOUNDS · LIBRIVOX', dx:110, dy:30, hiza:'sag', cizgi:false },
     { h:'.kanal.ad', m:'TAP FOR LIST', dx:0, dy:12, hiza:'orta' },
     { h:'#araCizgi', m:'SEARCH', dx:0, dy:-24, hiza:'orta' },
     { h:'#npBayrak', m:'COUNTRY — TAP FOR LIST', dx:-8, dy:-20, hiza:'sag' },

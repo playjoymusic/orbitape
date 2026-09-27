@@ -3366,3 +3366,62 @@ kaldım, işlev silmedim. Sonuç: saglik 892/892 · arıza 18/18 ·
 senaryo 121/121 · motor 19/19 · cihaz 156/156 · yayın 19/19 ·
 ilk boyama 109 KB brotli (tavan 110) · ilk açılış 112 KB (tavan 113) ·
 ham 1301 KB.
+### 28 Eylül (devam) — dışarıdan gerçek bir banka: WIKIMEDIA COMMONS
+
+Kullanıcı: "o yeni banka dediğin müzik türleri ve JOYTAPE için mi. bizden
+değil **dışardan yeni bir banka, link adres** vs". Eklediği "Özet"
+belgesinde 12 dış kaynak, lisansları, API uçları ve kotaları var.
+
+**Önce ölçtüm, sonra yazdım** (28 Eylul, tarayıcıdan, `fetch` ile):
+| kaynak | sonuç |
+|---|---|
+| WIKIMEDIA COMMONS | **200**, ses dosyaları akışa açık (6/6 ses) |
+| INTERNET ARCHIVE | **200**, `audio/mpeg` akışı açık (zaten kullanılıyor) |
+| FREESOUND | **401** "credentials were not provided" (token şart) |
+| JAMENDO / PIXABAY | 400 (anahtar) |
+| LIBRIVOX / OPENGAMEART / XENO-CANTO / MIXKIT / SOUNDBIBLE | *Failed to fetch* (CORS kapalı) |
+
+Yani **anahtarsız ve CORS'a açık olan yalnız iki kaynak** var. İlk dış
+banka bu yüzden Commons oldu.
+
+**Ne yapıldı**
+* `WIKI_AD` / `WIKI_KAT` (`Audio files of music`, `Audio files of songs`)
+  / `WIKI_UC` (MediaWiki `generator=categorymembers`, `iiprop=url|size|mime`)
+  ve `wikiCek()`. JOYTAPE'ye girilince bir kez çekiliyor
+  (`modHavuzu`), sonraki girişlerde `_wikiCekildi` sayacı atıyor.
+* Her ses kaydı `earthHavuz`'a `{id:'wc:'+başlık, mp3:upload.wikimedia.org
+  adresi, dis:WIKI_AD}` olarak ekleniyor; `arsivRaf` en başta
+  `if(o && o.dis) return o.dis;` ile dış kaydı kendi bankasına veriyor.
+  **ÖNEMLİ HATA DÜZELTİLDİ:** ilk denemede dış kayıtlar havuza giriyor
+  ama `modUyar` FALSE dönüyordu (etiket/koleksiyon alanı olmadığı için
+  kurallar "OTHERS" diyordu) → halka boş kalıyordu. Ölçüldü: 20 kayıt
+  çekildi, `joyRaf` doğru bankayı veriyordu ama `modUyar` eliyordu.
+* Ölçülen sonuç: **WIKIMEDIA COMMONS 40 kayıt** (iki kategoriden 20'şer),
+  havuz 12.365 → **12.405**, halka 10 → **11**.
+* ÇALDIĞI DOĞRULANDI: `upload.wikimedia.org` kaydı uygulamanın `<audio>`
+  elemanına kondu → `canplay`, play başladı, 3 sn ilerledi, hata yok.
+  Uygulama `ses.crossOrigin='anonymous'` zaten ayarlıyor (bkz. 15573),
+  bu olmasa Web Audio zinciri sessiz kalırdı.
+* Rehber: JOY tablosuna iki satır — "OUTSIDE BANK — COMMONS LIVE ·
+  OTHERS NEED A TOKEN" ve adres listesi; 5 dil dosyası 187 anahtara çıktı.
+
+**ÜÇ KİPİN ÖLÇÜLEN İÇERİĞİ** (kullanıcı: "sound fx ler orbitape te.
+müzikler joytape te. radio zaten radio")
+| kip | içerik | kayıt | halka |
+|---|---|---|---|
+| ORBITAPE | ses efektleri | **13.938** | 9 (HUMANS 5.979 · NATURE 2.746 · CITY 1.619 · OTHERS 1.240 · AMBIANCE 811 · NOISE 637 · DARK 377 · INDUSTRIAL 295 · SPACE 234) |
+| JOYTAPE | müzik | **12.405** | 11 (10 yerel banka + WIKIMEDIA COMMONS 40) |
+| RADIOTAPE | radyo | canlı istasyonlar | dokunulmadı |
+Müzik ORBITAPE'ye sızmıyor; toplam kayıt kaybı yok.
+
+**Bütçe:** ham boy tavanı 1.332.224 B. Bu değişiklikler 2.119 B **ölü
+kod** silerek yer açtı: `KOL_AGIRLIK` / `kolAgirlik` / `kolSec` /
+`birOgeBul` hiç çağrılmıyordu (veri 18 Eylül'den beri
+`earth_buyuk.json`'dan geliyor; canlı archive.org araması yapılmıyor).
+Yardımcılar (OK/FAIL/KARA/basari/hataEkle) başka yerlerde kullanıldığı
+için duruyor. Kalan pay **165 B** — kırmızı iki kalem daha
+(harf aralığı, ham boy) yorum sıkıştırmasıyla çözüldü, işlev silinmedi.
+
+Kapı yeşil: saglik 892/892 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19 · ilk boyama 110 KB brotli ·
+ilk açılış 112 KB · ham 1301 KB.
