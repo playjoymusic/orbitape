@@ -2259,7 +2259,27 @@
      visual sirasinda kalmasin gezegenler"). Once her kipte
      gorunuyordu. */
   #uydular{display:none;}
-  body.mood:not(.gorsel-acik) #uydular{display:block;}
+  /* GEZEGENLER ARTIK KAPALI BASLAR (27 Eylul, gorev 5): once mood'da
+     daima acikti; simdi #gezegenTus'a basilinca yumusak beliriyor.
+     display:none yerine opacity/scale -- transition icin. */
+  body.mood:not(.gorsel-acik) #uydular{display:block;opacity:0;
+    transform:translateY(4px) scale(.94);pointer-events:none;
+    transition:opacity .26s ease,transform .26s cubic-bezier(.25,1.3,.4,1);}
+  body.mood:not(.gorsel-acik).gezegen-acik #uydular{
+    opacity:1;transform:none;pointer-events:auto;}
+  @media (prefers-reduced-motion: reduce){ #uydular{transition:none;} }
+  /* GEZEGEN MENU IKONU: diger yuvarlak tuslarla (#deriFirca vs) ayni
+     dil -- 22px svg, stroke 1.7, cevre faktorleriyle ortali. Yalniz
+     ORBITAPE'de ve gorsel kipinde degil gorunur. Yeri JS'te. */
+  #gezegenTus{display:none;position:fixed;z-index:74;width:30px;height:30px;
+    align-items:center;justify-content:center;border-radius:50%;
+    background:rgba(20,22,28,.38);color:rgba(232,169,126,.85);
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+    opacity:.7;transition:opacity .18s ease,background .18s ease,transform .18s ease;}
+  #gezegenTus svg{width:20px;height:20px;}
+  #gezegenTus:hover,#gezegenTus:focus-visible{opacity:1;background:rgba(232,169,126,.16);}
+  body.mood:not(.gorsel-acik) #gezegenTus{display:flex;}
+  body.mood.gezegen-acik #gezegenTus{opacity:1;color:#e8a97e;transform:scale(1.06);}
   body.mood #mark{position:fixed;z-index:70;display:flex;align-items:center;cursor:pointer;
     top:calc(25px + env(safe-area-inset-top, 0px));
     left:calc(14px + env(safe-area-inset-left, 0px));}
@@ -4362,6 +4382,19 @@
   <!-- NEBULA ve GEZEGENLER: yalnizca SOUND BANKS kipinde gorunur.
        Radyo tarafinda display:none ile kapali (bkz. body.mood). -->
   <div id="mark" class="lib" aria-hidden="true"><canvas class="neb" width="148" height="148"></canvas></div>
+  <!-- GEZEGEN MENU IKONU (27 Eylul, gorev 5, v1 taslak): kamera
+       ikonunun rec/cam yelpazesiyle ayni desen -- basinca 4 gezegen
+       yumusak acilir, tekrar basinca ya da bos yere basinca kapanir.
+       Yalniz ORBITAPE'de ve gorsel kipinde degil gorunur. Yeri JS'te
+       (.disk'in hemen ustunde, ortali) -- uyduYerlestir() icinde. -->
+  <button id="gezegenTus" type="button" aria-label="Open orbit bodies"
+    aria-expanded="false" aria-controls="uydular"
+    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.1"/>
+      <ellipse cx="12" cy="12" rx="9.2" ry="3.6"/>
+      <circle cx="20.4" cy="12" r="1.15" fill="currentColor" stroke="none"/>
+    </svg></button>
   <div id="uydular" aria-hidden="false"></div>
   <!-- Kanal adları halkalara taşındı (en dıştaki üç halka). Sağ üstte
        artık sadece uygulamanın adı duruyor. Ölçü referansı olarak
@@ -8230,6 +8263,32 @@
     b.innerHTML='<span class="nk"></span><i class="hlk"></i>';   // hlk: Satürn halkası
     if(uyduKap) uyduKap.appendChild(b); uyduDug[u.fx]=b;
   });
+  /* GEZEGEN MENU IKONU: acma/kapama (gorev 5, 27 Eylul v1 taslak).
+     Kamera yelpazesiyle ayni desen -- basinca acilir, tekrar basinca
+     ya da bos yere basinca kapanir. */
+  (function(){
+    try{
+      const tus = document.getElementById('gezegenTus');
+      if(!tus) return;
+      const ac = (acik)=>{
+        document.body.classList.toggle('gezegen-acik', acik);
+        tus.setAttribute('aria-expanded', acik ? 'true' : 'false');
+      };
+      tus.addEventListener('click', e=>{
+        try{ e.stopPropagation(); }catch(_){ _yut(_); }
+        ac(!document.body.classList.contains('gezegen-acik'));
+      });
+      document.addEventListener('click', e=>{
+        if(!document.body.classList.contains('gezegen-acik')) return;
+        const t = /** @type {any} */ (e).target;
+        if(t && t.closest && (t.closest('#gezegenTus') || t.closest('#uydular'))) return;
+        ac(false);
+      });
+      document.addEventListener('keydown', e=>{
+        if(e.key==='Escape' && document.body.classList.contains('gezegen-acik')) ac(false);
+      });
+    }catch(e){ _yut(e); }
+  })();
   const bekle=$('bekle'), bekleGly=$('bekleGly');               // WAIT göstergesi (uzaylı sembol)
   /* Her parça bir sembol. Dağarcık geometri, yaşam ağacı, simya ve gök
      işaretlerinden; hepsi TEK genişlikte yuvaya oturacak sadelikte seçildi. */
@@ -10417,6 +10476,15 @@
       const d = document.querySelector('.disk');
       const r = d ? d.getBoundingClientRect() : null;
       if(!r || !r.width) return;
+      /* GEZEGEN MENU IKONU (gorev 5): halkanin TEPESINDE, ortali,
+         8px bosluk -- "cok yakin yapma" kuraliyla ayni bosluk dili
+         diger ikonlarda kullanilan degerle (8px). TASLAK: ekran
+         goruntusuyle dogrulanacak. */
+      const gt = document.getElementById('gezegenTus');
+      if(gt){
+        gt.style.left = Math.round(r.left + r.width/2 - 15) + 'px';
+        gt.style.top = Math.round(r.top - 30 - 8) + 'px';
+      }
       const T = UYDULAR.map(u=>({ u, cap: Math.round(74*u.cap) }))
                      .sort((a,b)=>a.cap - b.cap);
       const ar = 10, BOS = 12;
