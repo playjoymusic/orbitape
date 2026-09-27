@@ -4044,7 +4044,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                 mp3:'https://archive.org/download/JV-25463-1946-QmY13QXN9yZMT7TYEhnpF7N5ne6SGKUfZcbXCadqUfPRff.mp3/APOR1054.mp3' },
             /* 27 Eylul: hedef tek 'JOYTAPE' kovasi degil, JOYTAPE'nin
                on rafindan biri: bu kayit caz plagi -> JAZZ. */
-            olmali:'JAZZ' },
+            olmali:'BLUES & JAZZ' },
           /* LibriVox siiri: adinda "Wind" geciyor diye NATURE'daydi.
              Sesli kitap ve siir artik TALKS rafinda. */
           { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',
@@ -4209,6 +4209,49 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       if(!eski){ document.body.classList.remove('mood'); geriYerlestir(); await bek(200); }
       return nebulaYok && gor && g.length === 4 && sirali && tekSatir;
     }), 'nebula gizli · 4 gezegen ayni satirda, kucukten buyuge');
+  /* 28 Eylul (kullanici: "fxlerle oynarken pencereyi kapama, fx ler
+     gezegenler kapanmasin. ya tekrar ikona basarsam kapa ya da
+     sayfanin bos yerine"): gezegen menusu yalniz IKIKISARLA kapanir --
+     ikonun tekrar basilmasiyla ya da bos yere dokunmakla. Gezegene
+     ya da diske dokunmak menusu ACIK birakmali. Ogrenilmis bir
+     davranis: iki olcum de (a) gezegen acik kalir, (b) bos yer
+     kapatir. */
+  K('FX acinca gezegen menusu kapanmiyor', await pg.evaluate(async()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const m=document.getElementById('mark'), u=document.getElementById('uydular');
+      const eskiMood=document.body.classList.contains('mood');
+      const eskiGez=document.body.classList.contains('gezegen-acik');
+      const eskiFx=(typeof FXMOD!=='undefined')?FXMOD:'';
+      const sonuc={};
+      try{
+        if(!eskiMood){ document.body.classList.add('mood'); await bek(80); geriYerlestir(); await bek(240); }
+        document.body.classList.add('gezegen-acik'); await bek(320);
+        const g=[...document.querySelectorAll('#uydular .uydu')]
+          .filter(e=>e.getBoundingClientRect().width>0);
+        if(!g.length){ sonuc.neden='gezegen yok'; return sonuc; }
+        /* GERCEK OLAY YOLU: gezegene dokunmak (pointerdown + click). */
+        g[0].dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));
+        g[0].dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));
+        await bek(420);
+        sonuc.fx=(typeof FXMOD!=='undefined')?FXMOD:'';
+        sonuc.gezegenAcik=document.body.classList.contains('gezegen-acik');
+        /* Bos yer: govdeye dokunmak kapatir. */
+        document.body.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));
+        await bek(300);
+        sonuc.bosYerKapatti=!document.body.classList.contains('gezegen-acik');
+      }finally{
+        if(eskiFx!==(typeof FXMOD!=='undefined'?FXMOD:'')){
+          try{ fxModGec(eskiFx); }catch(e){}
+        }
+        document.body.classList.toggle('gezegen-acik', eskiGez);
+        if(!eskiMood) document.body.classList.remove('mood');
+        try{ geriYerlestir(); }catch(e){}
+        await bek(200);
+      }
+      return sonuc;
+    }), (o)=>(!o||!o.neden) && o.fx && o.gezegenAcik && o.bosYerKapatti
+        ? ('FX ' + o.fx + ' sonrasi menu acik kaldi; bos yer kapatti') : '-',
+      (o)=>!!o && !o.neden && !!o.fx && o.gezegenAcik && o.bosYerKapatti);
   /* Once "KANAL_SIRA tek elemanli mi" diye sorulurdu. O dizi bir
      iskeletin parcasiydi ve silindi; asil kural zaten daha basitti:
      'mod' hicbir zaman degismiyor, oteki dunya AYAR.mood ile
@@ -5297,7 +5340,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      KIP: RADIOTAPE radyo, JOYTAPE muzik, ORBITAPE ses efektleri.
      Arsiv raflarinda musik rafi yok (kullanci: "records olmayacak"). */
   /* 27 Eylul: JOYTAPE artik tek kova degil, on raf; sayim onlarda. */
-  K('Muzik kolu JOYTAPE raflari, RECORDS rafi yok', await pg.evaluate(()=>
+  K('Muzik kolu JOYTAPE bankalari, RECORDS rafi yok', await pg.evaluate(()=>
       ARSIV_ADLAR.indexOf('RECORDS') < 0
       && JOY_ADLAR.every(a=>ARSIV_ADLAR.indexOf(a) < 0)
       && JOY_ADLAR.indexOf(arsivRaf({etiket:'78rpm · jazz · vinyl',ad:'x'})) >= 0
@@ -7594,17 +7637,36 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           && r1.renk!==r2.renk && r2.renk!==r3.renk && r1.renk!==r3.renk
           && r1.soluk.every(c=>c===r2.soluk[0]);
     }), 'uc durak sirayla acilir, her biri kendi odasinin renginde; secili olmayanlar soluk');
-    K('Kip yolunun isimleri tek sirada ve ayni fontta', await pg.evaluate(()=>{
+    /* 28 Eylul: yatay dugme. Kullanici: "sol alt swichi yataya yap.
+       alttaki ikon soldan daha uzun olmasin, hizala. mod isimleri de
+       yatay olarak ustunde yazsin. hangi modtaysa o yanar. ayni yerde
+       olacaklar ama o silinecek digeri yazacak. font buyukluk bak
+       attim sag ustteki gibi olsun."
+       Olculecek: (1) yol yatay (genislik > yukseklik), (2) isimler
+       yolun USTUNDE, (3) ucu de ayni yerde (secili olan gorunur),
+       (4) topuz sol kenari tasirmiyor, (5) yazi tipi tek. */
+    K('Kip yolu yatay, isimler ustunde ve tek yerde', await pg.evaluate(()=>{
       const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
-      if(l.length!==3) return false;
+      const yol=document.querySelector('#kipKisayol .uck-yol');
+      const top=document.querySelector('#kipKisayol .uck-topuz');
+      if(l.length!==3 || !yol || !top) return null;
+      const yr=yol.getBoundingClientRect(), tr=top.getBoundingClientRect();
       const r=l.map(e=>e.getBoundingClientRect());
       const f=l.map(e=>getComputedStyle(e));
-      return r.every(x=>x.width>0) && r.every(x=>Math.abs(x.left-r[0].left)<=5)  /* secili olmayan isim 4px kayarak giriyor */
-          && r[0].top<r[1].top && r[1].top<r[2].top
-          && new Set(f.map(x=>x.fontFamily)).size===1
-          && new Set(f.map(x=>x.fontWeight)).size===1
-          && new Set(f.map(x=>x.fontSize)).size===1;
-    }), 'uc isim alt alta, ayni sol kenar, ayni yazi tipi');
+      const ayniYer = r.every(x=>Math.abs(x.top-r[0].top)<=1 && Math.abs(x.bottom-r[0].bottom)<=1);
+      const yaziTek = new Set(f.map(x=>x.fontFamily)).size===1
+                   && new Set(f.map(x=>x.fontWeight)).size===1
+                   && new Set(f.map(x=>x.fontSize)).size===1;
+      return { yatay: yr.width>yr.height, yol:[Math.round(yr.width),Math.round(yr.height)],
+        isimUstte: r.every(x=>x.bottom<=yr.top+1), ayniYer, yaziTek,
+        /* "s oldan daha uzun olmasin": topuzun sol kenari yolun sol
+           kenarindan 2 px icerde baslar, disariya tasmaz. */
+        solTasma: Math.round(tr.left-yr.left), topuzGenislik: Math.round(tr.width) };
+    }), (o)=>o?('yol '+o.yol+' yatay='+o.yatay+', isimler ustte='+o.isimUstte
+       +', tek yerde='+o.ayniYer+', topuz sol '+o.solTasma+'px'):'-',
+      o=>!!o && o.yatay && o.isimUstte && o.ayniYer && o.yaziTek
+         && o.solTasma>=-1 && o.solTasma<=4
+         && o.topuzGenislik<o.yol[0]/2);
   }
 
   /* ── HIZ YAZIMI TAMPON BOSKEN DURUYOR ───────────────────────

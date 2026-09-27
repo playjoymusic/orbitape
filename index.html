@@ -2372,72 +2372,61 @@
      ORBITAPE'de uc cizginin saginda (arasi 8px, dikeyde ortasina
      hizali), RADIOTAPE'de konsolun ustunde. Yeri JS yaziyor
      (_kipKisayoluHizala); burasi ilk kare yedegi. */
-  /* ── ANAHTAR IKI KIPTE DE VAR ─────────────────────────────────
-     Once yalnizca arsivdeydi ("radyoya don"). Radyo tarafinda ayni
-     kapiya ulasmak icin ayarlari acmak gerekiyordu -- iki taraf
-     esit degildi. Artik ayni anahtar iki kipte de ayni yerde:
-     radyoda ORBITAPE yaziyor ve kapali duruyor, arsivde RADIO
-     yaziyor ve acik duruyor. Tek nesne, iki yon. */
-  /* YATAY KAP (27 Eylul): MOODS yazisi anahtarin ustunde, ikisi de
-     44 px genisliginde ve sol kenarda. Blok 44x34; dikey 78 px'lik
-     olcun kalinti olarak iki yerde bir daha vardi (burasi ve
-     _kipKisayoluHizala'nin yedek yeri) -- ikisi de temizlendi. */
-  /* YATAY KAP (27 Eylul, kullanici: "radyotape orijinal hali
-     kalacak"): yatay hap, kip adi YANINDA, sol altta transport
-     satirinin hemen ustunde -- her kipte ayni yer. */
-  /* ── KIP DUGMESI: ELLEMEDIGIN ORIJINAL (e8867c9) ────────────────
-     Kullanici: "swichimi eski haline getir, ellemedigin haline
-     getir, kodu o tarafina". Orijinal olculer: hap 46x24, topuz
-     18 px (sol:2px), yazi 12 px / 700 / .30em aralik. Benim
-     yazdigim 44x24 ve 8 px/400/.26em idi; kullanici "bu font bu
-     buyukluk bu renk... baska bisey yapmissin" dedi. Simdi TAM o
-     olculer. Iki kapi satiri ustuste, ayni olcude, ayni sol
-     kenarda, 6 px arayla. */
-  /* UC KADEME SWITCH (27 Eylul, v2 taslak). Olculer degisken:
-     --uck-h yolun boyu, GUNLUK'te not edildigi gibi carka
-     TASMAYACAK sekilde ekran goruntusunden sonra ayarlanacak. */
+  /* ── KIP DUGMESI ────────────────────────────────────────────────
+     Anahtar iki kipte de ayni yerde (sol altta, transport satirinin
+     ustunde) ve uc kademeli: RADIOTAPE · JOYTAPE · ORBITAPE. 28
+     Eylul'de yatay oldu ve isimler markanin diliyle (23 px / 700 /
+     .26em) yolun ustunde, tek yerde, secili olan yaniyor.
+     Olculer degisken: --uck-h yolun boyu, --uck-w kalinligi. */
+  /* UC KADEME SWITCH: --uck-h yolun boyu, --uck-w yolun kalinligi. */
   :root{ --uck-h:128px; --uck-w:26px; }
+  /* YATAY DUGME (28 Eylul: "sol alt swichi yataya yap... mod isimleri
+     de yatay olarak ustunde yazsin... font buyukluk sag ustteki gibi
+     olsun"). Yol genislige dondu, isimler tek yerde ust uste. */
   #kipKisayol{
-    position:fixed;z-index:96;display:flex;flex-direction:row;
-    align-items:center;gap:10px;
+    /* column-reverse: DOM'da yol once geliyor ama ISIM ustte
+       olmali; olculdu: duz column'da isimler yolun altinda kaliyordu. */
+    position:fixed;z-index:96;display:flex;flex-direction:column-reverse;
+    align-items:flex-start;gap:8px;
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     bottom:calc(116px + var(--dip-pay));
     -webkit-tap-highlight-color:transparent;cursor:pointer;
     opacity:.82;transition:opacity .22s ease;touch-action:none;}
   #kipKisayol:hover,#kipKisayol:focus-visible{opacity:1;}
   #kipKisayol .uck-yol{position:relative;flex:0 0 auto;
-    width:var(--uck-w);height:var(--uck-h);border-radius:calc(var(--uck-w)/2);
-    /* HOMOJEN GECIS: uc odanin rengi tek bir gradyanda -- ust
-       ORBITAPE (#c4736f), orta JOYTAPE (#a8703a), alt RADIOTAPE
-       (#35e0d8). Hex degerleri JS'teki O/J/Rc dizileriyle ayni
-       (_kipAnahtarYaz), renk burada da orada da tek kaynaktan. */
-    background:linear-gradient(180deg,#c4736f 0%,#a8703a 50%,#35e0d8 100%);
+    width:var(--uck-h);height:var(--uck-w);border-radius:calc(var(--uck-w)/2);
+    /* HOMOJEN GECIS + RETRO/KREM (28 Eylul: "retroalstir swichin
+       rengini cok parlak", "backgrounddu krem ... gul kokusuz gri
+       tonlar"): sol ORBITAPE, orta JOYTAPE, sag RADIOTAPE. Onceki
+       turkuaz #35e0d8 doygunluk .76 / fark 171 -- neondu. RETRO
+       kurali: zemin #e0d6c2/#dbd1bd/#d5cbba .14/30; topuz #ae776f
+       .36/63 · #8c877d .11/15 · #7d868c .11/15. */
+    background:linear-gradient(90deg,#e0d6c2 0%,#dbd1bd 50%,#d5cbba 100%);
     border:1px solid rgba(255,255,255,.16);
     box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
-  #kipKisayol .uck-topuz{position:absolute;left:2px;top:2px;
+  #kipKisayol .uck-topuz{position:absolute;left:2px;top:50%;
+    transform:translateY(-50%);
     width:calc(var(--uck-w) - 8px);height:calc(var(--uck-w) - 8px);
     border-radius:50%;background:#fff;
     box-shadow:0 0 0 2px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.5);
-    transition:top .18s cubic-bezier(.4,0,.2,1),background .18s ease;}
-  /* Uc konum: yol yuksekligi - topuz capi kadar oynar. calc()
-     --uck-h'e bagli, sabit px degil -- boy degisirse konum da
-     dogru olcekler. */
-  #kipKisayol[aria-valuenow="0"] .uck-topuz{top:calc(var(--uck-h) - (var(--uck-w) - 4px));background:#35e0d8;}
-  #kipKisayol[aria-valuenow="1"] .uck-topuz{top:calc(50% - (var(--uck-w) - 8px)/2);background:#a8703a;}
-  #kipKisayol[aria-valuenow="2"] .uck-topuz{top:2px;background:#c4736f;}
-  /* ISIMLER: varsayilan yalniz SECILI olan gorunur; basili
-     tutulunca (.uck-acik) ucu de gorunur -- kullanicinin sozu:
-     "swiche dokundugumuz an 3 isim de alt alta kendi yerinde
-     olacak". Yazi tipi eski ORBITAPE fontuyla ayni (marka dili,
-     24 Eylul karariyla ayni aile). */
-  #kipKisayol .uck-adlar{display:flex;flex-direction:column;gap:5px;}
+    /* SOLDAN UZATMA YOK: en sol konum yolun 2 px icinde. */
+    transition:left .18s cubic-bezier(.4,0,.2,1),background .18s ease;}
+  /* Uc konum: yol GENISLIGI - topuz capi kadar oynar; calc()
+     --uck-h'e bagli, boy degisirse konum da dogru olcekler. */
+  #kipKisayol[aria-valuenow="0"] .uck-topuz{left:calc(var(--uck-h) - (var(--uck-w) - 4px));background:#7d868c;}
+  #kipKisayol[aria-valuenow="1"] .uck-topuz{left:calc(50% - (var(--uck-w) - 8px)/2);background:#8c877d;}
+  #kipKisayol[aria-valuenow="2"] .uck-topuz{left:2px;background:#ae776f;}
+  /* ISIMLER TEK YERDE: yalniz secili gorunur ("hangi modtaysa o
+     yanar... o silinecek, digeri yazacak"); basili tutulunca
+     (.uck-acik) ucu de gorunur. Yazi tipi markanin diliyle ayni. */
+  #kipKisayol .uck-adlar{position:relative;display:block;width:100%;height:0;}
   #kipKisayol .uck-ad{
+    position:absolute;left:0;bottom:6px;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    /* Harf araligi markanin diliyle ayni (.26em): 27 Eylul'de .22em
-       idi ve "Anahtar etiketi markanin diliyle yaziliyor" kontrolu
-       kirmiziydi (0.22 / 0.26). Onceki kipin yazisi da .26em'di. */
-    font-size:0.75rem;font-weight:700;letter-spacing:.26em;line-height:1;
-    white-space:nowrap;color:rgba(255,255,255,.28);
+    /* Harf araligi markanin diliyle ayni (.26em). */
+    /* Marka dili: 23 px / 700 / .26em (olculdu: #ust .kanal) */
+    font-size:1.4375rem;font-weight:700;letter-spacing:.26em;line-height:1;
+    margin-right:-.26em;white-space:nowrap;color:rgba(206,196,176,.28);
     opacity:0;transform:translateX(-4px);
     transition:opacity .16s ease,transform .16s ease,color .16s ease;}
   /* Basili degilken sadece secili isim gorunur, kendi renginde. */
@@ -2445,14 +2434,16 @@
   #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"],
   #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
     opacity:1;transform:none;}
-  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:#e0a09c;}
-  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:#d19a5e;}
-  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:#35e0d8;}
+  /* Yazilar koyu zeminde okunacak kadar acik: #cfa8a2 .22/45 (kontras
+     9.15) · #bdbab4 .05/9 (10.16) · #b0b7bd .07/13 (9.70). */
+  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:#cfa8a2;}
+  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:#bdbab4;}
+  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:#b0b7bd;}
   /* Basiliyken (.uck-acik) UCU DE gorunur -- soluk olanlar da. */
-  #kipKisayol.uck-acik .uck-ad{opacity:1;transform:none;color:rgba(255,255,255,.4);}
-  #kipKisayol.uck-acik .uck-ad[data-kip="orbit"]{color:#e0a09c;}
-  #kipKisayol.uck-acik .uck-ad[data-kip="joy"]{color:#d19a5e;}
-  #kipKisayol.uck-acik .uck-ad[data-kip="radio"]{color:#35e0d8;}
+  #kipKisayol.uck-acik .uck-ad{opacity:1;transform:none;color:rgba(206,196,176,.40);}
+  #kipKisayol.uck-acik .uck-ad[data-kip="orbit"]{color:#d3aca7;}
+  #kipKisayol.uck-acik .uck-ad[data-kip="joy"]{color:#cfbaa0;}
+  #kipKisayol.uck-acik .uck-ad[data-kip="radio"]{color:#99ccc8;}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .uck-topuz,#kipKisayol .uck-ad{transition:none;}
   }
@@ -5297,7 +5288,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.27';
+  var ORB_SURUM = '2026.09.28';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ─────────────────────────
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -8277,9 +8268,8 @@
   /* GEZEGEN MENU IKONU: acma/kapama (gorev 5, 27 Eylul v1 taslak).
      Kamera yelpazesiyle ayni desen -- basinca acilir, tekrar basinca
      ya da bos yere basinca kapanir. */
-  /* GEZEGEN MENU IKONU SILINDI (27 Eylul, kullanici: "gorselleri de
-     at"). Satirlar sildi; asagida bos bir fonksiyon ve UYDULAR bos
-     bir dizi olarak kaliyor ki cagiran yerler (olcum, test) patlamasin. */
+  /* GEZEGEN MENU IKONU (27 Eylul once silinmis, sonra geri geldi):
+     acma/kapama ve bos yere basinca kapanma burada. */
   (function(){
     try{
       const tus = document.getElementById('gezegenTus');
@@ -9965,17 +9955,29 @@
      farki <= 82).
      UST SEVIYEDE duruyor: once RETRO'nun kapsaminda yasidi ve
      oradan referans vermek tip denetimine yeni uyari getiriyordu. */
+  /* ACIK KREM, RETRO 60'LAR (27 Eylul, kullanici: "joytape in renkleri
+     farkli olsun, bi acik krem retro 60's renkler"). Once sicak kahve/
+     roz paletiydi; bu odanin hafifligi icin krem zemin uzerinde
+     kalsin: hardal, tu tun, kiremit, zeytin, soluk lila, kirik beyaz.
+     RETRO ile ayni dortgen kurali: doygunluk (max-min)/max <= .38 ve
+     kanal farki <= 82 (olculdu, hepsi icinde). */
+  /* JOYTAPE'NIN KENDI BANKALARI (27 Eylul: "yeni muzik bankalari vs
+     eklenecekti ya. radiotape demiyorum"). Once radyonun raf adlari
+     kopyalanmisti (JAZZ, AMBIENT...) -- radyonun listesi bu. Simdi
+     veriden cikarilmis YENI adlar (sozcukler MUZIK_KALIP'ten), krem
+     retro 60'lar paletinde: 20 degerin hepsi RETRO kuralinda
+     (doygunluk <= .38, kanal farki <= 82). */
   const JOY_RENKLER = {
-    'ANATOLIA':      ['198,132,96','224,198,182'],
-    'AMBIENT':       ['176,150,120','220,206,190'],
-    'ORCHESTRAL':    ['190,150,140','226,210,204'],
-    'JAZZ':          ['200,150,110','228,204,184'],
-    'LOUNGE & LOFI': ['168,140,132','214,200,196'],
-    'DISCO FUNK':    ['206,140,120','230,204,192'],
-    'WORLD & ROOTS': ['160,160,130','212,212,196'],
-    'ROCK & INDIE':  ['186,140,148','222,204,210'],
-    'ELECTRONIC':    ['150,150,170','206,206,220'],
-    'MIXTAPE':       ['176,168,160','220,216,210']
+    'MACHINE & SYNTH':['186,152,120','226,208,186'],   /* hardal */
+    'DRIFT & DRONE':  ['184,176,152','228,222,206'],   /* kum krem */
+    'SYMPHONY':       ['176,164,136','222,214,196'],   /* keten */
+    'BLUES & JAZZ':   ['184,148,116','226,202,182'],   /* tutun */
+    'GROOVE & SOUL':  ['180,170,152','226,220,208'],   /* acik krem */
+    'BEATS & RHYME':  ['188,146,124','228,200,186'],   /* mercan */
+    'ROOTS & ROADS':  ['170,160,128','220,212,192'],   /* zeytin */
+    'EAST & WEST':    ['178,142,130','224,202,196'],   /* kiremit */
+    'CHILL & GROOVE': ['166,160,178','216,212,226'],   /* soluk lila */
+    'TAPE & VINYL':   ['186,178,168','230,224,216']    /* kirik beyaz */
   };
   var JOY_ADLAR = Object.keys(JOY_RENKLER);
   try{ window.JOY_ADLAR = JOY_ADLAR; window.JOY_RENKLER = JOY_RENKLER; }
@@ -10061,24 +10063,47 @@
      kelime bazi kayitlari yanlisca toplardi. Olcum yapilmadi --
      kullanici "hallet bitir" dedi, ilk dagilim bu; sayilar gelince
      raflari daraltip genisletmek tek satir. */
+  /* KATEGORILER MUZIK TARZLARINA GORE (27 Eylul, kullanici:
+     "kategoriler muzik tarzlarina gore olacakti, gunlugu oku").
+     Sozcukler MUZIK_KALIP'ten -- yani veriden cikarilmis liste, uydurma
+     degil: netlabel, vinyl, jazz, electronic, ambient, drone, rock,
+     folk, classical, blues, metal, hip-hop, trip-hop, funk, soul,
+     gospel, reggae, dub, house, breakbeat, big band, swing,
+     orchestra, piano, symphony, waltz, bebop, ragtime, trance,
+     downtempo, lofi, chillout, dnb, acid, punk, disco, indie, rap,
+     acoustic, synth, vaporwave, pop, soundtrack, country, ska,
+     salsa, tango, flamenco, klezmer, minimal, glitch, techno,
+     experimental, industrial. */
+  /* HALKA PALETI (28 Eylul: "joytape te halkalar ... koyu tonlar
+     olacak ama renk olsun petro lyesili dip deniz mavisi siyah gir
+     vs"): raf etiketleri krem kaldi, HALKA bu koyu paletten gelir.
+     Olculecek: doygunluk .40/.62/.58/.50, kanal farki 78/72/14/88. */
+  const JOY_HALKA = ['16,84,104','18,58,100','12,20,28','44,116,140'];
+  /* KURALLAR: MUZIK_KALIP'teki gercek sozcukler (jazz, electronic,
+     ambient, techno, funk, soul, reggae, dub, house, breakbeat, big
+     band, swing, orchestra, piano, symphony, waltz, bebop, ragtime,
+     trance, downtempo, lofi, dnb, acid, punk, disco, indie, rap, hip
+     hop, synth, vaporwave, country, ska, salsa, tango, flamenco,
+     klezmer, minimal, glitch, experimental). Sira dar ve kesin; kalan
+     her sey TAPE & VINYL (lp_/78_/netlabel kaynak kimligi dahil). */
   const JOY_KURALLAR = [
-    ['ANATOLIA',      /\banatolia|\bturk|\bturkce|\banadol|\barabesk|\bfolkrock/],
-    ['ORCHESTRAL',    /\borchestra|\bclassical|\bbaroque|\bsymphon|\bchamber/],
-    ['JAZZ',          /\bjazz|\bblues|\bbebop|\bnuevo/],
-    ['DISCO FUNK',    /\bfunk|\bdisco|\bsoul|\bmotown|\bgroove/],
-    ['AFROBEATS',     /\bafrobeat|\bafro|\bhighlife/],
-    ['LOUNGE & LOFI', /\blofi|\blounge|\bchillout|\bdowntempo|\btrip hop/],
-    ['ROCK & INDIE',  /\brock|\bindie|\balternative|\bpunk|\bmetal/],
-    ['WORLD & ROOTS', /\bworld music|\breggae|\bafrican|\blatin|\bbalkan|\bmediter/],
-    ['ELECTRONIC',    /\belectronic|\btechno|\bhouse|\bidm|\bsynth/],
-    ['AMBIENT',       /\bambient|\bdrone|\bnew age|\bmeditat/]
+    ['SYMPHONY',      /\borchestra|\bclassical|\bbaroque|\bsymphon|\bsonata|\bconcerto|\bwaltz|\bquartet|\bpiano|\bguitar/],
+    ['BLUES & JAZZ',  /\bjazz|\bbebop|\bswing|\bbig band|\bblues|\bragtime|\bchorus/],
+    ['GROOVE & SOUL', /\bfunk|\bdisco|\bsoul|\bgospel|\bgroove/],
+    ['MACHINE & SYNTH', /\btechno|\bhouse|\bidm|\btrance|\bdnb|\bacid|\belectro|\bglitch|\bminimal|\bsynth|\bbreakbeat|\belectronic|\belectronica/],
+    ['CHILL & GROOVE',/\blofi|\blo-fi|\blounge|\bchillout|\bdowntempo|\bchill\b/],
+    ['DRIFT & DRONE', /\bambient|\bdrone|\bvaporwave|\bshoegaze|\bgenerative|\bexperimental|\bexpiremental/],
+    ['BEATS & RHYME', /\bhip.?hop|\brap\b|\btrip.?hop|\bsample/],
+    ['EAST & WEST',   /\banatolia|\bturk|\bturkce|\banadol|\barabesk|\bsalsa|\btango|\bflamenco|\bklezmer|\bfolk ?rock|\bfolkrock/],
+    ['ROOTS & ROADS', /\breggae|\bdub\b|\bska\b|\bcountry|\bworld music|\bafrican|\bhighlife|\bfolk\b/]
+    /* Kalan: TAPE & VINYL (fonksiyonun son satiri). */
   ];
   function joyRaf(o){
     try{
       const t = (_mt(o) + ' ' + _mk(o)).replace(/[_\-.\/]+/g,' ');
       for(const [ad, m] of JOY_KURALLAR) if(m.test(t)) return ad;
-      return 'MIXTAPE';
-    }catch(e){ return 'MIXTAPE'; }
+      return 'TAPE & VINYL';
+    }catch(e){ return 'TAPE & VINYL'; }
   }
   function _muzikMi(o){
     const t = _mt(o), k = _mk(o);
@@ -14370,6 +14395,9 @@
           _rnk = _renkKaris(_rnk, _T.v, _pay);
         }
       }catch(e){ _yut(e); }
+      /* JOYTAPE halkalari kendi koyu paletinden: konus (T.v) HALKA'dan
+         once olsaydi koyu ton %34 acilip solardi -- olculdu. */
+      if(JOY_ADLAR.indexOf(_mAd) >= 0) _rnk = JOY_HALKA[k & 3];
       /* ── FX AÇIKKEN HALKALAR O RENGİN AİLESİNE KAYAR ──────────────
          Tek bir halkayı boyamak yetmiyordu: efektte olduğunu ve hangi
          efektte olduğunu ancak bütün diskin rengi söyleyebiliyor.
@@ -17594,12 +17622,14 @@
       /* Y konumundan durak hesabi: yolun ust 1/3'u 'orbit',
          orta 1/3'u 'joy', alt 1/3'u 'radio'. Yol bulunamazsa
          (ilk kare, layout henuz olculmemis) mevcut moddan cikma. */
-      const _yolDurak = (clientY)=>{
+      /* YATAY (28 Eylul): yolun SOLU ORBITAPE, ortasi JOYTAPE, sagi
+         RADIOTAPE -- dikey surumun (ust/orta/alt) yatay karsiligi. */
+      const _yolDurak = (clientX)=>{
         try{
           const yol = _kk.querySelector('.uck-yol');
           const r = yol ? yol.getBoundingClientRect() : null;
-          if(!r || !r.height) return _mod();
-          const oran = Math.min(1, Math.max(0, (clientY - r.top) / r.height));
+          if(!r || !r.width) return _mod();
+          const oran = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
           if(oran < 1/3) return 'orbit';
           if(oran < 2/3) return 'joy';
           return 'radio';
@@ -17610,14 +17640,14 @@
         try{ e.stopPropagation(); }catch(_){ _yut(_); }
         _surukleniyor = true;
         _kk.classList.add('uck-acik');
-        const y = (/** @type {any} */ (e)).clientY;
+        const y = (/** @type {any} */ (e)).clientX;
         const d = _yolDurak(typeof y === 'number' ? y : 0);
         _kk.setAttribute('aria-valuenow', d==='orbit'?'2':d==='joy'?'1':'0');
       };
       const _tasi = (e)=>{
         if(!_surukleniyor) return;
         try{ e.preventDefault(); }catch(_){ _yut(_); }
-        const y = (/** @type {any} */ (e)).clientY;
+        const y = (/** @type {any} */ (e)).clientX;
         if(typeof y !== 'number') return;
         const d = _yolDurak(y);
         _kk.setAttribute('aria-valuenow', d==='orbit'?'2':d==='joy'?'1':'0');

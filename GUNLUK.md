@@ -3289,3 +3289,80 @@ denetimi yakaladı (63 uyarı), blok HEAD'ten geri kondu. Aynı sırada
 Kapı yeşil: saglik 891/891 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19 · tip 60 (taban 60) ·
 ilk boyama 112.039 B (tavan 112.640).
+### 28 Eylül — yatay kip düğmesi, krem-retro palet, koyu halkalar, dış kaynak listesi
+
+**1) KİP DÜĞMESİ YATAY.** Kullanıcı: "sol alt swichi yataya yap.
+alttaki ikon soldan daha uzun olmasın, hizala. mod isimleri de yatay
+olarak üstünde yazsın. hangi modtaysa o yanar. aynı yerde olacaklar
+ama o silinecek diğeri yazacak. font büyüklük sağ üstteki gibi olsun."
+Sonra sıra için bir düzeltme geldi ("en sol radiotape, orta orbitape,
+en sağ joytape") ve hemen "pardon orta joytape" ile geri alındı →
+sıra değişmedi: **sol ORBITAPE · orta JOYTAPE · sağ RADIOTAPE**.
+
+* Yol 128×26 ölçüldü (dikey 26×128'den döndü), gradyan 90°.
+* Topuz: en sol konum yolun **2 px içinde** (ölçülen `sol+3`, 1 px
+  çerçeve payı) — "soldan uzamıyor" ✓; orta 55, sağ 107.
+* İsimler tek yerde üst üste (üçü de `left 14 · top 739 · bottom 762`),
+  yalnız seçili görünür. `flex-direction:column-reverse` gerekti:
+  DOM'da yol önce geliyor, düz `column`'da isimler yolun **altında**
+  kalıyordu (ölçüldü: blok 768-802, isimler 773-796).
+* Yazı: **23 px / 700 / .26em** — `#ust .kanal` ile aynı aile, aynı
+  kalınlık, harf aralığı **oran** olarak eşit (.26/.26). Nokta: ilk
+  denemede .30em yazıldı ve "Anahtar etiketi markanın diliyle
+  yazılıyor" kontrolü kırmızıydı (marka .26em ölçüldü) → .26em.
+* Dokunma: sol uç → ORBITAPE, orta → JOYTAPE, sağ → RADIOTAPE.
+  `_yolDurak` artık `clientX` okuyor.
+
+**2) RENK: RETRO + KREM.** "retroalştır swichin rengini çok parlak" →
+eskisi turkuaz `#35e0d8`: doygunluk **.76**, kanal farkı **171** (neon).
+"backgrounddu krem, gül kokusuz gri tonlar" → zemin krem, vurgular
+gül kokusuz + iki gri. Ölçülen (RETRO kuralı: doygunluk ≤ .38, kanal
+farkı ≤ 82):
+* zemin `#e0d6c2 / #dbd1bd / #d5cbba` — doy .14, fark 30
+* topuz `#ae776f` gül kokusuz .36/63 · `#8c877d` sıcak gri .11/15 ·
+  `#7d868c` soğuk gri .11/15 (krem zeminde kontrast 2.47/2.38/2.47)
+* yazılar koyu zeminde: `#cfa8a2` 9.15 · `#bdbab4` 10.16 · `#b0b7bd` 9.70
+
+**3) JOYTAPE HALKALARI KOYU VE RENKLİ.** "joytape te halkalar ... koyu
+tonlar olacak ama renk olsun petrol mavisi dip deniz mavisi siyah
+gibi vs". Raf etiketleri krem kaldı; **halka** kendi paletinden gelir
+(`JOY_HALKA = 16,84,104 · 18,58,100 · 12,20,28 · 44,116,140`).
+Ölçüm tuvalden piksel piksel (`#viz`, 852², rAF içinde): seçili halka
+**[36,109,128] (L 95)**, diğerleri **[17,51,88] (L 46)** — koyu ve
+renkli; karşılaştırma: ORBITAPE [155,155,173] L 157, RADIOTAPE
+[42,234,212] L 192. Konuş (`T.v`) karışımı halkadan **önce** olmalı:
+yoksa koyu ton %34 açılıp soluyordu.
+
+**4) FX OYNARKEN GEZEGENLER KAPANMIYOR.** "fxlerle oynarken pencereyi
+kapama, fx ler gezegenler kapanmasın. ya tekrar ikona basarsam kapa
+ya da sayfanın boş yerine". Ölçüm: gezegene dokununca menü **açık
+kalıyor** (FXMOD='retro', `gezegen-acik` true), diski sürükleyince de
+açık; **boş yere** dokununca kapanıyor, ikona tekrar basınca da.
+Davranış zaten böyleydi; şimdi kapıya bağlandı: yeni kontrol
+"FX açınca gezegen menüsü kapanmıyor" (892/892).
+
+**5) DIŞ KAYNAK ARAŞTIRMASI (kullanıcının eklediği belge).** "özet"
+başlıklı PDF okundu: Freesound/Archive.org dışındaki bağımsız ses
+arşivleri, 12 kaynak (Jamendo, Pixabay Ses, LotsOfSounds, LibriVox,
+Wikimedia Commons, audio.com, Zapsplat, SoundBible, BBC SesFX,
+OpenGameArt, 99Sounds, SoundSnap, Mixkit) — her biri için URL, lisans,
+API ucu, kota ve atıf şartı. Kullanıcının sorusu buydu: "o yeni banka
+dediğin müzik türleri JOYTAPE için mi... bizden değil **dışardan yeni
+bir banka, link adres** vs". Cevap: şu anki on banka **bizim** kendi
+kayıt havuzumuzdan (archive.org, ölçülen 12.365 kayıt; makine-sentetik
+4.737, bant-vinyl 2.029, sürüklen-uzak 1.796, senfoni 1.509, blues-caz
+1.208, kökler-yollar 520, ritim-ruh 296, sakin-ritim 142, vuruş-dize
+69, doğu-batı 59). Dışarıdan banka isteniyorsa bu bir VERİ KAYNAĞI
+değişikliği: anahtarsız, CORS'a açık uçlar (Wikimedia Commons,
+LibriVox, OpenGameArt, Internet Archive) akışa bağlanabilir; Jamendo /
+Freesound / Pixabay / LotsOfSounds **token istiyor** (PDF'te
+belirtildiği gibi: Freesound `&token=`, 60/dk, 2000/gün; Jamendo
+`client_id`). Sıradaki adım bu; ölçülmeye devam edecek.
+
+**Kapı iki kırmızı verdi, ikisi de ölçümle çözüldü:** harf aralığı
+(.30em → .26em) ve ham boy (1.334.077 B, tavan 1.332.224 B → **407 B
+kaldı**). Ham boy kasıtlı bir fren: yorumları kısaltmak zorunda
+kaldım, işlev silmedim. Sonuç: saglik 892/892 · arıza 18/18 ·
+senaryo 121/121 · motor 19/19 · cihaz 156/156 · yayın 19/19 ·
+ilk boyama 109 KB brotli (tavan 110) · ilk açılış 112 KB (tavan 113) ·
+ham 1301 KB.
