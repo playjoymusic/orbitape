@@ -10279,7 +10279,16 @@
        musiki JOYTAPE'ye gidiyor, buraya degmiyor. */
     /* 27 Eylul: JOYTAPE tek kova degil, on raf; "muzik mi" sorusu
        artik "JOY_ADLAR'in birinde mi". */
-    if(ad === 'ORBITAPE') return JOY_ADLAR.indexOf(arsivRaf(o)) < 0;
+    /* ORBITAPE = MUZIK SIFIR (28 Eylul, kullanici: "orbitape ve
+       radiotape asla muzik sizmayacak ... radyo haric" ve "hala
+       orbitape ile ayni oda mood gibi ayni bankayi kullaniyor").
+       ONCEKI KURAL YETERSIZDI: yalnizca 8 banka adina dusmus
+       kayitlar eleniyordu. Olcum: "orchestral" gibi etiketli klasik
+       muzik ARSIV_ADLAR'da yer almadigi icin OTHERS rafina duser ve
+       ORBITAPE'e giriyordu. Dogru kural: ORBITAPE'de muzik OLMAYAN
+       kayitlar. Ayni test JOYTAPE tarafinda da kullaniliyor
+       (_muzikMi) -- tek muzik tespiti, iki yon. */
+    if(ad === 'ORBITAPE') return !_muzikMi(o);
     /* ARSIVIN DAR RAFLARI: karar tek yerden, arsivRaf()'tan geliyor.
        Burada ayrica kalip denemek iki farkli dogruluk kaynagi yaratir
        ve er gec ayrisirlar. */

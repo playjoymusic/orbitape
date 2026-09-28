@@ -3982,3 +3982,33 @@ birlikte tek pakette yapılacak.
 
 Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 — **TEMİZ**.
+
+### 28 Eylül (on dördüncü tur) — mood sızıntısının kökü: ORBITAPE'de müzik sıfır
+
+**1) "HALA AYNI BANKAYI KULLANIYOR" — KÖK NEDEN BULUNDU ve DÜZELTİLDİ.**
+Kullanıcı: "orbitape ve radiotape asla müzik sızmayacak (radyo hariç)",
+"her mood için aynı kural", "radyotape'e ve favorilerine de asla diğer
+2 mood sızmayacak".
+· Halkalar zaten ayrıydı: RADIOTAPE = `aileDolular()` (radyo aileleri),
+  JOYTAPE = `joyDolular()` (8 müzik bankası), ORBITAPE = `ARSIV_ADLAR`
+  (10 efekt rafı) — `halkaAdlar()` üçünü de ayrı döndürüyor ✓.
+· **Sızıntı süzgeçteydi**: ORBITAPE kuralı yalnız
+  `JOY_ADLAR.indexOf(arsivRaf(o)) < 0` idi, yani **sadece 8 banka adına
+  düşen** kayıtları eliyordu. "orchestral / jazz / rock" gibi etiketli
+  klasik müzik `ARSIV_ADLAR`'da yer almadığı için **OTHERS rafına**
+  düşüyor ve ORBITAPE'e giriyordu. Aynı "hâlâ aynı banka" izlenimi.
+· Yeni kural: **ORBITAPE'de müzik olan hiçbir kayıt girmez**
+  (`!_muzikMi(o)`) — JOYTAPE ile **aynı müzik testi**, iki yön. Tek
+  tespit, iki kapı: JOYTAPE sadece müzik, ORBITAPE sadece müzik dışı.
+· RADIOTAPE zaten canlı yayınla sınırlı (`o.radyo` → yalnız
+  RADIOTAPE), yani radyo dışında oraya müzik giremiyor ✓.
+
+**2) ÖLÇÜM AÇIĞI (dürüst kayıt).** Sayfayı açtığımda `modHavuzu()` üç
+kip için de **0** döndü: katalog, oda açılınca ve arka planda
+yükleniyor, headless koşuda odaya girilmeden havuz boş. Bu yüzden
+"havuzdaki müzik oranı" bu turda sayısal olarak raporlanamadı; kural
+kod düzeyinde değişti, **oran ölçümü sıradaki turda odaya girilerek**
+alınacak ve kapıya kalıcı kontrol olarak yazılacak.
+
+Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**.
