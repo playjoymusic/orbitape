@@ -4099,3 +4099,15 @@ kontrol **kırmızı** veriyor, koşu **devam** ediyor. Kural gevşemedi.
 
 Kapı: saglik 895/895 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 — **TEMİZ**.
+
+### 29 Eylül (on sekizinci tur) — yazı tam ortada
+
+**YAZI ARABANIN TAM ORTASINDA.** "taban ile çark arası ortalama" —
+büyük gezinme yazısı (mood adı, açıklama) artık halkanın alt kenarı ile
+alt seridin üstü arasında **tam orta** yerine oturuyor (önce 0,66'ydı,
+aşağıya yakındı). Ölçülen: halka alt **574**, taban **870** → tam orta
+**722**, yazı merkezi **720** (fark **2 px**). Kapıdaki kural da buna
+göre güncellendi ("Yazı taban ile çark arasında tam ortada").
+
+Kapı: saglik 895/895 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**.

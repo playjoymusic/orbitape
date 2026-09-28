@@ -19775,7 +19775,10 @@
            eskisinden daha buyuk ve halkanin cizgilerine yaklasiyordu;
            istenen "biraz da o yazilari asagiya al". Alt sinir yine
            alt seridin ustu -- oraya dayanirsa daha asagi inmiyor. */
-        const orta = halkaAlt + (taban - halkaAlt)*0.66 - h*0.5;
+        /* TABAN ILE CARK ARASI TAM ORTA (29 Eylul: "taban ile cark
+           arasi ortalama"). Once 0,66'ydi: yazi araligin altina yakin
+           duruyordu. Artik tam orta (0,50). */
+        const orta = halkaAlt + (taban - halkaAlt)*0.50 - h*0.5;
         el.style.top = Math.round(Math.max(halkaAlt + 10, Math.min(taban - 14 - h, orta))) + 'px';
       }catch(e){ _yut(e); }
     }

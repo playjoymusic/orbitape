@@ -4847,9 +4847,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* ORAN 0.50 -> 0.66. Cizilmis harfler eskisinden buyuk ve halkanin
      cizgilerine yaklasiyordu; istenen "biraz da o yazilari asagiya
      al". Alt sinir yine alt seridin ustu. */
-  K('Yazi halka ile alt serit arasinda, asagida',
-     ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.66))<=12,
-     'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.66):'-'));
+  K('Yazi taban ile cark arasinda tam ortada',
+     ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.50))<=12,
+     'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.50):'-'));
   K('Ses baslayinca halka menu', ac.son1.ilk===true && ac.gez2===true,
      'ikinci basis gezinme '+ac.gez2);
 
