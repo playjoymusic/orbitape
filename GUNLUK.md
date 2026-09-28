@@ -3571,3 +3571,41 @@ ham 1245 KB (tavan 1301 KB).
 archive.org'un daha geniş koleksiyonları eklenmeli (kota yok, ölçüldü:
 `audio_islamic`, `audio_sermons`, `audio_religion`, `librivoxaudio` gibi
 büyük koleksiyonlar henüz toplanmadı — "din · vaaz" bunlarda).
+### 28 Eylül (beşinci tur) — din · vaaz yasaklandı, kilise müziği serbest
+
+Kullanıcı: "audio_islamic, audio_sermons, audio_religion, librivoxaudio
+-- din · vaaz istemiyorum dedim, **yasaklı onlar**", sonra netleştirdi:
+"**kilise olur, vaaz değil de, koro falan**". Yani yasak olan **söz
+uygulaması** (vaaz / sermon / hutbe); **ibadet yeri ve kilise müziği**
+(koro, org, ilahi) serbest.
+
+**Önce ölçtüm, sonra yazdım — ve ilk yasak FAZLA genişti.**
+Geniş kural (church/priest/hymn/islam/prayer…) **2.537 kaydı** silmişti;
+ölçüldü: bunların çoğu kilise müziğiydi. Daraltılmış kuralda
+(yalnız `sermon|sermons|khutba|vaaz|preaching|bible reading|religious
+lecture|sermonized`) düşen kayıt: **katalogda 12, yerel aynada 2**.
+Silinen kilise kayıtları geri toplandı.
+
+**İki katman:**
+1. **Koleksiyon yasakları** (`araclar/yasak.py` → `hasat.py`'ye bağlı):
+   `audio_islamic`, `audio_sermons`, `audio_religion`, `librivoxaudio`
+   bir daha **hiç toplanmıyor**; `librivoxaudio.json` silindi.
+2. **Uygulama süzgeci**: `DINI_YASAK` + `modUygun()` içinde
+   `if(_diniMi(o)) return false;` → yerel ayna dahil hiçbir kayıt
+   havuza giremiyor.
+
+**Ölçülen sonuç (katalog 117.993 kayıt · 17 banka):**
+| kip | havuz | vaaz kalan | kilise müziği | dağılım |
+|---|---|---|---|---|
+| JOYTAPE | 53.483 | **0** | **393** | COMPOSERS 14.228 · ELECTRONIC LAB 11.481 · BLUE NOTE 10.064 · TAPE & VINYL 9.490 · POP & GROOVE 5.319 · WORLD 2.861 · WIKIMEDIA COMMONS 40 |
+| ORBITAPE | 90.803 | **0** | **655** | OTHERS 57.649 · HUMANS 19.771 · SPACE 5.105 · NATURE 3.481 · CITY 1.720 · AMBIANCE 1.148 · NOISE 1.006 · DARK 555 · INDUSTRIAL 368 |
+
+**Kapıya kilitlendi:** "Vaaz yasak, kilise muzigi serbest" — dört
+vaaz örneğinin dördü de işaretleniyor ve oynatılamıyor (0/4), üç kilise
+örneğinin **hiçbiri** işaretlenmiyor ve üçü de oynatılabiliyor (3/3),
+havuzda 0 vaaz. Yani kural hem yasaklamayı hem **izin** verdiğini
+ölçüyor; sadece "yok" diye geçmiyor.
+
+Not: bu turda GUNLUK'a `librivoxaudio` yazım hatasıyla düzeltildi.
+Kapı yeşil: saglik 893/893 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19 · ham 1245 KB.

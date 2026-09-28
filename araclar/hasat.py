@@ -46,6 +46,12 @@ DIZIN = os.path.join(KOK, 'katalog')
 UA = 'OrbitapeHarvest/1.0 (katalog hasadi; 28 Eylul 2026)'
 
 # ── INTERNET ARCHIVE: (koleksiyon, hedef kayit sayisi) ──────────────────
+# DIN · VAAZ YASAKI (28 Eylul, kullanici: "audio_islamic, audio_sermons,
+# audio_religion, librivoxaudio -- din vaaz istemiyorum dedim, yasakli
+# onlar"). Tek kaynak: araclar/yasak.py. Asagidaki filtre hem koleksiyon
+# adini hem de kaydin konu alanini eler.
+from yasak import YASAK_KOLLEKSIYONLAR as _YASAK_KOL, DINI_KONULAR as _DINI
+
 IA_KOLEKSIYONLAR = [
     ('netlabels', 40000),
     ('freemusicarchive', 40000),
@@ -217,6 +223,9 @@ def ia_cek(koleksiyon, hedef):
     yigilir ve hicbir halka 2.000'e ulasamazdi. Konu toplu geliyor
     (olculdu: fl[]=subject).
     """
+    if koleksiyon in _YASAK_KOL:
+        print('   ! yasakli koleksiyon, cekilmiyor: %s' % koleksiyon, flush=True)
+        return []
     kimlikler = []
     gorulen = set()
     sayfa = 1
@@ -239,7 +248,10 @@ def ia_cek(koleksiyon, hedef):
                 konu = d.get('subject') or []
                 if isinstance(konu, str):
                     konu = [konu]
-                kimlikler.append([kim, ';'.join(str(x)[:40] for x in konu[:14])])
+                metin = ';'.join(str(x)[:40] for x in konu[:14])
+                if _DINI.search(kim) or _DINI.search(metin):
+                    continue                      # din · vaaz yasak
+                kimlikler.append([kim, metin])
         if sayfa % 5 == 0 or len(belgeler) < satir:
             print('     %-26s %7d / %d' % (koleksiyon, len(kimlikler), hedef), flush=True)
         sayfa += 1

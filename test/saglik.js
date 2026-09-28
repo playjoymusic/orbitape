@@ -4252,6 +4252,38 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     }), (o)=>(!o||!o.neden) && o.fx && o.gezegenAcik && o.bosYerKapatti
         ? ('FX ' + o.fx + ' sonrasi menu acik kaldi; bos yer kapatti') : '-',
       (o)=>!!o && !o.neden && !!o.fx && o.gezegenAcik && o.bosYerKapatti);
+  /* ── DIN · VAAZ YASAK (28 Eylul) ────────────────────────────────
+     Kullanici once genis yasagimizi duzeltip netlestirdi: "audio_islamic,
+     audio_sermons, audio_religion, librivoxaudio -- din vaaz
+     istemiyorum dedim, yasakli onlar" ve "kilise olur, vaaz degil de,
+     korofalan". Yani yasak olan SOZ UYGULAMASI (vaaz/sermon/khutbe);
+     KILISE MUZIGI (koro, org, ilahi) serbest. Kapida ikisi de olculuyor:
+     vaaz oynatilmiyor, kilise muzigi OYNATILABILIYOR. */
+  K('Vaaz yasak, kilise muzigi serbest', await pg.evaluate(async ()=>{
+      const bek=ms=>new Promise(r=>setTimeout(r,ms));
+      const vaaz=[{tur:'sermon vaaz', ad:'Cuma hutbesi'},
+        {tur:'islamic sermon', ad:'Vaaz kaydi'},
+        {tur:'bible reading', ad:'Kutsal Kitap okuma'},
+        {tur:'khutbe toplulugu', ad:'Hutbe'}];
+      const kilise=[{tur:'church organ mass', ad:'Kilise orgu'},
+        {tur:'sacred choir a cappella', ad:'Koro'},
+        {tur:'gospel hymn quartet', ad:'Ilahi'}];
+      const vIsaretli = vaaz.filter(o=>_diniMi(o)).length;
+      const kIsaretli = kilise.filter(o=>_diniMi(o)).length;
+      const eski=AKTIF_MOD;
+      AKTIF_MOD='ORBITAPE';
+      const vGecen = vaaz.filter(o=>modUygun(o)).length;
+      const kGecen = kilise.filter(o=>modUygun(o)).length;
+      const havuz=modHavuzu()||[];
+      const kalan=havuz.filter(o=>_diniMi(o)).length;
+      AKTIF_MOD=eski;
+      await bek(60);
+      return {vIsaretli, kIsaretli, vGecen, kGecen, kalan, toplam:havuz.length};
+    }), (o)=>'vaaz isaretli '+o.vIsaretli+'/4 · kilise isaretli '+o.kIsaretli
+        +'/3 (0 olmali) · oynatilan vaaz '+o.vGecen+' · oynatilan kilise '
+        +o.kGecen+'/3 · havuzda vaaz '+o.kalan+'/'+o.toplam,
+      (o)=>!!o && o.vIsaretli===4 && o.kIsaretli===0 && o.vGecen===0
+        && o.kGecen===3 && o.kalan===0);
   /* Once "KANAL_SIRA tek elemanli mi" diye sorulurdu. O dizi bir
      iskeletin parcasiydi ve silindi; asil kural zaten daha basitti:
      'mod' hicbir zaman degismiyor, oteki dunya AYAR.mood ile

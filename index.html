@@ -10203,8 +10203,29 @@
   }
   var AKTIF_MOD = null;            // null = mod yok, her şey gelir
   function modBul(ad){ for(const m of MODLAR) if(m.ad===ad) return m; return null; }
+  /* ── DIN · VAAZ YASAK (28 Eylul) ─────────────────────────────────
+     Kullanici: "audio_islamic, audio_sermons, audio_religion,
+     librivoxaudio -- din vaaz istemiyorum dedim, yasakli onlar."
+     Iki katman. (1) KATALOG: bu koleksiyonlar hic toplanmiyor
+     (araclar/yasak.py) ve toplanan kayitlardan din/vaaz konulari
+     cikariliyor; koleksiyon dosyalarindan librivoxaudio silindi.
+     (2) BU KORUMA: yerel ayna dahil HICBIR kayit havuza giremez.
+  /* Kullanici netlestirdi: "kilise olur, vaaz degil de, korofalan" --
+     yani IBADET YERI ve KILISE MUZIGI serbest (koro, org, ilahi); yasak
+     olan SOZ UYGULAMASI: vaaz / sermon / hutbe. Onceki genis yasak
+     (church/priest/hymn/islam...) 2.537 kayit silmisti; olculdu:
+     daraltilmis yasak katalogda yalniz 12, yerel aynada 2 kayit duser. */
+  const DINI_YASAK = /\b(sermon|sermons|khutba|vaaz|preaching|bible reading|scripture reading|religious lecture|sermonized)\b/i;
+  function _diniMi(o){
+    try{
+      if(!o) return false;
+      return DINI_YASAK.test(_mt(o) + ' ' + _mk(o) + ' ' +
+        String(o.ad||'') + ' ' + String(o.sanatci||''));
+    }catch(e){ return false; }
+  }
   function modUygun(o){            // havuz süzgeci
     if(!AKTIF_MOD) return true;
+    if(_diniMi(o)) return false;   /* din · vaaz: yasak */
     return modUyar(o, AKTIF_MOD);
   }
   const ORB_ORAN = { uzay:0.18, ses:0.60, muzik:0.22 };
