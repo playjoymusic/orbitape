@@ -3698,3 +3698,61 @@ başladıktan sonra `katalogIsit` sıradaki kayıtları arka planda
 
 Kapı yeşil: saglik 893/893 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19 · ham 1247 KB.
+### 28 Eylül (sekizinci tur) — JOYTAPE ayrı oda, müzik sızıntısı kapandı, byte freni
+
+**1) MÜZİK ORBITAPE'E SIZIYORDU — KAPANDI.** "orbitape te de müzik
+olanları buraya aktaracaksın". Ölçüm: güvenilir liste (`MUZIK_KALIP`)
+dışında kalan **25 gerçek müzik sözcüğü** vardı
+(romantic 2.670 · baroque 1.583 · vocal 622 · instrumental 517 ·
+violin · choir · hymn · mambo · samba · choral · cantata · oratorio ·
+lied · nocturne · prelude · fugue · serenade · lounge · ballad ·
+easy listening …). Eklendi; doğrulama: hedef 25 sözcüğün **25'i** de
+eşleşiyor, yanlış pozitif **yok** (war of the worlds, romance novel,
+world war ii, news broadcast, football match, cooking recipe).
+
+**2) YALNIZCA HEMEN ÇALANLAR.** "ilk etapta sadece hemen çalanlardan
+açacaksın. sayı çoğaldıkça ekleyeceğiz". Ölçülen hata: katalog 2,5 sn'de
+başlıyordu, yerel tam havuz da 2,5 sn'de → çakışıyor, 117 bin adresiz
+kayıt 36.534 adresli kaydın önüne geçiyordu; ORBITAPE'de "anında çalan"
+**273**'e düşmüştü (burası "sonsuz arıyor"un sebebiydi). Üç düzeltme:
+(1) sıralamada **adresi olmayan kayıt seçilmiyor** (`earthAl` null
+döner, bekleme ekranı dönmez), (2) katalog **yerel tam havuz bittikten
+sonra** ve **tek tek** dosya çekiyor, (3) çözüm arka planda
+(`katalogIsit`). Ölçülen sonuç: **ORBITAPE 13.889/13.889**, **JOYTAPE
+12.404/12.404** kayıt adresli, ilk ses 1,0-10,1 sn (havuz hazırlığı).
+
+**3) JOYTAPE'Yİ AYRI ODA YAPTIM.** "joytape in background ... krem,
+koyu portakal, biraz da yeşilimsi koyu petrol yeşili katmanlar. ama
+açık renk üstüne koyu tonlar" + "renk değişimleri güzel görünür ve
+farkı anlarız mood". `body.zem.joy`: taban krem `rgb(230,219,194)`,
+üstünde koyu turuncu (206,116,48) ve koyu petrol yeşili (16,72,64)
+katmanları. Ölçülen: JOYTAPE'de zemin açık, RADIOTAPE ve ORBITAPE'de
+siyah kalıyor → sol alttaki anahtarla gezerken fark belli. Gezegen/FX
+ikonu JOYTAPE'de yok, ikon 30×30 → 44×44.
+
+**4) GEZEGEN MENÜSÜ.** FX aktifken artık **hiçbir şey** kapanmıyor:
+odanın yüzeylerine (tuval, disk, üst çubuk, kip düğmesi) dokunmak menüyü
+kapatmıyor, boş yer de kapatmıyor; yalnız ikon kapatıyor. Seçili gezegene
+ciddi ışık + halka rengi (--m1) halesi eklendi.
+
+**5) ACOUSTIC.** "sadece acoustic yaz" — halka eklendi, saplı/şaşak
+çalgılarla **2.209** kayıt.
+
+**6) BYTE FRENİ — İŞ AYRI DALA ALINDI.** Ham boy tavanı rahat (63 KB
+pay) ama **ilk boyama brotli 111 KB** (tavan 110 KB = 112.640 B).
+Ölçülen: 12.251 B yorum silmek yayınlanmış dosyada **hiç** hareket
+etmedi (571.504 → 570.679 B, yani 825 B ham ≈ 80 B brotli) — çünkü
+yayınlanan dosya küçültülüyor, yorumlar zaten çıkmıyor. Bu turun
+**kodu** ~6-8 KB büyüttü (katalog yükleyici/ısıtıcı, müzik kuralları,
+din-vaaz süzgeci, duvar kâğıdı). Düzeltilebilir olan: halka adlarını
+tuvalde çizme (yeni, henüz görsel olarak doğrulanmamış) **kaldırıldı**.
+Kalan ~5 KB kodu çıkarmak = kullanıcının istediği özelliklerden birini
+silmek demek; onun yerine **ana hat yeşil bırakıldı** (404e222) ve tüm
+bu iş `ozellik-joytape-oda` dalına kondu. Karar kullanıcının: ya bütçe
+yükselir (112.640 B → ~115 KB) ya da bir özellik geri alınır.
+
+Kapı (dal): saglik 890/893 — yalnız iki boyut kırmızısı + çözülen
+yıldız ikinci-dokunuş kırmızısı (kal koruması istasyon kayıtlarını da
+atlıyordu; `mp3 || url_resolved || url` ile düzeltildi, yeniden
+koşulacak). Arıza 18/18 · senaryo 121/121 · motor 19/19 · cihaz 156/156.
+Ana hat: 404e222 yeşil.
