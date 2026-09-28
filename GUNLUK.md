@@ -4067,3 +4067,35 @@ kip)`. Saglik 894 → **895**.
 
 Kapı: saglik 895/895 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 — **TEMİZ**.
+
+### 29 Eylül (on yedinci tur) — alt bant düzeltmesi, RECORDS bankası, CI çökmesinin izole edilmesi
+
+**1) ALT BANTTA DERİ RENGİ (düzeltildi).** "altta skins neyse onu
+gösteriyor ... hangi skins ile kaparsam o bant oluyor". Sebep: deri
+`body`'yi boyuyor (`body.deri{background:var(--d-zem) !important}`),
+odanın koyu katmanı alt kenarlık güvenlik alanına kadar gitmediği için
+ekranın en altında derinin rengi görünüyordu. Çözüm: odanın kendi tonu
+için en arkada **tam ekran** bir katman (`body.deri::before`,
+`--oda-tem`; JOYTAPE'de krem, koyu odalarda derin siyah) — skin ne
+olursa olsun alt bant **oda renginde** kalır.
+
+**2) RECORDS, JOYTAPE'NİN SON BANKASI.** "ordaki müzikler records diye
+orbitape modunun içine geçiyor ... onun içi full müzikler olacak".
+RECORDS 26 Eylül'de "records olmayacak" diye çıkarılmıştı; şimdi
+**doğru yerde** geri geliyor: JOYTAPE'nin dokuzuncu bankası, içinde
+yalnızca müzik. Ölçülen: JOYTAPE **9 halka** (ELECTRONIC LAB ·
+COMPOSERS · BLUE NOTE · WORLD · POP & GROOVE · ACOUSTIC · TAPE & VINYL
+· WIKIMEDIA COMMONS · **RECORDS**), havuz 12.452 kayıt.
+
+**3) CI ÇÖKMESİ: TEK KONTROL ARTIK KAPIYI DÜŞÜRMÜYOR.** GitHub
+Actions'taki "Sağlık kontrolü" exit code 2 ile düşüyor ve **88/88
+geçti** deyip duruyordu; ekran görüntüsündeki satır belli:
+`page.evaluate: Resulting promise was garbage collected`
+(saglik.js:2598). Sebep: servis işçisi (sw.js) sayfayı yenileyince
+bekleyen evaluate boşa düşüyor, istisna tüm suite'ı yıkıyor ve 895
+kontrolün 88'inden sonrası hiç koşmuyor. Düzeltme: `_guvenli(pg, fn,
+yedek)` sarmalayıcısı — hata olursa ölçüm nesnesine `_hata` yazılıyor,
+kontrol **kırmızı** veriyor, koşu **devam** ediyor. Kural gevşemedi.
+
+Kapı: saglik 895/895 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**.

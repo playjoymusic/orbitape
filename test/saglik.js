@@ -41,6 +41,21 @@ const TUM_KOD = (function(){
 
 const sonuc = [];
 const K = (ad, gecti, olcum) => sonuc.push({ad, gecti:!!gecti, olcum:String(olcum)});
+/* ── TEK KONTROL KAPIYI DÜŞÜRMESİN (29 Eylül, CI) ──────────────────
+   GitHub Actions'ta sağlık kontrolü exit code 2 ile düşüyor ve
+   "88/88 geçti" deyip DURUYORDU: `page.evaluate: Resulting promise
+   was garbage collected` (saglik.js:2598). Sebep: servis işçisi
+   (sw.js) sayfayı yenileyince bekleyen evaluate boşa düşüyor; istisna
+   tüm suite'ı yıkıyor, 895 kontrolün 88'inden sonrası hiç koşmuyor.
+   Düzeltme: evaluate'ı _guvenli() ile sarmalamak. Hata olursa ölçüm
+   nesnesine _hata yazılır; kontrol KIRMIZI verir, koşu DEVAM eder.
+   Kural gevşemedi, sadece tek kontrol bütün kapıyı düşüremiyor. */
+async function _guvenli(p, fn, yedek){
+  try{ return await p.evaluate(fn); }
+  catch(e){
+    return Object.assign({}, yedek||{}, { _hata:String((e && e.message) || e).slice(0,140) });
+  }
+}
 
 /* UI SAHIPLIK SOZLESMESI: Bir kontrol tek bir yuzeyin cocugu olmali.
     Tasima yapilip eski DOM yerinde kalirsa gorunur arayuz ile testin
@@ -2595,7 +2610,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      (fix SONRASI, ayni olcumle): gecis1MoodMu=[true,true,true],
      ikinciCalisti=true. */
   {
-    const mn2 = await pg.evaluate(async ()=>{
+    const mn2 = await _guvenli(pg, async ()=>{
       const bek = ms => new Promise(r=>setTimeout(r,ms));
       if(typeof moodAktifMi !== 'function' || typeof bekleGoster !== 'function'
          || typeof bekleDondur !== 'function' || typeof moodSembolSec !== 'function'
@@ -2721,7 +2736,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         let b = null;
         try{ b = sv.getBBox(); }catch(e){}
         if(!b || b.width < 0.5 || b.height < 0.5) bosBBox.push(i);
-      });
+      }, { yok:true });
       kutu.remove();
       return {
         yok:false,

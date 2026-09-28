@@ -2532,6 +2532,19 @@
      tuslar 36x32, anahtar 128x34. Gorsel ayni kalsin diye hedef
      buyutuldu: tuslara min-width/min-height 48, anahtara 7 px dikey
      ic bosluk (yol 26 px gorunur kalir). */
+  /* ── ALT BANTTA DERİ RENGİ (29 Eylul) ────────────────────────────
+     "altta skins neyse onu gösteriyor ... hangi skins ile kaparsam o
+     bant oluyor". Sebep: deri `body`'yi boyuyor
+     (body.deri{background:var(--d-zem) !important}); odanın koyu
+     katmanı alt kenarlık güvenlik alanına kadar gitmediği için ekranın
+     en altında derinin rengi görünüyordu. Çözüm: odanın kendi tonu için
+     en arkada TAM EKRAN bir katman — skin ne olursa olsun alt bant oda
+     renginde kalır. JOYTAPE'de oda tonu krem (duvar kâğıdıyla aynı),
+     koyu odalarda o derin siyah. */
+  body.zem{--oda-tem:#04070a;}
+  body.zem.joy{--oda-tem:#efe6d2;}
+  body.deri::before{content:'';position:fixed;inset:0;z-index:0;
+    pointer-events:none;background:var(--oda-tem,#04070a);}
   #kipKisayol .uck-ad{
     position:absolute;left:0;bottom:6px;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -10109,7 +10122,14 @@
     'POP & GROOVE':   ['104,48,16','230,200,172'],  /* acik kavunici */
     'ACOUSTIC':       ['40,44,46','210,206,200'],  /* gumus */
     'TAPE & VINYL':   ['78,38,18','224,194,166'],  /* kavunici */
-    'WIKIMEDIA COMMONS':['46,50,52','214,210,204'] /* disaridan */
+    'WIKIMEDIA COMMONS':['46,50,52','214,210,204'], /* disaridan */
+    /* RECORDS (29 Eylul, kullanici: "ordaki muzikler records diye
+       orbitape modunun icine geciyor ... onun ici full muzikler
+       olacak"). RECORDS 26 Eylul'de "records olmayacak" diye
+       kaldirilmisit; simdi geri geliyor ama DOGRU YERDE: JOYTAPE'nin
+       son bankasi, icinde yalnizca muzik. Yani "diger yedi bankaya
+       girmeyen ama muzik olan" kayitlar burada birikir. */
+    'RECORDS':         ['84,40,18','228,198,168']
   };
   /* ── DIS BANKA: WIKIMEDIA COMMONS (28 Eylul) ──
      "bizde n degil disardan yeni bir banka. link adres vs". 12 kaynak
