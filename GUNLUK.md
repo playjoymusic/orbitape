@@ -3609,3 +3609,45 @@ havuzda 0 vaaz. Yani kural hem yasaklamayı hem **izin** verdiğini
 Not: bu turda GUNLUK'a `librivoxaudio` yazım hatasıyla düzeltildi.
 Kapı yeşil: saglik 893/893 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19 · ham 1245 KB.
+### 28 Eylül (altıncı tur) — "sonsuz arıyor" düzeltildi, ACOUSTIC, ikon, doğrudan adres
+
+**1) "ORBİTAPE'DE SES BULAMIYOR, SONSUZ ARIYOR."** Ölçüm (20 sn
+izleme): havuz 90.803 kaydı, **sadece 13.889'u** doğrudan ses adresi
+taşıyor; gerisi oynatmadan önce `archive.org/metadata` turu bekliyor.
+Siralama o kayıtları da seçebiliyordu → bekleme ekranı dönüyor, sonra
+radyo akışına düşülüyordu (aktif öge `rb:…`, `currentTime` 10'da
+donmuş). İki düzeltme:
+* **Sıralama önce adresi olanı seçiyor** (`earthAl` iki tur geziyor:
+  1) `mp3` olanlar, 2) yoksa çözülecekler).
+* **Ön ısıtma**: ses başladıktan sonra sıradaki kayıtlar arka planda
+  çözülüyor (`katalogIsit`, kuyruk 4).
+* **Ölçülen sonuç: ilk ses 1,2 sn** (eskiden 20 sn bekleme).
+
+**2) "DOĞRUDAN SES ADRESİ OLMALI HEPSİ" — araclar/adres.py.**
+"nasıl yaptıysam aynı olmalı hepsi": yerel aynadaki gibi her kayıtta
+doğrudan adres. archive.org'un toplu metadata ucu **YOK** (ölçüldü: 5
+ve 50 kimlikte yanıt boş). Kimlik başına tek istek gerekiyor; ölçülen
+hız 16 iş parçacığıyla **1,0 kimlik/sn** → 118.000 kayıt ≈ **33 saat**.
+Bu yüzden iş **kesintisiz ve sürdürülebilir**: `araclar/adres.py`
+bulduğu adresi dosyaya yazar (`[id, konu]` → `[id, konu, adres]`), her
+dakika bir kez kaydeder, durdurulup yeniden başlatılabilir, çözülmüş
+kayıtlar tekrar sorulmaz. İlk dakikalarda ölçülen: 90 sn'de 97 kayıt.
+Uygulamadaki `mp3Bul` çözümü **yedek** olarak duruyor.
+
+**3) ACOUSTIC HALKASI.** "sadece acoustic yaz" — listedeki ACOUSTIC ve
+VOICE uygulamada düşmüştü (kayıtları TAPE & VINYL'e gidiyordu).
+Ölçülen: ilk kural 1.878 kayıt (kural: 2.000'in altında halka yok);
+saplı/şaşak çalgılar eklenince **2.209**.
+
+**4) FX İKONU.** "yukardaki fx ikonunun işi yok joytape te. olmayacak"
+→ `body.joy #gezegenTus{display:none}` (ölçülen: JOYTAPE'de gizli, 0 px).
+"çok küçük zaten, dikkat çeksin, büyük olsun biraz" → 30×30 → **44×44**,
+ikon 20 → 28 px, arka plan opaklığı .38 → .62 (ölçülen: 44×44).
+
+**JOYTAPE halkaları (ölçülen, 8 halka):** COMPOSERS 14.228 ·
+ELECTRONIC LAB 10.458 · BLUE NOTE 10.064 · TAPE & VINYL 8.760 ·
+POP & GROOVE 5.044 · WORLD 2.680 · ACOUSTIC 2.209 · WIKIMEDIA COMMONS 40.
+Hepsi 2.000'in üstünde.
+
+Kapı yeşil: saglik 893/893 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19 · ham 1246 KB.
