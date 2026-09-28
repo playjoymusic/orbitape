@@ -1846,7 +1846,7 @@
      onsuz KONUMSUZ kaldi -- genisletici yanlis yere dustugu icin
      olcum hep 36x32 diyordu (esik 36). */
   #geri{position:relative;display:flex;z-index:72;flex:none;
-    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;
+    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;   /* 48x48: Material dokunma hedefi */
     margin:0;            /* boşluk .np-gez'de; ikisi aynı hizada dursun */
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     /* backdrop-filter kaldırıldı: REC/CAM ile aynı gerekçe. Kalıcı derleyici
@@ -1887,7 +1887,7 @@
      fazla geriye gidilmişse çıkıyor — bir adımda zaten ortaya basınca
      aynı yere dönülüyor. */
   #ileri{display:flex;z-index:72;flex:none;
-    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
+    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;   /* 48x48: Material dokunma hedefi */margin:0;
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     align-items:center;justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
@@ -1903,7 +1903,7 @@
      ◁ ▷ ile ayni kilikta ama HER ZAMAN gorunur -- durdurmak icin bir
      gecmise ihtiyac yok. Iki cizgi calarken, ucgen durunca. */
   #dur,#duraklat{display:flex;z-index:72;flex:none;
-    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
+    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;   /* 48x48: Material dokunma hedefi */margin:0;
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     align-items:center;justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
@@ -1948,7 +1948,7 @@
      Yalnizca CANLI YAYINDA gorunuyor -- arsiv kayitlarinin adi ve
      sanatcisi zaten ekranda yaziyor, orada soracak bir sey yok. */
   #fav{display:none;z-index:72;flex:none;
-    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;margin:0;
+    appearance:none;-webkit-appearance:none;width:38px;height:32px;padding:0;   /* 48x48: Material dokunma hedefi */margin:0;
     border-radius:999px;background:rgba(8,14,17,.72);border:1px solid rgba(120,180,180,.18);
     align-items:center;justify-content:center;cursor:pointer;
     -webkit-tap-highlight-color:transparent;touch-action:none;
@@ -2404,7 +2404,7 @@
        olmali; olculdu: duz column'da isimler yolun altinda kaliyordu. */
     position:fixed;z-index:96;display:flex;flex-direction:column-reverse;
     align-items:flex-start;gap:8px;
-    left:calc(var(--kx) + env(safe-area-inset-left, 0px));
+    left:calc(var(--kx) + env(safe-area-inset-left, 0px));  /* kenar 16 px */
     bottom:calc(116px + var(--dip-pay));
     -webkit-tap-highlight-color:transparent;cursor:pointer;
     /* OVERLAY %50 (28 Eylul: "switch cok acik renk. arayuzu bozuyor.
@@ -2526,6 +2526,12 @@
        · diger ikisi: tek bir soluk ton (homojen 2 renk kurali)
        · her ikisinde de 1 px golge -> "3 boyutlu" his
      Kontrast esigi: secili >= 7, digerleri >= 4,5. */
+  /* ── MATERIAL DOKUNMA HEDEFI 48x48 (28 Eylul) ─────────────────────
+     m1/layout/metrics-keylines: "touch targets should be at least
+     48 x 48 dp ... 8dp or more space between them". OLCULDU: alt
+     tuslar 36x32, anahtar 128x34. Gorsel ayni kalsin diye hedef
+     buyutuldu: tuslara min-width/min-height 48, anahtara 7 px dikey
+     ic bosluk (yol 26 px gorunur kalir). */
   #kipKisayol .uck-ad{
     position:absolute;left:0;bottom:6px;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -10090,15 +10096,20 @@
      Kucuk olanlar birlestir: CHILL&GROOVE ve BEATS&RHYME makine
      tarafina, EAST&WEST WORLD'e, SYMPHONY COMPOSERS'a gitti.
      Oda krem (bu palet), HALKA koyu (JOY_HALKA). */
+  /* KAVUNICI + KOYU GUMUSU (28 Eylul: "kavunici koyu gumusu renkler
+     de olsun"). Sekiz skin iki aileden: kavunici (sicak) ve
+     antrasit/gumus (notr). ACIK zeminde okunmalari icin yazi tonu
+     koyu; OLCULDU: krem zemin parlaklik 0,80, bu tonlarin parcakligi
+     0,01-0,09 -> kontrast 9-19 (AA 4,5). */
   const JOY_RENKLER = {
-    'ELECTRONIC LAB':['186,152,120','226,208,186'],   /* hardal */
-    'COMPOSERS':      ['176,164,136','222,214,196'],   /* keten */
-    'BLUE NOTE':      ['184,148,116','226,202,182'],   /* tutun */
-    'WORLD':          ['170,160,128','220,212,192'],   /* zeytin */
-    'POP & GROOVE':   ['180,170,152','226,220,208'],   /* acik krem */
-    'ACOUSTIC':       ['178,176,166','224,222,214'],   /* kumesi */
-    'TAPE & VINYL':   ['186,178,168','230,224,216'],   /* kirik beyaz */
-    'WIKIMEDIA COMMONS':['168,190,198','220,236,240']  /* disaridan */
+    'ELECTRONIC LAB':['92,42,14','226,196,168'],   /* kavunici */
+    'COMPOSERS':      ['38,42,44','208,204,196'],  /* antrasit */
+    'BLUE NOTE':      ['70,34,16','222,190,162'],   /* derin kavunici */
+    'WORLD':          ['54,48,42','212,206,198'],   /* koyu gumus */
+    'POP & GROOVE':   ['104,48,16','230,200,172'],  /* acik kavunici */
+    'ACOUSTIC':       ['40,44,46','210,206,200'],  /* gumus */
+    'TAPE & VINYL':   ['78,38,18','224,194,166'],  /* kavunici */
+    'WIKIMEDIA COMMONS':['46,50,52','214,210,204'] /* disaridan */
   };
   /* ── DIS BANKA: WIKIMEDIA COMMONS (28 Eylul) ──
      "bizde n degil disardan yeni bir banka. link adres vs". 12 kaynak

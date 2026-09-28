@@ -4012,3 +4012,34 @@ alınacak ve kapıya kalıcı kontrol olarak yazılacak.
 
 Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 — **TEMİZ**.
+
+### 29 Eylül (on beşinci tur) — skinler kavunici+gümüş, Material denemesi ve ders
+
+**1) JOYTAPE SKİNLERİ: KAVUNİCİ + KOYU GÜMÜŞÜ.** "kavunici koyu
+gümüşü renkler de olsun". Sekiz skin iki aileye geçti: kavunici
+(ELECTRONIC LAB 92,42,14 · BLUE NOTE 70,34,16 · POP & GROOVE 104,48,16
+· TAPE & VINYL 78,38,18) ve antrasit/gümüş (COMPOSERS 38,42,44 ·
+WORLD 54,48,42 · ACOUSTIC 40,44,46 · WIKIMEDIA 46,50,52). Ölçülen
+parlaklık **0,022-0,051**, krem zeminde (0,80) kontrast **8,4-11,7** —
+hepsi AA üstü, ikinci ton (yazı tonu) açık.
+
+**2) MATERIAL 48×48 DOKUNMA HEDEFİ: DENENDİ, GERİ ALINDI — kapı
+kazandı.** Alt tuşlar 36×32 → 48×48, anahtar 128×34 → 128×48 yapıldı
+(ölçüldü). Kapı iki kırmızı verdi: "İki yıldız aynı ölçüde: 36x32 /
+48x48" ve "İki satır aynı yükseklikte". Sebep: uygulamanın **kendi
+ölçü birliği** var (bütün düğmeler aynı kutu) ve tek bir düğmeyi
+büyütmek birliği bozuyor. Geri alındı. Ders yazıldı: buradaki kural
+kapıdır; Material kuralı ancak **tüm düğmeler bir seferde** 48'e
+çekilip yerleşim de birlikte güncellenirse uygulanmalı — sıraya alındı.
+
+**3) YAYIN BOYUTU 350 KB ÇIKTI — KÖK NEDEN: YARIM `yayin/`.** Kapı
+"İlk çizim 350 KB brotli" verdi (beklenen 105). `derle.py` yeniden
+koşulunca: `yayin/index.html` 466.544 B, brotli **107.302 B** (tavan
+112.640) ✓. Demek ki ölçüm, **kesilen kapı koşusundan kalmış yarım
+derleme** çıktısını okumuş. Sonuç: yayın boyutu ancak `derle.py`
+temiz bittikten sonra ölçülmeli; yarım derlemeyi ölçmek yanlış kırmızı
+üretiyor. (Bu dosyada iki kez oldu: kapıyı yarıda kesip ölçüm
+almak.)
+
+Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**. İlk boyama 105 KB brotli.
