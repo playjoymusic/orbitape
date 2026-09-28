@@ -99,6 +99,19 @@
       return mood && AKTIF_MOD !== 'JOYTAPE';
     }catch(e){ return false; }
   }
+/* ANAHTAR ODANIN RENGINI ALSIN (28 Eylul: "her odaya gecince onun
+     rengini alacak"). --kip1/2/3: yatay yolun uc duragi; yol once
+     markanin --m1/2/3'unu aliyordu, yani uc odada da ayni kalirdi. */
+  function _kipRenkleri(m){
+    try{
+      const _k = document.documentElement.style;
+      const set=(a,b,c)=>{ _k.setProperty('--kip1',a); _k.setProperty('--kip2',b);
+                           _k.setProperty('--kip3',c); };
+      if(m === 'joy')        set('#5a2b10','#8c431a','#3a1c0b');  /* kavunici */
+      else if(m === 'orbit') set('#0f3d46','#1d5a63','#0a2b31');  /* petrol */
+      else                   set('#17402f','#2a6b55','#0f2c1f');  /* yesil */
+    }catch(e){}
+  }
   function modKollarIsaretle(){
     try{
       const kap = document.getElementById('modKollar');
@@ -174,7 +187,8 @@
           AYAR.merkez = (m === 'joy') ? 'cark' : 'yuvarlak';
           if(typeof merkezUygula === 'function') merkezUygula();
         }catch(e){ _yut(e); }
-        modKollarIsaretle();
+        _kipRenkleri(m);
+          modKollarIsaretle();
         modAdiYaz();
         geriYerlestir();
       }

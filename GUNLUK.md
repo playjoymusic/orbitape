@@ -3861,3 +3861,47 @@ defined") ve **yeşil görünüyordu**. Artık kaynak metin denetleniyor.
 Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 · yayın 19/19 — **TEMİZ**. İlk boyama 104 KB.
 Katalog: 117.993 kayıt · 25.691 adresli (%21,8) · kalan 92.302.
+
+### 28 Eylül (on birinci tur) — açık odada koyu mürekkep, kavunici anahtar, oda adı
+
+**1) ACIK ZEMİNDE AÇIK YAZI — 27 ÖĞE ÖLÇÜLDÜ, HEPSİ KOYULAŞTIRILDI.**
+"yazılar semboller günmüyor hepsi koyu olmalı siyah antrasit vs gri
+vs" + "açık renk üstü açık renk olmaz". Ölçüm (krem zemin parlaklık
+**0,80**, `body.zem.joy`): **27 öğe** turkuaz/açik gride takılıydı,
+kontrast **1,1-1,7**. Hepsine koyu mürekkep: siyah `#101413`,
+antrasit `#2b3331`, gri `#39423f` / `#4d5452`. Listelenenler: sol
+ikon sütunu (`#saatTus #gorselTus #rehberTus #kamTus #deriFirca
+#mute #fav #favAc #isaret #geri #dur #duraklat #ileri`), yazılar
+(`#ayarAra #npAd #npKaynak #npSanatci #npLisans .durum .yazi .yuva
+.el`) ve rehber satırları (`.sat`: "ALL SOUNDS OFF", "SEARCH",
+"CLICK", "WHEEL ..."). Ölçüm sonrası: **kalan 0**.
+
+**2) ANAHTAR KOYU KAVUNİCİ + HER ODA KENDİ RENGİ.** "swichy çok kötü
+zaten çok siyah gibi koyu renkli yap kavunici" + "her odaya geçince
+onun rengini alacak". Ölçülen: yol `rgb(90,43,16) → rgb(140,67,26) →
+rgb(58,28,11)`, topuz `rgb(140,67,26)`. `kollar.js`'e `_kipRenkleri(m)`
+yazıldı: JOYTAPE kavunici, ORBITAPE petrol, RADIOTAPE yesil
+(`--kip1/2/3`). Önce yol markanın `--m1/2/3`'ünü alıyordu, yani üç
+odada da aynı kalıyordu.
+
+**3) JOYTAPE'TE ODA ADI YOKTU — DÜZELTİ.** "joytape te oda isimleri
+hala yok". Sebep: büyük yazı yalnız `#modAd` bir mood adına değişince
+tetikleniyordu; JOYTAPE'de `#modAd` **kategori** adını taşıyor
+("ELECTRONIC LAB"), oda adı hiç çıkmıyordu. Tetik kip geçişinin **tek
+noktasına** (`_uygula`, index.html:17673) taşındı. Ölçülen: `JOYTAPE`,
+sınıf `alt`, **y=688** (halkanın altı, siyah boşluk), opaklık 0,56.
+
+**4) CI ÇÖKMESİ — TEKRARLANAMADI ( dürüst rapor ).** `071a26d`
+GitHub Actions'ta "Sağlık kontrolü" **exit code 2** ile düştü (test
+kırmızısı değil, süreç çökmüş; logda 88/88 yazmış). Yerelde CI'ın
+**aynı adımları** koşuldu: (a) mevcut çalışma ağacı, (b) temiz
+worktree'de `071a26d` — ikisi de **894/894, sıfır kırmızı**. Yani
+kodla ilgili bir hata yerel olarak görünmüyor; CI'ın WebKit/Firefox
+motor koşuları veya koşucu kaynakları söz konusu. `gh` yok, CI günlüğü
+çekilemedi. İşaret: `<style>`/`script-src` CSP ihlali **yerelde de**
+oldu — `_headers` bayat olduğu için ölçümler yarım çalışan sayfada
+yapılıyordu (`csp.py --kontrol` bunu söyledi, `python3 araclar/csp.py`
+ile düzeldi). DERS: ölçümden önce `csp.py --kontrol` yeşil olmalı.
+
+Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**. Katalog: 117.993 kayıt · 25.691 adresli (%21,8).

@@ -2452,6 +2452,44 @@
   body.zem.joy #solUst,body.zem.joy #solUst .simge{color:#1d2a27;}
   body.zem.joy #modAd{color:#26332f !important;}
   body.zem.joy #kipKisayol{opacity:.72;}
+  /* ══ ACIK ZEMINDE KOYU MUREKKEP (28 Eylul) ══════════════════════
+     "yazilar semboller gunmuyor hepsi koyu olmali siyah antrasit vs
+     gri vs" + "acik renk ustu acik renk olmaz".
+     OLCULDU (krem zemin parlaklik 0,80): 27 oge turkuaz/açik gride
+     kalıyordu, kontrast 1,1-1,7. Uc mürekkep: siyah #101413, antrasit
+     #2b3331, gri #4d5452 -- hepsi krem zemine 8-18 kontrast. */
+  body.zem.joy{color:#1b2422;}
+  body.zem.joy #ust,body.zem.joy #solUst,body.zem.joy #kipKisayol,
+  body.zem.joy #modGez,body.zem.joy #ara,body.zem.joy #np,
+  body.zem.joy #sesCubuk,body.zem.joy #kayitBilgi,body.zem.joy .yuva,
+  body.zem.joy .el,body.zem.joy .yazi,body.zem.joy .durum,
+  body.zem.joy .isaret,body.zem.joy .gs-tarih{color:#1b2422 !important;}
+  body.zem.joy #saatTus,body.zem.joy #gorselTus,body.zem.joy #rehberTus,
+  body.zem.joy #kamTus,body.zem.joy #deriFirca,body.zem.joy #mute,
+  body.zem.joy #fav,body.zem.joy #favAc,body.zem.joy #isaret,
+  body.zem.joy #geri,body.zem.joy #dur,body.zem.joy #duraklat,
+  body.zem.joy #ileri,body.zem.joy #ayarAra,body.zem.joy #rec,
+  body.zem.joy #cam{color:#26302d !important;}
+  body.zem.joy #npAd,body.zem.joy #npKaynak,body.zem.joy #npSanatci,
+  body.zem.joy #npLisans,body.zem.joy h5{color:#39423f !important;}
+  body.zem.joy svg,body.zem.joy svg *{stroke:currentColor;}
+  /* REHBER SATIRLARI (olculdu: ".sat" icindeki 27 ogeden biri --
+     "ALL SOUNDS OFF", "SEARCH", "CLICK", "WHEEL ..." gibi yazilar
+     1,2 kontrastta kalip gorunmuyordu). */
+  body.zem.joy .sat,body.zem.joy .sat *{color:#39423f !important;}
+  body.zem.joy .sat .bas,body.zem.joy .sat b,body.zem.joy .sat strong,
+  body.zem.joy .sat h5{color:#1b2422 !important;}
+  /* ANAHTAR: KOYU KAVUNICI (28 Eylul: "swichy cok koty zaten cok
+     siyah gibi koyu renkli yap kavunici") -- ve her oda kendi
+     rengini alsin (--kip1/2/3 moodUygula yaziyor). */
+  body.zem.joy #kipKisayol .uck-yol{
+    background:linear-gradient(90deg,var(--kip1,#4a2410) 0%,
+      var(--kip2,#6b3512) 50%, var(--kip3,#3a1c0b) 100%);}
+  body.zem.joy #kipKisayol .uck-topuz{background:#8c431a;
+    box-shadow:0 1px 3px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.25);}
+  body.zem.joy #kipKisayol[aria-valuenow="0"] .uck-topuz{background:#6b3512;}
+  body.zem.joy #kipKisayol[aria-valuenow="1"] .uck-topuz{background:#8c431a;}
+  body.zem.joy #kipKisayol[aria-valuenow="2"] .uck-topuz{background:#5a2b10;}
   #kipKisayol .uck-ad{
     position:absolute;left:0;bottom:6px;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -17672,7 +17710,12 @@
       };
       const _uygula = (m)=>{
         try{
-          if(typeof window !== 'undefined' && typeof window.modKolaGit === 'function')
+          /* ODA ADI (28 Eylul: "joytape te oda isimleri hala yok"): kip gecisinin
+         TEK noktasi. Once yalniz #modAd degisince tetikleniyordu; JOYTAPE'de
+         #modAd kategori adini tasiyor, oda adi hic cikmiyordu. */
+         try{ moodAdGoster(m === 'joy' ? 'JOYTAPE'
+               : (m === 'radio' ? 'RADIOTAPE' : 'ORBITAPE')); }catch(e){ _yut(e); }
+                   if(typeof window !== 'undefined' && typeof window.modKolaGit === 'function')
             window.modKolaGit(m);
           else if(m === 'radio'){ if(window.moodKapat) window.moodKapat(); }
           else if(window.moodAc) window.moodAc();
