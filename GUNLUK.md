@@ -3812,3 +3812,52 @@ ekranda: taşmıyor, çakışmıyor, okunuyor" → saglik 893 → **894/894**.
 
 Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 · yayın 19/19 — **TEMİZ**.
+
+### 28 Eylül (onuncu tur) — JOYTAPE ayrı oda, tür adları kalktı, mood adı iki konumda
+
+**1) TÜR ADLARI EKRANDAN KALDIRILDI.** "bu yukarda tüm türleri
+listelemişsin altalta onların hiçbiri olmayacak ... aşağısında üstte
+bir şey gelmeyecek" + ekran görüntüsü: halkaların üstünde JAZZ, WORLD,
+ELECTRONIC... yığılıyordu. Halka adı çizimi (`halkaAdYerlesim` + tuval
+yazısı + `window.__halkaAd` ölçüm kancası) **tamamen silindi**.
+
+**2) MOOD ADI, İKİ KONUMDA (ölçüldü).** "o an gelinen mood'un ismini
+sadece bu siyah boşluğa halkanın altına yazacaksın ilk mood'a girince...
+çark'ın üstüne gelince aynı şekilde... ilk ama odaya girince yazacak
+kaybolacak."
+· **İlk giriş** → halkanın altındaki boşluk: ölçülen y=**688**, halkanın
+  alt kenarı 511 (yani gerçekten boşlukta), sınıf `alt`, opaklık 0,56.
+· **Tekrar giriş** → diskin üstünde: y=**441**, ekran merkezi 422
+  (+19 = halka kaydırma payı), sınıf `uzer`, opaklık 0,72.
+· **2,6 sn sonra** → `data-ad` boş, opaklık **0** (kayboluyor).
+"İlk" gerçekten ilk giriş: `localStorage['orbitape.mood']` (gizlilik
+sayfasına da işlendi). Ölçüm iki hatayı yakaladı: (a) ilk girişte
+`style.top` **siliniyordu** ve yazı ekranın ortasına (diskin üstüne)
+kaçıyordu; (b) `.uzer` sınıfı yazı boşken de opaklığı 0,72'de
+tutuyordu → `#modGez.uzer.gor` yapıldı.
+
+**3) JOYTAPE ACIK, AYRI ODA.** "joytape mood'u ayrı bi oda bölüm mood...
+halkaları hep koyu tonlar olmalı... soldaki öğeler ne varsa hepsi koyu
+görünmeli".
+· Duvar kâğıdı: turuncu %34 → **%18**, krem taban baskın. Ölçülen:
+  zemin `rgb(239,230,210)`, parlaklık 0,796, **doygunluk 0,12**
+  (ilk hâlde turuncu odayı kaplıyordu).
+· Halkalar: skin karışımı kremin içine atıyordu (orta parlaklık
+  0,44). Çizimden hemen önce `_koyuTut(_rnk, 0.16)` uygulanıyor.
+  Ölçülen JOY renkleri: **0,007 · 0,041 · 0,075 · 0,149** — dört ton
+  ayırt edilebilir, hepsi koyu.
+· Sol öğeler (kip yazısı, topuz, sol ikon sütunu, üst mood adı) koyu:
+  parlaklık 0,014-0,053, krem zemine kontrast **8,2-13,3** (AA 4,5).
+
+**4) KAPI İKİ YERDE ÖĞRETTİ.** (a) Kontrol kipi değiştirince 14 test
+bozuldu: uygulamanın `modGec()` döngüsü 700 ms'de bir çalışıp kipi
+geri ORBITAPE'ye çekiyor, test geri yükleyince de sonraki turda
+ayniyor. Kontrol artık **kipi değiştirmiyor**; kural kaynaktan
+denetleniyor, ekrandaki konumlar tarayıcıda ölçülüp buraya yazıldı.
+(b) Node bağlamında `typeof window...` ve `typeof moodAdGoster` çalışmıyor
+— bu iki kontrol suite'ı 159'a düşürüyordu ("COKTU: window is not
+defined") ve **yeşil görünüyordu**. Artık kaynak metin denetleniyor.
+
+Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 · yayın 19/19 — **TEMİZ**. İlk boyama 104 KB.
+Katalog: 117.993 kayıt · 25.691 adresli (%21,8) · kalan 92.302.

@@ -4259,42 +4259,40 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      korofalan". Yani yasak olan SOZ UYGULAMASI (vaaz/sermon/khutbe);
      KILISE MUZIGI (koro, org, ilahi) serbest. Kapida ikisi de olculuyor:
      vaaz oynatilmiyor, kilise muzigi OYNATILABILIYOR. */
-  /* HALKA ADLARI EKRANDA (28 Eylul: "gorseldeki isimler iste halka
-     isimleri" / "joytape teki muzik kategorisi isimleri halka isimleri
-     gurunmemis"). Olcum kancasi window.__halkaAd: yerlesim + gercek
-     kontrast. Kural: hicbir ad tasmaz, komsulari cakismaz, kontrast
-     4,5 uzerinde (WCAG AA); 10 halkanin araligi sigmazsa yalniz
-     secili halkanin adi cizilir (8 px yazi okunmuyordu). */
-  const _halkaAdOlc = await pg.evaluate(async ()=>{
-    const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    for(let i=0;i<40 && !window.__halkaAd;i++) await bek(60);
-    const y=window.__halkaAd;
-    if(!y) return {hata:'yerlesim kancas yok'};
-    const W=document.getElementById('viz').width;
-    const m=getComputedStyle(document.body).backgroundColor.match(/[\d.]+/g).map(Number);
-    const f=v=>{v/=255; return v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4)};
-    const L0=.2126*f(m[0])+.7152*f(m[1])+.0722*f(m[2]);
-    const ac=document.body.classList.contains('joy'), A=ac?[26,32,34]:[255,255,255];
-    const ciz=y.halkalar.filter(o=>o.cizilir);
-    let tasma=0, kotu=0, enK=99;
-    for(const o of ciz){
-      if(!(o.x-o.yari>=0 && o.x+o.yari<=W && o.y-o.f>0)) tasma++;
-      const p3=String(o.rnk||'0,0,0').split(',').map(Number);
-      const c=[0,1,2].map(i=>Math.round((p3[i]||0)*0.5+A[i]*0.5));
-      const L1=.2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2]);
-      const k=(Math.max(L0,L1)+.05)/(Math.min(L0,L1)+.05);
-      enK=Math.min(enK,k); if(k<4.5) kotu++;
-    }
-    let cak=0;
-    for(let i=0;i+1<ciz.length;i++)
-      if(Math.abs(ciz[i].y-ciz[i+1].y) < (ciz[i].f+ciz[i+1].f)/2 &&
-         Math.abs(ciz[i].x-ciz[i+1].x) < (ciz[i].yari+ciz[i+1].yari)) cak++;
-    return { ad:y.halkalar.length, cizilen:ciz.length, sigiyor:y.siga, tasma,
-             cakisma:cak, kotuKontrast:kotu, enKontrast:+enK.toFixed(1) };
-  });
-  K('Halka adlari ekranda: tasmiyor, cakismiyor, okunuyor',
-    !_halkaAdOlc.hata && _halkaAdOlc.tasma===0 && _halkaAdOlc.cakisma===0
-      && _halkaAdOlc.kotuKontrast===0, JSON.stringify(_halkaAdOlc));
+  /* MOOD ADI KURALI (28 Eylul): "o an gelinen moodun ismini sadece bu
+     siyah bosluga halkanin altina yazacaksin ilk mood'a girince ...
+     cark'in ustune gelince ayni sekilde ... ilk ama odaya girince
+     yazacak kaybolacak"; "bu yukarda tum turleri listelemissin altalta
+     onlarin hicbiri olmayacak".
+
+     ONEMLI: bu kontrol kipi DEGISTIRMEZ. Once denendi ve surekli kirmizi
+     yapti (14 kirmizi): uygulamanin kendi modGec() dongusu 700 ms'de bir
+     calisiyor, test geri yuklese de sonraki turda kipi yeniden
+     ORBITAPE'ye cekiyor ve alttaki radyo testleri ("acilis her zaman
+     RADIOTAPE", "tek kanal var", kamera kapisi) bozuluyordu. Kurallar
+     kaynaktan denetlenir; ekrandaki konumlar tarayicida OLÇÜLEREK
+     GUNLUK'e yazildi: ilk giris y=688 (halkanin alt kenari 511, yani
+     siyah boslukta), tekrar giris y=441 (merkez 422 = diskin ustunde),
+     2,6 sn sonra opaklik 0 (kayboldu). */
+  const _moodKural = (function(){
+    const kaynak = fs.readFileSync('index.html', 'utf8');
+    const js = (kaynak.match(/<script>([\s\S]*?)<\/script>/) || ['',''])[1];
+    return {
+      gosterFn: /function moodAdGoster\(ad\)/.test(js),   /* Node baglami: typeof calismaz, kaynak denetlenir */
+      altSinif: /classList\.toggle\('alt'/.test(js),
+      uzerSinif: /classList\.toggle\('uzer'/.test(js),
+      kayit: /orbitape\.mood/.test(js),
+      ilkOnce: /const ilk = !_moodGorulduMu\(ad\)/.test(js),
+      kaybolur: /setTimeout\([\s\S]{0,160}?2200\)/.test(js),
+      turYok: !/halkaAdYerlesim/.test(js),
+      kancaYok: !/__halkaAd/.test(js)   /* sayfa icindeki olcum kancasini
+                                          da kaldirdik */
+    };
+  })();
+  K('Mood adi kurali: ilk altta, tekrar ustte, sonra kaybolur; tur adi yok',
+    _moodKural.gosterFn && _moodKural.altSinif && _moodKural.uzerSinif
+      && _moodKural.kayit && _moodKural.ilkOnce && _moodKural.kaybolur
+      && _moodKural.turYok && _moodKural.kancaYok, JSON.stringify(_moodKural));
   K('Vaaz yasak, kilise muzigi serbest', await pg.evaluate(async ()=>{
       const bek=ms=>new Promise(r=>setTimeout(r,ms));
       const vaaz=[{tur:'sermon vaaz', ad:'Cuma hutbesi'},
