@@ -3651,3 +3651,50 @@ Hepsi 2.000'in üstünde.
 
 Kapı yeşil: saglik 893/893 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19 · ham 1246 KB.
+### 28 Eylül (yedinci tur) — düğme %50 overlay, ikon, gezegen sürtmesi, doğrudan adres çözücü
+
+**1) DÜĞME OVERLAY %50.** "switch çok açık renk. arayüzü bozuyor.
+overlay olsun %50" — düğmenin rengi tema duraklarından geliyor ve tam
+opaklıkta ekranı tartıyordu. Blok **opacity .5**; dokunulunca/odaklanınca
+0.9, basılıyken 0.78. Ölçüldü: `getComputedStyle` opacity 0.5.
+
+**2) FX İKONU.** 30×30 → **44×44**, ikon 20 → 28 px, zemin opaklığı
+.38 → .62 ("çok küçük zaten, dikkat çeksin, büyük olsun biraz").
+JOYTAPE'de tamamen gizli (`body.joy #gezegenTus{display:none}`,
+ölçülen 0 px) — "burada ayrı bir oda, ayrı bir mood".
+
+**3) GEZEGEN MENÜSÜ SÜRTMEDE KAPANIYORDU.** "fxlerden biri aktif ve
+parmağımızla sürtmeye başlayınca gezegenler kapanmasın. halkanın
+içinde kapanmasın. ancak sayfanın boş yerine ya da yukarıdaki ikona
+tekrar basınca kapansın." Ölçüldü: gezegen menüsü açıkken diske
+sürtünce `gezegen-acik` **true → false** oluyordu (menü kapanıyordu),
+çünkü dokunma tuvalin üstüne düşüyor ve "boş yer" sayılıyordu.
+Düzeltme: menüyü kapatan belge dinleyicisi artık odanın kendi
+yüzeylerini saymıyor (tuval, disk, bekleme simgesi, üst çubuk, kip
+düğmesi, seçici). Ölçülen: FX aktifken diskte ve halkanın üstünde
+sürteyince menü **açık kalıyor**; ikon tekrar ve boş yer kapatıyor.
+
+**4) DOĞRUDAN ADRES ÇÖZÜCÜ** (`araclar/adres.py`). "doğrudan ses
+adresine sahip olmalı hepsi, sistemim o hızlı çalması için" ·
+"nasıl yaptıysam aynı olmalı hepsi". archive.org'un toplu metadata ucu
+**yok** (ölçüldü: 5 ve 50 kimlikte yanıt boş); kimlik başına tek istek
+gerekiyor, ölçülen hız 16 iş parçacığıyla **1,0 kimlik/sn**. İş
+kesintisiz ve sürdürülebilir: bulunan adres dosyaya yazılıyor
+(`[id, konu]` → `[id, konu, adres]`), her dakika kayıt, durdurulup
+başlatılabilir, çözülmüş kayıt tekrar sorulmaz. Ölçülen ilk
+saniyelerde 5.242 kayıtta adres var (%4,4); kalan 112.751 sırada.
+Uygulamadaki `mp3Bul` çözümü **yedek** olarak duruyor.
+
+**5) SIRA + ÖN ISITMA.** "orbitape te ses bulamıyor, sonsuz arıyor"
+ölçümü: havuz 90.803, doğrudan adresi olan 13.889; sıralama adresi
+olmayanları da seçiyordu → bekleme ekranı dönüyor, sonra radyo
+akışına düşülüyordu (`currentTime` 10'da donmuş). Artık `earthAl`
+iki tur geziyor (1) adresi olanlar, 2) yoksa çözülecekler) ve ses
+başladıktan sonra `katalogIsit` sıradaki kayıtları arka planda
+çözüyor. **Ölçülen ilk ses: 1,2 sn.**
+
+**6) ACOUSTIC.** "sadece acoustic yaz" — halka eklendi; ilk kural
+1.878 kayıt verdi (2.000 tabanı), saplı/şaşak çalgılarla **2.209**.
+
+Kapı yeşil: saglik 893/893 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156 · yayın 19/19 · ham 1247 KB.

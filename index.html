@@ -2397,8 +2397,13 @@
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));
     bottom:calc(116px + var(--dip-pay));
     -webkit-tap-highlight-color:transparent;cursor:pointer;
-    opacity:.82;transition:opacity .22s ease;touch-action:none;}
-  #kipKisayol:hover,#kipKisayol:focus-visible{opacity:1;}
+    /* OVERLAY %50 (28 Eylul: "switch cok acik renk. arayuzu bozuyor.
+       overlay olsun %50"): dugmenin rengi tema duraklarindan geliyor
+       ve tam opaklikta ekrani tartip duruyordu. Blok yari saydam
+       katman; dokunulunca/odaklaninca 0.9'a cikiyor. */
+    opacity:.5;transition:opacity .22s ease;touch-action:none;}
+  #kipKisayol:hover,#kipKisayol:focus-visible{opacity:.9;}
+  #kipKisayol.uck-acik{opacity:.78;}
   #kipKisayol .uck-yol{position:relative;flex:0 0 auto;
     width:var(--uck-h);height:var(--uck-w);border-radius:calc(var(--uck-w)/2);
     /* HOMOGEN GECIS + TEMA RENKLERI (28 Eylul: "swichin rengi skins
@@ -8305,6 +8310,18 @@
         if(!document.body.classList.contains('gezegen-acik')) return;
         const t = /** @type {any} */ (e).target;
         if(t && t.closest && (t.closest('#gezegenTus') || t.closest('#uydular'))) return;
+        /* SADCE SAYFANIN BOS YERI KAPATIR (28 Eylul: "fxlerden biri
+           aktif ve parmagimizla surtmeye baslayinca gezegenler
+           kapanmasin. halkanin icinde kapanmasin. ancak ne zaman
+           sayfanin bos yerine ya da yukardaki ikona tekrar basimca").
+           OLCUMLU: onceki halde diske ve halkanin uzerine surtmek
+           menuyu kapatiyordu (gezegen: true -> false) -- cunku
+           dokunma tuvalin uzerine dustugu icin "bos yer" sayiliyordu.
+           Artik odanin kendi yuzeyleri sayilmaz: tuval, disk, beklenme
+           simgesi, ust cubuk ve kip dugmesi. */
+        if(t && t.closest && t.closest(
+            '#viz, #tasima, #bekle, #mark, #kipKisayol, #kipKisayol *, ' +
+            '#ust, .kanal, #kipKut, #modKollar')) return;
         ac(false);
       });
       document.addEventListener('keydown', e=>{
