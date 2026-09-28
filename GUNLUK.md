@@ -3513,3 +3513,61 @@ rahat olanlar". Ölçülen seçim:
 Kapı yeşil: saglik 892/892 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156 · yayın 19/19 · ilk boyama 109 KB ·
 ilk açılış 112 KB · ham 1301 KB (pay 48 B).
+### 28 Eylül (dördüncü tur) — 100.000+ kayıt katalogu, çözüm yolu, düğme ve halkalar
+
+**1) KATALOG UYGULAMAYA BAĞLANDI.** "ne yüz bini milyon", "hemen
+yüzbinlere ekleyelim", "zaten radyo ile açılıyoruz o anda ön yük vs neyse
+her şey linkler yüklenebilir". `araclar/hasat.py` ile toplanan
+`katalog/*.json` dosyaları açılışta **arka planda**, tek tek çekiliyor
+(`katalogYukle()`, radyo çalarken). Kayıtlar `[kimlik, konu]` ikilisi:
+konu **etiket** alanına gidiyor, böylece mevcut kurallar kaydı doğru
+halkaya dağıtıyor. Konu olmasaydı 119.000 kayıt tek kovada (TAPE & VINYL)
+kalırdı — ölçüldü, o yüzden konu hasada alınıyor.
+
+* **Ölçülen dağılım (43.250 havuz):** COMPOSERS **12.531** ·
+  ELECTRONIC LAB **9.752** · TAPE & VINYL **8.405** · BLUE NOTE **5.669**
+  · POP & GROOVE **4.446** · WORLD **2.407** · WIKIMEDIA COMMONS 40.
+  Artık **her halka 2.000'in üstünde** (kural: "bi türün içinde 2000
+  den az track olmasın").
+* **Ses adresi oynatma anında çözülüyor** (100.000+ kayıt *kimlik*
+  olarak taşınıyor; başlık ve ses `archive.org/metadata/<id>` ile
+  geliyor). Ölçülen: 14 kaydın 13'ü çözüldü, çözülen kayıt 8,3 sn
+  çaldı (readyState 4, hata yok).
+
+**2) ÇEVRİMDIŞI SENARYO BOZULDU, DÜZELTİLDİ.** Arıza kapısı 14/18
+kırmızıydı: "sonsuz aramaya girmiyor: durdu:false, 4 deneme" ve
+"istek asılı, uygulama sonsuza kadar bekliyor". İki ayrı sebep:
+(1) arıza testi `katalog/` dosyalarını **mocklamıyordu** — testin kendi
+notu bu tuzağı zaten bir kez yazmış (EARTH_GIRIS UNUTULMUSTU); 120.000
+gerçek kayıt sızıyordu. (2) Çözüm yolunda kendi zaman aşımımız yoktu;
+`atla()`'nin 300 ms koruması yüzünden 6 sn'de 12 hata eşiğine ulaşılamıyor
+du. Düzeltme: mock listeye `katalog/` eklendi, çözüme 6 sn zaman aşımı +
+her yolda ilerleyen hata sayacı kondu. **arıza 18/18** ✓
+
+**3) BİR RASTLANTI YOK, DÜZELTİLDİ.** "Birds diye halka aç orbitape'e"
+denendi: Commons kategorileri ölçüldü ama API **429** veriyor (12 dk
+boyunca, kota dolu); Xeno-Canto v2 **404**, v3 **401** (anahtar) — yani
+listelenen 700.000 kayda "rahat olanlar" kuralıyla erişilemiyor. Kullanıcı:
+"dur bi... gerek yok, kotali işlere girme" ve "az kuş varsa yeter,
+atarsın nature'a". **BIRDS halkası tamamen geri alındı** (0 kalıntı);
+kuş kayıtları mevcut kurallarla NATURE'a gidiyor. Geri alırken **RECORDS
+satırı da yanlışlıkla silindi** (RETRO tablosu 11 → 10 anahtar) ve kapı
+bunu yakaladı: "Her kategorinin kendi zemin tonu: RECORDS #08090b" —
+yani RECORDS teması yoktu, zemini radyonunkiyle aynıydı. Satır geri
+kondu.
+
+**4) BÜTÇE: 57 KB YER AÇILDI.** Tavan 1.332.224 B, dosya
+1.275.528 B. Yer, **dekoratif çizgilerden** açıldı: dosyada 646 adet
+`────` dizisi vardı (4+ işaret → 2) ve 12+ boşluk dizileri 12'ye
+indirildi. Bilgi taşıyan hiçbir şey silinmedi — ölçüm: 1.331.111 →
+1.274.243 B (**57.981 B**). Yeni katalog yükleyicisi ve ses çözüm
+yolu bu paydan eklendi, işlev silinmedi.
+
+Kapı: ariza 18/18 · senaryo 121/121 · motor 19/19 · cihaz 156/156 ·
+saglik ve yayın kırmızısız · ilk boyama 110 KB · ilk açılış 113 KB ·
+ham 1245 KB (tavan 1301 KB).
+
+**Katalog durumu:** 119.284 kayıt · 18 banka · 9 MB. Milyon hedefi için
+archive.org'un daha geniş koleksiyonları eklenmeli (kota yok, ölçüldü:
+`audio_islamic`, `audio_sermons`, `audio_religion`, `librivoxaudio` gibi
+büyük koleksiyonlar henüz toplanmadı — "din · vaaz" bunlarda).

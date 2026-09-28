@@ -210,6 +210,13 @@ def yeterli(banka, hedef):
 
 # ── INTERNET ARCHIVE ─────────────────────────────────────────────────────
 def ia_cek(koleksiyon, hedef):
+    """[kimlik, 'konu;konu'] listesi.
+
+    NEDEN KONU DA: uygulama kaydi etiketten (etiket alani) siniflandiriyor
+    (bkz. _mt). Konu olmadan 120.000 kayit tek kovaya (TAPE & VINYL)
+    yigilir ve hicbir halka 2.000'e ulasamazdi. Konu toplu geliyor
+    (olculdu: fl[]=subject).
+    """
     kimlikler = []
     gorulen = set()
     sayfa = 1
@@ -217,7 +224,7 @@ def ia_cek(koleksiyon, hedef):
     while len(kimlikler) < hedef and sayfa <= 200:
         q = 'collection:(%s) AND mediatype:(audio)' % koleksiyon
         url = ('https://archive.org/advancedsearch.php?q=%s'
-               '&fl%%5B%%5D=identifier&rows=%d&page=%d&output=json'
+               '&fl%%5B%%5D=identifier&fl%%5B%%5D=subject&rows=%d&page=%d&output=json'
                % (urllib.parse.quote(q), satir, sayfa))
         j = istek(url, bekle=0.4)
         if not j:
@@ -229,7 +236,10 @@ def ia_cek(koleksiyon, hedef):
             kim = d.get('identifier')
             if kim and kim not in gorulen:
                 gorulen.add(kim)
-                kimlikler.append(kim)
+                konu = d.get('subject') or []
+                if isinstance(konu, str):
+                    konu = [konu]
+                kimlikler.append([kim, ';'.join(str(x)[:40] for x in konu[:14])])
         if sayfa % 5 == 0 or len(belgeler) < satir:
             print('     %-26s %7d / %d' % (koleksiyon, len(kimlikler), hedef), flush=True)
         sayfa += 1
@@ -413,6 +423,63 @@ def commons_tara(hedef, derinlik=3):
                   % (len(kimlikler), len(gorulen_kat), istek_no), flush=True)
     return kimlikler[:hedef]
 
+def ozet_yaz():
+    """Uygulamanin okudugu dosya listesi: katalog/ozet.json."""
+    if not os.path.isdir(DIZIN):
+        return
+    adlar = [a for a in sorted(os.listdir(DIZIN)) if a.endswith('.json') and a != 'ozet.json']
+    with open(os.path.join(DIZIN, 'ozet.json'), 'w', encoding='utf-8') as f:
+        json.dump(adlar, f, ensure_ascii=False, separators=(',', ':'))
+    print('   v ozet.json (%d dosya)' % len(adlar), flush=True)
+
+
+# BIRDS (28 Eylul, "kussesleri fazla galiba. Birds diye halka ac"):
+# once Commons denenildi ama API kotasI 429 veriyor (olculdu: 12 dk
+# boyunca). Xeno-canto 700.000+ kayit vaat ediyor ama v2 404, v3 401
+# (anahtar) -- yani "rahat olan" degil. RAHAT OLAN: archive.org'un konu
+# (subject) inde kuş. OLÇÜLDÜ: subject:"birds" -> 5.212 ses kaydi,
+# 1,9-2,3 sn/sayfa, kota yok.
+BIRS_SORGULAR = [
+    'subject:"birds"', 'subject:"birdsong"', 'subject:"bird song"',
+    'subject:"owl"', 'subject:"robin"', 'subject:"nightingale"',
+    'subject:"canary"', 'subject:"finch"', 'subject:"seagull"',
+    'subject:"eagle"', 'subject:"cuckoo"', 'subject:"blackbird"',
+    'subject:"wren"', 'subject:"woodpecker"', 'subject:"parrot"',
+    'subject:"songbirds"', 'subject:"wild birds"'
+]
+
+
+def kus_cek(hedef=20000):
+    cift = []
+    gorulen = set()
+    for sorgu in BIRS_SORGULAR:
+        sayfa = 1
+        while sayfa <= 12 and len(cift) < hedef:
+            j = istek('https://archive.org/advancedsearch.php?q=%s'
+                      '&fl%%5B%%5D=identifier&fl%%5B%%5D=subject&rows=200&page=%d&output=json'
+                      % (urllib.parse.quote('mediatype:(audio) AND ' + sorgu), sayfa),
+                      bekle=0.4)
+            if not j:
+                break
+            docs = (j.get('response') or {}).get('docs') or []
+            if not docs:
+                break
+            for d in docs:
+                kim = d.get('identifier')
+                if not kim or kim in gorulen:
+                    continue
+                gorulen.add(kim)
+                konu = d.get('subject') or []
+                if isinstance(konu, str):
+                    konu = [konu]
+                cift.append([kim, ';'.join(str(x)[:40] for x in konu[:14])])
+            sayfa += 1
+        print('   %-26s toplam %d' % (sorgu, len(cift)), flush=True)
+        if len(cift) >= hedef:
+            break
+    return cift
+
+
 def kontrol():
     toplam = 0
     sat = []
@@ -420,10 +487,14 @@ def kontrol():
         for ad in sorted(os.listdir(DIZIN)):
             if not ad.endswith('.json'):
                 continue
+            if ad == 'ozet.json':          # dosya listesi, banka degil
+                continue
             try:
                 with open(os.path.join(DIZIN, ad), encoding='utf-8') as f:
                     d = json.load(f)
             except Exception:
+                continue
+            if not isinstance(d, dict):
                 continue
             toplam += d.get('n', 0)
             sat.append((d.get('n', 0), d.get('k', ad), d.get('s', '')))
@@ -457,6 +528,18 @@ def main():
             if kim:
                 yaz(kol, 'Internet Archive', 'koleksiyon: ' + kol, kim,
                     'https://archive.org/details/' + kol)
+                ozet_yaz()          # uygulama her an okuyor
+    if hepsi or 'birds' in sec:
+        print('BIRDS (archive.org konu sorgulari)', flush=True)
+        var = mevcut('birds')
+        if var and var.get('n', 0) >= 2000:
+            print('   · birds zaten %d' % var['n'], flush=True)
+        else:
+            cift = kus_cek()
+            if cift:
+                yaz('birds', 'Internet Archive', 'konu: kus/bird', cift,
+                    'https://archive.org/details/texts?tab=collection&query=birds')
+                ozet_yaz()
     if hepsi or 'wiki' in sec:
         print('WIKIMEDIA COMMONS (derinlikli kategori taramasi)', flush=True)
         var = mevcut('commons-audio-tarama')
@@ -502,6 +585,7 @@ def main():
             if kim:
                 yaz('xeno-canto', 'Xeno-Canto', 'CC (kayit basina)', kim,
                     'https://xeno-canto.org/')
+    ozet_yaz()
     kontrol()
     return 0
 

@@ -81,6 +81,16 @@ async function ac(tarayici, ses, secenek){
       if(/\/earth(_giris|_buyuk)?\.json/.test(u))
         return r.fulfill({status:200, contentType:'application/json',
           body: JSON.stringify(se.liste ? ARSIV : [])});
+      /* 28 Eylul -- KATALOG DA SIZIYORDU (ayni tuzak, ikinci kez):
+         dis kaynak katalogu katalog/ozet.json + katalog/*.json
+         dosyalarindan geliyor ve acilista arka planda yukleniyor.
+         Mocklanmadigi icin 120.000+ GERCEK kayit havuza giriyor,
+         bunlarin ses adresleri testin 404 mock'unu hic gormuyordu ve
+         ariza senaryosu kendi varsayimini kaybediyordu ("sonsuz
+         aramaya girmiyor: durdu:false, 4 deneme"). Duzeltme: liste de
+         mocklanir; bos liste = "bu senaryoda katalog yok". */
+      if(/\/katalog\//.test(u))
+        return r.fulfill({status:200, contentType:'application/json', body:'[]'});
       return r.continue();
     }
     if(/radio-browser/.test(u))
