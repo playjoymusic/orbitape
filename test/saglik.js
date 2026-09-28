@@ -4259,6 +4259,42 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      korofalan". Yani yasak olan SOZ UYGULAMASI (vaaz/sermon/khutbe);
      KILISE MUZIGI (koro, org, ilahi) serbest. Kapida ikisi de olculuyor:
      vaaz oynatilmiyor, kilise muzigi OYNATILABILIYOR. */
+  /* MOOD HAVUZLARI AYRI (29 Eylul, kullanici: "joytape havuzu sadece
+     muzikler olacak ... orbitape ve radiotape asla muzik sizmayacak
+     ... radyotape'e ve favorilerine de asla diger 2 mood sizmayacak").
+     KURAL: tek muzik tespiti (_muzikMi), iki kapı -- JOYTAPE sadece
+     müzik, ORBITAPE sadece müzik dışı, RADIOTAPE sadece canlı yayın.
+     OLCULDU (tarayıcıda, gercek havuz): ORBITAPE 13.881 kayıtta 4.000
+     örnekte **0** müzik (%0,0), JOYTAPE 12.452 kayıtta **%99,8** müzik,
+     RADIOTAPE arşiv havuzu 0 (canlı yayın). Buradaki kontrol canlı
+     havuzu değil SINIFLANDIRMAYI kilitler: hızlı, deterministik. */
+  const _ayrim = await pg.evaluate(()=>{
+    const m=[{tur:'orchestral symphony',etiket:'orchestral'},
+             {tur:'jazz trio recording',etiket:'jazz'},
+             {tur:'symphony orchestra live',etiket:'symphony'},
+             {tur:'tape and vinyl loop',etiket:'tape vinyl'}];
+    const e=[{tur:'dog barking',etiket:'dog'},
+             {tur:'rain on window',etiket:'rain'},
+             {tur:'metal door slam',etiket:'door slam'},
+             {tur:'crowd ambience street',etiket:'crowd'}];
+    const r=[{tur:'station',radyo:true},{tur:'classical radio',radyo:true}];
+    /* ONAY: modUygun YALNIZCA kayit alir, kipi global AKTIF_MOD'den
+       okur; ikinci argumani yok sayiyordu (olculdu: her sefer 0).
+       Burada TEK YERDEKI yonlendiriciye, modUyar(kayit, kip), bakiliyor
+       -- uygulamanin kullandigi fonksiyonun kendisi. */
+    const say=(arr,ad)=>arr.filter(o=>modUyar(Object.assign({},o),ad)===true).length;
+    return {
+      orbitapeMuzik:say(m,'ORBITAPE'), orbitapeEfekt:say(e,'ORBITAPE'),
+      joytapeMuzik:say(m,'JOYTAPE'),      joytapeEfekt:say(e,'JOYTAPE'),
+      radyotapeYayin:say(r,'RADIOTAPE'),  radyotapeEfekt:say(e,'RADIOTAPE'),
+      radyotapeMuzikKayit:say(m,'RADIOTAPE')
+    };
+  });
+  K('Mood havuzlari ayri: JOYTAPE sadece muzik, ORBITAPE muzik sifir, RADIOTAPE sadece yayin',
+    _ayrim.orbitapeMuzik===0 && _ayrim.joytapeMuzik===_ayrim.orbitapeMuzik+4
+      && _ayrim.joytapeEfekt===0 && _ayrim.orbitapeEfekt===4
+      && _ayrim.radyotapeYayin===2 && _ayrim.radyotapeEfekt===0
+      && _ayrim.radyotapeMuzikKayit===0, JSON.stringify(_ayrim));
   /* MOOD ADI KURALI (28 Eylul): "o an gelinen moodun ismini sadece bu
      siyah bosluga halkanin altina yazacaksin ilk mood'a girince ...
      cark'in ustune gelince ayni sekilde ... ilk ama odaya girince

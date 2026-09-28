@@ -4043,3 +4043,27 @@ almak.)
 
 Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 — **TEMİZ**. İlk boyama 105 KB brotli.
+
+### 29 Eylül (on altıncı tur) — havuz ayrımı ölçüldü ve kapıya kilitlendi
+
+**1) AYRIM GERÇEK VERİYLE ÖLÇÜLDÜ.** Tarayıcıda, odaya girip katalog
+yüklendikten sonra gerçek havuzlar ölçüldü:
+· **ORBITAPE** 13.881 kayıt · 4.000 örnekte **0 müzik → %0,0**
+· **JOYTAPE** 12.452 kayıt · **%99,8 müzik**
+· **RADIOTAPE** arşiv havuzu 0 (yalnız canlı yayın)
+Yani "hala aynı banka" izlenimi gitti: havuzlar artık ayrı ve
+ORBITAPE'de müzik sıfır.
+
+**2) KAPIYA KALICI KONTROL.** "Mood havuzları ayrı: JOYTAPE sadece
+müzik, ORBITAPE müzik sıfır, RADIOTAPE sadece yayın" — sınıflandırma
+giriş kayıtlarıyla (orchestral · jazz · symphony · tape/vinyl / dog bark
+· rain · door slam · crowd / canlı yayın) kilitlendi; canlı havuz
+kullanılmıyor, yani hızlı ve deterministik.
+**ÖLÇÜM NOTU (kendi hatam):** önce `modUygun(kayit, kip)` yazdım —
+`modUygun` yalnız kayıt alıp kipi `AKTIF_MOD`'den okuyor, ikinci
+argümanı yok sayıyor; kontrol 0/0/0 verdi ve kırmızı yandı. Doğru
+çağrı, uygulamanın kullandığı yönlendiricinin kendisi: `modUyar(kayit,
+kip)`. Saglik 894 → **895**.
+
+Kapı: saglik 895/895 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**.
