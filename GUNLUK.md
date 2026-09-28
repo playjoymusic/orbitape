@@ -3905,3 +3905,43 @@ ile düzeldi). DERS: ölçümden önce `csp.py --kontrol` yeşil olmalı.
 
 Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 — **TEMİZ**. Katalog: 117.993 kayıt · 25.691 adresli (%21,8).
+
+### 28 Eylül (on ikinci tur) — oda katmanı: yön kayması, arka plan giydirme, boyut
+
+**1) YÖN DEĞİŞİNCE KOLLAR EKRANIN KÖŞESİNE DÜŞÜYORDU** (ölçüldü,
+düzeltildi). "telefonu yatay ve dikey yaptıktan sonra kayıyor". Üç kolun
+merkezi `844x390` dönüşünde **(0,0)** idi: konum yalnızca katman
+açılırken bir kez hesaplanıyordu. `kollar.js`'e `_kolYeriTazele()`
+eklendi: `resize` + `orientationchange` + `visualViewport.resize`
+dinleyicileri, 120 ms debounce ile yeniden hesaplar. Ölçüm sonrası
+yatayda kollar **(422,75) · (339,219) · (505,219)** — üçü de ekran içinde
+ve simetrik.
+
+**2) KATMAN ARKAYI GİYDİRİYOR** (ölçüldü). "hatta arka planı giydirmesi
+lazım". Zemin `rgba(4,8,10,.72) → .95` idi: merkezde oda %28 görünüyordu.
+Artık **.965 → .995**.
+
+**3) BOYUT**: "baya küçük ... büyük olması". Kol simgesi 33 → **48 px**,
+dokunma halkası (tetik) 56 → **74 px** (ölçüldü: 56x56 → 74x74).
+
+**4) DURAKLAMA YAPILMADI.** "JOYTAPE↔ORBITAPE geçişinde duraklama
+olmasın. zaten bir sonraki track'e geçecek ya ... radyodan geçince yeni
+odadaki track eline geçiyorsa bu da öyle olacak" — kural: kip geçişi
+bekletmez, kuyruk yeni odanın parçasını zaten hazırlar. Ölçüm: katman
+açıkken arka plana dokunmak parça adını **değiştirmedi**
+(önce=sonra="RADIOTAPE") ve arka plan dokunuşu **yutuldu** — yani
+"RADIOTAPE halkasına basınca bir daha track geçiyor" belirtisi bu
+yolla tekrarlanmadı; yine de izole edilip ölçülecek.
+
+Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**.
+
+**SIRAYA ALINANLAR (henüz yapılmadı)**: (a) mood adının fontu JOYTAPE'de
+yanlış — ölçüldü: ORBITAPE/RADIOTAPE adı `GEZ_CIZIM` vektör harfleriyle,
+JOYTAPE'de o harfler olmadığı için **metin** olarak düşüyor, bu yüzden
+tip değişiyor; üçü tek harf setine bağlanacak. (b) halka adları geri
+gelecek ama **sadece halkaların üstünde**. (c) kavunici + koyu gümüşü
+palet. (d) **JOYTAPE ve ORBITAPE AYRI BANKA**: kullanıcı "hala aynı
+odada aynı bankayı kullanıyor" diyor — havuz ayrımı ölçülüp
+yapılacak. (e) Material metrics/keylines (4/8 px ızgara, dokunma hedefi
+44-48 px, hizalama) satırlarına göre kolların ve çarkın yerleşimi.

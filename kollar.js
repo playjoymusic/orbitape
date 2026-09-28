@@ -195,6 +195,26 @@
     }catch(e){ _yut(e); }
   }
   /* YERLESIM: halka kutsunun ortasi + yaricap. Sabit piksel yok. */
+  /* YON DEGISINDE YERLESIM (28 Eylul: telefonu yatay ve dikeye
+     cevirince kollar EKRANIN KOSESINE DUSUYORDU -- olculdu: uc kolun
+     merkezi (0,0)). Konum sadece acilista bir kez hesaplaniyordu.
+     Artik resize + orientationchange + visualViewport ile yenilenir. */
+  var _kolYerTimer = null;
+  function _kolYeriTazele(){
+    try{
+      if(_kolYerTimer) clearTimeout(_kolYerTimer);
+      _kolYerTimer = setTimeout(()=>{ _kolYerTimer = null;
+        try{
+          const kap = document.getElementById('modKollar');
+          if(kap && kap.classList.contains('ac')) _modKollarYerlestir();
+        }catch(e){} }, 120);
+    }catch(e){}
+  }
+  try{
+    window.addEventListener('resize', _kolYeriTazele);
+    window.addEventListener('orientationchange', _kolYeriTazele);
+    if(window.visualViewport) window.visualViewport.addEventListener('resize', _kolYeriTazele);
+  }catch(e){}
   function _modKollarYerlestir(){
     try{
       const kap = document.getElementById('modKollar');

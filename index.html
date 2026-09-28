@@ -3423,9 +3423,12 @@
      "ortaya bas -> muzik baslasiyor" diye iki sey birden oluyordu.
      Simdi katman dokunusu kendisi aliyor; dallar yine tiklanabilir
      (bkz. .kol b) ve arka plan hicbir sey yapmiyor. */
+  /* ACIK KATMAN ARKAYI GIYDIRIR (28 Eylul: "hatta arka plani
+     giydirmesi lazım"). OLCULDU: merkezde %72 siyahti, oda arkadan
+     okunuyordu. Artik %96 -> %99. */
   #modKollar{position:fixed;inset:0;z-index:118;display:none;
     pointer-events:auto;
-    background:radial-gradient(120% 90% at 50% 42%,rgba(4,8,10,.72),rgba(2,4,6,.95));
+    background:radial-gradient(120% 90% at 50% 42%,rgba(4,8,10,.965),rgba(2,4,6,.995));
     opacity:0;transform:scale(.985);
     transition:opacity .26s ease,transform .26s cubic-bezier(.25,1.3,.4,1);}
   #modKollar.ac{display:block;opacity:1;transform:none;}
@@ -3441,7 +3444,10 @@
      isik yukaridan geliyor (radial gradient), disarida yumusak
      bir hale, icinde de ic golge var -- daire duz bir cizgi degil,
      kure gibi. */
-  #modKollar .kol b{width:56px;height:56px;border-radius:50%;
+  /* DOKUNMA ALANI BUYUTULDU (28 Eylul: "baya küçük ... büyük olması"):
+     56 -> 74 px. OLCULDU: once 56x56, simdi 74x74 (parmak hedefi
+     zaten 44 px'in uzerinde ama gorsel olarak kucuk duruyordu). */
+  #modKollar .kol b{width:74px;height:74px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     border:1px solid rgba(var(--renk),.6);
     background:radial-gradient(circle at 50% 28%,
@@ -3480,7 +3486,9 @@
      calisiyor -- icteki tika oge .kol'a yukari DAGIYOR. */
   #modKollar .kol{pointer-events:none;}
   #modKollar .kol b{pointer-events:auto;cursor:pointer;}
-  #modKollar .kol svg{width:33px;height:33px;fill:none;
+  #modKollar .kol svg{width:48px;height:48px;fill:none;   /* BUYUK (28
+       Eylul: "baya kucuk ... buyuk olmasi"): 33 -> 48 px. OLCULDU: kol
+       kutusu 81x88 px, simdi ~118x130. */
     stroke:rgb(var(--renk));stroke-width:1.4;stroke-linecap:round;
     stroke-linejoin:round;}
   /* KOL HALKAYA BAGLANIYOR: ince cizgi + ucunda nokta. Gorseldeki
