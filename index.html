@@ -2490,6 +2490,42 @@
   body.zem.joy #kipKisayol[aria-valuenow="0"] .uck-topuz{background:#6b3512;}
   body.zem.joy #kipKisayol[aria-valuenow="1"] .uck-topuz{background:#8c431a;}
   body.zem.joy #kipKisayol[aria-valuenow="2"] .uck-topuz{background:#5a2b10;}
+  /* ══ ACIK ODA: SKIN DEGISKENLERI (28 Eylul) ══════════════════════
+     Ekran goruntusu: ayar menusu KOYU kutu, yazilar gorunmuyor.
+     Sebep: panel renkleri SKIN degiskenlerinden geliyor
+     (body.deri #ayar{background:var(--d-panel); color:var(--d-yazi)})
+     ve benim onceki koyu-murekkep kuralim yalniz `color` yaziyordu.
+     DOGRU YER BURASI: odayin palet degiskenleri. Artik panel acik,
+     yazi koyu. OLCULDU: "#ayar .sat > span 1.69" -> krem yuzey
+     uzerinde antrasit, kontrast 8+. */
+  body.zem.joy{
+    --d-panel:rgba(250,246,236,.97);
+    --d-yazi:#1b2422; --d-yazi2:#39423f; --d-simge:#2b3331;
+    --d-vurgu:#8c431a; --d-marka:#8c431a;
+    --d-tus-zem:rgba(27,36,34,.06); --d-raf:#2b3331; --d-cizgi:rgba(27,36,34,.16);}
+  /* Sol ust ayar cizgileri (uc kisa renkli bar): acik zeminde turkuaz/
+     macenta gorunmuyordu; koyu iki ton + kavunici vurgu. */
+  body.zem.joy #ayarTut span{background:#2b3331 !important;}
+  body.zem.joy #ayarTut span:nth-child(2){background:#5a6664 !important;}
+  body.zem.joy #ayarTut span:nth-child(3){background:#8c431a !important;}
+  /* Sol alt mood isimleri: iki HOMOJEN koyu ton (secili = koyu, diger
+     = acik gri) + acik zeminde beyaz golge -> "3 boyutlu" his. */
+  body.zem.joy #kipKisayol .uck-ad{color:#5a6664 !important;
+    text-shadow:0 1px 0 rgba(255,252,244,.9);}
+  body.zem.joy #kipKisayol[aria-valuenow] .uck-ad{color:#5a6664 !important;}
+  body.zem.joy #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"],
+  body.zem.joy #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"],
+  body.zem.joy #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
+    color:#16211f !important;}
+  /* SOL ALT MOOD ISIMLERI OKUNUR (28 Eylul: "sol alttaki mood isimleri
+     skinlere gore biraz etkilensin bazilarinda gorunmuyor ... 3
+     boyutlu ve homojen 2 renkli olsun"). OLCULDU: secili olmayan iki isim
+     rgba(206,196,176,.28) idi -- koyu zeminde kontrast **2,0**, yani
+     gorunmez; bazi skinlerde daha da dustu. Kural (her oda icin):
+       · secili isim: koyu oda = oda rengi tam, acik oda = antrasit
+       · diger ikisi: tek bir soluk ton (homojen 2 renk kurali)
+       · her ikisinde de 1 px golge -> "3 boyutlu" his
+     Kontrast esigi: secili >= 7, digerleri >= 4,5. */
   #kipKisayol .uck-ad{
     position:absolute;left:0;bottom:6px;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -2498,7 +2534,7 @@
        punto 28 Eylul'de kucultuldu ("yaziyi biraz kucult") --
        1.4375rem (23 px) -> 1.1875rem (19 px). */
     font-size:1.1875rem;font-weight:700;letter-spacing:.26em;line-height:1;
-    margin-right:-.26em;white-space:nowrap;color:rgba(206,196,176,.28);
+    margin-right:-.26em;white-space:nowrap;color:rgba(226,222,212,.62);   /* soluk ton (homojen 2 renk) */
     opacity:0;transform:translateX(-4px);
     /* KROSSFADE (28 Eylul: isimler ustuste, "biri gitsin digeri oyle
        gelsin"): 420 ms. Kalici filter DENEMESI yapildi ve KALDIRILDI --
@@ -2510,9 +2546,12 @@
   #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
     opacity:1;transform:none;}
   /* Yazi da kendi duraginin rengi: skin degisince o da degisir. */
-  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);}
-  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:var(--k2,#e8a97e);}
-  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:var(--k3,#86dcd0);}
+  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);
+    text-shadow:0 1px 2px rgba(0,0,0,.55);}
+  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:var(--k2,#e8a97e);
+    text-shadow:0 1px 2px rgba(0,0,0,.55);}
+  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:var(--k3,#86dcd0);
+    text-shadow:0 1px 2px rgba(0,0,0,.55);}
   /* Basiliyken (.uck-acik) UCU DE gorunur -- soluk olanlar da. */
   #kipKisayol.uck-acik .uck-ad{opacity:1;transform:none;color:rgba(206,196,176,.40);}
   #kipKisayol.uck-acik .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);}
@@ -4032,10 +4071,14 @@
      katman (turuncu, petrol yesili) -- ama KREM BASKIN. OLCULDU:
      ilk denemede turuncu %34 alphayla odayi kapliyordu; krem taban
      %60'ta, doygunluk 0,12. */
+  /* DUZ ZEMIN (28 Eylul: "yanlardan koyuluk koymusun, retro heralde
+     onlar olmasin istem" + "altta bi bant olmus, oraya dogru duz bir
+     renge gec ki alttarafiyla yedpare olsun"). Kenar karartmasi
+     KALDIRILDI, alt koyu band yerine duz birakildi. */
   body.zem.joy{background-color:#efe6d2;background-image:
-    radial-gradient(58% 42% at 16% 12%,#ce74382e,transparent 64%),
-    radial-gradient(52% 40% at 88% 86%,#10484033,transparent 68%),
-    radial-gradient(140% 120% at 50% 44%,#f7f1e2 0%,#ece2cd 58%,#d8caac 100%)}
+    radial-gradient(64% 48% at 18% 14%,#ce743826,transparent 66%),
+    radial-gradient(58% 44% at 86% 84%,#1048402b,transparent 70%),
+    linear-gradient(180deg,#f4eee0 0%,#efe7d3 46%,#e9e0ca 100%)}
 
   /* ── GECE MODU (KIRMIZI FILTRE) ──
      Kullanicinin istegi: karanlikta ekran goz kamastirmasin --

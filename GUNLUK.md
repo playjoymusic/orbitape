@@ -3945,3 +3945,40 @@ palet. (d) **JOYTAPE ve ORBITAPE AYRI BANKA**: kullanıcı "hala aynı
 odada aynı bankayı kullanıyor" diyor — havuz ayrımı ölçülüp
 yapılacak. (e) Material metrics/keylines (4/8 px ızgara, dokunma hedefi
 44-48 px, hizalama) satırlarına göre kolların ve çarkın yerleşimi.
+
+### 28 Eylül (on üçüncü tur) — mood isimleri okunur, açık oda düz
+
+**1) SOL ALT MOOD İSİMLERİ GÖRÜNMEZDI (ölçüldü, düzeltildi).**
+"sol alttaki mood isimleri skinlere göre biraz etkilensin
+bazılarındas görünmüyor ... 3 boyutlu ve homojen 2 renkli olsun".
+Sebep: seçili olmayan iki isim `rgba(206,196,176,.28)` idi — koyu
+zeminde kontrast **2,0** (yani görünmez), bazı skinlerde daha da
+düşüyordu. Kural (her oda için): seçili isim oda renginde tam,
+diğer ikisi **tek bir soluk ton** (2 homojen renk), hepsinde 1 px
+gölge. Ölçüm sonrası: koyu oda **6,0-6,1**, açık oda (parlaklık 0,80)
+**4,8-13,3** — hepsi AA eşiğinin (4,5) üstünde.
+
+**2) AÇIK ODA: SKİN DEĞİŞKENLERİ DOĞRU YERDEN ÇEVRİLDİ.** Ekran
+görüntüsünde ayar menüsü koyu kutu, yazılar görünmüyordu. Önceki
+koyu-mürekkep kuralı yalnız `color` yazıyordu; panel zemini ise **skin
+değişkenlerinden** geliyor (`body.deri #ayar{background:var(--d-panel)}`).
+Bu yüzden kural **odanın palet değişkenlerine** taşındı: JOYTAPE'de
+`--d-panel` açık krem, `--d-yazi` antrasit, `--d-vurgu/--d-marka`
+kavunici. Ayar çubuklarındaki üç renkli bant da koyu iki ton + kavunici
+olarak koyulaştırıldı (açık zeminde turkuaz/macenta görünmüyordu).
+
+**3) DUVAR KÂĞIDI DÜZLEŞTİRİLDİ.** "yanlardan koyuluk koymuşsun, retro
+herhalde onlar olmasın istem" + "altta bir bant olmuş, oraya doğru düz
+bir renge geç". Kenar karartması kaldırıldı; alt koyu band yerine
+düz dikey geçiş (`#f4eee0 → #efe7d3 → #e9e0ca`).
+
+**4) GERİ ALINAN DENEME (dürüst kayıt).** JOYTAPE'i üst kola alıp ilk
+açılan oda yapmayı denedim; kapı kırmızı oldu (saglik 2 + ariza 1:
+"Üç kollu seçici ilk açılışta duruyor", "JOYTAPE yalnızca müzik
+veriyor", "radyo tarafı çalışmaya devam ediyor"). Testler "ilk kol =
+RADIOTAPE" varsayımındaydı ve ölçüm `kip: null / havuz: -1` verdi.
+Yeşiz push'u bozmamak için geri alındı; sıradaki turda testlerle
+birlikte tek pakette yapılacak.
+
+Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 — **TEMİZ**.
