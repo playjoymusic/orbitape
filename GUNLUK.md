@@ -3756,3 +3756,59 @@ yıldız ikinci-dokunuş kırmızısı (kal koruması istasyon kayıtlarını da
 atlıyordu; `mp3 || url_resolved || url` ile düzeltildi, yeniden
 koşulacak). Arıza 18/18 · senaryo 121/121 · motor 19/19 · cihaz 156/156.
 Ana hat: 404e222 yeşil.
+
+### 28 Eylül (dokuzuncu tur) — byte freninin asıl kökü: yayın boşluk taşıyordu, halka adları ekranda
+
+**1) BYTE FRENİNİN KÖKÜ BULUNDU (kapı kırmızısı değil, ölçüm).**
+`araclar/derle.py` yayına giden dosyayı terser ile **güzelleştiriyordu**
+(`beautify=true, indent_level=2`): yani telden giden dosyada 63.769 B
+BOŞLUK gidiyordu. Ölçüm: yayın 569.769 B / brotli 112.882 B (tavan
+112.640 B → **242 B kırmızı**). Boşluk ölçümü: `yayin 461.681 B /
+brotli 106.429 B` → **6.211 B pay**. Kapı aynı koddan yeşile döndü
+(ilk boyama 110 KB → 104 KB). Kaynakta yorum ve girinti duruyor; sadece
+yayın sıkıştırılıyor. Bu, "yorum silmek işe yaramıyor" gözleminin de
+açıklamasıydı: yorumlar zaten yayında yoktu.
+
+**2) ÖLÜ KOD.** `cal()` içinde `if(false){...}` — adresi olan kayıtlar
+çaldığı için hiç çalışmayan eski çözüm/zaman-aşımı yolu (601 B) silindi.
+`sesHazirURL===item.mp3` karşılaştırması da çözülen adrese (`_adres`)
+bağlandı: istasyon kayıtları adresi `mp3` değil `url_resolved`/`url`
+taşıyordu ve koruma onları da atlıyordu — kapıdaki "İkinci dokunuş o
+istasyona geçiyor" kırmızısının sebebi buydu, düzeldi.
+
+**3) HALKA ADLARI EKRANDA — ÖLÇÜLDÜ.** "görseldeki isimler işte halka
+isimleri / joytape teki müzik kategorisi isimleri halka isimleri
+görünmemiş". Adlar tuvalde, halkanın kendi rengiyle, kendi halkasının
+üstünde (dönmüş değil, ekrana dik). Ölçüm (`window.__halkaAd` kancası,
+piksel/kutu ölçümü, PNG yok):
+· 11 halkalı RADIOTAPE'de halka aralığı **8 px** → 8 px yazı
+  okunmuyor; kural: **yalnız seçili halkanın adı**, 16 px, kontrast 16,0.
+· 8 halkalı JOYTAPE'de aralık 12-14 px → hepsi çiziliyor, kontrast
+  7,0-12,8 (WCAG AA 4,5 üstü).
+· **taşma 0, çakışma 0** her iki kipte, 390 px ve 1440 px'te.
+Ölçüm iki gerçek hata yakaladı: (a) yerleşim CSS pikseliyle çizim
+cihaz pikseli karışıyordu (konumlar ekran dışında), (b) yazı boyutu
+`600*ağırlık*_o.f` ile **600 kat** büyüktü ("RADIOTAPE" 54.000 px).
+Koyu odada yazı beyaza, açık duvar kâğıdında (JOYTAPE krem taban) siyaha
+karıştırılıyor; koyu renkli halka rengiyle yazılınca kontrast 2,6'ya
+düşüyordu.
+
+**4) KİP BAĞIMSIZLIK.** Ad çizimi hem kaynakta hem yayında çalışıyor
+(derleme sonrası ölçüldü). Kapıya kalıcı kontrol eklendi: "Halka adları
+ekranda: taşmıyor, çakışmıyor, okunuyor" → saglik 893 → **894/894**.
+
+**5) İKİ GERÇEK KAPI KIRMIZISI DÜZELTİLDİ.**
+· *Tip denetimi* (57 taban, 60 oldu): halka adı nesnesine iki alan
+  eklenmemişti (`rnk`, `halkalar`) ve `window.__halkaAd`
+  `araclar/tipler.d.ts`'te bildirilmemişti. Ayrıca **TDZ**: yardımcı
+  fonksiyon çizim döngüsünden SONRA tanımlıydı; kapının "Çizimde TDZ
+  riski yok" kontrolü bunu yakaladı (kullanım 9410, tanım 26774) —
+  tanım `vizLoop`'tan önceye taşındı. Özellik adı `ogeler` idi; modül
+  dosyalarındaki (`favori.js`, `liste.js`, `ulke.js`) aynı adlı
+  değişkenle çakışıyordu, `halkalar` yapıldı.
+
+**6) KATALOG.** Doğrudan ses adresi: 117.993 kayıt · **18.571 adresli
+(%15,7)** · kalan 99.422. Çözücü arka planda çalışıyor.
+
+Kapı: saglik 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 · yayın 19/19 — **TEMİZ**.

@@ -4259,6 +4259,42 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      korofalan". Yani yasak olan SOZ UYGULAMASI (vaaz/sermon/khutbe);
      KILISE MUZIGI (koro, org, ilahi) serbest. Kapida ikisi de olculuyor:
      vaaz oynatilmiyor, kilise muzigi OYNATILABILIYOR. */
+  /* HALKA ADLARI EKRANDA (28 Eylul: "gorseldeki isimler iste halka
+     isimleri" / "joytape teki muzik kategorisi isimleri halka isimleri
+     gurunmemis"). Olcum kancasi window.__halkaAd: yerlesim + gercek
+     kontrast. Kural: hicbir ad tasmaz, komsulari cakismaz, kontrast
+     4,5 uzerinde (WCAG AA); 10 halkanin araligi sigmazsa yalniz
+     secili halkanin adi cizilir (8 px yazi okunmuyordu). */
+  const _halkaAdOlc = await pg.evaluate(async ()=>{
+    const bek=ms=>new Promise(r=>setTimeout(r,ms));
+    for(let i=0;i<40 && !window.__halkaAd;i++) await bek(60);
+    const y=window.__halkaAd;
+    if(!y) return {hata:'yerlesim kancas yok'};
+    const W=document.getElementById('viz').width;
+    const m=getComputedStyle(document.body).backgroundColor.match(/[\d.]+/g).map(Number);
+    const f=v=>{v/=255; return v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4)};
+    const L0=.2126*f(m[0])+.7152*f(m[1])+.0722*f(m[2]);
+    const ac=document.body.classList.contains('joy'), A=ac?[26,32,34]:[255,255,255];
+    const ciz=y.halkalar.filter(o=>o.cizilir);
+    let tasma=0, kotu=0, enK=99;
+    for(const o of ciz){
+      if(!(o.x-o.yari>=0 && o.x+o.yari<=W && o.y-o.f>0)) tasma++;
+      const p3=String(o.rnk||'0,0,0').split(',').map(Number);
+      const c=[0,1,2].map(i=>Math.round((p3[i]||0)*0.5+A[i]*0.5));
+      const L1=.2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2]);
+      const k=(Math.max(L0,L1)+.05)/(Math.min(L0,L1)+.05);
+      enK=Math.min(enK,k); if(k<4.5) kotu++;
+    }
+    let cak=0;
+    for(let i=0;i+1<ciz.length;i++)
+      if(Math.abs(ciz[i].y-ciz[i+1].y) < (ciz[i].f+ciz[i+1].f)/2 &&
+         Math.abs(ciz[i].x-ciz[i+1].x) < (ciz[i].yari+ciz[i+1].yari)) cak++;
+    return { ad:y.halkalar.length, cizilen:ciz.length, sigiyor:y.siga, tasma,
+             cakisma:cak, kotuKontrast:kotu, enKontrast:+enK.toFixed(1) };
+  });
+  K('Halka adlari ekranda: tasmiyor, cakismiyor, okunuyor',
+    !_halkaAdOlc.hata && _halkaAdOlc.tasma===0 && _halkaAdOlc.cakisma===0
+      && _halkaAdOlc.kotuKontrast===0, JSON.stringify(_halkaAdOlc));
   K('Vaaz yasak, kilise muzigi serbest', await pg.evaluate(async ()=>{
       const bek=ms=>new Promise(r=>setTimeout(r,ms));
       const vaaz=[{tur:'sermon vaaz', ad:'Cuma hutbesi'},

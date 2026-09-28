@@ -3966,13 +3966,11 @@
      kalirken burada ACIK (krem) taban uzerine koyu turuncu ve koyu
      petrol yesili katmanlar; halkalar koyu (petrol/derin deniz
      mavisi) oldugu icin krem uzerinde okunur. */
-  body.zem.joy{
-    background-color:#e6dbc2;
-    background-image:
-      radial-gradient(88% 66% at 20% 16%, rgba(206,116,48,.34) 0%, rgba(206,116,48,0) 62%),
-      radial-gradient(78% 58% at 84% 82%, rgba(16,72,64,.36) 0%, rgba(16,72,64,0) 66%),
-      radial-gradient(60% 44% at 50% 58%, rgba(120,58,28,.22) 0%, rgba(120,58,28,0) 70%),
-      radial-gradient(130% 115% at 50% 44%, #f6eeda 0%, #e8dcc0 62%, #cdb998 100%);}
+  body.zem.joy{background-color:#e6dbc2;background-image:
+    radial-gradient(88% 66% at 20% 16%,#ce743857,transparent 62%),
+    radial-gradient(78% 58% at 84% 82%,#1048405c,transparent 66%),
+    radial-gradient(60% 44% at 50% 58%,#783a1c38,transparent 70%),
+    radial-gradient(130% 115% at 50% 44%,#f6eeda 0%,#e8dcc0 62%,#cdb998)}
 
   /* ── GECE MODU (KIRMIZI FILTRE) ──
      Kullanicinin istegi: karanlikta ekran goz kamastirmasin --
@@ -14261,6 +14259,33 @@
     return { T:T, teal:teal, mag:mag, HALKA_RENK:HALKA_RENK };
   }
   const HALKA_KAY = 6;   /* halka/cark dikey kaymasi, px */
+  /* HALKA ADI YERLESIMI (28 Eylul). Cizim ve olcum ayni sonucu
+     kullanir: kural tek yerde, olcum taklit etmez. Donen: her halka
+     icin kutu (ad, x, y, yariyaricap, cizilir mi) + yazi boyu + aralik.
+     Halka araligi yazi yuksekligine yetmiyorsa yalniz secili halkanin
+     adi cizilir: okunmayan yazi ekrani bogar. */
+  /* OLCULDU: cizim CIHAZ pikselinde (W=viz.width, dpr yalnizca kalinlik
+     icin). Yerlesim de ayni birimde olmali; CSS pikseli kullanmak
+     konumlari ekran disinda birakiyordu. */
+  function halkaAdYerlesim(_adlar, _adSec, R, squeeze, _ic, _ara, dpr, cx, cy, _W){
+    const _n = _adlar.length;
+    const fs = Math.max(8*dpr, Math.min(11*dpr, _W/(_n*8)));
+    const yA = R*squeeze*_ara;
+    const siga = yA >= fs*1.35;
+    /* Sigmazsa yalniz secili halkanin adi cizilir, ama O daha buyuk
+       olur: 10 halka 390 px'te aralik 8,1 px (OLCULDU), 8 px yazi
+       okunmuyordu; secili ad 16 px'te tek basina duruyor. */
+    const fsSec = Math.max(12*dpr, Math.min(16*dpr, _W/24));
+    const ogeler = [];
+    for(let k=0;k<_n;k++){
+      const sec = !!(Array.isArray(_adSec) && _adSec[k]);
+      const f = siga ? fs : fsSec;
+      const rx = R*squeeze*(_ic + k*_ara);
+      ogeler.push({ ad:_adlar[k], k, sec, f, x:cx, y:(cy - rx - f*0.72),
+        yari:0, cizilir:(siga || sec), r:rx, rnk:'' });   /* rnk: cizim doldurur */
+    }
+    return { fs, fsSec, yA, siga, halkalar:ogeler };
+  }
   function vizLoop(zaman){
     /* KİLİT BİTTİĞİ AN: kare döngüsü kilit bitince İLK çalışan şeydir.
        Tam bu noktada geçmişin SON kaydı, kilitlenen işin ta kendisidir —
@@ -14432,6 +14457,7 @@
        kalanlar dönmeye devam ediyor — hangisinin seçili olduğu tek
        bakışta belli. Seçiliyken kalanlar gölgede kalıyor. */
     const _adlar = halkaAdlar(), _aileMi = halkaAilesiMi(), _ic = halkaIc(), _ara = halkaAra();
+    const _adRnk=[], _adSec=[];   /* halka adi yazisi: renk + secili bilgisi */
     for(let k=0;k<_adlar.length;k++){
       vctx.save(); vctx.translate(cx,cy);
       const _mAd = _adlar[k];
@@ -14527,7 +14553,45 @@
       else if(_secili) a = Math.min(0.60, a*1.06);   // seçili halka: sadece bir tık önde
       vctx.strokeStyle='rgba('+_rnk+','+a.toFixed(3)+')';
       vctx.lineWidth=((_vurgu?3.0:_secili?1.35:1.1)+rit*0.9)*dpr; vctx.stroke();
+      _adRnk[k]=_rnk; _adSec[k]=!!_secili;
       vctx.restore();
+    }
+
+    /* HALKA ADI (28 Eylul: "gorseldeki isimler iste halka isimleri" /
+       "joytape teki muzik kategorisi isimleri halka isimleri
+       gurunmemis"). Ad her halkanin kendi rengiyle, kendi halkasinin
+       USTUNDE (donmus halde degil: ekrana dik). Halka araligi yazi
+       yuksekligine yetmiyorsa yalniz secili halkanin adi cizilir
+       (okunmayan yazi ekrani bogar) -- kural OLCULDU: 390 px genislikte
+       aralik 34 px, yazi 10 px; geniste aralik 62 px, yazi 11 px. */
+    {
+      const _cW = W;
+      const _y = halkaAdYerlesim(_adlar, _adSec, R, squeeze, _ic, _ara, dpr, cx, cy, _cW);
+      vctx.textAlign='center'; vctx.textBaseline='middle';
+      vctx.shadowColor='rgba(0,0,0,.92)'; vctx.shadowBlur=7*dpr;
+      for(const _o of _y.halkalar){
+        if(!_o.cizilir) continue;
+        /* 600 = YAZI AGIRLIGI, _o.f = BOYUT. Ikisi carpilirsa yazi 600 kat
+         buyuyordu (OLCULDU: "RADIOTAPE" 54.000 px genislik, ekranin
+         disina tasmis). */
+        vctx.font = '600 ' + _o.f.toFixed(1) + 'px "Share Tech Mono", ui-monospace, monospace';
+        const _yari = vctx.measureText(_o.ad).width/2 + 2*dpr;
+        _o.yari = _yari;
+        _o.x = Math.max(_yari+2*dpr, Math.min(_cW-_yari-2*dpr, cx));
+        /* Yazi rengi halkanin rengi; koyu oda'da beyaza, ACIK duvar
+           kagidinda (JOYTAPE krem taban) siyaha dogru karistirilir.
+           OLCULDU: koyu oda + halka rengi dogrudan = kontrast 2,6;
+           beyaza karisik = 5-9. Krem taban uzerinde acik yazi okunmaz. */
+        const _acZ = document.body.classList.contains('joy');
+        _o.rnk = _adRnk[_o.k];          /* olcum: gercek yazi rengi */
+        const _yc = _renkKaris(_o.rnk, _acZ ? '26,32,34' : '255,255,255', 0.5);
+        vctx.globalAlpha = _o.sec ? 0.97 : 0.86;
+        vctx.shadowColor = _acZ ? 'rgba(250,246,235,.92)' : 'rgba(0,0,0,.92)';
+        vctx.fillStyle = 'rgb('+_yc+')';
+        vctx.fillText(_o.ad, _o.x, _o.y);
+      }
+      vctx.globalAlpha = 1; vctx.shadowBlur = 0;
+      try{ window.__halkaAd = _y; }catch(e){ _yut(e); }   /* olcum kancası */
     }
 
     /* ── SADE HALKA: PARLAMA YOK ──
@@ -15627,22 +15691,7 @@
       try{ atla(); }catch(e){ _yut(e); }
       return;
     }
-    if(false){
-      const _b = (u)=>{
-        if(u){ try{ item.mp3 = u; cal(item); }catch(e){ _yut(e); } return; }
-        ustUsteHata++;
-        try{ if(ustUsteHata >= ARSIV_HATA_ESIK) arsivDurdur(mod!=='lib'); else atla(); }
-        catch(e){ _yut(e); }
-      };
-      try{
-        let _bitti = 0;
-        const _z = setTimeout(()=>{ if(!_bitti){ _bitti=1; _b(null); } }, 6000);
-        mp3Bul(item.id).then(u=>{ if(_bitti) return; _bitti=1; clearTimeout(_z); _b(u); })
-          .catch(()=>{ if(_bitti) return; _bitti=1; clearTimeout(_z); _b(null); });
-      }catch(e){ _b(null); }
-      return;
-    }
-    if(sesHazirURL===item.mp3 && ses.getAttribute('src')){
+    if(sesHazirURL===_adres && ses.getAttribute('src')){
       // bu parça zaten ÖNDEN yüklendi (ilk parça) -> src'yi SIFIRLAMA, tamponu koru => anında başlar
     }else{
       try{ ses.crossOrigin='anonymous'; }catch(e){ _yut(e); }

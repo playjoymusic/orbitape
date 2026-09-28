@@ -20,6 +20,11 @@ interface Window {
   hataGonder?: (kip?: string) => void;
   hataSifirla?: () => void;
   moodAc?: () => void;
+  /* HALKA ADI YERLESIMI (28 Eylul): saglik takimi olcumu buradan
+     okur -- tasma/cakisma/kontrast buradan gelir. */
+  __halkaAd?: { fs:number, fsSec:number, yA:number, siga:boolean,
+    halkalar:{ ad:string, k:number, sec:boolean, f:number, x:number, y:number,
+             yari:number, cizilir:boolean, r:number, rnk:string }[] };
   moodKapat?: () => void;
   /* true -> ac, false -> kapat (bkz. window.ayarGoster tanimi) */
   ayarGoster?: (ac?: boolean) => void;

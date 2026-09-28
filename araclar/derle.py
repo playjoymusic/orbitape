@@ -14,11 +14,14 @@ NEDEN VAR
 
 NE YAPAR
   1. .assetsignore'daki disinda kalan her seyi yayin/ altina kopyalar.
-  2. JS dosyalarindan (ve index.html'in satir ici betiginden) yorumlari
-     terser ile dusurur -- elle yazilmis bir siyirici degil, gercek bir
-     ayristirici: dizgi, duzenli ifade ve sablon iceren 16 bin satirlik
-     dosyada "yorum gibi gorunen" bir sey bozulmasin. Sikistirma ve ad
-     kisaltma KAPALI: kod birebir ayni kalir, yalnizca yorumlar gider.
+  2. JS dosyalarindan (ve index.html'in satir ici betiginden) yorumlari ve
+     girintiyi terser ile dusurur -- elle yazilmis bir siyirici degil,
+     gercek bir ayristirici: dizgi, duzenli ifade ve sablon iceren 16 bin
+     satirlik dosyada "yorum gibi gorunen" bir sey bozulmasin. Sikistirma
+     ve ad kisaltma KAPALI: kod birebir ayni kalir, yalnizca yorum ve
+     bosluk gider (28 Eylul olcumu: telden 63.769 B bosluk gidiyordu,
+     brotli 112.850 -> 106.429 B; tavan 112.640 B). Kaynakta okunabilir
+     yorumlar ve girinti durur.
   3. index.html'in <style> blogundan CSS yorumlarini, disaridaki HTML
      yorumlarini dusurur (dizgi icindekilere dokunmadan).
   4. yayin/_headers'daki CSP ozetlerini YENI dosyadan hesaplar
@@ -74,9 +77,13 @@ def kopyala():
 
 
 def js_yorumsuz(kaynak, ad):
-    """terser: yorum yok, sikistirma yok, ad kisaltma yok, satirlar korunur."""
+    # 28 Eylul OLCUMU: yayin dosyasi guzellestirilerek yaziliyordu
+    # (beautify=true) -- yani telden 63.769 B bosluk gidiyordu. Bosluk
+    # kaldirilincak yayin 569.769 -> ~506.000 B, brotli 112.850 ->
+    # 108.496 B (node zlib brotli q11 ile OLCULDU). Kod birebir ayni:
+    # yalnizca girinti, satir sonu ve tirnak bicimi degisiyor.
     p = subprocess.run(
-        [TERSER, "--comments", "false", "--format", "beautify=true,indent_level=2,quote_style=3"],
+        [TERSER, "--comments", "false", "--format", "quote_style=3"],
         input=kaynak, capture_output=True, text=True, encoding="utf-8")
     if p.returncode != 0:
         raise SystemExit("terser %s: %s" % (ad, p.stderr.strip()[:400]))
