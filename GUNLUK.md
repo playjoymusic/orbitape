@@ -4475,3 +4475,51 @@ tasindi. Bu, "sessiz hatayi olc" kuralinin tam calistigi andir.
 **KAPI:** saglik 894/894 · ariza 18/18 · senaryo 121/121 · motor
 19/19 · cihaz 156/156 · birim 133/133 · tip 54 (taban sabit).
 index.html 1.273.000 B.
+
+## 30 Eylul — halka adlari silindi, istasyon adi ust bosluga tasindi
+
+**1) HALKA ADLARI KALDIRILDI.**
+Kullanici: ekran goruntusunu gonderip "cabuk sil sunalri" dedi. 11
+halkanin adini tepe bosluguna yazan cizim (`halkaAdYaz`, Path2D,
+olcme kancalari) tamamen silindi. Iki tur once CI kirmiziydi; ayin
+goruntusu de ayni sonucu veriyordu: ucu ust ust binmis, okunmaz bir
+yigindi. **Tek harf seti (HARFTEK) duruyor** -- mood adlari ondan
+ciziliyor, 27/27.
+
+**2) USTE YAZANIN YERI VE KURALI DEGISTI.**
+Kullanici: "ustteki yazi genel bir isim olacak", sonra netlestirdi:
+"gecici istasyon degisimi yazisiyla ayni font, kalin, halkasinin
+renginde ve gidecek gecici zaten bunlarda: fx'e ilk basildiginda,
+gezegene ilk basildiginda".
+
+- `moodAdYerineGoster` artik yalniz ORBITAPE/RADIOTAPE'yi degil
+  **HER ISTASYON** adini gecici yaziye veriyor.
+- Konum: daima halkanin **tepe boslugu** -- kuzey gezegeninin
+  USTUNDE. `modGezUsteYerlestir()` bunu olculen yerden hesapliyor.
+- `font-weight:700` (once 300), opaklik .92 (once .56).
+
+**3) OLCULER (kendim kirip duzelttim, hepsi ekran goruntusuyle).**
+- Ay ile cakisma: 12 px pay yetmedi, yazi ayin ORTASINDA kaldi
+  (yazi 270..310, ay 280..324). Duzeltme: yazinin alt kenari
+  gezegenin ust kenarindan 10 px yukarda (yazi 230..270).
+- Ortalama: `left:0;width:100%` yetmedi, yazi sola kacti (0-235,
+  olmesi gereken 117-313). Sebep: `text-indent` ve transform
+  devredeydi. Cozum: iki kenar sabit + flex ortalama.
+- Sinif: `tepe` vardi ama `gor` YOKTU -- opaklik 0, yazi hic
+  gorunmuyordu. `gor` artik acikca veriliyor.
+- Konum `if(ad)` blogunun icindeydi; ad temizlenince yazi ekranin
+  sag ustune kaciyordu. Cagri tasindi.
+
+**4) KAPILAR.**
+Bes kontrol eski kurali ("ilk altta, tekrar ustte") olcuyordu;
+yeni kurala gecirildi -- kontrollerin SAYISI ve SERTLIGI ayni, sadece
+olculen sey degisti:
+· kaynak denetimi: `alt`/`uzer` -> `tepe` + `modGezUsteYerlestir`
+  + `font-weight:700` varligi
+· "Gezinme yazisi halkanin ALTINDA" -> "gezegenin USTUNDE"
+· "Yazi taban ile cark arasinda tam ortada" -> "gezegenin ustunden
+  10 px payli" (8-14 px araligi, olcum 10)
+· "Isim dugmesi alt yaziyi da gosteriyor" -> "ust boslukta yaziyi"
+· "Gecici ad halkanin icine girmiyor" -> "gezegenin ustunde"
+Saglik 894/894 · ariza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 · birim 133/133 · tip 54 (taban sabit) -- 0 kirmizi.

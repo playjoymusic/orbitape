@@ -4357,8 +4357,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const js = (kaynak.match(/<script>([\s\S]*?)<\/script>/) || ['',''])[1];
     return {
       gosterFn: /function moodAdGoster\(ad\)/.test(js),   /* Node baglami: typeof calismaz, kaynak denetlenir */
-      altSinif: /classList\.toggle\('alt'/.test(js),
-      uzerSinif: /classList\.toggle\('uzer'/.test(js),
+      /* 30 Eylul: 'alt'/'uzer' yerine 'tepe' -- TEK konum. Konumu
+         modGezUsteYerlestir yaziyor, kalinlik CSS'te (font-weight:700). */
+      tepeSinif: /classList\.add\('tepe'\)/.test(js),
+      tepeYerlestir: /function modGezUsteYerlestir\(\)/.test(js),
+      kalin: /#modGez\.tepe[\s\S]{0,240}?font-weight:700/.test(kaynak),
       kayit: /orbitape\.mood/.test(js),
       ilkOnce: /const ilk = !_moodGorulduMu\(ad\)/.test(js),
       kaybolur: /setTimeout\([\s\S]{0,160}?2200\)/.test(js),
@@ -4367,9 +4370,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                                           da kaldirdik */
     };
   })();
-  K('Mood adi kurali: ilk altta, tekrar ustte, sonra kaybolur; tur adi yok',
-    _moodKural.gosterFn && _moodKural.altSinif && _moodKural.uzerSinif
-      && _moodKural.kayit && _moodKural.ilkOnce && _moodKural.kaybolur
+  /* 30 Eylul: KURAL DEGISTI. Istasyon adi gecici yazinin yerinde
+     dursun: halkanin ustundeki boslukta, KALIN, halkanin renginde.
+     Eski kural ("ilk altta, tekrar ustte") kaldirildi. */
+  K('Mood adi kurali: tepe boslugunda, kalin, halka renginde, sonra kaybolur',
+    _moodKural.gosterFn && _moodKural.tepeSinif && _moodKural.tepeYerlestir
+      && _moodKural.kalin && _moodKural.kayit && _moodKural.kaybolur
       && _moodKural.turYok && _moodKural.kancaYok, JSON.stringify(_moodKural));
   K('Vaaz yasak, kilise muzigi serbest', await pg.evaluate(async ()=>{
       const bek=ms=>new Promise(r=>setTimeout(r,ms));
@@ -4838,6 +4844,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const d = document.querySelector('.disk').getBoundingClientRect();
         const y = document.getElementById('modGez').getBoundingClientRect();
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
+        /* 30 Eylul: yazi halkanin ALTINDA degil, TEPE BOSLUGUNDA.
+           Kuzey gezegeni halkanin disinda (uyduYerlestir: rr =
+           halkaR + 22 + 14), kutusu 44 px. */
+        const _gezR = Math.min(d.width/2)*HALKA_DIS + 22 + 14;
+        const gezUst = Math.round(d.top + d.height*0.5 - _gezR - 22);
         /* TABAN UYGULAMAYLA AYNI KURALDAN: gorunen, halkalarin
            altinda ve ekran icinde duran elemanlar. Bu satir bir ara
            uygulamadan ayri dusmustu (eski liste 'araclar', gorunurluk
@@ -4851,8 +4862,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           if(k.height<=0 || k.top<=halkaAlt || k.top>=innerHeight) return;
           taban=Math.min(taban,k.top); });
         modGezYaz('');
-        return { ust:Math.round(y.top), alt:Math.round(y.bottom), merkez:Math.round(y.top+y.height/2),
-                 halkaAlt:Math.round(halkaAlt), taban:Math.round(taban), H:innerHeight };
+        return { ust:Math.round(y.top), alt:Math.round(y.bottom),
+                 halkaAlt:Math.round(halkaAlt), gezUst:gezUst,
+                 taban:Math.round(taban), H:innerHeight };
       });
       return { mod0, depo, bay0, gez1, son1, gez2, yayin, yazi };
     } finally { await kapat(); }
@@ -4861,8 +4873,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Ilk basis kategori degistirmez', ac.bay0===false && ac.gez1===false && ac.son1.mod==='RADIOTAPE', 'gezinme '+ac.gez1+' | mod '+ac.son1.mod);
   K('Canli yayin sadece RADIOTAPE', ac.yayin && ac.yayin.rt===true && ac.yayin.amb===false && ac.yayin.nat===false,
      'RADIOTAPE '+(ac.yayin&&ac.yayin.rt)+' | AMBIANCE '+(ac.yayin&&ac.yayin.amb)+' | HUMAN '+(ac.yayin&&ac.yayin.nat));
-  K('Gezinme yazisi halkanin ALTINDA', ac.yazi && ac.yazi.ust > ac.yazi.halkaAlt,
-     'yazi ust '+(ac.yazi&&ac.yazi.ust)+' | halka alt '+(ac.yazi&&ac.yazi.halkaAlt));
+  /* 30 Eylul: yazi artik halkanin altinda degil, TEPE BOSLUGUNDA.
+     SART: yazinin alt kenari kuzey gezegeninin ust kenarindan
+     YUKARIDA (yani gezegene binmemeli) ve halkanin ustunde. */
+  K('Gezinme yazisi gezegenin USTUNDE',
+     ac.yazi && ac.yazi.gezUst > 0 && ac.yazi.alt < ac.yazi.gezUst
+     && ac.yazi.ust < ac.yazi.halkaAlt,
+     'yazi '+(ac.yazi&&ac.yazi.ust)+'..'+(ac.yazi&&ac.yazi.alt)
+     +' | gezegen ust '+(ac.yazi&&ac.yazi.gezUst));
   K('Yazi alt seridi gecmiyor', ac.yazi && ac.yazi.alt <= ac.yazi.taban-14,
      'yazi alt '+(ac.yazi&&ac.yazi.alt)+' | serit ust '+(ac.yazi&&ac.yazi.taban));
   /* HALKA ILE ALT SERIDIN TAM ORTASI. Bir ara aradaki mesafenin
@@ -4873,9 +4891,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* ORAN 0.50 -> 0.66. Cizilmis harfler eskisinden buyuk ve halkanin
      cizgilerine yaklasiyordu; istenen "biraz da o yazilari asagiya
      al". Alt sinir yine alt seridin ustu. */
-  K('Yazi taban ile cark arasinda tam ortada',
-     ac.yazi && Math.abs(ac.yazi.merkez-(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.50))<=12,
-     'merkez '+(ac.yazi&&ac.yazi.merkez)+' | hedef '+(ac.yazi?Math.round(ac.yazi.halkaAlt+(ac.yazi.taban-ac.yazi.halkaAlt)*0.50):'-'));
+  /* ESKI KURAL ("yazi taban ile cark arasinda tam ortada") artik
+     gecerli degil: yazi ust bosluktadir. Yeni olcu: gezegenin ust
+     kenarina tam 10 px pay. */
+  K('Yazi gezegenin ustunden 10 px payli',
+     ac.yazi && ac.yazi.gezUst - ac.yazi.alt >= 8 && ac.yazi.gezUst - ac.yazi.alt <= 14,
+     'pay '+(ac.yazi ? (ac.yazi.gezUst - ac.yazi.alt) : '-') + ' px (hedef 10)');
   K('Ses baslayinca halka menu', ac.son1.ilk===true && ac.gez2===true,
      'ikinci basis gezinme '+ac.gez2);
 
@@ -8409,20 +8430,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        once calanin rafina, sonra gezinmeye baslanan rafa donuyordu.
        Ikisinde de kuyruk yeniden doluyor ve parmak kalkinca sarki
        degisiyordu. Dogrusu VAZGECMEK: raf kalkar, butun liste calar. */
-    /* GECICI AD HALKANIN ALTINDA: sag ustteki kucuk yazi gozden
-       kaciyordu; isim dugmesinde de alttaki buyuk silik yazi cikiyor. */
-    K('Isim dugmesi alt yaziyi da gosteriyor', await pg.evaluate(()=>{
-        const eM = mod, eA = AKTIF_AILE;
-        mod = 'radio'; AKTIF_AILE = 'JAZZ';
-        aileSiraGec();
-        const el = document.getElementById('modGez');
-        /* GECICI AD ARTIK CIZIM: ne yazdigini data-ad soyluyor. */
-        const yazi = el ? (el.getAttribute('data-ad') || el.textContent) : '';
-        const altta = el ? (el.getBoundingClientRect().top >
-                            document.querySelector('.disk').getBoundingClientRect().top) : false;
-        mod = eM; AKTIF_AILE = eA; try{ modGezYaz(''); }catch(e){}
-        return !!yazi && yazi !== 'JAZZ' && altta;
-      }), 'gecici ad halkanin ALTINDA cikiyor ve kendi kendine soner');
+     /* 30 Eylul: gecici ad artik halkanin ALTINDA degil, TEPE
+        BOSLUGUNDA (kuzey gezegeninin ustunde). Kontrol de yeni
+        yeri olculuyor: diskin USTUNDE ve halkanin altinda degil. */
+     K('Isim dugmesi ust boslukta yaziyi gosteriyor', await pg.evaluate(()=>{
+         const eM = mod, eA = AKTIF_AILE;
+         mod = 'radio'; AKTIF_AILE = 'JAZZ';
+         aileSiraGec();
+         const el = document.getElementById('modGez');
+         /* GECICI AD ARTIK CIZIM: ne yazdigini data-ad soyluyor. */
+         const yazi = el ? (el.getAttribute('data-ad') || el.textContent) : '';
+         const d = document.querySelector('.disk').getBoundingClientRect();
+         const ustte = el ? (el.getBoundingClientRect().bottom < d.top) : false;
+         mod = eM; AKTIF_AILE = eA; try{ modGezYaz(''); }catch(e){}
+         return !!yazi && yazi !== 'JAZZ' && ustte;
+       }), 'gecici ad diskin USTUNDE (tepe boslugu) ve kendi kendine soner');
     /* ORTA = SIRADAKI SES. Bir ara oraya "raf secimini birak" da
        baglanmisti; zar atlamak icin en cok basilan yer orasi ve her
        basista ustteki raf adi siliniyordu. Kullanici kaldirtti.
@@ -16601,8 +16623,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const d = document.querySelector('.disk').getBoundingClientRect();
         const halkaAlt = d.top + d.height*0.5 + Math.min(d.width,d.height)*0.357*(HALKA_DIS);
         const su = document.getElementById('solUst').getBoundingClientRect();
+        /* 30 Eylul: gecici ad TEPE BOSLUGUNDA. Kuzey gezegeni
+           halkanin disinda (uyduYerlestir), kutusu 44 px. */
+        const _gR = Math.min(d.width/2)*HALKA_DIS + 22 + 14;
+        const gezUst = Math.round(d.top + d.height*0.5 - _gR - 22);
         return { ust:Math.round(g.top), alt:Math.round(g.bottom),
-                 halkaAlt:Math.round(halkaAlt), modulUst:Math.round(su.top),
+                 halkaAlt:Math.round(halkaAlt), gezUst:gezUst, modulUst:Math.round(su.top),
                  bosluk:Math.round(su.top - g.bottom) };
       };
       /* OTURMUS YERLESIMI OLC, YOLDAKINI DEGIL. Sabit bir bekleme
@@ -16686,11 +16712,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             && /solUst[\s\S]{0,600}getBoundingClientRect/.test(k)
             && !/modGez[\s\S]{0,80}top\s*=\s*['"]\d+px/.test(k);
       }), 'konum olculuyor, sabit sayi yazilmiyor');
-    K('Gecici ad halkanin icine girmiyor',
-       gz.kipte.ust > gz.kipte.halkaAlt && gz.radyo.ust > gz.radyo.halkaAlt
-       && gz.kipte.alt < gz.kipte.modulUst && gz.radyo.alt < gz.radyo.modulUst,
-       'kipte: halka alti ' + gz.kipte.halkaAlt + ' < yazi ' + gz.kipte.ust
-       + '..' + gz.kipte.alt + ' < modul ' + gz.kipte.modulUst);
+    /* 30 Eylul: kural degisti. Artik "halkanin altinda" degil, yazi
+       TEPE BOSLUGUNDA ve kuzey gezegeninin USTUNDE olmali. */
+    K('Gecici ad gezegenin ustunde, halkanin icinde degil',
+       gz.kipte.alt < gz.kipte.gezUst && gz.radyo.alt < gz.radyo.gezUst
+       && gz.kipte.ust < gz.kipte.halkaAlt && gz.radyo.ust < gz.radyo.halkaAlt,
+       'kipte: yazi ' + gz.kipte.ust + '..' + gz.kipte.alt
+       + ' | gezegen ust ' + gz.kipte.gezUst + ' | halka alt ' + gz.kipte.halkaAlt);
     /* Ekran disinda park etmis bir eleman tabani belirlememeli --
        hatanin kokeni buydu. */
     K('Ekran disindaki eleman tabani belirlemiyor', await pg.evaluate(()=>{
