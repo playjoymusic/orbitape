@@ -2332,7 +2332,21 @@
      "live radio / curated - loops / sound fx" acliklamalarinin
      ayni dili -- ad once, yalniz ad, tireyle ayrilmis. */
   #fxYazi .fx-satir{display:flex;align-items:center;gap:9px;
-    white-space:nowrap;}
+    white-space:nowrap;justify-content:center;}
+  /* 16 ACIKLAMA (29 Eylul): secili gezegenin 4 efektinin gercek
+     parametre aciklamasi, satirin altinda kucuk ve soluk. */
+  #fxYazi .fx-bilgi{display:block;text-align:center;margin:7px auto 0;
+    max-width:88%;font:400 .625rem/1.4 'Share Tech Mono',monospace;
+    letter-spacing:.04em;color:rgba(226,222,212,.55);
+    text-shadow:0 1px 3px rgba(0,0,0,.75);transition:opacity .18s ease;}
+  /* GEZEGEN ADI: halkanin tepesi. Kalin, halkanin renginde, gecici. */
+  #fxAd{position:fixed;left:0;top:0;z-index:73;pointer-events:none;
+    text-align:center;opacity:0;transform:translateY(4px);
+    font:700 1.1875rem/1 'Share Tech Mono',monospace;
+    letter-spacing:.26em;margin-right:-.26em;white-space:nowrap;
+    text-shadow:0 1px 3px rgba(0,0,0,.8);
+    transition:opacity .24s ease,transform .24s ease,color .24s ease;}
+  body.mood:not(.gorsel-acik) #fxAd.gorunur{opacity:1;transform:translateY(0);}
   #fxYazi .fx-oge{display:inline-flex;align-items:baseline;gap:5px;
     font:400 .75rem/1 'Share Tech Mono',monospace;
     color:rgba(226,222,212,.55);text-shadow:0 1px 3px rgba(0,0,0,.75);
@@ -4388,7 +4402,10 @@
   <div id="mark" class="lib" aria-hidden="true"><canvas class="neb" width="148" height="148"></canvas></div>
     <!-- 29 Eylul: #gezegenTus kaldi (dort FX dugumu halkanin kenarinda,
          her zaman gorunur). Yerine secili FX'in adi + bilgisi. -->
-    <div id="fxYazi" aria-live="polite"><div class="fx-satir"></div></div>
+    <div id="fxYazi" aria-live="polite"><div class="fx-satir"></div><div class="fx-bilgi"></div></div>
+    <!-- Gezegen adi halkanin USTUNDE (29 Eylul): kuzey dugumunun
+         30 px ustunde, kalin, halkanin/neon renginde, gecici. -->
+    <div id="fxAd" aria-live="polite"></div>
   <!-- Kanal adları halkalara taşındı (en dıştaki üç halka). Sağ üstte
        artık sadece uygulamanın adı duruyor. Ölçü referansı olarak
        kullanıldığı için eleman yapısı aynı kaldı. -->
@@ -4770,6 +4787,14 @@
          oldugu yerde kalirdi. -->
     <div class="sat islem" data-ayar="halkaBoy" role="button" tabindex="-1">
       <span>RING SIZE</span><span class="durum">MEDIUM</span></div>
+    <!-- ── CENTER: RING / WHEEL (29 Eylul) ──
+         Kullanicinin sozu: "isteyen yukardan cark'i secer
+         skins'lerden, ama secince gelsin ... secimler bir sonraki
+         giriste ayni sekilde devam etmeli. devamlilik". Once cark
+         VARSAYILANDI ve uc ayri yer secimi eziyordu; simdi tek satir,
+         iki secenek, secim localStorage'da kalici (AYAR.merkez). -->
+    <div class="sat islem" data-ayar="merkez" role="button" tabindex="-1">
+      <span>CENTER</span><span class="durum">RING</span></div>
 
     <!-- ── PLAYBACK: SES CIHAZDAN NASIL CIKIYOR ──
          Tek satirlik bir bolum ama kendi sorusu var ve o soru ne
@@ -7118,7 +7143,7 @@
          zorlamayi eziyordu -- olculdu: ORBITAPE'de cark yine acik
          kaldi. O yuzden karar tek yerde: mood'da ve kullanici bu
          oturumda secim yapmadiysa HALKA gosterilir. */
-      const m = zorlama || (AYAR.merkez || 'cark');
+      const m = zorlama || (AYAR.merkez || 'yuvarlak');
       document.body.classList.toggle('merkez-cark', m === 'cark');
       document.body.classList.toggle('merkez-faz', m === 'faz');
       /* halka/yuvarlak ayrimi: govde sinifi + RING anahtari. */
@@ -8250,20 +8275,38 @@
   /* ── GEZEGENLER (FX DUGMELERI) ──
      Yalnizca SOUND BANKS kipinde gorunurler; radyo tarafinda ekranda
      yoklar. Tanim burada duruyor cunku kip acilinca aynen kuruluyorlar. */
+  /* ── 4 GEZEGEN, HER BIRINDE 4 FX (29 Eylul) ───────────────
+     Kullanici: "fx leri genel ismi olmasin retro vs gibi. direkt
+     delay pich vs neyse onlari yaz. 4 gezegen ve uydu her birine
+     icindeki fx ler 4'er yani 16 aciklama oluyor." Once her
+     gezegen TEK genel ad tasiyordu (RETRO, LOOP, BLACK HOLE, FX) --
+     bunlar efekt DEGIL, grup adi. Simdi her gezegen kendi Dort
+     GERCEK efektini tasiyor; ekranda yazan isim daima efekt adi.
+     Gezegen adi yalniz aria icin kalir.
+     OLCU: 4 gezegen x 4 = 16 aciklama. */
   const UYDULAR = [
-    /* Gezegen + ayları: ilki sağ ekvatorda, sonrakiler saat yönünde aşağı
-       iner. Her adımda hem küçülüyor hem yörüngesi genişliyor. */
-    { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO — tape / lo-fi', neon:'214,110,58' },
-    { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP — infinite repeat', neon:'53,224,216' },
-    { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE — collapse / infinite echo', neon:'176,140,255' },
-    /* ── ANA FX ──
-       Eskiden temel efekt her sürüklemede kendiliğinden devredeydi.
-       Artık onun da bir gezegeni var: kapalıyken halkalar KATEGORİ
-       menüsü, açıkken FX. Böylece ikisi birbirine karışmıyor. */
-    { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX — main effect group', neon:'232,169,126' }
-    /* KENAR ATAMASI (29 Eylul): dizilim sirasi ekrandaki yerlesim sirasi:
-       0 kuzey · 1 dogu · 2 guney · 3 bati. */
-    ];  const uyduDug = {};
+      { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO', neon:'214,110,58',
+        fxler:[ {ad:'TAPE',   bilgi:'saturation · hiss', par:'doygunluk'},
+                {ad:'DRIFT',  bilgi:'wow & flutter',      par:'wobble'},
+                {ad:'DUST',   bilgi:'crackle · noise',    par:'kirpinti'},
+                {ad:'WARM',   bilgi:'low shelf',         par:'sicaklik'} ] },
+      { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP', neon:'53,224,216',
+        fxler:[ {ad:'DELAY',  bilgi:'echo · repeat',     par:'gecikme'},
+                {ad:'ECHO',   bilgi:'feedback taps',     par:'yanki'},
+                {ad:'PITCH',  bilgi:'tape speed',         par:'hiz'},
+                {ad:'REPEAT', bilgi:'loop length',        par:'dongu'} ] },
+      { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE', neon:'176,140,255',
+        fxler:[ {ad:'REVERB',   bilgi:'cathedral tail',   par:'yanki'},
+                {ad:'FEEDBACK', bilgi:'self loop',        par:'geri besleme'},
+                {ad:'COLLAPSE', bilgi:'pitch -> 0',       par:'catlama'},
+                {ad:'DIVE',     bilgi:'sweep down',       par:'dalma'} ] },
+      { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX', neon:'232,169,126',
+        fxler:[ {ad:'FILTER', bilgi:'low-pass sweep',    par:'filtre'},
+                {ad:'DRIVE',  bilgi:'saturation',        par:'doygunluk'},
+                {ad:'TONE',   bilgi:'EQ tilt',           par:'ton'},
+                {ad:'SPACE',  bilgi:'stereo width',      par:'genislik'} ] },
+  ];  const uyduDug = {};
+
     UYDULAR.forEach((u,i)=>{
       const b=document.createElement('button');
       b.type='button'; b.className='uydu'; b.dataset.fx=u.fx; b.dataset.gk=u.gk||'';
@@ -8299,20 +8342,26 @@
            ← bati · ↑ kuzey · ↓ guney · → dogu. Sira saat yonunde
            (kuzey-dogu-guney-bati) ki halkanin cizim sirasiyla ayni. */
         const OK = { kuzey:'↑', dogu:'→', guney:'↓', bati:'←' };
+        const _bilgi = _yazi ? _yazi.querySelector('.fx-bilgi') : null;
+        /* 16 ACIKLAMA (29 Eylul). Ekranda genel ad (RETRO, LOOP,
+           BLACK HOLE, FX) DEGIL, gercek efekt adi (DELAY, PITCH,
+           REVERB...) yaziyor. Kullanici: "fx leri genel ismi olmasin
+           retro vs gibi. direkt delay pich vs neyse onlari yaz. 4
+           gezegen x 4 efekt = 16 aciklama. Satira secili gezegenin
+           DORT efekti, altina parametre aciklamalari. */
         const _yaz = (ad)=>{
           if(!_yazi || !_satir) return;
           if(!ad){ _yazi.classList.remove('gorunur'); return; }
-          /* Dort oge, aralarinda tire. */
+          const g = UYDULAR.filter(u=>u.fx===ad)[0];
+          const fxler = (g && g.fxler) ? g.fxler : [];
           const parcalar = [];
-          UYDULAR.forEach((u,i)=>{
+          fxler.forEach((f,i)=>{
             if(i) parcalar.push('<span class="fx-tire">—</span>');
-            const k = (uyduDug[u.fx] ? uyduDug[u.fx].dataset.kenar : '') || 'kuzey';
-            const sec = (ad === u.fx) ? ' secili' : '';
-            parcalar.push('<span class="fx-oge'+sec+'"><span class="ok">'
-              + (OK[k]||'·') + '</span><span class="ad">'
-              + (uyduDug[u.fx] ? uyduDug[u.fx].dataset.fxAd : '') + '</span></span>');
+            parcalar.push('<span class="fx-oge"><span class="ad">'
+              + f.ad + '</span></span>');
           });
           _satir.innerHTML = parcalar.join('');
+          if(_bilgi) _bilgi.textContent = fxler.map(f=>f.bilgi).join('  ·  ');
           _yazi.classList.add('gorunur');
           try{ fxYaziYerlestir(); }catch(e){ _yut(e); }
         };
@@ -8325,10 +8374,30 @@
             b.setAttribute('aria-pressed', sec ? 'true' : 'false');
           });
         };
-        /* TEK KAYNAK: isaret ve aciklama hep buradan. */
+        /* Gezegen adi HALKANIN USTUNDE (29 Eylul). 2.6 sn gorunur,
+           sonra solar -- aciklama yazisiyla ayni kural. Yeni gezegen
+           secilirse yazi HEMEN degisir. Genel ad ekrana yazilmaz. */
+        const _adEl = document.getElementById('fxAd');
+        let _fxAdZaman = 0;
+        const _adYaz = (ad)=>{
+          if(!_adEl) return;
+          if(!ad){ _adEl.classList.remove('gorunur'); return; }
+          const g = UYDULAR.filter(u=>u.fx===ad)[0];
+          if(!g) return;
+          _adEl.textContent = g.ad || '';
+          _adEl.style.color = 'rgb(var(--fxn,232,169,126))';
+          _adEl.classList.add('gorunur');
+          try{ if(window.fxAdYerlestir) window.fxAdYerlestir(); }catch(e){ _yut(e); }
+          /* Bos catch yok: temizleme hatasi _yut ile sayilir. */
+          try{ clearTimeout(_fxAdZaman); }catch(e){ _yut(e); }
+          _fxAdZaman = setTimeout(()=>{ try{ _adEl.classList.remove('gorunur'); }
+            catch(e){ _yut(e); } }, 2600);
+        };
+        /* TEK KAYNAK: isaret, aciklama ve gezegen adi hep buradan. */
         window.fxGoster = (ad)=>{
           _isaretle(ad || '');
           _yaz(ad || '');
+          _adYaz(ad || '');
         };
         UYDULAR.forEach(u=>{
           const b = uyduDug[u.fx]; if(!b) return;
@@ -8368,7 +8437,8 @@
           try{ e.preventDefault(); }catch(_){ _yut(_); }
         });
         /* Pencere degisince yazi da yerinden gelsin. */
-        window.addEventListener('resize', ()=>{ try{ fxYaziYerlestir(); }catch(e){ _yut(e); } });
+        window.addEventListener('resize', ()=>{ try{ fxYaziYerlestir();
+          if(window.fxAdYerlestir) window.fxAdYerlestir(); }catch(e){ _yut(e); } });
       }catch(e){ _yut(e); }
     })();
   const bekle=$('bekle'), bekleGly=$('bekleGly');            // WAIT göstergesi (uzaylı sembol)
@@ -10765,11 +10835,29 @@
           b.dataset.kenar = AD[i % 4];
         });
         fxYaziYerlestir();
+        try{ if(window.fxAdYerlestir) window.fxAdYerlestir(); }catch(e){ _yut(e); }
       }catch(e){ _yut(e); }
     }
     /* ACIKLAMA NEREDE: halkanin guney disi, taban ile alt dugum arasinda
        TAM ORTA. Disk alt kenar r.top+r.height; alt dugumun ust kenari
        cy+rr-DUG/2. Ikisinin ortasi; yazi yatayda ortalanir. */
+    /* GEZEGEN ADININ YERI (29 Eylul): halkanin tepesi, yani kuzey
+       dugumunun 30 px ustunde. Sabit piksel degil, olculen yerinden. */
+    function fxAdYerlestir(){
+      try{
+        const y = document.getElementById('fxAd'); if(!y) return;
+        const d = document.querySelector('.disk');
+        const r = d ? d.getBoundingClientRect() : null;
+        if(!r || !r.width) return;
+        const cy = r.top + r.height/2;
+        const halkaR = (r.width/2) * 0.89;
+        const yb = y.getBoundingClientRect();
+        y.style.left  = '0px';
+        y.style.width = '100%';
+        y.style.top = Math.round(cy - halkaR - 30 - (yb.height || 20)/2) + 'px';
+      }catch(e){ _yut(e); }
+    }
+    try{ window.fxAdYerlestir = fxAdYerlestir; }catch(e){ _yut(e); }
     /* ── NEDEN IKINCI KEZ (29 Eylul) ──────────────────────────
        OLCULEDILDI: kip degisiminden hemen sonra uyduYerlestir
        calisiyor ama diskin olculen kutusu HENUZ yeni merkeze
@@ -11929,7 +12017,14 @@
      duyulan kisa ses, yeni kullaniciyi bilgilendirmeden karsiliyordu.
      Ayni desen: yalnizca YENI kullaniciyi etkiler, kayitli tercihi
      olanin degeri asagidaki _a.aramaSes okumasi yuzunden hep kazanir. */
-  var AYAR = { aramaSes:false, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, merkez:'cark', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[],
+  var AYAR = { aramaSes:false, tikSes:true, carkSes:true, sesKapa:false, carkSesCal:true, carkSesSev:3, sesAcildi:true, merkezOnar:true, halka:true, halkaBoy:2, /* 29 Eylul: VARSAYILAN ARTIK 'yuvarlak' (HALKA). Kullanici:
+   "isteyen yukardan cark'i secer skins'lerden, ama secince
+   gelsin ... secimler bir sonraki giriste ayni sekilde devam
+   etmeli. devamlilik". Cark ARTUK gelen bir sey degil, bir
+   SECENEK: skins'ten secilir ve secim kalicidir (AYAR.merkez
+   localStorage'da). Once varsayilan 'cark' idi, yani uygulama
+   ilk acilista carkli geliyordu. */
+  merkez:'yuvarlak', mood:false, tema:0, temaKilit:false, yildiz:4, yildizIsik:1, cark:false, karanlik:true, deri:0, olcum:false, dil:'', arac:false, gorselSaat:true, gorselSaatOnar:true, deriRastgele:false, deriTorba:[],
     /* ── LOCK SKIN (20 Eylul) ──
        Kullanicinin sozu: "orbitape tarafina gecersek kesinlikle ilk
        default carkli halka ile acilsin her zaman her durumda ...
@@ -11943,7 +12038,7 @@
        donuste sakladigini GERI VERIYOR -- bkz. moodUygula yorumu.
        Kilit ACILIRSA (deriKilit:true) bu zorlama devre disi kalir,
        deri eskisi gibi tek ve tum uygulamada sabit kalir. */
-    deriKilit:false, radyoDeri:0, radyoMerkez:'cark',
+    deriKilit:false, radyoDeri:0, radyoMerkez:'yuvarlak',
     /* SEMBOL SPIN (17 Eylul): varsayilan KAPALI. Acikken sag ustteki
        3 sembol eski soyut oyunu oynar (rastgele donme + ucluk
        kutlamasi + tik'te carkiCevir). Kapaliyken (varsayilan) --
@@ -12085,7 +12180,13 @@
            TASIYORDU. Duzeltmeden SONRA: AYAR.merkez='yuvarlak',
            govde sinifinda 'merkez-cark' YOK (bkz. test/saglik.js,
            "Random skin on open: merkez de circle'a donuyor"). */
-        if(AYAR.merkez !== 'yuvarlak') AYAR.merkez = 'yuvarlak';
+          /* 29 Eylul: ZORLAMA KALDIRILDI. Kullanici: "isteyen
+             yukardan cark'i secer skins'lerden, ama secince gelsin
+             ... secimler bir sonraki giriste ayni sekilde devam
+             etmeli. devamlilik". Once burada secim HER ACILIS'TA
+             'yuvarlak'a zorlaniyordu; simdi secenek secmedigi
+             surece kayitli degeri oldugu gibi kalir. */
+          /* AYAR.merkez degistirilmez. */
       }
       /* ── KIP DEPODAN GERI GELIYOR (AMA ILK CIZIMDEN ONCE) ──
          Bu satir bir kez KALDIRILDI ve sonra geri kondu; ikisinin
@@ -12420,7 +12521,7 @@
            bkz. moodUygula(true) notu) uzerine yazilmiyor. */
         if(!AYAR.deriKilit && _oncekiDunya !== 'lib'){
           AYAR.radyoDeri = AYAR.deri|0;
-          AYAR.radyoMerkez = AYAR.merkez || 'cark';
+          AYAR.radyoMerkez = AYAR.merkez || 'yuvarlak';
           AYAR.deri = 0;
           /* CARK ORBITAPE'DE OTOMATIK ACILMAZ (27 Eylul, kullanicinin
             sozu: "orbitape te bence cark ilk acilmasin. skins'ler
@@ -12432,7 +12533,10 @@
             Radyo tarafi kendi kayitli merkezini koruyor (radyoMerkez)
             ve istenirse cark yine skins/ayar sayfasindan secilir. */
             /* 29 Eylul: JOYTAPE kalkti; ORBITAPE merkezi HALKA kalir. */
-            AYAR.merkez = 'yuvarlak';
+            /* 29 Eylul: artik zorlanmiyor -- secim kullaniciya ait
+               (skins'ten secmisse o kalir; secmediyse varsayilan
+               gelir). Once hep 'yuvarlak' yaziliyordu, secimi
+               siliyordu. */
         }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
@@ -12478,7 +12582,7 @@
            hic dokunulmuyor -- eskisi gibi sabit kaliyor. */
         if(!AYAR.deriKilit){
           AYAR.deri = AYAR.radyoDeri|0;
-          AYAR.merkez = AYAR.radyoMerkez || 'cark';
+            AYAR.merkez = AYAR.radyoMerkez || 'yuvarlak';
         }
         try{ fxNormale(); }catch(e){ _yut(e); }
         try{ AKTIF_MOD = null; }catch(e){ _yut(e); }
@@ -13274,6 +13378,10 @@
      durmuyor. */
   const HALKA_KAT = [1.00, 0.95, 0.90, 0.85, 0.80];
   const HALKA_AD  = ['FULL','LARGE','MEDIUM','SMALL','TINY'];
+  /* ORTADAKI ALET (29 Eylul): RING (halka, varsayilan) ya da WHEEL
+     (cark). Kullanici carki bir gelen sey degil, bir SECENEK istedi:
+     "isteyen yukardan cark'i secer skins'lerden". */
+  const MERKEZ_AD = ['RING','WHEEL'];
   function halkaBoyYaz(){
     try{
       const i = Math.max(0, Math.min(HALKA_KAT.length - 1, AYAR.halkaBoy | 0));
@@ -17741,11 +17849,12 @@
        baslangic zamaniyla calisip yeni kanalda pesi sira atliyordu:
        "her sey sapitiyor" denen sey buydu. */
     try{ _moodGez = false; _moodVurgu = -1; modAdiBirak(); }catch(e){ _yut(e); }
-    /* FX DE SONER. Nebuladan oteki kanala gecip geri donunce
-       gezegenler yanik kaliyordu: efekt kapali ama dugmeler acik
-       gorunuyordu, kullanici neyin acik oldugunu bilemiyordu.
-       Kanal degisimi temiz bir baslangictir. */
-    try{ if(FXMOD) fxModGec(FXMOD); }catch(e){ _yut(e); }
+    /* FX KAPANMAZ (29 Eylul). Kullanici: "fx aktifken ortaya basip
+       ya da baska bir yerden track degisse bile fx'i kapama.
+       ancak mood degisirse zaten mecbur kapaniyor ya da tekrar
+       ustune basinca". Once burada FX kapatiliyordu (kanal
+       degisimi 'temiz baslangic' sayiliyordu) -- simdi yalniz
+       gezinme durumu sifirlanir, FX devam eder. */
     try{ calBaslangic = 0; buParcaSinyal = false; }catch(e){ _yut(e); }
     gecmisSifirla();            // geri listesi kanal başına
     moodYaz();
@@ -17945,9 +18054,12 @@
     if(!(mag > 0.22)) return;            // dokunup bırakmak değil, GERÇEK sürtme
     fxIpucuKapat(true);
   }
-  function fxNormale(){            // aktif uydu varsa kapat (sönümlemeyle)
-    if(FXMOD) fxModGec(FXMOD);            // aynı moda basmak zaten kapatıyor
-  }
+  /* PARCA DEGISINCE FX KAPANMAZ (29 Eylul). Kullanicinin kurali:
+     "fx aktifken ortaya basip ya da baska bir yerden track
+     degisse bile fx'i kapama". Once ortaya basmak efekti
+     kapatiyordu; kural degisti. Yalniz kip degisimi (moodUygula)
+     ve ayni gezegene tekrar basis kapatir. */
+  function fxNormale(){ /* artik bir sey yapmiyor */ }
   /* ── GEZEGEN: HALKALARI SIRAYLA GEZER ──
      Kanal adları halkalara taşınınca gezegenin işi de değişti. Artık
      halkaları EN DIŞTAN İÇE doğru sırayla açıyor:
@@ -20006,6 +20118,8 @@
         if(el5) el5.textContent = Y(CARK_SEV_AD[AYAR.carkSesSev|0] || 'MID');
         const el6 = kut.querySelector('.sat[data-ayar="halkaBoy"] .durum');
         if(el6) el6.textContent = Y(HALKA_AD[AYAR.halkaBoy|0] || 'MEDIUM');
+        const el7 = kut.querySelector('.sat[data-ayar="merkez"] .durum');
+        if(el7) el7.textContent = Y(MERKEZ_AD[(AYAR.merkez==='cark')?1:0]);
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
            baska is yapmaz (ADVANCED acik olsa bile). SEND DIAGNOSTICS
@@ -20326,6 +20440,16 @@
            (bkz. markup notu). Tema satiriyla ayni davranis. */
         dilListeKur();
         dilListeAc(!!document.getElementById('dilListe').hidden);
+        return;
+      }
+      if(k === 'merkez'){
+        /* Tek satir, iki secenek. Secim kalici: ayarKaydet() diske
+           yaziyor, acilista _a.merkez geri geliyor (bkz. 29 Eylul
+           notu: varsayilan artik HALKA, zorlama kaldirildi). */
+        AYAR.merkez = (AYAR.merkez === 'cark') ? 'yuvarlak' : 'cark';
+        ayarKaydet();
+        try{ merkezUygula(); }catch(e){ _yut(e); }
+        try{ if(typeof yaz==='function') yaz(); }catch(e){ _yut(e); }
         return;
       }
       if(k === 'halkaBoy'){

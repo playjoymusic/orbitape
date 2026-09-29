@@ -4304,3 +4304,68 @@ Toplam 1209 kontrol, 0 kırmızı.
 
 **Sıradaki:** 7 (favori ayrımı) → 5 (ilk dokunuş) → 4 (halka adları +
 tek harf seti) → 6 (Material ölçüleri).
+
+## 29 Eylul — 16 efekt aciklamasi, gezegen adi halkanin ustunde, cark secenek oldu
+
+**1) Ekranda genel ad degil, gercek efekt adi.**
+Kullanici: "fx leri genel ismi olmasin retro vs gibi. direkt delay
+pich vs neyse onlari yaz. 4 gezegen ve uydu her birine icindeki
+fx ler 4'er yani 16 aciklama oluyor."
+`UYDULAR` artik her gezegende `fxler:[4]` tasiyor. Satira secili
+gezegenin dort GERCEK efekti yaziliyor, altina parametre
+aciklamalari. OLCU: RETRO -> TAPE/DRIFT/DUST/WARM, LOOP ->
+DELAY/ECHO/PITCH/REPEAT, BLACK HOLE -> REVERB/FEEDBACK/COLLAPSE/
+DIVE, FX -> FILTER/DRIVE/TONE/SPACE. 4 x 4 = 16 aciklama.
+Satir ortalandi (`justify-content:center`); icerik ortasi 215 = ekran
+ortasi, kayma 0.
+
+**2) Gezegen adi halkanin USTUNDE.**
+Kullanici: gezegen adi "kuzey gezegeninin ustundeki boslukta", halkanin
+adlari gibi kalin ve halkanin/neon renginde, gecici.
+`#fxAd` eklendi; `fxAdYerlestir()` yaziyi kuzey dugumunun 30 px
+ustune koyuyor (Sabit piksel degil, olculen yerinden). OLCU: y=298
+(halkanin tepesi 302), font-weight 700, renk gezegenin neonu
+(rgb(214,110,58) / 53,224,216 / 176,140,255 / 232,169,126). 2.6 sn
+sonra soluyor. Bos catch birakilmadi (`_yut`).
+
+**3) FX kapanma kurali.**
+Kullanici: "fx aktifken ortaya basip ya da baska bir yerden track
+degisse bile fx'i kapama. ancak mood degisirse zaten mecbur kapaniyor
+ya da tekrar ustune basinca."
+Iki kapatma noktasi vardi ve ikisi de kaldirildi: kanal degisimi
+(`index.html` moodUygula) ve `fxNormale()` (ortaya basma = parca
+degisimi). Kapanma artik TEK yerde: `fxModKapat` (ayni gezegene tekrar
+basis). OLCU: ortaya bas -> retro KALDI; parca degis -> KALDI; ayni
+gezegene tekrar -> ""; baska gezegen -> degisti. Kip degisimi yine
+kapatiyor.
+
+**4) Cark artik bir secenek, varsayilan degil.**
+Kullanici: "isteyen yukardan cark'i secer skins'lerden, ama secince
+gelsin yani ordan secilirse oyle devam etmeli. secimler bir sonraki
+giriste ayni sekilde devam etmeli. devamlilik."
+- `AYAR.merkez` varsayilani `'cark'` -> `'yuvarlak'` (HALKA).
+- SKINS bolumune `CENTER` satiri eklendi: tek dokunus RING <-> WHEEL.
+  `MERKEZ_AD = ['RING','WHEEL']`; bes dilde `CENTER` cevirisi eklendi
+  (186 anahtar, hepsi esit).
+- Uc yer secimi EZIYORDU ve hepsi kaldirildi: acilista
+  `'yuvarlak'` zorlamasi, ORBITAPE'e gecerken `'yuvarlak'` yazimi,
+  radyoya donerken `radyoMerkez` geri yazimi.
+OLCU: acilis RING (cark yok) -> satira dokun WHEEL (aclik cark) ->
+yeniden yukleme WHEEL (devamlilik) -> tekrar dokun RING.
+`radyoMerkez` varsayilani da `'yuvarlak'`.
+
+**5) Kapilar.**
+`araclar/tipler.d.ts`: `fxAdYerlestir` eklendi.
+`test/saglik.js` 895 kontrol korundu. Carkla ilgili dort kontrol
+ESKI KURALI olcuyordu, yeni olcuye gecirildi (kontrol SAYISI ve
+siddeti ayni kaldi, sadece varsayilan degistigi icin beklenen deger
+degisti):
+- "Ilk acilista ortada cark" -> "Ilk acilista ortada HALKA"
+- "Random skin on open: merkez de circle'a donuyor" ->
+  "secilen merkez EZILMEZ" (depoda yazan kalir)
+- "Deri degisince cark ayni karede yenileniyor" -> carki once ACIK
+  yapiyor, olcum bitince secimi geri koyuyor
+- "Cark istek uzerine iniyor ve varsayilan merkez" -> modul + tuval
+Tip: 54 uyari, taban degismedi. Birim: 132/132.
+Kapi: saglik 894/894, ariza 18/18, senaryo 121/121, motor 19/19,
+cihaz 156/156, 0 kirmizi. index.html 1.286.904 B (sinir 1.332.224).

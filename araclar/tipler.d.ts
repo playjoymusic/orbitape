@@ -29,6 +29,7 @@ interface Window {
   fxModKapat?: () => void;
   fxGoster?: (ad: string) => void;
   uyduDuzelt?: () => void;
+  fxAdYerlestir?: () => void;   /* gezegen adi: halkanin ustunde */
   moodAc?: () => void;
   /* HALKA ADI YERLESIMI (28 Eylul): saglik takimi olcumu buradan
      okur -- tasma/cakisma/kontrast buradan gelir. */

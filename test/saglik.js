@@ -3579,8 +3579,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         else localStorage.setItem('orbitape.tur', d.t);
       }catch(e){}
     }, oncekiDepo);
-    K('Ilk acilista ortada cark', eski === 'cark',
-      'damgasiz depoda merkez=' + eski + ' (yuvarlak yaziliydi)');
+    /* 29 Eylul: CARK ARTUK VARSAYILAN DEGIL. Kullanici: "isteyen
+       yukardan cark'i secer skins'lerden ... secimler bir sonraki
+       giriste ayni sekilde devam etmeli". Yani cark bir SECENEK;
+       secen secmedigi surece HALKA gelir. OLCU: damgasiz depo. */
+    K('Ilk acilista ortada HALKA (cark secen degil)', eski === 'yuvarlak',
+      'damgasiz depoda merkez=' + eski + ' (yuvarlak gelmeliydi)');
     K('Onarim kullanicinin secimini silmiyor', yeni === 'halka',
       'damgali depoda merkez=' + yeni);
     K('Secili deri kapayip acinca yerinde kaliyor',
@@ -3705,8 +3709,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         else localStorage.setItem('orbitape.tur', d.t);
       }catch(e){}
     }, oncekiDepo4);
-    K('Random skin on open: merkez de circle\'a donuyor, cark degil',
-      !!rsm && rsm.deri === 42 && rsm.merkez === 'yuvarlak' && rsm.carkSinifi === false,
+    /* 29 Eylul: zorlama kaldirildi. Depoda 'cark' yaziyorsa cark
+       KALIR -- kural "secimler bir sonraki giriste ayni sekilde
+       devam etmeli". Once burada her acilista 'yuvarlak'a zorlaniyordu. */
+    K('Random skin on open: secilen merkez EZILMEZ',
+      !!rsm && rsm.deri === 42 && rsm.merkez === 'cark' && rsm.carkSinifi === true,
       rsm ? ('deri=' + rsm.deri + ' merkez=' + rsm.merkez + ' merkez-cark sinifi=' + rsm.carkSinifi)
           : 'olculemedi');
   }
@@ -10935,7 +10942,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const bek = ms2 => new Promise(r => setTimeout(r, ms2));
       const c = {};
       const eskiDeri = AYAR.deri;
+      /* 29 Eylul: cark bir secenek; bu test onu ACIK yapiyor
+         (skins > CENTER) ve olcum bitince secimi geri koyuyor. */
+      const mzEski = AYAR.merkez;
       try{
+        /* 29 Eylul: cark varsayilan DEGIL; bu test carkin dogru
+           cizildigini olcuyor, o yuzden once cark ACIK yapiyor
+           (skins'teki CENTER satirindan secilebilir). */
+        AYAR.merkez = 'cark';
+        try{ if(!window.CARK_HAZIR) window.carkYukle(); }catch(e){}
+        try{ window.merkezUygula(); }catch(e){}
+        for(let i2 = 0; i2 < 40 && !window.CARK_HAZIR; i2++) await bek(100);
+        await bek(400);
         const tv = document.getElementById('carkTuval');
         c.tuvalVar = !!tv;
         if(tv){
@@ -10954,7 +10972,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           c.olcum = a1 + ' -> ' + a2;
         }
       }catch(e){ c.hata = String(e && e.message || e); }
+      /* 29 Eylul: olcum bitti; deri ve merkez secimi geri konur. */
+      AYAR.merkez = mzEski;
       try{ AYAR.deri = eskiDeri; deriUygula(); }catch(e){}
+      try{ window.merkezUygula(); }catch(e){}
       await bek(300);
       return c;
     });
@@ -14402,7 +14423,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const c = {};
       try{
+        /* 29 Eylul: cark artik VARSAYILAN DEGIL, bir secenek. Bu
+           blok carkin dogru calistigini olcuyor, o yuzden carki
+           once ACIK yapiyor; varsayilanin halkanin oldugunu ayri
+           satir olcuyor (bkz. 'Ilk acilista ortada HALKA'). */
         c.varsayilan = AYAR.merkez === 'cark';
+        const _mz = AYAR.merkez;
+        AYAR.merkez = 'cark';
         if(!window.CARK_HAZIR){ try{ window.carkYukle(); }catch(e){} }
         for(let i = 0; i < 60 && !window.CARK_HAZIR; i++) await bek(100);
         c.geldi = !!window.CARK_HAZIR;
@@ -14457,8 +14484,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return c;
     });
     const ckOz = Object.keys(ck).filter(k => ck[k] !== true).map(k => k + '=' + ck[k]).join(' ');
-    K('Cark istek uzerine iniyor ve varsayilan merkez', ck.varsayilan && ck.geldi && ck.tuvalVar,
-       ckOz || 'AYAR.merkez=cark, tuval acik');
+    /* 29 Eylul: cark bir secenek; bu kontrol modulun inip tuvalin
+       acilmasi olcuyor. Secim kaliciligi ayri satirda. */
+    K('Cark istek uzerine iniyor ve secildiginde aciyor', ck.geldi && ck.tuvalVar,
+       ckOz || 'CARK_HAZIR, tuval acik');
     K('Carki cevirmek rafi degistiriyor ve dise oturuyor', ck.degisti && ck.rafaOturdu,
        ckOz || 'cevirdi, en yakin rafa oturdu');
     K('Raf adi markanin solunda yaziyor (cark olsa da)',
