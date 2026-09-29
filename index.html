@@ -10045,7 +10045,12 @@
     { ad:'NOISE',      yer:/\bnoise\b|harsh ?noise|\bpower ?electronics\b|\bjnoise\b|noisecore/i, radyo:'' },
     { ad:'DARK',       yer:/\bdark\b|darkwave|dark ?ambient|\bpsychedelic\b|\bpsych\b|\bgothic\b|\bdoom\b|\bocculto?\b|\britual\b|\bblack ?metal\b/i, radyo:'' },
     { ad:'BEATS',    yer:/\btechno\b|\bidm\b|\bhouse\b|downtempo|\belectro\b|electronica|breakbeat|\bdub\b|\bbeats?\b|psytrance|\btrance\b|\bglitch\b|breakcore|\bdnb\b|drum ?and ?bass|\bacid\b|experimental|improvis|musique concrete|electroacoustic/i, radyo:'' },
-    { ad:'OTHERS',   yer:/.^/, radyo:'' }          // kalan: asagidaki arsivRaf() dolduruyor
+    { ad:'OTHERS',   yer:/.^/, radyo:'' },         // kalan: asagidaki arsivRaf() dolduruyor
+    /* RECORDS (29 Eylul): JOYTAPE moodu ve dokuz bankasi kalkti; butun
+       muzik burada toplandI. KALIBI YENI DEGIL -- icinde tam once
+       MUZIK_KALIP vardi (9942), ayni siniflamanin adi.
+       OLCUM: 12.412 kayit, ornekte 2.500/2.500 muzik (%100). */
+    { ad:'RECORDS',  yer:MUZIK_KALIP, radyo:'' }
   ];
   /* ORBITAPE kanalinda halkalar bunlar. En icteki ilk acilan. */
   /* ORBITAPE EN BASTA (en icteki halka) ve acilista secili olan raf.
@@ -10077,8 +10082,12 @@
   /* RECORDS (26 Eylul) KALKTI: kullanicinin kurali "records olmayacak".
    Muzik artik ayri bir kol: JOYTAPE. ORBITAPE'nin icinde musiki
    rafi yok. */
+  /* RECORDS (29 Eylul): "silinen JOYTAPE'teki tum muzikler, ORBITAPE
+     modunda RECORDS rafinda olacak". Halka sirasi distan ice:
+     ... NATURE, HUMANS, **RECORDS**, ORBITAPE (hepsi) -- RECORDS disaridan
+     ikinci, en genis halka; icinde YALNIZCA muzik. */
   var ARSIV_ADLAR = ['INDUSTRIAL','NOISE','DARK','OTHERS','SPACE','AMBIANCE','CITY',
-    'NATURE','HUMANS','ORBITAPE'];
+    'NATURE','HUMANS','RECORDS','ORBITAPE'];
 
   /* ── JOYTAPE RAFLARI (27 Eylul, kullanici: "icine bankalari koy
      hallet bitir") ──
@@ -10207,7 +10216,11 @@
        de yaziyor: "noise'u da kaldir" -- NOISE bir SES EFEKTI
        rafidir, muzik kelimesi degil; MUZIK_KALIP'ten cikarildi
        (olcum: "noise" 2.000 kayitta geciyordu). */
-    if(_muzikMi(o)) return joyRaf(o);
+    /* BUTUN MUZIK TEK RAFTA: RECORDS (29 Eylul, kullanici: "silinen
+       JOYTAPE'teki tum muzikler ORBITAPE modunda records rafinda
+       olacak"). JOYTAPE moodu ve dokuz bankasi kalkti; eski
+       JOY_ADLAR dagitimi yerine tek raf. */
+    if(_muzikMi(o)) return 'RECORDS';
     for(const ad of ARSIV_SORGU){
       const m = modBul(ad);
       if(m && m.yer && m.yer.test(t)) return ad;

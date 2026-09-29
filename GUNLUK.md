@@ -4137,3 +4137,32 @@ yapılacak.
 
 Kapı (son yeşil): saglik 895/895 · arıza 18/18 · senaryo 121/121 ·
 motor 19/19 · cihaz 156/156. Birim 132/132.
+
+## 29 Eylül 2026 — RECORDS rafa döndü (madde 1)
+
+**Karar (çelişki çözüldü):** "ORBITAPE = hepsi" ile "ORBITAPE'de müzik sıfır"
+aynı anda doğru olamaz. Kural artık **dışlama değil, toplama**:
+müzik yalnız RECORDS'ta olur. Efektler kendi raflarında kalır.
+
+**Yapılanlar:**
+- `ARSIV_ADLAR` 10 → 11 halka: `… HUMANS · RECORDS · ORBITAPE`
+  (RECORDS dıştan ikinci; en dışta hâlâ ORBITAPE = hepsi)
+- `arsivRaf()`: JOYTAPE'nin dokuz bankası yerine tek kova —
+  `if(_muzikMi(o)) return 'RECORDS'`
+- `MODLAR`'a RECORDS girdi. Kalibi **yeni kural değil**, `MUZIK_KALIP`'in
+  kendisi (dosyanın zaten kullandığı müzik tespiti). Sıralama TDZ yüzünden
+  `MUZIK_KALIP` önce gelmeli — `birim.js` MANIFEST'i düzeltildi.
+- RECORDS teması zaten vardı (bakır: plak) — ayrıca eklenmedi.
+
+**Ölçüm (Chromium, 430×932, gerçek havuz):**
+- Halkalar 11 ✓
+- RECORDS 12.412 kayıt, örnekte 2.500/2.500 müzik (%100)
+- ORBITAPE 13.881 kayıt → 0 müzik · OTHERS 1.197 → 0 · HUMANS 5.943 → 0
+- Kategori sayısı 15 → 16
+
+**Kapı:** 895 sağlık (0 kırmızı) · 18 arıza · 121 senaryo · 19 motor ·
+156 cihaz · birim 132/132 · tip 57 uyarı (taban). Toplam 1209 kontrol.
+
+**Sonraki sıra:** 2 (açılış seçicisinin silinmesi) → 7 (favori ayrımı) →
+5 (ilk dokunuş) → 4 (halka adları + tek harf seti) → 3 (çarkın 4 FX düğümü) →
+6 (Material ölçüleri).

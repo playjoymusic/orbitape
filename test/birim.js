@@ -50,9 +50,11 @@ const MANIFEST = [
   'function sanatciTemiz',
   'const SANATCI_COP',
   'const KAYNAK',
-  'const MODLAR',
+  /* 29 Eylul: RECORDS'in kalibi MUZIK_KALIP'in KENDISI; MODLAR onu
+     kullandigi icin MUZIK_KALIP once gelmeli (TDZ). */
   'const MUZIK_DEGIL',
   'const MUZIK_KALIP',
+  'const MODLAR',
   'var ARSIV_ADLAR',
   'var ARSIV_SORGU',
   /* 27 Eylul: JOYTAPE'nin kendi raflari (kullanici: "icine bankalari
@@ -189,10 +191,10 @@ K('Alan kaydi NATURE rafina gidiyor',
 /* 27 Eylul (son hali): bankalar YENI adlar -- radyonun listesi
    degil. Muzik kaydi JOY_RENKLER'in adina gider; ortam sesi
    (ambience) arsivin kendi AMBIANCE rafinda kalir. */
-K('Muzik olan ambient JOYTAPE bankasinda, ortam sesi AMBIANCE',
-  A.arsivRaf(kayit('ambient · drone', 'Deep Drone')) === 'ELECTRONIC LAB'
-  && A.arsivRaf(kayit('ambience · room tone', 'Deep Room')) === 'AMBIANCE',
-  'muzik ambient -> ELECTRONIC LAB · ortam sesi -> arsiv AMBIANCE');
+  K('Muzik olan ambient RECORDS rafinda, ortam sesi AMBIANCE',
+    A.arsivRaf(kayit('ambient · drone', 'Deep Drone')) === 'RECORDS'
+    && A.arsivRaf(kayit('ambience · room tone', 'Deep Room')) === 'AMBIANCE',
+    'muzik ambient -> RECORDS · ortam sesi -> arsiv AMBIANCE');
 K('JOYTAPE bankalari muzigi turune gore dagitiyor',
   A.joyRaf(kayit('jazz · bebop', 'x')) === 'BLUE NOTE'
   && A.joyRaf(kayit('techno · minimal', 'x')) === 'ELECTRONIC LAB'
@@ -211,11 +213,11 @@ K('Radyo tiyatrosu ve sozlu tarih HUMANS ta',
    Arazi kaydi ("field recording") MUZIK_DEGIL'de -> ORBITAPE'de
    kalir. Gurultunun saf hali ("harsh noise", elektrik kelimesi
    olmadan) NOISE'ta. */
-K('Saf gurultu NOISE, arazi kaydi INDUSTRIAL, muzik JOYTAPE rafinda',
+  K('Saf gurultu NOISE, arazi kaydi INDUSTRIAL, muzik RECORDS rafinda',
   A.arsivRaf(kayit('harsh noise · hiss · static', 'x')) === 'NOISE'
   && A.arsivRaf(kayit('field recording · train · railway', 'x')) === 'INDUSTRIAL'
-  && A.JOY_ADLAR.indexOf(A.arsivRaf(kayit('power electronics · dark ambient', 'x'))) >= 0,
-  'NOISE / INDUSTRIAL / JOYTAPE raflari');
+    && A.arsivRaf(kayit('power electronics · dark ambient', 'x')) === 'RECORDS',
+    'NOISE / INDUSTRIAL / RECORDS rafi');
 K('Canli yayin yalnizca RADIOTAPE',
   A.modUyar({ radyo: true, etiket: '', ad: 'FM' }, 'RADIOTAPE') === true
   && A.modUyar({ radyo: true, etiket: '', ad: 'FM' }, 'ORBITAPE') === false,
@@ -223,13 +225,12 @@ K('Canli yayin yalnizca RADIOTAPE',
 K('ORBITAPE rafi her arsiv kaydini aliyor',
   A.modUyar(kayit('', 'Tidal Wave'), 'ORBITAPE') === true,
   'en icteki halka bos kalmiyor');
-/* 26 Eylul: RECORDS yerine JOYTAPE (muzik kolu). */
-/* 27 Eylul: hedef tek kova degil, JOYTAPE'nin raflari; kayit
-   etiketsiz oldugu icin tur kelimesi yok -> MIXTAPE. */
+  /* 29 Eylul: hedef tek kova degil, RECORDS rafi; kayit etiketsiz
+     oldugu icin tur kelimesi yok ama kaynak kimligi lp_/78_ -> muzik. */
 K('Kaynaktan raf: lp_/78_ muzik sayiliyor',
-  A.JOY_ADLAR.indexOf(A.arsivRaf(kayit('', 'x', 'https://archive.org/download/lp_madama-butterfly/x.mp3'))) >= 0
-  && A.JOY_ADLAR.indexOf(A.arsivRaf(kayit('', 'x', 'https://archive.org/download/78_valley_percy/x.mp3'))) >= 0,
-  'archive.org kimligi karar veriyor, hedef JOYTAPE raflari');
+    A.arsivRaf(kayit('', 'x', 'https://archive.org/download/lp_madama-butterfly/x.mp3')) === 'RECORDS'
+    && A.arsivRaf(kayit('', 'x', 'https://archive.org/download/78_valley_percy/x.mp3')) === 'RECORDS',
+    'archive.org kimligi karar veriyor, hedef RECORDS');
 
 /* ── RENK KARISIMLARI ───────────────────────────────────────────
    Zeminin ve markanin rengi bu uc fonksiyondan cikiyor. Sinirlarda

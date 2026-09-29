@@ -3962,8 +3962,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      CITY ve BEATS acildi, MACHINES ile SOUNDSCAPES kalkti). Sayi
      sabit bir hedef degil, listenin GERCEKTEN degistigini gormek
      icin duruyor. */
-   /* 26 Eylul: RECORDS cikti, muzik JOYTAPE kolu oldu: 16 -> 15. */
-  K('Kategoriler tanimli',    md.n===15, md.ad);
+  K('Kategoriler tanimli',    md.n===16, md.ad);
+  /* 26 Eylul: RECORDS cikti, muzik JOYTAPE kolu oldu: 16 -> 15.
+     29 Eylul: RECORDS geri geldi (artik RAF, kip degil): 15 -> 16. */
   /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
      Ilk yazisinda boyle yapilmisti ve test yalan soyledi. */
   const hs = await pg.evaluate(()=>({sira:halkaAdlar().join(' | '), n:halkaAdlar().length,
@@ -4024,12 +4025,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        hepsi var ve ilk sirada"), RECORDS EN DISTA.
        Sira KAYIT SAYISINA GORE DEGIL: TALKS 4.123 kayitla ictekilerden
        biri, RECORDS 1.745 kayitla en distaki. Sunum sirasi. */
-   /* 26 Eylul: IKI raf kalkti. RECORDS ("records olmayacak") ve
-     BEATS ("beats'i de iptal et") -- ikisi de musikti, musik artik
-     ayri bir kol: JOYTAPE. 12 -> 10 raf. */
-  K('Arsiv kanalinda halkalar 10 raf', ars.n===10 && /^INDUSTRIAL/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
+   /* 29 Eylul: RECORDS geri geldi ama ARTIK BIR KOL DEGIL, BIR RAF.
+     Kullanici: "silinen JOYTAPE'teki tum muzikler ORBITAPE modunda
+     records rafinda olacak". 10 -> 11 halka; arsivRaf() butun muzigi
+     RECORDS'a gonderir. OLCUM: RECORDS 12.412 kayit, %100 muzik. */
+  K('Arsiv kanalinda halkalar 11 raf', ars.n===11 && /^INDUSTRIAL/.test(ars.ad) && /ORBITAPE$/.test(ars.ad), ars.ad);
+    /* RECORDS en distan ikinci: ORBITAPE'nin (hepsi) hemen icinde. */
     K('En icte INDUSTRIAL, en dista ORBITAPE',
-      /^INDUSTRIAL NOISE DARK/.test(ars.ad) && /HUMANS ORBITAPE$/.test(ars.ad), ars.ad);
+      /^INDUSTRIAL NOISE DARK/.test(ars.ad) && /HUMANS RECORDS ORBITAPE$/.test(ars.ad), ars.ad);
     /* MEZAR TASI: bir tur TALKS diye bir raf vardi (sesli kitap,
        siir, radyo tiyatrosu). Kullanici kapatti ve icerigi arsivden
        cikardi: tek basina arsivin dortte biriydi ve rastgele calan
@@ -4055,11 +4058,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
              adresine baslik gecerse kelime oradan yakalanir ve test
              yanlis sebeple duser (bir kez oldu). */
           { o:{ etiket:'jazz · vinyl · 78-rpm · 78rpm',
-                ad:"Jumpin' At Apollo",
-                mp3:'https://archive.org/download/JV-25463-1946-QmY13QXN9yZMT7TYEhnpF7N5ne6SGKUfZcbXCadqUfPRff.mp3/APOR1054.mp3' },
-            /* 27 Eylul: hedef tek 'JOYTAPE' kovasi degil, JOYTAPE'nin
-               on rafindan biri: bu kayit caz plagi -> JAZZ. */
-            olmali:'BLUE NOTE' },
+                /* 29 Eylul: bu kayit caz plagi -> RECORDS. JOYTAPE'nin
+                   dokuz bankasi kalkti; butun muzik tek rafta. */
+                  ad:"Jumpin' At Apollo",
+                  mp3:'https://archive.org/download/JV-25463-1946-QmY13QXN9yZMT7TYEhnpF7N5ne6SGKUfZcbXCadqUfPRff.mp3/APOR1' },
+              olmali:'RECORDS' },
           /* LibriVox siiri: adinda "Wind" geciyor diye NATURE'daydi.
              Sesli kitap ve siir artik TALKS rafinda. */
           { o:{ etiket:'librivoxaudio audio_bookspoetry librivox audiobooks poetry',
@@ -4535,7 +4538,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                enDoygun:Math.max(...g.filter(x=>x.ad!=='HUMANS').map(x=>doygun(x.p.ana))),
                zeminler:g.every(x=>/^#0/.test(x.p.zemin[0])) };
     });
-    K('Sekiz raf tanimli ve kalipli', rt.hepsiTemali && rt.hepsiKalipli, 'her rafin temasi ve kalibi var');
+      /* 29 Eylul: 11 raf. RECORDS'in kalibi MUZIK_KALIP'in kendisi
+         (bosuna yeni kural degil) ve temasi bakir: plak. */
+      K('On bir raf tanimli ve kalipli', rt.hepsiTemali && rt.hepsiKalipli, 'her rafin temasi ve kalibi var');
     /* DAR RAFLAR BIRBIRINI DISLIYOR: ayni kayit iki dar rafa giremez.
        Girerse OTHERS "kalan" olmaktan cikar ve halkalar yalan soyler.
        ORBITAPE bu kontrolun DISINDA: o bir daraltma degil, hepsini
@@ -5453,27 +5458,33 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   /* "Arsivdeki butun muzik" rafi RECORDS: MIXTAPE halkasi ekranda
      hicbir yerde gorunmuyordu (halkaAdlar iki dunyada da baska liste
      donuyor), kaldirildi. RECORDS duruyor ve dolu. */
-  /* 26 Eylul: RECORDS yerine JOYTAPE kolu. Muzik bir RAF degil, bir
-     KIP: RADIOTAPE radyo, JOYTAPE muzik, ORBITAPE ses efektleri.
-     Arsiv raflarinda musik rafi yok (kullanci: "records olmayacak"). */
-  /* 27 Eylul: JOYTAPE artik tek kova degil, on raf; sayim onlarda. */
-  K('Muzik kolu JOYTAPE bankalari, RECORDS rafi yok', await pg.evaluate(()=>
-      ARSIV_ADLAR.indexOf('RECORDS') < 0
-      && JOY_ADLAR.every(a=>ARSIV_ADLAR.indexOf(a) < 0)
-      && JOY_ADLAR.indexOf(arsivRaf({etiket:'78rpm · jazz · vinyl',ad:'x'})) >= 0
-      && modUyar({etiket:'78rpm · jazz · vinyl',ad:'x'},'ORBITAPE') === false),
-     'RECORDS yok, JOYTAPE raflari yalnizca muzik');
+    /* 29 Eylul: JOYTAPE moodu SILINDI. Muzik bir kip degil, ORBITAPE
+       icindeki tek raf: RECORDS. Kural "muzik sizmasin" degil,
+       "muzik yalnizca RECORDS'ta olur" -- yonlendirme.
+       OLCUM: RECORDS 12.412 kayit (%100 muzik), ORBITAPE/OTHERS/HUMANS 0. */
+    K('Butun muzik RECORDS rafinda, RECORDS haricinde yok', await pg.evaluate(()=>{
+        const ornek={etiket:'78rpm · jazz · vinyl', ad:'x'};
+        return ARSIV_ADLAR.indexOf('RECORDS') >= 0
+        && arsivRaf(ornek) === 'RECORDS'
+        && modUyar(ornek,'RECORDS') === true
+        && modUyar(ornek,'ORBITAPE') === false
+        && modUyar(ornek,'OTHERS')   === false
+        && modUyar(ornek,'HUMANS')   === false
+        && ARSIV_ADLAR.filter(a=>a!=='RECORDS' && a!=='ORBITAPE')
+               .every(a=>modUyar(ornek,a) === false);
+      }),
+       'RECORDS var ve dolu; diger raflar muzigi eliyor');
   /* OTHERS'in son sorusu: bu bir muzik mi? Kalip listesi uzatilmadi,
      uygulamanin kendi muzik testi soruldu. Olculdu: OTHERS 1.289 ->
      598, RECORDS 5.224 -> 5.915. */
-  /* 27 Eylul: deneysel netlabel yayini JOYTAPE'nin raflarina gider
-     (MIXTAPE: tur kelimesi yok), kalan OTHERS. */
-  K('OTHERS muzigi JOYTAPE rafina birakiyor', await pg.evaluate(()=>
-      JOY_ADLAR.indexOf(arsivRaf({etiket:'opensource_audio community experimental',
-                                   ad:'[LEMN018] Therma Ikarias', mp3:''})) >= 0
-      && arsivRaf({etiket:'', ad:'Broken Doorbell', mp3:''}) === 'OTHERS'),
-     'deneysel netlabel yayini JOYTAPE raflari, kalan OTHERS');
-  K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
+    /* 29 Eylul: deneysel netlabel yayini RECORDS'a gider (MIXTAPE:
+       tur kelimesi yok), kalan OTHERS. */
+    K('OTHERS muzigi RECORDS rafina birakiyor', await pg.evaluate(()=>
+        arsivRaf({etiket:'opensource_audio community experimental',
+                  ad:'[LEMN018] Therma Ikarias', mp3:''}) === 'RECORDS'
+        && arsivRaf({etiket:'', ad:'Broken Doorbell', mp3:''}) === 'OTHERS'),
+       'deneysel netlabel yayini RECORDS, kalan OTHERS');
+    K('Radyoda yukseltme yok',   saf.radyoTavan===1, 'tavan '+saf.radyoTavan+' | hedef '+saf.radyoHedef);
   K('Kayit hedefi ONDEN hazir', await pg.evaluate(()=>!!kayitHedef), 'REC oncesi kurulu');
   /* latencyHint:'playback': tampon 441 -> 1024 ornek. Cizirti isleci
      acligindan; buyuk tampon bosalma payini iki katindan fazla yapiyor.
