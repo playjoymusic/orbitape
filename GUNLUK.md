@@ -4111,3 +4111,29 @@ göre güncellendi ("Yazı taban ile çark arasında tam ortada").
 
 Kapı: saglik 895/895 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 — **TEMİZ**.
+
+### 29 Eylül (on dokuzuncu tur) — commit'lenmiş CSP bayattı, düzeltildi
+
+**BULGU (açılışı kıran türden):** Depodaki `_headers` özeti, depodaki
+`index.html` ile **uyumsuzdu** — yani sayfa tarayıcıda açılsa "inline
+script violates CSP" deyip komut dosyası çalışmazdı. Kapı her koşuda
+`araclar/csp.py` çalıştırıp dosyayı düzelttiği için **yerelde yeşil
+görünüyordu** (`csp.py --kontrol`: "_headers BAYAT: index.html degismis
+ama ozet tazelenmemis"). Yayın adımı (`derle.py`) kendi özetini
+hesapladığı için `yayin/` doğruydu; düzeltilmemiş olan kaynak ağacıydı.
+Düzeltme: `python3 araclar/csp.py` çalıştırıldı ve `_headers` **bu kez
+commit edildi** — artık depodaki özet depodaki sayfayla örtüşüyor.
+
+**Ayrıca (ölçüldü, geri alındı):** JOYTAPE moodunun silinmesi denendi.
+Veri tarafı doğrulandı: müzik kayıtları **ORBITAPE'nin içindeki RECORDS
+rafına** gidiyor (ölçüm: RECORDS 12.412 kayıt, %100 müzik; ORBITAPE
+13.881 kayıt, 0 müzik; OTHERS 1.197, 0 müzik) ve panel iki kola
+indiği doğrulandı. Ama arayüzde üç parça eksik kaldı — RECORDS'ın halka
+*sırası* (kapı: "En içte INDUSTRIAL, en dışta ORBITAPE"), RECORDS'ın
+*teması/kalıbı** (kapı: "Sekiz raf tanimli ve kalipli") ve halka sayısı
+kontrolünün yeni değere (11) uyarlanması. Yarım bırakmak yerine çalışma
+ağacı son yeşiz push'a döndürüldü; üç kalem sonraki adımda tek seferde
+yapılacak.
+
+Kapı (son yeşil): saglik 895/895 · arıza 18/18 · senaryo 121/121 ·
+motor 19/19 · cihaz 156/156. Birim 132/132.
