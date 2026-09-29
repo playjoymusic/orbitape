@@ -71,7 +71,13 @@ const MANIFEST = [
   'const F3',
   'const DERILER',
   'function deriTorbaKaristir',
-  'const GEZ_CIZIM',
+  'const HARFTEK',
+  'const HARF_ARA',
+  'const HARF_BOSLUK',
+  'const HARF_UPM',
+  'const HARF_S',
+  'const HARF_KAYDIR',
+  'function HARF_BIRLESTIR',
   'function _parlaklikRGB',
   'function _parlaklikHex',
   'function _kontrastOran',
@@ -517,10 +523,26 @@ function _kontrast(a,b){
    kullanicinin bildirdigi sey buydu: bes yeni raf (INDUSTRIAL,
    NOISE, DARK, CITY, BEATS) tabloda yoktu. Yeni bir raf acilinca
    ayni sey tekrar olmasin diye kapi burada duruyor. */
+/* 29 Eylul: cizimler artik KELIME BASINA tablo degil, TEK HARF
+   SETI'nden (HARFTEK) uretiliyor. Kontrol de ayni kaynagi olcmeli:
+   rafin cizimi var mi sorusu "HARF_BIRLESTIR bu ad icin yol
+   donduruyor mu" demek. */
 K('Her arsiv rafinin cizimi var',
-  A.ARSIV_ADLAR.every(ad=>!!A.GEZ_CIZIM.ad[ad]),
-  A.ARSIV_ADLAR.filter(ad=>!A.GEZ_CIZIM.ad[ad]).join(', ')
+  A.ARSIV_ADLAR.every(ad=>!!A.HARF_BIRLESTIR(ad)),
+  A.ARSIV_ADLAR.filter(ad=>!A.HARF_BIRLESTIR(ad)).join(', ')
   || A.ARSIV_ADLAR.length + ' raf, hepsi cizili');
+/* Harf setinin KENDISI yeterli mi: kullanilan her harf tabloda var mi.
+   Eksik harf = o ad metne duser, yani sessizce bozulur. */
+K('Harf seti butun raf adlarini kapsiyor', (()=>{
+  const eksik = new Set();
+  for(const ad of A.ARSIV_ADLAR){
+    for(const ch of String(ad).toUpperCase()){
+      if(ch === ' ') continue;
+      if(!A.HARFTEK[ch]) eksik.add(ch);
+    }
+  }
+  return eksik.size === 0;
+})(), 'A..Z, & ve bosluk disi eksik harf yok');
 
 /* ── DERI SINIRI TABLOYLA AYNI MI ───────────────────────────────
    Ayarlar betigin BASINDA okunuyor, DERILER tablosu cok asagida;

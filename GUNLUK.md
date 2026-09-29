@@ -4369,3 +4369,54 @@ degisti):
 Tip: 54 uyari, taban degismedi. Birim: 132/132.
 Kapi: saglik 894/894, ariza 18/18, senaryo 121/121, motor 19/19,
 cihaz 156/156, 0 kirmizi. index.html 1.286.904 B (sinir 1.332.224).
+
+## 29 Eylul — tek harf seti, halka adlari geri geldi
+
+**1) TEK HARF SETI (GERCEK BIR KUCULME).**
+Tür adlarının çizimi kelime başına ayrı ayrı saklanıyordu: 27 ad,
+24.087 B. Hepsi aynı alfabeden türemiş olsa da (olçüldü: her harf
+kelimeler arasında aynı şekilde, cap 143, taban 0) aynı "A" 22 kez,
+aynı "E" 16 kez yazılıyordu.
+
+Simdi 25 harflik **tek tablo** (`HARFTEK`, 3.541 B) + kelimeleri
+harflerden birleştiren `HARF_BIRLESTIR`. Net **-20.5 KB**.
+
+Ölçüm (piksel düzeyinde, eski çizim tablosuyla karşılaştırma):
+dikey kayma **27/27 sıfır**; yatay örtüşme 24/27 kelimede %97+
+(en düşük DARK %95, INDUSTRIAL %94). Sebep: 1 birimlik genişlik
+yuvarlaması — gözle görünmez.
+
+**2) HALKA ADLARI, SADECE HALKANIN ÜSTÜNDE.**
+Kullanıcı: "halka adları geri gelecek ama sadece halkaların
+üstünde." 28 Eylül'de silinmişti (üstte liste hâlinde yığıldığı için).
+Şimdi her ad kendi halkasının üst çizgisinin 2 px üstünde, sabit ve
+yatay.
+
+Çizim de `HARF_BIRLESTIR`'dan geliyor — ayrı tuval fontu yok.
+
+Ölçüm: RADIOTAPE 11/11 ve ORBITAPE 11/11 ad çizildi; ekran dışı 0,
+üst üste binme 0, JS hatası 0. Cap 11 px sabit.
+
+**3) ÇÖZÜLEN ÜÇ HATA (hepsi sessizce çizmiyordu).**
+- `vctx` kapsam dışıydı: `halkaAdYaz` içinde `typeof vctx`
+  'undefined' dönüyor, fonksiyon her karede sessizce çıkıyordu.
+  Tuval ve merkez artık **açıkça parametre**.
+- Dönüş hatası: `rotate(don + PI/2)` yazıyı tepeye değil halkanın
+  çevresine savuruyordu. Artık dönüş yok — ad sabit duruyor.
+- `const` zaman çizgisi: `_halkaAdAra` `cap`'ten sonra okunuyordu →
+  ReferenceError → adlar hiç çizilmiyordu. Sıra düzeltildi.
+
+**4) CSP TUZAKI (bu turda iki kez).**
+`index.html` değişince `araclar/csp.py` **her zaman** çalıştırılmalı.
+Aksi halde satır içi script hash'i tutmaz, tarayıcı tüm betiği
+engeller — ekran normal görünür (arka plan CSS), hiçbir hata da
+görünmez, sadece `vizLoop` hiç çağrılmamış olur. Ölçüm: sayaç 0.
+
+**5) KAPILAR.**
+`test/birim.js`: `GEZ_CIZIM.ad` tablosu kalktığı için kontrol yeni
+kaynağa bağlandı (`HARF_BIRLESTIR`) ve **yeni bir kontrol eklendi**:
+"Harf seti bütün raf adlarını kapsıyor" — eksik harf = o ad metne
+düşerdi. 132 → **133/133**.
+Tip 54 uyarı (taban değişmedi). Sağlık 894/894 · arıza 18/18 ·
+senaryo 121/121 · motor 19/19 · cihaz 156/156 — 0 kırmızı.
+index.html 1.274.226 B (sınır 1.332.224).
