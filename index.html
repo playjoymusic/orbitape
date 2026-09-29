@@ -1706,8 +1706,6 @@
   /* .uzer yalniz yazi varken gecerli: bos yazida kalici opaklik
      birakmamali (yoksa bos #modGez her zaman gorunur kalirdi). */
   #modGez.uzer.gor{opacity:.72;}
-  body.zem.joy #modGez{mix-blend-mode:normal;
-    color:#1e2b27 !important;text-shadow:none !important;}
   /* ── CIZILMIS AD ──
      BES AD SONRADAN URETILDI. INDUSTRIAL, NOISE, DARK, CITY ve
      BEATS raflari acildiginda bu tabloda karsiliklari yoktu ve
@@ -2303,10 +2301,6 @@
     opacity:.7;transition:opacity .18s ease,background .18s ease,transform .18s ease;}
   #gezegenTus svg{width:28px;height:28px;}
   #gezegenTus:hover,#gezegenTus:focus-visible{opacity:1;background:rgba(232,169,126,.16);}
-  body.mood:not(.gorsel-acik) #gezegenTus{display:flex;}
-  /* JOYTAPE'de FX/gezegen ikonu YOK (28 Eylul: "yukardaki fx ikonunun
-     isi yok joytape te. olmayacak") -- burasi ayri bir oda. */
-  body.joy #gezegenTus{display:none !important;}
   body.mood.gezegen-acik #gezegenTus{opacity:1;color:#e8a97e;transform:scale(1.06);}
   body.mood #mark{position:fixed;z-index:70;display:flex;align-items:center;cursor:pointer;
     top:calc(25px + env(safe-area-inset-top, 0px));
@@ -2422,7 +2416,7 @@
        duragini kullaniyor --m1/--m2/--m3, bunlari markaRengi() kip,
        raf ve skin ile guncelliyor (6210). */
     background:linear-gradient(90deg,
-      var(--m1,#35e0d8) 0%, var(--m2,#e8a97e) 50%, var(--m3,#86dcd0) 100%);
+        var(--m1,#35e0d8) 0%, var(--m3,#86dcd0) 100%);
     border:1px solid rgba(255,255,255,.16);
     box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
   #kipKisayol .uck-topuz{position:absolute;left:2px;top:50%;
@@ -2434,62 +2428,20 @@
     transition:left .18s cubic-bezier(.4,0,.2,1),background .18s ease;}
   /* Uc konum: yol GENISLIGI - topuz capi kadar oynar; calc()
      --uck-h'e bagli, boy degisirse konum da dogru olcekler. */
-  #kipKisayol[aria-valuenow="0"] .uck-topuz{left:calc(var(--uck-h) - (var(--uck-w) - 4px));background:var(--m3,#86dcd0);}
-  #kipKisayol[aria-valuenow="1"] .uck-topuz{left:calc(50% - (var(--uck-w) - 8px)/2);background:var(--m2,#e8a97e);}
-  #kipKisayol[aria-valuenow="2"] .uck-topuz{left:2px;background:var(--m1,#35e0d8);}
+    /* 29 Eylul: IKI DURAK. 0 = RADIOTAPE (sag uc), 1 = ORBITAPE (sol uc).
+       Once uc durak vardi (arada JOYTAPE); secici ve mood kalkti. */
+    #kipKisayol[aria-valuenow="0"] .uck-topuz{left:calc(var(--uck-h) - (var(--uck-w) - 4px));background:var(--m3,#86dcd0);}
+    #kipKisayol[aria-valuenow="1"] .uck-topuz{left:2px;background:var(--m1,#35e0d8);}
   /* ISIMLER TEK YERDE: yalniz secili gorunur ("hangi modtaysa o
      yanar... o silinecek, digeri yazacak"); basili tutulunca
      (.uck-acik) ucu de gorunur. Yazi tipi markanin diliyle ayni. */
   #kipKisayol .uck-adlar{position:relative;display:block;width:100%;height:0;}
-  /* ── JOYTAPE ACIK ODADA SOL TARAF KOYU (28 Eylul: "sola sag alt sol
-     vs gorunumuyor renkler ayni ... hepsi koyu gorunmeli") ── */
-  body.zem.joy #kipKisayol .uck-ad{color:#2b3a37;}
-  body.zem.joy #kipKisayol[aria-valuenow] .uck-ad{color:#16211f !important;}
-  body.zem.joy #kipKisayol .uck-yol{
-    background:linear-gradient(90deg,#16302c 0%,#33261a 50%,#1c3a34 100%);}
-  body.zem.joy #kipKisayol .uck-topuz{background:#0d1a18;
-    box-shadow:0 1px 2px rgba(0,0,0,.45);}
-  body.zem.joy #solUst,body.zem.joy #solUst .simge{color:#1d2a27;}
-  body.zem.joy #modAd{color:#26332f !important;}
-  body.zem.joy #kipKisayol{opacity:.72;}
-  /* ══ ACIK ZEMINDE KOYU MUREKKEP (28 Eylul) ══════════════════════
-     "yazilar semboller gunmuyor hepsi koyu olmali siyah antrasit vs
-     gri vs" + "acik renk ustu acik renk olmaz".
-     OLCULDU (krem zemin parlaklik 0,80): 27 oge turkuaz/açik gride
-     kalıyordu, kontrast 1,1-1,7. Uc mürekkep: siyah #101413, antrasit
-     #2b3331, gri #4d5452 -- hepsi krem zemine 8-18 kontrast. */
-  body.zem.joy{color:#1b2422;}
-  body.zem.joy #ust,body.zem.joy #solUst,body.zem.joy #kipKisayol,
-  body.zem.joy #modGez,body.zem.joy #ara,body.zem.joy #np,
-  body.zem.joy #sesCubuk,body.zem.joy #kayitBilgi,body.zem.joy .yuva,
-  body.zem.joy .el,body.zem.joy .yazi,body.zem.joy .durum,
-  body.zem.joy .isaret,body.zem.joy .gs-tarih{color:#1b2422 !important;}
-  body.zem.joy #saatTus,body.zem.joy #gorselTus,body.zem.joy #rehberTus,
-  body.zem.joy #kamTus,body.zem.joy #deriFirca,body.zem.joy #mute,
-  body.zem.joy #fav,body.zem.joy #favAc,body.zem.joy #isaret,
-  body.zem.joy #geri,body.zem.joy #dur,body.zem.joy #duraklat,
-  body.zem.joy #ileri,body.zem.joy #ayarAra,body.zem.joy #rec,
-  body.zem.joy #cam{color:#26302d !important;}
-  body.zem.joy #npAd,body.zem.joy #npKaynak,body.zem.joy #npSanatci,
-  body.zem.joy #npLisans,body.zem.joy h5{color:#39423f !important;}
-  body.zem.joy svg,body.zem.joy svg *{stroke:currentColor;}
   /* REHBER SATIRLARI (olculdu: ".sat" icindeki 27 ogeden biri --
      "ALL SOUNDS OFF", "SEARCH", "CLICK", "WHEEL ..." gibi yazilar
      1,2 kontrastta kalip gorunmuyordu). */
-  body.zem.joy .sat,body.zem.joy .sat *{color:#39423f !important;}
-  body.zem.joy .sat .bas,body.zem.joy .sat b,body.zem.joy .sat strong,
-  body.zem.joy .sat h5{color:#1b2422 !important;}
   /* ANAHTAR: KOYU KAVUNICI (28 Eylul: "swichy cok koty zaten cok
      siyah gibi koyu renkli yap kavunici") -- ve her oda kendi
      rengini alsin (--kip1/2/3 moodUygula yaziyor). */
-  body.zem.joy #kipKisayol .uck-yol{
-    background:linear-gradient(90deg,var(--kip1,#4a2410) 0%,
-      var(--kip2,#6b3512) 50%, var(--kip3,#3a1c0b) 100%);}
-  body.zem.joy #kipKisayol .uck-topuz{background:#8c431a;
-    box-shadow:0 1px 3px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.25);}
-  body.zem.joy #kipKisayol[aria-valuenow="0"] .uck-topuz{background:#6b3512;}
-  body.zem.joy #kipKisayol[aria-valuenow="1"] .uck-topuz{background:#8c431a;}
-  body.zem.joy #kipKisayol[aria-valuenow="2"] .uck-topuz{background:#5a2b10;}
   /* ══ ACIK ODA: SKIN DEGISKENLERI (28 Eylul) ══════════════════════
      Ekran goruntusu: ayar menusu KOYU kutu, yazilar gorunmuyor.
      Sebep: panel renkleri SKIN degiskenlerinden geliyor
@@ -2498,25 +2450,7 @@
      DOGRU YER BURASI: odayin palet degiskenleri. Artik panel acik,
      yazi koyu. OLCULDU: "#ayar .sat > span 1.69" -> krem yuzey
      uzerinde antrasit, kontrast 8+. */
-  body.zem.joy{
-    --d-panel:rgba(250,246,236,.97);
-    --d-yazi:#1b2422; --d-yazi2:#39423f; --d-simge:#2b3331;
-    --d-vurgu:#8c431a; --d-marka:#8c431a;
-    --d-tus-zem:rgba(27,36,34,.06); --d-raf:#2b3331; --d-cizgi:rgba(27,36,34,.16);}
-  /* Sol ust ayar cizgileri (uc kisa renkli bar): acik zeminde turkuaz/
-     macenta gorunmuyordu; koyu iki ton + kavunici vurgu. */
-  body.zem.joy #ayarTut span{background:#2b3331 !important;}
-  body.zem.joy #ayarTut span:nth-child(2){background:#5a6664 !important;}
-  body.zem.joy #ayarTut span:nth-child(3){background:#8c431a !important;}
   /* Sol alt mood isimleri: iki HOMOJEN koyu ton (secili = koyu, diger
-     = acik gri) + acik zeminde beyaz golge -> "3 boyutlu" his. */
-  body.zem.joy #kipKisayol .uck-ad{color:#5a6664 !important;
-    text-shadow:0 1px 0 rgba(255,252,244,.9);}
-  body.zem.joy #kipKisayol[aria-valuenow] .uck-ad{color:#5a6664 !important;}
-  body.zem.joy #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"],
-  body.zem.joy #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"],
-  body.zem.joy #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
-    color:#16211f !important;}
   /* SOL ALT MOOD ISIMLERI OKUNUR (28 Eylul: "sol alttaki mood isimleri
      skinlere gore biraz etkilensin bazilarinda gorunmuyor ... 3
      boyutlu ve homojen 2 renkli olsun"). OLCULDU: secili olmayan iki isim
@@ -2542,7 +2476,6 @@
      renginde kalır. JOYTAPE'de oda tonu krem (duvar kâğıdıyla aynı),
      koyu odalarda o derin siyah. */
   body.zem{--oda-tem:#04070a;}
-  body.zem.joy{--oda-tem:#efe6d2;}
   body.deri::before{content:'';position:fixed;inset:0;z-index:0;
     pointer-events:none;background:var(--oda-tem,#04070a);}
   #kipKisayol .uck-ad{
@@ -2560,21 +2493,18 @@
        kapı "Kalici CSS filtresi/katmani" diye kirmizi veriyor. */
     transition:opacity .42s ease,transform .42s ease,color .28s ease;}
   /* Basili degilken sadece secili isim gorunur, kendi renginde. */
-  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"],
-  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"],
-  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
+    #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="orbit"],
+    #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{
+      opacity:1;transform:none;}
     opacity:1;transform:none;}
   /* Yazi da kendi duraginin rengi: skin degisince o da degisir. */
-  #kipKisayol[aria-valuenow="2"] .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);
-    text-shadow:0 1px 2px rgba(0,0,0,.55);}
-  #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="joy"]{color:var(--k2,#e8a97e);
-    text-shadow:0 1px 2px rgba(0,0,0,.55);}
-  #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:var(--k3,#86dcd0);
+    #kipKisayol[aria-valuenow="1"] .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);
+      text-shadow:0 1px 2px rgba(0,0,0,.55);}
+    #kipKisayol[aria-valuenow="0"] .uck-ad[data-kip="radio"]{color:var(--k3,#86dcd0);
     text-shadow:0 1px 2px rgba(0,0,0,.55);}
   /* Basiliyken (.uck-acik) UCU DE gorunur -- soluk olanlar da. */
   #kipKisayol.uck-acik .uck-ad{opacity:1;transform:none;color:rgba(206,196,176,.40);}
   #kipKisayol.uck-acik .uck-ad[data-kip="orbit"]{color:var(--k1,#35e0d8);}
-  #kipKisayol.uck-acik .uck-ad[data-kip="joy"]{color:var(--k2,#e8a97e);}
   #kipKisayol.uck-acik .uck-ad[data-kip="radio"]{color:var(--k3,#86dcd0);}
   @media (prefers-reduced-motion: reduce){
     #kipKisayol .uck-topuz,#kipKisayol .uck-ad{transition:none;}
@@ -3458,141 +3388,17 @@
   #kamTus:hover,#kamTus:focus-visible,#kamTus[aria-expanded="true"]{opacity:1;}
   body.klavye #kamTus{opacity:0;pointer-events:none;}
   body.deri #kamTus{color:var(--d-simge, var(--d-marka, var(--d-yazi)));}
-  /* ── UC KOLLU MOD SECICI (26 Eylul) ──
-     Kullanicinin cizimi: "CHOOSE YOUR ORBIT" -- uc dal, ortada
-     halka. Yerlesim .disk'in OLCULEN kutusundan; halka buyudugu icin
-     dugumler de uzaklasir (sabit piksel yazmıyoruz). */
-  /* ILK ACILIS KATMANI: sadece acilista durur, bir kola basilinca
-     kapanir; basilmazsa RADIOTAPE'ten devam eder (kullanci kurali). */
-  /* GECIRGEN: katman hicbir dokunusu YUTMAZ. pointer-events'i
-     kaybettigimizde halkada gezinme calismiyordu (olculdu: 2.
-     halkada basili tutmak _moodGez'i kurmadi; 3. halka ancak
-     katman bir onceki dokunusla kapandiktan sonra calisti).
-     Dogru davranis: kola basilinca kip degisir ve katman kapanir;
-     baska yere basilinca KATMAN kapanir, dokunus normal yerine
-     gider (kullanici: "basilmazsa RADIOTAPE'ten devam eder").
-     KATMAN YOK: sayfada kalici CSS filtresi/katmani yasak (pil,
-     test/saglik.js) -- karartma tek gradyanla ayni isi goruyor. */
-  /* ARKA PLAN INAKTIF (27 Eylul, kullanici: "acilis ekrani acikken bir
-     kez ortaya bastik mi artik arkasi inaktif olmali. cunku
-     radiotape'e basinca sanki tekrar sarki degisiyor. ya arkasi
-     tiklaniyor ya bir sey."). Once katmanin pointer-events'i none
-     idi: dokunus DALLARIN ARASINDAN diskin ortasina gidiyor ve
-     "ortaya bas -> muzik baslasiyor" diye iki sey birden oluyordu.
-     Simdi katman dokunusu kendisi aliyor; dallar yine tiklanabilir
-     (bkz. .kol b) ve arka plan hicbir sey yapmiyor. */
-  /* ACIK KATMAN ARKAYI GIYDIRIR (28 Eylul: "hatta arka plani
-     giydirmesi lazım"). OLCULDU: merkezde %72 siyahti, oda arkadan
-     okunuyordu. Artik %96 -> %99. */
-  #modKollar{position:fixed;inset:0;z-index:118;display:none;
-    pointer-events:auto;
-    background:radial-gradient(120% 90% at 50% 42%,rgba(4,8,10,.965),rgba(2,4,6,.995));
-    opacity:0;transform:scale(.985);
-    transition:opacity .26s ease,transform .26s cubic-bezier(.25,1.3,.4,1);}
-  #modKollar.ac{display:block;opacity:1;transform:none;}
-  #modKollar.kapanis{opacity:0;transform:scale(.97);}
-  #modKollar .kol,#modKollar .bas{position:absolute;
-    transform:translate(-50%,-50%);display:flex;flex-direction:column;
-    align-items:center;gap:5px;pointer-events:auto;cursor:pointer;
-    background:none;border:0;padding:0;
-    -webkit-tap-highlight-color:transparent;}
-  #modKollar .bas{pointer-events:none;}
-  /* DAIRE: isik ve derinlik (26 Eylul, kullanicinin cizimi).
-     Once duz 1px halka idi ve "yamuk/ucuz" gorunuyordu. Simdi:
-     isik yukaridan geliyor (radial gradient), disarida yumusak
-     bir hale, icinde de ic golge var -- daire duz bir cizgi degil,
-     kure gibi. */
-  /* DOKUNMA ALANI BUYUTULDU (28 Eylul: "baya küçük ... büyük olması"):
-     56 -> 74 px. OLCULDU: once 56x56, simdi 74x74 (parmak hedefi
-     zaten 44 px'in uzerinde ama gorsel olarak kucuk duruyordu). */
-  #modKollar .kol b{width:74px;height:74px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    border:1px solid rgba(var(--renk),.6);
-    background:radial-gradient(circle at 50% 28%,
-      rgba(var(--renk),.22),rgba(var(--renk),.05) 72%);
-    box-shadow:0 0 22px rgba(var(--renk),.28),
-      inset 0 0 16px rgba(var(--renk),.16);}
-  #modKollar .kol .ad{font:600 .6875rem/1 'Share Tech Mono',monospace;
-    letter-spacing:.22em;color:rgb(var(--renk));white-space:nowrap;}
-  /* ACIKLAMA SARIYOR (27 Eylul, kullanici: "alttaki aciklamalar
-     cerceve cizgisine tasmis, rahatlat biraz"). Once nowrap'ti:
-     "live · radio · streams" tek satirda 105 px kutudan tasip
-     diski gecidiyordu. Artikiki satira sarar; yazi tipi ELINDEKILER
-     gibi (Share Tech Mono) -- ozel bir font denenmedi. */
-  /* TEK SATIR (27 Eylul): iki satira sarip cerceveyi tasirdi.
-     Metinler kisaltildi (live radio / curated - loops / sound fx),
-     boylece tek satira sigiyor. */
-  #modKollar .kol .alt{
-    font:400 .4375rem/1.25 'Share Tech Mono',monospace;letter-spacing:.04em;
-    color:rgba(238,228,205,.6);text-align:center;white-space:nowrap;
-    margin:2px auto 0;padding:0;}
-  #modKollar .bas span{
-    font:400 .4375rem/1.3 'Share Tech Mono',monospace;letter-spacing:.08em;
-    color:rgba(238,228,205,.6);text-align:center;white-space:nowrap;}
-  /* Kaydirmalar KALDIRILDI (27 Eylul, kullanici: "yazilari ortala
-     kaymis"): metinler dairelerinden 13-24 px kayiyordu. Artik
-     dallarin yaricapi kollar.js'te daraltildigi icin yazi hem
-     dairesinin USTUNDE ortali hem de cercevenin icinde kaliyor. */
-  /* SURECILERI FILTRE YOK: sayfada kalici CSS/SVG filtresi yasak
-     (pil; test/saglik.js "Kalici CSS filtresi/katmani"). Ikonun
-     parlamasi dairenin ic golgesinden geliyor. */
-  /* DALLARIN KUTUSU DISKIN USTUNE BINIYOR (27 Eylul, olculdu: 360x640
-     ekranda dallar diskin merkezine 9 px kala iniyordu; diskin dokunma
-     alani 60x39'a dustu ve "tuslar parmak olcusunde" kontrolu 8 ekranda
-     kirmiziydi). Dokunma yalniz HALKAYA: dugunun kendisi
-     pointer-events:none, icindeki <b> (halka) auto. TIK yine
-     calisiyor -- icteki tika oge .kol'a yukari DAGIYOR. */
-  #modKollar .kol{pointer-events:none;}
-  #modKollar .kol b{pointer-events:auto;cursor:pointer;}
-  #modKollar .kol svg{width:48px;height:48px;fill:none;   /* BUYUK (28
-       Eylul: "baya kucuk ... buyuk olmasi"): 33 -> 48 px. OLCULDU: kol
-       kutusu 81x88 px, simdi ~118x130. */
-    stroke:rgb(var(--renk));stroke-width:1.4;stroke-linecap:round;
-    stroke-linejoin:round;}
-  /* KOL HALKAYA BAGLANIYOR: ince cizgi + ucunda nokta. Gorseldeki
-     uc catallilik buradan geliyor; sadece uc daire "3 kollu" degil,
-     dallar halkanin icine uzaniyor. */
-  /* Cizginin BASLAMA NOKTASI JS OLCUYOR (--basX/--basY): halkanin
-     kenari + 5 px, tam merkeze dogru. Once sabit dikey kayma vardi
-     (--bas 34 / -14) ve iki hatayi birden birasiyordu: cizgi halkanin
-     ICINE giriyordu ("cizgiler halkalara tasmasin") ve ucu merkezden
-     32 px kaliyordu ("cizgi ile nokta tutmuyor"). Artik ikisi de
-     olculuyor. */
-  #modKollar .kol::before{content:'';position:absolute;
-    left:calc(50% + var(--basX,0px));
-    top:calc(50% + var(--basY,0px));
-    width:var(--cizgi,40px);height:1px;
-    /* Merkezden baslar (27 Eylul): parlak uc mavi noktada, dal
-       tarafina dogru solar. */
-    background:linear-gradient(270deg,rgba(var(--renk),.5),rgba(var(--renk),.12));
-    transform-origin:0 50%;transform:rotate(var(--aci,0deg));}
-  /* NOKTA: 5 px daire, cizginin tam sonunda ve cizgiyle AYNI eksende.
-     Once `translate(-50%,-50%)` dondurusunden sonra geliyordu, yani
-     donmus karede -2.5 px kayiyor ve nokta cizgiden kopuyordu. Artik
-     kutu komsu koseden (left/top -2.5) basliyor, donduren sadece
-     rotate + translateX: nokta komsunun USTUNDE kaliyor. */
-  #modKollar .kol::after{content:'';position:absolute;
-    left:calc(50% + var(--basX,0px) - 2.5px);
-    top:calc(50% + var(--basY,0px) - 2.5px);
-    width:5px;height:5px;border-radius:50%;background:rgb(var(--renk));
-    transform:rotate(var(--aci,0deg)) translateX(var(--cizgi,40px));}
-  #modKollar .kol.secili b{border-color:rgb(var(--renk));
-    background:radial-gradient(circle at 50% 28%,
-      rgba(var(--renk),.34),rgba(var(--renk),.10) 72%);
-    box-shadow:0 0 30px rgba(var(--renk),.45),
-      inset 0 0 18px rgba(var(--renk),.26);}
-  #modKollar .kol.secili .ad{text-shadow:0 0 10px rgba(var(--renk),.55);}
-  #modKollar .bas{pointer-events:none;gap:6px;}
-  /* DIS HALKA: uc kolu birlestiren cember. Stili kayit.js
-     veriyor (CSP style-src hash'li: <style> enjekte edilemez,
-     CSSOM serbest). */
-  #modKollar .halka{position:absolute;border-radius:50%;
-    transform:translate(-50%,-50%);pointer-events:none;}
-  #modKollar .bas span{color:rgba(200,220,225,.42);max-width:none;}
-  #modKollar .bas i{display:block;width:34px;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(53,224,216,.7),transparent);}
-  body.klavye #modKollar,body.yildiz-zum #modKollar,body.kayit #modKollar,
-  body.gorsel-acik #modKollar,body:has(#fotoOnizle.var) #modKollar{display:none;}
+  /* 29 EYLUL: ACILIS MOD SECICISI SILINDI ──────────────────────
+     #modKollar, .kol, .bas, .halka ve uc simge (kule, kaset,
+     gezegen) kaldirildi: panel artik kurulmuyor, CSS'i de yok.
+     Kip degisimi TEK YOLDA: sol alt #kipKisayol, iki durak
+     (0 = RADIOTAPE, 1 = ORBITAPE). Onceki hal buradaydi:
+       · katman pointer-events:auto, arka plani %96->%99 giyiyordu
+       · uc dal 120 derece, ayni yaricapta; dis halka nabiz atiyordu
+       · 'CHOOSE YOUR ORBIT' basligi, kisa aciklamalar
+       · simge 48 px, dokunma halkasi 74x74, secilende neon
+     OLCUM (saglik.js): #modKollar DOM'da yok, ortaya basma panel
+     acmiyor ve kipi degistirmiyor. */
   #yelpaze{position:fixed;z-index:97;display:flex;flex-direction:column;gap:6px;
     padding:8px;border-radius:12px;background:rgba(8,14,17,.92);
     border:1px solid rgba(120,180,180,.18);}
@@ -4090,14 +3896,6 @@
      katman (turuncu, petrol yesili) -- ama KREM BASKIN. OLCULDU:
      ilk denemede turuncu %34 alphayla odayi kapliyordu; krem taban
      %60'ta, doygunluk 0,12. */
-  /* DUZ ZEMIN (28 Eylul: "yanlardan koyuluk koymusun, retro heralde
-     onlar olmasin istem" + "altta bi bant olmus, oraya dogru duz bir
-     renge gec ki alttarafiyla yedpare olsun"). Kenar karartmasi
-     KALDIRILDI, alt koyu band yerine duz birakildi. */
-  body.zem.joy{background-color:#efe6d2;background-image:
-    radial-gradient(64% 48% at 18% 14%,#ce743826,transparent 66%),
-    radial-gradient(58% 44% at 86% 84%,#1048402b,transparent 70%),
-    linear-gradient(180deg,#f4eee0 0%,#efe7d3 46%,#e9e0ca 100%)}
 
   /* ── GECE MODU (KIRMIZI FILTRE) ──
      Kullanicinin istegi: karanlikta ekran goz kamastirmasin --
@@ -4672,11 +4470,10 @@
        odanin adi kalir. TASLAK: yukseklik ekran goruntusuyle
        dogrulanip ayarlanacak -- bkz GUNLUK.md 27 Eylul, gorev 1. -->
   <div id="kipKisayol" class="uck" role="slider" tabindex="0"
-       aria-label="Choose your orbit" aria-valuemin="0" aria-valuemax="2" aria-valuenow="2">
+       aria-label="Choose your orbit" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1">
     <div class="uck-yol" aria-hidden="true"><span class="uck-topuz"></span></div>
     <div class="uck-adlar" aria-hidden="true">
       <span class="uck-ad" data-kip="orbit">ORBITAPE</span>
-      <span class="uck-ad" data-kip="joy">JOYTAPE</span>
       <span class="uck-ad" data-kip="radio">RADIOTAPE</span>
     </div>
   </div>
@@ -5900,7 +5697,7 @@
     const _zem = (rgb, k, taban)=>'#' + rgb.split(',')
       .map(x=>Math.min(255, Math.round(+x * k) + taban).toString(16).padStart(2,'0')).join('');
     for(const ad in RETRO){
-      const [ana, ik] = RETRO[ad] || JOY_RENKLER[ad] || RETRO.OTHERS;
+      const [ana, ik] = RETRO[ad] || RETRO.OTHERS;
       MOD_TEMA[ad] = { ana:ana, ikinci:ik,
             halka:[ana, ik, '96,92,86', '224,216,200'],
             zemin:[_zem(ana, 0.04, 3), _zem(ana, 0.015, 1)] };
@@ -7972,8 +7769,6 @@
     try{
       if(typeof mod !== 'undefined'){
         if(mod === 'radio' && typeof AILE_ADLAR !== 'undefined') return aileDolular();
-        if(mod === 'lib'   && document.body.classList.contains('joy')
-           && typeof JOY_ADLAR !== 'undefined') return joyDolular();
         if(mod === 'lib'   && typeof ARSIV_ADLAR !== 'undefined') return ARSIV_ADLAR;
       }
     }catch(e){ _yut(e); }
@@ -8015,7 +7810,6 @@
      rafin 8'ini gosteriyordu, JOYTAPE ve DISCO FUNK kayboluyordu.
      Arsiv listesi her zaman yuklenmedigi icin (cevrimdisi, ilk kare)
      hepsi gosterilir; bos rafin icerigi yoktur, sesi calinmaz. */
-  function joyDolular(){ try{ return JOY_ADLAR; }catch(e){ return []; } }
   function halkaAilesiMi(){
     try{ return typeof mod !== 'undefined' && mod === 'radio'; }catch(e){ return false; }
   }
@@ -8428,7 +8222,7 @@
            sey kapanmaz, yalniz ikon. */
         if(t && t.closest && t.closest(
             '#viz, #tasima, #bekle, #mark, #kipKisayol, #kipKisayol *, ' +
-            '#ust, .kanal, #kipKut, #modKollar')) return;
+          '#ust, .kanal, #kipKut')) return;
         /* FX ACIKKEN BOS YER KAPATMAZ (28 Eylul: "orbityape te fx leri
            kullanirken, fx aktifken ekranin bos bir yerine basiyorsun
            pencere kapanip gidiyor ya. fx ler aktifken kapanmamali.
@@ -10089,64 +9883,16 @@
   var ARSIV_ADLAR = ['INDUSTRIAL','NOISE','DARK','OTHERS','SPACE','AMBIANCE','CITY',
     'NATURE','HUMANS','RECORDS','ORBITAPE'];
 
-  /* ── JOYTAPE RAFLARI (27 Eylul, kullanici: "icine bankalari koy
-     hallet bitir") ──
-     Muzik kayitlari tek bir "JOYTAPE" kovasina gidiyordu ve o ad
-     ARSIV_ADLAR'da bile yoktu: oda acilip hicbir raf gorunmuyordu
-     (olculdu: halkaAdlar() 10 efekt rafini donuyordu, muzik sifir).
-     Simdi muzigin KENDI raflari var. Isimler arsivin kendi tur
-     sozcukleri (26 Eylul olcumu: 12.365 muzik kaydi). Renkler odanin
-     sicakliginda; RETRO ile ayni kural (doygunluk .24-.38, kanal
-     farki <= 82).
-     UST SEVIYEDE duruyor: once RETRO'nun kapsaminda yasidi ve
-     oradan referans vermek tip denetimine yeni uyari getiriyordu. */
-  /* ACIK KREM, RETRO 60'LAR (27 Eylul, kullanici: "joytape in renkleri
-     farkli olsun, bi acik krem retro 60's renkler"). Once sicak kahve/
-     roz paletiydi; bu odanin hafifligi icin krem zemin uzerinde
-     kalsin: hardal, tu tun, kiremit, zeytin, soluk lila, kirik beyaz.
-     RETRO ile ayni dortgen kurali: doygunluk (max-min)/max <= .38 ve
-     kanal farki <= 82 (olculdu, hepsi icinde). */
-  /* ── JOYTAPE BANKALARI (28 Eylul) ──
-     "yeni muzik bankalari ... bizde n degil disardan yeni bir banka"
-     + "composers orchestra birlestir, adini composers" + "lab ve
-     machine birlesir, deneysel gibi bi isim" + "bi turun icinde 2000
-     den az track olmasin". ADLAR UYDURULMADI: 73.143 kaydin gercek
-     etiketi sayildi (araclar/etiket.py): classical/romantic/baroque/
-     mozart/bach 7585, ambient/electronic/techno/idm/glitch 7368,
-     experimental/noise/drone/industrial 6171, jazz/blues/big band
-     4146, folk/world/greek/arabesk 3114, rock/metal/indie 1841.
-     Kucuk olanlar birlestir: CHILL&GROOVE ve BEATS&RHYME makine
-     tarafina, EAST&WEST WORLD'e, SYMPHONY COMPOSERS'a gitti.
-     Oda krem (bu palet), HALKA koyu (JOY_HALKA). */
-  /* KAVUNICI + KOYU GUMUSU (28 Eylul: "kavunici koyu gumusu renkler
-     de olsun"). Sekiz skin iki aileden: kavunici (sicak) ve
-     antrasit/gumus (notr). ACIK zeminde okunmalari icin yazi tonu
-     koyu; OLCULDU: krem zemin parlaklik 0,80, bu tonlarin parcakligi
-     0,01-0,09 -> kontrast 9-19 (AA 4,5). */
-  const JOY_RENKLER = {
-    'ELECTRONIC LAB':['92,42,14','226,196,168'],   /* kavunici */
-    'COMPOSERS':      ['38,42,44','208,204,196'],  /* antrasit */
-    'BLUE NOTE':      ['70,34,16','222,190,162'],   /* derin kavunici */
-    'WORLD':          ['54,48,42','212,206,198'],   /* koyu gumus */
-    'POP & GROOVE':   ['104,48,16','230,200,172'],  /* acik kavunici */
-    'ACOUSTIC':       ['40,44,46','210,206,200'],  /* gumus */
-    'TAPE & VINYL':   ['78,38,18','224,194,166'],  /* kavunici */
-    'WIKIMEDIA COMMONS':['46,50,52','214,210,204'], /* disaridan */
-    /* RECORDS (29 Eylul, kullanici: "ordaki muzikler records diye
-       orbitape modunun icine geciyor ... onun ici full muzikler
-       olacak"). RECORDS 26 Eylul'de "records olmayacak" diye
-       kaldirilmisit; simdi geri geliyor ama DOGRU YERDE: JOYTAPE'nin
-       son bankasi, icinde yalnizca muzik. Yani "diger yedi bankaya
-       girmeyen ama muzik olan" kayitlar burada birikir. */
-    'RECORDS':         ['84,40,18','228,198,168']
-  };
   /* ── DIS BANKA: WIKIMEDIA COMMONS (28 Eylul) ──
      "bizde n degil disardan yeni bir banka. link adres vs". 12 kaynak
      tarayicidan denendi; anahtarsiz + CORS acik IKISI: COMMONS (200,
      upload.wikimedia.org akisiyor) ve INTERNET ARCHIVE (200, zaten
      kullaniliyor). Elenen: FREESOUND 401 (token), JAMENDO/PIXABAY 400,
      LIBRIVOX/OPENGAMEART/XENO-CANTO/MIXKIT/SOUNDBIBLE CORS. */
-  const WIKI_AD   = 'WIKIMEDIA COMMONS';
+  /* 29 Eylul: banka WIKIMEDIA COMMONS degil RECORDS. Commons kayitlari
+     MUZIKtir (tur:'muzik'); musiz artik tek rafta toplaniyor, o yuzden
+     disaridan gelen kayit da RECORDS'a isaretlenir (arsivRaf: o.dis). */
+  const WIKI_AD   = 'RECORDS';
   const WIKI_KAT  = ['Audio files of music','Audio files of songs'];
   const WIKI_UC   = 'https://commons.wikimedia.org/w/api.php?action=query&format=json'
             + '&origin=*&generator=categorymembers&gcmtype=file&gcmlimit=20'
@@ -10168,9 +9914,10 @@
     _wikiCekildi = true;
     WIKI_KAT.forEach(kat=>wikiCekBir(kat, WIKI_AD, 'muzik'));
   }
-  var JOY_ADLAR = Object.keys(JOY_RENKLER);
-  try{ window.JOY_ADLAR = JOY_ADLAR; window.JOY_RENKLER = JOY_RENKLER; }
-  catch(e){ _yut(e); }
+  /* 29 Eylul: JOYTAPE moodu ve dokuz bankasi SILINDI. Muzik artik bir
+     kip degil, ORBITAPE icindeki tek raf: RECORDS. Baska bir yerde
+     ikinci bir siniflama yok -- muzik tespiti MUZIK_KALIP'te duruyor,
+     raf karari arsivRaf()'ta. */
   /* TEK KARAR NOKTASI: bir kayit HANGI rafa ait. Yukaridan asagi ilk
      uyan raf kazaniyor; hicbiri uymazsa ARCHIVE. Boylece raflar
      ust uste binmiyor ve OTHERS gercekten "geri kalan" oluyor. */
@@ -10268,32 +10015,6 @@
      symphony, waltz, bebop, trance, lofi, dnb, acid, punk, disco,
      indie, rap, synth, pop, country, ska, tango, flamenco, klezmer,
      minimal, glitch, techno, experimental, industrial. */
-  /* HALKA PALETI (28 Eylul: "koyu tonlar ama renk olsun petrol
-     mavisi derin deniz mavisi siyah"): etiketler krem, HALKA bu koyu
-     paletten gelir (doy .40/.62/.58/.50, fark 78/72/14/88). */
-  const JOY_HALKA = ['16,84,104','18,58,100','12,20,28','44,116,140'];
-  /* KURALLAR: gercek etiket dili (MUZIK_KALIP + etiket sayimi).
-     Dar ve kesin once sorulur; kalan her sey TAPE & VINYL. */
-  const JOY_KURALLAR = [
-    ['COMPOSERS', /classical|baroque|romantic|symphon|sonata|concerto|waltz|quartet|orchestra|orchestral|ensemble|mozart|bach|beethoven|schubert|chopin|brahms|liszt|vivaldi|haydn|debussy|handel|choir|\bpiano|violin|cello|\bguitar/],
-    ['BLUE NOTE', /jazz|bebop|swing|big band|blues|ragtime|chorus/],
-    /* ACOUSTIC (28 Eylul, "vsadece acoustic yaz"): ilk kural yalniz
-       1.878 kayit verdi (kural: 2.000'in altinda halka olmayacak).
-       Sapli calgi ve sacak calgilar eklendi: olculdu. */
-    ['ACOUSTIC', /acoustic|unplugged|instrumental|\bdemo\b|studio session|live session|fingerstyle|nylon|harmonica|accordion|mandolin|banjo|fiddle|oud|saz|kemen|tambur/],
-    ['POP & GROOVE', /\bpop|funk|soul|disco|gospel|hip.?hop|\brap\b|trip.?hop|sample|rnb/],
-    ['ELECTRONIC LAB', /techno|house|idm|trance|dnb|acid|electro|glitch|minimal|synth|breakbeat|electronic|electronica|ambient|drone|vaporwave|shoegaze|generative|experimental|industrial|lounge|chillout|downtempo|lofi|lo-fi|chill/],
-    ['WORLD', /anatolia|turk|turkce|anadol|arabesk|salsa|tango|flamenco|klezmer|folk|reggae|\bdub\b|ska|country|world music|african|highlife|greek|balkan|manele/]
-    /* Kalan: TAPE & VINYL (fonksiyonun son satiri). */
-  ];
-  function joyRaf(o){
-    try{
-      if(o && o.dis) return o.dis;            /* disaridan gelen kayit */
-      const t = (_mt(o) + ' ' + _mk(o)).replace(/[_\-.\/]+/g,' ');
-      for(const [ad, m] of JOY_KURALLAR) if(m.test(t)) return ad;
-      return 'TAPE & VINYL';
-    }catch(e){ return 'TAPE & VINYL'; }
-  }
   function _muzikMi(o){
     const t = _mt(o), k = _mk(o);
     if(!t) return KAYNAK.RADIOTAPE.test(k);
@@ -10347,8 +10068,6 @@
        yeni siniflandirma degil, ayni siniflamanin adi.
        OLCUM (26.263 kayit): musik 12.174 (%46), insan konusmasi
        4.324 (%16), efekt + kalan 9.765 (%37). */
-    if(ad === 'JOYTAPE') return JOY_ADLAR.indexOf(arsivRaf(o)) >= 0;
-    try{ if(JOY_ADLAR.indexOf(ad) >= 0) return arsivRaf(o) === ad; }catch(e){ _yut(e); }
     const mz = _muzikMi(o);
     if(mz) return false;            // müzik hiçbir alt kategoriye girmez
     const t = _mt(o);
@@ -12438,9 +12157,6 @@
       document.body.classList.toggle('mood', !!AYAR.mood);
       /* JOYTAPE ucuncu kip: ayni yerlesimi (govde.mood) kullanir,
          yalniz kendi rengi ve havuzu farklidir. */
-      try{ document.body.classList.toggle('joy',
-        !!AYAR.mood && typeof AKTIF_MOD !== 'undefined' && AKTIF_MOD === 'JOYTAPE');
-      }catch(e){ _yut(e); }
       if(AYAR.mood){
         /* ── LOCK SKIN KAPALIYSA: ORBITAPE HER ZAMAN DEFAULT DERIYLE
            ACILIR. Sadece GERCEK bir RADIOTAPE->ORBITAPE gecisinde
@@ -12461,9 +12177,8 @@
             gezegen ikonu (247-277) ust uste biniyordu. Simdi HALKA.
             Radyo tarafi kendi kayitli merkezini koruyor (radyoMerkez)
             ve istenirse cark yine skins/ayar sayfasindan secilir. */
-          /* 28 Eylul: "yoytape modunda da carkla acilmali" -- JOYTAPE
-            merkezi CARK olur, ORBITAPE halka olarak kalir. */
-          AYAR.merkez = (AKTIF_MOD === 'JOYTAPE') ? 'cark' : 'yuvarlak';
+            /* 29 Eylul: JOYTAPE kalkti; ORBITAPE merkezi HALKA kalir. */
+            AYAR.merkez = 'yuvarlak';
         }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
@@ -14681,7 +14396,6 @@
       }catch(e){ _yut(e); }
       /* JOYTAPE halkalari kendi koyu paletinden: konus (T.v) HALKA'dan
          once olsaydi koyu ton %34 acilip solardi -- olculdu. */
-      if(JOY_ADLAR.indexOf(_mAd) >= 0) _rnk = JOY_HALKA[k & 3];
       /* ── FX AÇIKKEN HALKALAR O RENGİN AİLESİNE KAYAR ──
          Tek bir halkayı boyamak yetmiyordu: efektte olduğunu ve hangi
          efektte olduğunu ancak bütün diskin rengi söyleyebiliyor.
@@ -14712,7 +14426,6 @@
          VURGU anlık bir geri bildirim, o güçlü kalıyor. */
       if(_vurgu)       a = Math.min(1,    a*1.5);
       else if(_secili) a = Math.min(0.60, a*1.06);   // seçili halka: sadece bir tık önde
-      if(JOY_ADLAR.indexOf(_mAd) >= 0) _rnk = _koyuTut(_rnk, 0.16);
       vctx.strokeStyle='rgba('+_rnk+','+a.toFixed(3)+')';
       vctx.lineWidth=((_vurgu?3.0:_secili?1.35:1.1)+rit*0.9)*dpr; vctx.stroke();
         vctx.restore();
@@ -17808,8 +17521,7 @@
          calisir: basilan noktanin ucte biri secilir. */
       const _mod = ()=>{
         try{
-          if(!document.body.classList.contains('mood')) return 'radio';
-          return document.body.classList.contains('joy') ? 'joy' : 'orbit';
+          return document.body.classList.contains('mood') ? 'orbit' : 'radio';
         }catch(_){ return 'radio'; }
       };
       const _uygula = (m)=>{
@@ -17817,8 +17529,8 @@
           /* ODA ADI (28 Eylul: "joytape te oda isimleri hala yok"): kip gecisinin
          TEK noktasi. Once yalniz #modAd degisince tetikleniyordu; JOYTAPE'de
          #modAd kategori adini tasiyor, oda adi hic cikmiyordu. */
-         try{ moodAdGoster(m === 'joy' ? 'JOYTAPE'
-               : (m === 'radio' ? 'RADIOTAPE' : 'ORBITAPE')); }catch(e){ _yut(e); }
+            try{ moodAdGoster(m === 'radio' ? 'RADIOTAPE' : 'ORBITAPE');
+            }catch(e){ _yut(e); }
                    if(typeof window !== 'undefined' && typeof window.modKolaGit === 'function')
             window.modKolaGit(m);
           else if(m === 'radio'){ if(window.moodKapat) window.moodKapat(); }
@@ -17836,9 +17548,7 @@
           const r = yol ? yol.getBoundingClientRect() : null;
           if(!r || !r.width) return _mod();
           const oran = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
-          if(oran < 1/3) return 'orbit';
-          if(oran < 2/3) return 'joy';
-          return 'radio';
+            return oran < 0.5 ? 'orbit' : 'radio';
         }catch(_){ return _mod(); }
       };
       let _surukleniyor = false;
@@ -17848,7 +17558,7 @@
         _kk.classList.add('uck-acik');
         const y = (/** @type {any} */ (e)).clientX;
         const d = _yolDurak(typeof y === 'number' ? y : 0);
-        _kk.setAttribute('aria-valuenow', d==='orbit'?'2':d==='joy'?'1':'0');
+        _kk.setAttribute('aria-valuenow', d==='orbit' ? '1' : '0');
       };
       const _tasi = (e)=>{
         if(!_surukleniyor) return;
@@ -17856,14 +17566,14 @@
         const y = (/** @type {any} */ (e)).clientX;
         if(typeof y !== 'number') return;
         const d = _yolDurak(y);
-        _kk.setAttribute('aria-valuenow', d==='orbit'?'2':d==='joy'?'1':'0');
+        _kk.setAttribute('aria-valuenow', d==='orbit' ? '1' : '0');
       };
       const _birak = (e)=>{
         if(!_surukleniyor) return;
         _surukleniyor = false;
         try{
           const d = _kk.getAttribute('aria-valuenow');
-          const m = d==='2' ? 'orbit' : (d==='1' ? 'joy' : 'radio');
+            const m = d==='1' ? 'orbit' : 'radio';
           _uygula(m);
         }catch(_){ _yut(_); }
         /* Basili birakinca kisa bir sure ucu de gorunur kalsin
@@ -17879,15 +17589,15 @@
          durak, Home/End uclar. */
       _kk.addEventListener('keydown', e=>{
         const ke = /** @type {any} */ (e);
-        const sira = ['radio','joy','orbit'];
+          const sira = ['radio','orbit'];
         const su = sira.indexOf(_mod());
         let hedef = null;
-        if(ke.key==='ArrowUp'){ hedef = sira[Math.min(2, su+1)]; }
+          if(ke.key==='ArrowUp'){ hedef = sira[Math.min(1, su+1)]; }
         else if(ke.key==='ArrowDown'){ hedef = sira[Math.max(0, su-1)]; }
         else if(ke.key==='Home'){ hedef = 'radio'; }
         else if(ke.key==='End'){ hedef = 'orbit'; }
         else if(ke.key===' ' || ke.key==='Enter'){
-          hedef = sira[su===2 ? 0 : su+1];
+            hedef = sira[su===1 ? 0 : 1];
         }
         if(hedef){ try{ ke.preventDefault(); }catch(_){ _yut(_); } _uygula(hedef); }
       });
@@ -18502,11 +18212,10 @@
     try{
       const k = document.getElementById('kipKisayol'); if(!k) return;
       const mood = document.body.classList.contains('mood');
-      const joy = document.body.classList.contains('joy');
-      const deger = !mood ? '0' : (joy ? '1' : '2');
+        const deger = mood ? '1' : '0';
       k.setAttribute('aria-valuenow', deger);
       k.setAttribute('aria-label', mood ? 'Switch to live radio' : 'Choose your orbit');
-      k.setAttribute('aria-valuetext', !mood ? 'RADIOTAPE' : (joy ? 'JOYTAPE' : 'ORBITAPE'));
+        k.setAttribute('aria-valuetext', mood ? 'ORBITAPE' : 'RADIOTAPE');
     }catch(e){ _yut(e); }
   }
   /* _kipSagKenar SILINDI (27 Eylul): kip anahtarinin sol kenara
@@ -19520,7 +19229,7 @@
   /* Yalniz UC mood adi bu buyuk yaziyi hak eder; gezilen tur adlari
      degil -- onlar kucuk yazida kalir. */
   function moodAdYerineGoster(ad){
-    if(ad === 'ORBITAPE' || ad === 'JOYTAPE' || ad === 'RADIOTAPE') moodAdGoster(ad);
+    if(ad === 'ORBITAPE' || ad === 'RADIOTAPE') moodAdGoster(ad);
   }
   function modAdiYaz(gezinen){
     const el = document.getElementById('modAd'); if(!el) return;
@@ -21566,11 +21275,9 @@
          sonraki tusa basista tablo hazir olur. */
       /* Uc kip ucu tablo (27 Eylul): RADIOTAPE / ORBITAPE / JOYTAPE.
          JOYTAPE de bir oda, ona kozu tablo bir onceki turda yoktu. */
-      const _b = document.body.classList.contains('mood')
-            ? (document.body.classList.contains('joy')
-            ? (window.REHBER_JOY || window.REHBER_ORB || [])
-            : (window.REHBER_ORB || []))
-            : (window.REHBER_RADIO || []);
+        const _b = document.body.classList.contains('mood')
+              ? (window.REHBER_ORB || [])
+              : (window.REHBER_RADIO || []);
       const liste = _b;
       const cizgiler = [];    // { ax, ay, etiket } -- 2. gecis icin biriktiriliyor
       liste.forEach(e=>{

@@ -57,14 +57,8 @@ const MANIFEST = [
   'const MODLAR',
   'var ARSIV_ADLAR',
   'var ARSIV_SORGU',
-  /* 27 Eylul: JOYTAPE'nin kendi raflari (kullanici: "icine bankalari
-     koy"). arsivRaf muzik kaydinda joyRaf'i cagirir, o yuzden cikarim
-     listesinde olmazsa ReferenceError veriyordu (olculdu: birim
-     testi cokuyordu). */
-  'const JOY_RENKLER',
-  'var JOY_ADLAR',
-  'const JOY_KURALLAR',
-  'function joyRaf',
+  /* 29 Eylul: JOYTAPE bankalari ve joyRaf kalkti; muzik tek
+     rafta (RECORDS) toplanir. MANIFEST'te cikarim yok. */
   'function arsivRaf',
   'function _mt',
   'function _mk',
@@ -195,13 +189,21 @@ K('Alan kaydi NATURE rafina gidiyor',
     A.arsivRaf(kayit('ambient · drone', 'Deep Drone')) === 'RECORDS'
     && A.arsivRaf(kayit('ambience · room tone', 'Deep Room')) === 'AMBIANCE',
     'muzik ambient -> RECORDS · ortam sesi -> arsiv AMBIANCE');
-K('JOYTAPE bankalari muzigi turune gore dagitiyor',
-  A.joyRaf(kayit('jazz · bebop', 'x')) === 'BLUE NOTE'
-  && A.joyRaf(kayit('techno · minimal', 'x')) === 'ELECTRONIC LAB'
-  && A.joyRaf(kayit('turkce · arabesk', 'x')) === 'WORLD'
-  && A.joyRaf(kayit('ambient · drone', 'x')) === 'ELECTRONIC LAB'
-  && A.joyRaf(kayit('tamamen bilinmeyen', 'x')) === 'TAPE & VINYL',
-  A.JOY_ADLAR.length + ' banka: her biri kendi turunu aliyor, kalan TAPE & VINYL');
+  /* 29 Eylul: dokuz banka yerine TEK raf. Muzik turu ne olursa olsun
+     RECORDS'a gider; ortam sesi (ambience) arsivde kalir. */
+  K('Butun muzik tek rafta: RECORDS',
+    A.arsivRaf(kayit('jazz · bebop', 'x')) === 'RECORDS'
+    && A.arsivRaf(kayit('techno · minimal', 'x')) === 'RECORDS'
+    /* OLCU (29 Eylul): 'turkce · arabesk' MUZIK_KALIP'ta YOK
+       (kalip: netlabel, 78rpm, vinyl, jazz, electronic, ambient, drone,
+       experimental, classical, blues, metal, house, song, music, ep...).
+       Turkce/arabesk etiketi muzik sayilmaz -> OTHERS. Bu davranis
+       JOYTAPE oncesinden beri ayniydi; kural degismedi, konu degisti. */
+    && A.arsivRaf(kayit('turkce · arabesk', 'x')) === 'OTHERS'
+    && A.arsivRaf(kayit('ambient · drone', 'x')) === 'RECORDS'
+    && A.arsivRaf(kayit('tamamen bilinmeyen', 'x')) !== 'RECORDS'
+    && A.arsivRaf(kayit('ambience · room tone', 'x')) === 'AMBIANCE',
+    'dokuz banka yerine tek raf RECORDS; ortam sesi AMBIANCE');
 K('Radyo tiyatrosu ve sozlu tarih HUMANS ta',
   A.arsivRaf(kayit('old time radio · otr', 'x')) === 'HUMANS'
   && A.arsivRaf(kayit('densho · oral history', 'x')) === 'HUMANS',

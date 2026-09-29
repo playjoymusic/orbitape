@@ -4166,3 +4166,59 @@ müzik yalnız RECORDS'ta olur. Efektler kendi raflarında kalır.
 **Sonraki sıra:** 2 (açılış seçicisinin silinmesi) → 7 (favori ayrımı) →
 5 (ilk dokunuş) → 4 (halka adları + tek harf seti) → 3 (çarkın 4 FX düğümü) →
 6 (Material ölçüleri).
+
+## 29 Eylül 2026 — JOYTAPE silindi, açılış seçicisi kalktı (madde 2)
+
+**Kullanıcı kararı:** "JOYTAPE'i sil, seçiciyi de kaldır." İki mood kaldı:
+**RADIOTAPE · ORBITAPE**.
+
+### Silinenler
+- **JOYTAPE moodu ve dokuz bankası**: `JOY_RENKLER`, `JOY_ADLAR`,
+  `JOY_KURALLAR`, `JOY_HALKA`, `joyRaf()`, `joyDolular()`, `REHBER_JOY`.
+  Müzik tespiti (`MUZIK_KALIP`) ve raf kararı (`arsivRaf`) **duruyor** —
+  silinen sadece ikinci sınıflandırmaydı.
+- **`body.joy` CSS ailesi** (krem duvar kâğıdı, koyu mürekkep kuralları,
+  panel paleti, anahtar/sol üst renkleri, `--oda-tem` krem tonu).
+- **Açılış seçicisi**: `#modKollar` katmanı, `#modKollar` CSS bloğu,
+  `KOL_SIMGELERI` (kule/kaset/gezegen), `MOD_KOLLARI`, `modKollarKur/Ac/
+  Kapa/Isaretle`, `modKolaGit`'in panel çağrıları, `_modKollarYerlestir`,
+  `_kolYeriTazele`, `modKolsu`.
+- **Çeviriler**: `ORBITAPE · JOYTAPE · RADIO` → `ORBITAPE · RADIO`;
+  JOYTAPE'ye özel iki rehber satırı (banka listesi) çıkarıldı.
+  187 → 185 anahtar, beş dilde aynı.
+
+### Korunanlar
+- `modKolaGit` **kaldı**: sol alt anahtarın kullandığı yol bu.
+- `REHBER_RADIO` / `REHBER_ORB` kaldı; `REHBER_JOY` kalktı.
+- WIKIMEDIA COMMONS çekimi kaldı ama bankası `WIKIMEDIA COMMONS` değil
+  `RECORDS` — Commons kayıtları müziktir, müzik tek rafta toplanıyor.
+
+### Anahtar artık iki durak
+`aria-valuemax="1"`; **0 = RADIOTAPE** (sağ uç), **1 = ORBITAPE** (sol uç).
+Sürükleme eşiği 1/3 → **1/2**. Klavye sırası `['radio','orbit']`,
+ArrowUp/ArrowDown 0..1, Home/End uçlar. Yol gradyanı iki durak
+(`--m1` → `--m3`). CSS'te `aria-valuenow="2"` kuralları silindi,
+`="1"` ORBITAPE'ye, `="0"` RADIOTAPE'ye bağlandı.
+
+### Ölçüm (Chromium, 430×932)
+- `#modKollar` DOM'da **yok** (`false`)
+- Ortaya basma: panel açmıyor (`false`), kip değiştirmiyor (`false`)
+- Anahtar: `aria-valuemax=1`, isimler `ORBITAPE / RADIOTAPE`, `body.joy: false`
+- İki kip ayrı: ORBITAPE 0 müzik / 4 efekt · RECORDS 4 müzik / 0 efekt ·
+  RADIOTAPE 2 yayın / 0 müzik
+
+### Kapı
+Sağlık **894/894** (bir eski kontrol kalktı: üç kollu seçici) · arıza 18/18 ·
+senaryo 121/121 · motor 19/19 · cihaz 156/156 · yayın 19/19 · birim 132/132 ·
+tip 54 uyarı (taban 57'den düştü). Toplam 1209 kontrol, 0 kırmızı.
+
+### Not (kapı işe yaradı)
+Yeni kontrolleri ilk yazdığımda `document.getElementBy` yazmışım;
+sağlık testi 502'de çöktü ve kapı kırmızı verdi. Düzeltildi. Sonra panel
+gerçekten DOM'daydı — `kollar.js` açılışta kuruyormuş. İkinci turda silindi.
+
+### Boyut
+`kollar.js` 23.224 → **6.169 B**. `index.html` 1.283.550 → **1.265.292 B**.
+
+**Sonraki sıra:** 7 (favori ayrımı) → 5 (ilk dokunuş) → 4 (halka adları +
+tek harf seti) → 3 (çarkın 4 FX düğümü) → 6 (Material ölçüleri).

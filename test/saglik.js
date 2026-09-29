@@ -4128,7 +4128,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const muzik={etiket:'netlabel · techno',ad:'Acid EP'}, ses={etiket:'field recordings',ad:'Rain'};
     /* 27 Eylul: muzik kaydi JOYTAPE'nin raflarindan birine gider
        (artik tek 'JOYTAPE' adi yok), ortam sesi arsivin NATURE'ina. */
-    const joyMu=(o)=>JOY_ADLAR.indexOf(arsivRaf(o)) >= 0;
+      const joyMu=(o)=>arsivRaf(o) === 'RECORDS';
     return joyMu(muzik) && !modUyar(muzik,'NATURE')
         && modUyar(ses,'NATURE') && !joyMu(ses)
         && modUyar(ses,'ORBITAPE') && !modUyar(muzik,'ORBITAPE')
@@ -4300,17 +4300,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        okur; ikinci argumani yok sayiyordu (olculdu: her sefer 0).
        Burada TEK YERDEKI yonlendiriciye, modUyar(kayit, kip), bakiliyor
        -- uygulamanin kullandigi fonksiyonun kendisi. */
-    const say=(arr,ad)=>arr.filter(o=>modUyar(Object.assign({},o),ad)===true).length;
-    return {
-      orbitapeMuzik:say(m,'ORBITAPE'), orbitapeEfekt:say(e,'ORBITAPE'),
-      joytapeMuzik:say(m,'JOYTAPE'),      joytapeEfekt:say(e,'JOYTAPE'),
-      radyotapeYayin:say(r,'RADIOTAPE'),  radyotapeEfekt:say(e,'RADIOTAPE'),
-      radyotapeMuzikKayit:say(m,'RADIOTAPE')
-    };
-  });
-  K('Mood havuzlari ayri: JOYTAPE sadece muzik, ORBITAPE muzik sifir, RADIOTAPE sadece yayin',
-    _ayrim.orbitapeMuzik===0 && _ayrim.joytapeMuzik===_ayrim.orbitapeMuzik+4
-      && _ayrim.joytapeEfekt===0 && _ayrim.orbitapeEfekt===4
+      const say=(arr,ad)=>arr.filter(o=>modUyar(Object.assign({},o),ad)===true).length;
+      const rec=(arr)=>arr.filter(o=>arsivRaf(Object.assign({},o))==='RECORDS').length;
+      return {
+        orbitapeMuzik:say(m,'ORBITAPE'), orbitapeEfekt:say(e,'ORBITAPE'),
+        recordsMuzik:rec(m), recordsEfekt:rec(e),
+        radyotapeYayin:say(r,'RADIOTAPE'), radyotapeEfekt:say(e,'RADIOTAPE'),
+        radyotapeMuzikKayit:say(m,'RADIOTAPE')
+      };
+    });
+    /* 29 Eylul: JOYTAPE moodu KALKTI. Iki kip var: RADIOTAPE yalnizca
+       canli yayin, ORBITAPE ses efektleri. Muzik ORBITAPE'in ICINDEKI
+       RECORDS rafinda durur. */
+  K('Iki kip ayri: ORBITAPE muzik sifir, RADIOTAPE sadece yayin, muzik RECORDS rafinda',
+    _ayrim.orbitapeMuzik===0 && _ayrim.orbitapeEfekt===4
+      && _ayrim.recordsMuzik===4 && _ayrim.recordsEfekt===0
       && _ayrim.radyotapeYayin===2 && _ayrim.radyotapeEfekt===0
       && _ayrim.radyotapeMuzikKayit===0, JSON.stringify(_ayrim));
   /* MOOD ADI KURALI (28 Eylul): "o an gelinen moodun ismini sadece bu
@@ -4394,7 +4398,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
    K('FIRING sinifi temizleniyor', !ttr.firing, '6 saniye sonra firing='+ttr.firing);
    K('Body basisi engellenmiyor', ttr.bodyDownNotBlocked, 'defaultPrevented='+!ttr.bodyDownNotBlocked);
 
-  K('Raflar ayri, muzik JOYTAPE de', ay, 'muzik JOYTAPE, ses NATURE ve ORBITAPE');
+  K('Raflar ayri, muzik RECORDS da', ay, 'muzik RECORDS, ses NATURE ve ORBITAPE');
   const sf = await pg.evaluate(()=>{
     const t=(e,a)=>({etiket:e,ad:a});
     return {
@@ -4410,18 +4414,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          JOYTAPE'nin KENDI on rafina gidiyor (joyRaf). Soru artik
          "hangi rafa" degil "hangi odanin rafinda". */
       ambientKendiRafi: modUyar(t('ambience · room tone','Deep Room'),'AMBIANCE')
-                     && JOY_ADLAR.indexOf(arsivRaf(t('ambient · drone','Deep Drone'))) >= 0
+                     && arsivRaf(t('ambient · drone','Deep Drone')) === 'RECORDS'
                      && !modUyar(t('ambient · drone','Deep Drone'),'AMBIANCE'),
       /* 26 Eylul: 'noise' muzik listesinden cikarildi (kullanici:
          "noise'u da kaldir"), NOISE bir SES EFEKTI rafidir. */
       gurultuNoise:  modUyar(t('white noise · hiss · static','Harsh'),'NOISE')
-                  && JOY_ADLAR.indexOf(arsivRaf(t('noise · experimental','Harsh'))) >= 0,
+                 && arsivRaf(t('noise · experimental','Harsh')) === 'RECORDS',
       alanKaydi:    modUyar(t('green-field-recordings','x'),'NATURE'),
       nasa:         modUyar(t('nasaaudiocollection · nasa','x'),'SPACE'),
       baslikYok:    modUyar(t('','Tidal Wave'),'ORBITAPE') && !modUyar(t('','Tidal Wave'),'NATURE')
-                    && JOY_ADLAR.indexOf(arsivRaf(t('','Tidal Wave'))) < 0,
+                   && arsivRaf(t('','Tidal Wave')) !== 'RECORDS',
       canliYayin:   modUyar({etiket:'',ad:'FM',radyo:true},'RADIOTAPE') === true &&
-                    JOY_ADLAR.concat(['ORBITAPE','AMBIANCE','HUMAN']).every(k=>!modUyar({etiket:'',ad:'FM',radyo:true},k)),
+                    ['ORBITAPE','AMBIANCE','HUMAN','RECORDS'].every(k=>!modUyar({etiket:'',ad:'FM',radyo:true},k)),
       radyoSadeceYayin: !modUyar(t('netlabel · techno','Acid EP'),'RADIOTAPE') && !modUyar(t('field recordings','Rain'),'RADIOTAPE')
     };
   });
@@ -4436,7 +4440,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const A=['RADIOTAPE','RECORDS','ORBITAPE','HUMANS','NATURE','SPACE','AMBIANCE','BEATS','CITY','NOISE','DARK','INDUSTRIAL','OTHERS'];
     /* JOYTAPE bir kip, arsiv rafi degil; onu da soruyoruz. */
     /* 27 Eylul: JOYTAPE tek ad degil, on raf; hepsi sorulur. */
-    const f=(o)=>A.concat(JOY_ADLAR).filter(a=>modUyar(o,a)).join(',');
+    const f=(o)=>A.filter(a=>modUyar(o,a)).join(',');
     const U=(id)=>({etiket:'', ad:'Tidal Wave', mp3:'https://archive.org/download/'+id+'/x.mp3'});
     return {
       lp:      f(U('lp_madama-butterfly_giacomo-puccini')),
@@ -4450,20 +4454,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       soap:    f({etiket:'old time radio · otr soap opera', ad:'x', mp3:''}),
       /* 27 Eylul: kontrol Node tarafinda kuruluyor, adlar orada
          tanimli degil -- bu yuzden burada bir kez gonderiliyor. */
-      joyAdlar: JOY_ADLAR.join('|')
+      bosRaf: 'RECORDS'
     };
   });
   /* 27 Eylul: etiketsiz kayitlar JOYTAPE'nin raflarina gider; raf
      adi artik 'JOYTAPE' degil, on addan biri -- isim listesinden
      sorulur. */
-  K('Etiketsiz: lp_/edison/78_ muzik',
-     (function(){ const rx=new RegExp(kyn.joyAdlar);
-       return rx.test(kyn.lp) && rx.test(kyn.edison) && rx.test(kyn.r78); })(),
-     'lp '+kyn.lp+' | edison '+kyn.edison+' | 78 '+kyn.r78);
-  /* NASA yer-uzay hatti INSAN SESI: HUMAN'a girer, AMBIANCE'a GIRMEZ.
-     Kullanicinin kurali: ambiance'a asla telsiz konusmasi koyma. */
-  /* NASA yer-uzay hatti INSAN SESI: HUMANS'a girer (telsiz rafi),
-     uzay seslerinin rafina degil. */
+    /* 29 Eylul: etiketsiz kayitlar kaynak kimligine bakar; muzikse
+       RECORDS'a gider. JOYTAPE'nin bankalari yerine tek raf. */
+    K('Etiketsiz: lp_/edison/78_ muzik, RECORDS rafinda',
+       /RECORDS/.test(kyn.lp) && /RECORDS/.test(kyn.edison) && /RECORDS/.test(kyn.r78),
+       'lp '+kyn.lp+' | edison '+kyn.edison+' | 78 '+kyn.r78);
+    /* NASA yer-uzay hatti INSAN SESI: HUMANS'a girer (telsiz rafi),
   K('Etiketsiz: NASA konusmasi HUMANS', /HUMANS/.test(kyn.nasa), kyn.nasa);
   K('Etiketsiz: voyager SPACE', /SPACE/.test(kyn.voyager), kyn.voyager);
   /* OTHERS artik gorunur bir halka: kaynaksiz kayit hem ORBITAPE'te
@@ -4550,20 +4552,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                      {etiket:'78rpm jazz vinyl'},{etiket:'nasa apollo'},{etiket:'engine factory'},
                      {etiket:'birds forest'},{etiket:'zzz-hicbir-sey'}];
         const dar = ARSIV_ADLAR.filter(a=>a!=='ORBITAPE');
-        /* Musiki bir kayit hicbir dar rafta GORUNMEZ (kullanci:
-           "muzikse FX'ten kaldir o halkayi") -- JOYTAPE'ye gider.
-           Yani ya tam bir dar rafta, ya da hicbir dar rafta degil. */
+        /* Muzik bir kayit hicbir dar rafta GORUNMEZ: ya tam bir dar
+           rafta, ya RECORDS'ta. Dar raflar birbirini disliyor. */
         return { tek: ornek.every(o=>{ const n=dar.filter(a=>modUyar(o,a)).length;
-                          return n===1 || (n===0 && JOY_ADLAR.indexOf(arsivRaf(o))>=0); }),
-                 hepsi: ornek.filter(o=>JOY_ADLAR.indexOf(arsivRaf(o))<0)
+                          return n===1 || (n===0 && arsivRaf(o)==='RECORDS'); }),
+                 hepsi: ornek.filter(o=>arsivRaf(o)!=='RECORDS')
                           .every(o=>modUyar(o,'ORBITAPE')===true) };
       });
-    K('Dar raflar birbirini dislıyor', rafDagilim.tek, 'her kayit tek dar rafa giriyor');
-    /* 26 Eylul: ORBITAPE artik "hepsi" degil -- sadece ses
-       efektleri. Muzik JOYTAPE'ye gidiyor, buraya degmiyor. */
-    K('ORBITAPE rafi sadece efekt kapsiyor', rafDagilim.hepsi
-        && await pg.evaluate(()=>modUyar({etiket:'78rpm · jazz',ad:'x'},'ORBITAPE') === false),
-        'ust raf: ses efektleri; muzik JOYTAPE');
+      K('Dar raflar birbirini disliyor', rafDagilim.tek, 'her kayit tek dar rafa giriyor');
+      /* 29 Eylul: ORBITAPE ust rafi sadece ses efektleri; muzik
+         RECORDS'ta durur. */
+      K('ORBITAPE ust rafi sadece efekt kapsiyor, muzik RECORDS rafinda', rafDagilim.hepsi
+          && await pg.evaluate(()=>modUyar({etiket:'78rpm · jazz',ad:'x'},'ORBITAPE') === false),
+          'ust raf: ses efektleri; muzik RECORDS');
     K('Arsiv raflari retro-sonuk', rt.enDoygun <= 100, 'en doygun raf farki '+rt.enDoygun+' (radyo tarafi 150+)');
     K('Arsiv zeminleri koyu', rt.zeminler, 'hepsi #0.. ile basliyor');
   }
@@ -7720,51 +7721,37 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        odanin satiri calisir ve RADIOTAPE yazar, digeri soluk kalir.
        Olcum: radyoda iki kapi farkli renkte; ortapoda turuncu (ORBITAPE)
        ve RADIOTAPE yazan, altta soluk. */
-    K('Kip yolunun duraklari odanin rengini tasiyor', await pg.evaluate(async ()=>{
-      const bek = ms=>new Promise(r=>setTimeout(r,ms));
-      const k=document.getElementById('kipKisayol');
-      const renk=()=>{ const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
-        const g=l.find(x=>parseFloat(getComputedStyle(x).opacity)>0.9);
-        return { kip:g?g.dataset.kip:'', renk:g?getComputedStyle(g).color:'',
-                 soluk:l.filter(x=>x!==g).map(x=>getComputedStyle(x).color) }; };
-      const eski = AYAR.mood;
-      /* KIP DURUMUNUN TAMAMI: mood + joy. Yalniz AYAR.mood geri
-         alininca bazen JOYTAPE'de kaliniyordu (oklar modKolaGit
-         ile gidiyor, o da body.joy ekliyor) ve sonraki kontroller
-         ("carki cevirmek...", "bekci yerinden...") radyo varsayiyor:
-         olculdu, ikisi de tam bu yuzden kirmiziydi. */
-      const eskiJoy = AYAR.joy;
-      const eskiSinif = document.body.className;
-      AYAR.mood = false; moodUygula(false); await bek(340); geriYerlestir(); await bek(340);
-      const r1 = renk();
-      /* v2 yolun alt duragindan yukarı: klavyede ArrowUp bir sonraki
-         duragi secer (RADIOTAPE -> JOYTAPE -> ORBITAPE). */
-      k.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));
-      await bek(460); const r2 = renk();
-      k.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));
-      await bek(460); const r3 = renk();
-      /* moodAc() gecikmeli bitiyor: 420 px bekleyince geri alma, sonra
-         gelen sinfa tekrar mood+joy birakiyordu. Olculdu: bu kontrol
-         ORBITAPE/JOYTAPE'de kaliyordu ve sonraki iki kontrol radyo
-         varsayiyor -- cark JOYTAPE'de FARKLI bir izgaraya oturuyor
-         (360/11 yerine 360/5: kalan -6.55, kirmizi). O yuzden iki kez,
-         arada 1.2 sn bekleyerek geri aliniyor. */
-      const radyoya = ()=>{
-        AYAR.mood = false; AYAR.joy = false;
-        try{ moodUygula(false); }catch(e){}
-        document.body.classList.remove('mood','joy');
-        try{ if(typeof window.modKolaGit === 'function') window.modKolaGit('radio'); }catch(e){}
-      };
-      if(eskiSinif.indexOf('mood') < 0){
-        radyoya(); await bek(1200); radyoya(); await bek(420);
-      }else{
-        AYAR.mood = eski; if(eskiJoy !== undefined) AYAR.joy = eskiJoy;
-        moodUygula(false); await bek(420);
-      }
-      return r1.kip==='radio' && r2.kip==='joy' && r3.kip==='orbit'
-          && r1.renk!==r2.renk && r2.renk!==r3.renk && r1.renk!==r3.renk
-          && r1.soluk.every(c=>c===r2.soluk[0]);
-    }), 'uc durak sirayla acilir, her biri kendi odasinin renginde; secili olmayanlar soluk');
+      /* 29 Eylul: anahtar IKI durakli (0 = RADIOTAPE, 1 = ORBITAPE).
+         Durumu topuzun yeri ve rengi anlatir; secili isim kendi oda
+         renginde, digeri soluk. */
+      K('Kip yolunun duraklari odanin rengini tasiyor', await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const k=document.getElementById('kipKisayol');
+        const renk=()=>{ const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
+          const g=l.find(x=>parseFloat(getComputedStyle(x).opacity)>0.9);
+          return { kip:g?g.dataset.kip:'', renk:g?getComputedStyle(g).color:'',
+                   soluk:l.filter(x=>x!==g).map(x=>getComputedStyle(x).color) }; };
+        const eski = AYAR.mood;
+        const eskiSinif = document.body.className;
+        AYAR.mood = false; moodUygula(false); await bek(340); geriYerlestir(); await bek(340);
+        const r1 = renk();
+        /* Klavyede ArrowUp bir sonraki duragi secer: RADIOTAPE -> ORBITAPE. */
+        k.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true}));
+        await bek(460); const r2 = renk();
+        const radyoya = ()=>{
+          AYAR.mood = false;
+          try{ moodUygula(false); }catch(e){}
+          document.body.classList.remove('mood');
+          try{ if(typeof window.modKolaGit === 'function') window.modKolaGit('radio'); }catch(e){}
+        };
+        if(eskiSinif.indexOf('mood') < 0){
+          radyoya(); await bek(1200); radyoya(); await bek(420);
+        }else{
+          AYAR.mood = eski; moodUygula(false); await bek(420);
+        }
+        return r1.kip==='radio' && r2.kip==='orbit' && r1.renk!==r2.renk
+            && r1.soluk.every(c=>c===r2.soluk[0]);
+      }), 'iki durak sirayla acilir, her biri kendi odasinin renginde; secili olmayan soluk');
     /* 28 Eylul: yatay dugme. Kullanici: "sol alt swichi yataya yap.
        alttaki ikon soldan daha uzun olmasin, hizala. mod isimleri de
        yatay olarak ustunde yazsin. hangi modtaysa o yanar. ayni yerde
@@ -7777,7 +7764,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
       const yol=document.querySelector('#kipKisayol .uck-yol');
       const top=document.querySelector('#kipKisayol .uck-topuz');
-      if(l.length!==3 || !yol || !top) return null;
+        /* 29 Eylul: iki durak (RADIOTAPE, ORBITAPE). */
+        if(l.length!==2 || !yol || !top) return null;
       const yr=yol.getBoundingClientRect(), tr=top.getBoundingClientRect();
       const r=l.map(e=>e.getBoundingClientRect());
       const f=l.map(e=>getComputedStyle(e));
@@ -8946,18 +8934,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
             && Math.abs(r1.kk.l - r2.kk.l) <= 1
             && Math.abs(r1.kk.t - r2.kk.t) <= 1
             && Math.abs(r1.kk.h - r2.kk.h) <= 1;
-        /* 27 Eylul: etiket artik kip adi (MOODS degil) ve kap
-           iki satirdan olusuyor; durumu satirin yazisi ve rengi
-           anlatiyor. */
-        /* 27 Eylul: satir daima kendi odasinin adini yazar (arti
-           secilen kipte "RADIOTAPE" degil) ve her iki satir da
-           calisir -- ORBITAPE'den JOYTAPE'ye gecilir. */
-        /* v2: secili durak ARTIK kipin kendi adi (0=RADIOTAPE,
-           1=JOYTAPE, 2=ORBITAPE) ve aria-valuenow onu soyler. */
+        /* 29 Eylul: satir daima kendi odasinin adini yazar ve secili
+           durak aria-valuenow ile bildirilir: 0 = RADIOTAPE, 1 = ORBITAPE. */
         return radyoDogru(r1) && arsivDogru(r2) && sabit
             && r1.yazi === 'RADIOTAPE' && r2.yazi === 'ORBITAPE'
-            && r1.acik === '0' && r2.acik === '2';
-      }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket hep MOODS');
+            && r1.acik === '0' && r2.acik === '1';
+      }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket oda adi');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
     K('Kip kislayolu radyoya donduruyor', await pg.evaluate(async ()=>{
@@ -9105,72 +9087,59 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         if(typeof a!=='number' || typeof b2!=='number' || a<0 || b2<0) fark.push(id+':gizli');
         else if(Math.abs(a-b2)>1) fark.push(id+':'+a+'->'+b2);
       });
-      /* ── UC KOLLU MOD SECICI (26 Eylul) ──────────────────────────
-         Kullanicinin cizimi: "CHOOSE YOUR ORBIT". Ilk acilista durur,
-         bir kola basilinca kapanir; hicbir sey yapilmazsa RADIOTAPE'ten
-         devam eder. Uc kol: ust RADIOTAPE, sol alt JOYTAPE, sag alt
-         ORBITAPE. Icerik kurali: RADIOTAPE sadece radyo, JOYTAPE
-         sadece muzik, ORBITAPE sadece ses efektleri (AMBANCE).
-         OLCUM: (1) ilk acilista uc kol var ve RADIOTAPE secili,
-         (2) JOYTAPE havuzu YALNIZCA muzik (arsivin 13.894 kaydi),
-         (3) ORBITAPE musizgi almaz, (4) kola basmak katmani kapatir
-         ve govde sinifi degisir, (5) kol halkanin disinda durur. */
-      {
-        const kk = await pg.evaluate(async ()=>{
-          const bek = ms=>new Promise(r=>setTimeout(r,ms));
-          const O = { kol:0, secili:'', disarida:false, kapali:false };
-          /* ONCE RADIOTAPE'E SABITLENIR: bu sayfada_onceki testler
-             kipi degistirmis olabiliyor; "ilk acilista" olcumu
-             ozellikle bundan sonra alinir (olculdu: secili 001). */
-          try{ if(window.moodKapat) window.moodKapat(); }catch(e){}
-          AKTIF_MOD = null;
-          try{ document.body.classList.remove('joy');
-               modKollarIsaretle(); geriYerlestir(); }catch(e){}
-          await bek(500);
-          const kap = document.getElementById('modKollar');
-          const koll = kap ? [...kap.querySelectorAll('.kol')] : [];
-          O.kol = koll.length;
-          O.secili = koll.map(e=>e.classList.contains('secili')?1:0).join('');
-          const d = document.querySelector('.disk');
-          if(d && koll.length === 3){
-            const r = d.getBoundingClientRect();
-            const cx = r.left + r.width/2, cy = r.top + r.height/2;
-            const R = Math.min(r.width, r.height) * 0.54;
-            O.disarida = koll.every(e=>{
-              const b = e.getBoundingClientRect();
-              const dx = (b.left + b.width/2) - cx, dy = (b.top + 22) - cy;
-              return Math.sqrt(dx*dx + dy*dy) > R * 0.6;
-            });
-          }
-          const j = koll[1];
-          if(j){
-            j.click();
-            await bek(1400);
-            O.kapali = !kap.classList.contains('ac');
-            O.mood = document.body.classList.contains('mood');
-            O.aktif = AKTIF_MOD;
-            try{ O.havuz = modHavuzu() ? modHavuzu().length : -1; }catch(e){ O.havuz = -1; }
-            try{ O.orbitapeMuzik = modHavuzu()
-                 ? modHavuzu().filter(o=>JOY_ADLAR.indexOf(arsivRaf(o))>=0).length : -1; }catch(e){}
-          }
-          /* SONRAKI TESTLERI ETKILEMESIN: radyoya don. */
-          try{ if(window.moodKapat) window.moodKapat(); }catch(e){}
-          AKTIF_MOD = null;
-          try{ modKollarIsaretle(); geriYerlestir(); }catch(e){}
-          await bek(400);
-          return O;
-        });
-        const k = kk || {};
-        K('Uc kollu secici ilk acilista duruyor',
-          k.kol === 3 && k.secili === '100' && k.disarida === true,
-          'kol: ' + k.kol + ' · secili (radyo/joy/orbit): ' + (k.secili||'-')
-          + ' · halkanin disinda: ' + k.disarida);
-        K('JOYTAPE yalnizca muzik veriyor',
-          k.aktif === 'JOYTAPE' && k.mood === true && k.kapali === true
-          && k.havuz > 0 && k.orbitapeMuzik === k.havuz,
-          'kip: ' + k.aktif + ' · katman kapali: ' + k.kapali
-          + ' · havuz: ' + k.havuz + ' · hepsi JOYTAPE rafinda: ' + k.orbitapeMuzik);
-      }
+        /* ── ACILIS SECICISI KALKTI (29 Eylul) ──────────────────
+           Kullanici karari: acilista ortaya cikan "CHOOSE YOUR ORBIT"
+           paneli gitti. Kip degisimi TEK YOLDA: sol alt anahtar
+           (0 = RADIOTAPE, 1 = ORBITAPE). JOYTAPE moodu da kalkti.
+           OLCUM: (1) #modKollar hicbir zaman DOM'da degil,
+           (2) ortaya basmak panel ACMAZ, (3) anahtar iki durakli,
+           (4) duraklar RADIOTAPE ve ORBITAPE. */
+        {
+          const kk = await pg.evaluate(async ()=>{
+            const bek = ms=>new Promise(r=>setTimeout(r,ms));
+            const O = {};
+            try{ if(window.moodKapat) window.moodKapat(); }catch(e){}
+            await bek(500);
+            O.katmanVar = !!document.getElementById('modKollar');
+            O.rolVar = [...document.querySelectorAll('[aria-label="Choose your orbit"]')]
+                     .filter(e=>e.id!=='kipKisayol').length;
+            /* ORTAYA BASMAK ACILIS PANELI ACMAZ. */
+            const d = document.querySelector('.disk');
+            if(d){
+              const r = d.getBoundingClientRect();
+              const cx = r.left + r.width/2, cy = r.top + r.height/2;
+              for(const tip of ['pointerdown','pointerup','click'])
+                d.dispatchEvent(new PointerEvent(tip,{bubbles:true,clientX:cx,clientY:cy}));
+              await bek(700);
+            }
+            O.ortadaPanel = !!document.getElementById('modKollar');
+            O.ortadaDegisim = !!document.body.classList.contains('mood');
+            /* ANAHTAR IKI DURAK: aria-valuemax 1, iki isim. */
+            const a = document.getElementById('kipKisayol');
+            O.anahtarVar = !!a;
+            if(a){
+              O.maks = a.getAttribute('aria-valuemax');
+              O.adlar = [...a.querySelectorAll('.uck-ad')].map(e=>e.textContent.trim());
+              O.su = a.getAttribute('aria-valuenow');
+            }
+            O.joySinif = document.body.classList.contains('joy');
+            O.aktif = (typeof AKTIF_MOD!=='undefined') ? AKTIF_MOD : null;
+            return O;
+          });
+          const k = kk || {};
+          K('Acilis mood secicisi yok',
+            k.katmanVar === false && k.rolVar === 0
+            && k.ortadaPanel === false && k.ortadaDegisim === false,
+            'panel DOM\'da yok: ' + k.katmanVar + ' · ortaya basma panel acmadi: '
+            + k.ortadaPanel + ' · ortaya basma kip degistirmedi: ' + k.ortadaDegisim);
+          K('Anahtar iki durakli: RADIOTAPE ve ORBITAPE',
+            k.anahtarVar === true && k.maks === '1' && (k.adlar||[]).length === 2
+            && (k.adlar||[]).indexOf('RADIOTAPE') >= 0
+            && (k.adlar||[]).indexOf('ORBITAPE') >= 0
+            && (k.adlar||[]).indexOf('JOYTAPE') < 0 && k.joySinif === false,
+            'durak: ' + k.maks + ' · isimler: ' + (k.adlar||[]).join(' / ')
+            + ' · body.joy: ' + k.joySinif);
+        }
       K('Fotodan sonra sol sutun yerinde kaliyor',
         fark.length===0,
         fark.length ? fark.join(' · ')
