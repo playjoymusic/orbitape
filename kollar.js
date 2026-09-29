@@ -48,6 +48,10 @@
         }catch(e){ _yut(e); }
         _kipRenkleri(m);
         modAdiYaz();
+        /* 29 Eylul: disk olcusu kip gecisinde henuz oturmamis oluyor;
+           60 ms sonra FX dugumleri yeniden olculuyor (bkz.
+           uyduDuzelt, index.html). */
+        try{ if(typeof uyduDuzelt === 'function') uyduDuzelt(); }catch(e){ _yut(e); }
         geriYerlestir();
       }
     }catch(e){ _yut(e); }

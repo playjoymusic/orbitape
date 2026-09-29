@@ -19,6 +19,16 @@ interface Window {
   hataPostaAdresi?: (kip?: string) => string;
   hataGonder?: (kip?: string) => void;
   hataSifirla?: () => void;
+  /* FX DUGUMLERI (29 Eylul): halkanin dort kenarindaki dort dugum.
+     Tip denetleyici bu window atamalarini bilmedigi icin
+     "Property 'fxModGec' does not exist" diyordu; olculdu:
+     kayit.js'te 4 sagte hata (srcObject, muted, volume, videoWidth)
+     -- bunlar modulun butun kuresel sozlugu tasindigi icin
+     beliriyordu. YENI BIR window.X EKLERSEN BURAYA DA YAZ. */
+  fxModGec?: (ad: string) => void;
+  fxModKapat?: () => void;
+  fxGoster?: (ad: string) => void;
+  uyduDuzelt?: () => void;
   moodAc?: () => void;
   /* HALKA ADI YERLESIMI (28 Eylul): saglik takimi olcumu buradan
      okur -- tasma/cakisma/kontrast buradan gelir. */

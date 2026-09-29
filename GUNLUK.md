@@ -4222,3 +4222,85 @@ gerçekten DOM'daydı — `kollar.js` açılışta kuruyormuş. İkinci turda si
 
 **Sonraki sıra:** 7 (favori ayrımı) → 5 (ilk dokunuş) → 4 (halka adları +
 tek harf seti) → 3 (çarkın 4 FX düğümü) → 6 (Material ölçüleri).
+
+## 29 Eylül 2026 — 4 FX halkanın dört kenarında (madde 3)
+
+**Kullanıcı kararları:**
+- "çark olmasın halkanın 4 kenarında olsun fx'ler"
+- "her zaman görünür" (ikon kalktı)
+- "fx gezegeni seçiliyle kendisi neona döner, hatta sağ üstteki
+  semboller de fx'in ana rengini neonsal alabilir. fx'e basınca
+  ekranda atraksiyon olur"
+- "arka plan çok patlamasın hep küçük grafisel dokunuşlar"
+- "isimler altta yan yana aralarında tire olacak… sol ok ve soldaki
+  fx yazsın, yukarı ok yukarıdaki fx yazsın, 4 tarafa da uygula"
+
+### Geometri (ölçüldü, 430×932)
+Disk 302 px, halka 0.89R = **134 px**, düğüm 44×44.
+Düzüm yarıçapı 134+22+14 = **170**:
+kuzey(215,302) · doğu(385,472) · güney(215,642) · batı(45,472).
+Dört yarıçap **birebir 170** · çakışma 0 · ekran dışı 0 ·
+halkanın içine giren 0.
+
+### Konum neden bu kadar zor oldu (üç kez ölçüldü)
+1. `translate(-50%,-50%)` → 176/170/164/170 (eşit değil)
+2. `offsetWidth` ile ortalama → 199/151/144/194 (**daha kötü**)
+3. merkez + `translate` → yine eşit değil
+Sebep: gezegenler farklı `cap` (0.22–0.45), Satürn'ün `.hlk`
+halkası `cap*2.2` genişlikte sola taşıyor; kutunun **görsel ağırlık
+merkezi** `cap`'e göre kayıyor. "Kutu kenarına göre ortalama" her
+zaman kayar. Çözüm: sabit 44×44 kutu, **köşe** koordinatı yazılır.
+
+### Ölçüm koruması
+Kip geçişinde diskin CSS transform'u ~0.8 sn animasyonla oturuyor;
+`uyduYerlestir` geçiş ortasında çağrılırsa **eski** konumu yazıyordu.
+`_uyduOlcumOturdu()` iki kare üst üste aynı ölçümü görüyor mu diye
+bakıyor; oturmadıysa **yazmaz** (ekranda ara dağılım olmaz),
+`uyduDuzelt` rAF ile yeniden dener.
+
+### Neon yayılımı
+`fxModGec` seçili FX'in rengini `--fxn` olarak gövdeye yazar:
+- **sağ üst semboller**: renk + 4 px hâle (%45)
+- **arka plan (#viz)**: `saturate(1.06)` + 4 px hâle (%14) — ilk deneme
+  `saturate(1.18)` + 10 px idi, kullanıcı "çok patlamasın" dedi
+- açılışta `--fxn` boşaltılır, normal görünüme döner
+
+### Açıklama satırı
+Halkanın altındaki boşluğun **ortasında** (y=725; boşluk 726–856):
+`↑RETRO — →LOOP — ↓BLACK HOLE — ←FX`
+Dört öge yan yana, aralarında 3 tire, yön oku her ögeyi yerine
+bağlıyor. Seçili olan neon renginde, diğerleri soluk.
+
+### Silinenler
+`#gezegenTus` ikonu (HTML + CSS + JS), `gezegen-acik` sınıfı,
+`REHBER_JOY`'daki gezegen satırı, `MOD_KOLLARI`/`KOL_SIMGELERI`'ın
+kalan kullanımı.
+
+### Ölçümle bulunan 4 gerçek hata
+1. **Düğümler görünüyordu ama tıklanamıyordu** — `elementFromPoint`
+   gövdeyi veriyordu. Sebep: `#uydular` kaplayıcısı
+   `pointer-events:none` ve bu **çocuğa kalıtılıyor**. FX'e hiç basmak
+   mümkün değildi.
+2. **Tıklama hiçbir şey yapmıyordu** — iki ayrı dinleyici vardı
+   (yeni IIFE + eski RETRO kısayolu satırı); ikincisi `fxModGec`'i
+   tekrar çağırıp efekti anında kapatıyordu (ölçüldü: 2 çağrı).
+3. **Açıklama bir tik geride kalıyordu** — `secili` sınıfı ekleniyordu
+   ama yazı eski değeri gösteriyordu.
+4. **Tip denetimi kırmızıydı (61→54)** — `fxYaziYerlestir` içinde
+   `catch(e)` ile aynı addaki `e` değişkeni global çıkarımı bozuyordu;
+   11 satır ötedeki `araGiris.value` etkileniyordu.
+
+### Foto sızıntısı kontrolü: ölçüm düzeltildi
+Kontrol "gezegenler tek sırada, disk altında" diye yazılmıştı; dört
+kenar düzeninde o nokta halkanın **üzerine** düşüyor ve piksel
+[159,182,187] halkanın kendi rengi. Sızıntı **yoktu**: `kk(.nk,true)`
+null dönüyor, kap `display:none`, düğüm kutusu 0×0. Karşılaştırma
+noktası halkanın dışına (düğümün 30 px sağı) alındı.
+
+### Kapı
+Sağlık 894/894 · arıza 18/18 · senaryo 121/121 · motor 19/19 ·
+cihaz 156/156 · yayın 19/19 · birim 132/132 · tip 54 (taban).
+Toplam 1209 kontrol, 0 kırmızı.
+
+**Sıradaki:** 7 (favori ayrımı) → 5 (ilk dokunuş) → 4 (halka adları +
+tek harf seti) → 6 (Material ölçüleri).

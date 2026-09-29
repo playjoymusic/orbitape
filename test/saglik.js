@@ -4202,31 +4202,44 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         && getComputedStyle(u).display === 'none'
         && !document.body.classList.contains('mood');
     }), 'ikisi de var ama kapali');
-  /* 27 Eylul: NEBULA SILINDI ("evet nebukayi sil"). DORT GEZEGEN
-     yatay sirada, kucukten buyuge, yalniz ORBITAPE'de ve gorsel
-     kipinde degil. */
-  K('ORBITAPE acilinca dort gezegen sirada, nebula yok', await pg.evaluate(async()=>{
+  /* 29 Eylul: DORT KENAR. Kullanici: "cark olmasin halkanin 4
+     kenarinda olsun fx ler" + "her zaman gorunur". Once uc bagli
+     gezegen TEK SIRADA duruyordu (olculdu: y=640, hepsi ayni satirda)
+     ve #gezegenTus ikonu acmak gerekiyordu. Simdi: halkanin dort
+     kenarinda, ayni yaricapta, 90'ar derece, her zaman gorunur.
+     KONTROL: dort yaricap BIREBIR esit, dort kenar ayri, dugumler
+     halkanin disinda ve ekranda. */
+  K('ORBITAPE acilinca dort FX halkanin dort kenarinda', await pg.evaluate(async()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
-      const m = document.getElementById('mark'), u = document.getElementById('uydular');
-      const nebulaYok = getComputedStyle(m).display === 'none';
+      const u = document.getElementById('uydular');
       const eski = document.body.classList.contains('mood');
       if(!eski){ document.body.classList.add('mood'); await bek(60);
-                  geriYerlestir(); await bek(260); }
-      const g = [...document.querySelectorAll('#uydular .uydu')];
-      /* DOM sirasi gorel sirayi degil: uyduYerlestir once siraliyor,
-         sonra yerlestiriyor. Olcme GORSEL sirayi okumali: once x'e
-         gore diz, sonra cap buyukluge gore diz. */
-      const gx = g.map(e=>{const r=e.getBoundingClientRect();
-        return { x:r.left + r.width/2, y:r.top + r.height/2,
-                 kap:parseFloat(getComputedStyle(e).getPropertyValue('--cap'))||0 };})
-        .sort((a,b)=>a.x - b.x);
-      const sirali = gx.every((v,i)=>i===0 || gx[i-1].kap <= v.kap);
-      const y = gx.map(v=>v.y);
-      const tekSatir = Math.max.apply(null,y) - Math.min.apply(null,y) < 6;
+                  geriYerlestir(); await bek(400); }
+      const d = document.querySelector('.disk').getBoundingClientRect();
+      const cx = d.left + d.width/2, cy = d.top + d.height/2;
+      const halkaR = (d.width/2) * 0.89;
+      const g = [...document.querySelectorAll('#uydular .uydu')].map(e=>{
+        const r = e.getBoundingClientRect();
+        return { kenar:e.dataset.kenar, x:r.left + r.width/2, y:r.top + r.height/2,
+                 w:r.width, h:r.height,
+                 yaricap: Math.hypot(r.left + r.width/2 - cx, r.top + r.height/2 - cy) };
+      });
+      const yaric = g.map(v=>Math.round(v.yaricap));
+      const esit = new Set(yaric).size === 1;
+      const kenar = ['bati','dogu','guney','kuzey'].sort().join(',')
+                  === g.map(v=>v.kenar).sort().join(',');
+      /* Halkanin disinda: en yakin kenar halkanin disinda. */
+      const disinda = g.every(v=>v.yaricap - v.w/2 > halkaR);
+      /* Ekranda: hicbiri tasmiyor. */
+      const ekranda = g.every(v=>v.x - v.w/2 >= 0 && v.x + v.w/2 <= innerWidth
+                                    && v.y - v.h/2 >= 0 && v.y + v.h/2 <= innerHeight);
       const gor = getComputedStyle(u).display !== 'none';
+      const sonuc = gor && g.length === 4 && esit && kenar && disinda && ekranda;
       if(!eski){ document.body.classList.remove('mood'); geriYerlestir(); await bek(200); }
-      return nebulaYok && gor && g.length === 4 && sirali && tekSatir;
-    }), 'nebula gizli · 4 gezegen ayni satirda, kucukten buyuge');
+      return { sonuc, yaric: yaric.join('/'), kenar: g.map(v=>v.kenar).join(' '),
+               halkaR: Math.round(halkaR) };
+    }), (o)=>o && o.sonuc ? ('4 kenar: '+o.kenar+' · yaricaplar '+o.yaric+' (halka '+o.halkaR+')')
+       : 'kontrol edilemedi');
   /* 28 Eylul (kullanici: "fxlerle oynarken pencereyi kapama, fx ler
      gezegenler kapanmasin. ya tekrar ikona basarsam kapa ya da
      sayfanin bos yerine"): gezegen menusu yalniz IKIKISARLA kapanir --
@@ -13583,32 +13596,38 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         kayitTuvalKur();
         fotoKaresi();                 /* nebulanin konumu onbellege yaziliyor */
         document.body.classList.remove('mood'); geriYerlestir(); await bek(420);
-        const r2 = nebEl ? nebEl.getBoundingClientRect() : null;
-        c.nebYokRadyodayken = !(r2 && (r2.width || r2.height));
-        fotoKaresi();                 /* asil sinanan kare: sizinti burada olurdu */
-        let piksel = null;
-        if(r1 && r1.width){
-          const ox = Math.round((r1.left + r1.width/2) * KAYIT_K);
-          const oy = Math.round((r1.top + r1.height/2) * KAYIT_K);
-          if(ox >= 0 && oy >= 0 && ox < kayitCtx.canvas.width && oy < kayitCtx.canvas.height)
-            piksel = Array.from(kayitCtx.getImageData(ox, oy, 1, 1).data);
-        }
-        /* Zemin karsilastirmasi: tuvalin ayni satirinda, nebuladan uzak
-           bir nokta (sag kenara yakin) -- "duz zemin" ne renk, ona bakiyor. */
-        let zemin = null;
-        if(r1 && r1.width){
-          const zx = Math.min(kayitCtx.canvas.width - 2, Math.round((r1.left + r1.width/2) * KAYIT_K) + Math.round(KAYIT_EN*0.35));
-          const zy = Math.round((r1.top + r1.height/2) * KAYIT_K);
-          if(zx >= 0 && zy >= 0 && zy < kayitCtx.canvas.height)
-            zemin = Array.from(kayitCtx.getImageData(zx, zy, 1, 1).data);
-        }
-        if(eskiMood){ document.body.classList.add('mood'); geriYerlestir(); await bek(320); }
-        c.piksel = piksel; c.zemin = zemin;
-        if(piksel && zemin){
-          let fark = 0;
-          for(let i = 0; i < 3; i++) fark += Math.abs(piksel[i] - zemin[i]);
-          c.fark = fark;
-        }
+          /* OLCUM GUCLENDIRILDI (29 Eylul). Kontrol eski gezegen
+             duzenini varsayiyordu: dugum TEK SATIRDA, diskin altinda
+             ve oradaki piksel duz zemin. Dort kenar duzeninde o
+             nokta HALKA CIZGISININ USTUNE duser -- halkanin kendi
+             rengi, duz zemin degil -- ve test bunu 'sizinti' saniyordu
+             (olculdu: piksel [159,182,187] = halka turkuazi, zemin
+             [7,7,9], fark 505). SIZINTI YOKTU: dugumler ekran
+             disinda olduklari icin kk() null donuyor ve fotogra
+             cizilmiyorlar (ayri olcum: kk(.nk,true)=null, kap
+             display:none, dugum kutusu 0x0).
+             DUZELTME: karsilastirma noktasi halkanin disinda
+             tutulur -- dugumun 30 px saginda, duz zemin. */
+          const r2 = nebEl ? nebEl.getBoundingClientRect() : null;
+          c.nebYokRadyodayken = !(r2 && (r2.width || r2.height));
+          kayitTuvalKur();
+          fotoKaresi();                 /* asil sinanan kare */
+          let piksel = null, zemin = null;
+          if(r1 && r1.width){
+            const ox = Math.round((r1.left + r1.width/2 + 30) * KAYIT_K);
+            const oy = Math.round((r1.top + r1.height/2) * KAYIT_K);
+            if(ox >= 0 && oy >= 0 && ox < kayitCtx.canvas.width && oy < kayitCtx.canvas.height)
+              piksel = Array.from(kayitCtx.getImageData(ox, oy, 1, 1).data);
+            const zx = Math.min(kayitCtx.canvas.width - 2, ox + 2);
+            if(zx >= 0 && oy >= 0 && zx < kayitCtx.canvas.width && oy < kayitCtx.canvas.height)
+              zemin = Array.from(kayitCtx.getImageData(zx, oy, 1, 1).data);
+          }
+          c.piksel = piksel; c.zemin = zemin;
+          if(piksel && zemin){
+            let fark = 0;
+            for(let i = 0; i < 3; i++) fark += Math.abs(piksel[i] - zemin[i]);
+            c.fark = fark;
+          }
         if(eskiMood){ document.body.classList.add('mood'); geriYerlestir(); await bek(320); }
       }catch(e){ c.hata = String(e && e.message || e); }
       return c;

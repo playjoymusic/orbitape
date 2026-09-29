@@ -2055,7 +2055,7 @@
     background:none;border:0;box-shadow:none;appearance:none;-webkit-appearance:none;
     display:flex;align-items:center;justify-content:center;cursor:pointer;
     width:var(--vur,44px);height:var(--vur,44px);
-    -webkit-tap-highlight-color:transparent;transform:translate(-50%,-50%);}
+    -webkit-tap-highlight-color:transparent;}
   .uydu .nk{position:relative;width:var(--cap,26px);height:var(--cap,26px);
     border-radius:50%;overflow:hidden;opacity:1;
     box-shadow:0 0 9px rgba(0,0,0,.42), inset 0 0 6px rgba(0,0,0,.7);
@@ -2273,35 +2273,113 @@
      degeri ekrana gore degil, kutunun kosesine gore sayiliyordu.
      Olculdu: y 1007, ekranin disinda -- gezegenler hic gorunmuyordu
      ve rehberdeki "FX -- TAP A MOON" etiketi de ekrani tasiyordu. */
+  /* ── FX DUGUMLERI: HALKANIN DORT KENARINDA (29 Eylul) ──────
+     Kullanici: "cark olmasin halkanin 4 kenarinda olsun fx ler".
+     ONCE: gezegenler disk altinda TEK SIRADA duruyordu (olculdu:
+     dort dugumun hepsi y=644, x=158-263) ve #gezegenTus ikona
+     basilmadan gorunmuyordu. SIMDI: dort dugum halkanin dort
+     kenarinda (kuzey, dogu, guney, bati) ve HER ZAMAN gorunur.
+
+     GEOMETRI (olculdu, 430x932): disk 302 px, halka 0.89R = 134 px
+     yaricap, dugum 44x44. Duzum yaricapi 134+22+14 = 170 px:
+       kuzey (215,302) · dogu (385,472) · guney (215,642) · bati (45,472)
+     Dort kenar da ekrana sigiyor (en genis nokta 385+22 = 407 < 430)
+     ve hicbir arayuz ogesiyle cakismiyor (sol sutun 14-58, araclar
+     262-348, bekle 284-417, kipKisayol 856-890). Ayni yaricap,
+     dort kenar 90 derece. Konum JS'te .disk'in OLCULEN kutusundan:
+     sabit piksel yazmiyoruz. */
   #uydular{display:none;position:fixed;left:0;top:0;width:100%;height:100%;
     pointer-events:none;}
-  /* GEZEGENLER KAPALI BASLAR (gorev 5): #gezegenTus'a basilinca yumusak
-     beliriyor. Belirme cocuklara tasindi: kap tum ekran oldugu icin
-     ustundeki transform butun satiri buyutuyordu. */
-  body.mood:not(.gorsel-acik) #uydular{display:block;opacity:0;
-    transition:opacity .26s ease;}
+  body.mood:not(.gorsel-acik) #uydular{display:block;}
   body.mood:not(.gorsel-acik) #uydular .uydu{
-    transform:translate(-50%,-50%) translateY(4px) scale(.94);
-    transition:transform .26s cubic-bezier(.25,1.3,.4,1);}
-  body.mood:not(.gorsel-acik).gezegen-acik #uydular{opacity:1;}
-  body.mood:not(.gorsel-acik).gezegen-acik #uydular .uydu{
-    transform:translate(-50%,-50%);pointer-events:auto;}
+    /* OLCULEDILDI (29 Eylul): dugumler ekranda GORUNUYOR ama
+       TIKLANAMIYORDU -- elementFromPoint dugumu degil govdeyi
+       veriyordu. Sebep: kaplayici #uydular pointer-events:none
+       ve bu deger COCUGA KALITILIYOR. FX'e hic basmak mumkun
+       degildi. COZUM: dugumun kendi pointer-events'i acik. */
+    position:fixed;width:44px;height:44px;pointer-events:auto;
+    display:flex;align-items:center;justify-content:center;
+    border:0;background:none;padding:0;margin:0;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+    transition:transform .22s ease,filter .22s ease;}
+  /* DOKUNMA ALANI 48x48 (Material): gorunen 44, hedef 48 -- 2 px
+     her yone pay, kirpi yok. */
+  #uydular .uydu::before{content:'';position:absolute;inset:-2px;
+    border-radius:50%;}
   @media (prefers-reduced-motion: reduce){
     #uydular,#uydular .uydu{transition:none;} }
+  /* NEON: secili dugum kendi renginde yanar. Kapida olculecek.
+     0 dugumde gölge yok, secilende 3 katman. */
+  #uydular .uydu .nk{transition:filter .24s ease,opacity .24s ease;}
+  #uydular .uydu.secili .nk{
+    filter:drop-shadow(0 0 6px var(--nk,#e8a97e)) drop-shadow(0 0 16px var(--nk,#e8a97e));
+    opacity:1 !important;}
+  #uydular .uydu:active{transform:scale(.93);}
+  /* ACIKLAMA: secili dugumun adi + tek satir bilgisi. Halkanin
+     guney disi, taban ile alt dugum arasinda TAM ORTA. */
+  #fxYazi{position:fixed;left:0;top:0;z-index:73;pointer-events:none;
+    text-align:center;opacity:0;transform:translateY(4px);
+    transition:opacity .24s ease,transform .24s ease;}
+  body.mood:not(.gorsel-acik) #fxYazi.gorunur{opacity:1;transform:translateY(0);}
+  /* ACIKLAMA: halkanin ALTINDAKI boslugun ORTASINDA, dort FX
+     yan yana, aralarinda tire. Yön oku her ogeyi yerine baglar:
+     sol ok = bati dugumu, yukari ok = kuzey, asagi = guney,
+     sag ok = dogu. Sira sabit (kuzey-dogu-guney-bati = saat yonu).
+     Sekil: "← RETRO — ↑ LOOP — ↓ BLACK HOLE — → FX".
+     Eski yapida secili olanin adi + bilgisi TEK satir halinde
+     gosteriliyordu; kullanici dort tarafi bir arada istiyor.
+     Bitisik gosterim: mood secicideki kol adlarinin altindaki
+     "live radio / curated - loops / sound fx" acliklamalarinin
+     ayni dili -- ad once, yalniz ad, tireyle ayrilmis. */
+  #fxYazi .fx-satir{display:flex;align-items:center;gap:9px;
+    white-space:nowrap;}
+  #fxYazi .fx-oge{display:inline-flex;align-items:baseline;gap:5px;
+    font:400 .75rem/1 'Share Tech Mono',monospace;
+    color:rgba(226,222,212,.55);text-shadow:0 1px 3px rgba(0,0,0,.75);
+    transition:color .24s ease,text-shadow .24s ease;}
+  #fxYazi .fx-oge .ok{font-size:.6875rem;opacity:.62;}
+  #fxYazi .fx-oge .ad{font-weight:400;}
+  #fxYazi .fx-oge.secili{
+    color:rgb(var(--fxn,232,169,126)) !important;
+    text-shadow:0 0 6px rgba(var(--fxn,232,169,126),.5),0 1px 3px rgba(0,0,0,.75);}
+  #fxYazi .fx-oge.secili .ok{opacity:1;}
+  #fxYazi .fx-tire{color:rgba(226,222,212,.30);font:400 .75rem/1 monospace;}
+
+  /* ── NEON YAYILIMI (29 Eylul) ───────────────────────────────
+     Kullanici: "fx gezegeni seciliyle kendisi neona döner hatta
+     sag ustteki semboller de fx in ana rengini neonsal alabilir. fx
+     e basınca ekranda atraksiyon olur . backroaund y-ta etkilenir".
+
+     UYGULAMA: secili dugum --fxn (rgb uclu) degiskenini govdeye
+     yazar. Iki yerde okunur:
+       (1) SAG USTTEKI SEMBOLLER: renk + neon (--m1 degismez, o
+           kipin rengidir; FX rengi gecici bir katmandir).
+       (2) ARKA PLAN: yildiz katmani (#viz) FX rengine dogru
+           CEKILIR (atraksiyon) ve biraz parlar.
+     Bosaltma: --fxn yoksa normal durum. */
+  /* SEMBOLLER: renk degisir, hale KUCUK (6 px, %55) -- "neonsal" ama
+     abartili degil. Kontrast kurali (4,5) korunur. */
+  body.fx-acik #solUst,#solUst .simge,body.fx-acik #ust .simge{
+    color:rgb(var(--fxn,232,169,126)) !important;
+    filter:drop-shadow(0 0 4px rgba(var(--fxn,232,169,126),.45));
+    transition:color .3s ease,filter .3s ease;}
+  /* ARKA PLAN DOKUNUSU KUCUK (29 Eylul, kullanici: "arka plan cok
+     patlamasin hep kucuk grafisel dokunuslar"). Ilk denemede
+     saturate(1.18) + 10px hale cok geliyordu: yildizlar buyuyor ve
+     oda turunu saniyordu. SIMDI yalniz ince bir renk cekimi:
+     doygunluk 1.06 ve 4 px'de %14 hale. Oda rengi degismez,
+     yildizlarin KENDI rengi kalir -- sadece FX'e dogru hafif
+     egilim olur. Buyuk grafik katman yok. */
+  body.fx-acik #viz{
+    filter:saturate(1.06) drop-shadow(0 0 4px rgba(var(--fxn,232,169,126),.14));
+    transition:filter .45s ease;}
   /* GEZEGEN MENU IKONU: diger yuvarlak tuslarla (#deriFirca vs) ayni
      dil -- 22px svg, stroke 1.7, cevre faktorleriyle ortali. Yalniz
      ORBITAPE'de ve gorsel kipinde degil gorunur. Yeri JS'te. */
-  /* 28 Eylul: "cok kotu ikon ya cok kucuk zaten. dikkat ceksin ve
-     gezegen siran gibi olam. buyuk olsun biraz" -- 30x30 -> 44x44,
-     ikon 20 -> 28 px, arka plan opakligi artti. */
-  #gezegenTus{display:none;position:fixed;z-index:74;width:44px;height:44px;
-    align-items:center;justify-content:center;border-radius:50%;
-    background:rgba(20,22,28,.62);color:rgba(232,169,126,.95);
-    -webkit-tap-highlight-color:transparent;cursor:pointer;
-    opacity:.7;transition:opacity .18s ease,background .18s ease,transform .18s ease;}
-  #gezegenTus svg{width:28px;height:28px;}
-  #gezegenTus:hover,#gezegenTus:focus-visible{opacity:1;background:rgba(232,169,126,.16);}
-  body.mood.gezegen-acik #gezegenTus{opacity:1;color:#e8a97e;transform:scale(1.06);}
+  /* 29 Eylul: #gezegenTus IKONU KALDIRILDI. Dort FX dugumu halkanin
+     kenarinda ve her zaman gorunur oldugu icin acmak icin ikona
+     gerek yoktu; ikon bir adim fazlaydi (iki dokunus). OLCUM: dugumler
+     DOM'da ve pointer-events:auto, #gezegenTus yok. */
   body.mood #mark{position:fixed;z-index:70;display:flex;align-items:center;cursor:pointer;
     top:calc(25px + env(safe-area-inset-top, 0px));
     left:calc(14px + env(safe-area-inset-left, 0px));}
@@ -4308,14 +4386,9 @@
   <!-- NEBULA ve GEZEGENLER: yalnizca SOUND BANKS kipinde gorunur.
        Radyo tarafinda display:none ile kapali (bkz. body.mood). -->
   <div id="mark" class="lib" aria-hidden="true"><canvas class="neb" width="148" height="148"></canvas></div>
-    <button id="gezegenTus" type="button" aria-label="Open orbit bodies"
-    aria-expanded="false" aria-controls="uydular"
-    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="3.1"/>
-      <ellipse cx="12" cy="12" rx="9.2" ry="3.6"/>
-      <circle cx="20.4" cy="12" r="1.15" fill="currentColor" stroke="none"/>
-    </svg></button>
+    <!-- 29 Eylul: #gezegenTus kaldi (dort FX dugumu halkanin kenarinda,
+         her zaman gorunur). Yerine secili FX'in adi + bilgisi. -->
+    <div id="fxYazi" aria-live="polite"><div class="fx-satir"></div></div>
   <!-- Kanal adları halkalara taşındı (en dıştaki üç halka). Sağ üstte
        artık sadece uygulamanın adı duruyor. Ölçü referansı olarak
        kullanıldığı için eleman yapısı aynı kaldı. -->
@@ -8180,62 +8253,124 @@
   const UYDULAR = [
     /* Gezegen + ayları: ilki sağ ekvatorda, sonrakiler saat yönünde aşağı
        iner. Her adımda hem küçülüyor hem yörüngesi genişliyor. */
-    { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO — tape / lo-fi' },
-    { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP — infinite repeat' },
-    { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE — collapse / infinite echo' },
+    { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO — tape / lo-fi', neon:'214,110,58' },
+    { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP — infinite repeat', neon:'53,224,216' },
+    { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE — collapse / infinite echo', neon:'176,140,255' },
     /* ── ANA FX ──
        Eskiden temel efekt her sürüklemede kendiliğinden devredeydi.
        Artık onun da bir gezegeni var: kapalıyken halkalar KATEGORİ
        menüsü, açıkken FX. Böylece ikisi birbirine karışmıyor. */
-    { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX — main effect group' }
-  ];  const uyduDug = {};
-  UYDULAR.forEach(u=>{
-    const b=document.createElement('button');
-    b.type='button'; b.className='uydu'; b.dataset.fx=u.fx; b.dataset.gk=u.gk||'';
-    b.title=u.ad; b.setAttribute('aria-label',u.ad);
-    b.innerHTML='<span class="nk"></span><i class="hlk"></i>';   // hlk: Satürn halkası
-    if(uyduKap) uyduKap.appendChild(b); uyduDug[u.fx]=b;
-  });
-  /* GEZEGEN MENU IKONU: acma/kapama (gorev 5, 27 Eylul v1 taslak).
-     Kamera yelpazesiyle ayni desen -- basinca acilir, tekrar basinca
-     ya da bos yere basinca kapanir. */
-  /* GEZEGEN MENU IKONU (27 Eylul once silinmis, sonra geri geldi):
-     acma/kapama ve bos yere basinca kapanma burada. */
-  (function(){
-    try{
-      const tus = document.getElementById('gezegenTus');
-      if(!tus) return;
-      const ac = (acik)=>{
-        document.body.classList.toggle('gezegen-acik', acik);
-        tus.setAttribute('aria-expanded', acik ? 'true' : 'false');
-      };
-      tus.addEventListener('click', e=>{
-        try{ e.stopPropagation(); }catch(_){ _yut(_); }
-        ac(!document.body.classList.contains('gezegen-acik'));
-      });
-      document.addEventListener('click', e=>{
-        if(!document.body.classList.contains('gezegen-acik')) return;
-        const t = /** @type {any} */ (e).target;
-        if(t && t.closest && (t.closest('#gezegenTus') || t.closest('#uydular'))) return;
-        /* Bos yer kurali (28 Eylul): odanin kendi yuzeyleri (tuval,
-           disk, ust cubuk, kip dugmesi) sayilmaz; FX aktifken hicbir
-           sey kapanmaz, yalniz ikon. */
-        if(t && t.closest && t.closest(
-            '#viz, #tasima, #bekle, #mark, #kipKisayol, #kipKisayol *, ' +
-          '#ust, .kanal, #kipKut')) return;
-        /* FX ACIKKEN BOS YER KAPATMAZ (28 Eylul: "orbityape te fx leri
-           kullanirken, fx aktifken ekranin bos bir yerine basiyorsun
-           pencere kapanip gidiyor ya. fx ler aktifken kapanmamali.
-           kafa karisiyor. ama kisi ikona basarsa fx ler kapanir") --
-           yani bos yere basmak HICBIR seyi kapatmaz, yalniz ikon. */
-        if(typeof FXMOD !== 'undefined' && FXMOD) return;
-        ac(false);
-      });
-      document.addEventListener('keydown', e=>{
-        if(e.key==='Escape' && document.body.classList.contains('gezegen-acik')) ac(false);
-      });
-    }catch(e){ _yut(e); }
-  })();
+    { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX — main effect group', neon:'232,169,126' }
+    /* KENAR ATAMASI (29 Eylul): dizilim sirasi ekrandaki yerlesim sirasi:
+       0 kuzey · 1 dogu · 2 guney · 3 bati. */
+    ];  const uyduDug = {};
+    UYDULAR.forEach((u,i)=>{
+      const b=document.createElement('button');
+      b.type='button'; b.className='uydu'; b.dataset.fx=u.fx; b.dataset.gk=u.gk||'';
+      b.dataset.kenar = ['kuzey','dogu','guney','bati'][i % 4];
+      /* 29 Eylul: ad ve bilgi ayri -- aciklamada kullanilacak. */
+      const _ad = String(u.ad||'').split('—')[0].trim();
+      const _bil = String(u.ad||'').split('—')[1] ? String(u.ad).split('—')[1].trim() : '';
+      b.dataset.fxAd = _ad; b.dataset.fxBilgi = _bil;
+      /* NEON RENGI (29 Eylul): secili dugumun rengi iki yere daha
+         yayilir -- sag ustteki semboller ve arka plan/yildizlar.
+         Kullanicinin sozu: "sag ustteki semboller de fx in ana rengini
+         neonsal alabilir. fx e basınca ekranda atraksiyon olur
+         . backroaund y-ta etkilenir". */
+      b.dataset.fxNeon = u.neon || '232,169,126';
+      b.title=u.ad; b.setAttribute('aria-label',u.ad);
+      b.setAttribute('aria-pressed','false');
+      b.innerHTML='<span class="nk"></span><i class="hlk"></i>';   // hlk: Satürn halkası
+      if(uyduKap) uyduKap.appendChild(b); uyduDug[u.fx]=b;
+    });
+    /* ── 29 EYLUL: DUGUM DAVRANISI ─────────────────────────────
+       Dugumler halkanin dort kenarinda ve HER ZAMAN gorunur;
+       acmak icin ikon yok (#gezegenTus kaldirildi).
+         · dokunma  -> fxModGec(): ayni dugume ikinci dokunus kapatir
+         · secili   -> neon (CSS .secili) + aciklama (#fxYazi)
+         · klavye   -> oklar dort kenarda gezinir, Enter secir
+       Bos yere basinca HICBIR sey kapanmaz (28 Eylul kurali aynen
+       durur: FX acikken pencere kapanmamali). */
+    (function(){
+      try{
+        const _yazi = document.getElementById('fxYazi');
+        const _satir = _yazi ? _yazi.querySelector('.fx-satir') : null;
+        /* YON OKLARI (29 Eylul): her oge yerini okla belli eder.
+           ← bati · ↑ kuzey · ↓ guney · → dogu. Sira saat yonunde
+           (kuzey-dogu-guney-bati) ki halkanin cizim sirasiyla ayni. */
+        const OK = { kuzey:'↑', dogu:'→', guney:'↓', bati:'←' };
+        const _yaz = (ad)=>{
+          if(!_yazi || !_satir) return;
+          if(!ad){ _yazi.classList.remove('gorunur'); return; }
+          /* Dort oge, aralarinda tire. */
+          const parcalar = [];
+          UYDULAR.forEach((u,i)=>{
+            if(i) parcalar.push('<span class="fx-tire">—</span>');
+            const k = (uyduDug[u.fx] ? uyduDug[u.fx].dataset.kenar : '') || 'kuzey';
+            const sec = (ad === u.fx) ? ' secili' : '';
+            parcalar.push('<span class="fx-oge'+sec+'"><span class="ok">'
+              + (OK[k]||'·') + '</span><span class="ad">'
+              + (uyduDug[u.fx] ? uyduDug[u.fx].dataset.fxAd : '') + '</span></span>');
+          });
+          _satir.innerHTML = parcalar.join('');
+          _yazi.classList.add('gorunur');
+          try{ fxYaziYerlestir(); }catch(e){ _yut(e); }
+        };
+        const _isaretle = (ad)=>{
+          UYDULAR.forEach(u=>{
+            const b = uyduDug[u.fx]; if(!b) return;
+            const sec = (ad === u.fx);
+            b.classList.toggle('secili', sec);
+            b.classList.toggle('acik', sec);
+            b.setAttribute('aria-pressed', sec ? 'true' : 'false');
+          });
+        };
+        /* TEK KAYNAK: isaret ve aciklama hep buradan. */
+        window.fxGoster = (ad)=>{
+          _isaretle(ad || '');
+          _yaz(ad || '');
+        };
+        UYDULAR.forEach(u=>{
+          const b = uyduDug[u.fx]; if(!b) return;
+    b.addEventListener('click', e=>{
+      /* 29 Eylul: AC-KAPA, TEK YONLU. Eski halde dugum
+                   window.fxModGec(u.fx) cagiriyordu; fxModGec
+                   'ayni ad' gorunce kendini KAPATIYORDU. Tıklama
+                   zinciri de fxModGec(FXMOD) cagirdigi icin (bkz.
+                   17695 kanal temizligi) ikinci cagri Ayni ad'i
+                   gorup efekti hemen kapatiyordu: OLCULEDILDI,
+                   FX'e basmak hicbir seyi degistirmiyordu.
+                   COZUM: dugum once kapatmayi kendi yonetir,
+                   fxModGec'e SADECE acma yapar. */
+              if((typeof FXMOD!=='undefined') && FXMOD === u.fx){
+                if(window.fxModKapat) window.fxModKapat();
+              }else{ if(window.fxModGec) window.fxModGec(u.fx); }
+                if(window.fxGoster) window.fxGoster((typeof FXMOD!=='undefined') ? FXMOD : '');
+              try{ e.stopPropagation(); }catch(_){ _yut(_); }
+            });
+          });
+        /* Klavye: halkanin dort kenarinda dolas (29 Eylul). */
+        document.addEventListener('keydown', e=>{
+          if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' '].includes(e.key)) return;
+          const kap = document.getElementById('uydular');
+          if(!kap || getComputedStyle(kap).display === 'none') return;
+          const l = [...kap.querySelectorAll('.uydu')];
+          if(!l.length) return;
+          if(e.key==='Enter' || e.key===' '){
+            const f = /** @type {any} */ (document.activeElement);
+            if(f && f.classList && f.classList.contains('uydu')) f.click();
+            return;
+          }
+          const su = l.indexOf(/** @type {any} */ (document.activeElement));
+          const adim = (e.key==='ArrowUp'||e.key==='ArrowLeft') ? -1 : 1;
+          const n = su < 0 ? 0 : (su + adim + l.length) % l.length;
+          /** @type {any} */ (l[n]).focus();
+          try{ e.preventDefault(); }catch(_){ _yut(_); }
+        });
+        /* Pencere degisince yazi da yerinden gelsin. */
+        window.addEventListener('resize', ()=>{ try{ fxYaziYerlestir(); }catch(e){ _yut(e); } });
+      }catch(e){ _yut(e); }
+    })();
   const bekle=$('bekle'), bekleGly=$('bekleGly');            // WAIT göstergesi (uzaylı sembol)
   /* Her parça bir sembol. Dağarcık geometri, yaşam ağacı, simya ve gök
      işaretlerinden; hepsi TEK genişlikte yuvaya oturacak sadelikte seçildi. */
@@ -10555,59 +10690,162 @@
   /* Uydular büyük nebulanın çevresinde bir YAY üzerinde dizilir: sağ yandan
      başlayıp saat yönünde aşağı doğru küçülerek. Konumlar nebulanın gerçek
      ölçüsünden hesaplanıyor, sabit sayı yok. */
-  function uyduYerlestir(){
-    iz('uyduYerlestir');
-    try{
-      /* NEBULA YOK (27 Eylul): dort gezegen YATAY SIRADA, kucukten
-         buyuge, halkanin biraz ustunde. Once nebulanin cevresinde
-         y yay ciziyordu ve yalniz ORBITAPE'de gorunuyordu. */
-      /* UYDULAR sonra ataniyor; acilista bu fonksiyon erken
-         cagrilirsa undefined olurdu (test: "Acilis yerlesiminde TDZ
-         riski yok"). */
-      if(!UYDULAR || !UYDULAR.length) return;
-      const d = document.querySelector('.disk');
-      const r = d ? d.getBoundingClientRect() : null;
-      if(!r || !r.width) return;
-      /* GEZEGEN MENU IKONU (gorev 5): halkanin TEPESINDE, ortali,
-         8px bosluk -- "cok yakin yapma" kuraliyla ayni bosluk dili
-         diger ikonlarda kullanilan degerle (8px). TASLAK: ekran
-         goruntusuyle dogrulanacak. */
-      const gt = document.getElementById('gezegenTus');
-      if(gt){
-        gt.style.left = Math.round(r.left + r.width/2 - 15) + 'px';
-        gt.style.top = Math.round(r.top - 30 - 8) + 'px';
-      }
-      const T = UYDULAR.map(u=>({ u, cap: Math.round(74*u.cap) }))
-            .sort((a,b)=>a.cap - b.cap);
-      const ar = 10, BOS = 12;
-      const gen = T.reduce((s,v)=>s+v.cap, 0) + ar*(T.length-1);
-      let x = Math.round(r.left + r.width/2 - gen/2);
-      /* Kullanicinin dedigi yer: "choose your orbit'in ustunde".
-         O yazi ilk acilista 190'da duruyor; sira onun 12 px ustunde,
-         en buyuk gezegenin yaricapini kadar daha yukarida. */
-      /* SABIT Y (27 Eylul): once "CHOOSE YOUR ORBIT" yazisinin
-         yerine konuldu (190) ve o yazi gecici oldugu icin mantikli
-         gorunuyordu. Ama O YERDE KIP BASLIGI var: olculdu, gezegenler
-         168-212, ORBITAPE basligi ile ayni seride -> ust uste biniyor
-         (kullanici: "gezegenlere balk nere"). Ust bar 33'te bitiyor,
-         halka 291'de basliyor; arada bos serit var. Sira 118'e
-         alindi: ust barin altinda, basligin ustunde. */
-      /* HALKANIN BIRAZ ALTINDA (27 Eylul, kullanici: "halkanin biraz
-         altinda olacak"). Once ustune kondu (once "biraz ustunde",
-         sonra basliga carsti diye y=150). Olcum: halka 291-565, sol
-         alt dugmeler 752-802; arada 565-752 seridi bos. Merkez 640. */
-      const y = 640;
-      T.forEach(v=>{
-        const b = uyduDug[v.u.fx]; if(!b) return;
-        const vur = Math.max(30, Math.min(Math.round(v.cap*1.9), 44));
-        b.style.setProperty('--cap', v.cap+'px');
-        b.style.setProperty('--vur', vur+'px');
-        b.style.left = Math.round(x + v.cap/2) + 'px';   /* transform -50% */
-        b.style.top  = y + 'px';
-        x += v.cap + ar;
-      });
-    }catch(e){ _yut(e); }
-  }
+    /* Disk olcusu iki kare ust uste ayni mi? Gecis sirasinda
+       degisiyor, oturunca degismiyor. Bu, transform animasyonunun
+       bittiginin EN UCUZ olcumu. */
+    var _uyduSonOlcum = '';
+    function _uyduOlcumOturdu(){
+      try{
+        const d = document.querySelector('.disk');
+        if(!d) return true;
+        const r = d.getBoundingClientRect();
+        if(!r.width) return false;
+        const imza = Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width);
+        const ayni = (imza === _uyduSonOlcum);
+        _uyduSonOlcum = imza;
+        return ayni;
+      }catch(e){ return true; }
+    }
+    function uyduYerlestir(){
+      /* OLCUM KORUMASI (29 Eylul): kip gecisinde diskin CSS
+         transform'u ~0.8 sn animasyonla oturuyor. Bu fonksiyon
+         gecis ortasinda cagrilirsa ESKI konumu yazar ve dort
+         dugum yaricapta esit olmaz (olculdu: 176/170/164/170;
+         elle cagri hep 170 verir -- hesap dogru, zaman yanlis).
+         COZUM: konum yazmadan once OLCUMUN OTURDUGUNU SOR. Oturmadi
+         ise bu cagriyi BIRAK: kendi kendine yeniden denemeyi
+         uyduDuzelt yapar. Boylece hicbir yanlis konum yazilmaz --
+         ekranda gecici bir dagilim olmaz. */
+      if(!_uyduOlcumOturdu()) return;
+      iz('uyduYerlestir');
+      try{
+        if(!UYDULAR || !UYDULAR.length) return;
+        const d = document.querySelector('.disk');
+        const r = d ? d.getBoundingClientRect() : null;
+        if(!r || !r.width) return;
+        /* ── 29 EYLUL: DORT KENAR ───────────────────────────
+           Kullanici: "cark olmasin halkanin 4 kenarinda olsun fx
+           ler" + "her zaman gorunur". Once: dort dugum TEK SIRADA,
+           sabit y=640 ve #gezegenTus ikona basilmadan gorunmuyordu.
+           SIMDI: halkanin dort kenarinda (kuzey/dogu/guney/bati),
+           ayni yaricapta, 90'ar derece, halkanin DISINDA.
+
+           OLCUM (430x932, disk 302, halka 0.89R = 134): yaricap
+           134+22+14 = 170. Dort nokta: kuzey(215,302) dogu(385,472)
+           guney(215,642) bati(45,472) -- en genis 385+22=407 < 430,
+           hicbir arayuz ogesiyle cakismiyor.
+
+           KONUM NEDEN BU KADAR ZOR OLDU (uc kez olculdu):
+             1) translate(-50%,-50%)  -> 176/170/164/170 (esit degil)
+             2) offsetWidth ile ortalama -> 199/151/144/194 (daha kotu)
+             3) merkez + translate    -> yine esit degil
+           Sebep: gezegenler farkli cap (0.22-0.45) ve Saturn'un
+           .hlk halkasi cap*2.2 genislikte sola tasar; kutunun
+           GORSEL AGIRLIK MERKEZI cap'e gore kayar. 'Kutu kenarina
+           gore ortalama' her zaman kayar.
+           COZUM: sabit 44x44 kutu, KOSE koordinati yazilir; icerik
+           kendi cap'i icinde ortalanir. Dort kose ayni yaricaptadir
+           -> dort yaricap KESIN esittir.
+        */
+        const cx = r.left + r.width/2, cy = r.top + r.height/2;
+        const HALKA_DIS_ORAN = 0.89;   /* cizimle ayni (HALKA_DIS) */
+        const halkaR = (r.width/2) * HALKA_DIS_ORAN;
+        const DUG = 44, PAY = 14;
+        const rr = Math.min(Math.max(halkaR + DUG/2 + PAY, 0),
+                           cx - DUG/2 - 4, innerWidth - cx - DUG/2 - 4,
+                           cy - DUG/2 - 4, innerHeight - cy - DUG/2 - 4);
+        const N = Math.round(rr);
+        const KENAR = [[0,-1],[1,0],[0,1],[-1,0]];   /* k/d/g/b */
+        const AD = ['kuzey','dogu','guney','bati'];
+        UYDULAR.forEach((u,i)=>{
+          const b = uyduDug[u.fx]; if(!b) return;
+          const k = KENAR[i % 4];
+          b.style.left = Math.round(cx + k[0]*N - DUG/2) + 'px';
+          b.style.top  = Math.round(cy + k[1]*N - DUG/2) + 'px';
+          b.dataset.kenar = AD[i % 4];
+        });
+        fxYaziYerlestir();
+      }catch(e){ _yut(e); }
+    }
+    /* ACIKLAMA NEREDE: halkanin guney disi, taban ile alt dugum arasinda
+       TAM ORTA. Disk alt kenar r.top+r.height; alt dugumun ust kenari
+       cy+rr-DUG/2. Ikisinin ortasi; yazi yatayda ortalanir. */
+    /* ── NEDEN IKINCI KEZ (29 Eylul) ──────────────────────────
+       OLCULEDILDI: kip degisiminden hemen sonra uyduYerlestir
+       calisiyor ama diskin olculen kutusu HENUZ yeni merkeze
+       oturmamis oluyor. Sonuc: dort dugum yaricapta esit degil
+       kaldi (176/170/164/170). Elle cagrilinda hepsi 170 oluyor
+       -- yani hesap dogru, ZAMAN yanlis. COZUM: kip degistikten
+       60 ms sonra yeniden olc. Kullanici hicbir sey hissetmez. */
+    /* ── NEDEN IKINCI KEZ (29 Eylul) ─────────────────────────
+       OLCULEDILDI: kip degisiminde diskin CSS transform'u
+       (scale 0.9 + translateY 6px) GECISLE uygulanir. Bir karede
+       getBoundingClientRect() eski konumu veriyor (merkez 466),
+       ertesinde yeni konumu (472). Sonuc: yaricaplar esit degil
+       -- 176/170/164/170 (olculdu). Elle cagri hep dogru verir.
+       COZUM: iki kare bekleyip olc. Kullanici hissetmez:
+       duzeltme ayni kare icinde tamamlanir. */
+    /* ── NEDEN SUREYLE (29 Eylul) ───────────────────────────
+       OLCULEDILDI: kip degisiminde diskin CSS transform'u
+       (scale + translateY) ~0.8 sn GECISLE uygulanir. Tek bir
+       rAF beklemek yetmiyor: 2 kare sonra da merkez 466 okundu.
+       Sonuc: yaricaplar esit degil -- 176/170/164/170. Elle
+       cagri hep dogru verir (hepsi 170): hesap dogru, ZAMAN yanlis.
+       COZUM: gecis suresi boyunca olcup KONUM KARSILASTIRMASI
+       yapan bir dongu. Konum iki kare ust uste ayni olunca biter.
+       Kullanici hicbir sey hissetmez -- duzeltme gecis icinde. */
+    var _uyduDuzelt = 0;
+    /* Gecis surece kadar her karede yeniden dener. Konum yazan
+       fonksiyonun guard'i olcum oturmadan yazmayi reddettigi icin
+       ekranda hicbir ara dagilim gorunmez. */
+    var _uyduDuzelt = 0;
+    function uyduDuzelt(){
+      try{
+        if(_uyduDuzelt) cancelAnimationFrame(_uyduDuzelt);
+        let say = 0;
+        const adim = ()=>{
+          try{
+            uyduYerlestir();
+            if(++say > 120){ _uyduDuzelt = 0; return; }
+            _uyduDuzelt = requestAnimationFrame(adim);
+          }catch(e){ _uyduDuzelt = 0; _yut(e); }
+        };
+        _uyduDuzelt = requestAnimationFrame(adim);
+      }catch(e){ _yut(e); }
+    }
+    try{ window.uyduDuzelt = uyduDuzelt; }catch(e){ _yut(e); }
+    /* ACIKLAMA NEREDE (29 Eylul): halkanin ALTINDAKI boslugun
+       ORTASI -- halkanin dis kenari ile alttaki ilk arayuz ogesi
+       arasinda. Once guney dugumunun ust kenari ile disk alt
+       kenarinin ortasina yapistiriliyordu (olculdu y=631). */
+    function fxYaziYerlestir(){
+      try{
+        const y = document.getElementById('fxYazi'); if(!y) return;
+        const d = document.querySelector('.disk');
+        const r = d ? d.getBoundingClientRect() : null;
+        if(!r || !r.width) return;
+        const cx = r.left + r.width/2, cy = r.top + r.height/2;
+        const halkaR = (r.width/2) * 0.89;
+        let alt = innerHeight;
+        /* OLCU: burada degisken adi 'e' idi. TypeScript 'e'yi
+           catch(e) ile ayni kapsamda gorup global cikarimi
+           bozuyordu: 3 yeni tip hatasi (app.js 15465/15485/15528
+           "Property 'value' does not exist on HTMLElement") --
+           aradaki kodun arasi (araGiris.value) etkileniyordu.
+           Cozum: adi degistir. Ayni sebepten _e kullanmiyoruz. */
+        ['kipKisayol','solUst'].forEach(_id=>{
+          const _el = document.getElementById(_id);
+          if(_el){ const _b = _el.getBoundingClientRect();
+                 if(_b.height) alt = Math.min(alt, _b.top); }
+        });
+        const yb = y.getBoundingClientRect();
+        const yazi = yb.height || 18;   /* yazi gizliyken yukseklik 0 */
+        const merkez = (cy + halkaR + alt) / 2 - yazi/2;
+        y.style.left = '0px';
+        y.style.width = '100%';
+        y.style.top  = Math.round(Math.max(merkez, cy + halkaR + 6)) + 'px';
+      }catch(e){ _yut(e); }
+    }
 
   /* ── FX MODLARI ──
      FXMOD: '' (normal) veya bir uydunun adı. Aynı uyduya tekrar basmak
@@ -10630,6 +10868,14 @@
        kendi dongusunu birakiyor, gokyuzu jesti baslamiyor. FX
        kapaninca hepsi geri geliyor. */
     try{ document.body.classList.toggle('fx-acik', !!FXMOD); }catch(e){ _yut(e); }
+    /* NEON RENGI (29 Eylul): secili FX'in rengi govdeye --fxn olarak
+       yazilir. Semboller ve arka plan bunu okuyor (CSS 2339-2345).
+       Bosaltilirsa normal gorunum. Kapanirken de temizlenir. */
+    try{
+      const _b = FXMOD ? uyduDug[FXMOD] : null;
+      if(_b) document.documentElement.style.setProperty('--fxn', _b.dataset.fxNeon || '232,169,126');
+      else    document.documentElement.style.removeProperty('--fxn');
+    }catch(e){ _yut(e); }
     /* MOD DEĞİŞİMİNDE FX KESİLMİYOR, UZUYOR.
        Eskiden değerler anında sıfırlanıyordu: eko ve döngü kuyruğu bıçak gibi
        kopuyordu. Artık parça değişimindeki sönümleme çalışıyor — değerler
@@ -10652,6 +10898,14 @@
     try{ if(FXMOD) fxIpucuAc(); else fxIpucuKapat(false); }catch(e){ _yut(e); }
     retroUygula();            // ortak uygulayıcı: fxUygula + yatayUygula + modUygula
   }
+  try{ window.fxModGec = fxModGec; }catch(e){ _yut(e); }
+  /* TEK YONLU KAPATMA (29 Eylul): dugumun ikinci dokunusu ve
+     kanal temizligi (bkz. 17695) bunu kullanir. fxModGec'in 'ayni
+     ad gorunce kapat' davranisi bir tiklamada IKI kez tetiklenip
+     efekti aninda kapatiyordu (olculdu: FX'e basmak hicbir seyi
+     degistirmiyordu, sadece dugum 'secili' isaretini aliyordu). */
+  function fxModKapat(){ if(FXMOD) fxModGec(FXMOD); }
+  try{ window.fxModKapat = fxModKapat; }catch(e){ _yut(e); }
   /* ── AudioParam YAZIM SÜZGECİ ──
      Parmak sürüklerken saniyede 30 kez, her seferinde ~15 parametreye
      setTargetAtTime yazıyorduk: saniyede ~450 zamanlama olayı. Parmak
@@ -12279,7 +12533,7 @@
           if(_drSat) _drSat.textContent = DERI_AD[AYAR.deri|0] || 'OFF';
         }catch(e){ _yut(e); }
       }
-      try{ modAdiYaz(); zeminUygula(); moodYaz(); }catch(e){ _yut(e); }
+      try{ modAdiYaz(); zeminUygula(); moodYaz(); if(typeof uyduDuzelt === 'function') uyduDuzelt(); }catch(e){ _yut(e); }
       /* ── CARK AYNI ANDA OTEKI DUNYAYA GECIYOR ──
          Bildirilen: "ORBITAPE'e geciyorum, carkta hala RADIOTAPE
          isimleri oluyor; ne zaman bir tiklasam duzeliyor."
@@ -20755,7 +21009,13 @@
   // ● RETRO kısayolu
   UYDULAR.forEach(u=>{
     const b=uyduDug[u.fx];
-    b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); fxModGec(u.fx); });
+      /* 29 Eylul: burasi da dugum tikmasi. Yeni dugum mantigi
+         (tek yonlu ac-kapa + neon + aciklama) IX. satirdaki IIFE
+         icinde; bu eski dinleyici ikinci kez fxModGec cagiriyor
+         ve efekti ANINDA kapatiyordu (olculdu: iki cagri, FXMOD
+         bos). COZUM: burada yalnizca tarayici varsayilanini
+         engelle, secimi tek yerde yap. */
+      b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); });
   });
   ['pointerdown','mousedown','touchstart'].forEach(t=>
     UYDULAR.forEach(u=>uyduDug[u.fx].addEventListener(t, e=>e.stopPropagation(), {passive:true})));
