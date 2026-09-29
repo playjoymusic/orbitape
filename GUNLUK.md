@@ -4420,3 +4420,58 @@ düşerdi. 132 → **133/133**.
 Tip 54 uyarı (taban değişmedi). Sağlık 894/894 · arıza 18/18 ·
 senaryo 121/121 · motor 19/19 · cihaz 156/156 — 0 kırmızı.
 index.html 1.274.226 B (sınır 1.332.224).
+
+## 29 Eylul — halka adlari kucuk ekranlarda kirildi (CI kirmizisi)
+
+**NE OLDU.** 4ca8611 yerelde tamamen yesildi (1209 kontrol, 0 kirmizi)
+ama GitHub'da "Yayin (testler yesilse)" isinin KAPI adimi kirmizi
+bardi (14m 57s, exit 1). O kosunun gunlugu repo sahibi olmayan
+birlikte acilamiyor ("Must have admin rights"), yani sebebi DOGRUDAN
+okuyamadim; asagi yazilanlar olcuye dayanan tahmin degil, kapinin
+gercekten yakaladigi ve ekranlarda gorsel olarak gordugum kusurlar.
+
+**1) CAP SABITTI, KUCUK EKRANLARA SIIGMIYORDU.**
+Cap 11 px sabit yazildi; oysa halka araligi ekrana gore degisiyor.
+OLCU (9 ekran, gercek cizimden): 360x520 odasinda aralik 10.9 px,
+yatay telefonda (844x390) 6.3 px -- ikisi de 11 px'in altinda, yani
+adlar ust uste biniyordu. Ekran goruntusu bunu gosterdi: 11 ad
+birbirinin icine girmis haldeydi.
+
+**2) "EN DAR BOSLUK" KARSILTIRMASI KENDI KENDINI YENIYORDU.**
+Once cap'i bir sonraki halkanin yaricapindan olctum; ama o yaricap
+dongunun KENDI degerleriyle (esne/squeeze) yeniden hesaplaniyordu,
+yani benim "en dar bosluk" dedigim sey cizimdeki bosluk degildi.
+
+**3) ASIL HATA: HESAP KARSILA DIRILDI.**
+Halka yaricapi kareden kareye `esne` ile +/-%3 nefes aliyor ve
+komsular zit fazda, yani aralik bir karede 9 px, bir sonrakinde
+16 px oluyor. Cap buna gore her kare yeniden hesaplaniyordu ve
+adlar KARE KARE ACIK KAPANIYORDU (olculdu: ProMax'ta 5 karenin
+birinde hic ad yoktu). Cozum: konum ve olcek halkanin NEFES ALAN
+degil, SABIT (nominal) yaricapina baglandi. Titreme bitti, cakisma
+matematiksel olarak imkansiz.
+
+**SART: cap + PAY <= aralik.** Yuzde katsayi yetmiyor; olculdu
+(%78 katsayisiyla 9 ekrandan 5'inde birer cakisma). Dogrusu: cap =
+aralik - pay - 0,5. Tam esitlikte bile 2 ekranda 0,02 px asim
+vardi; yarim piksel ucuz nefes payi.
+
+**SIGMAYINCA HIC CIZILMEZ.** Yatay telefonda 11 ad 2 px'e
+sigmiyor. Ust uste binen yazi yazidan kotudur, o karede adlar
+gizlenir (ekran cevrilince geri gelir).
+
+**OLCU (9 ekran, gercek cizim degerleriyle):** 8 ekranda 11/11 ad,
+yatayda 0 (bilinçli), cakisma 0, 5 kare ust uste ad SAYISI SABIT.
+
+**4) KAPI YAKALADI: 'HARFTEK before initialization'.**
+Yutulan hata butcesi 13'e cikti (taban 9) ve su hatayi yazdi:
+HARFTEK tablosu betigin SONUNDA (19866) tanimliydi, halkaAdYaz
+onu 7950'de cagiriyordu. Betik calisirken vizLoop() SENKRON
+cagriliyor, const henuz baslatilmamis oluyor, ReferenceError
+doguyordu ve benim catch'im onu yutup gizliyordu -- yani halka
+adlari sessizce hic cizilmiyordu. Sabitler ilk kullanimdan ONCE
+tasindi. Bu, "sessiz hatayi olc" kuralinin tam calistigi andir.
+
+**KAPI:** saglik 894/894 · ariza 18/18 · senaryo 121/121 · motor
+19/19 · cihaz 156/156 · birim 133/133 · tip 54 (taban sabit).
+index.html 1.273.000 B.

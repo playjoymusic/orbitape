@@ -7946,11 +7946,75 @@
      Cizim TEK HARF SETI (bkz. HARFTEK / HARF_BIRLESTIR) -- mood
      adlariyla ayni alfabe, ayri tuval fontu yok. Yol onbellekte:
      ayni ad her karede yeniden kurulmaz. */
-  /* SABIT: cap 11 px, halkanin ust cizgisinden 2 px yukarida.
-     OLCU: 430x932'de en ic halkanin yaricapi 121, en disininki 303;
-     halka araligi 9-18 px. 11 px'lik yazi bu araliga her yerde
-     sigiyor ve ust ust binme olmuyor. */
-  const HALKA_AD_CAP = 11, HALKA_AD_PAY = 2;
+  /* Cap SABIT DEGIL, halka araligindan turer. OLCU: sabit 11 px
+     9 ekrandan 2'sinde sigmiyordu -- yatay (844x390) telefon ve
+     kucuk+tarayici (360x520) odasinda halka araligi 11 px'in altina
+     dustu (6,3 ve 10,9 px) ve adlar ust uste biniyordu. Simdi cap
+     araligin bir parcasi; taban 5 px (okunur), tavan 11 px. */
+  /* ── TEK HARF SETI: BURAYA YERLESIKLI (29 Eylul) ─────────────
+     SIRA ONEMLI. Once bu tablo 19866'da (betigin sonunda) duruyordu
+     ve halkaAdYaz onu 7950'de cagiriyordu. Betik calisirken
+     vizLoop() SENKRON cagriliyor (bkz. merkezUygula zinciri, 7152)
+     ve const henuz baslatilmamisti: 'Cannot access HARFTEK before
+     initialization' ReferenceError'i doguyor, benim catch'im onu
+     yutup gizliyordu. Saglik kontrolu 'yutulan hata butcesi'
+     yakaladi (13 yutuldu, taban 9). Sabitler simdi ilk kullanimdan
+     ONCE duruyor. */
+  const HARFTEK = {"A":[196.0,["M 61 -143 0 0 H 58 L 76 -41 H 120 L 137 0 H 196 L 134 -143 Z","M 89 -72 98 -93 107 -72 Z"]],"F":[129.0,["M 0 -143 V 0 H 58 V -59 H 108 V -91 H 58 V -99 H 129 V -143 Z"]],"R":[161.0,["M 153 -101 C 153 -128 136 -143 105 -143 H 0 V 0 H 58 V -64 H 60 L 96 0 H 161 L 124 -65 C 143 -69 153 -81 153 -101 Z","M 58 -91 V -99 H 97 C 99 -99 101 -97 101 -94 C 101 -92 100 -91 97 -91 Z"]],"O":[176.0,["M 79 -143 C 27 -143 0 -119 0 -72 C 0 -25 28 0 79 0 H 97 C 148 0 176 -25 176 -72 C 176 -119 149 -143 97 -143 Z","M 80 -99 H 96 C 112 -99 118 -92 118 -75 C 118 -58 112 -52 96 -52 H 80 C 63 -52 58 -58 58 -75 C 58 -93 63 -99 80 -99 Z"]],"B":[161.0,["M 0 -143 V 0 H 113 C 144 0 161 -15 161 -41 C 161 -57 155 -69 144 -75 C 149 -81 153 -90 153 -101 C 153 -127 134 -143 104 -143 Z","M 57 -91 V -99 H 97 C 101 -99 102 -97 102 -95 C 102 -92 101 -91 97 -91 Z","M 57 -52 V -60 H 97 C 100 -60 102 -59 102 -56 C 102 -53 101 -52 97 -52 Z"]],"E":[135.0,["M 0 -143 V 0 H 135 V -52 H 57 V -60 H 90 V -91 H 57 V -99 H 118 V -143 Z"]],"T":[145.0,["M 0 -143 V -99 H 44 V 0 H 101 V -99 H 145 V -143 Z"]],"S":[164.0,["M 45 -143 C 16 -143 0 -128 0 -102 C 0 -76 15 -60 40 -60 H 110 C 113 -60 114 -59 114 -56 C 114 -53 113 -52 110 -52 H 4 V 0 H 116 C 147 0 164 -15 164 -44 C 164 -73 148 -91 121 -91 H 54 C 51 -91 50 -92 50 -95 C 50 -97 51 -99 54 -99 H 158 V -143 Z"]],"M":[173.0,["M 109 -143 87 -84 64 -143 H 0 V 0 H 58 V -83 L 76 -37 H 99 L 115 -81 V 0 H 173 V -143 Z"]],"I":[58.0,["M 0 -143 V 0 H 58 V -143 Z"]],"N":[159.0,["M 0 -143 V 0 H 57 V -89 L 109 0 H 159 V -143 H 101 V -74 L 61 -143 Z"]],"C":[157.0,["M 71 -143 C 27 -143 0 -115 0 -70 C 0 -26 26 0 70 0 H 157 V -52 H 78 C 66 -52 58 -62 58 -76 C 58 -90 65 -99 78 -99 H 156 V -143 Z"]],"L":[126.0,["M 0 -143 V 0 H 126 V -52 H 58 V -143 Z"]],"Y":[152.0,["M 0 -143 H 58 L 76 -104 L 94 -143 H 152 L 105 -58 V 0 H 47 V -58 Z"]],"D":[180.0,["M 0 -143 V 0 H 110 C 154 0 180 -26 180 -70 C 180 -115 153 -143 109 -143 Z","M 58 -99 H 102 C 116 -99 122 -91 122 -75 C 122 -59 116 -52 102 -52 H 58 Z"]],"K":[182.0,["M 58 -143 H 0 V 0 H 58 V -41 L 66 -48 L 108 0 H 182 L 109 -85 L 177 -143 H 130 L 58 -82 Z"]],"H":[149.0,["M 58 -143 H 0 V 0 H 58 V -67 H 92 V 0 H 149 V -143 H 92 V -97 H 58 Z"]],"U":[155.0,["M 98 -143 V -68 C 98 -56 94 -52 81 -52 H 73 C 63 -52 58 -57 58 -68 V -143 H 0 V -51 C 0 -18 18 0 50 0 H 105 C 138 0 155 -18 155 -51 V -143 Z"]],"J":[117.0,["M 60 -143 V -61 C 60 -54 58 -52 50 -52 H 0 V 0 H 68 C 100 0 117 -18 117 -51 V -143 Z"]],"Z":[152.0,["M 148 -103 V -143 H 0 V -99 H 78 L 0 -54 V 0 H 152 V -52 H 59 Z"]],"G":[182.0,["M 71 -143 C 26 -143 0 -116 0 -71 C 0 -27 26 0 70 0 H 134 C 165 0 182 -16 182 -45 C 182 -72 168 -91 139 -91 H 84 V -60 H 127 C 131 -60 132 -59 132 -56 C 132 -53 131 -52 127 -52 H 79 C 66 -52 57 -61 57 -76 C 57 -91 65 -99 79 -99 H 137 V -143 Z"]],"&":[144.0,["M 95 -143 H 57 C 27 -143 8 -127 8 -101 C 8 -90 12 -81 17 -75 C 6 -69 0 -57 0 -41 C 0 -15 17 0 48 0 H 144 V -52 H 105 L 110 -60 H 143 V -91 H 130 L 144 -112 H 109 L 96 -91 H 64 C 60 -91 59 -92 59 -95 C 59 -97 60 -99 64 -99 H 95 Z","M 59 -56 C 59 -59 61 -60 64 -60 H 78 L 73 -52 H 64 C 60 -52 59 -53 59 -56 Z"]],"X":[176.0,["M 70 -143 H 0 L 55 -69 L 1 0 H 41 L 74 -44 L 106 0 H 176 L 117 -79 L 167 -143 H 127 L 98 -105 Z"]],"P":[153.0,["M 58 0 V -60 H 112 C 138 -60 153 -75 153 -101 C 153 -128 136 -143 105 -143 H 0 V 0 Z","M 58 -91 V -99 H 95 C 98 -99 99 -97 99 -95 C 99 -92 98 -91 95 -91 Z"]],"W":[244.0,["M 137 -143 H 107 L 81 -48 L 56 -143 H 0 L 37 0 H 100 L 122 -84 L 146 0 H 210 L 244 -143 H 188 L 165 -46 Z"]]};
+;
+  /* BOSLUK: gercek olcum. ' & ' ve ' &' arasi en yakin iki glifin
+     farki medyan harf araligindan (28) buyuk: 96. Tek deger. */
+  const HARF_ARA = 28;
+  const HARF_BOSLUK = 96;
+  /* BIRLESTIR: kelimeyi harflerden kurar. Hicbir harf yoksa null
+     doner -- cagiran taraf metne duser (liste disi yazi, soru
+     cumlesi gibi). Uretilen yol ayni koordinat sisteminde: cap
+     143, taban 0; genislik `en` viewBox icin. */
+  function HARF_BIRLESTIR(kelime){
+    const k = String(kelime || '').toUpperCase();
+    if(!k) return null;
+    let x = 0, par = [], bilinmeyen = 0;
+    for(let i=0; i<k.length; i++){
+      const ch = k[i];
+      if(ch === ' '){ x += HARF_BOSLUK; continue; }
+      const h = HARFTEK[ch];
+      if(!h){ bilinmeyen++; continue; }
+      for(let j=0; j<h[1].length; j++) par.push(HARF_KAYDIR(h[1][j], x));
+      x += h[0] + HARF_ARA;
+    }
+    if(!par.length || bilinmeyen) return null;
+    x -= HARF_ARA;
+    return { d: par.join(' '), w: x / HARF_UPM };
+  }
+  const HARF_UPM = 200;
+  /* KAYDIR: yalnizca X ekseni. Tuvalde dikey kayma bir harfi baska
+     bir harften ayirirdi; bu yuzden komut tipi biliniyor: M/L/C
+     sayilari (x,y) ikilisi, H tek x, V tek y. Sayilar zaten kisa
+     yazili (virgulsuz ondalik) -- byte kazanci, gorsel degisim yok.
+     OLCU: 27/27 kelimenin cap'i 143, tabani 0. */
+  const HARF_KAYDIR = (yol, dx)=>{
+    const tk = yol.match(/[MCHVLZ]|-?[0-9.]+/g) || [];
+    const c = []; let k = null;
+    for(let i=0; i<tk.length; i++){
+      const t = tk[i];
+      if(/^[MCHVLZ]$/.test(t)){ k = t; c.push(t); continue; }
+      const v = parseFloat(t);
+      if(k === 'M' || k === 'L' || k === 'C'){ c.push(HARF_S(v + dx), HARF_S(parseFloat(tk[++i]))); }
+      else if(k === 'H'){ c.push(HARF_S(v + dx)); }
+      else { c.push(HARF_S(v)); }
+    }
+    return c.join(' ');
+  };
+  /* HARF_S: ondalik sadelestirme. Tam sayiysa '42', degilse '42.5'. */
+  const HARF_S = (n)=>{ const v = Math.round(n*10)/10;
+    return (v === Math.round(v)) ? String(Math.round(v)) : String(v); };
+  const HALKA_AD_PAY = 2, HALKA_AD_EN_FAZLA = 11, HALKA_AD_EN_AZ = 6;
+  /* EN AZ bu kadar bosluk yoksa hic cizilmez. Olcu: yatay telefonda
+     (844x390) disk 118 px, 11 halkanin en dar araligi 2 px. 11 adi
+     2 px'e sikistirmak mumkun degil; ust uste binen yazi yazidan
+     kotudur, o yuzden o karede adlar gizlenir. Kapilarin disinda
+     bir ekran degil, gercek bir durum: ekran cevrilince gecer. */
+
   const _halkaAdEn = {};
   const _halkaAdYol = {};
   function _halkaAdGetir(ad){
@@ -7979,19 +8043,28 @@
      `typeof vctx` 'undefined' donuyor ve fonksiyon sessizce cikiyordu
      (Path2D dolu, ekranda tek piksel yok). Bu yuzden tuval ve merkez
      ACIKÇA parametreyle geliyor: gizli kapsam varsayimi yok. */
-  function halkaAdYaz(g, ox, oy, ad, rR, don, rnk, onekin, a){
+  function halkaAdYaz(g, ox, oy, ad, rR, ara, don, rnk, onekin, a){
     try{
       if(!g) return;
       const yol = _halkaAdGetir(ad);
       if(!yol) return;
-      /* Cap ve yerlesim TEK KAYNAKTAN, SABIT. OLCU: once cap halka
-         araligindan olculuyordu (bir sonraki halkanin yaricapi), ama
-         o yaricap dongunun KENDI degerleriyle (esne/squeeze) yeniden
-         hesaplaniyordu; 11 halka icinde biri (AFROBEATS) bir ustteki
-         (RNB & FUNK) ile ust uste biniyordu. Simdi cap 11 px sabit ve
-         ad halkanin ust cizgisinin tam 2 px ustunde duruyor: halka
-         donse de ad yerinden kalkmiyor. */
-      const cap = HALKA_AD_CAP;
+      /* Cap ve yerlesim TEK KAYNAKTAN. Cap halka ARALIGINDAN turer
+         (nominal aralik: dongudeki olcek degerleri degisse de bu
+         sabit kalir, yoksa ad halkayi takip edip kayardi). Ad
+         halkanin ust cizgisinin tam 2 px ustunde duruyor; halka donse
+         de yerinden kalkmiyor. */
+      /* Cap, en dar araliktan PAY DUSULerek bulunur -- yuzde gibi
+         bir olcu DEGIL. SART: cap + PAY <= aralik, aksi halde alttaki
+         yazi ustteki halkanin cizgisine biner. OLCU: %78 katsayisiyla
+         9 ekrandan 5'inde birer cakisma vardi (ProMax: cap 7.0 + pay
+         2 = 9.0, bosluk 9.0 -- bir piksel pay yetmiyordu). */
+      /* +0,5 px nefes: yuvarlama. Tam esitlikte 9 ekrandan 2'sinde
+         cap+pay boslugu 0,02 px asiyordu -- gorunmez ama olcumde
+         kirmizi. Yarim piksel ucuz, hicbir sey degismiyor. */
+      const cap = Math.min(HALKA_AD_EN_FAZLA, ara - HALKA_AD_PAY - 0.5);
+      /* Sigmazsa hic cizme (ustteki yorum). Taban 6 px'in altinda
+         yazi okunmuyor; sessizce birakmak yerine gizlemek. */
+      if(cap < HALKA_AD_EN_AZ) return;
       const o = cap / 143;                 /* cap 143 harf birimi */
       const rYazi = rR + HALKA_AD_PAY;
       if(_halkaAdEn[ad] === undefined) _halkaAdEn[ad] = _halkaAdGenislik(ad);
@@ -14773,6 +14846,19 @@
        kalanlar dönmeye devam ediyor — hangisinin seçili olduğu tek
        bakışta belli. Seçiliyken kalanlar gölgede kalıyor. */
     const _adlar = halkaAdlar(), _aileMi = halkaAilesiMi(), _ic = halkaIc(), _ara = halkaAra();
+    /* ── HALKA ADLARI: NOMİNAL HALKA ÜZERİNDE ─────────────────
+       Konum ve olcek, halkanin NEFES ALAN yaricapi yerine sabit
+       (nominal) yaricapina baglanir.
+       OLCU: once gercek en dar bosluk kullanildi; halka yaricapi
+       kareden kareye `esne` ile +/-%3 nefes aliyor, iki komsu halka
+       zit fazda oldugu icin aralik bir karede 9 px, bir sonrakinde
+       16 px oluyor. Ad olcusu bu degisime gore her kare yeniden
+       hesaplandi ve adlar KARE KARE ACIK KAPANIYORDU (olculdu:
+       ProMax'ta olcum yakaladi, ekran goruntusu yakalayamadigi bir
+       karede hic ad yoktu). Sabit konum: ne titreme, ne cakisma
+       mumkun degil. Bedeli: halka nefes alirken ad en fazla
+       yaricapindaki %3 kadar (dis halkada ~4 px) halkadan ayrilir. */
+    const _nomAra = R*_ara*squeeze;      // iki komsu halkanin sabit araligi
     for(let k=0;k<_adlar.length;k++){
       vctx.save(); vctx.translate(cx,cy);
       const _mAd = _adlar[k];
@@ -14886,7 +14972,10 @@
          icinde cizilirse konum iki kez kayar ve yazi ekran disinda
          kalir (olculdu: Path2D dolu, ekranda tek piksel yok). */
       vctx.restore();
-      try{ halkaAdYaz(vctx, cx, cy, _mAd, rR, _dondur, _rnk, _secili || _vurgu2, a); }catch(e){ _yut(e); }
+      /* Ad, halkanin SABIT (nominal) yaricapinda durur -- bkz. yukarida.
+         Boylece konum kare kare degismez. */
+      const _nomR = R*(_ic + k*_ara)*squeeze;
+      try{ halkaAdYaz(vctx, cx, cy, _mAd, _nomR, _nomAra, _dondur, _rnk, _secili || _vurgu2, a); }catch(e){ _yut(e); }
     }
 
     /* ── SADE HALKA: PARLAMA YOK ──
@@ -19831,54 +19920,6 @@
      artik HARFlerden birlestiriliyor (BIRLESTIR). Olcu: yeni
      genislikler orijinalin %1,6'i icinde; piksel karsilastirmasi
      test/saglik.js'te. Aralik 28 birim olculdu (medyan). */
-  const HARFTEK = {"A":[196.0,["M 61 -143 0 0 H 58 L 76 -41 H 120 L 137 0 H 196 L 134 -143 Z","M 89 -72 98 -93 107 -72 Z"]],"F":[129.0,["M 0 -143 V 0 H 58 V -59 H 108 V -91 H 58 V -99 H 129 V -143 Z"]],"R":[161.0,["M 153 -101 C 153 -128 136 -143 105 -143 H 0 V 0 H 58 V -64 H 60 L 96 0 H 161 L 124 -65 C 143 -69 153 -81 153 -101 Z","M 58 -91 V -99 H 97 C 99 -99 101 -97 101 -94 C 101 -92 100 -91 97 -91 Z"]],"O":[176.0,["M 79 -143 C 27 -143 0 -119 0 -72 C 0 -25 28 0 79 0 H 97 C 148 0 176 -25 176 -72 C 176 -119 149 -143 97 -143 Z","M 80 -99 H 96 C 112 -99 118 -92 118 -75 C 118 -58 112 -52 96 -52 H 80 C 63 -52 58 -58 58 -75 C 58 -93 63 -99 80 -99 Z"]],"B":[161.0,["M 0 -143 V 0 H 113 C 144 0 161 -15 161 -41 C 161 -57 155 -69 144 -75 C 149 -81 153 -90 153 -101 C 153 -127 134 -143 104 -143 Z","M 57 -91 V -99 H 97 C 101 -99 102 -97 102 -95 C 102 -92 101 -91 97 -91 Z","M 57 -52 V -60 H 97 C 100 -60 102 -59 102 -56 C 102 -53 101 -52 97 -52 Z"]],"E":[135.0,["M 0 -143 V 0 H 135 V -52 H 57 V -60 H 90 V -91 H 57 V -99 H 118 V -143 Z"]],"T":[145.0,["M 0 -143 V -99 H 44 V 0 H 101 V -99 H 145 V -143 Z"]],"S":[164.0,["M 45 -143 C 16 -143 0 -128 0 -102 C 0 -76 15 -60 40 -60 H 110 C 113 -60 114 -59 114 -56 C 114 -53 113 -52 110 -52 H 4 V 0 H 116 C 147 0 164 -15 164 -44 C 164 -73 148 -91 121 -91 H 54 C 51 -91 50 -92 50 -95 C 50 -97 51 -99 54 -99 H 158 V -143 Z"]],"M":[173.0,["M 109 -143 87 -84 64 -143 H 0 V 0 H 58 V -83 L 76 -37 H 99 L 115 -81 V 0 H 173 V -143 Z"]],"I":[58.0,["M 0 -143 V 0 H 58 V -143 Z"]],"N":[159.0,["M 0 -143 V 0 H 57 V -89 L 109 0 H 159 V -143 H 101 V -74 L 61 -143 Z"]],"C":[157.0,["M 71 -143 C 27 -143 0 -115 0 -70 C 0 -26 26 0 70 0 H 157 V -52 H 78 C 66 -52 58 -62 58 -76 C 58 -90 65 -99 78 -99 H 156 V -143 Z"]],"L":[126.0,["M 0 -143 V 0 H 126 V -52 H 58 V -143 Z"]],"Y":[152.0,["M 0 -143 H 58 L 76 -104 L 94 -143 H 152 L 105 -58 V 0 H 47 V -58 Z"]],"D":[180.0,["M 0 -143 V 0 H 110 C 154 0 180 -26 180 -70 C 180 -115 153 -143 109 -143 Z","M 58 -99 H 102 C 116 -99 122 -91 122 -75 C 122 -59 116 -52 102 -52 H 58 Z"]],"K":[182.0,["M 58 -143 H 0 V 0 H 58 V -41 L 66 -48 L 108 0 H 182 L 109 -85 L 177 -143 H 130 L 58 -82 Z"]],"H":[149.0,["M 58 -143 H 0 V 0 H 58 V -67 H 92 V 0 H 149 V -143 H 92 V -97 H 58 Z"]],"U":[155.0,["M 98 -143 V -68 C 98 -56 94 -52 81 -52 H 73 C 63 -52 58 -57 58 -68 V -143 H 0 V -51 C 0 -18 18 0 50 0 H 105 C 138 0 155 -18 155 -51 V -143 Z"]],"J":[117.0,["M 60 -143 V -61 C 60 -54 58 -52 50 -52 H 0 V 0 H 68 C 100 0 117 -18 117 -51 V -143 Z"]],"Z":[152.0,["M 148 -103 V -143 H 0 V -99 H 78 L 0 -54 V 0 H 152 V -52 H 59 Z"]],"G":[182.0,["M 71 -143 C 26 -143 0 -116 0 -71 C 0 -27 26 0 70 0 H 134 C 165 0 182 -16 182 -45 C 182 -72 168 -91 139 -91 H 84 V -60 H 127 C 131 -60 132 -59 132 -56 C 132 -53 131 -52 127 -52 H 79 C 66 -52 57 -61 57 -76 C 57 -91 65 -99 79 -99 H 137 V -143 Z"]],"&":[144.0,["M 95 -143 H 57 C 27 -143 8 -127 8 -101 C 8 -90 12 -81 17 -75 C 6 -69 0 -57 0 -41 C 0 -15 17 0 48 0 H 144 V -52 H 105 L 110 -60 H 143 V -91 H 130 L 144 -112 H 109 L 96 -91 H 64 C 60 -91 59 -92 59 -95 C 59 -97 60 -99 64 -99 H 95 Z","M 59 -56 C 59 -59 61 -60 64 -60 H 78 L 73 -52 H 64 C 60 -52 59 -53 59 -56 Z"]],"X":[176.0,["M 70 -143 H 0 L 55 -69 L 1 0 H 41 L 74 -44 L 106 0 H 176 L 117 -79 L 167 -143 H 127 L 98 -105 Z"]],"P":[153.0,["M 58 0 V -60 H 112 C 138 -60 153 -75 153 -101 C 153 -128 136 -143 105 -143 H 0 V 0 Z","M 58 -91 V -99 H 95 C 98 -99 99 -97 99 -95 C 99 -92 98 -91 95 -91 Z"]],"W":[244.0,["M 137 -143 H 107 L 81 -48 L 56 -143 H 0 L 37 0 H 100 L 122 -84 L 146 0 H 210 L 244 -143 H 188 L 165 -46 Z"]]};
-;
-  /* BOSLUK: gercek olcum. ' & ' ve ' &' arasi en yakin iki glifin
-     farki medyan harf araligindan (28) buyuk: 96. Tek deger. */
-  const HARF_ARA = 28;
-  const HARF_BOSLUK = 96;
-  /* BIRLESTIR: kelimeyi harflerden kurar. Hicbir harf yoksa null
-     doner -- cagiran taraf metne duser (liste disi yazi, soru
-     cumlesi gibi). Uretilen yol ayni koordinat sisteminde: cap
-     143, taban 0; genislik `en` viewBox icin. */
-  function HARF_BIRLESTIR(kelime){
-    const k = String(kelime || '').toUpperCase();
-    if(!k) return null;
-    let x = 0, par = [], bilinmeyen = 0;
-    for(let i=0; i<k.length; i++){
-      const ch = k[i];
-      if(ch === ' '){ x += HARF_BOSLUK; continue; }
-      const h = HARFTEK[ch];
-      if(!h){ bilinmeyen++; continue; }
-      for(let j=0; j<h[1].length; j++) par.push(HARF_KAYDIR(h[1][j], x));
-      x += h[0] + HARF_ARA;
-    }
-    if(!par.length || bilinmeyen) return null;
-    x -= HARF_ARA;
-    return { d: par.join(' '), w: x / HARF_UPM };
-  }
-  const HARF_UPM = 200;
-  /* KAYDIR: yalnizca X ekseni. Tuvalde dikey kayma bir harfi baska
-     bir harften ayirirdi; bu yuzden komut tipi biliniyor: M/L/C
-     sayilari (x,y) ikilisi, H tek x, V tek y. Sayilar zaten kisa
-     yazili (virgulsuz ondalik) -- byte kazanci, gorsel degisim yok.
-     OLCU: 27/27 kelimenin cap'i 143, tabani 0. */
-  const HARF_KAYDIR = (yol, dx)=>{
-    const tk = yol.match(/[MCHVLZ]|-?[0-9.]+/g) || [];
-    const c = []; let k = null;
-    for(let i=0; i<tk.length; i++){
-      const t = tk[i];
-      if(/^[MCHVLZ]$/.test(t)){ k = t; c.push(t); continue; }
-      const v = parseFloat(t);
-      if(k === 'M' || k === 'L' || k === 'C'){ c.push(HARF_S(v + dx), HARF_S(parseFloat(tk[++i]))); }
-      else if(k === 'H'){ c.push(HARF_S(v + dx)); }
-      else { c.push(HARF_S(v)); }
-    }
-    return c.join(' ');
-  };
-  /* HARF_S: ondalik sadelestirme. Tam sayiysa '42', degilse '42.5'. */
-  const HARF_S = (n)=>{ const v = Math.round(n*10)/10;
-    return (v === Math.round(v)) ? String(Math.round(v)) : String(v); };
   const GEZ_CIZIM = {"meta":{"upm":200,"cap":0.715},"ad":{}};
   /* ONCEki GEZ_CIZIM.ad tablosu kaldirildi; ayni anahtarlar artik
      HARF_BIRLESTIR ile uretiliyor. */
