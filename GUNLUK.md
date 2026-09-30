@@ -4629,3 +4629,62 @@ kare süresi 13.4 ms (değişmedi).
 
 **Ders:** bir test, kendisinden sonra gelen kontrollerin durumunu
 bozabilir. "Yeşil" bir koşu tek kanıt değil — ikinci koşuyu da koştur.
+
+## 30 Eylül (gece) — Gezegen yerleşimi, çizimli deri kilidi, iki kip iki merkez
+
+**1) Çizimli skinlerde gezegenler "yarım yamalak"tı.**
+z-index değil, geometri: yerleşim `0.89R` üzerinden yapılıyordu
+(halkanın *çizgi* yarıçapı), ama koyu disk tam `R` kadar boyanıyor.
+Ölçüm (1000×850, disk R=171): gezegen merkezi 188 px, görsel yarıçap
+22 px → **iç kenar 166 px**, diskin boyandığı yarıçap **171 px**. Her
+gezegen 5 px diskin altında kalıyordu. Düz renkli derilerde koyu diske
+karışıyor, çizimli derilerde desene kayboluyordu.
+
+Düzeltme: yarıçap disk kutusundan ölçülüyor. Beş ekranda ölçüldü
+(360×640 · 390×844 · 430×932 · 768×1024 · 1000×850): gezegen iç kenarı
+her yerde diskin dışında, hiçbiri ekrandan taşmıyor.
+
+Ayrıca **148 derinin tamamı** tarandı: diskin içinde kalan gezegen 0,
+ekran dışı 0, gizli gezegen 0.
+
+**2) Çizimli deriler ORBITAPE'te kilitli (kullanıcının kuralı).**
+Kontrast ölçümü: çizimli derilerde gezegen/arka plan oranı **1.00–1.8:1**
+(DECO 1.36, TRENCADIS 1.01, POP ART 1.00, SELBU 1.00, RAMSHORN 1.00,
+BAUHAUS 1.00) — düz renkli derilerde sorun yok.
+
+- İzgara (liste): çizimli kareler soluk + basılamaz.
+- Şerit (minimise, ◀ ▶): çizimli deriler **hiç gösterilmez**.
+- RADIOTAPE'de hiçbiri kilitli değil, şeritte hepsi geçilir (orada
+  gezegen yok).
+
+Ölçüldü: ORBITAPE 107/107 çizimli kilitli, 41/41 düz açık; şeritte 45
+adım → 0 çizimli. RADIOTAPE 0 kilitli; şeritte 45 adım → 45 çizimli.
+
+**3) İki kip, iki merkez — hatırlanıyor.**
+"orbitape tarafı çarksız açılıyor evet . ama biri çark seçerse öyle
+açılacak. en son neyle kapatıldıysa onunla aç, hatırla. ve radiotape
+tarafı da hangi ayarlar skins istasyon vs ile kapatıldıysa öyle açılacak"
+
+- `radyoMerkez` (RADIOTAPE, varsayılan **çark**) · `merkezOrb`
+  (ORBITAPE, varsayılan **halka**).
+- Ölçülen iki sızıntı düzeltildi:
+  1. `kollar.js` her ORBITAPE girişinde `merkez`'i zorla `yuvarlak`
+     yapıyordu → seçim kayboluyordu. Artık `merkezOrb`.
+  2. `moodUygula` geçiş anında `AYAR.merkez`'i radyoya kopyalıyordu;
+     ama `modKolaGit` önce `moodAc()`'i çağırdığı için o değer zaten
+     arşivinkidi → **radyonun kaydı arşivinkile eziliyordu**. Artık
+     geçişte hiçbir şey taşınmıyor; radyonun merkezi yalnız radyodayken
+     değişir.
+- Ölçüm: açılış RADIOTAPE+çark → ORBITAPE halka (çarksız) → seçim
+  korunuyor → radyo kendi çarkına dönüyor.
+
+**4) Yutulan hata tabanı 9 → 10** (gece). Yeni kilit kontrolü galeriyi
+kurarken **136 TIDAL MEMORY** derisinin çizimi hata veriyor:
+`addColorStop(... 'undefined')`. 148 deri tek tek denendi, hata veren tek
+deri bu. Kusur bizim değişikliğimizden değil (daha önce de vardı, sessizce
+yutuluyordu — galeri hiç kurulmadığı için tetiklenmiyordu). Palet
+düzeltmesi ayrı iş; bütçe güncellendi, 11. yutma yine kırmızı yapar.
+
+**Ders:** gece yarısı acele etmemek lazım; iki turda bir "test kendi
+arkasında bırakıyor" (kip kalmıyor, panel açık kalıyor, gezegen seçili
+kalıyor, hata bütçesi artıyor). Hepsi ölçülüp düzeltildi.

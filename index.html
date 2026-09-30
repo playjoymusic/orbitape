@@ -2360,6 +2360,19 @@
      her kurede: ince koyu dis cizgi + disarida yumusak golge.
      Kutunun 44 px'i degil, KURENIN 26 px'i cevrelenir --
      kenari kutunun kenarina degil, gezegene yakinlasir. */
+  /* ── KOYU ZEMINDE ACIK KENAR (30 Eylul) ─────────────────────────
+     AY'in ayni sorunuun tersi: koyu kizil gezegen (ANA FX) koyu
+     desenin icinde kayboluyor. OLCU (canli, 1000x850): gezegen
+     ile arkasindaki 3.2 yaricaplik pikselin kontrasti
+       DECO 1.36 · TRENCADIS 1.01 · POP ART 1.00 · SELBU 1.00
+       · RAMSHORN 1.00 · BAUHAUS 1.00 · HALFTONE 1.34
+     Yani cizimli derilerde gezegen arka planla AYNI renkte.
+     COZUM: koyu zeminde ince ACIK kenar. Acik zeminde koyu
+     kenar (asagida) -- ikisi birlikte: her zeminde bir kenar
+     var, kenarin rengi zeminin tersi. */
+  body:not(.deri-acik) .uydu .nk{
+    box-shadow:0 0 0 1.25px rgba(238,236,228,.40),
+      0 2px 8px rgba(0,0,0,.45), inset 0 0 6px rgba(0,0,0,.55);}
   body.deri-acik .uydu .nk{
     box-shadow:0 0 0 1.25px rgba(24,26,32,.62),
       0 2px 8px rgba(24,26,32,.34), inset 0 0 6px rgba(0,0,0,.55);}
@@ -10904,10 +10917,25 @@
            -> dort yaricap KESIN esittir.
         */
         const cx = r.left + r.width/2, cy = r.top + r.height/2;
-        const HALKA_DIS_ORAN = 0.89;   /* cizimle ayni (HALKA_DIS) */
-        const halkaR = (r.width/2) * HALKA_DIS_ORAN;
+        /* ── YERLESIM 0.89R DEGIL, TAM R (30 Eylul) ───────────────
+           OLCU (1000x850, disk R=171): cizimli derilerde (DECO,
+           TRENCADIS, POP ART, SELBU, RAMSHORN, BAUHAUS) gezegenler
+           yariim yamalak ya da hic yok; duz renkli derilerde
+           (HALFTONE, VECTOR) sorun yok.
+           SEBEP: yerlesim `0.89R` uzerinden hesaplaniyordu (hala
+           cizilmis halka cizgilerinin diski). Ama KOYU DİSK tam
+           `R` kadar boyanir -- 0.89R yalniz cizgilerin oturdugu
+           yerdir. Olculen: gezegen merkezi 188 px, gorsel yaricap
+           22 px -> IC KENAR 166 px; diskin boyandigi yaricap 171 px.
+           Yani her gezegen 5 px diskin ALTINDA kaliyor. Duz
+           renkli deride koyu diske karisiyor, cizimli deride
+           desenin icinde kayboluyor.
+           DUZELTME: yaricap disk KUTUSUNUN tam yaricapindan
+           olculuyor. Daha fazla uzaklasmaya gerek yok: 4 px +
+           gezegenin gorsel yaricapi. */
+        const R = r.width/2;
         const DUG = 44, PAY = 14;
-        const rr = Math.min(Math.max(halkaR + DUG/2 + PAY, 0),
+        const rr = Math.min(Math.max(R + PAY + DUG/2, 0),
                            cx - DUG/2 - 4, innerWidth - cx - DUG/2 - 4,
                            cy - DUG/2 - 4, innerHeight - cy - DUG/2 - 4);
         const N = Math.round(rr);
@@ -12106,7 +12134,17 @@
        donuste sakladigini GERI VERIYOR -- bkz. moodUygula yorumu.
        Kilit ACILIRSA (deriKilit:true) bu zorlama devre disi kalir,
        deri eskisi gibi tek ve tum uygulamada sabit kalir. */
-    deriKilit:false, radyoDeri:0, radyoMerkez:'yuvarlak',
+    /* ── İKİ KİP, İKİ MERKEZ (30 Eylul) ───────────────────────────
+       Kullanıcının kuralı: "orbitape tarafı çarksız açılıyor evet,
+       ama biri çark seçerse öyle açılacak. en son neyle kapatıldıysa
+       onunla aç, hatırla. ve radiotape tarafı da hangi ayarlar
+       skins istasyon vs ile kapatıldıysa öyle açılacak."
+       radyoMerkez: RADIOTAPE'in ortadaki aleti (varsayılan ÇARK).
+       merkezOrb  : ORBITAPE'inki (varsayılan HALKA = çarksız).
+       Tek 'merkez' alanı varken biri diğerini eziyordu: radyoya
+       dönünce çark kayboluyordu. */
+    deriKilit:false, radyoDeri:0, radyoMerkez:'cark',
+    merkezOrb:'yuvarlak',
     /* SEMBOL SPIN (17 Eylul): varsayilan KAPALI. Acikken sag ustteki
        3 sembol eski soyut oyunu oynar (rastgele donme + ucluk
        kutlamasi + tik'te carkiCevir). Kapaliyken (varsayilan) --
@@ -12294,6 +12332,9 @@
          && _a.radyoDeri <= 148) AYAR.radyoDeri = _a.radyoDeri|0;
       if(_a.radyoMerkez === 'cark' || _a.radyoMerkez === 'faz'
          || _a.radyoMerkez === 'yuvarlak') AYAR.radyoMerkez = _a.radyoMerkez;
+      /* 30 Eylul: ORBITAPE'in kendi merkez kaydi (ayarlar > CENTER). */
+      if(_a.merkezOrb === 'cark' || _a.merkezOrb === 'yuvarlak')
+         AYAR.merkezOrb = _a.merkezOrb;
 
       if(typeof _a.yildiz === 'number' && _a.yildiz >= 0
          && _a.yildiz < 5) AYAR.yildiz = _a.yildiz|0;
@@ -12589,7 +12630,17 @@
            bkz. moodUygula(true) notu) uzerine yazilmiyor. */
         if(!AYAR.deriKilit && _oncekiDunya !== 'lib'){
           AYAR.radyoDeri = AYAR.deri|0;
-          AYAR.radyoMerkez = AYAR.merkez || 'yuvarlak';
+          /* 30 EYLUL: `AYAR.radyoMerkez` ARTIK BURAYA YAZILMIYOR.
+             OLCU: bu satir `AYAR.merkez`'i radyoya kopyaliyordu, ama
+             `modKolaGit` once `moodAc()`'i cagirip SONRA kendi
+             `AYAR.merkez = merkezOrb` yazdigindan, bu satira gelin-
+             de AYAR.merkez artik ORBITAPE'inkidi. Sonuc: radyonun
+             kaydi arsivin degeriyle eziliyordu (olculdu: radyo
+             'cark' iken ORBITAPE'ye girip cikince radyoMerkez
+             'yuvarlak' oldu, sonra RADIOTAPE'de cark kayboldu).
+             Dogru kural: radyonun merkezi YALNIZ radyodayken
+             (ayarlar > CENTER, veya kullanici merkezUygula ile)
+             degisir. Gecis aninda hicbir sey tasinmaz. */
           AYAR.deri = 0;
           /* CARK ORBITAPE'DE OTOMATIK ACILMAZ (27 Eylul, kullanicinin
             sozu: "orbitape te bence cark ilk acilmasin. skins'ler
@@ -12600,11 +12651,11 @@
             gezegen ikonu (247-277) ust uste biniyordu. Simdi HALKA.
             Radyo tarafi kendi kayitli merkezini koruyor (radyoMerkez)
             ve istenirse cark yine skins/ayar sayfasindan secilir. */
-            /* 29 Eylul: JOYTAPE kalkti; ORBITAPE merkezi HALKA kalir. */
-            /* 29 Eylul: artik zorlanmiyor -- secim kullaniciya ait
-               (skins'ten secmisse o kalir; secmediyse varsayilan
-               gelir). Once hep 'yuvarlak' yaziliyordu, secimi
-               siliyordu. */
+            /* 30 Eylul: ORBITAPE KENDİ KAYITLI merkezini açar
+               (merkezOrb; ayarlar > CENTER). Varsayılan HALKA
+               (çarksız) — kullanıcı çark seçtiyse o seçimle açılır.
+               Radyonun merkezi ayrıdır ve buradan etkilenmez. */
+            if(!AYAR.deriKilit) AYAR.merkez = AYAR.merkezOrb || 'yuvarlak';
         }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
@@ -12650,7 +12701,7 @@
            hic dokunulmuyor -- eskisi gibi sabit kaliyor. */
         if(!AYAR.deriKilit){
           AYAR.deri = AYAR.radyoDeri|0;
-            AYAR.merkez = AYAR.radyoMerkez || 'yuvarlak';
+            AYAR.merkez = AYAR.radyoMerkez || 'cark';
         }
         try{ fxNormale(); }catch(e){ _yut(e); }
         try{ AKTIF_MOD = null; }catch(e){ _yut(e); }
@@ -20215,6 +20266,8 @@
         if(el6) el6.textContent = Y(HALKA_AD[AYAR.halkaBoy|0] || 'MEDIUM');
         const el7 = kut.querySelector('.sat[data-ayar="merkez"] .durum');
         if(el7) el7.textContent = Y(MERKEZ_AD[(AYAR.merkez==='cark')?1:0]);
+        /* Kutu yazilirken hangi kipte oldugumuzu da yaziyoruz: ayar
+           paneli her iki kipte de acilabiliyor. */
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
            yokken menude yer tutan bir satir, menuyu uzatmaktan
            baska is yapmaz (ADVANCED acik olsa bile). SEND DIAGNOSTICS
@@ -20541,7 +20594,16 @@
         /* Tek satir, iki secenek. Secim kalici: ayarKaydet() diske
            yaziyor, acilista _a.merkez geri geliyor (bkz. 29 Eylul
            notu: varsayilan artik HALKA, zorlama kaldirildi). */
-        AYAR.merkez = (AYAR.merkez === 'cark') ? 'yuvarlak' : 'cark';
+        /* 30 Eylul: bu satır AÇIK OLAN KİPİN merkezini yazar.
+           ORBITAPE'de merkezOrb'ı, RADIOTAPE'de radyoMerkez'i.
+           Öbür kipin kaydına dokunulmaz. */
+        if(document.body.classList.contains('mood')){
+          AYAR.merkezOrb = (AYAR.merkezOrb === 'cark') ? 'yuvarlak' : 'cark';
+          AYAR.merkez = AYAR.merkezOrb;
+        }else{
+          AYAR.radyoMerkez = (AYAR.radyoMerkez === 'cark') ? 'yuvarlak' : 'cark';
+          AYAR.merkez = AYAR.radyoMerkez;
+        }
         ayarKaydet();
         try{ merkezUygula(); }catch(e){ _yut(e); }
         try{ if(typeof yaz==='function') yaz(); }catch(e){ _yut(e); }
@@ -22143,10 +22205,19 @@
      kullaniciya hata gosterilmiyor. */
   /* ── MERKEZ ILK KAREDEN SONRA ──
      Cark ilk cizimde gerekmiyor: once halka boyaniyor, hemen sonra
-     modul inip ortadaki alet yerine oturuyor. */
+     modul inip ortadaki alet yerine oturuyor.
+     30 EYLUL: ACILISTA KIPIN KAYDI KULLANILIR. RADIOTAPE kendi
+     merkezini (varsayılan çark), ORBITAPE kendisinkini (varsayılan
+     halka = çarksız). Tek alan varken global varsayılan geliyor ve
+     radyonun çarkı hiç yüklenmiyordu. */
   try{
     window.addEventListener('load', ()=>{ setTimeout(()=>{
-      try{ merkezUygula(); }catch(e){ _yut(e); } }, 120); });
+      try{
+        AYAR.merkez = document.body.classList.contains('mood')
+          ? (AYAR.merkezOrb || 'yuvarlak')
+          : (AYAR.radyoMerkez || 'cark');
+        merkezUygula();
+      }catch(e){ _yut(e); } }, 120); });
   }catch(e){ _yut(e); }
   /* ══ KAYIT MODULU ISTEK UZERINE ══
      Once sayfanin sonundaki betik etiketiyle HER ACILISTA iniyordu

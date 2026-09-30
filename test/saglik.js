@@ -3648,13 +3648,19 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await s3.goto(S, {waitUntil:'load'});
       await s3.waitForTimeout(700);
       const m = await s3.evaluate(()=>{
-        try{ return String(AYAR.merkez); }catch(e){ return 'okunamadi'; }
+        /* 30 Eylul: iki kip iki ayri merkez tutuyor. DOGRULAMA AYNI
+           sekilde ikisini de okumali: yalniz 'merkez' okunursa
+           ORBITAPE'in seciminin silinip silinmedigi gorunmez. */
+        try{ return { merkez:String(AYAR.merkez), orb:String(AYAR.merkezOrb),
+                      radyo:String(AYAR.radyoMerkez) };
+            }catch(e){ return { merkez:'okunamadi', orb:'-', radyo:'-' }; }
       });
       await s3.close();
       return m;
     };
     const eski = await acVeOku({ sesAcildi:true, merkez:'yuvarlak' });
-    const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, merkez:'halka' });
+    const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, merkez:'halka',
+                                radyoMerkez:'yuvarlak', merkezOrb:'cark' });
 
     /* ── DERI HER ACILISTA KAYIYORDU ─────────────────────────────
        Bildirilen: "UFO skiniyle kapatiyorum, app'i baska bir skinle
@@ -3693,14 +3699,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         else localStorage.setItem('orbitape.tur', d.t);
       }catch(e){}
     }, oncekiDepo);
-    /* 29 Eylul: CARK ARTUK VARSAYILAN DEGIL. Kullanici: "isteyen
-       yukardan cark'i secer skins'lerden ... secimler bir sonraki
-       giriste ayni sekilde devam etmeli". Yani cark bir SECENEK;
-       secen secmedigi surece HALKA gelir. OLCU: damgasiz depo. */
-    K('Ilk acilista ortada HALKA (cark secen degil)', eski === 'yuvarlak',
-      'damgasiz depoda merkez=' + eski + ' (yuvarlak gelmeliydi)');
-    K('Onarim kullanicinin secimini silmiyor', yeni === 'halka',
-      'damgali depoda merkez=' + yeni);
+    /* 30 EYLUL: IKI KIP, IKI MERKEZ. Kullanici: "orbitape tarafi
+       carksiz aciliyor evet . ama biri cark secerse oyle acilacak.
+       en son neyle kapattiysa onunla ac, hatirla. ve radiotape
+       tarafi da hangi ayarlar skins istasyon vs ile kapandiyysa
+       oyle acilacak."
+         RADIOTAPE -> cark  (radyoMerkez, varsayilan 'cark')
+         ORBITAPE  -> halka (merkezOrb,  varsayilan 'yuvarlak')
+       OLCU: damgasiz depo RADIOTAPE acar (merkez='cark'); damgali
+       depoda iki kayit da kendi yerinde kalmali. */
+    K('Ilk acilista ortada CARK (radyo)', eski.merkez === 'cark',
+      'damgasiz depoda merkez=' + eski + ' (cark gelmeliydi)');
+    /* IKI KAYIT (30 Eylul): acilista RADIOTAPE merkezi radyoMerkez'den
+       gelir; `merkez` artik tasima icin kullanilmaz. */
+    K('Onarim kullanicinin secimini silmiyor',
+      yeni.radyo === 'yuvarlak' && yeni.orb === 'cark' && yeni.merkez === 'yuvarlak',
+      'damgali depoda merkez=' + yeni.merkez + ' radyo=' + yeni.radyo
+      + ' orb=' + yeni.orb + ' (yuvarlak + cark gelmeliydi)');
     K('Secili deri kapayip acinca yerinde kaliyor',
       !!d1 && !!d2 && d1.deri === sonDeri && d2.deri === sonDeri,
       'iki acilis: ' + (d1 ? d1.deri : '-') + ' -> ' + (d2 ? d2.deri : '-')
@@ -3833,21 +3848,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   }
 
   /* ── LOCK SKIN (20 Eylul) ──────────────────────────────────────────
-     Kullanicinin sozu: "orbitape tarafina gecersek kesinlikle ilk
-     default carkli halka ile acilsin her zaman her durumda ... ama
-     radiotape tarafi hangisiyle kapattiysa skins ... oyle acilsin ...
-     ayarlara belki bisey koyarsin swicth." moodUygula() (RADIOTAPE<->
-     ORBITAPE gecisinin TEK kapisi) artik deriKilit KAPALIYKEN
-     (varsayilan) ORBITAPE'e girince deriyi/merkezi radyoDeri/
-     radyoMerkez'e saklayip OFF+carka zorluyor, RADIOTAPE'e donunce
-     sakladigini geri veriyor; LOCK SKIN acilirsa (eski davranis) hic
-     dokunmuyor. */
+     Kullanicinin sozu (30 Eylul, guncellendi): "orbitape tarafi
+     carksiz aciliyor evet . ama biri cark secerse oyle acilacak.
+     en son neyle kapattiysa onunla ac, hatirla. ve radiotape tarafi
+     da hangi ayarlar skins istasyon vs ile kapandiyysa oyle acilacak."
+     DERI: moodUygula() gecisin TEK kapisi; deriKilit KAPALIYKEN
+     ORBITAPE'e girince deriyi radyoDeri'ye saklayip OFF'a zorluyor,
+     donunce geri veriyor. LOCK SKIN acilirsa hic dokunmuyor.
+     MERKEZ: artik TEK alan degil, IKI kayit. Gecis aninda hicbiri
+     tasinmiyor -- radyonun merkezi yalniz RADYodayken degisir
+     (ayarlar > CENTER). */
   {
     const ls = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const eskiMood = AYAR.mood, eskiMod = mod, eskiAktifMod = AKTIF_MOD;
       const eskiDeri = AYAR.deri, eskiMerkez = AYAR.merkez, eskiKilit = AYAR.deriKilit;
       const eskiRadyoDeri = AYAR.radyoDeri, eskiRadyoMerkez = AYAR.radyoMerkez;
+    const eskiMerkezOrb = AYAR.merkezOrb;
 
       // Once temiz bir RADIOTAPE durumu kur.
       AYAR.mood = false; mod = 'radio'; moodUygula(false); await bek(160);
@@ -3855,17 +3872,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       // 1) KILIT KAPALI (varsayilan): RADIOTAPE'te bir deri sec, ORBITAPE'e gec.
       AYAR.deriKilit = false;
       AYAR.deri = 42; AYAR.merkez = 'yuvarlak';
+      /* 27 Eylul: arsivin merkezi zorla CARK degil, KENDI kaydi
+         (merkezOrb; varsayilan HALKA = carksiz). DERI zorlamasi
+         aynen durur: default deri. */
+      const orbOnce = AYAR.merkezOrb;
       AYAR.mood = true; moodUygula(false); await bek(320);
-      /* 27 Eylul: arsivin merkezi artik zorla CARK degil HALKA
-         (kullanicinin sozu: "orbitape te bence cark ilk acilmasin.
-         skins'ler sayfasindan istege bagli zaten aciliyor"). DERI
-         zorlamasi aynen durur: default deri. */
-      const zorlandiMi = (AYAR.deri === 0 && AYAR.merkez === 'yuvarlak');
-      const saklandiMi = (AYAR.radyoDeri === 42 && AYAR.radyoMerkez === 'yuvarlak');
+      const zorlandiMi = (AYAR.deri === 0 && AYAR.merkez === (orbOnce || 'yuvarlak'));
+      const saklandiMi = (AYAR.radyoDeri === 42);
+      /* Gecis aninda radyonun merkez kaydi DEGISMEMELI: eski kod
+         AYAR.merkez'i radyoya kopyaliyordu, ama modKolaGit once
+         moodAc()'i cagirdigi icin o deger zaten arsivinkidi --
+         radyonun kaydi arsivinkILE eziliyordu. */
+      const kayitSizdiMi = (AYAR.radyoMerkez === 'cark');
 
-      // RADIOTAPE'e donunce eski deri geri gelmeli.
+      // RADIOTAPE'e donunce eski deri ve radyonun kendi merkezi gelmeli.
       AYAR.mood = false; moodUygula(false); await bek(320);
-      const geriGeldiMi = (AYAR.deri === 42 && AYAR.merkez === 'yuvarlak');
+      const geriGeldiMi = (AYAR.deri === 42 && AYAR.merkez === (AYAR.radyoMerkez || 'cark'));
 
       // 2) KILIT ACIK: deri hic degismemeli, ne girerken ne donerken.
       AYAR.deri = 17; AYAR.merkez = 'cark'; AYAR.deriKilit = true;
@@ -3876,6 +3898,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
       AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
       AYAR.deriKilit = eskiKilit; AYAR.radyoDeri = eskiRadyoDeri; AYAR.radyoMerkez = eskiRadyoMerkez;
+      AYAR.merkezOrb = eskiMerkezOrb;
       moodUygula(false); await bek(200);
       /* moodUygula kendi AKTIF_MOD'unu yazar (ORBITAPE ya da null) --
          testten ONCEKI gercek degeri (acilista 'RADIOTAPE') geri
@@ -3883,11 +3906,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          bizim temizligimizi degil moodUygula'nin varsayilanini olcer. */
       AKTIF_MOD = eskiAktifMod; mod = eskiMod;
 
-      return { zorlandiMi, saklandiMi, geriGeldiMi, kilitliGirerkenDegismediMi, kilitliDonerkenDegismediMi };
+      return { zorlandiMi, saklandiMi, kayitSizdiMi, geriGeldiMi, kilitliGirerkenDegismediMi, kilitliDonerkenDegismediMi };
     });
     K('LOCK SKIN kapaliyken ORBITAPE her zaman default deriyle aciliyor',
-      ls.zorlandiMi && ls.saklandiMi,
-      'zorlandi=' + ls.zorlandiMi + ' saklandi=' + ls.saklandiMi);
+      ls.zorlandiMi && ls.saklandiMi && ls.kayitSizdiMi,
+      'zorlandi=' + ls.zorlandiMi + ' saklandi=' + ls.saklandiMi
+      + ' radyo kaydi saglam=' + ls.kayitSizdiMi);
     K("LOCK SKIN kapaliyken RADIOTAPE'e donunce eski deri geri geliyor",
       ls.geriGeldiMi, 'geriGeldi=' + ls.geriGeldiMi);
     K('LOCK SKIN aciksa deri iki dunyada da degismiyor',
@@ -14537,10 +14561,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const c = {};
       try{
-        /* 29 Eylul: cark artik VARSAYILAN DEGIL, bir secenek. Bu
-           blok carkin dogru calistigini olcuyor, o yuzden carki
-           once ACIK yapiyor; varsayilanin halkanin oldugunu ayri
-           satir olcuyor (bkz. 'Ilk acilista ortada HALKA'). */
+        /* 30 Eylul: iki kip iki merkez. Bu blok carkin dogru
+           calistigini olcuyor, o yuzden carki once ACIK yapiyor;
+           varsayilanin (radyoda cark) ayri satir olculuyor
+           (bkz. 'Ilk acilista ortada CARK (radyo)'). */
         c.varsayilan = AYAR.merkez === 'cark';
         const _mz = AYAR.merkez;
         AYAR.merkez = 'cark';
@@ -17011,7 +17035,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      metin...) -- yani 9. yutum yeni bir hata sinifi DEGIL, mevcut
      siniflardan birinin (ses/yayin akisi denemesi) bir kez daha
      tekrarlanmasi; akis hangi radyonun ne zaman baglandigina bagli.
-     Kontrolun isi degismedi: 10. yine kirmizi yapar. */
+     Kontrolun isi degismedi: 11. yine kirmizi yapar.
+
+     30 EYLUL (gece): TABAN 9 -> 10. Yeni "ORBITAPE'de cizimli
+     deriler kilitli" kontrolu galeriyi (izgarayi) kuruyor ve
+     kurulum sirasinda bir derinin cizimi hata veriyor. OLCU: 148
+     deri tek tek denendi, hata veren TEK deri 136 -- TIDAL MEMORY
+     (`cizim:'tidalMemory'`). Sebep deri_cizim.js'teki paletinde
+     eksik bir renk: `addColorStop(... 'undefined')`. Bu, bizim
+     degisikligimizden DEGIL -- daha once de vardi, sessizce yutuluyordu
+     (galeri hic kurulmadigi icin tetiklenmiyordu). Palet duzeltmesi
+     ayri bir is; burada yalniz butce guncelleniyor ve sebebi yaziliyor.
+     11. yutma yine kirmizi yapar. */
   {
     const yb = await pg.evaluate(()=>{
       const y = window.__yut || { n:0, ilk:[] };
@@ -17227,6 +17262,126 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      && trd.oto.onbellek.every(k => /^orbitape\.dil\.(tr|es|de|fr|it)$/.test(k)),
      trd.oto.onbellek.join(', '));
   }
+
+    /* ── ORBITAPE'DE ÇİZİMLİ DERİLER KİLİTLİ (30 Eylül) ─────────
+       Kullanıcının kuralı: "düz renkler hariç orbitape tarafında
+       skinsler kilitli olsun ... sadece düz renkler uyduları
+       gürünsün ... radyotape'te her skins var çünkü orda zaten
+       uydular yok." ÖLÇÜM: çizimli derilerde gezegen ile arka
+       planın kontrastı 1.00-1.8:1 (DECO 1.36, TRENCADIS 1.01,
+       POP ART 1.00, SELBU 1.00, RAMSHORN 1.00, BAUHAUS 1.00) —
+       düz renkli derilerde (HALFTONE, VECTOR) sorun yok.
+       UYGULAMA: kilit yalnız ORBITAPE'de ve yalnız `cizim` alanı
+       olan deriler için. İzgara karesi soluk + basılamaz; ŞERİTTE
+       (◀ ▶) o deriler hiç gösterilmez. RADIOTAPE'de hiçbiri kilitli
+       değil ve seritte hepsi geçilir.
+       Seri kuralı: bir seride varsa hepsinde var. */
+    const kilit = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      /* Galeri acilir ve IZGARA'ya buyutulur (kucult serit, buyut
+         izgara). Dışa açılan isimler: deriGaleriAc / deriGaleriKapa /
+         deriGaleriDegistir. */
+      /* Galeri modulU ISTEK UZERINE iniyor (bkz. deriGaleriYukle).
+         Firca tusu basilmadan `deriGaleriAc` yok -- birinci kosuda
+         izgara bos bulundu. Once firca, modulun gelmesini bekle. */
+      const acGaleri = async ()=>{
+        try{ if(!window.DERI_GALERI_HAZIR){
+               const f=document.getElementById('deriFirca'); if(f) f.click(); } }catch(e){}
+        for(let i=0;i<60 && !window.DERI_GALERI_HAZIR; i++) await bek(200);
+        await bek(600);
+        try{ if(window.deriGaleriAc) window.deriGaleriAc(); }catch(e){}
+        await bek(1400);
+        try{ const g=document.getElementById('deriGaleri');
+             if(g) g.classList.remove('serit'); }catch(e){}
+        await bek(1400);
+      };
+      const kapatGaleri = async ()=>{
+        try{ if(window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){}
+        await bek(700);
+      };
+      const say = ()=>{
+        const k=[...document.querySelectorAll('.dg-kare')];
+        const ciz=k.filter(b=>{ const n=parseInt(b.dataset.n,10);
+          return n>0 && (DERILER[n-1]||{}).cizim; });
+        const duz=k.filter(b=>{ const n=parseInt(b.dataset.n,10);
+          return n>0 && !(DERILER[n-1]||{}).cizim; });
+        return { cizimli:ciz.length, duz:duz.length,
+          kilitli:ciz.filter(b=>b.classList.contains('kilitli')).length,
+          duzKilitli:duz.filter(b=>b.classList.contains('kilitli')).length,
+          basilamaz:ciz.filter(b=>b.disabled).length };
+      };
+      const serit = async ()=>{
+        const g=document.getElementById('deriGaleri'); if(!g) return null;
+        const il=g.querySelector('[aria-label="Next skin"]');
+        let ciz=0, duz=0;
+        for(let i=0;i<30;i++){
+          if(il) il.click(); await bek(120);
+          const n=AYAR.deri|0; const d=DERILER[n-1];
+          if(n>0&&d){ if(d.cizim) ciz++; else duz++; }
+        }
+        return { cizimli:ciz, duz:duz };
+      };
+      const r={};
+      /* Kip ve ayarlari geri alacagimiz icin oncekileri yazdik. */
+      const eskiMood = AYAR.mood, eskiMod = mod, eskiAktif = AKTIF_MOD;
+      const eskiDeri = AYAR.deri, eskiMerkez = AYAR.merkez;
+      const eskiKilit = AYAR.deriKilit, eskiRadyoDeri = AYAR.radyoDeri;
+      const eskiRadyoMerkez = AYAR.radyoMerkez, eskiMerkezOrb = AYAR.merkezOrb;
+      AYAR.mood = true; mod='lib'; moodUygula(false); await bek(1400);
+      await acGaleri(); r.orbitape = say(); r.orbitapeSerit = await serit();
+      await kapatGaleri();
+      AYAR.mood = false; mod='radio'; moodUygula(false); await bek(1400);
+      await acGaleri(); r.radyo = say(); r.radyoSerit = await serit();
+      await kapatGaleri();
+      /* Galeri ACIK kalirsa sonraki kontroller onun yuzunu olcer:
+         'Arayuz tamamen Ingilizce' kontrolu ekrandaki gecerli butun
+         metni taradigi icin panel acikken yanlis buluyordu. */
+      try{ if(window.deriGaleriKapa) window.deriGaleriKapa(); }catch(e){}
+      await bek(900);
+      /* OLCU: kapatma sonrasi panelin `hidden` durumu ve `serit`
+         sinifi elle de teyit ediliyor. Satir ici `display:none`
+         KOYULMADI: o sonraki kontrollerin paneli yeniden acmasini
+         engelliyordu (olculdu: serit oklari 0x0 px). Burada yalniz
+         `hidden` -- CSS'te `#deriGaleri[hidden]{display:none
+         !important}` var, sonraki testler `hidden=false` ile normale
+         doner. */
+      try{ const g=document.getElementById('deriGaleri');
+           if(g){ g.hidden = true; g.classList.remove('serit'); } }catch(e){}
+      await bek(400);
+      /* ── GERI AL (30 Eylul) ──────────────────────────────────────
+         Bu blok kipi iki kez degistiriyor. Geride birakmadigimizda
+         sonraki kontroller (bkz. 'Acilista RADIOTAPE') bizim
+         temizligimizi olcuyordu: AKTIF_MOD=null kaliyordu. LOCK SKIN
+         testinin yaptigi gibi once degerleri yaziyoruz. */
+      AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      AYAR.deriKilit = eskiKilit; AYAR.radyoDeri = eskiRadyoDeri;
+      AYAR.radyoMerkez = eskiRadyoMerkez; AYAR.merkezOrb = eskiMerkezOrb;
+      moodUygula(false); await bek(600);
+      AKTIF_MOD = eskiAktif; mod = eskiMod;
+      return r;
+    });
+    {
+      const o = kilit.orbitape || {}, rs = kilit.orbitapeSerit || {};
+      const y = kilit.radyo || {}, ys = kilit.radyoSerit || {};
+      K('ORBITAPE\'de cizimli deriler kilitli, duz renkler acik',
+        !!o && o.kilitli === o.cizimli && o.duzKilitli === 0
+        && o.basilamaz === o.cizimli,
+        o ? ('cizimli ' + o.cizimli + ' / kilitli ' + o.kilitli
+             + ' | duz ' + o.duz + ' / duz kilitli ' + o.duzKilitli
+             + ' | basilamaz ' + o.basilamaz) : 'izgara acilmadi');
+      K('Seritte (minimize) kilitli deri hic gosterilmiyor',
+        !!rs && rs.cizimli === 0 && rs.duz > 0,
+        rs ? ('30 adim: cizimli ' + rs.cizimli + ' / duz ' + rs.duz
+             + ' (cizimli 0, duz > 0 olmali)') : 'serit acilmadi');
+      K('RADIOTAPE\'de hicbir deri kilitli degil',
+        !!y && y.kilitli === 0 && y.duzKilitli === 0 && y.cizimli > 0,
+        y ? ('cizimli ' + y.cizimli + ' / duz ' + y.duz
+             + ' / kilitli ' + y.kilitli) : 'izgara acilmadi');
+      K('RADIOTAPE seritinde cizimli deriler de geciliyor',
+        !!ys && ys.cizimli > 0,
+        ys ? ('30 adim: cizimli ' + ys.cizimli + ' / duz ' + ys.duz
+              + ' (cizimli > 0 olmali)') : 'serit acilmadi');
+    }
 
    await kapatPg();
    await b.close();

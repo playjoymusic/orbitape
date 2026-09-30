@@ -40,10 +40,17 @@
       }else{
         if(!document.body.classList.contains('mood') && window.moodAc) window.moodAc();
         AKTIF_MOD = 'ORBITAPE';
-        /* ORBITAPE merkezi HALKA (moodUygula'daki yazma yalniz radyodan
-           GELEN gecislerde calisiyordu). */
+        /* ── ORBITAPE KENDI KAYITLI MERKEZINI ACAR (30 Eylul) ──────
+           Burada her geciste `AYAR.merkez = 'yuvarlak'` ZORLANIYORDU;
+           kullanici bu satirdan gectigi icin merkezOrb'daki secimi
+           (ayarlar > CENTER) kaybediyordu -- kollar.js index.html'in
+           disinda, o yüzden index.html'deki duzeltme buraya gelmedi.
+           Olcu: ORBITAPE'de cark secildi, radyoya donuldu, geri
+           gelindi -> merkez 'yuvarlak' (kayip). Simdi merkezOrb.
+           Varsayilan zaten 'yuvarlak' (çarksız) -- değişen tek şey
+           secimin korunması. */
         try{
-          AYAR.merkez = 'yuvarlak';
+          AYAR.merkez = AYAR.merkezOrb || 'yuvarlak';
           if(typeof merkezUygula === 'function') merkezUygula();
         }catch(e){ _yut(e); }
         _kipRenkleri(m);

@@ -105,7 +105,8 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     ".dg-kare{appearance:none;-webkit-appearance:none;border:0;padding:0;margin:0;position:relative;display:block;width:100%;aspect-ratio:108/172;height:auto;border-radius:12px;overflow:hidden;cursor:pointer;background:#111;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;isolation:isolate}",
     /* .dg-kare.kapa KALDIRILDI: OFF karesi artik oteki kareler
        gibi gercek bir onizleme (bkz. kareYap). */
-    ".dg-kare[aria-pressed=\"true\"]{outline:2px solid var(--dg-vurgu);outline-offset:3px}",
+    ".dg-kare.kilitli{opacity:.30;cursor:not-allowed;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}",
+    ".dg-kare.kilitli .dg-ad{opacity:.5}",
     ".dg-tuval,.dg-doku{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}",
     ".dg-disk{position:absolute;left:50%;top:44%;width:58%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background-size:cover;pointer-events:none}",
     ".dg-kare .dg-ad{position:absolute;left:8px;right:6px;bottom:7px;text-align:left;font-size:0.5625rem;font-weight:700;letter-spacing:.12em;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
@@ -384,6 +385,37 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
      uygulama tarafindaki tek kapisi (gunDongusuAc) index.html'den
      silindi. */
   /* ── KARE: DERININ KUCUK HALI ─────────────────────────────────── */
+  /* ── KİLİT: ÇİZİMLİ DERİLER ORBITAPE'TE PASİF (30 Eylul) ──────
+     Kullanıcının kuralı: "düz renkler hariç orbitape tarafında
+     skinsler kilitli olsun ... sadece düz renkler uyduları
+     gürünsün ... radyotape'te her skins var çünkü orda zaten
+     uydular yok."
+     ÖLÇÜM (1000x850): çizimli derilerde gezegen ile arka planın
+     kontrastı 1.00-1.8:1, yani gezegen ekranla aynı renkte
+     (DECO 1.36, TRENCADIS 1.01, POP ART 1.00, SELBU 1.00,
+     RAMSHORN 1.00, BAUHAUS 1.00). Düz renkli derilerde (HALFTONE,
+     VECTOR) sorun yok.
+     UYGULAMA: kilit yalnız ORBITAPE'te (body.mood) ve yalnız
+     `cizim` alanı olan deriler için. İzgara karesi soluk görünür
+     ve basılamaz; ŞERİTTE (◀ ▶) o deriler hiç gösterilmez.
+     RADIOTAPE'de (body.mood yok) hiçbir şey kilitlenmez.
+     Seri kuralı: bir seride varsa hepsinde var. */
+  function deriKilitliMi(n){
+    try{
+      if(!document.body.classList.contains('mood')) return false;
+      const d = DERILER[(n|0) - 1];
+      return !!(d && d.cizim);
+    }catch(e){ yut(e); return false; }
+  }
+  /* Şeritte kullanılacak sıra. kilitliAtla=true ise ORBITAPE'de
+     çizimli deriler listeden çıkar. */
+  function seritSira(kilitliAtla){
+    try{
+      const s = [0].concat(deriEkranSirasi().map(i=>i + 1));  // 0 = OFF
+      if(!kilitliAtla) return s;
+      return s.filter(x=>!deriKilitliMi(x));
+    }catch(e){ yut(e); return [0]; }
+  }
   function kareYap(n, d){
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'dg-kare'; b.dataset.n = String(n);
@@ -410,6 +442,13 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       return b;
     }
     b.setAttribute('aria-label', d.ad);
+    /* Kilit: soluk + basılamaz. `disabled` tarayıcıda zaten
+       basmayı ve odağı engelliyor; burada istediğimiz de o. */
+    if(deriKilitliMi(n)){
+      b.classList.add('kilitli');
+      b.setAttribute('aria-disabled', 'true');
+      b.disabled = true;
+    }
     b.style.background = d.zem;
     b.style.color = d.yazi || d.marka || '#fff';
     b.style.fontFamily = d.font || 'inherit';
@@ -653,10 +692,15 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        veriyordu; artik sira iki parcali (ters blok + sona eklenen
        yeniler), yani tablo numarasindan ekran yonu cikarilamiyor.
        Sira neyse komsu da odur. */
-    const s = [0].concat(deriEkranSirasi().map(i=>i + 1));  // 0 = OFF
+    /* ORBITAPE'te kilitli (çizimli) deriler ATLANIR: şeritte hiç
+       gösterilmezler. RADIOTAPE'de liste aynen -- hepsi var. */
+    const s = seritSira(true);
     const N = s.length;
     const p = s.indexOf(AYAR.deri|0);
-    sec(s[(((p < 0 ? 0 : p) + y) % N + N) % N]);
+    /* Seçili deri listede yoksa (kilitli) en yakın geçilebilir
+       kareden başla. */
+    const bas = (p < 0) ? (y > 0 ? -1 : 0) : p;
+    sec(s[(((bas) + y) % N + N) % N]);
   }
   function fircaIsaret(acik){
     try{
@@ -704,9 +748,26 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       }
     }catch(e){ yut(e); }
   }
+  /* Izgara bir kez kurulur (kur(): `if(kap) return;`). Kilit ise
+     KIPE BAGLI: kullanici RADIOTAPE'de listeyi acmisa, sonra
+     ORBITAPE'e gecip yeniden actiginda kareler kilitli kalmamali.
+     Bu yuzden her acilista kilit durumu tazeleniyor. */
+  function kilitleriTazele(){
+    try{
+      if(!izg) return;
+      izg.querySelectorAll('.dg-kare').forEach(b=>{
+        const nn = parseInt(b.dataset.n || '0', 10) || 0;
+        const k = nn > 0 && deriKilitliMi(nn);
+        b.classList.toggle('kilitli', k);
+        if(k){ b.setAttribute('aria-disabled','true'); b.disabled = true; }
+        else{ b.removeAttribute('aria-disabled'); b.disabled = false; }
+      });
+    }catch(e){ yut(e); }
+  }
   function ac(){
     try{
       kur();
+      try{ kilitleriTazele(); }catch(e){ yut(e); }
       /* ── ACILISTA: DERI VARSA DISK, OFF'TA KULLANICININ MERKEZI ──
          "Skinsler gezilmeye baslandiginda o yuvarlak olanla goster
          ilk" istegi duruyor -- ama yalnizca gosterilecek bir deri
