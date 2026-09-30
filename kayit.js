@@ -3004,7 +3004,10 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
         'That take was cancelled. Nothing was saved.'); }catch(e){ _yut(e); }
       return;
     }
-    _bekleyenKayit = { blob: blob, ad: ad, tip: tip };
+    /* radyoSebep: kayit CANLI RADYOYA gecildigi icin mi durdu? Panel soruyu
+       buna gore kurar. _kayitSebep burada henuz bos degil (kayitBilgiYaz
+       sonra tuketiyor). */
+    _bekleyenKayit = { blob: blob, ad: ad, tip: tip, radyoSebep: /LIVE RADIO/.test(String(_kayitSebep || '')) };
     rec.classList.remove('hazirla','sessiz');
     rec.classList.add('kaydet'); recYazi.textContent='REC';
     camModuTazele();                 // yanındaki tuş: CAM -> DELETE
@@ -3572,45 +3575,67 @@ try{
   const _fanTus = document.getElementById('kamTus');
   const _fanCep = document.getElementById('yelpaze');
   if(_fanTus && _fanCep){
-    /* Dort oge: etiket + islev. */
+    /* 1 EKIM: YELPAZE -> KALICI KAMERA PANELI. Durumlar (bos / basliyor /
+       kayit / karar) #rec'in siniflarindan ve _bekleyenKayit'tan
+       okunuyor; yeni bir durum makinesi YOK, yalnizca goruntu. Kayit ve
+       karar sirasinda panel KENDILIGINDEN acilir ve kapanamaz: soru
+       (kaydedeyim mi?) kaybolmasin. Bos durumda ise dokunus disari
+       giderse kapanir. Dort ogenin kimligi (fanRec, fanPic, fanCam,
+       fanDon) ayni: kayitta fanRec = STOP, kararda fanRec = SAVE ve
+       fanCam = DELETE. */
+    const _svg = d=>'<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>';
+    const _IKON = {
+      rec:  _svg('<circle cx="12" cy="12" r="6.2"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/>'),
+      stop: _svg('<rect x="6.5" y="6.5" width="11" height="11" rx="2.4" fill="currentColor" stroke="none"/>'),
+      pic:  _svg('<path d="M4.5 9V6.5a2 2 0 0 1 2-2H9M15 4.5h2.5a2 2 0 0 1 2 2V9M19.5 15v2.5a2 2 0 0 1-2 2H15M9 19.5H6.5a2 2 0 0 1-2-2V15"/><circle cx="12" cy="12" r="2.6"/>'),
+      cam:  _svg('<path d="M3.5 8.5A2.5 2.5 0 0 1 6 6h6a2.5 2.5 0 0 1 2.5 2.5v7A2.5 2.5 0 0 1 12 18H6a2.5 2.5 0 0 1-2.5-2.5zM14.5 11l6-3.2v8.4l-6-3.2"/>'),
+      don:  _svg('<path d="M4 9a8 8 0 0 1 13.9-5.3M20 4v4.6h-4.6"/><path d="M20 15a8 8 0 0 1-13.9 5.3M4 20v-4.6h4.6"/>'),
+      ok:   _svg('<path d="M5 12.8l4.4 4.4L19 7.4"/>'),
+      sil:  _svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+      geri: _svg('<path d="M9 6.5L4.5 11 9 15.5M5 11h8.5a5 5 0 0 1 0 10H11"/>')
+    };
+    /* Ust satir: isik + sure / soru. */
+    const _fanSure = document.createElement('div');
+    _fanSure.id = 'fanSure'; _fanSure.setAttribute('role','status'); _fanSure.setAttribute('aria-live','polite');
+    _fanSure.innerHTML = '<i class="fanLed" aria-hidden="true"></i><span class="fanMetin"></span>';
+    _fanCep.appendChild(_fanSure);
+    const _fanMetin = _fanSure.querySelector('.fanMetin');
+
+    const _fanRecIslev = ()=>{
+      const d = _fanDurum();
+      if(d === 'karar'){ try{ kaydiPaylas(); }catch(e){ _yut(e); } return; }
+      if(d === 'basliyor') return;
+      if(d === 'bos' && !(typeof AYAR !== 'undefined' && AYAR.mood)){
+        /* kisaNotYaz ceviriyi KENDI yapiyor (Y() sarmalamak hataya yol
+           acardi) ve govde zorunlu: tek argumanda ekrana "undefined"
+           yaziyordu (olcum). */
+        try{ kisaNotYaz('REC LOCKED', 'RECORDING RADIO IS NOT ALLOWED'); }catch(e){ _yut(e); }
+        return;
+      }
+      try{ kayitDegis(); }catch(e){ _yut(e); }     // bos: baslat · kayit: durdur
+    };
+    const _fanCamIslev = ()=>{
+      if(_fanDurum() === 'karar'){ try{ kaydiSil(); }catch(e){ _yut(e); } return; }
+      try{ kamDegis(); }catch(e){ _yut(e); }        // kayitta ilk 3 sn: UNDO (kamDegis icinde)
+    };
     const _fanHavuz = [
-      { id:'fanRec', yazi:'REC', islev:()=>{
-          if(!(typeof AYAR !== 'undefined' && AYAR.mood)){
-            /* kisaNotYaz ceviriyi KENDI yapiyor (Y() sarmalamak
-               hataya yol acardi) ve govde zorunlu: tek argumanda
-               ekrana "undefined" yaziyordu (olcum). */
-            try{ kisaNotYaz('REC LOCKED', 'RECORDING RADIO IS NOT ALLOWED'); }catch(e){ _yut(e); }
-            return;
-          }
-          try{ kayitDegis(); }catch(e){ _yut(e); }
-        } },
-      { id:'fanPic', yazi:'PIC', islev:()=>{ try{ fotoCek(); }catch(e){ _yut(e); } } },
-      { id:'fanCam', yazi:'CAM', islev:()=>{ try{ kamDegis(); }catch(e){ _yut(e); } } },
-      { id:'fanDon', yazi:'', islev:()=>{ try{ kamDondur(); }catch(e){ _yut(e); } } }
+      { id:'fanRec', ikon:'rec', yazi:'REC', islev:_fanRecIslev },
+      { id:'fanPic', ikon:'pic', yazi:'PIC', islev:()=>{ try{ fotoCek(); }catch(e){ _yut(e); } } },
+      { id:'fanCam', ikon:'cam', yazi:'CAM', islev:_fanCamIslev },
+      { id:'fanDon', ikon:'don', yazi:'FLIP', islev:()=>{ try{ kamDondur(); }catch(e){ _yut(e); } } }
     ];
-    /* Dondurme simgesi: ayni yol simgesi (oklar). */
-    const _fanOkSvg = '<svg viewBox="0 0 24 24" aria-hidden="true">'
-      + '<path d="M4 9a8 8 0 0 1 13.9-5.3M20 4v4.6h-4.6"/>'
-      + '<path d="M20 15a8 8 0 0 1-13.9 5.3M4 20v-4.6h4.6"/></svg>';
     _fanHavuz.forEach(h=>{
       try{
         const o = document.createElement('div');
         o.className = 'fanOge'; o.id = h.id;
         o.setAttribute('role','menuitem'); o.setAttribute('tabindex','0');
-        const n = document.createElement('span');
-        n.className = 'nokta'; n.setAttribute('aria-hidden','true');
-        o.appendChild(n);
-        if(h.yazi){
-          const y = document.createElement('span');
-          y.className = 'fanYazi'; y.textContent = h.yazi; o.appendChild(y);
-        }else{
-          o.setAttribute('aria-label', Y('Switch camera'));
-          o.insertAdjacentHTML('beforeend', _fanOkSvg);
-        }
+        o.innerHTML = _IKON[h.ikon] + '<span class="fanYazi"></span>';
+        o.querySelector('.fanYazi').textContent = h.yazi;
+        if(h.id === 'fanDon') o.setAttribute('aria-label', Y('Switch camera'));
+        /* Basinca panel KAPANMIYOR (eski hali her basista kapaniyordu:
+           "tekrar pencereyi aciyoruz"). */
         const cal = (e)=>{
-          try{ if(e){ e.preventDefault(); e.stopPropagation(); }
-            fanAc(false); h.islev();
-          }catch(_){ _yut(_); }
+          try{ if(e){ e.preventDefault(); e.stopPropagation(); } h.islev(); fanCiz(); }catch(_){ _yut(_); }
         };
         o.addEventListener('click', cal);
         o.addEventListener('keydown', e=>{
@@ -3621,24 +3646,81 @@ try{
       }catch(e){ _yut(e); }
     });
     const _fanRecKapali = ()=> !(typeof AYAR !== 'undefined' && AYAR.mood);
-    function fanDurum(){
+
+    /* DURUM: yalniz okur. kontrol = REC'e basildi, ses/kare dogrulaniyor
+       (en fazla 1.8 sn); kayit = kaydedici calisiyor (durdurulurken de);
+       karar = dosya hazir, SAVE/DELETE bekliyor. */
+    function _fanDurum(){
       try{
-        const o = document.getElementById('fanRec');
-        if(o){
-          const kapali = _fanRecKapali();
-          o.setAttribute('aria-disabled', kapali ? 'true' : 'false');
-          o.setAttribute('title', kapali ? Y('RECORDING RADIO IS NOT ALLOWED') : Y('Screen recording'));
+        if(_bekleyenKayit) return 'karar';
+        if(kaydedici) return 'kayit';
+        if(rec && rec.classList.contains('kontrol')) return 'basliyor';
+      }catch(e){ _yut(e); }
+      return 'bos';
+    }
+    const _fanZorunlu = ()=> _fanDurum() !== 'bos';
+    function _fanSureYaz(){
+      try{
+        const sn = Math.max(0, Math.floor((Date.now() - kayitBaslangic) / 1000));
+        return String(Math.floor(sn / 60)).padStart(2,'0') + ':' + String(sn % 60).padStart(2,'0');
+      }catch(e){ return '00:00'; }
+    }
+    let _fanZaman = null;
+    function fanCiz(){
+      try{
+        const d = _fanDurum();
+        _fanCep.setAttribute('data-durum', d);
+        const oge = id => document.getElementById(id);
+        const goster = (id, g)=>{ const o = oge(id); if(o) o.hidden = !g; };
+        const yaz = (id, ikon, yazi)=>{
+          const o = oge(id); if(!o) return;
+          o.querySelector('.fanYazi').textContent = yazi;
+          const v = o.querySelector('svg'); if(v) v.outerHTML = _IKON[ikon];
+        };
+        _fanTus.setAttribute('data-kayit', d === 'kayit' ? '1' : '0');
+        if(d === 'bos'){
+          goster('fanRec', true); goster('fanPic', true); goster('fanCam', true); goster('fanDon', true);
+          yaz('fanRec','rec','REC'); yaz('fanCam','cam','CAM');
+          const r = oge('fanRec');
+          if(r){
+            const kapali = _fanRecKapali();
+            r.setAttribute('aria-disabled', kapali ? 'true' : 'false');
+            r.setAttribute('title', kapali ? Y('RECORDING RADIO IS NOT ALLOWED') : Y('Screen recording'));
+          }
+        }else if(d === 'basliyor'){
+          _fanMetin.textContent = Y('GETTING READY');
+          ['fanRec','fanPic','fanCam','fanDon'].forEach(i=>goster(i,false));
+        }else if(d === 'kayit'){
+          _fanMetin.textContent = 'REC ' + _fanSureYaz();
+          goster('fanRec', true); goster('fanPic', false); goster('fanDon', false);
+          const durur = !!(rec && rec.classList.contains('hazirla'));
+          yaz('fanRec','stop', durur ? 'STOPPING' : 'STOP');
+          const r = oge('fanRec'); if(r){ r.setAttribute('aria-disabled', durur ? 'true' : 'false'); r.removeAttribute('title'); }
+          /* Ilk 3 saniye: yanlis basisin geri alinmasi (kamDegis icinde). */
+          const geri = !!(geriAlPenceresi && geriAlPenceresi());
+          goster('fanCam', geri); if(geri) yaz('fanCam','geri','UNDO');
+        }else{ /* karar */
+          const radyo = !!(_bekleyenKayit && _bekleyenKayit.radyoSebep);
+          _fanMetin.textContent = radyo ? Y('LIVE RADIO STARTED. SAVE YOUR RECORDING?') : Y('SAVE RECORDING?');
+          goster('fanRec', true); goster('fanCam', true); goster('fanPic', false); goster('fanDon', false);
+          yaz('fanRec','ok','SAVE'); yaz('fanCam','sil','DELETE');
+          const r = oge('fanRec'); if(r){ r.setAttribute('aria-disabled','false'); r.removeAttribute('title'); }
         }
+        /* Kayit sirasinda sure/UNDO icin saniyede iki kez tazele. */
+        if(d === 'kayit' && !_fanZaman){ _fanZaman = setInterval(fanCiz, 500); }
+        if(d !== 'kayit' && _fanZaman){ clearInterval(_fanZaman); _fanZaman = null; }
+        if(!_fanCep.hidden) fanYer();
       }catch(e){ _yut(e); }
     }
-    /* Yelpaze ikona BAGLI: konum her acilista ikonun olculmus
-       kutusundan; ekrana sigmiyorsa yukaridan itilir. */
+    const fanDurum = fanCiz;
+    /* Panel ikona BAGLI: konum her acilista ikonun olculmus kutusundan;
+       ekrana sigmiyorsa yukaridan itilir. */
     function fanYer(){
       try{
         const r = _fanTus.getBoundingClientRect();
         if(!r.height) return;
         const c = _fanCep.getBoundingClientRect();
-        const g = c.width || 96, y = c.height || 176;
+        const g = c.width || 118, y = c.height || 176;
         let sol = Math.round(r.right + 8);
         if(sol + g > innerWidth - 6) sol = Math.max(6, Math.round(r.left - g - 8));
         let ust = Math.round(r.top - 10);
@@ -3651,12 +3733,14 @@ try{
     function fanAc(ac){
       try{
         const y = ac !== false;
+        /* Kayit/karar sirasinda kapatma istegi yok sayilir. */
+        if(!y && _fanZorunlu()) return;
         _fanCep.hidden = !y;
         _fanTus.setAttribute('aria-expanded', y ? 'true' : 'false');
-        if(y){ fanDurum(); fanYer(); }
+        if(y){ fanCiz(); fanYer(); }
       }catch(e){ _yut(e); }
     }
-    const fanTik = (e)=>{ try{ if(e) e.stopPropagation(); fanAc(_fanCep.hidden); }catch(_){ _yut(_); } };
+    const fanTik = (e)=>{ try{ if(e) e.stopPropagation(); if(_fanZorunlu()) return; fanAc(_fanCep.hidden); }catch(_){ _yut(_); } };
     try{
       _fanTus.addEventListener('click', fanTik);
       _fanTus.addEventListener('keydown', e=>{
@@ -3664,35 +3748,32 @@ try{
       ['pointerdown','touchstart','mousedown'].forEach(t=>
         _fanTus.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
     }catch(e){ _yut(e); }
-    /* Dışarı dokunmak kapatır. */
+    /* Disari dokunmak kapatir (yalniz bos durumda). */
     try{
       document.addEventListener('pointerdown', e=>{
-        if(_fanCep.hidden) return;
+        if(_fanCep.hidden || _fanZorunlu()) return;
         const t = /** @type {any} */ (e.target);
         if(t && (t.closest('#yelpaze') || t.closest('#kamTus'))) return;
         fanAc(false);
       }, true);
     }catch(e){ _yut(e); }
-    /* Kip degisince REC durumu degissin; kayit/kamera/foto/gorsel
-       baslayinca yelpaze KAPANSIN ("yeni ikon cikmasin tasmasin"). */
-    /* Kamera (body.kam) BILEREK kapamiyor -- ikon kalsin. */
-    const _fanKapan = ()=>{
-      try{
-        if(['kayit','gorsel-acik'].some(c=>document.body.classList.contains(c))) return true;
-        const f = document.getElementById('fotoOnizle');
-        return !!(f && f.classList.contains('var'));
-      }catch(e){ return false; }
-    };
+    /* #rec'in siniflari degisince (kontrol -> kayit -> hazirla -> kaydet
+       -> temiz) panel durumu yeniden cizer ve KARAR/KAYIT'ta kendiliginden
+       acilir: canli radyoya gecince kayit durur, panel "kaydedeyim mi"
+       diye sorar, sorusu kaybolmaz. */
     try{
-      new MutationObserver(()=>{
-        try{
-          if(_fanKapan()) fanAc(false);
-          else if(!_fanCep.hidden) fanDurum();
-        }catch(e){ _yut(e); }
-      }).observe(document.body, {attributes:true, attributeFilter:['class']});
+      if(rec) new MutationObserver(()=>{
+        try{ if(_fanZorunlu() && _fanCep.hidden) fanAc(true); else fanCiz(); }catch(e){ _yut(e); }
+      }).observe(rec, {attributes:true, attributeFilter:['class']});
+    }catch(e){ _yut(e); }
+    /* Foto/gorsel acilinca panel durumunu tazele; KAMERA (body.kam) ikonu
+       kapatmaz. */
+    try{
+      new MutationObserver(()=>{ try{ if(!_fanCep.hidden) fanCiz(); }catch(e){ _yut(e); } })
+        .observe(document.body, {attributes:true, attributeFilter:['class']});
       /** @type {any} */ (window).yelpazeDurum = fanDurum;
     }catch(e){ _yut(e); }
-    try{ fanDurum(); }catch(e){ _yut(e); }
+    try{ fanCiz(); }catch(e){ _yut(e); }
   }
 
 /* ── "BITIRDIM" IMZASI ────────────────────────────────────────────

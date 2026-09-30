@@ -6151,8 +6151,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      ustteki kamera dugmesi -> yelpaze -> REC. Once ayarlar acilip
      #rec tiklaniyordu; o dugme artik display:none ve Playwright
      30 sn bekleyip dustu ("page.click: Timeout"). */
+  /* 1 EKIM: panel artik her basista KAPANMIYOR; ikona tiklamak
+     acik bir paneli KAPATIRDI. Yardimci yalniz KAPALIYSA acar. */
   const fanTik = async (id)=>{
-    await pg.evaluate(()=>document.getElementById('kamTus').click());
+    await pg.evaluate(()=>{ if(document.getElementById('yelpaze').hidden) document.getElementById('kamTus').click(); });
     await pg.waitForTimeout(400);
     await pg.click(id);
   };
@@ -6196,6 +6198,117 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'REC/CAM sabit | durum kaydet/sil sinifi');
   await fanTik('#fanCam'); await pg.waitForTimeout(500);
   K('DELETE kaydi siliyor',   (await pg.evaluate(()=>!_bekleyenKayit)), 'temizlendi');
+
+  /* ── KAMERA PANELI (1 Ekim) ──────────────────────────────────────
+     Kullanicinin sikayeti: "kayit basladi mi haberimiz yok ... pencere
+     kapaniyor ... 3. basista kaydedeyim mi". Sebep: durumlar gizli
+     Ayarlar panelindeki dugmede yaziliydi. Bu blok panelin DORT durumunu
+     (bos, kayit, karar, radyoya gecis) ve kareye GIRMEDIGINI sinar.
+     Durum sayfadaki #yelpaze[data-durum]'dan okunur. */
+  const panel = ()=>pg.evaluate(()=>{
+    const y = document.getElementById('yelpaze'), t = document.getElementById('kamTus');
+    const m = document.querySelector('#fanSure .fanMetin');
+    const c = getComputedStyle(t).color.match(/\d+/g).map(Number);
+    return { durum:y.getAttribute('data-durum'), acik:!y.hidden,
+      metin:(m&&m.textContent)||'', kirmizi: t.getAttribute('data-kayit'),
+      ikonRenk:c, goster:getComputedStyle(y).display !== 'none',
+      ogeler:[...y.querySelectorAll('.fanOge')].filter(o=>!o.hidden).map(o=>o.querySelector('.fanYazi').textContent) };
+  });
+  const panelAc = async ()=>{ await pg.evaluate(()=>{ const y=document.getElementById('yelpaze'); if(y.hidden) document.getElementById('kamTus').click(); }); await pg.waitForTimeout(350); };
+  await pg.evaluate(()=>{ AYAR.mood = true; document.body.classList.add('mood'); });
+  await panelAc();
+  const pBos = await panel();
+  K('Panel bostayken REC/PIC/CAM/FLIP, isik yok',
+    pBos.durum==='bos' && pBos.acik && pBos.kirmizi==='0' && pBos.ogeler.join()==='REC,PIC,CAM,FLIP',
+    pBos.durum+' · '+pBos.ogeler.join('/')+' · ikon kirmizi:'+pBos.kirmizi);
+  await pg.click('#fanRec');
+  /* On kontrol (ses/kare dogrulama) en fazla 1.8 sn surer; sabit bekleme
+     yavas kosuda 'GETTING READY'de kaliyordu. Durum 'kayit' olana dek bekle. */
+  await pg.waitForFunction(()=>document.getElementById('yelpaze').getAttribute('data-durum')==='kayit', null, {timeout:9000}).catch(()=>{});
+  await pg.waitForTimeout(700);
+  const pKayit = await panel();
+  K('Kayitta panel ACIK, sure yaziyor, STOP var',
+    pKayit.durum==='kayit' && pKayit.acik && /^REC \d\d:\d\d$/.test(pKayit.metin) && pKayit.ogeler.indexOf('STOP')>=0,
+    pKayit.durum+' · "'+pKayit.metin+'" · '+pKayit.ogeler.join('/'));
+  K('Kayitta kamera ikonu KIRMIZI nabiz atiyor',
+    pKayit.kirmizi==='1' && pKayit.ikonRenk[0]>200 && pKayit.ikonRenk[1]<130 && pKayit.ikonRenk[2]<130,
+    'data-kayit '+pKayit.kirmizi+' · rgb('+pKayit.ikonRenk.slice(0,3).join(',')+')');
+  /* Kayitta disari dokunmak ve ikona basmak paneli KAPATMIYOR. */
+  await pg.evaluate(()=>{ document.body.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true})); document.getElementById('kamTus').click(); });
+  await pg.waitForTimeout(250);
+  const pKapanmadi = await panel();
+  K('Kayitta disari dokunus / ikon paneli kapatmiyor', pKapanmadi.acik && pKapanmadi.durum==='kayit',
+    'acik:'+pKapanmadi.acik+' durum:'+pKapanmadi.durum);
+  /* KAREYE GIRMIYOR: panel bir DOM katmani; kayit/foto karesi ayri
+     tuvalde cizildigi icin paneli icermemeli. Olcum: ayni karenin panel
+     ACIKKEN ve GIZLIYKEN alinmis iki kopyasi, panelin kapladigi
+     dikdortgende, iki GIZLI kopya arasindaki dogal farktan (cark
+     donuyor) belirgin fazla ayrilmamali. */
+  const kare = await pg.evaluate(async ()=>{
+    const y = document.getElementById('yelpaze');
+    const r = y.getBoundingClientRect();
+    const cv = ()=>{ try{ return kayitCtx && kayitCtx.canvas; }catch(e){ return null; } };
+    const al = async (gizli)=>{
+      y.style.visibility = gizli ? 'hidden' : 'visible';
+      await new Promise(rs=>setTimeout(rs,60));
+      if(!fotoKaresi(new Map())) return null;
+      const c = cv(); if(!c) return null;
+      const k = c.width / innerWidth;
+      const x0=Math.round(r.left*k), y0=Math.round(r.top*k), w=Math.round(r.width*k), h=Math.round(r.height*k);
+      return kayitCtx.getImageData(x0,y0,Math.max(1,w),Math.max(1,h)).data;
+    };
+    const fark = (a,b)=>{ if(!a||!b||a.length!==b.length) return -1; let t=0; for(let i=0;i<a.length;i+=4){ t+=Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2]); } return t/(a.length/4)/3; };
+    const A = await al(false), B = await al(true), C = await al(true);
+    y.style.visibility = '';
+    return { acikGizli: fark(A,B), gizliGizli: fark(B,C) };
+  });
+  K('Panel kayit/foto karesine GIRMIYOR (piksel olcumu)',
+    kare.acikGizli >= 0 && kare.gizliGizli >= 0 && kare.acikGizli <= kare.gizliGizli + 4,
+    'acik-gizli fark '+kare.acikGizli.toFixed(2)+' · gizli-gizli (dogal) '+kare.gizliGizli.toFixed(2));
+  await pg.waitForTimeout(3200);   // UNDO penceresi (3 sn) kapansin
+  await pg.click('#fanRec'); await pg.waitForTimeout(2400);
+  const pKarar = await panel();
+  K('Durunca panel KARAR soruyor: SAVE yesil, DELETE kirmizi',
+    pKarar.durum==='karar' && pKarar.ogeler.join()==='SAVE,DELETE' && /SAVE RECORDING\?/.test(pKarar.metin) && pKarar.kirmizi==='0',
+    pKarar.durum+' · '+pKarar.ogeler.join('/')+' · "'+pKarar.metin+'"');
+  await pg.click('#fanCam'); await pg.waitForTimeout(500);
+  /* KAYITTA RADYOYA GECIS: kayit durur, radyo CALAR, panel sorar. */
+  const rg = await pg.evaluate(async ()=>{
+    const bek = ms=>new Promise(r=>setTimeout(r,ms));
+    const o = {};
+    const eskiSonraki = window.sonraki; window.sonraki = function(){};
+    try{
+      document.getElementById('fanRec').click();           // yeni kayit basla
+      for(let i=0; i<80 && !kaydedici; i++) await bek(100);   // on kontrol bitene dek
+      await bek(700);
+      o.basladi = !!kaydedici;
+      AYAR.mood = false; document.body.classList.remove('mood'); mod = 'radio'; AKTIF_MOD = null;
+      cal({mp3:'https://sahte.test/r0', ad:'Radio X', radyo:true});
+      await bek(2600);
+      const m = document.querySelector('#fanSure .fanMetin');
+      o.kayitDurdu = !kaydedici;
+      o.radyoCaliyor = !!(aktifItem && aktifItem.radyo);
+      o.bekleyen = !!_bekleyenKayit;
+      o.durum = document.getElementById('yelpaze').getAttribute('data-durum');
+      o.metin = m ? m.textContent : '';
+      o.acik = !document.getElementById('yelpaze').hidden;
+    }finally{ window.sonraki = eskiSonraki; }
+    return o;
+  });
+  K('Kayitta radyoya gecince: kayit durur, radyo calar, panel sorar',
+    rg.basladi && rg.kayitDurdu && rg.radyoCaliyor && rg.bekleyen && rg.durum==='karar' && rg.acik
+      && /LIVE RADIO STARTED/.test(rg.metin),
+    'kayit durdu:'+rg.kayitDurdu+' radyo:'+rg.radyoCaliyor+' panel:'+rg.durum+' · "'+rg.metin+'"');
+  /* TEMIZLIK: bekleyen kaydi sil, ORBITAPE dunyasina don (sonraki testler). */
+  await pg.evaluate(async ()=>{
+    try{ if(kaydedici){ kayitDurdur(); await new Promise(r=>setTimeout(r,2600)); } }catch(e){}
+    try{ if(_bekleyenKayit) kaydiSil(); }catch(e){}
+    AYAR.mood = true; document.body.classList.add('mood'); mod = 'lib'; AKTIF_MOD = null;
+    cal({ id:'kyt2', mp3:'https://sahte.test/kayit.mp3', ad:'Kayit', etiket:'netlabel', lisans:SERBEST });
+    await new Promise(r=>setTimeout(r,400));
+    try{ document.getElementById('yelpaze').hidden = true; document.getElementById('kamTus').setAttribute('aria-expanded','false'); }catch(e){}
+  });
+  await pg.waitForTimeout(400);
   /* KIPI GERI KAPAT. Acik birakmak sonraki testleri bozdu: gecmis,
      arama ve kayit testleri bir anda oteki dunyada calisiyordu
      (dokuz test birden kirmizi yandi). Test kendi actigi kapiyi
@@ -9174,7 +9287,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         document.body.classList.add('kam'); await bek(160);
         const kamGizli = getComputedStyle(document.getElementById('kamTus')).display;
         document.body.classList.remove('kam'); await bek(120);
-        /* KAYIT: gizli kalsin (onceki kural bozulmadi mi). */
+        /* KAYIT: artik GORUNUR (1 Ekim, bkz. asagidaki kontrol). */
         document.body.classList.add('kayit'); await bek(160);
         const kayitGizli = getComputedStyle(document.getElementById('kamTus')).display;
         document.body.classList.remove('kayit'); await bek(120);
@@ -9202,8 +9315,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         !!(O2.mood === true && O2.fan && O2.soru && O2.fan.t >= O2.soru.b - 1),
         O2.fan && O2.soru ? ('yelpaze ' + O2.fan.t + '..' + O2.fan.b
                              + ' · soru ' + O2.soru.t + '..' + O2.soru.b) : 'olculemedi');
-      K('Yelpaze kamera acikken KALIR, kayitta gizlenir',
-        y.kamGizli && y.kamGizli !== 'none' && y.kayitGizli === 'none',
+      /* 1 EKIM (kullanici: "kayit basladi mi haberimiz yok"): eski kural
+         kayitta ikonu GIZLIYORDU; artik kayit sirasinda ikon ve panel
+         GORUNUR kalir (kirmizi nabiz + sure). Gizleme yalniz gorsel/foto
+         onizleme acikken (bkz. index.html, KAMERA PANELI). Eski kontrol
+         'kayit: none' bekliyordu; yeni kural tersi. */
+      K('Kamera ikonu kamera acikken VE kayitta GORUNUR kalir',
+        y.kamGizli && y.kamGizli !== 'none' && y.kayitGizli && y.kayitGizli !== 'none',
         'kamera: ' + y.kamGizli + ' · kayit: ' + y.kayitGizli);
     }
     /* ── FOTODAN SONRA SUTUN KAYMIYOR (26 Eylul) ────────────────────

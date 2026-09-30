@@ -4962,3 +4962,61 @@ Commit/push: yok (yalnız bu günlük satırı yerelde).
   AYRI DAL + PR ile (bekliyor).
 - **Ders:** yeni bir üst düzey dosya/klasör eklendiğinde
   `.assetsignore` kontrol edilir; yoksa derle.py onu yayına kopyalar.
+
+---
+
+# 1 Ekim 2026 — REVİZYON İSTEKLERİ (pj, kendi sözleriyle özetlendi)
+
+**Önce:** `yayin-ic-belgeler-gizle` (PR #54) birleşti; canlıda TASARIM.md,
+.claude/..., GUNLUK.md 404. Kontroller 6/6 yeşil.
+
+**pj'nin yetkisi:** *"bana sormadan gidebilirsin"* (kural 5: index.html'e
+dokunma yetkisi bu revizyonlar için verildi). *"dizayn yardımı al, grafik
+tasarım standartlarını araştır."* NOT: "app'te tasarım değişmeyecek"
+kararı (30 Eylül) krem/kobalt görünüşü içindi; bunlar ayrı, somut UX
+istekleri.
+
+**Genel ilke (her iş için):** *"hep homojen geçişler, yumuşak, derin ama 3D
+gibi yapay değil."* Modern, boyutlu; yapay/plastik değil.
+
+**1 — KAMERA (pj: "en önemli sorun").** Bugünkü akış kötü: kamera
+ikonuna bas → pencere açılır → REC'e bas → kayıt başlar AMA hiçbir belirti
+yok; pencere kapanır; yeniden aç → REC → durur, yine belirti yok; 3. REC'te
+"kaydedeyim mi?" sorusu çıkıyor (ayarlar menüsünden) → evet/hayır. Cam aç /
+foto / kamera döndürme hepsinde aynı külfet. İstenen:
+- Kameraya tek dokunuş → PANEL (sol altta, DİKEY, hep orada durur; modern
+  uygulamalardaki gibi). Cam aç? Kayıt başla? gibi tek tık.
+- Kayıt başlayınca KIRMIZI yanıp sönen ışık. Durunca SAVE ve DELETE ayrı
+  renklerde, ışıkla. Stop / save / vazgeç paneli pratik olsun.
+- Cam açma, foto, döndürme — hepsi tasarlanacak.
+- **Bu panel kameranın kaydına GİRMEYECEK** (kayıt/foto karesinde görünmez).
+- **REC yalnız ORBITAPE tarafı için** (RADIOTAPE'te kayıt yok — kural 3).
+- Kayıt sürerken RADIOTAPE'e geçilirse: kayıt KESİLİR, "kaydetmek ister
+  misin?" sorusu çıkar (kaydet / sil); RADIOTAPE'e geçiş yine yapılır ve
+  çalmaya başlar, soru alt/üstte durur.
+
+**2 — SKINS / ÇARK.** ORBITAPE tarafında skins kısayolunda ÇARK seçiliyse
+ORBITAPE çarkla AÇILMALI. ("bu önemli")
+
+**3 — SOL ALT SWITCH (RADIOTAPE/ORBITAPE).** Estetik değil; daha OVERLAY
+olmalı. Tam sürüklenebilir (sağa-sola çekince RENK aşamalı, homojen
+geçsin). RADIOTAPE yazısı biraz TAŞIYOR. ORBITAPE yazısına geçerken
+harfler şu an crossfade (biri yok olup öbürü geliyor, gidip gelme); istenen:
+switch konumuna bağlı fade-in/fade-out, tıpkı renk gibi, biri tam sönünce
+öbürü tam gelmeli.
+
+**4 — SOL ALT MOOD İSİMLERİ.** Beğenmiyor; BOYUTLU ama modern olmalı.
+
+**Sıra (pj'nin öncelik sözüne göre):** 1 kamera → 2 skins/çark → 3 switch →
+4 mood isimleri. Her biri AYRI dal/PR (kural 6: tek açık iş).
+
+**5 — GEÇİŞTE SES "ARIYOR" (pj, 1 Ekim).** RADIOTAPE→ORBITAPE geçerken
+bazen ses çok "arıyor", sanki bir kez dokunmamı bekliyor. ÖNCE ÖLÇÜLECEK
+(kural 4): tarayıcının ses bağlamı (AudioContext) askıda mı kalıyor,
+ilk parça ne zaman başlıyor.
+
+**6 — FX PARÇA DEĞİŞİNCE DEVAM ETSİN (pj, 1 Ekim).** ORBITAPE'te bir FX
+açıkken ortaya basıp parça değişse de FX kesilmesin, hiçbir şey kesilmesin.
+DİKKAT: bugünkü kod bunun TERSİNİ bilerek yapıyor (`cal()` içinde
+`fxSifirla()`: "HER parça TEMİZ başlar: FX 0"). pj'nin yeni kararı
+eskisini geçer; eski gerekçe okunup öyle değiştirilecek.
