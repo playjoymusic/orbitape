@@ -376,7 +376,7 @@ işaretlendi — "bunu yapmış mıydık" sorusu bir daha çıkmasın diye.
 | Kullanım şartları + KVKK | **[x]** `terms.html` içinde; "istasyonu çıkar" sözü ve iletişim adresi yazılı |
 | Kayıt tamponuna tavan | **[x]** 400 MB / 15 dakika (`kayit.js`: `KAYIT_TAVAN_BAYT`, `KAYIT_TAVAN_MS`) |
 | Ölü bağlantı örneklemesi | **[x]** "Radyo bağlantı kontrolü" iş akışı, ayda bir + elle |
-| Veri deposuna CI | **[ ]** `tracks` deposunda hâlâ kontrol yok. Radyo listesi artık tek kaynakta (kod deposu) olduğu için risk küçüldü ama arşiv havuzu orada duruyor |
+| Veri deposuna CI | **[x]** `tracks`'te `.github/workflows/kontrol.yml` + `dogrula.py` 17 Eylül'den beri var (bu satır 30 Eylül'e kadar yanlışlıkla **[ ]** duruyordu). 30 Eylül'de ölçümle bir açık bulundu ve kapatıldı: kapı ND/boş/tanınmayan lisansı yakalamıyordu; artık `lisans_filtre.serbest_mi` ile yakalıyor (5 yasak çeşit: eski kapı 0, yeni kapı 1) |
 | Boş `catch`'lere sessiz sayaç | **[x]** 15 Eylül'de eklendi: `_yut()` her yakaladığını sayıyor (index.html + kayit.js, ~950 çağrı), `ADVANCED` altında `DIAGNOSTICS` satırı bu sayacı gösteriyor (sıfırsa satır da yok). Göndermek ayrı bir adım: `SEND DIAGNOSTICS` anahtarı — varsayılan KAPALI — açılırsa yalnızca sürüm, kaba platform ve hata imzaları gidiyor (kimlik/istasyon/şarkı/konum yok, bkz. `olcu.js` başı ve `/privacy`) |
 
 **17 Eylül'de eklendi, henüz başlanmadı** (açık iş -- arşiv agır hata

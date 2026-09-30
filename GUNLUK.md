@@ -4824,3 +4824,122 @@ Bunları da yazıyorum, çünkü kayıt tek taraflı olmamalı:
 5. **Push başına tek commit**, ölçüm betikleri asla commit edilmez.
 6. **Gece 23:00'ten sonra yeni kural/sunum işi yok**; sadece ölçüm ve
    düzeltme.
+
+---
+
+# 30 Eylül 2026 — "Bir üst seviye": çalışma alanı, Higgsfield, Hermes
+
+**Kullanıcı ne istedi:** 3 aydır tek klasörde birikti; "bir üst seviyeye
+geçelim". Her uygulama ve mağaza işi ayrı klasör, geçmiş hep kayıtlı,
+Higgsfield arkada çalışsın, Hermes kendi hafızasını tutsun. Bu
+yapılanmadan sonra uygulamada arşiv + tasarım işi konuşulacak.
+
+**Yapılanlar (hepsi tek adım + ekran görüntüsüyle):**
+- Oturuma `ORBITAPE DATA` kökü eklendi (önceden yalnız `orbitape/`).
+- **Higgsfield API:** hesap pj'nin; anahtar `orbitape-mac`, 90 gün,
+  bitiş **29 Aralık 2026** (yenilenecek). Anahtar pj tarafından
+  `~/.config/higgsfield/key` dosyasına (izin 600) gizli girişle
+  kaydedildi; Claude içeriğini görmedi/yazmadı. Doğrulama: aynı sorgu
+  anahtarla 404, uydurma anahtarla 401 → anahtar kabul ediliyor.
+  Adres `api.higgsfield.ai`, başlık `Authorization: Key <anahtar>`,
+  görsel modeli `higgsfield-soul/v2/standard`, sonuç için
+  `GET /requests/{id}/status`. **Bakiye $0; yükleme kararı pj'nin.**
+- **Hermes:** Nous Portal'a bağlandı (Google hesabıyla, ücretsiz katman,
+  model `stealth/space-bunny-alpha`). Yerleşik hafıza (MEMORY.md/USER.md)
+  açık. Karar: Hermes kendi hafızasını tutar, Claude ona yazmaz.
+  Hermes'e şifre/anahtar/`~/.config/higgsfield/` verilmez (stealth
+  model, yazışma kaydı olabilir).
+- ChatGPT bağlantısı bilerek yapılmadı (hesap izni, gereksiz).
+
+**Ders:** anahtar yapıştırma ilk denemede başarısız oldu — çok satırlı
+komut yapıştırınca satır sonu bekleyen `read`'i geçti ve yanlış şey
+"KAYDEDILDI" dedi. Kalıcı çözüm: girişi `/dev/tty`'den okuyan betik
+(`~/.config/higgsfield/anahtar_kaydet.sh`) ve 20 karakterden kısa
+girişi reddeden kontrol. Başarı mesajına değil dosyanın şekline bakıldı.
+
+**Açık (sırayla, tek iş):**
+1. Klasör haritası onayı + klasör klasör taşıma (git klasörleri
+   `orbitape`, `tracks-depo` yerinde kalır; kökteki eski
+   `CLAUDE.md`/`GUNLUK.md` bayat).
+2. Hermes'te `hermes project` ile ORBITAPE çalışma alanı.
+3. Proje skill'leri (arşiv hasadı, tasarım).
+4. Sonra: uygulamada arşiv + tasarım işi.
+
+Commit/push: yok (yalnız bu günlük satırı yerelde).
+
+## 30 Eylül 2026 (devam) — kararlar ve ders
+
+- **Genel katman kuruldu:** `~/.claude/CLAUDE.md` (tüm projeler için:
+  çalışma tarzı, mühendislik standardı, güvenlik sınırı, hafıza kuralı).
+  Tasarım bakışı kısmı `[SORULACAK]` — boş, uydurulmadı.
+- **pj yazılımcı değil:** terim kullanılırsa yanına günlük dil karşılığı
+  (genel kılavuza yazıldı).
+- **Video (Avenox, Hermes iş akışı) incelendi:** altyazı panodan alındı.
+  Alınacak fikirler: 3 ayrı hafıza (yazılı kasa / öğrenilmiş bağlam /
+  oturum), oturum başında ZORUNLU okuma, hata kaydı, gece köprüsü
+  (oturum→hafıza), haftalık nabız (veri değil karar), insan onay kapısı.
+  Alınmayanlar: sunucu, iş ilanı, sponsor mail, YouTube analitiği.
+- **Yedi maddelik plan:** 1 genel katman (YAPILDI, tasarım boş) →
+  2 proje ayrımı → 3 zorunlu okuma → 4 Hermes hafızası → 5 tasarım
+  standardı → 6 gece köprüsü → 7 haftalık nabız.
+- **KARAR: uygulamanın tasarımı DEĞİŞMEZ** (pj: "app te tasarım
+  değişmeyecek"). `TASARIM.md`'deki krem/kobalt görünüş (renkler
+  ölçüldü) uygulamaya uygulanmaz; nerede kullanılacağı AÇIK SORU.
+- **Ders:** ne yaptığımı söylemeden renk ölçümüne girdim, pj "bu ne"
+  dedi. Kural: yeni bir işe girmeden önce tek cümleyle NEDEN yazılır.
+- Hermes bağlı (Nous Portal, ücretsiz). Chrome'daki Claude paneli AYRI
+  bir sohbet, bu oturumu bilmez; "otomatik onay" açık (pj kararı).
+- **Commit/push yok.** Değişen: `GUNLUK.md`, yeni `TASARIM.md`.
+- **Sıradaki:** madde 2 (proje ayrımı, klasör haritası onayı).
+
+- **n8n (pj, 30 Eylül):** bir yerde n8n bağlıydı; kararı: süresi dolarsa
+  YENİLENMEYECEK, kendi bitsin. Claude n8n'e erişmiyor, yalnız kayıt.
+- **Tasarım işi iki ayrı kulvar:** (1) küçük ayar ("düğmeyi sola çek, şunu
+  renklendir") → burada, normal çalışmayla; (2) VİZYON düzeyi tasarım →
+  pj bunu Fable ile yapacak (pj: "favle la yaparım"). Claude'un görevi
+  (2) için standart/skill/çerçeve hazırlamak. Uygulamanın tasarımı yine
+  DEĞİŞMEZ kararı geçerli.
+- Klasör taşıma (zip-ve-medya) onay bekliyor; kod taraması yapıldı:
+  taşınacak 53 dosyanın adı kodda geçmiyor, `orbitape` ile `tracks-depo`
+  YAN YANA kalmak zorunda (README/araçlar `../tracks-depo` kullanıyor).
+
+## 30 Eylül 2026 (devam 2) — klasör taşıma ve imza yedeği
+
+- **Klasör taşıma bitti:** kökteki 53 medya/zip/pdf dosyası
+  `ORBITAPE DATA/zip-ve-medya/` altına (kurulum-dosyalari, ses, video,
+  gorseller, belgeler, paketler-zip). Liste: `zip-ve-medya/TASINAN.txt`.
+  Hiçbir şey silinmedi. Kökte yalnız 8 dosya kaldı; kökteki eski
+  `CLAUDE.md`/`GUNLUK.md` bayat kopyalar (sonra konuşulacak). `orbitape`
+  ve `tracks-depo` YAN YANA kalmak zorunda (`../tracks-depo` yolu).
+- **İmzalama anahtarları:** İKİ FARKLI keystore var
+  (`orbitape-twa/android.keystore`, `ORBITAPE - Google Play package/signing.keystore`).
+  Hangisinin Play uygulamasını imzaladığı DOĞRULANMADI (Play Console'da
+  bakılacak). İkisi de GitHub'da yok. `signing-key-info.txt` AÇILMADI
+  (parola içerebilir).
+- **Yedek:** üç dosya `PJ` ve `One Touch` disklerine
+  `ORBITAPE-IMZA-YEDEK-2026-09-30/` olarak kopyalandı; SHA-256 ile
+  kaynakla birebir aynı doğrulandı.
+- **Bilgisayarda Time Machine yok** ("No destinations configured") —
+  tasarım klasörleri ve GitHub'a girmeyenler yedeksiz. AÇIK İŞ.
+- **Sıra:** ③ `tracks` kontrol kapısı → ④ kanca/gece köprüsü/nabız;
+  Higgsfield anahtar süresi (29 Aralık) hatırlatması pj onayı bekliyor.
+
+## 30 Eylül 2026 (devam 3) — `tracks` veri kapısı
+
+- **Bulgu:** "Veri deposuna CI" açık iş olarak duruyordu ama kapı ZATEN
+  vardı (`kontrol.yml` + `dogrula.py`, 17 Eylül). Kılavuz satırı bayattı
+  (18 Eylül'deki ile aynı hastalık); düzeltildi.
+- **Ölçüm (kural 4):** bozuk veriyle kapı denendi. Biçim bozuklukları
+  (http adres, eksik alan, çift adres, bozuk JSON, boş dizi) 5/5
+  yakalandı. AMA `by-nc-nd` lisanslı kayıt kapıdan GEÇTİ (çıkış 0).
+- **Düzeltme:** `dogrula.py` artık her kaydı `lisans_filtre.serbest_mi`
+  ile sınıyor (kuralın tek kaynağı; ND, BY-NC'den önce). Geri alıp
+  ölçme: 5 yasak lisans çeşidinde eski kapı 0, yeni kapı 1; by-nc ve
+  by-nc-sa serbest kalıyor (yanlış alarm yok). Gerçek veri 22.903 kayıt
+  temiz.
+- **Dal:** `tracks-depo` → `veri-kapisi-lisans` (yerel, commit/push YOK;
+  pj GitHub Desktop'tan commit+publish eder). `.DS_Store` commit'e
+  GİRMEMELİ.
+- **Açık kalan (bilinçli):** kapı adreslerin ÇALIŞIP ÇALIŞMADIĞINA
+  bakmıyor (ayrı, yavaş soru; "ölü bağlantı örneklemesi" var ama radyo
+  için). Arşiv havuzu için karşılığı yok.
