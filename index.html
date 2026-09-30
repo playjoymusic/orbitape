@@ -1706,29 +1706,6 @@
   /* .uzer yalniz yazi varken gecerli: bos yazida kalici opaklik
      birakmamali (yoksa bos #modGez her zaman gorunur kalirdi). */
   #modGez.uzer.gor{opacity:.72;}
-  /* ── TEPE YAZISI (30 Eylul) ──────────────────────────────────
-     Istasyon degistiginde ad, halkanin ustundeki bos alanda cikiyor
-     (konum: modGezUsteYerlestir). Kullanicinin istegi: "gecici cikan
-     istasyon degisiminde ciktigi gibi ayni font, KALIN, halkasinin
-     renginden etkilenen". Once iki ayri yer vardi (alt / ekran
-     ortasi) ve ince (300) yaziliyordu; simdi tek yer, kalin.
-     Opaklik de yukseltildi: eskisi .56 idi, ust boslukta okunmuyordu. */
-  #modGez.tepe.gor{opacity:.92; font-weight:700;}
-  #modGez.tepe.cizim.gor{opacity:.92;}
-  #modGez.tepe{font-weight:700;}
-  /* ORTALAMA: 'left:50% + translateX(-50%)' yerine sabit tam genislik.
-     OLCU: cizimli ad (svg) icinde transform kurali `.cizim` ile
-     degisiyor ve yazi EKRANIN SAG USTUNE kaciyordu (x 280-415,
-     olmesi gereken 77-353). Metin icin de ayni risk vardi. */
-  /* OLCU: `left:0;width:100%` yetmedi -- yazi sola kaydi (DARK 0-235,
-     olmesi gereken 117-313). Sebep: taban kuraldaki `text-indent:.42em`
-     ve transform hala devredeydi. Burada konum TAMAMEN yeniden
-     yaziliyor: iki kenar, sabit, flex ortalama. */
-  #modGez.tepe{left:0 !important; right:0 !important; width:auto !important;
-    transform:none !important; text-indent:0 !important; letter-spacing:normal;
-    display:flex !important; justify-content:center; align-items:center;}
-  #modGez.tepe.cizim{transform:none !important;}
-  #modGez.tepe svg{display:inline-block; vertical-align:middle; margin:0 auto;}
   /* ── CIZILMIS AD ──
      BES AD SONRADAN URETILDI. INDUSTRIAL, NOISE, DARK, CITY ve
      BEATS raflari acildiginda bu tabloda karsiliklari yoktu ve
@@ -19604,18 +19581,21 @@
       }
       modGezYaz(ad);
       const el = _modGezEl();
-      el.classList.remove('uzer', 'alt');
-      el.classList.add('tepe');
-      /* OLCU: sinif yalniz 'tepe cizim' idi, 'gor' YOKTU -- yani
-         opaklik 0 ve yazi ekranda gorunmuyordu. `gor` yazinin
-         gorunur oldugunu soyleyen sinif; burada acikca veriliyor. */
-      el.classList.add('gor');
-      /* 30 Eylul: yazi daima HALKANIN TEPE BOSLUGUNDA. Once iki yerde
-         duruyordu: ilk giriste halkanin altinda, tekrar giriste
-         diskin ORTASINDA (ekranin merkezine biniyordu). Istenen tek
-         yer: ust bosluk. */
-      try{ modGezUsteYerlestir(); }catch(e){ _yut(e); }
-      if(ilk){
+      /* 30 Eylul: GECICI YAZI ESKI YERINDE. Bir ara istasyon adinin
+         ust bosluğa (halkanin tepesi) tasinmisti; kullanici geri
+         aldi: "yukarda yazan gecici yazilari alta al, tek is". Artik
+         yine: ilk giriste halkanin ALTINDA, tekrar giriste ekranin
+         ortasinda. Degisen tek sey KONUM. */
+      el.classList.toggle('uzer', !ilk);
+      el.classList.toggle('alt',  ilk);
+      if(!ilk){
+        /* Diskin ustune: ekranin ortasi + halka kaydirma payi. 'important'
+           cunku modGezYaz her cagrida style.top'u yeniden yaziyor. */
+        const y = (typeof HALKA_KAY !== 'undefined') ? HALKA_KAY : 0;
+        el.style.setProperty('top', (Math.round(_gorBoy()/2) + y) + 'px', 'important');
+      }else{
+        /* Yalniz ONCELIK dusurulur; deger modGezYaz'in hesapladigi
+           "halkanin altindaki bosluk" konumunda kalir. */
         const t = el.style.getPropertyValue('top');
         if(t) el.style.setProperty('top', t);
       }
@@ -19732,32 +19712,6 @@
        yani ad degisip punto degisince o da kaymali. Ayni sira,
        ayni sebep. */
     try{ _tutamakYerlestir(); }catch(e){ _yut(e); }
-  }
-  /* ── ISTASYON ADI NEREDE (30 Eylul) ───────────────────────────
-     Kullanicinin istedigi yer: halkanin TEPE BOSLUGU, yani kuzey
-     dugumunun (ve gezegenin) ustunde kalan siyah alan. Sabit piksel
-     degil: diskin olculen yerinden. */
-  function modGezUsteYerlestir(){
-    try{
-      const el = _modGezEl();
-      const d = document.querySelector('.disk');
-      const r = d ? d.getBoundingClientRect() : null;
-      if(!r || !r.width){ el.style.removeProperty('top'); return; }
-      const cy = r.top + r.height/2;
-      /* KUZEY GEZEGENININ USTU. OLCU: yazi once halkanin tepesine
-         (halkaR) konuluyordu; ama gezegenler halkanin DISINDA
-         (bkz. uyduYerlestir: rr = halkaR + 22 + 14), yani yazi
-         gezegenin USTUNE biniyordu (ekran goruntusu: ay yazinin
-         ortasinda kalmisti). Simdi yer, gezegenin kendi yaricapi. */
-      const halkaR = (r.width/2) * 0.89;
-      const gezR = halkaR + 22 + 14;
-      const yb = el.getBoundingClientRect();
-      /* Gezegenin kutusu 44 px, yaricap 22. Yazinin ALT kenari
-         gezegenin UST kenarinin 10 px ustunde olmali. OLCU: 12 px
-         pay yetmedi, yazi ayin ortasina bindi (y 270..310, ay 280..324). */
-      const y = cy - gezR - 22 - 10 - (yb.height || 24);
-      el.style.setProperty('top', Math.max(8, Math.round(y)) + 'px', 'important');
-    }catch(e){ _yut(e); }
   }
   /* Büyük gezinme yazısı — halkanın hemen üstünde. */
   function _modGezEl(){
@@ -19947,19 +19901,13 @@
            duruyordu. Artik tam orta (0,50). */
         const orta = halkaAlt + (taban - halkaAlt)*0.50 - h*0.5;
         el.style.top = Math.round(Math.max(halkaAlt + 10, Math.min(taban - 14 - h, orta))) + 'px';
-      /* 30 Eylul: yazi daima HALKANIN TEPE BOSLUGUNDA. Aşağıdaki
-         hesap (halkanın altı) artık yalnızca yedek; konumu
-         modGezUsteYerlestir() yazıyor ve `!important` ile üstüne
-         biniyor. Kullanıcının isteği: istasyon değişiminde ad, üstteki
-         boş alanda, kalın, halkanın renginde görünsün. */
       }catch(e){ _yut(e); }
       }
-      /* Konum HER cagrida, ad bos olsa da yazilir. Once bu cagri
-         `if(ad)` blogunun icindeydi; ad temizlenince (yazi solar)
-         konum geri geliyor ve yazi ekranin sag ustune kaciyordu
-         (olculdu: data-ad='DARK' iken x=117..313, bir sonraki
-         temizlemeden sonra x=560'a kaydi). */
-      try{ modGezUsteYerlestir(); }catch(e){ _yut(e); }
+      /* `gor` sinifi yazinin gorunur oldugunu soyleyen tek sey. Bir ara
+         silinmisti; opaklik 0 kaliyor ve gecici yazi EKRANDA
+         GORUNMUYORDU (saglik kontrolu 'Gezinme yazisi okunur' ile
+         yakaladi). */
+      el.classList.toggle('gor', !!ad);
     }
   function modAdiGoster(){ onizlemeAyarla(''); modAdiYaz(); modGezYaz(''); }   // seçim: küçük etiket yazar, büyük gider
   /* BUYUK YAZI ICIN BEKCI: hizli/dagitik jestte "parmak kalkti"
