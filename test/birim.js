@@ -1141,6 +1141,20 @@ function bitir(){
     K('Sozluk dosyasi yayindan dislanmamis',
       !/^\s*dil\//m.test(yoksay),
       '.assetsignore dil/ klasorunu engellememeli');
+    /* 30 Eylul 2026 olcumu: TASARIM.md ve .claude/ .assetsignore'a
+       yazilmadigi icin derle.py ikisini yayina kopyaladi; canlida
+       acik servis edildi. Kural: kokteki her .md ic belgedir ve
+       .claude/ proje ayaridir -- hepsi burada listeli olmali. Yeni
+       bir .md eklenip listeye unutulursa kirmizi yanar. */
+    const yoksaySatir = new Set(yoksay.split('\n').map(l => l.trim()));
+    const eksikBelge = fs.readdirSync(KOK)
+      .filter(n => /\.md$/i.test(n) && !yoksaySatir.has(n));
+    K('Koktaki her .md ic belge yayindan dislanmis',
+      eksikBelge.length === 0,
+      eksikBelge.length ? 'listede yok: ' + eksikBelge.join(', ') : 'hepsi .assetsignore\'da');
+    K('.claude/ yayindan dislanmis',
+      yoksaySatir.has('.claude/'),
+      '.assetsignore .claude/ satiri');
     const bas = fs.readFileSync(path.join(KOK, '_headers'), 'utf8');
     DILLER_T.forEach(kod=>{
       K('Sozluk dosyasinin onbellek kurali var: ' + kod,
