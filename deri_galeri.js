@@ -296,10 +296,27 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
            ya da onceki secimin sozu gecmez. Elle secim damgasi da
            siliniyor -- bir sonraki deride odunc yeniden calissin. */
         if(AYAR.merkez !== 'cark'){
-          AYAR.merkez = 'cark'; yaz();
+          AYAR.merkez = 'cark'; merkezKalici('cark'); yaz();
         }
         _merkezOnce = null; _merkezElle = false;
       }
+    }catch(e){ yut(e); }
+  }
+  /* 1 EKIM (kullanici: "orbitape tarafinda skins kisayolunda cark
+     sectiysem artik orbitape'i carkla acman gerekiyor"). KOK NEDEN:
+     galeride WHEEL/RING/DISC'e basmak ve OFF'a donmak yalniz anlik
+     AYAR.merkez'i degistiriyordu; ORBITAPE'in HATIRLADIGI kayit
+     (merkezOrb) yalniz Ayarlar > CENTER dugmesinde guncelleniyordu.
+     Sonuc: galeriden cark secip RADIOTAPE'e gidip donunce (ya da
+     yeniden acinca) modaGec eski kaydi (halka/disc) geri yukluyordu.
+     Artik KALICI kararlar (elle secim, OFF -> cark) o anda ACIK olan
+     kipin kaydina da yaziliyor: ORBITAPE'deyken merkezOrb, RADIOTAPE'de
+     radyoMerkez. Odunc alinan gecici 'yuvarlak' (bir skin secilince)
+     BURAYA GELMEZ: o bir karar degil, skin bitince geri verilir. */
+  function merkezKalici(k){
+    try{
+      if(document.body.classList.contains('mood')) AYAR.merkezOrb = k;
+      else AYAR.radyoMerkez = k;
     }catch(e){ yut(e); }
   }
   function el(t, sinif){ const e = document.createElement(t); if(sinif) e.className = sinif; return e; }
@@ -590,7 +607,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       const t = tus('mrk', ad, T(ad), ()=>{
         _merkezOnce = null;                        // elle secildi: odunc degil karar
         _merkezElle = true;                        // bu oturumda bir daha odunc alinmiyor
-        try{ AYAR.merkez = k; ayarKaydet(); }catch(e){ yut(e); }
+        try{ AYAR.merkez = k; merkezKalici(k); ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
         merkezIsaret(); diskleriTazele();
       });
@@ -839,7 +856,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
          Bkz. merkezOdunc -- kullanici "OFF'a basinca hep ilk acilan
          carkli mood olacak" dedi ve kapanis da ayni kurali izliyor. */
       if((AYAR.deri|0) === 0 && AYAR.merkez !== 'cark'){
-        try{ AYAR.merkez = 'cark'; ayarKaydet(); }catch(e){ yut(e); }
+        try{ AYAR.merkez = 'cark'; merkezKalici('cark'); ayarKaydet(); }catch(e){ yut(e); }
         try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
         try{ if(window.carkTazele) window.carkTazele(); }catch(e){ yut(e); }
         _merkezOnce = null; _merkezElle = false;

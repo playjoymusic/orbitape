@@ -6208,11 +6208,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   const panel = ()=>pg.evaluate(()=>{
     const y = document.getElementById('yelpaze'), t = document.getElementById('kamTus');
     const m = document.querySelector('#fanSure .fanMetin');
-    const c = getComputedStyle(t).color.match(/\d+/g).map(Number);
+    const c = (getComputedStyle(t).color.match(/\d+/g) || [0,0,0]).map(Number);
     return { durum:y.getAttribute('data-durum'), acik:!y.hidden,
       metin:(m&&m.textContent)||'', kirmizi: t.getAttribute('data-kayit'),
       ikonRenk:c, goster:getComputedStyle(y).display !== 'none',
-      ogeler:[...y.querySelectorAll('.fanOge')].filter(o=>!o.hidden).map(o=>o.querySelector('.fanYazi').textContent) };
+      ogeler:[...y.querySelectorAll('.fanOge')].filter(o=>!o.hidden).map(o=>((o.querySelector('.fanYazi')||{}).textContent)||o.id) };
   });
   const panelAc = async ()=>{ await pg.evaluate(()=>{ const y=document.getElementById('yelpaze'); if(y.hidden) document.getElementById('kamTus').click(); }); await pg.waitForTimeout(350); };
   await pg.evaluate(()=>{ AYAR.mood = true; document.body.classList.add('mood'); });
@@ -8001,7 +8001,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const renk=()=>{ const l=[...document.querySelectorAll('#kipKisayol .uck-ad')];
           const g=l.find(x=>parseFloat(getComputedStyle(x).opacity)>0.9);
           return { kip:g?g.dataset.kip:'', renk:g?getComputedStyle(g).color:'',
-                   soluk:l.filter(x=>x!==g).map(x=>getComputedStyle(x).color) }; };
+                   soluk:l.filter(x=>x!==g).map(x=>getComputedStyle(x).color),
+                   gizli:l.filter(x=>x!==g).map(x=>parseFloat(getComputedStyle(x).opacity)) }; };
         const eski = AYAR.mood;
         const eskiSinif = document.body.className;
         AYAR.mood = false; moodUygula(false); await bek(340); geriYerlestir(); await bek(340);
@@ -8020,9 +8021,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         }else{
           AYAR.mood = eski; moodUygula(false); await bek(420);
         }
+        /* 1 EKIM: secili olmayan isim artik "soluk ton" DEGIL, tamamen
+           GORUNMEZ (isimler switch konumuna bagli, sirayla soner/gelir).
+           Eski sart (hepsi ayni soluk ton) bilerek kalkti. */
         return r1.kip==='radio' && r2.kip==='orbit' && r1.renk!==r2.renk
-            && r1.soluk.every(c=>c===r2.soluk[0]);
-      }), 'iki durak sirayla acilir, her biri kendi odasinin renginde; secili olmayan soluk');
+            && r1.gizli.every(o=>o<0.05) && r2.gizli.every(o=>o<0.05);
+      }), 'iki durak sirayla acilir, her biri kendi odasinin renginde; secili olmayan GORUNMEZ');
     /* 28 Eylul: yatay dugme. Kullanici: "sol alt swichi yataya yap.
        alttaki ikon soldan daha uzun olmasin, hizala. mod isimleri de
        yatay olarak ustunde yazsin. hangi modtaysa o yanar. ayni yerde
@@ -17500,6 +17504,124 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         ys ? ('30 adim: cizimli ' + ys.cizimli + ' / duz ' + ys.duz
               + ' (cizimli > 0 olmali)') : 'serit acilmadi');
     }
+
+  /* ══ REVIZYON 1 EKIM ═══════════════════════════════════════════════
+     Her is kendi alt baslikta; hepsi TEMIZ bir sayfada (localStorage
+     silinir) kosuyor ki ustteki testlerin biraktigi durum karismasin. */
+  {
+    /* ── 2. ORBITAPE, GALERIDE SECILEN CARKLA ACILIR ───────────────
+       Kullanicinin sozu: "orbitape tarafinda skins kisayolunda cark
+       sectiysem artik orbitape'i carkla acman gerekiyor."
+       OLCUM (eski kodda): galeriden WHEEL secince yalniz anlik
+       AYAR.merkez 'cark' oluyordu, ORBITAPE'in hatirladigi kayit
+       (merkezOrb) 'yuvarlak' kaliyordu; RADIOTAPE'e gidip donunce ya da
+       yenileyince 'yuvarlak'a geri donuluyordu. Duzeltme:
+       deri_galeri.js merkezKalici(). */
+    const { sayfa: p2, kapat: k2 } = await sayfaAc(c, { bekle: 2500 });
+    await p2.evaluate(()=>{ try{ localStorage.clear(); }catch(e){} });
+    await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
+    const dm = ()=>p2.evaluate(()=>({ merkez:AYAR.merkez, orb:AYAR.merkezOrb, rad:AYAR.radyoMerkez }));
+    const orbGec = async()=>{ await p2.evaluate(()=>{ AYAR.mood=true; moodUygula(true); }); await p2.waitForTimeout(700); };
+    const radGec = async()=>{ await p2.evaluate(()=>{ AYAR.mood=false; moodUygula(false); }); await p2.waitForTimeout(700); };
+    await orbGec();
+    const d0 = await dm();
+    await p2.evaluate(()=>document.getElementById('deriFirca').click()); await p2.waitForTimeout(900);
+    await p2.evaluate(()=>document.querySelector('.dg-merkez [data-merkez="cark"]').click()); await p2.waitForTimeout(500);
+    const d1 = await dm();
+    K('Galeriden WHEEL secmek ORBITAPE kaydina yaziliyor',
+      d1.merkez === 'cark' && d1.orb === 'cark',
+      'once merkezOrb '+d0.orb+' -> sonra merkez '+d1.merkez+' / merkezOrb '+d1.orb);
+    await radGec(); await orbGec();
+    const d2 = await dm();
+    K('RADIOTAPE\'e gidip donunce ORBITAPE carkla aciliyor', d2.merkez === 'cark', 'donuste merkez '+d2.merkez);
+    await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
+    await orbGec();
+    const d3 = await dm();
+    K('Yenileyince ORBITAPE carkla aciliyor', d3.merkez === 'cark' && d3.orb === 'cark', 'yenileme sonrasi merkez '+d3.merkez);
+    /* Ters yon: ORBITAPE'de DISC secmek RADIOTAPE'in carkini EZMEZ. */
+    await p2.evaluate(()=>document.getElementById('deriFirca').click()); await p2.waitForTimeout(900);
+    await p2.evaluate(()=>document.querySelector('.dg-merkez [data-merkez="yuvarlak"]').click()); await p2.waitForTimeout(500);
+    const d4 = await dm();
+    K('ORBITAPE\'de DISC secmek RADIOTAPE merkezini bozmuyor',
+      d4.orb === 'yuvarlak' && d4.rad === 'cark', 'merkezOrb '+d4.orb+' · radyoMerkez '+d4.rad);
+    await k2();
+  }
+
+  {
+    /* ── 3. SWITCH: SUREKLI, KONUMA BAGLI ─────────────────────────
+       Kullanicinin sozu: "full surtebilmeliyiz, saga sola cektikce rengi
+       asamali homojen gecis; yazilar da switche bagli, biri tok olup
+       digeri gelmeli; RADIOTAPE yazisi tasiyor". Topuzu sag uctan sol
+       uca parmakla cekip her adimda konumu ve iki ismin opakligini
+       okuyoruz. */
+    const { sayfa: p3, kapat: k3 } = await sayfaAc(c, { bekle: 2500 });
+    await p3.evaluate(()=>{ try{ localStorage.clear(); }catch(e){} });
+    await p3.reload({ waitUntil:'load' }); await p3.waitForTimeout(3000);
+    const sw = ()=>p3.evaluate(()=>{
+      const k=document.getElementById('kipKisayol'), yol=k.querySelector('.uck-yol');
+      const ad=n=>{ const e=k.querySelector('.uck-ad[data-kip="'+n+'"]'); return { op:+(+getComputedStyle(e).opacity).toFixed(3), w:e.getBoundingClientRect().width }; };
+      const tp = getComputedStyle(k.querySelector('.uck-topuz')).backgroundColor;
+      return { p:parseFloat(k.style.getPropertyValue('--uck-p')), orbit:ad('orbit'), radio:ad('radio'),
+               yolW:yol.getBoundingClientRect().width, mood:document.body.classList.contains('mood'), tp };
+    });
+    const bas = await sw();
+    const tx = await p3.evaluate(()=>{ const r=document.querySelector('#kipKisayol .uck-topuz').getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top+r.height/2}; });
+    const yb = await p3.evaluate(()=>{ const r=document.querySelector('#kipKisayol .uck-yol').getBoundingClientRect(); return {l:r.left, r:r.right}; });
+    await p3.mouse.move(tx.x, tx.y); await p3.mouse.down();
+    const iz = [];
+    for(const f of [0.9,0.75,0.6,0.5,0.4,0.25,0.1,0.0]){
+      await p3.mouse.move(yb.l + 9 + f*(yb.r-yb.l-18), tx.y, {steps:4}); await p3.waitForTimeout(70);
+      iz.push(await sw());
+    }
+    const ortaTp = iz[3].tp;
+    await p3.mouse.up(); await p3.waitForTimeout(1200);
+    const son = await sw();
+    const ps = iz.map(x=>x.p);
+    K('Switch parmakla SUREKLI suruklenebiliyor (ara konumlar var)',
+      bas.p === 1 && ps.every((v,i)=> i===0 || v <= ps[i-1] + 1e-6)
+        && ps.filter(v=>v > 0.08 && v < 0.92).length >= 5,
+      'p: '+ps.map(v=>v.toFixed(2)).join(' → '));
+    K('Yazilar switche bagli, SIRAYLA: hicbir an ikisi birden gorunmuyor',
+      iz.every(x=> Math.min(x.orbit.op, x.radio.op) < 0.05)
+        && iz[0].radio.op > 0.9 && iz[iz.length-1].orbit.op > 0.9
+        && iz.some(x=> x.orbit.op > 0.1 && x.orbit.op < 0.9),
+      iz.map(x=>x.radio.op.toFixed(2)+'/'+x.orbit.op.toFixed(2)).join('  ')+'  (RADIO/ORBIT)');
+    K('Topuz rengi konuma gore degisiyor', bas.tp !== ortaTp, 'p=1 ile p~0.5 farkli renk');
+    K('Birakinca kip degisiyor ve topuz ucta duruyor', son.mood === true && son.p === 0 && son.orbit.op > 0.95,
+      'mood '+son.mood+' · p '+son.p+' · ORBITAPE yazisi '+son.orbit.op);
+    K('Kip isimleri switch yolundan TASMIYOR',
+      bas.radio.w <= bas.yolW && son.orbit.w <= son.yolW,
+      'yol '+bas.yolW+' px · RADIOTAPE '+Math.round(bas.radio.w)+' px · ORBITAPE '+Math.round(son.orbit.w)+' px');
+    await k3();
+  }
+  {
+    /* ── 6. ORBITAPE'TE FX PARCA DEGISINCE DEVAM EDER ─────────────
+       Kullanicinin sozu: "orbitape te bi fx acıksa ortaya basıp track
+       degisse bile fx devam etsin". Kontrol: FX degerleri ver, parca
+       degistir, 3.6 sn (eski 2.5 sn'lik sonme suresini asar) bekle.
+       RADIOTAPE'te eski kural DEGISMEDI: orada soner. */
+    const { sayfa: p6, kapat: k6 } = await sayfaAc(c, { bekle: 2500 });
+    const fx = async (mood)=>{
+      await p6.evaluate(async (m)=>{
+        AYAR.mood=m; moodUygula(m); AKTIF_MOD=null; mod = m?'lib':'radio'; window.sonraki=function(){};
+        if(m) cal({ id:'fa1', mp3:'https://sahte.test/fa1.mp3', ad:'FA1', etiket:'netlabel', lisans:SERBEST });
+        else  cal({ id:'fr1', mp3:'https://sahte.test/fr1', ad:'FR1', radyo:true });
+        await new Promise(r=>setTimeout(r,700));
+        FXMOD='retro'; fxSeviye=0.6; yatay=0.4; fxX=0.4; fxY=0.6;
+        try{ fxUygula(); yatayUygula(); modUygula(); }catch(e){}
+        if(m) cal({ id:'fa2', mp3:'https://sahte.test/fa2.mp3', ad:'FA2', etiket:'netlabel', lisans:SERBEST });
+        else  cal({ id:'fr2', mp3:'https://sahte.test/fr2', ad:'FR2', radyo:true });
+      }, mood);
+      await p6.waitForTimeout(3600);
+      return p6.evaluate(()=>({ fxSeviye:+fxSeviye.toFixed(2), yatay:+yatay.toFixed(2), FXMOD }));
+    };
+    const fo = await fx(true), fr = await fx(false);
+    K('ORBITAPE: parca degisince FX devam ediyor', fo.fxSeviye === 0.6 && fo.yatay === 0.4 && fo.FXMOD === 'retro',
+      'parca degisti, 3.6 sn sonra seviye '+fo.fxSeviye+' yatay '+fo.yatay+' mod '+fo.FXMOD);
+    K('RADIOTAPE: parca degisince FX eskisi gibi soner', fr.fxSeviye === 0 && fr.yatay === 0,
+      'seviye '+fr.fxSeviye+' yatay '+fr.yatay);
+    await k6();
+  }
 
    await kapatPg();
    await b.close();
