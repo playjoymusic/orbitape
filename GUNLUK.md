@@ -4523,3 +4523,47 @@ olculen sey degisti:
 · "Gecici ad halkanin icine girmiyor" -> "gezegenin ustunde"
 Saglik 894/894 · ariza 18/18 · senaryo 121/121 · motor 19/19 ·
 cihaz 156/156 · birim 133/133 · tip 54 (taban sabit) -- 0 kirmizi.
+
+## 30 Eylül — Deri arka planı: oda katmanı kaldırıldı
+
+**Bildirilen:** "arka plan normalde aynı renkti, hepsi koyu siyah bir şey
+yolmuş" + ekran görüntüleri (VECTOR, BLUSH, MINT, COBALT): skin seçili,
+arka plan düz siyah.
+
+**Bulunan sebep:** `body.deri::before{inset:0;background:#04070a}` diye
+**tam ekran** bir koyu katman vardı. Yorumu kendisi ele veriyordu: *"JOYTAPE'de
+oda tonu krem… koyu odalarda o derin siyah."* JOYTAPE 29 Eylül'de kalktı,
+katman kaldı ve işini değiştirmedi. `body.deri{background:var(--d-zem)
+!important}` yazmasına rağmen derinin rengi hiç görünmüyordu.
+
+**Ölçüm (canlı sitede, 148 deri):** dört skin örneği katman kapalıyken
+düz siyah geliyordu — VECTOR `#f2c318`, BLUSH `#e0a9a3`, MINT `#9fd2c0`,
+COBALT `#2f7fd0`; `body::before` dördünde de `rgb(4,7,10)`. Katman
+saydam yapılınca dördü de kendi rengine döndü.
+
+**Düzeltme:** iki satırlık katman ve `body.zem{--oda-tem}` kaldırıldı.
+Alt bant sorunu bir daha doğmaz: o zaman istenen buydu, şimdi istenen
+derinin rengi.
+
+**Yeni kontrol:** "Deri seçiliyken arka plan derinin kendi rengi" — üç deri
+(VECTOR açık, PLUM koyu, BAUHAUS çizimli): `--d-zem` ile ekranın gerçek
+arka planı aynı olmalı, oda katmanı olmamalı. Kanal başına 4 birim tolerans
+(zemin geçişi .30 s).
+
+### Yutulan hata tabanı 8 → 9 (dalgalanma, gerileme değil)
+
+Kapı "Yutulan hata bütçesi" kontrolünde kırmızı çıktı. **Sorumlunun benim
+değişikliğim olmadığı ölçüldü:** yeni kontrol `deriUygula()` çağırdığı halde
+`window.__yut` sayacı **+0** artıyor (VECTOR/PLUM/BAUHAUS ölçüldü).
+
+`2ea944c`'nin **kendisi** (deri değişikliği olmadan) arka arkaya iki kez 9,
+bir kez 8 yüttü. Mesajların altısı da her koşuda aynı:
+`NotReadableError | deneme | null | undefined | [object Object] | metin…`
+Yani 9. yutum yeni bir hata sınıfı değil, mevcut sınıflardan birinin
+(ses/yayın akışı denemesi) bir kez daha tekrarlanması — hangi radyonun ne
+zaman bağlandığına bağlı. Taban 9'a çıkarıldı; kontrolün işi değişmedi,
+10. yine kırmızı yapar.
+
+**Ders (kalıcı):** yeşil gördüğüm koşu tek kanıt değil. Aynı kod 8 de 9 da
+verebiliyor; bir kontrol kırmızıysa önce "bunu ben mi yaptım" sorusunu
+ölçerek sormak gerekiyor.

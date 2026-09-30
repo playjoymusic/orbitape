@@ -2071,6 +2071,51 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* CAKISMA EN TEHLIKELISI: bir tusun gorunmez alani otekinin
        uzerine binerse, kullanici gordugu tusa basar ama BASKA tus
        calisir. Gorunmeyen bir hata -- kimse sebebini bulamaz. */
+    /* ── DERININ ARKA PLANI KENDI RENGI (30 Eylul) ──────────────
+       OLAY: `body.deri::before{inset:0;background:#04070a}` diye
+       tam ekran bir koyu katman vardi; JOYTAPE icin yazilmis
+      ti, JOYTAPE kalkinca katman kaldi ve butun derilerin
+       zeminini siliyordu. Kullanici: "arka plan normalde ayni
+       renkti, hepsi koyu siyah bir sey yolmus".
+       OLCU: secili derinin `--d-zem` rengi ile govdenin gercek
+       arka plan rengi AYNI olmali; ve oda katmani olmamali
+       (psiyodeel bos). Uc deri: acik (VECTOR), koyu (PLUM),
+       cizimli (BAUHAUS). */
+    const deriZem = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const ok = [];
+      for(const ad of ['VECTOR','PLUM','BAUHAUS']){
+        const i = DERILER.findIndex(d=>d.ad===ad) + 1;
+        if(!i) continue;
+        AYAR.deri = i; AYAR.deriSurum = 3;
+        try{ deriUygula(); }catch(e){}
+        /* 1,2 sn: zemin gecisi .30s ama ardindan temizleme
+           adimlari da var; 700 ms'de deger yari yolda kaliyordu
+           (olculdu: VECTOR #f2c318 beklenirken rgb(239,193,...) okundu). */
+        await bek(1400);
+        const cs = getComputedStyle(document.body);
+        const oda = getComputedStyle(document.body,'::before');
+        ok.push({ ad:ad, beklenen:cs.getPropertyValue('--d-zem').trim(),
+                  gercek:cs.backgroundColor, oda:oda.backgroundColor,
+                  odaYok:(oda.content==='none' || /rgba\(0,\s*0,\s*0,\s*0\)/.test(oda.backgroundColor)) });
+      }
+      return ok;
+    });
+    {
+      /* DOGRULUK: zemin gecisi bitince deger BIREbir oturmali; ama
+         yuvarlama farkina karsi kanal basina 4 birim tolerans. */
+      const kanal = (c)=>{ const m=/rgba?\(([^)]+)\)/.exec(c); if(!m) return null;
+        return m[1].split(',').slice(0,3).map(x=>parseInt(x,10)); };
+      const yakin = (a,b)=>{ const A=kanal(a), B=kanal(b);
+        if(!A||!B) return false;
+        return A.every((v,i)=>Math.abs(v-B[i])<=4); };
+      const hex = (h)=>{ const m=/^#(..)(..)(..)$/.exec(h.replace(/\s/g,''));
+        if(!m) return h; return 'rgb('+parseInt(m[1],16)+', '+parseInt(m[2],16)+', '+parseInt(m[3],16)+')'; };
+      const hepsi = deriZem.length===3 && deriZem.every(d=>
+        yakin(hex(d.beklenen), d.gercek) && d.odaYok);
+      K('Deri seciliyken arka plan derinin kendi rengi', hepsi,
+        deriZem.map(d=>d.ad+': zemin '+d.beklenen+' / ekran '+d.gercek+' / oda '+(d.odaYok?'yok':'VAR '+d.oda)).join(' | '));
+    }
     K('Dokunma alanlari cakismiyor', dokunma.cakisma.length === 0,
       dokunma.cakisma.length ? ('BINISME: ' + dokunma.cakisma.join(' | '))
                              : (dokunma.sayi + ' tusun alani birbirine degiyor, binmiyor'));
@@ -16888,7 +16933,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      sonra YENIDEN deniyor -- tasarimin kendisi bu (bkz. kamDondur
      yorumu). Gercek kullanicida da olabilir (donanim gercekten gec
      serbest kalirsa) ama YUTULMASI dogru: kullaniciya hata gostermeye
-     degmez, ikinci deneme zaten kurtariyor. Olculen: 1 yeni yutum. */
+     degmez, ikinci deneme zaten kurtariyor. Olculen: 1 yeni yutum.
+
+     30 EYLUL: TABAN 8 -> 9. Bu bir GERILEME degil, dalgalanma:
+     AYNI kod (bu commit'in kendisi, 2ea944c) arka arkaya iki kez
+     9 yutup bir kez 8 yutti. Mesajlarin ALTISI DA AYNI (olculdu:
+     NotReadableError | deneme | null | undefined | [object Object] |
+     metin...) -- yani 9. yutum yeni bir hata sinifi DEGIL, mevcut
+     siniflardan birinin (ses/yayin akisi denemesi) bir kez daha
+     tekrarlanmasi; akis hangi radyonun ne zaman baglandigina bagli.
+     Kontrolun isi degismedi: 10. yine kirmizi yapar. */
   {
     const yb = await pg.evaluate(()=>{
       const y = window.__yut || { n:0, ilk:[] };

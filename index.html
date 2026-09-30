@@ -2559,9 +2559,20 @@
      en arkada TAM EKRAN bir katman — skin ne olursa olsun alt bant oda
      renginde kalır. JOYTAPE'de oda tonu krem (duvar kâğıdıyla aynı),
      koyu odalarda o derin siyah. */
-  body.zem{--oda-tem:#04070a;}
-  body.deri::before{content:'';position:fixed;inset:0;z-index:0;
-    pointer-events:none;background:var(--oda-tem,#04070a);}
+  /* 30 Eylul: ODA KATMANI KALDIRILDI. Burada TAM EKRAN bir koyu
+     katman vardi: `body.deri::before{inset:0;background:#04070a}`.
+     JOYTAPE icin yazilmisti (bkz. yukaridaki yorum) -- o odanin
+     tonu kremdi, koyu odalarda derin siyah. JOYTAPE 29 Eylul'da
+     KALKTI ama katman kaldi ve isini degistirmedi.
+     OLCU: catmanin uzerinde butun derilerin zemini OLMAYAN siyah
+     bir duz ekrana donusuyordu. `body.deri{background:var(--d-zem) !important}
+     ` yaziyor ve yine de derinin rengi GORUNMUYORDU. Ornekler:
+     VECTOR --d-zem #f2c318, BLUSH #e0a9a3, MINT #9fd2c0, COBALT
+     #2f7fd0; canli olcumde dortu de #04070a ile siliniyordu.
+     Duzeltme: katman kaldirildi. Artik derinin kendi rengi ekranin
+     tamamini boyar (bkz. yukarida `body.deri` ve `body.deri.zem`).
+     Alt bant sorunu bir daha dogmayacak: o zaman istiyordu, simdi
+     istenen sey derinin rengi. */
   #kipKisayol .uck-ad{
     position:absolute;left:0;bottom:6px;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
