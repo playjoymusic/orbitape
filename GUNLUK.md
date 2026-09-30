@@ -4943,3 +4943,22 @@ Commit/push: yok (yalnız bu günlük satırı yerelde).
 - **Açık kalan (bilinçli):** kapı adreslerin ÇALIŞIP ÇALIŞMADIĞINA
   bakmıyor (ayrı, yavaş soru; "ölü bağlantı örneklemesi" var ama radyo
   için). Arşiv havuzu için karşılığı yok.
+
+## 30 Eylül 2026 (devam 4) — `tracks` kapısı yayında; iki teslim karıştı
+
+- **tracks PR #1 birleşti** (`5a39f50`): `dogrula.py` artık lisansı da
+  sınıyor (ND/boş/tanınmayan → HATA). Ana dalda doğrulandı; gerçek veri
+  22.903 kayıt temiz. Dal silindi.
+- **HATA (Claude'un): commit metni hangi depoya ait olduğu
+  söylenmeden verildi.** pj GitHub Desktop'ta o sırada `orbitape`
+  seçiliydi; orbitape'in bekleyen notları (CLAUDE.md satırı, GUNLUK,
+  TASARIM.md, skill) tracks'in commit metniyle ve DOĞRUDAN `main`'e
+  gitti (`54428b3`, orbitape). Kural: her commit metninin başına
+  "DEPO: ..." yazılır; commit öncesi "Current Repository" doğrulatılır.
+- **Sonucu:** orbitape'te TASARIM.md ve .claude/skills/... canlı sitede
+  HERKESE AÇIK (orbitape.app/TASARIM.md → 200). İçinde parola yok, ama
+  site "iki sayfa"dır. GUNLUK.md doğru şekilde 404 (.assetsignore'da).
+  Düzeltme: .assetsignore'a `TASARIM.md` ve `.claude/` eklenecek —
+  AYRI DAL + PR ile (bekliyor).
+- **Ders:** yeni bir üst düzey dosya/klasör eklendiğinde
+  `.assetsignore` kontrol edilir; yoksa derle.py onu yayına kopyalar.
