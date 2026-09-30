@@ -5020,3 +5020,91 @@ açıkken ortaya basıp parça değişse de FX kesilmesin, hiçbir şey kesilmes
 DİKKAT: bugünkü kod bunun TERSİNİ bilerek yapıyor (`cal()` içinde
 `fxSifirla()`: "HER parça TEMİZ başlar: FX 0"). pj'nin yeni kararı
 eskisini geçer; eski gerekçe okunup öyle değiştirilecek.
+
+## 1 Ekim 2026 — KAMERA PANELİ: ölçüm kanıtı ve dersler (PR #55)
+
+- **Kanıt (kural 4, geri alarak):** eski `kayit.js` ile yeni panel
+  kontrollerinden 5'i tek tek KIRMIZI yandı (292/297), takım sonra zaman
+  aşımına düştü (çıkış 2). Yeni `kayit.js` ile 908/908 temiz. İlk geri
+  alma denemesinde takım kontrol yanmadan ÇÖKTÜ (yeni testim eski kodda
+  olmayan bir öğeyi okuyordu); testler boş-değer güvenli yapıldı.
+- **Kapı iki gerçek şey yakaladı:** (1) panelde `backdrop-filter`
+  ("Kalıcı CSS filtresi", donma sınıfı) → kaldırıldı; (2) kendi piksel
+  testimin YANLIŞ ÇAĞRISI (`fotoKaresi([])`, doğrusu `new Map()`) 0,00/0,00
+  sahte sonuç verdi ve "yutulan hata bütçesi"ni (9→15) kırdı. Düzeltildi;
+  pozitif kontrol (panel alanına dikdörtgen: fark 48,5) ölçümün
+  çalıştığını gösteriyor.
+- **Düzeltilen yanlış varsayım:** "ilk iki dokunuş boşa gidiyor" bulgusu
+  GERÇEK DEĞİL, benim ölçümümün kusuru (JS `.click()` pointerdown'u
+  tetiklemediği için tembel yükleme tekrarı devreye girmedi).
+- **Ders (Claude):** commit metnini sonuç bitmeden YARIM verdim; pj
+  onunla commit etti. Kural: Özet+Açıklama ancak hazır ve doğrulanmış
+  olduğunda, eksiksiz ve "commit et / bekle" diye açıkça verilir.
+- **Önce yeni panelin ikon yeri:** kamera ikonunun sağında (switch
+  sol altta olduğu için alt köşe kullanılmadı).
+- **Açık:** 2. iş (skins/çark), 3. iş (switch), 4. iş (mood isimleri),
+  5. iş (ORBITAPE geçişinde ses), 6. iş (FX devamı) — sırayla.
+
+---
+
+# 1 Ekim 2026 — REVİZYON 2-6 (tek dal: `revizyon-1-ekim`)
+
+pj: *"sormadan hepsini bitir ... tek push."* Kamera paneli (1. iş) PR #55 ile
+birleşti ve canlıda (`kayit.js`'te panel kodu var). Geri kalan işler TEK
+dalda; her birinin ölçümü ayrı.
+
+**2 — Skins/çark (ORBITAPE çarkla açılsın).** KÖK NEDEN: `deri_galeri.js`
+WHEEL/RING/DISC seçimi ve "OFF → çark" yalnız anlık `AYAR.merkez`i
+değiştiriyordu; ORBITAPE'in hatırladığı kayıt `merkezOrb` yalnız
+Ayarlar > CENTER düğmesinde güncelleniyordu. ÖLÇÜM (eski kod): galeride
+WHEEL seç → RADIOTAPE'e git, dön → `yuvarlak`; yenile → `yuvarlak`.
+Yeni kod: üçünde de `cark`. Düzeltme: `merkezKalici()` (kalıcı kararlar
+açık kipin kaydına yazılır); yükleyici `halka`'yı da kabul eder. Geçici
+"ödünç `yuvarlak`" (skin seçilince) kayda YAZILMAZ. LOCK SKIN ve
+"OFF hep çark" kuralları korundu.
+
+**3+4 — Switch ve mood isimleri.** Switch artık SÜREKLİ: parmakla topuzu
+sürükle, `--uck-p` (0 = ORBITAPE, 1 = RADIOTAPE) konumu, topuz rengi ve iki
+ismin opaklığını sürer. İsimler SIRAYLA söner/gelir (ORBITAPE p≤0.25 tam,
+0.5'te sıfır; RADIOTAPE 0.5'ten sonra gelir, 0.75'te tam): ikisi hiçbir
+anda birden görünmez. Bırakınca 220 ms'de yakın uca oturur ve kip değişir.
+Yol yarı saydam cam gibi oluk; isimler üst üste yumuşak gölgeyle boyutlu
+(filter/backdrop-filter YOK — donma sınıfı kapısı). RADIOTAPE yazısı
+taşıyordu (yol 128 px, yazı ~143 px): yol 152 px, yazı 18 px → 140 px.
+ÖLÇÜM (sürükleme): p 0.87→0.02; RADIOTAPE opaklığı 1→0.89→0.29→0, sonra
+ORBITAPE 0→0.11→0.71→1; bırakınca mood=true, p=0.
+Eski kontrol ("seçilmeyen isim aynı soluk ton") bilerek değişti:
+seçilmeyen isim artık GÖRÜNMEZ.
+
+**5 — Geçişte ses "arıyor", bir kez dokunmamı istiyor gibi.** ÖLÇÜLEMEDİ,
+kod DEĞİŞTİRİLMEDİ (kural 4). Bulgular: (a) oynatma reddedilirse
+(`NotAllowedError`, tarayıcının otomatik-çalma kuralı) uygulama zaten
+`bekleGoster()` ile "bir kere dokun" ekranını açıyor; pj'nin tarif ettiği
+belirti BU olabilir. (b) RADIOTAPE→ORBITAPE dönüşteki bilinen bekleme
+(`earth_giris.json`) daha önce cihaz önbelleğiyle giderilmiş. Test
+tarayıcımız otomatik-çalma kuralını KAPATIYOR ve iPhone Safari burada
+kurulamıyor: iOS davranışı ölçülemedi. SONRAKİ ADIM: telefonda `?tani`
+(ya da D tuşu) ile tanı panelini aç, geçişi yap, tanı satırının ekran
+görüntüsünü al (`ses.play` izi ve reddedilme nedeni orada).
+
+**6 — ORBITAPE'te FX parça değişince devam eder.** `cal()` içindeki
+`fxSifirla()` artık yalnız RADIOTAPE'te (body.mood yokken). FX MODU
+değişimindeki sönme (satır ~11119) aynı kaldı. ÖLÇÜM: seviye 0.6, yatay
+0.4, FXMOD retro → parça değişti, 3.6 sn sonra (eski sönme süresi 2.5 sn):
+eski kod 0/0, yeni kod ORBITAPE'te 0.6/0.4; RADIOTAPE'te 0/0 (değişmedi).
+
+**Bu teslimde yan değişiklikler:** panel testleri boş-değer güvenli;
+önceki teslimin günlük notları (PR #55 sonrası) da bu dalda gidiyor.
+
+**Bilinen sınır:** switch `color-mix()` kullanıyor (Chrome 111+, Safari
+16.2+, Firefox 113+). Daha eski tarayıcıda topuz/oluk düz renk kalır,
+kayma yine çalışır.
+
+**KANIT (kural 4, geri alarak) — 1 Ekim revizyonları:** yeni kod 919/919;
+`index.html`, `deri_galeri.js`, `_headers` ESKİ hâle döndürülünce 910/919:
+dokuz yeni kontrol kırmızı (çark 3: merkezOrb `yuvarlak` kalıyor; switch 5:
+`p NaN`, yazılar üst üste, bırakınca kip değişmiyor, yol 128 px /
+RADIOTAPE yazısı 147 px; FX 1: parça değişince 0/0). RADIOTAPE FX ve
+"DISC seçmek RADIOTAPE'i bozmaz" korumaları iki hâlde de geçti (beklenen).
+Dosyalar yerine döndü (özet b9e41bd76…, 02de5f88…, 7071b4cc…). Birim
+135/135, tip denetimi 54 (taban aynı).
