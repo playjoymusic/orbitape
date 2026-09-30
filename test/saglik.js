@@ -2116,6 +2116,75 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Deri seciliyken arka plan derinin kendi rengi', hepsi,
         deriZem.map(d=>d.ad+': zemin '+d.beklenen+' / ekran '+d.gercek+' / oda '+(d.odaYok?'yok':'VAR '+d.oda)).join(' | '));
     }
+    /* ── ACIK ZEMINDE OKUNABILIRLIK (30 Eylul) ───────────────────
+       Kullanicinin istegi: "acik backroundlarda aciklamalari
+       antrasit yaparsin" + "cizimli skinslerde uydular arada
+       kalmis". Sebep renk, katman degil: AY'in govdesi
+       `--c1:#eceef0`, acik zeminde (BAUHAUS #efe9dd, PAPER
+       #f2efe6) kayboluyordu. Duz renkli acik derilerde (VECTOR
+       #f2c318) okunuyordu.
+       OLCUM: acik deride (a) aciklamenin kontrast orani >= 4.5:1,
+       (b) gecenin dis cizgisi koyu, (c) koyu deride ikisi de
+       ESKIDEN gibi kalmali (koyu zeminde koyulastirmak yanlis). */
+    const acikOku = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const par = (s)=>{ const m=/rgba?\(([^)]+)\)/.exec(s||'');
+        if(!m) return null; const a=m[1].split(',').map(x=>parseFloat(x));
+        return { r:a[0], g:a[1], b:a[2], a:(a.length>3?a[3]:1) }; };
+      const lum = (c)=>{ const f=v=>{ v/=255; return v<=0.03928 ? v/12.92
+        : Math.pow((v+0.055)/1.055, 2.4); };
+        return 0.2126*f(c.r)+0.7152*f(c.g)+0.0722*f(c.b); };
+      /* saydamligi zeminin uzerine birlestirip kontrasti olc */
+      const uy = (fg,bg)=>{ const al=(fg.a===undefined?1:fg.a);
+        return { r:fg.r*al+bg.r*(1-al), g:fg.g*al+bg.g*(1-al),
+                 b:fg.b*al+bg.b*(1-al), a:1 }; };
+      const oku = async (ad)=>{
+        const i = DERILER.findIndex(d=>d.ad===ad) + 1;
+        if(!i) return null;
+        AYAR.deri = i; AYAR.deriSurum = 3;
+        try{ deriUygula(); }catch(e){}
+        await bek(1300);
+        try{ window.fxGoster && window.fxGoster('dongu'); }catch(e){}
+        await bek(500);
+        const bil = document.querySelector('#fxYazi .fx-bilgi');
+        const ay  = document.querySelector('.uydu[data-gk="ay"] .nk');
+        const cs  = getComputedStyle(document.body);
+        const zem = par(cs.backgroundColor) || { r:0,g:0,b:0,a:1 };
+        const yaz = uy(par(getComputedStyle(bil).color) || {r:0,g:0,b:0,a:1}, zem);
+        const L1 = lum(yaz), L2 = lum(zem);
+        return { ad:ad, acik:document.body.classList.contains('deri-acik'),
+          oran:(Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05),
+          golge:getComputedStyle(ay).boxShadow };
+      };
+      /* Bu iki deri bittikten sonra secili gezegeni KALDIRIYORUZ:
+         `.uydu.acik{filter:drop-shadow(...)}` kalici bir filtre ve
+         kapinin "Kalici CSS filtresi/katmani" kontrolu onu
+         kirmizi sayiyor. Bu kontrol kendi testinden sonra
+         calistigi icin geride birakmak hatayi olagan misafir
+         ediyordu -- ilk kosuda yesil, sonrakilerde kirmizi
+         (flaky). */
+      const sonuc = { acik: await oku('BAUHAUS'), koyu: await oku('PLUM') };
+      try{ if(window.fxNormale) window.fxNormale(); }catch(e){}
+      try{ if(window.fxGoster) window.fxGoster(''); }catch(e){}
+      /* sinifi de elle soy: `.acik` kalirsa filtre kalici sayiliyor */
+      try{ document.querySelectorAll('.uydu.acik, .uydu.secili')
+             .forEach(u=>{ u.classList.remove('acik'); u.classList.remove('secili'); }); }
+      catch(e){}
+      await bek(900);
+      return sonuc;
+    });
+    {
+      const kenarKoyu = (g)=>/rgba\(24,\s*26,\s*32/.test(g||'');
+      const a = acikOku.acik, k = acikOku.koyu;
+      K('Acik zeminde aciklama antrasit', !!a && a.acik && a.oran >= 4.5,
+        a ? ('acik deri ' + a.ad + ': kontrast ' + a.oran.toFixed(2)
+             + ':1 (hedef 4.5)') : 'deri bulunamadi');
+      K('Acik zeminde gezegen kenari koyu', !!a && !!k
+        && kenarKoyu(a.golge) && !kenarKoyu(k.golge),
+        a && k ? ('acik deride ' + (kenarKoyu(a.golge) ? 'kenar var' : 'KENAR YOK')
+                  + ' | koyu deride ' + (kenarKoyu(k.golge) ? 'YANLIS KOYULMUS' : 'dogru'))
+                 : 'deri bulunamadi');
+    }
     K('Dokunma alanlari cakismiyor', dokunma.cakisma.length === 0,
       dokunma.cakisma.length ? ('BINISME: ' + dokunma.cakisma.join(' | '))
                              : (dokunma.sayi + ' tusun alani birbirine degiyor, binmiyor'));

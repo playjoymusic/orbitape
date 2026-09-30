@@ -4567,3 +4567,65 @@ zaman bağlandığına bağlı. Taban 9'a çıkarıldı; kontrolün işi değiş
 **Ders (kalıcı):** yeşil gördüğüm koşu tek kanıt değil. Aynı kod 8 de 9 da
 verebiliyor; bir kontrol kırmızıysa önce "bunu ben mi yaptım" sorusunu
 ölçerek sormak gerekiyor.
+
+## 30 Eylül — Açık zeminde okunabilirlik + Visual'ın Mac patlaması
+
+**1) Çizimli skinlerde gezegenler "arkada kalıyor"du.**
+Sebep z-index değil, **renk**: AY'ın gövdesi `--c1:#eceef0`. Açık
+zeminde (BAUHAUS #efe9dd, PAPER #f2efe6) neredeyse beyazla aynı.
+`elementFromPoint` gezegeni gösteriyordu — yani gezegen üstteydi,
+görünmüyordu.
+
+Düz renkli açık derilerde (VECTOR #f2c318) okunuyordu; çizimlilerde
+kayboluyordu.
+
+**Çözüm:** zeminin parlaklığı zaten hesaplanıyordu (`_acikZ`, 0.30
+eşiği) — o karar sınıf olarak yazıldı: `body.deri-acik`. Açık deride
+gezegenlere 1.25 px koyu dış çizgi + dış gölge, Satürn'ün kuşağına
+koyu kenarlık.
+
+**2) "Açık backroundlarda açıklamaları antrasit yaparsın".**
+`.fx-bilgi` `rgba(226,222,212,.55)` — beyaz zeminde okunmuyordu.
+Antrasit `#2f3640`, gölgesiz. Aynı sebepten efekt **adları** (`.fx-oge`)
+ve **tireler** (`.fx-tire`) de soluk kalıyordu; üçü birden koyulaştı.
+
+**Ölçüm (kontrast oranı, WCAG AA = 4.5:1):**
+
+| deri  | zemin      | kontrast |
+|-------|------------|----------|
+| BAUHAUS (çizimli) | #efe9dd | 7.22:1 |
+| VECTOR  | #f2c318 | 7.31:1 |
+| PAPER   | #f2efe6 | 10.60:1 |
+| PLUM (koyu) | #251a33 | 12.27:1 (değişmedi) |
+
+**3) 16 açıklama sade dile döndü.** "pitch falls to zero", "low-shelf
+warmth", "EQ tilt" gibi teknik metinler geri gelmişti (önceki turun
+geri alınmasıyla). Kullanıcının "rakam yazma, teknik olmasın"
+talimatı geçerliydi. Artık: *kendini tekrarlar · yavaş salınım ·
+kirpinti, eski plak…* — 16 açıklamada sayı, ok veya teknik kısaltma yok.
+
+**4) Visual: telefonda iyi, Mac'te parlaklık patlıyor.**
+Ölçüldü: `GOR_TAVAN = 720` **telefon için** seçilmiş. Mac'te tuval
+720 px genişlikte ama 1440 CSS px'e basılıyor — **2.00× büyütme**
+(telefonda 1.30×). Görseller yumşak geçişli olduğu için 2×
+büyütülünce parlak yerler bayram yapıyor.
+
+Kare süresi 720'de telefonda da Mac'te de **13.3 ms** (60 Hz'e
+takılmış) → boşluk var. Çözüm: tavan ekrana göre — telefon 720
+**aynen**, geniş ekran 1080. Ölçülen: Mac'te büyütme **2.00× → 1.33×**,
+kare süresi 13.4 ms (değişmedi).
+
+### Kapı iki kez kırmızı verdi (ikisi de gerçek)
+
+- **"Kalıcı CSS filtresi/katmanı"**: Satürn kuşağına
+  `filter:drop-shadow` koymuştum — kapı kalıcı filtreyi yasaklıyor.
+  `box-shadow` + koyu kenarlıkla aynı iş yapıldı.
+- **Aynı kontrol ikinci kez**: yeni testim gezegeni **seçili
+  bırakıyordu**; `.uydu.acik{filter:drop-shadow}` kalıcı filtre
+  sayılıyordu. İlk koşuda yeşil, sonrakilerde kırmızı — **flaky**.
+  Ölçüldü (`fil.js`): seçim yokken tarama boş, seçim varken
+  `.uydu`/`.nk` çıkıyor, `fxNormale()` + `fxGoster('')` ile temizleniyor.
+  Test artık seçimi kapatıp sinifi de elle soyuyor.
+
+**Ders:** bir test, kendisinden sonra gelen kontrollerin durumunu
+bozabilir. "Yeşil" bir koşu tek kanıt değil — ikinci koşuyu da koştur.

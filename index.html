@@ -2343,6 +2343,33 @@
     font:400 .75rem/1 'Share Tech Mono',monospace;
     color:rgba(226,222,212,.55);text-shadow:0 1px 3px rgba(0,0,0,.75);
     transition:color .24s ease,text-shadow .24s ease;}
+  /* ── ACIK ZEMINDE (30 Eylul) ─────────────────────────────────
+     Kullanicinin istegi: "acik backroundlarda aciklamalari
+     antrasit yaparsin". Antrasit: koyu gri, sicak degil --
+     #2f3640. Golge DUSULUR (acik zeminde siyah golge yaziyi
+     bulaniklastirir, koyu yazi zaten zeminin kendisiyle
+     kontrast yapiyor). Efekt ADLARI da ayni sebepten soluk
+     kaliyordu; onlar da koyuluyor. OLCU: kontrast orani
+     4.5:1'in uzerinde (bkz. test/saglik.js "Acik zeminde
+     aciklama antrasit"). */
+  body.deri-acik #fxYazi .fx-bilgi{color:rgba(47,54,64,.88);
+    text-shadow:none;}
+  body.deri-acik #fxYazi .fx-oge{color:rgba(47,54,64,.82);
+    text-shadow:none;}
+  /* Gezegenler: acik zeminde kenar koyulasir. Ayni recete
+     her kurede: ince koyu dis cizgi + disarida yumusak golge.
+     Kutunun 44 px'i degil, KURENIN 26 px'i cevrelenir --
+     kenari kutunun kenarina degil, gezegene yakinlasir. */
+  body.deri-acik .uydu .nk{
+    box-shadow:0 0 0 1.25px rgba(24,26,32,.62),
+      0 2px 8px rgba(24,26,32,.34), inset 0 0 6px rgba(0,0,0,.55);}
+  /* SATURN'UN KUSAKI: once `filter:drop-shadow` denendi -- KAPI
+     REDDETTI ("Kalici CSS filtresi/katmani": .uydu filter, .nk
+     filter). Ayni is icin box-shadow: kusak zaten golge
+     tasiyor, sadece rengi koyulastiriliyor. */
+  body.deri-acik .uydu[data-gk="saturn"] .hlk{
+    border-color:rgba(24,26,32,.42);
+    box-shadow:0 1px 2px rgba(24,26,32,.30), inset 0 0 4px rgba(24,26,32,.18);}
   #fxYazi .fx-oge .ok{font-size:.6875rem;opacity:.62;}
   #fxYazi .fx-oge .ad{font-weight:400;}
   #fxYazi .fx-oge.secili{
@@ -2350,6 +2377,10 @@
     text-shadow:0 0 6px rgba(var(--fxn,232,169,126),.5),0 1px 3px rgba(0,0,0,.75);}
   #fxYazi .fx-oge.secili .ok{opacity:1;}
   #fxYazi .fx-tire{color:rgba(226,222,212,.30);font:400 .75rem/1 monospace;}
+  /* OLCU: acik zeminde tire acik kalinca efekt adlari kesikli
+     gorunuyordu (BAUHAUS: "DELAY ECHO PITCH REPEAT" aralarindaki
+     tireler kayboldu). */
+  body.deri-acik #fxYazi .fx-tire{color:rgba(47,54,64,.45);}
 
   /* ── NEON YAYILIMI (29 Eylul) ───────────────────────────────
      Kullanici: "fx gezegeni seciliyle kendisi neona döner hatta
@@ -7412,6 +7443,9 @@
       const n = AYAR.deri|0;
       if(!n){
         document.body.classList.remove('deri');
+        /* ACIK DERI ISARETI (30 Eylul): bkz. asagida. Deri
+           kapaninca da duser. */
+        document.body.classList.remove('deri-acik');
         document.body.classList.remove('halkaresim');
         document.body.classList.remove('luks');
         document.body.classList.remove('sadehalka');
@@ -7645,6 +7679,19 @@
           k.setProperty('--d-doku-sef', d.dokuSef || '0');
         }
         document.body.classList.add('deri');
+        /* ── ACIK DERI ISARETI (30 Eylul) ─────────────────────
+           Kontrast, canlilik ve zemin rengi ayni sey degil. AY'in
+           govdesi `--c1:#eceef0` -- acik zeminde (BAUHAUS #efe9dd,
+           PAPER #f2efe6) beyaza yakin oldugu icin kayboluyordu
+           (olculdu: elementFromPoint gezegeni gosteriyor, yani
+           z-index sorunu DEGIL, renk sorunu). Ayni sey alt yazi
+           icin de gecerli: aciklama `rgba(226,222,212,.55)`
+           beyaz zeminde okunmuyor.
+           COZUM: zeminin parlakligi zaten hesaplaniyor
+           (`_acikZ`, 0.30 esigi) -- o karar sinif olarak
+           yazilir: (a) gezegenlere koyu bir kenar, (b) aciklamalar
+           ANTRASIT, golgesiz. */
+        document.body.classList.toggle('deri-acik', !!_acikZ);
         /* RINGS ONLY yalnizca deri acikken anlamli; sinif da orada.
            DERININ KENDISI DE ISTEYEBILIYOR (13 Eylul, kullanici:
            "ortadaki circle'da cerceve yapma, gorselleri kesiyor").
@@ -8342,25 +8389,25 @@
      OLCU: 4 gezegen x 4 = 16 aciklama. */
   const UYDULAR = [
       { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO', neon:'214,110,58',
-        fxler:[ {ad:'TAPE',   bilgi:'tape saturation', par:'doygunluk'},
-                {ad:'DRIFT',  bilgi:'wow & flutter',      par:'wobble'},
-                {ad:'DUST',   bilgi:'crackle & hiss',    par:'kirpinti'},
-                {ad:'WARM',   bilgi:'low-shelf warmth',         par:'sicaklik'} ] },
+        fxler:[ {ad:'TAPE',   bilgi:'kadifli, yumusak', par:'doygunluk'},
+                {ad:'DRIFT',  bilgi:'yavas salinim',      par:'wobble'},
+                {ad:'DUST',   bilgi:'kirpinti, eski plak',    par:'kirpinti'},
+                {ad:'WARM',   bilgi:'sicak, gobe gibi',         par:'sicaklik'} ] },
       { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP', neon:'53,224,216',
-        fxler:[ {ad:'DELAY',  bilgi:'echo time',     par:'gecikme'},
-                {ad:'ECHO',   bilgi:'feedback amount',     par:'yanki'},
-                {ad:'PITCH',  bilgi:'tape speed',         par:'hiz'},
-                {ad:'REPEAT', bilgi:'loop length',        par:'dongu'} ] },
+        fxler:[ {ad:'DELAY',  bilgi:'kendini tekrarlar',     par:'gecikme'},
+                {ad:'ECHO',   bilgi:'yukseldikce uzaklasir',     par:'yanki'},
+                {ad:'PITCH',  bilgi:'sesi asagi yukseltir',         par:'hiz'},
+                {ad:'REPEAT', bilgi:'ayni yeri basa doner',        par:'dongu'} ] },
       { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE', neon:'176,140,255',
-        fxler:[ {ad:'REVERB',   bilgi:'cathedral tail',   par:'yanki'},
-                {ad:'FEEDBACK', bilgi:'self-loop',        par:'geri besleme'},
-                {ad:'COLLAPSE', bilgi:'pitch falls to zero',       par:'catlama'},
-                {ad:'DIVE',     bilgi:'downward sweep',       par:'dalma'} ] },
+        fxler:[ {ad:'REVERB',   bilgi:'uzun, bos oda',   par:'yanki'},
+                {ad:'FEEDBACK', bilgi:'kendini besler',        par:'geri besleme'},
+                {ad:'COLLAPSE', bilgi:'ses yere dogru yikar',       par:'catlama'},
+                {ad:'DIVE',     bilgi:'bir anda asagi sarkar',       par:'dalma'} ] },
       { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX', neon:'232,169,126',
-        fxler:[ {ad:'FILTER', bilgi:'low-pass sweep',    par:'filtre'},
-                {ad:'DRIVE',  bilgi:'overdrive',        par:'doygunluk'},
-                {ad:'TONE',   bilgi:'EQ tilt',           par:'ton'},
-                {ad:'SPACE',  bilgi:'stereo width',      par:'genislik'} ] },
+        fxler:[ {ad:'FILTER', bilgi:'yalnizca yumusak ses',    par:'filtre'},
+                {ad:'DRIVE',  bilgi:'sonuna kadar bastirir',        par:'doygunluk'},
+                {ad:'TONE',   bilgi:'agirtas veya tiz',           par:'ton'},
+                {ad:'SPACE',  bilgi:'sanki genisler',      par:'genislik'} ] },
   ];  const uyduDug = {};
 
     UYDULAR.forEach((u,i)=>{

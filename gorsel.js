@@ -196,7 +196,23 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
      720: olculdu. Daha yukarisi (1080) telefonda kare basina 6-9 ms
      ekliyor ve gozle fark yok -- cunku bu gorsellerin hepsi yumusak
      gecisli, keskin kenari olan tek sey yok. */
+  /* 30 EYLUL: TAVAN EKRANA GORE. 720 yalnizca TELEFON icin olculmus
+     (asagidaki yorum). Mac'te tuval 720 px genislikte kaliyor ama
+     1440 CSS px'e basilIYOR -- 2.00x buyutme; telefonda ayni oran
+     1.30x. Gorseller yumusak gecisli olduklari icin 2x buyutulduk
+     lerinde parlak yerler BAYRAM yapip ekrani yagliyor
+     (kullanicinin sozu: "visual telefonda iyi ama mac'te parlaklik
+     patliyor"). Olculen: 720'de kare suresi telefonda da Mac'te de
+     13.3 ms (60 Hz'e takilmis) -- bosluk var.
+     COZUM: genis ekranda tavan 1080. Mac'te buyutme 2.00x -> 1.33x.
+     Telefonda 720 AYNEN korunur (1080'in telefonda 6-9 ms ekledigi
+     olcumu bu yuzden yapilmis ve gecerli). */
   const GOR_TAVAN = 720;
+  const GOR_TAVAN_GENIS = 1080;
+  function gorselTavan(){
+    try{ return (MOBIL || innerWidth < 760) ? GOR_TAVAN : GOR_TAVAN_GENIS; }
+    catch(e){ return GOR_TAVAN; }
+  }
   const MOBIL = (()=>{ try{ return matchMedia('(pointer:coarse)').matches || innerWidth < 760; }catch(e){ return false; } })();
   const KARE = MOBIL ? 30 : 48;
   const DEPO = 'orbitape.gorsel';
@@ -729,7 +745,8 @@ try{ window.GORSEL_BASLADI = true; }catch(e){}
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       let W = Math.round(w * dpr), H = Math.round(h * dpr);
       const en = Math.max(W, H);
-      if(en > GOR_TAVAN){ const k = GOR_TAVAN / en; W = Math.round(W * k); H = Math.round(H * k); }
+      const tavan = gorselTavan();
+      if(en > tavan){ const k = tavan / en; W = Math.round(W * k); H = Math.round(H * k); }
       W = Math.max(2, W); H = Math.max(2, H);
       if(tuval.width !== W || tuval.height !== H){
         tuval.width = W; tuval.height = H;
