@@ -5793,7 +5793,7 @@
          kayboldu; kapida "Her kategorinin kendi zemin tonu" kirmiziydi:
          RECORDS icin tema yoktu, zemin radyonunkiyle ayni kaliyordu).
          Bakir: plak. */
-      RECORDS:  ['189,137,107','211,196,187'],   // bakir: plak
+      RECORDS:  ['192,154,126','226,204,186'],   // kavunici: plak (doy .34, fark 66)
       BEATS:    ['126,158,186','200,214,224'],   // celik mavi
     };
     /* ── HER RAFIN KENDI ZEMINI ──
@@ -8354,23 +8354,23 @@
      OLCU: 4 gezegen x 4 = 16 aciklama. */
   const UYDULAR = [
       { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO', neon:'214,110,58',
-        fxler:[ {ad:'TAPE',   bilgi:'saturation · hiss', par:'doygunluk'},
+        fxler:[ {ad:'TAPE',   bilgi:'tape saturation', par:'doygunluk'},
                 {ad:'DRIFT',  bilgi:'wow & flutter',      par:'wobble'},
-                {ad:'DUST',   bilgi:'crackle · noise',    par:'kirpinti'},
-                {ad:'WARM',   bilgi:'low shelf',         par:'sicaklik'} ] },
+                {ad:'DUST',   bilgi:'crackle & hiss',    par:'kirpinti'},
+                {ad:'WARM',   bilgi:'low-shelf warmth',         par:'sicaklik'} ] },
       { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP', neon:'53,224,216',
-        fxler:[ {ad:'DELAY',  bilgi:'echo · repeat',     par:'gecikme'},
-                {ad:'ECHO',   bilgi:'feedback taps',     par:'yanki'},
+        fxler:[ {ad:'DELAY',  bilgi:'echo time',     par:'gecikme'},
+                {ad:'ECHO',   bilgi:'feedback amount',     par:'yanki'},
                 {ad:'PITCH',  bilgi:'tape speed',         par:'hiz'},
                 {ad:'REPEAT', bilgi:'loop length',        par:'dongu'} ] },
       { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE', neon:'176,140,255',
         fxler:[ {ad:'REVERB',   bilgi:'cathedral tail',   par:'yanki'},
-                {ad:'FEEDBACK', bilgi:'self loop',        par:'geri besleme'},
-                {ad:'COLLAPSE', bilgi:'pitch -> 0',       par:'catlama'},
-                {ad:'DIVE',     bilgi:'sweep down',       par:'dalma'} ] },
+                {ad:'FEEDBACK', bilgi:'self-loop',        par:'geri besleme'},
+                {ad:'COLLAPSE', bilgi:'pitch falls to zero',       par:'catlama'},
+                {ad:'DIVE',     bilgi:'downward sweep',       par:'dalma'} ] },
       { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX', neon:'232,169,126',
         fxler:[ {ad:'FILTER', bilgi:'low-pass sweep',    par:'filtre'},
-                {ad:'DRIVE',  bilgi:'saturation',        par:'doygunluk'},
+                {ad:'DRIVE',  bilgi:'overdrive',        par:'doygunluk'},
                 {ad:'TONE',   bilgi:'EQ tilt',           par:'ton'},
                 {ad:'SPACE',  bilgi:'stereo width',      par:'genislik'} ] },
   ];  const uyduDug = {};
