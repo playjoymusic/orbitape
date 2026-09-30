@@ -3538,24 +3538,69 @@
        · simge 48 px, dokunma halkasi 74x74, secilende neon
      OLCUM (saglik.js): #modKollar DOM'da yok, ortaya basma panel
      acmiyor ve kipi degistirmiyor. */
-  #yelpaze{position:fixed;z-index:97;display:flex;flex-direction:column;gap:6px;
-    padding:8px;border-radius:12px;background:rgba(8,14,17,.92);
-    border:1px solid rgba(120,180,180,.18);}
+  /* ── KAMERA PANELI (1 Ekim, kullanici: "kayit basladi mi haberimiz
+     yok... kirmizi bir isigin yanip sonmesi, durunca save/delete ayri
+     renklerde ve isikla... modern"). Eski yelpaze her basista kapaniyor
+     ve kayit sirasinda HICBIR belirti vermiyordu: REC'in durumu
+     (bekleme/kayit/karar) yalniz gizli Ayarlar panelindeki dugmede
+     yaziliydi. Artik ayni durumlar bu panelde gorunuyor.
+     DURUM: [data-durum] bos | basliyor | kayit | karar (kayit.js).
+     DERINLIK: yumusak golge + ince ic isik + yari opak zemin; plastik
+     degil. BULANIK CAM (backdrop-filter) YOK: kalici filtre donma
+     sinifi (saglik.js "Kalici CSS filtresi/katmani"); ilk surumde
+     yazilmisti, kapi yakaladi, kaldirildi (1 Ekim). Nabiz YALNIZ opaklik (olcek degil): kayit gostergesi
+     oyuncak gibi durmamali. Panel bir DOM katmani: kayit/foto kareleri
+     ayri tuvalde cizildigi icin kareye GIRMEZ. */
+  #yelpaze{position:fixed;z-index:97;display:flex;flex-direction:column;gap:4px;
+    min-width:118px;padding:6px;border-radius:20px;
+    background:linear-gradient(180deg,rgba(20,31,36,.94),rgba(8,14,17,.97));
+    border:1px solid rgba(150,220,215,.16);
+    box-shadow:0 14px 34px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.07);
+    animation:fanGir .24s cubic-bezier(.2,.8,.2,1);}
+  @keyframes fanGir{from{opacity:0;transform:translateX(-8px) scale(.97);}to{opacity:1;transform:none;}}
   #yelpaze[hidden]{display:none;}
-  #yelpaze .fanOge{display:flex;align-items:center;gap:7px;padding:6px 8px;
-    border-radius:8px;font:600 .625rem/1 'Share Tech Mono',monospace;
-    letter-spacing:.18em;cursor:pointer;min-height:32px;
+  #yelpaze .fanOge{display:flex;align-items:center;gap:10px;padding:0 13px;min-height:44px;
+    border-radius:14px;font:600 .6875rem/1 'Share Tech Mono',monospace;letter-spacing:.16em;
+    color:#bfeee8;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid transparent;
+    transition:background .22s ease,border-color .22s ease,color .22s ease,opacity .22s ease,box-shadow .3s ease;
     -webkit-tap-highlight-color:transparent;}
-  #yelpaze .fanOge svg{width:16px;height:16px;fill:none;stroke:currentColor;
-    stroke-width:1.6;stroke-linecap:round;}
-  #yelpaze .fanOge .nokta{width:9px;height:9px;border-radius:50%;
-    background:#e2564a;flex:none;}
+  #yelpaze .fanOge:hover,#yelpaze .fanOge:focus-visible{background:rgba(255,255,255,.09);
+    border-color:rgba(150,220,215,.24);}
+  #yelpaze .fanOge svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;
+    stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  #yelpaze .fanOge[hidden]{display:none;}
   #yelpaze .fanOge[aria-disabled="true"]{opacity:.42;}
-  #yelpaze .fanOge[aria-disabled="true"] .nokta{background:#6b4a48;}
-  /* Kamera acikken ikon KALIR; gizleme yalniz kayit/foto/gorsel. */
-  body.gorsel-acik #kamTus,body.kayit #kamTus,
+  #yelpaze .fanOge .nokta{width:9px;height:9px;border-radius:50%;background:#e2564a;flex:none;}
+  #fanRec{color:#ff9a90;}
+  /* Ust satir: kirmizi isik + sure / karar sorusu. */
+  #fanSure{display:none;align-items:center;gap:9px;padding:9px 11px 7px;
+    font:600 .6875rem/1.25 'Share Tech Mono',monospace;letter-spacing:.14em;color:#ffc2bb;}
+  #yelpaze:not([data-durum="bos"]) #fanSure{display:flex;}
+  #fanSure .fanLed{width:10px;height:10px;border-radius:50%;flex:none;background:#ff4a3d;
+    box-shadow:0 0 12px rgba(255,74,61,.75);animation:fanNabiz 1.3s ease-in-out infinite;}
+  #yelpaze[data-durum="basliyor"] #fanSure{color:#ffe0a3;}
+  #yelpaze[data-durum="basliyor"] .fanLed{background:#f3b43f;box-shadow:0 0 12px rgba(243,180,63,.7);}
+  #yelpaze[data-durum="karar"] #fanSure{color:#d7efe9;max-width:170px;}
+  #yelpaze[data-durum="karar"] .fanLed{animation:none;background:#f3b43f;box-shadow:0 0 10px rgba(243,180,63,.6);}
+  @keyframes fanNabiz{0%,100%{opacity:1;}50%{opacity:.3;}}
+  /* KAYIT: STOP kirmizi; kamera ikonu da kirmizi nabiz atiyor. */
+  #yelpaze[data-durum="kayit"] #fanRec{color:#ff8f84;background:rgba(226,86,74,.16);
+    border-color:rgba(255,120,105,.5);}
+  /* KARAR: SAVE yesil, DELETE kirmizi; ikisi de yumusak isikla soluyor. */
+  #yelpaze[data-durum="karar"] #fanRec{color:#8ff0dd;background:rgba(60,200,170,.14);
+    border-color:rgba(120,230,200,.45);animation:fanIsikYesil 2s ease-in-out infinite;}
+  #yelpaze[data-durum="karar"] #fanCam{color:#ff8f84;background:rgba(226,86,74,.12);
+    border-color:rgba(255,120,105,.4);animation:fanIsikKirmizi 2s ease-in-out infinite;}
+  @keyframes fanIsikYesil{0%,100%{box-shadow:0 0 0 rgba(120,230,200,0);}50%{box-shadow:0 0 16px rgba(120,230,200,.38);}}
+  @keyframes fanIsikKirmizi{0%,100%{box-shadow:0 0 0 rgba(255,110,95,0);}50%{box-shadow:0 0 16px rgba(255,110,95,.34);}}
+  body #kamTus[data-kayit="1"],body.deri #kamTus[data-kayit="1"]{color:#ff5a4d;opacity:1;
+    animation:fanNabiz 1.3s ease-in-out infinite;}
+  @media (prefers-reduced-motion:reduce){
+    #yelpaze,#fanSure .fanLed,#yelpaze .fanOge,body #kamTus[data-kayit="1"]{animation:none !important;}}
+  /* Kayit SIRASINDA panel ve ikon GORUNUR kalir (eski kural gizliyordu).
+     Gizleme yalniz gorsel/foto onizleme acikken. */
+  body.gorsel-acik #kamTus,
   body:has(#fotoOnizle.var) #kamTus,body.gorsel-acik #yelpaze,
-  body.kayit #yelpaze,
   body:has(#fotoOnizle.var) #yelpaze{display:none !important;}
   /* ── SOL SUTUN: DERIDE DAHA GOZE GELIYOR ──
      Kullanicinin sozu (7 Eylul): "bazi karisik skins'lerde soldaki
@@ -5373,7 +5418,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.09.30';
+  var ORB_SURUM = '2026.10.01';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
