@@ -2629,11 +2629,16 @@
      gecisi (transition) YOK: parmagin konumu surucu. BOYUT: ust uste
      binen yumusak golgeler (ince kenar + derinlik + hafif renkli isik);
      filter / backdrop-filter YOK (donma sinifi kapisi). */
+  /* ORTALI (1 Ekim, kullanici: "bu yazilar ortalanmiyor mu... standart
+     seyler"): isim yolun TAM ORTASINDA. Iki isim de ayni merkezde, yani
+     gecerken yatayda ziplamaz. Harf araligi son harfin arkasina da bosluk
+     ekler; padding-left ayni miktari soldan vererek GORUNEN yazi
+     ortalanir (yalniz kutu degil). */
   #kipKisayol .uck-ad{
-    position:absolute;left:0;bottom:6px;
+    position:absolute;left:0;right:0;bottom:6px;text-align:center;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:1.125rem;font-weight:700;letter-spacing:.26em;line-height:1;
-    margin-right:-.26em;white-space:nowrap;
+    padding-left:.26em;box-sizing:border-box;white-space:nowrap;
     --kc:#86dcd0;color:var(--kc);
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48);
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48),
@@ -3595,10 +3600,16 @@
     border-color:rgba(255,120,105,.4);animation:fanIsikKirmizi 2s ease-in-out infinite;}
   @keyframes fanIsikYesil{0%,100%{box-shadow:0 0 0 rgba(120,230,200,0);}50%{box-shadow:0 0 16px rgba(120,230,200,.38);}}
   @keyframes fanIsikKirmizi{0%,100%{box-shadow:0 0 0 rgba(255,110,95,0);}50%{box-shadow:0 0 16px rgba(255,110,95,.34);}}
-  body #kamTus[data-kayit="1"],body.deri #kamTus[data-kayit="1"]{color:#ff5a4d;opacity:1;
-    animation:fanNabiz 1.3s ease-in-out infinite;}
+  /* KAYIT SURERKEN ikon kirmizi ve UZERINDE kirmizi yanip sonen isik var:
+     panel kapatilmis olsa bile (FX yaparken carkin ustunde engel olmasin)
+     kaydin surdugu gorunur (1 Ekim). Isik yalniz opaklik nabzi (olcek
+     degil); bosta ikonda kirmizi YOK (26 Eylul karari korunur). */
+  body #kamTus[data-kayit="1"],body.deri #kamTus[data-kayit="1"]{color:#ff5a4d;opacity:1;}
+  #kamTus[data-kayit="1"]::after{content:'';position:absolute;left:15px;top:0;
+    width:9px;height:9px;border-radius:50%;background:#ff4a3d;
+    box-shadow:0 0 9px rgba(255,74,61,.85);animation:fanNabiz 1.3s ease-in-out infinite;}
   @media (prefers-reduced-motion:reduce){
-    #yelpaze,#fanSure .fanLed,#yelpaze .fanOge,body #kamTus[data-kayit="1"]{animation:none !important;}}
+    #yelpaze,#fanSure .fanLed,#yelpaze .fanOge,#kamTus[data-kayit="1"]::after{animation:none !important;}}
   /* Kayit SIRASINDA panel ve ikon GORUNUR kalir (eski kural gizliyordu).
      Gizleme yalniz gorsel/foto onizleme acikken. */
   body.gorsel-acik #kamTus,

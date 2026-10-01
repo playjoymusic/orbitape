@@ -3658,7 +3658,15 @@ try{
       }catch(e){ _yut(e); }
       return 'bos';
     }
-    const _fanZorunlu = ()=> _fanDurum() !== 'bos';
+    /* ZORUNLU ACIK: yalniz 'karar' (kaydedeyim mi sorusu kaybolmasin) ve
+       'basliyor' (en fazla 1.8 sn). KAYIT sirasinda kullanici kamera
+       ikonuna basarak paneli KAPATABILIR (1 Ekim: "ekranda parmagimizi
+       surterek fx yapiyoruz; panel carkin ustunde engel oluyor, ikona
+       basip kapatabilmeliyiz"). Kapaliyken kaydin surdugu ikonun uzerindeki
+       kirmizi yanip sonen isikla gorunur (index.html, #kamTus::after).
+       Disari dokunus YINE kapatmaz: FX icin ekrana dokunuluyor. */
+    const _fanZorunlu = ()=>{ const d = _fanDurum(); return d === 'karar' || d === 'basliyor'; };
+    let _fanSonDurum = 'bos';
     function _fanSureYaz(){
       try{
         const sn = Math.max(0, Math.floor((Date.now() - kayitBaslangic) / 1000));
@@ -3751,7 +3759,7 @@ try{
     /* Disari dokunmak kapatir (yalniz bos durumda). */
     try{
       document.addEventListener('pointerdown', e=>{
-        if(_fanCep.hidden || _fanZorunlu()) return;
+        if(_fanCep.hidden || _fanDurum() !== 'bos') return;   // kayitta/kararda FX dokunusu paneli kapatmaz
         const t = /** @type {any} */ (e.target);
         if(t && (t.closest('#yelpaze') || t.closest('#kamTus'))) return;
         fanAc(false);
@@ -3763,7 +3771,14 @@ try{
        diye sorar, sorusu kaybolmaz. */
     try{
       if(rec) new MutationObserver(()=>{
-        try{ if(_fanZorunlu() && _fanCep.hidden) fanAc(true); else fanCiz(); }catch(e){ _yut(e); }
+        try{
+          const d = _fanDurum();
+          const degisti = (d !== _fanSonDurum);
+          _fanSonDurum = d;
+          /* Panel YALNIZ durum degisince kendiliginden acilir (kayit basladi,
+             karar geldi). Kayit surerken kullanici kapattiysa tekrar acilmaz. */
+          if(degisti && d !== 'bos' && _fanCep.hidden) fanAc(true); else fanCiz();
+        }catch(e){ _yut(e); }
       }).observe(rec, {attributes:true, attributeFilter:['class']});
     }catch(e){ _yut(e); }
     /* Foto/gorsel acilinca panel durumunu tazele; KAMERA (body.kam) ikonu
