@@ -8474,25 +8474,25 @@
      OLCU: 4 gezegen x 4 = 16 aciklama. */
   const UYDULAR = [
       { fx:'retro',     gk:'ay',     cap:0.45, aci:0,   uzak:1.16, ad:'RETRO', neon:'214,110,58',
-        fxler:[ {ad:'TAPE',   bilgi:'kadifli, yumusak', par:'doygunluk'},
-                {ad:'DRIFT',  bilgi:'yavas salinim',      par:'wobble'},
-                {ad:'DUST',   bilgi:'kirpinti, eski plak',    par:'kirpinti'},
-                {ad:'WARM',   bilgi:'sicak, gobe gibi',         par:'sicaklik'} ] },
+        fxler:[ {ad:'TAPE',   bilgi:'soft and velvety', par:'doygunluk'},
+                {ad:'DRIFT',  bilgi:'slow wobble',      par:'wobble'},
+                {ad:'DUST',   bilgi:'crackle, old record',    par:'kirpinti'},
+                {ad:'WARM',   bilgi:'warm and hazy',         par:'sicaklik'} ] },
       { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP', neon:'53,224,216',
-        fxler:[ {ad:'DELAY',  bilgi:'kendini tekrarlar',     par:'gecikme'},
-                {ad:'ECHO',   bilgi:'yukseldikce uzaklasir',     par:'yanki'},
-                {ad:'PITCH',  bilgi:'sesi asagi yukseltir',         par:'hiz'},
-                {ad:'REPEAT', bilgi:'ayni yeri basa doner',        par:'dongu'} ] },
+        fxler:[ {ad:'DELAY',  bilgi:'repeats itself',     par:'gecikme'},
+                {ad:'ECHO',   bilgi:'drifts away as it rises',     par:'yanki'},
+                {ad:'PITCH',  bilgi:'bends the pitch',         par:'hiz'},
+                {ad:'REPEAT', bilgi:'loops back to the same spot',        par:'dongu'} ] },
       { fx:'karadelik', gk:'mars',   cap:0.22, aci:106, uzak:2.05, ad:'BLACK HOLE', neon:'176,140,255',
-        fxler:[ {ad:'REVERB',   bilgi:'uzun, bos oda',   par:'yanki'},
-                {ad:'FEEDBACK', bilgi:'kendini besler',        par:'geri besleme'},
-                {ad:'COLLAPSE', bilgi:'ses yere dogru yikar',       par:'catlama'},
-                {ad:'DIVE',     bilgi:'bir anda asagi sarkar',       par:'dalma'} ] },
+        fxler:[ {ad:'REVERB',   bilgi:'long, empty room',   par:'yanki'},
+                {ad:'FEEDBACK', bilgi:'feeds itself',        par:'geri besleme'},
+                {ad:'COLLAPSE', bilgi:'sound caves in',       par:'catlama'},
+                {ad:'DIVE',     bilgi:'sinks down at once',       par:'dalma'} ] },
       { fx:'ana',       gk:'kizil',  cap:0.37, aci:26,  uzak:2.22, ad:'FX', neon:'232,169,126',
-        fxler:[ {ad:'FILTER', bilgi:'yalnizca yumusak ses',    par:'filtre'},
-                {ad:'DRIVE',  bilgi:'sonuna kadar bastirir',        par:'doygunluk'},
-                {ad:'TONE',   bilgi:'agirtas veya tiz',           par:'ton'},
-                {ad:'SPACE',  bilgi:'sanki genisler',      par:'genislik'} ] },
+        fxler:[ {ad:'FILTER', bilgi:'only the soft sound',    par:'filtre'},
+                {ad:'DRIVE',  bilgi:'pushes it to the limit',        par:'doygunluk'},
+                {ad:'TONE',   bilgi:'heavy or bright',           par:'ton'},
+                {ad:'SPACE',  bilgi:'feels wider',      par:'genislik'} ] },
   ];  const uyduDug = {};
 
     UYDULAR.forEach((u,i)=>{
@@ -8549,7 +8549,7 @@
               + f.ad + '</span></span>');
           });
           _satir.innerHTML = parcalar.join('');
-          if(_bilgi) _bilgi.textContent = fxler.map(f=>f.bilgi).join('  ·  ');
+          if(_bilgi) _bilgi.textContent = fxler.map(f=>Y(f.bilgi)).join('  ·  ');
           _yazi.classList.add('gorunur');
           try{ fxYaziYerlestir(); }catch(e){ _yut(e); }
         };
