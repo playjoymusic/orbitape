@@ -9,6 +9,24 @@
   "grup": "ANATOLIA"
  },
  {
+  "id": "rb:dd10f037-269c-42e0-9bfb-c22726aa8a7c",
+  "mp3": "https://radyo.ilef.net/stream",
+  "ad": "Ankara Üniversitesi Radyosu Radyo İlef",
+  "etiket": "70's,80s,anatolian rock,jazz,rock,soul,turkish,world music",
+  "ulke": "TR",
+  "tur": "",
+  "grup": "ANATOLIA"
+ },
+ {
+  "id": "rb:84572182-00a9-4433-a71f-331e6a8f4858",
+  "mp3": "https://radyo.radyoimza.com/8034/stream",
+  "ad": "Deva FM Oyun Havası",
+  "etiket": "düğün,halk müziği,oyun havası,turkish folk,türkü",
+  "ulke": "TR",
+  "tur": "",
+  "grup": "ANATOLIA"
+ },
+ {
   "id": "rb:34631647-80f2-4928-8a9f-1662f1e881ce",
   "mp3": "https://usa4.fastcast4u.com/proxy/radyoizmirfm/mp3stream128",
   "ad": "HEY RADYO",
@@ -54,10 +72,28 @@
   "grup": "ANATOLIA"
  },
  {
+  "id": "rb:6399eac6-3a5c-4ce0-9f66-d50762f1543f",
+  "mp3": "https://embed.tawk.to/_s/v4/assets/audio/chat_sound.mp3",
+  "ad": "Radyo Ender",
+  "etiket": "classic hits,hits,pop,turkish music",
+  "ulke": "TR",
+  "tur": "",
+  "grup": "ANATOLIA"
+ },
+ {
   "id": "rb:e1480c4f-467f-44ec-8b57-653abdfc7c7e",
   "mp3": "https://radyo.yayin.com.tr:6179/;",
   "ad": "Radyo Gökçeada",
   "etiket": "90s,aor / slow rock / soft rock (adult-orientated rock e.g. the eagles.),easy listening,jazz,turkish pop",
+  "ulke": "TR",
+  "tur": "",
+  "grup": "ANATOLIA"
+ },
+ {
+  "id": "rb:f6516fa9-1e5b-4bc6-a196-35f8dd745496",
+  "mp3": "https://radyo.gonulmisralari.com/listen/canli/radio.mp3",
+  "ad": "Radyo Gönül Mısraları",
+  "etiket": "emotional music,instrumental,original music,poetry,turkish,türkçe,özgün müzik,şiir",
   "ulke": "TR",
   "tur": "",
   "grup": "ANATOLIA"
@@ -88,6 +124,15 @@
   "ulke": "TR",
   "tur": "",
   "grup": "ANATOLIA"
+ },
+ {
+  "id": "rb:9592171c-b5a5-45ad-9241-a5d354b249b1",
+  "mp3": "https://ais-sa2.cdnstream1.com/2345_128.mp3",
+  "ad": "#1 Splash Coffee",
+  "etiket": "ambient,ambient and relaxation music,ambiental,chillout,easy listening,slow,splash",
+  "ulke": "ES",
+  "tur": "",
+  "grup": "AMBIENT"
  },
  {
   "id": "rb:3f4be720-c996-439f-be3b-cce594ea2852",
@@ -122,6 +167,15 @@
   "ad": "[1337 4M813N7] RADIO.MASCHINENGEIST.ORG Deep Field Transmiss",
   "etiket": "ambient,downtempo,dreampop,drone,experimental,soundscapes,space",
   "ulke": "CH",
+  "tur": "",
+  "grup": "AMBIENT"
+ },
+ {
+  "id": "rb:5886456b-6ed3-40c8-a2c4-4167793d225b",
+  "mp3": "https://radio.stereoscenic.com/asp-h",
+  "ad": "Ambient Sleeping Pill",
+  "etiket": "ambient,chillout,electronic,sleep",
+  "ulke": "US",
   "tur": "",
   "grup": "AMBIENT"
  },
@@ -288,6 +342,15 @@
   "grup": "AMBIENT"
  },
  {
+  "id": "rb:a807ecc5-8410-4704-bac4-aed64ba76742",
+  "mp3": "https://ice5.somafm.com/deepspaceone-128-mp3",
+  "ad": "SomaFM Deep Space One (128k MP3)",
+  "etiket": "ambient,electronic,space",
+  "ulke": "US",
+  "tur": "",
+  "grup": "AMBIENT"
+ },
+ {
   "id": "rb:960eb2e9-0601-11e8-ae97-52543be04c81",
   "mp3": "https://ice2.somafm.com/dronezone-128-mp3",
   "ad": "SomaFM Drone Zone (128k MP3)",
@@ -306,6 +369,15 @@
   "grup": "AMBIENT"
  },
  {
+  "id": "rb:ae7aeb65-5a30-4848-8059-91b2bc2dcfd9",
+  "mp3": "https://ice6.somafm.com/dronezone-256-mp3",
+  "ad": "SomaFM Drone Zone (256k MP3)",
+  "etiket": "ambient,atmospheric",
+  "ulke": "US",
+  "tur": "",
+  "grup": "AMBIENT"
+ },
+ {
   "id": "rb:ca0d4e4d-658b-43cc-abce-710075ae358d",
   "mp3": "https://ice6.somafm.com/groovesalad-256-mp3",
   "ad": "SomaFM Groove Salad (256k MP3)",
@@ -317,6 +389,15 @@
  {
   "id": "rb:ca0d4e4d-658b-43cc-abce-710075ae358d",
   "mp3": "https://ice2.somafm.com/groovesalad-256-mp3",
+  "ad": "SomaFM Groove Salad (256k MP3)",
+  "etiket": "ambient,chillout,downtempo,groove,lounge,sleep",
+  "ulke": "US",
+  "tur": "",
+  "grup": "AMBIENT"
+ },
+ {
+  "id": "rb:ca0d4e4d-658b-43cc-abce-710075ae358d",
+  "mp3": "https://ice5.somafm.com/groovesalad-256-mp3",
   "ad": "SomaFM Groove Salad (256k MP3)",
   "etiket": "ambient,chillout,downtempo,groove,lounge,sleep",
   "ulke": "US",
@@ -351,6 +432,15 @@
   "grup": "AMBIENT"
  },
  {
+  "id": "rb:83accca7-b878-419d-a506-3d21ef2f250f",
+  "mp3": "https://ice2.somafm.com/synphaera-256-mp3",
+  "ad": "SomaFM Synphaera Radio",
+  "etiket": "ambient,electronic,space",
+  "ulke": "US",
+  "tur": "",
+  "grup": "AMBIENT"
+ },
+ {
   "id": "rb:2ed5037f-f09d-4aa6-b9b9-57024ecbb8a4",
   "mp3": "https://ice2.somafm.com/darkzone-256-mp3",
   "ad": "SomaFM The Dark Zone (256k MP3)",
@@ -376,6 +466,24 @@
   "ulke": "AU",
   "tur": "",
   "grup": "AMBIENT"
+ },
+ {
+  "id": "rb:10a9a02e-f52c-4a27-8dd6-4d00996593a4",
+  "mp3": "https://azura.theindiebeat.fm/listen/the_indie_beat_radio_-_ambient/radio.mp3",
+  "ad": "The Indie Beat Radio - Ambient Channel",
+  "etiket": "ambient,ambient techno,dark ambient,deep ambient",
+  "ulke": "US",
+  "tur": "",
+  "grup": "AMBIENT"
+ },
+ {
+  "id": "rb:5dc97c2f-566f-47df-8236-021db5906dde",
+  "mp3": "https://stream.0nlineradio.com/bach?ref=radiobrowser",
+  "ad": "0nlineradio BACH",
+  "etiket": "bach,classic,classical,klassik,modern classical,symphonic,symphony",
+  "ulke": "DE",
+  "tur": "",
+  "grup": "ORCHESTRAL"
  },
  {
   "id": "rb:6746402d-62bf-485a-8769-f2ebed3e10b4",
@@ -465,6 +573,15 @@
   "etiket": "classical",
   "ulke": "DE",
   "tur": "classical",
+  "grup": "ORCHESTRAL"
+ },
+ {
+  "id": "rb:364e1ed5-b415-4633-b6f4-78edb0ff4d1c",
+  "mp3": "https://live.amperwave.net/direct/mzmedia-cfmzfmmp3-ibc2",
+  "ad": "CFMZ 96.3 \"The New Classical FM\"",
+  "etiket": "baroque,classical,easy listening,opera,orchestral,romantic",
+  "ulke": "CA",
+  "tur": "",
   "grup": "ORCHESTRAL"
  },
  {
@@ -582,6 +699,15 @@
   "etiket": "ambient,ambiental,chill,chillout,classic,classical,classical piano,klassik,new age piano,piano jazz,relax,relaxing",
   "ulke": "DE",
   "tur": "new age",
+  "grup": "ORCHESTRAL"
+ },
+ {
+  "id": "rb:d5fdc0d9-8aac-4a19-9c3c-3e10692d74f6",
+  "mp3": "https://stream.epic-classical.com/classical-study",
+  "ad": "EPIC CLASSICAL - Classical Study",
+  "etiket": "adult contemporary,ambient,chillout,chillout+lounge,classical,jazz,klassik,music for study",
+  "ulke": "DE",
+  "tur": "",
   "grup": "ORCHESTRAL"
  },
  {
@@ -1122,6 +1248,15 @@
   "etiket": "eclectic,electronic,rock,world music",
   "ulke": "GR",
   "tur": "world",
+  "grup": "ROCK & INDIE"
+ },
+ {
+  "id": "rb:7afae7e3-8d06-42f5-b59e-a52d6e09e60e",
+  "mp3": "https://cast1.torontocast.com:4610/stream",
+  "ad": "RdMix Classic Rock 70s 80s 90s",
+  "etiket": "60s,60s and 70s.,70's,70er,70s,80's,80er,80s,90's,90er,90s,blues,blues rock,classic blues,classic hits,classic hits 60s 70a 80s,classic rock,classic rock  50's 60's 70's 80's 90's,classic rock music,classic rock oldies,classic rock oldies soul,classic rock; alternative rock indie,country,entretenimiento,fm,hard rock,high quality audio,hits,local radio,melodic hard rock,music,music 70s 80s 90s,musica,oldies,pop rock,public radio,radio,real classic rock,rhythm and blues,rock,soft rock",
+  "ulke": "CA",
+  "tur": "soul",
   "grup": "ROCK & INDIE"
  },
  {
@@ -1791,6 +1926,15 @@
   "grup": "JAZZ"
  },
  {
+  "id": "rb:d7339299-f364-11e8-a471-52543be04c81",
+  "mp3": "https://0n-jazz.radionetz.de/0n-jazz.mp3",
+  "ad": "0 N - Jazz on Radio",
+  "etiket": "jazz,smooth jazz,swing",
+  "ulke": "DE",
+  "tur": "",
+  "grup": "JAZZ"
+ },
+ {
   "id": "rb:389011a1-3a96-11e9-9b4e-52543be04c81",
   "mp3": "https://0n-smoothjazz.radionetz.de/0n-smoothjazz.aac",
   "ad": "0 N - Smooth Jazz on Radio",
@@ -1823,6 +1967,15 @@
   "ad": "1001 TRUMPET SONG",
   "etiket": "classic - instrumental,classic jazz,instrumental,instrumental music,jazz,jazz fusion,nu-jazz,smooth jazz",
   "ulke": "DE",
+  "tur": "",
+  "grup": "JAZZ"
+ },
+ {
+  "id": "rb:1df6a2fe-bd24-4b65-8bb5-c7cb6a10c9c4",
+  "mp3": "https://streaming.radio.co/s36bd2a451/listen",
+  "ad": "95.5 Jazz Radio",
+  "etiket": "jazz",
+  "ulke": "CR",
   "tur": "",
   "grup": "JAZZ"
  },
@@ -1944,6 +2097,15 @@
   "grup": "JAZZ"
  },
  {
+  "id": "rb:cdc278a0-eeea-4188-9987-ea03e0499652",
+  "mp3": "https://tunein-live-b.cdnstream1.com/3885_128.mp3?aw_0_1st.skey=1733919523&lat=37.751&lon=-97.822&aw_0_1st.abtest=&aw_0_1st.stationId=s321092&aw_0_1st.premium=false&source=TuneIn&aw_0_req.gdpr=true&aw_0_1st.platform=tunein&aw_0_1st.genre_id=g11&aw_0_1st.class=music&aw_0_1st.ads_partner_alias=ce.Other&aw_0_azn.planguage=en&aw_0_1st.is_ondemand=false&aw_0_1st.topicId=na&aw_0_1st.affiliateIds=a38725%2ca40075&aw_0_1st.bandId=16",
+  "ad": "JAZU - Japanese Jazz",
+  "etiket": "japanese,japanese music,jazz,piano",
+  "ulke": "CA",
+  "tur": "",
+  "grup": "JAZZ"
+ },
+ {
   "id": "rb:4e2d17f6-4be7-4f0e-bdc9-fa53b5dc45ef",
   "mp3": "https://kbem-live.streamguys1.com/kbem_aac",
   "ad": "Jazz 88 Minneapolis KBEM",
@@ -1996,15 +2158,6 @@
   "ulke": "CR",
   "tur": "blues",
   "grup": "JAZZ"
- },
- {
-  "id": "rb:7afae7e3-8d06-42f5-b59e-a52d6e09e60e",
-  "mp3": "https://cast1.torontocast.com:4610/stream",
-  "ad": "RdMix Classic Rock 70s 80s 90s",
-  "etiket": "60s,60s and 70s.,70's,70er,70s,80's,80er,80s,90's,90er,90s,blues,blues rock,classic blues,classic hits,classic hits 60s 70a 80s,classic rock,classic rock  50's 60's 70's 80's 90's,classic rock music,classic rock oldies,classic rock oldies soul,classic rock; alternative rock indie,country,entretenimiento,fm,hard rock,high quality audio,hits,local radio,melodic hard rock,music,music 70s 80s 90s,musica,oldies,pop rock,public radio,radio,real classic rock,rhythm and blues,rock,soft rock",
-  "ulke": "CA",
-  "tur": "soul",
-  "grup": "ROCK & INDIE"
  },
  {
   "id": "rb:510506e7-6bc0-4b91-b6a1-fc024ccad1a8",
@@ -2094,6 +2247,15 @@
   "etiket": "jazz,smooth jazz,suave",
   "ulke": "BR",
   "tur": "jazz",
+  "grup": "JAZZ"
+ },
+ {
+  "id": "rb:3487079b-91b1-4fb8-b315-c4150e705b7a",
+  "mp3": "https://ais-sa8.cdnstream1.com/3629_128.mp3",
+  "ad": "WBGO Jazz 88.3 FM",
+  "etiket": "jazz",
+  "ulke": "US",
+  "tur": "",
   "grup": "JAZZ"
  },
  {
@@ -3609,6 +3771,15 @@
   "grup": "RNB & FUNK"
  },
  {
+  "id": "rb:93d5a687-4059-42d4-8dfa-b2009e678ba5",
+  "mp3": "https://streaming.nrjaudio.fm/oupn23bgddr9",
+  "ad": "Energy Classics rap us",
+  "etiket": "hip hop",
+  "ulke": "FR",
+  "tur": "",
+  "grup": "RNB & FUNK"
+ },
+ {
   "id": "rb:205c5091-6ea1-4368-8774-def7301f7251",
   "mp3": "https://manager5.streamradio.fr:1185/stream",
   "ad": "Fly Foot Selecta",
@@ -3758,6 +3929,15 @@
   "ad": "Radio Greu De Difuzat",
   "etiket": "hip hop,hip-hop,rap,romanian,romanian hip-hop,romanian rap,urban",
   "ulke": "RO",
+  "tur": "",
+  "grup": "RNB & FUNK"
+ },
+ {
+  "id": "rb:1c10bc25-fd5b-4904-a548-48b4e1908ca1",
+  "mp3": "https://azuracast.streams.ovh/listen/radiokyklos/radio.mp3",
+  "ad": "RadioKyklos - Greek Hiphop",
+  "etiket": "greek,hip hop,hip-hop,hip-hop and rap oldies,hiphop,rap,rap hiphop rnb",
+  "ulke": "GR",
   "tur": "",
   "grup": "RNB & FUNK"
  },
