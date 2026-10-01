@@ -2517,7 +2517,12 @@
      .26em) yolun ustunde, tek yerde, secili olan yaniyor.
      Olculer degisken: --uck-h yolun boyu, --uck-w kalinligi. */
   /* UC KADEME SWITCH: --uck-h yolun boyu, --uck-w yolun kalinligi. */
-  :root{ --uck-h:152px; --uck-w:26px; }
+  /* 1 EKIM (ölçüm): isimler rem, çubuk px idi; telefonda yazı boyutu %115 ve
+     üstüne ayarlıyken isimler çubuktan TAŞIYORDU (RADIOTAPE %115'te, ORBITAPE
+     %130'da; 360x800, 390x844 ve 320x568'de aynı). Çubuk artık isimle AYNI
+     birimde: 9.5rem = 152 px (varsayılan yazıda değişmedi), yazı büyürse
+     çubuk da büyür. */
+  :root{ --uck-h:9.5rem; --uck-w:26px; }
   /* YATAY DUGME (28 Eylul: "sol alt swichi yataya yap... mod isimleri
      de yatay olarak ustunde yazsin... font buyukluk sag ustteki gibi
      olsun"). Yol genislige dondu, isimler tek yerde ust uste. */
@@ -5639,6 +5644,15 @@
     }
     window.onerror = function(mesaj, kaynak, satir, sutun){
       try{
+        /* ZARARSIZ TARAYICI BILDIRIMI: "ResizeObserver loop completed with
+           undelivered notifications" (Safari/Chrome; eski adi "...limit
+           exceeded") bir HATA degildir: tarayici, bir boyut gozlemcisinin
+           ayni karede yetisemedigini soyler, hicbir sey bozulmaz. Eskiden
+           bu da "SOMETHING BROKE" panelini aciyordu: 26 Eylul'de bir iPhone
+           testcisi bu yuzden hata raporu gonderdi (state: audio=playing,
+           graph=running, yani her sey calisiyordu). Gercek hata paneli
+           yalniz gercek hatada cikmali. Kayda da girmez (gurultu). */
+        if(/^ResizeObserver loop (limit exceeded|completed with undelivered notifications)/i.test(String(mesaj || ''))) return true;
         ekle('error', String(mesaj || 'unknown'),
             (kaynak ? String(kaynak).replace(/^.*\//,'') : '') + ':' + satir + ':' + sutun);
         panel();

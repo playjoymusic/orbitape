@@ -5152,3 +5152,116 @@ rehber, görsel, saat ve switch sol kenarları 14 px'te aynı.
 **KURAL (pj'nin sözünden, kalıcı):** yeni bir öğe eklerken grafik tasarım
 standartlarını (ortalama, sol kenar hizası, boşluk, taşma, ≥44 px dokunma
 hedefi) pj söylemeden BEN ölçerim ve kalıcı kontrol olarak eklerim.
+
+---
+
+# 1 Ekim 2026 — çalışma alanı: haritanın kalanı, yedek durumu, Play sayacı
+
+**Google Play (pj ekran görüntüsü):** kapalı testte 12 test kullanıcısı
+13 gündür kesintisiz kayıtlı; "Apply for production" için 14 gün gerekiyor,
+yaklaşık 1 gün sonra açılır (2 Ekim civarı). O zamana kadar test
+kullanıcıları ÇIKARILMAZ, test listesi DEĞİŞTİRİLMEZ, yeni test yayını
+açılmaz (sayaç sıfırlanır). Düğme açılınca Google soru soracak ("Preview
+questions"); cevap taslağını Claude hazırlar, GÖNDERMEK pj'nin.
+
+**Klasör haritası tamamlandı:** `tasarim/` (9 klasör), `ham-arsiv/` (9),
+`orbitape-magaza/` (10) oluşturuldu; 28 klasör taşındı, liste
+`ORBITAPE DATA/TASINAN_KLASORLER.txt`. Taşımadan ÖNCE ölçüldü: bu
+klasörlerde mutlak yol (`/Users/joy`, `ORBITAPE DATA`) geçen dosya YOK, repo
+araçlarında anılma YOK. `orbitape/` ve `tracks-depo/` YAN YANA kaldı
+(`../tracks-depo`). Kökteki bayat `CLAUDE.md`/`GUNLUK.md`
+`eski-belgeler/`e alındı (silinmedi); kökte yeni kısa bir HARİTA CLAUDE.md var.
+
+**YEDEK DURUMU (ölçüm):** Mac'in Data birimi 396 GB dolu, 26 GB BOŞ — disk
+neredeyse dolu. Time Machine için ne `PJ` (HFS+, 106 GB boş) ne `One Touch`
+(exFAT, 105 GB boş; Time Machine onu SİLİP biçimlendirmek ister!) uygun:
+tüm Mac ~400 GB ister. Proje verisi yalnız 9,4 GB. KARAR: Time Machine için
+ayrı, ≥1 TB bir disk gerekir (pj'nin kararı); o zamana kadar proje klasörü
+iki diske tarihli kopyalanır (`ORBITAPE-YEDEK-2026-10-01`, içerik
+karşılaştırmalı doğrulama). Time Machine ayarı bir sistem ayarıdır: pj yapar.
+**KRİTİK:** `One Touch` diskini Time Machine'e VERME (silinir).
+
+**Kapalı test verisi (1 Ekim, pj'nin WhatsApp ekran görüntüleri):** grup
+17 Eylül'de kuruldu, 14 üye; ~13 anket; GÖRÜNEN özet: arayüz bozulması
+8/8 hayır, genel takılma 8/8 hayır, kamera/foto 4 hayır + 3 "1-2 kere",
+RADIOTAPE↔ORBITAPE geçişi 3 hayır + 2 "kısa gecikme/donma". Bu, pj'nin
+"geçişte ses arıyor" şikâyetini İKİ KAYNAKLA destekliyor (5. iş, hâlâ
+ölçülemedi). Mail geri bildirimleri henüz görülmedi. Başvuru taslakları:
+`magaza/PRODUKSIYON_BASVURUSU.md`. Testçi adları/fotoğrafları HİÇBİR
+yere yazılmadı.
+
+**Yedek tamamlandı (1 Ekim):** proje klasörü iki diske birebir: `PJ` (8349/8350
+dosya; eksik = kopyadan sonra yazılan dosya) ve `One Touch` (8350/8350),
+`ORBITAPE-YEDEK-2026-10-01`, içerik karşılaştırmalı. node_modules hariç.
+Form taslakları (soru 5, 7) pj'nin sözlerine göre yazıldı; 13 yaşındaki
+yeğen bir anekdot, hedef kitle 18+ (Play beyanıyla çelişmemek için).
+Mağaza ekran görüntüleri (29 Ağustos) ESKİ tasarımı gösteriyor; üretimden
+önce yenilenmeli.
+
+---
+
+# 1 Ekim 2026 — Cloudflare planı ve maliyet modeli
+
+pj'nin ekran görüntüleri: hesapta **Workers Paid** aktif, yenileme **2 Ekim 2026**,
+5 dolar/ay. Cloudflare paneli son 24 saatte **897 çağrı, 0 hata, CPU 358 µs**.
+Worker yalnız iki yola cevap verir: `/olcu` (tanılama, varsayılan KAPALI) ve
+`/np` (radyo "şu an ne çalıyor" kenar önbelleği). Site dosyaları, `earth*.json`,
+ikonlar Worker'a UĞRAMAZ (statik, sınırsız ve ücretsiz); ses archive.org'dan ve
+istasyonların kendi sunucularından gelir (bize maliyeti yok).
+
+**DÜZELTME (Claude):** önce "ücretsiz plan yeter" demiştim; bugünkü trafik için
+doğru ama LANSMAN için yanlış. `/np`: radyo dinleyen her istemci 25 sn'de bir
+sorar (~72 çağrı / 30 dk). Ücretsiz plan günde 100.000 çağrı = ~1.400 günlük
+aktif dinleyici. Paid: 10 milyon/ay dahil, fazlası 0,30 dolar/milyon.
+KABA TAHMİN (30 dk/gün, 25 sn): 1.000 DAU ≈ 5 $; 10.000 ≈ 8-9 $; 100.000 ≈
+65-70 $; 1.000.000 ≈ 650 $. 1 milyon KURULUM genelde 100-200 bin DAU =
+~70-140 $/ay. KARAR: Workers Paid YENİLENSİN (lansman sigortası). Lansmandan
+sonra gerçek trafikle yeniden bakılır.
+
+**Maliyet düşürme (şimdi YAPILMADI, ölçmeden yapılmaz):** sorma aralığı 25→60 sn
+ve ekran kapalıyken sormama ~2-3 kat düşürür; ama kilit ekranı başlığı
+(Media Session) etkilenir, tasarım kararı gerekir.
+**Fallback:** `/np` ya da `/olcu` cevap vermezse (limit dolsa bile) uygulama
+davranışı DEĞİŞMEZ: yalnız parça adı gelmez, ses sürer.
+**Deploy yolu:** PR merge → "Yayın (testler yeşilse)" iş akışı → otomatik. Panelde
+"Manually deployed / Wrangler" etiketi bu otomatik yayındır (saat eşleşti:
+PR #57 yayını 04:15, panel "52 dk önce"). Panelden elle deploy / "Edit code"
+YAPILMAZ (sonraki otomatik yayında ezilir, hangi sürümün canlı olduğu karışır).
+Geri dönüş: Actions → "Geri al (önceki sürüme dön)".
+**workers.dev:** `orbitape.caneranar.workers.dev` ikinci, herkese açık adres ve
+hesap kullanıcı adını içeriyor; kapatmak isteğe bağlı, acil değil.
+
+---
+
+# 1 Ekim 2026 — telefon ölçekleri, gelen hata raporları, başvuru taslakları
+
+pj: *"görsellerdeki hatalar genelde kayan öğeler, telefon ölçeklerine göre çıkan
+sorunlar."* ÖLÇÜM: 10 ekran boyutunda (320x568 ... 430x932, iki kip) öğe taşması/
+çakışması YOK. GERÇEK SEBEP: telefonun YAZI BOYUTU ayarı. Yazı %115 ve
+üstündeyken switch isimleri (rem) çubuktan (px) TAŞIYORDU: RADIOTAPE %115'te,
+ORBITAPE %130'da (360x800, 390x844, 320x568'de aynı). Düzeltme: çubuk
+`--uck-h: 9.5rem` (152 px varsayılanda aynı, yazıyla birlikte büyür).
+24/24 kombinasyon temiz. BİLİNEN SINIR (düzeltilmedi): 320 px genişlik VE yazı
+%150 iken çarkın üstündeki mod adı (`#modAd`) soldan 16 px taşar; sebep üst
+şeridin düzeni (menü ikonu + başlık da büyüyor), nadir, riskli.
+
+**Gelen testçi hata raporları (pj, e-posta):** 10 ve 18 Eylül (Android):
+`Identifier 'rec' has already been declared`; 12 Eylül (iPhone): `Can't create
+duplicate variable: 'KAM_ALT'`. İkisi de `kayit.js`'in iki kez çalıştırılması
+(18 Eylül'de düzeltildi; nöbetçi artık ikinci isteği atmıyor). ÖLÇÜM: kayit.js
+hâlâ iki kez yüklenirse AYNI hatayı verir (modül yaşar); normal akışta olmaz.
+26 Eylül'den sonra bu hata raporlanmadı. DOKUNULMADI. 26 Eylül (iPhone):
+`ResizeObserver loop completed with undelivered notifications` = zararsız
+tarayıcı bildirimi, AMA `window.onerror` bunu da "SOMETHING BROKE" paneline
+çeviriyordu (state: audio=playing, graph=running). ÖLÇÜM: eski kodda panel
+AÇILDI, yeni kodda açılmaz ve kayda girmez; gerçek hata hâlâ paneli açar.
+
+**Kanıt (kural 4, geri alarak):** yeni kod 925/925; `index.html`+`_headers` eski
+hâle dönünce 923/925: yazı boyutu kontrolü (%115 RADIOTAPE, %130 ORBITAPE taşıyor)
+ve ResizeObserver kontrolü (panel açıldı) kırmızı. Birim 135/135, tip 54.
+Dosyalar yerine döndü (özet 9bc9c68f…, d4a07e7c…).
+
+**Başvuru taslakları:** `magaza/PRODUKSIYON_BASVURUSU.md`: soru 5 (18+ beyanıyla
+tutarlı; 13 yaşındaki yeğen anekdot, formda YOK), soru 7 (temkinli aralık
+SEÇİLDİ: 10.000–100.000), mağaza ekran görüntüleri (29 Ağustos) ESKİ tasarımı
+gösteriyor, üretimden önce yenilenmeli. Testçi adı/e-postası dosyalara YAZILMADI.
