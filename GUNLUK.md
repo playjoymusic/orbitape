@@ -5265,3 +5265,137 @@ Dosyalar yerine döndü (özet 9bc9c68f…, d4a07e7c…).
 tutarlı; 13 yaşındaki yeğen anekdot, formda YOK), soru 7 (temkinli aralık
 SEÇİLDİ: 10.000–100.000), mağaza ekran görüntüleri (29 Ağustos) ESKİ tasarımı
 gösteriyor, üretimden önce yenilenmeli. Testçi adı/e-postası dosyalara YAZILMADI.
+
+---
+
+# 1-2 Ekim 2026 (gece) — DIŞ KAYNAKTAN YENİ SES HASADI (pj uyurken)
+
+**pj'nin sözü:** *"hasat değil dışarıdan yeni ... bana sorma, ben yokum. Sen
+çekebildiğin kadar TEMİZ kayıt çek. Link aynı sistem, hemen çalabilsin, lisans
+durumu ve KOTA olmamalı."* Hedef 1 milyon; uygulama YAVAŞLAMAMALI.
+
+**KARARLAR (soru sorulmadı, gerekçeli):**
+1. **Freesound KULLANILMADI.** API şartları (Section 4f): *"scraping ... build
+   similar databases"* AÇIKÇA YASAK; ayrıca anahtar + 60/dk, 2000/gün kota.
+   pj'nin yapıştırdığı metindeki "apiv2/apiv2/apply" bağlantısı da hatalıydı
+   (başka bir yapay zekâ çıktısı; veri sayıldı, talimat değil).
+2. **Wikimedia Commons seçildi:** anahtarsız, kotasız, her dosyanın lisansı
+   kayıtta, ses adresi kalıcı. ÖLÇÜLDÜ: `access-control-allow-origin: *`
+   (FX/kayıt için gerekli), `Range` 206, yönlendirme yok.
+3. **GERÇEK TAVAN:** Commons "miser mode"da (MIME'a göre listeleme KAPALI).
+   Arama motoruyla ses dosyası: 191.429 (>300 KB), 139.703 (>1 MB). Eski
+   "1,8 milyon ses" rakamının çoğu tek kelimelik telaffuz klibi. **MİLYON
+   Commons'tan GELMEZ**: tavan yüz binler, süzgeçten sonra ~38 bin bekleniyor.
+4. Milyona giden GERÇEK yol arşivde: archive.org'da lisans alanı dolu 2.029.090
+   ses, ND (yasak) 915.063 → ~1,1 milyon izinli kayıt (kesin sayı için
+   `licenseurl` sorgusu düzeltilmeli; ilk deneme 5 sorguda `response` hatası
+   verdi). pj "arşiv değil dışarıdan yeni" dediği için bu gece YAPILMADI;
+   sabah seçenek olarak sunulacak.
+
+**ARAÇ:** `araclar/hasat_commons.py` (yeni). Nazik: tek parçacık, ≥1,15 sn
+aralık, maxlag=5, 429/503'te Retry-After, kimlik User-Agent'ta. filesize
+aralıklarını ikiye bölerek her aralığı <9.500 sonuca indirir (CirrusSearch
+derin sayfalama tavanı 10.000). Lisans: yalnız PD/CC0/BY/BY-SA ve depodaki
+`lisans_filtre.serbest_mi()` (tek kaynak, ND önce). Süre ≥30 sn, ≥300 KB.
+Çıktı `earth.json` ile AYNI şema ({mp3, ad, sanatci, etiket, lisans}); depoya
+GİRMEZ: `ORBITAPE DATA/hasat-yeni/commons/` (sahne). Devam dosyası var.
+
+**KALİTE ÖLÇÜMÜ (kural 4):** pilot 1 (yalnız kara liste): 150'nin %86'sı geçti
+AMA geçmemesi gerekenler geçti: LibriVox sesli kitap (pj'nin yasakladığı kaynak),
+Nürnberg mahkeme konuşması, eğitim konuşması. Çözüm: OLUMLU SEÇİM (kategori ya da
+ad müzik/doğa/çalgı/ortam demeli) + genişletilmiş konuşma yasağı. Pilot 2: 400'ün
+%20'si (80) geçti ve örneklem müzik/doğa (Xeno-canto kuş kayıtları, Free Music
+Archive, kilise orgu, halk müziği, Musopen). Birim: ND lisans reddedilir, LibriVox
+reddedilir, geçerli kayıt temiz çıkar.
+
+**KOŞU:** 2 Ekim ~06:10'da başladı (`caffeinate -i`, log:
+`hasat-yeni/commons.log`). ~12 dosya/sn → tam tarama ~4-5 saat. UYGULAMAYA
+DOKUNULMADI (yavaşlama riski yok). Bağlama (index.html) AYRI iş: 1 milyon kayıt
+tek dosyada ~100 MB olur; uygulama her açılışta tamamını indiremez, rastgele
+parça (shard) yükleme tasarımı + ölçüm gerekir.
+
+**ÖNEMLİ KEŞİF (gece, olçüldü): OGG → MP3.** Pilotta kayıtların %58'i OGG/OPUS/FLAC;
+iPhone Safari bunları ÇALMAZ (yarı yarıya sessizlik). Commons her ses için
+MP3 türevi üretiyor: `.../commons/transcoded/6/67/10_Careers.ogg/10_Careers.ogg.mp3`
+(HTTP 200, `audio/mpeg`, CORS `*`). Adres tahmin edilmez; API'den
+(`prop=videoinfo&viprop=derivatives`, 50'lik gruplar) DOĞRULANIR.
+`araclar/hasat_commons_mp3.py` pilotta 47 OGG'nin 47'sini MP3'e çevirdi
+(80/80 MP3, iOS'ta çalmayan %0, 15/15 link çalıştı, CORS 15/15, Range 15/15).
+
+**Araçlar (hepsi yeni, repoda, henüz commit EDİLMEDİ):** `hasat_commons.py` (hasat),
+`hasat_commons_mp3.py` (OGG→MP3), `hasat_commons_kontrol.py` (tracks-depo veri
+kapısından geçirme + parçalar arası tekrar + lisans/format dağılımı + 200 rastgele
+link sağlığı + `SABAH_RAPORU.md`), `KAYNAKLAR.md` (kaynak kararları).
+**Zincir:** Commons koşusu bitince OTOMATİK: MP3 geçişi → kontrol → rapor
+(`hasat-yeni/bitis.log`, `hasat-yeni/SABAH_RAPORU.md`).
+
+**Uygulamayı yavaşlatmama ölçümü (Node/V8, telefon 5-10x yavaş sayılır):**
+| kayıt | dosya | JSON.parse | tarama |
+|---|---|---|---|
+| 1.000 (1 parça) | 0,2 MB | 2 ms | 1,6 ms |
+| 20.000 | 4,9 MB | 8 ms | 3,9 ms |
+| 100.000 | 24,7 MB | 42 ms | 7,6 ms |
+| 1.000.000 | **248,6 MB** | **616 ms** | 70 ms |
+Sonuç: 1 milyon kaydı TEK dosyada indirmek 250 MB + telefonda saniyeler sürecek
+ana-iş-parçacığı kilidi demek: OLMAZ. Tasarım: 1.000 kayıtlık parçalar (0,2 MB, ~2 ms),
+açılışta YALNIZ rastgele bir tane (mevcut `earth_buyuk.json` "zar" mantığı gibi),
+gerisi talep üzerine. Bu AYRI iş (index.html + ölçüm); gece yapılmadı.
+
+**Elenen kaynaklar ve neden:** `araclar/KAYNAKLAR.md` (Freesound: ToS yasak + kota;
+Xeno-canto: v3 anahtar; Openverse: günde 200 kota; ccMixter: hotlink 403 + CORS yok;
+LOC: 403). archive.org: izinli ≈ 1,0-1,2 MILYON, milyona giden TEK yol; pj "dışarıdan
+yeni" dediği için gece dokunulmadı.
+
+**Sabah (pj) için karar listesi:** (1) Commons verisi ~N kayıt çıktı (rapora bak),
+depoya girsin mi (boyut)? (2) milyon için archive.org'u lisansı baştan doğrulanmış
+(`licenseurl` ile, kayıt başına istek YOK) kayıtlarla açalım mı? Parçalı yükleme
+tasarımı ile birlikte. (3) iç belgeler: bu teslimin commit'i (araçlar + günlük).
+
+---
+
+# 2 Ekim 2026 (öğle) — Commons hasadı TAMAMLANDI, temizlik, envanter
+
+**pj:** *"yeni her sese müziğe açığım, güvenilir, hızlı çalsın, telif bizim standartlar...
+temiz linkleri hazırla, en son hepsini verip hangi türü yükleriz karar verelim,
+linkleri o arada çekelim... geçmişime bak, bayağı bir şey çıkarmıştım... bana çektiklerini
+tag'leriyle yaz... aktif olanlara bakmıyorsun değil mi, YENİ bakıyoruz... başında
+değilim, sorma."* Aktif havuza (`earth*.json`, `katalog/`, `radyo.json`) DOKUNULMADI,
+yalnız tekrar kontrolü için OKUNDU.
+
+**Sonuç:** Commons koşusu 11:33'te bitti: 40.761 kayıt. MP3 geçişi (OGG/WAV/FLAC→MP3):
+30.906 dönüştü, 21'inin türevi yok (elendi). KONUŞMA SIZINTISI ölçüldü ve temizlendi:
+2.296 kayıt "Department of Defense..." yükleyenli (Beyaz Saray basın toplantıları,
+Reagan konuşmaları, Yüksek Mahkeme) + 303 ad-deseni (entrevista, podcast, kalp sesi...).
+**SON: 38.141 temiz kayıt**, hepsi MP3, lisans PD/CC0 14.859 · CC BY-SA 14.227 · CC BY 9.055,
+veri kapısı (`tracks-depo/dogrula.py`) TEMİZ, parçalar arası tekrar 0, aktif havuzla çakışma 0.
+
+**DERSLER (kural 4):** (1) kara liste YETMEDİ: "sound" gibi genel bir kategori adı resmî
+konuşmaları geçirdi → olumlu seçim ("sounds? of|soundscape|...") + ayrı temizlik geçişi
+(`hasat_commons_temizle.py`). (2) ilk tür sınıflandırmam YANLIŞTI ("Sanatçı - Parça"
+biçimindeki her adı kuş sandı; `wolf` Wolfgang'da, `wind` Wind Quintet'te eşleşti) → gözle
+örneklem şart; `hasat_commons_envanter.py` düzeltildi, gruplar ±%10 tahmindir. (3) Zincirim
+KENDİ KENDİNİ bekledi (`pgrep -f` kendi komut satırını buldu) → `bitis.log` boş kaldı; artık
+`[h]asat` kalıbı. (4) Link kontrolü 200/200 iken sonra 106/200 (94 × HTTP 429): Wikimedia
+HIZ SINIRI (benim yoğun isteğim); aynı link dakikalar sonra 200 + CORS. 429 "bozuk link"
+DEĞİL; kontrol aracı artık Retry-After kadar bekleyip 4 kez dener, 1,2 sn aralıkla.
+
+**ESKİ 84.296'lık `yeni_hasat.json` (kökte, aktif DEĞİL) incelendi:** %52'si (43.692)
+`librivoxaudio` = pj'nin 28 Eylül'de YASAKLADIĞI kaynak, %66'sı konuşma/radyo programı.
+Temiz sayılan 28.067 kaydın 24.400'ü ZATEN aktif havuzda, 70'i katalogda; GERÇEKTEN YENİ
+yalnız 3.597 (sesli kitap kalıntısı ve lisans "diğer" 112 dahil). Eski aracın
+"61.782 aday" sonucu yanıltıcıydı (LibriVox'u elemiyor). Çıktı: `hasat-yeni/ia_eski_hasat_yeni.json`
+(sahne). Sonuç: yeni kaynak neredeyse tamamen Commons.
+
+**Dosyalar (hepsi `ORBITAPE DATA/hasat-yeni/`, depoya GİRMEDİ):** `commons/` (3 parça),
+`ENVANTER.md` (tür/lisans/etiket), `SABAH_RAPORU.md` (kapı + link sağlığı),
+`ia_eski_hasat_yeni.json`, `yeni_hasat_temiz_aday.json`. Araçlar (repo `araclar/`, commit
+EDİLMEDİ): `hasat_commons.py`, `_mp3.py`, `_temizle.py`, `_kontrol.py`, `_envanter.py`,
+`KAYNAKLAR.md`.
+
+**SON ÖLÇÜM (2 Ekim, öğle):** link sağlığı yavaş (1,2 sn) ve 429'u bekleyen araçla
+**200/200 çalışıyor, CORS 200/200, Range 200/200** (önceki 106/200 geçici hız sınırıydı).
+Teslim: araçlar + `KAYNAKLAR.md` + günlük (dal `hasat-araclari`); VERİ depoya girmedi.
+**Karar bekleyenler (pj):** (1) 38.141 kaydın hangi türleri uygulamaya/depoya girsin (bkz.
+`hasat-yeni/ENVANTER.md`); (2) milyon için archive.org'u lisansı baştan doğrulanmış
+kimliklerle (`licenseurl`) açmak; (3) 1.000 kayıtlık parçalı yükleme tasarımı (index.html,
+ölçümlü, ayrı iş).
