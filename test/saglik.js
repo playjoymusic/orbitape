@@ -17654,6 +17654,58 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     await k6();
   }
 
+  {
+    /* ── TELEFONUN YAZI BOYUTU AYARI ─────────────────────────────
+       pj: "gorsellerdeki hatalar genelde kayan ogeler, telefon olculerine
+       gore cikan sorunlar". OLCUM: yazi boyutu %115 ve ustu iken switch
+       isimleri (rem) cubuktan (px) TASIYORDU: RADIOTAPE %115'te, ORBITAPE
+       %130'da; uc ekran boyutunda da ayni. Duzeltme: cubuk da rem. */
+    const { sayfa: p7, kapat: k7 } = await sayfaAc(c, { bekle: 2500 });
+    const tasanlar = [];
+    for(const yz of [100, 115, 130, 150]){
+      for(const m of [false, true]){
+        await p7.evaluate((a)=>{ document.documentElement.style.fontSize = a.yz + '%'; AYAR.mood = a.m; moodUygula(a.m); try{ geriYerlestir(); }catch(e){} }, {yz, m});
+        await p7.waitForTimeout(900);
+        const r = await p7.evaluate(()=>{
+          const k = document.getElementById('kipKisayol'), y = k.querySelector('.uck-yol').getBoundingClientRect();
+          let tasan = '';
+          k.querySelectorAll('.uck-ad').forEach(e=>{
+            if(parseFloat(getComputedStyle(e).opacity) > 0.5){
+              const rg = document.createRange(); rg.selectNodeContents(e); const q = rg.getBoundingClientRect();
+              if(q.right > y.right + 1 || q.left < y.left - 1) tasan = e.dataset.kip;
+            }
+          });
+          return tasan;
+        });
+        if(r) tasanlar.push('%' + yz + ' ' + (m ? 'ORBITAPE' : 'RADIOTAPE') + ': ' + r);
+      }
+    }
+    K('Switch isimleri yazi boyutu %150\'ye kadar cubuktan tasmiyor', tasanlar.length === 0,
+      tasanlar.length ? tasanlar.join(' | ') : '%100, %115, %130, %150 x iki kip: hepsi sigiyor');
+    await p7.evaluate(()=>{ document.documentElement.style.fontSize = ''; });
+    /* ── ZARARSIZ TARAYICI BILDIRIMI HATA PANELI ACMAZ ───────────────
+       26 Eylul'de bir iPhone testcisi "ResizeObserver loop completed with
+       undelivered notifications" yuzunden hata raporu gonderdi (her sey
+       calisiyordu). Gercek hata hala paneli acmali. */
+    const hp = await p7.evaluate(()=>{
+      const ac = ()=>{ const e = document.getElementById('hata'); return !!(e && e.classList.contains('on')); };
+      const kapat = ()=>{ try{ window.hataSifirla && window.hataSifirla(); const e = document.getElementById('hata'); e && e.classList.remove('on'); }catch(x){} };
+      kapat();
+      window.onerror('ResizeObserver loop completed with undelivered notifications.', '', 0, 0);
+      const bildirim1 = ac();
+      window.onerror('ResizeObserver loop limit exceeded', '', 0, 0);
+      const bildirim2 = ac();
+      window.onerror('Uncaught ReferenceError: x is not defined', 'a.js', 1, 1);
+      const gercek = ac();
+      kapat();
+      return { bildirim1, bildirim2, gercek };
+    });
+    K('Zararsiz ResizeObserver bildirimi hata paneli ACMIYOR', hp.bildirim1 === false && hp.bildirim2 === false,
+      'yeni ad: ' + hp.bildirim1 + ' · eski ad: ' + hp.bildirim2 + ' (ikisi false olmali)');
+    K('GERCEK hata yine hata panelini aciyor', hp.gercek === true, 'gercek hata -> panel ' + hp.gercek);
+    await k7();
+  }
+
    await kapatPg();
    await b.close();
 
