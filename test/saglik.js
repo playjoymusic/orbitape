@@ -8094,6 +8094,42 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          && o.topuzGenislik<o.yol[0]/2);
   }
 
+  /* ── FX UYGULAMA ARKA PLANA/KAPANISA GIDINCE KAPANIR + ILK PARCA HIZLI KAYNAKTAN (2 Ekim) ──
+     pj: "fx acik kalmasin; app'i kapattim hala caliyor, tekrar actim radyoya basmasam fx sonsuza
+     kadar giderdi" ve "acilista hep hizlilar olsun". OLCUM: FX yalniz oturum durumu ama sayfa
+     gizlenince (arka plan) kapanmiyordu. Ilk sese kadar: archive.org ortanca 2,7 sn, Commons 0,4 sn. */
+  {
+    const yb = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiMood = AYAR.mood, eskiMod = mod, eskiAktif = AKTIF_MOD, eskiH = earthHavuz.slice();
+      const eskiVar = Object.getOwnPropertyDescriptor(document, 'hidden');
+      window.modKolaGit('orbit'); await bek(900);
+      const u = document.querySelectorAll('.uydu'); if(u[1]) u[1].click(); await bek(500);
+      const acikti = document.body.classList.contains('fx-acik') && !!FXMOD;
+      Object.defineProperty(document, 'hidden', {configurable:true, get:()=>true});
+      document.dispatchEvent(new Event('visibilitychange')); await bek(300);
+      const gizlenince = { sinif: document.body.classList.contains('fx-acik'), fxmod: FXMOD };
+      if(eskiVar) Object.defineProperty(document, 'hidden', eskiVar); else delete document.hidden;
+      // ilk parca: havuzda 5 archive.org + 1 Commons -> Commons gelmeli
+      const L='http://creativecommons.org/licenses/by-sa/3.0/';
+      earthHavuz.length = 0;
+      for(let i=0;i<5;i++) earthHavuz.push({id:'hz'+i, mp3:'https://archive.org/download/x/y'+i+'.mp3', ad:'A'+i, lisans:L});
+      earthHavuz.push({id:'hzc', mp3:'https://upload.wikimedia.org/wikipedia/commons/transcoded/a/ab/T.ogg/T.ogg.mp3', ad:'C', lisans:L});
+      AKTIF_MOD = 'ORBITAPE'; _hizliIlkVerildi = false; _modAdi = null; _modHavuzSay = -1;
+      const ilk = earthAl();
+      const sonuc = { acikti, fxKaldi: gizlenince.sinif, fxmod: gizlenince.fxmod, ilkHost: ilk ? new URL(ilk.mp3).host : '' };
+      earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
+      AYAR.mood = eskiMood; mod = eskiMod; AKTIF_MOD = eskiAktif; _modAdi = null; _modHavuzSay = -1;
+      moodUygula(false); await bek(300);
+      return sonuc;
+    });
+    K('Uygulama arka plana gidince (sayfa gizlenince) FX kapaniyor',
+      yb.acikti && !yb.fxKaldi && yb.fxmod==='',
+      'FX acilmisti='+yb.acikti+' gizlenince fx-acik kaldi='+yb.fxKaldi+' FXMOD="'+yb.fxmod+'"');
+    K("ORBITAPE'e giriste ilk parca hizli kaynaktan (Commons) secilir",
+      yb.ilkHost==='upload.wikimedia.org', 'ilk parca '+yb.ilkHost);
+  }
+
   /* ── ORBITAPE'TE FX ACIKKEN RADIOTAPE'E GECINCE CARK (2 Ekim) ──────
      pj: "fx'ler aktifken RADIOTAPE'e gecersem cark gitmis oluyor". OLCUM (390 px, modKolaGit):
      ORBITAPE'te bir uydu (FX) acilir, RADIOTAPE'e donulur -> body'de `fx-acik` KALIYOR, FXMOD dolu,
@@ -8216,16 +8252,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const oran = Math.max(...adim)/Math.max(Math.min(...adim),1e-6);
       const kontrast = c=>(lum(c.map(v=>v*0.66))+.05)/.05;   // kutu %66 opak, siyah zemin
       const kk = getComputedStyle(k);
-      return { fs, yolG:Math.round(yr.width), yolY:Math.round(yr.height),
+      const ybg = getComputedStyle(yol).backgroundColor, ybi = getComputedStyle(yol).backgroundImage;
+      const yolBos = (ybg==='rgba(0, 0, 0, 0)' || ybg==='transparent') && ybi==='none' && getComputedStyle(yol).boxShadow==='none';
+      return { yolBos, fs, yolG:Math.round(yr.width), yolY:Math.round(yr.height),
         adMerkezFark: Math.abs((ar.left+ar.width/2)-(yr.left+yr.width/2)),
         dokunUst:icinde(ust), dokunAlt:icinde(alt),
         uc0:renkler[0], uc1:renkler[12], oran, adimMin:Math.min(...adim),
         kontrastOrbit:kontrast(renkler[0]), kontrastRadio:kontrast(renkler[12]),
         anim:kk.animationName, gecikme:parseFloat(kk.animationDelay), opak:parseFloat(kk.opacity) };
     });
-    K('Switch yazisi 12 px, cubuk 112x22 (eski 18 px / 152x26 ekranin en baskin ogesiydi)',
-      sw.fs<=13 && sw.yolG<=120 && sw.yolY<=24,
-      'yazi '+sw.fs+' px, cubuk '+sw.yolG+'x'+sw.yolY);
+    /* 2 Ekim: pj "mood isimleri telefonda cok kucuk, buyut; switch'i incelt, cok cizgi var, ortasi dolu olmasin".
+       12 px yazi cok kucuk kalmisti (18 px da cok buyuktu): 15 px; cubuk 128x18, ici BOS (seffaf), tek ince kontur. */
+    K('Switch yazisi okunur (14-17 px), cubuk ince (<=136x20), ici bos',
+      sw.fs>=14 && sw.fs<=17 && sw.yolG<=136 && sw.yolY<=20 && sw.yolBos,
+      'yazi '+sw.fs+' px, cubuk '+sw.yolG+'x'+sw.yolY+', ici bos='+sw.yolBos);
     K('Switch dokunma alani 44 px (yolun 18 px ustu ve 2 px alti hala switch)',
       sw.dokunUst && sw.dokunAlt, 'ust='+sw.dokunUst+' alt='+sw.dokunAlt);
     K('Switch yazisi cubuga ortali (gorunen yazi, yalniz kutu degil)',
