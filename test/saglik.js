@@ -6233,12 +6233,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   K('Kayitta kamera ikonu KIRMIZI nabiz atiyor',
     pKayit.kirmizi==='1' && pKayit.ikonRenk[0]>200 && pKayit.ikonRenk[1]<130 && pKayit.ikonRenk[2]<130,
     'data-kayit '+pKayit.kirmizi+' · rgb('+pKayit.ikonRenk.slice(0,3).join(',')+')');
-  /* Kayitta disari dokunmak ve ikona basmak paneli KAPATMIYOR. */
-  await pg.evaluate(()=>{ document.body.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true})); document.getElementById('kamTus').click(); });
+  /* KAYITTA PANEL KAPATILABILIR (1 Ekim, kullanici: "ekranda parmagimizi
+     surterek fx yapiyoruz; tekrar kameraya basip kapatabilmeliyiz; kayit
+     surdugu ikonun ustunde kirmizi yanip sonerek gorunsun"). Ekrana
+     dokunmak (FX) paneli KAPATMAZ; yalniz ikon kapatir. */
+  await pg.evaluate(()=>{ document.body.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true})); });
   await pg.waitForTimeout(250);
   const pKapanmadi = await panel();
-  K('Kayitta disari dokunus / ikon paneli kapatmiyor', pKapanmadi.acik && pKapanmadi.durum==='kayit',
+  K('Kayitta ekrana dokunmak (FX) paneli kapatmiyor', pKapanmadi.acik && pKapanmadi.durum==='kayit',
     'acik:'+pKapanmadi.acik+' durum:'+pKapanmadi.durum);
+  await pg.evaluate(()=>{ document.getElementById('kamTus').click(); });
+  await pg.waitForTimeout(400);
+  const pDaraldi = await pg.evaluate(()=>{
+    const y = document.getElementById('yelpaze'), t = document.getElementById('kamTus');
+    const cs = getComputedStyle(t, '::after');
+    return { acik:!y.hidden, kayit:!!kaydedici, isik: cs.content !== 'none' && cs.width === '9px',
+             renk: cs.backgroundColor };
+  });
+  K('Kayitta ikona basinca panel kapanir, kayit SURER, ikonda kirmizi isik var',
+    !pDaraldi.acik && pDaraldi.kayit && pDaraldi.isik && /255, 74, 61/.test(pDaraldi.renk),
+    'panel acik:'+pDaraldi.acik+' · kayit:'+pDaraldi.kayit+' · isik:'+pDaraldi.isik+' '+pDaraldi.renk);
+  await pg.evaluate(()=>{ document.getElementById('kamTus').click(); });      // tekrar ac
+  await pg.waitForTimeout(400);
+  const pYenidenAcildi = await panel();
+  K('Ikona tekrar basinca panel geri aciliyor', pYenidenAcildi.acik && pYenidenAcildi.durum==='kayit',
+    'acik:'+pYenidenAcildi.acik);
   /* KAREYE GIRMIYOR: panel bir DOM katmani; kayit/foto karesi ayri
      tuvalde cizildigi icin paneli icermemeli. Olcum: ayni karenin panel
      ACIKKEN ve GIZLIYKEN alinmis iki kopyasi, panelin kapladigi
@@ -17561,8 +17580,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const k=document.getElementById('kipKisayol'), yol=k.querySelector('.uck-yol');
       const ad=n=>{ const e=k.querySelector('.uck-ad[data-kip="'+n+'"]'); return { op:+(+getComputedStyle(e).opacity).toFixed(3), w:e.getBoundingClientRect().width }; };
       const tp = getComputedStyle(k.querySelector('.uck-topuz')).backgroundColor;
+      /* GORUNEN yazinin merkezi: harf araligi son harfin arkasina da bosluk
+         koyar, o yari kadar geri alinir (yoksa kutu ortali, yazi degil). */
+      const ink = n=>{ const e=k.querySelector('.uck-ad[data-kip="'+n+'"]'); const ls=parseFloat(getComputedStyle(e).letterSpacing)||0;
+        const rg=document.createRange(); rg.selectNodeContents(e); const b=rg.getBoundingClientRect(); return (b.left+b.width/2) - ls/2; };
+      const yr = yol.getBoundingClientRect();
       return { p:parseFloat(k.style.getPropertyValue('--uck-p')), orbit:ad('orbit'), radio:ad('radio'),
-               yolW:yol.getBoundingClientRect().width, mood:document.body.classList.contains('mood'), tp };
+               yolW:yr.width, mood:document.body.classList.contains('mood'), tp,
+               yolMerkez:yr.left+yr.width/2, orbitMerkez:ink('orbit'), radioMerkez:ink('radio') };
     });
     const bas = await sw();
     const tx = await p3.evaluate(()=>{ const r=document.querySelector('#kipKisayol .uck-topuz').getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top+r.height/2}; });
@@ -17592,6 +17617,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Kip isimleri switch yolundan TASMIYOR',
       bas.radio.w <= bas.yolW && son.orbit.w <= son.yolW,
       'yol '+bas.yolW+' px · RADIOTAPE '+Math.round(bas.radio.w)+' px · ORBITAPE '+Math.round(son.orbit.w)+' px');
+    /* ORTALI (kullanici: "bu yazilar ortalanmiyor mu... standart seyler"):
+       gorunen isim yolun tam ortasinda, iki kipte de. */
+    K('Kip ismi switch yolunun ORTASINDA (iki kipte de)',
+      Math.abs(bas.radioMerkez - bas.yolMerkez) <= 1.5 && Math.abs(son.orbitMerkez - son.yolMerkez) <= 1.5,
+      'RADIOTAPE: yazi '+bas.radioMerkez.toFixed(1)+' / yol '+bas.yolMerkez.toFixed(1)
+      +' · ORBITAPE: yazi '+son.orbitMerkez.toFixed(1)+' / yol '+son.yolMerkez.toFixed(1));
     await k3();
   }
   {

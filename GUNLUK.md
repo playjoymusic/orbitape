@@ -5108,3 +5108,47 @@ RADIOTAPE yazısı 147 px; FX 1: parça değişince 0/0). RADIOTAPE FX ve
 "DISC seçmek RADIOTAPE'i bozmaz" korumaları iki hâlde de geçti (beklenen).
 Dosyalar yerine döndü (özet b9e41bd76…, 02de5f88…, 7071b4cc…). Birim
 135/135, tip denetimi 54 (taban aynı).
+
+---
+**1 Ekim 2026 — KAPANIŞ.** PR #55 (kamera) ve PR #56 (çark, switch, isimler, FX)
+birleşti ve canlıda (ana dal 6/6 yeşil, canlı sınama başarılı). pj gerçek
+cihazda denedi: *"hersey yesil"*. AÇIK: (1) geçişte ses "arıyor / bir kez
+dokunmamı istiyor" — ölçülemedi, telefonda `?tani` ekran görüntüsü bekliyor;
+(2) çalışma alanı planının kalanı: Hermes projesi, proje skill'leri (arşiv
+hasadı), kanca + gece köprüsü + haftalık nabız, Time Machine yedeği,
+kökteki eski CLAUDE.md/GUNLUK.md, klasör haritasının diğer taşımaları
+(tasarim/, ham-arsiv/, orbitape-magaza/); (3) Play imzalama anahtarı
+hangisi doğrulanacak (Play Console).
+
+---
+
+# 1 Ekim 2026 (gece) — Kayıtta panel kapatılabilir + switch isimleri ortalı
+
+pj: *"ekranda parmağımızı sürterek FX yapıyoruz ya; tekrar kameraya basıp
+kapatabilmeliyiz; açık pencereyi kapatınca kaydın devam ettiğini sol üstteki
+kamera ikonunun üstünde kırmızı yanıp sönerek görelim."* VE: *"bu yazılar
+ortalanmıyor mu; ben sürekli grafik tasarım öğretemem, bunlar standart
+şeyler."*
+
+**Kamera paneli (benim tasarım hatam):** kayıtta paneli "kapanamaz" yapmıştım;
+FX için çarkın üstünde engel oluyordu. Artık yalnız `karar` (kaydedeyim mi?)
+ve `basliyor` (≤1.8 sn) zorunlu açık. Kayıtta kamera ikonu paneli açıp
+kapatır; ekrana dokunmak (FX) kapatmaz; kapalıyken kaydın sürdüğü ikonun
+üstünde 9 px kırmızı yanıp sönen ışıkla görünür (`#kamTus::after`, yalnız
+`data-kayit=1`; boşta ikonda kırmızı YOK — 26 Eylül kararı korundu). Panel
+yalnız durum DEĞİŞİNCE kendiliğinden açılır; kapattıysa tekrar açılmaz.
+
+**Switch isimleri ortalı:** `.uck-ad` sola yaslıydı (ORBITAPE kısa olduğu için
+sağda boşluk). Artık `left:0;right:0;text-align:center` + `padding-left:.26em`
+(harf aralığı son harfin arkasına da boşluk koyar; görünen yazı ortalanır).
+İki isim aynı merkezde, geçişte yatayda zıplamaz.
+
+**ÖLÇÜM:** yeni kod 922/922. Düzeltmeler geri alınınca 920/922: panel kapanma
+kontrolü (panel açık kaldı, ışık yok) ve ortalama kontrolü (RADIOTAPE yazısı
+merkez 81,5 / yol 90,0; ORBITAPE 73,7 / yol 90,0; yani 8,5 ve 16,3 px sola
+kaymış) kırmızı. Yeni kodda ikisi de 90,0 / 90,0. Çevre hizası: kamera,
+rehber, görsel, saat ve switch sol kenarları 14 px'te aynı.
+
+**KURAL (pj'nin sözünden, kalıcı):** yeni bir öğe eklerken grafik tasarım
+standartlarını (ortalama, sol kenar hizası, boşluk, taşma, ≥44 px dokunma
+hedefi) pj söylemeden BEN ölçerim ve kalıcı kontrol olarak eklerim.
