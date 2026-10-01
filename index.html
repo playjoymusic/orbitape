@@ -12846,7 +12846,13 @@
            kilit yalniz DERIYI sabitler, merkezi (cark/halka) degil.
            Kural (pj): her kip merkezi nasil biraktiysan oyle acilir. */
         AYAR.merkez = AYAR.radyoMerkez || 'cark';
-        try{ fxNormale(); }catch(e){ _yut(e); }
+        /* 2 EKIM OLCUM (pj: "fx'ler aktifken RADIOTAPE'e gecersem cark gidiyor"; ekranda radyoda
+           ORBITAPE'in FX ekrani takili: "DRAG INSIDE", yildirim simgeleri, cark yok). SEBEP:
+           burada cagrilan fxNormale() "artik bir sey yapmiyor" (bos govde); FX acikken body'de
+           `fx-acik` sinifi kaliyor ve CSS cark tuvalini bu sinifla GIZLIYOR. FX yalniz ORBITAPE'in
+           isi; kipten cikarken gercekten kapatilir (UI'daki ayni yol: fxModGec ayni uyduyu
+           tekrar secince normale doner). Ayarlara/merkeze dokunmaz. */
+        try{ if(FXMOD) fxModGec(FXMOD); fxSifirla(); }catch(e){ _yut(e); }
         try{ AKTIF_MOD = null; }catch(e){ _yut(e); }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'radio';

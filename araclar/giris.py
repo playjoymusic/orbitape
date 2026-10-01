@@ -49,8 +49,31 @@ def main():
     if not isinstance(hepsi, list) or not hepsi:
         raise SystemExit('earth.json okunamadi ya da bos')
 
-    adim = max(1, len(hepsi) // SAYI)
-    ornek = hepsi[::adim][:SAYI]
+    # 2 EKIM OLCUM (pj: "orbitape'e gecince sessiz, 1-2 sn sonra bir sey buluyor; ilk kural hizli calmali"):
+    # ilk ses bu dosyadan geliyor ve 700 kaydin %100'u archive.org idi. Ilk sese kadar gecen sure
+    # (tarayicida play() -> 'playing', 10 parca): archive.org ortanca 2,7 sn (2,0-4,6);
+    # Commons CDN (upload.wikimedia.org) ortanca 0,4 sn (0,23-0,61, 10/10 HTTP 206).
+    # Cozum: baslangic dosyasinin cogu Commons (hizli CDN) parcasi; yalniz Commons'un olmadigi raflar
+    # (HUMANS, CITY, SPACE, DARK, NOISE...) icin az sayida archive.org ornegi. Tam havuz arkadan
+    # inmeye devam ediyor (yeni/ parcalari adres kumesiyle tekrar elenir).
+    HIZLI = {'RECORDS': 320, 'NATURE': 100, 'AMBIANCE': 60, 'INDUSTRIAL': 30}
+    yeni_dir = os.path.join(KOK, 'yeni')
+    hizli = []
+    if os.path.isdir(yeni_dir):
+        havuz = {}
+        for ad in sorted(os.listdir(yeni_dir)):
+            if ad.startswith('yeni_') and ad.endswith('.json'):
+                for k in json.load(open(os.path.join(yeni_dir, ad), encoding='utf-8')):
+                    if 'upload.wikimedia.org' in k['mp3']:
+                        havuz.setdefault(k.get('dis'), []).append(k)
+        for raf, n in HIZLI.items():
+            lst = havuz.get(raf, [])
+            if lst:
+                adim_h = max(1, len(lst) // n)
+                hizli += lst[::adim_h][:n]
+    kalan = SAYI - len(hizli)
+    adim = max(1, len(hepsi) // max(kalan, 1))
+    ornek = hizli + hepsi[::adim][:kalan]
 
     metin = json.dumps(ornek, ensure_ascii=False, separators=(',', ':'))
     with open(HEDEF, 'w', encoding='utf-8') as f:
