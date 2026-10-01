@@ -279,6 +279,26 @@ K('Gercek isim oldugu gibi geciyor',
   A.sanatciTemiz('  Duke   Ellington ') === 'Duke Ellington',
   'bosluklar sadelesiyor, isim korunuyor');
 
+/* ── EFEKT ACIKLAMALARI: EKRAN INGILIZCE, TELEFON DILI NE ISE O ─
+   2 Ekim 2026 OLCUM: ana ekrandaki alt satir ("kendini tekrarlar ·
+   yukseldikce uzaklasir ...") UYDULAR icinde 16 aciklama olarak
+   dogrudan TURKCE yazilmisti ve Y() cevirisinden gecmiyordu -> telefon
+   dili ne olursa olsun herkes Turkce goruyordu (pj ekran goruntusu).
+   Kural: kodda Ingilizce yazilir, Y() ile telefon diline cevrilir;
+   5 dil dosyasinin hepsinde karsiligi olmak ZORUNDA. */
+const _bilgiler = [...KAYNAK.matchAll(/\{ad:'[A-Z ]+',\s+bilgi:'([^']+)'/g)].map(m => m[1]);
+const _dilEksik = [];
+for (const dl of ['tr', 'de', 'es', 'fr', 'it']) {
+  const sz = JSON.parse(fs.readFileSync(path.join(KOK, 'dil', dl + '.json'), 'utf8'));
+  for (const b of _bilgiler) if (!sz[b] || (dl !== 'tr' && sz[b] === b)) _dilEksik.push(dl + ':' + b);
+}
+K('Efekt aciklamalari 16 tane, hepsi 5 dilde cevrili (kodda Ingilizce)',
+  _bilgiler.length === 16 && _dilEksik.length === 0,
+  _bilgiler.length + ' aciklama, eksik: ' + (_dilEksik.slice(0, 4).join(' | ') || 'yok'));
+K('Efekt aciklamasi ekrana Y() ile cevrilerek yaziliyor',
+  /_bilgi\.textContent = fxler\.map\(f=>Y\(f\.bilgi\)\)/.test(KAYNAK),
+  'ham metin degil, telefon diline cevrilmis metin');
+
 /* ── DERI KONTRASTI OLCULUYOR, GOZE BIRAKILMIYOR ────────────────
    Kullanicinin bildirdigi kusur: "bazi temalarda bazi yazilar dusuk
    kaliyor." Goz bu soruya guvenilir cevap vermiyor -- ozellikle
