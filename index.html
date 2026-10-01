@@ -12730,8 +12730,9 @@
                (merkezOrb; ayarlar > CENTER). Varsayılan HALKA
                (çarksız) — kullanıcı çark seçtiyse o seçimle açılır.
                Radyonun merkezi ayrıdır ve buradan etkilenmez. */
-            if(!AYAR.deriKilit) AYAR.merkez = AYAR.merkezOrb || 'yuvarlak';
         }
+        /* Merkez de kilitten bagimsiz: ORBITAPE kendi kayitli merkezini acar. */
+        if(_oncekiDunya !== 'lib') AYAR.merkez = AYAR.merkezOrb || 'yuvarlak';
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
         /* Radyo tarafinin rafi UNUTULMUYOR, saklaniyor: kipten
@@ -12776,8 +12777,15 @@
            hic dokunulmuyor -- eskisi gibi sabit kaliyor. */
         if(!AYAR.deriKilit){
           AYAR.deri = AYAR.radyoDeri|0;
-            AYAR.merkez = AYAR.radyoMerkez || 'cark';
         }
+        /* 2 EKIM OLCUM (pj: "orbitape'ten radiotape'e gecince cark
+           siliniyor"): LOCK SKIN ACIKKEN ORBITAPE -> RADIOTAPE donusunde
+           merkez 'cark'tan 'yuvarlak'a dustu (olculdu: kilit kapali /
+           skin acik / FX acik / caliyor = cark kaliyor; yalniz kilit
+           acik = kayip). Sebep: bu satir kilit denetiminin ICINDEYDI;
+           kilit yalniz DERIYI sabitler, merkezi (cark/halka) degil.
+           Kural (pj): her kip merkezi nasil biraktiysan oyle acilir. */
+        AYAR.merkez = AYAR.radyoMerkez || 'cark';
         try{ fxNormale(); }catch(e){ _yut(e); }
         try{ AKTIF_MOD = null; }catch(e){ _yut(e); }
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
