@@ -8094,6 +8094,79 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          && o.topuzGenislik<o.yol[0]/2);
   }
 
+  /* ── SWITCH: KUCUK, HOMOJEN RENK, SICRAMASIZ ACILIS (2 Ekim) ───────
+     pj: "sol alt switch ve yazi cok buyuk, renk degisken ve homojen degil,
+     profesyonel standartlarda; ilk RADIOTAPE once altta sonra ortada
+     yazdi". OLCUM (390 px): yazi 18 px/cubuk 152x26 (basliktan buyuk);
+     renk --m1/--m3'ten (kipe bagli) geliyordu, kip degisince ziplardi;
+     ORBITAPE yazisi kontrast ~2,9; acilista switch ilk karede (75 ms)
+     beliriyor, baslik 350 ms'de geliyordu. */
+  {
+    const sw = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const k = document.getElementById('kipKisayol');
+      const yol = k.querySelector('.uck-yol'), ad = k.querySelector('.uck-ad[data-kip="radio"]');
+      /* Chromium color-mix(in oklab) sonucunu 'oklab(...)' yazar; canvas ile
+         sRGB 0-255'e cevriliyor. */
+      const cv = document.createElement('canvas'); cv.width = cv.height = 1;
+      const cx = cv.getContext('2d', {willReadFrequently:true});
+      const ayrisir = c=>{ cx.clearRect(0,0,1,1); cx.fillStyle='#000'; cx.fillStyle=c; cx.fillRect(0,0,1,1);
+        const d=cx.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]]; };
+      const lum = ([r,g,b])=>{ const f=v=>{ v/=255; return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4); };
+        return .2126*f(r)+.7152*f(g)+.0722*f(b); };
+      const yr = yol.getBoundingClientRect(), ar = ad.getBoundingClientRect();
+      const fs = parseFloat(getComputedStyle(ad).fontSize);
+      // dokunma alani 44 px: yolun 18 px ustu ve 2 px alti hala switch'in icinde
+      const ortaX = yr.left + yr.width/2;
+      const ust = document.elementFromPoint(ortaX, yr.top - 18);
+      const alt = document.elementFromPoint(ortaX, yr.bottom + 2);
+      const icinde = e=>!!e && (e===k || k.contains(e));
+      // renk: 13 konum, parmak surukluyormus gibi (uck-suruk: JS --uck-p'ye karismasin)
+      const eskiP = k.style.getPropertyValue('--uck-p');
+      k.classList.add('uck-suruk');
+      const renkler=[];
+      for(let i=0;i<=12;i++){ k.style.setProperty('--uck-p', String(i/12)); await bek(30);
+        renkler.push(ayrisir(getComputedStyle(ad).color)); }
+      k.classList.remove('uck-suruk'); k.style.setProperty('--uck-p', eskiP || '1');
+      /* Adimlar OKLAB'ta olculur (algisal birim): karisim oklab'ta yapildigi icin
+         orada esit aralikli olmali. sRGB'de esit olmaz (doygun turkuaz uca
+         dogru sRGB kanal adimlari buyur: 7 -> 24) ve bu bir kusur degil. */
+      const oklab = ([r,g,b])=>{ const f=v=>{ v/=255; return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4); };
+        const R=f(r),G=f(g),B=f(b);
+        const l=Math.cbrt(.4122214708*R+.5363325363*G+.0514459929*B),
+              m=Math.cbrt(.2119034982*R+.6806995451*G+.1073969566*B),
+              s=Math.cbrt(.0883024619*R+.2817188376*G+.6299787005*B);
+        return [.2104542553*l+.7936177850*m-.0040720468*s, 1.9779984951*l-2.4285922050*m+.4505937099*s, .0259040371*l+.7827717662*m-.8086757660*s]; };
+      const ok = renkler.map(oklab);
+      const adim = ok.slice(1).map((c,i)=>Math.hypot(c[0]-ok[i][0],c[1]-ok[i][1],c[2]-ok[i][2]));
+      const oran = Math.max(...adim)/Math.max(Math.min(...adim),1e-6);
+      const kontrast = c=>(lum(c.map(v=>v*0.66))+.05)/.05;   // kutu %66 opak, siyah zemin
+      const kk = getComputedStyle(k);
+      return { fs, yolG:Math.round(yr.width), yolY:Math.round(yr.height),
+        adMerkezFark: Math.abs((ar.left+ar.width/2)-(yr.left+yr.width/2)),
+        dokunUst:icinde(ust), dokunAlt:icinde(alt),
+        uc0:renkler[0], uc1:renkler[12], oran, adimMin:Math.min(...adim),
+        kontrastOrbit:kontrast(renkler[0]), kontrastRadio:kontrast(renkler[12]),
+        anim:kk.animationName, gecikme:parseFloat(kk.animationDelay), opak:parseFloat(kk.opacity) };
+    });
+    K('Switch yazisi 12 px, cubuk 112x22 (eski 18 px / 152x26 ekranin en baskin ogesiydi)',
+      sw.fs<=13 && sw.yolG<=120 && sw.yolY<=24,
+      'yazi '+sw.fs+' px, cubuk '+sw.yolG+'x'+sw.yolY);
+    K('Switch dokunma alani 44 px (yolun 18 px ustu ve 2 px alti hala switch)',
+      sw.dokunUst && sw.dokunAlt, 'ust='+sw.dokunUst+' alt='+sw.dokunAlt);
+    K('Switch yazisi cubuga ortali (gorunen yazi, yalniz kutu degil)',
+      sw.adMerkezFark<=1.5, 'fark '+sw.adMerkezFark.toFixed(2)+' px');
+    K('Switch rengi iki sabit uc arasinda HOMOJEN geciyor (13 konum, adimlar esit, sicrama yok)',
+      sw.uc0[0]>sw.uc1[0] && sw.uc0[2]>sw.uc1[2] && sw.oran<=1.35 && sw.adimMin>0.004,
+      'ORBITAPE ucu '+sw.uc0+' -> RADIOTAPE ucu '+sw.uc1+' ; oklab adimlari: en buyuk/en kucuk '+sw.oran.toFixed(2)+'x, en kucuk '+sw.adimMin.toFixed(4));
+    K('Switch yazilari kontrast >= 4,5 (kutu %66 opak, siyah zemin)',
+      sw.kontrastOrbit>=4.5 && sw.kontrastRadio>=4.5,
+      'ORBITAPE '+sw.kontrastOrbit.toFixed(2)+' RADIOTAPE '+sw.kontrastRadio.toFixed(2));
+    K('Switch acilista ekranla birlikte yumusakca geliyor (ilk karede ani belirmiyor)',
+      sw.anim==='uckGel' && sw.gecikme>=0.3 && Math.abs(sw.opak-0.66)<0.03,
+      'animasyon='+sw.anim+' gecikme='+sw.gecikme+'s son opaklik='+sw.opak.toFixed(2));
+  }
+
   /* ── HIZ YAZIMI TAMPON BOSKEN DURUYOR ───────────────────────
      Kullanicinin bildirimi: "her fx degistirmede cizirti oluyor,
      YUKLENMEDEN GELEN. Ve fx'lere yuklenince de oluyor."
