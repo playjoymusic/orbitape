@@ -8094,6 +8094,31 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          && o.topuzGenislik<o.yol[0]/2);
   }
 
+  /* ── ORBITAPE'TE FX ACIKKEN RADIOTAPE'E GECINCE CARK (2 Ekim) ──────
+     pj: "fx'ler aktifken RADIOTAPE'e gecersem cark gitmis oluyor". OLCUM (390 px, modKolaGit):
+     ORBITAPE'te bir uydu (FX) acilir, RADIOTAPE'e donulur -> body'de `fx-acik` KALIYOR, FXMOD dolu,
+     ekranda ORBITAPE'in FX ekrani ("DRAG INSIDE", yildirim simgeleri), cark gizli. Sebep:
+     moodUygula'daki fxNormale() bos govdeydi. Beklenen: radyoda FX kapali, `fx-acik` yok. */
+  {
+    const fx = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiMood = AYAR.mood, eskiMod = mod, eskiAktif = AKTIF_MOD, eskiMerk = AYAR.merkez, eskiRM = AYAR.radyoMerkez;
+      AYAR.radyoMerkez = 'cark';
+      window.modKolaGit('orbit'); await bek(900);
+      const u = document.querySelectorAll('.uydu'); if(u[1]) u[1].click(); await bek(500);
+      const acikti = document.body.classList.contains('fx-acik') && !!FXMOD;
+      window.modKolaGit('radio'); await bek(900);
+      const r = { acikti, fxAcikKaldi: document.body.classList.contains('fx-acik'), fxmod: FXMOD,
+                  carkSinifi: document.body.classList.contains('merkez-cark'), merkez: AYAR.merkez };
+      AYAR.mood = eskiMood; mod = eskiMod; AKTIF_MOD = eskiAktif; AYAR.merkez = eskiMerk; AYAR.radyoMerkez = eskiRM;
+      moodUygula(false); await bek(300);
+      return r;
+    });
+    K("ORBITAPE'te FX acikken RADIOTAPE'e gecince FX ekrani kapaniyor, cark geri geliyor",
+      fx.acikti && !fx.fxAcikKaldi && fx.fxmod==='' && fx.carkSinifi && fx.merkez==='cark',
+      'FX acilmisti='+fx.acikti+' fx-acik kaldi='+fx.fxAcikKaldi+' FXMOD="'+fx.fxmod+'" cark sinifi='+fx.carkSinifi+' merkez='+fx.merkez);
+  }
+
   /* ── YENI HAVUZ + ADRESSIZ KATALOG GORUNMEZ (2 Ekim) ────────────────
      pj: "hazir olanlari ekle deneyelim" ve "adresi bulunacak ~92.300 kayit
      simdilik uygulamada gorunmesin". OLCUM: katalog 117.993 kayit, 25.691'i
@@ -9855,6 +9880,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const hamKB = Math.round(fsx.statSync('earth_giris.json').size/1024);
       const tamKB = Math.round(fsx.statSync('earth.json').size/1024);
       const tamKume = new Set(tam.map(x=>x && x.mp3));
+      /* 2 Ekim: tam havuz artik earth.json + yeni/ parcalari (yeniYukle). Baslangic dosyasinin
+         bir kismi yeni/'den (hizli CDN: ilk ses 2,7 sn -> 0,4 sn); alt kume kurali ikisini de kapsar. */
+      try{ fsx.readdirSync('yeni').filter(f=>/^yeni_\d+\.json$/.test(f))
+        .forEach(f=>JSON.parse(fsx.readFileSync('yeni/'+f,'utf8')).forEach(x=>tamKume.add(x.mp3))); }catch(e){}
       const altKume = giris.every(x=>tamKume.has(x && x.mp3));
       K('Baslangic dosyasi kucuk ve tam havuzdan geliyor',
          Array.isArray(giris) && giris.length >= 400 && giris.length <= 1200
