@@ -9930,7 +9930,7 @@
       if(!formatCalinir(u)) return null;
       return { id:'ert:'+(k+i), mp3:u, ad:(x.ad||x.title||x.name||'').toString(),
             sanatci:sanatciTemiz(x.sanatci), etiket:(x.etiket||'').toString(),
-            lisans:(x.lisans||'').toString() };
+            lisans:(x.lisans||'').toString(), dis:(x.dis||'').toString() };
     }).filter(Boolean);
   }
   function _earthGovde(d){
@@ -10022,7 +10022,7 @@
            kayit yerelin (36.534 dogrudan adresli) onune geciyordu;
            ORBITAPE'de aninda calan kayit 273'e dustu. Artik katalog,
            yerel havuz tamamlandiktan sonra gelir. */
-        try{ katalogYukle(); }catch(e){ _yut(e); }
+        try{ yeniYukle(); }catch(e){ _yut(e); }
         return earthHavuz.length;
       }catch(e){ hataEkle('earth'); agBosArtir(); return earthHavuz.length || earthOnbellekten(); }
       finally{ _etSoz=null; }
@@ -10607,11 +10607,15 @@
         const sira = (k)=>k>=l.length ? null : fetch('katalog/'+l[k]).then(r=>r.json())
           .then(d=>{
             const a = d.a || [];
+            /* 2 EKIM (pj: "adresi bulunacak ~92.300 kayit yavas, siraya alinmali, simdilik
+               uygulamada gorunmesin"): ADRESSIZ kayit (yalniz archive.org kimligi; calarken
+               /metadata ile cozuluyordu: gec baslar, cevap gelmezse atlanir) havuza GIRMIYOR.
+               Olcu: 117.993 kaydin 25.691'i adresli, 92.302'si adressiz. Adressizler
+               araclar/hasat_katalog_coz.py ile onceden cozulup hazir adresli olarak gelecek. */
             for(let i=0;i<a.length;i++){
               const c = a[i];
-              earthHavuz.push(Array.isArray(c)
-                ? { id:c[0], etiket:c[1]||'', mp3:c[2]||'', tur:'muzik' }
-                : { id:c, mp3:'', tur:'muzik' });
+              if(Array.isArray(c) && c[2])
+                earthHavuz.push({ id:c[0], etiket:c[1]||'', mp3:c[2], tur:'muzik' });
             }
             katalogIsit();
           }).catch(()=>{}).then(()=>sira(k+1));
@@ -10619,8 +10623,34 @@
       }).catch(()=>{});
     } else { setTimeout(()=>{ try{ katalogYukle(); }catch(e){ _yut(e); } }, 3000); }
   }
+  /* ── YENI HAVUZ (2 Ekim 2026; pj: "hazir olanlari ekle deneyelim") ──
+     yeni/yeni_NNN.json: 2.500'luk parcalar, HAZIR ADRESLI + lisansi onceden dogrulanmis
+     (Commons + archive.org). Her kayitta `dis` = raf adi (arsivRaf onu dogrudan raf yapar).
+     YUK DISIPLINI katalogla ayni: yerel tam havuz BITTIKTEN SONRA, parcalar TEK TEK arka planda;
+     acilis istegi ve ilk ses hattini bu yuzden kullanmaz. Bittikten sonra eski katalog baslar
+     (yalniz adresli kayitlari). Ayni adres iki kez girmez. */
+  let _yeniAcildi = 0;
+  function yeniYukle(){
+    if(_yeniAcildi) return;
+    if(typeof _earthTam !== 'undefined' && !_earthTam){
+      setTimeout(()=>{ try{ yeniYukle(); }catch(e){ _yut(e); } }, 3000); return; }
+    _yeniAcildi = 1;
+    const bitir = ()=>{ try{ katalogYukle(); }catch(e){ _yut(e); } };
+    const var_ = new Set(earthHavuz.map(x=>x.mp3));
+    fetch('yeni/ozet.json').then(r=>r.json()).then(l=>{
+      const sira = (k)=>{
+        if(k>=l.length){ bitir(); return null; }
+        return fetch('yeni/'+l[k]).then(r=>r.json()).then(d=>{
+          const g = earthEsle(d, earthHavuz.length).filter(x=>!var_.has(x.mp3));
+          g.forEach(x=>var_.add(x.mp3));
+          for(let i=0;i<g.length;i++) earthHavuz.push(g[i]);
+        }).catch(()=>{}).then(()=>sira(k+1));
+      };
+      return sira(0);
+    }).catch(bitir);
+  }
   function modHavuzu(){
-    katalogYukle();            /* 100.000+ kayit */
+    yeniYukle();               /* yeni hazir adresli parcalar; bitince katalog */
     wikiCek();            /* Commons: muzik bankasi */
     const say = earthHavuz.length;
     if(_modAdi !== AKTIF_MOD || _modHavuzSay !== say){
