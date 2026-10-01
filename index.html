@@ -2522,7 +2522,25 @@
      %130'da; 360x800, 390x844 ve 320x568'de aynı). Çubuk artık isimle AYNI
      birimde: 9.5rem = 152 px (varsayılan yazıda değişmedi), yazı büyürse
      çubuk da büyür. */
-  :root{ --uck-h:9.5rem; --uck-w:26px; }
+  /* 2 EKIM (pj: "sol alt switch ve yazi cok buyuk, renk degisken ve homojen
+     degil, profesyonel standart"). OLCU (390 px telefon): yazi 18 px + harf
+     araligi 4,7 px, cubuk 152x26 -> basliktan (14 px) buyuk, ekranin en
+     baskin ogesi. Yeni: cubuk 112x22, yazi 12 px. Gorunen boyut kuculur,
+     DOKUNMA ALANI kucuk degil (.uck-yol::before ile 44 px'e genisler).
+     RENK: onceden --m1/--m3 (o anki kipin temasi) kullaniliyordu; kip
+     degisince bu degerler degisiyor (RADIOTAPE turkuaz 53,224,216 ->
+     ORBITAPE gri-lacivert 85,90,110) ve switch surukleme BITTIKTEN SONRA
+     ziplayarak yeniden renkleniyordu; ORBITAPE yazisi siyah uzerinde
+     kontrast ~2,9'da kaliyordu. Cozum: iki kipin SABIT kimlik rengi,
+     arasi parmagin konumuyla (--uck-p) oklab uzayinda karisir: ara
+     tonlar algisal olarak esit aralikli, sicrama yok. Etkin kontrast
+     (kutu %66 opak): ORBITAPE 5,4 / RADIOTAPE 5,8. */
+  :root{ --uck-h:7rem; --uck-w:22px;
+    --sw-orbit:rgb(190,196,220); --sw-radio:rgb(53,224,216); }
+  /* --sw-mix BURADA, :root'ta DEGIL: --uck-p switch'in KENDI uzerinde
+     yazili; :root'ta var(--uck-p) hep yedek degere (1) cozulurdu ve renk
+     hic degismezdi (olculdu: 'Kip yolunun duraklari' kontrolu r1 === r2). */
+  #kipKisayol{--sw-mix:color-mix(in oklab,var(--sw-radio) calc(var(--uck-p,1) * 100%),var(--sw-orbit));}
   /* YATAY DUGME (28 Eylul: "sol alt swichi yataya yap... mod isimleri
      de yatay olarak ustunde yazsin... font buyukluk sag ustteki gibi
      olsun"). Yol genislige dondu, isimler tek yerde ust uste. */
@@ -2538,7 +2556,14 @@
        overlay olsun %50"): dugmenin rengi tema duraklarindan geliyor
        ve tam opaklikta ekrani tartip duruyordu. Blok yari saydam
        katman; dokunulunca/odaklaninca 0.9'a cikiyor. */
-    opacity:.66;--uck-p:1;transition:opacity .22s ease;touch-action:none;}
+    opacity:.66;--uck-p:1;transition:opacity .22s ease;touch-action:none;
+    /* 2 EKIM OLCU: acilista switch yazisi ILK KAREDE (75 ms) altta
+       beliriyor, ustteki baslik 350 ms'de geliyor -> "once altta yazdi
+       sonra ortada". Switch simdi 0,35 sn bekleyip yumusakca geliyor:
+       ekran birlikte kuruluyor. 'backwards': bekleme boyunca 0, bitince
+       elemanin kendi opakligi (.66). */
+    animation:uckGel .55s ease-out .35s backwards;}
+  @keyframes uckGel{from{opacity:0;}}
   #kipKisayol:hover,#kipKisayol:focus-visible{opacity:.9;}
   #kipKisayol.uck-acik{opacity:.94;}
   /* 1 EKIM (kullanici: "switch estetik degil, daha overlay olmali; saga
@@ -2551,11 +2576,16 @@
     width:var(--uck-h);height:var(--uck-w);border-radius:calc(var(--uck-w)/2);
     background:linear-gradient(90deg,var(--m1,#35e0d8) 0%,var(--m3,#86dcd0) 100%);
     background:linear-gradient(90deg,
-        color-mix(in srgb,var(--m1,#35e0d8) 62%,transparent) 0%,
-        color-mix(in srgb,var(--m3,#86dcd0) 62%,transparent) 100%);
+        color-mix(in oklab,var(--sw-orbit) 46%,transparent) 0%,
+        color-mix(in oklab,var(--sw-radio) 46%,transparent) 100%);
     border:1px solid rgba(255,255,255,.18);
     box-shadow:inset 0 2px 5px rgba(0,0,0,.38),inset 0 -1px 0 rgba(255,255,255,.10),
                0 1px 0 rgba(255,255,255,.05);}
+  /* Gorunmez dokunma alani: yol 22 px (ic 20) + 20 ust + 4 alt = 44 px. ALT 4 px: oynatma
+     tuslari (geri/dur/ileri) yolun 8 px altinda basliyor, tasmamali (ilk
+     surum 11 px alta uzandi ve tuslarin ust kismini calarak
+     'Dokunma alani parmak icin yeterli' kontrolunu dusurdu). */
+  #kipKisayol .uck-yol::before{content:"";position:absolute;inset:-20px -6px -4px;}
   #kipKisayol .uck-topuz{position:absolute;top:50%;transform:translateY(-50%);
     left:calc(2px + var(--uck-p) * (var(--uck-h) - var(--uck-w) + 2px));
     width:calc(var(--uck-w) - 8px);height:calc(var(--uck-w) - 8px);
@@ -2563,7 +2593,7 @@
     /* Renk yolun iki ucu arasinda KONUMA gore karisiyor; ustte yumusak
        bir isik lekesi (gercek bir isik kaynagi, plastik kabartma degil). */
     background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.92) 0%,rgba(255,255,255,0) 48%),
-      color-mix(in srgb,color-mix(in srgb,var(--m1,#35e0d8) calc((1 - var(--uck-p)) * 100%),var(--m3,#86dcd0)) 82%,#fff);
+      color-mix(in oklab,var(--sw-mix) 84%,#fff);
     box-shadow:0 0 0 1px rgba(0,0,0,.28),0 2px 5px rgba(0,0,0,.45),inset 0 -2px 3px rgba(0,0,0,.22);}
   /* Uc konum: yol GENISLIGI - topuz capi kadar oynar; calc()
      --uck-h'e bagli, boy degisirse konum da dogru olcekler. */
@@ -2640,19 +2670,19 @@
      ekler; padding-left ayni miktari soldan vererek GORUNEN yazi
      ortalanir (yalniz kutu degil). */
   #kipKisayol .uck-ad{
-    position:absolute;left:0;right:0;bottom:6px;text-align:center;
+    position:absolute;left:0;right:0;bottom:4px;text-align:center;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:1.125rem;font-weight:700;letter-spacing:.26em;line-height:1;
+    font-size:.75rem;font-weight:700;letter-spacing:.26em;line-height:1;
     padding-left:.26em;box-sizing:border-box;white-space:nowrap;
-    --kc:#86dcd0;color:var(--kc);
+    --kc:var(--sw-mix);color:var(--kc);
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48);
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48),
                 0 0 18px color-mix(in srgb,var(--kc) 34%,transparent);
     opacity:0;}
-  #kipKisayol .uck-ad[data-kip="orbit"]{--kc:var(--k1,#35e0d8);
+  #kipKisayol .uck-ad[data-kip="orbit"]{
     opacity:clamp(0,calc((0.5 - var(--uck-p)) * 4),1);
     transform:translateX(calc(clamp(0,calc((var(--uck-p) - 0.25) * 4),1) * -8px));}
-  #kipKisayol .uck-ad[data-kip="radio"]{--kc:var(--k3,#86dcd0);
+  #kipKisayol .uck-ad[data-kip="radio"]{
     opacity:clamp(0,calc((var(--uck-p) - 0.5) * 4),1);
     transform:translateX(calc((1 - clamp(0,calc((var(--uck-p) - 0.5) * 4),1)) * 8px));}
   /* (Eski "secili isim gorunur / basiliyken ucu de gorunur" kurallari
