@@ -3890,11 +3890,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const geriGeldiMi = (AYAR.deri === 42 && AYAR.merkez === (AYAR.radyoMerkez || 'cark'));
 
       // 2) KILIT ACIK: deri hic degismemeli, ne girerken ne donerken.
-      AYAR.deri = 17; AYAR.merkez = 'cark'; AYAR.deriKilit = true;
+      /* 2 EKIM OLCUM (pj: "orbitape'ten radiotape'e gecince cark siliniyor"):
+         kilit ACIKKEN donuste merkez 'cark'tan 'yuvarlak'a dusuyordu (eski
+         kod merkezi geri koymayi kilit denetiminin ICINE yazmisti). Kilit
+         yalniz DERIYI sabitler; merkez her kipte nasil birakildiysa oyle. */
+      AYAR.deri = 17; AYAR.merkez = 'cark'; AYAR.radyoMerkez = 'cark'; AYAR.merkezOrb = 'yuvarlak'; AYAR.deriKilit = true;
       AYAR.mood = true; moodUygula(false); await bek(320);
       const kilitliGirerkenDegismediMi = (AYAR.deri === 17);
+      const kilitliOrbitMerkezMi = (AYAR.merkez === 'yuvarlak');
       AYAR.mood = false; moodUygula(false); await bek(320);
       const kilitliDonerkenDegismediMi = (AYAR.deri === 17);
+      const kilitliCarkKaldiMi = (AYAR.merkez === 'cark');
+      /* SWITCH'IN GERCEK YOLU: modKolaGit (kollar.js) -- pj'nin kullandigi yol bu;
+         moodUygula'yi dogrudan cagirmak orbit girisindeki merkez atamasini atliyordu. */
+      AYAR.merkez = 'cark'; AYAR.radyoMerkez = 'cark'; AYAR.merkezOrb = 'yuvarlak'; AYAR.deriKilit = true;
+      window.modKolaGit('orbit'); await bek(400);
+      window.modKolaGit('radio'); await bek(400);
+      const kilitliSwitchYoluCarkMi = (AYAR.merkez === 'cark');
 
       AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
       AYAR.deriKilit = eskiKilit; AYAR.radyoDeri = eskiRadyoDeri; AYAR.radyoMerkez = eskiRadyoMerkez;
@@ -3906,7 +3918,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          bizim temizligimizi degil moodUygula'nin varsayilanini olcer. */
       AKTIF_MOD = eskiAktifMod; mod = eskiMod;
 
-      return { zorlandiMi, saklandiMi, kayitSizdiMi, geriGeldiMi, kilitliGirerkenDegismediMi, kilitliDonerkenDegismediMi };
+      return { zorlandiMi, saklandiMi, kayitSizdiMi, geriGeldiMi, kilitliGirerkenDegismediMi, kilitliDonerkenDegismediMi, kilitliCarkKaldiMi, kilitliOrbitMerkezMi, kilitliSwitchYoluCarkMi };
     });
     K('LOCK SKIN kapaliyken ORBITAPE her zaman default deriyle aciliyor',
       ls.zorlandiMi && ls.saklandiMi && ls.kayitSizdiMi,
@@ -3917,6 +3929,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('LOCK SKIN aciksa deri iki dunyada da degismiyor',
       ls.kilitliGirerkenDegismediMi && ls.kilitliDonerkenDegismediMi,
       'girerken=' + ls.kilitliGirerkenDegismediMi + ' donerken=' + ls.kilitliDonerkenDegismediMi);
+    K("LOCK SKIN aciksa bile ORBITAPE'ten RADIOTAPE'e donunce CARK silinmiyor, her kip kendi merkeziyle aciliyor",
+      ls.kilitliCarkKaldiMi && ls.kilitliOrbitMerkezMi && ls.kilitliSwitchYoluCarkMi,
+      'radyoda cark kaldi=' + ls.kilitliCarkKaldiMi + ' orbitape kendi merkezi=' + ls.kilitliOrbitMerkezMi + ' switch yolu cark=' + ls.kilitliSwitchYoluCarkMi);
   }
 
   /* ── ARAMA SESI 2 TIK KISILDI (20 Eylul) ────────────────────────────
