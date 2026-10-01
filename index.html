@@ -2535,7 +2535,7 @@
      arasi parmagin konumuyla (--uck-p) oklab uzayinda karisir: ara
      tonlar algisal olarak esit aralikli, sicrama yok. Etkin kontrast
      (kutu %66 opak): ORBITAPE 5,4 / RADIOTAPE 5,8. */
-  :root{ --uck-h:7rem; --uck-w:22px;
+  :root{ --uck-h:8rem; --uck-w:18px; --uck-d:12px;
     --sw-orbit:rgb(190,196,220); --sw-radio:rgb(53,224,216); }
   /* --sw-mix BURADA, :root'ta DEGIL: --uck-p switch'in KENDI uzerinde
      yazili; :root'ta var(--uck-p) hep yedek degere (1) cozulurdu ve renk
@@ -2575,26 +2575,19 @@
   #kipKisayol .uck-yol{position:relative;flex:0 0 auto;
     width:var(--uck-h);height:var(--uck-w);border-radius:calc(var(--uck-w)/2);
     background:linear-gradient(90deg,var(--m1,#35e0d8) 0%,var(--m3,#86dcd0) 100%);
-    background:linear-gradient(90deg,
-        color-mix(in oklab,var(--sw-orbit) 46%,transparent) 0%,
-        color-mix(in oklab,var(--sw-radio) 46%,transparent) 100%);
-    border:1px solid rgba(255,255,255,.18);
-    box-shadow:inset 0 2px 5px rgba(0,0,0,.38),inset 0 -1px 0 rgba(255,255,255,.10),
-               0 1px 0 rgba(255,255,255,.05);}
+    /* 2 EKIM (pj: "switch'i incelt, cok cizgi var, ortasi dolu olmasin"): ici BOS, tek ince
+       kontur (rengi konuma gore karisan --sw-mix); ic golge/parlak kenar/dolgu yok. */
+    background:transparent;
+    border:1.5px solid color-mix(in oklab,var(--sw-mix) 80%,transparent);box-shadow:none;}
   /* Gorunmez dokunma alani: yol 22 px (ic 20) + 20 ust + 4 alt = 44 px. ALT 4 px: oynatma
      tuslari (geri/dur/ileri) yolun 8 px altinda basliyor, tasmamali (ilk
      surum 11 px alta uzandi ve tuslarin ust kismini calarak
      'Dokunma alani parmak icin yeterli' kontrolunu dusurdu). */
-  #kipKisayol .uck-yol::before{content:"";position:absolute;inset:-20px -6px -4px;}
+  #kipKisayol .uck-yol::before{content:"";position:absolute;inset:-24px -6px -5px;}
   #kipKisayol .uck-topuz{position:absolute;top:50%;transform:translateY(-50%);
-    left:calc(2px + var(--uck-p) * (var(--uck-h) - var(--uck-w) + 2px));
-    width:calc(var(--uck-w) - 8px);height:calc(var(--uck-w) - 8px);
-    border-radius:50%;background:var(--m1,#35e0d8);
-    /* Renk yolun iki ucu arasinda KONUMA gore karisiyor; ustte yumusak
-       bir isik lekesi (gercek bir isik kaynagi, plastik kabartma degil). */
-    background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.92) 0%,rgba(255,255,255,0) 48%),
-      color-mix(in oklab,var(--sw-mix) 84%,#fff);
-    box-shadow:0 0 0 1px rgba(0,0,0,.28),0 2px 5px rgba(0,0,0,.45),inset 0 -2px 3px rgba(0,0,0,.22);}
+    left:calc(2px + var(--uck-p) * (var(--uck-h) - var(--uck-d) - 6px));
+    width:var(--uck-d);height:var(--uck-d);
+    border-radius:50%;background:var(--sw-mix);box-shadow:none;}
   /* Uc konum: yol GENISLIGI - topuz capi kadar oynar; calc()
      --uck-h'e bagli, boy degisirse konum da dogru olcekler. */
     /* 29 Eylul: IKI DURAK. 0 = RADIOTAPE (sag uc), 1 = ORBITAPE (sol uc).
@@ -2670,9 +2663,9 @@
      ekler; padding-left ayni miktari soldan vererek GORUNEN yazi
      ortalanir (yalniz kutu degil). */
   #kipKisayol .uck-ad{
-    position:absolute;left:0;right:0;bottom:4px;text-align:center;
+    position:absolute;left:0;right:0;bottom:8px;text-align:center;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:.75rem;font-weight:700;letter-spacing:.26em;line-height:1;
+    font-size:.94rem;font-weight:700;letter-spacing:.26em;line-height:1;
     padding-left:.26em;box-sizing:border-box;white-space:nowrap;
     --kc:var(--sw-mix);color:var(--kc);
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48);
@@ -5466,7 +5459,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.01';
+  var ORB_SURUM = '2026.10.02';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -9764,6 +9757,17 @@
     try{ if(ses && !ses.paused) ses.pause(); }catch(e){ _yut(e); }
     try{ ortamDurum(); }catch(e){ _yut(e); }
   }
+  /* 2 EKIM (pj: "fx acik kalmasin; app'i kapattim hala caliyor, tekrar actim radyoya basmasam fx
+     sonsuza kadar giderdi"): FX bir OTURUM durumu (kaydedilmiyor) ama uygulama arka plana gidince
+     (ya da sayfa gizlenince/kapaninca) acik kaliyordu. Burada FX kapatilir; SES kesilmez (kilit
+     ekraninda dinleme korunur, bkz. yukaridaki not). Geri donuste (pageshow) de garanti. */
+  function fxHepsiniKapat(){
+    try{ if(typeof FXMOD !== 'undefined' && FXMOD) fxModGec(FXMOD); }catch(e){ _yut(e); }
+    try{ fxSeviye = 0; yatay = 0; fxX = 0; fxY = 0; _fxSonum = 0; fxIste(); }catch(e){ _yut(e); }
+  }
+  try{ document.addEventListener('visibilitychange', ()=>{ if(document.hidden) fxHepsiniKapat(); }); }catch(e){ _yut(e); }
+  try{ window.addEventListener('pagehide', fxHepsiniKapat); }catch(e){ _yut(e); }
+  try{ window.addEventListener('pageshow', fxHepsiniKapat); }catch(e){ _yut(e); }
   try{ window.addEventListener('pagehide', kapanirkenSesiBirak); }catch(e){ _yut(e); }
   try{ window.addEventListener('beforeunload', kapanirkenSesiBirak); }catch(e){ _yut(e); }
   function ortamKunye(ad, sanatci, item){
@@ -10662,6 +10666,7 @@
     }
     return _modHavuz;
   }
+  var _hizliIlkVerildi = false;     // ORBITAPE'e her girisin ilk parcasi hizli kaynaktan (moodUygula sifirlar)
   function earthAl(){
     if(!earthHavuz.length) return null;
     /* MOD ACIKSA: sadece o modun havuzundan, sirayla (torba mantigi). */
@@ -10671,6 +10676,16 @@
       /* YALNIZCA ADRESI OLAN KAYIT (28 Eylul: "ilk etapta sadece hemen
          calanlardan acacaksin"): adresi olmayan secilince bekleme
          ekrani donuyordu ("sonsuz ariyor", olculdu: 20 sn). */
+      /* 2 EKIM OLCUM (pj: "acilista hep hizlilar olsun"): ORBITAPE'e giriste ilk sese kadar sure
+         archive.org ortanca 2,7 sn, Commons CDN 0,4 sn. Girisin ILK parcasi hizli kaynaktan
+         (upload.wikimedia.org) secilir; havuzda yoksa normal siraya duser. _modIdx tuketilmez. */
+      if(!_hizliIlkVerildi){
+        _hizliIlkVerildi = true;
+        for(let t=0;t<mh.length;t++){
+          const o = mh[(_modIdx + t) % mh.length];
+          if(o && o.mp3 && /^https:\/\/upload\.wikimedia\.org\//.test(o.mp3) && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)) return o;
+        }
+      }
       for(let t=0;t<mh.length;t++){
         if(_modIdx >= mh.length){ karistir(mh); _modIdx = 0; }
         const o = mh[_modIdx++];
@@ -12795,6 +12810,7 @@
         if(_oncekiDunya !== 'lib') AYAR.merkez = AYAR.merkezOrb || 'yuvarlak';
         try{ kuyruk.length = 0; radyoKuyruk.length = 0; }catch(e){ _yut(e); }
         mod = 'lib';
+        _hizliIlkVerildi = false;       // her ORBITAPE girisinde ilk parca yeniden hizli kaynaktan
         /* Radyo tarafinin rafi UNUTULMUYOR, saklaniyor: kipten
            donunce ayni rafa geri gelmek icin. Once null'a
            yaziliyordu ve donuste raf bos kaliyordu -- marka yazisi
