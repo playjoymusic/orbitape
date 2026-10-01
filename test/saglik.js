@@ -8094,6 +8094,55 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          && o.topuzGenislik<o.yol[0]/2);
   }
 
+  /* ── YENI HAVUZ + ADRESSIZ KATALOG GORUNMEZ (2 Ekim) ────────────────
+     pj: "hazir olanlari ekle deneyelim" ve "adresi bulunacak ~92.300 kayit
+     simdilik uygulamada gorunmesin". OLCUM: katalog 117.993 kayit, 25.691'i
+     adresli, 92.302'si adressiz (calarken /metadata ile cozuluyordu).
+     Sahte fetch: yeni/ozet.json + bir parca (iki kayit, biri havuzda zaten var),
+     katalog/ozet.json + bir parca (biri adresli, biri adressiz). Beklenen:
+     yeni kayit girer ve `dis` rafi arsivRaf'tan cikar, tekrar eden adres girmez,
+     katalogdan yalniz ADRESLI kayit girer. */
+  {
+    const yp = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiFetch = window.fetch, eskiH = earthHavuz.slice();
+      const eskiTam = _earthTam, eskiY = _yeniAcildi, eskiK = _katAcildi;
+      const L = 'http://creativecommons.org/licenses/by-sa/3.0/';
+      const cevap = o=>Promise.resolve(new Response(JSON.stringify(o), {status:200, headers:{'content-type':'application/json'}}));
+      window.fetch = function(u){
+        const a = String(u);
+        if(/yeni\/ozet\.json$/.test(a)) return cevap(['t1.json']);
+        if(/yeni\/t1\.json$/.test(a)) return cevap([
+          {mp3:'https://yeni.test/a.mp3', ad:'Yeni A', sanatci:'X', etiket:'birds', lisans:L, dis:'NATURE'},
+          {mp3:'https://yeni.test/zaten.mp3', ad:'Zaten', sanatci:'X', etiket:'', lisans:L, dis:'RECORDS'}]);
+        if(/katalog\/ozet\.json$/.test(a)) return cevap(['k1.json']);
+        if(/katalog\/k1\.json$/.test(a)) return cevap({a:[
+          ['kimlik-adresli','jazz','https://katalog.test/adresli.mp3'], ['kimlik-adressiz','jazz']]});
+        return eskiFetch.apply(this, arguments);
+      };
+      earthHavuz.length = 0;
+      earthHavuz.push({id:'t0', mp3:'https://yeni.test/zaten.mp3', ad:'Zaten', lisans:L});
+      _earthTam = true; _yeniAcildi = 0; _katAcildi = 0;
+      yeniYukle(); await bek(900);
+      const a = earthHavuz.find(x=>x.mp3==='https://yeni.test/a.mp3');
+      const r = {
+        girdi: !!a, raf: a ? arsivRaf(a) : '', lisansVar: !!(a && a.lisans),
+        tekrarYok: earthHavuz.filter(x=>x.mp3==='https://yeni.test/zaten.mp3').length === 1,
+        adresliGirdi: earthHavuz.some(x=>x.mp3==='https://katalog.test/adresli.mp3'),
+        adressizGirmedi: !earthHavuz.some(x=>x.id==='kimlik-adressiz') };
+      window.fetch = eskiFetch; earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
+      _earthTam = eskiTam; _yeniAcildi = eskiY; _katAcildi = eskiK;
+      return r;
+    });
+    K('Yeni havuz parcasi uygulamaya giriyor ve `dis` ile dogru rafa konuyor',
+      yp.girdi && yp.raf==='NATURE' && yp.lisansVar,
+      'girdi='+yp.girdi+' raf='+yp.raf+' lisans='+yp.lisansVar);
+    K('Yeni havuzda ayni adres iki kez girmiyor', yp.tekrarYok, 'tekrar yok='+yp.tekrarYok);
+    K('Eski katalogdan yalniz ADRESLI kayit giriyor, adressiz (kimlik-only) gorunmuyor',
+      yp.adresliGirdi && yp.adressizGirmedi,
+      'adresli girdi='+yp.adresliGirdi+' adressiz girmedi='+yp.adressizGirmedi);
+  }
+
   /* ── SWITCH: KUCUK, HOMOJEN RENK, SICRAMASIZ ACILIS (2 Ekim) ───────
      pj: "sol alt switch ve yazi cok buyuk, renk degisken ve homojen degil,
      profesyonel standartlarda; ilk RADIOTAPE once altta sonra ortada
