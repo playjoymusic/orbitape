@@ -10679,7 +10679,8 @@
   }
   function modHavuzu(){
     yeniYukle();               /* yeni hazir adresli parcalar; bitince katalog */
-    wikiCek();            /* Commons: muzik bankasi */
+    /* wikiCek() KALDIRILDI (2 Ekim): canli Commons API'sinden LISANSSIZ kayit ekliyordu ('...&utm_content=original'); lisans kapisi
+       onlari hic calmiyor, yalniz havuzu kirletiyor ve hizli-ilk secimi tikiyordu. Yerine yeni/ parcalari (lisansli, hazir adresli). */
     const say = earthHavuz.length;
     if(_modAdi !== AKTIF_MOD || _modHavuzSay !== say){
       _modAdi = AKTIF_MOD;
@@ -10706,8 +10707,15 @@
       if(!_hizliIlkVerildi){
         _hizliIlkVerildi = true;
         for(let t=0;t<mh.length;t++){
-          const o = mh[(_modIdx + t) % mh.length];
-          if(o && o.mp3 && /^https:\/\/upload\.wikimedia\.org\//.test(o.mp3) && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)) return o;
+          const k = (_modIdx + t) % mh.length, o = mh[k];
+          if(o && o.mp3 && o.lisans && /^https:\/\/upload\.wikimedia\.org\//.test(o.mp3) && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)){
+            /* 2 EKIM DUZELTME (pj: "radyodan orbitape'e gecince alt isim degismiyor, ses sonsuz ariyor"; canlida URETILDI):
+               secilen kayit sirayla TUKETILIR. Eskiden _modIdx ilerlemiyordu: cal() kaydi reddederse (lisans yok vb.)
+               yeniden deneme AYNI kaydi dondurup 7 denemede pes ediyordu. Lisansi olmayan kayit hic secilmez. */
+            if(k !== _modIdx){ const gecici = mh[_modIdx]; mh[_modIdx] = o; mh[k] = gecici; }
+            _modIdx++;
+            return o;
+          }
         }
       }
       for(let t=0;t<mh.length;t++){
@@ -15530,12 +15538,19 @@
   function sagligiYokla(o){
     try{
       if(!o || !o.mp3 || SAGLIK_YOKLANDI.has(o.mp3) || HIZLI_ADRES.test(o.mp3)) return;
+      /* 2 EKIM DUZELTME (test 'Ikinci dokunus' dustu, kaynak okununca bulundu): CANLI RADYO yoklanmaz. Canli yayin
+         Range'i yok sayip SONSUZ bir akis acar; govde kapatilmazsa her yoklama bir akisi acik birakir (mobil veri
+         israfi). Yoklama yalniz ARSIV parcalari icindir. */
+      if(o.radyo) return;
       SAGLIK_YOKLANDI.add(o.mp3);
       const ac = new AbortController(), t0 = Date.now(), url = o.mp3;
       const z = setTimeout(()=>{ try{ ac.abort(); }catch(e){ _yut(e); } }, 5000);
       fetch(url, { headers:{ Range:'bytes=0-0' }, signal:ac.signal }).then(r=>{
         clearTimeout(z);
-        if(!(r.status === 200 || r.status === 206) || Date.now() - t0 > 3500) earthOluIsaretle(url);
+        const yavas = Date.now() - t0 > 3500;
+        /* Baslik yeter: govde HEMEN kesilir (sunucu Range'i yok sayip tum dosyayi yollarsa indirme surmesin). */
+        try{ ac.abort(); }catch(e){ _yut(e); }
+        if(!(r.status === 200 || r.status === 206) || yavas) earthOluIsaretle(url);
       }).catch(()=>{ clearTimeout(z); earthOluIsaretle(url); });
     }catch(e){ _yut(e); }
   }
@@ -15554,7 +15569,7 @@
        (bkz. modGec), isitilacak sey radyo degil arsiv. */
     const modAktifArsiv = AKTIF_MOD && AKTIF_MOD !== 'RADIOTAPE';
     const adaylar = modAktifArsiv ? modHavuzOnizle(ONB_SAYI) : kuyruk;
-    for(let i=0;i<Math.min(2, adaylar.length);i++) sagligiYokla(adaylar[i]);
+    if(modAktifArsiv) for(let i=0;i<Math.min(2, adaylar.length);i++) sagligiYokla(adaylar[i]);      // yalniz ARSIV: canli radyo yoklanmaz
     for(let i=0;i<ONB_SAYI;i++){
       const nx = adaylar[i];
       if(!nx || !nx.mp3) continue;
