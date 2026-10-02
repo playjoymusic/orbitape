@@ -8345,6 +8345,27 @@
     return a;
   }
   function karisik(a){ return Array.isArray(a) ? karistir(a.slice()) : a; }
+  /* ── HIZLI SIRA (2 Ekim; pj: "her track gecisi de hizli olmali; yavas acilan bisey olacaksa arkada
+     hazirlansin") ──
+     OLCUM: ilk sese kadar archive.org ortanca 2,2-2,7 sn (3/8'i 5-18 sn ya da hic acilmadi), Commons CDN
+     ortanca 0,4 sn (20/20). Onden isitma archive.org'da ise YARAMADI (gizli oynaticida 8 sn once yuklenen
+     parca sonradan 2,9 sn; yonlendirmeyi onceden cozmek yalniz ~0,35 sn kazandirdi). Bu yuzden SIRA
+     hizli kaynaga gore kurulur: karistirdiktan sonra 3 hizli (upload.wikimedia.org) : 1 yavas
+     serpistirilir; havuzda yalniz tek tur varsa siralama aynen karisik kalir. */
+  const HIZLI_ADRES = /^https:\/\/upload\.wikimedia\.org\//;
+  function hizliKaristir(a){
+    karistir(a);
+    const hizli = [], yavas = [];
+    for(let i=0;i<a.length;i++) (a[i] && a[i].mp3 && HIZLI_ADRES.test(a[i].mp3) ? hizli : yavas).push(a[i]);
+    if(!hizli.length || !yavas.length) return a;
+    let i = 0, h = 0, y = 0;
+    while(i < a.length){
+      for(let k=0;k<3 && h<hizli.length;k++) a[i++] = hizli[h++];
+      if(y < yavas.length) a[i++] = yavas[y++];
+      if(h >= hizli.length) while(y < yavas.length) a[i++] = yavas[y++];
+    }
+    return a;
+  }
   /* ── LİSTE ÇEKME: DAMGA DEĞİL, KOŞULLU İSTEK ──
      ÖLÇÜLEN İSRAF: her isteğe "?t=zaman" ekliyorduk. Amaç tazelikti —
      jsDelivr yeni yüklenen dosyayı eski hâliyle veriyordu. Ama damga
@@ -10664,7 +10685,7 @@
       _modAdi = AKTIF_MOD;
       _modHavuzSay = say;
       _modHavuz = AKTIF_MOD ? earthHavuz.filter(modUygun) : null;
-      if(_modHavuz) karistir(_modHavuz);
+      if(_modHavuz) hizliKaristir(_modHavuz);
       _modIdx = 0;
     }
     return _modHavuz;
@@ -10690,7 +10711,7 @@
         }
       }
       for(let t=0;t<mh.length;t++){
-        if(_modIdx >= mh.length){ karistir(mh); _modIdx = 0; }
+        if(_modIdx >= mh.length){ hizliKaristir(mh); _modIdx = 0; }
         const o = mh[_modIdx++];
         if(o && o.mp3 && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)) return o;
       }
@@ -15501,6 +15522,23 @@
       onbellekURLler[i]=null;
     }
   }
+  /* SIRADAKI YAVAS KAYNAK PARCALARINI ARKADA YOKLA (2 Ekim): hizli kaynak (Commons) yoklanmaz.
+     Sirada gelecek archive.org parcasi icin 1 baytlik Range istegi (en cok 5 sn): hata ya da 3,5 sn'den
+     yavas cevap -> parca olu sayilir (earthOluIsaretle: sira gelince atlanir, kullanici 5-18 sn
+     beklemez). Ayni adres bir kez yoklanir. Havuzun %25'i olu cikarsa fren zaten devrede. */
+  const SAGLIK_YOKLANDI = new Set();
+  function sagligiYokla(o){
+    try{
+      if(!o || !o.mp3 || SAGLIK_YOKLANDI.has(o.mp3) || HIZLI_ADRES.test(o.mp3)) return;
+      SAGLIK_YOKLANDI.add(o.mp3);
+      const ac = new AbortController(), t0 = Date.now(), url = o.mp3;
+      const z = setTimeout(()=>{ try{ ac.abort(); }catch(e){ _yut(e); } }, 5000);
+      fetch(url, { headers:{ Range:'bytes=0-0' }, signal:ac.signal }).then(r=>{
+        clearTimeout(z);
+        if(!(r.status === 200 || r.status === 206) || Date.now() - t0 > 3500) earthOluIsaretle(url);
+      }).catch(()=>{ clearTimeout(z); earthOluIsaretle(url); });
+    }catch(e){ _yut(e); }
+  }
   function onbellekIsit(){
 
     if(_arsivDurdu) return;
@@ -15516,6 +15554,7 @@
        (bkz. modGec), isitilacak sey radyo degil arsiv. */
     const modAktifArsiv = AKTIF_MOD && AKTIF_MOD !== 'RADIOTAPE';
     const adaylar = modAktifArsiv ? modHavuzOnizle(ONB_SAYI) : kuyruk;
+    for(let i=0;i<Math.min(2, adaylar.length);i++) sagligiYokla(adaylar[i]);
     for(let i=0;i<ONB_SAYI;i++){
       const nx = adaylar[i];
       if(!nx || !nx.mp3) continue;

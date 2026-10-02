@@ -5452,3 +5452,22 @@ kimliklerle (`licenseurl`) açmak; (3) 1.000 kayıtlık parçalı yükleme tasar
 - **Test:** sağlık 946/946 (6 yeni kontrol: PIC/FLIP kapanmıyor, kayıtta FLIP gerçek kamera akışını değiştirir ve kayıt sürer, siyah ekran dokunuşu kapatır, kamera ikonu açar, sürükleme kapatmaz, VISUAL'de el ve rehber yok); birim 137/137; tip 54 (taban aynı).
 - **Ders (test):** yeni test bloğu kamerayı ve modu açık bırakınca sonraki iki kontrol ("Switch yazısı ortalı", "Arama istasyonları da buluyor") düştü. Bloklar kamerayı kapatıp modu geri vermeli. Dokunuş noktası kenarda bir gezegen düğmesine denk geliyordu, boş siyah alana (200,690) çekildi.
 - **Bulgu (iş çıkarılmadı):** canlıda ORBITAPE'e geçince ilk ses ~2,3 sn: `earth_giris.json` ancak geçişten sonra indirilmeye başlıyor (~1,9 sn sonra geliyor). Çözüm: RADIOTAPE'teyken önceden (49 KB) indirmek, arşiv entegrasyonu işinin parçası. Reklam koruması için ICY ölçümü: 539 istasyonun 450'si ICY başlığı veriyor; net işaret `ADWTAG_…` (AdsWizz), tuzak `Daft Punk - Funk Ad` (müzik).
+
+## 2 Ekim 2026 — Play üretim erişimi başvurusu GÖNDERİLDİ
+
+- **Durum:** 06:25'te pj başvuruyu gönderdi (Play Console → Dashboard: "We have your application for production access"). Google hesap sahibine e-posta ile cevap verecek, genelde 7 gün ya da daha az, bazen uzun.
+- **Sayaç:** 12 testçi / 14 gün şartı tamamlanmıştı (panoda üç madde de yeşil). `magaza/KALANLAR.md` madde 3 artık bayat: şart karşılandı.
+- **Form (3 bölüm, 9 soru):** cevaplar `magaza/PRODUKSIYON_BASVURUSU.md` taslaklarından, formdaki 300 karakter sınırına göre kısaltılarak girildi. Kayıtlı anket sayıları kullanıldı (donma 8/8 yok; kamera 3/7 sorun; geçiş 2/5 gecikme). Hedef kitle 18+ (konsol beyanıyla tutarlı), ilk yıl kurulum 10K–100K, test sayıları sağlık 938 / birim 137.
+- **Açık/pj'nin doğrulaması:** "tanıdıklar daha sabırlı denedi" ve "bir testçi kayıt kolaylaştırmayı önerdi" cümleleri pj'nin gözlemine dayanıyor; kayıtta ayrı kaynağı yok.
+- **Bekleyen:** başvuru sonucu (e-posta). Beklerken: testçi ÇIKARILMAZ, yeni test yayını AÇILMAZ. Üretim yayınından önce mağaza ekran görüntüleri güncel uygulamadan yenilenecek (eski switch'i gösteriyor).
+- **Reddedilirse:** kapalı teste devam edip yeniden başvurulur.
+
+## 2 Ekim 2026 (devam 5) — hızlı çalma sırası + sıradaki yavaş parçayı arkada yoklama (dal `hizli-sira`)
+
+- **pj:** "her track geçişi de hızlı olmalı; yavaş açılan bir şey olacaksa arkada yüklenir/hazırlanır."
+- **ÖLÇÜM:** ilk sese kadar archive.org ortanca 2,2–2,7 sn (8 parçanın 3'ü 5–18 sn ya da hiç açılmadı); Commons CDN ortanca 0,4 sn (20/20). Mevcut önden ısıtma (`onbellekIsit`) archive.org'da İŞE YARAMIYOR: gizli oynatıcıda 8 sn önce yüklenen parça sonradan ortanca 2,9 sn (soğuk 2,3). Yönlendirmeyi önceden çözüp son adrese gitmek yalnız ~0,35 sn kazandırdı (2,2 → 1,85).
+- **Yapılan:** (1) `hizliKaristir()`: karıştırdıktan sonra 3 hızlı (upload.wikimedia.org) : 1 yavaş serpiştirilir; yalnız tek tür varsa sıra aynen karışık kalır. (2) `sagligiYokla()`: sıradaki 2 yavaş-kaynak parçası için 1 baytlık Range isteği (en çok 5 sn); hata ya da 3,5 sn'den yavaş cevap → `earthOluIsaretle` (sıra gelince atlanır, %25 freni geçerli). Hızlı kaynak yoklanmaz, aynı adres bir kez yoklanır.
+- **Test:** sağlık 941/941; kalıcı kontroller: sıra 3:1 serpiştirme (her 4'lü pencerede ≤1 yavaş), yoklama 404 ve 3,8 sn gecikmeyi ölü sayar / hızlı cevabı saglam bırakır, Commons yoklanmaz. İlk koşuda boş `catch` "yutulan hatalar sayılıyor" kontrolünü düşürdü, `_yut(e)` ile düzeltildi.
+- **Sıradaki iş (pj istedi, başlanmadı):** kamera paneli REC'e basınca kapanmasın ve tekrar açılabilsin; kayıttayken siyah ekrana basınca menü kapansın; VISUAL sırasında rehber el/tutorial çıkmasın.
+
+- **Ders (2 Ekim, hızlı sıra):** "düzeltmeyi geri alıp ölç" adımı (Kural 4) canlı dalda, kaydedilmemiş çalışma klasöründe yapılırken pj commit'ledi ve geçici bozuk satır (`hizliKaristir` içinde `return a;`) 0aab711'e girdi, GitHub'a gitti. Düzeltme 887abfd (tek satır). Kural: geri-alma ölçümü ya yedek KOPYADA/ayrı klasörde yapılır ya da pj'ye "şimdi commit'leme" denir; sağlık 941/941 ve test düzeltme kapalıyken gerçekten düşüyor (939/941: 3 hızlı : 1 yavaş + CSP özeti).
