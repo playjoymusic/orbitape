@@ -8277,6 +8277,50 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Siradaki yavas kaynak parcasi arkada yoklaniyor: hata ve 3,5 sn ustu olu sayiliyor, saglam kaliyor',
       hs.aOlu && hs.bOlu && !hs.cOlu, '404 olu='+hs.aOlu+' 3,8 sn gecikme olu='+hs.bOlu+' hizli cevap olu='+hs.cOlu);
     K('Hizli kaynak (Commons) yoklanmiyor', hs.hizliYoklanmaz, 'yoklanmadi='+hs.hizliYoklanmaz);
+    /* RADYODAN ORBITAPE'E GECINCE SONSUZ ARAMA (2 Ekim, canlida uretildi): ilk hizli secim sayaci ilerletmiyor, lisanssiz
+       Commons kaydi (eski wikiCek) hep ayni kayit olarak donuyordu. */
+    const ia = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiH = earthHavuz.slice(), eskiMod = AKTIF_MOD, eskiWiki = _wikiCekildi;
+      const L = 'http://creativecommons.org/licenses/by-sa/3.0/';
+      earthHavuz.length = 0;
+      earthHavuz.push({id:'b1', mp3:'https://upload.wikimedia.org/x/lisanssiz.mp3', ad:'Lisanssiz'});          // lisans YOK: secilmemeli
+      earthHavuz.push({id:'y1', mp3:'https://archive.org/download/a/yavas.mp3', ad:'Y', lisans:L});
+      earthHavuz.push({id:'h1', mp3:'https://upload.wikimedia.org/x/h1.mp3', ad:'H1', lisans:L});
+      earthHavuz.push({id:'h2', mp3:'https://upload.wikimedia.org/x/h2.mp3', ad:'H2', lisans:L});
+      AKTIF_MOD = 'ORBITAPE'; _hizliIlkVerildi = false; _modAdi = null; _modHavuzSay = -1; _modIdx = 0;
+      const a1 = earthAl(), a2 = earthAl(), a3 = earthAl();       // cal() reddetse bile her cagri YENI kayit vermeli
+      const r = { ids: [a1, a2, a3].map(x=>x ? x.id : null), kopya: a1 && a2 && (a1.id === a2.id || a2.id === a3.id || a1.id === a3.id) };
+      // wikiCek artik havuza lisanssiz kayit eklemiyor
+      _wikiCekildi = false; earthHavuz.length = 0; _modAdi = null; _modHavuzSay = -1;
+      modHavuzu(); await bek(300);
+      r.wikiKayit = earthHavuz.filter(x=>String(x.id).startsWith('wc:')).length;
+      earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x)); AKTIF_MOD = eskiMod; _wikiCekildi = eskiWiki; _modAdi = null; _modHavuzSay = -1;
+      return r;
+    });
+    K("ORBITAPE'e giriste ilk hizli secim sayaci ilerletiyor, lisanssiz kayit secmiyor (ayni kayda takilmaz)",
+      !ia.kopya && !!ia.ids[0] && ia.ids[0] !== 'b1', 'secilenler '+ia.ids.join(',')+' (ilk secim lisanssizi atlar; her cagri yeni kayit verir)');
+    K('Eski canli Commons cekimi (wikiCek) havuza lisanssiz kayit eklemiyor', ia.wikiKayit === 0, "'wc:' kayit sayisi "+ia.wikiKayit);
+    /* 2 Ekim: CANLI RADYO yoklanmaz ve yoklama govdeyi hemen keser (canli yayin sonsuz akis; kapatilmazsa acik kalir). */
+    const sy = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiFetch = window.fetch; const sinyaller = []; let radyoIstegi = 0;
+      window.fetch = function(u, init){
+        const x = String(u);
+        if(/canli\.test\/r\.mp3/.test(x)){ radyoIstegi++; return Promise.resolve(new Response('', {status:200})); }
+        if(/yok\.test\/s\.mp3/.test(x)){ if(init && init.signal) sinyaller.push(init.signal); return Promise.resolve(new Response('', {status:206})); }
+        return eskiFetch.apply(this, arguments);
+      };
+      sagligiYokla({id:'cr', mp3:'https://canli.test/r.mp3', radyo:true});
+      sagligiYokla({id:'ar', mp3:'https://yok.test/s.mp3'});
+      await bek(400);
+      const r = { radyoIstegi, arsivIstegi: sinyaller.length, govdeKesildi: sinyaller.length===1 && sinyaller[0].aborted };
+      window.fetch = eskiFetch;
+      return r;
+    });
+    K('Yoklama canli radyoyu yoklamiyor, arsivde basliktan sonra govdeyi kesiyor',
+      sy.radyoIstegi===0 && sy.arsivIstegi===1 && sy.govdeKesildi,
+      'canli radyo istegi='+sy.radyoIstegi+' arsiv istegi='+sy.arsivIstegi+' govde kesildi='+sy.govdeKesildi);
   }
 
   /* ── ORBITAPE'TE FX ACIKKEN RADIOTAPE'E GECINCE CARK (2 Ekim) ──────
