@@ -8351,7 +8351,7 @@
      serpistirilir; havuzda yalniz tek tur varsa siralama aynen karisik kalir. */
   const HIZLI_ADRES = /^https:\/\/upload\.wikimedia\.org\//;
   function hizliKaristir(a){
-    karistir(a); return a;
+    karistir(a);
     const hizli = [], yavas = [];
     for(let i=0;i<a.length;i++) (a[i] && a[i].mp3 && HIZLI_ADRES.test(a[i].mp3) ? hizli : yavas).push(a[i]);
     if(!hizli.length || !yavas.length) return a;
