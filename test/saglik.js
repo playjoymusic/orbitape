@@ -8130,6 +8130,48 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       yb.ilkHost==='upload.wikimedia.org', 'ilk parca '+yb.ilkHost);
   }
 
+  /* ── HIZLI SIRA: 3 HIZLI : 1 YAVAS + SIRADAKI YAVAS PARCAYI ARKADA YOKLA (2 Ekim) ──
+     pj: "her track gecisi de hizli olmali; yavas acilan arkada hazirlansin". OLCUM: ilk ses archive.org
+     ortanca 2,2-2,7 sn (3/8'i 5-18 sn ya da hic), Commons 0,4 sn; onden isitma archive.org'da ise yaramadi. */
+  {
+    const hs = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const L='http://creativecommons.org/licenses/by-sa/3.0/';
+      const a = [];
+      for(let i=0;i<12;i++) a.push({id:'y'+i, mp3:'https://archive.org/download/x/y'+i+'.mp3', lisans:L});
+      for(let i=0;i<12;i++) a.push({id:'h'+i, mp3:'https://upload.wikimedia.org/wikipedia/commons/h'+i+'.mp3', lisans:L});
+      hizliKaristir(a);
+      const yavasMi = o=>!HIZLI_ADRES.test(o.mp3);
+      // her 4'luk pencerede (ilk 16) en fazla 1 yavas, ilk 16'nin 12'si hizli
+      let pencereTamam = true;
+      for(let w=0;w<16;w+=4){ if(a.slice(w,w+4).filter(yavasMi).length > 1) pencereTamam = false; }
+      const ilk16Hizli = a.slice(0,16).filter(o=>!yavasMi(o)).length;
+      // yoklama: 404 -> olu, 3,8 sn gecikme -> olu, hizli cevap -> saglam
+      const eskiFetch = window.fetch;
+      window.fetch = function(u, init){
+        const x = String(u);
+        if(/ol\.test\/a\.mp3/.test(x)) return Promise.resolve(new Response('', {status:404}));
+        if(/ol\.test\/b\.mp3/.test(x)) return new Promise(r=>setTimeout(()=>r(new Response('', {status:206})), 3800));
+        if(/ol\.test\/c\.mp3/.test(x)) return Promise.resolve(new Response('', {status:206}));
+        return eskiFetch.apply(this, arguments);
+      };
+      const eskiKara = new Set(EARTH_KARA);
+      ['a','b','c'].forEach(k=>sagligiYokla({id:'s'+k, mp3:'https://ol.test/'+k+'.mp3'}));
+      await bek(4300);
+      const r = { pencereTamam, ilk16Hizli, aOlu:EARTH_KARA.has('https://ol.test/a.mp3'), bOlu:EARTH_KARA.has('https://ol.test/b.mp3'),
+                  cOlu:EARTH_KARA.has('https://ol.test/c.mp3'),
+                  hizliYoklanmaz: (()=>{ const u='https://upload.wikimedia.org/x/z.mp3'; sagligiYokla({id:'z', mp3:u}); return !SAGLIK_YOKLANDI.has(u); })() };
+      window.fetch = eskiFetch;
+      ['a','b','c'].forEach(k=>{ EARTH_KARA.delete('https://ol.test/'+k+'.mp3'); });
+      return r;
+    });
+    K('Calma sirasi 3 hizli : 1 yavas serpistiriliyor (her 4 parcada en fazla 1 yavas)',
+      hs.pencereTamam && hs.ilk16Hizli >= 12, 'pencere tamam='+hs.pencereTamam+' ilk 16 icinde hizli='+hs.ilk16Hizli);
+    K('Siradaki yavas kaynak parcasi arkada yoklaniyor: hata ve 3,5 sn ustu olu sayiliyor, saglam kaliyor',
+      hs.aOlu && hs.bOlu && !hs.cOlu, '404 olu='+hs.aOlu+' 3,8 sn gecikme olu='+hs.bOlu+' hizli cevap olu='+hs.cOlu);
+    K('Hizli kaynak (Commons) yoklanmiyor', hs.hizliYoklanmaz, 'yoklanmadi='+hs.hizliYoklanmaz);
+  }
+
   /* ── ORBITAPE'TE FX ACIKKEN RADIOTAPE'E GECINCE CARK (2 Ekim) ──────
      pj: "fx'ler aktifken RADIOTAPE'e gecersem cark gitmis oluyor". OLCUM (390 px, modKolaGit):
      ORBITAPE'te bir uydu (FX) acilir, RADIOTAPE'e donulur -> body'de `fx-acik` KALIYOR, FXMOD dolu,
