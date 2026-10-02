@@ -8130,6 +8130,103 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       yb.ilkHost==='upload.wikimedia.org', 'ilk parca '+yb.ilkHost);
   }
 
+  /* ── KAYITTA KAMERA PANELI: PIC/FLIP KAPANMAZ, SIYAH EKRANA DOKUNUS KAPATIR, VISUAL'DE EL YOK (2 Ekim) ──
+     pj: "rec'e basinca cam dondurme vs kapaniyor, kapanmasin, tekrar acilsin"; "kayittayken siyah ekrana
+     basinca menu kapansin"; "visual sirasinda rehber el cikiyor, tutorial olmayacak". OLCUM (390 px, sahte
+     kamera): REC'ten sonra fanPic ve fanDon gizleniyor, panel 202 -> 140 -> 92 px'e kuculuyor. */
+  {
+    const eskiDurum = await pg.evaluate(()=>({ mood:AYAR.mood, mod, aktif:AKTIF_MOD }));
+    await pg.evaluate(async ()=>{
+      document.body.classList.remove('yildiz-zum','firing','gecis');
+      AYAR.mood = true; document.body.classList.add('mood'); AKTIF_MOD = null; mod = 'lib';
+      cal({ id:'kyt3', mp3:'https://sahte.test/kayit.mp3', ad:'Kayit', etiket:'netlabel', lisans:SERBEST });
+      await new Promise(r=>setTimeout(r,400)); try{ recPasifYaz(); }catch(e){}
+    });
+    await pg.waitForTimeout(400);
+    const gor = ()=>pg.evaluate(()=>{
+      const v = id=>{ const e=document.getElementById(id); if(!e) return false; const r=e.getBoundingClientRect(), s=getComputedStyle(e);
+        return r.width>4 && r.height>4 && s.display!=='none' && s.visibility!=='hidden'; };
+      return { panel: !document.getElementById('yelpaze').hidden, pic:v('fanPic'), don:v('fanDon'), rec:v('fanRec'),
+               kayit: (typeof kaydedici!=='undefined' && kaydedici) ? kaydedici.state : 'yok' };
+    });
+    await pg.evaluate(()=>{ if(document.getElementById('yelpaze').hidden) document.getElementById('kamTus').click(); });
+    await pg.waitForTimeout(400);
+    // kamera AC (CAM), sonra REC: gercek akis degisimini sinamak icin
+    await pg.click('#fanCam'); await pg.waitForTimeout(2000);
+    await pg.evaluate(()=>{ if(document.getElementById('yelpaze').hidden) document.getElementById('kamTus').click(); }); await pg.waitForTimeout(300);
+    await pg.click('#fanRec'); await pg.waitForTimeout(250);
+    const basliyor = await gor();
+    await pg.waitForTimeout(2600);
+    const kayitta = await gor();
+    // FLIP kayit sirasinda tiklanir: kamera yonu degisir (tercih), kayit surer
+    const yon0 = await pg.evaluate(()=>_kamYon);
+    await pg.click('#fanDon'); await pg.waitForTimeout(1200);
+    const donus = await pg.evaluate(()=>({ yon:_kamYon, kayit:(kaydedici?kaydedici.state:'yok'), kamAcik:!!kamAcik,
+      iz:(kamAkis && kamAkis.getVideoTracks()[0]) ? kamAkis.getVideoTracks()[0].readyState : 'yok' }));
+    // siyah ekrana kisa dokunus: panel kapanir, kayit surer
+    // (200,690): diskin altinda, switch'in ustunde BOS siyah alan (kenar noktasi bir gezegen dugmesine denk geliyordu)
+    await pg.mouse.click(200, 690); await pg.waitForTimeout(500);
+    const dokunus = await gor();
+    // kamera ikonu tekrar acar
+    await pg.evaluate(()=>document.getElementById('kamTus').click()); await pg.waitForTimeout(500);
+    const tekrar = await gor();
+    // surukleme (FX) paneli KAPATMAZ
+    await pg.mouse.move(195, 430); await pg.mouse.down(); await pg.mouse.move(225, 460, {steps:6}); await pg.mouse.up(); await pg.waitForTimeout(400);
+    const surukle = await gor();
+    // temizlik: kaydi durdur ve sil (onceki testlerin yaptigi gibi); panel kapaliysa once ikonla ac
+    await pg.evaluate(()=>{ if(document.getElementById('yelpaze').hidden) document.getElementById('kamTus').click(); }); await pg.waitForTimeout(400);
+    await pg.click('#fanRec'); await pg.waitForTimeout(2200);
+    await pg.evaluate(()=>{ if(document.getElementById('yelpaze').hidden) document.getElementById('kamTus').click(); }); await pg.waitForTimeout(400);
+    try{ await pg.click('#fanCam'); }catch(e){} await pg.waitForTimeout(500);       // DELETE
+    // kamerayi KAPAT (bu blok acmisti) ve modu eski haline dondur: sonraki kontroller temiz sayfa gormeli
+    await pg.evaluate(()=>{ if(document.getElementById('yelpaze').hidden) document.getElementById('kamTus').click(); }); await pg.waitForTimeout(300);
+    try{ if(await pg.evaluate(()=>!!kamAcik)){ await pg.click('#fanCam'); await pg.waitForTimeout(700); } }catch(e){}
+    await pg.evaluate(async d=>{ if(!document.getElementById('yelpaze').hidden) document.getElementById('kamTus').click();
+      AYAR.mood = d.mood; mod = d.mod; AKTIF_MOD = d.aktif; try{ moodUygula(false); }catch(e){} await new Promise(r=>setTimeout(r,300)); }, eskiDurum);
+    K('REC baslarken PIC ve FLIP kapanmiyor', basliyor.pic && basliyor.don, 'basliyor: PIC='+basliyor.pic+' FLIP='+basliyor.don);
+    K('Kayit surerken PIC, FLIP ve STOP gorunur', kayitta.kayit==='recording' && kayitta.pic && kayitta.don && kayitta.rec,
+      'kayit='+kayitta.kayit+' PIC='+kayitta.pic+' FLIP='+kayitta.don+' STOP='+kayitta.rec);
+    K('Kayit surerken FLIP kamera yonunu degistirir ve kayit kesilmez',
+      donus.yon !== yon0 && donus.kayit==='recording' && donus.kamAcik && donus.iz==='live',
+      yon0+' -> '+donus.yon+' | kayit '+donus.kayit+' | kamera acik='+donus.kamAcik+' | yeni akis '+donus.iz);
+    K('Kayitta siyah ekrana kisa dokunus paneli kapatir, kayit surer', !dokunus.panel && dokunus.kayit==='recording',
+      'panel acik='+dokunus.panel+' kayit='+dokunus.kayit);
+    K('Kamera ikonu paneli tekrar acar', tekrar.panel && tekrar.pic && tekrar.don, 'panel='+tekrar.panel);
+    K('FX suruklemesi (kayitta) paneli kapatmaz', surukle.panel, 'panel acik='+surukle.panel);
+  }
+
+  /* VISUAL ACILINCA REHBER KATMANI KAPANIR, VISUAL SURERKEN ACILMAZ (pj: "visual sirasinda rehber kapanacak") */
+  {
+    const rh = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      rehberAc(); await bek(300);
+      const acildi = rehberAcikMi();
+      document.body.classList.add('gorsel-acik'); await bek(300);
+      const gorselde = rehberAcikMi();
+      rehberAc(); await bek(300);
+      const gorseldeAcildiMi = rehberAcikMi();
+      document.body.classList.remove('gorsel-acik'); await bek(200);
+      if(rehberAcikMi()) rehberKapa();
+      return { acildi, gorselde, gorseldeAcildiMi };
+    });
+    K('VISUAL acilinca acik rehber katmani kapaniyor, VISUAL surerken rehber acilmiyor',
+      rh.acildi && !rh.gorselde && !rh.gorseldeAcildiMi,
+      'rehber normalde aciliyor='+rh.acildi+' | visual acilinca acik kaldi='+rh.gorselde+' | visualde acildi='+rh.gorseldeAcildiMi);
+  }
+
+  /* VISUAL ACIKKEN EL IPUCU/KARSILAMA GORUNMEZ */
+  {
+    const el = await pg.evaluate(()=>{
+      const i = document.getElementById('ipucuEl'), k = document.getElementById('karsilama');
+      document.body.classList.add('gorsel-acik'); i.classList.add('on'); k.classList.add('on');
+      const r = { ipucu: getComputedStyle(i).display, kars: getComputedStyle(k).display };
+      document.body.classList.remove('gorsel-acik'); i.classList.remove('on'); k.classList.remove('on');
+      return r;
+    });
+    K('VISUAL acikken rehber el (ipucu ve karsilama) gorunmuyor', el.ipucu==='none' && el.kars==='none',
+      'ipucuEl='+el.ipucu+' karsilama='+el.kars);
+  }
+
   /* ── ORBITAPE'TE FX ACIKKEN RADIOTAPE'E GECINCE CARK (2 Ekim) ──────
      pj: "fx'ler aktifken RADIOTAPE'e gecersem cark gitmis oluyor". OLCUM (390 px, modKolaGit):
      ORBITAPE'te bir uydu (FX) acilir, RADIOTAPE'e donulur -> body'de `fx-acik` KALIYOR, FXMOD dolu,
