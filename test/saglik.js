@@ -8133,6 +8133,59 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       yb.ilkHost==='upload.wikimedia.org', 'ilk parca '+yb.ilkHost);
   }
 
+  /* ── ARSIV ENTEGRASYONU: BUTCELI YUKLEME + BASLANGIC HAVUZU ONCEDEN (2 Ekim) ──
+     pj: "yeni arsivleri raflara dagitarak ekle, hizli calacak sekilde entegre et". OLCUM: yeni/ 85 parca
+     (206 bin kayit, 65 MB ham, ~15 MB gzip) -> hepsini her ziyarette indirmek mobil hatti boguyor.
+     Butce: 'o' parcalarin HEPSI (hicbir raf bos kalmaz) + 2 hizli + 2 yavas; sonrasi dinledikce.
+     Canli olcum (ilk kez gelen kullanici): ORBITAPE'e gecis -> ilk ses 2,3 sn, cunku earth_giris.json
+     ancak gecisten sonra indiriliyordu: RADIOTAPE'teyken onceden indirilir. */
+  {
+    const bu = await pg.evaluate(async ()=>{
+      const bek = ms=>new Promise(r=>setTimeout(r,ms));
+      const eskiFetch = window.fetch, eskiH = earthHavuz.slice();
+      const eskiAcil = _yeniAcildi, eskiYuk = _yeniYuklendi, eskiVar = _yeniVar, eskiTam = _earthTam, eskiZaman = _yeniZaman;
+      const istenen = [];
+      const liste = [];
+      for(let i=0;i<3;i++) liste.push({f:'o'+i+'.json', t:'o'});
+      for(let i=0;i<6;i++) liste.push({f:'h'+i+'.json', t:'h'});
+      for(let i=0;i<6;i++) liste.push({f:'y'+i+'.json', t:'y'});
+      window.fetch = function(u){
+        const a = String(u);
+        if(/yeni\/ozet\.json$/.test(a)) return Promise.resolve(new Response(JSON.stringify(liste), {status:200}));
+        const m = a.match(/yeni\/([ohy]\d+)\.json$/);
+        if(m){ istenen.push(m[1]); return Promise.resolve(new Response('[]', {status:200})); }
+        if(/katalog\/ozet\.json$/.test(a)) return Promise.resolve(new Response('[]', {status:200}));
+        return eskiFetch.apply(this, arguments);
+      };
+      _yeniAcildi = 0; _yeniYuklendi = 0; _yeniVar = null; _earthTam = true; _yeniKalanH = []; _yeniKalanY = [];
+      yeniYukle(); await bek(2200);
+      const r = { o: istenen.filter(x=>x[0]==='o').length, h: istenen.filter(x=>x[0]==='h').length, y: istenen.filter(x=>x[0]==='y').length,
+                  tekrar: istenen.length !== new Set(istenen).size, yuklendi: _yeniYuklendi,
+                  kalan: _yeniKalanH.length + _yeniKalanY.length };
+      if(_yeniZaman && _yeniZaman !== eskiZaman) clearInterval(_yeniZaman);
+      _yeniZaman = eskiZaman; window.fetch = eskiFetch;
+      earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
+      _yeniAcildi = eskiAcil; _yeniYuklendi = eskiYuk; _yeniVar = eskiVar; _earthTam = eskiTam;
+      return r;
+    });
+    K('Arsiv butcesi: tum kucuk raf parcalari + 2 hizli + 2 yavas muzik parcasi iniyor, fazlasi inmiyor, tekrar yok',
+      bu.o===3 && bu.h===2 && bu.y===2 && !bu.tekrar && bu.kalan===(6-2)+(6-2),
+      'o='+bu.o+' h='+bu.h+' y='+bu.y+' tekrar='+bu.tekrar+' kalan='+bu.kalan);
+    const on = await pg.evaluate(async ()=>{
+      const eskiFetch = window.fetch, eskiOn = _girisOnSoz; let girisIstegi = 0;
+      window.fetch = function(u){
+        if(/earth_giris\.json/.test(String(u))){ girisIstegi++; return Promise.resolve(new Response(JSON.stringify([{mp3:'https://upload.wikimedia.org/a/b.mp3', ad:'A', lisans:'http://creativecommons.org/licenses/by-sa/3.0/'}]), {status:200})); }
+        return eskiFetch.apply(this, arguments);
+      };
+      _girisOnSoz = null; _girisOnYukle(); _girisOnYukle();
+      const veri = await _girisOnSoz;
+      window.fetch = eskiFetch; _girisOnSoz = eskiOn;
+      return { istek: girisIstegi, uzunluk: Array.isArray(veri) ? veri.length : -1 };
+    });
+    K('Baslangic havuzu radyodayken onceden indirilir: iki cagri tek istek, veri hazir tutulur',
+      on.istek===1 && on.uzunluk===1, 'istek='+on.istek+' hazir kayit='+on.uzunluk);
+  }
+
   /* ── KAYITTA KAMERA PANELI: PIC/FLIP KAPANMAZ, SIYAH EKRANA DOKUNUS KAPATIR, VISUAL'DE EL YOK (2 Ekim) ──
      pj: "rec'e basinca cam dondurme vs kapaniyor, kapanmasin, tekrar acilsin"; "kayittayken siyah ekrana
      basinca menu kapansin"; "visual sirasinda rehber el cikiyor, tutorial olmayacak". OLCUM (390 px, sahte

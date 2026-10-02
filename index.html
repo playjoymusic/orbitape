@@ -5462,7 +5462,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.02';
+  var ORB_SURUM = '2026.10.03';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -9964,6 +9964,15 @@
   function _earthGovde(d){
     return Array.isArray(d) ? d : ((d && (d.tracks||d.songs||d.liste)) || []);
   }
+  /* Baslangic havuzu on yukleme: uygulama acilinca (radyodayken, bosta) bir kez; yalniz hazir veri tutulur. */
+  var _girisOnSoz = null;
+  function _girisOnYukle(){
+    try{
+      if(_girisOnSoz) return;
+      _girisOnSoz = listeCek(EARTH_GIRIS_URL, "", 6000).then(r=>(r && r.ok) ? r.json() : null).catch(()=>null);
+    }catch(e){ _yut(e); }
+  }
+  try{ window.addEventListener('load', ()=>{ setTimeout(()=>{ try{ if(!AYAR.mood) _girisOnYukle(); }catch(e){ _yut(e); } }, 1500); }); }catch(e){ _yut(e); }
   async function earthYukle(){
     iz('earthYukle');
     /* Radyo tarafinda arsivin isi yok: ne aramada, ne kuyrukta. */
@@ -9984,9 +9993,14 @@
     if(_ehSoz) return _ehSoz;
     _ehSoz = (async()=>{
       try{
-        const r = await listeCek(EARTH_GIRIS_URL, "", 6000);
-        if(r && r.ok){
-          const g = earthEsle(_earthGovde(await r.json()), 0);
+        /* 2 EKIM OLCUM (canli, ilk kez gelen kullanici): ORBITAPE'e geciste ilk ses 2,3 sn; baslangic havuzu
+           (earth_giris.json) ancak gecisten SONRA indirilmeye basliyordu. RADIOTAPE'teyken _girisOnYukle()
+           onu sessizce indirip tutuyor; burada hazirsa dogrudan kullanilir (ag beklenmez). */
+        let _gv = null;
+        if(_girisOnSoz){ try{ _gv = await _girisOnSoz; }catch(e){ _yut(e); } }
+        if(!_gv){ const r = await listeCek(EARTH_GIRIS_URL, "", 6000); if(r && r.ok){ try{ _gv = await r.json(); }catch(e){ _yut(e); } } }
+        if(_gv){
+          const g = earthEsle(_earthGovde(_gv), 0);
           if(g.length){
             earthHavuz = g; _ehShuf=[]; _ehIdx=0; earthAyir();
             basari('earth');
@@ -10657,22 +10671,58 @@
      YUK DISIPLINI katalogla ayni: yerel tam havuz BITTIKTEN SONRA, parcalar TEK TEK arka planda;
      acilis istegi ve ilk ses hattini bu yuzden kullanmaz. Bittikten sonra eski katalog baslar
      (yalniz adresli kayitlari). Ayni adres iki kez girmez. */
-  let _yeniAcildi = 0;
+  /* 2. SURUM (2 Ekim; pj: "yeni arsivleri raflara dagitarak ekle, hizli calacak sekilde entegre et"):
+     yeni/ artik 85 parca (206 bin kayit, ~15 MB gzip). HEPSINI her ziyarette indirmek mobil hatti
+     boguyordu; BUTCE: (1) 'o' parcalari (RECORDS disindaki butun raflar: NATURE, AMBIANCE, INDUSTRIAL...
+     ~1,2 MB gzip) HER SEFERINDE, hicbir raf bos kalmasin; (2) muzikten (RECORDS) rastgele YENI_ILK_H hizli
+     (Commons) + YENI_ILK_Y yavas (archive.org) parca; (3) dinledikce her YENI_ARA ms'de bir tane daha
+     (hizlidan %60), en cok YENI_TAVAN parca. Her parca CALAN PARCANIN TAMPONU rahatken iner
+     (tamponYeterliMi): arka plan indirmesi calan sesi yavaslatmaz. ozet.json: [{f,t:'o|h|y'}]; eski
+     bicim (duz ad dizisi) 'h' sayilir. Parcalar kendi icinde karisik (tohumlu): rastgele parca = rastgele ornek. */
+  const YENI_ILK_H = 2, YENI_ILK_Y = 2, YENI_TAVAN = 28, YENI_ARA = 180000;
+  let _yeniAcildi = 0, _yeniYuklendi = 0, _yeniKalanH = [], _yeniKalanY = [], _yeniVar = null, _yeniZaman = null;
+  function _yeniKaris(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function _yeniParca(f){
+    return fetch('yeni/' + f).then(r=>r.json()).then(d=>{
+      if(!_yeniVar) _yeniVar = new Set(earthHavuz.map(x=>x.mp3));
+      const g = earthEsle(d, earthHavuz.length).filter(x=>!_yeniVar.has(x.mp3));
+      g.forEach(x=>_yeniVar.add(x.mp3));
+      for(let i=0;i<g.length;i++) earthHavuz.push(g[i]);
+      _yeniYuklendi++;
+    }).catch(()=>{});
+  }
+  function _yeniTamponBekle(){
+    return new Promise(r=>{
+      let n = 0;
+      const dene = ()=>{ let ok = true; try{ ok = ses.paused || tamponYeterliMi(); }catch(e){ _yut(e); }
+        if(ok || ++n > 15) r(); else setTimeout(dene, 1000); };
+      dene();
+    });
+  }
+  function yeniDevam(){
+    try{
+      if(document.hidden || ses.paused || _yeniYuklendi >= YENI_TAVAN || !tamponYeterliMi()) return;
+      const kaynak = (Math.random() < 0.6 && _yeniKalanH.length) ? _yeniKalanH : (_yeniKalanY.length ? _yeniKalanY : _yeniKalanH);
+      const x = kaynak.shift();
+      if(x) _yeniParca(x.f);
+    }catch(e){ _yut(e); }
+  }
   function yeniYukle(){
     if(_yeniAcildi) return;
     if(typeof _earthTam !== 'undefined' && !_earthTam){
       setTimeout(()=>{ try{ yeniYukle(); }catch(e){ _yut(e); } }, 3000); return; }
     _yeniAcildi = 1;
+    _yeniVar = null;               // tekrar elemesi HER baslangicta guncel havuzdan kurulur
     const bitir = ()=>{ try{ katalogYukle(); }catch(e){ _yut(e); } };
-    const var_ = new Set(earthHavuz.map(x=>x.mp3));
-    fetch('yeni/ozet.json').then(r=>r.json()).then(l=>{
+    fetch('yeni/ozet.json').then(r=>r.json()).then(liste=>{
+      const l = (liste || []).map(x=>typeof x === 'string' ? {f:x, t:'h'} : x);
+      const o = l.filter(x=>x.t === 'o');
+      const h = _yeniKaris(l.filter(x=>x.t === 'h')), y = _yeniKaris(l.filter(x=>x.t === 'y'));
+      const ilk = o.concat(h.splice(0, YENI_ILK_H), y.splice(0, YENI_ILK_Y));
+      _yeniKalanH = h; _yeniKalanY = y;
       const sira = (k)=>{
-        if(k>=l.length){ bitir(); return null; }
-        return fetch('yeni/'+l[k]).then(r=>r.json()).then(d=>{
-          const g = earthEsle(d, earthHavuz.length).filter(x=>!var_.has(x.mp3));
-          g.forEach(x=>var_.add(x.mp3));
-          for(let i=0;i<g.length;i++) earthHavuz.push(g[i]);
-        }).catch(()=>{}).then(()=>sira(k+1));
+        if(k >= ilk.length){ bitir(); if(!_yeniZaman) _yeniZaman = setInterval(yeniDevam, YENI_ARA); return null; }
+        return _yeniTamponBekle().then(()=>_yeniParca(ilk[k].f)).then(()=>sira(k+1));
       };
       return sira(0);
     }).catch(bitir);
