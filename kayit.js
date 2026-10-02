@@ -3697,10 +3697,12 @@ try{
           }
         }else if(d === 'basliyor'){
           _fanMetin.textContent = Y('GETTING READY');
-          ['fanRec','fanPic','fanCam','fanDon'].forEach(i=>goster(i,false));
+          /* 2 EKIM (pj: "rec'e basinca cam dondurme vs kapaniyor, kapanmasin"): PIC ve FLIP kayit
+             baslarken de gorunur kalir; yalniz REC/CAM (UNDO) bu kisa surede gizli. */
+          goster('fanRec', false); goster('fanCam', false); goster('fanPic', true); goster('fanDon', true);
         }else if(d === 'kayit'){
           _fanMetin.textContent = 'REC ' + _fanSureYaz();
-          goster('fanRec', true); goster('fanPic', false); goster('fanDon', false);
+          goster('fanRec', true); goster('fanPic', true); goster('fanDon', true);   // kayitta PIC ve FLIP KAPANMAZ (pj, 2 Ekim)
           const durur = !!(rec && rec.classList.contains('hazirla'));
           yaz('fanRec','stop', durur ? 'STOPPING' : 'STOP');
           const r = oge('fanRec'); if(r){ r.setAttribute('aria-disabled', durur ? 'true' : 'false'); r.removeAttribute('title'); }
@@ -3755,6 +3757,24 @@ try{
         if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fanTik(e); } });
       ['pointerdown','touchstart','mousedown'].forEach(t=>
         _fanTus.addEventListener(t, e=>e.stopPropagation(), {passive:true}));
+    }catch(e){ _yut(e); }
+    /* KAYITTAYKEN SIYAH EKRANA KISA DOKUNUS paneli kapatir (pj, 2 Ekim: "kayittayken siyah ekrana
+       basinca menu kapansin"). Surukleme (FX) kapatmaz: 10 px'ten az hareket + 450 ms'den kisa
+       basis = dokunus. Kamera ikonu tekrar acar. Dokunus yutulmaz, baska bir sey engellenmez. */
+    try{
+      let _dokDown = null;
+      document.addEventListener('pointerdown', e=>{
+        if(_fanCep.hidden || _fanDurum() !== 'kayit'){ _dokDown = null; return; }
+        _dokDown = { x:e.clientX, y:e.clientY, t:Date.now(), hedef:e.target };
+      }, true);
+      document.addEventListener('pointerup', e=>{
+        const d = _dokDown; _dokDown = null;
+        if(!d || _fanCep.hidden || _fanDurum() !== 'kayit') return;
+        if(Date.now() - d.t > 450 || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10) return;
+        const t = /** @type {any} */ (d.hedef);
+        if(t && t.closest && (t.closest('#yelpaze') || t.closest('#kamTus'))) return;
+        fanAc(false);
+      }, true);
     }catch(e){ _yut(e); }
     /* Disari dokunmak kapatir (yalniz bos durumda). */
     try{

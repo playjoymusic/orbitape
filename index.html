@@ -1481,6 +1481,9 @@
      left/top JS'den (ipucuGoster) geliyor ve transform ile o noktaya
      ortalaniyor. Boyu kucuk -- tum ekrani degil, tek bir dugmeyi
      isaret ediyor. Bkz. "KARSILAMA ELI" ve "IPUCU ELI" script blogu. */
+  /* 2 EKIM (pj: "visual sirasinda rehber el cikiyor; tutorial olmayacak"): tam ekran gorsel acikken hicbir el
+     ipucusu/karsilama eli gorunmez (zaten acik olan da hemen kapanir; yeni olan da cikmaz). */
+  body.gorsel-acik #ipucuEl,body.gorsel-acik #karsilama{display:none !important;}
   #ipucuEl{position:fixed;z-index:150;display:none;pointer-events:none;
     opacity:0;transition:opacity .45s ease;transform:translate(-50%,-50%);}
   #ipucuEl.on{display:block;opacity:1;}
@@ -22124,6 +22127,8 @@
   function rehberAcikMi(){ return _rehberAcik; }
   function rehberAc(){
     try{
+      /* 2 EKIM (pj: "visual sirasinda rehber kapanacak"): tam ekran gorsel acikken rehber acilmaz. */
+      if(document.body.classList.contains('gorsel-acik')) return;
       const r = document.getElementById('rehber'); if(!r) return;
       _rehberAcik = true;
       r.style.display = 'block';
@@ -22151,6 +22156,11 @@
     }catch(e){ _yut(e); }
   }
   function rehberAcKapa(){ if(_rehberAcik) rehberKapa(); else rehberAc(); }
+  /* VISUAL acilinca zaten acik olan rehber katmani kapanir (body.gorsel-acik izlenir). */
+  try{
+    new MutationObserver(()=>{ try{ if(_rehberAcik && document.body.classList.contains('gorsel-acik')) rehberKapa(); }catch(e){ _yut(e); } })
+      .observe(document.body, { attributes:true, attributeFilter:['class'] });
+  }catch(e){ _yut(e); }
   /* ── ILK UC ACILIS KALKTI (17 Eylul) ──
      Eskiden burada rehber ilk 3 acilista kendiliginden cikiyordu
      (iki bagimsiz sayac: radyo + ORBITAPE). Kullanicinin sozu: "ilk
