@@ -8148,31 +8148,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const eskiAcil = _yeniAcildi, eskiYuk = _yeniYuklendi, eskiVar = _yeniVar, eskiTam = _earthTam, eskiZaman = _yeniZaman;
       const istenen = [];
       const liste = [];
-      for(let i=0;i<3;i++) liste.push({f:'o'+i+'.json', t:'o'});
+      for(let i=0;i<3;i++) liste.push({f:'c'+i+'.json', t:'o', r:'CITY'});
+      for(let i=0;i<2;i++) liste.push({f:'n'+i+'.json', t:'o', r:'NOISE'});
       for(let i=0;i<6;i++) liste.push({f:'h'+i+'.json', t:'h'});
       for(let i=0;i<6;i++) liste.push({f:'y'+i+'.json', t:'y'});
       window.fetch = function(u){
         const a = String(u);
         if(/yeni\/ozet\.json$/.test(a)) return Promise.resolve(new Response(JSON.stringify(liste), {status:200}));
-        const m = a.match(/yeni\/([ohy]\d+)\.json$/);
+        const m = a.match(/yeni\/([cnhy]\d+)\.json$/);
         if(m){ istenen.push(m[1]); return Promise.resolve(new Response('[]', {status:200})); }
         if(/katalog\/ozet\.json$/.test(a)) return Promise.resolve(new Response('[]', {status:200}));
         return eskiFetch.apply(this, arguments);
       };
-      _yeniAcildi = 0; _yeniYuklendi = 0; _yeniVar = null; _earthTam = true; _yeniKalanH = []; _yeniKalanY = [];
+      _yeniAcildi = 0; _yeniYuklendi = 0; _yeniVar = null; _earthTam = true; _yeniKalanH = []; _yeniKalanY = []; _yeniKalanO = {}; _yeniOYuk = {};
       yeniYukle(); await bek(2200);
-      const r = { o: istenen.filter(x=>x[0]==='o').length, h: istenen.filter(x=>x[0]==='h').length, y: istenen.filter(x=>x[0]==='y').length,
+      const r = { c: istenen.filter(x=>x[0]==='c').length, n: istenen.filter(x=>x[0]==='n').length, h: istenen.filter(x=>x[0]==='h').length, y: istenen.filter(x=>x[0]==='y').length,
                   tekrar: istenen.length !== new Set(istenen).size, yuklendi: _yeniYuklendi,
-                  kalan: _yeniKalanH.length + _yeniKalanY.length };
+                  kalan: _yeniKalanH.length + _yeniKalanY.length + Object.keys(_yeniKalanO).reduce((t_,k)=>t_+_yeniKalanO[k].length,0) };
       if(_yeniZaman && _yeniZaman !== eskiZaman) clearInterval(_yeniZaman);
       _yeniZaman = eskiZaman; window.fetch = eskiFetch;
       earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
       _yeniAcildi = eskiAcil; _yeniYuklendi = eskiYuk; _yeniVar = eskiVar; _earthTam = eskiTam;
       return r;
     });
-    K('Arsiv butcesi: tum kucuk raf parcalari + 2 hizli + 2 yavas muzik parcasi iniyor, fazlasi inmiyor, tekrar yok',
-      bu.o===3 && bu.h===2 && bu.y===2 && !bu.tekrar && bu.kalan===(6-2)+(6-2),
-      'o='+bu.o+' h='+bu.h+' y='+bu.y+' tekrar='+bu.tekrar+' kalan='+bu.kalan);
+    K('Arsiv butcesi: HER RAFTAN 1 parca (CITY, NOISE) + 2 hizli + 2 yavas muzik parcasi iniyor, fazlasi inmiyor, tekrar yok',
+      bu.c===1 && bu.n===1 && bu.h===2 && bu.y===2 && !bu.tekrar && bu.kalan===(2+1)+(6-2)+(6-2),
+      'CITY='+bu.c+' NOISE='+bu.n+' h='+bu.h+' y='+bu.y+' tekrar='+bu.tekrar+' kalan='+bu.kalan);
     const on = await pg.evaluate(async ()=>{
       const eskiFetch = window.fetch, eskiOn = _girisOnSoz; let girisIstegi = 0;
       window.fetch = function(u){

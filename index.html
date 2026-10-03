@@ -10692,8 +10692,11 @@
      (hizlidan %60), en cok YENI_TAVAN parca. Her parca CALAN PARCANIN TAMPONU rahatken iner
      (tamponYeterliMi): arka plan indirmesi calan sesi yavaslatmaz. ozet.json: [{f,t:'o|h|y'}]; eski
      bicim (duz ad dizisi) 'h' sayilir. Parcalar kendi icinde karisik (tohumlu): rastgele parca = rastgele ornek. */
-  const YENI_ILK_H = 2, YENI_ILK_Y = 2, YENI_TAVAN = 28, YENI_ARA = 180000;
-  let _yeniAcildi = 0, _yeniYuklendi = 0, _yeniKalanH = [], _yeniKalanY = [], _yeniVar = null, _yeniZaman = null;
+  /* 3 EKIM 3. SURUM: FX raflari 72 bin kayda cikti (CITY 19,6 bin, NOISE 10,5 bin, DARK 6,7 bin...) -> 'o' parcalarinin HEPSINI her
+     seferinde indirmek ~5 MB olurdu. Artik 'o' parcalar RAF RAF (ozet.json'da "r"): her raftan rastgele YENI_ILK_O parca iner
+     (hicbir raf bos kalmaz, ilk yukleme ~13 parca), sonra dinledikce raf raf eklenir (en az yuklenen raf once), en cok YENI_TAVAN. */
+  const YENI_ILK_O = 1, YENI_ILK_H = 2, YENI_ILK_Y = 2, YENI_TAVAN = 40, YENI_ARA = 180000;
+  let _yeniAcildi = 0, _yeniYuklendi = 0, _yeniKalanH = [], _yeniKalanY = [], _yeniKalanO = {}, _yeniOYuk = {}, _yeniVar = null, _yeniZaman = null;
   function _yeniKaris(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
   function _yeniParca(f){
     return fetch('yeni/' + f).then(r=>r.json()).then(d=>{
@@ -10715,8 +10718,21 @@
   function yeniDevam(){
     try{
       if(document.hidden || ses.paused || _yeniYuklendi >= YENI_TAVAN || !tamponYeterliMi()) return;
-      const kaynak = (Math.random() < 0.6 && _yeniKalanH.length) ? _yeniKalanH : (_yeniKalanY.length ? _yeniKalanY : _yeniKalanH);
-      const x = kaynak.shift();
+      /* kaynak secimi: %45 FX rafi (en az yuklenen raf), %33 hizli muzik, %22 yavas muzik; bos olan atlanir */
+      const rafSec = ()=>{
+        const adaylar = Object.keys(_yeniKalanO).filter(r=>_yeniKalanO[r].length && r !== 'OTHERS');
+        const liste = adaylar.length ? adaylar : Object.keys(_yeniKalanO).filter(r=>_yeniKalanO[r].length);
+        liste.sort((a,b)=>(_yeniOYuk[a]||0) - (_yeniOYuk[b]||0));
+        return liste.length ? liste[0] : null;
+      };
+      const z = Math.random();
+      let x = null;
+      const r = rafSec();
+      if(z < 0.45 && r){ x = _yeniKalanO[r].shift(); _yeniOYuk[r] = (_yeniOYuk[r]||0) + 1; }
+      else if(z < 0.78 && _yeniKalanH.length) x = _yeniKalanH.shift();
+      else if(_yeniKalanY.length) x = _yeniKalanY.shift();
+      else if(_yeniKalanH.length) x = _yeniKalanH.shift();
+      else if(r){ x = _yeniKalanO[r].shift(); _yeniOYuk[r] = (_yeniOYuk[r]||0) + 1; }
       if(x) _yeniParca(x.f);
     }catch(e){ _yut(e); }
   }
@@ -10726,13 +10742,22 @@
       setTimeout(()=>{ try{ yeniYukle(); }catch(e){ _yut(e); } }, 3000); return; }
     _yeniAcildi = 1;
     _yeniVar = null;               // tekrar elemesi HER baslangicta guncel havuzdan kurulur
+    _yeniOYuk = {};
     const bitir = ()=>{ try{ katalogYukle(); }catch(e){ _yut(e); } };
     fetch('yeni/ozet.json').then(r=>r.json()).then(liste=>{
       const l = (liste || []).map(x=>typeof x === 'string' ? {f:x, t:'h'} : x);
-      const o = l.filter(x=>x.t === 'o');
       const h = _yeniKaris(l.filter(x=>x.t === 'h')), y = _yeniKaris(l.filter(x=>x.t === 'y'));
-      const ilk = o.concat(h.splice(0, YENI_ILK_H), y.splice(0, YENI_ILK_Y));
-      _yeniKalanH = h; _yeniKalanY = y;
+      /* 'o' parcalari raf raf grupla (raf adi yoksa '?'); her raftan rastgele YENI_ILK_O tane ilk yuklemeye. OTHERS (halka degil,
+         yalniz ORBITAPE-hepsi icinde) ilk yuklemeye girmez, yalniz dinledikce siradan eklenir. */
+      const gruplar = {};
+      l.filter(x=>x.t === 'o').forEach(x=>{ const r = x.r || '?'; (gruplar[r] = gruplar[r] || []).push(x); });
+      const ilkO = [];
+      Object.keys(gruplar).forEach(r=>{
+        _yeniKaris(gruplar[r]);
+        if(r !== 'OTHERS'){ const al = gruplar[r].splice(0, YENI_ILK_O); _yeniOYuk[r] = al.length; ilkO.push.apply(ilkO, al); }
+      });
+      const ilk = ilkO.concat(h.splice(0, YENI_ILK_H), y.splice(0, YENI_ILK_Y));
+      _yeniKalanH = h; _yeniKalanY = y; _yeniKalanO = gruplar;
       const sira = (k)=>{
         if(k >= ilk.length){ bitir(); if(!_yeniZaman) _yeniZaman = setInterval(yeniDevam, YENI_ARA); return null; }
         return _yeniTamponBekle().then(()=>_yeniParca(ilk[k].f)).then(()=>sira(k+1));
