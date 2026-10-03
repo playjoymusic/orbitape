@@ -9,7 +9,7 @@ yeni/ozet.json. Her kayit: {mp3, ad, sanatci, etiket, lisans, dis}; `dis` = RAF 
 o rafa koyar).
 
 PARCALAMA (uygulama her ziyarette HEPSINI indirmez; bkz. index.html yeniYukle):
-  · "ozel" parcalar: RECORDS disindaki butun raflar (NATURE, AMBIANCE, INDUSTRIAL, NOISE, CITY, DARK, HUMANS,
+  · "ozel" parcalar: RECORDS ve ACOUSTIC (muzik) disindaki butun raflar (NATURE, AMBIANCE, INDUSTRIAL, NOISE, CITY, DARK, HUMANS,
     SPACE, OTHERS ~17 bin kayit). Karistirilmis, HEPSI her seferinde yuklenir -> hicbir raf bos kalmaz.
   · "h" (hizli) parcalar: RECORDS, adresi upload.wikimedia.org (Commons CDN, ilk ses ortanca 0,4 sn).
   · "y" (yavas) parcalar: RECORDS, diger kaynaklar (archive.org: ortanca 2,2-2,7 sn). Her parca KENDI ICINDE
@@ -68,7 +68,7 @@ def main():
             o = {'mp3': k['mp3'], 'ad': k['ad'], 'sanatci': k.get('sanatci') or '', 'etiket': k.get('etiket') or '',
                  'lisans': k['lisans'], 'dis': hedef}
             sayac[hedef] = sayac.get(hedef, 0) + 1
-            if hedef != 'RECORDS':
+            if hedef not in ('RECORDS', 'ACOUSTIC'):      # muzik raflari (RECORDS + ACOUSTIC) butceli, hizli/yavas; digerleri 'ozel'
                 ozel.append(o)
             elif HIZLI.match(o['mp3']):
                 hizli.append(o)

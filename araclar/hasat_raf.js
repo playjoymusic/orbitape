@@ -45,18 +45,25 @@ const TURLER = ['jazz','electronic','ambient','drone','rock','folk','classical',
     if (COMMONS_ORTAM.test(t)) return 'AMBIANCE';
     if (muzikDahil && COMMONS_MUZIK.test(t)) return 'RECORDS';
     return null; };
-  let tasinan = 0;
+  let tasinan = 0, muzigeTasinan = 0;
+  const MUZIK_KOLEKSIYON = /\b(netlabels|freemusicarchive|audio_music|78rpm|etree|unlockedrecordings|album_recordings)\b|from free music archive|pandora music/i;
   for (let i = 0; i < tum.length; i += 4000) {
     const dilim = tum.slice(i, i + 4000);
-    const sonuc = await p.evaluate(d => d.map(k => { try { return arsivRaf({ mp3: k.mp3, ad: k.ad, etiket: k.etiket }); } catch (e) { return 'HATA'; } }), dilim);
+    const sonuc = await p.evaluate(d => d.map(k => { try { return [arsivRaf({ mp3: k.mp3, ad: k.ad, etiket: k.etiket }), akustikMi({ mp3: k.mp3, etiket: (k.etiket || '') })]; } catch (e) { return ['HATA', false]; } }), dilim);
     dilim.forEach((k, j) => {
-      let r = sonuc[j];
+      let r = sonuc[j][0]; const akustik = sonuc[j][1];
       /* Makine/doga/ortam/konusma kurali app'in RECORDS kararini da duzeltir (olcum: "Work With Sounds
          WWS Mouldgrinding" makine sesi RECORDS'a, kus kayitlari OTHERS'a dusuyordu); MUZIK kurali yalniz OTHERS'u. */
       if ((r === 'OTHERS' || r === 'RECORDS') && k._kaynak === 'COMMONS') {
-        const y = commonsRaf(k, r === 'OTHERS'); if (y && y !== r) { r = y; tasinan++; } }
+        const y = commonsRaf(k, r === 'OTHERS'); if (y && y !== r) { r = (y === 'RECORDS' && akustik) ? 'ACOUSTIC' : y; tasinan++; } }
       if (!raf.has(r)) raf.set(r, { n: 0, kaynak: {}, tur: {}, ornek: [], kayit: [] });
       const o = raf.get(r); o.n++; o.kaynak[k._kaynak] = (o.kaynak[k._kaynak] || 0) + 1;
+      /* 2 EKIM (pj: "muzik sadece RECORDS ve ACOUSTIC'te olacak, gerisi sadece FX ustune"): MUZIK KOLEKSIYONLARINDAN gelen her kayit
+         (netlabels, freemusicarchive, 78rpm...) MUZIKTIR. Etiketle ayirmak guvenilmez: netlabel albumlerinin etiketine sanatci
+         'soundscape', 'field recording', 'dark', 'noise' yazar (olcum: DARK rafinin %100'u, NOISE'un %94'u netlabel albumuydu).
+         Bu yuzden FX raflarina (AMBIANCE, INDUSTRIAL, CITY, NATURE, HUMANS, SPACE) dusmus olsa bile muzige tasinir.
+         ISTISNA (pj, 2 Ekim: "dark noise da muzik olabilir"): DARK ve NOISE ruh hali rafidir, muzik kalabilir. */
+      if (MUZIK_KOLEKSIYON.test(k.etiket) && r !== 'RECORDS' && r !== 'ACOUSTIC' && r !== 'DARK' && r !== 'NOISE' && !r.startsWith('ELENDI')) { r = akustik ? 'ACOUSTIC' : 'RECORDS'; muzigeTasinan++; }
       const t = (k.etiket + ' ' + k.ad).toLowerCase();
       for (const x of TURLER) if (t.includes(x)) o.tur[x] = (o.tur[x] || 0) + 1;
       if (o.ornek.length < 4 && Math.random() < 0.003 + 4 / Math.max(o.n, 1) * 0.01) o.ornek.push((k.sanatci ? k.sanatci + ' — ' : '') + k.ad);

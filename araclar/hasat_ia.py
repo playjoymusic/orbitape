@@ -97,9 +97,9 @@ def sayi(q):
     return d['response']['numFound'] if d else -1
 
 
-def dilimle(kol, bas, son, cikti):
+def dilimle(kol, bas, son, cikti, kosul=None):
     """publicdate [bas, son) dilimini <= TAVAN_SORGU olana kadar boler; (bas, son) listesi doldurur."""
-    q = 'collection:%s AND %s AND publicdate:[%s TO %s}' % (kol, TEMIZ, bas, son)
+    q = '%s AND %s AND publicdate:[%s TO %s}' % (kosul or ('collection:' + kol), TEMIZ, bas, son)
     n = sayi(q)
     if n < 0:
         raise SystemExit('sayim basarisiz: ' + q[:80])
@@ -114,25 +114,28 @@ def dilimle(kol, bas, son, cikti):
     o = orta.strftime('%Y-%m-%dT%H:%M:%SZ')
     if o == bas or o == son:
         cikti.append((bas, son, n)); return
-    dilimle(kol, bas, o, cikti); dilimle(kol, o, son, cikti)
+    dilimle(kol, bas, o, cikti, kosul); dilimle(kol, o, son, cikti, kosul)
 
 
-def liste(kol):
+def liste(kol, kosul=None, ornek=0):
     yol = os.path.join(DIZIN, kol + '_liste.json')
     if os.path.exists(yol):
         return json.load(open(yol, encoding='utf-8'))
     dilimler = []
-    dilimle(kol, '2005-01-01T00:00:00Z', '2027-01-01T00:00:00Z', dilimler)
+    dilimle(kol, '2005-01-01T00:00:00Z', '2027-01-01T00:00:00Z', dilimler, kosul)
     print('%s: %d dilim, ~%d kayit' % (kol, len(dilimler), sum(d[2] for d in dilimler)), flush=True)
     gorulen, tum = set(), []
     for bas, son, n in dilimler:
-        q = 'collection:%s AND %s AND publicdate:[%s TO %s}' % (kol, TEMIZ, bas, son)
+        q = '%s AND %s AND publicdate:[%s TO %s}' % (kosul or ('collection:' + kol), TEMIZ, bas, son)
         for sayfa in range(1, (n // 1000) + 2):
             d = arama(q, rows=1000, page=sayfa, sort='publicdate asc',
                       **{'fl[]': ['identifier', 'title', 'creator', 'licenseurl', 'subject', 'language', 'collection']})
             for x in ((d or {}).get('response') or {}).get('docs', []):
                 if x['identifier'] not in gorulen:
                     gorulen.add(x['identifier']); tum.append(x)
+    if ornek and len(tum) > ornek:           # esit aralikli ornek: yalniz OLCUM icin (--ornek N)
+        adim = len(tum) / float(ornek)
+        tum = [tum[int(i * adim)] for i in range(ornek)]
     json.dump(tum, open(yol + '.tmp', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     os.replace(yol + '.tmp', yol)
     print('%s: liste %d kayit' % (kol, len(tum)), flush=True)
@@ -260,12 +263,34 @@ def bitir(kol):
     print('%s: %d parca yazildi (%d dosya)' % (kol, len(tum), (len(tum) + PARCA - 1) // PARCA))
 
 
+# KUCUK RAFLAR icin konu taramasi (2 Ekim, pj: "kucuk raflara yeni kaynak"). Raf karari yine uygulamanin arsivRaf'i:
+# musik etiketi tasiyan kayit RECORDS'a gider, yani yalniz hedef rafa DUSEN kayit ise yarar (hasat_raf.js ile olculur).
+HARASAT = 'collection:(netlabels OR freemusicarchive OR 78rpm OR audio_music OR ourmedia)'
+RAF_SORGU = {
+    'SPACE': 'subject:("space sounds" OR nasa OR apollo OR voyager OR cassini OR sputnik OR satellite OR cosmos OR galaxy OR "solar system" OR planet OR spacewalk OR telemetry OR soyuz)',
+    'CITY': 'subject:("city sounds" OR "urban sounds" OR urban OR traffic OR airport OR market OR crowd OR street OR soundmap OR aporee)',
+    'NOISE': 'subject:(noise OR "harsh noise" OR "power electronics" OR noisecore)',
+    'DARK': 'subject:(dark OR darkwave OR "dark ambient" OR gothic OR doom OR occult OR ritual OR "black metal")',
+    'INDUSTRIAL': 'subject:(industrial OR "machine sounds" OR train OR subway OR metro OR engine OR factory OR railway OR turbine)',
+    'NATURE': 'subject:("field recording" OR bioacoustic OR birds OR forest OR rain OR ocean OR waterfall OR thunder OR wildlife OR insects)',
+}
+
+
 def main():
     arg = [a for a in sys.argv[1:] if not a.startswith('--')]
+    ornek = 0
+    if '--ornek' in sys.argv:
+        ornek = int(sys.argv[sys.argv.index('--ornek') + 1])
+        arg = [a for a in arg if a != str(ornek)]
     os.makedirs(DIZIN, exist_ok=True)
     for kol in arg:
         if '--bitir' in sys.argv:
-            bitir(kol); continue
+            bitir(kol.replace(':', '_')); continue
+        if kol.startswith('raf:'):
+            ad = 'raf_' + kol[4:]
+            coz(ad, liste(ad, RAF_SORGU[kol[4:]] + ' AND NOT ' + HARASAT, ornek))
+            bitir(ad)
+            continue
         coz(kol, liste(kol))
         bitir(kol)
 

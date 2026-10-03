@@ -4122,7 +4122,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      CITY ve BEATS acildi, MACHINES ile SOUNDSCAPES kalkti). Sayi
      sabit bir hedef degil, listenin GERCEKTEN degistigini gormek
      icin duruyor. */
-  K('Kategoriler tanimli',    md.n===16, md.ad);
+  /* 3 Ekim: ACOUSTIC eklendi (OTHERS halka olmaktan cikti ama 'kalan' icin kayitta duruyor): 16 -> 17. */
+  K('Kategoriler tanimli',    md.n===17, md.ad);
   /* 26 Eylul: RECORDS cikti, muzik JOYTAPE kolu oldu: 16 -> 15.
      29 Eylul: RECORDS geri geldi (artik RAF, kip degil): 15 -> 16. */
   /* Adlarda BOSLUK VAR ("LOUNGE & LOFI") -> sayiyi ayirarak sayma.
@@ -4610,7 +4611,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      siniflaniyor: 'lp_madama-butterfly' muzik, 'exp46-change-of-command'
      insan sesi. Baslik hala hicbir seye karismiyor. */
   const kyn = await pg.evaluate(()=>{
-    const A=['RADIOTAPE','RECORDS','ORBITAPE','HUMANS','NATURE','SPACE','AMBIANCE','BEATS','CITY','NOISE','DARK','INDUSTRIAL','OTHERS'];
+    const A=['RADIOTAPE','RECORDS','ORBITAPE','HUMANS','NATURE','SPACE','AMBIANCE','BEATS','CITY','NOISE','DARK','INDUSTRIAL','ACOUSTIC'];
     /* JOYTAPE bir kip, arsiv rafi degil; onu da soruyoruz. */
     /* 27 Eylul: JOYTAPE tek ad degil, on raf; hepsi sorulur. */
     const f=(o)=>A.filter(a=>modUyar(o,a)).join(',');
@@ -4641,9 +4642,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* NASA yer-uzay hatti INSAN SESI: HUMANS'a girer (telsiz rafi),
   K('Etiketsiz: NASA konusmasi HUMANS', /HUMANS/.test(kyn.nasa), kyn.nasa);
   K('Etiketsiz: voyager SPACE', /SPACE/.test(kyn.voyager), kyn.voyager);
-  /* OTHERS artik gorunur bir halka: kaynaksiz kayit hem ORBITAPE'te
-     (hepsi) hem OTHERS'ta (geri kalan) gorunuyor -- ikisi de dogru. */
-  K('Kaynaksiz kayit OTHERS rafinda', kyn.bos==='ORBITAPE,OTHERS', kyn.bos);
+  /* 2 Ekim: OTHERS artik halka degil (ACOUSTIC oldu): kaynaksiz/tanimsiz kayit yalniz ORBITAPE'te
+     (hepsi) gorunuyor, hicbir sey kaybolmuyor. */
+  K('Kaynaksiz kayit ORBITAPE (hepsi) icinde, hicbir halkada degil', kyn.bos==='ORBITAPE', kyn.bos);
   K('Etiket "radio program" derse HUMANS', /HUMANS/.test(kyn.talk), kyn.talk);
   K('folksoundomy muzik DEGIL', /NATURE/.test(kyn.folk) && !/RECORDS/.test(kyn.folk), kyn.folk);
   K('soap opera muzik DEGIL', /HUMANS/.test(kyn.soap) && !/RECORDS/.test(kyn.soap), kyn.soap);
@@ -4728,7 +4729,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* Muzik bir kayit hicbir dar rafta GORUNMEZ: ya tam bir dar
            rafta, ya RECORDS'ta. Dar raflar birbirini disliyor. */
         return { tek: ornek.every(o=>{ const n=dar.filter(a=>modUyar(o,a)).length;
-                          return n===1 || (n===0 && arsivRaf(o)==='RECORDS'); }),
+                          /* 3 Ekim: OTHERS artik halka degil: muzik olmayan tanimsiz kayit (n===0) 'OTHERS' doner ve yalniz ORBITAPE-hepsi icinde gorunur. */
+                          return n===1 || (n===0 && (arsivRaf(o)==='RECORDS' || arsivRaf(o)==='ACOUSTIC' || arsivRaf(o)==='OTHERS')); }),
                  hepsi: ornek.filter(o=>arsivRaf(o)!=='RECORDS')
                           .every(o=>modUyar(o,'ORBITAPE')===true) };
       });
@@ -5645,7 +5647,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         && arsivRaf(ornek) === 'RECORDS'
         && modUyar(ornek,'RECORDS') === true
         && modUyar(ornek,'ORBITAPE') === false
-        && modUyar(ornek,'OTHERS')   === false
+        && modUyar(ornek,'ACOUSTIC') === false
         && modUyar(ornek,'HUMANS')   === false
         && ARSIV_ADLAR.filter(a=>a!=='RECORDS' && a!=='ORBITAPE')
                .every(a=>modUyar(ornek,a) === false);
