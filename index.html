@@ -5913,7 +5913,8 @@
       INDUSTRIAL:['168,138,118','214,196,186'],  // pas: makine
       NOISE:    ['186,158,132','224,208,194'],   // kum: gurultu dokusu
       DARK:     ['146,92,176','196,166,214'],    // menekse: karanlik
-      OTHERS:   ['187,182,170','224,222,214'],   // sicak gri: geri kalan
+      OTHERS:   ['187,182,170','224,222,214'],   // sicak gri: geri kalan (halka degil; yalniz ORBITAPE-hepsi icinde)
+      ACOUSTIC: ['201,160,112','240,214,176'],   // sicak ahsap: akustik muzik
       SPACE:    ['147,155,190','206,210,226'],   // kursun mavi
       AMBIANCE: ['160,148,190','214,208,226'],   // sonuk menekse
       CITY:     ['168,168,158','214,214,208'],   // beton
@@ -10287,7 +10288,8 @@
     { ad:'NOISE',      yer:/\bnoise\b|harsh ?noise|\bpower ?electronics\b|\bjnoise\b|noisecore/i, radyo:'' },
     { ad:'DARK',       yer:/\bdark\b|darkwave|dark ?ambient|\bpsychedelic\b|\bpsych\b|\bgothic\b|\bdoom\b|\bocculto?\b|\britual\b|\bblack ?metal\b/i, radyo:'' },
     { ad:'BEATS',    yer:/\btechno\b|\bidm\b|\bhouse\b|downtempo|\belectro\b|electronica|breakbeat|\bdub\b|\bbeats?\b|psytrance|\btrance\b|\bglitch\b|breakcore|\bdnb\b|drum ?and ?bass|\bacid\b|experimental|improvis|musique concrete|electroacoustic/i, radyo:'' },
-    { ad:'OTHERS',   yer:/.^/, radyo:'' },         // kalan: asagidaki arsivRaf() dolduruyor
+    { ad:'OTHERS',   yer:/.^/, radyo:'' },         // kalan (halka DEGIL): muzik olmayan tanimsizlar ORBITAPE-hepsi icinde kalir
+    { ad:'ACOUSTIC', yer:/\bacoustic\b|\bfolk\b|\bpiano\b|unplugged|singer[- ]?songwriter|lullab/i, radyo:'' },   // karar arsivRaf()'ta (akustikMi)
     /* RECORDS (29 Eylul): JOYTAPE moodu ve dokuz bankasi kalkti; butun
        muzik burada toplandI. KALIBI YENI DEGIL -- icinde tam once
        MUZIK_KALIP vardi (9942), ayni siniflamanin adi.
@@ -10328,7 +10330,7 @@
      modunda RECORDS rafinda olacak". Halka sirasi distan ice:
      ... NATURE, HUMANS, **RECORDS**, ORBITAPE (hepsi) -- RECORDS disaridan
      ikinci, en genis halka; icinde YALNIZCA muzik. */
-  var ARSIV_ADLAR = ['INDUSTRIAL','NOISE','DARK','OTHERS','SPACE','AMBIANCE','CITY',
+  var ARSIV_ADLAR = ['INDUSTRIAL','NOISE','DARK','ACOUSTIC','SPACE','AMBIANCE','CITY',
     'NATURE','HUMANS','RECORDS','ORBITAPE'];
 
   /* ── DIS BANKA: WIKIMEDIA COMMONS (28 Eylul) ──
@@ -10375,6 +10377,17 @@
      olculdu, MACHINES 523 kayittan 7'ye dusmustu. Once DAR ve kesin
      raflar soruluyor, genis olanlar en sonda. */
   var ARSIV_SORGU = ['INDUSTRIAL','NOISE','DARK','HUMANS','SPACE','CITY','NATURE','AMBIANCE'];
+  /* ── ACOUSTIC (2 Ekim; pj: "OTHERS adi ACOUSTIC olabilir, sadece akustikleri koyarsin, RECORDS biraz rahatlar") ──
+     OLCUM (yeni/, 197 bin muzik): akustik kelimeli (acoustic, folk, piano, guitar, cello, harp, ukulele, ninni...) 18.038 kayit (%9)
+     RECORDS'taydi, eski OTHERS'ta yalniz 94. KURAL: MUZIK ise ve akustik etiket tasiyorsa ACOUSTIC; elektronik/rock/metal/noise
+     gibi bir etiket de varsa RECORDS'ta kalir. Yalniz ETIKET + KAYNAK bakilir (baslik asla: _mt/_mk kurali). Lookbehind kullanilmaz
+     (eski Safari'de dosyanin tamamini patlatir). Muzik olmayan tanimsiz kayit ('OTHERS') halkada degil, ORBITAPE-hepsi icinde kalir. */
+  const AKUSTIK_KALIP = /\bacoustic\b|\bfolk\b|folklore|\bpiano\b|\bguitar\b|unplugged|singer[- ]?songwriter|lullab|\bviolin\b|\bcello\b|\bharp\b|\bfiddle\b|\bbanjo\b|ukulele|\bflute\b|chamber|a cappella|\bchoir\b|\bchoral\b|\bhymns?\b|string quartet|\blute\b|mandolin|bluegrass/i;
+  const AKUSTIK_DEGIL = /electronic|techno|\bhouse\b|synth|\bmetal\b|punk|\brock\b|noise|industrial|dubstep|trance|hip[- ]?hop|\brap\b|electro|electric ?guitar|\bedm\b|chiptune|glitch|\bidm\b|drum ?and ?bass|breakbeat/i;
+  function akustikMi(o){
+    const t = (_mt(o) + ' ' + _mk(o)).replace(/[_\-.\/]+/g,' ');
+    return AKUSTIK_KALIP.test(t) && !AKUSTIK_DEGIL.test(t);
+  }
   function arsivRaf(o){
     /* DISARIDAN GELEN KAYIT (28 Eylul): kendi bankasi var. Commons
        kayitlarinda etiket/koleksiyon alani yok; kurallar bunu
@@ -10415,7 +10428,7 @@
        JOYTAPE'teki tum muzikler ORBITAPE modunda records rafinda
        olacak"). JOYTAPE moodu ve dokuz bankasi kalkti; eski
        JOY_ADLAR dagitimi yerine tek raf. */
-    if(_muzikMi(o)) return 'RECORDS';
+    if(_muzikMi(o)) return akustikMi(o) ? 'ACOUSTIC' : 'RECORDS';
     for(const ad of ARSIV_SORGU){
       const m = modBul(ad);
       if(m && m.yer && m.yer.test(t)) return ad;

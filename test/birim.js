@@ -59,6 +59,10 @@ const MANIFEST = [
   'var ARSIV_SORGU',
   /* 29 Eylul: JOYTAPE bankalari ve joyRaf kalkti; muzik tek
      rafta (RECORDS) toplanir. MANIFEST'te cikarim yok. */
+  /* 2 Ekim: ACOUSTIC (eski OTHERS halkasi) -- arsivRaf akustikMi'yi cagirir. */
+  'const AKUSTIK_KALIP',
+  'const AKUSTIK_DEGIL',
+  'function akustikMi',
   'function arsivRaf',
   'function _mt',
   'function _mk',
@@ -264,6 +268,22 @@ K('Retro ton doygunlugu kisiyor',
   (() => { const g = A._retroTon('255,0,0', 0.5).split(',').map(Number);
            return g[0] < 255 && g[1] > 0 && g[2] > 0; })(),
   A._retroTon('255,0,0', 0.5) + ' (saf kirmizi bagirmiyor)');
+
+/* ── ACOUSTIC RAFI (2 Ekim; pj: "OTHERS adi ACOUSTIC olabilir, sadece akustikleri koyarsin, RECORDS rahatlar") ──
+   OLCUM: yeni/ muzik kayitlarinin %9'u (18.038 / 197 bin) akustik kelimeli ve RECORDS'taydi. */
+K('Akustik etiketli muzik ACOUSTIC rafina gidiyor, elektronik/rock olani RECORDS\'ta kaliyor',
+  A.arsivRaf(kayit('folk acoustic songs', 'x')) === 'ACOUSTIC'
+  && A.arsivRaf(kayit('piano netlabel', 'x')) === 'ACOUSTIC'
+  && A.arsivRaf(kayit('electronic folk', 'x')) === 'RECORDS'
+  && A.arsivRaf(kayit('rock guitar', 'x')) === 'RECORDS'
+  && A.arsivRaf(kayit('jazz vinyl 78rpm', 'x')) === 'RECORDS',
+  'folk/piano -> ACOUSTIC; electronic folk, rock guitar, jazz -> RECORDS');
+K('Baslik akustik raf kararina karismiyor (yalniz etiket ve kaynak)',
+  A.arsivRaf(kayit('experimental netlabel', 'Beautiful Acoustic Piano Song')) === 'RECORDS',
+  'baslikta acoustic/piano gecse de etiket konusmaz -> RECORDS');
+K('ACOUSTIC halkasi var, OTHERS halka degil',
+  A.ARSIV_ADLAR.indexOf('ACOUSTIC') >= 0 && A.ARSIV_ADLAR.indexOf('OTHERS') < 0,
+  'halkalar: ' + A.ARSIV_ADLAR.join(' '));
 
 /* ── SANATCI ADI TEMIZLIGI ──────────────────────────────────────
    Kunyeye "Various" ya da bir e-posta adresi yazmak, kaydin sahibine

@@ -56,7 +56,7 @@ def main():
     # Cozum: baslangic dosyasinin cogu Commons (hizli CDN) parcasi; yalniz Commons'un olmadigi raflar
     # (HUMANS, CITY, SPACE, DARK, NOISE...) icin az sayida archive.org ornegi. Tam havuz arkadan
     # inmeye devam ediyor (yeni/ parcalari adres kumesiyle tekrar elenir).
-    HIZLI = {'RECORDS': 320, 'NATURE': 100, 'AMBIANCE': 60, 'INDUSTRIAL': 30}
+    HIZLI = {'RECORDS': 280, 'ACOUSTIC': 40, 'NATURE': 100, 'AMBIANCE': 60, 'INDUSTRIAL': 30}
     yeni_dir = os.path.join(KOK, 'yeni')
     hizli = []
     if os.path.isdir(yeni_dir):

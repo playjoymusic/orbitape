@@ -8,6 +8,7 @@ test/
 araclar/
 .github/
 node_modules/
+node_modules
 
 # ── DEPONUN KENDISI ──────────────────────────────────────────────
 # .git YUKLENIYORDU. Ilk kez `wrangler deploy` elle calistirilinca
