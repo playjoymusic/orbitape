@@ -9123,6 +9123,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         mod = eM; AKTIF_AILE = eA; _aileOncesi = eO; modAdiYaz();
         return bekler && katilasti;
       }), 'raf duyulana kadar nefes aliyor, sonra katilasiyor');
+    /* BASIS NEFESI DISKI KAYDIRMAZ (4 Ekim). Olcum: .disk dinlenirken
+       translateY(6px) tasiyor, diskNefes anahtar kareleri yalniz scale
+       yaziyordu -> animasyon boyunca disk 6px YUKARI sicriyor, bitince
+       geri dusuyordu ("minik konum kaymasi"). Olcek merkezden kuculdugu
+       icin disk MERKEZI nefes boyunca ayni yerde kalmali. */
+    K('Basis nefesi diski kaydirmiyor', await pg.evaluate(async ()=>{
+        const d = document.querySelector('.disk');
+        const m0 = (()=>{ const r = d.getBoundingClientRect(); return r.top + r.height/2; })();
+        d.classList.remove('nefes'); void d.offsetWidth; d.classList.add('nefes');
+        let sapma = 0;
+        for(let i=0;i<14;i++){
+          await new Promise(r=>setTimeout(r,35));
+          const r = d.getBoundingClientRect();
+          sapma = Math.max(sapma, Math.abs(r.top + r.height/2 - m0));
+        }
+        d.classList.remove('nefes');
+        return sapma < 0.6;
+      }), 'nefes boyunca disk merkezi yerinde (animasyon translateY(6px)i unutmuyor)');
     /* BOS YERE BASMAK SECIMI IPTAL EDER: secim calan sesin rafina
        doner. Bayrak degil, calan kaydin rafi olcut. */
     /* IPTAL GEZINMEYE BASLADIGIN RAFA DONER, CALANIN RAFINA DEGIL.

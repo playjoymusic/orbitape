@@ -330,10 +330,16 @@
     body.serit-acik .disk{width:min(46vw,352px,calc((100dvh - var(--ust-rez) - var(--alt-rez)) * 0.64));}
   }
   /* Basış nefesi: transform derleyicide çalışır, ana iş parçacığı takılsa bile akar. */
+  /* 4 Ekim OLCUM: .disk dinlenirken translateY(6px) scale(..) tasiyor
+     (satir ~121) ama bu anahtar kareler yalniz scale yaziyordu; animasyon
+     transform'u TAMAMEN ezdigi icin disk her basista 6px YUKARI sicrayip
+     animasyon bitince 6px geri dusuyordu (kullanici: "minik konum kaymasi,
+     duzeltme oluyor"). 63 ms'de top 291.1 -> 285.1, 480 ms sonra 291.1.
+     Anahtar kareler artik ayni 6px'i tasiyor. */
   @keyframes diskNefes{
-    0%  {transform:scale(var(--halka-kat,1));}
-    36% {transform:scale(calc(var(--halka-kat,1) * var(--nfs,.93)));}
-    100%{transform:scale(var(--halka-kat,1));}
+    0%  {transform:translateY(6px) scale(var(--halka-kat,1));}
+    36% {transform:translateY(6px) scale(calc(var(--halka-kat,1) * var(--nfs,.93)));}
+    100%{transform:translateY(6px) scale(var(--halka-kat,1));}
   }
   .disk.nefes{transition:none;animation:diskNefes var(--nsure,480ms) cubic-bezier(.32,.02,.24,1);
     will-change:transform;}
@@ -5462,7 +5468,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.03';
+  var ORB_SURUM = '2026.10.04';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
