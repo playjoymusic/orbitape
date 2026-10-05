@@ -1205,6 +1205,36 @@ function bitir(){
     K('tr.json okunabiliyor', false, String(e && e.message || e));
   }
 
+  /* ── GIZLILIK METNI SES KAYNAKLARINI SAYIYOR MU (5 Ekim) ─────────
+     OLCUM: privacy.html "Servers ORBITAPE talks to" tablosunda arsiv
+     icin yalniz archive.org yaziyordu; oysa acilis havuzundaki
+     kayitlarin buyuk kismi upload.wikimedia.org'dan caliyor (Commons
+     2 Ekim'de eklendi, metin 2 Eylul'de kalmisti). Cihaz o sunucuya
+     baglaniyor ama metin soylemiyordu. Kural: acilis havuzunda payi
+     %1'i gecen her ses sunucusu metinde gecmeli. */
+  try{
+    const gz = fs.readFileSync(path.join(KOK, 'privacy.html'), 'utf8').toLowerCase();
+    const hv = JSON.parse(fs.readFileSync(path.join(KOK, 'earth_giris.json'), 'utf8'));
+    const say = {}; let top = 0;
+    (function gez(o){
+      if(Array.isArray(o)) o.forEach(gez);
+      else if(o && typeof o === 'object'){
+        const u = o.mp3 || o.u || o.url;
+        if(typeof u === 'string' && /^https?:/.test(u)){
+          const h = u.split('/')[2].split('.').slice(-2).join('.').toLowerCase();
+          say[h] = (say[h]||0) + 1; top++;
+        }
+        Object.keys(o).forEach(k=>{ if(o[k] && typeof o[k] === 'object') gez(o[k]); });
+      }
+    })(hv);
+    const buyuk = Object.keys(say).filter(h=>say[h] / Math.max(top,1) > 0.01);
+    const eksik = buyuk.filter(h=>gz.indexOf(h) < 0);
+    K('privacy.html arsivin ses sunucularini sayiyor', top > 100 && eksik.length === 0,
+      top + ' adres, sunucular: ' + buyuk.join(', ') + (eksik.length ? ' · EKSIK: ' + eksik.join(', ') : ''));
+  }catch(e){
+    K('privacy.html arsivin ses sunucularini sayiyor', false, String(e && e.message || e));
+  }
+
   /* ── GIZLILIK METNI KODLA UYUSUYOR MU ────────────────────────────
      privacy.html'deki "cihazda ne tutuluyor" tablosu su cumleyle
      bitiyor: "That is the whole list, not a sample." Bu bir GARANTI.

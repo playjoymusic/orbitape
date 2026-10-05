@@ -8499,7 +8499,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const ok = renkler.map(oklab);
       const adim = ok.slice(1).map((c,i)=>Math.hypot(c[0]-ok[i][0],c[1]-ok[i][1],c[2]-ok[i][2]));
       const oran = Math.max(...adim)/Math.max(Math.min(...adim),1e-6);
-      const kontrast = c=>(lum(c.map(v=>v*0.66))+.05)/.05;   // kutu %66 opak, siyah zemin
+      const kontrast = c=>(lum(c)+.05)/.05;   // 5 Ekim: kutu tam opak, siyah zemin
       const kk = getComputedStyle(k);
       const ybg = getComputedStyle(yol).backgroundColor, ybi = getComputedStyle(yol).backgroundImage;
       const yolBos = (ybg==='rgba(0, 0, 0, 0)' || ybg==='transparent') && ybi==='none' && getComputedStyle(yol).boxShadow==='none';
@@ -8519,14 +8519,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       sw.dokunUst && sw.dokunAlt, 'ust='+sw.dokunUst+' alt='+sw.dokunAlt);
     K('Switch yazisi cubuga ortali (gorunen yazi, yalniz kutu degil)',
       sw.adMerkezFark<=1.5, 'fark '+sw.adMerkezFark.toFixed(2)+' px');
-    K('Switch rengi iki sabit uc arasinda HOMOJEN geciyor (13 konum, adimlar esit, sicrama yok)',
-      sw.uc0[0]>sw.uc1[0] && sw.uc0[2]>sw.uc1[2] && sw.oran<=1.35 && sw.adimMin>0.004,
-      'ORBITAPE ucu '+sw.uc0+' -> RADIOTAPE ucu '+sw.uc1+' ; oklab adimlari: en buyuk/en kucuk '+sw.oran.toFixed(2)+'x, en kucuk '+sw.adimMin.toFixed(4));
-    K('Switch yazilari kontrast >= 4,5 (kutu %66 opak, siyah zemin)',
+    /* 5 Ekim: iki sabit uc rengi KALKTI (pj: switch temadan etkilensin).
+       Renk artik tek: temanin rengi (--sw-tema). Surukleme boyunca hic
+       degismemeli; kip kesinlesince yeni rafin rengine gecer. Eski sart
+       (iki uc arasi esit adim) bilerek degisti. */
+    K('Switch rengi surukleme boyunca SABIT (13 konum ayni renk, sicrama yok)',
+      sw.oran!==undefined && String(sw.uc0)===String(sw.uc1) && sw.adimMin<0.0005,
+      'sol uc '+sw.uc0+' / sag uc '+sw.uc1);
+    K('Switch yazilari kontrast >= 4,5 (kutu tam opak, siyah zemin)',
       sw.kontrastOrbit>=4.5 && sw.kontrastRadio>=4.5,
       'ORBITAPE '+sw.kontrastOrbit.toFixed(2)+' RADIOTAPE '+sw.kontrastRadio.toFixed(2));
     K('Switch acilista ekranla birlikte yumusakca geliyor (ilk karede ani belirmiyor)',
-      sw.anim==='uckGel' && sw.gecikme>=0.3 && Math.abs(sw.opak-0.66)<0.03,
+      sw.anim==='uckGel' && sw.gecikme>=0.3 && Math.abs(sw.opak-1)<0.03,
       'animasyon='+sw.anim+' gecikme='+sw.gecikme+'s son opaklik='+sw.opak.toFixed(2));
   }
 
@@ -9141,6 +9145,59 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         d.classList.remove('nefes');
         return sapma < 0.6;
       }), 'nefes boyunca disk merkezi yerinde (animasyon translateY(6px)i unutmuyor)');
+    /* SWITCH RENGI TEMADAN, HER DERIDE OKUNUR (5 Ekim). Olcum: switch
+       her deride ayni sabit acik turkuazdi; krem/sari zeminde %66 opak
+       = gorunmez. kipRengi rafin rengini zemine gore hedef kontrasta
+       oturtur. Burada 148 derinin HEPSI x 4 raf rengi olculuyor. */
+    { const _o = await pg.evaluate(()=>{
+        const lum = s=>{ const m = s.match(/\d+/g).map(Number);
+          return _parlaklikRGB(m[0],m[1],m[2]); };
+        let enAz = 99, enCok = 0, kotu = '';
+        const renkler = ['53,224,216','226,122,158','146,92,176','236,224,197'];
+        const zeminler = ['#000000'].concat(DERILER.map(d=>d.zem));
+        for(const z of zeminler) for(const r of renkler){
+          const c = kipRengi(r, z); if(!c){ kotu = 'bos:'+z; continue; }
+          const k = _kontrastOran(lum(c), _parlaklikHex(z));
+          if(k < enAz){ enAz = k; if(k < 4.5) kotu = z+' '+r+' '+k.toFixed(2); }
+          if(_parlaklikHex(z) < 0.02) enCok = Math.max(enCok, k);
+        }
+        return { enAz:+enAz.toFixed(2), siyahtaEnCok:+enCok.toFixed(2), kotu };
+      });
+      K('Switch rengi her deride okunur ve bagirmiyor', (o=>!o.kotu && o.enAz >= 4.5 && o.siyahtaEnCok <= 5.4)(_o), (o=>'en dusuk kontrast '+o.enAz+', siyah zeminde en yuksek '+o.siyahtaEnCok+(o.kotu?' KOTU: '+o.kotu:''))(_o)); }
+    { const _o = await pg.evaluate(()=>{
+        const k = document.getElementById('kipKisayol');
+        const l = [...document.querySelectorAll('#kipKisayol .uck-ad')]
+                    .find(x=>parseFloat(getComputedStyle(x).opacity) > 0.9);
+        if(!k || !l) return null;
+        const tema = getComputedStyle(k).getPropertyValue('--sw-tema').replace(/\s/g,'');
+        const renk = getComputedStyle(l).color.replace(/\s/g,'');
+        /* Golgedeki her renk siyah olmali: renkli hale = parlama. */
+        const golge = getComputedStyle(l).textShadow;
+        const renkliHale = (golge.match(/rgba?\([^)]+\)|oklab\([^)]+\)|color\([^)]+\)/g) || [])
+                             .some(c=>!/^rgba?\(0, 0, 0/.test(c));
+        return { ayni: !!tema && tema === renk, opak: getComputedStyle(k).opacity, renkliHale,
+                 vurguIle: getComputedStyle(document.documentElement).getPropertyValue('--d-vurgu') !== '' };
+      });
+      K('Switch yazisi tema renginde, tam opak, renkli halesiz', (o=>!!o && o.ayni && o.opak === '1' && !o.renkliHale)(_o), (o=>o?('tema==yazi '+o.ayni+', opaklik '+o.opak+', renkli hale '+o.renkliHale):'-')(_o)); }
+    /* ALL BLACK'TE HALKANIN ICI DE SIYAH (5 Ekim). Olcum: zemin #000
+       iken tuvalin merkezinde rafin renginde isik topu ve ic dolgu
+       vardi (merkez pikseli alfa > 60). Tuvalin merkez cevresi
+       olculuyor; ALL BLACK kapaninca isik GERI gelmeli (kontrolun
+       kendisi korluk olcmesin). */
+    { const _o = await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const v = document.getElementById('viz'), c = v.getContext('2d');
+        const olc = ()=>{ const n = 9, x = Math.round(v.width/2) - 4, y = Math.round(v.height/2) - 4;
+          const d = c.getImageData(x, y, n, n).data; let t = 0;
+          for(let i = 3; i < d.length; i += 4) t += d[i];
+          return Math.round(t / (n*n)); };
+        const eK = AYAR.karanlik, eD = AYAR.deri;
+        AYAR.deri = 0; AYAR.karanlik = true;  await bek(260); const acik = olc();
+        AYAR.karanlik = false;                await bek(260); const kapali = olc();
+        AYAR.karanlik = eK; AYAR.deri = eD;   await bek(60);
+        return { acik, kapali };
+      });
+      K('ALL BLACK acikken halkanin ortasinda isik yok', (o=>o.acik <= 30 && o.kapali >= 45)(_o), (o=>'merkez alfa: ALL BLACK '+o.acik+' / kapali '+o.kapali)(_o)); }
     /* BOS YERE BASMAK SECIMI IPTAL EDER: secim calan sesin rafina
        doner. Bayrak degil, calan kaydin rafi olcut. */
     /* IPTAL GEZINMEYE BASLADIGIN RAFA DONER, CALANIN RAFINA DEGIL.
@@ -18084,7 +18141,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         && iz[0].radio.op > 0.9 && iz[iz.length-1].orbit.op > 0.9
         && iz.some(x=> x.orbit.op > 0.1 && x.orbit.op < 0.9),
       iz.map(x=>x.radio.op.toFixed(2)+'/'+x.orbit.op.toFixed(2)).join('  ')+'  (RADIO/ORBIT)');
-    K('Topuz rengi konuma gore degisiyor', bas.tp !== ortaTp, 'p=1 ile p~0.5 farkli renk');
+    /* 5 Ekim: ESKI SART TERS DONDU (bilerek). Topuz rengi konuma gore
+       degisiyordu (iki sabit uc rengi); artik switch temanin tek rengini
+       tasiyor, suruklerken renk SABIT, kip kesinlesince yeni rafin rengine
+       geciyor (son.tp farkli). */
+    K('Topuz rengi suruklerken sabit, kip degisince yeni rafin rengi', bas.tp === ortaTp && son.tp !== bas.tp,
+      'bas '+bas.tp+' · orta '+ortaTp+' · birakinca '+son.tp);
     K('Birakinca kip degisiyor ve topuz ucta duruyor', son.mood === true && son.p === 0 && son.orbit.op > 0.95,
       'mood '+son.mood+' · p '+son.p+' · ORBITAPE yazisi '+son.orbit.op);
     K('Kip isimleri switch yolundan TASMIYOR',

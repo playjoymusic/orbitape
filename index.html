@@ -2549,7 +2549,12 @@
   /* --sw-mix BURADA, :root'ta DEGIL: --uck-p switch'in KENDI uzerinde
      yazili; :root'ta var(--uck-p) hep yedek degere (1) cozulurdu ve renk
      hic degismezdi (olculdu: 'Kip yolunun duraklari' kontrolu r1 === r2). */
-  #kipKisayol{--sw-mix:color-mix(in oklab,var(--sw-radio) calc(var(--uck-p,1) * 100%),var(--sw-orbit));}
+  /* 5 EKIM: iki sabit kimlik rengi yerine TEMA rengi (--sw-tema, JS:
+     kipRengi). Kip degisince renk degisir; sicramasin diye ozellik
+     kayitli (@property) ve .45 sn'de gecer. Kayit desteklenmeyen
+     tarayicida renk aninda degisir, baska bir sey bozulmaz. */
+  @property --sw-tema{syntax:'<color>';inherits:true;initial-value:rgb(42,146,141);}
+  #kipKisayol{--sw-mix:var(--sw-tema,rgb(42,146,141));transition:opacity .22s ease,--sw-tema .45s ease;}
   /* YATAY DUGME (28 Eylul: "sol alt swichi yataya yap... mod isimleri
      de yatay olarak ustunde yazsin... font buyukluk sag ustteki gibi
      olsun"). Yol genislige dondu, isimler tek yerde ust uste. */
@@ -2565,7 +2570,9 @@
        overlay olsun %50"): dugmenin rengi tema duraklarindan geliyor
        ve tam opaklikta ekrani tartip duruyordu. Blok yari saydam
        katman; dokunulunca/odaklaninca 0.9'a cikiyor. */
-    opacity:.66;--uck-p:1;transition:opacity .22s ease;touch-action:none;
+    /* 5 EKIM: .66 -> 1. Renk artik kontrast hedefiyle hesaplaniyor
+       (kipRengi); ustune saydamlik binerse hedef tutmaz. */
+    opacity:1;--uck-p:1;touch-action:none;
     /* 2 EKIM OLCU: acilista switch yazisi ILK KAREDE (75 ms) altta
        beliriyor, ustteki baslik 350 ms'de geliyor -> "once altta yazdi
        sonra ortada". Switch simdi 0,35 sn bekleyip yumusakca geliyor:
@@ -2573,8 +2580,7 @@
        elemanin kendi opakligi (.66). */
     animation:uckGel .55s ease-out .35s backwards;}
   @keyframes uckGel{from{opacity:0;}}
-  #kipKisayol:hover,#kipKisayol:focus-visible{opacity:.9;}
-  #kipKisayol.uck-acik{opacity:.94;}
+  /* (5 Ekim: hover/acik opaklik kurallari kalkti; kutu hep tam opak.) */
   /* 1 EKIM (kullanici: "switch estetik degil, daha overlay olmali; saga
      sola cektikce renk de asamali homojen gecis yapsin"). Yol artik
      YARI SAYDAM cam gibi bir oluk: renk duraklari %62 opak, ic golgeler
@@ -2677,10 +2683,12 @@
     font-size:.94rem;font-weight:700;letter-spacing:.26em;line-height:1;
     padding-left:.26em;box-sizing:border-box;white-space:nowrap;
     --kc:var(--sw-mix);color:var(--kc);
+    /* 5 EKIM (pj: "Mac'te sol alt ORBITAPE yazisinda parlaklik var, olmasin"):
+       18 px'lik renkli hale kaldirildi; yalniz ayirici koyu golge kaldi. */
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48);
-    text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48),
-                0 0 18px color-mix(in srgb,var(--kc) 34%,transparent);
     opacity:0;}
+  /* Acik deride koyu golge yazinin altinda kir gibi duruyordu (olcum: SKY, krem zemin). */
+  body.deri-acik #kipKisayol .uck-ad{text-shadow:none;}
   #kipKisayol .uck-ad[data-kip="orbit"]{
     opacity:clamp(0,calc((0.5 - var(--uck-p)) * 4),1);
     transform:translateX(calc(clamp(0,calc((var(--uck-p) - 0.25) * 4),1) * -8px));}
@@ -5468,7 +5476,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.04';
+  var ORB_SURUM = '2026.10.05';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -6502,6 +6510,41 @@
           return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
       }
       return lz > 0.30 ? 'rgb(0,0,0)' : 'rgb(255,255,255)';
+    }catch(e){ _yut(e); return ''; }
+  }
+  /* ── SWITCH RENGI: TEMANIN RENGI, SABIT KONTRASTTA (5 Ekim) ──
+     pj: "sol alttaki switch ve yazisi temalardan etkilenmeli; koyu
+     zeminde acik ama tema/skin/istasyondan etkilensin; secilen renk
+     iyi gelmedi, daha koyulastir."
+     OLCUM (390x844, 8 deri x 2 kip): switch HER deride ayni sabit
+     turkuaz/gri idi (oklab .82); krem (#f2efe6) ve sari (#f5e14a)
+     zeminde acik turkuaz %66 opak = neredeyse gorunmez. Raf adi
+     (#modAd) ise ayni anda zemine gore koyulasiyordu.
+     Kural: rafin rengi (modAd ile ayni kaynak) alinir, zemine dogru
+     ya da zeminden uzaga kaydirilarak kontrast HEDEFE oturtulur:
+     koyu zeminde 5.0 (eski sabit turkuaz 5.7 idi -> bir tik koyu),
+     acik zeminde 6.0. Boylece her deride ne soluk ne parlak. Kutu
+     artik tam opak; kontrast hesabi ekrana gidenle ayni. */
+  function kipRengi(rgbDizi, zemHex){
+    try{
+      const zem = zemHex || '#000000';
+      const lz = _parlaklikHex(zem);
+      const hedef = lz > 0.30 ? 6.0 : 5.0;
+      let p = String(rgbDizi || '').split(',').map(Number);
+      if(p.length !== 3 || p.some(isNaN)) p = lz > 0.30 ? [40,40,40] : [150,160,170];
+      const zr = _hexDizi(zem).split(',').map(Number);
+      const K = (c)=>_kontrastOran(_parlaklikRGB(c[0],c[1],c[2]), lz);
+      if(K(p) >= hedef){
+        /* Fazla parlak/koyu: ZEMINE dogru, hedefin altina inmeden. */
+        let son = p;
+        for(let i = 1; i <= 60; i++){
+          const t = i/60, c = p.map((v,j)=>Math.round(v + (zr[j]-v)*t));
+          if(K(c) < hedef) break;
+          son = c;
+        }
+        return 'rgb(' + son.join(',') + ')';
+      }
+      return okunurVurgu(p.join(','), zem, hedef) || (lz > 0.30 ? 'rgb(0,0,0)' : 'rgb(255,255,255)');
     }catch(e){ _yut(e); return ''; }
   }
   /* Raf adlarinin ekrandaki rengi. Deri kapaliyken uygulamanin
@@ -15226,7 +15269,16 @@
        'g' baska bir seye baglanip tip kapisini kirmiziya
        donduruyordu (olculdu: 83 -> 84). Ayri ad, ayri kapsam
        tartismasi yok. */
-    if(!_sadeHalka){
+    /* ALL BLACK'TE IC DOLGU VE MERKEZ ISIGI YOK (5 Ekim). pj: "raflarda
+       background retrolasiyor ya; ben ALL BLACK ile engelledim ama bazi
+       turlerde halkanin ortasinda kalmis" + "arkadasin Mac'inde halkanin
+       ortasinda parlaklik vardi, o olmasin". OLCUM (1280x800, dpr 1,
+       ALL BLACK acik): zemin #000 ama halkanin ici rafin renginde
+       (AMBIENT: koyu turkuaz) dolu, merkezde 27 px yaricapli isik topu.
+       ALL BLACK "zemin her yerde simsiyah" demek; halkanin ici de zemin.
+       ALL BLACK kapaliyken ve derilerde ikisi de eskisi gibi. */
+    const _tamSiyah = !!(AYAR.karanlik && !(AYAR.deri|0));
+    if(!_sadeHalka && !_tamSiyah){
       /* ── GRADYAN ONBELLEKTE (isinma) ──
          Her karede yeni bir radyal gradyan uretmek pahali: nesne
          ayrilir, uc durak hesaplanir, sonra bir kez kullanilip
@@ -15296,7 +15348,7 @@
        Rengi deriden geliyor (halkaDeriRengi): acik zeminde koyu,
        koyu zeminde acik -- yani beyaz bir kremde kaybolmuyor. */
     const pulse=base*(0.16+0.035*Math.sin(vt*3)*energy);
-    if(!_kamOrta){
+    if(!_kamOrta && !_tamSiyah){
     const _cekRenk = halkaDeriRengi('214,246,242');
     const _cekHalo = halkaDeriRengi(teal);
     const _sk = _sadeHalka ? 0.55 : 1;
@@ -20157,6 +20209,11 @@
         const _k = document.documentElement.style;
         _k.setProperty('--d-raf', _c);
         _k.setProperty('--d-vurgu', _c);
+        /* Switch ayni raf renginden, kendi kontrast hedefiyle (bkz. kipRengi). */
+        { const _d0 = DERILER[(AYAR.deri|0) - 1];
+          const _z = (_d0 && document.body.classList.contains('deri')) ? _d0.zem : '#000000';
+          const _sw = kipRengi(_rn, _z);
+          if(_sw) _k.setProperty('--sw-tema', _sw); }
         /* Halkanin uzerindeki oluk cizgisi ve cekirdek de bu
            renkten pay aliyor: raf degisince tazeleniyorlar. */
         try{ olukYaz(); }catch(_2){ _yut(_2); }
