@@ -590,6 +590,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            her turda _arsivDurdu yeniden zorlanip onbellekIsit() tekrar
            deneniyor. Kosul zaten dogruysa ESKISI KADAR HIZLI (ilk
            turda) doner. */
+        /* 5 EKIM: yavas kaynak artik ONCE yoklanir (1 bayt), saglamsa
+           isitilir (bkz. index.html COZUK). sahte.test gercekte yok;
+           yoklama cevabi burada taklit edilir. Olculen sey ayni:
+           siradaki kayit gizli oynaticiya yaziliyor mu. */
+        const _eskiFetch = window.fetch;
+        window.fetch = (u)=>Promise.resolve({ status:206, url:String(u) });
         let srcs = [], isindi = false;
         for(let i=0; i<15 && !isindi; i++){
           _arsivDurdu = false;
@@ -598,9 +604,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           srcs = onbellekler.map(a=>a.getAttribute('src')||'');
           isindi = srcs.some(s=>/\/mp\d+\.mp3/.test(s));
         }
+        window.fetch = _eskiFetch;
         return { isindi, srcs };
       } finally {
         onbellekDurdur();
+        try{ COZUK.clear(); SAGLIK_YOKLANDI.clear(); }catch(e){}
         earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
         AKTIF_MOD = eskiAktifMod; mod = eskiDunya; _arsivDurdu = eskiDurdu;
         ustUsteHata = eskiHata;
@@ -8135,6 +8143,56 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       yb.ilkHost==='upload.wikimedia.org', 'ilk parca '+yb.ilkHost);
   }
 
+  /* ── YAVAS KAYNAK: COZ, ISIT, ISINMAMISI BEKLET (5 Ekim) ─────────────
+     pj: "ACOUSTIC'te bir track sessiz biri caldi, 3 kere". OLCUM: her 4
+     parcadan biri archive.org ve 2,1-5,4 sn sessiz; eski isitma ise
+     yaramiyordu cunku archive.org her istekte baska sunucuya yonlendiriyor.
+     Uc sey olculuyor: (1) isinmamis yavas parca yerine siradaki hizli
+     seciliyor ve yavas olan KAYBOLMUYOR, (2) isininca sirasi gelince
+     seciliyor, (3) cal() isinmis parcayi COZULMUS adresle aciyor. */
+  {
+    const ys = await pg.evaluate(()=>{
+      const eskiH = earthHavuz.slice(), eskiAktif = AKTIF_MOD, eskiIdx = _modIdx;
+      const eskiU = onbellekURLler.slice();
+      const L='http://creativecommons.org/licenses/by-sa/3.0/';
+      const Y = i=>({id:'yv'+i, mp3:'https://archive.org/download/sinama/yv'+i+'.mp3', ad:'Y'+i, lisans:L});
+      const H = i=>({id:'hz'+i, mp3:'https://upload.wikimedia.org/wikipedia/commons/sinama/h'+i+'.mp3', ad:'H'+i, lisans:L});
+      const mh = [Y(0), H(0), H(1), Y(1), H(2)];
+      const eskiMH = modHavuzu;
+      let r;
+      try{
+        modHavuzu = ()=>mh; _hizliIlkVerildi = true; _modIdx = 0;
+        const a = earthAl();                       // sira Y0 (soguk) -> H0 gelmeli
+        const y0Duruyor = mh.indexOf(mh.find(x=>x.id==='yv0')) >= _modIdx;
+        /* Y0'i ISINMIS yap: gizli oynatici cozulmus adresi tasiyor ve hazir. */
+        const cz = 'https://ia800000.us.archive.org/1/items/sinama/yv0.mp3';
+        COZUK.set(mh.find(x=>x.id==='yv0').mp3, cz);
+        onbellekURLler[0] = cz;
+        const eskiRS = Object.getOwnPropertyDescriptor(onbellekler[0], 'readyState');
+        Object.defineProperty(onbellekler[0], 'readyState', {configurable:true, get:()=>4});
+        const isik = isikMi(mh.find(x=>x.id==='yv0'));
+        _modIdx = mh.findIndex(x=>x.id==='yv0');
+        const b = earthAl();                       // artik isik -> Y0 gelmeli
+        if(eskiRS) Object.defineProperty(onbellekler[0], 'readyState', eskiRS); else delete onbellekler[0].readyState;
+        r = { ilk: a && a.id, y0Duruyor, isik, ikinci: b && b.id,
+              hizliHepIsik: isikMi(H(9)), sogukIsikDegil: !isikMi(Y(9)),
+              calCozuk: /COZUK\.has\(_adres\) && isikMi\(item\)/.test(String(cal)) };
+      }finally{
+        modHavuzu = eskiMH; COZUK.clear();
+        for(let i=0;i<eskiU.length;i++) onbellekURLler[i] = eskiU[i];
+        earthHavuz.length = 0; eskiH.forEach(x=>earthHavuz.push(x));
+        AKTIF_MOD = eskiAktif; _modIdx = eskiIdx; _modAdi = null; _modHavuzSay = -1;
+      }
+      return r;
+    });
+    K('Isinmamis yavas parca yerine siradaki hizli parca caliyor, yavas olan kuyrukta kaliyor',
+      ys.ilk==='hz0' && ys.y0Duruyor && ys.sogukIsikDegil && ys.hizliHepIsik,
+      'ilk secim '+ys.ilk+' · yavas kuyrukta='+ys.y0Duruyor);
+    K('Yavas parca isininca sirasi gelince seciliyor ve cozulmus adresle aciliyor',
+      ys.isik && ys.ikinci==='yv0' && ys.calCozuk,
+      'isik='+ys.isik+' · secim '+ys.ikinci+' · cal() cozuk adres='+ys.calCozuk);
+  }
+
   /* ── ARSIV ENTEGRASYONU: BUTCELI YUKLEME + BASLANGIC HAVUZU ONCEDEN (2 Ekim) ──
      pj: "yeni arsivleri raflara dagitarak ekle, hizli calacak sekilde entegre et". OLCUM: yeni/ 85 parca
      (206 bin kayit, 65 MB ham, ~15 MB gzip) -> hepsini her ziyarette indirmek mobil hatti boguyor.
@@ -9198,6 +9256,53 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         return { acik, kapali };
       });
       K('ALL BLACK acikken halkanin ortasinda isik yok', (o=>o.acik <= 30 && o.kapali >= 45)(_o), (o=>'merkez alfa: ALL BLACK '+o.acik+' / kapali '+o.kapali)(_o)); }
+    /* ACIK DERI DENETIMI (5 Ekim, pj'nin CUTOUT ekran goruntusu: "bir
+       karede kac tane hata"). Dort olcum, hepsi ayni deride:
+        · ikonlarda golge/hale yok (pj: "hicbir ikonda golge istemiyorum")
+        · ayarlardaki arama kutusu koyu blok degil (eski: rgba(8,20,22,.72))
+        · RINGS ONLY'de tuval TERSLENMIYOR ve halka cizgileri zemine karsi
+          kontrast >= 4 (eski: invert(1) koyu cizgiyi yeniden aciga ceviriyordu)
+        · cark.js raf adini zemine gore renklendiriyor (rafYaziRengi) */
+    { const _o = await pg.evaluate(async ()=>{
+        const bek = ms=>new Promise(r=>setTimeout(r,ms));
+        const eD = AYAR.deri, eH = AYAR.halka;
+        const olc = async (ad)=>{
+          AYAR.deri = DERILER.findIndex(d=>d.ad===ad) + 1; AYAR.halka = true; deriUygula(); await bek(700);
+          const cs = e=>getComputedStyle(e);
+          const ik = ['deriFirca','saatTus','gorselTus','rehberTus'].map(i=>{
+            const sv = document.getElementById(i) && document.getElementById(i).querySelector('svg');
+            return sv ? cs(sv).filter : 'none'; });
+          const sp = document.querySelector('#ayarTut span');
+          const ara = document.getElementById('ayarAra');
+          const m = ara ? (cs(ara).backgroundColor.match(/[\d.]+/g) || []).map(Number) : [];
+          /* color(srgb r g b / a) ya da rgba(r,g,b,a): son deger alfa. */
+          const alfa = m.length >= 4 ? m[m.length-1] : 1;
+          const v = document.getElementById('viz'), c = v.getContext('2d');
+          const d = c.getImageData(0, Math.round(v.height/2), v.width, 1).data;
+          const lz = _parlaklikHex(DERILER[AYAR.deri-1].zem); const ks = [];
+          for(let x=0;x<v.width;x++){ if(d[x*4+3] > 150)
+            ks.push(_kontrastOran(_parlaklikRGB(d[x*4],d[x*4+1],d[x*4+2]), lz)); }
+          ks.sort((a,b)=>a-b);
+          return { ikonGolge: ik.some(f=>f !== 'none') || (sp && cs(sp).boxShadow !== 'none'),
+                   araAlfa: alfa, filtre: cs(v).filter, piksel: ks.length,
+                   ortanca: ks.length ? +ks[Math.floor(ks.length/2)].toFixed(2) : 0 };
+        };
+        const acik = await olc('CUTOUT');
+        const koyuAd = (DERILER.find(d=>_parlaklikHex(d.zem) < 0.05) || {}).ad;
+        const koyu = koyuAd ? await olc(koyuAd) : null;
+        AYAR.deri = eD; AYAR.halka = eH; deriUygula(); await bek(300);
+        return { acik, koyu, koyuAd };
+      });
+      K('Hicbir ikonda golge yok (acik ve koyu deride)',
+        !_o.acik.ikonGolge && (!_o.koyu || !_o.koyu.ikonGolge),
+        'CUTOUT golge='+_o.acik.ikonGolge+' · '+_o.koyuAd+' golge='+(_o.koyu && _o.koyu.ikonGolge));
+      K('Acik deride ayar arama kutusu koyu blok degil', _o.acik.araAlfa <= 0.2,
+        'zemin alfasi '+_o.acik.araAlfa);
+      K('Acik deride halka tuvali terslenmiyor, cizgiler zemine karsi kontrast >= 4',
+        _o.acik.filtre === 'none' && _o.acik.piksel >= 4 && _o.acik.ortanca >= 4,
+        'filtre '+_o.acik.filtre+' · '+_o.acik.piksel+' cizgi pikseli · ortanca kontrast '+_o.acik.ortanca); }
+    K('Cark raf adini deride zemine gore renklendiriyor',
+      /rafYaziRengi\(r, 0\)/.test(fs.readFileSync('cark.js','utf8')), 'cark.js rafRengi -> rafYaziRengi');
     /* BOS YERE BASMAK SECIMI IPTAL EDER: secim calan sesin rafina
        doner. Bayrak degil, calan kaydin rafi olcut. */
     /* IPTAL GEZINMEYE BASLADIGIN RAFA DONER, CALANIN RAFINA DEGIL.

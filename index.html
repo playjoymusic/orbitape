@@ -1490,6 +1490,9 @@
   /* 2 EKIM (pj: "visual sirasinda rehber el cikiyor; tutorial olmayacak"): tam ekran gorsel acikken hicbir el
      ipucusu/karsilama eli gorunmez (zaten acik olan da hemen kapanir; yeni olan da cikmaz). */
   body.gorsel-acik #ipucuEl,body.gorsel-acik #karsilama{display:none !important;}
+  /* ACIK DERIDE EL IPUCU KOYU (5 Ekim, CUTOUT olcumu): acik turkuaz
+     (#8ff0dd) krem zeminde kontrast ~1,3 idi. Derinin yazi rengi. */
+  body.deri-acik #ipucuEl,body.deri-acik #karsilama{color:var(--d-yazi) !important;}
   #ipucuEl{position:fixed;z-index:150;display:none;pointer-events:none;
     opacity:0;transition:opacity .45s ease;transform:translate(-50%,-50%);}
   #ipucuEl.on{display:block;opacity:1;}
@@ -3216,6 +3219,14 @@
     animation:halkaGel .3s ease both;
     filter:var(--d-filtre,none);
     mix-blend-mode:var(--d-halka-karisim,normal);}
+  /* ACIK DERIDE TERSLEME YOK (5 Ekim). OLCUM (CUTOUT, krem zemin):
+     tuvale giden halka rengi halkaDeriRengi ile ZATEN zemine gore
+     koyulastiriliyor (tuvalde kontrast 4,6-4,8), ama --d-filtre
+     'invert(1)' onu ekranda yeniden ACIGA ceviriyordu -> pj'nin
+     gordugu soluk pastel cizgiler. Tersleme, renklerin zemine gore
+     hesaplanmadigi eski gunlerden kalmaydi; iki duzeltme ust uste
+     binip birbirini goturuyordu. */
+  body.deri-acik.sadehalka #viz{filter:none;}
   body.deri.sadehalka .disk{background:none !important;box-shadow:none !important;}
   body.deri.sadehalka .disk::after,
   body.deri.sadehalka .disk::before{display:none !important;}
@@ -3681,10 +3692,11 @@
      okunuyordu -- kullanicinin gordugu "kaymali gibi" tam buydu.
      Geriye simetrik tek hale kaldi; o da yalnizca zemin gercekten
      desenliyse yaziliyor (--d-hale, bkz. deriUygula). */
-  body.deri #deriFirca svg,body.deri #saatTus svg,body.deri #gorselTus svg,body.deri #rehberTus svg{
-    filter:drop-shadow(0 0 2px var(--d-hale, var(--d-ters-hale, rgba(0,0,0,.6))));}
-  body.deri #ayarTut span{
-    box-shadow:0 0 2px var(--d-hale, var(--d-ters-hale, rgba(0,0,0,.6)));}
+  /* HALE DE SILINDI (5 Ekim). pj: "sol ustteki ikonlarda golge gibi
+     bir sey var, hicbir ikonda golge istemiyorum." 7 Eylul'de desenli
+     derilerde simge kaybolmasin diye konmustu; ayrisma artik yalniz
+     RENKTEN geliyor (--d-simge, zeminin tersi). Kalici kontrol:
+     saglik.js 'Hicbir ikonda golge yok'. */
   /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ──
      Bir ara buradaki iki nesnenin (uc cizgi ve kip anahtari)
      ALTINI koyulastiriyorduk: ikisi panelden ustte ciziliyor
@@ -3847,6 +3859,11 @@
     font-family:'Share Tech Mono',ui-monospace,monospace;font-size:.6875rem;
     letter-spacing:.22em;}
   #ayarAra::after{content:'⌕';font-size:1.15rem;letter-spacing:0;}
+  /* DERIDE ARAMA KUTUSU PANELIN TONUNDA (5 Ekim). pj: "search'teki
+     koyuluk". OLCUM (CUTOUT): panel #ebe7dc, kutu sabit rgba(8,20,22,.72)
+     = krem panelin ortasinda koyu gri blok, yazi koyu lacivert (okunmuyor). */
+  body.deri #ayarAra{background:color-mix(in srgb,var(--d-yazi) 7%,transparent);
+    border-color:color-mix(in srgb,var(--d-yazi) 30%,transparent);color:var(--d-yazi);}
   #ayar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
     padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
   #ayarAraclar:empty{display:none;}
@@ -8403,6 +8420,34 @@
      hizli kaynaga gore kurulur: karistirdiktan sonra 3 hizli (upload.wikimedia.org) : 1 yavas
      serpistirilir; havuzda yalniz tek tur varsa siralama aynen karisik kalir. */
   const HIZLI_ADRES = /^https:\/\/upload\.wikimedia\.org\//;
+  /* ── YAVAS KAYNAK: ADRESI ONCEDEN COZ, O ADRESLE ISIT (5 Ekim) ──
+     pj: "ACOUSTIC'te bir track sessiz biri caldi, 3 kere; secti ama ses
+     gelmedi, bastim gecti."
+     OLCUM (uygulamanin icinde, 40 gecis): her 4 parcadan biri archive.org
+     ve HEPSI 2,1-5,4 sn sessiz; Commons parcalari 0,35-1 sn. Yani desen
+     3 hizli : 1 yavas siralamasinin kendisi.
+     NEDEN ISITMA ISE YARAMIYORDU: archive.org/download/... her istekte
+     BASKA bir depo sunucusuna (dn7107xx, ia8004xx...) 302 ile yonlendiriyor.
+     Gizli oynatici bir sunucudan indiriyor, asil oynatici baskasina
+     gidiyor; tarayici onbellegi eslesmiyor.
+     DENEY (12 adres, 6 sn on yukleme): soguk 1,8-8,3 sn · eski isitma
+     0,5-4,0 sn · adres COZULUP o adresle isitma 0,003-0,03 sn.
+     Kural: yoklama (zaten yapilan 1 baytlik istek) son adresi COZUK'e
+     yazar; gizli oynatici VE asil oynatici o adresi kullanir. item.mp3
+     DEGISMEZ (kara liste, calindi, lisans hep ona bakar). */
+  const COZUK = new Map();
+  function isiAdres(o){ return (o && o.mp3) ? (COZUK.get(o.mp3) || o.mp3) : ''; }
+  /* Sira gelince HEMEN calar mi: hizli kaynak her zaman; yavas kaynak
+     ancak gizli oynaticida tamponlanmissa. */
+  function isikMi(o){
+    try{
+      if(!o || !o.mp3) return false;
+      if(HIZLI_ADRES.test(o.mp3)) return true;
+      const a = isiAdres(o);
+      for(let i=0;i<ONB_SAYI;i++) if(onbellekURLler[i] === a && onbellekler[i].readyState >= 3) return true;
+      return false;
+    }catch(e){ return false; }
+  }
   function hizliKaristir(a){
     karistir(a);
     const hizli = [], yavas = [];
@@ -10858,7 +10903,28 @@
       for(let t=0;t<mh.length;t++){
         if(_modIdx >= mh.length){ hizliKaristir(mh); _modIdx = 0; }
         const o = mh[_modIdx++];
-        if(o && o.mp3 && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)) return o;
+        if(o && o.mp3 && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)){
+          /* ISINMAMIS YAVAS PARCA BEKLER (5 Ekim, bkz. COZUK): sira yavas
+             kaynakta ama tamponu hazir degilse, onumuzdeki 8 kayit icindeki
+             ilk hizli parca one alinir; yavas olan yerini onunla degisir ve
+             o arada isinir. Ilk ertelemeden sonra en cok 30 sn bekletilir (hic
+             isinamayan ama canli bir parca sonsuza kadar kuyrukta kalmasin).
+             OLCUM: sayiyla sinir (4 erteleme) hizli gecen kullanicida 2-3 sn
+             ediyordu, cozme + tampon ~4 sn suruyor -> parca yine soguk
+             caliyordu (40 geciste 3 kez 6 sn). Havuzda hizli yoksa eskisi gibi
+             sogugu calar. */
+          if(!isikMi(o) && (!o._ertT || Date.now() - o._ertT < 30000)){
+            if(!o._ertT) o._ertT = Date.now();
+            for(let j=_modIdx; j<mh.length && j<_modIdx+8; j++){
+              const f = mh[j];
+              if(f && f.mp3 && HIZLI_ADRES.test(f.mp3) && !CALINDI.has(f.id) && !EARTH_KARA.has(f.mp3)){
+                mh[j] = o; mh[_modIdx-1] = f;
+                return f;
+              }
+            }
+          }
+          return o;
+        }
       }
       /* ADRESI OLMAYAN KAYIT SECILMEZ (28 Eylul: "ilk etapta sadece
          hemen calanlardan acacaksin. sayi cogaldikca ekleyecegiz").
@@ -15229,7 +15295,8 @@
       /* Deri acikken halka zemine gore okunur hale getiriliyor:
          acik kremde koyu, koyu lacivertte acik (bkz.
          halkaDeriRengi). */
-      try{ _rnk = halkaDeriRengi(_rnk); }catch(e){ _yut(e); }
+      const _acikDeriH = document.body.classList.contains('deri-acik');
+      try{ _rnk = _acikDeriH ? halkaDeriRengi(_rnk, undefined, 4.5) : halkaDeriRengi(_rnk); }catch(e){ _yut(e); }
       /* HALKALAR HER ZAMAN TAM AÇIK. Önceden mod seçilince diğerleri
          %22'ye düşüyordu ve halka "kapanmış" gibi duruyordu. Artık
          sadece seçili olan öne çıkıyor: daha parlak ve daha kalın.
@@ -15241,6 +15308,7 @@
          VURGU anlık bir geri bildirim, o güçlü kalıyor. */
       if(_vurgu)       a = Math.min(1,    a*1.5);
       else if(_secili) a = Math.min(0.60, a*1.06);   // seçili halka: sadece bir tık önde
+      if(_acikDeriH) a = Math.max(a, 0.82);
       vctx.strokeStyle='rgba('+_rnk+','+a.toFixed(3)+')';
       vctx.lineWidth=((_vurgu?3.0:_secili?1.35:1.1)+rit*0.9)*dpr; vctx.stroke();
       vctx.restore();
@@ -15259,6 +15327,13 @@
        dolgusunda ve bildirimi asagida birakmak "used before its
        declaration" veriyordu -- tip kapisi yakaladi. */
     const _sadeHalka = (typeof AYAR !== 'undefined') && !!AYAR.halka && !!AYAR.deri;
+    /* ACIK DERIDE HALKA CIZGILERI KOYU VE DOLGUN (5 Ekim). pj (CUTOUT
+       ekran goruntusu): "halkanin cemberlerinin renkleri, kontrasta
+       dikkat edilmemis." OLCUM: esik 2,4 idi ve cizgi %30-60 opak
+       ciziliyordu -> krem zeminde etkin kontrast ~1,3 (gorunmez).
+       Acik deride esik 4,5 ve opaklik en az .82. Koyu deride ve
+       derisiz halde eskisi gibi. */
+    /* (degisken halka dongusunden ONCE tanimli olmali: bkz. _acikDeriH) */
     // ana zar (dolgulu, hafif renkli, karanlık)
     const base=_zarTaban, amp=0.06+energy*0.10+rit*0.06;
     const zarM = uzamaPx>0 ? uzamaPx/base : 0;   // tepe noktası tam parmakta biter
@@ -15641,7 +15716,11 @@
       // gerçek ağ (2) / desteklenmeyen kaynak (4) hatalarını ölü sayıyoruz.
       const kod = (a.error && a.error.code) || 0;
       if(u && (kod===2 || kod===4)){
-        earthOluIsaretle(u);
+        /* 5 Ekim: gizli oynatici artik COZULMUS adresi tasiyabilir; kara
+           liste ise asil adrese (item.mp3) bakar -> geri cevrilir. */
+        let _asil = u;
+        try{ COZUK.forEach((v,k)=>{ if(v === u) _asil = k; }); if(_asil !== u) COZUK.delete(_asil); }catch(e){ _yut(e); }
+        earthOluIsaretle(_asil);
         const i=onbellekURLler.indexOf(u); if(i>=0) onbellekURLler[i]=null;
         hazirla();            // yerine yenisini çek
       }
@@ -15697,13 +15776,19 @@
         /* Baslik yeter: govde HEMEN kesilir (sunucu Range'i yok sayip tum dosyayi yollarsa indirme surmesin). */
         try{ ac.abort(); }catch(e){ _yut(e); }
         if(!(r.status === 200 || r.status === 206) || yavas) earthOluIsaretle(url);
+        else{
+          /* Yonlendirme sonrasi SON adres (bkz. COZUK). Yalniz https ve farkliysa. */
+          /* Yonlendirme YOKSA da yazilir (kendi adresiyle): COZUK ayni zamanda
+             "yoklandi, saglam, isitilabilir" isareti; yazilmazsa yonlendirmeyen
+             yavas sunucudaki parca hic isitilmazdi (saglik testi yakaladi). */
+          try{ COZUK.set(url, (r.url && /^https:\/\//.test(r.url)) ? r.url : url); onbellekIsit(); }catch(e){ _yut(e); }
+        }
       }).catch(()=>{ clearTimeout(z); earthOluIsaretle(url); });
     }catch(e){ _yut(e); }
   }
   function onbellekIsit(){
 
     if(_arsivDurdu) return;
-    if(!tamponYeterliMi()) return;            // önce çalan parça rahatlasın
     /* 19 EYLUL (Kural 4, olculdu) -- MOD ACIKKEN KAYNAK `kuyruk`
        DEGIL `modHavuzOnizle()`. `kuyruk` yalnizca mod KAPALIYKEN
        (duz kutuphane gezintisi) hazirla() tarafindan doluyor;
@@ -15714,15 +15799,31 @@
        haric: o dalda modGec() zaten earthAl()'e hic ugramiyor
        (bkz. modGec), isitilacak sey radyo degil arsiv. */
     const modAktifArsiv = AKTIF_MOD && AKTIF_MOD !== 'RADIOTAPE';
-    const adaylar = modAktifArsiv ? modHavuzOnizle(ONB_SAYI) : kuyruk;
-    if(modAktifArsiv) for(let i=0;i<Math.min(2, adaylar.length);i++) sagligiYokla(adaylar[i]);      // yalniz ARSIV: canli radyo yoklanmaz
+    /* 5 EKIM (bkz. COZUK): onumuzdeki 8 kayda bakilir, YAVAS kaynaklar
+       one alinir -- hizli kaynak zaten 0,4 sn'de aciliyor, isitilacak
+       sey yavas olan. Yoklama (1 bayt) kapidan ONCE: bant yemez, adresi
+       cozer. Yavas parca adresi cozulmeden isitilmaz (cozulmemis adresle
+       isitma bosa gidiyordu); cozulunce yoklama burayi yeniden cagirir. */
+    let adaylar = modAktifArsiv ? modHavuzOnizle(8) : kuyruk;
+    if(modAktifArsiv){
+      const yv = adaylar.filter(o=>o && o.mp3 && !HIZLI_ADRES.test(o.mp3));
+      for(let i=0;i<Math.min(2, yv.length);i++) sagligiYokla(yv[i]);      // yalniz ARSIV: canli radyo yoklanmaz
+      adaylar = yv.filter(o=>COZUK.has(o.mp3)).concat(adaylar.filter(o=>o && o.mp3 && HIZLI_ADRES.test(o.mp3)));
+    }
+    /* KAPI: once calan parca rahatlasin. Calan HIZLI kaynaksa (kucuk
+       dosya, CDN) ve calmaya basladiysa beklemeye gerek yok: hizli
+       gecen kullanicida 5 sn sarti hic dolmuyor, yavas parca hep soguk
+       kaliyordu. */
+    const _hizliCalan = !!(aktifItem && aktifItem.mp3 && HIZLI_ADRES.test(aktifItem.mp3) && calBaslangic && ses.readyState >= 3);
+    if(!tamponYeterliMi() && !_hizliCalan) return;
     for(let i=0;i<ONB_SAYI;i++){
       const nx = adaylar[i];
       if(!nx || !nx.mp3) continue;
-      if(onbellekURLler.indexOf(nx.mp3) >= 0) continue;      // zaten ısıtıldı -> tekrar indirme
+      const _ad = isiAdres(nx);
+      if(onbellekURLler.indexOf(_ad) >= 0) continue;      // zaten ısıtıldı -> tekrar indirme
       const slot = (onbSira++) % ONB_SAYI;            // sırayla yaz (kuyruk kayınca ısınmış olan korunur)
-      onbellekURLler[slot] = nx.mp3;
-      try{ onbellekler[slot].src = nx.mp3; onbellekler[slot].load(); }catch(e){ _yut(e); }
+      onbellekURLler[slot] = _ad;
+      try{ onbellekler[slot].src = _ad; onbellekler[slot].load(); }catch(e){ _yut(e); }
     }
   }
   // çalan parça takılırsa arka plan indirmesini derhal kes; toparlayınca tekrar dene
@@ -15738,7 +15839,7 @@
      olduktan sonraki 6 sn'de 1 yeni ses istegi cikiyordu (37 denemenin
      sonuncusu, esik gecildikten sonra). Asagidaki kapiyla DUZELTMEDEN
      SONRA ayni pencerede 0 yeni istek. */
-  setInterval(()=>{ if(!_arsivDurdu && tamponYeterliMi()) onbellekIsit(); }, 1500);   // uygun zamanda sessizce ısıt
+  setInterval(()=>{ if(!_arsivDurdu) onbellekIsit(); }, 1500);   // uygun zamanda sessizce ısıt
 
   // ── frekans arama sesi: yumuşak ANALOG synth tonu (cutoff baya kapalı VCF), "tı—tı—tı" 3 ton -> bekle -> tekrar ──
   let aramaCalisyor=false, aramaTimer=null, aramaLoop=null;
@@ -16391,7 +16492,10 @@
     }else{
       try{ ses.crossOrigin='anonymous'; }catch(e){ _yut(e); }
       ses.preload='auto';
-      iz('ses.src'); ses.src=_adres; sesHazirURL=_adres; iz('ses.src bitti');
+      /* Yavas kaynak ISINMISSA cozulmus adresle cal: gizli oynaticinin
+         indirdigi tampon ancak AYNI adreste eslesir (bkz. COZUK). */
+      const _calAdres = (COZUK.has(_adres) && isikMi(item)) ? COZUK.get(_adres) : _adres;
+      iz('ses.src'); ses.src=_calAdres; sesHazirURL=_adres; iz('ses.src bitti');
       if(typeof katalogIsit === 'function') katalogIsit();   /* 28 Eylul */
     }
     clearTimeout(aramaTimer); aramaTimer=setTimeout(aramaBaslat, 240);   // 240ms'de girmezse frekans-arama sesi boşluğu doldurur
