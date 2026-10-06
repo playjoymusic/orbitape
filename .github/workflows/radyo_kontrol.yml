@@ -34,7 +34,7 @@ jobs:
   kontrol:
     name: Baglantilari sina
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 55   # 6 Ekim: reklam taramasi eklendi (16 tur x 90 sn ~ 25 dk)
 
     steps:
       - name: Depoyu al
@@ -58,6 +58,16 @@ jobs:
       - name: Ozete yaz
         if: always()
         run: cat rapor.md >> "$GITHUB_STEP_SUMMARY"
+
+      # REKLAM TARAMASI (6 Ekim 2026): slogan "no ads". Reklami yayin
+      # bilgisinde isaretleyen istasyon listede durmaz (bkz.
+      # araclar/radyo_reklam.py basi). Yalniz RAPOR yazar, listeye
+      # dokunmaz; cikarma karari insanin.
+      - name: Reklam taramasi
+        if: always()
+        run: |
+          python3 araclar/radyo_reklam.py radyo.json 16 90 reklam.md
+          cat reklam.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Raporu sakla
         if: always()

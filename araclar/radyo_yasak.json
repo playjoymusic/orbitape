@@ -131,5 +131,100 @@
   "ad": "ROBOTARIIS RADIO",
   "mp3": "https://subwave.robotariis.com/stream.mp3",
   "sebep": "yapay zeka uretimi yayin (etiketinde ai); kunye yok"
+ },
+ {
+  "ad": "1000 HITS Classical",
+  "mp3": "https://ais-sa2.cdnstream1.com/2208_128.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "181.FM - True Blues",
+  "mp3": "https://listen.181fm.com/181-blues_128k.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "KEXP",
+  "mp3": "https://kexp.streamguys1.com/kexp160.aac?listenerid=f4bcb5c771d830fbdd4195088a946ea6&awparams=companionAds%3Atrue",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "KUTX 98.9 (2024 Stream",
+  "mp3": "https://streams.kut.org/4428_192.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "Non-Stop Oldies",
+  "mp3": "https://ais-sa2.cdnstream1.com/2383_128.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "WXPN 88.5 Philadelphia",
+  "mp3": "https://wxpnhi.xpn.org/xpnhi",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "181.FM - Christmas Soundtracks",
+  "mp3": "https://listen.181fm.com/181-xsoundtrax_128k.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "Chillout Ibiza FM",
+  "mp3": "https://edge3.peta.live365.net/b05055_128mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "PAX LO-FI",
+  "mp3": "https://das-edge16-live365-dal02.cdnstream.com/a24494",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "REYFM - lofi",
+  "mp3": "https://listen.reyfm.de/lofi_128kbps.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "Jazz 88 Minneapolis KBEM",
+  "mp3": "https://kbem-live.streamguys1.com/kbem_aac",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "FIESTA MEXICANA 92.3 (GDL) - 92.3 FM",
+  "mp3": "https://stream.promomedios.com:8002/stream",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "KEXP 90.3 FM Seattle",
+  "mp3": "https://kexp-mp3-128.streamguys1.com/kexp128.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "181.FM - Soul",
+  "mp3": "https://listen.181fm.com/181-soul_128k.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "Funky Corner Radio (Spain)",
+  "mp3": "https://ais-sa2.cdnstream1.com/2447_96.aac",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "Funky Corner Radio (USA)",
+  "mp3": "https://ais-sa2.cdnstream1.com/2447_192.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "Rise Radio 365",
+  "mp3": "https://streaming.live365.com/a87815",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "#1 Splash Spa",
+  "mp3": "https://ais-sa2.cdnstream1.com/2347_128.mp3",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
+ },
+ {
+  "ad": "WQXR 105.9 FM",
+  "mp3": "https://stream.wqxr.org/wqxr-web?nyprBrowserId=32c67956bf1d5600",
+  "sebep": "reklam isaretliyor (6 Ekim 2026 taramasi, araclar/radyo_reklam.py)"
  }
 ]

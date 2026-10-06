@@ -1490,6 +1490,9 @@
   /* 2 EKIM (pj: "visual sirasinda rehber el cikiyor; tutorial olmayacak"): tam ekran gorsel acikken hicbir el
      ipucusu/karsilama eli gorunmez (zaten acik olan da hemen kapanir; yeni olan da cikmaz). */
   body.gorsel-acik #ipucuEl,body.gorsel-acik #karsilama{display:none !important;}
+  /* ACIK DERIDE EL IPUCU KOYU (5 Ekim, CUTOUT olcumu): acik turkuaz
+     (#8ff0dd) krem zeminde kontrast ~1,3 idi. Derinin yazi rengi. */
+  body.deri-acik #ipucuEl,body.deri-acik #karsilama{color:var(--d-yazi) !important;}
   #ipucuEl{position:fixed;z-index:150;display:none;pointer-events:none;
     opacity:0;transition:opacity .45s ease;transform:translate(-50%,-50%);}
   #ipucuEl.on{display:block;opacity:1;}
@@ -2549,7 +2552,12 @@
   /* --sw-mix BURADA, :root'ta DEGIL: --uck-p switch'in KENDI uzerinde
      yazili; :root'ta var(--uck-p) hep yedek degere (1) cozulurdu ve renk
      hic degismezdi (olculdu: 'Kip yolunun duraklari' kontrolu r1 === r2). */
-  #kipKisayol{--sw-mix:color-mix(in oklab,var(--sw-radio) calc(var(--uck-p,1) * 100%),var(--sw-orbit));}
+  /* 5 EKIM: iki sabit kimlik rengi yerine TEMA rengi (--sw-tema, JS:
+     kipRengi). Kip degisince renk degisir; sicramasin diye ozellik
+     kayitli (@property) ve .45 sn'de gecer. Kayit desteklenmeyen
+     tarayicida renk aninda degisir, baska bir sey bozulmaz. */
+  @property --sw-tema{syntax:'<color>';inherits:true;initial-value:rgb(42,146,141);}
+  #kipKisayol{--sw-mix:var(--sw-tema,rgb(42,146,141));transition:opacity .22s ease,--sw-tema .45s ease;}
   /* YATAY DUGME (28 Eylul: "sol alt swichi yataya yap... mod isimleri
      de yatay olarak ustunde yazsin... font buyukluk sag ustteki gibi
      olsun"). Yol genislige dondu, isimler tek yerde ust uste. */
@@ -2565,7 +2573,9 @@
        overlay olsun %50"): dugmenin rengi tema duraklarindan geliyor
        ve tam opaklikta ekrani tartip duruyordu. Blok yari saydam
        katman; dokunulunca/odaklaninca 0.9'a cikiyor. */
-    opacity:.66;--uck-p:1;transition:opacity .22s ease;touch-action:none;
+    /* 5 EKIM: .66 -> 1. Renk artik kontrast hedefiyle hesaplaniyor
+       (kipRengi); ustune saydamlik binerse hedef tutmaz. */
+    opacity:1;--uck-p:1;touch-action:none;
     /* 2 EKIM OLCU: acilista switch yazisi ILK KAREDE (75 ms) altta
        beliriyor, ustteki baslik 350 ms'de geliyor -> "once altta yazdi
        sonra ortada". Switch simdi 0,35 sn bekleyip yumusakca geliyor:
@@ -2573,8 +2583,7 @@
        elemanin kendi opakligi (.66). */
     animation:uckGel .55s ease-out .35s backwards;}
   @keyframes uckGel{from{opacity:0;}}
-  #kipKisayol:hover,#kipKisayol:focus-visible{opacity:.9;}
-  #kipKisayol.uck-acik{opacity:.94;}
+  /* (5 Ekim: hover/acik opaklik kurallari kalkti; kutu hep tam opak.) */
   /* 1 EKIM (kullanici: "switch estetik degil, daha overlay olmali; saga
      sola cektikce renk de asamali homojen gecis yapsin"). Yol artik
      YARI SAYDAM cam gibi bir oluk: renk duraklari %62 opak, ic golgeler
@@ -2677,10 +2686,12 @@
     font-size:.94rem;font-weight:700;letter-spacing:.26em;line-height:1;
     padding-left:.26em;box-sizing:border-box;white-space:nowrap;
     --kc:var(--sw-mix);color:var(--kc);
+    /* 5 EKIM (pj: "Mac'te sol alt ORBITAPE yazisinda parlaklik var, olmasin"):
+       18 px'lik renkli hale kaldirildi; yalniz ayirici koyu golge kaldi. */
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48);
-    text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48),
-                0 0 18px color-mix(in srgb,var(--kc) 34%,transparent);
     opacity:0;}
+  /* Acik deride koyu golge yazinin altinda kir gibi duruyordu (olcum: SKY, krem zemin). */
+  body.deri-acik #kipKisayol .uck-ad{text-shadow:none;}
   #kipKisayol .uck-ad[data-kip="orbit"]{
     opacity:clamp(0,calc((0.5 - var(--uck-p)) * 4),1);
     transform:translateX(calc(clamp(0,calc((var(--uck-p) - 0.25) * 4),1) * -8px));}
@@ -3208,6 +3219,14 @@
     animation:halkaGel .3s ease both;
     filter:var(--d-filtre,none);
     mix-blend-mode:var(--d-halka-karisim,normal);}
+  /* ACIK DERIDE TERSLEME YOK (5 Ekim). OLCUM (CUTOUT, krem zemin):
+     tuvale giden halka rengi halkaDeriRengi ile ZATEN zemine gore
+     koyulastiriliyor (tuvalde kontrast 4,6-4,8), ama --d-filtre
+     'invert(1)' onu ekranda yeniden ACIGA ceviriyordu -> pj'nin
+     gordugu soluk pastel cizgiler. Tersleme, renklerin zemine gore
+     hesaplanmadigi eski gunlerden kalmaydi; iki duzeltme ust uste
+     binip birbirini goturuyordu. */
+  body.deri-acik.sadehalka #viz{filter:none;}
   body.deri.sadehalka .disk{background:none !important;box-shadow:none !important;}
   body.deri.sadehalka .disk::after,
   body.deri.sadehalka .disk::before{display:none !important;}
@@ -3673,10 +3692,11 @@
      okunuyordu -- kullanicinin gordugu "kaymali gibi" tam buydu.
      Geriye simetrik tek hale kaldi; o da yalnizca zemin gercekten
      desenliyse yaziliyor (--d-hale, bkz. deriUygula). */
-  body.deri #deriFirca svg,body.deri #saatTus svg,body.deri #gorselTus svg,body.deri #rehberTus svg{
-    filter:drop-shadow(0 0 2px var(--d-hale, var(--d-ters-hale, rgba(0,0,0,.6))));}
-  body.deri #ayarTut span{
-    box-shadow:0 0 2px var(--d-hale, var(--d-ters-hale, rgba(0,0,0,.6)));}
+  /* HALE DE SILINDI (5 Ekim). pj: "sol ustteki ikonlarda golge gibi
+     bir sey var, hicbir ikonda golge istemiyorum." 7 Eylul'de desenli
+     derilerde simge kaybolmasin diye konmustu; ayrisma artik yalniz
+     RENKTEN geliyor (--d-simge, zeminin tersi). Kalici kontrol:
+     saglik.js 'Hicbir ikonda golge yok'. */
   /* ── PANEL ACIKKEN USTUNDE HICBIR SEY YOK ──
      Bir ara buradaki iki nesnenin (uc cizgi ve kip anahtari)
      ALTINI koyulastiriyorduk: ikisi panelden ustte ciziliyor
@@ -3839,6 +3859,11 @@
     font-family:'Share Tech Mono',ui-monospace,monospace;font-size:.6875rem;
     letter-spacing:.22em;}
   #ayarAra::after{content:'⌕';font-size:1.15rem;letter-spacing:0;}
+  /* DERIDE ARAMA KUTUSU PANELIN TONUNDA (5 Ekim). pj: "search'teki
+     koyuluk". OLCUM (CUTOUT): panel #ebe7dc, kutu sabit rgba(8,20,22,.72)
+     = krem panelin ortasinda koyu gri blok, yazi koyu lacivert (okunmuyor). */
+  body.deri #ayarAra{background:color-mix(in srgb,var(--d-yazi) 7%,transparent);
+    border-color:color-mix(in srgb,var(--d-yazi) 30%,transparent);color:var(--d-yazi);}
   #ayar #araclar{display:flex;align-items:center;gap:6px;margin:0 0 10px;
     padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.10);}
   #ayarAraclar:empty{display:none;}
@@ -4498,20 +4523,20 @@
      · twitter:*    : X önizlemesi (summary_large_image = geniş kart)
      Önizleme görseli KENDİ ekranımız; üzerinde başkasının istasyon
      adı ya da sanatçısı YOK — bkz. paylas.png üretimi (araclar/). -->
-<meta name="description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
+<meta name="description" content="Over 500 live radio stations grouped into eleven genres and over 340,000 public-domain and Creative Commons recordings. No account, no ads, no tracking.">
 <link rel="canonical" href="https://orbitape.app/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://orbitape.app/">
 <meta property="og:site_name" content="ORBITAPE">
 <meta property="og:title" content="ORBITAPE — live radio">
-<meta property="og:description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
+<meta property="og:description" content="Over 500 live radio stations grouped into eleven genres and over 340,000 public-domain and Creative Commons recordings. No account, no ads, no tracking.">
 <meta property="og:image" content="https://orbitape.app/paylas.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ORBITAPE — LIVE RADIO · SOUND ARCHIVE; orbital rings on a black field.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ORBITAPE — a sound explorer">
-<meta name="twitter:description" content="Live radio from around the world, grouped into eleven genres. No account, no ads, no tracking.">
+<meta name="twitter:description" content="Over 500 live radio stations grouped into eleven genres and over 340,000 public-domain and Creative Commons recordings. No account, no ads, no tracking.">
 <meta name="twitter:image" content="https://orbitape.app/paylas.png?v=2">
 </head>
 <body>
@@ -5468,7 +5493,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.04';
+  var ORB_SURUM = '2026.10.06';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -6502,6 +6527,41 @@
           return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
       }
       return lz > 0.30 ? 'rgb(0,0,0)' : 'rgb(255,255,255)';
+    }catch(e){ _yut(e); return ''; }
+  }
+  /* ── SWITCH RENGI: TEMANIN RENGI, SABIT KONTRASTTA (5 Ekim) ──
+     pj: "sol alttaki switch ve yazisi temalardan etkilenmeli; koyu
+     zeminde acik ama tema/skin/istasyondan etkilensin; secilen renk
+     iyi gelmedi, daha koyulastir."
+     OLCUM (390x844, 8 deri x 2 kip): switch HER deride ayni sabit
+     turkuaz/gri idi (oklab .82); krem (#f2efe6) ve sari (#f5e14a)
+     zeminde acik turkuaz %66 opak = neredeyse gorunmez. Raf adi
+     (#modAd) ise ayni anda zemine gore koyulasiyordu.
+     Kural: rafin rengi (modAd ile ayni kaynak) alinir, zemine dogru
+     ya da zeminden uzaga kaydirilarak kontrast HEDEFE oturtulur:
+     koyu zeminde 5.0 (eski sabit turkuaz 5.7 idi -> bir tik koyu),
+     acik zeminde 6.0. Boylece her deride ne soluk ne parlak. Kutu
+     artik tam opak; kontrast hesabi ekrana gidenle ayni. */
+  function kipRengi(rgbDizi, zemHex){
+    try{
+      const zem = zemHex || '#000000';
+      const lz = _parlaklikHex(zem);
+      const hedef = lz > 0.30 ? 6.0 : 5.0;
+      let p = String(rgbDizi || '').split(',').map(Number);
+      if(p.length !== 3 || p.some(isNaN)) p = lz > 0.30 ? [40,40,40] : [150,160,170];
+      const zr = _hexDizi(zem).split(',').map(Number);
+      const K = (c)=>_kontrastOran(_parlaklikRGB(c[0],c[1],c[2]), lz);
+      if(K(p) >= hedef){
+        /* Fazla parlak/koyu: ZEMINE dogru, hedefin altina inmeden. */
+        let son = p;
+        for(let i = 1; i <= 60; i++){
+          const t = i/60, c = p.map((v,j)=>Math.round(v + (zr[j]-v)*t));
+          if(K(c) < hedef) break;
+          son = c;
+        }
+        return 'rgb(' + son.join(',') + ')';
+      }
+      return okunurVurgu(p.join(','), zem, hedef) || (lz > 0.30 ? 'rgb(0,0,0)' : 'rgb(255,255,255)');
     }catch(e){ _yut(e); return ''; }
   }
   /* Raf adlarinin ekrandaki rengi. Deri kapaliyken uygulamanin
@@ -8360,6 +8420,34 @@
      hizli kaynaga gore kurulur: karistirdiktan sonra 3 hizli (upload.wikimedia.org) : 1 yavas
      serpistirilir; havuzda yalniz tek tur varsa siralama aynen karisik kalir. */
   const HIZLI_ADRES = /^https:\/\/upload\.wikimedia\.org\//;
+  /* ── YAVAS KAYNAK: ADRESI ONCEDEN COZ, O ADRESLE ISIT (5 Ekim) ──
+     pj: "ACOUSTIC'te bir track sessiz biri caldi, 3 kere; secti ama ses
+     gelmedi, bastim gecti."
+     OLCUM (uygulamanin icinde, 40 gecis): her 4 parcadan biri archive.org
+     ve HEPSI 2,1-5,4 sn sessiz; Commons parcalari 0,35-1 sn. Yani desen
+     3 hizli : 1 yavas siralamasinin kendisi.
+     NEDEN ISITMA ISE YARAMIYORDU: archive.org/download/... her istekte
+     BASKA bir depo sunucusuna (dn7107xx, ia8004xx...) 302 ile yonlendiriyor.
+     Gizli oynatici bir sunucudan indiriyor, asil oynatici baskasina
+     gidiyor; tarayici onbellegi eslesmiyor.
+     DENEY (12 adres, 6 sn on yukleme): soguk 1,8-8,3 sn · eski isitma
+     0,5-4,0 sn · adres COZULUP o adresle isitma 0,003-0,03 sn.
+     Kural: yoklama (zaten yapilan 1 baytlik istek) son adresi COZUK'e
+     yazar; gizli oynatici VE asil oynatici o adresi kullanir. item.mp3
+     DEGISMEZ (kara liste, calindi, lisans hep ona bakar). */
+  const COZUK = new Map();
+  function isiAdres(o){ return (o && o.mp3) ? (COZUK.get(o.mp3) || o.mp3) : ''; }
+  /* Sira gelince HEMEN calar mi: hizli kaynak her zaman; yavas kaynak
+     ancak gizli oynaticida tamponlanmissa. */
+  function isikMi(o){
+    try{
+      if(!o || !o.mp3) return false;
+      if(HIZLI_ADRES.test(o.mp3)) return true;
+      const a = isiAdres(o);
+      for(let i=0;i<ONB_SAYI;i++) if(onbellekURLler[i] === a && onbellekler[i].readyState >= 3) return true;
+      return false;
+    }catch(e){ return false; }
+  }
   function hizliKaristir(a){
     karistir(a);
     const hizli = [], yavas = [];
@@ -10815,7 +10903,28 @@
       for(let t=0;t<mh.length;t++){
         if(_modIdx >= mh.length){ hizliKaristir(mh); _modIdx = 0; }
         const o = mh[_modIdx++];
-        if(o && o.mp3 && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)) return o;
+        if(o && o.mp3 && !CALINDI.has(o.id) && !EARTH_KARA.has(o.mp3)){
+          /* ISINMAMIS YAVAS PARCA BEKLER (5 Ekim, bkz. COZUK): sira yavas
+             kaynakta ama tamponu hazir degilse, onumuzdeki 8 kayit icindeki
+             ilk hizli parca one alinir; yavas olan yerini onunla degisir ve
+             o arada isinir. Ilk ertelemeden sonra en cok 30 sn bekletilir (hic
+             isinamayan ama canli bir parca sonsuza kadar kuyrukta kalmasin).
+             OLCUM: sayiyla sinir (4 erteleme) hizli gecen kullanicida 2-3 sn
+             ediyordu, cozme + tampon ~4 sn suruyor -> parca yine soguk
+             caliyordu (40 geciste 3 kez 6 sn). Havuzda hizli yoksa eskisi gibi
+             sogugu calar. */
+          if(!isikMi(o) && (!o._ertT || Date.now() - o._ertT < 30000)){
+            if(!o._ertT) o._ertT = Date.now();
+            for(let j=_modIdx; j<mh.length && j<_modIdx+8; j++){
+              const f = mh[j];
+              if(f && f.mp3 && HIZLI_ADRES.test(f.mp3) && !CALINDI.has(f.id) && !EARTH_KARA.has(f.mp3)){
+                mh[j] = o; mh[_modIdx-1] = f;
+                return f;
+              }
+            }
+          }
+          return o;
+        }
       }
       /* ADRESI OLMAYAN KAYIT SECILMEZ (28 Eylul: "ilk etapta sadece
          hemen calanlardan acacaksin. sayi cogaldikca ekleyecegiz").
@@ -15186,7 +15295,8 @@
       /* Deri acikken halka zemine gore okunur hale getiriliyor:
          acik kremde koyu, koyu lacivertte acik (bkz.
          halkaDeriRengi). */
-      try{ _rnk = halkaDeriRengi(_rnk); }catch(e){ _yut(e); }
+      const _acikDeriH = document.body.classList.contains('deri-acik');
+      try{ _rnk = _acikDeriH ? halkaDeriRengi(_rnk, undefined, 4.5) : halkaDeriRengi(_rnk); }catch(e){ _yut(e); }
       /* HALKALAR HER ZAMAN TAM AÇIK. Önceden mod seçilince diğerleri
          %22'ye düşüyordu ve halka "kapanmış" gibi duruyordu. Artık
          sadece seçili olan öne çıkıyor: daha parlak ve daha kalın.
@@ -15198,6 +15308,7 @@
          VURGU anlık bir geri bildirim, o güçlü kalıyor. */
       if(_vurgu)       a = Math.min(1,    a*1.5);
       else if(_secili) a = Math.min(0.60, a*1.06);   // seçili halka: sadece bir tık önde
+      if(_acikDeriH) a = Math.max(a, 0.82);
       vctx.strokeStyle='rgba('+_rnk+','+a.toFixed(3)+')';
       vctx.lineWidth=((_vurgu?3.0:_secili?1.35:1.1)+rit*0.9)*dpr; vctx.stroke();
       vctx.restore();
@@ -15216,6 +15327,13 @@
        dolgusunda ve bildirimi asagida birakmak "used before its
        declaration" veriyordu -- tip kapisi yakaladi. */
     const _sadeHalka = (typeof AYAR !== 'undefined') && !!AYAR.halka && !!AYAR.deri;
+    /* ACIK DERIDE HALKA CIZGILERI KOYU VE DOLGUN (5 Ekim). pj (CUTOUT
+       ekran goruntusu): "halkanin cemberlerinin renkleri, kontrasta
+       dikkat edilmemis." OLCUM: esik 2,4 idi ve cizgi %30-60 opak
+       ciziliyordu -> krem zeminde etkin kontrast ~1,3 (gorunmez).
+       Acik deride esik 4,5 ve opaklik en az .82. Koyu deride ve
+       derisiz halde eskisi gibi. */
+    /* (degisken halka dongusunden ONCE tanimli olmali: bkz. _acikDeriH) */
     // ana zar (dolgulu, hafif renkli, karanlık)
     const base=_zarTaban, amp=0.06+energy*0.10+rit*0.06;
     const zarM = uzamaPx>0 ? uzamaPx/base : 0;   // tepe noktası tam parmakta biter
@@ -15226,7 +15344,16 @@
        'g' baska bir seye baglanip tip kapisini kirmiziya
        donduruyordu (olculdu: 83 -> 84). Ayri ad, ayri kapsam
        tartismasi yok. */
-    if(!_sadeHalka){
+    /* ALL BLACK'TE IC DOLGU VE MERKEZ ISIGI YOK (5 Ekim). pj: "raflarda
+       background retrolasiyor ya; ben ALL BLACK ile engelledim ama bazi
+       turlerde halkanin ortasinda kalmis" + "arkadasin Mac'inde halkanin
+       ortasinda parlaklik vardi, o olmasin". OLCUM (1280x800, dpr 1,
+       ALL BLACK acik): zemin #000 ama halkanin ici rafin renginde
+       (AMBIENT: koyu turkuaz) dolu, merkezde 27 px yaricapli isik topu.
+       ALL BLACK "zemin her yerde simsiyah" demek; halkanin ici de zemin.
+       ALL BLACK kapaliyken ve derilerde ikisi de eskisi gibi. */
+    const _tamSiyah = !!(AYAR.karanlik && !(AYAR.deri|0));
+    if(!_sadeHalka && !_tamSiyah){
       /* ── GRADYAN ONBELLEKTE (isinma) ──
          Her karede yeni bir radyal gradyan uretmek pahali: nesne
          ayrilir, uc durak hesaplanir, sonra bir kez kullanilip
@@ -15296,7 +15423,7 @@
        Rengi deriden geliyor (halkaDeriRengi): acik zeminde koyu,
        koyu zeminde acik -- yani beyaz bir kremde kaybolmuyor. */
     const pulse=base*(0.16+0.035*Math.sin(vt*3)*energy);
-    if(!_kamOrta){
+    if(!_kamOrta && !_tamSiyah){
     const _cekRenk = halkaDeriRengi('214,246,242');
     const _cekHalo = halkaDeriRengi(teal);
     const _sk = _sadeHalka ? 0.55 : 1;
@@ -15589,7 +15716,11 @@
       // gerçek ağ (2) / desteklenmeyen kaynak (4) hatalarını ölü sayıyoruz.
       const kod = (a.error && a.error.code) || 0;
       if(u && (kod===2 || kod===4)){
-        earthOluIsaretle(u);
+        /* 5 Ekim: gizli oynatici artik COZULMUS adresi tasiyabilir; kara
+           liste ise asil adrese (item.mp3) bakar -> geri cevrilir. */
+        let _asil = u;
+        try{ COZUK.forEach((v,k)=>{ if(v === u) _asil = k; }); if(_asil !== u) COZUK.delete(_asil); }catch(e){ _yut(e); }
+        earthOluIsaretle(_asil);
         const i=onbellekURLler.indexOf(u); if(i>=0) onbellekURLler[i]=null;
         hazirla();            // yerine yenisini çek
       }
@@ -15645,13 +15776,19 @@
         /* Baslik yeter: govde HEMEN kesilir (sunucu Range'i yok sayip tum dosyayi yollarsa indirme surmesin). */
         try{ ac.abort(); }catch(e){ _yut(e); }
         if(!(r.status === 200 || r.status === 206) || yavas) earthOluIsaretle(url);
+        else{
+          /* Yonlendirme sonrasi SON adres (bkz. COZUK). Yalniz https ve farkliysa. */
+          /* Yonlendirme YOKSA da yazilir (kendi adresiyle): COZUK ayni zamanda
+             "yoklandi, saglam, isitilabilir" isareti; yazilmazsa yonlendirmeyen
+             yavas sunucudaki parca hic isitilmazdi (saglik testi yakaladi). */
+          try{ COZUK.set(url, (r.url && /^https:\/\//.test(r.url)) ? r.url : url); onbellekIsit(); }catch(e){ _yut(e); }
+        }
       }).catch(()=>{ clearTimeout(z); earthOluIsaretle(url); });
     }catch(e){ _yut(e); }
   }
   function onbellekIsit(){
 
     if(_arsivDurdu) return;
-    if(!tamponYeterliMi()) return;            // önce çalan parça rahatlasın
     /* 19 EYLUL (Kural 4, olculdu) -- MOD ACIKKEN KAYNAK `kuyruk`
        DEGIL `modHavuzOnizle()`. `kuyruk` yalnizca mod KAPALIYKEN
        (duz kutuphane gezintisi) hazirla() tarafindan doluyor;
@@ -15662,15 +15799,31 @@
        haric: o dalda modGec() zaten earthAl()'e hic ugramiyor
        (bkz. modGec), isitilacak sey radyo degil arsiv. */
     const modAktifArsiv = AKTIF_MOD && AKTIF_MOD !== 'RADIOTAPE';
-    const adaylar = modAktifArsiv ? modHavuzOnizle(ONB_SAYI) : kuyruk;
-    if(modAktifArsiv) for(let i=0;i<Math.min(2, adaylar.length);i++) sagligiYokla(adaylar[i]);      // yalniz ARSIV: canli radyo yoklanmaz
+    /* 5 EKIM (bkz. COZUK): onumuzdeki 8 kayda bakilir, YAVAS kaynaklar
+       one alinir -- hizli kaynak zaten 0,4 sn'de aciliyor, isitilacak
+       sey yavas olan. Yoklama (1 bayt) kapidan ONCE: bant yemez, adresi
+       cozer. Yavas parca adresi cozulmeden isitilmaz (cozulmemis adresle
+       isitma bosa gidiyordu); cozulunce yoklama burayi yeniden cagirir. */
+    let adaylar = modAktifArsiv ? modHavuzOnizle(8) : kuyruk;
+    if(modAktifArsiv){
+      const yv = adaylar.filter(o=>o && o.mp3 && !HIZLI_ADRES.test(o.mp3));
+      for(let i=0;i<Math.min(2, yv.length);i++) sagligiYokla(yv[i]);      // yalniz ARSIV: canli radyo yoklanmaz
+      adaylar = yv.filter(o=>COZUK.has(o.mp3)).concat(adaylar.filter(o=>o && o.mp3 && HIZLI_ADRES.test(o.mp3)));
+    }
+    /* KAPI: once calan parca rahatlasin. Calan HIZLI kaynaksa (kucuk
+       dosya, CDN) ve calmaya basladiysa beklemeye gerek yok: hizli
+       gecen kullanicida 5 sn sarti hic dolmuyor, yavas parca hep soguk
+       kaliyordu. */
+    const _hizliCalan = !!(aktifItem && aktifItem.mp3 && HIZLI_ADRES.test(aktifItem.mp3) && calBaslangic && ses.readyState >= 3);
+    if(!tamponYeterliMi() && !_hizliCalan) return;
     for(let i=0;i<ONB_SAYI;i++){
       const nx = adaylar[i];
       if(!nx || !nx.mp3) continue;
-      if(onbellekURLler.indexOf(nx.mp3) >= 0) continue;      // zaten ısıtıldı -> tekrar indirme
+      const _ad = isiAdres(nx);
+      if(onbellekURLler.indexOf(_ad) >= 0) continue;      // zaten ısıtıldı -> tekrar indirme
       const slot = (onbSira++) % ONB_SAYI;            // sırayla yaz (kuyruk kayınca ısınmış olan korunur)
-      onbellekURLler[slot] = nx.mp3;
-      try{ onbellekler[slot].src = nx.mp3; onbellekler[slot].load(); }catch(e){ _yut(e); }
+      onbellekURLler[slot] = _ad;
+      try{ onbellekler[slot].src = _ad; onbellekler[slot].load(); }catch(e){ _yut(e); }
     }
   }
   // çalan parça takılırsa arka plan indirmesini derhal kes; toparlayınca tekrar dene
@@ -15686,7 +15839,7 @@
      olduktan sonraki 6 sn'de 1 yeni ses istegi cikiyordu (37 denemenin
      sonuncusu, esik gecildikten sonra). Asagidaki kapiyla DUZELTMEDEN
      SONRA ayni pencerede 0 yeni istek. */
-  setInterval(()=>{ if(!_arsivDurdu && tamponYeterliMi()) onbellekIsit(); }, 1500);   // uygun zamanda sessizce ısıt
+  setInterval(()=>{ if(!_arsivDurdu) onbellekIsit(); }, 1500);   // uygun zamanda sessizce ısıt
 
   // ── frekans arama sesi: yumuşak ANALOG synth tonu (cutoff baya kapalı VCF), "tı—tı—tı" 3 ton -> bekle -> tekrar ──
   let aramaCalisyor=false, aramaTimer=null, aramaLoop=null;
@@ -16339,7 +16492,10 @@
     }else{
       try{ ses.crossOrigin='anonymous'; }catch(e){ _yut(e); }
       ses.preload='auto';
-      iz('ses.src'); ses.src=_adres; sesHazirURL=_adres; iz('ses.src bitti');
+      /* Yavas kaynak ISINMISSA cozulmus adresle cal: gizli oynaticinin
+         indirdigi tampon ancak AYNI adreste eslesir (bkz. COZUK). */
+      const _calAdres = (COZUK.has(_adres) && isikMi(item)) ? COZUK.get(_adres) : _adres;
+      iz('ses.src'); ses.src=_calAdres; sesHazirURL=_adres; iz('ses.src bitti');
       if(typeof katalogIsit === 'function') katalogIsit();   /* 28 Eylul */
     }
     clearTimeout(aramaTimer); aramaTimer=setTimeout(aramaBaslat, 240);   // 240ms'de girmezse frekans-arama sesi boşluğu doldurur
@@ -20157,6 +20313,11 @@
         const _k = document.documentElement.style;
         _k.setProperty('--d-raf', _c);
         _k.setProperty('--d-vurgu', _c);
+        /* Switch ayni raf renginden, kendi kontrast hedefiyle (bkz. kipRengi). */
+        { const _d0 = DERILER[(AYAR.deri|0) - 1];
+          const _z = (_d0 && document.body.classList.contains('deri')) ? _d0.zem : '#000000';
+          const _sw = kipRengi(_rn, _z);
+          if(_sw) _k.setProperty('--sw-tema', _sw); }
         /* Halkanin uzerindeki oluk cizgisi ve cekirdek de bu
            renkten pay aliyor: raf degisince tazeleniyorlar. */
         try{ olukYaz(); }catch(_2){ _yut(_2); }

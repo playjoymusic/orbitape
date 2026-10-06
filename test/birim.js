@@ -1205,6 +1205,89 @@ function bitir(){
     K('tr.json okunabiliyor', false, String(e && e.message || e));
   }
 
+  /* ── REKLAMLI ISTASYON LISTEDE DURMAZ (6 Ekim) ───────────────────
+     Slogan "no ads". OLCUM (41 tur, 516 istasyon): 19 istasyon reklami
+     yayin bilgisinde isaretliyordu; pj karari: hepsi listeden cikar
+     (4 kamu radyosu dahil). Iki kalici kontrol:
+      1) yasak listesindeki hicbir adres radyo.json'da yok (elle geri
+         eklenirse ya da hasat getirirse kapi kirmizi),
+      2) reklam kurali reklami yakaliyor ve MUZIGE/JINGLE'A dokunmuyor
+         (kelime avi degil: 'Jingle Bell Rock', 'Commercial Club Crew'). */
+  try{
+    const rd = JSON.parse(fs.readFileSync(path.join(KOK, 'radyo.json'), 'utf8'));
+    const ys = JSON.parse(fs.readFileSync(path.join(KOK, 'araclar', 'radyo_yasak.json'), 'utf8'));
+    const yasakAdres = new Set(ys.map(x=>x.mp3));
+    const sizan = rd.filter(x=>yasakAdres.has(x.mp3)).map(x=>x.ad);
+    const reklamSay = ys.filter(x=>/reklam/.test(x.sebep || '')).length;
+    K('Yasak listesindeki hicbir istasyon radyo.json\'da yok', sizan.length === 0 && reklamSay >= 19,
+      rd.length + ' istasyon, ' + ys.length + ' yasak (' + reklamSay + ' reklam)' + (sizan.length ? ' · SIZAN: ' + sizan.slice(0,5).join(', ') : ''));
+    const sn = require('child_process').spawnSync('python3', [path.join(KOK, 'araclar', 'radyo_reklam.py'), '--sinama'], {encoding:'utf8'});
+    K('Reklam kurali reklami yakaliyor, muzige ve jingle\'a dokunmuyor', sn.status === 0,
+      String(sn.stdout || sn.stderr || '').trim().split('\n').join(' · ').slice(0, 200));
+  }catch(e){
+    K('Yasak listesindeki hicbir istasyon radyo.json\'da yok', false, String(e && e.message || e));
+  }
+
+  /* ── ACIKLAMADAKI SAYILAR GERCEGI ASMIYOR (6 Ekim) ───────────────
+     5 Ekim denetimi: aciklama "eleven genres" diyor, arsivden hic
+     soz etmiyordu; README/CLAUDE.md "22.903 kayit, 559 istasyon"
+     diyordu (gercek 342.078 / 520). Aciklama artik sayi tasiyor
+     ("Over 500 ...", "over 340,000 ..."): liste ya da arsiv bu
+     sayilarin ALTINA duserse kapi kirmizi yanar, metin yalan
+     soylemeden once duzeltilir. Uc meta + manifest ayni sayilari
+     tasimali. */
+  try{
+    const ix = fs.readFileSync(path.join(KOK, 'index.html'), 'utf8');
+    const mf = JSON.parse(fs.readFileSync(path.join(KOK, 'manifest.json'), 'utf8')).description || '';
+    const metalar = (ix.match(/<meta (?:name="description"|property="og:description"|name="twitter:description") content="([^"]+)"/g) || [])
+                      .map(x=>x.replace(/^.*content="/, '').replace(/"$/, ''));
+    const sayilar = t=>{ const i = /Over ([\d,]+) live radio/i.exec(t), k = /over ([\d,]+) public-domain/i.exec(t);
+      return { ist: i ? +i[1].replace(/,/g,'') : -1, kay: k ? +k[1].replace(/,/g,'') : -1 }; };
+    const istGercek = JSON.parse(fs.readFileSync(path.join(KOK, 'radyo.json'), 'utf8')).length;
+    let kayGercek = 0;
+    const ekle = f=>{ const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+      kayGercek += Array.isArray(d) ? d.length : Object.values(d).reduce((a,v)=>a + (Array.isArray(v) ? v.length : 0), 0); };
+    ekle(path.join(KOK, 'earth.json')); ekle(path.join(KOK, 'earth_buyuk.json'));
+    fs.readdirSync(path.join(KOK, 'yeni')).filter(f=>/^yeni_\d+\.json$/.test(f)).forEach(f=>ekle(path.join(KOK, 'yeni', f)));
+    const hepsi = metalar.concat([mf]).map(sayilar);
+    const tutarli = metalar.length === 3 && hepsi.every(x=>x.ist === hepsi[0].ist && x.kay === hepsi[0].kay && x.ist > 0 && x.kay > 0);
+    K('Aciklamadaki sayilar gercegi asmiyor (uc meta + manifest ayni)',
+      tutarli && hepsi[0].ist <= istGercek && hepsi[0].kay <= kayGercek,
+      'aciklama: ' + hepsi[0].ist + ' istasyon / ' + hepsi[0].kay + ' kayit · gercek: ' + istGercek + ' / ' + kayGercek);
+  }catch(e){
+    K('Aciklamadaki sayilar gercegi asmiyor (uc meta + manifest ayni)', false, String(e && e.message || e));
+  }
+
+  /* ── GIZLILIK METNI SES KAYNAKLARINI SAYIYOR MU (5 Ekim) ─────────
+     OLCUM: privacy.html "Servers ORBITAPE talks to" tablosunda arsiv
+     icin yalniz archive.org yaziyordu; oysa acilis havuzundaki
+     kayitlarin buyuk kismi upload.wikimedia.org'dan caliyor (Commons
+     2 Ekim'de eklendi, metin 2 Eylul'de kalmisti). Cihaz o sunucuya
+     baglaniyor ama metin soylemiyordu. Kural: acilis havuzunda payi
+     %1'i gecen her ses sunucusu metinde gecmeli. */
+  try{
+    const gz = fs.readFileSync(path.join(KOK, 'privacy.html'), 'utf8').toLowerCase();
+    const hv = JSON.parse(fs.readFileSync(path.join(KOK, 'earth_giris.json'), 'utf8'));
+    const say = {}; let top = 0;
+    (function gez(o){
+      if(Array.isArray(o)) o.forEach(gez);
+      else if(o && typeof o === 'object'){
+        const u = o.mp3 || o.u || o.url;
+        if(typeof u === 'string' && /^https?:/.test(u)){
+          const h = u.split('/')[2].split('.').slice(-2).join('.').toLowerCase();
+          say[h] = (say[h]||0) + 1; top++;
+        }
+        Object.keys(o).forEach(k=>{ if(o[k] && typeof o[k] === 'object') gez(o[k]); });
+      }
+    })(hv);
+    const buyuk = Object.keys(say).filter(h=>say[h] / Math.max(top,1) > 0.01);
+    const eksik = buyuk.filter(h=>gz.indexOf(h) < 0);
+    K('privacy.html arsivin ses sunucularini sayiyor', top > 100 && eksik.length === 0,
+      top + ' adres, sunucular: ' + buyuk.join(', ') + (eksik.length ? ' · EKSIK: ' + eksik.join(', ') : ''));
+  }catch(e){
+    K('privacy.html arsivin ses sunucularini sayiyor', false, String(e && e.message || e));
+  }
+
   /* ── GIZLILIK METNI KODLA UYUSUYOR MU ────────────────────────────
      privacy.html'deki "cihazda ne tutuluyor" tablosu su cumleyle
      bitiyor: "That is the whole list, not a sample." Bu bir GARANTI.

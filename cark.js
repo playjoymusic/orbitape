@@ -63,8 +63,18 @@ try{ window.CARK_BASLADI = true; }catch(e){}
   function acikRaf(){ try{ return radyoMu() ? (AKTIF_AILE || '') : (AKTIF_MOD || ''); }catch(e){ return ''; } }
   function rafRengi(ad){
     try{
-      if(radyoMu()){ const r = aileRenk(ad); return r ? 'rgb(' + r + ')' : ''; }
-      if(typeof MOD_TEMA !== 'undefined' && MOD_TEMA[ad] && MOD_TEMA[ad].ana) return 'rgb(' + MOD_TEMA[ad].ana + ')';
+      /* DERIDE RAF ADI ZEMINE GORE OKUNUR (5 Ekim). pj (CUTOUT): cark
+         ustundeki adlar krem zeminde ham raf rengiyle yaziliyordu
+         (RADIOTAPE 53,224,216 = kontrast ~1,5). Sol ustteki raf adiyla
+         AYNI kaynak: rafYaziRengi (acik zeminde esik 5,5). */
+      let r = '';
+      if(radyoMu()) r = aileRenk(ad) || '';
+      else if(typeof MOD_TEMA !== 'undefined' && MOD_TEMA[ad] && MOD_TEMA[ad].ana) r = MOD_TEMA[ad].ana;
+      if(!r) return '';
+      if(typeof AYAR !== 'undefined' && (AYAR.deri|0) && typeof rafYaziRengi === 'function'){
+        const v = rafYaziRengi(r, 0); if(v) return v;
+      }
+      return 'rgb(' + r + ')';
     }catch(e){ yut(e); }
     return '';
   }
@@ -527,7 +537,10 @@ try{ window.CARK_BASLADI = true; }catch(e){}
         ctx.font = (bu ? 700 : 400) + ' ' + Math.round(R * (bu ? 0.10 : 0.078)) + "px 'Share Tech Mono', ui-monospace, monospace";
         /* Kenara yaklaşan ad soluklaşarak bitiyor: kesik değil, sönük. */
         const sonuk = Math.max(0, 1 - Math.abs(a) / AD_YAY);
-        ctx.globalAlpha = bu ? 1 : (0.18 + sonuk * 0.5);
+        /* Acik deride komsu adlar daha dolgun (5 Ekim): .18-.68 opaklik krem
+           zeminde okunmuyordu (CUTOUT). Sonme yonu ayni, taban yuksek. */
+        const _acikD = document.body.classList.contains('deri-acik');
+        ctx.globalAlpha = bu ? 1 : (_acikD ? (0.42 + sonuk * 0.45) : (0.18 + sonuk * 0.5));
         ctx.fillStyle = renk;
         ctx.fillText(ad[i], x, y);
       }

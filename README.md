@@ -202,18 +202,34 @@ duruyor; uygulama artık onlara hiç dokunmuyor.
 
 ### Arşivin rafları
 
-ORBITAPE dünyasında halkalar arşivin raflarıdır. 22.903 kayıt üzerinde ölçüldü:
+ORBITAPE dünyasında halkalar arşivin raflarıdır. **6 Ekim 2026 sayımı:
+342.078 çalınabilir kayıt** (archive.org 304.838 + Wikimedia Commons 37.240).
+Canlı radyo tarafı aynı gün **520 istasyon, 68 ülke, on bir raf**.
+
+Arşiv iki katman: `earth.json` + `earth_buyuk.json` (35.834 kayıt, raf
+uygulamada `arsivRaf()` ile hesaplanır) ve `yeni/` (306.244 kayıt, raf
+veriye önceden yazılı). `yeni/` dağılımı:
 
 | Raf | Kayıt |
 |---|---|
-| ORBITAPE (hepsi) | 22.903 |
-| HUMANS | 6.871 |
-| RECORDS | 5.915 |
-| SOUNDSCAPES | 5.501 |
-| NATURE | 3.048 |
-| OTHERS | 598 |
-| SPACE | 769 |
-| MACHINES | 201 |
+| RECORDS | 231.426 |
+| CITY | 19.110 |
+| ACOUSTIC | 10.231 |
+| NOISE | 9.306 |
+| DARK | 6.202 |
+| NATURE | 6.121 |
+| INDUSTRIAL | 5.037 |
+| HUMANS | 3.465 |
+| AMBIANCE | 2.689 |
+| SPACE | 2.264 |
+| (halkası olmayan: OTHERS) | 10.393 |
+
+Müzik yalnız RECORDS ve ACOUSTIC'te (DARK ve NOISE'ta da olabilir); diğer
+raflar efektlerin üstüne oynanacak müzik dışı seslerdir.
+
+> Aşağıdaki iki paragraf 22.903 kayıtlık ilk arşiv üzerinde yazıldı (raf
+> adları o günden beri değişti: MACHINES → INDUSTRIAL, SOUNDSCAPES →
+> AMBIANCE/CITY). Kuralın mantığı aynı, sayılar tarihsel.
 
 Raf kararı tek yerden verilir: `arsivRaf()`. Önce **dar ve kesin** raflar
 sorulur (MACHINES, SPACE, SOUNDSCAPES, NATURE), sonra geniş olanlar
@@ -230,7 +246,7 @@ doğruluk kaynağı.
 
 `mixtape.json` (1.453 CC netlabel parçası) çalışıyordu ve lisans tarafı
 sağlamdı — kaldırılma sebebi bir karar: **ORBITAPE tek kaynaktan beslenecek.**
-Arşiv 22.903 kayıt, havuzun on beş katı; boşluk doğurmuyor. Dosya `tracks`
+Arşiv o gün 22.903 kayıttı (bugün 342.078), havuzun on beş katı; boşluk doğurmuyor. Dosya `tracks`
 deposunda duruyor.
 
 Bununla birlikte MIXTAPE **kanalı** da kapandı — zaten iki dünyaya geçilirken

@@ -450,15 +450,6 @@
   "grup": "ORCHESTRAL"
  },
  {
-  "id": "rb:cf670706-e552-4ffd-b0fc-0a3b55315cf6",
-  "mp3": "https://ais-sa2.cdnstream1.com/2208_128.mp3",
-  "ad": "1000 HITS Classical",
-  "etiket": "classical,classical baroque,classical guitar,classical music,classical piano,contemporary classical",
-  "ulke": "ES",
-  "tur": "classical",
-  "grup": "ORCHESTRAL"
- },
- {
   "id": "rb:29010f42-faef-4a9e-b15c-3ad1613b45cb",
   "mp3": "https://dispatcher.rndfnk.com/br/brklassik/live/mp3/high",
   "ad": "BR-Klassik",
@@ -720,15 +711,6 @@
   "grup": "ROCK & INDIE"
  },
  {
-  "id": "rb:961e719c-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://listen.181fm.com/181-blues_128k.mp3",
-  "ad": "181.FM - True Blues",
-  "etiket": "blues,waynesboro",
-  "ulke": "US",
-  "tur": "blues",
-  "grup": "ROCK & INDIE"
- },
- {
   "id": "rb:a648882e-b8d3-422a-9a79-307ccab8c406",
   "mp3": "https://ec3.yesstreaming.net:3685/stream",
   "ad": "24/7 Blues Radio",
@@ -945,30 +927,12 @@
   "grup": "ROCK & INDIE"
  },
  {
-  "id": "rb:42c0308b-908d-4243-92e5-05d658ecb781",
-  "mp3": "https://kexp.streamguys1.com/kexp160.aac?listenerid=f4bcb5c771d830fbdd4195088a946ea6&awparams=companionAds%3Atrue",
-  "ad": "KEXP",
-  "etiket": "afrobeats,alternative,alternative rock,ambient,dj mixes,dj remix,djs,electronic,folk,highlife,hip hop,indie,indie rock,jazz,live sessions,local music,mrcrosby,music,punk,rock,talk",
-  "ulke": "US",
-  "tur": "jazz",
-  "grup": "ROCK & INDIE"
- },
- {
   "id": "rb:53548d01-14fa-4c90-92c5-8a13ce0ae0fd",
   "mp3": "https://radiola.me/listen/kiss_pop_rock/radio.mp3",
   "ad": "KISS Pop Rock",
   "etiket": "blues,pop,pop rock,rock,soul",
   "ulke": "FR",
   "tur": "soul",
-  "grup": "ROCK & INDIE"
- },
- {
-  "id": "rb:694bc694-cd35-4224-b622-630b735af327",
-  "mp3": "https://streams.kut.org/4428_192.mp3",
-  "ad": "KUTX 98.9 (2024 Stream",
-  "etiket": "indie rock",
-  "ulke": "US",
-  "tur": "indie",
   "grup": "ROCK & INDIE"
  },
  {
@@ -996,15 +960,6 @@
   "etiket": "80s,80s live radio,90s,acir,acir online,américa,cdmx,ciudad de méxico,classic rock,classic rock; alternative rock indie,en vivo,entretenimiento,español,estación,grupo acir,iheart,iheart radio,indie rock,latinoamérica,live,live concert,live music,live rock,mexico city,mix,mix en vivo,mix fm,moi merino,méxico,norteamérica,online,online only,pop,pop en inglés,pop music,pop rock,radio,radio online,rock,rock en inglés,valle de méxico",
   "ulke": "MX",
   "tur": "indie",
-  "grup": "ROCK & INDIE"
- },
- {
-  "id": "rb:0653bfab-cb60-44e9-9511-d89b993c48f9",
-  "mp3": "https://ais-sa2.cdnstream1.com/2383_128.mp3",
-  "ad": "Non-Stop Oldies",
-  "etiket": "70's,decades,motown,oldies,oldies 50's/60's,soul & great rock n' roll",
-  "ulke": "US",
-  "tur": "soul",
   "grup": "ROCK & INDIE"
  },
  {
@@ -1233,15 +1188,6 @@
   "grup": "ROCK & INDIE"
  },
  {
-  "id": "rb:960dd7a5-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://wxpnhi.xpn.org/xpnhi",
-  "ad": "WXPN 88.5 Philadelphia",
-  "etiket": "blues,folk,public radio,rock",
-  "ulke": "US",
-  "tur": "blues",
-  "grup": "ROCK & INDIE"
- },
- {
   "id": "rb:22ed63fd-57bf-469a-9c71-4524834b74d0",
   "mp3": "https://stream.0nlineradio.com/lo-fi?ref=radiobrowser",
   "ad": "0nlineradio LO-FI",
@@ -1314,15 +1260,6 @@
   "grup": "LOUNGE & LOFI"
  },
  {
-  "id": "rb:9637f981-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://listen.181fm.com/181-xsoundtrax_128k.mp3",
-  "ad": "181.FM - Christmas Soundtracks",
-  "etiket": "christmas music,soundtracks,waynesboro",
-  "ulke": "US",
-  "tur": "soundtrack",
-  "grup": "LOUNGE & LOFI"
- },
- {
   "id": "rb:64381ada-fe89-46eb-8049-b1fc79e4dbbe",
   "mp3": "https://ec3.yesstreaming.net:3665/stream",
   "ad": "24/7 Cool Radio",
@@ -1392,15 +1329,6 @@
   "etiket": "downtempo,electronic chill-out,lounge,trip-hop",
   "ulke": "GR",
   "tur": "downtempo",
-  "grup": "LOUNGE & LOFI"
- },
- {
-  "id": "rb:d69fbc2c-530a-4d40-ac9f-56532356b248",
-  "mp3": "https://edge3.peta.live365.net/b05055_128mp3",
-  "ad": "Chillout Ibiza FM",
-  "etiket": "chillout,relaxing",
-  "ulke": "GB",
-  "tur": "chillout",
   "grup": "LOUNGE & LOFI"
  },
  {
@@ -1665,15 +1593,6 @@
   "grup": "LOUNGE & LOFI"
  },
  {
-  "id": "rb:6b2eafdd-ce30-4e3c-b25b-161b546aa2f3",
-  "mp3": "https://das-edge16-live365-dal02.cdnstream.com/a24494",
-  "ad": "PAX LO-FI",
-  "etiket": "christian,lofi,religious",
-  "ulke": "US",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI"
- },
- {
   "id": "rb:11b62ca3-4a65-4103-9bff-1881363d0647",
   "mp3": "https://stream.radiojar.com/1uqnt5zp1v8uv.mp3",
   "ad": "Perfect Radio Coffeemusic",
@@ -1714,15 +1633,6 @@
   "mp3": "https://a5.asurahosting.com:8150/radio.mp3",
   "ad": "Retro Lofi Chiptune Radio",
   "etiket": "16-bit,8-bit,background music,chiptune,jrpg,lofi,pixel music,relaxing,retro game music,video game music",
-  "ulke": "DE",
-  "tur": "lofi",
-  "grup": "LOUNGE & LOFI"
- },
- {
-  "id": "rb:02338a64-da59-4db6-a1c1-639fdc74d65b",
-  "mp3": "https://listen.reyfm.de/lofi_128kbps.mp3",
-  "ad": "REYFM - lofi",
-  "etiket": "lo-fi,lofi",
   "ulke": "DE",
   "tur": "lofi",
   "grup": "LOUNGE & LOFI"
@@ -1940,15 +1850,6 @@
   "ad": "J-Club Club Bandstand",
   "etiket": "1930s,1940s,big band,jazz,swing",
   "ulke": "JP",
-  "tur": "jazz",
-  "grup": "JAZZ"
- },
- {
-  "id": "rb:4e2d17f6-4be7-4f0e-bdc9-fa53b5dc45ef",
-  "mp3": "https://kbem-live.streamguys1.com/kbem_aac",
-  "ad": "Jazz 88 Minneapolis KBEM",
-  "etiket": "jazz,traffic",
-  "ulke": "US",
   "tur": "jazz",
   "grup": "JAZZ"
  },
@@ -2367,15 +2268,6 @@
   "grup": "WORLD & ROOTS"
  },
  {
-  "id": "rb:5b35f143-21f9-49a4-ba85-e587591a15aa",
-  "mp3": "https://stream.promomedios.com:8002/stream",
-  "ad": "FIESTA MEXICANA 92.3 (GDL) - 92.3 FM",
-  "etiket": "92.3 fm,américa,entretenimiento,español,estación,fiesta mexicana,fm,gdl,guadalajara,jalisco,latinoamérica,mexican music,moi merino,music,méxico,música,música en español,música mexicana,música popular mexicana,música regional,música regional mexicana,música tradicional mexicana,norteamérica,radio,regional,regional mexican,regional mexicana,regional music,traditional mexican music",
-  "ulke": "MX",
-  "tur": "latin",
-  "grup": "WORLD & ROOTS"
- },
- {
   "id": "rb:1cbf8d7b-6aa8-45a0-9440-3e349369bc7f",
   "mp3": "https://streams.fluxfm.de/Melides/mp3-320/streams.fluxfm.de/",
   "ad": "FluxFM - Melides Art Radio",
@@ -2427,15 +2319,6 @@
   "etiket": "beautiful music,easy listening,instrumental",
   "ulke": "BE",
   "tur": "instrumental",
-  "grup": "WORLD & ROOTS"
- },
- {
-  "id": "rb:e9fddd49-3ee2-4597-8574-1b7dbd00aac0",
-  "mp3": "https://kexp-mp3-128.streamguys1.com/kexp128.mp3",
-  "ad": "KEXP 90.3 FM Seattle",
-  "etiket": "alternative,eclectic,electronic,folk,indie,jazz,pop,rock",
-  "ulke": "US",
-  "tur": "folk",
   "grup": "WORLD & ROOTS"
  },
  {
@@ -3555,15 +3438,6 @@
   "grup": "RNB & FUNK"
  },
  {
-  "id": "rb:96191df4-0601-11e8-ae97-52543be04c81",
-  "mp3": "https://listen.181fm.com/181-soul_128k.mp3",
-  "ad": "181.FM - Soul",
-  "etiket": "soul,waynesboro",
-  "ulke": "US",
-  "tur": "soul",
-  "grup": "RNB & FUNK"
- },
- {
   "id": "rb:bafbd6cc-65e0-4af7-907b-dd1c425e8917",
   "mp3": "https://discofunk.streamingmedia.it/usa",
   "ad": "70s 80s Disco Funk ModernSoul Boogie",
@@ -3642,24 +3516,6 @@
   "etiket": "classic hip hop,contemporary r&b,disco funk,funk,future funk,hip hop,hip-hop,hip-hop and rap oldies,hiphop,hiphop r&b,jazz funk,neo soul,new jack swing,p-funk,r&b,r&b soul,r&b/urban,retro r&b,soul,soul music",
   "ulke": "US",
   "tur": "",
-  "grup": "RNB & FUNK"
- },
- {
-  "id": "rb:373e8330-81d4-4498-adca-1e2a73ae0908",
-  "mp3": "https://ais-sa2.cdnstream1.com/2447_96.aac",
-  "ad": "Funky Corner Radio (Spain)",
-  "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
-  "ulke": "ES",
-  "tur": "funk",
-  "grup": "RNB & FUNK"
- },
- {
-  "id": "rb:43718921-41a0-48f5-9645-c467d19a5095",
-  "mp3": "https://ais-sa2.cdnstream1.com/2447_192.mp3",
-  "ad": "Funky Corner Radio (USA)",
-  "etiket": "70s,70s disco,80s,black,black music,disco,funk,funky,motown,music,musica,oldies,p-funk,philadelphia,r&b,r'n'b,rare groove,rnb,soul,the sound of philadelphia",
-  "ulke": "US",
-  "tur": "funk",
   "grup": "RNB & FUNK"
  },
  {
@@ -3771,15 +3627,6 @@
   "grup": "RNB & FUNK"
  },
  {
-  "id": "rb:b664bae1-312e-4055-abb6-77be585e2dc6",
-  "mp3": "https://streaming.live365.com/a87815",
-  "ad": "Rise Radio 365",
-  "etiket": "deep house,neo soul,old school hip hop,old school rap,smoothjazz",
-  "ulke": "US",
-  "tur": "",
-  "grup": "RNB & FUNK"
- },
- {
   "id": "rb:c6e6f4b9-dfb7-423c-b416-12d2c34b81a2",
   "mp3": "https://sensihiphop.radioca.st/stream",
   "ad": "senshiphop",
@@ -3868,15 +3715,6 @@
   "ulke": "GB",
   "tur": "dub",
   "grup": "RNB & FUNK"
- },
- {
-  "id": "rb:29de6c98-0a96-4196-8b7f-1aeb32cbb6ca",
-  "mp3": "https://ais-sa2.cdnstream1.com/2347_128.mp3",
-  "ad": "#1 Splash Spa",
-  "etiket": "ambient,ambient and relaxation music,ambiental,chillout,downtempo,easy listening,zen ambient",
-  "ulke": "ES",
-  "tur": "downtempo",
-  "grup": "ELECTRONIC"
  },
  {
   "id": "rb:8cda8d0d-6166-4881-b9e3-db0994ce23be",
@@ -4821,15 +4659,6 @@
   "etiket": "#dj,#edm,bigroom,dance,dance house club  electronic techhouse,dance music,deep house,dj,dj mixes,dj sets,edm,electro,electro house,electronic,festival,hard techno,hiphop,house,progressive house,rap,techhouse,techno,worldclubdome",
   "ulke": "DE",
   "tur": "world",
-  "grup": "RADIOTAPE"
- },
- {
-  "id": "rb:30928802-8f3b-4083-94ee-7cb3c6c41790",
-  "mp3": "https://stream.wqxr.org/wqxr-web?nyprBrowserId=32c67956bf1d5600",
-  "ad": "WQXR 105.9 FM",
-  "etiket": "classical,new york city,new york public radio",
-  "ulke": "US",
-  "tur": "classical",
   "grup": "RADIOTAPE"
  },
  {
