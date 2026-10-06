@@ -1205,6 +1205,29 @@ function bitir(){
     K('tr.json okunabiliyor', false, String(e && e.message || e));
   }
 
+  /* ── REKLAMLI ISTASYON LISTEDE DURMAZ (6 Ekim) ───────────────────
+     Slogan "no ads". OLCUM (41 tur, 516 istasyon): 19 istasyon reklami
+     yayin bilgisinde isaretliyordu; pj karari: hepsi listeden cikar
+     (4 kamu radyosu dahil). Iki kalici kontrol:
+      1) yasak listesindeki hicbir adres radyo.json'da yok (elle geri
+         eklenirse ya da hasat getirirse kapi kirmizi),
+      2) reklam kurali reklami yakaliyor ve MUZIGE/JINGLE'A dokunmuyor
+         (kelime avi degil: 'Jingle Bell Rock', 'Commercial Club Crew'). */
+  try{
+    const rd = JSON.parse(fs.readFileSync(path.join(KOK, 'radyo.json'), 'utf8'));
+    const ys = JSON.parse(fs.readFileSync(path.join(KOK, 'araclar', 'radyo_yasak.json'), 'utf8'));
+    const yasakAdres = new Set(ys.map(x=>x.mp3));
+    const sizan = rd.filter(x=>yasakAdres.has(x.mp3)).map(x=>x.ad);
+    const reklamSay = ys.filter(x=>/reklam/.test(x.sebep || '')).length;
+    K('Yasak listesindeki hicbir istasyon radyo.json\'da yok', sizan.length === 0 && reklamSay >= 19,
+      rd.length + ' istasyon, ' + ys.length + ' yasak (' + reklamSay + ' reklam)' + (sizan.length ? ' · SIZAN: ' + sizan.slice(0,5).join(', ') : ''));
+    const sn = require('child_process').spawnSync('python3', [path.join(KOK, 'araclar', 'radyo_reklam.py'), '--sinama'], {encoding:'utf8'});
+    K('Reklam kurali reklami yakaliyor, muzige ve jingle\'a dokunmuyor', sn.status === 0,
+      String(sn.stdout || sn.stderr || '').trim().split('\n').join(' · ').slice(0, 200));
+  }catch(e){
+    K('Yasak listesindeki hicbir istasyon radyo.json\'da yok', false, String(e && e.message || e));
+  }
+
   /* ── GIZLILIK METNI SES KAYNAKLARINI SAYIYOR MU (5 Ekim) ─────────
      OLCUM: privacy.html "Servers ORBITAPE talks to" tablosunda arsiv
      icin yalniz archive.org yaziyordu; oysa acilis havuzundaki
