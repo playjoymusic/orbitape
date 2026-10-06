@@ -19,8 +19,8 @@ oynanan efektler. Hesap yok, reklam yok, takip yok, çerez yok.
 
 | Dünya | Kaynak |
 |---|---|
-| **RADIOTAPE** | Canlı istasyonlar (`radyo.json` beyaz listesi + yedek: radio-browser) — 11 Eylül: **559 istasyon, on bir raf** |
-| **ORBITAPE** | Arşiv kayıtları (`earth.json` + `earth_buyuk.json`) — 22.903 kayıt |
+| **RADIOTAPE** | Canlı istasyonlar (`radyo.json` beyaz listesi + yedek: radio-browser) — 6 Ekim: **520 istasyon, 68 ülke, on bir raf** (reklam işaretleyen 19 istasyon çıkarıldı) |
+| **ORBITAPE** | Arşiv kayıtları (`earth.json` + `earth_buyuk.json` 35.834 + `yeni/` 306.244) — 6 Ekim: **342.078 kayıt**, on raf |
 
 Kaldırılanlar: Audius (lisans bilgisi döndürmüyordu), Jamendo (çalışmıyordu,
 `client_id` taşıyordu), PLAYJOY / `liste.json` (kendi kayıtlarımız — dağıtımı
@@ -46,12 +46,11 @@ açıklaması Türkçe karakter içeremez.
 
 ### 2. Lisansı tanınmayan hiçbir şey çalmaz
 
-Kural tek: `lisansSerbest()`. Üç yerde uygulanıyor:
+Kural tek: `lisansSerbest()`. İki yerde uygulanıyor (üçüncüsü `jamendoCek()` idi; Jamendo kaldırılınca o da gitti):
 
 | Nerede | Ne zaman |
 |---|---|
 | `araclar/lisans_filtre.py` | hasat havuza katılırken |
-| `jamendoCek()` | Jamendo'dan parça çekilirken |
 | `cal()` | çalmadan hemen önce — **son kapı** |
 
 Son kapı diğerlerinin arkasında duruyor: yeni bir kaynak eklenip süzgeci

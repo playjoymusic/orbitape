@@ -1228,6 +1228,36 @@ function bitir(){
     K('Yasak listesindeki hicbir istasyon radyo.json\'da yok', false, String(e && e.message || e));
   }
 
+  /* ── ACIKLAMADAKI SAYILAR GERCEGI ASMIYOR (6 Ekim) ───────────────
+     5 Ekim denetimi: aciklama "eleven genres" diyor, arsivden hic
+     soz etmiyordu; README/CLAUDE.md "22.903 kayit, 559 istasyon"
+     diyordu (gercek 342.078 / 520). Aciklama artik sayi tasiyor
+     ("Over 500 ...", "over 340,000 ..."): liste ya da arsiv bu
+     sayilarin ALTINA duserse kapi kirmizi yanar, metin yalan
+     soylemeden once duzeltilir. Uc meta + manifest ayni sayilari
+     tasimali. */
+  try{
+    const ix = fs.readFileSync(path.join(KOK, 'index.html'), 'utf8');
+    const mf = JSON.parse(fs.readFileSync(path.join(KOK, 'manifest.json'), 'utf8')).description || '';
+    const metalar = (ix.match(/<meta (?:name="description"|property="og:description"|name="twitter:description") content="([^"]+)"/g) || [])
+                      .map(x=>x.replace(/^.*content="/, '').replace(/"$/, ''));
+    const sayilar = t=>{ const i = /Over ([\d,]+) live radio/i.exec(t), k = /over ([\d,]+) public-domain/i.exec(t);
+      return { ist: i ? +i[1].replace(/,/g,'') : -1, kay: k ? +k[1].replace(/,/g,'') : -1 }; };
+    const istGercek = JSON.parse(fs.readFileSync(path.join(KOK, 'radyo.json'), 'utf8')).length;
+    let kayGercek = 0;
+    const ekle = f=>{ const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+      kayGercek += Array.isArray(d) ? d.length : Object.values(d).reduce((a,v)=>a + (Array.isArray(v) ? v.length : 0), 0); };
+    ekle(path.join(KOK, 'earth.json')); ekle(path.join(KOK, 'earth_buyuk.json'));
+    fs.readdirSync(path.join(KOK, 'yeni')).filter(f=>/^yeni_\d+\.json$/.test(f)).forEach(f=>ekle(path.join(KOK, 'yeni', f)));
+    const hepsi = metalar.concat([mf]).map(sayilar);
+    const tutarli = metalar.length === 3 && hepsi.every(x=>x.ist === hepsi[0].ist && x.kay === hepsi[0].kay && x.ist > 0 && x.kay > 0);
+    K('Aciklamadaki sayilar gercegi asmiyor (uc meta + manifest ayni)',
+      tutarli && hepsi[0].ist <= istGercek && hepsi[0].kay <= kayGercek,
+      'aciklama: ' + hepsi[0].ist + ' istasyon / ' + hepsi[0].kay + ' kayit · gercek: ' + istGercek + ' / ' + kayGercek);
+  }catch(e){
+    K('Aciklamadaki sayilar gercegi asmiyor (uc meta + manifest ayni)', false, String(e && e.message || e));
+  }
+
   /* ── GIZLILIK METNI SES KAYNAKLARINI SAYIYOR MU (5 Ekim) ─────────
      OLCUM: privacy.html "Servers ORBITAPE talks to" tablosunda arsiv
      icin yalniz archive.org yaziyordu; oysa acilis havuzundaki
