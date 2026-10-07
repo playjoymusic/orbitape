@@ -539,15 +539,12 @@ const CASUS = ()=>{
       const tut = document.getElementById('ayarTut');
       tut.click(); await b2(340);
       const acik = document.body.classList.contains('ayar-acik');
-      /* Tema izgarasini ac ve bir tema sec -- gercek tiklamayla. */
-      document.querySelector('#ayar .sat[data-ayar="tema"]').click(); await b2(200);
-      const hedef = TEMALAR.findIndex(t=>t.ad==='PLANETARIUM');
-      document.querySelector('#temaIzgara .tm[data-i="'+hedef+'"]').click(); await b2(200);
-      const temaSecildi = AYAR.tema === hedef;
-      const zemin = document.body.style.getPropertyValue('--zem1').trim();
-      /* Kilit ve yildiz satirlari. */
-      document.querySelector('#ayar .sat[data-ayar="temaKilit"]').click(); await b2(140);
-      const kilit = AYAR.temaKilit;
+      /* 7 EKIM: THEME / LOCK THEME satirlari kalkti; yerine WHEEL anahtari -- gercek tiklamayla. */
+      const caEski = AYAR.carkAcik === true;
+      document.querySelector('#ayar .sat[data-ayar="carkAcik"]').click(); await b2(200);
+      const temaSecildi = AYAR.carkAcik === !caEski;
+      const zemin = String(AYAR.carkAcik);
+      const kilit = true;
       const yl = document.querySelector('#ayar .sat[data-ayar="yildiz"]');
       const oncekiY = AYAR.yildiz;
       yl.click(); await b2(140);
@@ -561,12 +558,11 @@ const CASUS = ()=>{
                tikKapali, kapali, depo: localStorage.getItem('orbitape.ayar') || '' };
     });
     K('[Y6] Panel acilip kapaniyor', ay.acik===true && ay.kapali===true, 'tutamakla');
-    K('[Y6] Izgaradan tema seciliyor', ay.temaSecildi===true && ay.zemin!=='',
-       'zemin ' + (ay.zemin||'(bos)'));
-    K('[Y6] Kilit ve yildiz satirlari calisiyor',
-       ay.kilit===true && ay.yildizDegisti===true, 'yildiz: ' + ay.yildizEtiket);
+    K('[Y6] WHEEL anahtari tiklayinca degisiyor', ay.temaSecildi===true, 'carkAcik ' + ay.zemin);
+    K('[Y6] Yildiz satiri calisiyor',
+       ay.yildizDegisti===true, 'yildiz: ' + ay.yildizEtiket);
     K('[Y6] Tik kapatilabiliyor', ay.tikKapali===true, 'CLICK OFF');
-    K('[Y6] Ayarlar depoya yaziliyor', /"tema"/.test(ay.depo) && /"yildiz"/.test(ay.depo),
+    K('[Y6] Ayarlar depoya yaziliyor', /"carkAcik"/.test(ay.depo) && /"yildiz"/.test(ay.depo),
        ay.depo.slice(0,72));
     await supur(p2, 'Y6 ayarlar');
   }
@@ -578,16 +574,16 @@ const CASUS = ()=>{
      ══════════════════════════════════════════════════════════════ */
   {
     const oncesi = await p2.evaluate(()=>({
-      tema: AYAR.tema, kilit: AYAR.temaKilit, yildiz: AYAR.yildiz,
+      tema: AYAR.carkAcik, kilit: false, yildiz: AYAR.yildiz,
       tik: AYAR.tikSes, fav: FAV.length
     }));
     await p2.reload({ waitUntil: 'load' });
     await bek(2600);
     const sonrasi = await p2.evaluate(()=>({
-      tema: AYAR.tema, kilit: AYAR.temaKilit, yildiz: AYAR.yildiz,
+      tema: AYAR.carkAcik, kilit: false, yildiz: AYAR.yildiz,
       tik: AYAR.tikSes, fav: FAV.length,
-      temaAd: (TEMALAR[AYAR.tema]||{}).ad,
-      zemin: document.body.style.getPropertyValue('--zem1').trim(),
+      temaAd: 'WHEEL ' + (AYAR.carkAcik ? 'ON' : 'OFF'),
+      zemin: 'x',
       raf: AKTIF_AILE, kanal: mod,
       /* OLCU 'ilk calindi mi' DEGIL, 'ses duyuluyor mu'. Uygulama
          acilista bir raf secip kaynagi hazirliyor (_ilkCalindi true
@@ -608,15 +604,12 @@ const CASUS = ()=>{
         return document.getElementById('ses').paused===false || g('karsilama') || g('tur');
       })()
     }));
-    K('[Y7] Tema yeniden acilista duruyor',
-       sonrasi.tema===oncesi.tema && sonrasi.kilit===oncesi.kilit,
-       sonrasi.temaAd + (sonrasi.kilit ? ' (kilitli)' : ''));
+    K('[Y7] WHEEL ayari yeniden acilista duruyor',
+       sonrasi.tema===oncesi.tema, sonrasi.temaAd);
     K('[Y7] Yildiz kademesi duruyor', sonrasi.yildiz===oncesi.yildiz,
        'kademe ' + sonrasi.yildiz);
     K('[Y7] Tik ayari duruyor', sonrasi.tik===oncesi.tik, 'CLICK ' + (sonrasi.tik?'ON':'OFF'));
     K('[Y7] Favoriler duruyor', sonrasi.fav===oncesi.fav, sonrasi.fav + ' kayit');
-    K('[Y7] Tema zemini hemen uygulaniyor', sonrasi.zemin!=='',
-       'acilista ' + (sonrasi.zemin||'(bos)'));
     /* Ve uygulama yine bilinen yerden basliyor: raf hatirlanmiyor,
        kanal radyo, hicbir sey kendiliginden calmiyor. */
     K('[Y7] Yeniden acilis bilinen yerden',

@@ -642,6 +642,10 @@ await sayfa.goto(ADRES);
         if(typeof klavyeKipi === 'function') klavyeKipi(!!w);
       }, en);
 
+      /* 7 EKIM: cark artik YALNIZ OFF skin + WHEEL acikken var (varsayilan kapali); bu olcum carkin
+         tuvalinin diskine hizalandigini sorguluyor, o yuzden once WHEEL aciliyor (sayfa bu blokla kapanir). */
+      await sayfa.evaluate(()=>{ try{ AYAR.carkAcik = true; AYAR.deri = 0; merkezUygula(); }catch(e){} });
+      await sayfa.waitForTimeout(1500);
       await kur('240px');
       await sayfa.waitForTimeout(900);
       const acik = await hiza();
