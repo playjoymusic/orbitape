@@ -265,41 +265,13 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
      Panelde merkezi ELLE seciyorsa o bir KARAR: o oturumda bir daha
      odunc alinmiyor, secim oldugu gibi kaliyor. */
   function merkezOdunc(){
+    /* 7 EKIM: ODUNC/ELLE SECIM MANTIGI KALDIRILDI (denendi, geri alindi). pj: "skinsler halka
+       olmuyor, circle olmali; default haric hepsi hep circle; skins panelinden halka/wheel
+       degistirme kisayolu kalksin." Kural artik tek yerde: index.html merkezUygula() -- skin
+       aciksa duz disk, OFF'ta halka (+ ayarlardaki WHEEL aciksa cark). Burasi yalniz tetikliyor. */
     try{
-      if(typeof AYAR === 'undefined' || !AYAR) return;
-      /* ELLE SECIM DAMGASI OFF'U BAGLAMIYOR: asagidaki OFF dali her
-         zaman calisiyor, damga yalnizca DERI tarafindaki oduncu
-         durduruyor. */
-      if(_merkezElle && (AYAR.deri|0) > 0) return;
-      const yaz = ()=>{
-        try{ ayarKaydet(); }catch(e){ yut(e); }
-        try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
-      };
-      if((AYAR.deri|0) > 0){
-        if(AYAR.merkez !== 'yuvarlak'){
-          _merkezOnce = AYAR.merkez;               // kapaninca geri verilecek
-          AYAR.merkez = 'yuvarlak';
-          yaz();
-        }
-      }else{
-        /* ── OFF HER ZAMAN CARK (10 Eylul gece) ──────────────────
-           Kullanicinin sozu: "skinslerde oklarla gezip ya da basta
-           bir seye basip tekrar OFF'a basinca cark gidiyor. OFF'a
-           basinca hep ilk acilan carkli mood olacak; kisi isterse
-           degistirir."
-           Eski hal iki yerde birden sessiz kaliyordu: panelde bir
-           kere DISC/RING'e basildiysa (_merkezElle) odunc hic geri
-           verilmiyordu, ve galeri zaten 'yuvarlak' ikeneken acildiysa
-           geri verilecek bir sey (_merkezOnce) yoktu. Iki durumda da
-           OFF'a donen kullanici carkini bulamiyordu.
-           OFF uygulamanin KENDISI: orada varsayilan carktir, oduncun
-           ya da onceki secimin sozu gecmez. Elle secim damgasi da
-           siliniyor -- bir sonraki deride odunc yeniden calissin. */
-        if(AYAR.merkez !== 'cark'){
-          AYAR.merkez = 'cark'; merkezKalici('cark'); yaz();
-        }
-        _merkezOnce = null; _merkezElle = false;
-      }
+      try{ ayarKaydet(); }catch(e){ yut(e); }
+      try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
     }catch(e){ yut(e); }
   }
   /* 1 EKIM (kullanici: "orbitape tarafinda skins kisayolunda cark
@@ -361,8 +333,8 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
      halkali olsun" karari bunun ozel hali, tersi degil. */
   function diskYaz(disk, d){
     try{
-      const _mrk = (typeof AYAR !== 'undefined' && AYAR.merkez) || 'cark';
-      const halkaAcik = _mrk === 'halka';
+      /* 7 EKIM: skin onizlemesi HEP duz disk (skin aciksa merkez zaten disk). */
+      const halkaAcik = false;
       const resim = (d.cizim && halkaOnbellek[d.cizim]) || '';
       if(halkaAcik){
         /* GOVDE YOK, HALKA VAR. Bos birakmak yanlis olurdu: kullanici
@@ -566,15 +538,8 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     bas.appendChild(baslik);
     bas.appendChild(adYazi);
     bas.appendChild(tus('ileri', 'Next skin', '▶', ()=>adim(1)));
-    /* RING ANAHTARI (3 Eylul, kullanici): "ring only hem adi ring
-       olsun hem de o skins menusunde olsun ac kapa olsun. ayarlarda
-       kalabilir." Ayni ayar (AYAR.halka), ayni islev
-       (halkaDegistir); iki yerden de kumanda ediliyor. */
-    halkaTus = tus('halka', 'Rings only', T('RING'), ()=>{
-      try{ if(typeof window.halkaDegistir === 'function') window.halkaDegistir(); }catch(e){ yut(e); }
-      halkaIsaret(); diskleriTazele();
-    });
-    bas.appendChild(halkaTus);
+    /* 7 EKIM: RING dugmesi KALDIRILDI (pj: "skins panelinden halka/wheel degistirme kisayolunu
+       kaldir"). Halka yalniz OFF skin'de var; cark ayarlardaki WHEEL anahtariyla acilir/kapanir. */
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
        (degistir). ▦ seritte kaliyor: tam galeriye donus. */
     /* Yanina ALL yazisi da konmustu; kullanici ekranda o kelimeyi
@@ -591,7 +556,6 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        "minimize modunda halka, yuvarlak, cark ve faz olsun ...
        diger secenekler de ordan degissin ki o an gorelim etkisini."
        Serit kipinde ekranin alti acik: secim aninda goruluyor. */
-    const mrk = document.createElement('div'); mrk.className = 'dg-merkez';
     /* ── 'PHASE' -> 'FREQUENCY' (8 Eylul) ────────────────────────
        Kullanicinin sozu: "faz dedigimizi frekans yap, adini
        ingilizce."
@@ -603,21 +567,11 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        satirinda uc secenek kaldi. AYAR.merkez = 'faz' anahtari
        kodda duruyor (eski depoda kayitli olabilir, merkezUygula
        onu hala tanir); yalnizca bu pencereden SECILEMIYOR. */
-    merkezTuslari = [['cark','WHEEL'],['halka','RING'],['yuvarlak','DISC']].map(([k, ad])=>{
-      const t = tus('mrk', ad, T(ad), ()=>{
-        _merkezOnce = null;                        // elle secildi: odunc degil karar
-        _merkezElle = true;                        // bu oturumda bir daha odunc alinmiyor
-        try{ AYAR.merkez = k; merkezKalici(k); ayarKaydet(); }catch(e){ yut(e); }
-        try{ if(typeof window.merkezUygula === 'function') window.merkezUygula(); }catch(e){ yut(e); }
-        merkezIsaret(); diskleriTazele();
-      });
-      t.dataset.merkez = k; mrk.appendChild(t); return t;
-    });
+    /* 7 EKIM: WHEEL / RING / DISC secici KALDIRILDI (bkz. merkezOdunc). */
     anlamYazi = document.createElement('span'); anlamYazi.className = 'dg-anlam';
     anlamYazi.setAttribute('aria-live', 'polite');
     bas.appendChild(anlamYazi);
     kap.appendChild(el('i', 'dg-tutamak'));
-    bas.appendChild(mrk);
     kap.appendChild(bas);
     izg = document.createElement('div'); izg.className = 'dg-izgara';
     izg.appendChild(kareYap(0, null));

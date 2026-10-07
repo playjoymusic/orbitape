@@ -2547,7 +2547,13 @@
      arasi parmagin konumuyla (--uck-p) oklab uzayinda karisir: ara
      tonlar algisal olarak esit aralikli, sicrama yok. Etkin kontrast
      (kutu %66 opak): ORBITAPE 5,4 / RADIOTAPE 5,8. */
-  :root{ --uck-h:8rem; --uck-w:18px; --uck-d:12px;
+  /* 7 EKIM (pj: "hicbiri eski boyle degildi" -> 20 Eylul karesi: koyu pill + yaninda yazi).
+     2 Ekim'deki ince/ici bos cubuk (128x18, yazi ustte, topuz saga) DENENDI, GERI ALINDI:
+     pj eski sekli istedi. Eski sekil: 46x24 pill, 18 px topuz, yazi pill'in SAGINDA ve
+     GIDILECEK yeri soyluyor (radyodayken ORBITAPE, arsivdeyken RADIOTAPE); topuz radyoda
+     solda, arsivde sagda. Renk mekanizmasi (--sw-tema: raf/deri/istasyon rengi, kontrast
+     hedefli) ve surukleme (--uck-p) AYNI kaldi: yalniz sekil geri geldi. */
+  :root{ --uck-h:46px; --uck-w:24px; --uck-d:18px;
     --sw-orbit:rgb(190,196,220); --sw-radio:rgb(53,224,216); }
   /* --sw-mix BURADA, :root'ta DEGIL: --uck-p switch'in KENDI uzerinde
      yazili; :root'ta var(--uck-p) hep yedek degere (1) cozulurdu ve renk
@@ -2564,8 +2570,8 @@
   #kipKisayol{
     /* column-reverse: DOM'da yol once geliyor ama ISIM ustte
        olmali; olculdu: duz column'da isimler yolun altinda kaliyordu. */
-    position:fixed;z-index:96;display:flex;flex-direction:column-reverse;
-    align-items:flex-start;gap:8px;
+    position:fixed;z-index:96;display:flex;flex-direction:row;
+    align-items:center;gap:9px;height:var(--uck-w);
     left:calc(var(--kx) + env(safe-area-inset-left, 0px));  /* kenar 16 px */
     bottom:calc(116px + var(--dip-pay));
     -webkit-tap-highlight-color:transparent;cursor:pointer;
@@ -2590,20 +2596,15 @@
      oluk hissi veriyor (derin ama plastik degil). Topuzun yeri ve
      rengi --uck-p ile SUREKLI degisir (0 = ORBITAPE sol, 1 = RADIOTAPE
      sag); JS suruklerken yazar. color-mix yoksa eski duz renk kalir. */
-  #kipKisayol .uck-yol{position:relative;flex:0 0 auto;
+  #kipKisayol .uck-yol{position:relative;flex:0 0 auto;box-sizing:border-box;
     width:var(--uck-h);height:var(--uck-w);border-radius:calc(var(--uck-w)/2);
-    background:linear-gradient(90deg,var(--m1,#35e0d8) 0%,var(--m3,#86dcd0) 100%);
-    /* 2 EKIM (pj: "switch'i incelt, cok cizgi var, ortasi dolu olmasin"): ici BOS, tek ince
-       kontur (rengi konuma gore karisan --sw-mix); ic golge/parlak kenar/dolgu yok. */
-    background:transparent;
-    border:1.5px solid color-mix(in oklab,var(--sw-mix) 80%,transparent);box-shadow:none;}
-  /* Gorunmez dokunma alani: yol 22 px (ic 20) + 20 ust + 4 alt = 44 px. ALT 4 px: oynatma
-     tuslari (geri/dur/ileri) yolun 8 px altinda basliyor, tasmamali (ilk
-     surum 11 px alta uzandi ve tuslarin ust kismini calarak
-     'Dokunma alani parmak icin yeterli' kontrolunu dusurdu). */
-  #kipKisayol .uck-yol::before{content:"";position:absolute;inset:-24px -6px -5px;}
+    /* Dolu, koyu pill: rengin %20'si zemine karisir, kontur %60. Renk raf/deri/istasyondan
+       (--sw-tema); yazinin ve topuzun rengiyle AYNI degisken, yani uc parca hep tutarli. */
+    background:color-mix(in oklab,var(--sw-mix) 20%,rgba(0,0,0,.55));
+    border:1px solid color-mix(in oklab,var(--sw-mix) 60%,transparent);box-shadow:none;}
+  #kipKisayol .uck-yol::before{content:"";position:absolute;inset:-15px -6px -5px;}
   #kipKisayol .uck-topuz{position:absolute;top:50%;transform:translateY(-50%);
-    left:calc(2px + var(--uck-p) * (var(--uck-h) - var(--uck-d) - 6px));
+    left:calc(2px + (1 - var(--uck-p)) * (var(--uck-h) - var(--uck-d) - 6px));
     width:var(--uck-d);height:var(--uck-d);
     border-radius:50%;background:var(--sw-mix);box-shadow:none;}
   /* Uc konum: yol GENISLIGI - topuz capi kadar oynar; calc()
@@ -2613,7 +2614,9 @@
   /* ISIMLER TEK YERDE: yalniz secili gorunur ("hangi modtaysa o
      yanar... o silinecek, digeri yazacak"); basili tutulunca
      (.uck-acik) ucu de gorunur. Yazi tipi markanin diliyle ayni. */
-  #kipKisayol .uck-adlar{position:relative;display:block;width:100%;height:0;}
+  /* Yazi pill'in SAGINDA; iki isim ust uste, genislik en uzun isme (RADIOTAPE) yeter. */
+  #kipKisayol .uck-adlar{position:relative;display:block;flex:0 0 auto;
+    width:calc(9 * 0.9 * 0.75rem + 6px);height:var(--uck-w);}
   /* REHBER SATIRLARI (olculdu: ".sat" icindeki 27 ogeden biri --
      "ALL SOUNDS OFF", "SEARCH", "CLICK", "WHEEL ..." gibi yazilar
      1,2 kontrastta kalip gorunmuyordu). */
@@ -2681,23 +2684,21 @@
      ekler; padding-left ayni miktari soldan vererek GORUNEN yazi
      ortalanir (yalniz kutu degil). */
   #kipKisayol .uck-ad{
-    position:absolute;left:0;right:0;bottom:8px;text-align:center;
+    position:absolute;left:0;top:50%;transform:translateY(-50%);text-align:left;
     font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:.94rem;font-weight:700;letter-spacing:.26em;line-height:1;
-    padding-left:.26em;box-sizing:border-box;white-space:nowrap;
+    font-size:.75rem;font-weight:700;letter-spacing:.26em;line-height:1;
+    box-sizing:border-box;white-space:nowrap;
     --kc:var(--sw-mix);color:var(--kc);
     /* 5 EKIM (pj: "Mac'te sol alt ORBITAPE yazisinda parlaklik var, olmasin"):
-       18 px'lik renkli hale kaldirildi; yalniz ayirici koyu golge kaldi. */
+       renkli hale yok; yalniz ayirici koyu golge. */
     text-shadow:0 1px 0 rgba(0,0,0,.42),0 2px 0 rgba(0,0,0,.26),0 5px 9px rgba(0,0,0,.48);
     opacity:0;}
   /* Acik deride koyu golge yazinin altinda kir gibi duruyordu (olcum: SKY, krem zemin). */
   body.deri-acik #kipKisayol .uck-ad{text-shadow:none;}
-  #kipKisayol .uck-ad[data-kip="orbit"]{
-    opacity:clamp(0,calc((0.5 - var(--uck-p)) * 4),1);
-    transform:translateX(calc(clamp(0,calc((var(--uck-p) - 0.25) * 4),1) * -8px));}
-  #kipKisayol .uck-ad[data-kip="radio"]{
-    opacity:clamp(0,calc((var(--uck-p) - 0.5) * 4),1);
-    transform:translateX(calc((1 - clamp(0,calc((var(--uck-p) - 0.5) * 4),1)) * 8px));}
+  /* GIDILECEK YERI SOYLER (20 Eylul'daki gibi): radyodayken (p=1) ORBITAPE, arsivdeyken (p=0)
+     RADIOTAPE. Konuma bagli: surukleme sirasinda biri soner digeri gelir. */
+  #kipKisayol .uck-ad[data-kip="orbit"]{opacity:clamp(0,calc((var(--uck-p) - 0.5) * 4),1);}
+  #kipKisayol .uck-ad[data-kip="radio"]{opacity:clamp(0,calc((0.5 - var(--uck-p)) * 4),1);}
   /* (Eski "secili isim gorunur / basiliyken ucu de gorunur" kurallari
      KALKTI: gorunurluk artik yukaridaki --uck-p formulleriyle.) */
   @media (prefers-reduced-motion: reduce){
@@ -4860,18 +4861,8 @@
          hemen altinda kalmali: acilinca satirin altindan aciliyorlar,
          araya baska satir girerse panel yanlis yerden buyur. -->
     <h5>DISPLAY</h5>
-    <div class="sat islem" data-ayar="tema" role="button" tabindex="-1"
-         aria-expanded="false" aria-controls="temaIzgara">
-      <span>THEME</span><span class="durum">AUTO</span></div>
-    <!-- Izgara calisma aninda TEMALAR tablosundan uretiliyor: tablo
-         tek kaynak, buraya elle otuz bes kutu yazilmiyor. -->
-    <div id="temaIzgara" role="listbox" aria-label="Theme" hidden></div>
-    <!-- KILIT: acikken zemin HIC degismez. Kapaliyken tema ile rafin
-         zemini karisir, yani raf degistikce zemin de hafifce doner.
-         Iki durumda da halkalar rafin renginde -- hangi odada
-         oldugun kaybolmuyor. -->
-    <div class="sat" data-ayar="temaKilit" role="switch" tabindex="-1">
-      <span>LOCK THEME</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- 7 EKIM: THEME, LOCK THEME ve LOCK SKIN satirlari KALDIRILDI (pj: "gereksiz, sil").
+         Tema hep AUTO, kilitler hep kapali (bkz. AYAR yukleme). -->
     <div class="sat islem" data-ayar="deri" role="button" tabindex="-1"
          aria-expanded="false" aria-controls="deriIzgara">
       <span>SKINS</span><span class="durum">OFF</span></div>
@@ -4888,13 +4879,6 @@
          (bkz. AYAR yuklenirken deriRastgele/deriTorba notu). -->
     <div class="sat" data-ayar="deriRastgele" role="switch" tabindex="-1">
       <span>RANDOM SKIN ON OPEN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- ── LOCK SKIN (20 Eylul) ──
-         "LOCK THEME" ile ayni desen. KAPALIYKEN (varsayilan):
-         ORBITAPE'e gecince deri her zaman OFF/carka doner, RADIOTAPE
-         kendi derisini hatirlar (bkz. moodUygula). ACIKKEN: deri
-         eskisi gibi tek ve sabit, iki dunya da ayni deriyi paylasir. -->
-    <div class="sat" data-ayar="deriKilit" role="switch" tabindex="-1">
-      <span>LOCK SKIN</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ALL BLACK: zemin her rafta simsiyah. Tema secili olsa bile
          siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
@@ -4931,14 +4915,6 @@
          yeniden duzenlemenin icindeki KESIN karar). Iki satir da
          DAVRANIS olarak DEGISMEDI, yalnizca yeri degisti. -->
     <h5>RING</h5>
-    <!-- ── RING (eski adi RINGS ONLY; 3 Eylul, kullanici: "adi ring
-         olsun") ──
-         Deri govdesi (ortadaki yuvarlak malzeme) kalkiyor, geriye
-         zeminin uzerinde yalnizca uygulamanin kendi organik halkasi
-         kaliyor. Yalnizca deri acikken anlamli: deri kapaliyken
-         zaten oyle duruyor. -->
-    <div class="sat" data-ayar="halka" role="switch" tabindex="-1">
-      <span>RING</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
     <!-- ── HALKA BOYU: BES KADEME ──
          Kullanicinin sozu: "dikkatsiz sert cevrilince ortadaki
          halkalara dokunuyor parmak... isteyen halkayi buyutur
@@ -4951,14 +4927,14 @@
          oldugu yerde kalirdi. -->
     <div class="sat islem" data-ayar="halkaBoy" role="button" tabindex="-1">
       <span>RING SIZE</span><span class="durum">MEDIUM</span></div>
-    <!-- ── CENTER: RING / WHEEL (29 Eylul) ──
-         Kullanicinin sozu: "isteyen yukardan cark'i secer
-         skins'lerden, ama secince gelsin ... secimler bir sonraki
-         giriste ayni sekilde devam etmeli. devamlilik". Once cark
-         VARSAYILANDI ve uc ayri yer secimi eziyordu; simdi tek satir,
-         iki secenek, secim localStorage'da kalici (AYAR.merkez). -->
-    <div class="sat islem" data-ayar="merkez" role="button" tabindex="-1">
-      <span>CENTER</span><span class="durum">RING</span></div>
+    <!-- ── WHEEL (7 Ekim) ──
+         pj: "OFF skin'de cark ac/kapa, kalici, iki kipte de gecerli; skins'ten halka/cark
+         kisayolu kalksin; diger skin'ler hep duz disk." Eski CENTER (RING/WHEEL secimi) ve RING
+         anahtari BU TEK anahtarla degisti. Halka OFF skin'de hep var; bu anahtar yalniz carki
+         acar/kapar. Kalici (AYAR.carkAcik), RADIOTAPE ve ORBITAPE'te ortak, varsayilan KAPALI.
+         Bir skin aciksa etkisi yok: skin'lerde merkez hep duz disk (bkz. merkezUygula). -->
+    <div class="sat" data-ayar="carkAcik" role="switch" tabindex="-1">
+      <span>WHEEL</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
 
     <!-- ── PLAYBACK: SES CIHAZDAN NASIL CIKIYOR ──
          Tek satirlik bir bolum ama kendi sorusu var ve o soru ne
@@ -5493,7 +5469,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.06';
+  var ORB_SURUM = '2026.10.07';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -7352,7 +7328,17 @@
          zorlamayi eziyordu -- olculdu: ORBITAPE'de cark yine acik
          kaldi. O yuzden karar tek yerde: mood'da ve kullanici bu
          oturumda secim yapmadiysa HALKA gosterilir. */
-      const m = zorlama || (AYAR.merkez || 'yuvarlak');
+      /* 7 EKIM (pj): "halka OFF haric digerlerinde olmasin, skinsler halka olmuyor, circle olmali;
+         default haric digerleri hep circle". Ve: "OFF'ta cark ac/kapa ayarlardan, kalici, iki kipte
+         de gecerli". KURAL TEK YERDE, KAYITLI KIP MERKEZLERINDEN (radyoMerkez/merkezOrb) BAGIMSIZ:
+           skin acik (AYAR.deri > 0)  -> her zaman duz disk ('yuvarlak')
+           OFF skin                   -> halka; ayarlardaki WHEEL aciksa halka + cark
+         Eskiden skins galerisinde WHEEL/RING/DISC kisayolu ve ayarlarda CENTER/RING vardi; secim
+         kip basina ayri kayitliydi ve birbirini eziyordu (kip degisince cark kayboluyordu). Bu
+         DENENDI, GERI ALINDI: tek ayar (carkAcik), iki kipte ortak. AYAR.merkez bu kuralin AYNASI:
+         baska kodlar (galeri onizlemesi vb.) onu hala okuyor. */
+      const m = zorlama || ((AYAR.deri|0) > 0 ? 'yuvarlak' : (AYAR.carkAcik ? 'cark' : 'halka'));
+      AYAR.merkez = m;
       document.body.classList.toggle('merkez-cark', m === 'cark');
       document.body.classList.toggle('merkez-faz', m === 'faz');
       /* halka/yuvarlak ayrimi: govde sinifi + RING anahtari. */
@@ -12525,7 +12511,7 @@
        merkezOrb  : ORBITAPE'inki (varsayılan HALKA = çarksız).
        Tek 'merkez' alanı varken biri diğerini eziyordu: radyoya
        dönünce çark kayboluyordu. */
-    deriKilit:false, radyoDeri:0, radyoMerkez:'cark',
+    deriKilit:false, radyoDeri:0, radyoMerkez:'cark', carkAcik:false,
     merkezOrb:'yuvarlak',
     /* SEMBOL SPIN (17 Eylul): varsayilan KAPALI. Acikken sag ustteki
        3 sembol eski soyut oyunu oynar (rastgele donme + ucluk
@@ -12706,10 +12692,12 @@
          Deger DOGRULANARAK aliniyor -- depodaki sayi tablonun disina
          cikmis olabilir (tema silinmis ya da surum eskimis olabilir)
          ve dogrudan yazmak tanimsiz bir temaya isaret ederdi. */
-      if(typeof _a.tema === 'number' && _a.tema >= 0
-         && _a.tema < TEMALAR.length) AYAR.tema = _a.tema|0;
-      if(_a.temaKilit === true) AYAR.temaKilit = true;
-      if(_a.deriKilit === true) AYAR.deriKilit = true;
+      /* 7 EKIM: THEME, LOCK THEME ve LOCK SKIN satirlari ayarlardan KALDIRILDI (pj: "gereksiz").
+         Satir yokken depoda kalmis eski bir secim gorunmez ama etkili olurdu; o yuzden artik
+         OKUNMUYOR: tema hep AUTO, iki kilit hep kapali (eski varsayilanlar). */
+      AYAR.tema = 0; AYAR.temaKilit = false; AYAR.deriKilit = false;
+      /* WHEEL (ayarlar): OFF skin'de cark acik/kapali, kalici, iki kipte ortak. Varsayilan KAPALI. */
+      if(_a.carkAcik === true) AYAR.carkAcik = true;
       if(typeof _a.radyoDeri === 'number' && _a.radyoDeri >= 0
          && _a.radyoDeri <= 148) AYAR.radyoDeri = _a.radyoDeri|0;
       if(_a.radyoMerkez === 'cark' || _a.radyoMerkez === 'faz'
@@ -13900,7 +13888,6 @@
   /* ORTADAKI ALET (29 Eylul): RING (halka, varsayilan) ya da WHEEL
      (cark). Kullanici carki bir gelen sey degil, bir SECENEK istedi:
      "isteyen yukardan cark'i secer skins'lerden". */
-  const MERKEZ_AD = ['RING','WHEEL'];
   function halkaBoyYaz(){
     try{
       const i = Math.max(0, Math.min(HALKA_KAT.length - 1, AYAR.halkaBoy | 0));
@@ -18519,8 +18506,8 @@
       const _xtenP = (clientX)=>{
         const y = _yol(); const r = y ? y.getBoundingClientRect() : null;
         if(!r || !r.width) return _p;
-        const w = Math.max(1, r.width - 18);                // topuz capi ~ yol kalinligi - 8
-        return (clientX - r.left - 9) / w;
+        const w = Math.max(1, r.width - 24);                // topuzun gidebildigi yol: genislik - capi(18) - 2x2 pay - 2 kenar
+        return 1 - (clientX - r.left - 12) / w;             // radyo SOLDA (p=1), arsiv SAGDA (p=0)
       };
       const _pGit = (hedef, ms)=>{
         const id = ++_pAnim, bas = _p, t0 = performance.now();
@@ -20781,8 +20768,6 @@
         if(el5) el5.textContent = Y(CARK_SEV_AD[AYAR.carkSesSev|0] || 'MID');
         const el6 = kut.querySelector('.sat[data-ayar="halkaBoy"] .durum');
         if(el6) el6.textContent = Y(HALKA_AD[AYAR.halkaBoy|0] || 'MEDIUM');
-        const el7 = kut.querySelector('.sat[data-ayar="merkez"] .durum');
-        if(el7) el7.textContent = Y(MERKEZ_AD[(AYAR.merkez==='cark')?1:0]);
         /* Kutu yazilirken hangi kipte oldugumuzu da yaziyoruz: ayar
            paneli her iki kipte de acilabiliyor. */
         /* DIAGNOSTICS: sayi sifirsa satir gizli. Gosterecek bir sey
@@ -21107,25 +21092,6 @@
         dilListeAc(!!document.getElementById('dilListe').hidden);
         return;
       }
-      if(k === 'merkez'){
-        /* Tek satir, iki secenek. Secim kalici: ayarKaydet() diske
-           yaziyor, acilista _a.merkez geri geliyor (bkz. 29 Eylul
-           notu: varsayilan artik HALKA, zorlama kaldirildi). */
-        /* 30 Eylul: bu satır AÇIK OLAN KİPİN merkezini yazar.
-           ORBITAPE'de merkezOrb'ı, RADIOTAPE'de radyoMerkez'i.
-           Öbür kipin kaydına dokunulmaz. */
-        if(document.body.classList.contains('mood')){
-          AYAR.merkezOrb = (AYAR.merkezOrb === 'cark') ? 'yuvarlak' : 'cark';
-          AYAR.merkez = AYAR.merkezOrb;
-        }else{
-          AYAR.radyoMerkez = (AYAR.radyoMerkez === 'cark') ? 'yuvarlak' : 'cark';
-          AYAR.merkez = AYAR.radyoMerkez;
-        }
-        ayarKaydet();
-        try{ merkezUygula(); }catch(e){ _yut(e); }
-        try{ if(typeof yaz==='function') yaz(); }catch(e){ _yut(e); }
-        return;
-      }
       if(k === 'halkaBoy'){
         AYAR.halkaBoy = ((AYAR.halkaBoy|0) + 1) % HALKA_KAT.length;
         ayarKaydet(); halkaBoyYaz(); yildizYaz();
@@ -21311,6 +21277,7 @@
          ama hicbir sey cikmaz -- yani yalan soyleyen bir dugme.
          Damgalar siliniyor; bir sonraki acilista tur yine cikiyor. */
       if(k === 'karanlik'){ try{ zeminUygula(); }catch(e){ _yut(e); } }
+      if(k === 'carkAcik'){ try{ merkezUygula(); }catch(e){ _yut(e); } }
       /* CAR MODE ACILDI ve zincir zaten kurulu: eleman zincirden
          sokulemez (spec), tek yol yeniden acilis. Kapatildiysa
          zincir bir sonraki calmada kurulur, yenileme gerekmez. */

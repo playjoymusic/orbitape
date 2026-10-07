@@ -3659,16 +3659,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 30 Eylul: iki kip iki ayri merkez tutuyor. DOGRULAMA AYNI
            sekilde ikisini de okumali: yalniz 'merkez' okunursa
            ORBITAPE'in seciminin silinip silinmedigi gorunmez. */
-        try{ return { merkez:String(AYAR.merkez), orb:String(AYAR.merkezOrb),
-                      radyo:String(AYAR.radyoMerkez) };
-            }catch(e){ return { merkez:'okunamadi', orb:'-', radyo:'-' }; }
+        try{ return { merkez:String(AYAR.merkez), ca:AYAR.carkAcik === true };
+            }catch(e){ return { merkez:'okunamadi', ca:false }; }
       });
       await s3.close();
       return m;
     };
     const eski = await acVeOku({ sesAcildi:true, merkez:'yuvarlak' });
-    const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, merkez:'halka',
-                                radyoMerkez:'yuvarlak', merkezOrb:'cark' });
+    const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, carkAcik:true });
 
     /* ── DERI HER ACILISTA KAYIYORDU ─────────────────────────────
        Bildirilen: "UFO skiniyle kapatiyorum, app'i baska bir skinle
@@ -3716,14 +3714,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          ORBITAPE  -> halka (merkezOrb,  varsayilan 'yuvarlak')
        OLCU: damgasiz depo RADIOTAPE acar (merkez='cark'); damgali
        depoda iki kayit da kendi yerinde kalmali. */
-    K('Ilk acilista ortada CARK (radyo)', eski.merkez === 'cark',
-      'damgasiz depoda merkez=' + eski + ' (cark gelmeliydi)');
-    /* IKI KAYIT (30 Eylul): acilista RADIOTAPE merkezi radyoMerkez'den
-       gelir; `merkez` artik tasima icin kullanilmaz. */
-    K('Onarim kullanicinin secimini silmiyor',
-      yeni.radyo === 'yuvarlak' && yeni.orb === 'cark' && yeni.merkez === 'yuvarlak',
-      'damgali depoda merkez=' + yeni.merkez + ' radyo=' + yeni.radyo
-      + ' orb=' + yeni.orb + ' (yuvarlak + cark gelmeliydi)');
+    /* 7 EKIM: ilk acilista OFF skin'de HALKA (cark kapali); WHEEL acildiysa kapayip acinca CARK
+       geri gelir (kalici, iki kipte ortak). Eski iki kip kaydi (radyoMerkez/merkezOrb) artik
+       merkezi belirlemiyor. */
+    K('Ilk acilista OFF skin: ortada halka, cark kapali', eski.merkez === 'halka' && eski.ca === false,
+      'damgasiz depoda merkez=' + eski.merkez + ' carkAcik=' + eski.ca + ' (halka + kapali gelmeliydi)');
+    K('WHEEL acik birakilirsa kapayip acinca cark geliyor (kalici)',
+      yeni.merkez === 'cark' && yeni.ca === true,
+      'damgali depoda merkez=' + yeni.merkez + ' carkAcik=' + yeni.ca + ' (cark + acik gelmeliydi)');
     K('Secili deri kapayip acinca yerinde kaliyor',
       !!d1 && !!d2 && d1.deri === sonDeri && d2.deri === sonDeri,
       'iki acilis: ' + (d1 ? d1.deri : '-') + ' -> ' + (d2 ? d2.deri : '-')
@@ -3829,7 +3827,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     await s7.addInitScript(d=>{
       try{ localStorage.setItem('orbitape.ayar', d); }catch(e){}
     }, JSON.stringify({ sesAcildi:true, merkezOnar:true, deriSurum:3,
-                         merkez:'cark', deri:0, deriRastgele:true, deriTorba:[42] }));
+                         carkAcik:true, deri:0, deriRastgele:true, deriTorba:[42] }));
     await s7.goto(S, {waitUntil:'load'});
     await s7.waitForTimeout(700);
     const rsm = await s7.evaluate(()=>{
@@ -3846,100 +3844,66 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         else localStorage.setItem('orbitape.tur', d.t);
       }catch(e){}
     }, oncekiDepo4);
-    /* 29 Eylul: zorlama kaldirildi. Depoda 'cark' yaziyorsa cark
-       KALIR -- kural "secimler bir sonraki giriste ayni sekilde
-       devam etmeli". Once burada her acilista 'yuvarlak'a zorlaniyordu. */
-    K('Random skin on open: secilen merkez EZILMEZ',
-      !!rsm && rsm.deri === 42 && rsm.merkez === 'cark' && rsm.carkSinifi === true,
+    /* 7 EKIM: skin ACIKKEN merkez HEP duz disk (WHEEL ayari acik olsa bile); cark yalniz OFF
+       skin'de. Eski kural (secilen cark ezilmez) kalkti: kullanici "skinsler halka olmuyor,
+       circle olmali" dedi. */
+    K('Random skin on open: skin acikken merkez duz disk (WHEEL acik olsa bile)',
+      !!rsm && rsm.deri === 42 && rsm.merkez === 'yuvarlak' && rsm.carkSinifi === false,
       rsm ? ('deri=' + rsm.deri + ' merkez=' + rsm.merkez + ' merkez-cark sinifi=' + rsm.carkSinifi)
           : 'olculemedi');
   }
 
-  /* ── LOCK SKIN (20 Eylul) ──────────────────────────────────────────
-     Kullanicinin sozu (30 Eylul, guncellendi): "orbitape tarafi
-     carksiz aciliyor evet . ama biri cark secerse oyle acilacak.
-     en son neyle kapattiysa onunla ac, hatirla. ve radiotape tarafi
-     da hangi ayarlar skins istasyon vs ile kapandiyysa oyle acilacak."
-     DERI: moodUygula() gecisin TEK kapisi; deriKilit KAPALIYKEN
-     ORBITAPE'e girince deriyi radyoDeri'ye saklayip OFF'a zorluyor,
-     donunce geri veriyor. LOCK SKIN acilirsa hic dokunmuyor.
-     MERKEZ: artik TEK alan degil, IKI kayit. Gecis aninda hicbiri
-     tasinmiyor -- radyonun merkezi yalniz RADYodayken degisir
-     (ayarlar > CENTER). */
+  /* ── KIP GECISINDE DERI VE MERKEZ (7 Ekim: LOCK SKIN kalkti, kural sadelesti) ──────────
+     pj: THEME/LOCK THEME/LOCK SKIN ayarlardan silindi. Kalan kural:
+       · RADIOTAPE -> ORBITAPE: skin OFF'a doner (radyonun skin'i saklanir), RADIOTAPE'e
+         donunce geri gelir.
+       · Merkez skin'e gore: skin acik -> duz disk; OFF -> halka, WHEEL (carkAcik) aciksa cark.
+         WHEEL iki kipte ORTAK ve kip gecisinde kaybolmaz (eski "cark siliniyor" hatasi). */
   {
     const ls = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const eskiMood = AYAR.mood, eskiMod = mod, eskiAktifMod = AKTIF_MOD;
-      const eskiDeri = AYAR.deri, eskiMerkez = AYAR.merkez, eskiKilit = AYAR.deriKilit;
-      const eskiRadyoDeri = AYAR.radyoDeri, eskiRadyoMerkez = AYAR.radyoMerkez;
-    const eskiMerkezOrb = AYAR.merkezOrb;
+      const eskiDeri = AYAR.deri, eskiRadyoDeri = AYAR.radyoDeri, eskiCA = AYAR.carkAcik;
 
-      // Once temiz bir RADIOTAPE durumu kur.
       AYAR.mood = false; mod = 'radio'; moodUygula(false); await bek(160);
+      AYAR.carkAcik = true;
+      AYAR.deri = 42; try{ merkezUygula(); }catch(e){}
+      const radyodaSkinDisk = (AYAR.merkez === 'yuvarlak');
 
-      // 1) KILIT KAPALI (varsayilan): RADIOTAPE'te bir deri sec, ORBITAPE'e gec.
-      AYAR.deriKilit = false;
-      AYAR.deri = 42; AYAR.merkez = 'yuvarlak';
-      /* 27 Eylul: arsivin merkezi zorla CARK degil, KENDI kaydi
-         (merkezOrb; varsayilan HALKA = carksiz). DERI zorlamasi
-         aynen durur: default deri. */
-      const orbOnce = AYAR.merkezOrb;
       AYAR.mood = true; moodUygula(false); await bek(320);
-      const zorlandiMi = (AYAR.deri === 0 && AYAR.merkez === (orbOnce || 'yuvarlak'));
+      const zorlandiMi = (AYAR.deri === 0);
       const saklandiMi = (AYAR.radyoDeri === 42);
-      /* Gecis aninda radyonun merkez kaydi DEGISMEMELI: eski kod
-         AYAR.merkez'i radyoya kopyaliyordu, ama modKolaGit once
-         moodAc()'i cagirdigi icin o deger zaten arsivinkidi --
-         radyonun kaydi arsivinkILE eziliyordu. */
-      const kayitSizdiMi = (AYAR.radyoMerkez === 'cark');
+      const orbitOffCark = (AYAR.merkez === 'cark');          // OFF + WHEEL acik
 
-      // RADIOTAPE'e donunce eski deri ve radyonun kendi merkezi gelmeli.
       AYAR.mood = false; moodUygula(false); await bek(320);
-      const geriGeldiMi = (AYAR.deri === 42 && AYAR.merkez === (AYAR.radyoMerkez || 'cark'));
+      const geriGeldiMi = (AYAR.deri === 42 && AYAR.merkez === 'yuvarlak');
 
-      // 2) KILIT ACIK: deri hic degismemeli, ne girerken ne donerken.
-      /* 2 EKIM OLCUM (pj: "orbitape'ten radiotape'e gecince cark siliniyor"):
-         kilit ACIKKEN donuste merkez 'cark'tan 'yuvarlak'a dusuyordu (eski
-         kod merkezi geri koymayi kilit denetiminin ICINE yazmisti). Kilit
-         yalniz DERIYI sabitler; merkez her kipte nasil birakildiysa oyle. */
-      AYAR.deri = 17; AYAR.merkez = 'cark'; AYAR.radyoMerkez = 'cark'; AYAR.merkezOrb = 'yuvarlak'; AYAR.deriKilit = true;
-      AYAR.mood = true; moodUygula(false); await bek(320);
-      const kilitliGirerkenDegismediMi = (AYAR.deri === 17);
-      const kilitliOrbitMerkezMi = (AYAR.merkez === 'yuvarlak');
-      AYAR.mood = false; moodUygula(false); await bek(320);
-      const kilitliDonerkenDegismediMi = (AYAR.deri === 17);
-      const kilitliCarkKaldiMi = (AYAR.merkez === 'cark');
-      /* SWITCH'IN GERCEK YOLU: modKolaGit (kollar.js) -- pj'nin kullandigi yol bu;
-         moodUygula'yi dogrudan cagirmak orbit girisindeki merkez atamasini atliyordu. */
-      AYAR.merkez = 'cark'; AYAR.radyoMerkez = 'cark'; AYAR.merkezOrb = 'yuvarlak'; AYAR.deriKilit = true;
-      window.modKolaGit('orbit'); await bek(400);
+      /* SWITCH'IN GERCEK YOLU (modKolaGit): OFF skin + WHEEL acik -> her duraktaki merkez cark. */
+      AYAR.deri = 0; AYAR.radyoDeri = 0; try{ deriUygula(); merkezUygula(); }catch(e){}
+      const hepCark = [];
+      window.modKolaGit('orbit'); await bek(400); hepCark.push(AYAR.merkez === 'cark');
+      window.modKolaGit('radio'); await bek(400); hepCark.push(AYAR.merkez === 'cark');
+      window.modKolaGit('orbit'); await bek(400); hepCark.push(AYAR.merkez === 'cark');
       window.modKolaGit('radio'); await bek(400);
-      const kilitliSwitchYoluCarkMi = (AYAR.merkez === 'cark');
+      const radyoCark = (AYAR.merkez === 'cark');
 
-      AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
-      AYAR.deriKilit = eskiKilit; AYAR.radyoDeri = eskiRadyoDeri; AYAR.radyoMerkez = eskiRadyoMerkez;
-      AYAR.merkezOrb = eskiMerkezOrb;
+      AYAR.carkAcik = false; try{ merkezUygula(); }catch(e){}
+      const kapaliHalka = (AYAR.merkez === 'halka');
+
+      AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.radyoDeri = eskiRadyoDeri; AYAR.carkAcik = eskiCA;
       moodUygula(false); await bek(200);
-      /* moodUygula kendi AKTIF_MOD'unu yazar (ORBITAPE ya da null) --
-         testten ONCEKI gercek degeri (acilista 'RADIOTAPE') geri
-         zorluyoruz, yoksa sonraki "Acilista RADIOTAPE" kontrolu
-         bizim temizligimizi degil moodUygula'nin varsayilanini olcer. */
       AKTIF_MOD = eskiAktifMod; mod = eskiMod;
-
-      return { zorlandiMi, saklandiMi, kayitSizdiMi, geriGeldiMi, kilitliGirerkenDegismediMi, kilitliDonerkenDegismediMi, kilitliCarkKaldiMi, kilitliOrbitMerkezMi, kilitliSwitchYoluCarkMi };
+      return { radyodaSkinDisk, zorlandiMi, saklandiMi, orbitOffCark, geriGeldiMi,
+               hepCark: hepCark.every(Boolean), radyoCark, kapaliHalka };
     });
-    K('LOCK SKIN kapaliyken ORBITAPE her zaman default deriyle aciliyor',
-      ls.zorlandiMi && ls.saklandiMi && ls.kayitSizdiMi,
-      'zorlandi=' + ls.zorlandiMi + ' saklandi=' + ls.saklandiMi
-      + ' radyo kaydi saglam=' + ls.kayitSizdiMi);
-    K("LOCK SKIN kapaliyken RADIOTAPE'e donunce eski deri geri geliyor",
-      ls.geriGeldiMi, 'geriGeldi=' + ls.geriGeldiMi);
-    K('LOCK SKIN aciksa deri iki dunyada da degismiyor',
-      ls.kilitliGirerkenDegismediMi && ls.kilitliDonerkenDegismediMi,
-      'girerken=' + ls.kilitliGirerkenDegismediMi + ' donerken=' + ls.kilitliDonerkenDegismediMi);
-    K("LOCK SKIN aciksa bile ORBITAPE'ten RADIOTAPE'e donunce CARK silinmiyor, her kip kendi merkeziyle aciliyor",
-      ls.kilitliCarkKaldiMi && ls.kilitliOrbitMerkezMi && ls.kilitliSwitchYoluCarkMi,
-      'radyoda cark kaldi=' + ls.kilitliCarkKaldiMi + ' orbitape kendi merkezi=' + ls.kilitliOrbitMerkezMi + ' switch yolu cark=' + ls.kilitliSwitchYoluCarkMi);
+    K("RADIOTAPE'ten ORBITAPE'e gecince skin OFF'a donuyor, saklaniyor",
+      ls.zorlandiMi && ls.saklandiMi, 'zorlandi=' + ls.zorlandiMi + ' saklandi=' + ls.saklandiMi);
+    K("ORBITAPE'ten RADIOTAPE'e donunce eski skin geri geliyor ve skin'de merkez duz disk",
+      ls.geriGeldiMi && ls.radyodaSkinDisk, 'geriGeldi=' + ls.geriGeldiMi + ' skinDisk=' + ls.radyodaSkinDisk);
+    K('WHEEL acikken switch ile her gecis durakta OFF skin cark kaliyor (iki kipte ortak)',
+      ls.orbitOffCark && ls.hepCark && ls.radyoCark,
+      'orbitOff=' + ls.orbitOffCark + ' hepCark=' + ls.hepCark + ' radyoCark=' + ls.radyoCark);
+    K('WHEEL kapaliyken OFF skin: halka', ls.kapaliHalka === true, 'merkez halka');
   }
 
   /* ── ARAMA SESI 2 TIK KISILDI (20 Eylul) ────────────────────────────
@@ -8071,7 +8035,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 1 EKIM: secili olmayan isim artik "soluk ton" DEGIL, tamamen
            GORUNMEZ (isimler switch konumuna bagli, sirayla soner/gelir).
            Eski sart (hepsi ayni soluk ton) bilerek kalkti. */
-        return r1.kip==='radio' && r2.kip==='orbit' && r1.renk!==r2.renk
+        /* 7 EKIM: yazi GIDILECEK YERI soyler: radyodayken ORBITAPE, arsivdeyken RADIOTAPE. */
+        return r1.kip==='orbit' && r2.kip==='radio' && r1.renk!==r2.renk
             && r1.gizli.every(o=>o<0.05) && r2.gizli.every(o=>o<0.05);
       }), 'iki durak sirayla acilir, her biri kendi odasinin renginde; secili olmayan GORUNMEZ');
     /* 28 Eylul: yatay dugme. Kullanici: "sol alt swichi yataya yap.
@@ -8096,7 +8061,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                    && new Set(f.map(x=>x.fontWeight)).size===1
                    && new Set(f.map(x=>x.fontSize)).size===1;
       return { yatay: yr.width>yr.height, yol:[Math.round(yr.width),Math.round(yr.height)],
-        isimUstte: r.every(x=>x.bottom<=yr.top+1), ayniYer, yaziTek,
+        /* 7 EKIM: isimler pill'in SAGINDA ve dikeyde ortada (20 Eylul tasarimi). */
+        isimUstte: r.every(x=>x.left>=yr.right-1 && Math.abs((x.top+x.bottom)/2-(yr.top+yr.bottom)/2)<=3),
+        ayniYer, yaziTek,
         /* "s oldan daha uzun olmasin": topuzun sol kenari yolun sol
            kenarindan 2 px icerde baslar, disariya tasmaz. */
         solTasma: Math.round(tr.left-yr.left), topuzGenislik: Math.round(tr.width) };
@@ -8445,15 +8412,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
   {
     const fx = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
-      const eskiMood = AYAR.mood, eskiMod = mod, eskiAktif = AKTIF_MOD, eskiMerk = AYAR.merkez, eskiRM = AYAR.radyoMerkez;
-      AYAR.radyoMerkez = 'cark';
+      const eskiMood = AYAR.mood, eskiMod = mod, eskiAktif = AKTIF_MOD, eskiMerk = AYAR.merkez, eskiCA = AYAR.carkAcik, eskiDeriFx = AYAR.deri;
+      AYAR.carkAcik = true; AYAR.deri = 0;      // 7 EKIM: OFF skin + WHEEL acik = cark
+      try{ merkezUygula(); }catch(e){}
       window.modKolaGit('orbit'); await bek(900);
       const u = document.querySelectorAll('.uydu'); if(u[1]) u[1].click(); await bek(500);
       const acikti = document.body.classList.contains('fx-acik') && !!FXMOD;
       window.modKolaGit('radio'); await bek(900);
       const r = { acikti, fxAcikKaldi: document.body.classList.contains('fx-acik'), fxmod: FXMOD,
                   carkSinifi: document.body.classList.contains('merkez-cark'), merkez: AYAR.merkez };
-      AYAR.mood = eskiMood; mod = eskiMod; AKTIF_MOD = eskiAktif; AYAR.merkez = eskiMerk; AYAR.radyoMerkez = eskiRM;
+      AYAR.mood = eskiMood; mod = eskiMod; AKTIF_MOD = eskiAktif; AYAR.merkez = eskiMerk; AYAR.carkAcik = eskiCA; AYAR.deri = eskiDeriFx;
       moodUygula(false); await bek(300);
       return r;
     });
@@ -8535,7 +8503,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const fs = parseFloat(getComputedStyle(ad).fontSize);
       // dokunma alani 44 px: yolun 18 px ustu ve 2 px alti hala switch'in icinde
       const ortaX = yr.left + yr.width/2;
-      const ust = document.elementFromPoint(ortaX, yr.top - 18);
+      const ust = document.elementFromPoint(ortaX, yr.top - 14);
       const alt = document.elementFromPoint(ortaX, yr.bottom + 2);
       const icinde = e=>!!e && (e===k || k.contains(e));
       // renk: 13 konum, parmak surukluyormus gibi (uck-suruk: JS --uck-p'ye karismasin)
@@ -8560,9 +8528,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const kontrast = c=>(lum(c)+.05)/.05;   // 5 Ekim: kutu tam opak, siyah zemin
       const kk = getComputedStyle(k);
       const ybg = getComputedStyle(yol).backgroundColor, ybi = getComputedStyle(yol).backgroundImage;
-      const yolBos = (ybg==='rgba(0, 0, 0, 0)' || ybg==='transparent') && ybi==='none' && getComputedStyle(yol).boxShadow==='none';
-      return { yolBos, fs, yolG:Math.round(yr.width), yolY:Math.round(yr.height),
-        adMerkezFark: Math.abs((ar.left+ar.width/2)-(yr.left+yr.width/2)),
+      /* 7 EKIM: pill artik DOLU koyu (20 Eylul tasarimi): zemin saydam degil. */
+      const yolDolu = !(ybg==='rgba(0, 0, 0, 0)' || ybg==='transparent');
+      return { yolBos:yolDolu, fs, yolG:Math.round(yr.width), yolY:Math.round(yr.height),
+        /* yazi pill'in SAGINDA: dikey merkez farki (gorunen yazi) */
+        adMerkezFark: Math.abs((ar.top+ar.height/2)-(yr.top+yr.height/2)),
+        yaziSagda: ar.left >= yr.right - 1,
         dokunUst:icinde(ust), dokunAlt:icinde(alt),
         uc0:renkler[0], uc1:renkler[12], oran, adimMin:Math.min(...adim),
         kontrastOrbit:kontrast(renkler[0]), kontrastRadio:kontrast(renkler[12]),
@@ -8570,12 +8541,14 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     });
     /* 2 Ekim: pj "mood isimleri telefonda cok kucuk, buyut; switch'i incelt, cok cizgi var, ortasi dolu olmasin".
        12 px yazi cok kucuk kalmisti (18 px da cok buyuktu): 15 px; cubuk 128x18, ici BOS (seffaf), tek ince kontur. */
-    K('Switch yazisi okunur (14-17 px), cubuk ince (<=136x20), ici bos',
-      sw.fs>=14 && sw.fs<=17 && sw.yolG<=136 && sw.yolY<=20 && sw.yolBos,
-      'yazi '+sw.fs+' px, cubuk '+sw.yolG+'x'+sw.yolY+', ici bos='+sw.yolBos);
-    K('Switch dokunma alani 44 px (yolun 18 px ustu ve 2 px alti hala switch)',
+    /* 7 EKIM: 2 Ekim'deki ince/ici bos cubuk DENENDI, GERI ALINDI (pj: eski sekil). 20 Eylul tasarimi:
+       46x24 dolu pill, yazi 12 px pill'in sagi. */
+    K('Switch: dolu pill 46x24, yazi 12 px ve pill\'in sagi', 
+      sw.fs===12 && sw.yolG===46 && sw.yolY===24 && sw.yolBos && sw.yaziSagda,
+      'yazi '+sw.fs+' px, pill '+sw.yolG+'x'+sw.yolY+', dolu='+sw.yolBos+', yazi sagda='+sw.yaziSagda);
+    K('Switch dokunma alani 44 px (yolun 14 px ustu ve 2 px alti hala switch)',
       sw.dokunUst && sw.dokunAlt, 'ust='+sw.dokunUst+' alt='+sw.dokunAlt);
-    K('Switch yazisi cubuga ortali (gorunen yazi, yalniz kutu degil)',
+    K('Switch yazisi pill ile dikeyde ortali (gorunen yazi, yalniz kutu degil)',
       sw.adMerkezFark<=1.5, 'fark '+sw.adMerkezFark.toFixed(2)+' px');
     /* 5 Ekim: iki sabit uc rengi KALKTI (pj: switch temadan etkilensin).
        Renk artik tek: temanin rengi (--sw-tema). Surukleme boyunca hic
@@ -9862,9 +9835,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* 29 Eylul: satir daima kendi odasinin adini yazar ve secili
            durak aria-valuenow ile bildirilir: 0 = RADIOTAPE, 1 = ORBITAPE. */
         return radyoDogru(r1) && arsivDogru(r2) && sabit
-            && r1.yazi === 'RADIOTAPE' && r2.yazi === 'ORBITAPE'
+            && r1.yazi === 'ORBITAPE' && r2.yazi === 'RADIOTAPE'
             && r1.acik === '0' && r2.acik === '1';
-      }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket oda adi');
+      }), 'her iki kipte ayni yerde (sabit), radyoda kapali, arsivde acik; etiket GIDILECEK yeri soyler (7 Ekim)');
     /* Kisayol AYARLARDAKI KAPIYLA AYNI islevi cagiriyor: iki ayri
        "kipi kapat" mantigi er gec ayrisir. */
     K('Kip kislayolu radyoya donduruyor', await pg.evaluate(async ()=>{
@@ -11852,42 +11825,32 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Olculen: deri degistikten HEMEN sonra (dokunus yok) tuvalin
      icerigi degisiyor mu. */
   {
+    /* 7 EKIM: cark YALNIZ OFF skin'de (skin acikken merkez duz disk). Eski olcu "skin degisince
+       cark yenileniyor" anlamsizlasti; yerine: skin acilinca cark tuvali KALKIYOR, OFF'a donunce
+       GERI geliyor. */
     const dd = await pg.evaluate(async ()=>{
       const bek = ms2 => new Promise(r => setTimeout(r, ms2));
       const c = {};
-      const eskiDeri = AYAR.deri;
-      /* 29 Eylul: cark bir secenek; bu test onu ACIK yapiyor
-         (skins > CENTER) ve olcum bitince secimi geri koyuyor. */
-      const mzEski = AYAR.merkez;
+      const eskiDeri = AYAR.deri, eskiCA = AYAR.carkAcik;
       try{
-        /* 29 Eylul: cark varsayilan DEGIL; bu test carkin dogru
-           cizildigini olcuyor, o yuzden once cark ACIK yapiyor
-           (skins'teki CENTER satirindan secilebilir). */
-        AYAR.merkez = 'cark';
+        AYAR.carkAcik = true; AYAR.deri = 0; deriUygula();
         try{ if(!window.CARK_HAZIR) window.carkYukle(); }catch(e){}
         try{ window.merkezUygula(); }catch(e){}
         for(let i2 = 0; i2 < 40 && !window.CARK_HAZIR; i2++) await bek(100);
         await bek(400);
-        const tv = document.getElementById('carkTuval');
-        c.tuvalVar = !!tv;
-        if(tv){
-          const imza = ()=>{ const g = tv.getContext('2d');
-            const W = tv.width, H = tv.height;
-            const d = g.getImageData(0, Math.round(H/2) - 2, W, 4).data;
-            let s2 = 0; for(let i = 0; i < d.length; i += 4) s2 += d[i] + d[i+1] + d[i+2];
-            return s2; };
-          const koyu = DERILER.findIndex(d=>d.ad === 'TERMINAL');
-          const acik = DERILER.findIndex(d=>d.ad === 'PAPER');
-          AYAR.deri = koyu + 1; deriUygula(); await bek(600);
-          const a1 = imza();
-          AYAR.deri = acik + 1; deriUygula(); await bek(120);   /* DOKUNUS YOK */
-          const a2 = imza();
-          c.yenilendi = a1 !== a2;
-          c.olcum = a1 + ' -> ' + a2;
-        }
+        const gor = ()=>{ const tv = document.getElementById('carkTuval');
+          return !!tv && getComputedStyle(tv).display !== 'none' && document.body.classList.contains('merkez-cark'); };
+        c.tuvalVar = !!document.getElementById('carkTuval');
+        c.offCark = gor();
+        const koyu = DERILER.findIndex(d=>d.ad === 'TERMINAL');
+        AYAR.deri = koyu + 1; deriUygula(); try{ window.merkezUygula(); }catch(e){} await bek(500);
+        c.skindeKalkti = !gor();
+        AYAR.deri = 0; deriUygula(); try{ window.merkezUygula(); }catch(e){} await bek(500);
+        c.geriGeldi = gor();
+        c.yenilendi = c.offCark && c.skindeKalkti && c.geriGeldi;
+        c.olcum = 'OFF cark=' + c.offCark + ' skin\'de kalkti=' + c.skindeKalkti + ' OFF\'a donunce geri=' + c.geriGeldi;
       }catch(e){ c.hata = String(e && e.message || e); }
-      /* 29 Eylul: olcum bitti; deri ve merkez secimi geri konur. */
-      AYAR.merkez = mzEski;
+      AYAR.carkAcik = eskiCA;
       try{ AYAR.deri = eskiDeri; deriUygula(); }catch(e){}
       try{ window.merkezUygula(); }catch(e){}
       await bek(300);
@@ -11895,9 +11858,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     });
     const ddOz = Object.keys(dd).filter(k => dd[k] !== true && k !== 'olcum')
                    .map(k => k + '=' + dd[k]).join(' ');
-    K('Deri degisince cark ayni karede yenileniyor',
+    K('Skin acilinca cark kalkiyor, OFF\'a donunce geri geliyor',
        dd.tuvalVar === true && dd.yenilendi === true,
-       ddOz || (dd.olcum || 'eski kare ekranda kalmiyor'));
+       ddOz || (dd.olcum || 'cark yalniz OFF skin\'de'));
   }
 
   /* ── FX ACIKKEN KULLANILMAYANLAR SUSUYOR ───────────────────────
@@ -11915,7 +11878,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const eskiMerkez = AYAR.merkez, eskiFX = FXMOD;
       try{
         if(FXMOD) fxModGec(FXMOD);
-        AYAR.merkez = 'faz'; window.merkezUygula(); await bek(800);
+        window.merkezUygula('faz'); await bek(800);   // 7 EKIM: merkez artik kuraldan; 'faz' bu olcum icin zorlaniyor
         const cv = ()=> document.getElementById('carkTuval');
         c.tuvalVar = !!cv();
         c.oncedenAcik = !!cv() && getComputedStyle(cv()).display !== 'none';
@@ -11928,7 +11891,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.anahtarKalkti = !document.body.classList.contains('fx-acik');
       }catch(e){ c.hata = String(e && e.message || e); }
       try{ if(FXMOD) fxModGec(FXMOD); if(eskiFX) fxModGec(eskiFX);
-           AYAR.merkez = eskiMerkez; window.merkezUygula(); }catch(e){}
+           window.merkezUygula(); }catch(e){}
       await bek(400);
       return c;
     });
@@ -13100,9 +13063,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const c = {};
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const eskiBl = beyazListe, eskiDenendi = _blDenendi, eskiAile = AKTIF_AILE,
-            eskiMood = AYAR.mood;
+            eskiMood = AYAR.mood, eskiCAkd = AYAR.carkAcik, eskiDeriKd = AYAR.deri;
       try{
         AYAR.mood = false; moodUygula(false); await bek(200);
+        /* 7 EKIM: cark yalniz OFF skin + WHEEL acikken var; bu olcum carkin geri gelmesine bakiyor. */
+        AYAR.carkAcik = true; AYAR.deri = 0;
+        try{ if(!window.CARK_HAZIR) window.carkYukle(); window.merkezUygula(); }catch(e){}
+        for(let i = 0; i < 40 && !window.CARK_HAZIR; i++) await bek(100);
         _blDenendi = true; _blSoz = null;
         beyazListe = Array.from({length:20},(_,i)=>({
           stationuuid:'kd'+i, name:'Karartma '+i, url:'https://sahte.test/kd'+i,
@@ -13120,7 +13087,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.carkGeriGeldi = !!ct && +getComputedStyle(ct).opacity > 0.95;
         c.moodAcikKaldi = document.body.classList.contains('mood') === true;
       }catch(e){ c.hata = String(e && e.message || e); }
-      try{ AYAR.mood = eskiMood; moodUygula(false); }catch(e){}
+      try{ AYAR.mood = eskiMood; AYAR.carkAcik = eskiCAkd; AYAR.deri = eskiDeriKd; moodUygula(false); window.merkezUygula(); }catch(e){}
       beyazListe = eskiBl; _blDenendi = eskiDenendi; AKTIF_AILE = eskiAile;
       return c;
     });
@@ -14064,34 +14031,27 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        'depodan geri okunuyor, sinir kontrollu');
   }
 
-  K('Tema cihazda kaliyor',
-       /_a\.tema === 'number'[\s\S]{0,120}AYAR\.tema = _a\.tema/.test(kaynak)
-       && /_a\.temaKilit === true/.test(kaynak),
-       'depodan geri okunuyor, sinir kontrollu');
+  /* 7 EKIM: THEME / LOCK THEME / LOCK SKIN ayarlardan kaldirildi (pj: "gereksiz"). Satir yokken
+     depoda kalmis eski bir secim gorunmez ama etkili olurdu -> yukleme artik tema/kilitleri OKUMUYOR. */
+  K('Eski tema ve kilit kaydi etkisiz (satirlar kalkti)',
+       /AYAR\.tema = 0; AYAR\.temaKilit = false; AYAR\.deriKilit = false;/.test(kaynak)
+       && !/_a\.temaKilit === true/.test(kaynak),
+       'tema hep AUTO, kilitler hep kapali');
   }
 
-  /* Izgara: otuz bes kutu TEMALAR tablosundan uretiliyor, elle
-     yazilmiyor. Kapali panelde odaklanabilir kalmiyor (WCAG 4.1.2). */
-  const izg = await pg.evaluate(async ()=>{
-    const bek=ms=>new Promise(r=>setTimeout(r,ms));
-    const tut=document.getElementById('ayarTut');
-    tut.click(); await bek(320);
-    const sat=document.querySelector('#ayar .sat[data-ayar="tema"]');
-    sat.click(); await bek(160);
-    const iz=document.getElementById('temaIzgara');
-    const acik={ n:iz.children.length, gizli:iz.hidden,
-                 odak:[...iz.children].every(d=>d.getAttribute('tabindex')==='0'),
-                 ad:[...iz.children].every(d=>!!d.getAttribute('aria-label')) };
-    tut.click(); await bek(320);
-    const kapali={ gizli:iz.hidden,
-                   odak:[...iz.children].every(d=>d.getAttribute('tabindex')==='-1') };
-    return { acik, kapali };
+  /* 7 EKIM: tema izgarasi ve THEME/LOCK THEME/LOCK SKIN/RING/CENTER satirlari KALDIRILDI;
+     yerine tek WHEEL anahtari geldi. Kalici kontrol: eski satirlar geri gelmesin, WHEEL var. */
+  const satirlar = await pg.evaluate(()=>{
+    const var_ = k=>!!document.querySelector('#ayar .sat[data-ayar="'+k+'"]');
+    return { tema:var_('tema'), temaKilit:var_('temaKilit'), deriKilit:var_('deriKilit'),
+             halka:var_('halka'), merkez:var_('merkez'), cark:var_('carkAcik'), boy:var_('halkaBoy'),
+             izgara:!!document.getElementById('temaIzgara') };
   });
-  K('Tema izgarasi tablodan ureliyor', izg.acik.n === 36 && izg.acik.gizli===false,
-     izg.acik.n + ' kutu');
-  K('Her kutunun adi var', izg.acik.ad===true, 'aria-label (renk tek basina erisilebilir degil)');
-  K('Kapali panelde izgara odaklanamiyor', izg.kapali.gizli===true && izg.kapali.odak===true,
-     'tabindex -1');
+  K('Ayarlarda THEME, LOCK THEME, LOCK SKIN, RING ve CENTER satirlari yok',
+     !satirlar.tema && !satirlar.temaKilit && !satirlar.deriKilit && !satirlar.halka
+       && !satirlar.merkez && !satirlar.izgara, JSON.stringify(satirlar));
+  K('Ayarlarda WHEEL anahtari ve RING SIZE var', satirlar.cark === true && satirlar.boy === true,
+     'tek cark anahtari, halka boyu kaldi');
 
   /* Yildizlar: hepsi ayni yone, tam daire cizerek donuyordu ve
      "birbirine bagli" gorunuyordu. Uc sey eklendi. */
@@ -15341,9 +15301,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            calistigini olcuyor, o yuzden carki once ACIK yapiyor;
            varsayilanin (radyoda cark) ayri satir olculuyor
            (bkz. 'Ilk acilista ortada CARK (radyo)'). */
-        c.varsayilan = AYAR.merkez === 'cark';
-        const _mz = AYAR.merkez;
-        AYAR.merkez = 'cark';
+        /* 7 EKIM: cark = OFF skin + WHEEL acik (ayarlar). Bu blok carkin calistigini olcuyor. */
+        AYAR.carkAcik = true; AYAR.deri = 0; try{ deriUygula(); }catch(e){}
         if(!window.CARK_HAZIR){ try{ window.carkYukle(); }catch(e){} }
         for(let i = 0; i < 60 && !window.CARK_HAZIR; i++) await bek(100);
         c.geldi = !!window.CARK_HAZIR;
@@ -15395,6 +15354,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         /* Tik sesi ayari AUDIO bolumunde ve kapatilabiliyor. */
         c.sesAyari = !!document.querySelector('#ayar .sat[data-ayar="carkSes"]');
       }catch(e){ c.hata = String(e && e.message || e); }
+      /* kip degisince cark testi de carka ihtiyac duyuyor: WHEEL acik kaliyor (sonraki blok geri koyar) */
       return c;
     });
     const ckOz = Object.keys(ck).filter(k => ck[k] !== true).map(k => k + '=' + ck[k]).join(' ');
@@ -15424,7 +15384,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const c = {};
       const eskiMerkez = AYAR.merkez;
       try{
-        AYAR.merkez = 'faz'; window.merkezUygula(); await bek(900);
+        window.merkezUygula('faz'); await bek(900);     // 7 EKIM: merkez artik kuraldan; 'faz' bu olcum icin zorlaniyor
         c.fazKipi = window.carkDurum().kip === 'faz';
         const tv = document.getElementById('carkTuval');
         c.tuvalVar = !!tv;
@@ -15449,7 +15409,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           c.olcum = once + ' -> ' + window.carkDurum().secili;
         }
       }catch(e){ c.hata = String(e && e.message || e); }
-      try{ AYAR.merkez = eskiMerkez; window.merkezUygula(); }catch(e){}
+      try{ window.merkezUygula(); }catch(e){}
       await bek(400);
       return c;
     });
@@ -15491,6 +15451,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
     K('Faz kipinde de cevrilip raf degisiyor',
        fz.fazKipi === true && fz.cevrildi === true, fzOz || (fz.olcum || 'faz cevriliyor'));
+    /* 7 EKIM: yukaridaki cark olcumleri WHEEL'i acik biraktı; varsayilana (kapali) geri. */
+    await pg.evaluate(()=>{ try{ AYAR.carkAcik = false; AYAR.deri = 0; merkezUygula(); ayarKaydet(); }catch(e){} });
   }
 
   /* ── DERI GALERISI (deri_galeri.js): FIRCA ────────────────────────
@@ -15632,17 +15594,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           await bek(100);
         }
         c.tuvalDolu = !!tv && dolu > tv.width * tv.height * 0.5;
-        /* RING anahtari baslikta (3 Eylul): ayni AYAR.halka, ayni
-           islev; basinca ayarlardaki anahtarla birlikte degisiyor. */
-        const ht = kap.querySelector('.dg-tus.halka');
-        const eskiHalka = !!AYAR.halka;
-        ht.click(); await bek(150);
-        const satH = document.querySelector('.sat[data-ayar="halka"]');
-        c.ringAnahtari = !!ht && !!AYAR.halka !== eskiHalka && ht.getAttribute('aria-pressed') === String(!!AYAR.halka)
-                      && (!satH || satH.getAttribute('aria-checked') === String(!!AYAR.halka))
-                      && document.body.classList.contains('sadehalka') === !!AYAR.halka;
-        ht.click(); await bek(150);
-        c.ringGeri = !!AYAR.halka === eskiHalka;
+        /* 7 EKIM: RING dugmesi galeri basliginda KALDIRILDI (bkz. merkezTusYok). */
         /* SERITE GECIS ARTIK BASLIKTAN: firca ac/kapa anahtari oldu
            (kullanici: "tekrar fircaya basarsam kapanmali"), kucultme
            SKINS basliginin isi. Ayri bir kucultme tusu yok. */
@@ -15723,22 +15675,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           c.seritBinmiyor = sr.top >= alt && degdi.length === 0;
           c.seritOlcu = Math.round(sr.top) + ' >= ' + Math.round(alt);
         }
-        /* ── OK SATIRI ILE MERKEZ SATIRI ARASINDAKI ARALIK ──────
-           Kullanicinin sozu (10 Eylul): "skins mini penceresinde sol
-           oka basarken bazen cark whell vs ona basiliyor, parmak cok
-           yakin." Olculdu: ok satiri 140-172, merkez satiri 177-201
-           -- arada bes piksel. ◀ (x 94-128) ayrica WHEEL'in
-           (x 120-172) tam ustunde, yani yatayda da ortusuyorlar.
-           Bir bas parmagin temas alani rahat yirmi piksel.
-           Esik 12 piksel: bugunku olcum 17 ve altina dusmemeli. */
-        {
-          const okE = kap.querySelector('.dg-tus.geri');
-          const mrkE = kap.querySelector('.dg-tus.mrk');
-          if(okE && mrkE){
-            const a = okE.getBoundingClientRect(), b = mrkE.getBoundingClientRect();
-            c.tusAralik = Math.round(b.top - a.bottom);
-          } else c.tusAralik = -1;
-        }
+        /* 7 EKIM: skins panelinde WHEEL/RING/DISC secici ve RING dugmesi KALDIRILDI (pj: "skins
+           panelinden halka/wheel degistirme kisayolunu kaldir"). Olculen: ikisi de panelde YOK
+           (eski olcu: ok satiri ile merkez satiri arasi 12 px -- satir kalmayinca anlamsiz). */
+        c.merkezTusYok = !kap.querySelector('.dg-tus.mrk') && !kap.querySelector('.dg-tus.halka')
+                      && !kap.querySelector('.dg-merkez');
         c.arkaDokunulur = !document.getElementById('tp').closest('[inert]');
         /* OKLARIN YONU EKRANI TAKIP EDIYOR (10 Eylul): izgara tersten
            diziliyor, bu yuzden "ileri" tablo numarasini KUCULTUYOR.
@@ -15749,14 +15690,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         kap.querySelector('.dg-tus.geri').click(); kap.querySelector('.dg-tus.geri').click(); await bek(300);
         c.geri = AYAR.deri === 3;
         c.adYazisi = kap.querySelector('.dg-secili').textContent.trim() === DERILER[2].ad;
-        /* SERITTE RING GORUNUR (3 Eylul): "halkayi acip kapama da
-           gorunsun orda." Kucultunce kaybolmamali. */
-        /* SERITTE RING ANAHTARI YOK. Merkez secicide zaten "RING"
-           yaziyor ve iki ayri sey ayni kelimeyle yan yana duruyordu.
-           Merkez "DISC" secilince halka zaten kapaniyor. Anahtar tam
-           galeride duruyor; olculen sey artik seritte GORUNMEDIGI. */
-        c.seritteRingYok = !kap.querySelector('.dg-tus.halka')
-          || getComputedStyle(kap.querySelector('.dg-tus.halka')).display === 'none';
         /* Panel tepeye dayanmiyor: ustte en az 40px pay. */
         c.tepeBosluk = kap.getBoundingClientRect().top >= 40;
         /* Baslik bir dugme ve serite indiriyor. */
@@ -15765,15 +15698,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         if(bsl) bsl.click(); await bek(200);
         c.baslikKucultur = !!bsl && bsl.tagName === 'BUTTON'
                         && kap.classList.contains('serit') !== seritOnce;
-        /* Merkez secici: dort tus, secili olan isaretli. */
-        const mt = [...kap.querySelectorAll('.dg-tus.mrk')].map(t=>t.dataset.merkez);
-        /* 8 Eylul: FREQUENCY ('faz') pencereden kaldirildi --
-           kullanicinin sozu "fazi yapamadin, sil lutfen". Olcu uc
-           tusa bakiyor ve 'faz'in ORADA OLMAMASINI bekliyor. */
-        c.merkezDort = ['cark','halka','yuvarlak'].every(k => mt.indexOf(k) >= 0)
-                    && mt.indexOf('faz') < 0;
-        const sec = kap.querySelector('.dg-tus.mrk[aria-pressed="true"]');
-        c.merkezSecili = !!sec && sec.dataset.merkez === (AYAR.merkez || 'cark');
         if(kap.classList.contains('serit') !== seritOnce && bsl){ bsl.click(); await bek(200); }
         /* seritte bosluga dokunus: kapatir ve dokunusu yutar */
         const yN = window.__yut ? window.__yut.n : 0;   // sahte pointerId, testin urunu
@@ -15899,17 +15823,16 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            f.click() burada onu YANLISLIKLA KAPATIRDI. */
         if(!deriGaleriAcik()){ f.click(); } await bek(400);
         const k2 = kap.querySelector('.dg-kare[data-n="2"] .dg-disk');
-        const eskiM = AYAR.merkez;
-        const mrkTus = k => kap.querySelector('.dg-tus.mrk[data-merkez="' + k + '"]');
-        mrkTus('halka').click(); await bek(250);
-        const acikStil = getComputedStyle(k2);
-        c.kareHalkali = /radial-gradient/.test(acikStil.backgroundImage)
-                     && /rgba\(0, 0, 0, 0\)|transparent/.test(acikStil.backgroundColor);
-        mrkTus('yuvarlak').click(); await bek(250);
-        const kapaliStil = getComputedStyle(k2);
-        c.kareGovdeli = !/radial-gradient/.test(kapaliStil.backgroundImage)
-                     && kapaliStil.boxShadow !== 'none';
-        if(AYAR.merkez !== eskiM && mrkTus(eskiM)){ mrkTus(eskiM).click(); await bek(150); }
+        /* 7 EKIM: skin onizlemesi HEP duz disk (govdeli), WHEEL ayari ne olursa olsun
+           (skin aciksa merkez zaten disk). Iki ayarla da olculuyor. */
+        const eskiCA = AYAR.carkAcik;
+        const govdeli = ()=>{ const st = getComputedStyle(k2);
+          return !/radial-gradient/.test(st.backgroundImage) && st.boxShadow !== 'none'; };
+        AYAR.carkAcik = true;  try{ merkezUygula(); }catch(_){} await bek(250);
+        const g1 = govdeli();
+        AYAR.carkAcik = false; try{ merkezUygula(); }catch(_){} await bek(250);
+        c.kareGovdeli = g1 && govdeli();
+        AYAR.carkAcik = eskiCA; try{ merkezUygula(); }catch(_){}
         deriGaleriKapa(); await bek(200);
         c.kapandi = !deriGaleriAcik() && !document.body.classList.contains('galeri-acik');
         AYAR.deri = eskiDeri; deriUygula(); ayarKaydet();
@@ -15941,7 +15864,6 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Kareye dokunmak deriyi uygular, galeri acik kalir', g.secildi, oz || 'deri 2');
     K('Cizimli derinin karesi gercekten ciziliyor', g.tuvalDolu, oz || 'tuval dolu');
     K('Serit kipi: ince, ekrani kapatmaz, oklar deri degistirir', g.serit && g.arkaDokunulur && g.ileri && g.geri && g.adYazisi && g.kucultTusuYok, oz || 'serit, kucultme tusu yok');
-    K('RING anahtari galeri basliginda, ayarlarla ayni', g.ringAnahtari && g.ringGeri, oz || 'AYAR.halka iki yerden');
     K('Seritte bosluga dokunus kapatir ve yutulur', g.bosKapatti && g.bosYutuldu,
        'acikti=' + g.bosOnceAcik + ' kapatti=' + g.bosKapatti
        + ' kapanmaMs=' + g.bosKapatmaMs + ' gecenMs=' + g.bosGecenMs
@@ -15952,21 +15874,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
 
     K('Serit ustteki simgelerin altinda', g.seritBinmiyor === true,
        (g && g.seritOlcu) || 'serit ust ile cakismiyor');
-    K('Seritte ok satiri merkez satirina yapismiyor', (g.tusAralik|0) >= 12,
-       'ok ile WHEEL arasi ' + g.tusAralik + ' px (en az 12)');
-    K('Seritte RING anahtari yok (merkez seciciyle karismasin)', g.seritteRingYok,
-       oz || 'RING kelimesi seritte tek yerde');
+    K('Skins panelinde WHEEL/RING/DISC secici ve RING dugmesi yok', g.merkezTusYok === true,
+       oz || 'halka/cark yalniz ayarlardaki WHEEL anahtariyla');
     /* 4 Eylul: panel tepeye DAYANMIYOR (ustte tutamak payi kaliyor ki
        yukari-asagi cekip kapatilabilsin) ve baslik ("SKINS") serite
        inip cikmanin kisayolu. Serit kipinde merkez secici gorunur:
        halka / yuvarlak / cark / faz -- secim aninda ekranda. */
     K('Galeri tepeye dayanmiyor, baslik serite indiriyor',
        g.tepeBosluk && g.baslikKucultur, oz || 'ust pay var, baslik dugme');
-    K('Merkez secici seritte: cark / halka / yuvarlak',
-       g.merkezDort && g.merkezSecili, oz || 'uc tus, secili isaretli');
     K('Yukari kaydirma artik galeriyi KAPATMIYOR (tepedeyken hizli kaydirma)',
       g.kaydirdiktaAcikKaldi === true, oz || 'tepedeyken yukari cekis, panel acik kalmali');
-    K('Kareler RING acikken halkali, kapaliyken govdeli', g.kareHalkali && g.kareGovdeli, oz || 'onizleme ekrani anlatiyor');
+    K('Skin onizlemesi WHEEL acik/kapali iken HEP govdeli disk', g.kareGovdeli === true, oz || 'skin aciksa merkez duz disk');
 
   /* ── OFF'TA CARK, DERIDE DISK ────────────────────────────────────
      Iki istek arka arkaya geldi ve ilk bakista celisiyorlar:
@@ -15980,22 +15898,24 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const bek = ms2 => new Promise(r => setTimeout(r, ms2));
     const c = {};
     try{
-      const eskiDeri = AYAR.deri|0, eskiMerkez = AYAR.merkez;
+      /* 7 EKIM: kural artik merkezUygula'da: skin acik -> disk; OFF -> halka, WHEEL (carkAcik)
+         aciksa cark. Burada WHEEL ACIK (OFF'ta cark) ile olculuyor. */
+      const eskiDeri = AYAR.deri|0, eskiCA = AYAR.carkAcik;
       try{ if(window.deriGaleriAcik && deriGaleriAcik()) deriGaleriKapa(); }catch(e){}
       await bek(200);
-      AYAR.deri = 0; AYAR.merkez = 'cark';
+      AYAR.deri = 0; AYAR.carkAcik = true;
       try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
       document.getElementById('deriFirca').click();
       for(let i = 0; i < 40 && !(window.deriGaleriAcik && deriGaleriAcik()); i++) await bek(80);
       await bek(250);
-      c.offCark   = AYAR.merkez === 'cark';         // OFF: kullanicinin merkezi duruyor
+      c.offCark   = AYAR.merkez === 'cark';         // OFF + WHEEL acik: cark
       window.deriGaleriAdim(1);  await bek(250);
-      c.deriDisk  = AYAR.merkez === 'yuvarlak';     // deri: disk odunc alindi
+      c.deriDisk  = AYAR.merkez === 'yuvarlak';     // skin: hep duz disk
       window.deriGaleriAdim(-1); await bek(250);
-      c.geriCark  = AYAR.merkez === 'cark';         // OFF'a donus: odunc geri verildi
+      c.geriCark  = AYAR.merkez === 'cark';         // OFF'a donus: cark geri
       try{ deriGaleriKapa(); }catch(e){}
       await bek(200);
-      AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      AYAR.deri = eskiDeri; AYAR.carkAcik = eskiCA;
       try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
     }catch(e){ c.hata = String(e && e.message || e); }
     return c;
@@ -16049,29 +15969,21 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return olcerVar && kendiVar && !!renk && renk !== 'transparent'
         && renk !== 'rgba(0, 0, 0, 0)';
     }), 'BAUHAUS: firca rengi ham markadan farkli');
-  K('Cizimli deride merkez tuslari basilabiliyor', await pg.evaluate(async()=>{
+  K('Cizimli deride de merkez duz disk (WHEEL acik olsa bile)', await pg.evaluate(async()=>{
       const bek = ms2 => new Promise(r => setTimeout(r, ms2));
-      const eskiDeri = AYAR.deri|0, eskiMerkez = AYAR.merkez;
+      const eskiDeri = AYAR.deri|0, eskiCA = AYAR.carkAcik;
       try{ if(window.deriGaleriAcik && deriGaleriAcik()) deriGaleriKapa(); }catch(e){}
       await bek(150);
-      /* Cizimli bir deri sec (tabloda cizim alani dolu olan ilki). */
       let n = 0;
       for(let i = 0; i < DERILER.length; i++) if(DERILER[i].cizim){ n = i + 1; break; }
-      AYAR.deri = n; try{ deriUygula(); merkezUygula(); }catch(e){}
-      document.getElementById('deriFirca').click();
-      for(let i = 0; i < 40 && !(window.deriGaleriAcik && deriGaleriAcik()); i++) await bek(80);
-      await bek(250);
-      const kap = document.getElementById('deriGaleri');
-      const cark = kap.querySelector('.dg-tus.mrk[data-merkez="cark"]');
-      const acik = !!cark && cark.disabled === false;
-      cark.click(); await bek(300);
-      const gecti = AYAR.merkez === 'cark' && document.body.classList.contains('merkez-cark');
-      try{ deriGaleriKapa(); }catch(e){}
-      await bek(150);
-      AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      AYAR.carkAcik = true; AYAR.deri = n;
       try{ deriUygula(); merkezUygula(); }catch(e){}
-      return acik && gecti;
-    }), 'cizimli deride WHEEL basilabiliyor ve cark aciliyor');
+      await bek(250);
+      const disk = AYAR.merkez === 'yuvarlak' && !document.body.classList.contains('merkez-cark');
+      AYAR.deri = eskiDeri; AYAR.carkAcik = eskiCA;
+      try{ deriUygula(); merkezUygula(); }catch(e){}
+      return disk;
+    }), 'skin acikken cark/halka yok, duz disk (7 Ekim kurali)');
   K('Skins OFF ile acilinca ortada cark kaliyor', mrkOd.offCark === true,
      mrkOd.hata || 'merkez=' + (mrkOd.offCark ? 'cark' : 'degisti'));
   K('Deriye gecince disk odunc, OFF\'a donunce geri',
@@ -16089,10 +16001,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Kural tek: disk deriye ait. Deri duruyorsa odunc de duruyor. */
   K('Deri seciliyken panel kapaninca cark geri gelmiyor', await pg.evaluate(async()=>{
       const bek = ms2 => new Promise(r => setTimeout(r, ms2));
-      const eskiDeri = AYAR.deri|0, eskiMerkez = AYAR.merkez;
+      const eskiDeri = AYAR.deri|0, eskiCA = AYAR.carkAcik;
       try{ if(window.deriGaleriAcik && deriGaleriAcik()) deriGaleriKapa(); }catch(e){}
       await bek(150);
-      AYAR.deri = 0; AYAR.merkez = 'cark';
+      AYAR.deri = 0; AYAR.carkAcik = true;
       try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
       document.getElementById('deriFirca').click();
       for(let i = 0; i < 40 && !(window.deriGaleriAcik && deriGaleriAcik()); i++) await bek(80);
@@ -16103,7 +16015,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       await bek(350);
       const kapaninca = AYAR.merkez;
       const deriDuruyor = (AYAR.deri|0) > 0;
-      AYAR.deri = eskiDeri; AYAR.merkez = eskiMerkez;
+      AYAR.deri = eskiDeri; AYAR.carkAcik = eskiCA;
       try{ deriUygula(); merkezUygula(); ayarKaydet(); }catch(e){}
       return acikkenDisk && deriDuruyor && kapaninca === 'yuvarlak';
     }), 'deri acikken merkez disk kaliyor');
@@ -17463,30 +17375,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
          display:none'dan donerken olcusu sifir oldugu icin ilk kare
          karanlik bir delik oluyordu. Ikisi de burada olculuyor:
          sinif dondu mu ve tuvalin gercek bir olcusu var mi. */
-      K('RINGS ONLY ayni karede uygulaniyor', await pg.evaluate(()=>{
-          const sat = document.querySelector('.sat[data-ayar="halka"]');
+      /* 7 EKIM: RING satiri kalkti; ayni "ayni karede uygulanir" kurali yeni WHEEL anahtari icin:
+         tiklayinca body sinifi (merkez-cark) AYNI KAREDE doner, ayarlar depoya yazilir. Durum geri konur. */
+      K('WHEEL anahtari ayni karede uygulaniyor', await pg.evaluate(()=>{
+          const sat = document.querySelector('.sat[data-ayar="carkAcik"]');
           if(!sat) return false;
-          /* ── DURUM GERI BIRAKILIYOR ──────────────────────────────
-             Anahtara dokunmak ayarlari DEPOYA yaziyor; bu kontrol
-             kendinden sonraki sayfa yuklemelerine deri birakirsa
-             baska kontroller (mesela "kalici CSS filtresi") o
-             derinin tuval suzgecini gorup kirmizi yaniyor -- bir
-             kez oldu ve boyle bulundu. Ne alindiysa geri konuyor. */
-          const eskiDeri = AYAR.deri|0, eskiHalka = !!AYAR.halka;
-          if(!AYAR.deri){ AYAR.deri = 2; deriUygula(); }
-          if(AYAR.halka){ sat.click(); }
+          const eskiDeri = AYAR.deri|0, eskiCA = AYAR.carkAcik === true;
+          AYAR.deri = 0; AYAR.carkAcik = false; try{ deriUygula(); merkezUygula(); }catch(e){}
           sat.click();                       // ac
-          const v = document.getElementById('viz');
-          const acildi = document.body.classList.contains('sadehalka')
-                      && getComputedStyle(v).display !== 'none'
-                      && v.width > 10 && v.height > 10;
+          const acildi = AYAR.carkAcik === true && document.body.classList.contains('merkez-cark');
           sat.click();                       // kapa
-          const kapandi = !document.body.classList.contains('sadehalka');
-          AYAR.deri = eskiDeri; AYAR.halka = eskiHalka;
+          const kapandi = AYAR.carkAcik === false && !document.body.classList.contains('merkez-cark')
+                       && AYAR.merkez === 'halka';
+          AYAR.deri = eskiDeri; AYAR.carkAcik = eskiCA;
           try{ ayarKaydet(); }catch(e){}
-          try{ deriUygula(); }catch(e){}
+          try{ deriUygula(); merkezUygula(); }catch(e){}
           return acildi && kapandi;
-        }), 'sinif ayni karede donuyor, tuval bos donmuyor');
+        }), 'sinif ayni karede donuyor');
 
       K('Govdenin kendisine dokunulmadi',
          /body\.deri \.disk\{border-radius:50%;background:var\(--d-zem\)/.test(kaynak)
@@ -18163,41 +18068,46 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Her is kendi alt baslikta; hepsi TEMIZ bir sayfada (localStorage
      silinir) kosuyor ki ustteki testlerin biraktigi durum karismasin. */
   {
-    /* ── 2. ORBITAPE, GALERIDE SECILEN CARKLA ACILIR ───────────────
-       Kullanicinin sozu: "orbitape tarafinda skins kisayolunda cark
-       sectiysem artik orbitape'i carkla acman gerekiyor."
-       OLCUM (eski kodda): galeriden WHEEL secince yalniz anlik
-       AYAR.merkez 'cark' oluyordu, ORBITAPE'in hatirladigi kayit
-       (merkezOrb) 'yuvarlak' kaliyordu; RADIOTAPE'e gidip donunce ya da
-       yenileyince 'yuvarlak'a geri donuluyordu. Duzeltme:
-       deri_galeri.js merkezKalici(). */
+    /* ── 2. WHEEL AYARI: KALICI, IKI KIPTE ORTAK (7 Ekim) ────────────
+       pj: "OFF skin'de cark ac/kapa, kalici ayarlanan, app acilip kapansa bile; son kapattigini
+       hatirlasin; iki mood'da da gecerli." (Eski kural: galeriden WHEEL secmek ORBITAPE'in ayri
+       kaydina yaziliyordu; kaldirildi, skins'ten secim yok artik.)
+       OLCUM: ayarlardaki WHEEL satirina GERCEK tiklama -> merkez cark; RADIOTAPE<->ORBITAPE
+       gecisinde ve sayfa yenilenince cark kaliyor; kapatinca halka. */
     const { sayfa: p2, kapat: k2 } = await sayfaAc(c, { bekle: 2500 });
     await p2.evaluate(()=>{ try{ localStorage.clear(); }catch(e){} });
     await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
-    const dm = ()=>p2.evaluate(()=>({ merkez:AYAR.merkez, orb:AYAR.merkezOrb, rad:AYAR.radyoMerkez }));
+    const dm = ()=>p2.evaluate(()=>({ merkez:AYAR.merkez, ca:AYAR.carkAcik === true,
+      kayit:(()=>{ try{ return JSON.parse(localStorage.getItem('orbitape.ayar')||'{}').carkAcik === true; }catch(e){ return null; } })() }));
     const orbGec = async()=>{ await p2.evaluate(()=>{ AYAR.mood=true; moodUygula(true); }); await p2.waitForTimeout(700); };
     const radGec = async()=>{ await p2.evaluate(()=>{ AYAR.mood=false; moodUygula(false); }); await p2.waitForTimeout(700); };
-    await orbGec();
+    const tikla = ()=>p2.evaluate(()=>{ document.getElementById('ayarTut').click(); }).then(()=>p2.waitForTimeout(400))
+      .then(()=>p2.evaluate(()=>{ document.querySelector('#ayar .sat[data-ayar="carkAcik"]').click(); }))
+      .then(()=>p2.waitForTimeout(500))
+      .then(()=>p2.evaluate(()=>{ document.getElementById('ayarTut').click(); })).then(()=>p2.waitForTimeout(400));
     const d0 = await dm();
-    await p2.evaluate(()=>document.getElementById('deriFirca').click()); await p2.waitForTimeout(900);
-    await p2.evaluate(()=>document.querySelector('.dg-merkez [data-merkez="cark"]').click()); await p2.waitForTimeout(500);
+    K('Ilk acilista WHEEL kapali, OFF skin: halka', d0.merkez === 'halka' && d0.ca === false,
+      'merkez '+d0.merkez+' carkAcik '+d0.ca);
+    await tikla();
     const d1 = await dm();
-    K('Galeriden WHEEL secmek ORBITAPE kaydina yaziliyor',
-      d1.merkez === 'cark' && d1.orb === 'cark',
-      'once merkezOrb '+d0.orb+' -> sonra merkez '+d1.merkez+' / merkezOrb '+d1.orb);
-    await radGec(); await orbGec();
-    const d2 = await dm();
-    K('RADIOTAPE\'e gidip donunce ORBITAPE carkla aciliyor', d2.merkez === 'cark', 'donuste merkez '+d2.merkez);
-    await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
+    K('Ayarlardaki WHEEL anahtari carki aciyor ve depoya yaziyor',
+      d1.merkez === 'cark' && d1.ca === true && d1.kayit === true,
+      'merkez '+d1.merkez+' carkAcik '+d1.ca+' depo '+d1.kayit);
     await orbGec();
+    const d2o = await dm();
+    await radGec();
+    const d2r = await dm();
+    K('WHEEL iki kipte ortak: ORBITAPE\'e gidip donunce cark kaliyor',
+      d2o.merkez === 'cark' && d2r.merkez === 'cark', 'orbitape '+d2o.merkez+' / radyo '+d2r.merkez);
+    await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
     const d3 = await dm();
-    K('Yenileyince ORBITAPE carkla aciliyor', d3.merkez === 'cark' && d3.orb === 'cark', 'yenileme sonrasi merkez '+d3.merkez);
-    /* Ters yon: ORBITAPE'de DISC secmek RADIOTAPE'in carkini EZMEZ. */
-    await p2.evaluate(()=>document.getElementById('deriFirca').click()); await p2.waitForTimeout(900);
-    await p2.evaluate(()=>document.querySelector('.dg-merkez [data-merkez="yuvarlak"]').click()); await p2.waitForTimeout(500);
+    K('Yenileyince (uygulama kapanip acilinca) cark acik kaliyor', d3.merkez === 'cark' && d3.ca === true,
+      'yenileme sonrasi merkez '+d3.merkez);
+    await tikla();
     const d4 = await dm();
-    K('ORBITAPE\'de DISC secmek RADIOTAPE merkezini bozmuyor',
-      d4.orb === 'yuvarlak' && d4.rad === 'cark', 'merkezOrb '+d4.orb+' · radyoMerkez '+d4.rad);
+    K('WHEEL kapatilinca halka geri geliyor ve kapali hatirlaniyor',
+      d4.merkez === 'halka' && d4.ca === false && d4.kayit === false,
+      'merkez '+d4.merkez+' carkAcik '+d4.ca+' depo '+d4.kayit);
     await k2();
   }
 
@@ -18220,8 +18130,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const ink = n=>{ const e=k.querySelector('.uck-ad[data-kip="'+n+'"]'); const ls=parseFloat(getComputedStyle(e).letterSpacing)||0;
         const rg=document.createRange(); rg.selectNodeContents(e); const b=rg.getBoundingClientRect(); return (b.left+b.width/2) - ls/2; };
       const yr = yol.getBoundingClientRect();
+      /* 7 EKIM: yazi pill'in SAGINDA; ortalama DIKEY (gorunen yazinin dikey merkezi pill ile ayni). */
+      const inkV = n=>{ const e=k.querySelector('.uck-ad[data-kip="'+n+'"]');
+        const rg=document.createRange(); rg.selectNodeContents(e); const b=rg.getBoundingClientRect(); return (b.top+b.bottom)/2; };
       return { p:parseFloat(k.style.getPropertyValue('--uck-p')), orbit:ad('orbit'), radio:ad('radio'),
                yolW:yr.width, mood:document.body.classList.contains('mood'), tp,
+               adlarW:k.querySelector('.uck-adlar').getBoundingClientRect().width,
+               yolDikey:(yr.top+yr.bottom)/2, orbitDikey:inkV('orbit'), radioDikey:inkV('radio'),
                yolMerkez:yr.left+yr.width/2, orbitMerkez:ink('orbit'), radioMerkez:ink('radio') };
     });
     const bas = await sw();
@@ -18229,8 +18144,9 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const yb = await p3.evaluate(()=>{ const r=document.querySelector('#kipKisayol .uck-yol').getBoundingClientRect(); return {l:r.left, r:r.right}; });
     await p3.mouse.move(tx.x, tx.y); await p3.mouse.down();
     const iz = [];
-    for(const f of [0.9,0.75,0.6,0.5,0.4,0.25,0.1,0.0]){
-      await p3.mouse.move(yb.l + 9 + f*(yb.r-yb.l-18), tx.y, {steps:4}); await p3.waitForTimeout(70);
+    /* 7 EKIM: topuz radyoda SOLDA; ORBITAPE'e gitmek icin SAGA surulur (p: 1 -> 0). */
+    for(const f of [0.1,0.25,0.4,0.5,0.6,0.75,0.9,1.0]){
+      await p3.mouse.move(yb.l + 12 + f*(yb.r-yb.l-24), tx.y, {steps:4}); await p3.waitForTimeout(70);
       iz.push(await sw());
     }
     const ortaTp = iz[3].tp;
@@ -18243,26 +18159,26 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       'p: '+ps.map(v=>v.toFixed(2)).join(' → '));
     K('Yazilar switche bagli, SIRAYLA: hicbir an ikisi birden gorunmuyor',
       iz.every(x=> Math.min(x.orbit.op, x.radio.op) < 0.05)
-        && iz[0].radio.op > 0.9 && iz[iz.length-1].orbit.op > 0.9
-        && iz.some(x=> x.orbit.op > 0.1 && x.orbit.op < 0.9),
-      iz.map(x=>x.radio.op.toFixed(2)+'/'+x.orbit.op.toFixed(2)).join('  ')+'  (RADIO/ORBIT)');
+        && iz[0].orbit.op > 0.9 && iz[iz.length-1].radio.op > 0.9
+        && iz.some(x=> x.radio.op > 0.1 && x.radio.op < 0.9),
+      iz.map(x=>x.orbit.op.toFixed(2)+'/'+x.radio.op.toFixed(2)).join('  ')+'  (ORBIT/RADIO; yazi GIDILECEK yeri soyler)');
     /* 5 Ekim: ESKI SART TERS DONDU (bilerek). Topuz rengi konuma gore
        degisiyordu (iki sabit uc rengi); artik switch temanin tek rengini
        tasiyor, suruklerken renk SABIT, kip kesinlesince yeni rafin rengine
        geciyor (son.tp farkli). */
     K('Topuz rengi suruklerken sabit, kip degisince yeni rafin rengi', bas.tp === ortaTp && son.tp !== bas.tp,
       'bas '+bas.tp+' · orta '+ortaTp+' · birakinca '+son.tp);
-    K('Birakinca kip degisiyor ve topuz ucta duruyor', son.mood === true && son.p === 0 && son.orbit.op > 0.95,
-      'mood '+son.mood+' · p '+son.p+' · ORBITAPE yazisi '+son.orbit.op);
-    K('Kip isimleri switch yolundan TASMIYOR',
-      bas.radio.w <= bas.yolW && son.orbit.w <= son.yolW,
-      'yol '+bas.yolW+' px · RADIOTAPE '+Math.round(bas.radio.w)+' px · ORBITAPE '+Math.round(son.orbit.w)+' px');
-    /* ORTALI (kullanici: "bu yazilar ortalanmiyor mu... standart seyler"):
-       gorunen isim yolun tam ortasinda, iki kipte de. */
-    K('Kip ismi switch yolunun ORTASINDA (iki kipte de)',
-      Math.abs(bas.radioMerkez - bas.yolMerkez) <= 1.5 && Math.abs(son.orbitMerkez - son.yolMerkez) <= 1.5,
-      'RADIOTAPE: yazi '+bas.radioMerkez.toFixed(1)+' / yol '+bas.yolMerkez.toFixed(1)
-      +' · ORBITAPE: yazi '+son.orbitMerkez.toFixed(1)+' / yol '+son.yolMerkez.toFixed(1));
+    K('Birakinca kip degisiyor ve topuz ucta duruyor', son.mood === true && son.p === 0 && son.radio.op > 0.95,
+      'mood '+son.mood+' · p '+son.p+' · RADIOTAPE (gidilecek yer) yazisi '+son.radio.op);
+    K('Kip isimleri kendi kutusundan TASMIYOR',
+      bas.radio.w <= bas.adlarW && bas.orbit.w <= bas.adlarW,
+      'yazi kutusu '+Math.round(bas.adlarW)+' px · RADIOTAPE '+Math.round(bas.radio.w)+' px · ORBITAPE '+Math.round(bas.orbit.w)+' px');
+    /* ORTALI (kullanici: "bu yazilar ortalanmiyor mu... standart seyler"): 7 EKIM: yazi pill'in
+       SAGINDA; gorunen yazinin DIKEY merkezi pill'in dikey merkeziyle ayni (iki kipte de). */
+    K('Kip ismi pill ile dikeyde ORTALI (iki kipte de)',
+      Math.abs(bas.radioDikey - bas.yolDikey) <= 2 && Math.abs(son.orbitDikey - son.yolDikey) <= 2,
+      'RADIOTAPE: yazi '+bas.radioDikey.toFixed(1)+' / pill '+bas.yolDikey.toFixed(1)
+      +' · ORBITAPE: yazi '+son.orbitDikey.toFixed(1)+' / pill '+son.yolDikey.toFixed(1));
     await k3();
   }
   {
@@ -18309,18 +18225,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         const r = await p7.evaluate(()=>{
           const k = document.getElementById('kipKisayol'), y = k.querySelector('.uck-yol').getBoundingClientRect();
           let tasan = '';
+          /* 7 EKIM: yazi pill'in SAGINDA; olculen: ekran kenarindan 8 px'den fazla tasmiyor ve pill ile ust uste binmiyor. */
           k.querySelectorAll('.uck-ad').forEach(e=>{
-            if(parseFloat(getComputedStyle(e).opacity) > 0.5){
-              const rg = document.createRange(); rg.selectNodeContents(e); const q = rg.getBoundingClientRect();
-              if(q.right > y.right + 1 || q.left < y.left - 1) tasan = e.dataset.kip;
-            }
+            const rg = document.createRange(); rg.selectNodeContents(e); const q = rg.getBoundingClientRect();
+            if(q.right > innerWidth - 8 || q.left < y.right - 1) tasan = e.dataset.kip;
           });
           return tasan;
         });
         if(r) tasanlar.push('%' + yz + ' ' + (m ? 'ORBITAPE' : 'RADIOTAPE') + ': ' + r);
       }
     }
-    K('Switch isimleri yazi boyutu %150\'ye kadar cubuktan tasmiyor', tasanlar.length === 0,
+    K('Switch isimleri yazi boyutu %150\'ye kadar ekrandan tasmiyor, pill ile cakismiyor', tasanlar.length === 0,
       tasanlar.length ? tasanlar.join(' | ') : '%100, %115, %130, %150 x iki kip: hepsi sigiyor');
     await p7.evaluate(()=>{ document.documentElement.style.fontSize = ''; });
     /* ── ZARARSIZ TARAYICI BILDIRIMI HATA PANELI ACMAZ ───────────────
