@@ -4931,7 +4931,8 @@
          pj: "OFF skin'de cark ac/kapa, kalici, iki kipte de gecerli; skins'ten halka/cark
          kisayolu kalksin; diger skin'ler hep duz disk." Eski CENTER (RING/WHEEL secimi) ve RING
          anahtari BU TEK anahtarla degisti. Halka OFF skin'de hep var; bu anahtar yalniz carki
-         acar/kapar. Kalici (AYAR.carkAcik), RADIOTAPE ve ORBITAPE'te ortak, varsayilan KAPALI.
+         acar/kapar. KIP BASINA AYRI ve kalici (8 Ekim): RADIOTAPE varsayilan ACIK, ORBITAPE KAPALI;
+         satir icinde bulunulan kipin ayarini cevirir (AYAR.carkAcik koprusu).
          Bir skin aciksa etkisi yok: skin'lerde merkez hep duz disk (bkz. merkezUygula). -->
     <div class="sat" data-ayar="carkAcik" role="switch" tabindex="-1">
       <span>WHEEL</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
@@ -5469,7 +5470,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.07';
+  var ORB_SURUM = '2026.10.08';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -7335,7 +7336,7 @@
            OFF skin                   -> halka; ayarlardaki WHEEL aciksa halka + cark
          Eskiden skins galerisinde WHEEL/RING/DISC kisayolu ve ayarlarda CENTER/RING vardi; secim
          kip basina ayri kayitliydi ve birbirini eziyordu (kip degisince cark kayboluyordu). Bu
-         DENENDI, GERI ALINDI: tek ayar (carkAcik), iki kipte ortak. AYAR.merkez bu kuralin AYNASI:
+         DENENDI, GERI ALINDI: tek ayar (carkAcik) iki kipte ORTAK yapilmisti (7 Ekim); pj kip basina ayri istedi (8 Ekim): carkRadyo/carkOrbit. AYAR.merkez bu kuralin AYNASI:
          baska kodlar (galeri onizlemesi vb.) onu hala okuyor. */
       const m = zorlama || ((AYAR.deri|0) > 0 ? 'yuvarlak' : (AYAR.carkAcik ? 'cark' : 'halka'));
       AYAR.merkez = m;
@@ -7354,6 +7355,12 @@
     }catch(e){ _yut(e); }
   }
   try{ window.merkezUygula = merkezUygula; window.carkYukle = carkYukle; }catch(e){ _yut(e); }
+  /* WHEEL aç/kapa: ayarlar satiri ve skins seridi (minimize menu) ayni yola geliyor. Icinde
+     bulunulan kipin ayarini cevirir, kaydeder, hemen uygular. */
+  try{ window['carkDegistir'] = function(){
+    try{ AYAR.carkAcik = !AYAR.carkAcik; ayarKaydet(); merkezUygula(); }catch(e){ _yut(e); }
+    try{ if(typeof window['ayarDurumTazele'] === 'function') window['ayarDurumTazele'](); }catch(e){ _yut(e); }
+  }; }catch(e){ _yut(e); }
   function deriGaleriYukle(){
     try{
       if(window.DERI_GALERI_HAZIR || _galeriIsteniyor) return;
@@ -12511,7 +12518,7 @@
        merkezOrb  : ORBITAPE'inki (varsayılan HALKA = çarksız).
        Tek 'merkez' alanı varken biri diğerini eziyordu: radyoya
        dönünce çark kayboluyordu. */
-    deriKilit:false, radyoDeri:0, radyoMerkez:'cark', carkAcik:false,
+    deriKilit:false, radyoDeri:0, radyoMerkez:'cark', carkRadyo:true, carkOrbit:false,
     merkezOrb:'yuvarlak',
     /* SEMBOL SPIN (17 Eylul): varsayilan KAPALI. Acikken sag ustteki
        3 sembol eski soyut oyunu oynar (rastgele donme + ucluk
@@ -12521,6 +12528,15 @@
        moodAktifMi(). Adin "SPIN" olmasi bilerek: acik olan hal, eski
        DONEN/oyun halidir. */
     sembolSpin:false };
+  /* AYAR.carkAcik = ICINDE BULUNULAN KIPIN cark ayari (radyoda carkRadyo, ORBITAPE'te carkOrbit).
+     Gercek kayit iki ayri alan; bu yalnizca okuma/yazma KOPRUSU: ayar satiri, skins seridi ve
+     merkezUygula tek isimle konusuyor. Numaralanamaz (enumerable:false) -> depoya yazilmaz,
+     yalniz iki gercek alan yazilir. */
+  try{
+    Object.defineProperty(AYAR, 'carkAcik', { enumerable:false, configurable:true,
+      get(){ return AYAR.mood ? AYAR.carkOrbit === true : AYAR.carkRadyo !== false; },
+      set(v){ if(AYAR.mood) AYAR.carkOrbit = !!v; else AYAR.carkRadyo = !!v; } });
+  }catch(e){ _yut(e); }
   try{
     const _a = JSON.parse(localStorage.getItem('orbitape.ayar') || '{}');
     if(_a && typeof _a === 'object'){
@@ -12696,8 +12712,12 @@
          Satir yokken depoda kalmis eski bir secim gorunmez ama etkili olurdu; o yuzden artik
          OKUNMUYOR: tema hep AUTO, iki kilit hep kapali (eski varsayilanlar). */
       AYAR.tema = 0; AYAR.temaKilit = false; AYAR.deriKilit = false;
-      /* WHEEL (ayarlar): OFF skin'de cark acik/kapali, kalici, iki kipte ortak. Varsayilan KAPALI. */
-      if(_a.carkAcik === true) AYAR.carkAcik = true;
+      /* WHEEL: OFF skin'de cark acik/kapali, KIP BASINA AYRI ve kalici (8 Ekim, pj: "RADIOTAPE
+         carkli aciliyor, ORBITAPE carksiz; en son neyle kapattiysan onunla ac"). Varsayilanlar:
+         radyo ACIK, ORBITAPE KAPALI. (7 Ekim'de tek ortak ayar yapilmisti: pj'nin istedigi bu degildi,
+         geri alindi. Eski `carkAcik` kaydi artik okunmuyor.) */
+      if(_a.carkRadyo === false) AYAR.carkRadyo = false;
+      if(_a.carkOrbit === true) AYAR.carkOrbit = true;
       if(typeof _a.radyoDeri === 'number' && _a.radyoDeri >= 0
          && _a.radyoDeri <= 148) AYAR.radyoDeri = _a.radyoDeri|0;
       if(_a.radyoMerkez === 'cark' || _a.radyoMerkez === 'faz'

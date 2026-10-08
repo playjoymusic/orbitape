@@ -92,6 +92,8 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        yonu ve isi degisiyor -- ▾ listeyi acar, ▴ serite doner.
        Eskiden burada "izgarada gizle" kurali vardi; kaldirildi. */
     ".dg-tus.halka{width:auto;padding:0 8px;font-size:0.625rem;letter-spacing:.22em;opacity:.45}",
+    ".dg-tus.cark{width:auto;min-width:44px;padding:0 6px;font-size:0.625rem;letter-spacing:.14em;opacity:.55}",
+    ".dg-tus.cark[aria-pressed='true']{opacity:1;color:var(--dg-vurgu)}",
     /* ── SUN: GUN DONGUSU ANAHTARI ─────────────────────────────
        Gun isigi bir DERI degil bir MOOD: hangi deri secili olursa
        olsun uzerine biniyor. O yuzden menude uc satir acmak yerine
@@ -169,9 +171,10 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
        Ad ne olursa olsun sutunlar oynamiyor; uzun ad kesilip uc
        nokta ile bitiyor (asagida). Oklar da kenara yapismiyor,
        adin iki yaninda -- basparmak ayni yeri buluyor. */
-    "#deriGaleri.serit .dg-bas{display:grid;grid-template-columns:auto 34px minmax(72px,140px) 34px 34px;align-items:center;gap:2px;padding:5px 10px 4px;flex-wrap:nowrap;justify-content:center}",
+    "#deriGaleri.serit .dg-bas{display:grid;grid-template-columns:auto 34px minmax(72px,140px) 34px auto 34px;align-items:center;gap:2px;padding:5px 10px 4px;flex-wrap:nowrap;justify-content:center}",
     "#deriGaleri.serit .dg-secili{font-size:0.9375rem;letter-spacing:.08em;min-width:0;max-width:100%;text-align:center;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
     "#deriGaleri.serit .dg-tus{width:34px;height:32px;font-size:0.9375rem}",
+    "#deriGaleri.serit .dg-tus.cark{width:auto;min-width:44px;padding:0 6px;font-size:0.625rem}",
     /* ▦ ile ✕ oklardan bir tik uzakta: yanlislikla kapatma azalsin. */
     /* ── LISTE OKU ARTIK BIR TUS ─────────────────────────────────
        Once "tus degil, IPUCU" diye yazilmisti: 26 piksel genis,
@@ -238,7 +241,7 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
       KURALLAR.forEach(k=>{ try{ st.sheet.insertRule(k, st.sheet.cssRules.length); }catch(e){ yut(e); } });
     }catch(e){ yut(e); }
   }
-  let halkaTus = null, merkezTuslari = [];
+  let carkTus = null, merkezTuslari = [];
   let buyutTus = null;
   /* ── ACARKEN DISK, KAPARKEN ESKISI (9 Eylul) ──────────────────
      Kullanicinin sozu: "skins ikonuna basinca bir anda cark gidiyor;
@@ -307,7 +310,6 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
         t.disabled = false;
         t.style.opacity = '';
       });
-      if(halkaTus){ halkaTus.disabled = false; halkaTus.style.opacity = ''; }
     }catch(e){ yut(e); }
   }
   let kap = null, izg = null, adYazi = null, anlamYazi = null;
@@ -538,6 +540,13 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     bas.appendChild(baslik);
     bas.appendChild(adYazi);
     bas.appendChild(tus('ileri', 'Next skin', '▶', ()=>adim(1)));
+    /* 8 EKIM (pj: "minimize menuden de cark acma kapama olacak"): WHEEL aç/kapa, skins seridinde de.
+       Icinde bulunulan kipin ayarini cevirir (RADIOTAPE ve ORBITAPE ayri hatirlar). */
+    carkTus = tus('cark', 'Wheel on or off', T('WHEEL'), ()=>{
+      try{ const cd = window['carkDegistir']; if(typeof cd === 'function') cd(); }catch(e){ yut(e); }   // window['..']: tip denetimi nokta yazimini sevmiyor
+      carkIsaret();
+    });
+    bas.appendChild(carkTus);
     /* 7 EKIM: RING dugmesi KALDIRILDI (pj: "skins panelinden halka/wheel degistirme kisayolunu
        kaldir"). Halka yalniz OFF skin'de var; cark ayarlardaki WHEEL anahtariyla acilir/kapanir. */
     /* Kucultme tusu (▁) KALKTI: firca tekrar basilinca serit oluyor
@@ -597,14 +606,19 @@ try{ window.DERI_GALERI_BASLADI = true; }catch(e){}
     document.body.appendChild(kap);
   }
 
+  /* WHEEL dugmesi durumu: acik/kapali (icinde bulunulan kipin ayari). Bir skin aciksa merkez
+     zaten duz disk; dugme yine calisir (OFF'a donunce gecerli) ama soluk gorunur. */
+  function carkIsaret(){
+    try{
+      if(!carkTus) return;
+      const a = (typeof AYAR !== 'undefined') && !!AYAR.carkAcik;
+      carkTus.setAttribute('aria-pressed', a ? 'true' : 'false');
+      carkTus.style.opacity = ((typeof AYAR !== 'undefined') && (AYAR.deri|0) > 0) ? '.4' : '';
+    }catch(e){ yut(e); }
+  }
   function halkaIsaret(){
     try{ merkezIsaret(); }catch(e){}
-    try{
-      if(!halkaTus) return;
-      const a = (typeof AYAR !== 'undefined') && !!AYAR.halka;
-      halkaTus.setAttribute('aria-pressed', a ? 'true' : 'false');
-      halkaTus.textContent = T('RING');
-    }catch(e){ yut(e); }
+    try{ carkIsaret(); }catch(e){ yut(e); }
   }
   function isaretle(kaydir){
     try{

@@ -3666,7 +3666,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       return m;
     };
     const eski = await acVeOku({ sesAcildi:true, merkez:'yuvarlak' });
-    const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, carkAcik:true });
+    const yeni = await acVeOku({ sesAcildi:true, merkezOnar:true, carkRadyo:false, carkOrbit:true });
 
     /* ── DERI HER ACILISTA KAYIYORDU ─────────────────────────────
        Bildirilen: "UFO skiniyle kapatiyorum, app'i baska bir skinle
@@ -3717,11 +3717,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* 7 EKIM: ilk acilista OFF skin'de HALKA (cark kapali); WHEEL acildiysa kapayip acinca CARK
        geri gelir (kalici, iki kipte ortak). Eski iki kip kaydi (radyoMerkez/merkezOrb) artik
        merkezi belirlemiyor. */
-    K('Ilk acilista OFF skin: ortada halka, cark kapali', eski.merkez === 'halka' && eski.ca === false,
-      'damgasiz depoda merkez=' + eski.merkez + ' carkAcik=' + eski.ca + ' (halka + kapali gelmeliydi)');
-    K('WHEEL acik birakilirsa kapayip acinca cark geliyor (kalici)',
-      yeni.merkez === 'cark' && yeni.ca === true,
-      'damgali depoda merkez=' + yeni.merkez + ' carkAcik=' + yeni.ca + ' (cark + acik gelmeliydi)');
+    /* 8 EKIM: cark KIP BASINA ayri; RADIOTAPE varsayilan ACIK (ilk acilis radyoda). Kapatilirsa kapali hatirlanir. */
+    K('Ilk acilista RADIOTAPE carkli aciliyor (varsayilan)', eski.merkez === 'cark' && eski.ca === true,
+      'damgasiz depoda merkez=' + eski.merkez + ' carkAcik=' + eski.ca + ' (cark + acik gelmeliydi)');
+    K('Radyoda cark KAPATILIRSA kapayip acinca halka (kalici)',
+      yeni.merkez === 'halka' && yeni.ca === false,
+      'damgali depoda merkez=' + yeni.merkez + ' carkAcik=' + yeni.ca + ' (halka + kapali gelmeliydi)');
     K('Secili deri kapayip acinca yerinde kaliyor',
       !!d1 && !!d2 && d1.deri === sonDeri && d2.deri === sonDeri,
       'iki acilis: ' + (d1 ? d1.deri : '-') + ' -> ' + (d2 ? d2.deri : '-')
@@ -3827,7 +3828,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     await s7.addInitScript(d=>{
       try{ localStorage.setItem('orbitape.ayar', d); }catch(e){}
     }, JSON.stringify({ sesAcildi:true, merkezOnar:true, deriSurum:3,
-                         carkAcik:true, deri:0, deriRastgele:true, deriTorba:[42] }));
+                         carkRadyo:true, carkOrbit:true, deri:0, deriRastgele:true, deriTorba:[42] }));
     await s7.goto(S, {waitUntil:'load'});
     await s7.waitForTimeout(700);
     const rsm = await s7.evaluate(()=>{
@@ -3863,10 +3864,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const ls = await pg.evaluate(async ()=>{
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const eskiMood = AYAR.mood, eskiMod = mod, eskiAktifMod = AKTIF_MOD;
-      const eskiDeri = AYAR.deri, eskiRadyoDeri = AYAR.radyoDeri, eskiCA = AYAR.carkAcik;
+      const eskiDeri = AYAR.deri, eskiRadyoDeri = AYAR.radyoDeri, eskiCR = AYAR.carkRadyo, eskiCO = AYAR.carkOrbit;
 
       AYAR.mood = false; mod = 'radio'; moodUygula(false); await bek(160);
-      AYAR.carkAcik = true;
+      AYAR.carkRadyo = true; AYAR.carkOrbit = true;      // iki kipte de WHEEL acik
       AYAR.deri = 42; try{ merkezUygula(); }catch(e){}
       const radyodaSkinDisk = (AYAR.merkez === 'yuvarlak');
 
@@ -3890,7 +3891,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       AYAR.carkAcik = false; try{ merkezUygula(); }catch(e){}
       const kapaliHalka = (AYAR.merkez === 'halka');
 
-      AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.radyoDeri = eskiRadyoDeri; AYAR.carkAcik = eskiCA;
+      AYAR.mood = eskiMood; AYAR.deri = eskiDeri; AYAR.radyoDeri = eskiRadyoDeri; AYAR.carkRadyo = eskiCR; AYAR.carkOrbit = eskiCO;
       moodUygula(false); await bek(200);
       AKTIF_MOD = eskiAktifMod; mod = eskiMod;
       return { radyodaSkinDisk, zorlandiMi, saklandiMi, orbitOffCark, geriGeldiMi,
@@ -13063,11 +13064,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       const c = {};
       const bek = ms=>new Promise(r=>setTimeout(r,ms));
       const eskiBl = beyazListe, eskiDenendi = _blDenendi, eskiAile = AKTIF_AILE,
-            eskiMood = AYAR.mood, eskiCAkd = AYAR.carkAcik, eskiDeriKd = AYAR.deri;
+            eskiMood = AYAR.mood, eskiCRkd = AYAR.carkRadyo, eskiCOkd = AYAR.carkOrbit, eskiDeriKd = AYAR.deri;
       try{
         AYAR.mood = false; moodUygula(false); await bek(200);
         /* 7 EKIM: cark yalniz OFF skin + WHEEL acikken var; bu olcum carkin geri gelmesine bakiyor. */
-        AYAR.carkAcik = true; AYAR.deri = 0;
+        AYAR.carkRadyo = true; AYAR.carkOrbit = true; AYAR.deri = 0;
         try{ if(!window.CARK_HAZIR) window.carkYukle(); window.merkezUygula(); }catch(e){}
         for(let i = 0; i < 40 && !window.CARK_HAZIR; i++) await bek(100);
         _blDenendi = true; _blSoz = null;
@@ -13087,7 +13088,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         c.carkGeriGeldi = !!ct && +getComputedStyle(ct).opacity > 0.95;
         c.moodAcikKaldi = document.body.classList.contains('mood') === true;
       }catch(e){ c.hata = String(e && e.message || e); }
-      try{ AYAR.mood = eskiMood; AYAR.carkAcik = eskiCAkd; AYAR.deri = eskiDeriKd; moodUygula(false); window.merkezUygula(); }catch(e){}
+      try{ AYAR.mood = eskiMood; AYAR.carkRadyo = eskiCRkd; AYAR.carkOrbit = eskiCOkd; AYAR.deri = eskiDeriKd; moodUygula(false); window.merkezUygula(); }catch(e){}
       beyazListe = eskiBl; _blDenendi = eskiDenendi; AKTIF_AILE = eskiAile;
       return c;
     });
@@ -15680,6 +15681,20 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
            (eski olcu: ok satiri ile merkez satiri arasi 12 px -- satir kalmayinca anlamsiz). */
         c.merkezTusYok = !kap.querySelector('.dg-tus.mrk') && !kap.querySelector('.dg-tus.halka')
                       && !kap.querySelector('.dg-merkez');
+        /* 8 EKIM: skins seridinde (minimize menu) WHEEL ac/kapa dugmesi VAR ve icinde bulunulan kipin
+           ayarini cevirir (OFF skin'de gorunen cark/halka ayni karede degisir). */
+        {
+          const ct = kap.querySelector('.dg-tus.cark');
+          c.carkTusVar = !!ct;
+          if(ct){
+            const eski = AYAR.carkAcik, eskiDeri2 = AYAR.deri|0;
+            ct.click(); await bek(200);
+            c.carkTusCevirdi = AYAR.carkAcik === !eski && ct.getAttribute('aria-pressed') === String(!eski);
+            ct.click(); await bek(200);
+            c.carkTusGeri = AYAR.carkAcik === eski;
+            c.carkTusBoy = Math.round(ct.getBoundingClientRect().width);
+          }
+        }
         c.arkaDokunulur = !document.getElementById('tp').closest('[inert]');
         /* OKLARIN YONU EKRANI TAKIP EDIYOR (10 Eylul): izgara tersten
            diziliyor, bu yuzden "ileri" tablo numarasini KUCULTUYOR.
@@ -15875,7 +15890,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Serit ustteki simgelerin altinda', g.seritBinmiyor === true,
        (g && g.seritOlcu) || 'serit ust ile cakismiyor');
     K('Skins panelinde WHEEL/RING/DISC secici ve RING dugmesi yok', g.merkezTusYok === true,
-       oz || 'halka/cark yalniz ayarlardaki WHEEL anahtariyla');
+       oz || 'halka/cark secici kalkti');
+    K('Skins seridinde (minimize menu) WHEEL ac/kapa dugmesi var ve kipin ayarini cevirir',
+       g.carkTusVar === true && g.carkTusCevirdi === true && g.carkTusGeri === true && g.carkTusBoy >= 44,
+       oz || ('dugme genisligi ' + g.carkTusBoy + ' px'));
     /* 4 Eylul: panel tepeye DAYANMIYOR (ustte tutamak payi kaliyor ki
        yukari-asagi cekip kapatilabilsin) ve baslik ("SKINS") serite
        inip cikmanin kisayolu. Serit kipinde merkez secici gorunur:
@@ -18068,17 +18086,17 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      Her is kendi alt baslikta; hepsi TEMIZ bir sayfada (localStorage
      silinir) kosuyor ki ustteki testlerin biraktigi durum karismasin. */
   {
-    /* ── 2. WHEEL AYARI: KALICI, IKI KIPTE ORTAK (7 Ekim) ────────────
-       pj: "OFF skin'de cark ac/kapa, kalici ayarlanan, app acilip kapansa bile; son kapattigini
-       hatirlasin; iki mood'da da gecerli." (Eski kural: galeriden WHEEL secmek ORBITAPE'in ayri
-       kaydina yaziliyordu; kaldirildi, skins'ten secim yok artik.)
-       OLCUM: ayarlardaki WHEEL satirina GERCEK tiklama -> merkez cark; RADIOTAPE<->ORBITAPE
-       gecisinde ve sayfa yenilenince cark kaliyor; kapatinca halka. */
+    /* ── 2. WHEEL AYARI: KIP BASINA AYRI, KALICI (8 Ekim) ─────────────
+       pj: "RADIOTAPE carkli aciliyor, ORBITAPE carksiz; ayarlardan ve minimize menuden cark ac/kapa,
+       kalici, en son neyle kapattiysam onunla ac." (7 Ekim'de tek ortak ayar yapilmisti, pj'nin istedigi
+       bu degildi.) OLCUM: gercek tiklama; radyo varsayilan cark, ORBITAPE halka; her kip kendi
+       secimini ayri tutuyor; yenilemede ikisi de duruyor. */
     const { sayfa: p2, kapat: k2 } = await sayfaAc(c, { bekle: 2500 });
     await p2.evaluate(()=>{ try{ localStorage.clear(); }catch(e){} });
     await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
-    const dm = ()=>p2.evaluate(()=>({ merkez:AYAR.merkez, ca:AYAR.carkAcik === true,
-      kayit:(()=>{ try{ return JSON.parse(localStorage.getItem('orbitape.ayar')||'{}').carkAcik === true; }catch(e){ return null; } })() }));
+    const dm = ()=>p2.evaluate(()=>({ merkez:AYAR.merkez, r:AYAR.carkRadyo, o:AYAR.carkOrbit,
+      kr:(()=>{ try{ return JSON.parse(localStorage.getItem('orbitape.ayar')||'{}').carkRadyo; }catch(e){ return null; } })(),
+      ko:(()=>{ try{ return JSON.parse(localStorage.getItem('orbitape.ayar')||'{}').carkOrbit; }catch(e){ return null; } })() }));
     const orbGec = async()=>{ await p2.evaluate(()=>{ AYAR.mood=true; moodUygula(true); }); await p2.waitForTimeout(700); };
     const radGec = async()=>{ await p2.evaluate(()=>{ AYAR.mood=false; moodUygula(false); }); await p2.waitForTimeout(700); };
     const tikla = ()=>p2.evaluate(()=>{ document.getElementById('ayarTut').click(); }).then(()=>p2.waitForTimeout(400))
@@ -18086,28 +18104,34 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       .then(()=>p2.waitForTimeout(500))
       .then(()=>p2.evaluate(()=>{ document.getElementById('ayarTut').click(); })).then(()=>p2.waitForTimeout(400));
     const d0 = await dm();
-    K('Ilk acilista WHEEL kapali, OFF skin: halka', d0.merkez === 'halka' && d0.ca === false,
-      'merkez '+d0.merkez+' carkAcik '+d0.ca);
-    await tikla();
-    const d1 = await dm();
-    K('Ayarlardaki WHEEL anahtari carki aciyor ve depoya yaziyor',
-      d1.merkez === 'cark' && d1.ca === true && d1.kayit === true,
-      'merkez '+d1.merkez+' carkAcik '+d1.ca+' depo '+d1.kayit);
+    K('Ilk acilista RADIOTAPE carkli', d0.merkez === 'cark' && d0.r === true && d0.o === false,
+      'merkez '+d0.merkez+' radyo '+d0.r+' orbit '+d0.o);
     await orbGec();
-    const d2o = await dm();
-    await radGec();
-    const d2r = await dm();
-    K('WHEEL iki kipte ortak: ORBITAPE\'e gidip donunce cark kaliyor',
-      d2o.merkez === 'cark' && d2r.merkez === 'cark', 'orbitape '+d2o.merkez+' / radyo '+d2r.merkez);
-    await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
-    const d3 = await dm();
-    K('Yenileyince (uygulama kapanip acilinca) cark acik kaliyor', d3.merkez === 'cark' && d3.ca === true,
-      'yenileme sonrasi merkez '+d3.merkez);
+    const d1 = await dm();
+    K('ORBITAPE carksiz aciliyor (halka)', d1.merkez === 'halka', 'merkez '+d1.merkez);
     await tikla();
+    const d2 = await dm();
+    K('ORBITAPE\'te ayarlardan WHEEL acilinca cark geliyor ve depoya yaziliyor',
+      d2.merkez === 'cark' && d2.o === true && d2.ko === true && d2.r === true,
+      'merkez '+d2.merkez+' orbit '+d2.o+' depo '+d2.ko+' radyo '+d2.r);
+    await radGec();
+    const d3 = await dm();
+    await orbGec();
     const d4 = await dm();
-    K('WHEEL kapatilinca halka geri geliyor ve kapali hatirlaniyor',
-      d4.merkez === 'halka' && d4.ca === false && d4.kayit === false,
-      'merkez '+d4.merkez+' carkAcik '+d4.ca+' depo '+d4.kayit);
+    K('Kip gecisinde her kip kendi secimini koruyor (cark kaybolmuyor)',
+      d3.merkez === 'cark' && d4.merkez === 'cark', 'radyo '+d3.merkez+' / orbitape '+d4.merkez);
+    await radGec();
+    await tikla();                       // radyoda KAPAT
+    const d5 = await dm();
+    await orbGec();
+    const d6 = await dm();
+    K('Radyoda cark kapatilinca yalniz radyo etkileniyor, ORBITAPE kendi secimiyle',
+      d5.merkez === 'halka' && d5.r === false && d5.kr === false && d6.merkez === 'cark' && d6.o === true,
+      'radyo '+d5.merkez+' (kayit '+d5.kr+') / orbitape '+d6.merkez);
+    await p2.reload({ waitUntil:'load' }); await p2.waitForTimeout(3000);
+    const d7 = await dm();
+    K('Yenileyince (uygulama kapanip acilinca) iki kipin secimi duruyor',
+      d7.r === false && d7.o === true, 'radyo '+d7.r+' orbit '+d7.o);
     await k2();
   }
 

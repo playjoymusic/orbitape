@@ -562,7 +562,7 @@ const CASUS = ()=>{
     K('[Y6] Yildiz satiri calisiyor',
        ay.yildizDegisti===true, 'yildiz: ' + ay.yildizEtiket);
     K('[Y6] Tik kapatilabiliyor', ay.tikKapali===true, 'CLICK OFF');
-    K('[Y6] Ayarlar depoya yaziliyor', /"carkAcik"/.test(ay.depo) && /"yildiz"/.test(ay.depo),
+    K('[Y6] Ayarlar depoya yaziliyor', /"carkRadyo"/.test(ay.depo) && /"yildiz"/.test(ay.depo),
        ay.depo.slice(0,72));
     await supur(p2, 'Y6 ayarlar');
   }
