@@ -5587,3 +5587,27 @@ kimliklerle (`licenseurl`) açmak; (3) 1.000 kayıtlık parçalı yükleme tasar
 - **Kural 4 kanıtı:** radyo varsayılanı geri alınınca (`carkRadyo:false`) radyo `halka` açılıyor; düzeltmeyle `cark` (ORBITAPE iki durumda da `halka`).
 - **Ders:** (1) pj'nin cümlesini tek ayara özetleyip varsayılanı kendim seçmek yanlıştı; varsayılan "eskisi gibi" ise eski davranış korunur. (2) `git stash` ile taban ölçerken arkada test koşuyorsa o test geçersiz olur (bu turda yapıldı, test baştan koşturuldu). (3) `test/senaryo.js` ve `test/cihaz.js` yerelde `KAPI_ADRES` olmadan 8765'e gider (başka sohbetin sunucusu): her koşuda aynı `KAPI_ADRES`.
 - **Açık:** pj'nin telefonda elle bakışı (radyo çarklı, ORBITAPE çarksız, ayardan ve şeritten aç/kapa, her kip kendi seçimini hatırlıyor); commit/push pj'nin.
+
+## 11 Ekim — Ayarlar paneli dibindeki sabitleme iptal
+
+**İstenen:** "ayarlar menusunde en alttaki youtube instagram vs bi
+bolum vardı, en alttaki 4 satırı sabitlemiştim. menu hareket etse de
+yukarı aşağı o sabit olmasın iptal olsun. normal o da yukarı aşağıya
+gitsin."
+
+**Bulunan:** `#ayarDip` — RESET SETTINGS · PRIVACY · TERMS · YOUTUBE ·
+INSTAGRAM — `position:sticky;bottom:0;z-index:2` ile panelin dibine
+yapışıktı. Yorumu kendi gerekçesini söylüyordu ("Search'u açınca altına
+terms privacy geliyor, onlar en altta sabit kalacak"); kullanıcı o
+kararı geri aldı.
+
+**Kaldırılanlar:** `position:sticky`, `bottom`, `z-index`, `border-top`
+(çizgi yapışkanlığın işaretiydi) ve `background-color:inherit` (altından
+kayan içeriği örtmek içindi). Kalan: `margin-top`/`padding-top`.
+
+**Ölçüm (430×932):** panel kaydırılınca satırlar **y 1058 → 715**
+gidiyor. Yapışıkken panel dibinde (886) sabit kalıyorlardı.
+`getComputedStyle(#ayarDip).position = static`, `border-top-width = 0px`.
+
+Kapı: `6/6 TEMIZ` · saglik 963/963 · birum 144/144 · tip 54 ·
+ariza 18 · senaryo 120 · motor 19 · cihaz 156

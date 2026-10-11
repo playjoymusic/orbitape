@@ -3774,14 +3774,18 @@
   body:not(.mood) #ayarTut span:nth-child(1){width:32px;}
   body:not(.mood) #ayarTut span:nth-child(2){width:25px;}
   body:not(.mood) #ayarTut span:nth-child(3){width:17px;}
-  /* PANEL DIBI: KAYDIRMA NASIL OLURSA OLSUN SABIT.
-     `background-color:inherit` panelin zeminini alir; deri
-     degisince cubuk da uyuyor. */
-  #ayarDip{position:sticky;bottom:0;z-index:2;
-    background-color:inherit;
-    margin-top:6px;padding-top:2px;
-    border-top:1px solid rgba(255,255,255,.10);}
-  body.deri #ayarDip{border-top-color:var(--d-kenar, rgba(255,255,255,.10));}
+  /* 11 EYLUL: SABITLEME IPTAL. Kullanıcının isteği: "en alttaki 4
+     satırı sabitlemiştim, menu hareket etse de yukarı aşağı o sabit
+     olmasın iptal olsun. normal o da yukarı aşağıya gitsin."
+     Once `position:sticky;bottom:0` ile panel dibine yapışıktı
+     (RESET · PRIVACY · TERMS · YOUTUBE · INSTAGRAM). Artık normal
+     akışta: menüyle birlikte kayar.
+     KALDIRILANLAR: `position:sticky`, `bottom`, `z-index` (yapışkanlık
+     bittiği için sıralamaya gerek yok) ve üst çizgi -- çizgi bir
+     YAPIŞIKLIĞIN işaretiydi, menü içinde normal bir bölüm çizgisidir
+     ama artık gerekmiyor. `background-color:inherit` de kaldırıldı:
+     o da altından kayan içeriği örtmek içindi. */
+  #ayarDip{margin-top:6px;padding-top:2px;}
   /* Acikken uc cizgi esitlenip duz bir yigin oluyor: ucgen kapaniyor.
      Eski davranisin birebir aynisi. */
   /* Acikken uc cizgi esitleniyor: ucgen kapaniyor. Arsivde zaten
@@ -5470,7 +5474,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.10.08';
+  var ORB_SURUM = '2026.10.11';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
