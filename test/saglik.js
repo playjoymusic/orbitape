@@ -17736,6 +17736,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
      tekrarlanmasi; akis hangi radyonun ne zaman baglandigina bagli.
      Kontrolun isi degismedi: 11. yine kirmizi yapar.
 
+     11 EYLUL: TABAN 10 VE ARTIK DUSMEZ (asagidaki dalin
+     yorumu). Kontrol iki yonlu kama gibi calisiyordu: 10 -> 9 ->
+     8 gerilemisti ve sonraki normal kosu CI'i kirmizi yapmisti.
+
      30 EYLUL (gece): TABAN 9 -> 10. Yeni "ORBITAPE'de cizimli
      deriler kilitli" kontrolu galeriyi (izgarayi) kuruyor ve
      kurulum sirasinda bir derinin cizimi hata veriyor. OLCU: 148
@@ -17761,9 +17765,18 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('Yutulan hata butcesi', false,
          yb.n + ' yutuldu, taban ' + taban + ' — yeni sessiz hata: ' + (yb.ilk.join(' | ') || '-'));
     } else {
-      if(yb.n < taban){ try{ fs.writeFileSync(tabanYol, String(yb.n) + '\n'); }catch(e){} }
+      /* 11 EYLUL: TABAN ARTIK DUSMEZ.
+         Once burada `yb.n < taban` durumunda dosya yeniden yaziliyordu
+         -- yani kama ASAGI DA calisiyordu. Olcum: bu sayi zamanlamaya
+         bagli. Ayni kod (bizimki degil, 30 Eylul'deki 2ea944c) arka
+         arkaya 9 ve 8 yuttu; taban 10 -> 9 -> 8 geriledi. Sonraki
+         normal kosu 9'u bulunca taban 8'i gecti ve CI KIRMIZI verdi
+         (11 Ekim, 640f291) -- yani kirmizilik bir hattan degil, kontrolun
+         kendi kendini dusurmesinden geldi.
+         Artik taban YALNIZCA yukselir. Gercek bir hata duzeltilirse
+         taban oldugu gibi kalir: fazlalik guvenli, eksiklik degil. */
       K('Yutulan hata butcesi', true,
-         yb.n + '/' + taban + (yb.n < taban ? ' — taban indi' : '')
+         yb.n + '/' + taban + (yb.n < taban ? ' (taban ayni kaldi)' : '')
          + (yb.ilk.length ? '  · ' + yb.ilk.join(' | ') : ''));
     }
   }

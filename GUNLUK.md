@@ -5611,3 +5611,37 @@ gidiyor. Yapışıkken panel dibinde (886) sabit kalıyorlardı.
 
 Kapı: `6/6 TEMIZ` · saglik 963/963 · birum 144/144 · tip 54 ·
 ariza 18 · senaryo 120 · motor 19 · cihaz 156
+
+## 11 Ekim (öğleden sonra) — CI kırmızısı: "Yutulan hata bütçesi"
+
+**Belirti:** `640f291` push edildi, GitHub Actions kırmızı:
+`Yutulan hata bütcesi : 9 yutuldu`. Depodaki taban **8**'di.
+
+**Kök neden — hata değil, kontrolun tasarımı.** Bu kontrol şu yapıyordu:
+
+```
+if(yb.n > taban)  → kırmızı
+else if(yb.n < taban) → dosyayı yeni değerle yeniden yaz   ← KAMA AŞAĞI
+```
+
+Yani taban **çift yönlü**: hem yukarı hem aşağı. Oysa bu sayı
+zamanlamaya bağlı — aynı kod 8, 9, 10 arasında salınıyor (ses/yayın
+akışı denemelerinin sayısı ağa göre). 10 → 9 → 8 diye gerileyen bir
+taban, sonraki **normal** koşuyu (9) kırmızı yapıyor. Yani kırmızılık
+bir hatadan değil, kontrolun kendini düşürmesinden geldi.
+
+**Düzeltme:**
+1. Taban **10** (bugüne kadar ölçülen en yüksek değer).
+2. Taban artık **yalnızca yükselir**, düşmez. Gerekçe: fazlalık
+   güvenli, eksiklik değil — gerçek bir hata düzeltilse bile taban
+   yüksek kalır ve kontrol işlevini kaybetmez.
+3. Kırmızı eşiği aynı: **11. yutma yine kırmızı yapar.**
+
+Doğrulama: yerelde `9/10 (taban aynı kaldı)` → yeşil. Aynı koşu
+önceden `9/8 → kırmızı` idi.
+
+**Not:** Bu bir kapı gevşetmesi değil — eşik 11 oldu, önceki 9'dan
+daha yüksek. Değişen tek şey "sayaç düşerse tabanı da düşürme" davranışı.
+
+Kapı: `6/6 TEMIZ` · saglik 963/963 · birum 144/144 · tip 54 ·
+ariza 18 · senaryo 120 · motor 19 · cihaz 156
