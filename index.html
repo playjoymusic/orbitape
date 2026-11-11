@@ -9611,7 +9611,17 @@
   function kaynakSatiri(it){
     try{
       if(!it) return '';
-      if(!it.radyo) return kaynakAdi(it);
+      /* ── ARSIVDE DE SITE ADI YAZILMIYOR (11 Kasim) ──
+         Kullanicinin sozu: "wikimedia diye bisey yok app te sil ya
+         da ne o ya". Satir kaydin barindigi SUNUCUNUN adini
+         (WIKIMEDIA, ARCHIVE.ORG) yaziyordu; olculdu (390x844,
+         ?arsiv): sanatci satirinin solunda, ne sol ne sag sutuna
+         hizali bir yerde (x 171..225) asili duruyordu. Lisansin
+         istedigi atif -- eser adi, sanatci, lisans (CC BY ...) --
+         ayri satirlarda ve yerinde kaliyor; sunucunun adi o
+         atifin parcasi degil. Kilit ekranindaki MediaSession hala
+         kaynakAdi() kullaniyor (orada "sanatci" alani bos kalmasin). */
+      if(!it.radyo) return '';
       /* ── CANLI YAYINDA BIZDEN HICBIR SEY YAZMIYORUZ ──
          Kullanicinin sozu: "sag altta kesinlikle bizden bir bilgi
          olmasin. live mis, tur, o da kanal ismi vs biz eklemeyelim.

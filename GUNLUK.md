@@ -5656,3 +5656,14 @@ ariza 18 · senaryo 120 · motor 19 · cihaz 156
 - **Ayrı iş (sırada):** sol alttaki ORBITAPE yazısı + switch + altındakiler sol kenara hizalı değil; üstteki ORBITAPE yazısı biraz sağda. Ölçülüp düzeltilecek.
 - **Kapı (ikinci koşu, test düzeltmesinden sonra):** `6/6 TEMIZ` · tip 54 · birim 144/144 · saglik 963/963 · ariza 18/18 · senaryo 120/120 · motor 19/19 · cihaz 156/156 · yayin/ 19/19.
 - Ölçüm betikleri (`cek_cark.js`, `dbg_cark.js`, `olc_cark.js`) depodan çıkarıldı → `ORBITAPE DATA/eski-belgeler/olcum-betikleri-2026-10-21/`; mağaza çekim betiği `magaza_cek.js` → `orbitape-magaza/magaza-30/`. Commit/push pj'nin.
+- **Push doğrudan main'e gitti (ders):** `cark-kip` dalının yerel takip ayarı (upstream) `origin/main`'di; GitHub Desktop "Push origin/main" dedi ve `66892c8` + LICENSE birleştirmesi `6787f20` doğrudan main'e indi, PR açılamadı ("There isn't anything to compare"). Ekim'deki iki "Continue Orbitape development" commit'i de aynı yoldan gitmişti. Zarar yok (yerel kapı yeşildi, Yayın iş akışı testler yeşilse yayınlar) ama "main'e doğrudan yazılmıyor" kuralı atlandı. **Bir sonraki işte:** main'den yeni dal açılacak ve ilk push'tan önce Desktop'ta üst çubuğun "Publish branch" dediği (origin/main DEĞİL) görülecek.
+- **CI (6787f20, main):** Sağlık kontrolü ✓, Yayın (testler yeşilse) ✓ — çark küçültmesi canlıda.
+- **LOOP İSTASYONU kararları (pj, 11 Kasım):** (1) Loop SONSUZ döner; BPM/tempo/ölçü kontrolü YOK — amaç sesleri üst üste çalabilmek. (2) **8 kanal.** (3) Kanal düğmesi: tek dokunuş aç/kapa, basılı tutunca sil. (4) Yalnız ORBITAPE (arşiv) tarafı; **radyoya dokunulmaz, bu bir daha sorulmaz.** Çalma hızı mimarisine dokunulmaz.
+
+## 11 Kasım (öğle) — Künyedeki sunucu adı (WIKIMEDIA / ARCHIVE.ORG) kaldırıldı (dal `hizalama`)
+
+- **pj:** "wikimedia diye bisey yok app te sil ya da ne o ya". Satır (`#npKaynak`) arşiv kaydının barındığı sunucunun adını yazıyordu; 390x844 `?arsiv` ölçümünde sanatçı satırının solunda, hiçbir sütuna hizalı olmayan bir yerde (x 171..225) duruyordu.
+- **Değişiklik:** `kaynakSatiri()` arşivde de `''` döndürüyor (radyoda zaten boştu). Atıf için gerekenler (eser adı, sanatçı, lisans) yerinde. Kilit ekranı (MediaSession) `kaynakAdi()`'yı kullanmaya devam ediyor.
+- **Test:** "Kaynak sanatçıyla aynıysa tekrarlanmıyor" → "Künyede kayıt sunucusunun adı yazmıyor" (archive.org, wikimedia, ccmixter üçü de boş). Kural 4: düzeltme geri alınınca `"ARCHIVE.ORG" "WIKIMEDIA"` döndü, düzeltmeyle `"" ""`.
+- **Hizalama ölçümü:** Chromium'da 360/390/600/800 genişlik, iki kip: sol sütun (menü, ikonlar, switch, oynatma tuşları) görünür mürekkep 14–15 px (tablette 16–17.5), sağ üst ORBITAPE kenardan 15 px (tablette 18) içeride — kayma yakalanamadı. pj'nin telefon ekran görüntüsü bekleniyor (telefondaki yazı tipi farkı olabilir); ölçülmeden düzeltilmeyecek.
+- Kapı: `6/6 TEMIZ` · tip 54 · birim 144 · saglik 963/963 · ariza 18 · senaryo 120 · motor 19 · cihaz 156 · yayin 19.

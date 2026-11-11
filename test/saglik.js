@@ -9657,9 +9657,13 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('Tik sesi kisik', await pg.evaluate(()=>
         typeof TIK_VOL === 'number' && TIK_VOL > 0 && TIK_VOL <= 0.37),
       'TIK_VOL <= 0.37');
-    /* AYNI SEY IKI KEZ YAZILMAZ: kaynak adi sanatci adiyla ayni
-       oldugunda ekranda yan yana iki kez cikiyordu. */
-    K('Kaynak sanatciyla ayniysa tekrarlanmiyor', await pg.evaluate(()=>{
+    /* KUNYEDE SUNUCU ADI YOK (11 Kasim): once "kaynak sanatciyla
+       ayniysa tekrarlanmiyor" idi ve farkli kaynagin (ARCHIVE.ORG)
+       hala yazildigini da olcuyordu. pj satiri istemedi ("wikimedia
+       diye bisey yok app te sil"); artik iki durumda da satir bos.
+       Kural 4: index.html'deki `if(!it.radyo) return '';` eski
+       haline (`return kaynakAdi(it)`) alininca bu kontrol dusuyor. */
+    K('Kunyede kayit sunucusunun adi yazmiyor', await pg.evaluate(()=>{
         const eM = mod;
         mod = 'liste';
         simdiCalan({ id:'mx:0', ad:'Caramel Delusion', sanatci:'CCMIXTER',
@@ -9668,14 +9672,12 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         simdiCalan({ id:'ar:9', ad:'Bir Kayit', sanatci:'Biri',
                      mp3:'https://archive.org/download/a/b.mp3' });
         const farkli2 = document.getElementById('npKaynak').textContent.trim();
+        const wiki = (simdiCalan({ id:'ar:10', ad:'Bir Kayit', sanatci:'Biri',
+                     mp3:'https://upload.wikimedia.org/a/b.ogg' }),
+                     document.getElementById('npKaynak').textContent.trim());
         mod = eM;
-        /* Ayni oldugunda satir bos; farkli oldugunda hala yaziyor --
-           tekrarı kaldirirken bilgiyi de kaldirmis olmayalim.
-           IKINCI ORNEK ARTIK ARSIVDEN: canli yayinda o satir kural
-           geregi hep bos (bayrak yildizin yanina tasindi), yani
-           "farkli kaynak hala yaziliyor" ancak arsivde olculebilir. */
-        return ayni === '' && farkli2 === 'ARCHIVE.ORG';
-      }), 'ayni ad iki kez yok; farkli kaynak hala yaziliyor');
+        return ayni === '' && farkli2 === '' && wiki === '';
+      }), 'ARCHIVE.ORG / WIKIMEDIA / CCMIXTER kunyede yok');
     /* ── OLCULEN DEGERE env() EKLENMEZ ──────────────────────────────
        IKI KERE YASANDI, ikisinde de ekranda ayni sekilde goruldu:
        "buyutec havada / yukari kaymis, yeri bos, ustundekinin uzerine
