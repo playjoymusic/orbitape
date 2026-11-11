@@ -5645,3 +5645,14 @@ daha yüksek. Değişen tek şey "sayaç düşerse tabanı da düşürme" davran
 
 Kapı: `6/6 TEMIZ` · saglik 963/963 · birum 144/144 · tip 54 ·
 ariza 18 · senaryo 120 · motor 19 · cihaz 156
+
+## 11 Kasım 2026 — Actions'taki kırmızı seri, yarım kalan çark küçültmesi, mağaza dosyaları taşındı
+
+- **Actions kırmızı serisi (3 Kas 12:52 → 10 Kas 07:44):** kod hatası DEĞİL. Her koşu 3 sn'de düştü; GitHub notu: *"The job was not started because your account is locked due to a billing issue."* Hesap fatura yüzünden kilitlenmiş, iş hiç başlatılmamış. 10 Kas 13:03'ten beri yeşil (ödeme düzelmiş). O hafta canlı siteyi hiçbir otomatik nöbet izlemedi. Aynı sha (`8c47d69`) önce kırmızı sonra yeşil — kanıt bu.
+- **Bayat durum bulundu:** 21 Ekim'de yapılmış ama commit edilmemiş, günlüğe de yazılmamış bir değişiklik `cark-kip` dalında bekliyordu: `--yatay-tavan` (çark sol ikon sütununa / kamera düğmesine binmesin) + `ORB_SURUM 2026.10.21`. pj'nin sözü (yorumda): "kamera çarka girmiş, çarkın halkası daha küçük olmalı".
+- **Kapıda tek kırmızı:** `Belirgin kaydirma kipi sure beklemeden acar` (962/963). Ölçüm: test diskin %10'u kadar kaydırıyordu; disk 390x844'te 273.8 → 228.6 px küçülünce %10 = 22.9 px, uygulamanın sabit eşiği 24 px (`MOOD_SURT`). Uygulama doğru, test ölçüsü diske bağlıydı. Düzeltme: test sabit 40 px kaydırıyor (gerekçe yorumda). Kural 4 kanıtı: eski ölçüyle aynı kod kırmızıydı (ilk kapı koşusu).
+- **Mağaza dosyaları taşındı (pj onayıyla):** `magaza/telefon`, `tablet-7`, `tablet-10`, `rapor.json`, `yeni-galeri.html`, `orbitape-magaza-30.zip` → `ORBITAPE DATA/orbitape-magaza/magaza-30/`. Depodaki zip kopyası üst klasördekiyle `cmp` ile aynı çıktıktan sonra silindi.
+- **Sıradaki iş (bu dal birleşince, Kural 6) — LOOP İSTASYONU, pj'nin isteği:** loop'a basınca o anki ses+efekt bir kanala SABİTLENİR, yeni ses açılsa da değişmez; her basış yeni kanal; kanallar üstte/halkanın çevresinde (gezegen gibi) tek tek aç/kapa; loop uzunluğu ölçü cinsinden ayarlanır; birden fazla efekt aynı anda açık kalabilir; klasik loop station mantığı, dokunma hedefleri ve parametrelere özen. **KESİN SINIR: çalma hızı mimarisine dokunulmaz.** Şu anki davranış (pj): sağdaki efekti en sağa sürükleyince loop'a giriyor, ama ortadan yeni ses açınca kontrolsüz değişiyor, parmak çekilince hepsi kapanıyor.
+- **Ayrı iş (sırada):** sol alttaki ORBITAPE yazısı + switch + altındakiler sol kenara hizalı değil; üstteki ORBITAPE yazısı biraz sağda. Ölçülüp düzeltilecek.
+- **Kapı (ikinci koşu, test düzeltmesinden sonra):** `6/6 TEMIZ` · tip 54 · birim 144/144 · saglik 963/963 · ariza 18/18 · senaryo 120/120 · motor 19/19 · cihaz 156/156 · yayin/ 19/19.
+- Ölçüm betikleri (`cek_cark.js`, `dbg_cark.js`, `olc_cark.js`) depodan çıkarıldı → `ORBITAPE DATA/eski-belgeler/olcum-betikleri-2026-10-21/`; mağaza çekim betiği `magaza_cek.js` → `orbitape-magaza/magaza-30/`. Commit/push pj'nin.

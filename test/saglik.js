@@ -5124,12 +5124,22 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       try{ fxNormale && fxNormale(); }catch(e){}
       _ilkCalindi = true; AKTIF_MOD='RADIOTAPE'; _nebSira=-1;
       const p = nokta(o);
-      const gen = kb2().width;
+      /* KAYDIRMA PIKSEL CINSINDEN SABIT (11 Kasim). Once diskin
+         %10'u kadardi; uygulamanin esigi ise sabit 24 px (MOOD_SURT).
+         Cark sol ikon sutununa girmesin diye kuculunce (21 Ekim,
+         --yatay-tavan) olculdu: 390x844'te disk 273.8 -> 228.6 px,
+         yani %10 = 27.4 -> 22.9 px, esigin ALTI -- test "belirgin"
+         sandigi bir kaydirmayi aslinda ufak surtme olarak yapiyordu
+         ve kirmiziya dustu. Kullanicinin parmagi disk boyundan
+         bagimsiz piksel kat ediyor; test de oyle yapmali. 40 px
+         esigin rahatca ustu, 4 px'lik "ufak surtme" testinin cok
+         uzagi. */
+      const KAY_PX = 40;
       OL('pointerdown', p.x, p.y);
-      if(kaydir) OL('pointermove', p.x - gen*0.10, p.y);
+      if(kaydir) OL('pointermove', p.x - KAY_PX, p.y);
       await bek(sure);
       const gez = !!_moodGez;
-      OL('pointerup', kaydir ? p.x - gen*0.10 : p.x, p.y);
+      OL('pointerup', kaydir ? p.x - KAY_PX : p.x, p.y);
       await bek(220);
       return { gez, mod: AKTIF_MOD };
     };
