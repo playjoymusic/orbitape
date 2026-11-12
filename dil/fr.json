@@ -199,5 +199,10 @@
   "only the soft sound": "seulement le son doux",
   "pushes it to the limit": "pousse à fond",
   "heavy or bright": "grave ou brillant",
-  "feels wider": "semble plus large"
+  "feels wider": "semble plus large",
+  "RECORDING": "ENREGISTREMENT",
+  "MUTED": "MUET",
+  "DELETED": "SUPPRIMÉ",
+  "LOOPS": "BOUCLES",
+  "PLAYING": "EN LECTURE"
 }

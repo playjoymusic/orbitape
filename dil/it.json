@@ -199,5 +199,10 @@
   "only the soft sound": "solo il suono morbido",
   "pushes it to the limit": "spinge al massimo",
   "heavy or bright": "grave o brillante",
-  "feels wider": "sembra più ampio"
+  "feels wider": "sembra più ampio",
+  "RECORDING": "IN REGISTRAZIONE",
+  "MUTED": "MUTO",
+  "DELETED": "ELIMINATO",
+  "LOOPS": "LOOP",
+  "PLAYING": "IN RIPRODUZIONE"
 }
