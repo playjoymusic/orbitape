@@ -96,6 +96,7 @@
   "The screen could not be captured. Reloading usually fixes it.": "No se pudo capturar la pantalla. Recargar suele arreglarlo.",
   "The image could not be prepared on this device.": "No se pudo preparar la imagen en este dispositivo.",
   "RECORDING SAVED": "GRABACIÓN GUARDADA",
+  "VIDEO + AUDIO SAVED": "VÍDEO + AUDIO GUARDADOS",
   "CAMERA BLOCKED": "CÁMARA BLOQUEADA",
   "NO CAMERA FOUND": "NO HAY CÁMARA",
   "This device reports no front camera the browser can reach.": "Este dispositivo no declara ninguna cámara frontal a la que el navegador pueda llegar.",

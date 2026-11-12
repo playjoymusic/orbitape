@@ -5738,3 +5738,17 @@ yüklendi, `cmp` aynı. İlk geri-alma denemesinde test kontrollü düşmek yeri
 **Sırada (pj'nin önceki isteği):** REC sesi ayrı, yüksek kaliteli dosya olarak da versin.
 
 - **12 Kasım — PR #87 (`loop-ses`) CI'da kırmızı, düzeltildi (ikinci commit).** "Önizleme" işindeki Kapı adımında sağlık 986/987: "MAIN dokunma alani en az 44 px" — CI'da genişlik 43, yerelde 47. Sebep: alan yazının genişliğine bağlıydı, CI'daki yedek yazı tipinde "MAIN" daraldı (Türkçe "ANA" daha da kısa olurdu). Düzeltme: `.ls-ana{min-width:40px}` (+ iki yandan 4 px = en az 48). Ders: dokunma alanı yazı genişliğine bırakılmaz; yerelde geçen ölçü CI yazı tipinde geçmeyebilir. Not: aynı commit'te "Sağlık kontrolü" işi yeşildi — o koşuda yazı tipi yüklenmişti.
+
+- **12 Kasım (gece):** PR #87 (`loop-ses`, iki commit) pj tarafından birleştirildi; `main` sağlık ve yayın yeşil.
+
+## 13 Kasım — REC: AYRI SES DOSYASI, WAV (dal `rec-ses`)
+
+**pj:** "O laptop tarafında REC tuşu var ya... aynı zamanda audio kaydı da yapsın. hem görüntü hem audio kaydını ayrı ayrı indirebilirim... yüksek kalitede olsun."
+**Kullanıcı ne yaşıyordu:** kaydın sesi yalnız videonun içindeydi ve sıkıştırılmıştı (128 kbit/s); sesi ayrıca kullanmak için videodan sökmek gerekiyordu.
+**Artık (laptopta):** REC video ile birlikte sesi de ayrı kaydeder; kaydet deyince iki dosya iner: video ve aynı adla `.wav` (24 bit stereo PCM, grafiğin hızında — ölçülen 48.000 Hz, dakikada ~17 MB). FX ve loop'lar içinde, kullanıcının ses düzeyinden önce (videoyla aynı düğüm: `tavan`).
+**Kararlar:** (1) YALNIZ MASAÜSTÜ (ölçüt: `hover:hover` + `pointer:fine`): WAV bellekte birikiyor (15 dk = 259 MB), telefonda 400 MB video tavanının yanına konmaz; pj de "laptop" dedi. (2) Ses baytları aynı 400 MB tavana sayılıyor; dolunca kayıt durur, dosyalar kurtulur. (3) `ScriptProcessor`, tampon 16384 (loop yakalamayla aynı yol; büyük tampon ana iş parçacığı takılmasını yutsun diye). AudioWorklet'e geçmek ayrı dosya + CSP + derleme listesi demekti; ölçüm gerek göstermedi. (4) Paylaşım sayfası iki dosyayı birden kabul etmiyorsa paylaşım atlanır, ikisi de indirilir. (5) İptalde WAV oluşmaz.
+**Ölçüm:** sinüs (440 Hz, 0,3) `tavan`'a verilip tuval çizimi sürerken kaydedildi: ardışık örnekler arası en büyük sıçrama 0,021 (sınır 0,0276) — örnek düşmüyor. Tepe 0,365 ölçüldü (0,30 bekleniyordu; kompresör + susan ana sesin kuyruğu) → tepe aralığı genişletildi, asıl ölçü sıçrama.
+**Test:** 5 yeni kontrol. Kapı 6/6 temiz, sağlık 993/993.
+**Kural 4:** (a) ölçüt hep `true` yapılınca "telefonda üretmiyor" düştü; (b) ilk bozma denemesi YANLIŞTI — tek parça yerine 3. parçadan sonraki her şeyi atmışım, dosya 1,02 sn çıktı, süre kontrolü düştü ama SÜREKLİLİK testi düşmedi (kesik dosyada sıçrama olmaz); (c) doğru bozma (yalnız 3. parça atlandı): sıçrama 0,421 > 0,0276, süreklilik testi düştü. Geri yüklendi, `cmp` aynı.
+**Not:** kapı `ORB_SURUM` 2026.11.12 damgasıyla koştu; ardından `csp.py` damgayı 2026.11.13'e çevirdi (yalnız sürüm satırı ve `_headers` özeti değişti).
+**Yapılmadı:** gerçek laptop tarayıcısında elle deneme (iki indirme, tarayıcının "birden fazla dosya" sorusu) — pj birleşince bakacak. `kayitNotYaz` yalnız `?tani` kipinde görünüyor; "VIDEO + AUDIO SAVED" yazısı normal kullanıcıya görünmez (çevirisi yine de 5 dilde).

@@ -96,6 +96,7 @@
   "The screen could not be captured. Reloading usually fixes it.": "Ekran yakalanamadı. Sayfayı yenilemek genelde çözüyor.",
   "The image could not be prepared on this device.": "Görsel bu cihazda hazırlanamadı.",
   "RECORDING SAVED": "KAYIT KAYDEDİLDİ",
+  "VIDEO + AUDIO SAVED": "VİDEO + SES KAYDEDİLDİ",
   "CAMERA BLOCKED": "KAMERA ENGELLİ",
   "NO CAMERA FOUND": "KAMERA BULUNAMADI",
   "This device reports no front camera the browser can reach.": "Bu cihazda tarayıcının ulaşabileceği bir ön kamera görünmüyor.",
