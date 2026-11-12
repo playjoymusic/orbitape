@@ -18660,6 +18660,95 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       K('REC videosunda MAIN gostergesi var', r.videoGri > 40 && !r.cizHata,
         r.videoGri + ' acik gri piksel' + (r.cizHata ? ' · ' + r.cizHata : ''));
     }
+
+    /* ── REC: AYRI SES DOSYASI, WAV (12 Kasim) ───────────────────
+       pj: "REC ... audio kaydi da yapsin, ayri ayri indirebilirim,
+       yuksek kalitede olsun". Olculen: (1) dosya gercekten 24 bit
+       stereo WAV; (2) SUREKLILIK -- ana ses susturulup tavan'a bilinen
+       bir sinus (440 Hz, 0.3) veriliyor, kayit boyunca tuval cizimi
+       suruyor; ornek dusseydi ardisik iki ornek arasinda sinusun
+       verebileceginden buyuk bir sicrama olurdu; (3) kaydet = iki
+       indirme (video + wav); (4) telefonda ayri ses YOK; (5) iptalde
+       dosya ve acik yakalama kalmiyor. */
+    {
+      const { sayfa: ps, kapat: ks } = await sayfaAc(c, { bekle: 2500 });
+      const r = await ps.evaluate(async (kok)=>{
+        const bek = ms => new Promise(r=>setTimeout(r, ms));
+        const o = {};
+        AYAR.mood = true; moodUygula(true); await bek(400);
+        ses.crossOrigin = 'anonymous'; ses.src = kok; ses.loop = true;
+        sesBaglamiAl(); await actx.resume(); await ses.play().catch(()=>{}); analizKur();
+        await bek(600); await kayitYukle(); await bek(200);
+        const kaydet = async (ms, iptal)=>{
+          await kayitBaslat(); for(let i = 0; i < 50 && !kaydedici; i++) await bek(100);
+          const yak = !!_sesYak;
+          await bek(ms);
+          if(iptal) kayitIptalEt(); else kayitDurdur();
+          for(let i = 0; i < 60 && (kaydedici || (!iptal && !_bekleyenKayit)); i++) await bek(100);
+          return yak;
+        };
+        /* (4) telefon (testin kendi baglami dokunmatik): ayri ses yok. */
+        o.telefonOlcut = sesAyriIstenir();
+        await kaydet(900, false);
+        o.telefondaSes = !!(_bekleyenKayit && _bekleyenKayit.ses);
+        kaydiSil();
+        /* masaustu gibi davran */
+        window._sesAyriZorla = true;
+        /* (5) iptal */
+        o.iptalYak = await kaydet(700, true);
+        o.iptalTemiz = !_bekleyenKayit && !_sesYak;
+        /* (1)(2) sinus */
+        anaSesYaz(0); await bek(400);
+        const osc = actx.createOscillator(), og = actx.createGain();
+        osc.frequency.value = 440; og.gain.value = 0.3; osc.connect(og); og.connect(tavan); osc.start();
+        await bek(300);
+        o.yak = await kaydet(2600, false);
+        osc.stop(); og.disconnect();
+        const k = _bekleyenKayit;
+        o.var = !!(k && k.ses); if(!o.var) return o;
+        o.ad = k.ses.ad; o.videoAd = k.ad; o.tip = k.ses.blob.type;
+        const ab = await k.ses.blob.arrayBuffer(), v = new DataView(ab), u = new Uint8Array(ab);
+        const dort = q => String.fromCharCode(u[q], u[q+1], u[q+2], u[q+3]);
+        o.baslik = dort(0) + '/' + dort(8) + '/' + dort(36);
+        o.kanal = v.getUint16(22, true); o.sr = v.getUint32(24, true); o.bit = v.getUint16(34, true);
+        o.srGraf = actx.sampleRate; o.veri = v.getUint32(40, true); o.boy = ab.byteLength;
+        const n = Math.floor((ab.byteLength - 44) / 6); o.sn = n / o.sr;
+        const al = i => { const q = 44 + i*6; let x = u[q] | (u[q+1] << 8) | (u[q+2] << 16); if(x & 0x800000) x -= 0x1000000; return x / 8388607; };
+        /* Bas ve sondaki 0.3 sn atlaniyor (osilator/ana ses gecisleri). */
+        const b0 = Math.floor(o.sr * 0.3), b1 = n - b0; let tepe = 0, sic = 0;
+        for(let i = b0; i < b1; i++){ const x = al(i); const m = x < 0 ? -x : x; if(m > tepe) tepe = m;
+          if(i > b0){ const d = Math.abs(x - al(i-1)); if(d > sic) sic = d; } }
+        o.tepe = +tepe.toFixed(3); o.sicrama = +sic.toFixed(4);
+        o.sinir = +(2 * Math.PI * 440 / o.sr * 0.3 * 1.6).toFixed(4);
+        /* (3) kaydet: iki indirme */
+        const adlar = []; const eski = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function(){ if(this.download) adlar.push(this.download); else eski.call(this); };
+        try{ await kaydiPaylas(); await bek(900); }finally{ HTMLAnchorElement.prototype.click = eski; }
+        o.indirilen = adlar; o.birakildi = !_bekleyenKayit;
+        window._sesAyriZorla = null; anaSesYaz(1);
+        return o;
+      }, S.replace(/\/[^/]*$/, '') + '/test/yuksek.mp3');
+      await ks();
+      K('REC telefonda ayri ses dosyasi uretmiyor (bellek)', r.telefonOlcut === false && r.telefondaSes === false,
+        'olcut ' + r.telefonOlcut + ' · ses ' + r.telefondaSes);
+      K('REC iptal edilince ses dosyasi ve acik yakalama kalmiyor', r.iptalYak && r.iptalTemiz,
+        'yakalama basladi ' + r.iptalYak + ' · temiz ' + r.iptalTemiz);
+      K('REC ayri ses dosyasi 24 bit stereo WAV, grafigin hizinda',
+        r.var && r.baslik === 'RIFF/WAVE/data' && r.kanal === 2 && r.bit === 24 && r.sr === r.srGraf
+          && r.tip === 'audio/wav' && r.veri === r.boy - 44 && r.sn > 2 && r.sn < 4.5,
+        r.var ? (r.baslik + ' · ' + r.kanal + ' kanal · ' + r.bit + ' bit · ' + r.sr + ' Hz · ' + r.sn.toFixed(2) + ' sn · ' + Math.round(r.boy/1024) + ' KB') : 'ses yok (yakalama ' + r.yak + ')');
+      K('REC ses dosyasinda ornek dusmuyor (sinus surekliligi, cizim surerken)',
+        /* Tepe araligi genis: ilk olcude 0.365 cikti (tavan kompresoru
+           ve susan ana sesin kuyrugu ustune biniyor). Asil olcu SICRAMA;
+           tepe yalniz "sinyal var ve kirpilmamis" diyor. Sicrama siniri
+           0.48 genlige kadar olan bir sinusu kapsiyor. */
+        r.var && r.tepe > 0.2 && r.tepe < 0.45 && r.sicrama <= r.sinir,
+        'tepe ' + r.tepe + ' (beklenen 0.3) · en buyuk sicrama ' + r.sicrama + ' <= ' + r.sinir);
+      K('REC kaydet: video ve ses AYRI iki dosya olarak iniyor',
+        r.var && r.indirilen.length === 2 && r.indirilen[0] === r.videoAd && /\.wav$/.test(r.indirilen[1])
+          && r.indirilen[1].replace(/\.wav$/, '') === r.videoAd.replace(/\.[a-z0-9]+$/, '') && r.birakildi,
+        (r.indirilen || []).join(' + '));
+    }
   }
 
    await kapatPg();
