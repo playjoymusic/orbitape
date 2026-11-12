@@ -3732,6 +3732,39 @@
   @keyframes loopDon{to{transform:rotate(360deg);}}
   @media (prefers-reduced-motion: reduce){
     .loopK b,.loopK.kayit i,.loopK.ret{animation:none !important;}}
+  /* ── KATMAN SERIDI (12 Kasim) ──
+     pj: "bir seye basinca aciklama gelse super olur, loop 1, loop 2
+     ... bunlari gormemiz lazim; kayitta da". Fable 5.2 ile uc yon
+     denendi (A yerinde etiket, B kalici serit, C isimler hep acik);
+     pj B'yi secti. Gerekce (olculdu, 390 ve 360x640): tek temiz
+     cikan yon -- A'da gezegen adi 360'ta bir aya biniyordu, C'de
+     secili gezegenin parlamasi icinde ad kontrasti 1,92'ye dusuyordu.
+     Ust satir: kayitta olan / son dokunulan / kac loop caliyor.
+     Alt satir: 1-8 numarali noktalar (dolu = caliyor, kesikli = bos,
+     soluk + cizgi = susturulmus, kirmizi = kayitta) ve acik FX'in adi.
+     Dokunulmaz (pointer-events yok): dugme degil, gosterge. Yeri JS
+     koyar (_loopSeritYerlestir): halkanin altindaki bosluk. */
+  #loopSerit{position:fixed;left:0;top:0;z-index:74;pointer-events:none;display:none;
+    flex-direction:column;align-items:center;gap:7px;
+    font:400 .6875rem/1 'Share Tech Mono',monospace;letter-spacing:.2em;color:rgba(226,222,212,.86);}
+  body.mood #loopSerit.var{display:flex;}
+  #loopSerit .ls-bas{white-space:nowrap;}
+  #loopSerit .ls-bas .k{color:#ff5a4d;}
+  #loopSerit .ls-sira{display:flex;align-items:center;gap:6px;}
+  #loopSerit .ls-n{box-sizing:border-box;width:18px;height:18px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font:400 .625rem/1 'Share Tech Mono',monospace;letter-spacing:0;
+    color:#080a0e;background:rgb(var(--lr));position:relative;}
+  #loopSerit .ls-n.bos{background:none;border:1.5px dashed rgba(var(--lr),.75);color:rgb(var(--lr));}
+  #loopSerit .ls-n.kapali{background:none;border:1.5px solid rgb(var(--lr));color:rgb(var(--lr));}
+  #loopSerit .ls-n.kapali::after{content:'';position:absolute;left:2px;right:2px;top:50%;
+    height:1.5px;background:rgb(var(--lr));transform:rotate(-45deg);}
+  #loopSerit .ls-n.kayit{background:#ff4d4d;color:#080a0e;animation:loopNabiz 1.1s infinite;}
+  #loopSerit .ls-fx{display:flex;align-items:center;gap:6px;margin-left:8px;
+    letter-spacing:.16em;font-size:.625rem;color:rgb(var(--fxs));}
+  #loopSerit .ls-fx::before{content:'';width:10px;height:10px;border-radius:50%;background:rgb(var(--fxs));}
+  @media (prefers-reduced-motion: reduce){ #loopSerit .ls-n.kayit{animation:none;} }
+  body.yildiz-zum #loopSerit,body.gorsel-acik #loopSerit,body:has(#fotoOnizle.var) #loopSerit,
   body.yildiz-zum #loopKanallar,
   body.gorsel-acik #loopKanallar,body:has(#fotoOnizle.var) #loopKanallar{display:none !important;}
   body.gorsel-acik #kamTus,
@@ -4788,6 +4821,9 @@
   <!-- LOOP ISTASYONU (11 Kasim): kanallar halkanin cevresinde, JS
        kurar (bkz. LOOP_KANAL). Dugme alt satirda, yildizin solunda. -->
   <div id="loopKanallar" aria-label="Loop channels"></div>
+  <!-- KATMAN SERIDI (12 Kasim): hangi loop'un caldigini, son dokunulani
+       ve acik FX'i tek satirda soyler. Dokunulmaz -- yalniz bilgi. -->
+  <div id="loopSerit" aria-live="polite"><div class="ls-bas"></div><div class="ls-sira"></div></div>
   <!-- UC KADEME DIKEY SWITCH (27 Eylul, v2 taslak -- kullanicinin
        yeni tarifi: "3 kademeli her kademe homojen renk gecisli...
        swiche dokundugumuz an 3 isim de alt alta kendi yerinde
@@ -8685,7 +8721,12 @@
                 {ad:'DRIFT',  bilgi:'slow wobble',      par:'wobble'},
                 {ad:'DUST',   bilgi:'crackle, old record',    par:'kirpinti'},
                 {ad:'WARM',   bilgi:'warm and hazy',         par:'sicaklik'} ] },
-      { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'LOOP', neon:'53,224,216',
+      /* 12 Kasim: ad 'LOOP' -> 'TIME'. Halkanin cevresindeki 8 loop
+         kanali da "LOOP 1..8" adini tasiyor; ayni ad iki farkli seyi
+         anlatiyordu (pj: "kafa karistiriyor"). Icindekiler -- DELAY,
+         ECHO, PITCH, REPEAT -- hepsi zamanla oynuyor. Ic adi (fx:
+         'dongu') degismedi: kayitli tercihler ve testler onu okuyor. */
+      { fx:'dongu',     gk:'saturn', cap:0.31, aci:58,  uzak:1.62, ad:'TIME', neon:'53,224,216',
         fxler:[ {ad:'DELAY',  bilgi:'repeats itself',     par:'gecikme'},
                 {ad:'ECHO',   bilgi:'drifts away as it rises',     par:'yanki'},
                 {ad:'PITCH',  bilgi:'bends the pitch',         par:'hiz'},
@@ -12393,18 +12434,28 @@
     const src = actx.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(g);
     src.start(); g.gain.setTargetAtTime(1, actx.currentTime, 0.01);
     _loopYuva[k.yuva] = { src, g, acik:true, sure:buf.duration };
+    _loopSonYaz([['LOOP ' + (k.yuva+1), LOOP_RENK[k.yuva]], [' · ', ''], [Y('ON'), '']]);
     _loopCiz();
     return true;
+  }
+  /* SON DOKUNULAN: seridin ust satiri 2,5 sn boyunca bunu soyler,
+     sonra "kac loop caliyor"a doner. */
+  var _loopSon = null, _loopSonZam = 0;
+  function _loopSonYaz(parcalar){
+    _loopSon = parcalar; clearTimeout(_loopSonZam);
+    _loopSonZam = setTimeout(()=>{ _loopSon = null; try{ _loopSeritCiz(); }catch(e){ _yut(e); } }, 2500);
   }
   function loopKanalGec(i){
     const c = _loopYuva[i]; if(!c || !actx) return;
     c.acik = !c.acik;
+    _loopSonYaz([['LOOP ' + (i+1), LOOP_RENK[i]], [' · ', ''], [Y(c.acik ? 'ON' : 'MUTED'), '']]);
     c.g.gain.setTargetAtTime(c.acik ? 1 : 0, actx.currentTime, 0.015);
     _loopCiz();
   }
   function loopKanalSil(i){
     const c = _loopYuva[i]; if(!c) return;
     _loopYuva[i] = null;
+    _loopSonYaz([['LOOP ' + (i+1), LOOP_RENK[i]], [' · ', ''], [Y('DELETED'), '']]);
     try{ c.g.gain.setTargetAtTime(0, actx.currentTime, 0.015); c.src.stop(actx.currentTime + 0.08); }catch(e){ _yut(e); }
     setTimeout(()=>{ try{ c.src.disconnect(); c.g.disconnect(); }catch(e){ _yut(e); } }, 200);
     _loopCiz();
@@ -12445,6 +12496,103 @@
       b.style.left = Math.round(x - 22) + 'px'; b.style.top = Math.round(y - 22) + 'px';
     });
   }
+  /* SERIDIN DURUMU -- ekran da REC de (kayit.js) buradan okur, ikisi
+     ayrismasin. bas: [metin, 'r,g,b' | '' (varsayilan) | 'k' (kirmizi)];
+     sira: 8 yuvanin durumu; fx: acik FX gezegeninin adi ve rengi. */
+  function loopSeritDurum(){
+    const yuva = _loopYuva.map((c, s)=>({ no:s+1, renk:LOOP_RENK[s],
+      durum: (_loopKayit && _loopKayit.yuva === s) ? 'kayit' : !c ? 'bos' : c.acik ? 'acik' : 'kapali' }));
+    let bas;
+    if(_loopKayit){
+      const s = _loopKayit.yuva;
+      bas = [['LOOP ' + (s+1), LOOP_RENK[s]], [' · ', ''], [Y('RECORDING'), 'k']];
+    }else if(_loopSon){ bas = _loopSon; }
+    else{
+      const n = _loopYuva.filter(c => c && c.acik).length;
+      bas = n ? [[Y('LOOPS'), ''], [' · ', ''], [n + ' ' + Y('PLAYING'), '']] : [[Y('LOOPS'), '']];
+    }
+    let fx = null;
+    try{
+      if(typeof FXMOD !== 'undefined' && FXMOD && uyduDug[FXMOD]){
+        const u = UYDULAR.filter(x => x.fx === FXMOD)[0];
+        if(u) fx = { ad:String(u.ad).split('—')[0].trim(), renk:u.neon || '232,169,126' };
+      }
+    }catch(e){ _yut(e); }
+    const gorunur = _loopArsivde() && !(typeof AYAR !== 'undefined' && AYAR.arac)
+      && (!!_loopKayit || _loopYuva.some(Boolean) || !!fx);
+    return { gorunur, bas, yuva, fx };
+  }
+  try{ window.loopSeritDurum = loopSeritDurum; }catch(e){ _yut(e); }
+  function _loopSeritCiz(){
+    const el = document.getElementById('loopSerit'); if(!el) return;
+    const d = loopSeritDurum();
+    el.classList.toggle('var', d.gorunur);
+    if(!d.gorunur) return;
+    /* DOM ile kuruluyor, innerHTML + satir ici style niteligi ile DEGIL: ozet
+       tabanli CSP satir ici style niteligini reddediyor (sayfa ciplak
+       acilir -- csp.py bunu yakaliyor). el.style ile yazmak serbest. */
+    const yap = (sinif, metin, lr)=>{ const e = document.createElement('span');
+      if(sinif) e.className = sinif; if(metin != null) e.textContent = metin;
+      if(lr) e.style.setProperty('--lr', lr); return e; };
+    const bas = el.querySelector('.ls-bas'); bas.textContent = '';
+    d.bas.forEach(([t, r])=>{
+      const e = yap(r === 'k' ? 'k' : '', t);
+      if(r && r !== 'k') e.style.color = 'rgb(' + r + ')';
+      bas.appendChild(e);
+    });
+    const sira = el.querySelector('.ls-sira'); sira.textContent = '';
+    d.yuva.forEach(y => sira.appendChild(yap('ls-n ' + y.durum, String(y.no), y.renk)));
+    if(d.fx){ const f = yap('ls-fx', d.fx.ad); f.style.setProperty('--fxs', d.fx.renk); sira.appendChild(f); }
+    _loopSeritYerlestir();
+  }
+  /* YER: halkanin altindaki bosluk -- ustte FX aciklamasi (gorunurse),
+     disk ve alt aylar; altta kip anahtari ve calan parca kunyesi.
+     Ikisinin ORTASI. Bosluk seride yetmezse (kucuk ekran + uzun kunye)
+     serit kunyenin hemen ustune degil, aciklamanin hemen altina iner:
+     kunye kalabalik, aciklama sabit. Olcu: _loopSeritYerlestir testte. */
+  function _loopSeritYerlestir(){
+    const el = document.getElementById('loopSerit'); if(!el || !el.classList.contains('var')) return;
+    const kutu = id => { const e = document.getElementById(id); if(!e) return null;
+      const r = e.getBoundingClientRect(); return r.height ? r : null; };
+    let ust = 0;
+    const fy = document.getElementById('fxYazi');
+    if(fy && fy.classList.contains('gorunur')){ const r = fy.getBoundingClientRect(); if(r.height) ust = Math.max(ust, r.bottom); }
+    const dk = document.querySelector('.disk'); if(dk){ const r = dk.getBoundingClientRect(); if(r.height) ust = Math.max(ust, r.bottom); }
+    _loopDug.forEach(b => { const r = b.getBoundingClientRect(); if(r.height) ust = Math.max(ust, r.bottom); });
+    UYDULAR.forEach(u => { const b = uyduDug[u.fx]; if(!b) return; const r = b.getBoundingClientRect(); if(r.height) ust = Math.max(ust, r.bottom); });
+    let alt = innerHeight;
+    const kk = kutu('kipKisayol'); if(kk) alt = Math.min(alt, kk.top);
+    /* Kunye: yalniz gorunurken (opaklik 0 iken #np yer kaplar ama
+       gorunmez -- CLAUDE.md tuzagi). Icindeki gorunen satirlarin en ustu. */
+    /* Kunye satirlari (.np-bilgi) alt sinir; yildiz satiri (.np-gez)
+       sag kenarda kucuk bir kutu -- onu dikeyde sinir saymak 360x640'ta
+       seridi aciklamanin ustune itiyordu (olculdu: serit 509..545,
+       yildiz satiri 312..346 x 528..560 -- BLACK HOLE yildiza biniyordu).
+       Onun yerine serit, yildiz satiriyla kesisiyorsa SOLA kayar. */
+    const np = document.getElementById('np');
+    let gez = null;
+    if(np && parseFloat(getComputedStyle(np).opacity) > 0.05){
+      np.querySelectorAll('.np-bilgi').forEach(e => { const r = e.getBoundingClientRect();
+        if(r.height && r.width) alt = Math.min(alt, r.top); });
+      const g = np.querySelector('.np-gez'); if(g){ const r = g.getBoundingClientRect(); if(r.height && r.width) gez = r; }
+    }
+    const h = el.offsetHeight || 40, w = el.offsetWidth || 0;
+    let y = (ust + alt) / 2 - h / 2;
+    y = Math.max(ust + 6, Math.min(y, alt - 6 - h));
+    let x = (innerWidth - w) / 2;
+    /* Pay 12 px: 390'da serit (44..336) yildiz satirina (342..) 6 px
+       kalarak siniri TAM esitlikte geciyordu; yazi tipi gec yuklenip
+       serit yarim piksel genisleyince testte 'binme' olarak dustu. */
+    if(gez && y < gez.bottom + 4 && y + h > gez.top - 4 && x + w > gez.left - 12){
+      const kx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16;
+      x = Math.max(kx, gez.left - 12 - w);
+      /* Sola kaymak yetmiyorsa (serit genis: buyuk yazi boyu, uzun FX
+         adi) yildiz satirinin USTUNE cikar. */
+      if(x + w > gez.left - 6) y = Math.max(ust + 2, gez.top - 8 - h);
+    }
+    el.style.left = Math.round(x) + 'px';
+    el.style.top = Math.round(y) + 'px';
+  }
   function _loopCiz(){
     const kap = document.getElementById('loopKanallar');
     if(kap) kap.classList.toggle('yok', typeof AYAR !== 'undefined' && !!AYAR.arac);
@@ -12459,11 +12607,12 @@
       b.tabIndex = 0;
     });
     _loopYerlestir();
+    _loopSeritCiz();
     /* Arsivdeyken ara ara yeniden olc: halka bir FX'le, klavyeyle ya
        da donmeyle yer degistirebilir; bos yuvalar da artik gorunuyor.
        Radyoda saat yok (yuvalar orada hic yok). */
     const var_ = _loopArsivde();
-    if(var_ && !_loopZaman) _loopZaman = setInterval(()=>{ try{ _loopYerlestir(); }catch(e){ _yut(e); } }, 700);
+    if(var_ && !_loopZaman) _loopZaman = setInterval(()=>{ try{ _loopYerlestir(); _loopSeritYerlestir(); }catch(e){ _yut(e); } }, 700);
     if(!var_ && _loopZaman){ clearInterval(_loopZaman); _loopZaman = 0; }
   }
   (function(){
@@ -12513,7 +12662,13 @@
         try{ if(_loopBus && actx) _loopBus.gain.setTargetAtTime(a ? 1 : 0, actx.currentTime, 0.05); }catch(e){ _yut(e); }
         _loopCiz();
       }).observe(document.body, { attributes:true, attributeFilter:['class'] });
-      addEventListener('resize', ()=>{ try{ _loopYerlestir(); }catch(e){ _yut(e); } });
+      addEventListener('resize', ()=>{ try{ _loopYerlestir(); _loopSeritYerlestir(); }catch(e){ _yut(e); } });
+      /* FX gezegeni acilip kapaninca seritteki ad da degissin: tek
+         kaynak fxGoster (bkz. UYDULAR), onu sarmaliyoruz. */
+      try{
+        const _fxg = window.fxGoster;
+        if(typeof _fxg === 'function') window.fxGoster = (ad)=>{ _fxg(ad); try{ _loopSeritCiz(); }catch(e){ _yut(e); } };
+      }catch(e){ _yut(e); }
       /* AYAR bu satirdan ASAGIDA tanimli (var, henuz bos): CAR MODE
          isareti ancak sayfa yuklenince dogru okunur. */
       addEventListener('load', ()=>{ try{ _loopCiz(); }catch(e){ _yut(e); } });

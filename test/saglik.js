@@ -1327,7 +1327,11 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           tavanina 0,4 KB kaldi. Tavan 1306 KB: bir sonraki kucuk
           isin payi, kacak buyumeyi hala yakalar. Derlenmis ilk
           cizim brotli tavani (110 KB) ayrica sinaniyor. */
-       K('Ham boy < 1306 KB', dosyaBoy < 1306*1024,
+       /* 12 Kasim: KATMAN SERIDI + REC'te loop (pj secimi, Fable 5.2
+          incelemesi). index.html 1.299,9 -> ~1.309 KB, cogu karar ve
+          olcum yorumu (yorum budamak depo kararina aykiri). Tavan
+          1316 KB. */
+       K('Ham boy < 1316 KB', dosyaBoy < 1316*1024,
          Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -2501,7 +2505,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                 gorNo:gorunum(mod), renk:(KANAL_RENK[gorunum(mod)] || KANAL_RENK.lib),
                 kareBas:performance.now(), simdi:performance.now() };
         }catch(e){ hata.push('baglam: ' + (e && e.message)); }
-        const adim = ['_kayZemin','_kayKamera','_kayDisk','_kaySolUst','_kaySagUst',
+        const adim = ['_kayZemin','_kayKamera','_kayDisk','_kaySolUst','_kayLoop','_kaySagUst',
                       '_kaySemboller','_kaySagAlt','_kaySolAlt','_kaySesCubugu','_kayVinyet'];
         if(g) for(const a of adim){
           if(typeof window[a] !== 'function'){ hata.push(a + ': TANIMSIZ'); continue; }
@@ -18459,6 +18463,97 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       lp.carp.length === 0 && kucuk.length === 0,
       (lp.carp.concat(kucuk).join(' ') || 'temiz') + ' · ay 44x44, ekran icinde');
     await k8();
+
+    /* ── KATMAN SERIDI + REC (12 Kasim) ──────────────────────────
+       pj: "REC'ten kaydediyoruz, bu seceneklerin islerini
+       gostermiyor... loop 1, loop 2, bunlari gormemiz lazim".
+       Fable 5.2 ile uc yon denendi, pj B'yi (kalici serit) secti.
+       Sinananlar: serit dogru durumu soyluyor, radyoda yok, iki
+       telefon boyunda (kunye DOLUyken) hicbir seye binmiyor, Saturn'un
+       adi TIME (LOOP 1-8 ile karismasin) ve -- asil sikayet --
+       VIDEO KARESINDE ay ve serit gercekten var (piksel olcusu). */
+    const seritOlc = async (gen, boy)=>{
+      const { sayfa: ps, kapat: ks } = await sayfaAc(boy === 844 ? c : b, { bekle: 2500,
+        baglamEk: { viewport: { width:gen, height:boy } } });
+      const r = await ps.evaluate(async (kok)=>{
+        const bek = ms => new Promise(r=>setTimeout(r, ms));
+        const o = {};
+        AYAR.mood = true; moodUygula(true); await bek(400);
+        const el = document.getElementById('loopSerit');
+        const gor = () => getComputedStyle(el).display !== 'none';
+        o.bostaYok = !gor();
+        ses.crossOrigin = 'anonymous'; ses.src = kok; ses.loop = true;
+        sesBaglamiAl(); await actx.resume(); await ses.play().catch(()=>{}); analizKur();
+        /* Kunye dolu: en kalabalik alt kose (iki satirlik ad + lisans). */
+        simdiCalan({ ad:'Piranga leucoptera - White-winged Tanager XC242976 long title',
+                     sanatci:'Niels Krabbe', lisans:'CC BY-SA 4.0' });
+        await bek(700);
+        for(const i of [0,2,4]){ loopKayitBasla(i); await bek(420); loopKayitBasla(); await bek(60); }
+        loopKanalGec(2);
+        o.sonDokunulan = el.querySelector('.ls-bas').textContent;
+        uyduDug['karadelik'].click(); await bek(450);
+        loopKayitBasla(6); await bek(300);
+        o.kayitBas = el.querySelector('.ls-bas').textContent;
+        o.durumlar = [...el.querySelectorAll('.ls-n')].map(n => n.className.replace('ls-n ','')).join(',');
+        const fx = el.querySelector('.ls-fx'); o.fx = fx ? fx.textContent : '';
+        o.time = uyduDug['dongu'].getAttribute('aria-label');
+        _loopSeritYerlestir(); await bek(100);
+        const kut = e => e.getBoundingClientRect();
+        const kes = (a,b) => Math.min(a.right,b.right) - Math.max(a.left,b.left) > 0.5
+                          && Math.min(a.bottom,b.bottom) - Math.max(a.top,b.top) > 0.5;
+        const sr = kut(el), carp = [];
+        const np = document.getElementById('np');
+        const diger = UYDULAR.map(u=>uyduDug[u.fx]).concat(_loopDug,
+          [document.getElementById('kipKisayol'), document.querySelector('#fxYazi.gorunur'),
+           np.querySelector('.np-gez'), np.querySelector('.np-bilgi')])
+          .filter(e=>e && kut(e).width > 0 && kut(e).height > 0);
+        const yuv = q => [q.left,q.top,q.right,q.bottom].map(v=>Math.round(v)).join(',');
+        diger.forEach(d=>{ if(kes(sr, kut(d))) carp.push((d.id || d.className.toString().slice(0,12) || d.dataset.fx)
+          + '[' + yuv(kut(d)) + ' / serit ' + yuv(sr) + ']'); });
+        if(sr.left < 0 || sr.right > innerWidth || sr.bottom > innerHeight) carp.push('ekran disi');
+        o.carp = carp; o.kunye = parseFloat(getComputedStyle(np).opacity) > 0.5;
+        /* VIDEO KARESI: tam kayitCiz() -- yalniz _kayLoop degil; cagri
+           kondüktorden duserse de yakalansin. Dolu ay 1'in merkezinde
+           ayin rengi, seridin 1 numarali noktasinda da. */
+        await kayitYukle(); await bek(200);
+        kayitTuvalKur(); _kkNo += 8;
+        try{ kayitCiz(); }catch(e){ o.cizHata = e.message; }
+        try{ if(kayitRAF) cancelAnimationFrame(kayitRAF); kayitRAF = 0; }catch(e){}
+        const px = (x, y)=>{ const d = kayitCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data; return [d[0],d[1],d[2]]; };
+        const ay = kut(_loopDug[0].querySelector('i'));
+        const p1 = px((ay.left + ay.width*0.62) * KAYIT_K, (ay.top + ay.height*0.62) * KAYIT_K);
+        o.videoAy = p1; o.videoAyVar = p1[1] > 120 && p1[2] > 110;          // 53,224,216 ailesi
+        /* Serit videoda sol altta: ilk noktayi tara (sol kenar, alt %25). */
+        let bulundu = false;
+        const x0 = Math.round(10*KAYIT_K), x1 = Math.round(60*KAYIT_K);
+        const y0 = Math.round(KAYIT_BOY*0.72), y1 = KAYIT_BOY - 2;
+        const d = kayitCtx.getImageData(x0, y0, x1-x0, y1-y0).data;
+        for(let i = 0; i < d.length && !bulundu; i += 4)
+          if(d[i] < 90 && d[i+1] > 180 && d[i+2] > 170) bulundu = true;      // nokta 1: 53,224,216
+        o.videoSeritVar = bulundu;
+        AYAR.mood = false; moodUygula(false); await bek(400);
+        o.radyodaYok = !gor();
+        return o;
+      }, S.replace(/\/[^/]*$/, '') + '/test/yuksek.mp3');
+      await ks();
+      return r;
+    };
+    const s390 = await seritOlc(390, 844), s360 = await seritOlc(360, 640);
+    K('Katman seridi bosta yok, radyoda yok', s390.bostaYok && s390.radyodaYok && s360.radyodaYok,
+      'bosta gizli ' + s390.bostaYok + ' · radyoda gizli ' + s390.radyodaYok);
+    K('Katman seridi son dokunulani soyluyor', /LOOP 3/.test(s390.sonDokunulan) && /MUTED/.test(s390.sonDokunulan),
+      s390.sonDokunulan);
+    K('Katman seridi kaydi ve 8 yuvanin durumunu gosteriyor',
+      /LOOP 7/.test(s390.kayitBas) && /RECORDING/.test(s390.kayitBas)
+        && s390.durumlar === 'acik,bos,kapali,bos,acik,bos,kayit,bos' && s390.fx === 'BLACK HOLE',
+      s390.kayitBas + ' · ' + s390.durumlar + ' · fx ' + s390.fx);
+    K('Saturn gezegeninin adi TIME (LOOP 1-8 ile karismiyor)', s390.time === 'TIME', s390.time);
+    K('Katman seridi hicbir seye binmiyor (390 + 360x640, kunye dolu)',
+      s390.carp.length === 0 && s360.carp.length === 0 && s390.kunye && s360.kunye,
+      (s390.carp.map(x=>'390:'+x).concat(s360.carp.map(x=>'360:'+x)).join(' ') || 'temiz')
+        + ' · kunye gorunur ' + (s390.kunye && s360.kunye));
+    K('REC videosunda loop aylari ve serit var', s390.videoAyVar && s390.videoSeritVar && !s390.cizHata,
+      'ay pikseli ' + s390.videoAy + ' · serit ' + s390.videoSeritVar + (s390.cizHata ? ' · ' + s390.cizHata : ''));
   }
 
    await kapatPg();

@@ -2083,6 +2083,119 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       });
     }catch(e){ _yut(e); }
   }
+  /* ── LOOP AYLARI + KATMAN SERIDI (12 Kasim) ─────────────────────
+     pj: "REC'ten kaydediyoruz, bu seceneklerin islerini gostermiyor".
+     OLCULDU (Fable 5.2, gercek kayit karesi): halkanin cevresindeki
+     8 loop ayi ve seridin hicbiri videoya girmiyordu -- izleyen sesin
+     neden ust uste bindigini goremiyordu. Simdi:
+       · aylar ekrandaki yerlerinden (kk, taze), ekrandaki hallerinde
+         (bos = kesikli halka, dolu = renkli kure, susturulmus = soluk,
+         kayitta = kirmizi);
+       · serit VIDEODA sol alt koseye (o kose videoda bilerek bos --
+         bkz. kayitCiz sonundaki not), FOTOGRAFTA ekrandaki yerine
+         ("ne goruyorsak o").
+     Durum index.html'deki loopSeritDurum()'dan: ekran ve kayit ayni
+     kaynaktan okur, ayrismaz. */
+  function _kayLoop(g){
+    const c = g.c, K = g.K;
+    try{
+      const kap = document.getElementById('loopKanallar');
+      if(!kap || getComputedStyle(kap).display === 'none') return;
+      kap.querySelectorAll('.loopK').forEach(b=>{
+        const i = b.querySelector('i'); const k = kk(i, true); if(!k) return;
+        const r = Math.min(k.w, k.h)/2; if(!(r > 0)) return;
+        const lr = (getComputedStyle(b).getPropertyValue('--lr') || '232,230,235').trim();
+        kat(c, ()=>{
+          if(b.classList.contains('bos')){
+            c.setLineDash([3*K, 3*K]); c.lineWidth = 1.5*K;
+            c.strokeStyle = 'rgba(' + lr + ',.75)';
+            c.beginPath(); c.arc(k.ox, k.oy, r - 0.75*K, 0, 6.2832); c.stroke();
+            return;
+          }
+          const kay = b.classList.contains('kayit');
+          if(b.classList.contains('kapali')) c.globalAlpha = 0.28;
+          const renk = kay ? '255,77,77' : lr;
+          c.shadowColor = 'rgba(' + renk + ',.6)'; c.shadowBlur = 10*K;
+          const gr = c.createRadialGradient(k.ox - r*0.3, k.oy - r*0.4, 0, k.ox, k.oy, r);
+          if(kay){ gr.addColorStop(0, 'rgb(255,77,77)'); gr.addColorStop(1, 'rgb(255,77,77)'); }
+          else{ gr.addColorStop(0, 'rgba(255,255,255,.85)'); gr.addColorStop(0.45, 'rgb(' + lr + ')'); gr.addColorStop(1, 'rgba(0,0,0,.55)'); }
+          c.fillStyle = gr; c.beginPath(); c.arc(k.ox, k.oy, r, 0, 6.2832); c.fill();
+        });
+      });
+    }catch(e){ _yut(e); }
+    try{
+      const d = (typeof window.loopSeritDurum === 'function') ? window.loopSeritDurum() : null;
+      const el = document.getElementById('loopSerit');
+      if(!d || !d.gorunur || !el) return;
+      const cs = getComputedStyle(el);
+      if(cs.display === 'none') return;
+      const aile = cs.fontFamily || 'monospace';
+      const VARS = 'rgba(226,222,212,.86)', KIR = '#ff5a4d';
+      /* Harf araligi elle: ctx.letterSpacing her motorda yok. */
+      const yaz = (t, x, y, px, ara, renk)=>{
+        c.font = '400 ' + (px*K).toFixed(1) + 'px ' + aile; c.fillStyle = renk; c.textBaseline = 'middle';
+        for(const ch of String(t)){ c.fillText(ch, x, y); x += c.measureText(ch).width + ara*K; }
+        return x;
+      };
+      const gen = (t, px, ara)=>{ c.font = '400 ' + (px*K).toFixed(1) + 'px ' + aile;
+        let w = 0; for(const ch of String(t)) w += c.measureText(ch).width + ara*K; return w; };
+      /* Yer: fotografta ekrandaki kutu, videoda sol alt kose. */
+      let x0, y0;
+      const ek = kk(el, true);
+      if(g.foto && ek){ x0 = ek.x; y0 = ek.y; }
+      else{
+        const kx = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16) * K;
+        x0 = kx; y0 = g.H - kx - 44*K;
+        /* SAG ALTTAKI KUNYEYE BINMESIN. OLCULDU (390x844 kayit karesi,
+           iki satirlik parca adi): seridin sonundaki FX adi (BLACK HOLE)
+           kunyenin ikinci satirinin ustune basiliyordu. Serit genisligi
+           hesaplanip kunye bloguyla (yildiz satiri dahil) yatayda
+           kesisiyorsa serit kunyenin en ust kenarinin USTUNE cikar. */
+        const sGen = Math.max(d.bas.reduce((t, q)=> t + gen(q[0], 11, 2.2), 0),
+          8*24*K - 6*K + (d.fx ? 8*K + 16*K + gen(d.fx.ad, 10, 1.6) : 0));
+        let kunyeUst = Infinity;
+        const np = document.getElementById('np');
+        if(np && parseFloat(getComputedStyle(np).opacity) > 0.05){
+          np.querySelectorAll('.np-gez, .np-bilgi').forEach(e=>{
+            const k = kk(e, true); if(k && k.w && k.x < x0 + sGen + 8*K) kunyeUst = Math.min(kunyeUst, k.y);
+          });
+        }
+        if(y0 + 40*K > kunyeUst - 8*K) y0 = kunyeUst - 8*K - 40*K;
+      }
+      kat(c, ()=>{
+        /* Ust satir. */
+        let x = x0;
+        d.bas.forEach(([t, r])=>{
+          x = yaz(t, x, y0 + 6*K, 11, 2.2, r === 'k' ? KIR : r ? 'rgb(' + r + ')' : VARS);
+        });
+        /* Alt satir: 8 nokta + FX adi. */
+        const cy = y0 + 14*K + 7*K + 9*K, R = 9*K;
+        let nx = x0 + R;
+        d.yuva.forEach(y=>{
+          const lr = y.durum === 'kayit' ? '255,77,77' : y.renk;
+          c.save();
+          if(y.durum === 'bos' || y.durum === 'kapali'){
+            if(y.durum === 'bos') c.setLineDash([3*K, 3*K]);
+            c.lineWidth = 1.5*K; c.strokeStyle = y.durum === 'bos' ? 'rgba(' + lr + ',.75)' : 'rgb(' + lr + ')';
+            c.beginPath(); c.arc(nx, cy, R - 0.75*K, 0, 6.2832); c.stroke();
+            if(y.durum === 'kapali'){ c.setLineDash([]); c.beginPath();
+              c.moveTo(nx - 6*K, cy + 6*K); c.lineTo(nx + 6*K, cy - 6*K); c.stroke(); }
+          }else{ c.fillStyle = 'rgb(' + lr + ')'; c.beginPath(); c.arc(nx, cy, R, 0, 6.2832); c.fill(); }
+          c.restore();
+          const no = String(y.no);
+          yaz(no, nx - gen(no, 10, 0)/2, cy + 0.5*K, 10, 0,
+              (y.durum === 'bos' || y.durum === 'kapali') ? 'rgb(' + lr + ')' : '#080a0e');
+          nx += 2*R + 6*K;
+        });
+        if(d.fx){
+          const fx = nx - R + 8*K;
+          c.fillStyle = 'rgb(' + d.fx.renk + ')';
+          c.beginPath(); c.arc(fx + 5*K, cy, 5*K, 0, 6.2832); c.fill();
+          yaz(d.fx.ad, fx + 16*K, cy, 10, 1.6, 'rgb(' + d.fx.renk + ')');
+        }
+      });
+    }catch(e){ _yut(e); }
+  }
   function _kaySagUst(g){
     const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 4) SAĞ ÜST: kanal adları — ölçülen kutu, ekrandan okunan yazı tipi */
@@ -2517,6 +2630,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     _kayDisk(g);
     _kayKamera(g);
     _kaySolUst(g);
+    _kayLoop(g);
     _kaySagUst(g);
     _kaySemboller(g);
     _kaySagAlt(g);
@@ -3128,7 +3242,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          hemen sonrasindaki kayitCiz() notunda (kayitCiz de ayni
          hatayi tasiyordu: kamera cizilip UZERINE deri govdesi
          basiliyor, fotografta kamera hic gorunmuyordu). */
-      _kayZemin(g); _kayDisk(g); _kayKamera(g); _kayCark(g); _kaySolUst(g); _kaySagUst(g);
+      _kayZemin(g); _kayDisk(g); _kayKamera(g); _kayCark(g); _kaySolUst(g); _kayLoop(g); _kaySagUst(g);
       _kaySemboller(g); _kaySagAlt(g); _kaySolAlt(g); _kaySesCubugu(g);
       /* ARAYUZ KATMANI: kullanicinin istegi "ne goruyorsak o, yani o
          anda". Tuslar da fotografta. Vinyetten ONCE ciziliyor ki
