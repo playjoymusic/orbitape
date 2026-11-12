@@ -3722,6 +3722,10 @@
     border:1.5px dashed rgba(var(--lr),.75);}
   .loopK.bos b{display:none;}
   .loopK.bos:hover i,.loopK.bos:focus-visible i{border-color:rgb(var(--lr));}
+  /* SES DUZEYI: ay kisildikca kuculur (--sv = .5 + .5*duzey, JS yazar).
+     Surukleme sirasinda gecis yok: parmagi geriden izlemesin. */
+  .loopK.dolu i{transform:scale(var(--sv,1));}
+  .loopK.suruk i{transition:none;}
   .loopK.ret{animation:loopRet .36s ease;}
   .loopK.kapali i{opacity:.28;box-shadow:none;}
   .loopK.kapali b{animation-play-state:paused;opacity:.28;}
@@ -3751,6 +3755,30 @@
   #loopSerit .ls-bas{white-space:nowrap;}
   #loopSerit .ls-bas .k{color:#ff5a4d;}
   #loopSerit .ls-sira{display:flex;align-items:center;gap:6px;}
+  /* MAIN: ortadan gelen kaynagin sesi. Seritte DOKUNULAN tek oge:
+     bas + yukari/asagi surukle = duzey, kisa dokunus = sus/ac (aylarla
+     ayni hareket). Gorunen boy 18 px ama dokunma alani ::before ile
+     44 px (olcusu testte).
+     UST SATIRDA, noktalarin yaninda DEGIL. Ilk denemede alt satirin
+     basindaydi: 360x640'ta serit 341 px'e cikti (14..355) ve sagdaki
+     yildiz satirina (312..346) bindi, kacacak yer de kalmadi. Ust
+     satir kisa (en uzunu "LOOP 7 · RECORDING"), MAIN oraya sigiyor
+     ve alt satir olculmus haliyle kaliyor. */
+  #loopSerit .ls-ust{display:flex;align-items:center;gap:12px;}
+  #loopSerit .ls-ana{position:relative;pointer-events:auto;touch-action:none;
+    display:flex;align-items:center;gap:5px;height:18px;margin:0;padding:0;border:0;
+    background:none;color:inherit;font:inherit;font-size:.625rem;letter-spacing:.16em;
+    cursor:ns-resize;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  #loopSerit .ls-ana::before{content:'';position:absolute;left:-4px;right:-4px;top:-13px;bottom:-13px;}
+  #loopSerit .ls-ana i{display:block;width:4px;height:18px;border-radius:2px;
+    background:linear-gradient(to top,currentColor var(--sd,100%),rgba(226,222,212,.24) var(--sd,100%));}
+  #loopSerit .ls-ana.kapali span{text-decoration:line-through;opacity:.62;}
+  #loopSerit .ls-ana.kapali i{background:rgba(226,222,212,.24);}
+  #loopSerit .ls-ana:focus-visible{outline:2px solid #35e0d8;outline-offset:4px;}
+  /* Kisilmis loop: nokta alttan duzeyi kadar dolu. Yarinin altinda
+     rakam koyu zeminde kalir, o yuzden ayin rengine doner (.kisik). */
+  #loopSerit .ls-n.acik{background:linear-gradient(to top,rgb(var(--lr)) var(--sd,100%),rgba(var(--lr),.22) var(--sd,100%));}
+  #loopSerit .ls-n.acik.kisik{color:rgb(var(--lr));}
   #loopSerit .ls-n{box-sizing:border-box;width:18px;height:18px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     font:400 .625rem/1 'Share Tech Mono',monospace;letter-spacing:0;
@@ -4823,7 +4851,7 @@
   <div id="loopKanallar" aria-label="Loop channels"></div>
   <!-- KATMAN SERIDI (12 Kasim): hangi loop'un caldigini, son dokunulani
        ve acik FX'i tek satirda soyler. Dokunulmaz -- yalniz bilgi. -->
-  <div id="loopSerit" aria-live="polite"><div class="ls-bas"></div><div class="ls-sira"></div></div>
+  <div id="loopSerit" aria-live="polite"><div class="ls-ust"><button type="button" class="ls-ana" id="lsAna" aria-label="Main volume"><span></span><i></i></button><div class="ls-bas"></div></div><div class="ls-sira"></div></div>
   <!-- UC KADEME DIKEY SWITCH (27 Eylul, v2 taslak -- kullanicinin
        yeni tarifi: "3 kademeli her kademe homojen renk gecisli...
        swiche dokundugumuz an 3 isim de alt alta kendi yerinde
@@ -11197,7 +11225,7 @@
   let fxHam=0, _fxYum=0, _fxAkis=0, _fxAkisT=0, _fxSuruyor=false;
   let yatay=0;            // -1 = tam reverb (sol) .. 0 = temiz .. +1 = tam distortion (sağ)
   let dryG=null, wetG=null, delayNode=null, fbNode=null, delayG=null, convNode=null, fbTavan=null;
-  let limiter=null, cikisG=null, tavan=null;   // dengeleyici + çıkış kazancı + tepe koruması
+  let limiter=null, cikisG=null, tavan=null, anaG=null;   // dengeleyici + çıkış kazancı + tepe koruması
   /* ── KULLANICI SESI: GRAFIGIN EN SONU ──
      Iki parmak jesti ses.volume yaziyordu ve HICBIR SEY olmuyordu:
      <audio> Web Audio grafigine baglaninca (createMediaElementSource)
@@ -12277,7 +12305,14 @@
            iken grafik kurulduktan sonra kulGain.gain=1. */
         kulGain=actx.createGain();
         kulGain.gain.value = (typeof kSes === 'number' && isFinite(kSes)) ? kSes : 1;
-        analiz.connect(tremG); cikisG.connect(tavan);
+        /* ANA KAYNAK SEVIYESI (12 Kasim, pj: "ortadan gelen icin de bi
+           volum olmali"). cikisG ile tavan ARASINDA: loop yakalama
+           cikisG'den aliyor (kisilmamis ses kaydedilir), loop veriyolu
+           tavan'a giriyor (bu kazanc loop'lara dokunmaz). Seviye
+           _anaHedef()'ten: radyoda hep 1. */
+        anaG=actx.createGain();
+        try{ anaG.gain.value = _anaHedef(); }catch(e){ _yut(e); }
+        analiz.connect(tremG); cikisG.connect(anaG); anaG.connect(tavan);
         /* KAYIT tavan'dan aliniyor, yani kullanici kazancindan ONCE:
            sesi kistin diye kaydin kisik cikmasi istenmez. */
         tavan.connect(kulGain); kulGain.connect(actx.destination);
@@ -12358,6 +12393,36 @@
      duyulur. Kural 3 (canli yayin kaydedilmez) bu yuzden de korunur:
      yakalama yalniz body.mood iken baslar. */
   const LOOP_KANAL = 8, LOOP_TAVAN_SN = 16, LOOP_EN_AZ_SN = 0.3, LOOP_SIL_MS = 600;
+  /* SES DUZEYI (12 Kasim): parmak LOOP_SES_ESIK px oynayinca surukleme
+     sayilir (silme sayaci iptal), LOOP_SES_YOL px tam aralik (0..1).
+     Kazanc = duzey^2: kulak logaritmik duyuyor, duz carpanla ust yari
+     neredeyse hic degismiyormus gibi gelir. */
+  const LOOP_SES_ESIK = 8, LOOP_SES_YOL = 120;
+  var _anaSev = 1, _anaAcik = true;
+  /* Radyoda serit yok, kullanici duzeyi geri acamaz: orada hep 1. */
+  function _anaHedef(){ return !_loopArsivde() ? 1 : (_anaAcik ? _anaSev * _anaSev : 0); }
+  function _anaUygula(){
+    try{ if(anaG && actx) anaG.gain.setTargetAtTime(_anaHedef(), actx.currentTime, 0.02); }catch(e){ _yut(e); }
+  }
+  function _sesYuzde(v){ return Y('VOL') + ' ' + Math.round(v * 100); }
+  function anaSesYaz(v){
+    _anaSev = Math.max(0, Math.min(1, +v || 0)); if(_anaSev > 0) _anaAcik = true;
+    _anaUygula();
+    _loopSonYaz([[Y('MAIN'), ''], [' · ', ''], [_sesYuzde(_anaSev), '']]);
+    _loopSeritCiz();
+  }
+  function anaGec(){
+    _anaAcik = !_anaAcik; _anaUygula();
+    _loopSonYaz([[Y('MAIN'), ''], [' · ', ''], [Y(_anaAcik ? 'ON' : 'MUTED'), '']]);
+    _loopSeritCiz();
+  }
+  function loopSesYaz(i, v){
+    const c = _loopYuva[i]; if(!c || !actx) return;
+    c.sev = Math.max(0, Math.min(1, +v || 0)); if(c.sev > 0) c.acik = true;
+    c.g.gain.setTargetAtTime(c.acik ? c.sev * c.sev : 0, actx.currentTime, 0.02);
+    _loopSonYaz([['LOOP ' + (i+1), LOOP_RENK[i]], [' · ', ''], [_sesYuzde(c.sev), '']]);
+    _loopCiz();
+  }
   const LOOP_RENK = ['53,224,216','232,169,126','176,140,255','255,122,150',
                      '140,220,120','255,210,90','110,170,255','230,230,235'];
   var _loopBus = null, _loopBusHedef = null, _loopYuva = new Array(LOOP_KANAL).fill(null),
@@ -12433,7 +12498,7 @@
     const g = actx.createGain(); g.gain.value = 0; g.connect(bus);
     const src = actx.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(g);
     src.start(); g.gain.setTargetAtTime(1, actx.currentTime, 0.01);
-    _loopYuva[k.yuva] = { src, g, acik:true, sure:buf.duration };
+    _loopYuva[k.yuva] = { src, g, acik:true, sev:1, sure:buf.duration };
     _loopSonYaz([['LOOP ' + (k.yuva+1), LOOP_RENK[k.yuva]], [' · ', ''], [Y('ON'), '']]);
     _loopCiz();
     return true;
@@ -12449,7 +12514,7 @@
     const c = _loopYuva[i]; if(!c || !actx) return;
     c.acik = !c.acik;
     _loopSonYaz([['LOOP ' + (i+1), LOOP_RENK[i]], [' · ', ''], [Y(c.acik ? 'ON' : 'MUTED'), '']]);
-    c.g.gain.setTargetAtTime(c.acik ? 1 : 0, actx.currentTime, 0.015);
+    c.g.gain.setTargetAtTime(c.acik ? c.sev * c.sev : 0, actx.currentTime, 0.015);
     _loopCiz();
   }
   function loopKanalSil(i){
@@ -12500,7 +12565,7 @@
      ayrismasin. bas: [metin, 'r,g,b' | '' (varsayilan) | 'k' (kirmizi)];
      sira: 8 yuvanin durumu; fx: acik FX gezegeninin adi ve rengi. */
   function loopSeritDurum(){
-    const yuva = _loopYuva.map((c, s)=>({ no:s+1, renk:LOOP_RENK[s],
+    const yuva = _loopYuva.map((c, s)=>({ no:s+1, renk:LOOP_RENK[s], sev: c ? c.sev : 1,
       durum: (_loopKayit && _loopKayit.yuva === s) ? 'kayit' : !c ? 'bos' : c.acik ? 'acik' : 'kapali' }));
     let bas;
     if(_loopKayit){
@@ -12519,8 +12584,10 @@
       }
     }catch(e){ _yut(e); }
     const gorunur = _loopArsivde() && !(typeof AYAR !== 'undefined' && AYAR.arac)
-      && (!!_loopKayit || _loopYuva.some(Boolean) || !!fx);
-    return { gorunur, bas, yuva, fx };
+      && (!!_loopKayit || _loopYuva.some(Boolean) || !!fx || !_anaAcik || _anaSev < 1);
+    /* ana kisikken/susmusken serit loop ve FX olmasa da gorunur: yoksa
+       kullanici sesi geri acacagi yeri bulamaz. */
+    return { gorunur, bas, yuva, fx, ana:{ sev:_anaSev, acik:_anaAcik, ad:Y('MAIN') } };
   }
   try{ window.loopSeritDurum = loopSeritDurum; }catch(e){ _yut(e); }
   function _loopSeritCiz(){
@@ -12541,7 +12608,16 @@
       bas.appendChild(e);
     });
     const sira = el.querySelector('.ls-sira'); sira.textContent = '';
-    d.yuva.forEach(y => sira.appendChild(yap('ls-n ' + y.durum, String(y.no), y.renk)));
+    d.yuva.forEach(y => { const e = yap('ls-n ' + y.durum + (y.sev < 0.5 ? ' kisik' : ''), String(y.no), y.renk);
+      if(y.durum === 'acik') e.style.setProperty('--sd', Math.round(y.sev * 100) + '%');
+      sira.appendChild(e); });
+    const ana = document.getElementById('lsAna');
+    if(ana){
+      ana.firstChild.textContent = d.ana.ad;
+      ana.classList.toggle('kapali', !d.ana.acik);
+      ana.style.setProperty('--sd', Math.round(d.ana.sev * 100) + '%');
+      ana.setAttribute('aria-pressed', d.ana.acik ? 'true' : 'false');
+    }
     if(d.fx){ const f = yap('ls-fx', d.fx.ad); f.style.setProperty('--fxs', d.fx.renk); sira.appendChild(f); }
     _loopSeritYerlestir();
   }
@@ -12601,7 +12677,7 @@
       b.classList.toggle('dolu', !!c); b.classList.toggle('kayit', kay);
       b.classList.toggle('bos', !c && !kay);
       b.classList.toggle('kapali', !!c && !c.acik);
-      if(c) b.style.setProperty('--ls', c.sure.toFixed(3) + 's');
+      if(c){ b.style.setProperty('--ls', c.sure.toFixed(3) + 's'); b.style.setProperty('--sv', (0.5 + 0.5 * c.sev).toFixed(3)); }
       b.setAttribute('aria-pressed', c && c.acik ? 'true' : 'false');
       b.setAttribute('aria-label', 'Loop ' + (s+1) + (kay ? ', recording' : c ? (c.acik ? ', on' : ', off') : ', empty'));
       b.tabIndex = 0;
@@ -12630,20 +12706,36 @@
            Bos yuvaya dokunmak oraya kaydi acar; kayit suren yuvaya
            dokunmak kapatir. Baska bir yuvada kayit surerken bos yuvaya
            dokunmak da once o kaydi kapatir (loopKayitBasla). */
-        let zam = 0, silindi = false;
-        const birak = ()=>{ clearTimeout(zam); zam = 0; b.classList.remove('basili'); };
+        /* SURUKLE = SES DUZEYI (12 Kasim): dolu aya basip yukari/asagi.
+           Esigi gecince silme sayaci iptal olur ve ardindan gelen
+           'click' yutulur (yoksa birakinca ay susardi). Parmak ayin
+           disina tasinca da surmesi icin isaretci yakalaniyor. */
+        let zam = 0, silindi = false, pid = null, y0 = 0, s0 = 1, suruk = false;
+        const say = ()=>{ clearTimeout(zam); zam = 0; b.classList.remove('basili'); };
+        const birak = ()=>{ say(); pid = null; b.classList.remove('suruk'); };
         b.addEventListener('pointerdown', (e)=>{
-          e.stopPropagation(); silindi = false;
+          e.stopPropagation(); silindi = false; suruk = false;
           if(!_loopYuva[s]) return;
+          pid = e.pointerId; y0 = e.clientY; s0 = _loopYuva[s].sev;
+          try{ b.setPointerCapture(pid); }catch(_){ _yut(_); }
           b.classList.add('basili');
           zam = setTimeout(()=>{ silindi = true; birak(); loopKanalSil(s); }, LOOP_SIL_MS);
         });
-        ['pointerup','pointercancel','pointerleave'].forEach(t => b.addEventListener(t, birak));
+        b.addEventListener('pointermove', (e)=>{
+          if(pid === null || e.pointerId !== pid || !_loopYuva[s]) return;
+          const dy = e.clientY - y0;
+          if(!suruk){ if(Math.abs(dy) < LOOP_SES_ESIK) return; suruk = true; say(); b.classList.add('suruk'); }
+          loopSesYaz(s, s0 - (dy - Math.sign(dy) * LOOP_SES_ESIK) / LOOP_SES_YOL);
+        });
+        ['pointerup','pointercancel'].forEach(t => b.addEventListener(t, birak));
+        /* Yakalama alinamadiysa (eski motor) eski davranis: aydan cikinca birak. */
+        b.addEventListener('pointerleave', ()=>{ if(!suruk) birak(); });
         ['touchstart','mousedown'].forEach(t => b.addEventListener(t, dur, {passive:true}));
         b.addEventListener('contextmenu', (e)=> e.preventDefault());
         b.addEventListener('click', (e)=>{
           e.stopPropagation();
           if(silindi){ silindi = false; return; }
+          if(suruk){ suruk = false; return; }
           if(_loopKayit){ loopKayitBitir(); return; }
           if(!_loopYuva[s]){ loopKayitBasla(s); return; }
           loopKanalGec(s);
@@ -12660,9 +12752,34 @@
         _loopArsiv = a;
         if(!a && _loopKayit) loopKayitBitir(true);
         try{ if(_loopBus && actx) _loopBus.gain.setTargetAtTime(a ? 1 : 0, actx.currentTime, 0.05); }catch(e){ _yut(e); }
+        _anaUygula();
         _loopCiz();
       }).observe(document.body, { attributes:true, attributeFilter:['class'] });
       addEventListener('resize', ()=>{ try{ _loopYerlestir(); _loopSeritYerlestir(); }catch(e){ _yut(e); } });
+      /* MAIN: aylarla ayni hareket (bkz. yukarida SURUKLE). */
+      (function(){
+        const a = document.getElementById('lsAna'); if(!a) return;
+        let pid = null, y0 = 0, s0 = 1, suruk = false;
+        a.addEventListener('pointerdown', (e)=>{
+          e.stopPropagation(); suruk = false;
+          pid = e.pointerId; y0 = e.clientY; s0 = _anaAcik ? _anaSev : 0;
+          try{ a.setPointerCapture(pid); }catch(_){ _yut(_); }
+        });
+        a.addEventListener('pointermove', (e)=>{
+          if(pid === null || e.pointerId !== pid) return;
+          const dy = e.clientY - y0;
+          if(!suruk){ if(Math.abs(dy) < LOOP_SES_ESIK) return; suruk = true; }
+          anaSesYaz(s0 - (dy - Math.sign(dy) * LOOP_SES_ESIK) / LOOP_SES_YOL);
+        });
+        ['pointerup','pointercancel'].forEach(t => a.addEventListener(t, ()=>{ pid = null; }));
+        ['touchstart','mousedown'].forEach(t => a.addEventListener(t, dur, {passive:true}));
+        a.addEventListener('contextmenu', (e)=> e.preventDefault());
+        a.addEventListener('click', (e)=>{ e.stopPropagation(); if(suruk){ suruk = false; return; } anaGec(); });
+        a.addEventListener('keydown', (e)=>{
+          if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){ e.preventDefault();
+            anaSesYaz((_anaAcik ? _anaSev : 0) + (e.key === 'ArrowUp' ? 0.1 : -0.1)); }
+        });
+      })();
       /* FX gezegeni acilip kapaninca seritteki ad da degissin: tek
          kaynak fxGoster (bkz. UYDULAR), onu sarmaliyoruz. */
       try{

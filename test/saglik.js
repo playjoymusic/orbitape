@@ -1330,8 +1330,8 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        /* 12 Kasim: KATMAN SERIDI + REC'te loop (pj secimi, Fable 5.2
           incelemesi). index.html 1.299,9 -> ~1.309 KB, cogu karar ve
           olcum yorumu (yorum budamak depo kararina aykiri). Tavan
-          1316 KB. */
-       K('Ham boy < 1316 KB', dosyaBoy < 1316*1024,
+          1316 KB. Ayni gun LOOP + ANA SES DUZEYI: 1317 KB -> 1326 KB. */
+       K('Ham boy < 1326 KB', dosyaBoy < 1326*1024,
          Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
   }
@@ -18554,6 +18554,112 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         + ' · kunye gorunur ' + (s390.kunye && s360.kunye));
     K('REC videosunda loop aylari ve serit var', s390.videoAyVar && s390.videoSeritVar && !s390.cizHata,
       'ay pikseli ' + s390.videoAy + ' · serit ' + s390.videoSeritVar + (s390.cizHata ? ' · ' + s390.cizHata : ''));
+
+    /* ── LOOP + ANA SES DUZEYI (12 Kasim) ────────────────────────
+       pj: "her loopun volumu olmali, belki basip yukari assagi gibi;
+       ortadan gelen icin de bi volum olmali, ortaya koyamazsin".
+       GERCEK isaretci olaylariyla sinaniyor (fonksiyon cagrisiyla
+       degil): asil risk hareketlerin birbirine karismasi -- surukleme
+       silmeyi tetiklemesin, birakinca ay susmasin. */
+    {
+      const { sayfa: ps, kapat: ks } = await sayfaAc(b, { bekle: 2500,
+        baglamEk: { viewport: { width:360, height:640 } } });
+      const r = await ps.evaluate(async (kok)=>{
+        const bek = ms => new Promise(r=>setTimeout(r, ms));
+        const o = {};
+        AYAR.mood = true; moodUygula(true); await bek(400);
+        ses.crossOrigin = 'anonymous'; ses.src = kok; ses.loop = true;
+        sesBaglamiAl(); await actx.resume(); await ses.play().catch(()=>{}); analizKur();
+        await bek(600);
+        for(const i of [0,2]){ loopKayitBasla(i); await bek(420); loopKayitBasla(); await bek(60); }
+        const el = document.getElementById('loopSerit');
+        const bas = () => el.querySelector('.ls-bas').textContent;
+        const olay = (hedef, tip, x, y) => hedef.dispatchEvent(new PointerEvent(tip,
+          { bubbles:true, cancelable:true, pointerId:7, pointerType:'touch', isPrimary:true, clientX:x, clientY:y }));
+        const surukle = async (hedef, dy, bekle)=>{
+          const q = hedef.getBoundingClientRect(), x = q.left + q.width/2, y = q.top + q.height/2;
+          olay(hedef, 'pointerdown', x, y);
+          for(let k = 1; k <= 4; k++){ olay(hedef, 'pointermove', x, y + dy*k/4); await bek(20); }
+          await bek(bekle || 0);
+          olay(hedef, 'pointerup', x, y + dy);
+          hedef.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true }));
+          await bek(250);
+        };
+        /* 1) AY: 68 px asagi = (68-8)/120 = yari. 750 ms tutuluyor:
+           silme sayaci (600 ms) iptal olmadiysa ay silinir. */
+        const ay = _loopDug[0], iBoy0 = ay.querySelector('i').getBoundingClientRect().width;
+        await surukle(ay, 68, 750);
+        const c0 = _loopYuva[0];
+        o.aySev = c0 ? c0.sev : -1; o.ayAcik = !!(c0 && c0.acik);
+        o.ayKazanc = c0 ? c0.g.gain.value : -1;
+        o.ayBas = bas();
+        o.ayBoy = [iBoy0, ay.querySelector('i').getBoundingClientRect().width];
+        const n1 = el.querySelector('.ls-n'); o.nokta = n1.style.getPropertyValue('--sd') + ' ' + n1.className;
+        o.digerKazanc = _loopYuva[2] ? _loopYuva[2].g.gain.value : -1;
+        /* 2) MAIN: dokunma alani + surukleme + kisa dokunus. */
+        const ana = el.querySelector('.ls-ana'), aq = ana.getBoundingClientRect();
+        const ax = aq.left + aq.width/2, ay0 = aq.top + aq.height/2;
+        const vur = (x, y) => { const e = document.elementFromPoint(x, y); return !!(e && ana.contains(e)); };
+        o.anaAlan = [vur(ax, ay0 - 21), vur(ax, ay0 + 21), vur(aq.left - 3, ay0), vur(aq.right + 3, ay0)];
+        o.anaGen = Math.round(aq.width + 8);
+        await surukle(ana, 68, 0);
+        o.anaSev = _anaSev; o.anaKazanc = anaG ? anaG.gain.value : -1; o.anaBas = bas();
+        o.loopDokunulmadi = _loopYuva[2] ? _loopYuva[2].g.gain.value : -1;
+        /* radyoda hep 1, donunce geri */
+        AYAR.mood = false; moodUygula(false); await bek(400);
+        o.radyoKazanc = anaG.gain.value;
+        AYAR.mood = true; moodUygula(true); await bek(400);
+        o.donusKazanc = anaG.gain.value;
+        ana.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true })); await bek(250);
+        o.susBas = bas(); o.susKazanc = anaG.gain.value;
+        const sp = getComputedStyle(ana.querySelector('span')), m = sp.color.match(/[\d.]+/g).map(Number);
+        const al = (m.length > 3 ? m[3] : 1) * parseFloat(sp.opacity);
+        const L = m.slice(0,3).map(v => { v = v*al/255; return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); });
+        o.susKontrast = +(((0.2126*L[0] + 0.7152*L[1] + 0.0722*L[2]) + .05) / .05).toFixed(2);
+        ana.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true })); await bek(100);
+        /* 3) Loop yok, FX yok, ana kisik: serit gorunur kalmali. */
+        loopKanalSil(0); loopKanalSil(2); await bek(100);
+        o.kisikkenGorunur = loopSeritDurum().gorunur;
+        /* 4) VIDEO: MAIN yazisi + cubuk sol altta (acik gri pikseller). */
+        await kayitYukle(); await bek(200);
+        kayitTuvalKur(); _kkNo += 8;
+        try{ kayitCiz(); }catch(e){ o.cizHata = e.message; }
+        try{ if(kayitRAF) cancelAnimationFrame(kayitRAF); kayitRAF = 0; }catch(e){}
+        /* Alt YARI taraniyor: ust satir genisleyince serit kunyenin
+           ustune cikabiliyor (ilk olcude alt %28'de 0 piksel cikti). */
+        const x0 = Math.round(10*KAYIT_K), x1 = Math.round(70*KAYIT_K);
+        const y0 = Math.round(KAYIT_BOY*0.5), y1 = KAYIT_BOY - 2;
+        const d = kayitCtx.getImageData(x0, y0, x1-x0, y1-y0).data; let gri = 0;
+        for(let i = 0; i < d.length; i += 4) if(d[i] > 170 && d[i+1] > 165 && d[i+2] > 155 && Math.abs(d[i]-d[i+2]) < 40) gri++;
+        o.videoGri = gri;
+        anaSesYaz(1); await bek(50);
+        o.tamkenGizli = !loopSeritDurum().gorunur;
+        return o;
+      }, S.replace(/\/[^/]*$/, '') + '/test/yuksek.mp3');
+      await ks();
+      const yak = (a, h, p) => Math.abs(a - h) <= (p || 0.03);
+      K('Loop: aya basip asagi suruklemek sesi kisiyor, silmiyor, susturmuyor',
+        yak(r.aySev, 0.5) && r.ayAcik && yak(r.ayKazanc, 0.25, 0.04) && yak(r.digerKazanc, 1),
+        'duzey ' + r.aySev + ' · acik ' + r.ayAcik + ' · kazanc ' + (+r.ayKazanc).toFixed(3) + ' · diger loop ' + (+r.digerKazanc).toFixed(2));
+      K('Loop sesi ekranda gorunuyor: serit yaziyor, ay kuculuyor, nokta yari dolu',
+        /LOOP 1/.test(r.ayBas) && /VOL 50/.test(r.ayBas) && r.ayBoy[1] < r.ayBoy[0] - 3 && /^50%/.test(r.nokta),
+        r.ayBas + ' · ay ' + r.ayBoy.map(v=>v.toFixed(1)).join(' -> ') + ' px · nokta ' + r.nokta);
+      K('MAIN dokunma alani en az 44 px (360x640)',
+        r.anaAlan.every(Boolean) && r.anaGen >= 44, 'ust/alt/sol/sag ' + r.anaAlan + ' · genislik ' + r.anaGen);
+      K('MAIN: suruklemek yalniz ortadan gelen sesi kisiyor, loop ayni kaliyor',
+        yak(r.anaSev, 0.5) && yak(r.anaKazanc, 0.25, 0.04) && yak(r.loopDokunulmadi, 1) && /VOL 50/.test(r.anaBas),
+        r.anaBas + ' · kazanc ' + (+r.anaKazanc).toFixed(3) + ' · loop ' + (+r.loopDokunulmadi).toFixed(2));
+      K('MAIN radyoda etkisiz (hep tam ses), arsive donunce geri geliyor',
+        yak(r.radyoKazanc, 1) && yak(r.donusKazanc, 0.25, 0.04),
+        'radyo ' + (+r.radyoKazanc).toFixed(2) + ' · donus ' + (+r.donusKazanc).toFixed(2));
+      K('MAIN kisa dokunus susturuyor; susmus yazi okunur (>= 4.5)',
+        /MUTED/.test(r.susBas) && r.susKazanc < 0.02 && r.susKontrast >= 4.5,
+        r.susBas + ' · kazanc ' + (+r.susKazanc).toFixed(3) + ' · kontrast ' + r.susKontrast);
+      K('MAIN kisikken serit kaybolmuyor (ses geri acilabilsin); tam seste gizleniyor',
+        r.kisikkenGorunur && r.tamkenGizli, 'kisikken ' + r.kisikkenGorunur + ' · tamken gizli ' + r.tamkenGizli);
+      K('REC videosunda MAIN gostergesi var', r.videoGri > 40 && !r.cizHata,
+        r.videoGri + ' acik gri piksel' + (r.cizHata ? ' · ' + r.cizHata : ''));
+    }
   }
 
    await kapatPg();
