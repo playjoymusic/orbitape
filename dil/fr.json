@@ -202,6 +202,8 @@
   "feels wider": "semble plus large",
   "RECORDING": "ENREGISTREMENT",
   "MUTED": "MUET",
+  "MAIN": "BASE",
+  "VOL": "VOL",
   "DELETED": "SUPPRIMÉ",
   "LOOPS": "BOUCLES",
   "PLAYING": "EN LECTURE"

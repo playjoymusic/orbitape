@@ -5723,3 +5723,18 @@ yüklendi, `cmp` aynı. İlk geri-alma denemesinde test kontrollü düşmek yeri
 
 - **pj'nin sıradaki isteği (bu dal birleşince, Kural 6):** REC aynı anda ses kaydını da AYRI dosya olarak versin (video + yüksek kaliteli ses ayrı ayrı indirilebilsin).
 - **Kural 4 (geri alıp ölçüldü):** `kayitCiz`'den `_kayLoop(g)` çıkarılınca "REC videosunda loop aylari ve serit var" düştü (ay pikseli 9,9,14, serit yok); yıldız satırından kaçma `if(false)` yapılınca "Katman seridi hicbir seye binmiyor" düştü — test ortamında 390'da yıldız satırı 288..376 genişliğinde (birden çok ikon), şerit 49..341. Geri yüklendi, `cmp` aynı. Sağlık 979/979.
+
+## 12 Kasım — LOOP + ANA SES DÜZEYİ (dal `loop-ses`)
+
+**pj:** "her loopun volumu olmalı, belki basıp yukarı aşağı gibi; ortadan gelen için de bi volum olmalı, ortaya koyamazsın, tür seçimi var, sen bi düşün." Öneri sunuldu, pj "Başla" dedi. (PR #86 katman şeridi bu sırada main'e birleşmişti.)
+**Kullanıcı ne yaşıyordu:** loop ya tam ses çalıyordu ya susuyordu; ortadan gelen parça loop'ların altında/üstünde kalınca dengelemenin yolu yoktu.
+**Artık:** dolu aya basıp yukarı/aşağı sürükleyince o loop'un sesi değişir (kısa dokunuş yine sus/aç, uzun basış yine sil; parmak 8 px oynayınca silme iptal). Ay kısıldıkça küçülür, şeritteki nokta düzeyi kadar dolar, üst satır "LOOP 3 · VOL 70" yazar. Şeridin üst satırının başında `MAIN` + küçük düzey çubuğu: aynı hareket ortadan gelen sesi kısar, kısa dokunuş susturur. REC videosunda da görünür.
+**Teknik:** yeni `anaG` kazancı `cikisG` ile `tavan` ARASINDA — loop yakalama `cikisG`'den aldığı için kısılmamış ses kaydedilir, loop veriyolu `tavan`'a girdiği için MAIN loop'lara dokunmaz. Kazanç = düzey² (kulak logaritmik). Radyoda MAIN hep 1 (şerit orada yok, geri açılamazdı). MAIN kısıkken şerit loop/FX olmasa da görünür kalır. Yeni kelimeler 5 dilde: MAIN, VOL. Ham boy tavanı 1316 → 1326 KB.
+**Ölçümler:** MAIN ilk denemede alt satırın başındaydı; 360x640'ta şerit 341 px'e çıktı (14..355) ve yıldız satırına (312..346) bindi → MAIN üst satıra alındı, temiz. MAIN dokunma alanı 47 px genişlik, dikeyde ±21 px (44). Susmuş MAIN yazısı kontrastı 4,65. Tip denetimi 8 yeni uyarı verdi (`querySelector` → `Element`), `getElementById` ile 54'e döndü.
+**Test:** 8 yeni kontrol, GERÇEK işaretçi olaylarıyla (pointerdown/move/up + click). Kapı: tip 54, birim 144/144, arıza 18/18, senaryo 120/120, motor 19/19, cihaz 156/156, yayın 19/19; sağlık aynı baytlarda 988/988.
+**Kural 4:** sürüklemede silme sayacını iptal eden `say()` çıkarılınca ve `_anaUygula` kapatılınca 979/988 (ay silindi; MAIN kazancı 1.000 kaldı); geri yüklendi, `cmp` aynı.
+**Tutarsız test notu (çözülmedi, ayrı iş):** aynı baytlarla art arda koşularda sağlık bir kez "Sembole basmak yalnizca sembolleri donduruyor"da (987/988), bir kez dört eski LOOP kayıt testinde (984/988, "sure 0 sn · tepe 0") düştü, sonraki koşu 988/988. İkinci düşüşte makine yükü 4,95'ti (başka oturumlar açık). Sebep ölçülmedi; tekrar görülürse kör bekleme yerine koşul beklemeye çevrilecek.
+**Yapılmadı:** ekran görüntüsüyle göz kontrolü bu turda alınmadı; pj telefonda bakacak.
+**Sırada (pj'nin önceki isteği):** REC sesi ayrı, yüksek kaliteli dosya olarak da versin.
+
+- **12 Kasım — PR #87 (`loop-ses`) CI'da kırmızı, düzeltildi (ikinci commit).** "Önizleme" işindeki Kapı adımında sağlık 986/987: "MAIN dokunma alani en az 44 px" — CI'da genişlik 43, yerelde 47. Sebep: alan yazının genişliğine bağlıydı, CI'daki yedek yazı tipinde "MAIN" daraldı (Türkçe "ANA" daha da kısa olurdu). Düzeltme: `.ls-ana{min-width:40px}` (+ iki yandan 4 px = en az 48). Ders: dokunma alanı yazı genişliğine bırakılmaz; yerelde geçen ölçü CI yazı tipinde geçmeyebilir. Not: aynı commit'te "Sağlık kontrolü" işi yeşildi — o koşuda yazı tipi yüklenmişti.

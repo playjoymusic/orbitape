@@ -2151,7 +2151,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
            kunyenin ikinci satirinin ustune basiliyordu. Serit genisligi
            hesaplanip kunye bloguyla (yildiz satiri dahil) yatayda
            kesisiyorsa serit kunyenin en ust kenarinin USTUNE cikar. */
-        const sGen = Math.max(d.bas.reduce((t, q)=> t + gen(q[0], 11, 2.2), 0),
+        const sGen = Math.max((d.ana ? gen(d.ana.ad, 10, 1.6) + 5*K + 4*K + 12*K : 0) + d.bas.reduce((t, q)=> t + gen(q[0], 11, 2.2), 0),
           8*24*K - 6*K + (d.fx ? 8*K + 16*K + gen(d.fx.ad, 10, 1.6) : 0));
         let kunyeUst = Infinity;
         const np = document.getElementById('np');
@@ -2163,8 +2163,20 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
         if(y0 + 40*K > kunyeUst - 8*K) y0 = kunyeUst - 8*K - 40*K;
       }
       kat(c, ()=>{
-        /* Ust satir. */
+        /* Ust satir: MAIN + duzey cubugu (ekrandaki .ls-ana), sonra baslik.
+           Cubuk videoda 12 birim (ekranda 18): ust satirin yuksekligine sigsin. */
         let x = x0;
+        if(d.ana){
+          const uy = y0 + 6*K, x00 = x;
+          c.save(); if(!d.ana.acik) c.globalAlpha = 0.62;
+          x = yaz(d.ana.ad, x, uy, 10, 1.6, VARS);
+          if(!d.ana.acik){ c.fillStyle = VARS; c.fillRect(x00, uy - 0.5*K, x - x00 - 1.6*K, 1*K); }
+          c.restore();
+          x += 5*K - 1.6*K;
+          c.fillStyle = 'rgba(226,222,212,.24)'; c.fillRect(x, uy - 6*K, 4*K, 12*K);
+          if(d.ana.acik){ const h = 12*K*d.ana.sev; c.fillStyle = VARS; c.fillRect(x, uy + 6*K - h, 4*K, h); }
+          x += 4*K + 12*K;
+        }
         d.bas.forEach(([t, r])=>{
           x = yaz(t, x, y0 + 6*K, 11, 2.2, r === 'k' ? KIR : r ? 'rgb(' + r + ')' : VARS);
         });
@@ -2180,11 +2192,16 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
             c.beginPath(); c.arc(nx, cy, R - 0.75*K, 0, 6.2832); c.stroke();
             if(y.durum === 'kapali'){ c.setLineDash([]); c.beginPath();
               c.moveTo(nx - 6*K, cy + 6*K); c.lineTo(nx + 6*K, cy - 6*K); c.stroke(); }
+          }else if(y.durum === 'acik' && y.sev < 1){
+            /* Kisilmis loop: soluk daire + alttan duzeyi kadar dolu. */
+            c.beginPath(); c.arc(nx, cy, R, 0, 6.2832);
+            c.fillStyle = 'rgba(' + lr + ',.22)'; c.fill(); c.clip();
+            c.fillStyle = 'rgb(' + lr + ')'; c.fillRect(nx - R, cy + R - 2*R*y.sev, 2*R, 2*R*y.sev);
           }else{ c.fillStyle = 'rgb(' + lr + ')'; c.beginPath(); c.arc(nx, cy, R, 0, 6.2832); c.fill(); }
           c.restore();
           const no = String(y.no);
           yaz(no, nx - gen(no, 10, 0)/2, cy + 0.5*K, 10, 0,
-              (y.durum === 'bos' || y.durum === 'kapali') ? 'rgb(' + lr + ')' : '#080a0e');
+              (y.durum === 'bos' || y.durum === 'kapali' || (y.durum === 'acik' && y.sev < 0.5)) ? 'rgb(' + lr + ')' : '#080a0e');
           nx += 2*R + 6*K;
         });
         if(d.fx){
