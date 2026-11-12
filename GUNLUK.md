@@ -5679,3 +5679,33 @@ ariza 18 · senaryo 120 · motor 19 · cihaz 156
 - **Kural 4 (geri alıp ölçüldü):** radyoda susturma satırı kapatılınca "radyoya geçince susuyor" düştü; sol sütun itmesi silinince "binmiyor" `360:ay6xkamTus` ile düştü; `src.loop=false` yapılınca "sonsuz doner" `loop=false` ile düştü.
 - **Ham boy tavanı:** `index.html` 1283,9 → 1300,6 KB (çoğu karar/ölçüm yorumu); tavan 1301 → 1306 KB (gerekçesi testte).
 - **Ayrı not (dokunulmadı):** Sağlık takımının ilk koşusu "Mood geçişi bitince kilitli OLMAYAN yuvalar..." testinde `gecis1MoodMu` okunamayıp çöktü; tek başına koşunca geçti, ikinci tam koşuda da geçti (962/962). Tekrar ederse ayrı iş.
+
+- **12 Kasım:** PR #84 (Loop) pj tarafından birleştirildi (11 Kasım 22:40 UTC, `main` = fd6f46b). #84 hem WIKIMEDIA silmeyi (6739852) hem LOOP'u (4edc046) taşıdığı için #83 ayrıca birleştirilmedi. `main` üzerinde "Sağlık kontrolü" ve "Yayin (testler yesilse)" koşuyordu; yeşil bitince LOOP canlıya çıkar. Sonraki: pj telefonda loop'u dener; hizalama işi için telefon ekran görüntüsü bekleniyor.
+
+## 12 Kasım — LOOP: ayrı düğme kalktı, 8 yuva halkada hep görünür (dal `loop-aylar`)
+
+**Kullanıcı ne yaşıyordu:** LOOP canlıya çıktı ama pj bulamadı. Düğme sağ altta,
+çalan parçanın satırında, yıldızın solundaydı; o satır bir şey çalmazken tamamen
+görünmez (`#np` opaklık 0, eskiden beri). Aylar ise ancak kayıttan sonra
+halkada beliriyordu. pj: *"halkanın çevresi gezegen dolamlı extra 8 tane şey
+gelecekti"*, *"sağ alt ne alaka"*, *"saçma"*. Önce "düğmeyi halkanın altına
+taşıyalım" önerdim, o da reddedildi; doğru okuma: ayrı düğme hiç olmamalı.
+
+**Artık:** arşiv tarafına geçince halkanın çevresinde, gezegenlerin arasında
+8 kesikli soluk halka (boş yuva) hep durur. Boş yuvaya dokun → o yuvaya kayıt
+başlar (kırmızı yanıp söner); tekrar dokun → kayıt biter, ay renklenir, ses
+sonsuz döner. Dolu aya dokun → sus/çal; basılı tut → silinir, yuva boşa döner.
+Ses çalmıyorken boş yuvaya dokunulursa yuva sallanır. Radyoda yuvalar yok.
+
+**Teknik:** `#loopTus` HTML/CSS/JS'ten çıktı; `.loopK` hep `display:block`,
+yeni `.bos` sınıfı; `loopKayitBasla(yuva)` artık yuva alıyor (verilmezse ilk
+boş); konum saati arşivdeyken hep çalışıyor (700 ms). CAR MODE'da kap `.yok`.
+Boş halka kontrastı ölçüldü: alfa .5'te mor 2,6 / pembe 2,7 / mavi 2,8 (3:1
+altı) → .75'e çıkarıldı, en düşüğü 4,8.
+
+**Test:** saglik 974/974. Yeni kontrol "8 boş yuva baştan görünür, ayrı düğme
+yok"; kayıt testi artık 3. yuvaya doğrudan dokunuyor; çakışma ölçümü 360x640'ta
+hem boşken hem doluyken. **Kural 4:** `.loopK` `display:none`'a ve "boş yuvaya
+dokununca kayıt" satırı silinince 7 LOOP kontrolü düştü (967/974); geri
+yüklendi, `cmp` aynı. İlk geri-alma denemesinde test kontrollü düşmek yerine
+ÇÖKTÜ (`c0` null) — korumalar eklendi, artık temiz kırmızı veriyor.

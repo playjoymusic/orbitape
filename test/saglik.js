@@ -18322,25 +18322,37 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
        halkanin cevresinde, tek tek ac/kapa". Kararlari: sonsuz doner,
        BPM yok, 8 kanal, dokunus ac/kapa, basili tut sil, YALNIZ
        ORBITAPE. Her kontrol bir sozu sinar; Kural 4 icin hangi
-       satir geri alininca hangisinin dustugu GUNLUK.md'de (11 Kasim). */
+       satir geri alininca hangisinin dustugu GUNLUK.md'de (11 Kasim).
+       12 Kasim: ayri LOOP dugmesi kalkti (pj canlida bulamadi: "sag
+       alt ne alaka", "sacma"); sekiz yuva arsivde HEP gorunur, bos
+       yuvaya dokunmak kaydi acar. Testler artik ayin kendisine
+       dokunuyor; bos yuvalarin gorundugu ayrica sinaniyor. */
     const { sayfa: p8, kapat: k8 } = await sayfaAc(c, { bekle: 2500 });
     const lp = await p8.evaluate(async (kok)=>{
       const bek = ms => new Promise(r=>setTimeout(r, ms));
       const o = {};
-      const tus = document.getElementById('loopTus');
+      const kap = document.getElementById('loopKanallar');
+      const gorunen = ()=> _loopDug.filter(b=>{ const r = b.getBoundingClientRect();
+        return r.width >= 44 && r.height >= 44 && getComputedStyle(b).visibility !== 'hidden'; }).length;
       AYAR.mood = false; moodUygula(false); await bek(200);
-      o.radyodaGizli = getComputedStyle(tus).display === 'none';
+      o.radyodaGizli = getComputedStyle(kap).display === 'none' && gorunen() === 0;
       AYAR.mood = true; moodUygula(true); await bek(300);
-      o.arsivdeGorunur = getComputedStyle(tus).display !== 'none';
+      o.arsivdeGorunur = gorunen();
+      o.bosYuva = _loopDug.filter(b=>b.classList.contains('bos')).length;
+      o.dugmeYok = !document.getElementById('loopTus');
       try{ ses.pause(); }catch(e){}
-      o.sessizKayitYok = loopKayitBasla() === false && !_loopKayit;
+      _loopDug[3].click();
+      o.sessizKayitYok = !_loopKayit && !_loopYuva[3];
       ses.crossOrigin = 'anonymous'; ses.src = kok; ses.loop = true;
       sesBaglamiAl(); await actx.resume(); await ses.play().catch(()=>{}); analizKur();
       await bek(800);
       const hiz0 = ses.playbackRate;
-      tus.click(); o.kayitAcildi = !!_loopKayit && tus.getAttribute('aria-pressed') === 'true';
-      await bek(900); tus.click();
-      const c0 = _loopYuva[0];
+      /* BOS YUVAYA DOKUN: kayit O yuvaya acilir (3. yuva -- ilk bos
+         yuvaya degil, dokunulana). Bir daha dokun: kapanir. */
+      const ay = _loopDug[3];
+      ay.click(); o.kayitAcildi = !!_loopKayit && _loopKayit.yuva === 3 && ay.classList.contains('kayit');
+      await bek(900); ay.click();
+      const c0 = _loopYuva[3];
       o.sure = c0 ? +c0.sure.toFixed(2) : 0;
       let tepe = 0;
       if(c0){ const d = c0.src.buffer.getChannelData(0); for(let i=0;i<d.length;i++) tepe = Math.max(tepe, Math.abs(d[i])); }
@@ -18349,24 +18361,23 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
       /* KILIT: kaynak susup baska yere gecince kanal ayni kalir. */
       ses.pause(); ses.removeAttribute('src'); try{ ses.load(); }catch(e){}
       await bek(250);
-      o.kilitli = _loopYuva[0] === c0 && c0.acik && c0.g.gain.value > 0.9;
+      o.kilitli = !!c0 && _loopYuva[3] === c0 && c0.acik && c0.g.gain.value > 0.9;
       o.hizAyni = ses.playbackRate === hiz0;
       /* DOKUNUS: ac / kapa */
-      const ay = _loopDug[0];
-      ay.click(); await bek(150); const kapali = c0.g.gain.value < 0.05 && ay.classList.contains('kapali');
-      ay.click(); await bek(150); const acik = c0.g.gain.value > 0.9 && !ay.classList.contains('kapali');
+      ay.click(); await bek(150); const kapali = !!c0 && c0.g.gain.value < 0.05 && ay.classList.contains('kapali');
+      ay.click(); await bek(150); const acik = !!c0 && c0.g.gain.value > 0.9 && !ay.classList.contains('kapali');
       o.dokunAcKapa = kapali && acik;
       /* RADYO: kanal veriyolu susar, arsive donunce geri gelir. */
       AYAR.mood = false; moodUygula(false); await bek(450);
-      const busRadyo = _loopBus.gain.value;
+      const busRadyo = _loopBus ? _loopBus.gain.value : 1;
       AYAR.mood = true; moodUygula(true); await bek(450);
-      o.radyodaSessiz = busRadyo < 0.05 && _loopBus.gain.value > 0.9;
+      o.radyodaSessiz = busRadyo < 0.05 && !!_loopBus && _loopBus.gain.value > 0.9;
       /* BASILI TUT: sil. */
       ay.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true}));
       await bek(750);
       ay.dispatchEvent(new PointerEvent('pointerup', {bubbles:true}));
       ay.click();
-      o.basiliSil = _loopYuva[0] === null && !ay.classList.contains('dolu');
+      o.basiliSil = _loopYuva[3] === null && !ay.classList.contains('dolu') && ay.classList.contains('bos');
       /* 8 KANAL: dokuzuncu acilmaz. Yerlesimi de dolu halde olc. */
       ses.src = kok; await ses.play().catch(()=>{}); await bek(500);
       for(let i=0;i<9;i++){ loopKayitBasla(); await bek(380); loopKayitBasla(); await bek(40); }
@@ -18376,10 +18387,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
                         && Math.min(a.bottom,b.bottom) - Math.max(a.top,b.top) > 0.5;
       const carp = (yer)=>{
         _loopYerlestir();
-        const ays = _loopDug.filter(b=>b.classList.contains('dolu')).map(kut), c = [];
-        if(ays.length !== 8) c.push(yer+':dolu ay '+ays.length);
+        const ays = _loopDug.map(kut), c = [];
+        if(_loopDug.filter(b=>b.classList.contains('dolu')).length !== 8) c.push(yer+':dolu ay eksik');
         const diger = UYDULAR.map(u=>uyduDug[u.fx]).concat(['ayarTut','saatTus','deriFirca',
-          'gorselTus','rehberTus','kamTus','loopTus','fav','isaret','kipKisayol']
+          'gorselTus','rehberTus','kamTus','fav','isaret','kipKisayol']
           .map(i=>document.getElementById(i))).filter(e=>e && kut(e).width > 0);
         ays.forEach((a,i)=>{
           if(a.width < 44 || a.height < 44) c.push(yer+':ay'+i+' kucuk');
@@ -18387,22 +18398,15 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           ays.forEach((b,j)=>{ if(j > i && kes(a,b)) c.push(yer+':ay'+i+'xay'+j); });
           if(a.left < 0 || a.right > innerWidth) c.push(yer+':ay'+i+' tasiyor');
         });
-        const t = kut(tus);
-        /* Tus calan-ses satirinda; satir gizliyken genisligi 0 (gizli
-           elemanin olcusu sifirdir -- CLAUDE.md tuzaklari). */
-        if(t.width > 0){
-          diger.forEach(d=>{ if(d !== tus && kes(t, kut(d))) c.push(yer+':loopTus x'+(d.id||d.dataset.fx)); });
-          /* offsetWidth: #np acilirken olcekli gelir, ekran kutusu bir an
-             44'un altinda okunuyordu (kosuya gore degisen 'dar'). */
-          if(tus.offsetWidth < 44) c.push(yer+':loopTus dar');
-        }
         return c;
       };
       o.carp = carp('telefon');
       return o;
     }, S.replace(/\/[^/]*$/, '') + '/test/yuksek.mp3');
     /* 360x640 (kucuk Android, iPhone SE'ye yakin): ilk tasarimda
-       hem LOOP tusu sol FX gezegenine hem sol ust ay kameraya biniyordu.
+       hem (o zamanki) LOOP tusu sol FX gezegenine hem sol ust ay
+       kameraya biniyordu. 12 Kasim: bos yuvalar da hep gorundugu icin
+       olcu once BOS haldeyken, sonra dolu haldeyken aliniyor.
        Sayfa bu boyda SIFIRDAN aciliyor: acik sayfayi kucultmek FX
        gezegenlerini yeniden yerlestirmiyor (onceden beri boyle) ve
        olcu yalan soyluyordu. */
@@ -18411,30 +18415,38 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     const kucuk = await p9.evaluate(async (kok)=>{
       const bek = ms => new Promise(r=>setTimeout(r, ms));
       AYAR.mood = true; moodUygula(true); await bek(400);
+      const kut = e => e.getBoundingClientRect();
+      const kes = (a,b) => Math.min(a.right,b.right) - Math.max(a.left,b.left) > 0.5
+                        && Math.min(a.bottom,b.bottom) - Math.max(a.top,b.top) > 0.5;
+      const c = [];
+      const olc = (yer)=>{
+        _loopYerlestir();
+        const diger = UYDULAR.map(u=>uyduDug[u.fx]).concat(['ayarTut','saatTus','deriFirca',
+          'gorselTus','rehberTus','kamTus','fav','isaret','kipKisayol']
+          .map(i=>document.getElementById(i))).filter(e=>e && kut(e).width > 0);
+        _loopDug.forEach((a,i)=>{
+          const r = kut(a);
+          if(r.width < 44) c.push(yer+':ay'+i+' gorunmuyor');
+          diger.forEach(d=>{ if(kes(r, kut(d))) c.push(yer+':ay'+i+'x'+(d.id||d.dataset.fx)); });
+          if(r.left < 0 || r.right > innerWidth) c.push(yer+':ay'+i+' tasiyor');
+        });
+      };
+      olc('360bos');
       ses.crossOrigin = 'anonymous'; ses.src = kok; ses.loop = true;
       sesBaglamiAl(); await actx.resume(); await ses.play().catch(()=>{}); analizKur();
       await bek(700);
       for(let i=0;i<8;i++){ loopKayitBasla(); await bek(380); loopKayitBasla(); await bek(40); }
-      const kut = e => e.getBoundingClientRect();
-      const kes = (a,b) => Math.min(a.right,b.right) - Math.max(a.left,b.left) > 0.5
-                        && Math.min(a.bottom,b.bottom) - Math.max(a.top,b.top) > 0.5;
-      _loopYerlestir();
-      const diger = UYDULAR.map(u=>uyduDug[u.fx]).concat(['ayarTut','saatTus','deriFirca',
-        'gorselTus','rehberTus','kamTus','fav','isaret','kipKisayol']
-        .map(i=>document.getElementById(i))).filter(e=>e && kut(e).width > 0);
-      const c = [];
-      const ays = _loopDug.filter(x=>x.classList.contains('dolu'));
-      if(ays.length !== 8) c.push('360:dolu ay '+ays.length);
-      ays.concat([document.getElementById('loopTus')]).filter(a=>kut(a).width > 0).forEach((a,i)=>{
-        diger.forEach(d=>{ if(kes(kut(a), kut(d))) c.push('360:'+(a.id||'ay'+i)+'x'+(d.id||d.dataset.fx)); });
-      });
+      if(_loopYuva.filter(Boolean).length !== 8) c.push('360:dolu ay eksik');
+      olc('360dolu');
       return c;
     }, S.replace(/\/[^/]*$/, '') + '/test/yuksek.mp3');
     await k9();
-    K('LOOP yalniz ORBITAPE tarafinda', lp.radyodaGizli && lp.arsivdeGorunur,
-      'radyoda gizli ' + lp.radyodaGizli + ' · arsivde gorunur ' + lp.arsivdeGorunur);
-    K('LOOP ses yokken kayit acmiyor', lp.sessizKayitYok, 'duran kaynakta bos kanal acilmiyor');
-    K('LOOP o anki sesi yakaliyor (sonsuz doner)',
+    K('LOOP yalniz ORBITAPE tarafinda', lp.radyodaGizli && lp.arsivdeGorunur === 8,
+      'radyoda gizli ' + lp.radyodaGizli + ' · arsivde gorunen yuva ' + lp.arsivdeGorunur);
+    K('LOOP 8 bos yuva bastan gorunur, ayri dugme yok', lp.arsivdeGorunur === 8 && lp.bosYuva === 8 && lp.dugmeYok,
+      'gorunen ' + lp.arsivdeGorunur + ' · bos ' + lp.bosYuva + ' · ayri dugme yok ' + lp.dugmeYok);
+    K('LOOP ses yokken kayit acmiyor', lp.sessizKayitYok, 'duran kaynakta bos yuvaya dokunus kayit acmiyor');
+    K('LOOP bos yuvaya dokununca o yuvaya kaydediyor (sonsuz doner)',
       lp.kayitAcildi && lp.sure >= 0.5 && lp.sure <= 1.3 && lp.tepe > 0.01 && lp.donguSonsuz,
       'sure ' + lp.sure + ' sn · tepe ' + lp.tepe + ' · loop=' + lp.donguSonsuz);
     K('LOOP kanali ses degisince ayni kalir', lp.kilitli, 'kaynak durdu, kanal acik ve calisiyor');
@@ -18443,7 +18455,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     K('LOOP radyoya gecince susuyor, donunce geri geliyor', lp.radyodaSessiz, 'veriyolu 0 / 1');
     K('LOOP kanali basili tutunca siliniyor', lp.basiliSil, '600 ms basili -> kanal bos');
     K('LOOP en fazla 8 kanal', lp.dolu === 8, lp.dolu + ' kanal');
-    K('LOOP kanallari ve tusu hicbir seye binmiyor (390 + 360x640)',
+    K('LOOP yuvalari hicbir seye binmiyor (390 + 360x640, bos ve dolu)',
       lp.carp.length === 0 && kucuk.length === 0,
       (lp.carp.concat(kucuk).join(' ') || 'temiz') + ' · ay 44x44, ekran icinde');
     await k8();
