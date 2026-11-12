@@ -3767,6 +3767,11 @@
   #loopSerit .ls-ust{display:flex;align-items:center;gap:12px;}
   #loopSerit .ls-ana{position:relative;pointer-events:auto;touch-action:none;
     display:flex;align-items:center;gap:5px;height:18px;margin:0;padding:0;border:0;
+    /* min-width: dokunma alani YAZININ genisligine bagli kalmasin.
+       OLCULDU (CI, PR #87): yedek yazi tipinde "MAIN" daraldi, alan
+       43 px cikti (yerelde 47); Turkce "ANA" daha da kisa. 40 + iki
+       yandan 4 px (::before) = en az 48. */
+    min-width:40px;
     background:none;color:inherit;font:inherit;font-size:.625rem;letter-spacing:.16em;
     cursor:ns-resize;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
   #loopSerit .ls-ana::before{content:'';position:absolute;left:-4px;right:-4px;top:-13px;bottom:-13px;}
