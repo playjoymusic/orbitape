@@ -1,5 +1,50 @@
 # ORBITAPE — tasarım notları
 
+## STUDIO (13 Kasım 2026, pj onayladı: "Evet, bu yön")
+
+30 Eylül kararı ("uygulamanın tasarımı değişmez") **CLASSIC** görünüş için
+aynen geçerli. STUDIO pj'nin kendi isteğiyle AYRI bir anahtarın
+(CLASSIC / STUDIO) arkasında; eskisine dokunulmaz.
+
+**Ne:** arşiv tarafı bir sample üretme konsolu. Kategori seç → halka
+sisteminde FX ve loop'larla işle → WAV + atıf (CREDITS) olarak al.
+Radyo tarafı STUDIO'da yok, değişmez.
+
+**Değişmez çekirdek (pj):** *"gezegenler, efektler, looplar … onlar
+çıkmasın … o sistem olmalı, mecbur."* Ekranın ortası HER ZAMAN halka
+sistemi: disk + çalan sesin sembolü, 4 FX gezegeni (RETRO, TIME, BLACK
+HOLE, FX), aralarda 8 loop ayı.
+
+**KARAR (13 Kasım, pj): ORİJİNALE DOKUNULMAZ.** *"benim gezegenler
+kısmını elleme, bozma, o ayrı, orijinaline dokunma ... STUDIO'ya bastığım
+zaman senin gösterdiğin tasarımları göreceğim."* STUDIO'daki gezegen ve
+aylar maketteki gibi KENDİ çizimidir (aynı işlevleri çağırır: fxModGec,
+loop kaydı/sesi). Gerçek disk, gezegenler ve aylar STUDIO açıkken yalnız
+gizlenir; yeri ve boyu hiç değişmez (saglik.js ölçüyor). İlk deneme
+gerçek diski STUDIO ekranına taşıyordu — reddedildi.
+
+**Düzen (maket A Konsol):** üstte logo + CLASSIC/STUDIO · kategori
+şeridi (BIRD, MACHINE, WATER, VOICE, MUSIC, WIND, CITY — elle çizilmiş
+sembollerle) · solda kamera sütunu (REC, CAM, PHOTO, CREDITS, SAVE) ·
+ortada halka sistemi + LCD saat · çalan ses şeridi (ad, dalga, lisans
+rozeti) · FX RACK (her gezegenin miktarı, döner düğme) · LOOP MIXER
+(8 sürgü) · EXPORT WAV + CREDITS + MAIN.
+
+**Temalar:** 20 tema, düzen sabit; tema yalnız renk, zemin, yıldız/
+bulutsu katmanı ve sembol çizgisinin parlaması. Tam liste ve renk
+kodları: `../tasarim/studio-2026-11-13/temalar.js`. Kartela:
+`../tasarim/studio-2026-11-13/kartela.png`.
+
+**Reddedilenler (tekrar önerme):** tek düzenli "takımyıldız" (D) ve
+gezegensiz konsol — pj: *"baya düz, kötü, zevksiz"*; gezegenleri döner
+düğmeye/kutuya çevirmek — sistem kaybolur.
+
+**Ölçüm (390x844, 20 tema):** kontrast düşüğü 0, taşma 0. Açık
+temalarda döner düğme içi hâlâ sabit koyu — uygulamada temaya bağlanacak.
+
+---
+
+
 **KARAR (30 Eylül 2026, pj): UYGULAMANIN tasarımı DEĞİŞMEZ.**
 Onun sözü: *"app te tasarım değişmeyecek."* Bu dosyadaki görünüş
 uygulamaya (`index.html`, arayüz, deriler) UYGULANMAZ.

@@ -4627,6 +4627,16 @@
   body.klavye #ayarTut::after,body.klavye #deriFirca::after,
   body.klavye #saatTus::after,body.klavye #gorselTus::after,
   body.klavye #rehberTus::after{pointer-events:none;}
+  /* ── STUDIO (13 Kasim): kabin, gorunus ve davranis studio.js'te,
+     YALNIZ STUDIO acilinca iner (ilk acilis boyu tavani, saglik.js:
+     tasima oncesi 117 KB > 113). Burada yalniz CLASSIC'teki gecis dugmesi. */
+  /* CLASSIC'te STUDIO'ya gecis dugmesi: yalniz ORBITAPE tarafinda, sag ustte. */
+  #stAc{display:none;}
+  body.mood:not(.studio) #stAc{display:flex;position:fixed;z-index:96;align-items:center;gap:7px;min-height:44px;min-width:88px;padding:0 12px;
+    top:calc(44px + env(safe-area-inset-top, 0px));right:calc(var(--kx, 14px) + env(safe-area-inset-right, 0px));border-radius:10px;cursor:pointer;
+    background:rgba(255,180,58,.08);color:#ffb43a;border:1px solid rgba(255,180,58,.55);font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;}
+  #stAc i{width:7px;height:7px;border-radius:50%;background:#ffb43a;box-shadow:0 0 6px #ffb43a;}
+  body.ayar-acik #stAc,body.gorsel-acik #stAc,body.arac #stAc{display:none !important;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
@@ -4676,6 +4686,18 @@
 <meta name="twitter:image" content="https://orbitape.app/paylas.png?v=2">
 </head>
 <body>
+  <!-- ── STUDIO KONSOLU (13 Kasim) ──────────────────────────────────
+       pj'nin onayladigi maket A (../tasarim/studio-2026-11-13/a-konsol.png),
+       pj: "studio switch'i ile bana gosterdin, okeyledik, 20 tane".
+       Yalniz body.studio'da gorunur (ORBITAPE + ayar). CLASSIC'e hicbir
+       sey eklemez. ORTADAKI HALKA SISTEMI GERCEGIDIR: disk, 4 FX
+       gezegeni, 8 loop ayi -- kopyasi degil; STUDIO yalniz diskin
+       yerini ve boyunu #stEkran'in icine ayarlar, gezegenler ve aylar
+       kendi kodlariyla onu izler. pj: "gezegenler, efektler, looplar
+       ... onlar cikmasin ... o sistem olmali, mecbur."
+       Kap z-index 0 ve <body>'nin BASINDA: disk (10), gezegenler ve
+       aylar (95) her zaman ustunde kalir. -->
+  <button type="button" id="stAc" aria-label="Studio"><i aria-hidden="true"></i><span>STUDIO</span></button>
   <!-- Sayfanın tek başlığı. Ekranda GÖRÜNMÜYOR çünkü marka adı zaten
        sağ üstte çizili duruyor; ama bir belgenin başlıksız olması hem
        ekran okuyucuda ("bu sayfa ne?") hem aramada kayıp. Görsel olarak
@@ -5024,6 +5046,14 @@
          siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
       <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <!-- ── STUDIO KONSOLU (13 Kasim, asama 1) ──
+         pj: "biz aslinda splice gibi bir seyiz ... prof konsola donmeli
+         ... simdilik eskisini bozmadan bir switch'le". Yalniz ORBITAPE
+         (arsiv) tarafinda gorunur; radyo ve CLASSIC aynen kalir.
+         Varsayilan KAPALI. Tasarim karari TASARIM.md basinda. -->
+    <div class="sat" data-ayar="studio" role="switch" tabindex="-1">
+      <span>STUDIO CONSOLE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
+    <p class="not">Archive side only. The radio stays as it is.</p>
     <!-- ── GORSELDE SAAT ──
          VISUALS tam ekran ve ekranin geri kalani soner: o sirada
          saate bakmanin yolu telefonu kilitleyip acmaktan geciyordu.
@@ -9946,6 +9976,7 @@
       const ad2 = lisansAdi(item && item.lisans);
       lz.textContent = ad2;
       lz.classList.toggle('var', !!ad2);
+
     }catch(e){ _yut(e); }
     npUst.textContent=''; npUst.classList.remove('var');
     np.classList.remove('radio','liste','lib');
@@ -13582,6 +13613,28 @@
      KAPARKEN: FX soner, kanal radyoya doner, radyo kuyrugu bastan
             dolar. Arsivden kalan bir istasyon calmaya devam
             etmesin diye siradaki ses de radyodan aliniyor. */
+  /* ── STUDIO YUKLEYICI (13 Kasim) ──────────────────────────────────
+     STUDIO'nun tamami studio.js'te (gorsel.js/kayit.js kalibi): CLASSIC
+     kullanicisi o dosyayi HIC indirmez. Olculdu: gomulu halde ilk acilis
+     117 KB brotli, tavan 113 (saglik.js). Bu fonksiyon ayar anahtari,
+     dunya degisimi (moodUygula) ve STUDIO dugmesi tarafindan cagrilir;
+     modul geldiyse onun studioUygulaGercek'ine devreder. */
+  var _stIstendi = false;
+  function studioAcik(){ return !!(AYAR && AYAR.studio && AYAR.mood); }
+  function studioUygula(){
+    try{
+      if(window.STUDIO_HAZIR && window.studioUygulaGercek){ window.studioUygulaGercek(); return; }
+      if(!studioAcik() || _stIstendi) return;
+      _stIstendi = true;
+      const sc = document.createElement('script');
+      sc.src = 'studio.js'; sc.defer = true;
+      sc.onerror = ()=>{ _stIstendi = false; };
+      document.head.appendChild(sc);
+    }catch(e){ _yut(e); }
+  }
+  try{ const ac = document.getElementById('stAc'); if(ac) ac.addEventListener('click', e => { e.stopPropagation();
+    AYAR.studio = true; ayarKaydet(); studioUygula();
+    document.querySelectorAll('#ayar .sat[data-ayar="studio"]').forEach(el => { el.classList.add('acik'); el.setAttribute('aria-checked', 'true'); }); }); }catch(e){ _yut(e); }
   function moodUygula(ilk){
     const _favModOncekiMod = AKTIF_MOD;
     /* ── LOCK SKIN: RADIOTAPE<->ORBITAPE GECISINDE DERI (20 Eylul) ──
@@ -13613,6 +13666,8 @@
          && typeof zumBitti === 'function') zumBitti(); }catch(e){ _yut(e); }
     try{
       document.body.classList.toggle('mood', !!AYAR.mood);
+      /* STUDIO yalniz arsivde: dunya degisince sinif da degisir. */
+      try{ studioUygula(); }catch(e){ _yut(e); }
       /* JOYTAPE ucuncu kip: ayni yerlesimi (govde.mood) kullanir,
          yalniz kendi rengi ve havuzu farklidir. */
       if(AYAR.mood){
@@ -21923,6 +21978,8 @@
       /* SOUND BANKS: dunya degisiyor. Panel kapaniyor -- degisikligi
          gormek icin ekranin kendisine bakmak lazim. */
       if(k === 'mood'){ kapa(); moodUygula(false); return; }
+      /* STUDIO: ayni karede gorunsun; radyodaysa yalniz kayit. */
+      if(k === 'studio'){ studioUygula(); }
           /* BUTUN SESLER kapandi: calmakta olan arama dongusu de sussun.
          Acildiginda tek bir tik: degisikligi duyarak anla. */
       if(k === 'sesKapa'){

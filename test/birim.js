@@ -1319,7 +1319,7 @@ function bitir(){
        unutmak serbest degil. */
     {
       const kucuk = [];
-      for(const f of ['index.html','saat.js','deri_galeri.js','liste.js','kayit.js','gorsel.js']){
+      for(const f of ['index.html','saat.js','deri_galeri.js','liste.js','kayit.js','gorsel.js','studio.js']){
         const yol = path.join(KOK, f);
         if(!fs.existsSync(yol)) continue;
         const metin = fs.readFileSync(yol, 'utf8');
@@ -1346,7 +1346,7 @@ function bitir(){
     }
 
     /* Koddaki anahtarlar: hem dogrudan yazilanlar hem sabitler. */
-    const kodHepsi = ['index.html','kayit.js','deri_cizim.js','saat.js','deri_galeri.js','liste.js','cark.js','gorsel.js','sw.js']
+    const kodHepsi = ['index.html','kayit.js','deri_cizim.js','saat.js','deri_galeri.js','liste.js','cark.js','gorsel.js','studio.js','sw.js']
       .filter(f => fs.existsSync(path.join(KOK, f)))
       .map(f => fs.readFileSync(path.join(KOK, f), 'utf8')).join('\n');
     const kullanilan = new Set();

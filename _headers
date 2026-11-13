@@ -152,6 +152,11 @@
   Content-Type: text/javascript; charset=utf-8
   Cache-Control: no-cache
 
+# STUDIO konsolu (13 Kasim). Yalniz STUDIO acilinca iniyor; ayni kural.
+/studio.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: no-cache
+
 # Istasyon listesi (sag ust). Istek uzerine iniyor; ayni kural.
 /liste.js
   Content-Type: text/javascript; charset=utf-8
@@ -263,10 +268,10 @@
 
 # index.html
 /
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-oQqlQXtmwGxKjKImVSmF/RqSCxAc5Oa3UsW96AJ0dQw='; style-src 'sha256-FFkLNOUDfdmohBLXET/Nzb6X2jl42nkHzKsd8+PzjUw='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-5HreDM4QRy7uv1i14R0uT/9Vi3Df09wUrXfRQ/5TTSI='; style-src 'sha256-okEJLZqfRgRZEjpspXQB/sLhPZc6Yv6JZjhE3ZkSWVE='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 /index.html
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-oQqlQXtmwGxKjKImVSmF/RqSCxAc5Oa3UsW96AJ0dQw='; style-src 'sha256-FFkLNOUDfdmohBLXET/Nzb6X2jl42nkHzKsd8+PzjUw='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-5HreDM4QRy7uv1i14R0uT/9Vi3Df09wUrXfRQ/5TTSI='; style-src 'sha256-okEJLZqfRgRZEjpspXQB/sLhPZc6Yv6JZjhE3ZkSWVE='; img-src 'self' data: blob:; media-src 'self' https: blob: data:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'
 
 # privacy.html
 /privacy

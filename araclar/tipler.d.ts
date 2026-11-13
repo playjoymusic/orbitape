@@ -202,6 +202,9 @@ interface Window {
      Istek uzerine iniyor; tusun bekleyen dokunusunu modul gelince
      yerine getiriyoruz (gorselGeldi). gorselAcikMi'yi hem index.html'in
      kare dongusu hem cark.js soruyor: acikken ikisi de cekiliyor. */
+  /* STUDIO konsolu (studio.js): istek uzerine iner (index.html studioUygula). */
+  STUDIO_HAZIR?: boolean;
+  studioUygulaGercek?: () => void;
   GORSEL_BASLADI?: boolean;
   GORSEL_HAZIR?: boolean;
   gorselGeldi?: () => void;

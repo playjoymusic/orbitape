@@ -1331,6 +1331,10 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
           incelemesi). index.html 1.299,9 -> ~1.309 KB, cogu karar ve
           olcum yorumu (yorum budamak depo kararina aykiri). Tavan
           1316 KB. Ayni gun LOOP + ANA SES DUZEYI: 1317 KB -> 1326 KB. */
+       /* 13 Kasim: STUDIO konsolu ayri dosyada (studio.js, istek uzerine);
+          index.html'de yalniz dugme + yukleyici kaldi: 1.320,8 KB. Tavan
+          1326'da kaldi (gomulu deneme 1.370 KB'a cikmisti; ilk acilis
+          boyu 117 KB > 113 oldugu icin modul ayrildi). */
        K('Ham boy < 1326 KB', dosyaBoy < 1326*1024,
          Math.round(dosyaBoy/1024) + ' KB kaynak, %'
       + Math.round(100 - br*100/dosyaBoy) + ' sikisiyor (aciklamalar dahil)');
@@ -18748,6 +18752,192 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         r.var && r.indirilen.length === 2 && r.indirilen[0] === r.videoAd && /\.wav$/.test(r.indirilen[1])
           && r.indirilen[1].replace(/\.wav$/, '') === r.videoAd.replace(/\.[a-z0-9]+$/, '') && r.birakildi,
         (r.indirilen || []).join(' + '));
+    }
+    /* ── STUDIO KONSOLU (13 Kasim) ─────────────────────────────────────
+       pj: "studio switch'i ile bana gosterdin, okeyledik, 20 tane" +
+       "benim orijinali bozma" + "gezegenler, efektler, looplar ... onlar
+       cikmasin ... o sistem olmali, mecbur". Her kontrol bir sozu sinar.
+       Kural 4 icin geri alma olcumleri GUNLUK.md'de (13 Kasim). */
+    {
+      const bek = ms => new Promise(r=>setTimeout(r, ms));
+      const olc = async (pp)=> pp.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r, ms));
+        const R = e => { const q = e.getBoundingClientRect(); return { l:q.left, t:q.top, r:q.right, b:q.bottom, w:q.width, h:q.height }; };
+        const kes = (a, c2)=> a.l < c2.r - 0.5 && c2.l < a.r - 0.5 && a.t < c2.b - 0.5 && c2.t < a.b - 0.5;
+        const ic = (a, c2)=> a.l >= c2.l - 0.5 && a.r <= c2.r + 0.5 && a.t >= c2.t - 0.5 && a.b <= c2.b + 0.5;
+        const ozgun = ()=> [document.querySelector('.disk'),
+          ...UYDULAR.map(u => uyduDug[u.fx]).filter(Boolean),
+          ...document.querySelectorAll('#loopKanallar .loopK')].map(R);
+        const o = {};
+        const sistem = ()=> [document.querySelector('#stSistem .st-disk'), ...document.querySelectorAll('#stSistem .st-gz'),
+          ...document.querySelectorAll('#stSistem .st-ay')].map(R);
+        o.varsayilan = !AYAR.studio;
+        const kabinGizli = ()=>{ const k = document.getElementById('studio'); return !k || k.hidden; };
+        const modul = async ()=>{ for(let i = 0; i < 60 && !window.STUDIO_HAZIR; i++) await bek(100); };
+        o.classicTemiz = !document.body.classList.contains('studio') && kabinGizli() && !window.STUDIO_HAZIR;
+        AYAR.studio = true; AYAR.mood = false; moodUygula(false); await bek(300);
+        o.radyodaYok = !document.body.classList.contains('studio') && kabinGizli();
+        AYAR.studio = false; AYAR.mood = true; moodUygula(true); await bek(1600);
+        const klasik = ozgun();
+        /* CLASSIC'teki STUDIO dugmesi: gorunur, 44 px, ust yaziya ve gercek sisteme binmiyor, basinca acar */
+        const ac = document.getElementById('stAc'); const aq = R(ac);
+        o.acGor = getComputedStyle(ac).display !== 'none' && aq.w >= 44 && aq.h >= 44;
+        o.acBinen = klasik.slice(1).concat([R(document.getElementById('ust'))]).filter(q => kes(q, aq)).length;
+        ac.click(); await modul(); await bek(1600);
+        o.arsivdeVar = document.body.classList.contains('studio') && !document.getElementById('studio').hidden;
+        /* Halka sistemi: gercek gezegenler ve aylar gorunur ve EKRANIN icinde */
+        const ek = R(document.getElementById('stEkran'));
+        const st = sistem();
+        o.sistemSayi = st.length;
+        o.disari = st.map((g, i)=> (g.w > 0 && ic(g, ek)) ? '' : ('oge' + i)).filter(Boolean);
+        o.ogeBoy = Math.min(...st.slice(1).map(g => Math.min(g.w, g.h)));
+        const gor = e => { const s = getComputedStyle(e); return s.display !== 'none' && s.visibility !== 'hidden'; };
+        o.gizliOge = [document.querySelector('#stSistem .st-disk'), ...document.querySelectorAll('#stSistem .st-gz,#stSistem .st-ay')].filter(e => !gor(e)).length;
+        /* Orijinal: STUDIO acikken yalniz gizli, yeri ve boyu ayni */
+        const icerde = ozgun();
+        o.ozgunGizli = getComputedStyle(document.getElementById('uydular')).visibility === 'hidden' && getComputedStyle(document.querySelector('.disk')).visibility === 'hidden';
+        o.ozgunKayma = Math.max(...klasik.map((a, i)=> Math.max(Math.abs(a.l - icerde[i].l), Math.abs(a.t - icerde[i].t), Math.abs(a.w - icerde[i].w))));
+        /* Bolumler birbirine ve ekran disina tasmiyor */
+        const tabaka = document.body.classList.contains('studio-raf-tabaka');
+        const ad = ['stBas','stKat','stSut','stEkran','stSimdi','stAyak'].concat(tabaka ? [] : ['stRaf']);
+        const kutu = ad.map(i => [i, R(document.getElementById(i))]);
+        o.binen = [];
+        for(let i = 0; i < kutu.length; i++){
+          const [a, q] = kutu[i];
+          if(q.l < -0.5 || q.t < -0.5 || q.r > innerWidth + 0.5 || q.b > innerHeight + 0.5) o.binen.push(a + ' ekran disi');
+          for(let j = i + 1; j < kutu.length; j++) if(kes(q, kutu[j][1])) o.binen.push(a + ' x ' + kutu[j][0]);
+        }
+        if(kes(R(document.getElementById('ayarTut')), R(document.getElementById('stBas')))) o.binen.push('ayarTut x stBas');
+        /* Dokunma hedefleri */
+        o.kucuk = [...document.querySelectorAll('#studio button,#studio .st-dg,#studio .st-fd')]
+          .filter(e => gor(e) && e.offsetParent !== null && !e.hidden && !(tabaka && e.closest('#stRaf')))
+          .map(e => [e.id || e.className, R(e)]).filter(([, q]) => q.w < 44 || q.h < 44).map(([n, q]) => n + ' ' + Math.round(q.w) + 'x' + Math.round(q.h));
+        /* Raf tabakasi (kisa ekran): ac -> ekranda, sistem gizli; kapa -> geri */
+        o.tabaka = tabaka;
+        if(tabaka){
+          document.getElementById('stRafTus').click(); await bek(150);
+          const rf = R(document.getElementById('stRaf')), ay = R(document.getElementById('stAyak'));
+          o.tabakaAcik = rf.h > 100 && rf.b <= ay.t + 0.5 && rf.t >= 0 && getComputedStyle(document.getElementById('stSistem')).visibility === 'hidden';
+          o.tabakaKucuk = [...document.querySelectorAll('#stRaf .st-dg,#stRaf .st-fd')].map(R).filter(q => q.w < 44 || q.h < 44).length;
+          document.getElementById('stRafTus').click(); await bek(150);
+          o.tabakaKapandi = getComputedStyle(document.getElementById('stSistem')).visibility !== 'hidden';
+        }
+        /* CLASSIC'e donus: duzen birebir eski hali */
+        document.getElementById('stClassic').click(); await bek(1800);
+        const geri = ozgun();
+        o.donus = !document.body.classList.contains('studio') && AYAR.studio === false;
+        o.klasikKayma = Math.max(...klasik.map((a, i)=> Math.max(Math.abs(a.l - geri[i].l), Math.abs(a.t - geri[i].t), Math.abs(a.w - geri[i].w))));
+        return o;
+      });
+      const { sayfa: pz, kapat: kz } = await sayfaAc(c, { bekle: 2500 });
+      const z = await olc(pz);
+      /* Islev kontrolleri (390x844, STUDIO acik) */
+      const f = await pz.evaluate(async ()=>{
+        const bek = ms => new Promise(r=>setTimeout(r, ms));
+        const o = {};
+        AYAR.studio = true; studioUygula(); for(let i = 0; i < 60 && !window.STUDIO_HAZIR; i++) await bek(100); await bek(800);
+        /* LCD */
+        o.bicim = [_stSureYazi(0), _stSureYazi(83.7), _stSureYazi(NaN), _stSureYazi(6005)].join(' ');
+        studioTik(); o.lcd = document.getElementById('stSaat').textContent === _stSureYazi(ses.currentTime);
+        /* Lisans rozeti */
+        const eski = aktifItem;
+        const dene = l => { aktifItem = { id:'e:st', mp3:'https://archive.org/download/x/y.mp3', ad:'Test', sanatci:'S', lisans:l }; studioTik();
+          const e = document.getElementById('stLis'); return { y: e.textContent, nc: e.classList.contains('nc') }; };
+        o.cc0 = dene('https://creativecommons.org/publicdomain/zero/1.0/');
+        o.bysa = dene('http://creativecommons.org/licenses/by-sa/3.0/');
+        o.nc = dene('http://creativecommons.org/licenses/by-nc-sa/3.0/');
+        aktifItem = eski;
+        /* Kategori kurali: kelime siniri (olculen yanlis eslesmeler dahil) */
+        const vakalar = [['Dawn chorus, wetland','BIRD'],['Hello Bluebird',''],['Over The Rainbow',''],['The Window on the Hill',''],
+          ['Eclecticity',''],['Printing press, slow','MACHINE'],['Harbour, rope and hull','WATER'],['Kansas City Farewell','CITY'],
+          ['Market crowd, morning','VOICE'],['Organ drone study','MUSIC'],['Ridge wind, high field','WIND']];
+        o.katYanlis = vakalar.filter(([m, b]) => studioKatBul(m) !== b).map(([m, b]) => m + '->' + studioKatBul(m) + ' (' + b + ')');
+        /* Kategori dugmesi: etiket akisini yalniz o kategoriyle doldurur, tekrar basmak kaldirir */
+        const eAra = window.araIndeks, eSon = window.sonraki;
+        const sahte = [{ kanal:'lib', o:{ ad:'Blackbird at dusk', mp3:'a' } }, { kanal:'lib', o:{ ad:'Over The Rainbow', mp3:'b' } },
+          { kanal:'lib', o:{ ad:'Gulls', etiket:'field recording', mp3:'c' } }, { kanal:'radio', o:{ ad:'Bird FM', mp3:'d' } }];
+        let sonrakiSay = 0;
+        window.araIndeks = () => sahte; window.sonraki = () => { sonrakiSay++; };
+        try{
+          document.querySelector('#stKat button[data-kat="BIRD"]').click(); await bek(50);
+          o.katHavuz = _etHavuz.map(x => x.o.mp3).join(',');
+          o.katBasili = document.querySelector('#stKat button[data-kat="BIRD"]').getAttribute('aria-pressed');
+          o.katSonraki = sonrakiSay;
+          document.querySelector('#stKat button[data-kat="BIRD"]').click(); await bek(50);
+          o.katKalkti = !_stKat && !_etiket;
+        } finally { window.araIndeks = eAra; window.sonraki = eSon; }
+        /* FX dugmesi: TIME'i yukari cevirmek TIME gezegeninin efektini acar
+           ve ayni degiskenleri (yatay/fxSeviye) yazar; dokunmak kapatir. */
+        const pd = (el, tip, y) => el.dispatchEvent(new PointerEvent(tip, { bubbles:true, pointerId:7, clientX:el.getBoundingClientRect().left + 20, clientY:y, isPrimary:true }));
+        const tm = document.querySelector('#stDug .st-dg[data-fx="dongu"]'); const y0 = tm.getBoundingClientRect().top + 20;
+        pd(tm, 'pointerdown', y0); pd(tm, 'pointermove', y0 - 30); pd(tm, 'pointermove', y0 - 70); pd(tm, 'pointerup', y0 - 70); await bek(80);
+        o.fxMod = FXMOD; o.fxSev = +fxSeviye.toFixed(3); studioTik();
+        o.fxGosterge = +tm.getAttribute('aria-valuenow');
+        pd(tm, 'pointerdown', y0); pd(tm, 'pointerup', y0); await bek(80);
+        o.fxKapandi = FXMOD === '';
+        /* MAIN: asagi cevirmek ana sesi kisar */
+        const mn = document.querySelector('#stDug .st-dg[data-fx="_main"]'); const y1 = mn.getBoundingClientRect().top + 20;
+        anaSesYaz(1);
+        pd(mn, 'pointerdown', y1); pd(mn, 'pointermove', y1 + 30); pd(mn, 'pointermove', y1 + 60); pd(mn, 'pointerup', y1 + 60); await bek(50);
+        o.main = +_anaSev.toFixed(2); anaSesYaz(1);
+        /* 20 tema: okunurluk (normal yazi 4.5, LCD buyuk yazi 3) */
+        const lum = h => { const v = [1,3,5].map(i => parseInt(h.substr(i, 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4); return .2126*v[0] + .7152*v[1] + .0722*v[2]; };
+        const kn = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+        o.temaSay = ST_TEMA.length;
+        o.temaDus = ST_TEMA.map(t => { const d = [];
+          if(kn(t[3], t[1]) < 4.5) d.push('ikincil ' + kn(t[3], t[1]).toFixed(2));
+          if(kn(t[6], t[4]) < 4.5) d.push('dugme ' + kn(t[6], t[4]).toFixed(2));
+          if(kn(t[4], t[1]) < 3) d.push('LCD ' + kn(t[4], t[1]).toFixed(2));
+          if(kn(t[7], t[1]) < 4.5) d.push('lisans ' + kn(t[7], t[1]).toFixed(2));
+          return d.length ? t[0] + ': ' + d.join(', ') : ''; }).filter(Boolean);
+        const tm0 = AYAR.studioTema | 0;
+        document.getElementById('stTemaTus').click(); await bek(50);
+        o.temaGecti = (AYAR.studioTema | 0) === (tm0 + 1) % ST_TEMA.length
+          && getComputedStyle(document.getElementById('studio')).getPropertyValue('--zem').trim().toLowerCase() === ST_TEMA[(tm0 + 1) % ST_TEMA.length][1].toLowerCase();
+        AYAR.studioTema = tm0; _stTemaUygula();
+        AYAR.studio = false; studioUygula();
+        return o;
+      });
+      await kz();
+      const { sayfa: pk, kapat: kk } = await sayfaAc(c, { bekle: 2500 });
+      await pk.setViewportSize({ width: 360, height: 640 });
+      await bek(300);
+      const k360 = await olc(pk);
+      await kk();
+      K('STUDIO varsayilan KAPALI, CLASSIC ekrana hicbir sey eklemiyor', z.varsayilan && z.classicTemiz,
+        'kapali ' + z.varsayilan + ' · konsol gizli ' + z.classicTemiz);
+      K('STUDIO yalniz ORBITAPE (arsiv) tarafinda acilir, radyoda acilmaz', z.radyodaYok && z.arsivdeVar,
+        'radyoda yok ' + z.radyodaYok + ' · arsivde var ' + z.arsivdeVar);
+      K("CLASSIC'te STUDIO dugmesi gorunur, 44 px, hicbir seye binmiyor, basinca STUDIO acilir (390 ve 360x640)",
+        z.acGor && !z.acBinen && k360.acGor && !k360.acBinen && z.arsivdeVar && k360.arsivdeVar,
+        'gorunur ' + z.acGor + '/' + k360.acGor + ' · binen ' + z.acBinen + '/' + k360.acBinen);
+      K('STUDIO acikken senin gezegenlerin/aylarin yalniz GIZLI, yeri ve boyu degismiyor', z.ozgunGizli && z.ozgunKayma <= 0.5 && k360.ozgunGizli && k360.ozgunKayma <= 0.5,
+        'gizli ' + z.ozgunGizli + ' · kayma ' + z.ozgunKayma.toFixed(2) + ' / ' + k360.ozgunKayma.toFixed(2) + ' px');
+      K('STUDIO ekraninda maketteki halka sistemi: disk + 4 FX gezegeni + 8 loop ayi gorunur ve ekranin icinde (390 ve 360x640)',
+        z.sistemSayi === 13 && !z.disari.length && !z.gizliOge && z.ogeBoy >= 44 && k360.sistemSayi === 13 && !k360.disari.length && !k360.gizliOge && k360.ogeBoy >= 44,
+        z.sistemSayi + ' oge · disarida ' + (z.disari.concat(k360.disari.map(x => '360:' + x)).join(',') || 'yok') + ' · gizli ' + z.gizliOge + '/' + k360.gizliOge + ' · en kucuk ' + Math.round(Math.min(z.ogeBoy, k360.ogeBoy)) + ' px');
+      K('STUDIO bolumleri birbirine binmiyor, ekrandan tasmiyor (390 ve 360x640)', !z.binen.length && !k360.binen.length,
+        (z.binen.concat(k360.binen.map(x => '360:' + x)).join(', ')) || 'binme 0 · tasma 0');
+      K('STUDIO butun dugme, cevirme dugmesi ve surgu en az 44 px', !z.kucuk.length && !k360.kucuk.length && !k360.tabakaKucuk,
+        (z.kucuk.concat(k360.kucuk.map(x => '360:' + x)).join(', ')) || 'hepsi >= 44');
+      K('STUDIO kisa ekranda raf alttan acilir, acikken sistem gizli, kapaninca geri', !z.tabaka && k360.tabaka && k360.tabakaAcik && k360.tabakaKapandi,
+        '390 tabaka ' + z.tabaka + ' · 360 tabaka ' + k360.tabaka + ' · acildi ' + k360.tabakaAcik + ' · geri ' + k360.tabakaKapandi);
+      K('STUDIO CLASSIC tusu eski ekrana doner; klasik halka birebir ayni yerde', z.donus && z.klasikKayma <= 0.5 && k360.donus && k360.klasikKayma <= 0.5,
+        'dondu ' + z.donus + ' · klasik kayma ' + z.klasikKayma.toFixed(2) + ' / ' + k360.klasikKayma.toFixed(2) + ' px');
+      K('STUDIO LCD calma suresini dakika:saniye yaziyor', f.bicim === '00:00 01:23 00:00 99:05' && f.lcd, f.bicim + ' · ses ile ayni ' + f.lcd);
+      K('STUDIO lisans rozeti: CC0 ve BY-SA ticari olur, NC olmaz',
+        /COMMERCIAL OK/.test(f.cc0.y) && !f.cc0.nc && /COMMERCIAL OK/.test(f.bysa.y) && !f.bysa.nc && /NON-COMMERCIAL/.test(f.nc.y) && f.nc.nc,
+        f.cc0.y + ' | ' + f.bysa.y + ' | ' + f.nc.y);
+      K('STUDIO kategori kurali kelime sinirli (Rainbow su degil, Window ruzgar degil, Eclecticity sehir degil)', !f.katYanlis.length,
+        f.katYanlis.join(' · ') || '11 vaka dogru');
+      K('STUDIO kategori dugmesi etiket akisini yalniz o kategoriyle doldurur, radyo girmez, tekrar basmak kaldirir',
+        f.katHavuz === 'a,c' && f.katBasili === 'true' && f.katSonraki === 1 && f.katKalkti,
+        'havuz ' + f.katHavuz + ' · basili ' + f.katBasili + ' · sonraki ' + f.katSonraki + ' · kalkti ' + f.katKalkti);
+      K('STUDIO FX dugmesi gezegenin efektini acar ve gosterir, dokunmak kapatir', f.fxMod === 'dongu' && f.fxSev > 0.2 && f.fxGosterge > 30 && f.fxKapandi,
+        'mod ' + f.fxMod + ' · seviye ' + f.fxSev + ' · gosterge ' + f.fxGosterge + ' · kapandi ' + f.fxKapandi);
+      K('STUDIO MAIN dugmesi ana sesi kisar', f.main < 0.8, 'ana ses 1 -> ' + f.main);
+      K('STUDIO 20 tema, hepsi okunur (yazi 4.5, LCD 3), tema tusu siradakine gecer', f.temaSay === 20 && !f.temaDus.length && f.temaGecti,
+        f.temaSay + ' tema · ' + (f.temaDus.join(' | ') || 'dusen yok') + ' · gecis ' + f.temaGecti);
     }
   }
 
