@@ -4630,13 +4630,18 @@
   /* ── STUDIO (13 Kasim): kabin, gorunus ve davranis studio.js'te,
      YALNIZ STUDIO acilinca iner (ilk acilis boyu tavani, saglik.js:
      tasima oncesi 117 KB > 113). Burada yalniz CLASSIC'teki gecis dugmesi. */
-  /* CLASSIC'te STUDIO'ya gecis dugmesi: yalniz ORBITAPE tarafinda, sag ustte. */
-  #stAc{display:none;}
-  body.mood:not(.studio) #stAc{display:flex;position:fixed;z-index:96;align-items:center;gap:7px;min-height:44px;min-width:88px;padding:0 12px;
-    top:calc(44px + env(safe-area-inset-top, 0px));right:calc(var(--kx, 14px) + env(safe-area-inset-right, 0px));border-radius:10px;cursor:pointer;
-    background:rgba(255,180,58,.08);color:#ffb43a;border:1px solid rgba(255,180,58,.55);font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;}
-  #stAc i{width:7px;height:7px;border-radius:50%;background:#ffb43a;box-shadow:0 0 6px #ffb43a;}
-  body.ayar-acik #stAc,body.gorsel-acik #stAc,body.arac #stAc{display:none !important;}
+  /* ── STUDIO VARSAYILAN, ESKI ORBITAPE GIZLI (14 Kasim) ──────────
+     pj: "bu bizim eski orbitape'i simdilik gizle", "20 ornek direk o
+     acilsin". Arsiv tarafi her zaman STUDIO ile acilir; eski ekran
+     yalniz ?klasik adresiyle (geri donus yolu). studio.js inene kadar
+     (ilk acilis) eski disk/gezegenler GORUNMESIN diye bekleme sinifi:
+     modul gelince body.studio devralir, inemezse sinif kalkar ve eski
+     ekran acilir (cevrimdisi yedek). */
+  body.studio-bekle{background-color:#0b0c10 !important;background-image:none !important;}
+  body.studio-bekle .disk,body.studio-bekle #uydular,body.studio-bekle #loopKanallar,body.studio-bekle #ust,
+  body.studio-bekle #modGez,body.studio-bekle #np,body.studio-bekle #solUst,body.studio-bekle #kipKisayol,
+  body.studio-bekle #karsilama,body.studio-bekle #ipucuEl,body.studio-bekle #saatTus,body.studio-bekle #deriFirca,
+  body.studio-bekle #gorselTus,body.studio-bekle #rehberTus,body.studio-bekle #kamTus{visibility:hidden !important;}
 </style>
 <!-- Manifest ve ikonlar artik KENDI alan adimizda. Eskiden jsdelivr'dan
      geliyordu: uygulamanin kimligi bize ait olmayan bir CDN'e bagliydi,
@@ -4697,7 +4702,6 @@
        ... onlar cikmasin ... o sistem olmali, mecbur."
        Kap z-index 0 ve <body>'nin BASINDA: disk (10), gezegenler ve
        aylar (95) her zaman ustunde kalir. -->
-  <button type="button" id="stAc" aria-label="Studio"><i aria-hidden="true"></i><span>STUDIO</span></button>
   <!-- Sayfanın tek başlığı. Ekranda GÖRÜNMÜYOR çünkü marka adı zaten
        sağ üstte çizili duruyor; ama bir belgenin başlıksız olması hem
        ekran okuyucuda ("bu sayfa ne?") hem aramada kayıp. Görsel olarak
@@ -5046,14 +5050,6 @@
          siyah kaliyor -- "acikken zaten kilitli" istegi bu. -->
     <div class="sat" data-ayar="karanlik" role="switch" tabindex="-1">
       <span>ALL BLACK</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <!-- ── STUDIO KONSOLU (13 Kasim, asama 1) ──
-         pj: "biz aslinda splice gibi bir seyiz ... prof konsola donmeli
-         ... simdilik eskisini bozmadan bir switch'le". Yalniz ORBITAPE
-         (arsiv) tarafinda gorunur; radyo ve CLASSIC aynen kalir.
-         Varsayilan KAPALI. Tasarim karari TASARIM.md basinda. -->
-    <div class="sat" data-ayar="studio" role="switch" tabindex="-1">
-      <span>STUDIO CONSOLE</span><i class="anahtar" aria-hidden="true"><b></b></i></div>
-    <p class="not">Archive side only. The radio stays as it is.</p>
     <!-- ── GORSELDE SAAT ──
          VISUALS tam ekran ve ekranin geri kalani soner: o sirada
          saate bakmanin yolu telefonu kilitleyip acmaktan geciyordu.
@@ -5641,7 +5637,7 @@
   function yutSil(){
     try{ _yutDefter = {}; localStorage.removeItem(YUT_ANAHTAR); }catch(_){}
   }
-  var ORB_SURUM = '2026.11.13';
+  var ORB_SURUM = '2026.11.14';
   /* ── OLCUM: KAPALIYKEN TEK BAYT GITMIYOR ──
      Yutulan hata defteri cihazda birikiyor; kimse kopyalamazsa
      sahnede ne bozuldugunu ogrenemiyoruz. Bu fonksiyon o kapiyi
@@ -12534,7 +12530,10 @@
     const g = actx.createGain(); g.gain.value = 0; g.connect(bus);
     const src = actx.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(g);
     src.start(); g.gain.setTargetAtTime(1, actx.currentTime, 0.01);
-    _loopYuva[k.yuva] = { src, g, acik:true, sev:1, sure:buf.duration };
+    /* bas + kaynak (14 Kasim): STUDIO ayin/surgunun oynatma ilerlemesini
+       ve icindeki sesin adini/turunu bunlardan gosteriyor. */
+    _loopYuva[k.yuva] = { src, g, acik:true, sev:1, sure:buf.duration, bas:actx.currentTime,
+                          kaynak:(typeof aktifItem !== 'undefined' ? aktifItem : null) };
     _loopSonYaz([['LOOP ' + (k.yuva+1), LOOP_RENK[k.yuva]], [' · ', ''], [Y('ON'), '']]);
     _loopCiz();
     return true;
@@ -13214,6 +13213,11 @@
       }
       AYAR.sesAcildi = true;
       AYAR.merkezOnar = true;
+      /* STUDIO (14 Kasim): arsivde HEP acik; yalniz ?klasik eski ekrani
+         getirir. Eskiden studio/studioTema depodan HIC okunmuyordu
+         (tema her acilista sifirlaniyordu) -- 14 Kasim'da fark edildi. */
+      AYAR.studio = !(/[?&]klasik(&|=|$)/.test(location.search) || localStorage.getItem('orbitape.klasik') === '1');
+      if(typeof _a.studioTema === 'number') AYAR.studioTema = Math.max(0, Math.min(19, _a.studioTema | 0));
       if(_a.arac    === true)  AYAR.arac    = true;
       /* ALL BLACK VARSAYILAN ACIK. Kullanicinin sozu: "kesinlikle
          all black'te yaptigi neyse oyle acilmali bu app, ozellikle
@@ -13624,17 +13628,15 @@
   function studioUygula(){
     try{
       if(window.STUDIO_HAZIR && window.studioUygulaGercek){ window.studioUygulaGercek(); return; }
+      document.body.classList.toggle('studio-bekle', studioAcik());
       if(!studioAcik() || _stIstendi) return;
       _stIstendi = true;
       const sc = document.createElement('script');
       sc.src = 'studio.js'; sc.defer = true;
-      sc.onerror = ()=>{ _stIstendi = false; };
+      sc.onerror = ()=>{ _stIstendi = false; document.body.classList.remove('studio-bekle'); };
       document.head.appendChild(sc);
     }catch(e){ _yut(e); }
   }
-  try{ const ac = document.getElementById('stAc'); if(ac) ac.addEventListener('click', e => { e.stopPropagation();
-    AYAR.studio = true; ayarKaydet(); studioUygula();
-    document.querySelectorAll('#ayar .sat[data-ayar="studio"]').forEach(el => { el.classList.add('acik'); el.setAttribute('aria-checked', 'true'); }); }); }catch(e){ _yut(e); }
   function moodUygula(ilk){
     const _favModOncekiMod = AKTIF_MOD;
     /* ── LOCK SKIN: RADIOTAPE<->ORBITAPE GECISINDE DERI (20 Eylul) ──

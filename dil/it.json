@@ -208,8 +208,6 @@
   "DELETED": "ELIMINATO",
   "LOOPS": "LOOP",
   "PLAYING": "IN RIPRODUZIONE",
-  "STUDIO CONSOLE": "CONSOLE STUDIO",
-  "Archive side only. The radio stays as it is.": "Solo lato archivio. La radio resta com'è.",
   "COMMERCIAL OK": "USO COMMERCIALE OK",
   "STUDIO": "STUDIO",
   "CLASSIC": "CLASSICO",
@@ -227,5 +225,6 @@
   "WIND": "VENTO",
   "ALL SOUNDS": "TUTTI I SUONI",
   "NON-COMMERCIAL": "NON COMMERCIALE",
-  "Nothing in this category yet.": "Ancora niente in questa categoria."
+  "Nothing in this category yet.": "Ancora niente in questa categoria.",
+  "THEMES": "TEMI"
 }

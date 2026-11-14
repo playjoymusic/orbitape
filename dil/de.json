@@ -208,8 +208,6 @@
   "DELETED": "GELÖSCHT",
   "LOOPS": "LOOPS",
   "PLAYING": "SPIELEN",
-  "STUDIO CONSOLE": "STUDIO-KONSOLE",
-  "Archive side only. The radio stays as it is.": "Nur auf der Archivseite. Das Radio bleibt, wie es ist.",
   "COMMERCIAL OK": "KOMMERZIELL OK",
   "STUDIO": "STUDIO",
   "CLASSIC": "KLASSISCH",
@@ -227,5 +225,6 @@
   "WIND": "WIND",
   "ALL SOUNDS": "ALLE KLÄNGE",
   "NON-COMMERCIAL": "NICHT KOMMERZIELL",
-  "Nothing in this category yet.": "In dieser Kategorie gibt es noch nichts."
+  "Nothing in this category yet.": "In dieser Kategorie gibt es noch nichts.",
+  "THEMES": "THEMEN"
 }
