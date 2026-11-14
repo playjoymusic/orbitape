@@ -19,6 +19,31 @@
      (kok punto ayari STUDIO'da da isler; senaryo.js [Y11]). */
 /* eslint-disable */
 var ST_KURAL = [
+ "#studio .st-ay b svg{display:none;width:72%;height:72%;}",
+ "#studio .st-ay.dolu b,#studio .st-ay.kayit b{width:2.125rem;height:2.125rem;}",
+ "#studio .st-ay.dolu b{transform:scale(var(--k,1));color:#000;}",
+ "#studio .st-ay.dolu b svg,#studio .st-ay.kayit b svg{display:block;}",
+ "#studio .st-ay.dolu b span,#studio .st-ay.kayit b span{display:none;}",
+ "#studio .st-ay.dolu::after{content:'';position:absolute;left:50%;top:50%;width:2.75rem;height:2.75rem;margin:-1.375rem 0 0 -1.375rem;border-radius:50%;background:conic-gradient(var(--c) var(--p,0deg),color-mix(in srgb,var(--c) 18%,transparent) 0);-webkit-mask:radial-gradient(circle,transparent 18px,#000 19px);mask:radial-gradient(circle,transparent 18px,#000 19px);pointer-events:none;}",
+ "#studio .st-fd .st-n{position:absolute;left:0;right:0;top:3px;}",
+ "#studio .st-fd .st-sm{position:absolute;left:50%;top:15px;width:1rem;height:1rem;margin-left:-.5rem;color:var(--c);}",
+ "#studio .st-fd .st-sm svg{width:100%;height:100%;}",
+ "#studio .st-fd .st-wv{position:absolute;left:3px;top:33px;width:calc(100% - 6px);height:calc(100% - 39px);opacity:.6;display:none;}",
+ "#studio .st-fd.dolu .st-wv,#studio .st-fd.sus .st-wv{display:block;}",
+ "#studio .st-fd.sus .st-wv{opacity:.2;}",
+ "#studio .st-fd .st-ph{display:none;position:absolute;left:3px;right:3px;height:2px;background:var(--c);box-shadow:0 0 6px var(--c);top:calc(33px + var(--ph,0) * (100% - 41px));}",
+ "#studio .st-fd.dolu .st-ph{display:block;}",
+ "#studio .st-lcd small{max-width:15.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}",
+ "#stTemalar{display:none;left:0;right:0;top:auto;bottom:0;max-height:calc(100% - 3.75rem);z-index:130;padding:.75rem 1rem 1rem;overflow:auto;background:color-mix(in srgb,var(--zem) 96%,var(--yz));border-top:1px solid var(--cz);border-radius:1.125rem 1.125rem 0 0;box-shadow:0 -.75rem 2rem rgba(0,0,0,.5);}",
+ "#stTemalar.acik{display:block;}",
+ "#studio .st-tbas{display:flex;align-items:center;justify-content:space-between;font-size:.625rem;letter-spacing:.2em;color:var(--yz2);margin-bottom:.625rem;}",
+ "#stTemaKapat{min-width:44px;min-height:44px;font-size:1rem;color:var(--yz);}",
+ "#stTemaIzgara{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}",
+ "#studio .st-tk{min-height:4.25rem;border:1px solid;border-radius:.625rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;}",
+ "#studio .st-tk[aria-pressed=\"true\"]{outline:2px solid var(--a1);outline-offset:2px;}",
+ "#studio .st-td{display:flex;gap:.25rem;}",
+ "#studio .st-td i{width:.875rem;height:.875rem;border-radius:50%;}",
+ "#studio .st-tn{font-size:.5rem;letter-spacing:.08em;}",
    "body.studio #karsilama{display:none !important;}",
    "@font-face{font-family:'DSEG7 Modern';font-style:normal;font-weight:700;font-display:swap;src:url('/yazitipi/DSEG7-Modern-700.woff2') format('woff2')}",
    "#studio{position:fixed;inset:0;z-index:0;color:var(--yz);background:var(--zem); font:0.75rem/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em; --zem:#0b0c10;--pan:rgba(21,23,29,.86);--pan2:#1c1f27;--cz:#2b2f3a;--yz:#e9ebf0;--yz2:#9aa1b0; --a1:#ffb43a;--a2:#35e0d8;--on:#1a1205;--ok:#5be38a;--kir:#ff5c70;}",
@@ -32,9 +57,7 @@ var ST_KURAL = [
    ".st-logo b{color:var(--a1);}",
    "#stTemaTus{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;}",
    "#stTemaTus i{width:20px;height:20px;border-radius:50%;border:1px solid var(--cz); background:conic-gradient(var(--a1) 0 50%,var(--a2) 0);}",
-   ".st-anah{display:flex;border:1px solid var(--cz);border-radius:8px;overflow:hidden;}",
-   "#studio .st-anah button{min-height:44px;padding:0 10px;font-size:0.625rem;color:var(--yz2);}",
-   "#studio .st-anah button[aria-pressed=\"true\"]{background:var(--a1);color:var(--on);font-weight:700;}",
+       "#studio .st-anah button[aria-pressed=\"true\"]{background:var(--a1);color:var(--on);font-weight:700;}",
    "#stKat{display:flex;justify-content:space-between;gap:4px;}",
    "#stKat button{flex:1;min-width:44px;border:1px solid var(--cz) !important;border-radius:8px;background:var(--pan) !important; display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--yz2) !important;font-size:0.4688rem !important;}",
    "#stKat button svg{width:26px;height:26px;}",
@@ -78,8 +101,8 @@ var ST_KURAL = [
    "#stMix{display:flex;padding:0;}",
    ".st-fd{flex:1;min-width:0;height:100%;position:relative;font-size:0.5rem !important;color:var(--yz2) !important;touch-action:none;}",
    ".st-fd > b{position:absolute;left:3px;right:3px;top:0;bottom:0;border-radius:6px;background:var(--pan2);border:1px solid var(--cz);font-weight:400;padding-top:3px;text-align:center;}",
-   ".st-fd > b::before{content:'';position:absolute;left:50%;top:16px;bottom:6px;width:3px;margin-left:-1.5px;border-radius:2px; background:color-mix(in srgb,var(--yz) 15%,transparent);}",
-   ".st-fd i{position:absolute;left:50%;width:22px;height:9px;margin-left:-11px;border-radius:3px;background:var(--c); box-shadow:0 0 8px var(--c);bottom:calc(6px + var(--v) * (100% - 31px));}",
+   ".st-fd > b::before{content:'';position:absolute;left:50%;top:32px;bottom:6px;width:3px;margin-left:-1.5px;border-radius:2px; background:color-mix(in srgb,var(--yz) 15%,transparent);}",
+   ".st-fd i{position:absolute;left:50%;width:22px;height:9px;margin-left:-11px;border-radius:3px;background:var(--c); box-shadow:0 0 8px var(--c);bottom:calc(6px + var(--v) * (100% - 40px));}",
    ".st-fd.bos i{background:transparent;border:1px dashed color-mix(in srgb,var(--yz) 35%,transparent);box-shadow:none;}",
    ".st-fd.sus i{opacity:.35;box-shadow:none;}",
    ".st-fd.kayit > b{border-color:var(--kir);color:var(--kir);}",
@@ -119,7 +142,7 @@ var ST_KURAL = [
    "#studio .st-ay.sus b{opacity:.4;box-shadow:none;}",
    "#studio .st-ay.kayit b{border:2px solid var(--kir);color:var(--kir);box-shadow:0 0 12px var(--kir);animation:stNabiz 1s infinite;}"
 ];
-var ST_HTML = "<div id=\"studio\" hidden><canvas id=\"stUzay\" aria-hidden=\"true\"></canvas><div id=\"stBas\"><div class=\"st-logo\" aria-hidden=\"true\"><span>ORBITAPE</span><b>STUDIO</b></div><button type=\"button\" id=\"stTemaTus\" aria-label=\"Theme\"><i aria-hidden=\"true\"></i></button><div class=\"st-anah\" role=\"group\" aria-label=\"Screen\"><button type=\"button\" id=\"stClassic\" aria-pressed=\"false\">CLASSIC</button><button type=\"button\" id=\"stTus\" aria-pressed=\"true\">STUDIO</button></div></div><div id=\"stKat\" role=\"group\" aria-label=\"Categories\"></div><div id=\"stSut\" role=\"group\" aria-label=\"Capture\"><button type=\"button\" id=\"stRec\" class=\"st-t st-rec\"><i aria-hidden=\"true\"></i><span>REC</span></button><button type=\"button\" id=\"stCam\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"7\" width=\"13\" height=\"11\" rx=\"2\"/><path d=\"M16 11l5-3v9l-5-3\"/></svg><span>CAM</span></button><button type=\"button\" id=\"stFoto\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 9h3l2-3h6l2 3h3v10H4z\"/><circle cx=\"12\" cy=\"13\" r=\"3.5\"/></svg><span>PHOTO</span></button><button type=\"button\" id=\"stKunye\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 4h14v16H5zM9 9h6M9 13h6M9 17h3\"/></svg><span>CREDITS</span></button><button type=\"button\" id=\"stFav\" class=\"st-t\" aria-pressed=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z\"/></svg><span>SAVE</span></button></div><div id=\"stEkran\"><div class=\"st-izgara\" aria-hidden=\"true\"></div><div id=\"stSistem\"></div><div class=\"st-lcd\"><small id=\"stSayac\"></small><span id=\"stSaat\" role=\"timer\" aria-label=\"Elapsed time\">00:00</span></div></div><canvas id=\"stKadran\" aria-hidden=\"true\"></canvas><div id=\"stSimdi\"><span id=\"stSimge\" aria-hidden=\"true\"></span><div class=\"st-ad\"><b id=\"stAd\"></b><span id=\"stAlt\"></span><canvas id=\"stDalga\" aria-hidden=\"true\"></canvas></div><span id=\"stLis\"></span></div><div id=\"stRaf\"><div class=\"st-h\"><span>FX RACK</span><span id=\"stFxSay\"></span></div><div id=\"stDug\"></div><div class=\"st-h\"><span>LOOP MIXER</span><span id=\"stLpSay\"></span></div><div id=\"stMix\"></div></div><div id=\"stAyak\"><button type=\"button\" id=\"stGeri\" class=\"st-k\" aria-label=\"Previous\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 5v14M19 5l-10 7 10 7z\"/></svg></button><button type=\"button\" id=\"stCal\" class=\"st-k\" aria-label=\"Pause\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"d1\" d=\"M8 5v14M16 5v14\"/><path class=\"d2\" d=\"M7 5l12 7-12 7z\"/></svg></button><button type=\"button\" id=\"stIleri\" class=\"st-k\" aria-label=\"Next\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18 5v14M5 5l10 7-10 7z\"/></svg></button><button type=\"button\" id=\"stRafTus\" class=\"st-k\" aria-expanded=\"false\"><span>RACK</span></button><button type=\"button\" id=\"stExport\" class=\"st-ex\" aria-disabled=\"true\"><span>EXPORT</span><small>SOON</small></button></div></div>";
+var ST_HTML = "<div id=\"studio\" hidden><canvas id=\"stUzay\" aria-hidden=\"true\"></canvas><div id=\"stBas\"><div class=\"st-logo\" aria-hidden=\"true\"><span>ORBITAPE</span><b>STUDIO</b></div><button type=\"button\" id=\"stTemaTus\" aria-label=\"Theme\"><i aria-hidden=\"true\"></i></button></div><div id=\"stTemalar\" role=\"dialog\" aria-label=\"Themes\"><div class=\"st-tbas\"><span>THEMES</span><button type=\"button\" id=\"stTemaKapat\" aria-label=\"Close\">✕</button></div><div id=\"stTemaIzgara\"></div></div><div id=\"stKat\" role=\"group\" aria-label=\"Categories\"></div><div id=\"stSut\" role=\"group\" aria-label=\"Capture\"><button type=\"button\" id=\"stRec\" class=\"st-t st-rec\"><i aria-hidden=\"true\"></i><span>REC</span></button><button type=\"button\" id=\"stCam\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"7\" width=\"13\" height=\"11\" rx=\"2\"/><path d=\"M16 11l5-3v9l-5-3\"/></svg><span>CAM</span></button><button type=\"button\" id=\"stFoto\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 9h3l2-3h6l2 3h3v10H4z\"/><circle cx=\"12\" cy=\"13\" r=\"3.5\"/></svg><span>PHOTO</span></button><button type=\"button\" id=\"stKunye\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 4h14v16H5zM9 9h6M9 13h6M9 17h3\"/></svg><span>CREDITS</span></button><button type=\"button\" id=\"stFav\" class=\"st-t\" aria-pressed=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z\"/></svg><span>SAVE</span></button></div><div id=\"stEkran\"><div class=\"st-izgara\" aria-hidden=\"true\"></div><div id=\"stSistem\"></div><div class=\"st-lcd\"><small id=\"stSayac\"></small><span id=\"stSaat\" role=\"timer\" aria-label=\"Elapsed time\">00:00</span></div></div><canvas id=\"stKadran\" aria-hidden=\"true\"></canvas><div id=\"stSimdi\"><span id=\"stSimge\" aria-hidden=\"true\"></span><div class=\"st-ad\"><b id=\"stAd\"></b><span id=\"stAlt\"></span><canvas id=\"stDalga\" aria-hidden=\"true\"></canvas></div><span id=\"stLis\"></span></div><div id=\"stRaf\"><div class=\"st-h\"><span>FX RACK</span><span id=\"stFxSay\"></span></div><div id=\"stDug\"></div><div class=\"st-h\"><span>LOOP MIXER</span><span id=\"stLpSay\"></span></div><div id=\"stMix\"></div></div><div id=\"stAyak\"><button type=\"button\" id=\"stGeri\" class=\"st-k\" aria-label=\"Previous\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 5v14M19 5l-10 7 10 7z\"/></svg></button><button type=\"button\" id=\"stCal\" class=\"st-k\" aria-label=\"Pause\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"d1\" d=\"M8 5v14M16 5v14\"/><path class=\"d2\" d=\"M7 5l12 7-12 7z\"/></svg></button><button type=\"button\" id=\"stIleri\" class=\"st-k\" aria-label=\"Next\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18 5v14M5 5l10 7-10 7z\"/></svg></button><button type=\"button\" id=\"stRafTus\" class=\"st-k\" aria-expanded=\"false\"><span>RACK</span></button><button type=\"button\" id=\"stExport\" class=\"st-ex\" aria-disabled=\"true\"><span>EXPORT</span><small>SOON</small></button></div></div>";
 function _stKurallariKur(){
     try{
       let ok = false;
@@ -232,7 +255,8 @@ function studioKatBul(metin){
     return '';
 }
 function _stMetin(o){ return o ? ((o.ad || '') + ' ' + (o.etiket || '') + ' ' + (o.sanatci || '')) : ''; }
-var _stKat = '', _stZaman = 0, _stKuruldu = false, _stOlcu = '', _stTemaNot = 0;
+var _stKat = '', _stZaman = 0, _stKuruldu = false, _stOlcu = '', _stMsj = '', _stMsjBit = 0, _stSid = 0, _stAkis = 0;
+function _stBilgi(y){ _stMsj = y; _stMsjBit = Date.now() + 2500; }
 function _stEl(id){ return document.getElementById(id); }
 /** @returns {HTMLElement[]} */
 function _stHepsi(sel){ return /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(sel))); }
@@ -248,7 +272,7 @@ function _stTemaUygula(){
       for(const a in V) k.style.setProperty('--' + a, V[a]);
       document.body.style.setProperty('--st-zem', t[1]);
       document.body.classList.toggle('studio-acik-tema', !!t[12]);
-      _stOlcu = ''; _stUzayCiz();
+      _stOlcu = ''; _stUzayCiz(); _stHepsi('#stTemaIzgara .st-tk').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === n ? 'true' : 'false'));
     }catch(e){ _yut(e); }
 }
 function _stUzayCiz(){
@@ -275,7 +299,7 @@ function _stUzayCiz(){
      sistemi kuculemez -- gezegen ve aylar 44 px dokunma alani, disk de
      parmakla FX calinan yer. Olculdu: 360x640'ta raf yerinde kalsa disk
      47 px'e iniyordu. */
-const ST_RAF_Y = 176, ST_SIMDI_Y = 62;
+const ST_RAF_Y = 196, ST_SIMDI_Y = 62;
 function studioYerlesim(){
     const W = innerWidth, H = innerHeight;
     const imza = W + 'x' + H; const ilk = imza !== _stOlcu;
@@ -308,7 +332,7 @@ function studioYerlesim(){
     /* Sürgu satiri: 8 hucre, her biri en az 44 px genis (kenar payi
        dar ekranda kuculur -- 360'ta 8 x 44 = 352). */
     const mix = _stEl('stMix'); if(mix){ const rafW = tabaka ? W : W - 2 * m; const pay = Math.max(0, Math.min(10, (rafW - 2 - 8 * 44) / 2));
-      mix.style.padding = '0 ' + pay + 'px'; mix.style.height = '64px'; }
+      mix.style.padding = '0 ' + pay + 'px'; mix.style.height = '84px'; }
     /* STUDIO'NUN KENDI HALKA SISTEMI (maket A): ortada disk + sembol,
        cevrede 4 FX gezegeni, aralarda 8 loop ayi. Gercek disk/gezegen/
        aylara DOKUNULMAZ (pj); bunlar ayni islevleri cagiran kendi
@@ -316,16 +340,16 @@ function studioYerlesim(){
     const lcdH = 40, cx = ekW / 2, cy = lcdH + (kalan - lcdH) / 2;
     const R = Math.max(70, Math.min(ekW / 2 - 40, (kalan - lcdH) / 2 - 34));
     _stGeo = { cx: ekX + cx, cy: govY + cy, R: R + 30 };
-    const dk = Math.round(R * 0.84);
+    const dk = Math.round(R * 0.72);
     const yer = (e, x, y, w, h) => { if(!e) return; e.style.left = Math.round(x) + 'px'; e.style.top = Math.round(y) + 'px';
       if(w){ e.style.width = Math.round(w) + 'px'; e.style.height = Math.round(h) + 'px'; } };
     yer(_stBir('#stSistem .st-disk'), cx - dk / 2, cy - dk / 2, dk, dk);
     yer(_stBir('#stSistem .st-yr.a'), cx - R, cy - R, 2 * R, 2 * R);
-    yer(_stBir('#stSistem .st-yr.b'), cx - R * .76, cy - R * .76, R * 1.52, R * 1.52);
+    yer(_stBir('#stSistem .st-yr.b'), cx - R * .64, cy - R * .64, R * 1.28, R * 1.28);
     _stHepsi('#stSistem .st-gz').forEach((g, i) => { const a = [-150, -30, 150, 30][i] * Math.PI / 180;
       const z = +g.dataset.z; yer(g, cx + Math.cos(a) * R - 35, cy + Math.sin(a) * R - z / 2); });
-    _stHepsi('#stSistem .st-ay').forEach((g, i) => { const a = [-90, -60, -120, 90, 60, 120, 0, 180][i] * Math.PI / 180;
-      yer(g, cx + Math.cos(a) * R * .76 - 22, cy + Math.sin(a) * R * .76 - 22); });
+    _stHepsi('#stSistem .st-ay').forEach((g, i) => { const a = [-90, -45, 0, 45, 90, 135, 180, -135][i] * Math.PI / 180;
+      yer(g, cx + Math.cos(a) * R * .64 - 22, cy + Math.sin(a) * R * .64 - 22); });
     if(ilk) _stUzayCiz();
     _stKadranCiz(cx, cy, ekX, govY, ekW, kalan);
 }
@@ -372,6 +396,7 @@ function _stSurukle(el, ayar){
     el.addEventListener('pointerdown', e => {
       try{ e.preventDefault(); e.stopPropagation(); el.setPointerCapture(e.pointerId); }catch(x){ _yut(x); }
       bas = true; oyn = false; y0 = e.clientY; v0 = ayar.oku();
+      if(ayar.bas){ try{ ayar.bas(); }catch(x){ _yut(x); } }
       if(ayar.uzun) uzun = setTimeout(() => { uzun = 0; if(bas && !oyn){ bas = false; ayar.uzun(); } }, 600);
     });
     el.addEventListener('pointermove', e => {
@@ -432,9 +457,10 @@ function studioKur(){
       for(let i = 0; i < 8; i++){
         const b = document.createElement('div'); b.className = 'st-ay'; b.dataset.yuva = String(i); b.tabIndex = 0;
         b.setAttribute('role', 'button'); b.setAttribute('aria-label', 'LOOP ' + (i + 1)); b.style.setProperty('--c', ST_LOOP_RENK[i]);
-        b.innerHTML = '<b>' + (i + 1) + '</b>'; sis.appendChild(b);
+        b.innerHTML = '<b><span>' + (i + 1) + '</span></b>'; sis.appendChild(b);
         _stSurukle(b, { oku: () => { const c = _loopYuva[i]; return c ? c.sev : 0; }, surukleBasla: () => !!_loopYuva[i],
-          yaz: v => { try{ loopSesYaz(i, v); }catch(e){ _yut(e); } },
+          bas: () => { if(_loopYuva[i]) _stBilgi(_stLoopMesaj(i)); },
+          yaz: v => { try{ loopSesYaz(i, v); _stBilgi(_stLoopMesaj(i)); }catch(e){ _yut(e); } },
           dokun: () => { try{ if(_loopKayit) loopKayitBitir(); else if(_loopYuva[i]) loopKanalGec(i); else loopKayitBasla(i); }catch(e){ _yut(e); } },
           uzun: () => { try{ if(_loopYuva[i]) loopKanalSil(i); }catch(e){ _yut(e); } } });
       }
@@ -454,12 +480,13 @@ function studioKur(){
       const b = document.createElement('div'); b.className = 'st-fd bos'; b.dataset.yuva = String(i); b.tabIndex = 0;
       b.setAttribute('role', 'slider'); b.setAttribute('aria-label', 'LOOP ' + (i + 1));
       b.style.setProperty('--c', ST_LOOP_RENK[i]); b.style.setProperty('--v', '.7');
-      b.innerHTML = '<b>' + (i + 1) + '</b><i></i>';
+      b.innerHTML = '<b><span class="st-n">' + (i + 1) + '</span><em class="st-sm"></em><canvas class="st-wv" width="40" height="64"></canvas><u class="st-ph"></u></b><i></i>';
       mix.appendChild(b);
       _stSurukle(b, {
         oku: () => { const c = _loopYuva[i]; return c ? c.sev : 0; },
         surukleBasla: () => !!_loopYuva[i],
-        yaz: v => { try{ loopSesYaz(i, v); }catch(e){ _yut(e); } },
+        bas: () => { if(_loopYuva[i]) _stBilgi(_stLoopMesaj(i)); },
+        yaz: v => { try{ loopSesYaz(i, v); _stBilgi(_stLoopMesaj(i)); }catch(e){ _yut(e); } },
         boy: () => Math.max(40, b.getBoundingClientRect().height - 30),
         dokun: () => { try{
           if(_loopKayit) loopKayitBitir();
@@ -479,10 +506,27 @@ function studioKur(){
     on('stCal', () => { if(ses && ses.src){ const g = _stEl('duraklat'); if(g) g.click(); } else sonraki(true); });
     on('stRafTus', () => { const a = !document.body.classList.contains('studio-raf-acik');
       document.body.classList.toggle('studio-raf-acik', a); _stEl('stRafTus').setAttribute('aria-expanded', a ? 'true' : 'false'); });
-    on('stClassic', () => { AYAR.studio = false; ayarKaydet(); studioUygulaGercek();
-      document.querySelectorAll('#ayar .sat[data-ayar="studio"]').forEach(el => { el.classList.remove('acik'); el.setAttribute('aria-checked', 'false'); }); });
-    on('stTemaTus', () => { AYAR.studioTema = ((AYAR.studioTema | 0) + 1) % ST_TEMA.length; ayarKaydet();
-      _stTemaUygula(); _stTemaNot = Date.now() + 2500; studioTik(); });
+    /* TEMA SECICI (14 Kasim): 20 tema kucuk onizleme kartlari olarak
+       acilir (zemin, iki vurgu rengi, bulutsu), dokununca hemen uygulanir.
+       pj: "20 ornek direk o acilsin, kullanisli olsun, gorseller". */
+    const izg = _stEl('stTemaIzgara');
+    if(izg) ST_TEMA.forEach((t, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'st-tk'; b.dataset.i = String(i);
+      b.setAttribute('aria-label', t[0]); b.style.background = t[1]; b.style.borderColor = t[3]; b.style.color = t[2];
+      const neb = t[8] || t[9] || t[10];
+      if(neb) b.style.backgroundImage = 'radial-gradient(circle at 85% 15%,' + neb + ',transparent 70%)';
+      const d = document.createElement('span'); d.className = 'st-td';
+      [t[4], t[5]].forEach(c => { const o = document.createElement('i'); o.style.background = c; d.appendChild(o); });
+      const n = document.createElement('span'); n.className = 'st-tn'; n.textContent = t[0];
+      b.appendChild(d); b.appendChild(n);
+      b.addEventListener('click', e => { e.stopPropagation(); AYAR.studioTema = i; ayarKaydet(); _stTemaUygula();
+        _stBilgi(Y('THEME') + ' ' + String(i + 1).padStart(2, '0') + ' · ' + t[0]); studioTik(); });
+      izg.appendChild(b); });
+    const sayfa = _stEl('stTemalar');
+    const temaAc = a => { if(!sayfa) return; sayfa.classList.toggle('acik', a); const t = _stEl('stTemaTus'); if(t) t.setAttribute('aria-expanded', a ? 'true' : 'false'); };
+    on('stTemaTus', () => temaAc(!(sayfa && sayfa.classList.contains('acik'))));
+    on('stTemaKapat', () => temaAc(false));
+    addEventListener('keydown', e => { if(e.key === 'Escape') temaAc(false); });
     addEventListener('resize', () => { try{ if(document.body.classList.contains('studio')){ studioYerlesim(); } }catch(e){ _yut(e); } });
 }
 /* KATEGORI: mevcut etiket akisi (_etHavuz/etiketGec) beslenir, yani
@@ -500,6 +544,47 @@ function studioKategori(ad){
       }
       studioTik();
     }catch(e){ _yut(e); }
+}
+/* ── LOOP GORUNUR (14 Kasim) ────────────────────────────────────
+   pj: "biri loop'a aldiginda rahatca anlasin, orada gorsun akisi, volum
+   pratik olsun", "semboller kus, makine, city vardi". Dolu ay: icindeki
+   sesin sembolu (kus/makine/sehir...), cevresinde oynatma halkasi (loop
+   boyunca doner), ses kisildikca kuculur. Mixer hucresi: sembol + loop'un
+   dalga seklini ve oynatma cizgisini gosterir. Dokununca ya da
+   surukleyince LCD'nin ustunde "LOOP 3 - sesin adi - VOL 70" yazar. */
+function _stLoopAd(c){ return (c && c.kaynak && c.kaynak.ad) || ''; }
+function _stLoopTur(c){ return (c && c.kaynak && studioKatBul(_stMetin(c.kaynak))) || 'SOUND'; }
+function _stLoopMesaj(i){
+  const c = _loopYuva[i];
+  return 'LOOP ' + (i + 1) + (c ? ' · ' + (_stLoopAd(c) || Y('LOOPS')) + ' · ' + Y('VOL') + ' ' + Math.round(c.sev * 100) : '');
+}
+function _stDalgaCizLoop(cv, buf){
+  try{
+    const c = cv.getContext('2d'); if(!c) return; const W = cv.width, H = cv.height; c.clearRect(0, 0, W, H);
+    if(!buf) return;
+    const d = buf.getChannelData(0), n = d.length, kova = Math.max(1, Math.floor(n / H));
+    const st = getComputedStyle(cv.closest('.st-fd') || cv); c.fillStyle = st.getPropertyValue('--c') || '#fff';
+    let tepe = 0.0001; const z = new Array(H).fill(0);
+    for(let y = 0; y < H; y++){ let m = 0; const b = y * kova, e = Math.min(n, b + kova);
+      for(let k = b; k < e; k += 8){ const v = d[k] < 0 ? -d[k] : d[k]; if(v > m) m = v; }
+      z[y] = m; if(m > tepe) tepe = m; }
+    for(let y = 0; y < H; y++){ const w = Math.max(1, (z[y] / tepe) * (W / 2 - 1)); c.fillRect(W / 2 - w, y, w * 2, 1); }
+  }catch(e){ _yut(e); }
+}
+function _stAkisAdim(){
+  _stAkis = 0;
+  if(!document.body.classList.contains('studio')) return;
+  try{
+    const t = actx ? actx.currentTime : 0;
+    for(let i = 0; i < 8; i++){
+      const c = _loopYuva[i]; if(!c || !c.sure || c.bas == null) continue;
+      const ph = (((t - c.bas) % c.sure) + c.sure) % c.sure / c.sure;
+      const ay = _stBir('#stSistem .st-ay[data-yuva="' + i + '"]'), fd = _stBir('#stMix .st-fd[data-yuva="' + i + '"]');
+      if(ay) ay.style.setProperty('--p', Math.round(ph * 360) + 'deg');
+      if(fd) fd.style.setProperty('--ph', ph.toFixed(3));
+    }
+  }catch(e){ _yut(e); }
+  _stAkis = requestAnimationFrame(_stAkisAdim);
 }
 function _stSureYazi(t){
     t = (isFinite(t) && t > 0) ? t : 0;
@@ -543,7 +628,7 @@ function studioTik(){
     const say = _stEl('stSayac');
     if(say){
       let y;
-      if(_stTemaNot > Date.now()) y = Y('THEME') + ' ' + String((AYAR.studioTema | 0) + 1).padStart(2, '0') + ' · ' + (ST_TEMA[AYAR.studioTema | 0] || ST_TEMA[0])[0];
+      if(_stMsjBit > Date.now()) y = _stMsj;
       else if(_stKat && _etHavuz.length) y = Y(_stKat) + ' ' + Math.min(_etIdx, _etHavuz.length) + ' / ' + _etHavuz.length.toLocaleString('en-US');
       else y = Y('ALL SOUNDS');
       if(say.textContent !== y) say.textContent = y;
@@ -558,7 +643,10 @@ function studioTik(){
     /* Kendi gezegenleri ve aylari: durum gercek sistemden okunur */
     _stHepsi('#stSistem .st-gz').forEach(g => g.classList.toggle('acik', typeof FXMOD !== 'undefined' && FXMOD === g.dataset.fx));
     _stHepsi('#stSistem .st-ay').forEach(g => { const i = +g.dataset.yuva, c = _loopYuva[i], kk = !!(_loopKayit && _loopKayit.yuva === i);
-      g.classList.toggle('dolu', !!c && !kk); g.classList.toggle('kayit', kk); g.classList.toggle('sus', !!(c && !c.acik)); });
+      g.classList.toggle('dolu', !!c && !kk); g.classList.toggle('kayit', kk); g.classList.toggle('sus', !!(c && !c.acik));
+      const bb = g.querySelector('b'); const tur = c ? _stLoopTur(c) : (kk ? _stKat || 'SOUND' : '');
+      if(bb && g.dataset.s !== tur){ g.dataset.s = tur; bb.innerHTML = '<span>' + (i + 1) + '</span>' + (tur ? stSembol(tur, 2.4) : ''); }
+      g.style.setProperty('--k', c ? (0.7 + 0.3 * c.sev).toFixed(2) : '1'); });
     const ad = _stEl('stAd'), alt = _stEl('stAlt');
     const adY = it ? (it.ad || '') : '';
     if(ad && ad.textContent !== adY) ad.textContent = adY;
@@ -592,7 +680,13 @@ function studioTik(){
     _stHepsi('#stMix .st-fd').forEach(b => {
       const i = +b.dataset.yuva, c = _loopYuva[i], kk = !!(_loopKayit && _loopKayit.yuva === i);
       b.classList.toggle('bos', !c && !kk); b.classList.toggle('kayit', kk); b.classList.toggle('sus', !!(c && !c.acik));
-      if(c){ b.style.setProperty('--v', String(c.sev)); if(c.acik) cal++; }
+      b.classList.toggle('dolu', !!c && c.acik);
+      if(c){ b.style.setProperty('--v', String(c.sev)); if(c.acik) cal++;
+        if(!c.sid) c.sid = ++_stSid;
+        if(b.dataset.sid !== String(c.sid)){ b.dataset.sid = String(c.sid);
+          _stDalgaCizLoop(/** @type {HTMLCanvasElement} */ (b.querySelector('.st-wv')), c.src && c.src.buffer);
+          const sm = b.querySelector('.st-sm'); if(sm) sm.innerHTML = stSembol(_stLoopTur(c), 2.4); } }
+      else if(b.dataset.sid){ b.dataset.sid = ''; const sm = b.querySelector('.st-sm'); if(sm) sm.innerHTML = ''; }
       b.setAttribute('aria-valuenow', String(c ? Math.round(c.sev * 100) : 0));
     });
     const ls = _stEl('stLpSay'); const lsY = cal + ' ' + Y('PLAYING') + (_loopKayit ? ' · ' + Y('RECORDING') : '');
@@ -614,6 +708,7 @@ function studioTik(){
       cl.setAttribute('aria-label', d ? 'Play' : 'Pause'); }
 }
 function studioUygulaGercek(){
+  document.body.classList.remove('studio-bekle');
     try{
       const on = studioAcik();
       const k = _stEl('studio'); if(!k) return;
@@ -623,6 +718,7 @@ function studioUygulaGercek(){
         studioKur(); _stTemaUygula();
         try{ kayitYukle(); }catch(e){ _yut(e); }
         _stOlcu = ''; studioTik();
+      if(!_stAkis) _stAkis = requestAnimationFrame(_stAkisAdim);
         if(!_stZaman) _stZaman = setInterval(() => { try{ studioTik(); }catch(e){ _yut(e); } }, 250);
       } else {
         if(_stZaman){ clearInterval(_stZaman); _stZaman = 0; }

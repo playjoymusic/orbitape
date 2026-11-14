@@ -208,8 +208,6 @@
   "DELETED": "SİLİNDİ",
   "LOOPS": "LOOPLAR",
   "PLAYING": "ÇALIYOR",
-  "STUDIO CONSOLE": "STÜDYO KONSOLU",
-  "Archive side only. The radio stays as it is.": "Yalnız arşiv tarafında. Radyo olduğu gibi kalır.",
   "COMMERCIAL OK": "TİCARİ KULLANIM OK",
   "STUDIO": "STÜDYO",
   "CLASSIC": "KLASİK",
@@ -227,5 +225,6 @@
   "WIND": "RÜZGÂR",
   "ALL SOUNDS": "TÜM SESLER",
   "NON-COMMERCIAL": "TİCARİ DEĞİL",
-  "Nothing in this category yet.": "Bu kategoride henüz bir şey yok."
+  "Nothing in this category yet.": "Bu kategoride henüz bir şey yok.",
+  "THEMES": "TEMALAR"
 }

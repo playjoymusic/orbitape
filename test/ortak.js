@@ -224,6 +224,10 @@ async function sayfaAc(kaynak, secenek){
        Kalicilik AYRICA sinaniyor; oradaki test degeri kendisi
        yaziyor. Burada varsayilan hep ayni: radyo. */
     try{ localStorage.removeItem('orbitape.kanal'); }catch(e){}
+    /* STUDIO arsivde VARSAYILAN (14 Kasim); eski ORBITAPE ekranini olcen
+       butun mevcut testler klasik ekranda kosar. Anahtar yalniz YOKSA
+       '1' yazilir: STUDIO'yu olcen testler '0' yazip yeniden yukler. */
+    try{ if(localStorage.getItem('orbitape.klasik') === null) localStorage.setItem('orbitape.klasik', '1'); }catch(e){}
   });
 
   if(se.once){
