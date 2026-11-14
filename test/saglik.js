@@ -19014,6 +19014,144 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         lo.ad + ' | ses ' + lo.sev + ' · ' + lo.sesYazi + ' · hala acik ' + lo.hala + ' · ay kucuk ' + lo.kucuk);
       K('STUDIO mixer surgusunu yukari surukleyince loop sesi artar', lo.sevFader > lo.sev, 'ses ' + lo.sev + ' -> ' + lo.sevFader);
     }
+    /* ── STUDIO EXPORT: WAV + CREDITS (14 Kasim) ─────────────────────
+       pj: "sonunda cikti alinan bir sey" + "eserlerinde kullanabiliyor
+       dimi, atif ekleyerek". Olculen: (1) EXPORT -> STOP -> SAVE,
+       gercek dugme tiklamasiyla; (2) WAV 24 bit stereo, grafigin hizinda,
+       sinus surekliligi (ornek dusmuyor); (3) CREDITS duyulan her kaydi
+       sayiyor (calan parca + loop kaynagi), NC varsa ticari kullanimi
+       YASAKLIYOR, SA'yi soyluyor, PD/CC0'a atif istemiyor; (4) SAVE iki
+       dosya indiriyor; (5) canli yayina gecince kayit duruyor (Kural 3);
+       (6) tavan dolunca kendiliginden duruyor, ses kaybolmuyor;
+       (7) STUDIO kapaninca duruyor; (8) STOP halindeki dugme 20 temada
+       okunur. */
+    {
+      const { sayfa: pe, kapat: ke } = await sayfaAc(c, { bekle: 2500 });
+      const ex = await pe.evaluate(async (kok)=>{
+        const bek = ms => new Promise(r=>setTimeout(r, ms));
+        const o = {};
+        AYAR.mood = true; AYAR.studio = true; moodUygula(true);
+        for(let i = 0; i < 60 && !window.STUDIO_HAZIR; i++) await bek(100);
+        await bek(1000);
+        const tus = document.getElementById('stExport');
+        const yazi = ()=> { studioTik(); return tus.querySelector('span').textContent + '|' + tus.querySelector('small').textContent; };
+        o.bos = yazi(); o.pasifDegil = !tus.hasAttribute('aria-disabled');
+        ses.crossOrigin = 'anonymous'; ses.src = kok; ses.loop = true;
+        sesBaglamiAl(); await actx.resume(); await ses.play().catch(()=>{}); analizKur(); await bek(500);
+        /* loop: CC0 bir kuş kaydından */
+        aktifItem = { id:'e:a', mp3:'https://archive.org/download/kusA/a.mp3', ad:'Dawn chorus A', sanatci:'Ann',
+                      lisans:'https://creativecommons.org/publicdomain/zero/1.0/' };
+        loopKayitBasla(0); await bek(900); loopKayitBitir(); await bek(400);
+        /* calan: NC-SA */
+        aktifItem = { id:'e:b', mp3:'https://archive.org/download/suB/b.mp3', ad:'River B', sanatci:'Bo',
+                      lisans:'http://creativecommons.org/licenses/by-nc-sa/3.0/' };
+        anaSesYaz(0); await bek(400);
+        const osc = actx.createOscillator(), og = actx.createGain();
+        osc.frequency.value = 440; og.gain.value = 0.3; osc.connect(og); og.connect(tavan); osc.start();
+        loopKanalGec(0);           // loop sussun: olcu yalniz sinus
+        await bek(300);
+        tus.click(); await bek(150);
+        o.kayitta = yazi(); o.kayitSinif = tus.classList.contains('kayit');
+        /* STOP halinde 20 temada kontrast */
+        const lum = s => { const m = s.match(/[\d.]+/g).map(Number).slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+          return 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]; };
+        const kon = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+        const eskiTema = AYAR.studioTema; o.konDus = [];
+        for(let i = 0; i < ST_TEMA.length; i++){ AYAR.studioTema = i; _stTemaUygula();
+          const cs = getComputedStyle(tus); const k2 = kon(cs.color, cs.backgroundColor);
+          if(k2 < 4.5) o.konDus.push(ST_TEMA[i][0] + ' ' + k2.toFixed(2)); }
+        AYAR.studioTema = eskiTema; _stTemaUygula();
+        await bek(2500);
+        loopKanalGec(0);           // kunye icin loop yine acik (sesli)
+        await bek(500);
+        tus.click(); await bek(100);
+        osc.stop(); og.disconnect();
+        o.bekliyor = yazi();
+        const k = _stExBekleyen;
+        o.var = !!k; if(!k) return o;
+        const ab = await k.wav.arrayBuffer(), v = new DataView(ab), u = new Uint8Array(ab);
+        const dort = q => String.fromCharCode(u[q], u[q+1], u[q+2], u[q+3]);
+        o.baslik = dort(0) + '/' + dort(8) + '/' + dort(36);
+        o.kanal = v.getUint16(22, true); o.sr = v.getUint32(24, true); o.bit = v.getUint16(34, true);
+        o.srGraf = actx.sampleRate; o.veri = v.getUint32(40, true); o.boy = ab.byteLength;
+        const n = Math.floor((ab.byteLength - 44) / 6); o.sn = n / o.sr;
+        const al = i => { const q = 44 + i*6; let x = u[q] | (u[q+1] << 8) | (u[q+2] << 16); if(x & 0x800000) x -= 0x1000000; return x / 8388607; };
+        /* Sinus yalniz loop susukken: 0.3 sn'den 2.6 sn'ye kadar olculur. */
+        const b0 = Math.floor(o.sr * 0.3), b1 = Math.min(n, Math.floor(o.sr * 2.6)); let tepe = 0, sic = 0;
+        for(let i = b0; i < b1; i++){ const x = al(i); const m = x < 0 ? -x : x; if(m > tepe) tepe = m;
+          if(i > b0){ const d = Math.abs(x - al(i-1)); if(d > sic) sic = d; } }
+        o.tepe = +tepe.toFixed(3); o.sicrama = +sic.toFixed(4);
+        o.sinir = +(2 * Math.PI * 440 / o.sr * 0.3 * 1.6).toFixed(4);
+        o.metin = k.metin; o.wavAd = k.wavAd; o.metinAd = k.metinAd;
+        /* SAVE: iki indirme */
+        const adlar = []; const eski = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function(){ if(this.download) adlar.push(this.download); else eski.call(this); };
+        try{ tus.click(); await bek(1200); }finally{ HTMLAnchorElement.prototype.click = eski; }
+        o.indirilen = adlar; o.birakildi = !_stExBekleyen; o.geriDondu = yazi();
+        /* saf kunye: yalniz PD/CC0 ve yalniz BY */
+        const pd = studioKunyeMetni([{ ad:'P', sanatci:'', lisans:'http://creativecommons.org/licenses/publicdomain/', mp3:'' }], { sn: 5 });
+        o.pdTicari = /Commercial use: allowed/.test(pd); o.pdAtifYok = /not required/.test(pd) && !/ATTRIBUTION/.test(pd);
+        const by = studioKunyeMetni([{ ad:'Q', sanatci:'Z', lisans:'https://creativecommons.org/licenses/by/4.0/', mp3:'https://archive.org/download/q/q.mp3' }], { sn: 5 });
+        o.byTicari = /Commercial use: allowed/.test(by); o.byAtif = /Attribution: required/.test(by) && /"Q" by Z, CC BY 4\.0, https:\/\/archive\.org\/details\/q/.test(by);
+        /* (5) canli yayin */
+        aktifItem = { id:'e:b', mp3:'https://archive.org/download/suB/b.mp3', ad:'River B', lisans:'http://creativecommons.org/licenses/by-nc-sa/3.0/' };
+        tus.click(); await bek(800);
+        const once = _stEx ? _stEx.n : -1;
+        aktifItem = { id:'r:1', ad:'Live station', radyo:true };
+        await bek(900);
+        o.canliDurdu = !_stEx && once > 0; o.canliMsj = document.getElementById('stSayac').textContent;
+        o.canliSn = _stExBekleyen ? +_stExBekleyen.sn.toFixed(2) : 0; o.onceSn = +(once / actx.sampleRate).toFixed(2);
+        o.canliBasMaz = !studioExportBasla();
+        _stExBekleyen = null;
+        /* (6) tavan */
+        aktifItem = { id:'e:b', mp3:'https://archive.org/download/suB/b.mp3', ad:'River B', lisans:'http://creativecommons.org/licenses/by-nc-sa/3.0/' };
+        window._stExTavanZorla = 1200;
+        tus.click(); await bek(2600);
+        o.tavanDurdu = !_stEx; o.tavanSn = _stExBekleyen ? +_stExBekleyen.sn.toFixed(2) : 0; o.tavanYazi = yazi();
+        window._stExTavanZorla = null; _stExBekleyen = null;
+        /* (7) STUDIO kapaninca */
+        tus.click(); await bek(700);
+        const acikti = !!_stEx;
+        AYAR.mood = false; moodUygula(false); await bek(400);
+        o.kapanincaDurdu = acikti && !_stEx;
+        _stExBekleyen = null; anaSesYaz(1);
+        return o;
+      }, S.replace(/\/[^/]*$/, '') + '/test/yuksek.mp3');
+      await ke();
+      K('STUDIO EXPORT dugmesi calisir (SOON degil): EXPORT -> STOP -> SAVE -> EXPORT',
+        ex.bos === 'EXPORT|WAV' && ex.pasifDegil && /^STOP\|00:0\d$/.test(ex.kayitta) && ex.kayitSinif
+          && /^SAVE\|WAV \+ CREDITS$/.test(ex.bekliyor) && ex.geriDondu === 'EXPORT|WAV',
+        ex.bos + ' -> ' + ex.kayitta + ' -> ' + ex.bekliyor + ' -> ' + ex.geriDondu);
+      K('STUDIO EXPORT STOP halinde dugme yazisi 20 temada okunur (>= 4.5)', ex.konDus && !ex.konDus.length,
+        ex.konDus && ex.konDus.length ? ex.konDus.join(', ') : '20 tema');
+      K('STUDIO EXPORT sesi 24 bit stereo WAV, grafigin hizinda',
+        ex.var && ex.baslik === 'RIFF/WAVE/data' && ex.kanal === 2 && ex.bit === 24 && ex.sr === ex.srGraf
+          && ex.veri === ex.boy - 44 && ex.sn > 2.6 && ex.sn < 4.6,
+        ex.var ? (ex.baslik + ' · ' + ex.kanal + ' kanal · ' + ex.bit + ' bit · ' + ex.sr + ' Hz · ' + ex.sn.toFixed(2) + ' sn') : 'dosya yok');
+      K('STUDIO EXPORT WAV\'da ornek dusmuyor (sinus surekliligi)',
+        ex.var && ex.tepe > 0.2 && ex.tepe < 0.45 && ex.sicrama <= ex.sinir,
+        'tepe ' + ex.tepe + ' · en buyuk sicrama ' + ex.sicrama + ' <= ' + ex.sinir);
+      K('STUDIO EXPORT CREDITS: calan parca ve loop kaynagi listede; NC varsa ticari kullanim YASAK, SA yazili, CC0 atif listesinde degil',
+        ex.var && /SOUNDS \(2\)/.test(ex.metin) && /"River B" by Bo/.test(ex.metin) && /"Dawn chorus A" by Ann/.test(ex.metin)
+          && /Commercial use: NOT ALLOWED\. 1 of 2/.test(ex.metin) && /ShareAlike: .*CC BY-NC-SA 3\.0/.test(ex.metin)
+          && /Source:  https:\/\/archive\.org\/details\/suB/.test(ex.metin)
+          && /ATTRIBUTION\n"River B" by Bo, CC BY-NC-SA 3\.0/.test(ex.metin) && !/\nATTRIBUTION\n[\s\S]*Dawn chorus/.test(ex.metin),
+        ex.var ? ex.metin.split('\n').slice(12).join(' / ') : 'yok');
+      K('STUDIO EXPORT CREDITS: PD/CC0 ticari olur ve atif istemez; BY ticari olur ama atif ister',
+        ex.pdTicari && ex.pdAtifYok && ex.byTicari && ex.byAtif,
+        'pd ' + ex.pdTicari + '/' + ex.pdAtifYok + ' · by ' + ex.byTicari + '/' + ex.byAtif);
+      K('STUDIO EXPORT SAVE: WAV ve CREDITS ayni adla iki dosya iner',
+        ex.var && ex.indirilen.length === 2 && ex.indirilen[0] === ex.wavAd && ex.indirilen[1] === ex.metinAd
+          && /^orbitape-studio-[\d-]+\.wav$/.test(ex.wavAd) && ex.metinAd === ex.wavAd.replace(/\.wav$/, '-credits.txt') && ex.birakildi,
+        (ex.indirilen || []).join(' + '));
+      K('STUDIO EXPORT canli yayina gecince durur (Kural 3), canli yayinda baslamaz',
+        ex.canliDurdu && /LIVE RADIO/.test(ex.canliMsj) && ex.canliBasMaz && ex.canliSn <= ex.onceSn + 0.4,
+        'durdu ' + ex.canliDurdu + ' · ' + ex.canliMsj + ' · ses ' + ex.canliSn + ' sn (gecisten once ' + ex.onceSn + ') · baslamaz ' + ex.canliBasMaz);
+      K('STUDIO EXPORT tavan dolunca kendiliginden durur, ses SAVE\'i bekler',
+        ex.tavanDurdu && ex.tavanSn >= 1.2 && ex.tavanSn < 1.9 && /^SAVE/.test(ex.tavanYazi),
+        'durdu ' + ex.tavanDurdu + ' · ' + ex.tavanSn + ' sn (tavan 1.2) · ' + ex.tavanYazi);
+      K('STUDIO EXPORT STUDIO kapaninca (radyoya gecis) durur', ex.kapanincaDurdu, 'durdu ' + ex.kapanincaDurdu);
+    }
   }
 
    await kapatPg();

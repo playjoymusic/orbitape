@@ -116,7 +116,8 @@ var ST_KURAL = [
    "#stRafTus[hidden]{display:none;}",
    "#stRafTus[aria-expanded=\"true\"]{color:var(--a1) !important;border-color:var(--a1) !important;}",
    ".st-ex{flex:1;min-height:44px;border-radius:10px;background:var(--a1) !important;color:var(--on) !important; display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700 !important;font-size:0.6875rem !important;letter-spacing:.12em !important;}",
-   ".st-ex[aria-disabled=\"true\"]{opacity:.55;cursor:default;}",
+   ".st-ex.kayit{background:var(--kir) !important;color:var(--zem) !important;}",
+   ".st-ex.kayit small::before{content:'';display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:2px;background:currentColor;animation:stNabiz 1s infinite;}",
    ".st-ex small{font-size:0.5rem;opacity:.8;}",
    "body.studio-raf-tabaka #stRaf{display:none;}",
    "body.studio-raf-tabaka.studio-raf-acik #stRaf{display:block; box-shadow:0 -12px 30px rgba(0,0,0,.55);background:color-mix(in srgb,var(--zem) 94%,var(--yz));}",
@@ -142,7 +143,7 @@ var ST_KURAL = [
    "#studio .st-ay.sus b{opacity:.4;box-shadow:none;}",
    "#studio .st-ay.kayit b{border:2px solid var(--kir);color:var(--kir);box-shadow:0 0 12px var(--kir);animation:stNabiz 1s infinite;}"
 ];
-var ST_HTML = "<div id=\"studio\" hidden><canvas id=\"stUzay\" aria-hidden=\"true\"></canvas><div id=\"stBas\"><div class=\"st-logo\" aria-hidden=\"true\"><span>ORBITAPE</span><b>STUDIO</b></div><button type=\"button\" id=\"stTemaTus\" aria-label=\"Theme\"><i aria-hidden=\"true\"></i></button></div><div id=\"stTemalar\" role=\"dialog\" aria-label=\"Themes\"><div class=\"st-tbas\"><span>THEMES</span><button type=\"button\" id=\"stTemaKapat\" aria-label=\"Close\">✕</button></div><div id=\"stTemaIzgara\"></div></div><div id=\"stKat\" role=\"group\" aria-label=\"Categories\"></div><div id=\"stSut\" role=\"group\" aria-label=\"Capture\"><button type=\"button\" id=\"stRec\" class=\"st-t st-rec\"><i aria-hidden=\"true\"></i><span>REC</span></button><button type=\"button\" id=\"stCam\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"7\" width=\"13\" height=\"11\" rx=\"2\"/><path d=\"M16 11l5-3v9l-5-3\"/></svg><span>CAM</span></button><button type=\"button\" id=\"stFoto\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 9h3l2-3h6l2 3h3v10H4z\"/><circle cx=\"12\" cy=\"13\" r=\"3.5\"/></svg><span>PHOTO</span></button><button type=\"button\" id=\"stKunye\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 4h14v16H5zM9 9h6M9 13h6M9 17h3\"/></svg><span>CREDITS</span></button><button type=\"button\" id=\"stFav\" class=\"st-t\" aria-pressed=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z\"/></svg><span>SAVE</span></button></div><div id=\"stEkran\"><div class=\"st-izgara\" aria-hidden=\"true\"></div><div id=\"stSistem\"></div><div class=\"st-lcd\"><small id=\"stSayac\"></small><span id=\"stSaat\" role=\"timer\" aria-label=\"Elapsed time\">00:00</span></div></div><canvas id=\"stKadran\" aria-hidden=\"true\"></canvas><div id=\"stSimdi\"><span id=\"stSimge\" aria-hidden=\"true\"></span><div class=\"st-ad\"><b id=\"stAd\"></b><span id=\"stAlt\"></span><canvas id=\"stDalga\" aria-hidden=\"true\"></canvas></div><span id=\"stLis\"></span></div><div id=\"stRaf\"><div class=\"st-h\"><span>FX RACK</span><span id=\"stFxSay\"></span></div><div id=\"stDug\"></div><div class=\"st-h\"><span>LOOP MIXER</span><span id=\"stLpSay\"></span></div><div id=\"stMix\"></div></div><div id=\"stAyak\"><button type=\"button\" id=\"stGeri\" class=\"st-k\" aria-label=\"Previous\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 5v14M19 5l-10 7 10 7z\"/></svg></button><button type=\"button\" id=\"stCal\" class=\"st-k\" aria-label=\"Pause\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"d1\" d=\"M8 5v14M16 5v14\"/><path class=\"d2\" d=\"M7 5l12 7-12 7z\"/></svg></button><button type=\"button\" id=\"stIleri\" class=\"st-k\" aria-label=\"Next\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18 5v14M5 5l10 7-10 7z\"/></svg></button><button type=\"button\" id=\"stRafTus\" class=\"st-k\" aria-expanded=\"false\"><span>RACK</span></button><button type=\"button\" id=\"stExport\" class=\"st-ex\" aria-disabled=\"true\"><span>EXPORT</span><small>SOON</small></button></div></div>";
+var ST_HTML = "<div id=\"studio\" hidden><canvas id=\"stUzay\" aria-hidden=\"true\"></canvas><div id=\"stBas\"><div class=\"st-logo\" aria-hidden=\"true\"><span>ORBITAPE</span><b>STUDIO</b></div><button type=\"button\" id=\"stTemaTus\" aria-label=\"Theme\"><i aria-hidden=\"true\"></i></button></div><div id=\"stTemalar\" role=\"dialog\" aria-label=\"Themes\"><div class=\"st-tbas\"><span>THEMES</span><button type=\"button\" id=\"stTemaKapat\" aria-label=\"Close\">✕</button></div><div id=\"stTemaIzgara\"></div></div><div id=\"stKat\" role=\"group\" aria-label=\"Categories\"></div><div id=\"stSut\" role=\"group\" aria-label=\"Capture\"><button type=\"button\" id=\"stRec\" class=\"st-t st-rec\"><i aria-hidden=\"true\"></i><span>REC</span></button><button type=\"button\" id=\"stCam\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"7\" width=\"13\" height=\"11\" rx=\"2\"/><path d=\"M16 11l5-3v9l-5-3\"/></svg><span>CAM</span></button><button type=\"button\" id=\"stFoto\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 9h3l2-3h6l2 3h3v10H4z\"/><circle cx=\"12\" cy=\"13\" r=\"3.5\"/></svg><span>PHOTO</span></button><button type=\"button\" id=\"stKunye\" class=\"st-t\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 4h14v16H5zM9 9h6M9 13h6M9 17h3\"/></svg><span>CREDITS</span></button><button type=\"button\" id=\"stFav\" class=\"st-t\" aria-pressed=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 3.4l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z\"/></svg><span>SAVE</span></button></div><div id=\"stEkran\"><div class=\"st-izgara\" aria-hidden=\"true\"></div><div id=\"stSistem\"></div><div class=\"st-lcd\"><small id=\"stSayac\"></small><span id=\"stSaat\" role=\"timer\" aria-label=\"Elapsed time\">00:00</span></div></div><canvas id=\"stKadran\" aria-hidden=\"true\"></canvas><div id=\"stSimdi\"><span id=\"stSimge\" aria-hidden=\"true\"></span><div class=\"st-ad\"><b id=\"stAd\"></b><span id=\"stAlt\"></span><canvas id=\"stDalga\" aria-hidden=\"true\"></canvas></div><span id=\"stLis\"></span></div><div id=\"stRaf\"><div class=\"st-h\"><span>FX RACK</span><span id=\"stFxSay\"></span></div><div id=\"stDug\"></div><div class=\"st-h\"><span>LOOP MIXER</span><span id=\"stLpSay\"></span></div><div id=\"stMix\"></div></div><div id=\"stAyak\"><button type=\"button\" id=\"stGeri\" class=\"st-k\" aria-label=\"Previous\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 5v14M19 5l-10 7 10 7z\"/></svg></button><button type=\"button\" id=\"stCal\" class=\"st-k\" aria-label=\"Pause\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"d1\" d=\"M8 5v14M16 5v14\"/><path class=\"d2\" d=\"M7 5l12 7-12 7z\"/></svg></button><button type=\"button\" id=\"stIleri\" class=\"st-k\" aria-label=\"Next\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18 5v14M5 5l10 7-10 7z\"/></svg></button><button type=\"button\" id=\"stRafTus\" class=\"st-k\" aria-expanded=\"false\"><span>RACK</span></button><button type=\"button\" id=\"stExport\" class=\"st-ex\"><span>EXPORT</span><small>WAV</small></button></div></div>";
 function _stKurallariKur(){
     try{
       let ok = false;
@@ -183,8 +184,8 @@ function _stKabinKur(){
      #duraklat/#geri/#ileri, SAVE -> #fav, FX dugmesi -> fxModGec + ayni
      yatay/fxSeviye degerleri (parmagin yaptigi), sürgu -> loopSesYaz,
      MAIN -> anaSesYaz, kategori -> mevcut etiket akisi (_etHavuz).
-     EXPORT asama 3'te (WAV + CREDITS); simdilik "SOON" ve basilmaz --
-     yapilmamis bir isi yapiyor gibi gostermiyor. */
+     EXPORT (14 Kasim, asama 3): EXPORT -> STOP -> SAVE; iki dosya
+     verir, WAV + CREDITS. Ayrinti asagida "EXPORT" basliginda. */
 /* 20 tema: maketteki temalar.js'in aynisi (pj kartelayi gordu).
      [ad, zemin, yazi, ikincil yazi, vurgu1, vurgu2, vurgu1 ustu yazi,
       lisans yesili, bulutsu1, bulutsu2, bulutsu3, yildiz yogunlugu, acik] */
@@ -501,6 +502,7 @@ function studioKur(){
     on('stFoto', () => _stFanTikla('fanPic'));
     on('stKunye', () => { if(typeof aktifItem !== 'undefined' && aktifItem) parcaKartAc(); });
     on('stFav', () => { const f = _stEl('fav'); if(f) f.click(); });
+    on('stExport', () => studioExportTus());
     on('stGeri', () => { const g = _stEl('geri'); if(g) g.click(); });
     on('stIleri', () => { const g = _stEl('ileri'); if(g) g.click(); });
     on('stCal', () => { if(ses && ses.src){ const g = _stEl('duraklat'); if(g) g.click(); } else sonraki(true); });
@@ -626,9 +628,11 @@ function studioTik(){
     if(saat && saat.textContent !== lcd) saat.textContent = lcd;
     if(saat) saat.classList.toggle('kayit', !!kay);
     const say = _stEl('stSayac');
+    _stExportYansit();
     if(say){
       let y;
       if(_stMsjBit > Date.now()) y = _stMsj;
+      else if(_stEx) y = Y('EXPORTING') + ' · ' + _stEx.kunye.size + ' ' + Y('SOUNDS');
       else if(_stKat && _etHavuz.length) y = Y(_stKat) + ' ' + Math.min(_etIdx, _etHavuz.length) + ' / ' + _etHavuz.length.toLocaleString('en-US');
       else y = Y('ALL SOUNDS');
       if(say.textContent !== y) say.textContent = y;
@@ -707,6 +711,206 @@ function studioTik(){
     const cl = _stEl('stCal'); if(cl){ const d = !!(sm && (!sm.src || sm.paused)); cl.classList.toggle('durdu', d);
       cl.setAttribute('aria-label', d ? 'Play' : 'Pause'); }
 }
+/* ── EXPORT: WAV + CREDITS (14 Kasim, asama 3) ──────────────────────
+     pj: "kategorilerin secildigi, ustune FX'lerin uygulandigi, sonunda
+     cikti alinan bir sey" + "insanlar eserlerinde kullanabiliyor dimi,
+     atif ekleyerek". GUNLUK 13 Kasim olcumu: arsivin ~%37'si NC, bir
+     kismi SA -- yani "kullanabilir miyim" sorusunun cevabi sesten sese
+     degisiyor. Cikti bu yuzden IKI dosya: ses (WAV) + o seste duyulan
+     her kaydin lisansi ve atif satiri (CREDITS, duz metin).
+     AKIS: EXPORT -> (kayitta) STOP -> SAVE. REC'in durum makinesiyle
+     ayni desen. NEDEN AYRI BIR SAVE DOKUNUSU: paylasim sayfasi
+     (navigator.share) yalniz kullanici dokunusuyla acilir; kayit sinira
+     ya da canli yayina takilip KENDILIGINDEN durursa dokunus yok.
+     NE KAYDEDILIR: REC'in ayri WAV'i ile AYNI dugum (tavan) -- FX'ler
+     ve loop'lar icinde, kullanicinin ses duzeyinden once. 24 bit
+     stereo PCM, grafigin hizinda.
+     NEDEN kayit.js'in sesYakalaBasla'si KULLANILMADI: o REC'e bagli
+     (tek _sesYak, tavana varinca kaydediciyi durduruyor, yalniz
+     masaustu). REC ve EXPORT ayni anda calisabilmeli; ikisi tek
+     yakalayiciyi paylasirsa biri otekini keser.
+     NEDEN TAVAN: WAV bellekte birikir, 48 kHz'de saniyede 288 KB.
+     Masaustu 10 dk (~173 MB), dokunmatik 5 dk (~86 MB; telefonda REC
+     videosunun 400 MB tavani da ayni bellekten yiyor). Dolunca kayit
+     DURUR, o ana kadarki ses SAVE'i bekler -- emek kaybolmaz.
+     CANLI YAYIN (Kural 3): STUDIO yalniz arsivde acilir ama kayit
+     surerken RADIOTAPE'e gecilebilir. Her tamponda aktifItem.radyo
+     bakiliyor; canli yayin gorulurse O TAMPON ATILIR ve kayit durur.
+     KUNYE NEDEN FAZLA SAYAR, EKSIK SAYMAZ: kayit boyunca calan parca
+     (oynuyorsa) ve acik/sesli her loop'un kaynagi listeye girer. Fazla
+     bir atif zararsiz; eksik bir atif lisansi ihlal eder.
+     CREDITS METNI INGILIZCE: ekranda gorunmuyor, kullanicinin eserinin
+     aciklamasina yapistiracagi bir lisans belgesi -- CC'nin kendi atif
+     dili Ingilizce ve okuyan herkes icin ayni olmali. */
+const ST_EX_TAMPON = 16384;
+/** @type {any} */ var _stEx = null;
+/** @type {any} */ var _stExBekleyen = null;
+/** @type {number|null} */ var _stExTavanZorla = null;   // test kancasi (ms)
+var _stExSuruyor = false;
+function _stExTavanMs(){
+    if(_stExTavanZorla != null) return _stExTavanZorla;
+    let masa = false;
+    try{ masa = matchMedia('(hover: hover) and (pointer: fine)').matches; }catch(e){ _yut(e); }
+    return (masa ? 10 : 5) * 60 * 1000;
+}
+function _stExKunyeEkle(y, it){
+    if(!y || !it || it.radyo) return;
+    const k = String(it.mp3 || it.id || it.ad || ''); if(!k || y.kunye.has(k)) return;
+    y.kunye.set(k, { ad: it.ad || '', sanatci: it.sanatci || '', lisans: it.lisans || '', mp3: it.mp3 || '' });
+}
+function _stExDuyulanlar(y){
+    const sm = /** @type {HTMLMediaElement} */ (ses);
+    if(typeof aktifItem !== 'undefined' && aktifItem && sm && !sm.paused) _stExKunyeEkle(y, aktifItem);
+    for(let i = 0; i < 8; i++){ const c = _loopYuva[i]; if(c && c.acik && c.sev > 0) _stExKunyeEkle(y, c.kaynak); }
+}
+function studioExportBasla(){
+    if(_stEx) return false;
+    if(typeof actx === 'undefined' || !actx || typeof tavan === 'undefined' || !tavan){ _stBilgi(Y('PLAY A SOUND FIRST')); return false; }
+    if(typeof aktifItem !== 'undefined' && aktifItem && aktifItem.radyo){ _stBilgi(Y('EXPORT STOPPED: LIVE RADIO')); return false; }
+    _stExBekleyen = null;
+    const sp = actx.createScriptProcessor(ST_EX_TAMPON, 2, 2), sus = actx.createGain();
+    sus.gain.value = 0;
+    const y = { sp, sus, parca: /** @type {Uint8Array[]} */ ([]), n: 0, sr: actx.sampleRate, bas: Date.now(), kunye: new Map(), sebep: '' };
+    _stExDuyulanlar(y);
+    sp.onaudioprocess = (ev) => {
+      if(_stEx !== y) return;
+      if(typeof aktifItem !== 'undefined' && aktifItem && aktifItem.radyo){ studioExportBitir('canli'); return; }
+      const g = ev.inputBuffer, L = g.getChannelData(0), R = g.getChannelData(g.numberOfChannels > 1 ? 1 : 0), N = L.length;
+      /* 24 bit, kucuk uclu, L R sirali; tasan ornek kirpilir (sarmasin). */
+      const o = new Uint8Array(N * 6); let p = 0;
+      for(let i = 0; i < N; i++){
+        let a = L[i]; a = a > 1 ? 1 : a < -1 ? -1 : a; a = Math.round(a * 8388607);
+        o[p++] = a & 255; o[p++] = (a >> 8) & 255; o[p++] = (a >> 16) & 255;
+        let b = R[i]; b = b > 1 ? 1 : b < -1 ? -1 : b; b = Math.round(b * 8388607);
+        o[p++] = b & 255; o[p++] = (b >> 8) & 255; o[p++] = (b >> 16) & 255;
+      }
+      y.parca.push(o); y.n += N;
+      _stExDuyulanlar(y);
+      if(y.n / y.sr * 1000 >= _stExTavanMs()) studioExportBitir('tavan');
+    };
+    try{ tavan.connect(sp); sp.connect(sus); sus.connect(actx.destination); }
+    catch(e){ _yut(e); return false; }
+    _stEx = y;
+    return true;
+}
+/* Durdurur; ses varsa SAVE'i bekleyen dosyalari hazirlar. Donus: bekleyen ya da null. */
+function studioExportBitir(sebep){
+    const y = _stEx; if(!y) return null;
+    _stEx = null;
+    y.sp.onaudioprocess = null;
+    try{ tavan.disconnect(y.sp); }catch(e){ _yut(e); }
+    try{ y.sp.disconnect(); y.sus.disconnect(); }catch(e){ _yut(e); }
+    if(sebep === 'canli') _stBilgi(Y('EXPORT STOPPED: LIVE RADIO'));
+    else if(sebep === 'tavan') _stBilgi(Y('EXPORT LIMIT') + ' · ' + Math.round(_stExTavanMs() / 60000) + ' MIN');
+    if(!y.n){ if(sebep !== 'canli') _stBilgi(Y('NOTHING RECORDED')); return null; }
+    const veri = y.n * 6, b = new ArrayBuffer(44), v = new DataView(b);
+    const yaz = (o, t) => { for(let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    yaz(0, 'RIFF'); v.setUint32(4, 36 + veri, true); yaz(8, 'WAVE'); yaz(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true);
+    v.setUint32(24, y.sr, true); v.setUint32(28, y.sr * 6, true);
+    v.setUint16(32, 6, true); v.setUint16(34, 24, true);
+    yaz(36, 'data'); v.setUint32(40, veri, true);
+    const kok = 'orbitape-studio-' + new Date(y.bas).toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    const sn = y.n / y.sr;
+    _stExBekleyen = {
+      wav: new Blob([b].concat(y.parca), { type: 'audio/wav' }), wavAd: kok + '.wav',
+      metin: studioKunyeMetni(Array.from(y.kunye.values()), { dosya: kok + '.wav', tarih: new Date(y.bas), sn }),
+      metinAd: kok + '-credits.txt', sn };
+    return _stExBekleyen;
+}
+function _stLisSurum(l){ const m = String(l || '').match(/\/(\d+\.\d+)(?:\/|$)/); return m ? ' ' + m[1] : ''; }
+function _stKaynakSayfa(u){
+    const m = String(u || '').match(/^https?:\/\/archive\.org\/download\/([^/]+)\//);
+    return m ? 'https://archive.org/details/' + m[1] : String(u || '');
+}
+/* Duz metin kunye. Saf fonksiyon: testte dogrudan cagriliyor. Lisans
+     adi lisansAdi() ile (rozetle ayni kaynak); NC/SA o addan okunur. */
+function studioKunyeMetni(liste, bilgi){
+    const iki = n => String(n).padStart(2, '0');
+    const sn = Math.round(bilgi.sn || 0), t = bilgi.tarih || new Date();
+    const satir = [];
+    const kayitlar = liste.map(k => {
+      const ad = lisansAdi(k.lisans);
+      const pd = ad === 'CC0' || ad === 'PUBLIC DOMAIN';
+      return { k, ad: ad || 'UNKNOWN', tam: pd ? ad : ((ad || 'UNKNOWN') + _stLisSurum(k.lisans)), pd,
+               nc: /NC/.test(ad), sa: /SA/.test(ad), sayfa: _stKaynakSayfa(k.mp3) };
+    });
+    const nc = kayitlar.filter(r => r.nc), sa = kayitlar.filter(r => r.sa), atif = kayitlar.filter(r => !r.pd);
+    satir.push('ORBITAPE STUDIO - CREDITS', '');
+    satir.push('File:     ' + (bilgi.dosya || ''));
+    satir.push('Recorded: ' + t.getFullYear() + '-' + iki(t.getMonth() + 1) + '-' + iki(t.getDate()) + ' '
+      + iki(t.getHours()) + ':' + iki(t.getMinutes()) + ' · length ' + iki(Math.floor(sn / 60)) + ':' + iki(sn % 60));
+    satir.push('Made with ORBITAPE - https://orbitape.app', '');
+    satir.push('HOW YOU CAN USE THIS FILE');
+    satir.push(nc.length
+      ? '- Commercial use: NOT ALLOWED. ' + nc.length + ' of ' + kayitlar.length + ' sounds are NonCommercial (NC).'
+      : '- Commercial use: allowed.');
+    if(sa.length) satir.push('- ShareAlike: a work that uses this file must be shared under the same license ('
+      + Array.from(new Set(sa.map(r => r.tam))).join(', ') + ').');
+    satir.push(atif.length
+      ? '- Attribution: required. Copy the lines under ATTRIBUTION into your description.'
+      : '- Attribution: not required (public domain / CC0). Credit is still appreciated.');
+    satir.push('- This file contains your changes (effects, loops). The licenses below still apply.', '');
+    satir.push('SOUNDS (' + kayitlar.length + ')');
+    kayitlar.forEach((r, i) => {
+      satir.push((i + 1) + '. "' + (r.k.ad || 'Untitled') + '"' + (r.k.sanatci ? ' by ' + r.k.sanatci : ''));
+      satir.push('   License: ' + r.tam + (r.k.lisans ? ' - ' + r.k.lisans : '') + (r.nc ? '  [NON-COMMERCIAL]' : ''));
+      if(r.sayfa) satir.push('   Source:  ' + r.sayfa);
+    });
+    if(atif.length){
+      satir.push('', 'ATTRIBUTION');
+      atif.forEach(r => satir.push('"' + (r.k.ad || 'Untitled') + '"' + (r.k.sanatci ? ' by ' + r.k.sanatci : '')
+        + ', ' + r.tam + (r.sayfa ? ', ' + r.sayfa : '')));
+    }
+    return satir.join('\n') + '\n';
+}
+/* SAVE: paylasim sayfasi iki dosyayi birden kabul ediyorsa oraya,
+     degilse ikisi de indirilir (REC'teki kaydiPaylas ile ayni karar;
+     vazgecerse dosyalar bekler, SAVE yine orada). */
+async function studioExportKaydet(){
+    const k = _stExBekleyen; if(!k || _stExSuruyor) return false;
+    let oldu = false, iptal = false;
+    const dosyalar = [new File([k.wav], k.wavAd, { type: 'audio/wav' }), new File([k.metin], k.metinAd, { type: 'text/plain' })];
+    try{
+      if(navigator.canShare && navigator.canShare({ files: dosyalar })){
+        _stExSuruyor = true;
+        await navigator.share({ files: dosyalar, title: 'ORBITAPE STUDIO' });
+        oldu = true;
+      }
+    }catch(e){ iptal = !!e && (e.name === 'AbortError' || /cancel/i.test(String(e.message || ''))); if(!iptal) _yut(e); }
+    finally{ _stExSuruyor = false; }
+    if(iptal) return false;
+    if(!oldu){
+      const indir = (blob, ad) => { const u = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = u; a.download = ad; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 8000); };
+      try{
+        indir(k.wav, k.wavAd);
+        /* Ikinci indirme biraz sonra: bazi tarayicilar art arda iki
+           tiklamayi tek sayip ikincisini dusuruyor. */
+        await new Promise(r => setTimeout(r, 600));
+        indir(new Blob([k.metin], { type: 'text/plain' }), k.metinAd);
+        oldu = true;
+      }catch(e){ _yut(e); }
+    }
+    if(oldu){ if(_stExBekleyen === k) _stExBekleyen = null; _stBilgi(Y('EXPORT SAVED')); }
+    return oldu;
+}
+function studioExportTus(){
+    if(_stEx) studioExportBitir('');
+    else if(_stExBekleyen) studioExportKaydet();
+    else if(studioExportBasla()) _stBilgi(Y('EXPORTING'));
+    studioTik();
+}
+function _stExportYansit(){
+    const b = _stEl('stExport'); if(!b) return;
+    const sp = b.querySelector('span'), sm = b.querySelector('small');
+    let ust = Y('EXPORT'), alt = 'WAV';
+    if(_stEx){ const s = Math.floor(_stEx.n / _stEx.sr); ust = Y('STOP'); alt = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+    else if(_stExBekleyen){ ust = Y('SAVE'); alt = 'WAV + ' + Y('CREDITS'); }
+    if(sp && sp.textContent !== ust) sp.textContent = ust;
+    if(sm && sm.textContent !== alt) sm.textContent = alt;
+    b.classList.toggle('kayit', !!_stEx);
+}
 function studioUygulaGercek(){
   document.body.classList.remove('studio-bekle');
     try{
@@ -722,6 +926,8 @@ function studioUygulaGercek(){
         if(!_stZaman) _stZaman = setInterval(() => { try{ studioTik(); }catch(e){ _yut(e); } }, 250);
       } else {
         if(_stZaman){ clearInterval(_stZaman); _stZaman = 0; }
+        /* STUDIO kapaninca (RADIOTAPE'e gecis) EXPORT durur; ses SAVE'i bekler. */
+        if(_stEx) studioExportBitir('');
         document.body.classList.remove('studio-raf-tabaka', 'studio-raf-acik', 'studio-acik-tema');
         document.body.style.removeProperty('--st-zem');
         if(_stKat){ _stKat = ''; try{ etiketKur(''); }catch(e){ _yut(e); } }
