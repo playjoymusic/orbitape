@@ -109,3 +109,28 @@ Yeni oturum boş başlar; şunlar okunur, sırayla:
 Sert sınırlar özet: uygulamanın tasarımı DEĞİŞMEZ; `index.html`'e sormadan
 dokunulmaz; ekran İngilizce; yeni yazı tipi/lisanssız öge yok; Higgsfield
 üretimi önce maliyet söylenerek ve pj onayıyla.
+
+## 16 Kasım 2026 — Telefon STUDIO'su: dört alt sekme ve on görünüm
+
+PJ bu konuşmada geniş ekran maketlerini telefon uygulaması olarak istedi;
+"alttan değişen sayfalar" ve bütün görünümlerin seçilebilir olmasını onayladı.
+Ardından "hadi", "testleri yap" ve mevcut radyoya bir düğmeyle geçiş istedi.
+Bu karar, yalnız yeni mobil STUDIO düzeninde önceki tek-ekran kuralını günceller.
+
+- Discover / Loops / Play / Export sabit alt sekmelerdir. Sayfa değişimi ses
+  kaynaklarını yeniden kurmaz; loop'lar akmaya devam eder.
+- Mobilde dört loop yuvası; her birinde sembol içi dolgu, ses düzeyi ve susturma.
+  Kayıtta kırmızı, oynatmada yeşil; durum ayrıca metinle görünür.
+- Play'de seçilen loop'un tek aktif efekti, dış miktar halkası ve iç X/Y PAD'i
+  vardır. Hold son konumu tutar; kapalıysa dokunma öncesindeki konuma döner.
+- Kaynak sesin özgün RETRO/TIME/BLACK HOLE/FX kontrolleri korunur. Loop'lar
+  ayrı Reverb/Delay/Filter/Drive işlem zincirine sahiptir; birinde bir FX açıktır.
+- Üstte Radio mevcut RADIOTAPE'i açar. Radyoda STUDIO dönüş düğmesi vardır.
+  Canlı yayın kayıt/export kapıları korunur. Radyo tasarımı değiştirilmez.
+- On yeni mobil görünüm aynı kontrolleri paylaşır; görünüm seçimi kalıcıdır.
+  Original console ile eski STUDIO ve 20 teması hâlâ erişilebilirdir.
+- Mobil Export performansı kaydeder; 60 saniyelik sınır, 24-bit stereo PCM
+  WAV ve 44.1 kHz dönüşümü, ayrı kullanıcı dokunuşuyla paylaşma/indirme.
+  Künye metni korunur. Proje kaydetme bu değişikliğin kapsamında değildir.
+- `studio-mobile.js` + `studio-mobile.css` ayrı yüklenir. Klasik uygulamanın
+  ses motoru taşınmaz; STUDIO'nun küçük yükleyicisi telefon kabuğunu çağırır.

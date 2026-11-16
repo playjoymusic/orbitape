@@ -170,6 +170,9 @@ pidler=""
 for t in senaryo motor cihaz; do kosu "$t" & pidler="$pidler $!"; done
 wait $pidler 2>/dev/null         # cikis kodlarina GUVENILMIYOR, dosyalar okunuyor
 for t in senaryo motor cihaz; do rapor "$t"; done
+# Mobil kabuk: gercek loop, PAD, radyo donusu ve 24/44.1 dosya.
+kosu mobile-studio
+rapor mobile-studio
 echo
 echo "  (takimlar $(( $(date +%s) - t0 )) sn)"
 

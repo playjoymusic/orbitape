@@ -1050,6 +1050,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
     /* studio.js 16 KB (14 Kasim): konsolun tamami (20 tema, 7 sembol,
        loop gorunumu, kabin) tek dosyada; brotli 13 KB. Yalniz arsivde iner. */
     const _IU_TAVAN = { 'kayit.js': 24, 'deri_cizim.js': 30, 'studio.js': 16 };
+    if(!_istekUzerine.includes('studio-mobile.js')) _istekUzerine.push('studio-mobile.js');
     const _iuTavan = f => (_IU_TAVAN[f] || 12) * 1024;
     const _iuBoy = _istekUzerine.reduce((t,f)=> t + bro(fs.readFileSync(_yayin(f))), 0);
     const _iuBuyuk = _istekUzerine.filter(f => bro(fs.readFileSync(_yayin(f))) >= _iuTavan(f));
@@ -18832,7 +18833,7 @@ const yavas = (ad) => { atlanan.push(ad); return true; };
         o.klasikKayma = Math.max(...klasik.map((a, i)=> Math.max(Math.abs(a.l - geri[i].l), Math.abs(a.t - geri[i].t), Math.abs(a.w - geri[i].w))));
         return o;
       });
-      const { sayfa: pz, kapat: kz } = await sayfaAc(c, { bekle: 2500 });
+      const { sayfa: pz, kapat: kz } = await sayfaAc(c, { bekle: 2500, once:()=>localStorage.setItem('orbitape.mobile','0') });
       /* Varsayilan: anahtar '0' ise eski ekran istenmiyor -> STUDIO acik */
       await pz.evaluate(()=>{ localStorage.setItem('orbitape.klasik', '0'); });
       await pz.reload({ waitUntil:'load' }); await pz.waitForTimeout(1500);

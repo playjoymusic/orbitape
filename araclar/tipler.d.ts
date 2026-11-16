@@ -257,3 +257,5 @@ interface Window {
 declare const REHBER_RADIO: any;
 declare const REHBER_ORB: any;
 declare const REHBER_JOY: any;
+
+interface Window { OrbitapeMobile?: { themes: any[]; setTheme(n: number): void; go(page: string): void; select(i: number): void; prepareWav(): Promise<void>; readonly state: any; fx(i: number): any; show(): void; }; }

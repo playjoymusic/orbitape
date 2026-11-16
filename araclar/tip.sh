@@ -54,6 +54,7 @@ dis = re.findall(r'<script[^>]*\ssrc=["\']([^"\']+)["\']', s)
 dis += [t for t in re.findall(r'["\']([\w./-]+\.js)["\']', s)
         if not t.startswith(('http://', 'https://', '//'))
         and os.path.basename(t) != 'sw.js']
+dis += ['studio-mobile.js']  # STUDIO icinden istekle yuklenen telefon kabugu
 gorulen = set()
 for u in dis:
     if u in gorulen:

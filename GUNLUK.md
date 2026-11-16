@@ -5803,3 +5803,61 @@ yüklendi, `cmp` aynı. İlk geri-alma denemesinde test kontrollü düşmek yeri
 **Kural 4:** (1. tur, altı bozma birden) loop kaynağı künyeden çıkarılınca CREDITS "SOUNDS (1)"; canlı yayın kapısı kaldırılınca "durdu false"; STUDIO kapanınca durdurma kaldırılınca "durdu false"; 3. ses parçası atlanınca sıçrama 0,129. (2. tur, karışmasın diye ayrı) NC tanıma kapatılınca CREDITS testi, tavan kaldırılınca tavan testi düştü. Geri yüklendi, `cmp` aynı. Ölçüm betikleri scratchpad'de, commit edilmedi.
 **Dikkat:** yayın kopyası `yayin/studio.js` brotli 15.983 bayt — modül tavanı 16 KB (16.384); pay ~0,4 KB. STUDIO'ya bir sonraki ekleme tavanı aşar; o zaman tavan ölçülerek yükseltilecek ya da bir parça ayrılacak (pj'ye sorulacak).
 **Yapılmadı:** telefonda/laptopta elle deneme (pj); gerçek paylaşım sayfasında iki dosya davranışı (Android TWA'da .txt kabul ediliyor mu) yerelde ölçülemedi.
+
+## 16 Kasım — Mobil STUDIO (Codex, dal `mobile-studio`, ayrı worktree)
+
+**Kullanıcının isteği:** On görselin telefon uygulaması halleri, seçilebilir
+bütün görünümler, alttan değişen sayfalar, gerçek loop/FX/halka/PAD kontrolleri,
+testler; ayrıca mevcut radyo ekranına geçiş düğmesi. Önceki `studio-export`
+push'ı yalnız günlük notuydu; mobil uygulama değişikliği içermiyordu.
+
+**Uygulanan:** `studio-mobile.js`/`.css`; dört sekme, dört loop, 10 görünüm,
+mevcut kaynak motoruna bağlanan keşif/önizleme ve özgün kaynak FX'leri, her
+loop için ayrı tek-FX zinciri, dairesel miktar kontrolü, X/Y PAD, Hold/reset,
+Radio ve STUDIO dönüşü, gerçek WAV + CREDITS indirme. Mobil export 24-bit
+stereo PCM'i OfflineAudioContext ile 44100 Hz'e dönüştürür; sadece uzantıyı
+veya başlığı değiştirmez. Mobil performans süresi 60 saniyeyle sınırlandırıldı.
+Kaynak değişirse sürmekte olan mobil loop yakalaması iptal edilir: yanlış
+kayıt/lisansın loop'a yazılmasına izin verilmez. Semboller metadata temellidir;
+train/rain ayrı, genel machine/water ayrı; bilinmeyen SOUND.
+
+**İzolasyon:** `/private/tmp/orbitape-mobile-20261116`, `origin/main` be4fb38'den
+`--no-track` ile açıldı. Ana çalışma dizininin kullanıcı dosyaları değiştirilmedi.
+`index.html` işlevsel olarak değiştirilmedi; csp.py sürümü 2026.11.16 yaptı.
+Gizlilik anahtar listesi ve test/tip kapsamı yeni modülle güncellendi.
+
+**İlk doğrulama:** Gerçek Chromium + yerel ağ fixture'ı ile 33 mobil kontrol
+geçti; 3 ekran boyutunda 10 görünüm × 4 sayfada yatay taşma yok. Gerçek WAV
+indirmesinde PCM=1, stereo, 24-bit, 44100 Hz, veri uzunluğu ve sıfır olmayan
+ses doğrulandı. 4 saniye loop: 48000 Hz bağlamda 192000 örnek. Radyo dönüşünde
+aynı AudioBufferSource korunuyor; canlı radyo export reddediliyor. Sonrasında
+kontrast, kart boyu ve kaynak-kayıt koruması eklenerek son kontroller hazırlanıyor.
+
+**Görseller:** ASRLAB/tasarim/orbitape-app-2026-11-16/ (gerçek test ekranları;
+üretim arşiv seslerini dinleyerek kabul yapılmadı). Fiziksel Android/TWA paylaşım
+penceresi ve arka plan davranışı yerel emülasyonla doğrulanmış sayılmaz.
+
+**Durum:** Tam kapı çalışıyor; sonucu tamamlanınca bu kaydın altına eklenecek.
+
+**Son doğrulama (16 Kasım):** Birim 144/144, senaryo 120/120, motor
+19/19, cihaz 156/156, arıza 18/18, yeni mobil 34/34; derlenmiş motor
+19/19 geçti. Tam kapının sağlık takımı 1023/1024 verdi: yeni loader'daki
+aynı satır `const mobileScript=...; mobileScript.src=...` statik tarayıcıda
+`src` adında geç tanımlanan değişken sanılıyordu. Atama ayrı satıra taşındı;
+aynı kontrol tek başına geçti. Bellekte eski satır geri konunca kontrol
+yeniden düştü, düzeltilmiş satırla geçti (geri-alma kanıtı). Test filtresi
+genişletilmedi. Tam 16 dakikalık kapı bu satır düzeninden sonra baştan
+tekrarlanmadı; ilk kapı günlüğü bu yüzden kırmızı sonucunu taşır.
+Son tip denetimi tabandaki 54 uyarıda, yeni uyarı yok.
+
+**Radyo eklemesi:** Kullanıcının radyo bölümü isteği aynı işin parçası.
+Üstte Radio mevcut moodKapat yolunu açıyor, radyo ekranında sağ üstte
+STUDIO aynı moodAc yoluyla dönüyor. Alt oynatma kontrolleri kapatılmıyor.
+Derlenmiş testte dönüşten hemen sonra konan örnek sesin moodUygula'nın
+120 ms sonraki kaynak seçimiyle ezildiği ölçüldü; görsel fixture'ı geçişten
+sonraya alındı, oynama hazır koşulu beklendi. Testin canlı-radyo işaretlemesi
+try/finally ile geri yükleniyor; gerçek uygulamanın radyo motoru değiştirilmedi.
+
+**Derlenmiş son mobil kontrol:** 34/34 geçti; 40 uygulama ekranı + radyo/dönüş
+ekranları alındı. PCM=1, stereo, 24-bit/44100 Hz WAV indirme ve sıfır olmayan
+ses yeniden doğrulandı. Son UI/CSS bu ekranlardaki sürümdür.

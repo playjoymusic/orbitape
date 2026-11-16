@@ -757,7 +757,7 @@ const CASUS = ()=>{
     const pxKalan = (()=>{ try{
       const fs = require('fs');
       const out = [];
-      for(const d of ['index.html','saat.js','deri_galeri.js','liste.js','gorsel.js','studio.js']){
+      for(const d of ['index.html','saat.js','deri_galeri.js','liste.js','gorsel.js','studio.js','studio-mobile.js','studio-mobile.css']){
         const m = fs.readFileSync(d,'utf8').match(/font-size\s*:\s*[0-9.]+px/g) || [];
         if(m.length) out.push(d + ' ' + m.length);
       }

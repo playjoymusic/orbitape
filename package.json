@@ -17,7 +17,8 @@
     "birim": "node test/birim.js",
     "kanca": "bash araclar/kanca/kur.sh",
     "duman": "bash araclar/duman.sh",
-    "deneme": "bash araclar/kontrol.sh && npx wrangler deploy --env deneme"
+    "deneme": "bash araclar/kontrol.sh && npx wrangler deploy --env deneme",
+    "test:mobile": "node test/mobile-studio.js"
   },
   "devDependencies": {
     "playwright": "1.62.1",

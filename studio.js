@@ -939,3 +939,9 @@ _stKabinKur();
 window.studioUygulaGercek = studioUygulaGercek;
 window.STUDIO_HAZIR = true;
 studioUygulaGercek();
+
+/* Telefon kabugu ayri yuklenir: eski konsolun 16 KB butcesi korunur. */
+try{ if(localStorage.getItem('orbitape.mobile') !== '0' && (matchMedia('(max-width:700px)').matches || new URLSearchParams(location.search).has('mobile'))){
+  const mobileScript=document.createElement('script');
+  mobileScript.src='studio-mobile.js'; document.head.appendChild(mobileScript);
+} }catch(e){ _yut(e); }
