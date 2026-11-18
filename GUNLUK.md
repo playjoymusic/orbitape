@@ -5803,3 +5803,15 @@ yüklendi, `cmp` aynı. İlk geri-alma denemesinde test kontrollü düşmek yeri
 **Kural 4:** (1. tur, altı bozma birden) loop kaynağı künyeden çıkarılınca CREDITS "SOUNDS (1)"; canlı yayın kapısı kaldırılınca "durdu false"; STUDIO kapanınca durdurma kaldırılınca "durdu false"; 3. ses parçası atlanınca sıçrama 0,129. (2. tur, karışmasın diye ayrı) NC tanıma kapatılınca CREDITS testi, tavan kaldırılınca tavan testi düştü. Geri yüklendi, `cmp` aynı. Ölçüm betikleri scratchpad'de, commit edilmedi.
 **Dikkat:** yayın kopyası `yayin/studio.js` brotli 15.983 bayt — modül tavanı 16 KB (16.384); pay ~0,4 KB. STUDIO'ya bir sonraki ekleme tavanı aşar; o zaman tavan ölçülerek yükseltilecek ya da bir parça ayrılacak (pj'ye sorulacak).
 **Yapılmadı:** telefonda/laptopta elle deneme (pj); gerçek paylaşım sayfasında iki dosya davranışı (Android TWA'da .txt kabul ediliyor mu) yerelde ölçülemedi.
+
+- **15 Kasım — PR #90 (`studio-export`) birleşti** (`main` = be4fb38, commit 8fcbeab). `main`'de "Sağlık kontrolü #685" ve "Yayin #408" koşuyordu (pj'nin ekran görüntüsü). Sırada: ikisi yeşil olunca pj telefonda/laptopta EXPORT'u elle dener (özellikle Android'de paylaşım sayfası .txt'yi alıyor mu).
+
+## 18 Kasım — ORBITAPE tarafı 11 Kasım'a (loop öncesine) geri alındı (dal `loopsuz-11kasim`, `--no-track`)
+
+**pj:** *"eski loop'un olmadığı tarihe döner misin. orbitape tarafı. bozulmadan öncesine"*. İki seçenek soruldu (13 Kasım STUDIO öncesi / 11 Kasım loop hiç yokken); pj **11 Kasım, loop hiç yokken**'i seçti.
+**Kullanıcı ne yaşıyordu:** ORBITAPE tarafı STUDIO konsoluyla açılıyordu (20 tema, EXPORT, 8 loop ayı, mixer); eski ekran gizliydi.
+**Artık:** ORBITAPE 11 Kasım'daki gibi: eski halka/gezegen ekranı, loop yok, STUDIO yok, EXPORT yok, katman şeridi/MAIN sesi/REC WAV yok. Radyo tarafı da 11 Kasım hâline döner (arada radyoya özel değişiklik yoktu).
+**Teknik:** `git restore --source=6787f20` (PR #84 loop birleşmesinden hemen önceki `main`) ile bütün uygulama dosyaları birebir o hâle getirildi; `studio.js` silindi. Dokunulmayanlar: `GUNLUK.md`, `TASARIM.md` (belge). `csp.py` + `derle.py` koşuldu; tek fark sürüm damgası `ORB_SURUM` 2026.11.11 → 2026.11.18 (telefonlardaki service worker önbelleği yenilensin diye) ve buna bağlı `_headers` script özeti. Geri alınan PR'lar: #84, #85, #86, #87, #88, STUDIO (de16513), #89, #90. Kod geçmişte duruyor; istenirse geri getirilir (dallar: `loop`, `loop-aylar`, `katman-seridi`, `loop-ses`, `rec-ses`, `studio-1`, `studio-2`, `studio-export`).
+**Dikkat:** `mobile-studio` dalı (16 Kasım, 36e9d5c, ayrı worktree `/private/tmp/orbitape-mobile-20261116`) STUDIO üzerine kurulu; bu geri alma birleşirse o dal anlamını yitirir — ona dokunulmadı.
+**Test (kontrol.sh tam kapı):** tip 54, birim 144/144, sağlık 963/963, arıza 18/18, senaryo 120/120, motor 19/19, cihaz 156/156, derlenmiş 19/19 — "TEMİZ". (Sağlık 1024 → 963: loop/STUDIO/EXPORT kontrolleri onlarla birlikte gitti.) Kural 4 uygulanmadı: yeni düzeltme yok, birebir eski hâle dönüş.
+**Yapılmadı:** telefonda elle bakış (pj); push ve PR (pj).

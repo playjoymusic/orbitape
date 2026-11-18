@@ -69,78 +69,6 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
   const KAYIT_TAVAN_BAYT = 400 * 1024 * 1024;
   const KAYIT_TAVAN_MS   = 15 * 60 * 1000;
   var _kayitBoyut = 0;
-  /* ── AYRI SES DOSYASI: WAV (12 Kasim) ─────────────────────────────
-     pj: "REC ... ayni zamanda audio kaydi da yapsin. hem goruntu hem
-     audio kaydini ayri ayri indirebilirim ... yuksek kalitede olsun."
-     NEDEN VIDEONUN SESI YETMIYOR: videodaki ses kayipli sikistirilmis
-     (128 kbit/s). Ayri dosya SIKISTIRILMAMIS: 24 bit PCM WAV, ses
-     grafiginin kendi ornekleme hizinda, videoyla AYNI dugumden (tavan)
-     -- yani FX'ler ve loop'lar icinde, kullanicinin ses duzeyinden once.
-     NEDEN YALNIZ MASAUSTU: 24 bit stereo dakikada ~17 MB ve BELLEKTE
-     birikiyor (15 dk = 259 MB). Telefonda video tavaninin (400 MB)
-     yanina bu yuk bellek baskisi demek; pj de "laptop tarafinda" dedi.
-     Olcut: fare + hover (dokunmatik degil). Ses baytlari da ayni
-     tavana sayiliyor: toplam 400 MB'a varinca kayit DURUR, dosyalar
-     kurtulur.
-     NEDEN ScriptProcessor, TAMPON 16384: loop yakalama da ayni yolu
-     kullaniyor. Bu dugum ana is parcaciginda calisir; REC sirasinda
-     her kare tuvale ciziliyor, ana is parcacigi takilirsa ornek
-     dusebilir. Buyuk tampon (48 kHz'de 341 ms) bu takilmayi yutuyor;
-     gecikme kayit icin onemsiz. Sureklilik testte olculuyor (bilinen
-     bir sinus kaydedilip ornekler arasi sicrama araniyor). */
-  const SES_WAV_TAMPON = 16384;
-  var _sesYak = null, _sesAyriZorla = null;      // ikincisi test kancasi: true/false olcutu ezer
-  function sesAyriIstenir(){
-    if(_sesAyriZorla != null) return !!_sesAyriZorla;
-    try{ return matchMedia('(hover: hover) and (pointer: fine)').matches; }catch(e){ return false; }
-  }
-  function sesYakalaBasla(kaynak){
-    sesYakalaBitir(true);
-    if(!actx || !kaynak || !sesAyriIstenir()) return false;
-    const sp = actx.createScriptProcessor(SES_WAV_TAMPON, 2, 2), sus = actx.createGain();
-    sus.gain.value = 0;
-    const y = { sp, sus, kaynak, parca:[], n:0, bayt:0, sr:actx.sampleRate };
-    sp.onaudioprocess = (ev)=>{
-      if(_sesYak !== y) return;
-      const g = ev.inputBuffer, L = g.getChannelData(0),
-            R = g.getChannelData(g.numberOfChannels > 1 ? 1 : 0), N = L.length;
-      /* 24 bit, kucuk uclu, L R sirali. Kirpma: tavan zaten 0 dB'i
-         gecirmiyor ama bir ornek tasarsa sarmasin (cit olur). */
-      const o = new Uint8Array(N * 6); let p = 0;
-      for(let i = 0; i < N; i++){
-        let a = L[i]; a = a > 1 ? 1 : a < -1 ? -1 : a; a = Math.round(a * 8388607);
-        o[p++] = a & 255; o[p++] = (a >> 8) & 255; o[p++] = (a >> 16) & 255;
-        let b = R[i]; b = b > 1 ? 1 : b < -1 ? -1 : b; b = Math.round(b * 8388607);
-        o[p++] = b & 255; o[p++] = (b >> 8) & 255; o[p++] = (b >> 16) & 255;
-      }
-      y.parca.push(o); y.n += N; y.bayt += o.length;
-      if(_kayitBoyut + y.bayt >= KAYIT_TAVAN_BAYT && kaydedici){
-        _kayitSebep = 'RECORDING LIMIT: ' + Math.round(KAYIT_TAVAN_BAYT/1048576) + ' MB';
-        try{ kayitDurdur(); }catch(_){ _yut(_); }
-      }
-    };
-    try{ kaynak.connect(sp); sp.connect(sus); sus.connect(actx.destination); }
-    catch(e){ _yut(e); return false; }
-    _sesYak = y;
-    return true;
-  }
-  /* iptal: dosya olusmaz. Donus: WAV Blob ya da null. */
-  function sesYakalaBitir(iptal){
-    const y = _sesYak; if(!y) return null;
-    _sesYak = null;
-    y.sp.onaudioprocess = null;
-    try{ y.kaynak.disconnect(y.sp); }catch(e){ _yut(e); }
-    try{ y.sp.disconnect(); y.sus.disconnect(); }catch(e){ _yut(e); }
-    if(iptal || !y.n) return null;
-    const veri = y.n * 6, b = new ArrayBuffer(44), v = new DataView(b);
-    const yaz = (o, t)=>{ for(let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
-    yaz(0, 'RIFF'); v.setUint32(4, 36 + veri, true); yaz(8, 'WAVE'); yaz(12, 'fmt ');
-    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true);
-    v.setUint32(24, y.sr, true); v.setUint32(28, y.sr * 6, true);
-    v.setUint16(32, 6, true); v.setUint16(34, 24, true);
-    yaz(36, 'data'); v.setUint32(40, veri, true);
-    return new Blob([b].concat(y.parca), { type:'audio/wav' });
-  }
   /* Kayıt ses hedefini tamamen kapat: iz durdurulur, grafikten koparılır.
      Canlı kalan bir iz hem boşuna iş yapar hem de bir sonraki kaydın
      ses/görüntü hizasını kaydırır. */
@@ -2155,136 +2083,6 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       });
     }catch(e){ _yut(e); }
   }
-  /* ── LOOP AYLARI + KATMAN SERIDI (12 Kasim) ─────────────────────
-     pj: "REC'ten kaydediyoruz, bu seceneklerin islerini gostermiyor".
-     OLCULDU (Fable 5.2, gercek kayit karesi): halkanin cevresindeki
-     8 loop ayi ve seridin hicbiri videoya girmiyordu -- izleyen sesin
-     neden ust uste bindigini goremiyordu. Simdi:
-       · aylar ekrandaki yerlerinden (kk, taze), ekrandaki hallerinde
-         (bos = kesikli halka, dolu = renkli kure, susturulmus = soluk,
-         kayitta = kirmizi);
-       · serit VIDEODA sol alt koseye (o kose videoda bilerek bos --
-         bkz. kayitCiz sonundaki not), FOTOGRAFTA ekrandaki yerine
-         ("ne goruyorsak o").
-     Durum index.html'deki loopSeritDurum()'dan: ekran ve kayit ayni
-     kaynaktan okur, ayrismaz. */
-  function _kayLoop(g){
-    const c = g.c, K = g.K;
-    try{
-      const kap = document.getElementById('loopKanallar');
-      if(!kap || getComputedStyle(kap).display === 'none') return;
-      kap.querySelectorAll('.loopK').forEach(b=>{
-        const i = b.querySelector('i'); const k = kk(i, true); if(!k) return;
-        const r = Math.min(k.w, k.h)/2; if(!(r > 0)) return;
-        const lr = (getComputedStyle(b).getPropertyValue('--lr') || '232,230,235').trim();
-        kat(c, ()=>{
-          if(b.classList.contains('bos')){
-            c.setLineDash([3*K, 3*K]); c.lineWidth = 1.5*K;
-            c.strokeStyle = 'rgba(' + lr + ',.75)';
-            c.beginPath(); c.arc(k.ox, k.oy, r - 0.75*K, 0, 6.2832); c.stroke();
-            return;
-          }
-          const kay = b.classList.contains('kayit');
-          if(b.classList.contains('kapali')) c.globalAlpha = 0.28;
-          const renk = kay ? '255,77,77' : lr;
-          c.shadowColor = 'rgba(' + renk + ',.6)'; c.shadowBlur = 10*K;
-          const gr = c.createRadialGradient(k.ox - r*0.3, k.oy - r*0.4, 0, k.ox, k.oy, r);
-          if(kay){ gr.addColorStop(0, 'rgb(255,77,77)'); gr.addColorStop(1, 'rgb(255,77,77)'); }
-          else{ gr.addColorStop(0, 'rgba(255,255,255,.85)'); gr.addColorStop(0.45, 'rgb(' + lr + ')'); gr.addColorStop(1, 'rgba(0,0,0,.55)'); }
-          c.fillStyle = gr; c.beginPath(); c.arc(k.ox, k.oy, r, 0, 6.2832); c.fill();
-        });
-      });
-    }catch(e){ _yut(e); }
-    try{
-      const d = (typeof window.loopSeritDurum === 'function') ? window.loopSeritDurum() : null;
-      const el = document.getElementById('loopSerit');
-      if(!d || !d.gorunur || !el) return;
-      const cs = getComputedStyle(el);
-      if(cs.display === 'none') return;
-      const aile = cs.fontFamily || 'monospace';
-      const VARS = 'rgba(226,222,212,.86)', KIR = '#ff5a4d';
-      /* Harf araligi elle: ctx.letterSpacing her motorda yok. */
-      const yaz = (t, x, y, px, ara, renk)=>{
-        c.font = '400 ' + (px*K).toFixed(1) + 'px ' + aile; c.fillStyle = renk; c.textBaseline = 'middle';
-        for(const ch of String(t)){ c.fillText(ch, x, y); x += c.measureText(ch).width + ara*K; }
-        return x;
-      };
-      const gen = (t, px, ara)=>{ c.font = '400 ' + (px*K).toFixed(1) + 'px ' + aile;
-        let w = 0; for(const ch of String(t)) w += c.measureText(ch).width + ara*K; return w; };
-      /* Yer: fotografta ekrandaki kutu, videoda sol alt kose. */
-      let x0, y0;
-      const ek = kk(el, true);
-      if(g.foto && ek){ x0 = ek.x; y0 = ek.y; }
-      else{
-        const kx = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kx')) || 16) * K;
-        x0 = kx; y0 = g.H - kx - 44*K;
-        /* SAG ALTTAKI KUNYEYE BINMESIN. OLCULDU (390x844 kayit karesi,
-           iki satirlik parca adi): seridin sonundaki FX adi (BLACK HOLE)
-           kunyenin ikinci satirinin ustune basiliyordu. Serit genisligi
-           hesaplanip kunye bloguyla (yildiz satiri dahil) yatayda
-           kesisiyorsa serit kunyenin en ust kenarinin USTUNE cikar. */
-        const sGen = Math.max((d.ana ? gen(d.ana.ad, 10, 1.6) + 5*K + 4*K + 12*K : 0) + d.bas.reduce((t, q)=> t + gen(q[0], 11, 2.2), 0),
-          8*24*K - 6*K + (d.fx ? 8*K + 16*K + gen(d.fx.ad, 10, 1.6) : 0));
-        let kunyeUst = Infinity;
-        const np = document.getElementById('np');
-        if(np && parseFloat(getComputedStyle(np).opacity) > 0.05){
-          np.querySelectorAll('.np-gez, .np-bilgi').forEach(e=>{
-            const k = kk(e, true); if(k && k.w && k.x < x0 + sGen + 8*K) kunyeUst = Math.min(kunyeUst, k.y);
-          });
-        }
-        if(y0 + 40*K > kunyeUst - 8*K) y0 = kunyeUst - 8*K - 40*K;
-      }
-      kat(c, ()=>{
-        /* Ust satir: MAIN + duzey cubugu (ekrandaki .ls-ana), sonra baslik.
-           Cubuk videoda 12 birim (ekranda 18): ust satirin yuksekligine sigsin. */
-        let x = x0;
-        if(d.ana){
-          const uy = y0 + 6*K, x00 = x;
-          c.save(); if(!d.ana.acik) c.globalAlpha = 0.62;
-          x = yaz(d.ana.ad, x, uy, 10, 1.6, VARS);
-          if(!d.ana.acik){ c.fillStyle = VARS; c.fillRect(x00, uy - 0.5*K, x - x00 - 1.6*K, 1*K); }
-          c.restore();
-          x += 5*K - 1.6*K;
-          c.fillStyle = 'rgba(226,222,212,.24)'; c.fillRect(x, uy - 6*K, 4*K, 12*K);
-          if(d.ana.acik){ const h = 12*K*d.ana.sev; c.fillStyle = VARS; c.fillRect(x, uy + 6*K - h, 4*K, h); }
-          x += 4*K + 12*K;
-        }
-        d.bas.forEach(([t, r])=>{
-          x = yaz(t, x, y0 + 6*K, 11, 2.2, r === 'k' ? KIR : r ? 'rgb(' + r + ')' : VARS);
-        });
-        /* Alt satir: 8 nokta + FX adi. */
-        const cy = y0 + 14*K + 7*K + 9*K, R = 9*K;
-        let nx = x0 + R;
-        d.yuva.forEach(y=>{
-          const lr = y.durum === 'kayit' ? '255,77,77' : y.renk;
-          c.save();
-          if(y.durum === 'bos' || y.durum === 'kapali'){
-            if(y.durum === 'bos') c.setLineDash([3*K, 3*K]);
-            c.lineWidth = 1.5*K; c.strokeStyle = y.durum === 'bos' ? 'rgba(' + lr + ',.75)' : 'rgb(' + lr + ')';
-            c.beginPath(); c.arc(nx, cy, R - 0.75*K, 0, 6.2832); c.stroke();
-            if(y.durum === 'kapali'){ c.setLineDash([]); c.beginPath();
-              c.moveTo(nx - 6*K, cy + 6*K); c.lineTo(nx + 6*K, cy - 6*K); c.stroke(); }
-          }else if(y.durum === 'acik' && y.sev < 1){
-            /* Kisilmis loop: soluk daire + alttan duzeyi kadar dolu. */
-            c.beginPath(); c.arc(nx, cy, R, 0, 6.2832);
-            c.fillStyle = 'rgba(' + lr + ',.22)'; c.fill(); c.clip();
-            c.fillStyle = 'rgb(' + lr + ')'; c.fillRect(nx - R, cy + R - 2*R*y.sev, 2*R, 2*R*y.sev);
-          }else{ c.fillStyle = 'rgb(' + lr + ')'; c.beginPath(); c.arc(nx, cy, R, 0, 6.2832); c.fill(); }
-          c.restore();
-          const no = String(y.no);
-          yaz(no, nx - gen(no, 10, 0)/2, cy + 0.5*K, 10, 0,
-              (y.durum === 'bos' || y.durum === 'kapali' || (y.durum === 'acik' && y.sev < 0.5)) ? 'rgb(' + lr + ')' : '#080a0e');
-          nx += 2*R + 6*K;
-        });
-        if(d.fx){
-          const fx = nx - R + 8*K;
-          c.fillStyle = 'rgb(' + d.fx.renk + ')';
-          c.beginPath(); c.arc(fx + 5*K, cy, 5*K, 0, 6.2832); c.fill();
-          yaz(d.fx.ad, fx + 16*K, cy, 10, 1.6, 'rgb(' + d.fx.renk + ')');
-        }
-      });
-    }catch(e){ _yut(e); }
-  }
   function _kaySagUst(g){
     const c=g.c, W=g.W, H=g.H, K=g.K, gorNo=g.gorNo, renk=g.renk;
     /* 4) SAĞ ÜST: kanal adları — ölçülen kutu, ekrandan okunan yazı tipi */
@@ -2719,7 +2517,6 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     _kayDisk(g);
     _kayKamera(g);
     _kaySolUst(g);
-    _kayLoop(g);
     _kaySagUst(g);
     _kaySemboller(g);
     _kaySagAlt(g);
@@ -3071,9 +2868,6 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          1 saniyelik dilim eskiden ses/görüntü hizasını bozuyordu;
          5 saniyede o sorun yok (AUDIO OK 21MS). BU DEĞERİ DÜŞÜRME. */
       kaydedici.start(5000);
-      /* AYRI SES: kaydedici GERCEKTEN basladiktan sonra (start patlarsa
-         acik bir yakalama kalmasin). Yalniz videoya ses girdiyse. */
-      try{ if(sesliKayit && grafHazir) sesYakalaBasla(tavan || cikisG || analiz); }catch(e){ _yut(e); }
       _calDevam();
       setTimeout(_calDevam, 120); setTimeout(_calDevam, 400); setTimeout(_calDevam, 1200);
       _durdurmaIstendi=false; _kayitSebep='';
@@ -3182,8 +2976,6 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     kamKapat();
     kayitSesiBirak();                               // izi canlı bırakma: sonraki kaydın hizası kaymasın                                    // kayıt bitti -> kamera tamamen kapanır
     const blob=new Blob(kayitParcalari,{type:tip}); kayitParcalari=[]; _kayitBoyut=0;
-    let sesBlob = null;
-    try{ sesBlob = sesYakalaBitir(_kayitIptal); }catch(e){ _yut(e); }
     kayitDosyasiniOlc(blob);                      // dosyayı ölç: sesi baştan mı başlıyor?
     const uzanti = tip.includes('mp4') ? 'mp4' : 'webm';
     const ad = 'orbitape-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.'+uzanti;
@@ -3215,8 +3007,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     /* radyoSebep: kayit CANLI RADYOYA gecildigi icin mi durdu? Panel soruyu
        buna gore kurar. _kayitSebep burada henuz bos degil (kayitBilgiYaz
        sonra tuketiyor). */
-    _bekleyenKayit = { blob: blob, ad: ad, tip: tip,
-      ses: sesBlob ? { blob: sesBlob, ad: ad.replace(/\.[a-z0-9]+$/, '.wav') } : null, radyoSebep: /LIVE RADIO/.test(String(_kayitSebep || '')) };
+    _bekleyenKayit = { blob: blob, ad: ad, tip: tip, radyoSebep: /LIVE RADIO/.test(String(_kayitSebep || '')) };
     rec.classList.remove('hazirla','sessiz');
     rec.classList.add('kaydet'); recYazi.textContent='REC';
     camModuTazele();                 // yanındaki tuş: CAM -> DELETE
@@ -3247,14 +3038,10 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
     if(_paylasimSuruyor) return;
     let oldu = false, iptal = false;
     try{
-      /* AYRI SES VARSA paylasim sayfasina ikisi BIRLIKTE gider; sayfa
-         ikisini birden kabul etmiyorsa paylasim atlanir ve ikisi de
-         indirilir (yalniz videoyu paylasip sesi kaybetmek yok). */
-      const dosyalar = [new File([k.blob], k.ad, {type:k.tip})];
-      if(k.ses) dosyalar.push(new File([k.ses.blob], k.ses.ad, {type:'audio/wav'}));
-      if(navigator.canShare && navigator.canShare({files:dosyalar})){
+      const dosya = new File([k.blob], k.ad, {type:k.tip});
+      if(navigator.canShare && navigator.canShare({files:[dosya]})){
         _paylasimSuruyor = true;
-        await navigator.share({files:dosyalar, title:'ORBITAPE'});   // iOS: "Videoyu Kaydet" -> galeri
+        await navigator.share({files:[dosya], title:'ORBITAPE'});   // iOS: "Videoyu Kaydet" -> galeri
         oldu = true;
       }
     }catch(e){ oldu = false; iptal = _iptalMi(e); if(!iptal) _yut(e); }
@@ -3266,21 +3053,13 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
       /* Paylaşım yoksa ya da iptal edildiyse: doğrudan indirme.
          Sessizce kaybetmiyoruz. */
       try{
-        const indir = (blob, ad)=>{
-          const u=URL.createObjectURL(blob); const a=document.createElement('a');
-          a.href=u; a.download=ad; document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(()=>URL.revokeObjectURL(u), 8000);
-        };
-        indir(k.blob, k.ad);
-        /* Ikinci indirme biraz sonra: art arda iki tiklamayi bazi
-           tarayicilar tek sayip ikincisini dusuruyor. Tarayici ilk
-           seferde "birden fazla dosya indirilsin mi" diye sorabilir. */
-        if(k.ses){ const s = k.ses; setTimeout(()=>{ try{ indir(s.blob, s.ad); }catch(e){ _yut(e); } }, 600); }
+        const u=URL.createObjectURL(k.blob); const a=document.createElement('a');
+        a.href=u; a.download=k.ad; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(u), 8000);
         oldu = true;
       }catch(e){ _yut(e); }
     }
-    if(oldu){ const sesli = !!k.ses; kayitBekleyeniBirak();
-      try{ kayitNotYaz(sesli ? 'VIDEO + AUDIO SAVED' : 'RECORDING SAVED', false); }catch(e){ _yut(e); } }
+    if(oldu){ kayitBekleyeniBirak(); try{ kayitNotYaz('RECORDING SAVED', false); }catch(e){ _yut(e); } }
   }
 
   /* ══ RADYODA FOTOGRAF ═══════════════════════════════════════════
@@ -3349,7 +3128,7 @@ try{ window.KAYIT_MODULU_BASLADI = true; }catch(e){}
          hemen sonrasindaki kayitCiz() notunda (kayitCiz de ayni
          hatayi tasiyordu: kamera cizilip UZERINE deri govdesi
          basiliyor, fotografta kamera hic gorunmuyordu). */
-      _kayZemin(g); _kayDisk(g); _kayKamera(g); _kayCark(g); _kaySolUst(g); _kayLoop(g); _kaySagUst(g);
+      _kayZemin(g); _kayDisk(g); _kayKamera(g); _kayCark(g); _kaySolUst(g); _kaySagUst(g);
       _kaySemboller(g); _kaySagAlt(g); _kaySolAlt(g); _kaySesCubugu(g);
       /* ARAYUZ KATMANI: kullanicinin istegi "ne goruyorsak o, yani o
          anda". Tuslar da fotografta. Vinyetten ONCE ciziliyor ki
